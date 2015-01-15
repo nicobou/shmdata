@@ -732,7 +732,7 @@ gint RtpSession::get_mtu_at_add_data_stream(void *user_data) {
 }
 
 void RtpSession::on_rtp_caps(std::string shmdata_path, std::string caps) {
-  caps += ", media_label=" + get_quiddity_name_from_file_name(shmdata_path);
+  caps += ", media-label=" + get_quiddity_name_from_file_name(shmdata_path);
   graft_tree("rtp_caps." + std::move(shmdata_path),
              data::Tree::make(std::move(caps)));
 }

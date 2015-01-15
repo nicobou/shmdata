@@ -38,9 +38,9 @@ Decodebin2::Decodebin2():
 
 bool Decodebin2::init_gpipe() {
   decodebin_->invoke(std::bind(&SinglePadGstSink::set_sink_element,
-                               this, std::placeholders::_1));
-  SinglePadGstSink::
-      set_on_first_data_hook(Decodebin2::make_decodebin_active, this);
+                               this,
+                               std::placeholders::_1));
+  SinglePadGstSink::set_on_first_data_hook(Decodebin2::make_decodebin_active, this);
   return true;
 }
 
@@ -59,4 +59,5 @@ Decodebin2::make_decodebin_active(ShmdataReader *caller,
     invoke(std::bind(GstUtils::sync_state_with_parent,
 		     std::placeholders::_1));
 }
-}
+
+}  // namespace switcher

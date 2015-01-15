@@ -20,11 +20,7 @@
 #include "./sdp-utils.hpp"
 
 namespace switcher {
-SDPMedia::SDPMedia():
-    media_(nullptr),
-    caps_structure_(nullptr),
-    port_(0)  // means "disabled media"
-{
+SDPMedia::SDPMedia() {
   gst_sdp_media_new(&media_);
 }
 
@@ -97,52 +93,41 @@ SDPMedia::add_to_sdp_description(GstSDPMessage *sdp_description,
     rtpmap.append("/");
     rtpmap.append(caps_params);
   }
-
   gst_sdp_media_add_attribute(media_, "rtpmap", rtpmap.c_str());
-
   /* the config uri */
   std::string control("stream=" + std::to_string(index));
   gst_sdp_media_add_attribute(media_, "control", control.c_str());
-
   /* collect all other properties and add them to fmtp */
   std::string fmtp = std::to_string(caps_pt);
   fmtp.append(" ");
   bool first = true;
   guint n_fields = gst_structure_n_fields(caps_structure_);
-
   for (uint j = 0; j < n_fields; j++) {
-    const gchar *fname = nullptr;
-    const gchar *fval = nullptr;
-
-    fname = gst_structure_nth_field_name(caps_structure_, j);
-    if (nullptr == fname)
+    const gchar *fname_c = gst_structure_nth_field_name(caps_structure_, j);
+    if (nullptr == fname_c)
       continue;
+    std::string fname(fname_c);
     /* filter out standard properties */
-    if (g_strcmp0(fname, "media") == 0)
+    if (fname.compare("media") == 0
+        || fname.compare("payload") == 0
+        || fname.compare("clock-rate") == 0
+        || fname.compare("encoding-name") == 0
+        || fname.compare("encoding-params") == 0
+        || fname.compare("ssrc") == 0
+        || fname.compare("clock-base") == 0
+        || fname.compare("seqnum-base") == 0)
       continue;
-    if (g_strcmp0(fname, "payload") == 0)
-      continue;
-    if (g_strcmp0(fname, "clock-rate") == 0)
-      continue;
-    if (g_strcmp0(fname, "encoding-name") == 0)
-      continue;
-    if (g_strcmp0(fname, "encoding-params") == 0)
-      continue;
-    if (g_strcmp0(fname, "ssrc") == 0)
-      continue;
-    if (g_strcmp0(fname, "clock-base") == 0)
-      continue;
-    if (g_strcmp0(fname, "seqnum-base") == 0)
-      continue;
-
-    const gchar *struct_str = gst_structure_get_string(caps_structure_, fname);
+    const gchar *struct_str = gst_structure_get_string(caps_structure_, fname.c_str());
     if (nullptr == struct_str)
       continue;
-    std::string fname_value(std::string(fname)
-                            + "="
-                            + std::string(struct_str));
-
-    if ((fval = gst_structure_get_string(caps_structure_, fname))) {
+    std::string val = std::string(struct_str);
+    if (0 == fname.compare("sprop-parameter-sets")
+        && '=' == val.back()) {
+      g_warning("removing buggy trailing = at the end of sprop-parameter-sets");
+      val = std::string(val, 0, val.size() - 1) ;
+    }
+    std::string fname_value(fname + "=" + val);
+    if (gst_structure_get_string(caps_structure_, fname.c_str())) {
       if (!first)
         fmtp.append(";");
       else
@@ -152,19 +137,14 @@ SDPMedia::add_to_sdp_description(GstSDPMessage *sdp_description,
   }
   if (!first)
     gst_sdp_media_add_attribute(media_, "fmtp", fmtp.c_str());
-
   gst_sdp_message_add_media(sdp_description, media_);
-
   return true;
 }
 
-SDPDescription::SDPDescription():
-    sdp_description_(nullptr),
-    index_(0) {
+SDPDescription::SDPDescription() {
   gst_sdp_message_new(&sdp_description_);
   /* some standard things first */
   gst_sdp_message_set_version(sdp_description_, "0");
-  
   // FIXME check and chose between IP4 and IP6, IP4 hardcoded
   // FIXME generate proper session id &version
   gst_sdp_message_set_origin(sdp_description_, "-",   // the user name
@@ -173,7 +153,6 @@ SDPDescription::SDPDescription():
                              "IN",    // a network type
                              "IP4",   // an address type
                              "127.0.0.1");    // an address
-
   gst_sdp_message_set_session_name(sdp_description_, "switcher session");
   gst_sdp_message_set_information(sdp_description_, "telepresence");
   gst_sdp_message_add_time(sdp_description_, "0", "0", nullptr);
@@ -196,4 +175,5 @@ bool SDPDescription::add_media(const SDPMedia &media) {
   index_++;
   return true;
 }
-}
+
+}  // namespace switcher

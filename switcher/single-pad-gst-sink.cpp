@@ -46,14 +46,11 @@ bool SinglePadGstSink::disconnect_all() {
 bool SinglePadGstSink::connect(std::string shmdata_socket_path) {
   unregister_shmdata(shmdata_socket_path);
   on_shmdata_connect(shmdata_socket_path);
-
-  ShmdataReader::ptr reader;
-  reader.reset(new ShmdataReader());
+  auto reader = std::make_shared<ShmdataReader>();
   reader->set_path(shmdata_socket_path.c_str());
   shmdata_path_ = shmdata_socket_path;
   reader->set_g_main_context(get_g_main_context());
   reader->set_bin(get_bin());
-
   if (sink_element_ != nullptr)
     reader->set_sink_element(sink_element_);
   if (connection_hook_ != nullptr) {

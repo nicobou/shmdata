@@ -47,20 +47,22 @@ class PJCall {
 
  private:
   /* Media stream created when the call is active. */
+  struct call;
   struct media_stream {
-    unsigned call_index {0}; /* Call owner. */
-    unsigned media_index {0};  /* Media index in call. */
+    unsigned call_index {0};                 /* Call owner. */
+    unsigned media_index {0};                /* Media index in call. */
     pjmedia_transport *transport {nullptr};  /* To send/recv RTP/RTCP */
-    pj_bool_t active {PJ_FALSE};  /* Non-zero if is in call. */
-    pjmedia_stream_info si;  /* Current stream info: */
-    pjmedia_rtp_session out_sess;     /* outgoing RTP session */
-    pjmedia_rtp_session in_sess;      /* incoming RTP session */
-    pjmedia_rtcp_session rtcp;        /* incoming RTCP session (for stats). */
+    pj_bool_t active {PJ_FALSE};             /* Non-zero if is in call. */
+    pjmedia_stream_info si;                  /* Current stream info: */
+    pjmedia_rtp_session out_sess;            /* outgoing RTP session */
+    pjmedia_rtp_session in_sess;             /* incoming RTP session */
+    pjmedia_rtcp_session rtcp;               /* incoming RTCP session (for stats). */
     // type + codec param
-    std::string type {};              /* audio, video or appli */
-    std::string extra_params {};
+    std::string type{};                      /* audio, video or appli */
+    std::string extra_params{};
     // shmdata
-    ShmdataAnyWriter::ptr shm {};     /* RTP, FIXME make RTCP shm */
+    ShmdataAnyWriter::ptr shm{};             /* RTP, FIXME make RTCP shm */
+    struct call *call{nullptr};
     std::string shm_path_to_send {};
     media_stream(): si(), out_sess(), in_sess(), rtcp() {}
     media_stream(const media_stream&) = delete;
@@ -102,10 +104,8 @@ class PJCall {
   // external rtp session quidity for sending
   // std::string rtp_session_name_ {};
   // GParamSpec *rtp_session_name_spec_ {nullptr};
-
   uint starting_rtp_port_ {18000};
   GParamSpec *starting_rtp_port_spec_ {nullptr};
-
   // sip functions
   static pj_bool_t on_rx_request(pjsip_rx_data *rdata);
   static void call_on_state_changed(pjsip_inv_session *inv,
@@ -156,6 +156,7 @@ class PJCall {
   void make_attach_shmdata_to_contact(const std::string &shmpath,
                                       const std::string &contact_uri,
                                       bool attach);
+  static std::string make_extra_params(const std::string &raw_extra_params);
 };
 
 }  // namespace switcher

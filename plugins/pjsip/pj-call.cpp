@@ -63,11 +63,9 @@ PJCall::PJCall(PJSIP *sip_instance):
   init_app();
   // creating rtpsession for SIP transmission
   manager_->create("rtpsession", "siprtp");
-
   /*  Init invite session module. */
   {
     pjsip_inv_callback inv_cb;
-
     /* Init the callback for INVITE session: */
     pj_bzero(&inv_cb, sizeof(inv_cb));
     inv_cb.on_state_changed = &call_on_state_changed;
@@ -85,7 +83,6 @@ PJCall::PJCall(PJSIP *sip_instance):
     if (status != PJ_SUCCESS)
       g_warning("Init invite session module failed");
   }
-
   /* Register our module to receive incoming requests. */
   status =
       pjsip_endpt_register_module(sip_instance_->sip_endpt_,
@@ -112,7 +109,6 @@ PJCall::PJCall(PJSIP *sip_instance):
     app.call[i].media_count = 0;
     app.call[i].instance = this;
   }
-
   /* Init media transport for all calls. */
   for (unsigned i = 0, count = 0; i < app.max_calls; ++i, ++count) {
     unsigned j;
@@ -121,12 +117,10 @@ PJCall::PJCall(PJSIP *sip_instance):
       /* Repeat binding media socket to next port when fails to bind
        * to current port number.
        */
-
       app.call[i].media[j].call_index = i;
       app.call[i].media[j].media_index = j;
     }
   }
-
   // properties and methods for user
   sip_instance_->
       install_method("Call a contact",  // long name
@@ -141,7 +135,6 @@ PJCall::PJCall(PJSIP *sip_instance):
                      G_TYPE_BOOLEAN,
                      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
                      this);
-
   sip_instance_->
       install_method("Hang Up",  // long name
                      "hang-up",  // name
@@ -155,7 +148,6 @@ PJCall::PJCall(PJSIP *sip_instance):
                      G_TYPE_BOOLEAN,
                      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
                      this);
-
   sip_instance_->
       install_method("Attach Shmdata To Contact",  // long name
                      "attach_shmdata_to_contact",       // name
@@ -178,8 +170,6 @@ PJCall::PJCall(PJSIP *sip_instance):
                                                        G_TYPE_BOOLEAN,
                                                        nullptr),
                      this);
-
-
   starting_rtp_port_spec_ =
       sip_instance_->custom_props_->
       make_int_property("starting-rtp-port",
@@ -209,7 +199,6 @@ PJCall::~PJCall() {
       }
     }
   }
-
   if (med_endpt_) {
     pjmedia_endpt_destroy(med_endpt_);
     med_endpt_ = nullptr;
@@ -222,11 +211,9 @@ pj_bool_t PJCall::on_rx_request(pjsip_rx_data *rdata) {
   //        __FUNCTION__,
   //        static_cast<int>(rdata->msg_info.msg->line.req.method.name.slen),
   //        rdata->msg_info.msg->line.req.method.name.ptr);
-
   /* Ignore strandled ACKs (must not send respone) */
   if (rdata->msg_info.msg->line.req.method.id == PJSIP_ACK_METHOD)
     return PJ_FALSE;
-
   /* Respond (statelessly) any non-INVITE requests with 500  */
   if (rdata->msg_info.msg->line.req.method.id != PJSIP_INVITE_METHOD) {
     return PJ_SUCCESS;
@@ -237,10 +224,8 @@ pj_bool_t PJCall::on_rx_request(pjsip_rx_data *rdata) {
                                   rdata, 500, &reason, nullptr, nullptr);
     return PJ_TRUE;
   }
-
   /* Handle incoming INVITE */
   process_incoming_call(rdata);
-
   /* Done */
   return PJ_TRUE;
 }
@@ -248,19 +233,16 @@ pj_bool_t PJCall::on_rx_request(pjsip_rx_data *rdata) {
 void PJCall::init_app() {
   static char ip_addr[32];
   // static char local_uri[64];
-
   /* Get local IP address for the default IP address */
   {
     const pj_str_t *hostname;
     pj_sockaddr_in tmp_addr;
     char *addr;
-
     hostname = pj_gethostname();
     pj_sockaddr_in_init(&tmp_addr, hostname, 0);
     addr = pj_inet_ntoa(tmp_addr.sin_addr);
     pj_ansi_strcpy(ip_addr, addr);
   }
-
   /* Init defaults */
   app.max_calls = 256;
   app.local_addr = pj_str(ip_addr);
@@ -282,7 +264,6 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event *e) {
               call->peer_uri.c_str());
     return;
   }
-
   if (inv->state == PJSIP_INV_STATE_DISCONNECTED) {
     // pj_time_val null_time = {0, 0};
     g_debug("Call #%d disconnected. Reason=%d (%.*s)",
@@ -324,22 +305,18 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event *e) {
       call->instance->sip_instance_->
           graft_tree(std::string(".buddy." + std::to_string(id)), tree);
     }  // endif PJSIP_INV_STATE_DISCONNECTED
-
     // FIXME destroy_call_media(call->index);
     // call->start_time = null_time;
     // call->response_time = null_time;
     // call->connect_time = null_time;
-
     ++app.uac_calls;
   } else if (inv->state == PJSIP_INV_STATE_CONFIRMED) {
     pj_time_val t;
     pj_gettimeofday(&call->connect_time);
     if (call->response_time.sec == 0)
       call->response_time = call->connect_time;
-
     t = call->connect_time;
     PJ_TIME_VAL_SUB(t, call->start_time);
-
     g_debug("Call #%d connected in %ld ms", call->index,
             PJ_TIME_VAL_MSEC(t));
     // updating call status in the tree
@@ -407,7 +384,6 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
       g_debug("Error geting stream info from sdp");
       return;
     }
-
     // testing if receiving
     if (PJMEDIA_DIR_DECODING == current_media->si.dir
         || PJMEDIA_DIR_PLAYBACK == current_media->si.dir
@@ -416,29 +392,22 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
         || PJMEDIA_DIR_CAPTURE_PLAYBACK == current_media->si.dir
         || PJMEDIA_DIR_CAPTURE_RENDER == current_media->si.dir) {
       // managing rtp with pjsip
-      for (uint attr_i = 0; attr_i < remote_sdp->media[i]->attr_count;
-           attr_i++) {
+      for (uint attr_i = 0; attr_i < remote_sdp->media[i]->attr_count; attr_i++) {
         pjmedia_sdp_attr *attr = remote_sdp->media[i]->attr[attr_i];
-        if (0 ==
-            std::string(attr->name.ptr, attr->name.slen).compare("fmtp")) {
+        if (0 == std::string(attr->name.ptr, attr->name.slen).compare("fmtp")) {
           std::string value(attr->value.ptr, attr->value.slen);
           std::size_t found = value.find_first_of(" ");
-          if (std::string::npos != found) {
+          if (std::string::npos != found ) {
             // testing if fmtp line is about the considered media fmt
-            if (0 == std::string(value, 0, found).
-                compare(std::to_string(current_media->si.fmt.pt))) {
-              size_t string_len = value.length();
-              size_t last_pos = string_len - (found + 1);
-              // removing trailing "=" if present since it makes shmdata fail
-              if ('=' == value[string_len - 1])
-                last_pos = last_pos - 1;
+            if (0 ==
+                std::string(value, 0, found).compare(std::to_string(current_media->si.fmt.pt))) {
+              size_t last_pos = value.length() - (found + 1);
               current_media->extra_params =
-                  std::string(value, found + 1, last_pos).c_str();
+                  PJCall::make_extra_params(std::string(value, found + 1, last_pos));
             }
           }
         }
       }
-
       pjmedia_rtp_session_init(&current_media->out_sess,
                                current_media->si.tx_pt, pj_rand());
       pjmedia_rtp_session_init(&current_media->in_sess,
@@ -446,28 +415,13 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
       // pjmedia_rtcp_init(&current_media->rtcp,
       // "rtcp", current_media->clock_rate,
       //          current_media->samples_per_frame, 0);
-
+      current_media->call = call;
       current_media->shm = std::make_shared<ShmdataAnyWriter>();
       std::string shm_any_name = call->instance->sip_instance_->
           make_file_name(call->peer_uri + "-" + std::to_string(i));
       current_media->shm->set_path(shm_any_name.c_str());
       g_message("created a new shmdata any writer (%s)",
                 shm_any_name.c_str());
-      //creating a decodebin for this media stream
-      std::string dec_name =
-          call->peer_uri
-          + "-"
-          + std::to_string(current_media->call_index)
-          + "-"
-          + std::to_string(current_media->media_index);
-      call->instance->manager_->create("decodebin", dec_name);
-      call->instance->manager_->
-          invoke_va(dec_name,
-                    "connect",
-                    nullptr,
-                    shm_any_name.c_str(),
-                    nullptr);
-      
       status = pjmedia_transport_attach(current_media->transport,
                                         current_media,  // user_data
                                         &current_media->si.rem_addr,
@@ -506,9 +460,31 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
   }  // end iterating media
 }
 
-/*
- * Receive incoming call
- */
+std::string PJCall::make_extra_params(const std::string &raw_extra_params){
+  std::string extra_params;
+  size_t param_begin = 0;
+  size_t param_end = raw_extra_params.find(';');
+  bool done = false;
+  std::string fmtp_caps;
+  while (!done){
+    size_t equal_pos = raw_extra_params.find('=', param_begin);
+    if (std::string::npos != param_end) {
+      extra_params +=
+          std::string(raw_extra_params, param_begin, equal_pos + 1 - param_begin)
+          + '"' + std::string(raw_extra_params, equal_pos + 1, param_end - (equal_pos + 1))
+          + '"' + ",";
+      param_begin = param_end + 1;
+      param_end = raw_extra_params.find(';', param_begin);
+    } else {
+      extra_params += std::string(raw_extra_params, param_begin, equal_pos + 1 - param_begin)
+          + '"' + std::string(raw_extra_params, equal_pos + 1, param_end - (equal_pos + 1))
+          + '"';
+      done = true;
+    }
+  }
+   return extra_params;
+}
+
 void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   // finding caller info
   char uristr[PJSIP_MAX_URL_SIZE];
@@ -525,20 +501,17 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                         rdata->msg_info.to->uri, uristr, sizeof(uristr));
   // g_print("----------- call to %.*s\n", len, uristr);
-
   unsigned i, options;
   struct call *call;
   pjsip_dialog *dlg;
   pjmedia_sdp_session *sdp;
   pjsip_tx_data *tdata;
   pj_status_t status;
-
   /* Find free call slot */
   for (i = 0; i < app.max_calls; ++i) {
     if (app.call[i].inv == nullptr)
       break;
   }
-
   if (i == app.max_calls) {
     pj_str_t reason;
     pj_cstr(&reason, "Too many calls");
@@ -546,10 +519,8 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
                                   500, &reason, nullptr, nullptr);
     return;
   }
-
   call = &app.call[i];
   call->peer_uri = from_uri;
-
   /* Parse SDP from incoming request and
      verify that we can handle the request. */
   pjmedia_sdp_session *offer = nullptr;
@@ -565,7 +536,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
     if (status != PJ_SUCCESS)
       g_warning("Bad SDP in incoming INVITE");
   }
-
   // print_sdp(offer);
   options = 0;
   status = pjsip_inv_verify_request(rdata,
@@ -574,14 +544,12 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
                                     nullptr,
                                     PJSIP::sip_endpt_,
                                     &tdata);
-
   if (status != PJ_SUCCESS) {
     /*
      * No we can't handle the incoming INVITE request.
      */
     if (tdata) {
       pjsip_response_addr res_addr;
-
       pjsip_get_response_addr(tdata->pool, rdata, &res_addr);
       pjsip_endpt_send_response(PJSIP::sip_endpt_,
                                 &res_addr,
@@ -598,7 +566,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
     }
     return;
   }
-
   /* Create UAS dialog */
   status = pjsip_dlg_create_uas(pjsip_ua_instance(), rdata, nullptr, &dlg);
   if (status != PJ_SUCCESS) {
@@ -608,22 +575,18 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
                                   rdata, 500, &reason, nullptr, nullptr);
     return;
   }
-
   /* we expect the outgoing INVITE to be challenged*/
   pjsip_auth_clt_set_credentials(&dlg->auth_sess,
                                  1,
                                  &call->instance->sip_instance_->
                                  sip_presence_->cfg_.cred_info[0]);
-
   // checking number of transport to create for receiving
   // and creating transport for receiving data offered
-
   call->media_count = 0;
   std::vector<pjmedia_sdp_media *>media_to_receive;
   // FIXME start from last attributed
   pj_uint16_t rtp_port =
       (pj_uint16_t) (call->instance->starting_rtp_port_ & 0xFFFE);
-
   {
     unsigned int j = 0;  // counting media to receive
     for (unsigned int media_index = 0; media_index < offer->media_count;
@@ -654,7 +617,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
         std::string control_stream("control:stream=" + std::to_string(j));
         pj_strdup2(dlg->pool, &attr->name, control_stream.c_str());
         tmp_media->attr[tmp_media->attr_count++] = attr;
-
         // saving media
         media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool,
                                                            tmp_media));
@@ -678,10 +640,8 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       }
     }
   }
-
   /* Create SDP */
   create_sdp(dlg->pool, call, media_to_receive, &sdp);
-
   /* Create UAS invite session */
   // sdp=nullptr;
   status = pjsip_inv_create_uas(dlg, rdata, sdp, 0, &call->inv);
@@ -691,16 +651,12 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
     pjsip_dlg_send_response(dlg, pjsip_rdata_get_tsx(rdata), tdata);
     return;
   }
-
   // const pjmedia_sdp_session *offer = nullptr;
   // pjmedia_sdp_neg_get_neg_remote(call->inv->neg, &offer);
-
   /* Attach call data to invite session */
   call->inv->mod_data[mod_siprtp_.id] = call;
-
   /* Mark start of call */
   pj_gettimeofday(&call->start_time);
-
   /* Create 200 response . */
   status = pjsip_inv_initial_answer(call->inv, rdata, 200,
                                     nullptr, nullptr, &tdata);
@@ -714,7 +670,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       pjsip_inv_terminate(call->inv, 500, PJ_FALSE);
     return;
   }
-
   /* Send the 200 response. */
   status = pjsip_inv_send_msg(call->inv, tdata);
   PJ_ASSERT_ON_FAIL(status == PJ_SUCCESS, return);
@@ -732,9 +687,7 @@ PJCall::create_sdp(pj_pool_t *pool,
   pjmedia_sdp_session *sdp;
   // pjmedia_sdp_media *m;
   // pjmedia_sdp_attr *attr;
-
   PJ_ASSERT_RETURN(pool && p_sdp, PJ_EINVAL);
-
   /* Create and initialize basic SDP session */
   sdp =  static_cast<pjmedia_sdp_session *>(
       pj_pool_zalloc(pool, sizeof(pjmedia_sdp_session)));
@@ -745,7 +698,6 @@ PJCall::create_sdp(pj_pool_t *pool,
   pj_cstr(&sdp->origin.addr_type, "IP4");
   sdp->origin.addr = *pj_gethostname();  // FIXME this should be IP address
   pj_cstr(&sdp->name, "pjsip");
-
   /* Since we only support one media stream at present, put the
    * SDP connection line in the session level.
    */
@@ -754,16 +706,13 @@ PJCall::create_sdp(pj_pool_t *pool,
   pj_cstr(&sdp->conn->net_type, "IN");
   pj_cstr(&sdp->conn->addr_type, "IP4");
   sdp->conn->addr = app.local_addr;
-
   /* SDP time and attributes. */
   sdp->time.start = sdp->time.stop = 0;
   sdp->attr_count = 0;
   sdp->media_count = 0;
-
   for (unsigned i = 0; i < call->media_count; i++) {
     // getting offer media to receive
     pjmedia_sdp_media *sdp_media = media_to_receive[i];
-
     for (unsigned u = 0; u < sdp_media->desc.fmt_count;) {
       bool remove_it = false;
       // // removing unassigned payload type (ekiga)
@@ -771,7 +720,6 @@ PJCall::create_sdp(pj_pool_t *pool,
       // pt = pj_strtoul(&sdp_media->desc.fmt[u]);
       // if (77 <= pt && pt <= 95)
       //   remove_it = true;
-
       // apply removal if necessary
       if (remove_it)
         remove_from_sdp_media(sdp_media, u);
@@ -788,10 +736,8 @@ PJCall::create_sdp(pj_pool_t *pool,
     sdp->media[i] = sdp_media;
     sdp->media_count++;
   }
-
   /* Done */
   *p_sdp = sdp;
-
   return PJ_SUCCESS;
 }
 
@@ -804,37 +750,28 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
   const pjmedia_rtp_hdr *hdr;
   const void *payload;
   unsigned payload_len;
-
-  strm = (struct media_stream *) user_data;
-
+  strm = (struct media_stream *)user_data;
   /* Discard packet if media is inactive */
   if (!strm->active)
     return;
-
   /* Check for errors */
   if (size < 0) {
     g_debug("RTP recv() error");
     return;
   }
-
   void *buf = malloc(size);
   memcpy(buf, pkt, size);
-
   /* Decode RTP packet. */
   status = pjmedia_rtp_decode_rtp(&strm->in_sess,
                                   buf, static_cast<int>(size),
                                   &hdr, &payload, &payload_len);
-
   /* Update the RTCP session. */
   // pjmedia_rtcp_rx_rtp(&strm->rtcp, pj_ntohs(hdr->seq),
   //    pj_ntohl(hdr->ts), payload_len);
-
   /* Update RTP session */
   pjmedia_rtp_session_update(&strm->in_sess, hdr, nullptr);
-
   if (!static_cast<bool>(strm->shm))
     return;
-
   if (!strm->shm->started()) {
     std::string encoding_name(strm->si.fmt.encoding_name.ptr,
                               strm->si.fmt.encoding_name.slen);
@@ -844,7 +781,7 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
     // FIXME check for channels in
     // fmt + all si.param + ssrc + clock-base + seqnum-base
     std::string data_type("application/x-rtp"
-                          ", media= " + strm->type
+                          ", media=" + strm->type
                           + ", clock-rate=" +
                           std::to_string(strm->si.fmt.clock_rate) +
                           ", payload=" +
@@ -856,14 +793,26 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
     //+ std::to_string(strm->in_sess->seq_ctrl->base_seq)
     if (!strm->extra_params.empty())
       data_type.append(std::string(", " + strm->extra_params));
-
     strm->shm->set_data_type(data_type);
     // application/x-rtp, media=(string)application, clock-rate=(int)90000,
     // encoding-name=(string)X-GST, ssrc=(uint)4199653519, payload=(int)96,
     // clock-base=(uint)479267716, seqnum-base=(uint)53946
     strm->shm->start();
+    //creating a decodebin for this media stream
+    std::string dec_name =
+        strm->call->peer_uri
+        + "-"
+        + std::to_string(strm->call_index)
+        + "-"
+        + std::to_string(strm->media_index);
+    strm->call->instance->manager_->create("decodebin", dec_name);
+    strm->call->instance->manager_->
+        invoke_va(dec_name,
+                  "connect",
+                  nullptr,
+                  strm->shm->get_path().c_str(),
+                  nullptr);
   }
-
   strm->shm->push_data_auto_clock(buf, (size_t) size, free, buf);
   if (status != PJ_SUCCESS) {
     g_debug("RTP decode error");
@@ -876,21 +825,16 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
  */
 void PJCall::on_rx_rtcp(void *user_data, void *pkt, pj_ssize_t size) {
   return;
-
   struct media_stream *strm;
-
   strm = (struct media_stream *) user_data;
-
   /* Discard packet if media is inactive */
   if (!strm->active)
     return;
-
   /* Check for errors */
   if (size < 0) {
     g_warning("Error receiving RTCP packet");
     return;
   }
-
   /* Update RTCP session */
   pjmedia_rtcp_rx_rtcp(&strm->rtcp, pkt, size);
 }
@@ -927,24 +871,19 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
   int rem_af, local_af;
   pj_sockaddr local_addr;
   pj_status_t status;
-
   /* Validate arguments: */
   PJ_ASSERT_RETURN(pool && si && local && remote, PJ_EINVAL);
   PJ_ASSERT_RETURN(stream_idx < local->media_count, PJ_EINVAL);
   PJ_ASSERT_RETURN(stream_idx < remote->media_count, PJ_EINVAL);
-
   /* Keep SDP shortcuts */
   local_m = local->media[stream_idx];
   rem_m = remote->media[stream_idx];
-
   local_conn = local_m->conn ? local_m->conn : local->conn;
   if (local_conn == nullptr)
     return PJMEDIA_SDP_EMISSINGCONN;
-
   rem_conn = rem_m->conn ? rem_m->conn : remote->conn;
   if (rem_conn == nullptr)
     return PJMEDIA_SDP_EMISSINGCONN;
-
   /* Media type must be audio */
   if (pj_stricmp2(&local_m->desc.media, "audio") == 0)
     si->type = PJMEDIA_TYPE_AUDIO;
@@ -954,21 +893,15 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
     si->type = PJMEDIA_TYPE_APPLICATION;
   else
     si->type = PJMEDIA_TYPE_UNKNOWN;
-
   /* Get codec manager. */
   mgr = pjmedia_endpt_get_codec_mgr(endpt);
-
   /* Reset: */
-
   pj_bzero(si, sizeof(*si));
-
 #if PJMEDIA_HAS_RTCP_XR && PJMEDIA_STREAM_ENABLE_XR
   /* Set default RTCP XR enabled/disabled */
   si->rtcp_xr_enabled = PJ_TRUE;
 #endif
-
   /* Transport protocol */
-
   /* At this point, transport type must be compatible,
    * the transport instance will do more validation later.
    */
@@ -976,7 +909,6 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
                                      &local_m->desc.transport);
   if (status != PJ_SUCCESS)
     return PJMEDIA_SDPNEG_EINVANSTP;
-
   if (pj_stricmp2(&local_m->desc.transport, "RTP/AVP") == 0) {
     si->proto = PJMEDIA_TP_PROTO_RTP_AVP;
   } else if (pj_stricmp2(&local_m->desc.transport, "RTP/SAVP") == 0) {
@@ -985,7 +917,6 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
     si->proto = PJMEDIA_TP_PROTO_UNKNOWN;
     return PJ_SUCCESS;
   }
-
   /* Check address family in remote SDP */
   rem_af = pj_AF_UNSPEC();
   if (pj_stricmp2(&rem_conn->net_type, "IN") == 0) {
@@ -995,12 +926,10 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
       rem_af = pj_AF_INET6();
     }
   }
-
   if (rem_af == pj_AF_UNSPEC()) {
     /* Unsupported address family */
     return PJ_EAFNOTSUP;
   }
-
   /* Set remote address: */
   status = pj_sockaddr_init(rem_af, &si->rem_addr, &rem_conn->addr,
                             rem_m->desc.port);
@@ -1008,7 +937,6 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
     /* Invalid IP address. */
     return PJMEDIA_EINVALIDIP;
   }
-
   /* Check address family of local info */
   local_af = pj_AF_UNSPEC();
   if (pj_stricmp2(&local_conn->net_type, "IN") == 0) {
@@ -1018,12 +946,10 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
       local_af = pj_AF_INET6();
     }
   }
-
   if (local_af == pj_AF_UNSPEC()) {
     /* Unsupported address family */
     return PJ_SUCCESS;
   }
-
   /* Set remote address: */
   status = pj_sockaddr_init(local_af, &local_addr, &local_conn->addr,
                             local_m->desc.port);
@@ -1031,11 +957,9 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
     /* Invalid IP address. */
     return PJMEDIA_EINVALIDIP;
   }
-
   /* Local and remote address family must match */
   if (local_af != rem_af)
     return PJ_EAFNOTSUP;
-
   /* Media direction: */
   if (local_m->desc.port == 0 ||
       pj_sockaddr_has_addr(&local_addr) == PJ_FALSE ||
@@ -1056,12 +980,10 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
     /* Send and receive stream. */
     si->dir = PJMEDIA_DIR_ENCODING_DECODING;
   }
-
   /* No need to do anything else if stream is rejected */
   if (local_m->desc.port == 0) {
     return PJ_SUCCESS;
   }
-
   /* If "rtcp" attribute is present in the SDP, set the RTCP address
    * from that attribute. Otherwise, calculate from RTP address.
    */
@@ -1083,44 +1005,34 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
       }
     }
   }
-
   if (!pj_sockaddr_has_addr(&si->rem_rtcp)) {
     int rtcp_port;
-
     pj_memcpy(&si->rem_rtcp, &si->rem_addr, sizeof(pj_sockaddr));
     rtcp_port = pj_sockaddr_get_port(&si->rem_addr) + 1;
     pj_sockaddr_set_port(&si->rem_rtcp, (pj_uint16_t) rtcp_port);
   }
-
   /* Get the payload number for receive channel. */
   /*
     Previously we used to rely on fmt[0] being the selected codec,
     but some UA sends telephone-event as fmt[0] and this would
     cause assert failure below.
-
     Thanks Chris Hamilton <chamilton .at. cs.dal.ca> for this patch.
-
     // And codec must be numeric!
     if (!pj_isdigit(*local_m->desc.fmt[0].ptr) ||
     !pj_isdigit(*rem_m->desc.fmt[0].ptr))
     {
     return PJMEDIA_EINVALIDPT;
     }
-
     pt = pj_strtoul(&local_m->desc.fmt[0]);
     pj_assert(PJMEDIA_RTP_PT_TELEPHONE_EVENTS==0 ||
     pt != PJMEDIA_RTP_PT_TELEPHONE_EVENTS);
   */
-
   /* Get codec info and param */
   status = get_audio_codec_info_param(si, pool, mgr, local_m, rem_m);
-
   /* Leave SSRC to random. */
   si->ssrc = pj_rand();
-
   /* Set default jitter buffer parameter. */
   si->jb_init = si->jb_max = si->jb_min_pre = si->jb_max_pre = -1;
-
   return status;
 }
 
@@ -1138,51 +1050,39 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
   pjmedia_sdp_rtpmap *rtpmap;
   unsigned i, fmti, pt = 0;
   pj_status_t status;
-
   /* Find the first codec which is not telephone-event */
   for (fmti = 0; fmti < local_m->desc.fmt_count; ++fmti) {
     pjmedia_sdp_rtpmap r;
-
     if (!pj_isdigit(*local_m->desc.fmt[fmti].ptr))
       return PJMEDIA_EINVALIDPT;
     pt = pj_strtoul(&local_m->desc.fmt[fmti]);
-
     if (pt < 77) {
       /* This is known static PT. Skip rtpmap checking because it is
        * optional. */
       break;
     }
-
     attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
                                         &local_m->desc.fmt[fmti]);
     if (attr == nullptr)
       continue;
-
     status = pjmedia_sdp_attr_get_rtpmap(attr, &r);
     if (status != PJ_SUCCESS)
       continue;
-
     if (pj_strcmp2(&r.enc_name, "telephone-event") != 0)
       break;
   }
-
   if (fmti >= local_m->desc.fmt_count)
     return PJMEDIA_EINVALIDPT;
-
   /* Get payload type for receiving direction */
   si->rx_pt = pt;
-
   /* Get codec info.
    * For static payload types, get the info from codec manager.
    * For dynamic payload types, MUST get the rtpmap.
    */
-
   if (pt < 77) {
     pj_bool_t has_rtpmap;
-
     rtpmap = nullptr;
     has_rtpmap = PJ_TRUE;
-
     attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
                                         &local_m->desc.fmt[fmti]);
     if (attr == nullptr) {
@@ -1193,14 +1093,12 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
       if (status != PJ_SUCCESS)
         has_rtpmap = PJ_FALSE;
     }
-
     /* Build codec format info: */
     if (has_rtpmap) {
       si->fmt.type = si->type;
       si->fmt.pt = pj_strtoul(&local_m->desc.fmt[fmti]);
       pj_strdup(pool, &si->fmt.encoding_name, &rtpmap->enc_name);
       si->fmt.clock_rate = rtpmap->clock_rate;
-
 #if defined(PJMEDIA_HANDLE_G722_MPEG_BUG) && (PJMEDIA_HANDLE_G722_MPEG_BUG != 0)
       /* The session info should have the actual clock rate, because
        * this info is used for calculationg buffer size, etc in stream
@@ -1208,7 +1106,6 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
       if (si->fmt.pt == PJMEDIA_RTP_PT_G722)
         si->fmt.clock_rate = 16000;
 #endif
-
       /* For audio codecs, rtpmap parameters denotes the number of
        * channels.
        */
@@ -1219,14 +1116,11 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
       }
     } else {
       const pjmedia_codec_info *p_info;
-
       status = pjmedia_codec_mgr_get_codec_info(mgr, pt, &p_info);
       if (status != PJ_SUCCESS)
         return status;
-
       pj_memcpy(&si->fmt, p_info, sizeof(pjmedia_codec_info));
     }
-
     /* For static payload type, pt's are symetric */
     si->tx_pt = pt;
   } else {
@@ -1234,23 +1128,18 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
     // pjmedia_codec_id codec_id;
     // pj_str_t codec_id_st;
     // const pjmedia_codec_info *p_info;
-
     attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
                                         &local_m->desc.fmt[fmti]);
     if (attr == nullptr)
       return PJMEDIA_EMISSINGRTPMAP;
-
     status = pjmedia_sdp_attr_to_rtpmap(pool, attr, &rtpmap);
     if (status != PJ_SUCCESS)
       return status;
-
     /* Build codec format info: */
-
     si->fmt.type = si->type;
     si->fmt.pt = pj_strtoul(&local_m->desc.fmt[fmti]);
     si->fmt.encoding_name = rtpmap->enc_name;
     si->fmt.clock_rate = rtpmap->clock_rate;
-
     /* For audio codecs, rtpmap parameters denotes the number of
      * channels.
      */
@@ -1258,7 +1147,6 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
       si->fmt.channel_cnt = (unsigned) pj_strtoul(&rtpmap->param);
     else
       si->fmt.channel_cnt = 1;
-
     /* Normalize the codec info from codec manager. Note that the
      * payload type will be resetted to its default (it might have
      * been rewritten by the SDP negotiator to match to the remote
@@ -1266,18 +1154,13 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
      * prefer (or even require) the default PT in codec info.
      */
     // pjmedia_codec_info_to_id(&si->fmt, codec_id, sizeof(codec_id));
-
     // i = 1;
     // codec_id_st = pj_str(codec_id);
     //  status = pjmedia_codec_mgr_find_codecs_by_id(mgr, &codec_id_st,
     //            &i, &p_info, nullptr);
-    //
     //  if (status != PJ_SUCCESS)
     //    return status;
-    //
-
     //  pj_memcpy(&si->fmt, p_info, sizeof(pjmedia_codec_info));
-
     //  /* Determine payload type for outgoing channel, by finding
     //   * dynamic payload type in remote SDP that matches the answer.
     //   */
@@ -1286,56 +1169,44 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
     //    unsigned rpt;
     //    pjmedia_sdp_attr *r_attr;
     //    pjmedia_sdp_rtpmap r_rtpmap;
-
     //    rpt = pj_strtoul(&rem_m->desc.fmt[i]);
     //    if (rpt < 96)
     //      continue;
-
     //    r_attr = pjmedia_sdp_media_find_attr2(rem_m, "rtpmap",
     //       &rem_m->desc.fmt[i]);
     //    if (!r_attr)
     //      continue;
-
     //    if (pjmedia_sdp_attr_get_rtpmap(r_attr, &r_rtpmap) != PJ_SUCCESS)
     //      continue;
-
     //    if (!pj_stricmp(&rtpmap->enc_name, &r_rtpmap.enc_name) &&
     //        rtpmap->clock_rate == r_rtpmap.clock_rate)
     //      {
     //        /* Found matched codec. */
     //        si->tx_pt = rpt;
-
     //        break;
     //      }
     //  }
-
     //
     //  if (si->tx_pt == 0xFFFF)
     //    return PJMEDIA_EMISSINGRTPMAP;
   }
-
   // /* Now that we have codec info, get the codec param. */
   // si->param = PJ_POOL_ALLOC_T(pool, pjmedia_codec_param);
   // status = pjmedia_codec_mgr_get_default_param(mgr, &si->fmt,
   //               si->param);
-
   // /* Get remote fmtp for our encoder. */
   // pjmedia_stream_info_parse_fmtp(pool, rem_m, si->tx_pt,
   //        &si->param->setting.enc_fmtp);
-
   /* Get local fmtp for our decoder. */
   // pjmedia_stream_info_parse_fmtp(pool, local_m, si->rx_pt,
   //        &si->param->setting.dec_fmtp);
-
   // /* Get the remote ptime for our encoder. */
   // attr = pjmedia_sdp_attr_find2(rem_m->attr_count, rem_m->attr,
   //       "ptime", nullptr);
   // if (attr) {
   //  pj_str_t tmp_val = attr->value;
   //  unsigned frm_per_pkt;
-
   //  pj_strltrim(&tmp_val);
-
   //  /* Round up ptime when the specified is not multiple of frm_ptime */
   //  frm_per_pkt = (pj_strtoul(&tmp_val) +
   //         si->param->info.frm_ptime/2) /
@@ -1344,17 +1215,14 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
   //         si->param->setting.frm_per_pkt = (pj_uint8_t)frm_per_pkt;
   //     }
   // }
-
   // /* Get remote maxptime for our encoder. */
   // attr = pjmedia_sdp_attr_find2(rem_m->attr_count, rem_m->attr,
   //       "maxptime", nullptr);
   // if (attr) {
   //  pj_str_t tmp_val = attr->value;
-
   //  pj_strltrim(&tmp_val);
   //  si->tx_maxptime = pj_strtoul(&tmp_val);
   // }
-
   // /* When direction is NONE (it means SDP negotiation has failed) we don't
   //  * need to return a failure here, as returning failure will cause
   //  * the whole SDP to be rejected. See ticket #:
@@ -1362,16 +1230,12 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
   //  *
   //  * Thanks Alain Totouom
   //  */
-  //
   // if (status != PJ_SUCCESS && si->dir != PJMEDIA_DIR_NONE)
   //  return status;
-  //
-
   /* Get incomming payload type for telephone-events */
   si->rx_event_pt = -1;
   for (i = 0; i < local_m->attr_count; ++i) {
     pjmedia_sdp_rtpmap r;
-
     attr = local_m->attr[i];
     if (pj_strcmp2(&attr->name, "rtpmap") != 0)
       continue;
@@ -1382,12 +1246,10 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
       break;
     }
   }
-
   /* Get outgoing payload type for telephone-events */
   si->tx_event_pt = -1;
   for (i = 0; i < rem_m->attr_count; ++i) {
     pjmedia_sdp_rtpmap r;
-
     attr = rem_m->attr[i];
     if (pj_strcmp2(&attr->name, "rtpmap") != 0)
       continue;
@@ -1398,7 +1260,6 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
       break;
     }
   }
-
   return PJ_SUCCESS;
 }
 
@@ -1475,7 +1336,6 @@ void PJCall::make_call(std::string dst_uri) {
               dst_uri.c_str());
     return;
   }
-  
   // Create UAC dialog
   status = pjsip_dlg_create_uac(pjsip_ua_instance(),
                                 &local_uri,  /* local URI */
@@ -1488,7 +1348,6 @@ void PJCall::make_call(std::string dst_uri) {
     g_warning("pjsip_dlg_create_uac FAILLED");
     return;
   }
-
   /* we expect the outgoing INVITE to be challenged*/
   pjsip_auth_clt_set_credentials(&dlg->auth_sess,
                                  1,
@@ -1548,12 +1407,10 @@ void PJCall::make_call(std::string dst_uri) {
               data::Tree::make("calling"));
   sip_instance_->
       graft_tree(std::string(".buddy." + std::to_string(id)), tree);
-
 }
 
-std::string
-PJCall::create_outgoing_sdp(struct call *call,
-                            std::string dst_uri) {
+std::string PJCall::create_outgoing_sdp(struct call *call,
+                                        std::string dst_uri) {
   pj_str_t contact;
   pj_cstr(&contact, std::string("sip:" + dst_uri).c_str());
   auto id = pjsua_buddy_find(&contact);
@@ -1561,9 +1418,7 @@ PJCall::create_outgoing_sdp(struct call *call,
     g_warning("buddy not found: cannot call %s", dst_uri.c_str());
     return std::string();
   }
-
   SDPDescription desc;
-
   auto paths = call->instance->sip_instance_->
       tree<std::list<std::string>, const std::string &>(
           &data::Tree::copy_leaf_values,
@@ -1572,24 +1427,19 @@ PJCall::create_outgoing_sdp(struct call *call,
   //               [&] (const std::string &val){
   //                 g_print("----------------------- %s\n", val.c_str());
   //               });
-  
   QuiddityManager::ptr manager = call->instance->manager_;
   gint port = starting_rtp_port_;
-
   for (auto &it : paths) {
     std::string data = manager->
         use_tree<const Any &, const std::string &>(
         std::string("siprtp"),
         &data::Tree::branch_read_data,
         std::string("rtp_caps.") + it).copy_as<std::string>();
-
     GstCaps *caps = gst_caps_from_string(data.c_str());
     On_scope_exit {gst_caps_unref(caps);};
-
     SDPMedia media;
     media.set_media_info_from_caps(caps);
     media.set_port(port);
-
     if (!desc.add_media(media)) {
       g_warning("a media has not been added to the SDP description");
     } else {
