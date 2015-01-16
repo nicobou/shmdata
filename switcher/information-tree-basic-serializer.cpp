@@ -24,10 +24,8 @@ namespace switcher {
 namespace data {
 namespace BasicSerializer {
 typedef struct {
-  std::list<std::string> path_ {
-  };
-  std::string result_ {
-  };
+  std::list<std::string> path_ {};
+  std::string result_ {};
 } BasicSerializerData;
 
 std::string path_to_string(std::list<std::string> path) {
@@ -41,14 +39,15 @@ std::string path_to_string(std::list<std::string> path) {
 void
 on_visiting_node(std::string key,
                  const Tree::ptrc node,
-                 bool, BasicSerializerData *data) {
+                 bool,
+                 BasicSerializerData *data) {
   data->path_.push_back(key);
   auto value = node->read_data();
   if (value.not_null())
     data->result_.append("."
-                         +
-                         BasicSerializer::path_to_string(data->path_) +
-                         " " + Any::to_string(value) + "\n");
+                         + BasicSerializer::path_to_string(data->path_)
+                         + " "
+                         + Any::to_string(value) + "\n");
 }
 
 void
@@ -85,13 +84,18 @@ Tree::ptr deserialize(const std::string &serialized) {
            && absolute_key.empty()) {
     }
     std::string value;
-    while (std::getline(line_ss, value, ' ') && value.empty()) {
-    }
+    while (std::getline(line_ss, value, ' ') && value.empty()) {}
+    // getting the rest of the value, if it contains space in it
+    std::string val_cont;
+    std::getline(line_ss, val_cont);
+    if (!val_cont.empty())
+      value += ' ' + val_cont;
     if (!absolute_key.empty() && !value.empty())
       tree->graft(absolute_key, Tree::make(value));
   }
   return tree;
 }
+
 }  // namespace BasicSerializer
 }  // namespace data
 }  // namespace switcher

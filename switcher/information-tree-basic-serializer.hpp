@@ -41,7 +41,7 @@ namespace data {
 namespace BasicSerializer {
 std::string serialize(Tree::ptrc);
 Tree::ptr deserialize(const std::string &serialized);
-};
+}  // namespace BasicSerializer
 }  // namespace data
 }  // namespace switcher
 #endif
