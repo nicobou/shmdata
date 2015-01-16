@@ -793,11 +793,14 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
                           std::to_string(strm->si.fmt.clock_rate) +
                           ", payload=" +
                           std::to_string(strm->si.fmt.pt) +
-                          ", encoding-name=" + encoding_name);
-    // + ", ssrc=" +
-    // + ", clock-base="
-    // + ", seqnum-base="
-    //+ std::to_string(strm->in_sess->seq_ctrl->base_seq)
+                          ", encoding-name=" + encoding_name
+                          // + ", ssrc=" + std::to_string(strm->in_sess.peer_ssrc) 
+                          // + ", clock-base="
+                          // + std::to_string(strm->in_sess.seq_ctrl.cycles)
+                          // + ", seqnum-base="
+                          // + std::to_string(strm->in_sess.seq_ctrl.base_seq)
+                          );
+    //    g_print("----------- data type %s\n", data_type.c_str());
     std::string media_label;
     if (!strm->extra_params.empty()) {
       data_type.append(std::string(", " + strm->extra_params));
