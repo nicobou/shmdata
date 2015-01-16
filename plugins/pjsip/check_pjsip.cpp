@@ -17,6 +17,22 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <unistd.h>  // usleep
+#include <cassert>
+
+#include <vector>
+#include <string>
+#include <list>
+#include <iostream>
+
+#include "switcher/quiddity-manager.hpp"
+#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/information-tree.hpp"
+
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 int main() {
     return 0;
 }

@@ -24,10 +24,10 @@
 #include <list>
 #include <forward_list>
 #include <vector>
-
 #include "switcher/sdp-utils.hpp"
 #include "switcher/information-tree.hpp"
 #include "switcher/scope-exit.hpp"
+#include "switcher/information-tree-basic-serializer.hpp"
 #include "./pj-call.hpp"
 #include "./pj-sip.hpp"
 
@@ -61,8 +61,11 @@ PJCall::PJCall(PJSIP *sip_instance):
                                            + sip_instance->get_name())) {
   pj_status_t status;
   init_app();
-  // creating rtpsession for SIP transmission
+  // configuring internal manager
   manager_->create("rtpsession", "siprtp");
+  manager_->make_signal_subscriber("signal_subscriber",
+                                   internal_manager_cb,
+                                   this);
   /*  Init invite session module. */
   {
     pjsip_inv_callback inv_cb;
@@ -806,6 +809,12 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
         + "-"
         + std::to_string(strm->media_index);
     strm->call->instance->manager_->create("decodebin", dec_name);
+    strm->call->instance->manager_->subscribe_signal("signal_subscriber",
+                                                     dec_name,
+                                                     "on-tree-grafted");
+    strm->call->instance->manager_->subscribe_signal("signal_subscriber",
+                                                     dec_name,
+                                                     "on-tree-pruned");
     strm->call->instance->manager_->
         invoke_va(dec_name,
                   "connect",
@@ -1563,6 +1572,29 @@ void PJCall::set_starting_rtp_port(const gint value, void *user_data) {
 gint PJCall::get_starting_rtp_port(void *user_data) {
   PJCall *context = static_cast<PJCall *>(user_data);
   return context->starting_rtp_port_;
+}
+
+void
+PJCall::internal_manager_cb(std::string /*subscriber_name */,
+                            std::string quid_name ,
+                            std::string sig_name,
+                            std::vector<std::string> params,
+                            void *user_data) {
+  PJCall *context = static_cast<PJCall *>(user_data);
+  if (0 == sig_name.compare("on-tree-grafted") 
+      && 0 == std::string(".shmdata.writer.").compare(std::string(params[0], 0, 16))) {
+    // make a copy through serialization
+    std::string stree = context->manager_->invoke_info_tree<std::string>(
+        quid_name,
+        [&](data::Tree::ptrc t){
+          return data::BasicSerializer::serialize(data::Tree::get_subtree(t, params[0]));
+        });
+    context->sip_instance_->graft_tree(params[0],
+                                       data::BasicSerializer::deserialize(stree));
+  } else if (0 == sig_name.compare("on-tree-pruned")) {
+    context->sip_instance_->prune_tree(params[0]);
+  }
+  g_warning("PJCall::%s unhandled signal (%s)", __FUNCTION__, sig_name.c_str());
 }
 
 }  // namespace switcher

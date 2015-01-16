@@ -157,6 +157,11 @@ class PJCall {
                                       const std::string &contact_uri,
                                       bool attach);
   static std::string make_extra_params(const std::string &raw_extra_params);
+  static void internal_manager_cb(std::string /*subscriber_name */,
+                                  std::string /*quiddity_name */,
+                                  std::string signal_name,
+                                  std::vector<std::string> params,
+                                  void */*user_data */);
 };
 
 }  // namespace switcher
