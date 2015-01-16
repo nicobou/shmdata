@@ -421,7 +421,11 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
       current_media->call = call;
       current_media->shm = std::make_shared<ShmdataAnyWriter>();
       std::string shm_any_name = call->instance->sip_instance_->
-          make_file_name(call->peer_uri + "-" + std::to_string(i));
+          make_file_name(std::string(call->peer_uri, 0, call->peer_uri.find('@'))
+                         + '-'
+                         + std::to_string(call->index)
+                         + '-'
+                         + std::to_string(i));
       current_media->shm->set_path(shm_any_name.c_str());
       g_message("created a new shmdata any writer (%s)",
                 shm_any_name.c_str());
@@ -794,8 +798,18 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
     // + ", clock-base="
     // + ", seqnum-base="
     //+ std::to_string(strm->in_sess->seq_ctrl->base_seq)
-    if (!strm->extra_params.empty())
+    std::string media_label;
+    if (!strm->extra_params.empty()) {
       data_type.append(std::string(", " + strm->extra_params));
+      std::string label_field("media-label=\"");
+      auto found = strm->extra_params.find(label_field);
+      if (std::string::npos != found) {
+        auto label_begin = found + label_field.size();
+        media_label = std::string(strm->extra_params,
+                                  label_begin,
+                                  strm->extra_params.find('"', label_begin) - label_begin);
+      }
+    }
     strm->shm->set_data_type(data_type);
     // application/x-rtp, media=(string)application, clock-rate=(int)90000,
     // encoding-name=(string)X-GST, ssrc=(uint)4199653519, payload=(int)96,
@@ -803,7 +817,7 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
     strm->shm->start();
     //creating a decodebin for this media stream
     std::string dec_name =
-        strm->call->peer_uri
+        std::string(strm->call->peer_uri, 0, strm->call->peer_uri.find('@'))
         + "-"
         + std::to_string(strm->call_index)
         + "-"
@@ -815,6 +829,11 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
     strm->call->instance->manager_->subscribe_signal("signal_subscriber",
                                                      dec_name,
                                                      "on-tree-pruned");
+    if (!media_label.empty())
+      strm->call->instance->manager_->
+          set_property(dec_name,
+                       "media-label",
+                       media_label);
     strm->call->instance->manager_->
         invoke_va(dec_name,
                   "connect",
