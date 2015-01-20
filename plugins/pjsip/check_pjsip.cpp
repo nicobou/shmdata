@@ -1,20 +1,18 @@
 /*
  * This file is part of switcher-pjsip.
  *
- * libswitcher is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * switcher-pjsip is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * switcher is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General
- * Public License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <unistd.h>  // usleep
@@ -62,10 +60,11 @@ int main() {
     std::string soap_name = manager->create("SOAPcontrolServer", "soapserver");
     std::string *result;
     manager->invoke_va(soap_name, "set_port", &result, "27182", nullptr);
-  if (0 == result->compare("false"))
-    return 1;
+    if (0 == result->compare("false"))
+      return 1;
+
     assert(switcher::QuiddityBasicTest::test_full(manager, "sip"));
-    return 0;
+  
     // // testing if dico containing log information & buddies is
     // // available for the test.
     // // if not cancel the test
@@ -171,7 +170,7 @@ int main() {
             }));
       }
       assert(std::equal(buddies.begin(), buddies.end(),
-                         buds_from_tree.begin()));
+                        buds_from_tree.begin()));
     }
 
     g_print("%s\n", manager->get_info(sip_name, ".").c_str());
@@ -209,7 +208,7 @@ int main() {
     //                           nullptr,
     //                           "buddies.list",
     //                           nullptr));
-// usleep(8000000);
+    // usleep(8000000);
     
     assert(manager->remove(sip_name));
 
