@@ -80,7 +80,6 @@ class PJCall {
     pj_time_val connect_time {0, 0};
     std::string peer_uri {};
     gchar *outgoing_sdp {nullptr};
-    PJCall *instance {nullptr};
   };
 
  private:
