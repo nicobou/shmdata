@@ -30,7 +30,6 @@
 #include "./pj-sip.hpp"
 
 namespace switcher {
-PJCall::app_t PJCall::app;
 pjmedia_endpt *PJCall::med_endpt_ = nullptr;
 
 char *pjcall_pjsip_module_name = strdup("mod-siprtpapp");
@@ -106,21 +105,21 @@ PJCall::PJCall(PJSIP *sip_instance):
     g_warning("Install codecs failed");
 
   /* Init calls */
-  for (unsigned i = 0; i < app.max_calls; ++i) {
-    app.call[i].index = i;
-    app.call[i].media_count = 0;
-    app.call[i].instance = this;
+  for (unsigned i = 0; i < max_calls; ++i) {
+    call[i].index = i;
+    call[i].media_count = 0;
+    call[i].instance = this;
   }
   /* Init media transport for all calls. */
-  for (unsigned i = 0, count = 0; i < app.max_calls; ++i, ++count) {
+  for (unsigned i = 0, count = 0; i < max_calls; ++i, ++count) {
     unsigned j;
     /* Create transport for each media in the call */
-    for (j = 0; j < PJ_ARRAY_SIZE(app.call[0].media); ++j) {
+    for (j = 0; j < PJ_ARRAY_SIZE(call[0].media); ++j) {
       /* Repeat binding media socket to next port when fails to bind
        * to current port number.
        */
-      app.call[i].media[j].call_index = i;
-      app.call[i].media[j].media_index = j;
+      call[i].media[j].call_index = i;
+      call[i].media[j].media_index = j;
     }
   }
   // properties and methods for user
@@ -191,10 +190,10 @@ PJCall::PJCall(PJSIP *sip_instance):
 }
 
 PJCall::~PJCall() {
-  for (unsigned i = 0; i < app.max_calls; ++i) {
+  for (unsigned i = 0; i < max_calls; ++i) {
     unsigned j;
-    for (j = 0; j < PJ_ARRAY_SIZE(app.call[0].media); ++j) {
-      struct media_stream *m = &app.call[i].media[j];
+    for (j = 0; j < PJ_ARRAY_SIZE(call[0].media); ++j) {
+      struct media_stream *m = &call[i].media[j];
       if (m->transport) {
         pjmedia_transport_close(m->transport);
         m->transport = nullptr;
@@ -246,8 +245,8 @@ void PJCall::init_app() {
     pj_ansi_strcpy(ip_addr, addr);
   }
   /* Init defaults */
-  app.max_calls = 256;
-  app.local_addr = pj_str(ip_addr);
+  max_calls = 256;
+  local_addr = pj_str(ip_addr);
 }
 
 /* Callback to be called when invite session's state has changed: */
@@ -508,18 +507,18 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   pjsip_tx_data *tdata;
   pj_status_t status;
   /* Find free call slot */
-  for (i = 0; i < app.max_calls; ++i) {
-    if (app.call[i].inv == nullptr)
+  for (i = 0; i < PJSIP::this_->sip_calls_->max_calls; ++i) {
+    if (PJSIP::this_->sip_calls_->call[i].inv == nullptr)
       break;
   }
-  if (i == app.max_calls) {
+  if (i == PJSIP::this_->sip_calls_->max_calls) {
     pj_str_t reason;
     pj_cstr(&reason, "Too many calls");
     pjsip_endpt_respond_stateless(PJSIP::this_->sip_endpt_, rdata,
                                   500, &reason, nullptr, nullptr);
     return;
   }
-  call = &app.call[i];
+  call = &PJSIP::this_->sip_calls_->call[i];
   call->peer_uri = from_uri;
   /* Parse SDP from incoming request and
      verify that we can handle the request. */
@@ -628,8 +627,10 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
               std::string(offer->media[media_index]->desc.media.ptr,
                           offer->media[media_index]->desc.media.slen);
           status =
-              pjmedia_transport_udp_create2(med_endpt_, "siprtp",
-                                            &app.local_addr, rtp_port,
+              pjmedia_transport_udp_create2(med_endpt_,
+                                            "siprtp",
+                                            &PJSIP::this_->sip_calls_->local_addr,
+                                            rtp_port,
                                             0, &m->transport);
           if (status == PJ_SUCCESS) {
             rtp_port += 2;
@@ -705,7 +706,7 @@ PJCall::create_sdp(pj_pool_t *pool,
       pj_pool_zalloc(pool, sizeof(pjmedia_sdp_conn)));
   pj_cstr(&sdp->conn->net_type, "IN");
   pj_cstr(&sdp->conn->addr_type, "IP4");
-  sdp->conn->addr = app.local_addr;
+  sdp->conn->addr = PJSIP::this_->sip_calls_->local_addr;
   /* SDP time and attributes. */
   sdp->time.start = sdp->time.stop = 0;
   sdp->attr_count = 0;
@@ -1343,13 +1344,13 @@ void PJCall::make_call(std::string dst_uri) {
   pjsip_tx_data *tdata = nullptr;
   pj_status_t status;
   // Find unused call slot
-  for (i = 0; i < app.max_calls; ++i) {
-    if (app.call[i].inv == nullptr)
+  for (i = 0; i < max_calls; ++i) {
+    if (call[i].inv == nullptr)
       break;
   }
-      if (i == app.max_calls)
+      if (i == max_calls)
     return;
-  call = &app.call[i];
+  call = &call[i];
   pj_str_t dest_str;
   pj_cstr(&dest_str,
           std::string("sip:" + dst_uri // + ";transport=tcp"
@@ -1500,17 +1501,17 @@ void PJCall::make_hang_up(std::string contact_uri) {
   pjsip_tx_data *tdata;
   pj_status_t status;
   bool res;
-  for (unsigned i = 0; i < app.max_calls; ++i) {
-    if (app.call[i].inv == nullptr)
+  for (unsigned i = 0; i < max_calls; ++i) {
+    if (call[i].inv == nullptr)
       break;
-    if (0 == contact_uri.compare(app.call[i].peer_uri)) {
-      status = pjsip_inv_end_session(app.call[i].inv, 603, nullptr, &tdata);
+    if (0 == contact_uri.compare(call[i].peer_uri)) {
+      status = pjsip_inv_end_session(call[i].inv, 603, nullptr, &tdata);
       if (status == PJ_SUCCESS && tdata != nullptr) {
-        pjsip_inv_send_msg(app.call[i].inv, tdata);
+        pjsip_inv_send_msg(call[i].inv, tdata);
       }
       res = true;
-      if (nullptr != app.call[i].outgoing_sdp)
-        g_free(app.call[i].outgoing_sdp);
+      if (nullptr != call[i].outgoing_sdp)
+        g_free(call[i].outgoing_sdp);
     }
   }
   if (!res) 

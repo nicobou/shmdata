@@ -83,17 +83,13 @@ class PJCall {
     PJCall *instance {nullptr};
   };
 
-  // Application's global variables
-  typedef struct app {
-    unsigned max_calls {256};
-    pj_str_t local_addr {nullptr, 0};
-    struct call call[MAX_CALLS];
-  } app_t;
-
  private:
   static pjmedia_endpt *med_endpt_;
   static pjsip_module mod_siprtp_;
-  static app_t app;
+  pj_str_t local_addr {nullptr, 0};
+  unsigned max_calls {256};
+  struct call call[MAX_CALLS];
+  // app_t app{};
   PJSIP *sip_instance_;
   // internal rtp
   QuiddityManager::ptr manager_;
