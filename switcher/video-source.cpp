@@ -86,10 +86,6 @@ VideoSource::VideoSource():
 }
 
 VideoSource::~VideoSource() {
-  GstUtils::clean_element(video_tee_);
-  GstUtils::clean_element(codec_element_);
-  GstUtils::clean_element(queue_codec_element_);
-  GstUtils::clean_element(color_space_codec_element_);
   GstUtils::free_g_enum_values(primary_codec_);
   GstUtils::free_g_enum_values(secondary_codec_);
 }
@@ -226,16 +222,16 @@ bool VideoSource::remake_codec_elements() {
   GstElement *tmp_codec_element = codec_element_;
   GstElement *tmp_color_space_codec_element = color_space_codec_element_;
   GstElement *tmp_queue_codec_element = queue_codec_element_;
-  if (!GstUtils::make_element
-      (secondary_codec_[codec_].value_nick, &codec_element_)
+  if (!GstUtils::make_element(secondary_codec_[codec_].value_nick, &codec_element_)
       || !GstUtils::make_element("ffmpegcolorspace", &color_space_codec_element_)
       || !GstUtils::make_element("queue", &queue_codec_element_))
     return false;
   // copy property value and register codec properties
   for (auto &it : codec_properties_) {
-    GstUtils::apply_property_value(G_OBJECT(tmp_codec_element),
-                                   G_OBJECT(codec_element_),
-                                   it.c_str());
+    if (nullptr != tmp_codec_element)
+      GstUtils::apply_property_value(G_OBJECT(tmp_codec_element),
+                                     G_OBJECT(codec_element_),
+                                     it.c_str());
     install_property(G_OBJECT(codec_element_), it, it, it);
   }
   GstUtils::clean_element(tmp_codec_element);
