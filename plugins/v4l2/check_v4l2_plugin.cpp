@@ -1,7 +1,7 @@
 /*
- * This file is part of switcher-myplugin.
+ * This file is part of switcher-v4l2.
  *
- * libswitcher is free software; you can redistribute it and/or
+ * switcher-v4l2 is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2 of the License, or (at your option) any later version.
