@@ -63,8 +63,9 @@ int main() {
     if (0 == result->compare("false"))
       return 1;
 
-    // assert(switcher::QuiddityBasicTest::test_full(manager, "sip"));
-  
+    assert(switcher::QuiddityBasicTest::test_full(manager, "sip"));
+    return 0;
+
     // // testing if dico containing log information & buddies is
     // // available for the test.
     // // if not cancel the test

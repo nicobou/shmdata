@@ -1338,7 +1338,7 @@ void PJCall::make_call(std::string dst_uri) {
   pj_cstr(&local_uri,
           local_uri_tmp.c_str());
   unsigned i;
-  struct call *call = nullptr;
+  struct call *cur_call = nullptr;
   pjsip_dialog *dlg = nullptr;
   pjmedia_sdp_session *sdp = nullptr;
   pjsip_tx_data *tdata = nullptr;
@@ -1350,7 +1350,7 @@ void PJCall::make_call(std::string dst_uri) {
   }
       if (i == max_calls)
     return;
-  call = &call[i];
+  cur_call = &call[i];
   pj_str_t dest_str;
   pj_cstr(&dest_str,
           std::string("sip:" + dst_uri // + ";transport=tcp"
@@ -1376,12 +1376,12 @@ void PJCall::make_call(std::string dst_uri) {
   pjsip_auth_clt_set_credentials(&dlg->auth_sess,
                                  1,
                                  &sip_instance_->sip_presence_->cfg_.cred_info[0]);
-  call->peer_uri = dst_uri;
+  cur_call->peer_uri = dst_uri;
   // Create SDP
-  std::string outgoing_sdp = create_outgoing_sdp(call, dst_uri);
-  call->outgoing_sdp = g_strdup(outgoing_sdp.c_str());  // free at hang up
+  std::string outgoing_sdp = create_outgoing_sdp(cur_call, dst_uri);
+  cur_call->outgoing_sdp = g_strdup(outgoing_sdp.c_str());  // free at hang up
   status = pjmedia_sdp_parse(dlg->pool,
-                             call->outgoing_sdp,
+                             cur_call->outgoing_sdp,
                              outgoing_sdp.length(),
                              &sdp);
   if (status != PJ_SUCCESS) {
@@ -1389,21 +1389,21 @@ void PJCall::make_call(std::string dst_uri) {
     return;
   }
   // Create the INVITE session.
-  status = pjsip_inv_create_uac(dlg, sdp, 0, &call->inv);
+  status = pjsip_inv_create_uac(dlg, sdp, 0, &cur_call->inv);
   if (status != PJ_SUCCESS) {
     pjsip_dlg_terminate(dlg);
     g_warning("pjsip_inv_create_uac FAILLED");
     return;
   }
   // Attach call data to invite session
-  call->inv->mod_data[mod_siprtp_.id] = call;
+  cur_call->inv->mod_data[mod_siprtp_.id] = cur_call;
   // Mark start of call
-  pj_gettimeofday(&call->start_time);
+  pj_gettimeofday(&cur_call->start_time);
   /* Create initial INVITE request.
    * This INVITE request will contain a perfectly good request and
    * an SDP body as well.
    */
-  status = pjsip_inv_invite(call->inv, &tdata);
+  status = pjsip_inv_invite(cur_call->inv, &tdata);
   if (status != PJ_SUCCESS) {
     g_warning("pjsip_inv_invite error");
     return;
@@ -1412,7 +1412,7 @@ void PJCall::make_call(std::string dst_uri) {
    * From now on, the invite session's state will be reported to us
    * via the invite session callbacks.
    */
-  status = pjsip_inv_send_msg(call->inv, tdata);
+  status = pjsip_inv_send_msg(cur_call->inv, tdata);
   if (status != PJ_SUCCESS) {
     g_warning("pjsip_inv_send_msg error");
     return;
