@@ -21,12 +21,11 @@
 #define __SWITCHER_PJSIP_H__
 
 #include <pjsua-lib/pjsua.h>
-
 #include <memory>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-
+#include <atomic>
 #include "switcher/quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
 #include "./pj-call.hpp"
@@ -65,15 +64,19 @@ class PJSIP: public Quiddity {
   bool continue_ {true};
   std::function<void()> command_ {};
   pj_pool_t *pool_ {nullptr};
+  pjsip_endpoint *sip_endpt_{nullptr};
   PJCall *sip_calls_ {nullptr};
   PJPresence *sip_presence_ {nullptr};
   std::thread sip_worker_ {};
   bool sip_work_ {true};
   pj_thread_desc worker_handler_desc_ {};
   pj_thread_t *worker_thread_ref_ {nullptr};
-  static pjsip_endpoint *sip_endpt_;
   pj_caching_pool cp_;
-
+  bool i_m_the_one_{false};
+  // singleton related members:
+  static std::atomic<unsigned short> sip_endpt_used_;
+  static PJSIP *this_;
+  // methods:
   void sip_init_shutdown_thread();
   void sip_handling_thread();
   bool pj_sip_init();
@@ -84,6 +87,6 @@ class PJSIP: public Quiddity {
   void sip_worker_thread();
   void start_tcp_transport();
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

@@ -88,7 +88,6 @@ class PJCall {
   // Application's global variables
   typedef struct app {
     unsigned max_calls {256};
-    unsigned uac_calls {0};
     pj_str_t local_addr {nullptr, 0};
     struct call call[MAX_CALLS];
   } app_t;
@@ -100,7 +99,7 @@ class PJCall {
   PJSIP *sip_instance_;
   // internal rtp
   QuiddityManager::ptr manager_;
-  data::Tree::ptr contact_shm_ {data::Tree::make()};
+  data::Tree::ptr contact_shm_;
   // external rtp session quidity for sending
   // std::string rtp_session_name_ {};
   // GParamSpec *rtp_session_name_spec_ {nullptr};

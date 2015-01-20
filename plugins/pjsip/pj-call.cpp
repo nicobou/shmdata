@@ -58,7 +58,8 @@ PJCall::PJCall(PJSIP *sip_instance):
     sip_instance_(sip_instance),
     manager_(QuiddityManager::make_manager(sip_instance->get_manager_name()
                                            + "-"
-                                           + sip_instance->get_name())) {
+                                           + sip_instance->get_name())),
+    contact_shm_(data::Tree::make()) {
   pj_status_t status;
   init_app();
   // configuring internal manager
@@ -274,11 +275,6 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event *e) {
             inv->cause,
             static_cast<int>(inv->cause_text.slen),
             inv->cause_text.ptr);
-    g_warning("Call #%d disconnected. Reason=%d (%.*s)",
-              call->index,
-              inv->cause,
-              static_cast<int>(inv->cause_text.slen),
-              inv->cause_text.ptr);
     call->inv = nullptr;
     inv->mod_data[mod_siprtp_.id] = nullptr;
     // cleaning shmdatas
@@ -312,7 +308,6 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event *e) {
     // call->start_time = null_time;
     // call->response_time = null_time;
     // call->connect_time = null_time;
-    ++app.uac_calls;
   } else if (inv->state == PJSIP_INV_STATE_CONFIRMED) {
     pj_time_val t;
     pj_gettimeofday(&call->connect_time);
@@ -522,7 +517,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   if (i == app.max_calls) {
     pj_str_t reason;
     pj_cstr(&reason, "Too many calls");
-    pjsip_endpt_respond_stateless(PJSIP::sip_endpt_, rdata,
+    pjsip_endpt_respond_stateless(PJSIP::this_->sip_endpt_, rdata,
                                   500, &reason, nullptr, nullptr);
     return;
   }
@@ -549,7 +544,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
                                     &options,
                                     nullptr,
                                     nullptr,
-                                    PJSIP::sip_endpt_,
+                                    PJSIP::this_->sip_endpt_,
                                     &tdata);
   if (status != PJ_SUCCESS) {
     /*
@@ -558,13 +553,13 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
     if (tdata) {
       pjsip_response_addr res_addr;
       pjsip_get_response_addr(tdata->pool, rdata, &res_addr);
-      pjsip_endpt_send_response(PJSIP::sip_endpt_,
+      pjsip_endpt_send_response(PJSIP::this_->sip_endpt_,
                                 &res_addr,
                                 tdata,
                                 nullptr,
                                 nullptr);
     } else {  /* Respond with 500 (Internal Server Error) */
-      pjsip_endpt_respond_stateless(PJSIP::sip_endpt_,
+      pjsip_endpt_respond_stateless(PJSIP::this_->sip_endpt_,
                                     rdata,
                                     500,
                                     nullptr,
@@ -578,7 +573,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   if (status != PJ_SUCCESS) {
     pj_str_t reason;
     pj_cstr(&reason, "Unable to create dialog");
-    pjsip_endpt_respond_stateless(PJSIP::sip_endpt_,
+    pjsip_endpt_respond_stateless(PJSIP::this_->sip_endpt_,
                                   rdata, 500, &reason, nullptr, nullptr);
     return;
   }
@@ -1375,7 +1370,6 @@ void PJCall::make_call(std::string dst_uri) {
                                 nullptr,  /* remote target */
                                 &dlg);  /* dialog */
   if (status != PJ_SUCCESS) {
-    ++app.uac_calls;
     g_warning("pjsip_dlg_create_uac FAILLED");
     return;
   }
@@ -1392,7 +1386,6 @@ void PJCall::make_call(std::string dst_uri) {
                              outgoing_sdp.length(),
                              &sdp);
   if (status != PJ_SUCCESS) {
-    ++app.uac_calls;
     g_warning("pjmedia_sdp_parse FAILLLED");
     return;
   }
@@ -1400,7 +1393,6 @@ void PJCall::make_call(std::string dst_uri) {
   status = pjsip_inv_create_uac(dlg, sdp, 0, &call->inv);
   if (status != PJ_SUCCESS) {
     pjsip_dlg_terminate(dlg);
-    ++app.uac_calls;
     g_warning("pjsip_inv_create_uac FAILLED");
     return;
   }
