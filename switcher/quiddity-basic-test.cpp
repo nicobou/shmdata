@@ -24,51 +24,54 @@ namespace switcher {
 bool
 QuiddityBasicTest::test_full(QuiddityManager::ptr manager,
                              std::string quiddity_class_name) {
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!test_get_info(manager, quiddity_class_name))
     return false;
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!test_create(manager, quiddity_class_name))
     return false;
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!test_description_by_class(manager, quiddity_class_name))
     return false;
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!test_startable(manager, quiddity_class_name))
     return false;
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   return true;
 }
 
 bool
 QuiddityBasicTest::test_create(QuiddityManager::ptr manager,
                                std::string quiddity_class_name) {
-  // g_print ("%s\n", quiddity_class_name.c_str ());
-
   // testing with a nick name
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   std::string res_with_nick =
       manager->create(quiddity_class_name, quiddity_class_name);
   if (res_with_nick.compare(quiddity_class_name) != 0) {
     g_warning("quiddity %s cannot be created (with nickname)",
               quiddity_class_name.c_str());
-    return true;              // true because some quiddity may not be crated because of a missing resource
-  }
-
-  if (!manager->remove(res_with_nick)) {
+    return true;  // true because some quiddity may not be crated because of a missing resource
+  } else if (!manager->remove(res_with_nick)) {
     g_warning("error while removing quiddity %s (with nickname)",
               quiddity_class_name.c_str());
     return false;
   }
-
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   // testing without nick name
   std::string res_without_nick = manager->create(quiddity_class_name);
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (res_without_nick.empty()) {
     g_warning("quiddity %s cannot be created (without nickname)",
               quiddity_class_name.c_str());
     return false;
   }
-
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!manager->remove(res_without_nick)) {
     g_warning("error while removing quiddity %s (without nickname)",
               quiddity_class_name.c_str());
     return false;
   }
-
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   return true;
 }
 
@@ -89,7 +92,6 @@ bool
 QuiddityBasicTest::test_startable(QuiddityManager::ptr manager,
                                   std::string quiddity_class_name) {
   // g_print ("---- startable test for %s\n", quiddity_class_name.c_str ());
-
   std::string name =
       manager->create(quiddity_class_name, quiddity_class_name);
   if (name.compare(quiddity_class_name) != 0) {
@@ -98,7 +100,6 @@ QuiddityBasicTest::test_startable(QuiddityManager::ptr manager,
          quiddity_class_name.c_str());
     return true;              // true because some quiddity may not be crated because of a missing resource
   }
-
   if (manager->has_property(name, "started")) {
     manager->make_property_subscriber("sub", on_started_cb, nullptr);
     manager->subscribe_property("sub", name, "started");
@@ -112,13 +113,11 @@ QuiddityBasicTest::test_startable(QuiddityManager::ptr manager,
     manager->unsubscribe_property("sub", name, "started");
     manager->remove_property_subscriber("sub");
   }
-
   if (!manager->remove(name)) {
     g_warning("error while removing quiddity %s (startable test)",
               quiddity_class_name.c_str());
     return false;
   }
-
   return true;
 }
 
@@ -133,7 +132,6 @@ QuiddityBasicTest::test_description_by_class(QuiddityManager::ptr manager,
       manager->get_methods_description_by_class(quiddity_class_name);
   std::string signals =
       manager->get_signals_description_by_class(quiddity_class_name);
-
   return true;
 }
 
@@ -142,6 +140,8 @@ QuiddityBasicTest::test_get_info(QuiddityManager::ptr manager,
                                  std::string quiddity_class_name) {
   std::string name = manager->create(quiddity_class_name);
   std::string res = manager->get_info(name, ".");
+  manager->remove(name);
   return true;
 }
-}
+
+}  // namespace switcher
