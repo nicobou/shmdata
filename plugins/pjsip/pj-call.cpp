@@ -54,8 +54,10 @@ pjsip_module PJCall::mod_siprtp_ = {
 PJCall::PJCall(PJSIP *sip_instance):
     sip_instance_(sip_instance),
     manager_(QuiddityManager::make_manager(sip_instance->get_manager_name()
-                                           + "-"
-                                           + sip_instance->get_name())),
+                                           // per Pierre-Antoine request:
+                                           // + "-"
+                                           // + sip_instance->get_name())
+                                           ),
     contact_shm_(data::Tree::make()) {
   pj_status_t status;
   init_app();
@@ -629,7 +631,8 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
                                             "siprtp",
                                             &PJSIP::this_->sip_calls_->local_addr,
                                             rtp_port,
-                                            0, &m->transport);
+                                            0,
+                                            &m->transport);
           if (status == PJ_SUCCESS) {
             rtp_port += 2;
             break;
@@ -1511,10 +1514,10 @@ void PJCall::make_hang_up(std::string contact_uri) {
         pjsip_inv_send_msg(call[i].inv, tdata);
       }
       res = true;
-      if (nullptr != call[i].outgoing_sdp) {
-        g_free(call[i].outgoing_sdp);
-        call[i].outgoing_sdp = nullptr;
-      }
+      // if (nullptr != call[i].outgoing_sdp) {
+      //   g_free(call[i].outgoing_sdp);
+      //   call[i].outgoing_sdp = nullptr;
+      // }
     }
   }
   // g_print("%s %d\n", __FUNCTION__, __LINE__);

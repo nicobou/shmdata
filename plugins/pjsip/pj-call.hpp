@@ -88,7 +88,6 @@ class PJCall {
   pj_str_t local_addr {nullptr, 0};
   unsigned max_calls {256};
   struct call call[MAX_CALLS];
-  // app_t app{};
   PJSIP *sip_instance_;
   // internal rtp
   QuiddityManager::ptr manager_;
