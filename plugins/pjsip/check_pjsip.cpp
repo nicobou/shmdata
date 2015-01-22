@@ -1,18 +1,20 @@
 /*
  * This file is part of switcher-pjsip.
  *
- * switcher-pjsip is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 #include <unistd.h>  // usleep
@@ -39,42 +41,28 @@ int main() {
     const std::string audio_name("a");
     const std::string video_name("v");
     std::list<std::string> buddies =
-        { "1001@10.10.30.179" };
+        { "101@sip.scenic.sat.qc.ca" };
 
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager(manager_name);
+
 #ifdef HAVE_CONFIG_H
-    {
-      gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
-      manager->scan_directory_for_plugins(usr_plugin_dir);
-      g_free(usr_plugin_dir);
-    }
-    {
-      gchar *usr_plugin_dir = g_strdup_printf("../gsoap/%s", LT_OBJDIR);
-      manager->scan_directory_for_plugins(usr_plugin_dir);
-      g_free(usr_plugin_dir);
-    }
+    gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
+    manager->scan_directory_for_plugins(usr_plugin_dir);
+    g_free(usr_plugin_dir);
 #else
     return 1;
 #endif
-    std::string soap_name = manager->create("SOAPcontrolServer", "soapserver");
-    std::string *result;
-    manager->invoke_va(soap_name, "set_port", &result, "27182", nullptr);
-    if (0 == result->compare("false"))
-      return 1;
-
-    // assert(switcher::QuiddityBasicTest::test_full(manager, "sip"));
-    // return 0;
 
     // // testing if dico containing log information & buddies is
     // // available for the test.
     // // if not cancel the test
     // // example dico is
     // /*
-    //   .buddies.1       foo@scenic.sat.qc.ca
-    //   .buddies.2       bar@scenic.sat.qc.ca
-    //   .buddies.3       space@scenic.sat.qc.ca
-    //   .me.uri        me@scenic.sat.qc.ca
+    //   .buddies.1       foo@sip.scenic.sat.qc.ca
+    //   .buddies.2       bar@sip.scenic.sat.qc.ca
+    //   .buddies.3       space@sip.scenic.sat.qc.ca
+    //   .me.uri        me@sip.scenic.sat.qc.ca
     //   .me.password   Udl3k0js
     // */
     // manager->create("dico", "info");
@@ -113,7 +101,7 @@ int main() {
     assert(manager->invoke_va(sip_name,
                               "register",
                               nullptr,
-                              "1002@10.10.30.179",  // user
+                              "102@sip.scenic.sat.qc.ca",  // user
                               "1234",  // password
                               nullptr));
 
@@ -171,29 +159,29 @@ int main() {
             }));
       }
       assert(std::equal(buddies.begin(), buddies.end(),
-                        buds_from_tree.begin()));
+                         buds_from_tree.begin()));
     }
 
     g_print("%s\n", manager->get_info(sip_name, ".").c_str());
     
     //usleep(2000000);
 
-    // for (auto &it : buddies)
-    //   assert(manager->invoke_va(sip_name,
-    //                             "call",
-    //                             nullptr,
-    //                             it.c_str(),
-    //                             nullptr));
+    for (auto &it : buddies)
+      assert(manager->invoke_va(sip_name,
+                                "call",
+                                nullptr,
+                                it.c_str(),
+                                nullptr));
     
     // usleep(8000000);
-    assert(manager->set_property(sip_name, "status", "Away"));
-    usleep(8000000);
-    assert(manager->set_property(sip_name, "status-note", "coucou"));
-    usleep(8000000);
-    assert(manager->set_property(sip_name, "status", "Busy"));
-    usleep(8000000);
-    //assert(manager->set_property(sip_name, "status", "Offline"));
-    usleep(8000000);
+    // assert(manager->set_property(sip_name, "status", "Away"));
+    // usleep(8000000);
+    // assert(manager->set_property(sip_name, "status-note", "coucou"));
+    // usleep(8000000);
+    // assert(manager->set_property(sip_name, "status", "Busy"));
+    // usleep(8000000);
+    // //assert(manager->set_property(sip_name, "status", "Offline"));
+    // usleep(8000000);
     
     usleep(80000000);
 
@@ -209,7 +197,7 @@ int main() {
     //                           nullptr,
     //                           "buddies.list",
     //                           nullptr));
-    // usleep(8000000);
+// usleep(8000000);
     
     assert(manager->remove(sip_name));
 

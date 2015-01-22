@@ -101,6 +101,7 @@ class PJPresence {
                                      gchar *uri,
                                      void *user_data);
   void name_buddy(std::string name, std::string sip_user);
+  pjsua_buddy_id get_id_for_buddy_name(const std::string &name);
   // pjsip functions
   static void on_reg_state(pjsua_acc_id acc_id);
   static void on_incoming_subscribe(pjsua_acc_id acc_id,

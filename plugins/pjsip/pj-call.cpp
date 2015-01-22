@@ -209,10 +209,10 @@ PJCall::~PJCall() {
 
 /* Callback to be called to handle incoming requests outside dialogs: */
 pj_bool_t PJCall::on_rx_request(pjsip_rx_data *rdata) {
-  // printf("%s %.*s\n",
-  //        __FUNCTION__,
-  //        static_cast<int>(rdata->msg_info.msg->line.req.method.name.slen),
-  //        rdata->msg_info.msg->line.req.method.name.ptr);
+  printf("-------------------- %s %.*s\n",
+         __FUNCTION__,
+         static_cast<int>(rdata->msg_info.msg->line.req.method.name.slen),
+         rdata->msg_info.msg->line.req.method.name.ptr);
   /* Ignore strandled ACKs (must not send respone) */
   if (rdata->msg_info.msg->line.req.method.id == PJSIP_ACK_METHOD)
     return PJ_FALSE;
@@ -258,13 +258,29 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event *e) {
     return;
   // finding id of the buddy related to the call 
   pj_str_t contact;
-  pj_cstr(&contact, std::string("sip:" + call->peer_uri // + ";transport=tcp"
-                                ).c_str());
+  std::string tmpstr("sip:" + call->peer_uri // + ";transport=tcp"
+                     ); 
+  pj_cstr(&contact, tmpstr.c_str());
   auto id = pjsua_buddy_find(&contact);
   if (PJSUA_INVALID_ID == id) {
-    g_warning("buddy not found: cannot update call status %s",
-              call->peer_uri.c_str());
-    return;
+    // trying to find buddy from presence, because the server may change domain in
+    // from & to header
+    // auto pos = call->peer_uri.find('@');
+    // std::string buddy_name(call->peer_uri, 0, pos);
+    // auto *buddy_id = &PJSIP::this_->sip_presence_->buddy_id_;
+    // auto &bud = std::find_if(
+    //     buddy_id->begin(),
+    //     buddy_id->end(),
+    //     [&buddy_name](decltype(buddy_id->begin()) &it){
+    //       return 0 == std::string(it->first, 0, buddy_name.size()).compare(buddy_name);
+    //     });        
+    // if (buddy_id->end() == bud) {
+      g_warning("buddy not found: cannot update call status %s",
+                call->peer_uri.c_str());
+      return;
+    // } else {
+    //   id = bud->second;
+    // }
   }
   if (inv->state == PJSIP_INV_STATE_DISCONNECTED) {
     // pj_time_val null_time = {0, 0};
@@ -491,15 +507,15 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   len = pjsip_uri_print(PJSIP_URI_IN_REQ_URI,
                         rdata->msg_info.msg->line.req.uri,
                         uristr, sizeof(uristr));
-  // g_print("---------- call req uri %.*s\n", len, uristr);
+  g_print("---------- call req uri %.*s\n", len, uristr);
   len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                         pjsip_uri_get_uri(rdata->msg_info.from->uri),
                         uristr, sizeof(uristr));
   std::string from_uri(uristr, len);
-  // g_print("---------- call from %.*s\n", len, uristr);
+  g_print("---------- call from %.*s\n", len, uristr);
   len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                         rdata->msg_info.to->uri, uristr, sizeof(uristr));
-  // g_print("----------- call to %.*s\n", len, uristr);
+  g_print("----------- call to %.*s\n", len, uristr);
   unsigned i, options;
   struct call *call;
   pjsip_dialog *dlg;
@@ -1349,13 +1365,13 @@ void PJCall::make_call(std::string dst_uri) {
     if (call[i].inv == nullptr)
       break;
   }
-      if (i == max_calls)
+  if (i == max_calls)
     return;
   cur_call = &call[i];
   pj_str_t dest_str;
-  pj_cstr(&dest_str,
-          std::string("sip:" + dst_uri // + ";transport=tcp"
-                      ).c_str());
+  std::string tmp_dest_uri("sip:"+ dst_uri // + ";transport=tcp"
+                           );
+  pj_cstr(&dest_str, tmp_dest_uri.c_str());
   auto id = pjsua_buddy_find(&dest_str);
   if (PJSUA_INVALID_ID == id) {
     g_warning("buddy not found: cannot call %s",
@@ -1370,7 +1386,9 @@ void PJCall::make_call(std::string dst_uri) {
                                 nullptr,  /* remote target */
                                 &dlg);  /* dialog */
   if (status != PJ_SUCCESS) {
-    g_warning("pjsip_dlg_create_uac FAILLED");
+    char errstr[1024];
+    pj_strerror(status, errstr, 1024); 	
+    g_warning("pjsip_dlg_create_uac FAILLED %s", errstr);
     return;
   }
   /* we expect the outgoing INVITE to be challenged*/
@@ -1435,7 +1453,8 @@ void PJCall::make_call(std::string dst_uri) {
 std::string PJCall::create_outgoing_sdp(struct call *call,
                                         std::string dst_uri) {
   pj_str_t contact;
-  pj_cstr(&contact, std::string("sip:" + dst_uri).c_str());
+  std::string tmpstr("sip:" + dst_uri);
+  pj_cstr(&contact, tmpstr.c_str());
   auto id = pjsua_buddy_find(&contact);
   if (PJSUA_INVALID_ID == id) {
     g_warning("buddy not found: cannot call %s", dst_uri.c_str());
@@ -1547,7 +1566,8 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
                                             const std::string &contact_uri,
                                             bool attach) {
   pj_str_t contact;
-  pj_cstr(&contact, std::string("sip:" + contact_uri).c_str());
+  std::string tmpstr("sip:" + contact_uri);
+  pj_cstr(&contact, tmpstr.c_str());
   auto id = pjsua_buddy_find(&contact);
   if (PJSUA_INVALID_ID == id) {
     g_warning("buddy not found: cannot attach %s to %s",

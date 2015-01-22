@@ -645,5 +645,17 @@ gboolean PJPresence::get_sip_registration_status(void *user_data) {
     return FALSE;
   return TRUE;
 }
-  
+
+pjsua_buddy_id PJPresence::get_id_for_buddy_name(const std::string &name) {
+  // auto bud = std::find_if(
+  //     buddy_id_.begin(),
+  //     buddy_id_.end(),
+  //     [&name](decltype(buddy_id_.begin()) &it){
+  //         return 0 == std::string(it->first, 0, name.size()).compare(name);
+  //     });
+  // if (buddy_id_.end() != bud) 
+  // return bud.second; 
+  return PJSUA_INVALID_ID;
+}
+    
 }  // namespace switcher
