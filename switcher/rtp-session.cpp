@@ -595,6 +595,7 @@ bool RtpSession::remove_data_stream(std::string shmpath) {
             shmpath.c_str());
     return false;
   }
+  unregister_shmdata(shmpath);
   prune_tree("rtp_caps." + shmpath);
   data_streams_.erase(ds_it);
   g_debug("data_stream %s removed", shmpath.c_str());
