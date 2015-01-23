@@ -43,7 +43,6 @@ HTTPSDPDec::HTTPSDPDec():
 bool HTTPSDPDec::init_gpipe() {
   if (!souphttpsrc_ || !sdpdemux_)
     return false;
-
   install_method("To Shmdata",
                  "to_shmdata",
                  "get raw streams from an sdp description distributed over http and write them to shmdatas",
@@ -125,14 +124,6 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement */*object */ ,
   context->decodebins_.push_back(std::move(decodebin));
 }
 
-void HTTPSDPDec::source_setup_cb(GstElement */*httpsdpdec */,
-                                 GstElement *source,
-                                 gpointer /*user_data */) {
-  g_debug("source %s %s",
-          GST_ELEMENT_NAME(source),
-          G_OBJECT_CLASS_NAME(G_OBJECT_GET_CLASS(source)));
-}
-
 gboolean HTTPSDPDec::to_shmdata_wrapped(gpointer uri, gpointer user_data) {
   HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
   if (context->to_shmdata((char *)uri))
@@ -166,4 +157,5 @@ void HTTPSDPDec::uri_to_shmdata() {
   GstUtils::sync_state_with_parent(souphttpsrc_.get_raw());
   GstUtils::sync_state_with_parent(sdpdemux_.get_raw());
 }
-}
+
+}  // namespace switcher

@@ -53,8 +53,6 @@ class HTTPSDPDec: public GstPipeliner {
   static void httpsdpdec_pad_added_cb(GstElement *object,
                                       GstPad *pad, gpointer user_data);
   static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);
-  static void source_setup_cb(GstElement *httpsdpdec,
-                              GstElement *source, gpointer user_data);
   static void on_new_element_in_sdpdemux(GstBin *bin,
                                          GstElement *element,
                                          gpointer user_data);

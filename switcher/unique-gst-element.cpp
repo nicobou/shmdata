@@ -21,7 +21,6 @@
 #include "./std2.hpp"
 
 namespace switcher {
-
 bool UGstElem::renew(UGstElem &element) {
   gst_element_handle tmp(gst_element_factory_make(element.class_name_.c_str(),
                                                   nullptr),
@@ -55,4 +54,5 @@ void UGstElem::invoke(std::function<void(GstElement *)> command) {
 GstElement *UGstElem::get_raw() {
   return element_.get();
 }
+
 }  // namespace switcher
