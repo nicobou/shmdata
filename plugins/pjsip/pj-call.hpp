@@ -153,6 +153,18 @@ class PJCall {
                                   std::string signal_name,
                                   std::vector<std::string> params,
                                   void */*user_data */);
+  static void on_inv_state_disconnected(struct call *call,
+                                        pjsip_inv_session *inv,
+                                        pjsua_buddy_id id);
+  static void on_inv_state_confirmed(struct call *call,
+                                     pjsip_inv_session *inv,
+                                     pjsua_buddy_id id);
+  static void on_inv_state_early(struct call *call,
+                                 pjsip_inv_session *inv,
+                                 pjsua_buddy_id id);
+  static void on_inv_state_connecting(struct call *call,
+                                      pjsip_inv_session *inv,
+                                      pjsua_buddy_id id);
 };
 
 }  // namespace switcher

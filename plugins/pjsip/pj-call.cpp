@@ -250,39 +250,9 @@ void PJCall::init_app() {
   local_addr = pj_str(ip_addr);
 }
 
-/* Callback to be called when invite session's state has changed: */
-void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event *e) {
-  struct call *call = (struct call *) inv->mod_data[mod_siprtp_.id];
-  PJ_UNUSED_ARG(e);
-  if (!call)
-    return;
-  // finding id of the buddy related to the call 
-  pj_str_t contact;
-  std::string tmpstr("sip:" + call->peer_uri // + ";transport=tcp"
-                     ); 
-  pj_cstr(&contact, tmpstr.c_str());
-  auto id = pjsua_buddy_find(&contact);
-  if (PJSUA_INVALID_ID == id) {
-    // trying to find buddy from presence, because the server may change domain in
-    // from & to header
-    // auto pos = call->peer_uri.find('@');
-    // std::string buddy_name(call->peer_uri, 0, pos);
-    // auto *buddy_id = &PJSIP::this_->sip_presence_->buddy_id_;
-    // auto &bud = std::find_if(
-    //     buddy_id->begin(),
-    //     buddy_id->end(),
-    //     [&buddy_name](decltype(buddy_id->begin()) &it){
-    //       return 0 == std::string(it->first, 0, buddy_name.size()).compare(buddy_name);
-    //     });        
-    // if (buddy_id->end() == bud) {
-      g_warning("buddy not found: cannot update call status %s",
-                call->peer_uri.c_str());
-      return;
-    // } else {
-    //   id = bud->second;
-    // }
-  }
-  if (inv->state == PJSIP_INV_STATE_DISCONNECTED) {
+void PJCall::on_inv_state_disconnected(struct call *call,
+                                       pjsip_inv_session *inv,
+                                       pjsua_buddy_id id) {
     // pj_time_val null_time = {0, 0};
     g_debug("Call #%d disconnected. Reason=%d (%.*s)",
             call->index,
@@ -316,12 +286,12 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event *e) {
       tree->graft(std::string(".call_status."),
                   data::Tree::make("disconnected"));
       PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
-    }  // endif PJSIP_INV_STATE_DISCONNECTED
-    // FIXME destroy_call_media(call->index);
-    // call->start_time = null_time;
-    // call->response_time = null_time;
-    // call->connect_time = null_time;
-  } else if (inv->state == PJSIP_INV_STATE_CONFIRMED) {
+    }
+}
+
+void PJCall::on_inv_state_confirmed(struct call *call,
+                                    pjsip_inv_session *inv,
+                                    pjsua_buddy_id id) {
     pj_time_val t;
     pj_gettimeofday(&call->connect_time);
     if (call->response_time.sec == 0)
@@ -342,9 +312,18 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event *e) {
                 data::Tree::make("calling"));
     PJSIP::this_->
         graft_tree(std::string(".buddy." + std::to_string(id)), tree);
-  } else if (inv->state == PJSIP_INV_STATE_EARLY ||
-             inv->state == PJSIP_INV_STATE_CONNECTING) {
-    g_debug("state early or connecting\n");
+}
+
+
+void PJCall::on_inv_state_early(struct call *call,
+                                pjsip_inv_session *inv,
+                                pjsua_buddy_id id) {
+  PJCall::on_inv_state_connecting(call, inv, id);
+}
+
+void PJCall::on_inv_state_connecting(struct call *call,
+                                     pjsip_inv_session *inv,
+                                     pjsua_buddy_id id) {
     if (call->response_time.sec == 0)
       pj_gettimeofday(&call->response_time);
     // updating call status in the tree
@@ -359,6 +338,51 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event *e) {
                 data::Tree::make("connecting"));
     PJSIP::this_->
         graft_tree(std::string(".buddy." + std::to_string(id)), tree);
+}
+
+/* Callback to be called when invite session's state has changed: */
+void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event */*e*/) {
+  struct call *call = (struct call *) inv->mod_data[mod_siprtp_.id];
+  if (!call) {
+    g_warning("%s, null call in invite", __FUNCTION__);
+    return;
+  }
+  // finding id of the buddy related to the call 
+  auto endpos = call->peer_uri.find('@');
+  auto beginpos = call->peer_uri.find("sip:");
+  if (0 == beginpos) beginpos = 4; else beginpos = 0;
+  auto id = PJSIP::this_->sip_presence_->
+      get_id_from_buddy_name(std::string(call->peer_uri, beginpos, endpos));  
+  if (PJSUA_INVALID_ID == id) {
+      g_warning("buddy not found: cannot update call status (%s)",
+                call->peer_uri.c_str());
+      return;
+  }
+  switch (inv->state) {
+    case PJSIP_INV_STATE_DISCONNECTED:
+    PJCall::on_inv_state_disconnected(call, inv, id);
+      break;
+    case PJSIP_INV_STATE_CONFIRMED:
+    PJCall::on_inv_state_confirmed(call, inv, id);
+      break;
+    case PJSIP_INV_STATE_EARLY:
+    PJCall::on_inv_state_early(call, inv, id);
+      break;
+    case PJSIP_INV_STATE_CONNECTING:
+      PJCall::on_inv_state_connecting(call, inv, id);
+      break;
+    case PJSIP_INV_STATE_NULL:
+      g_warning("----------- PJSIP_INV_STATE_NULL");
+      break;
+    case PJSIP_INV_STATE_CALLING:
+      g_warning("----------- PJSIP_INV_STATE_CALLING");
+      break;
+    case PJSIP_INV_STATE_INCOMING:
+      g_warning("----------- PJSIP_INV_STATE_INCOMING");
+      break;
+    default :
+      g_warning("%s, unhandled invite state", __FUNCTION__);
+      break;
   }
 }
 
