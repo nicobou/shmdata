@@ -45,11 +45,12 @@ bool HTTPSDPDec::init_gpipe() {
     return false;
   install_method("To Shmdata",
                  "to_shmdata",
-                 "get raw streams from an sdp description distributed over http and write them to shmdatas",
+                 "get streams from sdp description over http, "
+                 "accept also base64 encoded SDP string",
                  "success or fail",
                  Method::make_arg_description("URL",
                                               "url",
-                                              "the url to the sdp file",
+                                              "URL to the sdp file, or a base64 encoded SDP description",
                                               nullptr),
                  (Method::method_ptr)to_shmdata_wrapped,
                  G_TYPE_BOOLEAN,
@@ -133,7 +134,13 @@ gboolean HTTPSDPDec::to_shmdata_wrapped(gpointer uri, gpointer user_data) {
 }
 
 bool HTTPSDPDec::to_shmdata(std::string uri) {
-  uri_ = uri;
+  if (uri.find("http://") == 0) {
+    souphttpsrc_.mute("souphttpsrc");
+    uri_ = std::move(uri);
+  } else {
+    souphttpsrc_.mute("dataurisrc");
+    uri_ =  std::string("data:application/sdp;base64," + uri);
+  }
   on_error_.clear();
   uri_to_shmdata();
   return true;
@@ -147,8 +154,12 @@ void HTTPSDPDec::uri_to_shmdata() {
                     "on-error-gsource",
                     (gpointer)on_error_.back().get());
   g_debug("httpsdpdec: to_shmdata set uri %s", uri_.c_str());
+  // for souphttpsrc
   g_object_set(G_OBJECT(souphttpsrc_.get_raw()),
                "location", uri_.c_str(), nullptr);
+  // for dataurisrc
+  g_object_set(G_OBJECT(souphttpsrc_.get_raw()),
+               "uri", uri_.c_str(), nullptr);
   gst_bin_add_many(GST_BIN(get_bin()),
                    souphttpsrc_.get_raw(),
                    sdpdemux_.get_raw(),

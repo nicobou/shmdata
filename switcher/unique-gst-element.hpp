@@ -30,7 +30,6 @@ namespace switcher {
 class UGstElem : public SafeBoolIdiom {
  public:
   explicit UGstElem(const gchar *class_name);
-
   // invoke as g_object
   template<typename Return_type>
   Return_type
@@ -38,7 +37,6 @@ class UGstElem : public SafeBoolIdiom {
     return command(G_OBJECT(element_.get()));
   }
   void g_invoke(std::function<void(gpointer)> command);
-
   // invoke as GstElement
   template<typename Return_type>
   Return_type
@@ -46,12 +44,12 @@ class UGstElem : public SafeBoolIdiom {
     return command(element_.get());
   }
   void invoke(std::function<void(GstElement *)> command);
-
   // get raw without taking ownership (do not unref)
   GstElement *get_raw();
-
+  // renew
   static bool renew(UGstElem &element);
-
+  // mute (will be instanciated with a new class at renew)
+  void mute(const gchar *class_name);
  private:
   std::string class_name_{};
   using gst_element_handle =

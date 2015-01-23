@@ -44,6 +44,7 @@ class HTTPSDPDec: public GstPipeliner {
   std::list<GSourceWrapper::uptr> on_error_{};
   std::string uri_{};
   std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_{};
+  std::string src_element_class_{"souphttpsrc"};
   bool to_shmdata(std::string uri);
   void init_httpsdpdec();
   void destroy_httpsdpdec();
@@ -57,6 +58,6 @@ class HTTPSDPDec: public GstPipeliner {
                                          GstElement *element,
                                          gpointer user_data);
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

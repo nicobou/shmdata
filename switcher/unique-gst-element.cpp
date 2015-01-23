@@ -55,4 +55,8 @@ GstElement *UGstElem::get_raw() {
   return element_.get();
 }
 
+void UGstElem::mute(const gchar *class_name) {
+  class_name_ = class_name;
+}
+
 }  // namespace switcher
