@@ -33,7 +33,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     default-video-format.cpp \
     fake-shmdata-writer.cpp \
     fakesink.cpp \
-    file-sdp.cpp \
     g-source-wrapper.cpp \
     glibmainloop.cpp \
     gobject-custom-property.cpp \
@@ -45,7 +44,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gst-utils.cpp \
     gst-video-parse-to-bin-src.cpp \
     http-sdp-dec.cpp \
-    http-sdp.cpp \
     information-tree-basic-serializer.cpp \
     information-tree-json.cpp \
     information-tree.cpp \
@@ -119,7 +117,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     default-video-format.hpp \
     fake-shmdata-writer.hpp \
     fakesink.hpp \
-    file-sdp.hpp \
     g-source-wrapper.hpp \
     glibmainloop.hpp \
     gobject-custom-property.hpp \
@@ -133,7 +130,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     hash-table.hpp \
     hash-table_spec.hpp \
     http-sdp-dec.hpp \
-    http-sdp.hpp \
     information-tree-basic-serializer.hpp \
     information-tree-json.hpp \
     information-tree.hpp \

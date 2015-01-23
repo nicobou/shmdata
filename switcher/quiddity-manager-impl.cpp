@@ -31,10 +31,8 @@
 #include "./decodebin2.hpp"
 #include "./fake-shmdata-writer.hpp"
 #include "./fakesink.hpp"
-#include "./file-sdp.hpp"
 #include "./gst-parse-to-bin-src.hpp"
 #include "./gst-video-parse-to-bin-src.hpp"
-#include "./http-sdp.hpp"
 #include "./http-sdp-dec.hpp"
 #include "./jack-audio-source.hpp"
 #include "./jack-sink.hpp"
@@ -151,18 +149,12 @@ void QuiddityManager_Impl::register_classes() {
   abstract_factory_.register_class<FakeSink>
       (FakeSink::switcher_doc_.get_class_name(),
        &FakeSink::switcher_doc_);
-  abstract_factory_.register_class<FileSDP>
-      (FileSDP::switcher_doc_.get_class_name(),
-       &FileSDP::switcher_doc_);
   abstract_factory_.register_class<GstParseToBinSrc>
       (GstParseToBinSrc::switcher_doc_.get_class_name(),
        &GstParseToBinSrc::switcher_doc_);
   abstract_factory_.register_class<GstVideoParseToBinSrc>
       (GstVideoParseToBinSrc::switcher_doc_.get_class_name(),
        &GstVideoParseToBinSrc::switcher_doc_);
-  abstract_factory_.register_class<HTTPSDP>
-      (HTTPSDP::switcher_doc_.get_class_name(),
-       &HTTPSDP::switcher_doc_);
   abstract_factory_.register_class<HTTPSDPDec>
       (HTTPSDPDec::switcher_doc_.get_class_name(),
        &HTTPSDPDec::switcher_doc_);
