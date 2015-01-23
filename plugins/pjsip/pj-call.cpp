@@ -108,7 +108,6 @@ PJCall::PJCall(PJSIP *sip_instance):
 
   /* Init calls */
   for (unsigned i = 0; i < max_calls; ++i) {
-    call[i].index = i;
     call[i].media_count = 0;
   }
   /* Init media transport for all calls. */
@@ -119,7 +118,6 @@ PJCall::PJCall(PJSIP *sip_instance):
       /* Repeat binding media socket to next port when fails to bind
        * to current port number.
        */
-      call[i].media[j].call_index = i;
       call[i].media[j].media_index = j;
     }
   }
@@ -254,8 +252,7 @@ void PJCall::on_inv_state_disconnected(struct call *call,
                                        pjsip_inv_session *inv,
                                        pjsua_buddy_id id) {
     // pj_time_val null_time = {0, 0};
-    g_debug("Call #%d disconnected. Reason=%d (%.*s)",
-            call->index,
+    g_debug("Call disconnected. Reason=%d (%.*s)",
             inv->cause,
             static_cast<int>(inv->cause_text.slen),
             inv->cause_text.ptr);
@@ -270,9 +267,7 @@ void PJCall::on_inv_state_disconnected(struct call *call,
         if(!PJSIP::this_->sip_calls_->manager_->
            remove(call->peer_uri
                   + "-"
-                  + std::to_string(current_media->call_index)
-                  + "-"
-                  + std::to_string(current_media->media_index)))
+                  + std::to_string(i)))
           g_warning("decodebin not removed from sip call");
       }
       // updating call status in the tree
@@ -298,7 +293,7 @@ void PJCall::on_inv_state_confirmed(struct call *call,
       call->response_time = call->connect_time;
     t = call->connect_time;
     PJ_TIME_VAL_SUB(t, call->start_time);
-    g_debug("Call #%d connected in %ld ms", call->index,
+    g_debug("Call connected in %ld ms",
             PJ_TIME_VAL_MSEC(t));
     // updating call status in the tree
     data::Tree::ptr tree = PJSIP::this_->
@@ -458,8 +453,6 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
       current_media->shm = std::make_shared<ShmdataAnyWriter>();
       std::string shm_any_name = PJSIP::this_->
           make_file_name(std::string(call->peer_uri, 0, call->peer_uri.find('@'))
-                         + '-'
-                         + std::to_string(call->index)
                          + '-'
                          + std::to_string(i));
       current_media->shm->set_path(shm_any_name.c_str());
@@ -863,8 +856,6 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
     //creating a decodebin for this media stream
     std::string dec_name =
         std::string(strm->call->peer_uri, 0, strm->call->peer_uri.find('@'))
-        + "-"
-        + std::to_string(strm->call_index)
         + "-"
         + std::to_string(strm->media_index);
     PJSIP::this_->sip_calls_->manager_->create("decodebin", dec_name);

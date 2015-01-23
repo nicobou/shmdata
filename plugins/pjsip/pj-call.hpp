@@ -47,7 +47,6 @@ class PJCall {
   /* Media stream created when the call is active. */
   struct call;
   struct media_stream {
-    unsigned call_index {0};                 /* Call owner. */
     unsigned media_index {0};                /* Media index in call. */
     pjmedia_transport *transport {nullptr};  /* To send/recv RTP/RTCP */
     pj_bool_t active {PJ_FALSE};             /* Non-zero if is in call. */
@@ -71,7 +70,6 @@ class PJCall {
    * and only destroyed when the application quits.
    */
   struct call {
-    unsigned index {0};
     pjsip_inv_session *inv {nullptr};
     unsigned media_count {0};
     struct media_stream media[64];
