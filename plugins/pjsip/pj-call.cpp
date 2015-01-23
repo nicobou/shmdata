@@ -218,7 +218,7 @@ pj_bool_t PJCall::on_rx_request(pjsip_rx_data *rdata) {
     return PJ_FALSE;
   /* Respond (statelessly) any non-INVITE requests with 500  */
   if (rdata->msg_info.msg->line.req.method.id != PJSIP_INVITE_METHOD) {
-    return PJ_SUCCESS;
+    return PJ_FALSE;
     // FIXME
     pj_str_t reason;
     pj_cstr(&reason, "Unsupported Operation");
@@ -360,15 +360,19 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event */*e*/) {
   }
   switch (inv->state) {
     case PJSIP_INV_STATE_DISCONNECTED:
+      g_warning("----------- PJSIP_INV_STATE_DISCONNECTED");
     PJCall::on_inv_state_disconnected(call, inv, id);
       break;
     case PJSIP_INV_STATE_CONFIRMED:
-    PJCall::on_inv_state_confirmed(call, inv, id);
+      g_warning("----------- PJSIP_INV_STATE_CONFIRMED");
+      PJCall::on_inv_state_confirmed(call, inv, id);
       break;
     case PJSIP_INV_STATE_EARLY:
-    PJCall::on_inv_state_early(call, inv, id);
+      g_warning("----------- PJSIP_INV_STATE_EARLY");
+      PJCall::on_inv_state_early(call, inv, id);
       break;
     case PJSIP_INV_STATE_CONNECTING:
+      g_warning("----------- PJSIP_INV_STATE_CONNECTING");
       PJCall::on_inv_state_connecting(call, inv, id);
       break;
     case PJSIP_INV_STATE_NULL:
@@ -480,6 +484,9 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
         || PJMEDIA_DIR_CAPTURE_PLAYBACK == current_media->si.dir
         || PJMEDIA_DIR_CAPTURE_RENDER == current_media->si.dir) {
       QuiddityManager::ptr manager = PJSIP::this_->sip_calls_->manager_;
+      g_print("+++++++++++++++++++++++++++++++++++ sending data to %s\n",
+              std::string(remote_sdp->origin.addr.ptr,
+                          remote_sdp->origin.addr.slen).c_str());
       manager->invoke("siprtp",
                       "add_destination",
                       nullptr,
