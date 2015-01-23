@@ -121,10 +121,8 @@ void GstUtils::release_request_pad(GstPad *pad, gpointer user_data) {
 }
 
 void GstUtils::clean_element(GstElement *element) {
-  if (nullptr == element) {
-    g_warning("%s failed (nullptr)", __FUNCTION__);
+  if (nullptr == element)
     return;
-  }
   if (!GST_IS_ELEMENT(element)) {
     g_warning("%s failed (not a gst element)", __FUNCTION__);
     return;
@@ -165,7 +163,7 @@ void GstUtils::clean_element(GstElement *element) {
   }
   if (GST_IS_BIN(gst_element_get_parent(element)))
     gst_bin_remove(GST_BIN(gst_element_get_parent(element)), element);
-  else
+  else if (((GObject *) element)->ref_count > 0)
     gst_object_unref(element);
 }
 
@@ -409,14 +407,15 @@ void GstUtils::gst_element_deleter(GstElement *element) {
     return;
   }
   if (!G_IS_OBJECT(element)) {
-    g_warning("%s is trying to delete a non null ptr but not a GObject",
+    g_warning("%s is trying to delete something not a GObject",
 	      __FUNCTION__);
     return;
   }
     
   // delete if ownership has not been taken by a parent
   if (nullptr == GST_OBJECT_PARENT(element)) {
-    gst_object_unref(element);
+    if (((GObject *) element)->ref_count > 0)
+      gst_object_unref(element);
   } else {
     GstUtils::clean_element(element);
   }
