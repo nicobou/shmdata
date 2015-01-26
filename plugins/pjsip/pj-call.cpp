@@ -248,7 +248,7 @@ void PJCall::on_inv_state_disconnected(struct call *call,
           inv->cause_text.ptr);
   call->inv = nullptr;
   inv->mod_data[mod_siprtp_.id] = nullptr;
-  // removing receiving httpsdpdec
+  // removing the corresponding httpsdpdec
   std::string dec_name = std::string(call->peer_uri, 0, call->peer_uri.find('@'));
   auto shm_keys = PJSIP::this_->sip_calls_->manager_->
       use_tree<std::list<std::string>, const std::string &>(
@@ -258,6 +258,17 @@ void PJCall::on_inv_state_disconnected(struct call *call,
   for (auto &it: shm_keys)
     PJSIP::this_->prune_tree(std::string(".shmdata.writer." + it));
   PJSIP::this_->sip_calls_->manager_->remove(dec_name);
+  // removing destination to siprtp
+  PJSIP::this_->sip_calls_->manager_->
+      invoke("siprtp",
+             "remove_destination",
+             nullptr,
+             { call->peer_uri });
+  // freeing outgoing sdp
+  if (nullptr != call->outgoing_sdp) {
+    g_free(call->outgoing_sdp);
+    call->outgoing_sdp = nullptr;
+  }
   // updating call status in the tree
   data::Tree::ptr tree = PJSIP::this_->
       prune_tree(std::string(".buddy." + std::to_string(id)),
@@ -274,14 +285,7 @@ void PJCall::on_inv_state_disconnected(struct call *call,
 void PJCall::on_inv_state_confirmed(struct call *call,
                                     pjsip_inv_session *inv,
                                     pjsua_buddy_id id) {
-    pj_time_val t;
-    pj_gettimeofday(&call->connect_time);
-    if (call->response_time.sec == 0)
-      call->response_time = call->connect_time;
-    t = call->connect_time;
-    PJ_TIME_VAL_SUB(t, call->start_time);
-    g_debug("Call connected in %ld ms",
-            PJ_TIME_VAL_MSEC(t));
+    g_debug("Call connected");
     // updating call status in the tree
     data::Tree::ptr tree = PJSIP::this_->
         prune_tree(std::string(".buddy." + std::to_string(id)),
@@ -306,8 +310,6 @@ void PJCall::on_inv_state_early(struct call *call,
 void PJCall::on_inv_state_connecting(struct call *call,
                                      pjsip_inv_session *inv,
                                      pjsua_buddy_id id) {
-    if (call->response_time.sec == 0)
-      pj_gettimeofday(&call->response_time);
     // updating call status in the tree
     data::Tree::ptr tree = PJSIP::this_->
         prune_tree(std::string(".buddy." + std::to_string(id)),
@@ -655,8 +657,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   // pjmedia_sdp_neg_get_neg_remote(call->inv->neg, &offer);
   /* Attach call data to invite session */
   call->inv->mod_data[mod_siprtp_.id] = call;
-  /* Mark start of call */
-  pj_gettimeofday(&call->start_time);
   /* Create 200 response . */
   status = pjsip_inv_initial_answer(call->inv, rdata, 200,
                                     nullptr, nullptr, &tdata);
@@ -1271,8 +1271,6 @@ void PJCall::make_call(std::string dst_uri) {
   }
   // Attach call data to invite session
   cur_call->inv->mod_data[mod_siprtp_.id] = cur_call;
-  // Mark start of call
-  pj_gettimeofday(&cur_call->start_time);
   /* Create initial INVITE request.
    * This INVITE request will contain a perfectly good request and
    * an SDP body as well.

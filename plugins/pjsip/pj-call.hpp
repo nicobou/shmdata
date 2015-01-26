@@ -65,9 +65,6 @@ class PJCall {
     pjsip_inv_session *inv {nullptr};
     unsigned media_count {0};
     struct media_stream media[64];
-    pj_time_val start_time {0, 0};
-    pj_time_val response_time {0, 0};
-    pj_time_val connect_time {0, 0};
     std::string peer_uri {};
     gchar *outgoing_sdp {nullptr};
   };
