@@ -47,8 +47,9 @@ class PJCall {
   /* Media stream created when the call is active. */
   struct call;
   struct media_stream {
-    unsigned media_index {0};                /* Media index in call. */
-    pjmedia_transport *transport {nullptr};  /* To send/recv RTP/RTCP */
+    unsigned media_index{0};                /* Media index in call. */
+    pj_uint16_t rtp_port{0};
+    // pjmedia_transport *transport {nullptr};  /* To send/recv RTP/RTCP */
     pj_bool_t active {PJ_FALSE};             /* Non-zero if is in call. */
     pjmedia_stream_info si;                  /* Current stream info: */
     pjmedia_rtp_session out_sess;            /* outgoing RTP session */
@@ -109,25 +110,20 @@ class PJCall {
                                 const std::vector <pjmedia_sdp_media *>&
                                 media_to_receive,
                                 pjmedia_sdp_session **p_sdp);
-  static void on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size);
-  static void on_rx_rtcp(void *user_data, void *pkt, pj_ssize_t size);
-  static
-  pj_status_t parse_SDP_from_incoming_request(pjsip_rx_data *rdata,
-                                              pjmedia_sdp_session *offer);
+  static pj_status_t parse_SDP_from_incoming_request(pjsip_rx_data *rdata,
+                                                     pjmedia_sdp_session *offer);
   static void print_sdp(const pjmedia_sdp_session *local_sdp);
-  static
-  pj_status_t stream_info_from_sdp(pjmedia_stream_info *si,
-                                   pj_pool_t *pool,
-                                   pjmedia_endpt *endpt,
-                                   const pjmedia_sdp_session *local,
-                                   const pjmedia_sdp_session *remote,
-                                   unsigned stream_idx);
-  static
-  pj_status_t get_audio_codec_info_param(pjmedia_stream_info *si,
-                                         pj_pool_t *pool,
-                                         pjmedia_codec_mgr *mgr,
-                                         const pjmedia_sdp_media *local_m,
-                                         const pjmedia_sdp_media *rem_m);
+  static pj_status_t stream_info_from_sdp(pjmedia_stream_info *si,
+                                          pj_pool_t *pool,
+                                          pjmedia_endpt *endpt,
+                                          const pjmedia_sdp_session *local,
+                                          const pjmedia_sdp_session *remote,
+                                          unsigned stream_idx);
+  static pj_status_t get_audio_codec_info_param(pjmedia_stream_info *si,
+                                                pj_pool_t *pool,
+                                                pjmedia_codec_mgr *mgr,
+                                                const pjmedia_sdp_media *local_m,
+                                                const pjmedia_sdp_media *rem_m);
   static void remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
                                     unsigned fmt_pos);
   void make_call(std::string contact_uri);

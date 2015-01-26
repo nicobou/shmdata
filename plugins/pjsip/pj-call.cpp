@@ -189,16 +189,6 @@ PJCall::PJCall(PJSIP *sip_instance):
 }
 
 PJCall::~PJCall() {
-  for (unsigned i = 0; i < max_calls; ++i) {
-    unsigned j;
-    for (j = 0; j < PJ_ARRAY_SIZE(call[0].media); ++j) {
-      struct media_stream *m = &call[i].media[j];
-      if (m->transport) {
-        pjmedia_transport_close(m->transport);
-        m->transport = nullptr;
-      }
-    }
-  }
   if (med_endpt_) {
     pjmedia_endpt_destroy(med_endpt_);
     med_endpt_ = nullptr;
@@ -395,6 +385,7 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
                                   pj_status_t status) {
   const pjmedia_sdp_session *local_sdp, *remote_sdp;
   struct call *call = static_cast<struct call *>(inv->mod_data[mod_siprtp_.id]);
+  bool receiving = false;
   /* Do nothing if media negotiation has failed */
   if (status != PJ_SUCCESS) {
     g_warning("SDP negotiation failed");
@@ -425,50 +416,7 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
         || PJMEDIA_DIR_ENCODING_DECODING == current_media->si.dir
         || PJMEDIA_DIR_CAPTURE_PLAYBACK == current_media->si.dir
         || PJMEDIA_DIR_CAPTURE_RENDER == current_media->si.dir) {
-      // managing rtp with pjsip
-      for (uint attr_i = 0; attr_i < remote_sdp->media[i]->attr_count; attr_i++) {
-        pjmedia_sdp_attr *attr = remote_sdp->media[i]->attr[attr_i];
-        if (0 == std::string(attr->name.ptr, attr->name.slen).compare("fmtp")) {
-          std::string value(attr->value.ptr, attr->value.slen);
-          std::size_t found = value.find_first_of(" ");
-          if (std::string::npos != found ) {
-            // testing if fmtp line is about the considered media fmt
-            if (0 ==
-                std::string(value, 0, found).compare(std::to_string(current_media->si.fmt.pt))) {
-              size_t last_pos = value.length() - (found + 1);
-              current_media->extra_params =
-                  PJCall::make_extra_params(std::string(value, found + 1, last_pos));
-            }
-          }
-        }
-      }
-      pjmedia_rtp_session_init(&current_media->out_sess,
-                               current_media->si.tx_pt, pj_rand());
-      pjmedia_rtp_session_init(&current_media->in_sess,
-                               current_media->si.fmt.pt, 0);
-      // pjmedia_rtcp_init(&current_media->rtcp,
-      // "rtcp", current_media->clock_rate,
-      //          current_media->samples_per_frame, 0);
-      current_media->call = call;
-      current_media->shm = std::make_shared<ShmdataAnyWriter>();
-      std::string shm_any_name = PJSIP::this_->
-          make_file_name(std::string(call->peer_uri, 0, call->peer_uri.find('@'))
-                         + '-'
-                         + std::to_string(i));
-      current_media->shm->set_path(shm_any_name.c_str());
-      g_message("created a new shmdata any writer (%s)",
-                shm_any_name.c_str());
-      status = pjmedia_transport_attach(current_media->transport,
-                                        current_media,  // user_data
-                                        &current_media->si.rem_addr,
-                                        &current_media->si.rem_rtcp,
-                                        sizeof(pj_sockaddr_in),
-                                        &on_rx_rtp,
-                                        &on_rx_rtcp);
-      if (status != PJ_SUCCESS) {
-        g_debug("Error on pjmedia_transport_attach()");
-        return;
-      }
+      receiving = true;
     }  // end receiving
     // send streams
     if (PJMEDIA_DIR_ENCODING == current_media->si.dir
@@ -476,17 +424,17 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
         || PJMEDIA_DIR_ENCODING_DECODING == current_media->si.dir
         || PJMEDIA_DIR_CAPTURE_PLAYBACK == current_media->si.dir
         || PJMEDIA_DIR_CAPTURE_RENDER == current_media->si.dir) {
-      QuiddityManager::ptr manager = PJSIP::this_->sip_calls_->manager_;
-      g_print("+++++++++++++++++++++++++++++++++++ sending data to %s\n",
-              std::string(remote_sdp->origin.addr.ptr,
-                          remote_sdp->origin.addr.slen).c_str());
-      manager->invoke("siprtp",
-                      "add_destination",
-                      nullptr,
-                      { call->peer_uri,
-                            std::string(remote_sdp->origin.addr.ptr,
-                                        remote_sdp->origin.addr.slen)});
-      manager->invoke("siprtp",
+      // g_print("+++++++++++++++++++++++++++++++++++ sending data to %s\n",
+      //         std::string(remote_sdp->origin.addr.ptr,
+      //                     remote_sdp->origin.addr.slen).c_str());
+      PJSIP::this_->sip_calls_->manager_->
+          invoke("siprtp",
+                 "add_destination",
+                 nullptr,
+                 { call->peer_uri,
+                       std::string(remote_sdp->origin.addr.ptr,
+                                   remote_sdp->origin.addr.slen)});
+      PJSIP::this_->sip_calls_->manager_->invoke("siprtp",
                       "add_udp_stream_to_dest",
                       nullptr,
                       { current_media->shm_path_to_send, call->peer_uri,
@@ -497,6 +445,27 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
     }
     current_media->active = PJ_TRUE;
   }  // end iterating media
+  if (receiving) {  // preparing the switcher SDP decoder
+    // getting sdp string
+    char sdpbuf[4096];
+    pj_ssize_t len = pjmedia_sdp_print(local_sdp, sdpbuf, sizeof(sdpbuf));
+    if (len < 1)
+      g_warning("error when converting sdp to string\n");
+    sdpbuf[len] = '\0';
+    // converting to base64
+    gchar *b64sdp = g_base64_encode((const guchar *)sdpbuf, len * sizeof(char) / sizeof(guchar));
+    On_scope_exit{g_free(b64sdp);};
+    std::string dec_name = std::string(call->peer_uri, 0, call->peer_uri.find('@'));
+    PJSIP::this_->sip_calls_->manager_->create("httpsdpdec", dec_name);
+    PJSIP::this_->sip_calls_->manager_->subscribe_signal("signal_subscriber",
+                                                         dec_name,
+                                                         "on-tree-grafted");
+    PJSIP::this_->sip_calls_->manager_->subscribe_signal("signal_subscriber",
+                                                         dec_name,
+                                                         "on-tree-pruned");
+    PJSIP::this_->sip_calls_->manager_->
+        invoke_va(dec_name, "to_shmdata", nullptr, b64sdp, nullptr);
+   }
 }
 
 std::string PJCall::make_extra_params(const std::string &raw_extra_params){
@@ -628,7 +597,8 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       (pj_uint16_t) (PJSIP::this_->sip_calls_->starting_rtp_port_ & 0xFFFE);
   {
     unsigned int j = 0;  // counting media to receive
-    for (unsigned int media_index = 0; media_index < offer->media_count;
+    for (unsigned int media_index = 0;
+         media_index < offer->media_count;
          media_index++) {
       bool recv = false;
       pjmedia_sdp_media *tmp_media = nullptr;
@@ -666,17 +636,8 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
           m->type =
               std::string(offer->media[media_index]->desc.media.ptr,
                           offer->media[media_index]->desc.media.slen);
-          status =
-              pjmedia_transport_udp_create2(med_endpt_,
-                                            "siprtp",
-                                            &PJSIP::this_->sip_calls_->local_addr,
-                                            rtp_port,
-                                            0,
-                                            &m->transport);
-          if (status == PJ_SUCCESS) {
-            rtp_port += 2;
-            break;
-          }
+          m->rtp_port = rtp_port;
+          // FIXME check if port is available
         }
         j++;
       }
@@ -768,12 +729,8 @@ PJCall::create_sdp(pj_pool_t *pool,
       else
         u++;
     }
-    // getting transport info
-    pjmedia_transport_info tpinfo;
-    pjmedia_transport_info_init(&tpinfo);
-    pjmedia_transport_get_info(call->media[i].transport, &tpinfo);
-    sdp_media->desc.port =
-        pj_ntohs(tpinfo.sock_info.rtp_addr_name.ipv4.sin_port);
+    // set port
+    sdp_media->desc.port = call->media[i].rtp_port;
     // put media in answer
     sdp->media[i] = sdp_media;
     sdp->media_count++;
@@ -781,126 +738,6 @@ PJCall::create_sdp(pj_pool_t *pool,
   /* Done */
   *p_sdp = sdp;
   return PJ_SUCCESS;
-}
-
-/*
- * This callback is called by media transport on receipt of RTP packet.
- */
-void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
-  struct media_stream *strm;
-  pj_status_t status;
-  const pjmedia_rtp_hdr *hdr;
-  const void *payload;
-  unsigned payload_len;
-  strm = (struct media_stream *)user_data;
-  /* Discard packet if media is inactive */
-  if (!strm->active)
-    return;
-  /* Check for errors */
-  if (size < 0) {
-    g_debug("RTP recv() error");
-    return;
-  }
-  void *buf = malloc(size);
-  memcpy(buf, pkt, size);
-  /* Decode RTP packet. */
-  status = pjmedia_rtp_decode_rtp(&strm->in_sess,
-                                  buf, static_cast<int>(size),
-                                  &hdr, &payload, &payload_len);
-  /* Update the RTCP session. */
-  // pjmedia_rtcp_rx_rtp(&strm->rtcp, pj_ntohs(hdr->seq),
-  //    pj_ntohl(hdr->ts), payload_len);
-  /* Update RTP session */
-  pjmedia_rtp_session_update(&strm->in_sess, hdr, nullptr);
-  if (!static_cast<bool>(strm->shm))
-    return;
-  if (!strm->shm->started()) {
-    std::string encoding_name(strm->si.fmt.encoding_name.ptr,
-                              strm->si.fmt.encoding_name.slen);
-    std::transform(encoding_name.begin(),
-                   encoding_name.end(),
-                   encoding_name.begin(), (int (*)(int)) std::toupper);
-    // FIXME check for channels in
-    // fmt + all si.param + ssrc + clock-base + seqnum-base
-    std::string data_type("application/x-rtp"
-                          ", media=" + strm->type
-                          + ", clock-rate=" +
-                          std::to_string(strm->si.fmt.clock_rate) +
-                          ", payload=" +
-                          std::to_string(strm->si.fmt.pt) +
-                          ", encoding-name=" + encoding_name
-                          // + ", ssrc=" + std::to_string(strm->in_sess.peer_ssrc) 
-                          // + ", clock-base="
-                          // + std::to_string(strm->in_sess.seq_ctrl.cycles)
-                          // + ", seqnum-base="
-                          // + std::to_string(strm->in_sess.seq_ctrl.base_seq)
-                          );
-    //    g_print("----------- data type %s\n", data_type.c_str());
-    std::string media_label;
-    if (!strm->extra_params.empty()) {
-      data_type.append(std::string(", " + strm->extra_params));
-      std::string label_field("media-label=\"");
-      auto found = strm->extra_params.find(label_field);
-      if (std::string::npos != found) {
-        auto label_begin = found + label_field.size();
-        media_label = std::string(strm->extra_params,
-                                  label_begin,
-                                  strm->extra_params.find('"', label_begin) - label_begin);
-      }
-    }
-    strm->shm->set_data_type(data_type);
-    // application/x-rtp, media=(string)application, clock-rate=(int)90000,
-    // encoding-name=(string)X-GST, ssrc=(uint)4199653519, payload=(int)96,
-    // clock-base=(uint)479267716, seqnum-base=(uint)53946
-    strm->shm->start();
-    //creating a decodebin for this media stream
-    std::string dec_name =
-        std::string(strm->call->peer_uri, 0, strm->call->peer_uri.find('@'))
-        + "-"
-        + std::to_string(strm->media_index);
-    PJSIP::this_->sip_calls_->manager_->create("decodebin", dec_name);
-    PJSIP::this_->sip_calls_->manager_->subscribe_signal("signal_subscriber",
-                                                     dec_name,
-                                                     "on-tree-grafted");
-    PJSIP::this_->sip_calls_->manager_->subscribe_signal("signal_subscriber",
-                                                     dec_name,
-                                                     "on-tree-pruned");
-    if (!media_label.empty())
-      PJSIP::this_->sip_calls_->manager_->
-          set_property(dec_name,
-                       "media-label",
-                       media_label);
-    PJSIP::this_->sip_calls_->manager_->
-        invoke_va(dec_name,
-                  "connect",
-                  nullptr,
-                  strm->shm->get_path().c_str(),
-                  nullptr);
-  }
-  strm->shm->push_data_auto_clock(buf, (size_t) size, free, buf);
-  if (status != PJ_SUCCESS) {
-    g_debug("RTP decode error");
-    return;
-  }
-}
-
-/*
- * This callback is called by media transport on receipt of RTCP packet.
- */
-void PJCall::on_rx_rtcp(void *user_data, void *pkt, pj_ssize_t size) {
-  return;
-  struct media_stream *strm;
-  strm = (struct media_stream *) user_data;
-  /* Discard packet if media is inactive */
-  if (!strm->active)
-    return;
-  /* Check for errors */
-  if (size < 0) {
-    g_warning("Error receiving RTCP packet");
-    return;
-  }
-  /* Update RTCP session */
-  pjmedia_rtcp_rx_rtcp(&strm->rtcp, pkt, size);
 }
 
 void PJCall::print_sdp(const pjmedia_sdp_session *local_sdp) {
