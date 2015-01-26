@@ -242,36 +242,33 @@ void PJCall::on_inv_state_disconnected(struct call *call,
                                        pjsip_inv_session *inv,
                                        pjsua_buddy_id id) {
     // pj_time_val null_time = {0, 0};
-    g_debug("Call disconnected. Reason=%d (%.*s)",
-            inv->cause,
-            static_cast<int>(inv->cause_text.slen),
-            inv->cause_text.ptr);
-    call->inv = nullptr;
-    inv->mod_data[mod_siprtp_.id] = nullptr;
-    // cleaning shmdatas
-    for (uint i = 0; i < call->media_count; i++) {
-      struct media_stream *current_media = &call->media[i];
-      if (current_media->shm) {
-        ShmdataAnyWriter::ptr shm;
-        std::swap(current_media->shm, shm);
-        if(!PJSIP::this_->sip_calls_->manager_->
-           remove(call->peer_uri
-                  + "-"
-                  + std::to_string(i)))
-          g_warning("decodebin not removed from sip call");
-      }
-      // updating call status in the tree
-      data::Tree::ptr tree = PJSIP::this_->
-          prune_tree(std::string(".buddy." + std::to_string(id)),
-                     false);  // do not signal since the branch will be re-grafted
-      if (!tree) {
-        g_warning("cannot find buddy information tree, call status update cancelled");
-        return;
-      }
-      tree->graft(std::string(".call_status."),
-                  data::Tree::make("disconnected"));
-      PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
-    }
+  g_debug("Call disconnected. Reason=%d (%.*s)",
+          inv->cause,
+          static_cast<int>(inv->cause_text.slen),
+          inv->cause_text.ptr);
+  call->inv = nullptr;
+  inv->mod_data[mod_siprtp_.id] = nullptr;
+  // removing receiving httpsdpdec
+  std::string dec_name = std::string(call->peer_uri, 0, call->peer_uri.find('@'));
+  auto shm_keys = PJSIP::this_->sip_calls_->manager_->
+      use_tree<std::list<std::string>, const std::string &>(
+          dec_name,
+          &data::Tree::get_child_keys,
+          std::string(".shmdata.writer."));
+  for (auto &it: shm_keys)
+    PJSIP::this_->prune_tree(std::string(".shmdata.writer." + it));
+  PJSIP::this_->sip_calls_->manager_->remove(dec_name);
+  // updating call status in the tree
+  data::Tree::ptr tree = PJSIP::this_->
+      prune_tree(std::string(".buddy." + std::to_string(id)),
+                 false);  // do not signal since the branch will be re-grafted
+  if (!tree) {
+    g_warning("cannot find buddy information tree, call status update cancelled");
+    return;
+  }
+  tree->graft(std::string(".call_status."),
+              data::Tree::make("disconnected"));
+  PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
 }
 
 void PJCall::on_inv_state_confirmed(struct call *call,
@@ -1087,7 +1084,6 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
     //        break;
     //      }
     //  }
-    //
     //  if (si->tx_pt == 0xFFFF)
     //    return PJMEDIA_EMISSINGRTPMAP;
   }
@@ -1380,25 +1376,16 @@ void PJCall::make_hang_up(std::string contact_uri) {
   pjsip_tx_data *tdata;
   pj_status_t status;
   bool res;
-  // g_print("%s %d\n", __FUNCTION__, __LINE__);
   for (unsigned i = 0; i < max_calls; ++i) {
     if (call[i].inv == nullptr)
       break;
     if (0 == contact_uri.compare(call[i].peer_uri)) {
-      // g_print("----- end session %s %d\n", __FUNCTION__, __LINE__);
       status = pjsip_inv_end_session(call[i].inv, 603, nullptr, &tdata);
-      if (status == PJ_SUCCESS && tdata != nullptr) {
-        // g_print("----- send msg %s %d\n", __FUNCTION__, __LINE__);
+      if (status == PJ_SUCCESS && tdata != nullptr) 
         pjsip_inv_send_msg(call[i].inv, tdata);
-      }
       res = true;
-      // if (nullptr != call[i].outgoing_sdp) {
-      //   g_free(call[i].outgoing_sdp);
-      //   call[i].outgoing_sdp = nullptr;
-      // }
     }
   }
-  // g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!res) 
     g_warning("%s failled", __FUNCTION__);
 }
@@ -1490,8 +1477,10 @@ PJCall::internal_manager_cb(std::string /*subscriber_name */,
         });
     context->sip_instance_->graft_tree(params[0],
                                        data::BasicSerializer::deserialize(stree));
-  } else if (0 == sig_name.compare("on-tree-pruned")) {
+  } else if (0 == sig_name.compare("on-tree-pruned")
+             && 0 == std::string(".shmdata.writer.").compare(std::string(params[0], 0, 16))) {
     context->sip_instance_->prune_tree(params[0]);
+    return;
   }
   g_warning("PJCall::%s unhandled signal (%s)", __FUNCTION__, sig_name.c_str());
 }

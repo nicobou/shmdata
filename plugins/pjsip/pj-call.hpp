@@ -49,22 +49,13 @@ class PJCall {
   struct media_stream {
     unsigned media_index{0};                /* Media index in call. */
     pj_uint16_t rtp_port{0};
-    // pjmedia_transport *transport {nullptr};  /* To send/recv RTP/RTCP */
     pj_bool_t active {PJ_FALSE};             /* Non-zero if is in call. */
     pjmedia_stream_info si;                  /* Current stream info: */
-    pjmedia_rtp_session out_sess;            /* outgoing RTP session */
-    pjmedia_rtp_session in_sess;             /* incoming RTP session */
-    pjmedia_rtcp_session rtcp;               /* incoming RTCP session (for stats). */
     // type + codec param
     std::string type{};                      /* audio, video or appli */
     std::string extra_params{};
-    // shmdata
-    ShmdataAnyWriter::ptr shm{};             /* RTP, FIXME make RTCP shm */
-    struct call *call{nullptr};
     std::string shm_path_to_send {};
-    media_stream(): si(), out_sess(), in_sess(), rtcp() {}
-    media_stream(const media_stream&) = delete;
-    media_stream& operator=(const media_stream&) = delete;
+    media_stream(): si() {}
   };
 
   /* This is a call structure that is created when the application starts
