@@ -414,11 +414,12 @@ RtpSession::remove_destination_wrapped(gpointer nick_name,
 bool RtpSession::remove_destination(std::string nick_name) {
   auto it = destinations_.find(nick_name);
   if (destinations_.end() == it) {
-    g_warning
-        ("RtpSession: destination named %s does not exists, cannot remove",
-         nick_name.c_str());
+    g_warning("RtpSession: destination named %s does not exists, cannot remove",
+              nick_name.c_str());
     return false;
   }
+  for (auto &iter: it->second->get_shmdata())
+    remove_udp_stream_to_dest(iter, nick_name);
   destinations_.erase(it);
   return true;
 }
