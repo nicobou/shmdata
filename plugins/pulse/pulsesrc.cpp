@@ -23,50 +23,30 @@
 #include "switcher/gst-utils.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
-                                     "Pulse Audio Device",
-                                     "audio",
-                                     "Inspecting Devices And Getting Audio From Inputs",
-                                     "LGPL",
-                                     "pulsesrc",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PulseSrc,
+    "Pulse Audio Device",
+    "audio",
+    "Inspecting Devices And Getting Audio From Inputs",
+    "LGPL",
+    "pulsesrc",
+    "Nicolas Bouillot");
 
 PulseSrc::PulseSrc():
-    pulsesrc_(nullptr),
-    capsfilter_(nullptr),
-    pulsesrc_bin_(nullptr),
-    connected_to_pulse_(false),
-    devices_mutex_(),
-    devices_cond_(),
-    custom_props_(new CustomPropertyHelper()),
-    capture_devices_description_spec_(nullptr),
-    capture_devices_description_(nullptr),
-    devices_enum_spec_(nullptr),
-    devices_enum_(),
-    device_(0),
-    pa_glib_mainloop_(nullptr),
-    pa_mainloop_api_(nullptr),
-    pa_context_(nullptr),
-    server_(nullptr),
-    capture_devices_(),
-  quit_mutex_(),
-  quit_cond_() {
+    custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 
 bool PulseSrc::init_gpipe() {
   if (!make_elements())
     return false;
-
   install_property(G_OBJECT(pulsesrc_), "volume", "volume", "Volume");
   install_property(G_OBJECT(pulsesrc_), "mute", "mute", "Mute");
-
   init_startable(this);
   std::unique_lock<std::mutex> lock(devices_mutex_);
   GstUtils::g_idle_add_full_with_context(get_g_main_context(),
                                          G_PRIORITY_DEFAULT_IDLE,
                                          async_get_pulse_devices,
                                          this, nullptr);
-
   capture_devices_description_spec_ =
       custom_props_->make_string_property("devices-json",
                                           "Description of capture devices (json formated)",
@@ -74,11 +54,9 @@ bool PulseSrc::init_gpipe() {
                                           nullptr,
                                           PulseSrc::get_capture_devices_json,
                                           this);
-
   install_property_by_pspec(custom_props_->get_gobject(),
                             capture_devices_description_spec_,
                             "devices-json", "Capture Devices");
-
   // waiting for devices to be updated
   devices_cond_.wait(lock);
   if (!connected_to_pulse_) {
@@ -143,14 +121,10 @@ bool PulseSrc::make_elements() {
     return false;
   if (!GstUtils::make_element("bin", &pulsesrc_bin_))
     return false;
-
   g_object_set(G_OBJECT(pulsesrc_), "client", get_name().c_str(),
                nullptr);
-
   gst_bin_add_many(GST_BIN(pulsesrc_bin_), pulsesrc_, capsfilter_, nullptr);
-
   gst_element_link(pulsesrc_, capsfilter_);
-
   GstPad *src_pad = gst_element_get_static_pad(capsfilter_, "src");
   GstPad *ghost_srcpad = gst_ghost_pad_new(nullptr, src_pad);
   gst_pad_set_active(ghost_srcpad, TRUE);
@@ -160,7 +134,6 @@ bool PulseSrc::make_elements() {
   // uninstall_property ("mute");
   reinstall_property(G_OBJECT(pulsesrc_), "volume", "volume", "Volume");
   reinstall_property(G_OBJECT(pulsesrc_), "mute", "mute", "Mute");
-
   return true;
 }
 
@@ -168,7 +141,6 @@ void
 PulseSrc::pa_context_state_callback(pa_context *pulse_context,
                                     void *user_data) {
   PulseSrc *context = static_cast<PulseSrc *>(user_data);
-
   switch (pa_context_get_state(pulse_context)) {
     case PA_CONTEXT_CONNECTING:
       // g_print ("PA_CONTEXT_CONNECTING\n");
@@ -185,10 +157,8 @@ PulseSrc::pa_context_state_callback(pa_context *pulse_context,
       // pa_operation_unref(pa_context_get_source_info_list(pulse_context,
       //  get_source_info_callback,
       //  nullptr));
-
       pa_context_set_subscribe_callback(pulse_context,
                                         on_pa_event_callback, nullptr);
-
       pa_operation_unref(
           pa_context_subscribe(pulse_context,
                                static_cast<pa_subscription_mask_t>
@@ -203,7 +173,6 @@ PulseSrc::pa_context_state_callback(pa_context *pulse_context,
                                 | PA_SUBSCRIPTION_MASK_CARD),
                                nullptr,  // pa_context_success_cb_t cb,
                                nullptr));  // void *userdata);
-
       break;
     case PA_CONTEXT_TERMINATED:
       {
@@ -222,13 +191,11 @@ PulseSrc::pa_context_state_callback(pa_context *pulse_context,
 void PulseSrc::make_json_description() {
   if (capture_devices_description_ != nullptr)
     g_free(capture_devices_description_);
-
   JSONBuilder::ptr builder(new JSONBuilder());
   builder->reset();
   builder->begin_object();
   builder->set_member_name("capture devices");
   builder->begin_array();
-
   for (auto &it : capture_devices_) {
     builder->begin_object();
     builder->add_string_member("long name", it.description_.c_str());
@@ -240,7 +207,6 @@ void PulseSrc::make_json_description() {
     builder->add_string_member("active port", it.active_port_.c_str());
     builder->end_object();
   }
-
   builder->end_array();
   builder->end_object();
   capture_devices_description_ =
@@ -260,13 +226,11 @@ PulseSrc::get_source_info_callback(pa_context *pulse_context,
             pa_strerror(pa_context_errno(pulse_context)));
     return;
   }
-
   if (is_last) {
     pa_operation *operation =
         pa_context_drain(pulse_context, nullptr, nullptr);
     if (operation)
       pa_operation_unref(operation);
-
     // registering enum for devices
     context->update_capture_device();
     context->devices_enum_spec_ =
@@ -283,15 +247,12 @@ PulseSrc::get_source_info_callback(pa_context *pulse_context,
                                        custom_props_->get_gobject(),
                                        context->devices_enum_spec_,
                                        "device", "Capture Device");
-
     context->make_json_description();
-
     // signal init we are done
     std::unique_lock<std::mutex> lock(context->devices_mutex_);
     context->devices_cond_.notify_all();
     return;
   }
-
   DeviceDescription description;
   switch (i->state) {
     case PA_SOURCE_INIT:
@@ -319,13 +280,11 @@ PulseSrc::get_source_info_callback(pa_context *pulse_context,
       // g_print ("state: SUSPENDED \n");
       break;
   }
-
   description.name_ = i->name;
   if (i->description == nullptr)
     description.description_ = "";
   else
     description.description_ = i->description;
-
   description.sample_format_ =
       pa_sample_format_to_string(i->sample_spec.format);
   gchar *rate = g_strdup_printf("%u", i->sample_spec.rate);
@@ -334,7 +293,6 @@ PulseSrc::get_source_info_callback(pa_context *pulse_context,
   gchar *channels = g_strdup_printf("%u", i->sample_spec.channels);
   description.channels_ = channels;
   g_free(channels);
-
   // g_print ("Name: %s\n"
   //      "Description: %s\n"
   //      " format: %s\n"
@@ -348,7 +306,6 @@ PulseSrc::get_source_info_callback(pa_context *pulse_context,
   //      i->sample_spec.channels//,
   //      // pa_channel_map_snprint(cm, sizeof(cm), &i->channel_map)
   //      );
-
   if (i->ports) {
     pa_source_port_info **p;
     // printf("\tPorts:\n");
@@ -358,16 +315,13 @@ PulseSrc::get_source_info_callback(pa_context *pulse_context,
           ports_.push_back(std::make_pair((*p)->name, (*p)->description));
     }
   }
-
   if (i->active_port) {
     // printf("\tActive Port: %s\n", i->active_port->name);
     description.active_port_ = i->active_port->description;
   }
   else
     description.active_port_ = "n/a";
-
   context->capture_devices_.push_back(description);
-
   // if (i->formats) {
   //   uint8_t j;
   //   printf("\tFormats:\n");
@@ -389,7 +343,6 @@ PulseSrc::on_pa_event_callback(pa_context *pulse_context,
                                pulse_event_type, uint32_t /*index */ ,
                                void *user_data) {
   PulseSrc *context = static_cast<PulseSrc *>(user_data);
-
   if ((pulse_event_type &PA_SUBSCRIPTION_EVENT_FACILITY_MASK) ==
       PA_SUBSCRIPTION_EVENT_SOURCE) {
     if ((pulse_event_type &PA_SUBSCRIPTION_EVENT_TYPE_MASK) ==
@@ -398,7 +351,6 @@ PulseSrc::on_pa_event_callback(pa_context *pulse_context,
       return;
     }
   }
-
   if ((pulse_event_type &PA_SUBSCRIPTION_EVENT_FACILITY_MASK) ==
       PA_SUBSCRIPTION_EVENT_SOURCE) {
     if ((pulse_event_type &PA_SUBSCRIPTION_EVENT_TYPE_MASK) ==
@@ -414,17 +366,14 @@ const gchar *PulseSrc::get_capture_devices_json(void *user_data) {
   if (context->capture_devices_description_ == nullptr)
     context->capture_devices_description_ =
         g_strdup("{ \"capture devices\" : [] }");
-
   return context->capture_devices_description_;
 }
 
 bool PulseSrc::capture_device() {
   make_elements();
-
   g_object_set(G_OBJECT(pulsesrc_),
                "device", capture_devices_.at(device_).name_.c_str(),
                nullptr);
-
   set_raw_audio_element(pulsesrc_bin_);
   return true;
 }
@@ -465,4 +414,5 @@ gint PulseSrc::get_device(void *user_data) {
   PulseSrc *context = static_cast<PulseSrc *>(user_data);
   return context->device_;
 }
-}                               // end of PulseSrc class
+
+}  // namespace switcher
