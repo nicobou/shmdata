@@ -45,23 +45,15 @@ class PJCall {
 
  private:
   /* Media stream created when the call is active. */
-  struct call;
-  struct media_stream {
-    unsigned media_index{0};                /* Media index in call. */
-    pj_uint16_t rtp_port{0};
-    pj_bool_t active {PJ_FALSE};             /* Non-zero if is in call. */
-    pjmedia_stream_info si;                  /* Current stream info: */
-    // type + codec param
-    std::string type{};                      /* audio, video or appli */
-    std::string extra_params{};
+  using media_t = struct media_stream {
+    pj_uint16_t rtp_port{0};  // sending
     std::string shm_path_to_send {};
-    media_stream(): si() {}
   };
 
   /* This is a call structure that is created when the application starts
    * and only destroyed when the application quits.
    */
-  struct call {
+  using call_t = struct call {
     pjsip_inv_session *inv {nullptr};
     unsigned media_count {0};
     struct media_stream media[64];
@@ -74,7 +66,7 @@ class PJCall {
   static pjsip_module mod_siprtp_;
   pj_str_t local_addr {nullptr, 0};
   unsigned max_calls {256};
-  struct call call[MAX_CALLS];
+  call_t call[MAX_CALLS];
   PJSIP *sip_instance_;
   // internal rtp
   QuiddityManager::ptr manager_;

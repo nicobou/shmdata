@@ -110,17 +110,6 @@ PJCall::PJCall(PJSIP *sip_instance):
   for (unsigned i = 0; i < max_calls; ++i) {
     call[i].media_count = 0;
   }
-  /* Init media transport for all calls. */
-  for (unsigned i = 0, count = 0; i < max_calls; ++i, ++count) {
-    unsigned j;
-    /* Create transport for each media in the call */
-    for (j = 0; j < PJ_ARRAY_SIZE(call[0].media); ++j) {
-      /* Repeat binding media socket to next port when fails to bind
-       * to current port number.
-       */
-      call[i].media[j].media_index = j;
-    }
-  }
   // properties and methods for user
   sip_instance_->
       install_method("Call a contact",  // long name
@@ -396,9 +385,8 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
   // g_print ("negotiated LOCAL\n"); print_sdp(local_sdp);
   // g_print("negotiated REMOTE\n"); print_sdp(remote_sdp);
   for (uint i = 0; i < call->media_count; i++) {
-    struct media_stream *current_media;
-    current_media = &call->media[i];
-    status = stream_info_from_sdp(&current_media->si,
+    pjmedia_stream_info si; 
+    status = stream_info_from_sdp(&si,
                                   inv->pool,
                                   med_endpt_,
                                   local_sdp,
@@ -409,20 +397,20 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
       return;
     }
     // testing if receiving
-    if (PJMEDIA_DIR_DECODING == current_media->si.dir
-        || PJMEDIA_DIR_PLAYBACK == current_media->si.dir
-        || PJMEDIA_DIR_RENDER == current_media->si.dir
-        || PJMEDIA_DIR_ENCODING_DECODING == current_media->si.dir
-        || PJMEDIA_DIR_CAPTURE_PLAYBACK == current_media->si.dir
-        || PJMEDIA_DIR_CAPTURE_RENDER == current_media->si.dir) {
+    if (PJMEDIA_DIR_DECODING == si.dir
+        || PJMEDIA_DIR_PLAYBACK == si.dir
+        || PJMEDIA_DIR_RENDER == si.dir
+        || PJMEDIA_DIR_ENCODING_DECODING == si.dir
+        || PJMEDIA_DIR_CAPTURE_PLAYBACK == si.dir
+        || PJMEDIA_DIR_CAPTURE_RENDER == si.dir) {
       receiving = true;
     }  // end receiving
     // send streams
-    if (PJMEDIA_DIR_ENCODING == current_media->si.dir
-        || PJMEDIA_DIR_CAPTURE == current_media->si.dir
-        || PJMEDIA_DIR_ENCODING_DECODING == current_media->si.dir
-        || PJMEDIA_DIR_CAPTURE_PLAYBACK == current_media->si.dir
-        || PJMEDIA_DIR_CAPTURE_RENDER == current_media->si.dir) {
+    if (PJMEDIA_DIR_ENCODING == si.dir
+        || PJMEDIA_DIR_CAPTURE == si.dir
+        || PJMEDIA_DIR_ENCODING_DECODING == si.dir
+        || PJMEDIA_DIR_CAPTURE_PLAYBACK == si.dir
+        || PJMEDIA_DIR_CAPTURE_RENDER == si.dir) {
       // g_print("+++++++++++++++++++++++++++++++++++ sending data to %s\n",
       //         std::string(remote_sdp->origin.addr.ptr,
       //                     remote_sdp->origin.addr.slen).c_str());
@@ -433,16 +421,17 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
                  { call->peer_uri,
                        std::string(remote_sdp->origin.addr.ptr,
                                    remote_sdp->origin.addr.slen)});
-      PJSIP::this_->sip_calls_->manager_->invoke("siprtp",
-                      "add_udp_stream_to_dest",
-                      nullptr,
-                      { current_media->shm_path_to_send, call->peer_uri,
-                            std::to_string(remote_sdp->media[i]->desc.port)});
+      media_t *current_media = &call->media[i];
+      PJSIP::this_->sip_calls_->manager_->
+          invoke("siprtp",
+                 "add_udp_stream_to_dest",
+                 nullptr,
+                 { current_media->shm_path_to_send, call->peer_uri,
+                       std::to_string(remote_sdp->media[i]->desc.port)});
       // g_print("----------- sending data to %s, port %s\n",
       //         call->peer_uri.c_str(),
       //         std::to_string(remote_sdp->media[i]->desc.port).c_str());
     }
-    current_media->active = PJ_TRUE;
   }  // end iterating media
   if (receiving) {  // preparing the switcher SDP decoder
     // getting sdp string
@@ -632,9 +621,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
         call->media_count++;
         for (int retry = 0; retry < 100; ++retry, rtp_port += 2) {
           struct media_stream *m = &call->media[j];
-          m->type =
-              std::string(offer->media[media_index]->desc.media.ptr,
-                          offer->media[media_index]->desc.media.slen);
           m->rtp_port = rtp_port;
           // FIXME check if port is available
         }
