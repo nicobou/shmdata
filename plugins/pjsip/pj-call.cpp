@@ -222,7 +222,7 @@ void PJCall::init_app() {
   local_addr = pj_str(ip_addr);
 }
 
-void PJCall::on_inv_state_disconnected(struct call *call,
+void PJCall::on_inv_state_disconnected(call_t *call,
                                        pjsip_inv_session *inv,
                                        pjsua_buddy_id id) {
     // pj_time_val null_time = {0, 0};
@@ -230,7 +230,6 @@ void PJCall::on_inv_state_disconnected(struct call *call,
           inv->cause,
           static_cast<int>(inv->cause_text.slen),
           inv->cause_text.ptr);
-  call->inv = nullptr;
   inv->mod_data[mod_siprtp_.id] = nullptr;
   // removing the corresponding httpsdpdec
   std::string dec_name = std::string(call->peer_uri, 0, call->peer_uri.find('@'));
@@ -264,9 +263,16 @@ void PJCall::on_inv_state_disconnected(struct call *call,
   tree->graft(std::string(".call_status."),
               data::Tree::make("disconnected"));
   PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
+  auto it =
+  std::find_if(PJSIP::this_->sip_calls_->call.begin(),
+               PJSIP::this_->sip_calls_->call.end(),
+               [&call](const call_t &c){
+                 return c.inv == call->inv;
+               });
+  PJSIP::this_->sip_calls_->call.erase(it);
 }
 
-void PJCall::on_inv_state_confirmed(struct call *call,
+void PJCall::on_inv_state_confirmed(call_t *call,
                                     pjsip_inv_session *inv,
                                     pjsua_buddy_id id) {
     g_debug("Call connected");
@@ -285,13 +291,13 @@ void PJCall::on_inv_state_confirmed(struct call *call,
 }
 
 
-void PJCall::on_inv_state_early(struct call *call,
+void PJCall::on_inv_state_early(call_t *call,
                                 pjsip_inv_session *inv,
                                 pjsua_buddy_id id) {
   PJCall::on_inv_state_connecting(call, inv, id);
 }
 
-void PJCall::on_inv_state_connecting(struct call *call,
+void PJCall::on_inv_state_connecting(call_t *call,
                                      pjsip_inv_session *inv,
                                      pjsua_buddy_id id) {
     // updating call status in the tree
@@ -310,7 +316,7 @@ void PJCall::on_inv_state_connecting(struct call *call,
 
 /* Callback to be called when invite session's state has changed: */
 void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event */*e*/) {
-  struct call *call = (struct call *) inv->mod_data[mod_siprtp_.id];
+  call_t *call = (call_t *) inv->mod_data[mod_siprtp_.id];
   if (!call) {
     g_warning("%s, null call in invite", __FUNCTION__);
     return;
@@ -367,7 +373,7 @@ void PJCall::call_on_forked(pjsip_inv_session */*inv*/,
 void PJCall::call_on_media_update(pjsip_inv_session *inv,
                                   pj_status_t status) {
   const pjmedia_sdp_session *local_sdp, *remote_sdp;
-  struct call *call = static_cast<struct call *>(inv->mod_data[mod_siprtp_.id]);
+  call_t *call = static_cast<call_t *>(inv->mod_data[mod_siprtp_.id]);
   bool receiving = false;
   /* Do nothing if media negotiation has failed */
   if (status != PJ_SUCCESS) {
@@ -492,14 +498,14 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
                         rdata->msg_info.to->uri, uristr, sizeof(uristr));
   g_print("----------- call to %.*s\n", len, uristr);
   unsigned options;
-  struct call *call;
+  call_t *call;
   pjsip_dialog *dlg;
   pjmedia_sdp_session *sdp;
   pjsip_tx_data *tdata;
   pj_status_t status;
   PJSIP::this_->sip_calls_->call.emplace_back();
   call = &PJSIP::this_->sip_calls_->call.back();
-  call->peer_uri = from_uri;
+  call->peer_uri = std::string(from_uri, 4, std::string::npos);  // do not save 'sip:'
   /* Parse SDP from incoming request and
      verify that we can handle the request. */
   pjmedia_sdp_session *offer = nullptr;
@@ -647,7 +653,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
  */
 pj_status_t
 PJCall::create_sdp(pj_pool_t *pool,
-                   struct call *call,
+                   call_t *call,
                    const std::vector<pjmedia_sdp_media *> &media_to_receive,
                    pjmedia_sdp_session ** p_sdp) {
   pj_time_val tv;
@@ -1176,7 +1182,7 @@ void PJCall::make_call(std::string dst_uri) {
                             );
   pj_cstr(&local_uri,
           local_uri_tmp.c_str());
-  struct call *cur_call = nullptr;
+  call_t *cur_call = nullptr;
   pjsip_dialog *dlg = nullptr;
   pjmedia_sdp_session *sdp = nullptr;
   pjsip_tx_data *tdata = nullptr;
@@ -1264,7 +1270,7 @@ void PJCall::make_call(std::string dst_uri) {
       graft_tree(std::string(".buddy." + std::to_string(id)), tree);
 }
 
-std::string PJCall::create_outgoing_sdp(struct call *call,
+std::string PJCall::create_outgoing_sdp(call_t *call,
                                         std::string dst_uri) {
   pj_str_t contact;
   std::string tmpstr("sip:" + dst_uri);
@@ -1325,15 +1331,20 @@ gboolean PJCall::hang_up(gchar *sip_url, void *user_data) {
     return FALSE;
   }
   PJCall *context = static_cast<PJCall *>(user_data);
-  context->sip_instance_->run_command_sync(std::bind(&PJCall::make_hang_up, 
-						     context,
-						     std::string(sip_url)));
+  context->sip_instance_->
+      run_command_sync(std::bind(&PJCall::make_hang_up, 
+                                 context,
+                                 std::string(sip_url)));
   return TRUE;
 }
 
 void PJCall::make_hang_up(std::string contact_uri) {
   pjsip_tx_data *tdata;
   pj_status_t status;
+  // std::for_each(call.begin(), call.end(),
+  //               [](const call_t &call){
+  //                 g_print ("call with %s\n", call.peer_uri.c_str());
+  //               });
   auto it = std::find_if(call.begin(), call.end(),
                           [&contact_uri](const call_t &call){
                             return 0 == contact_uri.compare(call.peer_uri);
@@ -1345,7 +1356,8 @@ void PJCall::make_hang_up(std::string contact_uri) {
   status = pjsip_inv_end_session(it->inv, 603, nullptr, &tdata);
   if (status == PJ_SUCCESS && tdata != nullptr) 
     pjsip_inv_send_msg(it->inv, tdata);
-  call.erase(it);
+  else
+    g_warning("BYE has not been sent");
 }
 
 gboolean PJCall::attach_shmdata_to_contact(const gchar *shmpath,
