@@ -106,10 +106,6 @@ PJCall::PJCall(PJSIP *sip_instance):
   if (status != PJ_SUCCESS)
     g_warning("Install codecs failed");
 
-  /* Init calls */
-  for (unsigned i = 0; i < max_calls; ++i) {
-    call[i].media_count = 0;
-  }
   // properties and methods for user
   sip_instance_->
       install_method("Call a contact",  // long name
@@ -223,7 +219,6 @@ void PJCall::init_app() {
     pj_ansi_strcpy(ip_addr, addr);
   }
   /* Init defaults */
-  max_calls = 256;
   local_addr = pj_str(ip_addr);
 }
 
@@ -496,25 +491,14 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                         rdata->msg_info.to->uri, uristr, sizeof(uristr));
   g_print("----------- call to %.*s\n", len, uristr);
-  unsigned i, options;
+  unsigned options;
   struct call *call;
   pjsip_dialog *dlg;
   pjmedia_sdp_session *sdp;
   pjsip_tx_data *tdata;
   pj_status_t status;
-  /* Find free call slot */
-  for (i = 0; i < PJSIP::this_->sip_calls_->max_calls; ++i) {
-    if (PJSIP::this_->sip_calls_->call[i].inv == nullptr)
-      break;
-  }
-  if (i == PJSIP::this_->sip_calls_->max_calls) {
-    pj_str_t reason;
-    pj_cstr(&reason, "Too many calls");
-    pjsip_endpt_respond_stateless(PJSIP::this_->sip_endpt_, rdata,
-                                  500, &reason, nullptr, nullptr);
-    return;
-  }
-  call = &PJSIP::this_->sip_calls_->call[i];
+  PJSIP::this_->sip_calls_->call.emplace_back();
+  call = &PJSIP::this_->sip_calls_->call.back();
   call->peer_uri = from_uri;
   /* Parse SDP from incoming request and
      verify that we can handle the request. */
@@ -1192,20 +1176,14 @@ void PJCall::make_call(std::string dst_uri) {
                             );
   pj_cstr(&local_uri,
           local_uri_tmp.c_str());
-  unsigned i;
   struct call *cur_call = nullptr;
   pjsip_dialog *dlg = nullptr;
   pjmedia_sdp_session *sdp = nullptr;
   pjsip_tx_data *tdata = nullptr;
   pj_status_t status;
   // Find unused call slot
-  for (i = 0; i < max_calls; ++i) {
-    if (call[i].inv == nullptr)
-      break;
-  }
-  if (i == max_calls)
-    return;
-  cur_call = &call[i];
+  call.emplace_back();
+  cur_call = &call.back();
   pj_str_t dest_str;
   std::string tmp_dest_uri("sip:"+ dst_uri // + ";transport=tcp"
                            );
@@ -1322,7 +1300,7 @@ std::string PJCall::create_outgoing_sdp(struct call *call,
       g_warning("a media has not been added to the SDP description");
     } else {
       call->media.emplace_back();
-      call->media[call->media_count].shm_path_to_send = it;
+      call->media.back().shm_path_to_send = it;
     }
     port += 2;
   }
@@ -1356,19 +1334,18 @@ gboolean PJCall::hang_up(gchar *sip_url, void *user_data) {
 void PJCall::make_hang_up(std::string contact_uri) {
   pjsip_tx_data *tdata;
   pj_status_t status;
-  bool res;
-  for (unsigned i = 0; i < max_calls; ++i) {
-    if (call[i].inv == nullptr)
-      break;
-    if (0 == contact_uri.compare(call[i].peer_uri)) {
-      status = pjsip_inv_end_session(call[i].inv, 603, nullptr, &tdata);
-      if (status == PJ_SUCCESS && tdata != nullptr) 
-        pjsip_inv_send_msg(call[i].inv, tdata);
-      res = true;
-    }
+  auto it = std::find_if(call.begin(), call.end(),
+                          [&contact_uri](const call_t &call){
+                            return 0 == contact_uri.compare(call.peer_uri);
+                          });
+  if (call.end() == it) {
+    g_warning("no call found with %s", contact_uri.c_str());
+    return;
   }
-  if (!res) 
-    g_warning("%s failled", __FUNCTION__);
+  status = pjsip_inv_end_session(it->inv, 603, nullptr, &tdata);
+  if (status == PJ_SUCCESS && tdata != nullptr) 
+    pjsip_inv_send_msg(it->inv, tdata);
+  call.erase(it);
 }
 
 gboolean PJCall::attach_shmdata_to_contact(const gchar *shmpath,

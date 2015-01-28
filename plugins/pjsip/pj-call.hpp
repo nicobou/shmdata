@@ -55,8 +55,7 @@ class PJCall {
    */
   using call_t = struct call {
     pjsip_inv_session *inv {nullptr};
-    unsigned media_count {0};
-    std::vector<media_t> media;
+    std::vector<media_t> media{};
     std::string peer_uri {};
     gchar *outgoing_sdp {nullptr};
   };
@@ -65,8 +64,7 @@ class PJCall {
   static pjmedia_endpt *med_endpt_;
   static pjsip_module mod_siprtp_;
   pj_str_t local_addr {nullptr, 0};
-  unsigned max_calls {256};
-  call_t call[MAX_CALLS];
+  std::vector<call_t> call;
   PJSIP *sip_instance_;
   // internal rtp
   QuiddityManager::ptr manager_;
