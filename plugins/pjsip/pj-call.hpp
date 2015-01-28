@@ -83,11 +83,11 @@ class PJCall {
                                    pj_status_t status);
   static void process_incoming_call(pjsip_rx_data *rdata);
   void init_app();
-  static pj_status_t create_sdp(pj_pool_t *pool,
-                                struct call *call,
-                                const std::vector <pjmedia_sdp_media *>&
-                                media_to_receive,
-                                pjmedia_sdp_session **p_sdp);
+  static pj_status_t create_sdp_answer(pj_pool_t *pool,
+                                       struct call *call,
+                                       const std::vector <pjmedia_sdp_media *>&
+                                       media_to_receive,
+                                       pjmedia_sdp_session **p_sdp);
   static pj_status_t parse_SDP_from_incoming_request(pjsip_rx_data *rdata,
                                                      pjmedia_sdp_session *offer);
   static void print_sdp(const pjmedia_sdp_session *local_sdp);
@@ -105,7 +105,7 @@ class PJCall {
   static void remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
                                     unsigned fmt_pos);
   void make_call(std::string contact_uri);
-  std::string create_outgoing_sdp(struct call *call, std::string dst_uri);
+  std::string create_outgoing_sdp(call_t *call);
   Quiddity::ptr retrieve_rtp_manager();
   static gboolean call_sip_url(gchar *sip_url, void *user_data);
   static void set_starting_rtp_port(const gint value, void *user_data);

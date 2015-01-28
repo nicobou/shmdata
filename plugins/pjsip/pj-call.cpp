@@ -588,11 +588,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
           pj_cstr(&tmp_media->attr[j]->name, "recvonly");
           recv = true;
         }
-        // g_print("name %.*s, value%.*s\n",
-        //    static_cast<int>(offer->media[media_index]->attr[j]->name.slen),
-        //    offer->media[media_index]->attr[j]->name.ptr,
-        //    static_cast<int>(offer->media[media_index]->attr[j]->value.slen),
-        //    offer->media[media_index]->attr[j]->value.ptr);
       }
       if (recv && nullptr != tmp_media) {
         // adding control stream attribute
@@ -616,7 +611,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
     }
   }
   /* Create SDP */
-  create_sdp(dlg->pool, call, media_to_receive, &sdp);
+  create_sdp_answer(dlg->pool, call, media_to_receive, &sdp);
   /* Create UAS invite session */
   // sdp=nullptr;
   status = pjsip_inv_create_uas(dlg, rdata, sdp, 0, &call->inv);
@@ -652,14 +647,12 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
  * Create SDP session for a call.
  */
 pj_status_t
-PJCall::create_sdp(pj_pool_t *pool,
-                   call_t *call,
-                   const std::vector<pjmedia_sdp_media *> &media_to_receive,
-                   pjmedia_sdp_session ** p_sdp) {
+PJCall::create_sdp_answer(pj_pool_t *pool,
+                          call_t *call,
+                          const std::vector<pjmedia_sdp_media *> &media_to_receive,
+                          pjmedia_sdp_session **p_sdp) {
   pj_time_val tv;
   pjmedia_sdp_session *sdp;
-  // pjmedia_sdp_media *m;
-  // pjmedia_sdp_attr *attr;
   PJ_ASSERT_RETURN(pool && p_sdp, PJ_EINVAL);
   /* Create and initialize basic SDP session */
   sdp =  static_cast<pjmedia_sdp_session *>(
@@ -671,9 +664,6 @@ PJCall::create_sdp(pj_pool_t *pool,
   pj_cstr(&sdp->origin.addr_type, "IP4");
   sdp->origin.addr = *pj_gethostname();  // FIXME this should be IP address
   pj_cstr(&sdp->name, "pjsip");
-  /* Since we only support one media stream at present, put the
-   * SDP connection line in the session level.
-   */
   sdp->conn = static_cast<pjmedia_sdp_conn *>(
       pj_pool_zalloc(pool, sizeof(pjmedia_sdp_conn)));
   pj_cstr(&sdp->conn->net_type, "IN");
@@ -683,7 +673,7 @@ PJCall::create_sdp(pj_pool_t *pool,
   sdp->time.start = sdp->time.stop = 0;
   sdp->attr_count = 0;
   sdp->media_count = 0;
-  for (unsigned i = 0; i < call->media.size(); i++) {
+  for (unsigned i = 0; i < media_to_receive.size(); i++) {
     // getting offer media to receive
     pjmedia_sdp_media *sdp_media = media_to_receive[i];
     for (unsigned u = 0; u < sdp_media->desc.fmt_count;) {
@@ -705,6 +695,8 @@ PJCall::create_sdp(pj_pool_t *pool,
     sdp->media[i] = sdp_media;
     sdp->media_count++;
   }
+  
+  
   /* Done */
   *p_sdp = sdp;
   return PJ_SUCCESS;
@@ -1219,14 +1211,14 @@ void PJCall::make_call(std::string dst_uri) {
                                  &sip_instance_->sip_presence_->cfg_.cred_info[0]);
   cur_call->peer_uri = dst_uri;
   // Create SDP
-  std::string outgoing_sdp = create_outgoing_sdp(cur_call, dst_uri);
+  std::string outgoing_sdp = create_outgoing_sdp(cur_call);
   cur_call->outgoing_sdp = g_strdup(outgoing_sdp.c_str());  // free at hang up
   status = pjmedia_sdp_parse(dlg->pool,
                              cur_call->outgoing_sdp,
                              outgoing_sdp.length(),
                              &sdp);
   if (status != PJ_SUCCESS) {
-    g_warning("pjmedia_sdp_parse FAILLLED");
+    g_warning("pjmedia_sdp_parse FAILLED");
     return;
   }
   // Create the INVITE session.
@@ -1270,14 +1262,13 @@ void PJCall::make_call(std::string dst_uri) {
       graft_tree(std::string(".buddy." + std::to_string(id)), tree);
 }
 
-std::string PJCall::create_outgoing_sdp(call_t *call,
-                                        std::string dst_uri) {
+std::string PJCall::create_outgoing_sdp(call_t *call) {
   pj_str_t contact;
-  std::string tmpstr("sip:" + dst_uri);
+  std::string tmpstr("sip:" + call->peer_uri);
   pj_cstr(&contact, tmpstr.c_str());
   auto id = pjsua_buddy_find(&contact);
   if (PJSUA_INVALID_ID == id) {
-    g_warning("buddy not found: cannot call %s", dst_uri.c_str());
+    g_warning("buddy not found: cannot call %s", call->peer_uri.c_str());
     return std::string();
   }
   SDPDescription desc;
