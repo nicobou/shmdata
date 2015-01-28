@@ -56,7 +56,7 @@ class PJCall {
   using call_t = struct call {
     pjsip_inv_session *inv {nullptr};
     unsigned media_count {0};
-    struct media_stream media[64];
+    std::vector<media_t> media;
     std::string peer_uri {};
     gchar *outgoing_sdp {nullptr};
   };

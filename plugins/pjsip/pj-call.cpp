@@ -384,7 +384,7 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
   pjmedia_sdp_neg_get_active_remote(inv->neg, &remote_sdp);
   // g_print ("negotiated LOCAL\n"); print_sdp(local_sdp);
   // g_print("negotiated REMOTE\n"); print_sdp(remote_sdp);
-  for (uint i = 0; i < call->media_count; i++) {
+  for (uint i = 0; i < call->media.size(); i++) {
     pjmedia_stream_info si; 
     status = stream_info_from_sdp(&si,
                                   inv->pool,
@@ -421,12 +421,11 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
                  { call->peer_uri,
                        std::string(remote_sdp->origin.addr.ptr,
                                    remote_sdp->origin.addr.slen)});
-      media_t *current_media = &call->media[i];
       PJSIP::this_->sip_calls_->manager_->
           invoke("siprtp",
                  "add_udp_stream_to_dest",
                  nullptr,
-                 { current_media->shm_path_to_send, call->peer_uri,
+                 { call->media[i].shm_path_to_send, call->peer_uri,
                        std::to_string(remote_sdp->media[i]->desc.port)});
       // g_print("----------- sending data to %s, port %s\n",
       //         call->peer_uri.c_str(),
@@ -578,7 +577,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
                                  sip_presence_->cfg_.cred_info[0]);
   // checking number of transport to create for receiving
   // and creating transport for receiving data offered
-  call->media_count = 0;
   std::vector<pjmedia_sdp_media *>media_to_receive;
   // FIXME start from last attributed
   pj_uint16_t rtp_port =
@@ -618,10 +616,9 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
         media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool,
                                                            tmp_media));
         // creating transport
-        call->media_count++;
+        call->media.emplace_back();
         for (int retry = 0; retry < 100; ++retry, rtp_port += 2) {
-          struct media_stream *m = &call->media[j];
-          m->rtp_port = rtp_port;
+          call->media[j].rtp_port = rtp_port;
           // FIXME check if port is available
         }
         j++;
@@ -696,7 +693,7 @@ PJCall::create_sdp(pj_pool_t *pool,
   sdp->time.start = sdp->time.stop = 0;
   sdp->attr_count = 0;
   sdp->media_count = 0;
-  for (unsigned i = 0; i < call->media_count; i++) {
+  for (unsigned i = 0; i < call->media.size(); i++) {
     // getting offer media to receive
     pjmedia_sdp_media *sdp_media = media_to_receive[i];
     for (unsigned u = 0; u < sdp_media->desc.fmt_count;) {
@@ -1324,8 +1321,8 @@ std::string PJCall::create_outgoing_sdp(struct call *call,
     if (!desc.add_media(media)) {
       g_warning("a media has not been added to the SDP description");
     } else {
+      call->media.emplace_back();
       call->media[call->media_count].shm_path_to_send = it;
-      call->media_count++;
     }
     port += 2;
   }
