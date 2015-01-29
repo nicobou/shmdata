@@ -28,8 +28,6 @@
 #include "switcher/quiddity-manager.hpp"
 #include "./pj-codec.hpp"
 
-#define MAX_CALLS 1024
-
 namespace switcher {
 class PJSIP;
 
@@ -57,7 +55,6 @@ class PJCall {
     pjsip_inv_session *inv {nullptr};
     std::vector<media_t> media{};
     std::string peer_uri {};
-    gchar *outgoing_sdp {nullptr};
   };
 
  private:
@@ -81,6 +78,8 @@ class PJCall {
   static void call_on_forked(pjsip_inv_session * inv, pjsip_event *e);
   static void call_on_media_update(pjsip_inv_session *inv,
                                    pj_status_t status);
+  static void call_on_rx_offer(pjsip_inv_session *inv,
+                               const pjmedia_sdp_session *offer);
   static void process_incoming_call(pjsip_rx_data *rdata);
   void init_app();
   static pj_status_t create_sdp_answer(pj_pool_t *pool,
@@ -105,7 +104,9 @@ class PJCall {
   static void remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
                                     unsigned fmt_pos);
   void make_call(std::string contact_uri);
-  std::string create_outgoing_sdp(call_t *call);
+  void create_outgoing_sdp(pjsip_dialog *dlg,
+                           call_t *call,
+                           pjmedia_sdp_session **res);
   Quiddity::ptr retrieve_rtp_manager();
   static gboolean call_sip_url(gchar *sip_url, void *user_data);
   static void set_starting_rtp_port(const gint value, void *user_data);

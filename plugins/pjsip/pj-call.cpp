@@ -71,6 +71,7 @@ PJCall::PJCall(PJSIP *sip_instance):
     pjsip_inv_callback inv_cb;
     /* Init the callback for INVITE session: */
     pj_bzero(&inv_cb, sizeof(inv_cb));
+    inv_cb.on_rx_offer = &call_on_rx_offer;
     inv_cb.on_state_changed = &call_on_state_changed;
     inv_cb.on_new_session = &call_on_forked;
     inv_cb.on_media_update = &call_on_media_update;
@@ -247,11 +248,6 @@ void PJCall::on_inv_state_disconnected(call_t *call,
              "remove_destination",
              nullptr,
              { call->peer_uri });
-  // freeing outgoing sdp
-  if (nullptr != call->outgoing_sdp) {
-    g_free(call->outgoing_sdp);
-    call->outgoing_sdp = nullptr;
-  }
   // updating call status in the tree
   data::Tree::ptr tree = PJSIP::this_->
       prune_tree(std::string(".buddy." + std::to_string(id)),
@@ -383,8 +379,8 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
   /* Capture stream definition from the SDP */
   pjmedia_sdp_neg_get_active_local(inv->neg, &local_sdp);
   pjmedia_sdp_neg_get_active_remote(inv->neg, &remote_sdp);
-  // g_print ("negotiated LOCAL\n"); print_sdp(local_sdp);
-  // g_print("negotiated REMOTE\n"); print_sdp(remote_sdp);
+  g_print ("negotiated LOCAL\n"); print_sdp(local_sdp);
+  g_print("negotiated REMOTE\n"); print_sdp(remote_sdp);
   for (uint i = 0; i < call->media.size(); i++) {
     pjmedia_stream_info si; 
     status = stream_info_from_sdp(&si,
@@ -571,47 +567,44 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   // FIXME start from last attributed
   pj_uint16_t rtp_port =
       (pj_uint16_t) (PJSIP::this_->sip_calls_->starting_rtp_port_ & 0xFFFE);
-  {
-    unsigned int j = 0;  // counting media to receive
-    for (unsigned int media_index = 0;
-         media_index < offer->media_count;
-         media_index++) {
-      bool recv = false;
-      pjmedia_sdp_media *tmp_media = nullptr;
-      for (unsigned int j = 0; j < offer->media[media_index]->attr_count; j++) {
-        if (0 == pj_strcmp2(&offer->media[media_index]->attr[j]->name,
-                            "sendrecv")
-            || 0 == pj_strcmp2(&offer->media[media_index]->attr[j]->name,
-                               "sendonly")) {
-          tmp_media = pjmedia_sdp_media_clone(dlg->pool,
-                                              offer->media[media_index]);
-          pj_cstr(&tmp_media->attr[j]->name, "recvonly");
-          recv = true;
-        }
+  unsigned int j = 0;  // counting media to receive
+  for (unsigned int media_index = 0;
+       media_index < offer->media_count;
+       media_index++) {
+    bool recv = false;
+    pjmedia_sdp_media *tmp_media = nullptr;
+    for (unsigned int j = 0; j < offer->media[media_index]->attr_count; j++) {
+      if (0 == pj_strcmp2(&offer->media[media_index]->attr[j]->name,
+                          "sendrecv")
+          || 0 == pj_strcmp2(&offer->media[media_index]->attr[j]->name,
+                             "sendonly")) {
+        tmp_media = pjmedia_sdp_media_clone(dlg->pool,
+                                            offer->media[media_index]);
+        pj_cstr(&tmp_media->attr[j]->name, "recvonly");
+        recv = true;
       }
-      if (recv && nullptr != tmp_media) {
-        // adding control stream attribute
-        pjmedia_sdp_attr *attr =
-            static_cast<pjmedia_sdp_attr *>
-            (pj_pool_zalloc(dlg->pool, sizeof(pjmedia_sdp_attr)));
-        std::string control_stream("control:stream=" + std::to_string(j));
-        pj_strdup2(dlg->pool, &attr->name, control_stream.c_str());
-        tmp_media->attr[tmp_media->attr_count++] = attr;
-        // saving media
-        media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool,
-                                                           tmp_media));
-        // creating transport
-        call->media.emplace_back();
-        for (int retry = 0; retry < 100; ++retry, rtp_port += 2) {
-          call->media[j].rtp_port = rtp_port;
-          // FIXME check if port is available
-        }
-        j++;
-      }
+    }
+    if (recv && nullptr != tmp_media) {
+      // // adding control stream attribute
+      // pjmedia_sdp_attr *attr =
+      //     static_cast<pjmedia_sdp_attr *>
+      //     (pj_pool_zalloc(dlg->pool, sizeof(pjmedia_sdp_attr)));
+      // std::string control_stream("control:stream=" + std::to_string(j));
+      // pj_strdup2(dlg->pool, &attr->name, control_stream.c_str());
+      // tmp_media->attr[tmp_media->attr_count++] = attr;
+      // saving media
+      media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool,
+                                                         tmp_media));
+      // creating transport
+      call->media.emplace_back();
+      call->media[j].rtp_port = rtp_port;
+      rtp_port += 2;
+      j++;
     }
   }
   /* Create SDP */
   create_sdp_answer(dlg->pool, call, media_to_receive, &sdp);
+  //  g_print("================= sdp answer:\n"); print_sdp(sdp);
   /* Create UAS invite session */
   // sdp=nullptr;
   status = pjsip_inv_create_uas(dlg, rdata, sdp, 0, &call->inv);
@@ -621,12 +614,17 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
     pjsip_dlg_send_response(dlg, pjsip_rdata_get_tsx(rdata), tdata);
     return;
   }
-  // const pjmedia_sdp_session *offer = nullptr;
-  // pjmedia_sdp_neg_get_neg_remote(call->inv->neg, &offer);
   /* Attach call data to invite session */
   call->inv->mod_data[mod_siprtp_.id] = call;
-  /* Create 200 response . */
-  status = pjsip_inv_initial_answer(call->inv, rdata, 200,
+
+  // preparing initial answer
+  int initial_answer_code = 200;
+  pjmedia_sdp_session *outgoing_sdp = nullptr;
+  PJSIP::this_->sip_calls_->create_outgoing_sdp(dlg, call, &outgoing_sdp);
+  if (nullptr != outgoing_sdp)  // need to update the session
+    initial_answer_code = 180;
+  /* Create response . */
+  status = pjsip_inv_initial_answer(call->inv, rdata, initial_answer_code,
                                     nullptr, nullptr, &tdata);
   if (status != PJ_SUCCESS) {
     status = pjsip_inv_initial_answer(call->inv, rdata,
@@ -638,19 +636,22 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       pjsip_inv_terminate(call->inv, 500, PJ_FALSE);
     return;
   }
-  /* Send the 200 response. */
+  /* Send the initial response. */
   status = pjsip_inv_send_msg(call->inv, tdata);
   PJ_ASSERT_ON_FAIL(status == PJ_SUCCESS, return);
+
+  // stops if 200 has been sent (no update)
+  if (200 == initial_answer_code)
+    return;
+
+  // send update if needed
 }
 
-/*
- * Create SDP session for a call.
- */
-pj_status_t
-PJCall::create_sdp_answer(pj_pool_t *pool,
-                          call_t *call,
-                          const std::vector<pjmedia_sdp_media *> &media_to_receive,
-                          pjmedia_sdp_session **p_sdp) {
+pj_status_t PJCall::create_sdp_answer(
+    pj_pool_t *pool,
+    call_t *call,
+    const std::vector<pjmedia_sdp_media *> &media_to_receive,
+    pjmedia_sdp_session **p_sdp) {
   pj_time_val tv;
   pjmedia_sdp_session *sdp;
   PJ_ASSERT_RETURN(pool && p_sdp, PJ_EINVAL);
@@ -695,8 +696,35 @@ PJCall::create_sdp_answer(pj_pool_t *pool,
     sdp->media[i] = sdp_media;
     sdp->media_count++;
   }
+  // std::string sdp_str_to_append = PJSIP::this_->sip_calls_->create_outgoing_sdp(call);
+  // char *tmp = g_strdup(sdp_str_to_append.c_str());  // FIXME this is leaking
+  // pjmedia_sdp_session *outgoing_sdp = nullptr;
+  // pj_status_t status = pjmedia_sdp_parse(pool,
+  //                                        tmp,
+  //                                        sdp_str_to_append.length(),
+  //                                        &outgoing_sdp);
   
-  
+  // if (status != PJ_SUCCESS) {
+  //   g_warning("pjmedia_sdp_parse FAILLED in %s"
+  //             "cannot add local streams", __FUNCTION__);
+  // } else {
+  //   for (unsigned int i = 0; i < outgoing_sdp->media_count; i++) {
+  //     // renumbering control:stream attributes
+  //     pjmedia_sdp_attr *attr =
+  //         pjmedia_sdp_attr_find2(outgoing_sdp->attr_count,
+  //                                outgoing_sdp->attr,
+  //                                std::string("control:stream=" + std::to_string(i)).c_str(),
+  //                                nullptr);
+  //     if (nullptr != attr) 
+  //       pj_strdup2(pool,
+  //                  &attr->name,
+  //                  std::string("control:stream=" + std::to_string(sdp->media_count)).c_str());
+  //     else
+  //       g_warning("no control:stream value in local sdp to send");
+  //     sdp->media[sdp->media_count] = outgoing_sdp->media[i];
+  //     sdp->media_count++;
+  //   }
+  // }
   /* Done */
   *p_sdp = sdp;
   return PJ_SUCCESS;
@@ -736,7 +764,7 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
   pj_status_t status;
   /* Validate arguments: */
   PJ_ASSERT_RETURN(pool && si && local && remote, PJ_EINVAL);
-  PJ_ASSERT_RETURN(stream_idx < local->media_count, PJ_EINVAL);
+  PJ_ASSERT_RETURN(stream_idx < local->media_count, PJ_EINVAL); 
   PJ_ASSERT_RETURN(stream_idx < remote->media_count, PJ_EINVAL);
   /* Keep SDP shortcuts */
   local_m = local->media[stream_idx];
@@ -1211,16 +1239,9 @@ void PJCall::make_call(std::string dst_uri) {
                                  &sip_instance_->sip_presence_->cfg_.cred_info[0]);
   cur_call->peer_uri = dst_uri;
   // Create SDP
-  std::string outgoing_sdp = create_outgoing_sdp(cur_call);
-  cur_call->outgoing_sdp = g_strdup(outgoing_sdp.c_str());  // free at hang up
-  status = pjmedia_sdp_parse(dlg->pool,
-                             cur_call->outgoing_sdp,
-                             outgoing_sdp.length(),
-                             &sdp);
-  if (status != PJ_SUCCESS) {
-    g_warning("pjmedia_sdp_parse FAILLED");
-    return;
-  }
+  create_outgoing_sdp(dlg, cur_call, &sdp);
+  if (nullptr == sdp)
+    g_warning("%s failled creating sdp");
   // Create the INVITE session.
   status = pjsip_inv_create_uac(dlg, sdp, 0, &cur_call->inv);
   if (status != PJ_SUCCESS) {
@@ -1262,16 +1283,17 @@ void PJCall::make_call(std::string dst_uri) {
       graft_tree(std::string(".buddy." + std::to_string(id)), tree);
 }
 
-std::string PJCall::create_outgoing_sdp(call_t *call) {
+void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
+                                 call_t *call,
+                                 pjmedia_sdp_session **res) {
   pj_str_t contact;
   std::string tmpstr("sip:" + call->peer_uri);
   pj_cstr(&contact, tmpstr.c_str());
   auto id = pjsua_buddy_find(&contact);
   if (PJSUA_INVALID_ID == id) {
     g_warning("buddy not found: cannot call %s", call->peer_uri.c_str());
-    return std::string();
+    return;
   }
-  SDPDescription desc;
   auto paths = PJSIP::this_->
       tree<std::list<std::string>, const std::string &>(
           &data::Tree::copy_leaf_values,
@@ -1280,6 +1302,9 @@ std::string PJCall::create_outgoing_sdp(call_t *call) {
   //               [&] (const std::string &val){
   //                 g_print("----------------------- %s\n", val.c_str());
   //               });
+  if (paths.empty())
+    return;
+  SDPDescription desc;
   QuiddityManager::ptr manager = PJSIP::this_->sip_calls_->manager_;
   gint port = starting_rtp_port_;
   for (auto &it : paths) {
@@ -1301,7 +1326,20 @@ std::string PJCall::create_outgoing_sdp(call_t *call) {
     }
     port += 2;
   }
-  return desc.get_string();
+  std::string desc_str = desc.get_string();
+  if (desc_str.empty()) {
+    g_warning("%s: empty SDP description");
+    return;
+  }
+  pj_str_t sdp_str;
+  pj_strdup2(dlg->pool, &sdp_str, desc_str.c_str());
+  pj_status_t status = pjmedia_sdp_parse(dlg->pool,
+                                         sdp_str.ptr,
+                                         sdp_str.slen,
+                                         res);
+  if (status != PJ_SUCCESS) {
+    g_warning("pjmedia_sdp_parse FAILLED in %s", __FUNCTION__);
+  }
 }
 
 gboolean PJCall::call_sip_url(gchar *sip_url, void *user_data) {
@@ -1444,6 +1482,14 @@ PJCall::internal_manager_cb(std::string /*subscriber_name */,
     return;
   }
   g_warning("PJCall::%s unhandled signal (%s)", __FUNCTION__, sig_name.c_str());
+}
+
+void PJCall::call_on_rx_offer(pjsip_inv_session *inv,
+                              const pjmedia_sdp_session *offer)
+{
+  g_print("(((((((((((((((((((((((((((begin %s\n", __FUNCTION__);
+  print_sdp(offer);
+  g_print("(((((((((((((((((((((((((((end %s\n", __FUNCTION__);
 }
 
 }  // namespace switcher
