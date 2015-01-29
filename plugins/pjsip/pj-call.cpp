@@ -81,12 +81,13 @@ PJCall::PJCall(PJSIP *sip_instance):
                                            pjsip_inv_usage_instance());
     if (status != PJ_SUCCESS)
       g_warning("unregistering default invite module failed");
-
+    
     /* Initialize invite session module:  */
     status = pjsip_inv_usage_init(sip_instance_->sip_endpt_, &inv_cb);
     if (status != PJ_SUCCESS)
       g_warning("Init invite session module failed");
   }
+  pjsip_100rel_init_module(sip_instance_->sip_endpt_);
   /* Register our module to receive incoming requests. */
   status =
       pjsip_endpt_register_module(sip_instance_->sip_endpt_,
@@ -368,6 +369,12 @@ void PJCall::call_on_forked(pjsip_inv_session */*inv*/,
 /* Callback to be called when SDP negotiation is done in the call: */
 void PJCall::call_on_media_update(pjsip_inv_session *inv,
                                   pj_status_t status) {
+  if (PJSIP::this_->sip_calls_->is_updating_) {
+    g_warning("%s: not creating transport for media since currently updating invite",
+              __FUNCTION__);
+    return;
+  }
+    
   const pjmedia_sdp_session *local_sdp, *remote_sdp;
   call_t *call = static_cast<call_t *>(inv->mod_data[mod_siprtp_.id]);
   bool receiving = false;
@@ -382,32 +389,20 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
   g_print ("negotiated LOCAL\n"); print_sdp(local_sdp);
   g_print("negotiated REMOTE\n"); print_sdp(remote_sdp);
   for (uint i = 0; i < call->media.size(); i++) {
-    pjmedia_stream_info si; 
-    status = stream_info_from_sdp(&si,
-                                  inv->pool,
-                                  med_endpt_,
-                                  local_sdp,
-                                  remote_sdp,
-                                  i);
-    if (status != PJ_SUCCESS) {
-      g_debug("Error geting stream info from sdp");
-      return;
+    if (i >= local_sdp->media_count) {
+      g_warning("%s local SDP negotiation has less media than local SDP, skiping extras",
+                __FUNCTION__);
+      break;
     }
+    const pjmedia_sdp_media *local_m = local_sdp->media[i];;
     // testing if receiving
-    if (PJMEDIA_DIR_DECODING == si.dir
-        || PJMEDIA_DIR_PLAYBACK == si.dir
-        || PJMEDIA_DIR_RENDER == si.dir
-        || PJMEDIA_DIR_ENCODING_DECODING == si.dir
-        || PJMEDIA_DIR_CAPTURE_PLAYBACK == si.dir
-        || PJMEDIA_DIR_CAPTURE_RENDER == si.dir) {
+    if (pjmedia_sdp_media_find_attr2(local_m, "recvonly", nullptr) != nullptr
+        || pjmedia_sdp_media_find_attr2(local_m, "sendrecv", nullptr) != nullptr) {
       receiving = true;
     }  // end receiving
     // send streams
-    if (PJMEDIA_DIR_ENCODING == si.dir
-        || PJMEDIA_DIR_CAPTURE == si.dir
-        || PJMEDIA_DIR_ENCODING_DECODING == si.dir
-        || PJMEDIA_DIR_CAPTURE_PLAYBACK == si.dir
-        || PJMEDIA_DIR_CAPTURE_RENDER == si.dir) {
+    if (pjmedia_sdp_media_find_attr2(local_m, "sendonly", nullptr) != nullptr
+        || pjmedia_sdp_media_find_attr2(local_m, "sendrecv", nullptr) != nullptr) {
       // g_print("+++++++++++++++++++++++++++++++++++ sending data to %s\n",
       //         std::string(remote_sdp->origin.addr.ptr,
       //                     remote_sdp->origin.addr.slen).c_str());
@@ -493,7 +488,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                         rdata->msg_info.to->uri, uristr, sizeof(uristr));
   g_print("----------- call to %.*s\n", len, uristr);
-  unsigned options;
   call_t *call;
   pjsip_dialog *dlg;
   pjmedia_sdp_session *sdp;
@@ -517,8 +511,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
     if (status != PJ_SUCCESS)
       g_warning("Bad SDP in incoming INVITE");
   }
-  // print_sdp(offer);
-  options = 0;
+  unsigned options = 0;
   status = pjsip_inv_verify_request(rdata,
                                     &options,
                                     nullptr,
@@ -526,9 +519,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
                                     PJSIP::this_->sip_endpt_,
                                     &tdata);
   if (status != PJ_SUCCESS) {
-    /*
-     * No we can't handle the incoming INVITE request.
-     */
+    g_warning("%s: can't handle incoming INVITE request", __FUNCTION__);
     if (tdata) {
       pjsip_response_addr res_addr;
       pjsip_get_response_addr(tdata->pool, rdata, &res_addr);
@@ -561,6 +552,8 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
                                  1,
                                  &PJSIP::this_->
                                  sip_presence_->cfg_.cred_info[0]);
+
+
   // checking number of transport to create for receiving
   // and creating transport for receiving data offered
   std::vector<pjmedia_sdp_media *>media_to_receive;
@@ -568,9 +561,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   pj_uint16_t rtp_port =
       (pj_uint16_t) (PJSIP::this_->sip_calls_->starting_rtp_port_ & 0xFFFE);
   unsigned int j = 0;  // counting media to receive
-  for (unsigned int media_index = 0;
-       media_index < offer->media_count;
-       media_index++) {
+  for (unsigned int media_index = 0; media_index < offer->media_count; media_index++) {
     bool recv = false;
     pjmedia_sdp_media *tmp_media = nullptr;
     for (unsigned int j = 0; j < offer->media[media_index]->attr_count; j++) {
@@ -602,11 +593,19 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       j++;
     }
   }
-  /* Create SDP */
+
+  // Create SDP answer
   create_sdp_answer(dlg->pool, call, media_to_receive, &sdp);
-  //  g_print("================= sdp answer:\n"); print_sdp(sdp);
-  /* Create UAS invite session */
-  // sdp=nullptr;
+
+  // preparing initial answer
+  int initial_answer_code = 200;
+  pjmedia_sdp_session *outgoing_sdp = nullptr;
+  PJSIP::this_->sip_calls_->create_outgoing_sdp(dlg, call, &outgoing_sdp);
+  if (nullptr != outgoing_sdp) {  // need to update the session
+    initial_answer_code = 183;
+    PJSIP::this_->sip_calls_->is_updating_ = true;
+  }
+  // Create UAS invite session
   status = pjsip_inv_create_uas(dlg, rdata, sdp, 0, &call->inv);
   if (status != PJ_SUCCESS) {
     g_debug("error creating uas");
@@ -617,12 +616,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   /* Attach call data to invite session */
   call->inv->mod_data[mod_siprtp_.id] = call;
 
-  // preparing initial answer
-  int initial_answer_code = 200;
-  pjmedia_sdp_session *outgoing_sdp = nullptr;
-  PJSIP::this_->sip_calls_->create_outgoing_sdp(dlg, call, &outgoing_sdp);
-  if (nullptr != outgoing_sdp)  // need to update the session
-    initial_answer_code = 180;
   /* Create response . */
   status = pjsip_inv_initial_answer(call->inv, rdata, initial_answer_code,
                                     nullptr, nullptr, &tdata);
@@ -645,6 +638,13 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
     return;
 
   // send update if needed
+  pjsip_tx_data *update_tdata;
+  status = pjsip_inv_update(call->inv, NULL, outgoing_sdp, &update_tdata);
+   if (status != PJ_SUCCESS)
+     g_warning("sip building update FAILLED");
+   status = pjsip_inv_send_msg(call->inv, update_tdata);
+   if (status != PJ_SUCCESS)
+     g_warning("sip sending update FAILLED");
 }
 
 pj_status_t PJCall::create_sdp_answer(
@@ -740,191 +740,6 @@ void PJCall::print_sdp(const pjmedia_sdp_session *local_sdp) {
   }
   sdpbuf1[len1] = '\0';
   g_debug("sdp : \n%s \n\n ", sdpbuf1);
-}
-
-/*
- * Rewrite of pjsip function in order to get more than only audio
- * (Create stream info from SDP media line.)
- */
-pj_status_t
-PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
-                             pj_pool_t *pool,
-                             pjmedia_endpt *endpt,
-                             const pjmedia_sdp_session *local,
-                             const pjmedia_sdp_session *remote,
-                             unsigned stream_idx) {
-  pjmedia_codec_mgr *mgr;
-  const pjmedia_sdp_attr *attr;
-  const pjmedia_sdp_media *local_m;
-  const pjmedia_sdp_media *rem_m;
-  const pjmedia_sdp_conn *local_conn;
-  const pjmedia_sdp_conn *rem_conn;
-  int rem_af, local_af;
-  pj_sockaddr local_addr;
-  pj_status_t status;
-  /* Validate arguments: */
-  PJ_ASSERT_RETURN(pool && si && local && remote, PJ_EINVAL);
-  PJ_ASSERT_RETURN(stream_idx < local->media_count, PJ_EINVAL); 
-  PJ_ASSERT_RETURN(stream_idx < remote->media_count, PJ_EINVAL);
-  /* Keep SDP shortcuts */
-  local_m = local->media[stream_idx];
-  rem_m = remote->media[stream_idx];
-  local_conn = local_m->conn ? local_m->conn : local->conn;
-  if (local_conn == nullptr)
-    return PJMEDIA_SDP_EMISSINGCONN;
-  rem_conn = rem_m->conn ? rem_m->conn : remote->conn;
-  if (rem_conn == nullptr)
-    return PJMEDIA_SDP_EMISSINGCONN;
-  /* Media type must be audio */
-  if (pj_stricmp2(&local_m->desc.media, "audio") == 0)
-    si->type = PJMEDIA_TYPE_AUDIO;
-  else if (pj_stricmp2(&local_m->desc.media, "video") == 0)
-    si->type = PJMEDIA_TYPE_VIDEO;
-  else if (pj_stricmp2(&local_m->desc.media, "application") == 0)
-    si->type = PJMEDIA_TYPE_APPLICATION;
-  else
-    si->type = PJMEDIA_TYPE_UNKNOWN;
-  /* Get codec manager. */
-  mgr = pjmedia_endpt_get_codec_mgr(endpt);
-  /* Reset: */
-  pj_bzero(si, sizeof(*si));
-#if PJMEDIA_HAS_RTCP_XR && PJMEDIA_STREAM_ENABLE_XR
-  /* Set default RTCP XR enabled/disabled */
-  si->rtcp_xr_enabled = PJ_TRUE;
-#endif
-  /* Transport protocol */
-  /* At this point, transport type must be compatible,
-   * the transport instance will do more validation later.
-   */
-  status = pjmedia_sdp_transport_cmp(&rem_m->desc.transport,
-                                     &local_m->desc.transport);
-  if (status != PJ_SUCCESS)
-    return PJMEDIA_SDPNEG_EINVANSTP;
-  if (pj_stricmp2(&local_m->desc.transport, "RTP/AVP") == 0) {
-    si->proto = PJMEDIA_TP_PROTO_RTP_AVP;
-  } else if (pj_stricmp2(&local_m->desc.transport, "RTP/SAVP") == 0) {
-    si->proto = PJMEDIA_TP_PROTO_RTP_SAVP;
-  } else {
-    si->proto = PJMEDIA_TP_PROTO_UNKNOWN;
-    return PJ_SUCCESS;
-  }
-  /* Check address family in remote SDP */
-  rem_af = pj_AF_UNSPEC();
-  if (pj_stricmp2(&rem_conn->net_type, "IN") == 0) {
-    if (pj_stricmp2(&rem_conn->addr_type, "IP4") == 0) {
-      rem_af = pj_AF_INET();
-    } else if (pj_stricmp2(&rem_conn->addr_type, "IP6") == 0) {
-      rem_af = pj_AF_INET6();
-    }
-  }
-  if (rem_af == pj_AF_UNSPEC()) {
-    /* Unsupported address family */
-    return PJ_EAFNOTSUP;
-  }
-  /* Set remote address: */
-  status = pj_sockaddr_init(rem_af, &si->rem_addr, &rem_conn->addr,
-                            rem_m->desc.port);
-  if (status != PJ_SUCCESS) {
-    /* Invalid IP address. */
-    return PJMEDIA_EINVALIDIP;
-  }
-  /* Check address family of local info */
-  local_af = pj_AF_UNSPEC();
-  if (pj_stricmp2(&local_conn->net_type, "IN") == 0) {
-    if (pj_stricmp2(&local_conn->addr_type, "IP4") == 0) {
-      local_af = pj_AF_INET();
-    } else if (pj_stricmp2(&local_conn->addr_type, "IP6") == 0) {
-      local_af = pj_AF_INET6();
-    }
-  }
-  if (local_af == pj_AF_UNSPEC()) {
-    /* Unsupported address family */
-    return PJ_SUCCESS;
-  }
-  /* Set remote address: */
-  status = pj_sockaddr_init(local_af, &local_addr, &local_conn->addr,
-                            local_m->desc.port);
-  if (status != PJ_SUCCESS) {
-    /* Invalid IP address. */
-    return PJMEDIA_EINVALIDIP;
-  }
-  /* Local and remote address family must match */
-  if (local_af != rem_af)
-    return PJ_EAFNOTSUP;
-  /* Media direction: */
-  if (local_m->desc.port == 0 ||
-      pj_sockaddr_has_addr(&local_addr) == PJ_FALSE ||
-      pj_sockaddr_has_addr(&si->rem_addr) == PJ_FALSE ||
-      pjmedia_sdp_media_find_attr2(local_m, "inactive",
-                                   nullptr) != nullptr) {
-    /* Inactive stream. */
-    si->dir = PJMEDIA_DIR_NONE;
-  } else if (pjmedia_sdp_media_find_attr2(local_m, "sendonly", nullptr) !=
-           nullptr) {
-    /* Send only stream. */
-    si->dir = PJMEDIA_DIR_ENCODING;
-  } else if (pjmedia_sdp_media_find_attr2(local_m, "recvonly", nullptr) !=
-           nullptr) {
-    /* Recv only stream. */
-    si->dir = PJMEDIA_DIR_DECODING;
-  } else {
-    /* Send and receive stream. */
-    si->dir = PJMEDIA_DIR_ENCODING_DECODING;
-  }
-  /* No need to do anything else if stream is rejected */
-  if (local_m->desc.port == 0) {
-    return PJ_SUCCESS;
-  }
-  /* If "rtcp" attribute is present in the SDP, set the RTCP address
-   * from that attribute. Otherwise, calculate from RTP address.
-   */
-  attr = pjmedia_sdp_attr_find2(rem_m->attr_count, rem_m->attr,
-                                "rtcp", nullptr);
-  if (attr) {
-    pjmedia_sdp_rtcp_attr rtcp;
-    status = pjmedia_sdp_attr_get_rtcp(attr, &rtcp);
-    if (status == PJ_SUCCESS) {
-      if (rtcp.addr.slen) {
-        status = pj_sockaddr_init(rem_af, &si->rem_rtcp, &rtcp.addr,
-                                  (pj_uint16_t) rtcp.port);
-      } else {
-        pj_sockaddr_init(rem_af, &si->rem_rtcp, nullptr,
-                         (pj_uint16_t) rtcp.port);
-        pj_memcpy(pj_sockaddr_get_addr(&si->rem_rtcp),
-                  pj_sockaddr_get_addr(&si->rem_addr),
-                  pj_sockaddr_get_addr_len(&si->rem_addr));
-      }
-    }
-  }
-  if (!pj_sockaddr_has_addr(&si->rem_rtcp)) {
-    int rtcp_port;
-    pj_memcpy(&si->rem_rtcp, &si->rem_addr, sizeof(pj_sockaddr));
-    rtcp_port = pj_sockaddr_get_port(&si->rem_addr) + 1;
-    pj_sockaddr_set_port(&si->rem_rtcp, (pj_uint16_t) rtcp_port);
-  }
-  /* Get the payload number for receive channel. */
-  /*
-    Previously we used to rely on fmt[0] being the selected codec,
-    but some UA sends telephone-event as fmt[0] and this would
-    cause assert failure below.
-    Thanks Chris Hamilton <chamilton .at. cs.dal.ca> for this patch.
-    // And codec must be numeric!
-    if (!pj_isdigit(*local_m->desc.fmt[0].ptr) ||
-    !pj_isdigit(*rem_m->desc.fmt[0].ptr))
-    {
-    return PJMEDIA_EINVALIDPT;
-    }
-    pt = pj_strtoul(&local_m->desc.fmt[0]);
-    pj_assert(PJMEDIA_RTP_PT_TELEPHONE_EVENTS==0 ||
-    pt != PJMEDIA_RTP_PT_TELEPHONE_EVENTS);
-  */
-  /* Get codec info and param */
-  status = get_audio_codec_info_param(si, pool, mgr, local_m, rem_m);
-  /* Leave SSRC to random. */
-  si->ssrc = pj_rand();
-  /* Set default jitter buffer parameter. */
-  si->jb_init = si->jb_max = si->jb_min_pre = si->jb_max_pre = -1;
-  return status;
 }
 
 /*
@@ -1241,7 +1056,7 @@ void PJCall::make_call(std::string dst_uri) {
   // Create SDP
   create_outgoing_sdp(dlg, cur_call, &sdp);
   if (nullptr == sdp)
-    g_warning("%s failled creating sdp");
+    g_warning("%s failled creating sdp", __FUNCTION__);
   // Create the INVITE session.
   status = pjsip_inv_create_uac(dlg, sdp, 0, &cur_call->inv);
   if (status != PJ_SUCCESS) {
@@ -1328,7 +1143,7 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
   }
   std::string desc_str = desc.get_string();
   if (desc_str.empty()) {
-    g_warning("%s: empty SDP description");
+    g_warning("%s: empty SDP description", __FUNCTION__);
     return;
   }
   pj_str_t sdp_str;

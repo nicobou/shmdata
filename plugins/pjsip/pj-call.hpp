@@ -71,6 +71,7 @@ class PJCall {
   // GParamSpec *rtp_session_name_spec_ {nullptr};
   uint starting_rtp_port_ {18000};
   GParamSpec *starting_rtp_port_spec_ {nullptr};
+  bool is_updating_{false};
   // sip functions
   static pj_bool_t on_rx_request(pjsip_rx_data *rdata);
   static void call_on_state_changed(pjsip_inv_session *inv,
@@ -90,12 +91,6 @@ class PJCall {
   static pj_status_t parse_SDP_from_incoming_request(pjsip_rx_data *rdata,
                                                      pjmedia_sdp_session *offer);
   static void print_sdp(const pjmedia_sdp_session *local_sdp);
-  static pj_status_t stream_info_from_sdp(pjmedia_stream_info *si,
-                                          pj_pool_t *pool,
-                                          pjmedia_endpt *endpt,
-                                          const pjmedia_sdp_session *local,
-                                          const pjmedia_sdp_session *remote,
-                                          unsigned stream_idx);
   static pj_status_t get_audio_codec_info_param(pjmedia_stream_info *si,
                                                 pj_pool_t *pool,
                                                 pjmedia_codec_mgr *mgr,
