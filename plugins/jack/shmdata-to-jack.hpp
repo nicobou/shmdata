@@ -27,6 +27,7 @@
 #include "switcher/custom-property-helper.hpp"
 #include "switcher/unique-gst-element.hpp"
 #include "./jack-client.hpp"
+#include "./audio-resampler.hpp"
 
 namespace switcher {
 class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
@@ -39,7 +40,7 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
 
  private:
   JackClient jack_client_;
-  GstElement *jacksink_{nullptr};
+  GstElement *audiobin_{nullptr};  // FIXME use UGstElem
   GstElement *volume_{nullptr};
   GstElement *fakesink_{nullptr};
   gulong handoff_handler_{0};
@@ -47,6 +48,8 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
   CustomPropertyHelper::ptr custom_props_{};
   std::vector<jack_port_t *> output_ports_{};  // FIXME
   std::mutex output_ports_mutex_{};
+  // jack sample is the time unit, assuming gst pipeline has the same sample rate
+  AudioResampler<jack_nframes_t> resampler_;
   bool init_gpipe() final;
   bool start() final;
   bool stop() final;

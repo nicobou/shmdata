@@ -34,7 +34,7 @@ bool ShmdataToJack::init_gpipe() {
     g_warning("JackClient cannot be instancied");
     return false;
   }
-  if (false == make_elements())
+  if (!make_elements())
     return false;
   init_startable(this);
   install_property(G_OBJECT(volume_), "volume", "volume", "Volume");
@@ -50,7 +50,9 @@ ShmdataToJack::ShmdataToJack(const std::string &name):
 }
 
 int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
-  g_print("coucou");
+  //auto context = static_cast<ShmdataToJack *>(arg);
+  //g_print("jack_process %u\n", jack_frame_time(context->jack_client_.get_raw()));
+  // g_print("coucou");
   return 0;
 }
 void
@@ -59,6 +61,7 @@ ShmdataToJack::on_handoff_cb(GstElement */*object*/,
                              GstPad *pad,
                              gpointer user_data) {
   ShmdataToJack *context = static_cast<ShmdataToJack *>(user_data);
+  auto current_time = jack_frame_time(context->jack_client_.get_raw());
   GstCaps *caps = gst_pad_get_negotiated_caps(pad);
   if (nullptr == caps)
     return;
@@ -73,9 +76,12 @@ ShmdataToJack::on_handoff_cb(GstElement */*object*/,
   // g_print("on handoff, channel number %d\n", channels);
   context->check_output_ports(channels);
   // HERE
-  g_print("audio data buffer %p, size %d\n",
-          GST_BUFFER_DATA(buf),
-          GST_BUFFER_SIZE(buf));
+  g_print("handoff %u\n", current_time);
+  jack_nframes_t duration = GST_BUFFER_SIZE(buf)/4;
+  context->resampler_.set_current_buffer_info(current_time, duration);
+  // g_print("audio data buffer %p, size %d\n",
+  //         GST_BUFFER_DATA(buf),
+  //         GST_BUFFER_SIZE(buf));
 }
 
 void ShmdataToJack::check_output_ports(int channels){
@@ -134,9 +140,9 @@ bool ShmdataToJack::make_elements() {
                                       "handoff",
                                       (GCallback)on_handoff_cb,
                                       this);
-  if (nullptr != jacksink_) 
-    GstUtils::clean_element(jacksink_);
-  jacksink_ = jacksink;
+  if (nullptr != audiobin_) 
+    GstUtils::clean_element(audiobin_);
+  audiobin_ = jacksink;
   volume_ = volume;
   fakesink_ = fakesink;
   return true;
@@ -145,7 +151,7 @@ bool ShmdataToJack::make_elements() {
 bool ShmdataToJack::start() {
   if (false == make_elements())
     return false;
-  set_sink_element(jacksink_);
+  set_sink_element(audiobin_);
   reinstall_property(G_OBJECT(volume_),
                      "volume", "volume", "Volume");
   reinstall_property(G_OBJECT(volume_),
@@ -171,7 +177,7 @@ void ShmdataToJack::on_shmdata_disconnect() {
 void ShmdataToJack::on_shmdata_connect(std::string /* shmdata_sochet_path */ ) {
   if (is_started()) {
     stop();
-    set_sink_element_no_connect(jacksink_);
+    set_sink_element_no_connect(audiobin_);
   }
 }
 

@@ -9,6 +9,8 @@ libswitcherjack_la_SOURCES = \
     shmdata-to-jack.cpp
 
 libswitcherjack_la_include_HEADERS = \
+    audio-resampler.hpp \
+    audio-resampler_spec.hpp \
     jack-client.hpp \
     shmdata-to-jack.hpp
 

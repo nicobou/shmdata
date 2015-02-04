@@ -109,7 +109,7 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement */*object */ ,
   auto caps = gst_pad_get_caps(pad);
   On_scope_exit{gst_caps_unref(caps);};
   auto structure = gst_caps_get_structure(caps, 0);
-  decodebin->set_media_label(gst_structure_get_string (structure, "media_label"));
+  decodebin->set_media_label(gst_structure_get_string (structure, "media-label"));
   decodebin->invoke_with_return<gboolean>(
       std::bind(gst_bin_add, GST_BIN(context->get_bin()), std::placeholders::_1));
   // GstPad *sinkpad = gst_element_get_static_pad (decodebin, "sink");
