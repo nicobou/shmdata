@@ -78,7 +78,7 @@ ShmdataToJack::on_handoff_cb(GstElement */*object*/,
   // HERE
   g_print("handoff %u\n", current_time);
   jack_nframes_t duration = GST_BUFFER_SIZE(buf)/(4*channels);
-  context->drift_observer_.set_current_buffer_info(current_time, duration);
+  context->drift_observer_.set_current_time_info(current_time, duration);
   // g_print("audio data buffer %p, size %d\n",
   //         GST_BUFFER_DATA(buf),
   //         GST_BUFFER_SIZE(buf));

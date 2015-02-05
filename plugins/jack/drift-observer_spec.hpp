@@ -22,7 +22,7 @@
 namespace switcher {
 
 template<typename TimeType>
-TimeType DriftObserver<TimeType>::set_current_buffer_info(
+TimeType DriftObserver<TimeType>::set_current_time_info(
     const TimeType date,
     const TimeType duration){
   if (0 != current_buffer_duration_) {

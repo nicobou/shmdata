@@ -27,9 +27,9 @@ class DriftObserver {
  public:
   DriftObserver() = default;
   ~DriftObserver() = default;
-  // this is returning the duration this buffer should have
-  TimeType set_current_buffer_info(const TimeType date,
-                                   const TimeType duration);
+  // this is returning the duration this duration should have
+  TimeType set_current_time_info(const TimeType date,
+                                 const TimeType duration);
  private:
   TimeType current_buffer_date_{0};
   TimeType current_buffer_duration_{0};
