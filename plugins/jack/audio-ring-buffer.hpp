@@ -17,26 +17,28 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_AUDIO_RESAMPLER_H__
-#define __SWITCHER_AUDIO_RESAMPLER_H__
+#ifndef __SWITCHER_AUDIO_RING_BUFFER_H__
+#define __SWITCHER_AUDIO_RING_BUFFER_H__
 
+#include <atomic>
 
 namespace switcher {
-template<typename TimeType>
-class AudioResampler {
+template<typename SampleType> class AudioRingBuffer {
  public:
-  AudioResampler() = default;
-  ~AudioResampler() = default;
-  // this is returning the duration this buffer should have
-  TimeType set_current_buffer_info(const TimeType date,
-                                   const TimeType duration);
+  explicit AudioRingBuffer(size_t size_in_sample);
+  AudioRingBuffer() = delete;
+  ~AudioRingBuffer() = default;
+  
+  // return the number of sample actually emplaced.
+  size_t emplace(size_t num,
+                 std::function<SampleType(*)(const size_t pos)> sample_factory);
+  
  private:
-  TimeType current_buffer_date_{0};
-  TimeType current_buffer_duration_{0};
-  double ratio_{1};
-  double smoothing_factor_{0.001};
+  std::vector<SampleType> buffer_;
+  const size_t buffer_size_; 
+  std::atomic_ulong available_size_;
 };
 
 }  // namespace switcher
-#include "./audio-resampler_spec.hpp"
+#include "./audio-ring-buffer_spec.hpp"
 #endif

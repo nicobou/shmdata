@@ -77,7 +77,7 @@ ShmdataToJack::on_handoff_cb(GstElement */*object*/,
   context->check_output_ports(channels);
   // HERE
   g_print("handoff %u\n", current_time);
-  jack_nframes_t duration = GST_BUFFER_SIZE(buf)/4;
+  jack_nframes_t duration = GST_BUFFER_SIZE(buf)/(4*channels);
   context->resampler_.set_current_buffer_info(current_time, duration);
   // g_print("audio data buffer %p, size %d\n",
   //         GST_BUFFER_DATA(buf),
@@ -95,7 +95,7 @@ void ShmdataToJack::check_output_ports(int channels){
     for (auto &it: output_ports_)
       jack_port_unregister(cl, it);
     // registering new ports
-    for (int i = 0; i < channels; i++)
+    for (int i = 0; i < channels; ++i)
       output_ports_.emplace_back(
           jack_port_register(cl,
                              std::string("output_" + std::to_string(i)).c_str(),
@@ -121,8 +121,9 @@ bool ShmdataToJack::make_elements() {
     return false;
   }
   g_object_set(G_OBJECT(jacksink), "async-handling", TRUE, nullptr);
-  GstElement *volume = GstUtils::get_first_element_from_factory_name(GST_BIN(jacksink),
-                                                                     "volume");
+  GstElement *volume =
+      GstUtils::get_first_element_from_factory_name(GST_BIN(jacksink),
+                                                    "volume");
   if (nullptr != volume_) {
     GstUtils::apply_property_value(G_OBJECT(volume_),
                                    G_OBJECT(volume),
@@ -134,8 +135,9 @@ bool ShmdataToJack::make_elements() {
   if (handoff_handler_ > 0 && nullptr != fakesink_)
     g_signal_handler_disconnect(G_OBJECT(fakesink_),
                                 handoff_handler_);
-  GstElement *fakesink = GstUtils::get_first_element_from_factory_name(GST_BIN(jacksink),
-                                                                       "fakesink");
+  GstElement *fakesink =
+      GstUtils::get_first_element_from_factory_name(GST_BIN(jacksink),
+                                                    "fakesink");
   handoff_handler_ = g_signal_connect(fakesink,
                                       "handoff",
                                       (GCallback)on_handoff_cb,
@@ -185,4 +187,4 @@ bool ShmdataToJack::can_sink_caps(std::string caps) {
   return GstUtils::can_sink_caps("audioconvert", caps);
 }
 
-}
+}  // namespace switcher

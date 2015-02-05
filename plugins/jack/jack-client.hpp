@@ -25,15 +25,18 @@
 #include "switcher/safe-bool-idiom.hpp"
 
 namespace switcher {
+
+using jack_sample_t = jack_default_audio_sample_t;
+
 class ShmdataToJack;
 class JackClient : public SafeBoolIdiom {
   friend ShmdataToJack;
+
  public:
   explicit JackClient(const char *name);
   JackClient() = delete;
   JackClient(const JackClient &) = delete;
   JackClient &operator=(const JackClient &) = delete;
-
   jack_nframes_t get_sample_rate() const;
   jack_nframes_t get_buffer_size() const;
   void set_jack_process_callback(JackProcessCallback cb,
@@ -52,6 +55,7 @@ class JackClient : public SafeBoolIdiom {
   static void on_jack_shutdown (void *arg);
   static int jack_process (jack_nframes_t nframes, void *arg);
   jack_client_t *get_raw();
+
 };
 
 }  // namespace switcher

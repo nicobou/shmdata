@@ -22,8 +22,9 @@
 namespace switcher {
 
 template<typename TimeType>
-void AudioResampler<TimeType>::set_current_buffer_info(TimeType date,
-                                                       TimeType duration){
+TimeType AudioResampler<TimeType>::set_current_buffer_info(
+    const TimeType date,
+    const TimeType duration){
   if (0 != current_buffer_duration_) {
     double measured_ratio = (double)(date - current_buffer_date_) / current_buffer_duration_;
     if (0.7 < measured_ratio && measured_ratio < 1.3)
@@ -43,9 +44,9 @@ void AudioResampler<TimeType>::set_current_buffer_info(TimeType date,
             << std::endl;
   g_print("ratio   %g\n", ratio_);
 
-  auto res = duration_to_convert/ratio_;
-  // FIXME save remainder for including in next calculation
-  std::cout << "new duration " << tmp << std::endl;
+  auto res = duration/ratio_;
+  // FIXME think about saving the remainder for being included into the next calculation
+  std::cout << "new duration " << res << std::endl;
   return res;
 }
 
