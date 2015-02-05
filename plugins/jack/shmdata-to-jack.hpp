@@ -27,7 +27,7 @@
 #include "switcher/custom-property-helper.hpp"
 #include "switcher/unique-gst-element.hpp"
 #include "./jack-client.hpp"
-#include "./audio-resampler.hpp"
+#include "./drift-observer.hpp"
 #include "./audio-ring-buffer.hpp"
 
 namespace switcher {
@@ -51,7 +51,7 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
   std::mutex output_ports_mutex_{};
   std::vector<AudioRingBuffer<jack_sample_t>> ring_buffers_;  // one per channel
   // jack sample is the time unit, assuming gst pipeline has the same sample rate:
-  AudioResampler<jack_nframes_t> resampler_;
+  DriftObserver<jack_nframes_t> drift_observer_;
   bool init_gpipe() final;
   bool start() final;
   bool stop() final;

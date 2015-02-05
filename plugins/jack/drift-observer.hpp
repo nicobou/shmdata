@@ -17,16 +17,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_AUDIO_RESAMPLER_H__
-#define __SWITCHER_AUDIO_RESAMPLER_H__
+#ifndef __SWITCHER_DRIFT_OBSERVER_H__
+#define __SWITCHER_DRIFT_OBSERVER_H__
 
 
 namespace switcher {
 template<typename TimeType>
-class AudioResampler {
+class DriftObserver {
  public:
-  AudioResampler() = default;
-  ~AudioResampler() = default;
+  DriftObserver() = default;
+  ~DriftObserver() = default;
   // this is returning the duration this buffer should have
   TimeType set_current_buffer_info(const TimeType date,
                                    const TimeType duration);
@@ -38,5 +38,5 @@ class AudioResampler {
 };
 
 }  // namespace switcher
-#include "./audio-resampler_spec.hpp"
+#include "./drift-observer_spec.hpp"
 #endif
