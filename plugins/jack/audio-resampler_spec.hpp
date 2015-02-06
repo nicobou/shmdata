@@ -17,16 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <iostream>
-
 namespace switcher {
 
-template<typename SampleType>
-size_t AudioRingBuffer<SampleType>::emplace(
-    size_t num,
-    std::function<SampleType(*)(const size_t &pos)> sample_getter){
-  
-  return 0;
+template<typename SampleT>
+AudioResampler<SampleT>::AudioResampler(size_t original_size,
+                                        size_t resampled_size):
+    original_size_(original_size),
+    resample_size_(resample_size){  
 }
 
 }  // namespace switcher

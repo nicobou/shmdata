@@ -17,16 +17,28 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <iostream>
+#ifndef __SWITCHER_AUDIO_RESAMPLER_H__
+#define __SWITCHER_AUDIO_RESAMPLER_H__
+
+#include "./audio-ring-buffer.hpp"
 
 namespace switcher {
-
-template<typename SampleType>
-size_t AudioRingBuffer<SampleType>::emplace(
-    size_t num,
-    std::function<SampleType(*)(const size_t &pos)> sample_getter){
+template<typename SampleT>
+class AudioResampler {
+ public:
+  using resample_fun_t = std::function<SampleT(*)(const size_t &pos)>; 
+  template<typename SampleT>
+  bool resample_in_ring_buffer(const size_t num_channels,
+                               resample_fun_t<SampleT> fun);
   
-  return 0;
-}
+  template<typename SampleT>
+  SampleT zero_pole_get_sample(const size_t &pos);
+ private:
+  size_t original_size_;
+  size_t resampled_size_;
+  SampleT samplebuf_[];
+};
 
 }  // namespace switcher
+#include "./audio-resampler_spec.hpp"
+#endif

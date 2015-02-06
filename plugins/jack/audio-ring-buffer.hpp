@@ -31,7 +31,7 @@ template<typename SampleType> class AudioRingBuffer {
   
   // return the number of sample actually emplaced.
   size_t emplace(size_t num,
-                 std::function<SampleType(*)(const size_t pos)> sample_factory);
+                 std::function<SampleType(*)(const size_t &pos)> sample_factory);
   
  private:
   std::vector<SampleType> buffer_;
