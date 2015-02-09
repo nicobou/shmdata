@@ -20,6 +20,7 @@
 #include "switcher/gst-utils.hpp"
 #include "switcher/scope-exit.hpp"
 #include "./shmdata-to-jack.hpp"
+#include "./audio-resampler.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
@@ -50,7 +51,13 @@ ShmdataToJack::ShmdataToJack(const std::string &name):
 }
 
 int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
-  //auto context = static_cast<ShmdataToJack *>(arg);
+  auto context = static_cast<ShmdataToJack *>(arg);
+  for (unsigned int i = 0; i < context->ring_buffers_.size(); ++i) {
+    context->ring_buffers_[i].
+        pop_samples((std::size_t)nframes,
+                    (jack_sample_t *)jack_port_get_buffer(context->output_ports_[i],
+                                                          nframes));
+  }
   //g_print("jack_process %u\n", jack_frame_time(context->jack_client_.get_raw()));
   // g_print("coucou");
   return 0;
@@ -73,15 +80,28 @@ ShmdataToJack::on_handoff_cb(GstElement */*object*/,
       gst_structure_get_value(gst_caps_get_structure(caps, 0),
                               "channels");
   const int channels = g_value_get_int(val);
-  // g_print("on handoff, channel number %d\n", channels);
+  if ((unsigned int)channels != context->ring_buffers_.size()){
+    std::vector<AudioRingBuffer<jack_sample_t>> tmp(channels);
+    std::swap(context->ring_buffers_, tmp);  // FIXME race condition if a reader is active
+  }
   context->check_output_ports(channels);
-  // HERE
-  g_print("handoff %u\n", current_time);
   jack_nframes_t duration = GST_BUFFER_SIZE(buf)/(4*channels);
-  context->drift_observer_.set_current_time_info(current_time, duration);
-  // g_print("audio data buffer %p, size %d\n",
-  //         GST_BUFFER_DATA(buf),
-  //         GST_BUFFER_SIZE(buf));
+  std::size_t new_size =
+      (std::size_t)context->drift_observer_.set_current_time_info(current_time, duration);
+  for (int i = 0; i < channels; ++i) {
+    AudioResampler<jack_sample_t> resample(duration,
+                                           new_size,
+                                           (jack_sample_t *)GST_BUFFER_DATA(buf),
+                                           i + 1);
+    //auto emplaced =
+        context->ring_buffers_[i].put_samples(
+        new_size,
+        [&resample]() {
+          return resample.zero_pole_get_next_sample();
+        });
+    // if (emplaced != new_size)
+      //g_print("overflow of %lu samples", new_size - emplaced);
+  }
 }
 
 void ShmdataToJack::check_output_ports(int channels){

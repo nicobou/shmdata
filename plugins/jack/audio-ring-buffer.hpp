@@ -25,18 +25,18 @@
 namespace switcher {
 template<typename SampleType> class AudioRingBuffer {
  public:
-  explicit AudioRingBuffer(size_t size_in_sample);
-  AudioRingBuffer() = delete;
+  AudioRingBuffer(std::size_t size_in_sample = 96000);
   ~AudioRingBuffer() = default;
-  
-  // return the number of sample actually emplaced.
-  size_t emplace(size_t num,
-                 std::function<SampleType(*)(const size_t &pos)> sample_factory);
-  
+  // put and pop are returning the number of sample actually processed
+  std::size_t put_samples(std::size_t num, std::function<SampleType()> sample_factory);
+  std::size_t pop_samples(std::size_t num, SampleType *dest);
+
  private:
+  const std::size_t buffer_size_; 
   std::vector<SampleType> buffer_;
-  const size_t buffer_size_; 
   std::atomic_ulong available_size_;
+  std::size_t read_{0};
+  std::size_t write_{0};
 };
 
 }  // namespace switcher

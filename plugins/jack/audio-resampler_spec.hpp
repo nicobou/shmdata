@@ -20,10 +20,22 @@
 namespace switcher {
 
 template<typename SampleT>
-AudioResampler<SampleT>::AudioResampler(size_t original_size,
-                                        size_t resampled_size):
+AudioResampler<SampleT>::AudioResampler(std::size_t original_size,
+                                        std::size_t resampled_size,
+                                        const SampleT *samplebuf,
+                                        unsigned int channel_number):
     original_size_(original_size),
-    resample_size_(resample_size){  
+    resampled_size_(resampled_size),
+    ratio_(original_size/resampled_size),
+    channel_number_(channel_number),
+    samplebuf_ (samplebuf){  
+}
+
+template<typename SampleT>
+SampleT AudioResampler<SampleT>::zero_pole_get_next_sample(){
+  std::size_t new_pos = (std::size_t)(ratio_ * (double)cur_pos_);
+  ++cur_pos_;
+  return samplebuf_[new_pos * channel_number_];
 }
 
 }  // namespace switcher

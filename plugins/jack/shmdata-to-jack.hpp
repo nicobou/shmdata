@@ -49,9 +49,9 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
   CustomPropertyHelper::ptr custom_props_{};
   std::vector<jack_port_t *> output_ports_{};  // FIXME
   std::mutex output_ports_mutex_{};
-  std::vector<AudioRingBuffer<jack_sample_t>> ring_buffers_;  // one per channel
+  std::vector<AudioRingBuffer<jack_sample_t>> ring_buffers_{};  // one per channel
   // jack sample is the time unit, assuming gst pipeline has the same sample rate:
-  DriftObserver<jack_nframes_t> drift_observer_;
+  DriftObserver<jack_nframes_t> drift_observer_{};
   bool init_gpipe() final;
   bool start() final;
   bool stop() final;

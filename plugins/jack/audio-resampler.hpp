@@ -26,17 +26,20 @@ namespace switcher {
 template<typename SampleT>
 class AudioResampler {
  public:
-  using resample_fun_t = std::function<SampleT(*)(const size_t &pos)>; 
-  template<typename SampleT>
-  bool resample_in_ring_buffer(const size_t num_channels,
-                               resample_fun_t<SampleT> fun);
-  
-  template<typename SampleT>
-  SampleT zero_pole_get_sample(const size_t &pos);
+  AudioResampler() = delete;
+  explicit AudioResampler(std::size_t original_size,
+                          std::size_t resampled_size,
+                          const SampleT *samplebuf,
+                          unsigned int channel_number = 1);
+  SampleT zero_pole_get_next_sample();
+
  private:
-  size_t original_size_;
-  size_t resampled_size_;
-  SampleT samplebuf_[];
+  std::size_t original_size_;
+  std::size_t resampled_size_;
+  double ratio_;
+  unsigned int channel_number_;
+  const SampleT *samplebuf_;
+  std::size_t cur_pos_{0};
 };
 
 }  // namespace switcher

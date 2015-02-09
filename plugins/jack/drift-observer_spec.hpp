@@ -39,14 +39,14 @@ TimeType DriftObserver<TimeType>::set_current_time_info(
   current_buffer_date_ = date;
   current_buffer_duration_ = duration;
   
-  std::cout << "date " << current_buffer_date_
-            << " duration " << current_buffer_duration_
-            << std::endl;
-  g_print("ratio   %g\n", ratio_);
+  // std::cout << "date " << current_buffer_date_
+  //           << " duration " << current_buffer_duration_
+  //           << std::endl;
+  // g_print("ratio   %g\n", ratio_);
 
   auto res = duration/ratio_;
   // FIXME think about saving the remainder for being included into the next calculation
-  std::cout << "new duration " << res << std::endl;
+  //std::cout << "new duration " << res << std::endl;
   return res;
 }
 
