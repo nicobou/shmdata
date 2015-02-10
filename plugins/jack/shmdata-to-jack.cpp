@@ -53,10 +53,14 @@ ShmdataToJack::ShmdataToJack(const std::string &name):
 int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
   auto context = static_cast<ShmdataToJack *>(arg);
   for (unsigned int i = 0; i < context->ring_buffers_.size(); ++i) {
-    context->ring_buffers_[i].
-        pop_samples((std::size_t)nframes,
-                    (jack_sample_t *)jack_port_get_buffer(context->output_ports_[i],
-                                                          nframes));
+    jack_sample_t *buf = (jack_sample_t *)jack_port_get_buffer(context->output_ports_[i],
+                                                     nframes);
+    auto poped = context->ring_buffers_[i].pop_samples((std::size_t)nframes, buf);
+    if (nframes != poped) {
+      g_print("cannot pop to jack, missing %lu frames\n", nframes - poped);
+      for (unsigned int j = poped; j < nframes; ++j)
+        buf[j] = 0;
+    }
   }
   //g_print("jack_process %u\n", jack_frame_time(context->jack_client_.get_raw()));
   // g_print("coucou");
@@ -85,22 +89,29 @@ ShmdataToJack::on_handoff_cb(GstElement */*object*/,
     std::swap(context->ring_buffers_, tmp);  // FIXME race condition if a reader is active
   }
   context->check_output_ports(channels);
-  jack_nframes_t duration = GST_BUFFER_SIZE(buf)/(4*channels);
+  jack_nframes_t duration = GST_BUFFER_SIZE(buf) / (4 * channels);
   std::size_t new_size =
       (std::size_t)context->drift_observer_.set_current_time_info(current_time, duration);
+  if (duration != new_size) {
+    g_print("duration %u, new size %lu, load is %lu\n",
+            duration,
+            new_size,
+            context->ring_buffers_[0].get_used());
+  }
   for (int i = 0; i < channels; ++i) {
     AudioResampler<jack_sample_t> resample(duration,
                                            new_size,
                                            (jack_sample_t *)GST_BUFFER_DATA(buf),
-                                           i + 1);
-    //auto emplaced =
+                                           i,
+                                           channels);
+    auto emplaced =
         context->ring_buffers_[i].put_samples(
         new_size,
         [&resample]() {
           return resample.zero_pole_get_next_sample();
         });
-    // if (emplaced != new_size)
-      //g_print("overflow of %lu samples", new_size - emplaced);
+    if (emplaced != new_size)
+      g_print("overflow of %lu samples", new_size - emplaced);
   }
 }
 

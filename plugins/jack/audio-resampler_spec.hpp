@@ -23,19 +23,25 @@ template<typename SampleT>
 AudioResampler<SampleT>::AudioResampler(std::size_t original_size,
                                         std::size_t resampled_size,
                                         const SampleT *samplebuf,
-                                        unsigned int channel_number):
+                                        unsigned int channel_number,
+                                        unsigned int number_of_channels):
     original_size_(original_size),
     resampled_size_(resampled_size),
     ratio_(original_size/resampled_size),
     channel_number_(channel_number),
+    number_of_channels_(number_of_channels),
     samplebuf_ (samplebuf){  
 }
 
 template<typename SampleT>
 SampleT AudioResampler<SampleT>::zero_pole_get_next_sample(){
   std::size_t new_pos = (std::size_t)(ratio_ * (double)cur_pos_);
-  ++cur_pos_;
-  return samplebuf_[new_pos * channel_number_];
+  if (cur_pos_ < resampled_size_ - 1)
+    ++cur_pos_;
+  auto sample = samplebuf_[new_pos * number_of_channels_ + channel_number_];
+  // auto sample = samplebuf_[cur_pos_ * channel_number_];
+  //std::cout << sample << std::endl;
+  return sample;
 }
 
 }  // namespace switcher

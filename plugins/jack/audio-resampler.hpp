@@ -30,7 +30,8 @@ class AudioResampler {
   explicit AudioResampler(std::size_t original_size,
                           std::size_t resampled_size,
                           const SampleT *samplebuf,
-                          unsigned int channel_number = 1);
+                          unsigned int channel_number = 0,
+                          unsigned int number_of_channels = 1);
   SampleT zero_pole_get_next_sample();
 
  private:
@@ -38,6 +39,7 @@ class AudioResampler {
   std::size_t resampled_size_;
   double ratio_;
   unsigned int channel_number_;
+  unsigned int number_of_channels_;
   const SampleT *samplebuf_;
   std::size_t cur_pos_{0};
 };

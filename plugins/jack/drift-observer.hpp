@@ -33,8 +33,9 @@ class DriftObserver {
  private:
   TimeType current_buffer_date_{0};
   TimeType current_buffer_duration_{0};
+  double remainder_{0};
   double ratio_{1};
-  double smoothing_factor_{0.001};
+  double smoothing_factor_{0.0001};
 };
 
 }  // namespace switcher
