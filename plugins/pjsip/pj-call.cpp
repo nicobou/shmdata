@@ -428,8 +428,8 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
   /* Capture stream definition from the SDP */
   pjmedia_sdp_neg_get_active_local(inv->neg, &local_sdp);
   pjmedia_sdp_neg_get_active_remote(inv->neg, &remote_sdp);
-  g_print ("negotiated LOCAL\n"); print_sdp(local_sdp);
-  g_print("negotiated REMOTE\n"); print_sdp(remote_sdp);
+  // g_print ("negotiated LOCAL\n"); print_sdp(local_sdp);
+  // g_print("negotiated REMOTE\n"); print_sdp(remote_sdp);
   for (uint i = 0; i < call->media.size(); i++) {
     if (i >= local_sdp->media_count) {
       g_warning("%s local SDP negotiation has less media than local SDP, skiping extras",
