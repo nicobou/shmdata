@@ -61,14 +61,13 @@ class PJCall {
   static pjmedia_endpt *med_endpt_;
   static pjsip_module mod_siprtp_;
   pj_str_t local_addr {nullptr, 0};
-  std::vector<call_t> call;
+  std::vector<call_t> outgoing_call_{};
+  std::vector<call_t> incoming_call_{};
+  std::vector<call_t> call_{};
   PJSIP *sip_instance_;
   // internal rtp
   QuiddityManager::ptr manager_;
   data::Tree::ptr contact_shm_;
-  // external rtp session quidity for sending
-  // std::string rtp_session_name_ {};
-  // GParamSpec *rtp_session_name_spec_ {nullptr};
   uint starting_rtp_port_ {18000};
   GParamSpec *starting_rtp_port_spec_ {nullptr};
   bool is_updating_{false};
@@ -133,6 +132,8 @@ class PJCall {
   static void on_inv_state_connecting(struct call *call,
                                       pjsip_inv_session *inv,
                                       pjsua_buddy_id id);
+  static bool release_incoming_call(call_t *call, pjsua_buddy_id id);
+  static bool release_outgoing_call(call_t *call, pjsua_buddy_id id);
 };
 
 }  // namespace switcher

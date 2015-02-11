@@ -233,6 +233,19 @@ void PJCall::on_inv_state_disconnected(call_t *call,
           static_cast<int>(inv->cause_text.slen),
           inv->cause_text.ptr);
   inv->mod_data[mod_siprtp_.id] = nullptr;
+  if (!release_outgoing_call(call, id))
+    release_incoming_call(call, id);
+}
+
+bool PJCall::release_incoming_call(call_t *call, pjsua_buddy_id id){
+  auto &calls = PJSIP::this_->sip_calls_->incoming_call_;
+  auto it = std::find_if(calls.begin(),
+                         calls.end(),
+                         [&call](const call_t &c){
+                           return c.inv == call->inv;
+                         });
+  if (calls.end() == it)
+    return false;
   // removing the corresponding httpsdpdec
   std::string dec_name = std::string(call->peer_uri, 0, call->peer_uri.find('@'));
   auto shm_keys = PJSIP::this_->sip_calls_->manager_->
@@ -243,6 +256,19 @@ void PJCall::on_inv_state_disconnected(call_t *call,
   for (auto &it: shm_keys)
     PJSIP::this_->prune_tree(std::string(".shmdata.writer." + it));
   PJSIP::this_->sip_calls_->manager_->remove(dec_name);
+ 
+  return true;
+}
+
+bool PJCall::release_outgoing_call(call_t *call, pjsua_buddy_id id){
+  auto &calls = PJSIP::this_->sip_calls_->outgoing_call_;
+  auto it = std::find_if(calls.begin(),
+                         calls.end(),
+                         [&call](const call_t &c){
+                           return c.inv == call->inv;
+                         });
+  if (calls.end() == it)
+    return false;
   // removing destination to siprtp
   PJSIP::this_->sip_calls_->manager_->
       invoke("siprtp",
@@ -255,18 +281,13 @@ void PJCall::on_inv_state_disconnected(call_t *call,
                  false);  // do not signal since the branch will be re-grafted
   if (!tree) {
     g_warning("cannot find buddy information tree, call status update cancelled");
-    return;
+  } else {
+    tree->graft(std::string(".call_status."),
+                data::Tree::make("disconnected"));
+    PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
   }
-  tree->graft(std::string(".call_status."),
-              data::Tree::make("disconnected"));
-  PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
-  auto it =
-  std::find_if(PJSIP::this_->sip_calls_->call.begin(),
-               PJSIP::this_->sip_calls_->call.end(),
-               [&call](const call_t &c){
-                 return c.inv == call->inv;
-               });
-  PJSIP::this_->sip_calls_->call.erase(it);
+  calls.erase(it);
+  return true;
 }
 
 void PJCall::on_inv_state_confirmed(call_t *call,
@@ -493,8 +514,8 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   pjmedia_sdp_session *sdp;
   pjsip_tx_data *tdata;
   pj_status_t status;
-  PJSIP::this_->sip_calls_->call.emplace_back();
-  call = &PJSIP::this_->sip_calls_->call.back();
+  PJSIP::this_->sip_calls_->incoming_call_.emplace_back();
+  call = &PJSIP::this_->sip_calls_->incoming_call_.back();
   call->peer_uri = std::string(from_uri, 4, std::string::npos);  // do not save 'sip:'
   /* Parse SDP from incoming request and
      verify that we can handle the request. */
@@ -1023,8 +1044,8 @@ void PJCall::make_call(std::string dst_uri) {
   pjsip_tx_data *tdata = nullptr;
   pj_status_t status;
   // Find unused call slot
-  call.emplace_back();
-  cur_call = &call.back();
+  outgoing_call_.emplace_back();
+  cur_call = &outgoing_call_.back();
   pj_str_t dest_str;
   std::string tmp_dest_uri("sip:"+ dst_uri // + ";transport=tcp"
                            );
@@ -1189,11 +1210,11 @@ void PJCall::make_hang_up(std::string contact_uri) {
   //               [](const call_t &call){
   //                 g_print ("call with %s\n", call.peer_uri.c_str());
   //               });
-  auto it = std::find_if(call.begin(), call.end(),
+  auto it = std::find_if(outgoing_call_.begin(), outgoing_call_.end(),
                           [&contact_uri](const call_t &call){
                             return 0 == contact_uri.compare(call.peer_uri);
                           });
-  if (call.end() == it) {
+  if (outgoing_call_.end() == it) {
     g_warning("no call found with %s", contact_uri.c_str());
     return;
   }
@@ -1299,12 +1320,12 @@ PJCall::internal_manager_cb(std::string /*subscriber_name */,
   g_warning("PJCall::%s unhandled signal (%s)", __FUNCTION__, sig_name.c_str());
 }
 
-void PJCall::call_on_rx_offer(pjsip_inv_session *inv,
-                              const pjmedia_sdp_session *offer)
+void PJCall::call_on_rx_offer(pjsip_inv_session */*inv*/,
+                              const pjmedia_sdp_session */*offer*/)
 {
-  g_print("(((((((((((((((((((((((((((begin %s\n", __FUNCTION__);
-  print_sdp(offer);
-  g_print("(((((((((((((((((((((((((((end %s\n", __FUNCTION__);
+  // g_print("(((((((((((((((((((((((((((begin %s\n", __FUNCTION__);
+  // print_sdp(offer);
+  // g_print("(((((((((((((((((((((((((((end %s\n", __FUNCTION__);
 }
 
 }  // namespace switcher
