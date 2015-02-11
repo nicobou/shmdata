@@ -70,7 +70,6 @@ class PJCall {
   data::Tree::ptr contact_shm_;
   uint starting_rtp_port_ {18000};
   GParamSpec *starting_rtp_port_spec_ {nullptr};
-  bool is_updating_{false};
   // sip functions
   static pj_bool_t on_rx_request(pjsip_rx_data *rdata);
   static void call_on_state_changed(pjsip_inv_session *inv,
