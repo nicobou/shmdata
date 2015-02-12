@@ -597,7 +597,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   // checking number of transport to create for receiving
   // and creating transport for receiving data offered
   std::vector<pjmedia_sdp_media *>media_to_receive;
-  // FIXME start from last attributed
   auto &rtp_port = PJSIP::this_->sip_calls_->last_attributed_port_;
   unsigned int j = 0;  // counting media to receive
   for (unsigned int media_index = 0; media_index < offer->media_count; media_index++) {
@@ -623,7 +622,12 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
         if (rtp_port > me->starting_rtp_port_ + me->port_range_
             || rtp_port < me->starting_rtp_port_)
           rtp_port = me->starting_rtp_port_;
-      }
+        --counter;
+        }
+        rtp_port += 2;
+        if (rtp_port > me->starting_rtp_port_ + me->port_range_
+            || rtp_port < me->starting_rtp_port_)
+          rtp_port = me->starting_rtp_port_;
       if (0 != counter) {
         // saving media
         media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool, tmp_media));

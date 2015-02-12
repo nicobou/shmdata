@@ -27,7 +27,7 @@
 namespace switcher {
 
 bool PortChecker::is_used(std::uint16_t port){
-  bool res = false;
+  bool res = true;
   struct addrinfo hints;
   memset(&hints, 0, sizeof(struct addrinfo));
   hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
@@ -53,8 +53,7 @@ bool PortChecker::is_used(std::uint16_t port){
     if (sfd == -1)
       continue;
     if (bind(sfd, rp->ai_addr, rp->ai_addrlen) == 0) {
-      res = true;
-      break; /* Success */
+      res = false;
     }
     close(sfd);
   }
