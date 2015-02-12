@@ -618,16 +618,20 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       // finding a free port
       auto &me = PJSIP::this_->sip_calls_;
       unsigned int counter = me->port_range_/2;
-      while (!PortChecker::is_used(rtp_port) || 0 != counter) {
+      while (PortChecker::is_used(rtp_port) && 0 != counter) {
         rtp_port += 2;
         if (rtp_port > me->starting_rtp_port_ + me->port_range_
             || rtp_port < me->starting_rtp_port_)
           rtp_port = me->starting_rtp_port_;
       }
-      // saving media
-      media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool, tmp_media));
-      call->media.emplace_back();
-      call->media[j].rtp_port = rtp_port;
+      if (0 != counter) {
+        // saving media
+        media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool, tmp_media));
+        call->media.emplace_back();
+        call->media[j].rtp_port = rtp_port;
+      } else {
+        g_warning("no free port, media discarded");
+      }
       j++;
     }
   }
