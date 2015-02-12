@@ -26,6 +26,7 @@
 #include "switcher/information-tree.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/information-tree-basic-serializer.hpp"
+#include "switcher/port-checker.hpp"
 #include "./pj-call.hpp"
 #include "./pj-sip.hpp"
 
@@ -614,21 +615,19 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       }
     }
     if (recv && nullptr != tmp_media) {
-      // // adding control stream attribute
-      // pjmedia_sdp_attr *attr =
-      //     static_cast<pjmedia_sdp_attr *>
-      //     (pj_pool_zalloc(dlg->pool, sizeof(pjmedia_sdp_attr)));
-      // std::string control_stream("control:stream=" + std::to_string(j));
-      // pj_strdup2(dlg->pool, &attr->name, control_stream.c_str());
-      // tmp_media->attr[tmp_media->attr_count++] = attr;
+      // finding a free port
+      auto &me = PJSIP::this_->sip_calls_;
+      unsigned int counter = me->port_range_/2;
+      while (!PortChecker::is_used(rtp_port) || 0 != counter) {
+        rtp_port += 2;
+        if (rtp_port > me->starting_rtp_port_ + me->port_range_
+            || rtp_port < me->starting_rtp_port_)
+          rtp_port = me->starting_rtp_port_;
+      }
       // saving media
-      media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool,
-                                                         tmp_media));
-      // creating transport
+      media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool, tmp_media));
       call->media.emplace_back();
-      // FIXME checking the port
       call->media[j].rtp_port = rtp_port;
-      rtp_port += 2;
       j++;
     }
   }
