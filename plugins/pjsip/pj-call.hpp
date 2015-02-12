@@ -19,10 +19,8 @@
 #define PLUGINS_PJSIP_PJ_CALL_H_
 
 #include <pjsua-lib/pjsua.h>
-
 #include <string>
 #include <vector>
-
 #include "switcher/shmdata-any-writer.hpp"
 #include "switcher/rtp-session.hpp"
 #include "switcher/quiddity-manager.hpp"
@@ -30,7 +28,6 @@
 
 namespace switcher {
 class PJSIP;
-
 class PJCall {
   friend PJCodec;
 
@@ -48,9 +45,8 @@ class PJCall {
     std::string shm_path_to_send {};
   };
 
-  /* This is a call structure that is created when the application starts
-   * and only destroyed when the application quits.
-   */
+  // This is a call structure that is created when the application starts
+  // and only destroyed when the application quits.
   using call_t = struct call {
     pjsip_inv_session *inv {nullptr};
     std::vector<media_t> media{};
@@ -68,7 +64,9 @@ class PJCall {
   // internal rtp
   QuiddityManager::ptr manager_;
   data::Tree::ptr contact_shm_;
-  uint starting_rtp_port_ {18000};
+  const uint starting_rtp_port_ {18900};
+  pj_uint16_t last_attributed_port_{18900};  // Must be even
+  uint port_range_{100};
   GParamSpec *starting_rtp_port_spec_ {nullptr};
   // sip functions
   static pj_bool_t on_rx_request(pjsip_rx_data *rdata);

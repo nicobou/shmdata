@@ -194,12 +194,11 @@ pj_bool_t PJCall::on_rx_request(pjsip_rx_data *rdata) {
   /* Respond (statelessly) any non-INVITE requests with 500  */
   if (rdata->msg_info.msg->line.req.method.id != PJSIP_INVITE_METHOD) {
     return PJ_FALSE;
-    // FIXME
-    pj_str_t reason;
-    pj_cstr(&reason, "Unsupported Operation");
-    pjsip_endpt_respond_stateless(rdata->tp_info.transport->endpt,
-                                  rdata, 500, &reason, nullptr, nullptr);
-    return PJ_TRUE;
+    // pj_str_t reason;
+    // pj_cstr(&reason, "Unsupported Operation");
+    // pjsip_endpt_respond_stateless(rdata->tp_info.transport->endpt,
+    //                               rdata, 500, &reason, nullptr, nullptr);
+    // return PJ_TRUE;
   }
   /* Handle incoming INVITE */
   process_incoming_call(rdata);
@@ -294,7 +293,7 @@ bool PJCall::release_outgoing_call(call_t *call, pjsua_buddy_id id){
   if (!tree) {
     g_warning("cannot find buddy information tree, call status update cancelled");
   } else {
-    tree->graft(std::string(".call_status."),
+    tree->graft(std::string(".send_status."),
                 data::Tree::make("disconnected"));
     PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
   }
@@ -322,7 +321,7 @@ void PJCall::on_inv_state_confirmed(call_t *call,
                            return c.inv == call->inv;
                          });
   if (calls.end() != it)
-    tree->graft(std::string(".call_status."), data::Tree::make("calling"));
+    tree->graft(std::string(".send_status."), data::Tree::make("calling"));
   else
     tree->graft(std::string(".recv_status."), data::Tree::make("receiving"));
   PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
@@ -353,7 +352,7 @@ void PJCall::on_inv_state_connecting(call_t *call,
                            return c.inv == call->inv;
                          });
   if (calls.end() != it)    
-    tree->graft(std::string(".call_status."), data::Tree::make("connecting"));
+    tree->graft(std::string(".send_status."), data::Tree::make("connecting"));
   else
     tree->graft(std::string(".recv_status."), data::Tree::make("connecting"));
   PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
@@ -598,8 +597,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   // and creating transport for receiving data offered
   std::vector<pjmedia_sdp_media *>media_to_receive;
   // FIXME start from last attributed
-  pj_uint16_t rtp_port =
-      (pj_uint16_t) (PJSIP::this_->sip_calls_->starting_rtp_port_ & 0xFFFE);
+  auto &rtp_port = PJSIP::this_->sip_calls_->last_attributed_port_;
   unsigned int j = 0;  // counting media to receive
   for (unsigned int media_index = 0; media_index < offer->media_count; media_index++) {
     bool recv = false;
@@ -628,6 +626,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
                                                          tmp_media));
       // creating transport
       call->media.emplace_back();
+      // FIXME checking the port
       call->media[j].rtp_port = rtp_port;
       rtp_port += 2;
       j++;
@@ -716,35 +715,6 @@ pj_status_t PJCall::create_sdp_answer(
     sdp->media[i] = sdp_media;
     sdp->media_count++;
   }
-  // std::string sdp_str_to_append = PJSIP::this_->sip_calls_->create_outgoing_sdp(call);
-  // char *tmp = g_strdup(sdp_str_to_append.c_str());  // FIXME this is leaking
-  // pjmedia_sdp_session *outgoing_sdp = nullptr;
-  // pj_status_t status = pjmedia_sdp_parse(pool,
-  //                                        tmp,
-  //                                        sdp_str_to_append.length(),
-  //                                        &outgoing_sdp);
-  // if (status != PJ_SUCCESS) {
-  //   g_warning("pjmedia_sdp_parse FAILLED in %s"
-  //             "cannot add local streams", __FUNCTION__);
-  // } else {
-  //   for (unsigned int i = 0; i < outgoing_sdp->media_count; i++) {
-  //     // renumbering control:stream attributes
-  //     pjmedia_sdp_attr *attr =
-  //         pjmedia_sdp_attr_find2(outgoing_sdp->attr_count,
-  //                                outgoing_sdp->attr,
-  //                                std::string("control:stream=" + std::to_string(i)).c_str(),
-  //                                nullptr);
-  //     if (nullptr != attr) 
-  //       pj_strdup2(pool,
-  //                  &attr->name,
-  //                  std::string("control:stream=" + std::to_string(sdp->media_count)).c_str());
-  //     else
-  //       g_warning("no control:stream value in local sdp to send");
-  //     sdp->media[sdp->media_count] = outgoing_sdp->media[i];
-  //     sdp->media_count++;
-  //   }
-  // }
-  /* Done */
   *p_sdp = sdp;
   return PJ_SUCCESS;
 }
@@ -990,18 +960,12 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
 void
 PJCall::remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
                               unsigned fmt_pos) {
-  // g_print ("sdp_media->desc.fmt_count %u\n", sdp_media->desc.fmt_count);
   // remove the rtpmap
   pjmedia_sdp_attr *attr;
   attr = pjmedia_sdp_media_find_attr2(sdp_media, "rtpmap",
                                       &sdp_media->desc.fmt[fmt_pos]);
-  if (attr != nullptr) {
+  if (attr != nullptr)
     pjmedia_sdp_attr_remove(&sdp_media->attr_count, sdp_media->attr, attr);
-    // std::string updated_val (attr->value.ptr, attr->value.slen);
-    // updated_val.replace (0,2, std::to_string (pt));
-    // FIXME free following string
-    // pj_strdup2 (pool, &attr->value, updated_val.c_str ());
-  }
   // remove the fmtp line
   attr = pjmedia_sdp_media_find_attr2(sdp_media, "fmtp",
                                       &sdp_media->desc.fmt[fmt_pos]);
@@ -1018,8 +982,6 @@ PJCall::remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
       return (0 == pj_strcmp(&item, &sdp_media->desc.fmt[fmt_pos]));
     });
   sdp_media->desc.fmt_count--;
-  // FIXME free old ptr:
-  // sdp_media->desc.fmt[u].slen = pj_utoa (pt, sdp_media->desc.fmt[u].ptr);
 }
 
 /*
@@ -1111,7 +1073,7 @@ void PJCall::make_call(std::string dst_uri) {
     g_warning("cannot find buddy information tree, call cancelled");
     return;
   }
-  tree->graft(std::string(".call_status."),
+  tree->graft(std::string(".send_status."),
               data::Tree::make("calling"));
   sip_instance_->
       graft_tree(std::string(".buddy." + std::to_string(id)), tree);
