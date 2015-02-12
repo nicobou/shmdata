@@ -110,15 +110,15 @@ PJCall::PJCall(PJSIP *sip_instance):
 
   // properties and methods for user
   sip_instance_->
-      install_method("Call a contact",  // long name
-                     "call",  // name
-                     "invite a contact for a call",  // description
-                     "the call has been initiated or not",  // return desc
+      install_method("Send to a contact",  // long name
+                     "send",  // name
+                     "invite a contact to receive data",  // description
+                     "the invitation has been initiated or not",  // return desc
                      Method::make_arg_description("SIP url",  // long name
                                                   "url",  // name
                                                   "string",  // description
                                                   nullptr),
-                     (Method::method_ptr) &call_sip_url,
+                     (Method::method_ptr) &send_to,
                      G_TYPE_BOOLEAN,
                      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
                      this);
@@ -1138,7 +1138,7 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
   }
 }
 
-gboolean PJCall::call_sip_url(gchar *sip_url, void *user_data) {
+gboolean PJCall::send_to(gchar *sip_url, void *user_data) {
   if (nullptr == sip_url || nullptr == user_data) {
     g_warning("calling sip account received nullptr url");
     return FALSE;

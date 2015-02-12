@@ -64,7 +64,7 @@ class PJCall {
   // internal rtp
   QuiddityManager::ptr manager_;
   data::Tree::ptr contact_shm_;
-  const uint starting_rtp_port_ {18900};
+  uint starting_rtp_port_ {18900};
   pj_uint16_t last_attributed_port_{18900};  // Must be even
   uint port_range_{100};
   GParamSpec *starting_rtp_port_spec_ {nullptr};
@@ -99,7 +99,7 @@ class PJCall {
                            call_t *call,
                            pjmedia_sdp_session **res);
   Quiddity::ptr retrieve_rtp_manager();
-  static gboolean call_sip_url(gchar *sip_url, void *user_data);
+  static gboolean send_to(gchar *sip_url, void *user_data);
   static void set_starting_rtp_port(const gint value, void *user_data);
   static gint get_starting_rtp_port(void *user_data);
   void make_hang_up(std::string contact_uri);
