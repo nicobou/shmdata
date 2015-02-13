@@ -32,8 +32,9 @@ class AudioResampler {
                           const SampleT *samplebuf,
                           unsigned int channel_number = 0,
                           unsigned int number_of_channels = 1);
-  SampleT zero_pole_get_next_sample();
-
+  inline SampleT zero_pole_get_next_sample();
+  inline SampleT linear_get_next_sample();
+  
  private:
   std::size_t original_size_;
   std::size_t resampled_size_;
