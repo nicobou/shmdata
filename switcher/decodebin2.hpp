@@ -20,10 +20,10 @@
 #ifndef __SWITCHER_DECODEBIN2_H__
 #define __SWITCHER_DECODEBIN2_H__
 
-#include "./single-pad-gst-sink.hpp"
-#include "./decodebin-to-shmdata.hpp"
 #include <memory>
 #include <map>
+#include "./single-pad-gst-sink.hpp"
+#include "./decodebin-to-shmdata.hpp"
 
 namespace switcher {
 class Decodebin2:public SinglePadGstSink {
@@ -34,17 +34,20 @@ class Decodebin2:public SinglePadGstSink {
   Decodebin2 &operator=(const Decodebin2 &) = delete;
 
  private:
+  CustomPropertyHelper::ptr custom_props_{};
+  GParamSpec *media_label_spec_{nullptr};
+  std::string media_label_{};
   std::unique_ptr<DecodebinToShmdata> decodebin_;
-  std::map<std::string, int>media_counters_ {};
-
+  std::map<std::string, int> media_counters_ {};
   bool init_gpipe() final;
   bool can_sink_caps(std::string /*caps*/) final {
     return true;
   };
-
   static void make_decodebin_active(ShmdataReader *caller,
                                     void *decodebin2_instance);
+  static void set_media_label(const gchar *value, void *user_data);
+  static const gchar *get_media_label(void *user_data);
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

@@ -88,12 +88,11 @@ class QuiddityManager
   std::string get_class_doc(std::string class_name);
   std::string get_quiddity_description(std::string quiddity_name);
   std::string get_quiddities_description();
-  // create/remove/rename
+  // create/remove
   std::string create(std::string class_name);
   // &?= chars are not allowed in nicknames
   std::string create(std::string class_name, std::string nick_name);
   bool remove(std::string quiddity_name);
-  bool rename(std::string nick_name, std::string new_nick_name);
 
   // ****************** informations ******
   std::string get_info(const std::string &nick_name,

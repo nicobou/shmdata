@@ -17,31 +17,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_FILE_SDP_H__
-#define __SWITCHER_FILE_SDP_H__
+#ifndef __SWITCHER_PORT_CHECKER_H__
+#define __SWITCHER_PORT_CHECKER_H__
 
-#include "./gst-pipeliner.hpp"
-#include <memory>
+#include <cstdint>
 
 namespace switcher {
-class FileSDP:public GstPipeliner {
- public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FileSDP);
-  FileSDP(const std::string &);
-  FileSDP(const FileSDP &) = delete;
-  FileSDP &operator=(const FileSDP &) = delete;
-  bool to_shmdata(std::string uri);
+namespace PortChecker {
 
- private:
-  GstElement *filesrc_;
-  GstElement *sdpdemux_;
-  int media_counter_;
-  bool init_gpipe() final;
-  static void pad_added_cb(GstElement * object, GstPad *pad,
-                           gpointer user_data);
-  static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);
-  static void no_more_pads_cb(GstElement *object, gpointer user_data);
-};
+bool is_used(std::uint16_t port);
+
+}  // namespace PortChecker
 }  // namespace switcher
+#endif
 
-#endif                          // ifndef
+
+

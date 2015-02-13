@@ -50,7 +50,8 @@ bool Segment::register_shmdata(ShmdataAnyWriter::ptr writer) {
 
   writer->set_on_caps(std::bind(&Segment::populate_tree,
                                 this,
-                                std::string(".shmdata.writer.") + name,
+                                std::string(".shmdata.writer.")
+                                + data::Tree::escape_dots(name),
                                 std::placeholders::_1));
   
   shmdata_any_writers_[name] = writer;

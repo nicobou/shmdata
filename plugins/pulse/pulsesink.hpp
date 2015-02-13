@@ -20,13 +20,13 @@
 #ifndef __SWITCHER_PULSE_SINK_H__
 #define __SWITCHER_PULSE_SINK_H__
 
-#include "switcher/single-pad-gst-sink.hpp"
 #include <pulse/pulseaudio.h>
 #include <pulse/glib-mainloop.h>
-#include "switcher/custom-property-helper.hpp"
 #include <mutex>
 #include <condition_variable>
 #include <vector>
+#include "switcher/single-pad-gst-sink.hpp"
+#include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
 class PulseSink:public SinglePadGstSink {
@@ -39,44 +39,42 @@ class PulseSink:public SinglePadGstSink {
 
  private:
   typedef struct {
-    std::string name_;
-    std::string description_;
-    std::string state_;
-    std::string sample_format_;
-    std::string sample_rate_;
-    std::string channels_;
-    std::vector < std::pair < std::string /*port */ ,
-                              std::string /*description */  > >ports_;
-    std::string active_port_;
+    std::string name_{};
+    std::string description_{};
+    std::string state_{};
+    std::string sample_format_{};
+    std::string sample_rate_{};
+    std::string channels_{};
+    std::vector<std::pair<std::string/*port */, std::string/*description */>> ports_{};
+    std::string active_port_{};
   } DeviceDescription;
 
-  GstElement *pulsesink_bin_;
-  bool connected_to_pulse_;
+  GstElement *pulsesink_bin_{nullptr};
+  bool connected_to_pulse_{false};
   // custom property:
-  CustomPropertyHelper::ptr custom_props_;
-  GParamSpec *devices_description_spec_;      // json formated
-  gchar *devices_description_;        // json formated
+  CustomPropertyHelper::ptr custom_props_{};
+  GParamSpec *devices_description_spec_{nullptr};  // json formated
+  gchar *devices_description_{nullptr};  // json formated
   // pulse_audio
-  pa_glib_mainloop *pa_glib_mainloop_;
-  pa_mainloop_api *pa_mainloop_api_;
-  pa_context *pa_context_;
-  char *server_;
-  std::vector<DeviceDescription> devices_;       // indexed by pulse_device_name
-  std::mutex devices_mutex_;
-  std::condition_variable devices_cond_;
+  pa_glib_mainloop *pa_glib_mainloop_{nullptr};
+  pa_mainloop_api *pa_mainloop_api_{nullptr};
+  pa_context *pa_context_{nullptr};
+  char *server_{nullptr};
+  std::vector<DeviceDescription> devices_{};       // indexed by pulse_device_name
+  std::mutex devices_mutex_{};
+  std::condition_variable devices_cond_{};
   // devices enumeration
-  GParamSpec *devices_enum_spec_;
+  GParamSpec *devices_enum_spec_{nullptr};
   GEnumValue devices_enum_[128];
-  gint device_;
+  gint device_{0};
   // quit
-  std::mutex quit_mutex_;
-  std::condition_variable quit_cond_;
+  std::mutex quit_mutex_{};
+  std::condition_variable quit_cond_{};
 
   bool init_gpipe() final;
   void on_shmdata_disconnect() final;
   void on_shmdata_connect(std::string shmdata_sochet_path) final;
   bool can_sink_caps(std::string) final;
-
   bool make_elements();
   bool build_elements();
   void make_device_description(pa_context *pulse_context);
@@ -99,5 +97,4 @@ class PulseSink:public SinglePadGstSink {
 
 SWITCHER_DECLARE_PLUGIN(PulseSink);
 }  // namespace switcher
-
-#endif                          // ifndef
+#endif

@@ -1,20 +1,18 @@
 /*
- * This file is part of switcher-myplugin.
+ * This file is part of switcher-pjsip.
  *
- * switcher-myplugin is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * switcher-pjsip is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * switcher is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General
- * Public License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef __SWITCHER_PJ_PRESENCE_H__
@@ -103,6 +101,8 @@ class PJPresence {
                                      gchar *uri,
                                      void *user_data);
   void name_buddy(std::string name, std::string sip_user);
+  // FIXME this should get id with checking the domain also
+  pjsua_buddy_id get_id_from_buddy_name(const std::string &name);
   // pjsip functions
   static void on_reg_state(pjsua_acc_id acc_id);
   static void on_incoming_subscribe(pjsua_acc_id acc_id,

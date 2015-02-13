@@ -334,5 +334,11 @@ std::list<std::string> Tree::copy_leaf_values(const std::string &path) const {
   return res;
 }
 
+Tree::ptrc Tree::get_subtree(Tree::ptrc tree, const std::string &path) {
+  std::unique_lock<std::mutex> lock(tree->mutex_);
+  auto found = tree->get_node(path);
+  return found.second->second.get();
+}
+
 }  // namespace data
 }  // namespace switcher

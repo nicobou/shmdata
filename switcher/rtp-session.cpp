@@ -414,11 +414,12 @@ RtpSession::remove_destination_wrapped(gpointer nick_name,
 bool RtpSession::remove_destination(std::string nick_name) {
   auto it = destinations_.find(nick_name);
   if (destinations_.end() == it) {
-    g_warning
-        ("RtpSession: destination named %s does not exists, cannot remove",
-         nick_name.c_str());
+    g_warning("RtpSession: destination named %s does not exists, cannot remove",
+              nick_name.c_str());
     return false;
   }
+  for (auto &iter: it->second->get_shmdata())
+    remove_udp_stream_to_dest(iter, nick_name);
   destinations_.erase(it);
   return true;
 }
@@ -589,13 +590,13 @@ bool RtpSession::remove_data_stream(std::string shmpath) {
     if (it.second->has_shmdata(shmpath))
       it.second->remove_stream(shmpath);
   }
-
   auto ds_it = data_streams_.find(shmpath);
   if (data_streams_.end() == ds_it) {
     g_debug("RTP remove_data_stream: %s not present",
             shmpath.c_str());
     return false;
   }
+  unregister_shmdata(shmpath);
   prune_tree("rtp_caps." + shmpath);
   data_streams_.erase(ds_it);
   g_debug("data_stream %s removed", shmpath.c_str());
@@ -607,7 +608,7 @@ void RtpSession::on_bye_ssrc(GstElement * /*rtpbin */ ,
                              guint /*ssrc */ ,
                              gpointer /*user_data */ ) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_debug("on_bye_ssrc");
+  // g_debug("on_bye_ssrc");
 }
 
 void RtpSession::on_bye_timeout(GstElement * /*rtpbin */ ,
@@ -615,7 +616,7 @@ void RtpSession::on_bye_timeout(GstElement * /*rtpbin */ ,
                                 guint /*ssrc */ ,
                                 gpointer /*user_data */ ) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_debug("on_bye_timeout");
+  // g_debug("on_bye_timeout");
 }
 
 void RtpSession::on_new_ssrc(GstElement * /*rtpbin */ ,
@@ -631,7 +632,7 @@ void RtpSession::on_npt_stop(GstElement * /*rtpbin */ ,
                              guint /*ssrc */ ,
                              gpointer /*user_data */ ) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_debug("on_npt_stop");
+  // g_debug("on_npt_stop");
 }
 
 void RtpSession::on_sender_timeout(GstElement * /*rtpbin */ ,
@@ -639,7 +640,7 @@ void RtpSession::on_sender_timeout(GstElement * /*rtpbin */ ,
                                    guint /*ssrc */ ,
                                    gpointer /*user_data */ ) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_debug("on_sender_timeout");
+  // g_debug("on_sender_timeout");
 }
 
 void RtpSession::on_ssrc_active(GstElement * /*rtpbin */ ,
@@ -647,7 +648,7 @@ void RtpSession::on_ssrc_active(GstElement * /*rtpbin */ ,
                                 guint /*ssrc */ ,
                                 gpointer /*user_data */ ) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_debug("on_ssrc_active");
+  // g_debug("on_ssrc_active");
 }
 
 void RtpSession::on_ssrc_collision(GstElement * /*rtpbin */ ,
@@ -663,7 +664,7 @@ void RtpSession::on_ssrc_sdes(GstElement * /*rtpbin */ ,
                               guint /*ssrc */ ,
                               gpointer /*user_data */ ) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_debug("on_ssrc_sdes");
+  // g_debug("on_ssrc_sdes");
 }
 
 void RtpSession::on_ssrc_validated(GstElement * /*rtpbin */ ,
@@ -671,7 +672,7 @@ void RtpSession::on_ssrc_validated(GstElement * /*rtpbin */ ,
                                    guint /*ssrc */ ,
                                    gpointer /*user_data */ ) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_debug("on_ssrc_validated");
+  // g_debug("on_ssrc_validated");
 }
 
 void RtpSession::on_timeout(GstElement * /*rtpbin */ ,
@@ -679,28 +680,26 @@ void RtpSession::on_timeout(GstElement * /*rtpbin */ ,
                             guint /*ssrc */ ,
                             gpointer /*user_data */ ) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_debug("on_timeout");
+  // g_debug("on_timeout");
 }
 
 void RtpSession::on_pad_added(GstElement * /*gstelement */ ,
                               GstPad *new_pad, gpointer user_data) {
-  RtpSession *context = static_cast<RtpSession *>(user_data);
+  // RtpSession *context = static_cast<RtpSession *>(user_data);
   g_debug("on_pad_added, name: %s, direction: %d",
           gst_pad_get_name(new_pad), gst_pad_get_direction(new_pad));
-  // gchar *bidule = g_strdup ("bidule");
-  context->signal_emit("truc", "bidule");
 }
 
 void RtpSession::on_pad_removed(GstElement * /*gstelement */ ,
                                 GstPad *new_pad, gpointer /*user_data */ ) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_debug("on_pad_removed");
+  // g_debug("on_pad_removed");
 }
 
 void RtpSession::on_no_more_pad(GstElement * /*gstelement */ ,
                                 gpointer /*user_data */ ) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_debug("on_no_more_pad");
+  // g_debug("on_no_more_pad");
 }
 
 const gchar *RtpSession::get_destinations_json(void *user_data) {
@@ -732,7 +731,7 @@ gint RtpSession::get_mtu_at_add_data_stream(void *user_data) {
 }
 
 void RtpSession::on_rtp_caps(std::string shmdata_path, std::string caps) {
-  caps += ", media_label=" + get_quiddity_name_from_file_name(shmdata_path);
+  caps += ", media-label=" + get_quiddity_name_from_file_name(shmdata_path);
   graft_tree("rtp_caps." + std::move(shmdata_path),
              data::Tree::make(std::move(caps)));
 }
@@ -778,9 +777,9 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
     return false;
   }
   {  // RTP
-    GstPad *src_pad = gst_element_get_static_pad(
-        rtpsession_,
-        std::string("send_rtp_src_" + rtp_id).c_str());
+    GstPad *src_pad =
+        gst_element_get_static_pad(rtpsession_,
+                                   std::string("send_rtp_src_" + rtp_id).c_str());
     //saving for latter cleaning
     it->second->rtp_static_pad = src_pad;
 

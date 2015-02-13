@@ -51,10 +51,10 @@ class Tree {
   using rptr = Tree *;  // raw
   using child_type = std::pair<std::string, Tree::ptr>;
   using childs_t = std::list<child_type>;
-  using OnNodeFunction = std::function <void(const std::string &name,
+  using OnNodeFunction = std::function<void(const std::string &name,
                                              Tree::ptrc tree,
                                              bool is_array_element)>;
-  using GetNodeReturn = std::pair <Tree::childs_t, Tree::childs_t::iterator>;
+  using GetNodeReturn = std::pair<Tree::childs_t, Tree::childs_t::iterator>;
   
   // factory
   static Tree::ptr make();
@@ -74,7 +74,8 @@ class Tree {
   static void preorder_tree_walk(Tree::ptrc tree,
                                  Tree::OnNodeFunction on_visiting_node,
                                  Tree::OnNodeFunction on_node_visited);
-
+  static Tree::ptrc get_subtree(Tree::ptrc tree, const std::string &path);
+  
   //const methods
   bool is_leaf() const;
   bool is_array() const;
@@ -107,7 +108,6 @@ class Tree {
   
   // get leaf values in a newly allocated container
   std::list<std::string> copy_leaf_values(const std::string &path) const;
-  
 
   //Tree modifications:
   Any get_data();

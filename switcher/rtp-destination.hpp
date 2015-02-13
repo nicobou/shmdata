@@ -52,6 +52,7 @@ class RtpDestination {
   bool remove_stream(const std::string &shmdata_stream_path);
   std::string get_sdp();
   bool write_to_file (std::string file_name);
+  std::vector<std::string> get_shmdata();
   // get json doc:
   JSONBuilder::Node get_json_root_node();
 

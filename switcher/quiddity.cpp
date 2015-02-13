@@ -742,11 +742,33 @@ std::string Quiddity::make_file_name(const std::string &suffix) {
 
 std::string Quiddity::get_quiddity_name_from_file_name(const std::string &path) {
    QuiddityManager_Impl::ptr manager = manager_impl_.lock();
-   if ((bool) manager) {
-     auto prefix_size = std::string("/tmp/switcher_" + manager->get_name() + "_").size();
-     return std::string(path, prefix_size, path.find_last_of('_') - prefix_size);
+   auto file_begin = path.find("switcher_");
+   if (std::string::npos == file_begin) {
+     g_warning("%s: not a switcher generated path", __FUNCTION__);
+     return std::string();
    }
-   return std::string();
+   std::string filename(path, file_begin);
+   // searching for underscores
+   std::vector<size_t> underscores;
+   bool done = false;
+   size_t found = 0;
+   while (!done) {
+     found = filename.find('_', found);
+     if (std::string::npos == found)
+       done = true;
+     else {
+       underscores.push_back(found);
+       if (found + 1 == filename.size())
+         done = true;
+       else
+         found = found + 1;
+     }
+   }
+   if (3 != underscores.size()) {
+     g_warning("%s: wrong shmdata path format", __FUNCTION__);
+     return std::string();
+   }
+   return std::string(filename, underscores[1] + 1, underscores[2] - (underscores[1] + 1));   
 }
 
 std::string Quiddity::get_manager_name() {

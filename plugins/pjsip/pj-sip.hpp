@@ -1,32 +1,29 @@
 /*
- * This file is part of switcher-myplugin.
+ * This file is part of switcher-pjsip.
  *
- * switcher-myplugin is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * switcher-pjsip is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * switcher is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General
- * Public License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef __SWITCHER_PJSIP_H__
 #define __SWITCHER_PJSIP_H__
 
 #include <pjsua-lib/pjsua.h>
-
 #include <memory>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-
+#include <atomic>
 #include "switcher/quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
 #include "./pj-call.hpp"
@@ -65,15 +62,19 @@ class PJSIP: public Quiddity {
   bool continue_ {true};
   std::function<void()> command_ {};
   pj_pool_t *pool_ {nullptr};
+  pjsip_endpoint *sip_endpt_{nullptr};
   PJCall *sip_calls_ {nullptr};
   PJPresence *sip_presence_ {nullptr};
   std::thread sip_worker_ {};
   bool sip_work_ {true};
   pj_thread_desc worker_handler_desc_ {};
   pj_thread_t *worker_thread_ref_ {nullptr};
-  static pjsip_endpoint *sip_endpt_;
   pj_caching_pool cp_;
-
+  bool i_m_the_one_{false};
+  // singleton related members:
+  static std::atomic<unsigned short> sip_endpt_used_;
+  static PJSIP *this_;
+  // methods:
   void sip_init_shutdown_thread();
   void sip_handling_thread();
   bool pj_sip_init();
@@ -84,6 +85,6 @@ class PJSIP: public Quiddity {
   void sip_worker_thread();
   void start_tcp_transport();
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

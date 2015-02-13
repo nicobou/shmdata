@@ -526,25 +526,6 @@ controlService::create_named_quiddity(std::string quiddity_class,
 }
 
 int
-controlService::rename_quiddity(std::string nick_name,
-                                std::string new_nick_name,
-                                std::string *result)
-{
-  using namespace switcher;
-
-  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
-  QuiddityManager::ptr manager;
-  if (ctrl_server != nullptr)
-    manager = ctrl_server->get_quiddity_manager();
-
-  if (manager->rename(nick_name, new_nick_name))
-    *result = "true";
-  else
-    *result = "false";
-  return SOAP_OK;
-}
-
-int
 controlService::delete_quiddity(std::string quiddity_name)
 {
   using namespace switcher;

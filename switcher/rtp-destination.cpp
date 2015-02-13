@@ -142,4 +142,13 @@ bool RtpDestination::write_to_file(std::string file_name) {
   files_.push_front(std::move(file_name));
   return true;
 }
+
+std::vector<std::string> RtpDestination::get_shmdata(){
+  std::vector<std::string> res;
+  for (auto &it: source_streams_) {
+    res.push_back(it.first);
+  }
+  return res;
 }
+
+}  // namespace switcher

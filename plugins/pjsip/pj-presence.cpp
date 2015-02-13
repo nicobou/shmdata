@@ -1,20 +1,18 @@
 /*
  * This file is part of switcher-pjsip.
  *
- * switcher-myplugin is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * switcher-pjsip is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * switcher is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General
- * Public License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <string>
@@ -55,7 +53,6 @@ PJPresence::PJPresence(PJSIP *sip_instance):
                                                        G_TYPE_STRING,
                                                        nullptr),
                      this);
-  
   sip_instance_->
       install_method("Unregister SIP Account",  // long name
                      "unregister",  // name
@@ -68,7 +65,6 @@ PJPresence::PJPresence(PJSIP *sip_instance):
                      Method::make_arg_type_description(G_TYPE_NONE,
                                                        nullptr),
                      this);
-
   //buddies
     sip_instance_->
       install_method("Add Buddy",  // long name
@@ -116,7 +112,6 @@ PJPresence::PJPresence(PJSIP *sip_instance):
                      Method::make_arg_type_description(G_TYPE_STRING,
                                                        nullptr),
                      this);
-
     // FIXME remove or implement
     // sip_instance_->
     //     install_method("Save Buddies",  // long name
@@ -132,8 +127,6 @@ PJPresence::PJPresence(PJSIP *sip_instance):
     //                    Method::make_arg_type_description(G_TYPE_STRING,
     //                                                      nullptr),
     //                    this);
-
-    
     // online status
     status_enum_spec_ =
         sip_instance_->custom_props_->
@@ -165,7 +158,6 @@ PJPresence::PJPresence(PJSIP *sip_instance):
                                   custom_status_spec_,
                                   "status-note",
                                   "Custom status note");
-
     sip_reg_status_spec_ = sip_instance_->custom_props_->
         make_boolean_property("sip-registration",
                               "Self SIP registration status",
@@ -179,7 +171,6 @@ PJPresence::PJPresence(PJSIP *sip_instance):
                                   sip_reg_status_spec_,
                                   "sip-registration",
                                   "Self SIP registration status");
-
 }
 
 PJPresence::~PJPresence() {
@@ -204,7 +195,9 @@ PJPresence::register_account_wrapped(gchar *user,
                                             context,
                                             std::string(user),
                                             std::string(password)));
-  return TRUE;
+  if (context->registered_)
+    return TRUE;
+  return FALSE;
 }
 
 void
@@ -320,7 +313,10 @@ void PJPresence::add_buddy(const std::string &sip_user) {
       graft_tree(".buddy." + std::to_string(buddy_id) + ".uri",
                  data::Tree::make(sip_user));
   sip_instance_->
-      graft_tree(".buddy." + std::to_string(buddy_id) + ".call_status",
+      graft_tree(".buddy." + std::to_string(buddy_id) + ".send_status",
+                 data::Tree::make("disconnected"));
+  sip_instance_->
+      graft_tree(".buddy." + std::to_string(buddy_id) + ".recv_status",
                  data::Tree::make("disconnected"));
   return;
 }
@@ -403,6 +399,9 @@ PJPresence::on_registration_state(pjsua_acc_id acc_id,
       static_cast<PJPresence *>(pjsua_acc_get_user_data(acc_id));
   std::unique_lock<std::mutex> lock(context->registration_mutex_);
   if (PJ_SUCCESS != info->cbparam->status) {
+    g_warning("registration failed (%.s)",
+              static_cast<int>(info->cbparam->reason.slen),
+              info->cbparam->reason.ptr);
     if (-1 != context->account_id_) {
       pj_status_t status = pjsua_acc_del(context->account_id_);
       if (PJ_SUCCESS != status)
@@ -410,7 +409,6 @@ PJPresence::on_registration_state(pjsua_acc_id acc_id,
       context->account_id_ = -1;
     }
     context->registered_ = false;
-    g_warning("registration failled");
   } else {
     context->registered_ = true;
   }
@@ -428,7 +426,6 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
     return;
   pjsua_buddy_info info;
   pjsua_buddy_get_info(buddy_id, &info);
-
   std::string activity;
   if (PJRPID_ACTIVITY_UNKNOWN == info.rpid.activity)
     activity = "unknown";
@@ -436,22 +433,20 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
     activity = "away";
   if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
     activity = "busy";
-
-  g_debug("%.*s status is %.*s, subscription state is %s "
-          "(last termination reason code=%d %.*s)\n"
-          "rpid  activity %s, note %.*s\n",
-          static_cast<int>(info.uri.slen),
-          info.uri.ptr,
-          static_cast<int>(info.status_text.slen),
-          info.status_text.ptr,
-          info.sub_state_name,
-          info.sub_term_code,
-          static_cast<int>(info.sub_term_reason.slen),
-          info.sub_term_reason.ptr,
-          activity.c_str(),
-          static_cast<int>(info.rpid.note.slen),
-          info.rpid.note.ptr);
-
+  // g_debug("%.*s status is %.*s, subscription state is %s "
+  //         "(last termination reason code=%d %.*s)\n"
+  //         "rpid  activity %s, note %.*s\n",
+  //         static_cast<int>(info.uri.slen),
+  //         info.uri.ptr,
+  //         static_cast<int>(info.status_text.slen),
+  //         info.status_text.ptr,
+  //         info.sub_state_name,
+  //         info.sub_term_code,
+  //         static_cast<int>(info.sub_term_reason.slen),
+  //         info.sub_term_reason.ptr,
+  //         activity.c_str(),
+  //         static_cast<int>(info.rpid.note.slen),
+  //         info.rpid.note.ptr);
   // std::string buddy_url(info.uri.ptr, (size_t) info.uri.slen);
   // tree->graft(".sip_url", data::Tree::make(buddy_url));
   std::string status("unknown");
@@ -471,7 +466,6 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
     status = "away";
   if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
     status = "busy";
-
   data::Tree::ptr tree = context->sip_instance_->
       prune_tree(std::string(".buddy." + std::to_string(buddy_id)),
                  false);  // do not signal since the tree will be updated
@@ -484,7 +478,6 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
                                           (size_t) info.status_text.slen)));
   tree->graft(".subscription_state",
               data::Tree::make(std::string(info.sub_state_name)));
-
   // replacing old one
   context->sip_instance_->
       graft_tree(std::string(".buddy." + std::to_string(buddy_id)), tree);
@@ -500,7 +493,6 @@ void PJPresence::set_status(const gint value, void *user_data) {
     g_warning("cannot set online status when not registered");
     return;
   }
-
   context->status_ = value;
   context->sip_instance_->
       run_command_sync(std::bind(&PJPresence::change_online_status,
@@ -576,7 +568,6 @@ void PJPresence::set_note(const gchar *custom_status, void *user_data) {
                                            (&PJPresence::change_online_status,
                                             context,
                                             context->status_));
-
   context->sip_instance_->custom_props_->
       notify_property_changed(context->custom_status_spec_);
 }
@@ -633,21 +624,19 @@ PJPresence::on_buddy_evsub_state(pjsua_buddy_id buddy_id,
     snprintf(event_info, sizeof(event_info),
              " (RX %s)", pjsip_rx_data_get_info(rdata));
   }
-  g_debug("Buddy %d: subscription state: %s (event: %s%s)",
-         buddy_id, pjsip_evsub_get_state_name(sub),
-         pjsip_event_str(event->type), event_info);
+  // g_debug("Buddy %d: subscription state: %s (event: %s%s)",
+  //        buddy_id, pjsip_evsub_get_state_name(sub),
+  //        pjsip_event_str(event->type), event_info);
 }
 
 gboolean PJPresence::save_buddies_wrapped(gchar *file_name,
                                           void *user_data) {
   PJPresence *context = static_cast<PJPresence *>(user_data);
-
   // HERE
   // auto serialize_buddies = [&] (data::Tree::ptrc tree) {
   //   data::Tree::ptr buds = tree->get("buddy");
   //   return data::BasicSerializer::serialize(bud);
   // };
-  
   std::string buddies = context->sip_instance_->
       invoke_info_tree<std::string>(data::BasicSerializer::serialize); 
   return TRUE;
@@ -659,5 +648,17 @@ gboolean PJPresence::get_sip_registration_status(void *user_data) {
     return FALSE;
   return TRUE;
 }
-  
+
+pjsua_buddy_id PJPresence::get_id_from_buddy_name(const std::string &name) {
+  auto bud = std::find_if(
+      buddy_id_.begin(),
+      buddy_id_.end(),
+      [&name](decltype(*buddy_id_.begin()) &it){
+          return 0 == std::string(it.first, 0, name.size()).compare(name);
+      });
+  if (buddy_id_.end() != bud) 
+    return bud->second; 
+  return PJSUA_INVALID_ID;
+}
+    
 }  // namespace switcher
