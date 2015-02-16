@@ -37,11 +37,13 @@ AudioResampler<SampleT>::AudioResampler(std::size_t original_size,
 
 template<typename SampleT>
 SampleT AudioResampler<SampleT>::zero_pole_get_next_sample(){
-  std::size_t new_pos = (std::size_t)(ratio_ * (double)cur_pos_);
+ if (cur_pos_ >= resampled_size_) {
+    cur_pos_ = resampled_size_ - 1;  // cliping
+    g_warning("%s is asked for more sample than supposed", __FUNCTION__);
+  }
+ std::size_t new_pos = (std::size_t)(ratio_ * (double)cur_pos_);
   if (cur_pos_ < resampled_size_ - 1)
     ++cur_pos_;
-  else
-    g_warning("%s is asked for more sample than suposed", __FUNCTION__);
   return samplebuf_[new_pos * number_of_channels_ + channel_number_];
 }
 

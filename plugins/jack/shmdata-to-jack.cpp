@@ -110,7 +110,7 @@ void ShmdataToJack::on_handoff_cb(GstElement */*object*/,
         new_size,
         [&resample]() {
           // return resample.zero_pole_get_next_sample();
-          return resample.linear_get_next_sample();
+          return resample.zero_pole_get_next_sample();
         });
     if (emplaced != new_size)
       g_print("overflow of %lu samples", new_size - emplaced);
