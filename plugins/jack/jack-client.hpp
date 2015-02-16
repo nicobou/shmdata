@@ -22,6 +22,7 @@
 
 #include <jack/jack.h>
 #include <memory>
+#include <atomic>
 #include "switcher/safe-bool-idiom.hpp"
 
 namespace switcher {
@@ -31,7 +32,7 @@ using jack_sample_t = jack_default_audio_sample_t;
 class ShmdataToJack;
 class JackClient : public SafeBoolIdiom {
   friend ShmdataToJack;
-
+  using XRunCallback_t = std::function<void(uint number_of_missed_samples)>;
  public:
   explicit JackClient(const char *name);
   JackClient() = delete;
@@ -39,9 +40,11 @@ class JackClient : public SafeBoolIdiom {
   JackClient &operator=(const JackClient &) = delete;
   jack_nframes_t get_sample_rate() const;
   jack_nframes_t get_buffer_size() const;
-  void set_jack_process_callback(JackProcessCallback cb,
-                                 void *arg);
-
+  void set_jack_process_callback(JackProcessCallback cb, void *arg);
+  // the xrun callback is called in jack_process
+  // before calling the actual process function:
+  void set_on_xrun_callback(XRunCallback_t cb);
+  
  private:
   using jack_client_handle =
       std::unique_ptr<jack_client_t, decltype(&jack_client_close)>;
@@ -51,11 +54,15 @@ class JackClient : public SafeBoolIdiom {
   jack_nframes_t buffer_size_{0};  // actually uint32_t
   JackProcessCallback user_cb_{nullptr};
   void *user_cb_arg_{nullptr};
+  std::atomic_uint xrun_count_{0};
+  XRunCallback_t xrun_cb_{};
+  bool set_jack_last_time_{true};
+  jack_nframes_t jack_last_time_{0};
   bool safe_bool_idiom() const final;
   static void on_jack_shutdown (void *arg);
   static int jack_process (jack_nframes_t nframes, void *arg);
+  static int on_xrun(void *arg);
   jack_client_t *get_raw();
-
 };
 
 }  // namespace switcher

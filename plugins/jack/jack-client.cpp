@@ -18,6 +18,8 @@
  */
 
 #include <glib.h>
+#include <jack/statistics.h>
+#include <cmath>
 #include "switcher/std2.hpp"
 #include "./jack-client.hpp"
 
@@ -46,6 +48,7 @@ JackClient::JackClient(const char *name) :
   buffer_size_ = jack_get_buffer_size(client_.get());
   // g_print("sample rate %" PRIu32 "\n", sample_rate_);
   // g_print("buffer size %" PRIu32 " \n", jack_get_buffer_size(client_.get()));
+  jack_set_xrun_callback(client_.get(), on_xrun, this);
   jack_set_process_callback(client_.get(), jack_process, this);
   jack_activate(client_.get());
 }
@@ -53,9 +56,15 @@ JackClient::JackClient(const char *name) :
 int JackClient::jack_process(jack_nframes_t nframes, void *arg)
 {
   JackClient *context = static_cast<JackClient *>(arg);
+  unsigned int samples = context->xrun_count_.load();
+  if (0 != samples) {
+    g_print("-- missed samples %u\n", samples);
+    if (context->xrun_cb_)
+      context->xrun_cb_(samples);
+    context->xrun_count_.fetch_sub(samples);
+  }
   if (nullptr != context->user_cb_)
     return context->user_cb_(nframes, context->user_cb_arg_);
-  g_print("no jack process callback set by user\n");
   return 0;
 }
 
@@ -85,6 +94,24 @@ jack_client_t *JackClient::get_raw(){
 void JackClient::set_jack_process_callback(JackProcessCallback cb, void *arg){
   user_cb_ = cb;
   user_cb_arg_ = arg;
+}
+
+int
+JackClient::on_xrun(void *arg)
+{
+  JackClient *context = static_cast<JackClient *>(arg);
+  // computing the number of sample missed
+  // g_print("xrun delay %f ms\n num sample missed %f",
+  //         0.001 * jack_get_xrun_delayed_usecs(context->client_.get()),
+  //         (float)context->sample_rate_ * (1e-6 * jack_get_xrun_delayed_usecs(context->client_.get())));
+  context->xrun_count_.fetch_add(std::ceil(
+      (float)context->sample_rate_
+      * (1e-6 * jack_get_xrun_delayed_usecs(context->client_.get()))));
+  return 0;
+}
+
+void JackClient::set_on_xrun_callback(XRunCallback_t cb){
+  xrun_cb_ = cb;
 }
 
 }  // namespace switcher

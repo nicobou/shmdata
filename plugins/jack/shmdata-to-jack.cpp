@@ -47,10 +47,14 @@ ShmdataToJack::ShmdataToJack(const std::string &name):
     jack_client_(name.c_str()),
     custom_props_(std::make_shared<CustomPropertyHelper>()) {
   jack_client_.set_jack_process_callback(&ShmdataToJack::jack_process, this);
+  jack_client_.set_on_xrun_callback([this](uint n){on_xrun(n);});
 }
 
 int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
   auto context = static_cast<ShmdataToJack *>(arg);
+  // g_print("last frame %u, num frames %u\n",
+  //         jack_last_frame_time(context->jack_client_.get_raw()),
+  //         nframes);
   { std::unique_lock<std::mutex> lock(context->output_ports_mutex_, std::defer_lock);
     if (lock.try_lock()) {
       for (unsigned int i = 0; i < context->output_ports_.size(); ++i) {
@@ -66,6 +70,14 @@ int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
     }  // locked
   }  // releasing lock
   return 0;
+}
+
+void ShmdataToJack::on_xrun(uint num_of_missed_samples) {
+  for (auto &it: ring_buffers_) {
+    // this is safe since on_xrun is called right before jack_process,
+    // on the same thread
+    it.pop_samples((std::size_t)num_of_missed_samples, nullptr);
+  }
 }
 
 void ShmdataToJack::on_handoff_cb(GstElement */*object*/,

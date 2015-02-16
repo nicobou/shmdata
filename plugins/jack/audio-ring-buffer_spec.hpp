@@ -60,11 +60,15 @@ std::size_t AudioRingBuffer<SampleType>::pop_samples(std::size_t num,
     return res;
   for (std::size_t i = 0; i < res; ++i){
     //std::cout << "read " << buffer_[read_] << " -- " << read_ << std::endl;
-    dest[i] = buffer_[read_];
+    if (nullptr != dest)
+      dest[i] = buffer_[read_];
     ++read_;
     read_ = read_ % buffer_size_;
   }
   available_size_.fetch_add(res);
+  // if (nullptr == dest) 
+  //   g_print("%s is droping: available %lu, res %lu \n",
+  //           __FUNCTION__, available, res);
   return res;
 }
 

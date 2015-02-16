@@ -60,6 +60,7 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
   bool can_sink_caps(std::string caps) final;
   bool make_elements();
   void check_output_ports(int channels);
+  void on_xrun(uint num_of_missed_samples);
   static void on_handoff_cb(GstElement *object,
                             GstBuffer *buf,
                             GstPad *pad,
