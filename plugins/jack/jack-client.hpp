@@ -32,6 +32,7 @@ using jack_sample_t = jack_default_audio_sample_t;
 class ShmdataToJack;
 class JackClient : public SafeBoolIdiom {
   friend ShmdataToJack;
+  // warning, number of missed samples is estimated from the xrun duration.
   using XRunCallback_t = std::function<void(uint number_of_missed_samples)>;
  public:
   explicit JackClient(const char *name);

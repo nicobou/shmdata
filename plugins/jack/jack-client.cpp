@@ -58,7 +58,7 @@ int JackClient::jack_process(jack_nframes_t nframes, void *arg)
   JackClient *context = static_cast<JackClient *>(arg);
   unsigned int samples = context->xrun_count_.load();
   if (0 != samples) {
-    g_print("-- missed samples %u\n", samples);
+    // g_print("-- missed samples %u\n", samples);
     if (context->xrun_cb_)
       context->xrun_cb_(samples);
     context->xrun_count_.fetch_sub(samples);
@@ -101,9 +101,9 @@ JackClient::on_xrun(void *arg)
 {
   JackClient *context = static_cast<JackClient *>(arg);
   // computing the number of sample missed
-  // g_print("xrun delay %f ms\n num sample missed %f",
-  //         0.001 * jack_get_xrun_delayed_usecs(context->client_.get()),
-  //         (float)context->sample_rate_ * (1e-6 * jack_get_xrun_delayed_usecs(context->client_.get())));
+  g_print("xrun delay %f ms\n num sample missed %f",
+          0.001 * jack_get_xrun_delayed_usecs(context->client_.get()),
+          (float)context->sample_rate_ * (1e-6 * jack_get_xrun_delayed_usecs(context->client_.get())));
   context->xrun_count_.fetch_add(std::ceil(
       (float)context->sample_rate_
       * (1e-6 * jack_get_xrun_delayed_usecs(context->client_.get()))));

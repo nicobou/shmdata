@@ -25,25 +25,18 @@ template<typename TimeType>
 TimeType DriftObserver<TimeType>::set_current_time_info(
     const TimeType date,
     const TimeType duration){
+  // udating statistics for the previous duration
   if (0 != current_buffer_duration_) {
     double measured_ratio = (double)(date - current_buffer_date_) / current_buffer_duration_;
     if (0.9 < measured_ratio && measured_ratio < 1.1)
       ratio_ = (1 - smoothing_factor_) * ratio_ + smoothing_factor_ * measured_ratio;
     else
       ratio_ = 1;
-    // std::cout << " date " << current_buffer_date_ << " & " << date
-    //           << " duration " << current_buffer_duration_ << " & " << duration
-    //           << std::endl;
-    //g_print("ratio %g\n", ratio_);
   }
   current_buffer_date_ = date;
   current_buffer_duration_ = duration;
-  
-  // std::cout << "date " << current_buffer_date_
-  //           << " duration " << current_buffer_duration_
-  //           << std::endl;
-  // g_print("ratio   %g\n", ratio_);
-
+  // computing expected duration for this current data,
+  // according to statistics previouslyt computed
   double res = duration/ratio_ + remainder_;
   //std::cout << "new duration " << res << std::endl;
   remainder_ = res - static_cast<TimeType>(res);

@@ -30,6 +30,8 @@ template<typename SampleType> class AudioRingBuffer {
   // put and pop are returning the number of sample actually processed
   std::size_t put_samples(std::size_t num, std::function<SampleType()> sample_factory);
   std::size_t pop_samples(std::size_t num, SampleType *dest);
+  // return the number of samples dropped
+  std::size_t shrink_to(std::size_t size);
   std::size_t get_used();  
   
  private:

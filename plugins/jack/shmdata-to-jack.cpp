@@ -73,10 +73,12 @@ int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
 }
 
 void ShmdataToJack::on_xrun(uint num_of_missed_samples) {
+  g_print ("%s %u\n", __FUNCTION__, num_of_missed_samples);
+  jack_nframes_t jack_buffer_size = jack_client_.get_buffer_size();
   for (auto &it: ring_buffers_) {
     // this is safe since on_xrun is called right before jack_process,
     // on the same thread
-    it.pop_samples((std::size_t)num_of_missed_samples, nullptr);
+    it.shrink_to((std::size_t)jack_buffer_size * 1.5);
   }
 }
 

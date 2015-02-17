@@ -55,26 +55,36 @@ std::size_t AudioRingBuffer<SampleType>::pop_samples(std::size_t num,
   std::size_t res = num; 
   if (available < num)
     res = available;
-  //g_print("%s available %lu\n", __FUNCTION__, available);
   if (0 == res)
     return res;
+  if (nullptr == dest) {
+    read_ = (read_ + res) % buffer_size_;
+    return res;
+  }
   for (std::size_t i = 0; i < res; ++i){
-    //std::cout << "read " << buffer_[read_] << " -- " << read_ << std::endl;
-    if (nullptr != dest)
-      dest[i] = buffer_[read_];
+    dest[i] = buffer_[read_];
     ++read_;
     read_ = read_ % buffer_size_;
   }
   available_size_.fetch_add(res);
-  // if (nullptr == dest) 
-  //   g_print("%s is droping: available %lu, res %lu \n",
-  //           __FUNCTION__, available, res);
   return res;
 }
 
 template<typename SampleType>
 std::size_t AudioRingBuffer<SampleType>::get_used(){
   return buffer_size_ - available_size_.load();
+}
+
+template<typename SampleType>
+std::size_t AudioRingBuffer<SampleType>::shrink_to(std::size_t size) {
+   std::size_t available = buffer_size_ - available_size_.load();
+   if (available < size)
+     return 0;
+   std::size_t res = available - size;
+   read_ = (read_ + res) % buffer_size_;
+   available_size_.fetch_add(res);
+   g_print("shrinked to %lu\n", available - res);
+   return res;
 }
 
 }  // namespace switcher
