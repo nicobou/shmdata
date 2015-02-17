@@ -312,13 +312,6 @@ QuiddityManager_Impl::create(std::string quiddity_class,
   return std::string(quiddity->get_name());
 }
 
-bool
-QuiddityManager_Impl::rename(std::string nick_name,
-                             std::string new_nick_name) {
-  // FIXME remove rename
-  return false;
-}
-
 std::vector<std::string> QuiddityManager_Impl::get_instances() {
   std::vector<std::string> res;
   for (auto &it : quiddities_)

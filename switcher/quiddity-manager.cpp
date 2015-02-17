@@ -766,18 +766,6 @@ std::string QuiddityManager::create(std::string quiddity_class) {
   return res;
 }
 
-bool
-QuiddityManager::rename(std::string nick_name, std::string new_nick_name)
-{
-  std::string res = seq_invoke(QuiddityCommand::rename,
-                               nick_name.c_str(),
-                               new_nick_name.c_str(), nullptr);
-  if (res == "true")
-    return true;
-  else
-    return false;
-}
-
 bool QuiddityManager::scan_directory_for_plugins(std::string directory) {
   std::string res = seq_invoke(QuiddityCommand::scan_directory_for_plugins,
                                directory.c_str(), nullptr);
@@ -956,13 +944,6 @@ gboolean QuiddityManager::execute_command(gpointer user_data) {
                                                                  context->
                                                                  command_->args_
                                                                  [1]));
-      break;
-    case QuiddityCommand::rename:
-      if (context->manager_impl_->rename(context->command_->args_[0],
-                                         context->command_->args_[1]))
-        context->command_->result_.push_back("true");
-      else
-        context->command_->result_.push_back("false");
       break;
     case QuiddityCommand::remove:
       if (context->manager_impl_->remove(context->command_->args_[0]))

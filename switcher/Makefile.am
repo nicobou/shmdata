@@ -54,6 +54,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     method.cpp \
     on-caps.cpp \
     plugin-loader.cpp \
+    port-checker.cpp \
     property-mapper.cpp \
     property.cpp \
     quiddity-basic-test.cpp \
@@ -141,6 +142,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     method.hpp \
     on-caps.hpp \
     plugin-loader.hpp \
+    port-checker.hpp \
     property-mapper.hpp \
     property.hpp \
     quiddity-basic-test.hpp \

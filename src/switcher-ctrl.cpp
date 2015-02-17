@@ -27,7 +27,6 @@ static gboolean save = FALSE;
 static gboolean load = FALSE;
 static gboolean run = FALSE;
 static gboolean createquiddity = FALSE;
-static gboolean renamequiddity = FALSE;
 static gboolean deletequiddity = FALSE;
 static gboolean listclasses = FALSE;
 static gboolean classesdoc = FALSE;
@@ -60,8 +59,6 @@ static GOptionEntry entries[24] = {
    nullptr},
   {"delete-quiddity", 'D', 0, G_OPTION_ARG_NONE, &deletequiddity,
    "delete a quiddity instance by its name", nullptr},
-  {"rename", 'r', 0, G_OPTION_ARG_NONE, &renamequiddity,
-   "rename a quiddity (-r nick name new_nick_name)", nullptr},
   {"list-classes", 'c', 0, G_OPTION_ARG_NONE, &listclasses,
    "list quiddity classes", nullptr},
   {"list-quiddities", 'e', 0, G_OPTION_ARG_NONE, &listquiddities,
@@ -118,8 +115,7 @@ main(int argc, char *argv[]) {
   if (server == nullptr)
     server = g_strdup("http://localhost:27182");
 
-  if (!(renamequiddity
-        ^ save
+  if (!(save
         ^ load
         ^ run
         ^ listclasses
@@ -145,22 +141,7 @@ main(int argc, char *argv[]) {
   controlProxy switcher_control(SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);
   switcher_control.soap_endpoint = server;
 
-  if (renamequiddity) {
-    if (remaining_args[0] == nullptr) {
-      g_printerr("missing nick name\n");
-      return false;
-    }
-    std::string res;
-    if (remaining_args[1] == nullptr) {
-      g_printerr("missing new nick name\n");
-      return false;
-    }
-
-    switcher_control.rename_quiddity(remaining_args[0], remaining_args[1],
-                                     &res);
-    std::cout << res << std::endl;
-  }
-  else if (save) {
+  if (save) {
     std::string result;
     if (remaining_args[0] == nullptr) {
       g_printerr("file name missing\n");

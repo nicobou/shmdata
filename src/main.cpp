@@ -37,8 +37,6 @@ static gboolean display_version;
 static gboolean quiet;
 static gboolean debug;
 static gboolean verbose;
-// static gchar **remaining_args = nullptr;
-
 static gboolean listclasses;
 static gboolean classesdoc;
 static gchar *classdoc = nullptr;
@@ -46,15 +44,8 @@ static gchar *listpropbyclass = nullptr;
 static gchar *listmethodsbyclass = nullptr;
 static gchar *listsignalsbyclass = nullptr;
 static gchar *extraplugindir = nullptr;
-
-// static std::vector<switcher::QuiddityManager::ptr> container;
-static
-switcher::QuiddityManager::ptr
-manager;
-
-static
-GOptionEntry
-entries[15] = {
+static switcher::QuiddityManager::ptr manager;
+static GOptionEntry entries[15] = {
   {"version", 'V', 0, G_OPTION_ARG_NONE, &display_version,
    "display switcher version number", nullptr},
   {"server-name", 'n', 0, G_OPTION_ARG_STRING, &server_name,
@@ -80,8 +71,7 @@ entries[15] = {
   {"classes-doc", 'K', 0, G_OPTION_ARG_NONE, &classesdoc,
    "print classes documentation, JSON-formated", nullptr},
   {"class-doc", 'k', 0, G_OPTION_ARG_STRING, &classdoc,
-   "print class documentation, JSON-formated (--class-doc class_name)",
-   nullptr},
+   "print class documentation, JSON-formated (--class-doc class_name)", nullptr},
   {"osc-port", 'o', 0, G_OPTION_ARG_STRING, &osc_port_number,
    "osc port number (osc enabled only if set)", nullptr},
   {"extra-plugin-dir", 'E', 0, G_OPTION_ARG_STRING, &extraplugindir,
@@ -112,7 +102,8 @@ static void
 logger_cb(std::string /*subscriber_name */ ,
           std::string /*quiddity_name */ ,
           std::string /*property_name */ ,
-          std::string value, void * /*user_data */ ) {
+          std::string value,
+          void * /*user_data */ ) {
   g_print("%s\n", value.c_str());
 }
 
@@ -125,10 +116,8 @@ main(int argc, char *argv[]) {
   (void) signal(SIGTERM, leave);
 
   // command line options
-  GError *
-      error = nullptr;
-  GOptionContext *
-      context;
+  GError *error = nullptr;
+  GOptionContext *context;
   context = g_option_context_new("- switcher server");
   g_option_context_add_main_entries(context, entries, nullptr);
   if (!g_option_context_parse(context, &argc, &argv, &error)) {
@@ -226,8 +215,7 @@ main(int argc, char *argv[]) {
   }
   if (listpropbyclass != nullptr) {
     g_log_set_default_handler(quiet_log_handler, nullptr);
-    g_print("%s\n",
-            manager->
+    g_print("%s\n", manager->
             get_properties_description_by_class(listpropbyclass).c_str());
     return 0;
   }

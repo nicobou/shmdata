@@ -19,10 +19,8 @@
 #define PLUGINS_PJSIP_PJ_CALL_H_
 
 #include <pjsua-lib/pjsua.h>
-
 #include <string>
 #include <vector>
-
 #include "switcher/shmdata-any-writer.hpp"
 #include "switcher/rtp-session.hpp"
 #include "switcher/quiddity-manager.hpp"
@@ -30,7 +28,6 @@
 
 namespace switcher {
 class PJSIP;
-
 class PJCall {
   friend PJCodec;
 
@@ -48,9 +45,8 @@ class PJCall {
     std::string shm_path_to_send {};
   };
 
-  /* This is a call structure that is created when the application starts
-   * and only destroyed when the application quits.
-   */
+  // This is a call structure that is created when the application starts
+  // and only destroyed when the application quits.
   using call_t = struct call {
     pjsip_inv_session *inv {nullptr};
     std::vector<media_t> media{};
@@ -61,17 +57,17 @@ class PJCall {
   static pjmedia_endpt *med_endpt_;
   static pjsip_module mod_siprtp_;
   pj_str_t local_addr {nullptr, 0};
-  std::vector<call_t> call;
+  std::vector<call_t> outgoing_call_{};
+  std::vector<call_t> incoming_call_{};
+  std::vector<call_t> call_{};
   PJSIP *sip_instance_;
   // internal rtp
   QuiddityManager::ptr manager_;
   data::Tree::ptr contact_shm_;
-  // external rtp session quidity for sending
-  // std::string rtp_session_name_ {};
-  // GParamSpec *rtp_session_name_spec_ {nullptr};
-  uint starting_rtp_port_ {18000};
+  uint starting_rtp_port_ {18900};
+  pj_uint16_t last_attributed_port_{18900};  // Must be even
+  uint port_range_{100};
   GParamSpec *starting_rtp_port_spec_ {nullptr};
-  bool is_updating_{false};
   // sip functions
   static pj_bool_t on_rx_request(pjsip_rx_data *rdata);
   static void call_on_state_changed(pjsip_inv_session *inv,
@@ -103,7 +99,7 @@ class PJCall {
                            call_t *call,
                            pjmedia_sdp_session **res);
   Quiddity::ptr retrieve_rtp_manager();
-  static gboolean call_sip_url(gchar *sip_url, void *user_data);
+  static gboolean send_to(gchar *sip_url, void *user_data);
   static void set_starting_rtp_port(const gint value, void *user_data);
   static gint get_starting_rtp_port(void *user_data);
   void make_hang_up(std::string contact_uri);
@@ -133,6 +129,8 @@ class PJCall {
   static void on_inv_state_connecting(struct call *call,
                                       pjsip_inv_session *inv,
                                       pjsua_buddy_id id);
+  static bool release_incoming_call(call_t *call, pjsua_buddy_id id);
+  static bool release_outgoing_call(call_t *call, pjsua_buddy_id id);
 };
 
 }  // namespace switcher

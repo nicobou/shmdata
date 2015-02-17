@@ -456,4 +456,5 @@ bool GstUtils::can_sink_caps(std::string factory_name, std::string caps) {
     return false;
   return true;
 }
-}
+
+}  // namespace switcher

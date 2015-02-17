@@ -249,36 +249,6 @@ v8::Handle<v8::Value> GetInfo(const v8::Arguments &args) {
   return scope.Close(name);
 }
 
-v8::Handle<v8::Value> Rename(const v8::Arguments &args) {
-  v8::HandleScope scope;
-  if (args.Length() != 2) {
-    ThrowException(v8::Exception::TypeError(v8::String::New
-                                            ("Wrong number of arguments")));
-    return scope.Close(v8::Undefined());
-  }
-  if (!args[0]->IsString()) {
-    ThrowException(v8::Exception::TypeError(v8::String::New
-                                            ("switcher create: Wrong first arg type")));
-    return scope.Close(v8::Undefined());
-  }
-  v8::String::Utf8Value first_arg(args[0]->ToString());
-
-  if (!args[1]->IsString()) {
-    ThrowException(v8::Exception::TypeError(v8::String::New
-                                            ("switcher create: Wrong second arg type")));
-    return scope.Close(v8::Undefined());
-  }
-  v8::String::Utf8Value second_arg(args[1]->ToString());
-
-  v8::Local<v8::String> name;
-
-  v8::Handle<v8::Boolean> res =
-      v8::Boolean::New(switcher_container[0]->rename(std::string(*first_arg),
-                                                     std::string(*second_arg)));
-
-  return scope.Close(res);
-}
-
 v8::Handle<v8::Value> SwitcherClose(const v8::Arguments &args) {
   v8::HandleScope scope;
   // if (!user_log_cb.IsEmpty ())
@@ -1033,8 +1003,6 @@ Init(v8::Handle<v8::Object> target) {
   // life manager
   target->Set(v8::String::NewSymbol("create"),
               v8::FunctionTemplate::New(Create)->GetFunction());
-  target->Set(v8::String::NewSymbol("rename"),
-              v8::FunctionTemplate::New(Rename)->GetFunction());
   target->Set(v8::String::NewSymbol("remove"),
               v8::FunctionTemplate::New(Remove)->GetFunction());
   target->Set(v8::String::NewSymbol("close"),

@@ -75,7 +75,6 @@ class QuiddityCommand {
     remove,
     remove_property_subscriber,
     remove_signal_subscriber,
-    rename,
     scan_directory_for_plugins,
     set_property,
     subscribe_property,
