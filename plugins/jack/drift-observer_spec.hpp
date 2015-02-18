@@ -28,10 +28,10 @@ TimeType DriftObserver<TimeType>::set_current_time_info(
   // udating statistics for the previous duration
   if (0 != current_buffer_duration_) {
     double measured_ratio = (double)(date - current_buffer_date_) / current_buffer_duration_;
-    if (0.9 < measured_ratio && measured_ratio < 1.1)
+    //if (0.1 < measured_ratio && measured_ratio < 1.9)
       ratio_ = (1 - smoothing_factor_) * ratio_ + smoothing_factor_ * measured_ratio;
-    else
-      ratio_ = 1;
+      //else
+      //ratio_ = 1;
   }
   current_buffer_date_ = date;
   current_buffer_duration_ = duration;
@@ -39,7 +39,7 @@ TimeType DriftObserver<TimeType>::set_current_time_info(
   // according to statistics previouslyt computed
   double res = duration*ratio_ + remainder_;
   //std::cout << "new duration " << res << std::endl;
-  remainder_ = res - static_cast<TimeType>(res);
+  remainder_ = 0; // res - static_cast<TimeType>(res);
   return static_cast<TimeType>(res);
 }
 
