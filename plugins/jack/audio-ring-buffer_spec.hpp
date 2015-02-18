@@ -42,7 +42,8 @@ std::size_t AudioRingBuffer<SampleType>::put_samples(
   for (std::size_t i = 0; i < res; ++i){
     buffer_[write_] = sample_getter();
     ++write_;
-    write_ = write_ % buffer_size_;
+    if (buffer_size_ == write_)
+      write_ = 0;
   }
   available_size_.fetch_sub(res);
   return res;
@@ -64,7 +65,8 @@ std::size_t AudioRingBuffer<SampleType>::pop_samples(std::size_t num,
   for (std::size_t i = 0; i < res; ++i){
     dest[i] = buffer_[read_];
     ++read_;
-    read_ = read_ % buffer_size_;
+    if (buffer_size_ == read_)
+      read_ = 0;
   }
   available_size_.fetch_add(res);
   return res;
