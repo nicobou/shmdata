@@ -63,8 +63,14 @@ int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
         auto poped = context->ring_buffers_[i].pop_samples((std::size_t)nframes, buf);
         if (nframes != poped) {
           g_print("cannot pop to jack, missing %lu frames\n", nframes - poped);
+          if (0 != poped) {
+            jack_sample_t sample = buf[poped - 1]; 
           for (unsigned int j = poped; j < nframes; ++j)
-            buf[j] = 0;
+            buf[j] = sample;
+          } else {
+            for (unsigned int j = 0; j < nframes; ++j)
+              buf[j] = 0;
+          }
         }
       }
     }  // locked
