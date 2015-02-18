@@ -37,7 +37,7 @@ TimeType DriftObserver<TimeType>::set_current_time_info(
   current_buffer_duration_ = duration;
   // computing expected duration for this current data,
   // according to statistics previouslyt computed
-  double res = duration/ratio_ + remainder_;
+  double res = duration*ratio_ + remainder_;
   //std::cout << "new duration " << res << std::endl;
   remainder_ = res - static_cast<TimeType>(res);
   return static_cast<TimeType>(res);

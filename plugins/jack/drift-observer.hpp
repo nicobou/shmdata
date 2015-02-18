@@ -35,7 +35,7 @@ class DriftObserver {
   TimeType current_buffer_duration_{0};
   double remainder_{0};
   double ratio_{1};
-  double smoothing_factor_{0.0001};
+  double smoothing_factor_{0.000001};
 };
 
 }  // namespace switcher
