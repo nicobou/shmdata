@@ -107,24 +107,23 @@ void ShmdataToJack::on_handoff_cb(GstElement */*object*/,
   const int channels = g_value_get_int(val);
   context->check_output_ports(channels);
   jack_nframes_t duration = GST_BUFFER_SIZE(buf) / (4 * channels);
+  // setting the smoothing value affecting a window of 3 seconds
+  context->drift_observer_.set_smoothing_factor(
+      3.0 * (double)duration / (double)context->jack_client_.get_sample_rate());
   std::size_t new_size = 
       (std::size_t)context->drift_observer_.set_current_time_info(current_time, duration);
   if (duration != new_size) {
     g_print("duration %u, new size %lu, load is %lu\n",
             duration,
             new_size,
-            context->ring_buffers_[0].get_used());  // FIXME rename into get_usage
+            context->ring_buffers_[0].get_usage());
   }
   // std::vector<jack_sample_t> buf_copy((jack_sample_t *)GST_BUFFER_DATA(buf),
   //                                     (jack_sample_t *)(GST_BUFFER_DATA(buf) + GST_BUFFER_SIZE(buf)));
   // jack_sample_t *tmp_buf = (jack_sample_t *)buf_copy.data();
   jack_sample_t *tmp_buf = (jack_sample_t *)GST_BUFFER_DATA(buf);
   for (int i = 0; i < channels; ++i) {
-    AudioResampler<jack_sample_t> resample(duration,
-                                           new_size,
-                                           tmp_buf,
-                                           i,
-                                           channels);
+    AudioResampler<jack_sample_t> resample(duration, new_size, tmp_buf, i, channels);
     auto emplaced =
         context->ring_buffers_[i].put_samples(
         new_size,

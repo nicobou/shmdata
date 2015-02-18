@@ -73,7 +73,7 @@ std::size_t AudioRingBuffer<SampleType>::pop_samples(std::size_t num,
 }
 
 template<typename SampleType>
-std::size_t AudioRingBuffer<SampleType>::get_used(){
+std::size_t AudioRingBuffer<SampleType>::get_usage(){
   return buffer_size_ - available_size_.load();
 }
 

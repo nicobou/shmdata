@@ -27,6 +27,7 @@ class DriftObserver {
  public:
   DriftObserver() = default;
   ~DriftObserver() = default;
+  void set_smoothing_factor(const double &sf);  // data race with set_current_time_info 
   // this is returning the duration this duration should have
   TimeType set_current_time_info(const TimeType date,
                                  const TimeType duration);
@@ -35,7 +36,7 @@ class DriftObserver {
   TimeType current_buffer_duration_{0};
   double remainder_{0};
   double ratio_{1};
-  double smoothing_factor_{0.000001};
+  double smoothing_factor_{0.0001};
 };
 
 }  // namespace switcher

@@ -43,4 +43,9 @@ TimeType DriftObserver<TimeType>::set_current_time_info(
   return static_cast<TimeType>(res);
 }
 
+template<typename TimeType>
+void DriftObserver<TimeType>::set_smoothing_factor(const double &sf){
+  smoothing_factor_ = sf;
+}
+
 }  // namespace switcher

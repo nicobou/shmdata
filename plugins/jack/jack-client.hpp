@@ -39,8 +39,8 @@ class JackClient : public SafeBoolIdiom {
   JackClient() = delete;
   JackClient(const JackClient &) = delete;
   JackClient &operator=(const JackClient &) = delete;
-  jack_nframes_t get_sample_rate() const;
-  jack_nframes_t get_buffer_size() const;
+  jack_nframes_t get_sample_rate() const{return sample_rate_;};
+  jack_nframes_t get_buffer_size() const{return buffer_size_;};
   void set_jack_process_callback(JackProcessCallback cb, void *arg);
   // the xrun callback is called in jack_process
   // before calling the actual process function:

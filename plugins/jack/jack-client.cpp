@@ -73,14 +73,6 @@ bool JackClient::safe_bool_idiom() const {
   return static_cast<bool>(client_);
 }
 
-jack_nframes_t JackClient::get_sample_rate() const{
-  return sample_rate_;
-}
-
-jack_nframes_t JackClient::get_buffer_size() const{
-  return buffer_size_;
-}
-
 void JackClient::on_jack_shutdown (void */*arg*/)
 {
   g_warning("jack shut down");
