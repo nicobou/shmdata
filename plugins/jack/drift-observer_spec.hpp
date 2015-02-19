@@ -41,10 +41,10 @@ TimeType DriftObserver<TimeType>::set_current_time_info(
   const double decimals = res - std::floor(res);
   // minimising the remainder
   if (decimals < 0.5){
-    remainder_ = 0; // decimals;
+    remainder_ = decimals;
     return static_cast<TimeType>(res);
   } else {
-    remainder_ = 0; //decimals - 1;
+    remainder_ = decimals - 1;
     return static_cast<TimeType>(res + 1);
   }
 }
