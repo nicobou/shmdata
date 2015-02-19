@@ -27,31 +27,32 @@
 #include <vector>
 
 namespace switcher {
-template<class T> class Creator {
+template<class T, typename ...ATs> class Creator {
  public:
-  virtual ~ Creator() {
-  }
-  virtual T *Create() = 0;
+  virtual ~Creator() {}
+  virtual T *Create(ATs... args) = 0;
 };
 
-template<class T > class DerivedCreator:public Creator < T> {
+template<class T, typename ...ATs>
+class DerivedCreator: public Creator<T, ATs...> {
  public:
-  T *Create() {
-    return new T;
+  T *Create(ATs... args) {
+    return new T(std::forward<ATs>(args)...);
   }
 };
 
-template<class T > class CustomDerivedCreator:public Creator < T> {
+template<class T, typename ...ATs>
+class CustomDerivedCreator: public Creator<T, ATs...> {
  public:
-  T *Create() {
-    return (*custom_create_) ();
+  T *Create(ATs... args) {
+    return (*custom_create_) (std::forward<ATs>(args)...);
   }
-  T *(*custom_create_) ();
+  T *(*custom_create_) (ATs...);
 
   CustomDerivedCreator():
       custom_create_() {
   }
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

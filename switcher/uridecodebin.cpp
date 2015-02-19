@@ -36,7 +36,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
 Uridecodebin::~Uridecodebin() {
 }
 
-Uridecodebin::Uridecodebin():
+Uridecodebin::Uridecodebin(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 

@@ -24,7 +24,9 @@
 
 namespace switcher {
 namespace PortChecker {
+
 bool is_used(std::uint16_t port);
+
 }  // namespace PortChecker
 }  // namespace switcher
 #endif

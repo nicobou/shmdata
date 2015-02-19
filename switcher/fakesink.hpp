@@ -31,7 +31,7 @@ namespace switcher {
 class FakeSink:public SinglePadGstSink {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeSink);
-  FakeSink();
+  FakeSink(const std::string &);
   ~FakeSink();
   FakeSink(const FakeSink &) = delete;
   FakeSink &operator=(const FakeSink &) = delete;

@@ -17,31 +17,29 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./osc-ctrl-server.hpp"
-#include <ctime>                // For time()
-#include <cstdlib>              // For srand() and rand()
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <lo/lo.h>
 #include <utility>              // std::make_pair (,)
+#include "./osc-ctrl-server.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscCtrlServer,
                                      "Switcher OSC Controler",
                                      "control server",
                                      "OSCcontrolServer allows for managing switcher through OSC",
-                                     "LGPL", "OSCctl", "Nicolas Bouillot");
-OscCtrlServer::OscCtrlServer():port_(),
-                               osc_subscribers_(), osc_thread_(nullptr) {
+                                     "LGPL",
+                                     "OSCctl",
+                                     "Nicolas Bouillot");
+OscCtrlServer::OscCtrlServer(const std::string &):
+    port_(),
+    osc_subscribers_(),
+    osc_thread_(nullptr) {
 }
 
 bool OscCtrlServer::init() {
   osc_thread_ = nullptr;
-  srand(time(0));
-  set_name(g_strdup_printf("oscctrlserver%d", rand() % 1024));
-
   install_method("Set Port",
                  "set_port",
                  "set the port used by the osc server and start listening messages",

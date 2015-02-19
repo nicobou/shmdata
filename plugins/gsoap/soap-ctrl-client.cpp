@@ -29,7 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SoapCtrlClient,
                                      "SOAPcontrolClient",
                                      "Nicolas Bouillot");
 
-SoapCtrlClient::SoapCtrlClient() :
+SoapCtrlClient::SoapCtrlClient(const std::string &) :
     switcher_control_(nullptr),
     url_(nullptr),
     try_connect_g_source_(nullptr),

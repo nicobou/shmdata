@@ -32,7 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "pulsesrc",
     "Nicolas Bouillot");
 
-PulseSrc::PulseSrc():
+PulseSrc::PulseSrc(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 

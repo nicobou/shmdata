@@ -32,7 +32,7 @@ namespace switcher {
 class PulseSink:public SinglePadGstSink {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSink);
-  PulseSink();
+  PulseSink(const std::string &);
   ~PulseSink();
   PulseSink(const PulseSink &) = delete;
   PulseSink &operator=(const PulseSink &) = delete;

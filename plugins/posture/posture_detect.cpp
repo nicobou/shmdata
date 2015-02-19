@@ -33,7 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureDetect,
                                      "LGPL",
                                      "pcldetectsink", "Emmanuel Durand");
 
-PostureDetect::PostureDetect():
+PostureDetect::PostureDetect(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()) {
 }
 

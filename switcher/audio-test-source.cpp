@@ -29,7 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
                                      "audiotestsrc",
                                      "Nicolas Bouillot");
 
-AudioTestSource::AudioTestSource():
+AudioTestSource::AudioTestSource(const std::string &):
     audiotestsrc_("audiotestsrc") {
 }
 

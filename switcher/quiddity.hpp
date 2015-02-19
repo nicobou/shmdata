@@ -64,7 +64,7 @@ class Quiddity {
 
   // instance name
   const std::string &get_name();
-  bool set_name(std::string name);
+  bool set_name(const std::string &name);  // can be called once
 
   // properties
   std::string get_property_description(std::string property_name);
@@ -297,8 +297,8 @@ class Quiddity {
   static QuiddityDocumentation switcher_doc_;
 
 #define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)             \
-  extern "C" Quiddity *create() {                               \
-    return new cpp_quiddity_class;                              \
+  extern "C" Quiddity *create(const std::string &name) {        \
+    return new cpp_quiddity_class(name);                        \
   }                                                             \
   extern "C" void destroy(Quiddity *quiddity) {                 \
     delete quiddity;                                            \
@@ -306,6 +306,6 @@ class Quiddity {
   extern "C" QuiddityDocumentation *get_documentation() {       \
     return &cpp_quiddity_class::switcher_doc_;                  \
   }
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

@@ -26,7 +26,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(MyPlugin,
                                      "Creates a quiddity from a plugin",
                                      "LGPL",
                                      "myplugin", "Nicolas Bouillot");
-MyPlugin::MyPlugin():
+MyPlugin::MyPlugin(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()) {
 }
 

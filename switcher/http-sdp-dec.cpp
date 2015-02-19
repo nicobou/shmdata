@@ -35,7 +35,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "httpsdpdec",
     "Nicolas Bouillot");
 
-HTTPSDPDec::HTTPSDPDec():
+HTTPSDPDec::HTTPSDPDec(const std::string &):
     souphttpsrc_("souphttpsrc"),
     sdpdemux_("sdpdemux") {
 }

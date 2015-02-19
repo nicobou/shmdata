@@ -36,7 +36,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureSrc,
                                      "posturesrc",
                                      "Emmanuel Durand");
 
-PostureSrc::PostureSrc():
+PostureSrc::PostureSrc(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()) {
   zcamera_ = make_shared<ZCamera> ();
   

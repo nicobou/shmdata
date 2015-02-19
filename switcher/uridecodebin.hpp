@@ -28,7 +28,7 @@ namespace switcher {
 class Uridecodebin:public GstPipeliner {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uridecodebin);
-  Uridecodebin();
+  Uridecodebin(const std::string &);
   ~Uridecodebin();
   Uridecodebin(const Uridecodebin &) = delete;
   Uridecodebin &operator=(const Uridecodebin &) = delete;

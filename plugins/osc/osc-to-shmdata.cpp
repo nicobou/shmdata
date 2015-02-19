@@ -28,7 +28,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
                                      "OSCsrc",
                                      "Nicolas Bouillot");
 
-OscToShmdata::OscToShmdata():
+OscToShmdata::OscToShmdata(const std::string &):
     custom_props_(new CustomPropertyHelper()),
     port_(1056),
     osc_thread_(nullptr),

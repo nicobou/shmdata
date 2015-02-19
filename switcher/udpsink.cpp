@@ -37,7 +37,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(UDPSink,
                                      "LGPL",
                                      "udpsink",
                                      "Nicolas Bouillot");
-UDPSink::UDPSink() {
+UDPSink::UDPSink(const std::string &) {
 }
 
 bool UDPSink::init_gpipe() {

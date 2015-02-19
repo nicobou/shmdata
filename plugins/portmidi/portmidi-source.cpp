@@ -29,7 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSource,
                                      "midisrc",
                                      "Nicolas Bouillot");
 
-PortMidiSource::PortMidiSource():
+PortMidiSource::PortMidiSource(const std::string &):
     shm_any_(std::make_shared <ShmdataAnyWriter > ()),
     last_status_(-1),
     last_data1_(-1),

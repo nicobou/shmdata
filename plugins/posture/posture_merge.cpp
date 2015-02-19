@@ -32,7 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureMerge,
                                      "LGPL",
                                      "pclmergesink", "Emmanuel Durand");
 
-PostureMerge::PostureMerge():
+PostureMerge::PostureMerge(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()) {
 }
 

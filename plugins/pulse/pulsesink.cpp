@@ -23,6 +23,7 @@
 #include "./pulsesink.hpp"
 
 namespace switcher {
+
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     PulseSink,
     "Audio Display (Pulse)",
@@ -32,7 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "pulsesink",
     "Nicolas Bouillot");
 
-PulseSink::PulseSink():
+PulseSink::PulseSink(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper>()){
 }
 

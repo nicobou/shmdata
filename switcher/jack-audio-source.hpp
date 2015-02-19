@@ -26,10 +26,10 @@
 #include <memory>
 
 namespace switcher {
-class JackAudioSource:public AudioSource, public StartableQuiddity {
+class JackAudioSource: public AudioSource, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackAudioSource);
-  JackAudioSource();
+  JackAudioSource(const std::string &);
   ~JackAudioSource();
   JackAudioSource(const JackAudioSource &) = delete;
   JackAudioSource &operator=(const JackAudioSource &) = delete;

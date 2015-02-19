@@ -29,7 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoParseToBinSrc,
                                      "gstvideosrc",
                                      "Nicolas Bouillot");
 
-GstVideoParseToBinSrc::GstVideoParseToBinSrc():
+GstVideoParseToBinSrc::GstVideoParseToBinSrc(const std::string &):
     gst_video_parse_to_bin_src_ (nullptr),
     custom_props_(std::make_shared<CustomPropertyHelper>()),
     gst_launch_pipeline_spec_(nullptr),

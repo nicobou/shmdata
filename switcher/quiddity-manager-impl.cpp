@@ -35,7 +35,6 @@
 #include "./gst-video-parse-to-bin-src.hpp"
 #include "./http-sdp-dec.hpp"
 #include "./jack-audio-source.hpp"
-#include "./jack-sink.hpp"
 #include "./logger.hpp"
 #include "./property-mapper.hpp"
 #include "./rtp-session.hpp"
@@ -161,9 +160,6 @@ void QuiddityManager_Impl::register_classes() {
   abstract_factory_.register_class<JackAudioSource>
       (JackAudioSource::switcher_doc_.get_class_name(),
        &JackAudioSource::switcher_doc_);
-  abstract_factory_.register_class<JackSink>
-      (JackSink::switcher_doc_.get_class_name(),
-       &JackSink::switcher_doc_);
   abstract_factory_.register_class<Logger>
       (Logger::switcher_doc_.get_class_name(),
        &Logger::switcher_doc_);
@@ -240,9 +236,7 @@ void QuiddityManager_Impl::give_name_if_unnamed(Quiddity::ptr quiddity) {
 
 bool QuiddityManager_Impl::init_quiddity(Quiddity::ptr quiddity) {
   quiddity->set_manager_impl(me_.lock());
-
-  give_name_if_unnamed(quiddity);
-
+  //give_name_if_unnamed(quiddity);
   if (!quiddity->init())
     return false;
 
@@ -259,31 +253,34 @@ std::string
 QuiddityManager_Impl::create_without_hook(std::string quiddity_class) {
   if (!class_exists(quiddity_class))
     return std::string();
-  
-  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class);
-  if (quiddity.get() != nullptr) {
-    quiddity->set_manager_impl(me_.lock());
-    give_name_if_unnamed(quiddity);
-
-    if (!quiddity->init())
-      return "{\"error\":\"cannot init quiddity class\"}";
-    
-    quiddities_[quiddity->get_name()] = quiddity;
-  }
-  return quiddity->get_name();
+  std::string name = quiddity_class + std::to_string(quiddity_created_counter_);
+  quiddity_created_counter_++;
+  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class, name);
+  if (nullptr == quiddity.get())
+    return "{\"error\":\"cannot make quiddity\"}";
+  quiddity->set_manager_impl(me_.lock());
+  quiddity->set_name(name);
+    //give_name_if_unnamed(quiddity);
+  if (!quiddity->init())
+    return "{\"error\":\"cannot init quiddity class\"}";
+  quiddities_[name] = quiddity;
+  return name;
 }
 
 std::string QuiddityManager_Impl::create(std::string quiddity_class) {
   if (!class_exists(quiddity_class))
     return std::string();
-  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class);
+  std::string name = quiddity_class + std::to_string(quiddity_created_counter_);
+  quiddity_created_counter_++;
+  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class, name);
   if (quiddity.get() != nullptr) {
+    quiddity->set_name(name);
     if (!init_quiddity(quiddity)) {
       g_debug("initialization of %s failled", quiddity_class.c_str());
       return std::string();
     }
   }
-  return quiddity->get_name();
+  return name;
 }
 
 std::string
@@ -297,19 +294,20 @@ QuiddityManager_Impl::create(std::string quiddity_class,
               nick_name.c_str());
     return std::string();
   }
-  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class);
+  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class,
+                                                    nick_name);
   if (!quiddity) {
     g_warning("abstract factory failled to create %s (class %s)",
               nick_name.c_str(), quiddity_class.c_str());
     return std::string();
   }
-  quiddity->set_name(std::forward<std::string>(nick_name));
+  quiddity->set_name(nick_name);
   if (!init_quiddity(quiddity)) {
     g_debug("initialization of %s with name %s failled",
             quiddity_class.c_str(), quiddity->get_name().c_str());
     return std::string();
   }
-  return std::string(quiddity->get_name());
+  return nick_name;
 }
 
 std::vector<std::string> QuiddityManager_Impl::get_instances() {
@@ -959,12 +957,9 @@ GMainContext *QuiddityManager_Impl::get_g_main_context() {
 
 bool QuiddityManager_Impl::load_plugin(const char *filename) {
   PluginLoader::ptr plugin = std::make_shared<PluginLoader>();
-
   if (!plugin->load(filename))
     return false;
-
   std::string class_name = plugin->get_class_name();
-
   // close the old one if exists
   auto it = plugins_.find(class_name);
   if (plugins_.end() != it) {
@@ -972,7 +967,6 @@ bool QuiddityManager_Impl::load_plugin(const char *filename) {
             class_name.c_str());
     close_plugin(class_name);
   }
-
   abstract_factory_.register_class_with_custom_factory(
       class_name,
       plugin->get_doc(),

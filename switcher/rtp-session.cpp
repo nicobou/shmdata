@@ -43,7 +43,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RtpSession,
                                      "rtpsession",
                                      "Nicolas Bouillot");
 
-RtpSession::RtpSession():
+RtpSession::RtpSession(const std::string &):
     custom_props_(new CustomPropertyHelper()) {
 }
 

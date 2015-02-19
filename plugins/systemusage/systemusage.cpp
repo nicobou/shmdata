@@ -41,7 +41,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SystemUsage,
                                      "Gives system load information",
                                      "LGPL",
                                      "systemusage", "Emmanuel Durand");
-SystemUsage::SystemUsage():
+SystemUsage::SystemUsage(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()),
     period_prop_(nullptr), cpuNbr_(0), period_(0.1) {
 }

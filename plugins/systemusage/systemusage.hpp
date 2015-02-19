@@ -59,7 +59,7 @@ struct Net {
 class SystemUsage:public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SystemUsage);
-  SystemUsage();
+  SystemUsage(const std::string &);
   ~SystemUsage();
   SystemUsage(const SystemUsage &) = delete;
   SystemUsage &operator=(const SystemUsage &) = delete;

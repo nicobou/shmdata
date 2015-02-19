@@ -28,7 +28,7 @@ namespace switcher {
 class UDPSink:public SinglePadGstSink {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(UDPSink);
-  UDPSink();
+  UDPSink(const std::string &);
   ~UDPSink();
   UDPSink(const UDPSink &) = delete;
   UDPSink &operator=(const UDPSink &) = delete;

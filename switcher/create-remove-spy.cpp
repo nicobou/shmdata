@@ -30,7 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(CreateRemoveSpy,
                                      "create_remove_spy",
                                      "Nicolas Bouillot");
 
-CreateRemoveSpy::CreateRemoveSpy():i_am_the_one_(false) {
+CreateRemoveSpy::CreateRemoveSpy(const std::string &):
+    i_am_the_one_(false) {
 }
 
 bool CreateRemoveSpy::init() {

@@ -17,11 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/quiddity-manager.hpp"
-#include "switcher/quiddity-basic-test.hpp"
 #include <vector>
 #include <string>
 #include <iostream>
+#include <cassert>
+#include "switcher/quiddity-manager.hpp"
+#include "switcher/quiddity-basic-test.hpp"
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
@@ -29,12 +30,9 @@
 
 int
 main() {
-  bool success = true;
-
   {
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("test_manager");
-
 #ifdef HAVE_CONFIG_H
     gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
     manager->scan_directory_for_plugins(usr_plugin_dir);
@@ -42,16 +40,8 @@ main() {
 #else
     return 1;
 #endif
-
-    if (!switcher::QuiddityBasicTest::test_full(manager, "OSCctl"))
-      success = false;
-
-    if (!switcher::QuiddityBasicTest::test_full(manager, "OSCprop"))
-      success = false;
-  }                             // end of scope is releasing the manager
-
-  if (success)
-    return 0;
-  else
-    return 1;
+    assert(switcher::QuiddityBasicTest::test_full(manager, "OSCctl"));
+    assert(switcher::QuiddityBasicTest::test_full(manager, "shmOSCsink"));
+  }  // end of scope is releasing the manager
+  return 0;
 }

@@ -37,8 +37,7 @@ PJSIP *PJSIP::this_ = nullptr;  // static pointer to the instance
 // using unsigned short instead
 std::atomic<unsigned short> PJSIP::sip_endpt_used_(0);
 
-
-PJSIP::PJSIP():
+PJSIP::PJSIP(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper>()),
     cp_() {
 }

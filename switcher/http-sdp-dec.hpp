@@ -33,7 +33,7 @@ namespace switcher {
 class HTTPSDPDec: public GstPipeliner {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);
-  HTTPSDPDec();
+  HTTPSDPDec(const std::string &);
 
  private:
   UGstElem souphttpsrc_;

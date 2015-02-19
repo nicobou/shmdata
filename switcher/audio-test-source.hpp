@@ -26,10 +26,10 @@
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
-class AudioTestSource:public AudioSource, public StartableQuiddity {
+class AudioTestSource: public AudioSource, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AudioTestSource);
-  AudioTestSource();
+  AudioTestSource(const std::string &);
   ~AudioTestSource();
   AudioTestSource(const AudioTestSource &) = delete;
   AudioTestSource &operator=(const AudioTestSource &) = delete;

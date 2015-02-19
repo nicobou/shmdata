@@ -37,7 +37,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SoapCtrlServer,
                                      "SOAPcontrolServer",
                                      "Nicolas Bouillot");
 
-SoapCtrlServer::SoapCtrlServer() :
+SoapCtrlServer::SoapCtrlServer(const std::string &):
     soap_(),
     port_(8080),
     quit_server_thread_(false),
