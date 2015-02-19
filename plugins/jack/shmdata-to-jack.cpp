@@ -52,25 +52,22 @@ ShmdataToJack::ShmdataToJack(const std::string &name):
 
 int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
   auto context = static_cast<ShmdataToJack *>(arg);
-  // g_print("last frame %u, num frames %u\n",
-  //         jack_last_frame_time(context->jack_client_.get_raw()),
-  //         nframes);
   { std::unique_lock<std::mutex> lock(context->output_ports_mutex_, std::defer_lock);
     if (lock.try_lock()) {
+      auto write_zero = false;
+      auto num_channels = context->output_ports_.size();
+      if (num_channels > 0 &&  context->ring_buffers_[0].get_usage() < nframes){
+        //g_print("jack missed a buffer\n");
+        write_zero = true;
+      }
       for (unsigned int i = 0; i < context->output_ports_.size(); ++i) {
         jack_sample_t *buf =
             (jack_sample_t *)jack_port_get_buffer(context->output_ports_[i], nframes);
-        auto poped = context->ring_buffers_[i].pop_samples((std::size_t)nframes, buf);
-        if (nframes != poped) {
-          // g_print("cannot pop to jack, missing %lu frames\n", nframes - poped);
-          if (0 != poped) {
-            jack_sample_t sample = buf[poped - 1]; 
-          for (unsigned int j = poped; j < nframes; ++j)
-            buf[j] = sample;
-          } else {
-            for (unsigned int j = 0; j < nframes; ++j)
-              buf[j] = 0;
-          }
+        if (!write_zero) { 
+          context->ring_buffers_[i].pop_samples((std::size_t)nframes, buf);
+        } else {
+          for (unsigned int j = 0; j < nframes; ++j)
+            buf[j] = 0;
         }
       }
     }  // locked
@@ -79,7 +76,7 @@ int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
 }
 
 void ShmdataToJack::on_xrun(uint num_of_missed_samples) {
-  g_warning ("%s %u\n", __FUNCTION__, num_of_missed_samples);
+  g_warning ("jack xrun (delay of %u samples)", num_of_missed_samples);
   jack_nframes_t jack_buffer_size = jack_client_.get_buffer_size();
   for (auto &it: ring_buffers_) {
     // this is safe since on_xrun is called right before jack_process,
@@ -114,17 +111,19 @@ void ShmdataToJack::on_handoff_cb(GstElement */*object*/,
       (std::size_t)context->drift_observer_.set_current_time_info(current_time, duration);
   --context->debug_buffer_usage_;
   if (0 == context->debug_buffer_usage_){
-    // g_print("buffer load is %lu, ratio is %f\n",
-    //         context->ring_buffers_[0].get_usage(),
-    //         context->drift_observer_.get_ratio());
+    g_debug("buffer load is %lu, ratio is %f\n",
+            context->ring_buffers_[0].get_usage(),
+            context->drift_observer_.get_ratio());
     context->debug_buffer_usage_ = 1000;
   }
-  if (duration != new_size) {
-    // g_print("duration %u, new size %lu, load is %lu\n",
-    //         duration,
-    //         new_size,
-    //         context->ring_buffers_[0].get_usage());
-  }
+  // if (duration != new_size) {
+  //   g_print("duration %u, new size %lu, load is %lu, ratio is %f, sf %f\n",
+  //           duration,
+  //           new_size,
+  //           context->ring_buffers_[0].get_usage(),
+  //           context->drift_observer_.get_ratio(),
+  //           context->drift_observer_.get_smoothing_factor());
+  // }
   // std::vector<jack_sample_t> buf_copy((jack_sample_t *)GST_BUFFER_DATA(buf),
   //                                     (jack_sample_t *)(GST_BUFFER_DATA(buf) + GST_BUFFER_SIZE(buf)));
   // jack_sample_t *tmp_buf = (jack_sample_t *)buf_copy.data();

@@ -44,7 +44,6 @@ libportmidisink_la_SOURCES = \
     portmidi-sink.cpp
 
 libportmidisink_la_include_HEADERS = \
-    portmidi-devices.hpp \
     portmidi-sink.hpp
 
 libportmidisink_la_includedir = \

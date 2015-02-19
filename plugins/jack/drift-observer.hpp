@@ -32,6 +32,7 @@ class DriftObserver {
   TimeType set_current_time_info(const TimeType date,
                                  const TimeType duration);
   double get_ratio() const {return ratio_;}
+  double get_smoothing_factor() const {return smoothing_factor_;}
  private:
   TimeType current_buffer_date_{0};
   TimeType current_buffer_duration_{0};

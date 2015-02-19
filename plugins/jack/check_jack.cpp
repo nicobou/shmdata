@@ -41,7 +41,7 @@ main() {
     return 1;
 #endif
 
-    assert(switcher::QuiddityBasicTest::test_full(manager, "jacksink2"));
+    assert(switcher::QuiddityBasicTest::test_full(manager, "jacksink"));
 
   }  // end of scope is releasing the manager
   return 0;
