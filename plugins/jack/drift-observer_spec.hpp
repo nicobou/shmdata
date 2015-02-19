@@ -27,20 +27,26 @@ TimeType DriftObserver<TimeType>::set_current_time_info(
     const TimeType duration){
   // udating statistics for the previous duration
   if (0 != current_buffer_duration_) {
-    double measured_ratio = (double)(date - current_buffer_date_) / current_buffer_duration_;
-    //if (0.1 < measured_ratio && measured_ratio < 1.9)
+    const double measured_ratio = (double)(date - current_buffer_date_) / current_buffer_duration_;
+    if (0.7 < measured_ratio && measured_ratio < 1.3)
       ratio_ = (1 - smoothing_factor_) * ratio_ + smoothing_factor_ * measured_ratio;
-      //else
-      //ratio_ = 1;
+    else
+      ratio_ = 1;
   }
   current_buffer_date_ = date;
   current_buffer_duration_ = duration;
   // computing expected duration for this current data,
   // according to statistics previouslyt computed
-  double res = duration*ratio_ + remainder_;
-  //std::cout << "new duration " << res << std::endl;
-  remainder_ = res - static_cast<TimeType>(res);
-  return static_cast<TimeType>(res);
+  const double res = duration*ratio_ + remainder_;
+  const double decimals = res - std::floor(res);
+  // minimising the remainder
+  if (decimals < 0.5){
+    remainder_ = 0; // decimals;
+    return static_cast<TimeType>(res);
+  } else {
+    remainder_ = 0; //decimals - 1;
+    return static_cast<TimeType>(res + 1);
+  }
 }
 
 template<typename TimeType>

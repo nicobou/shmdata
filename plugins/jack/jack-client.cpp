@@ -93,9 +93,10 @@ JackClient::on_xrun(void *arg)
 {
   JackClient *context = static_cast<JackClient *>(arg);
   // computing the number of sample missed
-  g_print("xrun delay %f ms\n num sample missed %f",
-          0.001 * jack_get_xrun_delayed_usecs(context->client_.get()),
-          (float)context->sample_rate_ * (1e-6 * jack_get_xrun_delayed_usecs(context->client_.get())));
+  // g_print("xrun delay %f ms\n num sample missed %f",
+  //         0.001 * jack_get_xrun_delayed_usecs(context->client_.get()),
+  //         (float)context->sample_rate_ * (1e-6 * jack_get_xrun_delayed_usecs(context->client_.get())));
+  g_print("--- XRUN ---\n");
   context->xrun_count_.fetch_add(std::ceil(
       (float)context->sample_rate_
       * (1e-6 * jack_get_xrun_delayed_usecs(context->client_.get()))));

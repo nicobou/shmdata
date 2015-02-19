@@ -107,9 +107,9 @@ void ShmdataToJack::on_handoff_cb(GstElement */*object*/,
   const int channels = g_value_get_int(val);
   context->check_output_ports(channels);
   jack_nframes_t duration = GST_BUFFER_SIZE(buf) / (4 * channels);
-  // setting the smoothing value affecting a window of 3 seconds
+  // setting the smoothing value affecting a window of 10 seconds
   context->drift_observer_.set_smoothing_factor(
-      3.0 * (double)duration / (double)context->jack_client_.get_sample_rate());
+      (double)duration / (10.0 * (double)context->jack_client_.get_sample_rate()));
   std::size_t new_size = 
       (std::size_t)context->drift_observer_.set_current_time_info(current_time, duration);
   if (duration != new_size) {
@@ -129,7 +129,7 @@ void ShmdataToJack::on_handoff_cb(GstElement */*object*/,
         new_size,
         [&resample]() {
           // return resample.zero_pole_get_next_sample();
-          return resample.zero_pole_get_next_sample();
+          return resample.linear_get_next_sample();
         });
     if (emplaced != new_size)
       g_print("overflow of %lu samples", new_size - emplaced);
