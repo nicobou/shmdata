@@ -107,14 +107,16 @@ void ShmdataToJack::on_handoff_cb(GstElement */*object*/,
   const int channels = g_value_get_int(val);
   context->check_output_ports(channels);
   jack_nframes_t duration = GST_BUFFER_SIZE(buf) / (4 * channels);
-  // setting the smoothing value affecting
+  // setting the smoothing value affecting (20 sec)
   context->drift_observer_.set_smoothing_factor(
       (double)duration / (20.0 * (double)context->jack_client_.get_sample_rate()));
   std::size_t new_size = 
       (std::size_t)context->drift_observer_.set_current_time_info(current_time, duration);
   --context->debug_buffer_usage_;
   if (0 == context->debug_buffer_usage_){
-    g_print("buffer load is %lu\n", context->ring_buffers_[0].get_usage());
+    g_print("buffer load is %lu, ratio is %f\n",
+            context->ring_buffers_[0].get_usage(),
+            context->drift_observer_.get_ratio());
     context->debug_buffer_usage_ = 1000;
   }
   if (duration != new_size) {
