@@ -46,6 +46,7 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
   GstElement *fakesink_{nullptr};
   gulong handoff_handler_{0};
   unsigned short channels_{0};
+  unsigned int debug_buffer_usage_{1000}; 
   CustomPropertyHelper::ptr custom_props_{};
   std::vector<jack_port_t *> output_ports_{};  // FIXME
   std::mutex output_ports_mutex_{};

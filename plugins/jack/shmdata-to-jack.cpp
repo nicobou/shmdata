@@ -112,6 +112,11 @@ void ShmdataToJack::on_handoff_cb(GstElement */*object*/,
       (double)duration / (10.0 * (double)context->jack_client_.get_sample_rate()));
   std::size_t new_size = 
       (std::size_t)context->drift_observer_.set_current_time_info(current_time, duration);
+  --context->debug_buffer_usage_;
+  if (0 == context->debug_buffer_usage_){
+    g_print("buffer load is %lu\n", context->ring_buffers_[0].get_usage());
+    context->debug_buffer_usage_ = 1000;
+  }
   if (duration != new_size) {
     g_print("duration %u, new size %lu, load is %lu\n",
             duration,
