@@ -48,7 +48,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     information-tree-json.cpp \
     information-tree.cpp \
     jack-audio-source.cpp \
-    jack-sink.cpp \
     json-builder.cpp \
     logger.cpp \
     method.cpp \
@@ -135,7 +134,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     information-tree-json.hpp \
     information-tree.hpp \
     jack-audio-source.hpp \
-    jack-sink.hpp \
     json-builder.hpp \
     logger.hpp \
     make-consultable.hpp \

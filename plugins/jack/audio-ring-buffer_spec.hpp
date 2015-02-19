@@ -79,14 +79,12 @@ std::size_t AudioRingBuffer<SampleType>::get_usage(){
 
 template<typename SampleType>
 std::size_t AudioRingBuffer<SampleType>::shrink_to(std::size_t size) {
-  g_print("shrink to %lu\n", size);
   std::size_t available = buffer_size_ - available_size_.load();
    if (available < size)
      return 0;
    std::size_t res = available - size;
    read_ = (read_ + res) % buffer_size_;
    available_size_.fetch_add(res);
-   g_print("shrinked to %lu\n", available - res);
    return res;
 }
 

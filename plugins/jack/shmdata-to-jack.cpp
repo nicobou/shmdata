@@ -24,11 +24,11 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
-                                     "Shmdata to Jack",
+                                     "Audio Display (Jack)",
                                      "audio",
-                                     "send audio data to jack",
+                                     "Audio display",
                                      "LGPL",
-                                     "jacksink2",
+                                     "jacksink",
                                      "Nicolas Bouillot");
 bool ShmdataToJack::init_gpipe() {
   if (!jack_client_) {
@@ -62,7 +62,7 @@ int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
             (jack_sample_t *)jack_port_get_buffer(context->output_ports_[i], nframes);
         auto poped = context->ring_buffers_[i].pop_samples((std::size_t)nframes, buf);
         if (nframes != poped) {
-          g_print("cannot pop to jack, missing %lu frames\n", nframes - poped);
+          // g_print("cannot pop to jack, missing %lu frames\n", nframes - poped);
           if (0 != poped) {
             jack_sample_t sample = buf[poped - 1]; 
           for (unsigned int j = poped; j < nframes; ++j)
@@ -79,7 +79,7 @@ int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
 }
 
 void ShmdataToJack::on_xrun(uint num_of_missed_samples) {
-  g_print ("%s %u\n", __FUNCTION__, num_of_missed_samples);
+  g_warning ("%s %u\n", __FUNCTION__, num_of_missed_samples);
   jack_nframes_t jack_buffer_size = jack_client_.get_buffer_size();
   for (auto &it: ring_buffers_) {
     // this is safe since on_xrun is called right before jack_process,
@@ -114,16 +114,16 @@ void ShmdataToJack::on_handoff_cb(GstElement */*object*/,
       (std::size_t)context->drift_observer_.set_current_time_info(current_time, duration);
   --context->debug_buffer_usage_;
   if (0 == context->debug_buffer_usage_){
-    g_print("buffer load is %lu, ratio is %f\n",
-            context->ring_buffers_[0].get_usage(),
-            context->drift_observer_.get_ratio());
+    // g_print("buffer load is %lu, ratio is %f\n",
+    //         context->ring_buffers_[0].get_usage(),
+    //         context->drift_observer_.get_ratio());
     context->debug_buffer_usage_ = 1000;
   }
   if (duration != new_size) {
-    g_print("duration %u, new size %lu, load is %lu\n",
-            duration,
-            new_size,
-            context->ring_buffers_[0].get_usage());
+    // g_print("duration %u, new size %lu, load is %lu\n",
+    //         duration,
+    //         new_size,
+    //         context->ring_buffers_[0].get_usage());
   }
   // std::vector<jack_sample_t> buf_copy((jack_sample_t *)GST_BUFFER_DATA(buf),
   //                                     (jack_sample_t *)(GST_BUFFER_DATA(buf) + GST_BUFFER_SIZE(buf)));
@@ -139,7 +139,7 @@ void ShmdataToJack::on_handoff_cb(GstElement */*object*/,
           return resample.linear_get_next_sample();
         });
     if (emplaced != new_size)
-      g_print("overflow of %lu samples", new_size - emplaced);
+      g_warning("overflow of %lu samples", new_size - emplaced);
   }
 }
 
