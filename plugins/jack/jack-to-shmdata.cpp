@@ -18,8 +18,7 @@
  */
 
 #include <gst/gst.h>
-#include "./jack-audio-source.hpp"
-#include "./gst-utils.hpp"
+#include "./jack-to-shmdata.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackToShmdata,
@@ -27,14 +26,16 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackToShmdata,
                                      "audio",
                                      "get audio from jack",
                                      "LGPL",
-                                     "jacksrc2",
+                                     "2jacksrc",
                                      "Nicolas Bouillot");
 
-JackToShmdata::JackToShmdata(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper>()) {
+JackToShmdata::JackToShmdata(const std::string &name):
+    custom_props_(std::make_shared<CustomPropertyHelper>()),
+    client_name_(name),
+    jack_client_(name.c_str()){
 }
 
-bool JackToShmdata::init_gpipe() {
+bool JackToShmdata::init() {
   if (!jack_client_) {
     g_warning("JackClient cannot be instancied");
     return false;
@@ -64,11 +65,10 @@ bool JackToShmdata::init_gpipe() {
                             connect_physical_port_prop_,
                             "connect",
                             "automatically connect to physical ports");
-  client_name_ = g_strdup(get_name().c_str());  // FIXME use std::string
   client_name_spec_ =
       custom_props_->make_string_property("jack-client-name",
                                           "the jack client name",
-                                          "switcher",
+                                          client_name_.c_str(),
                                           (GParamFlags) G_PARAM_READWRITE,
                                           JackToShmdata::set_client_name,
                                           JackToShmdata::get_client_name,
@@ -77,11 +77,6 @@ bool JackToShmdata::init_gpipe() {
                             client_name_spec_,
                             "client-name", "Client Name");
   return true;
-}
-
-JackToShmdata::~JackToShmdata() {
-  if (nullptr != client_name_)
-    g_free(client_name_);
 }
 
 bool JackToShmdata::start() {
@@ -112,16 +107,14 @@ gint JackToShmdata::get_num_channels(void *user_data) {
 
 void JackToShmdata::set_client_name(const gchar *value, void *user_data) {
   JackToShmdata *context = static_cast<JackToShmdata *>(user_data);
-  if (nullptr != context->client_name_)
-    g_free(context->client_name_);
-  context->client_name_ = g_strdup(value);
+  context->client_name_ = value;
   context->custom_props_->
       notify_property_changed(context->client_name_spec_);
 }
 
 const gchar *JackToShmdata::get_client_name(void *user_data) {
   JackToShmdata *context = static_cast<JackToShmdata *>(user_data);
-  return context->client_name_;
+  return context->client_name_.c_str();
 }
 
 gboolean JackToShmdata::get_connect_phys(void *user_data) {
