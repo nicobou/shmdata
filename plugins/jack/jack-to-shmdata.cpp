@@ -23,7 +23,7 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackToShmdata,
-                                     "Jack Audio Device",
+                                     "Jack Audio Device2",
                                      "audio",
                                      "get audio from jack",
                                      "LGPL",
@@ -35,15 +35,16 @@ JackToShmdata::JackToShmdata(const std::string &):
 }
 
 bool JackToShmdata::init_gpipe() {
-  if (false == make_elements())
+  if (!jack_client_) {
+    g_warning("JackClient cannot be instancied");
     return false;
+  }
   init_startable(this);
-
   num_channels_spec_ =
       custom_props_->make_int_property("channels",
                                        "number of channels",
                                        1,
-                                       64,
+                                       256,
                                        num_channels_,
                                        (GParamFlags) G_PARAM_READWRITE,
                                        JackToShmdata::set_num_channels,
@@ -51,22 +52,19 @@ bool JackToShmdata::init_gpipe() {
                                        this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             num_channels_spec_, "channels", "Channels");
-
-    connect_physical_port_prop_ =
-        custom_props_->make_boolean_property("connect",
-                                             "automatically connect to physical ports",
-                                             (gboolean) TRUE,
-                                             (GParamFlags)G_PARAM_READWRITE,
-                                             JackToShmdata::set_connect_phys,
-                                             JackToShmdata::get_connect_phys,
-                                             this);
-    install_property_by_pspec(custom_props_->get_gobject(),
-                              connect_physical_port_prop_,
-                              "connect",
-                              "automatically connect to physical ports");
-  
-  client_name_ = g_strdup(get_name().c_str());
-
+  connect_physical_port_prop_ =
+      custom_props_->make_boolean_property("connect",
+                                           "automatically connect to physical ports",
+                                           (gboolean) TRUE,
+                                           (GParamFlags)G_PARAM_READWRITE,
+                                           JackToShmdata::set_connect_phys,
+                                           JackToShmdata::get_connect_phys,
+                                           this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            connect_physical_port_prop_,
+                            "connect",
+                            "automatically connect to physical ports");
+  client_name_ = g_strdup(get_name().c_str());  // FIXME use std::string
   client_name_spec_ =
       custom_props_->make_string_property("jack-client-name",
                                           "the jack client name",
@@ -78,27 +76,15 @@ bool JackToShmdata::init_gpipe() {
   install_property_by_pspec(custom_props_->get_gobject(),
                             client_name_spec_,
                             "client-name", "Client Name");
-
-  // g_object_set (G_OBJECT (jackaudiosrc_),
-  //   "is-live", TRUE,
-  //   "samplesperbuffer",512,
-  //   nullptr);
-
   return true;
 }
 
 JackToShmdata::~JackToShmdata() {
-  GstUtils::clean_element(jackaudiosrc_);  
-  GstUtils::clean_element(audioconvert_);  
-  GstUtils::clean_element(capsfilter_);  
-  GstUtils::clean_element(jackaudiosrc_bin_);  
   if (nullptr != client_name_)
     g_free(client_name_);
 }
 
 bool JackToShmdata::start() {
-  make_elements();
-  set_raw_audio_element(jackaudiosrc_bin_);
   disable_property("channels");
   disable_property("client-name");
   disable_property("connect");
@@ -109,49 +95,6 @@ bool JackToShmdata::stop() {
   enable_property("channels");
   enable_property("client-name");
   enable_property("connect");
-  reset_bin();
-  return true;
-}
-
-bool JackToShmdata::make_elements() {
-  if (!GstUtils::make_element("jackaudiosrc", &jackaudiosrc_))
-    return false;
-  if (!GstUtils::make_element("audioconvert", &audioconvert_))
-    return false;
-  if (!GstUtils::make_element("capsfilter", &capsfilter_))
-    return false;
-  if (!GstUtils::make_element("bin", &jackaudiosrc_bin_))
-    return false;
-
-  if (!connect_phys_)
-    g_object_set(G_OBJECT(jackaudiosrc_), "connect", 0, nullptr);
-  
-  // using caps compatible with L16 RTP payload
-  GstCaps *caps = gst_caps_new_simple("audio/x-raw-int",
-                                      "width", G_TYPE_INT, 16,
-                                      "depth", G_TYPE_INT, 16,
-                                      "signed", G_TYPE_BOOLEAN, TRUE,
-                                      "endianness", G_TYPE_INT, 4321,
-                                      "channels", G_TYPE_INT,
-                                      num_channels_,
-                                      nullptr);
-  g_object_set(G_OBJECT(capsfilter_), "caps", caps, nullptr);
-  gst_caps_unref(caps);
-
-  g_object_set(G_OBJECT(jackaudiosrc_),
-               "client-name", client_name_, nullptr);
-
-  gst_bin_add_many(GST_BIN(jackaudiosrc_bin_),
-                   jackaudiosrc_, audioconvert_, capsfilter_, nullptr);
-
-  gst_element_link_many(jackaudiosrc_, audioconvert_, capsfilter_, nullptr);
-
-  GstPad *src_pad = gst_element_get_static_pad(capsfilter_, "src");
-  GstPad *ghost_srcpad = gst_ghost_pad_new(nullptr, src_pad);
-  gst_pad_set_active(ghost_srcpad, TRUE);
-  gst_element_add_pad(jackaudiosrc_bin_, ghost_srcpad);
-  gst_object_unref(src_pad);
-
   return true;
 }
 

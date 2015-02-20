@@ -21,27 +21,22 @@
 #define __SWITCHER_JACK_TO_SHMDATA_H__
 
 #include <memory>
-#include "switcher/audio-source.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
-class JackToShmdata: public AudioSource, public StartableQuiddity {
+class JackToShmdata: public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackToShmdata);
   JackToShmdata(const std::string &);
   ~JackToShmdata();
   JackToShmdata(const JackToShmdata &) = delete;
   JackToShmdata &operator=(const JackToShmdata &) = delete;
-
   bool start();
   bool stop();
 
  private:
-  GstElement *jackaudiosrc_{nullptr};
-  GstElement *audioconvert_{nullptr};
-  GstElement *capsfilter_{nullptr};
-  GstElement *jackaudiosrc_bin_{nullptr};
+  JackClient jack_client_;
   CustomPropertyHelper::ptr custom_props_;
   GParamSpec *num_channels_spec_{nullptr};
   uint num_channels_{1};
@@ -50,7 +45,6 @@ class JackToShmdata: public AudioSource, public StartableQuiddity {
   GParamSpec *client_name_spec_{nullptr};
   gchar *client_name_{nullptr};
   bool init_gpipe() final;
-  bool make_elements();
 
   static void set_num_channels(const gint value, void *user_data);
   static gint get_num_channels(void *user_data);

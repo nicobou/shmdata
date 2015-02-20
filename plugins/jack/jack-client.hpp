@@ -29,9 +29,7 @@ namespace switcher {
 
 using jack_sample_t = jack_default_audio_sample_t;
 
-class ShmdataToJack;
 class JackClient : public SafeBoolIdiom {
-  friend ShmdataToJack;
   // warning, number of missed samples is estimated from the xrun duration.
   using XRunCallback_t = std::function<void(uint number_of_missed_samples)>;
  public:
@@ -45,6 +43,7 @@ class JackClient : public SafeBoolIdiom {
   // the xrun callback is called in jack_process
   // before calling the actual process function:
   void set_on_xrun_callback(XRunCallback_t cb);
+  jack_client_t *get_raw();
   
  private:
   using jack_client_handle =
@@ -63,7 +62,19 @@ class JackClient : public SafeBoolIdiom {
   static void on_jack_shutdown (void *arg);
   static int jack_process (jack_nframes_t nframes, void *arg);
   static int on_xrun(void *arg);
-  jack_client_t *get_raw();
+};
+
+class JackPort: public SafeBoolIdiom {
+ public:
+  JackPort(JackClient &client,
+           unsigned int number,
+           bool is_output = true);
+  inline jack_port_t *get_raw(){return port_.get();}
+ private:
+    using port_handle =
+        std::unique_ptr<jack_port_t, std::function<void(jack_port_t *)>>;
+  port_handle port_;
+  bool safe_bool_idiom() const final;
 };
 
 }  // namespace switcher

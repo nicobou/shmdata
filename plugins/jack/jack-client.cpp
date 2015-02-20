@@ -20,7 +20,6 @@
 #include <glib.h>
 #include <jack/statistics.h>
 #include <cmath>
-#include "switcher/std2.hpp"
 #include "./jack-client.hpp"
 
 namespace switcher {
@@ -88,8 +87,7 @@ void JackClient::set_jack_process_callback(JackProcessCallback cb, void *arg){
   user_cb_arg_ = arg;
 }
 
-int
-JackClient::on_xrun(void *arg)
+int JackClient::on_xrun(void *arg)
 {
   JackClient *context = static_cast<JackClient *>(arg);
   // computing the number of sample missed
@@ -105,6 +103,21 @@ JackClient::on_xrun(void *arg)
 
 void JackClient::set_on_xrun_callback(XRunCallback_t cb){
   xrun_cb_ = cb;
+}
+
+JackPort::JackPort(JackClient &client, unsigned int number, bool is_output) :
+    port_(jack_port_register(client.get_raw(),
+                             std::string("output_" + std::to_string(number)).c_str(),
+                             JACK_DEFAULT_AUDIO_TYPE,
+                             is_output ? JackPortIsOutput : JackPortIsInput,
+                             0),
+          [&](jack_port_t *port){
+            jack_port_unregister(client.get_raw(), port);
+          }){
+}
+
+bool JackPort::safe_bool_idiom() const{
+  return static_cast<bool>(port_);
 }
 
 }  // namespace switcher

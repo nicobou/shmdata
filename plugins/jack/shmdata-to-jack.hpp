@@ -40,7 +40,6 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
   ShmdataToJack &operator=(const ShmdataToJack &) = delete;
 
  private:
-  JackClient jack_client_;
   GstElement *audiobin_{nullptr};  // FIXME use UGstElem
   GstElement *volume_{nullptr};
   GstElement *fakesink_{nullptr};
@@ -53,6 +52,7 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
   std::vector<AudioRingBuffer<jack_sample_t>> ring_buffers_{};  // one per channel
   // jack sample is the time unit, assuming gst pipeline has the same sample rate:
   DriftObserver<jack_nframes_t> drift_observer_{};
+  JackClient jack_client_;
   bool init_gpipe() final;
   bool start() final;
   bool stop() final;
