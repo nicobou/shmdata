@@ -127,8 +127,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gst-pipeliner.hpp \
     gst-utils.hpp \
     gst-video-parse-to-bin-src.hpp \
-    hash-table.hpp \
-    hash-table_spec.hpp \
     http-sdp-dec.hpp \
     information-tree-basic-serializer.hpp \
     information-tree-json.hpp \
