@@ -33,6 +33,10 @@ JackToShmdata::JackToShmdata(const std::string &name):
     custom_props_(std::make_shared<CustomPropertyHelper>()),
     client_name_(name),
     jack_client_(name.c_str()){
+  if (jack_client_) {
+    jack_client_.set_jack_process_callback(&JackToShmdata::jack_process, this);
+    jack_client_.set_on_xrun_callback([this](uint n){on_xrun(n);});
+  }
 }
 
 bool JackToShmdata::init() {
@@ -40,12 +44,13 @@ bool JackToShmdata::init() {
     g_warning("JackClient cannot be instancied");
     return false;
   }
+  init_segment(this);
   init_startable(this);
   num_channels_spec_ =
       custom_props_->make_int_property("channels",
                                        "number of channels",
                                        1,
-                                       256,
+                                       128,
                                        num_channels_,
                                        (GParamFlags) G_PARAM_READWRITE,
                                        JackToShmdata::set_num_channels,
@@ -80,6 +85,24 @@ bool JackToShmdata::init() {
 }
 
 bool JackToShmdata::start() {
+  buf_.resize(num_channels_ * jack_client_.get_buffer_size()); 
+  std::string data_type("audio/x-raw-float, "
+                        "endianness=1234, "
+                        "width=32, "
+                        "rate=" + std::to_string(44100) + ", "
+                        "channels=" + std::to_string(num_channels_));
+  // creating a shmdata
+  unregister_shmdata(make_file_name("audio"));
+  ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter>();
+  shm_any->set_path(make_file_name("audio"));
+  shm_any->set_data_type(data_type);
+  shm_any->start();
+  register_shmdata(shm_any);
+  shm_ = shm_any.get();
+  { std::unique_lock<std::mutex> lock(input_ports_mutex_);
+    for (unsigned int i = 0; i < num_channels_; ++i)
+      input_ports_.emplace_back(jack_client_, i, false);
+  }
   disable_property("channels");
   disable_property("client-name");
   disable_property("connect");
@@ -87,6 +110,11 @@ bool JackToShmdata::start() {
 }
 
 bool JackToShmdata::stop() {
+  { std::unique_lock<std::mutex> lock(input_ports_mutex_);
+    input_ports_.clear();
+  }
+  shm_ = nullptr;
+  unregister_shmdata(make_file_name("audio"));
   enable_property("channels");
   enable_property("client-name");
   enable_property("connect");
@@ -131,6 +159,39 @@ void JackToShmdata::set_connect_phys(gboolean connect, void *user_data) {
   else
     context->connect_phys_ = false;
   context->custom_props_->notify_property_changed(context->connect_physical_port_prop_);
+}
+
+int JackToShmdata::jack_process (jack_nframes_t nframes, void *arg){
+  auto context = static_cast<JackToShmdata *>(arg);
+  { std::unique_lock<std::mutex> lock(context->input_ports_mutex_, std::defer_lock);
+    if (lock.try_lock()) {
+      std::size_t num_chan = context->input_ports_.size();
+      if (0 == num_chan)
+        return 0;
+      std::vector<jack_sample_t *> jack_bufs;
+      for (unsigned int i = 0; i < num_chan; ++i)
+        jack_bufs.emplace_back(
+            (jack_sample_t *)jack_port_get_buffer(
+                context->input_ports_[i].get_raw(), nframes));
+      std::size_t index = 0;
+      for(unsigned int j = 0; j < nframes; ++j) {
+        for (unsigned int i = 0; i < num_chan; ++i){
+          context->buf_[index] = jack_bufs[i][j];
+          ++index;
+        }
+      }
+      context->shm_->push_data_auto_clock(context->buf_.data(),
+                                          nframes * num_chan * sizeof(jack_sample_t),
+                                          nullptr,
+                                          nullptr);
+    }  // locked
+  }  // releasing lock
+  return 0;
+}
+
+
+void JackToShmdata::on_xrun(uint num_of_missed_samples) {
+  g_warning ("jack xrun (delay of %u samples)", num_of_missed_samples);
 }
 
 }  // namespace swittcher

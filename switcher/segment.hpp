@@ -84,6 +84,6 @@ class Segment: public CounterMap
                                          gpointer user_data);
   static gboolean can_sink_caps_wrapped(gpointer caps, gpointer user_data);
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

@@ -21,10 +21,12 @@
 #define __SWITCHER_JACK_TO_SHMDATA_H__
 
 #include <memory>
+#include <mutex>
 #include "switcher/quiddity.hpp"
 #include "switcher/segment.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
+#include "switcher/shmdata-any-writer.hpp"
 #include "./jack-client.hpp"
 
 namespace switcher {
@@ -41,20 +43,25 @@ class JackToShmdata: public Quiddity, public Segment, public StartableQuiddity {
  private:
   CustomPropertyHelper::ptr custom_props_;
   GParamSpec *num_channels_spec_{nullptr};
-  uint num_channels_{1};
+  unsigned int num_channels_{1};
   GParamSpec *connect_physical_port_prop_{nullptr};
-  bool connect_phys_{true};
+  bool connect_phys_{false};
   GParamSpec *client_name_spec_{nullptr};
   std::string client_name_{};
+  ShmdataAnyWriter *shm_{nullptr};
+  std::mutex input_ports_mutex_{};
   JackClient jack_client_;
+  std::vector<JackPort> input_ports_{};
+  std::vector<jack_sample_t> buf_{};
   bool init() final;
-
   static void set_num_channels(const gint value, void *user_data);
   static gint get_num_channels(void *user_data);
   static void set_client_name(const gchar *value, void *user_data);
   static const gchar *get_client_name(void *user_data);
   static gboolean get_connect_phys(void *user_data);
   static void set_connect_phys(gboolean connect, void *user_data);
+  static int jack_process (jack_nframes_t nframes, void *arg);
+  void on_xrun(uint num_of_missed_samples);
 };
 
 SWITCHER_DECLARE_PLUGIN(JackToShmdata);

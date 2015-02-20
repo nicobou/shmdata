@@ -298,9 +298,7 @@ void DecodebinToShmdata::on_handoff_cb(GstElement * /*object */ ,
       gst_caps_unref(caps);
     };
     gchar *string_caps = gst_caps_to_string(caps);
-    On_scope_exit {
-      g_free(string_caps);
-    };
+    On_scope_exit{g_free(string_caps);};
     writer->set_data_type(string_caps);
     writer->start();
   } else {

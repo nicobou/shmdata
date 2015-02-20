@@ -29,7 +29,7 @@
 #include "./on-caps.hpp"
 
 namespace switcher {
-class ShmdataAnyWriter:public OnCaps {
+class ShmdataAnyWriter: public OnCaps {
  public:
   typedef std::shared_ptr<ShmdataAnyWriter> ptr;
   using CapsCallBack = std::function<void(std::string)>;
@@ -61,10 +61,10 @@ class ShmdataAnyWriter:public OnCaps {
   shmdata_any_writer_t *writer_;
   JSONBuilder::ptr json_description_;
   std::mutex thread_safe_;
-  CumulativeClock <> clock_;
+  CumulativeClock<> clock_;
   void make_json_description();
   bool set_path_without_deleting(std::string name);
 };
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif
