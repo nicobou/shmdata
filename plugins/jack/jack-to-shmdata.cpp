@@ -89,7 +89,7 @@ bool JackToShmdata::start() {
   std::string data_type("audio/x-raw-float, "
                         "endianness=1234, "
                         "width=32, "
-                        "rate=" + std::to_string(44100) + ", "
+                        "rate=" + std::to_string(jack_client_.get_sample_rate()) + ", "
                         "channels=" + std::to_string(num_channels_));
   // creating a shmdata
   unregister_shmdata(make_file_name("audio"));
