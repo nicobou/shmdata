@@ -47,7 +47,7 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
   unsigned short channels_{0};
   unsigned int debug_buffer_usage_{1000}; 
   CustomPropertyHelper::ptr custom_props_{};
-  std::vector<jack_port_t *> output_ports_{};  // FIXME
+  std::vector<JackPort> output_ports_{};
   std::mutex output_ports_mutex_{};
   std::vector<AudioRingBuffer<jack_sample_t>> ring_buffers_{};  // one per channel
   // jack sample is the time unit, assuming gst pipeline has the same sample rate:
@@ -60,7 +60,7 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
   void on_shmdata_connect(std::string shmdata_sochet_path) final;
   bool can_sink_caps(std::string caps) final;
   bool make_elements();
-  void check_output_ports(int channels);
+  void check_output_ports(unsigned int channels);
   void on_xrun(uint num_of_missed_samples);
   static void on_handoff_cb(GstElement *object,
                             GstBuffer *buf,

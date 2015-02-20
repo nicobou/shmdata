@@ -62,7 +62,7 @@ int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
       }
       for (unsigned int i = 0; i < context->output_ports_.size(); ++i) {
         jack_sample_t *buf =
-            (jack_sample_t *)jack_port_get_buffer(context->output_ports_[i], nframes);
+            (jack_sample_t *)jack_port_get_buffer(context->output_ports_[i].get_raw(), nframes);
         if (!write_zero) { 
           context->ring_buffers_[i].pop_samples((std::size_t)nframes, buf);
         } else {
@@ -142,30 +142,20 @@ void ShmdataToJack::on_handoff_cb(GstElement */*object*/,
   }
 }
 
-void ShmdataToJack::check_output_ports(int channels){
+void ShmdataToJack::check_output_ports(unsigned int channels){
   if (channels == channels_)
     return;
   channels_ = channels;
-  jack_client_t *cl = jack_client_.get_raw();
   // thread safe operations on output ports
   { std::unique_lock<std::mutex> lock(output_ports_mutex_);
     // unregistering previous ports
-    for (auto &it: output_ports_)
-      jack_port_unregister(cl, it);
-    {  // replacing with new ports
-      std::vector<jack_port_t *> tmp(channels);
-      for (int i = 0; i < channels; ++i)
-        tmp[i] = jack_port_register(cl,
-                                    std::string("output_" + std::to_string(i)).c_str(),
-                                    JACK_DEFAULT_AUDIO_TYPE,
-                                    JackPortIsOutput,
-                                    0);
-      std::swap(output_ports_, tmp);
-    }
-    {  // replacing ring buffers
-      std::vector<AudioRingBuffer<jack_sample_t>> tmp(channels);
-      std::swap(ring_buffers_, tmp);
-    }
+    output_ports_.clear();
+    // replacing with new ports
+    for (unsigned int i = 0; i < channels; ++i)
+      output_ports_.emplace_back(jack_client_, i);
+    // replacing ring buffers
+    std::vector<AudioRingBuffer<jack_sample_t>> tmp(channels);
+    std::swap(ring_buffers_, tmp);
   }  // unlocking output_ports_
 }
 
