@@ -20,10 +20,10 @@
 #ifndef __SWITCHER_MY_PLUGIN_H__
 #define __SWITCHER_MY_PLUGIN_H__
 
+#include <memory>
 #include "switcher/quiddity.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
-#include <memory>
 
 namespace switcher {
 class MyPlugin: public Quiddity, public StartableQuiddity {
