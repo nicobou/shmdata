@@ -1,14 +1,14 @@
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
 plugins_LTLIBRARIES = \
-    libswitcherjack.la 
+    libswitcherjacktoshm.la 
 
-#libmyplugin info
-libswitcherjack_la_SOURCES = \
+#libswitcherjacktoshm info
+libswitcherjacktoshm_la_SOURCES = \
     jack-client.cpp \
     shmdata-to-jack.cpp
 
-libswitcherjack_la_include_HEADERS = \
+libswitcherjacktoshm_la_include_HEADERS = \
     audio-resampler.hpp \
     audio-resampler_spec.hpp \
     audio-ring-buffer.hpp \
@@ -18,10 +18,10 @@ libswitcherjack_la_include_HEADERS = \
     jack-client.hpp \
     shmdata-to-jack.hpp
 
-libswitcherjack_la_includedir = \
+libswitcherjacktoshm_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
-libswitcherjack_la_LDFLAGS = \
+libswitcherjacktoshm_la_LDFLAGS = \
     $(GLIB_LIBS) \
     $(GST_LIBS) \
     $(GMODULE_LIBS) \
@@ -33,7 +33,40 @@ libswitcherjack_la_LDFLAGS = \
     -L$(top_builddir)/switcher/.libs \
     -lswitcher-@LIBSWITCHER_API_VERSION@
 
-libswitcherjack_la_CXXFLAGS = \
+libswitcherjacktoshm_la_CXXFLAGS = \
+    $(GLIB_CFLAGS) \
+    $(GMODULE_CFLAGS) \
+    $(GST_CFLAGS) \
+    $(JACK_CFLAGS) \
+    $(JSONGLIB_CFLAGS) \
+    $(SHMDATA_CFLAGS) \
+    -DG_LOG_DOMAIN=\"switcher\" \
+    -I$(top_srcdir) 
+
+#libswitchershmtojack info
+libswitchershmtojack_la_SOURCES = \
+    jack-client.cpp \
+    jack-to-shmdata.cpp
+
+libswitchershmtojack_la_include_HEADERS = \
+    jack-to-shmdata.hpp
+
+libswitchershmtojack_la_includedir = \
+    $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
+
+libswitchershmtojack_la_LDFLAGS = \
+    $(GLIB_LIBS) \
+    $(GST_LIBS) \
+    $(GMODULE_LIBS) \
+    $(JACK_LIBS) \
+    $(JSONGLIB_LIBS) \
+    $(SHMDATA_LIBS) \
+    -avoid-version \
+    -module \
+    -L$(top_builddir)/switcher/.libs \
+    -lswitcher-@LIBSWITCHER_API_VERSION@
+
+libswitchershmtojack_la_CXXFLAGS = \
     $(GLIB_CFLAGS) \
     $(GMODULE_CFLAGS) \
     $(GST_CFLAGS) \
