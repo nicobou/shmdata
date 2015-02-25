@@ -29,24 +29,21 @@ class Categorizable {
   typedef std::shared_ptr<Categorizable> ptr;
 
   Categorizable();
-  virtual ~ Categorizable();
+  virtual ~Categorizable();
   // default category is ""
   void set_category(std::string category_name);
   // default position weight is 0
   void set_position_weight(int position_weight);
-
   std::string get_category();
   int get_position_weight();
-
   static bool compare_ptr(Categorizable::ptr first,
                           Categorizable::ptr second);
-
   static bool compare(Categorizable first, Categorizable second);
 
  private:
   std::string category_;
   int position_weight_;
 };
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

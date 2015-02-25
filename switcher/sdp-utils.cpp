@@ -166,7 +166,10 @@ SDPDescription::~SDPDescription() {
 }
 
 std::string SDPDescription::get_string() {
-  return gst_sdp_message_as_text(sdp_description_);
+  gchar *tmp = gst_sdp_message_as_text(sdp_description_);
+  std::string res(tmp);
+  g_free(tmp);
+  return res;
 }
 
 bool SDPDescription::add_media(const SDPMedia &media) {

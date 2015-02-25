@@ -551,6 +551,7 @@ bool V4L2Src::check_folder_for_v4l2_devices(const char *dir_path) {
   while ((info) && (!error)) {
     descend = g_file_get_child(inspected_dir, g_file_info_get_name(info));
     absolute_path = g_file_get_path(descend);
+    On_scope_exit{if(nullptr != absolute_path) g_free(absolute_path);};
     if (g_str_has_prefix(absolute_path, "/dev/video")
         /*|| g_str_has_prefix (absolute_path, "/dev/radio")
           || g_str_has_prefix (absolute_path, "/dev/vbi")

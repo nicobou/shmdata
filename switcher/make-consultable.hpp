@@ -24,7 +24,7 @@
 
 #define Make_consultable(_member_type, _member_rawptr, _consult_method) \
   static_assert(std::is_class<_member_type>::value,                     \
-                "Make_consultable 2nd arg must be a class");            \
+                "Make_consultable 1st arg must be a class");            \
                                                                         \
   /*disabling key type for later forward*/                              \
   using _consult_method##MapKey_t = decltype(nullptr);                  \

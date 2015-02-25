@@ -488,6 +488,7 @@ v8::Handle<v8::Value> Invoke(const v8::Arguments &args) {
                                 &return_value, vector_arg);
   if (nullptr != return_value) {
     v8::Handle<v8::String> res = v8::String::New((*return_value).c_str());
+    delete return_value;  // FIXME this should not be necessary
     return scope.Close(res);
   }
   v8::Handle<v8::String> res = v8::String::New("");

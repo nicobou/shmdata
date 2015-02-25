@@ -113,11 +113,17 @@ void QuiddityManager_Impl::remove_shmdata_sockets() {
       relative_path = g_file_get_relative_path(shmdata_dir, descend);
       On_scope_exit{g_free(relative_path);};
       if (g_str_has_prefix(relative_path, shmdata_prefix)) {
+        gchar *tmp = g_file_get_path(descend); 
         g_debug("deleting file %s",
-                g_file_get_path(descend));
-        if (!g_file_delete(descend, nullptr, &error))
+                tmp);
+        if (nullptr != tmp)
+          g_free(tmp);
+        if (!g_file_delete(descend, nullptr, &error)){
+          gchar *tmp = g_file_get_path(descend); 
           g_warning("file %s cannot be deleted",
-                    g_file_get_path(descend));
+                    tmp);
+          g_free(tmp);
+        }
         On_scope_exit{release_g_error(error);};
       }
       g_object_unref(info);

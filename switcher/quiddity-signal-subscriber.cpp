@@ -72,7 +72,7 @@ void QuidditySignalSubscriber::set_user_data(void *user_data) {
 }
 
 void QuidditySignalSubscriber::set_name(const gchar *name) {
-  name_ = g_strdup(name);
+  name_ = name;
 }
 
 void QuidditySignalSubscriber::set_callback(OnEmittedCallback cb) {
