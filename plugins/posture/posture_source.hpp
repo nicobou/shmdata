@@ -139,17 +139,17 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   static double get_depth_focal(void *user_data);
 
   static void cb_frame_cloud(void *context,
-                             const std::vector<char>&data);
+                             const std::vector<char>&& data);
   static void cb_frame_mesh(void *context,
-                            const std::vector<unsigned char>&data);
+                            std::vector<unsigned char>&& data);
   static void cb_frame_depth(void *context,
-                             const std::vector<unsigned char>&data,
+                             const std::vector<unsigned char>& data,
                              int width, int height);
   static void cb_frame_rgb(void *context,
-                           const std::vector<unsigned char>&data,
+                           const std::vector<unsigned char>& data,
                            int width, int height);
   static void cb_frame_ir(void *context,
-                          const std::vector<unsigned char>&data,
+                          const std::vector<unsigned char>& data,
                           int width, int height);
   static void free_sent_buffer(void* data);
   void check_buffers();

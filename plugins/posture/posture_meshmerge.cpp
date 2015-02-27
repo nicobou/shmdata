@@ -166,10 +166,9 @@ PostureMeshMerge::connect(std::string shmdata_socket_path) {
       }
 
       check_buffers();
-      vector<unsigned char> mesh = merger_->getMesh();
-      shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(mesh));
+      shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(merger_->getMesh()));
       mesh_writer_->push_data_auto_clock((void *) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
-                                          mesh.size(),
+                                          shmwriter_queue_[shmwriter_queue_.size() - 1]->size(),
                                           PostureMeshMerge::free_sent_buffer,
                                           (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
 

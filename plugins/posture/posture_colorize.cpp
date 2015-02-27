@@ -144,7 +144,7 @@ PostureColorize::connect(std::string shmdata_socket_path) {
 
       has_input_mesh_ = true;
       mesh_index_ = id;
-      mesh_ = vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size);
+      vector<unsigned char> mesh = vector<unsigned char>(reinterpret_cast<unsigned char*>(data), reinterpret_cast<unsigned char*>(data) + size);
 
       imageMutex_.lock();
       if (images_.size() == 0)
@@ -155,7 +155,7 @@ PostureColorize::connect(std::string shmdata_socket_path) {
       }
 
       worker_.set_task([=] () {
-        colorize_->setInput(mesh_, images_, dims_);
+        colorize_->setInput(std::move(mesh), images_, dims_);
         imageMutex_.unlock();
 
         vector<unsigned char> texturedMesh = colorize_->getTexturedMesh();

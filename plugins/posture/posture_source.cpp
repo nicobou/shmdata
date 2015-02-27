@@ -578,7 +578,7 @@ PostureSrc::nope(const double /*unused*/, void* /*unused*/)
 }
 
 void
-PostureSrc::cb_frame_cloud(void *context, const vector<char>&data) {
+PostureSrc::cb_frame_cloud(void *context, const vector<char>&& data) {
   PostureSrc *ctx = (PostureSrc *) context;
 
   if (ctx->cloud_writer_.get() == nullptr) {
@@ -606,7 +606,7 @@ PostureSrc::cb_frame_cloud(void *context, const vector<char>&data) {
 }
 
 void
-PostureSrc::cb_frame_mesh(void* context, const vector<unsigned char>& data)
+PostureSrc::cb_frame_mesh(void* context, vector<unsigned char>&& data)
 {
     PostureSrc *ctx = static_cast<PostureSrc*>(context);
 
@@ -620,9 +620,9 @@ PostureSrc::cb_frame_mesh(void* context, const vector<unsigned char>& data)
 
     lock_guard<mutex> lock(ctx->shmwriters_queue_mutex_);
     ctx->check_buffers();
-    ctx->shmwriters_queue_.push_back(make_shared<vector<unsigned char>>(data));
+    ctx->shmwriters_queue_.push_back(make_shared<vector<unsigned char>>(std::move(data)));
     ctx->mesh_writer_->push_data_auto_clock((void*) ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->data(),
-                                            data.size(),
+                                            ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->size(),
                                             PostureSrc::free_sent_buffer,
                                             (void*)(ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1].get()));
 }
