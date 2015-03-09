@@ -21,9 +21,9 @@
 #include "gst/gst.h"
 
 namespace switcher {
-Categorizable::Categorizable() {
-  category_ = "";
-  position_weight_ = 0;
+Categorizable::Categorizable(): 
+    category_(""),
+    position_weight_(0) {
 }
 
 Categorizable::~Categorizable() {
@@ -37,11 +37,11 @@ void Categorizable::set_position_weight(int position_weight) {
   position_weight_ = position_weight;
 }
 
-std::string Categorizable::get_category() {
+std::string Categorizable::get_category() const {
   return category_;
 }
 
-int Categorizable::get_position_weight() {
+int Categorizable::get_position_weight() const {
   return position_weight_;
 }
 

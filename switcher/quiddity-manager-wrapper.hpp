@@ -20,19 +20,19 @@
 #ifndef __SWITCHER_QUIDDITY_MANAGER_TRANSLATOR_H__
 #define __SWITCHER_QUIDDITY_MANAGER_TRANSLATOR_H__
 
-#include "./quiddity-manager.hpp"
 #include <memory>
+#include "./quiddity-manager.hpp"
 
 namespace switcher {
 class QuiddityManager;
 
-class QuiddityManagerWrapper:public Quiddity {
+class QuiddityManagerWrapper: public Quiddity {
  public:
   typedef std::shared_ptr<QuiddityManagerWrapper> ptr;
   void set_quiddity_manager(std::shared_ptr<QuiddityManager> manager);
  protected:
-  std::weak_ptr<QuiddityManager> manager_;
+  std::weak_ptr<QuiddityManager> manager_{};
 };
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

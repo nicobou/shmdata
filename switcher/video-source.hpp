@@ -70,13 +70,12 @@ class VideoSource: public GstPipeliner, public StartableQuiddity {
   void make_codec_properties();
   static void set_codec(const gint value, void *user_data);
   static gint get_codec(void *user_data);
-  static gboolean get_codec_long_list(void *user_data);
-  static void set_codec_long_list(gboolean mute, void *user_data);
+  // static gboolean get_codec_long_list(void *user_data);
+  // static void set_codec_long_list(gboolean mute, void *user_data);
   static gboolean sink_factory_filter(GstPluginFeature *feature,
                                       gpointer data);
   static gint sink_compare_ranks(GstPluginFeature *f1,
                                  GstPluginFeature *f2);
-  static void print_list(gpointer data, gpointer user_data);
   static gboolean reset_codec_configuration(gpointer /*unused */ , gpointer user_data);
 };
 }  // namespace switcher

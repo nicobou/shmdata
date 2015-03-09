@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <lo/lo.h>
-#include <utility>              // std::make_pair (,)
+#include <utility>  // std::make_pair (,)
 #include "./osc-ctrl-server.hpp"
 
 namespace switcher {
@@ -32,6 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscCtrlServer,
                                      "LGPL",
                                      "OSCctl",
                                      "Nicolas Bouillot");
+
 OscCtrlServer::OscCtrlServer(const std::string &):
     port_(),
     osc_subscribers_(),
@@ -60,10 +61,11 @@ OscCtrlServer::~OscCtrlServer() {
 }
 
 void
-OscCtrlServer::prop_cb(std::string internal_subscriber_name,
-                       std::string quiddity_name,
-                       std::string property_name,
-                       std::string value, void *user_data) {
+OscCtrlServer::prop_cb(const std::string &internal_subscriber_name,
+                       const std::string &quiddity_name,
+                       const std::string &property_name,
+                       const std::string &value,
+                       void *user_data) {
   OscCtrlServer *context = static_cast<OscCtrlServer *>(user_data);
 
   auto it = context->osc_subscribers_.find(internal_subscriber_name);
@@ -123,7 +125,7 @@ gboolean OscCtrlServer::set_port_wrapped(gpointer port, gpointer user_data) {
   return TRUE;
 }
 
-void OscCtrlServer::set_port(std::string port) {
+void OscCtrlServer::set_port(const std::string &port) {
   stop();
   port_ = port;
   start();

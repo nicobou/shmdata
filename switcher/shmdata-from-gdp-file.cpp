@@ -64,13 +64,13 @@ bool ShmdataFromGDPFile::init_gpipe() {
 
 const gchar *
 ShmdataFromGDPFile::get_input_prefix(void *user_data) {
-  ShmdataFromGDPFile *ctx = (ShmdataFromGDPFile*)user_data;
+  ShmdataFromGDPFile *ctx = static_cast<ShmdataFromGDPFile*>(user_data);
   return ctx->input_prefix_.c_str();
 }
 
 void
 ShmdataFromGDPFile::set_input_prefix(const gchar *prefix, void *user_data) {
-  ShmdataFromGDPFile *ctx = (ShmdataFromGDPFile *) user_data;
+  ShmdataFromGDPFile *ctx = static_cast<ShmdataFromGDPFile*>(user_data);
   if (prefix != nullptr)
     ctx->input_prefix_ = prefix;
 }

@@ -24,6 +24,7 @@
 #include <memory>
 
 namespace switcher {
+// FIXME remove caterory and call it positionnable
 class Categorizable {
  public:
   typedef std::shared_ptr<Categorizable> ptr;
@@ -34,8 +35,8 @@ class Categorizable {
   void set_category(std::string category_name);
   // default position weight is 0
   void set_position_weight(int position_weight);
-  std::string get_category();
-  int get_position_weight();
+  std::string get_category() const;
+  int get_position_weight() const;
   static bool compare_ptr(Categorizable::ptr first,
                           Categorizable::ptr second);
   static bool compare(Categorizable first, Categorizable second);

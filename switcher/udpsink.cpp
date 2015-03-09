@@ -164,20 +164,6 @@ UDPSink::add_elements_to_bin(ShmdataReader *caller,
 
 }
 
-void UDPSink::on_client_added(GstElement */*multiudpsink */ ,
-                              gchar */*host */ ,
-                              gint /*port */ ,
-                              gpointer /*user_data */ ) {
-  g_debug("UDPSink::on_client_added");
-}
-
-void UDPSink::on_client_removed(GstElement */*multiudpsink */ ,
-                                gchar */*host */ ,
-                                gint /*port */ ,
-                                gpointer /*user_data */ ) {
-  g_debug("UDPSink::on_client_removed");
-}
-
 gboolean
 UDPSink::remove_client_wrapped(gpointer host,
                                gint port,

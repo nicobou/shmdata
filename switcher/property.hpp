@@ -38,31 +38,23 @@ class Property:public Categorizable {
   ~Property();
   Property(const Property &source) = delete;
   Property &operator=(const Property &source) = delete;
-
   // this is when using an existing property
   void set_gobject_pspec(GObject * object, GParamSpec *pspec);
   void set_long_name(std::string long_name);
   void set_name(std::string name);
   void set(const std::string &value);
   std::string get();
-
   bool subscribe(Callback cb, void *user_data);
   bool unsubscribe(Callback cb, void *user_data);
-  static std::string parse_callback_args(GObject *gobject,
-                                         GParamSpec *pspec);
-
+  static std::string parse_callback_args(GObject *gobject, GParamSpec *pspec);
   GObject *get_gobject();
   GParamSpec *get_paramspec();
-
   std::string get_description();
   JSONBuilder::Node get_json_root_node();
-
-  void print();
-
+  // void print();  // from gst-inspect
   // getter
-  std::string get_long_name();
-  std::string get_name();
-  std::string get_short_description();
+  std::string get_long_name() const;
+  std::string get_name() const;
 
  private:
   void make_description();
@@ -73,6 +65,6 @@ class Property:public Categorizable {
   JSONBuilder::ptr json_description_;
   std::map<std::pair<Callback, void *>, gulong> subscribed_handlers_{};
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

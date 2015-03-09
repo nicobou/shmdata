@@ -39,7 +39,7 @@ class ShmdataWriter: public OnCaps {
 
   bool set_path(std::string name);  // path needs to be fully specified
   bool set_path_without_deleting(std::string name);  // path needs to be fully specified
-  std::string get_path();
+  std::string get_path() const;
 
   // caps does not need to be fully specified:
   void plug(GstElement *bin, GstElement *source_element, GstCaps *caps);

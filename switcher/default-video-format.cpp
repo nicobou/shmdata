@@ -110,7 +110,7 @@ gint DefaultVideoFormat::get_format(void *user_data) {
   return context->format_;
 }
 
-std::string DefaultVideoFormat::get_caps_str() {
+std::string DefaultVideoFormat::get_caps_str() const{
   return caps_[format_];  
 }
 

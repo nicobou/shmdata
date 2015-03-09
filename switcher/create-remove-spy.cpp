@@ -80,14 +80,14 @@ CreateRemoveSpy::~CreateRemoveSpy() {
 }
 
 void
-CreateRemoveSpy::on_created(std::string quiddity_nick_name,
+CreateRemoveSpy::on_created(const std::string &quiddity_nick_name,
                             void *user_data) {
   CreateRemoveSpy *context = static_cast<CreateRemoveSpy *>(user_data);
   context->signal_emit("on-quiddity-created", quiddity_nick_name.c_str());
 }
 
 void
-CreateRemoveSpy::on_removed(std::string quiddity_nick_name,
+CreateRemoveSpy::on_removed(const std::string &quiddity_nick_name,
                             void *user_data) {
   CreateRemoveSpy *context = static_cast<CreateRemoveSpy *>(user_data);
   context->signal_emit("on-quiddity-removed", quiddity_nick_name.c_str());

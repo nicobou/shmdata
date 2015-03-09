@@ -37,16 +37,13 @@ class GstPipe {
   GstPipe() = delete;
   GstPipe(const GstPipe &) = delete;
   GstPipe &operator=(const GstPipe &) = delete;
-
   void set_on_error_function(std::function<void(GstMessage *)> fun);
-  
   bool play(bool play);
   bool seek(gdouble position);
   bool speed(gdouble speed);
   GstElement *get_pipeline();  // FIXME remove that
   
  private:
-
   typedef struct {  // GstBus is a specific context:
     GSource source;
     GstBus *bus;

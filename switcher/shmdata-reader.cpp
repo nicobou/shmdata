@@ -32,7 +32,7 @@ ShmdataReader::~ShmdataReader() {
   stop();
 }
 
-std::string ShmdataReader::get_path() {
+std::string ShmdataReader::get_path() const {
   return path_;
 }
 

@@ -23,7 +23,7 @@
 namespace switcher {
 bool
 QuiddityBasicTest::test_full(QuiddityManager::ptr manager,
-                             std::string quiddity_class_name) {
+                             const std::string &quiddity_class_name) {
   g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!test_get_info(manager, quiddity_class_name))
     return false;
@@ -42,7 +42,7 @@ QuiddityBasicTest::test_full(QuiddityManager::ptr manager,
 
 bool
 QuiddityBasicTest::test_create(QuiddityManager::ptr manager,
-                               std::string quiddity_class_name) {
+                               const std::string &quiddity_class_name) {
   // testing with a nick name
   g_print("%s %d\n", __FUNCTION__, __LINE__);
   std::string res_with_nick =
@@ -75,10 +75,10 @@ QuiddityBasicTest::test_create(QuiddityManager::ptr manager,
   return true;
 }
 
-void on_started_cb(std::string /*subscriber_name */ ,
-                   std::string /*quiddity_name */ ,
-                   std::string /*property_name */ ,
-                   std::string /*value */ ,
+void on_started_cb(const std::string & /*subscriber_name */ ,
+                   const std::string & /*quiddity_name */ ,
+                   const std::string & /*property_name */ ,
+                   const std::string & /*value */ ,
                    void * /*user_data */ ) {
   // g_print ("on_started_cb: %s, %s, %s, %s\n",
   //      subscriber_name.c_str (),
@@ -90,7 +90,7 @@ void on_started_cb(std::string /*subscriber_name */ ,
 
 bool
 QuiddityBasicTest::test_startable(QuiddityManager::ptr manager,
-                                  std::string quiddity_class_name) {
+                                  const std::string &quiddity_class_name) {
   // g_print ("---- startable test for %s\n", quiddity_class_name.c_str ());
   std::string name =
       manager->create(quiddity_class_name, quiddity_class_name);
@@ -123,23 +123,19 @@ QuiddityBasicTest::test_startable(QuiddityManager::ptr manager,
 
 bool
 QuiddityBasicTest::test_description_by_class(QuiddityManager::ptr manager,
-                                             std::string
-                                             quiddity_class_name) {
+                                             const std::string &quiddity_class_name) {
   // by class
-  std::string props =
-      manager->get_properties_description_by_class(quiddity_class_name);
-  std::string methods =
-      manager->get_methods_description_by_class(quiddity_class_name);
-  std::string signals =
-      manager->get_signals_description_by_class(quiddity_class_name);
+  manager->get_properties_description_by_class(quiddity_class_name);
+  manager->get_methods_description_by_class(quiddity_class_name);
+  manager->get_signals_description_by_class(quiddity_class_name);
   return true;
 }
 
 bool
 QuiddityBasicTest::test_get_info(QuiddityManager::ptr manager,
-                                 std::string quiddity_class_name) {
+                                 const std::string &quiddity_class_name) {
   std::string name = manager->create(quiddity_class_name);
-  std::string res = manager->get_info(name, ".");
+  manager->get_info(name, ".");
   manager->remove(name);
   return true;
 }

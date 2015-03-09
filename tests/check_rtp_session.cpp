@@ -29,10 +29,11 @@ static bool video_success;
 static bool do_continue;
 
 void
-mon_property_cb(std::string /*subscriber_name */ ,
-                std::string quiddity_name,
-                std::string property_name,
-                std::string value, void * /*user_data */ ) {
+mon_property_cb(const std::string &/*subscriber_name */ ,
+                const std::string &quiddity_name,
+                const std::string &property_name,
+                const std::string &value,
+                void * /*user_data */ ) {
   if (!audio_success && 0 == quiddity_name.compare("audioprobe")) {
     g_message("audio received !");
     audio_success = true;

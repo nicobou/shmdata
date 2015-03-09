@@ -53,7 +53,7 @@ class PortMidi {
   GEnumValue output_devices_enum_[128];
 
   // input
-  int get_default_input_device_id();
+  // static int get_default_input_device_id();
   bool open_input_device(int id, on_pm_event_method method,
                          void *user_data);
   bool close_input_device(int id);
@@ -61,7 +61,7 @@ class PortMidi {
   std::vector<unsigned char>poll(int id);
 
   // ouput
-  int get_default_output_device_id();
+  // static int get_default_output_device_id();
   bool open_output_device(int id);
   bool close_output_device(int id);
   bool push_midi_message(int id, unsigned char status, unsigned char data1,

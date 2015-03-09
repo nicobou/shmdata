@@ -37,8 +37,6 @@ class FakeShmdataWriter: public Quiddity,
   ~FakeShmdataWriter();
   FakeShmdataWriter(const FakeShmdataWriter &) = delete;
   FakeShmdataWriter &operator=(const FakeShmdataWriter &) = delete;
-
-  bool add_shmdata_path(std::string name);
   bool start() final;
   bool stop() final;
 
@@ -50,10 +48,10 @@ class FakeShmdataWriter: public Quiddity,
   std::string caps_{};
   QuiddityManager::ptr manager_{};
   // getting caps from fakesink
-  static void caps_cb(std::string /*subscriber_name */ ,
-                      std::string /*quiddity_name*/,
-                      std::string /*property_name*/,
-                      std::string value,
+  static void caps_cb(const std::string &/*subscriber_name */ ,
+                      const std::string &/*quiddity_name*/,
+                      const std::string &/*property_name*/,
+                      const std::string &value,
                       void *user_data);
   bool init() final;  // segment implementation
   static gboolean add_shmdata_path_wrapped(gpointer name,

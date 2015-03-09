@@ -69,7 +69,7 @@ void QuiddityPropertySubscriber::set_callback(Callback cb) {
 
 bool
 QuiddityPropertySubscriber::subscribe(Quiddity::ptr quid,
-                                      std::string property_name) {
+                                      const std::string &property_name) {
   if (!quid || user_callback_ == nullptr) {
     g_warning("cannot subscribe (%s %s)",
               quid->get_name().c_str(), property_name.c_str());
@@ -103,7 +103,7 @@ QuiddityPropertySubscriber::subscribe(Quiddity::ptr quid,
 
 bool
 QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid,
-                                        std::string property_name) {
+                                        const std::string &property_name) {
   if (!quid)
     return false;
   auto cur_pair = std::make_pair(quid->get_name(), property_name);

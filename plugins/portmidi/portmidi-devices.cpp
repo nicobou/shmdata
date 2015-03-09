@@ -40,24 +40,22 @@ PortMidi::~PortMidi() {
   if (!input_streams_.empty())
     while (input_streams_.begin() != input_streams_.end())
       close_input_device(input_streams_.begin()->first);
-
   if (!output_streams_.empty())
     while (output_streams_.begin() != output_streams_.end())
       close_output_device(output_streams_.begin()->first);
-
   if (instance_counter_ == 0) {
     delete scheduler_;
     scheduler_ = nullptr;
   }
 }
 
-int PortMidi::get_default_output_device_id() {
-  return Pm_GetDefaultOutputDeviceID();
-}
+// int PortMidi::get_default_output_device_id() {
+//   return Pm_GetDefaultOutputDeviceID();
+// }
 
-int PortMidi::get_default_input_device_id() {
-  return Pm_GetDefaultInputDeviceID();
-}
+// int PortMidi::get_default_input_device_id() {
+//   return Pm_GetDefaultInputDeviceID();
+// }
 
 bool
 PortMidi::open_input_device(int id, on_pm_event_method method,

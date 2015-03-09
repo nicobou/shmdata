@@ -21,7 +21,7 @@
 #include "./gst-utils.hpp"
 
 namespace switcher {
-std::string OnCaps::get_caps() {
+std::string OnCaps::get_caps() const {
   return negociated_caps_;
 }
 

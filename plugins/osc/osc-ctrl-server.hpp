@@ -34,7 +34,7 @@ class OscCtrlServer:public QuiddityManagerWrapper {
   ~OscCtrlServer();
   OscCtrlServer(const OscCtrlServer &) = delete;
   OscCtrlServer &operator=(const OscCtrlServer &) = delete;
-  void set_port(std::string port);
+  void set_port(const std::string &port);
   // for invocation into osc handlers:
   std::shared_ptr<QuiddityManager> get_quiddity_manager();
   // wrappers
@@ -49,12 +49,16 @@ class OscCtrlServer:public QuiddityManagerWrapper {
 
   void start();
   void stop();
-  static void prop_cb(std::string subscriber_name,
-                      std::string quiddity_name,
-                      std::string property_name,
-                      std::string value, void *user_data);
-  static int osc_handler(const char *path, const char *types,
-                         lo_arg ** argv, int argc, void *data,
+  static void prop_cb(const std::string &subscriber_name,
+                      const std::string &quiddity_name,
+                      const std::string &property_name,
+                      const std::string &value,
+                      void *user_data);
+  static int osc_handler(const char *path,
+                         const char *types,
+                         lo_arg ** argv,
+                         int argc,
+                         void *data,
                          void *user_data);
   static void osc_error(int num, const char *msg, const char *path);
   static gchar *string_from_osc_arg(char types, lo_arg *data);
@@ -64,6 +68,6 @@ class OscCtrlServer:public QuiddityManagerWrapper {
 };
 
 SWITCHER_DECLARE_PLUGIN(OscCtrlServer);
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

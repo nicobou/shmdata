@@ -70,7 +70,7 @@ AbstractFactory<T, Key, Doc, ATs...>::get_classes_documentation() {
 }
 
 template<typename T, typename Key, typename Doc, typename ...ATs>
-Doc AbstractFactory<T, Key, Doc, ATs...>::get_class_documentation(Key id) {
+Doc AbstractFactory<T, Key, Doc, ATs...>::get_class_documentation(Key id){
   typename std::map<Key, Doc>::iterator iter =
       classes_documentation_.find(id);
 return iter->second;

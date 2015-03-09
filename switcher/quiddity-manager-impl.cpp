@@ -67,7 +67,6 @@ void QuiddityManager_Impl::release_g_error(GError *error) {
   if (nullptr != error) {
     g_debug("GError message: %s\n", error->message);
     g_error_free(error);
-    error = nullptr;
   }
 }
 
@@ -83,9 +82,6 @@ void QuiddityManager_Impl::remove_shmdata_sockets() {
                   "_",
                   nullptr);
   On_scope_exit{g_free(shmdata_prefix);};
-
-  GFile *descend;
-  char *relative_path;
 
   GError *error = nullptr;
   GFileEnumerator *enumerator =
@@ -108,9 +104,9 @@ void QuiddityManager_Impl::remove_shmdata_sockets() {
     GFileInfo *info = g_file_enumerator_next_file(enumerator, nullptr, &error);
     release_g_error(error);
     while (info) {
-      descend = g_file_get_child(shmdata_dir, g_file_info_get_name(info));
+      GFile *descend = g_file_get_child(shmdata_dir, g_file_info_get_name(info));
       On_scope_exit{g_object_unref(descend);};
-      relative_path = g_file_get_relative_path(shmdata_dir, descend);
+        char *relative_path = g_file_get_relative_path(shmdata_dir, descend);
       On_scope_exit{g_free(relative_path);};
       if (g_str_has_prefix(relative_path, shmdata_prefix)) {
         gchar *tmp = g_file_get_path(descend); 
@@ -133,7 +129,7 @@ void QuiddityManager_Impl::remove_shmdata_sockets() {
   }
 }
 
-std::string QuiddityManager_Impl::get_name() {
+std::string QuiddityManager_Impl::get_name() const {
   return name_;
 }
 
@@ -198,7 +194,7 @@ void QuiddityManager_Impl::register_classes() {
        &Xvimagesink::switcher_doc_);
 }
 
-std::vector<std::string> QuiddityManager_Impl::get_classes() {
+std::vector<std::string> QuiddityManager_Impl::get_classes(){
   // return abstract_factory_.get_classes_documentation ();
   return abstract_factory_.get_keys();
 }
@@ -220,7 +216,7 @@ std::string QuiddityManager_Impl::get_classes_doc() {
   return classes_doc_->get_string(true);
 }
 
-std::string QuiddityManager_Impl::get_class_doc(std::string class_name) {
+std::string QuiddityManager_Impl::get_class_doc(const std::string &class_name) {
   if (abstract_factory_.key_exists(class_name))
     return JSONBuilder::get_string(
         abstract_factory_.get_class_documentation(class_name)->get_json_root_node(),
@@ -229,20 +225,12 @@ std::string QuiddityManager_Impl::get_class_doc(std::string class_name) {
   return "{ \"error\":\"class not found\" }";
 }
 
-bool QuiddityManager_Impl::class_exists(std::string class_name) {
+bool QuiddityManager_Impl::class_exists(const std::string &class_name) {
   return abstract_factory_.key_exists(class_name);
-}
-
-void QuiddityManager_Impl::give_name_if_unnamed(Quiddity::ptr quiddity) {
-  if (quiddity->get_name().empty()) 
-    quiddity->set_name(std::string(quiddity->get_documentation()->get_class_name())
-                       + std::to_string(quiddity_created_counter_));
-  quiddity_created_counter_++;
 }
 
 bool QuiddityManager_Impl::init_quiddity(Quiddity::ptr quiddity) {
   quiddity->set_manager_impl(me_.lock());
-  //give_name_if_unnamed(quiddity);
   if (!quiddity->init())
     return false;
 
@@ -256,7 +244,7 @@ bool QuiddityManager_Impl::init_quiddity(Quiddity::ptr quiddity) {
 
 // for use of the "get description by class" methods
 std::string
-QuiddityManager_Impl::create_without_hook(std::string quiddity_class) {
+QuiddityManager_Impl::create_without_hook(const std::string &quiddity_class) {
   if (!class_exists(quiddity_class))
     return std::string();
   std::string name = quiddity_class + std::to_string(quiddity_created_counter_);
@@ -266,14 +254,13 @@ QuiddityManager_Impl::create_without_hook(std::string quiddity_class) {
     return "{\"error\":\"cannot make quiddity\"}";
   quiddity->set_manager_impl(me_.lock());
   quiddity->set_name(name);
-    //give_name_if_unnamed(quiddity);
   if (!quiddity->init())
     return "{\"error\":\"cannot init quiddity class\"}";
   quiddities_[name] = quiddity;
   return name;
 }
 
-std::string QuiddityManager_Impl::create(std::string quiddity_class) {
+std::string QuiddityManager_Impl::create(const std::string &quiddity_class) {
   if (!class_exists(quiddity_class))
     return std::string();
   std::string name = quiddity_class + std::to_string(quiddity_created_counter_);
@@ -290,8 +277,8 @@ std::string QuiddityManager_Impl::create(std::string quiddity_class) {
 }
 
 std::string
-QuiddityManager_Impl::create(std::string quiddity_class,
-                             std::string nick_name) {
+QuiddityManager_Impl::create(const std::string &quiddity_class,
+                             const std::string &nick_name) {
   if (!class_exists(quiddity_class) || nick_name.empty())
     return std::string();
   auto it = quiddities_.find(nick_name);
@@ -316,7 +303,7 @@ QuiddityManager_Impl::create(std::string quiddity_class,
   return nick_name;
 }
 
-std::vector<std::string> QuiddityManager_Impl::get_instances() {
+std::vector<std::string> QuiddityManager_Impl::get_instances() const {
   std::vector<std::string> res;
   for (auto &it : quiddities_)
     res.push_back(it.first);
@@ -363,7 +350,7 @@ std::string QuiddityManager_Impl::get_quiddities_description() {
 }
 
 std::string
-QuiddityManager_Impl::get_quiddity_description(std::string nick_name) {
+QuiddityManager_Impl::get_quiddity_description(const std::string &nick_name) {
   auto it = quiddities_.find(nick_name);
   if (quiddities_.end() == it)
     return "{ \"error\":\"quiddity not found\"}";
@@ -389,7 +376,7 @@ QuiddityManager_Impl::get_quiddity_description(std::string nick_name) {
   return descr->get_string(true);
 }
 
-Quiddity::ptr QuiddityManager_Impl::get_quiddity(std::string quiddity_name) {
+Quiddity::ptr QuiddityManager_Impl::get_quiddity(const std::string &quiddity_name) {
   auto it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == it) {
     g_debug("quiddity %s not found, cannot provide ptr",
@@ -402,7 +389,7 @@ Quiddity::ptr QuiddityManager_Impl::get_quiddity(std::string quiddity_name) {
 
 // for use of "get description by class" methods only
 //FIXME this should be the same method as remove
-bool QuiddityManager_Impl::remove_without_hook(std::string quiddity_name) {
+bool QuiddityManager_Impl::remove_without_hook(const std::string &quiddity_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_debug("(%s) quiddity %s not found for removing", name_.c_str(),
@@ -417,7 +404,7 @@ bool QuiddityManager_Impl::remove_without_hook(std::string quiddity_name) {
   return true;
 }
 
-bool QuiddityManager_Impl::remove(std::string quiddity_name) {
+bool QuiddityManager_Impl::remove(const std::string &quiddity_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_warning("(%s) quiddity %s not found for removing", name_.c_str(),
@@ -436,7 +423,7 @@ bool QuiddityManager_Impl::remove(std::string quiddity_name) {
 
 std::string
 QuiddityManager_Impl::
-get_properties_description(std::string quiddity_name) {
+get_properties_description(const std::string &quiddity_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_warning("quiddity %s not found, cannot get description of properties",
@@ -447,9 +434,8 @@ get_properties_description(std::string quiddity_name) {
 }
 
 std::string
-QuiddityManager_Impl::get_property_description(std::string quiddity_name,
-                                               std::string property_name)
-{
+QuiddityManager_Impl::get_property_description(const std::string &quiddity_name,
+                                               const std::string &property_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_warning("quiddity %s not found, cannot get description of properties",
@@ -460,8 +446,7 @@ QuiddityManager_Impl::get_property_description(std::string quiddity_name,
 }
 
 std::string
-QuiddityManager_Impl::get_properties_description_by_class(std::string
-                                                          class_name) {
+QuiddityManager_Impl::get_properties_description_by_class(const std::string &class_name) {
   if (!class_exists(class_name))
     return "{\"error\":\"class not found\"}";
   std::string quid_name = create_without_hook(class_name);
@@ -473,10 +458,8 @@ QuiddityManager_Impl::get_properties_description_by_class(std::string
 }
 
 std::string
-QuiddityManager_Impl::get_property_description_by_class(std::string
-                                                        class_name,
-                                                        std::string
-                                                        property_name) {
+QuiddityManager_Impl::get_property_description_by_class(const std::string &class_name,
+                                                        const std::string &property_name) {
   if (!class_exists(class_name))
     return "{\"error\":\"class not found\"}";
   std::string quid_name = create_without_hook(class_name);
@@ -488,9 +471,9 @@ QuiddityManager_Impl::get_property_description_by_class(std::string
 }
 
 bool
-QuiddityManager_Impl::set_property(std::string quiddity_name,
-                                   std::string property_name,
-                                   std::string property_value) {
+QuiddityManager_Impl::set_property(const std::string &quiddity_name,
+                                   const std::string &property_name,
+                                   const std::string &property_value) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_warning("quiddity %s not found, cannot set property",
@@ -503,7 +486,7 @@ QuiddityManager_Impl::set_property(std::string quiddity_name,
 
 // higher level subscriber
 bool
-QuiddityManager_Impl::make_property_subscriber(std::string subscriber_name,
+QuiddityManager_Impl::make_property_subscriber(const std::string &subscriber_name,
                                                QuiddityPropertySubscriber::Callback cb,
                                                void *user_data) {
   auto it = property_subscribers_.find(subscriber_name);
@@ -523,7 +506,7 @@ QuiddityManager_Impl::make_property_subscriber(std::string subscriber_name,
 
 bool
 QuiddityManager_Impl::
-remove_property_subscriber(std::string subscriber_name) {
+remove_property_subscriber(const std::string &subscriber_name) {
   auto it = property_subscribers_.find(subscriber_name);
   if (property_subscribers_.end() == it) {
     g_warning("a subscriber named %s does not exists\n",
@@ -535,9 +518,9 @@ remove_property_subscriber(std::string subscriber_name) {
 }
 
 bool
-QuiddityManager_Impl::subscribe_property(std::string subscriber_name,
-                                         std::string quiddity_name,
-                                         std::string property_name) {
+QuiddityManager_Impl::subscribe_property(const std::string &subscriber_name,
+                                         const std::string &quiddity_name,
+                                         const std::string &property_name) {
   auto it = property_subscribers_.find(subscriber_name);
   if (property_subscribers_.end() == it) {
     g_warning
@@ -555,9 +538,9 @@ QuiddityManager_Impl::subscribe_property(std::string subscriber_name,
 }
 
 bool
-QuiddityManager_Impl::unsubscribe_property(std::string subscriber_name,
-                                           std::string quiddity_name,
-                                           std::string property_name) {
+QuiddityManager_Impl::unsubscribe_property(const std::string &subscriber_name,
+                                           const std::string &quiddity_name,
+                                           const std::string &property_name) {
   auto it = property_subscribers_.find(subscriber_name);
   if (property_subscribers_.end() == it) {
     g_warning("QuiddityManager_Impl, a subscriber named %s does not exists\n",
@@ -574,15 +557,15 @@ QuiddityManager_Impl::unsubscribe_property(std::string subscriber_name,
 }
 
 std::vector<std::string>
-QuiddityManager_Impl::list_property_subscribers() {
+QuiddityManager_Impl::list_property_subscribers() const {
   std::vector<std::string> res;
   for (auto &it : property_subscribers_)
     res.push_back(it.first);
   return res;
 }
 
-std::vector<std::pair<std::string, std::string>>QuiddityManager_Impl::
-    list_subscribed_properties(std::string subscriber_name) {
+std::vector<std::pair<std::string, std::string>>
+    QuiddityManager_Impl::list_subscribed_properties(const std::string &subscriber_name) {
   auto it = property_subscribers_.find(subscriber_name);
   if (property_subscribers_.end() == it) {
     g_warning("QuiddityManager_Impl, a subscriber named %s does not exists\n",
@@ -597,8 +580,7 @@ std::string QuiddityManager_Impl::list_property_subscribers_json() {
 }
 
 std::string
-QuiddityManager_Impl::list_subscribed_properties_json(std::string
-                                                      subscriber_name) {
+QuiddityManager_Impl::list_subscribed_properties_json(const std::string &subscriber_name) {
   auto subscribed_props = list_subscribed_properties(subscriber_name);
 
   JSONBuilder *doc = new JSONBuilder();
@@ -620,8 +602,8 @@ QuiddityManager_Impl::list_subscribed_properties_json(std::string
 
 // lower level subscriber
 bool
-QuiddityManager_Impl::subscribe_property_glib(std::string quiddity_name,
-                                              std::string property_name,
+QuiddityManager_Impl::subscribe_property_glib(const std::string &quiddity_name,
+                                              const std::string &property_name,
                                               Property::Callback cb,
                                               void *user_data) {
   auto q_it = quiddities_.find(quiddity_name);
@@ -634,8 +616,8 @@ QuiddityManager_Impl::subscribe_property_glib(std::string quiddity_name,
 }
 
 bool
-QuiddityManager_Impl::unsubscribe_property_glib(std::string quiddity_name,
-                                                std::string property_name,
+QuiddityManager_Impl::unsubscribe_property_glib(const std::string &quiddity_name,
+                                                const std::string &property_name,
                                                 Property::Callback cb,
                                                 void *user_data) {
   auto q_it = quiddities_.find(quiddity_name);
@@ -648,8 +630,8 @@ QuiddityManager_Impl::unsubscribe_property_glib(std::string quiddity_name,
 }
 
 std::string
-QuiddityManager_Impl::get_property(std::string quiddity_name,
-                                   std::string property_name) {
+QuiddityManager_Impl::get_property(const std::string &quiddity_name,
+                                   const std::string &property_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_warning("quiddity %s not found, cannot get property",
@@ -660,8 +642,8 @@ QuiddityManager_Impl::get_property(std::string quiddity_name,
 }
 
 bool
-QuiddityManager_Impl::has_property(std::string quiddity_name,
-                                   std::string property_name) {
+QuiddityManager_Impl::has_property(const std::string &quiddity_name,
+                                   const std::string &property_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_debug("quiddity %s not found", quiddity_name.c_str());
@@ -671,8 +653,8 @@ QuiddityManager_Impl::has_property(std::string quiddity_name,
 }
 
 bool
-QuiddityManager_Impl::has_method(std::string quiddity_name,
-                                 std::string method_name) {
+QuiddityManager_Impl::has_method(const std::string &quiddity_name,
+                                 const std::string &method_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_debug("quiddity %s not found", quiddity_name.c_str());
@@ -682,10 +664,10 @@ QuiddityManager_Impl::has_method(std::string quiddity_name,
 }
 
 bool
-QuiddityManager_Impl::invoke(const std::string quiddity_name,
-                             const std::string method_name,
-                             std::string ** return_value,
-                             const std::vector<std::string> args) {
+QuiddityManager_Impl::invoke(const std::string &quiddity_name,
+                             const std::string &method_name,
+                             std::string **return_value,
+                             const std::vector<std::string> &args) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_debug("quiddity %s not found, cannot invoke", quiddity_name.c_str());
@@ -703,7 +685,7 @@ QuiddityManager_Impl::invoke(const std::string quiddity_name,
 }
 
 std::string
-QuiddityManager_Impl::get_methods_description(std::string quiddity_name) {
+QuiddityManager_Impl::get_methods_description(const std::string &quiddity_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_warning("quiddity %s not found, cannot get description of methods",
@@ -714,8 +696,8 @@ QuiddityManager_Impl::get_methods_description(std::string quiddity_name) {
 }
 
 std::string
-QuiddityManager_Impl::get_method_description(std::string quiddity_name,
-                                             std::string method_name) {
+QuiddityManager_Impl::get_method_description(const std::string &quiddity_name,
+                                             const std::string &method_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_warning("quiddity %s not found, cannot get description of methods",
@@ -726,32 +708,29 @@ QuiddityManager_Impl::get_method_description(std::string quiddity_name,
   return q_it->second->get_method_description(method_name);
 }
 
-std::string
-QuiddityManager_Impl::
-get_methods_description_by_class(std::string class_name) {
+std::string QuiddityManager_Impl::get_methods_description_by_class(const std::string &class_name) {
   if (!class_exists(class_name))
     return "{\"error\":\"class not found\"}";
-  std::string quid_name = create_without_hook(class_name);
-  std::string descr = get_methods_description(quid_name);
+  const std::string &quid_name = create_without_hook(class_name);
+  const std::string &descr = get_methods_description(quid_name);
   remove_without_hook(quid_name);
   return descr;
 }
 
 std::string
 QuiddityManager_Impl::
-get_method_description_by_class(std::string class_name,
-                                std::string method_name) {
+get_method_description_by_class(const std::string &class_name,
+                                const std::string &method_name) {
   if (!class_exists(class_name))
     return "{\"error\":\"class not found\"}";
-  std::string quid_name = create_without_hook(class_name);
-  std::string descr = get_method_description(quid_name, method_name);
+  const std::string &quid_name = create_without_hook(class_name);
+  const std::string &descr = get_method_description(quid_name, method_name);
   remove_without_hook(quid_name);
   return descr;
 }
 
 // *** signals
-std::string
-QuiddityManager_Impl::get_signals_description(std::string quiddity_name) {
+std::string QuiddityManager_Impl::get_signals_description(const std::string &quiddity_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_warning("quiddity %s not found, cannot get signals description",
@@ -762,8 +741,8 @@ QuiddityManager_Impl::get_signals_description(std::string quiddity_name) {
 }
 
 std::string
-QuiddityManager_Impl::get_signal_description(std::string quiddity_name,
-                                             std::string signal_name) {
+QuiddityManager_Impl::get_signal_description(const std::string &quiddity_name,
+                                             const std::string &signal_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_warning("quiddity %s not found, cannot get signal description",
@@ -773,9 +752,7 @@ QuiddityManager_Impl::get_signal_description(std::string quiddity_name,
   return q_it->second->get_signal_description(signal_name);
 }
 
-std::string
-QuiddityManager_Impl::
-get_signals_description_by_class(std::string class_name) {
+std::string QuiddityManager_Impl::get_signals_description_by_class(const std::string &class_name) {
   if (!class_exists(class_name))
     return "{\"error\":\"class not found\"}";
   std::string quid_name = create_without_hook(class_name);
@@ -786,10 +763,8 @@ get_signals_description_by_class(std::string class_name) {
   return descr;
 }
 
-std::string
-QuiddityManager_Impl::
-get_signal_description_by_class(std::string class_name,
-                                std::string signal_name) {
+std::string QuiddityManager_Impl::get_signal_description_by_class(const std::string &class_name,
+                                                                  const std::string &signal_name) {
   if (!class_exists(class_name))
     return "{\"error\":\"class not found\"}";
   std::string quid_name = create_without_hook(class_name);
@@ -812,9 +787,9 @@ void QuiddityManager_Impl::mute_property_subscribers(bool muted) {
 }
 
 bool
-QuiddityManager_Impl::make_signal_subscriber(std::string subscriber_name,
-                                             QuidditySignalSubscriber::OnEmittedCallback
-                                             cb, void *user_data) {
+QuiddityManager_Impl::make_signal_subscriber(const std::string &subscriber_name,
+                                             QuidditySignalSubscriber::OnEmittedCallback cb,
+                                             void *user_data) {
   auto it = signal_subscribers_.find(subscriber_name);
   if (signal_subscribers_.end() != it) {
     g_warning("QuiddityManager_Impl, a subscriber named %s already exists\n",
@@ -832,7 +807,7 @@ QuiddityManager_Impl::make_signal_subscriber(std::string subscriber_name,
 
 bool
 QuiddityManager_Impl::
-remove_signal_subscriber(std::string subscriber_name) {
+remove_signal_subscriber(const std::string &subscriber_name) {
   auto it = signal_subscribers_.find(subscriber_name);
   if (signal_subscribers_.end() == it) {
     g_warning("QuiddityManager_Impl, a subscriber named %s does not exists\n",
@@ -844,9 +819,9 @@ remove_signal_subscriber(std::string subscriber_name) {
 }
 
 bool
-QuiddityManager_Impl::subscribe_signal(std::string subscriber_name,
-                                       std::string quiddity_name,
-                                       std::string signal_name) {
+QuiddityManager_Impl::subscribe_signal(const std::string &subscriber_name,
+                                       const std::string &quiddity_name,
+                                       const std::string &signal_name) {
   auto it = signal_subscribers_.find(subscriber_name);
   if (signal_subscribers_.end() == it) {
     g_warning
@@ -864,9 +839,9 @@ QuiddityManager_Impl::subscribe_signal(std::string subscriber_name,
 }
 
 bool
-QuiddityManager_Impl::unsubscribe_signal(std::string subscriber_name,
-                                         std::string quiddity_name,
-                                         std::string signal_name) {
+QuiddityManager_Impl::unsubscribe_signal(const std::string &subscriber_name,
+                                         const std::string &quiddity_name,
+                                         const std::string &signal_name) {
   auto it = signal_subscribers_.find(subscriber_name);
   if (signal_subscribers_.end() == it) {
     g_warning
@@ -883,15 +858,15 @@ QuiddityManager_Impl::unsubscribe_signal(std::string subscriber_name,
   return it->second->unsubscribe(q_it->second, signal_name);
 }
 
-std::vector<std::string> QuiddityManager_Impl::list_signal_subscribers() {
+std::vector<std::string> QuiddityManager_Impl::list_signal_subscribers() const {
   std::vector<std::string> res;
   for (auto &it : signal_subscribers_)
     res.push_back(it.first);
   return res;
 }
 
-std::vector<std::pair<std::string, std::string>> QuiddityManager_Impl::
-    list_subscribed_signals(std::string subscriber_name) {
+std::vector<std::pair<std::string, std::string>>
+    QuiddityManager_Impl::list_subscribed_signals(const std::string &subscriber_name) {
   auto it = signal_subscribers_.find(subscriber_name);
   if (signal_subscribers_.end() == it) {
     g_warning
@@ -908,8 +883,7 @@ std::string QuiddityManager_Impl::list_signal_subscribers_json() {
 }
 
 std::string
-QuiddityManager_Impl::list_subscribed_signals_json(std::string
-                                                   subscriber_name) {
+QuiddityManager_Impl::list_subscribed_signals_json(const std::string &subscriber_name) {
   auto subscribed_sigs = list_subscribed_signals(subscriber_name);
 
   JSONBuilder *doc = new JSONBuilder();
@@ -982,7 +956,7 @@ bool QuiddityManager_Impl::load_plugin(const char *filename) {
   return true;
 }
 
-void QuiddityManager_Impl::close_plugin(const std::string class_name) {
+void QuiddityManager_Impl::close_plugin(const std::string &class_name) {
   abstract_factory_.unregister_class(class_name);
   plugins_.erase(class_name);
 }
@@ -995,8 +969,6 @@ QuiddityManager_Impl::scan_directory_for_plugins(const char
   GError *error;
   GFileEnumerator *enumerator;
   GFileInfo *info;
-  GFile *descend;
-  char *absolute_path;
   error = nullptr;
   enumerator =
       g_file_enumerate_children(dir, "*",
@@ -1007,8 +979,8 @@ QuiddityManager_Impl::scan_directory_for_plugins(const char
   error = nullptr;
   info = g_file_enumerator_next_file(enumerator, nullptr, &error);
   while ((info) && (!error)) {
-    descend = g_file_get_child(dir, g_file_info_get_name(info));
-    absolute_path = g_file_get_path(descend);  // g_file_get_relative_path (dir, descend);
+  GFile *descend = g_file_get_child(dir, g_file_info_get_name(info));
+  char *absolute_path = g_file_get_path(descend);  // g_file_get_relative_path (dir, descend);
     // trying to load the module
     if (g_str_has_suffix(absolute_path, ".so")
         || g_str_has_suffix(absolute_path, ".dylib")) {

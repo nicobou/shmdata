@@ -81,7 +81,7 @@ void QuidditySignalSubscriber::set_callback(OnEmittedCallback cb) {
 
 bool
 QuidditySignalSubscriber::subscribe(Quiddity::ptr quid,
-                                    std::string signal_name) {
+                                    const std::string &signal_name) {
   if (!quid || user_callback_ == nullptr) {
     g_warning("cannot subscribe to signal (%s %s)",
               quid->get_name().c_str(), signal_name.c_str());
@@ -113,7 +113,7 @@ QuidditySignalSubscriber::subscribe(Quiddity::ptr quid,
 
 bool
 QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid,
-                                      std::string signal_name) {
+                                      const std::string &signal_name) {
   if(!quid)
     return false;
   std::pair<std::string, std::string> cur_pair;

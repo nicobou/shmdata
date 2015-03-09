@@ -21,11 +21,11 @@
 #define __SWITCHER_METHOD_H__
 
 #include <gst/gst.h>
+#include <stdarg.h>
 #include <memory>
 #include <vector>
 #include <string>
 #include <map>
-#include <stdarg.h>
 #include <tuple>
 #include "./json-builder.hpp"
 #include "./categorizable.hpp"
@@ -45,24 +45,21 @@ class Method:public Categorizable {
   ~Method();
   Method(const Method &source);
   Method &operator=(const Method &source);
-
   bool set_method(method_ptr method,
-                  return_type return_type,
-                  args_types arg_types, gpointer user_data);
+                  return_type rtype,
+                  args_types atypes,
+                  gpointer user_data);
   bool invoke(std::vector<std::string> args, GValue *return_value);
-  uint get_num_of_value_args();
   void set_description(std::string long_name,
                        std::string method_name,
                        std::string short_description,
                        std::string return_description,
                        args_doc arg_description);
   std::string get_description();    // json formated description
-
   // helper methods, use nullptr sentinel
   static args_types make_arg_type_description(GType arg_type, ...);   // use G_TYPE_NONE if no arg
   static args_doc make_arg_description(const char *first_arg_long_name,
                                        ...);
-
   // Building complex json descriptions incuding this
   JSONBuilder::Node get_json_root_node();
 
@@ -81,6 +78,6 @@ class Method:public Categorizable {
   uint num_of_value_args_;
   JSONBuilder::ptr json_description_;
 };
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

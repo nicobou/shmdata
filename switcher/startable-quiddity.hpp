@@ -35,7 +35,7 @@ class StartableQuiddity {
 
  protected:
   void init_startable(void *quiddity);
-  bool is_started();
+  bool is_started() const;
   // find a way to avoid invoking init_startable (this) in quiddities (policies)
 
  private:

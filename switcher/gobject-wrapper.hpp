@@ -101,11 +101,6 @@ class GObjectWrapper {
   static guint
   make_signal(GType return_type, guint n_params, GType *param_types);
 
-  static guint
-  make_signal_action(GClosure *class_closure,
-                     GType return_type,
-                     guint n_params, GType *param_types);
-
   // for the gobject class
   GObjectCustomProperty::set_method_pointer get_set_method_pointer(guint
                                                                    prop_id);

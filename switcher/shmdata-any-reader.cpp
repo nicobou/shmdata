@@ -21,7 +21,8 @@
 
 namespace switcher {
 ShmdataAnyReader::ShmdataAnyReader():path_(),
-                                     reader_(shmdata_any_reader_init()), json_description_(new JSONBuilder()) {
+                                     reader_(shmdata_any_reader_init()),
+                                     json_description_(new JSONBuilder()) {
 }
 
 ShmdataAnyReader::~ShmdataAnyReader() {
@@ -44,7 +45,7 @@ bool ShmdataAnyReader::start() {
   return true;
 }
 
-std::string ShmdataAnyReader::get_path() {
+std::string ShmdataAnyReader::get_path() const {
   return path_;
 }
 
@@ -56,10 +57,6 @@ bool ShmdataAnyReader::set_callback(Callback cb, void *user_data) {
 
 void ShmdataAnyReader::mute(bool mute) {
   muted_ = mute;
-}
-
-bool ShmdataAnyReader::is_muted() {
-  return muted_;
 }
 
 void ShmdataAnyReader::make_json_description() {

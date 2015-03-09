@@ -61,11 +61,6 @@ void JSONBuilder::add_string_value(const gchar *string_value) {
   json_builder_add_string_value(builder_, string_value);
 }
 
-void JSONBuilder::add_double_value(gdouble double_value) {
-  std::unique_lock<std::mutex> lock(thread_safe_);
-  json_builder_add_double_value(builder_, double_value);
-}
-
 void JSONBuilder::end_array() {
   std::unique_lock<std::mutex> lock(thread_safe_);
   json_builder_end_array(builder_);
@@ -82,14 +77,6 @@ JSONBuilder::add_string_member(const gchar *member_name,
   std::unique_lock<std::mutex> lock(thread_safe_);
   json_builder_set_member_name(builder_, member_name);
   json_builder_add_string_value(builder_, string_value);
-}
-
-void
-JSONBuilder::add_double_member(const gchar *member_name,
-                               gdouble double_value) {
-  std::unique_lock<std::mutex> lock(thread_safe_);
-  json_builder_set_member_name(builder_, member_name);
-  json_builder_add_double_value(builder_, double_value);
 }
 
 void JSONBuilder::add_int_member(const gchar *member_name, gint int_value) {

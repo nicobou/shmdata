@@ -102,9 +102,9 @@ class V4L2Src:public VideoSource {
   /*      gpointer user_data); */
 
   static std::string pixel_format_to_string(unsigned pf_id);
-  static bool inspect_frame_rate(const char *file_path,
-                                 unsigned pixel_format,
-                                 unsigned width, unsigned height);
+  // static bool inspect_frame_rate(const char *file_path,
+  //                                unsigned pixel_format,
+  //                                unsigned width, unsigned height);
   static const gchar *get_capture_devices_json(void *user_data);
 
   // custom properties:

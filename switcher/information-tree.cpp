@@ -68,7 +68,7 @@ bool Tree::has_data() const {
   return !data_.is_null();
 }
 
-Any Tree::get_data(){
+Any Tree::get_data() const{
   std::unique_lock<std::mutex> lock(mutex_);
   return data_;
 }
@@ -109,7 +109,7 @@ bool Tree::branch_has_data(const std::string &path) const {
   return false;
 }
 
-Any Tree::get_data(const std::string &path) {
+Any Tree::get_data(const std::string &path) const {
   std::unique_lock<std::mutex> lock(mutex_);
   auto found = get_node(path);
   if (!found.first.empty())
@@ -251,14 +251,6 @@ bool Tree::tag_as_array(const std::string &path, bool is_array) {
     return false;
   tree->is_array_ = is_array;
   return true;
-}
-
-bool Tree::branch_is_array(const std::string &path) const {
-  std::unique_lock<std::mutex> lock(mutex_);
-  auto found = get_node(path);
-  if (!found.first.empty())
-    return found.second->second->is_array_;
-  return false;
 }
 
 std::string Tree::escape_dots(const std::string &str) {

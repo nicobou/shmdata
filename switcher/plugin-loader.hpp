@@ -43,7 +43,7 @@ class PluginLoader {
 
   bool load(const char *filename);
   bool close();
-  std::string get_class_name();
+  std::string get_class_name() const;
   JSONBuilder::Node get_json_root_node();
   QuiddityDocumentation *get_doc();
   

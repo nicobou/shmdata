@@ -35,22 +35,22 @@ PortMidiSink::PortMidiSink(const std::string &):
 bool PortMidiSink::init() {
   init_startable(this);
   init_segment(this);
-
   install_connect_method(std::bind(&PortMidiSink::connect, this,
                                    std::placeholders::_1), nullptr,
                          nullptr, std::bind(&PortMidiSink::can_sink_caps,
                                             this, std::placeholders::_1),
                          1);
-
-  devices_description_spec_ =
-      custom_props_->make_string_property("devices-json",
-                                          "Description of capture devices (json formated)",
-                                          get_devices_description_json((PortMidi *) this), (GParamFlags) G_PARAM_READABLE, nullptr, get_devices_description_json, (PortMidi *) this);
-
+  devices_description_spec_ = custom_props_->
+      make_string_property("devices-json",
+                           "Description of capture devices (json formated)",
+                           get_devices_description_json(static_cast<PortMidi *>(this)),
+                           (GParamFlags) G_PARAM_READABLE,
+                           nullptr,
+                           get_devices_description_json,
+                           static_cast<PortMidi *>(this));
   install_property_by_pspec(custom_props_->get_gobject(),
                             devices_description_spec_,
                             "devices-json", "Capture Devices");
-
   device_ = output_devices_enum_[0].value;
   devices_enum_spec_ =
       custom_props_->make_enum_property("device",
@@ -62,7 +62,6 @@ bool PortMidiSink::init() {
                                         PortMidiSink::get_device, this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             devices_enum_spec_, "device", "Capture Device");
-
   return true;
 }
 

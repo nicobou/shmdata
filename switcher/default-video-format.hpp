@@ -38,7 +38,7 @@ class DefaultVideoFormat {
   void make_format_property(const char *name, const char *display_text);
   bool disable_property();
   bool enable_property();
-  std::string get_caps_str();
+  std::string get_caps_str() const;
   
  private:
   Quiddity *quid_{nullptr};

@@ -37,30 +37,24 @@ class QuiddityManager_Impl;
 class QuiddityPropertySubscriber {
  public:
   typedef std::shared_ptr<QuiddityPropertySubscriber> ptr;
-  typedef void (*Callback) (std::string subscriber_name,
-                            std::string quiddity_name,
-                            std::string property_name,
-                            std::string value, void *user_data);
+  typedef void (*Callback) (const std::string &subscriber_name,
+                            const std::string &quiddity_name,
+                            const std::string &property_name,
+                            const std::string &value,
+                            void *user_data);
   QuiddityPropertySubscriber();
   ~QuiddityPropertySubscriber();
   QuiddityPropertySubscriber(const QuiddityPropertySubscriber &) = delete;
-  QuiddityPropertySubscriber &operator=(const QuiddityPropertySubscriber
-                                         &) = delete;
+  QuiddityPropertySubscriber &operator=(const QuiddityPropertySubscriber &) = delete;
   void mute(bool muted);
-
   void set_callback(Callback cb);
   void set_user_data(void *user_data);
   void set_name(const gchar *name);
-  bool subscribe(std::shared_ptr<Quiddity> quid,
-                 std::string property_name);
-  bool unsubscribe(std::shared_ptr<Quiddity> quid,
-                   std::string property_name);
+  bool subscribe(std::shared_ptr<Quiddity> quid, const std::string &property_name);
+  bool unsubscribe(std::shared_ptr<Quiddity> quid, const std::string &property_name);
   bool unsubscribe(std::shared_ptr<Quiddity> quid);
-  std::vector < std::pair < std::string,
-                            std::string > >list_subscribed_properties();
-  static void property_cb(GObject * gobject, GParamSpec *pspec,
-                          gpointer user_data);
-
+  std::vector<std::pair<std::string, std::string>> list_subscribed_properties();
+  static void property_cb(GObject * gobject, GParamSpec *pspec, gpointer user_data);
   // manager_impl initialization
   void set_manager_impl(std::shared_ptr<QuiddityManager_Impl>
                         manager_impl);
@@ -71,7 +65,6 @@ class QuiddityPropertySubscriber {
   std::string name_{};
   std::weak_ptr<QuiddityManager_Impl> manager_impl_{};
   bool muted_{false};
-
   typedef struct {
     QuiddityPropertySubscriber *property_subscriber{nullptr};
     gchar *name{nullptr};
@@ -81,11 +74,10 @@ class QuiddityPropertySubscriber {
     void *user_data{nullptr};
     std::weak_ptr<Quiddity> quid{};
   } PropertyData;
-  typedef std::map<std::pair<std::string, std::string>,
-                   PropertyData *>PropDataMap;
+  typedef std::map<std::pair<std::string, std::string>, PropertyData *> PropDataMap;
   PropDataMap prop_datas_{};
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif
 

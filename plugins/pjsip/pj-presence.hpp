@@ -85,9 +85,8 @@ class PJPresence {
   static gboolean del_buddy_wrapped(gchar *buddy_uri,
                                     void *user_data);
   static void on_buddy_state(pjsua_buddy_id buddy_id);
-  static gboolean save_buddies_wrapped(gchar *file_name,
-                                       void *user_data);
-  
+  // static gboolean save_buddies_wrapped(gchar *file_name,
+  //                                      void *user_data);
   // online status
   static void set_status(const gint value, void *user_data);
   static gint get_status(void *user_data);

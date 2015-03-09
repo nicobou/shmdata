@@ -82,7 +82,6 @@ class Tree {
   bool has_data() const;
   const Any &read_data () const;
   bool branch_is_leaf(const std::string &path) const;
-  bool branch_is_array(const std::string &path) const;
   bool branch_has_data(const std::string &path) const;
   const Any &branch_read_data (const std::string &path) const;
   
@@ -110,11 +109,11 @@ class Tree {
   std::list<std::string> copy_leaf_values(const std::string &path) const;
 
   //Tree modifications:
-  Any get_data();
+  Any get_data() const;
   void set_data(const Any &data);
   void set_data(const char *data);
   void set_data(std::nullptr_t ptr);
-  Any get_data(const std::string &path);
+  Any get_data(const std::string &path) const;
   bool set_data(const std::string &path, const Any &data);
   bool set_data(const std::string &path, const char *data);
   bool set_data(const std::string &path, std::nullptr_t ptr);

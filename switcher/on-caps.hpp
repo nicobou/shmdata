@@ -30,7 +30,7 @@ class OnCaps {
   using CapsCallBack = std::function<void (std::string)>;
   virtual ~OnCaps() {}
   void set_on_caps(CapsCallBack callback);
-  std::string get_caps();
+  std::string get_caps() const;
 
  private:
   std::string negociated_caps_ {};

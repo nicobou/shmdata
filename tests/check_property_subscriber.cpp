@@ -27,10 +27,11 @@ static const char *user_string = "hello world";
 static switcher::QuiddityManager::ptr manager;
 
 void
-mon_property_cb(std::string /*subscriber_name */ ,
-                std::string quiddity_name,
-                std::string property_name,
-                std::string value, void *user_data) {
+mon_property_cb(const std::string &/*subscriber_name */ ,
+                const std::string &quiddity_name,
+                const std::string &property_name,
+                const std::string &value,
+                void *user_data) {
   if (0 != quiddity_name.compare("vid")) {
     g_warning("quiddity name does not match, got %s instead of \"vid\"",
               quiddity_name.c_str());

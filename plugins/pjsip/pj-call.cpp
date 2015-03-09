@@ -489,46 +489,48 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
    }
 }
 
-std::string PJCall::make_extra_params(const std::string &raw_extra_params){
-  std::string extra_params;
-  size_t param_begin = 0;
-  size_t param_end = raw_extra_params.find(';');
-  bool done = false;
-  std::string fmtp_caps;
-  while (!done){
-    size_t equal_pos = raw_extra_params.find('=', param_begin);
-    if (std::string::npos != param_end) {
-      extra_params +=
-          std::string(raw_extra_params, param_begin, equal_pos + 1 - param_begin)
-          + '"' + std::string(raw_extra_params, equal_pos + 1, param_end - (equal_pos + 1))
-          + '"' + ",";
-      param_begin = param_end + 1;
-      param_end = raw_extra_params.find(';', param_begin);
-    } else {
-      extra_params += std::string(raw_extra_params, param_begin, equal_pos + 1 - param_begin)
-          + '"' + std::string(raw_extra_params, equal_pos + 1, param_end - (equal_pos + 1))
-          + '"';
-      done = true;
-    }
-  }
-   return extra_params;
-}
+// std::string PJCall::make_extra_params(const std::string &raw_extra_params){
+//   std::string extra_params;
+//   size_t param_begin = 0;
+//   size_t param_end = raw_extra_params.find(';');
+//   bool done = false;
+//   while (!done){
+//     size_t equal_pos = raw_extra_params.find('=', param_begin);
+//     if (std::string::npos != param_end) {
+//       extra_params +=
+//           std::string(raw_extra_params, param_begin, equal_pos + 1 - param_begin)
+//           + '"' + std::string(raw_extra_params, equal_pos + 1, param_end - (equal_pos + 1))
+//           + '"' + ",";
+//       param_begin = param_end + 1;
+//       param_end = raw_extra_params.find(';', param_begin);
+//     } else {
+//       extra_params += std::string(raw_extra_params, param_begin, equal_pos + 1 - param_begin)
+//           + '"' + std::string(raw_extra_params, equal_pos + 1, param_end - (equal_pos + 1))
+//           + '"';
+//       done = true;
+//     }
+//   }
+//    return extra_params;
+// }
 
 void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   // finding caller info
   char uristr[PJSIP_MAX_URL_SIZE];
   int len;
-  len = pjsip_uri_print(PJSIP_URI_IN_REQ_URI,
+  // len =
+      pjsip_uri_print(PJSIP_URI_IN_REQ_URI,
                         rdata->msg_info.msg->line.req.uri,
                         uristr, sizeof(uristr));
   // g_print("---------- call req uri %.*s\n", len, uristr);
-  len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
-                        pjsip_uri_get_uri(rdata->msg_info.from->uri),
-                        uristr, sizeof(uristr));
+  len =
+  pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
+                  pjsip_uri_get_uri(rdata->msg_info.from->uri),
+                  uristr, sizeof(uristr));
   std::string from_uri(uristr, len);
   // g_print("---------- call from %.*s\n", len, uristr);
-  len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
-                        rdata->msg_info.to->uri, uristr, sizeof(uristr));
+  // len =
+  pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
+                  rdata->msg_info.to->uri, uristr, sizeof(uristr));
   // g_print("----------- call to %.*s\n", len, uristr);
   call_t *call;
   pjsip_dialog *dlg;
@@ -703,19 +705,19 @@ pj_status_t PJCall::create_sdp_answer(
   for (unsigned i = 0; i < media_to_receive.size(); i++) {
     // getting offer media to receive
     pjmedia_sdp_media *sdp_media = media_to_receive[i];
-    for (unsigned u = 0; u < sdp_media->desc.fmt_count;) {
-      bool remove_it = false;
-      // // removing unassigned payload type (ekiga)
-      // unsigned pt = 0;
-      // pt = pj_strtoul(&sdp_media->desc.fmt[u]);
-      // if (77 <= pt && pt <= 95)
-      //   remove_it = true;
-      // apply removal if necessary
-      if (remove_it)
-        remove_from_sdp_media(sdp_media, u);
-      else
-        u++;
-    }
+    // for (unsigned u = 0; u < sdp_media->desc.fmt_count;) {
+    //   bool remove_it = false;
+    //   // // removing unassigned payload type (ekiga)
+    //   // unsigned pt = 0;
+    //   // pt = pj_strtoul(&sdp_media->desc.fmt[u]);
+    //   // if (77 <= pt && pt <= 95)
+    //   //   remove_it = true;
+    //   // apply removal if necessary
+    //   if (remove_it)
+    //     remove_from_sdp_media(sdp_media, u);
+    //   else
+    //     u++;
+    // }
     // set port
     sdp_media->desc.port = call->media[i].rtp_port;
     // put media in answer
@@ -726,270 +728,270 @@ pj_status_t PJCall::create_sdp_answer(
   return PJ_SUCCESS;
 }
 
-void PJCall::print_sdp(const pjmedia_sdp_session *local_sdp) {
-  char sdpbuf1[4096];
-  pj_ssize_t len1;
-  len1 = pjmedia_sdp_print(local_sdp, sdpbuf1, sizeof(sdpbuf1));
-  if (len1 < 1) {
-    g_warning("error when printing local sdp\n");
-    return;
-  }
-  sdpbuf1[len1] = '\0';
-  g_debug("sdp : \n%s \n\n ", sdpbuf1);
-}
+// void PJCall::print_sdp(const pjmedia_sdp_session *local_sdp) {
+//   char sdpbuf1[4096];
+//   pj_ssize_t len1;
+//   len1 = pjmedia_sdp_print(local_sdp, sdpbuf1, sizeof(sdpbuf1));
+//   if (len1 < 1) {
+//     g_warning("error when printing local sdp\n");
+//     return;
+//   }
+//   sdpbuf1[len1] = '\0';
+//   g_debug("sdp : \n%s \n\n ", sdpbuf1);
+// }
 
-/*
- * COPY and REWRITE of pjsip Internal function for collecting
- * codec info and param from the SDP media.
- */
-pj_status_t
-PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
-                                   pj_pool_t *pool,
-                                   pjmedia_codec_mgr *mgr,
-                                   const pjmedia_sdp_media *local_m,
-                                   const pjmedia_sdp_media *rem_m) {
-  const pjmedia_sdp_attr *attr;
-  pjmedia_sdp_rtpmap *rtpmap;
-  unsigned i, fmti, pt = 0;
-  pj_status_t status;
-  /* Find the first codec which is not telephone-event */
-  for (fmti = 0; fmti < local_m->desc.fmt_count; ++fmti) {
-    pjmedia_sdp_rtpmap r;
-    if (!pj_isdigit(*local_m->desc.fmt[fmti].ptr))
-      return PJMEDIA_EINVALIDPT;
-    pt = pj_strtoul(&local_m->desc.fmt[fmti]);
-    if (pt < 77) {
-      /* This is known static PT. Skip rtpmap checking because it is
-       * optional. */
-      break;
-    }
-    attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
-                                        &local_m->desc.fmt[fmti]);
-    if (attr == nullptr)
-      continue;
-    status = pjmedia_sdp_attr_get_rtpmap(attr, &r);
-    if (status != PJ_SUCCESS)
-      continue;
-    if (pj_strcmp2(&r.enc_name, "telephone-event") != 0)
-      break;
-  }
-  if (fmti >= local_m->desc.fmt_count)
-    return PJMEDIA_EINVALIDPT;
-  /* Get payload type for receiving direction */
-  si->rx_pt = pt;
-  /* Get codec info.
-   * For static payload types, get the info from codec manager.
-   * For dynamic payload types, MUST get the rtpmap.
-   */
-  if (pt < 77) {
-    pj_bool_t has_rtpmap;
-    rtpmap = nullptr;
-    has_rtpmap = PJ_TRUE;
-    attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
-                                        &local_m->desc.fmt[fmti]);
-    if (attr == nullptr) {
-      has_rtpmap = PJ_FALSE;
-    }
-    if (attr != nullptr) {
-      status = pjmedia_sdp_attr_to_rtpmap(pool, attr, &rtpmap);
-      if (status != PJ_SUCCESS)
-        has_rtpmap = PJ_FALSE;
-    }
-    /* Build codec format info: */
-    if (has_rtpmap) {
-      si->fmt.type = si->type;
-      si->fmt.pt = pj_strtoul(&local_m->desc.fmt[fmti]);
-      pj_strdup(pool, &si->fmt.encoding_name, &rtpmap->enc_name);
-      si->fmt.clock_rate = rtpmap->clock_rate;
-#if defined(PJMEDIA_HANDLE_G722_MPEG_BUG) && (PJMEDIA_HANDLE_G722_MPEG_BUG != 0)
-      /* The session info should have the actual clock rate, because
-       * this info is used for calculationg buffer size, etc in stream
-       */
-      if (si->fmt.pt == PJMEDIA_RTP_PT_G722)
-        si->fmt.clock_rate = 16000;
-#endif
-      /* For audio codecs, rtpmap parameters denotes the number of
-       * channels.
-       */
-      if (si->type == PJMEDIA_TYPE_AUDIO && rtpmap->param.slen) {
-        si->fmt.channel_cnt = (unsigned) pj_strtoul(&rtpmap->param);
-      } else {
-        si->fmt.channel_cnt = 1;
-      }
-    } else {
-      const pjmedia_codec_info *p_info;
-      status = pjmedia_codec_mgr_get_codec_info(mgr, pt, &p_info);
-      if (status != PJ_SUCCESS)
-        return status;
-      pj_memcpy(&si->fmt, p_info, sizeof(pjmedia_codec_info));
-    }
-    /* For static payload type, pt's are symetric */
-    si->tx_pt = pt;
-  } else {
-    // g_print ("DOES NOT HAVE RTPMAP\n");
-    // pjmedia_codec_id codec_id;
-    // pj_str_t codec_id_st;
-    // const pjmedia_codec_info *p_info;
-    attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
-                                        &local_m->desc.fmt[fmti]);
-    if (attr == nullptr)
-      return PJMEDIA_EMISSINGRTPMAP;
-    status = pjmedia_sdp_attr_to_rtpmap(pool, attr, &rtpmap);
-    if (status != PJ_SUCCESS)
-      return status;
-    /* Build codec format info: */
-    si->fmt.type = si->type;
-    si->fmt.pt = pj_strtoul(&local_m->desc.fmt[fmti]);
-    si->fmt.encoding_name = rtpmap->enc_name;
-    si->fmt.clock_rate = rtpmap->clock_rate;
-    /* For audio codecs, rtpmap parameters denotes the number of
-     * channels.
-     */
-    if (si->type == PJMEDIA_TYPE_AUDIO && rtpmap->param.slen)
-      si->fmt.channel_cnt = (unsigned) pj_strtoul(&rtpmap->param);
-    else
-      si->fmt.channel_cnt = 1;
-    /* Normalize the codec info from codec manager. Note that the
-     * payload type will be resetted to its default (it might have
-     * been rewritten by the SDP negotiator to match to the remote
-     * offer), this is intentional as currently some components may
-     * prefer (or even require) the default PT in codec info.
-     */
-    // pjmedia_codec_info_to_id(&si->fmt, codec_id, sizeof(codec_id));
-    // i = 1;
-    // codec_id_st = pj_str(codec_id);
-    //  status = pjmedia_codec_mgr_find_codecs_by_id(mgr, &codec_id_st,
-    //            &i, &p_info, nullptr);
-    //  if (status != PJ_SUCCESS)
-    //    return status;
-    //  pj_memcpy(&si->fmt, p_info, sizeof(pjmedia_codec_info));
-    //  /* Determine payload type for outgoing channel, by finding
-    //   * dynamic payload type in remote SDP that matches the answer.
-    //   */
-    //  si->tx_pt = 0xFFFF;
-    //  for (i=0; i<rem_m->desc.fmt_count; ++i) {
-    //    unsigned rpt;
-    //    pjmedia_sdp_attr *r_attr;
-    //    pjmedia_sdp_rtpmap r_rtpmap;
-    //    rpt = pj_strtoul(&rem_m->desc.fmt[i]);
-    //    if (rpt < 96)
-    //      continue;
-    //    r_attr = pjmedia_sdp_media_find_attr2(rem_m, "rtpmap",
-    //       &rem_m->desc.fmt[i]);
-    //    if (!r_attr)
-    //      continue;
-    //    if (pjmedia_sdp_attr_get_rtpmap(r_attr, &r_rtpmap) != PJ_SUCCESS)
-    //      continue;
-    //    if (!pj_stricmp(&rtpmap->enc_name, &r_rtpmap.enc_name) &&
-    //        rtpmap->clock_rate == r_rtpmap.clock_rate)
-    //      {
-    //        /* Found matched codec. */
-    //        si->tx_pt = rpt;
-    //        break;
-    //      }
-    //  }
-    //  if (si->tx_pt == 0xFFFF)
-    //    return PJMEDIA_EMISSINGRTPMAP;
-  }
-  // /* Now that we have codec info, get the codec param. */
-  // si->param = PJ_POOL_ALLOC_T(pool, pjmedia_codec_param);
-  // status = pjmedia_codec_mgr_get_default_param(mgr, &si->fmt,
-  //               si->param);
-  // /* Get remote fmtp for our encoder. */
-  // pjmedia_stream_info_parse_fmtp(pool, rem_m, si->tx_pt,
-  //        &si->param->setting.enc_fmtp);
-  /* Get local fmtp for our decoder. */
-  // pjmedia_stream_info_parse_fmtp(pool, local_m, si->rx_pt,
-  //        &si->param->setting.dec_fmtp);
-  // /* Get the remote ptime for our encoder. */
-  // attr = pjmedia_sdp_attr_find2(rem_m->attr_count, rem_m->attr,
-  //       "ptime", nullptr);
-  // if (attr) {
-  //  pj_str_t tmp_val = attr->value;
-  //  unsigned frm_per_pkt;
-  //  pj_strltrim(&tmp_val);
-  //  /* Round up ptime when the specified is not multiple of frm_ptime */
-  //  frm_per_pkt = (pj_strtoul(&tmp_val) +
-  //         si->param->info.frm_ptime/2) /
-  //         si->param->info.frm_ptime;
-  //  if (frm_per_pkt != 0) {
-  //         si->param->setting.frm_per_pkt = (pj_uint8_t)frm_per_pkt;
-  //     }
-  // }
-  // /* Get remote maxptime for our encoder. */
-  // attr = pjmedia_sdp_attr_find2(rem_m->attr_count, rem_m->attr,
-  //       "maxptime", nullptr);
-  // if (attr) {
-  //  pj_str_t tmp_val = attr->value;
-  //  pj_strltrim(&tmp_val);
-  //  si->tx_maxptime = pj_strtoul(&tmp_val);
-  // }
-  // /* When direction is NONE (it means SDP negotiation has failed) we don't
-  //  * need to return a failure here, as returning failure will cause
-  //  * the whole SDP to be rejected. See ticket #:
-  //  * http://
-  //  *
-  //  * Thanks Alain Totouom
-  //  */
-  // if (status != PJ_SUCCESS && si->dir != PJMEDIA_DIR_NONE)
-  //  return status;
-  /* Get incomming payload type for telephone-events */
-  si->rx_event_pt = -1;
-  for (i = 0; i < local_m->attr_count; ++i) {
-    pjmedia_sdp_rtpmap r;
-    attr = local_m->attr[i];
-    if (pj_strcmp2(&attr->name, "rtpmap") != 0)
-      continue;
-    if (pjmedia_sdp_attr_get_rtpmap(attr, &r) != PJ_SUCCESS)
-      continue;
-    if (pj_strcmp2(&r.enc_name, "telephone-event") == 0) {
-      si->rx_event_pt = pj_strtoul(&r.pt);
-      break;
-    }
-  }
-  /* Get outgoing payload type for telephone-events */
-  si->tx_event_pt = -1;
-  for (i = 0; i < rem_m->attr_count; ++i) {
-    pjmedia_sdp_rtpmap r;
-    attr = rem_m->attr[i];
-    if (pj_strcmp2(&attr->name, "rtpmap") != 0)
-      continue;
-    if (pjmedia_sdp_attr_get_rtpmap(attr, &r) != PJ_SUCCESS)
-      continue;
-    if (pj_strcmp2(&r.enc_name, "telephone-event") == 0) {
-      si->tx_event_pt = pj_strtoul(&r.pt);
-      break;
-    }
-  }
-  return PJ_SUCCESS;
-}
+// /*
+//  * COPY and REWRITE of pjsip Internal function for collecting
+//  * codec info and param from the SDP media.
+//  */
+// pj_status_t
+// PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
+//                                    pj_pool_t *pool,
+//                                    pjmedia_codec_mgr *mgr,
+//                                    const pjmedia_sdp_media *local_m,
+//                                    const pjmedia_sdp_media *rem_m) {
+//   const pjmedia_sdp_attr *attr;
+//   pjmedia_sdp_rtpmap *rtpmap;
+//   unsigned i, fmti, pt = 0;
+//   pj_status_t status;
+//   /* Find the first codec which is not telephone-event */
+//   for (fmti = 0; fmti < local_m->desc.fmt_count; ++fmti) {
+//     pjmedia_sdp_rtpmap r;
+//     if (!pj_isdigit(*local_m->desc.fmt[fmti].ptr))
+//       return PJMEDIA_EINVALIDPT;
+//     pt = pj_strtoul(&local_m->desc.fmt[fmti]);
+//     if (pt < 77) {
+//       /* This is known static PT. Skip rtpmap checking because it is
+//        * optional. */
+//       break;
+//     }
+//     attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
+//                                         &local_m->desc.fmt[fmti]);
+//     if (attr == nullptr)
+//       continue;
+//     status = pjmedia_sdp_attr_get_rtpmap(attr, &r);
+//     if (status != PJ_SUCCESS)
+//       continue;
+//     if (pj_strcmp2(&r.enc_name, "telephone-event") != 0)
+//       break;
+//   }
+//   if (fmti >= local_m->desc.fmt_count)
+//     return PJMEDIA_EINVALIDPT;
+//   /* Get payload type for receiving direction */
+//   si->rx_pt = pt;
+//   /* Get codec info.
+//    * For static payload types, get the info from codec manager.
+//    * For dynamic payload types, MUST get the rtpmap.
+//    */
+//   if (pt < 77) {
+//     pj_bool_t has_rtpmap;
+//     rtpmap = nullptr;
+//     has_rtpmap = PJ_TRUE;
+//     attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
+//                                         &local_m->desc.fmt[fmti]);
+//     if (attr == nullptr) {
+//       has_rtpmap = PJ_FALSE;
+//     }
+//     if (attr != nullptr) {
+//       status = pjmedia_sdp_attr_to_rtpmap(pool, attr, &rtpmap);
+//       if (status != PJ_SUCCESS)
+//         has_rtpmap = PJ_FALSE;
+//     }
+//     /* Build codec format info: */
+//     if (has_rtpmap) {
+//       si->fmt.type = si->type;
+//       si->fmt.pt = pj_strtoul(&local_m->desc.fmt[fmti]);
+//       pj_strdup(pool, &si->fmt.encoding_name, &rtpmap->enc_name);
+//       si->fmt.clock_rate = rtpmap->clock_rate;
+// #if defined(PJMEDIA_HANDLE_G722_MPEG_BUG) && (PJMEDIA_HANDLE_G722_MPEG_BUG != 0)
+//       /* The session info should have the actual clock rate, because
+//        * this info is used for calculationg buffer size, etc in stream
+//        */
+//       if (si->fmt.pt == PJMEDIA_RTP_PT_G722)
+//         si->fmt.clock_rate = 16000;
+// #endif
+//       /* For audio codecs, rtpmap parameters denotes the number of
+//        * channels.
+//        */
+//       if (si->type == PJMEDIA_TYPE_AUDIO && rtpmap->param.slen) {
+//         si->fmt.channel_cnt = (unsigned) pj_strtoul(&rtpmap->param);
+//       } else {
+//         si->fmt.channel_cnt = 1;
+//       }
+//     } else {
+//       const pjmedia_codec_info *p_info;
+//       status = pjmedia_codec_mgr_get_codec_info(mgr, pt, &p_info);
+//       if (status != PJ_SUCCESS)
+//         return status;
+//       pj_memcpy(&si->fmt, p_info, sizeof(pjmedia_codec_info));
+//     }
+//     /* For static payload type, pt's are symetric */
+//     si->tx_pt = pt;
+//   } else {
+//     // g_print ("DOES NOT HAVE RTPMAP\n");
+//     // pjmedia_codec_id codec_id;
+//     // pj_str_t codec_id_st;
+//     // const pjmedia_codec_info *p_info;
+//     attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
+//                                         &local_m->desc.fmt[fmti]);
+//     if (attr == nullptr)
+//       return PJMEDIA_EMISSINGRTPMAP;
+//     status = pjmedia_sdp_attr_to_rtpmap(pool, attr, &rtpmap);
+//     if (status != PJ_SUCCESS)
+//       return status;
+//     /* Build codec format info: */
+//     si->fmt.type = si->type;
+//     si->fmt.pt = pj_strtoul(&local_m->desc.fmt[fmti]);
+//     si->fmt.encoding_name = rtpmap->enc_name;
+//     si->fmt.clock_rate = rtpmap->clock_rate;
+//     /* For audio codecs, rtpmap parameters denotes the number of
+//      * channels.
+//      */
+//     if (si->type == PJMEDIA_TYPE_AUDIO && rtpmap->param.slen)
+//       si->fmt.channel_cnt = (unsigned) pj_strtoul(&rtpmap->param);
+//     else
+//       si->fmt.channel_cnt = 1;
+//     /* Normalize the codec info from codec manager. Note that the
+//      * payload type will be resetted to its default (it might have
+//      * been rewritten by the SDP negotiator to match to the remote
+//      * offer), this is intentional as currently some components may
+//      * prefer (or even require) the default PT in codec info.
+//      */
+//     // pjmedia_codec_info_to_id(&si->fmt, codec_id, sizeof(codec_id));
+//     // i = 1;
+//     // codec_id_st = pj_str(codec_id);
+//     //  status = pjmedia_codec_mgr_find_codecs_by_id(mgr, &codec_id_st,
+//     //            &i, &p_info, nullptr);
+//     //  if (status != PJ_SUCCESS)
+//     //    return status;
+//     //  pj_memcpy(&si->fmt, p_info, sizeof(pjmedia_codec_info));
+//     //  /* Determine payload type for outgoing channel, by finding
+//     //   * dynamic payload type in remote SDP that matches the answer.
+//     //   */
+//     //  si->tx_pt = 0xFFFF;
+//     //  for (i=0; i<rem_m->desc.fmt_count; ++i) {
+//     //    unsigned rpt;
+//     //    pjmedia_sdp_attr *r_attr;
+//     //    pjmedia_sdp_rtpmap r_rtpmap;
+//     //    rpt = pj_strtoul(&rem_m->desc.fmt[i]);
+//     //    if (rpt < 96)
+//     //      continue;
+//     //    r_attr = pjmedia_sdp_media_find_attr2(rem_m, "rtpmap",
+//     //       &rem_m->desc.fmt[i]);
+//     //    if (!r_attr)
+//     //      continue;
+//     //    if (pjmedia_sdp_attr_get_rtpmap(r_attr, &r_rtpmap) != PJ_SUCCESS)
+//     //      continue;
+//     //    if (!pj_stricmp(&rtpmap->enc_name, &r_rtpmap.enc_name) &&
+//     //        rtpmap->clock_rate == r_rtpmap.clock_rate)
+//     //      {
+//     //        /* Found matched codec. */
+//     //        si->tx_pt = rpt;
+//     //        break;
+//     //      }
+//     //  }
+//     //  if (si->tx_pt == 0xFFFF)
+//     //    return PJMEDIA_EMISSINGRTPMAP;
+//   }
+//   // /* Now that we have codec info, get the codec param. */
+//   // si->param = PJ_POOL_ALLOC_T(pool, pjmedia_codec_param);
+//   // status = pjmedia_codec_mgr_get_default_param(mgr, &si->fmt,
+//   //               si->param);
+//   // /* Get remote fmtp for our encoder. */
+//   // pjmedia_stream_info_parse_fmtp(pool, rem_m, si->tx_pt,
+//   //        &si->param->setting.enc_fmtp);
+//   /* Get local fmtp for our decoder. */
+//   // pjmedia_stream_info_parse_fmtp(pool, local_m, si->rx_pt,
+//   //        &si->param->setting.dec_fmtp);
+//   // /* Get the remote ptime for our encoder. */
+//   // attr = pjmedia_sdp_attr_find2(rem_m->attr_count, rem_m->attr,
+//   //       "ptime", nullptr);
+//   // if (attr) {
+//   //  pj_str_t tmp_val = attr->value;
+//   //  unsigned frm_per_pkt;
+//   //  pj_strltrim(&tmp_val);
+//   //  /* Round up ptime when the specified is not multiple of frm_ptime */
+//   //  frm_per_pkt = (pj_strtoul(&tmp_val) +
+//   //         si->param->info.frm_ptime/2) /
+//   //         si->param->info.frm_ptime;
+//   //  if (frm_per_pkt != 0) {
+//   //         si->param->setting.frm_per_pkt = (pj_uint8_t)frm_per_pkt;
+//   //     }
+//   // }
+//   // /* Get remote maxptime for our encoder. */
+//   // attr = pjmedia_sdp_attr_find2(rem_m->attr_count, rem_m->attr,
+//   //       "maxptime", nullptr);
+//   // if (attr) {
+//   //  pj_str_t tmp_val = attr->value;
+//   //  pj_strltrim(&tmp_val);
+//   //  si->tx_maxptime = pj_strtoul(&tmp_val);
+//   // }
+//   // /* When direction is NONE (it means SDP negotiation has failed) we don't
+//   //  * need to return a failure here, as returning failure will cause
+//   //  * the whole SDP to be rejected. See ticket #:
+//   //  * http://
+//   //  *
+//   //  * Thanks Alain Totouom
+//   //  */
+//   // if (status != PJ_SUCCESS && si->dir != PJMEDIA_DIR_NONE)
+//   //  return status;
+//   /* Get incomming payload type for telephone-events */
+//   si->rx_event_pt = -1;
+//   for (i = 0; i < local_m->attr_count; ++i) {
+//     pjmedia_sdp_rtpmap r;
+//     attr = local_m->attr[i];
+//     if (pj_strcmp2(&attr->name, "rtpmap") != 0)
+//       continue;
+//     if (pjmedia_sdp_attr_get_rtpmap(attr, &r) != PJ_SUCCESS)
+//       continue;
+//     if (pj_strcmp2(&r.enc_name, "telephone-event") == 0) {
+//       si->rx_event_pt = pj_strtoul(&r.pt);
+//       break;
+//     }
+//   }
+//   /* Get outgoing payload type for telephone-events */
+//   si->tx_event_pt = -1;
+//   for (i = 0; i < rem_m->attr_count; ++i) {
+//     pjmedia_sdp_rtpmap r;
+//     attr = rem_m->attr[i];
+//     if (pj_strcmp2(&attr->name, "rtpmap") != 0)
+//       continue;
+//     if (pjmedia_sdp_attr_get_rtpmap(attr, &r) != PJ_SUCCESS)
+//       continue;
+//     if (pj_strcmp2(&r.enc_name, "telephone-event") == 0) {
+//       si->tx_event_pt = pj_strtoul(&r.pt);
+//       break;
+//     }
+//   }
+//   return PJ_SUCCESS;
+// }
 
-void
-PJCall::remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
-                              unsigned fmt_pos) {
-  // remove the rtpmap
-  pjmedia_sdp_attr *attr;
-  attr = pjmedia_sdp_media_find_attr2(sdp_media, "rtpmap",
-                                      &sdp_media->desc.fmt[fmt_pos]);
-  if (attr != nullptr)
-    pjmedia_sdp_attr_remove(&sdp_media->attr_count, sdp_media->attr, attr);
-  // remove the fmtp line
-  attr = pjmedia_sdp_media_find_attr2(sdp_media, "fmtp",
-                                      &sdp_media->desc.fmt[fmt_pos]);
-  if (attr != nullptr) {
-    pjmedia_sdp_attr_remove(&sdp_media->attr_count, sdp_media->attr, attr);
-    // std::string updated_val (attr->value.ptr, attr->value.slen);
-    // updated_val.replace (0,2, std::to_string (pt));
-    // pj_strdup2 (pool, &attr->value, updated_val.c_str ());
-  }
-  // remove from media line
-  pj_str_t *begin = &sdp_media->desc.fmt[fmt_pos];
-  pj_str_t *end = &sdp_media->desc.fmt[sdp_media->desc.fmt_count - 1];
-  std::remove_if(begin, end, [&](pj_str_t item) {
-      return (0 == pj_strcmp(&item, &sdp_media->desc.fmt[fmt_pos]));
-    });
-  sdp_media->desc.fmt_count--;
-}
+// void
+// PJCall::remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
+//                               unsigned fmt_pos) {  // FIXME actually not doing the work 
+//   // remove the rtpmap
+//   pjmedia_sdp_attr *attr;
+//   attr = pjmedia_sdp_media_find_attr2(sdp_media, "rtpmap",
+//                                       &sdp_media->desc.fmt[fmt_pos]);
+//   if (attr != nullptr)
+//     pjmedia_sdp_attr_remove(&sdp_media->attr_count, sdp_media->attr, attr);
+//   // remove the fmtp line
+//   attr = pjmedia_sdp_media_find_attr2(sdp_media, "fmtp",
+//                                       &sdp_media->desc.fmt[fmt_pos]);
+//   if (attr != nullptr) {
+//     pjmedia_sdp_attr_remove(&sdp_media->attr_count, sdp_media->attr, attr);
+//     // std::string updated_val (attr->value.ptr, attr->value.slen);
+//     // updated_val.replace (0,2, std::to_string (pt));
+//     // pj_strdup2 (pool, &attr->value, updated_val.c_str ());
+//   }
+//   // FIXME remove from media line
+//   // pj_str_t *begin = &sdp_media->desc.fmt[fmt_pos];
+//   // pj_str_t *end = &sdp_media->desc.fmt[sdp_media->desc.fmt_count - 1];
+//   // std::remove_if(begin, end, [&](pj_str_t item) {
+//   //     return (0 == pj_strcmp(&item, &sdp_media->desc.fmt[fmt_pos]));
+//   //   });
+//   sdp_media->desc.fmt_count--;
+// }
 
 /*
  * Make outgoing call.
@@ -1263,10 +1265,10 @@ gint PJCall::get_starting_rtp_port(void *user_data) {
 }
 
 void
-PJCall::internal_manager_cb(std::string /*subscriber_name */,
-                            std::string quid_name ,
-                            std::string sig_name,
-                            std::vector<std::string> params,
+PJCall::internal_manager_cb(const std::string &/*subscriber_name */,
+                            const std::string &quid_name ,
+                            const std::string &sig_name,
+                            const std::vector<std::string> &params,
                             void *user_data) {
   PJCall *context = static_cast<PJCall *>(user_data);
   if (0 == sig_name.compare("on-tree-grafted") 

@@ -28,16 +28,12 @@
 static bool success = false;
 
 void
-quiddity_created_removed_cb(std::string  /* subscriber_name */,
-			     std::string  /* quiddity_name */,
-			     std::string signal_name,
-			     std::vector<std::string> params,
+quiddity_created_removed_cb(const std::string & /* subscriber_name */,
+			     const std::string & /* quiddity_name */,
+			     const std::string &signal_name,
+			     const std::vector<std::string> &params,
 			     void *  /* user_data */)
 {
-  // g_print("%s: %s %s",
-  // 	   signal_name.c_str(),
-  // 	   params[0].c_str(),
-  // 	   params[1].c_str());
   if (params[1].compare("true"))
     success = true;
 }

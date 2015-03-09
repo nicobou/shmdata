@@ -20,11 +20,11 @@
 #ifndef __SWITCHER_CREATE_REMOVE_SPY_H__
 #define __SWITCHER_CREATE_REMOVE_SPY_H__
 
-#include "./quiddity.hpp"
 #include <memory>
+#include "./quiddity.hpp"
 
 namespace switcher {
-class CreateRemoveSpy:public Quiddity {
+class CreateRemoveSpy: public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(CreateRemoveSpy);
   CreateRemoveSpy(const std::string &);
@@ -32,9 +32,8 @@ class CreateRemoveSpy:public Quiddity {
   CreateRemoveSpy(const CreateRemoveSpy &) = delete;
   CreateRemoveSpy &operator=(const CreateRemoveSpy &) = delete;
   bool init();
-
-  static void on_created(std::string quiddity_nick_name, void *user_data);
-  static void on_removed(std::string quiddity_nick_name, void *user_data);
+  static void on_created(const std::string &quiddity_nick_name, void *user_data);
+  static void on_removed(const std::string &quiddity_nick_name, void *user_data);
 
  private:
   bool i_am_the_one_;

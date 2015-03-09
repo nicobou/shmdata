@@ -53,13 +53,14 @@ AnyValueBase {
   }
 };
 
-template <> struct AnyValueDerived <std::nullptr_t> :
-AnyValueBase {
-  template <typename U> AnyValueDerived(U && value):
+template <>
+struct AnyValueDerived <std::nullptr_t> :
+    AnyValueBase {
+  template<typename U> AnyValueDerived(U && value):
       value_(std::forward<U> (value)) {
   }
   std::nullptr_t value_;
-  AnyValueBase * clone() const {
+  AnyValueBase *clone() const {
     return new AnyValueDerived <std::nullptr_t> (value_);
   }
   std::string to_string() const {

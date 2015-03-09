@@ -73,7 +73,7 @@ class RtpSession: public GstPipeliner {
 
  private:
   using DataStream = struct DataStream_t {
-    using ptr=std::unique_ptr<DataStream_t>;
+    using ptr = std::unique_ptr<DataStream_t>;
     DataStream_t() = delete;
     DataStream_t(GstElement *rtpsession): rtp (rtpsession) {}
     DataStream_t(DataStream_t &) = delete;

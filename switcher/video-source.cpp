@@ -90,15 +90,6 @@ VideoSource::~VideoSource() {
   GstUtils::free_g_enum_values(secondary_codec_);
 }
 
-void VideoSource::print_list(gpointer /*data */ ,
-                             gpointer /*user_data */ ) {
-  // g_print ("%s\n", g_type_name (gst_element_factory_get_element_type (GST_ELEMENT_FACTORY (data))));
-  // g_print ("long name: %s name %s description:%s\n",
-  //      gst_element_factory_get_longname ((GstElementFactory *)data),
-  //      gst_plugin_feature_get_name ((GstPluginFeature *)data),
-  //      gst_element_factory_get_description ((GstElementFactory *)data));
-}
-
 bool VideoSource::make_new_shmdatas() {
   clear_shmdatas();
   reset_bin();
@@ -251,34 +242,34 @@ gint VideoSource::get_codec(void *user_data) {
   return context->codec_;
 }
 
-gboolean VideoSource::get_codec_long_list(void *user_data) {
-  VideoSource *context = static_cast<VideoSource *>(user_data);
-  return context->codec_long_list_;
-}
+// gboolean VideoSource::get_codec_long_list(void *user_data) {
+//   VideoSource *context = static_cast<VideoSource *>(user_data);
+//   return context->codec_long_list_;
+// }
 
-void
-VideoSource::set_codec_long_list(gboolean codec_long_list,
-                                 void *user_data) {
-  VideoSource *context = static_cast<VideoSource *>(user_data);
-  context->codec_long_list_ = codec_long_list;
+// void
+// VideoSource::set_codec_long_list(gboolean codec_long_list,
+//                                  void *user_data) {
+//   VideoSource *context = static_cast<VideoSource *>(user_data);
+//   context->codec_long_list_ = codec_long_list;
 
-  if (codec_long_list) {
-    context->uninstall_property("codec");
-    context->install_property_by_pspec(context->
-                                       custom_props_->get_gobject(),
-                                       context->secondary_codec_spec_,
-                                       "codec", "Video Codecs (Long List)");
-  } else {
-    context->uninstall_property("codec");
-    context->install_property_by_pspec(context->
-                                       custom_props_->get_gobject(),
-                                       context->primary_codec_spec_,
-                                       "codec",
-                                       "Video Codecs (Short List)");
-  }
-  // reset codec value
-  set_codec(0, context);
-}
+//   if (codec_long_list) {
+//     context->uninstall_property("codec");
+//     context->install_property_by_pspec(context->
+//                                        custom_props_->get_gobject(),
+//                                        context->secondary_codec_spec_,
+//                                        "codec", "Video Codecs (Long List)");
+//   } else {
+//     context->uninstall_property("codec");
+//     context->install_property_by_pspec(context->
+//                                        custom_props_->get_gobject(),
+//                                        context->primary_codec_spec_,
+//                                        "codec",
+//                                        "Video Codecs (Short List)");
+//   }
+//   // reset codec value
+//   set_codec(0, context);
+// }
 
 void VideoSource::make_codec_properties() {
   codec_properties_.push_back("quality");     // jpegenc

@@ -32,30 +32,26 @@ namespace switcher {
 class ShmdataAnyReader:public OnCaps {
  public:
   typedef std::shared_ptr<ShmdataAnyReader> ptr;
-  using Callback = std::function < void (void *,
-                                         int,
-                                         unsigned long long,
-                                         const char *,
-                                         void *) >;
+  using Callback = std::function<void(void *,
+                                      int,
+                                      unsigned long long,
+                                      const char *,
+                                      void *)>;
 
   ShmdataAnyReader();
   ~ShmdataAnyReader();
   ShmdataAnyReader(const ShmdataAnyReader &) = delete;
   ShmdataAnyReader &operator=(const ShmdataAnyReader &) = delete;
-
   // conrfiguration member before starting:
   bool set_path(std::string path);    // path needs to be fully specified
   bool set_callback(Callback cb, void *user_data);
   bool set_data_type(std::string data_type);
   bool set_absolute_timestamp(bool absolute_timestamp);
-
   // starting the reader:
   bool start();
-
   // info + controls before and after starting the reader :
-  std::string get_path();
+  std::string get_path() const;
   void mute(bool mute);
-  bool is_muted();
   JSONBuilder::Node get_json_root_node();
 
  private:
@@ -72,6 +68,6 @@ class ShmdataAnyReader:public OnCaps {
                       int data_size, unsigned long long timestamp,
                       const char *type_description, void *user_data);
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

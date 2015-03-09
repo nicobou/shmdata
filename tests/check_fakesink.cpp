@@ -27,10 +27,10 @@
 
 static bool success = false; 
 void
-property_cb(std::string /*subscriber_name*/,
-            std::string /*quiddity_name*/,
-            std::string /*property_name*/,
-            std::string /*value*/,
+property_cb(const std::string &/*subscriber_name*/,
+            const std::string &/*quiddity_name*/,
+            const std::string &/*property_name*/,
+            const std::string &/*value*/,
             void */*user_data*/) {
   success = true;  // got a caps, success
 }

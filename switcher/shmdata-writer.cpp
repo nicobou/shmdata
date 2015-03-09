@@ -61,7 +61,7 @@ bool ShmdataWriter::set_path_without_deleting(std::string name) {
   return true;
 }
 
-std::string ShmdataWriter::get_path() {
+std::string ShmdataWriter::get_path() const {
   return path_;
 }
 

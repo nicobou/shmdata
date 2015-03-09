@@ -338,38 +338,6 @@ GObjectWrapper::make_signal(GType return_type,
   return signal_id;
 }
 
-guint
-GObjectWrapper::make_signal_action(GClosure *class_closure,
-                                   GType return_type,
-                                   guint n_params, GType *param_types) {
-  guint sig_id = next_signal_num_;
-  next_signal_num_++;
-  gchar *name = g_strdup_printf("custom_signal_%d", sig_id);
-  On_scope_exit{g_free(name);};
-
-  // TODO find a way to get CLASS without instanciating an unused object
-  MyObject *obj = (MyObject *) g_object_new(my_object_get_type(), nullptr);
-  guint signal_id = g_signal_newv(name,
-                                  G_TYPE_FROM_CLASS(G_OBJECT_GET_CLASS
-                                                    (obj)),
-                                  (GSignalFlags) (G_SIGNAL_RUN_LAST |
-                                                  G_SIGNAL_ACTION),
-                                  class_closure,
-                                  nullptr,    // GSignalAccumulator
-                                  nullptr,    // gpointer accu_data
-                                  nullptr,    // GSignalCMarshaller
-                                  return_type,
-                                  n_params,
-                                  param_types);
-  g_object_unref(obj);
-
-  // GObjectCustomSignal::ptr signal =
-  //   GObjectCustomSignal::make_custom_signal ();
-
-  // custom_signals_[signal_id] = signal;
-  return signal_id;
-}
-
 GObject *GObjectWrapper::get_gobject() {
   return G_OBJECT(my_object_);
 }

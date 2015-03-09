@@ -245,13 +245,13 @@ bool GstPipeliner::reset_bin() {
 void GstPipeliner::on_gst_error(GstMessage *msg) {
   // on-error-gsource
   GSourceWrapper *gsrc =
-      (GSourceWrapper *) g_object_get_data(G_OBJECT(msg->src),
-                                           "on-error-gsource");
+      static_cast<GSourceWrapper *>(g_object_get_data(G_OBJECT(msg->src),
+                                                      "on-error-gsource"));
   if(nullptr != gsrc) {
     // removing command in order to get it invoked once
     g_object_set_data(G_OBJECT(msg->src),
                       "on-error-gsource",
-                      (gpointer) nullptr);
+                      nullptr);
     gsrc->attach(get_g_main_context());
   }
   

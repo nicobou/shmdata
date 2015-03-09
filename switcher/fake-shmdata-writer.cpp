@@ -47,10 +47,10 @@ FakeShmdataWriter::~FakeShmdataWriter() {
 }
 
 
-void FakeShmdataWriter::caps_cb(std::string /*subscriber_name */,
-                                std::string /*quiddity_name*/,
-                                std::string /*property_name*/,
-                                std::string value,
+void FakeShmdataWriter::caps_cb(const std::string &/*subscriber_name */,
+                                const std::string &/*quiddity_name*/,
+                                const std::string &/*property_name*/,
+                                const std::string &value,
                                 void *user_data) {
   FakeShmdataWriter *context = static_cast<FakeShmdataWriter *>(user_data);
 
@@ -72,10 +72,6 @@ bool FakeShmdataWriter::init() {
                             shmdata_path_spec_, "shmdata-path",
                             "Shmdata Path");
 
-  return true;
-}
-
-bool FakeShmdataWriter::add_shmdata_path(std::string name) {
   return true;
 }
 

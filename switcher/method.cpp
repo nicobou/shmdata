@@ -80,11 +80,6 @@ Method::set_method(method_ptr method,
   return true;
 }
 
-// FIXME remove this method
-uint Method::get_num_of_value_args() {
-  return num_of_value_args_;
-}
-
 bool Method::invoke(std::vector<std::string> args, GValue *result_value) {
   // GValue result_value = G_VALUE_INIT;
 
@@ -160,18 +155,17 @@ void Method::make_description() {
   json_description_->set_member_name("arguments");
   json_description_->begin_array();
   args_doc::iterator it;
-  int j = 0;
   if (!arg_description_.empty()) {
-    for (it = arg_description_.begin(); it != arg_description_.end(); it++) {
+    for (auto &it :arg_description_) {
       json_description_->begin_object();
       json_description_->add_string_member("long name",
-                                           std::get<0> (*it).c_str());
+                                           std::get<0> (it).c_str());
       json_description_->add_string_member("name",
-                                           std::get<1> (*it).c_str());
+                                           std::get<1> (it).c_str());
       json_description_->add_string_member("description",
-                                           std::get<2> (*it).c_str());
-      json_description_->add_string_member("type",
-                                           g_type_name(arg_types_[j]));
+                                           std::get<2> (it).c_str());
+      json_description_->add_string_member("type",  // FIXME only the first arg ?
+                                           g_type_name(arg_types_[0]));
       json_description_->end_object();
     }
   }
@@ -208,7 +202,6 @@ Method::args_doc
 Method::make_arg_description(const char *first_arg_long_name, ...) {
   args_doc res;
   va_list vl;
-  char *arg_long_name;
   char *arg_name;
   char *arg_desc;
   va_start(vl, first_arg_long_name);
@@ -219,8 +212,7 @@ Method::make_arg_description(const char *first_arg_long_name, ...) {
                                   arg_name, arg_desc));
   gboolean parsing = true;
   do {
-    arg_long_name = va_arg(vl, char *);
-
+    char *arg_long_name = va_arg(vl, char *);
     if (arg_long_name != nullptr) {
       arg_name = va_arg(vl, char *);
       arg_desc = va_arg(vl, char *);

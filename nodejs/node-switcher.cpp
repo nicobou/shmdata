@@ -249,7 +249,7 @@ v8::Handle<v8::Value> GetInfo(const v8::Arguments &args) {
   return scope.Close(name);
 }
 
-v8::Handle<v8::Value> SwitcherClose(const v8::Arguments &args) {
+v8::Handle<v8::Value> SwitcherClose(const v8::Arguments &) {
   v8::HandleScope scope;
   // if (!user_log_cb.IsEmpty ())
   //  user_log_cb.Dispose ();
@@ -262,7 +262,7 @@ v8::Handle<v8::Value> SwitcherClose(const v8::Arguments &args) {
   return scope.Close(name);
 }
 
-v8::Handle<v8::Value> GetClassesDoc(const v8::Arguments &args) {
+v8::Handle<v8::Value> GetClassesDoc(const v8::Arguments &) {
   v8::HandleScope scope;
 
   v8::Handle<v8::String> res =
@@ -311,7 +311,7 @@ v8::Handle<v8::Value> GetQuiddityDescription(const v8::Arguments &args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> GetQuidditiesDescription(const v8::Arguments &args) {
+v8::Handle<v8::Value> GetQuidditiesDescription(const v8::Arguments &) {
   v8::HandleScope scope;
 
   v8::Handle<v8::String> res =
@@ -595,7 +595,7 @@ v8::Handle<v8::Value> RegisterLogCallback(const v8::Arguments &args) {
 }
 
 void
-NotifyLog(uv_async_t *async, int status) {
+NotifyLog(uv_async_t */*async*/, int /*status*/) {
   v8::HandleScope scope;
   v8::TryCatch try_catch;
   uv_mutex_lock(&switcher_log_mutex);
@@ -614,12 +614,11 @@ NotifyLog(uv_async_t *async, int status) {
 }
 
 // call client log callback
-static void
-logger_cb(std::string subscriber_name,
-          std::string quiddity_name,
-          std::string property_name,
-          std::string value,
-          void *user_data) {
+static void logger_cb(const std::string &subscriber_name,
+                      const std::string &quiddity_name,
+                      const std::string &property_name,
+                      const std::string &value,
+                      void *user_data) {
   uv_mutex_lock(&switcher_log_mutex);
   switcher_log_list.push_back(value);
   uv_mutex_unlock(&switcher_log_mutex);
@@ -666,10 +665,10 @@ NotifyProp(uv_async_t *async, int status) {
 
 // call client prop callback
 static void
-property_cb(std::string subscriber,
-            std::string quid,
-            std::string prop,
-            std::string val,
+property_cb(const std::string &subscriber,
+            const std::string &quid,
+            const std::string &prop,
+            const std::string &val,
             void *user_data) {
   uv_mutex_lock(&switcher_prop_mutex);
   switcher_prop_list.push_back(PropUpdate(std::move(quid),
@@ -778,10 +777,10 @@ NotifySignal(uv_async_t */*async*/, int /*status*/) {
 
 // call client signal callback
 static void
-signal_cb(std::string subscriber_name,
-          std::string quid,
-          std::string sig,
-          std::vector<std::string> params,
+signal_cb(const std::string &subscriber_name,
+          const std::string &quid,
+          const std::string &sig,
+          const std::vector<std::string> &params,
           void *user_data) {
   uv_mutex_lock(&switcher_sig_mutex);
   switcher_sig_list.push_back(SigUpdate(quid,

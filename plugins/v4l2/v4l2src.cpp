@@ -537,20 +537,20 @@ bool V4L2Src::check_folder_for_v4l2_devices(const char *dir_path) {
   GError *error;
   GFileEnumerator *enumerator;
   GFileInfo *info;
-  GFile *descend;
-  char *absolute_path;
   error = nullptr;
   enumerator =
-      g_file_enumerate_children(inspected_dir, "*",
-                                G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr,
+      g_file_enumerate_children(inspected_dir,
+                                "*",
+                                G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
+                                nullptr,
                                 &error);
   if (!enumerator)
     return false;
   error = nullptr;
   info = g_file_enumerator_next_file(enumerator, nullptr, &error);
   while ((info) && (!error)) {
-    descend = g_file_get_child(inspected_dir, g_file_info_get_name(info));
-    absolute_path = g_file_get_path(descend);
+    GFile *descend = g_file_get_child(inspected_dir, g_file_info_get_name(info));
+    char *absolute_path = g_file_get_path(descend);
     On_scope_exit{if(nullptr != absolute_path) g_free(absolute_path);};
     if (g_str_has_prefix(absolute_path, "/dev/video")
         /*|| g_str_has_prefix (absolute_path, "/dev/radio")
@@ -575,14 +575,14 @@ bool V4L2Src::check_folder_for_v4l2_devices(const char *dir_path) {
   return true;
 }
 
-bool V4L2Src::inspect_frame_rate(const char * /*file_path */ ,
-                                 unsigned /*pixel_format */ ,
-                                 unsigned /*width */ ,
-                                 unsigned /*height */ ) {
-  // FIXME, framerate can change according to pixel_format and resolution
-  g_debug("  V4L2Src::inspect_frame_rate: TODO");
-  return false;
-}
+// bool V4L2Src::inspect_frame_rate(const char * /*file_path */ ,
+//                                  unsigned /*pixel_format */ ,
+//                                  unsigned /*width */ ,
+//                                  unsigned /*height */ ) {
+//   // FIXME, framerate can change according to pixel_format and resolution
+//   g_debug("  V4L2Src::inspect_frame_rate: TODO");
+//   return false;
+// }
 
 bool V4L2Src::on_start() {
   uninstall_property("resolution");

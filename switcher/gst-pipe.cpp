@@ -39,17 +39,17 @@ GstPipe::GstPipe(GMainContext *context) :
   source_funcs_.dispatch = source_dispatch;
   source_funcs_.finalize = source_finalize;
   source_ = g_source_new(&source_funcs_, sizeof(GstBusSource));
-  ((GstBusSource *) source_)->bus =
+  reinterpret_cast<GstBusSource *>(source_)->bus =
       gst_pipeline_get_bus(GST_PIPELINE(pipeline_));
   g_source_set_callback(source_,
                         (GSourceFunc) bus_called,
                         this,
                         nullptr);
   g_source_attach(source_, gmaincontext_);
-  gst_bus_set_sync_handler(((GstBusSource *) source_)->bus,
+  gst_bus_set_sync_handler(reinterpret_cast<GstBusSource *>(source_)->bus,
                            bus_sync_handler,
                            this);
-  ((GstBusSource *) source_)->inited = FALSE;
+  reinterpret_cast<GstBusSource *>(source_)->inited = FALSE;
   {
     std::unique_lock<std::mutex> lock(play_pipe_);
     GstUtils::g_idle_add_full_with_context(gmaincontext_,

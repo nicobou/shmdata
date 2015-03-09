@@ -448,22 +448,18 @@ RtpSession::add_udp_stream_to_dest(std::string shmpath,
               shmpath.c_str());
     return false;
   }
-  std::string id = std::to_string(ds_it->second->id);
-
   auto destination_it = destinations_.find(nick_name);
   if (destinations_.end() == destination_it) {
     g_warning("RtpSession does not contain a destination named %s",
               nick_name.c_str());
     return false;
   }
-  
   gint rtp_port = atoi(port.c_str());
   if (rtp_port % 2 != 0) {
     g_warning("rtp destination port %s must be even, not odd",
               port.c_str());
     return false;
   }
-
   // rtp stream (sending)
   RtpDestination::ptr dest = destinations_[nick_name];
   dest->add_stream(shmpath, port);
@@ -472,7 +468,6 @@ RtpSession::add_udp_stream_to_dest(std::string shmpath,
                          dest->get_host_name().c_str(),
                          rtp_port,
                          nullptr);
-
   // rtcp stream (sending)
   g_signal_emit_by_name (ds_it->second->udp_rtcp_sink,
                          "add",

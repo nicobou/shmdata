@@ -47,7 +47,7 @@ void RtpDestination::set_host_name(std::string host_name) {
   make_json_description();
 }
 
-std::string RtpDestination::get_host_name() {
+std::string RtpDestination::get_host_name() const {
   return host_name_;
 }
 
@@ -143,7 +143,7 @@ bool RtpDestination::write_to_file(std::string file_name) {
   return true;
 }
 
-std::vector<std::string> RtpDestination::get_shmdata(){
+std::vector<std::string> RtpDestination::get_shmdata() const {
   std::vector<std::string> res;
   for (auto &it: source_streams_) {
     res.push_back(it.first);

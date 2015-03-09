@@ -105,16 +105,10 @@ SyphonSrc::stop() {
 void
 SyphonSrc::frameCallback(void *context, const char *data, int &width,
                          int &height) {
-  SyphonSrc *
-      ctx = (SyphonSrc *) context;
-
-  char
-      buffer[256] = "";
-  static
-      bool
-      set = false;
-
+  SyphonSrc *ctx = static_cast<SyphonSrc>(context);
+  static bool set = false;
   if (set == false || ctx->width_ != width || ctx->height_ != height) {
+    char buffer[256] = "";
     ctx->writer_.reset(new ShmdataAnyWriter);
     if (ctx->syphon_servername_ != "" && ctx->syphon_appname_ != "")
       ctx->writer_->set_path(ctx->make_file_name
@@ -127,7 +121,6 @@ SyphonSrc::frameCallback(void *context, const char *data, int &width,
     ctx->register_shmdata(ctx->writer_);
     ctx->width_ = width;
     ctx->height_ = height;
-
     sprintf(buffer,
             "video/x-raw-rgb,bpp=32,endianness=4321,depth=32,red_mask=-16777216,green_mask=16711680,blue_mask=65280,width=%i,height=%i,framerate=30/1",
             width, height);
@@ -135,39 +128,30 @@ SyphonSrc::frameCallback(void *context, const char *data, int &width,
     ctx->writer_->start();
     set = true;
   }
-
   ctx->writer_->push_data_auto_clock((void *) data, width *height * 4,
                                      nullptr, nullptr);
 }
 
 const gchar *
 SyphonSrc::get_servername(void *user_data) {
-  SyphonSrc *
-      ctx = (SyphonSrc *) user_data;
-  return ctx->syphon_servername_.c_str();
+  SyphonSrc *ctx = static_cast<SyphonSrc>(user_data);  return ctx->syphon_servername_.c_str();
 }
 
 void
 SyphonSrc::set_servername(const gchar *name, void *user_data) {
-  SyphonSrc *
-      ctx = (SyphonSrc *) user_data;
-
+  SyphonSrc *ctx = static_cast<SyphonSrc>(user_data);
   if (name != nullptr)
     ctx->syphon_servername_ = name;
 }
 
 const gchar *
 SyphonSrc::get_appname(void *user_data) {
-  SyphonSrc *
-      ctx = (SyphonSrc *) user_data;
-  return ctx->syphon_appname_.c_str();
+  SyphonSrc *ctx = static_cast<SyphonSrc>(user_data);  return ctx->syphon_appname_.c_str();
 }
 
 void
 SyphonSrc::set_appname(const gchar *name, void *user_data) {
-  SyphonSrc *
-      ctx = (SyphonSrc *) user_data;
-
+  SyphonSrc *ctx = static_cast<SyphonSrc>(user_data);
   if (name != nullptr)
     ctx->syphon_appname_ = name;
 }

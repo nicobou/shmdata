@@ -46,7 +46,7 @@ class ShmdataReader:public OnCaps, public GstElementCleaner {
   void set_g_main_context(GMainContext *context);
   void set_sink_element(GstElement *sink_element);
   void set_on_first_data_hook(on_first_data_hook cb, void *user_data);
-  std::string get_path();
+  std::string get_path() const;
   void start();
   void stop();
   // get json doc:

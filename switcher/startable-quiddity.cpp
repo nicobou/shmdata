@@ -65,7 +65,7 @@ void StartableQuiddity::set_started(gboolean started, void *user_data) {
       notify_property_changed(context->started_prop_);
 }
 
-bool StartableQuiddity::is_started() {
+bool StartableQuiddity::is_started() const {
   return started_;
 }
 

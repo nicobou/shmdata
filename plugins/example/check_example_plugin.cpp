@@ -51,8 +51,7 @@ main() {
     assert(manager->get_property("test", "myprop") == "true");
 
     // get json formated information
-    std::string info = manager->get_info("test", "custom.information");
-    // std::cout << info << std::endl;
+    manager->get_info("test", "custom.information");
 
     // testing hello-world method
     std::string *res = nullptr;

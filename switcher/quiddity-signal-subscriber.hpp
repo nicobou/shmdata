@@ -37,10 +37,10 @@ class QuiddityManager_Impl;
 class QuidditySignalSubscriber {
  public:
   typedef std::shared_ptr<QuidditySignalSubscriber> ptr;
-  typedef void (*OnEmittedCallback) (std::string subscriber_name,
-                                     std::string quiddity_name,
-                                     std::string signal_name,
-                                     std::vector<std::string> params,
+  typedef void (*OnEmittedCallback) (const std::string &subscriber_name,
+                                     const std::string &quiddity_name,
+                                     const std::string &signal_name,
+                                     const std::vector<std::string> &params,
                                      void *user_data);
   QuidditySignalSubscriber();
   ~QuidditySignalSubscriber();
@@ -53,9 +53,9 @@ class QuidditySignalSubscriber {
   void set_user_data(void *user_data);
   void set_name(const gchar *name);
   bool subscribe(std::shared_ptr<Quiddity> quid,
-                 std::string signal_name);
+                 const std::string &signal_name);
   bool unsubscribe(std::shared_ptr<Quiddity> quid,
-                   std::string signal_name);
+                   const std::string &signal_name);
   bool unsubscribe(std::shared_ptr<Quiddity> quid);
 
   std::vector<std::pair<std::string, std::string>> list_subscribed_signals();

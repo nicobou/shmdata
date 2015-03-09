@@ -106,13 +106,13 @@ ShmdataToFile::stop() {
 
 const gchar *
 ShmdataToFile::get_output_prefix(void *user_data) {
-  ShmdataToFile *ctx = (ShmdataToFile *) user_data;
+  ShmdataToFile *ctx = static_cast<ShmdataToFile *>(user_data);
   return ctx->output_prefix_.c_str();
 }
 
 void
 ShmdataToFile::set_output_prefix(const gchar *prefix, void *user_data) {
-  ShmdataToFile *ctx = (ShmdataToFile *) user_data;
+  ShmdataToFile *ctx = static_cast<ShmdataToFile *>(user_data);
   if (prefix != nullptr)
     ctx->output_prefix_ = prefix;
 }

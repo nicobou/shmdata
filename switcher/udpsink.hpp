@@ -52,14 +52,9 @@ class UDPSink:public SinglePadGstSink {
   static gboolean add_client_wrapped(gpointer host,
                                      gint port, gpointer user_data);
   static gboolean clear_wrapped(gpointer unused, gpointer user_data);
-  static void on_client_added(GstElement *multiudpsink,
-                              gchar *host, gint port, gpointer user_data);
-  static void on_client_removed(GstElement *multiudpsink,
-                                gchar *host,
-                                gint port, gpointer user_data);
   static void add_elements_to_bin(ShmdataReader *caller,
                                   void *udpbin_instance);
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

@@ -58,15 +58,17 @@ bool PortMidiSource::init() {
   }
   init_startable(this);
   init_segment(this);
-  devices_description_spec_ =
-      custom_props_->make_string_property("devices-json",
-                                          "Description of capture devices (json formated)",
-                                          get_devices_description_json((PortMidi *) this), (GParamFlags) G_PARAM_READABLE, nullptr, get_devices_description_json, (PortMidi *) this);
-
+  devices_description_spec_ = custom_props_->
+      make_string_property("devices-json",
+                           "Description of capture devices (json formated)",
+                           get_devices_description_json(static_cast<PortMidi *>(this)),
+                           (GParamFlags) G_PARAM_READABLE,
+                           nullptr,
+                           get_devices_description_json,
+                           static_cast<PortMidi *>(this));
   install_property_by_pspec(custom_props_->get_gobject(),
                             devices_description_spec_,
                             "devices-json", "Capture Devices");
-
   device_ = input_devices_enum_[0].value;
   devices_enum_spec_ =
       custom_props_->make_enum_property("device",
@@ -76,10 +78,8 @@ bool PortMidiSource::init() {
                                         (GParamFlags) G_PARAM_READWRITE,
                                         PortMidiSource::set_device,
                                         PortMidiSource::get_device, this);
-
   install_property_by_pspec(custom_props_->get_gobject(),
                             devices_enum_spec_, "device", "Capture Device");
-
   midi_value_spec_ =
       custom_props_->make_int_property("last-midi-value",
                                        "the last midi value",
@@ -88,20 +88,18 @@ bool PortMidiSource::init() {
                                        0,
                                        (GParamFlags) G_PARAM_READABLE,
                                        nullptr, get_midi_value, this);
-
   install_method("Next MIDI Event To Property",       // long name
                  "next_midi_event_to_property",       // name
-                 "Wait for a MIDI event and make a property for this channel",        // description
+                 "Wait for a MIDI event and make a property for this channel",  // description
                  "success or fail",   // return description
-                 Method::make_arg_description("Property Long Name",   // first arg long name
-                                              "property_long_name",   // fisrt arg name
-                                              "string",       // first arg description
+                 Method::make_arg_description("Property Long Name",  // first arg long name
+                                              "property_long_name",  // fisrt arg name
+                                              "string",  // first arg description
                                               nullptr),
                  (Method::method_ptr) &next_midi_event_to_property_method,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
-
   install_method("Last MIDI Event To Property",       // long name
                  "last_midi_event_to_property",       // name
                  "make a property with the given name from the next incoming MIDI event",     // description
@@ -114,7 +112,6 @@ bool PortMidiSource::init() {
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
-
   install_method("Remove Midi Property",      // long name
                  "remove_midi_property",      // name
                  "remove a property made with Make Property",  // description
@@ -127,7 +124,6 @@ bool PortMidiSource::init() {
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
-
   std::string shm_any_name = make_file_name("midi");
   shm_any_->set_path(shm_any_name.c_str());
   g_message("%s created a new shmdata any writer (%s)",
@@ -135,7 +131,6 @@ bool PortMidiSource::init() {
   shm_any_->set_data_type("audio/midi");
   shm_any_->start();
   register_shmdata(shm_any_);
-
   return true;
 }
 

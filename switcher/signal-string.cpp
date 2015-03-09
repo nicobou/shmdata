@@ -35,26 +35,6 @@ Signal::~Signal() {
   g_signal_remove_emission_hook(id_, hook_id_);
 }
 
-bool
-Signal::set_gobject_signame(GObject *object,
-                            std::string gobject_signal_name) {
-  if (!G_IS_OBJECT(object)) {
-    g_debug("Signal: object is not a gobject");
-    return false;
-  }
-
-  guint id = g_signal_lookup(gobject_signal_name.c_str(),
-                             G_TYPE_FROM_CLASS(G_OBJECT_CLASS_TYPE
-                                               (object)));
-  if (id == 0) {
-    g_debug("Signal: object does not have a signal named %s",
-            gobject_signal_name.c_str());
-    return false;
-  }
-
-  return set_gobject_sigid(object, id);
-}
-
 bool Signal::set_gobject_sigid(GObject *object, guint gobject_signal_id) {
   if (!G_IS_OBJECT(object)) {
     g_debug("Signal: object is not a gobject");
@@ -90,11 +70,6 @@ void Signal::inspect_gobject_signal() {
   query = g_new0(GSignalQuery, 1);
   g_signal_query(id_, query);
 
-  if (query->signal_flags &G_SIGNAL_ACTION)
-    is_action_ = TRUE;
-  else
-    is_action_ = FALSE;
-
   return_type_ = query->return_type;
 
   for (j = 0; j < query->n_params; j++) {
@@ -117,10 +92,7 @@ Signal::set_description(std::string long_name,
   json_description_->add_string_member("description",
                                        short_description.c_str());
 
-  if (is_action_)
-    json_description_->add_string_member("type", "action");
-  else
-    json_description_->add_string_member("type", "signal");
+  json_description_->add_string_member("type", "signal");
   json_description_->add_string_member("return type",
                                        g_type_name(return_type_));
   json_description_->add_string_member("return description",
@@ -129,15 +101,12 @@ Signal::set_description(std::string long_name,
   json_description_->begin_array();
   args_doc::iterator it;
   if (!arg_description.empty()) {
-    int j = 0;
-    for (it = arg_description.begin(); it != arg_description.end(); it++) {
+    for (auto &it : arg_description) {
       json_description_->begin_object();
-      json_description_->add_string_member("long name", std::get<0> (*it).c_str());
-      json_description_->add_string_member("name", std::get<1> (*it).c_str());
-      json_description_->add_string_member("description", std::get<2> (*it).c_str());
-      //json_description_->add_string_member("type", g_type_name(arg_types_[j]));
+      json_description_->add_string_member("long name", std::get<0> (it).c_str());
+      json_description_->add_string_member("name", std::get<1> (it).c_str());
+      json_description_->add_string_member("description", std::get<2> (it).c_str());
       json_description_->end_object();
-      j++;
     }
   }
   json_description_->end_array();
@@ -161,7 +130,6 @@ Signal::args_doc
 Signal::make_arg_description(const gchar *first_arg_long_name, ...) {
   args_doc res;
   va_list vl;
-  char *arg_long_name;
   char *arg_name;
   char *arg_desc;
   va_start(vl, first_arg_long_name);
@@ -173,7 +141,7 @@ Signal::make_arg_description(const gchar *first_arg_long_name, ...) {
 
   gboolean parsing = true;
   do {
-    arg_long_name = va_arg(vl, char *);
+  char *arg_long_name = va_arg(vl, char *);
     if (arg_long_name != nullptr) {
       arg_name = va_arg(vl, char *);
       arg_desc = va_arg(vl, char *);
@@ -302,49 +270,4 @@ void Signal::signal_emit(/*GMainContext *context, */ const gchar */*unused*/,
 //   return FALSE;
 // }
 
-GValue Signal::action_emit(std::vector<std::string> args) {
-  GValue result_value = G_VALUE_INIT;
-
-  if (!is_action_) {
-    g_warning
-        ("Signal::invoke cannot invoke if the signal is not an action");
-    return result_value;
-  }
-
-  if (args.size() != arg_types_.size() && arg_types_[0] != G_TYPE_NONE) {
-    g_warning
-        ("Signal::invoke number of arguments does not correspond to the size of argument types");
-    return result_value;
-  }
-
-  gsize param_size = 1;
-  if (arg_types_[0] != G_TYPE_NONE)
-    param_size = arg_types_.size() + 1;
-
-  GValue params[param_size];  // 1 is instance and return value
-
-  params[0] = G_VALUE_INIT;
-  g_value_init(&params[0], G_OBJECT_TYPE(object_));
-  g_value_set_object(&params[0], object_);
-
-  // with args
-  if (arg_types_[0] != G_TYPE_NONE) {
-    for (gsize i = 0; i < arg_types_.size(); i++) {
-      params[i + 1] = G_VALUE_INIT;
-      g_value_init(&params[i + 1], arg_types_[i]);
-
-      if (!gst_value_deserialize(&params[i + 1], args[i].c_str())) {
-        g_warning
-            ("Signal::invoke string not transformable into gvalue (argument: %s) ",
-             args[i].c_str());
-        return result_value;
-      }
-    }
-  }
-  g_value_init(&result_value, return_type_);
-  g_signal_emitv(params, id_, 0, &result_value);
-  for (gsize i = 0; i < param_size; i++)
-    g_value_unset(&params[i]);
-  return result_value;
-}
 }  // namespace switcher

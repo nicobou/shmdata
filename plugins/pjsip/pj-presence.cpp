@@ -426,13 +426,13 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
     return;
   pjsua_buddy_info info;
   pjsua_buddy_get_info(buddy_id, &info);
-  std::string activity;
-  if (PJRPID_ACTIVITY_UNKNOWN == info.rpid.activity)
-    activity = "unknown";
-  if (PJRPID_ACTIVITY_AWAY == info.rpid.activity)
-    activity = "away";
-  if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
-    activity = "busy";
+  // std::string activity;
+  // if (PJRPID_ACTIVITY_UNKNOWN == info.rpid.activity)
+  //   activity = "unknown";
+  // if (PJRPID_ACTIVITY_AWAY == info.rpid.activity)
+  //   activity = "away";
+  // if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
+  //   activity = "busy";
   // g_debug("%.*s status is %.*s, subscription state is %s "
   //         "(last termination reason code=%d %.*s)\n"
   //         "rpid  activity %s, note %.*s\n",
@@ -629,18 +629,18 @@ PJPresence::on_buddy_evsub_state(pjsua_buddy_id buddy_id,
   //        pjsip_event_str(event->type), event_info);
 }
 
-gboolean PJPresence::save_buddies_wrapped(gchar *file_name,
-                                          void *user_data) {
-  PJPresence *context = static_cast<PJPresence *>(user_data);
-  // HERE
-  // auto serialize_buddies = [&] (data::Tree::ptrc tree) {
-  //   data::Tree::ptr buds = tree->get("buddy");
-  //   return data::BasicSerializer::serialize(bud);
-  // };
-  std::string buddies = context->sip_instance_->
-      invoke_info_tree<std::string>(data::BasicSerializer::serialize); 
-  return TRUE;
-}
+// gboolean PJPresence::save_buddies_wrapped(gchar *file_name,
+//                                           void *user_data) {
+//   PJPresence *context = static_cast<PJPresence *>(user_data);
+//   // HERE
+//   // auto serialize_buddies = [&] (data::Tree::ptrc tree) {
+//   //   data::Tree::ptr buds = tree->get("buddy");
+//   //   return data::BasicSerializer::serialize(bud);
+//   // };
+//   context->sip_instance_->
+//       invoke_info_tree<std::string>(data::BasicSerializer::serialize); 
+//   return TRUE;
+// }
 
 gboolean PJPresence::get_sip_registration_status(void *user_data) {
   PJPresence *context = static_cast<PJPresence *>(user_data);

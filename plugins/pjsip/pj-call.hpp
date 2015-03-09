@@ -81,19 +81,18 @@ class PJCall {
   void init_app();
   static pj_status_t create_sdp_answer(pj_pool_t *pool,
                                        struct call *call,
-                                       const std::vector <pjmedia_sdp_media *>&
-                                       media_to_receive,
+                                       const std::vector<pjmedia_sdp_media *>&media_to_receive,
                                        pjmedia_sdp_session **p_sdp);
   static pj_status_t parse_SDP_from_incoming_request(pjsip_rx_data *rdata,
                                                      pjmedia_sdp_session *offer);
-  static void print_sdp(const pjmedia_sdp_session *local_sdp);
-  static pj_status_t get_audio_codec_info_param(pjmedia_stream_info *si,
-                                                pj_pool_t *pool,
-                                                pjmedia_codec_mgr *mgr,
-                                                const pjmedia_sdp_media *local_m,
-                                                const pjmedia_sdp_media *rem_m);
-  static void remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
-                                    unsigned fmt_pos);
+  // static void print_sdp(const pjmedia_sdp_session *local_sdp);
+  // static pj_status_t get_audio_codec_info_param(pjmedia_stream_info *si,
+  //                                               pj_pool_t *pool,
+  //                                               pjmedia_codec_mgr *mgr,
+  //                                               const pjmedia_sdp_media *local_m,
+  //                                               const pjmedia_sdp_media *rem_m);
+  // static void remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
+  //                                   unsigned fmt_pos);
   void make_call(std::string contact_uri);
   void create_outgoing_sdp(pjsip_dialog *dlg,
                            call_t *call,
@@ -111,11 +110,11 @@ class PJCall {
   void make_attach_shmdata_to_contact(const std::string &shmpath,
                                       const std::string &contact_uri,
                                       bool attach);
-  static std::string make_extra_params(const std::string &raw_extra_params);
-  static void internal_manager_cb(std::string /*subscriber_name */,
-                                  std::string /*quiddity_name */,
-                                  std::string signal_name,
-                                  std::vector<std::string> params,
+  // static std::string make_extra_params(const std::string &raw_extra_params);
+  static void internal_manager_cb(const std::string &/*subscriber_name */,
+                                  const std::string &/*quiddity_name */,
+                                  const std::string &signal_name,
+                                  const std::vector<std::string> &params,
                                   void */*user_data */);
   static void on_inv_state_disconnected(struct call *call,
                                         pjsip_inv_session *inv,

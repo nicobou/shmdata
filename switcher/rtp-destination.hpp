@@ -43,7 +43,7 @@ class RtpDestination {
   
   void set_name(std::string name);
   void set_host_name(std::string host_name);
-  std::string get_host_name();
+  std::string get_host_name() const;
   std::string get_port(const std::string &shmndata_path);
   // the reader of the rtp stream sent
   bool add_stream(const std::string &orig_shmdata_path,
@@ -52,7 +52,7 @@ class RtpDestination {
   bool remove_stream(const std::string &shmdata_stream_path);
   std::string get_sdp();
   bool write_to_file (std::string file_name);
-  std::vector<std::string> get_shmdata();
+  std::vector<std::string> get_shmdata() const;
   // get json doc:
   JSONBuilder::Node get_json_root_node();
 
