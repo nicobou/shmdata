@@ -21,6 +21,7 @@
 #define __SWITCHER_MAKE_CONSULTABLE_H__
 
 #include <functional>
+#include <type_traits>
 
 #define Make_consultable(_member_type, _member_rawptr, _consult_method) \
   static_assert(std::is_class<_member_type>::value,                     \
@@ -38,14 +39,14 @@
            typename ...BTs>                                             \
   inline R _consult_method(R(_member_type::*fun)(ATs...) const,         \
 			   BTs ...args)	const {                         \
-    return (_member_rawptr->*fun)(std::forward<BTs>(args)...);		\
+    return ((_member_rawptr)->*fun)(std::forward<BTs>(args)...);        \
   }                                                                     \
                                                                         \
   template<typename ...ATs,                                             \
            typename ...BTs>                                             \
   inline void _consult_method(void(_member_type::*fun)(ATs...) const,	\
 			      BTs ...args) const {                      \
-    (_member_rawptr->*fun)(std::forward<BTs>(args)...);			\
+    ((_member_rawptr)->*fun)(std::forward<BTs>(args)...);               \
   }                                                                     \
                                                                         \
   /* disable invokation of non const*/                                  \
@@ -160,7 +161,7 @@
   inline R _fw_method(                                                  \
       R( _fw_method##Consult_t ::*function)(ATs...) const,              \
       BTs ...args) const {                                              \
-    return _member_rawptr->                                             \
+    return (_member_rawptr)->                                           \
         _consult_method<R, ATs...>(                                     \
             std::forward<R( _fw_method##Consult_t ::*)(ATs...) const>(  \
                 function),                                              \
@@ -172,7 +173,7 @@
   inline void _fw_method(                                               \
       void( _fw_method##Consult_t ::*function)(ATs...) const,           \
       BTs ...args) const {                                              \
-    _member_rawptr->_consult_method<ATs...>(                            \
+    (_member_rawptr)->_consult_method<ATs...>(                          \
         std::forward<void( _fw_method##Consult_t ::*)(ATs...) const>(   \
             function),                                                  \
         std::forward<BTs>(args)...);                                    \
@@ -182,17 +183,22 @@
   /*forwarding consult from map if the map key type is defined*/        \
   template<typename R,                                                  \
            typename ...ATs,                                             \
-           typename ...BTs>                                             \
+           typename ...BTs,                                             \
+           /* enable_if work is depends from a template parameter, */   \
+           /* using sizeof...(ATs) for that*/                           \
+           class = typename                                             \
+           std::enable_if<(sizeof...(ATs),                              \
+                           /* if _fw_method##MapKey_t is the same */    \
+                           /* type as nullptr then this forward does */ \
+                           /* not require map key forwarding*/          \
+                           !std::is_same<decltype(nullptr),             \
+                           _fw_method##MapKey_t >::value)>::type>       \
   inline R _fw_method(                                                  \
-      /*if _fw_method##MapKey_t is same type as nullptr*/               \
-      /* then this forward does not require map key forwarding*/        \
-      typename std::enable_if<!std::is_same<decltype(nullptr),          \
-      _fw_method##MapKey_t >::value,                                    \
-      _fw_method##MapKey_t >::type key,                                 \
+      _fw_method##MapKey_t key,                                         \
       /*typename std::enable_if<!std::is_class<>::value, T>::type,*/    \
       R( _fw_method##Consult_t ::*function)(ATs...) const,              \
       BTs ...args) const {                                              \
-    return _member_rawptr->                                             \
+    return (_member_rawptr)->                                           \
         _consult_method<R, ATs...>(                                     \
             std::forward< _fw_method##MapKey_t >(key),                  \
             std::forward<R( _fw_method##Consult_t ::*)(ATs...) const>(  \
@@ -201,14 +207,21 @@
   }                                                                     \
                                                                         \
   template<typename ...ATs,                                             \
-           typename ...BTs>                                             \
+           typename ...BTs,                                             \
+           /* enable_if work is depends from a template parameter, */   \
+           /* using sizeof(ATs) for that*/                              \
+           class = typename                                             \
+           std::enable_if<(sizeof...(ATs),                              \
+                           /* if _fw_method##MapKey_t is the same */    \
+                           /* type as nullptr then this forward does */ \
+                           /* not require map key forwarding*/          \
+                           !std::is_same<decltype(nullptr),             \
+                           _fw_method##MapKey_t >::value)>::type>       \
   inline void _fw_method(                                               \
-      typename std::enable_if<!std::is_same<decltype(nullptr),          \
-      _fw_method##MapKey_t >::value,                                    \
-      _fw_method##MapKey_t >::type key,                                 \
+      _fw_method##MapKey_t key,                                         \
       void( _fw_method##Consult_t ::*function)(ATs...) const,           \
       BTs ...args) const {                                              \
-    _member_rawptr->_consult_method<ATs...>(                            \
+    (_member_rawptr)->_consult_method<ATs...>(                          \
         std::forward< _fw_method##MapKey_t >(key),                      \
         std::forward<void( _fw_method##Consult_t ::*)(ATs...) const>(   \
             function),                                                  \
