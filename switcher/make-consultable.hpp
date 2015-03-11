@@ -34,31 +34,35 @@
                                                                         \
   /* exposing T const methods accessible by T instance owner*/          \
   template<typename R,                                                  \
-           typename ...ATs>                                             \
+           typename ...ATs,                                             \
+           typename ...BTs>                                             \
   inline R _consult_method(R(_member_type::*fun)(ATs...) const,         \
-			   ATs ...args)	const {                         \
-    return (_member_rawptr->*fun)(std::forward<ATs>(args)...);		\
+			   BTs ...args)	const {                         \
+    return (_member_rawptr->*fun)(std::forward<BTs>(args)...);		\
   }                                                                     \
                                                                         \
-  template<typename ...ATs>                                             \
+  template<typename ...ATs,                                             \
+           typename ...BTs>                                             \
   inline void _consult_method(void(_member_type::*fun)(ATs...) const,	\
-			      ATs ...args) const {                      \
-    (_member_rawptr->*fun)(std::forward<ATs>(args)...);			\
+			      BTs ...args) const {                      \
+    (_member_rawptr->*fun)(std::forward<BTs>(args)...);			\
   }                                                                     \
                                                                         \
   /* disable invokation of non const*/                                  \
   template<typename R,                                                  \
-           typename ...ATs>                                             \
+           typename ...ATs,                                             \
+           typename ...BTs>                                             \
   R _consult_method(R(_member_type::*function)(ATs...),                 \
-                    ATs ...args) const {                                \
+                    BTs ...args) const {                                \
     static_assert(std::is_const<decltype(function)>::value,             \
                   "consultation is available for const methods only");  \
     return R();  /* for syntax only since assert should always fail */  \
   }                                                                     \
                                                                         \
-  template<typename ...ATs>                                             \
+  template<typename ...ATs,                                             \
+           typename ...BTs>                                             \
   void _consult_method(void(_member_type::*function)(ATs...),           \
-                       ATs ...args) const {                             \
+                       BTs ...args) const {                             \
     static_assert(std::is_const<decltype(function)>::value,             \
                   "consultation is available for const methods only");  \
   }
