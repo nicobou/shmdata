@@ -20,6 +20,10 @@
 
 int main () {
   shmdata::sysVShm shm(1234, 1024, IPC_CREAT | 0666);
+  if(!shm)
+    return 1;
+
+  
   return 0;
 }
 

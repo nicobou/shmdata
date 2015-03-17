@@ -14,6 +14,7 @@
 
 #include <sys/types.h>
 #include <stdio.h>  // perror
+#include <string.h>  // memset
 #include "./sysv-shm.hpp"
 
 namespace shmdata{
@@ -23,21 +24,26 @@ sysVShm::sysVShm(key_t key, size_t size, int shmflg):
     size_(size),
     shmflg_(shmflg) {
   if ((shmid_ = shmget(key_, size_, shmflg_)) < 0){
-      perror("shmget");  // TODO get string of perror and log info
+      perror("shmget");  // TODO get string of perror and make log
       return;
   }
   if ((shm_ = shmat(shmid_, NULL, 0)) == (void *) -1) {
     perror("shmat");  
     return;
   }
+  memset(shm_, 0, size_);
 }
 
-sysVShm::~sysVShm(){
-  if (shm_ == (void *) -1) { // fixme use safe bool
+sysVShm::~sysVShm() {
+  if (*this) {
     if (shmdt(shm_) == -1) {
       perror("shmdt");
     }
   }
+}
+
+bool sysVShm::is_valid() const {
+  return (shm_ != (void *) -1);
 }
 
 }  // namespace shmdata

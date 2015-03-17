@@ -8,6 +8,7 @@ libshmdata_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
     sysv-shm.cpp
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
+    safe-bool-idiom.hpp \
     sysv-shm.hpp 
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \

@@ -18,22 +18,26 @@
 
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include "./safe-bool-idiom.hpp"
 
 namespace shmdata{
 
-class sysVShm{
+class sysVShm: public SafeBoolIdiom {
  public:
   sysVShm(key_t key, size_t size, int shmflg);
   ~sysVShm();
   sysVShm() = delete;
   //TODO delete others
+
+  
   
   private:
   key_t key_;
   size_t size_;
   int shmflg_;
   int shmid_{-1};
-  void *shm_{nullptr};
+  void *shm_{(void *) -1};  // man shmat
+  bool is_valid() const final;
 };
 
 }  // namespace shmdata
