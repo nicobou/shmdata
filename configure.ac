@@ -1,5 +1,5 @@
 AC_PREREQ([2.61])
-AC_INIT(shmdata, [0.8.15], [http://codered.sat.qc.ca/redmine/projects/libshmdata/issues], [shmdata], [http://codered.sat.qc.ca/redmine/projects/libshmdata])
+AC_INIT(shmdata, [1.0.1], [http://codered.sat.qc.ca/redmine/projects/libshmdata/issues], [shmdata], [http://codered.sat.qc.ca/redmine/projects/libshmdata])
 #AC_CONFIG_MACRO_DIR([m4])
 AC_MSG_NOTICE([Configuring libshmdata])
 AM_INIT_AUTOMAKE([subdir-objects -Wno-portability])
@@ -17,16 +17,26 @@ AC_CANONICAL_HOST # fills $host variable
 #  * current: Increment when the interface changes. (and set revision to 0)
 #  * revision: Increment when the implementation changes, but not the interface.
 #  * age: Backward-compatible with how many interface numbers.
-AC_SUBST([LIBSHMDATA_SO_VERSION], [4:1:0])
+AC_SUBST([LIBSHMDATA_SO_VERSION], [5:0:0])
 
 # The version of the API. Should be major.minor and not change until not backward-compatible
-AC_SUBST([LIBSHMDATA_API_VERSION], [0.8])
+AC_SUBST([LIBSHMDATA_API_VERSION], [1.0])
 
 # -- checks for programs --
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
+
+AC_MSG_CHECKING([to see if compiler understands -std=c++11])
+CXXFLAGS="$CXXFLAGS -std=c++11"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  AC_MSG_RESULT([yes])
+], [
+  AC_MSG_RESULT([no])
+  AC_MSG_ERROR([compiler does not understand -std=c++11])
+])
+
 
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN";
@@ -37,7 +47,7 @@ AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
 
 
 # -- checks for header files --
-AC_CHECK_HEADERS([string.h math.h signal.h stdio.h stdlib.h unistd.h])
+AC_CHECK_HEADERS([sys/types.h sys/ipc.h sys/shm.h])
 
 # OSX and MINGW
 AM_CONDITIONAL(MINGW, false)
@@ -92,131 +102,127 @@ fi
 
 # -- compilation flags --
 CXXFLAGS+=" -g3 -ggdb -Wall -Wextra -Wfatal-errors -Wno-unused-parameter"
-CFLAGS+=" -g3 -ggdb -Wall -Wextra -Wfatal-errors -Wno-unused-parameter"
 
- # -- testing GStreamer SDK, if found, then building against --
-AM_CONDITIONAL(HAVE_GST_SDK, false)
- # linux
- AC_CHECK_FILE([/opt/gstreamer-sdk/lib/pkgconfig/gstreamer-0.10.pc], 
-                [AC_MSG_WARN([building against Linux GStreamer SDK.]) 
-                 AM_CONDITIONAL(HAVE_GST_SDK, true)
-                 PKG_CONFIG_PATH=/opt/gstreamer-sdk/lib/pkgconfig:$PKG_CONFIG_PATH
-                 export PKG_CONFIG_PATH
-                 SHMDATA_GST_PLUGIN_PATH=/opt/gstreamer-sdk/lib],
-                [AC_MSG_WARN([Linux GStreamer SDK not found])])
+dnl  # -- testing GStreamer SDK, if found, then building against --
+dnl AM_CONDITIONAL(HAVE_GST_SDK, false)
+dnl  # linux
+dnl  AC_CHECK_FILE([/opt/gstreamer-sdk/lib/pkgconfig/gstreamer-0.10.pc], 
+dnl                 [AC_MSG_WARN([building against Linux GStreamer SDK.]) 
+dnl                  AM_CONDITIONAL(HAVE_GST_SDK, true)
+dnl                  PKG_CONFIG_PATH=/opt/gstreamer-sdk/lib/pkgconfig:$PKG_CONFIG_PATH
+dnl                  export PKG_CONFIG_PATH
+dnl                  SHMDATA_GST_PLUGIN_PATH=/opt/gstreamer-sdk/lib],
+dnl                 [AC_MSG_WARN([Linux GStreamer SDK not found])])
 
- # osx
-AC_CHECK_FILE([/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig], 
-              [AC_MSG_WARN([building against OSX GStreamer SDK.]) 
-               AM_CONDITIONAL(HAVE_GST_SDK, true)
-               PKG_CONFIG_PATH=/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig:$PKG_CONFIG_PATH
-               export PKG_CONFIG_PATH
-               SHMDATA_GST_PLUGIN_PATH=/Library/Frameworks/GStreamer.framework/Libraries/gstreamer-0.10],
-              [AC_MSG_WARN([OSX GStreamer SDK not found])])
+dnl  # osx
+dnl AC_CHECK_FILE([/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig], 
+dnl               [AC_MSG_WARN([building against OSX GStreamer SDK.]) 
+dnl                AM_CONDITIONAL(HAVE_GST_SDK, true)
+dnl                PKG_CONFIG_PATH=/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig:$PKG_CONFIG_PATH
+dnl                export PKG_CONFIG_PATH
+dnl                SHMDATA_GST_PLUGIN_PATH=/Library/Frameworks/GStreamer.framework/Libraries/gstreamer-0.10],
+dnl               [AC_MSG_WARN([OSX GStreamer SDK not found])])
 
-# --define where to install gstreamer elements built -- 
-if test "x${prefix}" = "x$HOME"; then
-  SHMDATA_GST_PLUGIN_PATH="\$(HOME)/.gstreamer-0.10/plugins"
-  FLAT_SHMDATA_GST_PLUGIN_PATH=\"$HOME/.gstreamer-0.10/plugins\"
-else
-  if test "x${SHMDATA_GST_PLUGIN_PATH}" = "x" ; then
-    SHMDATA_GST_PLUGIN_PATH="\$(libdir)/gstreamer-0.10"
-  fi
+dnl # --define where to install gstreamer elements built -- 
+dnl if test "x${prefix}" = "x$HOME"; then
+dnl   SHMDATA_GST_PLUGIN_PATH="\$(HOME)/.gstreamer-0.10/plugins"
+dnl   FLAT_SHMDATA_GST_PLUGIN_PATH=\"$HOME/.gstreamer-0.10/plugins\"
+dnl else
+dnl   if test "x${SHMDATA_GST_PLUGIN_PATH}" = "x" ; then
+dnl     SHMDATA_GST_PLUGIN_PATH="\$(libdir)/gstreamer-0.10"
+dnl   fi
 
-  dnl set install paths.
-  if test "x$prefix" = "xNONE" ; then
-    prefix="/usr/local"
-  fi
-  if test "x$exec_prefix" = "xNONE" ; then
-    exec_prefix=$prefix
-  fi
-  LIBDIR=`eval echo $libdir`
-  LIBDIR=`eval echo $LIBDIR`
-  FLAT_SHMDATA_GST_PLUGIN_PATH=\"$LIBDIR/gstreamer-0.10\"
-fi
+dnl   dnl set install paths.
+dnl   if test "x$prefix" = "xNONE" ; then
+dnl     prefix="/usr/local"
+dnl   fi
+dnl   if test "x$exec_prefix" = "xNONE" ; then
+dnl     exec_prefix=$prefix
+dnl   fi
+dnl   LIBDIR=`eval echo $libdir`
+dnl   LIBDIR=`eval echo $LIBDIR`
+dnl   FLAT_SHMDATA_GST_PLUGIN_PATH=\"$LIBDIR/gstreamer-0.10\"
+dnl fi
 
-[echo "SHMDATA_GST_PLUGIN_PATH: ${SHMDATA_GST_PLUGIN_PATH}"]
+dnl [echo "SHMDATA_GST_PLUGIN_PATH: ${SHMDATA_GST_PLUGIN_PATH}"]
 
-AC_SUBST(SHMDATA_GST_PLUGIN_PATH)
-AC_DEFINE_UNQUOTED([SHMDATA_GST_PLUGIN_PATH],[$FLAT_SHMDATA_GST_PLUGIN_PATH],
-                   [GStreamer plugin path for element built])
+dnl AC_SUBST(SHMDATA_GST_PLUGIN_PATH)
+dnl AC_DEFINE_UNQUOTED([SHMDATA_GST_PLUGIN_PATH],[$FLAT_SHMDATA_GST_PLUGIN_PATH],
+dnl                    [GStreamer plugin path for element built])
 
-BUILDDIR=`pwd`
-SHMDATA_SHM_GST_PLUGIN_BUILD_PATH=\"$BUILDDIR/gst/shm/.libs\"
-AC_DEFINE_UNQUOTED([SHMDATA_SHM_GST_PLUGIN_BUILD_PATH],[$SHMDATA_SHM_GST_PLUGIN_BUILD_PATH],
-                   [Path where the shm elements have been built])
+dnl BUILDDIR=`pwd`
+dnl SHMDATA_SHM_GST_PLUGIN_BUILD_PATH=\"$BUILDDIR/gst/shm/.libs\"
+dnl AC_DEFINE_UNQUOTED([SHMDATA_SHM_GST_PLUGIN_BUILD_PATH],[$SHMDATA_SHM_GST_PLUGIN_BUILD_PATH],
+dnl                    [Path where the shm elements have been built])
 
-# -- ( mandatory libraries) --
-#Trying to set GST_CFLAGS and GST_LIBS using pkg-config
-PKG_CHECK_MODULES(GST, gstreamer-0.10, have_gstreamer=true, have_gstreamer=false)
-if test "x${have_gstreamer}" = "xfalse" ; then
-    AC_MSG_ERROR([missing package: libgstreamer0.10-dev])
-fi
+dnl # -- ( mandatory libraries) --
+dnl #Trying to set GST_CFLAGS and GST_LIBS using pkg-config
+dnl PKG_CHECK_MODULES(GST, gstreamer-0.10, have_gstreamer=true, have_gstreamer=false)
+dnl if test "x${have_gstreamer}" = "xfalse" ; then
+dnl     AC_MSG_ERROR([missing package: libgstreamer0.10-dev])
+dnl fi
 
-#for building shmsrc and shmsink elements
-PKG_CHECK_MODULES(GST_BASE, gstreamer-base-0.10, have_gstreamer_base=true, have_gstreamer_base=false)
-if test "x${have_gstreamer_base}" = "xfalse" ; then
-  AC_MSG_ERROR([missing package: libgstreamer0.10-dev])
-fi
+dnl #for building shmsrc and shmsink elements
+dnl PKG_CHECK_MODULES(GST_BASE, gstreamer-base-0.10, have_gstreamer_base=true, have_gstreamer_base=false)
+dnl if test "x${have_gstreamer_base}" = "xfalse" ; then
+dnl   AC_MSG_ERROR([missing package: libgstreamer0.10-dev])
+dnl fi
 
-#Trying to set GSTAPP using pkg-config
-PKG_CHECK_MODULES(GSTAPP, gstreamer-app-0.10, have_gstreamer_app=true, have_gstreamer_app=false)
-if test "x${have_gstreamer_app}" = "xfalse" ; then
-    AC_MSG_ERROR([missing package:  libgstreamer-plugins-base0.10-dev  ])
-fi
+dnl #Trying to set GSTAPP using pkg-config
+dnl PKG_CHECK_MODULES(GSTAPP, gstreamer-app-0.10, have_gstreamer_app=true, have_gstreamer_app=false)
+dnl if test "x${have_gstreamer_app}" = "xfalse" ; then
+dnl     AC_MSG_ERROR([missing package:  libgstreamer-plugins-base0.10-dev  ])
+dnl fi
 
 #Trying to set GIO using pkg-config
-PKG_CHECK_MODULES(GIO, gio-2.0, have_gio=true, have_gio=false)
-if test "x${have_gio}" = "xfalse" ; then
-    AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
-fi
+dnl PKG_CHECK_MODULES(GIO, gio-2.0, have_gio=true, have_gio=false)
+dnl if test "x${have_gio}" = "xfalse" ; then
+dnl     AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
+dnl fi
 
-# -- (openscenegraph library) --
-# Trying to set OPENSCENEGRAPH using pkg-config
-PKG_CHECK_MODULES(OPENSCENEGRAPH, openscenegraph, have_openscenegraph=true, have_openscenegraph=false)
-if test "x${have_openscenegraph}" = "xfalse" ; then
-    AC_MSG_WARN([***** missing optional package:  libopenscenegraph-dev ***** ])
-    AM_CONDITIONAL(HAVE_OPENSCENEGRAPH, false)
-else
-    AM_CONDITIONAL(HAVE_OPENSCENEGRAPH, true)
-    AC_CONFIG_FILES([shmdata-osg-${LIBSHMDATA_API_VERSION}.pc:shmdata-osg.pc.in])
-fi
+dnl # Check for Puredata
+dnl AC_CHECK_HEADER(m_pd.h,
+dnl                 PUREDATA=y,
+dnl                 AC_MSG_WARN([Puredata header not found.]))
+dnl AM_CONDITIONAL(PUREDATAFOUND, test "${PUREDATA}" = "y")
 
-# Check for Puredata
-AC_CHECK_HEADER(m_pd.h,
-                PUREDATA=y,
-                AC_MSG_WARN([Puredata header not found.]))
-AM_CONDITIONAL(PUREDATAFOUND, test "${PUREDATA}" = "y")
+dnl if test "${PUREDATA}" = "y" ; then
+dnl    #checking libsamplerate0-dev
+dnl    PKG_CHECK_MODULES(LIBSAMPLERATE, samplerate, have_samplerate=true, have_samplerate=false)
+dnl    if test "x${have_samplerate}" = "xfalse" ; then
+dnl        AC_MSG_ERROR([building puredata external enabled, but missing package: libsamplerate0-dev])
+dnl    fi
+dnl fi
 
-if test "${PUREDATA}" = "y" ; then
-   #checking libsamplerate0-dev
-   PKG_CHECK_MODULES(LIBSAMPLERATE, samplerate, have_samplerate=true, have_samplerate=false)
-   if test "x${have_samplerate}" = "xfalse" ; then
-       AC_MSG_ERROR([building puredata external enabled, but missing package: libsamplerate0-dev])
-   fi
-fi
-
-# Check for Python to build a wrapper
-PKG_CHECK_MODULES(PYTHON3, python3,
-    AM_CONDITIONAL(HAVE_PYTHON3, true),
-    AM_CONDITIONAL(HAVE_PYTHON3, false))
+dnl # Check for Python to build a wrapper
+dnl PKG_CHECK_MODULES(PYTHON3, python3,
+dnl     AM_CONDITIONAL(HAVE_PYTHON3, true),
+dnl     AM_CONDITIONAL(HAVE_PYTHON3, false))
 
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
+dnl AC_CONFIG_FILES([
+dnl         Makefile 
+dnl         shmdata/Makefile
+dnl         examples/Makefile
+dnl         tests/Makefile
+dnl         doxyfile
+dnl         shmdata-${LIBSHMDATA_API_VERSION}.pc:shmdata.pc.in
+dnl         shmdata-any-${LIBSHMDATA_API_VERSION}.pc:shmdata-any.pc.in
+dnl         plugins/Makefile
+dnl         plugins/puredata/Makefile
+dnl         gst/Makefile
+dnl         gst/shm/Makefile
+dnl         wrappers/Makefile
+dnl         wrappers/python/Makefile
+dnl         ])
+
 AC_CONFIG_FILES([
         Makefile 
         shmdata/Makefile
-        examples/Makefile
         tests/Makefile
         doxyfile
         shmdata-${LIBSHMDATA_API_VERSION}.pc:shmdata.pc.in
-        shmdata-any-${LIBSHMDATA_API_VERSION}.pc:shmdata-any.pc.in
-        plugins/Makefile
-        plugins/puredata/Makefile
-        gst/Makefile
-        gst/shm/Makefile
-        wrappers/Makefile
-        wrappers/python/Makefile
         ])
 
 AC_OUTPUT
