@@ -399,7 +399,7 @@ PJPresence::on_registration_state(pjsua_acc_id acc_id,
       static_cast<PJPresence *>(pjsua_acc_get_user_data(acc_id));
   std::unique_lock<std::mutex> lock(context->registration_mutex_);
   if (PJ_SUCCESS != info->cbparam->status) {
-    g_warning("registration failed (%.s)",
+    g_warning("registration failed (%.*s)",
               static_cast<int>(info->cbparam->reason.slen),
               info->cbparam->reason.ptr);
     if (-1 != context->account_id_) {

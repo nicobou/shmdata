@@ -253,7 +253,7 @@ GstUtils::get_first_element_from_factory_name(GstBin *bin,
   }
 
   if (g_list_length(GST_BIN_CHILDREN(bin)) == 0) {
-    g_warning("%s: bin has no child");
+    g_warning("%s: bin has no child", __FUNCTION__);
     return nullptr;
   }
 
@@ -265,7 +265,7 @@ GstUtils::get_first_element_from_factory_name(GstBin *bin,
       return current_element;
     }
   }
-  g_warning("%s: no element found for %s", factory_name.c_str());
+  g_warning("%s: no element found for %s", __FUNCTION__, factory_name.c_str());
   return nullptr;
 }
 

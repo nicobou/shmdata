@@ -1,6 +1,5 @@
 SUBDIRS= \
-    example \
-    pjsip
+    example
 
 if V4L2BUILD
 SUBDIRS += \
@@ -39,6 +38,7 @@ endif
 
 if HAVE_OSX
 SUBDIRS += \
+    pjsip \
     syphonsrc
 endif
 

@@ -23,6 +23,7 @@
 #include <jack/jack.h>
 #include <memory>
 #include <atomic>
+#include <functional>
 #include "switcher/safe-bool-idiom.hpp"
 
 namespace switcher {
@@ -56,8 +57,6 @@ class JackClient : public SafeBoolIdiom {
   void *user_cb_arg_{nullptr};
   std::atomic_uint xrun_count_{0};
   XRunCallback_t xrun_cb_{};
-  bool set_jack_last_time_{true};
-  jack_nframes_t jack_last_time_{0};
   bool safe_bool_idiom() const final;
   static void on_jack_shutdown (void *arg);
   static int jack_process (jack_nframes_t nframes, void *arg);

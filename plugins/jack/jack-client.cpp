@@ -20,6 +20,7 @@
 #include <glib.h>
 #include <jack/statistics.h>
 #include <cmath>
+#include <string>
 #include "./jack-client.hpp"
 
 namespace switcher {

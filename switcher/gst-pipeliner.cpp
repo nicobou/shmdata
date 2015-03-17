@@ -165,7 +165,7 @@ gboolean GstPipeliner::run_remove_quid(gpointer user_data) {
     for (auto &it: tmp) 
       manager->remove(it);
   } else {
-    g_warning("cannot recover from error with removing %s (no manager available)");
+    g_warning("cannot recover from error (no manager available)");
   }
   return FALSE;
 }
