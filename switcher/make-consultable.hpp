@@ -186,13 +186,13 @@
            typename ...BTs,                                             \
            /* enable_if work is depends from a template parameter, */   \
            /* using sizeof...(ATs) for that*/                           \
-           class = typename                                             \
-           std::enable_if<(sizeof...(ATs),                              \
-                           /* if _fw_method##MapKey_t is the same */    \
-                           /* type as nullptr then this forward does */ \
-                           /* not require map key forwarding*/          \
-                           !std::is_same<decltype(nullptr),             \
-                           _fw_method##MapKey_t >::value)>::type>       \
+           typename std::						\
+	   enable_if<(sizeof...(ATs),					\
+		      /* if _fw_method##MapKey_t is the same */		\
+		      /* type as nullptr then this forward does */	\
+		      /* not require map key forwarding*/		\
+		      !std::is_same<decltype(nullptr),			\
+		      _fw_method##MapKey_t >::value)>::type* = nullptr>	\
   inline R _fw_method(                                                  \
       _fw_method##MapKey_t key,                                         \
       /*typename std::enable_if<!std::is_class<>::value, T>::type,*/    \
@@ -210,13 +210,13 @@
            typename ...BTs,                                             \
            /* enable_if work is depends from a template parameter, */   \
            /* using sizeof(ATs) for that*/                              \
-           class = typename                                             \
-           std::enable_if<(sizeof...(ATs),                              \
-                           /* if _fw_method##MapKey_t is the same */    \
-                           /* type as nullptr then this forward does */ \
-                           /* not require map key forwarding*/          \
-                           !std::is_same<decltype(nullptr),             \
-                           _fw_method##MapKey_t >::value)>::type>       \
+           typename std::						\
+	   enable_if<(sizeof...(ATs),					\
+		      /* if _fw_method##MapKey_t is the same */		\
+		      /* type as nullptr then this forward does */	\
+		      /* not require map key forwarding*/		\
+		      !std::is_same<decltype(nullptr),			\
+		      _fw_method##MapKey_t >::value)>::type* = nullptr>	\
   inline void _fw_method(                                               \
       _fw_method##MapKey_t key,                                         \
       void( _fw_method##Consult_t ::*function)(ATs...) const,           \
