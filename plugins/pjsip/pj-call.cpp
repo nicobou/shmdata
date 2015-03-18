@@ -304,7 +304,7 @@ bool PJCall::release_outgoing_call(call_t *call, pjsua_buddy_id id){
 }
 
 void PJCall::on_inv_state_confirmed(call_t *call,
-                                    pjsip_inv_session *inv,
+                                    pjsip_inv_session */*inv*/,
                                     pjsua_buddy_id id) {
     g_debug("Call connected");
     // updating call status in the tree
@@ -336,7 +336,7 @@ void PJCall::on_inv_state_early(call_t *call,
 }
 
 void PJCall::on_inv_state_connecting(call_t *call,
-                                     pjsip_inv_session *inv,
+                                     pjsip_inv_session */*inv*/,
                                      pjsua_buddy_id id) {
     // updating call status in the tree
     data::Tree::ptr tree = PJSIP::this_->

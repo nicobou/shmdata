@@ -20,9 +20,9 @@
 #ifndef __SWITCHER_SDP_UTILS_H__
 #define __SWITCHER_SDP_UTILS_H__
 
-#include <string>
 #include <gst/gst.h>
 #include <gst/sdp/gstsdpmessage.h>
+#include <string>
 
 namespace switcher {
 class SDPDescription;

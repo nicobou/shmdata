@@ -54,7 +54,7 @@
            typename ...ATs,                                             \
            typename ...BTs>                                             \
   R _consult_method(R(_member_type::*function)(ATs...),                 \
-                    BTs .../*args*/) const {				\
+                    BTs ...) const {					\
     static_assert(std::is_const<decltype(function)>::value,             \
                   "consultation is available for const methods only");  \
     return R();  /* for syntax only since assert should always fail */  \
@@ -63,7 +63,7 @@
   template<typename ...ATs,                                             \
            typename ...BTs>                                             \
   void _consult_method(void(_member_type::*function)(ATs...),           \
-                       BTs .../*args*/) const {				\
+                       BTs ...) const {					\
     static_assert(std::is_const<decltype(function)>::value,             \
                   "consultation is available for const methods only");  \
   }
@@ -125,7 +125,7 @@
            typename ...ATs,                                             \
            typename ...BTs>                                             \
   R _fw_method(R( _fw_method##Consult_t ::*function)(ATs...),           \
-               BTs .../*args*/) const {					\
+               BTs ...) const {						\
     static_assert(std::is_const<decltype(function)>::value,		\
                   "consultation is available for const methods only");  \
     return R();  /* for syntax only */                                  \
@@ -134,7 +134,7 @@
   template<typename ...ATs,                                             \
            typename ...BTs>						\
   void _fw_method(void( _fw_method##Consult_t ::*function)(ATs...),     \
-                  BTs .../*args*/) const {				\
+                  BTs ...) const {					\
     static_assert(std::is_const<decltype(function)>::value,		\
                   "consultation is available for const methods only");  \
   }
