@@ -58,7 +58,7 @@ case "$host" in *-darwin* | *-macos10*)
   LIBTOOL="glibtool"
   CXXFLAGS+=" -D__Darwin -stdlib=libc++ -Qunused-arguments"
   CXX="clang++"
-  LDFLAGS+=" -undefined dynamic_lookup -Wl,-headerpad_max_install_names"
+  LDFLAGS+=" -g -undefined dynamic_lookup -Wl,-headerpad_max_install_names"
   if test -d /opt/local ; then
     CPPFLAGS+=" -I/usr/local/include -I/opt/local/include"
     CXXFLAGS+=" -I/usr/local/include -I/opt/local/include"
