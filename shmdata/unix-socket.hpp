@@ -13,28 +13,22 @@
  */
 
 
-#ifndef _SHMDATA_SYSV_SHM_H_
-#define _SHMDATA_SYSV_SHM_H_
+#ifndef _SHMDATA_UNIX_SOCKET_H_
+#define _SHMDATA_UNIX_SOCKET_H_
 
-#include <sys/ipc.h>
-#include <sys/shm.h>
 #include "./safe-bool-idiom.hpp"
 
 namespace shmdata{
 
-class sysVShm: public SafeBoolIdiom {
+class UnixSocket: public SafeBoolIdiom {
  public:
-  sysVShm(key_t key, size_t size, int shmflg);
-  ~sysVShm();
-  sysVShm() = delete;
-  //TODO delete others
+  UnixSocket(const std::string &path);
+  ~UnixSocket();
+  UnixSocket() = delete;
   
   private:
-  key_t key_;
-  size_t size_;
-  int shmflg_;
-  int shmid_{-1};
-  void *shm_{(void *) -1};  // man shmat
+  std::string path_;
+  int socket_{-1};
   bool is_valid() const final;
 };
 
