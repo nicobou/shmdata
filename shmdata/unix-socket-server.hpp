@@ -13,26 +13,35 @@
  */
 
 
-#ifndef _SHMDATA_UNIX_SOCKET_H_
-#define _SHMDATA_UNIX_SOCKET_H_
+#ifndef _SHMDATA_UNIX_SOCKET_SERVER_H_
+#define _SHMDATA_UNIX_SOCKET_SERVER_H_
 
+#include <future>
 #include "./safe-bool-idiom.hpp"
+#include "./unix-socket.hpp"
 
 namespace shmdata{
-class UnixSocketServer;
-class UnixSocket: public SafeBoolIdiom {
-  friend UnixSocketServer;
+
+class UnixSocketServer: public SafeBoolIdiom {
  public:
-  UnixSocket();
-  ~UnixSocket();
-  UnixSocket(const UnixSocket &) = delete;
-  UnixSocket& operator=(const UnixSocket&) = delete;
-  UnixSocket& operator=(UnixSocket&&) = default;
+  UnixSocketServer(const std::string &path, int max_pending_cnx = 10);
+  ~UnixSocketServer();
+  UnixSocketServer() = delete;
+  UnixSocketServer(const UnixSocketServer &) = delete;
+  UnixSocketServer& operator=(const UnixSocketServer&) = delete;
+  UnixSocketServer& operator=(UnixSocketServer&&) = default;
   
-  private:
+ private:
   std::string path_;
-  int fd_{-1};
+  UnixSocket socket_{};
+  int max_pending_cnx_;
+  bool is_binded_{false};
+  bool is_listening_{false};
+  std::future<void> done_{};
+  fd_set allset_{{}};
+  bool quit_{false};
   bool is_valid() const final;
+  void io_multiplex();
 };
 
 }  // namespace shmdata

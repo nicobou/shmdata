@@ -6,12 +6,14 @@ lib_LTLIBRARIES = \
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
     sysv-shm.cpp \
-    unix-socket.cpp
+    unix-socket.cpp \
+    unix-socket-server.cpp
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
     safe-bool-idiom.hpp \
     sysv-shm.hpp \
-    unix-socket.hpp
+    unix-socket.hpp \
+    unix-socket-server.hpp
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
     -export-dynamic \

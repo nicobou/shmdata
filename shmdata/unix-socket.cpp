@@ -23,34 +23,26 @@
 
 namespace shmdata{
 
-UnixSocket::UnixSocket(const std::string &path) :
-    path_(path),
-    socket_(socket(AF_UNIX, SOCK_STREAM, 0)){
-  if (-1 == socket_)
+UnixSocket::UnixSocket() :
+    fd_(socket(AF_UNIX, SOCK_STREAM, 0)){
+  if (-1 == fd_)
     perror("socket");
-  int flags = fcntl(socket_, F_GETFL, 0);
+  int flags = fcntl(fd_, F_GETFL, 0);
   if (flags < 0)
     perror("fcntl(F_GETFL)");
-  if (fcntl(socket_, F_SETFL, flags | O_NONBLOCK | FD_CLOEXEC) < 0)
+  if (fcntl(fd_, F_SETFL, flags | O_NONBLOCK | FD_CLOEXEC) < 0)
      perror("fcntl(F_SETFL)");
-   struct sockaddr_un sock_un;
-   sock_un.sun_family = AF_UNIX;
-   strncpy(sock_un.sun_path, path_.c_str(), sizeof(sock_un.sun_path) - 1);
-   if (bind(socket_, (struct sockaddr *) &sock_un, sizeof(struct sockaddr_un)) < 0)
-     perror("bind");
-   if (listen (socket_, 10) < 0)  // max 10 pending connections 
-     perror("listen");
 }
 
 UnixSocket::~UnixSocket() {
   if(is_valid()) {
-    close(socket_);
+    close(fd_);
     unlink (path_.c_str());
   }
 }
 
 bool UnixSocket::is_valid() const {
-  return -1 != socket_;  // FIXME should be also binded 
+  return -1 != fd_;
 }
 
 }  // namespace shmdata
