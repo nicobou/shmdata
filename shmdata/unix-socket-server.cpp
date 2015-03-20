@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <sys/un.h>
 #include <string>
+#include <algorithm>
 #include "./unix-socket-server.hpp"
 
 namespace shmdata{
@@ -61,44 +62,45 @@ bool UnixSocketServer::is_valid() const {
   return is_binded_ && is_listening_;
 }
 
+
 void UnixSocketServer::io_multiplex() {
-  int maxfd = socket_.fd_;
+  auto maxfd = socket_.fd_;
+  int clifd = -1;
+  char	buf[1000];  // MAXLINE
+
   while (!quit_) {
-    fd_set rset = allset_;  /* rset gets modified each time around */
+    auto rset = allset_;  /* rset gets modified each time around */
     if (select(maxfd + 1, &rset, NULL, NULL, NULL) < 0)
       perror("select error");
     if (FD_ISSET(socket_.fd_, &rset)) {
       // accept new client request
-      int clifd = accept(socket_.fd_, NULL, NULL);
+      auto clifd = accept(socket_.fd_, NULL, NULL);
       if (clifd < 0)
         perror("accept");
       FD_SET(clifd, &allset_);
       if (clifd > maxfd)
         maxfd = clifd;  // max fd for select()
+      clients_[clifd] = 0;
       std::printf("new connection: fd %d", clifd);
       continue;
     }
-    
-    // for (i = 0; i <= maxi; i++) {   /* go through client[] array */
-    //   if ((clifd = client[i].fd) < 0)
-    //     continue;
-    //   if (FD_ISSET(clifd, &rset)) {
-    //     /* read argument buffer from client */
-    //     if ((nread = read(clifd, buf, MAXLINE)) < 0) {
-    //       log_sys("read error on fd %d", clifd);
-    //     } else if (nread == 0) {
-    //       log_msg("closed: uid %d, fd %d",
-    //               client[i].uid, clifd);
-    //       client_del(clifd);  /* client has closed cxn */
-    //       FD_CLR(clifd, &allset);
-    //       close(clifd);
-    //     } else {    /* process client′s request */
-    //       handle_request(buf, nread, clifd, client[i].uid);
-    //     }
-    //   }
-    // }
 
-  }
+    for (auto &it : clients_) {
+      if (FD_ISSET(it.first, &rset)) {
+        auto nread = read(clifd, buf, 1000);  // MAXLINE
+        if (nread < 0) {
+          perror("read");
+        } else if (nread == 0) {
+          std::printf("closed: fd %d", clifd);
+          clients_.erase(clifd);
+          FD_CLR(clifd, &allset_);
+          close(clifd);
+        } else { /* process client′s request */
+          std::printf("client request\n");
+        }
+      }
+    }
+  }  // while (!quit_)
 }
 
 }  // namespace shmdata

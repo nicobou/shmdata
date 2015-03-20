@@ -17,6 +17,7 @@
 #define _SHMDATA_UNIX_SOCKET_SERVER_H_
 
 #include <future>
+#include <map>
 #include "./safe-bool-idiom.hpp"
 #include "./unix-socket.hpp"
 
@@ -40,6 +41,7 @@ class UnixSocketServer: public SafeBoolIdiom {
   std::future<void> done_{};
   fd_set allset_{{}};
   bool quit_{false};
+  std::map<int,int> clients_{};
   bool is_valid() const final;
   void io_multiplex();
 };
