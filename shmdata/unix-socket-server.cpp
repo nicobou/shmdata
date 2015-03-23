@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/un.h>
+#include <stddef.h>
 #include <algorithm>
 #include "./unix-socket-server.hpp"
 
@@ -34,7 +35,7 @@ UnixSocketServer::UnixSocketServer(const std::string &path, int max_pending_cnx)
     perror("name");
     return;
   }
-  unlink(path_.c_str());   /* in case it already exists */
+  unlink (path_.c_str());
   memset(&sock_un, 0, sizeof(sock_un));
   sock_un.sun_family = AF_UNIX;
   strcpy(sock_un.sun_path, path_.c_str());
@@ -59,16 +60,23 @@ UnixSocketServer::UnixSocketServer(const std::string &path, int max_pending_cnx)
 }
 
 UnixSocketServer::~UnixSocketServer() {
-  quit_.store(1);
-  if (done_.valid())
+  if (done_.valid()) {
+    quit_.store(1);
+    // // fake connect in order to restart select
+    // struct sockaddr_un sun;
+    // memset(&sun, 0, sizeof(sun));
+    // sun.sun_family = AF_UNIX;
+    // strcpy(sun.sun_path, path_.c_str());
+    // int len = offsetof(struct sockaddr_un, sun_path) + path_.size();
+    // connect(socket_.fd_, (struct sockaddr *)&sun, len);
     done_.get();
     unlink (path_.c_str());
+  }
 }
 
 bool UnixSocketServer::is_valid() const {
   return is_binded_ && is_listening_;
 }
-
 
 void UnixSocketServer::io_multiplex() {
   auto maxfd = socket_.fd_;

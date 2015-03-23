@@ -34,7 +34,6 @@ class UnixSocket: public SafeBoolIdiom {
   UnixSocket& operator=(UnixSocket&&) = default;
   
   private:
-  std::string path_;
   int fd_{-1};
   bool is_valid() const final;
 };

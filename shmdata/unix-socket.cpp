@@ -37,10 +37,8 @@ UnixSocket::UnixSocket() :
 UnixSocket::~UnixSocket() {
   if(is_valid()) {
     close(fd_);
-    unlink (path_.c_str());
   }
 }
-
 bool UnixSocket::is_valid() const {
   return -1 != fd_;
 }
