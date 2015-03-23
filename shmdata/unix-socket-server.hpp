@@ -19,6 +19,7 @@
 #include <future>
 #include <map>
 #include <string>
+#include <atomic>
 #include "./safe-bool-idiom.hpp"
 #include "./unix-socket.hpp"
 
@@ -40,11 +41,10 @@ class UnixSocketServer: public SafeBoolIdiom {
   bool is_binded_{false};
   bool is_listening_{false};
   std::future<void> done_{};
-  fd_set allset_{{}};
   std::atomic_short quit_{0};
-  std::map<int,int> clients_{};
+  std::map<int, int> clients_{};
   bool is_valid() const final;
-  void io_multiplex();
+  void client_interaction();
 };
 
 }  // namespace shmdata

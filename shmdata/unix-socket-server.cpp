@@ -52,10 +52,8 @@ UnixSocketServer::UnixSocketServer(const std::string &path, int max_pending_cnx)
   } else {
     is_listening_ = true;
   }
-  FD_ZERO(&allset_);
-  FD_SET(socket_.fd_, &allset_);
   done_ = std::async(std::launch::async,
-                     [](UnixSocketServer *self){self->io_multiplex();},
+                     [](UnixSocketServer *self){self->client_interaction();},
                      this);
 }
 
@@ -71,16 +69,18 @@ bool UnixSocketServer::is_valid() const {
   return is_binded_ && is_listening_;
 }
 
-void UnixSocketServer::io_multiplex() {
+void UnixSocketServer::client_interaction() {
+  fd_set allset;
+  FD_ZERO(&allset);
+  FD_SET(socket_.fd_, &allset);
   auto maxfd = socket_.fd_;
-  int clifd = -1;
-  struct timeval tv;
-  // select timeout
-  tv.tv_sec = 0;
-  tv.tv_usec = 10000;  // 10 msec
+  struct timeval tv;  // select timeout
   char	buf[1000];  // MAXLINE
   while (0 == quit_.load()) {
-    auto rset = allset_;  /* rset gets modified each time around */
+    // reset timeout since select may change values
+    tv.tv_sec = 0;
+    tv.tv_usec = 10000;  // 10 msec
+    auto rset = allset;  /* rset gets modified each time around */
     if (select(maxfd + 1, &rset, NULL, NULL, &tv) < 0) {
       perror("select error");
       continue;
@@ -90,10 +90,11 @@ void UnixSocketServer::io_multiplex() {
       auto clifd = accept(socket_.fd_, NULL, NULL);
       if (clifd < 0)
         perror("accept");
-      FD_SET(clifd, &allset_);
+      FD_SET(clifd, &allset);
       if (clifd > maxfd)
         maxfd = clifd;  // max fd for select()
       clients_[clifd] = 0;
+      
       std::printf("new connection: fd %d\n", clifd);
       continue;
     }
@@ -105,7 +106,7 @@ void UnixSocketServer::io_multiplex() {
         } else if (nread == 0) {
           std::printf("closed: fd %d\n", it.first);
           clients_.erase(it.first);
-          FD_CLR(it.first, &allset_);
+          FD_CLR(it.first, &allset);
           close(it.first);
         } else { /* process client′s request */
           std::printf("client request\n");

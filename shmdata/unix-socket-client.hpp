@@ -17,6 +17,8 @@
 #define _SHMDATA_UNIX_SOCKET_CLIENT_H_
 
 #include <string>
+#include <future>
+#include <atomic>
 #include "./safe-bool-idiom.hpp"
 #include "./unix-socket.hpp"
 
@@ -34,10 +36,11 @@ class UnixSocketClient: public SafeBoolIdiom {
  private:
   std::string path_;
   UnixSocket socket_{};
-  // std::future<void> done_{};
-  // bool quit_{false};
+  std::future<void> done_{};
+  std::atomic_short quit_{0};
   bool is_valid_{false};
   bool is_valid() const final;
+  void server_interaction();
 };
 
 }  // namespace shmdata

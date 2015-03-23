@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stddef.h>
+#include <unistd.h>
 #include "./unix-socket-client.hpp"
 
 namespace shmdata{
@@ -30,23 +31,53 @@ UnixSocketClient::UnixSocketClient(const std::string &path) :
   sun.sun_family = AF_UNIX;
   strcpy(sun.sun_path, path.c_str());
   int len = offsetof(struct sockaddr_un, sun_path) + path_.size();
-  if (0 != connect(socket_.fd_, (struct sockaddr *)&sun, len) < 0) {
+  if (0 != connect(socket_.fd_, (struct sockaddr *)&sun, len)) {
     perror("connect");
     return;
   }
   is_valid_ = true;
-  // done_ = std::async(std::launch::async,
-  //                    [](UnixSocketClient *self){self->io_multiplex();},
-  //                    this);
+  done_ = std::async(std::launch::async,
+                     [](UnixSocketClient *self){self->server_interaction();},
+                     this);
 }
 
 UnixSocketClient::~UnixSocketClient() {
-  // if (done_.valid())
-  //   done_.get();
+  if (done_.valid()) {
+    quit_.store(1);
+    done_.get();
+  }
 }
 
 bool UnixSocketClient::is_valid() const {
   return is_valid_;
 }
 
+void UnixSocketClient::server_interaction() {
+  fd_set allset;
+  FD_ZERO(&allset);
+  FD_SET(socket_.fd_, &allset);
+  auto maxfd = socket_.fd_;
+  struct timeval tv;  // select timeout
+  char	buf[1000];  // MAXLINE
+  while (0 == quit_.load()) {
+    // reset timeout since select may change values
+    tv.tv_sec = 0;
+    tv.tv_usec = 10000;  // 10 msec
+    auto rset = allset;  /* rset gets modified each time around */
+    if (select(maxfd + 1, &rset, NULL, NULL, &tv) < 0) {
+      perror("select error");
+      continue;
+    }
+    if (FD_ISSET(socket_.fd_, &rset)) {
+      auto nread = read(socket_.fd_, buf, 1000);  // MAXLINE
+        if (nread < 0) {
+          perror("read");
+        } else if (nread == 0) {
+          std::printf("server closed (?): fd %d\n", socket_.fd_);
+        } else { /* process server′s message */
+          std::printf("server message\n");
+        }
+    }
+  }  // while (!quit_)
+}
 }  // namespace shmdata
