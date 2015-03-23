@@ -96,7 +96,8 @@ void UnixSocketServer::client_interaction() {
       if (clifd > maxfd)
         maxfd = clifd;  // max fd for select()
       clients_[clifd] = 0;
-      
+      std::string hello("hello");
+      send(clifd, hello.c_str(), hello.size(), 0);
       std::printf("new connection: fd %d\n", clifd);
       continue;
     }

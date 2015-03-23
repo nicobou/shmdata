@@ -75,7 +75,7 @@ void UnixSocketClient::server_interaction() {
         } else if (nread == 0) {
           std::printf("server closed (?): fd %d\n", socket_.fd_);
         } else { /* process server′s message */
-          std::printf("server message\n");
+          std::printf("server message: %s\n", buf);
         }
     }
   }  // while (!quit_)
