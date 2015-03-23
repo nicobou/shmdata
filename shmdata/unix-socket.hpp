@@ -16,12 +16,16 @@
 #ifndef _SHMDATA_UNIX_SOCKET_H_
 #define _SHMDATA_UNIX_SOCKET_H_
 
+#include <string>
 #include "./safe-bool-idiom.hpp"
 
 namespace shmdata{
 class UnixSocketServer;
+class UnixSocketClient;
+
 class UnixSocket: public SafeBoolIdiom {
   friend UnixSocketServer;
+  friend UnixSocketClient;
  public:
   UnixSocket();
   ~UnixSocket();

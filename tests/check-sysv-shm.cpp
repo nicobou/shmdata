@@ -12,10 +12,6 @@
  * GNU Lesser General Public License for more details.
  */
 
-/**
- * @file TODO add description here.
- */
-
 #include "shmdata/sysv-shm.hpp"
 
 int main () {

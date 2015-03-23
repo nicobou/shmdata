@@ -18,7 +18,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/un.h>
-#include <string>
 #include <algorithm>
 #include "./unix-socket-server.hpp"
 
@@ -30,12 +29,22 @@ UnixSocketServer::UnixSocketServer(const std::string &path, int max_pending_cnx)
   if (!socket_)  // server not valid if socket is not valid
     return;
   struct sockaddr_un sock_un;
+  if (path_.size() >= sizeof(sock_un.sun_path)) {
+    errno = ENAMETOOLONG;
+    perror("name");
+    return;
+  }
+  unlink(path_.c_str());   /* in case it already exists */
+  memset(&sock_un, 0, sizeof(sock_un));
   sock_un.sun_family = AF_UNIX;
-  strncpy(sock_un.sun_path, path_.c_str(), sizeof(sock_un.sun_path) - 1);
-  if (bind(socket_.fd_, (struct sockaddr *) &sock_un, sizeof(struct sockaddr_un)) < 0)
+  strcpy(sock_un.sun_path, path_.c_str());
+  printf("%d, %s\n", socket_.fd_, path_.c_str());
+  if (bind(socket_.fd_, (struct sockaddr *) &sock_un, sizeof(struct sockaddr_un)) < 0) {
     perror("bind");
-  else
+    return;
+  } else {
     is_binded_ = true;
+  }
   if (listen (socket_.fd_, max_pending_cnx_) < 0) {
     perror("listen");
     return;
@@ -50,12 +59,10 @@ UnixSocketServer::UnixSocketServer(const std::string &path, int max_pending_cnx)
 }
 
 UnixSocketServer::~UnixSocketServer() {
+  quit_.store(1);
   if (done_.valid())
     done_.get();
-  if(is_valid()) {
     unlink (path_.c_str());
-    
-  }
 }
 
 bool UnixSocketServer::is_valid() const {
@@ -67,11 +74,12 @@ void UnixSocketServer::io_multiplex() {
   auto maxfd = socket_.fd_;
   int clifd = -1;
   char	buf[1000];  // MAXLINE
-
-  while (!quit_) {
+  while (0 == quit_.load()) {
     auto rset = allset_;  /* rset gets modified each time around */
-    if (select(maxfd + 1, &rset, NULL, NULL, NULL) < 0)
+    if (select(maxfd + 1, &rset, NULL, NULL, NULL) < 0) {
       perror("select error");
+      continue;
+    }
     if (FD_ISSET(socket_.fd_, &rset)) {
       // accept new client request
       auto clifd = accept(socket_.fd_, NULL, NULL);
@@ -81,20 +89,19 @@ void UnixSocketServer::io_multiplex() {
       if (clifd > maxfd)
         maxfd = clifd;  // max fd for select()
       clients_[clifd] = 0;
-      std::printf("new connection: fd %d", clifd);
+      std::printf("new connection: fd %d\n", clifd);
       continue;
     }
-
     for (auto &it : clients_) {
       if (FD_ISSET(it.first, &rset)) {
-        auto nread = read(clifd, buf, 1000);  // MAXLINE
+        auto nread = read(it.first, buf, 1000);  // MAXLINE
         if (nread < 0) {
           perror("read");
         } else if (nread == 0) {
-          std::printf("closed: fd %d", clifd);
-          clients_.erase(clifd);
-          FD_CLR(clifd, &allset_);
-          close(clifd);
+          std::printf("closed: fd %d\n", it.first);
+          clients_.erase(it.first);
+          FD_CLR(it.first, &allset_);
+          close(it.first);
         } else { /* process client′s request */
           std::printf("client request\n");
         }

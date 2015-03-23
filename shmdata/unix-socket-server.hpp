@@ -18,6 +18,7 @@
 
 #include <future>
 #include <map>
+#include <string>
 #include "./safe-bool-idiom.hpp"
 #include "./unix-socket.hpp"
 
@@ -40,7 +41,7 @@ class UnixSocketServer: public SafeBoolIdiom {
   bool is_listening_{false};
   std::future<void> done_{};
   fd_set allset_{{}};
-  bool quit_{false};
+  std::atomic_short quit_{0};
   std::map<int,int> clients_{};
   bool is_valid() const final;
   void io_multiplex();
