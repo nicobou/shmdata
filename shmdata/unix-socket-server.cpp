@@ -76,6 +76,7 @@ void UnixSocketServer::client_interaction() {
   auto maxfd = socket_.fd_;
   struct timeval tv;  // select timeout
   char	buf[1000];  // MAXLINE
+  std::vector<int> clients_to_remove;
   while (0 == quit_.load()) {
     // reset timeout since select may change values
     tv.tv_sec = 0;
@@ -105,7 +106,7 @@ void UnixSocketServer::client_interaction() {
           perror("read");
         } else if (nread == 0) {
           std::printf("closed: fd %d\n", it.first);
-          clients_.erase(it.first);
+          clients_to_remove.push_back(it.first);
           FD_CLR(it.first, &allset);
           close(it.first);
         } else { /* process client′s request */
@@ -113,6 +114,10 @@ void UnixSocketServer::client_interaction() {
         }
       }
     }
+    // cleaning clients_ if necessary
+    for (auto &it : clients_to_remove)
+      clients_.erase(it);
+    clients_to_remove.clear();
   }  // while (!quit_)
 }
 
