@@ -47,4 +47,5 @@ plugins/puredata/.deps/
 plugins/puredata/.libs/
 stamp-h1
 test-driver
-tests/check_sysv_shm
+tests/check-sysv-shm
+tests/check-unix-socket

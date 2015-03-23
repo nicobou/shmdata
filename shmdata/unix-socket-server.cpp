@@ -62,13 +62,6 @@ UnixSocketServer::UnixSocketServer(const std::string &path, int max_pending_cnx)
 UnixSocketServer::~UnixSocketServer() {
   if (done_.valid()) {
     quit_.store(1);
-    // // fake connect in order to restart select
-    // struct sockaddr_un sun;
-    // memset(&sun, 0, sizeof(sun));
-    // sun.sun_family = AF_UNIX;
-    // strcpy(sun.sun_path, path_.c_str());
-    // int len = offsetof(struct sockaddr_un, sun_path) + path_.size();
-    // connect(socket_.fd_, (struct sockaddr *)&sun, len);
     done_.get();
     unlink (path_.c_str());
   }
@@ -81,10 +74,14 @@ bool UnixSocketServer::is_valid() const {
 void UnixSocketServer::io_multiplex() {
   auto maxfd = socket_.fd_;
   int clifd = -1;
+  struct timeval tv;
+  // select timeout
+  tv.tv_sec = 0;
+  tv.tv_usec = 10000;  // 10 msec
   char	buf[1000];  // MAXLINE
   while (0 == quit_.load()) {
     auto rset = allset_;  /* rset gets modified each time around */
-    if (select(maxfd + 1, &rset, NULL, NULL, NULL) < 0) {
+    if (select(maxfd + 1, &rset, NULL, NULL, &tv) < 0) {
       perror("select error");
       continue;
     }
