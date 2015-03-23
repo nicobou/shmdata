@@ -20,6 +20,7 @@
 #include <sys/un.h>
 #include <stddef.h>
 #include <algorithm>
+#include <vector>
 #include "./unix-socket-server.hpp"
 
 namespace shmdata{

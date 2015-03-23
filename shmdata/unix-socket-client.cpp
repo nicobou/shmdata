@@ -17,7 +17,6 @@
 #include <sys/socket.h>
 #include <stddef.h>
 #include <unistd.h>
-#include <vector>
 #include "./unix-socket-client.hpp"
 
 namespace shmdata{
