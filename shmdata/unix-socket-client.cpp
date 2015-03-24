@@ -17,6 +17,7 @@
 #include <sys/socket.h>
 #include <stddef.h>
 #include <unistd.h>
+#include <iostream>
 #include "./unix-socket-client.hpp"
 
 namespace shmdata{
@@ -52,13 +53,31 @@ bool UnixSocketClient::is_valid() const {
   return is_valid_;
 }
 
+
 void UnixSocketClient::server_interaction() {
   fd_set allset;
   FD_ZERO(&allset);
   FD_SET(socket_.fd_, &allset);
   auto maxfd = socket_.fd_;
   struct timeval tv;  // select timeout
-  char	buf[1000];  // MAXLINE
+  //char	buf[1000];  // MAXLINE
+
+  struct msghdr	init_msg;
+  size_t shm_size = 0;
+  key_t shm_key = 0;
+  char user_data[1000];
+  struct iovec iov[3];
+  iov[0].iov_base = &shm_size;
+  iov[0].iov_len  = sizeof(size_t);
+  iov[1].iov_base = &shm_key;
+  iov[1].iov_len  = sizeof(key_t);
+  iov[2].iov_base = user_data;
+  iov[2].iov_len  = 1000;
+  init_msg.msg_name = NULL;
+  init_msg.msg_namelen = 0;
+  init_msg.msg_flags = 0;
+  init_msg.msg_control = NULL;
+  init_msg.msg_controllen = 0;
   while (0 == quit_.load()) {
     // reset timeout since select may change values
     tv.tv_sec = 0;
@@ -69,15 +88,24 @@ void UnixSocketClient::server_interaction() {
       continue;
     }
     if (FD_ISSET(socket_.fd_, &rset)) {
-      auto nread = read(socket_.fd_, buf, 1000);  // MAXLINE
-        if (nread < 0) {
-          perror("read");
-        } else if (nread == 0) {
-          std::printf("server closed (?): fd %d\n", socket_.fd_);
-        } else { /* process server′s message */
-          std::printf("server message: %s\n", buf);
-        }
+      auto nread = recvmsg(socket_.fd_, &init_msg, 0);
+      if (nread < 0) {
+        perror("read");
+      } else if (nread == 0) {
+        std::printf("server closed (?): fd %d\n", socket_.fd_);
+      } else { /* process server′s message */
+        std::cout << "server message "
+                  << shm_size
+                  << "  "
+                  << shm_key
+                  << "  "
+                  << std::string(user_data, 0, iov[2].iov_len)
+                  << std::endl;
+        // std::printf("server message: %s\n", buf);
+      }
     }
   }  // while (!quit_)
 }
+
+
 }  // namespace shmdata

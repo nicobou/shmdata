@@ -53,8 +53,8 @@ size_t iovec_len_{3};
 const struct iovec iovec_[3];
 // ctor
 onConnectData(size_t shm_size,
-                key_t key,
-                const std::string &user_data);
+              key_t key,
+              const std::string &user_data);
 onConnectData() = delete;
 socketMsg_t get_connect_iov();
 };
