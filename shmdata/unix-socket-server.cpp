@@ -81,7 +81,17 @@ void UnixSocketServer::client_interaction() {
   FD_SET(socket_.fd_, &allset);
   auto maxfd = socket_.fd_;
   struct timeval tv;  // select timeout
-  char	buf[1000];  // MAXLINE
+  // init message
+  struct msghdr init_msg;
+  init_msg.msg_name    = NULL;
+  init_msg.msg_namelen = 0;
+  init_msg.msg_flags = 0;
+  init_msg.msg_control = NULL;
+  init_msg.msg_controllen = 0;
+  auto iov = proto_->get_connect_iov_();
+  init_msg.msg_iov = const_cast<iovec *>(iov.iov_);
+  init_msg.msg_iovlen = iov.iov_len_;
+  char	buf[1];  // MAXLINE
   std::vector<int> clients_to_remove;
   while (0 == quit_.load()) {
     // reset timeout since select may change values
@@ -101,9 +111,9 @@ void UnixSocketServer::client_interaction() {
       if (clifd > maxfd)
         maxfd = clifd;  // max fd for select()
       clients_[clifd] = 0;
-      
-      std::string hello("hello");
-      send(clifd, hello.c_str(), hello.size(), 0);
+      // std::string hello("hello");
+      // send(clifd, hello.c_str(), hello.size(), 0);
+      sendmsg(clifd, &init_msg, 0);
       if (proto_->on_connect_cb_)
         proto_->on_connect_cb_(clifd);
       std::printf("new connection: fd %d\n", clifd);
@@ -111,7 +121,7 @@ void UnixSocketServer::client_interaction() {
     }
     for (auto &it : clients_) {
       if (FD_ISSET(it.first, &rset)) {
-        auto nread = read(it.first, buf, 1000);  // MAXLINE
+        auto nread = read(it.first, buf, 1);  // MAXLINE
         if (nread < 0) {
           perror("read");
         } else if (nread == 0) {
@@ -122,7 +132,7 @@ void UnixSocketServer::client_interaction() {
           FD_CLR(it.first, &allset);
           close(it.first);
         } else { /* process client′s request */
-          std::printf("client request\n");
+          std::printf("bug: client request\n");
         }
       }
     }
