@@ -18,35 +18,47 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <string>
 #include <functional>
 
 namespace shmdata{
 
+using socketMsg_t = struct onConnectMessage {
+onConnectMessage(const struct iovec *iovec, size_t iovec_len):
+    iov_(iovec), iov_len_(iovec_len){}
+const struct iovec *iov_{nullptr};
+size_t iov_len_{0};
+};
+
 // a basic initialisation and life monitoring protocol
 struct UnixSocketProtocol {
-  // connect/disconnect callbacks
-  using onPeerConnect = std::function<void(int id)>;
-  onPeerConnect on_connect_cb_{};
-  using onPeerDisconnect = std::function<void(int id)>;
-  onPeerDisconnect on_disconnect_cb_{};
-  // (server) get buffers to send back to clients when conecting
-  using iovServOnConnect = std::function<std::pair<const struct iovec *, size_t>()>;
-  iovServOnConnect get_connect_iov_{};
-  };
-
-struct onConnectData {
-  // data to distribute at connection
-  size_t shm_size_;
-  std::string shm_path_;
-  std::string user_data_;
-  // socket data structure pointing to previous members
-  const struct iovec iovec_[3];
-  // ctor
-  onConnectData(size_t shm_size,
-                const std::string &shm_path,
-                const std::string &user_data);
-  onConnectData() = delete;
+// connect/disconnect callbacks
+using onPeerConnect = std::function<void(int id)>;
+onPeerConnect on_connect_cb_{};
+using onPeerDisconnect = std::function<void(int id)>;
+onPeerDisconnect on_disconnect_cb_{};
+// (server) get buffers to send back to clients when connecting
+using iovServOnConnect = std::function<socketMsg_t()>;
+iovServOnConnect get_connect_iov_{};
 };
+
+// constructing onConnectData
+struct onConnectData {
+// data to distribute at connection
+size_t shm_size_;
+key_t shm_key_;
+std::string user_data_;
+// socket data structure pointing to members initialized in ctor
+size_t iovec_len_{3};
+const struct iovec iovec_[3];
+// ctor
+onConnectData(size_t shm_size,
+                key_t key,
+                const std::string &user_data);
+onConnectData() = delete;
+socketMsg_t get_connect_iov();
+};
+
 
 }  // namespace shmdata
 #endif

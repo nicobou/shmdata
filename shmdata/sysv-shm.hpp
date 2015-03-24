@@ -31,7 +31,7 @@ class sysVShm: public SafeBoolIdiom {
   sysVShm& operator=(const sysVShm&) = delete;
   sysVShm& operator=(sysVShm&&) = default;
   
-  private:
+ private:
   key_t key_;
   size_t size_;
   int shmflg_;

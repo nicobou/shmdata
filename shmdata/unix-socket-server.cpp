@@ -25,10 +25,15 @@
 
 namespace shmdata{
 
-UnixSocketServer::UnixSocketServer(const std::string &path, int max_pending_cnx) :
+UnixSocketServer::UnixSocketServer(const std::string &path,
+                                   const UnixSocketProtocol *proto,
+                                   int max_pending_cnx) :
     path_(path),
-    max_pending_cnx_(max_pending_cnx) {
+    max_pending_cnx_(max_pending_cnx),
+    proto_(proto){
   if (!socket_)  // server not valid if socket is not valid
+    return;
+  if (nullptr == proto)  // server not valid without protocol
     return;
   struct sockaddr_un sock_un;
   if (path_.size() >= sizeof(sock_un.sun_path)) {
@@ -96,8 +101,11 @@ void UnixSocketServer::client_interaction() {
       if (clifd > maxfd)
         maxfd = clifd;  // max fd for select()
       clients_[clifd] = 0;
+      
       std::string hello("hello");
       send(clifd, hello.c_str(), hello.size(), 0);
+      if (proto_->on_connect_cb_)
+        proto_->on_connect_cb_(clifd);
       std::printf("new connection: fd %d\n", clifd);
       continue;
     }
@@ -108,6 +116,8 @@ void UnixSocketServer::client_interaction() {
           perror("read");
         } else if (nread == 0) {
           std::printf("closed: fd %d\n", it.first);
+          if (proto_->on_disconnect_cb_)
+            proto_->on_disconnect_cb_(it.first);
           clients_to_remove.push_back(it.first);
           FD_CLR(it.first, &allset);
           close(it.first);

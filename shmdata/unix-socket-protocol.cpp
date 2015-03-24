@@ -17,15 +17,19 @@
 namespace shmdata{
 
 onConnectData::onConnectData(size_t shm_size,
-                             const std::string &shm_path,
+                             key_t shm_key,
                              const std::string &user_data) :
     shm_size_(shm_size),
-    shm_path_ (shm_path),
+    shm_key_ (shm_key),
     user_data_(user_data),
     iovec_{
   {&shm_size_, sizeof(size_t)},
-  {const_cast<char *>(shm_path_.c_str()), shm_path_.size()},
+  {&shm_key_, sizeof(key_t)},
   {const_cast<char *>(user_data_.c_str()), user_data_.size()}} {
+}
+
+socketMsg_t onConnectData::get_connect_iov(){
+  return {(const struct iovec *)iovec_, iovec_len_};
 }
 
 }  // namespace shmdata

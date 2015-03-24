@@ -22,12 +22,15 @@
 #include <atomic>
 #include "./safe-bool-idiom.hpp"
 #include "./unix-socket.hpp"
+#include "./unix-socket-protocol.hpp"
 
 namespace shmdata{
 
 class UnixSocketServer: public SafeBoolIdiom {
  public:
-  UnixSocketServer(const std::string &path, int max_pending_cnx = 10);
+  UnixSocketServer(const std::string &path,
+                   const UnixSocketProtocol *proto,
+                   int max_pending_cnx = 10);
   ~UnixSocketServer();
   UnixSocketServer() = delete;
   UnixSocketServer(const UnixSocketServer &) = delete;
@@ -43,6 +46,7 @@ class UnixSocketServer: public SafeBoolIdiom {
   std::future<void> done_{};
   std::atomic_short quit_{0};
   std::map<int, int> clients_{};
+  const UnixSocketProtocol *proto_;
   bool is_valid() const final;
   void client_interaction();
 };
