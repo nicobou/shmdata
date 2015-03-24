@@ -8,6 +8,7 @@ libshmdata_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
     sysv-shm.cpp \
     unix-socket.cpp \
     unix-socket-client.cpp \
+    unix-socket-protocol.cpp \
     unix-socket-server.cpp
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
@@ -15,6 +16,7 @@ libshmdata_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
     sysv-shm.hpp \
     unix-socket.hpp \
     unix-socket-client.hpp \
+    unix-socket-protocol.hpp \
     unix-socket-server.hpp
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \

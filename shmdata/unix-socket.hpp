@@ -33,7 +33,7 @@ class UnixSocket: public SafeBoolIdiom {
   UnixSocket& operator=(const UnixSocket&) = delete;
   UnixSocket& operator=(UnixSocket&&) = default;
   
-  private:
+ private:
   int fd_{-1};
   bool is_valid() const final;
 };
