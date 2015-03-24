@@ -16,4 +16,16 @@
 
 namespace shmdata{
 
+onConnectData::onConnectData(size_t shm_size,
+                             const std::string &shm_path,
+                             const std::string &user_data) :
+    shm_size_(shm_size),
+    shm_path_ (shm_path),
+    user_data_(user_data),
+    iovec_{
+  {&shm_size_, sizeof(size_t)},
+  {const_cast<char *>(shm_path_.c_str()), shm_path_.size()},
+  {const_cast<char *>(user_data_.c_str()), user_data_.size()}} {
+}
+
 }  // namespace shmdata
