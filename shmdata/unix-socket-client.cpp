@@ -60,9 +60,6 @@ void UnixSocketClient::server_interaction() {
   FD_SET(socket_.fd_, &allset);
   auto maxfd = socket_.fd_;
   struct timeval tv;  // select timeout
-  //char	buf[1000];  // MAXLINE
-
-  struct msghdr	init_msg;
   size_t shm_size = 0;
   key_t shm_key = 0;
   char user_data[1000];
@@ -73,11 +70,6 @@ void UnixSocketClient::server_interaction() {
   iov[1].iov_len  = sizeof(key_t);
   iov[2].iov_base = user_data;
   iov[2].iov_len  = 1000;
-  init_msg.msg_name = NULL;
-  init_msg.msg_namelen = 0;
-  init_msg.msg_flags = 0;
-  init_msg.msg_control = NULL;
-  init_msg.msg_controllen = 0;
   while (0 == quit_.load()) {
     // reset timeout since select may change values
     tv.tv_sec = 0;
@@ -88,13 +80,22 @@ void UnixSocketClient::server_interaction() {
       continue;
     }
     if (FD_ISSET(socket_.fd_, &rset)) {
-      auto nread = recvmsg(socket_.fd_, &init_msg, 0);
+      auto nread = readv(socket_.fd_, iov, 3);
       if (nread < 0) {
         perror("read");
       } else if (nread == 0) {
-        std::printf("server closed (?): fd %d\n", socket_.fd_);
+        std::printf("(client) server closed (?): fd %d\n", socket_.fd_);
+        std::cout << "(client) server message "
+                  << shm_size
+                  << "  "
+                  << shm_key
+                  << "  "
+                  << std::string(user_data, 0, iov[2].iov_len)
+                  << std::endl;
+
+        FD_CLR(socket_.fd_, &allset);
       } else { /* process server′s message */
-        std::cout << "server message "
+        std::cout << "(client) server message "
                   << shm_size
                   << "  "
                   << shm_key

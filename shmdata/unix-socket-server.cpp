@@ -81,16 +81,7 @@ void UnixSocketServer::client_interaction() {
   FD_SET(socket_.fd_, &allset);
   auto maxfd = socket_.fd_;
   struct timeval tv;  // select timeout
-  // init message
-  struct msghdr init_msg;
-  init_msg.msg_name    = NULL;
-  init_msg.msg_namelen = 0;
-  init_msg.msg_flags = 0;
-  init_msg.msg_control = NULL;
-  init_msg.msg_controllen = 0;
-  auto iov = proto_->get_connect_iov_();
-  init_msg.msg_iov = const_cast<iovec *>(iov.iov_);
-  init_msg.msg_iovlen = iov.iov_len_;
+  auto iov_cnx = proto_->get_connect_iov_();
   char	buf[1];  // MAXLINE
   std::vector<int> clients_to_remove;
   while (0 == quit_.load()) {
@@ -111,12 +102,10 @@ void UnixSocketServer::client_interaction() {
       if (clifd > maxfd)
         maxfd = clifd;  // max fd for select()
       clients_[clifd] = 0;
-      // std::string hello("hello");
-      // send(clifd, hello.c_str(), hello.size(), 0);
-      sendmsg(clifd, &init_msg, 0);
+      writev(clifd, const_cast<iovec *>(iov_cnx.iov_), iov_cnx.iov_len_);
       if (proto_->on_connect_cb_)
         proto_->on_connect_cb_(clifd);
-      std::printf("new connection: fd %d\n", clifd);
+      std::printf("(server) new connection: fd %d\n", clifd);
       continue;
     }
     for (auto &it : clients_) {
@@ -125,7 +114,7 @@ void UnixSocketServer::client_interaction() {
         if (nread < 0) {
           perror("read");
         } else if (nread == 0) {
-          std::printf("closed: fd %d\n", it.first);
+          std::printf("(server) closed: fd %d\n", it.first);
           if (proto_->on_disconnect_cb_)
             proto_->on_disconnect_cb_(it.first);
           clients_to_remove.push_back(it.first);
