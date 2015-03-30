@@ -24,8 +24,6 @@
 namespace shmdata{
 namespace UnixSocketProtocol{
 
-using onPeerConnect = std::function<void(int id)>;
-using onPeerDisconnect = std::function<void(int id)>;
 using socketMsg_t = struct socketMsg {
 socketMsg(const struct iovec *iovec, size_t iovec_len):
     iov_(iovec), iov_len_(iovec_len){}
@@ -46,11 +44,13 @@ struct onConnectData {
 
 // Server -----------------------------------------------------
 struct ServerSide {
-onPeerConnect on_connect_cb_{};
-onPeerDisconnect on_disconnect_cb_{};
-// (server) get buffers to send back to clients when connecting
-using iovServOnConnect = std::function<socketMsg_t()>;
-iovServOnConnect get_connect_iov_{};
+  using onClientConnect = std::function<void(int id)>;
+  using onClientDisconnect = std::function<void(int id)>;
+  onClientConnect on_connect_cb_{};
+  onClientDisconnect on_disconnect_cb_{};
+  // (server) get buffers to send back to clients when connecting
+  using iovServOnConnect = std::function<socketMsg_t()>;
+  iovServOnConnect get_connect_iov_{};
 };
 
 // constructing onConnectData
@@ -74,16 +74,23 @@ struct onConnectDataReceiver : public onConnectData {
       iovec_{
   {&shm_size_, sizeof(size_t)},
   {&shm_key_, sizeof(key_t)},
-  {&user_data, 0}} {
+  {user_data, _size}} {
   }
+  std::string get_user_data(){
+    return std::string(static_cast<char *>(iovec_[2].iov_base),
+                       0,
+                       iovec_[2].iov_len);
+}
   char user_data[_size];
   size_t iovec_len_{3};
   const struct iovec iovec_[3];
 };
 
 struct ClientSide {
-  onPeerConnect on_connect_cb_{};
-  onPeerDisconnect on_disconnect_cb_{};
+  using onServerConnected = std::function<void(int id)>;
+  using onServerDisconnected = std::function<void(int id)>;
+  onServerConnected on_connect_cb_{};
+  onServerDisconnected on_disconnect_cb_{};
   onConnectDataReceiver<4096> data_{};
   //  void set_user_data(std::string &&str);
 };

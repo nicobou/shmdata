@@ -28,12 +28,19 @@ int main () {
                                               "hello");  // user message
   UnixSocketProtocol::ServerSide sproto;
   sproto.get_connect_iov_ = [&data](){return data.get_connect_iov();};
-  sproto.on_connect_cb_ = [](int d) {std::printf("(server) on_connect_cb, id %d\n", d);};
-  sproto.on_disconnect_cb_ = [](int d) {std::printf("(server) on_disconnect_cb, id %d\n", d);};
+  sproto.on_connect_cb_ = [](int id) {std::printf("(server) on_connect_cb, id %d\n", id);};
+  sproto.on_disconnect_cb_ = [](int id) {std::printf("(server) on_disconnect_cb, id %d\n", id);};
 
   // client protocol
   UnixSocketProtocol::ClientSide cproto;
-  cproto.on_connect_cb_ = [](int d){std::printf("(client) on_connect_cb, id %d\n", d);};
+  cproto.on_connect_cb_ = [&cproto](int id){
+    std::cout << "(client) on_connect_cb, id "
+    << id
+    << " shm_size " << cproto.data_.shm_size_ 
+    << " shm_key " << cproto.data_.shm_key_
+    << " user_data " << cproto.data_.get_user_data().c_str()
+    << std::endl;
+  };
   cproto.on_disconnect_cb_ = [](int d) {std::printf("(client) on_disconnect_cb, id %d\n", d);};
 
   // testing
