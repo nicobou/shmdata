@@ -19,10 +19,14 @@
 
 namespace shmdata{
 
-sysVShm::sysVShm(key_t key, size_t size, int shmflg):
-    key_(key),
+sysVShm::sysVShm(const std::string &path, int id, size_t size, int shmflg):
+    key_(ftok(path.c_str(), id)),
     size_(size),
     shmflg_(shmflg) {
+  if (-1 == key_){
+    perror("ftok");
+    return;
+  }
   if ((shmid_ = shmget(key_, size_, shmflg_)) < 0){
       perror("shmget");  // TODO get string of perror and make log
       return;
@@ -35,7 +39,7 @@ sysVShm::sysVShm(key_t key, size_t size, int shmflg):
 }
 
 sysVShm::~sysVShm() {
-  if (*this) {
+  if (is_valid()) {
     if (shmdt(shm_) == -1) {
       perror("shmdt");
     }

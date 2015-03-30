@@ -18,13 +18,14 @@
 
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <string>
 #include "./safe-bool-idiom.hpp"
 
 namespace shmdata{
 
 class sysVShm: public SafeBoolIdiom {
  public:
-  sysVShm(key_t key, size_t size, int shmflg);
+  sysVShm(const std::string &path, int id, size_t size, int shmflg);
   ~sysVShm();
   sysVShm() = delete;
   sysVShm(const sysVShm &) = delete;
