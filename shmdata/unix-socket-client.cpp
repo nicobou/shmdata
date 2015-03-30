@@ -17,6 +17,7 @@
 #include <sys/socket.h>
 #include <stddef.h>
 #include <unistd.h>
+#include <sys/uio.h>
 #include <iostream>
 #include "./unix-socket-client.hpp"
 

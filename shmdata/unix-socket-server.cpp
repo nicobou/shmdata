@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <sys/un.h>
 #include <stddef.h>
+#include <sys/uio.h>
 #include <algorithm>
 #include <vector>
 #include "./unix-socket-server.hpp"
