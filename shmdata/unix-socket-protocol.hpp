@@ -22,7 +22,10 @@
 #include <functional>
 
 namespace shmdata{
+namespace UnixSocketProtocol{
 
+using onPeerConnect = std::function<void(int id)>;
+using onPeerDisconnect = std::function<void(int id)>;
 using socketMsg_t = struct onConnectMessage {
 onConnectMessage(const struct iovec *iovec, size_t iovec_len):
     iov_(iovec), iov_len_(iovec_len){}
@@ -31,11 +34,9 @@ size_t iov_len_{0};
 };
 
 // a basic initialisation and life monitoring protocol
-struct UnixSocketProtocol {
+struct ServerSide {
 // connect/disconnect callbacks
-using onPeerConnect = std::function<void(int id)>;
 onPeerConnect on_connect_cb_{};
-using onPeerDisconnect = std::function<void(int id)>;
 onPeerDisconnect on_disconnect_cb_{};
 // (server) get buffers to send back to clients when connecting
 using iovServOnConnect = std::function<socketMsg_t()>;
@@ -59,6 +60,6 @@ onConnectData() = delete;
 socketMsg_t get_connect_iov();
 };
 
-
+}  // namespace UnixSocketProtocol
 }  // namespace shmdata
 #endif

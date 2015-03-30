@@ -15,6 +15,7 @@
 #include "./unix-socket-protocol.hpp"
 
 namespace shmdata{
+namespace UnixSocketProtocol{
 
 onConnectData::onConnectData(size_t shm_size,
                              key_t shm_key,
@@ -32,4 +33,5 @@ socketMsg_t onConnectData::get_connect_iov(){
   return {(const struct iovec *)iovec_, iovec_len_};
 }
 
+}  // namespace UnixSocketProtocol
 }  // namespace shmdata

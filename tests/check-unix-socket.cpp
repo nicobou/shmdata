@@ -23,10 +23,10 @@ int main () {
   using namespace shmdata;
 
   // server protocol
-  onConnectData data(128,       // shm size
-                     8754,      // shm key to distribute
-                     "hello");  // user message
-  UnixSocketProtocol proto;
+  UnixSocketProtocol::onConnectData data(128,       // shm size
+                                         8754,      // shm key to distribute
+                                         "hello");  // user message
+  UnixSocketProtocol::ServerSide proto;
   proto.get_connect_iov_ = [&data](){return data.get_connect_iov();};
   proto.on_connect_cb_ = [](int d) { std::printf("(server) on_connect_cb, id %d\n", d);};
   proto.on_disconnect_cb_ = [](int d) { std::printf("(server) on_disconnect_cb, id %d\n", d);};

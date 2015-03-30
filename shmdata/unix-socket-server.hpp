@@ -29,7 +29,7 @@ namespace shmdata{
 class UnixSocketServer: public SafeBoolIdiom {
  public:
   UnixSocketServer(const std::string &path,
-                   const UnixSocketProtocol *proto,
+                   const UnixSocketProtocol::ServerSide *proto,
                    int max_pending_cnx = 10);
   ~UnixSocketServer();
   UnixSocketServer() = delete;
@@ -46,7 +46,7 @@ class UnixSocketServer: public SafeBoolIdiom {
   std::future<void> done_{};
   std::atomic_short quit_{0};
   std::map<int, int> clients_{};
-  const UnixSocketProtocol *proto_;
+  const UnixSocketProtocol::ServerSide *proto_;
   bool is_valid() const final;
   void client_interaction();
 };

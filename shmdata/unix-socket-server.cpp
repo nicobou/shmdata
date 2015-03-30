@@ -26,7 +26,7 @@
 namespace shmdata{
 
 UnixSocketServer::UnixSocketServer(const std::string &path,
-                                   const UnixSocketProtocol *proto,
+                                   const UnixSocketProtocol::ServerSide *proto,
                                    int max_pending_cnx) :
     path_(path),
     max_pending_cnx_(max_pending_cnx),
@@ -102,7 +102,9 @@ void UnixSocketServer::client_interaction() {
       if (clifd > maxfd)
         maxfd = clifd;  // max fd for select()
       clients_[clifd] = 0;
-      writev(clifd, const_cast<iovec *>(iov_cnx.iov_), iov_cnx.iov_len_);
+      auto res = writev(clifd, const_cast<iovec *>(iov_cnx.iov_), iov_cnx.iov_len_);
+      if (-1 == res)
+        perror("writev");
       if (proto_->on_connect_cb_)
         proto_->on_connect_cb_(clifd);
       std::printf("(server) new connection: fd %d\n", clifd);
