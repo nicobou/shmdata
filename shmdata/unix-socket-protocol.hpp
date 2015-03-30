@@ -44,20 +44,20 @@ iovServOnConnect get_connect_iov_{};
 };
 
 // constructing onConnectData
-struct onConnectData {
-// data to distribute at connection
-size_t shm_size_;
-key_t shm_key_;
-std::string user_data_;
-// socket data structure pointing to members initialized in ctor
-size_t iovec_len_{3};
-const struct iovec iovec_[3];
-// ctor
-onConnectData(size_t shm_size,
-              key_t key,
-              const std::string &user_data);
-onConnectData() = delete;
-socketMsg_t get_connect_iov();
+struct onConnectDataMaker {
+  // data to distribute at connection
+  size_t shm_size_;
+  key_t shm_key_;
+  std::string user_data_;
+  // socket data structure pointing to members initialized in ctor
+  size_t iovec_len_{3};
+  const struct iovec iovec_[3];
+  // ctor
+  onConnectDataMaker(size_t shm_size,
+                key_t key,
+                const std::string &user_data);
+  onConnectDataMaker() = delete;
+  socketMsg_t get_connect_iov();
 };
 
 }  // namespace UnixSocketProtocol

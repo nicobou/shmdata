@@ -17,9 +17,9 @@
 namespace shmdata{
 namespace UnixSocketProtocol{
 
-onConnectData::onConnectData(size_t shm_size,
-                             key_t shm_key,
-                             const std::string &user_data) :
+onConnectDataMaker::onConnectDataMaker(size_t shm_size,
+                                       key_t shm_key,
+                                       const std::string &user_data) :
     shm_size_(shm_size),
     shm_key_ (shm_key),
     user_data_(user_data),
@@ -29,7 +29,7 @@ onConnectData::onConnectData(size_t shm_size,
   {const_cast<char *>(user_data_.c_str()), user_data_.size()}} {
 }
 
-socketMsg_t onConnectData::get_connect_iov(){
+socketMsg_t onConnectDataMaker::get_connect_iov(){
   return {(const struct iovec *)iovec_, iovec_len_};
 }
 
