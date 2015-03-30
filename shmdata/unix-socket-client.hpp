@@ -21,12 +21,14 @@
 #include <atomic>
 #include "./safe-bool-idiom.hpp"
 #include "./unix-socket.hpp"
+#include "./unix-socket-protocol.hpp"
 
 namespace shmdata{
 
 class UnixSocketClient: public SafeBoolIdiom {
  public:
-  UnixSocketClient(const std::string &path);
+  UnixSocketClient(const std::string &path,
+                   UnixSocketProtocol::ClientSide *proto);
   ~UnixSocketClient();
   UnixSocketClient() = delete;
   UnixSocketClient(const UnixSocketClient &) = delete;
@@ -39,6 +41,7 @@ class UnixSocketClient: public SafeBoolIdiom {
   std::future<void> done_{};
   std::atomic_short quit_{0};
   bool is_valid_{false};
+  UnixSocketProtocol::ClientSide *proto_;
   bool is_valid() const final;
   void server_interaction();
 };

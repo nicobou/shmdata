@@ -22,9 +22,13 @@
 
 namespace shmdata{
 
-UnixSocketClient::UnixSocketClient(const std::string &path) :
-    path_(path) {
+UnixSocketClient::UnixSocketClient(const std::string &path,
+                                   UnixSocketProtocol::ClientSide *proto) :
+    path_(path),
+    proto_(proto){
   if (!socket_)  // client not valid if socket is not valid
+    return;
+  if (nullptr == proto_)
     return;
   struct sockaddr_un sun;
   // fill socket address structure with server′s address
@@ -85,14 +89,7 @@ void UnixSocketClient::server_interaction() {
         perror("read");
       } else if (nread == 0) {
         std::printf("(client) server closed (?): fd %d\n", socket_.fd_);
-        std::cout << "(client) server message "
-                  << shm_size
-                  << "  "
-                  << shm_key
-                  << "  "
-                  << std::string(user_data, 0, iov[2].iov_len)
-                  << std::endl;
-
+        proto_->on_disconnect_cb_(socket_.fd_);
         FD_CLR(socket_.fd_, &allset);
       } else { /* process server′s message */
         std::cout << "(client) server message "
@@ -103,6 +100,7 @@ void UnixSocketClient::server_interaction() {
                   << std::string(user_data, 0, iov[2].iov_len)
                   << std::endl;
         // std::printf("server message: %s\n", buf);
+        proto_->on_connect_cb_(socket_.fd_);
       }
     }
   }  // while (!quit_)

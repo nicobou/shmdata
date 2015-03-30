@@ -37,16 +37,15 @@ struct onConnectData {
   onConnectData(size_t shm_size,
                 key_t key,
                 const std::string &user_data);
-  // data to distribute at connection
-  size_t shm_size_;
-  key_t shm_key_;
-  std::string user_data_;  
+  onConnectData() = default;
+  // data to distribute by server at connection
+  size_t shm_size_{0};
+  key_t shm_key_{0};
+  std::string user_data_{};  
 };
 
 // Server -----------------------------------------------------
-// a basic initialisation and life monitoring protocol
 struct ServerSide {
-// connect/disconnect callbacks
 onPeerConnect on_connect_cb_{};
 onPeerDisconnect on_disconnect_cb_{};
 // (server) get buffers to send back to clients when connecting
@@ -61,13 +60,33 @@ struct onConnectDataMaker : public onConnectData {
   const struct iovec iovec_[3];
   // ctor
   onConnectDataMaker(size_t shm_size,
-                key_t key,
-                const std::string &user_data);
+                     key_t key,
+                     const std::string &user_data);
   onConnectDataMaker() = delete;
   socketMsg_t get_connect_iov();
 };
 
-// client -------------------------------------------------------
+// Client -----------------------------------------------------
+// placeholder for receiving connection data
+template<size_t _size>
+struct onConnectDataReceiver : public onConnectData {
+  onConnectDataReceiver() :
+      iovec_{
+  {&shm_size_, sizeof(size_t)},
+  {&shm_key_, sizeof(key_t)},
+  {&user_data, 0}} {
+  }
+  char user_data[_size];
+  size_t iovec_len_{3};
+  const struct iovec iovec_[3];
+};
+
+struct ClientSide {
+  onPeerConnect on_connect_cb_{};
+  onPeerDisconnect on_disconnect_cb_{};
+  onConnectDataReceiver<4096> data_{};
+  //  void set_user_data(std::string &&str);
+};
 
 
 }  // namespace UnixSocketProtocol
