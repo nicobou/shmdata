@@ -5,6 +5,7 @@ lib_LTLIBRARIES = \
     libshmdata-@LIBSHMDATA_API_VERSION@.la 
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
+    sysv-sem.cpp \
     sysv-shm.cpp \
     unix-socket.cpp \
     unix-socket-client.cpp \
@@ -13,6 +14,7 @@ libshmdata_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
     safe-bool-idiom.hpp \
+    sysv-sem.hpp \
     sysv-shm.hpp \
     unix-socket.hpp \
     unix-socket-client.hpp \
