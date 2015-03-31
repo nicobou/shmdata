@@ -35,8 +35,7 @@ class sysVShm: public SafeBoolIdiom {
  private:
   key_t key_;
   size_t size_;
-  int shmflg_;
-  int shmid_{-1};
+  int shmid_;
   void *shm_{(void *) -1};  // man shmat
   bool is_valid() const final;
 };

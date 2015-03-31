@@ -22,12 +22,12 @@ namespace shmdata{
 sysVShm::sysVShm(key_t key, size_t size, int shmflg):
     key_(key),
     size_(size),
-    shmflg_(shmflg) {
+    shmid_(shmget(key_, size_, shmflg)) {
   if (-1 == key_){
     perror("ftok");
     return;
   }
-  if ((shmid_ = shmget(key_, size_, shmflg_)) < 0){
+  if (shmid_ < 0){
       perror("shmget");
       return;
   }
