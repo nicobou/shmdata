@@ -25,7 +25,7 @@ namespace shmdata{
 
 class sysVShm: public SafeBoolIdiom {
  public:
-  sysVShm(const std::string &path, int id, size_t size, int shmflg);
+  sysVShm(key_t key, size_t size, int shmflg);
   ~sysVShm();
   sysVShm() = delete;
   sysVShm(const sysVShm &) = delete;

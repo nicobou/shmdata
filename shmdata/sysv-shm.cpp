@@ -19,8 +19,8 @@
 
 namespace shmdata{
 
-sysVShm::sysVShm(const std::string &path, int id, size_t size, int shmflg):
-    key_(ftok(path.c_str(), id)),
+sysVShm::sysVShm(key_t key, size_t size, int shmflg):
+    key_(key),
     size_(size),
     shmflg_(shmflg) {
   if (-1 == key_){
@@ -28,7 +28,7 @@ sysVShm::sysVShm(const std::string &path, int id, size_t size, int shmflg):
     return;
   }
   if ((shmid_ = shmget(key_, size_, shmflg_)) < 0){
-      perror("shmget");  // TODO get string of perror and make log
+      perror("shmget");
       return;
   }
   if ((shm_ = shmat(shmid_, NULL, 0)) == (void *) -1) {
@@ -43,6 +43,10 @@ sysVShm::~sysVShm() {
     if (shmdt(shm_) == -1) {
       perror("shmdt");
     }
+  }
+  if (0 < shmid_) {
+    if (shmctl(shmid_, IPC_RMID, NULL) < 0)
+      perror("shmctl removing shared mem");
   }
 }
 
