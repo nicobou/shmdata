@@ -15,6 +15,7 @@
 #include <cassert>
 #include <array>
 #include <future>
+#include <iostream>
 #include "shmdata/sysv-sem.hpp"
 
 using namespace shmdata;
@@ -26,16 +27,20 @@ bool writer(sysVSem *sem, int *val){
     writeLock wlock(sem);
     assert(wlock);
     *val = it;
+    std::this_thread::sleep_for (std::chrono::milliseconds(10));
   }
   return true;
 }
 
 bool reader(sysVSem *sem, int *val){
-  for (auto &it: array){
+  for (auto &it : array){
     readLock rlock(sem);
     assert(rlock);
-    if (*val != it)  // HERE
-      return true;
+    std::cout << *val << " " << it; 
+    if (*val != it)
+      std::cout << " error";
+    std::cout << std::endl;
+    assert (*val == it);
   }
   return true;
 }

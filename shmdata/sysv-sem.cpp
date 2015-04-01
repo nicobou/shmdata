@@ -32,6 +32,9 @@ static struct sembuf write_start2 [] = {{0,0,SEM_UNDO},    // wait reader is 0
 static struct sembuf write_fail_end [] = {{1,-1,SEM_UNDO}};// decr writer
 static struct sembuf write_end [] = {{0,-1,SEM_UNDO},      // decr reader
                                      {1,-1,SEM_UNDO}};     // decr writer
+// locking until first writer
+static struct sembuf until_writer [] = {{1,1,SEM_UNDO}};   // incr writer
+static struct sembuf at_writer [] = {{1,-1,SEM_UNDO}};     // decr writer
 }  // namespace semops
 
 sysVSem::sysVSem(key_t key, int semflg) :
@@ -39,6 +42,13 @@ sysVSem::sysVSem(key_t key, int semflg) :
     semid_(semget(key_, 3, semflg)) {
   if (semid_ < 0) {
     perror("semget");
+    return;
+  }
+  if (-1 == semop(semid_,
+                  semops::until_writer,
+                  sizeof(semops::until_writer)/sizeof(*semops::until_writer))) {
+    perror("locked_waiting_first_writer");
+    locked_waiting_first_writer_ = false;
     return;
   }
 }
@@ -78,6 +88,16 @@ writeLock::writeLock(sysVSem *sem) :
                   sizeof(semops::write_start1)/sizeof(*semops::write_start1))) {
     valid_ = false;
     return;
+  }
+  if (sem->locked_waiting_first_writer_) {
+    if (-1 == semop(semid_,
+                    semops::at_writer,
+                    sizeof(semops::at_writer)/sizeof(*semops::at_writer))) {
+      perror("locked_waiting_first_writer");
+      return;
+    } else {
+      sem->locked_waiting_first_writer_ = false;
+    }
   }
   if (-1 == semop(semid_,
                   semops::write_start2,
