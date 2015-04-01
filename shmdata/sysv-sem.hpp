@@ -36,5 +36,32 @@ class sysVSem: public SafeBoolIdiom {
   bool is_valid() const final;
 };
 
+class readLock: public SafeBoolIdiom {
+  readLock(int semid);
+  ~readLock();
+  readLock() = delete;
+  readLock(const readLock &) = delete;
+  readLock& operator=(const readLock&) = delete;
+  readLock& operator=(readLock&&) = delete;
+ private:
+  int semid_;
+  bool valid_{true};
+  bool is_valid() const final {return valid_;};
+};
+
+class writeLock: public SafeBoolIdiom {
+  writeLock(int semid);
+  ~writeLock();
+  writeLock() = delete;
+  writeLock(const writeLock &) = delete;
+  writeLock& operator=(const writeLock&) = delete;
+  writeLock& operator=(writeLock&&) = delete;
+ private:
+  int semid_;
+  bool valid_{true};
+  bool write_fail_{false};
+  bool is_valid() const final {return valid_;};
+};
+
 }  // namespace shmdata
 #endif
