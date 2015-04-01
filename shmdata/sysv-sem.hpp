@@ -16,12 +16,17 @@
 #ifndef _SHMDATA_SYSV_SEM_H_
 #define _SHMDATA_SYSV_SEM_H_
 
-#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
 #include "./safe-bool-idiom.hpp"
 
 namespace shmdata{
 
+class writeLock;
+class readLock;
 class sysVSem: public SafeBoolIdiom {
+  friend writeLock;
+  friend readLock;
  public:
   sysVSem(key_t key, int semflg);
   ~sysVSem();
@@ -37,7 +42,8 @@ class sysVSem: public SafeBoolIdiom {
 };
 
 class readLock: public SafeBoolIdiom {
-  readLock(int semid);
+ public:
+  readLock(sysVSem *sem);
   ~readLock();
   readLock() = delete;
   readLock(const readLock &) = delete;
@@ -50,7 +56,8 @@ class readLock: public SafeBoolIdiom {
 };
 
 class writeLock: public SafeBoolIdiom {
-  writeLock(int semid);
+ public:
+  writeLock(sysVSem *sem);
   ~writeLock();
   writeLock() = delete;
   writeLock(const writeLock &) = delete;

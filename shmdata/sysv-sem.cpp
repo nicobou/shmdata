@@ -21,9 +21,22 @@
 
 namespace shmdata{
 
+namespace semops{
+// sem_num 0 is for reader, 1 is for writer, 2 is for locking until first writer
+static struct sembuf read_start [] = {{0,1,SEM_UNDO},      // incr reader
+                                      {1,0,SEM_UNDO}};     // wait 0 on writer
+static struct sembuf read_end [] = {{0,-1,SEM_UNDO}};      // decr reader
+static struct sembuf write_start1 [] = {{1,1,SEM_UNDO}};   // incr writer
+static struct sembuf write_start2 [] = {{0,0,SEM_UNDO},    // wait reader is 0
+                                        {0,1,SEM_UNDO}};   // incr reader
+static struct sembuf write_fail_end [] = {{1,-1,SEM_UNDO}};// decr writer
+static struct sembuf write_end [] = {{0,-1,SEM_UNDO},      // decr reader
+                                     {1,-1,SEM_UNDO}};     // decr writer
+}  // namespace semops
+
 sysVSem::sysVSem(key_t key, int semflg) :
     key_ (key),
-    semid_(semget(key_, 2, semflg)) {
+    semid_(semget(key_, 3, semflg)) {
   if (semid_ < 0) {
     perror("semget");
     return;
@@ -42,24 +55,9 @@ bool sysVSem::is_valid() const {
   return 0 < semid_;
 }
 
-
-
-namespace semops{
-// sem_num 0 is for reader. 1 is for writer
-static struct sembuf read_start [] = {{0,1,SEM_UNDO},      // incr reader
-                                      {1,0,SEM_UNDO}};     // wait 0 on writer
-static struct sembuf read_end [] = {{0,-1,SEM_UNDO}};      // decr reader
-static struct sembuf write_start1 [] = {{1,1,SEM_UNDO}};   // incr writer
-static struct sembuf write_start2 [] = {{0,0,SEM_UNDO},    // wait reader is 0
-                                        {0,1,SEM_UNDO}};   // incr reader
-static struct sembuf write_fail_end [] = {{1,-1,SEM_UNDO}};// decr writer
-static struct sembuf write_end [] = {{0,-1,SEM_UNDO},      // decr reader
-                                     {1,-1,SEM_UNDO}};     // decr writer
-}  // namespace 
-
-readLock::readLock(int semid) :
-    semid_(semid){
-  if (-1 == semop(semid,
+readLock::readLock(sysVSem *sem) :
+    semid_(sem->semid_) {
+  if (-1 == semop(semid_,
                   semops::read_start,
                   sizeof(semops::read_start)/sizeof(*semops::read_start))){
     valid_ = false;  // TODO log this
@@ -73,8 +71,8 @@ readLock::~readLock(){
           sizeof(semops::read_end)/sizeof(*semops::read_end));
 }
 
-writeLock::writeLock(int semid) :
-    semid_(semid){
+writeLock::writeLock(sysVSem *sem) :
+    semid_(sem->semid_){
   if (-1 == semop(semid_,
                   semops::write_start1,
                   sizeof(semops::write_start1)/sizeof(*semops::write_start1))) {

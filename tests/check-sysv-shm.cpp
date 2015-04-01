@@ -12,23 +12,18 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "shmdata/unix-socket-server.hpp"
-#include "shmdata/unix-socket-client.hpp"
-#include "shmdata/unix-socket-protocol.hpp"
+#include <cassert>
 #include "shmdata/sysv-shm.hpp"
-
 
 int main () {
   using namespace shmdata;
   {
     sysVShm shm(1234, 1024, IPC_CREAT | IPC_EXCL | 0666);
-    if(!shm)
-      return 1;
+    assert(shm);
   }
   {
     sysVShm shm(1234, 1024, IPC_CREAT | IPC_EXCL | 0666);
-    if(!shm)
-      return 1;
+    assert(shm);
   }
   return 0;
 }
