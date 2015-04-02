@@ -25,21 +25,21 @@ namespace shmdata{
 namespace semops{
 // sem_num 0 is for reading, 1 is for writer, 2 is for data available, 3 for going to read
 static struct sembuf sem_init [] = {{2, 1, SEM_UNDO}};
-static struct sembuf read_wait [] = {{2, 0, SEM_UNDO},       // wait data
-                                     {3, 1, SEM_UNDO}};      // incr going to read
+static struct sembuf read_wait [] = {{3, 1, SEM_UNDO},     // incr going to read
+                                     {2, 0, SEM_UNDO}};      // wait data
 static struct sembuf read_start [] = {{0, 1, SEM_UNDO},      // incr reader
-                                      {1, 0, SEM_UNDO},      // wait 0 on writer
-                                      {3, -1, SEM_UNDO}};    // decr going to read
+                                      {3, -1, SEM_UNDO},    // decr going to read
+                                      {1, 0, SEM_UNDO}};      // wait 0 on writer
 static struct sembuf read_end [] = {{0, -1, SEM_UNDO}};      // decr reader
-static struct sembuf write_start1 [] = {{1, 1, SEM_UNDO},    // incr writer
-                                        {3, 0, SEM_UNDO}};   // wait going to read
+static struct sembuf write_start1 [] = {{1, 1, SEM_UNDO}};    // incr writer
 static struct sembuf write_start2 [] = {{0, 0, SEM_UNDO},    // wait reader is 0
                                         {0, 1, SEM_UNDO},    // incr reader
                                         {2, -1, SEM_UNDO}};  // updating data
 static struct sembuf write_fail_end [] = {{1, -1, SEM_UNDO}};// decr writer
-static struct sembuf write_end [] = {{0, -1, SEM_UNDO},      // decr reader
+static struct sembuf write_end1 [] = {{0, -1, SEM_UNDO},      // decr reader
                                      {1, -1, SEM_UNDO},      // decr writer
                                      {2, 1, SEM_UNDO}};      // end updating data
+static struct sembuf write_end2 [] = {{3, 0, SEM_UNDO}};   // wait going to read
 }  // namespace semops
 
 sysVSem::sysVSem(key_t key, int semflg) :
@@ -118,8 +118,11 @@ writeLock::~writeLock(){
   } else {
  
     semop(semid_,
-          semops::write_end,
-          sizeof(semops::write_end)/sizeof(*semops::write_end));
+          semops::write_end1,
+          sizeof(semops::write_end1)/sizeof(*semops::write_end1));
+    semop(semid_,
+          semops::write_end2,
+          sizeof(semops::write_end2)/sizeof(*semops::write_end2));
   }
   std::this_thread::yield();
 }
