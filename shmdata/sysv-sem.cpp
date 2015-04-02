@@ -16,25 +16,26 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <stdio.h>  // perror
+#include <thread>  //yield
 #include "./sysv-sem.hpp"
 
 
 namespace shmdata{
 
 namespace semops{
-// sem_num 0 is for reader, 1 is for writer, 2 is for locking until first writer
-static struct sembuf read_start [] = {{0,1,SEM_UNDO},      // incr reader
-                                      {1,0,SEM_UNDO}};     // wait 0 on writer
-static struct sembuf read_end [] = {{0,-1,SEM_UNDO}};      // decr reader
-static struct sembuf write_start1 [] = {{1,1,SEM_UNDO}};   // incr writer
-static struct sembuf write_start2 [] = {{0,0,SEM_UNDO},    // wait reader is 0
-                                        {0,1,SEM_UNDO}};   // incr reader
-static struct sembuf write_fail_end [] = {{1,-1,SEM_UNDO}};// decr writer
-static struct sembuf write_end [] = {{0,-1,SEM_UNDO},      // decr reader
-                                     {1,-1,SEM_UNDO}};     // decr writer
+// sem_num 0 is for reader, 1 is for writer, 2 is for data available
+static struct sembuf read_start [] = {{0, 1, SEM_UNDO},      // incr reader
+                                      {1, 0, SEM_UNDO}};     // wait 0 on writer
+static struct sembuf read_end [] = {{0, -1, SEM_UNDO}};      // decr reader
+static struct sembuf write_start1 [] = {{1, 1, SEM_UNDO}};   // incr writer
+static struct sembuf write_start2 [] = {{0, 0, SEM_UNDO},    // wait reader is 0
+                                        {0, 1, SEM_UNDO}};   // incr reader
+static struct sembuf write_fail_end [] = {{1, -1, SEM_UNDO}};// decr writer
+static struct sembuf write_end [] = {{0, -1, SEM_UNDO},      // decr reader
+                                     {1, -1, SEM_UNDO}};     // decr writer
 // locking until first writer
-static struct sembuf until_writer [] = {{1,1,SEM_UNDO}};   // incr writer
-static struct sembuf at_writer [] = {{1,-1,SEM_UNDO}};     // decr writer
+static struct sembuf until_writer [] = {{1, 1, SEM_UNDO}};   // incr writer
+static struct sembuf at_writer [] = {{1, -1, SEM_UNDO}};     // decr writer
 }  // namespace semops
 
 sysVSem::sysVSem(key_t key, int semflg) :
@@ -79,6 +80,7 @@ readLock::~readLock(){
     semop(semid_,
           semops::read_end,
           sizeof(semops::read_end)/sizeof(*semops::read_end));
+  std::this_thread::yield();
 }
 
 writeLock::writeLock(sysVSem *sem) :
@@ -120,6 +122,7 @@ writeLock::~writeLock(){
           semops::write_end,
           sizeof(semops::write_end)/sizeof(*semops::write_end));
   }
+  std::this_thread::yield();
 }
 
 }  // namespace shmdata
