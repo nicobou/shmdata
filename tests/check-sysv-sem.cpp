@@ -24,9 +24,11 @@ static const std::array<int, 3> array{ {1,2,3} };
 
 bool writer(sysVSem *sem, int *val){
   for (auto &it: array){
-    writeLock wlock(sem);
-    assert(wlock);
-    *val = it;
+    {
+      writeLock wlock(sem);
+      assert(wlock);
+      *val = it;
+    }
     std::this_thread::sleep_for (std::chrono::milliseconds(10));
   }
   return true;
@@ -56,16 +58,23 @@ int main () {
     sysVSem sem(4312, IPC_CREAT | IPC_EXCL | 0666);
     assert(sem);
     auto val = 0;
-    auto writer_handle = std::async(std::launch::async,
-                                    writer,
-                                    &sem,
-                                    &val);
     auto reader_handle = std::async(std::launch::async,
                                     reader,
                                     &sem,
                                     &val);
+    auto reader_handle2 = std::async(std::launch::async,
+                                     reader,
+                                     &sem,
+                                     &val);
+    // wait readers lunched in order
+    std::this_thread::sleep_for (std::chrono::milliseconds(100));
+    auto writer_handle = std::async(std::launch::async,
+                                    writer,
+                                    &sem,
+                                    &val);
     assert(writer_handle.get());
     assert(reader_handle.get());
+    assert(reader_handle2.get());
   }
   return 0;
 }

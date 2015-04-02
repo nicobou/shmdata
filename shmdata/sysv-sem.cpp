@@ -24,32 +24,32 @@ namespace shmdata{
 
 namespace semops{
 // sem_num 0 is for reader, 1 is for writer, 2 is for data available
+static struct sembuf sem_init [] = {{2, 1, SEM_UNDO}};
+static struct sembuf read_wait [] = {{2, 0, SEM_UNDO}};     // wait data
 static struct sembuf read_start [] = {{0, 1, SEM_UNDO},      // incr reader
                                       {1, 0, SEM_UNDO}};     // wait 0 on writer
 static struct sembuf read_end [] = {{0, -1, SEM_UNDO}};      // decr reader
 static struct sembuf write_start1 [] = {{1, 1, SEM_UNDO}};   // incr writer
 static struct sembuf write_start2 [] = {{0, 0, SEM_UNDO},    // wait reader is 0
-                                        {0, 1, SEM_UNDO}};   // incr reader
+                                        {0, 1, SEM_UNDO},   // incr reader
+                                        {2, -1, SEM_UNDO}};  // updating data
 static struct sembuf write_fail_end [] = {{1, -1, SEM_UNDO}};// decr writer
 static struct sembuf write_end [] = {{0, -1, SEM_UNDO},      // decr reader
-                                     {1, -1, SEM_UNDO}};     // decr writer
-// locking until first writer
-static struct sembuf until_writer [] = {{1, 1, SEM_UNDO}};   // incr writer
-static struct sembuf at_writer [] = {{1, -1, SEM_UNDO}};     // decr writer
+                                     {1, -1, SEM_UNDO},     // decr writer
+                                     {2, 1, SEM_UNDO}};    // end updating data
 }  // namespace semops
 
 sysVSem::sysVSem(key_t key, int semflg) :
     key_ (key),
-    semid_(semget(key_, 2, semflg)) {
+    semid_(semget(key_, 3, semflg)) {
   if (semid_ < 0) {
     perror("semget");
     return;
   }
   if (-1 == semop(semid_,
-                  semops::until_writer,
-                  sizeof(semops::until_writer)/sizeof(*semops::until_writer))) {
-    perror("locked_waiting_first_writer");
-    locked_waiting_first_writer_ = false;
+                  semops::sem_init,
+                  sizeof(semops::sem_init)/sizeof(*semops::sem_init))) {
+    perror("sem init");
     return;
   }
 }
@@ -68,6 +68,11 @@ bool sysVSem::is_valid() const {
 
 readLock::readLock(sysVSem *sem) :
     semid_(sem->semid_) {
+  if (-1 == semop(semid_,
+                  semops::read_wait,
+                  sizeof(semops::read_wait)/sizeof(*semops::read_wait))){
+    valid_ = false;  // TODO log this
+  }
   if (-1 == semop(semid_,
                   semops::read_start,
                   sizeof(semops::read_start)/sizeof(*semops::read_start))){
@@ -91,16 +96,6 @@ writeLock::writeLock(sysVSem *sem) :
     valid_ = false;
     return;
   }
-  if (sem->locked_waiting_first_writer_) {
-    if (-1 == semop(semid_,
-                    semops::at_writer,
-                    sizeof(semops::at_writer)/sizeof(*semops::at_writer))) {
-      perror("locked_waiting_first_writer");
-      return;
-    } else {
-      sem->locked_waiting_first_writer_ = false;
-    }
-  }
   if (-1 == semop(semid_,
                   semops::write_start2,
                   sizeof(semops::write_start2)/sizeof(*semops::write_start2))) {
@@ -118,6 +113,7 @@ writeLock::~writeLock(){
            semops::write_fail_end,
            sizeof(semops::write_fail_end)/sizeof(*semops::write_fail_end));
   } else {
+ 
     semop(semid_,
           semops::write_end,
           sizeof(semops::write_end)/sizeof(*semops::write_end));

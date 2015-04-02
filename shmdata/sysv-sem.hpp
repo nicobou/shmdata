@@ -41,7 +41,6 @@ class sysVSem: public SafeBoolIdiom {
  private:
   key_t key_;
   int semid_{-1};
-  bool locked_waiting_first_writer_{true};
   bool is_valid() const final;
 };
 
