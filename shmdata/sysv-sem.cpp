@@ -25,8 +25,8 @@ namespace shmdata{
 namespace semops{
 // sem_num 0 is for reading, 1 is for writer, 2 is for data available, 3 for going to read
 static struct sembuf sem_init [] = {{2, 1, 0}};
-static struct sembuf read_wait [] = {{3, 1, 0},     // incr going to read
-                                     {2, 0, 0}};      // wait data
+static struct sembuf read_wait [] = {{2, 0, 0},      // wait data
+                                     {3, 1, 0}};     // incr going to read
 static struct sembuf read_start [] = {{0, 1, 0},      // incr reader
                                       {1, 0, 0},      // wait 0 on writer
                                       {3, -1, 0}};    // decr going to read
@@ -35,7 +35,7 @@ static struct sembuf write_start1 [] = {{1, 1, 0}};    // incr writer
 static struct sembuf write_start2 [] = {{0, 0, 0},    // wait reader is 0
                                         {0, 1, 0},    // incr reader
                                         {2, -1, 0}};  // updating data
-static struct sembuf write_fail_end [] = {{1, -1, 0}};// decr writer
+static struct sembuf write_fail_end [] = {{1, -1, 0}};// decr writer //FIXME remove that
 static struct sembuf write_end1 [] = {{0, -1, 0},      // decr reader
                                      {1, -1, 0},      // decr writer
                                      {2, 1, 0}};      // end updating data
