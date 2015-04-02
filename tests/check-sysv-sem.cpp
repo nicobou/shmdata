@@ -60,17 +60,12 @@ int main () {
                                     writer,
                                     &sem,
                                     &val);
-    auto reader_handle1 = std::async(std::launch::async,
-                                     reader,
-                                     &sem,
-                                     &val);
-    auto reader_handle2 = std::async(std::launch::async,
-                                     reader,
-                                     &sem,
-                                     &val);
+    auto reader_handle = std::async(std::launch::async,
+                                    reader,
+                                    &sem,
+                                    &val);
     assert(writer_handle.get());
-    assert(reader_handle1.get());
-    assert(reader_handle2.get());
+    assert(reader_handle.get());
   }
   return 0;
 }

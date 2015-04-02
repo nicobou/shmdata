@@ -40,7 +40,7 @@ static struct sembuf at_writer [] = {{1, -1, SEM_UNDO}};     // decr writer
 
 sysVSem::sysVSem(key_t key, int semflg) :
     key_ (key),
-    semid_(semget(key_, 3, semflg)) {
+    semid_(semget(key_, 2, semflg)) {
   if (semid_ < 0) {
     perror("semget");
     return;
