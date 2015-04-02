@@ -23,25 +23,28 @@
 namespace shmdata{
 
 namespace semops{
-// sem_num 0 is for reader, 1 is for writer, 2 is for data available
+// sem_num 0 is for reading, 1 is for writer, 2 is for data available, 3 for going to read
 static struct sembuf sem_init [] = {{2, 1, SEM_UNDO}};
-static struct sembuf read_wait [] = {{2, 0, SEM_UNDO}};     // wait data
+static struct sembuf read_wait [] = {{2, 0, SEM_UNDO},       // wait data
+                                     {3, 1, SEM_UNDO}};      // incr going to read
 static struct sembuf read_start [] = {{0, 1, SEM_UNDO},      // incr reader
-                                      {1, 0, SEM_UNDO}};     // wait 0 on writer
+                                      {1, 0, SEM_UNDO},      // wait 0 on writer
+                                      {3, -1, SEM_UNDO}};    // decr going to read
 static struct sembuf read_end [] = {{0, -1, SEM_UNDO}};      // decr reader
-static struct sembuf write_start1 [] = {{1, 1, SEM_UNDO}};   // incr writer
+static struct sembuf write_start1 [] = {{1, 1, SEM_UNDO},    // incr writer
+                                        {3, 0, SEM_UNDO}};   // wait going to read
 static struct sembuf write_start2 [] = {{0, 0, SEM_UNDO},    // wait reader is 0
-                                        {0, 1, SEM_UNDO},   // incr reader
+                                        {0, 1, SEM_UNDO},    // incr reader
                                         {2, -1, SEM_UNDO}};  // updating data
 static struct sembuf write_fail_end [] = {{1, -1, SEM_UNDO}};// decr writer
 static struct sembuf write_end [] = {{0, -1, SEM_UNDO},      // decr reader
-                                     {1, -1, SEM_UNDO},     // decr writer
-                                     {2, 1, SEM_UNDO}};    // end updating data
+                                     {1, -1, SEM_UNDO},      // decr writer
+                                     {2, 1, SEM_UNDO}};      // end updating data
 }  // namespace semops
 
 sysVSem::sysVSem(key_t key, int semflg) :
     key_ (key),
-    semid_(semget(key_, 3, semflg)) {
+    semid_(semget(key_, 4, semflg)) {
   if (semid_ < 0) {
     perror("semget");
     return;
