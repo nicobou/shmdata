@@ -28,8 +28,8 @@ static struct sembuf sem_init [] = {{2, 1, SEM_UNDO}};
 static struct sembuf read_wait [] = {{3, 1, SEM_UNDO},     // incr going to read
                                      {2, 0, SEM_UNDO}};      // wait data
 static struct sembuf read_start [] = {{0, 1, SEM_UNDO},      // incr reader
-                                      {3, -1, SEM_UNDO},    // decr going to read
-                                      {1, 0, SEM_UNDO}};      // wait 0 on writer
+                                      {1, 0, SEM_UNDO},      // wait 0 on writer
+                                      {3, -1, SEM_UNDO}};    // decr going to read
 static struct sembuf read_end [] = {{0, -1, SEM_UNDO}};      // decr reader
 static struct sembuf write_start1 [] = {{1, 1, SEM_UNDO}};    // incr writer
 static struct sembuf write_start2 [] = {{0, 0, SEM_UNDO},    // wait reader is 0
@@ -81,6 +81,7 @@ readLock::readLock(sysVSem *sem) :
                   sizeof(semops::read_start)/sizeof(*semops::read_start))){
     valid_ = false;  // TODO log this
   }
+  std::this_thread::yield();
 }
 
 readLock::~readLock(){
@@ -105,7 +106,7 @@ writeLock::writeLock(sysVSem *sem) :
     write_fail_ = true;
     return;
   }
-
+  std::this_thread::yield();
 }
 
 writeLock::~writeLock(){
