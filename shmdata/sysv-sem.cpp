@@ -31,13 +31,13 @@ static struct sembuf read_start [] = {{0, 1, 0},      // incr reader
                                       {1, 0, 0},      // wait writer
                                       {3, -1, 0}};    // decr going to read
 static struct sembuf read_end [] = {{0, -1, 0}};      // decr reader
-static struct sembuf write_start2 [] = {{0, 0, 0},    // wait reader is 0
+static struct sembuf write_start [] = {{0, 0, 0},    // wait reader is 0
                                         {1, 1, 0},    // incr writer
                                         {0, 1, 0},    // incr reader
                                         {2, -1, 0}};  // updating data
-static struct sembuf write_end1 [] = {{0, -1, 0},      // decr reader
-                                     {1, -1, 0},      // decr writer
-                                     {2, 1, 0}};      // end updating data
+static struct sembuf write_end1 [] = {{2, 1, 0},      // end updating data
+                                      {0, -1, 0},      // decr reader
+                                      {1, -1, 0}};      // decr writer
 static struct sembuf write_end2 [] = {{3, 0, 0}};   // wait going to read
 }  // namespace semops
 
@@ -92,11 +92,13 @@ readLock::~readLock(){
 writeLock::writeLock(sysVSem *sem) :
     semid_(sem->semid_){
   if (-1 == semop(semid_,
-                  semops::write_start2,
-                  sizeof(semops::write_start2)/sizeof(*semops::write_start2))) {
+                  semops::write_start,
+                  sizeof(semops::write_start)/sizeof(*semops::write_start))) {
     valid_ = false;
     return;
   }
+    // give a chance to reader to observe data update:
+  std::this_thread::yield();
 }
 
 writeLock::~writeLock(){
@@ -105,8 +107,6 @@ writeLock::~writeLock(){
   semop(semid_,
         semops::write_end1,
         sizeof(semops::write_end1)/sizeof(*semops::write_end1));
-  // give a chance to reader to observe data update:
-  std::this_thread::yield();
   semop(semid_,
         semops::write_end2,
         sizeof(semops::write_end2)/sizeof(*semops::write_end2));
