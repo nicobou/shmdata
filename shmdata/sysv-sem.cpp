@@ -75,6 +75,8 @@ readLock::readLock(sysVSem *sem) :
                   sizeof(semops::read_wait)/sizeof(*semops::read_wait))){
     valid_ = false;  // TODO log this
   }
+  // give a chance to reader to observe data update:
+  std::this_thread::yield();
   if (-1 == semop(semid_,
                   semops::read_start,
                   sizeof(semops::read_start)/sizeof(*semops::read_start))){
@@ -97,7 +99,7 @@ writeLock::writeLock(sysVSem *sem) :
     valid_ = false;
     return;
   }
-    // give a chance to reader to observe data update:
+  // give a chance to reader to observe data update:
   std::this_thread::yield();
 }
 
