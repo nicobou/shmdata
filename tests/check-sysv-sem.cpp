@@ -29,7 +29,7 @@ bool writer(sysVSem *sem, int *val){
       assert(wlock);
       *val = it;
     }
-    std::this_thread::sleep_for (std::chrono::milliseconds(100));
+    //std::this_thread::sleep_for (std::chrono::milliseconds(1000));
   }
   return true;
 }
@@ -43,6 +43,7 @@ bool reader(sysVSem *sem, int *val){
       std::cout << " error";
     std::cout << std::endl;
     assert (*val == it);
+    //std::this_thread::sleep_for (std::chrono::milliseconds(1000));
   }
   return true;
 }

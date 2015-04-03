@@ -69,7 +69,6 @@ class writeLock: public SafeBoolIdiom {
  private:
   int semid_;
   bool valid_{true};
-  bool write_fail_{false};
   bool is_valid() const final {return valid_;};
 };
 

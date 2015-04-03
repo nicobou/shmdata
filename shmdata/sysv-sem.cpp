@@ -28,14 +28,13 @@ static struct sembuf sem_init [] = {{2, 1, 0}};
 static struct sembuf read_wait [] = {{2, 0, 0},      // wait data
                                      {3, 1, 0}};     // incr going to read
 static struct sembuf read_start [] = {{0, 1, 0},      // incr reader
-                                      {1, 0, 0},      // wait 0 on writer
+                                      {1, 0, 0},      // wait writer
                                       {3, -1, 0}};    // decr going to read
 static struct sembuf read_end [] = {{0, -1, 0}};      // decr reader
-static struct sembuf write_start1 [] = {{1, 1, 0}};    // incr writer
 static struct sembuf write_start2 [] = {{0, 0, 0},    // wait reader is 0
+                                        {1, 1, 0},    // incr writer
                                         {0, 1, 0},    // incr reader
                                         {2, -1, 0}};  // updating data
-static struct sembuf write_fail_end [] = {{1, -1, 0}};// decr writer //FIXME remove that
 static struct sembuf write_end1 [] = {{0, -1, 0},      // decr reader
                                      {1, -1, 0},      // decr writer
                                      {2, 1, 0}};      // end updating data
@@ -95,15 +94,9 @@ readLock::~readLock(){
 writeLock::writeLock(sysVSem *sem) :
     semid_(sem->semid_){
   if (-1 == semop(semid_,
-                  semops::write_start1,
-                  sizeof(semops::write_start1)/sizeof(*semops::write_start1))) {
-    valid_ = false;
-    return;
-  }
-  if (-1 == semop(semid_,
                   semops::write_start2,
                   sizeof(semops::write_start2)/sizeof(*semops::write_start2))) {
-    write_fail_ = true;
+    valid_ = false;
     return;
   }
   std::this_thread::yield();
@@ -112,19 +105,12 @@ writeLock::writeLock(sysVSem *sem) :
 writeLock::~writeLock(){
   if(!is_valid())
     return;
-  if(write_fail_) {
-     semop(semid_,
-           semops::write_fail_end,
-           sizeof(semops::write_fail_end)/sizeof(*semops::write_fail_end));
-  } else {
- 
-    semop(semid_,
-          semops::write_end1,
-          sizeof(semops::write_end1)/sizeof(*semops::write_end1));
-    semop(semid_,
-          semops::write_end2,
-          sizeof(semops::write_end2)/sizeof(*semops::write_end2));
-  }
+  semop(semid_,
+        semops::write_end1,
+        sizeof(semops::write_end1)/sizeof(*semops::write_end1));
+  semop(semid_,
+        semops::write_end2,
+        sizeof(semops::write_end2)/sizeof(*semops::write_end2));
   std::this_thread::yield();
 }
 
