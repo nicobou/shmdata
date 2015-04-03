@@ -80,7 +80,6 @@ readLock::readLock(sysVSem *sem) :
                   sizeof(semops::read_start)/sizeof(*semops::read_start))){
     valid_ = false;  // TODO log this
   }
-  std::this_thread::yield();
 }
 
 readLock::~readLock(){
@@ -88,7 +87,6 @@ readLock::~readLock(){
     semop(semid_,
           semops::read_end,
           sizeof(semops::read_end)/sizeof(*semops::read_end));
-  std::this_thread::yield();
 }
 
 writeLock::writeLock(sysVSem *sem) :
@@ -99,7 +97,6 @@ writeLock::writeLock(sysVSem *sem) :
     valid_ = false;
     return;
   }
-  std::this_thread::yield();
 }
 
 writeLock::~writeLock(){
@@ -108,10 +105,11 @@ writeLock::~writeLock(){
   semop(semid_,
         semops::write_end1,
         sizeof(semops::write_end1)/sizeof(*semops::write_end1));
+  // give a chance to reader to observe data update:
+  std::this_thread::yield();
   semop(semid_,
         semops::write_end2,
         sizeof(semops::write_end2)/sizeof(*semops::write_end2));
-  std::this_thread::yield();
 }
 
 }  // namespace shmdata
