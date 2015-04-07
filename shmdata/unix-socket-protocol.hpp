@@ -33,12 +33,10 @@ size_t iov_len_{0};
 
 struct onConnectData {
   onConnectData(size_t shm_size,
-                key_t key,
                 const std::string &user_data);
   onConnectData() = default;
   // data to distribute by server at connection
   size_t shm_size_{0};
-  key_t shm_key_{0};
   std::string user_data_{};  
 };
 
@@ -60,7 +58,6 @@ struct onConnectDataMaker : public onConnectData {
   const struct iovec iovec_[3];
   // ctor
   onConnectDataMaker(size_t shm_size,
-                     key_t key,
                      const std::string &user_data);
   onConnectDataMaker() = delete;
   socketMsg_t get_connect_iov();
@@ -73,17 +70,16 @@ struct onConnectDataReceiver : public onConnectData {
   onConnectDataReceiver() :
       iovec_{
   {&shm_size_, sizeof(size_t)},
-  {&shm_key_, sizeof(key_t)},
   {user_data, _size}} {
   }
   std::string get_user_data(){
-    return std::string(static_cast<char *>(iovec_[2].iov_base),
+    return std::string(static_cast<char *>(iovec_[1].iov_base),
                        0,
-                       iovec_[2].iov_len);
+                       iovec_[1].iov_len);
 }
   char user_data[_size];
-  size_t iovec_len_{3};
-  const struct iovec iovec_[3];
+  size_t iovec_len_{2};
+  const struct iovec iovec_[2];
 };
 
 struct ClientSide {

@@ -24,7 +24,6 @@ int main () {
 
   // server protocol
   UnixSocketProtocol::onConnectDataMaker data(128,       // shm size
-                                              8754,      // shm key to distribute
                                               "hello");  // user message
   UnixSocketProtocol::ServerSide sproto;
   sproto.get_connect_iov_ = [&data](){return data.get_connect_iov();};
@@ -37,7 +36,6 @@ int main () {
     std::cout << "(client) on_connect_cb, id "
     << id
     << " shm_size " << cproto.data_.shm_size_ 
-    << " shm_key " << cproto.data_.shm_key_
     << " user_data " << cproto.data_.get_user_data().c_str()
     << std::endl;
   };

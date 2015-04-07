@@ -24,7 +24,6 @@ int main () {
 
   // server protocol
   UnixSocketProtocol::onConnectDataMaker data(128,       // shm size
-                                              8754,      // shm key to distribute
                                               "hello");  // user message
   UnixSocketProtocol::ServerSide sproto;
   sproto.get_connect_iov_ = [&data](){return data.get_connect_iov();};
