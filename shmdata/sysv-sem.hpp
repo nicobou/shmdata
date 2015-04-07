@@ -26,10 +26,10 @@ namespace shmdata{
 // management on locked_waiting_first_writer_
 
 class writeLock;
-class readLock;
+class updateSubscriber;
 class sysVSem: public SafeBoolIdiom {
   friend writeLock;
-  friend readLock;
+  friend updateSubscriber;
  public:
   sysVSem(key_t key, int semflg);
   ~sysVSem();
@@ -44,17 +44,41 @@ class sysVSem: public SafeBoolIdiom {
   bool is_valid() const final;
 };
 
+// subscribing actually at first read
+class readLock;
+class updateSubscriber {
+  friend readLock;
+ public:
+  updateSubscriber(sysVSem *sem);
+  ~updateSubscriber();
+  updateSubscriber() = delete;
+  updateSubscriber(const updateSubscriber &) = delete;
+  updateSubscriber& operator=(const updateSubscriber&) = delete;
+  updateSubscriber& operator=(updateSubscriber&&) = delete;
+
+  void stop() {is_stoped_ = true;};
+ private:
+  int semid_;
+  bool do_wait_{true};
+  bool is_stoped_{false};
+};
+
 class readLock: public SafeBoolIdiom {
  public:
-  readLock(sysVSem *sem);
+  // if is_single_read is false, readLock is locking
+  // writer for avoiding the next read missing an update  
+  readLock(updateSubscriber *subscriber); 
   ~readLock();
   readLock() = delete;
   readLock(const readLock &) = delete;
   readLock& operator=(const readLock&) = delete;
   readLock& operator=(readLock&&) = delete;
+
+  //void set_last(){is_last_ = true;}
  private:
-  int semid_;
+  updateSubscriber *sub_;
   bool valid_{true};
+  //bool is_last_{false};
   bool is_valid() const final {return valid_;};
 };
 
