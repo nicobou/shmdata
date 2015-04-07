@@ -46,7 +46,7 @@ UnixSocketServer::UnixSocketServer(const std::string &path,
   memset(&sock_un, 0, sizeof(sock_un));
   sock_un.sun_family = AF_UNIX;
   strcpy(sock_un.sun_path, path_.c_str());
-  printf("%d, %s\n", socket_.fd_, path_.c_str());
+  //printf("%d, %s\n", socket_.fd_, path_.c_str());
   if (bind(socket_.fd_, (struct sockaddr *) &sock_un, sizeof(struct sockaddr_un)) < 0) {
     perror("bind");
     return;

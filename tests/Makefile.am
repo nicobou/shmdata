@@ -5,11 +5,15 @@ LDADD = \
     $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la 
 
 check_PROGRAMS = \
+    check-file-monitor \
     check-sysv-sem \
     check-sysv-shm \
     check-unix-socket
 
 TESTS = $(check_PROGRAMS)
+
+check_file_monitor_SOURCES = \
+    check-file-monitor.cpp
 
 check_sysv_sem_SOURCES = \
     check-sysv-sem.cpp
