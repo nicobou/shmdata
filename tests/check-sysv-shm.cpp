@@ -25,6 +25,15 @@ int main () {
     sysVShm shm(1234, 1024, IPC_CREAT | IPC_EXCL | 0666);
     assert(shm);
   }
+  { //write read
+    sysVShm shm_writer(1234, sizeof(int), IPC_CREAT | IPC_EXCL | 0666);
+    assert(shm_writer);
+    sysVShm shm_reader(1234, sizeof(int), 0666);
+    assert(shm_reader);
+    *(int *)shm_writer.get_mem() = 7;
+    assert(7 == *(int *)shm_reader.get_mem());
+  }
+  
   return 0;
 }
 
