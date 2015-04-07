@@ -22,9 +22,6 @@
 
 namespace shmdata{
 
-// one writer, multiple reader. more writer could be enabled with race condition
-// management on locked_waiting_first_writer_
-
 class writeLock;
 class updateSubscriber;
 class sysVSem: public SafeBoolIdiom {
