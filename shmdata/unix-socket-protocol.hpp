@@ -49,6 +49,13 @@ struct ServerSide {
   // (server) get buffers to send back to clients when connecting
   using iovServOnConnect = std::function<socketMsg_t()>;
   iovServOnConnect get_connect_iov_{};
+  ServerSide(onClientConnect occ,
+             onClientDisconnect ocd,
+             iovServOnConnect isoc) :
+      on_connect_cb_(occ),
+      on_disconnect_cb_ (ocd),
+      get_connect_iov_ (isoc){
+  }
 };
 
 // constructing onConnectData

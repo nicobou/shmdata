@@ -6,6 +6,7 @@ LDADD = \
 
 check_PROGRAMS = \
     check-file-monitor \
+    check-shmdata \
     check-sysv-sem \
     check-sysv-shm \
     check-unix-socket
@@ -14,6 +15,9 @@ TESTS = $(check_PROGRAMS)
 
 check_file_monitor_SOURCES = \
     check-file-monitor.cpp
+
+check_shmdata_SOURCES = \
+    check-shmdata.cpp
 
 check_sysv_sem_SOURCES = \
     check-sysv-sem.cpp

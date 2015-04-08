@@ -11,7 +11,8 @@ libshmdata_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
     unix-socket.cpp \
     unix-socket-client.cpp \
     unix-socket-protocol.cpp \
-    unix-socket-server.cpp
+    unix-socket-server.cpp \
+    writer.cpp
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
     file-monitor.hpp \
@@ -21,7 +22,8 @@ libshmdata_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
     unix-socket.hpp \
     unix-socket-client.hpp \
     unix-socket-protocol.hpp \
-    unix-socket-server.hpp
+    unix-socket-server.hpp \
+    writer.hpp
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
     -export-dynamic \

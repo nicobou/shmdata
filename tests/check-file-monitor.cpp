@@ -25,10 +25,11 @@ int main () {
   // server protocol
   UnixSocketProtocol::onConnectDataMaker data(128,       // shm size
                                               "hello");  // user message
-  UnixSocketProtocol::ServerSide sproto;
-  sproto.get_connect_iov_ = [&data](){return data.get_connect_iov();};
-  sproto.on_connect_cb_ = [](int) {};
-  sproto.on_disconnect_cb_ = [](int) {};
+
+  UnixSocketProtocol::ServerSide sproto(
+      [](int id) {std::printf("(server) on_connect_cb, id %d\n", id);},
+      [](int id) {std::printf("(server) on_disconnect_cb, id %d\n", id);},
+      [&data](){return data.get_connect_iov();});
 
   // testing
   {
