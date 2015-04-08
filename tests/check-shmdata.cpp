@@ -13,6 +13,7 @@
  */
 
 #include <cassert>
+#include <array>
 #include "shmdata/writer.hpp"
 
 // a struct with contiguous data storage 
