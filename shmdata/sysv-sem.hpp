@@ -86,7 +86,7 @@ class writeLock: public SafeBoolIdiom {
   writeLock() = delete;
   writeLock(const writeLock &) = delete;
   writeLock& operator=(const writeLock&) = delete;
-  writeLock& operator=(writeLock&&) = delete;
+  writeLock& operator=(writeLock&&) = default;
  private:
   int semid_;
   bool valid_{true};

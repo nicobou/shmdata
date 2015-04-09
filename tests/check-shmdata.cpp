@@ -20,21 +20,39 @@
 using Frame = struct {
   size_t count{0};
   std::array<int, 3> data{{3, 1, 4}};
+  // no vector ! vector.data is contiguous, but not vector
 };
 
 int main () {
   using namespace shmdata;
 
-  writer w("/tmp/check-shmdata",
+  Writer w("/tmp/check-shmdata",
            sizeof(Frame),
-           "check data format");
+           "application/x-check-shmdata");
   assert(w);
-  auto i = 300;
-  Frame frame;
-  while (0 != i--) {
+
+  {  // first method: copy the entire buffer 
+    auto i = 300;
+    Frame frame;
+    while (0 != i--) {
+      assert(w.copy_to_shm(&frame, sizeof(Frame)));
+      frame.count++;
+    }
+  }  // end first method
+
+  { // second method: access the memory and update only what need to be updated 
+    auto i = 300;
+    Frame frame;
+    // optional memory initialization with a copy
     assert(w.copy_to_shm(&frame, sizeof(Frame)));
-    frame.count++;
+    while (0 != i--) {
+      auto access = w.get_one_write_access();  // this locks the shared memory
+      assert(access);
+      auto frame = static_cast<Frame *>(access->get_mem());
+      frame->count++;
+    }  // access is released, lock is freed
   }
+  
   return 0;
 }
 

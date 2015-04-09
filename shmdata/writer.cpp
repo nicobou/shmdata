@@ -17,7 +17,7 @@
 
 namespace shmdata{
 
-writer::writer(const std::string &path, size_t memsize, const std::string &data_descr):
+Writer::Writer(const std::string &path, size_t memsize, const std::string &data_descr):
     connect_data_(memsize, data_descr),
     proto_([](int){},
            [](int){},
@@ -30,7 +30,7 @@ writer::writer(const std::string &path, size_t memsize, const std::string &data_
       is_valid_ = false;
 }
 
-bool writer::copy_to_shm(void *data, size_t size){
+bool Writer::copy_to_shm(void *data, size_t size){
   if (size > connect_data_.shm_size_)
     return false;
   writeLock wlock(&sem_);
@@ -38,6 +38,10 @@ bool writer::copy_to_shm(void *data, size_t size){
   if (dest != std::memcpy(dest, data, size))
     return false;
   return true;
+}
+
+std::unique_ptr<OneWriteAccess> Writer::get_one_write_access() {
+  return std::unique_ptr<OneWriteAccess>(new OneWriteAccess(&sem_, shm_.get_mem())) ;
 }
 
 }  // namespace shmdata

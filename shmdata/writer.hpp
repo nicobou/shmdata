@@ -16,6 +16,7 @@
 #define _SHMDATA_WRITER_H_
 
 #include <string>
+#include <memory>
 #include "shmdata/unix-socket-server.hpp"
 #include "shmdata/unix-socket-protocol.hpp"
 #include "shmdata/sysv-shm.hpp"
@@ -23,18 +24,18 @@
 #include "./safe-bool-idiom.hpp"
 
 namespace shmdata{
-
-class writer: public SafeBoolIdiom {
+class OneWriteAccess;
+class Writer: public SafeBoolIdiom {
  public:
-  writer(const std::string &path, size_t memsize, const std::string &data_descr);
-  //~writer();
-  writer() = delete;
-  writer(const writer &) = delete;
-  writer& operator=(const writer&) = delete;
-  writer& operator=(writer&&) = default;
+  Writer(const std::string &path, size_t memsize, const std::string &data_descr);
+  ~Writer() = default;
+  Writer() = delete;
+  Writer(const Writer &) = delete;
+  Writer& operator=(const Writer&) = delete;
+  Writer& operator=(Writer&&) = default;
 
   bool copy_to_shm(void *data, size_t size);
-  
+  std::unique_ptr<OneWriteAccess> get_one_write_access();
  private:
   std::string path_; 
   UnixSocketProtocol::onConnectDataMaker connect_data_;
@@ -46,6 +47,20 @@ class writer: public SafeBoolIdiom {
   bool is_valid() const final{return is_valid_;}
 };
 
+// see check-shmdata
+class OneWriteAccess {
+  friend Writer;
+ public:
+  void *get_mem() {return mem_;};
+ private:
+  OneWriteAccess(sysVSem *sem, void *mem) :
+      wlock_(sem),
+      mem_(mem){
+  }
+  OneWriteAccess& operator=(OneWriteAccess&&) = default;
+  writeLock wlock_;
+  void *mem_;
+};
 
 }  // namespace shmdata
 #endif
