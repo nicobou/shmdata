@@ -46,7 +46,8 @@ int main () {
     // optional memory initialization with a copy
     assert(w.copy_to_shm(&frame, sizeof(Frame)));
     while (0 != i--) {
-      auto access = w.get_one_write_access();  // this locks the shared memory
+      //  the following is locking the shared memory for writing
+      auto access = w.get_one_write_access();
       assert(access);
       auto frame = static_cast<Frame *>(access->get_mem());
       frame->count++;
