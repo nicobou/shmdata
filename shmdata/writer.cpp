@@ -33,7 +33,7 @@ Writer::Writer(const std::string &path, size_t memsize, const std::string &data_
 bool Writer::copy_to_shm(void *data, size_t size){
   if (size > connect_data_.shm_size_)
     return false;
-  writeLock wlock(&sem_);
+  WriteLock wlock(&sem_);
   auto dest = shm_.get_mem();
   if (dest != std::memcpy(dest, data, size))
     return false;

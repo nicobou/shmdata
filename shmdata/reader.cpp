@@ -51,16 +51,6 @@ void Reader::on_server_disconnected(){
 }
 
 bool Reader::on_buffer(sysVSem *sem){
-  {
-    updateSubscriber subscriber(sem);
-    while (do_read_) {
-      readLock rlock(&subscriber);
-      if (!rlock)
-        return false;
-      if (on_data_cb_)
-        on_data_cb_(shm_.get_mem());
-    }
-  }
   return true;
 }
 

@@ -58,7 +58,7 @@ class OneWriteAccess {
       mem_(mem){
   }
   OneWriteAccess& operator=(OneWriteAccess&&) = default;
-  writeLock wlock_;
+  WriteLock wlock_;
   void *mem_;
 };
 

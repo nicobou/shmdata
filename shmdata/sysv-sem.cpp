@@ -24,22 +24,15 @@
 namespace shmdata{
 
 namespace semops{
-// sem_num 0 is for reading, 1 is for writer, 2 is for data available, 3 for going to read
-static struct sembuf sem_init [] = {{2, 1, SEM_UNDO}};
-static struct sembuf read_wait [] = {{2, 0, SEM_UNDO},       // wait data
-                                     {3, 1, SEM_UNDO}};      // incr going to read
+// sem_num 0 is for reading, 1 is for writer
 static struct sembuf read_start [] = {{0, 1, SEM_UNDO},      // incr reader
-                                      {1, 0, SEM_UNDO},      // wait writer
-                                      {3, -1, SEM_UNDO}};    // decr going to read
+                                      {1, 0, SEM_UNDO}};     // wait writer
 static struct sembuf read_end [] = {{0, -1, SEM_UNDO}};      // decr reader
 static struct sembuf write_start [] = {{0, 0, SEM_UNDO},     // wait reader is 0
-                                        {1, 1, SEM_UNDO},    // incr writer
-                                       {0, 1, SEM_UNDO},    // incr reader
-                                        {2, -1, SEM_UNDO}};  // updating data
-static struct sembuf write_end1 [] = {{2, 1, SEM_UNDO},      // end updating data
-                                      {0, -1, SEM_UNDO},     // decr reader
-                                      {1, -1, SEM_UNDO}};    // decr writer
-static struct sembuf write_end2 [] = {{3, 0, SEM_UNDO}};     // wait going to read
+                                       {1, 1, SEM_UNDO},    // incr writer
+                                       {0, 1, SEM_UNDO}};   // incr reader
+static struct sembuf write_end [] = {{0, -1, SEM_UNDO},     // decr reader
+                                     {1, -1, SEM_UNDO}};    // decr writer
 }  // namespace semops
 
 sysVSem::sysVSem(key_t key, bool owner) :
@@ -48,12 +41,6 @@ sysVSem::sysVSem(key_t key, bool owner) :
     semid_(semget(key_, 4, owner ? IPC_CREAT | IPC_EXCL | 0666 : 0)) {
   if (semid_ < 0) {
     perror("semget");
-    return;
-  }
-  if (-1 == semop(semid_,
-                  semops::sem_init,
-                  sizeof(semops::sem_init)/sizeof(*semops::sem_init))) {
-    perror("sem init");
     return;
   }
 }
@@ -70,69 +57,37 @@ bool sysVSem::is_valid() const {
   return 0 < semid_;
 }
 
-updateSubscriber::updateSubscriber(sysVSem *sem) :
-    semid_(sem->semid_){
-}
-
-updateSubscriber::~updateSubscriber(){
-}
-
-readLock::readLock(updateSubscriber *subscriber) :
-    sub_(subscriber) {
-  // the first read lock need to wait for data:
-  
-  if (subscriber->do_wait_){
-    subscriber->do_wait_ = false;
-    if (-1 == semop(sub_->semid_,
-                    semops::read_wait,
-                    sizeof(semops::read_wait)/sizeof(*semops::read_wait))){
-      valid_ = false;  // TODO log this
-    }
-  }
-  std::this_thread::yield();
-  if (-1 == semop(sub_->semid_,
+ReadLock::ReadLock(sysVSem *sem) :
+    semid_(sem->semid_) {
+  if (-1 == semop(semid_,
                   semops::read_start,
                   sizeof(semops::read_start)/sizeof(*semops::read_start))){
     valid_ = false;  // TODO log this
   }
 }
 
-readLock::~readLock(){
-  if (is_valid()) {
-      semop(sub_->semid_,
-            semops::read_end,
-            sizeof(semops::read_end)/sizeof(*semops::read_end));
-      if (!sub_->is_stoped_) {
-        semop(sub_->semid_,
-              semops::read_wait,
-              sizeof(semops::read_wait)/sizeof(*semops::read_wait));
-      }
-  }
+ReadLock::~ReadLock(){
+  if (is_valid())
+    semop(semid_,
+          semops::read_end,
+          sizeof(semops::read_end)/sizeof(*semops::read_end));
 }
 
-writeLock::writeLock(sysVSem *sem) :
+WriteLock::WriteLock(sysVSem *sem) :
     semid_(sem->semid_){
   if (-1 == semop(semid_,
                   semops::write_start,
                   sizeof(semops::write_start)/sizeof(*semops::write_start))) {
     valid_ = false;
-    return;
   }
-  // give a chance to reader to observe data update:
-  std::this_thread::yield();
 }
 
-writeLock::~writeLock(){
+WriteLock::~WriteLock(){
   if(!is_valid())
     return;
-  // give a chance to reader to observe data update:
-  std::this_thread::yield();
   semop(semid_,
-        semops::write_end1,
-        sizeof(semops::write_end1)/sizeof(*semops::write_end1));
-  semop(semid_,
-         semops::write_end2,
-         sizeof(semops::write_end2)/sizeof(*semops::write_end2));
+        semops::write_end,
+        sizeof(semops::write_end)/sizeof(*semops::write_end));
 }
 
 }  // namespace shmdata

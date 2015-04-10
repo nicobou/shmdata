@@ -15,20 +15,23 @@
 #include <cassert>
 #include <array>
 #include <future>
+#include <atomic>
 #include <iostream>
 #include "shmdata/sysv-sem.hpp"
 
 using namespace shmdata;
 
-static const std::array<int, 3> array{ {1,2,3} };
+static std::atomic_int done(0);
+
+static const int init_val = 65535;
 
 bool writer(sysVSem *sem, int *val){
-  for (auto &it: array){
+  auto i = 65535;
+  while (0 != i--){
     {
-      writeLock wlock(sem);
+      WriteLock wlock(sem);
       assert(wlock);
-      *val = it;
-    std::this_thread::sleep_for (std::chrono::milliseconds(1));
+      *val = i;
     }
   }
   return true;
@@ -36,15 +39,13 @@ bool writer(sysVSem *sem, int *val){
 
 bool reader(sysVSem *sem, int *val){
   {
-    updateSubscriber subscriber(sem);
-    for (auto &it : array){
-      readLock rlock(&subscriber);
+    auto previous = init_val;
+    while (0 == done.load()){
+      ReadLock rlock(sem);
       assert(rlock);
-      if (3 == *val)
-        subscriber.stop();
-      std::cout << *val << " " << it; 
-      assert (*val == it);
-      //std::this_thread::sleep_for (std::chrono::milliseconds(10));
+      
+      assert (*val <= previous);
+      previous = *val;
     }
   }
   return true;
@@ -60,7 +61,8 @@ int main () {
   {
     sysVSem sem(4312, /* owner = */ true);
     assert(sem);
-    auto val = 0;
+    auto val = init_val;
+    // wait readers lunched in order
     auto reader_handle = std::async(std::launch::async,
                                     reader,
                                     &sem,
@@ -69,13 +71,12 @@ int main () {
                                      reader,
                                      &sem,
                                      &val);
-    // wait readers lunched in order
-    std::this_thread::sleep_for (std::chrono::milliseconds(100));
     auto writer_handle = std::async(std::launch::async,
                                     writer,
                                     &sem,
                                     &val);
     assert(writer_handle.get());
+    done.store(1);  // kills readers
     assert(reader_handle.get());
     assert(reader_handle2.get());
   }

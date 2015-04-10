@@ -22,11 +22,11 @@
 
 namespace shmdata{
 
-class writeLock;
-class updateSubscriber;
+class WriteLock;
+class ReadLock;
 class sysVSem: public SafeBoolIdiom {
-  friend writeLock;
-  friend updateSubscriber;
+  friend WriteLock;
+  friend ReadLock;
  public:
   explicit sysVSem(key_t key, bool owner = false);
   ~sysVSem();
@@ -42,52 +42,31 @@ class sysVSem: public SafeBoolIdiom {
   bool is_valid() const final;
 };
 
-// subscribing actually at first read
-class readLock;
-class updateSubscriber {
-  friend readLock;
+class ReadLock: public SafeBoolIdiom {
  public:
-  updateSubscriber(sysVSem *sem);
-  ~updateSubscriber();
-  updateSubscriber() = delete;
-  updateSubscriber(const updateSubscriber &) = delete;
-  updateSubscriber& operator=(const updateSubscriber&) = delete;
-  updateSubscriber& operator=(updateSubscriber&&) = delete;
-
-  void stop() {is_stoped_ = true;};
- private:
-  int semid_;
-  bool do_wait_{true};
-  bool is_stoped_{false};
-};
-
-class readLock: public SafeBoolIdiom {
- public:
-  // if is_single_read is false, readLock is locking
-  // writer for avoiding the next read missing an update  
-  readLock(updateSubscriber *subscriber); 
-  ~readLock();
-  readLock() = delete;
-  readLock(const readLock &) = delete;
-  readLock& operator=(const readLock&) = delete;
-  readLock& operator=(readLock&&) = delete;
+  ReadLock(sysVSem *sem); 
+  ~ReadLock();
+  ReadLock() = delete;
+  ReadLock(const ReadLock &) = delete;
+  ReadLock& operator=(const ReadLock&) = delete;
+  ReadLock& operator=(ReadLock&&) = delete;
 
   //void set_last(){is_last_ = true;}
  private:
-  updateSubscriber *sub_;
+  int semid_;
   bool valid_{true};
   //bool is_last_{false};
   bool is_valid() const final {return valid_;};
 };
 
-class writeLock: public SafeBoolIdiom {
+class WriteLock: public SafeBoolIdiom {
  public:
-  writeLock(sysVSem *sem);
-  ~writeLock();
-  writeLock() = delete;
-  writeLock(const writeLock &) = delete;
-  writeLock& operator=(const writeLock&) = delete;
-  writeLock& operator=(writeLock&&) = default;
+  WriteLock(sysVSem *sem);
+  ~WriteLock();
+  WriteLock() = delete;
+  WriteLock(const WriteLock &) = delete;
+  WriteLock& operator=(const WriteLock&) = delete;
+  WriteLock& operator=(WriteLock&&) = default;
  private:
   int semid_;
   bool valid_{true};
