@@ -71,17 +71,20 @@ int main () {
              sizeof(Frame),
              "application/x-check-shmdata");
     assert(w);
-    // Reader r("/tmp/check-shmdata",
-    //          [](void *data){
-    //            std::cout << "new data for client" << std::endl;
-    //          });
-    // assert(r);
-    // auto i = 300;
-    // Frame frame;
-    // while (0 != i--) {
-    //   assert(w.copy_to_shm(&frame, sizeof(Frame)));
-    //   frame.count++;
-    // }
+    Reader r("/tmp/check-shmdata",
+             [](void *data){
+               auto frame = static_cast<Frame *>(data);
+               std::cout << "new data for client "
+                         << frame->count
+                         << std::endl;
+             });
+    assert(r);
+    auto i = 300;
+    Frame frame;
+    while (0 != i--) {
+      frame.count = i;
+      assert(w.copy_to_shm(&frame, sizeof(Frame)));
+    }
   }
 
   return 0;
