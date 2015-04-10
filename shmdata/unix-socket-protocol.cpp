@@ -12,6 +12,7 @@
  * GNU Lesser General Public License for more details.
  */
 
+#include <limits> 
 #include "./unix-socket-protocol.hpp"
 
 namespace shmdata{
@@ -33,6 +34,18 @@ onConnectDataMaker::onConnectDataMaker(size_t shm_size,
 }
 
 socketMsg_t onConnectDataMaker::get_connect_iov(){
+  return {(const struct iovec *)iovec_, iovec_len_};
+}
+
+onUpdateDataMaker::onUpdateDataMaker() :
+    iovec_{{&count_, sizeof(size_t)}} {
+}
+
+socketMsg_t onUpdateDataMaker::get_update_iov(){
+  if (std::numeric_limits<size_t>::max() == count_)
+    count_ = 1;
+  else
+    count_ += 1;
   return {(const struct iovec *)iovec_, iovec_len_};
 }
 

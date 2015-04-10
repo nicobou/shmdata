@@ -34,6 +34,7 @@ bool Writer::copy_to_shm(void *data, size_t size){
   if (size > connect_data_.shm_size_)
     return false;
   WriteLock wlock(&sem_);
+  srv_.notify_update();
   auto dest = shm_.get_mem();
   if (dest != std::memcpy(dest, data, size))
     return false;
@@ -41,7 +42,9 @@ bool Writer::copy_to_shm(void *data, size_t size){
 }
 
 std::unique_ptr<OneWriteAccess> Writer::get_one_write_access() {
-  return std::unique_ptr<OneWriteAccess>(new OneWriteAccess(&sem_, shm_.get_mem())) ;
+  auto res = std::unique_ptr<OneWriteAccess>(new OneWriteAccess(&sem_, shm_.get_mem()));
+  srv_.notify_update();
+  return res;
 }
 
 }  // namespace shmdata

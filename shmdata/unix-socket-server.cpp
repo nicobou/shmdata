@@ -27,7 +27,7 @@
 namespace shmdata{
 
 UnixSocketServer::UnixSocketServer(const std::string &path,
-                                   const UnixSocketProtocol::ServerSide *proto,
+                                   UnixSocketProtocol::ServerSide *proto,
                                    int max_pending_cnx) :
     path_(path),
     max_pending_cnx_(max_pending_cnx),
@@ -73,9 +73,12 @@ UnixSocketServer::~UnixSocketServer() {
 }
 
 void UnixSocketServer::notify_update() {
-  // for (auto &it: clients_){
-  //   // TODO
-  // }
+  auto msg = proto_->get_update_iov();
+  for (auto &it: clients_){
+    auto res = writev(it, const_cast<iovec *>(msg.iov_), msg.iov_len_);
+    if (-1 == res)
+      perror("writev (update)");
+  }
 }
 
 bool UnixSocketServer::is_valid() const {

@@ -40,24 +40,11 @@ struct onConnectData {
   std::string user_data_{};  
 };
 
-// Server -----------------------------------------------------
-struct ServerSide {
-  using onClientConnect = std::function<void(int id)>;
-  using onClientDisconnect = std::function<void(int id)>;
-  onClientConnect on_connect_cb_{};
-  onClientDisconnect on_disconnect_cb_{};
-  // (server) get buffers to send back to clients when connecting
-  using iovServOnConnect = std::function<socketMsg_t()>;
-  iovServOnConnect get_connect_iov_{};
-  ServerSide(onClientConnect occ,
-             onClientDisconnect ocd,
-             iovServOnConnect isoc) :
-      on_connect_cb_(occ),
-      on_disconnect_cb_(ocd),
-      get_connect_iov_(isoc){
-  }
+struct onUpdateData {
+  size_t count_{0};
 };
 
+// Server -----------------------------------------------------
 // constructing onConnectData
 struct onConnectDataMaker : public onConnectData {
   // socket data structure pointing to members initialized in ctor
@@ -68,6 +55,35 @@ struct onConnectDataMaker : public onConnectData {
                      const std::string &user_data);
   onConnectDataMaker() = delete;
   socketMsg_t get_connect_iov();
+};
+
+// constructing onUpdateData
+struct onUpdateDataMaker : public onUpdateData {
+  // socket data structure pointing to members initialized in ctor
+  size_t iovec_len_{1};
+  const struct iovec iovec_[1];
+  // ctor
+  onUpdateDataMaker();
+  socketMsg_t get_update_iov();
+};
+
+struct ServerSide {
+  using onClientConnect = std::function<void(int id)>;
+  using onClientDisconnect = std::function<void(int id)>;
+  onClientConnect on_connect_cb_{};
+  onClientDisconnect on_disconnect_cb_{};
+  // (server) get buffers to send back to clients when connecting
+  using iovServOnConnect = std::function<socketMsg_t()>;
+  iovServOnConnect get_connect_iov_{};
+  onUpdateDataMaker updater_{};
+  socketMsg_t get_update_iov(){return updater_.get_update_iov();}
+  ServerSide(onClientConnect occ,
+             onClientDisconnect ocd,
+             iovServOnConnect isoc) :
+      on_connect_cb_(occ),
+      on_disconnect_cb_(ocd),
+      get_connect_iov_(isoc) {
+  }
 };
 
 // Client -----------------------------------------------------
