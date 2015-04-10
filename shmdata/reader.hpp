@@ -12,35 +12,37 @@
  * GNU Lesser General Public License for more details.
  */
 
+#ifndef _SHMDATA_READER_H_
+#define _SHMDATA_READER_H_
 
-#ifndef _SHMDATA_SYSV_SHM_H_
-#define _SHMDATA_SYSV_SHM_H_
-
-#include <sys/ipc.h>
-#include <sys/shm.h>
 #include <string>
+#include "shmdata/sysv-shm.hpp"
+#include "shmdata/sysv-sem.hpp"
+#include "shmdata/unix-socket-client.hpp"
 #include "./safe-bool-idiom.hpp"
 
 namespace shmdata{
-
-class sysVShm: public SafeBoolIdiom {
+class Reader: public SafeBoolIdiom {
  public:
-  sysVShm(key_t key, size_t size, bool owner = false);
-  ~sysVShm();
-  sysVShm() = delete;
-  sysVShm(const sysVShm &) = delete;
-  sysVShm& operator=(const sysVShm&) = delete;
-  sysVShm& operator=(sysVShm&&) = default;
+  Reader(const std::string &path);
+  ~Reader() = default;
+  Reader() = delete;
+  Reader(const Reader &) = delete;
+  Reader& operator=(const Reader&) = delete;
+  Reader& operator=(Reader&&) = default;
 
-  void *get_mem() {return shm_;};
-  
  private:
-  key_t key_;
-  size_t size_;
-  int shmid_;
-  bool owner_;  // responsible for creation and deletion of the shm
-  void *shm_{(void *) -1};  // man shmat
-  bool is_valid() const final;
+  std::string path_;
+  UnixSocketProtocol::ClientSide proto_;
+  UnixSocketClient cli_;
+  sysVShm shm_;
+  sysVSem sem_;
+  size_t shm_size_{0};
+  bool is_valid_{true};
+  bool is_valid() const final{return is_valid_;}
+  void on_server_connected();
+  void on_server_disconnected();
+
 };
 
 }  // namespace shmdata

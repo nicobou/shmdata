@@ -15,6 +15,15 @@
 #include <cassert>
 #include <array>
 #include "shmdata/writer.hpp"
+#include "shmdata/reader.hpp"
+
+/*
+ this file contains several examples:
+ - writer example that write to the shared memory by copying an existing buffer
+   or writing directly into the memory
+ - writer/reader with reader expecting to read buffer initial value
+ */
+
 
 // a struct with contiguous data storage 
 using Frame = struct {
@@ -26,32 +35,43 @@ using Frame = struct {
 int main () {
   using namespace shmdata;
 
-  Writer w("/tmp/check-shmdata",
-           sizeof(Frame),
-           "application/x-check-shmdata");
-  assert(w);
+  {  // writer example
+    Writer w("/tmp/check-shmdata",
+             sizeof(Frame),
+             "application/x-check-shmdata");
+    assert(w);
 
-  {  // first method: copy the entire buffer 
-    auto i = 300;
-    Frame frame;
-    while (0 != i--) {
+    {  // first method: copy the entire buffer 
+      auto i = 300;
+      Frame frame;
+      while (0 != i--) {
+        assert(w.copy_to_shm(&frame, sizeof(Frame)));
+        frame.count++;
+      }
+    }  // end first method
+
+    { // second method: access the memory and update only what need to be updated 
+      auto i = 300;
+      Frame frame;
+      // optional memory initialization with a copy
       assert(w.copy_to_shm(&frame, sizeof(Frame)));
-      frame.count++;
+      while (0 != i--) {
+        //  the following is locking the shared memory for writing
+        auto access = w.get_one_write_access();
+        assert(access);
+        auto frame = static_cast<Frame *>(access->get_mem());
+        frame->count++;
+      }  // access is released, lock is freed
     }
-  }  // end first method
+  }// end writer example
 
-  { // second method: access the memory and update only what need to be updated 
-    auto i = 300;
-    Frame frame;
-    // optional memory initialization with a copy
-    assert(w.copy_to_shm(&frame, sizeof(Frame)));
-    while (0 != i--) {
-      //  the following is locking the shared memory for writing
-      auto access = w.get_one_write_access();
-      assert(access);
-      auto frame = static_cast<Frame *>(access->get_mem());
-      frame->count++;
-    }  // access is released, lock is freed
+  {  // begin writer/reader example
+    Writer w("/tmp/check-shmdata",
+             sizeof(Frame),
+             "application/x-check-shmdata");
+    assert(w);
+    Reader r("/tmp/check-shmdata");
+    assert(r);
   }
   
   return 0;

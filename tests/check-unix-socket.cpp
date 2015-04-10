@@ -31,15 +31,17 @@ int main () {
       [&data](){return data.get_connect_iov();});
 
   // client protocol
-  UnixSocketProtocol::ClientSide cproto;
-  cproto.on_connect_cb_ = [&cproto](int id){
-    std::cout << "(client) on_connect_cb, id "
-    << id
-    << " shm_size " << cproto.data_.shm_size_ 
-    << " user_data " << cproto.data_.get_user_data().c_str()
-    << std::endl;
-  };
-  cproto.on_disconnect_cb_ = [](int d) {std::printf("(client) on_disconnect_cb, id %d\n", d);};
+  UnixSocketProtocol::ClientSide cproto(
+      [&cproto](int id){
+        std::cout << "(client) on_connect_cb, id "
+                  << id
+                  << " shm_size " << cproto.data_.shm_size_ 
+                  << " user_data " << cproto.data_.get_user_data().c_str()
+                  << std::endl;
+      },
+      [](int d) {
+        std::printf("(client) on_disconnect_cb, id %d\n", d);
+      });
 
   // testing
   { std::printf("-- creation with not time to connect\n");

@@ -28,7 +28,7 @@ class sysVSem: public SafeBoolIdiom {
   friend writeLock;
   friend updateSubscriber;
  public:
-  sysVSem(key_t key, int semflg);
+  explicit sysVSem(key_t key, bool owner = false);
   ~sysVSem();
   sysVSem() = delete;
   sysVSem(const sysVSem &) = delete;
@@ -37,6 +37,7 @@ class sysVSem: public SafeBoolIdiom {
   
  private:
   key_t key_;
+  bool owner_;
   int semid_{-1};
   bool is_valid() const final;
 };

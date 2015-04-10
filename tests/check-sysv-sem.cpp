@@ -54,11 +54,11 @@ bool reader(sysVSem *sem, int *val){
 int main () {
   using namespace shmdata;
   {
-    sysVSem sem(4312, IPC_CREAT | IPC_EXCL | 0666);
+    sysVSem sem(4312, /* owner = */ true);
     assert(sem);
   }
   {
-    sysVSem sem(4312, IPC_CREAT | IPC_EXCL | 0666);
+    sysVSem sem(4312, /* owner = */ true);
     assert(sem);
     auto val = 0;
     auto reader_handle = std::async(std::launch::async,

@@ -96,6 +96,11 @@ struct ClientSide {
   onServerDisconnected on_disconnect_cb_{};
   onConnectDataReceiver<4096> data_{};
   //  void set_user_data(std::string &&str);
+  ClientSide(onServerConnected osc,
+             onServerDisconnected osd) :
+      on_connect_cb_(osc),
+      on_disconnect_cb_(osd) {
+  }
 };
 
 

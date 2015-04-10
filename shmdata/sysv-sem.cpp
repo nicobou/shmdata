@@ -42,9 +42,10 @@ static struct sembuf write_end1 [] = {{2, 1, SEM_UNDO},      // end updating dat
 static struct sembuf write_end2 [] = {{3, 0, SEM_UNDO}};     // wait going to read
 }  // namespace semops
 
-sysVSem::sysVSem(key_t key, int semflg) :
+sysVSem::sysVSem(key_t key, bool owner) :
     key_ (key),
-    semid_(semget(key_, 4, semflg)) {
+    owner_(owner),
+    semid_(semget(key_, 4, owner ? IPC_CREAT | IPC_EXCL | 0666 : 0)) {
   if (semid_ < 0) {
     perror("semget");
     return;
@@ -58,7 +59,7 @@ sysVSem::sysVSem(key_t key, int semflg) :
 }
 
 sysVSem::~sysVSem() {
-  if (is_valid()) {
+  if (is_valid() && owner_) {
     if (semctl(semid_, 0, IPC_RMID, 0) != 0) {
       perror("semctl removing semaphore");
     }

@@ -23,8 +23,8 @@ Writer::Writer(const std::string &path, size_t memsize, const std::string &data_
            [](int){},
            [this](){return this->connect_data_.get_connect_iov();}),
     srv_(path, &proto_),
-    shm_(ftok(path.c_str(), 'n'), memsize, IPC_CREAT | IPC_EXCL | 0666),
-    sem_(ftok(path.c_str(), 'm'), IPC_CREAT | IPC_EXCL | 0666)
+    shm_(ftok(path.c_str(), 'n'), memsize, /*owner = */ true),
+    sem_(ftok(path.c_str(), 'm'), /*owner = */ true)
 {
   if (!srv_ || !shm_ || !sem_)
       is_valid_ = false;

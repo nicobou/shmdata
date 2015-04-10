@@ -19,10 +19,11 @@
 
 namespace shmdata{
 
-sysVShm::sysVShm(key_t key, size_t size, int shmflg):
+sysVShm::sysVShm(key_t key, size_t size, bool owner):
     key_(key),
     size_(size),
-    shmid_(shmget(key_, size_, shmflg)) {
+    shmid_(shmget(key_, size_, owner ? (IPC_CREAT | IPC_EXCL | 0666) : 0)),
+    owner_(owner) {
   if (-1 == key_){
     perror("ftok");
     return;
@@ -44,7 +45,7 @@ sysVShm::~sysVShm() {
       perror("shmdt");
     }
   }
-  if (0 < shmid_) {
+  if (0 < shmid_ && owner_) {
     if (shmctl(shmid_, IPC_RMID, NULL) < 0)
       perror("shmctl removing shared mem");
   }

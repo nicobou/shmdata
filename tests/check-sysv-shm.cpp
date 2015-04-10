@@ -18,17 +18,17 @@
 int main () {
   using namespace shmdata;
   {
-    sysVShm shm(1234, 1024, IPC_CREAT | IPC_EXCL | 0666);
+    sysVShm shm(1234, 1024, /*owner = */ true);
     assert(shm);
   }
   {
-    sysVShm shm(1234, 1024, IPC_CREAT | IPC_EXCL | 0666);
+    sysVShm shm(1234, 1024, /*owner = */ true);
     assert(shm);
   }
   { //write read
-    sysVShm shm_writer(1234, sizeof(int), IPC_CREAT | IPC_EXCL | 0666);
+    sysVShm shm_writer(1234, sizeof(int), /*owner = */ true);
     assert(shm_writer);
-    sysVShm shm_reader(1234, sizeof(int), 0666);
+    sysVShm shm_reader(1234, sizeof(int), /*owner = */ false);
     assert(shm_reader);
     *(int *)shm_writer.get_mem() = 7;
     assert(7 == *(int *)shm_reader.get_mem());
