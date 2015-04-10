@@ -52,7 +52,7 @@ int main () {
     }  // end first method
 
     { // second method: access the memory and update only what need to be updated 
-      auto i = 300;
+      size_t i = 300;
       Frame frame;
       // optional memory initialization with a copy
       assert(w.copy_to_shm(&frame, sizeof(Frame)));
@@ -79,11 +79,13 @@ int main () {
                          << std::endl;
              });
     assert(r);
-    auto i = 300;
+    //std::this_thread::sleep_for (std::chrono::milliseconds(100));
     Frame frame;
-    while (0 != i--) {
+    auto i = 300;
+    while (0 != --i) {
       frame.count = i;
       assert(w.copy_to_shm(&frame, sizeof(Frame)));
+      //std::this_thread::sleep_for (std::chrono::milliseconds(1));
     }
   }
 

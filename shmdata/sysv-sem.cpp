@@ -17,7 +17,6 @@
 #include <sys/sem.h>
 #include <stdio.h>  // perror
 #include <iostream>
-#include <thread>  //yield
 #include "./sysv-sem.hpp"
 
 
