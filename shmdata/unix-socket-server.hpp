@@ -17,7 +17,7 @@
 #define _SHMDATA_UNIX_SOCKET_SERVER_H_
 
 #include <future>
-#include <map>
+#include <vector>
 #include <string>
 #include <atomic>
 #include "./safe-bool-idiom.hpp"
@@ -36,6 +36,8 @@ class UnixSocketServer: public SafeBoolIdiom {
   UnixSocketServer(const UnixSocketServer &) = delete;
   UnixSocketServer& operator=(const UnixSocketServer&) = delete;
   UnixSocketServer& operator=(UnixSocketServer&&) = default;
+
+  void notify_update();
   
  private:
   std::string path_;
@@ -45,7 +47,7 @@ class UnixSocketServer: public SafeBoolIdiom {
   bool is_listening_{false};
   std::future<void> done_{};
   std::atomic_short quit_{0};
-  std::map<int, int> clients_{};
+  std::vector<int> clients_{};
   const UnixSocketProtocol::ServerSide *proto_;
   bool is_valid() const final;
   void client_interaction();

@@ -72,6 +72,12 @@ UnixSocketServer::~UnixSocketServer() {
   }
 }
 
+void UnixSocketServer::notify_update() {
+  // for (auto &it: clients_){
+  //   // TODO
+  // }
+}
+
 bool UnixSocketServer::is_valid() const {
   return is_binded_ && is_listening_;
 }
@@ -102,7 +108,7 @@ void UnixSocketServer::client_interaction() {
       FD_SET(clifd, &allset);
       if (clifd > maxfd)
         maxfd = clifd;  // max fd for select()
-      clients_[clifd] = 0;
+      clients_.push_back(clifd);
       auto res = writev(clifd, const_cast<iovec *>(iov_cnx.iov_), iov_cnx.iov_len_);
       if (-1 == res)
         perror("writev");
@@ -112,25 +118,27 @@ void UnixSocketServer::client_interaction() {
       continue;
     }
     for (auto &it : clients_) {
-      if (FD_ISSET(it.first, &rset)) {
-        auto nread = read(it.first, buf, 1);  // MAXLINE
+      if (FD_ISSET(it, &rset)) {
+        auto nread = read(it, buf, 1);  // MAXLINE
         if (nread < 0) {
           perror("read");
         } else if (nread == 0) {
-          std::printf("(server) closed: fd %d\n", it.first);
+          std::printf("(server) closed: fd %d\n", it);
           if (proto_->on_disconnect_cb_)
-            proto_->on_disconnect_cb_(it.first);
-          clients_to_remove.push_back(it.first);
-          FD_CLR(it.first, &allset);
-          close(it.first);
+            proto_->on_disconnect_cb_(it);
+          clients_to_remove.push_back(it);
+          FD_CLR(it, &allset);
+          close(it);
         } else { /* process client′s request */
           std::printf("bug: client request\n");
         }
       }
     }
     // cleaning clients_ if necessary
-    for (auto &it : clients_to_remove)
-      clients_.erase(it);
+    for (auto &it : clients_to_remove) {
+      auto cli = std::find(clients_.begin(), clients_.end(), it);
+      clients_.erase(cli);
+    }
     clients_to_remove.clear();
   }  // while (!quit_)
 }

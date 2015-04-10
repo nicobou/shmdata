@@ -53,16 +53,16 @@ struct ServerSide {
              onClientDisconnect ocd,
              iovServOnConnect isoc) :
       on_connect_cb_(occ),
-      on_disconnect_cb_ (ocd),
-      get_connect_iov_ (isoc){
+      on_disconnect_cb_(ocd),
+      get_connect_iov_(isoc){
   }
 };
 
 // constructing onConnectData
 struct onConnectDataMaker : public onConnectData {
   // socket data structure pointing to members initialized in ctor
-  size_t iovec_len_{3};
-  const struct iovec iovec_[3];
+  size_t iovec_len_{2};
+  const struct iovec iovec_[2];
   // ctor
   onConnectDataMaker(size_t shm_size,
                      const std::string &user_data);
@@ -77,14 +77,14 @@ struct onConnectDataReceiver : public onConnectData {
   onConnectDataReceiver() :
       iovec_{
   {&shm_size_, sizeof(size_t)},
-  {user_data, _size}} {
+  {user_data_, _size}} {
   }
   std::string get_user_data(){
     return std::string(static_cast<char *>(iovec_[1].iov_base),
                        0,
                        iovec_[1].iov_len);
 }
-  char user_data[_size];
+  char user_data_[_size];
   size_t iovec_len_{2};
   const struct iovec iovec_[2];
 };
@@ -92,9 +92,11 @@ struct onConnectDataReceiver : public onConnectData {
 struct ClientSide {
   using onServerConnected = std::function<void(int id)>;
   using onServerDisconnected = std::function<void(int id)>;
+  using onUpdate = std::function<void()>;
   onServerConnected on_connect_cb_{};
   onServerDisconnected on_disconnect_cb_{};
-  onConnectDataReceiver<4096> data_{};
+  onConnectDataReceiver<65536> data_{};
+  onUpdate update_cb_{};
   //  void set_user_data(std::string &&str);
   ClientSide(onServerConnected osc,
              onServerDisconnected osd) :
