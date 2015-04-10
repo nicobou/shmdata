@@ -41,6 +41,9 @@ int main () {
       },
       [](int d) {
         std::printf("(client) on_disconnect_cb, id %d\n", d);
+      },
+      [](int d){
+        std::printf("(client) on_update_cb, id %d\n", d);
       });
 
   // testing
@@ -63,7 +66,13 @@ int main () {
     assert(cli1);
     assert(cli2);
     assert(cli3);
-    usleep(100000); }
+    usleep(100000);
+    auto i = 5;
+    while (0 != i--) {
+      srv.notify_update();
+      usleep(10000);
+    }
+  }
   { std::printf("-- client can't connect at creation\n");
     UnixSocketClient cli("/tmp/check-unix-socket", &cproto);
     UnixSocketServer srv("/tmp/check-unix-socket", &sproto);

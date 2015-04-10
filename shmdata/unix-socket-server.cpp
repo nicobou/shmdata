@@ -73,7 +73,8 @@ UnixSocketServer::~UnixSocketServer() {
 }
 
 void UnixSocketServer::notify_update() {
-  auto msg = proto_->get_update_iov();
+  // re-sending connect message
+  auto msg = proto_->get_connect_iov_();
   for (auto &it: clients_){
     auto res = writev(it, const_cast<iovec *>(msg.iov_), msg.iov_len_);
     if (-1 == res)

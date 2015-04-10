@@ -20,8 +20,9 @@ namespace shmdata{
 Reader::Reader(const std::string &path, on_data_cb cb) :
     path_(path),
     on_data_cb_(cb),
-    proto_([this](int){this->on_server_connected();},
-           [this](int){this->on_server_disconnected();}),
+    proto_([this](int){on_server_connected();},
+           [this](int){on_server_disconnected();},
+           [this](int){on_buffer(&sem_);}),  // read when update is received
     cli_(path, &proto_),
     shm_(ftok(path.c_str(), 'n'), 0, /* owner = */ false),
     sem_(ftok(path.c_str(), 'm'), /* owner = */ false),
@@ -51,6 +52,11 @@ void Reader::on_server_disconnected(){
 }
 
 bool Reader::on_buffer(sysVSem *sem){
+  ReadLock lock(sem);
+  if (!lock)
+    return false;
+  if (on_data_cb_)
+    on_data_cb_(shm_.get_mem());
   return true;
 }
 

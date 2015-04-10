@@ -21,6 +21,8 @@
 #include <string>
 #include <functional>
 
+
+// FIXME get rid of update...
 namespace shmdata{
 namespace UnixSocketProtocol{
 
@@ -106,18 +108,19 @@ struct onConnectDataReceiver : public onConnectData {
 };
 
 struct ClientSide {
-  using onServerConnected = std::function<void(int id)>;
+  using onServerConnected = std::function<void(int id)>;  // FIXME remove id
   using onServerDisconnected = std::function<void(int id)>;
-  using onUpdate = std::function<void()>;
+  using onUpdate = std::function<void(int id)>;
   onServerConnected on_connect_cb_{};
   onServerDisconnected on_disconnect_cb_{};
   onConnectDataReceiver<65536> data_{};
-  onUpdate update_cb_{};
-  //  void set_user_data(std::string &&str);
+  onUpdate on_update_cb_{};
   ClientSide(onServerConnected osc,
-             onServerDisconnected osd) :
+             onServerDisconnected osd,
+             onUpdate ou) :
       on_connect_cb_(osc),
-      on_disconnect_cb_(osd) {
+      on_disconnect_cb_(osd),
+      on_update_cb_(ou) {
   }
 };
 

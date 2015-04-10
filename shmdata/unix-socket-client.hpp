@@ -40,6 +40,7 @@ class UnixSocketClient: public SafeBoolIdiom {
   UnixSocket socket_{};
   std::future<void> done_{};
   std::atomic_short quit_{0};
+  bool connected_{false};
   bool is_valid_{false};
   UnixSocketProtocol::ClientSide *proto_;
   bool is_valid() const final;

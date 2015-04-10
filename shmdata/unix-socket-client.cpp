@@ -84,7 +84,12 @@ void UnixSocketClient::server_interaction() {
         proto_->on_disconnect_cb_(socket_.fd_);
         FD_CLR(socket_.fd_, &allset);
       } else { /* process server′s message */
-        proto_->on_connect_cb_(socket_.fd_);
+        if (!connected_) {
+          proto_->on_connect_cb_(socket_.fd_);
+          connected_ = true;
+        } else {
+          proto_->on_update_cb_(socket_.fd_);
+        }
       }
     }
   }  // while (!quit_)
