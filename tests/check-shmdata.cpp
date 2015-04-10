@@ -14,6 +14,7 @@
 
 #include <cassert>
 #include <array>
+#include <iostream>
 #include "shmdata/writer.hpp"
 #include "shmdata/reader.hpp"
 
@@ -70,10 +71,19 @@ int main () {
              sizeof(Frame),
              "application/x-check-shmdata");
     assert(w);
-    Reader r("/tmp/check-shmdata");
-    assert(r);
+    // Reader r("/tmp/check-shmdata",
+    //          [](void *data){
+    //            std::cout << "new data for client" << std::endl;
+    //          });
+    // assert(r);
+    // auto i = 300;
+    // Frame frame;
+    // while (0 != i--) {
+    //   assert(w.copy_to_shm(&frame, sizeof(Frame)));
+    //   frame.count++;
+    // }
   }
-  
+
   return 0;
 }
 

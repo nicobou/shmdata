@@ -17,15 +17,25 @@
 
 namespace shmdata{
 
-Reader::Reader(const std::string &path) :
+Reader::Reader(const std::string &path, on_data_cb cb) :
     path_(path),
+    on_data_cb_(cb),
     proto_([this](int){this->on_server_connected();},
            [this](int){this->on_server_disconnected();}),
     cli_(path, &proto_),
     shm_(ftok(path.c_str(), 'n'), 0, /* owner = */ false),
-    sem_(ftok(path.c_str(), 'm'), /* owner = */ false) {
+    sem_(ftok(path.c_str(), 'm'), /* owner = */ false),
+    data_subscriber_(std::async(std::launch::async,
+                                &Reader::on_buffer,
+                                this,
+                                &sem_)){
   if (!cli_ || !shm_ || !sem_)
     is_valid_ = false;
+}
+
+Reader::~Reader(){
+  do_read_ = false;
+  data_subscriber_.get();
 }
 
 void Reader::on_server_connected(){
@@ -40,5 +50,18 @@ void Reader::on_server_disconnected(){
             << std::endl;
 }
 
+bool Reader::on_buffer(sysVSem *sem){
+  {
+    updateSubscriber subscriber(sem);
+    while (do_read_) {
+      readLock rlock(&subscriber);
+      if (!rlock)
+        return false;
+      if (on_data_cb_)
+        on_data_cb_(shm_.get_mem());
+    }
+  }
+  return true;
+}
 
 }  // namespace shmdata

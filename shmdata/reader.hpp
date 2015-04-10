@@ -16,6 +16,7 @@
 #define _SHMDATA_READER_H_
 
 #include <string>
+#include <future>
 #include "shmdata/sysv-shm.hpp"
 #include "shmdata/sysv-sem.hpp"
 #include "shmdata/unix-socket-client.hpp"
@@ -24,8 +25,9 @@
 namespace shmdata{
 class Reader: public SafeBoolIdiom {
  public:
-  Reader(const std::string &path);
-  ~Reader() = default;
+  using on_data_cb = std::function<void(void *)>;
+  Reader(const std::string &path, on_data_cb cb);
+  ~Reader();
   Reader() = delete;
   Reader(const Reader &) = delete;
   Reader& operator=(const Reader&) = delete;
@@ -33,16 +35,19 @@ class Reader: public SafeBoolIdiom {
 
  private:
   std::string path_;
+  on_data_cb on_data_cb_;
   UnixSocketProtocol::ClientSide proto_;
   UnixSocketClient cli_;
   sysVShm shm_;
   sysVSem sem_;
+  std::future<bool> data_subscriber_;
+  bool do_read_{true};
   size_t shm_size_{0};
   bool is_valid_{true};
   bool is_valid() const final{return is_valid_;}
   void on_server_connected();
   void on_server_disconnected();
-
+  bool on_buffer(sysVSem *sem);
 };
 
 }  // namespace shmdata
