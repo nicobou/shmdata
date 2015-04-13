@@ -72,7 +72,7 @@ UnixSocketServer::~UnixSocketServer() {
   }
 }
 
-void UnixSocketServer::notify_update() {
+size_t UnixSocketServer::notify_update() {
   // re-sending connect message
   auto msg = proto_->get_connect_iov_();
   for (auto &it: clients_){
@@ -80,6 +80,7 @@ void UnixSocketServer::notify_update() {
     if (-1 == res)
       perror("writev (update)");
   }
+  return clients_.size();
 }
 
 bool UnixSocketServer::is_valid() const {

@@ -20,23 +20,18 @@ namespace shmdata{
 Reader::Reader(const std::string &path, on_data_cb cb) :
     path_(path),
     on_data_cb_(cb),
+    shm_(ftok(path.c_str(), 'n'), 0, /* owner = */ false),
+    sem_(ftok(path.c_str(), 'm'), /* owner = */ false),
     proto_([this](int){on_server_connected();},
            [this](int){on_server_disconnected();},
            [this](int){on_buffer(&sem_);}),  // read when update is received
-    cli_(path, &proto_),
-    shm_(ftok(path.c_str(), 'n'), 0, /* owner = */ false),
-    sem_(ftok(path.c_str(), 'm'), /* owner = */ false),
-    data_subscriber_(std::async(std::launch::async,
-                                &Reader::on_buffer,
-                                this,
-                                &sem_)){
+    cli_(path, &proto_) {
   if (!cli_ || !shm_ || !sem_)
     is_valid_ = false;
 }
 
 Reader::~Reader(){
   do_read_ = false;
-  data_subscriber_.get();
 }
 
 void Reader::on_server_connected(){

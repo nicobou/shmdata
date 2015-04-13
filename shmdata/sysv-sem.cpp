@@ -26,7 +26,8 @@ namespace semops{
 // sem_num 0 is for reading, 1 is for writer
 static struct sembuf read_start [] = {{0, 1, SEM_UNDO},      // incr reader
                                       {1, 0, SEM_UNDO}};     // wait writer
-static struct sembuf read_end [] = {{0, -1, SEM_UNDO}};      // decr reader
+static struct sembuf read_end [] = {{0, -1, SEM_UNDO},       // decr reader
+                                    {2, -1, SEM_UNDO}};       
 static struct sembuf write_start [] = {{0, 0, SEM_UNDO},     // wait reader is 0
                                        {1, 1, SEM_UNDO},    // incr writer
                                        {0, 1, SEM_UNDO}};   // incr reader
@@ -73,12 +74,16 @@ ReadLock::~ReadLock(){
 }
 
 WriteLock::WriteLock(sysVSem *sem) :
-    semid_(sem->semid_){
+    semid_(sem->semid_) {
   if (-1 == semop(semid_,
                   semops::write_start,
                   sizeof(semops::write_start)/sizeof(*semops::write_start))) {
     valid_ = false;
   }
+}
+
+void WriteLock::set_num_readers(size_t num_readers) {
+  num_readers_ = num_readers;
 }
 
 WriteLock::~WriteLock(){
@@ -87,6 +92,12 @@ WriteLock::~WriteLock(){
   semop(semid_,
         semops::write_end,
         sizeof(semops::write_end)/sizeof(*semops::write_end));
+  if (0 != num_readers_) {
+    struct sembuf wait_readers[] = {{2, num_readers_ , SEM_UNDO}};    // wait readers
+    semop(semid_,
+          wait_readers,
+          sizeof(wait_readers)/sizeof(*wait_readers));
+  }
 }
 
 }  // namespace shmdata

@@ -37,7 +37,8 @@ class UnixSocketServer: public SafeBoolIdiom {
   UnixSocketServer& operator=(const UnixSocketServer&) = delete;
   UnixSocketServer& operator=(UnixSocketServer&&) = default;
 
-  void notify_update();
+  // notify client and return the number of notification
+  size_t notify_update();
   
  private:
   std::string path_;

@@ -21,37 +21,6 @@
 
 using namespace shmdata;
 
-static std::atomic_int done(0);
-
-static const int init_val = 65535;
-
-bool writer(sysVSem *sem, int *val){
-  auto i = 65535;
-  while (0 != i--){
-    {
-      WriteLock wlock(sem);
-      assert(wlock);
-      *val = i;
-    }
-  }
-  return true;
-}
-
-bool reader(sysVSem *sem, int *val){
-  {
-    auto previous = init_val;
-    while (0 == done.load()){
-      ReadLock rlock(sem);
-      assert(rlock);
-      
-      assert (*val <= previous);
-      previous = *val;
-    }
-  }
-  return true;
-}
-
-
 int main () {
   using namespace shmdata;
   {
@@ -61,24 +30,29 @@ int main () {
   {
     sysVSem sem(4312, /* owner = */ true);
     assert(sem);
-    auto val = init_val;
-    // wait readers lunched in order
-    auto reader_handle = std::async(std::launch::async,
-                                    reader,
-                                    &sem,
-                                    &val);
-    auto reader_handle2 = std::async(std::launch::async,
-                                     reader,
-                                     &sem,
-                                     &val);
-    auto writer_handle = std::async(std::launch::async,
-                                    writer,
-                                    &sem,
-                                    &val);
-    assert(writer_handle.get());
-    done.store(1);  // kills readers
-    assert(reader_handle.get());
-    assert(reader_handle2.get());
+    auto i = 65535;
+    auto val = i;
+    while (0 != i--){
+      {
+        // one writer, two readers
+        {
+          WriteLock wlock(&sem);
+          assert(wlock);
+          wlock.set_num_readers(2);
+          val = i;
+        }
+        {  // first reader
+          ReadLock rlock(&sem);
+          assert(rlock);
+          assert (val == i);
+        }
+        {  // second reader
+          ReadLock rlock(&sem);
+          assert(rlock);
+          assert (val == i);
+        }
+      }
+    }
   }
   return 0;
 }

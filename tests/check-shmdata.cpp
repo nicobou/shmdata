@@ -56,7 +56,7 @@ int main () {
       Frame frame;
       // optional memory initialization with a copy
       assert(w.copy_to_shm(&frame, sizeof(Frame)));
-      while (0 != i--) {
+      while (0 != --i) {
         //  the following is locking the shared memory for writing
         auto access = w.get_one_write_access();
         assert(access);
@@ -79,13 +79,13 @@ int main () {
                          << std::endl;
              });
     assert(r);
-    //std::this_thread::sleep_for (std::chrono::milliseconds(100));
     Frame frame;
     auto i = 300;
     while (0 != --i) {
+      if (0 == i)
+        std::cout << "i is 0" << std::endl;
       frame.count = i;
       assert(w.copy_to_shm(&frame, sizeof(Frame)));
-      //std::this_thread::sleep_for (std::chrono::milliseconds(1));
     }
   }
 

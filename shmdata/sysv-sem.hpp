@@ -67,8 +67,12 @@ class WriteLock: public SafeBoolIdiom {
   WriteLock(const WriteLock &) = delete;
   WriteLock& operator=(const WriteLock&) = delete;
   WriteLock& operator=(WriteLock&&) = default;
+
+  void set_num_readers(size_t num_readers);
+  
  private:
   int semid_;
+  size_t num_readers_{0};
   bool valid_{true};
   bool is_valid() const final {return valid_;};
 };
