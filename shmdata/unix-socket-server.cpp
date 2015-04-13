@@ -22,6 +22,7 @@
 #include <sys/uio.h>
 #include <algorithm>
 #include <vector>
+#include <iostream> // debug
 #include "./unix-socket-server.hpp"
 
 namespace shmdata{
@@ -74,12 +75,12 @@ UnixSocketServer::~UnixSocketServer() {
 
 short UnixSocketServer::notify_update() {
   // re-sending connect message
-  auto msg = proto_->get_connect_iov_();
-  for (auto &it: clients_){
-    auto res = writev(it, const_cast<iovec *>(msg.iov_), msg.iov_len_);
-    if (-1 == res)
-      perror("writev (update)");
-  }
+    auto msg = proto_->get_connect_iov_();
+    for (auto &it: clients_){
+      auto res = writev(it, const_cast<iovec *>(msg.iov_), msg.iov_len_);
+      if (-1 == res)
+        std::cout << "ERROR writev (update)" << std::endl;
+    }
   return clients_.size();
 }
 
@@ -122,7 +123,7 @@ void UnixSocketServer::client_interaction() {
       std::printf("(server) new connection: fd %d\n", clifd);
       continue;
     }
-    for (auto &it : clients_) {
+      for (auto &it : clients_) {
       if (FD_ISSET(it, &rset)) {
         auto nread = read(it, buf, 1);  // MAXLINE
         if (nread < 0) {
