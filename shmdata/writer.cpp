@@ -34,7 +34,7 @@ bool Writer::copy_to_shm(void *data, size_t size){
   if (size > connect_data_.shm_size_)
     return false;
   WriteLock wlock(&sem_);
-  wlock.set_num_readers(srv_.notify_update());
+  srv_.notify_update();
   auto dest = shm_.get_mem();
   if (dest != std::memcpy(dest, data, size))
     return false;

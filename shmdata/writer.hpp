@@ -56,8 +56,6 @@ class OneWriteAccess {
   OneWriteAccess(sysVSem *sem, void *mem, UnixSocketServer *srv) :
       wlock_(sem),
       mem_(mem){
-    if(wlock_)
-      wlock_.set_num_readers(srv->notify_update());
   }
   OneWriteAccess& operator=(OneWriteAccess&&) = default;
   WriteLock wlock_;

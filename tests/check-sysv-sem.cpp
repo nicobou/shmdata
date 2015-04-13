@@ -38,7 +38,6 @@ int main () {
         {
           WriteLock wlock(&sem);
           assert(wlock);
-          wlock.set_num_readers(2);
           val = i;
         }
         {  // first reader

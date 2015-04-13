@@ -89,10 +89,17 @@ void UnixSocketClient::server_interaction() {
           connected_ = true;
         } else {
           proto_->on_update_cb_(socket_.fd_);
+          // echo as ack
+          auto res = writev(socket_.fd_,
+                            proto_->data_.iovec_,
+                            proto_->data_.iovec_len_);
+          if (-1 == res)
+            perror("client writev");
         }
       }
     }
   }  // while (!quit_)
+  
 }
 
 }  // namespace shmdata
