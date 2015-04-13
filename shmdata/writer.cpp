@@ -43,7 +43,6 @@ bool Writer::copy_to_shm(void *data, size_t size){
 
 std::unique_ptr<OneWriteAccess> Writer::get_one_write_access() {
    return std::unique_ptr<OneWriteAccess>(new OneWriteAccess(&sem_, shm_.get_mem(), &srv_));
-  srv_.notify_update();
 }
 
 }  // namespace shmdata

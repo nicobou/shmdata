@@ -70,7 +70,7 @@ class WriteLock: public SafeBoolIdiom {
   
  private:
   int semid_;
-  size_t num_readers_{0};
+  short num_readers_{0};
   bool valid_{true};
   bool is_valid() const final {return valid_;};
 };
