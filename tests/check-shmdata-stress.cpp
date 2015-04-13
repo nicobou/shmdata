@@ -33,14 +33,14 @@ using Frame = struct {
 bool reader(){
   { // creating one reader
     std::this_thread::sleep_for (std::chrono::milliseconds(10));
-    // Reader r("/tmp/check-stress",
-    //          [](void *data){
-    //            // auto frame = static_cast<Frame *>(data);
-    //            // std::cout << "(one reader) new data for client "
-    //            //           << frame->count
-    //            //           << std::endl;
-    //          });
-    // assert(r);
+    Reader r("/tmp/check-stress",
+             [](void *data){
+               // auto frame = static_cast<Frame *>(data);
+               // std::cout << "(one reader) new data for client "
+               //           << frame->count
+               //           << std::endl;
+             });
+    assert(r);
     std::this_thread::sleep_for (std::chrono::milliseconds(1000));
   }
   // { // creating five readers
@@ -85,7 +85,7 @@ bool reader(){
   //                         << std::endl;
   //             });
   //   assert(r5);
-  //   std::this_thread::sleep_for (std::chrono::milliseconds(100));
+  //   std::this_thread::sleep_for (std::chrono::milliseconds(1000));
   // }
   done.store(1);
   return true;
@@ -120,6 +120,8 @@ int main () {
       assert(access);
       auto frame = static_cast<Frame *>(access->get_mem());
       frame->count++;
+      std::this_thread::sleep_for (std::chrono::milliseconds(1));
+    
     }
     assert(reader_handle.get());
   }
