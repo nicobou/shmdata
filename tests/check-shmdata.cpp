@@ -66,7 +66,7 @@ int main () {
     }
   }// end writer example
 
-  {  // begin writer/reader example
+  {  // copy writer with one reader
     Writer w("/tmp/check-shmdata",
              sizeof(Frame),
              "application/x-check-shmdata");
@@ -74,7 +74,7 @@ int main () {
     Reader r("/tmp/check-shmdata",
              [](void *data){
                auto frame = static_cast<Frame *>(data);
-               std::cout << "new data for client "
+               std::cout << "(copy) new data for client "
                          << frame->count
                          << std::endl;
              });
@@ -86,6 +86,34 @@ int main () {
         std::cout << "i is 0" << std::endl;
       frame.count = i;
       assert(w.copy_to_shm(&frame, sizeof(Frame)));
+    }
+  }
+
+    {  // direct access writer with one reader
+    Writer w("/tmp/check-shmdata",
+             sizeof(Frame),
+             "application/x-check-shmdata");
+    assert(w);
+    // init
+    {
+      Frame frame;
+      assert(w.copy_to_shm(&frame, sizeof(Frame)));
+    }
+    Reader r("/tmp/check-shmdata",
+             [](void *data){
+               auto frame = static_cast<Frame *>(data);
+               std::cout << "(direct access) new data for client "
+                         << frame->count
+                         << std::endl;
+             });
+    assert(r);
+    auto i = 300;
+    while (0 != --i) {
+      //  the following is locking the shared memory for writing
+      auto access = w.get_one_write_access();
+      assert(access);
+      auto frame = static_cast<Frame *>(access->get_mem());
+      frame->count++;
     }
   }
 
