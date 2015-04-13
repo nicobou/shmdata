@@ -13,6 +13,7 @@
  */
 
 #include <cstring>  // memcpy
+#include <iostream> // debug
 #include "./writer.hpp"
 
 namespace shmdata{
@@ -22,7 +23,7 @@ Writer::Writer(const std::string &path, size_t memsize, const std::string &data_
     proto_([](int){},
            [](int){},
            [this](){return this->connect_data_.get_connect_iov();}),
-    srv_(path, &proto_),
+    srv_(path, &proto_, [this](){this->on_client_notifyed();}),
     shm_(ftok(path.c_str(), 'n'), memsize, /*owner = */ true),
     sem_(ftok(path.c_str(), 'm'), /*owner = */ true)
 {
@@ -45,4 +46,8 @@ std::unique_ptr<OneWriteAccess> Writer::get_one_write_access() {
    return std::unique_ptr<OneWriteAccess>(new OneWriteAccess(&sem_, shm_.get_mem(), &srv_));
 }
 
+void Writer::on_client_notifyed(){
+  std::cout << "on_client_notified" << std::endl;
+  // TODO allow Writelock to release
+}
 }  // namespace shmdata

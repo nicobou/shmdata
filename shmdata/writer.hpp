@@ -45,6 +45,7 @@ class Writer: public SafeBoolIdiom {
   sysVSem sem_;
   bool is_valid_{true};
   bool is_valid() const final{return is_valid_;}
+  void on_client_notifyed();
 };
 
 // see check-shmdata

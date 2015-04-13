@@ -29,10 +29,12 @@ namespace shmdata{
 
 UnixSocketServer::UnixSocketServer(const std::string &path,
                                    UnixSocketProtocol::ServerSide *proto,
+                                   std::function<void()> on_client_notified_cb,
                                    int max_pending_cnx) :
     path_(path),
     max_pending_cnx_(max_pending_cnx),
-    proto_(proto){
+    proto_(proto),
+    on_client_notified_cb_(on_client_notified_cb){
   if (!socket_)  // server not valid if socket is not valid
     return;
   if (nullptr == proto)  // server not valid without protocol
@@ -74,12 +76,17 @@ UnixSocketServer::~UnixSocketServer() {
 }
 
 void UnixSocketServer::notify_update() {
+  if (!clients_notified_.empty())
+    std::cout << "bug" << std::endl;
+  clients_notified_.clear();
   // re-sending connect message
-    auto msg = proto_->get_connect_iov_();
-    for (auto &it: clients_){
-      auto res = writev(it, const_cast<iovec *>(msg.iov_), msg.iov_len_);
-      if (-1 == res)
-        std::cout << "ERROR writev (update)" << std::endl;
+  auto msg = proto_->get_connect_iov_();
+  for (auto &it: clients_){
+    auto res = writev(it, const_cast<iovec *>(msg.iov_), msg.iov_len_);
+    if (-1 == res)
+      std::cout << "ERROR writev (update)" << std::endl;
+    else
+      clients_notified_.insert(it);
     }
 }
 
@@ -122,20 +129,31 @@ void UnixSocketServer::client_interaction() {
       std::printf("(server) new connection: fd %d\n", clifd);
       continue;
     }
-      for (auto &it : clients_) {
+    bool ack_received = false;
+    for (auto &it : clients_) {
       if (FD_ISSET(it, &rset)) {
         auto nread = read(it, buf, 1);  // MAXLINE
         if (nread < 0) {
           perror("read");
         } else if (nread == 0) {
           std::printf("(server) closed: fd %d\n", it);
+          auto notified = clients_notified_.find(it);
+          if (clients_notified_.end() != notified) {
+            clients_notified_.erase(it);
+            ack_received = true;
+          }
           if (proto_->on_disconnect_cb_)
             proto_->on_disconnect_cb_(it);
           clients_to_remove.push_back(it);
           FD_CLR(it, &allset);
           close(it);
-        } else { /* process client′s request */
-          std::printf("bug: client request\n");
+        } else { 
+          // handling client ack
+          auto notified = clients_notified_.find(it);
+          if (clients_notified_.end() != notified) {
+            clients_notified_.erase(it);
+            ack_received = true;
+          }
         }
       }
     }
@@ -145,6 +163,9 @@ void UnixSocketServer::client_interaction() {
       clients_.erase(cli);
     }
     clients_to_remove.clear();
+    // call on notified is necessary
+    if (ack_received && clients_notified_.empty())
+      on_client_notified_cb_();
   }  // while (!quit_)
 }
 
