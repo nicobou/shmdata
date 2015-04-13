@@ -82,7 +82,7 @@ WriteLock::WriteLock(sysVSem *sem) :
   }
 }
 
-void WriteLock::set_num_readers(size_t num_readers) {
+void WriteLock::set_num_readers(short num_readers) {
   num_readers_ = num_readers;
 }
 

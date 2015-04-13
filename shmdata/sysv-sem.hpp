@@ -51,11 +51,9 @@ class ReadLock: public SafeBoolIdiom {
   ReadLock& operator=(const ReadLock&) = delete;
   ReadLock& operator=(ReadLock&&) = delete;
 
-  //void set_last(){is_last_ = true;}
  private:
   int semid_;
   bool valid_{true};
-  //bool is_last_{false};
   bool is_valid() const final {return valid_;};
 };
 
@@ -68,7 +66,7 @@ class WriteLock: public SafeBoolIdiom {
   WriteLock& operator=(const WriteLock&) = delete;
   WriteLock& operator=(WriteLock&&) = default;
 
-  void set_num_readers(size_t num_readers);
+  void set_num_readers(short num_readers);
   
  private:
   int semid_;

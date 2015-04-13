@@ -72,7 +72,7 @@ UnixSocketServer::~UnixSocketServer() {
   }
 }
 
-size_t UnixSocketServer::notify_update() {
+short UnixSocketServer::notify_update() {
   // re-sending connect message
   auto msg = proto_->get_connect_iov_();
   for (auto &it: clients_){
