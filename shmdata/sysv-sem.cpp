@@ -52,6 +52,14 @@ sysVSem::~sysVSem() {
   }
 }
 
+void sysVSem::cancel_commited_reader(){
+  if (-1 == semop(semid_,
+                  semops::read_end,
+                  sizeof(semops::read_end)/sizeof(*semops::read_end))){
+    std::cout << "bug cancel commited reader" << std::endl;
+  }
+}
+
 bool sysVSem::is_valid() const {
   return 0 < semid_;
 }

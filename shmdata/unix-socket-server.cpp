@@ -29,10 +29,12 @@ namespace shmdata{
 
 UnixSocketServer::UnixSocketServer(const std::string &path,
                                    UnixSocketProtocol::ServerSide *proto,
+                                   std::function<void(int)> on_client_error,
                                    int max_pending_cnx) :
     path_(path),
     max_pending_cnx_(max_pending_cnx),
-    proto_(proto) {
+    proto_(proto),
+    on_client_error_(on_client_error){
   if (!socket_)  // server not valid if socket is not valid
     return;
   if (nullptr == proto)  // server not valid without protocol
@@ -76,7 +78,6 @@ UnixSocketServer::~UnixSocketServer() {
 short UnixSocketServer::notify_update() {
   std::unique_lock<std::mutex> lock(clients_mutex_);
   clients_notified_.clear();
-
   // re-sending connect message
   auto msg = proto_->get_connect_iov_();
   for (auto &it: clients_){
@@ -100,7 +101,7 @@ void UnixSocketServer::client_interaction() {
   auto maxfd = socket_.fd_;
   struct timeval tv;  // select timeout
   auto iov_cnx = proto_->get_connect_iov_();
-  char	buf[1000000];  // MAXLINE
+  char	buf[1000000];  // FIXME MAXLINE
   std::vector<int> clients_to_remove;
   while (0 == quit_.load()) {
     // reset timeout since select may change values
@@ -131,7 +132,11 @@ void UnixSocketServer::client_interaction() {
       if (FD_ISSET(it, &rset)) {
         auto nread = read(it, buf, 1000000);  // MAXLINE
         if (nread < 0) {
-          perror("read");
+          perror("read disconnection");
+          clients_to_remove.push_back(it);
+          if (clients_notified_.end() != clients_notified_.find(it)) {
+            on_client_error_(it);
+          }
         } else if (nread == 0) {
           std::printf("(server) closed: fd %d\n", it);
           if (proto_->on_disconnect_cb_)
@@ -155,7 +160,7 @@ void UnixSocketServer::client_interaction() {
       if (FD_ISSET(it, &rset)) {
         auto nread = read(it, buf, 1000000);  // MAXLINE
         if (nread < 0) {
-          perror("read");
+          perror("read ack");
           clients_to_remove.push_back(it);
         } else if (nread == 0) {
           std::printf("bug checking connection ack from client");

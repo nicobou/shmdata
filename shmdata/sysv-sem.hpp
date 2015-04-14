@@ -35,6 +35,8 @@ class sysVSem: public SafeBoolIdiom {
   sysVSem(const sysVSem &) = delete;
   sysVSem& operator=(const sysVSem&) = delete;
   sysVSem& operator=(sysVSem&&) = default;
+
+  void cancel_commited_reader();
   
  private:
   key_t key_;

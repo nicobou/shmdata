@@ -22,6 +22,7 @@
 #include <atomic>
 #include <unordered_set>
 #include <mutex>
+#include <functional>
 #include "./safe-bool-idiom.hpp"
 #include "./unix-socket.hpp"
 #include "./unix-socket-protocol.hpp"
@@ -32,6 +33,7 @@ class UnixSocketServer: public SafeBoolIdiom {
  public:
   UnixSocketServer(const std::string &path,
                    UnixSocketProtocol::ServerSide *proto,
+                   std::function<void(int)> on_client_error = [](int){},
                    int max_pending_cnx = 10);
   ~UnixSocketServer();
   UnixSocketServer() = delete;
@@ -55,6 +57,7 @@ class UnixSocketServer: public SafeBoolIdiom {
   std::unordered_set<int> clients_notified_{};
   std::unordered_set<int> pending_clients_{};
   UnixSocketProtocol::ServerSide *proto_;
+  std::function<void(int)> on_client_error_;
   bool is_valid() const final;
   void client_interaction();
 };
