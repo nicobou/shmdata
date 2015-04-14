@@ -37,6 +37,8 @@ int main () {
         // one writer, two readers
         {
           WriteLock wlock(&sem);
+          // expecting two readers
+          wlock.commit_readers(2);
           assert(wlock);
           val = i;
         }

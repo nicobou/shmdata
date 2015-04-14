@@ -45,7 +45,6 @@ class Writer: public SafeBoolIdiom {
   sysVSem sem_;
   bool is_valid_{true};
   bool is_valid() const final{return is_valid_;}
-  void on_client_notifyed();
 };
 
 // see check-shmdata
@@ -54,7 +53,9 @@ class OneWriteAccess {
  public:
   void *get_mem() {return mem_;};
  private:
-  OneWriteAccess(sysVSem *sem, void *mem, UnixSocketServer *srv) :
+  OneWriteAccess(sysVSem *sem,
+                 void *mem,
+                 UnixSocketServer *srv) :
       wlock_(sem),
       mem_(mem){
   }

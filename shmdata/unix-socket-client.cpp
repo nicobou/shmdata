@@ -84,17 +84,19 @@ void UnixSocketClient::server_interaction() {
         proto_->on_disconnect_cb_(socket_.fd_);
         FD_CLR(socket_.fd_, &allset);
       } else { /* process server′s message */
+        std::cout << "msg from server" << std::endl;
         if (!connected_) {
-          proto_->on_connect_cb_(socket_.fd_);
-          connected_ = true;
-        } else {
-          proto_->on_update_cb_(socket_.fd_);
-          // echo as ack
+          // ack connection
           auto res = writev(socket_.fd_,
                             proto_->data_.iovec_,
                             proto_->data_.iovec_len_);
           if (-1 == res)
-            perror("client writev");
+            perror("writev client");
+          proto_->on_connect_cb_(socket_.fd_);
+          connected_ = true;
+        } else {
+          std::cout << "update from server" << std::endl;
+          proto_->on_update_cb_(socket_.fd_);
         }
       }
     }

@@ -34,7 +34,7 @@ int main () {
   // testing
   {
     assert(!fileMonitor::is_unix_socket(socket_path));
-    UnixSocketServer srv(socket_path, &sproto, [](){});
+    UnixSocketServer srv(socket_path, &sproto);
     assert(fileMonitor::is_unix_socket(socket_path));
     assert(srv);
   }

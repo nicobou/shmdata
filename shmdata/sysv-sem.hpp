@@ -18,6 +18,7 @@
 
 #include <sys/ipc.h>
 #include <sys/sem.h>
+#include <functional>
 #include "./safe-bool-idiom.hpp"
 
 namespace shmdata{
@@ -66,6 +67,8 @@ class WriteLock: public SafeBoolIdiom {
   WriteLock& operator=(const WriteLock&) = delete;
   WriteLock& operator=(WriteLock&&) = default;
 
+  bool commit_readers(short num_readers);
+  
  private:
   int semid_;
   bool valid_{true};

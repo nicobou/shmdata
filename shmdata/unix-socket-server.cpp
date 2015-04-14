@@ -29,12 +29,10 @@ namespace shmdata{
 
 UnixSocketServer::UnixSocketServer(const std::string &path,
                                    UnixSocketProtocol::ServerSide *proto,
-                                   std::function<void()> on_client_notified_cb,
                                    int max_pending_cnx) :
     path_(path),
     max_pending_cnx_(max_pending_cnx),
-    proto_(proto),
-    on_client_notified_cb_(on_client_notified_cb){
+    proto_(proto) {
   if (!socket_)  // server not valid if socket is not valid
     return;
   if (nullptr == proto)  // server not valid without protocol
@@ -75,10 +73,10 @@ UnixSocketServer::~UnixSocketServer() {
   }
 }
 
-void UnixSocketServer::notify_update() {
-  if (!clients_notified_.empty())
-    std::cout << "bug" << std::endl;
+short UnixSocketServer::notify_update() {
+  std::unique_lock<std::mutex> lock(clients_mutex_);
   clients_notified_.clear();
+
   // re-sending connect message
   auto msg = proto_->get_connect_iov_();
   for (auto &it: clients_){
@@ -87,7 +85,8 @@ void UnixSocketServer::notify_update() {
       std::cout << "ERROR writev (update)" << std::endl;
     else
       clients_notified_.insert(it);
-    }
+  }
+  return clients_notified_.size();
 }
 
 bool UnixSocketServer::is_valid() const {
@@ -101,7 +100,7 @@ void UnixSocketServer::client_interaction() {
   auto maxfd = socket_.fd_;
   struct timeval tv;  // select timeout
   auto iov_cnx = proto_->get_connect_iov_();
-  char	buf[1];  // MAXLINE
+  char	buf[1000000];  // MAXLINE
   std::vector<int> clients_to_remove;
   while (0 == quit_.load()) {
     // reset timeout since select may change values
@@ -112,6 +111,7 @@ void UnixSocketServer::client_interaction() {
       perror("select error");
       continue;
     }
+    std::unique_lock<std::mutex> lock(clients_mutex_);
     if (FD_ISSET(socket_.fd_, &rset)) {
       // accept new client request
       auto clifd = accept(socket_.fd_, NULL, NULL);
@@ -120,40 +120,27 @@ void UnixSocketServer::client_interaction() {
       FD_SET(clifd, &allset);
       if (clifd > maxfd)
         maxfd = clifd;  // max fd for select()
-      clients_.push_back(clifd);
+      pending_clients_.insert(clifd);
       auto res = writev(clifd, const_cast<iovec *>(iov_cnx.iov_), iov_cnx.iov_len_);
       if (-1 == res)
         perror("writev");
-      if (proto_->on_connect_cb_)
-        proto_->on_connect_cb_(clifd);
-      std::printf("(server) new connection: fd %d\n", clifd);
       continue;
     }
-    bool ack_received = false;
+    // checking disconnection
     for (auto &it : clients_) {
       if (FD_ISSET(it, &rset)) {
-        auto nread = read(it, buf, 1);  // MAXLINE
+        auto nread = read(it, buf, 1000000);  // MAXLINE
         if (nread < 0) {
           perror("read");
         } else if (nread == 0) {
           std::printf("(server) closed: fd %d\n", it);
-          auto notified = clients_notified_.find(it);
-          if (clients_notified_.end() != notified) {
-            clients_notified_.erase(it);
-            ack_received = true;
-          }
           if (proto_->on_disconnect_cb_)
             proto_->on_disconnect_cb_(it);
           clients_to_remove.push_back(it);
           FD_CLR(it, &allset);
           close(it);
         } else { 
-          // handling client ack
-          auto notified = clients_notified_.find(it);
-          if (clients_notified_.end() != notified) {
-            clients_notified_.erase(it);
-            ack_received = true;
-          }
+          std::cout << "bug client talking" << std::endl;
         }
       }
     }
@@ -163,9 +150,32 @@ void UnixSocketServer::client_interaction() {
       clients_.erase(cli);
     }
     clients_to_remove.clear();
-    // call on notified is necessary
-    if (ack_received && clients_notified_.empty())
-      on_client_notified_cb_();
+    // checking ack from clients
+    for (auto &it : pending_clients_) {
+      if (FD_ISSET(it, &rset)) {
+        auto nread = read(it, buf, 1000000);  // MAXLINE
+        if (nread < 0) {
+          perror("read");
+          clients_to_remove.push_back(it);
+        } else if (nread == 0) {
+          std::printf("bug checking connection ack from client");
+          clients_to_remove.push_back(it);
+          FD_CLR(it, &allset);
+          close(it);
+        } else { 
+          clients_.push_back(it);
+          clients_to_remove.push_back(it);
+          if (proto_->on_connect_cb_)
+            proto_->on_connect_cb_(it);
+          std::printf("(server) new connection: fd %d\n", it);
+        }
+      }
+    }
+    // removing pending client if necessary
+    for (auto &it : clients_to_remove) {
+      pending_clients_.erase(it);
+    }
+    clients_to_remove.clear();
   }  // while (!quit_)
 }
 

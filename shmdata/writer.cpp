@@ -23,7 +23,7 @@ Writer::Writer(const std::string &path, size_t memsize, const std::string &data_
     proto_([](int){},
            [](int){},
            [this](){return this->connect_data_.get_connect_iov();}),
-    srv_(path, &proto_, [this](){this->on_client_notifyed();}),
+    srv_(path, &proto_),
     shm_(ftok(path.c_str(), 'n'), memsize, /*owner = */ true),
     sem_(ftok(path.c_str(), 'm'), /*owner = */ true)
 {
@@ -32,22 +32,26 @@ Writer::Writer(const std::string &path, size_t memsize, const std::string &data_
 }
 
 bool Writer::copy_to_shm(void *data, size_t size){
-  if (size > connect_data_.shm_size_)
-    return false;
-  WriteLock wlock(&sem_);
-  srv_.notify_update();
-  auto dest = shm_.get_mem();
-  if (dest != std::memcpy(dest, data, size))
-    return false;
-  return true;
+  bool res = true;
+  {
+    if (size > connect_data_.shm_size_)
+      return false;
+    WriteLock wlock(&sem_);
+    auto num_readers = srv_.notify_update();
+    if (0 < num_readers) {
+      wlock.commit_readers(num_readers);
+    }
+    auto dest = shm_.get_mem();
+    if ( dest != std::memcpy(dest, data, size))
+      res = false;
+  } // release wlock & lock
+  return res;
 }
 
 std::unique_ptr<OneWriteAccess> Writer::get_one_write_access() {
-   return std::unique_ptr<OneWriteAccess>(new OneWriteAccess(&sem_, shm_.get_mem(), &srv_));
+  return std::unique_ptr<OneWriteAccess>(new OneWriteAccess(&sem_,
+                                                            shm_.get_mem(),
+                                                            &srv_));
 }
 
-void Writer::on_client_notifyed(){
-  std::cout << "on_client_notified" << std::endl;
-  // TODO allow Writelock to release
-}
 }  // namespace shmdata
