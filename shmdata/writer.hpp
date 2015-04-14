@@ -53,12 +53,7 @@ class OneWriteAccess {
  public:
   void *get_mem() {return mem_;};
  private:
-  OneWriteAccess(sysVSem *sem,
-                 void *mem,
-                 UnixSocketServer *srv) :
-      wlock_(sem),
-      mem_(mem){
-  }
+  OneWriteAccess(sysVSem *sem, void *mem, UnixSocketServer *srv);
   OneWriteAccess& operator=(OneWriteAccess&&) = default;
   WriteLock wlock_;
   void *mem_;

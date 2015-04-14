@@ -84,7 +84,6 @@ void UnixSocketClient::server_interaction() {
         proto_->on_disconnect_cb_(socket_.fd_);
         FD_CLR(socket_.fd_, &allset);
       } else { /* process server′s message */
-        std::cout << "msg from server" << std::endl;
         if (!connected_) {
           // ack connection
           auto res = writev(socket_.fd_,
@@ -95,7 +94,6 @@ void UnixSocketClient::server_interaction() {
           proto_->on_connect_cb_(socket_.fd_);
           connected_ = true;
         } else {
-          std::cout << "update from server" << std::endl;
           proto_->on_update_cb_(socket_.fd_);
         }
       }

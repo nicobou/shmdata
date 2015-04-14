@@ -54,4 +54,15 @@ std::unique_ptr<OneWriteAccess> Writer::get_one_write_access() {
                                                             &srv_));
 }
 
+OneWriteAccess::OneWriteAccess(sysVSem *sem,
+                               void *mem,
+                               UnixSocketServer *srv) :
+    wlock_(sem),
+    mem_(mem){
+  auto num_readers = srv->notify_update();
+  if (0 < num_readers) {
+    wlock_.commit_readers(num_readers);
+  }
+}
+
 }  // namespace shmdata
