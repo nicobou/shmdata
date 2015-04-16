@@ -56,6 +56,7 @@ void sysVSem::cancel_commited_reader(){
   if (-1 == semop(semid_,
                   semops::read_end,
                   sizeof(semops::read_end)/sizeof(*semops::read_end))){
+    perror("semop");
     std::cout << "bug cancel commited reader" << std::endl;
   }
 }
