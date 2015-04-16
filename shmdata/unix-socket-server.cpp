@@ -144,13 +144,17 @@ void UnixSocketServer::client_interaction() {
           }
         } else if (nread == 0) {
           std::printf("(server) closed: fd %d\n", it);
+          FD_CLR(it, &allset);
+          close(it);
+        } else {
+          // send quit ack
+          auto res = send(it, &proto_->quit_msg_, sizeof(proto_->quit_msg_), MSG_NOSIGNAL);
+          if (-1 == res)
+            perror("send (ack quit)");
           if (proto_->on_disconnect_cb_)
             proto_->on_disconnect_cb_(it);
           clients_to_remove.push_back(it);
-          FD_CLR(it, &allset);
-          close(it);
-        } else { 
-          std::cout << "bug client talking" << std::endl;
+          std::cout << "client quit" << std::endl;
         }
       }
     }

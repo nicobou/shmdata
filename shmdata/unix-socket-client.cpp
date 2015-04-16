@@ -54,7 +54,11 @@ UnixSocketClient::UnixSocketClient(const std::string &path,
 }
 
 UnixSocketClient::~UnixSocketClient() {
+  
   if (done_.valid()) {
+    auto res = send(socket_.fd_, &proto_->quit_msg_, sizeof(proto_->quit_msg_), MSG_NOSIGNAL);
+    if (-1 == res)
+      std::cout << "ERROR send (quit)" << std::endl;
     quit_.store(1);
     done_.get();
   }
@@ -74,7 +78,8 @@ void UnixSocketClient::server_interaction() {
   bool quit = false;
   if (0 != quit_.load())
     quit = true;
-  while (!quit) {
+  bool quit_acked = false;
+  while (!quit && ! quit_acked) {
     // reset timeout since select may change values
     tv.tv_sec = 0;
     tv.tv_usec = 10000;  // 10 msec
@@ -85,11 +90,9 @@ void UnixSocketClient::server_interaction() {
     }
     if (FD_ISSET(socket_.fd_, &rset)) {
       ssize_t nread;
-      if (!connected_) {
+      if (!connected_) 
         nread = read(socket_.fd_, &proto_->data_, sizeof(UnixSocketProtocol::onConnectData));
-      } else if (quit) {
-        // TODO
-      } else
+      else
         nread = read(socket_.fd_, &proto_->update_msg_, sizeof(proto_->update_msg_));
       
       if (nread < 0) {
@@ -109,14 +112,16 @@ void UnixSocketClient::server_interaction() {
           proto_->on_connect_cb_(socket_.fd_);
           connected_ = true;
         } else {
-          proto_->on_update_cb_(socket_.fd_);
+          if (1 == proto_->update_msg_.msg_type_)
+            proto_->on_update_cb_(socket_.fd_);
+          else
+            quit_acked = true;
         }
       }
     }
     if (0 != quit_.load())
       quit = true;
   }  // while (!quit_)
-  
 }
 
 }  // namespace shmdata
