@@ -83,9 +83,10 @@ short UnixSocketServer::notify_update() {
   std::unique_lock<std::mutex> lock(clients_mutex_);
   clients_notified_.clear();
   // re-sending connect message
-  auto msg = proto_->get_connect_msg_();
+  //auto msg = proto_->get_connect_msg_();
   for (auto &it: clients_){
-    auto res = send(it, &msg, sizeof(msg), MSG_NOSIGNAL);
+    //auto res = send(it, &msg, sizeof(msg), MSG_NOSIGNAL);
+    auto res = send(it, &proto_->update_msg_, sizeof(proto_->update_msg_), MSG_NOSIGNAL);
     if (-1 == res)
       std::cout << "ERROR send (update)" << std::endl;
     else
