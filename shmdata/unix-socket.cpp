@@ -32,6 +32,10 @@ UnixSocket::UnixSocket() :
     perror("fcntl(F_GETFL)");
   if (fcntl(fd_, F_SETFL, flags | O_NONBLOCK | FD_CLOEXEC) < 0)
      perror("fcntl(F_SETFL)");
+#ifdef SO_NOSIGPIPE
+  int set = 1;
+  setsockopt(sd, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
+#endif
 }
 
 UnixSocket::~UnixSocket() {
