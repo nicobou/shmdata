@@ -37,7 +37,7 @@ Reader::~Reader(){
 void Reader::on_server_connected(){
   std::cout << "(client) on_connect_cb "
             << " shm_size " << proto_.data_.shm_size_ 
-            << " user_data " << proto_.data_.get_user_data().c_str()
+            << " user_data " << proto_.data_.user_data_.data()
             << std::endl;
 }
 

@@ -37,7 +37,7 @@ static struct sembuf write_end [] = {{0, -1, SEM_UNDO},     // decr reader
 sysVSem::sysVSem(key_t key, bool owner) :
     key_ (key),
     owner_(owner),
-    semid_(semget(key_, 4, owner ? IPC_CREAT | IPC_EXCL | 0666 : 0)) {
+    semid_(semget(key_, 2, owner ? IPC_CREAT | IPC_EXCL | 0666 : 0)) {
   if (semid_ < 0) {
     perror("semget");
     return;

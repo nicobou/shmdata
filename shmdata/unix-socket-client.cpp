@@ -12,6 +12,7 @@
  * GNU Lesser General Public License for more details.
  */
 
+
 #include <sys/un.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -20,6 +21,11 @@
 #include <sys/uio.h>
 #include <iostream>
 #include "./unix-socket-client.hpp"
+
+// OSX compatibility
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL SO_NOSIGPIPE
+#endif
 
 namespace shmdata{
 
@@ -75,9 +81,9 @@ void UnixSocketClient::server_interaction() {
       continue;
     }
     if (FD_ISSET(socket_.fd_, &rset)) {
-      auto nread = readv(socket_.fd_,
-                         proto_->data_.iovec_,
-                         proto_->data_.iovec_len_);
+      auto nread = read(socket_.fd_,
+                        &proto_->data_,
+                        sizeof(UnixSocketProtocol::onConnectData));
       if (nread < 0) {
         perror("read");
       } else if (nread == 0) {
@@ -86,9 +92,10 @@ void UnixSocketClient::server_interaction() {
       } else { /* process server′s message */
         if (!connected_) {
           // ack connection
-          auto res = writev(socket_.fd_,
-                            proto_->data_.iovec_,
-                            proto_->data_.iovec_len_);
+          auto res = send(socket_.fd_,
+                          &proto_->data_,
+                          sizeof(UnixSocketProtocol::onConnectData),
+                          MSG_NOSIGNAL);
           if (-1 == res)
             perror("writev client");
           proto_->on_connect_cb_(socket_.fd_);

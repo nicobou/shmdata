@@ -25,71 +25,36 @@
 namespace shmdata{
 namespace UnixSocketProtocol{
 
-using socketMsg_t = struct socketMsg {
-socketMsg(const struct iovec *iovec, size_t iovec_len):
-    iov_(iovec), iov_len_(iovec_len){}
-const struct iovec *iov_{nullptr};
-size_t iov_len_{0};
-};
-
 struct onConnectData {
   onConnectData(size_t shm_size,
                 const std::string &user_data);
   onConnectData() = default;
   // data to distribute by server at connection
+  const unsigned short msg_type_{0}; 
   size_t shm_size_{0};
-  std::string user_data_{};  
+  std::array<char, 4096> user_data_;  
 };
 
 
 // Server -----------------------------------------------------
-// constructing onConnectData
-struct onConnectDataMaker : public onConnectData {
-  // socket data structure pointing to members initialized in ctor
-  size_t iovec_len_{2};
-  const struct iovec iovec_[2];
-  // ctor
-  onConnectDataMaker(size_t shm_size,
-                     const std::string &user_data);
-  onConnectDataMaker() = delete;
-  socketMsg_t get_connect_iov();
-};
-
 struct ServerSide {
   using onClientConnect = std::function<void(int id)>;
   using onClientDisconnect = std::function<void(int id)>;
   onClientConnect on_connect_cb_{};
   onClientDisconnect on_disconnect_cb_{};
   // (server) get buffers to send back to clients when connecting
-  using iovServOnConnect = std::function<socketMsg_t()>;
-  iovServOnConnect get_connect_iov_{};
+  using MsgOnConnect = std::function<onConnectData()>;
+  MsgOnConnect get_connect_msg_{};
   ServerSide(onClientConnect occ,
              onClientDisconnect ocd,
-             iovServOnConnect isoc) :
+             MsgOnConnect gocm) :
       on_connect_cb_(occ),
       on_disconnect_cb_(ocd),
-      get_connect_iov_(isoc) {
+      get_connect_msg_(gocm) {
   }
 };
 
 // Client -----------------------------------------------------
-// placeholder for receiving connection data
-template<size_t _size>
-struct onConnectDataReceiver : public onConnectData {
-  onConnectDataReceiver() :
-      iovec_{
-  {&shm_size_, sizeof(size_t)},
-  {user_data_, _size}} {
-  }
-  std::string get_user_data(){
-    return std::string(static_cast<char *>(iovec_[1].iov_base),
-                       0,
-                       iovec_[1].iov_len);
-}
-  char user_data_[_size];
-  size_t iovec_len_{2};
-  const struct iovec iovec_[2];
-};
 
 struct ClientSide {
   using onServerConnected = std::function<void(int id)>;  // FIXME remove id
@@ -97,7 +62,7 @@ struct ClientSide {
   using onUpdate = std::function<void(int id)>;
   onServerConnected on_connect_cb_{};
   onServerDisconnected on_disconnect_cb_{};
-  onConnectDataReceiver<65536> data_{};
+  onConnectData data_{};
   onUpdate on_update_cb_{};
   ClientSide(onServerConnected osc,
              onServerDisconnected osd,

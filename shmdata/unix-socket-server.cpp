@@ -25,6 +25,10 @@
 #include <iostream> // debug
 #include "./unix-socket-server.hpp"
 
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL SO_NOSIGPIPE
+#endif
+
 namespace shmdata{
 
 UnixSocketServer::UnixSocketServer(const std::string &path,
@@ -79,11 +83,11 @@ short UnixSocketServer::notify_update() {
   std::unique_lock<std::mutex> lock(clients_mutex_);
   clients_notified_.clear();
   // re-sending connect message
-  auto msg = proto_->get_connect_iov_();
+  auto msg = proto_->get_connect_msg_();
   for (auto &it: clients_){
-    auto res = writev(it, const_cast<iovec *>(msg.iov_), msg.iov_len_);
+    auto res = send(it, &msg, sizeof(msg), MSG_NOSIGNAL);
     if (-1 == res)
-      std::cout << "ERROR writev (update)" << std::endl;
+      std::cout << "ERROR send (update)" << std::endl;
     else
       clients_notified_.insert(it);
   }
@@ -100,7 +104,7 @@ void UnixSocketServer::client_interaction() {
   FD_SET(socket_.fd_, &allset);
   auto maxfd = socket_.fd_;
   struct timeval tv;  // select timeout
-  auto iov_cnx = proto_->get_connect_iov_();
+  auto cnx_msg = proto_->get_connect_msg_();
   char	buf[1000000];  // FIXME MAXLINE
   std::vector<int> clients_to_remove;
   while (0 == quit_.load()) {
@@ -122,9 +126,9 @@ void UnixSocketServer::client_interaction() {
       if (clifd > maxfd)
         maxfd = clifd;  // max fd for select()
       pending_clients_.insert(clifd);
-      auto res = writev(clifd, const_cast<iovec *>(iov_cnx.iov_), iov_cnx.iov_len_);
+      auto res = send(clifd, &cnx_msg, sizeof(cnx_msg), MSG_NOSIGNAL);
       if (-1 == res)
-        perror("writev");
+        perror("send");
       continue;
     }
     // checking disconnection

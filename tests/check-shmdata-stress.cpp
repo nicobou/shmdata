@@ -36,9 +36,9 @@ bool reader(){
     Reader r("/tmp/check-stress",
              [](void *data){
                auto frame = static_cast<Frame *>(data);
-               // std::cout << "(one reader) new data for client "
-               //           << frame->count
-               //           << std::endl;
+               std::cout << "(one reader) new data for client "
+                         << frame->count
+                         << std::endl;
              });
     assert(r);
     std::this_thread::sleep_for (std::chrono::milliseconds(1000));
@@ -48,41 +48,41 @@ bool reader(){
     Reader r1("/tmp/check-stress",
               [](void *data){
                 auto frame = static_cast<Frame *>(data);
-                // std::cout << "(1) new data for client "
-                //           << frame->count
-                //           << std::endl;
+                std::cout << "(1) new data for client "
+                          << frame->count
+                          << std::endl;
               });
     assert(r1);
     Reader r2("/tmp/check-stress",
               [](void *data){
                 auto frame = static_cast<Frame *>(data);
-                // std::cout << "(2) new data for client "
-                //           << frame->count
-                //           << std::endl;
+                std::cout << "(2) new data for client "
+                          << frame->count
+                          << std::endl;
               });
     assert(r2);
     Reader r3("/tmp/check-stress",
               [](void *data){
                 auto frame = static_cast<Frame *>(data);
-                // std::cout << "(3) new data for client "
-                //           << frame->count
-                //           << std::endl;
+                std::cout << "(3) new data for client "
+                          << frame->count
+                          << std::endl;
               });
     assert(r3);
     Reader r4("/tmp/check-stress",
               [](void *data){
                 auto frame = static_cast<Frame *>(data);
-                // std::cout << "(4) new data for client "
-                //           << frame->count
-                //           << std::endl;
+                std::cout << "(4) new data for client "
+                          << frame->count
+                          << std::endl;
               });
     assert(r4);
     Reader r5("/tmp/check-stress",
               [](void *data){
                 auto frame = static_cast<Frame *>(data);
-                // std::cout << "(5) new data for client "
-                //           << frame->count
-                //           << std::endl;
+                std::cout << "(5) new data for client "
+                          << frame->count
+                          << std::endl;
               });
     assert(r5);
     std::this_thread::sleep_for (std::chrono::milliseconds(1000));
@@ -110,9 +110,9 @@ int main () {
     Reader r("/tmp/check-stress",
              [](void *data){
                auto frame = static_cast<Frame *>(data);
-               // std::cout << "(0) new data for client "
-               //           << frame->count
-               //           << std::endl;
+               std::cout << "(0) new data for client "
+                         << frame->count
+                         << std::endl;
              });
     assert(r);
     auto reader_handle = std::async(std::launch::async, reader);

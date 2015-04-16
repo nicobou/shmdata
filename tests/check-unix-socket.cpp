@@ -23,12 +23,14 @@ int main () {
   using namespace shmdata;
 
   // server protocol
-  UnixSocketProtocol::onConnectDataMaker data(128,       // shm size
-                                              "hello");  // user message
+
   UnixSocketProtocol::ServerSide sproto(
       [](int id) {std::printf("(server) on_connect_cb, id %d\n", id);},
       [](int id) {std::printf("(server) on_disconnect_cb, id %d\n", id);},
-      [&data](){return data.get_connect_iov();});
+      [](){return
+            UnixSocketProtocol::onConnectData (128,          // shm size
+                                               "hello");});  // user message
+            
 
   // client protocol
   UnixSocketProtocol::ClientSide cproto(
@@ -36,7 +38,7 @@ int main () {
         std::cout << "(client) on_connect_cb, id "
                   << id
                   << " shm_size " << cproto.data_.shm_size_ 
-                  << " user_data " << cproto.data_.get_user_data().c_str()
+                  << " user_data " << cproto.data_.user_data_.data()
                   << std::endl;
       },
       [](int d) {

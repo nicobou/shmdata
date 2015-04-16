@@ -38,7 +38,7 @@ class Writer: public SafeBoolIdiom {
   std::unique_ptr<OneWriteAccess> get_one_write_access();
  private:
   std::string path_; 
-  UnixSocketProtocol::onConnectDataMaker connect_data_;
+  UnixSocketProtocol::onConnectData connect_data_;
   UnixSocketProtocol::ServerSide proto_;
   UnixSocketServer srv_;
   sysVShm shm_;

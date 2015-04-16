@@ -22,15 +22,13 @@ static const std::string socket_path("/tmp/check-file-monitor");
 int main () {
   using namespace shmdata;
 
-  // server protocol
-  UnixSocketProtocol::onConnectDataMaker data(128,       // shm size
-                                              "hello");  // user message
 
   UnixSocketProtocol::ServerSide sproto(
       [](int id) {std::printf("(server) on_connect_cb, id %d\n", id);},
       [](int id) {std::printf("(server) on_disconnect_cb, id %d\n", id);},
-      [&data](){return data.get_connect_iov();});
-
+      [](){return UnixSocketProtocol::onConnectData (128,         // shm size
+                                                     "hello");}); // user message
+  
   // testing
   {
     assert(!fileMonitor::is_unix_socket(socket_path));

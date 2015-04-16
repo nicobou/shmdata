@@ -22,7 +22,7 @@ Writer::Writer(const std::string &path, size_t memsize, const std::string &data_
     connect_data_(memsize, data_descr),
     proto_([](int){},
            [](int){},
-           [this](){return this->connect_data_.get_connect_iov();}),
+           [this](){return this->connect_data_;}),
     srv_(path, &proto_, [&](int){sem_.cancel_commited_reader();}),
     shm_(ftok(path.c_str(), 'n'), memsize, /*owner = */ true),
     sem_(ftok(path.c_str(), 'm'), /*owner = */ true)
