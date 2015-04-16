@@ -34,19 +34,14 @@ int main () {
 
   // client protocol
   UnixSocketProtocol::ClientSide cproto(
-      [&cproto](int id){
-        std::cout << "(client) on_connect_cb, id "
-                  << id
+      [&cproto](){
+        std::cout << "(client) on_connect_cb "
                   << " shm_size " << cproto.data_.shm_size_ 
                   << " user_data " << cproto.data_.user_data_.data()
                   << std::endl;
       },
-      [](int d) {
-        std::printf("(client) on_disconnect_cb, id %d\n", d);
-      },
-      [](int d){
-        std::printf("(client) on_update_cb, id %d\n", d);
-      });
+      [](){ std::printf("(client) on_disconnect_cb\n"); },
+      [](){ std::printf("(client) on_update_cb\n"); });
 
   // testing
   { std::printf("-- creation with not time to connect\n");

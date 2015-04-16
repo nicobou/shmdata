@@ -98,7 +98,7 @@ void UnixSocketClient::server_interaction() {
       if (nread < 0) {
         perror("read");
       } else if (nread == 0) {
-        proto_->on_disconnect_cb_(socket_.fd_);
+        proto_->on_disconnect_cb_();
         FD_CLR(socket_.fd_, &allset);
       } else { /* process server′s message */
         if (!connected_) {
@@ -109,11 +109,11 @@ void UnixSocketClient::server_interaction() {
                           MSG_NOSIGNAL);
           if (-1 == res)
             perror("writev client");
-          proto_->on_connect_cb_(socket_.fd_);
+          proto_->on_connect_cb_();
           connected_ = true;
         } else {
           if (1 == proto_->update_msg_.msg_type_)
-            proto_->on_update_cb_(socket_.fd_);
+            proto_->on_update_cb_();
           else
             quit_acked = true;
         }

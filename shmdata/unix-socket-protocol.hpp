@@ -67,9 +67,9 @@ struct ServerSide {
 // Client -----------------------------------------------------
 
 struct ClientSide {
-  using onServerConnected = std::function<void(int id)>;  // FIXME remove id
-  using onServerDisconnected = std::function<void(int id)>;
-  using onUpdate = std::function<void(int id)>;
+  using onServerConnected = std::function<void()>;
+  using onServerDisconnected = std::function<void()>;
+  using onUpdate = std::function<void()>;
   onServerConnected on_connect_cb_{};
   onServerDisconnected on_disconnect_cb_{};
   onConnectData data_{};
