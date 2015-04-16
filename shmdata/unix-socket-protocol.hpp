@@ -35,16 +35,26 @@ struct onConnectData {
   std::array<char, 4096> user_data_;  
 };
 
+struct UpdateMsg {
+  const unsigned short msg_type_{1}; 
+};
+
+struct QuitMsg {
+  const unsigned short msg_type_{2}; 
+};
+
 
 // Server -----------------------------------------------------
 struct ServerSide {
   using onClientConnect = std::function<void(int id)>;
   using onClientDisconnect = std::function<void(int id)>;
-  onClientConnect on_connect_cb_{};
-  onClientDisconnect on_disconnect_cb_{};
+  onClientConnect on_connect_cb_;
+  onClientDisconnect on_disconnect_cb_;
   // (server) get buffers to send back to clients when connecting
   using MsgOnConnect = std::function<onConnectData()>;
-  MsgOnConnect get_connect_msg_{};
+  MsgOnConnect get_connect_msg_;
+  UpdateMsg update_msg_{};
+  QuitMsg quit_msg_{};
   ServerSide(onClientConnect occ,
              onClientDisconnect ocd,
              MsgOnConnect gocm) :
@@ -64,6 +74,8 @@ struct ClientSide {
   onServerDisconnected on_disconnect_cb_{};
   onConnectData data_{};
   onUpdate on_update_cb_{};
+  UpdateMsg update_msg_{};
+  QuitMsg quit_msg_{};
   ClientSide(onServerConnected osc,
              onServerDisconnected osd,
              onUpdate ou) :
