@@ -105,7 +105,7 @@ void UnixSocketServer::client_interaction() {
   auto maxfd = socket_.fd_;
   struct timeval tv;  // select timeout
   auto cnx_msg = proto_->get_connect_msg_();
-  char	buf[1000000];  // FIXME MAXLINE
+  char	buf[8192];  // FIXME MAXLINE
   std::vector<int> clients_to_remove;
   while (0 == quit_.load()) {
     // reset timeout since select may change values
@@ -134,7 +134,7 @@ void UnixSocketServer::client_interaction() {
     // checking disconnection
     for (auto &it : clients_) {
       if (FD_ISSET(it, &rset)) {
-        auto nread = read(it, buf, 1000000);  // MAXLINE
+        auto nread = read(it, buf, 8192);  // MAXLINE
         if (nread < 0) {
           perror("read disconnection");
           clients_to_remove.push_back(it);
@@ -162,7 +162,7 @@ void UnixSocketServer::client_interaction() {
     // checking ack from clients
     for (auto &it : pending_clients_) {
       if (FD_ISSET(it, &rset)) {
-        auto nread = read(it, buf, 1000000);  // MAXLINE
+        auto nread = read(it, buf, 8192);  // MAXLINE
         if (nread < 0) {
           perror("read ack");
           clients_to_remove.push_back(it);
