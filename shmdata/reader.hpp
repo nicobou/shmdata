@@ -41,7 +41,6 @@ class Reader: public SafeBoolIdiom {
   UnixSocketProtocol::ClientSide proto_;
   UnixSocketClient cli_;
   bool do_read_{true};
-  size_t shm_size_{0};
   bool is_valid_{true};
   bool is_valid() const final{return is_valid_;}
   void on_server_connected();
