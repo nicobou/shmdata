@@ -106,8 +106,7 @@ void UnixSocketServer::client_interaction() {
   auto maxfd = socket_.fd_;
   struct timeval tv;  // select timeout
   auto cnx_msg = proto_->get_connect_msg_();
-  auto msg_placeholder = proto_->get_connect_msg_();
-  //char	buf[65536];  // FIXME MAXLINE
+  auto msg_placeholder = proto_->get_connect_msg_();  // connect is the longer msg
   std::vector<int> clients_to_remove;
   while (0 == quit_.load()) {
     // reset timeout since select may change values

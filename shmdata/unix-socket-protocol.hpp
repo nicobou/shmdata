@@ -32,7 +32,7 @@ struct onConnectData {
   // data to distribute by server at connection
   const unsigned short msg_type_{0}; 
   size_t shm_size_{0};
-  std::array<char, 32768> user_data_;  
+  std::array<char, 4096> user_data_;  
 };
 
 struct UpdateMsg {

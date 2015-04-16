@@ -24,7 +24,6 @@ namespace shmdata{
 
 namespace semops{
 // sem_num 0 is for reading, 1 is for writer
-static struct sembuf read_commit_reader [] = {{0, 1, SEM_UNDO}};      // incr reader
 static struct sembuf read_start [] = {{1, 0, SEM_UNDO}};     // wait writer
 static struct sembuf read_end [] = {{0, -1, SEM_UNDO}};       // decr reader
 static struct sembuf write_start [] = {{0, 0, SEM_UNDO},     // wait reader is 0
