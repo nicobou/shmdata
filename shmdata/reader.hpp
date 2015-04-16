@@ -36,9 +36,9 @@ class Reader: public SafeBoolIdiom {
  private:
   std::string path_;
   on_data_cb on_data_cb_;
-  UnixSocketProtocol::ClientSide proto_;
   sysVShm shm_;
   sysVSem sem_;
+  UnixSocketProtocol::ClientSide proto_;
   UnixSocketClient cli_;
   bool do_read_{true};
   size_t shm_size_{0};

@@ -20,7 +20,7 @@
 #include <sys/socket.h>
 #include <string>
 #include <functional>
-
+#include <array>
 
 namespace shmdata{
 namespace UnixSocketProtocol{

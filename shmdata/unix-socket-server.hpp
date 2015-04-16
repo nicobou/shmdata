@@ -23,6 +23,7 @@
 #include <unordered_set>
 #include <mutex>
 #include <functional>
+#include <future>
 #include "./safe-bool-idiom.hpp"
 #include "./unix-socket.hpp"
 #include "./unix-socket-protocol.hpp"
