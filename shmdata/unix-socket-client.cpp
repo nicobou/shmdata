@@ -71,7 +71,10 @@ void UnixSocketClient::server_interaction() {
   FD_SET(socket_.fd_, &allset);
   auto maxfd = socket_.fd_;
   struct timeval tv;  // select timeout
-  while (0 == quit_.load()) {
+  bool quit = false;
+  if (0 != quit_.load())
+    quit = true;
+  while (!quit) {
     // reset timeout since select may change values
     tv.tv_sec = 0;
     tv.tv_usec = 10000;  // 10 msec
@@ -81,9 +84,14 @@ void UnixSocketClient::server_interaction() {
       continue;
     }
     if (FD_ISSET(socket_.fd_, &rset)) {
-      auto nread = read(socket_.fd_,
-                        &proto_->data_,
-                        sizeof(UnixSocketProtocol::onConnectData));
+      ssize_t nread;
+      if (!connected_) {
+        nread = read(socket_.fd_, &proto_->data_, sizeof(UnixSocketProtocol::onConnectData));
+      } else if (quit) {
+        // TODO
+      } else
+        nread = read(socket_.fd_, &proto_->update_msg_, sizeof(proto_->update_msg_));
+      
       if (nread < 0) {
         perror("read");
       } else if (nread == 0) {
@@ -105,6 +113,8 @@ void UnixSocketClient::server_interaction() {
         }
       }
     }
+    if (0 != quit_.load())
+      quit = true;
   }  // while (!quit_)
   
 }
