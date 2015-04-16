@@ -34,7 +34,7 @@ UnixSocket::UnixSocket() :
      perror("fcntl(F_SETFL)");
 #ifdef SO_NOSIGPIPE
   int set = 1;
-  setsockopt(sd, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
+  setsockopt(fd_, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
 #endif
 }
 
