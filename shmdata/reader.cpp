@@ -20,7 +20,7 @@ Reader::Reader(const std::string &path, on_data_cb cb, AbstractLogger *log) :
     log_(log),
     path_(path),
     on_data_cb_(cb),
-    shm_(ftok(path.c_str(), 'n'), 0, /* owner = */ false),
+    shm_(ftok(path.c_str(), 'n'), 0, log_, /* owner = */ false),
     sem_(ftok(path.c_str(), 'm'), log_, /* owner = */ false),
     proto_([this](){on_server_connected();},
            [this](){on_server_disconnected();},
