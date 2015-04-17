@@ -29,8 +29,10 @@ Writer::Writer(const std::string &path,
     shm_(ftok(path.c_str(), 'n'), memsize, log, /*owner = */ true),
     sem_(ftok(path.c_str(), 'm'), log, /*owner = */ true),
     log_(log) {
-  if (!srv_ || !shm_ || !sem_)
-      is_valid_ = false;
+  if (!srv_ || !shm_ || !sem_) {
+    log_->error("writer failled to initialize");
+    is_valid_ = false;
+  }
 }
 
 bool Writer::copy_to_shm(void *data, size_t size){
