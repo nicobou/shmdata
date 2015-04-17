@@ -16,6 +16,8 @@ libshmdata_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
     writer.cpp
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
+    abstract-logger.hpp \
+    console-logger.hpp \
     file-monitor.hpp \
     reader.hpp \
     safe-bool-idiom.hpp \

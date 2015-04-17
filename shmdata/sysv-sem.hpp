@@ -20,16 +20,18 @@
 #include <sys/sem.h>
 #include <functional>
 #include "./safe-bool-idiom.hpp"
+#include "./abstract-logger.hpp"
 
 namespace shmdata{
 
 class WriteLock;
 class ReadLock;
+
 class sysVSem: public SafeBoolIdiom {
   friend WriteLock;
   friend ReadLock;
  public:
-  explicit sysVSem(key_t key, bool owner = false);
+  sysVSem(key_t key, AbstractLogger *log, bool owner = false);
   ~sysVSem();
   sysVSem() = delete;
   sysVSem(const sysVSem &) = delete;
@@ -41,7 +43,8 @@ class sysVSem: public SafeBoolIdiom {
  private:
   key_t key_;
   bool owner_;
-  int semid_{-1};
+  int semid_;
+  AbstractLogger *log_;
   bool is_valid() const final;
 };
 
@@ -55,7 +58,7 @@ class ReadLock: public SafeBoolIdiom {
   ReadLock& operator=(ReadLock&&) = delete;
 
  private:
-  int semid_;
+  sysVSem *sem_;
   bool valid_{true};
   bool is_valid() const final {return valid_;};
 };
@@ -72,7 +75,7 @@ class WriteLock: public SafeBoolIdiom {
   bool commit_readers(short num_readers);
   
  private:
-  int semid_;
+  sysVSem *sem_;
   bool valid_{true};
   bool is_valid() const final {return valid_;};
 };

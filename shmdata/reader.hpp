@@ -21,12 +21,13 @@
 #include "shmdata/sysv-sem.hpp"
 #include "shmdata/unix-socket-client.hpp"
 #include "./safe-bool-idiom.hpp"
+#include "./abstract-logger.hpp"
 
 namespace shmdata{
 class Reader: public SafeBoolIdiom {
  public:
   using on_data_cb = std::function<void(void *)>;
-  Reader(const std::string &path, on_data_cb cb);
+  Reader(const std::string &path, on_data_cb cb, AbstractLogger *log);
   ~Reader();
   Reader() = delete;
   Reader(const Reader &) = delete;
@@ -40,6 +41,7 @@ class Reader: public SafeBoolIdiom {
   sysVSem sem_;
   UnixSocketProtocol::ClientSide proto_;
   UnixSocketClient cli_;
+  AbstractLogger *log_;
   bool do_read_{true};
   bool is_valid_{true};
   bool is_valid() const final{return is_valid_;}

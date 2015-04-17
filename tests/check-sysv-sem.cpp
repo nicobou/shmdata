@@ -18,17 +18,19 @@
 #include <atomic>
 #include <iostream>
 #include "shmdata/sysv-sem.hpp"
+#include "shmdata/console-logger.hpp"
 
 using namespace shmdata;
 
 int main () {
   using namespace shmdata;
+  ConsoleLogger log;
   {
-    sysVSem sem(4312, /* owner = */ true);
+    sysVSem sem(4312, &log, /* owner = */ true);
     assert(sem);
   }
   {
-    sysVSem sem(4312, /* owner = */ true);
+    sysVSem sem(4312, &log, /* owner = */ true);
     assert(sem);
     auto i = 65535;
     auto val = i;

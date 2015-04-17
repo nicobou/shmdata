@@ -17,10 +17,12 @@
 #include <iostream>
 #include "shmdata/writer.hpp"
 #include "shmdata/reader.hpp"
-
-static std::atomic_int done(0);
+#include "shmdata/console-logger.hpp"
 
 using namespace shmdata;
+
+static std::atomic_int done(0);
+static ConsoleLogger log;
 
 // a struct with contiguous data storage 
 using Frame = struct {
@@ -28,7 +30,6 @@ using Frame = struct {
   std::array<int, 3> data{{3, 1, 4}};
   // no vector ! vector.data is contiguous, but not vector
 };
-
 
 bool reader(){
   { // creating one reader
@@ -39,7 +40,8 @@ bool reader(){
                std::cout << "(one reader) new data for client "
                          << frame->count
                          << std::endl;
-             });
+             },
+             &log);
     assert(r);
     std::this_thread::sleep_for (std::chrono::milliseconds(1000));
   }
@@ -51,7 +53,8 @@ bool reader(){
                 std::cout << "(1) new data for client "
                           << frame->count
                           << std::endl;
-              });
+              },
+              &log);
     assert(r1);
     Reader r2("/tmp/check-stress",
               [](void *data){
@@ -59,7 +62,8 @@ bool reader(){
                 std::cout << "(2) new data for client "
                           << frame->count
                           << std::endl;
-              });
+              },
+             &log);
     assert(r2);
     Reader r3("/tmp/check-stress",
               [](void *data){
@@ -67,7 +71,8 @@ bool reader(){
                 std::cout << "(3) new data for client "
                           << frame->count
                           << std::endl;
-              });
+              },
+             &log);
     assert(r3);
     Reader r4("/tmp/check-stress",
               [](void *data){
@@ -75,7 +80,8 @@ bool reader(){
                 std::cout << "(4) new data for client "
                           << frame->count
                           << std::endl;
-              });
+              },
+              &log);
     assert(r4);
     Reader r5("/tmp/check-stress",
               [](void *data){
@@ -83,7 +89,8 @@ bool reader(){
                 std::cout << "(5) new data for client "
                           << frame->count
                           << std::endl;
-              });
+              },
+              &log);
     assert(r5);
     std::this_thread::sleep_for (std::chrono::milliseconds(1000));
   }
@@ -100,7 +107,8 @@ int main () {
     // direct access writer with one reader
     Writer w("/tmp/check-stress",
              sizeof(Frame),
-             "application/x-check-shmdata");
+             "application/x-check-shmdata",
+             &log);
     assert(w);
     // init
     {
@@ -113,7 +121,8 @@ int main () {
                std::cout << "(0) new data for client "
                          << frame->count
                          << std::endl;
-             });
+             },
+             &log);
     assert(r);
     auto reader_handle = std::async(std::launch::async, reader);
     while (1 != done.load()) {

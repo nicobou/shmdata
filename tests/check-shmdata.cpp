@@ -17,6 +17,7 @@
 #include <iostream>
 #include "shmdata/writer.hpp"
 #include "shmdata/reader.hpp"
+#include "shmdata/console-logger.hpp"
 
 /*
  this file contains several examples:
@@ -35,11 +36,13 @@ using Frame = struct {
 
 int main () {
   using namespace shmdata;
-
+  ConsoleLogger log;
+  
   {  // writer example
     Writer w("/tmp/check-shmdata",
              sizeof(Frame),
-             "application/x-check-shmdata");
+             "application/x-check-shmdata",
+             &log);
     assert(w);
 
     {  // first method: copy the entire buffer 
@@ -69,7 +72,8 @@ int main () {
   {  // copy writer with one reader
     Writer w("/tmp/check-shmdata",
              sizeof(Frame),
-             "application/x-check-shmdata");
+             "application/x-check-shmdata",
+             &log);
     assert(w);
     Reader r("/tmp/check-shmdata",
              [](void *data){
@@ -77,7 +81,8 @@ int main () {
                std::cout << "(copy) new data for client "
                          << frame->count
                          << std::endl;
-             });
+             },
+             &log);
     assert(r);
     Frame frame;
     auto i = 300;
@@ -92,7 +97,8 @@ int main () {
     {  // direct access writer with one reader
     Writer w("/tmp/check-shmdata",
              sizeof(Frame),
-             "application/x-check-shmdata");
+             "application/x-check-shmdata",
+             &log);
     assert(w);
     // init
     {
@@ -105,7 +111,8 @@ int main () {
                std::cout << "(direct access) new data for client "
                          << frame->count
                          << std::endl;
-             });
+             },
+             &log);
     assert(r);
     auto i = 300;
     while (0 != --i) {

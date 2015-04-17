@@ -15,8 +15,8 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
-#include <stdio.h>  // perror
-#include <iostream>
+#include <errno.h>
+#include <string.h>
 #include "./sysv-sem.hpp"
 
 
@@ -33,12 +33,14 @@ static struct sembuf write_end [] = {{0, -1, SEM_UNDO},     // decr reader
                                      {1, -1, SEM_UNDO}};    // decr writer
 }  // namespace semops
 
-sysVSem::sysVSem(key_t key, bool owner) :
+sysVSem::sysVSem(key_t key, AbstractLogger *log, bool owner) :
     key_ (key),
     owner_(owner),
-    semid_(semget(key_, 2, owner ? IPC_CREAT | IPC_EXCL | 0666 : 0)) {
+    semid_(semget(key_, 2, owner ? IPC_CREAT | IPC_EXCL | 0666 : 0)),
+    log_(log) {
   if (semid_ < 0) {
-    perror("semget");
+    int err = errno;
+    log_->error("semget %", strerror(err));
     return;
   }
 }
@@ -46,7 +48,8 @@ sysVSem::sysVSem(key_t key, bool owner) :
 sysVSem::~sysVSem() {
   if (is_valid() && owner_) {
     if (semctl(semid_, 0, IPC_RMID, 0) != 0) {
-      perror("semctl removing semaphore");
+      int err = errno;
+      log_->error("semctl removing semaphore %", strerror(err));
     }
   }
 }
@@ -55,8 +58,8 @@ void sysVSem::cancel_commited_reader(){
   if (-1 == semop(semid_,
                   semops::read_end,
                   sizeof(semops::read_end)/sizeof(*semops::read_end))){
-    perror("semop");
-    std::cout << "bug cancel commited reader" << std::endl;
+      int err = errno;
+      log_->error("semop %", strerror(err));
   }
 }
 
@@ -65,35 +68,41 @@ bool sysVSem::is_valid() const {
 }
 
 ReadLock::ReadLock(sysVSem *sem) :
-    semid_(sem->semid_) {
-  if (-1 == semop(semid_,
+    sem_(sem) {
+  if (-1 == semop(sem_->semid_,
                   semops::read_start,
                   sizeof(semops::read_start)/sizeof(*semops::read_start))){
-    valid_ = false;  // TODO log this
+    int err = errno;
+    sem_->log_->error("semop ReadLock not valid %", strerror(err));
+    valid_ = false;
   }
 }
 
 ReadLock::~ReadLock(){
   if (is_valid())
-    semop(semid_,
+    semop(sem_->semid_,
           semops::read_end,
           sizeof(semops::read_end)/sizeof(*semops::read_end));
 }
 
 WriteLock::WriteLock(sysVSem *sem) :
-    semid_(sem->semid_) {
-  if (-1 == semop(semid_,
+    sem_(sem) {
+  if (-1 == semop(sem_->semid_,
                   semops::write_start,
                   sizeof(semops::write_start)/sizeof(*semops::write_start))) {
+    int err = errno;
+    sem_->log_->error("semop WriteLock not valid: %", strerror(err));
     valid_ = false;
   }
 }
 
 bool WriteLock::commit_readers(short num_reader){
   struct sembuf read_commit_reader [] = {{0, num_reader, SEM_UNDO}};
-  if (-1 == semop(semid_,
+  if (-1 == semop(sem_->semid_,
                   read_commit_reader,
                   sizeof(read_commit_reader)/sizeof(*read_commit_reader))) {
+    int err = errno;
+    sem_->log_->error("semop commit readers: %", strerror(err));
     return false;
   }
   return true;
@@ -101,7 +110,7 @@ bool WriteLock::commit_readers(short num_reader){
 WriteLock::~WriteLock(){
   if(!is_valid())
     return;
-  semop(semid_,
+  semop(sem_->semid_,
         semops::write_end,
         sizeof(semops::write_end)/sizeof(*semops::write_end));
 }

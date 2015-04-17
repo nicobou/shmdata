@@ -18,15 +18,18 @@
 
 namespace shmdata{
 
-Writer::Writer(const std::string &path, size_t memsize, const std::string &data_descr):
+Writer::Writer(const std::string &path,
+               size_t memsize,
+               const std::string &data_descr,
+               AbstractLogger *log):
     connect_data_(memsize, data_descr),
     proto_([](int){},
            [](int){},
            [this](){return this->connect_data_;}),
     srv_(path, &proto_, [&](int){sem_.cancel_commited_reader();}),
     shm_(ftok(path.c_str(), 'n'), memsize, /*owner = */ true),
-    sem_(ftok(path.c_str(), 'm'), /*owner = */ true)
-{
+    sem_(ftok(path.c_str(), 'm'), log, /*owner = */ true),
+    log_(log) {
   if (!srv_ || !shm_ || !sem_)
       is_valid_ = false;
 }

@@ -17,15 +17,16 @@
 
 namespace shmdata{
 
-Reader::Reader(const std::string &path, on_data_cb cb) :
+Reader::Reader(const std::string &path, on_data_cb cb, AbstractLogger *log) :
     path_(path),
     on_data_cb_(cb),
     shm_(ftok(path.c_str(), 'n'), 0, /* owner = */ false),
-    sem_(ftok(path.c_str(), 'm'), /* owner = */ false),
+    sem_(ftok(path.c_str(), 'm'), log, /* owner = */ false),
     proto_([this](){on_server_connected();},
            [this](){on_server_disconnected();},
            [this](){on_buffer(&sem_);}),  // read when update is received
-    cli_(path, &proto_) {
+    cli_(path, &proto_),
+    log_(log) {
   if (!cli_ || !shm_ || !sem_)
     is_valid_ = false;
 }

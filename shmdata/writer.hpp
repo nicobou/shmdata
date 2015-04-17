@@ -22,12 +22,16 @@
 #include "shmdata/sysv-shm.hpp"
 #include "shmdata/sysv-sem.hpp"
 #include "./safe-bool-idiom.hpp"
+#include "./abstract-logger.hpp"
 
 namespace shmdata{
 class OneWriteAccess;
 class Writer: public SafeBoolIdiom {
  public:
-  Writer(const std::string &path, size_t memsize, const std::string &data_descr);
+  Writer(const std::string &path,
+         size_t memsize,
+         const std::string &data_descr,
+         AbstractLogger *log);
   ~Writer() = default;
   Writer() = delete;
   Writer(const Writer &) = delete;
@@ -43,6 +47,7 @@ class Writer: public SafeBoolIdiom {
   UnixSocketServer srv_;
   sysVShm shm_;
   sysVSem sem_;
+  AbstractLogger *log_;
   bool is_valid_{true};
   bool is_valid() const final{return is_valid_;}
 };
