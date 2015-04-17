@@ -19,7 +19,6 @@
 #include <errno.h>
 #include <string.h>
 #include "./file-monitor.hpp"
-#include "./abstract-logger.hpp"
 
 namespace shmdata{
 namespace fileMonitor{
