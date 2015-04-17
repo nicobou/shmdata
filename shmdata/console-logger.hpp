@@ -15,6 +15,7 @@
 #ifndef _CONSOLE_LOGGER_H_
 #define _CONSOLE_LOGGER_H_
 
+#include <iostream>
 #include "./abstract-logger.hpp"
 
 namespace shmdata{

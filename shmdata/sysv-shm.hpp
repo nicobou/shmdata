@@ -20,12 +20,13 @@
 #include <sys/shm.h>
 #include <string>
 #include "./safe-bool-idiom.hpp"
+#include "./abstract-logger.hpp"
 
 namespace shmdata{
 
 class sysVShm: public SafeBoolIdiom {
  public:
-  sysVShm(key_t key, size_t size, bool owner = false);
+  sysVShm(key_t key, size_t size, AbstractLogger *log, bool owner = false);
   ~sysVShm();
   sysVShm() = delete;
   sysVShm(const sysVShm &) = delete;
@@ -35,6 +36,7 @@ class sysVShm: public SafeBoolIdiom {
   void *get_mem() {return shm_;};
   
  private:
+  AbstractLogger *log_;
   key_t key_;
   size_t size_;
   int shmid_;

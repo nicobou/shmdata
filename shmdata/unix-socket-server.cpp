@@ -14,15 +14,15 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <stdio.h>  // perror
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/un.h>
 #include <stddef.h>
 #include <sys/uio.h>
+#include <errno.h>
+#include <string.h>
 #include <algorithm>
 #include <vector>
-#include <iostream> // debug
 #include "./unix-socket-server.hpp"
 
 #ifndef MSG_NOSIGNAL
@@ -33,9 +33,12 @@ namespace shmdata{
 
 UnixSocketServer::UnixSocketServer(const std::string &path,
                                    UnixSocketProtocol::ServerSide *proto,
+                                   AbstractLogger *log,
                                    std::function<void(int)> on_client_error,
                                    int max_pending_cnx) :
+    log_(log),
     path_(path),
+    socket_(log),
     max_pending_cnx_(max_pending_cnx),
     proto_(proto),
     on_client_error_(on_client_error){
@@ -45,23 +48,23 @@ UnixSocketServer::UnixSocketServer(const std::string &path,
     return;
   struct sockaddr_un sock_un;
   if (path_.size() >= sizeof(sock_un.sun_path)) {
-    errno = ENAMETOOLONG;
-    perror("name");
+    log_->error("path name %", strerror(ENAMETOOLONG));
     return;
   }
   unlink (path_.c_str());
   memset(&sock_un, 0, sizeof(sock_un));
   sock_un.sun_family = AF_UNIX;
   strcpy(sock_un.sun_path, path_.c_str());
-  //printf("%d, %s\n", socket_.fd_, path_.c_str());
   if (bind(socket_.fd_, (struct sockaddr *) &sock_un, sizeof(struct sockaddr_un)) < 0) {
-    perror("bind");
+    int err = errno;
+    log_->error("bind %", strerror(err));
     return;
   } else {
     is_binded_ = true;
   }
   if (listen (socket_.fd_, max_pending_cnx_) < 0) {
-    perror("listen");
+    int err = errno;
+    log_->error("listen %", strerror(err));
     return;
   } else {
     is_listening_ = true;
@@ -87,10 +90,12 @@ short UnixSocketServer::notify_update() {
   for (auto &it: clients_){
     //auto res = send(it, &msg, sizeof(msg), MSG_NOSIGNAL);
     auto res = send(it, &proto_->update_msg_, sizeof(proto_->update_msg_), MSG_NOSIGNAL);
-    if (-1 == res)
-      std::cout << "ERROR send (update)" << std::endl;
-    else
+    if (-1 == res) {
+      int err = errno;
+      log_->error("send (update) %", strerror(err));
+    } else {
       clients_notified_.insert(it);
+    }
   }
   return clients_notified_.size();
 }
@@ -114,22 +119,27 @@ void UnixSocketServer::client_interaction() {
     tv.tv_usec = 10000;  // 10 msec
     auto rset = allset;  /* rset gets modified each time around */
     if (select(maxfd + 1, &rset, NULL, NULL, &tv) < 0) {
-      perror("select error");
+      int err = errno;
+      log_->error("select %", strerror(err));
       continue;
     }
     std::unique_lock<std::mutex> lock(clients_mutex_);
     if (FD_ISSET(socket_.fd_, &rset)) {
       // accept new client request
       auto clifd = accept(socket_.fd_, NULL, NULL);
-      if (clifd < 0)
-        perror("accept");
+      if (clifd < 0) {
+        int err = errno;
+        log_->error("accept %", strerror(err));
+      }
       FD_SET(clifd, &allset);
       if (clifd > maxfd)
         maxfd = clifd;  // max fd for select()
       pending_clients_.insert(clifd);
       auto res = send(clifd, &cnx_msg, sizeof(cnx_msg), MSG_NOSIGNAL);
-      if (-1 == res)
-        perror("send");
+      if (-1 == res) {
+        int err = errno;
+        log_->error("send %", strerror(err));
+      }
       continue;
     }
     // checking disconnection
@@ -137,24 +147,26 @@ void UnixSocketServer::client_interaction() {
       if (FD_ISSET(it, &rset)) {
         auto nread = read(it, &msg_placeholder, sizeof(msg_placeholder));
         if (nread < 0) {
-          perror("read disconnection");
+          int err = errno;
+          log_->error("read disconnection %", strerror(err));
           clients_to_remove.push_back(it);
           if (clients_notified_.end() != clients_notified_.find(it)) {
             on_client_error_(it);
           }
         } else if (nread == 0) {
-          std::printf("(server) closed: fd %d\n", it);
+          log_->debug("(server) closed: fd %", std::to_string(it));
           FD_CLR(it, &allset);
           close(it);
         } else {
           // send quit ack
           auto res = send(it, &proto_->quit_msg_, sizeof(proto_->quit_msg_), MSG_NOSIGNAL);
-          if (-1 == res)
-            perror("send (ack quit)");
+          if (-1 == res) {
+            int err = errno;
+            log_->error("send (ack quit) %", strerror(err));
+          }
           if (proto_->on_disconnect_cb_)
             proto_->on_disconnect_cb_(it);
           clients_to_remove.push_back(it);
-          std::cout << "client quit" << std::endl;
         }
       }
     }
@@ -169,10 +181,11 @@ void UnixSocketServer::client_interaction() {
       if (FD_ISSET(it, &rset)) {
         auto nread = read(it, &msg_placeholder, sizeof(msg_placeholder));
         if (nread < 0) {
-          perror("read ack");
+          int err = errno;
+          log_->error("read ack %", strerror(err));
           clients_to_remove.push_back(it);
         } else if (nread == 0) {
-          std::printf("bug checking connection ack from client");
+          log_->critical("bug checking connection ack from client");
           clients_to_remove.push_back(it);
           FD_CLR(it, &allset);
           close(it);
@@ -181,7 +194,6 @@ void UnixSocketServer::client_interaction() {
           clients_to_remove.push_back(it);
           if (proto_->on_connect_cb_)
             proto_->on_connect_cb_(it);
-          std::printf("(server) new connection: fd %d\n", it);
         }
       }
     }

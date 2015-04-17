@@ -36,13 +36,13 @@ using Frame = struct {
 
 int main () {
   using namespace shmdata;
-  ConsoleLogger log;
+  ConsoleLogger logger;
   
   {  // writer example
     Writer w("/tmp/check-shmdata",
              sizeof(Frame),
              "application/x-check-shmdata",
-             &log);
+             &logger);
     assert(w);
 
     {  // first method: copy the entire buffer 
@@ -73,7 +73,7 @@ int main () {
     Writer w("/tmp/check-shmdata",
              sizeof(Frame),
              "application/x-check-shmdata",
-             &log);
+             &logger);
     assert(w);
     Reader r("/tmp/check-shmdata",
              [](void *data){
@@ -82,7 +82,7 @@ int main () {
                          << frame->count
                          << std::endl;
              },
-             &log);
+             &logger);
     assert(r);
     Frame frame;
     auto i = 300;
@@ -98,7 +98,7 @@ int main () {
     Writer w("/tmp/check-shmdata",
              sizeof(Frame),
              "application/x-check-shmdata",
-             &log);
+             &logger);
     assert(w);
     // init
     {
@@ -112,7 +112,7 @@ int main () {
                          << frame->count
                          << std::endl;
              },
-             &log);
+             &logger);
     assert(r);
     auto i = 300;
     while (0 != --i) {

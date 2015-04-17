@@ -22,7 +22,7 @@
 using namespace shmdata;
 
 static std::atomic_int done(0);
-static ConsoleLogger log;
+static ConsoleLogger logger;
 
 // a struct with contiguous data storage 
 using Frame = struct {
@@ -41,7 +41,7 @@ bool reader(){
                          << frame->count
                          << std::endl;
              },
-             &log);
+             &logger);
     assert(r);
     std::this_thread::sleep_for (std::chrono::milliseconds(1000));
   }
@@ -54,7 +54,7 @@ bool reader(){
                           << frame->count
                           << std::endl;
               },
-              &log);
+              &logger);
     assert(r1);
     Reader r2("/tmp/check-stress",
               [](void *data){
@@ -63,7 +63,7 @@ bool reader(){
                           << frame->count
                           << std::endl;
               },
-             &log);
+             &logger);
     assert(r2);
     Reader r3("/tmp/check-stress",
               [](void *data){
@@ -72,7 +72,7 @@ bool reader(){
                           << frame->count
                           << std::endl;
               },
-             &log);
+             &logger);
     assert(r3);
     Reader r4("/tmp/check-stress",
               [](void *data){
@@ -81,7 +81,7 @@ bool reader(){
                           << frame->count
                           << std::endl;
               },
-              &log);
+              &logger);
     assert(r4);
     Reader r5("/tmp/check-stress",
               [](void *data){
@@ -90,7 +90,7 @@ bool reader(){
                           << frame->count
                           << std::endl;
               },
-              &log);
+              &logger);
     assert(r5);
     std::this_thread::sleep_for (std::chrono::milliseconds(1000));
   }
@@ -108,7 +108,7 @@ int main () {
     Writer w("/tmp/check-stress",
              sizeof(Frame),
              "application/x-check-shmdata",
-             &log);
+             &logger);
     assert(w);
     // init
     {
@@ -122,7 +122,7 @@ int main () {
                          << frame->count
                          << std::endl;
              },
-             &log);
+             &logger);
     assert(r);
     auto reader_handle = std::async(std::launch::async, reader);
     while (1 != done.load()) {

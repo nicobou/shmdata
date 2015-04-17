@@ -17,12 +17,12 @@
 #include "shmdata/unix-socket-server.hpp"
 #include "shmdata/unix-socket-protocol.hpp"
 #include "shmdata/file-monitor.hpp"
+#include "shmdata/console-logger.hpp"
 
 static const std::string socket_path("/tmp/check-file-monitor");
 int main () {
   using namespace shmdata;
-
-
+  ConsoleLogger logger;
   UnixSocketProtocol::ServerSide sproto(
       [](int id) {std::printf("(server) on_connect_cb, id %d\n", id);},
       [](int id) {std::printf("(server) on_disconnect_cb, id %d\n", id);},
@@ -31,12 +31,12 @@ int main () {
   
   // testing
   {
-    assert(!fileMonitor::is_unix_socket(socket_path));
-    UnixSocketServer srv(socket_path, &sproto);
-    assert(fileMonitor::is_unix_socket(socket_path));
+    assert(!fileMonitor::is_unix_socket(socket_path, &logger));
+    UnixSocketServer srv(socket_path, &sproto, &logger);
+    assert(fileMonitor::is_unix_socket(socket_path, &logger));
     assert(srv);
   }
-  assert(!fileMonitor::is_unix_socket(socket_path));
+  assert(!fileMonitor::is_unix_socket(socket_path, &logger));
   return 0;
 }
 

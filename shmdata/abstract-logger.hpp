@@ -47,7 +47,9 @@ class AbstractLogger {
     return std::string(format);
   }
   template<typename... Targs>
-  std::string make_string(const char *format, const std::string &value, Targs... Fargs) {
+  std::string make_string(const char *format,
+                          const std::string &value,
+                          Targs... Fargs) {
     std::string res;
     for ( ; *format != '\0'; format++ ) {
       if ( *format == '%' ) {

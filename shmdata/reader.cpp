@@ -12,21 +12,20 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include <iostream>  // debug
 #include "./reader.hpp"
 
 namespace shmdata{
 
 Reader::Reader(const std::string &path, on_data_cb cb, AbstractLogger *log) :
+    log_(log),
     path_(path),
     on_data_cb_(cb),
     shm_(ftok(path.c_str(), 'n'), 0, /* owner = */ false),
-    sem_(ftok(path.c_str(), 'm'), log, /* owner = */ false),
+    sem_(ftok(path.c_str(), 'm'), log_, /* owner = */ false),
     proto_([this](){on_server_connected();},
            [this](){on_server_disconnected();},
            [this](){on_buffer(&sem_);}),  // read when update is received
-    cli_(path, &proto_),
-    log_(log) {
+    cli_(path, &proto_, log_) {
   if (!cli_ || !shm_ || !sem_)
     is_valid_ = false;
 }
@@ -36,15 +35,13 @@ Reader::~Reader(){
 }
 
 void Reader::on_server_connected(){
-  std::cout << "(client) on_connect_cb "
-            << " shm_size " << proto_.data_.shm_size_ 
-            << " user_data " << proto_.data_.user_data_.data()
-            << std::endl;
+  log_->message("(client) server connected, shm_size %, type &",
+                std::to_string(proto_.data_.shm_size_),
+                proto_.data_.user_data_.data());
 }
 
 void Reader::on_server_disconnected(){
-  std::cout << "(client) on_disconnect_cb "
-            << std::endl;
+  log_->message("(client) on_disconnect_cb ");
 }
 
 bool Reader::on_buffer(sysVSem *sem){

@@ -15,22 +15,24 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <time.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <iostream>  // std::cout
+#include <errno.h>
+#include <string.h>
 #include "./file-monitor.hpp"
+#include "./abstract-logger.hpp"
 
 namespace shmdata{
 namespace fileMonitor{
 
-bool is_unix_socket(const std::string &path){
+bool is_unix_socket(const std::string &path, AbstractLogger *log){
   struct stat sb;
   if (stat(path.c_str(), &sb) == -1) {
-    //perror("stat");
+    int err = errno;
+    log->debug("stat %", strerror(err));
     return false;
   }
   if ((sb.st_mode & S_IFMT) != S_IFSOCK) {
-    std::cout << "file type is not a socket" << std::endl;
+    log->error("% is not a socket", path);
     return false;
   }
   return true;

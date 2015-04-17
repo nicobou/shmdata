@@ -19,7 +19,8 @@
 #include <stddef.h>
 #include <unistd.h>
 #include <sys/uio.h>
-#include <iostream>
+#include <errno.h>
+#include <string.h>
 #include "./unix-socket-client.hpp"
 
 // OSX compatibility
@@ -30,8 +31,11 @@
 namespace shmdata{
 
 UnixSocketClient::UnixSocketClient(const std::string &path,
-                                   UnixSocketProtocol::ClientSide *proto) :
+                                   UnixSocketProtocol::ClientSide *proto,
+                                   AbstractLogger *log) :
     path_(path),
+    socket_(log),
+    log_(log),
     proto_(proto){
   if (!socket_)  // client not valid if socket is not valid
     return;
@@ -44,7 +48,8 @@ UnixSocketClient::UnixSocketClient(const std::string &path,
   strcpy(sun.sun_path, path.c_str());
   int len = offsetof(struct sockaddr_un, sun_path) + path_.size();
   if (0 != connect(socket_.fd_, (struct sockaddr *)&sun, len)) {
-    perror("connect");
+    int err = errno;
+    log_->error("connect %", strerror(err));
     return;
   }
   is_valid_ = true;
@@ -58,7 +63,7 @@ UnixSocketClient::~UnixSocketClient() {
   if (done_.valid()) {
     auto res = send(socket_.fd_, &proto_->quit_msg_, sizeof(proto_->quit_msg_), MSG_NOSIGNAL);
     if (-1 == res)
-      std::cout << "ERROR send (quit)" << std::endl;
+      log_->error("send (client trying to quit)");
     quit_.store(1);
     done_.get();
   }
@@ -85,7 +90,8 @@ void UnixSocketClient::server_interaction() {
     tv.tv_usec = 10000;  // 10 msec
     auto rset = allset;  /* rset gets modified each time around */
     if (select(maxfd + 1, &rset, NULL, NULL, &tv) < 0) {
-      perror("select error");
+      int err = errno;
+      log_->error("select %", strerror(err));
       continue;
     }
     if (FD_ISSET(socket_.fd_, &rset)) {
@@ -96,7 +102,8 @@ void UnixSocketClient::server_interaction() {
         nread = read(socket_.fd_, &proto_->update_msg_, sizeof(proto_->update_msg_));
       
       if (nread < 0) {
-        perror("read");
+        int err = errno;
+        log_->error("read %", strerror(err));
       } else if (nread == 0) {
         proto_->on_disconnect_cb_();
         FD_CLR(socket_.fd_, &allset);
@@ -107,8 +114,10 @@ void UnixSocketClient::server_interaction() {
                           &proto_->data_,
                           sizeof(UnixSocketProtocol::onConnectData),
                           MSG_NOSIGNAL);
-          if (-1 == res)
-            perror("writev client");
+          if (-1 == res) {
+            int err = errno;
+            log_->error("writev client %", strerror(err));
+          }
           proto_->on_connect_cb_();
           connected_ = true;
         } else {

@@ -22,13 +22,15 @@
 #include "./safe-bool-idiom.hpp"
 #include "./unix-socket.hpp"
 #include "./unix-socket-protocol.hpp"
+#include "./abstract-logger.hpp"
 
 namespace shmdata{
 
 class UnixSocketClient: public SafeBoolIdiom {
  public:
   UnixSocketClient(const std::string &path,
-                   UnixSocketProtocol::ClientSide *proto);
+                   UnixSocketProtocol::ClientSide *proto,
+                   AbstractLogger *log);
   ~UnixSocketClient();
   UnixSocketClient() = delete;
   UnixSocketClient(const UnixSocketClient &) = delete;
@@ -37,7 +39,8 @@ class UnixSocketClient: public SafeBoolIdiom {
   
  private:
   std::string path_;
-  UnixSocket socket_{};
+  UnixSocket socket_;
+  AbstractLogger *log_;
   std::future<void> done_{};
   std::atomic_short quit_{0};
   bool connected_{false};

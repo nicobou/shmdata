@@ -13,7 +13,6 @@
  */
 
 #include <cstring>  // memcpy
-#include <iostream> // debug
 #include "./writer.hpp"
 
 namespace shmdata{
@@ -26,8 +25,8 @@ Writer::Writer(const std::string &path,
     proto_([](int){},
            [](int){},
            [this](){return this->connect_data_;}),
-    srv_(path, &proto_, [&](int){sem_.cancel_commited_reader();}),
-    shm_(ftok(path.c_str(), 'n'), memsize, /*owner = */ true),
+    srv_(path, &proto_, log, [&](int){sem_.cancel_commited_reader();}),
+    shm_(ftok(path.c_str(), 'n'), memsize, log, /*owner = */ true),
     sem_(ftok(path.c_str(), 'm'), log, /*owner = */ true),
     log_(log) {
   if (!srv_ || !shm_ || !sem_)

@@ -27,6 +27,7 @@
 #include "./safe-bool-idiom.hpp"
 #include "./unix-socket.hpp"
 #include "./unix-socket-protocol.hpp"
+#include "./abstract-logger.hpp"
 
 namespace shmdata{
 
@@ -34,6 +35,7 @@ class UnixSocketServer: public SafeBoolIdiom {
  public:
   UnixSocketServer(const std::string &path,
                    UnixSocketProtocol::ServerSide *proto,
+                   AbstractLogger *log,
                    std::function<void(int)> on_client_error = [](int){},
                    int max_pending_cnx = 10);
   ~UnixSocketServer();
@@ -46,8 +48,9 @@ class UnixSocketServer: public SafeBoolIdiom {
   short notify_update();
   
  private:
+  AbstractLogger *log_;
   std::string path_;
-  UnixSocket socket_{};
+  UnixSocket socket_;
   int max_pending_cnx_;
   bool is_binded_{false};
   bool is_listening_{false};

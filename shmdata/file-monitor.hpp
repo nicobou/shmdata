@@ -17,12 +17,13 @@
 #define _SHMDATA_FILE_MONITOR_H_
 
 #include <string>
-#include "./safe-bool-idiom.hpp"
+#include "./abstract-logger.hpp"
 
 namespace shmdata{
 namespace fileMonitor{
 
-bool is_unix_socket(const std::string &path);
+bool is_unix_socket(const std::string &path,
+                    AbstractLogger *log);
 
 }  // namespace fileMonitor
 }  // namespace shmdata

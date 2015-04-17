@@ -18,6 +18,7 @@
 
 #include <string>
 #include "./safe-bool-idiom.hpp"
+#include "./abstract-logger.hpp"
 
 namespace shmdata{
 class UnixSocketServer;
@@ -27,13 +28,14 @@ class UnixSocket: public SafeBoolIdiom {
   friend UnixSocketServer;
   friend UnixSocketClient;
  public:
-  UnixSocket();
+  UnixSocket(AbstractLogger *log);
   ~UnixSocket();
   UnixSocket(const UnixSocket &) = delete;
   UnixSocket& operator=(const UnixSocket&) = delete;
   UnixSocket& operator=(UnixSocket&&) = default;
   
  private:
+  AbstractLogger *log_;
   int fd_{-1};
   bool is_valid() const final;
 };

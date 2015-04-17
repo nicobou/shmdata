@@ -14,24 +14,32 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <stdio.h>  // perror
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/un.h>
+#include <errno.h>
+#include <string.h>
 #include <string>
 #include "./unix-socket.hpp"
 
 namespace shmdata{
 
-UnixSocket::UnixSocket() :
+UnixSocket::UnixSocket(AbstractLogger *log) :
+    log_(log),
     fd_(socket(AF_UNIX, SOCK_STREAM, 0)){
-  if (-1 == fd_)
-    perror("socket");
+  if (-1 == fd_) {
+    int err = errno;
+    log_->error("socket: %", strerror(err));
+  }
   int flags = fcntl(fd_, F_GETFL, 0);
-  if (flags < 0)
-    perror("fcntl(F_GETFL)");
-  if (fcntl(fd_, F_SETFL, flags | O_NONBLOCK | FD_CLOEXEC) < 0)
-     perror("fcntl(F_SETFL)");
+  if (flags < 0) {
+    int err = errno;
+    log_->error("fcntl(F_GETFL): %", strerror(err));
+  }
+  if (fcntl(fd_, F_SETFL, flags | O_NONBLOCK | FD_CLOEXEC) < 0){
+    int err = errno;
+    log_->error("fcntl(F_SETFL): %", strerror(err));
+  }
 #ifdef SO_NOSIGPIPE
   int set = 1;
   setsockopt(fd_, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));

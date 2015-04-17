@@ -13,27 +13,31 @@
  */
 
 #include <sys/types.h>
-#include <stdio.h>  // perror
+#include <errno.h>
 #include <string.h>  // memset
 #include "./sysv-shm.hpp"
 
 namespace shmdata{
 
-sysVShm::sysVShm(key_t key, size_t size, bool owner):
+sysVShm::sysVShm(key_t key, size_t size, AbstractLogger *log, bool owner):
+    log_(log),
     key_(key),
     size_(size),
     shmid_(shmget(key_, size_, owner ? (IPC_CREAT | IPC_EXCL | 0666) : 0)),
     owner_(owner) {
   if (-1 == key_){
-    perror("ftok");
+    int err = errno;
+    log_->error("ftok: %", strerror(err));
     return;
   }
   if (shmid_ < 0){
-      perror("shmget");
-      return;
+    int err = errno;
+    log_->error("shmget: %", strerror(err));
+    return;
   }
   if ((shm_ = shmat(shmid_, NULL, 0)) == (void *) -1) {
-    perror("shmat");  
+    int err = errno;
+    log_->error("shmat: %", strerror(err));
     return;
   }
   memset(shm_, 0, size_);
@@ -42,12 +46,15 @@ sysVShm::sysVShm(key_t key, size_t size, bool owner):
 sysVShm::~sysVShm() {
   if (is_valid()) {
     if (shmdt(shm_) == -1) {
-      perror("shmdt");
+      int err = errno;
+      log_->error("shmdt: %", strerror(err));
     }
   }
   if (0 < shmid_ && owner_) {
-    if (shmctl(shmid_, IPC_RMID, NULL) < 0)
-      perror("shmctl removing shared mem");
+    if (shmctl(shmid_, IPC_RMID, NULL) < 0) {
+      int err = errno;
+      log_->error("shmctl removing shared mem: %", strerror(err));
+    }
   }
 }
 

@@ -18,10 +18,12 @@
 #include "shmdata/unix-socket-server.hpp"
 #include "shmdata/unix-socket-client.hpp"
 #include "shmdata/unix-socket-protocol.hpp"
+#include "shmdata/console-logger.hpp"
 
 int main () {
-  using namespace shmdata;
 
+  using namespace shmdata;
+  ConsoleLogger logger;
   // server protocol
 
   UnixSocketProtocol::ServerSide sproto(
@@ -45,20 +47,20 @@ int main () {
 
   // testing
   { std::printf("-- creation with not time to connect\n");
-    UnixSocketServer srv("/tmp/check-unix-socket", &sproto);
-    UnixSocketClient cli("/tmp/check-unix-socket", &cproto);
+    UnixSocketServer srv("/tmp/check-unix-socket", &sproto, &logger);
+    UnixSocketClient cli("/tmp/check-unix-socket", &cproto, &logger);
     assert(srv);
     assert(cli); }
   { std::printf("-- creation with not time to connect 2\n");
-    UnixSocketClient cli("/tmp/check-unix-socket", &cproto);
-    UnixSocketServer srv("/tmp/check-unix-socket", &sproto);
+    UnixSocketClient cli("/tmp/check-unix-socket", &cproto, &logger);
+    UnixSocketServer srv("/tmp/check-unix-socket", &sproto, &logger);
     assert(srv);
     assert(!cli); }
   { std::printf("-- clients connects at creation\n");
-    UnixSocketServer srv("/tmp/check-unix-socket", &sproto);
-    UnixSocketClient cli1("/tmp/check-unix-socket", &cproto);
-    UnixSocketClient cli2("/tmp/check-unix-socket", &cproto);
-    UnixSocketClient cli3("/tmp/check-unix-socket", &cproto);
+    UnixSocketServer srv("/tmp/check-unix-socket", &sproto, &logger);
+    UnixSocketClient cli1("/tmp/check-unix-socket", &cproto, &logger);
+    UnixSocketClient cli2("/tmp/check-unix-socket", &cproto, &logger);
+    UnixSocketClient cli3("/tmp/check-unix-socket", &cproto, &logger);
     assert(srv);
     assert(cli1);
     assert(cli2);
@@ -71,8 +73,8 @@ int main () {
     }
   }
   { std::printf("-- client can't connect at creation\n");
-    UnixSocketClient cli("/tmp/check-unix-socket", &cproto);
-    UnixSocketServer srv("/tmp/check-unix-socket", &sproto);
+    UnixSocketClient cli("/tmp/check-unix-socket", &cproto, &logger);
+    UnixSocketServer srv("/tmp/check-unix-socket", &sproto, &logger);
     usleep(100000);
     assert(srv);
     assert(!cli); }
