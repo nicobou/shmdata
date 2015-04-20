@@ -39,7 +39,7 @@ class Writer: public SafeBoolIdiom {
   Writer& operator=(Writer&&) = default;
 
   bool copy_to_shm(void *data, size_t size);
-  std::unique_ptr<OneWriteAccess> get_one_write_access();
+  std::unique_ptr<OneWriteAccess> get_one_write_access(size_t size = 0);
  private:
   std::string path_; 
   UnixSocketProtocol::onConnectData connect_data_;
@@ -58,7 +58,7 @@ class OneWriteAccess {
  public:
   void *get_mem() {return mem_;};
  private:
-  OneWriteAccess(sysVSem *sem, void *mem, UnixSocketServer *srv);
+  OneWriteAccess(sysVSem *sem, void *mem, UnixSocketServer *srv, size_t size);
   OneWriteAccess& operator=(OneWriteAccess&&) = default;
   WriteLock wlock_;
   void *mem_;

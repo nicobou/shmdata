@@ -43,7 +43,7 @@ int main () {
                   << std::endl;
       },
       [](){ std::printf("(client) on_disconnect_cb\n"); },
-      [](){ std::printf("(client) on_update_cb\n"); });
+      [](size_t){ std::printf("(client) on_update_cb\n"); });
 
   // testing
   { std::printf("-- creation with not time to connect\n");

@@ -45,7 +45,7 @@ class UnixSocketServer: public SafeBoolIdiom {
   UnixSocketServer& operator=(UnixSocketServer&&) = default;
 
   // return true if at least one notification has been sent
-  short notify_update();
+  short notify_update(size_t size = 0);
   
  private:
   AbstractLogger *log_;

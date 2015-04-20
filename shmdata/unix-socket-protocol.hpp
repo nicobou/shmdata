@@ -37,6 +37,7 @@ struct onConnectData {
 
 struct UpdateMsg {
   const unsigned short msg_type_{1}; 
+  size_t size_{0};
 };
 
 struct QuitMsg {
@@ -69,7 +70,7 @@ struct ServerSide {
 struct ClientSide {
   using onServerConnected = std::function<void()>;
   using onServerDisconnected = std::function<void()>;
-  using onUpdate = std::function<void()>;
+  using onUpdate = std::function<void(size_t)>;  // the size that has been writen
   onServerConnected on_connect_cb_{};
   onServerDisconnected on_disconnect_cb_{};
   onConnectData data_{};

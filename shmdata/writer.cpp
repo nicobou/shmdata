@@ -41,7 +41,7 @@ bool Writer::copy_to_shm(void *data, size_t size){
     if (size > connect_data_.shm_size_)
       return false;
     WriteLock wlock(&sem_);
-    auto num_readers = srv_.notify_update();
+    auto num_readers = srv_.notify_update(size);
     if (0 < num_readers) {
       wlock.commit_readers(num_readers);
     }
@@ -52,18 +52,20 @@ bool Writer::copy_to_shm(void *data, size_t size){
   return res;
 }
 
-std::unique_ptr<OneWriteAccess> Writer::get_one_write_access() {
+std::unique_ptr<OneWriteAccess> Writer::get_one_write_access(size_t size) {
   return std::unique_ptr<OneWriteAccess>(new OneWriteAccess(&sem_,
                                                             shm_.get_mem(),
-                                                            &srv_));
+                                                            &srv_,
+                                                            size));
 }
 
 OneWriteAccess::OneWriteAccess(sysVSem *sem,
                                void *mem,
-                               UnixSocketServer *srv) :
+                               UnixSocketServer *srv,
+                               size_t size) :
     wlock_(sem),
     mem_(mem){
-  auto num_readers = srv->notify_update();
+  auto num_readers = srv->notify_update(size);
   if (0 < num_readers) {
     wlock_.commit_readers(num_readers);
   }

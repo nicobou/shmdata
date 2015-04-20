@@ -82,9 +82,10 @@ UnixSocketServer::~UnixSocketServer() {
   }
 }
 
-short UnixSocketServer::notify_update() {
+short UnixSocketServer::notify_update(size_t size) {
   std::unique_lock<std::mutex> lock(clients_mutex_);
   clients_notified_.clear();
+  proto_->update_msg_.size_ = size;
   // re-sending connect message
   //auto msg = proto_->get_connect_msg_();
   for (auto &it: clients_){

@@ -24,7 +24,7 @@ Reader::Reader(const std::string &path, on_data_cb cb, AbstractLogger *log) :
     sem_(ftok(path.c_str(), 'm'), log_, /* owner = */ false),
     proto_([this](){on_server_connected();},
            [this](){on_server_disconnected();},
-           [this](){on_buffer(&sem_);}),  // read when update is received
+           [this](size_t size){on_buffer(&sem_, size);}),  // read when update is received
     cli_(path, &proto_, log_) {
   if (!cli_ || !shm_ || !sem_)
     is_valid_ = false;
@@ -44,12 +44,12 @@ void Reader::on_server_disconnected(){
   log_->message("(client) on_disconnect_cb ");
 }
 
-bool Reader::on_buffer(sysVSem *sem){
+bool Reader::on_buffer(sysVSem *sem, size_t size){
   ReadLock lock(sem);
   if (!lock)
     return false;
   if (on_data_cb_)
-    on_data_cb_(shm_.get_mem());
+    on_data_cb_(shm_.get_mem(), size);
   return true;
 }
 

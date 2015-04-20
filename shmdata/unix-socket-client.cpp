@@ -122,7 +122,7 @@ void UnixSocketClient::server_interaction() {
           connected_ = true;
         } else {
           if (1 == proto_->update_msg_.msg_type_)
-            proto_->on_update_cb_();
+            proto_->on_update_cb_(proto_->update_msg_.size_);
           else
             quit_acked = true;
         }

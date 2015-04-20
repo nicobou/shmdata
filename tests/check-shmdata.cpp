@@ -76,10 +76,11 @@ int main () {
              &logger);
     assert(w);
     Reader r("/tmp/check-shmdata",
-             [](void *data){
+             [](void *data, size_t size){
                auto frame = static_cast<Frame *>(data);
                std::cout << "(copy) new data for client "
                          << frame->count
+                         << " (size " << size << ")"
                          << std::endl;
              },
              &logger);
@@ -106,10 +107,11 @@ int main () {
       assert(w.copy_to_shm(&frame, sizeof(Frame)));
     }
     Reader r("/tmp/check-shmdata",
-             [](void *data){
+             [](void *data, size_t size){
                auto frame = static_cast<Frame *>(data);
                std::cout << "(direct access) new data for client "
                          << frame->count
+                         << " (size " << size << ")"
                          << std::endl;
              },
              &logger);
@@ -117,7 +119,7 @@ int main () {
     auto i = 300;
     while (0 != --i) {
       //  the following is locking the shared memory for writing
-      auto access = w.get_one_write_access();
+      auto access = w.get_one_write_access(sizeof(Frame));
       assert(access);
       auto frame = static_cast<Frame *>(access->get_mem());
       frame->count++;

@@ -26,7 +26,7 @@
 namespace shmdata{
 class Reader: public SafeBoolIdiom {
  public:
-  using on_data_cb = std::function<void(void *)>;
+  using on_data_cb = std::function<void(void *, size_t)>;
   Reader(const std::string &path, on_data_cb cb, AbstractLogger *log);
   ~Reader();
   Reader() = delete;
@@ -47,7 +47,7 @@ class Reader: public SafeBoolIdiom {
   bool is_valid() const final{return is_valid_;}
   void on_server_connected();
   void on_server_disconnected();
-  bool on_buffer(sysVSem *sem);
+  bool on_buffer(sysVSem *sem, size_t size);
 };
 
 }  // namespace shmdata
