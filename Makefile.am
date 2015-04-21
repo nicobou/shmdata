@@ -11,9 +11,9 @@ SUBDIRS = \
     shmdata \
     tests 
 
-if BUILD_GST
-SUBDIRS += gst
-endif 
+# if BUILD_GST
+# SUBDIRS += gst
+# endif 
 
 EXTRA_DIST = \
     LICENSE \

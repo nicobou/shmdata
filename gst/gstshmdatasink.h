@@ -25,7 +25,7 @@
 #include <gst/gst.h>
 #include <gst/base/gstbasesink.h>
 
-#include "shmpipe.h"
+//#include "shmpipe.h"
 
 G_BEGIN_DECLS
 #define GST_TYPE_SHMDATA_SINK \
@@ -48,7 +48,7 @@ struct _GstShmdataSink
 
   gchar *socket_path;
 
-  ShmPipe *pipe;
+  //ShmPipe *pipe;
 
   guint perms;
   guint size;

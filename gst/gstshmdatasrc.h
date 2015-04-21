@@ -26,7 +26,7 @@
 #include <gst/base/gstpushsrc.h>
 #include <gst/base/gstbasesrc.h>
 
-#include "shmpipe.h"
+//#include "shmpipe.h"
 
 G_BEGIN_DECLS
 #define GST_TYPE_SHMDATA_SRC \
@@ -69,7 +69,7 @@ struct _GstShmPipe {
   int use_count;
 
   GstShmdataSrc *src;
-  ShmPipe *pipe;
+  //ShmPipe *pipe;
 };
 
 G_END_DECLS
