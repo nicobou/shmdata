@@ -16,7 +16,6 @@
 #define _SHMDATA_READER_H_
 
 #include <string>
-#include <future>
 #include "shmdata/sysv-shm.hpp"
 #include "shmdata/sysv-sem.hpp"
 #include "shmdata/unix-socket-client.hpp"
@@ -26,8 +25,14 @@
 namespace shmdata{
 class Reader: public SafeBoolIdiom {
  public:
-  using on_data_cb = std::function<void(void *, size_t)>;
-  Reader(const std::string &path, on_data_cb cb, AbstractLogger *log);
+  using onData = std::function<void(void *, size_t)>;
+  using onServerConnected = std::function<void()>;
+  using onServerDisconnected = std::function<void()>;
+  Reader(const std::string &path,
+         onData cb,
+         onServerConnected osc,
+         onServerDisconnected osd,
+         AbstractLogger *log);
   ~Reader();
   Reader() = delete;
   Reader(const Reader &) = delete;
@@ -37,7 +42,9 @@ class Reader: public SafeBoolIdiom {
  private:
   AbstractLogger *log_;
   std::string path_;
-  on_data_cb on_data_cb_;
+  onData on_data_cb_;
+  onServerConnected on_server_connected_cb_;
+  onServerDisconnected on_server_disconnected_cb_;
   sysVShm shm_;
   sysVSem sem_;
   UnixSocketProtocol::ClientSide proto_;

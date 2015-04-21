@@ -83,6 +83,8 @@ int main () {
                          << " (size " << size << ")"
                          << std::endl;
              },
+             nullptr,
+             nullptr,
              &logger);
     assert(r);
     Frame frame;
@@ -114,6 +116,8 @@ int main () {
                          << " (size " << size << ")"
                          << std::endl;
              },
+             nullptr,
+             nullptr,
              &logger);
     assert(r);
     auto i = 300;

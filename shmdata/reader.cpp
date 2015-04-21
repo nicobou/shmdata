@@ -16,10 +16,16 @@
 
 namespace shmdata{
 
-Reader::Reader(const std::string &path, on_data_cb cb, AbstractLogger *log) :
+Reader::Reader(const std::string &path,
+               onData cb,
+               onServerConnected osc,
+               onServerDisconnected osd,
+               AbstractLogger *log) :
     log_(log),
     path_(path),
     on_data_cb_(cb),
+    on_server_connected_cb_(osc),
+    on_server_disconnected_cb_(osd),
     shm_(ftok(path.c_str(), 'n'), 0, log_, /* owner = */ false),
     sem_(ftok(path.c_str(), 'm'), log_, /* owner = */ false),
     proto_([this](){on_server_connected();},
@@ -38,10 +44,14 @@ void Reader::on_server_connected(){
   log_->message("(client) server connected, shm_size %, type &",
                 std::to_string(proto_.data_.shm_size_),
                 proto_.data_.user_data_.data());
+  if (on_server_connected_cb_)
+    on_server_connected_cb_();
 }
 
 void Reader::on_server_disconnected(){
   log_->message("(client) on_disconnect_cb ");
+  if (on_server_disconnected_cb_)
+    on_server_disconnected_cb_();
 }
 
 bool Reader::on_buffer(sysVSem *sem, size_t size){

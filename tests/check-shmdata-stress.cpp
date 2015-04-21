@@ -42,6 +42,8 @@ bool reader(){
                          << " (size " << size << ")"
                          << std::endl;
              },
+             nullptr,
+             nullptr,
              &logger);
     assert(r);
     std::this_thread::sleep_for (std::chrono::milliseconds(1000));
@@ -56,6 +58,8 @@ bool reader(){
                           << " (size " << size << ")"
                           << std::endl;
               },
+             nullptr,
+             nullptr,
               &logger);
     assert(r1);
     Reader r2("/tmp/check-stress",
@@ -66,6 +70,8 @@ bool reader(){
                           << " (size " << size << ")"
                           << std::endl;
               },
+             nullptr,
+             nullptr,
              &logger);
     assert(r2);
     Reader r3("/tmp/check-stress",
@@ -76,6 +82,8 @@ bool reader(){
                           << " (size " << size << ")"
                           << std::endl;
               },
+             nullptr,
+             nullptr,
              &logger);
     assert(r3);
     Reader r4("/tmp/check-stress",
@@ -86,6 +94,8 @@ bool reader(){
                           << " (size " << size << ")"
                           << std::endl;
               },
+              nullptr,
+              nullptr,
               &logger);
     assert(r4);
     Reader r5("/tmp/check-stress",
@@ -96,6 +106,8 @@ bool reader(){
                          << " (size " << size << ")"
                           << std::endl;
               },
+              nullptr,
+              nullptr,
               &logger);
     assert(r5);
     std::this_thread::sleep_for (std::chrono::milliseconds(1000));
@@ -129,6 +141,8 @@ int main () {
                          << " (size " << size << ")"
                          << std::endl;
              },
+             nullptr,
+             nullptr,
              &logger);
     assert(r);
     auto reader_handle = std::async(std::launch::async, reader);
