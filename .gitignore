@@ -48,6 +48,7 @@ plugins/puredata/.libs/
 stamp-h1
 test-driver
 tests/check-file-monitor
+tests/check-follower
 tests/check-shmdata
 tests/check-shmdata-stress
 tests/check-sysv-sem
