@@ -1,4 +1,5 @@
-/* GStreamer
+/*
+ * Copyright (C) <2015> Nicolas Bouillot
  * Copyright (C) <2009> Collabora Ltd
  *  @author: Olivier Crete <olivier.crete@collabora.co.uk
  * Copyright (C) <2009> Nokia Inc
@@ -15,15 +16,26 @@
  *
  * You should have received a copy of the GNU Library General Public
  * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+ * Boston, MA 02110-1301, USA.
+ */
+/**
+ * SECTION:element-shmdatasrc
+ *
+ * Receive data from the shared memory sink.
+ *
+ * <refsect2>
+ * <title>Example launch lines</title>
+ * |[
+ * gst-launch shmdatasrc socket-path=/tmp/blah ! \
+ * "video/x-raw, format=(string)I420, width=(int)320, height=(int)240, \
+ * framerate=(fraction)30/1, pixel-aspect-ratio=(fraction)1/1, \
+ * interlace-mode=(string)progressive" ! autovideosink
+ * ]| Render video from shm buffers.
+ * </refsect2>
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include "gstshmsrc.h"
+#include "gstshmdatasrc.h"
 
 #include <gst/gst.h>
 
@@ -43,59 +55,45 @@ enum
   PROP_IS_LIVE
 };
 
-struct GstShmBuffer
+struct GstShmDataBuffer
 {
   char *buf;
   GstShmPipe *pipe;
 };
 
 
-GST_DEBUG_CATEGORY_STATIC (shmsrc_debug);
-#define GST_CAT_DEFAULT shmsrc_debug
+GST_DEBUG_CATEGORY_STATIC (shmdatasrc_debug);
+#define GST_CAT_DEFAULT shmdatasrc_debug
 
 static GstStaticPadTemplate srctemplate = GST_STATIC_PAD_TEMPLATE ("src",
     GST_PAD_SRC,
     GST_PAD_ALWAYS,
     GST_STATIC_CAPS_ANY);
 
-GST_BOILERPLATE (GstShmSrc, gst_shm_src, GstPushSrc, GST_TYPE_PUSH_SRC);
+#define gst_shmdata_src_parent_class parent_class
+G_DEFINE_TYPE (GstShmdataSrc, gst_shmdata_src, GST_TYPE_PUSH_SRC);
 
-static void gst_shm_src_set_property (GObject * object, guint prop_id,
+static void gst_shmdata_src_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec);
-static void gst_shm_src_get_property (GObject * object, guint prop_id,
+static void gst_shmdata_src_get_property (GObject * object, guint prop_id,
     GValue * value, GParamSpec * pspec);
-static void gst_shm_src_finalize (GObject * object);
-static gboolean gst_shm_src_start (GstBaseSrc * bsrc);
-static gboolean gst_shm_src_stop (GstBaseSrc * bsrc);
-static GstFlowReturn gst_shm_src_create (GstPushSrc * psrc,
+static void gst_shmdata_src_finalize (GObject * object);
+static gboolean gst_shmdata_src_start (GstBaseSrc * bsrc);
+static gboolean gst_shmdata_src_stop (GstBaseSrc * bsrc);
+static GstFlowReturn gst_shmdata_src_create (GstPushSrc * psrc,
     GstBuffer ** outbuf);
-static gboolean gst_shm_src_unlock (GstBaseSrc * bsrc);
-static gboolean gst_shm_src_unlock_stop (GstBaseSrc * bsrc);
-static GstStateChangeReturn gst_shm_src_change_state (GstElement * element,
+static gboolean gst_shmdata_src_unlock (GstBaseSrc * bsrc);
+static gboolean gst_shmdata_src_unlock_stop (GstBaseSrc * bsrc);
+static GstStateChangeReturn gst_shmdata_src_change_state (GstElement * element,
     GstStateChange transition);
 
-static void gst_shm_pipe_inc (GstShmPipe * pipe);
-static void gst_shm_pipe_dec (GstShmPipe * pipe);
+static void gst_shmdata_pipe_inc (GstShmPipe * pipe);
+static void gst_shmdata_pipe_dec (GstShmPipe * pipe);
 
-// static guint gst_shm_src_signals[LAST_SIGNAL] = { 0 };
-
-
-static void
-gst_shm_src_base_init (gpointer g_class)
-{
-  GstElementClass *element_class = GST_ELEMENT_CLASS (g_class);
-
-  gst_element_class_add_static_pad_template (element_class, &srctemplate);
-
-  gst_element_class_set_details_simple (element_class,
-      "Shared Memory Source",
-      "Source",
-      "Receive data from the sharem memory sink",
-      "Olivier Crete <olivier.crete@collabora.co.uk>");
-}
+// static guint gst_shmdata_src_signals[LAST_SIGNAL] = { 0 };
 
 static void
-gst_shm_src_class_init (GstShmSrcClass * klass)
+gst_shmdata_src_class_init (GstShmdataSrcClass * klass)
 {
   GObjectClass *gobject_class;
   GstElementClass *gstelement_class;
@@ -107,18 +105,18 @@ gst_shm_src_class_init (GstShmSrcClass * klass)
   gstbasesrc_class = (GstBaseSrcClass *) klass;
   gstpush_src_class = (GstPushSrcClass *) klass;
 
-  gobject_class->set_property = gst_shm_src_set_property;
-  gobject_class->get_property = gst_shm_src_get_property;
-  gobject_class->finalize = gst_shm_src_finalize;
+  gobject_class->set_property = gst_shmdata_src_set_property;
+  gobject_class->get_property = gst_shmdata_src_get_property;
+  gobject_class->finalize = gst_shmdata_src_finalize;
 
-  gstelement_class->change_state = gst_shm_src_change_state;
+  gstelement_class->change_state = gst_shmdata_src_change_state;
 
-  gstbasesrc_class->start = GST_DEBUG_FUNCPTR (gst_shm_src_start);
-  gstbasesrc_class->stop = GST_DEBUG_FUNCPTR (gst_shm_src_stop);
-  gstbasesrc_class->unlock = GST_DEBUG_FUNCPTR (gst_shm_src_unlock);
-  gstbasesrc_class->unlock_stop = GST_DEBUG_FUNCPTR (gst_shm_src_unlock_stop);
+  gstbasesrc_class->start = GST_DEBUG_FUNCPTR (gst_shmdata_src_start);
+  gstbasesrc_class->stop = GST_DEBUG_FUNCPTR (gst_shmdata_src_stop);
+  gstbasesrc_class->unlock = GST_DEBUG_FUNCPTR (gst_shmdata_src_unlock);
+  gstbasesrc_class->unlock_stop = GST_DEBUG_FUNCPTR (gst_shmdata_src_unlock_stop);
 
-  gstpush_src_class->create = gst_shm_src_create;
+  gstpush_src_class->create = gst_shmdata_src_create;
 
   g_object_class_install_property (gobject_class, PROP_SOCKET_PATH,
       g_param_spec_string ("socket-path",
@@ -131,32 +129,42 @@ gst_shm_src_class_init (GstShmSrcClass * klass)
           "True if the element cannot produce data in PAUSED", FALSE,
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  GST_DEBUG_CATEGORY_INIT (shmsrc_debug, "shmsrc", 0, "Shared Memory Source");
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&srctemplate));
+
+  gst_element_class_set_static_metadata (gstelement_class,
+      "Shared Memory Source",
+      "Source",
+      "Receive data from the shared memory sink",
+      "Olivier Crete <olivier.crete@collabora.co.uk>");
+
+  GST_DEBUG_CATEGORY_INIT (shmdatasrc_debug, "shmdatasrc", 0, "Shared Memory Source");
 }
 
 static void
-gst_shm_src_init (GstShmSrc * self, GstShmSrcClass * g_class)
+gst_shmdata_src_init (GstShmdataSrc * self)
 {
   self->poll = gst_poll_new (TRUE);
   gst_poll_fd_init (&self->pollfd);
 }
 
 static void
-gst_shm_src_finalize (GObject * object)
+gst_shmdata_src_finalize (GObject * object)
 {
-  GstShmSrc *self = GST_SHM_SRC (object);
+  GstShmdataSrc *self = GST_SHMDATA_SRC (object);
 
   gst_poll_free (self->poll);
+  g_free (self->socket_path);
 
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
 
 static void
-gst_shm_src_set_property (GObject * object, guint prop_id,
+gst_shmdata_src_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
-  GstShmSrc *self = GST_SHM_SRC (object);
+  GstShmdataSrc *self = GST_SHMDATA_SRC (object);
 
   switch (prop_id) {
     case PROP_SOCKET_PATH:
@@ -181,10 +189,10 @@ gst_shm_src_set_property (GObject * object, guint prop_id,
 }
 
 static void
-gst_shm_src_get_property (GObject * object, guint prop_id,
+gst_shmdata_src_get_property (GObject * object, guint prop_id,
     GValue * value, GParamSpec * pspec)
 {
-  GstShmSrc *self = GST_SHM_SRC (object);
+  GstShmdataSrc *self = GST_SHMDATA_SRC (object);
 
   switch (prop_id) {
     case PROP_SOCKET_PATH:
@@ -202,7 +210,7 @@ gst_shm_src_get_property (GObject * object, guint prop_id,
 }
 
 static gboolean
-gst_shm_src_start_reading (GstShmSrc * self)
+gst_shmdata_src_start_reading (GstShmdataSrc * self)
 {
   GstShmPipe *gstpipe = g_slice_new0 (GstShmPipe);
 
@@ -225,7 +233,7 @@ gst_shm_src_start_reading (GstShmSrc * self)
     GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE,
         ("Could not open socket %s: %d %s", self->socket_path, errno,
             strerror (errno)), (NULL));
-    gst_shm_pipe_dec (gstpipe);
+    gst_shmdata_pipe_dec (gstpipe);
     return FALSE;
   }
 
@@ -242,12 +250,12 @@ gst_shm_src_start_reading (GstShmSrc * self)
 }
 
 static void
-gst_shm_src_stop_reading (GstShmSrc * self)
+gst_shmdata_src_stop_reading (GstShmdataSrc * self)
 {
   GST_DEBUG_OBJECT (self, "Stopping %p", self);
 
   if (self->pipe) {
-    gst_shm_pipe_dec (self->pipe);
+    gst_shmdata_pipe_dec (self->pipe);
     self->pipe = NULL;
   }
 
@@ -258,19 +266,19 @@ gst_shm_src_stop_reading (GstShmSrc * self)
 }
 
 static gboolean
-gst_shm_src_start (GstBaseSrc * bsrc)
+gst_shmdata_src_start (GstBaseSrc * bsrc)
 {
   if (gst_base_src_is_live (bsrc))
     return TRUE;
   else
-    return gst_shm_src_start_reading (GST_SHM_SRC (bsrc));
+    return gst_shmdata_src_start_reading (GST_SHMDATA_SRC (bsrc));
 }
 
 static gboolean
-gst_shm_src_stop (GstBaseSrc * bsrc)
+gst_shmdata_src_stop (GstBaseSrc * bsrc)
 {
   if (!gst_base_src_is_live (bsrc))
-    gst_shm_src_stop_reading (GST_SHM_SRC (bsrc));
+    gst_shmdata_src_stop_reading (GST_SHMDATA_SRC (bsrc));
 
   return TRUE;
 }
@@ -279,7 +287,7 @@ gst_shm_src_stop (GstBaseSrc * bsrc)
 static void
 free_buffer (gpointer data)
 {
-  struct GstShmBuffer *gsb = data;
+  struct GstShmDataBuffer *gsb = data;
   g_return_if_fail (gsb->pipe != NULL);
   g_return_if_fail (gsb->pipe->src != NULL);
 
@@ -289,39 +297,39 @@ free_buffer (gpointer data)
   sp_client_recv_finish (gsb->pipe->pipe, gsb->buf);
   GST_OBJECT_UNLOCK (gsb->pipe->src);
 
-  gst_shm_pipe_dec (gsb->pipe);
+  gst_shmdata_pipe_dec (gsb->pipe);
 
-  g_slice_free (struct GstShmBuffer, gsb);
+  g_slice_free (struct GstShmDataBuffer, gsb);
 }
 
 static GstFlowReturn
-gst_shm_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
+gst_shmdata_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
 {
-  GstShmSrc *self = GST_SHM_SRC (psrc);
+  GstShmdataSrc *self = GST_SHMDATA_SRC (psrc);
   gchar *buf = NULL;
   int rv = 0;
-  struct GstShmBuffer *gsb;
+  struct GstShmDataBuffer *gsb;
 
   do {
     if (gst_poll_wait (self->poll, GST_CLOCK_TIME_NONE) < 0) {
       if (errno == EBUSY)
-        return GST_FLOW_WRONG_STATE;
-      GST_ELEMENT_ERROR (self, RESOURCE, READ, ("Failed to read from shmsrc"),
+        return GST_FLOW_FLUSHING;
+      GST_ELEMENT_ERROR (self, RESOURCE, READ, ("Failed to read from shmdatasrc"),
           ("Poll failed on fd: %s", strerror (errno)));
       return GST_FLOW_ERROR;
     }
 
     if (self->unlocked)
-      return GST_FLOW_WRONG_STATE;
+      return GST_FLOW_FLUSHING;
 
     if (gst_poll_fd_has_closed (self->poll, &self->pollfd)) {
-      GST_ELEMENT_ERROR (self, RESOURCE, READ, ("Failed to read from shmsrc"),
+      GST_ELEMENT_ERROR (self, RESOURCE, READ, ("Failed to read from shmdatasrc"),
           ("Control socket has closed"));
       return GST_FLOW_ERROR;
     }
 
     if (gst_poll_fd_has_error (self->poll, &self->pollfd)) {
-      GST_ELEMENT_ERROR (self, RESOURCE, READ, ("Failed to read from shmsrc"),
+      GST_ELEMENT_ERROR (self, RESOURCE, READ, ("Failed to read from shmdatasrc"),
           ("Control socket has error"));
       return GST_FLOW_ERROR;
     }
@@ -333,7 +341,7 @@ gst_shm_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
       rv = sp_client_recv (self->pipe->pipe, &buf);
       GST_OBJECT_UNLOCK (self);
       if (rv < 0) {
-        GST_ELEMENT_ERROR (self, RESOURCE, READ, ("Failed to read from shmsrc"),
+        GST_ELEMENT_ERROR (self, RESOURCE, READ, ("Failed to read from shmdatasrc"),
             ("Error reading control data: %d", rv));
         return GST_FLOW_ERROR;
       }
@@ -342,31 +350,27 @@ gst_shm_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
 
   GST_LOG_OBJECT (self, "Got buffer %p of size %d", buf, rv);
 
-  gsb = g_slice_new0 (struct GstShmBuffer);
+  gsb = g_slice_new0 (struct GstShmDataBuffer);
   gsb->buf = buf;
   gsb->pipe = self->pipe;
-  gst_shm_pipe_inc (self->pipe);
+  gst_shmdata_pipe_inc (self->pipe);
 
-  *outbuf = gst_buffer_new ();
-  GST_BUFFER_FLAG_SET (*outbuf, GST_BUFFER_FLAG_READONLY);
-  GST_BUFFER_DATA (*outbuf) = (guint8 *) buf;
-  GST_BUFFER_SIZE (*outbuf) = rv;
-  GST_BUFFER_MALLOCDATA (*outbuf) = (guint8 *) gsb;
-  GST_BUFFER_FREE_FUNC (*outbuf) = free_buffer;
+  *outbuf = gst_buffer_new_wrapped_full (GST_MEMORY_FLAG_READONLY,
+      buf, rv, 0, rv, gsb, free_buffer);
 
   return GST_FLOW_OK;
 }
 
 static GstStateChangeReturn
-gst_shm_src_change_state (GstElement * element, GstStateChange transition)
+gst_shmdata_src_change_state (GstElement * element, GstStateChange transition)
 {
   GstStateChangeReturn ret = GST_STATE_CHANGE_SUCCESS;
-  GstShmSrc *self = GST_SHM_SRC (element);
+  GstShmdataSrc *self = GST_SHMDATA_SRC (element);
 
   switch (transition) {
     case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
       if (gst_base_src_is_live (GST_BASE_SRC (element)))
-        if (!gst_shm_src_start_reading (self))
+        if (!gst_shmdata_src_start_reading (self))
           return GST_STATE_CHANGE_FAILURE;
     default:
       break;
@@ -379,7 +383,7 @@ gst_shm_src_change_state (GstElement * element, GstStateChange transition)
   switch (transition) {
     case GST_STATE_CHANGE_PLAYING_TO_PAUSED:
       if (gst_base_src_is_live (GST_BASE_SRC (element)))
-        gst_shm_src_stop_reading (self);
+        gst_shmdata_src_stop_reading (self);
     default:
       break;
   }
@@ -388,9 +392,9 @@ gst_shm_src_change_state (GstElement * element, GstStateChange transition)
 }
 
 static gboolean
-gst_shm_src_unlock (GstBaseSrc * bsrc)
+gst_shmdata_src_unlock (GstBaseSrc * bsrc)
 {
-  GstShmSrc *self = GST_SHM_SRC (bsrc);
+  GstShmdataSrc *self = GST_SHMDATA_SRC (bsrc);
 
   self->unlocked = TRUE;
   gst_poll_set_flushing (self->poll, TRUE);
@@ -399,9 +403,9 @@ gst_shm_src_unlock (GstBaseSrc * bsrc)
 }
 
 static gboolean
-gst_shm_src_unlock_stop (GstBaseSrc * bsrc)
+gst_shmdata_src_unlock_stop (GstBaseSrc * bsrc)
 {
-  GstShmSrc *self = GST_SHM_SRC (bsrc);
+  GstShmdataSrc *self = GST_SHMDATA_SRC (bsrc);
 
   self->unlocked = FALSE;
   gst_poll_set_flushing (self->poll, FALSE);
@@ -410,7 +414,7 @@ gst_shm_src_unlock_stop (GstBaseSrc * bsrc)
 }
 
 static void
-gst_shm_pipe_inc (GstShmPipe * pipe)
+gst_shmdata_pipe_inc (GstShmPipe * pipe)
 {
   g_return_if_fail (pipe);
   g_return_if_fail (pipe->src);
@@ -422,7 +426,7 @@ gst_shm_pipe_inc (GstShmPipe * pipe)
 }
 
 static void
-gst_shm_pipe_dec (GstShmPipe * pipe)
+gst_shmdata_pipe_dec (GstShmPipe * pipe)
 {
   g_return_if_fail (pipe);
   g_return_if_fail (pipe->src);
@@ -437,7 +441,7 @@ gst_shm_pipe_dec (GstShmPipe * pipe)
   }
 
   if (pipe->pipe)
-    sp_close (pipe->pipe);
+    sp_client_close (pipe->pipe);
   GST_OBJECT_UNLOCK (pipe->src);
 
   gst_object_unref (pipe->src);

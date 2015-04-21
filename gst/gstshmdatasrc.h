@@ -15,12 +15,12 @@
  *
  * You should have received a copy of the GNU Library General Public
  * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+ * Boston, MA 02110-1301, USA.
  */
 
-#ifndef __GST_SHM_SRC_H__
-#define __GST_SHM_SRC_H__
+#ifndef __GST_SHMDATA_SRC_H__
+#define __GST_SHMDATA_SRC_H__
 
 #include <gst/gst.h>
 #include <gst/base/gstpushsrc.h>
@@ -29,21 +29,21 @@
 #include "shmpipe.h"
 
 G_BEGIN_DECLS
-#define GST_TYPE_SHM_SRC \
-  (gst_shm_src_get_type())
-#define GST_SHM_SRC(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_SHM_SRC,GstShmSrc))
-#define GST_SHM_SRC_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST((klass),GST_TYPE_SHM_SRC,GstShmSrcClass))
-#define GST_IS_SHM_SRC(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_SHM_SRC))
-#define GST_IS_SHM_SRC_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE((klass),GST_TYPE_SHM_SRC))
-typedef struct _GstShmSrc GstShmSrc;
-typedef struct _GstShmSrcClass GstShmSrcClass;
+#define GST_TYPE_SHMDATA_SRC \
+  (gst_shmdata_src_get_type())
+#define GST_SHMDATA_SRC(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_SHMDATA_SRC,GstShmdataSrc))
+#define GST_SHMDATA_SRC_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST((klass),GST_TYPE_SHMDATA_SRC,GstShmdataSrcClass))
+#define GST_IS_SHMDATA_SRC(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_SHMDATA_SRC))
+#define GST_IS_SHMDATA_SRC_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE((klass),GST_TYPE_SHMDATA_SRC))
+typedef struct _GstShmdataSrc GstShmdataSrc;
+typedef struct _GstShmdataSrcClass GstShmdataSrcClass;
 typedef struct _GstShmPipe GstShmPipe;
 
-struct _GstShmSrc
+struct _GstShmdataSrc
 {
   GstPushSrc element;
 
@@ -58,19 +58,19 @@ struct _GstShmSrc
   gboolean unlocked;
 };
 
-struct _GstShmSrcClass
+struct _GstShmdataSrcClass
 {
   GstPushSrcClass parent_class;
 };
 
-GType gst_shm_src_get_type (void);
+GType gst_shmdata_src_get_type (void);
 
 struct _GstShmPipe {
   int use_count;
 
-  GstShmSrc *src;
+  GstShmdataSrc *src;
   ShmPipe *pipe;
 };
 
 G_END_DECLS
-#endif /* __GST_SHM_SRC_H__ */
+#endif /* __GST_SHMDATA_SRC_H__ */

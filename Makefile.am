@@ -5,16 +5,15 @@
 AUTOMAKE_OPTIONS = foreign
 
 # SUBDIRS = \
-#     shmdata \
-#     gst \
-#     tests \
-#     plugins \
-#     examples \
 #     wrappers
 
 SUBDIRS = \
     shmdata \
     tests 
+
+if BUILD_GST
+SUBDIRS += gst
+endif 
 
 EXTRA_DIST = \
     LICENSE \

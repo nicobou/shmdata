@@ -107,23 +107,15 @@ CXXFLAGS+=" -g3 -ggdb -Wall -Wextra -Wfatal-errors -Wno-unused-parameter"
 dnl required versions of gstreamer and plugins-base
 GST_REQUIRED=1.0.0
 GSTPB_REQUIRED=1.0.0
+BUILD_GST=enabled
 dnl give error and exit if we don't have pkgconfig
 AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
   AC_MSG_WARN([You need to have pkg-config installed!])
+  BUILD_GST=disabled
 ])
 dnl Check for the required version of GStreamer core (and gst-plugins-base)
 dnl This will export GST_CFLAGS and GST_LIBS variables for use in Makefile.am
 dnl
-dnl If you need libraries from gst-plugins-base here, also add:
-dnl for libgstaudio-1.0: gstreamer-audio-1.0 >= $GST_REQUIRED
-dnl for libgstvideo-1.0: gstreamer-video-1.0 >= $GST_REQUIRED
-dnl for libgsttag-1.0: gstreamer-tag-1.0 >= $GST_REQUIRED
-dnl for libgstpbutils-1.0: gstreamer-pbutils-1.0 >= $GST_REQUIRED
-dnl for libgstfft-1.0: gstreamer-fft-1.0 >= $GST_REQUIRED
-dnl for libgstinterfaces-1.0: gstreamer-interfaces-1.0 >= $GST_REQUIRED
-dnl for libgstrtp-1.0: gstreamer-rtp-1.0 >= $GST_REQUIRED
-dnl for libgstrtsp-1.0: gstreamer-rtsp-1.0 >= $GST_REQUIRED
-dnl etc.
 PKG_CHECK_MODULES(GST, [
   gstreamer-1.0 >= $GST_REQUIRED
   gstreamer-base-1.0 >= $GST_REQUIRED
@@ -139,53 +131,23 @@ PKG_CHECK_MODULES(GST, [
       on RPM-based systems gstreamer1.0-devel, libgstreamer1.0-devel
       or similar. The minimum version required is $GST_REQUIRED.
   ])
+  BUILD_GST=disabled
 ])
+
+AM_CONDITIONAL(BUILD_GST, test "x${BUILD_GST}" = "xenabled")
 
 dnl set the plugindir where plugins should be installed (for src/Makefile.am)
 if test "x${prefix}" = "x$HOME"; then
-  plugindir="$HOME/.gstreamer-1.0/plugins"
+  GST_PLUGIN_DIR="$HOME/.gstreamer-1.0/plugins"
 else
-  plugindir="\$(libdir)/gstreamer-1.0"
+  GST_PLUGIN_DIR="\$(libdir)/gstreamer-1.0"
 fi
-AC_SUBST(plugindir)
+AC_SUBST(GST_PLUGIN_DIR)
 
 dnl set proper LDFLAGS for plugins
 GST_PLUGIN_LDFLAGS='-module -avoid-version -export-symbols-regex [_]*\(gst_\|Gst\|GST_\).*'
 AC_SUBST(GST_PLUGIN_LDFLAGS)
 
-
-
-dnl # --define where to install gstreamer elements built -- 
-dnl if test "x${prefix}" = "x$HOME"; then
-dnl   SHMDATA_GST_PLUGIN_PATH="\$(HOME)/.gstreamer-0.10/plugins"
-dnl   FLAT_SHMDATA_GST_PLUGIN_PATH=\"$HOME/.gstreamer-0.10/plugins\"
-dnl else
-dnl   if test "x${SHMDATA_GST_PLUGIN_PATH}" = "x" ; then
-dnl     SHMDATA_GST_PLUGIN_PATH="\$(libdir)/gstreamer-0.10"
-dnl   fi
-
-dnl   dnl set install paths.
-dnl   if test "x$prefix" = "xNONE" ; then
-dnl     prefix="/usr/local"
-dnl   fi
-dnl   if test "x$exec_prefix" = "xNONE" ; then
-dnl     exec_prefix=$prefix
-dnl   fi
-dnl   LIBDIR=`eval echo $libdir`
-dnl   LIBDIR=`eval echo $LIBDIR`
-dnl   FLAT_SHMDATA_GST_PLUGIN_PATH=\"$LIBDIR/gstreamer-0.10\"
-dnl fi
-
-dnl [echo "SHMDATA_GST_PLUGIN_PATH: ${SHMDATA_GST_PLUGIN_PATH}"]
-
-dnl AC_SUBST(SHMDATA_GST_PLUGIN_PATH)
-dnl AC_DEFINE_UNQUOTED([SHMDATA_GST_PLUGIN_PATH],[$FLAT_SHMDATA_GST_PLUGIN_PATH],
-dnl                    [GStreamer plugin path for element built])
-
-dnl BUILDDIR=`pwd`
-dnl SHMDATA_SHM_GST_PLUGIN_BUILD_PATH=\"$BUILDDIR/gst/shm/.libs\"
-dnl AC_DEFINE_UNQUOTED([SHMDATA_SHM_GST_PLUGIN_BUILD_PATH],[$SHMDATA_SHM_GST_PLUGIN_BUILD_PATH],
-dnl                    [Path where the shm elements have been built])
 
 dnl # Check for Python to build a wrapper
 dnl PKG_CHECK_MODULES(PYTHON3, python3,
@@ -204,6 +166,7 @@ dnl         ])
 AC_CONFIG_FILES([
         Makefile 
         shmdata/Makefile
+        gst/Makefile
         tests/Makefile
         doxyfile
         shmdata-${LIBSHMDATA_API_VERSION}.pc:shmdata.pc.in

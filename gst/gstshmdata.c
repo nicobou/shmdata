@@ -1,4 +1,5 @@
 /* GStreamer
+ * Copyright (C) <2015> Nicolas Bouillot
  * Copyright (C) <2009> Collabora Ltd
  *  @author: Olivier Crete <olivier.crete@collabora.co.uk
  * Copyright (C) <2009> Nokia Inc
@@ -15,33 +16,32 @@
  *
  * You should have received a copy of the GNU Library General Public
  * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+ * Boston, MA 02110-1301, USA.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "gstshmdatasrc.h"
+#include "gstshmdatasink.h"
 
-#include "gstshmsrc.h"
-#include "gstshmsink.h"
+#ifndef PACKAGE
+#define PACKAGE "shmdata"
+#endif
 
 static gboolean
 plugin_init (GstPlugin * plugin)
 {
-  return gst_element_register (plugin, "shmsrc",
-      GST_RANK_NONE, GST_TYPE_SHM_SRC) &&
-      gst_element_register (plugin, "shmsink",
-      GST_RANK_NONE, GST_TYPE_SHM_SINK);
+  return gst_element_register (plugin, "shmdatasrc",
+      GST_RANK_NONE, GST_TYPE_SHMDATA_SRC) &&
+      gst_element_register (plugin, "shmdatasink",
+      GST_RANK_NONE, GST_TYPE_SHMDATA_SINK);
 }
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
-    GST_VERSION_MINOR,
-    "shm",
-    "shared memory sink source",
-    plugin_init, 
-    VERSION, 
-    "LGPL", 
-    "GStreamer element from shmdata", 
-    "Unknown package origin"
-)
+                   GST_VERSION_MINOR,
+                   shm,
+                   "shmdata sink source",
+                   plugin_init,
+                   "1.0",
+                   "LGPL",
+                   PACKAGE,
+                   "https://github.com/nicobou/shmdata")

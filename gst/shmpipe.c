@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -114,10 +115,11 @@ struct _ShmBuffer
 
   ShmBuffer *next;
 
-  int num_clients;
-  int clients[0];
+  void *tag;
 
-  uint64_t tag;
+  int num_clients;
+  /* This must ALWAYS stay last in the struct */
+  int clients[0];
 };
 
 
@@ -182,14 +184,14 @@ struct CommandBuffer
 static ShmArea *sp_open_shm (char *path, int id, mode_t perms, size_t size);
 static void sp_close_shm (ShmArea * area);
 static int sp_shmbuf_dec (ShmPipe * self, ShmBuffer * buf,
-    ShmBuffer * prev_buf);
+    ShmBuffer * prev_buf, ShmClient * client, void **tag);
 static void sp_shm_area_dec (ShmPipe * self, ShmArea * area);
 
 
 
 #define RETURN_ERROR(format, ...) do {                  \
   fprintf (stderr, format, __VA_ARGS__);                \
-  sp_close (self);                                      \
+  sp_writer_close (self, NULL, NULL);                   \
   return NULL;                                          \
   } while (0)
 
@@ -234,6 +236,10 @@ sp_writer_create (const char *path, size_t size, mode_t perms)
 
   self->socket_path = strdup (sock_un.sun_path);
 
+  if (chmod (self->socket_path, perms) < 0)
+    RETURN_ERROR ("failed to set socket permissions (%d): %s\n", errno,
+        strerror (errno));
+
   if (listen (self->main_socket, LISTEN_BACKLOG) < 0)
     RETURN_ERROR ("listen() failed (%d): %s\n", errno, strerror (errno));
 
@@ -275,6 +281,7 @@ sp_open_shm (char *path, int id, mode_t perms, size_t size)
 
   memset (area, 0, sizeof (ShmArea));
 
+  area->shm_area_buf = MAP_FAILED;
   area->use_count = 1;
 
   area->shm_area_len = size;
@@ -418,7 +425,8 @@ sp_dec (ShmPipe * self)
 }
 
 void
-sp_close (ShmPipe * self)
+sp_writer_close (ShmPipe * self, sp_buffer_free_callback callback,
+    void *user_data)
 {
   if (self->main_socket >= 0)
     close (self->main_socket);
@@ -429,10 +437,17 @@ sp_close (ShmPipe * self)
   }
 
   while (self->clients)
-    sp_writer_close_client (self, self->clients);
+    sp_writer_close_client (self, self->clients, callback, user_data);
 
   sp_dec (self);
 }
+
+void
+sp_client_close (ShmPipe * self)
+{
+  sp_writer_close (self, NULL, NULL);
+}
+
 
 int
 sp_writer_setperms_shm (ShmPipe * self, mode_t perms)
@@ -443,6 +458,8 @@ sp_writer_setperms_shm (ShmPipe * self, mode_t perms)
   self->perms = perms;
   for (area = self->shm_area; area; area = area->next)
     ret |= fchmod (area->shm_fd, perms);
+
+  ret |= chmod (self->socket_path, perms);
 
   return ret;
 }
@@ -552,7 +569,7 @@ sp_writer_free_block (ShmBlock * block)
 /* Returns the number of client this has successfully been sent to */
 
 int
-sp_writer_send_buf (ShmPipe * self, char *buf, size_t size, uint64_t tag)
+sp_writer_send_buf (ShmPipe * self, char *buf, size_t size, void *tag)
 {
   ShmArea *area = NULL;
   unsigned long offset = 0;
@@ -691,7 +708,7 @@ sp_client_recv (ShmPipe * self, char **buf)
 }
 
 int
-sp_writer_recv (ShmPipe * self, ShmClient * client)
+sp_writer_recv (ShmPipe * self, ShmClient * client, void **tag)
 {
   ShmBuffer *buf = NULL, *prev_buf = NULL;
   struct CommandBuffer cb;
@@ -705,7 +722,7 @@ sp_writer_recv (ShmPipe * self, ShmClient * client)
       for (buf = self->buffers; buf; buf = buf->next) {
         if (buf->shm_area->id == cb.area_id &&
             buf->offset == cb.payload.ack_buffer.offset) {
-          sp_shmbuf_dec (self, buf, prev_buf);
+          return sp_shmbuf_dec (self, buf, prev_buf, client, tag);
           break;
         }
         prev_buf = buf;
@@ -751,6 +768,7 @@ sp_client_open (const char *path)
 {
   ShmPipe *self = spalloc_new (ShmPipe);
   struct sockaddr_un sock_un;
+  int flags;
 
   memset (self, 0, sizeof (ShmPipe));
 
@@ -758,6 +776,13 @@ sp_client_open (const char *path)
   self->use_count = 1;
 
   if (self->main_socket < 0)
+    goto error;
+
+  flags = fcntl (self->main_socket, F_GETFL, 0);
+  if (flags < 0)
+    goto error;
+
+  if (fcntl (self->main_socket, F_SETFL, flags | FD_CLOEXEC) < 0)
     goto error;
 
   sock_un.sun_family = AF_UNIX;
@@ -770,7 +795,7 @@ sp_client_open (const char *path)
   return self;
 
 error:
-  sp_close (self);
+  sp_client_close (self);
   return NULL;
 }
 
@@ -820,8 +845,27 @@ error:
 }
 
 static int
-sp_shmbuf_dec (ShmPipe * self, ShmBuffer * buf, ShmBuffer * prev_buf)
+sp_shmbuf_dec (ShmPipe * self, ShmBuffer * buf, ShmBuffer * prev_buf,
+    ShmClient * client, void **tag)
 {
+  int i;
+  int had_client = 0;
+
+  /**
+   * Remove client from the list of buffer users. Here we make sure that
+   * if a client closes connection but already decremented the use count
+   * for this buffer, but other clients didn't have time to decrement
+   * buffer will not be freed too early in sp_writer_close_client.
+   */
+  for (i = 0; i < buf->num_clients; i++) {
+    if (buf->clients[i] == client->fd) {
+      buf->clients[i] = -1;
+      had_client = 1;
+      break;
+    }
+  }
+  assert (had_client);
+
   buf->use_count--;
 
   if (buf->use_count == 0) {
@@ -831,17 +875,19 @@ sp_shmbuf_dec (ShmPipe * self, ShmBuffer * buf, ShmBuffer * prev_buf)
     else
       self->buffers = buf->next;
 
+    if (tag)
+      *tag = buf->tag;
     shm_alloc_space_block_dec (buf->ablock);
     sp_shm_area_dec (self, buf->shm_area);
     spalloc_free1 (sizeof (ShmBuffer) + sizeof (int) * buf->num_clients, buf);
     return 0;
   }
-
   return 1;
 }
 
 void
-sp_writer_close_client (ShmPipe * self, ShmClient * client)
+sp_writer_close_client (ShmPipe * self, ShmClient * client,
+    sp_buffer_free_callback callback, void *user_data)
 {
   ShmBuffer *buffer = NULL, *prev_buf = NULL;
   ShmClient *item = NULL, *prev_item = NULL;
@@ -851,16 +897,19 @@ sp_writer_close_client (ShmPipe * self, ShmClient * client)
 again:
   for (buffer = self->buffers; buffer; buffer = buffer->next) {
     int i;
+    void *tag = NULL;
 
     for (i = 0; i < buffer->num_clients; i++) {
       if (buffer->clients[i] == client->fd) {
-        buffer->clients[i] = -1;
-        if (!sp_shmbuf_dec (self, buffer, prev_buf))
+        if (!sp_shmbuf_dec (self, buffer, prev_buf, client, &tag)) {
+          if (callback)
+            callback (tag, user_data);
           goto again;
+        }
         break;
       }
-      prev_buf = buffer;
     }
+    prev_buf = buffer;
   }
 
   for (item = self->clients; item; item = item->next) {
@@ -916,8 +965,17 @@ sp_writer_get_next_buffer (ShmBuffer * buffer)
   return buffer->next;
 }
 
-uint64_t
+void *
 sp_writer_buf_get_tag (ShmBuffer * buffer)
 {
   return buffer->tag;
+}
+
+size_t
+sp_writer_get_max_buf_size (ShmPipe * self)
+{
+  if (self->shm_area == NULL)
+    return 0;
+
+  return self->shm_area->shm_area_len;
 }
