@@ -76,6 +76,8 @@ UnixSocketServer::UnixSocketServer(const std::string &path,
 
 UnixSocketServer::~UnixSocketServer() {
   if (done_.valid()) {
+    quit_.store(1);
+    done_.get();
     // sending quit
     for (auto &it: clients_){
       if (-1 == send(it, &proto_->quit_msg_, sizeof(proto_->quit_msg_), MSG_NOSIGNAL)) {
@@ -83,8 +85,6 @@ UnixSocketServer::~UnixSocketServer() {
         log_->error("send (quit): %", strerror(err));
       } 
     }
-    quit_.store(1);
-    done_.get();
     unlink (path_.c_str());
   }
 }
