@@ -6,6 +6,7 @@ LDADD = \
 
 check_PROGRAMS = \
     check-file-monitor \
+    check-follower \
     check-shmdata \
     check-shmdata-stress \
     check-sysv-sem \
@@ -16,6 +17,9 @@ TESTS = $(check_PROGRAMS)
 
 check_file_monitor_SOURCES = \
     check-file-monitor.cpp
+
+check_follower_SOURCES = \
+    check-follower.cpp
 
 check_shmdata_SOURCES = \
     check-shmdata.cpp

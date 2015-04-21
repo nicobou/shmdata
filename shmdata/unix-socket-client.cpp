@@ -105,6 +105,7 @@ void UnixSocketClient::server_interaction() {
         int err = errno;
         log_->error("read %", strerror(err));
       } else if (nread == 0) {
+        log_->debug("socket client, server disconnected");
         proto_->on_disconnect_cb_();
         FD_CLR(socket_.fd_, &allset);
       } else { /* process server′s message */
@@ -123,6 +124,8 @@ void UnixSocketClient::server_interaction() {
         } else {
           if (1 == proto_->update_msg_.msg_type_)
             proto_->on_update_cb_(proto_->update_msg_.size_);
+          else if ((2 == proto_->update_msg_.msg_type_))
+            proto_->on_disconnect_cb_();
           else
             quit_acked = true;
         }
