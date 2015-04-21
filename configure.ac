@@ -103,25 +103,57 @@ fi
 # -- compilation flags --
 CXXFLAGS+=" -g3 -ggdb -Wall -Wextra -Wfatal-errors -Wno-unused-parameter"
 
-dnl  # -- testing GStreamer SDK, if found, then building against --
-dnl AM_CONDITIONAL(HAVE_GST_SDK, false)
-dnl  # linux
-dnl  AC_CHECK_FILE([/opt/gstreamer-sdk/lib/pkgconfig/gstreamer-0.10.pc], 
-dnl                 [AC_MSG_WARN([building against Linux GStreamer SDK.]) 
-dnl                  AM_CONDITIONAL(HAVE_GST_SDK, true)
-dnl                  PKG_CONFIG_PATH=/opt/gstreamer-sdk/lib/pkgconfig:$PKG_CONFIG_PATH
-dnl                  export PKG_CONFIG_PATH
-dnl                  SHMDATA_GST_PLUGIN_PATH=/opt/gstreamer-sdk/lib],
-dnl                 [AC_MSG_WARN([Linux GStreamer SDK not found])])
+# gstreamer
+dnl required versions of gstreamer and plugins-base
+GST_REQUIRED=1.0.0
+GSTPB_REQUIRED=1.0.0
+dnl give error and exit if we don't have pkgconfig
+AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
+  AC_MSG_WARN([You need to have pkg-config installed!])
+])
+dnl Check for the required version of GStreamer core (and gst-plugins-base)
+dnl This will export GST_CFLAGS and GST_LIBS variables for use in Makefile.am
+dnl
+dnl If you need libraries from gst-plugins-base here, also add:
+dnl for libgstaudio-1.0: gstreamer-audio-1.0 >= $GST_REQUIRED
+dnl for libgstvideo-1.0: gstreamer-video-1.0 >= $GST_REQUIRED
+dnl for libgsttag-1.0: gstreamer-tag-1.0 >= $GST_REQUIRED
+dnl for libgstpbutils-1.0: gstreamer-pbutils-1.0 >= $GST_REQUIRED
+dnl for libgstfft-1.0: gstreamer-fft-1.0 >= $GST_REQUIRED
+dnl for libgstinterfaces-1.0: gstreamer-interfaces-1.0 >= $GST_REQUIRED
+dnl for libgstrtp-1.0: gstreamer-rtp-1.0 >= $GST_REQUIRED
+dnl for libgstrtsp-1.0: gstreamer-rtsp-1.0 >= $GST_REQUIRED
+dnl etc.
+PKG_CHECK_MODULES(GST, [
+  gstreamer-1.0 >= $GST_REQUIRED
+  gstreamer-base-1.0 >= $GST_REQUIRED
+  gstreamer-controller-1.0 >= $GST_REQUIRED
+], [
+  AC_SUBST(GST_CFLAGS)
+  AC_SUBST(GST_LIBS)
+], [
+  AC_MSG_WARN([
+      You need to install or upgrade the GStreamer development
+      packages on your system. On debian-based systems these are
+      libgstreamer1.0-dev and libgstreamer-plugins-base1.0-dev.
+      on RPM-based systems gstreamer1.0-devel, libgstreamer1.0-devel
+      or similar. The minimum version required is $GST_REQUIRED.
+  ])
+])
 
-dnl  # osx
-dnl AC_CHECK_FILE([/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig], 
-dnl               [AC_MSG_WARN([building against OSX GStreamer SDK.]) 
-dnl                AM_CONDITIONAL(HAVE_GST_SDK, true)
-dnl                PKG_CONFIG_PATH=/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig:$PKG_CONFIG_PATH
-dnl                export PKG_CONFIG_PATH
-dnl                SHMDATA_GST_PLUGIN_PATH=/Library/Frameworks/GStreamer.framework/Libraries/gstreamer-0.10],
-dnl               [AC_MSG_WARN([OSX GStreamer SDK not found])])
+dnl set the plugindir where plugins should be installed (for src/Makefile.am)
+if test "x${prefix}" = "x$HOME"; then
+  plugindir="$HOME/.gstreamer-1.0/plugins"
+else
+  plugindir="\$(libdir)/gstreamer-1.0"
+fi
+AC_SUBST(plugindir)
+
+dnl set proper LDFLAGS for plugins
+GST_PLUGIN_LDFLAGS='-module -avoid-version -export-symbols-regex [_]*\(gst_\|Gst\|GST_\).*'
+AC_SUBST(GST_PLUGIN_LDFLAGS)
+
+
 
 dnl # --define where to install gstreamer elements built -- 
 dnl if test "x${prefix}" = "x$HOME"; then
@@ -155,45 +187,6 @@ dnl SHMDATA_SHM_GST_PLUGIN_BUILD_PATH=\"$BUILDDIR/gst/shm/.libs\"
 dnl AC_DEFINE_UNQUOTED([SHMDATA_SHM_GST_PLUGIN_BUILD_PATH],[$SHMDATA_SHM_GST_PLUGIN_BUILD_PATH],
 dnl                    [Path where the shm elements have been built])
 
-dnl # -- ( mandatory libraries) --
-dnl #Trying to set GST_CFLAGS and GST_LIBS using pkg-config
-dnl PKG_CHECK_MODULES(GST, gstreamer-0.10, have_gstreamer=true, have_gstreamer=false)
-dnl if test "x${have_gstreamer}" = "xfalse" ; then
-dnl     AC_MSG_ERROR([missing package: libgstreamer0.10-dev])
-dnl fi
-
-dnl #for building shmsrc and shmsink elements
-dnl PKG_CHECK_MODULES(GST_BASE, gstreamer-base-0.10, have_gstreamer_base=true, have_gstreamer_base=false)
-dnl if test "x${have_gstreamer_base}" = "xfalse" ; then
-dnl   AC_MSG_ERROR([missing package: libgstreamer0.10-dev])
-dnl fi
-
-dnl #Trying to set GSTAPP using pkg-config
-dnl PKG_CHECK_MODULES(GSTAPP, gstreamer-app-0.10, have_gstreamer_app=true, have_gstreamer_app=false)
-dnl if test "x${have_gstreamer_app}" = "xfalse" ; then
-dnl     AC_MSG_ERROR([missing package:  libgstreamer-plugins-base0.10-dev  ])
-dnl fi
-
-#Trying to set GIO using pkg-config
-dnl PKG_CHECK_MODULES(GIO, gio-2.0, have_gio=true, have_gio=false)
-dnl if test "x${have_gio}" = "xfalse" ; then
-dnl     AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
-dnl fi
-
-dnl # Check for Puredata
-dnl AC_CHECK_HEADER(m_pd.h,
-dnl                 PUREDATA=y,
-dnl                 AC_MSG_WARN([Puredata header not found.]))
-dnl AM_CONDITIONAL(PUREDATAFOUND, test "${PUREDATA}" = "y")
-
-dnl if test "${PUREDATA}" = "y" ; then
-dnl    #checking libsamplerate0-dev
-dnl    PKG_CHECK_MODULES(LIBSAMPLERATE, samplerate, have_samplerate=true, have_samplerate=false)
-dnl    if test "x${have_samplerate}" = "xfalse" ; then
-dnl        AC_MSG_ERROR([building puredata external enabled, but missing package: libsamplerate0-dev])
-dnl    fi
-dnl fi
-
 dnl # Check for Python to build a wrapper
 dnl PKG_CHECK_MODULES(PYTHON3, python3,
 dnl     AM_CONDITIONAL(HAVE_PYTHON3, true),
@@ -202,15 +195,6 @@ dnl     AM_CONDITIONAL(HAVE_PYTHON3, false))
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
 dnl AC_CONFIG_FILES([
-dnl         Makefile 
-dnl         shmdata/Makefile
-dnl         examples/Makefile
-dnl         tests/Makefile
-dnl         doxyfile
-dnl         shmdata-${LIBSHMDATA_API_VERSION}.pc:shmdata.pc.in
-dnl         shmdata-any-${LIBSHMDATA_API_VERSION}.pc:shmdata-any.pc.in
-dnl         plugins/Makefile
-dnl         plugins/puredata/Makefile
 dnl         gst/Makefile
 dnl         gst/shm/Makefile
 dnl         wrappers/Makefile
