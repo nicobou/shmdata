@@ -35,3 +35,12 @@ int shmdata_copy_to_shm(ShmdataWriter writer, void *data, size_t size){
   return static_cast<Writer *>(writer)->copy_to_shm(data, size);
 }
 
+ShmdataWriterAccess shmdata_get_one_write_access(ShmdataWriter writer,
+                                                 size_t size){
+  return
+      static_cast<void *>(static_cast<Writer *>(writer)->get_one_write_access_ptr(size));
+}
+
+void shmdata_release_one_write_access(ShmdataWriterAccess access){
+  delete static_cast<OneWriteAccess *>(access);
+}

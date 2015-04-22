@@ -59,6 +59,13 @@ std::unique_ptr<OneWriteAccess> Writer::get_one_write_access(size_t size) {
                                                             size));
 }
 
+OneWriteAccess *Writer::get_one_write_access_ptr(size_t size) {
+  return new OneWriteAccess(&sem_,
+                            shm_.get_mem(),
+                            &srv_,
+                            size);
+}
+
 OneWriteAccess::OneWriteAccess(sysVSem *sem,
                                void *mem,
                                UnixSocketServer *srv,
