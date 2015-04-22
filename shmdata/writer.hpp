@@ -38,8 +38,12 @@ class Writer: public SafeBoolIdiom {
   Writer& operator=(const Writer&) = delete;
   Writer& operator=(Writer&&) = default;
 
+  // copy to shmdata
   bool copy_to_shm(void *data, size_t size);
+  // direct access to the memory with lock
   std::unique_ptr<OneWriteAccess> get_one_write_access(size_t size = 0);
+  // direct access to the memory wth manual operations (C wrapper)
+  // TODO
  private:
   std::string path_; 
   UnixSocketProtocol::onConnectData connect_data_;
