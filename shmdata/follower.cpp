@@ -37,21 +37,20 @@ Follower::Follower(const std::string &path,
 
 Follower::~Follower(){
   quit_.store(true);
-  if (monitor_.valid()) {
+  if (monitor_.valid()) 
     monitor_.get();
-  }
 }
 
 void Follower::monitor(){
   auto do_sleep = true;
   while (!quit_.load()) {
     if (fileMonitor::is_unix_socket(path_, log_)) {
+      do_sleep = false;
       reader_.reset(new Reader(path_, on_data_cb_, osc_, [&](){on_server_disconnected();}, log_));
       if (*reader_.get()) {
-        do_sleep = false;
         quit_.store(true);
       } else {
-        log_->error("file % exists but writer failled");
+        log_->error("file % exists but reader failed", path_);
       }
     } 
     if (do_sleep)

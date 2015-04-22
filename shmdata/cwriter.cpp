@@ -45,6 +45,10 @@ ShmdataWriterAccess shmdata_get_one_write_access(ShmdataWriter writer,
       static_cast<void *>(static_cast<Writer *>(writer)->get_one_write_access_ptr(size));
 }
 
+void *shmdata_get_mem(ShmdataWriterAccess access){
+  return static_cast<OneWriteAccess *>(access)->get_mem();
+}
+
 void shmdata_release_one_write_access(ShmdataWriterAccess access){
   delete static_cast<OneWriteAccess *>(access);
 }

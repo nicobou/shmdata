@@ -26,18 +26,19 @@ Reader::Reader(const std::string &path,
     on_data_cb_(cb),
     on_server_connected_cb_(osc),
     on_server_disconnected_cb_(osd),
-    shm_(ftok(path.c_str(), 'n'), 0, log_, /* owner = */ false),
-    sem_(ftok(path.c_str(), 'm'), log_, /* owner = */ false),
+    shm_(new sysVShm(ftok(path.c_str(), 'n'), 0, log_, /* owner = */ false)),
+    sem_(new sysVSem(ftok(path.c_str(), 'm'), log_, /* owner = */ false)),
     proto_([this](){on_server_connected();},
            [this](){on_server_disconnected();},
-           [this](size_t size){on_buffer(&sem_, size);}),  // read when update is received
-    cli_(path, &proto_, log_) {
-  if (!cli_ || !shm_ || !sem_)
+           [this](size_t size){on_buffer(sem_.get(), size);}),  // read when update is received
+  cli_(new UnixSocketClient(path, &proto_, log_)) {
+  if (!(*cli_.get()) || !(*shm_.get()) || !(*sem_.get())) {
+    cli_.reset(nullptr);
+    sem_.reset(nullptr);
+    shm_.reset(nullptr);
     is_valid_ = false;
-}
+  }
 
-Reader::~Reader(){
-  do_read_ = false;
 }
 
 void Reader::on_server_connected(){
@@ -59,7 +60,7 @@ bool Reader::on_buffer(sysVSem *sem, size_t size){
   if (!lock)
     return false;
   if (on_data_cb_)
-    on_data_cb_(shm_.get_mem(), size);
+    on_data_cb_(shm_->get_mem(), size);
   return true;
 }
 

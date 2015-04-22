@@ -59,11 +59,12 @@ UnixSocketClient::UnixSocketClient(const std::string &path,
 }
 
 UnixSocketClient::~UnixSocketClient() {
-  
   if (done_.valid()) {
-    auto res = send(socket_.fd_, &proto_->quit_msg_, sizeof(proto_->quit_msg_), MSG_NOSIGNAL);
-    if (-1 == res)
-      log_->error("send (client trying to quit)");
+    if (is_valid_) {
+      auto res = send(socket_.fd_, &proto_->quit_msg_, sizeof(proto_->quit_msg_), MSG_NOSIGNAL);
+      if (-1 == res)
+        log_->error("send (client trying to quit)");
+    }
     quit_.store(1);
     done_.get();
   }
@@ -100,15 +101,19 @@ void UnixSocketClient::server_interaction() {
         nread = read(socket_.fd_, &proto_->data_, sizeof(UnixSocketProtocol::onConnectData));
       else
         nread = read(socket_.fd_, &proto_->update_msg_, sizeof(proto_->update_msg_));
-      
       if (nread < 0) {
         int err = errno;
         log_->error("read %", strerror(err));
       } else if (nread == 0) {
         log_->debug("socket client, server disconnected");
         proto_->on_disconnect_cb_();
-        quit = true; quit_acked = true;
+        // disable socket
         FD_CLR(socket_.fd_, &allset);
+        if (0 != close(socket_.fd_)){
+          int err = errno;
+          log_->error("client closing socket %", strerror(err));
+        }
+        socket_.fd_ = -1; is_valid_ = false; quit = true; quit_acked = true;
       } else { /* process server′s message */
         if (!connected_) {
           // ack connection
@@ -118,7 +123,7 @@ void UnixSocketClient::server_interaction() {
                           MSG_NOSIGNAL);
           if (-1 == res) {
             int err = errno;
-            log_->error("writev client %", strerror(err));
+            log_->error("client sending ack %", strerror(err));
           }
           proto_->on_connect_cb_();
           connected_ = true;
@@ -127,7 +132,13 @@ void UnixSocketClient::server_interaction() {
             proto_->on_update_cb_(proto_->update_msg_.size_);
           else if ((2 == proto_->update_msg_.msg_type_)) {
             proto_->on_disconnect_cb_();
-            quit = true; quit_acked = true;
+            // disable socket
+            FD_CLR(socket_.fd_, &allset);
+            if (0 != close(socket_.fd_)){
+              int err = errno;
+              log_->error("client closing socket %", strerror(err));
+            }
+            socket_.fd_ = -1; is_valid_ = false; quit = true; quit_acked = true;
           }
           else
             quit_acked = true;

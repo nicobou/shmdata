@@ -81,9 +81,15 @@ int main () {
     Frame frame;
     frame.count = 0;
     int i = 10;
-    while (0 != i--) {
+    while (-1 != --i) {
+      // first option: copy
+      ++frame.count;
       assert(0 != shmdata_copy_to_shm(writer, &frame, sizeof(Frame)));
-      frame.count++;
+      // second option: direct write
+      ShmdataWriterAccess access = shmdata_get_one_write_access(writer, sizeof(Frame));
+      Frame *shared_frame = (Frame *)shmdata_get_mem(access);
+      shared_frame->count = ++frame.count;
+      shmdata_release_one_write_access(access);
       }
     shmdata_delete_writer(writer);
     usleep(50000);

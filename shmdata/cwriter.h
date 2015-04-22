@@ -34,6 +34,7 @@ extern "C" int shmdata_copy_to_shm(ShmdataWriter writer,
                                    size_t size);
 extern "C" ShmdataWriterAccess shmdata_get_one_write_access(ShmdataWriter writer,
                                                             size_t size);
+extern "C" void *shmdata_get_mem(ShmdataWriterAccess access);
 extern "C" void shmdata_release_one_write_access(ShmdataWriterAccess access);
 
 #endif
