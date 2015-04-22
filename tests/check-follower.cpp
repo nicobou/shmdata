@@ -60,7 +60,7 @@ int main () {
                                   << " (size " << size << ")"
                                   << std::endl;
                       },
-                      [&](){++server_interactions;},
+                      [&](const std::string &){++server_interactions;},
                       [&](){++server_interactions;},
                       &logger);
     

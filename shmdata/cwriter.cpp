@@ -20,11 +20,15 @@ using namespace shmdata;
 ShmdataWriter shmdata_make_writer(const char *path,
                                   size_t memsize,
                                   const char *type_descr,
-                                  ShmdataCLogger log){
-  return static_cast<void *>(new Writer(path,
-                                        memsize,
-                                        type_descr,
-                                        static_cast<AbstractLogger *>(log)));
+                                  ShmdataLogger log){
+  Writer *res = new Writer(path,
+                           memsize,
+                           type_descr,
+                           static_cast<AbstractLogger *>(log));
+  if (*res)
+    return static_cast<void *>(res);
+  delete res;
+  return nullptr;
 }
 
 void shmdata_delete_writer(ShmdataWriter writer){

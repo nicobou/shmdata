@@ -47,6 +47,7 @@ plugins/puredata/.deps/
 plugins/puredata/.libs/
 stamp-h1
 test-driver
+tests/check-c-wrapper
 tests/check-file-monitor
 tests/check-follower
 tests/check-shmdata

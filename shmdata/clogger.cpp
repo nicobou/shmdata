@@ -51,17 +51,17 @@ class CLogger: public AbstractLogger {
 
 }  // namespace shmdata
 
-ShmdataCLogger Shmdata_make_logger(void (*on_error)(const char *),
-                                   void (*on_critical)(const char *),
-                                   void (*on_warning)(const char *),
-                                   void (*on_message)(const char *),
-                                   void (*on_info)(const char *),
-                                   void (*on_debug)(const char *)){
+ShmdataLogger shmdata_make_logger(void (*on_error)(const char *),
+                                  void (*on_critical)(const char *),
+                                  void (*on_warning)(const char *),
+                                  void (*on_message)(const char *),
+                                  void (*on_info)(const char *),
+                                  void (*on_debug)(const char *)){
   return static_cast<void *>(
       new shmdata::CLogger(on_error, on_critical, on_warning, on_message, on_info, on_debug));
 }
 
-void Shmdata_delete_logger(ShmdataCLogger logger){
+void shmdata_delete_logger(ShmdataLogger logger){
   delete static_cast<shmdata::CLogger *>(logger);
 }
 

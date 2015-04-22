@@ -26,7 +26,7 @@ namespace shmdata{
 class Reader: public SafeBoolIdiom {
  public:
   using onData = std::function<void(void *, size_t)>;
-  using onServerConnected = std::function<void()>;
+  using onServerConnected = std::function<void(const std::string &)>;
   using onServerDisconnected = std::function<void()>;
   Reader(const std::string &path,
          onData cb,

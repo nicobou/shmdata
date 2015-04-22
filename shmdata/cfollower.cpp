@@ -13,20 +13,21 @@
  */
 
 #include "cfollower.h"
+#include <string>
 #include "./follower.hpp"
 
 namespace shmdata{
-
 class CFollower {
  public:
   CFollower(const char *path,
             void (*on_data_cb)(void *user_data,
                                void *data,
                                size_t size),
-            void (*on_server_connected)(void *user_data),
+            void (*on_server_connected)(void *user_data,
+                                        const char *type_descr),
             void (*on_server_disconnected)(void *user_data),
             void *user_data,
-            ShmdataCLogger log) :
+            ShmdataLogger log) :
       on_data_cb_(on_data_cb),
       on_server_connected_(on_server_connected),
       on_server_disconnected_(on_server_disconnected),
@@ -36,9 +37,9 @@ class CFollower {
                 if(nullptr != on_data_cb_)
                   on_data_cb_(user_data_, data, size);
               },
-              [&](){
+              [&](const std::string &type_descr){
                 if(nullptr != on_server_connected_)
-                  on_server_connected_(user_data_);
+                  on_server_connected_(user_data_, type_descr.c_str());
               },
               [&](){
                 if(nullptr != on_server_disconnected_)
@@ -48,23 +49,22 @@ class CFollower {
   }
  private:
   void (*on_data_cb_)(void *user_data, void *data, size_t size);
-  void (*on_server_connected_)(void *user_data);
+  void (*on_server_connected_)(void *user_data, const char *type_descr);
   void (*on_server_disconnected_)(void *user_data);
   void *user_data_;
   Follower follower_;
-  
 };
 }  // namespace shmdata
-
 
 ShmdataFollower shmdata_make_follower(const char *path,
                                       void (*on_data_cb)(void *user_data,
                                                          void *data,
                                                          size_t size),
-                                      void (*on_server_connected)(void *user_data),
-                                      void (*on_server_disconnected)(void *user_data),
+                                      void(*on_server_connected)(void *user_data,
+                                                                 const char *type_descr),
+                                      void(*on_server_disconnected)(void *user_data),
                                       void *user_data,
-                                      ShmdataCLogger *log){
+                                      ShmdataLogger log){
   return static_cast<void *>(new shmdata::CFollower(path,
                                                     on_data_cb,
                                                     on_server_connected,

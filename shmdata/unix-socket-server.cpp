@@ -51,7 +51,6 @@ UnixSocketServer::UnixSocketServer(const std::string &path,
     log_->error("path name %", strerror(ENAMETOOLONG));
     return;
   }
-  unlink (path_.c_str());
   memset(&sock_un, 0, sizeof(sock_un));
   sock_un.sun_family = AF_UNIX;
   strcpy(sock_un.sun_path, path_.c_str());
@@ -76,6 +75,7 @@ UnixSocketServer::UnixSocketServer(const std::string &path,
 
 UnixSocketServer::~UnixSocketServer() {
   if (done_.valid()) {
+    unlink (path_.c_str());
     quit_.store(1);
     done_.get();
     // sending quit
@@ -85,26 +85,27 @@ UnixSocketServer::~UnixSocketServer() {
         log_->error("send (quit): %", strerror(err));
       } 
     }
-    unlink (path_.c_str());
   }
 }
 
 short UnixSocketServer::notify_update(size_t size) {
-  std::unique_lock<std::mutex> lock(clients_mutex_);
-  clients_notified_.clear();
-  proto_->update_msg_.size_ = size;
-  // re-sending connect message
-  //auto msg = proto_->get_connect_msg_();
-  for (auto &it: clients_){
-    //auto res = send(it, &msg, sizeof(msg), MSG_NOSIGNAL);
-    auto res = send(it, &proto_->update_msg_, sizeof(proto_->update_msg_), MSG_NOSIGNAL);
-    if (-1 == res) {
-      int err = errno;
-      log_->error("send (update) %", strerror(err));
-    } else {
-      clients_notified_.insert(it);
+  {
+    std::unique_lock<std::mutex> lock(clients_mutex_);
+    clients_notified_.clear();
+    proto_->update_msg_.size_ = size;
+    // re-sending connect message
+    //auto msg = proto_->get_connect_msg_();
+    for (auto &it: clients_){
+      //auto res = send(it, &msg, sizeof(msg), MSG_NOSIGNAL);
+      auto res = send(it, &proto_->update_msg_, sizeof(proto_->update_msg_), MSG_NOSIGNAL);
+      if (-1 == res) {
+        int err = errno;
+        log_->error("send (update) %", strerror(err));
+      } else {
+        clients_notified_.insert(it);
+      }
     }
-  }
+  }  // end lock
   return clients_notified_.size();
 }
 
@@ -131,85 +132,86 @@ void UnixSocketServer::client_interaction() {
       log_->error("select %", strerror(err));
       continue;
     }
-    std::unique_lock<std::mutex> lock(clients_mutex_);
-    if (FD_ISSET(socket_.fd_, &rset)) {
-      // accept new client request
-      auto clifd = accept(socket_.fd_, NULL, NULL);
-      if (clifd < 0) {
-        int err = errno;
-        log_->error("accept %", strerror(err));
-      }
-      FD_SET(clifd, &allset);
-      if (clifd > maxfd)
-        maxfd = clifd;  // max fd for select()
-      pending_clients_.insert(clifd);
-      auto res = send(clifd, &cnx_msg, sizeof(cnx_msg), MSG_NOSIGNAL);
-      if (-1 == res) {
-        int err = errno;
-        log_->error("send %", strerror(err));
-      }
-      continue;
-    }
-    // checking disconnection
-    for (auto &it : clients_) {
-      if (FD_ISSET(it, &rset)) {
-        auto nread = read(it, &msg_placeholder, sizeof(msg_placeholder));
-        if (nread < 0) {
+    { std::unique_lock<std::mutex> lock(clients_mutex_);
+      if (FD_ISSET(socket_.fd_, &rset)) {
+        // accept new client request
+        auto clifd = accept(socket_.fd_, NULL, NULL);
+        if (clifd < 0) {
           int err = errno;
-          log_->error("read disconnection %", strerror(err));
-          clients_to_remove.push_back(it);
-          if (clients_notified_.end() != clients_notified_.find(it)) {
-            on_client_error_(it);
-          }
-        } else if (nread == 0) {
-          log_->debug("(server) closed: fd %", std::to_string(it));
-          FD_CLR(it, &allset);
-          close(it);
-        } else {
-          // send quit ack
-          auto res = send(it, &proto_->quit_msg_, sizeof(proto_->quit_msg_), MSG_NOSIGNAL);
-          if (-1 == res) {
+          log_->error("accept %", strerror(err));
+        }
+        FD_SET(clifd, &allset);
+        if (clifd > maxfd)
+          maxfd = clifd;  // max fd for select()
+        pending_clients_.insert(clifd);
+        auto res = send(clifd, &cnx_msg, sizeof(cnx_msg), MSG_NOSIGNAL);
+        if (-1 == res) {
+          int err = errno;
+          log_->error("send %", strerror(err));
+        }
+        continue;
+      }
+      // checking disconnection
+      for (auto &it : clients_) {
+        if (FD_ISSET(it, &rset)) {
+          auto nread = read(it, &msg_placeholder, sizeof(msg_placeholder));
+          if (nread < 0) {
             int err = errno;
-            log_->error("send (ack quit) %", strerror(err));
+            log_->error("read disconnection %", strerror(err));
+            clients_to_remove.push_back(it);
+            if (clients_notified_.end() != clients_notified_.find(it)) {
+              on_client_error_(it);
+            }
+          } else if (nread == 0) {
+            log_->debug("(server) closed: fd %", std::to_string(it));
+            FD_CLR(it, &allset);
+            close(it);
+          } else {
+            // send quit ack
+            auto res = send(it, &proto_->quit_msg_, sizeof(proto_->quit_msg_), MSG_NOSIGNAL);
+            if (-1 == res) {
+              int err = errno;
+              log_->error("send (ack quit) %", strerror(err));
+            }
+            if (proto_->on_disconnect_cb_)
+              proto_->on_disconnect_cb_(it);
+            clients_to_remove.push_back(it);
           }
-          if (proto_->on_disconnect_cb_)
-            proto_->on_disconnect_cb_(it);
-          clients_to_remove.push_back(it);
         }
       }
-    }
-    // cleaning clients_ if necessary
-    for (auto &it : clients_to_remove) {
-      auto cli = std::find(clients_.begin(), clients_.end(), it);
-      clients_.erase(cli);
-    }
-    clients_to_remove.clear();
-    // checking ack from clients
-    for (auto &it : pending_clients_) {
-      if (FD_ISSET(it, &rset)) {
-        auto nread = read(it, &msg_placeholder, sizeof(msg_placeholder));
-        if (nread < 0) {
-          int err = errno;
-          log_->error("read ack %", strerror(err));
-          clients_to_remove.push_back(it);
-        } else if (nread == 0) {
-          log_->critical("bug checking connection ack from client");
-          clients_to_remove.push_back(it);
-          FD_CLR(it, &allset);
-          close(it);
-        } else { 
-          clients_.push_back(it);
-          clients_to_remove.push_back(it);
-          if (proto_->on_connect_cb_)
-            proto_->on_connect_cb_(it);
+      // cleaning clients_ if necessary
+      for (auto &it : clients_to_remove) {
+        auto cli = std::find(clients_.begin(), clients_.end(), it);
+        clients_.erase(cli);
+      }
+      clients_to_remove.clear();
+      // checking ack from clients
+      for (auto &it : pending_clients_) {
+        if (FD_ISSET(it, &rset)) {
+          auto nread = read(it, &msg_placeholder, sizeof(msg_placeholder));
+          if (nread < 0) {
+            int err = errno;
+            log_->error("read ack %", strerror(err));
+            clients_to_remove.push_back(it);
+          } else if (nread == 0) {
+            log_->critical("bug checking connection ack from client");
+            clients_to_remove.push_back(it);
+            FD_CLR(it, &allset);
+            close(it);
+          } else { 
+            clients_.push_back(it);
+            clients_to_remove.push_back(it);
+            if (proto_->on_connect_cb_)
+              proto_->on_connect_cb_(it);
+          }
         }
       }
-    }
-    // removing pending client if necessary
-    for (auto &it : clients_to_remove) {
-      pending_clients_.erase(it);
-    }
-    clients_to_remove.clear();
+      // removing pending client if necessary
+      for (auto &it : clients_to_remove) {
+        pending_clients_.erase(it);
+      }
+      clients_to_remove.clear();
+    }  // end unique lock
   }  // while (!quit_)
 }
 

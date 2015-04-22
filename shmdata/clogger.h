@@ -15,13 +15,13 @@
 #ifndef _CONSOLE_C_LOGGER_H_
 #define _CONSOLE_C_LOGGER_H_
 
-typedef void *ShmdataCLogger;
-extern "C" ShmdataCLogger Shmdata_make_logger(void (*on_error)(const char *),
-                                              void (*on_critical)(const char *),
-                                              void (*on_warning)(const char *),
-                                              void (*on_massage)(const char *),
-                                              void (*on_info)(const char *),
-                                              void (*on_debug)(const char *));
-extern "C" void Shmdata_delete_logger(ShmdataCLogger logger);
+typedef void *ShmdataLogger;
+extern "C" ShmdataLogger shmdata_make_logger(void (*on_error)(const char *),
+                                             void (*on_critical)(const char *),
+                                             void (*on_warning)(const char *),
+                                             void (*on_massage)(const char *),
+                                             void (*on_info)(const char *),
+                                             void (*on_debug)(const char *));
+extern "C" void shmdata_delete_logger(ShmdataLogger logger);
 
 #endif

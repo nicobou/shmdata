@@ -20,14 +20,16 @@
 
 typedef void * ShmdataFollower;
 
-extern "C" ShmdataFollower shmdata_make_follower(const char *path,
-                                                 void (*on_data_cb)(void *user_data,
-                                                                    void *data,
-                                                                    size_t size),
-                                                 void(*on_server_connected)(void *user_data),
-                                                 void(*on_server_disconnected)(void *user_data),
-                                                 void *user_data,
-                                                 ShmdataCLogger *log);
+extern "C" ShmdataFollower shmdata_make_follower(
+    const char *path,
+    void (*on_data_cb)(void *user_data,
+                       void *data,
+                       size_t size),
+    void(*on_server_connected)(void *user_data,
+                               const char *type_descr),
+    void(*on_server_disconnected)(void *user_data),
+    void *user_data,
+    ShmdataLogger log);
 extern "C" void shmdata_delete_follower(ShmdataFollower follower);
 
 #endif

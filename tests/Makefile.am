@@ -5,6 +5,7 @@ LDADD = \
     $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la 
 
 check_PROGRAMS = \
+    check-c-wrapper \
     check-file-monitor \
     check-follower \
     check-shmdata \
@@ -14,6 +15,9 @@ check_PROGRAMS = \
     check-unix-socket
 
 TESTS = $(check_PROGRAMS)
+
+check_c_wrapper_SOURCES = \
+    check-c-wrapper.cpp
 
 check_file_monitor_SOURCES = \
     check-file-monitor.cpp

@@ -23,7 +23,7 @@ typedef void * ShmdataWriterAccess;
 extern "C" ShmdataWriter shmdata_make_writer(const char * path,
                                              size_t memsize,
                                              const char *type_descr,
-                                             ShmdataCLogger *log);
+                                             ShmdataLogger log);
 extern "C" void shmdata_delete_writer(ShmdataWriter writer);
 extern "C" int shmdata_copy_to_shm(ShmdataWriter writer,
                                    void *data,

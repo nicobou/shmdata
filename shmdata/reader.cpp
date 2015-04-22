@@ -41,15 +41,15 @@ Reader::~Reader(){
 }
 
 void Reader::on_server_connected(){
-  log_->message("(client) server connected, shm_size %, type &",
+  log_->debug("received server info, shm_size %, type %",
                 std::to_string(proto_.data_.shm_size_),
                 proto_.data_.user_data_.data());
   if (on_server_connected_cb_)
-    on_server_connected_cb_();
+    on_server_connected_cb_(proto_.data_.user_data_.data());
 }
 
 void Reader::on_server_disconnected(){
-  log_->message("(client) on_disconnect_cb ");
+  log_->debug("server disconnection");
   if (on_server_disconnected_cb_)
     on_server_disconnected_cb_();
 }
