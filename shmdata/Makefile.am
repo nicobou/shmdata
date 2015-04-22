@@ -5,6 +5,7 @@ lib_LTLIBRARIES = \
     libshmdata-@LIBSHMDATA_API_VERSION@.la 
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
+    cfollower.cpp \
     clogger.cpp \
     cwriter.cpp \
     file-monitor.cpp \
@@ -20,6 +21,7 @@ libshmdata_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
     abstract-logger.hpp \
+    cfollower.h \
     clogger.h \
     cwriter.h \
     console-logger.hpp \
