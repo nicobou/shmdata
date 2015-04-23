@@ -36,9 +36,11 @@ Follower::Follower(const std::string &path,
 }
 
 Follower::~Follower(){
+  is_destructing_ = true;
   quit_.store(true);
   if (monitor_.valid()) 
     monitor_.get();
+  log_->warning("Follower destruct");
 }
 
 void Follower::monitor(){
@@ -56,13 +58,16 @@ void Follower::monitor(){
     if (do_sleep)
       std::this_thread::sleep_for(std::chrono::milliseconds (30));
   }  // end while
+  quit_.store(true);
 }
 
 void Follower::on_server_disconnected() {
   log_->debug("follower %", __FUNCTION__);
   // starting monitor
-  quit_.store(false);
-  monitor_ = std::async(std::launch::async, [this](){monitor();});
+  if (!is_destructing_) {
+    quit_.store(false);
+    monitor_ = std::async(std::launch::async, [this](){monitor();});
+  }
   // calling user callback
   osd_();
 }

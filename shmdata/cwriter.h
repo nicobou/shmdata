@@ -18,23 +18,31 @@
 #include <stdlib.h>
 #include "./clogger.h"
 
-typedef void * ShmdataWriter;
-typedef void * ShmdataWriterAccess;
-extern "C" ShmdataWriter shmdata_make_writer(const char * path,
-                                             size_t memsize,
-                                             const char *type_descr,
-                                             ShmdataLogger log);
-extern "C" void shmdata_delete_writer(ShmdataWriter writer);
-extern "C" int shmdata_copy_to_shm(ShmdataWriter writer,
-                                   void *data,
-                                   size_t size);
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+  typedef void * ShmdataWriter;
+  typedef void * ShmdataWriterAccess;
+  ShmdataWriter shmdata_make_writer(const char * path,
+                                    size_t memsize,
+                                    const char *type_descr,
+                                    ShmdataLogger log);
+  void shmdata_delete_writer(ShmdataWriter writer);
+  int shmdata_copy_to_shm(ShmdataWriter writer,
+                          void *data,
+                          size_t size);
 
-extern "C" int shmdata_copy_to_shm(ShmdataWriter writer,
-                                   void *data,
-                                   size_t size);
-extern "C" ShmdataWriterAccess shmdata_get_one_write_access(ShmdataWriter writer,
-                                                            size_t size);
-extern "C" void *shmdata_get_mem(ShmdataWriterAccess access);
-extern "C" void shmdata_release_one_write_access(ShmdataWriterAccess access);
+  int shmdata_copy_to_shm(ShmdataWriter writer,
+                          void *data,
+                          size_t size);
+  ShmdataWriterAccess shmdata_get_one_write_access(ShmdataWriter writer,
+                                                   size_t size);
+  void *shmdata_get_mem(ShmdataWriterAccess access);
+  void shmdata_release_one_write_access(ShmdataWriterAccess access);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

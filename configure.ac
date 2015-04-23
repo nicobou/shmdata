@@ -168,6 +168,7 @@ AC_CONFIG_FILES([
         shmdata/Makefile
         gst/Makefile
         tests/Makefile
+        utils/Makefile
         doxyfile
         shmdata-${LIBSHMDATA_API_VERSION}.pc:shmdata.pc.in
         ])

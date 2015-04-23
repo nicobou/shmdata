@@ -162,8 +162,9 @@ void UnixSocketServer::client_interaction() {
             if (clients_notified_.end() != clients_notified_.find(it)) {
               on_client_error_(it);
             }
+            FD_CLR(it, &allset);
           } else if (nread == 0) {
-            log_->debug("(server) closed: fd %", std::to_string(it));
+            log_->error("(server) closed: fd %", std::to_string(it));
             FD_CLR(it, &allset);
             close(it);
           } else {
@@ -173,6 +174,7 @@ void UnixSocketServer::client_interaction() {
               int err = errno;
               log_->error("send (ack quit) %", strerror(err));
             }
+            log_->error("send (ack quit)");
             if (proto_->on_disconnect_cb_)
               proto_->on_disconnect_cb_(it);
             clients_to_remove.push_back(it);

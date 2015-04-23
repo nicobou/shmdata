@@ -21,13 +21,16 @@
 namespace shmdata{
 
 class ConsoleLogger: public AbstractLogger {
+ public:
+  void set_debug(bool debug){debug_ = debug;}
  private:
-  void on_error(std::string &&str) final {std::cout << str << std::endl;}
-  void on_critical(std::string &&str) final {std::cout << str << std::endl;}
-  void on_warning(std::string &&str) final {std::cout << str << std::endl;}
+  bool debug_{true};
+  void on_error(std::string &&str) final {std::cerr << str << std::endl;}
+  void on_critical(std::string &&str) final {std::cerr << str << std::endl;}
+  void on_warning(std::string &&str) final {std::cerr << str << std::endl;}
   void on_message(std::string &&str) final {std::cout << str << std::endl;}
   void on_info(std::string &&str) final {std::cout << str << std::endl;}
-  void on_debug(std::string &&str) final {std::cout << str << std::endl;}
+  void on_debug(std::string &&str) final {if (debug_) std::cout << str << std::endl;}
 };
 
 }  // namespace shmdata

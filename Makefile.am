@@ -9,11 +9,12 @@ AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = \
     shmdata \
+    utils \
     tests 
 
-# if BUILD_GST
-# SUBDIRS += gst
-# endif 
+if BUILD_GST
+SUBDIRS += gst
+endif 
 
 EXTRA_DIST = \
     LICENSE \

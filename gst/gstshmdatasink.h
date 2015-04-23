@@ -24,8 +24,8 @@
 
 #include <gst/gst.h>
 #include <gst/base/gstbasesink.h>
-
-//#include "shmpipe.h"
+#include "shmdata/clogger.h"
+#include "shmdata/cwriter.h"
 
 G_BEGIN_DECLS
 #define GST_TYPE_SHMDATA_SINK \
@@ -48,16 +48,14 @@ struct _GstShmdataSink
 
   gchar *socket_path;
 
+  ShmdataWriter shmwriter;
+  ShmdataLogger shmlogger;
   //ShmPipe *pipe;
 
   guint perms;
   guint size;
 
   GList *clients;
-
-  GThread *pollthread;
-  GstPoll *poll;
-  GstPollFD serverpollfd;
 
   gboolean wait_for_connection;
   gboolean stop;

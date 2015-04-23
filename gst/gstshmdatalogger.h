@@ -1,5 +1,4 @@
 /* GStreamer
- * Copyright (C) <2015> Nicolas Bouillot
  * Copyright (C) <2009> Collabora Ltd
  *  @author: Olivier Crete <olivier.crete@collabora.co.uk
  * Copyright (C) <2009> Nokia Inc
@@ -20,28 +19,32 @@
  * Boston, MA 02110-1301, USA.
  */
 
-//#include "gstshmdatasrc.h"
-#include "gstshmdatasink.h"
+#ifndef __GST_SHMDATA_LOGGER_H__
+#define __GST_SHMDATA_LOGGER_H__
 
-#ifndef PACKAGE
-#define PACKAGE "shmdata"
-#endif
 
-static gboolean
-plugin_init (GstPlugin * plugin)
-{
-  return // gst_element_register (plugin, "shmdatasrc",
-      // GST_RANK_NONE, GST_TYPE_SHMDATA_SRC) &&
-      gst_element_register (plugin, "shmdatasink",
-      GST_RANK_NONE, GST_TYPE_SHMDATA_SINK);
+void gst_shmdata_on_error(void *self, const char *msg) {
+  GST_ERROR_OBJECT(G_OBJECT(self), "%s", msg);
 }
 
-GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
-                   GST_VERSION_MINOR,
-                   shm,
-                   "shmdata sink source",
-                   plugin_init,
-                   "1.0",
-                   "LGPL",
-                   PACKAGE,
-                   "https://github.com/nicobou/shmdata")
+void gst_shmdata_on_critical(void *self, const char *msg) {
+  GST_ERROR_OBJECT(G_OBJECT(self), "%s", msg);
+}
+
+void gst_shmdata_on_warning(void *self, const char *msg) {
+  GST_WARNING_OBJECT(G_OBJECT(self), "%s", msg);
+}
+
+void gst_shmdata_on_message(void *self, const char *msg) {
+  GST_LOG_OBJECT(G_OBJECT(self), "%s", msg);
+}
+
+void gst_shmdata_on_info(void *self, const char *msg) {
+  GST_INFO_OBJECT(G_OBJECT(self), "%s", msg);
+}
+
+void gst_shmdata_on_debug(void *self, const char *msg) {
+  GST_DEBUG_OBJECT(G_OBJECT(self), "%s", msg);
+}
+
+#endif

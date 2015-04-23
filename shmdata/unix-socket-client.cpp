@@ -132,6 +132,7 @@ void UnixSocketClient::server_interaction() {
             proto_->on_update_cb_(proto_->update_msg_.size_);
           else if ((2 == proto_->update_msg_.msg_type_)) {
             proto_->on_disconnect_cb_();
+            log_->error("received msg type 2");
             // disable socket
             FD_CLR(socket_.fd_, &allset);
             if (0 != close(socket_.fd_)){
@@ -139,9 +140,7 @@ void UnixSocketClient::server_interaction() {
               log_->error("client closing socket %", strerror(err));
             }
             socket_.fd_ = -1; is_valid_ = false; quit = true; quit_acked = true;
-          }
-          else
-            quit_acked = true;
+          } 
         }
       }
     }

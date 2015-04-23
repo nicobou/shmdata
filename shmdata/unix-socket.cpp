@@ -48,7 +48,10 @@ UnixSocket::UnixSocket(AbstractLogger *log) :
 
 UnixSocket::~UnixSocket() {
   if(is_valid()) {
-    close(fd_);
+    if (0 != close(fd_)){
+      int err = errno;
+      log_->error("closing socket %", strerror(err));
+    }
   }
 }
 bool UnixSocket::is_valid() const {

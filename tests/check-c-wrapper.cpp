@@ -31,7 +31,8 @@ typedef struct _Frame {
   const int tab[3] = {1, 2, 3};
 } Frame;
 
-void mylog(const char *str) {
+void mylog(void *user_data, const char *str) {
+  assert(user_data == my_user_data);
   printf("%s\n", str);
 }
 
@@ -61,7 +62,8 @@ int main () {
                                              &mylog,
                                              &mylog,
                                              &mylog,
-                                             &mylog);
+                                             &mylog,
+                                             my_user_data);
   assert(NULL != logger);
   ShmdataFollower follower = shmdata_make_follower("/tmp/check-c-wrapper",
                                                    &on_data,

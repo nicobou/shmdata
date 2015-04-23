@@ -55,3 +55,4 @@ tests/check-shmdata-stress
 tests/check-sysv-sem
 tests/check-sysv-shm
 tests/check-unix-socket
+utils/sdflow

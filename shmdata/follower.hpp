@@ -44,6 +44,7 @@ class Follower {
   std::unique_ptr<Reader> reader_;
   std::future<void> monitor_{};
   std::atomic<bool> quit_{false};
+  bool is_destructing_{false};
   void monitor();
   void on_server_disconnected();
 };
