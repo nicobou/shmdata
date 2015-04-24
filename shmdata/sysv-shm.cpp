@@ -27,17 +27,17 @@ sysVShm::sysVShm(key_t key, size_t size, AbstractLogger *log, bool owner):
     owner_(owner) {
   if (-1 == key_){
     int err = errno;
-    log_->error("ftok: %", strerror(err));
+    log_->warning("ftok: %", strerror(err));
     return;
   }
   if (shmid_ < 0){
     int err = errno;
-    log_->error("shmget: %", strerror(err));
+    log_->warning("shmget: %", strerror(err));
     return;
   }
   if ((shm_ = shmat(shmid_, NULL, 0)) == (void *) -1) {
     int err = errno;
-    log_->error("shmat: %", strerror(err));
+    log_->warning("shmat: %", strerror(err));
     return;
   }
   memset(shm_, 0, size_);
