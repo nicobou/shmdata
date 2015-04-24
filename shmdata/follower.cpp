@@ -74,7 +74,8 @@ void Follower::on_server_disconnected() {
     monitor_ = std::async(std::launch::async, [this](){monitor();});
   }
   // calling user callback
-  osd_();
+  if(osd_)
+    osd_();
 }
 
 }  // namespace shmdata

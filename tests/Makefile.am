@@ -12,7 +12,8 @@ check_PROGRAMS = \
     check-shmdata-stress \
     check-sysv-sem \
     check-sysv-shm \
-    check-unix-socket
+    check-unix-socket \
+    check-writer-follower
 
 TESTS = $(check_PROGRAMS)
 
@@ -39,3 +40,6 @@ check_sysv_shm_SOURCES = \
 
 check_unix_socket_SOURCES = \
     check-unix-socket.cpp
+
+check_writer_follower_SOURCES = \
+    check-writer-follower.cpp
