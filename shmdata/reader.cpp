@@ -31,8 +31,10 @@ Reader::Reader(const std::string &path,
     proto_([this](){on_server_connected();},
            [this](){on_server_disconnected();},
            [this](size_t size){on_buffer(sem_.get(), size);}),  // read when update is received
-  cli_(new UnixSocketClient(path, &proto_, log_)) {
-  if (!(*cli_.get()) || !(*shm_.get()) || !(*sem_.get())) {
+  cli_((*shm_.get()) && (*sem_.get()) ?
+       new UnixSocketClient(path, &proto_, log_) :
+       nullptr) {
+  if (!cli_ || !(*cli_.get()) || !(*shm_.get()) || !(*sem_.get())) {
     cli_.reset(nullptr);
     sem_.reset(nullptr);
     shm_.reset(nullptr);

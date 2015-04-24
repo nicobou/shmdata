@@ -36,15 +36,15 @@ class Follower {
   Follower& operator=(Follower&&) = delete;
 
  private:
+  bool is_destructing_{false};
   AbstractLogger *log_;
   std::string path_;
   Reader::onData on_data_cb_;
   Reader::onServerConnected osc_;
   Reader::onServerDisconnected osd_;
-  std::unique_ptr<Reader> reader_;
   std::future<void> monitor_{};
+  std::unique_ptr<Reader> reader_;
   std::atomic<bool> quit_{false};
-  bool is_destructing_{false};
   void monitor();
   void on_server_disconnected();
 };
