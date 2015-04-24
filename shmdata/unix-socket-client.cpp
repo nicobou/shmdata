@@ -49,7 +49,7 @@ UnixSocketClient::UnixSocketClient(const std::string &path,
   int len = offsetof(struct sockaddr_un, sun_path) + path_.size();
   if (0 != connect(socket_.fd_, (struct sockaddr *)&sun, len)) {
     int err = errno;
-    log_->error("connect %", strerror(err));
+    log_->warning("connect %", strerror(err));
     return;
   }
   is_valid_ = true;

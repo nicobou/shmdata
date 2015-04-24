@@ -59,7 +59,7 @@ void sysVSem::cancel_commited_reader(){
                   semops::read_end,
                   sizeof(semops::read_end)/sizeof(*semops::read_end))){
       int err = errno;
-      log_->error("semop %", strerror(err));
+      log_->error("semop cancel %", strerror(err));
   }
 }
 
