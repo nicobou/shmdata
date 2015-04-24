@@ -157,14 +157,16 @@ void UnixSocketServer::client_interaction() {
           auto nread = read(it, &msg_placeholder, sizeof(msg_placeholder));
           if (nread < 0) {
             int err = errno;
-            log_->error("read disconnection %", strerror(err));
-            clients_to_remove.push_back(it);
+            log_->error("server reading file descriptor (%)", strerror(err));
             if (clients_notified_.end() != clients_notified_.find(it)) {
+              log_->error("notified client quit, recovery");
               on_client_error_(it);
             }
+            clients_to_remove.push_back(it);
             FD_CLR(it, &allset);
           } else if (nread == 0) {
-            log_->error("(server) closed: fd %", std::to_string(it));
+            log_->debug("(server) closed: fd %", std::to_string(it));
+            clients_to_remove.push_back(it);
             FD_CLR(it, &allset);
             close(it);
           } else {
@@ -174,7 +176,6 @@ void UnixSocketServer::client_interaction() {
               int err = errno;
               log_->error("send (ack quit) %", strerror(err));
             }
-            log_->error("send (ack quit)");
             if (proto_->on_disconnect_cb_)
               proto_->on_disconnect_cb_(it);
             clients_to_remove.push_back(it);
@@ -185,6 +186,7 @@ void UnixSocketServer::client_interaction() {
       for (auto &it : clients_to_remove) {
         auto cli = std::find(clients_.begin(), clients_.end(), it);
         clients_.erase(cli);
+        log_->debug("client removed, remaining %", std::to_string(clients_.size()));
       }
       clients_to_remove.clear();
       // checking ack from clients

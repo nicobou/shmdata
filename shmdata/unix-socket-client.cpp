@@ -85,7 +85,7 @@ void UnixSocketClient::server_interaction() {
   if (0 != quit_.load())
     quit = true;
   bool quit_acked = false;
-  while (!quit && ! quit_acked) {
+  while (!quit || !quit_acked) {
     // reset timeout since select may change values
     tv.tv_sec = 0;
     tv.tv_usec = 10000;  // 10 msec
@@ -132,7 +132,7 @@ void UnixSocketClient::server_interaction() {
             proto_->on_update_cb_(proto_->update_msg_.size_);
           else if ((2 == proto_->update_msg_.msg_type_)) {
             proto_->on_disconnect_cb_();
-            log_->error("received msg type 2");
+            log_->debug("client received quit");
             // disable socket
             FD_CLR(socket_.fd_, &allset);
             if (0 != close(socket_.fd_)){
@@ -140,7 +140,7 @@ void UnixSocketClient::server_interaction() {
               log_->error("client closing socket %", strerror(err));
             }
             socket_.fd_ = -1; is_valid_ = false; quit = true; quit_acked = true;
-          } 
+          }
         }
       }
     }

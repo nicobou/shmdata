@@ -40,7 +40,7 @@ sysVSem::sysVSem(key_t key, AbstractLogger *log, bool owner) :
     log_(log) {
   if (semid_ < 0) {
     int err = errno;
-    log_->error("semget %", strerror(err));
+    log_->warning("semget %", strerror(err));
     return;
   }
 }
@@ -73,7 +73,7 @@ ReadLock::ReadLock(sysVSem *sem) :
                   semops::read_start,
                   sizeof(semops::read_start)/sizeof(*semops::read_start))){
     int err = errno;
-    sem_->log_->error("semop ReadLock not valid %", strerror(err));
+    sem_->log_->warning("semop ReadLock %", strerror(err));
     valid_ = false;
   }
 }
@@ -91,7 +91,7 @@ WriteLock::WriteLock(sysVSem *sem) :
                   semops::write_start,
                   sizeof(semops::write_start)/sizeof(*semops::write_start))) {
     int err = errno;
-    sem_->log_->error("semop WriteLock not valid: %", strerror(err));
+    sem_->log_->error("semop WriteLock: %", strerror(err));
     valid_ = false;
   }
 }

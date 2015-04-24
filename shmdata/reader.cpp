@@ -37,6 +37,9 @@ Reader::Reader(const std::string &path,
     sem_.reset(nullptr);
     shm_.reset(nullptr);
     is_valid_ = false;
+    log_->debug("reader initialization failed");
+  } else {
+    log_->debug("reader initialization done");
   }
 
 }
@@ -50,7 +53,7 @@ void Reader::on_server_connected(){
 }
 
 void Reader::on_server_disconnected(){
-  log_->debug("server disconnection");
+  log_->debug("disconnected from server");
   if (on_server_disconnected_cb_)
     on_server_disconnected_cb_();
 }

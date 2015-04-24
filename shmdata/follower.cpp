@@ -29,8 +29,11 @@ Follower::Follower(const std::string &path,
     on_data_cb_(cb),
     osc_(osc),
     osd_(osd),
-    reader_(new Reader(path_, on_data_cb_, osc_, [&](){on_server_disconnected();}, log_)){
-  if (!(*reader_.get())){
+    reader_(fileMonitor::is_unix_socket(path_, log_) ?
+            new Reader(path_, on_data_cb_, osc_, [&](){on_server_disconnected();}, log_) :
+            nullptr){
+  if (!reader_ || !(*reader_.get())){
+    reader_.reset(nullptr);
     monitor_ = std::async(std::launch::async, [this](){monitor();});
   }
 }
@@ -40,7 +43,6 @@ Follower::~Follower(){
   quit_.store(true);
   if (monitor_.valid()) 
     monitor_.get();
-  log_->warning("Follower destruct");
 }
 
 void Follower::monitor(){
@@ -48,10 +50,13 @@ void Follower::monitor(){
   while (!quit_.load()) {
     if (fileMonitor::is_unix_socket(path_, log_)) {
       do_sleep = false;
+      log_->debug("file detected, creating reader");
       reader_.reset(new Reader(path_, on_data_cb_, osc_, [&](){on_server_disconnected();}, log_));
+      log_->debug("reader crated testing");
       if (*reader_.get()) {
         quit_.store(true);
       } else {
+        reader_.reset(nullptr);
         log_->error("file % exists but reader failed", path_);
       }
     } 

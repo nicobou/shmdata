@@ -52,7 +52,6 @@ int main () {
   auto num_successive_write = 5;
   {
     Follower follower("/tmp/check-follower",
-                      //nullptr,
                       [](void *data, size_t size){
                         auto frame = static_cast<Frame *>(data);
                         std::cout << "(copy) new data for client "
@@ -69,6 +68,7 @@ int main () {
     while (-1 != --i) {
       auto writer_handle = std::async(std::launch::async, writer, &logger);
       writer_handle.get();
+      //std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
   }
 

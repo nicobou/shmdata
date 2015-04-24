@@ -36,27 +36,29 @@ bool reader(){
     std::this_thread::sleep_for (std::chrono::milliseconds(10));
     Reader r("/tmp/check-stress",
              [](void *data, size_t size){
-               auto frame = static_cast<Frame *>(data);
-               std::cout << "(one reader) new data for client "
-                         << frame->count
-                         << " (size " << size << ")"
-                         << std::endl;
+               // auto frame = static_cast<Frame *>(data);
+               // std::cout << "(one reader) new data for client "
+               //           << frame->count
+               //           << " (size " << size << ")"
+               //           << std::endl;
              },
              nullptr,
              nullptr,
              &logger);
     assert(r);
+    std::cout << "one more reader" << std::endl;
     std::this_thread::sleep_for (std::chrono::milliseconds(1000));
   }
+  std::cout << "one less reader" << std::endl;
   { // creating five readers
     std::this_thread::sleep_for (std::chrono::milliseconds(10));
     Reader r1("/tmp/check-stress",
               [](void *data, size_t size){
-                auto frame = static_cast<Frame *>(data);
-                std::cout << "(1) new data for client "
-                          << frame->count
-                          << " (size " << size << ")"
-                          << std::endl;
+                // auto frame = static_cast<Frame *>(data);
+                // std::cout << "(1) new data for client "
+                //           << frame->count
+                //           << " (size " << size << ")"
+                //           << std::endl;
               },
              nullptr,
              nullptr,
@@ -64,11 +66,11 @@ bool reader(){
     assert(r1);
     Reader r2("/tmp/check-stress",
               [](void *data, size_t size){
-                auto frame = static_cast<Frame *>(data);
-                std::cout << "(2) new data for client "
-                          << frame->count
-                          << " (size " << size << ")"
-                          << std::endl;
+                // auto frame = static_cast<Frame *>(data);
+                // std::cout << "(2) new data for client "
+                //           << frame->count
+                //           << " (size " << size << ")"
+                //           << std::endl;
               },
              nullptr,
              nullptr,
@@ -76,11 +78,11 @@ bool reader(){
     assert(r2);
     Reader r3("/tmp/check-stress",
               [](void *data, size_t size){
-                auto frame = static_cast<Frame *>(data);
-                std::cout << "(3) new data for client "
-                          << frame->count
-                          << " (size " << size << ")"
-                          << std::endl;
+                // auto frame = static_cast<Frame *>(data);
+                // std::cout << "(3) new data for client "
+                //           << frame->count
+                //           << " (size " << size << ")"
+                //           << std::endl;
               },
              nullptr,
              nullptr,
@@ -88,11 +90,11 @@ bool reader(){
     assert(r3);
     Reader r4("/tmp/check-stress",
               [](void *data, size_t size){
-                auto frame = static_cast<Frame *>(data);
-                std::cout << "(4) new data for client "
-                          << frame->count
-                          << " (size " << size << ")"
-                          << std::endl;
+                // auto frame = static_cast<Frame *>(data);
+                // std::cout << "(4) new data for client "
+                //           << frame->count
+                //           << " (size " << size << ")"
+                //           << std::endl;
               },
               nullptr,
               nullptr,
@@ -100,16 +102,17 @@ bool reader(){
     assert(r4);
     Reader r5("/tmp/check-stress",
               [](void *data, size_t size){
-                auto frame = static_cast<Frame *>(data);
-                std::cout << "(5) new data for client "
-                          << frame->count
-                         << " (size " << size << ")"
-                          << std::endl;
+                // auto frame = static_cast<Frame *>(data);
+                // std::cout << "(5) new data for client "
+                //           << frame->count
+                //          << " (size " << size << ")"
+                //           << std::endl;
               },
               nullptr,
               nullptr,
               &logger);
     assert(r5);
+    std::cout << "five more reader" << std::endl;
     std::this_thread::sleep_for (std::chrono::milliseconds(1000));
   }
   std::this_thread::sleep_for (std::chrono::milliseconds(100));
@@ -135,15 +138,16 @@ int main () {
     }
     Reader r("/tmp/check-stress",
              [](void *data, size_t size){
-               auto frame = static_cast<Frame *>(data);
-               std::cout << "(0) new data for client "
-                         << frame->count
-                         << " (size " << size << ")"
-                         << std::endl;
+               // auto frame = static_cast<Frame *>(data);
+               // std::cout << "(0) new data for client "
+               //           << frame->count
+               //           << " (size " << size << ")"
+               //           << std::endl;
              },
              nullptr,
              nullptr,
              &logger);
+    std::cout << "one reader" << std::endl;
     assert(r);
     auto reader_handle = std::async(std::launch::async, reader);
     while (1 != done.load()) {
@@ -155,7 +159,6 @@ int main () {
     }
     assert(reader_handle.get());
   }
-  
   std::this_thread::sleep_for (std::chrono::milliseconds(1000));
   std::cout << "fin" << std::endl;
   return 0;

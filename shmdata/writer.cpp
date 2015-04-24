@@ -33,6 +33,7 @@ Writer::Writer(const std::string &path,
     log_->error("writer failled to initialize");
     is_valid_ = false;
   }
+  log_->debug("writer initialized");
 }
 
 bool Writer::copy_to_shm(void *data, size_t size){
@@ -56,23 +57,27 @@ std::unique_ptr<OneWriteAccess> Writer::get_one_write_access(size_t size) {
   return std::unique_ptr<OneWriteAccess>(new OneWriteAccess(&sem_,
                                                             shm_.get_mem(),
                                                             &srv_,
-                                                            size));
+                                                            size,
+                                                            log_));
 }
 
 OneWriteAccess *Writer::get_one_write_access_ptr(size_t size) {
   return new OneWriteAccess(&sem_,
                             shm_.get_mem(),
                             &srv_,
-                            size);
+                            size,
+                            log_);
 }
 
 OneWriteAccess::OneWriteAccess(sysVSem *sem,
                                void *mem,
                                UnixSocketServer *srv,
-                               size_t size) :
+                               size_t size,
+                               AbstractLogger *log) :
     wlock_(sem),
     mem_(mem){
   auto num_readers = srv->notify_update(size);
+  //log->debug("one write access for % readers", std::to_string(num_readers));
   if (0 < num_readers) {
     wlock_.commit_readers(num_readers);
   }
