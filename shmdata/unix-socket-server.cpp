@@ -164,6 +164,7 @@ void UnixSocketServer::client_interaction() {
             }
             clients_to_remove.push_back(it);
             FD_CLR(it, &allset);
+            close(it);
           } else if (nread == 0) {
             log_->debug("(server) closed: fd %", std::to_string(it));
             clients_to_remove.push_back(it);
@@ -179,6 +180,8 @@ void UnixSocketServer::client_interaction() {
             if (proto_->on_disconnect_cb_)
               proto_->on_disconnect_cb_(it);
             clients_to_remove.push_back(it);
+            FD_CLR(it, &allset);
+            close(it);
           }
         }
       }

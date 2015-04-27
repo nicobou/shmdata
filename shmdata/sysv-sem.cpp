@@ -24,13 +24,13 @@ namespace shmdata{
 
 namespace semops{
 // sem_num 0 is for reading, 1 is for writer
-static struct sembuf read_start [] = {{1, 0, SEM_UNDO}};     // wait writer
-static struct sembuf read_end [] = {{0, -1, SEM_UNDO}};       // decr reader
-static struct sembuf write_start [] = {{0, 0, SEM_UNDO},     // wait reader is 0
-                                       {1, 1, SEM_UNDO},    // incr writer
-                                       {0, 1, SEM_UNDO}};   // incr reader
-static struct sembuf write_end [] = {{0, -1, SEM_UNDO},     // decr reader
-                                     {1, -1, SEM_UNDO}};    // decr writer
+static struct sembuf read_start [] = {{1, 0, 0}};     // wait writer
+static struct sembuf read_end [] = {{0, -1, 0}};       // decr reader
+static struct sembuf write_start [] = {{0, 0, 0},     // wait reader is 0
+                                       {1, 1, 0},    // incr writer
+                                       {0, 1, 0}};   // incr reader
+static struct sembuf write_end [] = {{0, -1, 0},     // decr reader
+                                     {1, -1, 0}};    // decr writer
 }  // namespace semops
 
 sysVSem::sysVSem(key_t key, AbstractLogger *log, bool owner) :
@@ -97,7 +97,7 @@ WriteLock::WriteLock(sysVSem *sem) :
 }
 
 bool WriteLock::commit_readers(short num_reader){
-  struct sembuf read_commit_reader [] = {{0, num_reader, SEM_UNDO}};
+  struct sembuf read_commit_reader [] = {{0, num_reader, 0}};
   if (-1 == semop(sem_->semid_,
                   read_commit_reader,
                   sizeof(read_commit_reader)/sizeof(*read_commit_reader))) {
