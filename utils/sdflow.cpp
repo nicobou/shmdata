@@ -12,6 +12,7 @@
  * GNU Lesser General Public License for more details.
  */
 
+#include <unistd.h>
 #include <signal.h>
 #include <memory>
 #include <iostream>
@@ -29,23 +30,46 @@ void leave(int sig) {
   exit(sig);
 }
 
+void usage(const char *prog_name){
+  printf("usage: %s [-d] shmpath\n", prog_name);
+  exit(1);
+}
 
 int main (int argc, char *argv[]) {
+  bool debug = false;
+  char *shmpath = nullptr;
 
-  if (argc != 2) {
-    
-  }
+  opterr = 0;
+  int c = 0;
+  while ((c = getopt (argc, argv, "d:")) != -1)
+    switch (c)
+      {
+        case 'd':
+          debug = true;
+          shmpath = optarg;
+          break;
+        case '?':
+          break;
+        default:
+          usage(argv[0]);
+      }
+
+  if (nullptr == shmpath && optind + 1 == argc)
+    shmpath = argv[optind];
+  if (nullptr == shmpath)
+    usage(argv[0]);
+
   (void) signal(SIGINT, leave);
   (void) signal(SIGABRT, leave);
   (void) signal(SIGQUIT, leave);
   (void) signal(SIGTERM, leave);
-
+  
   using namespace shmdata;
   ConsoleLogger logger;
-  logger.set_debug(false);
+  logger.set_debug(debug);
   {
     follower.reset(
-        new Follower("/tmp/blah",
+        new Follower(shmpath,
                      [](void *data, size_t size){
                        std::cout << "ptr "
                                  << data
@@ -62,9 +86,11 @@ int main (int argc, char *argv[]) {
                        std::cout << std::endl;
                      },
                      [&](const std::string &str){
-                       std::cout << "connected type " << str <<std::endl;
+                       std::cout << "connected: type " << str <<std::endl;
                      },
-                     [&](){std::cout << "disconnected" << std::endl;},
+                     [&](){
+                       std::cout << "disconnected" << std::endl;
+                     },
                      &logger));
     // wait
     while(true){
