@@ -30,7 +30,11 @@ void leave(int sig) {
 }
 
 
-int main () {
+int main (int argc, char *argv[]) {
+
+  if (argc != 2) {
+    
+  }
   (void) signal(SIGINT, leave);
   (void) signal(SIGABRT, leave);
   (void) signal(SIGQUIT, leave);
