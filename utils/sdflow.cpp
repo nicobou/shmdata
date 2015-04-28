@@ -71,19 +71,22 @@ int main (int argc, char *argv[]) {
     follower.reset(
         new Follower(shmpath,
                      [](void *data, size_t size){
-                       std::cout << "ptr "
-                                 << data
-                                 << " size " << size
-                                 << "  data extract: ";
-                       auto end = 4u;
-                       short *vals = static_cast<short *>(data);
-                       if (end * sizeof(short) > size)
+                       std::cout <<  " size: " << size
+                                 << " data: ";
+                       std::string etc;
+                       auto end = 20u;
+                       char *vals = static_cast<char *>(data);
+                       if (end * sizeof(char) > size) {
                          end = size;
+                       } else
+                         etc = "...";
                        while (0 != end) { 
-                         std::printf("%02x", vals[end]);
+                         std::printf("%02X", vals[end] & 0xff );
                          --end;
                        }
-                       std::cout << std::endl;
+                       if (!etc.empty())
+                         std::cout << etc;
+                       std::cout <<  std::endl;
                      },
                      [&](const std::string &str){
                        std::cout << "connected: type " << str <<std::endl;

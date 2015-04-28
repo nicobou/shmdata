@@ -88,8 +88,8 @@ static gboolean gst_shmdata_sink_event (GstBaseSink * bsink, GstEvent * event);
 static gboolean gst_shmdata_sink_unlock (GstBaseSink * bsink);
 static gboolean gst_shmdata_sink_unlock_stop (GstBaseSink * bsink);
 static gboolean gst_shmdata_sink_propose_allocation (GstBaseSink * sink,
-    GstQuery * query);
-
+                                                     GstQuery * query);
+static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps);
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
@@ -356,6 +356,7 @@ gst_shmdata_sink_class_init (GstShmdataSinkClass * klass)
   gobject_class->set_property = gst_shmdata_sink_set_property;
   gobject_class->get_property = gst_shmdata_sink_get_property;
 
+  gstbasesink_class->set_caps = GST_DEBUG_FUNCPTR (gst_shmdata_sink_on_caps);
   gstbasesink_class->start = GST_DEBUG_FUNCPTR (gst_shmdata_sink_start);
   gstbasesink_class->stop = GST_DEBUG_FUNCPTR (gst_shmdata_sink_stop);
   gstbasesink_class->render = GST_DEBUG_FUNCPTR (gst_shmdata_sink_render);
@@ -410,10 +411,10 @@ gst_shmdata_sink_class_init (GstShmdataSinkClass * klass)
       gst_static_pad_template_get (&sinktemplate));
 
   gst_element_class_set_static_metadata (gstelement_class,
-      "Shared Memory Sink",
-      "Sink",
-      "Send data over shared memory to the matching source",
-      "Olivier Crete <olivier.crete@collabora.co.uk>");
+                                         "Shmdata Sink",
+                                         "Sink",
+                                         "Share data over a shmdata",
+                                         "Nicolas Bouillot <nicolas.bouillot@gmail.com>");
 
   GST_DEBUG_CATEGORY_INIT (shmdatasink_debug, "shmdatasink", 0, "Shared Memory Sink");
 }
@@ -534,37 +535,37 @@ gst_shmdata_sink_start (GstBaseSink * bsink)
 
   self->stop = FALSE;
 
-  if (!self->socket_path) {
-    GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE,
-        ("Could not open socket."), (NULL));
-    return FALSE;
-  }
+  /* if (!self->socket_path) {  */
+  /*   GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE,  */
+  /*       ("Could not open socket."), (NULL));  */
+  /*   return FALSE;  */
+  /* }  */
 
-  GST_DEBUG_OBJECT (self, "Creating new socket at %s"
-      " with shared memory of %d bytes", self->socket_path, self->size);
+  /* GST_DEBUG_OBJECT (self, "Creating new socket at %s"  */
+  /*     " with shared memory of %d bytes", self->socket_path, self->size);  */
 
-  // FIXME this leak on shmwriter error
-  self->shmlogger = shmdata_make_logger(&gst_shmdata_on_error,
-                                        &gst_shmdata_on_critical,
-                                        &gst_shmdata_on_warning,
-                                        &gst_shmdata_on_message,
-                                        &gst_shmdata_on_info,
-                                        &gst_shmdata_on_debug,
-                                        self);
-  self->shmwriter = shmdata_make_writer(self->socket_path,
-                                        self->size,
-                                        "fake_caps",
-                                        self->shmlogger);
+  /* // FIXME this leak on shmwriter error  */
+  /* self->shmlogger = shmdata_make_logger(&gst_shmdata_on_error,  */
+  /*                                       &gst_shmdata_on_critical,  */
+  /*                                       &gst_shmdata_on_warning,  */
+  /*                                       &gst_shmdata_on_message,  */
+  /*                                       &gst_shmdata_on_info,  */
+  /*                                       &gst_shmdata_on_debug,  */
+  /*                                       self);  */
+  /* self->shmwriter = shmdata_make_writer(self->socket_path,  */
+  /*                                       self->size,  */
+  /*                                       "fake_caps",  */
+  /*                                       self->shmlogger);  */
 
-  if (!self->shmwriter) {
-    GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE,
-        ("Could not open socket."), (NULL));
-    return FALSE;
-  }
+  /* if (!self->shmwriter) {  */
+  /*   GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE,  */
+  /*       ("Could not open socket."), (NULL));  */
+  /*   return FALSE;  */
+  /* }  */
 
-  GST_DEBUG ("Created socket at %s", self->socket_path);
+  /* GST_DEBUG ("Created socket at %s", self->socket_path);  */
 
-  self->allocator = gst_shmdata_sink_allocator_new (self);
+  /* self->allocator = gst_shmdata_sink_allocator_new (self);  */
 
   return TRUE;
 
@@ -787,6 +788,48 @@ gst_shmdata_sink_propose_allocation (GstBaseSink * sink, GstQuery * query)
   if (self->allocator)
     gst_query_add_allocation_param (query, GST_ALLOCATOR (self->allocator),
                                     NULL);
+
+  return TRUE;
+}
+
+static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
+  GstShmdataSink *self = GST_SHMDATA_SINK (sink);
+
+  if (!self->socket_path) { 
+    GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE, 
+        ("Could not open socket."), (NULL)); 
+    return FALSE; 
+  } 
+
+  GST_DEBUG_OBJECT (self, "Creating new socket at %s" 
+      " with shared memory of %d bytes", self->socket_path, self->size); 
+
+  gchar *caps_str = gst_caps_to_string (caps);
+  GST_WARNING_OBJECT(G_OBJECT(sink), "on_caps %s", caps_str);
+
+  self->shmlogger = shmdata_make_logger(&gst_shmdata_on_error, 
+                                        &gst_shmdata_on_critical, 
+                                        &gst_shmdata_on_warning, 
+                                        &gst_shmdata_on_message, 
+                                        &gst_shmdata_on_info, 
+                                        &gst_shmdata_on_debug, 
+                                        self); 
+  self->shmwriter = shmdata_make_writer(self->socket_path, 
+                                        self->size, 
+                                        NULL == caps_str ? "unknown" : caps_str, 
+                                        self->shmlogger); 
+
+  if (NULL != caps_str)
+    g_free(caps_str);
+  
+  if (!self->shmwriter) { 
+    GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE, 
+        ("Could not open socket."), (NULL)); 
+    return FALSE; 
+  } 
+
+  GST_DEBUG ("Created socket at %s", self->socket_path); 
+  self->allocator = gst_shmdata_sink_allocator_new (self); 
 
   return TRUE;
 }
