@@ -50,7 +50,6 @@ struct _GstShmdataSink
 
   ShmdataWriter shmwriter;
   ShmdataLogger shmlogger;
-  //ShmPipe *pipe;
 
   guint perms;
   guint size;

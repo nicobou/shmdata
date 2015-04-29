@@ -23,27 +23,27 @@
 #define __GST_SHMDATA_LOGGER_H__
 
 
-void gst_shmdata_on_error(void *self, const char *msg) {
+static void gst_shmdata_on_error(void *self, const char *msg) {
   GST_ERROR_OBJECT(G_OBJECT(self), "%s", msg);
 }
 
-void gst_shmdata_on_critical(void *self, const char *msg) {
+static void gst_shmdata_on_critical(void *self, const char *msg) {
   GST_ERROR_OBJECT(G_OBJECT(self), "%s", msg);
 }
 
-void gst_shmdata_on_warning(void *self, const char *msg) {
+static void gst_shmdata_on_warning(void *self, const char *msg) {
   GST_WARNING_OBJECT(G_OBJECT(self), "%s", msg);
 }
 
-void gst_shmdata_on_message(void *self, const char *msg) {
+static void gst_shmdata_on_message(void *self, const char *msg) {
   GST_LOG_OBJECT(G_OBJECT(self), "%s", msg);
 }
 
-void gst_shmdata_on_info(void *self, const char *msg) {
+static void gst_shmdata_on_info(void *self, const char *msg) {
   GST_INFO_OBJECT(G_OBJECT(self), "%s", msg);
 }
 
-void gst_shmdata_on_debug(void *self, const char *msg) {
+static void gst_shmdata_on_debug(void *self, const char *msg) {
   GST_WARNING_OBJECT(G_OBJECT(self), "%s", msg);
 }
 

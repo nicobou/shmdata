@@ -7,7 +7,8 @@ plugin_LTLIBRARIES = \
 #libgstshmdata_la_SOURCES = gstshmdata.c gstshmdatasrc.c gstshmdatasink.c
 libgstshmdata_la_SOURCES = \
     gstshmdata.c \
-    gstshmdatasink.c
+    gstshmdatasink.c \
+    gstshmdatasrc.c
 
 libgstshmdata_la_CFLAGS = \
     $(GST_CFLAGS)
@@ -26,4 +27,5 @@ libgstshmdata_la_LIBTOOLFLAGS = \
 
 noinst_HEADERS = \
     gstshmdatalogger.h \
-    gstshmdatasink.h
+    gstshmdatasink.h \
+    gstshmdatasrc.c

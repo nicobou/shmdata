@@ -25,8 +25,8 @@
 #include <gst/gst.h>
 #include <gst/base/gstpushsrc.h>
 #include <gst/base/gstbasesrc.h>
-
-//#include "shmpipe.h"
+#include "shmdata/clogger.h"
+#include "shmdata/cfollower.h"
 
 G_BEGIN_DECLS
 #define GST_TYPE_SHMDATA_SRC \
@@ -41,20 +41,22 @@ G_BEGIN_DECLS
   (G_TYPE_CHECK_CLASS_TYPE((klass),GST_TYPE_SHMDATA_SRC))
 typedef struct _GstShmdataSrc GstShmdataSrc;
 typedef struct _GstShmdataSrcClass GstShmdataSrcClass;
-typedef struct _GstShmPipe GstShmPipe;
 
 struct _GstShmdataSrc
 {
   GstPushSrc element;
-
   gchar *socket_path;
+  ShmdataFollower shmfollower;
+  ShmdataLogger shmlogger;
+  GMutex on_data_mutex;
+  GCond on_data_cond;
+  GMutex data_rendered_mutex;
+  GCond data_rendered_cond;
+  void *current_data;
+  size_t current_size;
+  gboolean is_first_read;
 
-  GstShmPipe *pipe;
-  GstPoll *poll;
-  GstPollFD pollfd;
-
-
-  GstFlowReturn flow_return;
+  //GstFlowReturn flow_return;
   gboolean unlocked;
 };
 
@@ -64,13 +66,6 @@ struct _GstShmdataSrcClass
 };
 
 GType gst_shmdata_src_get_type (void);
-
-struct _GstShmPipe {
-  int use_count;
-
-  GstShmdataSrc *src;
-  //ShmPipe *pipe;
-};
 
 G_END_DECLS
 #endif /* __GST_SHMDATA_SRC_H__ */

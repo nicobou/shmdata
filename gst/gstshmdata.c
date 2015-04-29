@@ -20,7 +20,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-//#include "gstshmdatasrc.h"
+#include "gstshmdatasrc.h"
 #include "gstshmdatasink.h"
 
 #ifndef PACKAGE
@@ -30,10 +30,11 @@
 static gboolean
 plugin_init (GstPlugin * plugin)
 {
-  return // gst_element_register (plugin, "shmdatasrc",
-      // GST_RANK_NONE, GST_TYPE_SHMDATA_SRC) &&
+  return
+      gst_element_register (plugin, "shmdatasrc",
+                            GST_RANK_NONE, GST_TYPE_SHMDATA_SRC) &&
       gst_element_register (plugin, "shmdatasink",
-      GST_RANK_NONE, GST_TYPE_SHMDATA_SINK);
+                            GST_RANK_NONE, GST_TYPE_SHMDATA_SINK);
 }
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
