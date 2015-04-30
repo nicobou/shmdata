@@ -51,10 +51,8 @@ enum
 {
   PROP_0,
   PROP_SOCKET_PATH,
-  //  PROP_PERMS,
-  //PROP_SHM_SIZE,
-  PROP_WAIT_FOR_CONNECTION,
-  PROP_BUFFER_TIME
+  // PROP_PERMS,
+  // PROP_SHM_SIZE,
 };
 
 #define DEFAULT_SIZE ( 33554432 )
@@ -90,6 +88,8 @@ static gboolean gst_shmdata_sink_unlock_stop (GstBaseSink * bsink);
 static gboolean gst_shmdata_sink_propose_allocation (GstBaseSink * sink,
                                                      GstQuery * query);
 static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps);
+static void gst_shmdata_sink_on_client_connected(void *user_data, int id);
+static void gst_shmdata_sink_on_client_disconnected(void *user_data, int id);
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
@@ -336,9 +336,7 @@ gst_shmdata_sink_init (GstShmdataSink * self)
 {
   g_cond_init (&self->cond);
   self->size = DEFAULT_SIZE;
-  self->wait_for_connection = DEFAULT_WAIT_FOR_CONNECTION;
   //  self->perms = DEFAULT_PERMS;
-  self->clients = FALSE;
   gst_allocation_params_init (&self->params);
 }
 
@@ -385,20 +383,6 @@ gst_shmdata_sink_class_init (GstShmdataSinkClass * klass)
   /*         "Size of the shared memory area", */
   /*         0, G_MAXUINT, DEFAULT_SIZE, */
   /*         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)); */
-
-  g_object_class_install_property (gobject_class, PROP_WAIT_FOR_CONNECTION,
-      g_param_spec_boolean ("wait-for-connection",
-          "Wait for a connection until rendering",
-          "Block the stream until the shm pipe is connected",
-          DEFAULT_WAIT_FOR_CONNECTION,
-          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
-
-  g_object_class_install_property (gobject_class, PROP_BUFFER_TIME,
-      g_param_spec_int64 ("buffer-time",
-          "Buffer Time of the shm buffer",
-          "Maximum Size of the shm buffer in nanoseconds (-1 to disable)",
-          -1, G_MAXINT64, -1,
-          G_PARAM_CONSTRUCT | G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   signals[SIGNAL_CLIENT_CONNECTED] = g_signal_new ("client-connected",
       GST_TYPE_SHMDATA_SINK, G_SIGNAL_RUN_LAST, 0, NULL, NULL,
@@ -477,18 +461,6 @@ gst_shmdata_sink_set_property (GObject * object, guint prop_id,
     /*   self->size = g_value_get_uint (value); */
     /*   GST_OBJECT_UNLOCK (object); */
     /*   break; */
-    case PROP_WAIT_FOR_CONNECTION:
-      GST_OBJECT_LOCK (object);
-      self->wait_for_connection = g_value_get_boolean (value);
-      GST_OBJECT_UNLOCK (object);
-      g_cond_broadcast (&self->cond);
-      break;
-    case PROP_BUFFER_TIME:
-      GST_OBJECT_LOCK (object);
-      self->buffer_time = g_value_get_int64 (value);
-      GST_OBJECT_UNLOCK (object);
-      g_cond_broadcast (&self->cond);
-      break;
     default:
       break;
   }
@@ -512,12 +484,6 @@ gst_shmdata_sink_get_property (GObject * object, guint prop_id,
     /* case PROP_SHM_SIZE: */
     /*   g_value_set_uint (value, self->size); */
     /*   break; */
-    case PROP_WAIT_FOR_CONNECTION:
-      g_value_set_boolean (value, self->wait_for_connection);
-      break;
-    case PROP_BUFFER_TIME:
-      g_value_set_int64 (value, self->buffer_time);
-      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -533,52 +499,8 @@ gst_shmdata_sink_start (GstBaseSink * bsink)
 {
   GstShmdataSink *self = GST_SHMDATA_SINK (bsink);
   GError *err = NULL;
-
   self->stop = FALSE;
-
-  /* if (!self->socket_path) {  */
-  /*   GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE,  */
-  /*       ("Could not open socket."), (NULL));  */
-  /*   return FALSE;  */
-  /* }  */
-
-  /* GST_DEBUG_OBJECT (self, "Creating new socket at %s"  */
-  /*     " with shared memory of %d bytes", self->socket_path, self->size);  */
-
-  /* // FIXME this leak on shmwriter error  */
-  /* self->shmlogger = shmdata_make_logger(&gst_shmdata_on_error,  */
-  /*                                       &gst_shmdata_on_critical,  */
-  /*                                       &gst_shmdata_on_warning,  */
-  /*                                       &gst_shmdata_on_message,  */
-  /*                                       &gst_shmdata_on_info,  */
-  /*                                       &gst_shmdata_on_debug,  */
-  /*                                       self);  */
-  /* self->shmwriter = shmdata_make_writer(self->socket_path,  */
-  /*                                       self->size,  */
-  /*                                       "fake_caps",  */
-  /*                                       self->shmlogger);  */
-
-  /* if (!self->shmwriter) {  */
-  /*   GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE,  */
-  /*       ("Could not open socket."), (NULL));  */
-  /*   return FALSE;  */
-  /* }  */
-
-  /* GST_DEBUG ("Created socket at %s", self->socket_path);  */
-
-  /* self->allocator = gst_shmdata_sink_allocator_new (self);  */
-
   return TRUE;
-
-thread_error:
-
-  shmdata_delete_writer(self->shmwriter);
-  self->shmwriter = NULL;
-
-  GST_ELEMENT_ERROR (self, CORE, THREAD, ("Could not start thread"),
-      ("%s", err->message));
-  g_error_free (err);
-  return FALSE;
 }
 
 
@@ -586,13 +508,10 @@ static gboolean
 gst_shmdata_sink_stop (GstBaseSink * bsink)
 {
   GstShmdataSink *self = GST_SHMDATA_SINK (bsink);
-
   self->stop = TRUE;
-
   if (self->allocator)
     gst_object_unref (self->allocator);
   self->allocator = NULL;
-
   GST_DEBUG_OBJECT (self, "Stopping");
 
   //     g_signal_emit (self, signals[SIGNAL_CLIENT_DISCONNECTED], 0,
@@ -601,12 +520,6 @@ gst_shmdata_sink_stop (GstBaseSink * bsink)
   shmdata_delete_writer(self->shmwriter);
   self->shmwriter = NULL;
 
-  return TRUE;
-}
-
-static gboolean
-gst_shmdata_sink_can_render (GstShmdataSink * self, GstClockTime time)
-{
   return TRUE;
 }
 
@@ -622,19 +535,6 @@ gst_shmdata_sink_render (GstBaseSink * bsink, GstBuffer * buf)
   GstBuffer *sendbuf = NULL;
 
   GST_OBJECT_LOCK (self);
-  while (self->wait_for_connection && !self->clients) {
-    g_cond_wait (&self->cond, GST_OBJECT_GET_LOCK (self));
-    if (self->unlock)
-      goto flushing;
-  }
-
-  while (!gst_shmdata_sink_can_render (self, GST_BUFFER_TIMESTAMP (buf))) {
-    g_cond_wait (&self->cond, GST_OBJECT_GET_LOCK (self));
-    if (self->unlock)
-      goto flushing;
-  }
-
-
   if (gst_buffer_n_memory (buf) > 1) {
     GST_LOG_OBJECT (self, "Buffer %p has %d GstMemory, we only support a single"
         " one, need to do a memcpy", buf, gst_buffer_n_memory (buf));
@@ -667,15 +567,6 @@ gst_shmdata_sink_render (GstBaseSink * bsink, GstBuffer * buf)
       g_cond_wait (&self->cond, GST_OBJECT_GET_LOCK (self));
       if (self->unlock)
         goto flushing;
-    }
-
-    while (self->wait_for_connection && !self->clients) {
-      g_cond_wait (&self->cond, GST_OBJECT_GET_LOCK (self));
-      if (self->unlock) {
-        gst_memory_unref (memory);
-        GST_OBJECT_UNLOCK (self);
-        return GST_FLOW_FLUSHING;
-      }
     }
 
     gst_memory_map (memory, &map, GST_MAP_WRITE);
@@ -731,11 +622,6 @@ gst_shmdata_sink_event (GstBaseSink * bsink, GstEvent * event)
 
   switch (GST_EVENT_TYPE (event)) {
     case GST_EVENT_EOS:
-      GST_OBJECT_LOCK (self);
-      while (self->wait_for_connection // && sp_writer_pending_writes (self->pipe)
-          && !self->unlock)
-        g_cond_wait (&self->cond, GST_OBJECT_GET_LOCK (self));
-      GST_OBJECT_UNLOCK (self);
       break;
     default:
       break;
@@ -782,6 +668,19 @@ gst_shmdata_sink_propose_allocation (GstBaseSink * sink, GstQuery * query)
   return TRUE;
 }
 
+static void gst_shmdata_sink_on_client_connected(void *user_data, int id) {
+  // TODO signal
+  /* GstShmdataSink *self = GST_SHMDATA_SINK (user_data); */
+/* g_printf("-- %s %d\n", __FUNCTION__, __LINE__); */
+}
+
+static void gst_shmdata_sink_on_client_disconnected(void *user_data, int id) {
+  // TODO signal
+/* g_printf("-- %s %d\n", __FUNCTION__, __LINE__); */
+/*   GstShmdataSink *self = GST_SHMDATA_SINK (user_data); */
+/* g_printf("-- %s %d\n", __FUNCTION__, __LINE__); */
+}
+
 static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
   GstShmdataSink *self = GST_SHMDATA_SINK (sink);
 
@@ -795,7 +694,7 @@ static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
       " with shared memory of %d bytes", self->socket_path, self->size); 
 
   gchar *caps_str = gst_caps_to_string (caps);
-  GST_WARNING_OBJECT(G_OBJECT(sink), "on_caps %s", caps_str);
+  GST_DEBUG_OBJECT(G_OBJECT(sink), "on_caps %s", caps_str);
 
   self->shmlogger = shmdata_make_logger(&gst_shmdata_on_error, 
                                         &gst_shmdata_on_critical, 
@@ -807,6 +706,9 @@ static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
   self->shmwriter = shmdata_make_writer(self->socket_path, 
                                         self->size, 
                                         NULL == caps_str ? "unknown" : caps_str, 
+                                        &gst_shmdata_sink_on_client_connected,
+                                        &gst_shmdata_sink_on_client_disconnected,
+                                        self,
                                         self->shmlogger); 
 
   if (NULL != caps_str)

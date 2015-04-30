@@ -15,34 +15,73 @@
 #include "./cwriter.h"
 #include "./writer.hpp"
 
-using namespace shmdata;
+namespace shmdata{
+struct CWriter {
+  CWriter(const char *path,
+          size_t memsize,
+          const char *type_descr,
+          ShmdataLogger log,
+          void (*on_client_connected)(void *user_data, int id),
+          void (*on_client_disconnected)(void *user_data, int id),
+          void *user_data) :
+      on_client_connected_(on_client_connected),
+      on_client_disconnected_(on_client_disconnected),
+      user_data_(user_data),
+      writer_(path,
+              memsize,
+              type_descr,
+              static_cast<AbstractLogger *>(log),
+              [&](int id) {
+                if(nullptr != on_client_connected_)
+                  on_client_connected_(user_data_, id);
+              },
+              [&](int id) {
+                if(nullptr != on_client_disconnected_)
+                  on_client_disconnected_(user_data_, id);
+              }){
+  }
+  void (*on_client_connected_)(void *, int);
+  void (*on_client_disconnected_)(void *, int);
+  void *user_data_;
+  Writer writer_;  
+};
 
+}  // namespace shmdata
+
+using namespace shmdata;
 ShmdataWriter shmdata_make_writer(const char *path,
                                   size_t memsize,
                                   const char *type_descr,
+                                  void (*on_client_connected)(void *user_data, int id),
+                                  void (*on_client_disconnected)(void *user_data, int id),
+                                  void *user_data,
                                   ShmdataLogger log){
-  Writer *res = new Writer(path,
-                           memsize,
-                           type_descr,
-                           static_cast<AbstractLogger *>(log));
-  if (*res)
+  CWriter *res = new CWriter(path,
+                             memsize,
+                             type_descr,
+                             static_cast<AbstractLogger *>(log),
+                             on_client_connected,
+                             on_client_disconnected,
+                             user_data);
+  if (res->writer_)
     return static_cast<void *>(res);
   delete res;
   return nullptr;
 }
 
 void shmdata_delete_writer(ShmdataWriter writer){
-  delete static_cast<Writer *>(writer);
+  delete static_cast<CWriter *>(writer);
 }
 
 int shmdata_copy_to_shm(ShmdataWriter writer, void *data, size_t size){
-  return static_cast<Writer *>(writer)->copy_to_shm(data, size);
+  return static_cast<CWriter *>(writer)->writer_.copy_to_shm(data, size);
 }
 
 ShmdataWriterAccess shmdata_get_one_write_access(ShmdataWriter writer,
                                                  size_t size){
   return
-      static_cast<void *>(static_cast<Writer *>(writer)->get_one_write_access_ptr(size));
+      static_cast<void *>(static_cast<CWriter *>(writer)->writer_.
+                          get_one_write_access_ptr(size));
 }
 
 void *shmdata_get_mem(ShmdataWriterAccess access){

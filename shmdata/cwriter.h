@@ -24,10 +24,14 @@ extern "C" {
   
   typedef void * ShmdataWriter;
   typedef void * ShmdataWriterAccess;
+  
   ShmdataWriter shmdata_make_writer(const char *path,
-                                    size_t memsize,
-                                    const char *type_descr,
-                                    ShmdataLogger log);
+                                  size_t memsize,
+                                  const char *type_descr,
+                                  void (*on_client_connected)(void *user_data, int id),
+                                  void (*on_client_disconnected)(void *user_data, int id),
+                                  void *user_data,
+                                  ShmdataLogger log);
   void shmdata_delete_writer(ShmdataWriter writer);
 
   // write copying data

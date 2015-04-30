@@ -77,6 +77,9 @@ int main () {
     ShmdataWriter writer = shmdata_make_writer("/tmp/check-c-wrapper",
                                                sizeof(Frame),
                                                "application/x-check-shmdata",
+                                               NULL,
+                                               NULL,
+                                               NULL,
                                                logger);
     assert(NULL != writer); 
     usleep(50000);

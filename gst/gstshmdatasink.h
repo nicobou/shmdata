@@ -50,11 +50,8 @@ struct _GstShmdataSink
   ShmdataLogger shmlogger;
   guint perms;
   guint size;
-  gboolean clients;
-  gboolean wait_for_connection;
   gboolean stop;
   gboolean unlock;
-  GstClockTimeDiff buffer_time;
   GCond cond;
   GstShmdataSinkAllocator *allocator;
   GstAllocationParams params;
