@@ -77,19 +77,18 @@ int shmdata_copy_to_shm(ShmdataWriter writer, void *data, size_t size){
   return static_cast<CWriter *>(writer)->writer_.copy_to_shm(data, size);
 }
 
-ShmdataWriterAccess shmdata_get_one_write_access(ShmdataWriter writer,
-                                                 size_t size){
+ShmdataWriterAccess shmdata_get_one_write_access(ShmdataWriter writer){
   return
       static_cast<void *>(static_cast<CWriter *>(writer)->writer_.
-                          get_one_write_access_ptr(size));
+                          get_one_write_access_ptr());
 }
 
 void *shmdata_get_mem(ShmdataWriterAccess access){
   return static_cast<OneWriteAccess *>(access)->get_mem();
 }
 
-short shmdata_notify_clients(ShmdataWriterAccess access){
-  return static_cast<OneWriteAccess *>(access)->notify_clients();
+short shmdata_notify_clients(ShmdataWriterAccess access, size_t size){
+  return static_cast<OneWriteAccess *>(access)->notify_clients(size);
 }
 
 void shmdata_release_one_write_access(ShmdataWriterAccess access){

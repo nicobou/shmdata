@@ -48,6 +48,7 @@ struct _GstShmdataSink
   gchar *socket_path;
   ShmdataWriter shmwriter;
   ShmdataLogger shmlogger;
+  ShmdataWriterAccess access;
   guint perms;
   guint size;
   gboolean stop;

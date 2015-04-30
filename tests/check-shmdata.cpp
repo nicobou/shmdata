@@ -65,8 +65,9 @@ int main () {
         assert(access);
         auto frame = static_cast<Frame *>(access->get_mem());
         frame->count++;
-        access->notify_clients(); /* they will start reading
-                                     after w lock is release, at destruction */
+        access->notify_clients(sizeof(Frame)); /* they will start reading
+                                                  after w lock is release,
+                                                  at destruction */
       }  // access is released, lock is freed
     }
   }// end writer example
@@ -125,11 +126,11 @@ int main () {
     auto i = 300;
     while (0 != --i) {
       //  the following is locking the shared memory for writing
-      auto access = w.get_one_write_access(sizeof(Frame));
+      auto access = w.get_one_write_access();
       assert(access);
       auto frame = static_cast<Frame *>(access->get_mem());
       frame->count++;
-      access->notify_clients();
+      access->notify_clients(sizeof(Frame));
     }
   }
 

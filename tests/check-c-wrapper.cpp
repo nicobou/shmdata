@@ -91,10 +91,10 @@ int main () {
       ++frame.count;
       assert(0 != shmdata_copy_to_shm(writer, &frame, sizeof(Frame)));
       // second option: direct write
-      ShmdataWriterAccess access = shmdata_get_one_write_access(writer, sizeof(Frame));
+      ShmdataWriterAccess access = shmdata_get_one_write_access(writer);
       Frame *shared_frame = (Frame *)shmdata_get_mem(access);
       shared_frame->count = ++frame.count;
-      shmdata_notify_clients(access);
+      shmdata_notify_clients(access, sizeof(Frame));
       shmdata_release_one_write_access(access);
       }
     shmdata_delete_writer(writer);

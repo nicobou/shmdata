@@ -152,9 +152,9 @@ int main () {
     auto reader_handle = std::async(std::launch::async, reader);
     while (1 != done.load()) {
       //  the following is locking the shared memory for writing
-      auto access = w.get_one_write_access(sizeof(Frame));
+      auto access = w.get_one_write_access();
       assert(access);
-      access->notify_clients();
+      access->notify_clients(sizeof(Frame));
       auto frame = static_cast<Frame *>(access->get_mem());
       frame->count++;
     }

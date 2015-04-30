@@ -55,42 +55,38 @@ bool Writer::copy_to_shm(void *data, size_t size){
   return res;
 }
 
-std::unique_ptr<OneWriteAccess> Writer::get_one_write_access(size_t size) {
+std::unique_ptr<OneWriteAccess> Writer::get_one_write_access() {
   return std::unique_ptr<OneWriteAccess>(new OneWriteAccess(&sem_,
                                                             shm_.get_mem(),
                                                             &srv_,
-                                                            size,
                                                             log_));
 }
 
-OneWriteAccess *Writer::get_one_write_access_ptr(size_t size) {
+OneWriteAccess *Writer::get_one_write_access_ptr() {
   return new OneWriteAccess(&sem_,
                             shm_.get_mem(),
                             &srv_,
-                            size,
                             log_);
 }
 
 OneWriteAccess::OneWriteAccess(sysVSem *sem,
                                void *mem,
                                UnixSocketServer *srv,
-                               size_t size,
                                AbstractLogger *log) :
     wlock_(sem),
     mem_(mem),
     srv_(srv),
-    size_(size),
     log_(log){
 }
 
-short OneWriteAccess::notify_clients(){
+short OneWriteAccess::notify_clients(size_t size){
   if (has_notified_) {
     log_->warning("one notification only is expected per OneWriteAccess instance, "
                   "ignoring current invocation");
     return 0;
   }
   has_notified_ = true;
-  short num_readers = srv_->notify_update(size_);
+  short num_readers = srv_->notify_update(size);
   //log->debug("one write access for % readers", std::to_string(num_readers));
   if (0 < num_readers) {
     wlock_.commit_readers(num_readers);

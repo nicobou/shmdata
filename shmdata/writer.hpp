@@ -43,9 +43,9 @@ class Writer: public SafeBoolIdiom {
   // copy to shmdata
   bool copy_to_shm(void *data, size_t size);
   // direct access to the memory with lock
-  std::unique_ptr<OneWriteAccess> get_one_write_access(size_t size = 0);
+  std::unique_ptr<OneWriteAccess> get_one_write_access();
   // (for C wrappers) direct access without uniqueptr (user need to delete)
-  OneWriteAccess *get_one_write_access_ptr(size_t size = 0);
+  OneWriteAccess *get_one_write_access_ptr();
  private:
   std::string path_; 
   UnixSocketProtocol::onConnectData connect_data_;
@@ -63,18 +63,17 @@ class OneWriteAccess {
   friend Writer;
  public:
   void *get_mem() {return mem_;};
-  short notify_clients(); // must be called once, return number of clients notified
+  short notify_clients(size_t size); /* must be called only once,
+                                        return number of clients notified */
  private:
   OneWriteAccess(sysVSem *sem,
                  void *mem,
                  UnixSocketServer *srv,
-                 size_t size,
                  AbstractLogger *log);
   OneWriteAccess& operator=(OneWriteAccess&&) = default;
   WriteLock wlock_;
   void *mem_;
   UnixSocketServer *srv_;
-  size_t size_;
   AbstractLogger *log_;
   bool has_notified_{false};
 };

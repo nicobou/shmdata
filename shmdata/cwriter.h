@@ -40,10 +40,9 @@ extern "C" {
                           size_t size);
 
   // or get write lock and notify clients when they can try locking for reading 
-  ShmdataWriterAccess shmdata_get_one_write_access(ShmdataWriter writer,
-                                                   size_t size);
+  ShmdataWriterAccess shmdata_get_one_write_access(ShmdataWriter writer);
   void *shmdata_get_mem(ShmdataWriterAccess access);
-  short shmdata_notify_clients(ShmdataWriterAccess access);
+  short shmdata_notify_clients(ShmdataWriterAccess access, size_t size);
   void shmdata_release_one_write_access(ShmdataWriterAccess access);
 
 #ifdef __cplusplus

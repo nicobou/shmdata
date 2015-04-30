@@ -244,10 +244,7 @@ gst_shmdata_sink_allocator_alloc_locked (GstShmdataSinkAllocator * self, gsize s
   /* allocate more to compensate for alignment */
   maxsize += align;
 
-  ShmdataWriterAccess access = shmdata_get_one_write_access(self->sink->shmwriter,
-                                                            size);
-  shmdata_notify_clients(access);
-  void *data = shmdata_get_mem(access);
+  void *data = shmdata_get_mem(self->sink->access);
   if (data) {
     GstShmdataSinkMemory *mymem;
     gsize aoffset, padding;
@@ -279,7 +276,6 @@ gst_shmdata_sink_allocator_alloc_locked (GstShmdataSinkAllocator * self, gsize s
         maxsize, align, params->prefix, size);
   }
 
-  shmdata_release_one_write_access(access);
   return memory;
 }
 
@@ -585,10 +581,12 @@ gst_shmdata_sink_render (GstBaseSink * bsink, GstBuffer * buf)
    * We know it's not mapped for writing anywhere as we just mapped it for
    * reading
    */
-  ShmdataWriterAccess access = shmdata_get_one_write_access(self->shmwriter, map.size);
-  shmdata_notify_clients(access);
-  shmdata_release_one_write_access(access);
+  shmdata_notify_clients(self->access, map.size);
+  shmdata_release_one_write_access(self->access);
 
+  // wait for client to read and take the write lock
+  self->access = shmdata_get_one_write_access(self->shmwriter);
+   
   gst_buffer_unmap (sendbuf, &map);
 
   GST_OBJECT_UNLOCK (self);
@@ -660,30 +658,25 @@ static gboolean
 gst_shmdata_sink_propose_allocation (GstBaseSink * sink, GstQuery * query)
 {
   GstShmdataSink *self = GST_SHMDATA_SINK (sink);
-  
   if (self->allocator)
     gst_query_add_allocation_param (query, GST_ALLOCATOR (self->allocator),
                                     NULL);
-
   return TRUE;
 }
 
 static void gst_shmdata_sink_on_client_connected(void *user_data, int id) {
-  // TODO signal
-  /* GstShmdataSink *self = GST_SHMDATA_SINK (user_data); */
-/* g_printf("-- %s %d\n", __FUNCTION__, __LINE__); */
+  GstShmdataSink *self = GST_SHMDATA_SINK (user_data); 
+  g_signal_emit (self, signals[SIGNAL_CLIENT_CONNECTED], 0,
+                 id);
 }
 
 static void gst_shmdata_sink_on_client_disconnected(void *user_data, int id) {
-  // TODO signal
-/* g_printf("-- %s %d\n", __FUNCTION__, __LINE__); */
-/*   GstShmdataSink *self = GST_SHMDATA_SINK (user_data); */
-/* g_printf("-- %s %d\n", __FUNCTION__, __LINE__); */
+  GstShmdataSink *self = GST_SHMDATA_SINK (user_data); 
+  g_signal_emit (self, signals[SIGNAL_CLIENT_DISCONNECTED], 0, id);
 }
 
 static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
   GstShmdataSink *self = GST_SHMDATA_SINK (sink);
-
   if (!self->socket_path) { 
     GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE, 
         ("Could not open socket."), (NULL)); 
@@ -719,6 +712,8 @@ static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
         ("Could not open socket."), (NULL)); 
     return FALSE; 
   } 
+
+  self->access = shmdata_get_one_write_access(self->shmwriter);
 
   GST_DEBUG ("Created socket at %s", self->socket_path); 
   self->allocator = gst_shmdata_sink_allocator_new (self); 
