@@ -69,21 +69,21 @@ static GstStaticPadTemplate srctemplate = GST_STATIC_PAD_TEMPLATE ("src",
 #define gst_shmdata_src_parent_class parent_class
 G_DEFINE_TYPE (GstShmdataSrc, gst_shmdata_src, GST_TYPE_PUSH_SRC);
 
-static void gst_shmdata_src_set_property (GObject * object, guint prop_id,
-    const GValue * value, GParamSpec * pspec);
-static void gst_shmdata_src_get_property (GObject * object, guint prop_id,
-    GValue * value, GParamSpec * pspec);
-static void gst_shmdata_src_finalize (GObject * object);
-static gboolean gst_shmdata_src_start (GstBaseSrc * bsrc);
-static gboolean gst_shmdata_src_stop (GstBaseSrc * bsrc);
+static void gst_shmdata_src_set_property (GObject *object, guint prop_id,
+                                          const GValue *value, GParamSpec *pspec);
+static void gst_shmdata_src_get_property (GObject *object, guint prop_id,
+                                          GValue *value, GParamSpec *pspec);
+static void gst_shmdata_src_finalize (GObject *object);
+static gboolean gst_shmdata_src_start (GstBaseSrc *bsrc);
+static gboolean gst_shmdata_src_stop (GstBaseSrc *bsrc);
 static void gst_shmdata_src_on_data(void *user_data, void *data, size_t size);
-static GstFlowReturn gst_shmdata_src_create (GstPushSrc * psrc,
-    GstBuffer ** outbuf);
+static GstFlowReturn gst_shmdata_src_create (GstPushSrc *psrc,
+                                             GstBuffer **outbuf);
 static void gst_shmdata_src_on_data_rendered(gpointer data);
-static gboolean gst_shmdata_src_unlock (GstBaseSrc * bsrc);
-static gboolean gst_shmdata_src_unlock_stop (GstBaseSrc * bsrc);
-static GstStateChangeReturn gst_shmdata_src_change_state (GstElement * element,
-    GstStateChange transition);
+static gboolean gst_shmdata_src_unlock (GstBaseSrc *bsrc);
+static gboolean gst_shmdata_src_unlock_stop (GstBaseSrc *bsrc);
+static GstStateChangeReturn gst_shmdata_src_change_state (GstElement *element,
+                                                          GstStateChange transition);
 
 // static guint gst_shmdata_src_signals[LAST_SIGNAL] = { 0 };
 
@@ -137,11 +137,15 @@ gst_shmdata_src_class_init (GstShmdataSrcClass * klass)
 }
 
 static void
-gst_shmdata_src_init (GstShmdataSrc * self)
+gst_shmdata_src_init (GstShmdataSrc *self)
 {
   self->is_first_read = TRUE;
+  self->has_new_caps = FALSE;
+  self->caps = NULL;
+  self->on_data = FALSE;
   g_mutex_init(&self->on_data_mutex);
   g_cond_init (&self->on_data_cond);
+  self->data_rendered = FALSE;
   g_mutex_init (&self->data_rendered_mutex);
   g_cond_init (&self->data_rendered_cond);
 }
@@ -154,6 +158,8 @@ gst_shmdata_src_finalize (GObject * object)
   g_cond_clear (&self->on_data_cond);
   g_mutex_clear (&self->data_rendered_mutex);
   g_cond_clear (&self->data_rendered_cond);
+  if (NULL != self->caps)
+    gst_caps_unref (self->caps);
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
@@ -209,15 +215,19 @@ gst_shmdata_src_get_property (GObject * object, guint prop_id,
 
 void gst_shmdata_src_on_server_connect(void *user_data, const char *type_descr) {
   GstShmdataSrc *self = GST_SHMDATA_SRC (user_data);
-  GstPad *pad = gst_element_get_static_pad (GST_ELEMENT(self),"src");
-  gst_pad_use_fixed_caps (pad);
-  GstCaps *caps = gst_caps_from_string(type_descr);
-  if (!gst_pad_set_caps (pad, caps)) {
-    GST_WARNING_OBJECT (self, "cannot set caps from shmdata type description: %s",
-                        type_descr);
-  }
-  // FIXME unref
+
+  if (NULL != self->caps)
+    gst_caps_unref(self->caps);
+  self->caps = gst_caps_from_string(type_descr);
+  if (NULL != self->caps)
+    self->has_new_caps = TRUE;
   
+  /* GstPad *pad = gst_element_get_static_pad (GST_ELEMENT(self),"src"); */
+  /* gst_pad_use_fixed_caps (pad); */
+  /* if (!gst_pad_set_caps (pad, caps)) { */
+  /*   GST_WARNING_OBJECT (self, "cannot set caps from shmdata type description: %s", */
+  /*                       type_descr); */
+  /* } */
 }
 
 
@@ -292,67 +302,76 @@ gst_shmdata_src_stop (GstBaseSrc * bsrc)
   return TRUE;
 }
 
-
-/* static void */
-/* free_buffer (gpointer data) */
-/* { */
-/*   /\* struct GstShmDataBuffer *gsb = data; *\/ */
-/*   /\* g_return_if_fail (gsb->shmfollower != NULL); *\/ */
-
-/*   /\* GST_OBJECT_LOCK (gsb->pipe->src); *\/ */
-/*   /\* // TODO release read lock (?) *\/ */
-/*   /\* //sp_client_recv_finish (gsb->pipe->pipe, gsb->buf); *\/ */
-/*   /\* GST_OBJECT_UNLOCK (gsb->pipe->src); *\/ */
-/* } */
-
 static void gst_shmdata_src_on_data(void *user_data, void *data, size_t size) {
-  //g_printf("%s %d\n", __FUNCTION__, __LINE__);
   GstShmdataSrc *self = GST_SHMDATA_SRC (user_data);
   self->current_data = data;
   self->current_size = size;
-
-
   // synchronizing with gst_shmdata_src_create
-  //g_printf("%s %d\n", __FUNCTION__, __LINE__);
-
-  g_mutex_lock (&self->data_rendered_mutex); 
-
-  
   g_mutex_lock (&self->on_data_mutex);
+  self->on_data = TRUE;
   g_cond_broadcast (&self->on_data_cond);
   g_mutex_unlock (&self->on_data_mutex);
-
-
-  //g_printf("%s %d\n", __FUNCTION__, __LINE__); 
-  //g_cond_wait (&self->data_rendered_cond, &self->data_rendered_mutex); 
+  g_mutex_lock (&self->data_rendered_mutex); 
+  while(!self->data_rendered)  // spurious wake
+    g_cond_wait (&self->data_rendered_cond, &self->data_rendered_mutex);
+  self->data_rendered = FALSE;
   g_mutex_unlock (&self->data_rendered_mutex); 
-  //g_printf("%s %d\n", __FUNCTION__, __LINE__);
 }
 
 static void gst_shmdata_src_on_data_rendered(gpointer user_data){
   GstShmdataSrc *self = GST_SHMDATA_SRC (user_data); 
-  //g_printf("%s %d\n", __FUNCTION__, __LINE__); 
   g_mutex_lock (&self->data_rendered_mutex); 
-
+  self->data_rendered = TRUE;
   g_cond_broadcast(&self->data_rendered_cond); 
   g_mutex_unlock (&self->data_rendered_mutex); 
-  /* //g_printf("%s %d\n", __FUNCTION__, __LINE__); */
+}
+
+static void gst_shmdata_src_make_data_rendered(GstShmdataSrc *self){
+  g_mutex_lock (&self->data_rendered_mutex);
+  self->data_rendered = TRUE;
+  g_cond_broadcast(&self->data_rendered_cond); 
+  g_mutex_unlock (&self->data_rendered_mutex); 
 }
 
 static GstFlowReturn
-gst_shmdata_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
+gst_shmdata_src_create (GstPushSrc *psrc, GstBuffer **outbuf)
 {
   GstShmdataSrc *self = GST_SHMDATA_SRC (psrc);
 
   if (self->unlocked) {
     return GST_FLOW_FLUSHING;
   }
-  //g_printf("%s %d\n", __FUNCTION__, __LINE__);
+
   g_mutex_lock (&self->on_data_mutex);
-  g_cond_wait (&self->on_data_cond, &self->on_data_mutex);
-  //g_printf("%s %d\n", __FUNCTION__, __LINE__);
+  while (!self->on_data && !self->unlocked)
+    g_cond_wait_until (&self->on_data_cond,
+                       &self->on_data_mutex,
+                       g_get_monotonic_time () + 10 * G_TIME_SPAN_MILLISECOND);
+  if (self->unlocked) {
+    self->on_data = FALSE;
+    g_mutex_unlock (&self->on_data_mutex);
+    gst_shmdata_src_make_data_rendered(self);
+    return GST_FLOW_FLUSHING;
+  }
+  self->on_data = FALSE;
   g_mutex_unlock (&self->on_data_mutex);
 
+  if (self->is_first_read) {
+    gst_shmdata_src_make_data_rendered(self);
+    self->is_first_read = FALSE;
+  }
+
+  if (self->has_new_caps) {
+    self->has_new_caps = FALSE;
+    GstPad *pad = gst_element_get_static_pad (GST_ELEMENT(self),"src");
+    if(!gst_pad_set_caps (pad, self->caps)) {
+      GST_ELEMENT_ERROR (GST_ELEMENT(self), CORE, NEGOTIATION, (NULL),
+                         ("caps fix caps from shmdata type description"));
+      return GST_FLOW_ERROR;
+    }
+    gst_object_unref(pad);
+  }
+  
   *outbuf = gst_buffer_new_wrapped_full (GST_MEMORY_FLAG_READONLY, 
                                          self->current_data,
                                          self->current_size,
@@ -360,68 +379,7 @@ gst_shmdata_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
                                          self->current_size,
                                          self,
                                          gst_shmdata_src_on_data_rendered); 
-
-  if (self->is_first_read) {
-    g_mutex_lock (&self->data_rendered_mutex); 
-    g_cond_broadcast(&self->data_rendered_cond); 
-    g_mutex_unlock (&self->data_rendered_mutex); 
-    self->is_first_read = FALSE;
-  }
   
-  //g_printf("%s %d\n", __FUNCTION__, __LINE__);
-
-  //gchar *buf = NULL;
-  //int rv = 0;
-  //struct GstShmDataBuffer *gsb;
-
-  /* do { */
-  /*   if (gst_poll_wait (self->poll, GST_CLOCK_TIME_NONE) < 0) { */
-  /*     if (errno == EBUSY) */
-  /*       return GST_FLOW_FLUSHING; */
-  /*     GST_ELEMENT_ERROR (self, RESOURCE, READ, ("Failed to read from shmdatasrc"), */
-  /*         ("Poll failed on fd: %s", strerror (errno))); */
-  /*     return GST_FLOW_ERROR; */
-  /*   } */
-
-  /*   if (self->unlocked) */
-  /*     return GST_FLOW_FLUSHING; */
-
-  /*   if (gst_poll_fd_has_closed (self->poll, &self->pollfd)) { */
-  /*     GST_ELEMENT_ERROR (self, RESOURCE, READ, ("Failed to read from shmdatasrc"), */
-  /*         ("Control socket has closed")); */
-  /*     return GST_FLOW_ERROR; */
-  /*   } */
-
-  /*   if (gst_poll_fd_has_error (self->poll, &self->pollfd)) { */
-  /*     GST_ELEMENT_ERROR (self, RESOURCE, READ, ("Failed to read from shmdatasrc"), */
-  /*         ("Control socket has error")); */
-  /*     return GST_FLOW_ERROR; */
-  /*   } */
-
-  /*   if (gst_poll_fd_can_read (self->poll, &self->pollfd)) { */
-  /*     buf = NULL; */
-  /*     GST_LOG_OBJECT (self, "Reading from pipe"); */
-  /*     GST_OBJECT_LOCK (self); */
-  /*     rv = sp_client_recv (self->pipe->pipe, &buf); */
-  /*     GST_OBJECT_UNLOCK (self); */
-  /*     if (rv < 0) { */
-  /*       GST_ELEMENT_ERROR (self, RESOURCE, READ, ("Failed to read from shmdatasrc"), */
-  /*           ("Error reading control data: %d", rv)); */
-  /*       return GST_FLOW_ERROR; */
-  /*     } */
-  /*   } */
-  /* } while (buf == NULL); */
-
-  /* GST_LOG_OBJECT (self, "Got buffer %p of size %d", buf, rv); */
-
-  /* gsb = g_slice_new0 (struct GstShmDataBuffer); */
-  /* gsb->buf = buf; */
-  /* gsb->pipe = self->pipe; */
-  /* gst_shmdata_pipe_inc (self->pipe); */
-
-  /* *outbuf = gst_buffer_new_wrapped_full (GST_MEMORY_FLAG_READONLY, */
-  /*     buf, rv, 0, rv, gsb, free_buffer); */
-
   return GST_FLOW_OK;
 }
 

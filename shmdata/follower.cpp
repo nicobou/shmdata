@@ -57,7 +57,7 @@ void Follower::monitor(){
         quit_.store(true);
       } else {
         reader_.reset(nullptr);
-        log_->warning("file % exists but reader failed", path_);
+        log_->debug("file % exists but reader failed", path_);
       }
     } 
     if (do_sleep)

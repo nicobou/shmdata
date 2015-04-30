@@ -44,7 +44,7 @@ static void gst_shmdata_on_info(void *self, const char *msg) {
 }
 
 static void gst_shmdata_on_debug(void *self, const char *msg) {
-  GST_WARNING_OBJECT(G_OBJECT(self), "%s", msg);
+  GST_DEBUG_OBJECT(G_OBJECT(self), "%s", msg);
 }
 
 #endif

@@ -50,13 +50,15 @@ struct _GstShmdataSrc
   ShmdataLogger shmlogger;
   GMutex on_data_mutex;
   GCond on_data_cond;
+  gboolean on_data;  // managing spurious wake with GCond
   GMutex data_rendered_mutex;
   GCond data_rendered_cond;
+  gboolean data_rendered;  // managing spurious wake with GCond
   void *current_data;
   size_t current_size;
   gboolean is_first_read;
-
-  //GstFlowReturn flow_return;
+  gboolean has_new_caps;
+  GstCaps *caps;
   gboolean unlocked;
 };
 

@@ -40,7 +40,7 @@ sysVSem::sysVSem(key_t key, AbstractLogger *log, bool owner) :
     log_(log) {
   if (semid_ < 0) {
     int err = errno;
-    log_->warning("semget %", strerror(err));
+    log_->debug("semget: %", strerror(err));
     return;
   }
 }
@@ -59,7 +59,7 @@ void sysVSem::cancel_commited_reader(){
                   semops::read_end,
                   sizeof(semops::read_end)/sizeof(*semops::read_end))){
       int err = errno;
-      log_->error("semop cancel %", strerror(err));
+      log_->error("semop cancel: %", strerror(err));
   }
 }
 
