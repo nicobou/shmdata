@@ -50,7 +50,7 @@ struct _GstShmdataSink
   ShmdataLogger shmlogger;
   ShmdataWriterAccess access;
   guint perms;
-  guint size;
+  size_t size;
   gboolean stop;
   gboolean unlock;
   GCond cond;

@@ -684,7 +684,7 @@ static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
   } 
 
   GST_DEBUG_OBJECT (self, "Creating new socket at %s" 
-      " with shared memory of %d bytes", self->socket_path, self->size); 
+      " with shared memory of %lu bytes", self->socket_path, self->size); 
 
   gchar *caps_str = gst_caps_to_string (caps);
   GST_DEBUG_OBJECT(G_OBJECT(sink), "on_caps %s", caps_str);
