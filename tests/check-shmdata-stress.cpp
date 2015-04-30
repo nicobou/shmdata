@@ -154,6 +154,7 @@ int main () {
       //  the following is locking the shared memory for writing
       auto access = w.get_one_write_access(sizeof(Frame));
       assert(access);
+      access->notify_clients();
       auto frame = static_cast<Frame *>(access->get_mem());
       frame->count++;
     }

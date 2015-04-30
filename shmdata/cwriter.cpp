@@ -49,6 +49,10 @@ void *shmdata_get_mem(ShmdataWriterAccess access){
   return static_cast<OneWriteAccess *>(access)->get_mem();
 }
 
+short shmdata_notify_clients(ShmdataWriterAccess access){
+  return static_cast<OneWriteAccess *>(access)->notify_clients();
+}
+
 void shmdata_release_one_write_access(ShmdataWriterAccess access){
   delete static_cast<OneWriteAccess *>(access);
 }

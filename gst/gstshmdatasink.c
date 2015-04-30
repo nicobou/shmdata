@@ -246,6 +246,7 @@ gst_shmdata_sink_allocator_alloc_locked (GstShmdataSinkAllocator * self, gsize s
 
   ShmdataWriterAccess access = shmdata_get_one_write_access(self->sink->shmwriter,
                                                             size);
+  shmdata_notify_clients(access);
   void *data = shmdata_get_mem(access);
   if (data) {
     GstShmdataSinkMemory *mymem;
@@ -337,7 +338,7 @@ gst_shmdata_sink_init (GstShmdataSink * self)
   self->size = DEFAULT_SIZE;
   self->wait_for_connection = DEFAULT_WAIT_FOR_CONNECTION;
   //  self->perms = DEFAULT_PERMS;
-
+  self->clients = FALSE;
   gst_allocation_params_init (&self->params);
 }
 
@@ -606,18 +607,6 @@ gst_shmdata_sink_stop (GstBaseSink * bsink)
 static gboolean
 gst_shmdata_sink_can_render (GstShmdataSink * self, GstClockTime time)
 {
-  /* ShmBuffer *b; */
-
-  /* if (time == GST_CLOCK_TIME_NONE || self->buffer_time == GST_CLOCK_TIME_NONE) */
-  /*   return TRUE; */
-
-  /* b = sp_writer_get_pending_buffers (self->pipe); */
-  /* for (; b != NULL; b = sp_writer_get_next_buffer (b)) { */
-  /*   GstBuffer *buf = sp_writer_buf_get_tag (b); */
-  /*   if (GST_CLOCK_DIFF (time, GST_BUFFER_PTS (buf)) > self->buffer_time) */
-  /*     return FALSE; */
-  /* } */
-
   return TRUE;
 }
 
@@ -706,6 +695,7 @@ gst_shmdata_sink_render (GstBaseSink * bsink, GstBuffer * buf)
    * reading
    */
   ShmdataWriterAccess access = shmdata_get_one_write_access(self->shmwriter, map.size);
+  shmdata_notify_clients(access);
   shmdata_release_one_write_access(access);
 
   gst_buffer_unmap (sendbuf, &map);

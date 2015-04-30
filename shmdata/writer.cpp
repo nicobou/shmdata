@@ -20,10 +20,12 @@ namespace shmdata{
 Writer::Writer(const std::string &path,
                size_t memsize,
                const std::string &data_descr,
-               AbstractLogger *log):
+               AbstractLogger *log,
+               UnixSocketProtocol::ServerSide::onClientConnect on_client_connect,
+               UnixSocketProtocol::ServerSide::onClientDisconnect on_client_disconnect):
     connect_data_(memsize, data_descr),
-    proto_(nullptr,
-           nullptr,
+    proto_(on_client_connect,
+           on_client_disconnect,
            [this](){return this->connect_data_;}),
     srv_(path, &proto_, log, [&](int){sem_.cancel_commited_reader();}),
     shm_(ftok(path.c_str(), 'n'), memsize, log, /*owner = */ true),
@@ -75,12 +77,18 @@ OneWriteAccess::OneWriteAccess(sysVSem *sem,
                                size_t size,
                                AbstractLogger *log) :
     wlock_(sem),
-    mem_(mem){
-  auto num_readers = srv->notify_update(size);
+    mem_(mem),
+    srv_(srv),
+    size_(size){
+}
+
+short OneWriteAccess::notify_clients(){
+  short num_readers = srv_->notify_update(size_);
   //log->debug("one write access for % readers", std::to_string(num_readers));
   if (0 < num_readers) {
     wlock_.commit_readers(num_readers);
   }
+  return num_readers;
 }
 
 }  // namespace shmdata

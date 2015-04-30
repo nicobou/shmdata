@@ -31,7 +31,9 @@ class Writer: public SafeBoolIdiom {
   Writer(const std::string &path,
          size_t memsize,
          const std::string &data_descr,
-         AbstractLogger *log);
+         AbstractLogger *log,
+         UnixSocketProtocol::ServerSide::onClientConnect on_client_connect = nullptr,
+         UnixSocketProtocol::ServerSide::onClientDisconnect on_client_disconnect = nullptr);
   ~Writer() = default;
   Writer() = delete;
   Writer(const Writer &) = delete;
@@ -61,6 +63,7 @@ class OneWriteAccess {
   friend Writer;
  public:
   void *get_mem() {return mem_;};
+  short notify_clients(); // must be called once, return number of clients notified
  private:
   OneWriteAccess(sysVSem *sem,
                  void *mem,
@@ -70,6 +73,8 @@ class OneWriteAccess {
   OneWriteAccess& operator=(OneWriteAccess&&) = default;
   WriteLock wlock_;
   void *mem_;
+  UnixSocketServer *srv_;
+  size_t size_;
 };
 
 }  // namespace shmdata

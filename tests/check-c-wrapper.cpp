@@ -91,6 +91,7 @@ int main () {
       ShmdataWriterAccess access = shmdata_get_one_write_access(writer, sizeof(Frame));
       Frame *shared_frame = (Frame *)shmdata_get_mem(access);
       shared_frame->count = ++frame.count;
+      shmdata_notify_clients(access);
       shmdata_release_one_write_access(access);
       }
     shmdata_delete_writer(writer);

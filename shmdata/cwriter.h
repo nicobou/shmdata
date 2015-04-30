@@ -24,21 +24,22 @@ extern "C" {
   
   typedef void * ShmdataWriter;
   typedef void * ShmdataWriterAccess;
-  ShmdataWriter shmdata_make_writer(const char * path,
+  ShmdataWriter shmdata_make_writer(const char *path,
                                     size_t memsize,
                                     const char *type_descr,
                                     ShmdataLogger log);
   void shmdata_delete_writer(ShmdataWriter writer);
+
+  // write copying data
   int shmdata_copy_to_shm(ShmdataWriter writer,
                           void *data,
                           size_t size);
 
-  int shmdata_copy_to_shm(ShmdataWriter writer,
-                          void *data,
-                          size_t size);
+  // or get write lock and notify clients when they can try locking for reading 
   ShmdataWriterAccess shmdata_get_one_write_access(ShmdataWriter writer,
                                                    size_t size);
   void *shmdata_get_mem(ShmdataWriterAccess access);
+  short shmdata_notify_clients(ShmdataWriterAccess access);
   void shmdata_release_one_write_access(ShmdataWriterAccess access);
 
 #ifdef __cplusplus

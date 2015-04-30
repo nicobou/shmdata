@@ -65,6 +65,8 @@ int main () {
         assert(access);
         auto frame = static_cast<Frame *>(access->get_mem());
         frame->count++;
+        access->notify_clients(); /* they will start reading
+                                     after w lock is release, at destruction */
       }  // access is released, lock is freed
     }
   }// end writer example
@@ -127,6 +129,7 @@ int main () {
       assert(access);
       auto frame = static_cast<Frame *>(access->get_mem());
       frame->count++;
+      access->notify_clients();
     }
   }
 

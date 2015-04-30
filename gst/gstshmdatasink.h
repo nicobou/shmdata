@@ -45,26 +45,18 @@ typedef struct _GstShmdataSinkAllocator GstShmdataSinkAllocator;
 struct _GstShmdataSink
 {
   GstBaseSink element;
-
   gchar *socket_path;
-
   ShmdataWriter shmwriter;
   ShmdataLogger shmlogger;
-
   guint perms;
   guint size;
-
-  GList *clients;
-
+  gboolean clients;
   gboolean wait_for_connection;
   gboolean stop;
   gboolean unlock;
   GstClockTimeDiff buffer_time;
-
   GCond cond;
-
   GstShmdataSinkAllocator *allocator;
-
   GstAllocationParams params;
 };
 
