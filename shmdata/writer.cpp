@@ -79,10 +79,17 @@ OneWriteAccess::OneWriteAccess(sysVSem *sem,
     wlock_(sem),
     mem_(mem),
     srv_(srv),
-    size_(size){
+    size_(size),
+    log_(log){
 }
 
 short OneWriteAccess::notify_clients(){
+  if (has_notified_) {
+    log_->warning("one notification only is expected per OneWriteAccess instance, "
+                  "ignoring current invocation");
+    return 0;
+  }
+  has_notified_ = true;
   short num_readers = srv_->notify_update(size_);
   //log->debug("one write access for % readers", std::to_string(num_readers));
   if (0 < num_readers) {

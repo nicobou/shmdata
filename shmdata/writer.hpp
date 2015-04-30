@@ -75,6 +75,8 @@ class OneWriteAccess {
   void *mem_;
   UnixSocketServer *srv_;
   size_t size_;
+  AbstractLogger *log_;
+  bool has_notified_{false};
 };
 
 }  // namespace shmdata
