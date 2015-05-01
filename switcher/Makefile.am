@@ -20,6 +20,7 @@ lib_LTLIBRARIES = \
     libswitcher-@LIBSWITCHER_API_VERSION@.la
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
+    audio-test-source.cpp \
     categorizable.cpp \
     counter-map.cpp \
     create-remove-spy.cpp \
@@ -38,7 +39,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     json-builder.cpp \
     logger.cpp \
     method.cpp \
-    on-caps.cpp \
     plugin-loader.cpp \
     port-checker.cpp \
     property-mapper.cpp \
@@ -77,6 +77,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     abstract-factory.hpp \
     abstract-factory_spec.hpp \
     any.hpp \
+    audio-test-source.hpp \
     categorizable.hpp \
     clock.hpp \
     counter-map.hpp \
@@ -98,7 +99,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     logger.hpp \
     make-consultable.hpp \
     method.hpp \
-    on-caps.hpp \
     plugin-loader.hpp \
     port-checker.hpp \
     property-mapper.hpp \
@@ -115,6 +115,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     safe-bool-idiom.hpp \
     scope-exit.hpp \
     sdp-utils.hpp \
+    shmdata-glib-logger.hpp \
     shmdata-follower.hpp \
     shmdata-writer.hpp \
     signal-string.hpp \

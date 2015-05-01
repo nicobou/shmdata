@@ -1,4 +1,3 @@
-
 /*
  * This file is part of libswitcher.
  *
@@ -18,56 +17,43 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_SHMDATA_ANY_READER_H__
-#define __SWITCHER_SHMDATA_ANY_READER_H__
+#ifndef __SWITCHER_SHMDATA_FOLLOWER_H__
+#define __SWITCHER_SHMDATA_FOLLOWER_H__
 
-// #include <functional>
-// #include <memory>
-// #include <string>
-// #include <shmdata/any-data-reader.h>
-// #include "./json-builder.hpp"
-// #include "./on-caps.hpp"
+#include <functional>
+#include <memory>
+#include <string>
+#include <shmdata/follower.hpp>
+#include "./json-builder.hpp"
+#include "./shmdata-glib-logger.hpp"
 
-// namespace switcher {
-// class ShmdataAnyReader:public OnCaps {
-//  public:
-//   typedef std::shared_ptr<ShmdataAnyReader> ptr;
-//   using Callback = std::function<void(void *,
-//                                       int,
-//                                       unsigned long long,
-//                                       const char *,
-//                                       void *)>;
+namespace switcher {
+class ShmdataFollower {
+ public:
+  typedef std::shared_ptr<ShmdataFollower> ptr;
+  ShmdataFollower(const std::string &path,
+                  shmdata::Reader::onData cb,
+                  shmdata::Reader::onServerConnected osc,
+                  shmdata::Reader::onServerDisconnected osd);
+  ~ShmdataFollower() = default;
+  ShmdataFollower(const ShmdataFollower &) = delete;
+  ShmdataFollower &operator=(const ShmdataFollower &) = delete;
 
-//   ShmdataAnyReader();
-//   ~ShmdataAnyReader();
-//   ShmdataAnyReader(const ShmdataAnyReader &) = delete;
-//   ShmdataAnyReader &operator=(const ShmdataAnyReader &) = delete;
-//   // conrfiguration member before starting:
-//   bool set_path(std::string path);    // path needs to be fully specified
-//   bool set_callback(Callback cb, void *user_data);
-//   bool set_data_type(std::string data_type);
-//   bool set_absolute_timestamp(bool absolute_timestamp);
-//   // starting the reader:
-//   bool start();
-//   // info + controls before and after starting the reader :
-//   std::string get_path() const;
-//   void mute(bool mute);
-//   JSONBuilder::Node get_json_root_node();
+  std::string get_path() const;
+  JSONBuilder::Node get_json_root_node();
 
-//  private:
-//   bool muted_ {false};
-//   std::string path_;
-//   Callback cb_ {nullptr};
-//   void *cb_user_data_ {nullptr};
-//   shmdata_any_reader_t *reader_ {nullptr};
-//   bool is_caps_set_ {false};
+ private:
+  ShmdataGlibLogger logger_{};
+  std::string path_;
+  shmdata::Reader::onData od_;
+  shmdata::Reader::onServerConnected osc_;
+  shmdata::Reader::onServerDisconnected osd_;
+  shmdata::Follower follower_;
+  JSONBuilder::ptr json_description_;
 
-//   JSONBuilder::ptr json_description_;
-//   void make_json_description();
-//   static void on_data(shmdata_any_reader_t *, void *shmbuf, void *data,
-//                       int data_size, unsigned long long timestamp,
-//                       const char *type_description, void *user_data);
-// };
+  void on_data(void *data, size_t data_size);
+  void make_json_description();
+};
 
-// }  // namespace switcher
+}  // namespace switcher
 #endif

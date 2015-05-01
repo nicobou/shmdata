@@ -21,12 +21,13 @@
 #define __SWITCHER_AUDIO_TEST_SOURCE_H__
 
 #include <memory>
-#include "./audio-source.hpp"
+#include "./gst-pipeliner.hpp"
+#include "./quiddity.hpp"
 #include "./startable-quiddity.hpp"
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
-class AudioTestSource: public AudioSource, public StartableQuiddity {
+class AudioTestSource: public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AudioTestSource);
   AudioTestSource(const std::string &);
@@ -38,10 +39,11 @@ class AudioTestSource: public AudioSource, public StartableQuiddity {
   bool stop();
 
  private:
+  std::unique_ptr<GstPipeliner> gst_pipeline_{};
   UGstElem audiotestsrc_;
   bool make_audiotestsrc();
-  bool init_gpipe() final;
+  bool init() final;
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif
