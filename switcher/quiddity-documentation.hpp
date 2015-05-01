@@ -26,12 +26,12 @@
 namespace switcher {
 class QuiddityDocumentation {
  public:
-  QuiddityDocumentation(std::string long_name,
-                        std::string category,
-                        std::string short_description,
-                        std::string license,
-                        std::string class_name, 
-			std::string author);
+  QuiddityDocumentation(const std::string &long_name,
+                        const std::string &category,
+                        const std::string &short_description,
+                        const std::string &license,
+                        const std::string &class_name, 
+			const std::string &author);
   std::string get_category() const;
   std::string get_class_name() const;
   std::string get_description() const;

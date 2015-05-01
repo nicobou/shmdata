@@ -22,8 +22,6 @@
 
 #include <vector>
 #include <unordered_map>
-#include "./shmdata-any-writer.hpp"
-#include "./shmdata-any-reader.hpp"
 #include "./shmdata-writer.hpp"
 #include "./shmdata-reader.hpp"
 #include "./counter-map.hpp"
@@ -68,8 +66,6 @@ class Segment: public CounterMap
 
  private:
   Quiddity *quid_ {nullptr};
-  std::unordered_map<std::string, ShmdataAnyWriter::ptr> shmdata_any_writers_{};
-  std::unordered_map<std::string, ShmdataAnyReader::ptr> shmdata_any_readers_{};
   std::unordered_map<std::string, ShmdataWriter::ptr> shmdata_writers_{};
   std::unordered_map<std::string, ShmdataReader::ptr> shmdata_readers_{};
 

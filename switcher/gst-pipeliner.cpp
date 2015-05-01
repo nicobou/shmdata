@@ -21,7 +21,6 @@
  * The GstPipeliner class
  */
 
-#include <shmdata/base-reader.h>
 #include <gst/interfaces/xoverlay.h>
 #include <algorithm>
 #include "./gst-pipeliner.hpp"

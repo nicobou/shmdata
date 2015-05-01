@@ -942,11 +942,11 @@ Init(v8::Handle<v8::Object> target) {
 
   // loading plugins
   // FIXME use config.h for having the appropriate version
-  gchar *usr_plugin_dir = g_strdup_printf("/usr/switcher-0.6/plugins");
+  gchar *usr_plugin_dir = g_strdup_printf("/usr/switcher-0.7/plugins");
   switcher_manager->scan_directory_for_plugins(usr_plugin_dir);
   g_free(usr_plugin_dir);
   
-  gchar *usr_local_plugin_dir = g_strdup_printf("/usr/local/switcher-0.6/plugins");
+  gchar *usr_local_plugin_dir = g_strdup_printf("/usr/local/switcher-0.7/plugins");
   switcher_manager->scan_directory_for_plugins(usr_local_plugin_dir);
   g_free(usr_local_plugin_dir);
 

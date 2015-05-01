@@ -20,50 +20,51 @@
 #ifndef __SWITCHER_SHMDATA_WRITER_H__
 #define __SWITCHER_SHMDATA_WRITER_H__
 
-#include <memory>
-#include <string>
-#include <shmdata/base-writer.h>
-#include "./json-builder.hpp"
-#include "./on-caps.hpp"
-#include "./unique-gst-element.hpp"
+// #include <memory>
+// #include <string>
+// #include <mutex>
+// #include <shmdata/any-data-writer.h>
+// #include "./json-builder.hpp"
+// #include "./clock.hpp"
+// #include "./on-caps.hpp"
 
-namespace switcher {
-class ShmdataWriter: public OnCaps {
- public:
-  typedef std::shared_ptr<ShmdataWriter> ptr;
-  using CapsCallBack = std::function<void (std::string)>;
-  ShmdataWriter();
-  ~ShmdataWriter();
-  ShmdataWriter(const ShmdataWriter &) = delete;
-  ShmdataWriter &operator=(const ShmdataWriter &) = delete;
+// namespace switcher {
+// class ShmdataWriter: public OnCaps {
+//  public:
+//   typedef std::shared_ptr<ShmdataWriter> ptr;
+//   using CapsCallBack = std::function<void(std::string)>;
+//   ShmdataWriter();
+//   ~ShmdataWriter();
+//   ShmdataWriter(const ShmdataWriter &) = delete;
+//   ShmdataWriter &operator=(const ShmdataWriter &) = delete;
+//   bool set_path(std::string name);    // path needs to be fully specified
+//   std::string get_path();
+//   void set_data_type(std::string data_type);
+//   void push_data(void *data,
+//                  size_t data_size,
+//                  unsigned long long clock,
+//                  void(*data_not_required_anymore)(void *),
+//                  void *user_data);
+//   void push_data_auto_clock(void *data,
+//                             size_t data_size,
+//                             void(*data_not_required_anymore)(void *),
+//                             void *user_data);
+//   void start();
+//   bool started();
 
-  bool set_path(std::string name);  // path needs to be fully specified
-  bool set_path_without_deleting(std::string name);  // path needs to be fully specified
-  std::string get_path() const;
+//   // get json doc:
+//   JSONBuilder::Node get_json_root_node();
 
-  // caps does not need to be fully specified:
-  void plug(GstElement *bin, GstElement *source_element, GstCaps *caps);
-  void plug(GstElement *bin, GstPad *source_pad);
+//  private:
+//   bool started_;
+//   std::string path_;
+//   shmdata_any_writer_t *writer_;
+//   JSONBuilder::ptr json_description_;
+//   std::mutex thread_safe_;
+//   CumulativeClock<> clock_;
+//   void make_json_description();
+//   bool set_path_without_deleting(std::string name);
+// };
 
-  // get json doc:
-  JSONBuilder::Node get_json_root_node();
-
- private:
-  std::string path_ {};
-  shmdata_base_writer_t *writer_{nullptr};
-  GstElement *bin_{nullptr};
-  UGstElem tee_;
-  UGstElem queue_;
-  UGstElem fakesink_;
-  gulong handoff_handler_{0};
-  JSONBuilder::ptr json_description_{};
-
-  void make_json_description();
-  static void on_handoff_cb(GstElement *object,
-                            GstBuffer *buf,
-                            GstPad *pad,
-                            gpointer user_data);
-};
-}  // namespace switcher
-
+// }  // namespace switcher
 #endif

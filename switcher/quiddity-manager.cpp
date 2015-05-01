@@ -28,7 +28,7 @@ namespace switcher {
 QuiddityManager::ptr QuiddityManager::make_manager(const std::string &name) {
   if (!gst_is_initialized())
     gst_init(nullptr, nullptr);
-  GstRegistry *registry = gst_registry_get_default();
+  GstRegistry *registry = gst_registry_get();
   // TODO add option for scanning a path
   gst_registry_scan_path(registry, "/usr/local/lib/gstreamer-0.10/");
   

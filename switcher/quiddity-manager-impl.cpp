@@ -26,25 +26,25 @@
 #include "./scope-exit.hpp"
 
 // the quiddities to manage (line sorted)
-#include "./audio-test-source.hpp"
+//#include "./audio-test-source.hpp"
 #include "./create-remove-spy.hpp"
-#include "./decodebin2.hpp"
-#include "./fake-shmdata-writer.hpp"
-#include "./fakesink.hpp"
-#include "./gst-parse-to-bin-src.hpp"
-#include "./gst-video-parse-to-bin-src.hpp"
-#include "./http-sdp-dec.hpp"
-#include "./jack-audio-source.hpp"
+//#include "./decodebin2.hpp"
+//#include "./fake-shmdata-writer.hpp"
+//#include "./fakesink.hpp"
+//#include "./gst-parse-to-bin-src.hpp"
+//#include "./gst-video-parse-to-bin-src.hpp"
+//#include "./http-sdp-dec.hpp"
+//#include "./jack-audio-source.hpp"
 #include "./logger.hpp"
 #include "./property-mapper.hpp"
-#include "./rtp-session.hpp"
-#include "./shmdata-to-file.hpp"
-#include "./shmdata-from-gdp-file.hpp"
-#include "./udpsink.hpp"
-#include "./uridecodebin.hpp"
+//#include "./rtp-session.hpp"
+//#include "./shmdata-to-file.hpp"
+//#include "./shmdata-from-gdp-file.hpp"
+//#include "./udpsink.hpp"
+//#include "./uridecodebin.hpp"
 #include "./string-dictionary.hpp"
-#include "./video-test-source.hpp"
-#include "./xvimagesink.hpp"
+//#include "./video-test-source.hpp"
+//#include "./xvimagesink.hpp"
 
 namespace switcher {
 QuiddityManager_Impl::ptr
@@ -135,63 +135,63 @@ std::string QuiddityManager_Impl::get_name() const {
 
 void QuiddityManager_Impl::register_classes() {
   // registering quiddities
-  abstract_factory_.register_class<AudioTestSource>
-      (AudioTestSource::switcher_doc_.get_class_name(),
-       &AudioTestSource::switcher_doc_);
+  // abstract_factory_.register_class<AudioTestSource>
+  //     (AudioTestSource::switcher_doc_.get_class_name(),
+  //      &AudioTestSource::switcher_doc_);
   abstract_factory_.register_class<CreateRemoveSpy>
       (CreateRemoveSpy::switcher_doc_.get_class_name(),
        &CreateRemoveSpy::switcher_doc_);
-  abstract_factory_.register_class<Decodebin2>
-      (Decodebin2::switcher_doc_.get_class_name(),
-       &Decodebin2::switcher_doc_);
-  abstract_factory_.register_class<FakeShmdataWriter>
-      (FakeShmdataWriter::switcher_doc_.get_class_name(),
-       &FakeShmdataWriter::switcher_doc_);
-  abstract_factory_.register_class<FakeSink>
-      (FakeSink::switcher_doc_.get_class_name(),
-       &FakeSink::switcher_doc_);
-  abstract_factory_.register_class<GstParseToBinSrc>
-      (GstParseToBinSrc::switcher_doc_.get_class_name(),
-       &GstParseToBinSrc::switcher_doc_);
-  abstract_factory_.register_class<GstVideoParseToBinSrc>
-      (GstVideoParseToBinSrc::switcher_doc_.get_class_name(),
-       &GstVideoParseToBinSrc::switcher_doc_);
-  abstract_factory_.register_class<HTTPSDPDec>
-      (HTTPSDPDec::switcher_doc_.get_class_name(),
-       &HTTPSDPDec::switcher_doc_);
-  abstract_factory_.register_class<JackAudioSource>
-      (JackAudioSource::switcher_doc_.get_class_name(),
-       &JackAudioSource::switcher_doc_);
+  // abstract_factory_.register_class<Decodebin2>
+  //     (Decodebin2::switcher_doc_.get_class_name(),
+  //      &Decodebin2::switcher_doc_);
+  // abstract_factory_.register_class<FakeShmdataWriter>
+  //     (FakeShmdataWriter::switcher_doc_.get_class_name(),
+  //      &FakeShmdataWriter::switcher_doc_);
+  // abstract_factory_.register_class<FakeSink>
+  //     (FakeSink::switcher_doc_.get_class_name(),
+  //      &FakeSink::switcher_doc_);
+  // abstract_factory_.register_class<GstParseToBinSrc>
+  //     (GstParseToBinSrc::switcher_doc_.get_class_name(),
+  //      &GstParseToBinSrc::switcher_doc_);
+  // abstract_factory_.register_class<GstVideoParseToBinSrc>
+  //     (GstVideoParseToBinSrc::switcher_doc_.get_class_name(),
+  //      &GstVideoParseToBinSrc::switcher_doc_);
+  // abstract_factory_.register_class<HTTPSDPDec>
+  //     (HTTPSDPDec::switcher_doc_.get_class_name(),
+  //      &HTTPSDPDec::switcher_doc_);
+  // abstract_factory_.register_class<JackAudioSource>
+  //     (JackAudioSource::switcher_doc_.get_class_name(),
+  //      &JackAudioSource::switcher_doc_);
   abstract_factory_.register_class<Logger>
       (Logger::switcher_doc_.get_class_name(),
        &Logger::switcher_doc_);
   abstract_factory_.register_class<PropertyMapper>
       (PropertyMapper::switcher_doc_.get_class_name(),
        &PropertyMapper::switcher_doc_);
-  abstract_factory_.register_class<RtpSession>
-      (RtpSession::switcher_doc_.get_class_name(),
-       &RtpSession::switcher_doc_);
-  abstract_factory_.register_class<ShmdataFromGDPFile>
-      (ShmdataFromGDPFile::switcher_doc_.get_class_name(),
-       &ShmdataFromGDPFile::switcher_doc_);
-  abstract_factory_.register_class<ShmdataToFile>
-      (ShmdataToFile::switcher_doc_.get_class_name(),
-       &ShmdataToFile::switcher_doc_);
+  // abstract_factory_.register_class<RtpSession>
+  //     (RtpSession::switcher_doc_.get_class_name(),
+  //      &RtpSession::switcher_doc_);
+  // abstract_factory_.register_class<ShmdataFromGDPFile>
+  //     (ShmdataFromGDPFile::switcher_doc_.get_class_name(),
+  //      &ShmdataFromGDPFile::switcher_doc_);
+  // abstract_factory_.register_class<ShmdataToFile>
+  //     (ShmdataToFile::switcher_doc_.get_class_name(),
+  //      &ShmdataToFile::switcher_doc_);
   abstract_factory_.register_class<StringDictionary>
       (StringDictionary::switcher_doc_.get_class_name(),
        &StringDictionary::switcher_doc_);
-  abstract_factory_.register_class<UDPSink>
-      (UDPSink::switcher_doc_.get_class_name(),
-       &UDPSink::switcher_doc_);
-  abstract_factory_.register_class<Uridecodebin>
-      (Uridecodebin::switcher_doc_.get_class_name(),
-       &Uridecodebin::switcher_doc_);
-  abstract_factory_.register_class<VideoTestSource>
-      (VideoTestSource::switcher_doc_.get_class_name(),
-       &VideoTestSource::switcher_doc_);
-  abstract_factory_.register_class<Xvimagesink>
-      (Xvimagesink::switcher_doc_.get_class_name(),
-       &Xvimagesink::switcher_doc_);
+  // abstract_factory_.register_class<UDPSink>
+  //     (UDPSink::switcher_doc_.get_class_name(),
+  //      &UDPSink::switcher_doc_);
+  // abstract_factory_.register_class<Uridecodebin>
+  //     (Uridecodebin::switcher_doc_.get_class_name(),
+  //      &Uridecodebin::switcher_doc_);
+  // abstract_factory_.register_class<VideoTestSource>
+  //     (VideoTestSource::switcher_doc_.get_class_name(),
+  //      &VideoTestSource::switcher_doc_);
+  // abstract_factory_.register_class<Xvimagesink>
+  //     (Xvimagesink::switcher_doc_.get_class_name(),
+  //      &Xvimagesink::switcher_doc_);
 }
 
 std::vector<std::string> QuiddityManager_Impl::get_classes(){

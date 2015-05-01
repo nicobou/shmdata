@@ -23,7 +23,6 @@
 
 #include <glib-object.h>
 #include <gst/interfaces/xoverlay.h>
-#include <shmdata/base-reader.h>
 #include "./gst-utils.hpp"
 #include "./scope-exit.hpp"
 #include "./gst-pipe.hpp"
@@ -48,7 +47,8 @@ GstPipe::GstPipe(GMainContext *context) :
   g_source_attach(source_, gmaincontext_);
   gst_bus_set_sync_handler(reinterpret_cast<GstBusSource *>(source_)->bus,
                            bus_sync_handler,
-                           this);
+                           this,
+                           nullptr);
   reinterpret_cast<GstBusSource *>(source_)->inited = FALSE;
   {
     std::unique_lock<std::mutex> lock(play_pipe_);
@@ -113,9 +113,6 @@ gboolean GstPipe::bus_called(GstBus */*bus */,
 GstBusSyncReply GstPipe::bus_sync_handler(GstBus * /*bus*/,
                                           GstMessage *msg,
                                           gpointer user_data) {
-  shmdata_base_reader_t *reader =
-      (shmdata_base_reader_t *) g_object_get_data(G_OBJECT(msg->src),
-                                                  "shmdata_base_reader");
   GstPipe *context = static_cast<GstPipe *>(user_data);
 
   // g_print ("-----------%s-----%s--------------------------\n",
@@ -135,13 +132,6 @@ GstBusSyncReply GstPipe::bus_sync_handler(GstBus * /*bus*/,
     return GST_BUS_PASS;
   }
 
-  if (reader != nullptr) {
-    if (nullptr != msg && shmdata_base_reader_process_error(reader, msg))
-      return GST_BUS_DROP;
-    else
-      return GST_BUS_PASS;
-  }
-
   if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_ERROR) {
     gchar *debug = nullptr;
     GError *error = nullptr;
@@ -157,17 +147,19 @@ GstBusSyncReply GstPipe::bus_sync_handler(GstBus * /*bus*/,
     return GST_BUS_DROP;
   }
 
-  if (nullptr != msg->structure) {
-    if (gst_structure_has_name(msg->structure, "prepare-xwindow-id")) {
-      guintptr *window_handle =
-          (guintptr *) g_object_get_data(G_OBJECT(msg->src),
-                                         "window-handle");
-      if (window_handle != nullptr) {
-        gst_x_overlay_set_window_handle(GST_X_OVERLAY(msg->src),
-                                        *window_handle);
-      }
-    }
-  }
+  // FIXME:
+  // const GstStructure *gstruct = gst_message_get_structure (msg);
+  // if (nullptr != gstruct) {
+  //   if (gst_structure_has_name(gstruct, "prepare-xwindow-id")) {
+  //     guintptr *window_handle =
+  //         (guintptr *) g_object_get_data(G_OBJECT(msg->src),
+  //                                        "window-handle");
+  //     if (window_handle != nullptr) {
+  //       gst_x_overlay_set_window_handle(GST_X_OVERLAY(msg->src),
+  //                                       *window_handle);
+  //     }
+  //   }
+  // }
 
   if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_TAG) {
     // GstTagList *tags = nullptr;
@@ -288,10 +280,9 @@ bool GstPipe::speed(gdouble speed) {
 }
 
 void GstPipe::query_position_and_length() {
-  GstFormat fmt = GST_FORMAT_TIME;
   gint64 pos;
-  if (gst_element_query_position(pipeline_, &fmt, &pos)
-      && gst_element_query_duration(pipeline_, &fmt, &length_)) {
+  if (gst_element_query_position(pipeline_,  GST_FORMAT_TIME, &pos)
+      && gst_element_query_duration(pipeline_, GST_FORMAT_TIME , &length_)) {
     // g_print ("Time: %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r",
     //  GST_TIME_ARGS (pos), GST_TIME_ARGS (length_));
   }

@@ -136,19 +136,19 @@ void GstUtils::clean_element(GstElement *element) {
   //           GST_STATE_TARGET(element), GST_STATE_PENDING(element),
   //           GST_STATE_RETURN(element));
   
-  {  // unlinking pads
-    GstIterator *pad_iter;
-    pad_iter = gst_element_iterate_pads(element);
-    gst_iterator_foreach(pad_iter, (GFunc) GstUtils::unlink_pad, nullptr);
-    gst_iterator_free(pad_iter);
-  }
+  // FIXME {  // unlinking pads
+  //   GstIterator *pad_iter;
+  //   pad_iter = gst_element_iterate_pads(element);
+  //   gst_iterator_foreach(pad_iter, (GFunc) GstUtils::unlink_pad, nullptr);
+  //   gst_iterator_free(pad_iter);
+  // }
   
-  {  // releasing request pads
-    GstIterator *pad_iter;
-    pad_iter = gst_element_iterate_pads(element);
-    gst_iterator_foreach(pad_iter, (GFunc) GstUtils::release_request_pad, element);
-    gst_iterator_free(pad_iter);
-  }
+  // FIXME {  // releasing request pads
+  //   GstIterator *pad_iter;
+  //   pad_iter = gst_element_iterate_pads(element);
+  //   gst_iterator_foreach(pad_iter, (GFunc) GstUtils::release_request_pad, element);
+  //   gst_iterator_free(pad_iter);
+  // }
 
   GstState state = GST_STATE_TARGET(element);
   if (state != GST_STATE_NULL) {
