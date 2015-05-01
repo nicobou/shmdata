@@ -4,13 +4,11 @@
 #ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign
 
-# SUBDIRS = \
-#     wrappers
-
 SUBDIRS = \
     shmdata \
     utils \
-    tests 
+    tests \
+	wrappers
 
 if BUILD_GST
 SUBDIRS += gst

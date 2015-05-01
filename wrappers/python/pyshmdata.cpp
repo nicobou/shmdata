@@ -20,6 +20,44 @@
 using namespace std;
 
 /*************/
+void log_error_handler(void *user_data, const char *str)
+{
+    printf("Error: %s\n", str);
+}
+
+/*************/
+void log_critical_handler(void *user_data, const char *str)
+{
+    printf("Critical: %s\n", str);
+}
+
+/*************/
+void log_warning_handler(void *user_data, const char *str)
+{
+    printf("Warning: %s\n", str);
+}
+
+/*************/
+void log_message_handler(void *user_data, const char *str)
+{
+    printf("Message: %s\n", str);
+}
+
+/*************/
+void log_info_handler(void *user_data, const char *str)
+{
+    printf("Info: %s\n", str);
+}
+
+/*************/
+void log_debug_handler(void *user_data, const char *str)
+{
+    bool show_debug = *((bool*)user_data);
+    if (show_debug)
+        printf("Debug: %s\n", str);
+}
+
+/*************/
 // Any-data-writer
 PyMODINIT_FUNC
 PyInit_pyshmdata(void)
@@ -49,8 +87,9 @@ Writer_dealloc(pyshmdata_WriterObject* self)
 {
     Py_XDECREF(self->path);
     Py_XDECREF(self->datatype);
+    Py_XDECREF(self->framesize);
     if (self->writer != NULL)
-        shmdata_any_writer_close(self->writer);
+        shmdata_delete_writer(self->writer);
 
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
@@ -74,6 +113,20 @@ Writer_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
             Py_DECREF(self);
             return NULL;
         }
+
+        self->framesize = PyLong_FromSize_t((size_t)4000000);
+        if (self->framesize == NULL) {
+            Py_DECREF(self);
+            return NULL;
+        }
+
+        self->logger = shmdata_make_logger(&log_error_handler,
+                                           &log_critical_handler,
+                                           &log_warning_handler,
+                                           &log_message_handler,
+                                           &log_info_handler,
+                                           &log_debug_handler,
+                                           &self->show_debug_messages);
     }
 
     return (PyObject*)self;
@@ -85,11 +138,13 @@ Writer_init(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds)
 {
     PyObject *path = NULL;
     PyObject *datatype = NULL;
+    PyObject *framesize = NULL;
+    PyObject *showDebug = NULL;
     PyObject *tmp = NULL;
 
-    static char *kwlist[] = {(char*)"path", (char*)"datatype", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OO", kwlist,
-                                     &path, &datatype))
+    static char *kwlist[] = {(char*)"path", (char*)"datatype", (char*)"framesize", (char*)"debug", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist,
+                                     &path, &datatype, &framesize, &showDebug))
         return -1;
 
     if (path) {
@@ -104,6 +159,30 @@ Writer_init(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds)
         Py_INCREF(datatype);
         self->datatype = datatype;
         Py_XDECREF(tmp);
+    }
+
+    if (framesize) {
+        tmp = self->framesize;
+        Py_INCREF(framesize);
+        self->framesize = framesize;
+        Py_XDECREF(tmp);
+    }
+
+    if (showDebug)
+    {
+        if (PyBool_Check(showDebug))
+            self->show_debug_messages = true;
+        else
+            self->show_debug_messages = false;
+    }
+
+    string strPath(PyUnicode_AsUTF8(self->path));
+    string strDatatype(PyUnicode_AsUTF8(self->datatype));
+    size_t size = PyLong_AsSize_t(self->framesize);
+
+    self->writer = shmdata_make_writer(strPath.c_str(), size, strDatatype.c_str(), NULL, NULL, NULL, self->logger);
+    if (!self->writer) {
+        return -1;
     }
 
     return 0;
@@ -124,37 +203,16 @@ Writer_push(pyshmdata_WriterObject* self, PyObject* args)
         return NULL;
     }
 
-    if (self->writer == NULL) {
-        string path(PyUnicode_AsUTF8(self->path));
-        string datatype(PyUnicode_AsUTF8(self->datatype));
-
-        self->writer = shmdata_any_writer_init();
-        if (self->writer == NULL) {
-            return NULL;
-        }
-
-        shmdata_any_writer_set_data_type(self->writer, datatype.c_str());
-        if (!shmdata_any_writer_set_path(self->writer, path.c_str())) {
-            return NULL;
-        }
-
-        shmdata_any_writer_start(self->writer);
+    if (!self->writer) {
+        return NULL;
     }
 
-    if (self->writer != NULL) {
+    if (self->writer) {
         Py_INCREF(buffer);
-        shmdata_any_writer_push_data(self->writer, (void*)PyByteArray_AsString(buffer), PyByteArray_Size(buffer), timestamp, Writer_freeObject, buffer);
+        shmdata_copy_to_shm(self->writer, (void*)PyByteArray_AsString(buffer), PyByteArray_Size(buffer));
     }
 
     return Py_BuildValue("i", 1);
-}
-
-/*************/
-void
-Writer_freeObject(void* user_data)
-{
-    PyObject* buffer = (PyObject*)user_data;
-    Py_DECREF(buffer);
 }
 
 /*************/
@@ -166,8 +224,6 @@ Reader_dealloc(pyshmdata_ReaderObject* self)
 
     Py_XDECREF(self->path);
     Py_XDECREF(self->datatype);
-    if (self->reader != NULL)
-        shmdata_any_reader_close(self->reader);
 
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
@@ -191,6 +247,14 @@ Reader_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
             Py_DECREF(self);
             return NULL;
         }
+
+        self->logger = shmdata_make_logger(&log_error_handler,
+                                           &log_critical_handler,
+                                           &log_warning_handler,
+                                           &log_message_handler,
+                                           &log_info_handler,
+                                           &log_debug_handler,
+                                           &self->show_debug_messages);
     }
 
     return (PyObject*)self;
@@ -204,10 +268,11 @@ Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
     PyObject *pyFunc = NULL;
     PyObject *pyUserData = NULL;
     PyObject *pyDropFrames = NULL;
+    PyObject *showDebug = NULL;
     PyObject *tmp = NULL;
 
-    static char *kwlist[] = {(char*)"path", (char*)"callback", (char*)"user_data", (char*)"drop_frames", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist, &path, &pyFunc, &pyUserData, &pyDropFrames))
+    static char *kwlist[] = {(char*)"path", (char*)"callback", (char*)"user_data", (char*)"drop_frames", (char*)"debug", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist, &path, &pyFunc, &pyUserData, &pyDropFrames, &showDebug))
         return -1;
 
     if (path) {
@@ -235,11 +300,20 @@ Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
         self->drop_frames = PyObject_IsTrue(pyDropFrames);
     }
 
-    self->reader = shmdata_any_reader_init();
-    if (self->reader == NULL)
-        return -1;
-    shmdata_any_reader_set_on_data_handler(self->reader, Reader_on_data_handler, self);
-    shmdata_any_reader_start(self->reader, PyUnicode_AsUTF8(self->path));
+    if (showDebug)
+    {
+        if (PyBool_Check(showDebug))
+            self->show_debug_messages = true;
+        else
+            self->show_debug_messages = false;
+    }
+
+    self->reader = shmdata_make_follower(PyUnicode_AsUTF8(self->path),
+                       Reader_on_data_handler,
+                       Reader_on_connect_handler,
+                       Reader_on_disconnect,
+                       self,
+                       self->logger);
 
     return 0;
 }
@@ -248,7 +322,7 @@ Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
 PyObject*
 Reader_pull(pyshmdata_ReaderObject* self)
 {
-    lock_guard<mutex> lock(self->reader_mutex);
+    unique_lock<mutex> lock(self->reader_mutex);
     if (self->lastBuffer != NULL)
     {
         Py_INCREF(self->lastBuffer);
@@ -260,34 +334,22 @@ Reader_pull(pyshmdata_ReaderObject* self)
 
 /*************/
 void
-Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, int data_size, unsigned long long timestamp, const char* type, void* user_data)
+Reader_on_data_handler(void *user_data, void* data, size_t data_size)
 {
     pyshmdata_ReaderObject* self = static_cast<pyshmdata_ReaderObject*>(user_data);
 
     if (user_data == nullptr || (self->drop_frames && !self->frame_mutex.try_lock()))
-    {
-        shmdata_any_reader_free(shmbuf);
         return;
-    }
 
     PyGILState_STATE gil = PyGILState_Ensure(); // We need to check the GIL state here because of the mutex
 
-    lock_guard<mutex> lock(self->reader_mutex);
-
-    // Get the current type
-    PyObject *datatype = NULL;
-    PyObject *tmp = NULL;
-
-    datatype = PyUnicode_FromString(type);
-    tmp = self->datatype;
-    self->datatype = datatype;
-    Py_XDECREF(tmp);
+    unique_lock<mutex> lock(self->reader_mutex);
 
     // Get the current buffer
     PyObject *buffer = NULL;
 
     buffer = PyByteArray_FromStringAndSize((char*)data, data_size);
-    tmp = NULL;
+    PyObject *tmp = NULL;
     if (self->lastBuffer != NULL)
         tmp = self->lastBuffer;
     self->lastBuffer = buffer;
@@ -314,6 +376,26 @@ Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, i
 
     if (self->drop_frames)
         self->frame_mutex.unlock();
+}
 
-    shmdata_any_reader_free(shmbuf);
+/*************/
+void
+Reader_on_connect_handler(void *user_data, const char *type_descr)
+{
+    pyshmdata_ReaderObject* self = static_cast<pyshmdata_ReaderObject*>(user_data);
+
+    PyObject *datatype = NULL;
+    PyObject *tmp = NULL;
+    
+    datatype = PyUnicode_FromString(type_descr);
+    tmp = self->datatype;
+    self->datatype = datatype;
+    Py_XDECREF(tmp);
+}
+
+/*************/
+void
+Reader_on_disconnect(void *user_data)
+{
+    return;
 }

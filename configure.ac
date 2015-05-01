@@ -149,18 +149,16 @@ GST_PLUGIN_LDFLAGS='-module -avoid-version -export-symbols-regex [_]*\(gst_\|Gst
 AC_SUBST(GST_PLUGIN_LDFLAGS)
 
 
-dnl # Check for Python to build a wrapper
-dnl PKG_CHECK_MODULES(PYTHON3, python3,
-dnl     AM_CONDITIONAL(HAVE_PYTHON3, true),
-dnl     AM_CONDITIONAL(HAVE_PYTHON3, false))
+# Check for Python to build a wrapper
+PKG_CHECK_MODULES(PYTHON3, python3,
+    AM_CONDITIONAL(HAVE_PYTHON3, true),
+    AM_CONDITIONAL(HAVE_PYTHON3, false))
 
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
 dnl AC_CONFIG_FILES([
 dnl         gst/Makefile
 dnl         gst/shm/Makefile
-dnl         wrappers/Makefile
-dnl         wrappers/python/Makefile
 dnl         ])
 
 AC_CONFIG_FILES([
@@ -169,6 +167,8 @@ AC_CONFIG_FILES([
         gst/Makefile
         tests/Makefile
         utils/Makefile
+        wrappers/Makefile
+        wrappers/python/Makefile
         doxyfile
         shmdata-${LIBSHMDATA_API_VERSION}.pc:shmdata.pc.in
         ])
