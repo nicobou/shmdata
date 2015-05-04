@@ -57,7 +57,6 @@ libpjsip_plugin_la_CXXFLAGS = \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) \
     -Wno-error=write-strings \
-    -Wno-error=deprecated-register \
     -Wno-error=unused-parameter
 
 pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h: Makefile
