@@ -56,7 +56,7 @@ class PJCall {
  private:
   static pjmedia_endpt *med_endpt_;
   static pjsip_module mod_siprtp_;
-  pj_str_t local_addr {nullptr, 0};
+  pj_str_t local_addr_ {nullptr, 0};
   std::vector<call_t> outgoing_call_{};
   std::vector<call_t> incoming_call_{};
   std::vector<call_t> call_{};

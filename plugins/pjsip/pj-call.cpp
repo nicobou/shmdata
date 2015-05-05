@@ -221,7 +221,7 @@ void PJCall::init_app() {
     pj_ansi_strcpy(ip_addr, addr);
   }
   /* Init defaults */
-  local_addr = pj_str(ip_addr);
+  local_addr_ = pj_str(ip_addr);
 }
 
 void PJCall::on_inv_state_disconnected(call_t *call,
@@ -691,19 +691,20 @@ pj_status_t PJCall::create_sdp_answer(
   sdp->origin.version = sdp->origin.id = tv.sec + 2208988800UL;
   pj_cstr(&sdp->origin.net_type, "IN");
   pj_cstr(&sdp->origin.addr_type, "IP4");
-  pj_uint32_t ipv4 = pj_gethostaddr().s_addr;
-  std::string localip(std::to_string(ipv4 & 0xff)
-                      + "." + std::to_string((ipv4 >> 8) & 0xff)
-                      + "." + std::to_string((ipv4 >> 16) & 0xff)
-                      + "." + std::to_string((ipv4 >> 24) & 0xff));
-  g_debug("using local ip %s when creating sdp answer");
-  pj_cstr(&sdp->origin.addr, localip.c_str());
+  // pj_uint32_t ipv4 = pj_gethostaddr().s_addr;
+  // std::string localip(std::to_string(ipv4 & 0xff)
+  //                     + "." + std::to_string((ipv4 >> 8) & 0xff)
+  //                     + "." + std::to_string((ipv4 >> 16) & 0xff)
+  //                     + "." + std::to_string((ipv4 >> 24) & 0xff));
+  // g_debug("using local ip %s when creating sdp answer");
+  // pj_cstr(&sdp->origin.addr, localip.c_str());
+  sdp->origin.addr = PJSIP::this_->sip_calls_->local_addr_;
   pj_cstr(&sdp->name, "pjsip");
   sdp->conn = static_cast<pjmedia_sdp_conn *>(
       pj_pool_zalloc(pool, sizeof(pjmedia_sdp_conn)));
   pj_cstr(&sdp->conn->net_type, "IN");
   pj_cstr(&sdp->conn->addr_type, "IP4");
-  sdp->conn->addr = PJSIP::this_->sip_calls_->local_addr;
+  sdp->conn->addr = PJSIP::this_->sip_calls_->local_addr_;
   /* SDP time and attributes. */
   sdp->time.start = sdp->time.stop = 0;
   sdp->attr_count = 0;
