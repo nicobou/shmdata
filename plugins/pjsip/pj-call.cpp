@@ -26,7 +26,7 @@
 #include "switcher/information-tree.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/information-tree-basic-serializer.hpp"
-#include "switcher/port-checker.hpp"
+#include "switcher/net-utils.hpp"
 #include "./pj-call.hpp"
 #include "./pj-sip.hpp"
 
@@ -61,7 +61,15 @@ PJCall::PJCall(PJSIP *sip_instance):
                                            )),
     contact_shm_(data::Tree::make()) {
   pj_status_t status;
-  init_app();
+  local_ips_ = NetUtils::get_ips();
+  for (auto &it: local_ips_) 
+    g_debug("local ip found %s for interface %s", it.first.c_str(), it.second.c_str());
+  for (auto &it: local_ips_) {
+    if (0 != std::string(it.second, 0, 4).compare("127."))
+      pj_cstr(&local_addr_,it.second.c_str());
+  }
+  if (nullptr == local_addr_.ptr)
+    pj_cstr(&local_addr_, "127.0.0.1");
   // configuring internal manager
   manager_->create("rtpsession", "siprtp");
   manager_->make_signal_subscriber("signal_subscriber",
@@ -205,23 +213,6 @@ pj_bool_t PJCall::on_rx_request(pjsip_rx_data *rdata) {
   process_incoming_call(rdata);
   /* Done */
   return PJ_TRUE;
-}
-
-void PJCall::init_app() {
-  static char ip_addr[32];
-  // static char local_uri[64];
-  /* Get local IP address for the default IP address */
-  {
-    const pj_str_t *hostname;
-    pj_sockaddr_in tmp_addr;
-    char *addr;
-    hostname = pj_gethostname();
-    pj_sockaddr_in_init(&tmp_addr, hostname, 0);
-    addr = pj_inet_ntoa(tmp_addr.sin_addr);
-    pj_ansi_strcpy(ip_addr, addr);
-  }
-  /* Init defaults */
-  local_addr_ = pj_str(ip_addr);
 }
 
 void PJCall::on_inv_state_disconnected(call_t *call,
@@ -619,7 +610,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       // finding a free port
       auto &me = PJSIP::this_->sip_calls_;
       unsigned int counter = me->port_range_/2;
-      while (PortChecker::is_used(rtp_port) && 0 != counter) {
+      while (NetUtils::is_used(rtp_port) && 0 != counter) {
         rtp_port += 2;
         if (rtp_port > me->starting_rtp_port_ + me->port_range_
             || rtp_port < me->starting_rtp_port_)

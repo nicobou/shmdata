@@ -51,9 +51,9 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     json-builder.cpp \
     logger.cpp \
     method.cpp \
+    net-utils.cpp \
     on-caps.cpp \
     plugin-loader.cpp \
-    port-checker.cpp \
     property-mapper.cpp \
     property.cpp \
     quiddity-basic-test.cpp \
@@ -136,9 +136,9 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     logger.hpp \
     make-consultable.hpp \
     method.hpp \
+    net-utils.hpp \
     on-caps.hpp \
     plugin-loader.hpp \
-    port-checker.hpp \
     property-mapper.hpp \
     property.hpp \
     quiddity-basic-test.hpp \
