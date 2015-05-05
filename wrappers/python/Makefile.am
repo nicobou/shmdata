@@ -14,5 +14,9 @@ pyshmdata_la_CXXFLAGS = \
 
 pyshmdata_la_LDFLAGS = \
 	-module -fPIC \
-	`python3.4-config --libs` \
+	`python3.4-config --ldflags` \
 	$(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la
+
+if HAVE_OSX
+pyshmdata_la_LDFLAGS += -L/opt/local/lib
+endif
