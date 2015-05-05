@@ -445,9 +445,9 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
     // send streams
     if (pjmedia_sdp_media_find_attr2(local_m, "sendonly", nullptr) != nullptr
         || pjmedia_sdp_media_find_attr2(local_m, "sendrecv", nullptr) != nullptr) {
-      // g_print("+++++++++++++++++++++++++++++++++++ sending data to %s\n",
-      //         std::string(remote_sdp->origin.addr.ptr,
-      //                     remote_sdp->origin.addr.slen).c_str());
+      g_debug("sending data to %s\n",
+              std::string(remote_sdp->origin.addr.ptr,
+                          remote_sdp->origin.addr.slen).c_str());
       PJSIP::this_->sip_calls_->manager_->
           invoke("siprtp",
                  "add_destination",
@@ -691,7 +691,13 @@ pj_status_t PJCall::create_sdp_answer(
   sdp->origin.version = sdp->origin.id = tv.sec + 2208988800UL;
   pj_cstr(&sdp->origin.net_type, "IN");
   pj_cstr(&sdp->origin.addr_type, "IP4");
-  sdp->origin.addr = *pj_gethostname();  // FIXME this should be IP address
+  pj_uint32_t ipv4 = pj_gethostaddr().s_addr;
+  std::string localip(std::to_string(ipv4 & 0xff)
+                      + "." + std::to_string((ipv4 >> 8) & 0xff)
+                      + "." + std::to_string((ipv4 >> 16) & 0xff)
+                      + "." + std::to_string((ipv4 >> 24) & 0xff));
+  g_debug("using local ip %s when creating sdp answer");
+  pj_cstr(&sdp->origin.addr, localip.c_str());
   pj_cstr(&sdp->name, "pjsip");
   sdp->conn = static_cast<pjmedia_sdp_conn *>(
       pj_pool_zalloc(pool, sizeof(pjmedia_sdp_conn)));

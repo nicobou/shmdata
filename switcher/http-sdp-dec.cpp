@@ -60,8 +60,10 @@ bool HTTPSDPDec::init_gpipe() {
 }
 
 void HTTPSDPDec::init_httpsdpdec() {
-  UGstElem::renew(souphttpsrc_);
-  UGstElem::renew(sdpdemux_);
+  if (!UGstElem::renew(souphttpsrc_))
+    g_warning("error renewing souphttpsrc_"); 
+  if (!UGstElem::renew(sdpdemux_))
+    g_warning("error renewing sdpdemux_"); 
   g_signal_connect(GST_BIN(sdpdemux_.get_raw()),
                    "element-added",
                    (GCallback) HTTPSDPDec::on_new_element_in_sdpdemux,
