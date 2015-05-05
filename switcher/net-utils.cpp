@@ -90,7 +90,7 @@ std::map</* interface name */std::string, /* ip */std::string> NetUtils::get_ips
     //        (family == AF_INET) ?   " (AF_INET)" :
     //        (family == AF_INET6) ?  " (AF_INET6)" : "");
     /* For an AF_INET* interface address, display the address */
-    if (family == AF_INET || family == AF_INET6) {
+    if (family == AF_INET /*|| family == AF_INET6*/) {
       s = getnameinfo(ifa->ifa_addr,
                       (family == AF_INET) ? sizeof(struct sockaddr_in) :
                       sizeof(struct sockaddr_in6),
