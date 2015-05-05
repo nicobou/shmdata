@@ -143,7 +143,7 @@ Writer_init(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds)
     PyObject *tmp = NULL;
 
     static char *kwlist[] = {(char*)"path", (char*)"datatype", (char*)"framesize", (char*)"debug", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOO", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist,
                                      &path, &datatype, &framesize, &showDebug))
         return -1;
 
