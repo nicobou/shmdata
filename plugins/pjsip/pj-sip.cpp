@@ -15,6 +15,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "switcher/net-utils.hpp"
 #include "./pj-sip.hpp"
 
 namespace switcher {
@@ -226,6 +227,10 @@ void PJSIP::exit_cmd() {
 void PJSIP::start_tcp_transport() {
   if (-1 != transport_id_)
     pjsua_transport_close(transport_id_, PJ_FALSE);
+  if (NetUtils::is_used(sip_port_)) {
+    g_warning("SIP port cannot be binded (%u)", sip_port_);
+    return;
+  }
   pjsua_transport_config cfg;
   pjsua_transport_config_default(&cfg);
   cfg.port = sip_port_;
