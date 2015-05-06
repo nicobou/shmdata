@@ -467,7 +467,10 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
     // converting to base64
     gchar *b64sdp = g_base64_encode((const guchar *)sdpbuf, len * sizeof(char) / sizeof(guchar));
     On_scope_exit{g_free(b64sdp);};
-    std::string dec_name = std::string(call->peer_uri, 0, call->peer_uri.find('@'));
+    std::string dec_name =
+        std::string(PJSIP::this_->get_name())
+        + "-"
+        + std::string(call->peer_uri, 0, call->peer_uri.find('@'));
     PJSIP::this_->sip_calls_->manager_->create("httpsdpdec", dec_name);
     PJSIP::this_->sip_calls_->manager_->subscribe_signal("signal_subscriber",
                                                          dec_name,
