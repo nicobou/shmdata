@@ -419,7 +419,10 @@ PJPresence::on_registration_state(pjsua_acc_id acc_id,
     }
     context->registered_ = false;
   } else {
-    context->registered_ = true;
+    if ( 199 < info->cbparam->code && 300 > info->cbparam->code)
+      context->registered_ = true;
+    else
+      context->registered_ = false;
   }
   GObjectWrapper::notify_property_changed(context->sip_instance_->gobject_->
                                           get_gobject(),
