@@ -291,6 +291,11 @@ void PJPresence::add_buddy(const std::string &sip_user) {
   pjsua_buddy_id buddy_id;
   pj_status_t status = PJ_SUCCESS;
 
+  if (-1 == account_id_) {
+    g_warning("cannot add buddy with invalid account");
+    return;
+  }
+  
   std::string buddy_full_uri("sip:" + sip_user // + ";transport=tcp"
                              );
   if (pjsua_verify_url(buddy_full_uri.c_str()) != PJ_SUCCESS) {
