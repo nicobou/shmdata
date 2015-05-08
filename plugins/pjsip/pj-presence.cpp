@@ -190,6 +190,10 @@ PJPresence::register_account_wrapped(gchar *user,
     g_warning("register sip account missing user or domain or password");
     return FALSE;
   }
+  if (-1 == PJSIP::this_->transport_id_) {
+    g_warning("cannot register without connection to server");
+    return FALSE;
+  }
   context->sip_instance_->run_command_sync(std::bind
                                            (&PJPresence::register_account,
                                             context,
@@ -346,6 +350,11 @@ void PJPresence::del_buddy(const std::string &sip_user) {
 gboolean PJPresence::add_buddy_wrapped(gchar *buddy_uri,
                                        void *user_data) {
   PJPresence *context = static_cast<PJPresence *>(user_data);
+  if (-1 == PJSIP::this_->transport_id_) {
+    g_warning("cannot add buddy without connection to server");
+    return FALSE;
+  }
+
   context->sip_instance_->
       run_command_sync(std::bind(&PJPresence::add_buddy,
                                  context,

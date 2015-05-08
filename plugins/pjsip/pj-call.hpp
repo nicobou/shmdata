@@ -56,10 +56,11 @@ class PJCall {
  private:
   static pjmedia_endpt *med_endpt_;
   static pjsip_module mod_siprtp_;
-  pj_str_t local_addr {nullptr, 0};
+  pj_str_t local_addr_ {nullptr, 0};
   std::vector<call_t> outgoing_call_{};
   std::vector<call_t> incoming_call_{};
   std::vector<call_t> call_{};
+  std::map<std::string, std::string> local_ips_{};
   PJSIP *sip_instance_;
   // internal rtp
   QuiddityManager::ptr manager_;
@@ -78,7 +79,6 @@ class PJCall {
   static void call_on_rx_offer(pjsip_inv_session *inv,
                                const pjmedia_sdp_session *offer);
   static void process_incoming_call(pjsip_rx_data *rdata);
-  void init_app();
   static pj_status_t create_sdp_answer(pj_pool_t *pool,
                                        struct call *call,
                                        const std::vector<pjmedia_sdp_media *>&media_to_receive,

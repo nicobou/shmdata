@@ -17,17 +17,20 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_PORT_CHECKER_H__
-#define __SWITCHER_PORT_CHECKER_H__
+#ifndef __SWITCHER_NET_UTILS_H__
+#define __SWITCHER_NET_UTILS_H__
 
 #include <cstdint>
+#include <map>
 
 namespace switcher {
-namespace PortChecker {
+namespace NetUtils {
 
 bool is_used(std::uint16_t port);
 
-}  // namespace PortChecker
+std::map</* interface name */std::string, /* ip */std::string> get_ips();
+
+}  // namespace NetUtils
 }  // namespace switcher
 #endif
 
