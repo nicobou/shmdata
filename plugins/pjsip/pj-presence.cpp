@@ -246,7 +246,7 @@ PJPresence::register_account(const std::string &sip_user,
   // pjsua_acc_set_registration (account_id_, PJ_TRUE) or:
   cfg_.register_on_acc_add = PJ_TRUE;
   status = pjsua_acc_add(&cfg_, PJ_TRUE, &account_id_);
-  if (status != PJ_SUCCESS) {
+  if (status != PJ_SUCCESS || !pjsua_acc_is_valid(account_id_)) {
     account_id_ = -1;
     return;
   }
