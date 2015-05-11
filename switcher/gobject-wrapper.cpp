@@ -124,11 +124,8 @@ GParamSpec *GObjectWrapper::make_int_property(const gchar *nickname,
                                               get_method) {
   guint prop_id = next_prop_id_;
   next_prop_id_++;
-
   gchar *name = g_strdup_printf("customprop%d", prop_id);
   On_scope_exit{g_free(name);};
-  g_debug("custom property internal name %s", name);
-
   GParamSpec *param = g_param_spec_int(name,
                                        nickname,
                                        description,
@@ -165,8 +162,6 @@ GParamSpec *GObjectWrapper::make_double_property(const gchar *nickname,
 
   gchar *name = g_strdup_printf("customprop%d", prop_id);
   On_scope_exit{g_free(name);};
-  g_debug("custom property internal name %s", name);
-
   GParamSpec *param = g_param_spec_double(name,
                                           nickname,
                                           description,
@@ -292,8 +287,6 @@ GParamSpec *GObjectWrapper::make_boolean_property(const gchar *nickname,
 
   gchar *name = g_strdup_printf("customprop%u", prop_id);
   On_scope_exit{g_free(name);};
-  g_debug("custom property internal name %s", name);
-
   GParamSpec *param = g_param_spec_boolean(name,
                                            nickname,
                                            description,
