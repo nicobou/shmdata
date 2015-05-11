@@ -246,7 +246,7 @@ PJPresence::register_account(const std::string &sip_user,
   // pjsua_acc_set_registration (account_id_, PJ_TRUE) or:
   cfg_.register_on_acc_add = PJ_TRUE;
   status = pjsua_acc_add(&cfg_, PJ_TRUE, &account_id_);
-  if (status != PJ_SUCCESS) {
+  if (status != PJ_SUCCESS || !pjsua_acc_is_valid(account_id_)) {
     account_id_ = -1;
     return;
   }
@@ -291,6 +291,11 @@ void PJPresence::add_buddy(const std::string &sip_user) {
   pjsua_buddy_id buddy_id;
   pj_status_t status = PJ_SUCCESS;
 
+  if (-1 == account_id_) {
+    g_warning("cannot add buddy with invalid account");
+    return;
+  }
+  
   std::string buddy_full_uri("sip:" + sip_user // + ";transport=tcp"
                              );
   if (pjsua_verify_url(buddy_full_uri.c_str()) != PJ_SUCCESS) {
@@ -419,7 +424,10 @@ PJPresence::on_registration_state(pjsua_acc_id acc_id,
     }
     context->registered_ = false;
   } else {
-    context->registered_ = true;
+    if ( 199 < info->cbparam->code && 300 > info->cbparam->code)
+      context->registered_ = true;
+    else
+      context->registered_ = false;
   }
   GObjectWrapper::notify_property_changed(context->sip_instance_->gobject_->
                                           get_gobject(),

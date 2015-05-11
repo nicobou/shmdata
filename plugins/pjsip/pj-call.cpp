@@ -247,6 +247,9 @@ bool PJCall::release_incoming_call(call_t *call, pjsua_buddy_id id){
   for (auto &it: shm_keys)
     PJSIP::this_->prune_tree(std::string(".shmdata.writer." + it));
   PJSIP::this_->sip_calls_->manager_->remove(dec_name);
+  auto quid_uri_it = PJSIP::this_->sip_calls_->quid_uri_.find(dec_name);
+  if (PJSIP::this_->sip_calls_->quid_uri_.end() != quid_uri_it)
+    PJSIP::this_->sip_calls_->quid_uri_.erase(quid_uri_it);
   // updating recv status in the tree
   data::Tree::ptr tree = PJSIP::this_->
       prune_tree(std::string(".buddy." + std::to_string(id)),
@@ -471,6 +474,10 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
         std::string(PJSIP::this_->get_name())
         + "-"
         + std::string(call->peer_uri, 0, call->peer_uri.find('@'));
+    if(PJSIP::this_->sip_calls_->quid_uri_.end()
+       != PJSIP::this_->sip_calls_->quid_uri_.find(dec_name))
+      g_warning("a recever named %s already exist, overwritting", dec_name.c_str());
+    PJSIP::this_->sip_calls_->quid_uri_[dec_name] = std::string(call->peer_uri);
     PJSIP::this_->sip_calls_->manager_->create("httpsdpdec", dec_name);
     PJSIP::this_->sip_calls_->manager_->subscribe_signal("signal_subscriber",
                                                          dec_name,
@@ -1280,8 +1287,13 @@ PJCall::internal_manager_cb(const std::string &/*subscriber_name */,
         [&](data::Tree::ptrc t){
           return data::BasicSerializer::serialize(data::Tree::get_subtree(t, params[0]));
         });
-    context->sip_instance_->graft_tree(params[0],
-                                       data::BasicSerializer::deserialize(stree));
+    auto shmtree = data::BasicSerializer::deserialize(stree);
+    auto it = context->quid_uri_.find(quid_name);
+    if (context->quid_uri_.end() == it)
+      g_warning("uri not saved for internal quiddity %s", quid_name.c_str());
+    else 
+      shmtree->graft("uri", data::Tree::make(it->second));
+    context->sip_instance_->graft_tree(params[0], shmtree);
   } else if (0 == sig_name.compare("on-tree-pruned")
              && 0 == std::string(".shmdata.writer.").compare(std::string(params[0], 0, 16))) {
     context->sip_instance_->prune_tree(params[0]);

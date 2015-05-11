@@ -64,6 +64,8 @@ class PJCall {
   PJSIP *sip_instance_;
   // internal rtp
   QuiddityManager::ptr manager_;
+  // saving association between reception quids (httpsdpdec) and uris:
+  std::map<std::string, std::string> quid_uri_{};
   data::Tree::ptr contact_shm_;
   uint starting_rtp_port_ {18900};
   pj_uint16_t last_attributed_port_{18900};  // Must be even
