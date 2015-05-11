@@ -35,20 +35,18 @@
 
 namespace switcher {
 GstPipeliner::GstPipeliner():
-    bin_("bin"),
-    gpipe_custom_props_(std2::make_unique<CustomPropertyHelper>()) {
-  if (nullptr == get_g_main_context()) {
-    g_warning("%s: g_main_context is nullptr", __FUNCTION__);
-    return false;
+    main_loop_(std2::make_unique<GlibMainLoop>()),
+    gst_pipeline_ (std2::make_unique<GstPipe>(main_loop_->get_main_context())) {
+  if (!gst_pipeline_) {
+    g_warning("error initializing gstreamer pipeline");
+    return;
   }
-  gst_pipeline_ = std2::make_unique<GstPipe>(get_g_main_context());
   gst_pipeline_->set_on_error_function(std::bind(&GstPipeliner::on_gst_error,
                                                  this,
                                                  std::placeholders::_1));
 }
 
 GstPipeliner::~GstPipeliner() {
-  GstUtils::wait_state_changed(gst_pipeline_->get_pipeline());
   if (!commands_.empty())
     while (commands_.begin() != commands_.end())
     {
@@ -62,10 +60,8 @@ GstPipeliner::~GstPipeliner() {
 void GstPipeliner::play(gboolean play) {
   if (play) {
     gst_pipeline_->play(true);
-    play_ = true;
   } else {
     gst_pipeline_->play(false);
-    play_ = false;
   }
 }
 
@@ -127,40 +123,6 @@ GstElement *GstPipeliner::get_pipeline() {
 //   // }
 // }
 
-
-void GstPipeliner::make_bin() {
-  {  // reseting the pipeline too
-    std::unique_ptr<GstPipe> tmp;
-    std::swap(gst_pipeline_, tmp);
-  }
-  gst_pipeline_ = std2::make_unique<GstPipe>(get_g_main_context());
-  gst_pipeline_->set_on_error_function(std::bind(&GstPipeliner::on_gst_error,
-                                                 this,
-                                                 std::placeholders::_1));
-  g_object_set(G_OBJECT(bin_.get_raw()), "async-handling", TRUE, nullptr);
-  gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), bin_.get_raw());
-  GstUtils::wait_state_changed(gst_pipeline_->get_pipeline());
-  GstUtils::sync_state_with_parent(bin_.get_raw());
-  GstUtils::wait_state_changed(bin_.get_raw());
-}
-
-void GstPipeliner::clean_bin() {
-  UGstElem tmp("bin");
-  if(!tmp)
-    return;
-  bin_ = std::move(tmp);
-}
-
-GstElement *GstPipeliner::get_bin() {
-  return bin_.get_raw();
-}
-
-bool GstPipeliner::reset_bin() {
-  clean_bin();
-  make_bin();
-  return true;
-}
-
 void GstPipeliner::on_gst_error(GstMessage *msg) {
   // on-error-gsource
   GSourceWrapper *gsrc =
@@ -171,7 +133,7 @@ void GstPipeliner::on_gst_error(GstMessage *msg) {
     g_object_set_data(G_OBJECT(msg->src),
                       "on-error-gsource",
                       nullptr);
-    gsrc->attach(get_g_main_context());
+    gsrc->attach(main_loop_->get_main_context());
   }
   
   // on-error-delete
@@ -183,12 +145,12 @@ void GstPipeliner::on_gst_error(GstMessage *msg) {
     g_object_set_data(G_OBJECT(msg->src),
                       "on-error-delete",
                       (gpointer) nullptr);
-    quids_to_remove_.push_back(std::string(name));
-    GstUtils::g_idle_add_full_with_context(get_g_main_context (),
-                                           G_PRIORITY_DEFAULT_IDLE,
-                                           (GSourceFunc)run_remove_quid,
-                                           (gpointer)this,
-                                           nullptr);
+    g_warning("FIXME, handle on-error-delete");
+    // GstUtils::g_idle_add_full_with_context(main_loop_->get_main_context(),
+    //                                        G_PRIORITY_DEFAULT_IDLE,
+    //                                        (GSourceFunc)run_remove_quid,
+    //                                        (gpointer)this,
+    //                                        nullptr);
   }
 }
 

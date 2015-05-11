@@ -39,9 +39,9 @@ class AudioTestSource: public Quiddity, public StartableQuiddity {
   bool stop();
 
  private:
-  std::unique_ptr<GstPipeliner> gst_pipeline_{};
-  UGstElem audiotestsrc_;
-  bool make_audiotestsrc();
+  UGstElem audiotestsrc_{"audiotestsrc"};
+  UGstElem shmdatasink_{"shmdatasink"};
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
   bool init() final;
 };
 }  // namespace switcher

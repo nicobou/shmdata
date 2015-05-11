@@ -32,6 +32,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gobject-wrapper.cpp \
     gst-element-cleaner.cpp \
     gst-pipe.cpp \
+    gst-pipeliner.cpp \
     gst-utils.cpp \
     information-tree-basic-serializer.cpp \
     information-tree-json.cpp \
@@ -40,7 +41,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     logger.cpp \
     method.cpp \
     net-utils.cpp \
-    on-caps.cpp \
     plugin-loader.cpp \
     property-mapper.cpp \
     property.cpp \
@@ -92,6 +92,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gobject-wrapper.hpp \
     gst-element-cleaner.hpp \
     gst-pipe.hpp \
+    gst-pipeliner.hpp \
     gst-utils.hpp \
     information-tree-basic-serializer.hpp \
     information-tree-json.hpp \
@@ -101,7 +102,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     make-consultable.hpp \
     method.hpp \
     net-utils.hpp \
-    on-caps.hpp \
     plugin-loader.hpp \
     property-mapper.hpp \
     property.hpp \

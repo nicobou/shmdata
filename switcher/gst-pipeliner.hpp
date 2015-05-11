@@ -26,6 +26,7 @@
 #include <mutex>
 #include <string>
 #include "./quiddity.hpp"
+#include "./glibmainloop.hpp"
 #include "./gst-pipe.hpp"
 #include "./unique-gst-element.hpp"
 
@@ -44,7 +45,6 @@ class GstPipeliner {
   GstPipeliner(const GstPipeliner &) = delete;
   GstPipeliner &operator=(const GstPipeliner &) = delete;
 
-  GstElement *get_bin();
   GstElement *get_pipeline();
   void play(gboolean play);
   bool seek(gdouble position_in_ms);
@@ -57,14 +57,11 @@ class GstPipeliner {
   } QuidCommandArg;
 
  private:
-  std::unique_ptr<GstPipe> gst_pipeline_{};
-  UGstElem bin_;
+  std::unique_ptr<GlibMainLoop> main_loop_;
+  std::unique_ptr<GstPipe> gst_pipeline_;
   std::vector<QuidCommandArg *>commands_ {};
   void on_gst_error(GstMessage *msg);
-  
-  void make_bin();
-  void clean_bin();
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

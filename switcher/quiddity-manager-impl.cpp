@@ -26,7 +26,7 @@
 #include "./scope-exit.hpp"
 
 // the quiddities to manage (line sorted)
-//#include "./audio-test-source.hpp"
+#include "./audio-test-source.hpp"
 #include "./create-remove-spy.hpp"
 //#include "./decodebin2.hpp"
 //#include "./fake-shmdata-writer.hpp"
@@ -135,9 +135,9 @@ std::string QuiddityManager_Impl::get_name() const {
 
 void QuiddityManager_Impl::register_classes() {
   // registering quiddities
-  // abstract_factory_.register_class<AudioTestSource>
-  //     (AudioTestSource::switcher_doc_.get_class_name(),
-  //      &AudioTestSource::switcher_doc_);
+  abstract_factory_.register_class<AudioTestSource>
+      (AudioTestSource::switcher_doc_.get_class_name(),
+       &AudioTestSource::switcher_doc_);
   abstract_factory_.register_class<CreateRemoveSpy>
       (CreateRemoveSpy::switcher_doc_.get_class_name(),
        &CreateRemoveSpy::switcher_doc_);
