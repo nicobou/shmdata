@@ -17,9 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./audio-test-source.hpp"
 #include <gst/gst.h>
-#include "./gst-utils.hpp"
+#include <thread>
+#include "./shmdata-category.hpp" 
+#include "./audio-test-source.hpp"
 #include "./std2.hpp"
 
 namespace switcher {
@@ -52,6 +53,10 @@ bool AudioTestSource::init() {
   g_object_set(G_OBJECT(shmdatasink_.get_raw()),
                "socket-path", make_file_name("audio").c_str(),
                nullptr);
+  g_signal_connect(G_OBJECT(shmdatasink_.get_raw()),
+                   "notify::caps",
+                   G_CALLBACK(AudioTestSource::on_caps_cb),
+                   this);
   // registering
   install_property(G_OBJECT(audiotestsrc_.get_raw()), "volume", "volume", "Volume");
   install_property(G_OBJECT(audiotestsrc_.get_raw()), "freq", "freq", "Frequency");
@@ -61,10 +66,39 @@ bool AudioTestSource::init() {
                    shmdatasink_.get_raw(),
                    nullptr);
   gst_element_link(audiotestsrc_.get_raw(), shmdatasink_.get_raw());
+
+  byte_monitor_ = std::async(std::launch::async, [this](){byte_monitor();});
+
   return true;
 }
 
 AudioTestSource::~AudioTestSource() {
+  quit_.store(true);
+  if (byte_monitor_.valid()) 
+    byte_monitor_.get();
+}
+
+void AudioTestSource::on_caps_cb(GObject *gobject, GParamSpec *pspec, gpointer user_data){
+  AudioTestSource *context = static_cast<AudioTestSource *>(user_data);
+  GValue val = G_VALUE_INIT;
+  g_value_init(&val, pspec->value_type);
+  g_object_get_property(gobject, "caps", &val);
+  context->caps_ = std::string(g_value_get_string(&val));
+  g_print("caps received: %s, category: %s\n",
+          context->caps_.c_str(),
+          ShmdataCategory::get_category(context->caps_).c_str());
+  g_value_unset(&val);
+}
+
+void AudioTestSource::byte_monitor(){
+while(!quit_.load()){
+std::this_thread::sleep_for(std::chrono::milliseconds (300));
+GValue val = G_VALUE_INIT;
+g_value_init(&val, G_TYPE_UINT64);
+g_object_get_property(G_OBJECT(shmdatasink_.get_raw()), "bytes", &val);
+g_print("bytes %lu \n", g_value_get_uint64(&val));
+g_value_unset(&val);
+}
 }
 
 bool AudioTestSource::start() {

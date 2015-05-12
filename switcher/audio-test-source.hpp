@@ -21,6 +21,8 @@
 #define __SWITCHER_AUDIO_TEST_SOURCE_H__
 
 #include <memory>
+#include <future>
+#include <atomic>
 #include "./gst-pipeliner.hpp"
 #include "./quiddity.hpp"
 #include "./startable-quiddity.hpp"
@@ -41,9 +43,14 @@ class AudioTestSource: public Quiddity, public StartableQuiddity {
  private:
   UGstElem audiotestsrc_{"audiotestsrc"};
   UGstElem shmdatasink_{"shmdatasink"};
+  std::string caps_{};
   std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::atomic<bool> quit_{false};
+  std::future<void> byte_monitor_{};
   bool init() final;
+  static void on_caps_cb(GObject *gobject, GParamSpec *pspec, gpointer user_data);
+  void byte_monitor();
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

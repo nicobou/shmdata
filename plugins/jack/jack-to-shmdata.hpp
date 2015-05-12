@@ -65,6 +65,6 @@ class JackToShmdata: public Quiddity, public Segment, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(JackToShmdata);
-}  // namespace switcher
 
+}  // namespace switcher
 #endif
