@@ -53,6 +53,7 @@ static PyObject* Writer_push(pyshmdata_WriterObject* self, PyObject* args);
 static PyMemberDef Writer_members[] = {
     {(char*)"path", T_OBJECT_EX, offsetof(pyshmdata_WriterObject, path), 0, (char*)"Path to the shmdata output"},
     {(char*)"datatype", T_OBJECT_EX, offsetof(pyshmdata_WriterObject, datatype), 0, (char*)"Type of the data sent"},
+    {(char*)"framesize", T_OBJECT_EX, offsetof(pyshmdata_WriterObject, framesize), 0, (char*)"Size of the shared memory"},
     {NULL}
 };
 

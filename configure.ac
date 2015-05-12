@@ -150,9 +150,11 @@ AC_SUBST(GST_PLUGIN_LDFLAGS)
 
 
 # Check for Python to build a wrapper
-PKG_CHECK_MODULES(PYTHON3, python3,
-    AM_CONDITIONAL(HAVE_PYTHON3, true),
-    AM_CONDITIONAL(HAVE_PYTHON3, false))
+AC_CHECK_PROG(HAVE_PYTHON3,
+  python3.4-config,
+  [ ],
+  [AC_MSG_WARN([Python3.4 not detected, module will not be built])])
+AM_CONDITIONAL(HAVE_PYTHON3, test "x${HAVE_PYTHON3}", = "xtrue")
 
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
