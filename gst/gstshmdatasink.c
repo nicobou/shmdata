@@ -51,6 +51,8 @@ enum
 {
   PROP_0,
   PROP_SOCKET_PATH,
+  PROP_CAPS,
+  PROP_BYTES_SINCE_LAST_REQUEST
   // PROP_PERMS,
   // PROP_SHM_SIZE,
 };
@@ -361,11 +363,36 @@ gst_shmdata_sink_class_init (GstShmdataSinkClass * klass)
   gstbasesink_class->propose_allocation =
       GST_DEBUG_FUNCPTR (gst_shmdata_sink_propose_allocation);
 
-  g_object_class_install_property (gobject_class, PROP_SOCKET_PATH,
-      g_param_spec_string ("socket-path",
+  g_object_class_install_property (
+      gobject_class, PROP_SOCKET_PATH,
+      g_param_spec_string (
+          "socket-path",
           "Path to the control socket",
-          "The path to the control socket used to control the shared memory"
-          " transport", NULL, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+          "The path to the control socket used to control the shared memory transport",
+          NULL,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+  
+  g_object_class_install_property (
+      gobject_class,
+      PROP_CAPS,
+      g_param_spec_string (
+          "caps",
+          "Data type exposed in the shared memory",
+          "The data type (caps) exposed in the shared memory, as negociated with other elements",
+          NULL,
+          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (
+      gobject_class,
+      PROP_BYTES_SINCE_LAST_REQUEST,
+      g_param_spec_uint64 (
+          "bytes",
+          "Bytes number since last request",
+          "The number of bytes that passed the shmdata since last request",
+          0,
+          G_MAXUINT64,
+          0,
+          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   /* g_object_class_install_property (gobject_class, PROP_PERMS, */
   /*     g_param_spec_uint ("perms", */
@@ -407,7 +434,7 @@ gst_shmdata_sink_finalize (GObject * object)
 
   g_cond_clear (&self->cond);
   g_free (self->socket_path);
-
+  g_free (self->caps);
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
@@ -473,6 +500,13 @@ gst_shmdata_sink_get_property (GObject * object, guint prop_id,
   switch (prop_id) {
     case PROP_SOCKET_PATH:
       g_value_set_string (value, self->socket_path);
+      break;
+    case PROP_CAPS:
+      g_value_set_string (value, self->caps);
+      break;
+    case PROP_BYTES_SINCE_LAST_REQUEST:
+      g_value_set_uint64 (value, self->bytes_since_last_request);
+      self->bytes_since_last_request = 0;
       break;
     /* case PROP_PERMS: */
     /*   g_value_set_uint (value, self->perms); */
@@ -582,6 +616,7 @@ gst_shmdata_sink_render (GstBaseSink * bsink, GstBuffer * buf)
    * reading
    */
   shmdata_notify_clients(self->access, map.size);
+  self->bytes_since_last_request += map.size;
   shmdata_release_one_write_access(self->access);
 
   // wait for client to read and take the write lock
@@ -685,9 +720,11 @@ static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
 
   GST_DEBUG_OBJECT (self, "Creating new socket at %s" 
       " with shared memory of %lu bytes", self->socket_path, self->size); 
+  g_free(self->caps);
+  self->caps = gst_caps_to_string (caps);
+  g_object_notify(G_OBJECT(sink), "caps");
 
-  gchar *caps_str = gst_caps_to_string (caps);
-  GST_DEBUG_OBJECT(G_OBJECT(sink), "on_caps %s", caps_str);
+  GST_DEBUG_OBJECT(G_OBJECT(sink), "on_caps %s", self->caps);
 
   self->shmlogger = shmdata_make_logger(&gst_shmdata_on_error, 
                                         &gst_shmdata_on_critical, 
@@ -698,15 +735,11 @@ static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
                                         self); 
   self->shmwriter = shmdata_make_writer(self->socket_path, 
                                         self->size, 
-                                        NULL == caps_str ? "unknown" : caps_str, 
+                                        NULL == self->caps ? "unknown" : self->caps, 
                                         &gst_shmdata_sink_on_client_connected,
                                         &gst_shmdata_sink_on_client_disconnected,
                                         self,
                                         self->shmlogger); 
-
-  if (NULL != caps_str)
-    g_free(caps_str);
-  
   if (!self->shmwriter) { 
     GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE, 
         ("Could not open socket."), (NULL)); 

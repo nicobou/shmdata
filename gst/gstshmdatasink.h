@@ -46,6 +46,8 @@ struct _GstShmdataSink
 {
   GstBaseSink element;
   gchar *socket_path;
+  gchar *caps;
+  guint64 bytes_since_last_request;
   ShmdataWriter shmwriter;
   ShmdataLogger shmlogger;
   ShmdataWriterAccess access;
