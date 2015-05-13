@@ -27,13 +27,14 @@
 #include "./quiddity.hpp"
 #include "./startable-quiddity.hpp"
 #include "./unique-gst-element.hpp"
+#include "./gst-shmdata-subscriber.hpp"
 
 namespace switcher {
 class AudioTestSource: public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AudioTestSource);
   AudioTestSource(const std::string &);
-  ~AudioTestSource();
+  ~AudioTestSource() = default;
   AudioTestSource(const AudioTestSource &) = delete;
   AudioTestSource &operator=(const AudioTestSource &) = delete;
 
@@ -43,13 +44,9 @@ class AudioTestSource: public Quiddity, public StartableQuiddity {
  private:
   UGstElem audiotestsrc_{"audiotestsrc"};
   UGstElem shmdatasink_{"shmdatasink"};
-  std::string caps_{};
   std::unique_ptr<GstPipeliner> gst_pipeline_;
-  std::atomic<bool> quit_{false};
-  std::future<void> byte_monitor_{};
+  std::unique_ptr<GstShmdataSubscriber> shm_sub_;
   bool init() final;
-  static void on_caps_cb(GObject *gobject, GParamSpec *pspec, gpointer user_data);
-  void byte_monitor();
 };
 
 }  // namespace switcher

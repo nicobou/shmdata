@@ -33,6 +33,16 @@ GstShmdataSubscriber::GstShmdataSubscriber(GstElement *element,
     byte_monitor_ (GST_IS_ELEMENT(element) ?
                    std::async(std::launch::async, [this](){byte_monitor();})
                    : std::future<void>()) {
+
+  if (!GST_IS_ELEMENT(element_)){
+    g_warning("cannot monitor gstshmdata metadata, not a GstElement");
+    return;
+  }
+  g_signal_connect(G_OBJECT(element_),
+                   "notify::caps",
+                   G_CALLBACK(GstShmdataSubscriber::on_caps_cb),
+                   this);
+  
 }
 
 GstShmdataSubscriber::~GstShmdataSubscriber(){

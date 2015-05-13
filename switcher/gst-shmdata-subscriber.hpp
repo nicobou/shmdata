@@ -28,16 +28,15 @@ namespace switcher {
 class GstShmdataSubscriber {
  public:
   using num_bytes_t = guint64;
-  using on_caps_cb_t = std::function<void(std::string)>;
+  using on_caps_cb_t = std::function<void(std::string &&)>;
   using on_byte_monitor_t = std::function<void(num_bytes_t)>;
   GstShmdataSubscriber(GstElement *element,
                        on_caps_cb_t on_caps_cb,
                        on_byte_monitor_t on_byte_monitor_cb,
-                       int polling_ms = 500);
+                       int polling_ms = 200);
   GstShmdataSubscriber() = delete;
   GstShmdataSubscriber(const GstShmdataSubscriber &) = delete;
   GstShmdataSubscriber &operator=(const GstShmdataSubscriber &) = delete;
-
   ~GstShmdataSubscriber();
   
  private:
