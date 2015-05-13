@@ -33,6 +33,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gst-element-cleaner.cpp \
     gst-pipe.cpp \
     gst-pipeliner.cpp \
+    gst-shmdata-subscriber.cpp \
     gst-utils.cpp \
     information-tree-basic-serializer.cpp \
     information-tree-json.cpp \
@@ -94,6 +95,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gst-element-cleaner.hpp \
     gst-pipe.hpp \
     gst-pipeliner.hpp \
+    gst-shmdata-subscriber.hpp \
     gst-utils.hpp \
     information-tree-basic-serializer.hpp \
     information-tree-json.hpp \
