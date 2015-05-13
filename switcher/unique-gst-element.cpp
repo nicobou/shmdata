@@ -22,6 +22,7 @@
 
 namespace switcher {
 bool UGstElem::renew(UGstElem &element) {
+  g_debug("renewing gst element of class %s", element.class_name_.c_str());
   gst_element_handle tmp(gst_element_factory_make(element.class_name_.c_str(),
                                                   nullptr),
                          &GstUtils::gst_element_deleter);
@@ -56,7 +57,7 @@ GstElement *UGstElem::get_raw() {
 }
 
 void UGstElem::mute(const gchar *class_name) {
-  class_name_ = class_name;
+  class_name_ = std::string(class_name);
 }
 
 }  // namespace switcher
