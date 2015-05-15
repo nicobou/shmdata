@@ -22,13 +22,15 @@
 
 #include <gst/gst.h>
 #include <memory>
-#include "./single-pad-gst-sink.hpp"
-#include "./gst-element-cleaner.hpp"
+#include "./quiddity.hpp"
+#include "./shmdata-connector.hpp"
 #include "./custom-property-helper.hpp"
 #include "./unique-gst-element.hpp"
 
+// FIXME remove fakesink
+
 namespace switcher {
-class FakeSink:public SinglePadGstSink {
+class FakeSink: public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeSink);
   FakeSink(const std::string &);
@@ -43,23 +45,14 @@ class FakeSink:public SinglePadGstSink {
   gint byte_rate_{0};
   std::string string_caps_{};
   gboolean set_string_caps_{true};
+  ShmdataConnector shmcntr_;
   // byte rate property
   CustomPropertyHelper::ptr props_;
   GParamSpec *byte_rate_spec_{nullptr};
   GParamSpec *caps_spec_{nullptr};
 
-  bool init_gpipe() final;
-  bool can_sink_caps(std::string /*caps*/) final {
-    return true;
-  };
-
-  static void on_handoff_cb(GstElement *object,
-                            GstBuffer *buf,
-                            GstPad *pad, gpointer user_data);
-  static gboolean update_byte_rate(gpointer user_data);
-  static gint get_byte_rate(void *user_data);
-  static const gchar *get_caps(void *user_data);
+  bool init() final;
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

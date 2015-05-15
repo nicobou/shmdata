@@ -37,7 +37,7 @@
 #include "./custom-property-helper.hpp"
 
 namespace switcher {
-class RtpSession: public GstPipeliner {
+class RtpSession: public Quiddity {
   friend RtpDestination;
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(RtpSession);
@@ -67,9 +67,9 @@ class RtpSession: public GstPipeliner {
                                  std::string dest_name);
   bool write_sdp_file(std::string dest_name);
 
-  // will be called by shmdata reader
-  static void attach_data_stream(ShmdataReader *caller,
-                                 void *rtpsession_instance);
+  // // will be called by shmdata reader
+  // static void attach_data_stream(ShmdataReader *caller,
+  //                                void *rtpsession_instance);
 
  private:
   using DataStream = struct DataStream_t {
@@ -91,6 +91,7 @@ class RtpSession: public GstPipeliner {
     GstElement *udp_rtcp_sink{nullptr};
   };
 
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
   GstElement *rtpsession_{nullptr};
   // a counter used for setting id of internal streams
   // this value is arbitrary and can be changed
@@ -111,7 +112,7 @@ class RtpSession: public GstPipeliner {
   // destinations
   std::map<std::string, RtpDestination::ptr> destinations_{};
 
-  bool init_gpipe() final;
+  bool init() final;
 
   void on_rtp_caps(std::string shmdata_path, std::string caps);
 

@@ -26,6 +26,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     create-remove-spy.cpp \
     custom-property-helper.cpp \
     default-video-format.cpp \
+    fakesink.cpp \
     g-source-wrapper.cpp \
     glibmainloop.cpp \
     gobject-custom-property.cpp \
@@ -54,8 +55,11 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     quiddity-property-subscriber.cpp \
     quiddity-signal-subscriber.cpp \
     quiddity.cpp \
+    rtp-destination.cpp \
+    rtp-session.cpp \
     safe-bool-idiom.cpp \
     sdp-utils.cpp \
+    shmdata-connector.cpp \
     shmdata-follower.cpp \
     shmdata-utils.cpp \
     shmdata-writer.cpp \
@@ -88,6 +92,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     creator.hpp \
     custom-property-helper.hpp \
     default-video-format.hpp \
+    fakesink.hpp \
     g-source-wrapper.hpp \
     glibmainloop.hpp \
     gobject-custom-property.hpp \
@@ -117,9 +122,12 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     quiddity-property-subscriber.hpp \
     quiddity-signal-subscriber.hpp \
     quiddity.hpp \
+    rtp-destination.hpp \
+    rtp-session.hpp \
     safe-bool-idiom.hpp \
     scope-exit.hpp \
     sdp-utils.hpp \
+    shmdata-connector.hpp \
     shmdata-glib-logger.hpp \
     shmdata-follower.hpp \
     shmdata-utils.hpp \

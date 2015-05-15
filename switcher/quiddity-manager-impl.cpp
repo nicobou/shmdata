@@ -30,14 +30,14 @@
 #include "./create-remove-spy.hpp"
 //#include "./decodebin2.hpp"
 //#include "./fake-shmdata-writer.hpp"
-//#include "./fakesink.hpp"
+#include "./fakesink.hpp"
 //#include "./gst-parse-to-bin-src.hpp"
 //#include "./gst-video-parse-to-bin-src.hpp"
 //#include "./http-sdp-dec.hpp"
 //#include "./jack-audio-source.hpp"
 #include "./logger.hpp"
 #include "./property-mapper.hpp"
-//#include "./rtp-session.hpp"
+#include "./rtp-session.hpp"
 //#include "./shmdata-to-file.hpp"
 //#include "./shmdata-from-gdp-file.hpp"
 //#include "./udpsink.hpp"
@@ -147,9 +147,9 @@ void QuiddityManager_Impl::register_classes() {
   // abstract_factory_.register_class<FakeShmdataWriter>
   //     (FakeShmdataWriter::switcher_doc_.get_class_name(),
   //      &FakeShmdataWriter::switcher_doc_);
-  // abstract_factory_.register_class<FakeSink>
-  //     (FakeSink::switcher_doc_.get_class_name(),
-  //      &FakeSink::switcher_doc_);
+  abstract_factory_.register_class<FakeSink>
+      (FakeSink::switcher_doc_.get_class_name(),
+       &FakeSink::switcher_doc_);
   // abstract_factory_.register_class<GstParseToBinSrc>
   //     (GstParseToBinSrc::switcher_doc_.get_class_name(),
   //      &GstParseToBinSrc::switcher_doc_);
@@ -168,9 +168,9 @@ void QuiddityManager_Impl::register_classes() {
   abstract_factory_.register_class<PropertyMapper>
       (PropertyMapper::switcher_doc_.get_class_name(),
        &PropertyMapper::switcher_doc_);
-  // abstract_factory_.register_class<RtpSession>
-  //     (RtpSession::switcher_doc_.get_class_name(),
-  //      &RtpSession::switcher_doc_);
+  abstract_factory_.register_class<RtpSession>
+      (RtpSession::switcher_doc_.get_class_name(),
+       &RtpSession::switcher_doc_);
   // abstract_factory_.register_class<ShmdataFromGDPFile>
   //     (ShmdataFromGDPFile::switcher_doc_.get_class_name(),
   //      &ShmdataFromGDPFile::switcher_doc_);
@@ -195,7 +195,6 @@ void QuiddityManager_Impl::register_classes() {
 }
 
 std::vector<std::string> QuiddityManager_Impl::get_classes(){
-  // return abstract_factory_.get_classes_documentation ();
   return abstract_factory_.get_keys();
 }
 
