@@ -32,8 +32,7 @@ class GstShmdataSubscriber {
   using on_byte_monitor_t = std::function<void(num_bytes_t)>;
   GstShmdataSubscriber(GstElement *element,
                        on_caps_cb_t on_caps_cb,
-                       on_byte_monitor_t on_byte_monitor_cb,
-                       int polling_ms = 200);
+                       on_byte_monitor_t on_byte_monitor_cb);
   GstShmdataSubscriber() = delete;
   GstShmdataSubscriber(const GstShmdataSubscriber &) = delete;
   GstShmdataSubscriber &operator=(const GstShmdataSubscriber &) = delete;
@@ -41,10 +40,8 @@ class GstShmdataSubscriber {
   
  private:
   GstElement *element_;
-  std::string caps_{};
   on_caps_cb_t on_caps_cb_;
   on_byte_monitor_t on_byte_monitor_cb_;
-  int polling_ms_;
   std::atomic<bool> quit_{false};
   std::future<void> byte_monitor_{};
   static void on_caps_cb(GObject *gobject, GParamSpec *pspec, gpointer user_data);

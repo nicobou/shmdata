@@ -17,16 +17,20 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_SHMDATA_CATEGORY_H__
-#define __SWITCHER_SHMDATA_CATEGORY_H__
+#ifndef __SWITCHER_SHMDATA_UTILS_H__
+#define __SWITCHER_SHMDATA_UTILS_H__
 
 #include <string>
+#include "./information-tree.hpp"
 
 namespace switcher {
-namespace ShmdataCategory {
+namespace ShmdataUtils {
 
 std::string get_category(const std::string &caps);
+data::Tree::ptr make_tree(const std::string &caps,
+                          const std::string &category,
+                          const std::string &num_bytes);
 
-}  // namespace ShmdataCategory
+}  // namespace ShmdataUtils
 }  // namespace switcher
 #endif

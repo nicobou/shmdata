@@ -56,8 +56,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     quiddity.cpp \
     safe-bool-idiom.cpp \
     sdp-utils.cpp \
-    shmdata-category.cpp \
     shmdata-follower.cpp \
+    shmdata-utils.cpp \
     shmdata-writer.cpp \
     signal-string.cpp \
     startable-quiddity.cpp \
@@ -120,9 +120,9 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     safe-bool-idiom.hpp \
     scope-exit.hpp \
     sdp-utils.hpp \
-    shmdata-category.hpp \
     shmdata-glib-logger.hpp \
     shmdata-follower.hpp \
+    shmdata-utils.hpp \
     shmdata-writer.hpp \
     signal-string.hpp \
     startable-quiddity.hpp \

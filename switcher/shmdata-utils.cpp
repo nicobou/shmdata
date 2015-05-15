@@ -18,15 +18,14 @@
  */
 
 #include <algorithm>
-#include "./shmdata-category.hpp"
+#include "./shmdata-utils.hpp"
 
 namespace switcher {
 
-std::string ShmdataCategory::get_category(const std::string &caps){
+std::string ShmdataUtils::get_category(const std::string &caps){
   std::string category;
   std::string mime_type(caps.begin(),
                         std::find(caps.begin(), caps.end(), (',')));
-
   if (std::string::npos != mime_type.find("video/x-raw")) {
     category = "video";
   } else if (std::string::npos != mime_type.find("video/x-")) {
@@ -52,8 +51,18 @@ std::string ShmdataCategory::get_category(const std::string &caps){
   } else {
     category = mime_type;
   }
-
   return category;
 }
 
-}  // namespace siwtcher
+data::Tree::ptr ShmdataUtils::make_tree(const std::string &caps,
+                                        const std::string &category,
+                                        const std::string &num_bytes){
+  data::Tree::ptr tree = data::Tree::make();
+  tree->graft(".caps", data::Tree::make(caps));
+  tree->graft(".category", data::Tree::make(category));
+  tree->graft(".byte-rate", data::Tree::make(num_bytes));
+  return tree;
+}
+
+
+}  // namespace switcher

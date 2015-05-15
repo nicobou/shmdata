@@ -42,6 +42,7 @@ class AudioTestSource: public Quiddity, public StartableQuiddity {
   bool stop();
 
  private:
+  std::string shmpath_;
   UGstElem audiotestsrc_{"audiotestsrc"};
   UGstElem shmdatasink_{"shmdatasink"};
   std::unique_ptr<GstPipeliner> gst_pipeline_;

@@ -50,15 +50,15 @@ GstPipe::GstPipe(GMainContext *context) :
                            this,
                            nullptr);
   reinterpret_cast<GstBusSource *>(source_)->inited = FALSE;
-  {
-    std::unique_lock<std::mutex> lock(play_pipe_);
-    GstUtils::g_idle_add_full_with_context(gmaincontext_,
-                                           G_PRIORITY_DEFAULT_IDLE,
-                                           (GSourceFunc)play_pipe,
-                                           (gpointer)this,
-                                           nullptr);
-    play_cond_.wait(lock);
-  }
+  // {
+  //   std::unique_lock<std::mutex> lock(play_pipe_);
+  //   GstUtils::g_idle_add_full_with_context(gmaincontext_,
+  //                                          G_PRIORITY_DEFAULT_IDLE,
+  //                                          (GSourceFunc)play_pipe,
+  //                                          (gpointer)this,
+  //                                          nullptr);
+  //   play_cond_.wait(lock);
+  // }
 
 }
 GstPipe::~GstPipe() {
