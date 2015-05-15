@@ -30,7 +30,7 @@ VideoSource::VideoSource():
   GstUtils::element_factory_list_to_g_enum(primary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
                                            GST_RANK_PRIMARY,
-                                           false);
+                                           true);
 
   GstUtils::element_factory_list_to_g_enum(secondary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
