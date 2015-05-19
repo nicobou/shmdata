@@ -48,6 +48,8 @@ enum
 {
   PROP_0,
   PROP_SOCKET_PATH,
+  PROP_CAPS,
+  PROP_BYTES_SINCE_LAST_REQUEST,
   PROP_IS_LIVE
 };
 
@@ -119,11 +121,36 @@ gst_shmdata_src_class_init (GstShmdataSrcClass * klass)
           "The path to the control socket used to control the shared memory"
           " transport", NULL, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  g_object_class_install_property (gobject_class, PROP_IS_LIVE,
-      g_param_spec_boolean ("is-live", "Is this a live source",
-          "True if the element cannot produce data in PAUSED", FALSE,
-          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+  g_object_class_install_property (
+      gobject_class,
+      PROP_CAPS,
+      g_param_spec_string (
+          "caps",
+          "Data type exposed in the shared memory",
+          "The data type (caps) exposed in the shared memory, and proposed for negociation",
+          NULL,
+          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
+  g_object_class_install_property (
+      gobject_class,
+      PROP_BYTES_SINCE_LAST_REQUEST,
+      g_param_spec_uint64 (
+          "bytes",
+          "Bytes number since last request",
+          "The number of bytes that passed the shmdata since last request",
+          0,
+          G_MAXUINT64,
+          0,
+          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+  
+  g_object_class_install_property (
+      gobject_class,
+      PROP_IS_LIVE,
+      g_param_spec_boolean ("is-live", "Is this a live source",
+                            "True if the element cannot produce data in PAUSED",
+                            FALSE,
+                            G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+  
   gst_element_class_add_pad_template (gstelement_class,
                                       gst_static_pad_template_get (&srctemplate));
 
@@ -169,7 +196,6 @@ gst_shmdata_src_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
   GstShmdataSrc *self = GST_SHMDATA_SRC (object);
-
   switch (prop_id) {
     case PROP_SOCKET_PATH:
       GST_OBJECT_LOCK (object);
@@ -194,15 +220,27 @@ gst_shmdata_src_set_property (GObject * object, guint prop_id,
 
 static void
 gst_shmdata_src_get_property (GObject * object, guint prop_id,
-    GValue * value, GParamSpec * pspec)
+                              GValue * value, GParamSpec * pspec)
 {
   GstShmdataSrc *self = GST_SHMDATA_SRC (object);
-
+  gchar *caps_str = NULL;
   switch (prop_id) {
     case PROP_SOCKET_PATH:
       GST_OBJECT_LOCK (object);
       g_value_set_string (value, self->socket_path);
       GST_OBJECT_UNLOCK (object);
+      break;
+    case PROP_CAPS:
+      if (NULL != self->caps) {
+        caps_str = gst_caps_to_string(self->caps);
+        g_value_set_string (value, caps_str);
+        g_free(caps_str);
+      } else
+        g_value_set_string (value, NULL);
+      break;
+    case PROP_BYTES_SINCE_LAST_REQUEST:
+      g_value_set_uint64 (value, self->bytes_since_last_request);
+      self->bytes_since_last_request = 0;
       break;
     case PROP_IS_LIVE:
       g_value_set_boolean (value, gst_base_src_is_live (GST_BASE_SRC (object)));
@@ -221,7 +259,8 @@ void gst_shmdata_src_on_server_connect(void *user_data, const char *type_descr) 
   self->caps = gst_caps_from_string(type_descr);
   if (NULL != self->caps)
     self->has_new_caps = TRUE;
-  
+  g_object_notify(G_OBJECT(self), "caps");
+
   /* GstPad *pad = gst_element_get_static_pad (GST_ELEMENT(self),"src"); */
   /* gst_pad_use_fixed_caps (pad); */
   /* if (!gst_pad_set_caps (pad, caps)) { */
@@ -306,6 +345,7 @@ static void gst_shmdata_src_on_data(void *user_data, void *data, size_t size) {
   GstShmdataSrc *self = GST_SHMDATA_SRC (user_data);
   self->current_data = data;
   self->current_size = size;
+  self->bytes_since_last_request += size;
   // synchronizing with gst_shmdata_src_create
   g_mutex_lock (&self->on_data_mutex);
   self->on_data = TRUE;

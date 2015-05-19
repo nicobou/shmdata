@@ -59,6 +59,7 @@ struct _GstShmdataSrc
   gboolean is_first_read;
   gboolean has_new_caps;
   GstCaps *caps;
+  guint64 bytes_since_last_request;
   gboolean unlocked;
 };
 
