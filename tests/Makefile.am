@@ -42,6 +42,7 @@ check_PROGRAMS = \
     check_make_consultable \
     check_manager \
     check_quiddity_create_remove \
+    check_rtp_session \
     check_scope_guard \
     check_startable \
     check_string_dictionary \

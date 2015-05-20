@@ -35,6 +35,7 @@
 #include "./quiddity-manager.hpp"
 #include "./rtp-destination.hpp"
 #include "./custom-property-helper.hpp"
+#include "./gst-shmdata-subscriber.hpp"
 
 namespace switcher {
 class RtpSession: public Quiddity {
@@ -42,13 +43,13 @@ class RtpSession: public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(RtpSession);
   RtpSession(const std::string &);
-  ~RtpSession();
+  ~RtpSession() = default;
   RtpSession(const RtpSession &) = delete;
   RtpSession &operator=(const RtpSession &) = delete;
 
   // local streams
-  bool add_data_stream(std::string shmdata_socket_path);
-  bool remove_data_stream(std::string shmdata_socket_path);
+  bool add_data_stream(const std::string &shmdata_socket_path);
+  bool remove_data_stream(const std::string &shmdata_socket_path);
 
   // remote dest (using user defined "nick_name")
   bool add_destination(std::string dest_name, std::string host_name);
@@ -81,7 +82,10 @@ class RtpSession: public Quiddity {
     ~DataStream_t();
     guint id{};
     // RTP session
-    GstElement *rtp{nullptr};
+    GstElement *rtp;
+    // shm
+    GstElement *shmdatasrc{nullptr};
+    std::unique_ptr<GstShmdataSubscriber> shm_sub{nullptr};
     // UDP/RTP
     GstPad *rtp_static_pad{nullptr};
     GstElement *udp_rtp_bin{nullptr};
@@ -115,11 +119,9 @@ class RtpSession: public Quiddity {
   bool init() final;
 
   void on_rtp_caps(std::string shmdata_path, std::string caps);
-
-  static void make_data_stream_available(GstElement *typefind,
-                                         guint probability,
-                                         GstCaps *caps,
-                                         gpointer user_data);
+  // return RTP internal pad 
+  std::string make_rtp_payloader(GstElement *shmdatasrc,
+                          const std::string &caps);
   static gboolean sink_factory_filter(GstPluginFeature *feature,
                                       gpointer data);
   static gint sink_compare_ranks(GstPluginFeature *f1,

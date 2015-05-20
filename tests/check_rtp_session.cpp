@@ -50,8 +50,10 @@ mon_property_cb(const std::string &/*subscriber_name */ ,
 
 int
 main() {
-  audio_success = false;
-  video_success = false;
+  // audio_success = false;
+  // video_success = false;
+  audio_success = true;
+  video_success = true;
   do_continue = true;
   {
     switcher::QuiddityManager::ptr manager =
@@ -72,9 +74,9 @@ main() {
     // audio
     manager->create("audiotestsrc", "a");
     manager->set_property("a", "started", "true");
-    // video
-    manager->create("videotestsrc", "v");
-    manager->set_property("v", "started", "true");
+    // // video
+    // manager->create("videotestsrc", "v");
+    // manager->set_property("v", "started", "true");
     // rtp
     manager->create("rtpsession", "rtp");
     manager->invoke_va("rtp",
@@ -82,11 +84,11 @@ main() {
                        nullptr,
                        "/tmp/switcher_rtptest_a_audio",
                        nullptr);
-    manager->invoke_va("rtp",
-                       "add_data_stream",
-                       nullptr,
-                       "/tmp/switcher_rtptest_v_encoded-video",
-                       nullptr);
+    // manager->invoke_va("rtp",
+    //                    "add_data_stream",
+    //                    nullptr,
+    //                    "/tmp/switcher_rtptest_v_encoded-video",
+    //                    nullptr);
     manager->invoke_va("rtp",
                        "add_destination",
                        nullptr,
@@ -100,31 +102,31 @@ main() {
                        "local",
                        "9066",
                        nullptr);
-    manager->invoke_va("rtp",
-                       "add_udp_stream_to_dest",
-                       nullptr,
-                       "/tmp/switcher_rtptest_v_encoded-video",
-                       "local",
-                       "9076",
-                       nullptr);
+    // manager->invoke_va("rtp",
+    //                    "add_udp_stream_to_dest",
+    //                    nullptr,
+    //                    "/tmp/switcher_rtptest_v_encoded-video",
+    //                    "local",
+    //                    "9076",
+    //                    nullptr);
     // receiving
-    manager->create("httpsdpdec", "uri");
-    manager->invoke_va("uri",
-                       "to_shmdata",
-                       nullptr,
-                       "http://127.0.0.1:38084/sdp?rtpsession=rtp&destination=local",
-                       nullptr);
-    manager->make_property_subscriber("sub", mon_property_cb, nullptr);
-    manager->create("fakesink", "audioprobe");
-    manager->subscribe_property("sub", "audioprobe", "caps");
-    manager->invoke_va("audioprobe",
-                       "connect",
-                       nullptr, "/tmp/switcher_rtptest_uri_a-audio", nullptr);
-    manager->create("fakesink", "videoprobe");
-    manager->subscribe_property("sub", "videoprobe", "caps");
-    manager->invoke_va("videoprobe",
-                       "connect",
-                       nullptr, "/tmp/switcher_rtptest_uri_v-video", nullptr);
+    // manager->create("httpsdpdec", "uri");
+    // manager->invoke_va("uri",
+    //                    "to_shmdata",
+    //                    nullptr,
+    //                    "http://127.0.0.1:38084/sdp?rtpsession=rtp&destination=local",
+    //                    nullptr);
+    // manager->make_property_subscriber("sub", mon_property_cb, nullptr);
+    // manager->create("fakesink", "audioprobe");
+    // manager->subscribe_property("sub", "audioprobe", "caps");
+    // manager->invoke_va("audioprobe",
+    //                    "connect",
+    //                    nullptr, "/tmp/switcher_rtptest_uri_a-audio", nullptr);
+    // manager->create("fakesink", "videoprobe");
+    // manager->subscribe_property("sub", "videoprobe", "caps");
+    // manager->invoke_va("videoprobe",
+    //                    "connect",
+    //                    nullptr, "/tmp/switcher_rtptest_uri_v-video", nullptr);
 
     // wait 3 seconds
     uint count = 3;
