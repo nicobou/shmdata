@@ -20,6 +20,7 @@
 #endif
 
 #include <gst/gst.h>
+#include <cassert>
 #include <vector>
 #include <string>
 #include "switcher/quiddity-manager.hpp"
@@ -72,18 +73,22 @@ main() {
                        "38084",
                        nullptr);
     // audio
-    manager->create("audiotestsrc", "a");
+    g_print("******** %d\n", __LINE__);
+    assert("a" == manager->create("audiotestsrc", "a"));
     manager->set_property("a", "started", "true");
     // // video
     // manager->create("videotestsrc", "v");
     // manager->set_property("v", "started", "true");
     // rtp
-    manager->create("rtpsession", "rtp");
+    g_print("******** %d\n", __LINE__);
+    assert("rtp" == manager->create("rtpsession", "rtp"));
+    g_print("******** %d\n", __LINE__);
     manager->invoke_va("rtp",
                        "add_data_stream",
                        nullptr,
                        "/tmp/switcher_rtptest_a_audio",
                        nullptr);
+    g_print("******** %d\n", __LINE__);
     // manager->invoke_va("rtp",
     //                    "add_data_stream",
     //                    nullptr,
@@ -95,6 +100,9 @@ main() {
                        "local",
                        "127.0.0.1",
                        nullptr);
+    g_print("******** %d\n", __LINE__);
+    //FIXME:
+    usleep(2000000);
     manager->invoke_va("rtp",
                        "add_udp_stream_to_dest",
                        nullptr,
@@ -109,6 +117,12 @@ main() {
     //                    "local",
     //                    "9076",
     //                    nullptr);
+
+    g_print("******** %d\n", __LINE__);
+    usleep(2000000);
+    g_print("******** %d\n", __LINE__);
+
+    
     // receiving
     // manager->create("httpsdpdec", "uri");
     // manager->invoke_va("uri",

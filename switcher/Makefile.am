@@ -25,6 +25,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     counter-map.cpp \
     create-remove-spy.cpp \
     custom-property-helper.cpp \
+    decodebin-to-shmdata.cpp \
     default-video-format.cpp \
     fakesink.cpp \
     g-source-wrapper.cpp \
@@ -36,6 +37,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gst-pipeliner.cpp \
     gst-shmdata-subscriber.cpp \
     gst-utils.cpp \
+    http-sdp-dec.cpp \
     information-tree-basic-serializer.cpp \
     information-tree-json.cpp \
     information-tree.cpp \
@@ -92,6 +94,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     creator.hpp \
     custom-property-helper.hpp \
     default-video-format.hpp \
+    decodebin-to-shmdata.hpp \
     fakesink.hpp \
     g-source-wrapper.hpp \
     glibmainloop.hpp \
@@ -102,6 +105,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gst-pipeliner.hpp \
     gst-shmdata-subscriber.hpp \
     gst-utils.hpp \
+    http-sdp-dec.hpp \
     information-tree-basic-serializer.hpp \
     information-tree-json.hpp \
     information-tree.hpp \

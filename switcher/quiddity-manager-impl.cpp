@@ -33,7 +33,7 @@
 #include "./fakesink.hpp"
 //#include "./gst-parse-to-bin-src.hpp"
 //#include "./gst-video-parse-to-bin-src.hpp"
-//#include "./http-sdp-dec.hpp"
+#include "./http-sdp-dec.hpp"
 //#include "./jack-audio-source.hpp"
 #include "./logger.hpp"
 #include "./property-mapper.hpp"
@@ -156,9 +156,9 @@ void QuiddityManager_Impl::register_classes() {
   // abstract_factory_.register_class<GstVideoParseToBinSrc>
   //     (GstVideoParseToBinSrc::switcher_doc_.get_class_name(),
   //      &GstVideoParseToBinSrc::switcher_doc_);
-  // abstract_factory_.register_class<HTTPSDPDec>
-  //     (HTTPSDPDec::switcher_doc_.get_class_name(),
-  //      &HTTPSDPDec::switcher_doc_);
+  abstract_factory_.register_class<HTTPSDPDec>
+      (HTTPSDPDec::switcher_doc_.get_class_name(),
+       &HTTPSDPDec::switcher_doc_);
   // abstract_factory_.register_class<JackAudioSource>
   //     (JackAudioSource::switcher_doc_.get_class_name(),
   //      &JackAudioSource::switcher_doc_);

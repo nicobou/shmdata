@@ -81,6 +81,7 @@ bool RtpSession::init() {
   g_signal_connect(G_OBJECT(rtpsession_), "no-more-pads",
                    (GCallback) on_no_more_pad, (gpointer) this);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), rtpsession_);
+  gst_pipeline_->play(true);
   install_method("Add Data Stream",
                  "add_data_stream",
                  "add a data stream to the RTP session (sending)",
@@ -523,7 +524,7 @@ RtpSession::add_data_stream_wrapped(gpointer connector_name,
 
 bool RtpSession::add_data_stream(const std::string &shmpath) {
   remove_data_stream(shmpath);
-  //std::unique_lock<std::mutex> lock(stream_mutex_);
+  std::unique_lock<std::mutex> lock(stream_mutex_);
   DataStream::ptr ds = std2::make_unique<DataStream>(rtpsession_);
   ds->id = next_id_;
   next_id_++;
@@ -537,6 +538,10 @@ bool RtpSession::add_data_stream(const std::string &shmpath) {
           [this, shmpath, src](std::string &&caps){
             auto rtpid = this->make_rtp_payloader(src, caps);
             this->make_udp_sinks(shmpath, rtpid);
+            {
+              std::unique_lock<std::mutex> lock(this->stream_mutex_);
+              this->stream_cond_.notify_one();
+            }
             this->graft_tree(".shmdata.reader." + shmpath,
                              ShmdataUtils::make_tree(caps,
                                                      ShmdataUtils::get_category(caps),

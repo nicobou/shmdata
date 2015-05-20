@@ -30,12 +30,13 @@
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
-class HTTPSDPDec: public GstPipeliner {
+class HTTPSDPDec: public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);
   HTTPSDPDec(const std::string &);
 
  private:
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
   UGstElem souphttpsrc_;
   UGstElem sdpdemux_;
   guint retry_delay_{1000};
@@ -49,7 +50,7 @@ class HTTPSDPDec: public GstPipeliner {
   void init_httpsdpdec();
   void destroy_httpsdpdec();
   void make_new_error_handler();
-  bool init_gpipe() final;
+  bool init() final;
   void uri_to_shmdata();
   static void httpsdpdec_pad_added_cb(GstElement *object,
                                       GstPad *pad, gpointer user_data);

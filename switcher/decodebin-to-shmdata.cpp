@@ -55,13 +55,13 @@ DecodebinToShmdata::DecodebinToShmdata(GstPipeliner *gpipe):
 
 DecodebinToShmdata::~DecodebinToShmdata() {
   std::unique_lock<std::mutex> lock(thread_safe_);
-  // for (auto &it: cb_ids_)
-  //   if (0 != it)
-  // decodebin_.g_invoke (std::bind (g_signal_handler_disconnect,
-  // std::placeholders::_1,
-  // it));
-  for (auto &it : shmdata_path_)
-    gpipe_->unregister_shmdata(it);
+  // // for (auto &it: cb_ids_)
+  // //   if (0 != it)
+  // // decodebin_.g_invoke (std::bind (g_signal_handler_disconnect,
+  // // std::placeholders::_1,
+  // // it));
+  // for (auto &it : shmdata_path_)
+  //   gpipe_->unregister_shmdata(it);
 }
 
 void
@@ -75,7 +75,7 @@ DecodebinToShmdata::on_pad_added(GstElement * object, GstPad *pad,
   On_scope_exit {
     gst_caps_unref(rtpcaps);
   };
-  GstCaps *padcaps = gst_pad_get_caps(pad);
+  GstCaps *padcaps = gst_pad_get_current_caps(pad);
   On_scope_exit {
     gst_caps_unref(padcaps);
   };
@@ -89,20 +89,21 @@ DecodebinToShmdata::on_pad_added(GstElement * object, GstPad *pad,
     GstUtils::make_element("rtpgstdepay", &rtpgstdepay);
 
     // adding a probe for discarding uncomplete packets
-    GstPad *depaysrcpad = gst_element_get_static_pad(rtpgstdepay, "src");
-    gst_pad_add_buffer_probe(depaysrcpad,
-                             G_CALLBACK
-                             (DecodebinToShmdata::gstrtpdepay_buffer_probe_cb),
-                             context);
-    gst_object_unref(depaysrcpad);
+    // FIXME (test if drop buffer is necessary)
+    // GstPad *depaysrcpad = gst_element_get_static_pad(rtpgstdepay, "src");
+    // gst_pad_add_buffer_probe(depaysrcpad,
+    //                          G_CALLBACK
+    //                          (DecodebinToShmdata::gstrtpdepay_buffer_probe_cb),
+    //                          context);
+    // gst_object_unref(depaysrcpad);
 
     // was this: gst_bin_add (GST_BIN (context->bin_), rtpgstdepay);
     gst_bin_add(GST_BIN(GST_ELEMENT_PARENT(object)), rtpgstdepay);
     GstPad *sinkpad = gst_element_get_static_pad(rtpgstdepay, "sink");
     // adding a probe for handling loss messages from rtpbin
-    gst_pad_add_event_probe(sinkpad, (GCallback)
-                            DecodebinToShmdata::gstrtpdepay_event_probe_cb,
-                            context);
+    // gst_pad_add_event_probe(sinkpad, (GCallback)
+    //                         DecodebinToShmdata::gstrtpdepay_event_probe_cb,
+    //                         context);
 
     GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad));
     gst_object_unref(sinkpad);
@@ -132,10 +133,10 @@ int DecodebinToShmdata::on_autoplug_select(GstElement * /*bin */ ,
   if (g_strcmp0(GST_OBJECT_NAME(factory), "rtpgstdepay") == 0) {
     int return_val = 1;
     const GValue *val =
-        gst_structure_get_value(gst_caps_get_structure(gst_pad_get_caps(pad),
+        gst_structure_get_value(gst_caps_get_structure(gst_pad_get_current_caps(pad),
                                                        0),
                                 "caps");
-
+    
     gsize taille = 256;
     guchar *string_caps = g_base64_decode(g_value_get_string(val),
                                           &taille);
@@ -188,12 +189,12 @@ gboolean DecodebinToShmdata::gstrtpdepay_event_probe_cb(GstPad * /*pad */ ,
 }
 
 void
-DecodebinToShmdata::pad_to_shmdata_writer(GstElement * bin, GstPad *pad)
+DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad)
 {
   // looking for type of media
   std::string padname;
   {
-    GstCaps *padcaps = gst_pad_get_caps(pad);
+    GstCaps *padcaps = gst_pad_get_current_caps(pad);
     On_scope_exit {
       gst_caps_unref(padcaps);
     };
@@ -209,29 +210,19 @@ DecodebinToShmdata::pad_to_shmdata_writer(GstElement * bin, GstPad *pad)
 
   g_debug("decodebin-to-shmdata new pad name is %s\n", padname.c_str());
 
-  GstElement *fakesink;
-  GstUtils::make_element("fakesink", &fakesink);
-  g_object_set(fakesink,
-               "sync", TRUE,
-               "signal-handoffs", TRUE, "silent", TRUE, nullptr);
-
   GstElement *funnel;
-  GstUtils::make_element("funnel", &funnel);
-
-  gst_bin_add_many(GST_BIN(bin), fakesink, funnel, nullptr);
-  GstUtils::link_static_to_request(pad, funnel);
-  gst_element_link(funnel, fakesink);
-
-  // GstUtils::wait_state_changed (bin);
-  GstUtils::sync_state_with_parent(fakesink);
-  GstUtils::sync_state_with_parent(funnel);
-
+  GstUtils::make_element("shmdatasink", &funnel);
+  gst_bin_add(GST_BIN(bin), funnel);
   // probing eos
   GstPad *srcpad = gst_element_get_static_pad(funnel, "src");
+  On_scope_exit{gst_object_unref(srcpad);};
   if (nullptr == main_pad_)
     main_pad_ = srcpad;       // saving first pad for looping
-  gst_pad_add_event_probe(srcpad, (GCallback) eos_probe_cb, this);
-  gst_object_unref(srcpad);
+  // FIXME
+  // gst_pad_add_event_probe(srcpad, (GCallback) eos_probe_cb, this);
+  if (GST_PAD_LINK_OK != gst_pad_link(pad, srcpad))
+    g_warning("pad link failed in decodebin-to-shmdata");
+  GstUtils::sync_state_with_parent(funnel);
 
   std::string media_name(media_label_);
 
@@ -244,23 +235,25 @@ DecodebinToShmdata::pad_to_shmdata_writer(GstElement * bin, GstPad *pad)
       media_name += "-unknown";
     else
       media_name += std::string("-") + padname_splitted[0];
-    auto count = gpipe_->get_count(media_name);
-    if (count != 0)
-      media_name.append("-" + std::to_string(count));
+    // FIXME
+    // auto count = gpipe_->get_count(media_name);
+    // if (count != 0)
+    //   media_name.append("-" + std::to_string(count));
     g_debug("decodebin-to-shmdata: new media %s \n", media_name.c_str());
   }
   
-  // creating a shmdata
-  ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
-  std::string shm_any_name = gpipe_->make_file_name(media_name);
-  shm_any->set_path(shm_any_name.c_str());
-  // shm_any->start ();
-  cb_ids_.push_back(g_signal_connect
-                    (fakesink, "handoff", (GCallback) on_handoff_cb,
-                     shm_any.get()));
-  g_debug("%s created a new shmdata writer (%s)",
-          gpipe_->get_name().c_str(), shm_any_name.c_str());
-  gpipe_->register_shmdata(shm_any);
+  // FIXME register shmdata
+  // // creating a shmdata
+  // ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
+  // std::string shm_any_name = gpipe_->make_file_name(media_name);
+  // shm_any->set_path(shm_any_name.c_str());
+  // // shm_any->start ();
+  // cb_ids_.push_back(g_signal_connect
+  //                   (fakesink, "handoff", (GCallback) on_handoff_cb,
+  //                    shm_any.get()));
+  // g_debug("%s created a new shmdata writer (%s)",
+  //         gpipe_->get_name().c_str(), shm_any_name.c_str());
+  // gpipe_->register_shmdata(shm_any);
 }
 
 gboolean
@@ -272,12 +265,13 @@ DecodebinToShmdata::eos_probe_cb(GstPad * pad, GstEvent *event,
 
   if (GST_EVENT_TYPE(event) == GST_EVENT_EOS) {
     if (context->main_pad_ == pad)
-      GstUtils::g_idle_add_full_with_context(context->
-                                             gpipe_->get_g_main_context(),
-                                             G_PRIORITY_DEFAULT_IDLE,
-                                             (GSourceFunc)
-                                             DecodebinToShmdata::rewind,
-                                             (gpointer) context, nullptr);
+      // FIXME
+      // GstUtils::g_idle_add_full_with_context(context->
+      //                                        gpipe_->get_g_main_context(),
+      //                                        G_PRIORITY_DEFAULT_IDLE,
+      //                                        (GSourceFunc)
+      //                                        DecodebinToShmdata::rewind,
+      //                                        (gpointer) context, nullptr);
     return FALSE;
   }
 
@@ -285,27 +279,6 @@ DecodebinToShmdata::eos_probe_cb(GstPad * pad, GstEvent *event,
       GST_EVENT_TYPE(event) == GST_EVENT_FLUSH_STOP)
     return FALSE;
   return TRUE;
-}
-
-void DecodebinToShmdata::on_handoff_cb(GstElement * /*object */ ,
-                                       GstBuffer *buf,
-                                       GstPad *pad, gpointer user_data) {
-  ShmdataAnyWriter *writer = static_cast<ShmdataAnyWriter *>(user_data);
-
-  if (!writer->started()) {
-    GstCaps *caps = gst_pad_get_negotiated_caps(pad);
-    On_scope_exit {
-      gst_caps_unref(caps);
-    };
-    gchar *string_caps = gst_caps_to_string(caps);
-    On_scope_exit{g_free(string_caps);};
-    writer->set_data_type(string_caps);
-    writer->start();
-  } else {
-    writer->push_data(GST_BUFFER_DATA(buf),
-                      GST_BUFFER_SIZE(buf),
-                      GST_BUFFER_TIMESTAMP(buf), nullptr, nullptr);
-  }
 }
 
 void DecodebinToShmdata::invoke(std::function<void(GstElement *)>
