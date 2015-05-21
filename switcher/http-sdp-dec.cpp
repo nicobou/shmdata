@@ -19,6 +19,7 @@
 
 #include <glib/gprintf.h>
 #include <memory>
+#include <cassert>// FIXME remove that
 #include "./http-sdp-dec.hpp"
 #include "./gst-utils.hpp"
 #include "./scope-exit.hpp"
@@ -105,30 +106,52 @@ void HTTPSDPDec::make_new_error_handler() {
         on_error_.pop_front();
 }
 
+void HTTPSDPDec::configure_shmdatasink(GstElement *element, const std::string &media_type){
+  // FIXME use counter here:
+  g_object_set(G_OBJECT(element),
+               "socket-path", make_file_name(media_type).c_str(),
+               nullptr);
+  // FIXME make a shm sub
+}
+
 void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement */*object */,
                                          GstPad *pad,
                                          gpointer user_data) {
   HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
-  GstPipeliner *gpipe = static_cast<GstPipeliner *>(user_data);
   std::unique_ptr<DecodebinToShmdata> decodebin = 
-      std2::make_unique<DecodebinToShmdata>(gpipe);
-  auto caps = gst_pad_get_current_caps(pad);
+      std2::make_unique<DecodebinToShmdata>(
+          context->gst_pipeline_.get(),
+          [context](GstElement *el, const std::string &media_type){
+            context->configure_shmdatasink(el, media_type);
+          });
+  auto caps = gst_pad_get_pad_template_caps(pad);
   On_scope_exit{gst_caps_unref(caps);};
   auto structure = gst_caps_get_structure(caps, 0);
-  decodebin->set_media_label(gst_structure_get_string (structure, "media-label"));
-  decodebin->invoke_with_return<gboolean>(
-      std::bind(gst_bin_add, GST_BIN(context->gst_pipeline_->get_pipeline()),
-                std::placeholders::_1));
+  auto media_label = gst_structure_get_string (structure, "media-label");
+  if (nullptr != media_label)
+    decodebin->set_media_label(gst_structure_get_string (structure, "media-label"));
+  if(!decodebin->invoke_with_return<gboolean>([context](GstElement *el) {
+        return gst_bin_add(GST_BIN(context->gst_pipeline_->get_pipeline()), el);
+      })){
+      g_warning("decodebin cannot be added to pipeline");
+    }
   // GstPad *sinkpad = gst_element_get_static_pad (decodebin, "sink");
-  auto get_pad = std::bind(gst_element_get_static_pad,
-                           std::placeholders::_1,
-                           "sink");
+  // auto get_pad = std::bind(gst_element_get_static_pad,
+  //                          std::placeholders::_1,
+  //                          "sink");
   GstPad *sinkpad =
-      decodebin->invoke_with_return<GstPad *>(std::move(get_pad));
+      decodebin->invoke_with_return<GstPad *>([](GstElement *el){
+          // assert(GST_IS_ELEMENT(el));
+          // if (!GST_IS_PAD(gst_element_get_static_pad(el, "sink")))
+          // g_warning("NOT A PAD");
+          return gst_element_get_static_pad(el, "sink");
+        });
   On_scope_exit {gst_object_unref(GST_OBJECT(sinkpad));};
   GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad));
-  decodebin->invoke(std::bind(GstUtils::sync_state_with_parent,
-                              std::placeholders::_1));
+  
+  decodebin->invoke([](GstElement *el) {
+      GstUtils::sync_state_with_parent(el);
+    });
   context->decodebins_.push_back(std::move(decodebin));
 }
 

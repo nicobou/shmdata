@@ -52,6 +52,7 @@ class HTTPSDPDec: public Quiddity {
   void make_new_error_handler();
   bool init() final;
   void uri_to_shmdata();
+  void configure_shmdatasink(GstElement *element, const std::string &media_type);
   static void httpsdpdec_pad_added_cb(GstElement *object,
                                       GstPad *pad, gpointer user_data);
   static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);

@@ -22,9 +22,12 @@
 #include <glib/gprintf.h>
 
 namespace switcher {
-DecodebinToShmdata::DecodebinToShmdata(GstPipeliner *gpipe):
-    decodebin_("decodebin2"),
-    gpipe_(gpipe) {
+DecodebinToShmdata::DecodebinToShmdata(
+    GstPipeliner *gpipe,
+    on_configure_t on_gstshm_configure):
+    decodebin_("decodebin"),
+    gpipe_(gpipe),
+    on_gstshm_configure_(on_gstshm_configure){
   // set async property
   auto set_prop = std::bind(g_object_set,
                             std::placeholders::_1,
@@ -105,7 +108,9 @@ DecodebinToShmdata::on_pad_added(GstElement * object, GstPad *pad,
     //                         DecodebinToShmdata::gstrtpdepay_event_probe_cb,
     //                         context);
 
+    g_print("decodebin-to-shmdata %d\n", __LINE__);
     GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad));
+    g_print("decodebin-to-shmdata %d\n", __LINE__);
     gst_object_unref(sinkpad);
     GstPad *srcpad = gst_element_get_static_pad(rtpgstdepay, "src");
     GstUtils::sync_state_with_parent(rtpgstdepay);
@@ -207,40 +212,43 @@ DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad)
     else
       padname = gst_structure_get_name(gst_caps_get_structure(padcaps, 0));
   }
-
   g_debug("decodebin-to-shmdata new pad name is %s\n", padname.c_str());
-
   GstElement *funnel;
   GstUtils::make_element("shmdatasink", &funnel);
   gst_bin_add(GST_BIN(bin), funnel);
   // probing eos
-  GstPad *srcpad = gst_element_get_static_pad(funnel, "src");
-  On_scope_exit{gst_object_unref(srcpad);};
+  GstPad *sinkpad = gst_element_get_static_pad(funnel, "sink");
+  On_scope_exit{gst_object_unref(sinkpad);};
   if (nullptr == main_pad_)
-    main_pad_ = srcpad;       // saving first pad for looping
+    main_pad_ = sinkpad;  // saving first pad for looping
   // FIXME
   // gst_pad_add_event_probe(srcpad, (GCallback) eos_probe_cb, this);
-  if (GST_PAD_LINK_OK != gst_pad_link(pad, srcpad))
+    g_print("decodebin-to-shmdata %d\n", __LINE__);
+  if (GST_PAD_LINK_OK != gst_pad_link(pad, sinkpad))
     g_warning("pad link failed in decodebin-to-shmdata");
-  GstUtils::sync_state_with_parent(funnel);
-
   std::string media_name(media_label_);
-
   {  // giving a name to the stream
     gchar **padname_splitted = g_strsplit_set(padname.c_str(), "/", -1);
     On_scope_exit {
       g_strfreev(padname_splitted);
     };
     if (nullptr == padname_splitted[0])
-      media_name += "-unknown";
+      media_name = "unknown";
     else
-      media_name += std::string("-") + padname_splitted[0];
+      media_name = padname_splitted[0];
     // FIXME
     // auto count = gpipe_->get_count(media_name);
     // if (count != 0)
     //   media_name.append("-" + std::to_string(count));
     g_debug("decodebin-to-shmdata: new media %s \n", media_name.c_str());
   }
+
+  if(!on_gstshm_configure_)
+    g_warning("decodebin-to-shmdata cannot configure shmdatasink");
+  else
+    on_gstshm_configure_(funnel, media_name);
+  GstUtils::sync_state_with_parent(funnel);
+  g_print("decodebin-to-shmdata %d\n", __LINE__);
   
   // FIXME register shmdata
   // // creating a shmdata
@@ -281,10 +289,8 @@ DecodebinToShmdata::eos_probe_cb(GstPad * pad, GstEvent *event,
   return TRUE;
 }
 
-void DecodebinToShmdata::invoke(std::function<void(GstElement *)>
-                                command) {
+void DecodebinToShmdata::invoke(std::function<void(GstElement *)> command) {
   std::unique_lock<std::mutex> lock(thread_safe_);
-
   decodebin_.invoke(command);
 }
 
@@ -327,6 +333,7 @@ gboolean DecodebinToShmdata::rewind(gpointer user_data) {
 }
 
 void DecodebinToShmdata::set_media_label(std::string label) {
+  g_debug("new media label %s", label.c_str());
   media_label_ = std::move(label);
 }
 

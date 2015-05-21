@@ -124,12 +124,12 @@ main() {
 
     
     // receiving
-    // manager->create("httpsdpdec", "uri");
-    // manager->invoke_va("uri",
-    //                    "to_shmdata",
-    //                    nullptr,
-    //                    "http://127.0.0.1:38084/sdp?rtpsession=rtp&destination=local",
-    //                    nullptr);
+    manager->create("httpsdpdec", "uri");
+    manager->invoke_va("uri",
+                       "to_shmdata",
+                       nullptr,
+                       "http://127.0.0.1:38084/sdp?rtpsession=rtp&destination=local",
+                       nullptr);
     // manager->make_property_subscriber("sub", mon_property_cb, nullptr);
     // manager->create("fakesink", "audioprobe");
     // manager->subscribe_property("sub", "audioprobe", "caps");
@@ -143,7 +143,7 @@ main() {
     //                    nullptr, "/tmp/switcher_rtptest_uri_v-video", nullptr);
 
     // wait 3 seconds
-    uint count = 3;
+    uint count = 30;
     while (do_continue) {
       if (count == 0)
         do_continue = false;
