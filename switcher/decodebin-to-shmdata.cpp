@@ -236,32 +236,13 @@ DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad)
       media_name = "unknown";
     else
       media_name = padname_splitted[0];
-    // FIXME
-    // auto count = gpipe_->get_count(media_name);
-    // if (count != 0)
-    //   media_name.append("-" + std::to_string(count));
-    g_debug("decodebin-to-shmdata: new media %s \n", media_name.c_str());
+    g_debug("decodebin-to-shmdata: new media of type %s \n", media_name.c_str());
   }
-
   if(!on_gstshm_configure_)
     g_warning("decodebin-to-shmdata cannot configure shmdatasink");
   else
     on_gstshm_configure_(funnel, media_name);
   GstUtils::sync_state_with_parent(funnel);
-  g_print("decodebin-to-shmdata %d\n", __LINE__);
-  
-  // FIXME register shmdata
-  // // creating a shmdata
-  // ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
-  // std::string shm_any_name = gpipe_->make_file_name(media_name);
-  // shm_any->set_path(shm_any_name.c_str());
-  // // shm_any->start ();
-  // cb_ids_.push_back(g_signal_connect
-  //                   (fakesink, "handoff", (GCallback) on_handoff_cb,
-  //                    shm_any.get()));
-  // g_debug("%s created a new shmdata writer (%s)",
-  //         gpipe_->get_name().c_str(), shm_any_name.c_str());
-  // gpipe_->register_shmdata(shm_any);
 }
 
 gboolean

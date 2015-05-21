@@ -28,6 +28,7 @@
 #include "./decodebin-to-shmdata.hpp"
 #include "./g-source-wrapper.hpp"
 #include "./unique-gst-element.hpp"
+#include "./counter-map.hpp"
 
 namespace switcher {
 class HTTPSDPDec: public Quiddity {
@@ -46,6 +47,7 @@ class HTTPSDPDec: public Quiddity {
   std::string uri_{};
   std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_{};
   std::string src_element_class_{"souphttpsrc"};
+  CounterMap counter_{};
   bool to_shmdata(std::string uri);
   void init_httpsdpdec();
   void destroy_httpsdpdec();

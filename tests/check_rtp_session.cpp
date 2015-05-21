@@ -76,6 +76,9 @@ main() {
     g_print("******** %d\n", __LINE__);
     assert("a" == manager->create("audiotestsrc", "a"));
     manager->set_property("a", "started", "true");
+    assert("a2" == manager->create("audiotestsrc", "a2"));
+    manager->set_property("a2", "started", "true");
+
     // // video
     // manager->create("videotestsrc", "v");
     // manager->set_property("v", "started", "true");
@@ -87,6 +90,11 @@ main() {
                        "add_data_stream",
                        nullptr,
                        "/tmp/switcher_rtptest_a_audio",
+                       nullptr);
+    manager->invoke_va("rtp",
+                       "add_data_stream",
+                       nullptr,
+                       "/tmp/switcher_rtptest_a2_audio",
                        nullptr);
     g_print("******** %d\n", __LINE__);
     // manager->invoke_va("rtp",
@@ -109,6 +117,13 @@ main() {
                        "/tmp/switcher_rtptest_a_audio",
                        "local",
                        "9066",
+                       nullptr);
+    manager->invoke_va("rtp",
+                       "add_udp_stream_to_dest",
+                       nullptr,
+                       "/tmp/switcher_rtptest_a2_audio",
+                       "local",
+                       "9068",
                        nullptr);
     // manager->invoke_va("rtp",
     //                    "add_udp_stream_to_dest",

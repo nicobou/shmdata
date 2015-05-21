@@ -19,7 +19,6 @@
 
 #include <glib/gprintf.h>
 #include <memory>
-#include <cassert>// FIXME remove that
 #include "./http-sdp-dec.hpp"
 #include "./gst-utils.hpp"
 #include "./scope-exit.hpp"
@@ -81,11 +80,7 @@ void HTTPSDPDec::init_httpsdpdec() {
 void HTTPSDPDec::destroy_httpsdpdec() {
   make_new_error_handler();
   gst_pipeline_ = std2::make_unique<GstPipeliner>();
-  // FIXME:
-  // clear_shmdatas();
-  // reset_bin();
-  // FIXME:
-  // reset_counter_map();
+  counter_.reset_counter_map();
 }
 
 void
@@ -107,9 +102,13 @@ void HTTPSDPDec::make_new_error_handler() {
 }
 
 void HTTPSDPDec::configure_shmdatasink(GstElement *element, const std::string &media_type){
-  // FIXME use counter here:
+  auto count = counter_.get_count(media_type);
+  std::string media_name = media_type;
+  if (count != 0)
+    media_name.append("-" + std::to_string(count));
+  
   g_object_set(G_OBJECT(element),
-               "socket-path", make_file_name(media_type).c_str(),
+               "socket-path", make_file_name(media_name).c_str(),
                nullptr);
   // FIXME make a shm sub
 }
