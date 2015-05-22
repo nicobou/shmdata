@@ -126,7 +126,6 @@ main() {
     //                    "local",
     //                    "9076",
     //                    nullptr);
-    usleep(2000000);
     // receiving
     manager->create("httpsdpdec", "uri");
     manager->invoke_va("uri",
@@ -142,7 +141,7 @@ main() {
                                      "uri",
                                      "on-tree-grafted"));
     // wait 3 seconds
-    uint count = 10;
+    uint count = 3;
     while (do_continue) {
       if (count == 0)
         do_continue = false;
