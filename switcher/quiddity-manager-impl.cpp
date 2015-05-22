@@ -41,7 +41,7 @@
 //#include "./shmdata-to-file.hpp"
 //#include "./shmdata-from-gdp-file.hpp"
 //#include "./udpsink.hpp"
-//#include "./uridecodebin.hpp"
+#include "./uridecodebin.hpp"
 #include "./string-dictionary.hpp"
 //#include "./video-test-source.hpp"
 //#include "./xvimagesink.hpp"
@@ -183,9 +183,9 @@ void QuiddityManager_Impl::register_classes() {
   // abstract_factory_.register_class<UDPSink>
   //     (UDPSink::switcher_doc_.get_class_name(),
   //      &UDPSink::switcher_doc_);
-  // abstract_factory_.register_class<Uridecodebin>
-  //     (Uridecodebin::switcher_doc_.get_class_name(),
-  //      &Uridecodebin::switcher_doc_);
+  abstract_factory_.register_class<Uridecodebin>
+      (Uridecodebin::switcher_doc_.get_class_name(),
+       &Uridecodebin::switcher_doc_);
   // abstract_factory_.register_class<VideoTestSource>
   //     (VideoTestSource::switcher_doc_.get_class_name(),
   //      &VideoTestSource::switcher_doc_);

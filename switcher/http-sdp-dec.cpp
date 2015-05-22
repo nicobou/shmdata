@@ -111,25 +111,23 @@ void HTTPSDPDec::configure_shmdatasink(GstElement *element, const std::string &m
   if (count != 0)
     media_name.append("-" + std::to_string(count));
   std::string shmpath = make_file_name(media_name);
-  g_object_set(G_OBJECT(element),
-               "socket-path", shmpath.c_str(),
-               nullptr);
+  g_object_set(G_OBJECT(element), "socket-path", shmpath.c_str(), nullptr);
   shm_subs_.emplace_back(
       std2::make_unique<GstShmdataSubscriber>(
           element,
           [this, shmpath](std::string &&caps){
-            this->graft_tree(".shmdata.reader." + shmpath,
+            this->graft_tree(".shmdata.writer." + shmpath,
                              ShmdataUtils::make_tree(caps,
                                                      ShmdataUtils::get_category(caps),
                                                      0));
           },
           [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate){
-            auto tree = this->prune_tree(".shmdata.reader." + shmpath, false);
+            auto tree = this->prune_tree(".shmdata.writer." + shmpath, false);
             if (!tree)
               return;
             tree->graft(".byte-rate",
                         data::Tree::make(byte_rate));
-            this->graft_tree(".shmdata.reader." + shmpath, tree);
+            this->graft_tree(".shmdata.writer." + shmpath, tree);
           }));
 }
 

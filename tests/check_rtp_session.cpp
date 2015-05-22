@@ -91,7 +91,6 @@ main() {
                        nullptr,
                        "/tmp/switcher_rtptest_a2_audio",
                        nullptr);
-    g_print("******** %d\n", __LINE__);
     // manager->invoke_va("rtp",
     //                    "add_data_stream",
     //                    nullptr,

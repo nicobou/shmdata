@@ -213,11 +213,11 @@ DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad)
       padname = gst_structure_get_name(gst_caps_get_structure(padcaps, 0));
   }
   g_debug("decodebin-to-shmdata new pad name is %s\n", padname.c_str());
-  GstElement *funnel;
-  GstUtils::make_element("shmdatasink", &funnel);
-  gst_bin_add(GST_BIN(bin), funnel);
+  GstElement *shmdatasink;
+  GstUtils::make_element("shmdatasink", &shmdatasink);
+  gst_bin_add(GST_BIN(bin), shmdatasink);
   // probing eos
-  GstPad *sinkpad = gst_element_get_static_pad(funnel, "sink");
+  GstPad *sinkpad = gst_element_get_static_pad(shmdatasink, "sink");
   On_scope_exit{gst_object_unref(sinkpad);};
   if (nullptr == main_pad_)
     main_pad_ = sinkpad;  // saving first pad for looping
@@ -229,9 +229,7 @@ DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad)
   std::string media_name(media_label_);
   {  // giving a name to the stream
     gchar **padname_splitted = g_strsplit_set(padname.c_str(), "/", -1);
-    On_scope_exit {
-      g_strfreev(padname_splitted);
-    };
+    On_scope_exit {g_strfreev(padname_splitted);};
     if (nullptr == padname_splitted[0])
       media_name = "unknown";
     else
@@ -239,10 +237,10 @@ DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad)
     g_debug("decodebin-to-shmdata: new media of type %s \n", media_name.c_str());
   }
   if(!on_gstshm_configure_)
-    g_warning("decodebin-to-shmdata cannot configure shmdatasink");
+    g_warning("decodebin-to-shmdata has no configuration function for shmdatasink");
   else
-    on_gstshm_configure_(funnel, media_name);
-  GstUtils::sync_state_with_parent(funnel);
+    on_gstshm_configure_(shmdatasink, media_name);
+  GstUtils::sync_state_with_parent(shmdatasink);
 }
 
 gboolean

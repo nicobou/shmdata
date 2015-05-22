@@ -68,7 +68,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     signal-string.cpp \
     startable-quiddity.cpp \
     string-dictionary.cpp \
-    unique-gst-element.cpp 
+    unique-gst-element.cpp \
+    uridecodebin.cpp
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
     $(GLIB_LIBS) \
@@ -140,4 +141,5 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     startable-quiddity.hpp \
     std2.hpp \
     string-dictionary.hpp \
-    unique-gst-element.hpp 
+    unique-gst-element.hpp \
+    uridecodebin.hpp

@@ -21,11 +21,16 @@
 #define __SWITCHER_URIDECODEBIN_H__
 
 #include <unordered_map>
+#include <memory>
+#include "./std2.hpp"
+#include "./quiddity.hpp"
 #include "./gst-pipeliner.hpp"
 #include "./custom-property-helper.hpp"
+#include "./counter-map.hpp"
+#include "./gst-shmdata-subscriber.hpp"
 
 namespace switcher {
-class Uridecodebin:public GstPipeliner {
+class Uridecodebin: public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uridecodebin);
   Uridecodebin(const std::string &);
@@ -34,27 +39,27 @@ class Uridecodebin:public GstPipeliner {
   Uridecodebin &operator=(const Uridecodebin &) = delete;
 
  private:
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
   GstElement *uridecodebin_{nullptr};
-  std::unordered_map<std::string, int>media_counters_{};
   GstPad *main_pad_{nullptr};
   GstCaps *rtpgstcaps_{nullptr};
   bool discard_next_uncomplete_buffer_{false};
-  void init_uridecodebin();
-  void destroy_uridecodebin();
   QuiddityCommand *on_error_command_{nullptr};  // for the pipeline error handler
-  void clean_on_error_command();
-
   // custom properties
   CustomPropertyHelper::ptr custom_props_{};
   GParamSpec *loop_prop_{nullptr};
   bool loop_{false};
   GParamSpec *playing_prop_{nullptr};
   bool playing_{true};
-
   GParamSpec *uri_spec_{nullptr};
   std::string uri_{};
-
-  bool init_gpipe() final;
+  CounterMap counter_{};
+  std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
+  
+  bool init() final;
+  void init_uridecodebin();
+  void destroy_uridecodebin();
+  void clean_on_error_command();
   static gboolean get_loop(void *user_data);
   static void set_loop(gboolean mute, void *user_data);
   static void set_uri(const gchar *value, void *user_data);
@@ -87,16 +92,7 @@ class Uridecodebin:public GstPipeliner {
   static void on_handoff_cb(GstElement *, GstBuffer *, GstPad *, gpointer);
   static void release_buf(void *);
   void pad_to_shmdata_writer(GstElement * bin, GstPad *pad);
-  /* static GValueArray *autoplug_sort_cb (GstElement *bin, */
-  /*  GstPad *pad, */
-  /*  GstCaps *caps, */
-  /*  GValueArray *factories, */
-  /*  gpointer user_data); */
-  /* static GValueArray *autoplug_factory_cb (GstElement *bin, */
-  /*     GstPad *pad, */
-  /*     GstCaps *caps, */
-  /*     gpointer user_data); */
 };
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif
