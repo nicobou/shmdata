@@ -39,7 +39,6 @@
 
 namespace switcher {
 class QuiddityManager
-// FIXME add const for method args
 {
  public:
   typedef std::shared_ptr<QuiddityManager> ptr;

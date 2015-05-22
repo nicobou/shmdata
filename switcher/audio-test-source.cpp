@@ -43,7 +43,7 @@ AudioTestSource::AudioTestSource(const std::string &):
                  this->graft_tree(".shmdata.writer." + shmpath_,
                                   ShmdataUtils::make_tree(caps,
                                                           ShmdataUtils::get_category(caps),
-                                                          "0"));
+                                                          0));
                },
                [this](GstShmdataSubscriber::num_bytes_t byte_rate){
                  auto tree = this->prune_tree(".shmdata.writer." + shmpath_, false);

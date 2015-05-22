@@ -545,7 +545,7 @@ bool RtpSession::add_data_stream(const std::string &shmpath) {
             this->graft_tree(".shmdata.reader." + shmpath,
                              ShmdataUtils::make_tree(caps,
                                                      ShmdataUtils::get_category(caps),
-                                                     "0"));
+                                                     0));
           },
           [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate){
             auto tree = this->prune_tree(".shmdata.reader." + shmpath, false);

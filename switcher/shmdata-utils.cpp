@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include "./shmdata-utils.hpp"
+#include "./gst-shmdata-subscriber.hpp"
 
 namespace switcher {
 
@@ -56,7 +57,7 @@ std::string ShmdataUtils::get_category(const std::string &caps){
 
 data::Tree::ptr ShmdataUtils::make_tree(const std::string &caps,
                                         const std::string &category,
-                                        const std::string &num_bytes){
+                                        GstShmdataSubscriber::num_bytes_t num_bytes){
   data::Tree::ptr tree = data::Tree::make();
   tree->graft(".caps", data::Tree::make(caps));
   tree->graft(".category", data::Tree::make(category));

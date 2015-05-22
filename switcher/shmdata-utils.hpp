@@ -22,6 +22,7 @@
 
 #include <string>
 #include "./information-tree.hpp"
+#include "./gst-shmdata-subscriber.hpp"
 
 namespace switcher {
 namespace ShmdataUtils {
@@ -29,7 +30,7 @@ namespace ShmdataUtils {
 std::string get_category(const std::string &caps);
 data::Tree::ptr make_tree(const std::string &caps,
                           const std::string &category,
-                          const std::string &num_bytes);
+                          GstShmdataSubscriber::num_bytes_t num_bytes);
 
 }  // namespace ShmdataUtils
 }  // namespace switcher

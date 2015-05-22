@@ -24,6 +24,8 @@
 #include "./scope-exit.hpp"
 #include "./std2.hpp"
 #include "./g-source-wrapper.hpp"
+#include "./gst-shmdata-subscriber.hpp"
+#include "./shmdata-utils.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
@@ -78,6 +80,8 @@ void HTTPSDPDec::init_httpsdpdec() {
 }
 
 void HTTPSDPDec::destroy_httpsdpdec() {
+  shm_subs_.clear();
+  prune_tree(".shmdata.reader");
   make_new_error_handler();
   gst_pipeline_ = std2::make_unique<GstPipeliner>();
   counter_.reset_counter_map();
@@ -106,11 +110,27 @@ void HTTPSDPDec::configure_shmdatasink(GstElement *element, const std::string &m
   std::string media_name = media_type;
   if (count != 0)
     media_name.append("-" + std::to_string(count));
-  
+  std::string shmpath = make_file_name(media_name);
   g_object_set(G_OBJECT(element),
-               "socket-path", make_file_name(media_name).c_str(),
+               "socket-path", shmpath.c_str(),
                nullptr);
-  // FIXME make a shm sub
+  shm_subs_.emplace_back(
+      std2::make_unique<GstShmdataSubscriber>(
+          element,
+          [this, shmpath](std::string &&caps){
+            this->graft_tree(".shmdata.reader." + shmpath,
+                             ShmdataUtils::make_tree(caps,
+                                                     ShmdataUtils::get_category(caps),
+                                                     0));
+          },
+          [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate){
+            auto tree = this->prune_tree(".shmdata.reader." + shmpath, false);
+            if (!tree)
+              return;
+            tree->graft(".byte-rate",
+                        data::Tree::make(byte_rate));
+            this->graft_tree(".shmdata.reader." + shmpath, tree);
+          }));
 }
 
 void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement */*object */,
@@ -134,15 +154,8 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement */*object */,
       })){
       g_warning("decodebin cannot be added to pipeline");
     }
-  // GstPad *sinkpad = gst_element_get_static_pad (decodebin, "sink");
-  // auto get_pad = std::bind(gst_element_get_static_pad,
-  //                          std::placeholders::_1,
-  //                          "sink");
   GstPad *sinkpad =
       decodebin->invoke_with_return<GstPad *>([](GstElement *el){
-          // assert(GST_IS_ELEMENT(el));
-          // if (!GST_IS_PAD(gst_element_get_static_pad(el, "sink")))
-          // g_warning("NOT A PAD");
           return gst_element_get_static_pad(el, "sink");
         });
   On_scope_exit {gst_object_unref(GST_OBJECT(sinkpad));};
@@ -156,10 +169,9 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement */*object */,
 
 gboolean HTTPSDPDec::to_shmdata_wrapped(gpointer uri, gpointer user_data) {
   HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
-  if (context->to_shmdata((char *)uri))
-    return TRUE;
-  else
+  if (!context->to_shmdata((char *)uri))
     return FALSE;
+  return TRUE;
 }
 
 bool HTTPSDPDec::to_shmdata(std::string uri) {
@@ -177,7 +189,6 @@ bool HTTPSDPDec::to_shmdata(std::string uri) {
 
 void HTTPSDPDec::uri_to_shmdata() {
   destroy_httpsdpdec();
-  //reset_bin();
   init_httpsdpdec();
   g_object_set_data(G_OBJECT(sdpdemux_.get_raw()),
                     "on-error-gsource",

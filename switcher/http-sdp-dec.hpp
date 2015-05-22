@@ -31,6 +31,8 @@
 #include "./counter-map.hpp"
 
 namespace switcher {
+class GstShmdataSubscriber;
+
 class HTTPSDPDec: public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);
@@ -48,6 +50,7 @@ class HTTPSDPDec: public Quiddity {
   std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_{};
   std::string src_element_class_{"souphttpsrc"};
   CounterMap counter_{};
+  std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
   bool to_shmdata(std::string uri);
   void init_httpsdpdec();
   void destroy_httpsdpdec();
