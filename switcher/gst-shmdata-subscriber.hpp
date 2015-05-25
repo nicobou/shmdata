@@ -23,6 +23,7 @@
 #include <gst/gst.h>
 #include <future>
 #include <atomic>
+#include "./periodic-task.hpp"
 
 namespace switcher {
 class GstShmdataSubscriber {
@@ -36,14 +37,13 @@ class GstShmdataSubscriber {
   GstShmdataSubscriber() = delete;
   GstShmdataSubscriber(const GstShmdataSubscriber &) = delete;
   GstShmdataSubscriber &operator=(const GstShmdataSubscriber &) = delete;
-  ~GstShmdataSubscriber();
+  ~GstShmdataSubscriber() = default;
   
  private:
   GstElement *element_;
   on_caps_cb_t on_caps_cb_;
   on_byte_monitor_t on_byte_monitor_cb_;
-  std::atomic<bool> quit_{false};
-  std::future<void> byte_monitor_{};
+  PeriodicTask ptask_;
   static void on_caps_cb(GObject *gobject, GParamSpec *pspec, gpointer user_data);
   void byte_monitor();
 };

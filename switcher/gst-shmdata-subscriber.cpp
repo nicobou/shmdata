@@ -28,10 +28,8 @@ GstShmdataSubscriber::GstShmdataSubscriber(GstElement *element,
     element_(element),
     on_caps_cb_(on_caps_cb),
     on_byte_monitor_cb_(on_byte_monitor_cb),
-    byte_monitor_ (GST_IS_ELEMENT(element) ?
-                   std::async(std::launch::async, [this](){byte_monitor();})
-                   : std::future<void>()) {
-
+    ptask_ ([this](){this->byte_monitor();},
+            std::chrono::milliseconds (1000)) {
   if (!GST_IS_ELEMENT(element_)){
     g_warning("cannot monitor gstshmdata metadata, not a GstElement");
     return;
@@ -40,13 +38,6 @@ GstShmdataSubscriber::GstShmdataSubscriber(GstElement *element,
                    "notify::caps",
                    G_CALLBACK(GstShmdataSubscriber::on_caps_cb),
                    this);
-  
-}
-
-GstShmdataSubscriber::~GstShmdataSubscriber(){
-  quit_.store(true);
-  if (byte_monitor_.valid()) 
-    byte_monitor_.get();
 }
 
 void GstShmdataSubscriber::on_caps_cb(GObject *gobject, GParamSpec *pspec, gpointer user_data){
@@ -68,14 +59,11 @@ void GstShmdataSubscriber::byte_monitor(){
     g_debug("no byte monitor callback, not monitoring");
     return;
   }
-  while(!quit_.load()){
-    std::this_thread::sleep_for(std::chrono::seconds (1));
-    GValue val = G_VALUE_INIT;
-    g_value_init(&val, G_TYPE_UINT64);
-    g_object_get_property(G_OBJECT(element_), "bytes", &val);
-    on_byte_monitor_cb_(g_value_get_uint64(&val));
-    g_value_unset(&val);
-  }
+  GValue val = G_VALUE_INIT;
+  g_value_init(&val, G_TYPE_UINT64);
+  g_object_get_property(G_OBJECT(element_), "bytes", &val);
+  on_byte_monitor_cb_(g_value_get_uint64(&val));
+  g_value_unset(&val);
 }
 
 }  // namespace switcher

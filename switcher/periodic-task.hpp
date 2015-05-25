@@ -21,6 +21,7 @@
 #define __SWITCHER_PERIODIC_TASK_H__
 
 #include <future>
+#include <atomic>
 #include <chrono>
 
 namespace switcher {
@@ -38,7 +39,7 @@ class PeriodicTask {
   std::chrono::milliseconds period_;
   std::condition_variable cv_{};
   std::mutex cv_m_{};
-  bool canceled_{false};
+  std::atomic<bool> canceled_{false};
   std::future<void> fut_{};
   void do_work();
 };

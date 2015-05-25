@@ -44,8 +44,10 @@ void on_tree_grafted(const std::string &/*subscriber_name */ ,
       //std::string byte_rate =
       manager->use_tree<Any, const std::string &>(
           std::string("uri"), &data::Tree::get_data, params[0] + ".byte-rate");
-  if(0 != byte_rate && std::string::npos != params[0].find("audio"))
+  if(0 != byte_rate && std::string::npos != params[0].find("audio")){
     audio_success = true;
+    do_continue = false;
+  }
   std::printf("%s: %s %s\n",
               signal_name.c_str(), params[0].c_str(), std::to_string(byte_rate).c_str());
 }

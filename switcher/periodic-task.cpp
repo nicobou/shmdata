@@ -29,8 +29,8 @@ PeriodicTask::PeriodicTask(task_t task, std::chrono::milliseconds period):
 
 PeriodicTask::~PeriodicTask(){
   {
+    canceled_.store(true);
     std::unique_lock<std::mutex> lock(cv_m_);
-    canceled_ = true;
     cv_.notify_one();
   }
   if (fut_.valid()) 
@@ -38,11 +38,11 @@ PeriodicTask::~PeriodicTask(){
 }
 
 void PeriodicTask::do_work(){
-  while (!canceled_) {
+  while (!canceled_.load()) {
     std::unique_lock<std::mutex> lock(cv_m_);
-    if(cv_.wait_for(lock,
-                    period_,
-                    [this](){return canceled_;})){
+    if(!cv_.wait_for(lock,
+                     period_,
+                     [this](){return canceled_.load();})){
       task_();
     }
   }
