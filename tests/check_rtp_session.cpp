@@ -102,8 +102,6 @@ main() {
                        "local",
                        "127.0.0.1",
                        nullptr);
-    //FIXME:
-    usleep(2000000);
     manager->invoke_va("rtp",
                        "add_udp_stream_to_dest",
                        nullptr,

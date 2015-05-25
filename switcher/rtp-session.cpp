@@ -321,36 +321,9 @@ std::string RtpSession::make_rtp_payloader(GstElement *shmdatasrc,
   gchar **rtp_session_array = g_strsplit_set(rtp_sink_pad_name, "_", 0);
   On_scope_exit{g_strfreev(rtp_session_array);};
   return std::string(rtp_session_array[3]);
-  // FIXME
-  // context->make_udp_sinks(reader->get_path(),
-  //                         rtp_session_array[3]);
-  // std::unique_lock<std::mutex> lock(context->stream_mutex_);
-  // context->stream_cond_.notify_one();
   // FIXME We also want to receive RTCP, request an RTCP sinkpad for given session and
   // link it to a funnel for future linking with network connections
 }
-
-// void
-// RtpSession::attach_data_stream(ShmdataReader *caller,
-//                                void *user_data) {
-//   RtpSession *context = static_cast<RtpSession *>(user_data);
-//   GstElement *funnel, *typefind;
-//   GstUtils::make_element("funnel", &funnel);
-//   GstUtils::make_element("typefind", &typefind);
-//   // give caller to typefind in order to register telement to remove
-//   g_object_set_data(G_OBJECT(typefind), "shmdata-reader",
-//                     (gpointer) caller);
-//   g_signal_connect(typefind, "have-type",
-//                    G_CALLBACK(RtpSession::make_rtp_payloader),
-//                    context);
-//   gst_bin_add_many(GST_BIN(context->get_bin()), funnel, typefind, nullptr);
-//   gst_element_link(funnel, typefind);
-//   GstUtils::sync_state_with_parent(funnel);
-//   GstUtils::sync_state_with_parent(typefind);
-//   caller->set_sink_element(funnel);
-//   caller->add_element_to_cleaner(funnel);
-//   caller->add_element_to_cleaner(typefind);
-// }
 
 gboolean
 RtpSession::add_destination_wrapped(gpointer nick_name,
@@ -540,6 +513,7 @@ bool RtpSession::add_data_stream(const std::string &shmpath) {
             this->make_udp_sinks(shmpath, rtpid);
             {
               std::unique_lock<std::mutex> lock(this->stream_mutex_);
+              this->stream_added_ = true;
               this->stream_cond_.notify_one();
             }
             this->graft_tree(".shmdata.reader." + shmpath,
@@ -558,23 +532,22 @@ bool RtpSession::add_data_stream(const std::string &shmpath) {
   g_object_set(G_OBJECT(src), "socket-path", shmpath.c_str(), nullptr);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), src);
   GstUtils::sync_state_with_parent(src);
-  // OLD stuffs:
-  // ShmdataReader::ptr reader = std::make_shared<ShmdataReader>();
-  // reader->set_path(shmpath.c_str());
-  // reader->set_g_main_context(get_g_main_context());
-  // reader->set_bin(get_bin());
-  // reader->set_on_first_data_hook(attach_data_stream, this);
-  // reader->start();
-  // g_debug("%s waiting for data in shm %s",
-  //         __FUNCTION__,
-  //         shmpath.c_str());
-  // stream_cond_.wait_for(lock, std::chrono::seconds(3));
-  // // testing if stream has been added
-  // if (nullptr == data_streams_[shmpath]->udp_rtp_sink) {
-  //   remove_data_stream(shmpath);
-  //   return false;
-  // }
-  // register_shmdata(reader);
+  // waiting for caps to be updated
+  if(!stream_cond_.wait_for(lock,
+                            std::chrono::milliseconds(1000),
+                            [this](){
+                              if (true == this->stream_added_) {
+                                this->stream_added_ = false;
+                                return true;
+                              }
+                              return false;
+                            })){
+    auto ds_it = data_streams_.find(shmpath);
+    if (data_streams_.end() != ds_it) {
+      data_streams_.erase(ds_it);
+    }
+    return false;
+  }
   return true;
 }
 

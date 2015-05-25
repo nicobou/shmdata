@@ -112,6 +112,7 @@ class RtpSession: public Quiddity {
   std::map<std::string, DataStream::ptr> data_streams_{};
   std::mutex stream_mutex_{};
   std::condition_variable stream_cond_{};
+  bool stream_added_{false};
   
   // destinations
   std::map<std::string, RtpDestination::ptr> destinations_{};
@@ -184,6 +185,6 @@ class RtpSession: public Quiddity {
   static void set_udp_sock(GstElement *udpsink);
 #endif
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif
