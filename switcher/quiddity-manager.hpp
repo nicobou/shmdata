@@ -92,7 +92,8 @@ class QuiddityManager
   // &?= chars are not allowed in nicknames
   std::string create(const std::string &class_name, const std::string &nick_name);
   bool remove(const std::string &quiddity_name);
-
+  bool has_quiddity(const std::string &name);
+  
   // ****************** informations ******
   std::string get_info(const std::string &nick_name,
                        const std::string &path);

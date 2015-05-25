@@ -782,6 +782,10 @@ bool QuiddityManager::remove(const std::string &quiddity_name) {
     return false;
 }
 
+bool QuiddityManager::has_quiddity(const std::string &name) {
+  return manager_impl_->has_instance(name);
+}
+
 std::vector<std::string> QuiddityManager::get_classes() {
   std::vector<std::string> res;
   command_lock();

@@ -310,6 +310,10 @@ std::vector<std::string> QuiddityManager_Impl::get_instances() const {
   return res;
 }
 
+bool QuiddityManager_Impl::has_instance(const std::string &name) const {
+  return quiddities_.end() != quiddities_.find(name);
+}
+
 std::string QuiddityManager_Impl::get_quiddities_description() {
   JSONBuilder::ptr descr(new JSONBuilder());
   descr->reset();

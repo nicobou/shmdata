@@ -59,6 +59,8 @@ class QuiddityManager_Impl
   std::string get_name() const;
   std::vector<std::string> get_classes();
   std::vector<std::string> get_instances() const;
+  bool has_instance(const std::string &name) const;
+  
   // doc (json formatted)
   std::string get_classes_doc();
   std::string get_class_doc(const std::string &class_name);
