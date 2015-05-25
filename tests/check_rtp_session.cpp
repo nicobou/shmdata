@@ -119,12 +119,16 @@ main() {
     manager->subscribe_property("sub", "audioprobe", "caps");
     manager->invoke_va("audioprobe",
                        "connect",
-                       nullptr, "/tmp/switcher_rtptest_uri_a-audio", nullptr);
+                       nullptr,
+                       "/tmp/switcher_rtptest_uri_a-audio",
+                       nullptr);
     manager->create("fakesink", "videoprobe");
     manager->subscribe_property("sub", "videoprobe", "caps");
     manager->invoke_va("videoprobe",
                        "connect",
-                       nullptr, "/tmp/switcher_rtptest_uri_v-video", nullptr);
+                       nullptr,
+                       "/tmp/switcher_rtptest_uri_v-video",
+                       nullptr);
 
     // wait 3 seconds
     uint count = 3;
