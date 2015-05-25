@@ -30,11 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SoapCtrlClient,
                                      "Nicolas Bouillot");
 
 SoapCtrlClient::SoapCtrlClient(const std::string &) :
-    switcher_control_(nullptr),
-    url_(nullptr),
-    try_connect_g_source_(nullptr),
-    try_connect_mutex_()
-{}
+    custom_props_(new CustomPropertyHelper()){
+}
 
 bool
 SoapCtrlClient::init()
@@ -45,6 +42,20 @@ SoapCtrlClient::init()
   url_ = nullptr;
   switcher_control_->soap_endpoint = url_;
 
+  url_prop_ =
+      custom_props_->make_string_property("url",
+                                          "remote server url",
+                                          "",
+                                          (GParamFlags)G_PARAM_READABLE,
+                                          nullptr,
+                                          SoapCtrlClient::get_url,
+                                          this);
+
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            url_prop_,
+                            "url",
+                            "Remote URL");
+  
   install_method("Set Remote Switcher",
                  "set_remote_url",
                  "set remote url to control (for instance http://localhost:8080)",
@@ -470,4 +481,10 @@ SoapCtrlClient::invoke4(gpointer quiddity_name,
                                             &result);
   return TRUE;
 }
+
+const gchar *SoapCtrlClient::get_url(void *user_data) {
+  SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
+  return context->url_;
+}
+
 }
