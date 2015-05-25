@@ -45,6 +45,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     logger.cpp \
     method.cpp \
     net-utils.cpp \
+    periodic-task.cpp \
     plugin-loader.cpp \
     property-mapper.cpp \
     property.cpp \
@@ -115,6 +116,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     make-consultable.hpp \
     method.hpp \
     net-utils.hpp \
+    periodic-task.hpp \
     plugin-loader.hpp \
     property-mapper.hpp \
     property.hpp \
