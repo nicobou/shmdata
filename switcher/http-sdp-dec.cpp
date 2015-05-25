@@ -151,6 +151,7 @@ bool HTTPSDPDec::to_shmdata(std::string uri) {
 void HTTPSDPDec::uri_to_shmdata() {
   destroy_httpsdpdec();
   reset_bin();
+  clear_shmdatas();
   init_httpsdpdec();
   g_object_set_data(G_OBJECT(sdpdemux_.get_raw()),
                     "on-error-gsource",
