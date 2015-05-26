@@ -18,6 +18,7 @@
 #include <iostream>
 #include <thread>
 #include <algorithm>
+#include <climits>
 #include "shmdata/follower.hpp"
 #include "shmdata/console-logger.hpp"
 
@@ -67,14 +68,20 @@ int main (int argc, char *argv[]) {
   using namespace shmdata;
   ConsoleLogger logger;
   logger.set_debug(debug);
+  unsigned long long int frame_count = 0;
   {
     follower.reset(
         new Follower(shmpath,
-                     [](void *data, size_t size){
-                       std::cout <<  " size: " << size
-                                 << " data: ";
+                     [&frame_count](void *data, size_t size){
+                       std::cout << frame_count 
+                                 << "    size: " << size
+                                 << "    data: ";
+                       if (ULLONG_MAX == frame_count)
+                         frame_count = 0;
+                       else
+                         ++frame_count;
                        std::string etc;
-                       auto end = 20u;
+                       auto end = 15u;
                        char *vals = static_cast<char *>(data);
                        if (end * sizeof(char) > size) {
                          end = size;
