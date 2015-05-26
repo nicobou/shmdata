@@ -32,9 +32,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
                                      "urisrc",
                                      "Nicolas Bouillot");
 
-Uridecodebin::~Uridecodebin() {
-}
-
 Uridecodebin::Uridecodebin(const std::string &):
     gst_pipeline_(std2::make_unique<GstPipeliner>()),
     custom_props_(std::make_shared<CustomPropertyHelper>()) {
@@ -328,7 +325,6 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement *bin, GstPad *pad) {
   auto count = counter_.get_count(padname_splitted[0]);
   std::string media_name = std::string(padname_splitted[0]) + "-" + std::to_string(count);
   g_debug("uridecodebin: new media %s\n", media_name.c_str());
-  // FIXME shmsub + socket_path
   std::string shmpath = make_file_name(media_name);
   g_object_set(G_OBJECT(shmdatasink), "socket-path", shmpath.c_str(), nullptr);
   shm_subs_.emplace_back(
@@ -472,4 +468,5 @@ const gchar *Uridecodebin::get_uri(void *user_data) {
   Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   return context->uri_.c_str();
 }
-}
+
+}  // namespace switcher

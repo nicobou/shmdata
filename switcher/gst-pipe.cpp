@@ -28,11 +28,14 @@
 #include "./gst-pipe.hpp"
 
 namespace switcher {
-GstPipe::GstPipe(GMainContext *context) :
+GstPipe::GstPipe(GMainContext *context,
+                 on_error_cb_t on_error_cb,
+                 on_eos_cb_t on_eos_cb) :
+    on_error_cb_(on_error_cb),
+    on_eos_cb_(on_eos_cb),
     pipeline_ (gst_pipeline_new(nullptr)),
     gmaincontext_(context),
     source_funcs_() {
-
   source_funcs_.prepare = source_prepare;
   source_funcs_.check = source_check;
   source_funcs_.dispatch = source_dispatch;
@@ -75,7 +78,7 @@ gboolean GstPipe::bus_called(GstBus */*bus */,
   GError *error = nullptr;
   switch (GST_MESSAGE_TYPE(msg)) {
     case GST_MESSAGE_EOS:
-      g_warning("bus_call End of stream, name: %s", GST_MESSAGE_SRC_NAME(msg));
+      g_debug("bus_call End of stream, name: %s", GST_MESSAGE_SRC_NAME(msg));
       break;
     case GST_MESSAGE_SEGMENT_DONE:
       g_debug("bus_call segment done");
@@ -141,8 +144,8 @@ GstBusSyncReply GstPipe::bus_sync_handler(GstBus * /*bus*/,
             GST_MESSAGE_SRC_NAME(msg));
     g_error_free(error);
 
-    if (context->on_error_function_)
-      context->on_error_function_(msg);
+    if (context->on_error_cb_)
+      context->on_error_cb_(msg);
 
     return GST_BUS_DROP;
   }
@@ -181,7 +184,7 @@ void GstPipe::play_pipe(GstPipe *pipe) {
 }
 
 
-gboolean GstPipe::source_prepare(GSource * source, gint *timeout) {
+gboolean GstPipe::source_prepare(GSource *source, gint *timeout) {
   GstBusSource *bsrc = (GstBusSource *) source;
   *timeout = -1;
   return gst_bus_have_pending(bsrc->bus);
@@ -193,7 +196,8 @@ gboolean GstPipe::source_check(GSource *source) {
 }
 
 gboolean
-GstPipe::source_dispatch(GSource *source, GSourceFunc callback,
+GstPipe::source_dispatch(GSource *source,
+                         GSourceFunc callback,
                          gpointer user_data) {
   GstBusFunc handler = (GstBusFunc) callback;
   GstBusSource *bsrc = (GstBusSource *) source;
@@ -247,11 +251,9 @@ bool GstPipe::seek(gdouble position) {
 
 bool GstPipe::speed(gdouble speed) {
   g_debug("GstPipeliner::speed %f", speed);
-
   speed_ = speed;
   GstQuery *query;
   gboolean res;
-
   // query position
   query = gst_query_new_position(GST_FORMAT_TIME);
   res = gst_element_query(pipeline_, query);
@@ -264,7 +266,6 @@ bool GstPipe::speed(gdouble speed) {
     g_warning("position query failed...");
   }
   gst_query_unref(query);
-
   gboolean ret;
   ret = gst_element_seek(pipeline_,
                          speed,
@@ -290,10 +291,6 @@ void GstPipe::query_position_and_length() {
 
 GstElement *GstPipe::get_pipeline() {
   return pipeline_;
-}
-
-void GstPipe::set_on_error_function(std::function<void(GstMessage *)> fun) {
-  on_error_function_ = std::move(fun);
 }
 
 }  // namespace switcher

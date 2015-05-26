@@ -34,7 +34,7 @@ class Uridecodebin: public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uridecodebin);
   Uridecodebin(const std::string &);
-  ~Uridecodebin();
+  ~Uridecodebin() = default;
   Uridecodebin(const Uridecodebin &) = delete;
   Uridecodebin &operator=(const Uridecodebin &) = delete;
 

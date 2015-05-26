@@ -36,14 +36,16 @@
 namespace switcher {
 GstPipeliner::GstPipeliner():
     main_loop_(std2::make_unique<GlibMainLoop>()),
-    gst_pipeline_ (std2::make_unique<GstPipe>(main_loop_->get_main_context())) {
+    gst_pipeline_(
+        std2::make_unique<GstPipe>(main_loop_->get_main_context(),
+                                   std::bind(&GstPipeliner::on_gst_error,
+                                             this,
+                                             std::placeholders::_1),
+                                   [](){})){
   if (!gst_pipeline_) {
     g_warning("error initializing gstreamer pipeline");
     return;
   }
-  gst_pipeline_->set_on_error_function(std::bind(&GstPipeliner::on_gst_error,
-                                                 this,
-                                                 std::placeholders::_1));
 }
 
 GstPipeliner::~GstPipeliner() {

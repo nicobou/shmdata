@@ -31,13 +31,16 @@
 namespace switcher {
 
 class GstPipe {
+  using on_error_cb_t = std::function<void(GstMessage *)>;
+  using on_eos_cb_t = std::function<void()>;
  public:
-  GstPipe(GMainContext *context);
+  GstPipe(GMainContext *context,
+          on_error_cb_t on_error_cb,
+          on_eos_cb_t on_eos_cb);
   ~GstPipe();
   GstPipe() = delete;
   GstPipe(const GstPipe &) = delete;
   GstPipe &operator=(const GstPipe &) = delete;
-  void set_on_error_function(std::function<void(GstMessage *)> fun);
   bool play(bool play);
   bool seek(gdouble position);
   bool speed(gdouble speed);
@@ -49,7 +52,9 @@ class GstPipe {
     GstBus *bus;
     gboolean inited;
   } GstBusSource;
-
+  
+  on_error_cb_t on_error_cb_;
+  on_eos_cb_t on_eos_cb_;
   GstElement *pipeline_ {nullptr};
   GMainContext *gmaincontext_{nullptr};
   GSourceFuncs source_funcs_;
@@ -58,7 +63,6 @@ class GstPipe {
   std::condition_variable play_cond_{};
   GSource *source_ {nullptr};
   gint64 length_ {0};
-  std::function<void(GstMessage *)> on_error_function_{};
 
   void query_position_and_length();
   static gboolean source_prepare(GSource *source,
