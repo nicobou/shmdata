@@ -33,16 +33,24 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
                                      "Nicolas Bouillot");
 
 Uridecodebin::Uridecodebin(const std::string &):
-    gst_pipeline_(std2::make_unique<GstPipeliner>()),
+    gst_pipeline_(std2::make_unique<GstPipeliner>(
+        [this](GstMessage *msg){
+          this->bus_async(msg);
+        },
+        nullptr)),
     custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 
-bool Uridecodebin::init() {
+void Uridecodebin::bus_async(GstMessage *msg){
+  if (GST_MESSAGE_TYPE(msg) != GST_MESSAGE_EOS)
+    return;
+  if (loop_)
+    gst_pipeline_->seek(0);
+}
+
+bool Uridecodebin::init() {  
   if (!GstUtils::make_element("uridecodebin", &uridecodebin_))
     return false;
-  // FIXME
-  //install_play_pause();
-  //install_seek ();
   uri_spec_ =
       custom_props_->make_string_property("uri",
                                           "URI To Be Redirected Into Shmdata(s)",
@@ -70,28 +78,13 @@ void Uridecodebin::init_uridecodebin() {
     g_warning("cannot create uridecodebin");
     return;
   }
-
-  main_pad_ = nullptr;
   // discard_next_uncomplete_buffer_ = false;
   rtpgstcaps_ =
       gst_caps_from_string("application/x-rtp, media=(string)application");
-
   g_signal_connect(G_OBJECT(uridecodebin_),
                    "pad-added",
                    (GCallback) Uridecodebin::uridecodebin_pad_added_cb,
                    (gpointer) this);
-  g_signal_connect(G_OBJECT(uridecodebin_),
-                   "no-more-pads",
-                   (GCallback) Uridecodebin::no_more_pads_cb,
-                   (gpointer) this);
-  g_signal_connect(G_OBJECT(uridecodebin_),
-                   "source-setup",
-                   (GCallback) Uridecodebin::source_setup_cb,
-                   (gpointer) this);
-  // g_signal_connect (G_OBJECT (uridecodebin_),
-  //       "pad-removed",
-  //       (GCallback) Uridecodebin::pad_removed_cb ,
-  //       (gpointer) this);
   g_signal_connect(G_OBJECT(uridecodebin_),
                    "unknown-type",
                    (GCallback) Uridecodebin::unknown_type_cb,
@@ -100,28 +93,10 @@ void Uridecodebin::init_uridecodebin() {
                    "autoplug-continue",
                    (GCallback) Uridecodebin::autoplug_continue_cb,
                    (gpointer) this);
-  // g_signal_connect (G_OBJECT (uridecodebin_),
-  //       "autoplug-factory",
-  //       (GCallback) Uridecodebin::autoplug_factory_cb ,
-  //       (gpointer) this);
-  // g_signal_connect (G_OBJECT (uridecodebin_),
-  //       "autoplug-sort",
-  //       (GCallback) Uridecodebin::autoplug_sort_cb ,
-  //       (gpointer) this);
   g_signal_connect(G_OBJECT(uridecodebin_),
                    "autoplug-select",
                    (GCallback) Uridecodebin::autoplug_select_cb,
                    (gpointer) this);
-  // g_signal_connect (G_OBJECT (uridecodebin_),
-  //       "drained",
-  //       (GCallback) Uridecodebin::drained_cb ,
-  //       (gpointer) this);
-
-  // g_signal_connect (G_OBJECT (uridecodebin_),
-  //      "drained",
-  //      (GCallback) uridecodebin_drained_cb ,
-  //      (gpointer) this);
-
   g_object_set(G_OBJECT(uridecodebin_),
                // "ring-buffer-max-size",(guint64)200000000,
                // "download",TRUE,
@@ -131,11 +106,14 @@ void Uridecodebin::init_uridecodebin() {
                "async-handling", TRUE,
                // "buffer-duration",9223372036854775807,
                nullptr);
-  
 }
 
 void Uridecodebin::destroy_uridecodebin() {
-  gst_pipeline_ = std2::make_unique<GstPipeliner>();
+  gst_pipeline_ = std2::make_unique<GstPipeliner>(
+      [this](GstMessage *msg){
+        this->bus_async(msg);
+      },
+      nullptr);
   clean_on_error_command();
   prune_tree(".shmdata.writer.");
 }
@@ -145,12 +123,6 @@ void Uridecodebin::clean_on_error_command() {
     delete on_error_command_;
     on_error_command_ = nullptr;
   }
-}
-
-void Uridecodebin::no_more_pads_cb(GstElement * /*object */ ,
-                                   gpointer /*user_data */ ) {
-  // g_print ("---- no more pad\n");
-  // Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
 }
 
 void
@@ -165,10 +137,8 @@ Uridecodebin::unknown_type_cb(GstElement *bin,
 
 gboolean sink_factory_filter(GstPluginFeature *feature, gpointer data) {
   GstCaps *caps = (GstCaps *) data;
-
   if (!GST_IS_ELEMENT_FACTORY(feature))
     return FALSE;
-
   const GList *static_pads =
       gst_element_factory_get_static_pad_templates(GST_ELEMENT_FACTORY
                                                    (feature));
@@ -217,69 +187,9 @@ int Uridecodebin::autoplug_select_cb(GstElement * /*bin */ ,
   //   GST_AUTOPLUG_SELECT_EXPOSE,
   //   GST_AUTOPLUG_SELECT_SKIP
   // } GstAutoplugSelectResult;
-
   if (g_strcmp0(GST_OBJECT_NAME(factory), "rtpgstdepay") == 0)
     return 1;                 // expose
   return 0;                   // try
-}
-
-// GValueArray*
-// Uridecodebin::autoplug_factory_cb (GstElement *bin,
-//      GstPad          *pad,
-//      GstCaps         *caps,
-//      gpointer         user_data)
-// {
-//   g_print ("autoplug factory ---------- %s\n",gst_caps_to_string (caps));
-//   return nullptr;
-// }
-
-// GValueArray *
-// Uridecodebin::autoplug_sort_cb (GstElement *bin,
-//   GstPad *pad,
-//   GstCaps *caps,
-//   GValueArray *factories,
-//   gpointer user_data)
-// {
-//   g_print ("sort: %s\n%s\n", gst_element_get_name (bin),
-//                              gst_caps_to_string (caps));
-//   return g_value_array_copy(factories);
-// }
-
-gboolean Uridecodebin::process_eos(gpointer user_data) {
-  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-  if (!context->loop_) {
-    //context->play(FALSE);
-    //context->seek(0.0);
-    return FALSE;
-  }
-  //context->seek(0.0);
-  return FALSE;
-}
-
-gboolean
-Uridecodebin::event_probe_cb(GstPad * pad, GstEvent *event,
-                             gpointer user_data) {
-  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-  if (GST_EVENT_TYPE(event) == GST_EVENT_EOS) {
-    if (pad == context->main_pad_) {
-      GstUtils::g_idle_add_full_with_context(context->get_g_main_context(),
-                                             G_PRIORITY_DEFAULT_IDLE,
-                                             (GSourceFunc) process_eos,
-                                             (gpointer) context,
-                                             nullptr);
-    }
-    
-    return FALSE;
-  }
-
-  if (GST_EVENT_TYPE(event) == GST_EVENT_FLUSH_START
-      || GST_EVENT_TYPE(event) == GST_EVENT_FLUSH_STOP) {
-    /*|| GST_EVENT_TYPE (event) == GST_EVENT_LATENCY */
-    return FALSE;
-  }
-
-  // g_print ("event probed (%s)\n", GST_EVENT_TYPE_NAME(event));
-  return TRUE;
 }
 
 void Uridecodebin::release_buf(void *user_data) {
@@ -295,7 +205,6 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement *bin, GstPad *pad) {
     On_scope_exit{gst_caps_unref(padcaps);};
     gchar *padcapsstr = gst_caps_to_string(padcaps);
     On_scope_exit{g_free(padcapsstr);};
-    
     if (0 == g_strcmp0("ANY", padcapsstr)) {
       padname = "custom";
     } else {
@@ -303,17 +212,11 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement *bin, GstPad *pad) {
     }
   }
   g_debug("uridecodebin new pad name is %s", padname.c_str());
-
-  // probing eos
   GstElement *shmdatasink = nullptr;
   GstUtils::make_element("shmdatasink", &shmdatasink);
   gst_bin_add(GST_BIN(bin), shmdatasink);
   GstPad *sinkpad = gst_element_get_static_pad(shmdatasink, "sink");
   On_scope_exit{gst_object_unref(sinkpad);};
-  if (nullptr == main_pad_)
-    main_pad_ = sinkpad;  // saving first pad for looping
-  // FIXME
-  // gst_pad_add_event_probe(srcpad, (GCallback) event_probe_cb, this);
   if (GST_PAD_LINK_OK != gst_pad_link(pad, sinkpad))
     g_warning("pad link failed in decodebin-to-shmdata");
 
@@ -363,7 +266,6 @@ gboolean Uridecodebin::gstrtpdepay_event_probe_cb(GstPad * /*pad */ ,
                                                   GstEvent *event,
                                                   gpointer user_data) {
   Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-
   if (GST_EVENT_TYPE(event) == GST_EVENT_CUSTOM_DOWNSTREAM) {
     const GstStructure *s;
     s = gst_event_get_structure(event);
@@ -381,7 +283,6 @@ Uridecodebin::uridecodebin_pad_added_cb(GstElement *object,
                                         gpointer user_data)
 {
   Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-
   GstCaps *newcaps = gst_pad_get_current_caps(pad);
   On_scope_exit{gst_caps_unref(newcaps);};
   if (gst_caps_can_intersect(context->rtpgstcaps_, newcaps)) {
@@ -402,7 +303,6 @@ Uridecodebin::uridecodebin_pad_added_cb(GstElement *object,
     //                          G_CALLBACK
     //                          (Uridecodebin::gstrtpdepay_buffer_probe_cb),
     //                          context);
-
     gst_bin_add(GST_BIN(context->gst_pipeline_->get_pipeline()), rtpgstdepay);
     GstPad *sinkpad = gst_element_get_static_pad(rtpgstdepay, "sink");
     On_scope_exit{gst_object_unref(sinkpad);};
@@ -411,9 +311,7 @@ Uridecodebin::uridecodebin_pad_added_cb(GstElement *object,
     // gst_pad_add_event_probe(sinkpad,
     //                         (GCallback) Uridecodebin::gstrtpdepay_event_probe_cb,
     //                         context);
-
     GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad));
-    
     GstPad *srcpad = gst_element_get_static_pad(rtpgstdepay, "src");
     GstUtils::sync_state_with_parent(rtpgstdepay);
     On_scope_exit{gst_object_unref (srcpad);};
@@ -423,12 +321,6 @@ Uridecodebin::uridecodebin_pad_added_cb(GstElement *object,
   } else {
     context->pad_to_shmdata_writer(context->gst_pipeline_->get_pipeline(), pad);
   }
-}
-
-void
-Uridecodebin::source_setup_cb(GstElement */*uridecodebin*/,
-                              GstElement */*source*/,
-                              gpointer /*user_data*/) {
 }
 
 bool Uridecodebin::to_shmdata() {

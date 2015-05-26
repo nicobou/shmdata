@@ -41,7 +41,6 @@ class Uridecodebin: public Quiddity {
  private:
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   GstElement *uridecodebin_{nullptr};
-  GstPad *main_pad_{nullptr};
   GstCaps *rtpgstcaps_{nullptr};
   bool discard_next_uncomplete_buffer_{false};
   QuiddityCommand *on_error_command_{nullptr};  // for the pipeline error handler
@@ -60,6 +59,7 @@ class Uridecodebin: public Quiddity {
   void init_uridecodebin();
   void destroy_uridecodebin();
   void clean_on_error_command();
+  void bus_async(GstMessage *msg);
   static gboolean get_loop(void *user_data);
   static void set_loop(gboolean mute, void *user_data);
   static void set_uri(const gchar *value, void *user_data);
@@ -68,9 +68,6 @@ class Uridecodebin: public Quiddity {
   static void uridecodebin_pad_added_cb(GstElement * object, GstPad *pad,
                                         gpointer user_data);
   static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);
-  static void no_more_pads_cb(GstElement *object, gpointer user_data);
-  static void source_setup_cb(GstElement *uridecodebin,
-                              GstElement *source, gpointer user_data);
   static gboolean event_probe_cb(GstPad * pad, GstEvent *event,
                                  gpointer data);
   static gboolean process_eos(gpointer user_data);

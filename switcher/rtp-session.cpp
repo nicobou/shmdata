@@ -45,7 +45,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RtpSession,
                                      "Nicolas Bouillot");
 
 RtpSession::RtpSession(const std::string &):
-    gst_pipeline_(std2::make_unique<GstPipeliner>()),
+    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
     custom_props_(new CustomPropertyHelper()) {
 }
 

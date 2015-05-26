@@ -38,7 +38,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 HTTPSDPDec::HTTPSDPDec(const std::string &):
-    gst_pipeline_(std2::make_unique<GstPipeliner>()),
+    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
     souphttpsrc_("souphttpsrc"),
     sdpdemux_("sdpdemux") {
 }
@@ -83,7 +83,7 @@ void HTTPSDPDec::destroy_httpsdpdec() {
   shm_subs_.clear();
   prune_tree(".shmdata.reader");
   make_new_error_handler();
-  gst_pipeline_ = std2::make_unique<GstPipeliner>();
+  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
   counter_.reset_counter_map();
 }
 

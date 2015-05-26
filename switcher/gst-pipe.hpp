@@ -31,12 +31,14 @@
 namespace switcher {
 
 class GstPipe {
-  using on_error_cb_t = std::function<void(GstMessage *)>;
-  using on_eos_cb_t = std::function<void()>;
  public:
+  using on_msg_async_cb_t = std::function<void(GstMessage *)>;
+  using on_msg_sync_cb_t = std::function<GstBusSyncReply(GstMessage *)>;
   GstPipe(GMainContext *context,
-          on_error_cb_t on_error_cb,
-          on_eos_cb_t on_eos_cb);
+          GstBusSyncReply (*bus_sync_cb)(GstBus * /*bus*/,
+                                         GstMessage *msg,
+                                         gpointer user_data),
+          gpointer user_data);
   ~GstPipe();
   GstPipe() = delete;
   GstPipe(const GstPipe &) = delete;
@@ -44,7 +46,7 @@ class GstPipe {
   bool play(bool play);
   bool seek(gdouble position);
   bool speed(gdouble speed);
-  GstElement *get_pipeline();  // FIXME remove that
+  GstElement *get_pipeline();
   
  private:
   typedef struct {  // GstBus is a specific context:
@@ -53,17 +55,13 @@ class GstPipe {
     gboolean inited;
   } GstBusSource;
   
-  on_error_cb_t on_error_cb_;
-  on_eos_cb_t on_eos_cb_;
   GstElement *pipeline_ {nullptr};
   GMainContext *gmaincontext_{nullptr};
   GSourceFuncs source_funcs_;
   gdouble speed_ {1.0};
-  std::mutex play_pipe_{};
-  std::condition_variable play_cond_{};
   GSource *source_ {nullptr};
+  //  GSource *bus_watch_source_ {nullptr};
   gint64 length_ {0};
-
   void query_position_and_length();
   static gboolean source_prepare(GSource *source,
                                  gint *timeout);
@@ -72,12 +70,8 @@ class GstPipe {
                                   GSourceFunc callback,
                                   gpointer user_data);
   static void source_finalize(GSource *source);
-  
-  static gboolean bus_called(GstBus * bus, GstMessage *msg, gpointer data);
-  static GstBusSyncReply bus_sync_handler(GstBus * bus, GstMessage *msg,
-                                          gpointer user_data);
   static void play_pipe(GstPipe *pipe);
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

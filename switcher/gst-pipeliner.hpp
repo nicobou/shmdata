@@ -24,6 +24,7 @@
 #include <memory>
 #include <vector>
 #include <mutex>
+#include <list>
 #include <string>
 #include "./quiddity.hpp"
 #include "./glibmainloop.hpp"
@@ -40,7 +41,9 @@ class GstPipeliner {
   friend DecodebinToShmdata;
 
  public:
-  GstPipeliner();
+  GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
+               GstPipe::on_msg_sync_cb_t on_msg_sync_cb);
+  GstPipeliner() = delete;
   virtual ~GstPipeliner();
   GstPipeliner(const GstPipeliner &) = delete;
   GstPipeliner &operator=(const GstPipeliner &) = delete;
@@ -48,6 +51,7 @@ class GstPipeliner {
   GstElement *get_pipeline();
   void play(gboolean play);
   bool seek(gdouble position_in_ms);
+  void looping(gboolean looping);
   
  private:
     typedef struct {
@@ -57,10 +61,17 @@ class GstPipeliner {
   } QuidCommandArg;
 
  private:
+  GstPipe::on_msg_async_cb_t on_msg_async_cb_;
+  GstPipe::on_msg_sync_cb_t on_msg_sync_cb_;
   std::unique_ptr<GlibMainLoop> main_loop_;
   std::unique_ptr<GstPipe> gst_pipeline_;
+  std::list<GstMessage *> msgs_{};
   std::vector<QuidCommandArg *>commands_ {};
-  void on_gst_error(GstMessage *msg);
+  GstBusSyncReply on_gst_error(GstMessage *msg);
+  static gboolean bus_async(gpointer user_data);
+  static GstBusSyncReply bus_sync_handler(GstBus * bus,
+                                          GstMessage *msg,
+                                          gpointer user_data);
 };
 
 }  // namespace switcher
