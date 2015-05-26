@@ -188,6 +188,26 @@ v8::Handle<v8::Value> Remove(const v8::Arguments &args) {
     return v8::Boolean::New(false);
 }
 
+v8::Handle<v8::Value> HasQuiddity(const v8::Arguments &args) {
+  v8::HandleScope scope;
+  if (args.Length() != 1) {
+    ThrowException(v8::Exception::TypeError(v8::String::New
+                                            ("Wrong number of arguments")));
+    return scope.Close(v8::Undefined());
+  }
+  if (!args[0]->IsString()) {
+    ThrowException(v8::Exception::TypeError(v8::String::New
+                                            ("switcher has_quiddity:"
+                                             " Wrong first arguments type")));
+    return scope.Close(v8::Undefined());
+  }
+  v8::String::Utf8Value first_arg(args[0]->ToString());
+  if (switcher_container[0]->has_quiddity(std::string(*first_arg)))
+    return v8::Boolean::New(true);
+  else
+    return v8::Boolean::New(false);
+}
+
 v8::Handle<v8::Value> Create(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 1 && args.Length() != 2) {
@@ -1005,6 +1025,8 @@ Init(v8::Handle<v8::Object> target) {
               v8::FunctionTemplate::New(Create)->GetFunction());
   target->Set(v8::String::NewSymbol("remove"),
               v8::FunctionTemplate::New(Remove)->GetFunction());
+  target->Set(v8::String::NewSymbol("has_quiddity"),
+              v8::FunctionTemplate::New(HasQuiddity)->GetFunction());
   target->Set(v8::String::NewSymbol("close"),
               v8::FunctionTemplate::New(SwitcherClose)->GetFunction());
   target->Set(v8::String::NewSymbol("get_classes_doc"),

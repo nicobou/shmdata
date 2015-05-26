@@ -33,8 +33,13 @@ on_visiting_node(std::string key,
 
   if (node->is_leaf())
   {
-    json_builder_add_string_value(builder,
-                                  Any::to_string(node->read_data()).c_str());
+    if (!node->read_data().is_null()) {
+      json_builder_add_string_value(builder,
+                                    Any::to_string(node->read_data()).c_str());
+    } else {
+      json_builder_begin_object(builder);
+      json_builder_end_object(builder);
+    }
     return;
   } else {  // adding node value with the key "key_value" along with other childrens
     if (node->is_array()) {

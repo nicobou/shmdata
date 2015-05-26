@@ -33,6 +33,7 @@ bool Segment::init_segment(Quiddity *quid) {
   if (nullptr == quid)
     return false;
   quid_ = quid;
+  quid_->graft_tree(".shmdata", data::Tree::make());
   return true;
 }
 

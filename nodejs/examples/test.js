@@ -135,7 +135,15 @@ switcher_addon.set_property_value("propsubtest", "freq", "333");
 console.log('\n\n---- invoke rtptest returned:', 
   	    switcher_addon.invoke("rtptest", "add_destination", ["local","localhost"]));
 
- //remove 
- console.log('\n\n---- remove rtptest returned:', 
+// has_quiddity
+console.log('\n\n---- has_quiddity rtptest returned:', 
+  	    switcher_addon.has_quiddity("rtptest"));
+
+//remove 
+console.log('\n\n---- remove rtptest returned:', 
   	    switcher_addon.remove("rtptest"));
+
+// has_quiddity
+console.log('\n\n---- has_quiddity rtptest returned:', 
+  	    switcher_addon.has_quiddity("rtptest"));
 

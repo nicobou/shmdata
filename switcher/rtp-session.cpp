@@ -349,6 +349,7 @@ RtpSession::add_destination(std::string nick_name, std::string host_name)
   dest->set_name(nick_name);
   dest->set_host_name(host_name);
   destinations_[nick_name] = dest;
+  custom_props_->notify_property_changed(destination_description_json_);
   return true;
 }
 
@@ -356,7 +357,6 @@ gboolean
 RtpSession::remove_destination_wrapped(gpointer nick_name,
                                        gpointer user_data) {
   RtpSession *context = static_cast<RtpSession *>(user_data);
-
   if (context->remove_destination((char *) nick_name))
     return TRUE;
   else
@@ -373,6 +373,7 @@ bool RtpSession::remove_destination(std::string nick_name) {
   for (auto &iter: it->second->get_shmdata())
     remove_udp_stream_to_dest(iter, nick_name);
   destinations_.erase(it);
+  custom_props_->notify_property_changed(destination_description_json_);
   return true;
 }
 
@@ -426,6 +427,7 @@ RtpSession::add_udp_stream_to_dest(std::string shmpath,
                          dest->get_host_name().c_str(),
                          rtp_port + 1,
                          nullptr);
+  custom_props_->notify_property_changed(destination_description_json_);
   return true;
 }
 
@@ -481,6 +483,7 @@ RtpSession::remove_udp_stream_to_dest(std::string shmpath,
                          dest->get_host_name().c_str(),
                          rtp_port + 1,
                          nullptr);
+  custom_props_->notify_property_changed(destination_description_json_);
   return true;
 }
 
