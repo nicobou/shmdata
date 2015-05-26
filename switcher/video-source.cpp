@@ -35,7 +35,7 @@ VideoSource::VideoSource():
   GstUtils::element_factory_list_to_g_enum(secondary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
                                            GST_RANK_SECONDARY,
-                                           false);
+                                           true);
   primary_codec_spec_ =
       custom_props_->make_enum_property("codec",
                                         "Codec Short List",
