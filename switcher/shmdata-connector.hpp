@@ -29,13 +29,12 @@ namespace switcher {
 class Quiddity;
 
 class ShmdataConnector
-/*inherit from CounterMap for sharing counters between multiple DecodebinToShmdata */
 {
  public:
-  using OnConnect = std::function<bool(const std::string &)>;
-  using OnDisconnect = std::function<bool(const std::string &)>;
+  using OnConnect = std::function<bool(const std::string &/*shmpath*/)>;
+  using OnDisconnect = std::function<bool(const std::string &/*shmpath*/)>;
   using OnDisconnectAll = std::function<bool()>;
-  using CanSinkCaps = std::function<bool(const std::string &)>;
+  using CanSinkCaps = std::function<bool(const std::string &/*caps*/)>;
 
   explicit ShmdataConnector(Quiddity *quid);
   ShmdataConnector() = delete;
@@ -50,8 +49,7 @@ class ShmdataConnector
 
  private:
   Quiddity *quid_ {nullptr};
-
-  // reader methods to install by a subclass
+  // methods to install
   OnConnect on_connect_cb_ {nullptr};
   OnDisconnect on_disconnect_cb_ {nullptr};
   OnDisconnectAll on_disconnect_all_cb_ {nullptr};

@@ -19,35 +19,46 @@
 
 #include "switcher/gst-utils.hpp"
 #include "switcher/scope-exit.hpp"
+#include "switcher/std2.hpp"
+#include "switcher/shmdata-utils.hpp"
 #include "./shmdata-to-jack.hpp"
 #include "./audio-resampler.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
-                                     "Audio Display (Jack)",
-                                     "audio",
-                                     "Audio display",
-                                     "LGPL",
-                                     "jacksink",
-                                     "Nicolas Bouillot");
-bool ShmdataToJack::init_gpipe() {
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    ShmdataToJack,
+    "Audio Display (Jack)",
+    "audio",
+    "Audio display",
+    "LGPL",
+    "jacksink",
+    "Nicolas Bouillot");
+
+ShmdataToJack::ShmdataToJack(const std::string &name):
+    shmcntr_(static_cast<Quiddity *>(this)),
+    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
+    custom_props_(std::make_shared<CustomPropertyHelper>()),
+    jack_client_(name.c_str()) {
+  jack_client_.set_jack_process_callback(&ShmdataToJack::jack_process, this);
+  jack_client_.set_on_xrun_callback([this](uint n){on_xrun(n);});
+}
+
+bool ShmdataToJack::init() {
   if (!jack_client_) {
     g_warning("JackClient cannot be instancied");
     return false;
   }
   if (!make_elements())
     return false;
-  init_startable(this);
+  shmcntr_.install_connect_method(
+      [this](const std::string &shmpath){return this->on_shmdata_connect(shmpath);},
+      nullptr,
+      [this](){return this->on_shmdata_disconnect();},
+      [this](const std::string &caps){return this->can_sink_caps(caps);},
+      1);
   install_property(G_OBJECT(volume_), "volume", "volume", "Volume");
   install_property(G_OBJECT(volume_), "mute", "mute", "Mute");
   return true;
-}
-
-ShmdataToJack::ShmdataToJack(const std::string &name):
-    custom_props_(std::make_shared<CustomPropertyHelper>()),
-    jack_client_(name.c_str()) {
-  jack_client_.set_jack_process_callback(&ShmdataToJack::jack_process, this);
-  jack_client_.set_on_xrun_callback([this](uint n){on_xrun(n);});
 }
 
 int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
@@ -91,7 +102,7 @@ void ShmdataToJack::on_handoff_cb(GstElement */*object*/,
                                   gpointer user_data) {
   ShmdataToJack *context = static_cast<ShmdataToJack *>(user_data);
   auto current_time = jack_frame_time(context->jack_client_.get_raw());
-  GstCaps *caps = gst_pad_get_negotiated_caps(pad);
+  GstCaps *caps = gst_pad_get_current_caps(pad);
   if (nullptr == caps)
     return;
   On_scope_exit {gst_caps_unref(caps);};
@@ -103,7 +114,14 @@ void ShmdataToJack::on_handoff_cb(GstElement */*object*/,
                               "channels");
   const int channels = g_value_get_int(val);
   context->check_output_ports(channels);
-  jack_nframes_t duration = GST_BUFFER_SIZE(buf) / (4 * channels);
+  //getting buffer infomation:
+  GstMapInfo map;
+  if (!gst_buffer_map (buf, &map, GST_MAP_READ)) {
+    g_warning("gst_buffer_map failled: canceling audio buffer access");
+    return;
+  }
+  On_scope_exit{gst_buffer_unmap (buf, &map);};
+  jack_nframes_t duration = map.size / (4 * channels);
   // setting the smoothing value affecting (20 sec)
   context->drift_observer_.set_smoothing_factor(
       (double)duration / (20.0 * (double)context->jack_client_.get_sample_rate()));
@@ -116,18 +134,7 @@ void ShmdataToJack::on_handoff_cb(GstElement */*object*/,
             context->drift_observer_.get_ratio());
     context->debug_buffer_usage_ = 1000;
   }
-  // if (duration != new_size) {
-  //   g_print("duration %u, new size %lu, load is %lu, ratio is %f, sf %f\n",
-  //           duration,
-  //           new_size,
-  //           context->ring_buffers_[0].get_usage(),
-  //           context->drift_observer_.get_ratio(),
-  //           context->drift_observer_.get_smoothing_factor());
-  // }
-  // std::vector<jack_sample_t> buf_copy((jack_sample_t *)GST_BUFFER_DATA(buf),
-  //                                     (jack_sample_t *)(GST_BUFFER_DATA(buf) + GST_BUFFER_SIZE(buf)));
-  // jack_sample_t *tmp_buf = (jack_sample_t *)buf_copy.data();
-  jack_sample_t *tmp_buf = (jack_sample_t *)GST_BUFFER_DATA(buf);
+  jack_sample_t *tmp_buf = (jack_sample_t *)map.data;
   for (int i = 0; i < channels; ++i) {
     AudioResampler<jack_sample_t> resample(duration, new_size, tmp_buf, i, channels);
     auto emplaced =
@@ -161,7 +168,7 @@ void ShmdataToJack::check_output_ports(unsigned int channels){
 
 bool ShmdataToJack::make_elements() {
   GError *error = nullptr;
-  std::string description(std::string(" audioconvert ! audioresample ! volume ! ")
+  std::string description(std::string("shmdatasrc ! audioconvert ! audioresample ! volume ! ")
                           + " audioconvert ! "
                           + " capsfilter caps=\"audio/x-raw-float, "
                           "endianness=(int)1234, width=(int)32, rate="
@@ -174,7 +181,9 @@ bool ShmdataToJack::make_elements() {
     g_error_free(error);
     return false;
   }
-  g_object_set(G_OBJECT(jacksink), "async-handling", TRUE, nullptr);
+  GstElement *shmdatasrc =
+      GstUtils::get_first_element_from_factory_name(GST_BIN(jacksink),
+                                                    "fakesink");
   GstElement *volume =
       GstUtils::get_first_element_from_factory_name(GST_BIN(jacksink),
                                                     "volume");
@@ -195,6 +204,7 @@ bool ShmdataToJack::make_elements() {
                                       this);
   if (nullptr != audiobin_) 
     GstUtils::clean_element(audiobin_);
+  shmdatasrc_ = shmdatasrc;
   audiobin_ = jacksink;
   volume_ = volume;
   fakesink_ = fakesink;
@@ -202,20 +212,38 @@ bool ShmdataToJack::make_elements() {
 }
 
 bool ShmdataToJack::start() {
-  if (false == make_elements())
+  if (shmpath_.empty()) {
+    g_warning("cannot start, no shmdata to connect with");
     return false;
-  set_sink_element(audiobin_);
-  reinstall_property(G_OBJECT(volume_),
-                     "volume", "volume", "Volume");
-  reinstall_property(G_OBJECT(volume_),
-                     "mute", "mute", "Mute");
+  }
+  g_object_set(G_OBJECT(shmdatasrc_), "socket-path", shmpath_.c_str(), nullptr);
+  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+      shmdatasrc_,
+      [this](std::string &&caps) {
+        this->graft_tree(".shmdata.reader." + this->shmpath_,
+                         ShmdataUtils::make_tree(caps,
+                                                 ShmdataUtils::get_category(caps),
+                                                 0));
+      },
+      [this](GstShmdataSubscriber::num_bytes_t byte_rate){
+        auto tree = this->prune_tree(".shmdata.reader." + this->shmpath_, false);
+        if (!tree)
+          return;
+        tree->graft(".byte-rate",
+                    data::Tree::make(std::to_string(byte_rate)));
+        this->graft_tree(".shmdata.reader." + this->shmpath_, tree);
+      });
+  gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), audiobin_);
+  gst_pipeline_->play(true);
   return true;
 }
 
 bool ShmdataToJack::stop() {
-  if (!make_elements())
-    return false;
-  reset_bin();
+  {
+    On_scope_exit{gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);};
+    if (!make_elements())
+      return false;
+  }
   reinstall_property(G_OBJECT(volume_),
                      "volume", "volume", "Volume");
   reinstall_property(G_OBJECT(volume_),
@@ -223,18 +251,18 @@ bool ShmdataToJack::stop() {
   return true;
 }
 
-void ShmdataToJack::on_shmdata_disconnect() {
+bool ShmdataToJack::on_shmdata_disconnect() {
   stop();
+  return true;
 }
 
-void ShmdataToJack::on_shmdata_connect(std::string /* shmdata_sochet_path */ ) {
-  if (is_started()) {
-    stop();
-    set_sink_element_no_connect(audiobin_);
-  }
+bool ShmdataToJack::on_shmdata_connect(const std::string &shmpath) {
+  shmpath_ = shmpath;
+  stop();
+  return start();
 }
 
-bool ShmdataToJack::can_sink_caps(std::string caps) {
+bool ShmdataToJack::can_sink_caps(const std::string &caps) {
   return GstUtils::can_sink_caps("audioconvert", caps);
 }
 

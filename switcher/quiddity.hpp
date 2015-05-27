@@ -47,6 +47,7 @@ class QuiddityManager_Impl;
 class Quiddity {
   friend class StartableQuiddity;
   friend class ShmdataConnector;
+  friend class ShmdataWriter;
   friend class DefaultVideoFormat;
   
  public:

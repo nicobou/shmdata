@@ -17,114 +17,50 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "switcher/shmdata-utils.hpp"
+#include "switcher/std2.hpp"
 #include "./shmdata-writer.hpp"
-#include "./gst-utils.hpp"
 
-// namespace switcher {
-// ShmdataWriter::ShmdataWriter():started_(false),
-//                                      path_(),
-//                                      writer_(shmdata_any_writer_init()),
-//                                      json_description_(new JSONBuilder()), thread_safe_() {
-//   shmdata_any_writer_set_debug(writer_, SHMDATA_ENABLE_DEBUG);
-// }
+namespace switcher {
 
-// ShmdataWriter::~ShmdataWriter() {
-//   std::unique_lock<std::mutex> lock(thread_safe_);
-//   // g_print ("%s\n",__FUNCTION__);
-//   shmdata_any_writer_close(writer_);
-//   if (!path_.empty())
-//     g_debug("ShmdataWriter: %s deleted", path_.c_str());
-// }
+ShmdataWriter::ShmdataWriter(Quiddity *quid,
+                             const std::string &path,
+                             size_t memsize,
+                             const std::string &data_descr):
+    quid_(quid),
+    shmpath_(path),
+    data_type_(data_descr),
+    shm_(shmpath_, memsize, data_type_, &shmlog_),
+    task_(shm_ ?
+          std2::make_unique<PeriodicTask>([this](){
+              this->update_quid_byte_rate();
+            }, std::chrono::milliseconds(1000))
+          : nullptr) {
+  if (shm_ && nullptr != quid_)
+    quid_->graft_tree(".shmdata.writer." + shmpath_,
+                      ShmdataUtils::make_tree(data_type_,
+                                              ShmdataUtils::get_category(data_type_),
+                                              0));
+}
 
-// // WARNING if the file exist it will be deleted
-// bool ShmdataWriter::set_path(std::string name) {
-//   std::unique_lock<std::mutex> lock(thread_safe_);
-//   // g_print ("%s\n",__FUNCTION__);
-//   GFile *shmfile = g_file_new_for_commandline_arg(name.c_str());
-//   if (g_file_query_exists(shmfile, nullptr)) {
-//     // thrash it
-//     g_debug
-//         ("ShmdataWriter::set_path warning: file %s exists and will be deleted.",
-//          name.c_str());
-//     if (!g_file_delete(shmfile, nullptr, nullptr)) {
-//       g_debug
-//           ("ShmdataWriter::set_path error: file %s is already existing and cannot be trashed.",
-//            name.c_str());
-//       return false;
-//     }
-//   }
+ShmdataWriter::~ShmdataWriter(){
+  quid_->prune_tree(".shmdata.writer." + shmpath_);
+}
 
-//   return set_path_without_deleting(name);
-// }
+void ShmdataWriter::bytes_written(size_t size){
+  std::unique_lock<std::mutex>(bytes_mutex_);
+  bytes_written_ += size;
+}
 
-// bool ShmdataWriter::set_path_without_deleting(std::string name) {
-//   // setting the writer
-//   shmdata_any_writer_set_path(writer_, name.c_str());
-//   path_ = name;
-//   make_json_description();
-//   return true;
-// }
+void ShmdataWriter::update_quid_byte_rate(){
+  std::unique_lock<std::mutex>(bytes_mutex_);
+  auto tree = quid_->prune_tree(".shmdata.writer." + shmpath_, false);
+  if (!tree)
+    return;
+  tree->graft(".byte-rate",
+              data::Tree::make(std::to_string(bytes_written_)));
+  bytes_written_ = 0;
+  quid_->graft_tree(".shmdata.writer." + shmpath_, tree);
+}
 
-// std::string ShmdataWriter::get_path() {
-//   std::unique_lock<std::mutex> lock(thread_safe_);
-//   return path_;
-// }
-
-// void ShmdataWriter::start() {
-//   std::unique_lock<std::mutex> lock(thread_safe_);
-//   shmdata_any_writer_start(writer_);
-//   started_ = true;
-// }
-
-// void ShmdataWriter::set_data_type(std::string data_type) {
-//   std::unique_lock<std::mutex> lock(thread_safe_);
-//   shmdata_any_writer_set_data_type(writer_, data_type.c_str());
-//   set_negociated_caps(std::move(data_type));
-// }
-
-// void
-// ShmdataWriter::push_data(void *data,
-//                             size_t data_size,
-//                             unsigned long long clock,
-//                             void(*data_not_required_anymore)(void *),
-//                             void *user_data) {
-//   std::unique_lock<std::mutex> lock(thread_safe_);
-//   // // g_print ("%s\n",__FUNCTION__);
-//   if (started_)
-//     shmdata_any_writer_push_data(writer_,
-//                                  data,
-//                                  data_size,
-//                                  clock,
-//                                  data_not_required_anymore, user_data);
-// }
-
-// void
-// ShmdataWriter::push_data_auto_clock(void *data,
-//                                        size_t data_size,
-//                                        void(*data_not_required_anymore)
-//                                        (void *), void *user_data) {
-//   std::unique_lock<std::mutex> lock(thread_safe_);
-//   if (started_)
-//     shmdata_any_writer_push_data(writer_,
-//                                  data,
-//                                  data_size,
-//                                  clock_.get_count(),
-//                                  data_not_required_anymore, user_data);
-// }
-
-// void ShmdataWriter::make_json_description() {
-//   json_description_->reset();
-//   json_description_->begin_object();
-//   json_description_->add_string_member("path", path_.c_str());
-//   json_description_->end_object();
-// }
-
-// JSONBuilder::Node ShmdataWriter::get_json_root_node() {
-//   return json_description_->get_root();
-// }
-
-// bool ShmdataWriter::started() {
-//   std::unique_lock<std::mutex> lock(thread_safe_);
-//   return started_;
-// }
-// }
+}  // namespace switcher
