@@ -170,8 +170,8 @@ bool ShmdataToJack::make_elements() {
   GError *error = nullptr;
   std::string description(std::string("shmdatasrc ! audioconvert ! audioresample ! volume ! ")
                           + " audioconvert ! "
-                          + " capsfilter caps=\"audio/x-raw-float, "
-                          "endianness=(int)1234, width=(int)32, rate="
+                          + " capsfilter caps=\"audio/x-raw, format=(string)F32LE, "
+                          "layout=(string)interleaved, rate="
                           + std::to_string(jack_client_.get_sample_rate())
                           + "\" !" 
                           + " fakesink silent=true signal-handoffs=true sync=false");

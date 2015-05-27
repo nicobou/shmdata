@@ -45,6 +45,7 @@ bool JackToShmdata::init() {
     g_warning("JackClient cannot be instancied");
     return false;
   }
+  init_startable(this);
   num_channels_spec_ =
       custom_props_->make_int_property("channels",
                                        "number of channels",
