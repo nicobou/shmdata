@@ -65,12 +65,18 @@ class OneWriteAccess {
   void *get_mem() {return mem_;};
   short notify_clients(size_t size); /* must be called only once,
                                         return number of clients notified */
+  ~OneWriteAccess() = default;
+  OneWriteAccess() = delete;
+  OneWriteAccess(const OneWriteAccess &) = delete;
+  OneWriteAccess& operator=(const OneWriteAccess&) = delete;
+  OneWriteAccess& operator=(OneWriteAccess&&) = default;
+  
  private:
   OneWriteAccess(sysVSem *sem,
                  void *mem,
                  UnixSocketServer *srv,
                  AbstractLogger *log);
-  OneWriteAccess& operator=(OneWriteAccess&&) = default;
+
   WriteLock wlock_;
   void *mem_;
   UnixSocketServer *srv_;
