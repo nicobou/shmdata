@@ -17,40 +17,45 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "./std2.hpp"
+#include "./quiddity.hpp"
 #include "./shmdata-follower.hpp"
+#include "./shmdata-utils.hpp"
 
 namespace switcher {
-ShmdataFollower::ShmdataFollower(const std::string &path,
+ShmdataFollower::ShmdataFollower(Quiddity *quid,
+                                 const std::string &path,
                                  shmdata::Reader::onData od,
                                  shmdata::Reader::onServerConnected osc,
                                  shmdata::Reader::onServerDisconnected osd):
-    path_(path),
+    quid_(quid),
+    shmpath_(path),
     od_(od),
     osc_(osc),
     osd_(osd),
-    follower_(path_,
-              [this](void *data, size_t size){this->on_data(data, size);},
-              osc_,
-              osd_,
-              &logger_),
-    json_description_(new JSONBuilder()) {
-  make_json_description();
+    follower_(std2::make_unique<shmdata::Follower>(shmpath_,
+                                                   [this](void *data, size_t size){
+                                                     this->on_data(data, size);
+                                                   },
+                                                   osc_,
+                                                   osd_,
+                                                   &logger_)),
+  task_(std2::make_unique<PeriodicTask>([this](){
+        this->update_quid_byte_rate();
+      }, std::chrono::milliseconds(1000))) {
 }
 
-
-void ShmdataFollower::make_json_description() {
-  json_description_->reset();
-  json_description_->begin_object();
-  json_description_->add_string_member("path", path_.c_str());
-  json_description_->end_object();
+ShmdataFollower::~ShmdataFollower(){
+  follower_.reset(nullptr);
+  if (!data_type_.empty())
+    quid_->prune_tree(".shmdata.reader." + shmpath_);
 }
 
-JSONBuilder::Node ShmdataFollower::get_json_root_node() {
-  return json_description_->get_root();
-}
-
-void
-ShmdataFollower::on_data(void *data, size_t size) {
+void ShmdataFollower::on_data(void *data, size_t size) {
+  {
+    std::unique_lock<std::mutex>(bytes_mutex_);
+    bytes_written_ += size;
+  }
   if (!od_) {
     g_warning("data not handled by follower");
     return;
@@ -58,4 +63,32 @@ ShmdataFollower::on_data(void *data, size_t size) {
   od_(data, size);
 }
 
+void ShmdataFollower::on_server_connected(const std::string &data_type){
+  if (data_type != data_type_) {
+    data_type_ = data_type;
+    quid_->graft_tree(".shmdata.reader." + shmpath_,
+                      ShmdataUtils::make_tree(data_type_,
+                                              ShmdataUtils::get_category(data_type_),
+                                              0));
+  }
+  if (osc_)
+    osc_(data_type);
 }
+
+void ShmdataFollower::on_server_disconnected(){
+  if (osd_)
+    osd_();
+}
+
+void ShmdataFollower::update_quid_byte_rate(){
+  std::unique_lock<std::mutex>(bytes_mutex_);
+  auto tree = quid_->prune_tree(".shmdata.writer." + shmpath_, false);
+  if (!tree)
+    return;
+  tree->graft(".byte-rate",
+              data::Tree::make(std::to_string(bytes_written_)));
+  bytes_written_ = 0;
+  quid_->graft_tree(".shmdata.reader." + shmpath_, tree);
+}
+
+}  // namespace switcher

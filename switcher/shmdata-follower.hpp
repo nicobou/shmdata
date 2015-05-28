@@ -24,35 +24,41 @@
 #include <memory>
 #include <string>
 #include <shmdata/follower.hpp>
-#include "./json-builder.hpp"
-#include "./shmdata-glib-logger.hpp"
+#include "switcher/shmdata-glib-logger.hpp"
+#include "switcher/periodic-task.hpp"
 
 namespace switcher {
+class Quiddity;
+
 class ShmdataFollower {
  public:
-  typedef std::shared_ptr<ShmdataFollower> ptr;
-  ShmdataFollower(const std::string &path,
+  ShmdataFollower(Quiddity *quid,
+                  const std::string &path,
                   shmdata::Reader::onData cb,
-                  shmdata::Reader::onServerConnected osc,
-                  shmdata::Reader::onServerDisconnected osd);
-  ~ShmdataFollower() = default;
+                  shmdata::Reader::onServerConnected osc = nullptr,
+                  shmdata::Reader::onServerDisconnected osd = nullptr);
+  ~ShmdataFollower();
   ShmdataFollower(const ShmdataFollower &) = delete;
   ShmdataFollower &operator=(const ShmdataFollower &) = delete;
 
-  std::string get_path() const;
-  JSONBuilder::Node get_json_root_node();
-
  private:
+  Quiddity *quid_;
   ShmdataGlibLogger logger_{};
-  std::string path_;
+  std::string shmpath_;
+  std::string data_type_{};
   shmdata::Reader::onData od_;
   shmdata::Reader::onServerConnected osc_;
   shmdata::Reader::onServerDisconnected osd_;
-  shmdata::Follower follower_;
-  JSONBuilder::ptr json_description_;
+  std::unique_ptr<shmdata::Follower> follower_;
+  // monitoring byte rate
+  size_t bytes_written_{0};
+  std::mutex bytes_mutex_{};
+  std::unique_ptr<PeriodicTask> task_;
 
   void on_data(void *data, size_t data_size);
-  void make_json_description();
+  void on_server_connected(const std::string &data_type);
+  void on_server_disconnected();
+  void update_quid_byte_rate();
 };
 
 }  // namespace switcher
