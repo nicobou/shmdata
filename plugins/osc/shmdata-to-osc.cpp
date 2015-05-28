@@ -30,6 +30,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToOsc,
                                      "Nicolas Bouillot");
 
 ShmdataToOsc::ShmdataToOsc(const std::string &):
+    shmcntr_(static_cast<Quiddity *>(this)),
     custom_props_(new CustomPropertyHelper()),
     port_(1056),
     host_("localhost"),
@@ -39,10 +40,12 @@ ShmdataToOsc::ShmdataToOsc(const std::string &):
 
 bool ShmdataToOsc::init() {
   init_startable(this);
-  init_segment(this);
-
-  install_connect_method(std::bind(&ShmdataToOsc::connect, this, std::placeholders::_1), nullptr, nullptr, std::bind(&ShmdataToOsc::can_sink_caps, this, std::placeholders::_1), 1);  // could be more but should be tested
-
+  shmcntr_.install_connect_method(
+      [this](const std::string &shmpath){return this->connect(shmpath);},
+      [this](const std::string &){return this->disconnect();},
+      [this](){return this->disconnect();},
+      [this](const std::string &caps){return this->can_sink_caps(caps);},
+      1);
   port_spec_ =
       custom_props_->make_int_property("Port",
                                        "OSC destination port",
@@ -119,28 +122,23 @@ const gchar *ShmdataToOsc::get_host(void *user_data) {
   return context->host_.c_str();
 }
 
-bool ShmdataToOsc::connect(std::string path) {
-  ShmdataAnyReader::ptr reader = std::make_shared<ShmdataAnyReader> ();
-  reader->set_data_type("application/x-libloserialized-osc");
-  reader->set_path(path);
-  reader->set_callback(std::bind(&ShmdataToOsc::on_shmreader_data,
-                                 this,
-                                 std::placeholders::_1,
-                                 std::placeholders::_2,
-                                 std::placeholders::_3,
-                                 std::placeholders::_4,
-                                 std::placeholders::_5), NULL);
-  reader->start();
-  register_shmdata(reader);
+bool ShmdataToOsc::connect(const std::string &path) {
+  shm_.reset(new ShmdataFollower(this,
+                                 path,
+                                 [this](void *data, size_t size){
+                                   this->on_shmreader_data(data, size);
+                                 }));
+  return true;
+}
+
+bool ShmdataToOsc::disconnect() {
+  shm_.reset(nullptr);
   return true;
 }
 
 void
 ShmdataToOsc::on_shmreader_data(void *data,
-                                int data_size,
-                                unsigned long long timestamp,
-                                const char *type_description,
-                                void *user_data) {
+                                int data_size) {
   const char *path = lo_get_path(data, data_size);
   lo_message msg = lo_message_deserialise(data,
                                           data_size,
@@ -154,7 +152,8 @@ ShmdataToOsc::on_shmreader_data(void *data,
   }
 }
 
-bool ShmdataToOsc::can_sink_caps(std::string caps) {
+bool ShmdataToOsc::can_sink_caps(const std::string &caps) {
   return 0 == caps.find("application/x-libloserialized-osc");
 }
-}                               // end of ShmdataToOsc class
+
+}  // namespace switcher
