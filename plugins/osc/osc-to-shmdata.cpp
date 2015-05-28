@@ -124,12 +124,13 @@ OscToShmdata::osc_handler(const char *path,
   }
   size_t size;
   void *buftmp = lo_message_serialise(m, path, nullptr, &size);
-  if (context->shm_->writer(&shmdata::Writer::alloc_size) < size)
+  if (context->shm_->writer(&shmdata::Writer::alloc_size) < size) {
     context->shm_.reset(nullptr);
     context->shm_.reset(new ShmdataWriter(context,
                                           context->make_file_name("osc"),
                                           size,
                                           "application/x-libloserialized-osc"));
+  }
   context->shm_->writer(&shmdata::Writer::copy_to_shm, buftmp, size);
   context->shm_->bytes_written(size);
   g_free(buftmp);
