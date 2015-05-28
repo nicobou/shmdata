@@ -27,13 +27,14 @@
 
 #include "./posture.hpp"
 #include "switcher/quiddity.hpp"
-#include "switcher/segment.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-writer.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
 
 
 namespace switcher {
-class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
+class PostureSrc:public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureSrc);
   PostureSrc(const std::string &);
@@ -84,14 +85,11 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
 
   std::shared_ptr<posture::ZCamera> zcamera_ {nullptr};
 
-  ShmdataAnyWriter::ptr cloud_writer_ {nullptr};
-  ShmdataAnyWriter::ptr mesh_writer_ {nullptr};
-  ShmdataAnyWriter::ptr depth_writer_ {nullptr};
-  ShmdataAnyWriter::ptr rgb_writer_ {nullptr};
-  ShmdataAnyWriter::ptr ir_writer_ {nullptr};
-
-  std::mutex shmwriters_queue_mutex_ {};
-  std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriters_queue_ {};
+  std::unique_ptr<ShmdataWriter> cloud_writer_ {nullptr};
+  std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
+  std::unique_ptr<ShmdataWriter> depth_writer_ {nullptr};
+  std::unique_ptr<ShmdataWriter> rgb_writer_ {nullptr};
+  std::unique_ptr<ShmdataWriter> ir_writer_ {nullptr};
 
   bool cloud_compressed_ {false};
 
@@ -151,8 +149,6 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   static void cb_frame_ir(void *context,
                           const std::vector<unsigned char>& data,
                           int width, int height);
-  static void free_sent_buffer(void* data);
-  void check_buffers();
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureSrc);
