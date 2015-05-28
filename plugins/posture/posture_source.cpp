@@ -17,6 +17,7 @@
  */
 
 #include "./posture_source.hpp"
+#include "switcher/std2.hpp"
 
 #include <functional>
 #include <iostream>
@@ -102,7 +103,6 @@ bool
 PostureSrc::stop() {
   zcamera_->stop();
 
-  clear_shmdatas();
   cloud_writer_.reset();
   mesh_writer_.reset();
   depth_writer_.reset();
@@ -118,7 +118,6 @@ PostureSrc::stop() {
 bool
 PostureSrc::init() {
   init_startable(this);
-  init_segment(this);
 
   calibration_path_prop_ =
       custom_props_->make_string_property("calibration_path",
@@ -581,83 +580,75 @@ void
 PostureSrc::cb_frame_cloud(void *context, const vector<char>&& data) {
   PostureSrc *ctx = (PostureSrc *) context;
 
-  if (ctx->cloud_writer_.get() == nullptr) {
-    ctx->cloud_writer_.reset(new ShmdataAnyWriter);
-    ctx->cloud_writer_->set_path(ctx->make_file_name("cloud"));
-    ctx->register_shmdata(ctx->cloud_writer_);
-    if (ctx->compress_cloud_)
-      ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_COMPRESSED));
-    else
-      ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_BASE));
-    ctx->cloud_writer_->start();
+  if (!ctx->cloud_writer_ || data.size() > ctx->cloud_writer_->writer(&shmdata::Writer::alloc_size)) {
+    auto data_type = ctx->compress_cloud_ ? string(POINTCLOUD_TYPE_COMPRESSED) : string(POINTCLOUD_TYPE_BASE);
+    ctx->cloud_writer_.reset();
+    ctx->cloud_writer_ = std2::make_unique<ShmdataWriter>(ctx,
+                                                    ctx->make_file_name("cloud"),
+                                                    data.size() * 2,
+                                                    data_type);
+
+    if (!ctx->cloud_writer_) {
+      g_warning("Unable to create mesh callback");
+      return;
+    }
   }
 
   if (ctx->reload_calibration_)
     ctx->zcamera_->reloadCalibration();
 
-  lock_guard<mutex> lock(ctx->shmwriters_queue_mutex_);
-  ctx->check_buffers();
-  ctx->shmwriters_queue_.push_back(make_shared<vector<unsigned char>>(reinterpret_cast<const unsigned char*>(data.data()),
-                                                                      reinterpret_cast<const unsigned char*>(data.data()) + data.size()));
-  ctx->cloud_writer_->push_data_auto_clock((void *) ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->data(),
-                                         data.size(),
-                                         PostureSrc::free_sent_buffer,
-                                         (void*)(ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1].get()));
+  ctx->cloud_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<char*>(data.data()), data.size());
+  ctx->cloud_writer_->bytes_written(data.size());
 }
 
 void
 PostureSrc::cb_frame_mesh(void* context, vector<unsigned char>&& data)
 {
-    PostureSrc *ctx = static_cast<PostureSrc*>(context);
+  PostureSrc *ctx = static_cast<PostureSrc*>(context);
+  
+  if (!ctx->mesh_writer_ || data.size() > ctx->mesh_writer_->writer(&shmdata::Writer::alloc_size)) {
+    ctx->mesh_writer_.reset();
+    ctx->mesh_writer_ = std2::make_unique<ShmdataWriter>(ctx,
+                                                     ctx->make_file_name("mesh"),
+                                                     data.size() * 2,
+                                                     string(POLYGONMESH_TYPE_BASE));
 
-    if (ctx->mesh_writer_ == nullptr) {
-        ctx->mesh_writer_ = make_shared<ShmdataAnyWriter>();
-        ctx->mesh_writer_->set_path(ctx->make_file_name("mesh"));
-        ctx->register_shmdata(ctx->mesh_writer_);
-        ctx->mesh_writer_->set_data_type(string(POLYGONMESH_TYPE_BASE));
-        ctx->mesh_writer_->start();
+    if (!ctx->mesh_writer_) {
+      g_warning("Unable to create mesh callback");
+      return;
     }
+  }
 
-    lock_guard<mutex> lock(ctx->shmwriters_queue_mutex_);
-    ctx->check_buffers();
-    ctx->shmwriters_queue_.push_back(make_shared<vector<unsigned char>>(std::move(data)));
-    ctx->mesh_writer_->push_data_auto_clock((void*) ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->data(),
-                                            ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->size(),
-                                            PostureSrc::free_sent_buffer,
-                                            (void*)(ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1].get()));
+  ctx->mesh_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(data.data()), data.size());
+  ctx->mesh_writer_->bytes_written(data.size());
 }
 
 void
 PostureSrc::cb_frame_depth(void *context,
                            const vector<unsigned char>&data, int width,
                            int height) {
-  PostureSrc *
-      ctx = (PostureSrc *) context;
+  PostureSrc *ctx = (PostureSrc *) context;
 
-  if (ctx->depth_writer_.get() == nullptr || ctx->depth_width_ != width
-      || ctx->depth_height_ != height) {
-    ctx->depth_writer_.reset(new ShmdataAnyWriter);
-    ctx->depth_writer_->set_path(ctx->make_file_name("depth"));
-    ctx->register_shmdata(ctx->depth_writer_);
+  if (!ctx->depth_writer_ || ctx->depth_width_ != width || ctx->depth_height_ != height) {
     ctx->depth_width_ = width;
     ctx->depth_height_ = height;
+    char buffer[256] = "";
+    sprintf(buffer, "video/x-raw,format=(string)GRAY16_BE,width=(int)%i,height=(int)%i,framerate=30/1", width, height);
 
-    char
-        buffer[256] = "";
-    sprintf(buffer,
-            "video/x-raw-gray,bpp=16,endianness=1234,depth=16,width=%i,height=%i,framerate=30/1",
-            width, height);
-    ctx->depth_writer_->set_data_type(string(buffer));
-    ctx->depth_writer_->start();
+    ctx->depth_writer_.reset();
+    ctx->depth_writer_ = std2::make_unique<ShmdataWriter>(ctx,
+                                                    ctx->make_file_name("depth"),
+                                                    data.size(),
+                                                    string(buffer));
+
+    if (!ctx->depth_writer_) {
+      g_warning("Unable to create mesh callback");
+      return;
+    }
   }
 
-  lock_guard<mutex> lock(ctx->shmwriters_queue_mutex_);
-  ctx->check_buffers();
-  ctx->shmwriters_queue_.push_back(make_shared<vector<unsigned char>>(data));
-  ctx->depth_writer_->push_data_auto_clock((void *) ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->data(),
-                                         width *height * 2,
-                                         PostureSrc::free_sent_buffer,
-                                         (void*)(ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1].get()));
+  ctx->depth_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(data.data()), data.size());
+  ctx->depth_writer_->bytes_written(data.size());
 }
 
 void
@@ -668,77 +659,53 @@ PostureSrc::cb_frame_rgb(void *context,
 
   PostureSrc *ctx = (PostureSrc *) context;
 
-  if (ctx->rgb_writer_.get() == nullptr || ctx->rgb_width_ != width
-      || ctx->rgb_height_ != height) {
-    ctx->rgb_writer_.reset(new ShmdataAnyWriter);
-    ctx->rgb_writer_->set_path(ctx->make_file_name("rgb"));
-    ctx->register_shmdata(ctx->rgb_writer_);
+  if (!ctx->rgb_writer_ || ctx->rgb_width_ != width || ctx->rgb_height_ != height) {
     ctx->rgb_width_ = width;
     ctx->rgb_height_ = height;
-
     char buffer[256] = "";
-    sprintf(buffer, "video/x-raw-rgb,bpp=(int)24,endianness=(int)4321,depth=(int)24,red_mask=(int)16711680,green_mask=(int)65280,blue_mask=(int)255,width=(int)%i,height=(int)%i,framerate=30/1", width, height);
-    ctx->rgb_writer_->set_data_type(string(buffer));
-    ctx->rgb_writer_->start();
+    sprintf(buffer, "video/x-raw,format=(string)BGR,width=(int)%i,height=(int)%i,framerate=30/1", width, height);
+
+    ctx->rgb_writer_.reset();
+    ctx->rgb_writer_ = std2::make_unique<ShmdataWriter>(ctx,
+                                                  ctx->make_file_name("rgb"),
+                                                  data.size(),
+                                                  string(buffer));
+
+    if (!ctx->rgb_writer_) {
+      g_warning("Unable to create mesh callback");
+      return;
+    }
   }
 
-  lock_guard<mutex> lock(ctx->shmwriters_queue_mutex_);
-  ctx->check_buffers();
-  ctx->shmwriters_queue_.push_back(make_shared<vector<unsigned char>>(data));
-  ctx->rgb_writer_->push_data_auto_clock((void *) ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->data(),
-                                         width *height * 3,
-                                         PostureSrc::free_sent_buffer,
-                                         (void*)(ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1].get()));
+  ctx->rgb_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(data.data()), data.size());
+  ctx->rgb_writer_->bytes_written(data.size());
 }
 
 void
 PostureSrc::cb_frame_ir(void *context, const vector<unsigned char>&data,
                         int width, int height) {
-  PostureSrc *
-      ctx = (PostureSrc *) context;
+  PostureSrc *ctx = (PostureSrc *) context;
 
-  if (ctx->ir_writer_.get() == nullptr || ctx->ir_width_ != width
-      || ctx->ir_height_ != height) {
-    ctx->ir_writer_.reset(new ShmdataAnyWriter);
-    ctx->ir_writer_->set_path(ctx->make_file_name("ir"));
-    ctx->register_shmdata(ctx->ir_writer_);
+  if (!ctx->ir_writer_ || ctx->ir_width_ != width || ctx->ir_height_ != height) {
     ctx->ir_width_ = width;
     ctx->ir_height_ = height;
+    char buffer[256] = "";
+    sprintf(buffer, "video/x-raw,format=(string)GRAY16_BE,,width=(int)%i,height=(int)%i,framerate=30/1", width, height);
 
-    char
-        buffer[256] = "";
-    sprintf(buffer,
-            "video/x-raw-gray,bpp=16,endianness=1234,depth=16,width=%i,height=%i,framerate=30/1",
-            width, height);
-    ctx->ir_writer_->set_data_type(string(buffer));
-    ctx->ir_writer_->start();
+    ctx->ir_writer_.reset();
+    ctx->ir_writer_ = std2::make_unique<ShmdataWriter>(ctx,
+                                                 ctx->make_file_name("ir"),
+                                                 data.size(),
+                                                 string(buffer));
+
+    if (!ctx->ir_writer_) {
+      g_warning("Unable to create mesh callback");
+      return;
+    }
   }
 
-  lock_guard<mutex> lock(ctx->shmwriters_queue_mutex_);
-  ctx->check_buffers();
-  ctx->shmwriters_queue_.push_back(make_shared<vector<unsigned char>>(data));
-  ctx->ir_writer_->push_data_auto_clock((void *) ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->data(),
-                                         width *height * 2,
-                                         PostureSrc::free_sent_buffer,
-                                         (void*)(ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1].get()));
-}
-
-void
-PostureSrc::free_sent_buffer(void* data)
-{
-  vector<unsigned char>* buffer = static_cast<vector<unsigned char>*>(data);
-  buffer->clear();
-}
-
-void
-PostureSrc::check_buffers()
-{
-  for (unsigned int i = 0; i < shmwriters_queue_.size();) {
-    if (shmwriters_queue_[i]->size() == 0)
-      shmwriters_queue_.erase(shmwriters_queue_.begin() + i);
-    else
-      i++;
-  }
+  ctx->ir_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(data.data()), data.size());
+  ctx->ir_writer_->bytes_written(data.size());
 }
 
 }

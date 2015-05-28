@@ -34,10 +34,10 @@ endif
 #     portmidi
 # endif
 
-# if POSTUREBUILD
-# SUBDIRS += \
-# 	posture
-# endif
+if POSTUREBUILD
+SUBDIRS += \
+	posture
+endif
 
 # if HAVE_OSX
 # SUBDIRS += \
