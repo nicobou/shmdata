@@ -52,7 +52,7 @@ bool ShmdataToJack::init() {
     return false;
   shmcntr_.install_connect_method(
       [this](const std::string &shmpath){return this->on_shmdata_connect(shmpath);},
-      nullptr,
+      [this](const std::string &){return this->on_shmdata_disconnect();},
       [this](){return this->on_shmdata_disconnect();},
       [this](const std::string &caps){return this->can_sink_caps(caps);},
       1);
@@ -252,8 +252,7 @@ bool ShmdataToJack::stop() {
 }
 
 bool ShmdataToJack::on_shmdata_disconnect() {
-  stop();
-  return true;
+  return stop();
 }
 
 bool ShmdataToJack::on_shmdata_connect(const std::string &shmpath) {

@@ -9,10 +9,10 @@ SUBDIRS= \
 #     v4l2
 # endif
 
-# if OSCBUILD
-# SUBDIRS += \
-#     osc
-# endif
+if OSCBUILD
+SUBDIRS += \
+    osc
+endif
 
 if GSOAPBUILD
 SUBDIRS += \
