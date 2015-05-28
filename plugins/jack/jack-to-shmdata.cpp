@@ -91,6 +91,7 @@ bool JackToShmdata::start() {
                         "layout=(string)interleaved, "
                         "rate=" + std::to_string(jack_client_.get_sample_rate()) + ", "
                         "channels=" + std::to_string(num_channels_));
+  
   std::string shmpath = make_file_name("audio");
   shm_ = std2::make_unique<ShmdataWriter>(this,
                                           shmpath,
@@ -100,6 +101,10 @@ bool JackToShmdata::start() {
     g_warning("JackToShmdata failed to start");
     shm_.reset(nullptr);
     return false;
+  }
+  { std::unique_lock<std::mutex> lock(input_ports_mutex_);
+    for (unsigned int i = 0; i < num_channels_; ++i)
+      input_ports_.emplace_back(jack_client_, i, false);
   }
   disable_property("channels");
   disable_property("client-name");
