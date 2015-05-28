@@ -367,11 +367,12 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event */*e*/) {
   auto id = PJSIP::this_->sip_presence_->
       get_id_from_buddy_name(std::string(call->peer_uri, beginpos, endpos));  
   if (PJSUA_INVALID_ID == id) {
-      g_warning("buddy not found: cannot update call status (%s)",
+    // FIXME
+    g_warning("buddy not found: cannot update call status (%s)",
                 call->peer_uri.c_str());
       return;
   }
-  switch (inv->state) {
+  switch (inv->state) { // FIXME warnings
     case PJSIP_INV_STATE_DISCONNECTED:
       g_warning("----------- PJSIP_INV_STATE_DISCONNECTED");
     PJCall::on_inv_state_disconnected(call, inv, id);
@@ -1299,6 +1300,7 @@ PJCall::internal_manager_cb(const std::string &/*subscriber_name */,
     context->sip_instance_->prune_tree(params[0]);
     return;
   }
+  // FIXME
   g_warning("PJCall::%s unhandled signal (%s)", __FUNCTION__, sig_name.c_str());
 }
 
