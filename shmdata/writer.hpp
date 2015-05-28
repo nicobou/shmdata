@@ -40,6 +40,7 @@ class Writer: public SafeBoolIdiom {
   Writer& operator=(const Writer&) = delete;
   Writer& operator=(Writer&&) = default;
 
+  size_t alloc_size() const;
   // copy to shmdata
   bool copy_to_shm(void *data, size_t size);
   // direct access to the memory with lock
@@ -54,6 +55,7 @@ class Writer: public SafeBoolIdiom {
   sysVShm shm_;
   sysVSem sem_;
   AbstractLogger *log_;
+  size_t alloc_size_;
   bool is_valid_{true};
   bool is_valid() const final{return is_valid_;}
 };

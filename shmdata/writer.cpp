@@ -30,7 +30,8 @@ Writer::Writer(const std::string &path,
     srv_(path, &proto_, log, [&](int){sem_.cancel_commited_reader();}),
     shm_(ftok(path.c_str(), 'n'), memsize, log, /*owner = */ true),
     sem_(ftok(path.c_str(), 'm'), log, /*owner = */ true),
-    log_(log) {
+  log_(log),
+  alloc_size_(memsize){
   if (!srv_ || !shm_ || !sem_) {
     log_->error("writer failled to initialize");
     is_valid_ = false;
@@ -68,6 +69,11 @@ OneWriteAccess *Writer::get_one_write_access_ptr() {
                             &srv_,
                             log_);
 }
+
+size_t Writer::alloc_size() const{
+  return alloc_size_;
+}
+
 
 OneWriteAccess::OneWriteAccess(sysVSem *sem,
                                void *mem,
