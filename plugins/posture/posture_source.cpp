@@ -74,7 +74,7 @@ PostureSrc::start() {
                               10000.0,
                               rgb_focal_,
                               (GParamFlags)
-                              G_PARAM_READWRITE,
+                              G_PARAM_READABLE,
                               PostureSrc::nope,
                               PostureSrc::get_rgb_focal,
                               this);
@@ -88,7 +88,7 @@ PostureSrc::start() {
                               10000.0,
                               depth_focal_,
                               (GParamFlags)
-                              G_PARAM_READWRITE,
+                              G_PARAM_READABLE,
                               PostureSrc::set_depth_focal,
                               PostureSrc::get_depth_focal,
                               this);
