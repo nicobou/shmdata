@@ -750,7 +750,7 @@ data::Tree::ptr Quiddity::prune_tree(const std::string &path, bool do_signal) {
     if (do_signal)
       signal_emit("on-tree-pruned", path.c_str(), nullptr);
   } else {
-    g_warning("cannot prune %s", path.c_str());
+    g_debug("cannot prune %s", path.c_str());
   }
   return result;
 }

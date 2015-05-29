@@ -483,6 +483,7 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
     status = "away";
   if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
     status = "busy";
+  
   data::Tree::ptr tree = context->sip_instance_->
       prune_tree(std::string(".buddy." + std::to_string(buddy_id)),
                  false);  // do not signal since the tree will be updated
@@ -629,7 +630,7 @@ PJPresence::on_incoming_subscribe(pjsua_acc_id acc_id,
  * Subscription state has changed.
  */
 void
-PJPresence::on_buddy_evsub_state(pjsua_buddy_id buddy_id,
+PJPresence::on_buddy_evsub_state(pjsua_buddy_id /*buddy_id*/,
                                  pjsip_evsub *sub,
                                  pjsip_event *event) {
   char event_info[80];
