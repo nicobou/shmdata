@@ -32,7 +32,6 @@
 
 namespace switcher {
 pjmedia_endpt *PJCall::med_endpt_ = nullptr;
-
 char *pjcall_pjsip_module_name = strdup("mod-siprtpapp");
 
 pjsip_module PJCall::mod_siprtp_ = {
@@ -84,13 +83,11 @@ PJCall::PJCall(PJSIP *sip_instance):
     inv_cb.on_state_changed = &call_on_state_changed;
     inv_cb.on_new_session = &call_on_forked;
     inv_cb.on_media_update = &call_on_media_update;
-
     // unregister/shutdown default invite module
     status = pjsip_endpt_unregister_module(sip_instance_->sip_endpt_,
                                            pjsip_inv_usage_instance());
     if (status != PJ_SUCCESS)
       g_warning("unregistering default invite module failed");
-    
     /* Initialize invite session module:  */
     status = pjsip_inv_usage_init(sip_instance_->sip_endpt_, &inv_cb);
     if (status != PJ_SUCCESS)
@@ -103,7 +100,6 @@ PJCall::PJCall(PJSIP *sip_instance):
                                   &mod_siprtp_);
   if (status != PJ_SUCCESS)
     g_warning("Register mod_siprtp_ failed");
-
   // /* Init media */
   status = pjmedia_endpt_create(&sip_instance_->cp_.factory,
                                 nullptr,
@@ -111,12 +107,10 @@ PJCall::PJCall(PJSIP *sip_instance):
                                 &med_endpt_);
   if (status != PJ_SUCCESS)
     g_warning("Init media failed");
-
   // registering codecs
   status = PJCodec::install_codecs();
   if (status != PJ_SUCCESS)
     g_warning("Install codecs failed");
-
   // properties and methods for user
   sip_instance_->
       install_method("Send to a contact",  // long name
@@ -238,7 +232,9 @@ bool PJCall::release_incoming_call(call_t *call, pjsua_buddy_id id){
   if (calls.end() == it)
     return false;
   // removing the corresponding httpsdpdec
-  std::string dec_name = std::string(call->peer_uri, 0, call->peer_uri.find('@'));
+  std::string dec_name = std::string(PJSIP::this_->get_name())
+      + "-" 
+      + std::string(call->peer_uri, 0, call->peer_uri.find('@'));
   auto shm_keys = PJSIP::this_->sip_calls_->manager_->
       use_tree<std::list<std::string>, const std::string &>(
           dec_name,
@@ -294,6 +290,9 @@ bool PJCall::release_outgoing_call(call_t *call, pjsua_buddy_id id){
   }
   //removing call
   calls.erase(it);
+  std::unique_lock<std::mutex> lock(PJSIP::this_->sip_calls_->ocall_m_);
+  PJSIP::this_->sip_calls_->ocall_action_done_ = true;
+  PJSIP::this_->sip_calls_->ocall_cv_.notify_all();
   return true;
 }
 
@@ -320,6 +319,9 @@ void PJCall::on_inv_state_confirmed(call_t *call,
   else
     tree->graft(std::string(".recv_status."), data::Tree::make("receiving"));
   PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
+  std::unique_lock<std::mutex> lock(PJSIP::this_->sip_calls_->ocall_m_);
+  PJSIP::this_->sip_calls_->ocall_action_done_ = true;
+  PJSIP::this_->sip_calls_->ocall_cv_.notify_all();
 }
 
 
@@ -367,38 +369,38 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event */*e*/) {
   auto id = PJSIP::this_->sip_presence_->
       get_id_from_buddy_name(std::string(call->peer_uri, beginpos, endpos));  
   if (PJSUA_INVALID_ID == id) {
-      g_warning("buddy not found: cannot update call status (%s)",
+    g_warning("buddy not found: cannot update call status (%s)",
                 call->peer_uri.c_str());
       return;
   }
   switch (inv->state) {
     case PJSIP_INV_STATE_DISCONNECTED:
-      g_warning("----------- PJSIP_INV_STATE_DISCONNECTED");
+      g_debug("PJSIP_INV_STATE_DISCONNECTED");
     PJCall::on_inv_state_disconnected(call, inv, id);
       break;
     case PJSIP_INV_STATE_CONFIRMED:
-      g_warning("----------- PJSIP_INV_STATE_CONFIRMED");
+      g_debug("PJSIP_INV_STATE_CONFIRMED");
       PJCall::on_inv_state_confirmed(call, inv, id);
       break;
     case PJSIP_INV_STATE_EARLY:
-      g_warning("----------- PJSIP_INV_STATE_EARLY");
+      g_debug("PJSIP_INV_STATE_EARLY");
       PJCall::on_inv_state_early(call, inv, id);
       break;
     case PJSIP_INV_STATE_CONNECTING:
-      g_warning("----------- PJSIP_INV_STATE_CONNECTING");
+      g_debug("PJSIP_INV_STATE_CONNECTING");
       PJCall::on_inv_state_connecting(call, inv, id);
       break;
     case PJSIP_INV_STATE_NULL:
-      g_warning("----------- PJSIP_INV_STATE_NULL");
+      g_debug("PJSIP_INV_STATE_NULL");
       break;
     case PJSIP_INV_STATE_CALLING:
-      g_warning("----------- PJSIP_INV_STATE_CALLING");
+      g_debug("PJSIP_INV_STATE_CALLING");
       break;
     case PJSIP_INV_STATE_INCOMING:
-      g_warning("----------- PJSIP_INV_STATE_INCOMING");
+      g_debug("PJSIP_INV_STATE_INCOMING");
       break;
     default :
-      g_warning("%s, unhandled invite state", __FUNCTION__);
+      g_debug("%s, unhandled invite state", __FUNCTION__);
       break;
   }
 }
@@ -411,6 +413,7 @@ void PJCall::call_on_forked(pjsip_inv_session */*inv*/,
 /* Callback to be called when SDP negotiation is done in the call: */
 void PJCall::call_on_media_update(pjsip_inv_session *inv,
                                   pj_status_t status) {
+
   const pjmedia_sdp_session *local_sdp, *remote_sdp;
   call_t *call = static_cast<call_t *>(inv->mod_data[mod_siprtp_.id]);
   bool receiving = false;
@@ -518,17 +521,16 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   // finding caller info
   char uristr[PJSIP_MAX_URL_SIZE];
   int len;
-  // len =
+  len =
       pjsip_uri_print(PJSIP_URI_IN_REQ_URI,
                         rdata->msg_info.msg->line.req.uri,
                         uristr, sizeof(uristr));
-  // g_print("---------- call req uri %.*s\n", len, uristr);
+  g_debug("incomimg call req uri %.*s\n", len, uristr);
   len =
   pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                   pjsip_uri_get_uri(rdata->msg_info.from->uri),
                   uristr, sizeof(uristr));
   std::string from_uri(uristr, len);
-  // g_print("---------- call from %.*s\n", len, uristr);
   // len =
   pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                   rdata->msg_info.to->uri, uristr, sizeof(uristr));
@@ -541,6 +543,11 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   PJSIP::this_->sip_calls_->incoming_call_.emplace_back();
   call = &PJSIP::this_->sip_calls_->incoming_call_.back();
   call->peer_uri = std::string(from_uri, 4, std::string::npos);  // do not save 'sip:'
+  auto &buddy_list = PJSIP::this_->sip_presence_->buddy_id_;
+  if (buddy_list.end() == buddy_list.find(call->peer_uri)) {
+    PJSIP::this_->sip_presence_->add_buddy(call->peer_uri);
+    PJSIP::this_->sip_presence_->name_buddy(call->peer_uri, call->peer_uri);
+  }
   /* Parse SDP from incoming request and
      verify that we can handle the request. */
   pjmedia_sdp_session *offer = nullptr;
@@ -974,33 +981,6 @@ pj_status_t PJCall::create_sdp_answer(
 //   return PJ_SUCCESS;
 // }
 
-// void
-// PJCall::remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
-//                               unsigned fmt_pos) {  // FIXME actually not doing the work 
-//   // remove the rtpmap
-//   pjmedia_sdp_attr *attr;
-//   attr = pjmedia_sdp_media_find_attr2(sdp_media, "rtpmap",
-//                                       &sdp_media->desc.fmt[fmt_pos]);
-//   if (attr != nullptr)
-//     pjmedia_sdp_attr_remove(&sdp_media->attr_count, sdp_media->attr, attr);
-//   // remove the fmtp line
-//   attr = pjmedia_sdp_media_find_attr2(sdp_media, "fmtp",
-//                                       &sdp_media->desc.fmt[fmt_pos]);
-//   if (attr != nullptr) {
-//     pjmedia_sdp_attr_remove(&sdp_media->attr_count, sdp_media->attr, attr);
-//     // std::string updated_val (attr->value.ptr, attr->value.slen);
-//     // updated_val.replace (0,2, std::to_string (pt));
-//     // pj_strdup2 (pool, &attr->value, updated_val.c_str ());
-//   }
-//   // FIXME remove from media line
-//   // pj_str_t *begin = &sdp_media->desc.fmt[fmt_pos];
-//   // pj_str_t *end = &sdp_media->desc.fmt[sdp_media->desc.fmt_count - 1];
-//   // std::remove_if(begin, end, [&](pj_str_t item) {
-//   //     return (0 == pj_strcmp(&item, &sdp_media->desc.fmt[fmt_pos]));
-//   //   });
-//   sdp_media->desc.fmt_count--;
-// }
-
 /*
  * Make outgoing call.
  */
@@ -1160,10 +1140,24 @@ gboolean PJCall::send_to(gchar *sip_url, void *user_data) {
     g_warning("calling sip account received nullptr url");
     return FALSE;
   }
-  PJCall *context = static_cast<PJCall *>(user_data);
-  context->sip_instance_->run_command_sync(std::bind(&PJCall::make_call,
-                                                     context,
-                                                     std::string(sip_url)));
+  {
+    PJCall *context = static_cast<PJCall *>(user_data);
+    std::unique_lock<std::mutex> lock(context->ocall_m_, std::defer_lock);
+    if (!lock.try_lock()) {
+      g_debug("cancel SIP send_to because an operation is already pending");
+      return FALSE;
+    }
+    context->sip_instance_->run_command_sync(std::bind(&PJCall::make_call,
+                                                       context,
+                                                       std::string(sip_url)));
+    context->ocall_cv_.wait(lock, [context](){
+        if (context->ocall_action_done_) {
+          context->ocall_action_done_ = false;
+          return true;
+        }
+        return false;
+      }); 
+  }
   return TRUE;
 }
 
@@ -1172,11 +1166,25 @@ gboolean PJCall::hang_up(gchar *sip_url, void *user_data) {
     g_warning("hang up received nullptr url");
     return FALSE;
   }
-  PJCall *context = static_cast<PJCall *>(user_data);
-  context->sip_instance_->
-      run_command_sync(std::bind(&PJCall::make_hang_up, 
-                                 context,
-                                 std::string(sip_url)));
+  {
+    PJCall *context = static_cast<PJCall *>(user_data);
+    std::unique_lock<std::mutex> lock(context->ocall_m_, std::defer_lock);
+    if (!lock.try_lock()) {
+      g_debug("cancel SIP hang_up because an operation is already pending");
+      return FALSE;
+    }
+    context->sip_instance_->
+        run_command_sync(std::bind(&PJCall::make_hang_up, 
+                                   context,
+                                   std::string(sip_url)));
+    context->ocall_cv_.wait(lock, [context](){
+        if (context->ocall_action_done_) {
+          context->ocall_action_done_ = false;
+          return true;
+        }
+        return false;
+      }); 
+  }
   return TRUE;
 }
 
@@ -1294,6 +1302,7 @@ PJCall::internal_manager_cb(const std::string &/*subscriber_name */,
     else 
       shmtree->graft("uri", data::Tree::make(it->second));
     context->sip_instance_->graft_tree(params[0], shmtree);
+    return;
   } else if (0 == sig_name.compare("on-tree-pruned")
              && 0 == std::string(".shmdata.writer.").compare(std::string(params[0], 0, 16))) {
     context->sip_instance_->prune_tree(params[0]);
@@ -1303,11 +1312,8 @@ PJCall::internal_manager_cb(const std::string &/*subscriber_name */,
 }
 
 void PJCall::call_on_rx_offer(pjsip_inv_session */*inv*/,
-                              const pjmedia_sdp_session */*offer*/)
-{
-  // g_print("(((((((((((((((((((((((((((begin %s\n", __FUNCTION__);
+                              const pjmedia_sdp_session */*offer*/){
   // print_sdp(offer);
-  // g_print("(((((((((((((((((((((((((((end %s\n", __FUNCTION__);
 }
 
 }  // namespace switcher

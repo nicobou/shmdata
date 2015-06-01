@@ -21,6 +21,8 @@
 #include <pjsua-lib/pjsua.h>
 #include <string>
 #include <vector>
+#include <mutex>
+#include <condition_variable>
 #include "switcher/shmdata-any-writer.hpp"
 #include "switcher/rtp-session.hpp"
 #include "switcher/quiddity-manager.hpp"
@@ -58,6 +60,9 @@ class PJCall {
   static pjsip_module mod_siprtp_;
   pj_str_t local_addr_ {nullptr, 0};
   std::vector<call_t> outgoing_call_{};
+  std::mutex ocall_m_{};
+  std::condition_variable ocall_cv_{};
+  bool ocall_action_done_{false};
   std::vector<call_t> incoming_call_{};
   std::vector<call_t> call_{};
   std::map<std::string, std::string> local_ips_{};
@@ -87,14 +92,6 @@ class PJCall {
                                        pjmedia_sdp_session **p_sdp);
   static pj_status_t parse_SDP_from_incoming_request(pjsip_rx_data *rdata,
                                                      pjmedia_sdp_session *offer);
-  // static void print_sdp(const pjmedia_sdp_session *local_sdp);
-  // static pj_status_t get_audio_codec_info_param(pjmedia_stream_info *si,
-  //                                               pj_pool_t *pool,
-  //                                               pjmedia_codec_mgr *mgr,
-  //                                               const pjmedia_sdp_media *local_m,
-  //                                               const pjmedia_sdp_media *rem_m);
-  // static void remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
-  //                                   unsigned fmt_pos);
   void make_call(std::string contact_uri);
   void create_outgoing_sdp(pjsip_dialog *dlg,
                            call_t *call,
@@ -112,7 +109,6 @@ class PJCall {
   void make_attach_shmdata_to_contact(const std::string &shmpath,
                                       const std::string &contact_uri,
                                       bool attach);
-  // static std::string make_extra_params(const std::string &raw_extra_params);
   static void internal_manager_cb(const std::string &/*subscriber_name */,
                                   const std::string &/*quiddity_name */,
                                   const std::string &signal_name,
