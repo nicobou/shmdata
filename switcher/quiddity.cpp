@@ -731,7 +731,7 @@ std::string Quiddity::get_info(const std::string &path) {
   data::Tree::ptr tree = information_tree_->get(path);
   if (tree)
     return data::JSONSerializer::serialize(tree.get());
-  return "{ \"error\": \"no such path\" }";
+  return "null";
 }
 
 bool Quiddity::graft_tree(const std::string &path,
