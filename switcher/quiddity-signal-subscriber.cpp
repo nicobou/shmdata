@@ -30,7 +30,7 @@ QuidditySignalSubscriber::QuidditySignalSubscriber() {
 }
 
 QuidditySignalSubscriber::~QuidditySignalSubscriber() {
-  for (auto &it : signal_datas_) {
+  /*for (auto &it : signal_datas_) {
     Quiddity::ptr quid = it.second->quid.lock();
     if ((bool) quid) {
       g_debug("QuidditySignalSubscriber: cleaning signal not unsubscribed %s, %s, %s",
@@ -42,7 +42,7 @@ QuidditySignalSubscriber::~QuidditySignalSubscriber() {
                                it.second);
     }
     delete(it.second);
-  }
+  }*/
 }
 
 void QuidditySignalSubscriber::mute(bool muted) {
