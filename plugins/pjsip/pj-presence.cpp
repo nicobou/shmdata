@@ -253,7 +253,7 @@ PJPresence::register_account(const std::string &sip_user,
   pjsua_acc_set_user_data(account_id_, this);
   registration_cond_.wait(lock);
   // notifying sip registration status
-  GObjectWrapper::notify_property_changed(sip_instance_->gobject_->get_gobject(),
+  GObjectWrapper::notify_property_changed(sip_instance_->custom_props_->get_gobject(),
                                           sip_reg_status_spec_);
   sip_local_user_ = std::string("sip:") + sip_user +
       + ":" + std::to_string(sip_instance_->sip_port_);
@@ -283,6 +283,10 @@ void PJPresence::unregister_account() {
   }
   account_id_ = -1;
   sip_local_user_.clear();
+  registered_ = false;
+  GObjectWrapper::notify_property_changed(sip_instance_->custom_props_->
+                                          get_gobject(),
+                                          sip_reg_status_spec_);
   return;
 }
 
@@ -429,7 +433,7 @@ PJPresence::on_registration_state(pjsua_acc_id acc_id,
     else
       context->registered_ = false;
   }
-  GObjectWrapper::notify_property_changed(context->sip_instance_->gobject_->
+  GObjectWrapper::notify_property_changed(context->sip_instance_->custom_props_->
                                           get_gobject(),
                                           context->sip_reg_status_spec_);
   g_debug("registration SIP status code %d\n", info->cbparam->code);
@@ -516,7 +520,7 @@ void PJPresence::set_status(const gint value, void *user_data) {
       run_command_sync(std::bind(&PJPresence::change_online_status,
                                  context,
                                  context->status_));
-  GObjectWrapper::notify_property_changed(context->sip_instance_->gobject_->
+  GObjectWrapper::notify_property_changed(context->sip_instance_->custom_props_->
                                           get_gobject(),
                                           context->status_enum_spec_);
 }
