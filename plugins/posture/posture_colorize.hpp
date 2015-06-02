@@ -29,12 +29,14 @@
 #include "./posture.hpp"
 #include "./posture_worker.hpp"
 #include "switcher/quiddity.hpp"
-#include "switcher/segment.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-writer.hpp"
+#include "switcher/shmdata-follower.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
-class PostureColorize : public Quiddity, public Segment, public StartableQuiddity {
+class PostureColorize : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureColorize);
   PostureColorize(const std::string &);
@@ -47,6 +49,8 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
 
  private:
   CustomPropertyHelper::ptr custom_props_;
+  ShmdataConnector shmcntr_;
+
   std::string calibration_path_ {"default.kvc"};
   bool compute_tex_coords_ {false};
   bool compress_mesh_ {true};
@@ -69,9 +73,13 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
   std::vector<std::vector<unsigned int>> dims_ {};
   unsigned int source_id_ {0};
 
-  ShmdataAnyWriter::ptr mesh_writer_ {nullptr};
-  ShmdataAnyWriter::ptr tex_writer_ {nullptr};
-  std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};
+  std::mutex connect_mutex_ {};
+  std::map<std::string, std::unique_ptr<ShmdataFollower>> shmdata_readers_ {};
+  std::map<int, std::string> shmdata_reader_caps_ {};
+  unsigned int shmdata_reader_id_ {0};
+
+  std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
+  std::unique_ptr<ShmdataWriter> tex_writer_ {nullptr};
 
   unsigned int prev_width_ {0}, prev_height_ {0}; // Used to check the texture size did not change
 
@@ -89,9 +97,6 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
   static void set_compute_tex_coords(const int compute, void *user_data);
   static int get_compress_mesh(void *user_data);
   static void set_compress_mesh(const int compress, void *user_data);
-
-  static void free_sent_buffer(void* data);
-  void check_buffers();  
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureColorize);

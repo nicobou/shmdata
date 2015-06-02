@@ -44,8 +44,9 @@ PostureMerge::~PostureMerge() {
 
 bool
 PostureMerge::start() {
-  merger_ = make_shared<PointCloudMerger>("", source_id_);
+  merger_ = make_shared<PointCloudMerger>("");
 
+  merger_->setCloudNbr(source_id_);
   merger_->setCalibrationPath(calibration_path_);
   merger_->setDevicesPath(devices_path_);
   merger_->setCompression(compress_cloud_);
@@ -190,7 +191,8 @@ PostureMerge::connect(std::string shmdata_socket_path) {
     merger_->setInputCloud(index,
                            vector<char>((char*)data, (char*) data + size),
                            type != string(POINTCLOUD_TYPE_BASE));
-    vector<char> cloud = merger_->getCloud();
+    auto cloud = vector<char>();
+    merger_->getCloud(cloud);
 
     if (cloud_writer_.get() == nullptr || cloud.size() > cloud_writer_->writer(&shmdata::Writer::alloc_size)) {
       auto data_type = compress_cloud_ ? string(POINTCLOUD_TYPE_COMPRESSED) : string(POINTCLOUD_TYPE_BASE);
