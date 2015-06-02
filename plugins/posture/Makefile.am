@@ -2,8 +2,8 @@ pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
 plugins_LTLIBRARIES = \
 	libposturemerge.la \
-	libposturesource.la 
-#libposturecolorize.la \
+	libposturesource.la \
+	libposturecolorize.la
 #libposturedetect.la \
 #libposturedisplay.la \
 #libposturemeshmerge.la \
@@ -13,34 +13,34 @@ noinst_HEADERS = \
 	posture.hpp
 
 #libposturecolorize info
-##libposturecolorize_la_SOURCES = \
-##	posture_colorize.cpp \
-##	posture_worker.cpp
-##
-##libposturecolorize_la_LDFLAGS = \
-##	$(GLIB_LIBS) \
-##	$(GST_LIBS) \
-##	$(GMODULE_LIBS) \
-##	$(JSONGLIB_LIBS) \
-##	$(POSTURE_LIBS) \
-##	$(SHMDATA_LIBS) \
-##	-avoid-version \
-##	-L$(top_builddir)/switcher/.libs \
-##	-lswitcher-@LIBSWITCHER_API_VERSION@
-##
-##libposturecolorize_la_CXXFLAGS = \
-##	$(GLIB_CFLAGS) \
-##	$(GMODULE_CFLAGS) \
-##	$(GST_CFLAGS) \
-##	$(JSONGLIB_CFLAGS) \
-##	$(POSTURE_CFLAGS) \
-##	$(SHMDATA_CFLAGS) \
-##	-I$(top_srcdir) \
-##	-DG_LOG_DOMAIN=\"switcher\"
-##
-##noinst_HEADERS = \
-##	posture_colorize.hpp \
-##	posture_worker.hpp
+libposturecolorize_la_SOURCES = \
+	posture_colorize.cpp \
+	posture_worker.cpp
+
+libposturecolorize_la_LDFLAGS = \
+	$(GLIB_LIBS) \
+	$(GST_LIBS) \
+	$(GMODULE_LIBS) \
+	$(JSONGLIB_LIBS) \
+	$(POSTURE_LIBS) \
+	$(SHMDATA_LIBS) \
+	-avoid-version \
+	-L$(top_builddir)/switcher/.libs \
+	-lswitcher-@LIBSWITCHER_API_VERSION@
+
+libposturecolorize_la_CXXFLAGS = \
+	$(GLIB_CFLAGS) \
+	$(GMODULE_CFLAGS) \
+	$(GST_CFLAGS) \
+	$(JSONGLIB_CFLAGS) \
+	$(POSTURE_CFLAGS) \
+	$(SHMDATA_CFLAGS) \
+	-I$(top_srcdir) \
+	-DG_LOG_DOMAIN=\"switcher\"
+
+noinst_HEADERS += \
+	posture_colorize.hpp \
+	posture_worker.hpp
 ##
 ###libposturedetect info
 ##libposturedetect_la_SOURCES = \

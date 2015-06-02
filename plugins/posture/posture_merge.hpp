@@ -77,7 +77,6 @@ class PostureMerge : public Quiddity, public StartableQuiddity {
   std::map<int, std::string> cloud_readers_caps_;
 
   std::unique_ptr<ShmdataWriter> cloud_writer_ {nullptr};
-  std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};
 
   bool init() final;
 

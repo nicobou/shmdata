@@ -17,6 +17,7 @@
  */
 
 #include "./posture_colorize.hpp"
+#include "switcher/std2.hpp"
 
 #include <iostream>
 #include <regex>
@@ -34,7 +35,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureColorize,
                                      "texturetomeshsink", "Emmanuel Durand");
 
 PostureColorize::PostureColorize(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()) {
+    custom_props_(std::make_shared<CustomPropertyHelper> ()),
+    shmcntr_(static_cast<Quiddity*>(this)) {
 }
 
 PostureColorize::~PostureColorize() {
@@ -64,7 +66,6 @@ PostureColorize::stop() {
 
   mesh_writer_.reset();
   tex_writer_.reset();
-  clear_shmdatas();
 
   has_input_mesh_ = false;
   mesh_index_ = -1;
@@ -75,13 +76,12 @@ PostureColorize::stop() {
 bool
 PostureColorize::init() {
   init_startable(this);
-  init_segment(this);
 
-  install_connect_method(std::bind(&PostureColorize::connect, this, std::placeholders::_1),
-                         std::bind(&PostureColorize::disconnect, this, std::placeholders::_1),
-                         std::bind(&PostureColorize::disconnect_all, this),
-                         std::bind(&PostureColorize::can_sink_caps, this, std::placeholders::_1),
-                         std::numeric_limits<unsigned int>::max());
+  shmcntr_.install_connect_method([this](const std::string path){return connect(path);},
+                                  [this](const std::string path){return disconnect(path);},
+                                  [this](){return disconnect_all();},
+                                  [this](const std::string caps){return can_sink_caps(caps);},
+                                  std::numeric_limits<unsigned int>::max());
 
   calibration_path_prop_ = custom_props_->make_string_property("calibration_path",
                                           "Path to the calibration file",
@@ -121,25 +121,36 @@ PostureColorize::init() {
 
 bool
 PostureColorize::connect(std::string shmdata_socket_path) {
+  unique_lock<mutex> connectLock(connect_mutex_);
+
   int id = source_id_;
   source_id_++;
+  int shmid = shmdata_reader_id_;
+  shmdata_reader_id_++;
 
-  ShmdataAnyReader::ptr reader = make_shared<ShmdataAnyReader>();
-  reader->set_path(shmdata_socket_path);
-
-  reader->set_callback([=] (void *data,
-                            int size,
-                            unsigned long long /*unused*/,
-                            const char *type,
-                            void * /*unused*/)
+  auto reader = std2::make_unique<ShmdataFollower>(this,
+                  shmdata_socket_path,
+                  [=] (void *data, int size)
   {
-    if (colorize_ == nullptr)
+    if (!colorize_)
       return;
+
+    if (!mutex_.try_lock())
+      return;
+
+    auto typeIt = shmdata_reader_caps_.find(shmid);
+    if (typeIt == shmdata_reader_caps_.end())
+    {
+      mutex_.unlock();
+      return;
+    }
+    auto type = typeIt->second;
+    mutex_.unlock();
 
     unsigned int width, height, channels;
     // Update the input mesh. This calls the update of colorize_
-    if (string(type) == string(POLYGONMESH_TYPE_BASE)) {
-      if (!worker_.is_ready() || !mutex_.try_lock())
+    if (type == string(POLYGONMESH_TYPE_BASE) && size != 0) {
+      if (!worker_.is_ready())
         return;
 
       has_input_mesh_ = true;
@@ -150,7 +161,6 @@ PostureColorize::connect(std::string shmdata_socket_path) {
       if (images_.size() == 0)
       {
         imageMutex_.unlock();
-        mutex_.unlock();
         return;
       }
 
@@ -158,56 +168,45 @@ PostureColorize::connect(std::string shmdata_socket_path) {
         colorize_->setInput(std::move(mesh), images_, dims_);
         imageMutex_.unlock();
 
-        vector<unsigned char> texturedMesh = colorize_->getTexturedMesh();
+        auto texturedMesh = vector<unsigned char>();
+        colorize_->getTexturedMesh(texturedMesh);
 
         unsigned int width, height;
         vector<unsigned char> texture = colorize_->getTexture(width, height);
 
         // Write the mesh
-        if (mesh_writer_ == nullptr)
-        {
-          mesh_writer_ = make_shared<ShmdataAnyWriter>();
-          mesh_writer_->set_path(make_file_name("mesh"));
-          mesh_writer_->set_data_type(POLYGONMESH_TYPE_BASE);
-          register_shmdata(mesh_writer_);
-          mesh_writer_->start();
+        if (!mesh_writer_ || texturedMesh.size() > mesh_writer_->writer(&shmdata::Writer::alloc_size)) {
+          auto data_type = string(POLYGONMESH_TYPE_BASE);
+          mesh_writer_.reset();
+          mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
+                                                          make_file_name("mesh"),
+                                                          std::max(texturedMesh.size() * 2, (size_t)1024),
+                                                          data_type);
         }
 
-        check_buffers();
-        shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(texturedMesh.data(), texturedMesh.data() + texturedMesh.size()));
-        mesh_writer_->push_data_auto_clock((void*) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
-                                           texturedMesh.size(),
-                                           PostureColorize::free_sent_buffer,
-                                           (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
+        mesh_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(texturedMesh.data()), texturedMesh.size());
+        mesh_writer_->bytes_written(texturedMesh.size());
 
         // Write the texture
-        if (tex_writer_ == nullptr || width != prev_width_ || height != prev_height_)
-        {
-          tex_writer_ = make_shared<ShmdataAnyWriter>();
-          tex_writer_->set_path(make_file_name("texture"));
-          char buffer[256] = "";
-          sprintf(buffer, "video/x-raw-rgb,bpp=(int)24,endianness=(int)4321,depth=(int)24,red_mask=(int)16711680,green_mask=(int)65280,blue_mask=(int)255,width=(int)%i,height=(int)%i,framerate=30/1", width, height);
-          tex_writer_->set_data_type(buffer);
-          register_shmdata(tex_writer_);
-          tex_writer_->start();
-
+        if (!tex_writer_ || width != prev_width_ || height != prev_height_) {
+          auto data_type = "video/x-raw,format=(string)BGR,width=(int)" + to_string(width) + ",height=(int)" + to_string(height) + ",framerate=30/1";
+          tex_writer_.reset();
+          tex_writer_ = std2::make_unique<ShmdataWriter>(this,
+                                                         make_file_name("texture"),
+                                                         texture.size(),
+                                                         data_type);
           prev_width_ = width;
           prev_height_ = height;
         }
 
-        check_buffers();
-        shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(texture.data(), texture.data() + texture.size()));
-        tex_writer_->push_data_auto_clock((void*) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
-                                          texture.size(),
-                                          PostureColorize::free_sent_buffer,
-                                          (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
+        tex_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(texture.data()), texture.size());
+        tex_writer_->bytes_written(texture.size());
 
-        mutex_.unlock();
       });
       worker_.do_task();
     }
     // Update the input textures
-    else if (check_image_caps(string(type), width, height, channels)) {
+    else if (check_image_caps(type, width, height, channels)) {
       lock_guard<mutex> lock(imageMutex_);
       if (mesh_index_ != -1)
       {
@@ -230,12 +229,13 @@ PostureColorize::connect(std::string shmdata_socket_path) {
         dims_[index] = vector<unsigned int>({width, height, channels});
       }
     }
-  },
-  nullptr);
 
-  reader->start();
-  register_shmdata(reader);
+  }, [=](string caps) {
+    unique_lock<mutex> lock(mutex_);
+    shmdata_reader_caps_[shmid] = caps;
+  });
 
+  shmdata_readers_[shmdata_socket_path] = std::move(reader);
   return true;
 }
 
@@ -263,80 +263,85 @@ PostureColorize::can_sink_caps(std::string caps) {
   return false;
 }
 
+// Small function to work around a bug in GCC's libstdc++
+void removeExtraParenthesis(string& str)
+{
+    if (str.find(")") == 0)
+        str = str.substr(1);
+}
+
 bool
 PostureColorize::check_image_caps(string caps, unsigned int& width, unsigned int& height, unsigned int& channels)
 {
-  int bpp, red, green, blue;
-  red = green = blue = 0;
-
-  regex regRgb, regBpp, regWidth, regHeight, regRed, regGreen, regBlue;
+  regex regHap, regWidth, regHeight;
+  regex regVideo, regFormat;
   try
   {
-      regRgb = regex("(.*video/x-raw-rgb)(.*)", regex_constants::extended);
-      regBpp = regex("(.*bpp=\\(int\\))(.*)", regex_constants::extended);
-      regWidth = regex("(.*width=\\(int\\))(.*)", regex_constants::extended);
-      regHeight = regex("(.*height=\\(int\\))(.*)", regex_constants::extended);
-      regRed = regex("(.*red_mask=\\(int\\))(.*)", regex_constants::extended);
-      regGreen = regex("(.*green_mask=\\(int\\))(.*)", regex_constants::extended);
-      regBlue = regex("(.*blue_mask=\\(int\\))(.*)", regex_constants::extended);
+    regVideo = regex("(.*video/x-raw)(.*)", regex_constants::extended);
+    regHap = regex("(.*video/x-gst-fourcc-HapY)(.*)", regex_constants::extended);
+    regFormat = regex("(.*format=\\(string\\))(.*)", regex_constants::extended);
+    regWidth = regex("(.*width=\\(int\\))(.*)", regex_constants::extended);
+    regHeight = regex("(.*height=\\(int\\))(.*)", regex_constants::extended);
   }
   catch (const regex_error& e)
   {
       cout << "PostureColorize::" << __FUNCTION__ << " - Regex error code: " << e.code() << endl;
       return false;
   }
-  
-  if (regex_match(caps, regRgb))
+
+  smatch match;
+  string substr, format;
+
+  if (regex_match(caps, regVideo))
   {
-    smatch match;
-    string substr, format;
-  
-    if (regex_match(caps, match, regBpp))
+    if (regex_match(caps, match, regFormat))
     {
       ssub_match subMatch = match[2];
       substr = subMatch.str();
-      sscanf(substr.c_str(), ")%u", &bpp);
+      removeExtraParenthesis(substr);
+      substr = substr.substr(0, substr.find(","));
+
+      if ("RGB" == substr)
+      {
+        channels = 3;
+      }
+      else if ("BGR" == substr)
+      {
+        channels = 3;
+      }
+      else
+      {
+        return false;
+      }
     }
+
     if (regex_match(caps, match, regWidth))
     {
       ssub_match subMatch = match[2];
       substr = subMatch.str();
-      sscanf(substr.c_str(), ")%u", &width);
+      removeExtraParenthesis(substr);
+      substr = substr.substr(0, substr.find(","));
+      width = stoi(substr);
     }
+    else
+    {
+      return false;
+    }
+
     if (regex_match(caps, match, regHeight))
     {
       ssub_match subMatch = match[2];
       substr = subMatch.str();
-      sscanf(substr.c_str(), ")%u", &height);
+      removeExtraParenthesis(substr);
+      substr = substr.substr(0, substr.find(","));
+      height = stoi(substr);
     }
-    if (regex_match(caps, match, regRed))
-    {
-      ssub_match subMatch = match[2];
-      substr = subMatch.str();
-      sscanf(substr.c_str(), ")%i", &red);
-    }
-    if (regex_match(caps, match, regGreen))
-    {
-      ssub_match subMatch = match[2];
-      substr = subMatch.str();
-      sscanf(substr.c_str(), ")%i", &green);
-    }
-    if (regex_match(caps, match, regBlue))
-    {
-      ssub_match subMatch = match[2];
-      substr = subMatch.str();
-      sscanf(substr.c_str(), ")%i", &blue);
-    }
-  
-    if (bpp == 24)
-      channels = 3;
     else
+    {
       return false;
+    }
 
-    if (red == 16711680 && green == 65280 && blue == 255)
-      return true;
-    else
-      return false;
+    return true;
   }
   else
   {
@@ -379,24 +384,6 @@ void
 PostureColorize::set_compress_mesh(const int compress, void *user_data) {
     PostureColorize *ctx = (PostureColorize *) user_data;
     ctx->compress_mesh_ = compress;
-}
-
-void
-PostureColorize::free_sent_buffer(void* data)
-{
-  vector<unsigned char>* buffer = static_cast<vector<unsigned char>*>(data);
-  buffer->clear();
-}
-
-void
-PostureColorize::check_buffers()
-{
-  for (unsigned int i = 0; i < shmwriter_queue_.size();) {
-    if (shmwriter_queue_[i]->size() == 0)
-      shmwriter_queue_.erase(shmwriter_queue_.begin() + i);
-    else
-      i++;
-  }
 }
 
 }  // namespace switcher
