@@ -264,7 +264,7 @@ QuiddityManager::get_property_description(const std::string &quiddity_name,
                                           const std::string &property_name) {
   return seq_invoke(QuiddityCommand::get_property_description,
                     quiddity_name.c_str(), property_name.c_str(), nullptr);
-}
+  }
 
 std::string
 QuiddityManager::get_info(const std::string &quiddity_name,
@@ -874,18 +874,9 @@ QuiddityManager::seq_invoke(QuiddityCommand::command command, ...) {
 }
 
 void QuiddityManager::invoke_in_thread() {
-  JSONBuilder::ptr builder;
-  builder.reset(new JSONBuilder());
-  builder->reset();
-  builder->begin_object();
-  builder->set_member_name("command");
-  builder->add_node_value(command_->get_json_root_node());
-  builder->end_object();
-  {
-    std::unique_lock<std::mutex> lock(execution_done_mutex_);
-    g_async_queue_push(command_queue_, command_.get());
-    execution_done_cond_.wait(lock);
-  }
+  std::unique_lock<std::mutex> lock(execution_done_mutex_);
+  g_async_queue_push(command_queue_, command_.get());
+  execution_done_cond_.wait(lock);
 }
 
 gboolean QuiddityManager::execute_command(gpointer user_data) {

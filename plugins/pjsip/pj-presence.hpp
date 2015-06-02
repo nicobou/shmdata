@@ -33,7 +33,7 @@ class PJCall;
 
 class PJPresence {
   friend PJSIP;
-  friend PJCall;              // for account local uri
+  friend PJCall;  // for account local uri
 
  public:
   PJPresence() = delete;
