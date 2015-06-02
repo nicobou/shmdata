@@ -50,11 +50,11 @@ SwitcherController::SwitcherController(const std::string &name, Local<Function> 
 
     // loading plugins
     // FIXME use config.h for having the appropriate version
-    gchar *usr_plugin_dir = g_strdup_printf("/usr/switcher-0.6/plugins");
+    gchar *usr_plugin_dir = g_strdup_printf("/usr/switcher-0.7/plugins");
     quiddity_manager->scan_directory_for_plugins(usr_plugin_dir);
     g_free(usr_plugin_dir);
 
-    gchar *usr_local_plugin_dir = g_strdup_printf("/usr/local/switcher-0.6/plugins");
+    gchar *usr_local_plugin_dir = g_strdup_printf("/usr/local/switcher-0.7/plugins");
     quiddity_manager->scan_directory_for_plugins(usr_local_plugin_dir);
     g_free(usr_local_plugin_dir);
 
@@ -188,8 +188,8 @@ void SwitcherController::logger_cb(const std::string& /*subscriber_name*/, const
   SwitcherController *obj = static_cast<SwitcherController*>(user_data);
   uv_mutex_lock(&obj->switcher_log_mutex);
   obj->switcher_log_list.push_back(value);
-  uv_async_send(&obj->switcher_log_async);
   uv_mutex_unlock(&obj->switcher_log_mutex);
+  uv_async_send(&obj->switcher_log_async);
 }
 
 void SwitcherController::NotifyLog(uv_async_t* async, int /*status*/) {
@@ -223,8 +223,8 @@ void SwitcherController::property_cb(const std::string& /*subscriber_name*/, con
   SwitcherController *obj = static_cast<SwitcherController*>(user_data);
   uv_mutex_lock(&obj->switcher_prop_mutex);
   obj->switcher_prop_list.push_back(PropUpdate(std::move(quiddity_name), std::move(property_name), std::move(value)));
-  uv_async_send(&obj->switcher_prop_async);
   uv_mutex_unlock(&obj->switcher_prop_mutex);
+  uv_async_send(&obj->switcher_prop_async);
 }
 
 void SwitcherController::NotifyProp(uv_async_t *async, int /*status*/) {
@@ -260,8 +260,8 @@ void SwitcherController::signal_cb(const std::string& /*subscriber_name*/, const
   SwitcherController *obj = static_cast<SwitcherController*>(user_data);
   uv_mutex_lock(&obj->switcher_sig_mutex);
   obj->switcher_sig_list.push_back(SigUpdate(quiddity_name, signal_name, params));
-    uv_async_send(&obj->switcher_sig_async);
   uv_mutex_unlock(&obj->switcher_sig_mutex);
+  uv_async_send(&obj->switcher_sig_async);
 }
 
 void SwitcherController::NotifySignal(uv_async_t *async, int /*status*/) {
@@ -577,6 +577,7 @@ Handle<Value> SwitcherController::SetProperty(const Arguments& args) {
   String::Utf8Value property_val(args[2]->ToString());
 
   Handle<Boolean> res = Boolean::New(obj->quiddity_manager->set_property(std::string(*element_name), std::string(*property_name), std::string(*property_val)));
+
   return scope.Close(res);
 }
 
@@ -712,13 +713,11 @@ Handle<Value> SwitcherController::Invoke(const Arguments& args) {
   std::string *return_value = nullptr;
   obj->quiddity_manager->invoke(std::string(*element_name), std::string(*method_name), &return_value, vector_arg);
   if (nullptr != return_value) {
-  cout << "value" << endl;
     Handle<String> res = String::New((*return_value).c_str());
     delete return_value;  // FIXME this should not be necessary
     return scope.Close(parseJson(res));
   }
 
-cout << "null" << endl;
   return scope.Close(Undefined());
 }
 
