@@ -8,20 +8,17 @@
 #include <pcl/io/obj_io.h>
 
 using namespace std;
-using namespace
-switcher::data;
-using namespace
-posture;
+using namespace switcher::data;
+using namespace posture;
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureSc3,
                                      "Scan 3D",
                                      "video",
-                                     "Grabs meshe using zcameras",
+                                     "Grabs meshes using zcameras",
                                      "LGPL",
-                                     "postures_scan_3d",
+                                     "posturescansrc",
                                      "Ludovic Schreiber");
-
 
 PostureSc3::PostureSc3(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()){
@@ -43,14 +40,12 @@ bool PostureSc3::start()
     cameras_[index_]->start();
   }
   merger_->start();
-
   return true;
 }
 
 bool PostureSc3::stop()
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  merger_->stop();
   for (index_=0; index_<nbr_; index_++)
   {
     cameras_[index_]->stop();
@@ -77,7 +72,7 @@ bool PostureSc3::init()
                             this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             nbr_props_, "camera_number",
-                            "Nuber of used cameras");
+                            "Number of used cameras");
 
   return true;
 }
@@ -90,13 +85,18 @@ void PostureSc3::set_input_camera(const int camera_nbr, void* user_data)
 
   ctx->cameras_.resize(ctx->nbr_);
   ctx->merger_->setCloudNbr (ctx->nbr_);
-  for (ctx->index_=0; ctx->index_<ctx->nbr_; ctx->index_++)
+  for (ctx->index_ = 0; ctx->index_ < ctx->nbr_; ctx->index_++)
   {
-      std::shared_ptr<ZCamera> newCam = std::shared_ptr<ZCamera>(new ZCamera());
-      ctx->cameras_[ctx->index_] = newCam;
-      ctx->cameras_[ctx->index_]->setDeviceIndex(ctx->index_);
-      ctx->cameras_[ctx->index_]->setCaptureMode(ZCamera::CaptureMode_QQVGA_30Hz);
-      ctx->cameras_[ctx->index_]->setCallbackCloud(handle_cloud, user_data);
+    std::shared_ptr<ZCamera> newCam = std::shared_ptr<ZCamera>(new ZCamera());
+    ctx->cameras_[ctx->index_] = newCam;
+    ctx->cameras_[ctx->index_]->setDeviceIndex(ctx->index_);
+    ctx->cameras_[ctx->index_]->setCaptureMode(ZCamera::CaptureMode_QQVGA_30Hz);
+
+    int index = ctx->index_;
+
+    ctx->cameras_[ctx->index_]->setCallbackCloud([=](void* user_data, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud) -> void {
+        ctx->cb_frame_cloud(index, std::move(cloud));
+    }, nullptr);
   }
 }
 
@@ -106,40 +106,42 @@ int PostureSc3::get_input_camera(void* context)
   return ctx->nbr_;
 }
 
-void
-PostureSc3::cb_frame_mesh(void* context, vector<unsigned char>&& data)
+void PostureSc3::cb_frame_cloud(int index,pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud)
 {
-  PostureSc3 *ctx = static_cast<PostureSc3*>(context);
+  std::lock_guard<std::mutex> lock(mutex_);
 
-  if (!ctx->mesh_writer_ || data.size() > ctx->mesh_writer_->writer(&shmdata::Writer::alloc_size)) {
-    ctx->mesh_writer_.reset();
-    ctx->mesh_writer_ = std2::make_unique<ShmdataWriter>(ctx,
-                                                     ctx->make_file_name("mesh"),
-                                                     data.size() * 2,
-                                                     string(POLYGONMESH_TYPE_BASE));
+  merger_->setInputCloud(index, cloud);
+  pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr temp_cloud = boost::make_shared <pcl::PointCloud<pcl::PointXYZRGBNormal>>();
+  merger_->getCloud(temp_cloud);
+  sol_->setInputCloud(temp_cloud);
 
-    if (!ctx->mesh_writer_) {
-      g_warning("Unable to create mesh callback");
-      return;
-    }
+  sol_->getMesh(output_);
+
+  if (!mesh_writer_ || output_.size() > mesh_writer_->writer(&shmdata::Writer::alloc_size)) {
+      mesh_writer_.reset();
+      if (output_.size()>= 256)
+      {
+        mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
+                                                         make_file_name("mesh"),
+                                                         output_.size() * 2,
+                                                         string(POLYGONMESH_TYPE_BASE));
+      }
+      else
+      {
+          mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
+                                                           make_file_name("mesh"),
+                                                           512,
+                                                           string(POLYGONMESH_TYPE_BASE));
+      }
+
+      if (!mesh_writer_) {
+        g_warning("Unable to create mesh callback");
+        return;
+      }
   }
 
-  ctx->mesh_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(data.data()), data.size());
-  ctx->mesh_writer_->bytes_written(data.size());
-}
-
-void PostureSc3::handle_cloud(void* context,pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud)
-{
-  PostureSc3 *ctx = (PostureSc3*) context;
-
-  std::lock_guard<std::mutex> lock(ctx->mutex_);
-
-  ctx->merger_->setInputCloud(ctx->index_, cloud);
-  pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr temp_cloud = boost::make_shared <pcl::PointCloud<pcl::PointXYZRGBNormal>>();
-  ctx->merger_->getCloud(temp_cloud);
-  ctx->sol_->setInputCloud(temp_cloud);
-
-  ctx->sol_->getMesh(ctx->output_);
+  mesh_writer_->writer(&shmdata::Writer::copy_to_shm, (void *) &output_, output_.size());
+  mesh_writer_->bytes_written(output_.size());
 }
 
 }

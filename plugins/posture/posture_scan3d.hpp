@@ -30,11 +30,8 @@ class PostureSc3:public Quiddity, public StartableQuiddity {
   static void set_input_camera(const int camera_nbr, void* user_data);
   static int get_input_camera(void* context);
   static int get_output_mesh(std::vector<unsigned char>);
-  static void handle_cloud(void* context,
-                          pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud);
-
-  static void cb_frame_mesh(void *context,
-                            std::vector<unsigned char>&& data);
+  void cb_frame_cloud(int index,
+                      pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud);
 
   CustomPropertyHelper::ptr custom_props_;
   GParamSpec *nbr_props_ {nullptr};
