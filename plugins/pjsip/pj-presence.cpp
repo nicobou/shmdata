@@ -252,6 +252,7 @@ PJPresence::register_account(const std::string &sip_user,
   }
   pjsua_acc_set_user_data(account_id_, this);
   registration_cond_.wait(lock);
+  change_online_status(PJPresence::AVAILABLE);
   // notifying sip registration status
   GObjectWrapper::notify_property_changed(sip_instance_->custom_props_->get_gobject(),
                                           sip_reg_status_spec_);
@@ -280,6 +281,17 @@ void PJPresence::unregister_account() {
   if (PJ_SUCCESS != pjsua_acc_del(account_id_)) {
     g_warning("error when unregistering account");
     return;
+  }
+  pj_status_t status = PJ_SUCCESS;
+  while(buddy_id_.begin() != buddy_id_.end()){
+    auto it = buddy_id_.begin();
+    status = pjsua_buddy_del(it->second);
+    if (status != PJ_SUCCESS) {
+      g_warning("cannot remove buddy");
+      return;
+    }
+    sip_instance_->prune_tree(".buddy."+ std::to_string(it->second));
+    buddy_id_.erase(it);
   }
   account_id_ = -1;
   sip_local_user_.clear();
