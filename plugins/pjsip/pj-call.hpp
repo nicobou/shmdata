@@ -23,7 +23,6 @@
 #include <vector>
 #include <mutex>
 #include <condition_variable>
-#include "switcher/shmdata-any-writer.hpp"
 #include "switcher/rtp-session.hpp"
 #include "switcher/quiddity-manager.hpp"
 #include "./pj-codec.hpp"

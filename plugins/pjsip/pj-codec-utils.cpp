@@ -66,7 +66,9 @@ PJCodecUtils::inspect_rtp_codec_from_gst_element_factory(GstElementFactory *fact
     /*     pad->static_caps.string);  */
     if (nullptr == pad)
       continue;
-    GstCaps *caps = gst_caps_from_string(pad->static_caps.string);
+    GstCaps *caps = gst_static_pad_template_get_caps(pad); //gst_caps_from_string(pad->static_caps.string);
+    // if (!GST_IS_CAPS(caps))
+    //   continue;
     PJCodecUtils::codecs from_caps = inspect_rtp_codec_from_gst_caps(caps);
 
     // replace null "encoding-name" by appropriate
