@@ -5,7 +5,7 @@ plugins_LTLIBRARIES = \
 
 #libmyplugin info
 switcher_la_SOURCES = \
-    quiddity-manager-wrapper.cpp \
+    switcher-controller.cpp \
     switcher-addon.cpp
 
 switcher_la_includedir = \

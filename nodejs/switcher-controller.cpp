@@ -1,26 +1,19 @@
 #include <iostream>
 #include <node.h>
-#include "quiddity-manager-wrapper.hpp"
+#include "switcher-controller.hpp"
 #include "switcher/quiddity-manager.hpp"
 
 using namespace std;
 using namespace v8;
 using namespace node;
 
-QuiddityManagerWrapper::QuiddityManagerWrapper(const std::string &name) :
+SwitcherController::SwitcherController(const std::string &name, Local<Function> logger_callback) :
     quiddity_manager(switcher::QuiddityManager::make_manager(name))
 {
-    // loading plugins
-    // FIXME use config.h for having the appropriate version
-    gchar *usr_plugin_dir = g_strdup_printf("/usr/switcher-0.6/plugins");
-    quiddity_manager->scan_directory_for_plugins(usr_plugin_dir);
-    g_free(usr_plugin_dir);
-    
-    gchar *usr_local_plugin_dir = g_strdup_printf("/usr/local/switcher-0.6/plugins");
-    quiddity_manager->scan_directory_for_plugins(usr_local_plugin_dir);
-    g_free(usr_local_plugin_dir);
+    user_log_cb = Persistent<Function>::New(logger_callback);
 
     // mutex
+    //uv_mutex_init(&this_mutex);
     uv_mutex_init(&switcher_log_mutex);
     uv_mutex_init(&switcher_prop_mutex);
     uv_mutex_init(&switcher_sig_mutex);
@@ -55,36 +48,30 @@ QuiddityManagerWrapper::QuiddityManagerWrapper(const std::string &name) :
     quiddity_manager->subscribe_signal("signal_sub", "create_remove_spy", "on-quiddity-created");
     quiddity_manager->subscribe_signal("signal_sub", "create_remove_spy", "on-quiddity-removed");
 
+    // loading plugins
+    // FIXME use config.h for having the appropriate version
+    gchar *usr_plugin_dir = g_strdup_printf("/usr/switcher-0.6/plugins");
+    quiddity_manager->scan_directory_for_plugins(usr_plugin_dir);
+    g_free(usr_plugin_dir);
+
+    gchar *usr_local_plugin_dir = g_strdup_printf("/usr/local/switcher-0.6/plugins");
+    quiddity_manager->scan_directory_for_plugins(usr_local_plugin_dir);
+    g_free(usr_local_plugin_dir);
+
     // do not play with previous config when saving
     quiddity_manager->reset_command_history(false);
 };
 
-QuiddityManagerWrapper::~QuiddityManagerWrapper() {
+SwitcherController::~SwitcherController() {};
 
-    quiddity_manager->remove_property_subscriber("log_sub");
-    quiddity_manager->remove_property_subscriber("prop_sub");
-    quiddity_manager->remove_signal_subscriber("signal_sub");
-
-    //uv_close((uv_handle_t*)&switcher_log_async, nullptr);
-    //uv_close((uv_handle_t*)&switcher_prop_async, nullptr);
-    //uv_close((uv_handle_t*)&switcher_sig_async, nullptr);
-
-    uv_mutex_destroy(&switcher_log_mutex);
-    uv_mutex_destroy(&switcher_prop_mutex);
-    uv_mutex_destroy(&switcher_sig_mutex);
-
-    user_log_cb.Dispose();
-    user_prop_cb.Dispose();
-    user_signal_cb.Dispose();
-
-    //quiddity_manager = nullptr;
-};
-
-void QuiddityManagerWrapper::Init(Handle<Object> exports) {
+void SwitcherController::Init(Handle<Object> exports) {
     // Prepare constructor template
     Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
-    tpl->SetClassName(String::NewSymbol("QuiddityManager"));
+    tpl->SetClassName(String::NewSymbol("Switcher"));
     tpl->InstanceTemplate()->SetInternalFieldCount(36);
+
+    // release - 1
+    tpl->PrototypeTemplate()->Set(String::NewSymbol("release"), FunctionTemplate::New(Release)->GetFunction());
 
     // history - 3
     tpl->PrototypeTemplate()->Set(String::NewSymbol("save_history"), FunctionTemplate::New(SaveHistory)->GetFunction());
@@ -117,9 +104,6 @@ void QuiddityManagerWrapper::Init(Handle<Object> exports) {
     tpl->PrototypeTemplate()->Set(String::NewSymbol("get_method_description_by_class"), FunctionTemplate::New(GetMethodDescriptionByClass)->GetFunction());
     tpl->PrototypeTemplate()->Set(String::NewSymbol("invoke"), FunctionTemplate::New(Invoke)->GetFunction());
 
-    // log - 1
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("register_log_callback"), FunctionTemplate::New(RegisterLogCallback)->GetFunction());
-
     // property subscription - 4
     tpl->PrototypeTemplate()->Set(String::NewSymbol("register_prop_callback"), FunctionTemplate::New(RegisterPropCallback)->GetFunction());
     tpl->PrototypeTemplate()->Set(String::NewSymbol("subscribe_to_property"), FunctionTemplate::New(SubscribeToProperty)->GetFunction());
@@ -140,20 +124,55 @@ void QuiddityManagerWrapper::Init(Handle<Object> exports) {
 
     // constructor
     Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
-    exports->Set(String::NewSymbol("QuiddityManager"), constructor);
+    exports->Set(String::NewSymbol("Switcher"), constructor);
 }
 
-Handle<Value> QuiddityManagerWrapper::New(const Arguments& args) {
+Handle<Value> SwitcherController::New(const Arguments& args) {
   HandleScope scope;
 
-  String::Utf8Value name( (args.Length() != 1 || !args[0]->IsString() ) ? String::New("nodeserver") : args[0]->ToString());
-  QuiddityManagerWrapper* obj = new QuiddityManagerWrapper(std::string(*name));
+  if ( args.Length() < 2 || !args[0]->IsString() || !args[1]->IsFunction() ) {
+    ThrowException(Exception::TypeError(String::New("Wrong arguments. Switcher requires a name and logger callback.")));
+    return scope.Close(Undefined());
+  }
+
+  // Construction
+  String::Utf8Value name( ( args.Length() >= 1 && !args[0]->IsString() ) ? String::New("nodeserver") : args[0]->ToString());
+  SwitcherController* obj = new SwitcherController(std::string(*name), Local<Function>::Cast(args[1]));
+
   obj->Wrap(args.This());
 
   return args.This();
 }
 
-Handle<Value> QuiddityManagerWrapper::parseJson(Handle<Value> jsonString) {
+Handle<Value> SwitcherController::Release(const Arguments &args ) {
+  HandleScope scope;
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
+
+  obj->quiddity_manager.reset();
+
+  if (!uv_is_closing((uv_handle_t*)&obj->switcher_log_async)) {
+    uv_close((uv_handle_t*)&obj->switcher_log_async, nullptr);
+  }
+  if (!uv_is_closing((uv_handle_t*)&obj->switcher_prop_async)) {
+    uv_close((uv_handle_t*)&obj->switcher_prop_async, nullptr);
+  }
+  if (!uv_is_closing((uv_handle_t*)&obj->switcher_sig_async)) {
+    uv_close((uv_handle_t*)&obj->switcher_sig_async, nullptr);
+  }
+
+  uv_mutex_destroy(&obj->switcher_sig_mutex);
+  uv_mutex_destroy(&obj->switcher_prop_mutex);
+  uv_mutex_destroy(&obj->switcher_log_mutex);
+  //uv_mutex_destroy(&obj->this_mutex);
+
+  obj->user_log_cb.Dispose();
+  obj->user_prop_cb.Dispose();
+  obj->user_signal_cb.Dispose();
+
+  return scope.Close(Undefined());
+}
+
+Handle<Value> SwitcherController::parseJson(Handle<Value> jsonString) {
     HandleScope scope;
 
     Handle<Context> context = Context::GetCurrent();
@@ -162,22 +181,23 @@ Handle<Value> QuiddityManagerWrapper::parseJson(Handle<Value> jsonString) {
     Handle<Object> JSON = global->Get(String::New("JSON"))->ToObject();
     Handle<Function> JSON_parse = Handle<Function>::Cast(JSON->Get(String::New("parse")));
 
-    // return JSON.parse.apply(JSON, jsonString);
     return scope.Close(JSON_parse->Call(JSON, 1, &jsonString));
 }
 
-void QuiddityManagerWrapper::logger_cb(const std::string &subscriber_name, const std::string &quiddity_name, const std::string &property_name, const std::string &value, void *user_data) {
-  QuiddityManagerWrapper *obj = static_cast<QuiddityManagerWrapper*>(user_data);
+void SwitcherController::logger_cb(const std::string& /*subscriber_name*/, const std::string& /*quiddity_name*/, const std::string& /*property_name*/, const std::string &value, void *user_data) {
+  SwitcherController *obj = static_cast<SwitcherController*>(user_data);
   uv_mutex_lock(&obj->switcher_log_mutex);
   obj->switcher_log_list.push_back(value);
-  uv_mutex_unlock(&obj->switcher_log_mutex);
   uv_async_send(&obj->switcher_log_async);
+  uv_mutex_unlock(&obj->switcher_log_mutex);
 }
 
-void QuiddityManagerWrapper::NotifyLog(uv_async_t *async, int status) {
+void SwitcherController::NotifyLog(uv_async_t* async, int /*status*/) {
   HandleScope scope;
-  QuiddityManagerWrapper *obj = static_cast<QuiddityManagerWrapper*>(async->data);
 
+  SwitcherController *obj = static_cast<SwitcherController*>(async->data);
+
+  //uv_mutex_lock(&obj->this_mutex);
   if (!obj->user_log_cb.IsEmpty() && obj->user_log_cb->IsCallable()) {
     TryCatch try_catch;
     uv_mutex_lock(&obj->switcher_log_mutex);
@@ -196,19 +216,21 @@ void QuiddityManagerWrapper::NotifyLog(uv_async_t *async, int status) {
     obj->switcher_log_list.clear();
     uv_mutex_unlock(&obj->switcher_log_mutex);
   }
+  //uv_mutex_unlock(&obj->this_mutex);
 }
 
-void QuiddityManagerWrapper::property_cb(const std::string &subscriber_name, const std::string &quiddity_name, const std::string &property_name, const std::string &value, void *user_data) {
-  QuiddityManagerWrapper *obj = static_cast<QuiddityManagerWrapper*>(user_data);
+void SwitcherController::property_cb(const std::string& /*subscriber_name*/, const std::string &quiddity_name, const std::string &property_name, const std::string &value, void *user_data) {
+  SwitcherController *obj = static_cast<SwitcherController*>(user_data);
   uv_mutex_lock(&obj->switcher_prop_mutex);
   obj->switcher_prop_list.push_back(PropUpdate(std::move(quiddity_name), std::move(property_name), std::move(value)));
-  uv_mutex_unlock(&obj->switcher_prop_mutex);
   uv_async_send(&obj->switcher_prop_async);
+  uv_mutex_unlock(&obj->switcher_prop_mutex);
 }
 
-void QuiddityManagerWrapper::NotifyProp(uv_async_t *async, int status) {
+void SwitcherController::NotifyProp(uv_async_t *async, int /*status*/) {
   HandleScope scope;
-  QuiddityManagerWrapper *obj = static_cast<QuiddityManagerWrapper*>(async->data);
+  SwitcherController *obj = static_cast<SwitcherController*>(async->data);
+  //uv_mutex_lock(&obj->this_mutex);
 
   if (!obj->user_prop_cb.IsEmpty() && obj->user_prop_cb->IsCallable()) {
     TryCatch try_catch;
@@ -231,19 +253,21 @@ void QuiddityManagerWrapper::NotifyProp(uv_async_t *async, int status) {
     obj->switcher_prop_list.clear();
     uv_mutex_unlock(&obj->switcher_prop_mutex);
   }
+  //uv_mutex_unlock(&obj->this_mutex);
 }
 
-void QuiddityManagerWrapper::signal_cb(const std::string &subscriber_name, const std::string &quiddity_name, const std::string &signal_name, const std::vector<std::string> &params, void *user_data) {
-  QuiddityManagerWrapper *obj = static_cast<QuiddityManagerWrapper*>(user_data);
+void SwitcherController::signal_cb(const std::string& /*subscriber_name*/, const std::string &quiddity_name, const std::string &signal_name, const std::vector<std::string> &params, void *user_data) {
+  SwitcherController *obj = static_cast<SwitcherController*>(user_data);
   uv_mutex_lock(&obj->switcher_sig_mutex);
   obj->switcher_sig_list.push_back(SigUpdate(quiddity_name, signal_name, params));
+    uv_async_send(&obj->switcher_sig_async);
   uv_mutex_unlock(&obj->switcher_sig_mutex);
-  uv_async_send(&obj->switcher_sig_async);
 }
 
-void QuiddityManagerWrapper::NotifySignal(uv_async_t *async, int status) {
+void SwitcherController::NotifySignal(uv_async_t *async, int /*status*/) {
   HandleScope scope;
-  QuiddityManagerWrapper *obj = static_cast<QuiddityManagerWrapper*>(async->data);
+  SwitcherController *obj = static_cast<SwitcherController*>(async->data);
+  //uv_mutex_lock(&obj->this_mutex);
 
   if (!obj->user_signal_cb.IsEmpty() && obj->user_signal_cb->IsCallable()) {
     TryCatch try_catch;
@@ -276,6 +300,7 @@ void QuiddityManagerWrapper::NotifySignal(uv_async_t *async, int status) {
     obj->switcher_sig_list.clear();
     uv_mutex_unlock(&obj->switcher_sig_mutex);
   }
+  //uv_mutex_unlock(&obj->this_mutex);
 }
 
 //  ██╗  ██╗██╗███████╗████████╗ ██████╗ ██████╗ ██╗   ██╗
@@ -285,9 +310,9 @@ void QuiddityManagerWrapper::NotifySignal(uv_async_t *async, int status) {
 //  ██║  ██║██║███████║   ██║   ╚██████╔╝██║  ██║   ██║
 //  ╚═╝  ╚═╝╚═╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝   ╚═╝
 
-Handle<Value> QuiddityManagerWrapper::SaveHistory(const Arguments& args) {
+Handle<Value> SwitcherController::SaveHistory(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -306,9 +331,9 @@ Handle<Value> QuiddityManagerWrapper::SaveHistory(const Arguments& args) {
   return scope.Close(Boolean::New(false));
 }
 
-Handle<Value> QuiddityManagerWrapper::LoadHistoryFromCurrentState(const Arguments& args) {
+Handle<Value> SwitcherController::LoadHistoryFromCurrentState(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -332,9 +357,9 @@ Handle<Value> QuiddityManagerWrapper::LoadHistoryFromCurrentState(const Argument
   return scope.Close(Boolean::New(true));
 }
 
-Handle<Value> QuiddityManagerWrapper::LoadHistoryFromScratch(const Arguments& args) {
+Handle<Value> SwitcherController::LoadHistoryFromScratch(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -366,9 +391,9 @@ Handle<Value> QuiddityManagerWrapper::LoadHistoryFromScratch(const Arguments& ar
 //  ███████╗██║██║     ███████╗╚██████╗   ██║   ╚██████╗███████╗███████╗
 //  ╚══════╝╚═╝╚═╝     ╚══════╝ ╚═════╝   ╚═╝    ╚═════╝╚══════╝╚══════╝
 
-Handle<Value> QuiddityManagerWrapper::Remove(const Arguments& args) {
+Handle<Value> SwitcherController::Remove(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -387,9 +412,9 @@ Handle<Value> QuiddityManagerWrapper::Remove(const Arguments& args) {
   return scope.Close(Boolean::New(false));
 }
 
-Handle<Value> QuiddityManagerWrapper::HasQuiddity(const Arguments& args) {
+Handle<Value> SwitcherController::HasQuiddity(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -408,9 +433,9 @@ Handle<Value> QuiddityManagerWrapper::HasQuiddity(const Arguments& args) {
   return scope.Close(Boolean::New(false));
 }
 
-Handle<Value> QuiddityManagerWrapper::Create(const Arguments& args) {
+Handle<Value> SwitcherController::Create(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1 && args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -422,7 +447,6 @@ Handle<Value> QuiddityManagerWrapper::Create(const Arguments& args) {
   }
 
   String::Utf8Value first_arg(args[0]->ToString());
-  Handle<String> name;
 
   if (args.Length() == 2) {
     if (!args[1]->IsString()) {
@@ -432,17 +456,15 @@ Handle<Value> QuiddityManagerWrapper::Create(const Arguments& args) {
 
     String::Utf8Value second_arg(args[1]->ToString());
 
-    name = String::New(obj->quiddity_manager->create(std::string(*first_arg), std::string(*second_arg)).c_str());
+    return scope.Close(String::New(obj->quiddity_manager->create(std::string(*first_arg), std::string(*second_arg)).c_str()));
   } else {
-    name = String::New(obj->quiddity_manager->create(std::string(*first_arg)).c_str());
+    return scope.Close(String::New(obj->quiddity_manager->create(std::string(*first_arg)).c_str()));
   }
-
-  return scope.Close(name);
 }
 
-Handle<Value> QuiddityManagerWrapper::GetInfo(const Arguments& args) {
+Handle<Value> SwitcherController::GetInfo(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -461,14 +483,14 @@ Handle<Value> QuiddityManagerWrapper::GetInfo(const Arguments& args) {
   }
 
   String::Utf8Value second_arg(args[1]->ToString());
-  Local<String> name = String::New(obj->quiddity_manager->get_info(std::string(*first_arg), std::string(*second_arg)).c_str());
+  Handle<String> res = String::New(obj->quiddity_manager->get_info(std::string(*first_arg), std::string(*second_arg)).c_str());
 
-  return scope.Close(name);
+  return scope.Close(parseJson(res));
 }
 
-Handle<Value> QuiddityManagerWrapper::SwitcherClose(const Arguments &args) {
+Handle<Value> SwitcherController::SwitcherClose(const Arguments &/*args*/) {
   HandleScope scope;
-  //QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  //SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   //uv_close((uv_handle_t*)&obj->switcher_log_async, nullptr);
   //uv_close((uv_handle_t*)&obj->switcher_prop_async, nullptr);
@@ -477,17 +499,17 @@ Handle<Value> QuiddityManagerWrapper::SwitcherClose(const Arguments &args) {
   return scope.Close(Boolean::New(true));
 }
 
-Handle<Value> QuiddityManagerWrapper::GetClassesDoc(const Arguments &args) {
+Handle<Value> SwitcherController::GetClassesDoc(const Arguments &args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   Handle<String> res = String::New(obj->quiddity_manager->get_classes_doc().c_str());
   return scope.Close(parseJson(res));
 }
 
-Handle<Value> QuiddityManagerWrapper::GetClassDoc(const Arguments& args) {
+Handle<Value> SwitcherController::GetClassDoc(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -504,9 +526,9 @@ Handle<Value> QuiddityManagerWrapper::GetClassDoc(const Arguments& args) {
   return scope.Close(parseJson(res));
 }
 
-Handle<Value> QuiddityManagerWrapper::GetQuiddityDescription(const Arguments& args) {
+Handle<Value> SwitcherController::GetQuiddityDescription(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -523,9 +545,9 @@ Handle<Value> QuiddityManagerWrapper::GetQuiddityDescription(const Arguments& ar
   return scope.Close(parseJson(res));
 }
 
-Handle<Value> QuiddityManagerWrapper::GetQuidditiesDescription(const Arguments &args) {
+Handle<Value> SwitcherController::GetQuidditiesDescription(const Arguments &args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
   Handle<String> res = String::New(obj->quiddity_manager->get_quiddities_description().c_str());
   return scope.Close(parseJson(res));
 }
@@ -537,9 +559,9 @@ Handle<Value> QuiddityManagerWrapper::GetQuidditiesDescription(const Arguments &
 //  ██║     ██║  ██║╚██████╔╝██║     ███████╗██║  ██║   ██║   ██║███████╗███████║
 //  ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝╚══════╝╚══════╝
 
-Handle<Value> QuiddityManagerWrapper::SetProperty(const Arguments& args) {
+Handle<Value> SwitcherController::SetProperty(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 3) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -558,9 +580,9 @@ Handle<Value> QuiddityManagerWrapper::SetProperty(const Arguments& args) {
   return scope.Close(res);
 }
 
-Handle<Value> QuiddityManagerWrapper::GetProperty(const Arguments& args) {
+Handle<Value> SwitcherController::GetProperty(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -578,9 +600,9 @@ Handle<Value> QuiddityManagerWrapper::GetProperty(const Arguments& args) {
   return scope.Close(parseJson(res));
 }
 
-Handle<Value> QuiddityManagerWrapper::GetPropertiesDescription(const Arguments& args) {
+Handle<Value> SwitcherController::GetPropertiesDescription(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -597,9 +619,9 @@ Handle<Value> QuiddityManagerWrapper::GetPropertiesDescription(const Arguments& 
   return scope.Close(parseJson(res));
 }
 
-Handle<Value> QuiddityManagerWrapper::GetPropertyDescription(const Arguments& args) {
+Handle<Value> SwitcherController::GetPropertyDescription(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -617,9 +639,9 @@ Handle<Value> QuiddityManagerWrapper::GetPropertyDescription(const Arguments& ar
   return scope.Close(parseJson(res));
 }
 
-Handle<Value> QuiddityManagerWrapper::GetPropertiesDescriptionByClass(const Arguments& args) {
+Handle<Value> SwitcherController::GetPropertiesDescriptionByClass(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -636,9 +658,9 @@ Handle<Value> QuiddityManagerWrapper::GetPropertiesDescriptionByClass(const Argu
   return scope.Close(parseJson(res));
 }
 
-Handle<Value> QuiddityManagerWrapper::GetPropertyDescriptionByClass(const Arguments& args) {
+Handle<Value> SwitcherController::GetPropertyDescriptionByClass(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -663,9 +685,9 @@ Handle<Value> QuiddityManagerWrapper::GetPropertyDescriptionByClass(const Argume
 //  ██║ ╚═╝ ██║███████╗   ██║   ██║  ██║╚██████╔╝██████╔╝███████║
 //  ╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝
 
-Handle<Value> QuiddityManagerWrapper::Invoke(const Arguments& args) {
+Handle<Value> SwitcherController::Invoke(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() < 3) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -690,17 +712,19 @@ Handle<Value> QuiddityManagerWrapper::Invoke(const Arguments& args) {
   std::string *return_value = nullptr;
   obj->quiddity_manager->invoke(std::string(*element_name), std::string(*method_name), &return_value, vector_arg);
   if (nullptr != return_value) {
+  cout << "value" << endl;
     Handle<String> res = String::New((*return_value).c_str());
     delete return_value;  // FIXME this should not be necessary
     return scope.Close(parseJson(res));
   }
 
-  return scope.Close(Null());
+cout << "null" << endl;
+  return scope.Close(Undefined());
 }
 
-Handle<Value> QuiddityManagerWrapper::GetMethodsDescription(const Arguments& args) {
+Handle<Value> SwitcherController::GetMethodsDescription(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -717,9 +741,9 @@ Handle<Value> QuiddityManagerWrapper::GetMethodsDescription(const Arguments& arg
   return scope.Close(parseJson(res));
 }
 
-Handle<Value> QuiddityManagerWrapper::GetMethodDescription(const Arguments& args) {
+Handle<Value> SwitcherController::GetMethodDescription(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -737,9 +761,9 @@ Handle<Value> QuiddityManagerWrapper::GetMethodDescription(const Arguments& args
   return scope.Close(parseJson(res));
 }
 
-Handle<Value> QuiddityManagerWrapper::GetMethodsDescriptionByClass(const Arguments& args) {
+Handle<Value> SwitcherController::GetMethodsDescriptionByClass(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -756,9 +780,9 @@ Handle<Value> QuiddityManagerWrapper::GetMethodsDescriptionByClass(const Argumen
   return scope.Close(parseJson(res));
 }
 
-Handle<Value> QuiddityManagerWrapper::GetMethodDescriptionByClass(const Arguments& args) {
+Handle<Value> SwitcherController::GetMethodDescriptionByClass(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -776,22 +800,6 @@ Handle<Value> QuiddityManagerWrapper::GetMethodDescriptionByClass(const Argument
   return scope.Close(parseJson(res));
 }
 
-//  ██╗      ██████╗  ██████╗
-//  ██║     ██╔═══██╗██╔════╝
-//  ██║     ██║   ██║██║  ███╗
-//  ██║     ██║   ██║██║   ██║
-//  ███████╗╚██████╔╝╚██████╔╝
-//  ╚══════╝ ╚═════╝  ╚═════╝
-
-Handle<Value> QuiddityManagerWrapper::RegisterLogCallback(const Arguments& args) {
-  HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
-
-  obj->user_log_cb = Persistent<Function>::New(Local<Function>::Cast(args[0]));
-
-  return scope.Close(Undefined());
-}
-
 //  ██████╗ ██████╗  ██████╗ ██████╗ ███████╗██████╗ ████████╗██╗   ██╗
 //  ██╔══██╗██╔══██╗██╔═══██╗██╔══██╗██╔════╝██╔══██╗╚══██╔══╝╚██╗ ██╔╝
 //  ██████╔╝██████╔╝██║   ██║██████╔╝█████╗  ██████╔╝   ██║    ╚████╔╝
@@ -799,18 +807,18 @@ Handle<Value> QuiddityManagerWrapper::RegisterLogCallback(const Arguments& args)
 //  ██║     ██║  ██║╚██████╔╝██║     ███████╗██║  ██║   ██║      ██║
 //  ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝      ╚═╝
 
-Handle<Value> QuiddityManagerWrapper::RegisterPropCallback(const Arguments& args) {
+Handle<Value> SwitcherController::RegisterPropCallback(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   obj->user_prop_cb = Persistent<Function>::New(Local<Function>::Cast(args[0]));
 
   return scope.Close(Undefined());
 }
 
-Handle<Value> QuiddityManagerWrapper::SubscribeToProperty(const Arguments& args) {
+Handle<Value> SwitcherController::SubscribeToProperty(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -828,9 +836,9 @@ Handle<Value> QuiddityManagerWrapper::SubscribeToProperty(const Arguments& args)
   return scope.Close(res);
 }
 
-Handle<Value> QuiddityManagerWrapper::UnsubscribeToProperty(const Arguments& args) {
+Handle<Value> SwitcherController::UnsubscribeToProperty(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -848,9 +856,9 @@ Handle<Value> QuiddityManagerWrapper::UnsubscribeToProperty(const Arguments& arg
   return scope.Close(res);
 }
 
-Handle<Value> QuiddityManagerWrapper::ListSubscribedProperties(const Arguments& args) {
+Handle<Value> SwitcherController::ListSubscribedProperties(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   Handle<String> res = String::New(obj->quiddity_manager->list_subscribed_properties_json("prop_sub").c_str());
   return scope.Close(parseJson(res));
@@ -863,18 +871,18 @@ Handle<Value> QuiddityManagerWrapper::ListSubscribedProperties(const Arguments& 
 //  ███████║██║╚██████╔╝██║ ╚████║██║  ██║███████╗
 //  ╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝
 
-Handle<Value> QuiddityManagerWrapper::RegisterSignalCallback(const Arguments& args) {
+Handle<Value> SwitcherController::RegisterSignalCallback(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   obj->user_signal_cb = Persistent<Function>::New(Local<Function>::Cast(args[0]));
 
   return scope.Close(Undefined());
 }
 
-Handle<Value> QuiddityManagerWrapper::SubscribeToSignal(const Arguments& args) {
+Handle<Value> SwitcherController::SubscribeToSignal(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -892,9 +900,9 @@ Handle<Value> QuiddityManagerWrapper::SubscribeToSignal(const Arguments& args) {
   return scope.Close(res);
 }
 
-Handle<Value> QuiddityManagerWrapper::UnsubscribeToSignal(const Arguments& args) {
+Handle<Value> SwitcherController::UnsubscribeToSignal(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -912,17 +920,17 @@ Handle<Value> QuiddityManagerWrapper::UnsubscribeToSignal(const Arguments& args)
   return scope.Close(res);
 }
 
-Handle<Value> QuiddityManagerWrapper::ListSubscribedSignals(const Arguments& args) {
+Handle<Value> SwitcherController::ListSubscribedSignals(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   Handle<String> res = String::New(obj->quiddity_manager->list_subscribed_signals_json("signal_sub").c_str());
   return scope.Close(parseJson(res));
 }
 
-Handle<Value> QuiddityManagerWrapper::GetSignalsDescription(const Arguments& args) {
+Handle<Value> SwitcherController::GetSignalsDescription(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -939,9 +947,9 @@ Handle<Value> QuiddityManagerWrapper::GetSignalsDescription(const Arguments& arg
   return scope.Close(parseJson(res));
 }
 
-Handle<Value> QuiddityManagerWrapper::GetSignalDescription(const Arguments& args) {
+Handle<Value> SwitcherController::GetSignalDescription(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -959,9 +967,9 @@ Handle<Value> QuiddityManagerWrapper::GetSignalDescription(const Arguments& args
   return scope.Close(parseJson(res));
 }
 
-Handle<Value> QuiddityManagerWrapper::GetSignalsDescriptionByClass(const Arguments& args) {
+Handle<Value> SwitcherController::GetSignalsDescriptionByClass(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
@@ -978,9 +986,9 @@ Handle<Value> QuiddityManagerWrapper::GetSignalsDescriptionByClass(const Argumen
   return scope.Close(parseJson(res));
 }
 
-Handle<Value> QuiddityManagerWrapper::GetSignalDescriptionByClass(const Arguments& args) {
+Handle<Value> SwitcherController::GetSignalDescriptionByClass(const Arguments& args) {
   HandleScope scope;
-  QuiddityManagerWrapper* obj = ObjectWrap::Unwrap<QuiddityManagerWrapper>(args.This());
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
     ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));

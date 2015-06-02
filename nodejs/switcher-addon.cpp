@@ -16,12 +16,12 @@
  */
 
 #include <node.h>
-#include "quiddity-manager-wrapper.hpp"
+#include "switcher-controller.hpp"
 
 using namespace v8;
 
 void InitAll(Handle<Object> exports) {
-  QuiddityManagerWrapper::Init(exports);
+  SwitcherController::Init(exports);
 }
 
 NODE_MODULE(switcher, InitAll)

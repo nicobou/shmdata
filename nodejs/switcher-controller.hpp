@@ -1,10 +1,10 @@
-#ifndef QUIDDMGRWRAP_H
-#define QUIDDMGRWRAP_H
+#ifndef SWITCHERCTRL_H
+#define SWITCHERCTRL_H
 
 #include <node.h>
 #include "switcher/quiddity-manager.hpp"
 
-class QuiddityManagerWrapper : public node::ObjectWrap {
+class SwitcherController : public node::ObjectWrap {
     public:
         static void Init(v8::Handle<v8::Object> target);
 
@@ -13,10 +13,12 @@ class QuiddityManagerWrapper : public node::ObjectWrap {
         v8::Persistent<v8::Function> user_signal_cb;               // must be disposed
 
     private:
-        QuiddityManagerWrapper(const std::string &name);
-        ~QuiddityManagerWrapper();
+        SwitcherController(const std::string &name, v8::Local<v8::Function> logger_callbac);
+        ~SwitcherController();
 
         switcher::QuiddityManager::ptr quiddity_manager;
+
+        uv_mutex_t this_mutex;
 
         //async log
         uv_async_t switcher_log_async;
@@ -58,6 +60,7 @@ class QuiddityManagerWrapper : public node::ObjectWrap {
         static void NotifyLog(uv_async_t *async, int status);
 
         static v8::Handle<v8::Value> New(const v8::Arguments& args);
+        static v8::Handle<v8::Value> Release(const v8::Arguments& args);
 
         static v8::Handle<v8::Value> SaveHistory(const v8::Arguments& args);
         static v8::Handle<v8::Value> LoadHistoryFromCurrentState(const v8::Arguments& args);
