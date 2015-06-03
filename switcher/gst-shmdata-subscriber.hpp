@@ -46,6 +46,7 @@ class GstShmdataSubscriber {
   PeriodicTask ptask_;
   static void on_caps_cb(GObject *gobject, GParamSpec *pspec, gpointer user_data);
   void byte_monitor();
+  void notify_caps();
 };
 
 }  // namespace switcher

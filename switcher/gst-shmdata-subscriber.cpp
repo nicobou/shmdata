@@ -38,19 +38,26 @@ GstShmdataSubscriber::GstShmdataSubscriber(GstElement *element,
                    "notify::caps",
                    G_CALLBACK(GstShmdataSubscriber::on_caps_cb),
                    this);
+  notify_caps();
 }
 
-void GstShmdataSubscriber::on_caps_cb(GObject *gobject, GParamSpec *pspec, gpointer user_data){
+void GstShmdataSubscriber::on_caps_cb(GObject *gobject,
+                                      GParamSpec */*pspec*/,
+                                      gpointer user_data){
   GstShmdataSubscriber *context = static_cast<GstShmdataSubscriber *>(user_data);
-
   if (!context->on_caps_cb_) {
     g_debug("got caps, but no caps callback in GstShmdataSubscriber");
     return;
   }
+  context->notify_caps();
+}
+
+void GstShmdataSubscriber::notify_caps(){
   GValue val = G_VALUE_INIT;
-  g_value_init(&val, pspec->value_type);
-  g_object_get_property(gobject, "caps", &val);
-  context->on_caps_cb_(std::string(g_value_get_string(&val)));
+  g_value_init(&val, G_TYPE_STRING);
+  g_object_get_property(G_OBJECT(element_), "caps", &val);
+  if (nullptr != g_value_get_string(&val))
+    on_caps_cb_(g_value_get_string(&val));
   g_value_unset(&val);
 }
 
