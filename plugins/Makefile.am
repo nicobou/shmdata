@@ -53,3 +53,8 @@ if JACKBUILD
 SUBDIRS += \
     jack
 endif
+
+if VNCBUILD
+SUBDIRS += \
+	vnc
+endif
