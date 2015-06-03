@@ -34,6 +34,8 @@ class GstVideoCodec {
   GstVideoCodec(const GstVideoCodec &) = delete;
   GstVideoCodec &operator=(const GstVideoCodec &) = delete;
 
+  void set_visible(bool visible);
+  
  private:
   Quiddity *quid_;
   GstElement *rawvideo_{nullptr};
@@ -60,6 +62,10 @@ class GstVideoCodec {
   bool make_new_shmdatas();
   bool remake_codec_elements();
   void make_codec_properties();
+
+  void show();
+  void hide();
+
   static void set_codec(const gint value, void *user_data);
   static gint get_codec(void *user_data);
   // static gboolean get_codec_long_list(void *user_data);

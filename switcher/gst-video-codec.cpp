@@ -172,34 +172,25 @@ GstVideoCodec::~GstVideoCodec() {
 //   return true;
 // }
 
-// bool GstVideoCodec::start() {
-//   rawvideo_ = nullptr;
-//   if (!make_video_source(&rawvideo_)) {
-//     g_debug("cannot make video source");
-//     return false;
-//   }
-//   if (!make_new_shmdatas())
-//     return false;
-//   if (!on_start())
-//     return false;
-//   disable_method("reset");
-//   disable_property("codec");
-//   disable_property("more_codecs");
-//   video_output_format_->disable_property();
-//   return true;
-// }
+void GstVideoCodec::set_visible(bool visible){
+  if (visible)
+    show();
+  hide();
+}
 
-// bool GstVideoCodec::stop() {
-//   bool res = on_stop();
-//   unregister_shmdata(make_file_name("encoded-video"));
-//   unregister_shmdata(make_file_name("video"));
-//   reset_bin();
-//   enable_method("reset");
-//   enable_property("codec");
-//   enable_property("more_codecs");
-//   video_output_format_->enable_property();
-//   return res;
-// }
+void GstVideoCodec::show(){
+  quid_->disable_method("reset");
+  quid_->disable_property("codec");
+  quid_->disable_property("more_codecs");
+  video_output_format_->disable_property();
+}
+
+void GstVideoCodec::hide(){
+  quid_->enable_method("reset");
+  quid_->enable_property("codec");
+  quid_->enable_property("more_codecs");
+  video_output_format_->enable_property();
+}
 
 bool GstVideoCodec::remake_codec_elements() {
   if (codec_ == 0)

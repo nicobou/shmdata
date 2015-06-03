@@ -125,7 +125,7 @@ void HTTPSDPDec::configure_shmdatasink(GstElement *element, const std::string &m
             auto tree = this->prune_tree(".shmdata.writer." + shmpath, false);
             if (!tree)
               return;
-            tree->graft(".byte-rate",
+            tree->graft(".byte_rate",
                         data::Tree::make(byte_rate));
             this->graft_tree(".shmdata.writer." + shmpath, tree);
           }));

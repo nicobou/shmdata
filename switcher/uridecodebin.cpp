@@ -240,12 +240,8 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement *bin, GstPad *pad) {
                                                      0));
           },
           [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate){
-            auto tree = this->prune_tree(".shmdata.writer." + shmpath, false);
-            if (!tree)
-              return;
-            tree->graft(".byte-rate",
-                        data::Tree::make(byte_rate));
-            this->graft_tree(".shmdata.writer." + shmpath, tree);
+            this->graft_tree(".shmdata.writer." + shmpath + ".byte_rate",
+                             data::Tree::make(byte_rate));
           }));
   GstUtils::sync_state_with_parent(shmdatasink);
 }

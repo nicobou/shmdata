@@ -46,12 +46,8 @@ VideoTestSource::VideoTestSource(const std::string &)  :
                                                             0));
                  },
                  [this](GstShmdataSubscriber::num_bytes_t byte_rate){
-                   auto tree = this->prune_tree(".shmdata.writer." + shmpath_, false);
-                   if (!tree)
-                     return;
-                   tree->graft(".byte-rate",
-                               data::Tree::make(std::to_string(byte_rate)));
-                   this->graft_tree(".shmdata.writer." + shmpath_, tree);
+                   this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
+                                    data::Tree::make(std::to_string(byte_rate)));
                  })
              : nullptr){
   init_startable(this);
@@ -98,12 +94,8 @@ bool VideoTestSource::stop() {
                                                    0));
         },
         [this](GstShmdataSubscriber::num_bytes_t byte_rate){
-          auto tree = this->prune_tree(".shmdata.writer." + shmpath_, false);
-          if (!tree)
-            return;
-          tree->graft(".byte-rate",
-                      data::Tree::make(std::to_string(byte_rate)));
-          this->graft_tree(".shmdata.writer." + shmpath_, tree);
+          this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
+                           data::Tree::make(std::to_string(byte_rate)));
         });
     gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                      shmdatasink_.get_raw(), videotestsrc_.get_raw(),

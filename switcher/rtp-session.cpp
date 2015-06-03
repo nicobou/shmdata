@@ -525,12 +525,8 @@ bool RtpSession::add_data_stream(const std::string &shmpath) {
                                                      0));
           },
           [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate){
-            auto tree = this->prune_tree(".shmdata.reader." + shmpath, false);
-            if (!tree)
-              return;
-            tree->graft(".byte-rate",
-                        data::Tree::make(std::to_string(byte_rate)));
-            this->graft_tree(".shmdata.reader." + shmpath, tree);
+            this->graft_tree(".shmdata.reader." + shmpath + ".byte_rate",
+                             data::Tree::make(std::to_string(byte_rate)));
           }));
   g_object_set(G_OBJECT(src), "socket-path", shmpath.c_str(), nullptr);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), src);

@@ -226,12 +226,8 @@ bool ShmdataToJack::start() {
                                                  0));
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
-        auto tree = this->prune_tree(".shmdata.reader." + this->shmpath_, false);
-        if (!tree)
-          return;
-        tree->graft(".byte-rate",
-                    data::Tree::make(std::to_string(byte_rate)));
-        this->graft_tree(".shmdata.reader." + this->shmpath_, tree);
+        this->graft_tree(".shmdata.reader." + this->shmpath_ + ".byte_rate",
+                         data::Tree::make(std::to_string(byte_rate)));
       });
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), audiobin_);
   gst_pipeline_->play(true);

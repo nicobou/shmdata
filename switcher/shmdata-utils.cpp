@@ -61,7 +61,7 @@ data::Tree::ptr ShmdataUtils::make_tree(const std::string &caps,
   data::Tree::ptr tree = data::Tree::make();
   tree->graft(".caps", data::Tree::make(caps));
   tree->graft(".category", data::Tree::make(category));
-  tree->graft(".byte-rate", data::Tree::make(num_bytes));
+  tree->graft(".byte_rate", data::Tree::make(num_bytes));
   return tree;
 }
 
