@@ -68,21 +68,20 @@ void SwitcherController::Init(Handle<Object> exports) {
     // Prepare constructor template
     Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
     tpl->SetClassName(String::NewSymbol("Switcher"));
-    tpl->InstanceTemplate()->SetInternalFieldCount(36);
+    tpl->InstanceTemplate()->SetInternalFieldCount(35);
 
-    // release - 1
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("release"), FunctionTemplate::New(Release)->GetFunction());
+    // lifecycle - 1
+    tpl->PrototypeTemplate()->Set(String::NewSymbol("close"), FunctionTemplate::New(SwitcherClose)->GetFunction());
 
     // history - 3
     tpl->PrototypeTemplate()->Set(String::NewSymbol("save_history"), FunctionTemplate::New(SaveHistory)->GetFunction());
     tpl->PrototypeTemplate()->Set(String::NewSymbol("load_history_from_current_state"), FunctionTemplate::New(LoadHistoryFromCurrentState)->GetFunction());
     tpl->PrototypeTemplate()->Set(String::NewSymbol("load_history_from_scratch"), FunctionTemplate::New(LoadHistoryFromScratch)->GetFunction());
 
-    // life manager - 9
+    // life manager - 8
     tpl->PrototypeTemplate()->Set(String::NewSymbol("create"), FunctionTemplate::New(Create)->GetFunction());
     tpl->PrototypeTemplate()->Set(String::NewSymbol("remove"), FunctionTemplate::New(Remove)->GetFunction());
     tpl->PrototypeTemplate()->Set(String::NewSymbol("has_quiddity"), FunctionTemplate::New(HasQuiddity)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("close"), FunctionTemplate::New(SwitcherClose)->GetFunction());
     tpl->PrototypeTemplate()->Set(String::NewSymbol("get_classes_doc"), FunctionTemplate::New(GetClassesDoc)->GetFunction());
     tpl->PrototypeTemplate()->Set(String::NewSymbol("get_class_doc"), FunctionTemplate::New(GetClassDoc)->GetFunction());
     tpl->PrototypeTemplate()->Set(String::NewSymbol("get_quiddity_description"), FunctionTemplate::New(GetQuiddityDescription)->GetFunction());
@@ -127,6 +126,30 @@ void SwitcherController::Init(Handle<Object> exports) {
     exports->Set(String::NewSymbol("Switcher"), constructor);
 }
 
+
+void SwitcherController::release( ) {
+  quiddity_manager.reset();
+
+  if (!uv_is_closing((uv_handle_t*)&switcher_log_async)) {
+    uv_close((uv_handle_t*)&switcher_log_async, nullptr);
+  }
+  if (!uv_is_closing((uv_handle_t*)&switcher_prop_async)) {
+    uv_close((uv_handle_t*)&switcher_prop_async, nullptr);
+  }
+  if (!uv_is_closing((uv_handle_t*)&switcher_sig_async)) {
+    uv_close((uv_handle_t*)&switcher_sig_async, nullptr);
+  }
+
+  uv_mutex_destroy(&switcher_sig_mutex);
+  uv_mutex_destroy(&switcher_prop_mutex);
+  uv_mutex_destroy(&switcher_log_mutex);
+  //uv_mutex_destroy(&this_mutex);
+
+  user_log_cb.Dispose();
+  user_prop_cb.Dispose();
+  user_signal_cb.Dispose();
+}
+
 Handle<Value> SwitcherController::New(const Arguments& args) {
   HandleScope scope;
 
@@ -144,34 +167,6 @@ Handle<Value> SwitcherController::New(const Arguments& args) {
   return args.This();
 }
 
-Handle<Value> SwitcherController::Release(const Arguments &args ) {
-  HandleScope scope;
-  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
-
-  obj->quiddity_manager.reset();
-
-  if (!uv_is_closing((uv_handle_t*)&obj->switcher_log_async)) {
-    uv_close((uv_handle_t*)&obj->switcher_log_async, nullptr);
-  }
-  if (!uv_is_closing((uv_handle_t*)&obj->switcher_prop_async)) {
-    uv_close((uv_handle_t*)&obj->switcher_prop_async, nullptr);
-  }
-  if (!uv_is_closing((uv_handle_t*)&obj->switcher_sig_async)) {
-    uv_close((uv_handle_t*)&obj->switcher_sig_async, nullptr);
-  }
-
-  uv_mutex_destroy(&obj->switcher_sig_mutex);
-  uv_mutex_destroy(&obj->switcher_prop_mutex);
-  uv_mutex_destroy(&obj->switcher_log_mutex);
-  //uv_mutex_destroy(&obj->this_mutex);
-
-  obj->user_log_cb.Dispose();
-  obj->user_prop_cb.Dispose();
-  obj->user_signal_cb.Dispose();
-
-  return scope.Close(Undefined());
-}
-
 Handle<Value> SwitcherController::parseJson(Handle<Value> jsonString) {
     HandleScope scope;
 
@@ -185,6 +180,7 @@ Handle<Value> SwitcherController::parseJson(Handle<Value> jsonString) {
 }
 
 void SwitcherController::logger_cb(const std::string& /*subscriber_name*/, const std::string& /*quiddity_name*/, const std::string& /*property_name*/, const std::string &value, void *user_data) {
+  cout << ">>>" << value << endl;
   SwitcherController *obj = static_cast<SwitcherController*>(user_data);
   uv_mutex_lock(&obj->switcher_log_mutex);
   obj->switcher_log_list.push_back(value);
@@ -303,6 +299,20 @@ void SwitcherController::NotifySignal(uv_async_t *async, int /*status*/) {
   //uv_mutex_unlock(&obj->this_mutex);
 }
 
+//  ██╗     ██╗███████╗███████╗ ██████╗██╗   ██╗ ██████╗██╗     ███████╗
+//  ██║     ██║██╔════╝██╔════╝██╔════╝╚██╗ ██╔╝██╔════╝██║     ██╔════╝
+//  ██║     ██║█████╗  █████╗  ██║      ╚████╔╝ ██║     ██║     █████╗
+//  ██║     ██║██╔══╝  ██╔══╝  ██║       ╚██╔╝  ██║     ██║     ██╔══╝
+//  ███████╗██║██║     ███████╗╚██████╗   ██║   ╚██████╗███████╗███████╗
+//  ╚══════╝╚═╝╚═╝     ╚══════╝ ╚═════╝   ╚═╝    ╚═════╝╚══════╝╚══════╝
+
+Handle<Value> SwitcherController::SwitcherClose(const Arguments &args) {
+  HandleScope scope;
+  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
+  obj->release();
+  return scope.Close(Boolean::New(true));
+}
+
 //  ██╗  ██╗██╗███████╗████████╗ ██████╗ ██████╗ ██╗   ██╗
 //  ██║  ██║██║██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗╚██╗ ██╔╝
 //  ███████║██║███████╗   ██║   ██║   ██║██████╔╝ ╚████╔╝
@@ -384,12 +394,12 @@ Handle<Value> SwitcherController::LoadHistoryFromScratch(const Arguments& args) 
   return scope.Close(Boolean::New(true));
 }
 
-//  ██╗     ██╗███████╗███████╗ ██████╗██╗   ██╗ ██████╗██╗     ███████╗
-//  ██║     ██║██╔════╝██╔════╝██╔════╝╚██╗ ██╔╝██╔════╝██║     ██╔════╝
-//  ██║     ██║█████╗  █████╗  ██║      ╚████╔╝ ██║     ██║     █████╗
-//  ██║     ██║██╔══╝  ██╔══╝  ██║       ╚██╔╝  ██║     ██║     ██╔══╝
-//  ███████╗██║██║     ███████╗╚██████╗   ██║   ╚██████╗███████╗███████╗
-//  ╚══════╝╚═╝╚═╝     ╚══════╝ ╚═════╝   ╚═╝    ╚═════╝╚══════╝╚══════╝
+//   ██████╗ ██╗   ██╗██╗██████╗ ██████╗ ██╗████████╗██╗███████╗███████╗
+//  ██╔═══██╗██║   ██║██║██╔══██╗██╔══██╗██║╚══██╔══╝██║██╔════╝██╔════╝
+//  ██║   ██║██║   ██║██║██║  ██║██║  ██║██║   ██║   ██║█████╗  ███████╗
+//  ██║▄▄ ██║██║   ██║██║██║  ██║██║  ██║██║   ██║   ██║██╔══╝  ╚════██║
+//  ╚██████╔╝╚██████╔╝██║██████╔╝██████╔╝██║   ██║   ██║███████╗███████║
+//   ╚══▀▀═╝  ╚═════╝ ╚═╝╚═════╝ ╚═════╝ ╚═╝   ╚═╝   ╚═╝╚══════╝╚══════╝
 
 Handle<Value> SwitcherController::Remove(const Arguments& args) {
   HandleScope scope;
@@ -486,17 +496,6 @@ Handle<Value> SwitcherController::GetInfo(const Arguments& args) {
   Handle<String> res = String::New(obj->quiddity_manager->get_info(std::string(*first_arg), std::string(*second_arg)).c_str());
 
   return scope.Close(parseJson(res));
-}
-
-Handle<Value> SwitcherController::SwitcherClose(const Arguments &/*args*/) {
-  HandleScope scope;
-  //SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
-
-  //uv_close((uv_handle_t*)&obj->switcher_log_async, nullptr);
-  //uv_close((uv_handle_t*)&obj->switcher_prop_async, nullptr);
-  //uv_close((uv_handle_t*)&obj->switcher_sig_async, nullptr);
-
-  return scope.Close(Boolean::New(true));
 }
 
 Handle<Value> SwitcherController::GetClassesDoc(const Arguments &args) {
