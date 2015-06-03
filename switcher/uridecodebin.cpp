@@ -324,6 +324,7 @@ bool Uridecodebin::to_shmdata() {
     g_warning("no uri to decode");
     return false;
   }
+  counter_.reset_counter_map();
   destroy_uridecodebin();
   init_uridecodebin();
   g_debug("to_shmdata set uri %s", uri_.c_str());
