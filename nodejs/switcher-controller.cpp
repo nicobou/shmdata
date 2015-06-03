@@ -13,7 +13,6 @@ SwitcherController::SwitcherController(const std::string &name, Local<Function> 
     user_log_cb = Persistent<Function>::New(logger_callback);
 
     // mutex
-    //uv_mutex_init(&this_mutex);
     uv_mutex_init(&switcher_log_mutex);
     uv_mutex_init(&switcher_prop_mutex);
     uv_mutex_init(&switcher_sig_mutex);
@@ -143,7 +142,6 @@ void SwitcherController::release( ) {
   uv_mutex_destroy(&switcher_sig_mutex);
   uv_mutex_destroy(&switcher_prop_mutex);
   uv_mutex_destroy(&switcher_log_mutex);
-  //uv_mutex_destroy(&this_mutex);
 
   user_log_cb.Dispose();
   user_prop_cb.Dispose();
@@ -180,7 +178,6 @@ Handle<Value> SwitcherController::parseJson(Handle<Value> jsonString) {
 }
 
 void SwitcherController::logger_cb(const std::string& /*subscriber_name*/, const std::string& /*quiddity_name*/, const std::string& /*property_name*/, const std::string &value, void *user_data) {
-  cout << ">>>" << value << endl;
   SwitcherController *obj = static_cast<SwitcherController*>(user_data);
   uv_mutex_lock(&obj->switcher_log_mutex);
   obj->switcher_log_list.push_back(value);
@@ -193,7 +190,6 @@ void SwitcherController::NotifyLog(uv_async_t* async, int /*status*/) {
 
   SwitcherController *obj = static_cast<SwitcherController*>(async->data);
 
-  //uv_mutex_lock(&obj->this_mutex);
   if (!obj->user_log_cb.IsEmpty() && obj->user_log_cb->IsCallable()) {
     TryCatch try_catch;
     uv_mutex_lock(&obj->switcher_log_mutex);
@@ -212,7 +208,6 @@ void SwitcherController::NotifyLog(uv_async_t* async, int /*status*/) {
     obj->switcher_log_list.clear();
     uv_mutex_unlock(&obj->switcher_log_mutex);
   }
-  //uv_mutex_unlock(&obj->this_mutex);
 }
 
 void SwitcherController::property_cb(const std::string& /*subscriber_name*/, const std::string &quiddity_name, const std::string &property_name, const std::string &value, void *user_data) {
@@ -226,7 +221,6 @@ void SwitcherController::property_cb(const std::string& /*subscriber_name*/, con
 void SwitcherController::NotifyProp(uv_async_t *async, int /*status*/) {
   HandleScope scope;
   SwitcherController *obj = static_cast<SwitcherController*>(async->data);
-  //uv_mutex_lock(&obj->this_mutex);
 
   if (!obj->user_prop_cb.IsEmpty() && obj->user_prop_cb->IsCallable()) {
     TryCatch try_catch;
@@ -249,7 +243,6 @@ void SwitcherController::NotifyProp(uv_async_t *async, int /*status*/) {
     obj->switcher_prop_list.clear();
     uv_mutex_unlock(&obj->switcher_prop_mutex);
   }
-  //uv_mutex_unlock(&obj->this_mutex);
 }
 
 void SwitcherController::signal_cb(const std::string& /*subscriber_name*/, const std::string &quiddity_name, const std::string &signal_name, const std::vector<std::string> &params, void *user_data) {
@@ -263,17 +256,10 @@ void SwitcherController::signal_cb(const std::string& /*subscriber_name*/, const
 void SwitcherController::NotifySignal(uv_async_t *async, int /*status*/) {
   HandleScope scope;
   SwitcherController *obj = static_cast<SwitcherController*>(async->data);
-  //uv_mutex_lock(&obj->this_mutex);
 
   if (!obj->user_signal_cb.IsEmpty() && obj->user_signal_cb->IsCallable()) {
     TryCatch try_catch;
     uv_mutex_lock(&obj->switcher_sig_mutex);
-    // performing a copy in order to avoid
-    // deadlock from unknown behavior in user_signal_cb
-    //auto sig_list = obj->switcher_sig_list;
-    //obj->switcher_sig_list.clear();
-    //uv_mutex_unlock(&obj->switcher_sig_mutex);
-
     for (auto &it: obj->switcher_sig_list) {
       Local<Value> argv[3];
       Local<Array> array = Array::New(it.val_.size());
@@ -296,7 +282,6 @@ void SwitcherController::NotifySignal(uv_async_t *async, int /*status*/) {
     obj->switcher_sig_list.clear();
     uv_mutex_unlock(&obj->switcher_sig_mutex);
   }
-  //uv_mutex_unlock(&obj->this_mutex);
 }
 
 //  ██╗     ██╗███████╗███████╗ ██████╗██╗   ██╗ ██████╗██╗     ███████╗

@@ -20,8 +20,6 @@ class SwitcherController : public node::ObjectWrap {
 
         switcher::QuiddityManager::ptr quiddity_manager;
 
-        //uv_mutex_t this_mutex;
-
         //async log
         uv_async_t switcher_log_async;
         uv_mutex_t switcher_log_mutex;  // protecting the list
