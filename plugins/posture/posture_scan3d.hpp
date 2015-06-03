@@ -27,14 +27,28 @@ class PostureSc3:public Quiddity, public StartableQuiddity {
 
  private:
   bool init() final;
-  static void set_input_camera(const int camera_nbr, void* user_data);
+
   static int get_input_camera(void* context);
+  static void set_input_camera(const int camera_nbr, void* user_data);
+  static const gchar *get_calibration_path(void *user_data);
+  static void set_calibration_path(const gchar *name, void *user_data);
+  static const gchar *get_devices_path(void *user_data);
+  static void set_devices_path(const gchar *name, void *user_data);
+  static int get_grid_props(void *user_data);
+  static void set_grid_props(const int resolution, void *user_data);
+  static int get_reload_calibration(void *user_data);
+  static void set_reload_calibration(const int reload, void *user_data);
+
   static int get_output_mesh(std::vector<unsigned char>);
   void cb_frame_cloud(int index,
                       pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud);
 
   CustomPropertyHelper::ptr custom_props_;
   GParamSpec *nbr_props_ {nullptr};
+  GParamSpec *calibration_path_prop_ {nullptr};
+  GParamSpec *devices_path_prop_ {nullptr};
+  GParamSpec *grid_res_props_ {nullptr};
+  GParamSpec *reload_calibration_prop_ {nullptr};
 
   std::vector<std::shared_ptr<posture::ZCamera>> cameras_ {};
   std::unique_ptr<posture::PointCloudMerger> merger_ {nullptr};
@@ -47,7 +61,13 @@ class PostureSc3:public Quiddity, public StartableQuiddity {
   std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
 
   int index_ {0};
-  int nbr_ {0};
+  int nbr_ {1};
+  std::string calibration_path_ {"default.kvc"};
+  std::string devices_path_ {"devices.xml"};
+  int grid_res_ {3};
+  bool reload_calibration_ {false};
+
+  bool is_started_ {false};
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureSc3);
