@@ -21,7 +21,8 @@
 #define __SWITCHER_GST_VIDEO_CODEC_H__
 
 #include <vector>
-#include "./default-video-format.hpp"
+#include "switcher/unique-gst-element.hpp"
+#include "switcher/default-video-format.hpp"
 
 namespace switcher {
 class quiddity;
@@ -38,12 +39,24 @@ class GstVideoCodec {
   
  private:
   Quiddity *quid_;
-  GstElement *rawvideo_{nullptr};
-  GstElement *video_tee_{nullptr};
-  std::string shmdata_path_{};
+  UGstElem bin_{"bin"};
+  // raw video shmdata
+  UGstElem video_tee_{"tee"};
+  UGstElem shm_raw_{"shmdatasink"};
+  // format convertion for raw
+  UGstElem color_space_raw_{"videoconvert"};
+  UGstElem caps_filter_raw_{"capsfilter"};
+  // video encoding
+  UGstElem codec_element_{"vp8enc"};
+  UGstElem queue_codec_element_{"queue"};
+  UGstElem color_space_codec_element_{"videoconvert"};
+  UGstElem shm_encoded_{"shmdatasink"};
+  // shmdata path
+  std::string shm_raw_path_{};
+  std::string shm_encoded_path_{};
   // custom properties:
   CustomPropertyHelper::ptr custom_props_{};
-  // codec // FIXME make this static
+  // codec props
   GParamSpec *primary_codec_spec_{nullptr};
   GEnumValue primary_codec_[128]{};
   GParamSpec *secondary_codec_spec_{nullptr};
@@ -52,20 +65,14 @@ class GstVideoCodec {
   // short or long codec list
   GParamSpec *codec_long_list_spec_{nullptr};
   bool codec_long_list_{false};
-  GstElement *codec_element_{nullptr};
-  GstElement *queue_codec_element_{nullptr};
-  GstElement *color_space_codec_element_{nullptr};
   std::vector<std::string> codec_properties_{};
   DefaultVideoFormat::uptr video_output_format_{};
   
-  virtual bool make_video_source(GstElement ** new_element) = 0;
-  bool make_new_shmdatas();
   bool remake_codec_elements();
   void make_codec_properties();
-
+  void make_bin();
   void show();
   void hide();
-
   static void set_codec(const gint value, void *user_data);
   static gint get_codec(void *user_data);
   // static gboolean get_codec_long_list(void *user_data);
