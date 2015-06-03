@@ -35,21 +35,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 VideoTestSource::VideoTestSource(const std::string &)  :
-    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
-    shm_sub_(shmdatasink_ ?
-             new GstShmdataSubscriber(
-                 shmdatasink_.get_raw(),
-                 [this](std::string &&caps){
-                   this->graft_tree(".shmdata.writer." + shmpath_,
-                                    ShmdataUtils::make_tree(caps,
-                                                            ShmdataUtils::get_category(caps),
-                                                            0));
-                 },
-                 [this](GstShmdataSubscriber::num_bytes_t byte_rate){
-                   this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
-                                    data::Tree::make(std::to_string(byte_rate)));
-                 })
-             : nullptr){
+    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)){
   init_startable(this);
 }
 
@@ -71,6 +57,18 @@ bool VideoTestSource::init() {
 bool VideoTestSource::start() {
   if (!gst_pipeline_)
     return false;
+  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+      shmdatasink_.get_raw(),
+      [this](std::string &&caps){
+        this->graft_tree(".shmdata.writer." + shmpath_,
+                         ShmdataUtils::make_tree(caps,
+                                                 ShmdataUtils::get_category(caps),
+                                                 0));
+      },
+      [this](GstShmdataSubscriber::num_bytes_t byte_rate){
+        this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
+                         data::Tree::make(std::to_string(byte_rate)));
+      });
   gst_pipeline_->play(true);
   reinstall_property(G_OBJECT(videotestsrc_.get_raw()),
                      "pattern", "pattern", "Video Pattern");
@@ -78,30 +76,20 @@ bool VideoTestSource::start() {
 }
 
 bool VideoTestSource::stop() {
+  shm_sub_.reset(nullptr);
+  prune_tree(".shmdata.writer." + shmpath_);
   if (!UGstElem::renew(videotestsrc_, {"is-live", "pattern"})
       || !UGstElem::renew(shmdatasink_, {"socket-path"})) {
     g_warning("error initializing gst element for videotestsrc");
     gst_pipeline_.reset();
     return false;
   }
-    gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
-    shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
-        shmdatasink_.get_raw(),
-        [this](std::string &&caps){
-          this->graft_tree(".shmdata.writer." + shmpath_,
-                           ShmdataUtils::make_tree(caps,
-                                                   ShmdataUtils::get_category(caps),
-                                                   0));
-        },
-        [this](GstShmdataSubscriber::num_bytes_t byte_rate){
-          this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
-                           data::Tree::make(std::to_string(byte_rate)));
-        });
+  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
     gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                      shmdatasink_.get_raw(), videotestsrc_.get_raw(),
                      nullptr);
     gst_element_link(videotestsrc_.get_raw(), shmdatasink_.get_raw());
-
+    
   reinstall_property(G_OBJECT(videotestsrc_.get_raw()),
                      "pattern", "pattern", "Video Pattern");
   return true;
