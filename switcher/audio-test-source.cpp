@@ -34,7 +34,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
                                      "Nicolas Bouillot");
 
 AudioTestSource::AudioTestSource(const std::string &):
-    shmpath_{},
   gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
   shm_sub_(shmdatasink_ ?
            new GstShmdataSubscriber(

@@ -18,71 +18,101 @@
  */
 
 #include <gst/gst.h>
-#include "./gst-utils.hpp"
+#include "switcher/gst-utils.hpp"
+#include "switcher/std2.hpp"
+#include "switcher/shmdata-utils.hpp"
+#include "switcher/scope-exit.hpp"
 #include "./video-test-source.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
-                                     "Video Pattern",
-                                     "video",
-                                     "Creates a test video stream",
-                                     "LGPL",
-                                     "videotestsrc",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    VideoTestSource,
+    "Video Pattern",
+    "video",
+    "Creates a test video stream",
+    "LGPL",
+    "videotestsrc",
+    "Nicolas Bouillot");
 
-VideoTestSource::VideoTestSource(const std::string &) {
+VideoTestSource::VideoTestSource(const std::string &)  :
+    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
+    shm_sub_(shmdatasink_ ?
+             new GstShmdataSubscriber(
+                 shmdatasink_.get_raw(),
+                 [this](std::string &&caps){
+                   this->graft_tree(".shmdata.writer." + shmpath_,
+                                    ShmdataUtils::make_tree(caps,
+                                                            ShmdataUtils::get_category(caps),
+                                                            0));
+                 },
+                 [this](GstShmdataSubscriber::num_bytes_t byte_rate){
+                   auto tree = this->prune_tree(".shmdata.writer." + shmpath_, false);
+                   if (!tree)
+                     return;
+                   tree->graft(".byte-rate",
+                               data::Tree::make(std::to_string(byte_rate)));
+                   this->graft_tree(".shmdata.writer." + shmpath_, tree);
+                 })
+             : nullptr){
+  init_startable(this);
 }
 
-VideoTestSource::~VideoTestSource() {
-  GstUtils::clean_element(videotestsrc_);
-}
-
-bool VideoTestSource::init_gpipe() {
-  bool made = make_video_source(&videotestsrc_);
-  if (!made)
+bool VideoTestSource::init() {
+  if(!videotestsrc_ || !shmdatasink_)
     return false;
-
-  // "pattern" property available atfer initialization
-  install_property(G_OBJECT(videotestsrc_),
+  shmpath_ = make_file_name("video");
+  g_object_set(G_OBJECT(videotestsrc_.get_raw()), "is-live", TRUE, nullptr);
+  g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
+  gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
+                   shmdatasink_.get_raw(), videotestsrc_.get_raw(),
+                   nullptr);
+  gst_element_link(videotestsrc_.get_raw(), shmdatasink_.get_raw());
+  install_property(G_OBJECT(videotestsrc_.get_raw()),
                    "pattern", "pattern", "Video Pattern");
   return true;
 }
 
-bool VideoTestSource::make_video_source(GstElement **new_element) {
-  GstElement *videotest = nullptr;
-  if (!GstUtils::make_element("videotestsrc", &videotest))
+bool VideoTestSource::start() {
+  if (!gst_pipeline_)
     return false;
+  gst_pipeline_->play(true);
+  reinstall_property(G_OBJECT(videotestsrc_.get_raw()),
+                     "pattern", "pattern", "Video Pattern");
+  return true;
+}
 
-  g_object_set(G_OBJECT(videotest), "is-live", TRUE, nullptr);
-
-  if (videotestsrc_ != nullptr) {
-    GstUtils::apply_property_value(G_OBJECT(videotestsrc_),
-                                   G_OBJECT(videotest),
-                                   "pattern");
-
-    GstUtils::clean_element(videotestsrc_);
+bool VideoTestSource::stop() {
+  if (!UGstElem::renew(videotestsrc_, {"is-live", "pattern"})
+      || !UGstElem::renew(shmdatasink_, {"socket-path"})) {
+    g_warning("error initializing gst element for videotestsrc");
+    gst_pipeline_.reset();
+    return false;
   }
+    gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
+    shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+        shmdatasink_.get_raw(),
+        [this](std::string &&caps){
+          this->graft_tree(".shmdata.writer." + shmpath_,
+                           ShmdataUtils::make_tree(caps,
+                                                   ShmdataUtils::get_category(caps),
+                                                   0));
+        },
+        [this](GstShmdataSubscriber::num_bytes_t byte_rate){
+          auto tree = this->prune_tree(".shmdata.writer." + shmpath_, false);
+          if (!tree)
+            return;
+          tree->graft(".byte-rate",
+                      data::Tree::make(std::to_string(byte_rate)));
+          this->graft_tree(".shmdata.writer." + shmpath_, tree);
+        });
+    gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
+                     shmdatasink_.get_raw(), videotestsrc_.get_raw(),
+                     nullptr);
+    gst_element_link(videotestsrc_.get_raw(), shmdatasink_.get_raw());
 
-  videotestsrc_ = videotest;
-  *new_element = videotestsrc_;
-
-  return true;
-}
-
-bool VideoTestSource::on_start() {
-  reinstall_property(G_OBJECT(videotestsrc_),
+  reinstall_property(G_OBJECT(videotestsrc_.get_raw()),
                      "pattern", "pattern", "Video Pattern");
   return true;
 }
 
-bool VideoTestSource::on_stop() {
-  // need a new element for property setting
-  bool made = make_video_source(&videotestsrc_);
-  if (!made)
-    return false;
-
-  reinstall_property(G_OBJECT(videotestsrc_),
-                     "pattern", "pattern", "Video Pattern");
-  return true;
-}
-}
+}  // namespace switcher

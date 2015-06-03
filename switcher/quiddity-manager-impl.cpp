@@ -43,7 +43,7 @@
 //#include "./udpsink.hpp"
 #include "./uridecodebin.hpp"
 #include "./string-dictionary.hpp"
-//#include "./video-test-source.hpp"
+#include "./video-test-source.hpp"
 //#include "./xvimagesink.hpp"
 
 namespace switcher {
@@ -186,9 +186,9 @@ void QuiddityManager_Impl::register_classes() {
   abstract_factory_.register_class<Uridecodebin>
       (Uridecodebin::switcher_doc_.get_class_name(),
        &Uridecodebin::switcher_doc_);
-  // abstract_factory_.register_class<VideoTestSource>
-  //     (VideoTestSource::switcher_doc_.get_class_name(),
-  //      &VideoTestSource::switcher_doc_);
+  abstract_factory_.register_class<VideoTestSource>
+      (VideoTestSource::switcher_doc_.get_class_name(),
+       &VideoTestSource::switcher_doc_);
   // abstract_factory_.register_class<Xvimagesink>
   //     (Xvimagesink::switcher_doc_.get_class_name(),
   //      &Xvimagesink::switcher_doc_);

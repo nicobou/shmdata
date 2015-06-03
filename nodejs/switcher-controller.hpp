@@ -16,9 +16,9 @@ class SwitcherController : public node::ObjectWrap {
         SwitcherController(const std::string &name, v8::Local<v8::Function> logger_callbac);
         ~SwitcherController();
 
-        switcher::QuiddityManager::ptr quiddity_manager;
+        void release();
 
-        uv_mutex_t this_mutex;
+        switcher::QuiddityManager::ptr quiddity_manager;
 
         //async log
         uv_async_t switcher_log_async;
@@ -60,8 +60,6 @@ class SwitcherController : public node::ObjectWrap {
         static void NotifyLog(uv_async_t *async, int status);
 
         static v8::Handle<v8::Value> New(const v8::Arguments& args);
-        static v8::Handle<v8::Value> Release(const v8::Arguments& args);
-
         static v8::Handle<v8::Value> SaveHistory(const v8::Arguments& args);
         static v8::Handle<v8::Value> LoadHistoryFromCurrentState(const v8::Arguments& args);
         static v8::Handle<v8::Value> LoadHistoryFromScratch(const v8::Arguments& args);

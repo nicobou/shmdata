@@ -150,20 +150,22 @@ void GstUtils::clean_element(GstElement *element) {
   //   gst_iterator_free(pad_iter);
   // }
 
-  GstState state = GST_STATE_TARGET(element);
-  if (state != GST_STATE_NULL) {
-    if (GST_STATE_CHANGE_ASYNC ==
-        gst_element_set_state(element, GST_STATE_NULL)) {
-      while (GST_STATE(element) != GST_STATE_NULL) {
-        // warning this may be blocking
-        gst_element_get_state(element, nullptr, nullptr,
-                              GST_CLOCK_TIME_NONE);
-      }
-    }
-  }
-  if (GST_IS_BIN(gst_element_get_parent(element)))
-    gst_bin_remove(GST_BIN(gst_element_get_parent(element)), element);
-  else if (((GObject *) element)->ref_count > 0)
+  // GstState state = GST_STATE_TARGET(element);
+  // if (state != GST_STATE_NULL) {
+  //   if (GST_STATE_CHANGE_ASYNC ==
+  //       gst_element_set_state(element, GST_STATE_NULL)) {
+  //     while (GST_STATE(element) != GST_STATE_NULL) {
+  //       // warning this may be blocking
+  //       gst_element_get_state(element, nullptr, nullptr,
+  //                             GST_CLOCK_TIME_NONE);
+  //     }
+  //   }
+  // }
+  // if (GST_IS_BIN(gst_element_get_parent(element)))
+  //   gst_bin_remove(GST_BIN(gst_element_get_parent(element)), element);
+  // else
+    if (!GST_IS_BIN(gst_element_get_parent(element))
+        && ((GObject *) element)->ref_count > 0)
     gst_object_unref(element);
 }
 
