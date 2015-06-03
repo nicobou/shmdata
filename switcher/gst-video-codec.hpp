@@ -17,27 +17,25 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_VIDEO_SOURCE_H__
-#define __SWITCHER_VIDEO_SOURCE_H__
+#ifndef __SWITCHER_GST_VIDEO_CODEC_H__
+#define __SWITCHER_GST_VIDEO_CODEC_H__
 
-#include <memory>
-#include "./gst-pipeliner.hpp"
-#include "./gst-element-cleaner.hpp"
-#include "./startable-quiddity.hpp"
+#include <vector>
 #include "./default-video-format.hpp"
 
 namespace switcher {
-class VideoSource: public GstPipeliner, public StartableQuiddity {
+class quiddity;
+
+class GstVideoCodec {
  public:
-  typedef std::shared_ptr<VideoSource> ptr;
-  VideoSource();
-  ~VideoSource();
-  VideoSource(const VideoSource &) = delete;
-  VideoSource &operator=(const VideoSource &) = delete;
-  bool start();
-  bool stop();
+  GstVideoCodec(Quiddity *quid);
+  GstVideoCodec();
+  ~GstVideoCodec();
+  GstVideoCodec(const GstVideoCodec &) = delete;
+  GstVideoCodec &operator=(const GstVideoCodec &) = delete;
 
  private:
+  Quiddity *quid_;
   GstElement *rawvideo_{nullptr};
   GstElement *video_tee_{nullptr};
   std::string shmdata_path_{};
@@ -58,12 +56,6 @@ class VideoSource: public GstPipeliner, public StartableQuiddity {
   std::vector<std::string> codec_properties_{};
   DefaultVideoFormat::uptr video_output_format_{};
   
-  virtual bool on_start() {
-    return true;
-  }
-  virtual bool on_stop() {
-    return true;
-  }
   virtual bool make_video_source(GstElement ** new_element) = 0;
   bool make_new_shmdatas();
   bool remake_codec_elements();
@@ -78,6 +70,6 @@ class VideoSource: public GstPipeliner, public StartableQuiddity {
                                  GstPluginFeature *f2);
   static gboolean reset_codec_configuration(gpointer /*unused */ , gpointer user_data);
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

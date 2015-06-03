@@ -20,25 +20,33 @@
 #ifndef __SWITCHER_VIDEO_TEST_SOURCE_H__
 #define __SWITCHER_VIDEO_TEST_SOURCE_H__
 
-#include "./video-source.hpp"
 #include <memory>
+#include "switcher/quiddity.hpp"
+#include "switcher/startable-quiddity.hpp"
+#include "switcher/gst-pipeliner.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/unique-gst-element.hpp"
 
 namespace switcher {
-class VideoTestSource:public VideoSource {
+class VideoTestSource: public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VideoTestSource);
   VideoTestSource(const std::string &);
-  ~VideoTestSource();
+  ~VideoTestSource() = default;
   VideoTestSource(const VideoTestSource &) = delete;
   VideoTestSource &operator=(const VideoTestSource &) = delete;
 
  private:
-  GstElement *videotestsrc_{nullptr};
-  bool make_video_source(GstElement ** new_element);
-  bool on_start();
-  bool on_stop();
-  bool init_gpipe() final;
+  std::string shmpath_{};
+  UGstElem videotestsrc_{"videotestsrc"};
+  UGstElem shmdatasink_{"shmdatasink"};
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<GstShmdataSubscriber> shm_sub_;
+  //bool make_video_source(GstElement **new_element);
+  bool start() final;
+  bool stop() final;
+  bool init() final;
 };
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

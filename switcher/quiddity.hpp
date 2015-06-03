@@ -50,6 +50,7 @@ class Quiddity {
   friend class ShmdataWriter;
   friend class ShmdataFollower;
   friend class DefaultVideoFormat;
+  friend class GstVideoCodec;
   
  public:
   typedef std::shared_ptr<Quiddity> ptr;
