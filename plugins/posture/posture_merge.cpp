@@ -160,6 +160,7 @@ PostureMerge::connect(std::string shmdata_socket_path) {
 
   int index = source_id_;
   source_id_ += 1;
+  int shmreader_id = shmreader_id_;
   shmreader_id_++;
 
   auto reader = std2::make_unique<ShmdataFollower>(this,
@@ -170,7 +171,7 @@ PostureMerge::connect(std::string shmdata_socket_path) {
       return;
 
     // Test if we already received the type
-    auto typeIt = cloud_readers_caps_.find(shmreader_id_);
+    auto typeIt = cloud_readers_caps_.find(shmreader_id);
     if (typeIt == cloud_readers_caps_.end())
     {
       mutex_.unlock();
@@ -209,7 +210,7 @@ PostureMerge::connect(std::string shmdata_socket_path) {
     mutex_.unlock();
   }, [=](string caps) {
     unique_lock<mutex> lock(mutex_);
-    cloud_readers_caps_[shmreader_id_] = caps;
+    cloud_readers_caps_[shmreader_id] = caps;
   });
 
   cloud_readers_[shmdata_socket_path] = std::move(reader);

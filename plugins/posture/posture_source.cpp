@@ -23,10 +23,8 @@
 #include <iostream>
 
 using namespace std;
-using namespace
-switcher::data;
-using namespace
-posture;
+using namespace switcher::data;
+using namespace posture;
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureSrc,
