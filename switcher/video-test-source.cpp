@@ -34,8 +34,11 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "videotestsrc",
     "Nicolas Bouillot");
 
-VideoTestSource::VideoTestSource(const std::string &)  :
-    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)){
+VideoTestSource::VideoTestSource(const std::string &):
+    custom_props_(std::make_shared<CustomPropertyHelper>()),
+    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr))// ,
+    // codecs_(this, custom_props_.get())
+{
   init_startable(this);
 }
 

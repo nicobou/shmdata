@@ -25,10 +25,10 @@
 
 
 namespace switcher {
-GstVideoCodec::GstVideoCodec(Quiddity *quid):
+GstVideoCodec::GstVideoCodec(Quiddity *quid, CustomPropertyHelper *prop_helper):
     quid_(quid),
-    custom_props_(std::make_shared<CustomPropertyHelper>()),
-    video_output_format_(std2::make_unique<DefaultVideoFormat>(quid_)) {
+    video_output_format_(std2::make_unique<DefaultVideoFormat>(quid_)),
+    prop_helper_(prop_helper){
   GstUtils::element_factory_list_to_g_enum(primary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
                                            GST_RANK_PRIMARY,
@@ -39,7 +39,7 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid):
                                            GST_RANK_SECONDARY,
                                            true);
   primary_codec_spec_ =
-      custom_props_->make_enum_property("codec",
+      prop_helper_->make_enum_property("codec",
                                         "Codec Short List",
                                         codec_,
                                         primary_codec_,
@@ -47,12 +47,12 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid):
                                         GstVideoCodec::set_codec,
                                         GstVideoCodec::get_codec,
                                         this);
-  quid_->install_property_by_pspec(custom_props_->get_gobject(),
-                                   primary_codec_spec_,
-                                   "codec",
-                                   "Video Codecs (Short List)");
+    quid_->install_property_by_pspec(prop_helper_->get_gobject(),
+                                     primary_codec_spec_,
+                                     "codec",
+                                     "Video Codecs (Short List)");
   secondary_codec_spec_ =
-      custom_props_->make_enum_property("codec",
+      prop_helper_->make_enum_property("codec",
                                         "Codec Long List",
                                         codec_,
                                         secondary_codec_,
@@ -72,14 +72,14 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid):
                         this);
   // FIXME decide what to do with this
   // codec_long_list_spec_ =
-  //     custom_props_->make_boolean_property("more_codecs",
+  //     prop_helper_->make_boolean_property("more_codecs",
   //                                          "Get More codecs",
   //                                          (gboolean) FALSE,
   //                                          (GParamFlags) G_PARAM_READWRITE,
   //                                          GstVideoCodec::set_codec_long_list,
   //                                          GstVideoCodec::get_codec_long_list,
   //                                          this);
-  // install_property_by_pspec(custom_props_->get_gobject(),
+  // install_property_by_pspec(prop_helper_->get_gobject(),
   //                           codec_long_list_spec_,
   //                           "more_codecs", "More Codecs");
   shm_raw_path_ = quid_->make_file_name("video");
@@ -88,8 +88,8 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid):
                "socket-path", shm_raw_path_.c_str(), nullptr);
   g_object_set(G_OBJECT(shm_encoded_.get_raw()),
                "socket-path", shm_encoded_path_.c_str(), nullptr);
-  make_bin();
   video_output_format_->make_format_property("format", "Convert Pixel Format To");
+  make_bin();
   make_codec_properties();
   reset_codec_configuration(nullptr, this);
 }
@@ -216,13 +216,13 @@ gint GstVideoCodec::get_codec(void *user_data) {
 //   if (codec_long_list) {
 //     context->uninstall_property("codec");
 //     context->install_property_by_pspec(context->
-//                                        custom_props_->get_gobject(),
+//                                        prop_helper_->get_gobject(),
 //                                        context->secondary_codec_spec_,
 //                                        "codec", "Video Codecs (Long List)");
 //   } else {
 //     context->uninstall_property("codec");
 //     context->install_property_by_pspec(context->
-//                                        custom_props_->get_gobject(),
+//                                        prop_helper_->get_gobject(),
 //                                        context->primary_codec_spec_,
 //                                        "codec",
 //                                        "Video Codecs (Short List)");

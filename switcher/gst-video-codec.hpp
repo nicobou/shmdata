@@ -22,15 +22,16 @@
 
 #include <vector>
 #include "switcher/unique-gst-element.hpp"
-#include "switcher/default-video-format.hpp"
+#include "switcher/custom-property-helper.hpp"
+#include "./default-video-format.hpp"
 
 namespace switcher {
 class quiddity;
 
 class GstVideoCodec {
  public:
-  GstVideoCodec(Quiddity *quid);
-  GstVideoCodec();
+  GstVideoCodec(Quiddity *quid, CustomPropertyHelper *prop_helper);
+  GstVideoCodec() = delete;
   ~GstVideoCodec();
   GstVideoCodec(const GstVideoCodec &) = delete;
   GstVideoCodec &operator=(const GstVideoCodec &) = delete;
@@ -54,8 +55,6 @@ class GstVideoCodec {
   // shmdata path
   std::string shm_raw_path_{};
   std::string shm_encoded_path_{};
-  // custom properties:
-  CustomPropertyHelper::ptr custom_props_{};
   // codec props
   GParamSpec *primary_codec_spec_{nullptr};
   GEnumValue primary_codec_[128]{};
@@ -67,6 +66,7 @@ class GstVideoCodec {
   bool codec_long_list_{false};
   std::vector<std::string> codec_properties_{};
   DefaultVideoFormat::uptr video_output_format_{};
+  CustomPropertyHelper *prop_helper_;
   
   bool remake_codec_elements();
   void make_codec_properties();
