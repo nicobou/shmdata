@@ -34,25 +34,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
                                      "Nicolas Bouillot");
 
 AudioTestSource::AudioTestSource(const std::string &):
-  gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
-  shm_sub_(shmdatasink_ ?
-           new GstShmdataSubscriber(
-               shmdatasink_.get_raw(),
-               [this](std::string &&caps){
-                 this->graft_tree(".shmdata.writer." + shmpath_,
-                                  ShmdataUtils::make_tree(caps,
-                                                          ShmdataUtils::get_category(caps),
-                                                          0));
-               },
-               [this](GstShmdataSubscriber::num_bytes_t byte_rate){
-                 auto tree = this->prune_tree(".shmdata.writer." + shmpath_, false);
-                 if (!tree)
-                   return;
-                 tree->graft(".byte-rate",
-                             data::Tree::make(std::to_string(byte_rate)));
-                 this->graft_tree(".shmdata.writer." + shmpath_, tree);
-               })
-           : nullptr){
+  gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)){
     init_startable(this);
   }
 
@@ -63,7 +45,6 @@ bool AudioTestSource::init() {
   g_object_set(G_OBJECT(shmdatasink_.get_raw()),
                "socket-path", shmpath_.c_str(),
                nullptr);
-  g_print("SHMPATH %s\n", shmpath_.c_str());
   // registering
   install_property(G_OBJECT(audiotestsrc_.get_raw()), "volume", "volume", "Volume");
   install_property(G_OBJECT(audiotestsrc_.get_raw()), "freq", "freq", "Frequency");
@@ -73,7 +54,6 @@ bool AudioTestSource::init() {
                    shmdatasink_.get_raw(),
                    nullptr);
   gst_element_link(audiotestsrc_.get_raw(), shmdatasink_.get_raw());
-
   if (!audiotestsrc_) {
     g_warning("audiotestsrc creation failed");
     return false;
@@ -86,11 +66,25 @@ bool AudioTestSource::init() {
 }
 
 bool AudioTestSource::start() {
+  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+      shmdatasink_.get_raw(),
+      [this](std::string &&caps){
+        this->graft_tree(".shmdata.writer." + shmpath_,
+                         ShmdataUtils::make_tree(caps,
+                                                 ShmdataUtils::get_category(caps),
+                                                 0));
+      },
+      [this](GstShmdataSubscriber::num_bytes_t byte_rate){
+        this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
+                         data::Tree::make(byte_rate));
+      });
   gst_pipeline_->play(true);
   return true;
 }
 
 bool AudioTestSource::stop() {
+  shm_sub_.reset();
+  this->prune_tree(".shmdata.writer." + shmpath_);
   gst_pipeline_->play(false);
   return true;
 }

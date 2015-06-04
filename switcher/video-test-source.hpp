@@ -41,7 +41,7 @@ class VideoTestSource: public Quiddity, public StartableQuiddity {
   UGstElem videotestsrc_{"videotestsrc"};
   UGstElem shmdatasink_{"shmdatasink"};
   std::unique_ptr<GstPipeliner> gst_pipeline_;
-  std::unique_ptr<GstShmdataSubscriber> shm_sub_;
+  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
   //bool make_video_source(GstElement **new_element);
   bool start() final;
   bool stop() final;

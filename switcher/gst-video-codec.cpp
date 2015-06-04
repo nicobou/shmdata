@@ -82,6 +82,13 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid):
   // install_property_by_pspec(custom_props_->get_gobject(),
   //                           codec_long_list_spec_,
   //                           "more_codecs", "More Codecs");
+  shm_raw_path_ = quid_->make_file_name("video");
+  shm_encoded_path_ = quid_->make_file_name("encoded");
+  g_object_set(G_OBJECT(shm_raw_.get_raw()),
+               "socket-path", shm_raw_path_.c_str(), nullptr);
+  g_object_set(G_OBJECT(shm_encoded_.get_raw()),
+               "socket-path", shm_encoded_path_.c_str(), nullptr);
+  make_bin();
   video_output_format_->make_format_property("format", "Convert Pixel Format To");
   make_codec_properties();
   reset_codec_configuration(nullptr, this);
@@ -92,144 +99,101 @@ GstVideoCodec::~GstVideoCodec() {
   GstUtils::free_g_enum_values(secondary_codec_);
 }
 
-// bool GstVideoCodec::make_new_shmdatas() {
-//   clear_shmdatas();
-//   reset_bin();
-//   if (!GstUtils::make_element("tee", &video_tee_)) {
-//     g_warning("missing element for starting video source\n");
-//     return false;
-//   }
-//   gst_bin_add_many(GST_BIN(get_bin()),
-//                    rawvideo_,
-//                    video_tee_,
-//                    nullptr);
-//   gst_element_link_many(rawvideo_,
-//                         video_tee_,
-//                         nullptr);
-//   // FIXME this should be moved
-//   std::string caps_str = video_output_format_->get_caps_str();
-//   GstElement *colorspace = nullptr;
-//   GstElement *capsfilter = nullptr;
-//   if (caps_str != "none") {
-//     GstUtils::make_element("ffmpegcolorspace", &colorspace);
-//     GstUtils::make_element("capsfilter", &capsfilter);
-//     GstCaps *usercaps = gst_caps_from_string(caps_str.c_str());
-//     g_object_set(G_OBJECT(capsfilter),
-//                  "caps", usercaps,
-//                  nullptr);
-//     gst_caps_unref(usercaps);
-//     gst_bin_add_many(GST_BIN(get_bin()),
-//                      colorspace,
-//                      capsfilter,
-//                      nullptr);
-//     gst_element_link_many(video_tee_,
-//                           colorspace,
-//                           capsfilter,
-//                           nullptr);
-//   }
-// // FIXME end
-//   ShmdataWriter::ptr shmdata_writer = std::make_shared<ShmdataWriter>();
-//   shmdata_path_ = make_file_name("video");
-//   shmdata_writer->set_path(shmdata_path_.c_str());
-//   if (caps_str != "none") {
-//     GstCaps *caps = gst_caps_new_simple(caps_str.c_str(),
-//                                         nullptr);
-//     On_scope_exit{gst_caps_unref(caps);};
-//     shmdata_writer->plug(get_bin(), capsfilter, caps);
-//   } else {
-//     shmdata_writer->plug(get_bin(), video_tee_, nullptr);
-//   }
-//   register_shmdata(shmdata_writer);
-//   GstUtils::sync_state_with_parent(rawvideo_);
-//   GstUtils::sync_state_with_parent(video_tee_);
-//   if (caps_str != "none") {
-//     GstUtils::sync_state_with_parent(colorspace);
-//     GstUtils::sync_state_with_parent(capsfilter);
-//   }
-//   if (codec_ != 0) {
-//     remake_codec_elements();
-//     gst_bin_add_many(GST_BIN(get_bin()),
-//                      queue_codec_element_,
-//                      codec_element_,
-//                      color_space_codec_element_,
-//                      nullptr);
-//     gst_element_link_many(video_tee_,
-//                           queue_codec_element_,
-//                           color_space_codec_element_,
-//                           codec_element_, nullptr);
-//     ShmdataWriter::ptr shmdata_codec;
-//     shmdata_codec.reset(new ShmdataWriter());
-//     std::string shmdata_path = make_file_name("encoded-video");
-//     shmdata_codec->set_path(shmdata_path.c_str());
-//     GstPad *srcpad = gst_element_get_static_pad(codec_element_, "src");
-//     shmdata_codec->plug(get_bin(), srcpad);
-//     gst_object_unref(srcpad);
-//     register_shmdata(shmdata_codec);
-//     GstUtils::sync_state_with_parent(queue_codec_element_);
-//     GstUtils::sync_state_with_parent(color_space_codec_element_);
-//     GstUtils::sync_state_with_parent(codec_element_);
-//   }
-//   return true;
-// }
+void GstVideoCodec::set_visible(bool visible){
+  if (visible)
+    show();
+  hide();
+}
 
-// bool GstVideoCodec::start() {
-//   rawvideo_ = nullptr;
-//   if (!make_video_source(&rawvideo_)) {
-//     g_debug("cannot make video source");
-//     return false;
-//   }
-//   if (!make_new_shmdatas())
-//     return false;
-//   if (!on_start())
-//     return false;
-//   disable_method("reset");
-//   disable_property("codec");
-//   disable_property("more_codecs");
-//   video_output_format_->disable_property();
-//   return true;
-// }
+void GstVideoCodec::hide(){
+  quid_->disable_method("reset");
+  quid_->disable_property("codec");
+  quid_->disable_property("more_codecs");
+  video_output_format_->disable_property();
+}
 
-// bool GstVideoCodec::stop() {
-//   bool res = on_stop();
-//   unregister_shmdata(make_file_name("encoded-video"));
-//   unregister_shmdata(make_file_name("video"));
-//   reset_bin();
-//   enable_method("reset");
-//   enable_property("codec");
-//   enable_property("more_codecs");
-//   video_output_format_->enable_property();
-//   return res;
-// }
+void GstVideoCodec::show(){
+  quid_->enable_method("reset");
+  quid_->enable_property("codec");
+  quid_->enable_property("more_codecs");
+  video_output_format_->enable_property();
+}
+
+void GstVideoCodec::make_bin(){
+  gst_bin_add(GST_BIN(bin_.get_raw()), video_tee_.get_raw());
+  gst_bin_add(GST_BIN(bin_.get_raw()), shm_raw_.get_raw());
+  std::string caps_str = video_output_format_->get_caps_str();
+  if (caps_str != "none") {
+    GstCaps *usercaps = gst_caps_from_string(caps_str.c_str());
+    g_object_set(G_OBJECT(caps_filter_raw_.get_raw()),
+                 "caps", usercaps,
+                 nullptr);
+    gst_caps_unref(usercaps);
+    gst_bin_add(GST_BIN(bin_.get_raw()), color_space_raw_.get_raw());
+    gst_bin_add(GST_BIN(bin_.get_raw()), caps_filter_raw_.get_raw());
+    
+    gst_element_link_many(video_tee_.get_raw(),
+                          color_space_raw_.get_raw(),
+                          caps_filter_raw_.get_raw(),
+                          shm_raw_.get_raw(),
+                          nullptr);
+  } else {
+    gst_element_link(video_tee_.get_raw(), shm_raw_.get_raw() );
+  }
+  if (codec_ != 0) {
+  gst_bin_add_many(GST_BIN(bin_.get_raw()),
+                   shm_encoded_.get_raw(),
+                   color_space_codec_element_.get_raw(),
+                   queue_codec_element_.get_raw(),
+                   codec_element_.get_raw(),
+                   nullptr);
+  gst_element_link_many(video_tee_.get_raw(),
+                        queue_codec_element_.get_raw(),
+                        color_space_codec_element_.get_raw(),
+                        codec_element_.get_raw(),
+                        shm_encoded_.get_raw(),
+                        nullptr);
+  }
+}
 
 bool GstVideoCodec::remake_codec_elements() {
-  if (codec_ == 0)
-    return false;
   for (auto &it : codec_properties_)
     quid_->uninstall_property(it);
-  GstElement *tmp_codec_element = codec_element_;
-  GstElement *tmp_color_space_codec_element = color_space_codec_element_;
-  GstElement *tmp_queue_codec_element = queue_codec_element_;
-  if (!GstUtils::make_element(secondary_codec_[codec_].value_nick, &codec_element_)
-      || !GstUtils::make_element("ffmpegcolorspace", &color_space_codec_element_)
-      || !GstUtils::make_element("queue", &queue_codec_element_))
+  // elements are owner by the user
+  if (!UGstElem::renew(shm_raw_, {"socket-path"})
+     || !UGstElem::renew(video_tee_)
+     || !UGstElem::renew(bin_)){
+    g_warning("error renewing a shmdatasink related gst element");
     return false;
-  // copy property value and register codec properties
-  for (auto &it : codec_properties_) {
-    if (nullptr != tmp_codec_element)
-      GstUtils::apply_property_value(G_OBJECT(tmp_codec_element),
-                                     G_OBJECT(codec_element_),
-                                     it.c_str());
-    quid_->install_property(G_OBJECT(codec_element_), it, it, it);
   }
-  GstUtils::clean_element(tmp_codec_element);
-  GstUtils::clean_element(tmp_color_space_codec_element);
-  GstUtils::clean_element(tmp_queue_codec_element);
+  std::string caps_str = video_output_format_->get_caps_str();
+  if (caps_str != "none") {
+    if (!UGstElem::renew(color_space_raw_)
+        || !UGstElem::renew(caps_filter_raw_)){
+      g_warning("error renewing a video format related gst element");
+      return false;
+    }
+  }
+  if (codec_ != 0) {  //no codec
+    if (!UGstElem::renew(shm_encoded_, {"socket-path"})
+        || !UGstElem::renew(color_space_codec_element_)
+        || !UGstElem::renew(queue_codec_element_)
+        || !UGstElem::renew(codec_element_, codec_properties_)){
+      g_warning("error renewing a codec related gst element");
+      return false;
+    }
+    for (auto &it : codec_properties_) {
+      quid_->install_property(G_OBJECT(codec_element_.get_raw()), it, it, it);
+    }
+  }  // end no codec
+  make_bin();
   return true;
 }
 
 void GstVideoCodec::set_codec(const gint value, void *user_data) {
   GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
   context->codec_ = value;
+  context->codec_element_.mute(context->secondary_codec_[context->codec_].value_nick);
   context->remake_codec_elements();
 }
 
@@ -306,4 +270,4 @@ gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointe
   return TRUE;
 }
 
-}
+}  // namespace switcher

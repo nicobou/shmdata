@@ -43,7 +43,7 @@ void on_tree_grafted(const std::string &/*subscriber_name */ ,
   GstShmdataSubscriber::num_bytes_t byte_rate =
       //std::string byte_rate =
       manager->use_tree<Any, const std::string &>(
-          std::string("uri"), &data::Tree::get_data, params[0] + ".byte-rate");
+          std::string("uri"), &data::Tree::get_data, params[0] + ".byte_rate");
   if(0 != byte_rate && std::string::npos != params[0].find("audio")){
     audio_success = true;
     do_continue = false;
@@ -132,7 +132,7 @@ main() {
                        nullptr,
                        "http://127.0.0.1:38084/sdp?rtpsession=rtp&destination=local",
                        nullptr);
-    // checking http-sdp-dec is updating positive byte-rate in tree:
+    // checking http-sdp-dec is updating positive byte_rate in tree:
     assert(manager->make_signal_subscriber("signal_subscriber",
                                            on_tree_grafted,
                                            manager.get()));
