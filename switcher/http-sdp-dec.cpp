@@ -105,12 +105,19 @@ void HTTPSDPDec::make_new_error_handler() {
         on_error_.pop_front();
 }
 
-void HTTPSDPDec::configure_shmdatasink(GstElement *element, const std::string &media_type){
+void HTTPSDPDec::configure_shmdatasink(GstElement *element,
+                                       const std::string &media_type,
+                                       const std::string &media_label){
   auto count = counter_.get_count(media_type);
   std::string media_name = media_type;
   if (count != 0)
     media_name.append("-" + std::to_string(count));
-  std::string shmpath = make_file_name(media_name);
+  std::string shmpath;
+  if (media_label.empty())
+    shmpath = make_file_name(media_name);
+  else
+    shmpath = make_file_name(media_label + "-" + media_name);
+  
   g_object_set(G_OBJECT(element), "socket-path", shmpath.c_str(), nullptr);
   shm_subs_.emplace_back(
       std2::make_unique<GstShmdataSubscriber>(
@@ -138,15 +145,9 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement */*object */,
   std::unique_ptr<DecodebinToShmdata> decodebin = 
       std2::make_unique<DecodebinToShmdata>(
           context->gst_pipeline_.get(),
-          [context](GstElement *el, const std::string &media_type){
-            context->configure_shmdatasink(el, media_type);
+          [context](GstElement *el, const std::string &media_type, const std::string &media_label){
+            context->configure_shmdatasink(el, media_type, media_label);
           });
-  auto caps = gst_pad_get_pad_template_caps(pad);
-  On_scope_exit{gst_caps_unref(caps);};
-  auto structure = gst_caps_get_structure(caps, 0);
-  auto media_label = gst_structure_get_string (structure, "media-label");
-  if (nullptr != media_label)
-    decodebin->set_media_label(gst_structure_get_string (structure, "media-label"));
   if(!decodebin->invoke_with_return<gboolean>([context](GstElement *el) {
         return gst_bin_add(GST_BIN(context->gst_pipeline_->get_pipeline()), el);
       })){
@@ -158,7 +159,12 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement */*object */,
         });
   On_scope_exit {gst_object_unref(GST_OBJECT(sinkpad));};
   GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad));
-  
+  auto caps = gst_pad_get_allowed_caps(pad);
+  On_scope_exit{gst_caps_unref(caps);};
+  auto structure = gst_caps_get_structure(caps, 0);
+  auto media_label = gst_structure_get_string (structure, "media-label");
+  if (nullptr != media_label)
+    decodebin->set_media_label(gst_structure_get_string (structure, "media-label"));
   decodebin->invoke([](GstElement *el) {
       GstUtils::sync_state_with_parent(el);
     });

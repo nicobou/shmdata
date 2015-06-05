@@ -63,8 +63,6 @@ DecodebinToShmdata::~DecodebinToShmdata() {
   // // decodebin_.g_invoke (std::bind (g_signal_handler_disconnect,
   // // std::placeholders::_1,
   // // it));
-  // for (auto &it : shmdata_path_)
-  //   gpipe_->unregister_shmdata(it);
 }
 
 void
@@ -107,10 +105,7 @@ DecodebinToShmdata::on_pad_added(GstElement * object, GstPad *pad,
     // gst_pad_add_event_probe(sinkpad, (GCallback)
     //                         DecodebinToShmdata::gstrtpdepay_event_probe_cb,
     //                         context);
-
-    g_print("decodebin-to-shmdata %d\n", __LINE__);
     GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad));
-    g_print("decodebin-to-shmdata %d\n", __LINE__);
     gst_object_unref(sinkpad);
     GstPad *srcpad = gst_element_get_static_pad(rtpgstdepay, "src");
     GstUtils::sync_state_with_parent(rtpgstdepay);
@@ -223,7 +218,6 @@ DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad)
     main_pad_ = sinkpad;  // saving first pad for looping
   // FIXME
   // gst_pad_add_event_probe(srcpad, (GCallback) eos_probe_cb, this);
-    g_print("decodebin-to-shmdata %d\n", __LINE__);
   if (GST_PAD_LINK_OK != gst_pad_link(pad, sinkpad))
     g_warning("pad link failed in decodebin-to-shmdata");
   std::string media_name(media_label_);
@@ -239,12 +233,13 @@ DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad)
   if(!on_gstshm_configure_)
     g_warning("decodebin-to-shmdata has no configuration function for shmdatasink");
   else
-    on_gstshm_configure_(shmdatasink, media_name);
+    on_gstshm_configure_(shmdatasink, media_name, media_label_);
   GstUtils::sync_state_with_parent(shmdatasink);
 }
 
 gboolean
-DecodebinToShmdata::eos_probe_cb(GstPad * pad, GstEvent *event,
+DecodebinToShmdata::eos_probe_cb(GstPad *pad,
+                                 GstEvent *event,
                                  gpointer user_data) {
   DecodebinToShmdata *context =
       static_cast<DecodebinToShmdata *>(user_data);

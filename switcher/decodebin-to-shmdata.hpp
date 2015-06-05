@@ -32,7 +32,9 @@ namespace switcher {
 // this class has been designed for being possessed by a gpipe
 
 class DecodebinToShmdata {
-  using on_configure_t = std::function<void(GstElement *, const std::string &)>;
+  using on_configure_t = std::function<void(GstElement *,
+                                            const std::string &/*media_type*/,
+                                            const std::string &/*media_label*/)>;
   
  public:
   explicit DecodebinToShmdata(GstPipeliner *gpipe,
