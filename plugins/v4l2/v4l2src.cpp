@@ -36,10 +36,12 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 V4L2Src::V4L2Src(const std::string &):
+    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
     custom_props_(std::make_shared<CustomPropertyHelper>()) {
+  init_startable(this);
 }
 
-bool V4L2Src::init_gpipe() {
+bool V4L2Src::init() {
   if (!make_elements())
     return false;
   // device inspector
@@ -331,7 +333,7 @@ V4L2Src::~V4L2Src() {
 }
 
 bool V4L2Src::make_elements() {
-  clean_elements();
+  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
   if (!GstUtils::make_element("v4l2src", &v4l2src_))
     return false;
   if (!GstUtils::make_element("capsfilter", &capsfilter_))
@@ -346,10 +348,6 @@ bool V4L2Src::make_elements() {
   gst_element_add_pad(v4l2_bin_, ghost_srcpad);
   gst_object_unref(src_pad);
   return true;
-}
-
-void V4L2Src::clean_elements() {
-  reset_bin();
 }
 
 std::string V4L2Src::pixel_format_to_string(unsigned pf_id) {
@@ -584,7 +582,7 @@ bool V4L2Src::check_folder_for_v4l2_devices(const char *dir_path) {
 //   return false;
 // }
 
-bool V4L2Src::on_start() {
+bool V4L2Src::start() {
   uninstall_property("resolution");
   uninstall_property("width");
   uninstall_property("height");
@@ -600,8 +598,8 @@ bool V4L2Src::on_start() {
   return true;
 }
 
-bool V4L2Src::on_stop() {
-  clean_elements();
+bool V4L2Src::stop() {
+  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
   install_property_by_pspec(custom_props_->get_gobject(),
                             devices_enum_spec_,
                             "device",
@@ -888,14 +886,14 @@ bool V4L2Src::make_video_source(GstElement ** new_element) {
 GstStructure *
 V4L2Src::gst_v4l2_object_v4l2fourcc_to_structure (guint32 fourcc)
 {
-  GstStructure *structure = NULL;
+  GstStructure *structure = nullptr;
   switch (fourcc) {
     case V4L2_PIX_FMT_MJPEG:   /* Motion-JPEG */
 #ifdef V4L2_PIX_FMT_PJPG
     case V4L2_PIX_FMT_PJPG:    /* Progressive-JPEG */
 #endif
     case V4L2_PIX_FMT_JPEG:    /* JFIF JPEG */
-      structure = gst_structure_new ("image/jpeg", NULL);
+      structure = gst_structure_new ("image/jpeg", nullptr, nullptr);
       break;
     case V4L2_PIX_FMT_RGB332:
     case V4L2_PIX_FMT_RGB555:
@@ -974,12 +972,12 @@ V4L2Src::gst_v4l2_object_v4l2fourcc_to_structure (guint32 fourcc)
           "red_mask", G_TYPE_INT, r_mask,
           "green_mask", G_TYPE_INT, g_mask,
           "blue_mask", G_TYPE_INT, b_mask,
-          "endianness", G_TYPE_INT, endianness, NULL);
+          "endianness", G_TYPE_INT, endianness, nullptr);
       break;
     }
     case V4L2_PIX_FMT_GREY:    /*  8  Greyscale     */
       structure = gst_structure_new ("video/x-raw-gray",
-          "bpp", G_TYPE_INT, 8, NULL);
+          "bpp", G_TYPE_INT, 8, nullptr);
       break;
     case V4L2_PIX_FMT_YYUV:    /* 16  YUV 4:2:2     */
     case V4L2_PIX_FMT_HI240:   /*  8  8-bit color   */
@@ -999,83 +997,83 @@ V4L2Src::gst_v4l2_object_v4l2fourcc_to_structure (guint32 fourcc)
     case V4L2_PIX_FMT_YVYU:
 #endif
     case V4L2_PIX_FMT_YUV411P:{
-      guint32 fcc = 0;
-
+      std::string fcc;
       switch (fourcc) {
         case V4L2_PIX_FMT_NV12:
-          fcc = GST_MAKE_FOURCC ('N', 'V', '1', '2');
+          fcc = "NV12";
           break;
         case V4L2_PIX_FMT_NV21:
-          fcc = GST_MAKE_FOURCC ('N', 'V', '2', '1');
+          fcc = "NV21";
           break;
         case V4L2_PIX_FMT_YVU410:
-          fcc = GST_MAKE_FOURCC ('Y', 'V', 'U', '9');
+          fcc = "YVU9";
           break;
         case V4L2_PIX_FMT_YUV410:
-          fcc = GST_MAKE_FOURCC ('Y', 'U', 'V', '9');
+          fcc = "YVU9";
           break;
         case V4L2_PIX_FMT_YUV420:
-          fcc = GST_MAKE_FOURCC ('I', '4', '2', '0');
+          fcc = "I420";
           break;
         case V4L2_PIX_FMT_YUYV:
-          fcc = GST_MAKE_FOURCC ('Y', 'U', 'Y', '2');
+          fcc = "YUY2";
           break;
         case V4L2_PIX_FMT_YVU420:
-          fcc = GST_MAKE_FOURCC ('Y', 'V', '1', '2');
+          fcc = "YV12";
           break;
         case V4L2_PIX_FMT_UYVY:
-          fcc = GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y');
+          fcc = "UYVY";
           break;
         case V4L2_PIX_FMT_Y41P:
-          fcc = GST_MAKE_FOURCC ('Y', '4', '1', 'P');
+          fcc = "Y41P";
           break;
         case V4L2_PIX_FMT_YUV411P:
-          fcc = GST_MAKE_FOURCC ('Y', '4', '1', 'B');
+          fcc = "Y41B";
           break;
         case V4L2_PIX_FMT_YUV422P:
-          fcc = GST_MAKE_FOURCC ('Y', '4', '2', 'B');
+          fcc = "Y42B";
           break;
 #ifdef V4L2_PIX_FMT_YVYU
         case V4L2_PIX_FMT_YVYU:
-          fcc = GST_MAKE_FOURCC ('Y', 'V', 'Y', 'U');
+          fcc = "YVYU";
           break;
 #endif
         default:
           g_assert_not_reached ();
           break;
       }
-      structure = gst_structure_new ("video/x-raw-yuv",
-          "format", GST_TYPE_FOURCC, fcc, NULL);
+      structure = gst_structure_new ("video/x-raw",
+                                     "format", G_TYPE_STRING, fcc.c_str(),
+                                     nullptr);
       break;
     }
     case V4L2_PIX_FMT_DV:
       structure =
           gst_structure_new ("video/x-dv", "systemstream", G_TYPE_BOOLEAN, TRUE,
-          NULL);
+          nullptr);
       break;
     case V4L2_PIX_FMT_MPEG:    /* MPEG          */
-      structure = gst_structure_new ("video/mpegts", NULL);
+      structure = gst_structure_new ("video/mpegts", nullptr, nullptr);
       break;
     case V4L2_PIX_FMT_WNVA:    /* Winnov hw compres */
       break;
 #ifdef V4L2_PIX_FMT_SBGGR8
     case V4L2_PIX_FMT_SBGGR8:
-      structure = gst_structure_new ("video/x-raw-bayer", NULL);
+      structure = gst_structure_new ("video/x-bayer", nullptr, nullptr);
       break;
 #endif
 #ifdef V4L2_PIX_FMT_SN9C10X
     case V4L2_PIX_FMT_SN9C10X:
-      structure = gst_structure_new ("video/x-sonix", NULL);
+      structure = gst_structure_new ("video/x-sonix", nullptr, nullptr);
       break;
 #endif
 #ifdef V4L2_PIX_FMT_PWC1
     case V4L2_PIX_FMT_PWC1:
-      structure = gst_structure_new ("video/x-pwc1", NULL);
+      structure = gst_structure_new ("video/x-pwc1", nullptr, nullptr);
       break;
 #endif
 #ifdef V4L2_PIX_FMT_PWC2
     case V4L2_PIX_FMT_PWC2:
-      structure = gst_structure_new ("video/x-pwc2", NULL);
+      structure = gst_structure_new ("video/x-pwc2", nullptr, nullptr);
       break;
 #endif
     default:

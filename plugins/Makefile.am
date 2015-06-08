@@ -2,10 +2,10 @@ SUBDIRS= \
     example \
     pjsip
 
-# if V4L2BUILD
-# SUBDIRS += \
-#     v4l2
-# endif
+if V4L2BUILD
+SUBDIRS += \
+    v4l2
+endif
 
 if OSCBUILD
 SUBDIRS += \
