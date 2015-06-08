@@ -1,7 +1,5 @@
 SUBDIRS= \
-    example 
-
-SUBDIRS= \
+    example \
     pjsip
 
 # if V4L2BUILD
