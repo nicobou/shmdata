@@ -27,7 +27,7 @@
 namespace switcher {
 GstVideoCodec::GstVideoCodec(Quiddity *quid, CustomPropertyHelper *prop_helper):
     quid_(quid),
-    video_output_format_(std2::make_unique<DefaultVideoFormat>(quid_)),
+    video_output_format_(nullptr),//std2::make_unique<DefaultVideoFormat>(quid_, prop_helper)),
     prop_helper_(prop_helper){
   GstUtils::element_factory_list_to_g_enum(primary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
@@ -53,13 +53,13 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid, CustomPropertyHelper *prop_helper):
                                      "Video Codecs (Short List)");
   secondary_codec_spec_ =
       prop_helper_->make_enum_property("codec",
-                                        "Codec Long List",
-                                        codec_,
-                                        secondary_codec_,
-                                        (GParamFlags) G_PARAM_READWRITE,
-                                        GstVideoCodec::set_codec,
-                                        GstVideoCodec::get_codec,
-                                        this);
+                                       "Codec Long List",
+                                       codec_,
+                                       secondary_codec_,
+                                       (GParamFlags) G_PARAM_READWRITE,
+                                       GstVideoCodec::set_codec,
+                                       GstVideoCodec::get_codec,
+                                       this);
   quid_->install_method("Reset codec configuration",
                         "reset",
                         "Reset codec configuration to default",
@@ -88,10 +88,10 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid, CustomPropertyHelper *prop_helper):
                "socket-path", shm_raw_path_.c_str(), nullptr);
   g_object_set(G_OBJECT(shm_encoded_.get_raw()),
                "socket-path", shm_encoded_path_.c_str(), nullptr);
-  video_output_format_->make_format_property("format", "Convert Pixel Format To");
+  //video_output_format_->make_format_property("format", "Convert Pixel Format To");
   make_bin();
   make_codec_properties();
-  reset_codec_configuration(nullptr, this);
+  //reset_codec_configuration(nullptr, this);
 }
 
 GstVideoCodec::~GstVideoCodec() {
@@ -109,20 +109,20 @@ void GstVideoCodec::hide(){
   quid_->disable_method("reset");
   quid_->disable_property("codec");
   quid_->disable_property("more_codecs");
-  video_output_format_->disable_property();
+  //video_output_format_->disable_property();
 }
 
 void GstVideoCodec::show(){
   quid_->enable_method("reset");
   quid_->enable_property("codec");
   quid_->enable_property("more_codecs");
-  video_output_format_->enable_property();
+  //video_output_format_->enable_property();
 }
 
 void GstVideoCodec::make_bin(){
   gst_bin_add(GST_BIN(bin_.get_raw()), video_tee_.get_raw());
   gst_bin_add(GST_BIN(bin_.get_raw()), shm_raw_.get_raw());
-  std::string caps_str = video_output_format_->get_caps_str();
+  std::string caps_str = "none"; //video_output_format_->get_caps_str();
   if (caps_str != "none") {
     GstCaps *usercaps = gst_caps_from_string(caps_str.c_str());
     g_object_set(G_OBJECT(caps_filter_raw_.get_raw()),
@@ -166,7 +166,7 @@ bool GstVideoCodec::remake_codec_elements() {
     g_warning("error renewing a shmdatasink related gst element");
     return false;
   }
-  std::string caps_str = video_output_format_->get_caps_str();
+  std::string caps_str = "none"; //video_output_format_->get_caps_str();
   if (caps_str != "none") {
     if (!UGstElem::renew(color_space_raw_)
         || !UGstElem::renew(caps_filter_raw_)){

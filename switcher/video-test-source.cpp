@@ -36,15 +36,15 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 
 VideoTestSource::VideoTestSource(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper>()),
-    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr))// ,
-    // codecs_(this, custom_props_.get())
-{
+    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)){
   init_startable(this);
 }
 
 bool VideoTestSource::init() {
   if(!videotestsrc_ || !shmdatasink_)
     return false;
+  codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
+                                             custom_props_.get());
   shmpath_ = make_file_name("video");
   g_object_set(G_OBJECT(videotestsrc_.get_raw()), "is-live", TRUE, nullptr);
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);

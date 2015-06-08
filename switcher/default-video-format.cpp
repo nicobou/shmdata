@@ -20,17 +20,17 @@
 #include "./default-video-format.hpp"
 
 namespace switcher {
-DefaultVideoFormat::DefaultVideoFormat(Quiddity *quid):
+DefaultVideoFormat::DefaultVideoFormat(Quiddity *quid, CustomPropertyHelper *prop_helper):
     quid_(quid),
-    custom_props_(std::make_shared<CustomPropertyHelper>()) {
+    custom_props_(prop_helper) {
 }
 
 void DefaultVideoFormat::make_format_property(const char *name,
                                               const char *display_text) {
   prop_name_ = name;
   GstElementFactory *factory = gst_element_factory_find("videoconvert"); 
-  if (nullptr == factory)
-    g_print("factory is null ----------------\n");
+  // if (nullptr == factory)
+  //   g_print("factory is null ----------------\n");
   const GList *list = gst_element_factory_get_static_pad_templates(factory);  
   // first option is do not format
   caps_.emplace_back("none");
