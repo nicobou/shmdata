@@ -26,7 +26,7 @@
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "./default-video-format.hpp"
+//#include "./default-video-format.hpp"
 
 namespace switcher {
 class quiddity;
@@ -68,7 +68,7 @@ class GstVideoCodec {
   GParamSpec *codec_long_list_spec_{nullptr};
   bool codec_long_list_{false};
   std::vector<std::string> codec_properties_{};
-  DefaultVideoFormat::uptr video_output_format_{};
+  //DefaultVideoFormat::uptr video_output_format_{};
   CustomPropertyHelper *prop_helper_;
   
   bool remake_codec_elements();

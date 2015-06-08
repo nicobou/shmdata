@@ -31,7 +31,7 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid,
     quid_(quid),
     shmpath_to_encode_(shmpath),
     gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
-    video_output_format_(nullptr),//std2::make_unique<DefaultVideoFormat>(quid_, prop_helper)),
+    //video_output_format_(nullptr),//std2::make_unique<DefaultVideoFormat>(quid_, prop_helper)),
     prop_helper_(prop_helper){
   GstUtils::element_factory_list_to_g_enum(primary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
@@ -248,7 +248,7 @@ void GstVideoCodec::make_codec_properties() {
 
 gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointer user_data) {
   GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
-  context->quid_->set_property("format", "0");  // do not apply
+  //context->quid_->set_property("format", "0");  // do not apply
   context->quid_->set_property("codec","vp8enc");
   context->quid_->set_property("quality","5");
   context->quid_->set_property("bitrate","0");
