@@ -23,6 +23,9 @@
 #include <vector>
 #include "switcher/unique-gst-element.hpp"
 #include "switcher/custom-property-helper.hpp"
+#include "switcher/gst-pipeliner.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/shmdata-utils.hpp"
 #include "./default-video-format.hpp"
 
 namespace switcher {
@@ -30,31 +33,31 @@ class quiddity;
 
 class GstVideoCodec {
  public:
-  GstVideoCodec(Quiddity *quid, CustomPropertyHelper *prop_helper);
+  GstVideoCodec(Quiddity *quid,
+                CustomPropertyHelper *prop_helper,
+                const std::string &shmpath_to_encode);
   GstVideoCodec() = delete;
   ~GstVideoCodec();
   GstVideoCodec(const GstVideoCodec &) = delete;
   GstVideoCodec &operator=(const GstVideoCodec &) = delete;
 
-  void set_visible(bool visible);
+  bool start();
+  bool stop();
   
  private:
   Quiddity *quid_;
-  UGstElem bin_{"bin"};
-  // raw video shmdata
-  UGstElem video_tee_{"tee"};
-  UGstElem shm_raw_{"shmdatasink"};
-  // format convertion for raw
-  UGstElem color_space_raw_{"videoconvert"};
-  UGstElem caps_filter_raw_{"capsfilter"};
+  // shmdata path
+  std::string shm_encoded_path_{};
+  std::string shmpath_to_encode_;
+  // gst pipeline
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
   // video encoding
-  UGstElem codec_element_{"vp8enc"};
+  UGstElem shmsrc_{"shmdatasrc"};
   UGstElem queue_codec_element_{"queue"};
   UGstElem color_space_codec_element_{"videoconvert"};
+  UGstElem codec_element_{"vp8enc"};
   UGstElem shm_encoded_{"shmdatasink"};
-  // shmdata path
-  std::string shm_raw_path_{};
-  std::string shm_encoded_path_{};
+  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
   // codec props
   GParamSpec *primary_codec_spec_{nullptr};
   GEnumValue primary_codec_[128]{};
