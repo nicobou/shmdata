@@ -27,6 +27,8 @@
 #include "switcher/unique-gst-element.hpp"
 #include "switcher/gst-video-codec.hpp"
 #include "switcher/custom-property-helper.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/gst-video-codec.hpp"
 
 namespace switcher {
 class V4L2Src: public Quiddity, public StartableQuiddity {
@@ -58,6 +60,7 @@ class V4L2Src: public Quiddity, public StartableQuiddity {
   UGstElem v4l2src_{"v4l2src"};
   UGstElem capsfilter_{"capsfilter"};
   UGstElem shmsink_{"shmdatasink"};
+  std::string shmpath_{};
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
   std::unique_ptr<GstVideoCodec> codecs_{nullptr};

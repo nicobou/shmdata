@@ -44,8 +44,12 @@ V4L2Src::V4L2Src(const std::string &):
 bool V4L2Src::init() {
   if (!v4l2src_ || !capsfilter_ || !shmsink_)
     return false;
+  shmpath_ = make_file_name("video");
+  codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
+                                             custom_props_.get(),
+                                             shmpath_);
   g_object_set(G_OBJECT(shmsink_.get_raw()),
-               "socket-path", make_file_name("video").c_str(),
+               "socket-path", shmpath_.c_str(),
                nullptr);
   // device inspector
   check_folder_for_v4l2_devices("/dev");
@@ -587,7 +591,21 @@ bool V4L2Src::start() {
                    nullptr);
   gst_element_link_many(v4l2src_.get_raw(), capsfilter_.get_raw(), shmsink_.get_raw(),
                         nullptr);
+  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+      shmsink_.get_raw(),
+      [this](std::string &&caps){
+        this->graft_tree(".shmdata.writer." + shmpath_,
+                         ShmdataUtils::make_tree(caps,
+                                                 ShmdataUtils::get_category(caps),
+                                                 0));
+      },
+      [this](GstShmdataSubscriber::num_bytes_t byte_rate){
+        this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
+                         data::Tree::make(std::to_string(byte_rate)));
+      });
+
   gst_pipeline_->play(true);
+  codecs_->start();
   uninstall_property("resolution");
   uninstall_property("width");
   uninstall_property("height");
@@ -605,8 +623,12 @@ bool V4L2Src::start() {
 }
 
 bool V4L2Src::stop() {
+  shm_sub_.reset(nullptr);
+  prune_tree(".shmdata.writer." + shmpath_);
   remake_elements();
+  
   gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
+  codecs_->stop();
   install_property_by_pspec(custom_props_->get_gobject(),
                             devices_enum_spec_,
                             "device",

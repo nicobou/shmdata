@@ -223,17 +223,16 @@ gint GstVideoCodec::get_codec(void *user_data) {
 // }
 
 void GstVideoCodec::make_codec_properties() {
-  codec_properties_.push_back("quality");     // jpegenc
+  codec_properties_.push_back("quality");      // jpegenc
   codec_properties_.push_back("idct-method");  // jpegenc
-  codec_properties_.push_back("speed-preset");        // x264
-  codec_properties_.push_back("bitrate");     // x264
-  codec_properties_.push_back("threads");     // x264
-  codec_properties_.push_back("ref");  // x264
+  codec_properties_.push_back("speed-preset"); // x264
+  codec_properties_.push_back("target-bitrate");      
+  codec_properties_.push_back("threads");      // x264
+  codec_properties_.push_back("ref");          // x264
   codec_properties_.push_back("trellis");     // x264
   codec_properties_.push_back("key-int-max");  // x264
   codec_properties_.push_back("speed");       // vp8
   codec_properties_.push_back("mode");        // vp8
-  codec_properties_.push_back("error-resilient");     // vp8
   codec_properties_.push_back("max-latency");  // vp8
   codec_properties_.push_back("max-keyframe-distance");       // vp8
   codec_properties_.push_back("qmin");        // smokeenc
@@ -253,11 +252,12 @@ gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointe
   context->quid_->set_property("quality","5");
   context->quid_->set_property("bitrate","0");
   context->quid_->set_property("threads","4");
-  context->quid_->set_property("speed","7");
   context->quid_->set_property("mode","0");  // vbr
-  context->quid_->set_property("error-resilient","true");
   context->quid_->set_property("max-latency","10");
   context->quid_->set_property("max-keyframe-distance","5");
+  for (auto &it : context->codec_properties_) {
+    context->quid_->install_property(G_OBJECT( context->codec_element_.get_raw()), it, it, it);
+  }
   return TRUE;
 }
 
