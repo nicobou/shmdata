@@ -21,6 +21,7 @@
 #define __SWITCHER_GST_VIDEO_CODEC_H__
 
 #include <vector>
+#include <unordered_set>
 #include "switcher/unique-gst-element.hpp"
 #include "switcher/custom-property-helper.hpp"
 #include "switcher/gst-pipeliner.hpp"
@@ -70,9 +71,15 @@ class GstVideoCodec {
   std::vector<std::string> codec_properties_{};
   //DefaultVideoFormat::uptr video_output_format_{};
   CustomPropertyHelper *prop_helper_;
+  // codec params black list
+  std::unordered_set<std::string> param_black_list_{"name", "parent",
+        "twopass-vbr-bias", "twopass-vbr-minsection", "twopass-vbr-maxsection",
+        "multipass-mode", "multipass-cache-file",
+        "snapshot"};
   
   bool remake_codec_elements();
   void make_codec_properties();
+  void uninstall_codec_properties();
   void make_bin();
   void show();
   void hide();
