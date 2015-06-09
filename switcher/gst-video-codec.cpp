@@ -200,14 +200,12 @@ void GstVideoCodec::make_codec_properties() {
       G_OBJECT_GET_CLASS(codec_element_.get_raw()), &num_properties);
   On_scope_exit{g_free(props);};
   for (guint i = 0; i < num_properties; i++) {
-    auto param_nick = g_param_spec_get_nick(props[i]);
     auto param_name = g_param_spec_get_name(props[i]);
-    g_print("nick %s name %s\n", param_nick, param_name);
     if (param_black_list_.end() == param_black_list_.find(param_name)){
       quid_->install_property_by_pspec(G_OBJECT(codec_element_.get_raw()),
                                        props[i],
                                        param_name,
-                                       param_nick);
+                                       g_param_spec_get_nick(props[i]));
       codec_properties_.push_back(param_name);
     }
   }
@@ -217,12 +215,8 @@ gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointe
   GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
   context->quid_->set_property("codec","vp8enc");
   context->make_codec_properties();
-  // context->quid_->set_property("quality","5");
-  // context->quid_->set_property("bitrate","0");
-  // context->quid_->set_property("threads","4");
-  // context->quid_->set_property("mode","0");  // vbr
-  // context->quid_->set_property("max-latency","10");
-  // context->quid_->set_property("max-keyframe-distance","5");
+  context->quid_->set_property("deadline","30000");  //30ms
+  context->quid_->set_property("target-bitrate", "1000000"); // 1Mbps
   return TRUE;
 }
 
