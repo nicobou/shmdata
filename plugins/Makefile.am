@@ -17,10 +17,10 @@ SUBDIRS += \
     gsoap
 endif
 
-# if GTKBUILD
-# SUBDIRS += \
-#     gtk
-# endif
+if GTKBUILD
+SUBDIRS += \
+    gtk
+endif
 
 # if PULSEBUILD
 # SUBDIRS += \
