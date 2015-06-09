@@ -145,8 +145,6 @@ bool GstVideoCodec::remake_codec_elements() {
 
 void GstVideoCodec::set_codec(const gint value, void *user_data) {
   GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
-  if(value == context->codec_)
-    return;
   context->codec_ = value;
   context->uninstall_codec_properties();
   context->codec_element_.mute(context->secondary_codec_[context->codec_].value_nick);
@@ -223,6 +221,8 @@ gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointe
 bool GstVideoCodec::start(){
   hide();
   uninstall_codec_properties();
+  if (0 == codec_)
+    return true;
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shm_encoded_.get_raw(),
       [this](std::string &&caps){
@@ -242,11 +242,13 @@ bool GstVideoCodec::start(){
 
 bool GstVideoCodec::stop(){
   show();
-  shm_sub_.reset();
-  quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
-  remake_codec_elements();
-  make_codec_properties();
-  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
+  if (0 != codec_) {
+    shm_sub_.reset();
+    quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
+    remake_codec_elements();
+    make_codec_properties();
+    gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
+  }
   return false;
 }
 
