@@ -53,12 +53,11 @@ class V4L2Src: public Quiddity, public StartableQuiddity {
  private:
   bool start() final;
   bool stop() final;
-  bool make_video_source(GstElement **new_element);
+  bool configure_capture();
 
-  GstElement *v4l2src_{nullptr};
-  GstElement *v4l2_bin_{nullptr};
-  GstElement *capsfilter_{nullptr};
-
+  UGstElem v4l2src_{"v4l2src"};
+  UGstElem capsfilter_{"capsfilter"};
+  UGstElem shmsink_{"shmdatasink"};
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
   std::unique_ptr<GstVideoCodec> codecs_{nullptr};
@@ -89,7 +88,7 @@ class V4L2Src: public Quiddity, public StartableQuiddity {
     gint frame_interval_stepwise_step_denominator_{0};
   } CaptureDescription;
 
-  bool make_elements();
+  bool remake_elements();
   void update_capture_device();
   void update_device_specific_properties(gint device_enum_id);
   void update_discrete_resolution(const CaptureDescription &descr);

@@ -42,8 +42,11 @@ V4L2Src::V4L2Src(const std::string &):
 }
 
 bool V4L2Src::init() {
-  if (!make_elements())
+  if (!v4l2src_ || !capsfilter_ || !shmsink_)
     return false;
+  g_object_set(G_OBJECT(shmsink_.get_raw()),
+               "socket-path", make_file_name("video").c_str(),
+               nullptr);
   // device inspector
   check_folder_for_v4l2_devices("/dev");
   update_capture_device();
@@ -332,21 +335,17 @@ V4L2Src::~V4L2Src() {
     g_free(capture_devices_description_);
 }
 
-bool V4L2Src::make_elements() {
-  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
-  if (!GstUtils::make_element("v4l2src", &v4l2src_))
+bool V4L2Src::remake_elements() {
+   if (capture_devices_.empty()) {
+    g_debug("V4L2Src: no capture device available for starting capture");
     return false;
-  if (!GstUtils::make_element("capsfilter", &capsfilter_))
+  }
+   if (!UGstElem::renew(v4l2src_, {"device", "norm"})
+       || !UGstElem::renew(capsfilter_, {"caps"})
+       || !UGstElem::renew(shmsink_, {"socket-path"})){
+    g_warning("V4L2Src: issue when with elements for video capture");
     return false;
-  if (!GstUtils::make_element("bin", &v4l2_bin_))
-    return false;
-  gst_bin_add_many(GST_BIN(v4l2_bin_), v4l2src_, capsfilter_, nullptr);
-  gst_element_link(v4l2src_, capsfilter_);
-  GstPad *src_pad = gst_element_get_static_pad(capsfilter_, "src");
-  GstPad *ghost_srcpad = gst_ghost_pad_new(nullptr, src_pad);
-  gst_pad_set_active(ghost_srcpad, TRUE);
-  gst_element_add_pad(v4l2_bin_, ghost_srcpad);
-  gst_object_unref(src_pad);
+  }
   return true;
 }
 
@@ -376,7 +375,6 @@ bool V4L2Src::inspect_file_device(const char *file_path) {
   //        (char *)vcap.card,
   //        (char *)vcap.bus_info,
   //        (char *)vcap.driver);
-
   // pixel format
   v4l2_fmtdesc fmt;
   unsigned default_pixel_format = 0;
@@ -583,6 +581,13 @@ bool V4L2Src::check_folder_for_v4l2_devices(const char *dir_path) {
 // }
 
 bool V4L2Src::start() {
+  configure_capture();
+  gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
+                   v4l2src_.get_raw(), capsfilter_.get_raw(), shmsink_.get_raw(),
+                   nullptr);
+  gst_element_link_many(v4l2src_.get_raw(), capsfilter_.get_raw(), shmsink_.get_raw(),
+                        nullptr);
+  gst_pipeline_->play(true);
   uninstall_property("resolution");
   uninstall_property("width");
   uninstall_property("height");
@@ -591,14 +596,16 @@ bool V4L2Src::start() {
   uninstall_property("framerate");
   uninstall_property("framerate_numerator");
   uninstall_property("framerate_denominator");
-  install_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
-  install_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
-  install_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
-  install_property (G_OBJECT (v4l2src_),"hue","hue", "Hue");
+  uninstall_property("pixelformat");
+  // install_property (G_OBJECT(v4l2src_.get_raw()),"brightness","brightness", "Brightness");
+  // install_property (G_OBJECT(v4l2src_.get_raw()),"contrast","contrast", "Contrast");
+  // install_property (G_OBJECT(v4l2src_.get_raw()),"saturation","saturation", "Saturation");
+  // install_property (G_OBJECT(v4l2src_.get_raw()),"hue","hue", "Hue");
   return true;
 }
 
 bool V4L2Src::stop() {
+  remake_elements();
   gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
   install_property_by_pspec(custom_props_->get_gobject(),
                             devices_enum_spec_,
@@ -832,28 +839,25 @@ gint V4L2Src::get_framerate_denominator(void *user_data) {
   return context->framerate_denominator_;
 }
 
-bool V4L2Src::make_video_source(GstElement ** new_element) {
+bool V4L2Src::configure_capture() {
   if (capture_devices_.empty()) {
     g_debug("V4L2Src:: no capture device available for starting capture");
     return false;
   }
-  make_elements();
-  g_object_set(G_OBJECT(v4l2src_),
-               "device",
-               capture_devices_[device_].file_device_.c_str(), nullptr);
+  g_object_set(G_OBJECT(v4l2src_.get_raw()),
+               "device", capture_devices_[device_].file_device_.c_str(),
+               nullptr);
   if (tv_standard_ > 0)       //0 is none
-    g_object_set(G_OBJECT(v4l2src_),
+    g_object_set(G_OBJECT(v4l2src_.get_raw()),
                  "norm",
                  capture_devices_[device_].
                  tv_standards_[tv_standard_].c_str(),
                  nullptr);
   std::string caps = std::string(pixel_format_enum_[pixel_format_].value_nick);
   if (width_ > 0) {
-    gchar *width = g_strdup_printf("%d", width_);
-    gchar *height = g_strdup_printf("%d", height_);
-    caps = caps + ", width=(int)" + width + ", height=(int)" + height;
-    g_free(width);
-    g_free(height);
+    caps = caps
+        + ", width=(int)" + std::to_string(width_)
+        + ", height=(int)" + std::to_string(height_);
   }
   else if (resolution_ > -1) {
     caps = caps
@@ -870,16 +874,12 @@ bool V4L2Src::make_video_source(GstElement ** new_element) {
         + capture_devices_[device_].frame_interval_discrete_[framerate_].first.c_str();
   }
   else if (framerate_numerator_ > 0) {
-    gchar *numerator = g_strdup_printf("%d", framerate_numerator_);
-    gchar *denominator = g_strdup_printf("%d", framerate_denominator_);
-    caps = caps + ", framerate=(fraction)" + numerator + "/" + denominator;
-    g_free(numerator);
-    g_free(denominator);
+    caps = caps + ", framerate=(fraction)"
+        + std::to_string(framerate_numerator_) + "/" + std::to_string(framerate_denominator_);
   }
   GstCaps *usercaps = gst_caps_from_string(caps.c_str());
-  g_object_set(G_OBJECT(capsfilter_), "caps", usercaps, nullptr);
+  g_object_set(G_OBJECT(capsfilter_.get_raw()), "caps", usercaps, nullptr);
   gst_caps_unref(usercaps);
-  *new_element = v4l2_bin_;
   return true;
 }
 
