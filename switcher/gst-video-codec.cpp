@@ -214,7 +214,8 @@ gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointe
   context->quid_->set_property("codec","vp8enc");
   context->make_codec_properties();
   context->quid_->set_property("deadline","30000");  //30ms
-  context->quid_->set_property("target-bitrate", "1000000"); // 1Mbps
+  context->quid_->set_property("target-bitrate", "2000000"); // 2Mbps
+  context->quid_->set_property("end-usage", "1"); // CBR
   return TRUE;
 }
 
