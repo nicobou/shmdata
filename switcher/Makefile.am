@@ -32,7 +32,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     glibmainloop.cpp \
     gobject-custom-property.cpp \
     gobject-wrapper.cpp \
-    gst-element-cleaner.cpp \
     gst-pipe.cpp \
     gst-pipeliner.cpp \
     gst-shmdata-subscriber.cpp \
@@ -92,7 +91,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     any.hpp \
     audio-test-source.hpp \
     categorizable.hpp \
-    clock.hpp \
     counter-map.hpp \
     create-remove-spy.hpp \
     creator.hpp \
@@ -104,7 +102,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     glibmainloop.hpp \
     gobject-custom-property.hpp \
     gobject-wrapper.hpp \
-    gst-element-cleaner.hpp \
     gst-pipe.hpp \
     gst-pipeliner.hpp \
     gst-shmdata-subscriber.hpp \
