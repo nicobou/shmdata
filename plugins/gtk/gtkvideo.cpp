@@ -24,6 +24,7 @@
 #include "switcher/gst-utils.hpp"
 #include "switcher/quiddity-command.hpp"
 #include "switcher/quiddity-manager-impl.hpp"
+#include "switcher/shmdata-utils.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/std2.hpp"
 #ifdef HAVE_CONFIG_H
@@ -337,14 +338,30 @@ bool GTKVideo::remake_elements(){
 }
 
 bool GTKVideo::on_shmdata_disconnect() {
-  On_scope_exit{gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);};
+  prune_tree(".shmdata.reader." + shmpath_);
+  shm_sub_.reset();
+  On_scope_exit{gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, [this](GstMessage *msg){return this->bus_sync(msg);});};
   return remake_elements();
 }
 
 bool GTKVideo::on_shmdata_connect(const std::string &shmpath) {
+  shmpath_ = shmpath;
   g_object_set(G_OBJECT(shmsrc_.get_raw()),
-               "socket-path", shmpath.c_str(),
+               "socket-path", shmpath_.c_str(),
                nullptr);
+  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+      shmsrc_.get_raw(),
+      [this](std::string &&caps){
+        this->graft_tree(".shmdata.reader." + shmpath_,
+                         ShmdataUtils::make_tree(caps,
+                                                 ShmdataUtils::get_category(caps),
+                                                 0));
+      },
+      [this](GstShmdataSubscriber::num_bytes_t byte_rate){
+        this->graft_tree(".shmdata.reader." + shmpath_ + ".byte_rate",
+                         data::Tree::make(std::to_string(byte_rate)));
+      });
+
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmsrc_.get_raw(),
                    queue_.get_raw(),

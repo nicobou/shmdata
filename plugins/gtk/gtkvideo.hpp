@@ -66,6 +66,7 @@ class GTKVideo: public Quiddity {
   GtkWidget *video_window_{nullptr};
   // shmsubscriber (publishing to the information-tree):
   std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  std::string shmpath_{};
   // gst elements:
   UGstElem shmsrc_{"shmdatasrc"};
   UGstElem queue_{"queue"};
