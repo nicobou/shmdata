@@ -75,7 +75,10 @@ class GstVideoCodec {
   std::unordered_set<std::string> param_black_list_{"name", "parent",
         "twopass-vbr-bias", "twopass-vbr-minsection", "twopass-vbr-maxsection",
         "multipass-mode", "multipass-cache-file",
-        "snapshot"};
+        "snapshot",
+        "temporal-scalability-target-bitrate", "temporal-scalability-rate-decimator",
+        "temporal-scalability-periodicity", "temporal-scalability-layer-id",
+        "error-resilient"};
   
   bool remake_codec_elements();
   void make_codec_properties();

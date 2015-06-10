@@ -55,8 +55,8 @@ PJCall::PJCall(PJSIP *sip_instance):
     sip_instance_(sip_instance),
     manager_(QuiddityManager::make_manager(sip_instance->get_manager_name()
                                            // per Pierre-Antoine request:
-                                           // + "-"
-                                           // + sip_instance->get_name()
+                                           + "-"
+                                           + sip_instance->get_name()
                                            )),
     contact_shm_(data::Tree::make()) {
   pj_status_t status;
