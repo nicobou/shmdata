@@ -17,8 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "switcher/gst-utils.hpp"
+#include "switcher/std2.hpp"
 #include "./external-shmdata-writer.hpp"
-#include "./gst-utils.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalShmdataWriter,
@@ -53,11 +54,19 @@ ExternalShmdataWriter::set_shmdata_path(const gchar *value, void *user_data)
 {
   ExternalShmdataWriter *context = static_cast<ExternalShmdataWriter *>(user_data);
   context->shmdata_path_ = value;
+  context->shm_ = std2::make_unique<ShmdataFollower>(context,
+                                                     context->shmdata_path_,
+                                                     nullptr,
+                                                     nullptr,
+                                                     nullptr,
+                                                     ".shmdata.writer.");
   context->custom_props_->notify_property_changed(context->shmdata_path_spec_);
 }
 
 const gchar *ExternalShmdataWriter::get_shmdata_path(void *user_data) {
   ExternalShmdataWriter *context = static_cast<ExternalShmdataWriter *>(user_data);
+  if (context->shmdata_path_.empty())
+    return "";
   return context->shmdata_path_.c_str();
 }
 

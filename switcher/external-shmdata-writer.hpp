@@ -21,8 +21,9 @@
 #define __SWITCHER_EXTERNAL_SHMDATA_WRITER_H__
 
 #include <memory>
-#include "./quiddity.hpp"
-#include "./custom-property-helper.hpp"
+#include "switcher/quiddity.hpp"
+#include "switcher/shmdata-follower.hpp"
+#include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
 class ExternalShmdataWriter: public Quiddity {
@@ -37,7 +38,8 @@ class ExternalShmdataWriter: public Quiddity {
   // custom properties:
   CustomPropertyHelper::ptr custom_props_;
   GParamSpec *shmdata_path_spec_{nullptr};
-  std::string shmdata_path_{"none"};
+  std::string shmdata_path_{};
+  std::unique_ptr<ShmdataFollower> shm_{nullptr};
   bool init() final;
   static void set_shmdata_path(const gchar *value, void *user_data);
   static const gchar *get_shmdata_path(void *user_data);
