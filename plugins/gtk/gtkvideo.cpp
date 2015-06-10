@@ -18,6 +18,7 @@
  */
 
 #include <gst/gst.h>
+#include <gst/video/videooverlay.h>
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdkcursor.h>
 #include "switcher/gst-utils.hpp"
@@ -45,7 +46,8 @@ std::thread GTKVideo::gtk_main_thread_ {};
 
 GTKVideo::GTKVideo(const std::string &):
     shmcntr_(static_cast<Quiddity *>(this)),
-    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
+    gst_pipeline_(std2::make_unique<GstPipeliner>(
+        nullptr, [this](GstMessage *msg){return this->bus_sync(msg);})),
     gtk_custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 
@@ -367,5 +369,14 @@ bool GTKVideo::on_shmdata_connect(const std::string &shmpath) {
 bool GTKVideo::can_sink_caps(std::string caps) {
   return GstUtils::can_sink_caps("videoconvert", caps);
 };
+
+GstBusSyncReply GTKVideo::bus_sync(GstMessage *msg){
+  if (!gst_is_video_overlay_prepare_window_handle_message (msg))
+    return GST_BUS_PASS;
+  GstVideoOverlay *overlay = GST_VIDEO_OVERLAY(GST_MESSAGE_SRC(msg));
+  gst_video_overlay_set_window_handle (overlay, window_handle_);
+  gst_message_unref (msg);
+  return GST_BUS_DROP;
+}
 
 }  // namespace switcher

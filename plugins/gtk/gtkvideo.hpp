@@ -99,7 +99,7 @@ class GTKVideo: public Quiddity {
   bool on_shmdata_connect(const std::string &shmpath);
   bool on_shmdata_disconnect();
   bool can_sink_caps(std::string caps);
-
+  GstBusSyncReply bus_sync(GstMessage *msg);
   static gboolean create_ui(void *user_data);
   static void realize_cb(GtkWidget *widget, void *user_data);
   static void delete_event_cb(GtkWidget *widget,
