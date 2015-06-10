@@ -29,7 +29,6 @@
 #include "./audio-test-source.hpp"
 #include "./create-remove-spy.hpp"
 #include "./external-shmdata-writer.hpp"
-#include "./fakesink.hpp"
 //#include "./gst-parse-to-bin-src.hpp"
 #include "./http-sdp-dec.hpp"
 //#include "./jack-audio-source.hpp"
@@ -140,9 +139,6 @@ void QuiddityManager_Impl::register_classes() {
   abstract_factory_.register_class<ExternalShmdataWriter>
       (ExternalShmdataWriter::switcher_doc_.get_class_name(),
        &ExternalShmdataWriter::switcher_doc_);
-  abstract_factory_.register_class<FakeSink>
-      (FakeSink::switcher_doc_.get_class_name(),
-       &FakeSink::switcher_doc_);
   // abstract_factory_.register_class<GstParseToBinSrc>
   //     (GstParseToBinSrc::switcher_doc_.get_class_name(),
   //      &GstParseToBinSrc::switcher_doc_);
