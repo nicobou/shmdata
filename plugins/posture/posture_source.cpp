@@ -37,7 +37,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureSrc,
 
 PostureSrc::PostureSrc(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()) {
-  zcamera_ = make_shared<ZCamera> ();
+  zcamera_ = std2::make_unique<ZCamera> ();
   
   zcamera_->setCallbackCloud(cb_frame_cloud, this);
   zcamera_->setCallbackMesh(cb_frame_mesh, this);
@@ -228,31 +228,31 @@ PostureSrc::init() {
   capture_modes_enum_[0].value_nick = capture_modes_enum_[0].value_name;
   capture_modes_enum_[1].value = 1;
   capture_modes_enum_[1].value_name = "SXGA 15Hz";
-  capture_modes_enum_[1].value_nick = capture_modes_enum_[0].value_name;
+  capture_modes_enum_[1].value_nick = capture_modes_enum_[1].value_name;
   capture_modes_enum_[2].value = 2;
   capture_modes_enum_[2].value_name = "VGA 30Hz";
-  capture_modes_enum_[2].value_nick = capture_modes_enum_[0].value_name;
+  capture_modes_enum_[2].value_nick = capture_modes_enum_[2].value_name;
   capture_modes_enum_[3].value = 3;
   capture_modes_enum_[3].value_name = "VGA 25Hz";
-  capture_modes_enum_[3].value_nick = capture_modes_enum_[0].value_name;
+  capture_modes_enum_[3].value_nick = capture_modes_enum_[3].value_name;
   capture_modes_enum_[4].value = 4;
   capture_modes_enum_[4].value_name = "QVGA 25Hz";
-  capture_modes_enum_[4].value_nick = capture_modes_enum_[0].value_name;
+  capture_modes_enum_[4].value_nick = capture_modes_enum_[4].value_name;
   capture_modes_enum_[5].value = 5;
   capture_modes_enum_[5].value_name = "QVGA 30Hz";
-  capture_modes_enum_[5].value_nick = capture_modes_enum_[0].value_name;
+  capture_modes_enum_[5].value_nick = capture_modes_enum_[5].value_name;
   capture_modes_enum_[6].value = 6;
   capture_modes_enum_[6].value_name = "QVGA 60Hz";
-  capture_modes_enum_[6].value_nick = capture_modes_enum_[0].value_name;
+  capture_modes_enum_[6].value_nick = capture_modes_enum_[6].value_name;
   capture_modes_enum_[7].value = 7;
   capture_modes_enum_[7].value_name = "QQVGA 25Hz";
-  capture_modes_enum_[7].value_nick = capture_modes_enum_[0].value_name;
+  capture_modes_enum_[7].value_nick = capture_modes_enum_[7].value_name;
   capture_modes_enum_[8].value = 8;
   capture_modes_enum_[8].value_name = "QQVGA 30Hz";
-  capture_modes_enum_[8].value_nick = capture_modes_enum_[0].value_name;
+  capture_modes_enum_[8].value_nick = capture_modes_enum_[8].value_name;
   capture_modes_enum_[9].value = 9;
   capture_modes_enum_[9].value_name = "QQVGA 60Hz";
-  capture_modes_enum_[9].value_nick = capture_modes_enum_[0].value_name;
+  capture_modes_enum_[9].value_nick = capture_modes_enum_[9].value_name;
   capture_modes_enum_[10].value = 0;
   capture_modes_enum_[10].value_name = nullptr;
   capture_modes_enum_[10].value_nick = nullptr;
@@ -357,7 +357,7 @@ PostureSrc::set_build_mesh(const int build_mesh, void *user_data) {
     ctx->uninstall_property("build_mesh_edge_length");
   }
 
-  if (ctx->zcamera_ != nullptr)
+  if (ctx->zcamera_)
     ctx->zcamera_->setBuildEdgeLength(ctx->build_mesh_edge_length_);
 }
 
@@ -372,7 +372,7 @@ PostureSrc::set_build_mesh_edge_length(const int edge_length, void *user_data) {
     PostureSrc *ctx = (PostureSrc*) user_data;
     ctx->build_mesh_edge_length_ = edge_length;
 
-    if (ctx->zcamera_ != nullptr)
+    if (ctx->zcamera_)
         ctx->zcamera_->setBuildEdgeLength(ctx->build_mesh_edge_length_);
 }
 
@@ -396,8 +396,7 @@ PostureSrc::get_capture_mode(void *user_data) {
 
 void
 PostureSrc::set_capture_mode(const int mode, void *user_data) {
-  PostureSrc *
-      ctx = (PostureSrc *) user_data;
+  PostureSrc *ctx = (PostureSrc *) user_data;
   ctx->capture_mode_ = mode;
 }
 
@@ -447,7 +446,7 @@ PostureSrc::set_downsample_active(const int active, void *user_data){
     ctx->uninstall_property("downsample_resolution");
   }
 
-  if (ctx->zcamera_ != nullptr)
+  if (ctx->zcamera_)
     ctx->zcamera_->setDownsampling(ctx->downsample_, ctx->downsample_resolution_);
 }
 
@@ -462,7 +461,7 @@ PostureSrc::set_downsampling_resolution(const double resolution, void *user_data
   PostureSrc *ctx = (PostureSrc *) user_data;
   ctx->downsample_resolution_ = resolution;
 
-  if (ctx->zcamera_ != nullptr)
+  if (ctx->zcamera_)
     ctx->zcamera_->setDownsampling(ctx->downsample_, ctx->downsample_resolution_);
 }
 
@@ -514,7 +513,7 @@ PostureSrc::set_filter_outliers(const int active, void *user_data) {
     ctx->uninstall_property("filter_stddev_mul");
   }
 
-  if (ctx->zcamera_ != nullptr)
+  if (ctx->zcamera_)
     ctx->zcamera_->setOutlierFilterParameters(ctx->filter_outliers_, ctx->filter_mean_k_, ctx->filter_stddev_mul_);
 }
 
@@ -529,7 +528,7 @@ PostureSrc::set_filter_mean_k(const int mean_k, void *user_data) {
   PostureSrc *ctx = (PostureSrc *) user_data;
   ctx->filter_mean_k_ = mean_k;
 
-  if (ctx->zcamera_ != nullptr)
+  if (ctx->zcamera_)
     ctx->zcamera_->setOutlierFilterParameters(ctx->filter_outliers_, ctx->filter_mean_k_, ctx->filter_stddev_mul_);
 }
 
@@ -544,7 +543,7 @@ PostureSrc::set_filter_stddev_mul(const double stddev_mul, void *user_data) {
   PostureSrc *ctx = (PostureSrc *) user_data;
   ctx->filter_stddev_mul_ = stddev_mul;
 
-  if (ctx->zcamera_ != nullptr)
+  if (ctx->zcamera_)
     ctx->zcamera_->setOutlierFilterParameters(ctx->filter_outliers_, ctx->filter_mean_k_, ctx->filter_stddev_mul_);
 }
 

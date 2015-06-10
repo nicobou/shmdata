@@ -82,7 +82,7 @@ class PostureSrc:public Quiddity, public StartableQuiddity {
   GParamSpec *capture_mode_prop_ {nullptr};
   GEnumValue capture_modes_enum_[16];
 
-  std::shared_ptr<posture::ZCamera> zcamera_ {nullptr};
+  std::unique_ptr<posture::ZCamera> zcamera_ {nullptr};
 
   std::unique_ptr<ShmdataWriter> cloud_writer_ {nullptr};
   std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
