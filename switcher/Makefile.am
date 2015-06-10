@@ -27,6 +27,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     custom-property-helper.cpp \
     decodebin-to-shmdata.cpp \
     default-video-format.cpp \
+    external-shmdata-writer.cpp \
     fakesink.cpp \
     g-source-wrapper.cpp \
     glibmainloop.cpp \
@@ -100,6 +101,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     default-video-format.hpp \
     decodebin-to-shmdata.hpp \
     fakesink.hpp \
+    external-shmdata-writer.hpp \
     g-source-wrapper.hpp \
     glibmainloop.hpp \
     gobject-custom-property.hpp \

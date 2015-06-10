@@ -28,7 +28,7 @@
 // the quiddities to manage (line sorted)
 #include "./audio-test-source.hpp"
 #include "./create-remove-spy.hpp"
-//#include "./fake-shmdata-writer.hpp"
+#include "./external-shmdata-writer.hpp"
 #include "./fakesink.hpp"
 //#include "./gst-parse-to-bin-src.hpp"
 #include "./http-sdp-dec.hpp"
@@ -137,9 +137,9 @@ void QuiddityManager_Impl::register_classes() {
   abstract_factory_.register_class<CreateRemoveSpy>
       (CreateRemoveSpy::switcher_doc_.get_class_name(),
        &CreateRemoveSpy::switcher_doc_);
-  // abstract_factory_.register_class<FakeShmdataWriter>
-  //     (FakeShmdataWriter::switcher_doc_.get_class_name(),
-  //      &FakeShmdataWriter::switcher_doc_);
+  abstract_factory_.register_class<ExternalShmdataWriter>
+      (ExternalShmdataWriter::switcher_doc_.get_class_name(),
+       &ExternalShmdataWriter::switcher_doc_);
   abstract_factory_.register_class<FakeSink>
       (FakeSink::switcher_doc_.get_class_name(),
        &FakeSink::switcher_doc_);

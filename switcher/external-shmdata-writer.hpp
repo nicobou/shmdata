@@ -17,45 +17,28 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_FAKE_SHMDATA_WRITER_H__
-#define __SWITCHER_FAKE_SHMDATA_WRITER_H__
+#ifndef __SWITCHER_EXTERNAL_SHMDATA_WRITER_H__
+#define __SWITCHER_EXTERNAL_SHMDATA_WRITER_H__
 
 #include <memory>
 #include "./quiddity.hpp"
-#include "./segment.hpp"
-#include "./startable-quiddity.hpp"
 #include "./custom-property-helper.hpp"
-#include "./quiddity-manager.hpp"
 
 namespace switcher {
-class FakeShmdataWriter: public Quiddity,
-                         public Segment,
-                         public StartableQuiddity {
+class ExternalShmdataWriter: public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeShmdataWriter);
-  FakeShmdataWriter(const std::string &);
-  ~FakeShmdataWriter();
-  FakeShmdataWriter(const FakeShmdataWriter &) = delete;
-  FakeShmdataWriter &operator=(const FakeShmdataWriter &) = delete;
-  bool start() final;
-  bool stop() final;
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ExternalShmdataWriter);
+  ExternalShmdataWriter(const std::string &);
+  ~ExternalShmdataWriter() = default;
+  ExternalShmdataWriter(const ExternalShmdataWriter &) = delete;
+  ExternalShmdataWriter &operator=(const ExternalShmdataWriter &) = delete;
 
  private:
   // custom properties:
   CustomPropertyHelper::ptr custom_props_;
   GParamSpec *shmdata_path_spec_{nullptr};
   std::string shmdata_path_{"none"};
-  std::string caps_{};
-  QuiddityManager::ptr manager_{};
-  // getting caps from fakesink
-  static void caps_cb(const std::string &/*subscriber_name */ ,
-                      const std::string &/*quiddity_name*/,
-                      const std::string &/*property_name*/,
-                      const std::string &value,
-                      void *user_data);
-  bool init() final;  // segment implementation
-  static gboolean add_shmdata_path_wrapped(gpointer name,
-                                           gpointer user_data);
+  bool init() final;
   static void set_shmdata_path(const gchar *value, void *user_data);
   static const gchar *get_shmdata_path(void *user_data);
 };
