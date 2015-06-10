@@ -31,7 +31,6 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid,
     quid_(quid),
     shmpath_to_encode_(shmpath),
     gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
-    //video_output_format_(nullptr),//std2::make_unique<DefaultVideoFormat>(quid_, prop_helper)),
     prop_helper_(prop_helper){
   GstUtils::element_factory_list_to_g_enum(primary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
@@ -92,8 +91,6 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid,
                "socket-path", shm_encoded_path_.c_str(),
                "sync", false,
                nullptr);
-  //video_output_format_->make_format_property("format", "Convert Pixel Format To");
-  make_codec_properties();
   reset_codec_configuration(nullptr, this);
 }
 
@@ -106,35 +103,15 @@ void GstVideoCodec::hide(){
   quid_->disable_method("reset");
   quid_->disable_property("codec");
   quid_->disable_property("more_codecs");
-  //video_output_format_->disable_property();
 }
 
 void GstVideoCodec::show(){
   quid_->enable_method("reset");
   quid_->enable_property("codec");
   quid_->enable_property("more_codecs");
-  //video_output_format_->enable_property();
 }
 
 void GstVideoCodec::make_bin(){
-  // std::string caps_str = "none"; //video_output_format_->get_caps_str();
-  // if (caps_str != "none") {
-  //   GstCaps *usercaps = gst_caps_from_string(caps_str.c_str());
-  //   g_object_set(G_OBJECT(caps_filter_raw_.get_raw()),
-  //                "caps", usercaps,
-  //                nullptr);
-  //   gst_caps_unref(usercaps);
-  //   gst_bin_add(GST_BIN(bin_.get_raw()), color_space_raw_.get_raw());
-  //   gst_bin_add(GST_BIN(bin_.get_raw()), caps_filter_raw_.get_raw());
-    
-  //   gst_element_link_many(video_tee_.get_raw(),
-  //                         color_space_raw_.get_raw(),
-  //                         caps_filter_raw_.get_raw(),
-  //                         shm_raw_.get_raw(),
-  //                         nullptr);
-  // } else {
-  //   gst_element_link(video_tee_.get_raw(), shm_raw_.get_raw() );
-  // }
   if (codec_ != 0) {
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmsrc_.get_raw(),
@@ -153,21 +130,6 @@ void GstVideoCodec::make_bin(){
 }
 
 bool GstVideoCodec::remake_codec_elements() {
-  //  // elements are owner by the user
-  // if (!UGstElem::renew(shmsrc_, {"socket-path"})
-  //    || !UGstElem::renew(video_tee_)
-  //    || !UGstElem::renew(bin_)){
-  //   g_warning("error renewing a shmdatasink related gst element");
-  //   return false;
-  // }
-  // std::string caps_str = "none"; //video_output_format_->get_caps_str();
-  // if (caps_str != "none") {
-  //   if (!UGstElem::renew(color_space_raw_)
-  //       || !UGstElem::renew(caps_filter_raw_)){
-  //     g_warning("error renewing a video format related gst element");
-  //     return false;
-  //   }
-  // }
   if (codec_ != 0) {  //no codec
     if (!UGstElem::renew(shmsrc_, {"socket-path"})
         || !UGstElem::renew(shm_encoded_, {"socket-path", "sync"})
@@ -184,8 +146,10 @@ bool GstVideoCodec::remake_codec_elements() {
 void GstVideoCodec::set_codec(const gint value, void *user_data) {
   GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
   context->codec_ = value;
+  context->uninstall_codec_properties();
   context->codec_element_.mute(context->secondary_codec_[context->codec_].value_nick);
   context->remake_codec_elements();
+  context->make_codec_properties();
 }
 
 gint GstVideoCodec::get_codec(void *user_data) {
@@ -222,49 +186,44 @@ gint GstVideoCodec::get_codec(void *user_data) {
 //   set_codec(0, context);
 // }
 
+void GstVideoCodec::uninstall_codec_properties(){
+  for (auto &it : codec_properties_)
+    quid_->uninstall_property(it);
+  codec_properties_.clear();
+}
+
 void GstVideoCodec::make_codec_properties() {
-  codec_properties_.push_back("quality");      // jpegenc
-  codec_properties_.push_back("idct-method");  // jpegenc
-  codec_properties_.push_back("speed-preset"); // x264
-  codec_properties_.push_back("target-bitrate");      
-  codec_properties_.push_back("threads");      // x264
-  codec_properties_.push_back("ref");          // x264
-  codec_properties_.push_back("trellis");     // x264
-  codec_properties_.push_back("key-int-max");  // x264
-  codec_properties_.push_back("speed");       // vp8
-  codec_properties_.push_back("mode");        // vp8
-  codec_properties_.push_back("max-latency");  // vp8
-  codec_properties_.push_back("max-keyframe-distance");       // vp8
-  codec_properties_.push_back("qmin");        // smokeenc
-  codec_properties_.push_back("qmax");        // smokeenc
-  codec_properties_.push_back("keyframe");    // smokeenc
-  codec_properties_.push_back("rate-control");        // schroenc (dirac)
-  codec_properties_.push_back("max-bitrate");  // schroenc (dirac)
-  codec_properties_.push_back("min-bitrate");  // schroenc (dirac)
-  codec_properties_.push_back("snapshot");    // png
-  codec_properties_.push_back("compression-level");   // png
+  guint num_properties = 0;
+  GParamSpec **props = g_object_class_list_properties(
+      G_OBJECT_GET_CLASS(codec_element_.get_raw()), &num_properties);
+  On_scope_exit{g_free(props);};
+  for (guint i = 0; i < num_properties; i++) {
+    auto param_name = g_param_spec_get_name(props[i]);
+    if (param_black_list_.end() == param_black_list_.find(param_name)){
+      quid_->install_property_by_pspec(G_OBJECT(codec_element_.get_raw()),
+                                       props[i],
+                                       param_name,
+                                       g_param_spec_get_nick(props[i]));
+      codec_properties_.push_back(param_name);
+    }
+  }
 }
 
 gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointer user_data) {
   GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
-  //context->quid_->set_property("format", "0");  // do not apply
   context->quid_->set_property("codec","vp8enc");
-  context->quid_->set_property("quality","5");
-  context->quid_->set_property("bitrate","0");
-  context->quid_->set_property("threads","4");
-  context->quid_->set_property("mode","0");  // vbr
-  context->quid_->set_property("max-latency","10");
-  context->quid_->set_property("max-keyframe-distance","5");
-  for (auto &it : context->codec_properties_) {
-    context->quid_->install_property(G_OBJECT( context->codec_element_.get_raw()), it, it, it);
-  }
+  context->make_codec_properties();
+  context->quid_->set_property("deadline","30000");  //30ms
+  context->quid_->set_property("target-bitrate", "2000000"); // 2Mbps
+  context->quid_->set_property("end-usage", "1"); // CBR
   return TRUE;
 }
 
 bool GstVideoCodec::start(){
   hide();
-  for (auto &it : codec_properties_)
-    quid_->uninstall_property(it);
+  uninstall_codec_properties();
+  if (0 == codec_)
+    return true;
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shm_encoded_.get_raw(),
       [this](std::string &&caps){
@@ -284,13 +243,13 @@ bool GstVideoCodec::start(){
 
 bool GstVideoCodec::stop(){
   show();
-  shm_sub_.reset();
-  quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
-  remake_codec_elements();
-  for (auto &it : codec_properties_) {
-    quid_->install_property(G_OBJECT(codec_element_.get_raw()), it, it, it);
+  if (0 != codec_) {
+    shm_sub_.reset();
+    quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
+    remake_codec_elements();
+    make_codec_properties();
+    gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
   }
-  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
   return false;
 }
 
