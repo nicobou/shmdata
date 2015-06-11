@@ -17,24 +17,31 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <iostream>
+#include <sstream>
 #include "./quiddity-documentation.hpp"
 
 namespace switcher {
 QuiddityDocumentation::QuiddityDocumentation(const std::string &long_name,
                                              const std::string &class_name,
                                              const std::string &category,
-                                             const std::vector<std::string> &tags,
+                                             const std::string &tags,
                                              const std::string &short_description,
                                              const std::string &license,
                                              const std::string &author) :
     category_(category),
-  tags_(tags),
   class_name_(class_name),
   description_(short_description),
   long_name_(long_name),
   author_(author),
   license_(license),
   json_description_(std::make_shared<JSONBuilder>()) {
+  // parsing tags since vector initialization like {"writer", "reader"} does
+  // not pass MACRO arguments:
+  std::istringstream ss(tags); // Turn the string into a stream.
+  std::string tok;  
+  while(std::getline(ss, tok, '/'))
+    tags_.push_back(tok);
 }
 
 std::string QuiddityDocumentation::get_category() const {

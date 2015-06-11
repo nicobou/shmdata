@@ -27,7 +27,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "logger",
     "Switcher Logger",
     "utils",
-    {},
+    "",
     "manage switcher logs and other glib log domains.",
     "LGPL",
     "Nicolas Bouillot");

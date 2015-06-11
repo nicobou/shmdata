@@ -27,7 +27,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "create_remove_spy",
     "Quiddity Creation Inspector",
     "utils",
-    {},
+    "",
     "spy manager for quidity creation and removal and convert into signals",
     "LGPL",
     "Nicolas Bouillot");

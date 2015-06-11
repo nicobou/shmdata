@@ -28,7 +28,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "property-mapper",
     "Switcher Property Mapper",
     "utils",
-    {},
+    "",
     "map two properties, one being slave of the other",
     "LGPL",
     "Nicolas Bouillot");

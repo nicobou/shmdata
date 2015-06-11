@@ -30,7 +30,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "videotestsrc",
     "Video Pattern",
     "video",
-    {"writer"},
+    "writer",
     "Creates a test video stream",
     "LGPL",
     "Nicolas Bouillot");

@@ -30,7 +30,7 @@ class QuiddityDocumentation {
   QuiddityDocumentation(const std::string &long_name,
                         const std::string &class_name, 
                         const std::string &category,
-                        const std::vector<std::string> &tags,
+                        const std::string &tags,  // backslash separated
                         const std::string &short_description,
                         const std::string &license,
 			const std::string &author);
@@ -44,7 +44,7 @@ class QuiddityDocumentation {
 
  private:
   const std::string category_;
-  const std::vector<std::string> tags_;
+  std::vector<std::string> tags_{};
   const std::string class_name_;
   const std::string description_;
   const std::string long_name_;

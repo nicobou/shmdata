@@ -30,7 +30,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "dico",
     "Dictionary",
     "utils",
-    {},
+    "",
     "Dictionary of string key/values accessible through properties",
     "LGPL",
     "Nicolas Bouillot");

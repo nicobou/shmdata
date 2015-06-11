@@ -27,7 +27,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "extshmsrc",
     "Raw Shmdata",
     "other",
-    {"writer"},
+    "writer",
     "import an external shmdata writer",
     "LGPL",
     "Nicolas Bouillot");

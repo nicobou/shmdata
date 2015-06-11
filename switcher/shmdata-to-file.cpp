@@ -29,7 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "shmtofile",
     "Shmdata Recorder",
     "file",
-    {"reader"},
+    "reader",
     "record shmdata(s) to file(s)",
     "LGPL",
     "Nicolas Bouillot, Emmanuel Durand");

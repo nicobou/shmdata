@@ -26,7 +26,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "gstsrc",
     "GStreamer Pipeline",
     "other",
-    {"reader","writer"},
+    "reader/writer",
     "GStreamer (src) pipeline description to a *single* shmdata",
     "LGPL",
     "Nicolas Bouillot");

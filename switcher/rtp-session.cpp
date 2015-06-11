@@ -41,7 +41,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "rtpsession",
     "RTP Session",
     "network",
-    {},
+    "",
     "RTP session manager",
     "LGPL",
     "Nicolas Bouillot");

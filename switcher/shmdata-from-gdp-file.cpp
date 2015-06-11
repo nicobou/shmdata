@@ -32,7 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "shmfromfile",
     "Shmdata File Player",
     "file",
-    {"reader"},
+    "reader",
     "play file(s) recorded with shmdatatofile",
     "LGPL",
     "Nicolas Bouillot, Emmanuel Durand");

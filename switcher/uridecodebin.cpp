@@ -29,7 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "urisrc",
     "URI/URL Player",
     "network",
-    {"writer"},
+    "writer",
     "URI decoding to shmdatas",
     "LGPL",
     "Nicolas Bouillot");

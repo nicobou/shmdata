@@ -37,6 +37,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gst-shmdata-subscriber.cpp \
     gst-utils.cpp \
     gst-video-codec.cpp \
+    gst-video-encoder.cpp \
     http-sdp-dec.cpp \
     information-tree-basic-serializer.cpp \
     information-tree-json.cpp \
@@ -107,6 +108,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gst-shmdata-subscriber.hpp \
     gst-utils.hpp \
     gst-video-codec.hpp \
+    gst-video-encoder.hpp \
     http-sdp-dec.hpp \
     information-tree-basic-serializer.hpp \
     information-tree-json.hpp \
