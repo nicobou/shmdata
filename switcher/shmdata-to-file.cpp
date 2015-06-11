@@ -24,13 +24,15 @@
 #include "./scope-exit.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToFile,
-                                     "Shmdata Recorder",
-                                     "file recorder",
-                                     "record shmdata(s) to file(s)",
-                                     "LGPL",
-                                     "shmtofilesink",
-                                     "Nicolas Bouillot, Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    ShmdataToFile,
+    "Shmdata Recorder",
+    "file",
+    {"reader"},
+    "record shmdata(s) to file(s)",
+    "LGPL",
+    "shmtofilesink",
+    "Nicolas Bouillot, Emmanuel Durand");
 
 ShmdataToFile::ShmdataToFile(const std::string &):
     custom_prop_(std::make_shared<CustomPropertyHelper>()) {

@@ -29,6 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     ShmdataToJack,
     "Audio Display (Jack)",
     "audio",
+    {"reader"},
     "Audio display",
     "LGPL",
     "jacksink",

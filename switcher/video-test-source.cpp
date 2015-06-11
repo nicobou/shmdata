@@ -29,6 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     VideoTestSource,
     "Video Pattern",
     "video",
+    {"writer"},
     "Creates a test video stream",
     "LGPL",
     "videotestsrc",

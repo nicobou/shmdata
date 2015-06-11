@@ -29,6 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     StringDictionary,
     "Dictionary",
     "dictionary",
+    {},
     "Dictionary of string key/values accessible through properties",
     "LGPL",
     "dico",

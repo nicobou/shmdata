@@ -27,12 +27,15 @@ using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureColorize,
-                                     "Project texture onto mesh",
-                                     "video",
-                                     "Project texture onto mesh, based on calibration",
-                                     "LGPL",
-                                     "texturetomeshsink", "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PostureColorize,
+    "Project texture onto mesh",
+    "video",
+    {"reader","writer"}
+    "Project texture onto mesh, based on calibration",
+    "LGPL",
+    "texturetomeshsink",
+    "Emmanuel Durand");
 
 PostureColorize::PostureColorize(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()),

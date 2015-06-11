@@ -20,12 +20,16 @@
 #include "./portmidi-sink.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSink,
-                                     "Midi (Port Midi)",
-                                     "midi",
-                                     "shmdata to midi",
-                                     "LGPL",
-                                     "midisink", "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PortMidiSink,
+    "Midi (Port Midi)",
+    "midi",
+    {"reader"},
+    "shmdata to midi",
+    "LGPL",
+    "midisink",
+    "Nicolas Bouillot");
+
 PortMidiSink::PortMidiSink(const std::string &):
     custom_props_(new CustomPropertyHelper()),
     devices_description_spec_(nullptr),

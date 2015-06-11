@@ -26,13 +26,15 @@ using namespace std;
 
 namespace switcher {
 
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VncClientSrc,
-                                     "VNC client",
-                                     "video",
-                                     "Connects to a VNC server and outputs the video to a shmdata",
-                                     "LGPL",
-                                     "vncclientsrc",
-                                     "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    VncClientSrc,
+    "VNC client",
+    "video",
+    {"writer"},
+    "Connects to a VNC server and outputs the video to a shmdata",
+    "LGPL",
+    "vncclientsrc",
+    "Emmanuel Durand");
 
 VncClientSrc::VncClientSrc(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()) {

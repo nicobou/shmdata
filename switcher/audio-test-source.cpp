@@ -25,13 +25,15 @@
 #include "./information-tree-basic-serializer.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
-                                     "Sine",
-                                     "audio",
-                                     "Creates audio test signals",
-                                     "LGPL",
-                                     "audiotestsrc",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    AudioTestSource,
+    "Sine",
+    "audio",
+    {"writer"},
+    "Creates audio test signals",
+    "LGPL",
+    "audiotestsrc",
+    "Nicolas Bouillot");
 
 AudioTestSource::AudioTestSource(const std::string &):
   gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)){

@@ -22,13 +22,15 @@
 #include "./quiddity-manager-impl.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(CreateRemoveSpy,
-                                     "Quiddity Creation Inspector",
-                                     "spy",
-                                     "spy manager for quidity creation and removal and convert into signals",
-                                     "LGPL",
-                                     "create_remove_spy",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    CreateRemoveSpy,
+    "Quiddity Creation Inspector",
+    "spy",
+    {},
+    "spy manager for quidity creation and removal and convert into signals",
+    "LGPL",
+    "create_remove_spy",
+    "Nicolas Bouillot");
 
 CreateRemoveSpy::CreateRemoveSpy(const std::string &):
     i_am_the_one_(false) {

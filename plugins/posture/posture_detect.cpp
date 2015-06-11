@@ -26,12 +26,15 @@ using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureDetect,
-                                     "Point Cloud Detect",
-                                     "video",
-                                     "Detect shapes and objects in point clouds",
-                                     "LGPL",
-                                     "pcldetectsink", "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PostureDetect,
+    "Point Cloud Detect",
+    "video",
+    {"reader", "writer"},
+    "Detect shapes and objects in point clouds",
+    "LGPL",
+    "pcldetectsink",
+    "Emmanuel Durand");
 
 PostureDetect::PostureDetect(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()),

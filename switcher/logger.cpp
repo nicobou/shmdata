@@ -22,23 +22,29 @@
 namespace switcher {
 bool Logger::installed_ = false;
 
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Logger,
-                                     "Switcher Logger",
-                                     "log",
-                                     "manage switcher logs and other glib log domains.",
-                                     "LGPL",
-                                     "logger", "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    Logger,
+    "Switcher Logger",
+    "log",
+    {},
+    "manage switcher logs and other glib log domains.",
+    "LGPL",
+    "logger",
+    "Nicolas Bouillot");
 
-Logger::Logger(const std::string &):i_am_the_one_(false),
-                 last_line_(),
-                 mute_(false),
-                 debug_(true),
-                 verbose_(true),
-                 handler_ids_(),
-                 custom_props_(new CustomPropertyHelper()),
-                 last_line_prop_(nullptr),
-                 mute_prop_(nullptr),
-                 debug_prop_(nullptr), verbose_prop_(nullptr), last_line_mutex_() {
+Logger::Logger(const std::string &):
+    i_am_the_one_(false),
+    last_line_(),
+    mute_(false),
+    debug_(true),
+    verbose_(true),
+    handler_ids_(),
+    custom_props_(new CustomPropertyHelper()),
+    last_line_prop_(nullptr),
+    mute_prop_(nullptr),
+    debug_prop_(nullptr),
+    verbose_prop_(nullptr),
+    last_line_mutex_() {
 }
 
 bool Logger::init() {

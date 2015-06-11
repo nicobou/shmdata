@@ -24,13 +24,15 @@
 #include "./shmdata-utils.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
-                                     "URI/URL Player",
-                                     "network",
-                                     "decode an URI and writes to shmdata(s)",
-                                     "LGPL",
-                                     "urisrc",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    Uridecodebin,
+    "URI/URL Player",
+    "network",
+    {"writer"},
+    "URI decoding to shmdatas",
+    "LGPL",
+    "urisrc",
+    "Nicolas Bouillot");
 
 Uridecodebin::Uridecodebin(const std::string &):
     gst_pipeline_(std2::make_unique<GstPipeliner>(

@@ -21,13 +21,15 @@
 #include "./gst-utils.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstParseToBinSrc,
-                                     "GStreamer Pipeline",
-                                     "other",
-                                     "GStreamer (src) pipeline description to a *single* shmdata",
-                                     "LGPL",
-                                     "gstsrc",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    GstParseToBinSrc,
+    "GStreamer Pipeline",
+    "other",
+    {"reader","writer"},
+    "GStreamer (src) pipeline description to a *single* shmdata",
+    "LGPL",
+    "gstsrc",
+    "Nicolas Bouillot");
 
 GstParseToBinSrc::GstParseToBinSrc(const std::string &):
     gst_parse_to_bin_src_(nullptr),

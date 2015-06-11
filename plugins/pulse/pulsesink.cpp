@@ -28,6 +28,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     PulseSink,
     "Audio Display (Pulse)",
     "audio",
+    {"reader"},
     "Inspecting Devices And Playing Audio To Outputs",
     "LGPL",
     "pulsesink",

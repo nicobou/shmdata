@@ -37,6 +37,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     GTKVideo,
     "Video Display (configurable)",
     "video",
+    {"reader"},
     "Video window with fullscreen",
     "LGPL",
     "gtkvideosink",

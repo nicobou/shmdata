@@ -25,12 +25,15 @@ using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureMeshMerge,
-                                     "Mesh Merge",
-                                     "video",
-                                     "Merges meshes captured with 3D cameras",
-                                     "LGPL",
-                                     "meshmergesink", "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PostureMeshMerge,
+    "Mesh Merge",
+    "video",
+    {"reader","writer"},
+    "Merges meshes captured with 3D cameras",
+    "LGPL",
+    "meshmergesink",
+    "Emmanuel Durand");
 
 PostureMeshMerge::PostureMeshMerge(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()),

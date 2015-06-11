@@ -26,12 +26,14 @@ using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureMerge,
-                                     "Point Clouds Merge",
-                                     "video",
-                                     "Merges point clouds captured with 3D cameras",
-                                     "LGPL",
-                                     "pclmergesink", "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PostureMerge,
+    "Point Clouds Merge",
+    "video",
+    {"writer","reader"},
+    "Merges point clouds captured with 3D cameras",
+    "LGPL",
+    "pclmergesink", "Emmanuel Durand");
 
 PostureMerge::PostureMerge(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()),

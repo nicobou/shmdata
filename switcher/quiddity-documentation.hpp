@@ -21,6 +21,7 @@
 #define __SWITCHER_QUIDDITY_DOCUMENTATION_H__
 
 #include <string>
+#include <vector>
 #include "./json-builder.hpp"
 
 namespace switcher {
@@ -28,6 +29,7 @@ class QuiddityDocumentation {
  public:
   QuiddityDocumentation(const std::string &long_name,
                         const std::string &category,
+                        const std::vector<std::string> &tags,
                         const std::string &short_description,
                         const std::string &license,
                         const std::string &class_name, 
@@ -41,16 +43,17 @@ class QuiddityDocumentation {
   JSONBuilder::Node get_json_root_node();
 
  private:
-  std::string category_;
-  std::string class_name_;
-  std::string description_;
-  std::string long_name_;
-  std::string author_;
-  std::string license_;
-
+  const std::string category_;
+  const std::vector<std::string> tags_;
+  const std::string class_name_;
+  const std::string description_;
+  const std::string long_name_;
+  const std::string author_;
+  const std::string license_;
+  
   JSONBuilder::ptr json_description_{};
   void make_json_description();
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

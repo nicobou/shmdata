@@ -24,6 +24,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     PJSIP,
     "SIP (Session Initiation Protocol)",
     "network",
+    {"writer"},
     "Manages user sessions",
     "LGPL",
     "sip",

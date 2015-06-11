@@ -31,12 +31,14 @@
 // #endif
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyMapper,
-                                     "Switcher Property Mapper",
-                                     "mapper",
-                                     "map two properties, one being slave of the other",
-                                     "LGPL",
-                                     "property-mapper", "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PropertyMapper,
+    "Switcher Property Mapper",
+    "mapper",
+    {},
+    "map two properties, one being slave of the other",
+    "LGPL",
+    "property-mapper", "Nicolas Bouillot");
 
 PropertyMapper::PropertyMapper(const std::string &):source_quiddity_(),
                                  source_property_name_(),

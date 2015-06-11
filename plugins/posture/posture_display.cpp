@@ -25,13 +25,15 @@ using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureDisplay,
-                                     "Point Clouds Display",
-                                     "video",
-                                     "Display point clouds in a window",
-                                     "LGPL",
-                                     "pcldisplaysink",
-                                     "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PostureDisplay,
+    "Point Clouds Display",
+    "video",
+    {"reader"},
+    "Display point clouds in a window",
+    "LGPL",
+    "pcldisplaysink",
+    "Emmanuel Durand");
 
 PostureDisplay::PostureDisplay(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()),

@@ -22,13 +22,15 @@
 #include "./jack-to-shmdata.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackToShmdata,
-                                     "Jack Audio Device",
-                                     "audio",
-                                     "get audio from jack",
-                                     "LGPL",
-                                     "jacksrc",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    JackToShmdata,
+    "Jack Audio Device",
+    "audio",
+    {"writer"},
+    "get audio from jack",
+    "LGPL",
+    "jacksrc",
+    "Nicolas Bouillot");
 
 JackToShmdata::JackToShmdata(const std::string &name):
     custom_props_(std::make_shared<CustomPropertyHelper>()),
