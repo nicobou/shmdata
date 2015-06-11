@@ -177,6 +177,9 @@ PostureColorize::connect(std::string shmdata_socket_path) {
         unsigned int width, height;
         vector<unsigned char> texture = colorize_->getTexture(width, height);
 
+        if (texturedMesh.size() == 0 || texture.size() == 0)
+            return;
+
         // Write the mesh
         if (!mesh_writer_ || texturedMesh.size() > mesh_writer_->writer(&shmdata::Writer::alloc_size)) {
           auto data_type = string(POLYGONMESH_TYPE_BASE);

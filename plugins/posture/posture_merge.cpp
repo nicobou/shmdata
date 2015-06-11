@@ -169,9 +169,13 @@ PostureMerge::connect(std::string shmdata_socket_path) {
   auto reader = std2::make_unique<ShmdataFollower>(this,
                   shmdata_socket_path,
                   [=] (void *data, size_t size) {
-    // If another thread is trying to get the merged cloud, don't bother
+    // If another thread is trying to get the merged cloud, stock him and don't bother
     if (!mutex_.try_lock())
+    {
+      unique_lock<mutex> lock(stock_mutex_);
+      stock_[index] = vector<char> ((char*)data, (char*) data + size);
       return;
+    }
 
     // Test if we already received the type
     auto typeIt = cloud_readers_caps_.find(shmreader_id);
@@ -192,11 +196,23 @@ PostureMerge::connect(std::string shmdata_socket_path) {
         merger_->reloadCalibration();
 
     // Setting input clouds is thread safe, so lets do it
+    {
+      unique_lock<mutex> lock(stock_mutex_);
+      for (auto it = stock_.begin(); it != stock_.end(); ++it)
+      {
+        merger_->setInputCloud(it->first,
+                               it->second,
+                               type != string(POINTCLOUD_TYPE_BASE));
+      }
+      stock_.clear();
+    }
+
     merger_->setInputCloud(index,
                            vector<char>((char*)data, (char*) data + size),
                            type != string(POINTCLOUD_TYPE_BASE));
     auto cloud = vector<char>();
     merger_->getCloud(cloud);
+
 
     if (cloud_writer_.get() == nullptr || cloud.size() > cloud_writer_->writer(&shmdata::Writer::alloc_size)) {
       auto data_type = compress_cloud_ ? string(POINTCLOUD_TYPE_COMPRESSED) : string(POINTCLOUD_TYPE_BASE);
