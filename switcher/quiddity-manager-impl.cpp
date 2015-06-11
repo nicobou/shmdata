@@ -300,25 +300,10 @@ std::string QuiddityManager_Impl::get_quiddities_description() {
        it != quids.end(); ++it) {
     descr->begin_object();
     std::shared_ptr<Quiddity> quid = get_quiddity(*it);
-    descr->add_string_member("name", quid->get_name().c_str());
+    descr->add_string_member("id", quid->get_name().c_str());
     descr->add_string_member("class",
                              quid->get_documentation()->get_class_name().
                              c_str());
-    descr->add_string_member("category",
-                             quid->get_documentation()->
-                             get_category().c_str());
-    descr->add_string_member("long name",
-                             quid->get_documentation()->
-                             get_long_name().c_str());
-    descr->add_string_member("description",
-                             quid->get_documentation()->get_description().
-                             c_str());
-    descr->add_string_member("license",
-                             quid->get_documentation()->
-                             get_license().c_str());
-    descr->add_string_member("author",
-                             quid->get_documentation()->
-                             get_author().c_str());
     descr->end_object();
   }
 
@@ -337,20 +322,10 @@ QuiddityManager_Impl::get_quiddity_description(const std::string &nick_name) {
   JSONBuilder::ptr descr(new JSONBuilder());
   descr->reset();
   descr->begin_object();
-  descr->add_string_member("name", nick_name.c_str());
+  descr->add_string_member("id", nick_name.c_str());
   // FIXME should use json node
   descr->add_string_member("class",
                            it->second->get_documentation()->get_class_name().c_str());
-  descr->add_string_member("category",
-                           it->second->get_documentation()->get_category().c_str());
-  descr->add_string_member("long name",
-                           it->second->get_documentation()->get_long_name().c_str());
-  descr->add_string_member("description",
-                           it->second->get_documentation()->get_description().c_str());
-  descr->add_string_member("license",
-                           it->second->get_documentation()->get_license().c_str());
-  descr->add_string_member("author",
-                           it->second->get_documentation()->get_author().c_str());
   descr->end_object();
   return descr->get_string(true);
 }
