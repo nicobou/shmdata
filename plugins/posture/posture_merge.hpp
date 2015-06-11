@@ -78,6 +78,9 @@ class PostureMerge : public Quiddity, public StartableQuiddity {
 
   std::unique_ptr<ShmdataWriter> cloud_writer_ {nullptr};
 
+  std::map<int, std::vector<char>> stock_;
+  std::mutex stock_mutex_;
+
   bool init() final;
 
   bool connect(std::string shmdata_socket_path);
@@ -99,7 +102,7 @@ class PostureMerge : public Quiddity, public StartableQuiddity {
   static int get_downsample_active(void *user_data);
   static void set_downsample_active(const int active, void *user_data);
   static double get_downsampling_resolution(void *user_data);
-  static void set_downsampling_resolution(const double resolution, void *user_data);
+  static void set_downsampling_resolution(const double resolution, void *user_data);  
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureMerge);
