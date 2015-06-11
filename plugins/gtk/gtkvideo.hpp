@@ -24,7 +24,9 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-#include "switcher/single-pad-gst-sink.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/gst-pipeliner.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/custom-property-helper.hpp"
 
 #ifdef HAVE_CONFIG_H
@@ -42,7 +44,7 @@
 #endif
 
 namespace switcher {
-class GTKVideo: public SinglePadGstSink {
+class GTKVideo: public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GTKVideo);
   GTKVideo(const std::string &);
@@ -54,40 +56,51 @@ class GTKVideo: public SinglePadGstSink {
  private:
   static guint instances_counter_;
   static std::thread gtk_main_thread_;
+  // registering connect/disconnect/can_sink_caps:
+  ShmdataConnector shmcntr_;
+  // gst pipeline:
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  // gtk:
   GdkDisplay *display_{nullptr};
   GtkWidget *main_window_{nullptr};
   GtkWidget *video_window_{nullptr};
-  GstElement *sink_bin_{nullptr};
-  GstElement *queue_{nullptr};
-  GstElement *ffmpegcolorspace_{nullptr};
-  GstElement *videoflip_{nullptr};
-  GstElement *gamma_{nullptr};
-  GstElement *videobalance_{nullptr};
-  GstElement *xvimagesink_{nullptr};
-
+  // shmsubscriber (publishing to the information-tree):
+  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  std::string shmpath_{};
+  // gst elements:
+  UGstElem shmsrc_{"shmdatasrc"};
+  UGstElem queue_{"queue"};
+  UGstElem videoconvert_{"videoconvert"};
+  UGstElem videoflip_{"videoflip"};
+  UGstElem gamma_{"gamma"};
+  UGstElem videobalance_{"videobalance"};
+#if HAVE_OSX
+  UGstElem xvimagesink_{"osxvideosink"};
+#else
+  UGstElem xvimagesink_{"xvimagesink"};
+#endif
 #if HAVE_OSX
   NSView *window_handle_{nullptr};
 #else
   guintptr window_handle_{0};
 #endif
   GdkCursor *blank_cursor_{nullptr};
-
   CustomPropertyHelper::ptr gtk_custom_props_{};
   GParamSpec *fullscreen_prop_spec_{nullptr};
   gboolean is_fullscreen_{FALSE};
   GParamSpec *title_prop_spec_{nullptr};
   gchar *title_{nullptr};
-
   std::mutex wait_window_mutex_{};
   std::condition_variable wait_window_cond_{};
-
   std::mutex window_destruction_mutex_{};
   std::condition_variable window_destruction_cond_{};
 
-  bool init_gpipe() final;
-  void on_shmdata_connect(std::string shmdata_sochet_path) final;
-  bool can_sink_caps(std::string caps) final;
-
+  bool init() final;
+  bool remake_elements();
+  bool on_shmdata_connect(const std::string &shmpath);
+  bool on_shmdata_disconnect();
+  bool can_sink_caps(std::string caps);
+  GstBusSyncReply bus_sync(GstMessage *msg);
   static gboolean create_ui(void *user_data);
   static void realize_cb(GtkWidget *widget, void *user_data);
   static void delete_event_cb(GtkWidget *widget,

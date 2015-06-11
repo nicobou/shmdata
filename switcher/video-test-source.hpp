@@ -26,6 +26,7 @@
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/unique-gst-element.hpp"
+#include "switcher/gst-video-codec.hpp"
 
 namespace switcher {
 class VideoTestSource: public Quiddity, public StartableQuiddity {
@@ -37,12 +38,13 @@ class VideoTestSource: public Quiddity, public StartableQuiddity {
   VideoTestSource &operator=(const VideoTestSource &) = delete;
 
  private:
+  CustomPropertyHelper::ptr custom_props_;
   std::string shmpath_{};
   UGstElem videotestsrc_{"videotestsrc"};
   UGstElem shmdatasink_{"shmdatasink"};
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
-  //bool make_video_source(GstElement **new_element);
+  std::unique_ptr<GstVideoCodec> codecs_{nullptr};
   bool start() final;
   bool stop() final;
   bool init() final;

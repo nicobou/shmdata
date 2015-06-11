@@ -41,10 +41,10 @@ main() {
     return 1;
 #endif
 
-    assert(switcher::QuiddityBasicTest::test_full(manager, "myplugin"));
+    assert(switcher::QuiddityBasicTest::test_full(manager, "dummy"));
 
     // creating a "myplugin" quiddity
-    assert(manager->create("myplugin", "test") == "test");
+    assert(manager->create("dummy", "test") == "test");
 
     // testing myprop property
     assert(manager->set_property("test", "myprop", "true"));

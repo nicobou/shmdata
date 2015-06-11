@@ -20,15 +20,17 @@
 #include "./default-video-format.hpp"
 
 namespace switcher {
-DefaultVideoFormat::DefaultVideoFormat(Quiddity *quid):
+DefaultVideoFormat::DefaultVideoFormat(Quiddity *quid, CustomPropertyHelper *prop_helper):
     quid_(quid),
-    custom_props_(std::make_shared<CustomPropertyHelper>()) {
+    custom_props_(prop_helper) {
 }
 
 void DefaultVideoFormat::make_format_property(const char *name,
                                               const char *display_text) {
   prop_name_ = name;
-  GstElementFactory *factory = gst_element_factory_find("ffmpegcolorspace"); 
+  GstElementFactory *factory = gst_element_factory_find("videoconvert"); 
+  // if (nullptr == factory)
+  //   g_print("factory is null ----------------\n");
   const GList *list = gst_element_factory_get_static_pad_templates(factory);  
   // first option is do not format
   caps_.emplace_back("none");
@@ -38,9 +40,10 @@ void DefaultVideoFormat::make_format_property(const char *name,
   video_format_[0].value_nick = caps_.back().c_str();
   guint i = 0;  
   while (NULL != list) {  
-    GstStaticPadTemplate *templ = (GstStaticPadTemplate *)list->data;  
-    if (templ->direction == GST_PAD_SRC) {  
-      GstCaps *caps = gst_static_caps_get(&templ->static_caps);  
+    GstStaticPadTemplate *templ = reinterpret_cast<GstStaticPadTemplate *>(list->data);  
+    if (GST_PAD_TEMPLATE_DIRECTION(templ) == GST_PAD_SRC) {
+      g_print("src direction found\n");
+      GstCaps *caps = gst_static_pad_template_get_caps(templ);
       // copying for removing fields in struture  
       GstCaps *copy = gst_caps_copy(caps);  
       gst_caps_unref(caps);  
@@ -51,9 +54,9 @@ void DefaultVideoFormat::make_format_property(const char *name,
         gst_structure_remove_fields(structure,  
                                     "format", "width", "height", "framerate",  
                                     NULL);  
-        // removing endianness for rgb
-        if (std::string(gst_structure_get_name(structure)) == "video/x-raw-rgb") 
-          gst_structure_remove_field(structure, "endianness");  
+        // FIXME // removing endianness for rgb
+        // if (std::string(gst_structure_get_name(structure)) == "video/x-raw-rgb") 
+        //   gst_structure_remove_field(structure, "endianness");  
 
         // copying the caps
         GstCaps *copy_nth = gst_caps_copy_nth(copy, i);   

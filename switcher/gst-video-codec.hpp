@@ -21,41 +21,44 @@
 #define __SWITCHER_GST_VIDEO_CODEC_H__
 
 #include <vector>
+#include <unordered_set>
 #include "switcher/unique-gst-element.hpp"
-#include "switcher/default-video-format.hpp"
+#include "switcher/custom-property-helper.hpp"
+#include "switcher/gst-pipeliner.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/shmdata-utils.hpp"
+//#include "./default-video-format.hpp"
 
 namespace switcher {
 class quiddity;
 
 class GstVideoCodec {
  public:
-  GstVideoCodec(Quiddity *quid);
-  GstVideoCodec();
+  GstVideoCodec(Quiddity *quid,
+                CustomPropertyHelper *prop_helper,
+                const std::string &shmpath_to_encode);
+  GstVideoCodec() = delete;
   ~GstVideoCodec();
   GstVideoCodec(const GstVideoCodec &) = delete;
   GstVideoCodec &operator=(const GstVideoCodec &) = delete;
 
-  void set_visible(bool visible);
+  bool start();
+  bool stop();
   
  private:
   Quiddity *quid_;
-  UGstElem bin_{"bin"};
-  // raw video shmdata
-  UGstElem video_tee_{"tee"};
-  UGstElem shm_raw_{"shmdatasink"};
-  // format convertion for raw
-  UGstElem color_space_raw_{"videoconvert"};
-  UGstElem caps_filter_raw_{"capsfilter"};
+  // shmdata path
+  std::string shm_encoded_path_{};
+  std::string shmpath_to_encode_;
+  // gst pipeline
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
   // video encoding
-  UGstElem codec_element_{"vp8enc"};
+  UGstElem shmsrc_{"shmdatasrc"};
   UGstElem queue_codec_element_{"queue"};
   UGstElem color_space_codec_element_{"videoconvert"};
+  UGstElem codec_element_{"vp8enc"};
   UGstElem shm_encoded_{"shmdatasink"};
-  // shmdata path
-  std::string shm_raw_path_{};
-  std::string shm_encoded_path_{};
-  // custom properties:
-  CustomPropertyHelper::ptr custom_props_{};
+  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
   // codec props
   GParamSpec *primary_codec_spec_{nullptr};
   GEnumValue primary_codec_[128]{};
@@ -66,10 +69,20 @@ class GstVideoCodec {
   GParamSpec *codec_long_list_spec_{nullptr};
   bool codec_long_list_{false};
   std::vector<std::string> codec_properties_{};
-  DefaultVideoFormat::uptr video_output_format_{};
+  //DefaultVideoFormat::uptr video_output_format_{};
+  CustomPropertyHelper *prop_helper_;
+  // codec params black list
+  std::unordered_set<std::string> param_black_list_{"name", "parent",
+        "twopass-vbr-bias", "twopass-vbr-minsection", "twopass-vbr-maxsection",
+        "multipass-mode", "multipass-cache-file",
+        "snapshot",
+        "temporal-scalability-target-bitrate", "temporal-scalability-rate-decimator",
+        "temporal-scalability-periodicity", "temporal-scalability-layer-id",
+        "error-resilient"};
   
   bool remake_codec_elements();
   void make_codec_properties();
+  void uninstall_codec_properties();
   void make_bin();
   void show();
   void hide();

@@ -1,13 +1,11 @@
 SUBDIRS= \
-    example 
-
-SUBDIRS= \
+    example \
     pjsip
 
-# if V4L2BUILD
-# SUBDIRS += \
-#     v4l2
-# endif
+if V4L2BUILD
+SUBDIRS += \
+    v4l2
+endif
 
 if OSCBUILD
 SUBDIRS += \
@@ -19,10 +17,10 @@ SUBDIRS += \
     gsoap
 endif
 
-# if GTKBUILD
-# SUBDIRS += \
-#     gtk
-# endif
+if GTKBUILD
+SUBDIRS += \
+    gtk
+endif
 
 # if PULSEBUILD
 # SUBDIRS += \

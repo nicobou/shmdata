@@ -17,41 +17,32 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_FAKESINK_H__
-#define __SWITCHER_FAKESINK_H__
+#ifndef __SWITCHER_EXTERNAL_SHMDATA_WRITER_H__
+#define __SWITCHER_EXTERNAL_SHMDATA_WRITER_H__
 
-#include <gst/gst.h>
 #include <memory>
-#include "./quiddity.hpp"
-#include "./shmdata-connector.hpp"
-#include "./custom-property-helper.hpp"
-#include "./unique-gst-element.hpp"
-
-// FIXME remove fakesink
+#include "switcher/quiddity.hpp"
+#include "switcher/shmdata-follower.hpp"
+#include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
-class FakeSink: public Quiddity {
+class ExternalShmdataWriter: public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeSink);
-  FakeSink(const std::string &);
-  ~FakeSink();
-  FakeSink(const FakeSink &) = delete;
-  FakeSink &operator=(const FakeSink &) = delete;
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ExternalShmdataWriter);
+  ExternalShmdataWriter(const std::string &);
+  ~ExternalShmdataWriter() = default;
+  ExternalShmdataWriter(const ExternalShmdataWriter &) = delete;
+  ExternalShmdataWriter &operator=(const ExternalShmdataWriter &) = delete;
 
  private:
-  UGstElem fakesink_;
-  gsize num_bytes_since_last_update_{0};
-  GSource *update_byterate_source_{nullptr};
-  gint byte_rate_{0};
-  std::string string_caps_{};
-  gboolean set_string_caps_{true};
-  ShmdataConnector shmcntr_;
-  // byte rate property
-  CustomPropertyHelper::ptr props_;
-  GParamSpec *byte_rate_spec_{nullptr};
-  GParamSpec *caps_spec_{nullptr};
-
+  // custom properties:
+  CustomPropertyHelper::ptr custom_props_;
+  GParamSpec *shmdata_path_spec_{nullptr};
+  std::string shmdata_path_{};
+  std::unique_ptr<ShmdataFollower> shm_{nullptr};
   bool init() final;
+  static void set_shmdata_path(const gchar *value, void *user_data);
+  static const gchar *get_shmdata_path(void *user_data);
 };
 
 }  // namespace switcher

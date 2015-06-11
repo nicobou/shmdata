@@ -183,7 +183,7 @@ bool ShmdataToJack::make_elements() {
   }
   GstElement *shmdatasrc =
       GstUtils::get_first_element_from_factory_name(GST_BIN(jacksink),
-                                                    "fakesink");
+                                                    "shmdatasrc");
   GstElement *volume =
       GstUtils::get_first_element_from_factory_name(GST_BIN(jacksink),
                                                     "volume");

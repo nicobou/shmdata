@@ -36,7 +36,8 @@ class ShmdataFollower {
                   const std::string &path,
                   shmdata::Reader::onData cb,
                   shmdata::Reader::onServerConnected osc = nullptr,
-                  shmdata::Reader::onServerDisconnected osd = nullptr);
+                  shmdata::Reader::onServerDisconnected osd = nullptr,
+                  std::string tree_path_ = ".shmdata.reader.");
   ~ShmdataFollower();
   ShmdataFollower(const ShmdataFollower &) = delete;
   ShmdataFollower &operator=(const ShmdataFollower &) = delete;
@@ -54,7 +55,8 @@ class ShmdataFollower {
   size_t bytes_written_{0};
   std::mutex bytes_mutex_{};
   std::unique_ptr<PeriodicTask> task_;
-
+  std::string tree_path_;
+  
   void on_data(void *data, size_t data_size);
   void on_server_connected(const std::string &data_type);
   void on_server_disconnected();

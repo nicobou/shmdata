@@ -29,7 +29,7 @@ class DefaultVideoFormat {
  public:
   using uptr = std::unique_ptr<DefaultVideoFormat>;
 
-  DefaultVideoFormat(Quiddity *quid);
+  DefaultVideoFormat(Quiddity *quid, CustomPropertyHelper *prop_helper);
   DefaultVideoFormat() = delete;
   ~DefaultVideoFormat() = default;
   DefaultVideoFormat(const DefaultVideoFormat &) = delete;
@@ -41,10 +41,10 @@ class DefaultVideoFormat {
   std::string get_caps_str() const;
   
  private:
-  Quiddity *quid_{nullptr};
+  Quiddity *quid_;
   std::string prop_name_{};
   // custom properties:
-  CustomPropertyHelper::ptr custom_props_{};
+  CustomPropertyHelper *custom_props_;
   // video format
   GParamSpec *video_format_spec_{nullptr};
   GEnumValue video_format_[128]{};
@@ -53,7 +53,7 @@ class DefaultVideoFormat {
   std::vector<std::string> formats_{};
   static void set_format(const gint value, void *user_data);
   static gint get_format(void *user_data);
-
 };
+
 }  // namespace switcher
 #endif
