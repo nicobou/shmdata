@@ -145,8 +145,10 @@ bool GstVideoCodec::remake_codec_elements() {
 
 void GstVideoCodec::set_codec(const gint value, void *user_data) {
   GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
-  context->codec_ = value;
   context->uninstall_codec_properties();
+  context->codec_ = value;
+  if (0 == value)
+    return;
   context->codec_element_.mute(context->secondary_codec_[context->codec_].value_nick);
   context->remake_codec_elements();
   context->make_codec_properties();

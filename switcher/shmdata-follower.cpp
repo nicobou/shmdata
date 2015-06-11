@@ -27,7 +27,8 @@ ShmdataFollower::ShmdataFollower(Quiddity *quid,
                                  const std::string &path,
                                  shmdata::Reader::onData od,
                                  shmdata::Reader::onServerConnected osc,
-                                 shmdata::Reader::onServerDisconnected osd):
+                                 shmdata::Reader::onServerDisconnected osd,
+                                 std::string tree_path):
     quid_(quid),
     shmpath_(path),
     od_(od),
@@ -42,13 +43,14 @@ ShmdataFollower::ShmdataFollower(Quiddity *quid,
                                                    &logger_)),
   task_(std2::make_unique<PeriodicTask>([this](){
         this->update_quid_byte_rate();
-      }, std::chrono::milliseconds(1000))) {
+      }, std::chrono::milliseconds(1000))),
+  tree_path_(tree_path){
 }
 
 ShmdataFollower::~ShmdataFollower(){
   follower_.reset(nullptr);
   if (!data_type_.empty())
-    quid_->prune_tree(".shmdata.reader." + shmpath_);
+    quid_->prune_tree(tree_path_ + shmpath_);
 }
 
 void ShmdataFollower::on_data(void *data, size_t size) {
@@ -57,7 +59,6 @@ void ShmdataFollower::on_data(void *data, size_t size) {
     bytes_written_ += size;
   }
   if (!od_) {
-    g_warning("data not handled by follower");
     return;
   }
   od_(data, size);
@@ -66,7 +67,7 @@ void ShmdataFollower::on_data(void *data, size_t size) {
 void ShmdataFollower::on_server_connected(const std::string &data_type){
   if (data_type != data_type_) {
     data_type_ = data_type;
-    quid_->graft_tree(".shmdata.reader." + shmpath_,
+    quid_->graft_tree(tree_path_ + shmpath_,
                       ShmdataUtils::make_tree(data_type_,
                                               ShmdataUtils::get_category(data_type_),
                                               0));
@@ -82,7 +83,7 @@ void ShmdataFollower::on_server_disconnected(){
 
 void ShmdataFollower::update_quid_byte_rate(){
   std::unique_lock<std::mutex>(bytes_mutex_);
-  quid_->graft_tree(".shmdata.reader." + shmpath_ + ".byte_rate",
+  quid_->graft_tree(tree_path_ + shmpath_ + ".byte_rate",
                     data::Tree::make(std::to_string(bytes_written_)));
   bytes_written_ = 0;
 }

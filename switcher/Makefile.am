@@ -27,12 +27,11 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     custom-property-helper.cpp \
     decodebin-to-shmdata.cpp \
     default-video-format.cpp \
-    fakesink.cpp \
+    external-shmdata-writer.cpp \
     g-source-wrapper.cpp \
     glibmainloop.cpp \
     gobject-custom-property.cpp \
     gobject-wrapper.cpp \
-    gst-element-cleaner.cpp \
     gst-pipe.cpp \
     gst-pipeliner.cpp \
     gst-shmdata-subscriber.cpp \
@@ -92,19 +91,17 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     any.hpp \
     audio-test-source.hpp \
     categorizable.hpp \
-    clock.hpp \
     counter-map.hpp \
     create-remove-spy.hpp \
     creator.hpp \
     custom-property-helper.hpp \
     default-video-format.hpp \
     decodebin-to-shmdata.hpp \
-    fakesink.hpp \
+    external-shmdata-writer.hpp \
     g-source-wrapper.hpp \
     glibmainloop.hpp \
     gobject-custom-property.hpp \
     gobject-wrapper.hpp \
-    gst-element-cleaner.hpp \
     gst-pipe.hpp \
     gst-pipeliner.hpp \
     gst-shmdata-subscriber.hpp \
