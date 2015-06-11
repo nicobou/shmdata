@@ -22,12 +22,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     DummyPlugin,
+    "dummy",
     "Dummy Plugin",
     "test",
     {},
     "Dummy plugin for testing/example purpose",
     "LGPL",
-    "dummy",
     "Nicolas Bouillot");
 
 DummyPlugin::DummyPlugin(const std::string &):

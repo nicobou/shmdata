@@ -27,12 +27,12 @@ using namespace posture;
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     PostureMeshMerge,
+    "meshmerge",
     "Mesh Merge",
     "video",
     {"reader","writer"},
     "Merges meshes captured with 3D cameras",
     "LGPL",
-    "meshmergesink",
     "Emmanuel Durand");
 
 PostureMeshMerge::PostureMeshMerge(const std::string &):

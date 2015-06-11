@@ -24,12 +24,12 @@ bool Logger::installed_ = false;
 
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     Logger,
+    "logger",
     "Switcher Logger",
-    "log",
+    "utils",
     {},
     "manage switcher logs and other glib log domains.",
     "LGPL",
-    "logger",
     "Nicolas Bouillot");
 
 Logger::Logger(const std::string &):

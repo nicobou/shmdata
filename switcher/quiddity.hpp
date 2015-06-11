@@ -269,19 +269,19 @@ class Quiddity {
 
 
 #define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(cpp_quiddity_class,        \
+                                             class_name,                \
                                              name,                      \
                                              category,                  \
                                              tags,                      \
                                              description,               \
                                              license,                   \
-                                             class_name,                \
                                              author)                    \
   QuiddityDocumentation cpp_quiddity_class::switcher_doc_(name,         \
+                                                          class_name,   \
                                                           category,     \
                                                           tags,         \
                                                           description,  \
                                                           license,      \
-                                                          class_name,   \
                                                           author);      \
   QuiddityDocumentation *cpp_quiddity_class::get_documentation()        \
   {return &switcher_doc_;}

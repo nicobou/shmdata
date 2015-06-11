@@ -23,12 +23,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     ShmdataToOsc,
+    "shmOSCsink",
     "OSC sender",
     "network",
     {"reader"},
     "shmOSCsink reveives OSC messages and updates associated property",
     "LGPL",
-    "shmOSCsink",
     "Nicolas Bouillot");
 
 ShmdataToOsc::ShmdataToOsc(const std::string &):

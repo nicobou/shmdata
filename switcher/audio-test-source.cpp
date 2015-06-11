@@ -27,12 +27,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     AudioTestSource,
+    "audiotestsrc",
     "Sine",
     "audio",
     {"writer"},
     "Creates audio test signals",
     "LGPL",
-    "audiotestsrc",
     "Nicolas Bouillot");
 
 AudioTestSource::AudioTestSource(const std::string &):

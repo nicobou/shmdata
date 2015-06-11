@@ -28,12 +28,12 @@ using namespace posture;
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     PostureDetect,
+    "pcldetectsink",
     "Point Cloud Detect",
     "video",
     {"reader", "writer"},
     "Detect shapes and objects in point clouds",
     "LGPL",
-    "pcldetectsink",
     "Emmanuel Durand");
 
 PostureDetect::PostureDetect(const std::string &):

@@ -26,12 +26,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     Uridecodebin,
+    "urisrc",
     "URI/URL Player",
     "network",
     {"writer"},
     "URI decoding to shmdatas",
     "LGPL",
-    "urisrc",
     "Nicolas Bouillot");
 
 Uridecodebin::Uridecodebin(const std::string &):

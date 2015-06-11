@@ -24,12 +24,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     JackToShmdata,
+    "jacksrc",
     "Jack Audio Device",
     "audio",
     {"writer"},
     "get audio from jack",
     "LGPL",
-    "jacksrc",
     "Nicolas Bouillot");
 
 JackToShmdata::JackToShmdata(const std::string &name):

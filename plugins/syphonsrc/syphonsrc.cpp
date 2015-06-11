@@ -32,12 +32,12 @@ switcher::data;
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     SyphonSrc,
+    "syphonsrc",
     "Video capture (through Syphon)",
     "video",
     {"writer"},
     "Reads video input from a Syphon source",
     "LGPL",
-    "syphonsrc",
     "Emmanuel Durand");
 
 SyphonSrc::SyphonSrc(const std::string &):

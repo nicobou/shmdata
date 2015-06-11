@@ -26,12 +26,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     ShmdataToFile,
+    "shmtofile",
     "Shmdata Recorder",
     "file",
     {"reader"},
     "record shmdata(s) to file(s)",
     "LGPL",
-    "shmtofilesink",
     "Nicolas Bouillot, Emmanuel Durand");
 
 ShmdataToFile::ShmdataToFile(const std::string &):

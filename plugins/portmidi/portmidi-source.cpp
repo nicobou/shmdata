@@ -23,12 +23,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     PortMidiSource,
+    "midisrc",
     "Midi (PortMidi)",
     "midi",
     {"writer"},
     "midi to shmdata and properties",
     "LGPL",
-    "midisrc",
     "Nicolas Bouillot");
 
 PortMidiSource::PortMidiSource(const std::string &):

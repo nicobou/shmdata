@@ -24,12 +24,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     ExternalShmdataWriter,
+    "extshmsrc",
     "Raw Shmdata",
     "other",
     {"writer"},
     "import an external shmdata writer",
     "LGPL",
-    "extshmsrc",
     "Nicolas Bouillot");
 
 ExternalShmdataWriter::ExternalShmdataWriter(const std::string &):

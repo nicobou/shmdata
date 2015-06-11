@@ -38,12 +38,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     RtpSession,
+    "rtpsession",
     "RTP Session",
     "network",
     {},
     "RTP session manager",
     "LGPL",
-    "rtpsession",
     "Nicolas Bouillot");
 
 RtpSession::RtpSession(const std::string &):

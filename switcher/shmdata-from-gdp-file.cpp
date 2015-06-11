@@ -29,12 +29,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     ShmdataFromGDPFile,
+    "shmfromfile",
     "Shmdata File Player",
     "file",
     {"reader"},
     "play file(s) recorded with shmdatatofile",
     "LGPL",
-    "shmfromfilesource",
     "Nicolas Bouillot, Emmanuel Durand");
 
 ShmdataFromGDPFile::ShmdataFromGDPFile(const std::string &):

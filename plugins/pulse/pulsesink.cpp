@@ -26,12 +26,12 @@ namespace switcher {
 
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     PulseSink,
+    "pulsesink",
     "Audio Display (Pulse)",
     "audio",
     {"reader"},
     "Inspecting Devices And Playing Audio To Outputs",
     "LGPL",
-    "pulsesink",
     "Nicolas Bouillot");
 
 PulseSink::PulseSink(const std::string &):

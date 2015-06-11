@@ -27,12 +27,12 @@ using namespace posture;
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     PostureDisplay,
+    "pcldisplay",
     "Point Clouds Display",
     "video",
     {"reader"},
     "Display point clouds in a window",
     "LGPL",
-    "pcldisplaysink",
     "Emmanuel Durand");
 
 PostureDisplay::PostureDisplay(const std::string &):

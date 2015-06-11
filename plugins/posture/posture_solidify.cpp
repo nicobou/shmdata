@@ -28,12 +28,13 @@ using namespace posture;
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     PostureSolidify,
+    "pcltomeshsink",
     "Point Clouds to Mesh",
     "video",
     {"writer", "reader"},
     "Convert a point cloud to a mesh",
     "LGPL",
-    "pcltomeshsink", "Emmanuel Durand");
+    "Emmanuel Durand");
 
 PostureSolidify::PostureSolidify(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()),

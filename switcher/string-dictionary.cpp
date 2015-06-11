@@ -27,12 +27,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     StringDictionary,
+    "dico",
     "Dictionary",
-    "dictionary",
+    "utils",
     {},
     "Dictionary of string key/values accessible through properties",
     "LGPL",
-    "dico",
     "Nicolas Bouillot");
 
 bool StringDictionary::init() {

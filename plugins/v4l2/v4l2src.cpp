@@ -28,12 +28,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     V4L2Src,
+    "v4l2src",
     "v4l2 Video Capture",
     "video",
     {"writer"},
     "Discover and use v4l2 supported capture cards and cameras",
     "GPL",
-    "v4l2src",
     "Nicolas Bouillot");
 
 V4L2Src::V4L2Src(const std::string &):

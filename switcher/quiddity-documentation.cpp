@@ -21,11 +21,11 @@
 
 namespace switcher {
 QuiddityDocumentation::QuiddityDocumentation(const std::string &long_name,
+                                             const std::string &class_name,
                                              const std::string &category,
                                              const std::vector<std::string> &tags,
                                              const std::string &short_description,
                                              const std::string &license,
-                                             const std::string &class_name,
                                              const std::string &author) :
     category_(category),
   tags_(tags),

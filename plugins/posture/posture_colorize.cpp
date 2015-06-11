@@ -29,12 +29,12 @@ using namespace posture;
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     PostureColorize,
+    "texturetomesh",
     "Project texture onto mesh",
     "video",
     {"reader","writer"}
     "Project texture onto mesh, based on calibration",
     "LGPL",
-    "texturetomeshsink",
     "Emmanuel Durand");
 
 PostureColorize::PostureColorize(const std::string &):

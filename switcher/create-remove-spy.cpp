@@ -24,12 +24,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     CreateRemoveSpy,
+    "create_remove_spy",
     "Quiddity Creation Inspector",
-    "spy",
+    "utils",
     {},
     "spy manager for quidity creation and removal and convert into signals",
     "LGPL",
-    "create_remove_spy",
     "Nicolas Bouillot");
 
 CreateRemoveSpy::CreateRemoveSpy(const std::string &):

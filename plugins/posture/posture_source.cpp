@@ -29,12 +29,12 @@ using namespace posture;
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     PostureSrc,
+    "posturesrc",
     "Depth Camera",
     "video",
     {"writer"},
     "Grabs point clouds/meshes using a zcamera",
     "LGPL",
-    "posturesrc",
     "Emmanuel Durand");
 
 PostureSrc::PostureSrc(const std::string &):
