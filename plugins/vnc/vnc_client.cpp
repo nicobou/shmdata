@@ -31,7 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "vncclientsrc",
     "VNC client",
     "video",
-    {"writer"},
+    "writer",
     "Connects to a VNC server and outputs the video to a shmdata",
     "LGPL",
     "Emmanuel Durand");

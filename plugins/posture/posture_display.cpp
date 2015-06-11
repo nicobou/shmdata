@@ -30,7 +30,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "pcldisplay",
     "Point Clouds Display",
     "video",
-    {"reader"},
+    "reader",
     "Display point clouds in a window",
     "LGPL",
     "Emmanuel Durand");

@@ -30,7 +30,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "jacksink",
     "Audio Display (Jack)",
     "audio",
-    {"reader"},
+    "reader",
     "Audio display",
     "LGPL",
     "Nicolas Bouillot");

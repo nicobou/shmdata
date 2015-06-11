@@ -31,7 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "pcldetectsink",
     "Point Cloud Detect",
     "video",
-    {"reader", "writer"},
+    "reader/writer",
     "Detect shapes and objects in point clouds",
     "LGPL",
     "Emmanuel Durand");

@@ -32,7 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "posturesrc",
     "Depth Camera",
     "video",
-    {"writer"},
+    "writer",
     "Grabs point clouds/meshes using a zcamera",
     "LGPL",
     "Emmanuel Durand");

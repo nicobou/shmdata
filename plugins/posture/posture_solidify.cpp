@@ -31,7 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "pcltomeshsink",
     "Point Clouds to Mesh",
     "video",
-    {"writer", "reader"},
+    "writer/reader",
     "Convert a point cloud to a mesh",
     "LGPL",
     "Emmanuel Durand");

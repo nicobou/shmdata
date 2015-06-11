@@ -25,7 +25,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "sip",
     "SIP (Session Initiation Protocol)",
     "network",
-    {"writer"},
+    "writer",
     "Manages user sessions",
     "LGPL",
     "Nicolas Bouillot");

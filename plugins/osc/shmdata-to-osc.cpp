@@ -26,7 +26,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "shmOSCsink",
     "OSC sender",
     "network",
-    {"reader"},
+    "reader",
     "shmOSCsink reveives OSC messages and updates associated property",
     "LGPL",
     "Nicolas Bouillot");

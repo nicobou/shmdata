@@ -12,13 +12,15 @@ using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (PostureSc3,
-                                     "Scan 3D",
-                                     "video",
-                                     "Grabs meshes using zcameras",
-                                     "LGPL",
-                                     "posturescansrc",
-                                     "Ludovic Schreiber");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (
+    PostureSc3,
+    "posturescansrc",
+    "Scan 3D",
+    "video",
+    "writer",
+    "Grabs meshes using zcameras",
+    "LGPL",
+    "Ludovic Schreiber");
 
 PostureSc3::PostureSc3 (const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()){

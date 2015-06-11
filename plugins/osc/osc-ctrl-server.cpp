@@ -30,7 +30,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "OSCctl",
     "Switcher OSC Controler",
     "control",
-    {},
+    "",
     "OSCcontrolServer allows for managing switcher through OSC",
     "LGPL",
     "Nicolas Bouillot");

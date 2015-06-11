@@ -28,7 +28,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "pulsesrc",
     "Pulse Audio Device",
     "audio",
-    {"writer"},
+    "writer",
     "Audio From Pulse audio driver",
     "LGPL",
     "Nicolas Bouillot");

@@ -38,7 +38,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "gtkwin",
     "Video Display (configurable)",
     "video",
-    {"reader"},
+    "reader",
     "Video window with fullscreen",
     "LGPL",
     "Nicolas Bouillot");

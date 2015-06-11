@@ -32,7 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "texturetomesh",
     "Project texture onto mesh",
     "video",
-    {"reader","writer"}
+    "reader/writer",
     "Project texture onto mesh, based on calibration",
     "LGPL",
     "Emmanuel Durand");

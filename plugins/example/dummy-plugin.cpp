@@ -25,7 +25,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "dummy",
     "Dummy Plugin",
     "test",
-    {},
+    "",
     "Dummy plugin for testing/example purpose",
     "LGPL",
     "Nicolas Bouillot");

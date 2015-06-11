@@ -30,7 +30,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "audiotestsrc",
     "Sine",
     "audio",
-    {"writer"},
+    "writer",
     "Creates audio test signals",
     "LGPL",
     "Nicolas Bouillot");

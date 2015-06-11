@@ -31,7 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "pclmergesink",
     "Point Clouds Merge",
     "video",
-    {"writer","reader"},
+    "writer/reader",
     "Merges point clouds captured with 3D cameras",
     "LGPL",
     "Emmanuel Durand");

@@ -30,7 +30,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "meshmerge",
     "Mesh Merge",
     "video",
-    {"reader","writer"},
+    "reader/writer",
     "Merges meshes captured with 3D cameras",
     "LGPL",
     "Emmanuel Durand");
