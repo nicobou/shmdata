@@ -55,13 +55,9 @@ void ShmdataWriter::bytes_written(size_t size){
 
 void ShmdataWriter::update_quid_byte_rate(){
   std::unique_lock<std::mutex>(bytes_mutex_);
-  auto tree = quid_->prune_tree(".shmdata.writer." + shmpath_, false);
-  if (!tree)
-    return;
-  tree->graft(".byte-rate",
-              data::Tree::make(std::to_string(bytes_written_)));
+  quid_->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
+                    data::Tree::make(std::to_string(bytes_written_)));
   bytes_written_ = 0;
-  quid_->graft_tree(".shmdata.writer." + shmpath_, tree);
 }
 
 }  // namespace switcher

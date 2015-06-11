@@ -37,6 +37,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gst-pipeliner.cpp \
     gst-shmdata-subscriber.cpp \
     gst-utils.cpp \
+    gst-video-codec.cpp \
     http-sdp-dec.cpp \
     information-tree-basic-serializer.cpp \
     information-tree-json.cpp \
@@ -70,7 +71,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     startable-quiddity.cpp \
     string-dictionary.cpp \
     unique-gst-element.cpp \
-    uridecodebin.cpp
+    uridecodebin.cpp \
+    video-test-source.cpp
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
     $(GLIB_LIBS) \
@@ -107,6 +109,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gst-pipeliner.hpp \
     gst-shmdata-subscriber.hpp \
     gst-utils.hpp \
+    gst-video-codec.hpp \
     http-sdp-dec.hpp \
     information-tree-basic-serializer.hpp \
     information-tree-json.hpp \
@@ -144,4 +147,5 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     std2.hpp \
     string-dictionary.hpp \
     unique-gst-element.hpp \
-    uridecodebin.hpp
+    uridecodebin.hpp \
+    video-test-source.hpp

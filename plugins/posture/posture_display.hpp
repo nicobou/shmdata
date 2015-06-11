@@ -25,12 +25,14 @@
 #include <string>
 
 #include "./posture.hpp"
+#include "switcher/std2.hpp"
 #include "switcher/quiddity.hpp"
-#include "switcher/segment.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-follower.hpp"
 #include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
-class PostureDisplay:public Quiddity, public Segment {
+class PostureDisplay:public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureDisplay);
   PostureDisplay(const std::string &);
@@ -40,8 +42,11 @@ class PostureDisplay:public Quiddity, public Segment {
 
  private:
   CustomPropertyHelper::ptr custom_props_;
+  ShmdataConnector shmcntr_;
 
-  std::shared_ptr<posture::Display> display_ {nullptr};
+  std::unique_ptr<ShmdataFollower> reader_ {nullptr};
+  std::string reader_caps_ {};
+  std::unique_ptr<posture::Display> display_ {nullptr};
   std::mutex display_mutex_ {};
 
   bool init() final;

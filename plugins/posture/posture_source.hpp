@@ -27,7 +27,6 @@
 
 #include "./posture.hpp"
 #include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-writer.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"

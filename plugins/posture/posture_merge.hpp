@@ -21,18 +21,22 @@
 #define __SWITCHER_POSTURE_MERGE_H__
 
 #include <deque>
+#include <list>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
 
 #include "./posture.hpp"
 #include "switcher/quiddity.hpp"
-#include "switcher/segment.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-writer.hpp"
+#include "switcher/shmdata-follower.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
-class PostureMerge : public Quiddity, public Segment, public StartableQuiddity {
+class PostureMerge : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureMerge);
   PostureMerge(const std::string &);
@@ -45,6 +49,8 @@ class PostureMerge : public Quiddity, public Segment, public StartableQuiddity {
 
  private:
   CustomPropertyHelper::ptr custom_props_;
+  ShmdataConnector shmcntr_;
+
   std::string calibration_path_ {"default.kvc"};
   std::string devices_path_ {"devices.xml"};
   bool compress_cloud_ {false};
@@ -65,8 +71,12 @@ class PostureMerge : public Quiddity, public Segment, public StartableQuiddity {
   std::shared_ptr<posture::PointCloudMerger> merger_ {nullptr};
   std::mutex mutex_ {};
 
-  ShmdataAnyWriter::ptr cloud_writer_ {nullptr};
-  std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};
+  std::mutex connect_mutex_;
+  unsigned int shmreader_id_ {0};
+  std::map<std::string, std::unique_ptr<ShmdataFollower>> cloud_readers_;
+  std::map<int, std::string> cloud_readers_caps_;
+
+  std::unique_ptr<ShmdataWriter> cloud_writer_ {nullptr};
 
   bool init() final;
 
@@ -90,9 +100,6 @@ class PostureMerge : public Quiddity, public Segment, public StartableQuiddity {
   static void set_downsample_active(const int active, void *user_data);
   static double get_downsampling_resolution(void *user_data);
   static void set_downsampling_resolution(const double resolution, void *user_data);
-
-  static void free_sent_buffer(void* data);
-  void check_buffers();
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureMerge);

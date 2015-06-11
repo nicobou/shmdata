@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_MY_PLUGIN_H__
-#define __SWITCHER_MY_PLUGIN_H__
+#ifndef __SWITCHER_DUMMY_PLUGIN_H__
+#define __SWITCHER_DUMMY_PLUGIN_H__
 
 #include <memory>
 #include "switcher/quiddity.hpp"
@@ -26,13 +26,13 @@
 #include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
-class MyPlugin: public Quiddity, public StartableQuiddity {
+class DummyPlugin: public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(MyPlugin);
-  MyPlugin(const std::string &);
-  ~MyPlugin() = default;
-  MyPlugin(const MyPlugin &) = delete;
-  MyPlugin &operator=(const MyPlugin &) = delete;
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(DummyPlugin);
+  DummyPlugin(const std::string &);
+  ~DummyPlugin() = default;
+  DummyPlugin(const DummyPlugin &) = delete;
+  DummyPlugin &operator=(const DummyPlugin &) = delete;
 
  private:
   CustomPropertyHelper::ptr custom_props_;
@@ -49,7 +49,7 @@ class MyPlugin: public Quiddity, public StartableQuiddity {
   static gchar *my_hello_world_method(gchar *first_arg, void *user_data);
 };
 
-SWITCHER_DECLARE_PLUGIN(MyPlugin);
-}  // namespace switcher
+SWITCHER_DECLARE_PLUGIN(DummyPlugin);
 
+}  // namespace switcher
 #endif

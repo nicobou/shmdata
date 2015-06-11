@@ -52,7 +52,7 @@ bool ShmdataToJack::init() {
     return false;
   shmcntr_.install_connect_method(
       [this](const std::string &shmpath){return this->on_shmdata_connect(shmpath);},
-      nullptr,
+      [this](const std::string &){return this->on_shmdata_disconnect();},
       [this](){return this->on_shmdata_disconnect();},
       [this](const std::string &caps){return this->can_sink_caps(caps);},
       1);
@@ -226,12 +226,8 @@ bool ShmdataToJack::start() {
                                                  0));
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
-        auto tree = this->prune_tree(".shmdata.reader." + this->shmpath_, false);
-        if (!tree)
-          return;
-        tree->graft(".byte-rate",
-                    data::Tree::make(std::to_string(byte_rate)));
-        this->graft_tree(".shmdata.reader." + this->shmpath_, tree);
+        this->graft_tree(".shmdata.reader." + this->shmpath_ + ".byte_rate",
+                         data::Tree::make(std::to_string(byte_rate)));
       });
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), audiobin_);
   gst_pipeline_->play(true);
@@ -252,8 +248,7 @@ bool ShmdataToJack::stop() {
 }
 
 bool ShmdataToJack::on_shmdata_disconnect() {
-  stop();
-  return true;
+  return stop();
 }
 
 bool ShmdataToJack::on_shmdata_connect(const std::string &shmpath) {

@@ -23,11 +23,11 @@
 #include <memory>
 #include <future>
 #include <atomic>
-#include "./gst-pipeliner.hpp"
-#include "./quiddity.hpp"
-#include "./startable-quiddity.hpp"
-#include "./unique-gst-element.hpp"
-#include "./gst-shmdata-subscriber.hpp"
+#include "switcher/gst-pipeliner.hpp"
+#include "switcher/quiddity.hpp"
+#include "switcher/startable-quiddity.hpp"
+#include "switcher/unique-gst-element.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
 
 namespace switcher {
 class AudioTestSource: public Quiddity, public StartableQuiddity {
@@ -38,15 +38,14 @@ class AudioTestSource: public Quiddity, public StartableQuiddity {
   AudioTestSource(const AudioTestSource &) = delete;
   AudioTestSource &operator=(const AudioTestSource &) = delete;
 
-  bool start();
-  bool stop();
-
  private:
-  std::string shmpath_;
+  std::string shmpath_{};
   UGstElem audiotestsrc_{"audiotestsrc"};
   UGstElem shmdatasink_{"shmdatasink"};
   std::unique_ptr<GstPipeliner> gst_pipeline_;
-  std::unique_ptr<GstShmdataSubscriber> shm_sub_;
+  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  bool start() final;
+  bool stop() final;
   bool init() final;
 };
 

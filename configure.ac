@@ -269,6 +269,16 @@ else
 fi
 AM_CONDITIONAL(POSTUREBUILD, test "${POSTUREBUILD}" = "enabled")
 
+# check for libvncclient
+PKG_CHECK_MODULES(VNC, libvncclient, have_vnc=true, have_vnc=false)
+if test "x${have_vnc}" = "xfalse" ; then
+    VNCBUILD=disabled
+    AC_MSG_WARN([Missing libvncclient, VNC client quiddity won't be built])
+else
+    VNCBUILD=enabled
+fi
+AM_CONDITIONAL(VNCBUILD, test "${VNCBUILD}" = "enabled")
+
 
 dnl Use the C++ compiler for the compile tests
 AC_LANG(C++)
@@ -401,8 +411,9 @@ plugins/v4l2/Makefile
 plugins/pjsip/Makefile
 plugins/gtk/Makefile
 plugins/jack/Makefile
-nodejs/Makefile
 plugins/posture/Makefile
+plugins/vnc/Makefile
+nodejs/Makefile
 ])
 AC_OUTPUT
 
@@ -431,6 +442,7 @@ AC_OUTPUT
 [echo "nodejs addon               ${NODEADDONBUILD}"]
 [echo "python                     ${PYTHONBUILD}"]
 [echo "posture support            ${POSTUREBUILD}"]
+[echo "vnc client support         ${VNCBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]

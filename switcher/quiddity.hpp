@@ -48,7 +48,9 @@ class Quiddity {
   friend class StartableQuiddity;
   friend class ShmdataConnector;
   friend class ShmdataWriter;
+  friend class ShmdataFollower;
   friend class DefaultVideoFormat;
+  friend class GstVideoCodec;
   
  public:
   typedef std::shared_ptr<Quiddity> ptr;
@@ -105,6 +107,7 @@ class Quiddity {
   R invoke_info_tree (std::function<R(data::Tree::ptrc tree)> fun) {
     return fun(information_tree_.get());
   }
+  // FIXME remove get_info
   std::string get_info(const std::string &path);
   Make_consultable(data::Tree, information_tree_.get(), tree);
     

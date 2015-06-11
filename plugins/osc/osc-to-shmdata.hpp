@@ -20,16 +20,14 @@
 #ifndef __SWITCHER_OSC_CTRL_SERVER_H__
 #define __SWITCHER_OSC_CTRL_SERVER_H__
 
+#include "lo/lo.h"
 #include "switcher/quiddity.hpp"
-#include "switcher/segment.hpp"
 #include "switcher/custom-property-helper.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "lo/lo.h"
-
-#include <chrono>
+#include "switcher/shmdata-writer.hpp"
 
 namespace switcher {
-class OscToShmdata:public Quiddity, public Segment, public StartableQuiddity {
+class OscToShmdata:public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(OscToShmdata);
   OscToShmdata(const std::string &);
@@ -42,15 +40,14 @@ class OscToShmdata:public Quiddity, public Segment, public StartableQuiddity {
   gint port_;
   lo_server_thread osc_thread_;
   GParamSpec *port_spec_;
-  std::chrono::time_point<std::chrono::system_clock> start_;
-  ShmdataAnyWriter::ptr shm_any_;
+  std::unique_ptr<ShmdataWriter> shm_{nullptr};
 
   bool init() final;
   bool start() final;
   bool stop() final;
 
   static int osc_handler(const char *path, const char *types,
-                         lo_arg ** argv, int argc, void *data,
+                         lo_arg **argv, int argc, void *data,
                          void *user_data);
   static void osc_error(int num, const char *msg, const char *path);
   static void set_port(const gint value, void *user_data);
@@ -58,6 +55,6 @@ class OscToShmdata:public Quiddity, public Segment, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(OscToShmdata);
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

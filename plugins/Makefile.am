@@ -1,18 +1,18 @@
 SUBDIRS= \
     example 
 
-# SUBDIRS= \
-#     pjsip
+SUBDIRS= \
+    pjsip
 
 # if V4L2BUILD
 # SUBDIRS += \
 #     v4l2
 # endif
 
-# if OSCBUILD
-# SUBDIRS += \
-#     osc
-# endif
+if OSCBUILD
+SUBDIRS += \
+    osc
+endif
 
 if GSOAPBUILD
 SUBDIRS += \
@@ -52,4 +52,9 @@ endif
 if JACKBUILD
 SUBDIRS += \
     jack
+endif
+
+if VNCBUILD
+SUBDIRS += \
+	vnc
 endif

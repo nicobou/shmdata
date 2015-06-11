@@ -28,12 +28,14 @@
 #include "./posture.hpp"
 #include "./posture_worker.hpp"
 #include "switcher/quiddity.hpp"
-#include "switcher/segment.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-writer.hpp"
+#include "switcher/shmdata-follower.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
-class PostureSolidify : public Quiddity, public Segment, public StartableQuiddity {
+class PostureSolidify : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureSolidify);
   PostureSolidify(const std::string &);
@@ -46,6 +48,7 @@ class PostureSolidify : public Quiddity, public Segment, public StartableQuiddit
 
  private:
   CustomPropertyHelper::ptr custom_props_;
+  ShmdataConnector shmcntr_;
   int marching_cubes_resolution_ {16};
   bool save_mesh_ {false};
   GParamSpec *marching_cubes_resolution_prop_ {nullptr};
@@ -55,8 +58,9 @@ class PostureSolidify : public Quiddity, public Segment, public StartableQuiddit
   std::mutex mutex_ {};
   Worker worker_ {};
 
-  ShmdataAnyWriter::ptr mesh_writer_ {nullptr};
-  std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};
+  std::unique_ptr<ShmdataFollower> pcl_reader_ {nullptr};
+  std::string pcl_reader_caps_ {};
+  std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
 
   bool init() final;
 
@@ -69,9 +73,6 @@ class PostureSolidify : public Quiddity, public Segment, public StartableQuiddit
   static void set_marching_cubes_resolution(const int res, void *user_data);
   static int get_save_mesh(void *user_data);
   static void set_save_mesh(const int save, void *user_data);
-
-  static void free_sent_buffer(void* data);
-  void check_buffers();
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureSolidify);

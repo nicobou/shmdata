@@ -17,28 +17,29 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./myplugin.hpp"
+#include "./dummy-plugin.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(MyPlugin,
-                                     "My Plugin",
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(DummyPlugin,
+                                     "Dummy Plugin",
                                      "test",
-                                     "Creates a quiddity from a plugin",
+                                     "Dummy plugin for testing/example purpose",
                                      "LGPL",
-                                     "myplugin", "Nicolas Bouillot");
-MyPlugin::MyPlugin(const std::string &):
+                                     "dummy",
+                                     "Nicolas Bouillot");
+DummyPlugin::DummyPlugin(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()) {
 }
 
-bool MyPlugin::init() {
+bool DummyPlugin::init() {
   init_startable(this);
   myprop_prop_ = custom_props_->make_boolean_property("myprop",       // name
                                                       "myprop is a boolean property",  // description
                                                       (gboolean) FALSE,  // default value
                                                       (GParamFlags)
                                                       G_PARAM_READWRITE,
-                                                      MyPlugin::set_myprop,
-                                                      MyPlugin::get_myprop,
+                                                      DummyPlugin::set_myprop,
+                                                      DummyPlugin::get_myprop,
                                                       this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             myprop_prop_,
@@ -71,32 +72,32 @@ bool MyPlugin::init() {
   return true;
 }
 
-gboolean MyPlugin::get_myprop(void *user_data) {
-  MyPlugin *context = static_cast<MyPlugin *>(user_data);
+gboolean DummyPlugin::get_myprop(void *user_data) {
+  DummyPlugin *context = static_cast<DummyPlugin *>(user_data);
   return context->myprop_;
 }
 
-void MyPlugin::set_myprop(gboolean myprop, void *user_data) {
-  MyPlugin *context = static_cast<MyPlugin *>(user_data);
+void DummyPlugin::set_myprop(gboolean myprop, void *user_data) {
+  DummyPlugin *context = static_cast<DummyPlugin *>(user_data);
   context->myprop_ = myprop;
   GObjectWrapper::notify_property_changed(context->gobject_->get_gobject(),
                                           context->myprop_prop_);
 }
 
-gchar *MyPlugin::my_hello_world_method(gchar *first_arg, void *user_data) {
-  MyPlugin *context = static_cast<MyPlugin *>(user_data);
+gchar *DummyPlugin::my_hello_world_method(gchar *first_arg, void *user_data) {
+  DummyPlugin *context = static_cast<DummyPlugin *>(user_data);
   g_debug("hello world from myplugin");
   context->hello_ = std::string("hello ") + first_arg;
   // the g_free will be invoked by the method system:
   return g_strdup(context->hello_.c_str());  
 }
 
-bool MyPlugin::start() {
+bool DummyPlugin::start() {
   g_debug("start from my plugin");
   return true;
 }
 
-bool MyPlugin::stop() {
+bool DummyPlugin::stop() {
   g_debug("stop from my plugin");
   return true;
 }
