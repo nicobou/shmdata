@@ -139,7 +139,11 @@ PostureMeshMerge::connect(std::string shmdata_socket_path) {
                   shmdata_socket_path,
                   [=] (void *data, size_t size) {
     if (!mutex_.try_lock())
+    {
+      unique_lock<mutex> lock(stock_mutex_);
+      stock_[index] = vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size);
       return;
+    }
 
     auto typeIt = mesh_readers_caps_.find(shmreader_id);
     if (typeIt == mesh_readers_caps_.end())
@@ -155,7 +159,18 @@ PostureMeshMerge::connect(std::string shmdata_socket_path) {
       return;
     }
 
-    // Setting input mesh is thread safe, so lets do it
+    // Setting input meshes is thread safe, so lets do it
+    {
+      unique_lock<mutex> lock(stock_mutex_);
+      for (auto it = stock_.begin(); it != stock_.end(); ++it)
+      {
+        merger_->setInputMesh(it->first,
+                              it->second);
+      }
+      stock_.clear();
+    }
+
+
     merger_->setInputMesh(index, vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size));
 
     if (!worker_.is_ready() || !updateMutex_.try_lock())

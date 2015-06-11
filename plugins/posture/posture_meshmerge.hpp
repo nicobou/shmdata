@@ -73,6 +73,9 @@ class PostureMeshMerge : public Quiddity, public StartableQuiddity {
   std::map<int, std::string> mesh_readers_caps_ {};
   std::unique_ptr<ShmdataWriter> mesh_writer_ {};
 
+  std::map<int, std::vector<unsigned char>> stock_;
+  std::mutex stock_mutex_;
+
   bool init() final;
 
   bool connect(std::string shmdata_socket_path);
