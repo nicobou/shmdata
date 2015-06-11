@@ -84,13 +84,7 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid,
   // install_property_by_pspec(prop_helper_->get_gobject(),
   //                           codec_long_list_spec_,
   //                           "more_codecs", "More Codecs");
-  shm_encoded_path_ = shmpath_to_encode_ + "-encoded";
-  g_object_set(G_OBJECT(shmsrc_.get_raw()),
-               "socket-path", shmpath_to_encode_.c_str(), nullptr);
-  g_object_set(G_OBJECT(shm_encoded_.get_raw()),
-               "socket-path", shm_encoded_path_.c_str(),
-               "sync", false,
-               nullptr);
+  set_shm(shmpath);
   reset_codec_configuration(nullptr, this);
 }
 
@@ -252,7 +246,18 @@ bool GstVideoCodec::stop(){
     make_codec_properties();
     gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
   }
-  return false;
+  return true;
+}
+
+void GstVideoCodec::set_shm(const std::string &shmpath){
+  shmpath_to_encode_ = shmpath;
+  shm_encoded_path_ = shmpath_to_encode_ + "-encoded";
+  g_object_set(G_OBJECT(shmsrc_.get_raw()),
+               "socket-path", shmpath_to_encode_.c_str(), nullptr);
+  g_object_set(G_OBJECT(shm_encoded_.get_raw()),
+               "socket-path", shm_encoded_path_.c_str(),
+               "sync", false,
+               nullptr);
 }
 
 }  // namespace switcher

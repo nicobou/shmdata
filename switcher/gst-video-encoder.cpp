@@ -56,7 +56,7 @@ bool GstVideoEncoder::on_shmdata_disconnect() {
 }
 
 bool GstVideoEncoder::on_shmdata_connect(const std::string &shmpath) {
-  //codecs->set_shmpath(shmpath);
+  codecs_->set_shm(shmpath);
   return codecs_->start();
 }
 

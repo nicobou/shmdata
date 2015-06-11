@@ -42,6 +42,7 @@ class GstVideoCodec {
   GstVideoCodec(const GstVideoCodec &) = delete;
   GstVideoCodec &operator=(const GstVideoCodec &) = delete;
 
+  void set_shm(const std::string &shmpath);
   bool start();
   bool stop();
   
