@@ -181,9 +181,11 @@ gboolean HTTPSDPDec::to_shmdata_wrapped(gpointer uri, gpointer user_data) {
 
 bool HTTPSDPDec::to_shmdata(std::string uri) {
   if (uri.find("http://") == 0) {
+    is_dataurisrc_ = false;
     souphttpsrc_.mute("souphttpsrc");
     uri_ = std::move(uri);
   } else {
+    is_dataurisrc_ = true;
     souphttpsrc_.mute("dataurisrc");
     uri_ =  std::string("data:application/sdp;base64," + uri);
   }
@@ -200,12 +202,12 @@ void HTTPSDPDec::uri_to_shmdata() {
                     "on-error-gsource",
                     (gpointer)on_error_.back().get());
   g_debug("httpsdpdec: to_shmdata set uri %s", uri_.c_str());
-  // for souphttpsrc
-  g_object_set(G_OBJECT(souphttpsrc_.get_raw()),
-               "location", uri_.c_str(), nullptr);
-  // for dataurisrc
-  g_object_set(G_OBJECT(souphttpsrc_.get_raw()),
-               "uri", uri_.c_str(), nullptr);
+  if(!is_dataurisrc_)   // for souphttpsrc
+    g_object_set(G_OBJECT(souphttpsrc_.get_raw()),
+                 "location", uri_.c_str(), nullptr);
+  else  // for dataurisrc
+    g_object_set(G_OBJECT(souphttpsrc_.get_raw()),
+                 "uri", uri_.c_str(), nullptr);
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    souphttpsrc_.get_raw(),
                    sdpdemux_.get_raw(),

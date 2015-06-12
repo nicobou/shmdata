@@ -42,6 +42,7 @@ class HTTPSDPDec: public Quiddity {
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   UGstElem souphttpsrc_;
   UGstElem sdpdemux_;
+  bool is_dataurisrc_{false};
   guint retry_delay_{1000};
   // will maintain a max of two GSourceWrapper in order to avoid destructing
   // itself from inside the GSource 
