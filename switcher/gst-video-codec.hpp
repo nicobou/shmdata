@@ -36,7 +36,8 @@ class GstVideoCodec {
  public:
   GstVideoCodec(Quiddity *quid,
                 CustomPropertyHelper *prop_helper,
-                const std::string &shmpath_to_encode);
+                const std::string &shmpath_to_encode,
+                const std::string &shmpath_encoded = {});
   GstVideoCodec() = delete;
   ~GstVideoCodec();
   GstVideoCodec(const GstVideoCodec &) = delete;
@@ -49,8 +50,9 @@ class GstVideoCodec {
  private:
   Quiddity *quid_;
   // shmdata path
-  std::string shm_encoded_path_{};
   std::string shmpath_to_encode_;
+  std::string shm_encoded_path_;
+  bool custom_shmsink_path_;
   // gst pipeline
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   // video encoding
@@ -59,7 +61,8 @@ class GstVideoCodec {
   UGstElem color_space_codec_element_{"videoconvert"};
   UGstElem codec_element_{"vp8enc"};
   UGstElem shm_encoded_{"shmdatasink"};
-  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
+  std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
   // codec props
   GParamSpec *primary_codec_spec_{nullptr};
   GEnumValue primary_codec_[128]{};
@@ -80,7 +83,7 @@ class GstVideoCodec {
         "temporal-scalability-target-bitrate", "temporal-scalability-rate-decimator",
         "temporal-scalability-periodicity", "temporal-scalability-layer-id",
         "error-resilient"};
-  
+
   bool remake_codec_elements();
   void make_codec_properties();
   void uninstall_codec_properties();

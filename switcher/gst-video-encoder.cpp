@@ -41,7 +41,8 @@ GstVideoEncoder::GstVideoEncoder(const std::string &):
 bool GstVideoEncoder::init() {
   codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
                                              custom_props_.get(),
-                                             std::string());
+                                             std::string(),
+                                             make_file_name("video-encoded"));
   shmcntr_.install_connect_method(
       [this](const std::string &shmpath){return this->on_shmdata_connect(shmpath);},
       [this](const std::string &){return this->on_shmdata_disconnect();},

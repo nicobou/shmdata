@@ -27,9 +27,12 @@
 namespace switcher {
 GstVideoCodec::GstVideoCodec(Quiddity *quid,
                              CustomPropertyHelper *prop_helper,
-                             const std::string &shmpath):
+                             const std::string &shmpath,
+                             const std::string &shmpath_encoded):
     quid_(quid),
     shmpath_to_encode_(shmpath),
+    shm_encoded_path_(shmpath_encoded),
+    custom_shmsink_path_(!shmpath_encoded.empty()),
     gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
     prop_helper_(prop_helper){
   GstUtils::element_factory_list_to_g_enum(primary_codec_,
@@ -220,7 +223,7 @@ bool GstVideoCodec::start(){
   uninstall_codec_properties();
   if (0 == codec_)
     return true;
-  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+  shmsink_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shm_encoded_.get_raw(),
       [this](std::string &&caps){
         this->quid_->graft_tree(".shmdata.writer." + shm_encoded_path_,
@@ -232,6 +235,18 @@ bool GstVideoCodec::start(){
         this->quid_->graft_tree(".shmdata.writer." + shm_encoded_path_ + ".byte_rate",
                                 data::Tree::make(std::to_string(byte_rate)));
       });
+  shmsrc_sub_ = std2::make_unique<GstShmdataSubscriber>(
+      shm_encoded_.get_raw(),
+      [this](std::string &&caps){
+        this->quid_->graft_tree(".shmdata.reader." + shmpath_to_encode_,
+                                ShmdataUtils::make_tree(caps,
+                                                        ShmdataUtils::get_category(caps),
+                                                        0));
+      },
+      [this](GstShmdataSubscriber::num_bytes_t byte_rate){
+        this->quid_->graft_tree(".shmdata.reader." + shmpath_to_encode_ + ".byte_rate",
+                                data::Tree::make(std::to_string(byte_rate)));
+      });
   make_bin();
   gst_pipeline_->play(true);
   return true;
@@ -240,8 +255,10 @@ bool GstVideoCodec::start(){
 bool GstVideoCodec::stop(){
   show();
   if (0 != codec_) {
-    shm_sub_.reset();
+    shmsink_sub_.reset();
+    shmsrc_sub_.reset();
     quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
+    quid_->prune_tree(".shmdata.reader." + shm_encoded_path_);
     remake_codec_elements();
     make_codec_properties();
     gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
@@ -251,7 +268,8 @@ bool GstVideoCodec::stop(){
 
 void GstVideoCodec::set_shm(const std::string &shmpath){
   shmpath_to_encode_ = shmpath;
-  shm_encoded_path_ = shmpath_to_encode_ + "-encoded";
+  if (!custom_shmsink_path_)
+    shm_encoded_path_ = shmpath_to_encode_ + "-encoded";
   g_object_set(G_OBJECT(shmsrc_.get_raw()),
                "socket-path", shmpath_to_encode_.c_str(), nullptr);
   g_object_set(G_OBJECT(shm_encoded_.get_raw()),
