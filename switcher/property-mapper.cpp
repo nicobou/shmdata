@@ -22,21 +22,16 @@
 #include "./gst-utils.hpp"
 #include "./quiddity-manager-impl.hpp"
 
-// for python
-// #ifdef HAVE_CONFIG_H
-// #include "../config.h"
-// #ifdef HAVE_PYTHON
-// #include <Python.h>
-// #endif
-// #endif
-
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyMapper,
-                                     "Switcher Property Mapper",
-                                     "mapper",
-                                     "map two properties, one being slave of the other",
-                                     "LGPL",
-                                     "property-mapper", "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PropertyMapper,
+    "property-mapper",
+    "Switcher Property Mapper",
+    "utils",
+    "",
+    "map two properties, one being slave of the other",
+    "LGPL",
+    "Nicolas Bouillot");
 
 PropertyMapper::PropertyMapper(const std::string &):source_quiddity_(),
                                  source_property_name_(),

@@ -30,11 +30,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     HTTPSDPDec,
+    "httpsdpdec",
     "HTTP/SDP Player",
     "network",
-    "decode an sdp-described stream deliver through http and make shmdatas",
+    "writer",
+    "decode an sdp-described stream delivered through http and make shmdatas",
     "LGPL",
-    "httpsdpdec",
     "Nicolas Bouillot");
 
 HTTPSDPDec::HTTPSDPDec(const std::string &):

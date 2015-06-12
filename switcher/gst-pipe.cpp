@@ -22,7 +22,6 @@
  */
 
 #include <glib-object.h>
-#include <gst/interfaces/xoverlay.h>
 #include "./gst-utils.hpp"
 #include "./scope-exit.hpp"
 #include "./gst-pipe.hpp"

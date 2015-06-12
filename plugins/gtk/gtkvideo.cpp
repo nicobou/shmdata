@@ -35,11 +35,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     GTKVideo,
+    "gtkwin",
     "Video Display (configurable)",
     "video",
+    "reader",
     "Video window with fullscreen",
     "LGPL",
-    "gtkvideosink",
     "Nicolas Bouillot");
 
 guint GTKVideo::instances_counter_ = 0;

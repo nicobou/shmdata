@@ -754,4 +754,5 @@ data::Tree::ptr Quiddity::prune_tree(const std::string &path, bool do_signal) {
   }
   return result;
 }
-}
+
+}  // namespace switcher

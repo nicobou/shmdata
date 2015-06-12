@@ -21,13 +21,15 @@
 #include "./shmdata-to-osc.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToOsc,
-                                     "OSC sender",
-                                     "network",
-                                     "shmOSCsink reveives OSC messages and updates associated property",
-                                     "LGPL",
-                                     "shmOSCsink",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    ShmdataToOsc,
+    "shmOSCsink",
+    "OSC sender",
+    "network",
+    "reader",
+    "shmOSCsink reveives OSC messages and updates associated property",
+    "LGPL",
+    "Nicolas Bouillot");
 
 ShmdataToOsc::ShmdataToOsc(const std::string &):
     shmcntr_(static_cast<Quiddity *>(this)),

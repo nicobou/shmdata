@@ -22,13 +22,15 @@
 #include "./external-shmdata-writer.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalShmdataWriter,
-                                     "Raw Shmdata",
-                                     "other",
-                                     "import an external shmdata writer",
-                                     "LGPL",
-                                     "extshmsrc",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    ExternalShmdataWriter,
+    "extshmsrc",
+    "Raw Shmdata",
+    "other",
+    "writer",
+    "import an external shmdata writer",
+    "LGPL",
+    "Nicolas Bouillot");
 
 ExternalShmdataWriter::ExternalShmdataWriter(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper>()) {

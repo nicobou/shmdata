@@ -20,13 +20,16 @@
 #include "./dummy-plugin.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(DummyPlugin,
-                                     "Dummy Plugin",
-                                     "test",
-                                     "Dummy plugin for testing/example purpose",
-                                     "LGPL",
-                                     "dummy",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    DummyPlugin,
+    "dummy",
+    "Dummy Plugin",
+    "test",
+    "",
+    "Dummy plugin for testing/example purpose",
+    "LGPL",
+    "Nicolas Bouillot");
+
 DummyPlugin::DummyPlugin(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()) {
 }

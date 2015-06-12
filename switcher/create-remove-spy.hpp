@@ -38,6 +38,6 @@ class CreateRemoveSpy: public Quiddity {
  private:
   bool i_am_the_one_;
 };
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

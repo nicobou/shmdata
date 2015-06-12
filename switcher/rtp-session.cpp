@@ -36,13 +36,15 @@
 #include "./shmdata-utils.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RtpSession,
-                                     "RTP Session",
-                                     "network",
-                                     "RTP session manager",
-                                     "LGPL",
-                                     "rtpsession",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    RtpSession,
+    "rtpsession",
+    "RTP Session",
+    "network",
+    "",
+    "RTP session manager",
+    "LGPL",
+    "Nicolas Bouillot");
 
 RtpSession::RtpSession(const std::string &):
     gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),

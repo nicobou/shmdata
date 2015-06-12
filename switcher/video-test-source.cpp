@@ -27,11 +27,12 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     VideoTestSource,
+    "videotestsrc",
     "Video Pattern",
     "video",
+    "writer",
     "Creates a test video stream",
     "LGPL",
-    "videotestsrc",
     "Nicolas Bouillot");
 
 VideoTestSource::VideoTestSource(const std::string &):

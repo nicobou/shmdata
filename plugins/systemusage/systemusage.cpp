@@ -35,12 +35,16 @@ using namespace
 switcher::data;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SystemUsage,
-                                     "SystemUsage plugin",
-                                     "SystemUsage",
-                                     "Gives system load information",
-                                     "LGPL",
-                                     "systemusage", "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    SystemUsage,
+    "systemusage",
+    "SystemUsage plugin",
+    "monitoring",
+    "",
+    "Gives system load information",
+    "LGPL",
+    "Emmanuel Durand");
+
 SystemUsage::SystemUsage(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()),
     period_prop_(nullptr), cpuNbr_(0), period_(0.1) {

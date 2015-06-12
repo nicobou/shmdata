@@ -30,12 +30,15 @@ using namespace
 switcher::data;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SyphonSrc,
-                                     "Video capture (through Syphon)",
-                                     "SyphonSrc",
-                                     "Reads video input from a Syphon source",
-                                     "LGPL",
-                                     "syphonsrc", "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    SyphonSrc,
+    "syphonsrc",
+    "Video capture (through Syphon)",
+    "video",
+    "writer",
+    "Reads video input from a Syphon source",
+    "LGPL",
+    "Emmanuel Durand");
 
 SyphonSrc::SyphonSrc(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()),
