@@ -236,7 +236,7 @@ bool GstVideoCodec::start(){
                                 data::Tree::make(std::to_string(byte_rate)));
       });
   shmsrc_sub_ = std2::make_unique<GstShmdataSubscriber>(
-      shm_encoded_.get_raw(),
+      shmsrc_.get_raw(),
       [this](std::string &&caps){
         this->quid_->graft_tree(".shmdata.reader." + shmpath_to_encode_,
                                 ShmdataUtils::make_tree(caps,
