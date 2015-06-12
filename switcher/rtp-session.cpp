@@ -493,7 +493,7 @@ gboolean
 RtpSession::add_data_stream_wrapped(gpointer connector_name,
                                     gpointer user_data) {
   RtpSession *context = static_cast<RtpSession *>(user_data);
-
+  g_print ("---- %s %d\n", __FUNCTION__, __LINE__);
   if (context->add_data_stream((char *) connector_name))
     return TRUE;
   else
@@ -556,6 +556,7 @@ gboolean
 RtpSession::remove_data_stream_wrapped(gpointer connector_name,
                                        gpointer user_data) {
   RtpSession *context = static_cast<RtpSession *>(user_data);
+  g_print ("---- %s %d\n", __FUNCTION__, __LINE__);
   if (context->remove_data_stream((char *) connector_name))
     return TRUE;
   else
@@ -573,9 +574,8 @@ bool RtpSession::remove_data_stream(const std::string &shmpath) {
             shmpath.c_str());
     return false;
   }
-  //unregister_shmdata(shmpath);
   prune_tree("rtp_caps." + shmpath);
-  
+  prune_tree("shmdata.reader." + shmpath);
   data_streams_.erase(ds_it);
   g_debug("data_stream %s removed", shmpath.c_str());
   return true;
