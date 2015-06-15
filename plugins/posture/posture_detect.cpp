@@ -26,15 +26,19 @@ using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureDetect,
-                                     "Point Cloud Detect",
-                                     "video",
-                                     "Detect shapes and objects in point clouds",
-                                     "LGPL",
-                                     "pcldetectsink", "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PostureDetect,
+    "pcldetectsink",
+    "Point Cloud Detect",
+    "video",
+    "reader/writer",
+    "Detect shapes and objects in point clouds",
+    "LGPL",
+    "Emmanuel Durand");
 
 PostureDetect::PostureDetect(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()) {
+    custom_props_(std::make_shared<CustomPropertyHelper> ()),
+    shmcntr_(static_cast<Quiddity*>(this)) {
 }
 
 PostureDetect::~PostureDetect() {
@@ -52,11 +56,10 @@ bool
 PostureDetect::stop() {
   lock_guard<mutex> lock(mutex_);
 
-  detect_.reset();
-
-  clear_shmdatas();
   cloud_writer_.reset();
   mesh_writer_.reset();
+
+  detect_.reset();
 
   return true;
 }
@@ -64,34 +67,26 @@ PostureDetect::stop() {
 bool
 PostureDetect::init() {
   init_startable(this);
-  init_segment(this);
 
-  install_connect_method(std::bind(&PostureDetect::connect, this, std::placeholders::_1),
-                         std::bind(&PostureDetect::disconnect, this, std::placeholders::_1),
-                         std::bind(&PostureDetect::disconnect_all, this),
-                         std::bind(&PostureDetect::can_sink_caps, this, std::placeholders::_1),
-                         1);
+  shmcntr_.install_connect_method([this](const string path){return connect(path);},
+                                  [this](const string path){return disconnect(path);},
+                                  [this](){return disconnect_all();},
+                                  [this](const string caps){return can_sink_caps(caps);},
+                                  1);
 
   return true;
 }
 
 bool
 PostureDetect::connect(std::string shmdata_socket_path) {
-  ShmdataAnyReader::ptr reader = make_shared<ShmdataAnyReader>();
-  reader->set_path(shmdata_socket_path);
-
-  // This is the callback for when new clouds are received
-  reader->set_callback([=] (void *data,
-                             int size,
-                             unsigned long long /*unused*/,
-                             const char *type,
-                             void * /*unused*/ )
-  {
+  reader_ = std2::make_unique<ShmdataFollower>(this,
+              shmdata_socket_path,
+              [=] (void *data, size_t size) {
     // If another thread is trying to get the merged cloud, don't bother
     if (!mutex_.try_lock())
       return;
 
-    if (detect_ == nullptr || (string(type) != string(POINTCLOUD_TYPE_BASE) && string(type) != string(POINTCLOUD_TYPE_COMPRESSED)))
+    if (detect_ == nullptr || (reader_caps_ != string(POINTCLOUD_TYPE_BASE) && reader_caps_ != string(POINTCLOUD_TYPE_COMPRESSED)))
     {
       mutex_.unlock();
       return;
@@ -99,63 +94,57 @@ PostureDetect::connect(std::string shmdata_socket_path) {
 
     // Setting input clouds is thread safe, so lets do it
     detect_->setInputCloud(vector<char>((char*)data, (char*) data + size),
-                           string(type) != string(POINTCLOUD_TYPE_BASE));
+                           reader_caps_ != string(POINTCLOUD_TYPE_BASE));
 
     thread computeThread = thread([&]() {
-      if (cloud_writer_.get() == nullptr) {
-        cloud_writer_.reset(new ShmdataAnyWriter);
-        cloud_writer_->set_path(make_file_name("cloud"));
-        register_shmdata(cloud_writer_);
-        if (compress_cloud_)
-          cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_COMPRESSED));
-        else
-          cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_BASE));
-        cloud_writer_->start();
-      }
+      if (detect_->detect())
+      {
+        auto cloud = vector<char>();
+        detect_->getProcessedCloud(cloud);
+        auto poly = vector<unsigned char>();
+        detect_->getConvexHull(poly, 0);
 
-      if (mesh_writer_.get() == nullptr) {
-        mesh_writer_.reset(new ShmdataAnyWriter);
-        mesh_writer_->set_path(make_file_name("mesh"));
-        register_shmdata(mesh_writer_);
-        mesh_writer_->set_data_type(string(POLYGONMESH_TYPE_BASE));
-        mesh_writer_->start();
-      }
+        auto data_type = compress_cloud_ ? string(POINTCLOUD_TYPE_COMPRESSED) : string(POINTCLOUD_TYPE_BASE);
+        if (!cloud_writer_ || cloud.size() > cloud_writer_->writer(&shmdata::Writer::alloc_size)) {
+          cloud_writer_.reset();
+          cloud_writer_ = std2::make_unique<ShmdataWriter>(this,
+                                                           make_file_name("cloud"),
+                                                           std::max(cloud.size() * 2, (size_t)1024),
+                                                           data_type);
+        }
 
-      check_buffers();
-      if (detect_->detect()) {
-        vector<char> cloud = detect_->getProcessedCloud();
-        shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(reinterpret_cast<const unsigned char*>(cloud.data()),
-                                                                      reinterpret_cast<const unsigned char*>(cloud.data()) + cloud.size()));
-        cloud_writer_->push_data_auto_clock((void *) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
-                                            cloud.size(),
-                                            PostureDetect::free_sent_buffer,
-                                            (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
+        data_type = string(POLYGONMESH_TYPE_BASE);
+        if (!mesh_writer_ || poly.size() > mesh_writer_->writer(&shmdata::Writer::alloc_size)) {
+          mesh_writer_.reset();
+          mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
+                                                          make_file_name("mesh"),
+                                                          std::max(poly.size() * 2, (size_t)1024),
+                                                          data_type);
+        }
 
+        cloud_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<char*>(cloud.data()), cloud.size());
+        cloud_writer_->bytes_written(cloud.size());
 
-        vector<unsigned char> poly = detect_->getConvexHull(0);
-        shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(poly.data(), poly.data() + poly.size()));
-        mesh_writer_->push_data_auto_clock((void *) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
-                                            poly.size(),
-                                            PostureDetect::free_sent_buffer,
-                                            (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
+        mesh_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(poly.data()), poly.size());
+        mesh_writer_->bytes_written(cloud.size());
       }
 
       mutex_.unlock();
     });
 
     computeThread.detach();
-  },
-  nullptr);
+  }, [=](const string caps) {
+    unique_lock<mutex> lock(mutex_);
+    reader_caps_ = caps;
+  });
 
-  reader->start();
-  register_shmdata(reader);
+
   return true;
 }
 
 bool
-PostureDetect::disconnect(std::string shmName) {
+PostureDetect::disconnect(std::string) {
   std::lock_guard<mutex> lock(mutex_);
-  unregister_shmdata(shmName);
   return true;
 }
 
@@ -170,21 +159,4 @@ PostureDetect::can_sink_caps(string caps) {
       || (caps == POINTCLOUD_TYPE_COMPRESSED);
 }
 
-void
-PostureDetect::free_sent_buffer(void* data)
-{
-  vector<unsigned char>* buffer = static_cast<vector<unsigned char>*>(data);
-  buffer->clear();
-}
-
-void
-PostureDetect::check_buffers()
-{
-  for (unsigned int i = 0; i < shmwriter_queue_.size();) {
-    if (shmwriter_queue_[i]->size() == 0)
-      shmwriter_queue_.erase(shmwriter_queue_.begin() + i);
-    else
-      i++;
-  }
-}
 }  // namespace switcher

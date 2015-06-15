@@ -2,10 +2,11 @@ dnl required version of autoconf
 AC_PREREQ([2.53])
 
 dnl package name and package version
-AC_INIT([switcher],[0.6.3])
+AC_INIT([switcher],[0.7.1])
 
 dnl required version of gstreamer and gst-plugins-base
-GST_REQUIRED=0.10.36
+GST_REQUIRED=1.0.0
+GSTPB_REQUIRED=1.0.0
 
 dnl AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
@@ -33,8 +34,8 @@ AC_CANONICAL_HOST
 AC_SUBST([LIBSWITCHER_SO_VERSION], [0:0:0])
 
 # The version of the API. Should be major.minor and not change until not backward-compatible
-AC_SUBST([LIBSWITCHER_API_VERSION], [0.6])
-AC_DEFINE(LIBSWITCHER_API_VERSION, ["0.6"], [API version])
+AC_SUBST([LIBSWITCHER_API_VERSION], [0.7])
+AC_DEFINE(LIBSWITCHER_API_VERSION, ["0.7"], [API version])
 
 dnl check for tools (compiler etc.)
 AC_PROG_CXX
@@ -85,25 +86,6 @@ case "$host" in *-darwin* | *-macos10*)
   ;;
 esac
 
-# -- testing GStreamer SDK, if found, then building against --
-AM_CONDITIONAL(HAVE_GST_SDK, false)
- # linux
- AC_CHECK_FILE([/opt/gstreamer-sdk/lib/pkgconfig/gstreamer-0.10.pc], 
-                [AC_MSG_WARN([building against Linux GStreamer SDK.]) 
-                 AM_CONDITIONAL(HAVE_GST_SDK, true)
-                 PKG_CONFIG_PATH=/opt/gstreamer-sdk/lib/pkgconfig:$PKG_CONFIG_PATH
-                 export PKG_CONFIG_PATH],
-                [AC_MSG_WARN([Linux GStreamer SDK not found])])
-
- # osx
-AC_CHECK_FILE([/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig], 
-              [AC_MSG_WARN([building against OSX GStreamer SDK.]) 
-               AM_CONDITIONAL(HAVE_GST_SDK, true)
-               PKG_CONFIG_PATH=/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig:$PKG_CONFIG_PATH
-               export PKG_CONFIG_PATH],
-              [AC_MSG_WARN([OSX GStreamer SDK not found])])
-
-
 dnl =======================================================================
 dnl Check for the required version of GStreamer core (and gst-plugins-base)
 dnl
@@ -112,11 +94,11 @@ dnl
 dnl =======================================================================
 
 PKG_CHECK_MODULES(GST, [
-    gstreamer-0.10              >= $GST_REQUIRED
-    gstreamer-base-0.10         >= $GST_REQUIRED
-    gstreamer-controller-0.10   >= $GST_REQUIRED
-    gstreamer-sdp-0.10          >= $GST_REQUIRED
-    gstreamer-interfaces-0.10   >= $GST_REQUIRED
+    gstreamer-1.0              >= $GST_REQUIRED
+    gstreamer-base-1.0         >= $GST_REQUIRED
+    gstreamer-controller-1.0   >= $GST_REQUIRED
+    gstreamer-sdp-1.0          >= $GST_REQUIRED
+    gstreamer-video-1.0        >= $GST_REQUIRED
   ], [
     AC_SUBST(GST_CFLAGS)
     AC_SUBST(GST_LIBS)
@@ -124,20 +106,17 @@ PKG_CHECK_MODULES(GST, [
   AC_MSG_ERROR([
     Can't find the following GStreamer development packages:
 
-      gstreamer-0.10              >= $GST_REQUIRED
-      gstreamer-base-0.10         >= $GST_REQUIRED
-      gstreamer-controller-0.10   >= $GST_REQUIRED
-      gstreamer-sdp-0.10          >= $GST_REQUIRED
-      gstreamer-interfaces-0.10   >= $GST_REQUIRED
+      gstreamer-1.0              >= $GST_REQUIRED
+      gstreamer-base-1.0         >= $GST_REQUIRED
+      gstreamer-controller-1.0   >= $GST_REQUIRED
+      gstreamer-sdp-1.0          >= $GST_REQUIRED
+      gstreamer-video-1.0        >= $GST_REQUIRED
 
-    Please make sure you have the necessary GStreamer-0.10
-    development headers installed.
-
-    On debian/Ubuntu systems you will probably need to install the
-    'libgstreamer0.10-dev' and 'libgstreamer-plugins-base0.10-dev' packages.
-
-    On RPM-based systems you will probably need to install the
-    'gstreamer-devel-0.10' package.
+    You need to install or upgrade the GStreamer development
+      packages on your system. On debian-based systems these are
+      libgstreamer1.0-dev and libgstreamer-plugins-base1.0-dev.
+      on RPM-based systems gstreamer1.0-devel, libgstreamer1.0-devel
+      or similar. The minimum version required is $GST_REQUIRED.
   ])
 ])
 
@@ -152,14 +131,9 @@ if test "x${have_gmodule}" = "xfalse" ; then
 fi
 
 #shmdata
-PKG_CHECK_MODULES(SHMDATA, shmdata-0.8, have_shmdata=true, have_shmdata=false)
+PKG_CHECK_MODULES(SHMDATA, shmdata-1.0, have_shmdata=true, have_shmdata=false)
 if test "x${have_shmdata}" = "xfalse" ; then
-    AC_MSG_ERROR([Missing libshmdata-0.8-dev])
-fi
-
-PKG_CHECK_MODULES(SHMDATA_ANY, shmdata-any-0.8, have_shmdata_any=true, have_shmdata_any=false)
-if test "x${have_shmdata_any}" = "xfalse" ; then
-    AC_MSG_ERROR([Missing libshmdata-0.8-dev])
+    AC_MSG_ERROR([Missing libshmdata-1.0 development files])
 fi
 
 #gsoap
@@ -297,6 +271,16 @@ else
 fi
 AM_CONDITIONAL(POSTUREBUILD, test "${POSTUREBUILD}" = "enabled")
 
+# check for libvncclient
+PKG_CHECK_MODULES(VNC, libvncclient, have_vnc=true, have_vnc=false)
+if test "x${have_vnc}" = "xfalse" ; then
+    VNCBUILD=disabled
+    AC_MSG_WARN([Missing libvncclient, VNC client quiddity won't be built])
+else
+    VNCBUILD=enabled
+fi
+AM_CONDITIONAL(VNCBUILD, test "${VNCBUILD}" = "enabled")
+
 
 dnl Use the C++ compiler for the compile tests
 AC_LANG(C++)
@@ -429,8 +413,9 @@ plugins/v4l2/Makefile
 plugins/pjsip/Makefile
 plugins/gtk/Makefile
 plugins/jack/Makefile
-nodejs/Makefile
 plugins/posture/Makefile
+plugins/vnc/Makefile
+nodejs/Makefile
 ])
 AC_OUTPUT
 
@@ -459,6 +444,7 @@ AC_OUTPUT
 [echo "nodejs addon               ${NODEADDONBUILD}"]
 [echo "python                     ${PYTHONBUILD}"]
 [echo "posture support            ${POSTUREBUILD}"]
+[echo "vnc client support         ${VNCBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]

@@ -21,13 +21,15 @@
 #include <time.h>
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSource,
-                                     "Midi (PortMidi)",
-                                     "midi",
-                                     "midi to shmdata and properties",
-                                     "LGPL",
-                                     "midisrc",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PortMidiSource,
+    "midisrc",
+    "Midi (PortMidi)",
+    "midi",
+    "writer",
+    "midi to shmdata and properties",
+    "LGPL",
+    "Nicolas Bouillot");
 
 PortMidiSource::PortMidiSource(const std::string &):
     shm_any_(std::make_shared <ShmdataAnyWriter > ()),

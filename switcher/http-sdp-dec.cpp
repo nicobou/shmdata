@@ -24,23 +24,27 @@
 #include "./scope-exit.hpp"
 #include "./std2.hpp"
 #include "./g-source-wrapper.hpp"
+#include "./gst-shmdata-subscriber.hpp"
+#include "./shmdata-utils.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     HTTPSDPDec,
+    "httpsdpdec",
     "HTTP/SDP Player",
     "network",
-    "decode an sdp-described stream deliver through http and make shmdatas",
+    "writer",
+    "decode an sdp-described stream delivered through http and make shmdatas",
     "LGPL",
-    "httpsdpdec",
     "Nicolas Bouillot");
 
 HTTPSDPDec::HTTPSDPDec(const std::string &):
+    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
     souphttpsrc_("souphttpsrc"),
     sdpdemux_("sdpdemux") {
 }
 
-bool HTTPSDPDec::init_gpipe() {
+bool HTTPSDPDec::init() {
   if (!souphttpsrc_ || !sdpdemux_)
     return false;
   install_method("To Shmdata",
@@ -77,18 +81,19 @@ void HTTPSDPDec::init_httpsdpdec() {
 }
 
 void HTTPSDPDec::destroy_httpsdpdec() {
+  shm_subs_.clear();
+  prune_tree(".shmdata.reader");
   make_new_error_handler();
-  clear_shmdatas();
-  reset_bin();
-  reset_counter_map();
+  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
+  counter_.reset_counter_map();
 }
 
 void
 HTTPSDPDec::on_new_element_in_sdpdemux(GstBin */*bin*/,
-                                       GstElement *element,
+                                       GstElement */*element*/,
                                        gpointer /*user_data*/) {
   // FIXME add that in uridecodebin
-  g_object_set(G_OBJECT(element), "ntp-sync", TRUE, nullptr);
+  //g_object_set(G_OBJECT(element), "ntp-sync", TRUE, nullptr);
 }
 
 void HTTPSDPDec::make_new_error_handler() {
@@ -101,45 +106,86 @@ void HTTPSDPDec::make_new_error_handler() {
         on_error_.pop_front();
 }
 
-void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement */*object */ ,
+void HTTPSDPDec::configure_shmdatasink(GstElement *element,
+                                       const std::string &media_type,
+                                       const std::string &media_label){
+  auto count = counter_.get_count(media_type);
+  std::string media_name = media_type;
+  if (count != 0)
+    media_name.append("-" + std::to_string(count));
+  std::string shmpath;
+  if (media_label.empty())
+    shmpath = make_file_name(media_name);
+  else
+    shmpath = make_file_name(media_label + "-" + media_name);
+  
+  g_object_set(G_OBJECT(element), "socket-path", shmpath.c_str(), nullptr);
+  shm_subs_.emplace_back(
+      std2::make_unique<GstShmdataSubscriber>(
+          element,
+          [this, shmpath](std::string &&caps){
+            this->graft_tree(".shmdata.writer." + shmpath,
+                             ShmdataUtils::make_tree(caps,
+                                                     ShmdataUtils::get_category(caps),
+                                                     0));
+          },
+          [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate){
+            auto tree = this->prune_tree(".shmdata.writer." + shmpath, false);
+            if (!tree)
+              return;
+            tree->graft(".byte_rate",
+                        data::Tree::make(byte_rate));
+            this->graft_tree(".shmdata.writer." + shmpath, tree);
+          }));
+}
+
+void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement */*object */,
                                          GstPad *pad,
                                          gpointer user_data) {
   HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
-  GstPipeliner *gpipe = static_cast<GstPipeliner *>(user_data);
   std::unique_ptr<DecodebinToShmdata> decodebin = 
-      std2::make_unique<DecodebinToShmdata>(gpipe);
-  auto caps = gst_pad_get_caps(pad);
-  On_scope_exit{gst_caps_unref(caps);};
-  auto structure = gst_caps_get_structure(caps, 0);
-  decodebin->set_media_label(gst_structure_get_string (structure, "media-label"));
-  decodebin->invoke_with_return<gboolean>(
-      std::bind(gst_bin_add, GST_BIN(context->get_bin()), std::placeholders::_1));
-  // GstPad *sinkpad = gst_element_get_static_pad (decodebin, "sink");
-  auto get_pad = std::bind(gst_element_get_static_pad,
-                           std::placeholders::_1,
-                           "sink");
+      std2::make_unique<DecodebinToShmdata>(
+          context->gst_pipeline_.get(),
+          [context](GstElement *el, const std::string &media_type, const std::string &media_label){
+            context->configure_shmdatasink(el, media_type, media_label);
+          });
+  if(!decodebin->invoke_with_return<gboolean>([context](GstElement *el) {
+        return gst_bin_add(GST_BIN(context->gst_pipeline_->get_pipeline()), el);
+      })){
+      g_warning("decodebin cannot be added to pipeline");
+    }
   GstPad *sinkpad =
-      decodebin->invoke_with_return<GstPad *>(std::move(get_pad));
+      decodebin->invoke_with_return<GstPad *>([](GstElement *el){
+          return gst_element_get_static_pad(el, "sink");
+        });
   On_scope_exit {gst_object_unref(GST_OBJECT(sinkpad));};
   GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad));
-  decodebin->invoke(std::bind(GstUtils::sync_state_with_parent,
-                              std::placeholders::_1));
+  auto caps = gst_pad_get_allowed_caps(pad);
+  On_scope_exit{gst_caps_unref(caps);};
+  auto structure = gst_caps_get_structure(caps, 0);
+  auto media_label = gst_structure_get_string (structure, "media-label");
+  if (nullptr != media_label)
+    decodebin->set_media_label(gst_structure_get_string (structure, "media-label"));
+  decodebin->invoke([](GstElement *el) {
+      GstUtils::sync_state_with_parent(el);
+    });
   context->decodebins_.push_back(std::move(decodebin));
 }
 
 gboolean HTTPSDPDec::to_shmdata_wrapped(gpointer uri, gpointer user_data) {
   HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
-  if (context->to_shmdata((char *)uri))
-    return TRUE;
-  else
+  if (!context->to_shmdata((char *)uri))
     return FALSE;
+  return TRUE;
 }
 
 bool HTTPSDPDec::to_shmdata(std::string uri) {
   if (uri.find("http://") == 0) {
+    is_dataurisrc_ = false;
     souphttpsrc_.mute("souphttpsrc");
     uri_ = std::move(uri);
   } else {
+    is_dataurisrc_ = true;
     souphttpsrc_.mute("dataurisrc");
     uri_ =  std::string("data:application/sdp;base64," + uri);
   }
@@ -150,26 +196,24 @@ bool HTTPSDPDec::to_shmdata(std::string uri) {
 
 void HTTPSDPDec::uri_to_shmdata() {
   destroy_httpsdpdec();
-  reset_bin();
-  clear_shmdatas();
+  prune_tree(".shmdata.reader");
   init_httpsdpdec();
   g_object_set_data(G_OBJECT(sdpdemux_.get_raw()),
                     "on-error-gsource",
                     (gpointer)on_error_.back().get());
   g_debug("httpsdpdec: to_shmdata set uri %s", uri_.c_str());
-  // for souphttpsrc
-  g_object_set(G_OBJECT(souphttpsrc_.get_raw()),
-               "location", uri_.c_str(), nullptr);
-  // for dataurisrc
-  g_object_set(G_OBJECT(souphttpsrc_.get_raw()),
-               "uri", uri_.c_str(), nullptr);
-  gst_bin_add_many(GST_BIN(get_bin()),
+  if(!is_dataurisrc_)   // for souphttpsrc
+    g_object_set(G_OBJECT(souphttpsrc_.get_raw()),
+                 "location", uri_.c_str(), nullptr);
+  else  // for dataurisrc
+    g_object_set(G_OBJECT(souphttpsrc_.get_raw()),
+                 "uri", uri_.c_str(), nullptr);
+  gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    souphttpsrc_.get_raw(),
                    sdpdemux_.get_raw(),
                    nullptr);
   gst_element_link(souphttpsrc_.get_raw(), sdpdemux_.get_raw());
-  GstUtils::sync_state_with_parent(souphttpsrc_.get_raw());
-  GstUtils::sync_state_with_parent(sdpdemux_.get_raw());
+  gst_pipeline_->play(true);
 }
 
 }  // namespace switcher

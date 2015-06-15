@@ -25,30 +25,32 @@ using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureDisplay,
-                                     "Point Clouds Display",
-                                     "video",
-                                     "Display point clouds in a window",
-                                     "LGPL",
-                                     "pcldisplaysink",
-                                     "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PostureDisplay,
+    "pcldisplay",
+    "Point Clouds Display",
+    "video",
+    "reader",
+    "Display point clouds in a window",
+    "LGPL",
+    "Emmanuel Durand");
 
 PostureDisplay::PostureDisplay(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()) {
+    custom_props_(std::make_shared<CustomPropertyHelper> ()),
+    shmcntr_(static_cast<Quiddity*>(this)) {
 }
 
 PostureDisplay::~PostureDisplay() {
+  disconnect_all();
 }
 
 bool
 PostureDisplay::init() {
-  init_segment(this);
-
-  install_connect_method(std::bind(&PostureDisplay::connect, this, std::placeholders::_1),
-                         std::bind(&PostureDisplay::disconnect, this, std::placeholders::_1),
-                         std::bind(&PostureDisplay::disconnect_all, this),
-                         std::bind(&PostureDisplay::can_sink_caps, this, std::placeholders::_1),
-                         1);
+  shmcntr_.install_connect_method([this](const string path){return connect(path);},
+                                  [this](const string path){return disconnect(path);},
+                                  [this](){return disconnect_all();},
+                                  [this](const string caps){return can_sink_caps(caps);},
+                                  1);
 
   return true;
 }
@@ -58,14 +60,11 @@ PostureDisplay::connect(std::string shmdata_socket_path) {
   if (display_ != nullptr)
     return false;
 
-  display_ = make_shared<Display> (shmdata_socket_path);
+  display_ = std2::make_unique<Display> (shmdata_socket_path);
 
-  ShmdataAnyReader::ptr reader = make_shared<ShmdataAnyReader> ();
-  reader->set_path(shmdata_socket_path);
-
-  // This is the callback for when new clouds are received
-  reader->set_callback([=] (void *data, int size, unsigned long long /* unused */, const char *type, void * /*unused */ )
-  {
+  reader_ = std2::make_unique<ShmdataFollower>(this,
+              shmdata_socket_path,
+              [=] (void *data, size_t size) {
     if (!display_mutex_.try_lock())
       return;
 
@@ -75,22 +74,22 @@ PostureDisplay::connect(std::string shmdata_socket_path) {
       return;
     }
 
-    if (string(type) == string(POINTCLOUD_TYPE_COMPRESSED) || string(type) == string(POINTCLOUD_TYPE_BASE))
+    if (reader_caps_ == string(POINTCLOUD_TYPE_COMPRESSED) || reader_caps_ == string(POINTCLOUD_TYPE_BASE))
     {
       vector<char> buffer((char *)data, (char *)data + size);
-      display_->setInputCloud(buffer, string(type) == string(POINTCLOUD_TYPE_COMPRESSED));
+      display_->setInputCloud(buffer, reader_caps_ == string(POINTCLOUD_TYPE_COMPRESSED));
     }
-    else if (string(type) == string(POLYGONMESH_TYPE_BASE))
+    else if (reader_caps_ == string(POLYGONMESH_TYPE_BASE))
     {
         vector<unsigned char> buffer((unsigned char*)data, (unsigned char*)data + size);
         display_->setPolygonMesh(buffer);
     }
 
     display_mutex_.unlock();
-  }, nullptr);
-
-  reader->start();
-  register_shmdata(reader);
+  }, [=](string caps) {
+    unique_lock<mutex> lock(display_mutex_);
+    reader_caps_ = caps;
+  });
 
   return true;
 }
@@ -103,7 +102,7 @@ PostureDisplay::disconnect(std::string /*unused*/) {
 bool
 PostureDisplay::disconnect_all() {
   std::lock_guard<mutex> lock(display_mutex_);
-  clear_shmdatas();
+  reader_.reset();
   display_.reset();
   return true;
 }

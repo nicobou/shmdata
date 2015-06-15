@@ -18,11 +18,15 @@
  */
 
 #include <gst/gst.h>
+#include <gst/video/videooverlay.h>
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdkcursor.h>
 #include "switcher/gst-utils.hpp"
 #include "switcher/quiddity-command.hpp"
 #include "switcher/quiddity-manager-impl.hpp"
+#include "switcher/shmdata-utils.hpp"
+#include "switcher/scope-exit.hpp"
+#include "switcher/std2.hpp"
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
@@ -31,73 +35,27 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     GTKVideo,
+    "gtkwin",
     "Video Display (configurable)",
     "video",
+    "reader",
     "Video window with fullscreen",
     "LGPL",
-    "gtkvideosink",
     "Nicolas Bouillot");
 
 guint GTKVideo::instances_counter_ = 0;
 std::thread GTKVideo::gtk_main_thread_ {};
 
-bool GTKVideo::init_gpipe() {
-  if (!GstUtils::make_element("bin", &sink_bin_))
-    return false;
-  if (!GstUtils::make_element("queue", &queue_))
-    return false;
-  if (!GstUtils::make_element("ffmpegcolorspace", &ffmpegcolorspace_))
-    return false;
-  if (!GstUtils::make_element("videoflip", &videoflip_))
-    g_warning("video fliping not available");
-  if (!GstUtils::make_element("gamma", &gamma_))
-    g_warning("gamma control not available");
-  if (!GstUtils::make_element("videobalance", &videobalance_))
-    g_warning("video balance not available");
-#if HAVE_OSX
-  if (!GstUtils::make_element("osxvideosink", &xvimagesink_))
-    return false;
-#else
-  if (!GstUtils::make_element("xvimagesink", &xvimagesink_))
-    return false;
-#endif
-  gst_bin_add_many(GST_BIN(sink_bin_),
-                   queue_, ffmpegcolorspace_, xvimagesink_, nullptr);
-  gst_element_link(queue_, ffmpegcolorspace_);
-  GstElement *next_to_connect_with = ffmpegcolorspace_;
-  if (nullptr != videoflip_) {
-    gst_bin_add(GST_BIN(sink_bin_), videoflip_);
-    gst_element_link(next_to_connect_with, videoflip_);
-    next_to_connect_with = videoflip_;
-  }
-  if (nullptr != gamma_) {
-    gst_bin_add(GST_BIN(sink_bin_), gamma_);
-    gst_element_link(next_to_connect_with, gamma_);
-    next_to_connect_with = gamma_;
-  }
-  if (nullptr != videobalance_) {
-    gst_bin_add(GST_BIN(sink_bin_), videobalance_);
-    gst_element_link(next_to_connect_with, videobalance_);
-    next_to_connect_with = videobalance_;
-  }
-  gst_element_link(next_to_connect_with, xvimagesink_);
+GTKVideo::GTKVideo(const std::string &):
+    shmcntr_(static_cast<Quiddity *>(this)),
+    gst_pipeline_(std2::make_unique<GstPipeliner>(
+        nullptr, [this](GstMessage *msg){return this->bus_sync(msg);})),
+    gtk_custom_props_(std::make_shared<CustomPropertyHelper>()) {
+}
 
-  GstPad *sink_pad = gst_element_get_static_pad(queue_,
-                                                "sink");
-  GstPad *ghost_sinkpad = gst_ghost_pad_new(nullptr, sink_pad);
-  gst_pad_set_active(ghost_sinkpad, TRUE);
-  gst_element_add_pad(sink_bin_, ghost_sinkpad);
-  gst_object_unref(sink_pad);
-
-  g_object_set(G_OBJECT(xvimagesink_),
-               "sync", FALSE,
-               "qos", FALSE,
-               nullptr);
-  g_object_set_data(G_OBJECT(xvimagesink_),
-                    "on-error-delete",
-                    (gpointer) get_name().c_str());
-  set_sink_element(sink_bin_);
-  is_fullscreen_ = FALSE;
+bool GTKVideo::init() {
+  if (!remake_elements())
+    return false;
   if (instances_counter_ == 0) {
     if (0 == gtk_main_level()) {
       gtk_main_thread_ = std::thread(&GTKVideo::gtk_main_loop_thread);
@@ -107,7 +65,12 @@ bool GTKVideo::init_gpipe() {
       g_debug("gtkvideosink: GTK main loop detected, using it");
   }
   instances_counter_++;
-
+  shmcntr_.install_connect_method(
+      [this](const std::string &shmpath){return this->on_shmdata_connect(shmpath);},
+      [this](const std::string &){return this->on_shmdata_disconnect();},
+      [this](){return this->on_shmdata_disconnect();},
+      [this](const std::string &caps){return this->can_sink_caps(caps);},
+      1);
   fullscreen_prop_spec_ =
       gtk_custom_props_->make_boolean_property("fullscreen",
                                                "Enable/Disable Fullscreen",
@@ -119,44 +82,32 @@ bool GTKVideo::init_gpipe() {
   install_property_by_pspec(gtk_custom_props_->get_gobject(),
                             fullscreen_prop_spec_, "fullscreen",
                             "Fullscreen");
-  g_object_set(G_OBJECT(xvimagesink_), "force-aspect-ratio", TRUE,
-               "draw-borders", TRUE, nullptr);
-
-  if (nullptr != videoflip_)
-    install_property(G_OBJECT(videoflip_),
-                     "method", "method", "Flip Method");
-  if (nullptr != gamma_)
-    install_property(G_OBJECT(gamma_), "gamma", "gamma", "Gamma");
-  if (nullptr != videobalance_) {
-    install_property(G_OBJECT(videobalance_),
-                     "contrast", "contrast", "Contrast");
-    install_property(G_OBJECT(videobalance_),
-                     "brightness", "brightness", "Brightness");
-    install_property(G_OBJECT(videobalance_), "hue", "hue", "Hue");
-    install_property(G_OBJECT(videobalance_),
-                     "saturation", "saturation", "Saturation");
-    title_ = g_strdup(get_name().c_str());
-    title_prop_spec_ =
-        gtk_custom_props_->make_string_property("title",
-                                                "Window Title",
-                                                title_, (GParamFlags)
-                                                G_PARAM_READWRITE,
-                                                GTKVideo::set_title,
-                                                GTKVideo::get_title, this);
-    install_property_by_pspec(gtk_custom_props_->get_gobject(),
-                              title_prop_spec_, "title", "Window Title");
-  }
-
+  install_property(G_OBJECT(videoflip_.get_raw()),
+                   "method", "method", "Flip Method");
+  install_property(G_OBJECT(gamma_.get_raw()), "gamma", "gamma", "Gamma");
+  install_property(G_OBJECT(videobalance_.get_raw()),
+                   "contrast", "contrast", "Contrast");
+  install_property(G_OBJECT(videobalance_.get_raw()),
+                   "brightness", "brightness", "Brightness");
+  install_property(G_OBJECT(videobalance_.get_raw()), "hue", "hue", "Hue");
+  install_property(G_OBJECT(videobalance_.get_raw()),
+                   "saturation", "saturation", "Saturation");
+  title_ = g_strdup(get_name().c_str());
+  title_prop_spec_ =
+      gtk_custom_props_->make_string_property("title",
+                                              "Window Title",
+                                              title_,
+                                              (GParamFlags)G_PARAM_READWRITE,
+                                              GTKVideo::set_title,
+                                              GTKVideo::get_title, this);
+  install_property_by_pspec(gtk_custom_props_->get_gobject(),
+                            title_prop_spec_, "title", "Window Title");
   std::unique_lock<std::mutex> lock(wait_window_mutex_);
   gtk_idle_add((GtkFunction) create_ui, this);
   wait_window_cond_.wait(lock);
   if (nullptr == display_)
     return false;
   return true;
-}
-
-GTKVideo::GTKVideo(const std::string &):
-    gtk_custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 
 void GTKVideo::gtk_main_loop_thread() {
@@ -214,7 +165,7 @@ gboolean GTKVideo::destroy_window(gpointer user_data) {
 }
 
 GTKVideo::~GTKVideo() {
-  reset_bin();
+  gst_pipeline_.reset();
   g_idle_remove_by_data(this);
   if (nullptr != title_)
     g_free(title_);
@@ -268,7 +219,7 @@ void GTKVideo::delete_event_cb(GtkWidget * /*widget */ ,
                                void *user_data) {
   GTKVideo *context = static_cast<GTKVideo *>(user_data);
 
-  context->reset_bin();
+  context->gst_pipeline_.reset();
   gtk_widget_destroy(context->main_window_);
   context->main_window_ = nullptr;
   QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
@@ -347,12 +298,12 @@ void GTKVideo::set_fullscreen(gboolean fullscreen, void *user_data) {
       notify_property_changed(context->fullscreen_prop_spec_);
 }
 
-void GTKVideo::on_shmdata_connect(std::string /*shmdata_sochet_path */ ) {
-  gdk_threads_enter();
-  g_object_set_data(G_OBJECT(xvimagesink_),
-                    "window-handle", (gpointer) &window_handle_);
-  gdk_threads_leave();
-}
+// FIXME void GTKVideo::on_shmdata_connect(std::string /*shmdata_sochet_path */ ) {
+//   gdk_threads_enter();
+//   g_object_set_data(G_OBJECT(xvimagesink_),
+//                     "window-handle", (gpointer) &window_handle_);
+//   gdk_threads_leave();
+// }
 
 void GTKVideo::set_title(const gchar *value, void *user_data) {
   GTKVideo *context = static_cast<GTKVideo *>(user_data);
@@ -369,7 +320,81 @@ const gchar *GTKVideo::get_title(void *user_data) {
   return context->title_;
 }
 
-bool GTKVideo::can_sink_caps(std::string caps) {
-  return GstUtils::can_sink_caps("ffmpegcolorspace", caps);
-};
+bool GTKVideo::remake_elements(){
+  if (!UGstElem::renew(shmsrc_) || !UGstElem::renew(queue_)
+      || !UGstElem::renew(videoconvert_) || !UGstElem::renew(videoflip_)
+      || !UGstElem::renew(gamma_) || !UGstElem::renew(videobalance_)
+      || !UGstElem::renew(xvimagesink_))
+    return false;
+  g_object_set(G_OBJECT(xvimagesink_.get_raw()),
+               "force-aspect-ratio", TRUE,
+               "draw-borders", TRUE,
+               "sync", FALSE,
+               "qos", FALSE,
+               nullptr);
+  g_object_set_data(G_OBJECT(xvimagesink_.get_raw()),
+                    "on-error-delete",
+                    (gpointer) get_name().c_str());
+  return true;
 }
+
+bool GTKVideo::on_shmdata_disconnect() {
+  prune_tree(".shmdata.reader." + shmpath_);
+  shm_sub_.reset();
+  On_scope_exit{gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, [this](GstMessage *msg){return this->bus_sync(msg);});};
+  return remake_elements();
+}
+
+bool GTKVideo::on_shmdata_connect(const std::string &shmpath) {
+  shmpath_ = shmpath;
+  g_object_set(G_OBJECT(shmsrc_.get_raw()),
+               "socket-path", shmpath_.c_str(),
+               nullptr);
+  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+      shmsrc_.get_raw(),
+      [this](std::string &&caps){
+        this->graft_tree(".shmdata.reader." + shmpath_,
+                         ShmdataUtils::make_tree(caps,
+                                                 ShmdataUtils::get_category(caps),
+                                                 0));
+      },
+      [this](GstShmdataSubscriber::num_bytes_t byte_rate){
+        this->graft_tree(".shmdata.reader." + shmpath_ + ".byte_rate",
+                         data::Tree::make(std::to_string(byte_rate)));
+      });
+
+  gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
+                   shmsrc_.get_raw(),
+                   queue_.get_raw(),
+                   videoconvert_.get_raw(),
+                   videoflip_.get_raw(),
+                   gamma_.get_raw(),
+                   videobalance_.get_raw(),
+                   xvimagesink_.get_raw(),
+                   nullptr);
+  gst_element_link_many(shmsrc_.get_raw(),
+                        queue_.get_raw(),
+                        videoconvert_.get_raw(),
+                        videoflip_.get_raw(),
+                        gamma_.get_raw(),
+                        videobalance_.get_raw(),
+                        xvimagesink_.get_raw(),
+                        nullptr);
+  gst_pipeline_->play(true);
+  return true;
+}
+
+bool GTKVideo::can_sink_caps(std::string caps) {
+  return GstUtils::can_sink_caps("videoconvert", caps);
+};
+
+GstBusSyncReply GTKVideo::bus_sync(GstMessage *msg){
+  if (!gst_is_video_overlay_prepare_window_handle_message (msg))
+    return GST_BUS_PASS;
+  GstVideoOverlay *overlay = GST_VIDEO_OVERLAY(GST_MESSAGE_SRC(msg));
+  gst_video_overlay_set_window_handle (overlay, window_handle_);
+  gst_message_unref (msg);
+  return GST_BUS_DROP;
+}
+
+}  // namespace switcher

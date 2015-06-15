@@ -17,20 +17,33 @@ AM_LDFLAGS = \
     $(SHMDATA_LIBS) \
     $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
 
+# check_PROGRAMS = \
+#     check_description_by_class \
+#     check_fake_shmdata_writer \
+#     check_fakesink \
+#     check_gst_pipeline \
+#     check_information_tree \
+#     check_make_consultable \
+#     check_manager \
+#     check_property_mapper \
+#     check_property_subscriber \
+#     check_quiddity_create_remove \
+#     check_rtp_session \
+#     check_scope_guard \
+#     check_signal_subscriber \
+#     check_startable \
+#     check_string_dictionary \
+#     check_ugstelem
+
 check_PROGRAMS = \
     check_description_by_class \
-    check_fake_shmdata_writer \
-    check_fakesink \
     check_gst_pipeline \
     check_information_tree \
     check_make_consultable \
     check_manager \
-    check_property_mapper \
-    check_property_subscriber \
     check_quiddity_create_remove \
     check_rtp_session \
     check_scope_guard \
-    check_signal_subscriber \
     check_startable \
     check_string_dictionary \
     check_ugstelem

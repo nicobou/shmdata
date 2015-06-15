@@ -4,7 +4,6 @@ AM_CXXFLAGS = \
     $(GMODULE_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
     $(PYTHON_CFLAGS) \
-    $(SHMDATA_ANY_CFLAGS) \
     $(SHMDATA_CFLAGS) \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) 
@@ -15,44 +14,39 @@ AM_LIBS = \
     $(GMODULE_LIBS) \
     $(JSONGLIB_LIBS) \
     $(PYTHON_LIBS) \
-    $(SHMDATA_ANY_LIBS) \
     $(SHMDATA_LIBS)
 
 lib_LTLIBRARIES = \
     libswitcher-@LIBSWITCHER_API_VERSION@.la
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
-    audio-source.cpp \
     audio-test-source.cpp \
     categorizable.cpp \
     counter-map.cpp \
     create-remove-spy.cpp \
     custom-property-helper.cpp \
     decodebin-to-shmdata.cpp \
-    decodebin2.cpp \
     default-video-format.cpp \
-    fake-shmdata-writer.cpp \
-    fakesink.cpp \
+    external-shmdata-writer.cpp \
     g-source-wrapper.cpp \
     glibmainloop.cpp \
     gobject-custom-property.cpp \
     gobject-wrapper.cpp \
-    gst-element-cleaner.cpp \
-    gst-parse-to-bin-src.cpp \
     gst-pipe.cpp \
     gst-pipeliner.cpp \
+    gst-shmdata-subscriber.cpp \
     gst-utils.cpp \
-    gst-video-parse-to-bin-src.cpp \
+    gst-video-codec.cpp \
+    gst-video-encoder.cpp \
     http-sdp-dec.cpp \
     information-tree-basic-serializer.cpp \
     information-tree-json.cpp \
     information-tree.cpp \
-    jack-audio-source.cpp \
     json-builder.cpp \
     logger.cpp \
     method.cpp \
     net-utils.cpp \
-    on-caps.cpp \
+    periodic-task.cpp \
     plugin-loader.cpp \
     property-mapper.cpp \
     property.cpp \
@@ -69,23 +63,16 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     rtp-session.cpp \
     safe-bool-idiom.cpp \
     sdp-utils.cpp \
-    segment.cpp \
-    shmdata-any-reader.cpp \
-    shmdata-any-writer.cpp \
-    shmdata-from-gdp-file.cpp \
-    shmdata-reader.cpp \
-    shmdata-to-file.cpp \
+    shmdata-connector.cpp \
+    shmdata-follower.cpp \
+    shmdata-utils.cpp \
     shmdata-writer.cpp \
     signal-string.cpp \
-    single-pad-gst-sink.cpp \
     startable-quiddity.cpp \
     string-dictionary.cpp \
-    udpsink.cpp \
     unique-gst-element.cpp \
     uridecodebin.cpp \
-    video-source.cpp \
-    video-test-source.cpp \
-    xvimagesink.cpp
+    video-test-source.cpp
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
     $(GLIB_LIBS) \
@@ -93,7 +80,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
     $(GMODULE_LIBS) \
     $(JSONGLIB_LIBS) \
     $(PYTHON_LIBS) \
-    $(SHMDATA_ANY_LIBS) \
     $(SHMDATA_LIBS) \
     -version-info $(LIBSWITCHER_SO_VERSION)
 
@@ -104,40 +90,35 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     abstract-factory.hpp \
     abstract-factory_spec.hpp \
     any.hpp \
-    audio-source.hpp \
     audio-test-source.hpp \
     categorizable.hpp \
-    clock.hpp \
     counter-map.hpp \
     create-remove-spy.hpp \
     creator.hpp \
     custom-property-helper.hpp \
-    decodebin-to-shmdata.hpp \
-    decodebin2.hpp \
     default-video-format.hpp \
-    fake-shmdata-writer.hpp \
-    fakesink.hpp \
+    decodebin-to-shmdata.hpp \
+    external-shmdata-writer.hpp \
     g-source-wrapper.hpp \
     glibmainloop.hpp \
     gobject-custom-property.hpp \
     gobject-wrapper.hpp \
-    gst-element-cleaner.hpp \
-    gst-parse-to-bin-src.hpp \
     gst-pipe.hpp \
     gst-pipeliner.hpp \
+    gst-shmdata-subscriber.hpp \
     gst-utils.hpp \
-    gst-video-parse-to-bin-src.hpp \
+    gst-video-codec.hpp \
+    gst-video-encoder.hpp \
     http-sdp-dec.hpp \
     information-tree-basic-serializer.hpp \
     information-tree-json.hpp \
     information-tree.hpp \
-    jack-audio-source.hpp \
     json-builder.hpp \
     logger.hpp \
     make-consultable.hpp \
     method.hpp \
     net-utils.hpp \
-    on-caps.hpp \
+    periodic-task.hpp \
     plugin-loader.hpp \
     property-mapper.hpp \
     property.hpp \
@@ -155,21 +136,15 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     safe-bool-idiom.hpp \
     scope-exit.hpp \
     sdp-utils.hpp \
-    segment.hpp \
-    shmdata-any-reader.hpp \
-    shmdata-any-writer.hpp \
-    shmdata-from-gdp-file.hpp \
-    shmdata-reader.hpp \
-    shmdata-to-file.hpp \
+    shmdata-connector.hpp \
+    shmdata-glib-logger.hpp \
+    shmdata-follower.hpp \
+    shmdata-utils.hpp \
     shmdata-writer.hpp \
     signal-string.hpp \
-    single-pad-gst-sink.hpp \
     startable-quiddity.hpp \
     std2.hpp \
     string-dictionary.hpp \
-    udpsink.hpp \
     unique-gst-element.hpp \
     uridecodebin.hpp \
-    video-source.hpp \
-    video-test-source.hpp \
-    xvimagesink.hpp
+    video-test-source.hpp

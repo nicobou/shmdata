@@ -22,25 +22,25 @@ SUBDIRS += \
     gtk
 endif
 
-if PULSEBUILD
-SUBDIRS += \
-    pulse
-endif
+# if PULSEBUILD
+# SUBDIRS += \
+#     pulse
+# endif
 
-if PORTMIDIBUILD
-SUBDIRS += \
-    portmidi
-endif
+# if PORTMIDIBUILD
+# SUBDIRS += \
+#     portmidi
+# endif
 
 if POSTUREBUILD
 SUBDIRS += \
 	posture
 endif
 
-if HAVE_OSX
-SUBDIRS += \
-    syphonsrc
-endif
+# if HAVE_OSX
+# SUBDIRS += \
+#     syphonsrc
+# endif
 
 if !HAVE_OSX
 SUBDIRS += \
@@ -50,4 +50,9 @@ endif
 if JACKBUILD
 SUBDIRS += \
     jack
+endif
+
+if VNCBUILD
+SUBDIRS += \
+	vnc
 endif

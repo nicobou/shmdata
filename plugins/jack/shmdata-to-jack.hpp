@@ -22,16 +22,16 @@
 
 #include <memory>
 #include <mutex>
-#include "switcher/single-pad-gst-sink.hpp"
-#include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
-#include "switcher/unique-gst-element.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/gst-pipeliner.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
 #include "./jack-client.hpp"
 #include "./drift-observer.hpp"
 #include "./audio-ring-buffer.hpp"
 
 namespace switcher {
-class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
+class ShmdataToJack: public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToJack);
   ShmdataToJack(const std::string &);
@@ -40,7 +40,16 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
   ShmdataToJack &operator=(const ShmdataToJack &) = delete;
 
  private:
-  GstElement *audiobin_{nullptr};  // FIXME use UGstElem
+  // registering connect/disconnect/can_sink_caps:
+  ShmdataConnector shmcntr_;
+  // gst pipeline:
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  // shmsubscriber (publishing to the information-tree):
+  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  // internal use:
+  std::string shmpath_{};
+  GstElement *shmdatasrc_{nullptr};
+  GstElement *audiobin_{nullptr};
   GstElement *volume_{nullptr};
   GstElement *fakesink_{nullptr};
   gulong handoff_handler_{0};
@@ -53,12 +62,13 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
   DriftObserver<jack_nframes_t> drift_observer_{};
   JackClient jack_client_;
   std::vector<JackPort> output_ports_{};
-  bool init_gpipe() final;
-  bool start() final;
-  bool stop() final;
-  void on_shmdata_disconnect() final;
-  void on_shmdata_connect(std::string shmdata_sochet_path) final;
-  bool can_sink_caps(std::string caps) final;
+  
+  bool init() final;
+  bool start();
+  bool stop();
+  bool on_shmdata_disconnect();
+  bool on_shmdata_connect(const std::string &shmdata_sochet_path);
+  bool can_sink_caps(const std::string &caps);
   bool make_elements();
   void check_output_ports(unsigned int channels);
   void on_xrun(uint num_of_missed_samples);

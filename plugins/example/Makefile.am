@@ -1,19 +1,19 @@
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
 plugins_LTLIBRARIES = \
-    libmyplugin.la 
+    libdummy-plugin.la 
 
-#libmyplugin info
-libmyplugin_la_SOURCES = \
-    myplugin.cpp
+#libdummy-plugin info
+libdummy_plugin_la_SOURCES = \
+    dummy-plugin.cpp
 
-libmyplugin_la_include_HEADERS = \
-    myplugin.hpp
+libdummy_plugin_la_include_HEADERS = \
+    dummy-plugin.hpp
 
-libmyplugin_la_includedir = \
+libdummy_plugin_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
-libmyplugin_la_LDFLAGS = \
+libdummy_plugin_la_LDFLAGS = \
     $(GLIB_LIBS) \
     $(GST_LIBS) \
     $(GMODULE_LIBS) \
@@ -24,7 +24,7 @@ libmyplugin_la_LDFLAGS = \
     -L$(top_builddir)/switcher/.libs \
     -lswitcher-@LIBSWITCHER_API_VERSION@
 
-libmyplugin_la_CXXFLAGS = \
+libdummy_plugin_la_CXXFLAGS = \
     $(GLIB_CFLAGS) \
     $(GMODULE_CFLAGS) \
     $(GST_CFLAGS) \

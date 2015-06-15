@@ -18,16 +18,19 @@
  */
 
 #include <gst/gst.h>
+#include "switcher/std2.hpp"
 #include "./jack-to-shmdata.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackToShmdata,
-                                     "Jack Audio Device2",
-                                     "audio",
-                                     "get audio from jack",
-                                     "LGPL",
-                                     "2jacksrc",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    JackToShmdata,
+    "jacksrc",
+    "Jack Audio Device",
+    "audio",
+    "writer",
+    "get audio from jack",
+    "LGPL",
+    "Nicolas Bouillot");
 
 JackToShmdata::JackToShmdata(const std::string &name):
     custom_props_(std::make_shared<CustomPropertyHelper>()),
@@ -44,7 +47,6 @@ bool JackToShmdata::init() {
     g_warning("JackClient cannot be instancied");
     return false;
   }
-  init_segment(this);
   init_startable(this);
   num_channels_spec_ =
       custom_props_->make_int_property("channels",
@@ -86,19 +88,22 @@ bool JackToShmdata::init() {
 
 bool JackToShmdata::start() {
   buf_.resize(num_channels_ * jack_client_.get_buffer_size()); 
-  std::string data_type("audio/x-raw-float, "
-                        "endianness=1234, "
-                        "width=32, "
+  std::string data_type("audio/x-raw, "
+                        "format=(string)F32LE, "
+                        "layout=(string)interleaved, "
                         "rate=" + std::to_string(jack_client_.get_sample_rate()) + ", "
                         "channels=" + std::to_string(num_channels_));
-  // creating a shmdata
-  unregister_shmdata(make_file_name("audio"));
-  ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter>();
-  shm_any->set_path(make_file_name("audio"));
-  shm_any->set_data_type(data_type);
-  shm_any->start();
-  register_shmdata(shm_any);
-  shm_ = shm_any.get();
+  
+  std::string shmpath = make_file_name("audio");
+  shm_ = std2::make_unique<ShmdataWriter>(this,
+                                          shmpath,
+                                          buf_.size() * sizeof(jack_sample_t),
+                                          data_type);
+  if(!shm_.get()) {
+    g_warning("JackToShmdata failed to start");
+    shm_.reset(nullptr);
+    return false;
+  }
   { std::unique_lock<std::mutex> lock(input_ports_mutex_);
     for (unsigned int i = 0; i < num_channels_; ++i)
       input_ports_.emplace_back(jack_client_, i, false);
@@ -113,8 +118,7 @@ bool JackToShmdata::stop() {
   { std::unique_lock<std::mutex> lock(input_ports_mutex_);
     input_ports_.clear();
   }
-  shm_ = nullptr;
-  unregister_shmdata(make_file_name("audio"));
+  shm_.reset(nullptr);
   enable_property("channels");
   enable_property("client-name");
   enable_property("connect");
@@ -180,15 +184,13 @@ int JackToShmdata::jack_process (jack_nframes_t nframes, void *arg){
           ++index;
         }
       }
-      context->shm_->push_data_auto_clock(context->buf_.data(),
-                                          nframes * num_chan * sizeof(jack_sample_t),
-                                          nullptr,
-                                          nullptr);
+      size_t size = nframes * num_chan * sizeof(jack_sample_t);
+      context->shm_->writer(&shmdata::Writer::copy_to_shm, context->buf_.data(), size);
+      context->shm_->bytes_written(size);
     }  // locked
   }  // releasing lock
   return 0;
 }
-
 
 void JackToShmdata::on_xrun(uint num_of_missed_samples) {
   g_warning ("jack xrun (delay of %u samples)", num_of_missed_samples);

@@ -17,20 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-/**
- * The GstPipeliner class
- */
-
-#ifndef __SWITCHER_GPIPE_H__
-#define __SWITCHER_GPIPE_H__
+#ifndef __SWITCHER_GST_PIPELINER_H__
+#define __SWITCHER_GST_PIPELINER_H__
 
 #include <gst/gst.h>
 #include <memory>
 #include <vector>
 #include <mutex>
+#include <list>
 #include <string>
 #include "./quiddity.hpp"
-#include "./segment.hpp"
+#include "./glibmainloop.hpp"
 #include "./gst-pipe.hpp"
 #include "./unique-gst-element.hpp"
 
@@ -40,27 +37,22 @@ class QuiddityCommand;
 class CustomPropertyHelper;
 class DecodebinToShmdata;
 
-class GstPipeliner: public Quiddity, public Segment {
+class GstPipeliner {
   friend DecodebinToShmdata;
 
  public:
-  GstPipeliner();
+  GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
+               GstPipe::on_msg_sync_cb_t on_msg_sync_cb);
+  GstPipeliner() = delete;
   virtual ~GstPipeliner();
   GstPipeliner(const GstPipeliner &) = delete;
   GstPipeliner &operator=(const GstPipeliner &) = delete;
-  bool init() final;
-  virtual bool init_gpipe() = 0;
 
- protected:
-  GstElement *get_bin();
-  bool reset_bin();
   GstElement *get_pipeline();
-  void install_play_pause();
-  void install_seek();
-  void install_speed();
-  void play(gboolean);  // FIXME use bool
+  void play(gboolean play);
   bool seek(gdouble position_in_ms);
-
+  void looping(gboolean looping);
+  
  private:
     typedef struct {
     GstPipeliner *self;
@@ -68,37 +60,19 @@ class GstPipeliner: public Quiddity, public Segment {
     GSource *src;
   } QuidCommandArg;
 
-  std::unique_ptr<GstPipe> gst_pipeline_{};
-  UGstElem bin_;
-
-  //GSource *position_tracking_source_ {nullptr};
-
-  std::unique_ptr<CustomPropertyHelper> gpipe_custom_props_;
-  GParamSpec *play_pause_spec_ {nullptr};
-  bool play_ {true};
-  GParamSpec *seek_spec_ {nullptr};
-  gdouble seek_ {0.0};
-  std::list<std::string> quids_to_remove_{};
-
+ private:
+  GstPipe::on_msg_async_cb_t on_msg_async_cb_;
+  GstPipe::on_msg_sync_cb_t on_msg_sync_cb_;
+  std::unique_ptr<GlibMainLoop> main_loop_;
+  std::unique_ptr<GstPipe> gst_pipeline_;
+  std::list<GstMessage *> msgs_{};
   std::vector<QuidCommandArg *>commands_ {};
-
-  void on_gst_error(GstMessage *msg);
-  
-  void make_bin();
-  void clean_bin();
-  bool speed(gdouble speed);
-  static gboolean get_play(void *user_data);
-  static void set_play(gboolean play, void *user_data);
-  static void set_seek(gdouble position, void *user_data);
-  static gdouble get_seek(void *user_data);
-  static gboolean speed_wrapped(gdouble speed, gpointer user_data);
-  static gboolean run_remove_quid(gpointer user_data);
-  static gboolean run_command(gpointer user_data);
-  static void print_one_tag(const GstTagList *list,
-                            const gchar *tag,
-                            gpointer user_data);
-  
+  GstBusSyncReply on_gst_error(GstMessage *msg);
+  static gboolean bus_async(gpointer user_data);
+  static GstBusSyncReply bus_sync_handler(GstBus * bus,
+                                          GstMessage *msg,
+                                          gpointer user_data);
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

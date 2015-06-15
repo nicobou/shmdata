@@ -33,11 +33,6 @@ pjmedia_codec_factory_op PJCodec::alt_codec_factory_op = {
   &PJCodec::alt_codec_deinit
 };
 
-// PJCodec::PJCodec ()
-// {}
-// PJCodec::~PJCodec ()
-// {}
-
 pj_status_t PJCodec::alt_codec_test_alloc(pjmedia_codec_factory */*factory*/,
                                           const pjmedia_codec_info *id) {
   // for performance, "available_codecs" could become static and reused here

@@ -22,23 +22,20 @@
 
 #include <memory>
 #include <mutex>
+#include "switcher/shmdata-writer.hpp"
 #include "switcher/quiddity.hpp"
-#include "switcher/segment.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
-#include "switcher/shmdata-any-writer.hpp"
 #include "./jack-client.hpp"
 
 namespace switcher {
-class JackToShmdata: public Quiddity, public Segment, public StartableQuiddity {
+class JackToShmdata: public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackToShmdata);
   JackToShmdata(const std::string &);
   ~JackToShmdata() = default;
   JackToShmdata(const JackToShmdata &) = delete;
   JackToShmdata &operator=(const JackToShmdata &) = delete;
-  bool start();
-  bool stop();
 
  private:
   CustomPropertyHelper::ptr custom_props_;
@@ -48,12 +45,15 @@ class JackToShmdata: public Quiddity, public Segment, public StartableQuiddity {
   bool connect_phys_{false};
   GParamSpec *client_name_spec_{nullptr};
   std::string client_name_{};
-  ShmdataAnyWriter *shm_{nullptr};
+  std::unique_ptr<ShmdataWriter> shm_{nullptr};
   std::mutex input_ports_mutex_{};
   JackClient jack_client_;
   std::vector<JackPort> input_ports_{};
   std::vector<jack_sample_t> buf_{};
+  
   bool init() final;
+  bool start() final;
+  bool stop() final;
   static void set_num_channels(const gint value, void *user_data);
   static gint get_num_channels(void *user_data);
   static void set_client_name(const gchar *value, void *user_data);
@@ -65,6 +65,6 @@ class JackToShmdata: public Quiddity, public Segment, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(JackToShmdata);
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

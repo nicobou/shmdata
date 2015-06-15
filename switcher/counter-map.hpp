@@ -29,24 +29,18 @@
  * maintains a thread safe map of
  * string as key and a unsigned int counter as value
  *
- * users should inherit from this class
- *
  **/
 
 namespace switcher {
 class CounterMap {
  public:
-  CounterMap();
-  virtual ~CounterMap();
-
- protected:
   unsigned int get_count(const std::string &key);
   void reset_counter_map();
 
  private:
-  std::map<std::string, unsigned int> counters_;
-  std::mutex mutex_;
+  std::map<std::string, unsigned int> counters_{};
+  std::mutex mutex_{};
 };
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

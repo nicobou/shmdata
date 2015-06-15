@@ -25,15 +25,19 @@ using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureMeshMerge,
-                                     "Mesh Merge",
-                                     "video",
-                                     "Merges meshes captured with 3D cameras",
-                                     "LGPL",
-                                     "meshmergesink", "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PostureMeshMerge,
+    "meshmerge",
+    "Mesh Merge",
+    "video",
+    "reader/writer",
+    "Merges meshes captured with 3D cameras",
+    "LGPL",
+    "Emmanuel Durand");
 
 PostureMeshMerge::PostureMeshMerge(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()) {
+    custom_props_(std::make_shared<CustomPropertyHelper> ()),
+    shmcntr_(static_cast<Quiddity*>(this)) {
 }
 
 PostureMeshMerge::~PostureMeshMerge() {
@@ -63,22 +67,18 @@ PostureMeshMerge::stop() {
     merger_.reset();
   }
 
-  clear_shmdatas();
-  mesh_writer_.reset();
-
   return true;
 }
 
 bool
 PostureMeshMerge::init() {
   init_startable(this);
-  init_segment(this);
 
-  install_connect_method(std::bind(&PostureMeshMerge::connect, this, std::placeholders::_1),
-                         std::bind(&PostureMeshMerge::disconnect, this, std::placeholders::_1),
-                         std::bind(&PostureMeshMerge::disconnect_all, this),
-                         std::bind(&PostureMeshMerge::can_sink_caps, this, std::placeholders::_1),
-                         8);
+  shmcntr_.install_connect_method([this](const std::string path){return connect(path);},
+                                  [this](const std::string path){return disconnect(path);},
+                                  [this](){return disconnect_all();},
+                                  [this](const std::string caps){return can_sink_caps(caps);},
+                                  8);
 
   calibration_path_prop_ =
       custom_props_->make_string_property("calibration_path",
@@ -131,23 +131,49 @@ PostureMeshMerge::init() {
 
 bool
 PostureMeshMerge::connect(std::string shmdata_socket_path) {
+  unique_lock<mutex> connectLock(connect_mutex_);
+
   int index = source_id_;
   source_id_ += 1;
+  int shmreader_id = shmreader_id_;
+  shmreader_id_++;
 
-  ShmdataAnyReader::ptr reader = make_shared<ShmdataAnyReader>();
-  reader->set_path(shmdata_socket_path);
-
-  // This is the callback for when new clouds are received
-  reader->set_callback([=] (void *data,
-                             int size,
-                             unsigned long long /*unused*/,
-                             const char *type,
-                             void * /*unused */ )
-  {
-    if (merger_ == nullptr || (string(type) != string(POLYGONMESH_TYPE_BASE)))
+  auto reader = std2::make_unique<ShmdataFollower>(this,
+                  shmdata_socket_path,
+                  [=] (void *data, size_t size) {
+    if (!mutex_.try_lock())
+    {
+      unique_lock<mutex> lock(stock_mutex_);
+      stock_[index] = vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size);
       return;
+    }
 
-    // Setting input mesh is thread safe, so lets do it
+    auto typeIt = mesh_readers_caps_.find(shmreader_id);
+    if (typeIt == mesh_readers_caps_.end())
+    {
+      mutex_.unlock();
+      return;
+    }
+    string type = typeIt->second;
+    mutex_.unlock();
+
+    if (merger_ == nullptr || (type != string(POLYGONMESH_TYPE_BASE)))
+    {
+      return;
+    }
+
+    // Setting input meshes is thread safe, so lets do it
+    {
+      unique_lock<mutex> lock(stock_mutex_);
+      for (auto it = stock_.begin(); it != stock_.end(); ++it)
+      {
+        merger_->setInputMesh(it->first,
+                              it->second);
+      }
+      stock_.clear();
+    }
+
+
     merger_->setInputMesh(index, vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size));
 
     if (!worker_.is_ready() || !updateMutex_.try_lock())
@@ -157,37 +183,37 @@ PostureMeshMerge::connect(std::string shmdata_socket_path) {
       if (reload_calibration_)
           merger_->reloadCalibration();
 
-      if (mesh_writer_ == nullptr) {
-        mesh_writer_.reset(new ShmdataAnyWriter);
-        mesh_writer_->set_path(make_file_name("mesh"));
-        register_shmdata(mesh_writer_);
-        mesh_writer_->set_data_type(string(POLYGONMESH_TYPE_BASE));
-        mesh_writer_->start();
+      auto mesh = vector<unsigned char>();
+      merger_->getMesh(mesh);
+
+      if (mesh_writer_ == nullptr || mesh.size() > mesh_writer_->writer(&shmdata::Writer::alloc_size)) {
+        auto data_type = string(POLYGONMESH_TYPE_BASE);
+        mesh_writer_.reset();
+        mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
+                                                        make_file_name("mesh"),
+                                                        std::max(mesh.size() * 2, (size_t)1024),
+                                                        data_type);
       }
 
-      check_buffers();
-      shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(merger_->getMesh()));
-      mesh_writer_->push_data_auto_clock((void *) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
-                                          shmwriter_queue_[shmwriter_queue_.size() - 1]->size(),
-                                          PostureMeshMerge::free_sent_buffer,
-                                          (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
+      mesh_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(mesh.data()), mesh.size());
+      mesh_writer_->bytes_written(mesh.size());
 
       updateMutex_.unlock();
     });
 
     worker_.do_task();
-  },
-  nullptr);
+  }, [=](string caps) {
+    unique_lock<mutex> lock(mutex_);
+    mesh_readers_caps_[shmreader_id] = caps;
+  });
 
-  reader->start();
-  register_shmdata(reader);
+  mesh_readers_[shmdata_socket_path] = std::move(reader);
   return true;
 }
 
 bool
-PostureMeshMerge::disconnect(std::string shmName) {
+PostureMeshMerge::disconnect(std::string) {
   std::lock_guard<mutex> lock(mutex_);
-  unregister_shmdata(shmName);
   return true;
 }
 
@@ -252,21 +278,4 @@ PostureMeshMerge::can_sink_caps(std::string caps) {
   return (caps == POLYGONMESH_TYPE_BASE);
 }
 
-void
-PostureMeshMerge::free_sent_buffer(void* data)
-{
-  vector<unsigned char>* buffer = static_cast<vector<unsigned char>*>(data);
-  buffer->clear();
-}
-
-void
-PostureMeshMerge::check_buffers()
-{
-  for (unsigned int i = 0; i < shmwriter_queue_.size();) {
-    if (shmwriter_queue_[i]->size() == 0)
-      shmwriter_queue_.erase(shmwriter_queue_.begin() + i);
-    else
-      i++;
-  }
-}
 }  // namespace switcher

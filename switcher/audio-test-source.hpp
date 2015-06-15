@@ -21,27 +21,33 @@
 #define __SWITCHER_AUDIO_TEST_SOURCE_H__
 
 #include <memory>
-#include "./audio-source.hpp"
-#include "./startable-quiddity.hpp"
-#include "./unique-gst-element.hpp"
+#include <future>
+#include <atomic>
+#include "switcher/gst-pipeliner.hpp"
+#include "switcher/quiddity.hpp"
+#include "switcher/startable-quiddity.hpp"
+#include "switcher/unique-gst-element.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
 
 namespace switcher {
-class AudioTestSource: public AudioSource, public StartableQuiddity {
+class AudioTestSource: public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AudioTestSource);
   AudioTestSource(const std::string &);
-  ~AudioTestSource();
+  ~AudioTestSource() = default;
   AudioTestSource(const AudioTestSource &) = delete;
   AudioTestSource &operator=(const AudioTestSource &) = delete;
 
-  bool start();
-  bool stop();
-
  private:
-  UGstElem audiotestsrc_;
-  bool make_audiotestsrc();
-  bool init_gpipe() final;
+  std::string shmpath_{};
+  UGstElem audiotestsrc_{"audiotestsrc"};
+  UGstElem shmdatasink_{"shmdatasink"};
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  bool start() final;
+  bool stop() final;
+  bool init() final;
 };
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

@@ -29,13 +29,15 @@
 
 namespace switcher
 {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SoapCtrlServer,
-                                     "Switcher Web Controler (SOAP)",
-                                     "control server",
-                                     "getting switcher controled through SOAP webservices",
-                                     "GPL",
-                                     "SOAPcontrolServer",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    SoapCtrlServer,
+    "SOAPcontrolServer",
+    "Switcher Web Controler (SOAP)",
+    "control",
+    "",
+    "getting switcher controled through SOAP webservices",
+    "GPL",
+    "Nicolas Bouillot");
 
 SoapCtrlServer::SoapCtrlServer(const std::string &):
     soap_(),
