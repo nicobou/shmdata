@@ -8,7 +8,7 @@ SUBDIRS = \
     shmdata \
     utils \
     tests \
-	wrappers
+    wrappers
 
 if BUILD_GST
 SUBDIRS += gst
