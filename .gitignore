@@ -1,5 +1,7 @@
+*.deps/
 *.gz
 *.la
+*.libs/
 *.lo
 *.log
 *.o
@@ -7,8 +9,6 @@
 *.pc
 *.swp
 *.trs
-*.deps/
-*.libs/
 *~
 Makefile
 Makefile.in
@@ -47,8 +47,13 @@ plugins/puredata/.deps/
 plugins/puredata/.libs/
 stamp-h1
 test-driver
-tests/check_gst_shm
-tests/check_read_and_write_onoff
-tests/check_read_then_write
-tests/check_write_and_read_onoff
-tests/check_write_read
+tests/check-c-wrapper
+tests/check-file-monitor
+tests/check-follower
+tests/check-shmdata
+tests/check-shmdata-stress
+tests/check-sysv-sem
+tests/check-sysv-shm
+tests/check-unix-socket
+tests/check-writer-follower
+utils/sdflow
