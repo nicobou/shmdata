@@ -17,70 +17,56 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "startable-quiddity.h"
-#include "quiddity.h"
+#include "./startable-quiddity.hpp"
+#include "./quiddity.hpp"
 
-namespace switcher
-{
+namespace switcher {
+StartableQuiddity::StartableQuiddity():
+    startable_custom_props_(std::make_shared<CustomPropertyHelper>()) {
+}
 
-  StartableQuiddity::StartableQuiddity () :
-    started_ (false),
-    startable_custom_props_ (new CustomPropertyHelper ())
-  {}
+StartableQuiddity::~StartableQuiddity() {
+}
 
-  StartableQuiddity::~StartableQuiddity ()
-  {}
+void StartableQuiddity::init_startable(void *quiddity) {
+  Quiddity *quid = static_cast<Quiddity *>(quiddity);
+  started_prop_ =
+      startable_custom_props_->make_boolean_property("started",
+                                                     "started or not",
+                                                     (gboolean) FALSE,
+                                                     (GParamFlags)
+                                                     G_PARAM_READWRITE,
+                                                     StartableQuiddity::set_started,
+                                                     StartableQuiddity::get_started,
+                                                     this);
+  quid->install_property_by_pspec(startable_custom_props_->get_gobject(),
+                                  started_prop_,
+                                  "started",
+                                  "Started");
+}
 
-  void
-  StartableQuiddity::init_startable (void *quiddity)
-  {
-    Quiddity *quid = static_cast <Quiddity *> (quiddity);
+gboolean StartableQuiddity::get_started(void *user_data) {
+  StartableQuiddity *context = static_cast<StartableQuiddity *>(user_data);
+  if (!context->started_)
+    return FALSE;
+  return TRUE;
+}
 
-    started_prop_ = 
-      startable_custom_props_->make_boolean_property ("started", 
-						      "started or not",
-						      (gboolean)FALSE,
-						      (GParamFlags) G_PARAM_READWRITE,
-						      StartableQuiddity::set_started,
-						      StartableQuiddity::get_started,
-						      this);
-    quid->install_property_by_pspec (startable_custom_props_->get_gobject (), 
-				     started_prop_, 
-				     "started",
-				     "Started");
+void StartableQuiddity::set_started(gboolean started, void *user_data) {
+  StartableQuiddity *context = static_cast<StartableQuiddity *>(user_data);
+  if (started) {
+    if (context->start())
+      context->started_ = true;
+  } else {
+    if (context->stop())
+      context->started_ = false;
   }
+  context->startable_custom_props_->
+      notify_property_changed(context->started_prop_);
+}
 
-  gboolean 
-  StartableQuiddity::get_started (void *user_data)
-  {
-    StartableQuiddity *context = static_cast<StartableQuiddity *> (user_data);
-    if (!context->started_)
-      return FALSE;
-    return TRUE;
-  }
+bool StartableQuiddity::is_started() const {
+  return started_;
+}
 
-  void 
-  StartableQuiddity::set_started (gboolean started, void *user_data)
-  {
-    StartableQuiddity *context = static_cast<StartableQuiddity *> (user_data);
-    if (started)
-      {
-	if (context->start ())
-	  context->started_ = true;
-      }
-    else
-      {
-	if (context->stop ())
-	  context->started_ = false;
-      }
-    context->startable_custom_props_->notify_property_changed (context->started_prop_);
-  }
-
-    bool 
-    StartableQuiddity::is_started ()
-    {
-      return started_;
-    }
-  
-}//end of switcher namespace
-
+}  // namespace switcher

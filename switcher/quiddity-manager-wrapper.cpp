@@ -17,16 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "quiddity-manager-wrapper.h"
+#include "./quiddity-manager-wrapper.hpp"
 
-namespace switcher
-{
-
-  void
-  QuiddityManagerWrapper::set_quiddity_manager (std::shared_ptr<QuiddityManager> manager)
-  {
-    manager_ = manager;
-  }
-
-}//end of class
-
+namespace switcher {
+void
+QuiddityManagerWrapper::set_quiddity_manager(std::shared_ptr <
+                                             QuiddityManager > manager) {
+  manager_ = manager;
+}
+}                               // end of class

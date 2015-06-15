@@ -1,3 +1,19 @@
+switcher 0.6.4 (2015-06-15)
+---------------------------
+This is an official release in the 0.6 stable series. 
+
+New features:
+
+* SIP quiddity
+* information tree
+* pixel format option for video quiddities
+* Make_consultable
+ 
+Bugs fixed:
+
+* audio glitching because of sound card clock drift
+* many others
+
 switcher 0.6.2 (2014-08-04)
 ---------------------------
 This is an official release in the 0.6 stable series. 

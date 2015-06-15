@@ -17,317 +17,202 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "string-dictionary.h"
-#include "property.h"
 #include <string.h>
-#include <iostream>
+#include <gio/gio.h>
+//#include <iostream>
+#include "./string-dictionary.hpp"
+#include "./information-tree-basic-serializer.hpp"
+#include "./scope-exit.hpp"
 
-namespace switcher
+namespace switcher {
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    StringDictionary,
+    "Dictionary",
+    "dictionary",
+    "Dictionary of string key/values accessible through properties",
+    "LGPL",
+    "dico",
+    "Nicolas Bouillot");
+
+bool StringDictionary::init() {
+  install_method("Update An Entry",
+                 "update",
+                 "update an existing entry",
+                 "success or failure",
+                 Method::make_arg_description("Entry Name (Key)",
+                                              "name",
+                                              "string",
+                                              "Entry value",
+                                              "value",
+                                              "string",
+                                              nullptr),
+                 (Method::method_ptr) &update_entry,
+                 G_TYPE_BOOLEAN,
+                 Method::make_arg_type_description(G_TYPE_STRING,
+                                                   G_TYPE_STRING,
+                                                   nullptr),
+                 this);
+  
+  install_method("Read Entry",
+                 "read",
+                 "read the entry",
+                 "the entry value",
+                 Method::make_arg_description("Entry Name",
+                                              "name",
+                                              "string",
+                                              nullptr),
+                 (Method::method_ptr) &read_entry,
+                 G_TYPE_STRING,
+                 Method::make_arg_type_description(G_TYPE_STRING,
+                                                   nullptr),
+                 this);
+
+  install_method("Remove An Entry",
+                 "remove",
+                 "remove the entry",
+                 "success or failure",
+                 Method::make_arg_description("Entry Name",
+                                              "name",
+                                              "string",
+                                              nullptr),
+                 (Method::method_ptr) &remove_entry,
+                 G_TYPE_BOOLEAN,
+                 Method::make_arg_type_description(G_TYPE_STRING,
+                                                   nullptr),
+                 this);
+
+  install_method("Save To A File",
+                 "save",
+                 "save dictionary to a file",
+                 "success or failure",
+                 Method::make_arg_description("File path",
+                                              "path",
+                                              "string",
+                                              nullptr),
+                 (Method::method_ptr) &save,
+                 G_TYPE_BOOLEAN,
+                 Method::make_arg_type_description(G_TYPE_STRING,
+                                                   nullptr),
+                 this);
+
+  install_method("Load From File",
+                 "load",
+                 "Load dictionary from a file",
+                 "success or failure",
+                 Method::make_arg_description("File path",
+                                              "path",
+                                              "string",
+                                              nullptr),
+                 (Method::method_ptr) &load,
+                 G_TYPE_BOOLEAN,
+                 Method::make_arg_type_description(G_TYPE_STRING,
+                                                   nullptr),
+                 this);
+
+  return true;
+}
+
+gboolean
+StringDictionary::update_entry(const gchar *name,
+                               const gchar *value,
+                               void *user_data) {
+  StringDictionary *context = static_cast<StringDictionary *>(user_data);
+  if (context->graft_tree(std::string(".dico.") + data::Tree::escape_dots(name),
+                          data::Tree::make(std::string(value))))
+    return TRUE;
+  g_warning("cannot update entry .dico.%s", name);
+  return FALSE;
+}
+
+gboolean
+StringDictionary::remove_entry(const gchar *name, void *user_data)
 {
-
-  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(StringDictionary,
-				       "Dictionary",
-				       "dictionary", 
-				       "Dictionary of string key/values accessible through properties",
-				       "LGPL",
-				       "dico",
-				       "Nicolas Bouillot");
-  StringDictionary::StringDictionary() :
-    dico_ (),
-    set_get_contexts_ (),
-    custom_props_ (new CustomPropertyHelper ()),
-    prop_specs_ ()
-  {}
-
-  StringDictionary::~StringDictionary()
-  {}
-    
-  bool
-  StringDictionary::init()
-  {
-    install_method ("Create A New Entry",
-		    "new-entry",
-		    "create a new dictionary entry accessible through a property sharing the same name",
-		    "success or failure",
-		    Method::make_arg_description ("Entry Name (Key)",
-						  "name", 
-						  "string",
-						  "Entry Description",
-						  "description", 
-						  "string",
-						  "Long Name",
-						  "long-name", 
-						  "string",
-						  nullptr),
-  		    (Method::method_ptr) &create_entry, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, nullptr),
-		    this);
-
-    install_method ("Remove An Entry",
-		    "remove-entry",
-		    "remove the entry and its property",
-		    "success or failure",
-		    Method::make_arg_description ("Entry Name",
-						  "name", 
-						  "string",
-						  nullptr),
-  		    (Method::method_ptr) &remove_entry, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
-		    this);
-
-    install_method ("Save To A File",
-     		    "save",
-     		    "save dictionary to a file",
-     		    "success or failure",
-     		    Method::make_arg_description ("File path",
-     						  "path", 
-     						  "string",
-     						  nullptr),
-     		    (Method::method_ptr) &save, 
-     		    G_TYPE_BOOLEAN,
-     		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
-     		    this);
-    
-    install_method ("Load From File",
-     		    "load",
-     		    "Load dictionary from a file",
-     		    "success or failure",
-     		    Method::make_arg_description ("File path",
-     						  "path", 
-     						  "string",
-     						  nullptr),
-     		    (Method::method_ptr) &load, 
-     		    G_TYPE_BOOLEAN,
-     		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
-     		    this);
-  
-    return true;
-  }
-
-  gboolean
-  StringDictionary::create_entry (const gchar *entry_name, 
-				  const gchar *entry_description, 
-				  const gchar *long_name,
-				  void *user_data)
-  {
-    StringDictionary *context = static_cast<StringDictionary *> (user_data);
-    
-    if (context->dico_.find (entry_name) != context->dico_.end ())
-      {
-	g_debug ("cannot create entry named %s (already existing)", entry_name);
-	return FALSE;
-      }
-    
-    std::shared_ptr <PropertySetGet> prop_context;
-    prop_context.reset (new PropertySetGet ()); 
-    prop_context->string_dictionary = context;
-    prop_context->entry_name = entry_name;
-    context->set_get_contexts_[entry_name] = prop_context;
-    
-    context->dico_[entry_name] = g_strdup ("");
-
-    context->prop_specs_[entry_name] = 
-      context->custom_props_->make_string_property (entry_name,  
-						    entry_description, 
-						    "",
-						    (GParamFlags) G_PARAM_READWRITE,  
-						    StringDictionary::string_setter,
-						    StringDictionary::string_getter,
-						      prop_context.get ()); 
-    
-    context->install_property_by_pspec (context->custom_props_->get_gobject (), 
-					 context->prop_specs_[entry_name], 
-					 entry_name,
-					 long_name);
-
+  StringDictionary *context = static_cast<StringDictionary *>(user_data);
+  if (context->prune_tree(std::string(".dico.") + data::Tree::escape_dots(name)))
     return TRUE;
-  }
+  g_warning("cannot remove entry .dico.%s", name);
+  return FALSE;
+}
 
-  gboolean
-  StringDictionary::remove_entry (const gchar *entry_name, void *user_data)
-  {
-    StringDictionary *context = static_cast<StringDictionary *> (user_data);
-    auto it = context->dico_.find (entry_name);
-    if (context->dico_.end () == it)
-      {
-	g_debug ("cannot remove entry named %s (not existing)", entry_name);
-	return FALSE;
-      }
-    context->uninstall_property (entry_name);
-    context->dico_.erase (it);
-    context->prop_specs_.erase (entry_name);
-    context->set_get_contexts_.erase (entry_name);
-    return TRUE;
-  }
+const gchar *
+StringDictionary::read_entry(const gchar *name, void *user_data)
+{
+  StringDictionary *context = static_cast<StringDictionary *>(user_data);
+  std::string val = context->
+      tree<const Any &, const std::string &>(
+          &data::Tree::branch_read_data,
+          std::string("dico.") + data::Tree::escape_dots(name)).copy_as<std::string>();
+  return g_strdup(val.c_str());  // FIXME make method class not requiring g_strdup
+}
 
-  const gchar *
-  StringDictionary::string_getter (void *user_data)
-  {
-    PropertySetGet *context = static_cast <PropertySetGet *> (user_data);
-    return context->string_dictionary->dico_[context->entry_name];
-  }
+gboolean StringDictionary::save_file(const gchar *file_path) {
+  GFile *file = g_file_new_for_commandline_arg(file_path);
+  On_scope_exit{g_object_unref(file);};
+  GError *error = nullptr;
+  GFileOutputStream *file_stream = g_file_replace(file,
+                                                  nullptr,
+                                                  TRUE,  // make backup
+                                                  G_FILE_CREATE_NONE,
+                                                  nullptr,
+                                                  &error);
+  On_scope_exit{g_object_unref(file_stream);};
   
-  void 
-  StringDictionary::string_setter (const gchar *value, void *user_data)
-  {
-    PropertySetGet *context = static_cast <PropertySetGet *> (user_data);
-    g_free (context->string_dictionary->dico_[context->entry_name]);
-    context->string_dictionary->dico_[context->entry_name] = g_strdup (value);
-    GObjectWrapper::notify_property_changed (context->string_dictionary->gobject_->get_gobject (), 
-					     context->string_dictionary->prop_specs_[context->entry_name]);
+  if (error != nullptr) {
+    g_warning("%s", error->message);
+    g_error_free(error);
+    return FALSE;
   }
 
+  std::string dico = invoke_info_tree<std::string>(&data::BasicSerializer::serialize);
 
-  gboolean
-  StringDictionary::save_file (const gchar *file_path)
-  {
-    GFile *file = g_file_new_for_commandline_arg (file_path);
-    GError *error = nullptr;
-    GFileOutputStream *file_stream = g_file_replace (file,
-						     nullptr,
-						     TRUE, //make backup
-						     G_FILE_CREATE_NONE ,
-						     nullptr,
-						     &error);
-    if (error != nullptr)
-      {
-	g_warning ("%s",error->message);
-	g_error_free (error);
-	return FALSE;
-      }
-
-    JSONBuilder::ptr builder;
-    builder.reset (new JSONBuilder ());
-    builder->reset ();
-    //builder->begin_object ();
-    //builder->set_member_name ("dictionary");
-    builder->begin_array ();
-
-    for (auto &it: dico_)
-      {
-	builder->begin_object ();
-	Property::ptr prop = get_property_ptr (it.first);
-	builder->add_string_member ("name", it.first.c_str ());
-	builder->add_string_member ("description", prop->get_short_description ().c_str ());
-	builder->add_string_member ("long name", prop->get_long_name ().c_str ());	
-	builder->add_string_member ("value", it.second);
-	builder->end_object ();
-      }
-
-    builder->end_array ();
-    //builder->end_object ();
-    
-    gchar *dico_json = g_strdup (builder->get_string(true).c_str ());
-
-    g_output_stream_write ((GOutputStream *)file_stream,
-			   dico_json,
-			   sizeof (gchar) * strlen (dico_json),
-			   nullptr,
-			   &error);
-    g_free (dico_json);
-    if (error != nullptr)
-      {
-	g_warning ("%s",error->message);
-	g_error_free (error);
-	return FALSE;
-      }
-     
-    g_output_stream_close ((GOutputStream *)file_stream,
-			   nullptr,
-			   &error);
-    if (error != nullptr)
-      {
-	g_warning ("%s",error->message);
-	g_error_free (error);
-	return FALSE;
-      }
-    
-    g_object_unref(file_stream);
-    return TRUE;
-  }
-  
-  gboolean 
-  StringDictionary::save (gchar *file_path, 
-			  void *user_data)
-  {
-    StringDictionary *context = static_cast <StringDictionary *> (user_data);
-    return context->save_file (file_path);
+  g_output_stream_write((GOutputStream *) file_stream,
+                        dico.c_str(),
+                        sizeof(char) * dico.size(),
+                        nullptr,
+                        &error);
+  if (error != nullptr) {
+    g_warning("%s", error->message);
+    g_error_free(error);
+    return FALSE;
   }
 
-  gboolean 
-  StringDictionary::load_file (const gchar *file_path)
-  {
-    JsonParser *parser = json_parser_new ();
-    GError *error = nullptr;
-    json_parser_load_from_file (parser,
-				file_path,
-				&error);
-    if (error != nullptr)
-      {
-	g_warning ("%s",error->message);
-	g_object_unref(parser);
-	g_error_free (error);
-	return false;
-      }
-    
-    JsonNode *root_node = json_parser_get_root (parser);
-    JsonReader *reader = json_reader_new (root_node);
-    
-    if (!json_reader_is_array (reader))
-      {
-	g_debug ("malformed dictionary file");
-	return false;
-      }
-
-    gint num_elements = json_reader_count_elements (reader);
-    int i;
-    for (i = 0; i < num_elements; i++)
-      {
-	json_reader_read_element (reader, i);
-
-	json_reader_read_member (reader, "name");
-	const gchar *name = json_reader_get_string_value (reader);
-	json_reader_end_member (reader);
-
-	json_reader_read_member (reader, "description");
-	const gchar *description = json_reader_get_string_value (reader);
-	json_reader_end_member (reader);
-
-	json_reader_read_member (reader, "long name");
-	const gchar *long_name = json_reader_get_string_value (reader);
-	json_reader_end_member (reader);
-
-	json_reader_read_member (reader, "value");
-	const gchar *value = json_reader_get_string_value (reader);
-	json_reader_end_member (reader);
-
-	json_reader_end_element (reader);
-	// g_print ("%s, %s, %s, %s\n",
-	// 	 name, 
-	// 	 description, 
-	// 	 long_name, 
-	// 	 value);
-	if (create_entry (name, description, long_name, this))
-	  {
-	    g_free (dico_[name]);
-	    dico_[name] = g_strdup (value);
-	  }
-      }
-   
-    g_object_unref(reader);
-    g_object_unref(parser);
-
-    return TRUE;
+  g_output_stream_close((GOutputStream *) file_stream, nullptr, &error);
+  if (error != nullptr) {
+    g_warning("%s", error->message);
+    g_error_free(error);
+    return FALSE;
   }
 
-  gboolean 
-  StringDictionary::load (gchar *file_path, 
-			  void *user_data)
-  {
-    StringDictionary *context = static_cast <StringDictionary *> (user_data);
-    return context->load_file (file_path);
+  return TRUE;
+}
+
+gboolean StringDictionary::save(gchar *file_path, void *user_data) {
+  StringDictionary *context = static_cast<StringDictionary *>(user_data);
+  return context->save_file(file_path);
+}
+
+gboolean StringDictionary::load_file(const gchar *filename) {
+  gchar *contents = nullptr;
+  GError *error = nullptr;
+  g_file_get_contents (filename,
+                       &contents,
+                       nullptr,
+                       &error);
+  On_scope_exit{if (nullptr != contents) g_free(contents);};
+  if (error != nullptr) {
+    g_warning("%s", error->message);
+    g_error_free(error);
+    return FALSE;
   }
-  
+
+  data::Tree::ptr tree = data::BasicSerializer::deserialize(std::string(contents));
+  // replacing the dico
+  graft_tree(std::string(".dico."), tree->get(".dico"));
+  return TRUE;
+}
+
+gboolean StringDictionary::load(gchar *file_path, void *user_data) {
+  StringDictionary *context = static_cast<StringDictionary *>(user_data);
+  return context->load_file(file_path);
+}
 }

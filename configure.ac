@@ -2,7 +2,7 @@ dnl required version of autoconf
 AC_PREREQ([2.53])
 
 dnl package name and package version
-AC_INIT([switcher],[0.6.2])
+AC_INIT([switcher],[0.6.4])
 
 dnl required version of gstreamer and gst-plugins-base
 GST_REQUIRED=0.10.36
@@ -58,7 +58,7 @@ case "$host" in *-darwin* | *-macos10*)
   LIBTOOL="glibtool"
   CXXFLAGS+=" -D__Darwin -stdlib=libc++ -Qunused-arguments"
   CXX="clang++"
-  LDFLAGS+=" -undefined dynamic_lookup -Wl,-headerpad_max_install_names"
+  LDFLAGS+=" -g -undefined dynamic_lookup -Wl,-headerpad_max_install_names"
   if test -d /opt/local ; then
     CPPFLAGS+=" -I/usr/local/include -I/opt/local/include"
     CXXFLAGS+=" -I/usr/local/include -I/opt/local/include"
@@ -77,7 +77,7 @@ case "$host" in *-darwin* | *-macos10*)
   PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
   export PKG_CONFIG_PATH
   
-  LDFLAGS+=" -fPIC -L/usr/local/lib -L/usr/local/lib64"
+  LDFLAGS+=" -fPIC -L/usr/local/lib"
   ;;
 *)
   AM_CONDITIONAL([HAVE_OSX], false)
@@ -181,6 +181,16 @@ else
 fi
 AM_CONDITIONAL(OSCBUILD, test "${OSCBUILD}" = "enabled")
 
+#jack
+PKG_CHECK_MODULES(JACK, jack, have_jack=true, have_jack=false)
+if test "x${have_jack}" = "xfalse" ; then
+    JACKBUILD=disabled
+    AC_MSG_WARN([Missing libjack-jackd2-dev package])
+else
+    JACKBUILD=enabled
+fi
+AM_CONDITIONAL(JACKBUILD, test "${JACKBUILD}" = "enabled")
+
 # python
 PKG_CHECK_MODULES(PYTHON, python, have_python=true, have_python=false)
 if test "x${have_python}" = "xfalse" ; then
@@ -244,14 +254,14 @@ AC_CHECK_HEADER(linux/videodev2.h,
 AM_CONDITIONAL(V4L2BUILD, test "${V4L2BUILD}" = "enabled")
 
 #pjsip
-PKG_CHECK_MODULES(PJSIP, libpjproject, have_pjsip=true, have_pjsip=false)
-if test "x${have_pjsip}" = "xfalse" ; then
-    PJSIPBUILD=disabled
-    AC_MSG_WARN([Missing pjsip dev files])
-else
-    PJSIPBUILD=enabled
-fi
-AM_CONDITIONAL(PJSIPBUILD, test "${PJSIPBUILD}" = "enabled")
+dnl PKG_CHECK_MODULES(PJSIP, libpjproject, have_pjsip=true, have_pjsip=false)
+dnl if test "x${have_pjsip}" = "xfalse" ; then
+dnl     PJSIPBUILD=disabled
+dnl     AC_MSG_WARN([Missing pjsip dev files])
+dnl else
+dnl     PJSIPBUILD=enabled
+dnl fi
+dnl AM_CONDITIONAL(PJSIPBUILD, test "${PJSIPBUILD}" = "enabled")
 
 
 # check for gtk (compatible with gstreamer sdk)
@@ -348,13 +358,29 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
 ])
 
 dnl clang++
-dnl check if compiler understands -Wno-error=return-type-c-linkage (if yes, add it to CFLAGS)
+dnl check if compiler understands -Wno-error=return-type-c-linkage 
+dnl (if yes, add it to CFLAGS)
 dnl -Wno-error=unused-parameter is required for gsoap generated code compiling
 AC_MSG_CHECKING([to see if compiler understands -Wno-error=return-type-c-linkage])
 saved_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$CXXFLAGS -Wno-error=return-type-c-linkage"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
   CXXFLAGS="$saved_CXXFLAGS -Wno-error=return-type-c-linkage"
+  AC_MSG_RESULT([yes])
+], [
+  CXXFLAGS="$saved_CXXFLAGS"
+  AC_MSG_RESULT([no])
+])
+
+dnl clang++
+dnl check if compiler understands -Wno-error=deprecated-register
+dnl (if yes, add it to CFLAGS)
+dnl required for gstreamer header inclusion
+AC_MSG_CHECKING([to see if compiler understands -Wno-error=deprecated-register])
+saved_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -Wno-error=deprecated-register"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  CXXFLAGS="$saved_CXXFLAGS -Wno-error=deprecated-register"
   AC_MSG_RESULT([yes])
 ], [
   CXXFLAGS="$saved_CXXFLAGS"
@@ -399,6 +425,7 @@ plugins/pulse/Makefile
 plugins/v4l2/Makefile
 plugins/pjsip/Makefile
 plugins/gtk/Makefile
+plugins/jack/Makefile
 nodejs/Makefile
 plugins/posture/Makefile
 ])
@@ -413,7 +440,7 @@ AC_OUTPUT
 [echo "GTK fullscreen video       ${GTKBUILD}"]
 [echo "Pulse audio                ${PULSEBUILD}"]
 [echo "PortMidi                   ${PORTMIDIBUILD}"]
-[echo "PJSIP                      ${PJSIPBUILD}"]
+[echo "Jack                       ${JACKBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]

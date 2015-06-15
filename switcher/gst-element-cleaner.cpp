@@ -17,42 +17,22 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "gst-element-cleaner.h"
-#include "gst-utils.h"
+#include "./gst-element-cleaner.hpp"
+#include "./gst-utils.hpp"
 
-namespace switcher
-{
-
-  GstElementCleaner::GstElementCleaner () :
-    elements_to_remove_ (),
-    labeled_elements_ ()
-  {}
-
-  GstElementCleaner::~GstElementCleaner ()
-  {
-    for (auto &it : elements_to_remove_)
-      GstUtils::clean_element (it);
-  }
-
-  void 
-  GstElementCleaner::add_element_to_cleaner (GstElement *element)
-  {
-    elements_to_remove_.push_back (element);
-  }
-
-  void 
-  GstElementCleaner::add_labeled_element_to_cleaner (const std::string &new_label, GstElement *element)
-  {
-    labeled_elements_[new_label] = element;
-  }
-  
-  GstElement *
-  GstElementCleaner::get_labeled_element_from_cleaner (const std::string &new_label)
-  {
-    auto it = labeled_elements_.find (new_label);
-    if (labeled_elements_.end () == it)
-      return nullptr;
-    return it->second;
-  }
-
+namespace switcher {
+GstElementCleaner::GstElementCleaner():
+    elements_to_remove_(),
+    labeled_elements_() {
 }
+
+GstElementCleaner::~GstElementCleaner() {
+  for (auto &it : elements_to_remove_)
+    GstUtils::clean_element(it);
+}
+
+void GstElementCleaner::add_element_to_cleaner(GstElement *element) {
+  elements_to_remove_.push_back(element);
+}
+
+}  // namespace switcher

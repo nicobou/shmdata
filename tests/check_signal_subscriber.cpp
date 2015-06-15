@@ -17,98 +17,66 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/quiddity-manager.h"
+#include <gst/gst.h>
 #include <vector>
 #include <string>
+#include <iostream>
+#include <cassert>
+#include "switcher/quiddity-manager.hpp"
 
-static bool success;
 static int signal_counter = 0;
 
-void 
-quiddity_created_removed_cb (std::string /*subscriber_name*/, 
-			     std::string /*quiddity_name*/, 
-			     std::string signal_name, 
-			     std::vector<std::string> params, 
-			     void */*user_data*/)
-{
-  g_message ("%s: %s", signal_name.c_str (), params[0].c_str ());
-  signal_counter ++;
+void
+quiddity_created_removed_cb(const std::string &/*subscriber_name */ ,
+                            const std::string &/*quiddity_name */ ,
+                            const std::string &signal_name,
+                            const std::vector<std::string> &params,
+                            void * /*user_data */ ) {
+  std::printf("%s: %s", signal_name.c_str(), params[0].c_str());
+  signal_counter++;
 }
 
 int
-main ()
-{
-  success = false;
-  
+main() {
   {
-    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("testing_signals");  
-
-    //make on-quiddity-created and on-quiddity-removed signals
-    manager->create ("create_remove_spy", "create_remove_spy");
-    manager->make_signal_subscriber ("signal_subscriber", quiddity_created_removed_cb, manager.get ());
-    manager->subscribe_signal ("signal_subscriber","create_remove_spy","on-quiddity-created");
-    manager->subscribe_signal ("signal_subscriber","create_remove_spy","on-quiddity-removed");
+    switcher::QuiddityManager::ptr manager =
+        switcher::QuiddityManager::make_manager("testing_signals");
     
-    manager->create ("videotestsrc","vid1");
-    manager->create ("fakesink", "fake1");
-    manager->create ("videotestsrc","vid2");
-    manager->create ("fakesink", "fake2");
-
-     // manager->create ("videotestsrc", "vid");
-     // manager->subscribe_signal ("signal_subscriber","vid","on-property-added");
-     // manager->subscribe_signal ("signal_subscriber","vid","on-property-removed");
-     // manager->subscribe_signal ("signal_subscriber","vid","on-property-reinstalled");
-     // manager->subscribe_signal ("signal_subscriber","vid","on-method-added");
-     // manager->subscribe_signal ("signal_subscriber","vid","on-method-removed");
-     // manager->set_property ("vid", "codec", "2");
-     // manager->set_property ("vid", "started", "true");
+    // make on-quiddity-created and on-quiddity-removed signals
+    assert("create_remove_spy" == manager->create("create_remove_spy",
+                                                  "create_remove_spy"));
+    assert(manager->make_signal_subscriber("signal_subscriber",
+                                           quiddity_created_removed_cb,
+                                           manager.get()));
+    assert(manager->subscribe_signal("signal_subscriber", "create_remove_spy",
+                                     "on-quiddity-created"));
+    assert(manager->subscribe_signal("signal_subscriber", "create_remove_spy",
+                                     "on-quiddity-removed"));
     
+    assert("vid1" == manager->create("videotestsrc", "vid1"));
+    assert("fake1" == manager->create("fakesink", "fake1"));
+    assert("vid2" == manager->create("videotestsrc", "vid2"));
+    assert("fake2" == manager->create("fakesink", "fake2"));
     
-    std::vector<std::string> subscribers = manager->list_signal_subscribers ();
-    if (subscribers.size () != 1 
-    	|| g_strcmp0 (subscribers.at(0).c_str (), "signal_subscriber") != 0)
-      {
-    	g_warning ("pb with list_signal_subscribers");
-    	return 1;
-      }
-    
-    std::vector<std::pair<std::string, std::string> > signals = 
-      manager->list_subscribed_signals ("signal_subscriber");
-    if(signals.size () != 2 
-       || g_strcmp0 (signals.at(0).first.c_str (),  "create_remove_spy")
-       || g_strcmp0 (signals.at(0).second.c_str (), "on-quiddity-created")
-       || g_strcmp0 (signals.at(1).first.c_str (),  "create_remove_spy")
-       || g_strcmp0 (signals.at(1).second.c_str (), "on-quiddity-removed"))
-      {
-    	g_warning ("pb with list_subscribed_signals");
-    	return 1;
-      }
+    auto subscribers = manager->list_signal_subscribers();
+    assert(subscribers.size() == 1);
+    assert(subscribers[0] == "signal_subscriber");
 
-    manager->remove ("create_remove_spy");
+    std::vector<std::pair<std::string, std::string>>signals =
+        manager->list_subscribed_signals("signal_subscriber");
+    assert(signals.size() == 2);
+    assert(signals.at(0).first == "create_remove_spy");
+    assert(signals.at(0).second == "on-quiddity-created");
+    assert(signals.at(1).first == "create_remove_spy");
+    assert(signals.at(1).second == "on-quiddity-removed");
 
-    signals = manager->list_subscribed_signals ("signal_subscriber");
-    if(signals.size () != 0)
-      {
-    	g_warning ("pb with automatic unsubscribe at quiddity removal");
-    	return 1;
-      }
-    // manager->unsubscribe_signal ("signal_subscriber","create_remove_spy","on-quiddity-created");
-    // manager->unsubscribe_signal ("signal_subscriber","create_remove_spy","on-quiddity-removed");
-
-    manager->remove_signal_subscriber ("signal_subscriber");
-    
-    // manager->unsubscribe_signal ("signal_subscriber","create_remove_spy","on-quiddity-created");
-    // manager->unsubscribe_signal ("signal_subscriber","create_remove_spy","on-quiddity-removed");
+    assert(manager->remove("create_remove_spy"));
+    assert(manager->list_subscribed_signals("signal_subscriber").size() == 0);
+    assert(manager->remove_signal_subscriber("signal_subscriber"));
   }
-
-  if (signal_counter == 4) //4 creations has been asked
-    success = true;
-
-  if (success)
+  
+  gst_deinit();
+  if (signal_counter == 4)  // 4 creations has been asked
     return 0;
-  else
-    return 1;
+  return 1;
 }
-
-
-

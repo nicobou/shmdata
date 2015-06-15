@@ -19,21 +19,42 @@ AM_LDFLAGS = \
 
 check_PROGRAMS = \
     check_description_by_class \
+    check_fake_shmdata_writer \
     check_fakesink \
+    check_gst_pipeline \
     check_information_tree \
-    check_quiddity_create_remove \
+    check_make_consultable \
+    check_manager \
     check_property_mapper \
     check_property_subscriber \
+    check_quiddity_create_remove \
     check_rtp_session \
     check_scope_guard \
     check_signal_subscriber \
-    check_startable 
+    check_startable \
+    check_string_dictionary \
+    check_ugstelem
 
 check_description_by_class_SOURCES = \
     check_description_by_class.cpp
 
-check_quiddity_create_remove_SOURCES = \
-    check_quiddity_create_remove.cpp
+check_fake_shmdata_writer_SOURCES = \
+    check_fake_shmdata_writer.cpp
+
+check_fakesink_SOURCES = \
+    check_fakesink.cpp
+
+check_gst_pipeline_SOURCES = \
+    check_gst_pipeline.cpp
+
+check_information_tree_SOURCES = \
+    check_information_tree.cpp
+
+check_make_consultable_SOURCES = \
+    check_make_consultable.cpp
+
+check_manager_SOURCES =\
+    check_manager.cpp
 
 check_property_mapper_SOURCES = \
     check_property_mapper.cpp
@@ -41,8 +62,14 @@ check_property_mapper_SOURCES = \
 check_property_subscriber_SOURCES = \
     check_property_subscriber.cpp
 
+check_quiddity_create_remove_SOURCES = \
+    check_quiddity_create_remove.cpp
+
 check_rtp_session_SOURCES = \
     check_rtp_session.cpp
+
+check_scope_guard_SOURCES = \
+    check_scope_guard.cpp
 
 check_signal_subscriber_SOURCES = \
     check_signal_subscriber.cpp
@@ -50,13 +77,10 @@ check_signal_subscriber_SOURCES = \
 check_startable_SOURCES = \
     check_startable.cpp
 
-check_fakesink_SOURCES = \
-    check_fakesink.cpp
+check_string_dictionary_SOURCES = \
+    check_string_dictionary.cpp
 
-check_information_tree_SOURCES = \
-    check_information_tree.cpp
-
-check_scope_guard_SOURCES = \
-    check_scope_guard.cpp
+check_ugstelem_SOURCES = \
+    check_ugstelem.cpp
 
 TESTS = $(check_PROGRAMS)

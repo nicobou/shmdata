@@ -9,7 +9,7 @@ libpulsesrc_la_SOURCES = \
     pulsesrc.cpp
 
 libpulsesrc_la_include_HEADERS = \
-    pulsesrc.h
+    pulsesrc.hpp
 
 libpulsesrc_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
@@ -41,7 +41,7 @@ libpulsesink_la_SOURCES = \
     pulsesink.cpp
 
 libpulsesink_la_include_HEADERS = \
-    pulsesink.h
+    pulsesink.hpp
 
 libpulsesink_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher

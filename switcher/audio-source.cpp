@@ -17,56 +17,52 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "audio-source.h"
-#include "gst-utils.h"
 #include <memory>
+#include "./audio-source.hpp"
+#include "./gst-utils.hpp"
 
-namespace switcher
-{
-  AudioSource::AudioSource() :
-    shmdata_path_ ()
-  { 
-    make_audio_elements ();
-  }
+namespace switcher {
+AudioSource::AudioSource() :
+    audio_tee_("tee") {
+  make_audio_elements();
+}
 
-  void 
-  AudioSource::make_audio_elements ()
-  {
-   if (!GstUtils::make_element ("tee", &audio_tee_))
-     g_debug ("tee GStreamer element is missing (for audio source)");
-    gst_bin_add (GST_BIN (bin_),
-		 audio_tee_);
-  }
+AudioSource::~AudioSource() {
+}
 
-  void 
-  AudioSource::set_raw_audio_element (GstElement *elt)
-  {
-    unset_raw_audio_element ();
-    make_audio_elements ();
-    rawaudio_ = elt;
-    gst_bin_add (GST_BIN (bin_), rawaudio_);
-    gst_element_link (rawaudio_, audio_tee_);
-    GstCaps *audiocaps = gst_caps_new_simple ("audio/x-raw-int",
-					      "width", G_TYPE_INT, 16,
-     					      nullptr);
-    //creating a connector for raw audio
-    ShmdataWriter::ptr shmdata_writer;
-    shmdata_writer.reset (new ShmdataWriter ());
-    shmdata_path_ = make_file_name ("audio");
-    shmdata_writer->set_path (shmdata_path_.c_str());
-    shmdata_writer->plug (bin_, audio_tee_, audiocaps);
-    register_shmdata (shmdata_writer);
-    gst_caps_unref(audiocaps);
-    GstUtils::sync_state_with_parent (rawaudio_);
-    GstUtils::sync_state_with_parent (audio_tee_);
-  }
+void AudioSource::make_audio_elements() {
+  UGstElem tmp("tee");
+  if (!tmp)
+    g_debug("cannot make tee for audio source");
+  else
+    audio_tee_ = std::move(tmp);
+}
 
-  void 
-  AudioSource::unset_raw_audio_element ()
-  {
-    if (!shmdata_path_.empty ())
-      unregister_shmdata (shmdata_path_);
-    reset_bin ();
-  }
+void AudioSource::set_raw_audio_element(GstElement *elt) {
+  unset_raw_audio_element();
+  make_audio_elements();
+  rawaudio_ = elt;
+  gst_bin_add_many(GST_BIN(get_bin()), rawaudio_, audio_tee_.get_raw(), nullptr);
+  gst_element_link(rawaudio_, audio_tee_.get_raw());
+  GstCaps *audiocaps = gst_caps_new_simple("audio/x-raw-int",
+                                           "width",
+                                           G_TYPE_INT, 16,
+                                           nullptr);
+  // creating a connector for raw audio
+  ShmdataWriter::ptr shmdata_writer;
+  shmdata_writer.reset(new ShmdataWriter());
+  shmdata_path_ = make_file_name("audio");
+  shmdata_writer->set_path(shmdata_path_.c_str());
+  shmdata_writer->plug(get_bin(), audio_tee_.get_raw(), audiocaps);
+  register_shmdata(shmdata_writer);
+  gst_caps_unref(audiocaps);
+  GstUtils::sync_state_with_parent(rawaudio_);
+  GstUtils::sync_state_with_parent(audio_tee_.get_raw());
+}
 
+void AudioSource::unset_raw_audio_element() {
+  if (!shmdata_path_.empty())
+    unregister_shmdata(shmdata_path_);
+  reset_bin();
+}
 }

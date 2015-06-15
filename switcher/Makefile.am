@@ -22,61 +22,62 @@ lib_LTLIBRARIES = \
     libswitcher-@LIBSWITCHER_API_VERSION@.la
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
-    aravis-genicam.cpp \
     audio-source.cpp \
     audio-test-source.cpp \
-    single-pad-gst-sink.cpp \
     categorizable.cpp \
     counter-map.cpp \
-    custom-property-helper.cpp \
     create-remove-spy.cpp \
-    decodebin2.cpp \
+    custom-property-helper.cpp \
     decodebin-to-shmdata.cpp \
-    deinterleave.cpp \
+    decodebin2.cpp \
+    default-video-format.cpp \
     fake-shmdata-writer.cpp \
-    file-sdp.cpp \
     fakesink.cpp \
+    g-source-wrapper.cpp \
+    glibmainloop.cpp \
     gobject-custom-property.cpp \
     gobject-wrapper.cpp \
-    gpipe.cpp \
     gst-element-cleaner.cpp \
     gst-parse-to-bin-src.cpp \
-    gst-video-parse-to-bin-src.cpp \
+    gst-pipe.cpp \
+    gst-pipeliner.cpp \
     gst-utils.cpp \
-    http-sdp.cpp \
+    gst-video-parse-to-bin-src.cpp \
     http-sdp-dec.cpp \
-    information-tree.cpp \
     information-tree-basic-serializer.cpp \
     information-tree-json.cpp \
+    information-tree.cpp \
     jack-audio-source.cpp \
-    jack-sink.cpp \
     json-builder.cpp \
     logger.cpp \
     method.cpp \
+    net-utils.cpp \
     on-caps.cpp \
     plugin-loader.cpp \
-    property.cpp \
     property-mapper.cpp \
+    property.cpp \
     quiddity-basic-test.cpp \
     quiddity-command.cpp \
     quiddity-documentation.cpp \
+    quiddity-manager-impl.cpp \
     quiddity-manager-wrapper.cpp \
     quiddity-manager.cpp \
-    quiddity-manager-impl.cpp \
     quiddity-property-subscriber.cpp \
     quiddity-signal-subscriber.cpp \
     quiddity.cpp \
     rtp-destination.cpp \
     rtp-session.cpp \
+    safe-bool-idiom.cpp \
     sdp-utils.cpp \
     segment.cpp \
-    shmdata-any-writer.cpp \
     shmdata-any-reader.cpp \
+    shmdata-any-writer.cpp \
     shmdata-from-gdp-file.cpp \
     shmdata-reader.cpp \
     shmdata-to-file.cpp \
     shmdata-writer.cpp \
     signal-string.cpp \
+    single-pad-gst-sink.cpp \
     startable-quiddity.cpp \
     string-dictionary.cpp \
     udpsink.cpp \
@@ -100,74 +101,75 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
-    abstract-factory.h \
-    abstract-factory_spec.h \
-    any.h \
-    aravis-genicam.h \
-    audio-source.h \
-    audio-test-source.h \
-    single-pad-gst-sink.h \
-    categorizable.h \
-    clock.h \
-    counter-map.h \
-    create-remove-spy.h \
-    creator.h \
-    custom-property-helper.h \
-    decodebin2.h \
-    decodebin-to-shmdata.h \
-    deinterleave.h \
-    fake-shmdata-writer.h \
-    fakesink.h \
-    file-sdp.h \
-    gobject-custom-property.h \
-    gobject-wrapper.h \
-    gpipe.h \
-    gst-element-cleaner.h \
-    gst-parse-to-bin-src.h \
-    gst-video-parse-to-bin-src.h \
-    gst-utils.h \
-    hash-table.h \
-    hash-table_spec.h \
-    http-sdp.h \
-    http-sdp-dec.h \
-    information-tree.h \
-    information-tree-basic-serializer.h \
-    information-tree-json.h \
-    jack-audio-source.h \
-    jack-sink.h \
-    json-builder.h \
-    logger.h \
-    method.h \
-    on-caps.h \
-    plugin-loader.h \
-    property.h \
-    property-mapper.h \
-    quiddity-basic-test.h \
-    quiddity-command.h \
-    quiddity-documentation.h \
-    quiddity-manager-wrapper.h \
-    quiddity-manager.h \
-    quiddity-manager-impl.h \
-    quiddity-property-subscriber.h \
-    quiddity-signal-subscriber.h \
-    quiddity.h \
-    rtp-destination.h \
-    rtp-session.h \
-    scope-exit.h \
-    sdp-utils.h \
-    segment.h \
-    shmdata-any-writer.h \
-    shmdata-any-reader.h \
-    shmdata-from-gdp-file.h \
-    shmdata-reader.h \
-    shmdata-to-file.h \
-    shmdata-writer.h \
-    signal-string.h \
-    startable-quiddity.h \
-    string-dictionary.h \
-    udpsink.h \
-    unique-gst-element.h \
-    uridecodebin.h \
-    video-source.h \
-    video-test-source.h \
-    xvimagesink.h
+    abstract-factory.hpp \
+    abstract-factory_spec.hpp \
+    any.hpp \
+    audio-source.hpp \
+    audio-test-source.hpp \
+    categorizable.hpp \
+    clock.hpp \
+    counter-map.hpp \
+    create-remove-spy.hpp \
+    creator.hpp \
+    custom-property-helper.hpp \
+    decodebin-to-shmdata.hpp \
+    decodebin2.hpp \
+    default-video-format.hpp \
+    fake-shmdata-writer.hpp \
+    fakesink.hpp \
+    g-source-wrapper.hpp \
+    glibmainloop.hpp \
+    gobject-custom-property.hpp \
+    gobject-wrapper.hpp \
+    gst-element-cleaner.hpp \
+    gst-parse-to-bin-src.hpp \
+    gst-pipe.hpp \
+    gst-pipeliner.hpp \
+    gst-utils.hpp \
+    gst-video-parse-to-bin-src.hpp \
+    http-sdp-dec.hpp \
+    information-tree-basic-serializer.hpp \
+    information-tree-json.hpp \
+    information-tree.hpp \
+    jack-audio-source.hpp \
+    json-builder.hpp \
+    logger.hpp \
+    make-consultable.hpp \
+    method.hpp \
+    net-utils.hpp \
+    on-caps.hpp \
+    plugin-loader.hpp \
+    property-mapper.hpp \
+    property.hpp \
+    quiddity-basic-test.hpp \
+    quiddity-command.hpp \
+    quiddity-documentation.hpp \
+    quiddity-manager-impl.hpp \
+    quiddity-manager-wrapper.hpp \
+    quiddity-manager.hpp \
+    quiddity-property-subscriber.hpp \
+    quiddity-signal-subscriber.hpp \
+    quiddity.hpp \
+    rtp-destination.hpp \
+    rtp-session.hpp \
+    safe-bool-idiom.hpp \
+    scope-exit.hpp \
+    sdp-utils.hpp \
+    segment.hpp \
+    shmdata-any-reader.hpp \
+    shmdata-any-writer.hpp \
+    shmdata-from-gdp-file.hpp \
+    shmdata-reader.hpp \
+    shmdata-to-file.hpp \
+    shmdata-writer.hpp \
+    signal-string.hpp \
+    single-pad-gst-sink.hpp \
+    startable-quiddity.hpp \
+    std2.hpp \
+    string-dictionary.hpp \
+    udpsink.hpp \
+    unique-gst-element.hpp \
+    uridecodebin.hpp \
+    video-source.hpp \
+    video-test-source.hpp \
+    xvimagesink.hpp

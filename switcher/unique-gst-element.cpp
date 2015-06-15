@@ -17,28 +17,46 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "unique-gst-element.h"
+#include "./unique-gst-element.hpp"
+#include "./std2.hpp"
 
-namespace switcher
-{
-
-  UniqueGstElement::UniqueGstElement (const gchar *class_name) :
-    element_ (gst_element_factory_make (class_name, nullptr), 
-	      &GstUtils::gst_element_deleter)
-  {}
-
-    void 
-    UniqueGstElement::g_invoke (std::function <void (gpointer)> command)
-    {
-      command (G_OBJECT (element_.get ()));
-      return;
-    }
-
-    void 
-    UniqueGstElement::invoke (std::function <void (GstElement *)> command)
-    {
-      command (element_.get ());
-      return;
-    }
-
+namespace switcher {
+bool UGstElem::renew(UGstElem &element) {
+  gst_element_handle tmp(gst_element_factory_make(element.class_name_.c_str(),
+                                                  nullptr),
+                         &GstUtils::gst_element_deleter);
+  if (!tmp)
+    return false;
+  std::swap(tmp, element.element_);
+  return true;
 }
+
+UGstElem::UGstElem(const gchar *class_name):
+    class_name_(class_name),
+    element_(gst_element_factory_make(class_name, nullptr),
+             &GstUtils::gst_element_deleter) {
+}
+
+bool UGstElem::safe_bool_idiom() const {
+  return static_cast<bool>(element_);
+}
+
+void UGstElem::g_invoke(std::function<void(gpointer)> command) {
+  command(G_OBJECT(element_.get()));
+  return;
+}
+
+void UGstElem::invoke(std::function<void(GstElement *)> command) {
+  command(element_.get());
+  return;
+}
+
+GstElement *UGstElem::get_raw() {
+  return element_.get();
+}
+
+void UGstElem::mute(const gchar *class_name) {
+  class_name_ = class_name;
+}
+
+}  // namespace switcher

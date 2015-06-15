@@ -39,7 +39,7 @@ libosc_ctrl_server_la_SOURCES = \
     osc-ctrl-server.cpp
 
 libosc_ctrl_server_la_include_HEADERS = \
-    osc-ctrl-server.h
+    osc-ctrl-server.hpp
 
 libosc_ctrl_server_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
@@ -55,7 +55,7 @@ libosc_to_shmdata_la_SOURCES = \
     osc-to-shmdata.cpp
 
 libosc_to_shmdata_la_include_HEADERS = \
-    osc-to-shmdata.h
+    osc-to-shmdata.hpp
 
 libosc_to_shmdata_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
@@ -71,7 +71,7 @@ libshmdata_to_osc_la_SOURCES = \
     shmdata-to-osc.cpp
 
 libshmdata_to_osc_la_include_HEADERS = \
-    shmdata-to-osc.h
+    shmdata-to-osc.hpp
 
 libshmdata_to_osc_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher

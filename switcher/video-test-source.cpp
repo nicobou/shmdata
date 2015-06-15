@@ -17,92 +17,72 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "video-test-source.h"
 #include <gst/gst.h>
-#include "gst-utils.h"
+#include "./gst-utils.hpp"
+#include "./video-test-source.hpp"
 
-namespace switcher
-{
-  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
-				       "Video Test",
-				       "video source", 
-				       "Creates a test video stream",
-				       "LGPL",
-				       "videotestsrc",				
-				       "Nicolas Bouillot");
+namespace switcher {
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
+                                     "Video Pattern",
+                                     "video",
+                                     "Creates a test video stream",
+                                     "LGPL",
+                                     "videotestsrc",
+                                     "Nicolas Bouillot");
 
-  VideoTestSource::VideoTestSource() :
-    videotestsrc_ (nullptr)
-  {}
- 
-  VideoTestSource::~VideoTestSource()
-  {
-    GstUtils::clean_element (videotestsrc_);
-  }
-  
-  bool
-  VideoTestSource::init_gpipe ()
-  {
-    bool made = make_video_source (&videotestsrc_);    
-    if (!made)
-      return false;
-    
-    //"pattern" property available atfer initialization 
-    install_property (G_OBJECT (videotestsrc_),
-		      "pattern",
-		      "pattern", 
-		      "Video Pattern");
-    return true;
-  }
+VideoTestSource::VideoTestSource(const std::string &) {
+}
 
-  bool
-  VideoTestSource::make_video_source (GstElement **new_element)
-  {
+VideoTestSource::~VideoTestSource() {
+  GstUtils::clean_element(videotestsrc_);
+}
 
-    GstElement *videotest;
-    if (!GstUtils::make_element ("videotestsrc",&videotest))
-      return false;
-    
-    g_object_set (G_OBJECT (videotest),
-		  "is-live", TRUE,
-		  nullptr);
-    
-    if (videotestsrc_ != nullptr)
-      {
-	GstUtils::apply_property_value (G_OBJECT (videotestsrc_), G_OBJECT (videotest), "pattern");
-	
-	GstUtils::clean_element (videotestsrc_);
-      }
-     
-    videotestsrc_ = videotest;
-    *new_element = videotestsrc_;
+bool VideoTestSource::init_gpipe() {
+  bool made = make_video_source(&videotestsrc_);
+  if (!made)
+    return false;
 
-    return true;
+  // "pattern" property available atfer initialization
+  install_property(G_OBJECT(videotestsrc_),
+                   "pattern", "pattern", "Video Pattern");
+  return true;
+}
+
+bool VideoTestSource::make_video_source(GstElement **new_element) {
+  GstElement *videotest = nullptr;
+  if (!GstUtils::make_element("videotestsrc", &videotest))
+    return false;
+
+  g_object_set(G_OBJECT(videotest), "is-live", TRUE, nullptr);
+
+  if (videotestsrc_ != nullptr) {
+    GstUtils::apply_property_value(G_OBJECT(videotestsrc_),
+                                   G_OBJECT(videotest),
+                                   "pattern");
+
+    GstUtils::clean_element(videotestsrc_);
   }
 
-  bool 
-  VideoTestSource::on_start ()
-  {
-    reinstall_property (G_OBJECT (videotestsrc_),
-			"pattern",
-			"pattern", 
-			"Video Pattern");
-    return true;
-  }
-  
-  bool 
-  VideoTestSource::on_stop ()
-  {
-    //need a new element for property setting 
-    bool made = make_video_source (&videotestsrc_);    
-    if (!made)
-      return false;
-    
-    reinstall_property (G_OBJECT (videotestsrc_),
-		       "pattern",
-		       "pattern", 
-		       "Video Pattern");
-    return true;
-  }
-  
+  videotestsrc_ = videotest;
+  *new_element = videotestsrc_;
+
+  return true;
+}
+
+bool VideoTestSource::on_start() {
+  reinstall_property(G_OBJECT(videotestsrc_),
+                     "pattern", "pattern", "Video Pattern");
+  return true;
+}
+
+bool VideoTestSource::on_stop() {
+  // need a new element for property setting
+  bool made = make_video_source(&videotestsrc_);
+  if (!made)
+    return false;
+
+  reinstall_property(G_OBJECT(videotestsrc_),
+                     "pattern", "pattern", "Video Pattern");
+  return true;
+}
 }

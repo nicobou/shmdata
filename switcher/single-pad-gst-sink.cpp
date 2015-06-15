@@ -17,100 +17,81 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "single-pad-gst-sink.h"
-#include "gst-utils.h"
+#include "./single-pad-gst-sink.hpp"
+#include "./gst-utils.hpp"
 #include <utility>
 
-namespace switcher
-{
-  SinglePadGstSink::~SinglePadGstSink ()
-  {}  
-  
-  SinglePadGstSink::SinglePadGstSink () 
-  {
-    install_connect_method (std::bind (&SinglePadGstSink::connect,
-				       this, 
-				       std::placeholders::_1),
-			    nullptr, //no disconnect
-			    std::bind (&SinglePadGstSink::disconnect_all,
-				       this),
-			    std::bind (&SinglePadGstSink::can_sink_caps,
-				       this, 
-				       std::placeholders::_1), 
-			    1);
+namespace switcher {
+SinglePadGstSink::~SinglePadGstSink() {
+}
+
+SinglePadGstSink::SinglePadGstSink() {
+  install_connect_method(std::bind(&SinglePadGstSink::connect,
+                                   this,
+                                   std::placeholders::_1),
+                         nullptr,  // no disconnect
+                         std::bind(&SinglePadGstSink::disconnect_all,
+                                   this),
+                         std::bind(&SinglePadGstSink::can_sink_caps,
+                                   this,
+                                   std::placeholders::_1),
+                         1);
+}
+
+bool SinglePadGstSink::disconnect_all() {
+  on_shmdata_disconnect();
+  return true;
+}
+
+bool SinglePadGstSink::connect(std::string shmdata_socket_path) {
+  unregister_shmdata(shmdata_socket_path);
+  on_shmdata_connect(shmdata_socket_path);
+  auto reader = std::make_shared<ShmdataReader>();
+  reader->set_path(shmdata_socket_path.c_str());
+  shmdata_path_ = shmdata_socket_path;
+  reader->set_g_main_context(get_g_main_context());
+  reader->set_bin(get_bin());
+  if (sink_element_ != nullptr)
+    reader->set_sink_element(sink_element_);
+  if (connection_hook_ != nullptr) {
+    g_debug("SinglePadGstSink::connect set on_first_data_hook ");
+    reader->set_on_first_data_hook(connection_hook_, hook_user_data_);
   }
-  
-  bool
-  SinglePadGstSink::disconnect_all ()
-  {
-    on_shmdata_disconnect ();
-    return true;
-  }
+  reader->start();
+  register_shmdata(reader);
+  return true;
+}
 
-  bool
-  SinglePadGstSink::connect (std::string shmdata_socket_path)
-  {
-    unregister_shmdata (shmdata_socket_path);
-    on_shmdata_connect (shmdata_socket_path);
+void SinglePadGstSink::set_sink_element(GstElement *sink) {
+  set_sink_element_no_connect(sink);
+  if (!shmdata_path_.empty())
+    connect(shmdata_path_);
+}
 
-    ShmdataReader::ptr reader_;
-    reader_.reset (new ShmdataReader ());
-    reader_->set_path (shmdata_socket_path.c_str());
-    shmdata_path_= shmdata_socket_path;
-    reader_->set_g_main_context (get_g_main_context ());
-    reader_->set_bin (bin_);
+void SinglePadGstSink::set_sink_element_no_connect(GstElement *sink) {
+  if (sink_element_ != nullptr && sink_element_ != sink)
+    GstUtils::clean_element(sink_element_);
+  // sink element will be added to get_bin() by the shmdata reader when appropriate
+  sink_element_ = sink;
+}
 
-    if (sink_element_ != nullptr)
-      reader_->set_sink_element (sink_element_);
-    if (connection_hook_ != nullptr) 
-      {
-	g_debug ("SinglePadGstSink::connect set on_first_data_hook ");
-	reader_->set_on_first_data_hook (connection_hook_, hook_user_data_);
-      }
-    reader_->start ();
-    register_shmdata (reader_);
-    return true;
-  }
+void
+SinglePadGstSink::
+set_on_first_data_hook(ShmdataReader::on_first_data_hook cb,
+                       void *user_data) {
+  connection_hook_ = cb;
+  hook_user_data_ = user_data;
+}
 
-  void
-  SinglePadGstSink::set_sink_element (GstElement *sink)
-  {
-    set_sink_element_no_connect (sink);
-    if (!shmdata_path_.empty ())
-      connect (shmdata_path_);
-  }
- 
-  void
-  SinglePadGstSink::set_sink_element_no_connect (GstElement *sink)
-  {
-    if (sink_element_ != nullptr && sink_element_ != sink)
-      GstUtils::clean_element (sink_element_);
-    //sink element will be added to bin_ by the shmdata reader when appropriate
-    sink_element_ = sink;
-  }
+bool SinglePadGstSink::can_sink_caps(std::string caps) {
+  g_warning("%s is not implemented for this quiddity",
+            caps.c_str());
+  return false;
+}
 
- 
-  void 
-  SinglePadGstSink::set_on_first_data_hook (ShmdataReader::on_first_data_hook cb, void *user_data)
-  {
-    connection_hook_ = cb;
-    hook_user_data_ = user_data;
-  }
+void SinglePadGstSink::on_shmdata_connect(std::string /*shmdata_sochet_path*/) {
+}
 
-  bool
-  SinglePadGstSink::can_sink_caps (std::string caps)
-  {
-    g_warning ("%s is not implemented for this quiddity");
-    return false;
-  }
-
-  void 
-  SinglePadGstSink::on_shmdata_connect (std::string shmdata_sochet_path) 
-  {}
-
-  void 
-  SinglePadGstSink::on_shmdata_disconnect () 
-  {}
-
-
+void SinglePadGstSink::on_shmdata_disconnect() {
+}
 }

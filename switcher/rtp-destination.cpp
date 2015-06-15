@@ -17,157 +17,138 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rtp-destination.h"
+#include <glib/gstdio.h>  // writing sdp file
+#include <string>
 #include <sstream>
-#include "sdp-utils.h"
+#include "./rtp-session.hpp"
+#include "./rtp-destination.hpp"
+#include "./sdp-utils.hpp"
+#include "./scope-exit.hpp"
+#include "./information-tree.hpp"
 
-namespace switcher
-{
-  RtpDestination::RtpDestination ()
-  {
-    json_description_.reset (new JSONBuilder());
-  }
-  
-  RtpDestination::~RtpDestination ()
-  {
-    for (auto &it : ports_)
-      {
-	QuiddityManager::ptr manager = it.second;
-	//cleaning rtp
-	std::vector <std::string> arg;
-	arg.push_back (host_name_);
-	arg.push_back (it.first);
-	manager->invoke ("udpsend_rtp", "remove_client", nullptr ,arg);
-	//cleaning rtcp
-	arg.clear ();
-	arg.push_back (host_name_);
-	std::ostringstream rtcp_port;
-	rtcp_port << atoi(it.first.c_str()) + 1;
-	arg.push_back (rtcp_port.str());
-	manager->invoke ("udpsend_rtp", "remove_client", nullptr, arg);
-	//TODO remove connection to funnel
-      }
-  }
-  
-  void 
-  RtpDestination::set_name (std::string name)
-  {
-    name_ = name;
-    make_json_description ();
-  }
-
-  void 
-  RtpDestination::set_host_name (std::string host_name)
-  {
-    host_name_ = host_name;
-    make_json_description ();
-  }
-  
-  std::string
-  RtpDestination::get_host_name ()
-  {
-    return host_name_;
-  }
-
-  std::string 
-  RtpDestination::get_port (std::string shmdata_path)
-  {
-    auto it = source_streams_.find (shmdata_path);
-    if (source_streams_.end () == it)
-      return "";
-    return it->second;
-  }
-
-
-  bool 
-  RtpDestination::add_stream (std::string orig_shmdata_path,
-			      QuiddityManager::ptr manager, 
-			      std::string port)
-  {
-    ports_[port] = manager;
-    source_streams_[orig_shmdata_path] = port;
-    make_json_description ();
-    return true;
-  }
-
-  bool
-  RtpDestination::has_shmdata (std::string shmdata_path)
-  {
-    return (source_streams_.end () != source_streams_.find (shmdata_path));
-  }
-
-  bool
-  RtpDestination::has_port (std::string port)
-  {
-    return (ports_.end () != ports_.find (port));
-  }
-  
-  bool
-  RtpDestination::remove_stream (std::string shmdata_stream_path)
-  {
-    auto it = source_streams_.find (shmdata_stream_path);
-    if (source_streams_.end () == it)
-      {
-	g_warning ("RtpDestination: stream not found, cannot remove %s", 
-		   shmdata_stream_path.c_str ());
-	return false;
-      }
-    ports_.erase (it->second);
-    source_streams_.erase (it);
-    make_json_description ();
-    return true;
-  }
-  
-  std::string 
-  RtpDestination::get_sdp ()
-  {
-    SDPDescription desc;
-    
-    for(auto &it : ports_)
-      {
-	std::string string_caps = (it.second)->get_property ("udpsend_rtp","caps");
-	GstCaps *caps = gst_caps_from_string (string_caps.c_str ());
-	gint port = atoi(it.first.c_str());
-	SDPMedia media;
-	media.set_media_info_from_caps (caps);
-	media.set_port (port);
-
-	if (!desc.add_media (media))
-	  g_warning ("a media has not been added to the SDP description");
-
-	gst_caps_unref (caps);
-      }
-
-    
-    return desc.get_string ();
-  }
-
-
-  void
-  RtpDestination::make_json_description ()
-  {
-    json_description_->reset ();
-    json_description_->begin_object ();
-    json_description_->add_string_member ("name", name_.c_str ());
-    json_description_->add_string_member ("host_name", host_name_.c_str ());
-    json_description_->set_member_name ("data_streams");
-    json_description_->begin_array ();
-    for (auto &it : source_streams_)
-      {
-	json_description_->begin_object ();
-	json_description_->add_string_member ("path", it.first.c_str ());
-	json_description_->add_string_member ("port", it.second.c_str ());
-	json_description_->end_object ();
-      }
-    json_description_->end_array ();
-    json_description_->end_object ();
-  }
-
-  JSONBuilder::Node 
-  RtpDestination::get_json_root_node ()
-  {
-    return json_description_->get_root ();
-  }
-
-
+namespace switcher {
+RtpDestination::RtpDestination(RtpSession *session) :
+    json_description_(std::make_shared<JSONBuilder>()),
+    session_ (session) {
 }
+
+RtpDestination::~RtpDestination() {
+  for (auto &it : files_)
+    g_remove(it.c_str());
+}
+
+void RtpDestination::set_name(std::string name) {
+  name_ = std::move(name);
+  make_json_description();
+}
+
+void RtpDestination::set_host_name(std::string host_name) {
+  host_name_ = std::move(host_name);
+  make_json_description();
+}
+
+std::string RtpDestination::get_host_name() const {
+  return host_name_;
+}
+
+std::string RtpDestination::get_port(const std::string &shmdata_path) {
+  auto it = source_streams_.find(shmdata_path);
+  if (source_streams_.end() == it)
+    return std::string();
+  return it->second;
+}
+
+bool
+RtpDestination::add_stream(const std::string &shmdata_path,
+                           std::string port) {
+  source_streams_[shmdata_path] = port;
+  make_json_description();
+  return true;
+}
+
+bool RtpDestination::has_shmdata(const std::string &shmdata_path) {
+  return (source_streams_.end() != source_streams_.find(shmdata_path));
+}
+
+bool RtpDestination::remove_stream(const std::string &shmdata_stream_path) {
+  auto it = source_streams_.find(shmdata_stream_path);
+  if (source_streams_.end() == it) {
+    g_warning("RtpDestination: stream not found, cannot remove %s",
+              shmdata_stream_path.c_str());
+    return false;
+  }
+  source_streams_.erase(it);
+  make_json_description();
+  return true;
+}
+
+std::string RtpDestination::get_sdp() {
+  SDPDescription desc;
+  
+  for (auto &it : source_streams_) {
+    std::string string_caps = session_->
+        tree<const Any &, const std::string &>(
+            &data::Tree::branch_read_data,
+            std::string("rtp_caps." + it.first)).copy_as<std::string>();
+    GstCaps *caps = gst_caps_from_string(string_caps.c_str());
+    On_scope_exit{gst_caps_unref(caps);};
+    gint port = atoi(it.second.c_str());
+    SDPMedia media;
+    media.set_media_info_from_caps(caps);
+    media.set_port(port);
+    if (!desc.add_media(media)) {
+      g_warning("a media has not been added to the SDP description,"
+                "returning empty description");
+      return std::string();
+    }
+  }
+  return desc.get_string();
+}
+
+void RtpDestination::make_json_description() {
+  json_description_->reset();
+  json_description_->begin_object();
+  json_description_->add_string_member("name", name_.c_str());
+  json_description_->add_string_member("host_name", host_name_.c_str());
+  json_description_->set_member_name("data_streams");
+  json_description_->begin_array();
+  for (auto &it : source_streams_) {
+    json_description_->begin_object();
+    json_description_->add_string_member("path", it.first.c_str());
+    json_description_->add_string_member("port", it.second.c_str());
+    json_description_->end_object();
+  }
+  json_description_->end_array();
+  json_description_->end_object();
+}
+
+JSONBuilder::Node RtpDestination::get_json_root_node() {
+  return json_description_->get_root();
+}
+
+bool RtpDestination::write_to_file(std::string file_name) {
+  std::string sdp = get_sdp();
+  if (sdp.empty())
+    return false;
+  GError *error = NULL;
+  if (!g_file_set_contents(file_name.c_str(),
+                           sdp.c_str(),
+                           -1,  // no size, res is a null terminated string
+                           &error)) {
+    g_warning("%s",error->message);
+    g_error_free(error);
+    return false;
+  }
+  files_.push_front(std::move(file_name));
+  return true;
+}
+
+std::vector<std::string> RtpDestination::get_shmdata() const {
+  std::vector<std::string> res;
+  for (auto &it: source_streams_) {
+    res.push_back(it.first);
+  }
+  return res;
+}
+
+}  // namespace switcher

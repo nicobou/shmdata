@@ -17,45 +17,31 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/quiddity-manager.h"
-#include "switcher/quiddity-basic-test.h"
 #include <vector>
 #include <string>
 #include <iostream>
+#include <cassert>
+#include "switcher/quiddity-manager.hpp"
+#include "switcher/quiddity-basic-test.hpp"
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "../../config.h"
 #endif
 
 int
-main ()
-{
-   bool success = true;
-
-   {
-  switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
-
-  #ifdef HAVE_CONFIG_H
-      gchar *usr_plugin_dir = g_strdup_printf ("./%s", LT_OBJDIR);
-      manager->scan_directory_for_plugins (usr_plugin_dir);
-      g_free (usr_plugin_dir);
-  #else
-      return 1;
-  #endif
-
-      if (!switcher::QuiddityBasicTest::test_full (manager, "OSCctl"))
-        success = false;
-
-      if (!switcher::QuiddityBasicTest::test_full (manager, "OSCprop"))
-        success = false;
-
-   }//end of scope is releasing the manager
-
-   if (success)
-     return 0;
-   else
-     return 1;
+main() {
+  {
+    switcher::QuiddityManager::ptr manager =
+        switcher::QuiddityManager::make_manager("test_manager");
+#ifdef HAVE_CONFIG_H
+    gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
+    manager->scan_directory_for_plugins(usr_plugin_dir);
+    g_free(usr_plugin_dir);
+#else
+    return 1;
+#endif
+    assert(switcher::QuiddityBasicTest::test_full(manager, "OSCctl"));
+    assert(switcher::QuiddityBasicTest::test_full(manager, "shmOSCsink"));
+  }  // end of scope is releasing the manager
+  return 0;
 }
-
-
-

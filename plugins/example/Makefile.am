@@ -8,7 +8,7 @@ libmyplugin_la_SOURCES = \
     myplugin.cpp
 
 libmyplugin_la_include_HEADERS = \
-    myplugin.h
+    myplugin.hpp
 
 libmyplugin_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher

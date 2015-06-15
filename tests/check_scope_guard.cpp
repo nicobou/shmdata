@@ -14,20 +14,24 @@
  * You should have received a copy of the GNU General Public License
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "switcher/scope-exit.h"
+#include "switcher/scope-exit.hpp"
 
-//note: do not write On_scope_exit call in the same line
+// note: do not write multiple "On_scope_exit" call in the same line
 int
-main ()
-{
+main() {
   int counter = 0;
   {
     counter = 1;
-    On_scope_exit {counter = 2;}; 
-    On_scope_exit {}; //ensuring multiple calls in the same scope
+    On_scope_exit {
+      counter = 2;
+    };
+    On_scope_exit {
+    };  // ensuring multiple calls in the same scope
   }
 
-  On_scope_exit {counter = 3;}; //should be assigned after "main"
+  On_scope_exit {
+    counter = 3;
+  };  // should be assigned after "main"
 
   if (2 == counter)
     return 0;

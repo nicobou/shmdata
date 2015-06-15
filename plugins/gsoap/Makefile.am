@@ -35,8 +35,8 @@ libsoapserver_la_SOURCES = \
     webservices/soapcontrolService.cpp 
 
 libsoapserver_la_include_HEADERS = \
-    ctrl-webservice-definition.h \
-    soap-ctrl-server.h 
+    ctrl-webservice-definition.hpp \
+    soap-ctrl-server.hpp 
 
 libsoapserver_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
@@ -51,7 +51,7 @@ libsoapclient_la_SOURCES = \
     webservices/soapcontrolProxy.cpp 
 
 libsoapclient_la_include_HEADERS = \
-    soap-ctrl-client.h
+    soap-ctrl-client.hpp
 
 libsoapclient_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
@@ -86,15 +86,15 @@ endif
 
 webservices/soapC.cpp: Makefile
 	mkdir -p webservices
-	soapcpp2 -I $(gsoap_INCLUDE) -i -d webservices $(srcdir)/ctrl-webservice-definition.h
+	soapcpp2 -I $(gsoap_INCLUDE) -i -d webservices $(srcdir)/ctrl-webservice-definition.hpp
 
 $(srcdir)/webservices/soapcontrolProxy.cpp: Makefile
 	mkdir -p webservices
-	soapcpp2 -I $(gsoap_INCLUDE) -i -d webservices $(srcdir)/ctrl-webservice-definition.h
+	soapcpp2 -I $(gsoap_INCLUDE) -i -d webservices $(srcdir)/ctrl-webservice-definition.hpp
 
 $(srcdir)/webservices/soapcontrolService.cpp: Makefile
 	mkdir -p webservices
-	soapcpp2 -I $(gsoap_INCLUDE) -i  -d webservices $(srcdir)/ctrl-webservice-definition.h
+	soapcpp2 -I $(gsoap_INCLUDE) -i  -d webservices $(srcdir)/ctrl-webservice-definition.hpp
 
 
 ## unit tests

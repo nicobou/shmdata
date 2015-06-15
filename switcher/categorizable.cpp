@@ -17,55 +17,41 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "categorizable.h"
+#include "./categorizable.hpp"
 #include "gst/gst.h"
 
-namespace switcher
-{
-  Categorizable::Categorizable ()
-  {
-    category_ = "";
-    position_weight_ = 0;
-  }
+namespace switcher {
+Categorizable::Categorizable(): 
+    category_(""),
+    position_weight_(0) {
+}
 
-  Categorizable::~Categorizable ()
-  {}
-  
-  void 
-  Categorizable::set_category (std::string category_name)
-  {
-    category_ = category_name;
-  }
-    
-  void 
-  Categorizable::set_position_weight (int position_weight)
-  {
-    position_weight_ =  position_weight;
-  }
+Categorizable::~Categorizable() {
+}
 
-  std::string 
-  Categorizable::get_category ()
-  {
-    return category_;
-  }
-  
-  int 
-  Categorizable::get_position_weight ()
-  {
-    return position_weight_;
-  }
+void Categorizable::set_category(std::string category_name) {
+  category_ = category_name;
+}
 
-  bool
-  Categorizable::compare_ptr (Categorizable::ptr first, 
-			      Categorizable::ptr second)
-  {
-    return first->position_weight_ < second->position_weight_;
-  }
+void Categorizable::set_position_weight(int position_weight) {
+  position_weight_ = position_weight;
+}
 
-  bool
-  Categorizable::compare (Categorizable first, 
-			  Categorizable second)
-  {
-    return first.position_weight_ < second.position_weight_;
-  }
+std::string Categorizable::get_category() const {
+  return category_;
+}
+
+int Categorizable::get_position_weight() const {
+  return position_weight_;
+}
+
+bool
+Categorizable::compare_ptr(Categorizable::ptr first,
+                           Categorizable::ptr second) {
+  return first->position_weight_ < second->position_weight_;
+}
+
+bool Categorizable::compare(Categorizable first, Categorizable second) {
+  return first.position_weight_ < second.position_weight_;
+}
 }

@@ -17,35 +17,27 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "counter-map.h"
+#include "./counter-map.hpp"
 
-namespace switcher
-{
+namespace switcher {
+CounterMap::CounterMap():counters_(), mutex_() {
+}
 
-  CounterMap::CounterMap () :
-    counters_ (),
-    mutex_ ()
-  {}
+CounterMap::~CounterMap() {
+}
 
-  CounterMap::~CounterMap () {}
+unsigned int CounterMap::get_count(const std::string &key) {
+  std::unique_lock<std::mutex> lock(mutex_);
+  auto it = counters_.find(key);
+  if (counters_.end() != it)
+    return ++(it->second);
+  // else init to 0 for this key
+  counters_[key] = 0;
+  return 0;
+}
 
-  uint
-  CounterMap::get_count (const std::string &key)
-  {
-    std::unique_lock<std::mutex> lock (mutex_);
-    auto it = counters_.find (key);
-    if (counters_.end () != it)
-      return ++(it->second);
-    //else init to 0 for this key
-    counters_[key] = 0;
-    return 0;
-  }
-
-  void 
-  CounterMap::reset_counter_map ()
-  {
-    std::unique_lock<std::mutex> lock (mutex_);
-    counters_.clear ();
-  }
-}//end of switcher namespace
-
+void CounterMap::reset_counter_map() {
+  std::unique_lock<std::mutex> lock(mutex_);
+  counters_.clear();
+}
+}  // namespace switcher

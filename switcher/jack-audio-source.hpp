@@ -1,0 +1,64 @@
+/*
+ * This file is part of libswitcher.
+ *
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+#ifndef __SWITCHER_JACK_AUDIO_SOURCE_H__
+#define __SWITCHER_JACK_AUDIO_SOURCE_H__
+
+#include "switcher/audio-source.hpp"
+#include "switcher/startable-quiddity.hpp"
+#include "switcher/custom-property-helper.hpp"
+#include <memory>
+
+namespace switcher {
+class JackAudioSource: public AudioSource, public StartableQuiddity {
+ public:
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackAudioSource);
+  JackAudioSource(const std::string &);
+  ~JackAudioSource();
+  JackAudioSource(const JackAudioSource &) = delete;
+  JackAudioSource &operator=(const JackAudioSource &) = delete;
+
+  bool start();
+  bool stop();
+
+ private:
+  GstElement *jackaudiosrc_{nullptr};
+  GstElement *audioconvert_{nullptr};
+  GstElement *capsfilter_{nullptr};
+  GstElement *jackaudiosrc_bin_{nullptr};
+  CustomPropertyHelper::ptr custom_props_;
+  GParamSpec *num_channels_spec_{nullptr};
+  uint num_channels_{1};
+  GParamSpec *connect_physical_port_prop_{nullptr};
+  bool connect_phys_{true};
+  GParamSpec *client_name_spec_{nullptr};
+  gchar *client_name_{nullptr};
+  bool init_gpipe() final;
+  bool make_elements();
+
+  static void set_num_channels(const gint value, void *user_data);
+  static gint get_num_channels(void *user_data);
+  static void set_client_name(const gchar *value, void *user_data);
+  static const gchar *get_client_name(void *user_data);
+  static gboolean get_connect_phys(void *user_data);
+  static void set_connect_phys(gboolean connect, void *user_data);
+};
+}  // namespace switcher
+
+#endif

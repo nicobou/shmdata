@@ -8,7 +8,7 @@ libsystemusage_la_SOURCES = \
     systemusage.cpp
 
 libsystemusage_la_include_HEADERS = \
-    systemusage.h
+    systemusage.hpp
 
 libsystemusage_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher

@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "syphonreader.h"
+#include "syphonreader.hpp"
 #import <Syphon/Syphon.h>
 
 #include <iostream>
