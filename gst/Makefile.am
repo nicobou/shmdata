@@ -4,14 +4,14 @@ plugindir = \
 plugin_LTLIBRARIES = \
     libgstshmdata.la
 
-#libgstshmdata_la_SOURCES = gstshmdata.c gstshmdatasrc.c gstshmdatasink.c
 libgstshmdata_la_SOURCES = \
     gstshmdata.c \
     gstshmdatasink.c \
     gstshmdatasrc.c
 
 libgstshmdata_la_CFLAGS = \
-    $(GST_CFLAGS)
+    $(GST_CFLAGS) \
+    -I$(top_srcdir)
 
 libgstshmdata_la_LDFLAGS = \
     $(GST_PLUGIN_LDFLAGS)
@@ -23,9 +23,7 @@ libgstshmdata_la_LIBADD = \
 libgstshmdata_la_LIBTOOLFLAGS = \
     --tag=disable-static
 
-#noinst_HEADERS = gstshmdatasrc.h gstshmdatasink.h
-
 noinst_HEADERS = \
     gstshmdatalogger.h \
     gstshmdatasink.h \
-    gstshmdatasrc.c
+    gstshmdatasrc.h

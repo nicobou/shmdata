@@ -21,11 +21,9 @@
 #include <memory>
 #include <structmember.h>
 
-//#include "any-data-reader.h"
-//#include "any-data-writer.h"
-#include <shmdata/clogger.h>
-#include <shmdata/cwriter.h>
-#include <shmdata/cfollower.h>
+#include "shmdata/clogger.h"
+#include "shmdata/cwriter.h"
+#include "shmdata/cfollower.h"
 
 #ifdef __cplusplus
 extern "C"

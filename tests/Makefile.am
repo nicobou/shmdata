@@ -1,4 +1,4 @@
-AM_CFLAGS = \
+AM_CXXFLAGS = \
     -I$(top_srcdir) 
 
 LDADD = \

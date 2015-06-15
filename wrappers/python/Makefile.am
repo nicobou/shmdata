@@ -2,15 +2,18 @@ plugins_LTLIBRARIES = \
 	pyshmdata.la
 
 # pyshmdata
-pluginsdir = `python3.4 -c 'from distutils import sysconfig; print(sysconfig.get_python_lib(1,0))'`
+pluginsdir = ${prefix}`python3.4 -c 'import sys; from distutils import sysconfig; print((sysconfig.get_python_lib(1,0)).split(sys.prefix)[1])'`
 
 pyshmdata_la_SOURCES = \
-	pyshmdata.cpp
+    pyshmdata.cpp
+
+noinst_HEADERS = \
+    pyshmdata.h
 
 pyshmdata_la_CXXFLAGS = \
 	$(AM_CXXFLAGS) \
 	`python3.4-config --cflags` \
-	-I$(top_builddir)/shmdata
+	-I$(top_srcdir)
 
 pyshmdata_la_LDFLAGS = \
 	-module -fPIC \
