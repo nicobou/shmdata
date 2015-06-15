@@ -179,7 +179,8 @@ shmdata_any_reader_init (const char *socketName)
   reader->do_absolute_ = FALSE;
   reader->run_gmainloop_ = TRUE;
 
-  gst_init (NULL, NULL);
+  if (!gst_is_initialized())
+    gst_init (NULL, NULL);
   reader->loop_ = g_main_loop_new (NULL, FALSE);
   reader->pipeline_ = gst_pipeline_new (NULL);
   if (reader->pipeline_ == NULL)

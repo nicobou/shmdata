@@ -28,7 +28,7 @@ struct shmdata_base_writer_
 
 //FIXME this should be part of the library
 void
-shmdata_base_writer_unlink_pad (GstPad * pad)
+shmdata_base_writer_unlink_pad (GstPad *pad)
 {
   GstPad *peer;
   if ((peer = gst_pad_get_peer (pad))) {
@@ -36,32 +36,68 @@ shmdata_base_writer_unlink_pad (GstPad * pad)
       gst_pad_unlink (pad, peer);
     else
       gst_pad_unlink (peer, pad);
-    //checking if the pad has been requested and releasing it needed 
-    GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);//check if this must be unrefed for GST 1
-    if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
-      gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer);
+    /* //checking if the pad has been requested and releasing it needed  */
+    /* GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer); */
+    /* if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST) { */
+    /*   gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer); */
+    /* } */
+    /* gst_object_unref(pad_templ); */
     gst_object_unref (peer);
   }
+  gst_object_unref(pad);  // for pad iterator
+}
+
+void
+shmdata_base_writer_release_request_pad (GstPad *pad, gpointer user_data)
+{
+  //checking if the pad has been requested and releasing it needed  
+  GstPadTemplate *pad_templ = gst_pad_get_pad_template (pad); 
+  if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST) { 
+    gst_element_release_request_pad ((GstElement *)user_data,
+                                     pad);
+    gst_object_unref(pad);
+  } 
+  // gst_object_unref(pad_templ);  // bug in gst 0.10 ? 
+  gst_object_unref(pad);  // for pad iterator
 }
 
 //FIXME this should be part of the library
 void
 shmdata_base_writer_clean_element (GstElement *element)
 {
-  if (element != NULL )
-    if (GST_IS_ELEMENT (element))
-      {
-	GstIterator *pad_iter;
-	pad_iter = gst_element_iterate_pads (element);
-	gst_iterator_foreach (pad_iter, (GFunc) shmdata_base_writer_unlink_pad, element);
-	gst_iterator_free (pad_iter);
-	if (GST_STATE_TARGET (element) != GST_STATE_NULL && GST_STATE (element) != GST_STATE_NULL)
-	  if (GST_STATE_CHANGE_ASYNC == gst_element_set_state (element, GST_STATE_NULL))
-	    while (GST_STATE (element) != GST_STATE_NULL)
-	      gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
-	if (GST_IS_BIN (gst_element_get_parent (element)))
-	  gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element);
+  if (element != NULL && GST_IS_ELEMENT(element)
+      && GST_STATE_CHANGE_FAILURE != GST_STATE_RETURN(element)) {
+
+    {  // unlinking pads
+       GstIterator *pad_iter = gst_element_iterate_pads(element);
+       gst_iterator_foreach(pad_iter, (GFunc) shmdata_base_writer_unlink_pad, NULL);
+       gst_iterator_free(pad_iter);
+    }
+
+    {  // releasing request pads
+       GstIterator *pad_iter = gst_element_iterate_pads(element);
+       gst_iterator_foreach(pad_iter,
+                            (GFunc) shmdata_base_writer_release_request_pad,
+                            element);
+       gst_iterator_free(pad_iter);
+    }
+
+    GstState state = GST_STATE_TARGET(element);
+    if (state != GST_STATE_NULL) {
+      if (GST_STATE_CHANGE_ASYNC ==
+          gst_element_set_state(element, GST_STATE_NULL)) {
+        while (GST_STATE(element) != GST_STATE_NULL) {
+          // warning this may be blocking
+          gst_element_get_state(element, NULL, NULL,
+                                GST_CLOCK_TIME_NONE);
+        }
       }
+    }
+    if (GST_IS_BIN(gst_element_get_parent(element)))
+      gst_bin_remove(GST_BIN(gst_element_get_parent(element)), element);
+    else
+      gst_object_unref(element);
+  }
 }
 
 void
@@ -105,6 +141,7 @@ shmdata_base_writer_close (shmdata_base_writer_t *writer)
   g_mutex_unlock (&writer->mutex_);
   g_mutex_clear (&writer->mutex_);
   shmdata_base_writer_init_members (writer);
+  g_mutex_clear (&writer->mutex_);
   g_free (writer);
   writer = NULL;
 }
@@ -121,8 +158,8 @@ shmdata_base_writer_link_branch (shmdata_base_writer_t * writer,
 }
 
 void
-shmdata_base_writer_link_branch_pad (shmdata_base_writer_t * writer,
-				     GstPad * srcPad)
+shmdata_base_writer_link_branch_pad (shmdata_base_writer_t *writer,
+				     GstPad *srcPad)
 {
   GstPad *sinkPad = gst_element_get_static_pad (writer->qserial_, "sink");
   /* if (sinkPad) */
@@ -133,7 +170,8 @@ shmdata_base_writer_link_branch_pad (shmdata_base_writer_t * writer,
   /*   g_critical ("lres == GST_PAD_LINK_OK"); */
   gst_object_unref (sinkPad);
   gst_element_link_many (writer->qserial_,
-			 writer->serializer_, writer->shmsink_, NULL);
+			 writer->serializer_,
+                         writer->shmsink_, NULL);
 }
 
 void
@@ -155,7 +193,7 @@ shmdata_base_writer_set_branch_state_as_pipeline (shmdata_base_writer_t *
 }
 
 void
-shmdata_base_writer_pad_unblocked (GstPad * pad,
+shmdata_base_writer_pad_unblocked (GstPad *pad,
 				   gboolean blocked, 
 				   gpointer user_data)
 {
@@ -184,9 +222,11 @@ shmdata_base_writer_switch_to_new_serializer (GstPad *pad,
     g_critical ("Error: cannot unlink sink");
   gst_object_unref (srcPad);
   gst_object_unref (sinkPad);
+
   GstBin *bin = GST_BIN (GST_ELEMENT_PARENT (context->serializer_));
   gst_element_set_state (context->serializer_, GST_STATE_NULL); 
   gst_bin_remove (GST_BIN (bin), context->serializer_);
+
   //creating and linking the new serializer
   context->serializer_ = gst_element_factory_make ("gdppay", NULL);
   gst_bin_add (bin, context->serializer_);
@@ -196,10 +236,12 @@ shmdata_base_writer_switch_to_new_serializer (GstPad *pad,
     gst_element_get_static_pad (context->serializer_, "src");
   gst_pad_link (newSrcPad, srcPadPeer);
   gst_pad_link (sinkPadPeer, newSinkPad);
+
   gst_object_unref (newSinkPad);
   gst_object_unref (newSrcPad);
   gst_object_unref (srcPadPeer);
   gst_object_unref (sinkPadPeer);
+
   if (!gst_element_set_state (context->serializer_,
 			      GST_STATE_TARGET(GST_ELEMENT_PARENT(context->serializer_))))
     g_critical ("Error: issue changing newSerializer state");
@@ -207,8 +249,7 @@ shmdata_base_writer_switch_to_new_serializer (GstPad *pad,
   //unblocking data stream
   gst_pad_set_blocked_async (pad,
 			     FALSE,
-			     (GstPadBlockCallback)
-			     (shmdata_base_writer_pad_unblocked),
+			     (GstPadBlockCallback) shmdata_base_writer_pad_unblocked,
 			     (void *) context);
   g_mutex_unlock (&context->mutex_);
 
@@ -243,52 +284,55 @@ shmdata_base_writer_on_client_connected (GstElement *shmsink,
   GstPad *padToBlock = gst_pad_get_peer (serializerSinkPad);
   gst_object_unref (serializerSinkPad);
 
-  if (!GST_IS_PAD (padToBlock))
-    {
+  if (!GST_IS_PAD (padToBlock)) {
       g_warning ("%s: peer pad is not a pad, cannot block");
       return;
     }
   gst_pad_set_blocked_async (padToBlock,
 			     TRUE,
-			     (GstPadBlockCallback)
-			     (shmdata_base_writer_switch_to_new_serializer),
+			     (GstPadBlockCallback) shmdata_base_writer_switch_to_new_serializer,
 			     (void *) context);
   gst_object_unref (padToBlock);
   g_mutex_unlock (&context->mutex_);
 }
 
 void
-shmdata_base_writer_make_shm_branch (shmdata_base_writer_t * writer,
+shmdata_base_writer_make_shm_branch (shmdata_base_writer_t *writer,
 				     const char *socketPath)
 {
+  if (NULL != writer->qserial_ || NULL != writer->serializer_ || NULL != writer->shmsink_) {
+  if (0 != writer->client_connected_handler_id_)
+    g_signal_handler_disconnect (writer->shmsink_, 
+				 writer->client_connected_handler_id_);
+  if (0 != writer->client_disconnected_handler_id_)
+    g_signal_handler_disconnect (writer->shmsink_, 
+				 writer->client_disconnected_handler_id_);
+    shmdata_base_writer_clean_element (writer->qserial_);
+    shmdata_base_writer_clean_element (writer->serializer_);
+    shmdata_base_writer_clean_element (writer->shmsink_);
+  }
   writer->qserial_ = gst_element_factory_make ("queue", NULL);
-  
   writer->serializer_ = gst_element_factory_make ("gdppay", NULL);
   writer->shmsink_ = gst_element_factory_make ("shmsink", NULL);
-
-  if (!writer->qserial_)
-    {
-      g_critical ("Writer: \"queue\" element is not available");
-      return;
-    }
-  if (!writer->serializer_)
-    {
-      g_critical ("Writer: \"gdppay\" element is not available");
-      return;
-    }
-  if (!writer->shmsink_)
-    {
-      g_critical ("Writer: \"shmsink\" element is not available, consider installing libshmdata");
-      return;
-    }
-
+  if (NULL == writer->qserial_) {
+    g_critical ("Writer: \"queue\" element is not available");
+    return;
+  }
+  if (NULL == writer->serializer_) {
+    g_critical ("Writer: \"gdppay\" element is not available");
+    return;
+  }
+  if (NULL == writer->shmsink_) {
+    g_critical ("Writer: \"shmsink\" element is not available");
+    return;
+  }
+  
   g_object_set (G_OBJECT (writer->shmsink_), "socket-path", socketPath, NULL);
   g_object_set (G_OBJECT (writer->shmsink_), "shm-size", 94967295, NULL);
   g_object_set (G_OBJECT (writer->shmsink_), "sync", FALSE, NULL);
   g_object_set (G_OBJECT (writer->shmsink_), "wait-for-connection", FALSE, NULL);
   g_object_set (G_OBJECT (writer->qserial_), "leaky", 1, "max-size-buffers", 2, NULL);
   
-
   writer->client_connected_handler_id_ = 
     g_signal_connect (writer->shmsink_, "client-connected",
 		      G_CALLBACK (shmdata_base_writer_on_client_connected),
@@ -371,16 +415,14 @@ shmdata_base_writer_plug_pad (shmdata_base_writer_t *writer,
 			      GstElement *pipeline, 
 			      GstPad *srcPad)
 {
-  if (NULL == writer)
-    {
-      g_debug ("cannot plug a NULL writer");
-      return;
-    }
-  if (!GST_IS_BIN (pipeline))
-    {
-      g_critical ("shmdata_base_writer_plug, not a bin");
-      return;
-    }
+  if (NULL == writer) {
+    g_debug ("cannot plug a NULL writer");
+    return;
+  }
+  if (!GST_IS_BIN (pipeline)) {
+    g_critical ("shmdata_base_writer_plug, not a bin");
+    return;
+  }
   writer->parent_bin_ = pipeline; //TODO get rid of the pipeline arg
   if (writer->socket_path_ == NULL) 
     g_critical ("cannot start when socket path has not been set");

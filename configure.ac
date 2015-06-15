@@ -1,5 +1,5 @@
 AC_PREREQ([2.61])
-AC_INIT(shmdata, [0.8.14], [http://codered.sat.qc.ca/redmine/projects/libshmdata/issues], [shmdata], [http://codered.sat.qc.ca/redmine/projects/libshmdata])
+AC_INIT(shmdata, [0.8.16], [http://codered.sat.qc.ca/redmine/projects/libshmdata/issues], [shmdata], [http://codered.sat.qc.ca/redmine/projects/libshmdata])
 #AC_CONFIG_MACRO_DIR([m4])
 AC_MSG_NOTICE([Configuring libshmdata])
 AM_INIT_AUTOMAKE([subdir-objects -Wno-portability])
@@ -196,6 +196,11 @@ if test "${PUREDATA}" = "y" ; then
    fi
 fi
 
+# Check for Python to build a wrapper
+PKG_CHECK_MODULES(PYTHON3, python3,
+    AM_CONDITIONAL(HAVE_PYTHON3, true),
+    AM_CONDITIONAL(HAVE_PYTHON3, false))
+
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
 AC_CONFIG_FILES([
@@ -210,6 +215,8 @@ AC_CONFIG_FILES([
         plugins/puredata/Makefile
         gst/Makefile
         gst/shm/Makefile
+        wrappers/Makefile
+        wrappers/python/Makefile
         ])
 
 AC_OUTPUT

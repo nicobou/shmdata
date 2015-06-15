@@ -7,8 +7,8 @@
 *.pc
 *.swp
 *.trs
-*/.deps/
-*/.libs/
+*.deps/
+*.libs/
 *~
 Makefile
 Makefile.in
@@ -47,6 +47,7 @@ plugins/puredata/.deps/
 plugins/puredata/.libs/
 stamp-h1
 test-driver
+tests/check_gst_shm
 tests/check_read_and_write_onoff
 tests/check_read_then_write
 tests/check_write_and_read_onoff

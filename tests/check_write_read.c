@@ -133,7 +133,7 @@ check_read_write ()
 }
 
 int
-main (int argc, char *argv)
+main ()
 {
   if (check_read_write () != 0)
     return 1;
