@@ -20,8 +20,8 @@
 #include <Python.h>
 #include <structmember.h>
 
-#include "any-data-reader.h"
-#include "any-data-writer.h"
+#include "shmdata/any-data-reader.h"
+#include "shmdata/any-data-writer.h"
 
 #ifdef __cplusplush
 extern "C"
