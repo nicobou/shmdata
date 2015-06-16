@@ -688,8 +688,9 @@ PostureSrc::cb_frame_ir(void *context, const vector<unsigned char>&data,
   if (!ctx->ir_writer_ || ctx->ir_width_ != width || ctx->ir_height_ != height) {
     ctx->ir_width_ = width;
     ctx->ir_height_ = height;
+
     char buffer[256] = "";
-    sprintf(buffer, "video/x-raw,format=(string)GRAY16_BE,,width=(int)%i,height=(int)%i,framerate=30/1", width, height);
+    sprintf(buffer, "video/x-raw,format=(string)GRAY16_BE,width=(int)%i,height=(int)%i,framerate=30/1", width, height);
 
     ctx->ir_writer_.reset();
     ctx->ir_writer_ = std2::make_unique<ShmdataWriter>(ctx,
