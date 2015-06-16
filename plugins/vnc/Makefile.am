@@ -1,12 +1,12 @@
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
 plugins_LTLIBRARIES = \
-	libvncclient.la
+	libvncplugin.la
 
-libvncclient_la_SOURCES = \
+libvncplugin_la_SOURCES = \
 	vnc_client.cpp
 
-libvncclient_la_LDFLAGS = \
+libvncplugin_la_LDFLAGS = \
 	$(GLIB_LIBS) \
 	$(GST_LIBS) \
 	$(GMODULE_LIBS) \
@@ -17,7 +17,7 @@ libvncclient_la_LDFLAGS = \
 	-L$(top_builddir)/switcher/.libs \
 	-lswitcher-@LIBSWITCHER_API_VERSION@
 
-libvncclient_la_CXXFLAGS = \
+libvncplugin_la_CXXFLAGS = \
 	$(GLIB_CFLAGS) \
 	$(GMODULE_CFLAGS) \
 	$(GST_CFLAGS) \
