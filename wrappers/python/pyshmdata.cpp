@@ -272,7 +272,7 @@ Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
     PyObject *tmp = NULL;
 
     static char *kwlist[] = {(char*)"path", (char*)"callback", (char*)"user_data", (char*)"drop_frames", (char*)"debug", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist, &path, &pyFunc, &pyUserData, &pyDropFrames, &showDebug))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOOO", kwlist, &path, &pyFunc, &pyUserData, &pyDropFrames, &showDebug))
         return -1;
 
     if (path) {
