@@ -493,7 +493,6 @@ gboolean
 RtpSession::add_data_stream_wrapped(gpointer connector_name,
                                     gpointer user_data) {
   RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_print ("---- %s %d\n", __FUNCTION__, __LINE__);
   if (context->add_data_stream((char *) connector_name))
     return TRUE;
   else
@@ -556,7 +555,6 @@ gboolean
 RtpSession::remove_data_stream_wrapped(gpointer connector_name,
                                        gpointer user_data) {
   RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_print ("---- %s %d\n", __FUNCTION__, __LINE__);
   if (context->remove_data_stream((char *) connector_name))
     return TRUE;
   else
