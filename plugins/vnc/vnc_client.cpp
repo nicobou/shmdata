@@ -68,11 +68,17 @@ VncClientSrc::start() {
   vnc_continue_update_ = true;
   vnc_update_thread_ = thread([&]() {
     while (vnc_continue_update_) {
-      int i = WaitForMessage(rfb_client_, 500);
+      int i = WaitForMessage(rfb_client_, 50);
       if (i < 0)
         return;
       if (i > 0 && !HandleRFBServerMessage(rfb_client_))
         return;
+
+      if (vnc_writer_)
+      {
+        vnc_writer_->writer(&shmdata::Writer::copy_to_shm, rfb_client_->frameBuffer, framebuffer_size_);
+        vnc_writer_->bytes_written(framebuffer_size_);
+      }
     }
   });
   
@@ -189,9 +195,9 @@ VncClientSrc::update_vnc(rfbClient *client, int x, int y, int w, int h) {
   auto height = client->height;
   auto depth = client->format.bitsPerPixel;
 
-  size_t framebufferSize = width * height * depth / 8;
+  that->framebuffer_size_ = width * height * depth / 8;
   if (!that->vnc_writer_ ||
-      framebufferSize > that->vnc_writer_->writer(&shmdata::Writer::alloc_size) ||
+      that->framebuffer_size_ > that->vnc_writer_->writer(&shmdata::Writer::alloc_size) ||
       that->previous_truecolor_state_ != that->capture_truecolor_)
   {
     auto data_type = string();
@@ -205,16 +211,13 @@ VncClientSrc::update_vnc(rfbClient *client, int x, int y, int w, int h) {
     that->vnc_writer_.reset();
     that->vnc_writer_ = std2::make_unique<ShmdataWriter>(that,
                                                          that->make_file_name("vnc"),
-                                                         framebufferSize,
+                                                         that->framebuffer_size_,
                                                          data_type);
     if (!that->vnc_writer_) {
       g_warning("Unable to create VNC writer");
       return;
     }
   }
-
-  that->vnc_writer_->writer(&shmdata::Writer::copy_to_shm, client->frameBuffer, framebufferSize);
-  that->vnc_writer_->bytes_written(framebufferSize);
 }
 
 }

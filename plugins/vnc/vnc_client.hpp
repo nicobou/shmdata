@@ -57,6 +57,7 @@ class VncClientSrc:public Quiddity, public StartableQuiddity {
 
   rfbClient *rfb_client_ {nullptr};
   std::vector<unsigned char> framebuffer_ {};
+  size_t framebuffer_size_ {0};
   std::unique_ptr<ShmdataWriter> vnc_writer_ {nullptr};
   std::atomic_bool vnc_continue_update_ {false};
   std::thread vnc_update_thread_ {};
