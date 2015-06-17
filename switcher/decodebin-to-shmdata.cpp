@@ -66,7 +66,8 @@ DecodebinToShmdata::~DecodebinToShmdata() {
 }
 
 void
-DecodebinToShmdata::on_pad_added(GstElement * object, GstPad *pad,
+DecodebinToShmdata::on_pad_added(GstElement *object,
+                                 GstPad *pad,
                                  gpointer user_data) {
   DecodebinToShmdata *context =
       static_cast<DecodebinToShmdata *>(user_data);
@@ -81,47 +82,58 @@ DecodebinToShmdata::on_pad_added(GstElement * object, GstPad *pad,
     gst_caps_unref(padcaps);
   };
   if (gst_caps_can_intersect(rtpcaps, padcaps)) {
-    // asking rtpbin to send an event when a packet is lost (do-lost property)
-    GstUtils::set_element_property_in_bin(object, "gstrtpbin", "do-lost",
-                                          TRUE);
-
-    g_message("custom rtp stream found");
-    GstElement *rtpgstdepay;
-    GstUtils::make_element("rtpgstdepay", &rtpgstdepay);
-
-    // adding a probe for discarding uncomplete packets
-    // FIXME (test if drop buffer is necessary)
-    // GstPad *depaysrcpad = gst_element_get_static_pad(rtpgstdepay, "src");
-    // gst_pad_add_buffer_probe(depaysrcpad,
-    //                          G_CALLBACK
-    //                          (DecodebinToShmdata::gstrtpdepay_buffer_probe_cb),
-    //                          context);
-    // gst_object_unref(depaysrcpad);
-
-    // was this: gst_bin_add (GST_BIN (context->bin_), rtpgstdepay);
-    gst_bin_add(GST_BIN(GST_ELEMENT_PARENT(object)), rtpgstdepay);
-    GstPad *sinkpad = gst_element_get_static_pad(rtpgstdepay, "sink");
-    // adding a probe for handling loss messages from rtpbin
-    // gst_pad_add_event_probe(sinkpad, (GCallback)
-    //                         DecodebinToShmdata::gstrtpdepay_event_probe_cb,
-    //                         context);
-    GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad));
-    gst_object_unref(sinkpad);
-    GstPad *srcpad = gst_element_get_static_pad(rtpgstdepay, "src");
-    GstUtils::sync_state_with_parent(rtpgstdepay);
-    gst_element_get_state(rtpgstdepay, nullptr, nullptr,
+      // asking rtpbin to send an event when a packet is lost (do-lost property)
+      GstUtils::set_element_property_in_bin(object, "gstrtpbin", "do-lost",
+                                            TRUE);
+    
+      g_message("custom rtp stream found");
+      GstElement *rtpgstdepay;
+      GstUtils::make_element("rtpgstdepay", &rtpgstdepay);
+      g_print("%s %d\n", __FUNCTION__, __LINE__);
+      // adding a probe for discarding uncomplete packets
+      // FIXME (test if drop buffer is necessary)
+      // GstPad *depaysrcpad = gst_element_get_static_pad(rtpgstdepay, "src");
+      // gst_pad_add_buffer_probe(depaysrcpad,
+      //                          G_CALLBACK
+      //                          (DecodebinToShmdata::gstrtpdepay_buffer_probe_cb),
+      //                          context);
+      // gst_object_unref(depaysrcpad);
+      g_print("%s %d\n", __FUNCTION__, __LINE__);
+    
+      // was this: gst_bin_add (GST_BIN (context->bin_), rtpgstdepay);
+      gst_bin_add(GST_BIN(GST_ELEMENT_PARENT(object)), rtpgstdepay);
+      g_print("%s %d\n", __FUNCTION__, __LINE__);
+      GstPad *sinkpad = gst_element_get_static_pad(rtpgstdepay, "sink");
+      g_print("%s %d\n", __FUNCTION__, __LINE__);
+      // adding a probe for handling loss messages from rtpbin
+      // gst_pad_add_event_probe(sinkpad, (GCallback)
+      //                         DecodebinToShmdata::gstrtpdepay_event_probe_cb,
+      //                         context);
+      g_print("%s %d\n", __FUNCTION__, __LINE__);
+      GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad));
+      g_print("%s %d\n", __FUNCTION__, __LINE__);
+      gst_object_unref(sinkpad);
+      g_print("%s %d\n", __FUNCTION__, __LINE__);
+      GstPad *srcpad = gst_element_get_static_pad(rtpgstdepay, "src");
+      g_print("%s %d\n", __FUNCTION__, __LINE__);
+      GstUtils::sync_state_with_parent(rtpgstdepay);
+      g_print("%s %d\n", __FUNCTION__, __LINE__);
+      gst_element_get_state(rtpgstdepay, nullptr, nullptr,
                           GST_CLOCK_TIME_NONE);
+    g_print("%s %d\n", __FUNCTION__, __LINE__);
     context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), srcpad);
+    g_print("%s %d\n", __FUNCTION__, __LINE__);
     gst_object_unref(srcpad);
+    g_print("%s %d\n", __FUNCTION__, __LINE__);
     return;
   }
-
+  
   context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), pad);
 }
 
 int DecodebinToShmdata::on_autoplug_select(GstElement * /*bin */ ,
                                            GstPad *pad,
-                                           GstCaps * /*caps */ ,
+                                           GstCaps *caps,
                                            GstElementFactory *factory,
                                            gpointer /*user_data */ ) {
   //     typedef enum {
@@ -132,9 +144,13 @@ int DecodebinToShmdata::on_autoplug_select(GstElement * /*bin */ ,
 
   if (g_strcmp0(GST_OBJECT_NAME(factory), "rtpgstdepay") == 0) {
     int return_val = 1;
+
+    g_print("caps arg: %s\n", gst_caps_to_string(caps));
+    g_print("current caps: %s\n", gst_caps_to_string(gst_pad_get_current_caps(pad)));
+    g_print("allowed caps: %s\n", gst_caps_to_string(gst_pad_get_allowed_caps(pad)));
+    
     const GValue *val =
-        gst_structure_get_value(gst_caps_get_structure(gst_pad_get_current_caps(pad),
-                                                       0),
+        gst_structure_get_value(gst_caps_get_structure(gst_pad_get_current_caps(pad), 0),
                                 "caps");
     
     gsize taille = 256;
@@ -142,7 +158,7 @@ int DecodebinToShmdata::on_autoplug_select(GstElement * /*bin */ ,
                                           &taille);
 
     gchar *string_caps_char = g_strdup_printf("%s", string_caps);
-
+    g_print("********************************* %s\n", string_caps);
     if (g_str_has_prefix(string_caps_char, "audio/")
         || g_str_has_prefix(string_caps_char, "video/")
         || g_str_has_prefix(string_caps_char, "image/"))
@@ -194,11 +210,18 @@ DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad)
   // looking for type of media
   std::string padname;
   {
+    // g_print("current caps: %s\n", gst_caps_to_string(gst_pad_get_current_caps(pad)));
+    // g_print("allowed caps: %s\n", gst_caps_to_string(gst_pad_get_allowed_caps(pad)));
+    // g_print("pad template caps: %s\n", gst_caps_to_string(gst_pad_get_pad_template_caps(pad)));
+
     GstCaps *padcaps = gst_pad_get_current_caps(pad);
+    //    if (nullptr == padcaps) g_print ("bingo ! %d\n", __LINE__);
     On_scope_exit {
       gst_caps_unref(padcaps);
     };
     gchar *stringcaps = gst_caps_to_string(padcaps);
+    //if (nullptr == stringcaps) g_print ("bingo ! %d\n", __LINE__);
+    g_print("%s: string caps %s", __FUNCTION__, stringcaps);
     On_scope_exit {
       g_free(stringcaps);
     };
@@ -221,6 +244,7 @@ DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad)
   if (GST_PAD_LINK_OK != gst_pad_link(pad, sinkpad))
     g_warning("pad link failed in decodebin-to-shmdata");
   std::string media_name(media_label_);
+  //std::string media_name("custom");
   {  // giving a name to the stream
     gchar **padname_splitted = g_strsplit_set(padname.c_str(), "/", -1);
     On_scope_exit {g_strfreev(padname_splitted);};
