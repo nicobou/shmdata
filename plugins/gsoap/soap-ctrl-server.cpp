@@ -75,14 +75,24 @@ SoapCtrlServer::init()
   return true;
 }
 
-SoapCtrlServer::~SoapCtrlServer()
-{
-  stop();
+SoapCtrlServer::~SoapCtrlServer(){
+  quit_server_thread_ = true;
+  if (thread_.joinable())
+    thread_.join();
+  soap_closesocket(socket_);
+  if (nullptr != service_){
+    soap_destroy(service_);
+    soap_end(service_);
+    soap_done(service_);
+    delete service_;
+  }
+  soap_destroy(&soap_);
+  soap_end(&soap_);
+  soap_done(&soap_);
 }
 
 std::shared_ptr<QuiddityManager>
-SoapCtrlServer::get_quiddity_manager()
-{
+SoapCtrlServer::get_quiddity_manager(){
   return manager_.lock();
 }
 
@@ -96,22 +106,18 @@ SoapCtrlServer::http_get(struct soap *soap)
   if (g_str_has_prefix (soap->path, "/sdp"))
   {
     gchar **query = g_strsplit_set(soap->path, "?",-1);
-
     if (query[1] == nullptr)
       return 404;
-
     gchar **query_vars = g_strsplit_set(query[1], "&",-1);
     int i=0;
     while (query_vars [i] != nullptr)
     {
       gchar **var = g_strsplit_set(query_vars [i], "=",-1);
-      if (g_strcmp0(var[0],"rtpsession") == 0 && var[1] != nullptr)
-      {
+      if (g_strcmp0(var[0],"rtpsession") == 0 && var[1] != nullptr){
         rtpsession_name.clear();
         rtpsession_name.append(var[1]);
       }
-      else if (g_strcmp0(var[0],"destination") == 0 && var[1] != nullptr)
-      {
+      else if (g_strcmp0(var[0],"destination") == 0 && var[1] != nullptr){
         destination_name.clear();
         destination_name.append(var[1]);
       }	
@@ -120,20 +126,16 @@ SoapCtrlServer::http_get(struct soap *soap)
     }
     g_strfreev(query_vars);
     g_strfreev(query);
-
     SoapCtrlServer *ctrl_server = static_cast<SoapCtrlServer *>(soap->user);
     QuiddityManager::ptr manager;
     if (ctrl_server != nullptr)
       manager = ctrl_server->get_quiddity_manager();
-
     if (!(bool) manager)
       return 404;
-
     std::vector<std::string> arg;
     arg.push_back(destination_name);
     if (!manager->invoke(rtpsession_name, "write_sdp_file", nullptr, arg))
       return 404;
-
     //sending file to client
     std::string sdp_file = get_socket_dir();
     sdp_file.append("/");
@@ -144,8 +146,7 @@ SoapCtrlServer::http_get(struct soap *soap)
     if (g_file_get_contents(sdp_file.c_str(),
                             &sdp_contents,
                             &file_length,
-                            nullptr) && 0 != file_length)  //not getting errors
-    {
+                            nullptr) && 0 != file_length){  //not getting errors
       On_scope_exit {g_free(sdp_contents);};
       soap_response(soap, SOAP_FILE);
       soap->http_content = "application/x-sdp";
@@ -205,20 +206,23 @@ SoapCtrlServer::start()
 //   return TRUE;
 // }
 
-bool
-SoapCtrlServer::stop()
-{
-  quit_server_thread_ = true;
-  if (thread_.joinable())
-    thread_.join();
-  soap_closesocket(socket_);
-  soap_destroy(&soap_);
-  soap_end(&soap_);
-  soap_done(&soap_);
-  if (nullptr != service_)
-    delete service_;
-  return true;
-}
+// bool
+// SoapCtrlServer::stop()
+// {
+//   quit_server_thread_ = true;
+//   if (thread_.joinable())
+//     thread_.join();
+//   else
+//     g_print("++++++++++++++++++++++++++++++ !!!!!! thread not joinable\n");
+//   //soap_closesocket(socket_);
+//   soap_destroy(&soap_);
+//   soap_end(&soap_);
+//   soap_done(&soap_);
+//   if (nullptr != service_)
+//     delete service_;
+//   g_print("end of %s\n", __FUNCTION__);
+//   return true;
+// }
 
 void
 SoapCtrlServer::server_thread()
@@ -259,7 +263,8 @@ SoapCtrlServer::server_thread()
     }
   }
 }
-}//end of SoapCtrlServer class
+
+}  // end of SoapCtrlServer class
 
 
 /**********************************************
