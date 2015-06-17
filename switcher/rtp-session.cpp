@@ -284,15 +284,16 @@ std::string RtpSession::make_rtp_payloader(GstElement *shmdatasrc,
   GstStructure *caps_structure = gst_caps_get_structure(caps, 0);
   // check jpeg dimension are suported by jpeg payloader
   if (g_str_has_prefix(gst_structure_get_name(caps_structure), "image/jpeg")) {
-    gint width = 0, height = 0;
-    if (gst_structure_get_int(caps_structure, "height", &height)) {
-      if (height <= 0 || height > 2040)
-        jpeg_payloader = false;
-    }
-    if (gst_structure_get_int(caps_structure, "width", &width)) {
-      if (width <= 0 || width > 2040)
-        jpeg_payloader = false;
-    }
+    jpeg_payloader = false;
+    // gint width = 0, height = 0;
+    // if (gst_structure_get_int(caps_structure, "height", &height)) {
+    //   if (height <= 0 || height > 2040)
+    //     jpeg_payloader = false;
+    // }
+    // if (gst_structure_get_int(caps_structure, "width", &width)) {
+    //   if (width <= 0 || width > 2040)
+    //     jpeg_payloader = false;
+    // }
   }
   if (list != nullptr && jpeg_payloader)
     pay = gst_element_factory_create(GST_ELEMENT_FACTORY(list->data), nullptr);
