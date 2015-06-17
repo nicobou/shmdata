@@ -71,15 +71,15 @@ class PostureMerge : public Quiddity, public StartableQuiddity {
   std::shared_ptr<posture::PointCloudMerger> merger_ {nullptr};
   std::mutex mutex_ {};
 
-  std::mutex connect_mutex_;
+  std::mutex connect_mutex_ {};
   unsigned int shmreader_id_ {0};
-  std::map<std::string, std::unique_ptr<ShmdataFollower>> cloud_readers_;
-  std::map<int, std::string> cloud_readers_caps_;
+  std::map<std::string, std::unique_ptr<ShmdataFollower>> cloud_readers_ {};
+  std::map<int, std::string> cloud_readers_caps_ {};
 
   std::unique_ptr<ShmdataWriter> cloud_writer_ {nullptr};
 
-  std::map<int, std::vector<char>> stock_;
-  std::mutex stock_mutex_;
+  std::map<int, std::vector<char>> stock_ {};
+  std::mutex stock_mutex_ {};
 
   bool init() final;
 

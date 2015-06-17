@@ -171,7 +171,7 @@ void PostureSc3::set_input_camera (const int camera_nbr, void* user_data)
 
     int index = ctx -> index_;
 
-    ctx->cameras_[ctx -> index_] -> setCallbackCloud ( [=] (void* user_data, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud) -> void {
+    ctx->cameras_[ctx -> index_] -> setCallbackCloud ( [=] (void*, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud) -> void {
         ctx -> cb_frame_cloud (index, std::move(cloud));
     }, nullptr);
   }
@@ -252,7 +252,7 @@ PostureSc3::set_colorize (const int assert_colorize, void *user_data) {
   {
     if (ctx->colorize_or_not_)
     {
-      ctx->cameras_[ctx -> index_] -> setCallbackRgb ( [=] (void* user_data, std::vector<unsigned char>& image, int width, int heigth) -> void {
+      ctx->cameras_[ctx -> index_] -> setCallbackRgb ( [=] (void*, std::vector<unsigned char>& image, int width, int heigth) -> void {
           ctx->cb_frame_rgb (image, width, heigth);
       }, nullptr);
     }

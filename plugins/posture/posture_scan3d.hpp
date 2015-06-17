@@ -61,7 +61,7 @@ class PostureSc3:public Quiddity, public StartableQuiddity {
 
   std::vector<unsigned char> output_ {};
 
-  mutable std::mutex mutex_;
+  mutable std::mutex mutex_ {};
 
   std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
   std::unique_ptr<ShmdataWriter> rgb_writer_ {nullptr};
@@ -77,7 +77,7 @@ class PostureSc3:public Quiddity, public StartableQuiddity {
   bool is_started_ {false};
 
   pcl::PolygonMesh::Ptr intermediate_mesh_ {nullptr};
-  std::vector<unsigned char> texture_;
+  std::vector<unsigned char> texture_ {};
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureSc3);
