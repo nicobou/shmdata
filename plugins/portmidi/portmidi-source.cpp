@@ -17,8 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./portmidi-source.hpp"
 #include <time.h>
+#include <switcher/std2.hpp>
+#include "./portmidi-source.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
@@ -32,7 +33,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 PortMidiSource::PortMidiSource(const std::string &):
-    shm_any_(std::make_shared <ShmdataAnyWriter > ()),
     last_status_(-1),
     last_data1_(-1),
     last_data2_(-1),
@@ -59,7 +59,6 @@ bool PortMidiSource::init() {
     return false;
   }
   init_startable(this);
-  init_segment(this);
   devices_description_spec_ = custom_props_->
       make_string_property("devices-json",
                            "Description of capture devices (json formated)",
@@ -126,13 +125,15 @@ bool PortMidiSource::init() {
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
-  std::string shm_any_name = make_file_name("midi");
-  shm_any_->set_path(shm_any_name.c_str());
-  g_message("%s created a new shmdata any writer (%s)",
-            get_name().c_str(), shm_any_name.c_str());
-  shm_any_->set_data_type("audio/midi");
-  shm_any_->start();
-  register_shmdata(shm_any_);
+  shm_ = std2::make_unique<ShmdataWriter>(this,
+                                          make_file_name("midi"),
+                                          sizeof(PmEvent),
+                                          "audio/midi");
+  if(!shm_.get()) {
+    g_warning("OscToShmdata failed to start");
+    shm_.reset(nullptr);
+    return false;
+  }
   return true;
 }
 
@@ -169,10 +170,9 @@ void PortMidiSource::on_pm_event(PmEvent *event, void *user_data) {
   PmEvent *tmp_event = (PmEvent *) g_malloc(sizeof(PmEvent));
   tmp_event->message = event->message;
   tmp_event->timestamp = event->timestamp;
-  context->shm_any_->push_data(tmp_event, sizeof(PmEvent),
-                               //(timestamp is in ms)
-                               (unsigned long long) tmp_event->timestamp *
-                               1000000, g_free, tmp_event);
+  context->shm_->writer(&shmdata::Writer::copy_to_shm, tmp_event, sizeof(PmEvent));
+  context->shm_->bytes_written(sizeof(PmEvent));
+  g_free(tmp_event);
 
   guint status = Pm_MessageStatus(event->message);
   guint data1 = Pm_MessageData1(event->message);

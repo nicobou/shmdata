@@ -27,10 +27,10 @@ endif
 #     pulse
 # endif
 
-# if PORTMIDIBUILD
-# SUBDIRS += \
-#     portmidi
-# endif
+if PORTMIDIBUILD
+SUBDIRS += \
+    portmidi
+endif
 
 if POSTUREBUILD
 SUBDIRS += \

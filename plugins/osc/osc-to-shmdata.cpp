@@ -70,13 +70,7 @@ gint OscToShmdata::get_port(void *user_data) {
 }
 
 bool OscToShmdata::start() {
-  // // creating a shmdata
-  // // ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
-  // std::string shm_any_name = make_file_name("osc");
-  // shm_any_->set_path(shm_any_name.c_str());
-  // shm_any_->set_data_type("application/x-libloserialized-osc");
-  // shm_any_->start();
-  // register_shmdata(shm_any_);
+  // creating a shmdata
   shm_ = std2::make_unique<ShmdataWriter>(this,
                                           make_file_name("osc"),
                                           4096,

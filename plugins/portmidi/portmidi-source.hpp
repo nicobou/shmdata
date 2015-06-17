@@ -21,14 +21,13 @@
 #define __SWITCHER_PORTMIDI_SOURCE_H__
 
 #include "switcher/quiddity.hpp"
-#include "switcher/segment.hpp"
-#include "./portmidi-devices.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
+#include "switcher/shmdata-writer.hpp"
+#include "./portmidi-devices.hpp"
 
 namespace switcher {
 class PortMidiSource: public Quiddity,
-                      public Segment,
                       public StartableQuiddity,
                       public PortMidi {
  public:
@@ -40,11 +39,11 @@ class PortMidiSource: public Quiddity,
 
  private:
   typedef struct {
-    PortMidiSource *port_midi_source_;
-    std::string property_long_name_;
+    PortMidiSource *port_midi_source_{nullptr};
+    std::string property_long_name_{};
   } MidiPropertyContext;
 
-  ShmdataAnyWriter::ptr shm_any_;
+  std::unique_ptr<ShmdataWriter> shm_{nullptr};
   gint last_status_;
   gint last_data1_;
   gint last_data2_;
@@ -86,6 +85,6 @@ class PortMidiSource: public Quiddity,
 };
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSource);
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif
