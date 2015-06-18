@@ -33,11 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 
 ShmdataToOsc::ShmdataToOsc(const std::string &):
     shmcntr_(static_cast<Quiddity *>(this)),
-    custom_props_(new CustomPropertyHelper()),
-    port_(1056),
-    host_("localhost"),
-    port_spec_(nullptr),
-    host_spec_(nullptr), address_(nullptr), address_mutex_() {
+    custom_props_(new CustomPropertyHelper()) {
 }
 
 bool ShmdataToOsc::init() {
@@ -140,7 +136,7 @@ bool ShmdataToOsc::disconnect() {
 
 void
 ShmdataToOsc::on_shmreader_data(void *data,
-                                int data_size) {
+                                size_t data_size) {
   const char *path = lo_get_path(data, data_size);
   lo_message msg = lo_message_deserialise(data,
                                           data_size,

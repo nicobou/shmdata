@@ -45,12 +45,12 @@ class ShmdataToOsc:public Quiddity, public StartableQuiddity {
   std::unique_ptr<ShmdataFollower> shm_{nullptr};
   // custom props
   CustomPropertyHelper::ptr custom_props_;
-  gint port_;
-  std::string host_;
-  GParamSpec *port_spec_;
-  GParamSpec *host_spec_;
-  lo_address address_;
-  std::mutex address_mutex_;
+  gint port_{1056};
+  std::string host_{"localhost"};
+  GParamSpec *port_spec_{nullptr};
+  GParamSpec *host_spec_{nullptr};
+  lo_address address_{nullptr};
+  std::mutex address_mutex_{};
 
   bool init() final;
   bool start() final;
@@ -59,7 +59,7 @@ class ShmdataToOsc:public Quiddity, public StartableQuiddity {
   bool disconnect();
   bool can_sink_caps(const std::string &caps);
   void on_shmreader_data(void *data,
-                         int data_size);
+                         size_t data_size);
   static void set_port(const gint value, void *user_data);
   static gint get_port(void *user_data);
   static void set_host(const gchar *value, void *user_data);
