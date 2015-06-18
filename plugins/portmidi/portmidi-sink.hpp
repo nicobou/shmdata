@@ -20,49 +20,46 @@
 #ifndef __SWITCHER_PORTMIDI_SINK_H__
 #define __SWITCHER_PORTMIDI_SINK_H__
 
-// #include "switcher/quiddity.hpp"
-// #include "switcher/segment.hpp"
-// #include "./portmidi-devices.hpp"
-// #include "switcher/custom-property-helper.hpp"
-// #include "switcher/startable-quiddity.hpp"
-// #include <shmdata/any-data-reader.h>
-// #include <memory>
+#include <memory>
+#include "switcher/quiddity.hpp"
+#include "switcher/custom-property-helper.hpp"
+#include "switcher/startable-quiddity.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-follower.hpp"
+#include "./portmidi-devices.hpp"
 
-// namespace switcher {
-// class PortMidiSink:public Quiddity, public Segment,
-//                    public StartableQuiddity, public PortMidi {
-//  public:
-//   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSink);
-//   PortMidiSink(const std::string &);
-//   ~PortMidiSink();
-//   PortMidiSink(const PortMidiSink &) = delete;
-//   PortMidiSink &operator=(const PortMidiSink &) = delete;
+namespace switcher {
+class PortMidiSink:public Quiddity, public StartableQuiddity, public PortMidi {
+ public:
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSink);
+  PortMidiSink(const std::string &);
+  ~PortMidiSink() = default;
+  PortMidiSink(const PortMidiSink &) = delete;
+  PortMidiSink &operator=(const PortMidiSink &) = delete;
 
-//  private:
-//   CustomPropertyHelper::ptr custom_props_;
-//   GParamSpec *devices_description_spec_;
-//   GParamSpec *devices_enum_spec_;
-//   gint device_;
+ private:
+  // registering connect/disconnect/can_sink_caps:
+  ShmdataConnector shmcntr_;
+  // shmdata follower
+  std::unique_ptr<ShmdataFollower> shm_{nullptr};
+  CustomPropertyHelper::ptr custom_props_;
+  GParamSpec *devices_description_spec_{nullptr};
+  GParamSpec *devices_enum_spec_{nullptr};
+  gint device_{0};
 
-//   bool init() final;
-//   bool start() final;
-//   bool stop() final;
+  bool init() final;
+  bool start() final;
+  bool stop() final;
+  // segment callback
+  bool connect(std::string path);
+  bool disconnect();
+  bool can_sink_caps(std::string caps);
+  // shmdata any callback
+  void on_shmreader_data(void *data, size_t data_size);
+  static void set_device(const gint value, void *user_data);
+  static gint get_device(void *user_data);
+};
+SWITCHER_DECLARE_PLUGIN(PortMidiSink);
 
-//   // segment callback
-//   bool connect(std::string path);
-//   bool can_sink_caps(std::string caps);
-
-//   // shmdata any callback
-//   void on_shmreader_data(void *data,
-//                          int data_size,
-//                          unsigned long long timestamp,
-//                          const char *type_description, void *user_data);
-
-//   static void set_device(const gint value, void *user_data);
-//   static gint get_device(void *user_data);
-// };
-
-// SWITCHER_DECLARE_PLUGIN(PortMidiSink);
-// }  // namespace switcher
-
-#endif                          // ifndef
+}  // namespace switcher
+#endif
