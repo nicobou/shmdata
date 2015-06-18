@@ -28,6 +28,7 @@
 
 #include <glib/gstdio.h>  // writing sdp file
 #include <chrono>
+#include <sstream>
 #include "./scope-exit.hpp"
 #include "./rtp-session.hpp"
 #include "./gst-utils.hpp"
@@ -709,8 +710,17 @@ gint RtpSession::get_mtu_at_add_data_stream(void *user_data) {
   return context->mtu_at_add_data_stream_;
 }
 
-void RtpSession::on_rtp_caps(std::string shmdata_path, std::string caps) {
-  caps += ", media-label=" + get_quiddity_name_from_file_name(shmdata_path);
+void RtpSession::on_rtp_caps(const std::string &shmdata_path, std::string caps) {
+  std::string rawlabel = get_quiddity_name_from_file_name(shmdata_path);
+  std::istringstream ss(rawlabel); // Turn the string into a stream
+  std::string tok;
+  std::getline(ss, tok, ' ');
+  std::string label = tok;
+  while(std::getline(ss, tok, ' '))
+    label += "\\ " + tok;
+  caps += ", media-label=(string)\""
+      + label
+      + "\"";
   graft_tree("rtp_caps." + std::move(shmdata_path),
              data::Tree::make(std::move(caps)));
 }

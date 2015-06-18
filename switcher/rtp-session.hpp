@@ -118,8 +118,7 @@ class RtpSession: public Quiddity {
   std::map<std::string, RtpDestination::ptr> destinations_{};
 
   bool init() final;
-
-  void on_rtp_caps(std::string shmdata_path, std::string caps);
+  void on_rtp_caps(const std::string &shmdata_path, std::string caps);
   // return RTP internal pad 
   std::string make_rtp_payloader(GstElement *shmdatasrc,
                           const std::string &caps);
@@ -127,7 +126,6 @@ class RtpSession: public Quiddity {
                                       gpointer data);
   static gint sink_compare_ranks(GstPluginFeature *f1,
                                  GstPluginFeature *f2);
-
   // internal rtpbin signals
   static void on_bye_ssrc(GstElement *rtpbin, guint session, guint ssrc,
                           gpointer user_data);

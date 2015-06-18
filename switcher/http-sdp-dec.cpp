@@ -82,7 +82,7 @@ void HTTPSDPDec::init_httpsdpdec() {
 
 void HTTPSDPDec::destroy_httpsdpdec() {
   shm_subs_.clear();
-  prune_tree(".shmdata.reader");
+  prune_tree(".shmdata.writer");
   make_new_error_handler();
   gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
   counter_.reset_counter_map();
@@ -109,7 +109,7 @@ void HTTPSDPDec::make_new_error_handler() {
 void HTTPSDPDec::configure_shmdatasink(GstElement *element,
                                        const std::string &media_type,
                                        const std::string &media_label){
-  auto count = counter_.get_count(media_type);
+  auto count = counter_.get_count(media_label + media_type);
   std::string media_name = media_type;
   if (count != 0)
     media_name.append("-" + std::to_string(count));
@@ -196,7 +196,7 @@ bool HTTPSDPDec::to_shmdata(std::string uri) {
 
 void HTTPSDPDec::uri_to_shmdata() {
   destroy_httpsdpdec();
-  prune_tree(".shmdata.reader");
+  prune_tree(".shmdata.writer");
   init_httpsdpdec();
   g_object_set_data(G_OBJECT(sdpdemux_.get_raw()),
                     "on-error-gsource",

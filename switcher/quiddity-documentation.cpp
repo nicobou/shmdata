@@ -38,7 +38,7 @@ QuiddityDocumentation::QuiddityDocumentation(const std::string &long_name,
   json_description_(std::make_shared<JSONBuilder>()) {
   // parsing tags since vector initialization like {"writer", "reader"} does
   // not pass MACRO arguments:
-  std::istringstream ss(tags); // Turn the string into a stream.
+  std::istringstream ss(tags); // Turn the string into a stream
   std::string tok;  
   while(std::getline(ss, tok, '/'))
     tags_.push_back(tok);
