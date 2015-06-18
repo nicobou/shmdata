@@ -24,6 +24,7 @@
 #include "./quiddity-manager-impl.hpp"
 #include "./quiddity.hpp"
 #include "./scope-exit.hpp"
+#include "./string-utils.hpp"
 
 // the quiddities to manage (line sorted)
 #include "./audio-test-source.hpp"
@@ -257,7 +258,11 @@ std::string QuiddityManager_Impl::create(const std::string &quiddity_class) {
 
 std::string
 QuiddityManager_Impl::create(const std::string &quiddity_class,
-                             const std::string &nick_name) {
+                             const std::string &raw_nick_name) {
+  std::string nick_name = StringUtils::replace_chars(
+      raw_nick_name,
+      {';', '-', '/', '[', ']', '&', '~', '*', '`', '#', '$', '|','\'', '"', '<', '>'},
+      ' ');
   if (!class_exists(quiddity_class) || nick_name.empty())
     return std::string();
   auto it = quiddities_.find(nick_name);

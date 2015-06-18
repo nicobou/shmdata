@@ -70,6 +70,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     signal-string.cpp \
     startable-quiddity.cpp \
     string-dictionary.cpp \
+    string-utils.cpp \
     unique-gst-element.cpp \
     uridecodebin.cpp \
     video-test-source.cpp
@@ -145,6 +146,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     startable-quiddity.hpp \
     std2.hpp \
     string-dictionary.hpp \
+    string-utils.hpp \
     unique-gst-element.hpp \
     uridecodebin.hpp \
     video-test-source.hpp
