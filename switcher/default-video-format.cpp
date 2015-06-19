@@ -42,7 +42,6 @@ void DefaultVideoFormat::make_format_property(const char *name,
   while (NULL != list) {  
     GstStaticPadTemplate *templ = reinterpret_cast<GstStaticPadTemplate *>(list->data);  
     if (GST_PAD_TEMPLATE_DIRECTION(templ) == GST_PAD_SRC) {
-      g_print("src direction found\n");
       GstCaps *caps = gst_static_pad_template_get_caps(templ);
       // copying for removing fields in struture  
       GstCaps *copy = gst_caps_copy(caps);  

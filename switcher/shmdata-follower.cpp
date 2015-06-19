@@ -38,8 +38,12 @@ ShmdataFollower::ShmdataFollower(Quiddity *quid,
                                                    [this](void *data, size_t size){
                                                      this->on_data(data, size);
                                                    },
-                                                   osc_,
-                                                   osd_,
+                                                   [this](const std::string &data_type) {
+                                                     this->on_server_connected(data_type);
+                                                   },
+                                                   [this](){
+                                                     this->on_server_disconnected();
+                                                   },
                                                    &logger_)),
   task_(std2::make_unique<PeriodicTask>([this](){
         this->update_quid_byte_rate();
