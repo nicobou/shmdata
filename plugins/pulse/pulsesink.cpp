@@ -20,6 +20,9 @@
  */
 
 #include "switcher/gst-utils.hpp"
+#include "switcher/std2.hpp"
+#include "switcher/scope-exit.hpp"
+#include "switcher/shmdata-utils.hpp"
 #include "./pulsesink.hpp"
 
 namespace switcher {
@@ -35,12 +38,25 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 PulseSink::PulseSink(const std::string &):
+    shmcntr_(static_cast<Quiddity *>(this)),
+    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
     custom_props_(std::make_shared<CustomPropertyHelper>()){
 }
 
-bool PulseSink::init_gpipe() {
-  if (!make_elements())
+bool PulseSink::init() {
+  if (!shmsrc_ || !audioconvert_ || !pulsesink_)
     return false;
+  g_object_set(G_OBJECT(pulsesink_.get_raw()),
+               "slave-method", 0,  // resample
+               "client-name", get_name().c_str(),
+               nullptr);
+  shmcntr_.install_connect_method(
+        [this](const std::string &shmpath){return this->on_shmdata_connect(shmpath);},
+        [this](const std::string &){return this->on_shmdata_disconnect();},
+        [this](){return this->on_shmdata_disconnect();},
+        [this](const std::string &caps){return this->can_sink_caps(caps);},
+        1);
+    
   std::unique_lock<std::mutex> lock(devices_mutex_);
   GstUtils::g_idle_add_full_with_context(get_g_main_context(),
                                          G_PRIORITY_DEFAULT_IDLE,
@@ -114,42 +130,20 @@ gboolean PulseSink::async_get_pulse_devices(void *user_data) {
   return FALSE;
 }
 
-bool PulseSink::build_elements() {
-  GstElement *pulsesink, *audioconvert;
-  if (!GstUtils::make_element("pulsesink", &pulsesink))
-    return false;
-  if (!GstUtils::make_element("audioconvert", &audioconvert))
-    return false;
-  if (!GstUtils::make_element("bin", &pulsesink_bin_))
-    return false;
+bool PulseSink::remake_elements() {
   uninstall_property("volume");
   uninstall_property("mute");
-  install_property(G_OBJECT(pulsesink), "volume", "volume", "Volume");
-  install_property(G_OBJECT(pulsesink), "mute", "mute", "Mute");
-  g_object_set(G_OBJECT(pulsesink), "slave-method", 0, nullptr);      // resample
+  if(!UGstElem::renew(pulsesink_,{"volume", "mute", "slave-method", "client-name"})
+     || !UGstElem::renew(shmsrc_)
+     || !UGstElem::renew(audioconvert_))
+    return false;
+  install_property(G_OBJECT(pulsesink_.get_raw()), "volume", "volume", "Volume");
+  install_property(G_OBJECT(pulsesink_.get_raw()), "mute", "mute", "Mute");
   if (!devices_.empty())
-    g_object_set(G_OBJECT(pulsesink), "device",
-                 devices_.at(device_).name_.c_str(), nullptr);
-  g_object_set(G_OBJECT(pulsesink), "client", get_name().c_str(),
-               nullptr);
-  gst_bin_add_many(GST_BIN(pulsesink_bin_), pulsesink, audioconvert,
-                   nullptr);
-  gst_element_link(audioconvert, pulsesink);
-  g_object_set(G_OBJECT(pulsesink), "sync", FALSE, nullptr);
-  GstPad *sink_pad = gst_element_get_static_pad(audioconvert, "sink");
-  GstPad *ghost_sinkpad = gst_ghost_pad_new(nullptr, sink_pad);
-  gst_pad_set_active(ghost_sinkpad, TRUE);
-  gst_element_add_pad(pulsesink_bin_, ghost_sinkpad);
-  gst_object_unref(sink_pad);
+    g_object_set(G_OBJECT(pulsesink_.get_raw()), "device",
+                 devices_.at(device_).name_.c_str(),
+                 nullptr);
   return true;
-}
-
-bool PulseSink::make_elements() {
-  if (build_elements()) {
-    set_sink_element(pulsesink_bin_);
-    return true;
-  }
-  return false;
 }
 
 void
@@ -373,16 +367,6 @@ const gchar *PulseSink::get_devices_json(void *user_data) {
   return context->devices_description_;
 }
 
-void PulseSink::on_shmdata_disconnect() {
-  reset_bin();
-}
-
-void PulseSink::on_shmdata_connect(std::string /* shmdata_sochet_path */ ) {
-  reset_bin();
-  build_elements();
-  set_sink_element_no_connect(pulsesink_bin_);
-}
-
 void PulseSink::update_output_device() {
   gint i = 0;
   for (auto &it : devices_) {
@@ -407,8 +391,48 @@ gint PulseSink::get_device(void *user_data) {
   return context->device_;
 }
 
-bool PulseSink::can_sink_caps(std::string caps) {
+bool PulseSink::can_sink_caps(const std::string &caps) {
   return GstUtils::can_sink_caps("audioconvert", caps);
 };
+
+bool PulseSink::on_shmdata_disconnect() {
+  prune_tree(".shmdata.reader." + shmpath_);
+  shm_sub_.reset();
+  On_scope_exit{
+    gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
+  };
+  return remake_elements();
+}
+
+bool PulseSink::on_shmdata_connect(const std::string &shmpath) {
+  shmpath_ = shmpath;
+  g_object_set(G_OBJECT(shmsrc_.get_raw()),
+               "socket-path", shmpath_.c_str(),
+               nullptr);
+  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+      shmsrc_.get_raw(),
+      [this](std::string &&caps){
+        this->graft_tree(".shmdata.reader." + shmpath_,
+                         ShmdataUtils::make_tree(caps,
+                                                 ShmdataUtils::get_category(caps),
+                                                 0));
+      },
+      [this](GstShmdataSubscriber::num_bytes_t byte_rate){
+        this->graft_tree(".shmdata.reader." + shmpath_ + ".byte_rate",
+                         data::Tree::make(std::to_string(byte_rate)));
+      });
+
+  gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
+                   shmsrc_.get_raw(),
+                   audioconvert_.get_raw(),
+                   pulsesink_.get_raw(),
+                   nullptr);
+  gst_element_link_many(shmsrc_.get_raw(),
+                        audioconvert_.get_raw(),
+                        pulsesink_.get_raw(),
+                        nullptr);
+  gst_pipeline_->play(true);
+  return true;
+}
 
 }  // namespace switcher

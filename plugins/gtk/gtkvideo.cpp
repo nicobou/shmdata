@@ -49,7 +49,8 @@ std::thread GTKVideo::gtk_main_thread_ {};
 GTKVideo::GTKVideo(const std::string &):
     shmcntr_(static_cast<Quiddity *>(this)),
     gst_pipeline_(std2::make_unique<GstPipeliner>(
-        nullptr, [this](GstMessage *msg){return this->bus_sync(msg);})),
+        nullptr,
+        [this](GstMessage *msg){return this->bus_sync(msg);})),
     gtk_custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 
@@ -297,13 +298,6 @@ void GTKVideo::set_fullscreen(gboolean fullscreen, void *user_data) {
   context->gtk_custom_props_->
       notify_property_changed(context->fullscreen_prop_spec_);
 }
-
-// FIXME void GTKVideo::on_shmdata_connect(std::string /*shmdata_sochet_path */ ) {
-//   gdk_threads_enter();
-//   g_object_set_data(G_OBJECT(xvimagesink_),
-//                     "window-handle", (gpointer) &window_handle_);
-//   gdk_threads_leave();
-// }
 
 void GTKVideo::set_title(const gchar *value, void *user_data) {
   GTKVideo *context = static_cast<GTKVideo *>(user_data);

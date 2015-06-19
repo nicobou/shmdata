@@ -22,10 +22,10 @@ SUBDIRS += \
     gtk
 endif
 
-# if PULSEBUILD
-# SUBDIRS += \
-#     pulse
-# endif
+if PULSEBUILD
+SUBDIRS += \
+    pulse
+endif
 
 if PORTMIDIBUILD
 SUBDIRS += \
@@ -37,6 +37,7 @@ SUBDIRS += \
 	posture
 endif
 
+# FIXME port to shmdata1
 # if HAVE_OSX
 # SUBDIRS += \
 #     syphonsrc
