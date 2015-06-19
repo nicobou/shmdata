@@ -49,6 +49,7 @@ class GstPipeliner {
   GstPipeliner &operator=(const GstPipeliner &) = delete;
 
   GstElement *get_pipeline();
+  GMainContext *get_main_context();
   void play(gboolean play);
   bool seek(gdouble position_in_ms);
   void looping(gboolean looping);

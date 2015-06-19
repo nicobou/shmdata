@@ -20,83 +20,89 @@
 #ifndef __SWITCHER_PULSE_SRC_H__
 #define __SWITCHER_PULSE_SRC_H__
 
-// #include <pulse/pulseaudio.h>
-// #include <pulse/glib-mainloop.h>
-// #include <mutex>
-// #include <condition_variable>
-// #include "switcher/audio-source.hpp"
-// #include "switcher/custom-property-helper.hpp"
-// #include "switcher/startable-quiddity.hpp"
+#include <pulse/pulseaudio.h>
+#include <pulse/glib-mainloop.h>
+#include <mutex>
+#include <condition_variable>
+#include "switcher/quiddity.hpp"
+#include "switcher/custom-property-helper.hpp"
+#include "switcher/startable-quiddity.hpp"
+#include "switcher/gst-pipeliner.hpp"
+#include "switcher/unique-gst-element.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
 
-// namespace switcher {
-// class PulseSrc:public AudioSource, public StartableQuiddity {
-//  public:
-//   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSrc);
-//   PulseSrc(const std::string &);
-//   ~PulseSrc();
-//   PulseSrc(const PulseSrc &) = delete;
-//   PulseSrc &operator=(const PulseSrc &) = delete;
+namespace switcher {
+class PulseSrc: public Quiddity, public StartableQuiddity {
+ public:
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSrc);
+  PulseSrc(const std::string &);
+  ~PulseSrc();
+  PulseSrc(const PulseSrc &) = delete;
+  PulseSrc &operator=(const PulseSrc &) = delete;
 
-//  private:
-//   typedef struct {
-//     std::string name_{};
-//     std::string description_{};
-//     std::string state_{};
-//     std::string sample_format_{};
-//     std::string sample_rate_{};
-//     std::string channels_{};
-//     std::vector<std::pair<std::string/*port*/,
-//                           std::string/*description*/>> ports_{};
-//     std::string active_port_{};
-//   } DeviceDescription;
+ private:
+  typedef struct {
+    std::string name_{};
+    std::string description_{};
+    std::string state_{};
+    std::string sample_format_{};
+    std::string sample_rate_{};
+    std::string channels_{};
+    std::vector<std::pair<std::string/*port*/,
+                          std::string/*description*/>> ports_{};
+    std::string active_port_{};
+  } DeviceDescription;
 
-//   GstElement *pulsesrc_{nullptr};
-//   GstElement *capsfilter_{nullptr};
-//   GstElement *pulsesrc_bin_{nullptr};
-//   bool connected_to_pulse_{false};
-//   std::mutex devices_mutex_{};
-//   std::condition_variable devices_cond_{};
-//   // custom property:
-//   CustomPropertyHelper::ptr custom_props_{};
-//   GParamSpec *capture_devices_description_spec_{nullptr};  // json formated
-//   gchar *capture_devices_description_{nullptr};  // json formated
-//   // device enum members
-//   GParamSpec *devices_enum_spec_{nullptr};
-//   GEnumValue devices_enum_[128];
-//   gint device_{};
-//   // pulse_audio
-//   pa_glib_mainloop *pa_glib_mainloop_{nullptr};
-//   pa_mainloop_api *pa_mainloop_api_{nullptr};
-//   pa_context *pa_context_{nullptr};
-//   char *server_{nullptr};
-//   std::vector<DeviceDescription> capture_devices_{};
-//   // quit
-//   std::mutex quit_mutex_{};
-//   std::condition_variable quit_cond_{};
+  std::string shmpath_{};
+  UGstElem pulsesrc_{"pulsesrc"};
+  UGstElem shmsink_{"shmdatasink"};
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  // pulse devices
+  bool connected_to_pulse_{false};
+  std::mutex devices_mutex_{};
+  std::condition_variable devices_cond_{};
+  // custom property:
+  CustomPropertyHelper::ptr custom_props_{};
+  GParamSpec *capture_devices_description_spec_{nullptr};  // json formated
+  gchar *capture_devices_description_{nullptr};  // json formated
+  // device enum members
+  GParamSpec *devices_enum_spec_{nullptr};
+  GEnumValue devices_enum_[128];
+  gint device_{};
+  // pulse_audio
+  pa_glib_mainloop *pa_glib_mainloop_{nullptr};
+  pa_mainloop_api *pa_mainloop_api_{nullptr};
+  pa_context *pa_context_{nullptr};
+  char *server_{nullptr};
+  std::vector<DeviceDescription> capture_devices_{};
+  // quit
+  std::mutex quit_mutex_{};
+  std::condition_variable quit_cond_{};
 
-//   bool start() final;
-//   bool stop() final;
-//   bool make_elements();
-//   static const gchar *get_capture_devices_json(void *user_data);
-//   static gboolean async_get_pulse_devices(void *user_data);
-//   bool capture_device();
-//   void update_capture_device();
-//   void make_device_description(pa_context *pulse_context);
-//   void make_json_description();
-//   bool init_gpipe() final;
-//   // device enum and select
-//   static void set_device(const gint value, void *user_data);
-//   static gint get_device(void *user_data);
-//   static void pa_context_state_callback(pa_context *c, void *userdata);
-//   static void get_source_info_callback(pa_context *c,
-//                                        const pa_source_info *i,
-//                                        int is_last, void *userdata);
-//   static void on_pa_event_callback(pa_context *c,
-//                                    pa_subscription_event_type_t t,
-//                                    uint32_t idx, void *userdata);
-//   static gboolean quit_pulse(void *user_data);
-// };
+  bool init() final;
+  bool start() final;
+  bool stop() final;
+  bool remake_elements();
+  static const gchar *get_capture_devices_json(void *user_data);
+  static gboolean async_get_pulse_devices(void *user_data);
+  void update_capture_device();
+  void make_device_description(pa_context *pulse_context);
+  void make_json_description();
+  // device enum and select
+  static void set_device(const gint value, void *user_data);
+  static gint get_device(void *user_data);
+  static void pa_context_state_callback(pa_context *c, void *userdata);
+  static void get_source_info_callback(pa_context *c,
+                                       const pa_source_info *i,
+                                       int is_last, void *userdata);
+  static void on_pa_event_callback(pa_context *c,
+                                   pa_subscription_event_type_t t,
+                                   uint32_t idx, void *userdata);
+  static gboolean quit_pulse(void *user_data);
+};
 
-// SWITCHER_DECLARE_PLUGIN(PulseSrc);
-// }  // namespace switcher
+SWITCHER_DECLARE_PLUGIN(PulseSrc);
+
+}  // namespace switcher
 #endif

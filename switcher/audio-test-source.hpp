@@ -23,9 +23,9 @@
 #include <memory>
 #include <future>
 #include <atomic>
-#include "switcher/gst-pipeliner.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/startable-quiddity.hpp"
+#include "switcher/gst-pipeliner.hpp"
 #include "switcher/unique-gst-element.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 
