@@ -48,11 +48,13 @@ bool PulseSrc::init() {
   install_property(G_OBJECT(pulsesrc_.get_raw()), "volume", "volume", "Volume");
   install_property(G_OBJECT(pulsesrc_.get_raw()), "mute", "mute", "Mute");
   g_object_set(G_OBJECT(pulsesrc_.get_raw()), "client-name", get_name().c_str(), nullptr);
+  g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   std::unique_lock<std::mutex> lock(devices_mutex_);
-  GstUtils::g_idle_add_full_with_context(gst_pipeline_->get_main_context(),
+  GstUtils::g_idle_add_full_with_context(get_g_main_context(),
                                          G_PRIORITY_DEFAULT_IDLE,
                                          async_get_pulse_devices,
-                                         this, nullptr);
+                                         this,
+                                         nullptr);
   capture_devices_description_spec_ =
       custom_props_->make_string_property("devices-json",
                                           "Description of capture devices (json formated)",
@@ -73,10 +75,9 @@ bool PulseSrc::init() {
 }
 
 gboolean PulseSrc::async_get_pulse_devices(void *user_data) {
-  
   PulseSrc *context = static_cast<PulseSrc *>(user_data);
   context->pa_glib_mainloop_ =
-      pa_glib_mainloop_new(context->gst_pipeline_->get_main_context());
+      pa_glib_mainloop_new(context->get_g_main_context());
   context->pa_mainloop_api_ =
       pa_glib_mainloop_get_api(context->pa_glib_mainloop_);
   context->pa_context_ = pa_context_new(context->pa_mainloop_api_, nullptr);
@@ -99,7 +100,7 @@ gboolean PulseSrc::async_get_pulse_devices(void *user_data) {
 }
 
 PulseSrc::~PulseSrc() {
-  GMainContext *main_context = gst_pipeline_->get_main_context();
+  GMainContext *main_context = get_g_main_context();
   if (nullptr != main_context && connected_to_pulse_) {
     std::unique_lock<std::mutex> lock(quit_mutex_);
     GstUtils::g_idle_add_full_with_context(main_context,
@@ -124,7 +125,7 @@ gboolean PulseSrc::quit_pulse(void *user_data) {
 
 bool PulseSrc::remake_elements() {
   if (!UGstElem::renew(pulsesrc_, {"client-name","volume", "mute", "device"})
-      || !UGstElem::renew(shmsink_))
+      || !UGstElem::renew(shmsink_, {"socket-path"}))
     return false;
   return true;
 }

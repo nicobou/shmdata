@@ -277,10 +277,4 @@ GstBusSyncReply GstPipeliner::bus_sync_handler(GstBus * /*bus*/,
   return res;
 }
 
-GMainContext *GstPipeliner::get_main_context(){
-  if (!main_loop_)
-    return nullptr;
-  return main_loop_->get_main_context();
-}
-
 }  // namespace switcher
