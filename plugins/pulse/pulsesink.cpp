@@ -50,6 +50,8 @@ bool PulseSink::init() {
                "slave-method", 0,  // resample
                "client-name", get_name().c_str(),
                nullptr);
+  install_property(G_OBJECT(pulsesink_.get_raw()), "volume", "volume", "Volume");
+  install_property(G_OBJECT(pulsesink_.get_raw()), "mute", "mute", "Mute");
   shmcntr_.install_connect_method(
         [this](const std::string &shmpath){return this->on_shmdata_connect(shmpath);},
         [this](const std::string &){return this->on_shmdata_disconnect();},
@@ -133,7 +135,7 @@ gboolean PulseSink::async_get_pulse_devices(void *user_data) {
 bool PulseSink::remake_elements() {
   uninstall_property("volume");
   uninstall_property("mute");
-  if(!UGstElem::renew(pulsesink_,{"volume", "mute", "slave-method", "client-name"})
+  if(!UGstElem::renew(pulsesink_,{"volume", "mute", "slave-method", "client-name", "device"})
      || !UGstElem::renew(shmsrc_)
      || !UGstElem::renew(audioconvert_))
     return false;
