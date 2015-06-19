@@ -52,7 +52,6 @@ void Follower::monitor(){
       do_sleep = false;
       log_->debug("file detected, creating reader");
       reader_.reset(new Reader(path_, on_data_cb_, osc_, [&](){on_server_disconnected();}, log_));
-      log_->debug("reader crated testing");
       if (*reader_.get()) {
         quit_.store(true);
       } else {
