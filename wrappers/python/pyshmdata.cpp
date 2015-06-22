@@ -221,6 +221,8 @@ void
 Reader_dealloc(pyshmdata_ReaderObject* self)
 {
     lock_guard<mutex> lock(self->reader_mutex);
+    if (self->reader)
+        shmdata_delete_follower(self->reader);
 
     Py_XDECREF(self->path);
     Py_XDECREF(self->datatype);
