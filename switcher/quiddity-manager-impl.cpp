@@ -261,7 +261,7 @@ QuiddityManager_Impl::create(const std::string &quiddity_class,
                              const std::string &raw_nick_name) {
   std::string nick_name = StringUtils::replace_chars(
       raw_nick_name,
-      {';', '-', '/', '[', ']', '&', '~', '*', '`', '#', '$', '|','\'', '"', '<', '>'},
+      {';', '/', '[', ']', '&', '~', '*', '`', '#', '$', '|','\'', '"', '<', '>'},
       ' ');
   if (!class_exists(quiddity_class) || nick_name.empty())
     return std::string();
