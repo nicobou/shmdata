@@ -248,14 +248,14 @@ bool PJCall::release_incoming_call(call_t *call, pjsua_buddy_id id){
     PJSIP::this_->sip_calls_->quid_uri_.erase(quid_uri_it);
   // updating recv status in the tree
   data::Tree::ptr tree = PJSIP::this_->
-      prune_tree(std::string(".buddy." + std::to_string(id)),
+      prune_tree(std::string(".buddies." + std::to_string(id)),
                  false);  // do not signal since the branch will be re-grafted
   if (!tree) {
     g_warning("cannot find buddy information tree, call status update cancelled");
   } else {
     tree->graft(std::string(".recv_status."),
                 data::Tree::make("disconnected"));
-    PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
+    PJSIP::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
   }
   // removing call
   calls.erase(it);
@@ -279,14 +279,14 @@ bool PJCall::release_outgoing_call(call_t *call, pjsua_buddy_id id){
              { call->peer_uri });
   // updating call status in the tree
   data::Tree::ptr tree = PJSIP::this_->
-      prune_tree(std::string(".buddy." + std::to_string(id)),
+      prune_tree(std::string(".buddies." + std::to_string(id)),
                  false);  // do not signal since the branch will be re-grafted
   if (!tree) {
     g_warning("cannot find buddy information tree, call status update cancelled");
   } else {
     tree->graft(std::string(".send_status."),
                 data::Tree::make("disconnected"));
-    PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
+    PJSIP::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
   }
   //removing call
   calls.erase(it);
@@ -302,7 +302,7 @@ void PJCall::on_inv_state_confirmed(call_t *call,
     g_debug("Call connected");
     // updating call status in the tree
     data::Tree::ptr tree = PJSIP::this_->
-        prune_tree(std::string(".buddy." + std::to_string(id)),
+        prune_tree(std::string(".buddies." + std::to_string(id)),
                    false);  // do not signal since the branch will be re-grafted
     if (!tree) {
       g_warning("cannot find buddy information tree, call status update cancelled");
@@ -318,7 +318,7 @@ void PJCall::on_inv_state_confirmed(call_t *call,
     tree->graft(std::string(".send_status."), data::Tree::make("calling"));
   else
     tree->graft(std::string(".recv_status."), data::Tree::make("receiving"));
-  PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
+  PJSIP::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
   std::unique_lock<std::mutex> lock(PJSIP::this_->sip_calls_->ocall_m_);
   PJSIP::this_->sip_calls_->ocall_action_done_ = true;
   PJSIP::this_->sip_calls_->ocall_cv_.notify_all();
@@ -336,7 +336,7 @@ void PJCall::on_inv_state_connecting(call_t *call,
                                      pjsua_buddy_id id) {
     // updating call status in the tree
     data::Tree::ptr tree = PJSIP::this_->
-        prune_tree(std::string(".buddy." + std::to_string(id)),
+        prune_tree(std::string(".buddies." + std::to_string(id)),
                    false);  // do not signal since the branch will be re-grafted
     if (!tree) {
       g_warning("cannot find buddy information tree, call status update cancelled");
@@ -352,7 +352,7 @@ void PJCall::on_inv_state_connecting(call_t *call,
     tree->graft(std::string(".send_status."), data::Tree::make("connecting"));
   else
     tree->graft(std::string(".recv_status."), data::Tree::make("connecting"));
-  PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
+  PJSIP::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
 }
 
 /* Callback to be called when invite session's state has changed: */
@@ -1064,7 +1064,7 @@ void PJCall::make_call(std::string dst_uri) {
   }
   // updating call status in the tree
   data::Tree::ptr tree = sip_instance_->
-        prune_tree(std::string(".buddy." + std::to_string(id)),
+        prune_tree(std::string(".buddies." + std::to_string(id)),
                    false);  // do not signal since the branch will be re-grafted
   if (!tree) {
     g_warning("cannot find buddy information tree, call cancelled");
@@ -1073,7 +1073,7 @@ void PJCall::make_call(std::string dst_uri) {
   tree->graft(std::string(".send_status."),
               data::Tree::make("calling"));
   sip_instance_->
-      graft_tree(std::string(".buddy." + std::to_string(id)), tree);
+      graft_tree(std::string(".buddies." + std::to_string(id)), tree);
 }
 
 void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
@@ -1090,7 +1090,7 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
   auto paths = PJSIP::this_->
       tree<std::list<std::string>, const std::string &>(
           &data::Tree::copy_leaf_values,
-          std::string(".buddy." + std::to_string(id) + ".connections"));
+          std::string(".buddies." + std::to_string(id) + ".connections"));
   // std::for_each(paths.begin(), paths.end(),
   //               [&] (const std::string &val){
   //                 g_print("----------------------- %s\n", val.c_str());
@@ -1243,7 +1243,7 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
   }
   if (attach) {
     data::Tree::ptr tree = sip_instance_->
-        prune_tree(std::string(".buddy." + std::to_string(id)),
+        prune_tree(std::string(".buddies." + std::to_string(id)),
                    false);  // do not signal since the branch will be re-grafted
   if (!tree)
     tree = data::Tree::make();
@@ -1255,7 +1255,7 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
     tree->graft(std::string(".connections." + shmpath),
                             data::Tree::make(shmpath));
     tree->tag_as_array(".connections", true);
-    sip_instance_->graft_tree(".buddy." + std::to_string(id),
+    sip_instance_->graft_tree(".buddies." + std::to_string(id),
                               tree);
   } else {
     manager_->invoke_va("siprtp",
@@ -1263,7 +1263,7 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
                         nullptr,
                         shmpath.c_str(),
                         nullptr);
-    sip_instance_->prune_tree(".buddy." + std::to_string(id)
+    sip_instance_->prune_tree(".buddies." + std::to_string(id)
                               + ".connections." + shmpath);
   }
 }
