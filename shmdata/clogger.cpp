@@ -34,6 +34,7 @@ class CLogger: public AbstractLogger {
       on_debug_(on_debug),
       user_data_(user_data){
   }
+  virtual ~CLogger(){};
   
  private:
   void (*on_error_)(void *user_data, const char *);

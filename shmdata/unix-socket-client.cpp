@@ -49,7 +49,7 @@ UnixSocketClient::UnixSocketClient(const std::string &path,
   int len = offsetof(struct sockaddr_un, sun_path) + path_.size();
   if (0 != connect(socket_.fd_, (struct sockaddr *)&sun, len)) {
     int err = errno;
-    log_->warning("connect %", strerror(err));
+    log_->debug("connect: %", strerror(err));
     return;
   }
   is_valid_ = true;
@@ -94,6 +94,9 @@ void UnixSocketClient::server_interaction() {
       int err = errno;
       log_->error("select %", strerror(err));
       continue;
+    }
+    if (!FD_ISSET(socket_.fd_, &rset) && !connected_){
+      log_->debug("timed out");
     }
     if (FD_ISSET(socket_.fd_, &rset)) {
       ssize_t nread;

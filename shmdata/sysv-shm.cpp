@@ -19,6 +19,20 @@
 
 namespace shmdata{
 
+bool force_shm_cleaning(key_t key, AbstractLogger *log){
+  auto shmid = shmget(key, 0, 0);
+  if (shmid < 0) {
+    int err = errno;
+    log->debug("shmget (forcing shm cleaning): %", strerror(err));
+    return false;
+  }
+  if (shmctl(shmid, IPC_RMID, NULL) != 0) {
+    int err = errno;
+    log->error("shmctl removing shm: %", strerror(err));
+  }
+  return true;
+}
+
 sysVShm::sysVShm(key_t key, size_t size, AbstractLogger *log, bool owner):
     log_(log),
     key_(key),
@@ -59,7 +73,7 @@ sysVShm::~sysVShm() {
 }
 
 bool sysVShm::is_valid() const {
-  return (shm_ != (void *) -1);
+  return (-1 != key_) && (shmid_ >= 0) && (shm_ != (void *) -1);
 }
 
 }  // namespace shmdata

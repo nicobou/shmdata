@@ -14,6 +14,7 @@
 
 #include <cstring>  // memcpy
 #include "./writer.hpp"
+#include "./reader.hpp"
 
 namespace shmdata{
 
@@ -27,16 +28,44 @@ Writer::Writer(const std::string &path,
     proto_(on_client_connect,
            on_client_disconnect,
            [this](){return this->connect_data_;}),
-    srv_(path, &proto_, log, [&](int){sem_.cancel_commited_reader();}),
-    shm_(ftok(path.c_str(), 'n'), memsize, log, /*owner = */ true),
-    sem_(ftok(path.c_str(), 'm'), log, /*owner = */ true),
+    srv_(new UnixSocketServer(path, &proto_, log, [&](int){sem_->cancel_commited_reader();})),
+  shm_(new sysVShm(ftok(path.c_str(), 'n'), memsize, log, /*owner = */ true)),
+  sem_(new sysVSem(ftok(path.c_str(), 'm'), log, /*owner = */ true)),
   log_(log),
   alloc_size_(memsize){
-  if (!srv_ || !shm_ || !sem_) {
-    log_->error("writer failled to initialize");
-    is_valid_ = false;
+  if (!(*srv_.get()) || !(*shm_.get()) || !(*sem_.get())) {
+    sem_.reset(); shm_.reset(); srv_.reset();
+    // checking if a server is responding with at this shmdata path
+    bool can_read = false;
+    {
+      log_->debug("writer need to checking if a shmdata with same path is active"); 
+      Reader inspector(path, nullptr, nullptr, nullptr, log_);
+      can_read = static_cast<bool>(inspector);
+    }
+    if (!can_read) {
+      log_->debug("writer detected a dead shmdata, will clean and retry");
+      force_sockserv_cleaning(path, log);
+      srv_.reset(new UnixSocketServer(path,
+                                      &proto_,
+                                      log,
+                                      [&](int){sem_->cancel_commited_reader();}));
+      force_shm_cleaning(ftok(path.c_str(), 'n'), log);
+      shm_.reset(new sysVShm(ftok(path.c_str(), 'n'), memsize, log, /*owner = */ true));
+      force_semaphore_cleaning(ftok(path.c_str(), 'm'), log);
+      sem_.reset(new sysVSem(ftok(path.c_str(), 'm'), log, /*owner = */ true));
+      if (!(*srv_.get())) log_->debug("issue with socket server");
+      if (!(*shm_.get())) log_->debug("issue with sysv shm");
+      if (!(*sem_.get())) log_->debug("issue with sysv sem");
+      is_valid_ = (*srv_.get()) && (*shm_.get()) && (*sem_.get());
+    } else {
+      log_->error("an other writer is using the same path");
+      is_valid_ = false;
+    }
   }
-  log_->debug("writer initialized");
+  if (is_valid_)
+    log_->debug("writer initialized");
+  else
+    log_->warning("writer failled initialization");
 }
 
 bool Writer::copy_to_shm(void *data, size_t size){
@@ -44,12 +73,12 @@ bool Writer::copy_to_shm(void *data, size_t size){
   {
     if (size > connect_data_.shm_size_)
       return false;
-    WriteLock wlock(&sem_);
-    auto num_readers = srv_.notify_update(size);
+    WriteLock wlock(sem_.get());
+    auto num_readers = srv_->notify_update(size);
     if (0 < num_readers) {
       wlock.commit_readers(num_readers);
     }
-    auto dest = shm_.get_mem();
+    auto dest = shm_->get_mem();
     if ( dest != std::memcpy(dest, data, size))
       res = false;
   } // release wlock & lock
@@ -57,16 +86,16 @@ bool Writer::copy_to_shm(void *data, size_t size){
 }
 
 std::unique_ptr<OneWriteAccess> Writer::get_one_write_access() {
-  return std::unique_ptr<OneWriteAccess>(new OneWriteAccess(&sem_,
-                                                            shm_.get_mem(),
-                                                            &srv_,
+  return std::unique_ptr<OneWriteAccess>(new OneWriteAccess(sem_.get(),
+                                                            shm_->get_mem(),
+                                                            srv_.get(),
                                                             log_));
 }
 
 OneWriteAccess *Writer::get_one_write_access_ptr() {
-  return new OneWriteAccess(&sem_,
-                            shm_.get_mem(),
-                            &srv_,
+  return new OneWriteAccess(sem_.get(),
+                            shm_->get_mem(),
+                            srv_.get(),
                             log_);
 }
 

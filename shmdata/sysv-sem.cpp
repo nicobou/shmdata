@@ -22,6 +22,20 @@
 
 namespace shmdata{
 
+bool force_semaphore_cleaning(key_t key, AbstractLogger *log){
+  auto semid = semget(key, 2, 0);
+  if (semid < 0) {
+    int err = errno;
+    log->debug("semget (forcing semaphore cleaning): %", strerror(err));
+    return false;
+  }
+  if (semctl(semid, 0, IPC_RMID, 0) != 0) {
+    int err = errno;
+    log->error("semctl removing semaphore %", strerror(err));
+  }
+  return true;
+}
+
 namespace semops{
 // sem_num 0 is for reading, 1 is for writer
 static struct sembuf read_start [] = {{1, 0, 0}};     // wait writer
@@ -73,7 +87,7 @@ ReadLock::ReadLock(sysVSem *sem) :
                   semops::read_start,
                   sizeof(semops::read_start)/sizeof(*semops::read_start))){
     int err = errno;
-    sem_->log_->warning("semop ReadLock %", strerror(err));
+    sem_->log_->debug("semop ReadLock %", strerror(err));
     valid_ = false;
   }
 }

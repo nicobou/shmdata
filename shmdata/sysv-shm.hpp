@@ -24,6 +24,8 @@
 
 namespace shmdata{
 
+bool force_shm_cleaning(key_t key, AbstractLogger *log);
+
 class sysVShm: public SafeBoolIdiom {
  public:
   sysVShm(key_t key, size_t size, AbstractLogger *log, bool owner = false);

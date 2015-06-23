@@ -51,9 +51,9 @@ class Writer: public SafeBoolIdiom {
   std::string path_; 
   UnixSocketProtocol::onConnectData connect_data_;
   UnixSocketProtocol::ServerSide proto_;
-  UnixSocketServer srv_;
-  sysVShm shm_;
-  sysVSem sem_;
+  std::unique_ptr<UnixSocketServer> srv_;
+  std::unique_ptr<sysVShm> shm_;
+  std::unique_ptr<sysVSem> sem_;
   AbstractLogger *log_;
   size_t alloc_size_;
   bool is_valid_{true};

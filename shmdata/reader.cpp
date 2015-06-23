@@ -30,7 +30,7 @@ Reader::Reader(const std::string &path,
     sem_(new sysVSem(ftok(path.c_str(), 'm'), log_, /* owner = */ false)),
     proto_([this](){on_server_connected();},
            [this](){on_server_disconnected();},
-           [this](size_t size){on_buffer(sem_.get(), size);}),  // read when update is received
+           [this](size_t size){on_buffer(this->sem_.get(), size);}),  // read when update is received
   cli_((*shm_.get()) && (*sem_.get()) ?
        new UnixSocketClient(path, &proto_, log_) :
        nullptr) {
@@ -62,7 +62,7 @@ void Reader::on_server_disconnected(){
 
 bool Reader::on_buffer(sysVSem *sem, size_t size){
   ReadLock lock(sem);
-  if (!lock)
+  if (!lock) 
     return false;
   if (on_data_cb_)
     on_data_cb_(shm_->get_mem(), size);

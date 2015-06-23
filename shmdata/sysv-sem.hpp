@@ -27,6 +27,8 @@ namespace shmdata{
 class WriteLock;
 class ReadLock;
 
+bool force_semaphore_cleaning(key_t key, AbstractLogger *log);
+
 class sysVSem: public SafeBoolIdiom {
   friend WriteLock;
   friend ReadLock;
@@ -39,7 +41,7 @@ class sysVSem: public SafeBoolIdiom {
   sysVSem& operator=(sysVSem&&) = default;
 
   void cancel_commited_reader();
-  
+ 
  private:
   key_t key_;
   bool owner_;

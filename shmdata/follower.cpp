@@ -16,6 +16,7 @@
 #include <utility>
 #include "./follower.hpp"
 #include "./file-monitor.hpp"
+#include "./unix-socket-server.hpp"
 
 namespace shmdata{
 
@@ -56,6 +57,9 @@ void Follower::monitor(){
         quit_.store(true);
       } else {
         reader_.reset(nullptr);
+        force_sockserv_cleaning(path_, log_);
+        force_shm_cleaning(ftok(path_.c_str(), 'n'), log_);  // FIXME wrap ftok
+        force_semaphore_cleaning(ftok(path_.c_str(), 'm'), log_);
         log_->debug("file % exists but reader failed", path_);
       }
     } 

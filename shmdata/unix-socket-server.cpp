@@ -31,6 +31,16 @@
 
 namespace shmdata{
 
+bool force_sockserv_cleaning(const std::string &path, AbstractLogger *log){
+  // FIXME stat if the file is a socket
+  if (0 == unlink (path.c_str())){
+    int err = errno;
+    log->error("unlink: %", strerror(err));
+    return false;
+  }
+  return true;
+}
+
 UnixSocketServer::UnixSocketServer(const std::string &path,
                                    UnixSocketProtocol::ServerSide *proto,
                                    AbstractLogger *log,
@@ -56,7 +66,7 @@ UnixSocketServer::UnixSocketServer(const std::string &path,
   strcpy(sock_un.sun_path, path_.c_str());
   if (bind(socket_.fd_, (struct sockaddr *) &sock_un, sizeof(struct sockaddr_un)) < 0) {
     int err = errno;
-    log_->error("bind %", strerror(err));
+    log_->error("bind: %", strerror(err));
     return;
   } else {
     is_binded_ = true;

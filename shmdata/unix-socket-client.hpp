@@ -43,6 +43,9 @@ class UnixSocketClient: public SafeBoolIdiom {
   AbstractLogger *log_;
   std::future<void> done_{};
   std::atomic_short quit_{0};
+  // connection
+  std::mutex connected_mutex_{};
+  std::condition_variable cv_{};
   bool connected_{false};
   bool is_valid_{false};
   UnixSocketProtocol::ClientSide *proto_;

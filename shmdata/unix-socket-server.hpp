@@ -31,6 +31,8 @@
 
 namespace shmdata{
 
+bool force_sockserv_cleaning(const std::string &path, AbstractLogger *log);
+
 class UnixSocketServer: public SafeBoolIdiom {
  public:
   UnixSocketServer(const std::string &path,
