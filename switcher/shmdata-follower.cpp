@@ -34,6 +34,7 @@ ShmdataFollower::ShmdataFollower(Quiddity *quid,
     od_(od),
     osc_(osc),
     osd_(osd),
+    tree_path_(tree_path),
     follower_(std2::make_unique<shmdata::Follower>(shmpath_,
                                                    [this](void *data, size_t size){
                                                      this->on_data(data, size);
@@ -47,8 +48,7 @@ ShmdataFollower::ShmdataFollower(Quiddity *quid,
                                                    &logger_)),
   task_(std2::make_unique<PeriodicTask>([this](){
         this->update_quid_byte_rate();
-      }, std::chrono::milliseconds(1000))),
-  tree_path_(tree_path){
+      }, std::chrono::milliseconds(1000))){
 }
 
 ShmdataFollower::~ShmdataFollower(){
