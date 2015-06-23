@@ -27,7 +27,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "midisrc",
     "Midi (PortMidi)",
     "midi",
-    "writer",
+    "writer/hid",
     "midi to shmdata and properties",
     "LGPL",
     "Nicolas Bouillot");
