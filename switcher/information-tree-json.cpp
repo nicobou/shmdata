@@ -26,19 +26,23 @@ namespace JSONSerializer {
 void
 on_visiting_node(std::string key,
                  Tree::ptrc node,
-                 bool is_array_element, JsonBuilder *builder) {
+                 bool is_array_element,
+                 JsonBuilder *builder) {
   key = data::Tree::unescape_dots(key);
   if (!is_array_element)  // discarding here to get it as a member called "name"
     json_builder_set_member_name(builder, key.c_str());
 
-  if (node->is_leaf())
-  {
+  if (node->is_leaf()){
     if (!node->read_data().is_null()) {
       json_builder_add_string_value(builder,
                                     Any::to_string(node->read_data()).c_str());
     } else {
-      json_builder_begin_object(builder);
-      json_builder_end_object(builder);
+      if(node->is_array()) {
+        json_builder_begin_array(builder);
+      } else {
+        json_builder_begin_object(builder);
+        json_builder_end_object(builder);
+      }
     }
     return;
   } else {  // adding node value with the key "key_value" along with other childrens
