@@ -1090,7 +1090,7 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
   auto paths = PJSIP::this_->
       tree<std::list<std::string>, const std::string &>(
           &data::Tree::copy_leaf_values,
-          std::string(".buddy." + std::to_string(id) + ".connection"));
+          std::string(".buddy." + std::to_string(id) + ".connections"));
   // std::for_each(paths.begin(), paths.end(),
   //               [&] (const std::string &val){
   //                 g_print("----------------------- %s\n", val.c_str());
@@ -1252,8 +1252,9 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
                         nullptr,
                         shmpath.c_str(),
                         nullptr);
-    tree->graft(std::string(".connection." + shmpath),
+    tree->graft(std::string(".connections." + shmpath),
                             data::Tree::make(shmpath));
+    tree->tag_as_array(".connections", true);
     sip_instance_->graft_tree(".buddy." + std::to_string(id),
                               tree);
   } else {
@@ -1263,7 +1264,7 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
                         shmpath.c_str(),
                         nullptr);
     sip_instance_->prune_tree(".buddy." + std::to_string(id)
-                              + ".connection." + shmpath);
+                              + ".connections." + shmpath);
   }
 }
 
