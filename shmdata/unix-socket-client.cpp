@@ -106,7 +106,7 @@ void UnixSocketClient::server_interaction() {
         nread = read(socket_.fd_, &proto_->update_msg_, sizeof(proto_->update_msg_));
       if (nread < 0) {
         int err = errno;
-        log_->error("read %", strerror(err));
+        log_->error("read: %", strerror(err));
       } else if (nread == 0) {
         log_->debug("socket client, server disconnected");
         proto_->on_disconnect_cb_();

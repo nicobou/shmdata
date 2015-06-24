@@ -65,7 +65,7 @@ void Follower::monitor(){
         log_->debug("file % exists but reader failed", path_);
         if (1 == successive_fail) {
           if(!force_sockserv_cleaning(path_, log_))
-            log_->warning("follower shmpath is not a shmdata");
+            log_->warning("follower shmpath is not dead shmdata that can be cleaned");
           else
             log_->debug("shmdata follower detected and cleaned a possible dead shmdata: %",
                         path_);
