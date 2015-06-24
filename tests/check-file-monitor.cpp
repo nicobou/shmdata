@@ -33,6 +33,7 @@ int main () {
   {
     assert(!fileMonitor::is_unix_socket(socket_path, &logger));
     UnixSocketServer srv(socket_path, &sproto, &logger);
+    srv.start_serving();
     assert(fileMonitor::is_unix_socket(socket_path, &logger));
     assert(srv);
   }

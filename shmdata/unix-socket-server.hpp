@@ -46,6 +46,7 @@ class UnixSocketServer: public SafeBoolIdiom {
   UnixSocketServer& operator=(const UnixSocketServer&) = delete;
   UnixSocketServer& operator=(UnixSocketServer&&) = default;
 
+  void start_serving();
   // return true if at least one notification has been sent
   short notify_update(size_t size = 0);
   

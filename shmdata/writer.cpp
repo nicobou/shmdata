@@ -59,10 +59,12 @@ Writer::Writer(const std::string &path,
       is_valid_ = false;
     }
   }
-  if (is_valid_)
-    log_->debug("writer initialized");
-  else
+  if (!is_valid_) {
     log_->warning("writer failled initialization");
+    return;
+  }
+  srv_->start_serving();
+  log_->debug("writer initialized");
 }
 
 bool Writer::copy_to_shm(void *data, size_t size){

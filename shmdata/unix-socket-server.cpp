@@ -87,9 +87,6 @@ UnixSocketServer::UnixSocketServer(const std::string &path,
   } else {
     is_listening_ = true;
   }
-  done_ = std::async(std::launch::async,
-                     [](UnixSocketServer *self){self->client_interaction();},
-                     this);
 }
 
 UnixSocketServer::~UnixSocketServer() {
@@ -105,6 +102,17 @@ UnixSocketServer::~UnixSocketServer() {
       } 
     }
   }
+}
+
+void UnixSocketServer::start_serving(){
+  if (done_.valid()){
+    log_->warning("shmdata socket server has been asked to start more than once,"
+                  "cancelling invocation");
+    return;
+  }
+  done_ = std::async(std::launch::async,
+                     [](UnixSocketServer *self){self->client_interaction();},
+                     this);
 }
 
 short UnixSocketServer::notify_update(size_t size) {
