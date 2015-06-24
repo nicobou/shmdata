@@ -43,6 +43,8 @@ bool force_sockserv_cleaning(const std::string &path, AbstractLogger *log){
   if (0 == unlink (path.c_str())){
     int err = errno;
     log->debug("unlink: %", strerror(err));
+    if (ECONNREFUSED == err)
+      return true;
     return false;
   }
   return true;
