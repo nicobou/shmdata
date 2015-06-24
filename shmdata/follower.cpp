@@ -48,20 +48,29 @@ Follower::~Follower(){
 
 void Follower::monitor(){
   auto do_sleep = true;
+  // give the change the reader to fail twice before cleaning dead shmdata:
+  auto successive_fail = 0;  
   while (!quit_.load()) {
     if (fileMonitor::is_unix_socket(path_, log_)) {
       do_sleep = false;
       log_->debug("file detected, creating reader");
-      reader_.reset(new Reader(path_, on_data_cb_, osc_, [&](){on_server_disconnected();}, log_));
+      reader_.reset(new Reader(path_,
+                               on_data_cb_,
+                               osc_,
+                               [&](){on_server_disconnected();},
+                               log_));
       if (*reader_.get()) {
         quit_.store(true);
       } else {
-        log_->debug("file % exists but reader failed, trying to clean possible dead shmdata",
-                    path_);
-        reader_.reset(nullptr);
-        force_sockserv_cleaning(path_, log_);
-        // force_shm_cleaning(ftok(path_.c_str(), 'n'), log_);  // FIXME wrap ftok
-        // force_semaphore_cleaning(ftok(path_.c_str(), 'm'), log_);
+        log_->debug("file % exists but reader failed", path_);
+        if (1 == successive_fail) {
+          if(!force_sockserv_cleaning(path_, log_))
+            log_->warning("follower shmpath is not a shmdata");
+          else
+            log_->debug("shmdata follower detected and cleaned a possible dead shmdata: %",
+                        path_);
+          successive_fail = 0; 
+        } else { ++successive_fail; }
       }
     } 
     if (do_sleep)
