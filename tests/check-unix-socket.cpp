@@ -49,13 +49,13 @@ int main () {
   { std::printf("-- creation with not time to connect\n");
     UnixSocketServer srv("/tmp/check-unix-socket", &sproto, &logger);
     srv.start_serving();
-    UnixSocketClient cli("/tmp/check-unix-socket", &cproto, &logger);
+    UnixSocketClient cli("/tmp/check-unix-socket", &logger);
     assert(srv);
     assert(cli);
-    cli.start();
+    cli.start(&cproto);
   }
   { std::printf("-- creation with not time to connect 2\n");
-    UnixSocketClient cli("/tmp/check-unix-socket", &cproto, &logger);
+    UnixSocketClient cli("/tmp/check-unix-socket", &logger);
     UnixSocketServer srv("/tmp/check-unix-socket", &sproto, &logger);
     srv.start_serving();
     assert(srv);
@@ -64,16 +64,16 @@ int main () {
   { std::printf("-- clients connects at creation\n");
     UnixSocketServer srv("/tmp/check-unix-socket", &sproto, &logger);
     srv.start_serving();
-    UnixSocketClient cli1("/tmp/check-unix-socket", &cproto, &logger);
-    UnixSocketClient cli2("/tmp/check-unix-socket", &cproto, &logger);
-    UnixSocketClient cli3("/tmp/check-unix-socket", &cproto, &logger);
+    UnixSocketClient cli1("/tmp/check-unix-socket", &logger);
+    UnixSocketClient cli2("/tmp/check-unix-socket", &logger);
+    UnixSocketClient cli3("/tmp/check-unix-socket", &logger);
     assert(srv);
     assert(cli1);
-    cli1.start();
+    cli1.start(&cproto);
     assert(cli2);
-    cli2.start();
+    cli2.start(&cproto);
     assert(cli3);
-    cli3.start();
+    cli3.start(&cproto);
     usleep(100000);
     auto i = 5;
     while (0 != i--) {
@@ -82,7 +82,7 @@ int main () {
     }
   }
   { std::printf("-- client can't connect at creation\n");
-    UnixSocketClient cli("/tmp/check-unix-socket", &cproto, &logger);
+    UnixSocketClient cli("/tmp/check-unix-socket", &logger);
     UnixSocketServer srv("/tmp/check-unix-socket", &sproto, &logger);
     srv.start_serving();
     usleep(100000);

@@ -31,15 +31,11 @@
 namespace shmdata{
 
 UnixSocketClient::UnixSocketClient(const std::string &path,
-                                   UnixSocketProtocol::ClientSide *proto,
                                    AbstractLogger *log) :
     path_(path),
     socket_(log),
-    log_(log),
-    proto_(proto){
+    log_(log){
   if (!socket_)  // client not valid if socket is not valid
-    return;
-  if (nullptr == proto_)
     return;
   struct sockaddr_un sun;
   // fill socket address structure with server′s address
@@ -71,12 +67,17 @@ bool UnixSocketClient::is_valid() const {
   return is_valid_;
 }
 
-bool UnixSocketClient::start(){
+bool UnixSocketClient::start(UnixSocketProtocol::ClientSide *proto){
+  if (nullptr == proto){
+    log_->error("shmdata socket client needs a non null protocol");
+    return false;
+  }
   if (done_.valid()){
     log_->warning("shmdata socket client start has already invoked, ignoring");
     is_valid_ = false;
     return false;
   }
+  proto_ = proto;
   done_ = std::async(std::launch::async,
                      [](UnixSocketClient *self){self->server_interaction();},
                      this);

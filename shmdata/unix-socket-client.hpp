@@ -29,7 +29,6 @@ namespace shmdata{
 class UnixSocketClient: public SafeBoolIdiom {
  public:
   UnixSocketClient(const std::string &path,
-                   UnixSocketProtocol::ClientSide *proto,
                    AbstractLogger *log);
   ~UnixSocketClient();
   UnixSocketClient() = delete;
@@ -37,7 +36,7 @@ class UnixSocketClient: public SafeBoolIdiom {
   UnixSocketClient& operator=(const UnixSocketClient&) = delete;
   UnixSocketClient& operator=(UnixSocketClient&&) = default;
 
-  bool start();  // FIXME &proto must be a start arg
+  bool start(UnixSocketProtocol::ClientSide *proto);
   
  private:
   std::string path_;
@@ -50,7 +49,7 @@ class UnixSocketClient: public SafeBoolIdiom {
   std::condition_variable cv_{};
   bool connected_{false};
   bool is_valid_{false};
-  UnixSocketProtocol::ClientSide *proto_;
+  UnixSocketProtocol::ClientSide *proto_{nullptr};
   bool is_valid() const final;
   void server_interaction();
 };
