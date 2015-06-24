@@ -56,11 +56,12 @@ void Follower::monitor(){
       if (*reader_.get()) {
         quit_.store(true);
       } else {
+        log_->debug("file % exists but reader failed, trying to clean possible dead shmdata",
+                    path_);
         reader_.reset(nullptr);
         force_sockserv_cleaning(path_, log_);
-        force_shm_cleaning(ftok(path_.c_str(), 'n'), log_);  // FIXME wrap ftok
-        force_semaphore_cleaning(ftok(path_.c_str(), 'm'), log_);
-        log_->debug("file % exists but reader failed", path_);
+        // force_shm_cleaning(ftok(path_.c_str(), 'n'), log_);  // FIXME wrap ftok
+        // force_semaphore_cleaning(ftok(path_.c_str(), 'm'), log_);
       }
     } 
     if (do_sleep)

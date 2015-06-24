@@ -13,6 +13,7 @@
  */
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -32,10 +33,16 @@
 namespace shmdata{
 
 bool force_sockserv_cleaning(const std::string &path, AbstractLogger *log){
-  // FIXME stat if the file is a socket
+  struct stat info;
+  if (0 != stat(path.c_str(), &info))
+    return true;  // the dead shmdata may not have left the sochet file 
+  if(!S_ISSOCK(info.st_mode)){
+    log->warning("trying to clean something not a socket");
+    return false;
+  }
   if (0 == unlink (path.c_str())){
     int err = errno;
-    log->error("unlink: %", strerror(err));
+    log->debug("unlink: %", strerror(err));
     return false;
   }
   return true;

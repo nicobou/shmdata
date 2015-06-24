@@ -26,8 +26,8 @@ namespace fileMonitor{
 bool is_unix_socket(const std::string &path, AbstractLogger *log){
   struct stat sb;
   if (stat(path.c_str(), &sb) == -1) {
-    int err = errno;
-    log->debug("stat %", strerror(err));
+    // int err = errno;
+    // log->debug("stat %", strerror(err));
     return false;
   }
   if ((sb.st_mode & S_IFMT) != S_IFSOCK) {

@@ -38,7 +38,7 @@ Writer::Writer(const std::string &path,
     // checking if a server is responding with at this shmdata path
     bool can_read = false;
     {
-      log_->debug("writer need to checking if a shmdata with same path is active"); 
+      log_->debug("checking if a shmdata having the same path is already active"); 
       Reader inspector(path, nullptr, nullptr, nullptr, log_);
       can_read = static_cast<bool>(inspector);
     }
@@ -53,9 +53,6 @@ Writer::Writer(const std::string &path,
       shm_.reset(new sysVShm(ftok(path.c_str(), 'n'), memsize, log, /*owner = */ true));
       force_semaphore_cleaning(ftok(path.c_str(), 'm'), log);
       sem_.reset(new sysVSem(ftok(path.c_str(), 'm'), log, /*owner = */ true));
-      if (!(*srv_.get())) log_->debug("issue with socket server");
-      if (!(*shm_.get())) log_->debug("issue with sysv shm");
-      if (!(*sem_.get())) log_->debug("issue with sysv sem");
       is_valid_ = (*srv_.get()) && (*shm_.get()) && (*sem_.get());
     } else {
       log_->error("an other writer is using the same path");
