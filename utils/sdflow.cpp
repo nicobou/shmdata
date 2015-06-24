@@ -42,12 +42,11 @@ int main (int argc, char *argv[]) {
 
   opterr = 0;
   int c = 0;
-  while ((c = getopt (argc, argv, "d:")) != -1)
+  while ((c = getopt (argc, argv, "d")) != -1)
     switch (c)
       {
         case 'd':
           debug = true;
-          shmpath = optarg;
           break;
         case '?':
           break;
