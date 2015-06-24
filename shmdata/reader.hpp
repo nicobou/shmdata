@@ -46,11 +46,11 @@ class Reader: public SafeBoolIdiom {
   onData on_data_cb_;
   onServerConnected on_server_connected_cb_;
   onServerDisconnected on_server_disconnected_cb_;
-  std::unique_ptr<sysVShm> shm_;
-  std::unique_ptr<sysVSem> sem_;
+  std::unique_ptr<sysVShm> shm_{nullptr};
+  std::unique_ptr<sysVSem> sem_{nullptr};
   UnixSocketProtocol::ClientSide proto_;
   std::unique_ptr<UnixSocketClient> cli_;
-  bool is_valid_{true};
+  bool is_valid_{false};
   bool is_valid() const final{return is_valid_;}
   void on_server_connected();
   void on_server_disconnected();

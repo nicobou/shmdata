@@ -26,24 +26,26 @@ Reader::Reader(const std::string &path,
     on_data_cb_(cb),
     on_server_connected_cb_(osc),
     on_server_disconnected_cb_(osd),
-    shm_(new sysVShm(ftok(path.c_str(), 'n'), 0, log_, /* owner = */ false)),
-    sem_(new sysVSem(ftok(path.c_str(), 'm'), log_, /* owner = */ false)),
     proto_([this](){on_server_connected();},
            [this](){on_server_disconnected();},
            [this](size_t size){on_buffer(this->sem_.get(), size);}),  // read when update is received
-  cli_((*shm_.get()) && (*sem_.get()) ?
-       new UnixSocketClient(path, &proto_, log_) :
-       nullptr) {
-  if (!cli_ || !(*cli_.get()) || !(*shm_.get()) || !(*sem_.get())) {
+    cli_(new UnixSocketClient(path, &proto_, log_)){
+  if (!cli_ || !(*cli_.get())) {
+    log_->debug("reader initialization failed (initializing socket client)");
     cli_.reset(nullptr);
-    sem_.reset(nullptr);
-    shm_.reset(nullptr);
-    is_valid_ = false;
-    log_->debug("reader initialization failed");
-  } else {
-    log_->debug("reader initialization done");
+    return;
   }
-
+  shm_.reset(new sysVShm(ftok(path.c_str(), 'n'), 0, log_, /* owner = */ false));
+  sem_.reset(new sysVSem(ftok(path.c_str(), 'm'), log_, /* owner = */ false));
+  if (!*shm_.get() || !*sem_.get() || !cli_->start()){
+    log_->debug("reader initialization failed");
+    cli_.reset();
+    shm_.reset();
+    sem_.reset();
+    return;
+  }
+  is_valid_ = true;
+  log_->debug("reader initialization done");
 }
 
 void Reader::on_server_connected(){

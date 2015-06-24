@@ -33,10 +33,8 @@ Follower::Follower(const std::string &path,
     reader_(fileMonitor::is_unix_socket(path_, log_) ?
             new Reader(path_, on_data_cb_, osc_, [&](){on_server_disconnected();}, log_) :
             nullptr){
-  if (!reader_ || !(*reader_.get())){
-    reader_.reset(nullptr);
+  if (!reader_ || !(*reader_.get()))
     monitor_ = std::async(std::launch::async, [this](){monitor();});
-  }
 }
 
 Follower::~Follower(){
@@ -62,6 +60,7 @@ void Follower::monitor(){
       if (*reader_.get()) {
         quit_.store(true);
       } else {
+        reader_.reset();
         log_->debug("file % exists but reader failed", path_);
         if (1 == successive_fail) {
           if(!force_sockserv_cleaning(path_, log_))

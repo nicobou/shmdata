@@ -36,6 +36,8 @@ class UnixSocketClient: public SafeBoolIdiom {
   UnixSocketClient(const UnixSocketClient &) = delete;
   UnixSocketClient& operator=(const UnixSocketClient&) = delete;
   UnixSocketClient& operator=(UnixSocketClient&&) = default;
+
+  bool start();  // FIXME &proto must be a start arg
   
  private:
   std::string path_;

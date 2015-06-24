@@ -53,9 +53,6 @@ UnixSocketClient::UnixSocketClient(const std::string &path,
     return;
   }
   is_valid_ = true;
-  done_ = std::async(std::launch::async,
-                     [](UnixSocketClient *self){self->server_interaction();},
-                     this);
 }
 
 UnixSocketClient::~UnixSocketClient() {
@@ -74,6 +71,20 @@ bool UnixSocketClient::is_valid() const {
   return is_valid_;
 }
 
+bool UnixSocketClient::start(){
+  if (done_.valid()){
+    log_->warning("shmdata socket client start has already invoked, ignoring");
+    is_valid_ = false;
+    return false;
+  }
+  done_ = std::async(std::launch::async,
+                     [](UnixSocketClient *self){self->server_interaction();},
+                     this);
+  std::unique_lock<std::mutex> lock(connected_mutex_);
+  cv_.wait_for(lock, std::chrono::milliseconds(100));
+  is_valid_ = is_valid_ && connected_;
+  return connected_;
+}
 
 void UnixSocketClient::server_interaction() {
   fd_set allset;
@@ -104,12 +115,14 @@ void UnixSocketClient::server_interaction() {
         nread = read(socket_.fd_, &proto_->data_, sizeof(UnixSocketProtocol::onConnectData));
       else
         nread = read(socket_.fd_, &proto_->update_msg_, sizeof(proto_->update_msg_));
-      if (nread < 0) {
-        int err = errno;
-        log_->error("read: %", strerror(err));
-      } else if (nread == 0) {
-        log_->debug("socket client, server disconnected");
-        proto_->on_disconnect_cb_();
+      if (nread <= 0) {
+        if (nread < 0) {
+          int err = errno;
+          log_->error("read: %", strerror(err));
+        }
+        log_->debug("socket client, server error");
+        if (connected_)
+          proto_->on_disconnect_cb_();
         // disable socket
         FD_CLR(socket_.fd_, &allset);
         if (0 != close(socket_.fd_)){
@@ -130,6 +143,9 @@ void UnixSocketClient::server_interaction() {
           }
           proto_->on_connect_cb_();
           connected_ = true;
+          log_->debug("client connected");
+          std::unique_lock<std::mutex> lock(connected_mutex_);
+          cv_.notify_one();
         } else {
           if (1 == proto_->update_msg_.msg_type_)
             proto_->on_update_cb_(proto_->update_msg_.size_);
