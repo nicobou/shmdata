@@ -259,8 +259,15 @@ void SwitcherController::NotifySignal(uv_async_t *async, int /*status*/) {
 
   if (!obj->user_signal_cb.IsEmpty() && obj->user_signal_cb->IsCallable()) {
     TryCatch try_catch;
+
     uv_mutex_lock(&obj->switcher_sig_mutex);
-    for (auto &it: obj->switcher_sig_list) {
+    // Performing a copy in order to avoid deadlock from signal handlers having to call the addon themselves
+    // For example, on-quiddity-removed has to also remove associated quiddities
+    auto sig_list = obj->switcher_sig_list;
+    obj->switcher_sig_list.clear();
+    uv_mutex_unlock(&obj->switcher_sig_mutex);
+
+    for (auto &it: sig_list) {
       Local<Value> argv[3];
       Local<Array> array = Array::New(it.val_.size());
       for (auto &item: it.val_) {
@@ -271,8 +278,6 @@ void SwitcherController::NotifySignal(uv_async_t *async, int /*status*/) {
       argv[2] = {Local<Value>::New(array)};
       obj->user_signal_cb->Call(obj->user_signal_cb, 3, argv);
     }
-    obj->switcher_sig_list.clear();
-    uv_mutex_unlock(&obj->switcher_sig_mutex);
 
     if (try_catch.HasCaught()) {
       node::FatalException(try_catch);
