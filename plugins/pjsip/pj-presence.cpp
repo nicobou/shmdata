@@ -171,6 +171,7 @@ PJPresence::PJPresence(PJSIP *sip_instance):
                                   sip_reg_status_spec_,
                                   "sip-registration",
                                   "Self SIP registration status");
+    sip_instance_->graft_tree(".self.", data::Tree::make(nullptr));
 }
 
 PJPresence::~PJPresence() {
@@ -254,10 +255,12 @@ PJPresence::register_account(const std::string &sip_user,
   registration_cond_.wait(lock);
   change_online_status(PJPresence::AVAILABLE);
   // notifying sip registration status
+  sip_instance_->graft_tree(".self.", data::Tree::make(sip_user));
   GObjectWrapper::notify_property_changed(sip_instance_->custom_props_->get_gobject(),
                                           sip_reg_status_spec_);
   sip_local_user_ = std::string("sip:") + sip_user +
       + ":" + std::to_string(sip_instance_->sip_port_);
+
 }
 
 gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */ ,
@@ -296,6 +299,7 @@ void PJPresence::unregister_account() {
   account_id_ = -1;
   sip_local_user_.clear();
   registered_ = false;
+  sip_instance_->graft_tree(".self.", data::Tree::make(nullptr));
   GObjectWrapper::notify_property_changed(sip_instance_->custom_props_->
                                           get_gobject(),
                                           sip_reg_status_spec_);
