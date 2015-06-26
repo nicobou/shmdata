@@ -105,7 +105,7 @@ void SwitcherController::Init(Handle<Object> exports) {
     // property subscription - 4
     tpl->PrototypeTemplate()->Set(String::NewSymbol("register_prop_callback"), FunctionTemplate::New(RegisterPropCallback)->GetFunction());
     tpl->PrototypeTemplate()->Set(String::NewSymbol("subscribe_to_property"), FunctionTemplate::New(SubscribeToProperty)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("unsubscribe_to_property"), FunctionTemplate::New(UnsubscribeToProperty)->GetFunction());
+    tpl->PrototypeTemplate()->Set(String::NewSymbol("unsubscribe_from_property"), FunctionTemplate::New(UnsubscribeFromProperty)->GetFunction());
     tpl->PrototypeTemplate()->Set(String::NewSymbol("list_subscribed_properties"), FunctionTemplate::New(ListSubscribedProperties)->GetFunction());
 
     // signals - 4
@@ -824,7 +824,7 @@ Handle<Value> SwitcherController::SubscribeToProperty(const Arguments& args) {
   return scope.Close(res);
 }
 
-Handle<Value> SwitcherController::UnsubscribeToProperty(const Arguments& args) {
+Handle<Value> SwitcherController::UnsubscribeFromProperty(const Arguments& args) {
   HandleScope scope;
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
