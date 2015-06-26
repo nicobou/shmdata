@@ -517,11 +517,6 @@ bool RtpSession::add_data_stream(const std::string &shmpath) {
           [this, shmpath, src](std::string &&caps){
             auto rtpid = this->make_rtp_payloader(src, caps);
             this->make_udp_sinks(shmpath, rtpid);
-            {
-              std::unique_lock<std::mutex> lock(this->stream_mutex_);
-              this->stream_added_ = true;
-              this->stream_cond_.notify_one();
-            }
             this->graft_tree(".shmdata.reader." + shmpath,
                              ShmdataUtils::make_tree(caps,
                                                      ShmdataUtils::get_category(caps),
@@ -723,6 +718,11 @@ void RtpSession::on_rtp_caps(const std::string &shmdata_path, std::string caps) 
       + "\"";
   graft_tree("rtp_caps." + std::move(shmdata_path),
              data::Tree::make(std::move(caps)));
+  {  // stream ready, unlocking add_data_stream
+    std::unique_lock<std::mutex> lock(this->stream_mutex_);
+    this->stream_added_ = true;
+    this->stream_cond_.notify_one();
+  }
 }
 
 // this is a typefind function used in order to get rtp payloader caps
