@@ -33,8 +33,10 @@ Follower::Follower(const std::string &path,
     reader_(fileMonitor::is_unix_socket(path_, log_) ?
             new Reader(path_, on_data_cb_, osc_, [&](){on_server_disconnected();}, log_) :
             nullptr){
+  log_->warning("coucou % %\n", __FUNCTION__, std::to_string(__LINE__));
   if (!reader_ || !(*reader_.get()))
     monitor_ = std::async(std::launch::async, [this](){monitor();});
+  log_->warning("coucou % %\n", __FUNCTION__, std::to_string(__LINE__));
 }
 
 Follower::~Follower(){
@@ -51,7 +53,7 @@ void Follower::monitor(){
   while (!quit_.load()) {
     if (fileMonitor::is_unix_socket(path_, log_)) {
       do_sleep = false;
-      log_->debug("file detected, creating reader");
+      //log_->debug("file detected, creating reader");
       reader_.reset(new Reader(path_,
                                on_data_cb_,
                                osc_,
@@ -61,15 +63,15 @@ void Follower::monitor(){
         quit_.store(true);
       } else {
         reader_.reset();
-        log_->debug("file % exists but reader failed", path_);
-        if (1 == successive_fail) {
-          if(!force_sockserv_cleaning(path_, log_))
-            log_->warning("follower shmpath is not dead shmdata that can be cleaned");
-          else
-            log_->debug("shmdata follower detected and cleaned a possible dead shmdata: %",
-                        path_);
-          successive_fail = 0; 
-        } else { ++successive_fail; }
+        //log_->debug("file % exists but reader failed", path_);
+        // if (1 == successive_fail) {
+        //   if(!force_sockserv_cleaning(path_, log_))
+        //     log_->warning("follower shmpath is not dead shmdata that can be cleaned");
+        //   else
+        //     log_->debug("shmdata follower detected and cleaned a possible dead shmdata: %",
+        //                 path_);
+        //   successive_fail = 0; 
+        // } else { ++successive_fail; }
       }
     } 
     if (do_sleep)
