@@ -86,7 +86,7 @@ class SwitcherController : public node::ObjectWrap {
         static v8::Handle<v8::Value> RegisterLogCallback(const v8::Arguments& args);
         static v8::Handle<v8::Value> RegisterPropCallback(const v8::Arguments& args);
         static v8::Handle<v8::Value> SubscribeToProperty(const v8::Arguments& args);
-        static v8::Handle<v8::Value> UnsubscribeToProperty(const v8::Arguments& args);
+        static v8::Handle<v8::Value> UnsubscribeFromProperty(const v8::Arguments& args);
         static v8::Handle<v8::Value> ListSubscribedProperties(const v8::Arguments& args);
         static v8::Handle<v8::Value> RegisterSignalCallback(const v8::Arguments& args);
         static v8::Handle<v8::Value> SubscribeToSignal(const v8::Arguments& args);
