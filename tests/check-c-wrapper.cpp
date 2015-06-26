@@ -85,8 +85,8 @@ int main () {
     usleep(50000);
     Frame frame;
     frame.count = 0;
-    int i = 10;
-    while (-1 != --i) {
+    int j = 10;
+    while (-1 != --j) {
       // first option: copy
       ++frame.count;
       assert(0 != shmdata_copy_to_shm(writer, &frame, sizeof(Frame)));
