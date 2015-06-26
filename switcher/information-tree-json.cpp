@@ -31,38 +31,31 @@ on_visiting_node(std::string key,
   key = data::Tree::unescape_dots(key);
   if (!is_array_element)  // discarding here to get it as a member called "name"
     json_builder_set_member_name(builder, key.c_str());
-
   if (node->is_leaf()){
     if (!node->read_data().is_null()) {
-      json_builder_add_string_value(builder,
-                                    Any::to_string(node->read_data()).c_str());
+      json_builder_add_string_value(builder, Any::to_string(node->read_data()).c_str());
     } else {
       if(node->is_array()) {
         json_builder_begin_array(builder);
       } else {
-        json_builder_begin_object(builder);
-        json_builder_end_object(builder);
+        json_builder_add_null_value(builder);
       }
     }
     return;
   } else {  // adding node value with the key "key_value" along with other childrens
     if (node->is_array()) {
-      json_builder_begin_array(builder);
+    json_builder_begin_array(builder);
       // json_builder_begin_object (builder);
-    }
-    else
-    {
+    } else {
       json_builder_begin_object(builder);
-      if (is_array_element)
-      {
+      if (is_array_element) {
         json_builder_set_member_name(builder, "name");
         json_builder_add_string_value(builder, key.c_str());
       }
       const Any value = node->read_data();
       if (value.not_null()) {
         json_builder_set_member_name(builder, "key_value");
-        json_builder_add_string_value(builder,
-                                      Any::to_string(value).c_str());
+        json_builder_add_string_value(builder, Any::to_string(value).c_str());
       }
     }
   }
