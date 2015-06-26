@@ -36,6 +36,8 @@ examples/rtp_data_sender
 examples/video_reader
 examples/video_writer
 examples/video_writer_uri
+gst/check-shmdatasink
+gst/check-shmdatasrc
 gst/shm/.deps/
 gst/shm/.libs/
 html/
