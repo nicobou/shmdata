@@ -33,10 +33,8 @@ Follower::Follower(const std::string &path,
     reader_(fileMonitor::is_unix_socket(path_, log_) ?
             new Reader(path_, on_data_cb_, osc_, [&](){on_server_disconnected();}, log_) :
             nullptr){
-  log_->warning("coucou % %\n", __FUNCTION__, std::to_string(__LINE__));
   if (!reader_ || !(*reader_.get()))
     monitor_ = std::async(std::launch::async, [this](){monitor();});
-  log_->warning("coucou % %\n", __FUNCTION__, std::to_string(__LINE__));
 }
 
 Follower::~Follower(){

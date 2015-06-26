@@ -259,7 +259,7 @@ void gst_shmdata_src_on_server_connect(void *user_data, const char *type_descr) 
   self->caps = gst_caps_from_string(type_descr);
   if (NULL != self->caps)
     self->has_new_caps = TRUE;
-  g_object_notify(G_OBJECT(self), "caps");
+  //FIXME this is locking: g_object_notify(G_OBJECT(self), "caps");
 
   /* GstPad *pad = gst_element_get_static_pad (GST_ELEMENT(self),"src"); */
   /* gst_pad_use_fixed_caps (pad); */
@@ -283,7 +283,8 @@ gst_shmdata_src_start_reading (GstShmdataSrc * self)
 
   GST_OBJECT_LOCK (self);
   self->is_first_read = TRUE;
-  
+
+
   self->shmlogger = shmdata_make_logger(&gst_shmdata_on_error, 
                                         &gst_shmdata_on_critical, 
                                         &gst_shmdata_on_warning, 

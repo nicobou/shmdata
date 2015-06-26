@@ -45,7 +45,8 @@ UnixSocketClient::UnixSocketClient(const std::string &path,
   int len = offsetof(struct sockaddr_un, sun_path) + path_.size();
   if (0 != connect(socket_.fd_, (struct sockaddr *)&sun, len)) {
     int err = errno;
-    log_->debug("connect: %", strerror(err));
+    if (ECONNREFUSED != err)
+      log_->debug("connect: %", strerror(err));
     return;
   }
   is_valid_ = true;

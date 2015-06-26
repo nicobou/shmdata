@@ -31,14 +31,15 @@ Reader::Reader(const std::string &path,
            [this](size_t size){on_buffer(this->sem_.get(), size);}),  // read when update is received
     cli_(new UnixSocketClient(path, log_)){
   if (!cli_ || !(*cli_.get())) {
-    log_->debug("reader initialization failed (initializing socket client)");
+    //log_->debug("reader initialization failed (initializing socket client)");
     cli_.reset(nullptr);
+  
     return;
   }
   shm_.reset(new sysVShm(ftok(path.c_str(), 'n'), 0, log_, /* owner = */ false));
   sem_.reset(new sysVSem(ftok(path.c_str(), 'm'), log_, /* owner = */ false));
   if (!*shm_.get() || !*sem_.get() || !cli_->start(&proto_)){
-    log_->debug("reader initialization failed");
+    //log_->debug("reader initialization failed");
     cli_.reset();
     shm_.reset();
     sem_.reset();

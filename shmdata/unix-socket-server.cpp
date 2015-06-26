@@ -43,9 +43,8 @@ bool force_sockserv_cleaning(const std::string &path, AbstractLogger *log){
   if (0 == unlink (path.c_str())){
     int err = errno;
     log->debug("unlink: %", strerror(err));
-    if (ECONNREFUSED == err)
-      return true;
-    return false;
+    if (EACCES == err)
+      return false;
   }
   return true;
 }
@@ -168,13 +167,17 @@ void UnixSocketServer::client_interaction() {
           log_->error("accept %", strerror(err));
         }
         FD_SET(clifd, &allset);
-        if (clifd > maxfd)
-          maxfd = clifd;  // max fd for select()
-        pending_clients_.insert(clifd);
+        // if (clifd > maxfd)
+        //   maxfd = clifd;  // max fd for select()
+        // pending_clients_.insert(clifd);
         auto res = send(clifd, &cnx_msg, sizeof(cnx_msg), MSG_NOSIGNAL);
         if (-1 == res) {
           int err = errno;
-          log_->error("send %", strerror(err));
+          log_->debug("send: %", strerror(err));
+        } else {
+          if (clifd > maxfd)
+            maxfd = clifd;  // max fd for select()
+          pending_clients_.insert(clifd);
         }
         continue;
       }
