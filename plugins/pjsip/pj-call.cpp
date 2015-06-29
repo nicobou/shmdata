@@ -362,7 +362,7 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event */*e*/) {
     g_warning("%s, null call in invite", __FUNCTION__);
     return;
   }
-  // finding id of the buddy related to the call 
+  // finding id of the buddy related to the call
   auto endpos = call->peer_uri.find('@');
   auto beginpos = call->peer_uri.find("sip:");
   if (0 == beginpos) beginpos = 4; else beginpos = 0;
@@ -413,7 +413,6 @@ void PJCall::call_on_forked(pjsip_inv_session */*inv*/,
 /* Callback to be called when SDP negotiation is done in the call: */
 void PJCall::call_on_media_update(pjsip_inv_session *inv,
                                   pj_status_t status) {
-
   const pjmedia_sdp_session *local_sdp, *remote_sdp;
   call_t *call = static_cast<call_t *>(inv->mod_data[mod_siprtp_.id]);
   bool receiving = false;
@@ -627,26 +626,31 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       // finding a free port
       auto &me = PJSIP::this_->sip_calls_;
       unsigned int counter = me->port_range_/2;
-      while (NetUtils::is_used(rtp_port) && 0 != counter) {
-        rtp_port += 2;
-        if (rtp_port > me->starting_rtp_port_ + me->port_range_
-            || rtp_port < me->starting_rtp_port_)
-          rtp_port = me->starting_rtp_port_;
-        --counter;
+      auto done = false;
+      auto port_found = false;
+      while (!done) {
+        if (!NetUtils::is_used(rtp_port)) {
+          // saving media
+          media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool, tmp_media));
+          call->media.emplace_back();
+          call->media[j].rtp_port = rtp_port;
+          done = true;
+          port_found = true;
+          continue;
         }
         rtp_port += 2;
         if (rtp_port > me->starting_rtp_port_ + me->port_range_
             || rtp_port < me->starting_rtp_port_)
           rtp_port = me->starting_rtp_port_;
-      if (0 != counter) {
-        // saving media
-        media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool, tmp_media));
-        call->media.emplace_back();
-        call->media[j].rtp_port = rtp_port;
-      } else {
-        g_warning("no free port, media discarded");
+        --counter;
+        if (0 == counter) {
+          g_warning("no free port found, discarding media");
+          done = true;
+          port_found = false;  // FIXME actually discard media in this case
+        }
       }
-      j++;
+      if (port_found)
+        j++;  // FIXME what that ???
     }
   }
   // Create SDP answer
@@ -743,17 +747,17 @@ pj_status_t PJCall::create_sdp_answer(
   return PJ_SUCCESS;
 }
 
-// void PJCall::print_sdp(const pjmedia_sdp_session *local_sdp) {
-//   char sdpbuf1[4096];
-//   pj_ssize_t len1;
-//   len1 = pjmedia_sdp_print(local_sdp, sdpbuf1, sizeof(sdpbuf1));
-//   if (len1 < 1) {
-//     g_warning("error when printing local sdp\n");
-//     return;
-//   }
-//   sdpbuf1[len1] = '\0';
-//   g_debug("sdp : \n%s \n\n ", sdpbuf1);
-// }
+void PJCall::print_sdp(const pjmedia_sdp_session *local_sdp) {
+  char sdpbuf1[4096];
+  pj_ssize_t len1;
+  len1 = pjmedia_sdp_print(local_sdp, sdpbuf1, sizeof(sdpbuf1));
+  if (len1 < 1) {
+    g_warning("error when printing local sdp\n");
+    return;
+  }
+  sdpbuf1[len1] = '\0';
+  g_debug("sdp : \n%s \n\n ", sdpbuf1);
+}
 
 // /*
 //  * COPY and REWRITE of pjsip Internal function for collecting

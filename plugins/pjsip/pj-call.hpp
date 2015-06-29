@@ -127,6 +127,7 @@ class PJCall {
                                       pjsua_buddy_id id);
   static bool release_incoming_call(call_t *call, pjsua_buddy_id id);
   static bool release_outgoing_call(call_t *call, pjsua_buddy_id id);
+  static void print_sdp(const pjmedia_sdp_session *local_sdp);
 };
 
 }  // namespace switcher
