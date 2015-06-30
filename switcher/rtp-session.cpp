@@ -374,6 +374,8 @@ bool RtpSession::remove_destination(std::string nick_name) {
               nick_name.c_str());
     return false;
   }
+  if (!it->second)
+    return false;
   for (auto &iter: it->second->get_shmdata())
     remove_udp_stream_to_dest(iter, nick_name);
   destinations_.erase(it);
@@ -388,8 +390,7 @@ RtpSession::add_udp_stream_to_dest_wrapped(gpointer shmdata_name,
                                            gpointer user_data) {
   RtpSession *context = static_cast<RtpSession *>(user_data);
 
-  if (context->add_udp_stream_to_dest
-      ((char *) shmdata_name, (char *) nick_name, (char *) port))
+  if (context->add_udp_stream_to_dest((char *) shmdata_name, (char *) nick_name, (char *) port))
     return TRUE;
   else
     return FALSE;

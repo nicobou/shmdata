@@ -242,7 +242,9 @@ bool PJCall::release_incoming_call(call_t *call, pjsua_buddy_id id){
           std::string(".shmdata.writer."));
   for (auto &it: shm_keys)
     PJSIP::this_->prune_tree(std::string(".shmdata.writer." + it));
-  PJSIP::this_->sip_calls_->manager_->remove(dec_name);
+  if(!PJSIP::this_->sip_calls_->manager_->remove(dec_name)){
+    g_warning("SIP internal httpsdpdec cannot be removed (%s)", dec_name.c_str());
+  }
   auto quid_uri_it = PJSIP::this_->sip_calls_->quid_uri_.find(dec_name);
   if (PJSIP::this_->sip_calls_->quid_uri_.end() != quid_uri_it)
     PJSIP::this_->sip_calls_->quid_uri_.erase(quid_uri_it);
@@ -272,6 +274,7 @@ bool PJCall::release_outgoing_call(call_t *call, pjsua_buddy_id id){
   if (calls.end() == it)
     return false;
   // removing destination to siprtp
+  
   PJSIP::this_->sip_calls_->manager_->
       invoke("siprtp",
              "remove_destination",
@@ -290,9 +293,11 @@ bool PJCall::release_outgoing_call(call_t *call, pjsua_buddy_id id){
   }
   //removing call
   calls.erase(it);
-  std::unique_lock<std::mutex> lock(PJSIP::this_->sip_calls_->ocall_m_);
-  PJSIP::this_->sip_calls_->ocall_action_done_ = true;
-  PJSIP::this_->sip_calls_->ocall_cv_.notify_all();
+  if (PJSIP::this_->sip_calls_->is_hanging_up_ || PJSIP::this_->sip_calls_->is_calling_ ){
+    std::unique_lock<std::mutex> lock(PJSIP::this_->sip_calls_->ocall_m_);
+    PJSIP::this_->sip_calls_->ocall_action_done_ = true;
+    PJSIP::this_->sip_calls_->ocall_cv_.notify_all();
+  }
   return true;
 }
 
@@ -314,14 +319,16 @@ void PJCall::on_inv_state_confirmed(call_t *call,
                          [&call](const call_t &c){
                            return c.inv == call->inv;
                          });
+  if( PJSIP::this_->sip_calls_->is_calling_) {
+    std::unique_lock<std::mutex> lock(PJSIP::this_->sip_calls_->ocall_m_);
+    PJSIP::this_->sip_calls_->ocall_action_done_ = true;
+    PJSIP::this_->sip_calls_->ocall_cv_.notify_all();
+  }
   if (calls.end() != it)
     tree->graft(std::string(".send_status."), data::Tree::make("calling"));
   else
     tree->graft(std::string(".recv_status."), data::Tree::make("receiving"));
   PJSIP::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
-  std::unique_lock<std::mutex> lock(PJSIP::this_->sip_calls_->ocall_m_);
-  PJSIP::this_->sip_calls_->ocall_action_done_ = true;
-  PJSIP::this_->sip_calls_->ocall_cv_.notify_all();
 }
 
 
@@ -358,7 +365,26 @@ void PJCall::on_inv_state_connecting(call_t *call,
 /* Callback to be called when invite session's state has changed: */
 void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event */*e*/) {
   call_t *call = (call_t *) inv->mod_data[mod_siprtp_.id];
-  if (!call) {
+   switch (inv->state) {
+    case PJSIP_INV_STATE_DISCONNECTED:
+      break;
+    case PJSIP_INV_STATE_CONFIRMED:
+      break;
+    case PJSIP_INV_STATE_EARLY:
+      break;
+    case PJSIP_INV_STATE_CONNECTING:
+      break;
+    case PJSIP_INV_STATE_NULL:
+      break;
+    case PJSIP_INV_STATE_CALLING:
+      break;
+    case PJSIP_INV_STATE_INCOMING:
+      break;
+    default :
+      break;
+  }
+   
+   if (!call) {
     g_warning("%s, null call in invite", __FUNCTION__);
     return;
   }
@@ -424,8 +450,8 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
   /* Capture stream definition from the SDP */
   pjmedia_sdp_neg_get_active_local(inv->neg, &local_sdp);
   pjmedia_sdp_neg_get_active_remote(inv->neg, &remote_sdp);
-  // g_print ("negotiated LOCAL\n"); print_sdp(local_sdp);
-  // g_print("negotiated REMOTE\n"); print_sdp(remote_sdp);
+  print_sdp(local_sdp);
+  print_sdp(remote_sdp);
   for (uint i = 0; i < call->media.size(); i++) {
     if (i >= local_sdp->media_count) {
       g_warning("%s local SDP negotiation has less media than local SDP, skiping extras",
@@ -1151,10 +1177,12 @@ gboolean PJCall::send_to(gchar *sip_url, void *user_data) {
       g_debug("cancel SIP send_to because an operation is already pending");
       return FALSE;
     }
+    context->is_calling_ = true;
+    On_scope_exit{context->is_calling_ = false;};
     context->sip_instance_->run_command_sync(std::bind(&PJCall::make_call,
                                                        context,
                                                        std::string(sip_url)));
-    context->ocall_cv_.wait(lock, [context](){
+    context->ocall_cv_.wait(lock, [&context](){
         if (context->ocall_action_done_) {
           context->ocall_action_done_ = false;
           return true;
@@ -1177,11 +1205,13 @@ gboolean PJCall::hang_up(gchar *sip_url, void *user_data) {
       g_debug("cancel SIP hang_up because an operation is already pending");
       return FALSE;
     }
+    context->is_hanging_up_ = true;
+    On_scope_exit{context->is_hanging_up_ = false;};
     context->sip_instance_->
         run_command_sync(std::bind(&PJCall::make_hang_up, 
                                    context,
                                    std::string(sip_url)));
-    context->ocall_cv_.wait(lock, [context](){
+    context->ocall_cv_.wait(lock, [&context](){
         if (context->ocall_action_done_) {
           context->ocall_action_done_ = false;
           return true;
@@ -1263,9 +1293,10 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
                               tree);
   } else {
     manager_->invoke_va("siprtp",
-                        "remove_data_stream",
+                        "remove_udp_stream_to_dest",
                         nullptr,
                         shmpath.c_str(),
+                        contact_uri.c_str(),
                         nullptr);
     sip_instance_->prune_tree(".buddies." + std::to_string(id)
                               + ".connections." + shmpath);

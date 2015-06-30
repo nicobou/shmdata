@@ -62,6 +62,8 @@ class PJCall {
   std::mutex ocall_m_{};
   std::condition_variable ocall_cv_{};
   bool ocall_action_done_{false};
+  bool is_calling_{false};
+  bool is_hanging_up_{false};
   std::vector<call_t> incoming_call_{};
   std::vector<call_t> call_{};
   std::map<std::string, std::string> local_ips_{};

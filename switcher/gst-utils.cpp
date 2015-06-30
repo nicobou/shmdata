@@ -393,7 +393,6 @@ GstUtils::element_factory_list_to_g_enum(GEnumValue *target_enum,
     target_enum[i].value_nick =
         g_strdup(gst_plugin_feature_get_name((GstPluginFeature *) iter->data));
     iter = g_list_next(iter);
-    g_print ("%s %s\n", target_enum[i].value_name, target_enum[i].value_nick);
     i++;
   }
   target_enum[i].value = 0;
