@@ -25,7 +25,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <netdb.h>
-#include <glib.h>
+#include <glib.h>  // g_warning
 #include <string>
 #include "./net-utils.hpp"
 

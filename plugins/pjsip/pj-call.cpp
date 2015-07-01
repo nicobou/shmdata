@@ -482,16 +482,16 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
                  "add_udp_stream_to_dest",
                  nullptr,
                  { call->media[i].shm_path_to_send, call->peer_uri,
-                       std::to_string(local_sdp->media[i]->desc.port)});
+                       std::to_string(remote_sdp->media[i]->desc.port)});
       // g_print("----------- sending data to %s, port %s\n",
       //         call->peer_uri.c_str(),
-      //         std::to_string(local_sdp->media[i]->desc.port).c_str());
+      //         std::to_string(remote_sdp->media[i]->desc.port).c_str());
     }
   }  // end iterating media
   if (receiving) {  // preparing the switcher SDP decoder
     // getting sdp string
     char sdpbuf[4096];
-    pj_ssize_t len = pjmedia_sdp_print(remote_sdp, sdpbuf, sizeof(sdpbuf));
+    pj_ssize_t len = pjmedia_sdp_print(local_sdp, sdpbuf, sizeof(sdpbuf));
     if (len < 1)
       g_warning("error when converting sdp to string\n");
     sdpbuf[len] = '\0';
@@ -629,7 +629,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   // checking number of transport to create for receiving
   // and creating transport for receiving data offered
   std::vector<pjmedia_sdp_media *>media_to_receive;
-  auto &rtp_port = PJSIP::this_->sip_calls_->last_attributed_port_;
+  auto &rtp_port = PJSIP::this_->sip_calls_->next_port_to_attribute_;
   unsigned int j = 0;  // counting media to receive
   for (unsigned int media_index = 0; media_index < offer->media_count; media_index++) {
     bool recv = false;
@@ -659,20 +659,20 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
           call->media[j].rtp_port = rtp_port;
           done = true;
           port_found = true;
-          continue;
-        }
-        rtp_port += 2;
-        if (rtp_port > me->starting_rtp_port_ + me->port_range_
-            || rtp_port < me->starting_rtp_port_)
-          rtp_port = me->starting_rtp_port_;
-        --counter;
-        if (0 == counter) {
-          g_warning("no free port found, discarding media");
-          done = true;
-          port_found = false;  // FIXME actually discard media in this case
+        } else {
+          rtp_port += 2;
+          if (rtp_port > me->starting_rtp_port_ + me->port_range_
+              || rtp_port < me->starting_rtp_port_)
+            rtp_port = me->starting_rtp_port_;
+          --counter;
+          if (0 == counter) {
+            g_warning("no free port found, discarding media");
+            done = true;
+            port_found = false;  // FIXME actually discard media in this case
+          }
         }
       }
-      PJSIP::this_->sip_calls_->last_attributed_port_ = rtp_port;
+      PJSIP::this_->sip_calls_->next_port_to_attribute_ = rtp_port + 2;
       if (port_found)
         j++;  // FIXME what that ???
     }

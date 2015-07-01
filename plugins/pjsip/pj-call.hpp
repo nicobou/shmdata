@@ -74,7 +74,7 @@ class PJCall {
   std::map<std::string, std::string> quid_uri_{};
   data::Tree::ptr contact_shm_;
   uint starting_rtp_port_ {18900};
-  pj_uint16_t last_attributed_port_{18900};  // Must be even
+  pj_uint16_t next_port_to_attribute_{18900};  // Must be even
   uint port_range_{100};
   GParamSpec *starting_rtp_port_spec_ {nullptr};
   // sip functions
