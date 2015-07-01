@@ -215,6 +215,7 @@ gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointe
   context->quid_->set_property("deadline","30000");  //30ms
   context->quid_->set_property("target-bitrate", "2000000"); // 2Mbps
   context->quid_->set_property("end-usage", "1"); // CBR
+  context->quid_->set_property("keyframe-max-dist", "5");
   return TRUE;
 }
 
