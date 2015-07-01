@@ -447,7 +447,7 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
     g_warning("SDP negotiation failed");
     return;
   }
-  /* Capture stream definition from the SDP */
+  // get stream definition from the SDP, (local contains negociated data)
   pjmedia_sdp_neg_get_active_local(inv->neg, &local_sdp);
   pjmedia_sdp_neg_get_active_remote(inv->neg, &remote_sdp);
   print_sdp(local_sdp);
@@ -482,16 +482,16 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
                  "add_udp_stream_to_dest",
                  nullptr,
                  { call->media[i].shm_path_to_send, call->peer_uri,
-                       std::to_string(remote_sdp->media[i]->desc.port)});
+                       std::to_string(local_sdp->media[i]->desc.port)});
       // g_print("----------- sending data to %s, port %s\n",
       //         call->peer_uri.c_str(),
-      //         std::to_string(remote_sdp->media[i]->desc.port).c_str());
+      //         std::to_string(local_sdp->media[i]->desc.port).c_str());
     }
   }  // end iterating media
   if (receiving) {  // preparing the switcher SDP decoder
     // getting sdp string
     char sdpbuf[4096];
-    pj_ssize_t len = pjmedia_sdp_print(local_sdp, sdpbuf, sizeof(sdpbuf));
+    pj_ssize_t len = pjmedia_sdp_print(remote_sdp, sdpbuf, sizeof(sdpbuf));
     if (len < 1)
       g_warning("error when converting sdp to string\n");
     sdpbuf[len] = '\0';
@@ -545,16 +545,13 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
 void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   // finding caller info
   char uristr[PJSIP_MAX_URL_SIZE];
-  int len;
-  len =
-      pjsip_uri_print(PJSIP_URI_IN_REQ_URI,
-                        rdata->msg_info.msg->line.req.uri,
-                        uristr, sizeof(uristr));
+  int len = pjsip_uri_print(PJSIP_URI_IN_REQ_URI,
+                            rdata->msg_info.msg->line.req.uri,
+                            uristr, sizeof(uristr));
   g_debug("incomimg call req uri %.*s\n", len, uristr);
-  len =
-  pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
-                  pjsip_uri_get_uri(rdata->msg_info.from->uri),
-                  uristr, sizeof(uristr));
+  len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
+                        pjsip_uri_get_uri(rdata->msg_info.from->uri),
+                        uristr, sizeof(uristr));
   std::string from_uri(uristr, len);
   // len =
   pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
@@ -675,6 +672,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
           port_found = false;  // FIXME actually discard media in this case
         }
       }
+      PJSIP::this_->sip_calls_->last_attributed_port_ = rtp_port;
       if (port_found)
         j++;  // FIXME what that ???
     }
