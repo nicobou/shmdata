@@ -27,7 +27,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "jacksrc",
     "Jack Audio Device",
     "audio",
-    "writer",
+    "writer/device",
     "get audio from jack",
     "LGPL",
     "Nicolas Bouillot");

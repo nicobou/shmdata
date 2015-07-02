@@ -32,7 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "pulsesink",
     "Audio Display (Pulse)",
     "audio",
-    "reader",
+    "reader/device",
     "Inspecting Devices And Playing Audio To Outputs",
     "LGPL",
     "Nicolas Bouillot");

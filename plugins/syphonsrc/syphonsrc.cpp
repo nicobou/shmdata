@@ -35,7 +35,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "syphonsrc",
     "Video capture (through Syphon)",
     "video",
-    "writer",
+    "writer/device",
     "Reads video input from a Syphon source",
     "LGPL",
     "Emmanuel Durand");

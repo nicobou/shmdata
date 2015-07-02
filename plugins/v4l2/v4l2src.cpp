@@ -31,7 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "v4l2src",
     "v4l2 Video Capture",
     "video",
-    "writer",
+    "writer/device",
     "Discover and use v4l2 supported capture cards and cameras",
     "GPL",
     "Nicolas Bouillot");
