@@ -80,7 +80,7 @@ static GOptionEntry entries[24] = {
   {"get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop,
    "get property value (-g quiddity_name prop_name)", nullptr},
   {"print-tree", 't', 0, G_OPTION_ARG_NONE, &print_tree,
-   "print information tree (-t quiddity_name)", nullptr},
+   "print information tree (-t quiddity_name [branch])", nullptr},
   {"invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod,
    "invoke method of a quiddity (-i quiddity_name method_name args...)",
    nullptr},
@@ -132,9 +132,12 @@ main(int argc, char *argv[]) {
         ^ deletequiddity
         ^ listmethods
         ^ listmethodsbyclass
-        ^ listsignals ^ listsignalsbyclass ^ invokemethod ^ print_tree)) {
-    g_printerr
-        ("I am very sorry for the inconvenience, but I am able to process only one command at a time. \n");
+        ^ listsignals
+        ^ listsignalsbyclass
+        ^ invokemethod
+        ^ print_tree)) {
+    g_printerr("I am very sorry for the inconvenience, "
+               "but I am able to process only one command at a time. \n");
     exit(1);
   }
 
