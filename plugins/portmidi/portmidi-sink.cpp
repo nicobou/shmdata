@@ -43,18 +43,6 @@ bool PortMidiSink::init() {
       [this](){return this->disconnect();},
       [this](const std::string &caps){return this->can_sink_caps(caps);},
       1);
-  devices_description_spec_ = custom_props_->
-      make_string_property("devices-json",
-                           "Description of capture devices (json formated)",
-                           get_devices_description_json(static_cast<PortMidi *>(this)),
-                           (GParamFlags) G_PARAM_READABLE,
-                           nullptr,
-                           get_devices_description_json,
-                           static_cast<PortMidi *>(this));
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            devices_description_spec_,
-                            "devices-json",
-                            "Capture Devices");
   device_ = output_devices_enum_[0].value;
   devices_enum_spec_ =
       custom_props_->make_enum_property("device",
@@ -88,7 +76,7 @@ gint PortMidiSink::get_device(void *user_data) {
 }
 
 bool PortMidiSink::start() {
-  uninstall_property("device");
+  disable_property("device");
   open_output_device(device_);
   // FIXME the following might not be necessary
   gint stat = 165;
@@ -103,8 +91,7 @@ bool PortMidiSink::start() {
 
 bool PortMidiSink::stop() {
   close_output_device(device_);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            devices_enum_spec_, "device", "Capture Device");
+  enable_property("device");
   return true;
 }
 

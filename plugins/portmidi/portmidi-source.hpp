@@ -49,7 +49,6 @@ class PortMidiSource: public Quiddity,
   gint last_data2_;
   // properties
   CustomPropertyHelper::ptr custom_props_;
-  GParamSpec *devices_description_spec_;
   // device selection
   GParamSpec *devices_enum_spec_;
   gint device_;

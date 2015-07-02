@@ -43,7 +43,6 @@ class PortMidiSink:public Quiddity, public StartableQuiddity, public PortMidi {
   // shmdata follower
   std::unique_ptr<ShmdataFollower> shm_{nullptr};
   CustomPropertyHelper::ptr custom_props_;
-  GParamSpec *devices_description_spec_{nullptr};
   GParamSpec *devices_enum_spec_{nullptr};
   gint device_{0};
 

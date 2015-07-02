@@ -46,9 +46,6 @@ bool V4L2Src::init() {
   if (!v4l2src_ || !capsfilter_ || !shmsink_)
     return false;
   shmpath_ = make_file_name("video");
-  codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
-                                             custom_props_.get(),
-                                             shmpath_);
   g_object_set(G_OBJECT(shmsink_.get_raw()),
                "socket-path", shmpath_.c_str(),
                nullptr);
@@ -60,19 +57,6 @@ bool V4L2Src::init() {
     g_debug("no video 4 linux device detected");
     return false;
   }
-  capture_devices_description_spec_ =
-      custom_props_->make_string_property("devices-json",
-                                          "Description of capture devices (json formated)",
-                                          get_capture_devices_json(this),
-                                          (GParamFlags)G_PARAM_READABLE,
-                                          nullptr,
-                                          V4L2Src::get_capture_devices_json,
-                                          this);
-
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            capture_devices_description_spec_,
-                            "devices-json",
-                            "Capture Devices");
   devices_enum_spec_ =
       custom_props_->make_enum_property("device",
                                         "Enumeration of v4l2 capture devices",
@@ -86,6 +70,9 @@ bool V4L2Src::init() {
                             devices_enum_spec_, "device", "Capture Device");
 
   update_device_specific_properties(device_);
+  codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
+                                             custom_props_.get(),
+                                             shmpath_);
   return true;
 }
 
@@ -333,11 +320,6 @@ void V4L2Src::update_tv_standard(const CaptureDescription &cap_descr) {
                               "tv_standard",
                               "TV Standard");
   }
-}
-
-V4L2Src::~V4L2Src() {
-  if (capture_devices_description_ != nullptr)
-    g_free(capture_devices_description_);
 }
 
 bool V4L2Src::remake_elements() {
@@ -607,19 +589,15 @@ bool V4L2Src::start() {
 
   gst_pipeline_->play(true);
   codecs_->start();
+  disable_property("device");
   uninstall_property("resolution");
   uninstall_property("width");
   uninstall_property("height");
   uninstall_property("tv_standard");
-  uninstall_property("device");
   uninstall_property("framerate");
   uninstall_property("framerate_numerator");
   uninstall_property("framerate_denominator");
   uninstall_property("pixelformat");
-  // install_property (G_OBJECT(v4l2src_.get_raw()),"brightness","brightness", "Brightness");
-  // install_property (G_OBJECT(v4l2src_.get_raw()),"contrast","contrast", "Contrast");
-  // install_property (G_OBJECT(v4l2src_.get_raw()),"saturation","saturation", "Saturation");
-  // install_property (G_OBJECT(v4l2src_.get_raw()),"hue","hue", "Hue");
   return true;
 }
 
@@ -630,130 +608,9 @@ bool V4L2Src::stop() {
   
   gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
   codecs_->stop();
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            devices_enum_spec_,
-                            "device",
-                            "Capture Device");
+  enable_property("device");
   update_device_specific_properties(device_);
-  uninstall_property ("brightness");
-  uninstall_property ("contrast");
-  uninstall_property ("saturation");
-  uninstall_property ("hue");
   return true;
-}
-
-const gchar *V4L2Src::get_capture_devices_json(void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  if (nullptr != context->capture_devices_description_) {
-    g_free(context->capture_devices_description_);
-    context->capture_devices_description_ = nullptr;
-  }
-  if (context->capture_devices_.empty()) {
-    g_warning("%s: no capture device, cannot make description",
-              __PRETTY_FUNCTION__);
-    return nullptr;
-  }
-  JSONBuilder::ptr builder(new JSONBuilder());
-  builder->reset();
-  builder->begin_object();
-  builder->set_member_name("capture devices");
-  builder->begin_array();
-  for (auto &it : context->capture_devices_) {
-    builder->begin_object();
-    builder->add_string_member("long name", it.card_.c_str());
-    builder->add_string_member("file path", it.file_device_.c_str());
-    builder->add_string_member("bus info", it.bus_info_.c_str());
-    builder->set_member_name("resolutions list");
-    builder->begin_array();
-    for (auto &frame_size_it : it.frame_size_discrete_) {
-      builder->begin_object();
-      builder->add_string_member("width", frame_size_it.first.c_str());
-      builder->add_string_member("height", frame_size_it.second.c_str());
-      builder->end_object();
-    }
-    builder->end_array();
-    char *stepwise_max_width =
-        g_strdup_printf("%d", it.frame_size_stepwise_max_width_);
-    char *stepwise_min_width =
-        g_strdup_printf("%d", it.frame_size_stepwise_min_width_);
-    char *stepwise_step_width =
-        g_strdup_printf("%d", it.frame_size_stepwise_step_width_);
-    char *stepwise_max_height =
-        g_strdup_printf("%d", it.frame_size_stepwise_max_height_);
-    char *stepwise_min_height =
-        g_strdup_printf("%d", it.frame_size_stepwise_min_height_);
-    char *stepwise_step_height =
-        g_strdup_printf("%d", it.frame_size_stepwise_step_height_);
-    builder->add_string_member("stepwise max width", stepwise_max_width);
-    builder->add_string_member("stepwise min width", stepwise_min_width);
-    builder->add_string_member("stepwise step width", stepwise_step_width);
-    builder->add_string_member("stepwise max height", stepwise_max_height);
-    builder->add_string_member("stepwise min height", stepwise_min_height);
-    builder->add_string_member("stepwise step height",
-                               stepwise_step_height);
-    g_free(stepwise_max_width);
-    g_free(stepwise_min_width);
-    g_free(stepwise_step_width);
-    g_free(stepwise_max_height);
-    g_free(stepwise_min_height);
-    g_free(stepwise_step_height);
-    builder->set_member_name("tv standards list");
-    builder->begin_array();
-    for (auto &tv_standards_it : it.tv_standards_)
-      builder->add_string_value(tv_standards_it.c_str());
-    builder->end_array();
-
-    builder->set_member_name("frame interval list (sec.)");
-    builder->begin_array();
-    if (!it.frame_interval_discrete_.empty())
-      for (auto &frame_interval_it : it.frame_interval_discrete_) {
-        builder->begin_object();
-        builder->add_string_member("numerator",
-                                   frame_interval_it.first.c_str());
-        builder->add_string_member("denominator",
-                                   frame_interval_it.second.c_str());
-        builder->end_object();
-      }
-    builder->end_array();
-    char *stepwise_max_numerator =
-        g_strdup_printf("%d", it.frame_interval_stepwise_max_numerator_);
-    char *stepwise_min_numerator =
-        g_strdup_printf("%d", it.frame_interval_stepwise_min_numerator_);
-    char *stepwise_step_numerator =
-        g_strdup_printf("%d", it.frame_interval_stepwise_step_numerator_);
-    char *stepwise_max_denominator =
-        g_strdup_printf("%d", it.frame_interval_stepwise_max_denominator_);
-    char *stepwise_min_denominator =
-        g_strdup_printf("%d", it.frame_interval_stepwise_min_denominator_);
-    char *stepwise_step_denominator = g_strdup_printf("%d",
-                                                      it.
-                                                      frame_interval_stepwise_step_denominator_);
-    builder->add_string_member("stepwise max frame interval numerator",
-                               stepwise_max_numerator);
-    builder->add_string_member("stepwise max frame interval denominator",
-                               stepwise_max_denominator);
-    builder->add_string_member("stepwise min frame interval numerator",
-                               stepwise_min_numerator);
-    builder->add_string_member("stepwise min frame interval denominator",
-                               stepwise_min_denominator);
-    builder->add_string_member("stepwise step frame interval numerator",
-                               stepwise_step_numerator);
-    builder->add_string_member
-        ("stepwise step frame interval denominator",
-         stepwise_step_denominator);
-    g_free(stepwise_max_numerator);
-    g_free(stepwise_min_numerator);
-    g_free(stepwise_step_numerator);
-    g_free(stepwise_max_denominator);
-    g_free(stepwise_min_denominator);
-    g_free(stepwise_step_denominator);
-    builder->end_object();
-  }
-  builder->end_array();
-  builder->end_object();
-  context->capture_devices_description_ =
-      g_strdup(builder->get_string(true).c_str());
-  return context->capture_devices_description_;
 }
 
 void V4L2Src::set_camera(const gint value, void *user_data) {

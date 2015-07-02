@@ -35,7 +35,7 @@ class V4L2Src: public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(V4L2Src);
   V4L2Src(const std::string &);
-  ~V4L2Src();
+  ~V4L2Src() = default;
   V4L2Src(const V4L2Src &) = delete;
   V4L2Src &operator=(const V4L2Src &) = delete;
 
@@ -116,13 +116,9 @@ class V4L2Src: public Quiddity, public StartableQuiddity {
   // static bool inspect_frame_rate(const char *file_path,
   //                                unsigned pixel_format,
   //                                unsigned width, unsigned height);
-  static const gchar *get_capture_devices_json(void *user_data);
 
   // custom properties:
   CustomPropertyHelper::ptr custom_props_{};
-  GParamSpec *capture_devices_description_spec_{nullptr};  // json formated
-  gchar *capture_devices_description_{nullptr};  // json formated
-  
   // device enum and select
   GParamSpec *devices_enum_spec_{nullptr};
   GEnumValue devices_enum_[128];

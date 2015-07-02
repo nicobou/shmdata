@@ -18,19 +18,15 @@
  */
 
 #include "./portmidi-devices.hpp"
-#include "switcher/json-builder.hpp"
 #include <glib/gprintf.h>
 
 namespace switcher {
 PortMidi::PortMidiScheduler *PortMidi::scheduler_ = nullptr;
 guint PortMidi::instance_counter_ = 0;
 
-PortMidi::PortMidi():devices_description_(nullptr),
-                     input_streams_(), output_streams_() {
+PortMidi::PortMidi(){
   if (scheduler_ == nullptr)
     scheduler_ = new PortMidiScheduler();
-  devices_description_ = nullptr;
-  make_devices_description(this);
   update_device_enum();
   instance_counter_++;
 }
@@ -116,42 +112,6 @@ bool PortMidi::close_output_device(int id) {
   output_streams_.erase(id);
   g_message("Midi input device closed (id %d)", id);
   return true;
-}
-
-gchar *PortMidi::make_devices_description(void *user_data) {
-  PortMidi *context = static_cast<PortMidi *>(user_data);
-
-  if (context->devices_description_ != nullptr)
-    g_free(context->devices_description_);
-  JSONBuilder::ptr builder(new JSONBuilder());
-  builder->reset();
-  builder->begin_object();
-  builder->set_member_name("devices");
-  builder->begin_array();
-
-  /* list device information */
-  int i;
-  for (i = 0; i < Pm_CountDevices(); i++) {
-    const PmDeviceInfo *listinfo = Pm_GetDeviceInfo(i);
-    builder->begin_object();
-    builder->add_string_member("long name", listinfo->name);
-    builder->add_string_member("interface", listinfo->interf);
-    gchar *id = g_strdup_printf("%d", i);
-    builder->add_string_member("id", id);
-    g_free(id);
-    if (listinfo->input)
-      builder->add_string_member("type", "input");
-    else
-      builder->add_string_member("type", "output");
-    builder->end_object();
-  }
-
-  builder->end_array();
-  builder->end_object();
-  context->devices_description_ =
-      g_strdup(builder->get_string(true).c_str());
-
-  return context->devices_description_;
 }
 
 //#################################### SCHEDULER
@@ -354,11 +314,6 @@ void PortMidi::PortMidiScheduler::process_midi(PtTimestamp /*timestamp */ ,
       }
     }
   }
-}
-
-const gchar *PortMidi::get_devices_description_json(gpointer user_data) {
-  PortMidi *context = static_cast<PortMidi *>(user_data);
-  return context->devices_description_;
 }
 
 void PortMidi::update_device_enum() {

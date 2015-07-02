@@ -37,7 +37,6 @@ PortMidiSource::PortMidiSource(const std::string &):
     last_data1_(-1),
     last_data2_(-1),
     custom_props_(new CustomPropertyHelper()),
-    devices_description_spec_(nullptr),
     devices_enum_spec_(nullptr),
     device_(0),
     midi_value_spec_(nullptr),
@@ -59,17 +58,6 @@ bool PortMidiSource::init() {
     return false;
   }
   init_startable(this);
-  devices_description_spec_ = custom_props_->
-      make_string_property("devices-json",
-                           "Description of capture devices (json formated)",
-                           get_devices_description_json(static_cast<PortMidi *>(this)),
-                           (GParamFlags) G_PARAM_READABLE,
-                           nullptr,
-                           get_devices_description_json,
-                           static_cast<PortMidi *>(this));
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            devices_description_spec_,
-                            "devices-json", "Capture Devices");
   device_ = input_devices_enum_[0].value;
   devices_enum_spec_ =
       custom_props_->make_enum_property("device",
@@ -88,7 +76,9 @@ bool PortMidiSource::init() {
                                        127,
                                        0,
                                        (GParamFlags) G_PARAM_READABLE,
-                                       nullptr, get_midi_value, this);
+                                       nullptr,
+                                       get_midi_value,
+                                       this);
   install_method("Next MIDI Event To Property",       // long name
                  "next_midi_event_to_property",       // name
                  "Wait for a MIDI event and make a property for this channel",  // description
@@ -138,7 +128,7 @@ bool PortMidiSource::init() {
 }
 
 bool PortMidiSource::start() {
-  uninstall_property("device");
+  disable_property("device");
   open_input_device(device_, on_pm_event, this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             midi_value_spec_,
@@ -149,8 +139,7 @@ bool PortMidiSource::start() {
 bool PortMidiSource::stop() {
   close_input_device(device_);
   uninstall_property("last-midi-value");
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            devices_enum_spec_, "device", "Capture Device");
+  enable_property("device");
   return true;
 }
 
