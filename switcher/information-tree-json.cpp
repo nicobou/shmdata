@@ -80,12 +80,9 @@ std::string serialize(Tree::ptrc tree) {
   On_scope_exit {
     g_object_unref(json_builder);
   };
-
   if (tree->is_leaf()){
     return std::string("\"" + Any::to_string(tree->read_data()) + "\"");
   }
-
-
   json_builder_begin_object(json_builder);
   Tree::preorder_tree_walk(tree,
                            std::bind(JSONSerializer::on_visiting_node,
