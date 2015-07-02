@@ -92,7 +92,8 @@ bool JackToShmdata::start() {
                         "format=(string)F32LE, "
                         "layout=(string)interleaved, "
                         "rate=" + std::to_string(jack_client_.get_sample_rate()) + ", "
-                        "channels=" + std::to_string(num_channels_));
+                        "channels=" + std::to_string(num_channels_)
+                        + ", channel-mask=(bitmask)0x0");
   
   std::string shmpath = make_file_name("audio");
   shm_ = std2::make_unique<ShmdataWriter>(this,
