@@ -50,8 +50,6 @@ bool PulseSink::init() {
                "slave-method", 0,  // resample
                "client-name", get_name().c_str(),
                nullptr);
-  install_property(G_OBJECT(pulsesink_.get_raw()), "volume", "volume", "Volume");
-  install_property(G_OBJECT(pulsesink_.get_raw()), "mute", "mute", "Mute");
   shmcntr_.install_connect_method(
         [this](const std::string &shmpath){return this->on_shmdata_connect(shmpath);},
         [this](const std::string &){return this->on_shmdata_disconnect();},
@@ -64,21 +62,13 @@ bool PulseSink::init() {
                                          G_PRIORITY_DEFAULT_IDLE,
                                          async_get_pulse_devices,
                                          this, nullptr);
-  devices_description_spec_ =
-      custom_props_->make_string_property("devices-json",
-                                          "Description of audio devices (json formated)",
-                                          "default",
-                                          (GParamFlags) G_PARAM_READABLE,
-                                          nullptr,
-                                          PulseSink::get_devices_json, this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            devices_description_spec_,
-                            "devices-json", "Devices Description");
   devices_cond_.wait(lock);
   if (!connected_to_pulse_) {
     g_debug("not connected to pulse, cannot init");
     return false;
   }
+  install_property(G_OBJECT(pulsesink_.get_raw()), "volume", "volume", "Volume");
+  install_property(G_OBJECT(pulsesink_.get_raw()), "mute", "mute", "Mute");
   return true;
 }
 
@@ -93,8 +83,6 @@ PulseSink::~PulseSink() {
                                            nullptr);
     quit_cond_.wait(lock);
   }
-  if (nullptr != devices_description_)
-    g_free(devices_description_);
 }
 
 gboolean PulseSink::quit_pulse(void *user_data) {
@@ -194,32 +182,6 @@ PulseSink::pa_context_state_callback(pa_context *pulse_context,
   }
 }
 
-void PulseSink::make_json_description() {
-  if (devices_description_ != nullptr)
-    g_free(devices_description_);
-  JSONBuilder::ptr builder(new JSONBuilder());
-  builder->reset();
-  builder->begin_object();
-  builder->set_member_name("devices");
-  builder->begin_array();
-  for (auto &it : devices_) {
-    builder->begin_object();
-    builder->add_string_member("long name", it.description_.c_str());
-    builder->add_string_member("name", it.name_.c_str());
-    builder->add_string_member("state", it.state_.c_str());
-    builder->add_string_member("sample format", it.sample_format_.c_str());
-    builder->add_string_member("sample rate", it.sample_rate_.c_str());
-    builder->add_string_member("channels", it.channels_.c_str());
-    builder->add_string_member("active port", it.active_port_.c_str());
-    builder->end_object();
-  }
-  builder->end_array();
-  builder->end_object();
-  devices_description_ = g_strdup(builder->get_string(true).c_str());
-  GObjectWrapper::notify_property_changed(gobject_->get_gobject(),
-                                          devices_description_spec_);
-}
-
 void
 PulseSink::get_sink_info_callback(pa_context *pulse_context,
                                   const pa_sink_info *i,
@@ -241,8 +203,7 @@ PulseSink::get_sink_info_callback(pa_context *pulse_context,
                                                    "Enumeration of Pulse output devices",
                                                    context->device_,
                                                    context->devices_enum_,
-                                                   (GParamFlags)
-                                                   G_PARAM_READWRITE,
+                                                   (GParamFlags) G_PARAM_READWRITE,
                                                    PulseSink::set_device,
                                                    PulseSink::get_device,
                                                    context);
@@ -250,7 +211,6 @@ PulseSink::get_sink_info_callback(pa_context *pulse_context,
                                        custom_props_->get_gobject(),
                                        context->devices_enum_spec_,
                                        "device", "Ouput Device");
-    context->make_json_description();
     std::unique_lock<std::mutex> lock(context->devices_mutex_);
     context->devices_cond_.notify_all();
     return;
@@ -361,14 +321,6 @@ PulseSink::on_pa_event_callback(pa_context *pulse_context,
     }
   }
 }
-const gchar *PulseSink::get_devices_json(void *user_data) {
-  // g_print ("%s\n", __PRETTY_FUNCTION__);
-  PulseSink *context = static_cast<PulseSink *>(user_data);
-  if (context->devices_description_ == nullptr)
-    context->devices_description_ = g_strdup("{ \"devices\" : [] }");
-  return context->devices_description_;
-}
-
 void PulseSink::update_output_device() {
   gint i = 0;
   for (auto &it : devices_) {

@@ -45,8 +45,6 @@ bool PulseSrc::init() {
   if (!pulsesrc_ || !shmsink_)
     return false;
   shmpath_ = make_file_name("audio"); 
-  install_property(G_OBJECT(pulsesrc_.get_raw()), "volume", "volume", "Volume");
-  install_property(G_OBJECT(pulsesrc_.get_raw()), "mute", "mute", "Mute");
   g_object_set(G_OBJECT(pulsesrc_.get_raw()), "client-name", get_name().c_str(), nullptr);
   g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   std::unique_lock<std::mutex> lock(devices_mutex_);
@@ -55,22 +53,14 @@ bool PulseSrc::init() {
                                          async_get_pulse_devices,
                                          this,
                                          nullptr);
-  capture_devices_description_spec_ =
-      custom_props_->make_string_property("devices-json",
-                                          "Description of capture devices (json formated)",
-                                          "", (GParamFlags) G_PARAM_READABLE,
-                                          nullptr,
-                                          PulseSrc::get_capture_devices_json,
-                                          this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            capture_devices_description_spec_,
-                            "devices-json", "Capture Devices");
   // waiting for devices to be updated
   devices_cond_.wait(lock);
   if (!connected_to_pulse_) {
     g_debug("not connected to pulse, cannot init");
     return false;
   }
+  install_property(G_OBJECT(pulsesrc_.get_raw()), "volume", "volume", "Volume");
+  install_property(G_OBJECT(pulsesrc_.get_raw()), "mute", "mute", "Mute");
   return true;
 }
 
@@ -108,8 +98,6 @@ PulseSrc::~PulseSrc() {
                                            quit_pulse, this, nullptr);
     quit_cond_.wait(lock);
   }
-  if (nullptr != capture_devices_description_)
-    g_free(capture_devices_description_);
 }
 
 gboolean PulseSrc::quit_pulse(void *user_data) {
@@ -181,33 +169,6 @@ PulseSrc::pa_context_state_callback(pa_context *pulse_context,
   }
 }
 
-void PulseSrc::make_json_description() {
-  if (capture_devices_description_ != nullptr)
-    g_free(capture_devices_description_);
-  JSONBuilder::ptr builder(new JSONBuilder());
-  builder->reset();
-  builder->begin_object();
-  builder->set_member_name("capture devices");
-  builder->begin_array();
-  for (auto &it : capture_devices_) {
-    builder->begin_object();
-    builder->add_string_member("long name", it.description_.c_str());
-    builder->add_string_member("name", it.name_.c_str());
-    builder->add_string_member("state", it.state_.c_str());
-    builder->add_string_member("sample format", it.sample_format_.c_str());
-    builder->add_string_member("sample rate", it.sample_rate_.c_str());
-    builder->add_string_member("channels", it.channels_.c_str());
-    builder->add_string_member("active port", it.active_port_.c_str());
-    builder->end_object();
-  }
-  builder->end_array();
-  builder->end_object();
-  capture_devices_description_ =
-      g_strdup(builder->get_string(true).c_str());
-  // g_print ("%s\n",capture_devices_description_);
-  GObjectWrapper::notify_property_changed(gobject_->get_gobject(),
-                                          capture_devices_description_spec_);
-}
 
 void
 PulseSrc::get_source_info_callback(pa_context *pulse_context,
@@ -240,7 +201,6 @@ PulseSrc::get_source_info_callback(pa_context *pulse_context,
                                        custom_props_->get_gobject(),
                                        context->devices_enum_spec_,
                                        "device", "Capture Device");
-    context->make_json_description();
     // signal init we are done
     std::unique_lock<std::mutex> lock(context->devices_mutex_);
     context->devices_cond_.notify_all();
@@ -354,14 +314,6 @@ PulseSrc::on_pa_event_callback(pa_context *pulse_context,
   }
 }
 
-const gchar *PulseSrc::get_capture_devices_json(void *user_data) {
-  PulseSrc *context = static_cast<PulseSrc *>(user_data);
-  if (context->capture_devices_description_ == nullptr)
-    context->capture_devices_description_ =
-        g_strdup("{ \"capture devices\" : [] }");
-  return context->capture_devices_description_;
-}
-
 void PulseSrc::update_capture_device() {
   gint i = 0;
   for (auto &it : capture_devices_) {
@@ -377,8 +329,6 @@ void PulseSrc::update_capture_device() {
 }
 
 bool PulseSrc::start() {
-  if (capture_devices_description_ == nullptr)
-    return false;
   g_object_set(G_OBJECT(pulsesrc_.get_raw()),
                "device", capture_devices_.at(device_).name_.c_str(),
                nullptr);

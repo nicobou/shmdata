@@ -66,8 +66,6 @@ class PulseSink: public Quiddity {
   UGstElem pulsesink_{"pulsesink"};
   // custom property:
   CustomPropertyHelper::ptr custom_props_{};
-  GParamSpec *devices_description_spec_{nullptr};  // json formated
-  gchar *devices_description_{nullptr};  // json formated
   // pulse_audio
   bool connected_to_pulse_{false};
   pa_glib_mainloop *pa_glib_mainloop_{nullptr};
@@ -91,10 +89,7 @@ class PulseSink: public Quiddity {
   bool can_sink_caps(const std::string &caps);
   bool remake_elements();
   void make_device_description(pa_context *pulse_context);
-  void make_json_description();
   void update_output_device();
-
-  static const gchar *get_devices_json(void *user_data);
   static void pa_context_state_callback(pa_context *c, void *userdata);
   static void get_sink_info_callback(pa_context *c,
                                      const pa_sink_info *i,

@@ -64,8 +64,6 @@ class PulseSrc: public Quiddity, public StartableQuiddity {
   std::condition_variable devices_cond_{};
   // custom property:
   CustomPropertyHelper::ptr custom_props_{};
-  GParamSpec *capture_devices_description_spec_{nullptr};  // json formated
-  gchar *capture_devices_description_{nullptr};  // json formated
   // device enum members
   GParamSpec *devices_enum_spec_{nullptr};
   GEnumValue devices_enum_[128];
@@ -84,11 +82,9 @@ class PulseSrc: public Quiddity, public StartableQuiddity {
   bool start() final;
   bool stop() final;
   bool remake_elements();
-  static const gchar *get_capture_devices_json(void *user_data);
   static gboolean async_get_pulse_devices(void *user_data);
   void update_capture_device();
   void make_device_description(pa_context *pulse_context);
-  void make_json_description();
   // device enum and select
   static void set_device(const gint value, void *user_data);
   static gint get_device(void *user_data);
