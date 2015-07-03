@@ -35,6 +35,8 @@
 namespace shmdata {
 
 class AbstractLogger {
+ public:
+  virtual ~AbstractLogger() = default;
   MakeLevel(error);
   MakeLevel(critical);
   MakeLevel(warning);
