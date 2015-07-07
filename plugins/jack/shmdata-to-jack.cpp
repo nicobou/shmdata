@@ -39,9 +39,10 @@ ShmdataToJack::ShmdataToJack(const std::string &name):
     shmcntr_(static_cast<Quiddity *>(this)),
     gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
     custom_props_(std::make_shared<CustomPropertyHelper>()),
-    jack_client_(name.c_str()) {
-  jack_client_.set_jack_process_callback(&ShmdataToJack::jack_process, this);
-  jack_client_.set_on_xrun_callback([this](uint n){on_xrun(n);});
+    jack_client_(name.c_str(),
+                 &ShmdataToJack::jack_process,
+                 this,
+                 [this](uint n){on_xrun(n);}) {
 }
 
 bool ShmdataToJack::init() {

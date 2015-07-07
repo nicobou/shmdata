@@ -71,7 +71,7 @@ bool PortMidiSource::init() {
                             devices_enum_spec_, "device", "Capture Device");
   midi_value_spec_ =
       custom_props_->make_int_property("last-midi-value",
-                                       "the last midi value",
+                                       "The last midi value from the device",
                                        0,
                                        127,
                                        0,
@@ -79,18 +79,18 @@ bool PortMidiSource::init() {
                                        nullptr,
                                        get_midi_value,
                                        this);
-  install_method("Next MIDI Event To Property",       // long name
-                 "next_midi_event_to_property",       // name
+  install_method("Next MIDI Event To Property",  // long name
+                 "next_midi_event_to_property",  // name
                  "Wait for a MIDI event and make a property for this channel",  // description
-                 "success or fail",   // return description
+                 "success or fail",  // return description
                  Method::make_arg_description("Property Long Name",  // first arg long name
                                               "property_long_name",  // fisrt arg name
                                               "string",  // first arg description
                                               nullptr),
                  (Method::method_ptr) &next_midi_event_to_property_method,
                  G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING,
-                                                   nullptr), this);
+                 Method::make_arg_type_description(G_TYPE_STRING, nullptr),
+                 this);
   install_method("Last MIDI Event To Property",       // long name
                  "last_midi_event_to_property",       // name
                  "make a property with the given name from the next incoming MIDI event",     // description
@@ -101,8 +101,8 @@ bool PortMidiSource::init() {
                                               nullptr),
                  (Method::method_ptr) &last_midi_event_to_property_method,
                  G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING,
-                                                   nullptr), this);
+                 Method::make_arg_type_description(G_TYPE_STRING, nullptr),
+                 this);
   install_method("Remove Midi Property",      // long name
                  "remove_midi_property",      // name
                  "remove a property made with Make Property",  // description
@@ -113,8 +113,8 @@ bool PortMidiSource::init() {
                                               nullptr),
                  (Method::method_ptr) &remove_property_method,
                  G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING,
-                                                   nullptr), this);
+                 Method::make_arg_type_description(G_TYPE_STRING, nullptr),
+                 this);
   shm_ = std2::make_unique<ShmdataWriter>(this,
                                           make_file_name("midi"),
                                           sizeof(PmEvent),
@@ -130,15 +130,13 @@ bool PortMidiSource::init() {
 bool PortMidiSource::start() {
   disable_property("device");
   open_input_device(device_, on_pm_event, this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            midi_value_spec_,
-                            "last-midi-value", "Last Midi Value");
+  enable_property("last-midi-value");
   return true;
 }
 
 bool PortMidiSource::stop() {
   close_input_device(device_);
-  uninstall_property("last-midi-value");
+  disable_property("last-midi-value");
   enable_property("device");
   return true;
 }
@@ -185,8 +183,8 @@ void PortMidiSource::on_pm_event(PmEvent *event, void *user_data) {
     std::string prop_long_name =
         context->midi_channels_[std::make_pair(status, data1)];
     context->midi_values_[prop_long_name] = data2;
-    context->custom_props_->notify_property_changed(context->prop_specs_
-                                                    [prop_long_name]);
+    context->custom_props_->
+        notify_property_changed(context->prop_specs_[prop_long_name]);
   }
 
   // making property if needed

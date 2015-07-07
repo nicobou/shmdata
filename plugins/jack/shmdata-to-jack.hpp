@@ -80,5 +80,6 @@ class ShmdataToJack: public Quiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToJack);
+
 }  // namespace switcher
 #endif

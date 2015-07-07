@@ -35,11 +35,10 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 JackToShmdata::JackToShmdata(const std::string &name):
     custom_props_(std::make_shared<CustomPropertyHelper>()),
     client_name_(name),
-    jack_client_(name.c_str()){
-  if (jack_client_) {
-    jack_client_.set_jack_process_callback(&JackToShmdata::jack_process, this);
-    jack_client_.set_on_xrun_callback([this](uint n){on_xrun(n);});
-  }
+    jack_client_(name.c_str(),
+                 &JackToShmdata::jack_process,
+                 this,
+                 [this](uint n){on_xrun(n);}){
 }
 
 bool JackToShmdata::init() {
@@ -59,19 +58,9 @@ bool JackToShmdata::init() {
                                        JackToShmdata::get_num_channels,
                                        this);
   install_property_by_pspec(custom_props_->get_gobject(),
-                            num_channels_spec_, "channels", "Channels");
-  connect_physical_port_prop_ =
-      custom_props_->make_boolean_property("connect",
-                                           "automatically connect to physical ports",
-                                           (gboolean) TRUE,
-                                           (GParamFlags)G_PARAM_READWRITE,
-                                           JackToShmdata::set_connect_phys,
-                                           JackToShmdata::get_connect_phys,
-                                           this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            connect_physical_port_prop_,
-                            "connect",
-                            "automatically connect to physical ports");
+                            num_channels_spec_,
+                            "channels",
+                            "Channels");
   client_name_spec_ =
       custom_props_->make_string_property("jack-client-name",
                                           "the jack client name",
@@ -82,7 +71,34 @@ bool JackToShmdata::init() {
                                           this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             client_name_spec_,
-                            "client-name", "Client Name");
+                            "client-name",
+                            "Client Name");
+  connect_to_spec_ =
+      custom_props_->make_string_property("connect-to",
+                                          "auto connect to other client",
+                                          connect_to_.c_str(),
+                                          (GParamFlags) G_PARAM_READWRITE,
+                                          JackToShmdata::set_connect_to,
+                                          JackToShmdata::get_connect_to,
+                                          this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            connect_to_spec_,
+                            "connect-to",
+                            "Connect To");
+  index_spec_ =
+      custom_props_->make_int_property("index",
+                                       "start connecting to other client from this index",
+                                       0,
+                                       128,
+                                       index_,
+                                       (GParamFlags) G_PARAM_READWRITE,
+                                       JackToShmdata::set_index,
+                                       JackToShmdata::get_index,
+                                       this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            index_spec_,
+                            "index",
+                            "Index");
   return true;
 }
 
@@ -111,7 +127,6 @@ bool JackToShmdata::start() {
   }
   disable_property("channels");
   disable_property("client-name");
-  disable_property("connect");
   return true;
 }
 
@@ -122,7 +137,6 @@ bool JackToShmdata::stop() {
   shm_.reset(nullptr);
   enable_property("channels");
   enable_property("client-name");
-  enable_property("connect");
   return true;
 }
 
@@ -150,21 +164,29 @@ const gchar *JackToShmdata::get_client_name(void *user_data) {
   return context->client_name_.c_str();
 }
 
-gboolean JackToShmdata::get_connect_phys(void *user_data) {
+void JackToShmdata::set_connect_to(const gchar *value, void *user_data) {
   JackToShmdata *context = static_cast<JackToShmdata *>(user_data);
-  if (!context->connect_phys_)
-    return FALSE;
-  return TRUE;
+  context->connect_to_ = value;
+  context->custom_props_->notify_property_changed(context->connect_to_spec_);
 }
 
-void JackToShmdata::set_connect_phys(gboolean connect, void *user_data) {
+const gchar *JackToShmdata::get_connect_to(void *user_data) {
   JackToShmdata *context = static_cast<JackToShmdata *>(user_data);
-  if (connect)
-    context->connect_phys_ = true;
-  else
-    context->connect_phys_ = false;
-  context->custom_props_->notify_property_changed(context->connect_physical_port_prop_);
+  return context->connect_to_.c_str();
 }
+
+void JackToShmdata::set_index(const gint value, void *user_data) {
+  JackToShmdata *context = static_cast<JackToShmdata *>(user_data);
+  context->index_ = value;
+  GObjectWrapper::notify_property_changed(context->gobject_->get_gobject(),
+                                          context->index_spec_);
+}
+
+gint JackToShmdata::get_index(void *user_data) {
+  JackToShmdata *context = static_cast<JackToShmdata *>(user_data);
+  return context->index_;
+}
+
 
 int JackToShmdata::jack_process (jack_nframes_t nframes, void *arg){
   auto context = static_cast<JackToShmdata *>(arg);
@@ -195,6 +217,12 @@ int JackToShmdata::jack_process (jack_nframes_t nframes, void *arg){
 
 void JackToShmdata::on_xrun(uint num_of_missed_samples) {
   g_warning ("jack xrun (delay of %u samples)", num_of_missed_samples);
+}
+
+void JackToShmdata::update_port_to_connect(){
+  ports_to_connect_.clear();
+  for (unsigned int i = index_; i < index_ + num_channels_; ++i)
+    ports_to_connect_.emplace_back(connect_to_ + std::to_string(i));
 }
 
 }  // namespace swittcher
