@@ -210,6 +210,7 @@ Writer_push(pyshmdata_WriterObject* self, PyObject* args)
     if (self->writer) {
         Py_INCREF(buffer);
         shmdata_copy_to_shm(self->writer, (void*)PyByteArray_AsString(buffer), PyByteArray_Size(buffer));
+        Py_XDECREF(buffer);
     }
 
     return Py_BuildValue("i", 1);
