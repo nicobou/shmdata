@@ -276,6 +276,7 @@ bool ShmdataToJack::start() {
 }
 
 bool ShmdataToJack::stop() {
+  shm_sub_.reset();
   {
     On_scope_exit{gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);};
     if (!make_elements())
