@@ -27,7 +27,8 @@ namespace switcher {
 JackClient::JackClient(const char *name,
                        JackProcessCallback process_cb,
                        void *process_user_data,
-                       XRunCallback_t xrun_cb) :
+                       XRunCallback_t xrun_cb,
+                       PortCallback_t port_cb) :
     client_ (jack_client_open(name,
                               JackNoStartServer,
                               &status_,
@@ -35,7 +36,8 @@ JackClient::JackClient(const char *name,
              &jack_client_close),
     user_cb_(process_cb),
     user_cb_arg_(process_user_data),
-    xrun_cb_(xrun_cb) {
+    xrun_cb_(xrun_cb),
+    port_cb_(port_cb){
   if ((client_ == NULL) && !(status_ & JackServerFailed)) {
     g_warning("jack_client_open() failed, "
               "status = 0x%2.0x", status_);
@@ -55,60 +57,48 @@ JackClient::JackClient(const char *name,
   // g_print("buffer size %" PRIu32 " \n", jack_get_buffer_size(client_.get()));
   jack_set_xrun_callback(client_.get(), on_xrun, this);
   jack_set_process_callback(client_.get(), jack_process, this);
-  jack_set_port_registration_callback (client_.get(), port_callback, this);
-  jack_set_client_registration_callback (client_.get(), client_callback, this);
+  if(port_cb_)
+    jack_set_port_registration_callback (client_.get(), port_callback, this);
   jack_activate(client_.get());
-}
-
-void JackClient::client_callback (const char* client, int yn, void *user_data){
-  printf ("Client %s %s\n", client, (yn ? "registered" : "unregistered"));
-  // JackClient *context = static_cast<JackClient *>(user_data);
-  // const char **ports = jack_get_ports (context->client_.get(),
-  //                                      NULL, //std::string(std::string(client) + ":*").c_str(),
-  //                                      NULL,
-  //                                      0);
-  // for (int i = 0; ports && ports[i]; ++i) {
-  //   printf ("%s\n", ports[i]);
-  // }
-  // jack_free(ports);
-  
 }
 
 void JackClient::port_callback (jack_port_id_t port_id, int yn, void *user_data){
   JackClient *context = static_cast<JackClient *>(user_data);
   jack_port_t *port = jack_port_by_id(context->client_.get(), port_id);
-  printf ("Port %d %s\n", port_id, (yn ? "registered" : "unregistered"));
-  {
-    int flags = jack_port_flags (port);
-    printf ("	properties: ");
-    if (flags & JackPortIsInput) {
-      fputs ("input,", stdout);
-    }
-    if (flags & JackPortIsOutput) {
-      fputs ("output,", stdout);
-    }
-    if (flags & JackPortCanMonitor) {
-      fputs ("can-monitor,", stdout);
-    }
-    if (flags & JackPortIsPhysical) {
-      fputs ("physical,", stdout);
-    }
-    if (flags & JackPortIsTerminal) {
-      fputs ("terminal,", stdout);
-    }
-    putc ('\n', stdout);
-  }
-  {
-    printf ("port type :: ");
-    putc ('\t', stdout);
-    fputs (jack_port_type (port), stdout);
-    putc ('\n', stdout);
-  }
-  {
-    printf("port name %s\n", jack_port_name(port));
-    printf("port short name %s\n", jack_port_short_name(port));
-  }
-  printf("-------------------------\n");
+  if (yn)
+    context->port_cb_(port);
+  // printf ("Port %d %s\n", port_id, (yn ? "registered" : "unregistered"));
+  // {
+  //   int flags = jack_port_flags (port);
+  //   printf ("	properties: ");
+  //   if (flags & JackPortIsInput) {
+  //     fputs ("input,", stdout);
+  //   }
+  //   if (flags & JackPortIsOutput) {
+  //     fputs ("output,", stdout);
+  //   }
+  //   if (flags & JackPortCanMonitor) {
+  //     fputs ("can-monitor,", stdout);
+  //   }
+  //   if (flags & JackPortIsPhysical) {
+  //     fputs ("physical,", stdout);
+  //   }
+  //   if (flags & JackPortIsTerminal) {
+  //     fputs ("terminal,", stdout);
+  //   }
+  //   putc ('\n', stdout);
+  // }
+  // {
+  //   printf ("port type :: ");
+  //   putc ('\t', stdout);
+  //   fputs (jack_port_type (port), stdout);
+  //   putc ('\n', stdout);
+  // }
+  // {
+  //   printf("port name %s\n", jack_port_name(port));
+  //   printf("port short name %s\n", jack_port_short_name(port));
+  // }
+  // printf("-------------------------\n");
 }
 
 int JackClient::jack_process(jack_nframes_t nframes, void *arg){
@@ -155,14 +145,19 @@ int JackClient::on_xrun(void *arg)
 }
 
 JackPort::JackPort(JackClient &client, unsigned int number, bool is_output) :
+    port_name_(std::string("output_" + std::to_string(number))),
     port_(jack_port_register(client.get_raw(),
-                             std::string("output_" + std::to_string(number)).c_str(),
+                             port_name_.c_str(),
                              JACK_DEFAULT_AUDIO_TYPE,
                              is_output ? JackPortIsOutput : JackPortIsInput,
                              0),
           [&](jack_port_t *port){
             jack_port_unregister(client.get_raw(), port);
           }){
+}
+
+std::string JackPort::get_name() const{
+  return port_name_;
 }
 
 bool JackPort::safe_bool_idiom() const{

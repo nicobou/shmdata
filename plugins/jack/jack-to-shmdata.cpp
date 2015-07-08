@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <string.h>
 #include <gst/gst.h>
 #include "switcher/std2.hpp"
 #include "./jack-to-shmdata.hpp"
@@ -38,7 +39,8 @@ JackToShmdata::JackToShmdata(const std::string &name):
     jack_client_(name.c_str(),
                  &JackToShmdata::jack_process,
                  this,
-                 [this](uint n){on_xrun(n);}){
+                 [this](uint n){on_xrun(n);},
+                 [this](jack_port_t *port){on_port(port);}){
 }
 
 bool JackToShmdata::init() {
@@ -99,6 +101,7 @@ bool JackToShmdata::init() {
                             index_spec_,
                             "index",
                             "Index");
+  update_port_to_connect();
   return true;
 }
 
@@ -121,12 +124,15 @@ bool JackToShmdata::start() {
     shm_.reset(nullptr);
     return false;
   }
-  { std::unique_lock<std::mutex> lock(input_ports_mutex_);
-    for (unsigned int i = 0; i < num_channels_; ++i)
-      input_ports_.emplace_back(jack_client_, i, false);
-  }
   disable_property("channels");
   disable_property("client-name");
+  disable_property("connect-to");
+  disable_property("index");
+  { std::unique_lock<std::mutex> lock(input_ports_mutex_);
+    for (unsigned int i = 0; i < num_channels_; ++i)
+      input_ports_.emplace_back(jack_client_, i + 1, false);
+    connect_ports();
+  }
   return true;
 }
 
@@ -137,12 +143,15 @@ bool JackToShmdata::stop() {
   shm_.reset(nullptr);
   enable_property("channels");
   enable_property("client-name");
+  enable_property("connect-to");
+  enable_property("index");
   return true;
 }
 
 void JackToShmdata::set_num_channels(const gint value, void *user_data) {
   JackToShmdata *context = static_cast<JackToShmdata *>(user_data);
   context->num_channels_ = value;
+  context->update_port_to_connect();
   GObjectWrapper::notify_property_changed(context->gobject_->get_gobject(),
                                           context->num_channels_spec_);
 }
@@ -167,6 +176,7 @@ const gchar *JackToShmdata::get_client_name(void *user_data) {
 void JackToShmdata::set_connect_to(const gchar *value, void *user_data) {
   JackToShmdata *context = static_cast<JackToShmdata *>(user_data);
   context->connect_to_ = value;
+  context->update_port_to_connect();
   context->custom_props_->notify_property_changed(context->connect_to_spec_);
 }
 
@@ -178,6 +188,7 @@ const gchar *JackToShmdata::get_connect_to(void *user_data) {
 void JackToShmdata::set_index(const gint value, void *user_data) {
   JackToShmdata *context = static_cast<JackToShmdata *>(user_data);
   context->index_ = value;
+  context->update_port_to_connect();
   GObjectWrapper::notify_property_changed(context->gobject_->get_gobject(),
                                           context->index_spec_);
 }
@@ -190,6 +201,14 @@ gint JackToShmdata::get_index(void *user_data) {
 
 int JackToShmdata::jack_process (jack_nframes_t nframes, void *arg){
   auto context = static_cast<JackToShmdata *>(arg);
+  { std::unique_lock<std::mutex> lock(context->port_to_connect_in_jack_process_mutex_);
+    for (auto &it: context->port_to_connect_in_jack_process_)
+      jack_connect(context->jack_client_.get_raw(),
+                   it.first.c_str(),
+                   it.second.c_str());
+    context->port_to_connect_in_jack_process_.clear();
+  }
+  
   { std::unique_lock<std::mutex> lock(context->input_ports_mutex_, std::defer_lock);
     if (lock.try_lock()) {
       std::size_t num_chan = context->input_ports_.size();
@@ -216,13 +235,41 @@ int JackToShmdata::jack_process (jack_nframes_t nframes, void *arg){
 }
 
 void JackToShmdata::on_xrun(uint num_of_missed_samples) {
-  g_warning ("jack xrun (delay of %u samples)", num_of_missed_samples);
+  g_warning("jack xrun (delay of %u samples)", num_of_missed_samples);
 }
 
 void JackToShmdata::update_port_to_connect(){
   ports_to_connect_.clear();
   for (unsigned int i = index_; i < index_ + num_channels_; ++i)
     ports_to_connect_.emplace_back(connect_to_ + std::to_string(i));
+}
+
+void JackToShmdata::connect_ports(){
+  if(ports_to_connect_.size() != input_ports_.size())
+    g_warning("bug in jack autoconnect");
+  for (unsigned int i = 0; i < num_channels_; ++i){
+    jack_connect(jack_client_.get_raw(),
+                 ports_to_connect_[i].c_str(),
+                 std::string(client_name_ + ":" + input_ports_[i].get_name()).c_str());
+  }
+}
+
+void JackToShmdata::on_port(jack_port_t *port){
+  int flags = jack_port_flags (port);
+  if (!(flags & JackPortIsOutput))
+    return;
+  auto it = std::find(ports_to_connect_.begin(),
+                      ports_to_connect_.end(),
+                      jack_port_name(port));
+  if (ports_to_connect_.end() == it)
+    return;
+  { std::unique_lock<std::mutex> lock(port_to_connect_in_jack_process_mutex_);
+    port_to_connect_in_jack_process_.push_back(
+        std::make_pair(*it,
+                       std::string(client_name_
+                                   + ":"
+                                   + input_ports_[it - ports_to_connect_.begin()].get_name())));
+  }
 }
 
 }  // namespace swittcher

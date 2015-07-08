@@ -44,7 +44,7 @@ class JackToShmdata: public Quiddity, public StartableQuiddity {
   GParamSpec *client_name_spec_{nullptr};
   std::string client_name_{};
   GParamSpec *connect_to_spec_{nullptr};
-  std::string connect_to_{"system:playback_"};
+  std::string connect_to_{"system:capture_"};
   GParamSpec *index_spec_{nullptr};
   unsigned int index_{1};
   std::unique_ptr<ShmdataWriter> shm_{nullptr};
@@ -53,11 +53,15 @@ class JackToShmdata: public Quiddity, public StartableQuiddity {
   std::vector<JackPort> input_ports_{};
   std::vector<jack_sample_t> buf_{};
   std::vector<std::string> ports_to_connect_{};
+  std::mutex  port_to_connect_in_jack_process_mutex_{};
+  std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
   
   bool init() final;
   bool start() final;
   bool stop() final;
   void update_port_to_connect();
+  void connect_ports();
+  void on_port(jack_port_t *port);
   static void set_num_channels(const gint value, void *user_data);
   static gint get_num_channels(void *user_data);
   static void set_client_name(const gchar *value, void *user_data);
