@@ -75,6 +75,7 @@ class ShmdataToJack: public Quiddity {
   bool stop();
   void update_port_to_connect();
   void connect_ports();
+  void disconnect_ports();
   void on_port(jack_port_t *port);
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string &shmdata_sochet_path);

@@ -272,13 +272,14 @@ bool ShmdataToJack::start() {
   gst_pipeline_->play(true);
   disable_property("connect-to");
   disable_property("index");
+  connect_ports();
   return true;
 }
 
 bool ShmdataToJack::stop() {
   shm_sub_.reset();
-  {
-    On_scope_exit{gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);};
+  disconnect_ports();
+  { On_scope_exit{gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);};
     if (!make_elements())
       return false;
   }
@@ -345,6 +346,11 @@ void ShmdataToJack::connect_ports(){
                  std::string(get_name() + ":" + output_ports_[i].get_name()).c_str(),
                  ports_to_connect_[i].c_str());
   }
+}
+
+void ShmdataToJack::disconnect_ports(){
+  for (auto &it: output_ports_)
+    jack_port_disconnect(jack_client_.get_raw(), it.get_raw());
 }
 
 void ShmdataToJack::on_port(jack_port_t *port){
