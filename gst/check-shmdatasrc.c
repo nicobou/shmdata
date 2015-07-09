@@ -20,13 +20,13 @@
 #include <gst/gst.h>
 #include <glib.h>
 
+static int success = 1;  // false 
 static GMainLoop *loop = NULL;
 
 // *** gstreamer callbacks
-static gboolean bus_call(GstBus     *bus,
-          GstMessage *msg,
-          gpointer    data)
-{
+static gboolean bus_call(GstBus *bus,
+                         GstMessage *msg,
+                         gpointer data){
   GMainLoop *loop =(GMainLoop *) data;
   switch(GST_MESSAGE_TYPE(msg)) {
     case GST_MESSAGE_EOS:
@@ -49,8 +49,12 @@ static gboolean bus_call(GstBus     *bus,
   return TRUE;
 }
 
+void on_handoff_cb(GstElement *object, GstBuffer *buf, GstPad *pad, gpointer user_data) {
+  success = 0; // true
+  g_main_loop_quit(loop);
+}
+
 int main () {
-  return 0;
   //gstreamer shmdatasink for writing
   GstElement *pipeline,
       *audiosource, *shmdatasink,
@@ -63,7 +67,7 @@ int main () {
   gst_registry_scan_path(registry, "./" LT_OBJDIR);
 #else
   g_printerr("shmdata plugins not found");
-return -1;
+  return -1;
 #endif
   loop = g_main_loop_new(NULL, FALSE);
   /* Create gstreamer elements */
@@ -74,6 +78,8 @@ return -1;
   fakesink = gst_element_factory_make("fakesink", "fake");
   if (!pipeline || !audiosource || !shmdatasink || !shmdatasrc || !fakesink) {
     g_printerr("One element could not be created. Exiting.\n"); return -1; }
+  g_object_set(G_OBJECT(fakesink), "silent", TRUE, "signal-handoffs", TRUE, NULL);
+  g_signal_connect(G_OBJECT(fakesink), "handoff", (GCallback)on_handoff_cb, NULL);
   g_object_set(G_OBJECT(shmdatasink), "socket-path", "/tmp/check-shmdatasrc", NULL);
   g_object_set(G_OBJECT(shmdatasrc), "socket-path", "/tmp/check-shmdatasrc", NULL);
   bus = gst_pipeline_get_bus(GST_PIPELINE(pipeline));
@@ -89,6 +95,5 @@ return -1;
   gst_object_unref(GST_OBJECT(pipeline));
   g_source_remove(bus_watch_id);
   g_main_loop_unref(loop);
-  return 0;
+  return success;
 }
-

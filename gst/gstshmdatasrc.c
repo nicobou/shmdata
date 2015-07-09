@@ -394,7 +394,8 @@ gst_shmdata_src_create (GstPushSrc *psrc, GstBuffer **outbuf)
     self->is_first_read = FALSE;
   }
 
-  if (self->has_new_caps) {
+  if (self->has_new_caps &&
+      (GST_STATE_PAUSED == GST_STATE(self) || GST_STATE_PLAYING == GST_STATE(self))) {
     self->has_new_caps = FALSE;
     g_object_notify(G_OBJECT(self), "caps");
     GstPad *pad = gst_element_get_static_pad (GST_ELEMENT(self),"src");
