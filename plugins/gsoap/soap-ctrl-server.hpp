@@ -45,18 +45,18 @@ class SoapCtrlServer : public QuiddityManagerWrapper
   static gboolean set_port_wrapped(gint port, gpointer user_data);
 
  private:
-  struct soap soap_;
-  int port_;
-  bool quit_server_thread_;
-  controlService *service_;
-  SOAP_SOCKET socket_;
-  std::thread thread_;
-  std::mutex mutex_;
+  struct soap soap_{};
+  int port_{8080};
+  bool quit_server_thread_{false};
+  controlService *service_{nullptr};
+  SOAP_SOCKET socket_{-1};
+  std::thread thread_{};
+  std::mutex mutex_{};
   void server_thread();
   static int http_get(struct soap *soap);
 };
 
 SWITCHER_DECLARE_PLUGIN(SoapCtrlServer);
-}  // namespace switcher
 
+}  // namespace switcher
 #endif
