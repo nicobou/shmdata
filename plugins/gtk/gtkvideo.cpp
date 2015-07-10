@@ -55,6 +55,7 @@ GTKVideo::GTKVideo(const std::string &):
 }
 
 bool GTKVideo::init() {
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   if (!remake_elements())
     return false;
   if (instances_counter_ == 0) {
@@ -108,6 +109,8 @@ bool GTKVideo::init() {
   wait_window_cond_.wait(lock);
   if (nullptr == display_)
     return false;
+
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   return true;
 }
 
@@ -231,20 +234,24 @@ void GTKVideo::delete_event_cb(GtkWidget * /*widget */ ,
 }
 
 gboolean GTKVideo::create_ui(void *user_data) {
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   GTKVideo *context = static_cast<GTKVideo *>(user_data);
   context->display_ = gdk_display_get_default();
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   if (nullptr == context->display_) {
     g_debug("gtkvideo: no default display, cannot create window");
     std::unique_lock<std::mutex> lock(context->wait_window_mutex_);
     context->wait_window_cond_.notify_all();
     return FALSE;
   }
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
 
   context->main_window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   g_signal_connect(G_OBJECT(context->main_window_),
                    "delete-event", G_CALLBACK(delete_event_cb), context);
   context->video_window_ = gtk_drawing_area_new();
   gtk_widget_set_double_buffered(context->video_window_, FALSE);
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   GdkColor color;
   gdk_color_parse("black", &color);
   gtk_widget_modify_bg(context->video_window_, GTK_STATE_NORMAL, &color);
@@ -252,14 +259,19 @@ gboolean GTKVideo::create_ui(void *user_data) {
                    G_CALLBACK(realize_cb), context);
   gtk_container_add(GTK_CONTAINER(context->main_window_),
                     context->video_window_);
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   gtk_window_set_default_size(GTK_WINDOW(context->main_window_), 640, 480);
   gtk_window_set_title(GTK_WINDOW(context->main_window_), context->title_);
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   context->blank_cursor_ = gdk_cursor_new(GDK_BLANK_CURSOR);
   gtk_widget_set_events(context->main_window_, GDK_KEY_PRESS_MASK);
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   g_signal_connect(G_OBJECT(context->main_window_),
                    "key-press-event",
                    G_CALLBACK(GTKVideo::key_pressed_cb), context);
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   gtk_widget_show_all((GtkWidget *) context->main_window_);
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   return FALSE;
 }
 
@@ -315,35 +327,49 @@ const gchar *GTKVideo::get_title(void *user_data) {
 }
 
 bool GTKVideo::remake_elements(){
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   if (!UGstElem::renew(shmsrc_) || !UGstElem::renew(queue_)
       || !UGstElem::renew(videoconvert_) || !UGstElem::renew(videoflip_)
       || !UGstElem::renew(gamma_) || !UGstElem::renew(videobalance_)
       || !UGstElem::renew(xvimagesink_))
     return false;
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   g_object_set(G_OBJECT(xvimagesink_.get_raw()),
                "force-aspect-ratio", TRUE,
                "draw-borders", TRUE,
                "sync", FALSE,
                "qos", FALSE,
                nullptr);
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   g_object_set_data(G_OBJECT(xvimagesink_.get_raw()),
                     "on-error-delete",
                     (gpointer) get_name().c_str());
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   return true;
 }
 
 bool GTKVideo::on_shmdata_disconnect() {
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   prune_tree(".shmdata.reader." + shmpath_);
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   shm_sub_.reset();
-  On_scope_exit{gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, [this](GstMessage *msg){return this->bus_sync(msg);});};
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
+  On_scope_exit{gst_pipeline_ =
+        std2::make_unique<GstPipeliner>(nullptr,
+                                        [this](GstMessage *msg){
+                                          return this->bus_sync(msg);
+                                        });};
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   return remake_elements();
 }
 
 bool GTKVideo::on_shmdata_connect(const std::string &shmpath) {
   shmpath_ = shmpath;
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   g_object_set(G_OBJECT(shmsrc_.get_raw()),
                "socket-path", shmpath_.c_str(),
                nullptr);
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
       [this](std::string &&caps){
@@ -356,6 +382,7 @@ bool GTKVideo::on_shmdata_connect(const std::string &shmpath) {
         this->graft_tree(".shmdata.reader." + shmpath_ + ".byte_rate",
                          data::Tree::make(std::to_string(byte_rate)));
       });
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
 
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmsrc_.get_raw(),
@@ -366,6 +393,7 @@ bool GTKVideo::on_shmdata_connect(const std::string &shmpath) {
                    videobalance_.get_raw(),
                    xvimagesink_.get_raw(),
                    nullptr);
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   gst_element_link_many(shmsrc_.get_raw(),
                         queue_.get_raw(),
                         videoconvert_.get_raw(),
@@ -374,7 +402,9 @@ bool GTKVideo::on_shmdata_connect(const std::string &shmpath) {
                         videobalance_.get_raw(),
                         xvimagesink_.get_raw(),
                         nullptr);
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   gst_pipeline_->play(true);
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   return true;
 }
 
@@ -383,11 +413,16 @@ bool GTKVideo::can_sink_caps(std::string caps) {
 };
 
 GstBusSyncReply GTKVideo::bus_sync(GstMessage *msg){
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   if (!gst_is_video_overlay_prepare_window_handle_message (msg))
     return GST_BUS_PASS;
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   GstVideoOverlay *overlay = GST_VIDEO_OVERLAY(GST_MESSAGE_SRC(msg));
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   gst_video_overlay_set_window_handle (overlay, window_handle_);
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   gst_message_unref (msg);
+  g_print("--%s %d\n", __FUNCTION__, __LINE__);
   return GST_BUS_DROP;
 }
 

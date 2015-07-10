@@ -210,7 +210,8 @@ PulseSink::get_sink_info_callback(pa_context *pulse_context,
     context->install_property_by_pspec(context->
                                        custom_props_->get_gobject(),
                                        context->devices_enum_spec_,
-                                       "device", "Ouput Device");
+                                       "device",
+                                       "Ouput Device");
     std::unique_lock<std::mutex> lock(context->devices_mutex_);
     context->devices_cond_.notify_all();
     return;
@@ -350,6 +351,7 @@ bool PulseSink::can_sink_caps(const std::string &caps) {
 };
 
 bool PulseSink::on_shmdata_disconnect() {
+  enable_property("device");
   prune_tree(".shmdata.reader." + shmpath_);
   shm_sub_.reset();
   On_scope_exit{
@@ -359,10 +361,15 @@ bool PulseSink::on_shmdata_disconnect() {
 }
 
 bool PulseSink::on_shmdata_connect(const std::string &shmpath) {
+  disable_property("device");
   shmpath_ = shmpath;
   g_object_set(G_OBJECT(shmsrc_.get_raw()),
                "socket-path", shmpath_.c_str(),
                nullptr);
+  if (!devices_.empty())
+    g_object_set(G_OBJECT(pulsesink_.get_raw()), "device",
+                 devices_.at(device_).name_.c_str(),
+                 nullptr);
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
       [this](std::string &&caps){

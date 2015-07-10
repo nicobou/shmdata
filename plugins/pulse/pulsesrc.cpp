@@ -369,6 +369,7 @@ bool PulseSrc::stop() {
 void PulseSrc::set_device(const gint value, void *user_data) {
   PulseSrc *context = static_cast<PulseSrc *>(user_data);
   context->device_ = value;
+  
 }
 
 gint PulseSrc::get_device(void *user_data) {
