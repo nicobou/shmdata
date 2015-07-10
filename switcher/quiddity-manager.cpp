@@ -31,6 +31,7 @@ QuiddityManager::ptr QuiddityManager::make_manager(const std::string &name) {
   GstRegistry *registry = gst_registry_get();
   // TODO add option for scanning a path
   gst_registry_scan_path(registry, "/usr/local/lib/gstreamer-1.0/");
+  gst_registry_scan_path(registry, "/usr/lib/gstreamer-1.0/");
   
   QuiddityManager::ptr manager(new QuiddityManager(name));
   manager->me_ = manager;
