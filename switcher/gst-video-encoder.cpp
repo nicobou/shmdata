@@ -34,8 +34,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 
 GstVideoEncoder::GstVideoEncoder(const std::string &):
     shmcntr_(static_cast<Quiddity *>(this)),
-    custom_props_(std::make_shared<CustomPropertyHelper>()),
-    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)){
+    custom_props_(std::make_shared<CustomPropertyHelper>()){
 }
 
 bool GstVideoEncoder::init() {

@@ -26,7 +26,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     create-remove-spy.cpp \
     custom-property-helper.cpp \
     decodebin-to-shmdata.cpp \
-    default-video-format.cpp \
     external-shmdata-writer.cpp \
     g-source-wrapper.cpp \
     glibmainloop.cpp \
@@ -34,9 +33,11 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gobject-wrapper.cpp \
     gst-pipe.cpp \
     gst-pipeliner.cpp \
+    gst-pixel-format-converter.cpp \
     gst-shmdata-subscriber.cpp \
     gst-utils.cpp \
     gst-video-codec.cpp \
+    gst-video-converter.cpp \
     gst-video-encoder.cpp \
     http-sdp-dec.cpp \
     information-tree-basic-serializer.cpp \
@@ -97,7 +98,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     create-remove-spy.hpp \
     creator.hpp \
     custom-property-helper.hpp \
-    default-video-format.hpp \
     decodebin-to-shmdata.hpp \
     external-shmdata-writer.hpp \
     g-source-wrapper.hpp \
@@ -106,9 +106,11 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gobject-wrapper.hpp \
     gst-pipe.hpp \
     gst-pipeliner.hpp \
+    gst-pixel-format-converter.hpp \
     gst-shmdata-subscriber.hpp \
     gst-utils.hpp \
     gst-video-codec.hpp \
+    gst-video-converter.hpp \
     gst-video-encoder.hpp \
     http-sdp-dec.hpp \
     information-tree-basic-serializer.hpp \

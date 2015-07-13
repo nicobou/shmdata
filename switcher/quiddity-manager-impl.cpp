@@ -31,6 +31,7 @@
 #include "./create-remove-spy.hpp"
 #include "./external-shmdata-writer.hpp"
 #include "./gst-video-encoder.hpp"
+#include "./gst-video-converter.hpp"
 //#include "./gst-parse-to-bin-src.hpp"
 #include "./http-sdp-dec.hpp"
 #include "./logger.hpp"
@@ -140,6 +141,9 @@ void QuiddityManager_Impl::register_classes() {
   abstract_factory_.register_class<ExternalShmdataWriter>
       (ExternalShmdataWriter::switcher_doc_.get_class_name(),
        &ExternalShmdataWriter::switcher_doc_);
+  abstract_factory_.register_class<GstVideoConverter>
+      (GstVideoConverter::switcher_doc_.get_class_name(),
+       &GstVideoConverter::switcher_doc_);
   abstract_factory_.register_class<GstVideoEncoder>
       (GstVideoEncoder::switcher_doc_.get_class_name(),
        &GstVideoEncoder::switcher_doc_);

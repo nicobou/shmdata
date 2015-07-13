@@ -259,7 +259,7 @@ bool GstVideoCodec::stop(){
     shmsink_sub_.reset();
     shmsrc_sub_.reset();
     quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
-    quid_->prune_tree(".shmdata.reader." + shm_encoded_path_);
+    quid_->prune_tree(".shmdata.reader." + shmpath_to_encode_);
     remake_codec_elements();
     make_codec_properties();
     gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);

@@ -22,8 +22,6 @@
 
 #include <memory>
 #include "switcher/quiddity.hpp"
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"  // FIXME not used ?
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/gst-video-codec.hpp"
 
@@ -40,9 +38,6 @@ class GstVideoEncoder: public Quiddity {
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
   CustomPropertyHelper::ptr custom_props_;
-  std::string shmpath_{};  // FIXME unused
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
-  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
   std::unique_ptr<GstVideoCodec> codecs_{nullptr};
   bool init() final;
   bool on_shmdata_disconnect();
