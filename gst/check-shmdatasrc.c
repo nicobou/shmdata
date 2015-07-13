@@ -55,12 +55,6 @@ void on_handoff_cb(GstElement *object, GstBuffer *buf, GstPad *pad, gpointer use
 }
 
 int main () {
-  //gstreamer shmdatasink for writing
-  GstElement *pipeline,
-      *audiosource, *shmdatasink,
-      *shmdatasrc, *fakesink;
-  GstBus *bus;
-  guint bus_watch_id;
   gst_init(NULL, NULL);
 #ifdef HAVE_CONFIG_H
   GstRegistry *registry = gst_registry_get();
@@ -71,29 +65,54 @@ int main () {
 #endif
   loop = g_main_loop_new(NULL, FALSE);
   /* Create gstreamer elements */
-  pipeline = gst_pipeline_new("audio-player");
-  audiosource = gst_element_factory_make("audiotestsrc", "audiosource");
-  shmdatasink = gst_element_factory_make("shmdatasink", "shmdata-output");
-  shmdatasrc = gst_element_factory_make("shmdatasrc", "shmdata-input");
-  fakesink = gst_element_factory_make("fakesink", "fake");
-  if (!pipeline || !audiosource || !shmdatasink || !shmdatasrc || !fakesink) {
+  GstElement *pipeline_writer = gst_pipeline_new("audio-writer");
+  GstElement *pipeline_reader = gst_pipeline_new("audio-reader");
+  GstElement *audiosource = gst_element_factory_make("audiotestsrc", "audiosource");
+  GstElement *shmdatasink = gst_element_factory_make("shmdatasink", "shmdata-output");
+  GstElement *shmdatasrc = gst_element_factory_make("shmdatasrc", "shmdata-input");
+  GstElement *fakesink = gst_element_factory_make("fakesink", "fake");
+  if (!pipeline_writer || !pipeline_reader || !audiosource || !shmdatasink || !shmdatasrc || !fakesink) {
     g_printerr("One element could not be created. Exiting.\n"); return -1; }
-  g_object_set(G_OBJECT(fakesink), "silent", TRUE, "signal-handoffs", TRUE, NULL);
+  GstBus *bus_writer = gst_pipeline_get_bus(GST_PIPELINE(pipeline_writer));
+  guint bus_watch_id_writer = gst_bus_add_watch(bus_writer, bus_call, loop);
+  gst_object_unref(bus_writer);
+  GstBus *bus_reader = gst_pipeline_get_bus(GST_PIPELINE(pipeline_reader));
+  guint bus_watch_id_reader = gst_bus_add_watch(bus_reader, bus_call, loop);
+  gst_object_unref(bus_reader);
+  g_object_set(G_OBJECT(pipeline_writer), "async-handling", TRUE, NULL);
+  g_object_set(G_OBJECT(pipeline_reader), "async-handling", TRUE, NULL);
+  g_object_set(G_OBJECT(fakesink),
+               "silent", TRUE,
+               "signal-handoffs", TRUE,
+               "sync", FALSE,
+               NULL);
   g_signal_connect(G_OBJECT(fakesink), "handoff", (GCallback)on_handoff_cb, NULL);
-  g_object_set(G_OBJECT(shmdatasink), "socket-path", "/tmp/check-shmdatasrc", NULL);
-  g_object_set(G_OBJECT(shmdatasrc), "socket-path", "/tmp/check-shmdatasrc", NULL);
-  bus = gst_pipeline_get_bus(GST_PIPELINE(pipeline));
-  bus_watch_id = gst_bus_add_watch(bus, bus_call, loop);
-  gst_object_unref(bus);
-  gst_bin_add_many(GST_BIN(pipeline), audiosource, shmdatasink, shmdatasrc, fakesink, NULL);
+  g_object_set(G_OBJECT(shmdatasink),
+               "socket-path", "/tmp/check-shmdatasrc",
+               "sync", FALSE,
+               NULL);
+  g_object_set(G_OBJECT(shmdatasrc),
+               "is-live", TRUE,
+               "socket-path", "/tmp/check-shmdatasrc",
+               NULL);
+  gst_bin_add_many(GST_BIN(pipeline_writer),
+                   audiosource, shmdatasink,
+                   NULL);
+  gst_bin_add_many(GST_BIN(pipeline_reader),
+                   shmdatasrc, fakesink,
+                   NULL);
   gst_element_link(audiosource, shmdatasink);
   gst_element_link(shmdatasrc, fakesink);
-  gst_element_set_state(pipeline, GST_STATE_PLAYING);
+  gst_element_set_state(pipeline_writer, GST_STATE_PLAYING);
+  gst_element_set_state(pipeline_reader, GST_STATE_PLAYING);
   g_main_loop_run(loop);
   // cleaning gst
-  gst_element_set_state(pipeline, GST_STATE_NULL);
-  gst_object_unref(GST_OBJECT(pipeline));
-  g_source_remove(bus_watch_id);
+  gst_element_set_state(pipeline_writer, GST_STATE_NULL);
+  gst_element_set_state(pipeline_reader, GST_STATE_NULL);
+  gst_object_unref(GST_OBJECT(pipeline_writer));
+  gst_object_unref(GST_OBJECT(pipeline_reader));
+  g_source_remove(bus_watch_id_writer);
+  g_source_remove(bus_watch_id_reader);
   g_main_loop_unref(loop);
   return success;
 }
