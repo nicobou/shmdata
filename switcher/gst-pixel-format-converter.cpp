@@ -180,7 +180,7 @@ bool GstPixelFormatConverter::stop(){
     g_warning("error renewing a pixel format converter related gst element");
     return false;
   }
-  gst_pipeline_.reset();
+  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
   return true;
 }
 
