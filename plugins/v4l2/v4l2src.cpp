@@ -569,6 +569,8 @@ bool V4L2Src::check_folder_for_v4l2_devices(const char *dir_path) {
 
 bool V4L2Src::start() {
   configure_capture();
+  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()),
+                        "async-handling", TRUE, nullptr);
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    v4l2src_.get_raw(), capsfilter_.get_raw(), shmsink_.get_raw(),
                    nullptr);
