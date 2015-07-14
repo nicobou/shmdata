@@ -129,7 +129,7 @@ void GstVideoCodec::make_bin(){
 bool GstVideoCodec::remake_codec_elements() {
   if (codec_ != 0) {  //no codec
     if (!UGstElem::renew(shmsrc_, {"socket-path"})
-        || !UGstElem::renew(shm_encoded_, {"socket-path", "sync"})
+        || !UGstElem::renew(shm_encoded_, {"socket-path", "sync", "async"})
         || !UGstElem::renew(color_space_codec_element_)
         || !UGstElem::renew(queue_codec_element_)
         || !UGstElem::renew(codec_element_, codec_properties_)){
@@ -252,7 +252,9 @@ bool GstVideoCodec::start(){
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()),
                "async-handling", TRUE,
                nullptr);
+  g_print("avant %s %d\n", __FUNCTION__, __LINE__);
   gst_pipeline_->play(true);
+  g_print("apres %s %d\n", __FUNCTION__, __LINE__);
   return true;
 }
 
@@ -278,7 +280,8 @@ void GstVideoCodec::set_shm(const std::string &shmpath){
                "socket-path", shmpath_to_encode_.c_str(), nullptr);
   g_object_set(G_OBJECT(shm_encoded_.get_raw()),
                "socket-path", shm_encoded_path_.c_str(),
-               "sync", false,
+               "sync", FALSE,
+               "async", FALSE,
                nullptr);
 }
 

@@ -110,6 +110,8 @@ void V4L2Src::update_discrete_resolution(const CaptureDescription &cap_descr) {
   uninstall_property("resolution");
   // resolution_ = -1;
   if (!cap_descr.frame_size_discrete_.empty()) {
+    width_ = -1;
+    height_ = -1;
     gint i = 0;
     for (auto &it : cap_descr.frame_size_discrete_) {
       resolutions_enum_[i].value = i;
@@ -143,39 +145,40 @@ void V4L2Src::update_discrete_resolution(const CaptureDescription &cap_descr) {
 
 void V4L2Src::update_discrete_framerate(const CaptureDescription &cap_descr) {
   uninstall_property("framerate");
-  // framerate_ = -1;
-  if (!cap_descr.frame_interval_discrete_.empty()) {
-    gint i = 0;
-    for (auto &it : cap_descr.frame_interval_discrete_) {
-      framerates_enum_[i].value = i;
-      // FIXME free previous here
-      // inversing enumerator and denominator because gst wants
-      // framerate while v4l2 gives frame interval
-      framerates_enum_[i].value_name = g_strdup_printf("%s/%s",
-                                                       it.second.c_str(),
-                                                       it.first.c_str());
-      framerates_enum_[i].value_nick = framerates_enum_[i].value_name;
-      i++;
-    }
-    framerates_enum_[i].value = 0;
-    framerates_enum_[i].value_name = nullptr;
-    framerates_enum_[i].value_nick = nullptr;
-
-    if (framerate_spec_ == nullptr)
-      framerate_spec_ =
-          custom_props_->make_enum_property("framerate",
-                                            "framerate of selected capture devices",
-                                            0,
-                                            framerates_enum_,
-                                            (GParamFlags)
-                                            G_PARAM_READWRITE,
-                                            V4L2Src::set_framerate,
-                                            V4L2Src::get_framerate,
-                                            this);
-    // framerate_ = 0;
-    install_property_by_pspec(custom_props_->get_gobject(),
-                              framerate_spec_, "framerate", "Framerate");
+  if (cap_descr.frame_interval_discrete_.empty()) {
+    framerate_ = -1;
+    return;
   }
+  gint i = 0;
+  for (auto &it : cap_descr.frame_interval_discrete_) {
+    framerates_enum_[i].value = i;
+    // FIXME free previous here
+    // inversing enumerator and denominator because gst wants
+    // framerate while v4l2 gives frame interval
+    framerates_enum_[i].value_name = g_strdup_printf("%s/%s",
+                                                     it.second.c_str(),
+                                                     it.first.c_str());
+    framerates_enum_[i].value_nick = framerates_enum_[i].value_name;
+    i++;
+  }
+  framerates_enum_[i].value = 0;
+  framerates_enum_[i].value_name = nullptr;
+  framerates_enum_[i].value_nick = nullptr;
+  
+  if (framerate_spec_ == nullptr)
+    framerate_spec_ =
+        custom_props_->make_enum_property("framerate",
+                                          "framerate of selected capture devices",
+                                          0,
+                                          framerates_enum_,
+                                          (GParamFlags)
+                                          G_PARAM_READWRITE,
+                                          V4L2Src::set_framerate,
+                                          V4L2Src::get_framerate,
+                                          this);
+  framerate_ = 0;
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            framerate_spec_, "framerate", "Framerate");
 }
 
 void V4L2Src::update_pixel_format(const CaptureDescription &cap_descr) {
@@ -216,6 +219,7 @@ void V4L2Src::update_pixel_format(const CaptureDescription &cap_descr) {
 void V4L2Src::update_width_height(const CaptureDescription &cap_descr) {
   uninstall_property("width");
   uninstall_property("height");
+  g_print("update width height -----------------------\n");
   // width_ = -1;
   // height_ = -1;
   if (cap_descr.frame_size_stepwise_max_width_ > 0) {
@@ -234,6 +238,7 @@ void V4L2Src::update_width_height(const CaptureDescription &cap_descr) {
     install_property_by_pspec(custom_props_->get_gobject(),
                               width_spec_, "width", "Width");
 
+    width_ = cap_descr.frame_size_stepwise_max_width_ / 2;
     // height_ = cap_descr.frame_size_stepwise_max_height_;
 
     if (height_spec_ == nullptr)
@@ -249,6 +254,7 @@ void V4L2Src::update_width_height(const CaptureDescription &cap_descr) {
 
     install_property_by_pspec(custom_props_->get_gobject(),
                               height_spec_, "height", "Height");
+    height_ = cap_descr.frame_size_stepwise_max_height_ / 2;
   }
 }
 
@@ -765,6 +771,7 @@ bool V4L2Src::configure_capture() {
     caps = caps + ", framerate=(fraction)"
         + std::to_string(framerate_numerator_) + "/" + std::to_string(framerate_denominator_);
   }
+  g_debug("caps for v4l2src %s", caps.c_str());
   GstCaps *usercaps = gst_caps_from_string(caps.c_str());
   g_object_set(G_OBJECT(capsfilter_.get_raw()), "caps", usercaps, nullptr);
   gst_caps_unref(usercaps);

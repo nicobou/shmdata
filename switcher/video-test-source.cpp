@@ -74,6 +74,9 @@ bool VideoTestSource::start() {
         this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
                          data::Tree::make(std::to_string(byte_rate)));
       });
+  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()),
+               "async-handling", TRUE,
+               nullptr);
   gst_pipeline_->play(true);
   codecs_->start();
   reinstall_property(G_OBJECT(videotestsrc_.get_raw()),
