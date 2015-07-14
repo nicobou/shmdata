@@ -249,6 +249,9 @@ bool GstVideoCodec::start(){
                                 data::Tree::make(std::to_string(byte_rate)));
       });
   make_bin();
+  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()),
+               "async-handling", TRUE,
+               nullptr);
   gst_pipeline_->play(true);
   return true;
 }
