@@ -175,6 +175,7 @@ gst_shmdata_src_init (GstShmdataSrc *self)
   self->data_rendered = FALSE;
   g_mutex_init (&self->data_rendered_mutex);
   g_cond_init (&self->data_rendered_cond);
+  gst_base_src_set_format (GST_BASE_SRC (self), GST_FORMAT_TIME);
 }
 
 static void
