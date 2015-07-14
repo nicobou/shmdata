@@ -320,9 +320,6 @@ bool GTKVideo::remake_elements(){
                "sync", FALSE,
                "qos", FALSE,
                nullptr);
-  g_object_set_data(G_OBJECT(xvimagesink_.get_raw()),
-                    "on-error-delete",
-                    (gpointer) get_name().c_str());
   return true;
 }
 
