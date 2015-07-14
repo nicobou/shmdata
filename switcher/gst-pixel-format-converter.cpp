@@ -176,6 +176,7 @@ bool GstPixelFormatConverter::stop(){
   if (!UGstElem::renew(shmsrc_, {"socket-path"})
       || !UGstElem::renew(shm_converted_, {"socket-path", "sync"})
       || !UGstElem::renew(color_space_codec_element_)
+      || !UGstElem::renew(capsfilter_)
       || !UGstElem::renew(queue_codec_element_)){
     g_warning("error renewing a pixel format converter related gst element");
     return false;
