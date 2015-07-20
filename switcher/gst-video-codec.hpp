@@ -81,7 +81,9 @@ class GstVideoCodec {
         "temporal-scalability-target-bitrate", "temporal-scalability-rate-decimator",
         "temporal-scalability-periodicity", "temporal-scalability-layer-id",
         "error-resilient"};
-
+  // shmdatasrc copy-buffers property:
+  bool copy_buffers_{false};
+  
   bool remake_codec_elements();
   void make_codec_properties();
   void uninstall_codec_properties();
