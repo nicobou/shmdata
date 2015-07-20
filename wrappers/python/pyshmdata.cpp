@@ -58,23 +58,6 @@ void log_debug_handler(void *user_data, const char *str)
 }
 
 /*************/
-// Utility function to convert a Python unicode string to a std::string
-string PyUnicode_to_string(PyObject* object)
-{
-    int size = PyUnicode_GET_DATA_SIZE(object);
-    string utf8Str(PyUnicode_AS_DATA(object), size);
-    string asciiStr = "";
-
-    for (auto c : utf8Str)
-    {
-        if (c >= 0 && c < 127)
-            asciiStr.push_back(c);
-    }
-
-    return asciiStr;
-}
-
-/*************/
 // Any-data-writer
 PyMODINIT_FUNC
 PyInit_pyshmdata(void)
@@ -193,10 +176,9 @@ Writer_init(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds)
             self->show_debug_messages = false;
     }
 
-    string strPath = PyUnicode_to_string(self->path);
-    string strDatatype = PyUnicode_to_string(self->datatype);
+    string strPath(PyUnicode_AsUTF8(self->path));
+    string strDatatype(PyUnicode_AsUTF8(self->datatype));
     size_t size = PyLong_AsSize_t(self->framesize);
-    cout << "---------> " << strPath << " - " << strDatatype << endl;
 
     self->writer = shmdata_make_writer(strPath.c_str(), size, strDatatype.c_str(), NULL, NULL, NULL, self->logger);
     if (!self->writer) {
@@ -329,7 +311,7 @@ Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
             self->show_debug_messages = false;
     }
 
-    self->reader = shmdata_make_follower(PyUnicode_to_string(self->path).c_str(),
+    self->reader = shmdata_make_follower(PyUnicode_AsUTF8(self->path),
                        Reader_on_data_handler,
                        Reader_on_connect_handler,
                        Reader_on_disconnect,
