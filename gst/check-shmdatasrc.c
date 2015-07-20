@@ -92,7 +92,6 @@ int main () {
                "sync", FALSE,
                NULL);
   g_object_set(G_OBJECT(shmdatasrc),
-               "is-live", TRUE,
                "socket-path", "/tmp/check-shmdatasrc",
                NULL);
   gst_bin_add_many(GST_BIN(pipeline_writer),
