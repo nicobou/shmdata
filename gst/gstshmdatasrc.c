@@ -50,7 +50,7 @@ enum
   PROP_SOCKET_PATH,
   PROP_CAPS,
   PROP_BYTES_SINCE_LAST_REQUEST,
-  PROP_IS_LIVE
+  PROP_COPY_BUFFERS
 };
 
 /* struct GstShmDataBuffer */
@@ -64,9 +64,9 @@ GST_DEBUG_CATEGORY_STATIC (shmdatasrc_debug);
 #define GST_CAT_DEFAULT shmdatasrc_debug
 
 static GstStaticPadTemplate srctemplate = GST_STATIC_PAD_TEMPLATE ("src",
-    GST_PAD_SRC,
-    GST_PAD_ALWAYS,
-    GST_STATIC_CAPS_ANY);
+                                                                   GST_PAD_SRC,
+                                                                   GST_PAD_ALWAYS,
+                                                                   GST_STATIC_CAPS_ANY);
 
 #define gst_shmdata_src_parent_class parent_class
 G_DEFINE_TYPE (GstShmdataSrc, gst_shmdata_src, GST_TYPE_PUSH_SRC);
@@ -116,10 +116,10 @@ gst_shmdata_src_class_init (GstShmdataSrcClass * klass)
   gstpush_src_class->create = gst_shmdata_src_create;
 
   g_object_class_install_property (gobject_class, PROP_SOCKET_PATH,
-      g_param_spec_string ("socket-path",
-          "Path to the control socket",
-          "The path to the control socket used to control the shared memory"
-          " transport", NULL, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+                                   g_param_spec_string ("socket-path",
+                                                        "Path to the control socket",
+                                                        "The path to the control socket used to control the shared memory"
+                                                        " transport", NULL, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (
       gobject_class,
@@ -145,9 +145,9 @@ gst_shmdata_src_class_init (GstShmdataSrcClass * klass)
   
   g_object_class_install_property (
       gobject_class,
-      PROP_IS_LIVE,
-      g_param_spec_boolean ("is-live", "Is this a live source",
-                            "True if the element cannot produce data in PAUSED",
+      PROP_COPY_BUFFERS,
+      g_param_spec_boolean ("copy-buffers", "copy buffers into the pipeline",
+                            "False if buffers from shared memory are used into the pipeline",
                             FALSE,
                             G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
   
@@ -155,10 +155,10 @@ gst_shmdata_src_class_init (GstShmdataSrcClass * klass)
                                       gst_static_pad_template_get (&srctemplate));
 
   gst_element_class_set_static_metadata (gstelement_class,
-      "Shmdata Source",
-      "Source",
-      "Receive data from a shmdata",
-      "Nicolas Bouillot <nicolas.bouillot@gmail.com>");
+                                         "Shmdata Source",
+                                         "Source",
+                                         "Receive data from a shmdata",
+                                         "Nicolas Bouillot <nicolas.bouillot@gmail.com>");
 
   GST_DEBUG_CATEGORY_INIT (shmdatasrc_debug, "shmdatasrc", 0, "Shmdata Source");
 }
@@ -170,12 +170,14 @@ gst_shmdata_src_init (GstShmdataSrc *self)
   self->has_new_caps = FALSE;
   self->caps = NULL;
   self->on_data = FALSE;
+  self->copy_buffers = FALSE;
   g_mutex_init(&self->on_data_mutex);
   g_cond_init (&self->on_data_cond);
   self->data_rendered = FALSE;
   g_mutex_init (&self->data_rendered_mutex);
   g_cond_init (&self->data_rendered_cond);
   gst_base_src_set_format (GST_BASE_SRC (self), GST_FORMAT_TIME);
+  gst_base_src_set_live(GST_BASE_SRC (self), TRUE);
 }
 
 static void
@@ -194,7 +196,7 @@ gst_shmdata_src_finalize (GObject * object)
 
 static void
 gst_shmdata_src_set_property (GObject * object, guint prop_id,
-    const GValue * value, GParamSpec * pspec)
+                              const GValue * value, GParamSpec * pspec)
 {
   GstShmdataSrc *self = GST_SHMDATA_SRC (object);
   switch (prop_id) {
@@ -202,16 +204,15 @@ gst_shmdata_src_set_property (GObject * object, guint prop_id,
       GST_OBJECT_LOCK (object);
       if (self->shmfollower) {
         GST_WARNING_OBJECT (object, "Can not modify socket path while the "
-            "element is playing");
+                            "element is playing");
       } else {
         g_free (self->socket_path);
         self->socket_path = g_value_dup_string (value);
       }
       GST_OBJECT_UNLOCK (object);
       break;
-    case PROP_IS_LIVE:
-      gst_base_src_set_live (GST_BASE_SRC (object),
-          g_value_get_boolean (value));
+    case PROP_COPY_BUFFERS:
+      self->copy_buffers = g_value_get_boolean (value);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -243,8 +244,8 @@ gst_shmdata_src_get_property (GObject * object, guint prop_id,
       g_value_set_uint64 (value, self->bytes_since_last_request);
       self->bytes_since_last_request = 0;
       break;
-    case PROP_IS_LIVE:
-      g_value_set_boolean (value, gst_base_src_is_live (GST_BASE_SRC (object)));
+    case PROP_COPY_BUFFERS:
+      g_value_set_boolean (value, self->copy_buffers);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -268,7 +269,7 @@ gst_shmdata_src_start_reading (GstShmdataSrc * self)
 {
   if (!self->socket_path) {
     GST_ELEMENT_ERROR (self, RESOURCE, NOT_FOUND,
-        ("No path specified for socket."), (NULL));
+                       ("No path specified for socket."), (NULL));
     return FALSE;
   }
 
@@ -285,17 +286,17 @@ gst_shmdata_src_start_reading (GstShmdataSrc * self)
                                         &gst_shmdata_on_info, 
                                         &gst_shmdata_on_debug, 
                                         self); 
-    self->shmfollower = shmdata_make_follower(self->socket_path,
-                                             &gst_shmdata_src_on_data,
-                                             &gst_shmdata_src_on_server_connect,
-                                             NULL, //&on_server_disconnect,
-                                             self,
-                                             self->shmlogger);
+  self->shmfollower = shmdata_make_follower(self->socket_path,
+                                            &gst_shmdata_src_on_data,
+                                            &gst_shmdata_src_on_server_connect,
+                                            NULL, //&on_server_disconnect,
+                                            self,
+                                            self->shmlogger);
   GST_OBJECT_UNLOCK (self);
 
   if (!self->shmfollower) {
     GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE,
-        ("Could not initialize shmdata follower %s", self->socket_path), (NULL));
+                       ("Could not initialize shmdata follower %s", self->socket_path), (NULL));
     return FALSE;
   }
 
@@ -306,7 +307,6 @@ static void
 gst_shmdata_src_stop_reading (GstShmdataSrc * self)
 {
   GST_DEBUG_OBJECT (self, "Stopping %p", self);
-
   if(self->shmfollower) {
     shmdata_delete_follower(self->shmfollower);
     self->shmfollower = NULL;
@@ -320,18 +320,12 @@ gst_shmdata_src_stop_reading (GstShmdataSrc * self)
 static gboolean
 gst_shmdata_src_start (GstBaseSrc * bsrc)
 {
-  if (gst_base_src_is_live (bsrc))
-    return TRUE;
-  else
-    return gst_shmdata_src_start_reading (GST_SHMDATA_SRC (bsrc));
+  return TRUE;
 }
 
 static gboolean
 gst_shmdata_src_stop (GstBaseSrc * bsrc)
 {
-  if (!gst_base_src_is_live (bsrc))
-    gst_shmdata_src_stop_reading (GST_SHMDATA_SRC (bsrc));
-
   return TRUE;
 }
 
@@ -407,14 +401,26 @@ gst_shmdata_src_create (GstPushSrc *psrc, GstBuffer **outbuf)
     }
     gst_object_unref(pad);
   }
-  
-  *outbuf = gst_buffer_new_wrapped_full (GST_MEMORY_FLAG_READONLY, 
-                                         self->current_data,
-                                         self->current_size,
-                                         0,
-                                         self->current_size,
-                                         self,
-                                         gst_shmdata_src_on_data_rendered); 
+  if(!self->copy_buffers){
+    *outbuf = gst_buffer_new_wrapped_full (GST_MEMORY_FLAG_READONLY, 
+                                           self->current_data,
+                                           self->current_size,
+                                           0,
+                                           self->current_size,
+                                           self,
+                                           gst_shmdata_src_on_data_rendered);
+  } else {
+    GstBuffer *tmp = gst_buffer_new_wrapped_full (GST_MEMORY_FLAG_READONLY, 
+                                                  self->current_data,
+                                                  self->current_size,
+                                                  0,
+                                                  self->current_size,
+                                                  NULL,
+                                                  NULL);
+    *outbuf = gst_buffer_copy (tmp); 
+    gst_shmdata_src_on_data_rendered(self);
+    gst_buffer_unref(tmp);
+  }
   
   return GST_FLOW_OK;
 }
@@ -426,11 +432,9 @@ gst_shmdata_src_change_state (GstElement * element, GstStateChange transition)
   GstShmdataSrc *self = GST_SHMDATA_SRC (element);
 
   switch (transition) {
-    // case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
     case GST_STATE_CHANGE_NULL_TO_READY:
-      if (gst_base_src_is_live (GST_BASE_SRC (element)))
-        if (!gst_shmdata_src_start_reading (self))
-          return GST_STATE_CHANGE_FAILURE;
+      if (!gst_shmdata_src_start_reading (self))
+        return GST_STATE_CHANGE_FAILURE;
     default:
       break;
   }
@@ -440,10 +444,8 @@ gst_shmdata_src_change_state (GstElement * element, GstStateChange transition)
     return ret;
 
   switch (transition) {
-    //case GST_STATE_CHANGE_PLAYING_TO_PAUSED:
     case GST_STATE_CHANGE_READY_TO_NULL:
-      if (gst_base_src_is_live (GST_BASE_SRC (element)))
-        gst_shmdata_src_stop_reading (self);
+      gst_shmdata_src_stop_reading (self);
     default:
       break;
   }

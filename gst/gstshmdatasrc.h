@@ -61,6 +61,7 @@ struct _GstShmdataSrc
   GstCaps *caps;
   guint64 bytes_since_last_request;
   gboolean unlocked;
+  gboolean copy_buffers;
 };
 
 struct _GstShmdataSrcClass
