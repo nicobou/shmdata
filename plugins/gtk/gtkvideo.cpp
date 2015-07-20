@@ -338,7 +338,6 @@ bool GTKVideo::on_shmdata_connect(const std::string &shmpath) {
   shmpath_ = shmpath;
   g_object_set(G_OBJECT(shmsrc_.get_raw()),
                "socket-path", shmpath_.c_str(),
-               "is-live", TRUE,
                nullptr);
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
