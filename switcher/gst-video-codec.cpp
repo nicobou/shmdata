@@ -156,6 +156,10 @@ void GstVideoCodec::set_codec(const gint value, void *user_data) {
     context->copy_buffers_ = false;
   context->remake_codec_elements();
   context->make_codec_properties();
+  if (codec_name == "x264enc")
+    g_object_set(G_OBJECT(context->codec_element_.get_raw()),
+                 "byte-stream", TRUE,
+                 nullptr);
 }
 
 gint GstVideoCodec::get_codec(void *user_data) {
