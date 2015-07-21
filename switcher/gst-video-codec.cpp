@@ -38,11 +38,13 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid,
   GstUtils::element_factory_list_to_g_enum(primary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
                                            GST_RANK_PRIMARY,
-                                           true);
+                                           true,
+                                           {"schroenc", "theoraenc"});  // black list
   GstUtils::element_factory_list_to_g_enum(secondary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
                                            GST_RANK_SECONDARY,
-                                           true);
+                                           true,
+                                           {"schroenc", "theoraenc"});
   primary_codec_spec_ =
       prop_helper_->make_enum_property("codec",
                                         "Codec Short List",
