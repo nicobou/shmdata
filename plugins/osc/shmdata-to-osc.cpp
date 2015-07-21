@@ -151,7 +151,7 @@ ShmdataToOsc::on_shmreader_data(void *data,
 }
 
 bool ShmdataToOsc::can_sink_caps(const std::string &caps) {
-  return 0 == caps.find("application/x-libloserialized-osc");
+  return (0 == caps.find("application/x-libloserialized-osc"));
 }
 
 }  // namespace switcher

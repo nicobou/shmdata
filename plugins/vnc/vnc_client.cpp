@@ -125,25 +125,25 @@ VncClientSrc::init() {
 
 int
 VncClientSrc::get_capture_truecolor(void *user_data) {
-  auto ctx = (VncClientSrc *) user_data;
+  auto ctx = static_cast<VncClientSrc *>(user_data);
   return ctx->capture_truecolor_;
 }
 
 void
 VncClientSrc::set_capture_truecolor(const int truecolor, void *user_data) {
-  auto ctx = (VncClientSrc *) user_data;
+  auto ctx = static_cast<VncClientSrc *>(user_data);
   ctx->capture_truecolor_ = truecolor;
 }
 
 const gchar *
 VncClientSrc::get_vnc_server_address(void *user_data) {
-  auto ctx = (VncClientSrc *) user_data;
+  auto ctx = static_cast<VncClientSrc *>(user_data);
   return ctx->vnc_server_address_.c_str();
 }
 
 void
 VncClientSrc::set_vnc_server_address(const gchar *address, void *user_data) {
-  auto ctx = (VncClientSrc *) user_data;
+  auto ctx = static_cast<VncClientSrc *>(user_data);
   if (address != nullptr)
     ctx->vnc_server_address_ = address;
 }
