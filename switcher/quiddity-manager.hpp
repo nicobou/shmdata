@@ -58,7 +58,7 @@ class QuiddityManager
 
   ~QuiddityManager();  // FIXME should be private?
   static QuiddityManager::ptr make_manager(const std::string &name);
-  QuiddityManager *operator=(const QuiddityManager &) = delete;
+  QuiddityManager &operator=(const QuiddityManager &) = delete;
   QuiddityManager(const QuiddityManager &) = delete;
   std::string get_name() const;
 

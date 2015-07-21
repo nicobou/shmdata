@@ -39,7 +39,7 @@ class RtpDestination {
   RtpDestination(RtpSession *session); 
   ~RtpDestination();
   RtpDestination(const RtpDestination &) = delete;
-  const RtpDestination &operator=(const RtpDestination &) = delete;
+  RtpDestination &operator=(const RtpDestination &) = delete;
   
   void set_name(std::string name);
   void set_host_name(std::string host_name);

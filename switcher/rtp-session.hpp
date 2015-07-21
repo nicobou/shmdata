@@ -78,7 +78,7 @@ class RtpSession: public Quiddity {
     DataStream_t() = delete;
     DataStream_t(GstElement *rtpsession): rtp (rtpsession) {}
     DataStream_t(DataStream_t &) = delete;
-    const DataStream_t &operator=(const DataStream_t &) = delete;
+    DataStream_t &operator=(const DataStream_t &) = delete;
     ~DataStream_t();
     guint id{};
     // RTP session
