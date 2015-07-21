@@ -171,6 +171,7 @@ gst_shmdata_src_init (GstShmdataSrc *self)
   self->caps = NULL;
   self->on_data = FALSE;
   self->copy_buffers = FALSE;
+  self->stop_read = FALSE;
   g_mutex_init(&self->on_data_mutex);
   g_cond_init (&self->on_data_cond);
   self->data_rendered = FALSE;
@@ -331,6 +332,8 @@ gst_shmdata_src_stop (GstBaseSrc * bsrc)
 
 static void gst_shmdata_src_on_data(void *user_data, void *data, size_t size) {
   GstShmdataSrc *self = GST_SHMDATA_SRC (user_data);
+  if (self->stop_read)
+    return;
   self->current_data = data;
   self->current_size = size;
   self->bytes_since_last_request += size;
@@ -444,7 +447,11 @@ gst_shmdata_src_change_state (GstElement * element, GstStateChange transition)
     return ret;
 
   switch (transition) {
+    case GST_STATE_CHANGE_PAUSED_TO_READY:
+      self->stop_read = TRUE;
+      break;
     case GST_STATE_CHANGE_READY_TO_NULL:
+      gst_shmdata_src_make_data_rendered(self);
       gst_shmdata_src_stop_reading (self);
     default:
       break;

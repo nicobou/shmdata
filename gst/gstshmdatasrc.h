@@ -62,6 +62,7 @@ struct _GstShmdataSrc
   guint64 bytes_since_last_request;
   gboolean unlocked;
   gboolean copy_buffers;
+  gboolean stop_read;
 };
 
 struct _GstShmdataSrcClass
