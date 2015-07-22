@@ -139,13 +139,13 @@ Method::set_description(std::string long_name,
 void Method::make_description() {
   json_description_->reset();
   json_description_->begin_object();
-  json_description_->add_string_member("long name", long_name_.c_str());
-  json_description_->add_string_member("name", method_name_.c_str());
+  json_description_->add_string_member("name", long_name_.c_str());
+  json_description_->add_string_member("id", method_name_.c_str());
   json_description_->add_string_member("description",
                                        short_description_.c_str());
-  json_description_->add_string_member("position category",
+  json_description_->add_string_member("parent",
                                        get_category().c_str());
-  json_description_->add_int_member("position weight",
+  json_description_->add_int_member("order",
                                     get_position_weight());
   json_description_->add_string_member("return type",
                                        g_type_name(return_type_));
