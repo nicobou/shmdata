@@ -83,14 +83,17 @@ void QuiddityManager::command_lock() {
   command_->time_ = cur_time - history_begin_time_;
 }
 
-bool QuiddityManager::must_be_saved(QuiddityCommand::command id){
+bool QuiddityManager::must_be_saved(QuiddityCommand *cmd){
+  QuiddityCommand::command id = cmd->id_;
   // actually a white list
   if (id == QuiddityCommand::create
       || id == QuiddityCommand::create_nick_named
-      || id == QuiddityCommand::invoke
       || id == QuiddityCommand::remove
       || id == QuiddityCommand::scan_directory_for_plugins
-      || id == QuiddityCommand::set_property)
+      || id == QuiddityCommand::set_property
+      || (id == QuiddityCommand::invoke
+          && cmd->args_[1] != "last_midi_event_to_property"
+          && cmd->args_[1] != "next_midi_event_to_property"))
     return true;
   return false;
 }
@@ -98,7 +101,7 @@ bool QuiddityManager::must_be_saved(QuiddityCommand::command id){
 void QuiddityManager::command_unlock() {
   // command has been invoked with the return value
   // save the command
-  if (must_be_saved(command_->id_))
+  if (must_be_saved(command_.get()))
     command_history_.push_back(command_);
   seq_mutex_.unlock();
 }

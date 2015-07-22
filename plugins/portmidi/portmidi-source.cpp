@@ -79,6 +79,11 @@ bool PortMidiSource::init() {
                                        nullptr,
                                        get_midi_value,
                                        this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            midi_value_spec_,
+                            "last-midi-value",
+                            "Last Midi Value");
+  disable_property("last-midi-value");
   install_method("Next MIDI Event To Property",  // long name
                  "next_midi_event_to_property",  // name
                  "Wait for a MIDI event and make a property for this channel",  // description
@@ -120,7 +125,7 @@ bool PortMidiSource::init() {
                                           sizeof(PmEvent),
                                           "audio/midi");
   if(!shm_.get()) {
-    g_warning("OscToShmdata failed to start");
+    g_warning("midi failed to start");
     shm_.reset(nullptr);
     return false;
   }
@@ -199,12 +204,6 @@ PortMidiSource::next_midi_event_to_property_method(gchar *long_name,
   PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
   context->make_property_for_next_midi_event_ = TRUE;
   context->next_property_name_ = long_name;
-
-  timespec delay;
-  delay.tv_sec = 0;
-  delay.tv_nsec = 1000000;    //1ms
-  while (context->make_property_for_next_midi_event_)
-    nanosleep(&delay, nullptr);
   return TRUE;
 }
 
@@ -263,11 +262,10 @@ bool PortMidiSource::make_property(std::string property_long_name) {
 
   if (midi_channels_.find(std::make_pair(last_status_, last_data1_))
       != midi_channels_.end()) {
-    g_debug
-        ("Midi Channels %u %u is already a property (is currently named %s)",
-         last_status_, last_data1_,
-         midi_channels_.
-         find(std::make_pair(last_status_, last_data1_))->second.c_str());
+    g_debug("Midi Channels %u %u is already a property (is currently named %s)",
+            last_status_, last_data1_,
+            midi_channels_.
+            find(std::make_pair(last_status_, last_data1_))->second.c_str());
     return false;
   }
 
