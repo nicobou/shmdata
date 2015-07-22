@@ -235,6 +235,7 @@ class QuiddityManager
   void invocation_thread();
   static gboolean execute_command(gpointer user_data);  // gmainloop source callback
   void invoke_in_thread();
+  bool must_be_saved(QuiddityCommand::command id);
 };
 }  // namespace switcher
 
