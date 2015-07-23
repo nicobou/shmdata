@@ -39,7 +39,7 @@ QuiddityManager::ptr QuiddityManager::make_manager(const std::string &name) {
 }
 
 QuiddityManager::QuiddityManager(const std::string &name):
-    manager_impl_ (QuiddityManager_Impl::make_manager(name)),
+    manager_impl_ (QuiddityManager_Impl::make_manager(this, name)),
     name_(name),
     command_(),
     seq_mutex_(),
@@ -91,6 +91,14 @@ bool QuiddityManager::must_be_saved(QuiddityCommand *cmd){
       || id == QuiddityCommand::remove
       || id == QuiddityCommand::scan_directory_for_plugins
       || id == QuiddityCommand::set_property
+      || id == QuiddityCommand::make_property_subscriber
+      || id == QuiddityCommand::make_signal_subscriber
+      || id == QuiddityCommand::remove_property_subscriber
+      || id == QuiddityCommand::remove_signal_subscriber
+      || id == QuiddityCommand::subscribe_property
+      || id == QuiddityCommand::subscribe_signal
+      || id == QuiddityCommand::unsubscribe_property
+      || id == QuiddityCommand::unsubscribe_signal
       || (id == QuiddityCommand::invoke
           && cmd->args_[1] != "last_midi_event_to_property"
           && cmd->args_[1] != "next_midi_event_to_property"))

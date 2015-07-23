@@ -45,9 +45,11 @@
 
 namespace switcher {
 QuiddityManager_Impl::ptr
-QuiddityManager_Impl::make_manager(const std::string &name) {
+QuiddityManager_Impl::make_manager(QuiddityManager *root_manager,
+                                   const std::string &name) {
   QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl(name));
   manager->me_ = manager;
+  manager->manager_ = root_manager;
   return manager;
 }
 
