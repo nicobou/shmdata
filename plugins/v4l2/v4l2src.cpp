@@ -219,7 +219,6 @@ void V4L2Src::update_pixel_format(const CaptureDescription &cap_descr) {
 void V4L2Src::update_width_height(const CaptureDescription &cap_descr) {
   uninstall_property("width");
   uninstall_property("height");
-  g_print("update width height -----------------------\n");
   // width_ = -1;
   // height_ = -1;
   if (cap_descr.frame_size_stepwise_max_width_ > 0) {
