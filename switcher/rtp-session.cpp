@@ -514,6 +514,7 @@ bool RtpSession::add_data_stream(const std::string &shmpath) {
   GstUtils::make_element("shmdatasrc",
                          &data_streams_[shmpath]->shmdatasrc);
   GstElement *src = data_streams_[shmpath]->shmdatasrc;
+  g_object_set(G_OBJECT(src), "copy_buffers", TRUE, nullptr);
   data_streams_[shmpath]->shm_sub.reset(
       new GstShmdataSubscriber(
           src,
