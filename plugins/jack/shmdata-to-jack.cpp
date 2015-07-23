@@ -269,6 +269,7 @@ bool ShmdataToJack::start() {
                          data::Tree::make(std::to_string(byte_rate)));
       });
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), audiobin_);
+  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
   disable_property("connect-to");
   disable_property("index");
