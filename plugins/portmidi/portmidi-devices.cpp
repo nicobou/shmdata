@@ -96,7 +96,6 @@ bool PortMidi::close_input_device(int id) {
   std::map<guint, PmStream *>::iterator it = input_streams_.find(id);
   if (it == input_streams_.end())
     return false;
-
   scheduler_->remove_input_stream(it->second);
   input_streams_.erase(id);
   g_message("Midi input device closed (id %d)", id);
@@ -139,8 +138,7 @@ PortMidi::PortMidiScheduler::~PortMidiScheduler() {
 }
 
 PmStream *PortMidi::PortMidiScheduler::add_input_stream(int id,
-                                                        on_pm_event_method
-                                                        method,
+                                                        on_pm_event_method method,
                                                         void *user_data) {
   PmStream *midi_in;
   if (pmNoError != Pm_OpenInput(&midi_in,
