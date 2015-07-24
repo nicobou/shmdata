@@ -64,7 +64,7 @@ bool VideoTestSource::start() {
     return false;
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmdatasink_.get_raw(),
-      [this](std::string &&caps){
+      [this]( const std::string &caps){
         this->graft_tree(".shmdata.writer." + shmpath_,
                          ShmdataUtils::make_tree(caps,
                                                  ShmdataUtils::get_category(caps),

@@ -341,7 +341,7 @@ bool GTKVideo::on_shmdata_connect(const std::string &shmpath) {
                nullptr);
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
-      [this](std::string &&caps){
+      [this]( const std::string &caps){
         this->graft_tree(".shmdata.reader." + shmpath_,
                          ShmdataUtils::make_tree(caps,
                                                  ShmdataUtils::get_category(caps),

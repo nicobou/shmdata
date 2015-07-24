@@ -518,7 +518,7 @@ bool RtpSession::add_data_stream(const std::string &shmpath) {
   data_streams_[shmpath]->shm_sub.reset(
       new GstShmdataSubscriber(
           src,
-          [this, shmpath, src](std::string &&caps){
+          [this, shmpath, src]( const std::string &caps){
             auto rtpid = this->make_rtp_payloader(src, caps);
             this->make_udp_sinks(shmpath, rtpid);
             this->graft_tree(".shmdata.reader." + shmpath,

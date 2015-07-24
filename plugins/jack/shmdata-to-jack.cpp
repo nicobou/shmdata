@@ -258,7 +258,7 @@ bool ShmdataToJack::start() {
   g_object_set(G_OBJECT(shmdatasrc_), "socket-path", shmpath_.c_str(), nullptr);
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmdatasrc_,
-      [this](std::string &&caps) {
+      [this]( const std::string &caps) {
         this->graft_tree(".shmdata.reader." + this->shmpath_,
                          ShmdataUtils::make_tree(caps,
                                                  ShmdataUtils::get_category(caps),

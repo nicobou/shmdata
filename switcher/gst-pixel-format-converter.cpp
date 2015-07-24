@@ -128,7 +128,7 @@ bool GstPixelFormatConverter::start(const std::string &shmpath_to_convert,
                nullptr);
   shmsink_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shm_converted_.get_raw(),
-      [this](std::string &&caps){
+      [this]( const std::string &caps){
         this->quid_->graft_tree(".shmdata.writer." + shmpath_converted_,
                                 ShmdataUtils::make_tree(caps,
                                                         ShmdataUtils::get_category(caps),
@@ -140,7 +140,7 @@ bool GstPixelFormatConverter::start(const std::string &shmpath_to_convert,
       });
   shmsrc_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
-      [this](std::string &&caps){
+      [this]( const std::string &caps){
         this->quid_->graft_tree(".shmdata.reader." + shmpath_to_convert_,
                                 ShmdataUtils::make_tree(caps,
                                                         ShmdataUtils::get_category(caps),

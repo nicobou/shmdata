@@ -237,7 +237,7 @@ bool GstVideoCodec::start(){
     return true;
   shmsink_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shm_encoded_.get_raw(),
-      [this](std::string &&caps){
+      [this]( const std::string &caps){
         this->quid_->graft_tree(".shmdata.writer." + shm_encoded_path_,
                                 ShmdataUtils::make_tree(caps,
                                                         ShmdataUtils::get_category(caps),
@@ -249,7 +249,7 @@ bool GstVideoCodec::start(){
       });
   shmsrc_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
-      [this](std::string &&caps){
+      [this]( const std::string &caps){
         this->quid_->graft_tree(".shmdata.reader." + shmpath_to_encode_,
                                 ShmdataUtils::make_tree(caps,
                                                         ShmdataUtils::get_category(caps),
