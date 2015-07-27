@@ -29,10 +29,15 @@
 
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-writer.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-follower.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
 
 #include <rfb/rfbclient.h>
+
+#define VNC_MOUSE_EVENTS_CAPS "application/x-mouse-events"
+#define VNC_KEYBOARD_EVENTS_CAPS "application/x-keyboard-events"
 
 namespace switcher {
 class VncClientSrc:public Quiddity, public StartableQuiddity {
@@ -48,6 +53,8 @@ class VncClientSrc:public Quiddity, public StartableQuiddity {
 
  private:
   CustomPropertyHelper::ptr custom_props_;
+  ShmdataConnector shmcntr_;
+
   std::string vnc_server_address_ {"localhost"};
   bool capture_truecolor_ {true};
   bool previous_truecolor_state_ {true};
@@ -62,7 +69,20 @@ class VncClientSrc:public Quiddity, public StartableQuiddity {
   std::atomic_bool vnc_continue_update_ {false};
   std::thread vnc_update_thread_ {};
 
+  std::mutex mutex_ {};
+  std::mutex connect_mutex_ {};
+  int shmreader_id_ {0};
+  std::map<int, std::string> shmdata_readers_caps_ {};
+  std::map<std::string, std::unique_ptr<ShmdataFollower>> events_readers_ {};
+  std::atomic_bool mouse_events_connected_ {false};
+  std::atomic_bool keyboard_events_connected_ {false};
+
   bool init() final;
+
+  bool connect(std::string shmdata_socket_path);
+  bool disconnect(std::string shmName);
+  bool disconnect_all();
+  bool can_sink_caps(std::string caps);
 
   static const gchar *get_vnc_server_address(void *user_data);
   static void set_vnc_server_address(const gchar *address, void *user_data);

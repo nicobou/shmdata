@@ -31,13 +31,14 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "vncclientsrc",
     "VNC client",
     "video",
-    "writer",
+    "writer/reader",
     "Connects to a VNC server and outputs the video to a shmdata",
     "LGPL",
     "Emmanuel Durand");
 
 VncClientSrc::VncClientSrc(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()) {
+    custom_props_(std::make_shared<CustomPropertyHelper> ()),
+    shmcntr_(static_cast<Quiddity*>(this)) {
 }
 
 VncClientSrc::~VncClientSrc() {
@@ -68,16 +69,18 @@ VncClientSrc::start() {
   vnc_continue_update_ = true;
   vnc_update_thread_ = thread([&]() {
     while (vnc_continue_update_) {
-      int i = WaitForMessage(rfb_client_, 50);
+      int i = WaitForMessage(rfb_client_, 10000);
       if (i < 0)
         return;
-      if (i > 0 && !HandleRFBServerMessage(rfb_client_))
-        return;
-
-      if (vnc_writer_)
+      if (i > 0)
       {
-        vnc_writer_->writer(&shmdata::Writer::copy_to_shm, rfb_client_->frameBuffer, framebuffer_size_);
-        vnc_writer_->bytes_written(framebuffer_size_);
+        if (!HandleRFBServerMessage(rfb_client_))
+          return;
+        if (vnc_writer_)
+        {
+          vnc_writer_->writer(&shmdata::Writer::copy_to_shm, rfb_client_->frameBuffer, framebuffer_size_);
+          vnc_writer_->bytes_written(framebuffer_size_);
+        }
       }
     }
   });
@@ -97,6 +100,12 @@ VncClientSrc::stop() {
 bool
 VncClientSrc::init() {
   init_startable(this);
+
+  shmcntr_.install_connect_method([this](const std::string path){return connect(path);},
+                                  [this](const std::string path){return disconnect(path);},
+                                  [this](){return disconnect_all();},
+                                  [this](const std::string caps){return can_sink_caps(caps);},
+                                  2);
 
   vnc_server_address_prop_ = custom_props_->make_string_property("vnc_server_address",
                                             "Address of the VNC server",
@@ -121,6 +130,82 @@ VncClientSrc::init() {
                             "Capture in 32bits if true, 16bits otherwise");
 
   return true;
+}
+
+bool
+VncClientSrc::connect(string shmdata_socket_path) {
+  unique_lock<mutex> connectLock(connect_mutex_);
+
+  int shmreader_id = shmreader_id_;
+  shmreader_id_++;
+
+  auto reader = std2::make_unique<ShmdataFollower>(this,
+                  shmdata_socket_path,
+                  [=] (void *data, size_t size) {
+    unique_lock<mutex> lock(mutex_);
+
+    if (rfb_client_ == nullptr)
+      return;
+
+    auto typeIt = shmdata_readers_caps_.find(shmreader_id);
+    if (typeIt == shmdata_readers_caps_.end())
+      return;
+
+    auto type = typeIt->second;
+
+    if (type == string(VNC_MOUSE_EVENTS_CAPS))
+    {
+      if (size < 3 * sizeof(int))
+        return;
+
+      int xPos = (static_cast<float>(static_cast<int*>(data)[0]) / 100000.f) * static_cast<float>(rfb_client_->width);
+      int yPos = (static_cast<float>(static_cast<int*>(data)[1]) / 100000.f) * static_cast<float>(rfb_client_->height);
+      int buttons = static_cast<int*>(data)[2];
+
+      SendPointerEvent(rfb_client_, xPos, yPos, buttons);
+    }
+    else if (type == string(VNC_KEYBOARD_EVENTS_CAPS))
+    {
+      if (size < 2 * sizeof(unsigned int))
+        return;
+
+      unsigned int key = static_cast<unsigned int*>(data)[0];
+      bool down = static_cast<unsigned int*>(data)[1];
+
+      SendKeyEvent(rfb_client_, key, down);
+    }
+  }, [=] (string caps) {
+    unique_lock<mutex> lock(mutex_);
+    if (caps == string(VNC_MOUSE_EVENTS_CAPS))
+      mouse_events_connected_ = true;
+    else if (caps == string(VNC_KEYBOARD_EVENTS_CAPS))
+      keyboard_events_connected_ = true;
+
+    shmdata_readers_caps_[shmreader_id] = caps;
+  });
+
+  events_readers_[shmdata_socket_path] = std::move(reader);
+
+  return true;
+}
+
+bool
+VncClientSrc::disconnect(string /*unused*/) {
+  unique_lock<mutex> lock(mutex_);
+  // TODO: implement this
+  return true;
+}
+
+bool
+VncClientSrc::disconnect_all() {
+  // TODO: implement this
+  return true;
+}
+
+bool
+VncClientSrc::can_sink_caps(string caps) {
+  return (!mouse_events_connected_ && caps == string(VNC_MOUSE_EVENTS_CAPS))
+      || (!keyboard_events_connected_ && caps == string(VNC_KEYBOARD_EVENTS_CAPS));
 }
 
 int
@@ -188,7 +273,7 @@ VncClientSrc::resize_vnc(rfbClient *client) {
 }
 
 void
-VncClientSrc::update_vnc(rfbClient *client, int x, int y, int w, int h) {
+VncClientSrc::update_vnc(rfbClient *client, int, int, int, int) {
   auto that = static_cast<VncClientSrc*>(rfbClientGetClientData(client, (void*)(&VncClientSrc::resize_vnc)));
 
   auto width = client->width;
