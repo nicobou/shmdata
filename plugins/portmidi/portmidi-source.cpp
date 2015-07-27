@@ -19,6 +19,9 @@
 
 #include <time.h>
 #include <switcher/std2.hpp>
+#include <switcher/quiddity-manager.hpp>
+#include <switcher/quiddity-manager-impl.hpp>
+#include <switcher/scope-exit.hpp>
 #include "./portmidi-source.hpp"
 
 namespace switcher {
@@ -49,9 +52,6 @@ PortMidiSource::PortMidiSource(const std::string &):
     unused_props_specs_() {
 }
 
-PortMidiSource::~PortMidiSource() {
-}
-
 bool PortMidiSource::init() {
   if (input_devices_enum_[0].value_name == nullptr) {
     g_debug("no MIDI capture device detected");
@@ -71,7 +71,7 @@ bool PortMidiSource::init() {
                             devices_enum_spec_, "device", "Capture Device");
   midi_value_spec_ =
       custom_props_->make_int_property("last-midi-value",
-                                       "the last midi value",
+                                       "The last midi value from the device",
                                        0,
                                        127,
                                        0,
@@ -79,30 +79,24 @@ bool PortMidiSource::init() {
                                        nullptr,
                                        get_midi_value,
                                        this);
-  install_method("Next MIDI Event To Property",       // long name
-                 "next_midi_event_to_property",       // name
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            midi_value_spec_,
+                            "last-midi-value",
+                            "Last Midi Value");
+  disable_property("last-midi-value");
+  install_method("Next MIDI Event To Property",  // long name
+                 "next_midi_event_to_property",  // name
                  "Wait for a MIDI event and make a property for this channel",  // description
-                 "success or fail",   // return description
+                 "success or fail",  // return description
                  Method::make_arg_description("Property Long Name",  // first arg long name
                                               "property_long_name",  // fisrt arg name
                                               "string",  // first arg description
                                               nullptr),
                  (Method::method_ptr) &next_midi_event_to_property_method,
                  G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING,
-                                                   nullptr), this);
-  install_method("Last MIDI Event To Property",       // long name
-                 "last_midi_event_to_property",       // name
-                 "make a property with the given name from the next incoming MIDI event",     // description
-                 "success or fail",   // return description
-                 Method::make_arg_description("Property Long Name",   // first arg long name
-                                              "property_long_name",   // fisrt arg name
-                                              "string",       // first arg description
-                                              nullptr),
-                 (Method::method_ptr) &last_midi_event_to_property_method,
-                 G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING,
-                                                   nullptr), this);
+                 Method::make_arg_type_description(G_TYPE_STRING, nullptr),
+                 this);
+  disable_method("next_midi_event_to_property");
   install_method("Remove Midi Property",      // long name
                  "remove_midi_property",      // name
                  "remove a property made with Make Property",  // description
@@ -113,14 +107,37 @@ bool PortMidiSource::init() {
                                               nullptr),
                  (Method::method_ptr) &remove_property_method,
                  G_TYPE_BOOLEAN,
+                 Method::make_arg_type_description(G_TYPE_STRING, nullptr),
+                 this);
+  disable_method("remove_midi_property");
+  install_method("Map midi channel to property",
+                 "map_midi_to_property",
+                 "creates a property from a midi channel",
+                 "success or fail",
+                 Method::make_arg_description("Property Long Name",   // first arg long name
+                                              "property_long_name",   // fisrt arg name
+                                              "string",       // first arg description
+                                              "Midi Status",
+                                              "midi_status",
+                                              "int",
+                                              "Midi data1",
+                                              "midi_data1",
+                                              "int",
+                                              nullptr),
+                 (Method::method_ptr) &make_property_wrapped,
+                 G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
-                                                   nullptr), this);
+                                                   G_TYPE_INT,
+                                                   G_TYPE_INT,
+                                                   nullptr),
+                 this);
+  disable_method("map_midi_to_property");
   shm_ = std2::make_unique<ShmdataWriter>(this,
                                           make_file_name("midi"),
                                           sizeof(PmEvent),
                                           "audio/midi");
   if(!shm_.get()) {
-    g_warning("OscToShmdata failed to start");
+    g_warning("midi failed to start");
     shm_.reset(nullptr);
     return false;
   }
@@ -130,15 +147,19 @@ bool PortMidiSource::init() {
 bool PortMidiSource::start() {
   disable_property("device");
   open_input_device(device_, on_pm_event, this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            midi_value_spec_,
-                            "last-midi-value", "Last Midi Value");
+  enable_property("last-midi-value");
+  enable_method("next_midi_event_to_property");
+  enable_method("remove_midi_property");
+  enable_method("map_midi_to_property");
   return true;
 }
 
 bool PortMidiSource::stop() {
   close_input_device(device_);
-  uninstall_property("last-midi-value");
+  disable_property("last-midi-value");
+  disable_method("next_midi_event_to_property");
+  disable_method("remove_midi_property");
+  disable_method("map_midi_to_property");
   enable_property("device");
   return true;
 }
@@ -185,14 +206,26 @@ void PortMidiSource::on_pm_event(PmEvent *event, void *user_data) {
     std::string prop_long_name =
         context->midi_channels_[std::make_pair(status, data1)];
     context->midi_values_[prop_long_name] = data2;
-    context->custom_props_->notify_property_changed(context->prop_specs_
-                                                    [prop_long_name]);
+    context->custom_props_->
+        notify_property_changed(context->prop_specs_[prop_long_name]);
   }
 
   // making property if needed
-  if (context->make_property_for_next_midi_event_)
-    if (context->make_property(context->next_property_name_))
-      context->make_property_for_next_midi_event_ = FALSE;
+  if (context->make_property_for_next_midi_event_){
+    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
+    if (manager){
+      manager->get_root_manager()->invoke(
+          context->get_name(),
+          "map_midi_to_property",
+          nullptr,
+          {context->next_property_name_,
+                std::to_string(context->last_status_),
+                std::to_string(context->last_data1_)});
+    } else {
+      g_warning("no manager in portmidi-source");
+    }
+    context->make_property_for_next_midi_event_ = FALSE;
+  }
 }
 
 gboolean
@@ -201,28 +234,11 @@ PortMidiSource::next_midi_event_to_property_method(gchar *long_name,
   PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
   context->make_property_for_next_midi_event_ = TRUE;
   context->next_property_name_ = long_name;
-
-  timespec delay;
-  delay.tv_sec = 0;
-  delay.tv_nsec = 1000000;    //1ms
-  while (context->make_property_for_next_midi_event_)
-    nanosleep(&delay, nullptr);
-  return TRUE;
-}
-
-gboolean
-PortMidiSource::last_midi_event_to_property_method(gchar *long_name,
-                                                   void *user_data) {
-  PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
-  if (!context->make_property(long_name))
-    return FALSE;
-
   return TRUE;
 }
 
 gint PortMidiSource::get_midi_property_value(void *user_data) {
-  MidiPropertyContext *context =
-      static_cast<MidiPropertyContext *>(user_data);
+  MidiPropertyContext *context = static_cast<MidiPropertyContext *>(user_data);
   return context->port_midi_source_->
       midi_values_[context->property_long_name_];
 }
@@ -257,37 +273,37 @@ PortMidiSource::remove_property_method(gchar *long_name,
   return TRUE;
 }
 
-bool PortMidiSource::make_property(std::string property_long_name) {
-  if (last_status_ == -1 || last_data1_ == -1) {
-    g_debug("portmidisource cannot make a property without midi event");
-    return false;
-  }
+gboolean PortMidiSource::make_property_wrapped(const gchar *property_long_name,
+                                               gint last_status,
+                                               gint last_data1,
+                                               void *user_data){
+  PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
+  if (context->make_property(property_long_name, last_status, last_data1))
+    return TRUE;
+  return FALSE;  
+}
 
-  if (midi_channels_.find(std::make_pair(last_status_, last_data1_))
+bool PortMidiSource::make_property(std::string property_long_name,
+                                   gint last_status,
+                                   gint last_data1) {
+  if (midi_channels_.find(std::make_pair(last_status, last_data1))
       != midi_channels_.end()) {
-    g_debug
-        ("Midi Channels %u %u is already a property (is currently named %s)",
-         last_status_, last_data1_,
-         midi_channels_.
-         find(std::make_pair(last_status_, last_data1_))->second.c_str());
+    g_debug("Midi Channels %u %u is already a property (is currently named %s)",
+            last_status, last_data1,
+            midi_channels_.find(std::make_pair(last_status, last_data1))->second.c_str());
     return false;
   }
-
-  midi_channels_[std::make_pair(last_status_, last_data1_)] =
+  midi_channels_[std::make_pair(last_status, last_data1)] =
       property_long_name;
-  gchar *prop_name = g_strdup_printf("%u-%u",
-                                     last_status_,
-                                     last_data1_);
+  std::string prop_name(std::to_string(last_status) + "-" + std::to_string(last_data1));
   midi_values_[property_long_name] = last_data2_;
-
   if (unused_props_specs_.find(prop_name) == unused_props_specs_.end()) {
     MidiPropertyContext midi_property_context;
     midi_property_context.port_midi_source_ = this;
     midi_property_context.property_long_name_ = property_long_name;
     midi_property_contexts_[property_long_name] = midi_property_context;
-
     prop_specs_[property_long_name] =
-        custom_props_->make_int_property(prop_name,
+        custom_props_->make_int_property(prop_name.c_str(),
                                          "midi value",
                                          0,
                                          127,
@@ -302,12 +318,9 @@ bool PortMidiSource::make_property(std::string property_long_name) {
     prop_specs_[property_long_name] = unused_props_specs_[prop_name];
     unused_props_specs_.erase(prop_name);
   }
-
   install_property_by_pspec(custom_props_->get_gobject(),
                             prop_specs_[property_long_name],
                             prop_name, property_long_name.c_str());
-  g_free(prop_name);
-
   return true;
 }
 

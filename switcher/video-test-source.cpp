@@ -64,7 +64,7 @@ bool VideoTestSource::start() {
     return false;
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmdatasink_.get_raw(),
-      [this](std::string &&caps){
+      [this]( const std::string &caps){
         this->graft_tree(".shmdata.writer." + shmpath_,
                          ShmdataUtils::make_tree(caps,
                                                  ShmdataUtils::get_category(caps),
@@ -74,6 +74,9 @@ bool VideoTestSource::start() {
         this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
                          data::Tree::make(std::to_string(byte_rate)));
       });
+  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()),
+               "async-handling", TRUE,
+               nullptr);
   gst_pipeline_->play(true);
   codecs_->start();
   reinstall_property(G_OBJECT(videotestsrc_.get_raw()),

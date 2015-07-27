@@ -1229,7 +1229,7 @@ void PJCall::make_hang_up(std::string contact_uri) {
   //               });
   auto it = std::find_if(outgoing_call_.begin(), outgoing_call_.end(),
                           [&contact_uri](const call_t &call){
-                            return 0 == contact_uri.compare(call.peer_uri);
+                           return (0 == contact_uri.compare(call.peer_uri));
                           });
   if (outgoing_call_.end() == it) {
     g_warning("no call found with %s", contact_uri.c_str());

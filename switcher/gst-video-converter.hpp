@@ -17,28 +17,28 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_GST_VIDEO_ENCODER_H__
-#define __SWITCHER_GST_VIDEO_ENCODER_H__
+#ifndef __SWITCHER_GST_VIDEO_CONVERTER_H__
+#define __SWITCHER_GST_VIDEO_CONVERTER_H__
 
 #include <memory>
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
-#include "switcher/gst-video-codec.hpp"
+#include "switcher/gst-pixel-format-converter.hpp"
 
 namespace switcher {
-class GstVideoEncoder: public Quiddity {
+class GstVideoConverter: public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstVideoEncoder);
-  GstVideoEncoder(const std::string &);
-  ~GstVideoEncoder() = default;
-  GstVideoEncoder(const GstVideoEncoder &) = delete;
-  GstVideoEncoder &operator=(const GstVideoEncoder &) = delete;
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstVideoConverter);
+  GstVideoConverter(const std::string &);
+  ~GstVideoConverter() = default;
+  GstVideoConverter(const GstVideoConverter &) = delete;
+  GstVideoConverter &operator=(const GstVideoConverter &) = delete;
 
  private:
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
   CustomPropertyHelper::ptr custom_props_;
-  std::unique_ptr<GstVideoCodec> codecs_{nullptr};
+  std::unique_ptr<GstPixelFormatConverter> converter_{nullptr};
   bool init() final;
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string &shmdata_sochet_path);

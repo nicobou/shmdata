@@ -623,7 +623,6 @@ std::string Quiddity::make_file_name(const std::string &suffix) {
 }
 
 std::string Quiddity::get_quiddity_name_from_file_name(const std::string &path) {
-   QuiddityManager_Impl::ptr manager = manager_impl_.lock();
    auto file_begin = path.find("switcher_");
    if (std::string::npos == file_begin) {
      g_warning("%s: not a switcher generated path", __FUNCTION__);

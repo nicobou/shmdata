@@ -123,7 +123,7 @@ void HTTPSDPDec::configure_shmdatasink(GstElement *element,
   shm_subs_.emplace_back(
       std2::make_unique<GstShmdataSubscriber>(
           element,
-          [this, shmpath](std::string &&caps){
+          [this, shmpath]( const std::string &caps){
             this->graft_tree(".shmdata.writer." + shmpath,
                              ShmdataUtils::make_tree(caps,
                                                      ShmdataUtils::get_category(caps),

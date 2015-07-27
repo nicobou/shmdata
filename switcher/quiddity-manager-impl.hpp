@@ -35,6 +35,7 @@
 namespace switcher {
 class QuiddityPropertySubscriber;
 class QuidditySignalSubscriber;
+class QuiddityManager;
 
 class QuiddityManager_Impl
 {
@@ -46,7 +47,8 @@ class QuiddityManager_Impl
                                          void *user_data);
 
   //  static QuiddityManager_Impl::ptr make_manager();    // will get name "default"
-  static QuiddityManager_Impl::ptr make_manager(const std::string &name = "default");
+  static QuiddityManager_Impl::ptr make_manager(QuiddityManager *root_manager,
+                                                const std::string &name = "default");
   QuiddityManager_Impl() = delete;
   virtual ~QuiddityManager_Impl(){}
   QuiddityManager_Impl(const QuiddityManager_Impl &) = delete;
@@ -197,7 +199,8 @@ class QuiddityManager_Impl
   // and from quiddity that creates other quiddity in the same manager
   std::string create_without_hook(const std::string &quiddity_class);
   bool remove_without_hook(const std::string &quiddity_name);
-
+  QuiddityManager *get_root_manager() {return manager_;};
+  
  private:
   GlibMainLoop::ptr mainloop_;
   std::unordered_map<std::string, PluginLoader::ptr> plugins_{};
@@ -226,6 +229,7 @@ class QuiddityManager_Impl
   void *removal_hook_user_data_{nullptr};
   guint quiddity_created_counter_{0};
   std::weak_ptr<QuiddityManager_Impl> me_ {};
+  QuiddityManager *manager_{nullptr};
   static void release_g_error(GError *error);
 };
 

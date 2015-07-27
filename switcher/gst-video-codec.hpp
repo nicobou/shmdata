@@ -27,7 +27,6 @@
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/shmdata-utils.hpp"
-//#include "./default-video-format.hpp"
 
 namespace switcher {
 class quiddity;
@@ -73,7 +72,6 @@ class GstVideoCodec {
   GParamSpec *codec_long_list_spec_{nullptr};
   bool codec_long_list_{false};
   std::vector<std::string> codec_properties_{};
-  //DefaultVideoFormat::uptr video_output_format_{};
   CustomPropertyHelper *prop_helper_;
   // codec params black list
   std::unordered_set<std::string> param_black_list_{"name", "parent",
@@ -83,7 +81,9 @@ class GstVideoCodec {
         "temporal-scalability-target-bitrate", "temporal-scalability-rate-decimator",
         "temporal-scalability-periodicity", "temporal-scalability-layer-id",
         "error-resilient"};
-
+  // shmdatasrc copy-buffers property:
+  bool copy_buffers_{false};
+  
   bool remake_codec_elements();
   void make_codec_properties();
   void uninstall_codec_properties();

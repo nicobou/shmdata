@@ -42,7 +42,7 @@ class PortMidi {
   typedef void (*on_pm_event_method) (PmEvent *midi_event,
                                       void *user_data);
   PortMidi();
-  virtual ~ PortMidi();
+  virtual ~PortMidi();
   PortMidi(const PortMidi &) = delete;
   PortMidi &operator=(const PortMidi &) = delete;
 

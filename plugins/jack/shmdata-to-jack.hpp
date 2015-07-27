@@ -62,10 +62,21 @@ class ShmdataToJack: public Quiddity {
   DriftObserver<jack_nframes_t> drift_observer_{};
   JackClient jack_client_;
   std::vector<JackPort> output_ports_{};
+  GParamSpec *connect_to_spec_{nullptr};
+  std::string connect_to_{"system:playback_"};
+  GParamSpec *index_spec_{nullptr};
+  unsigned int index_{1};
+  std::vector<std::string> ports_to_connect_{};
+  std::mutex  port_to_connect_in_jack_process_mutex_{};
+  std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
   
   bool init() final;
   bool start();
   bool stop();
+  void update_port_to_connect();
+  void connect_ports();
+  void disconnect_ports();
+  void on_port(jack_port_t *port);
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string &shmdata_sochet_path);
   bool can_sink_caps(const std::string &caps);
@@ -77,8 +88,14 @@ class ShmdataToJack: public Quiddity {
                             GstPad *pad,
                             gpointer user_data);
   static int jack_process (jack_nframes_t nframes, void *arg);
+  static void set_connect_to(const gchar *value, void *user_data);
+  static const gchar *get_connect_to(void *user_data);
+  static void set_index(const gint value, void *user_data);
+  static gint get_index(void *user_data);
+
 };
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToJack);
+
 }  // namespace switcher
 #endif

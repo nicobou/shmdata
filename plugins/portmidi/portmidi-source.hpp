@@ -33,7 +33,7 @@ class PortMidiSource: public Quiddity,
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSource);
   PortMidiSource(const std::string &);
-  ~PortMidiSource();
+  ~PortMidiSource() = default;
   PortMidiSource(const PortMidiSource &) = delete;
   PortMidiSource &operator=(const PortMidiSource &) = delete;
 
@@ -68,19 +68,21 @@ class PortMidiSource: public Quiddity,
   bool start() final;
   bool stop() final;
 
-  bool make_property(std::string property_long_name);
+  bool make_property(std::string property_long_name, gint last_status, gint last_data);
   static void set_device(const gint value, void *user_data);
   static gint get_device(void *user_data);
   static gint get_midi_value(void *user_data);
   // midi properties
   static gboolean next_midi_event_to_property_method(gchar *long_name,
                                                      void *user_data);
-  static gboolean last_midi_event_to_property_method(gchar *long_name,
-                                                     void *user_data);
   static gboolean remove_property_method(gchar *long_name,
                                          void *user_data);
   static gint get_midi_property_value(void *user_data);
   static void on_pm_event(PmEvent *event, void *user_data);
+  static gboolean make_property_wrapped(const gchar *property_long_name,
+                                        gint last_status,
+                                        gint last_data1,
+                                        void *user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSource);

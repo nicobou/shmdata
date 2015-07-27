@@ -110,7 +110,7 @@ bool PortMidiSink::disconnect() {
 }
 
 bool PortMidiSink::can_sink_caps(std::string caps) {
-  return 0 == caps.find("audio/midi");
+  return (0 == caps.find("audio/midi"));
 }
 
 }  // namespace switcher

@@ -193,14 +193,11 @@ GTKVideo::~GTKVideo() {
 void GTKVideo::realize_cb(GtkWidget *widget, void *user_data) {
   GTKVideo *context = static_cast<GTKVideo *>(user_data);
   GdkWindow *window = gtk_widget_get_window(widget);
-
   if (!gdk_window_ensure_native(window))
     g_debug("Couldn't create native window needed for GstXOverlay!");
-
   gdk_threads_enter();
   gdk_display_sync(context->display_);
   // gdk_error_trap_pop ();
-
   /* Retrieve window handler from GDK */
 #if defined(GDK_WINDOWING_WIN32)
   context->window_handle_ = reinterpret_cast<guintptr>(GDK_WINDOW_HWND(window));
@@ -219,7 +216,6 @@ void GTKVideo::delete_event_cb(GtkWidget * /*widget */ ,
                                GdkEvent * /*event */ ,
                                void *user_data) {
   GTKVideo *context = static_cast<GTKVideo *>(user_data);
-
   context->gst_pipeline_.reset();
   gtk_widget_destroy(context->main_window_);
   context->main_window_ = nullptr;
@@ -239,7 +235,6 @@ gboolean GTKVideo::create_ui(void *user_data) {
     context->wait_window_cond_.notify_all();
     return FALSE;
   }
-
   context->main_window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   g_signal_connect(G_OBJECT(context->main_window_),
                    "delete-event", G_CALLBACK(delete_event_cb), context);
@@ -277,7 +272,6 @@ gboolean GTKVideo::get_fullscreen(void *user_data) {
 
 void GTKVideo::set_fullscreen(gboolean fullscreen, void *user_data) {
   GTKVideo *context = static_cast<GTKVideo *>(user_data);
-
   if (fullscreen) {
     if (context->main_window_ != nullptr) {
       gdk_window_set_cursor(GDK_WINDOW
@@ -326,16 +320,17 @@ bool GTKVideo::remake_elements(){
                "sync", FALSE,
                "qos", FALSE,
                nullptr);
-  g_object_set_data(G_OBJECT(xvimagesink_.get_raw()),
-                    "on-error-delete",
-                    (gpointer) get_name().c_str());
   return true;
 }
 
 bool GTKVideo::on_shmdata_disconnect() {
   prune_tree(".shmdata.reader." + shmpath_);
   shm_sub_.reset();
-  On_scope_exit{gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, [this](GstMessage *msg){return this->bus_sync(msg);});};
+  On_scope_exit{gst_pipeline_ =
+        std2::make_unique<GstPipeliner>(nullptr,
+                                        [this](GstMessage *msg){
+                                          return this->bus_sync(msg);
+                                        });};
   return remake_elements();
 }
 
@@ -346,7 +341,7 @@ bool GTKVideo::on_shmdata_connect(const std::string &shmpath) {
                nullptr);
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
-      [this](std::string &&caps){
+      [this]( const std::string &caps){
         this->graft_tree(".shmdata.reader." + shmpath_,
                          ShmdataUtils::make_tree(caps,
                                                  ShmdataUtils::get_category(caps),
@@ -356,7 +351,6 @@ bool GTKVideo::on_shmdata_connect(const std::string &shmpath) {
         this->graft_tree(".shmdata.reader." + shmpath_ + ".byte_rate",
                          data::Tree::make(std::to_string(byte_rate)));
       });
-
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmsrc_.get_raw(),
                    queue_.get_raw(),
@@ -374,6 +368,7 @@ bool GTKVideo::on_shmdata_connect(const std::string &shmpath) {
                         videobalance_.get_raw(),
                         xvimagesink_.get_raw(),
                         nullptr);
+  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
   return true;
 }

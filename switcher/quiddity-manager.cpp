@@ -31,6 +31,7 @@ QuiddityManager::ptr QuiddityManager::make_manager(const std::string &name) {
   GstRegistry *registry = gst_registry_get();
   // TODO add option for scanning a path
   gst_registry_scan_path(registry, "/usr/local/lib/gstreamer-1.0/");
+  gst_registry_scan_path(registry, "/usr/lib/gstreamer-1.0/");
   
   QuiddityManager::ptr manager(new QuiddityManager(name));
   manager->me_ = manager;
@@ -38,7 +39,7 @@ QuiddityManager::ptr QuiddityManager::make_manager(const std::string &name) {
 }
 
 QuiddityManager::QuiddityManager(const std::string &name):
-    manager_impl_ (QuiddityManager_Impl::make_manager(name)),
+    manager_impl_ (QuiddityManager_Impl::make_manager(this, name)),
     name_(name),
     command_(),
     seq_mutex_(),
@@ -82,10 +83,34 @@ void QuiddityManager::command_lock() {
   command_->time_ = cur_time - history_begin_time_;
 }
 
+bool QuiddityManager::must_be_saved(QuiddityCommand *cmd){
+  QuiddityCommand::command id = cmd->id_;
+  // actually a white list
+  if (id == QuiddityCommand::create
+      || id == QuiddityCommand::create_nick_named
+      || id == QuiddityCommand::remove
+      || id == QuiddityCommand::scan_directory_for_plugins
+      || id == QuiddityCommand::set_property
+      || id == QuiddityCommand::make_property_subscriber
+      || id == QuiddityCommand::make_signal_subscriber
+      || id == QuiddityCommand::remove_property_subscriber
+      || id == QuiddityCommand::remove_signal_subscriber
+      || id == QuiddityCommand::subscribe_property
+      || id == QuiddityCommand::subscribe_signal
+      || id == QuiddityCommand::unsubscribe_property
+      || id == QuiddityCommand::unsubscribe_signal
+      || (id == QuiddityCommand::invoke
+          && cmd->args_[1] != "last_midi_event_to_property"
+          && cmd->args_[1] != "next_midi_event_to_property"))
+    return true;
+  return false;
+}
+
 void QuiddityManager::command_unlock() {
   // command has been invoked with the return value
   // save the command
-  command_history_.push_back(command_);
+  if (must_be_saved(command_.get()))
+    command_history_.push_back(command_);
   seq_mutex_.unlock();
 }
 
@@ -95,11 +120,13 @@ play_command_history(QuiddityManager::CommandHistory histo,
                      QuiddityManager::PropCallbackMap *prop_cb_data,
                      QuiddityManager::SignalCallbackMap *sig_cb_data,
                      bool mute_existing_subscribers) {
+  bool debug = false;
   if (mute_existing_subscribers) {
     manager_impl_->mute_property_subscribers(true);
     manager_impl_->mute_signal_subscribers(true);
   }
-
+  if (debug)
+    g_print("start playing history\n");
   for (auto &it : histo) {
     if (it->id_ == QuiddityCommand::make_property_subscriber) {
       if (prop_cb_data != nullptr) {
@@ -119,7 +146,7 @@ play_command_history(QuiddityManager::CommandHistory histo,
                                  sig_it->second.second);
       }
     } else {
-      // it not propable that create will return the same name,
+      // it is not propable that create will return the same original name,
       // so converting create into create_nick_named with
       // the name that was given first
       if (QuiddityCommand::create == it->id_) {
@@ -128,17 +155,31 @@ play_command_history(QuiddityManager::CommandHistory histo,
       }
       command_lock();
       command_ = it;
-      g_message("running command %s",
-                QuiddityCommand::get_string_from_id(command_->id_));
+      if (debug) {
+        g_print("running command %s args:", QuiddityCommand::get_string_from_id(command_->id_));
+        for (auto &iter: command_->args_)
+          g_print(" %s ", iter.c_str());
+        g_print("\n");
+        if (!command_->vector_arg_.empty()){
+          g_print("            vector args:");
+        for (auto &iter: command_->vector_arg_)
+          g_print(" %s ", iter.c_str());
+        g_print("\n");
+        }
+      }
       invoke_in_thread();
       // TODO test result consistency
       command_unlock();
       if (command_->id_ == QuiddityCommand::create
           || command_->id_ == QuiddityCommand::create_nick_named)
         auto_init(command_->result_[0]);
+      if (debug)
+        g_print("done result is %s\n\n", command_->result_[0].c_str());
     }
+        
   }
-
+  if (debug)
+    g_print("finished playing history\n");
   if (mute_existing_subscribers) {
     manager_impl_->mute_signal_subscribers(false);
     manager_impl_->mute_property_subscribers(false);

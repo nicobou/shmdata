@@ -19,6 +19,7 @@
 
 //#include <unistd.h>  // sleep
 #include <string>
+#include <algorithm>
 #include "./gst-utils.hpp"
 #include "./scope-exit.hpp"
 
@@ -374,7 +375,8 @@ void
 GstUtils::element_factory_list_to_g_enum(GEnumValue *target_enum,
                                          GstElementFactoryListType type,
                                          GstRank minrank,
-                                         bool insert_none_first) {
+                                         bool insert_none_first,
+                                         const std::vector<std::string> &black_list) {
   GList *element_list =
       gst_element_factory_list_get_elements(type, minrank);
 
@@ -387,13 +389,18 @@ GstUtils::element_factory_list_to_g_enum(GEnumValue *target_enum,
     i++;
   }
   while (iter != nullptr) {
-    target_enum[i].value = i;
-    target_enum[i].value_name =
-        g_strdup(gst_element_factory_get_longname((GstElementFactory *) iter->data));
-    target_enum[i].value_nick =
-        g_strdup(gst_plugin_feature_get_name((GstPluginFeature *) iter->data));
+    if (black_list.end() == std::find(
+            black_list.begin(),
+            black_list.end(), 
+            gst_plugin_feature_get_name((GstPluginFeature *) iter->data))){
+      target_enum[i].value = i;
+      target_enum[i].value_name =
+          g_strdup(gst_element_factory_get_longname((GstElementFactory *) iter->data));
+      target_enum[i].value_nick =
+          g_strdup(gst_plugin_feature_get_name((GstPluginFeature *) iter->data));
+      i++;
+    }
     iter = g_list_next(iter);
-    i++;
   }
   target_enum[i].value = 0;
   target_enum[i].value_name = nullptr;

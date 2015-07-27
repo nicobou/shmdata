@@ -334,7 +334,7 @@ bool PulseSrc::start() {
                nullptr);
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsink_.get_raw(),
-      [this](std::string &&caps){
+      [this]( const std::string &caps){
         this->graft_tree(".shmdata.writer." + shmpath_,
                          ShmdataUtils::make_tree(caps,
                                                  ShmdataUtils::get_category(caps),
@@ -369,6 +369,7 @@ bool PulseSrc::stop() {
 void PulseSrc::set_device(const gint value, void *user_data) {
   PulseSrc *context = static_cast<PulseSrc *>(user_data);
   context->device_ = value;
+  
 }
 
 gint PulseSrc::get_device(void *user_data) {

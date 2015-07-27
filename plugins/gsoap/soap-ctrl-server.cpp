@@ -23,7 +23,7 @@
 #ifdef WITH_IPV6
 #define SOAPBINDTO "::"
 #else
-# define SOAPBINDTO nullptr
+#define SOAPBINDTO nullptr
 #endif
 
 
@@ -39,15 +39,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "GPL",
     "Nicolas Bouillot");
 
-SoapCtrlServer::SoapCtrlServer(const std::string &):
-    soap_(),
-    port_(8080),
-    quit_server_thread_(false),
-    service_(nullptr),
-    socket_(),
-    thread_(),
-    mutex_()
-{}
+SoapCtrlServer::SoapCtrlServer(const std::string &){
+}
 
 bool
 SoapCtrlServer::init()
@@ -79,7 +72,8 @@ SoapCtrlServer::~SoapCtrlServer(){
   quit_server_thread_ = true;
   if (thread_.joinable())
     thread_.join();
-  soap_closesocket(socket_);
+  if (-1 != socket_)
+    soap_closesocket(socket_);
   if (nullptr != service_){
     soap_destroy(service_);
     soap_end(service_);

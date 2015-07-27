@@ -38,11 +38,13 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid,
   GstUtils::element_factory_list_to_g_enum(primary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
                                            GST_RANK_PRIMARY,
-                                           true);
+                                           true,
+                                           {"schroenc", "theoraenc"});  // black list
   GstUtils::element_factory_list_to_g_enum(secondary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
                                            GST_RANK_SECONDARY,
-                                           true);
+                                           true,
+                                           {"schroenc", "theoraenc"});
   primary_codec_spec_ =
       prop_helper_->make_enum_property("codec",
                                         "Codec Short List",
@@ -129,7 +131,7 @@ void GstVideoCodec::make_bin(){
 bool GstVideoCodec::remake_codec_elements() {
   if (codec_ != 0) {  //no codec
     if (!UGstElem::renew(shmsrc_, {"socket-path"})
-        || !UGstElem::renew(shm_encoded_, {"socket-path", "sync"})
+        || !UGstElem::renew(shm_encoded_, {"socket-path", "sync", "async"})
         || !UGstElem::renew(color_space_codec_element_)
         || !UGstElem::renew(queue_codec_element_)
         || !UGstElem::renew(codec_element_, codec_properties_)){
@@ -146,9 +148,18 @@ void GstVideoCodec::set_codec(const gint value, void *user_data) {
   context->codec_ = value;
   if (0 == value)
     return;
-  context->codec_element_.mute(context->secondary_codec_[context->codec_].value_nick);
+  std::string codec_name = context->secondary_codec_[context->codec_].value_nick;
+  context->codec_element_.mute(codec_name.c_str());
+  if (codec_name == "x264enc")
+    context->copy_buffers_ = true;
+  else
+    context->copy_buffers_ = false;
   context->remake_codec_elements();
   context->make_codec_properties();
+  if (codec_name == "x264enc")
+    g_object_set(G_OBJECT(context->codec_element_.get_raw()),
+                 "byte-stream", TRUE,
+                 nullptr);
 }
 
 gint GstVideoCodec::get_codec(void *user_data) {
@@ -226,7 +237,7 @@ bool GstVideoCodec::start(){
     return true;
   shmsink_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shm_encoded_.get_raw(),
-      [this](std::string &&caps){
+      [this]( const std::string &caps){
         this->quid_->graft_tree(".shmdata.writer." + shm_encoded_path_,
                                 ShmdataUtils::make_tree(caps,
                                                         ShmdataUtils::get_category(caps),
@@ -238,7 +249,7 @@ bool GstVideoCodec::start(){
       });
   shmsrc_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
-      [this](std::string &&caps){
+      [this]( const std::string &caps){
         this->quid_->graft_tree(".shmdata.reader." + shmpath_to_encode_,
                                 ShmdataUtils::make_tree(caps,
                                                         ShmdataUtils::get_category(caps),
@@ -249,6 +260,13 @@ bool GstVideoCodec::start(){
                                 data::Tree::make(std::to_string(byte_rate)));
       });
   make_bin();
+  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()),
+               "async-handling", TRUE,
+               nullptr);
+  if (copy_buffers_)
+    g_object_set(G_OBJECT(shmsrc_.get_raw()),
+                 "copy-buffers", TRUE,
+                 nullptr);
   gst_pipeline_->play(true);
   return true;
 }
@@ -259,7 +277,7 @@ bool GstVideoCodec::stop(){
     shmsink_sub_.reset();
     shmsrc_sub_.reset();
     quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
-    quid_->prune_tree(".shmdata.reader." + shm_encoded_path_);
+    quid_->prune_tree(".shmdata.reader." + shmpath_to_encode_);
     remake_codec_elements();
     make_codec_properties();
     gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
@@ -272,10 +290,12 @@ void GstVideoCodec::set_shm(const std::string &shmpath){
   if (!custom_shmsink_path_)
     shm_encoded_path_ = shmpath_to_encode_ + "-encoded";
   g_object_set(G_OBJECT(shmsrc_.get_raw()),
-               "socket-path", shmpath_to_encode_.c_str(), nullptr);
+               "socket-path", shmpath_to_encode_.c_str(),
+               nullptr);
   g_object_set(G_OBJECT(shm_encoded_.get_raw()),
                "socket-path", shm_encoded_path_.c_str(),
-               "sync", false,
+               "sync", FALSE,
+               "async", FALSE,
                nullptr);
 }
 

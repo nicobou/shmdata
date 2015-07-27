@@ -55,7 +55,7 @@ RtpSession::RtpSession(const std::string &):
 bool RtpSession::init() {
   if (!GstUtils::make_element("rtpbin", &rtpsession_))
     return false;
-  g_object_set(G_OBJECT(rtpsession_), "ntp-sync", TRUE, nullptr);
+  g_object_set(G_OBJECT(rtpsession_), "ntp-sync", TRUE, "async-handling", TRUE, nullptr);
   //g_object_set(G_OBJECT(get_bin()), "async-handling", TRUE, nullptr);
   g_signal_connect(G_OBJECT(rtpsession_), "on-bye-ssrc",
                    (GCallback) on_bye_ssrc, (gpointer) this);
@@ -84,6 +84,9 @@ bool RtpSession::init() {
   g_signal_connect(G_OBJECT(rtpsession_), "no-more-pads",
                    (GCallback) on_no_more_pad, (gpointer) this);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), rtpsession_);
+  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()),
+               "async-handling", TRUE,
+               nullptr);
   gst_pipeline_->play(true);
   install_method("Add Data Stream",
                  "add_data_stream",
@@ -205,7 +208,6 @@ bool RtpSession::init() {
                             mtu_at_add_data_stream_spec_,
                             "mtu-at-add-data-stream",
                             "MTU At Add Data Stream");
-  gst_pipeline_->play(true);
   return true;
 }
 
@@ -512,10 +514,11 @@ bool RtpSession::add_data_stream(const std::string &shmpath) {
   GstUtils::make_element("shmdatasrc",
                          &data_streams_[shmpath]->shmdatasrc);
   GstElement *src = data_streams_[shmpath]->shmdatasrc;
+  g_object_set(G_OBJECT(src), "copy_buffers", TRUE, nullptr);
   data_streams_[shmpath]->shm_sub.reset(
       new GstShmdataSubscriber(
           src,
-          [this, shmpath, src](std::string &&caps){
+          [this, shmpath, src]( const std::string &caps){
             auto rtpid = this->make_rtp_payloader(src, caps);
             this->make_udp_sinks(shmpath, rtpid);
             this->graft_tree(".shmdata.reader." + shmpath,
@@ -782,7 +785,6 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
     it->second->udp_rtp_bin = udpsink_bin;
     // saving for latter controling
     it->second->udp_rtp_sink = udpsink;
-    
     g_object_set (G_OBJECT (udpsink_bin), "async-handling", TRUE, nullptr);
     g_object_set(G_OBJECT(udpsink), "sync", FALSE, nullptr);
     // saving shmpath and this for use when type find will throw "have-type" 

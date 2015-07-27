@@ -29,7 +29,7 @@ namespace switcher {
 class GstShmdataSubscriber {
  public:
   using num_bytes_t = guint64;
-  using on_caps_cb_t = std::function<void(std::string &&)>;
+  using on_caps_cb_t = std::function<void(const std::string &)>;
   using on_byte_monitor_t = std::function<void(num_bytes_t)>;
   GstShmdataSubscriber(GstElement *element,
                        on_caps_cb_t on_caps_cb,

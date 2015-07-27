@@ -49,7 +49,7 @@ class Quiddity {
   friend class ShmdataConnector;
   friend class ShmdataWriter;
   friend class ShmdataFollower;
-  friend class DefaultVideoFormat;
+  friend class GstPixelFormatConverter;
   friend class GstVideoCodec;
   
  public:

@@ -235,7 +235,7 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement *bin, GstPad *pad) {
   shm_subs_.emplace_back(
       std2::make_unique<GstShmdataSubscriber>(
           shmdatasink,
-          [this, shmpath](std::string &&caps){
+          [this, shmpath]( const std::string &caps){
             this->graft_tree(".shmdata.writer." + shmpath,
                              ShmdataUtils::make_tree(caps,
                                                      ShmdataUtils::get_category(caps),

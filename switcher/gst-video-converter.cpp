@@ -19,29 +19,30 @@
 
 #include "switcher/std2.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "./gst-video-encoder.hpp"
+#include "./gst-video-converter.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    GstVideoEncoder,
-    "videnc",
-    "Video Encoder",
+    GstVideoConverter,
+    "videoconvert",
+    "Video converter",
     "video",
     "writer/reader",
-    "Encode raw video stream",
+    "Convert pixel format of raw video stream",
     "LGPL",
     "Nicolas Bouillot");
 
-GstVideoEncoder::GstVideoEncoder(const std::string &):
+GstVideoConverter::GstVideoConverter(const std::string &):
     shmcntr_(static_cast<Quiddity *>(this)),
     custom_props_(std::make_shared<CustomPropertyHelper>()){
 }
 
-bool GstVideoEncoder::init() {
-  codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
-                                             custom_props_.get(),
-                                             std::string(),
-                                             make_file_name("video-encoded"));
+bool GstVideoConverter::init() {
+  converter_ = std2::make_unique<GstPixelFormatConverter>(
+      static_cast<Quiddity *>(this),
+      custom_props_.get(),
+      "Pixel format",
+      "Convert to selected pixel format");
   shmcntr_.install_connect_method(
       [this](const std::string &shmpath){return this->on_shmdata_connect(shmpath);},
       [this](const std::string &){return this->on_shmdata_disconnect();},
@@ -51,16 +52,15 @@ bool GstVideoEncoder::init() {
   return true;
 }
 
-bool GstVideoEncoder::on_shmdata_disconnect() {
-  return codecs_->stop();
+bool GstVideoConverter::on_shmdata_disconnect() {
+  return converter_->stop();
 }
 
-bool GstVideoEncoder::on_shmdata_connect(const std::string &shmpath) {
-  codecs_->set_shm(shmpath);
-  return codecs_->start();
+bool GstVideoConverter::on_shmdata_connect(const std::string &shmpath) {
+  return converter_->start(shmpath, make_file_name("video-converted"));
 }
 
-bool GstVideoEncoder::can_sink_caps(const std::string &caps) {
+bool GstVideoConverter::can_sink_caps(const std::string &caps) {
   // assuming codecs_ is internally using videoconvert as first caps negotiating gst element: 
   return GstUtils::can_sink_caps("videoconvert", caps);
 }
