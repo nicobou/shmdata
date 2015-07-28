@@ -98,7 +98,16 @@ class GTKVideo: public Quiddity {
   std::mutex window_destruction_mutex_{};
   std::condition_variable window_destruction_cond_{};
   // keyboard to shmdata
-    std::unique_ptr<ShmdataWriter> keyb_shm_{nullptr};
+  std::unique_ptr<ShmdataWriter> keyb_shm_{nullptr};
+  // mouse to shmdata (relative to the video, not the window)
+  std::unique_ptr<ShmdataWriter> mouse_shm_{nullptr};
+  // video width & height (for mouse shmdata)
+  int vid_width_{-1};
+  int vid_height_{-1};
+  int horizontal_padding_{0};
+  int vertical_padding_{0};
+  float drawed_video_width_{-1};
+  float drawed_video_height_{-1};
   
   bool init() final;
   bool remake_elements();
@@ -126,11 +135,24 @@ class GTKVideo: public Quiddity {
   static const gchar *get_title(void *user_data);
   static gboolean get_keyb_interaction(void *user_data);
   static void set_keyb_interaction(gboolean keyb_interaction, void *user_data);
-
+  static gboolean button_event (GtkWidget *widget, GdkEventButton *event, gpointer data);
+  static gboolean motion_notify_event (GtkWidget *widget, GdkEventMotion *event, gpointer data);
+  static void widget_getsize(GtkWidget *widget, GtkAllocation *allocation, void *data);
+  void update_padding(GtkWidget *widget);
+  void write_mouse_info_to_shmdata(int x, int y, const GdkModifierType &state);
+  
   struct KeybEvent{
     KeybEvent (guint32 keyval, guint32 down) : keyval_(keyval), down_(down){}
     guint32 keyval_{0};
     guint32 down_{0};
+  };
+
+  struct MouseEvent{
+    MouseEvent (guint32 x, guint32 y, guint32 button_mask):
+        x_(x), y_(y), button_mask_(button_mask){}
+    guint32 x_{0};
+    guint32 y_{0};
+    guint32 button_mask_{0};
   };
 };
 

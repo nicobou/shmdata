@@ -126,13 +126,19 @@ bool GTKVideo::init() {
   keyb_shm_ = std2::make_unique<ShmdataWriter>(this,
                                                make_file_name("keyb"),
                                                sizeof(KeybEvent),
-                                               "application/x-keyboard-events");//"application/x-unicode");
+                                               "application/x-keyboard-events");
   if(!keyb_shm_.get()) {
     g_warning("GTK keyboard event shmdata writer failled");
     keyb_shm_.reset(nullptr);
   }
-  auto keybevent = KeybEvent(0, 0);
-  keyb_shm_->writer(&shmdata::Writer::copy_to_shm, &keybevent, sizeof(KeybEvent));
+  mouse_shm_ = std2::make_unique<ShmdataWriter>(this,
+                                               make_file_name("mouse"),
+                                               sizeof(MouseEvent),
+                                               "application/x-mouse-events");
+  if(!mouse_shm_.get()) {
+    g_warning("GTK mouse event shmdata writer failled");
+    mouse_shm_.reset(nullptr);
+  }
   return true;
 }
 
@@ -274,6 +280,24 @@ gboolean GTKVideo::create_ui(void *user_data) {
   gtk_widget_modify_bg(context->video_window_, GTK_STATE_NORMAL, &color);
   g_signal_connect(context->video_window_, "realize",
                    G_CALLBACK(realize_cb), context);
+  g_signal_connect (context->video_window_,
+                    "motion-notify-event",
+                    G_CALLBACK (GTKVideo::motion_notify_event), context);
+  g_signal_connect (context->video_window_,
+                    "button-press-event",
+                    G_CALLBACK (GTKVideo::button_event), context);
+  g_signal_connect (context->video_window_,
+                    "button-release-event",
+                    G_CALLBACK (GTKVideo::button_event), context);
+  g_signal_connect(context->video_window_,
+                   "size-allocate",
+                   G_CALLBACK(widget_getsize), context);
+  gtk_widget_set_events (context->video_window_,
+                         GDK_EXPOSURE_MASK
+                         | GDK_LEAVE_NOTIFY_MASK
+                         | GDK_BUTTON_PRESS_MASK
+                         | GDK_POINTER_MOTION_MASK
+                         | GDK_POINTER_MOTION_HINT_MASK);
   gtk_container_add(GTK_CONTAINER(context->main_window_),
                     context->video_window_);
   gtk_window_set_default_size(GTK_WINDOW(context->main_window_), 640, 480);
@@ -288,6 +312,7 @@ gboolean GTKVideo::create_ui(void *user_data) {
                    "key-release-event",
                    G_CALLBACK(GTKVideo::key_release_cb),
                    context);
+  
   gtk_widget_show_all((GtkWidget *) context->main_window_);
   return FALSE;
 }
@@ -350,7 +375,7 @@ bool GTKVideo::remake_elements(){
     return false;
   g_object_set(G_OBJECT(xvimagesink_.get_raw()),
                "force-aspect-ratio", TRUE,
-               "draw-borders", TRUE,
+               "draw-borders", FALSE,
                "sync", FALSE,
                "qos", FALSE,
                nullptr);
@@ -380,6 +405,14 @@ bool GTKVideo::on_shmdata_connect(const std::string &shmpath) {
                          ShmdataUtils::make_tree(caps,
                                                  ShmdataUtils::get_category(caps),
                                                  0));
+        GstCaps *gstcaps = gst_caps_from_string(caps.c_str());
+        On_scope_exit{if (gstcaps) gst_caps_unref(gstcaps);};
+        GstStructure *caps_struct = gst_caps_get_structure (gstcaps, 0);
+        const GValue *width_val = gst_structure_get_value (caps_struct, "width");
+        const GValue *height_val = gst_structure_get_value (caps_struct, "height");
+        this->vid_width_ = g_value_get_int(width_val);
+        this->vid_height_ = g_value_get_int(height_val);
+        this->update_padding(this->video_window_);
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
         this->graft_tree(".shmdata.reader." + shmpath_ + ".byte_rate",
@@ -430,6 +463,85 @@ void GTKVideo::set_keyb_interaction(gboolean keyb_interaction, void *user_data) 
   context->keyb_interaction_ = keyb_interaction;
   context->gtk_custom_props_->
       notify_property_changed(context->keyb_interaction_spec_);
+}
+
+gboolean GTKVideo::button_event (GtkWidget */*widget*/,
+                                 GdkEventButton *event,
+                                 gpointer data){
+  GTKVideo *context = static_cast<GTKVideo *>(data);
+  if (-1 == context->vid_width_)
+    return TRUE;
+  int x, y;
+  GdkModifierType state;
+  gdk_window_get_pointer (event->window, &x, &y, &state);
+  context->write_mouse_info_to_shmdata(x, y, state);
+  return TRUE;
+}
+
+gboolean GTKVideo::motion_notify_event (GtkWidget */*widget*/,
+                                        GdkEventMotion *event,
+                                        gpointer data){
+  GTKVideo *context = static_cast<GTKVideo *>(data);
+  if (-1 == context->vid_width_)
+    return TRUE;
+  int x, y;
+  GdkModifierType state;
+  if (event->is_hint)
+    gdk_window_get_pointer (event->window, &x, &y, &state);
+  else {
+    x = event->x;
+    y = event->y;
+  }
+  context->write_mouse_info_to_shmdata(x, y, state);
+  return TRUE;
+}
+
+void GTKVideo::widget_getsize(GtkWidget *widget,
+                              GtkAllocation */*allocation*/,
+                              void *data) {
+  GTKVideo *context = static_cast<GTKVideo *>(data);
+  context->horizontal_padding_ = 0;
+  context->vertical_padding_ = 0;
+  context->drawed_video_width_ = widget->allocation.width;
+  context->drawed_video_height_ = widget->allocation.height;
+  context->update_padding(widget);
+}
+
+void GTKVideo::update_padding(GtkWidget *widget){
+  if (-1 == drawed_video_width_ || -1 == vid_width_)
+    return;
+  if (widget->allocation.width / widget->allocation.height
+      > vid_width_ / vid_height_) {
+    // padding is horizontal
+    drawed_video_width_ =
+        widget->allocation.height * vid_width_ / vid_height_;
+    horizontal_padding_ = (widget->allocation.width - drawed_video_width_) / 2;
+  } else {
+    // padding is vertical
+    drawed_video_height_ =
+        widget->allocation.width * vid_height_ / vid_width_;
+    vertical_padding_ = (widget->allocation.height - drawed_video_height_) / 2;
+  }
+}
+
+void GTKVideo::write_mouse_info_to_shmdata(
+    int x, int y, const GdkModifierType &state){
+  int vid_x = (x - horizontal_padding_)
+      * 100000. / drawed_video_width_;
+  int vid_y = (y - vertical_padding_)
+      * 100000. / drawed_video_height_;
+  if (0 > vid_x || 100000 < vid_x || 0 > vid_y || 100000 < vid_y)
+    return;  // pointer is out of the video
+  int button_mask = 0;
+  if (state & GDK_BUTTON1_MASK)
+    button_mask = 1; 
+  if (state & GDK_BUTTON2_MASK)
+    button_mask += 2; 
+  if (state & GDK_BUTTON3_MASK)
+    button_mask += 4;
+  auto mouse_event = MouseEvent(vid_x, vid_y, button_mask);
+  mouse_shm_->writer(&shmdata::Writer::copy_to_shm, &mouse_event, sizeof(MouseEvent));
+  mouse_shm_->bytes_written(sizeof(MouseEvent));
 }
 
 }  // namespace switcher
