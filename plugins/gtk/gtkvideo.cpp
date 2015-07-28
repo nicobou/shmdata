@@ -31,7 +31,6 @@
 #include "../../config.h"
 #endif
 #include "./gtkvideo.hpp"
-#include "./keysym.h"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
