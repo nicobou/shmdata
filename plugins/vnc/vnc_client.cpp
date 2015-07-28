@@ -21,6 +21,7 @@
 
 #include <functional>
 #include <iostream>
+#include <cstdint>
 
 using namespace std;
 
@@ -155,23 +156,19 @@ VncClientSrc::connect(string shmdata_socket_path) {
 
     if (type == string(VNC_MOUSE_EVENTS_CAPS))
     {
-      if (size < 3 * sizeof(int))
+      if (size < 3 * sizeof(std::uint32_t))
         return;
 
-      int xPos = (static_cast<float>(static_cast<int*>(data)[0]) / 100000.f) * static_cast<float>(rfb_client_->width);
-      int yPos = (static_cast<float>(static_cast<int*>(data)[1]) / 100000.f) * static_cast<float>(rfb_client_->height);
-      int buttons = static_cast<int*>(data)[2];
+      int xPos = (static_cast<float>(static_cast<std::uint32_t *>(data)[0]) / 100000.f) * static_cast<float>(rfb_client_->width);
+      int yPos = (static_cast<float>(static_cast<std::uint32_t *>(data)[1]) / 100000.f) * static_cast<float>(rfb_client_->height);
+      int buttons = static_cast<std::uint32_t *>(data)[2];
 
       SendPointerEvent(rfb_client_, xPos, yPos, buttons);
-    }
-    else if (type == string(VNC_KEYBOARD_EVENTS_CAPS))
-    {
-      if (size < 2 * sizeof(unsigned int))
+    } else if (type == string(VNC_KEYBOARD_EVENTS_CAPS)) {
+      if (size < 2 * sizeof(std::uint32_t))
         return;
-
-      unsigned int key = static_cast<unsigned int*>(data)[0];
-      bool down = static_cast<unsigned int*>(data)[1];
-
+      unsigned int key = static_cast<std::uint32_t *>(data)[0];
+      bool down = static_cast<std::uint32_t *>(data)[1];
       SendKeyEvent(rfb_client_, key, down);
     }
   }, [=] (string caps) {
@@ -180,7 +177,6 @@ VncClientSrc::connect(string shmdata_socket_path) {
       mouse_events_connected_ = true;
     else if (caps == string(VNC_KEYBOARD_EVENTS_CAPS))
       keyboard_events_connected_ = true;
-
     shmdata_readers_caps_[shmreader_id] = caps;
   });
 
@@ -204,8 +200,8 @@ VncClientSrc::disconnect_all() {
 
 bool
 VncClientSrc::can_sink_caps(string caps) {
-  return (!mouse_events_connected_ && caps == string(VNC_MOUSE_EVENTS_CAPS))
-      || (!keyboard_events_connected_ && caps == string(VNC_KEYBOARD_EVENTS_CAPS));
+  return (caps == string(VNC_MOUSE_EVENTS_CAPS))
+      || (caps == string(VNC_KEYBOARD_EVENTS_CAPS));
 }
 
 int

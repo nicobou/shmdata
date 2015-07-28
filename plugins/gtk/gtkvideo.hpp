@@ -25,6 +25,7 @@
 #include <mutex>
 #include <condition_variable>
 #include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-writer.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/custom-property-helper.hpp"
@@ -90,11 +91,15 @@ class GTKVideo: public Quiddity {
   gboolean is_fullscreen_{FALSE};
   GParamSpec *title_prop_spec_{nullptr};
   gchar *title_{nullptr};
+  GParamSpec *keyb_interaction_spec_{nullptr};
+  gboolean keyb_interaction_{TRUE};
   std::mutex wait_window_mutex_{};
   std::condition_variable wait_window_cond_{};
   std::mutex window_destruction_mutex_{};
   std::condition_variable window_destruction_cond_{};
-
+  // keyboard to shmdata
+    std::unique_ptr<ShmdataWriter> keyb_shm_{nullptr};
+  
   bool init() final;
   bool remake_elements();
   bool on_shmdata_connect(const std::string &shmpath);
@@ -108,6 +113,9 @@ class GTKVideo: public Quiddity {
   static void gtk_main_loop_thread();
   static gboolean key_pressed_cb(GtkWidget *widget,
                                  GdkEventKey *event, gpointer data);
+  static gboolean key_release_cb(GtkWidget */*widget */,
+                                 GdkEventKey *event,
+                                 gpointer data);
   static gboolean get_fullscreen(void *user_data);
   static void set_fullscreen(gboolean fullscreen, void *user_data);
   static gboolean on_destroy_event(GtkWidget *widget,
@@ -116,6 +124,14 @@ class GTKVideo: public Quiddity {
   static gboolean destroy_window(gpointer data);
   static void set_title(const gchar *value, void *user_data);
   static const gchar *get_title(void *user_data);
+  static gboolean get_keyb_interaction(void *user_data);
+  static void set_keyb_interaction(gboolean keyb_interaction, void *user_data);
+
+  struct KeybEvent{
+    KeybEvent (guint32 keyval, guint32 down) : keyval_(keyval), down_(down){}
+    guint32 keyval_{0};
+    guint32 down_{0};
+  };
 };
 
 SWITCHER_DECLARE_PLUGIN(GTKVideo);

@@ -31,6 +31,7 @@
 #include "../../config.h"
 #endif
 #include "./gtkvideo.hpp"
+#include "./keysym.h"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
@@ -38,7 +39,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "gtkwin",
     "Video Display (configurable)",
     "video",
-    "reader/device",
+    "reader/device/writer",
     "Video window with fullscreen",
     "LGPL",
     "Nicolas Bouillot");
@@ -81,8 +82,22 @@ bool GTKVideo::init() {
                                                GTKVideo::get_fullscreen,
                                                this);
   install_property_by_pspec(gtk_custom_props_->get_gobject(),
-                            fullscreen_prop_spec_, "fullscreen",
+                            fullscreen_prop_spec_,
+                            "fullscreen",
                             "Fullscreen");
+  keyb_interaction_spec_ =
+      gtk_custom_props_->make_boolean_property("keyb_interaction",
+                                               "Enable/Disable keybord interaction",
+                                               keyb_interaction_,
+                                               (GParamFlags) G_PARAM_READWRITE,
+                                               GTKVideo::set_keyb_interaction,
+                                               GTKVideo::get_keyb_interaction,
+                                               this);
+  install_property_by_pspec(gtk_custom_props_->get_gobject(),
+                            keyb_interaction_spec_,
+                            "keyb_interaction",
+                            "Keyboard Interaction");
+
   install_property(G_OBJECT(videoflip_.get_raw()),
                    "method", "method", "Flip Method");
   install_property(G_OBJECT(gamma_.get_raw()), "gamma", "gamma", "Gamma");
@@ -108,6 +123,16 @@ bool GTKVideo::init() {
   wait_window_cond_.wait(lock);
   if (nullptr == display_)
     return false;
+  keyb_shm_ = std2::make_unique<ShmdataWriter>(this,
+                                               make_file_name("keyb"),
+                                               sizeof(KeybEvent),
+                                               "application/x-keyboard-events");//"application/x-unicode");
+  if(!keyb_shm_.get()) {
+    g_warning("GTK keyboard event shmdata writer failled");
+    keyb_shm_.reset(nullptr);
+  }
+  auto keybevent = KeybEvent(0, 0);
+  keyb_shm_->writer(&shmdata::Writer::copy_to_shm, &keybevent, sizeof(KeybEvent));
   return true;
 }
 
@@ -123,32 +148,36 @@ gboolean GTKVideo::key_pressed_cb(GtkWidget */*widget */ ,
                                   GdkEventKey *event,
                                   gpointer data) {
   GTKVideo *context = static_cast<GTKVideo *>(data);
-  // gchar outbuf[] = "coucou";
-  // auto i = g_unichar_to_utf8(gdk_keyval_to_unicode(event->keyval),
-  //                            outbuf);
-  // outbuf[i] = '\0';
-  // g_print("(%d)%s", i, outbuf);
-  QuiddityManager_Impl::ptr manager;
-  switch (event->keyval) {
-    case GDK_f:
-      context->toggle_fullscreen();
-      break;
-    case GDK_F:
-      context->toggle_fullscreen();
-      break;
-    case GDK_Escape:
-      context->toggle_fullscreen();
-      break;
-    case GDK_q:
-      manager = context->manager_impl_.lock();
-      if ((bool) manager)
-        manager->remove(context->get_name());
-      else
-        g_debug("GTKVideo::key_pressed_cb q pressed, closing window");
-      break;
-    default:
-      break;
-  }
+  guint32 val = event->keyval;
+  auto keybevent = KeybEvent(val, 1);
+  context->keyb_shm_->writer(&shmdata::Writer::copy_to_shm, &keybevent, sizeof(KeybEvent));
+  context->keyb_shm_->bytes_written(sizeof(KeybEvent));
+  if (context->keyb_interaction_) {
+    switch (event->keyval) {
+      case GDK_f:
+        context->toggle_fullscreen();
+        break;
+      case GDK_F:
+        context->toggle_fullscreen();
+        break;
+      case GDK_Escape:
+        context->toggle_fullscreen();
+        break;
+      default:
+        break;
+    }
+  }  // if (context->keyb_interaction_) 
+  return TRUE;
+}
+
+gboolean GTKVideo::key_release_cb(GtkWidget */*widget */ ,
+                                  GdkEventKey *event,
+                                  gpointer data) {
+  GTKVideo *context = static_cast<GTKVideo *>(data);
+  guint32 val = event->keyval;
+  auto keybevent = KeybEvent(val, 0);
+  context->keyb_shm_->writer(&shmdata::Writer::copy_to_shm, &keybevent, sizeof(KeybEvent));
+  context->keyb_shm_->bytes_written(sizeof(KeybEvent));
   return TRUE;
 }
 
@@ -253,7 +282,12 @@ gboolean GTKVideo::create_ui(void *user_data) {
   gtk_widget_set_events(context->main_window_, GDK_KEY_PRESS_MASK);
   g_signal_connect(G_OBJECT(context->main_window_),
                    "key-press-event",
-                   G_CALLBACK(GTKVideo::key_pressed_cb), context);
+                   G_CALLBACK(GTKVideo::key_pressed_cb),
+                   context);
+  g_signal_connect(G_OBJECT(context->main_window_),
+                   "key-release-event",
+                   G_CALLBACK(GTKVideo::key_release_cb),
+                   context);
   gtk_widget_show_all((GtkWidget *) context->main_window_);
   return FALSE;
 }
@@ -384,6 +418,18 @@ GstBusSyncReply GTKVideo::bus_sync(GstMessage *msg){
   gst_video_overlay_set_window_handle (overlay, window_handle_);
   gst_message_unref (msg);
   return GST_BUS_DROP;
+}
+
+gboolean GTKVideo::get_keyb_interaction(void *user_data) {
+  GTKVideo *context = static_cast<GTKVideo *>(user_data);
+  return context->keyb_interaction_;
+}
+
+void GTKVideo::set_keyb_interaction(gboolean keyb_interaction, void *user_data) {
+  GTKVideo *context = static_cast<GTKVideo *>(user_data);
+  context->keyb_interaction_ = keyb_interaction;
+  context->gtk_custom_props_->
+      notify_property_changed(context->keyb_interaction_spec_);
 }
 
 }  // namespace switcher
