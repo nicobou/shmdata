@@ -31,6 +31,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     glibmainloop.cpp \
     gobject-custom-property.cpp \
     gobject-wrapper.cpp \
+    gst-audio-codec.cpp \
+    gst-audio-encoder.cpp \
     gst-pipe.cpp \
     gst-pipeliner.cpp \
     gst-pixel-format-converter.cpp \
@@ -104,6 +106,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     glibmainloop.hpp \
     gobject-custom-property.hpp \
     gobject-wrapper.hpp \
+    gst-audio-codec.hpp \
+    gst-audio-encoder.hpp \
     gst-pipe.hpp \
     gst-pipeliner.hpp \
     gst-pixel-format-converter.hpp \

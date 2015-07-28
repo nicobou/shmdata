@@ -51,6 +51,7 @@ class Quiddity {
   friend class ShmdataFollower;
   friend class GstPixelFormatConverter;
   friend class GstVideoCodec;
+  friend class GstAudioCodec;
   
  public:
   typedef std::shared_ptr<Quiddity> ptr;
