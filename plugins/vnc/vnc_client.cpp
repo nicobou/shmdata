@@ -109,7 +109,7 @@ VncClientSrc::init() {
                                   2);
 
   vnc_server_address_prop_ = custom_props_->make_string_property("vnc_server_address",
-                                            "Address of the VNC server",
+                                            "IP address",
                                             vnc_server_address_.c_str(),
                                             (GParamFlags) G_PARAM_READWRITE,
                                             VncClientSrc::set_vnc_server_address,
@@ -120,7 +120,7 @@ VncClientSrc::init() {
                             "Address of the VNC server");
 
   capture_truecolor_prop_ = custom_props_->make_boolean_property("capture_truecolor",
-                                            "Capture in 32bits if true, 16bits otherwise",
+                                            "Capture color depth",
                                             capture_truecolor_,
                                             (GParamFlags) G_PARAM_READWRITE,
                                             VncClientSrc::set_capture_truecolor,
@@ -159,6 +159,7 @@ VncClientSrc::connect(string shmdata_socket_path) {
       if (size < 3 * sizeof(std::uint32_t))
         return;
 
+      // Position is stored in integer, and correspond to the position in [0, 1] multiplied by 100000.
       int xPos = (static_cast<float>(static_cast<std::uint32_t *>(data)[0]) / 100000.f) * static_cast<float>(rfb_client_->width);
       int yPos = (static_cast<float>(static_cast<std::uint32_t *>(data)[1]) / 100000.f) * static_cast<float>(rfb_client_->height);
       int buttons = static_cast<std::uint32_t *>(data)[2];
@@ -172,10 +173,6 @@ VncClientSrc::connect(string shmdata_socket_path) {
     }
   }, [=] (string caps) {
     unique_lock<mutex> lock(mutex_);
-    if (caps == string(VNC_MOUSE_EVENTS_CAPS))
-      mouse_events_connected_ = true;
-    else if (caps == string(VNC_KEYBOARD_EVENTS_CAPS))
-      keyboard_events_connected_ = true;
     shmdata_readers_caps_[shmreader_id] = caps;
   });
 
@@ -185,15 +182,23 @@ VncClientSrc::connect(string shmdata_socket_path) {
 }
 
 bool
-VncClientSrc::disconnect(string /*unused*/) {
+VncClientSrc::disconnect(string shmdata_socket_path) {
   unique_lock<mutex> lock(mutex_);
-  // TODO: implement this
-  return true;
+  auto shmdataIt = events_readers_.find(shmdata_socket_path);
+  if (shmdataIt != events_readers_.end())
+  {
+    events_readers_.erase(shmdataIt);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 bool
 VncClientSrc::disconnect_all() {
-  // TODO: implement this
+  events_readers_.clear();
   return true;
 }
 
