@@ -28,16 +28,21 @@
 #include "./decodebin-to-shmdata.hpp"
 #include "./g-source-wrapper.hpp"
 #include "./unique-gst-element.hpp"
+#include "./counter-map.hpp"
 
 namespace switcher {
-class HTTPSDPDec: public GstPipeliner {
+class GstShmdataSubscriber;
+
+class HTTPSDPDec: public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);
   HTTPSDPDec(const std::string &);
 
  private:
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
   UGstElem souphttpsrc_;
   UGstElem sdpdemux_;
+  bool is_dataurisrc_{false};
   guint retry_delay_{1000};
   // will maintain a max of two GSourceWrapper in order to avoid destructing
   // itself from inside the GSource 
@@ -45,12 +50,17 @@ class HTTPSDPDec: public GstPipeliner {
   std::string uri_{};
   std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_{};
   std::string src_element_class_{"souphttpsrc"};
+  CounterMap counter_{};
+  std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
   bool to_shmdata(std::string uri);
   void init_httpsdpdec();
   void destroy_httpsdpdec();
   void make_new_error_handler();
-  bool init_gpipe() final;
+  bool init() final;
   void uri_to_shmdata();
+  void configure_shmdatasink(GstElement *element,
+                             const std::string &media_type,
+                             const std::string &media_label);
   static void httpsdpdec_pad_added_cb(GstElement *object,
                                       GstPad *pad, gpointer user_data);
   static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);

@@ -17,14 +17,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./systemusage.hpp"
-#include "switcher/information-tree-basic-serializer.hpp"
-
 #include <chrono>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
+#include "switcher/information-tree-basic-serializer.hpp"
+#include "switcher/std2.hpp"
+#include "./systemusage.hpp"
+
 
 #define PROCSTATFILE "/proc/stat"
 #define PROCMEMINFOFILE "/proc/meminfo"
@@ -35,25 +36,27 @@ using namespace
 switcher::data;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SystemUsage,
-                                     "SystemUsage plugin",
-                                     "SystemUsage",
-                                     "Gives system load information",
-                                     "LGPL",
-                                     "systemusage", "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    SystemUsage,
+    "systemusage",
+    "SystemUsage plugin",
+    "monitoring",
+    "",
+    "Gives system load information",
+    "LGPL",
+    "Emmanuel Durand");
+
 SystemUsage::SystemUsage(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()),
-    period_prop_(nullptr), cpuNbr_(0), period_(0.1) {
+    tree_{Tree::make()},
+    period_(1.0),
+    pollStateTask_(std2::make_unique<PeriodicTask>([this](){
+          this->pollState();
+        }, std::chrono::milliseconds(static_cast<int>(1000 * period_)))){
 }
 
-SystemUsage::~SystemUsage() {
-  running_ = false;
-  pollStateThread_->join();
-}
-
-bool
-SystemUsage::init() {
-  period_prop_ = custom_props_->make_double_property("period",        // name
+bool SystemUsage::init() {
+  period_prop_ = custom_props_->make_double_property("period",  // name
                                                      "Update period",  // description
                                                      0.1,
                                                      5.0,
@@ -62,124 +65,110 @@ SystemUsage::init() {
                                                      SystemUsage::setRefreshPeriod,
                                                      SystemUsage::getRefreshPeriod,
                                                      this);
-  install_property_by_pspec(custom_props_->get_gobject(), period_prop_, "period", "Update period");   // long name
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            period_prop_,
+                            "period",
+                            "Update period");   // long name
+  return init_tree();
+}
 
-  // Initialize the properties tree
-  tree_ = Tree::make();
-
-  // Launch the polling thread
-  running_ = true;
-  pollStateThread_ = make_shared<thread> ([&]() {
-      pollState();
-    });
-
+bool SystemUsage::init_tree(){
   // Trying to reach the /proc files
   ifstream file;
+  // init cpu
   file.open(PROCSTATFILE);
   if (!file.is_open())
     return false;
-
   for (string line; getline(file, line);) {
-    string substr = line.substr(0, 3);
-    if (substr == "cpu")
-      cpuNbr_++;
+    string core;
+    long user, nice, system, idle, io, irq, softIrq, steal, guest;
+    istringstream stream(line);
+    stream >> core >> user >> nice >> system >> idle >> io >> irq >>
+          softIrq >> steal >> guest;
+    if (core.substr(0, 3) == "cpu") {
+      tree_->graft(".cpu." + core + ".total", Tree::make());
+      tree_->graft(".cpu." + core + ".user", Tree::make());
+      tree_->graft(".cpu." + core + ".nice", Tree::make());
+      tree_->graft(".cpu." + core + ".system", Tree::make());
+      tree_->graft(".cpu." + core + ".idle", Tree::make());
+    }
   }
-  cpuNbr_ = cpuNbr_ == 1 ? 1 : cpuNbr_ - 1;
   file.close();
-
+  // init mem
   file.open(PROCMEMINFOFILE);
   if (!file.is_open())
     return false;
+  for (string line; getline(file, line);) {
+        tree_->graft(".mem.total", Tree::make());
+        tree_->graft(".mem.free", Tree::make());
+        tree_->graft(".mem.buffers", Tree::make());
+        tree_->graft(".mem.cached", Tree::make());
+        tree_->graft(".mem.swap_total", Tree::make());
+        tree_->graft(".mem.swap_free", Tree::make());
+  }
   file.close();
-
+  // init net
   file.open(PROCNETDEVFILE);
   if (!file.is_open())
     return false;
+  for (string line; getline(file, line);) {
+    string netI;
+    long rBytes, rPackets, rErrs, rDrop, rFifo, rFrame, rCompressed, rMulticast;
+    long tBytes, tPackets, tErrs, tDrop, tFifo, tColls, tCarrier, tCompressed;
+    istringstream stream(line);
+    stream >> netI >> rBytes >> rPackets >> rErrs >> rDrop >> rFifo >>
+        rFrame >> rCompressed >> rMulticast >> tBytes >> tPackets >>
+        tErrs >> tDrop >> tFifo >> tColls >> tCarrier >> tCompressed;
+    if (netI.find("Inter") == string::npos
+        && netI.find("face") == string::npos) {
+      string netName;
+      netName = netI.substr(0, netI.find(":"));
+      tree_->graft(".net." + netName + ".rx_rate", Tree::make());
+      tree_->graft(".net." + netName + ".rx_bytes", Tree::make());
+      tree_->graft(".net." + netName + ".rx_packets", Tree::make());
+      tree_->graft(".net." + netName + ".rx_errors", Tree::make());
+      tree_->graft(".net." + netName + ".rx_drop", Tree::make());
+      tree_->graft(".net." + netName + ".tx_rate", Tree::make());
+      tree_->graft(".net." + netName + ".tx_bytes", Tree::make());
+      tree_->graft(".net." + netName + ".tx_packets", Tree::make());
+      tree_->graft(".net." + netName + ".tx_errors", Tree::make());
+      tree_->graft(".net." + netName + ".tx_drop", Tree::make());
+      _net[netName] = Net();
+    }
+  }
   file.close();
   return true;
 }
 
 void
 SystemUsage::pollState() {
-  bool firstRun = true;
-
-  while (running_) {
     ifstream file;
-
-    //
     // Get the cpu state
-    //
     file.open(PROCSTATFILE);
     if (!file.is_open())
       return;
-
     for (string line; getline(file, line);) {
       string core;
-      long
-          user,
-          nice,
-          system,
-          idle,
-          io,
-          irq,
-          softIrq,
-          steal,
-          guest;
-
+      long user, nice, system, idle, io, irq, softIrq, steal, guest;
       istringstream stream(line);
       stream >> core >> user >> nice >> system >> idle >> io >> irq >>
           softIrq >> steal >> guest;
-
       if (core.substr(0, 3) == "cpu") {
-        long
-            totalTime =
-            user + nice + system + idle + io + irq + softIrq + steal + guest;
-
-        // Initialize the tree
-        if (firstRun) {
-          tree_->graft(".cpu." + core + ".total", Tree::make());
-          tree_->graft(".cpu." + core + ".user", Tree::make());
-          tree_->graft(".cpu." + core + ".nice", Tree::make());
-          tree_->graft(".cpu." + core + ".system", Tree::make());
-          tree_->graft(".cpu." + core + ".idle", Tree::make());
-
-          _cpus[core] = Cpu();
-        }
-        else {
-          if (totalTime == _cpus[core].totalTime)
-            continue;
-
-          float
-              totalP,
-              userP,
-              niceP,
-              systemP,
-              idleP;
-          userP =
-              (float) (user - _cpus[core].user) / (float) (totalTime -
-                                                           _cpus
-                                                           [core].totalTime);
-          niceP =
-              (float) (nice - _cpus[core].nice) / (float) (totalTime -
-                                                           _cpus
-                                                           [core].totalTime);
-          systemP =
-              (float) (system -
-                       _cpus[core].system) / (float) (totalTime -
-                                                      _cpus[core].totalTime);
-          idleP =
-              (float) (idle - _cpus[core].idle) / (float) (totalTime -
-                                                           _cpus
-                                                           [core].totalTime);
-          totalP = userP + niceP + systemP;
-
-          tree_->set_data(".cpu." + core + ".total", totalP);
-          tree_->set_data(".cpu." + core + ".user", userP);
-          tree_->set_data(".cpu." + core + ".nice", niceP);
-          tree_->set_data(".cpu." + core + ".system", systemP);
-          tree_->set_data(".cpu." + core + ".idle", idleP);
-        }
-
+        long totalTime = user + nice + system + idle + io + irq + softIrq + steal + guest;
+        if (totalTime == _cpus[core].totalTime)
+          continue;
+        float totalP, userP, niceP, systemP, idleP;
+        userP = (float) (user - _cpus[core].user) / (float) (totalTime - _cpus[core].totalTime);
+        niceP = (float) (nice - _cpus[core].nice) / (float) (totalTime - _cpus[core].totalTime);
+        systemP =
+            (float) (system - _cpus[core].system) / (float) (totalTime - _cpus[core].totalTime);
+        idleP = (float) (idle - _cpus[core].idle) / (float) (totalTime - _cpus[core].totalTime);
+        totalP = userP + niceP + systemP;
+        tree_->set_data(".cpu." + core + ".total", totalP);
+        tree_->set_data(".cpu." + core + ".user", userP);
+        tree_->set_data(".cpu." + core + ".nice", niceP);
+        tree_->set_data(".cpu." + core + ".system", systemP);
+        tree_->set_data(".cpu." + core + ".idle", idleP);
         _cpus[core].user = user;
         _cpus[core].nice = nice;
         _cpus[core].system = system;
@@ -194,31 +183,15 @@ SystemUsage::pollState() {
     }
     file.close();
 
-    //
     // Get the memory state
-    //
     file.open(PROCMEMINFOFILE);
     if (!file.is_open())
       return;
-
     for (string line; getline(file, line);) {
-      // Initialize the tree
-      if (firstRun) {
-        tree_->graft(".mem.total", Tree::make());
-        tree_->graft(".mem.free", Tree::make());
-        tree_->graft(".mem.buffers", Tree::make());
-        tree_->graft(".mem.cached", Tree::make());
-        tree_->graft(".mem.swap_total", Tree::make());
-        tree_->graft(".mem.swap_free", Tree::make());
-      }
-
       string type;
-      int
-          qty;
-
+      int qty;
       istringstream stream(line);
       stream >> type >> qty;
-
       if (type.find("MemTotal") != string::npos)
         tree_->set_data("mem.total", qty);
       else if (type.find("MemFree") != string::npos)
@@ -235,84 +208,52 @@ SystemUsage::pollState() {
     }
     file.close();
 
-    //
     // Get the network state
-    //
     file.open(PROCNETDEVFILE);
     if (!file.is_open())
       return;
-
     for (string line; getline(file, line);) {
       string netI;
-      long
-          rBytes,
-          rPackets,
-          rErrs,
-          rDrop,
-          rFifo,
-          rFrame,
-          rCompressed,
-          rMulticast;
-      long
-          tBytes,
-          tPackets,
-          tErrs,
-          tDrop,
-          tFifo,
-          tColls,
-          tCarrier,
-          tCompressed;
-
+      long rBytes, rPackets, rErrs, rDrop, rFifo, rFrame, rCompressed, rMulticast;
+      long tBytes, tPackets, tErrs, tDrop, tFifo, tColls, tCarrier, tCompressed;
       istringstream stream(line);
       stream >> netI >> rBytes >> rPackets >> rErrs >> rDrop >> rFifo >>
           rFrame >> rCompressed >> rMulticast >> tBytes >> tPackets >>
           tErrs >> tDrop >> tFifo >> tColls >> tCarrier >> tCompressed;
-
       if (netI.find("Inter") == string::npos
           && netI.find("face") == string::npos) {
         string netName;
         netName = netI.substr(0, netI.find(":"));
-
-        if (firstRun) {
+        if (false) {  //FIXME
           tree_->graft(".net." + netName + ".rx_rate", Tree::make());
           tree_->graft(".net." + netName + ".rx_bytes", Tree::make());
           tree_->graft(".net." + netName + ".rx_packets", Tree::make());
           tree_->graft(".net." + netName + ".rx_errors", Tree::make());
           tree_->graft(".net." + netName + ".rx_drop", Tree::make());
-
           tree_->graft(".net." + netName + ".tx_rate", Tree::make());
           tree_->graft(".net." + netName + ".tx_bytes", Tree::make());
           tree_->graft(".net." + netName + ".tx_packets", Tree::make());
           tree_->graft(".net." + netName + ".tx_errors", Tree::make());
           tree_->graft(".net." + netName + ".tx_drop", Tree::make());
-
           _net[netName] = Net();
-        }
-        else {
-          long
-              rx_delta = rBytes - _net[netName].rx_bytes;
-          long
-              tx_delta = tBytes - _net[netName].tx_bytes;
-
+        } else {
+          long rx_delta = rBytes - _net[netName].rx_bytes;
+          long tx_delta = tBytes - _net[netName].tx_bytes;
           _net[netName].rx_rate = (long) ((double) rx_delta / period_);
           _net[netName].tx_rate = (long) ((double) tx_delta / period_);
-
           tree_->set_data(".net." + netName + ".rx_rate",
                           _net[netName].rx_rate);
           tree_->set_data(".net." + netName + ".tx_rate",
                           _net[netName].tx_rate);
         }
-
         _net[netName].rx_bytes = rBytes;
         _net[netName].rx_packets = rPackets;
         _net[netName].rx_errors = rErrs;
         _net[netName].rx_drop = rDrop;
-
         _net[netName].tx_bytes = tBytes;
         _net[netName].tx_packets = tPackets;
         _net[netName].tx_errors = tErrs;
         _net[netName].tx_drop = tDrop;
-
         tree_->set_data(".net." + netName + ".rx_bytes",
                         _net[netName].rx_bytes);
         tree_->set_data(".net." + netName + ".rx_packets",
@@ -321,7 +262,6 @@ SystemUsage::pollState() {
                         _net[netName].rx_errors);
         tree_->set_data(".net." + netName + ".rx_drop",
                         _net[netName].rx_drop);
-
         tree_->set_data(".net." + netName + ".tx_bytes",
                         _net[netName].tx_bytes);
         tree_->set_data(".net." + netName + ".tx_packets",
@@ -333,28 +273,18 @@ SystemUsage::pollState() {
       }
     }
     file.close();
-
     // Graft the data to the tree
     graft_tree(".top.", tree_);
-
-    firstRun = false;
-
-    // FIXME do not sleep in the polling thread
-    this_thread::sleep_for(chrono::milliseconds((int) (period_ * 1000.0)));
-  }
 }
 
-void
-SystemUsage::setRefreshPeriod(double period, void *user_data) {
-  SystemUsage *
-      ctx = static_cast<SystemUsage *>(user_data);
+void SystemUsage::setRefreshPeriod(double period, void *user_data) {
+  SystemUsage *ctx = static_cast<SystemUsage *>(user_data);
   ctx->period_ = period;
 }
 
-double
-SystemUsage::getRefreshPeriod(void *user_data) {
-  SystemUsage *
-      ctx = static_cast<SystemUsage *>(user_data);
+double SystemUsage::getRefreshPeriod(void *user_data) {
+  SystemUsage *ctx = static_cast<SystemUsage *>(user_data);
   return ctx->period_;
 }
-}
+
+} // namespace switcher

@@ -22,11 +22,12 @@ namespace switcher {
 SWITCHER_DECLARE_PLUGIN(PJSIP);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     PJSIP,
+    "sip",
     "SIP (Session Initiation Protocol)",
     "network",
+    "writer",
     "Manages user sessions",
     "LGPL",
-    "sip",
     "Nicolas Bouillot");
 
 // according to pjsip documentation:

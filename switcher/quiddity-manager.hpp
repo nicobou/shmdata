@@ -39,7 +39,6 @@
 
 namespace switcher {
 class QuiddityManager
-// FIXME add const for method args
 {
  public:
   typedef std::shared_ptr<QuiddityManager> ptr;
@@ -59,7 +58,7 @@ class QuiddityManager
 
   ~QuiddityManager();  // FIXME should be private?
   static QuiddityManager::ptr make_manager(const std::string &name);
-  QuiddityManager *operator=(const QuiddityManager &) = delete;
+  QuiddityManager &operator=(const QuiddityManager &) = delete;
   QuiddityManager(const QuiddityManager &) = delete;
   std::string get_name() const;
 
@@ -236,6 +235,7 @@ class QuiddityManager
   void invocation_thread();
   static gboolean execute_command(gpointer user_data);  // gmainloop source callback
   void invoke_in_thread();
+  bool must_be_saved(QuiddityCommand *cmd);
 };
 }  // namespace switcher
 

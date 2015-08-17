@@ -171,6 +171,7 @@ PJPresence::PJPresence(PJSIP *sip_instance):
                                   sip_reg_status_spec_,
                                   "sip-registration",
                                   "Self SIP registration status");
+    sip_instance_->graft_tree(".self.", data::Tree::make(nullptr));
 }
 
 PJPresence::~PJPresence() {
@@ -254,10 +255,12 @@ PJPresence::register_account(const std::string &sip_user,
   registration_cond_.wait(lock);
   change_online_status(PJPresence::AVAILABLE);
   // notifying sip registration status
+  sip_instance_->graft_tree(".self.", data::Tree::make(sip_user));
   GObjectWrapper::notify_property_changed(sip_instance_->custom_props_->get_gobject(),
                                           sip_reg_status_spec_);
   sip_local_user_ = std::string("sip:") + sip_user +
       + ":" + std::to_string(sip_instance_->sip_port_);
+
 }
 
 gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */ ,
@@ -290,12 +293,13 @@ void PJPresence::unregister_account() {
       g_warning("cannot remove buddy");
       return;
     }
-    sip_instance_->prune_tree(".buddy."+ std::to_string(it->second));
+    sip_instance_->prune_tree(".buddies."+ std::to_string(it->second));
     buddy_id_.erase(it);
   }
   account_id_ = -1;
   sip_local_user_.clear();
   registered_ = false;
+  sip_instance_->graft_tree(".self.", data::Tree::make(nullptr));
   GObjectWrapper::notify_property_changed(sip_instance_->custom_props_->
                                           get_gobject(),
                                           sip_reg_status_spec_);
@@ -335,13 +339,13 @@ void PJPresence::add_buddy(const std::string &sip_user) {
   g_debug("Buddy added");
   buddy_id_[sip_user] = buddy_id;
   sip_instance_->
-      graft_tree(".buddy." + std::to_string(buddy_id) + ".uri",
+      graft_tree(".buddies." + std::to_string(buddy_id) + ".uri",
                  data::Tree::make(sip_user));
   sip_instance_->
-      graft_tree(".buddy." + std::to_string(buddy_id) + ".send_status",
+      graft_tree(".buddies." + std::to_string(buddy_id) + ".send_status",
                  data::Tree::make("disconnected"));
   sip_instance_->
-      graft_tree(".buddy." + std::to_string(buddy_id) + ".recv_status",
+      graft_tree(".buddies." + std::to_string(buddy_id) + ".recv_status",
                  data::Tree::make("disconnected"));
   return;
 }
@@ -362,7 +366,7 @@ void PJPresence::del_buddy(const std::string &sip_user) {
     g_warning("cannot remove buddy");
     return;
   }
-  sip_instance_->prune_tree(".buddy."+ std::to_string(it->second));
+  sip_instance_->prune_tree(".buddies."+ std::to_string(it->second));
   buddy_id_.erase(it);
   g_debug("Buddy removed");
   return;
@@ -405,7 +409,7 @@ void PJPresence::name_buddy(std::string name, std::string sip_user) {
     return;
   }
   sip_instance_->
-      graft_tree(".buddy." + std::to_string(it->second) + ".name",
+      graft_tree(".buddies." + std::to_string(it->second) + ".name",
                  data::Tree::make(std::string(name)));
   return;
 }
@@ -501,7 +505,7 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
     status = "busy";
   
   data::Tree::ptr tree = context->sip_instance_->
-      prune_tree(std::string(".buddy." + std::to_string(buddy_id)),
+      prune_tree(std::string(".buddies." + std::to_string(buddy_id)),
                  false);  // do not signal since the tree will be updated
   if (!tree)
     tree = data::Tree::make();
@@ -514,7 +518,7 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
               data::Tree::make(std::string(info.sub_state_name)));
   // replacing old one
   context->sip_instance_->
-      graft_tree(std::string(".buddy." + std::to_string(buddy_id)), tree);
+      graft_tree(std::string(".buddies." + std::to_string(buddy_id)), tree);
 }
 
 void PJPresence::set_status(const gint value, void *user_data) {

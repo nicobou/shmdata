@@ -25,13 +25,15 @@
 #include "./osc-ctrl-server.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscCtrlServer,
-                                     "Switcher OSC Controler",
-                                     "control server",
-                                     "OSCcontrolServer allows for managing switcher through OSC",
-                                     "LGPL",
-                                     "OSCctl",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    OscCtrlServer,
+    "OSCctl",
+    "Switcher OSC Controler",
+    "control",
+    "",
+    "OSCcontrolServer allows for managing switcher through OSC",
+    "LGPL",
+    "Nicolas Bouillot");
 
 OscCtrlServer::OscCtrlServer(const std::string &):
     port_(),

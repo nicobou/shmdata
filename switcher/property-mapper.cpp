@@ -22,21 +22,16 @@
 #include "./gst-utils.hpp"
 #include "./quiddity-manager-impl.hpp"
 
-// for python
-// #ifdef HAVE_CONFIG_H
-// #include "../config.h"
-// #ifdef HAVE_PYTHON
-// #include <Python.h>
-// #endif
-// #endif
-
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyMapper,
-                                     "Switcher Property Mapper",
-                                     "mapper",
-                                     "map two properties, one being slave of the other",
-                                     "LGPL",
-                                     "property-mapper", "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PropertyMapper,
+    "property-mapper",
+    "Switcher Property Mapper",
+    "utils",
+    "",
+    "map two properties, one being slave of the other",
+    "LGPL",
+    "Nicolas Bouillot");
 
 PropertyMapper::PropertyMapper(const std::string &):source_quiddity_(),
                                  source_property_name_(),
@@ -173,6 +168,12 @@ PropertyMapper::set_source_property_method(gchar *quiddity_name,
     default:
       g_debug("type not handled (%s)", g_type_name(pspec->value_type));
   }
+  auto source_tree = context->prune_tree(".source", false);
+  if (!source_tree)
+    source_tree = data::Tree::make();
+  source_tree->graft(".quiddity", data::Tree::make(std::string(quiddity_name)));
+  source_tree->graft(".property", data::Tree::make(std::string(property_name)));
+  context->graft_tree(".source.", source_tree);
   return TRUE;
 }
 
@@ -371,6 +372,12 @@ PropertyMapper::set_sink_property_method(gchar *quiddity_name,
   context->sink_property_name_ = property_name;
   context->sink_quiddity_pspec_ =
       quid->get_property_ptr(property_name)->get_paramspec();
+  auto sink_tree = context->prune_tree(".sink", false);
+  if (!sink_tree)
+    sink_tree = data::Tree::make();
+  sink_tree->graft(".quiddity", data::Tree::make(std::string(quiddity_name)));
+  sink_tree->graft(".property", data::Tree::make(std::string(property_name)));
+  context->graft_tree(".sink", sink_tree);
   return TRUE;
 }
 

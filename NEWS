@@ -1,18 +1,21 @@
-switcher 0.6.4 (2015-06-15)
+switcher 0.8.0 (2015-08-17)
 ---------------------------
-This is an official release in the 0.6 stable series. 
+This is an official release in the 0.8 stable series. 
 
 New features:
 
-* SIP quiddity
-* information tree
-* pixel format option for video quiddities
-* Make_consultable
- 
+* SIP
+* VNC (compatible with gtkwin)
+* jack (resampling + autoconnection)
+* audio encoder
+* more option with v4l2 capture
+* ported to gstreamer 1.0
+* ported to shmdata 1.0
+* using internal information tree
+
 Bugs fixed:
 
-* audio glitching because of sound card clock drift
-* many others
+* two many to be listed here
 
 switcher 0.6.2 (2014-08-04)
 ---------------------------

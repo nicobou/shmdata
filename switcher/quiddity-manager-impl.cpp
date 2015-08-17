@@ -24,33 +24,33 @@
 #include "./quiddity-manager-impl.hpp"
 #include "./quiddity.hpp"
 #include "./scope-exit.hpp"
+#include "./string-utils.hpp"
 
 // the quiddities to manage (line sorted)
 #include "./audio-test-source.hpp"
 #include "./create-remove-spy.hpp"
-#include "./decodebin2.hpp"
-#include "./fake-shmdata-writer.hpp"
-#include "./fakesink.hpp"
-#include "./gst-parse-to-bin-src.hpp"
-#include "./gst-video-parse-to-bin-src.hpp"
+#include "./external-shmdata-writer.hpp"
+#include "./gst-audio-encoder.hpp"
+#include "./gst-video-encoder.hpp"
+#include "./gst-video-converter.hpp"
+//#include "./gst-parse-to-bin-src.hpp"
 #include "./http-sdp-dec.hpp"
-#include "./jack-audio-source.hpp"
 #include "./logger.hpp"
 #include "./property-mapper.hpp"
 #include "./rtp-session.hpp"
-#include "./shmdata-to-file.hpp"
-#include "./shmdata-from-gdp-file.hpp"
-#include "./udpsink.hpp"
+//#include "./shmdata-to-file.hpp"
+//#include "./shmdata-from-gdp-file.hpp"
 #include "./uridecodebin.hpp"
 #include "./string-dictionary.hpp"
 #include "./video-test-source.hpp"
-#include "./xvimagesink.hpp"
 
 namespace switcher {
 QuiddityManager_Impl::ptr
-QuiddityManager_Impl::make_manager(const std::string &name) {
+QuiddityManager_Impl::make_manager(QuiddityManager *root_manager,
+                                   const std::string &name) {
   QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl(name));
   manager->me_ = manager;
+  manager->manager_ = root_manager;
   return manager;
 }
 
@@ -141,27 +141,24 @@ void QuiddityManager_Impl::register_classes() {
   abstract_factory_.register_class<CreateRemoveSpy>
       (CreateRemoveSpy::switcher_doc_.get_class_name(),
        &CreateRemoveSpy::switcher_doc_);
-  abstract_factory_.register_class<Decodebin2>
-      (Decodebin2::switcher_doc_.get_class_name(),
-       &Decodebin2::switcher_doc_);
-  abstract_factory_.register_class<FakeShmdataWriter>
-      (FakeShmdataWriter::switcher_doc_.get_class_name(),
-       &FakeShmdataWriter::switcher_doc_);
-  abstract_factory_.register_class<FakeSink>
-      (FakeSink::switcher_doc_.get_class_name(),
-       &FakeSink::switcher_doc_);
-  abstract_factory_.register_class<GstParseToBinSrc>
-      (GstParseToBinSrc::switcher_doc_.get_class_name(),
-       &GstParseToBinSrc::switcher_doc_);
-  abstract_factory_.register_class<GstVideoParseToBinSrc>
-      (GstVideoParseToBinSrc::switcher_doc_.get_class_name(),
-       &GstVideoParseToBinSrc::switcher_doc_);
+  abstract_factory_.register_class<ExternalShmdataWriter>
+      (ExternalShmdataWriter::switcher_doc_.get_class_name(),
+       &ExternalShmdataWriter::switcher_doc_);
+  abstract_factory_.register_class<GstVideoConverter>
+      (GstVideoConverter::switcher_doc_.get_class_name(),
+       &GstVideoConverter::switcher_doc_);
+  abstract_factory_.register_class<GstVideoEncoder>
+      (GstVideoEncoder::switcher_doc_.get_class_name(),
+       &GstVideoEncoder::switcher_doc_);
+  abstract_factory_.register_class<GstAudioEncoder>
+      (GstAudioEncoder::switcher_doc_.get_class_name(),
+       &GstAudioEncoder::switcher_doc_);
+  // abstract_factory_.register_class<GstParseToBinSrc>
+  //     (GstParseToBinSrc::switcher_doc_.get_class_name(),
+  //      &GstParseToBinSrc::switcher_doc_);
   abstract_factory_.register_class<HTTPSDPDec>
       (HTTPSDPDec::switcher_doc_.get_class_name(),
        &HTTPSDPDec::switcher_doc_);
-  abstract_factory_.register_class<JackAudioSource>
-      (JackAudioSource::switcher_doc_.get_class_name(),
-       &JackAudioSource::switcher_doc_);
   abstract_factory_.register_class<Logger>
       (Logger::switcher_doc_.get_class_name(),
        &Logger::switcher_doc_);
@@ -171,31 +168,24 @@ void QuiddityManager_Impl::register_classes() {
   abstract_factory_.register_class<RtpSession>
       (RtpSession::switcher_doc_.get_class_name(),
        &RtpSession::switcher_doc_);
-  abstract_factory_.register_class<ShmdataFromGDPFile>
-      (ShmdataFromGDPFile::switcher_doc_.get_class_name(),
-       &ShmdataFromGDPFile::switcher_doc_);
-  abstract_factory_.register_class<ShmdataToFile>
-      (ShmdataToFile::switcher_doc_.get_class_name(),
-       &ShmdataToFile::switcher_doc_);
+  // abstract_factory_.register_class<ShmdataFromGDPFile>
+  //     (ShmdataFromGDPFile::switcher_doc_.get_class_name(),
+  //      &ShmdataFromGDPFile::switcher_doc_);
+  // abstract_factory_.register_class<ShmdataToFile>
+  //     (ShmdataToFile::switcher_doc_.get_class_name(),
+  //      &ShmdataToFile::switcher_doc_);
   abstract_factory_.register_class<StringDictionary>
       (StringDictionary::switcher_doc_.get_class_name(),
        &StringDictionary::switcher_doc_);
-  abstract_factory_.register_class<UDPSink>
-      (UDPSink::switcher_doc_.get_class_name(),
-       &UDPSink::switcher_doc_);
   abstract_factory_.register_class<Uridecodebin>
       (Uridecodebin::switcher_doc_.get_class_name(),
        &Uridecodebin::switcher_doc_);
   abstract_factory_.register_class<VideoTestSource>
       (VideoTestSource::switcher_doc_.get_class_name(),
        &VideoTestSource::switcher_doc_);
-  abstract_factory_.register_class<Xvimagesink>
-      (Xvimagesink::switcher_doc_.get_class_name(),
-       &Xvimagesink::switcher_doc_);
 }
 
 std::vector<std::string> QuiddityManager_Impl::get_classes(){
-  // return abstract_factory_.get_classes_documentation ();
   return abstract_factory_.get_keys();
 }
 
@@ -278,7 +268,11 @@ std::string QuiddityManager_Impl::create(const std::string &quiddity_class) {
 
 std::string
 QuiddityManager_Impl::create(const std::string &quiddity_class,
-                             const std::string &nick_name) {
+                             const std::string &raw_nick_name) {
+  std::string nick_name = StringUtils::replace_chars(
+      raw_nick_name,
+      {';', '/', '[', ']', '&', '~', '*', '`', '#', '$', '|','\'', '"', '<', '>'},
+      ' ');
   if (!class_exists(quiddity_class) || nick_name.empty())
     return std::string();
   auto it = quiddities_.find(nick_name);
@@ -325,25 +319,10 @@ std::string QuiddityManager_Impl::get_quiddities_description() {
        it != quids.end(); ++it) {
     descr->begin_object();
     std::shared_ptr<Quiddity> quid = get_quiddity(*it);
-    descr->add_string_member("name", quid->get_name().c_str());
+    descr->add_string_member("id", quid->get_name().c_str());
     descr->add_string_member("class",
                              quid->get_documentation()->get_class_name().
                              c_str());
-    descr->add_string_member("category",
-                             quid->get_documentation()->
-                             get_category().c_str());
-    descr->add_string_member("long name",
-                             quid->get_documentation()->
-                             get_long_name().c_str());
-    descr->add_string_member("description",
-                             quid->get_documentation()->get_description().
-                             c_str());
-    descr->add_string_member("license",
-                             quid->get_documentation()->
-                             get_license().c_str());
-    descr->add_string_member("author",
-                             quid->get_documentation()->
-                             get_author().c_str());
     descr->end_object();
   }
 
@@ -362,20 +341,10 @@ QuiddityManager_Impl::get_quiddity_description(const std::string &nick_name) {
   JSONBuilder::ptr descr(new JSONBuilder());
   descr->reset();
   descr->begin_object();
-  descr->add_string_member("name", nick_name.c_str());
+  descr->add_string_member("id", nick_name.c_str());
   // FIXME should use json node
   descr->add_string_member("class",
                            it->second->get_documentation()->get_class_name().c_str());
-  descr->add_string_member("category",
-                           it->second->get_documentation()->get_category().c_str());
-  descr->add_string_member("long name",
-                           it->second->get_documentation()->get_long_name().c_str());
-  descr->add_string_member("description",
-                           it->second->get_documentation()->get_description().c_str());
-  descr->add_string_member("license",
-                           it->second->get_documentation()->get_license().c_str());
-  descr->add_string_member("author",
-                           it->second->get_documentation()->get_author().c_str());
   descr->end_object();
   return descr->get_string(true);
 }

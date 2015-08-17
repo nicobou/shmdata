@@ -46,8 +46,12 @@ class QuiddityManager_Impl;
 
 class Quiddity {
   friend class StartableQuiddity;
-  friend class Segment;
-  friend class DefaultVideoFormat;
+  friend class ShmdataConnector;
+  friend class ShmdataWriter;
+  friend class ShmdataFollower;
+  friend class GstPixelFormatConverter;
+  friend class GstVideoCodec;
+  friend class GstAudioCodec;
   
  public:
   typedef std::shared_ptr<Quiddity> ptr;
@@ -264,27 +268,31 @@ class Quiddity {
   GMainContext *get_g_main_context();
 };
 
+
 #define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(cpp_quiddity_class,        \
-                                             long_name,                 \
-                                             category,                  \
-                                             short_description,         \
-                                             license,                   \
                                              class_name,                \
+                                             name,                      \
+                                             category,                  \
+                                             tags,                      \
+                                             description,               \
+                                             license,                   \
                                              author)                    \
-  QuiddityDocumentation                                                 \
-  cpp_quiddity_class::switcher_doc_(long_name,                          \
-                                    category,                           \
-                                    short_description,                  \
-                                    license,                            \
-                                    class_name,                         \
-                                    author);                            \
+  QuiddityDocumentation cpp_quiddity_class::switcher_doc_(name,         \
+                                                          class_name,   \
+                                                          category,     \
+                                                          tags,         \
+                                                          description,  \
+                                                          license,      \
+                                                          author);      \
   QuiddityDocumentation *cpp_quiddity_class::get_documentation()        \
   {return &switcher_doc_;}
+
 
 #define SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(cpp_quiddity_class)    \
   typedef std::shared_ptr<cpp_quiddity_class> ptr;                      \
   QuiddityDocumentation *get_documentation();                           \
   static QuiddityDocumentation switcher_doc_;
+
 
 #define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)             \
   extern "C" Quiddity *create(const std::string &name) {        \

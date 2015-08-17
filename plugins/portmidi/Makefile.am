@@ -22,7 +22,6 @@ libportmidisrc_la_LDFLAGS = \
     $(GMODULE_LIBS) \
     $(JSONGLIB_LIBS) \
     $(SHMDATA_LIBS) \
-    $(SHMDATA_ANY_LIBS) \
     -avoid-version \
     -module \
     -L$(top_builddir)/switcher/.libs \
@@ -35,7 +34,6 @@ libportmidisrc_la_CXXFLAGS = \
     $(GST_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
     $(SHMDATA_CFLAGS) \
-    $(SHMDATA_ANY_CFLAGS) \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) 
 
@@ -56,7 +54,6 @@ libportmidisink_la_LDFLAGS = \
     $(GMODULE_LIBS) \
     $(JSONGLIB_LIBS) \
     $(SHMDATA_LIBS) \
-    $(SHMDATA_ANY_LIBS) \
     -avoid-version \
     -module \
     -L$(top_builddir)/switcher/.libs \
@@ -69,7 +66,6 @@ libportmidisink_la_CXXFLAGS = \
     $(GST_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
     $(SHMDATA_CFLAGS) \
-    $(SHMDATA_ANY_CFLAGS) \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) 
 

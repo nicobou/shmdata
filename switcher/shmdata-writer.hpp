@@ -20,50 +20,46 @@
 #ifndef __SWITCHER_SHMDATA_WRITER_H__
 #define __SWITCHER_SHMDATA_WRITER_H__
 
-#include <memory>
-#include <string>
-#include <shmdata/base-writer.h>
-#include "./json-builder.hpp"
-#include "./on-caps.hpp"
-#include "./unique-gst-element.hpp"
+#include <mutex> 
+#include "shmdata/writer.hpp"
+#include "switcher/quiddity.hpp"
+#include "switcher/safe-bool-idiom.hpp"
+#include "switcher/shmdata-glib-logger.hpp"
+#include "switcher/make-consultable.hpp"
+#include "switcher/periodic-task.hpp"
 
 namespace switcher {
-class ShmdataWriter: public OnCaps {
+class ShmdataWriter: public SafeBoolIdiom {
  public:
-  typedef std::shared_ptr<ShmdataWriter> ptr;
-  using CapsCallBack = std::function<void (std::string)>;
-  ShmdataWriter();
+  ShmdataWriter(Quiddity *quid,
+                const std::string &path,
+                size_t memsize,
+                const std::string &data_descr);
+  ShmdataWriter() = delete;
   ~ShmdataWriter();
   ShmdataWriter(const ShmdataWriter &) = delete;
-  ShmdataWriter &operator=(const ShmdataWriter &) = delete;
+  ShmdataWriter& operator=(const ShmdataWriter&) = delete;
+  ShmdataWriter& operator=(ShmdataWriter&&) = default;
 
-  bool set_path(std::string name);  // path needs to be fully specified
-  bool set_path_without_deleting(std::string name);  // path needs to be fully specified
-  std::string get_path() const;
-
-  // caps does not need to be fully specified:
-  void plug(GstElement *bin, GstElement *source_element, GstCaps *caps);
-  void plug(GstElement *bin, GstPad *source_pad);
-
-  // get json doc:
-  JSONBuilder::Node get_json_root_node();
-
+  Make_delegate(shmdata::Writer, &shm_, writer);
+  // this is used in order to monitor traffic in the shmdata,
+  // i.e. you need to update this at each write with the size writen,
+  // regardless of the shmdata::Writer method you are using 
+  void bytes_written(size_t size);
+  
  private:
-  std::string path_ {};
-  shmdata_base_writer_t *writer_{nullptr};
-  GstElement *bin_{nullptr};
-  UGstElem tee_;
-  UGstElem queue_;
-  UGstElem fakesink_;
-  gulong handoff_handler_{0};
-  JSONBuilder::ptr json_description_{};
-
-  void make_json_description();
-  static void on_handoff_cb(GstElement *object,
-                            GstBuffer *buf,
-                            GstPad *pad,
-                            gpointer user_data);
+  Quiddity *quid_;
+  std::string shmpath_;
+  std::string data_type_;
+  ShmdataGlibLogger shmlog_{};
+  shmdata::Writer shm_;
+  std::unique_ptr<PeriodicTask> task_;
+  size_t bytes_written_{0};
+  std::mutex bytes_mutex_{};
+  
+  bool safe_bool_idiom() const final{return static_cast<bool>(shm_);};
+  void update_quid_byte_rate();
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

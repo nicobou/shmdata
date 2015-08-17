@@ -19,50 +19,48 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./pulsesrc.hpp"
 #include "switcher/gst-utils.hpp"
+#include "switcher/std2.hpp"
+#include "switcher/shmdata-utils.hpp" 
+#include "./pulsesrc.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     PulseSrc,
+    "pulsesrc",
     "Pulse Audio Device",
     "audio",
-    "Inspecting Devices And Getting Audio From Inputs",
+    "writer/device",
+    "Audio From Pulse audio driver",
     "LGPL",
-    "pulsesrc",
     "Nicolas Bouillot");
 
 PulseSrc::PulseSrc(const std::string &):
+    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
     custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 
-bool PulseSrc::init_gpipe() {
-  if (!make_elements())
-    return false;
-  install_property(G_OBJECT(pulsesrc_), "volume", "volume", "Volume");
-  install_property(G_OBJECT(pulsesrc_), "mute", "mute", "Mute");
+bool PulseSrc::init() {
   init_startable(this);
+  if (!pulsesrc_ || !shmsink_)
+    return false;
+  shmpath_ = make_file_name("audio"); 
+  g_object_set(G_OBJECT(pulsesrc_.get_raw()), "client-name", get_name().c_str(), nullptr);
+  g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   std::unique_lock<std::mutex> lock(devices_mutex_);
   GstUtils::g_idle_add_full_with_context(get_g_main_context(),
                                          G_PRIORITY_DEFAULT_IDLE,
                                          async_get_pulse_devices,
-                                         this, nullptr);
-  capture_devices_description_spec_ =
-      custom_props_->make_string_property("devices-json",
-                                          "Description of capture devices (json formated)",
-                                          "", (GParamFlags) G_PARAM_READABLE,
-                                          nullptr,
-                                          PulseSrc::get_capture_devices_json,
-                                          this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            capture_devices_description_spec_,
-                            "devices-json", "Capture Devices");
+                                         this,
+                                         nullptr);
   // waiting for devices to be updated
   devices_cond_.wait(lock);
   if (!connected_to_pulse_) {
     g_debug("not connected to pulse, cannot init");
     return false;
   }
+  install_property(G_OBJECT(pulsesrc_.get_raw()), "volume", "volume", "Volume");
+  install_property(G_OBJECT(pulsesrc_.get_raw()), "mute", "mute", "Mute");
   return true;
 }
 
@@ -79,9 +77,10 @@ gboolean PulseSrc::async_get_pulse_devices(void *user_data) {
   }
   pa_context_set_state_callback(context->pa_context_,
                                 pa_context_state_callback, context);
-  if (pa_context_connect
-      (context->pa_context_, context->server_, (pa_context_flags_t) 0,
-       nullptr) < 0) {
+  if (pa_context_connect(context->pa_context_,
+                         context->server_,
+                         (pa_context_flags_t) 0,
+                         nullptr) < 0) {
     g_debug("pa_context_connect() failed: %s",
             pa_strerror(pa_context_errno(context->pa_context_)));
     return FALSE;
@@ -99,8 +98,6 @@ PulseSrc::~PulseSrc() {
                                            quit_pulse, this, nullptr);
     quit_cond_.wait(lock);
   }
-  if (nullptr != capture_devices_description_)
-    g_free(capture_devices_description_);
 }
 
 gboolean PulseSrc::quit_pulse(void *user_data) {
@@ -114,26 +111,10 @@ gboolean PulseSrc::quit_pulse(void *user_data) {
   return FALSE;
 }
 
-bool PulseSrc::make_elements() {
-  if (!GstUtils::make_element("pulsesrc", &pulsesrc_))
+bool PulseSrc::remake_elements() {
+  if (!UGstElem::renew(pulsesrc_, {"client-name","volume", "mute", "device"})
+      || !UGstElem::renew(shmsink_, {"socket-path"}))
     return false;
-  if (!GstUtils::make_element("capsfilter", &capsfilter_))
-    return false;
-  if (!GstUtils::make_element("bin", &pulsesrc_bin_))
-    return false;
-  g_object_set(G_OBJECT(pulsesrc_), "client", get_name().c_str(),
-               nullptr);
-  gst_bin_add_many(GST_BIN(pulsesrc_bin_), pulsesrc_, capsfilter_, nullptr);
-  gst_element_link(pulsesrc_, capsfilter_);
-  GstPad *src_pad = gst_element_get_static_pad(capsfilter_, "src");
-  GstPad *ghost_srcpad = gst_ghost_pad_new(nullptr, src_pad);
-  gst_pad_set_active(ghost_srcpad, TRUE);
-  gst_element_add_pad(pulsesrc_bin_, ghost_srcpad);
-  gst_object_unref(src_pad);
-  // uninstall_property ("volume");
-  // uninstall_property ("mute");
-  reinstall_property(G_OBJECT(pulsesrc_), "volume", "volume", "Volume");
-  reinstall_property(G_OBJECT(pulsesrc_), "mute", "mute", "Mute");
   return true;
 }
 
@@ -188,33 +169,6 @@ PulseSrc::pa_context_state_callback(pa_context *pulse_context,
   }
 }
 
-void PulseSrc::make_json_description() {
-  if (capture_devices_description_ != nullptr)
-    g_free(capture_devices_description_);
-  JSONBuilder::ptr builder(new JSONBuilder());
-  builder->reset();
-  builder->begin_object();
-  builder->set_member_name("capture devices");
-  builder->begin_array();
-  for (auto &it : capture_devices_) {
-    builder->begin_object();
-    builder->add_string_member("long name", it.description_.c_str());
-    builder->add_string_member("name", it.name_.c_str());
-    builder->add_string_member("state", it.state_.c_str());
-    builder->add_string_member("sample format", it.sample_format_.c_str());
-    builder->add_string_member("sample rate", it.sample_rate_.c_str());
-    builder->add_string_member("channels", it.channels_.c_str());
-    builder->add_string_member("active port", it.active_port_.c_str());
-    builder->end_object();
-  }
-  builder->end_array();
-  builder->end_object();
-  capture_devices_description_ =
-      g_strdup(builder->get_string(true).c_str());
-  // g_print ("%s\n",capture_devices_description_);
-  GObjectWrapper::notify_property_changed(gobject_->get_gobject(),
-                                          capture_devices_description_spec_);
-}
 
 void
 PulseSrc::get_source_info_callback(pa_context *pulse_context,
@@ -247,7 +201,6 @@ PulseSrc::get_source_info_callback(pa_context *pulse_context,
                                        custom_props_->get_gobject(),
                                        context->devices_enum_spec_,
                                        "device", "Capture Device");
-    context->make_json_description();
     // signal init we are done
     std::unique_lock<std::mutex> lock(context->devices_mutex_);
     context->devices_cond_.notify_all();
@@ -361,23 +314,6 @@ PulseSrc::on_pa_event_callback(pa_context *pulse_context,
   }
 }
 
-const gchar *PulseSrc::get_capture_devices_json(void *user_data) {
-  PulseSrc *context = static_cast<PulseSrc *>(user_data);
-  if (context->capture_devices_description_ == nullptr)
-    context->capture_devices_description_ =
-        g_strdup("{ \"capture devices\" : [] }");
-  return context->capture_devices_description_;
-}
-
-bool PulseSrc::capture_device() {
-  make_elements();
-  g_object_set(G_OBJECT(pulsesrc_),
-               "device", capture_devices_.at(device_).name_.c_str(),
-               nullptr);
-  set_raw_audio_element(pulsesrc_bin_);
-  return true;
-}
-
 void PulseSrc::update_capture_device() {
   gint i = 0;
   for (auto &it : capture_devices_) {
@@ -393,21 +329,47 @@ void PulseSrc::update_capture_device() {
 }
 
 bool PulseSrc::start() {
-  if (capture_devices_description_ == nullptr)
-    return false;
-  return capture_device();
+  g_object_set(G_OBJECT(pulsesrc_.get_raw()),
+               "device", capture_devices_.at(device_).name_.c_str(),
+               nullptr);
+  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+      shmsink_.get_raw(),
+      [this]( const std::string &caps){
+        this->graft_tree(".shmdata.writer." + shmpath_,
+                         ShmdataUtils::make_tree(caps,
+                                                 ShmdataUtils::get_category(caps),
+                                                 0));
+      },
+      [this](GstShmdataSubscriber::num_bytes_t byte_rate){
+        this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
+                         data::Tree::make(byte_rate));
+      });
+  gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
+                   pulsesrc_.get_raw(),
+                   shmsink_.get_raw(),
+                   nullptr);
+  gst_element_link_many(pulsesrc_.get_raw(), shmsink_.get_raw(), nullptr);
+  gst_pipeline_->play(true);
+  return true;
 }
 
 bool PulseSrc::stop() {
-  if (capture_devices_description_ == nullptr)
+  shm_sub_.reset(nullptr);
+  prune_tree(".shmdata.writer." + shmpath_);
+  uninstall_property("volume");
+  uninstall_property("mute");
+  if (!remake_elements())
     return false;
-  reset_bin();
+  install_property(G_OBJECT(pulsesrc_.get_raw()), "volume", "volume", "Volume");
+  install_property(G_OBJECT(pulsesrc_.get_raw()), "mute", "mute", "Mute");
+  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
   return true;
 }
 
 void PulseSrc::set_device(const gint value, void *user_data) {
   PulseSrc *context = static_cast<PulseSrc *>(user_data);
   context->device_ = value;
+  
 }
 
 gint PulseSrc::get_device(void *user_data) {

@@ -28,36 +28,35 @@
 
 #include <glib/gstdio.h>  // writing sdp file
 #include <chrono>
+#include <sstream>
 #include "./scope-exit.hpp"
 #include "./rtp-session.hpp"
 #include "./gst-utils.hpp"
 #include "./json-builder.hpp"
 #include "./std2.hpp"
+#include "./shmdata-utils.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RtpSession,
-                                     "RTP Session",
-                                     "network",
-                                     "RTP session manager",
-                                     "LGPL",
-                                     "rtpsession",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    RtpSession,
+    "rtpsession",
+    "RTP Session",
+    "network",
+    "",
+    "RTP session manager",
+    "LGPL",
+    "Nicolas Bouillot");
 
 RtpSession::RtpSession(const std::string &):
+    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
     custom_props_(new CustomPropertyHelper()) {
 }
 
-RtpSession::~RtpSession() {
-  GstUtils::clean_element(rtpsession_);
-}
-
-bool RtpSession::init_gpipe() {
-  if (!GstUtils::make_element("gstrtpbin", &rtpsession_))
+bool RtpSession::init() {
+  if (!GstUtils::make_element("rtpbin", &rtpsession_))
     return false;
-  g_object_set(G_OBJECT(rtpsession_), "ntp-sync", TRUE, nullptr);
-
-  g_object_set(G_OBJECT(get_bin()), "async-handling", TRUE, nullptr);
-
+  g_object_set(G_OBJECT(rtpsession_), "ntp-sync", TRUE, "async-handling", TRUE, nullptr);
+  //g_object_set(G_OBJECT(get_bin()), "async-handling", TRUE, nullptr);
   g_signal_connect(G_OBJECT(rtpsession_), "on-bye-ssrc",
                    (GCallback) on_bye_ssrc, (gpointer) this);
   g_signal_connect(G_OBJECT(rtpsession_), "on-bye-timeout",
@@ -84,10 +83,11 @@ bool RtpSession::init_gpipe() {
                    (GCallback) on_pad_removed, (gpointer) this);
   g_signal_connect(G_OBJECT(rtpsession_), "no-more-pads",
                    (GCallback) on_no_more_pad, (gpointer) this);
-
-  gst_bin_add(GST_BIN(get_bin()), rtpsession_);
-  GstUtils::sync_state_with_parent(rtpsession_);
-
+  gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), rtpsession_);
+  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()),
+               "async-handling", TRUE,
+               nullptr);
+  gst_pipeline_->play(true);
   install_method("Add Data Stream",
                  "add_data_stream",
                  "add a data stream to the RTP session (sending)",
@@ -100,7 +100,6 @@ bool RtpSession::init_gpipe() {
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
-
   install_method("Remove Data Stream",
                  "remove_data_stream",
                  "remove a data stream from the RTP session (sending)",
@@ -114,7 +113,6 @@ bool RtpSession::init_gpipe() {
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr),
                  this);
-
   install_method("Add Destination",
                  "add_destination",
                  "add a destination (two destinations can share the same host name)",
@@ -132,7 +130,6 @@ bool RtpSession::init_gpipe() {
                                                    G_TYPE_STRING,
                                                    nullptr),
                  this);
-
   install_method("Remove Destination",
                  "remove_destination",
                  "remove a destination",
@@ -145,7 +142,6 @@ bool RtpSession::init_gpipe() {
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
-
   install_method("Add UDP Stream",
                  "add_udp_stream_to_dest",
                  "stream RTP to a port with udp",
@@ -164,7 +160,6 @@ bool RtpSession::init_gpipe() {
                                                    G_TYPE_STRING,
                                                    nullptr),
                  this);
-
   install_method("Remove UDP Stream",
                  "remove_udp_stream_to_dest",
                  "remove destination",
@@ -179,7 +174,6 @@ bool RtpSession::init_gpipe() {
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    G_TYPE_STRING,
                                                    nullptr), this);
-
   install_method("Write SDP File",
                  "write_sdp_file",
                  "print sdp for the given destination",
@@ -192,7 +186,6 @@ bool RtpSession::init_gpipe() {
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
-
   destination_description_json_ =
       custom_props_->make_string_property("destinations-json",
                                           "json formated description of destinations",
@@ -200,11 +193,9 @@ bool RtpSession::init_gpipe() {
                                           nullptr,
                                           RtpSession::get_destinations_json,
                                           this);
-
   install_property_by_pspec(custom_props_->get_gobject(),
                             destination_description_json_,
                             "destinations-json", "Destinations");
-
   mtu_at_add_data_stream_spec_ =
       custom_props_->make_int_property("mtu-at-add-data-stream",
                                        "MTU that will be set during add_data_stream invokation",
@@ -213,7 +204,6 @@ bool RtpSession::init_gpipe() {
                                        RtpSession::set_mtu_at_add_data_stream,
                                        RtpSession::get_mtu_at_add_data_stream,
                                        this);
-
   install_property_by_pspec(custom_props_->get_gobject(),
                             mtu_at_add_data_stream_spec_,
                             "mtu-at-add-data-stream",
@@ -225,7 +215,6 @@ gboolean
 RtpSession::write_sdp_file_wrapped(gpointer nick_name,
                                    gpointer user_data) {
   RtpSession *context = static_cast<RtpSession *>(user_data);
-
   if (context->write_sdp_file((char *) nick_name))
     return TRUE;
   else
@@ -262,8 +251,7 @@ RtpSession::sink_factory_filter(GstPluginFeature *feature,
   if (!(g_strrstr(klass, "Payloader") && g_strrstr(klass, "RTP")))
     return FALSE;
 
-  if (!gst_element_factory_can_sink_caps
-      (GST_ELEMENT_FACTORY(feature), caps))
+  if (!gst_element_factory_can_sink_all_caps(GST_ELEMENT_FACTORY(feature), caps))
     return FALSE;
 
   return TRUE;
@@ -283,15 +271,13 @@ RtpSession::sink_compare_ranks(GstPluginFeature *f1,
 }
 
 // this is a typefind function, called when type of input stream from a shmdata is found
-void
-RtpSession::make_data_stream_available(GstElement *typefind,
-                                       guint /*probability */ ,
-                                       GstCaps *caps,
-                                       gpointer user_data) {
-  RtpSession *context = static_cast<RtpSession *>(user_data);
+std::string RtpSession::make_rtp_payloader(GstElement *shmdatasrc,
+                                           const std::string &caps_str) {
   GstElement *pay = nullptr;
+  GstCaps *caps = gst_caps_from_string (caps_str.c_str());
+  On_scope_exit{if (nullptr != caps) gst_caps_unref(caps);};
   GList *list = gst_registry_feature_filter(
-      gst_registry_get_default(),
+      gst_registry_get(),
       (GstPluginFeatureFilter)sink_factory_filter,
       FALSE,
       caps);
@@ -301,38 +287,35 @@ RtpSession::make_data_stream_available(GstElement *typefind,
   GstStructure *caps_structure = gst_caps_get_structure(caps, 0);
   // check jpeg dimension are suported by jpeg payloader
   if (g_str_has_prefix(gst_structure_get_name(caps_structure), "image/jpeg")) {
-    gint width = 0, height = 0;
-    if (gst_structure_get_int(caps_structure, "height", &height)) {
-      if (height <= 0 || height > 2040)
-        jpeg_payloader = false;
-    }
-    if (gst_structure_get_int(caps_structure, "width", &width)) {
-      if (width <= 0 || width > 2040)
-        jpeg_payloader = false;
-    }
+    jpeg_payloader = false;
+    // gint width = 0, height = 0;
+    // if (gst_structure_get_int(caps_structure, "height", &height)) {
+    //   if (height <= 0 || height > 2040)
+    //     jpeg_payloader = false;
+    // }
+    // if (gst_structure_get_int(caps_structure, "width", &width)) {
+    //   if (width <= 0 || width > 2040)
+    //     jpeg_payloader = false;
+    // }
   }
   if (list != nullptr && jpeg_payloader)
     pay = gst_element_factory_create(GST_ELEMENT_FACTORY(list->data), nullptr);
   else 
     GstUtils::make_element("rtpgstpay", &pay);
-  ShmdataReader *reader = static_cast<ShmdataReader *>(
-      g_object_get_data(G_OBJECT(typefind), "shmdata-reader"));
-  reader->add_element_to_cleaner(pay);
-  
   g_debug("using %s payloader for %s",
           GST_ELEMENT_NAME(pay),
-          reader->get_path().c_str());
-  // add capture and payloading to the pipeline and link
-  gst_bin_add_many(GST_BIN(context->get_bin()), pay, nullptr);
-  gst_element_link(typefind, pay);
-  GstUtils::sync_state_with_parent(pay);
+          caps_str.c_str());
   g_object_set(G_OBJECT(pay),
                "mtu",
-               (guint)context->mtu_at_add_data_stream_,
+               (guint)mtu_at_add_data_stream_,
                nullptr);
+  // add capture and payloading to the pipeline and link
+  gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), pay);
+  gst_element_link(shmdatasrc, pay);
+  GstUtils::sync_state_with_parent(pay);
   // now link all to the rtpbin, start by getting an RTP sinkpad for session "%d"
-  GstPad *sinkpad = gst_element_get_request_pad(context->rtpsession_,
-                                                "send_rtp_sink_%d");
+  GstPad *sinkpad = gst_element_get_request_pad(rtpsession_,
+                                                "send_rtp_sink_%u");
   On_scope_exit {gst_object_unref(sinkpad);}; 
   GstPad *srcpad = gst_element_get_static_pad(pay, "src");
   On_scope_exit {gst_object_unref(srcpad);}; 
@@ -343,34 +326,9 @@ RtpSession::make_data_stream_available(GstElement *typefind,
   On_scope_exit{g_free(rtp_sink_pad_name);};
   gchar **rtp_session_array = g_strsplit_set(rtp_sink_pad_name, "_", 0);
   On_scope_exit{g_strfreev(rtp_session_array);};
-  context->make_udp_sinks(reader->get_path(),
-                          rtp_session_array[3]);
-  std::unique_lock<std::mutex> lock(context->stream_mutex_);
-  context->stream_cond_.notify_one();
+  return std::string(rtp_session_array[3]);
   // FIXME We also want to receive RTCP, request an RTCP sinkpad for given session and
   // link it to a funnel for future linking with network connections
-}
-
-void
-RtpSession::attach_data_stream(ShmdataReader *caller,
-                               void *user_data) {
-  RtpSession *context = static_cast<RtpSession *>(user_data);
-  GstElement *funnel, *typefind;
-  GstUtils::make_element("funnel", &funnel);
-  GstUtils::make_element("typefind", &typefind);
-  // give caller to typefind in order to register telement to remove
-  g_object_set_data(G_OBJECT(typefind), "shmdata-reader",
-                    (gpointer) caller);
-  g_signal_connect(typefind, "have-type",
-                   G_CALLBACK(RtpSession::make_data_stream_available),
-                   context);
-  gst_bin_add_many(GST_BIN(context->get_bin()), funnel, typefind, nullptr);
-  gst_element_link(funnel, typefind);
-  GstUtils::sync_state_with_parent(funnel);
-  GstUtils::sync_state_with_parent(typefind);
-  caller->set_sink_element(funnel);
-  caller->add_element_to_cleaner(funnel);
-  caller->add_element_to_cleaner(typefind);
 }
 
 gboolean
@@ -418,6 +376,8 @@ bool RtpSession::remove_destination(std::string nick_name) {
               nick_name.c_str());
     return false;
   }
+  if (!it->second)
+    return false;
   for (auto &iter: it->second->get_shmdata())
     remove_udp_stream_to_dest(iter, nick_name);
   destinations_.erase(it);
@@ -432,8 +392,7 @@ RtpSession::add_udp_stream_to_dest_wrapped(gpointer shmdata_name,
                                            gpointer user_data) {
   RtpSession *context = static_cast<RtpSession *>(user_data);
 
-  if (context->add_udp_stream_to_dest
-      ((char *) shmdata_name, (char *) nick_name, (char *) port))
+  if (context->add_udp_stream_to_dest((char *) shmdata_name, (char *) nick_name, (char *) port))
     return TRUE;
   else
     return FALSE;
@@ -539,37 +498,57 @@ gboolean
 RtpSession::add_data_stream_wrapped(gpointer connector_name,
                                     gpointer user_data) {
   RtpSession *context = static_cast<RtpSession *>(user_data);
-
   if (context->add_data_stream((char *) connector_name))
     return TRUE;
   else
     return FALSE;
 }
 
-bool RtpSession::add_data_stream(std::string shmpath) {
+bool RtpSession::add_data_stream(const std::string &shmpath) {
   remove_data_stream(shmpath);
   std::unique_lock<std::mutex> lock(stream_mutex_);
   DataStream::ptr ds = std2::make_unique<DataStream>(rtpsession_);
   ds->id = next_id_;
   next_id_++;
   data_streams_[shmpath] = std::move(ds);
-  
-  ShmdataReader::ptr reader = std::make_shared<ShmdataReader>();
-  reader->set_path(shmpath.c_str());
-  reader->set_g_main_context(get_g_main_context());
-  reader->set_bin(get_bin());
-  reader->set_on_first_data_hook(attach_data_stream, this);
-  reader->start();
-  g_debug("%s waiting for data in shm %s",
-          __FUNCTION__,
-          shmpath.c_str());
-  stream_cond_.wait_for(lock, std::chrono::seconds(3));
-  // testing if stream has been added
-  if (nullptr == data_streams_[shmpath]->udp_rtp_sink) {
-    remove_data_stream(shmpath);
+  GstUtils::make_element("shmdatasrc",
+                         &data_streams_[shmpath]->shmdatasrc);
+  GstElement *src = data_streams_[shmpath]->shmdatasrc;
+  g_object_set(G_OBJECT(src), "copy_buffers", TRUE, nullptr);
+  data_streams_[shmpath]->shm_sub.reset(
+      new GstShmdataSubscriber(
+          src,
+          [this, shmpath, src]( const std::string &caps){
+            auto rtpid = this->make_rtp_payloader(src, caps);
+            this->make_udp_sinks(shmpath, rtpid);
+            this->graft_tree(".shmdata.reader." + shmpath,
+                             ShmdataUtils::make_tree(caps,
+                                                     ShmdataUtils::get_category(caps),
+                                                     0));
+          },
+          [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate){
+            this->graft_tree(".shmdata.reader." + shmpath + ".byte_rate",
+                             data::Tree::make(std::to_string(byte_rate)));
+          }));
+  g_object_set(G_OBJECT(src), "socket-path", shmpath.c_str(), nullptr);
+  gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), src);
+  GstUtils::sync_state_with_parent(src);
+  // waiting for caps to be updated
+  if(!stream_cond_.wait_for(lock,
+                            std::chrono::milliseconds(1000),
+                            [this](){
+                              if (true == this->stream_added_) {
+                                this->stream_added_ = false;
+                                return true;
+                              }
+                              return false;
+                            })){
+    auto ds_it = data_streams_.find(shmpath);
+    if (data_streams_.end() != ds_it) {
+      data_streams_.erase(ds_it);
+    }
     return false;
   }
-  register_shmdata(reader);
   return true;
 }
 
@@ -583,7 +562,7 @@ RtpSession::remove_data_stream_wrapped(gpointer connector_name,
     return FALSE;
 }
 
-bool RtpSession::remove_data_stream(std::string shmpath) {
+bool RtpSession::remove_data_stream(const std::string &shmpath) {
   for (auto &it : destinations_) {
     if (it.second->has_shmdata(shmpath))
       it.second->remove_stream(shmpath);
@@ -594,8 +573,8 @@ bool RtpSession::remove_data_stream(std::string shmpath) {
             shmpath.c_str());
     return false;
   }
-  unregister_shmdata(shmpath);
   prune_tree("rtp_caps." + shmpath);
+  prune_tree("shmdata.reader." + shmpath);
   data_streams_.erase(ds_it);
   g_debug("data_stream %s removed", shmpath.c_str());
   return true;
@@ -682,14 +661,16 @@ void RtpSession::on_timeout(GstElement * /*rtpbin */ ,
 }
 
 void RtpSession::on_pad_added(GstElement * /*gstelement */ ,
-                              GstPad *new_pad, gpointer user_data) {
+                              GstPad *new_pad,
+                              gpointer /*user_data*/) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
   g_debug("on_pad_added, name: %s, direction: %d",
           gst_pad_get_name(new_pad), gst_pad_get_direction(new_pad));
 }
 
 void RtpSession::on_pad_removed(GstElement * /*gstelement */ ,
-                                GstPad *new_pad, gpointer /*user_data */ ) {
+                                GstPad */*new_pad*/,
+                                gpointer /*user_data */ ) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
   // g_debug("on_pad_removed");
 }
@@ -728,10 +709,24 @@ gint RtpSession::get_mtu_at_add_data_stream(void *user_data) {
   return context->mtu_at_add_data_stream_;
 }
 
-void RtpSession::on_rtp_caps(std::string shmdata_path, std::string caps) {
-  caps += ", media-label=" + get_quiddity_name_from_file_name(shmdata_path);
+void RtpSession::on_rtp_caps(const std::string &shmdata_path, std::string caps) {
+  std::string rawlabel = get_quiddity_name_from_file_name(shmdata_path);
+  std::istringstream ss(rawlabel); // Turn the string into a stream
+  std::string tok;
+  std::getline(ss, tok, ' ');
+  std::string label = tok;
+  while(std::getline(ss, tok, ' '))
+    label += "\\ " + tok;
+  caps += ", media-label=(string)\""
+      + label
+      + "\"";
   graft_tree("rtp_caps." + std::move(shmdata_path),
              data::Tree::make(std::move(caps)));
+  {  // stream ready, unlocking add_data_stream
+    std::unique_lock<std::mutex> lock(this->stream_mutex_);
+    this->stream_added_ = true;
+    this->stream_cond_.notify_one();
+  }
 }
 
 // this is a typefind function used in order to get rtp payloader caps
@@ -790,7 +785,6 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
     it->second->udp_rtp_bin = udpsink_bin;
     // saving for latter controling
     it->second->udp_rtp_sink = udpsink;
-    
     g_object_set (G_OBJECT (udpsink_bin), "async-handling", TRUE, nullptr);
     g_object_set(G_OBJECT(udpsink), "sync", FALSE, nullptr);
     // saving shmpath and this for use when type find will throw "have-type" 
@@ -808,7 +802,7 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
     gst_bin_add_many(GST_BIN(udpsink_bin),
                      typefind, udpsink, nullptr);
     gst_element_link(typefind, udpsink);
-    gst_bin_add(GST_BIN(get_bin()), udpsink_bin);
+    gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), udpsink_bin);
     GstPad *sink_pad = gst_element_get_static_pad(typefind, "sink");
     GstPad *ghost_sinkpad = gst_ghost_pad_new(nullptr, sink_pad);
     gst_pad_set_active(ghost_sinkpad, TRUE);
@@ -834,7 +828,7 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
 #if HAVE_OSX
     set_udp_sock(udpsink);
 #endif
-    gst_bin_add(GST_BIN(get_bin()), udpsink);
+    gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), udpsink);
     GstUtils::sync_state_with_parent(udpsink);
     GstPad *sink_pad = gst_element_get_static_pad(udpsink, "sink");
     On_scope_exit{gst_object_unref(sink_pad);};
@@ -845,6 +839,10 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
 }
 
 RtpSession::DataStream_t::~DataStream_t() {
+  if(nullptr != shmdatasrc){
+    shm_sub.reset(nullptr);
+    GstUtils::clean_element(shmdatasrc);
+  }
   if(nullptr != rtp_static_pad)
     gst_object_unref(rtp_static_pad);
   GstUtils::clean_element(udp_rtp_sink);

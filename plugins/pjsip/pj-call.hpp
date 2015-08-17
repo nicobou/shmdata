@@ -23,7 +23,6 @@
 #include <vector>
 #include <mutex>
 #include <condition_variable>
-#include "switcher/shmdata-any-writer.hpp"
 #include "switcher/rtp-session.hpp"
 #include "switcher/quiddity-manager.hpp"
 #include "./pj-codec.hpp"
@@ -63,6 +62,8 @@ class PJCall {
   std::mutex ocall_m_{};
   std::condition_variable ocall_cv_{};
   bool ocall_action_done_{false};
+  bool is_calling_{false};
+  bool is_hanging_up_{false};
   std::vector<call_t> incoming_call_{};
   std::vector<call_t> call_{};
   std::map<std::string, std::string> local_ips_{};
@@ -73,7 +74,7 @@ class PJCall {
   std::map<std::string, std::string> quid_uri_{};
   data::Tree::ptr contact_shm_;
   uint starting_rtp_port_ {18900};
-  pj_uint16_t last_attributed_port_{18900};  // Must be even
+  pj_uint16_t next_port_to_attribute_{18900};  // Must be even
   uint port_range_{100};
   GParamSpec *starting_rtp_port_spec_ {nullptr};
   // sip functions
@@ -128,6 +129,7 @@ class PJCall {
                                       pjsua_buddy_id id);
   static bool release_incoming_call(call_t *call, pjsua_buddy_id id);
   static bool release_outgoing_call(call_t *call, pjsua_buddy_id id);
+  static void print_sdp(const pjmedia_sdp_session *local_sdp);
 };
 
 }  // namespace switcher

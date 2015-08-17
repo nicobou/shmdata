@@ -21,36 +21,34 @@
 #define __SWITCHER_PORTMIDI_SOURCE_H__
 
 #include "switcher/quiddity.hpp"
-#include "switcher/segment.hpp"
-#include "./portmidi-devices.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
+#include "switcher/shmdata-writer.hpp"
+#include "./portmidi-devices.hpp"
 
 namespace switcher {
 class PortMidiSource: public Quiddity,
-                      public Segment,
                       public StartableQuiddity,
                       public PortMidi {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSource);
   PortMidiSource(const std::string &);
-  ~PortMidiSource();
+  ~PortMidiSource() = default;
   PortMidiSource(const PortMidiSource &) = delete;
   PortMidiSource &operator=(const PortMidiSource &) = delete;
 
  private:
   typedef struct {
-    PortMidiSource *port_midi_source_;
-    std::string property_long_name_;
+    PortMidiSource *port_midi_source_{nullptr};
+    std::string property_long_name_{};
   } MidiPropertyContext;
 
-  ShmdataAnyWriter::ptr shm_any_;
+  std::unique_ptr<ShmdataWriter> shm_{nullptr};
   gint last_status_;
   gint last_data1_;
   gint last_data2_;
   // properties
   CustomPropertyHelper::ptr custom_props_;
-  GParamSpec *devices_description_spec_;
   // device selection
   GParamSpec *devices_enum_spec_;
   gint device_;
@@ -70,22 +68,24 @@ class PortMidiSource: public Quiddity,
   bool start() final;
   bool stop() final;
 
-  bool make_property(std::string property_long_name);
+  bool make_property(std::string property_long_name, gint last_status, gint last_data);
   static void set_device(const gint value, void *user_data);
   static gint get_device(void *user_data);
   static gint get_midi_value(void *user_data);
   // midi properties
   static gboolean next_midi_event_to_property_method(gchar *long_name,
                                                      void *user_data);
-  static gboolean last_midi_event_to_property_method(gchar *long_name,
-                                                     void *user_data);
   static gboolean remove_property_method(gchar *long_name,
                                          void *user_data);
   static gint get_midi_property_value(void *user_data);
   static void on_pm_event(PmEvent *event, void *user_data);
+  static gboolean make_property_wrapped(const gchar *property_long_name,
+                                        gint last_status,
+                                        gint last_data1,
+                                        void *user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSource);
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

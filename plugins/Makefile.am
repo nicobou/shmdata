@@ -37,10 +37,11 @@ SUBDIRS += \
 	posture
 endif
 
-if HAVE_OSX
-SUBDIRS += \
-    syphonsrc
-endif
+# FIXME port to shmdata1
+# if HAVE_OSX
+# SUBDIRS += \
+#     syphonsrc
+# endif
 
 if !HAVE_OSX
 SUBDIRS += \
@@ -50,4 +51,9 @@ endif
 if JACKBUILD
 SUBDIRS += \
     jack
+endif
+
+if VNCBUILD
+SUBDIRS += \
+	vnc
 endif

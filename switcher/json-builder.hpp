@@ -45,7 +45,7 @@ class JSONBuilder {
     }
     RootNodeCopy() = delete;
     RootNodeCopy(const RootNodeCopy &) = delete;
-    const RootNodeCopy &operator=(const RootNodeCopy &) = delete;
+    RootNodeCopy &operator=(const RootNodeCopy &) = delete;
 
     JsonNode *get() {return copy_;}
    private:

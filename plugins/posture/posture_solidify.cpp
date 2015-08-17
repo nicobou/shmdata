@@ -17,6 +17,7 @@
  */
 
 #include "./posture_solidify.hpp"
+#include "switcher/std2.hpp"
 
 #include <iostream>
 
@@ -25,15 +26,19 @@ using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureSolidify,
-                                     "Point Clouds to Mesh",
-                                     "video",
-                                     "Convert a point cloud to a mesh",
-                                     "LGPL",
-                                     "pcltomeshsink", "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PostureSolidify,
+    "pcltomeshsink",
+    "Point Clouds to Mesh",
+    "video",
+    "writer/reader",
+    "Convert a point cloud to a mesh",
+    "LGPL",
+    "Emmanuel Durand");
 
 PostureSolidify::PostureSolidify(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()) {
+    custom_props_(std::make_shared<CustomPropertyHelper> ()),
+    shmcntr_(static_cast<Quiddity*>(this)) {
 }
 
 PostureSolidify::~PostureSolidify() {
@@ -54,23 +59,18 @@ PostureSolidify::stop() {
   lock_guard<mutex> lock(mutex_);
   solidify_.reset();
 
-  clear_shmdatas();
-  if (mesh_writer_ != nullptr)
-    mesh_writer_.reset();
-
   return true;
 }
 
 bool
 PostureSolidify::init() {
   init_startable(this);
-  init_segment(this);
 
-  install_connect_method(std::bind(&PostureSolidify::connect, this, std::placeholders::_1),
-                         std::bind(&PostureSolidify::disconnect, this, std::placeholders::_1),
-                         std::bind(&PostureSolidify::disconnect_all, this),
-                         std::bind(&PostureSolidify::can_sink_caps, this, std::placeholders::_1),
-                         1);
+  shmcntr_.install_connect_method([this](const std::string path){return connect(path);},
+                                  [this](const std::string path){return disconnect(path);},
+                                  [this](){return disconnect_all();},
+                                  [this](const std::string caps){return can_sink_caps(caps);},
+                                  1);
 
   save_mesh_prop_ = custom_props_->make_boolean_property("save_mesh",
                                            "Save the current mesh if true",
@@ -102,20 +102,13 @@ PostureSolidify::init() {
 
 bool
 PostureSolidify::connect(std::string shmdata_socket_path) {
-  ShmdataAnyReader::ptr reader_ = make_shared<ShmdataAnyReader>();
-  reader_->set_path(shmdata_socket_path);
-
-  // This is the callback for when new clouds are received
-  reader_->set_callback([=] (void *data,
-                             int size,
-                             unsigned long long /*unused*/,
-                             const char *type,
-                             void * /*unused */ )
-  {
+  pcl_reader_ = std2::make_unique<ShmdataFollower>(this,
+                                                   shmdata_socket_path,
+                                                   [=] (void *data, size_t size) {
     if (!worker_.is_ready() || !mutex_.try_lock())
       return;
 
-    if (solidify_ == nullptr || (string(type) != string(POINTCLOUD_TYPE_BASE) && string(type) != string(POINTCLOUD_TYPE_COMPRESSED)))
+    if (solidify_ == nullptr || (pcl_reader_caps_ != string(POINTCLOUD_TYPE_BASE) && pcl_reader_caps_ != string(POINTCLOUD_TYPE_COMPRESSED)))
     {
       mutex_.unlock();
       return;
@@ -123,36 +116,34 @@ PostureSolidify::connect(std::string shmdata_socket_path) {
 
     // Setting input clouds is thread safe, so lets do it
     solidify_->setInputCloud(vector<char>((char*)data, (char*) data + size),
-                             string(type) != string(POINTCLOUD_TYPE_BASE));
+                             pcl_reader_caps_ != string(POINTCLOUD_TYPE_BASE));
 
     worker_.set_task([=] () {
       // Get the result mesh, and send it through shmdata
-      vector<unsigned char> mesh = solidify_->getMesh();
-      if (mesh_writer_ == nullptr)
+      auto mesh = vector<unsigned char>();
+      solidify_->getMesh(mesh);
+      if (mesh_writer_ == nullptr || mesh.size() > mesh_writer_->writer(&shmdata::Writer::alloc_size))
       {
-        mesh_writer_ = make_shared<ShmdataAnyWriter>();
-        mesh_writer_->set_path(make_file_name("mesh"));
-        mesh_writer_->set_data_type(POLYGONMESH_TYPE_BASE);
-        register_shmdata(mesh_writer_);
-        mesh_writer_->start();
+        auto data_type = string(POLYGONMESH_TYPE_BASE);
+        mesh_writer_.reset();
+        mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
+                                                        make_file_name("mesh"),
+                                                        std::max(mesh.size() * 2, (size_t)1024),
+                                                        data_type);
       }
 
-      check_buffers();
-      shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(reinterpret_cast<const unsigned char*>(mesh.data()),
-                                                                    reinterpret_cast<const unsigned char*>(mesh.data()) + mesh.size()));
-      mesh_writer_->push_data_auto_clock((void *) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
-                                          mesh.size(),
-                                          PostureSolidify::free_sent_buffer,
-                                          (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
+      mesh_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(mesh.data()), mesh.size());
+      mesh_writer_->bytes_written(mesh.size());
+
       mutex_.unlock();
     });
 
     worker_.do_task();
-  },
-  nullptr);
+  }, [=](string caps) {
+    unique_lock<mutex> lock(mutex_);
+    pcl_reader_caps_ = caps;
+  });
 
-  reader_->start();
-  register_shmdata(reader_);
   return true;
 }
 
@@ -164,8 +155,7 @@ PostureSolidify::disconnect(std::string /*unused*/) {
 bool
 PostureSolidify::disconnect_all() {
   std::lock_guard<mutex> lock(mutex_);
-  if (solidify_ == nullptr)
-    clear_shmdatas();
+  stop();
   return true;
 }
 
@@ -203,24 +193,6 @@ PostureSolidify::set_save_mesh(const int save, void *user_data) {
 
   if (ctx->solidify_ != nullptr)
     ctx->solidify_->setSaveMesh(save);
-}
-
-void
-PostureSolidify::free_sent_buffer(void* data)
-{
-  vector<unsigned char>* buffer = static_cast<vector<unsigned char>*>(data);
-  buffer->clear();
-}
-
-void
-PostureSolidify::check_buffers()
-{
-  for (unsigned int i = 0; i < shmwriter_queue_.size();) {
-    if (shmwriter_queue_[i]->size() == 0)
-      shmwriter_queue_.erase(shmwriter_queue_.begin() + i);
-    else
-      i++;
-  }
 }
 
 }  // namespace switcher

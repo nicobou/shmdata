@@ -31,12 +31,15 @@ SDPMedia::~SDPMedia() {
 }
 
 bool SDPMedia::set_media_info_from_caps(const GstCaps *media_caps) {
-  if (nullptr == media_caps)
+  if (nullptr == media_caps){
+    g_warning("media description is missing when generating SDP media");
     return false;
+  }
   GstStructure *s = gst_caps_get_structure(media_caps, 0);
-  if (nullptr == s)
+  if (nullptr == s) {
+    g_warning("cannot get structure from caps when generating SDP media");
     return false;
-
+  }
   gint value;
   if (nullptr == gst_structure_get_string(s, "media")
       || nullptr == gst_structure_get_string(s, "encoding-name")

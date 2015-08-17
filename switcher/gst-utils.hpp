@@ -22,6 +22,8 @@
 
 #include <gst/gst.h>
 #include <memory>
+#include <vector>
+#include <string>
 
 namespace switcher {
 namespace GstUtils {
@@ -54,7 +56,8 @@ void free_g_enum_values(GEnumValue *target_enum);
 void element_factory_list_to_g_enum(GEnumValue *target_enum,
                                     GstElementFactoryListType type,
                                     GstRank minrank,
-                                    bool insert_none_first = true);
+                                    bool insert_none_first = true,
+                                    const std::vector<std::string> &black_list = {});
 void gst_element_deleter(GstElement *element);
 gulong g_signal_connect_function(gpointer gobject,
                                  const gchar *signal,

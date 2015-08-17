@@ -42,16 +42,14 @@ class PortMidi {
   typedef void (*on_pm_event_method) (PmEvent *midi_event,
                                       void *user_data);
   PortMidi();
-  virtual ~ PortMidi();
+  virtual ~PortMidi();
   PortMidi(const PortMidi &) = delete;
   PortMidi &operator=(const PortMidi &) = delete;
 
  protected:
   // info
-  static const gchar *get_devices_description_json(gpointer user_data);
   GEnumValue input_devices_enum_[128];
   GEnumValue output_devices_enum_[128];
-
   // input
   // static int get_default_input_device_id();
   bool open_input_device(int id, on_pm_event_method method,
@@ -59,7 +57,6 @@ class PortMidi {
   bool close_input_device(int id);
   // bool is_queue_empty(int id);
   std::vector<unsigned char>poll(int id);
-
   // ouput
   // static int get_default_output_device_id();
   bool open_output_device(int id);
@@ -68,12 +65,9 @@ class PortMidi {
                          unsigned char data2);
 
  private:
-  gchar *devices_description_;
-  std::map<guint, PmStream *>input_streams_;
-  std::map<guint, PmStream *>output_streams_;
-
+  std::map<guint, PmStream *>input_streams_{};
+  std::map<guint, PmStream *>output_streams_{};
   /** Prints the list of MIDI source devices. */
-  static gchar *make_devices_description(void *user_data);
   void update_device_enum();
 
   // internal midi scheduler
@@ -101,13 +95,11 @@ class PortMidi {
     bool portmidi_initialized_;
     bool app_sysex_in_progress_;
     bool thru_sysex_in_progress_;
-
     static void process_midi(PtTimestamp timestamp, void *userData);
   };                          // end of PortMidiScheduler
-
   static PortMidiScheduler *scheduler_;
   static guint instance_counter_;
 };
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

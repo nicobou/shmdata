@@ -20,11 +20,6 @@
 #include "./counter-map.hpp"
 
 namespace switcher {
-CounterMap::CounterMap():counters_(), mutex_() {
-}
-
-CounterMap::~CounterMap() {
-}
 
 unsigned int CounterMap::get_count(const std::string &key) {
   std::unique_lock<std::mutex> lock(mutex_);

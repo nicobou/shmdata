@@ -26,13 +26,16 @@
 #include <string>
 
 #include "./posture.hpp"
+#include "switcher/std2.hpp"
 #include "switcher/quiddity.hpp"
-#include "switcher/segment.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-follower.hpp"
+#include "switcher/shmdata-writer.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
-class PostureDetect : public Quiddity, public Segment, public StartableQuiddity {
+class PostureDetect : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureDetect);
   PostureDetect(const std::string &);
@@ -45,14 +48,17 @@ class PostureDetect : public Quiddity, public Segment, public StartableQuiddity 
 
  private:
   CustomPropertyHelper::ptr custom_props_;
+  ShmdataConnector shmcntr_;
+
   bool compress_cloud_ {false};
 
   std::shared_ptr<posture::Detect> detect_ {nullptr};
   std::mutex mutex_ {};
 
-  ShmdataAnyWriter::ptr cloud_writer_ {nullptr};
-  ShmdataAnyWriter::ptr mesh_writer_ {nullptr};
-  std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};
+  std::unique_ptr<ShmdataFollower> reader_ {nullptr};
+  std::string reader_caps_ {};
+  std::unique_ptr<ShmdataWriter> cloud_writer_ {nullptr};
+  std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
 
   bool init() final;
 
@@ -60,9 +66,6 @@ class PostureDetect : public Quiddity, public Segment, public StartableQuiddity 
   bool disconnect(std::string shmName);
   bool disconnect_all();
   bool can_sink_caps(std::string caps);
-
-  static void free_sent_buffer(void* data);
-  void check_buffers();
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureDetect);

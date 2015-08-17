@@ -17,77 +17,77 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./audio-test-source.hpp"
 #include <gst/gst.h>
-#include "./gst-utils.hpp"
+#include <thread>
+#include "./shmdata-utils.hpp" 
+#include "./audio-test-source.hpp"
+#include "./std2.hpp"
+#include "./information-tree-basic-serializer.hpp"
+
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
-                                     "Sine",
-                                     "audio",
-                                     "Creates audio test signals",
-                                     "LGPL",
-                                     "audiotestsrc",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    AudioTestSource,
+    "audiotestsrc",
+    "Sine",
+    "audio",
+    "writer",
+    "Creates audio test signals",
+    "LGPL",
+    "Nicolas Bouillot");
 
 AudioTestSource::AudioTestSource(const std::string &):
-    audiotestsrc_("audiotestsrc") {
-}
-
-bool AudioTestSource::init_gpipe() {
-  init_startable(this);
-  return make_audiotestsrc();
-}
-
-bool AudioTestSource::make_audiotestsrc() {
-  uninstall_property("volume");
-  uninstall_property("freq");
-  uninstall_property("samplesperbuffer");
-  uninstall_property("wave");
-
-  UGstElem audiotest("audiotestsrc");
-  if (!audiotest)
-    return false;
-
-  g_object_set(G_OBJECT(audiotest.get_raw()), "is-live", TRUE, nullptr);
-
-  if (audiotestsrc_) {
-    GstUtils::apply_property_value(G_OBJECT(audiotestsrc_.get_raw()),
-                                   G_OBJECT(audiotest.get_raw()), "volume");
-    GstUtils::apply_property_value(G_OBJECT(audiotestsrc_.get_raw()),
-                                   G_OBJECT(audiotest.get_raw()), "freq");
-    GstUtils::apply_property_value(G_OBJECT(audiotestsrc_.get_raw()),
-                                   G_OBJECT(audiotest.get_raw()), "samplesperbuffer");
-    GstUtils::apply_property_value(G_OBJECT(audiotestsrc_.get_raw()),
-                                   G_OBJECT(audiotest.get_raw()), "wave");
+  gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)){
+    init_startable(this);
   }
-  else
-    g_object_set(G_OBJECT(audiotest.get_raw()), "samplesperbuffer", 512, nullptr);
 
-  audiotestsrc_ = std::move(audiotest);
-
+bool AudioTestSource::init() {
+  shmpath_ = make_file_name("audio");  // FIXME make_file name should work in ctor...
+  g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "is-live", TRUE, nullptr);
+  g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "samplesperbuffer", 512, nullptr);
+  g_object_set(G_OBJECT(shmdatasink_.get_raw()),
+               "socket-path", shmpath_.c_str(),
+               nullptr);
   // registering
   install_property(G_OBJECT(audiotestsrc_.get_raw()), "volume", "volume", "Volume");
   install_property(G_OBJECT(audiotestsrc_.get_raw()), "freq", "freq", "Frequency");
-  // install_property (G_OBJECT (audiotestsrc_.get_raw()),
-  //        "samplesperbuffer",
-  //        "samplesperbuffer",
-  //        "Samples Per Buffer");
   install_property(G_OBJECT(audiotestsrc_.get_raw()), "wave", "wave", "Signal Form");
-
+  gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
+                   audiotestsrc_.get_raw(),
+                   shmdatasink_.get_raw(),
+                   nullptr);
+  gst_element_link(audiotestsrc_.get_raw(), shmdatasink_.get_raw());
+  if (!audiotestsrc_) {
+    g_warning("audiotestsrc creation failed");
+    return false;
+  }
+  if (!shmdatasink_) {
+    g_warning("shmdatasink creation failed");
+    return false;
+  }
   return true;
 }
 
-AudioTestSource::~AudioTestSource() {
-}
-
 bool AudioTestSource::start() {
-  set_raw_audio_element(audiotestsrc_.get_raw());
+  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+      shmdatasink_.get_raw(),
+      [this]( const std::string &caps){
+        this->graft_tree(".shmdata.writer." + shmpath_,
+                         ShmdataUtils::make_tree(caps,
+                                                 ShmdataUtils::get_category(caps),
+                                                 0));
+      },
+      [this](GstShmdataSubscriber::num_bytes_t byte_rate){
+        this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
+                         data::Tree::make(byte_rate));
+      });
+  gst_pipeline_->play(true);
   return true;
 }
 
 bool AudioTestSource::stop() {
-  make_audiotestsrc();
-  unset_raw_audio_element();
+  shm_sub_.reset();
+  this->prune_tree(".shmdata.writer." + shmpath_);
+  gst_pipeline_->play(false);
   return true;
 }
 }

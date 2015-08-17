@@ -20,37 +20,29 @@
 #include "./portmidi-sink.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSink,
-                                     "Midi (Port Midi)",
-                                     "midi",
-                                     "shmdata to midi",
-                                     "LGPL",
-                                     "midisink", "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PortMidiSink,
+    "midisink",
+    "Midi (Port Midi)",
+    "midi",
+    "reader/device",
+    "shmdata to midi",
+    "LGPL",
+    "Nicolas Bouillot");
+
 PortMidiSink::PortMidiSink(const std::string &):
-    custom_props_(new CustomPropertyHelper()),
-    devices_description_spec_(nullptr),
-    devices_enum_spec_(nullptr), device_(0) {
+    shmcntr_(static_cast<Quiddity *>(this)),
+    custom_props_(new CustomPropertyHelper()) {
 }
 
 bool PortMidiSink::init() {
   init_startable(this);
-  init_segment(this);
-  install_connect_method(std::bind(&PortMidiSink::connect, this,
-                                   std::placeholders::_1), nullptr,
-                         nullptr, std::bind(&PortMidiSink::can_sink_caps,
-                                            this, std::placeholders::_1),
-                         1);
-  devices_description_spec_ = custom_props_->
-      make_string_property("devices-json",
-                           "Description of capture devices (json formated)",
-                           get_devices_description_json(static_cast<PortMidi *>(this)),
-                           (GParamFlags) G_PARAM_READABLE,
-                           nullptr,
-                           get_devices_description_json,
-                           static_cast<PortMidi *>(this));
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            devices_description_spec_,
-                            "devices-json", "Capture Devices");
+  shmcntr_.install_connect_method(
+      [this](const std::string &shmpath){return this->connect(shmpath);},
+      [this](const std::string &){return this->disconnect();},
+      [this](){return this->disconnect();},
+      [this](const std::string &caps){return this->can_sink_caps(caps);},
+      1);
   device_ = output_devices_enum_[0].value;
   devices_enum_spec_ =
       custom_props_->make_enum_property("device",
@@ -65,13 +57,7 @@ bool PortMidiSink::init() {
   return true;
 }
 
-PortMidiSink::~PortMidiSink() {
-}
-
-void PortMidiSink::on_shmreader_data(void *data, int /*data_size */ ,
-                                     unsigned long long /*timestamp */ ,
-                                     const char * /*type_description */ ,
-                                     void *user_data) {
+void PortMidiSink::on_shmreader_data(void *data, size_t /*size */) {
   PmEvent *event = static_cast<PmEvent *>(data);
   push_midi_message(device_,
                     Pm_MessageStatus(event->message),
@@ -90,41 +76,41 @@ gint PortMidiSink::get_device(void *user_data) {
 }
 
 bool PortMidiSink::start() {
-  uninstall_property("device");
+  disable_property("device");
   open_output_device(device_);
+  // FIXME the following might not be necessary
   gint stat = 165;
   gint data1 = 1;
   gint data2 = 67;
-  push_midi_message(device_, (unsigned char) stat, (unsigned char) data1,
-                    (unsigned char) data2);
+  push_midi_message(device_,
+                    (unsigned char)stat,
+                    (unsigned char)data1,
+                    (unsigned char)data2);
   return true;
 }
 
 bool PortMidiSink::stop() {
   close_output_device(device_);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            devices_enum_spec_, "device", "Capture Device");
+  enable_property("device");
   return true;
 }
 
 bool PortMidiSink::connect(std::string path) {
-  ShmdataAnyReader::ptr reader = std::make_shared<ShmdataAnyReader> ();
-  reader->set_data_type("audio/midi");
-  reader->set_absolute_timestamp(false);
-  reader->set_path(path);
-  reader->set_callback(std::bind(&PortMidiSink::on_shmreader_data,
-                                 this,
-                                 std::placeholders::_1,
-                                 std::placeholders::_2,
-                                 std::placeholders::_3,
-                                 std::placeholders::_4,
-                                 std::placeholders::_5), NULL);
-  reader->start();
-  register_shmdata(reader);
+  shm_.reset(new ShmdataFollower(this,
+                                 path,
+                                 [this](void *data, size_t size){
+                                   this->on_shmreader_data(data, size);
+                                 }));
+  return true;
+}
+
+bool PortMidiSink::disconnect() {
+  shm_.reset(nullptr);
   return true;
 }
 
 bool PortMidiSink::can_sink_caps(std::string caps) {
-  return 0 == caps.find("audio/midi");
+  return (0 == caps.find("audio/midi"));
 }
-}
+
+}  // namespace switcher

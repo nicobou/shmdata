@@ -23,6 +23,7 @@
 #include <memory>
 #include <functional>
 #include <string>
+#include <vector>
 #include "./safe-bool-idiom.hpp"
 #include "./gst-utils.hpp"
 
@@ -47,7 +48,7 @@ class UGstElem : public SafeBoolIdiom {
   // get raw without taking ownership (do not unref)
   GstElement *get_raw();
   // renew
-  static bool renew(UGstElem &element);
+  static bool renew(UGstElem &element, const std::vector<std::string> &props_to_apply = {});
   // mute (will be instanciated with a new class at renew)
   void mute(const gchar *class_name);
  private:

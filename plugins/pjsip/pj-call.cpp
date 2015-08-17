@@ -55,8 +55,8 @@ PJCall::PJCall(PJSIP *sip_instance):
     sip_instance_(sip_instance),
     manager_(QuiddityManager::make_manager(sip_instance->get_manager_name()
                                            // per Pierre-Antoine request:
-                                           // + "-"
-                                           // + sip_instance->get_name()
+                                           + "-"
+                                           + sip_instance->get_name()
                                            )),
     contact_shm_(data::Tree::make()) {
   pj_status_t status;
@@ -242,20 +242,22 @@ bool PJCall::release_incoming_call(call_t *call, pjsua_buddy_id id){
           std::string(".shmdata.writer."));
   for (auto &it: shm_keys)
     PJSIP::this_->prune_tree(std::string(".shmdata.writer." + it));
-  PJSIP::this_->sip_calls_->manager_->remove(dec_name);
+  if(!PJSIP::this_->sip_calls_->manager_->remove(dec_name)){
+    g_warning("SIP internal httpsdpdec cannot be removed (%s)", dec_name.c_str());
+  }
   auto quid_uri_it = PJSIP::this_->sip_calls_->quid_uri_.find(dec_name);
   if (PJSIP::this_->sip_calls_->quid_uri_.end() != quid_uri_it)
     PJSIP::this_->sip_calls_->quid_uri_.erase(quid_uri_it);
   // updating recv status in the tree
   data::Tree::ptr tree = PJSIP::this_->
-      prune_tree(std::string(".buddy." + std::to_string(id)),
+      prune_tree(std::string(".buddies." + std::to_string(id)),
                  false);  // do not signal since the branch will be re-grafted
   if (!tree) {
     g_warning("cannot find buddy information tree, call status update cancelled");
   } else {
     tree->graft(std::string(".recv_status."),
                 data::Tree::make("disconnected"));
-    PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
+    PJSIP::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
   }
   // removing call
   calls.erase(it);
@@ -272,6 +274,7 @@ bool PJCall::release_outgoing_call(call_t *call, pjsua_buddy_id id){
   if (calls.end() == it)
     return false;
   // removing destination to siprtp
+  
   PJSIP::this_->sip_calls_->manager_->
       invoke("siprtp",
              "remove_destination",
@@ -279,20 +282,22 @@ bool PJCall::release_outgoing_call(call_t *call, pjsua_buddy_id id){
              { call->peer_uri });
   // updating call status in the tree
   data::Tree::ptr tree = PJSIP::this_->
-      prune_tree(std::string(".buddy." + std::to_string(id)),
+      prune_tree(std::string(".buddies." + std::to_string(id)),
                  false);  // do not signal since the branch will be re-grafted
   if (!tree) {
     g_warning("cannot find buddy information tree, call status update cancelled");
   } else {
     tree->graft(std::string(".send_status."),
                 data::Tree::make("disconnected"));
-    PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
+    PJSIP::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
   }
   //removing call
   calls.erase(it);
-  std::unique_lock<std::mutex> lock(PJSIP::this_->sip_calls_->ocall_m_);
-  PJSIP::this_->sip_calls_->ocall_action_done_ = true;
-  PJSIP::this_->sip_calls_->ocall_cv_.notify_all();
+  if (PJSIP::this_->sip_calls_->is_hanging_up_ || PJSIP::this_->sip_calls_->is_calling_ ){
+    std::unique_lock<std::mutex> lock(PJSIP::this_->sip_calls_->ocall_m_);
+    PJSIP::this_->sip_calls_->ocall_action_done_ = true;
+    PJSIP::this_->sip_calls_->ocall_cv_.notify_all();
+  }
   return true;
 }
 
@@ -302,7 +307,7 @@ void PJCall::on_inv_state_confirmed(call_t *call,
     g_debug("Call connected");
     // updating call status in the tree
     data::Tree::ptr tree = PJSIP::this_->
-        prune_tree(std::string(".buddy." + std::to_string(id)),
+        prune_tree(std::string(".buddies." + std::to_string(id)),
                    false);  // do not signal since the branch will be re-grafted
     if (!tree) {
       g_warning("cannot find buddy information tree, call status update cancelled");
@@ -314,14 +319,16 @@ void PJCall::on_inv_state_confirmed(call_t *call,
                          [&call](const call_t &c){
                            return c.inv == call->inv;
                          });
+  if( PJSIP::this_->sip_calls_->is_calling_) {
+    std::unique_lock<std::mutex> lock(PJSIP::this_->sip_calls_->ocall_m_);
+    PJSIP::this_->sip_calls_->ocall_action_done_ = true;
+    PJSIP::this_->sip_calls_->ocall_cv_.notify_all();
+  }
   if (calls.end() != it)
     tree->graft(std::string(".send_status."), data::Tree::make("calling"));
   else
     tree->graft(std::string(".recv_status."), data::Tree::make("receiving"));
-  PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
-  std::unique_lock<std::mutex> lock(PJSIP::this_->sip_calls_->ocall_m_);
-  PJSIP::this_->sip_calls_->ocall_action_done_ = true;
-  PJSIP::this_->sip_calls_->ocall_cv_.notify_all();
+  PJSIP::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
 }
 
 
@@ -336,7 +343,7 @@ void PJCall::on_inv_state_connecting(call_t *call,
                                      pjsua_buddy_id id) {
     // updating call status in the tree
     data::Tree::ptr tree = PJSIP::this_->
-        prune_tree(std::string(".buddy." + std::to_string(id)),
+        prune_tree(std::string(".buddies." + std::to_string(id)),
                    false);  // do not signal since the branch will be re-grafted
     if (!tree) {
       g_warning("cannot find buddy information tree, call status update cancelled");
@@ -352,17 +359,36 @@ void PJCall::on_inv_state_connecting(call_t *call,
     tree->graft(std::string(".send_status."), data::Tree::make("connecting"));
   else
     tree->graft(std::string(".recv_status."), data::Tree::make("connecting"));
-  PJSIP::this_->graft_tree(std::string(".buddy." + std::to_string(id)), tree);
+  PJSIP::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
 }
 
 /* Callback to be called when invite session's state has changed: */
 void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event */*e*/) {
   call_t *call = (call_t *) inv->mod_data[mod_siprtp_.id];
-  if (!call) {
+   switch (inv->state) {
+    case PJSIP_INV_STATE_DISCONNECTED:
+      break;
+    case PJSIP_INV_STATE_CONFIRMED:
+      break;
+    case PJSIP_INV_STATE_EARLY:
+      break;
+    case PJSIP_INV_STATE_CONNECTING:
+      break;
+    case PJSIP_INV_STATE_NULL:
+      break;
+    case PJSIP_INV_STATE_CALLING:
+      break;
+    case PJSIP_INV_STATE_INCOMING:
+      break;
+    default :
+      break;
+  }
+   
+   if (!call) {
     g_warning("%s, null call in invite", __FUNCTION__);
     return;
   }
-  // finding id of the buddy related to the call 
+  // finding id of the buddy related to the call
   auto endpos = call->peer_uri.find('@');
   auto beginpos = call->peer_uri.find("sip:");
   if (0 == beginpos) beginpos = 4; else beginpos = 0;
@@ -413,7 +439,6 @@ void PJCall::call_on_forked(pjsip_inv_session */*inv*/,
 /* Callback to be called when SDP negotiation is done in the call: */
 void PJCall::call_on_media_update(pjsip_inv_session *inv,
                                   pj_status_t status) {
-
   const pjmedia_sdp_session *local_sdp, *remote_sdp;
   call_t *call = static_cast<call_t *>(inv->mod_data[mod_siprtp_.id]);
   bool receiving = false;
@@ -422,11 +447,11 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
     g_warning("SDP negotiation failed");
     return;
   }
-  /* Capture stream definition from the SDP */
+  // get stream definition from the SDP, (local contains negociated data)
   pjmedia_sdp_neg_get_active_local(inv->neg, &local_sdp);
   pjmedia_sdp_neg_get_active_remote(inv->neg, &remote_sdp);
-  // g_print ("negotiated LOCAL\n"); print_sdp(local_sdp);
-  // g_print("negotiated REMOTE\n"); print_sdp(remote_sdp);
+  print_sdp(local_sdp);
+  print_sdp(remote_sdp);
   for (uint i = 0; i < call->media.size(); i++) {
     if (i >= local_sdp->media_count) {
       g_warning("%s local SDP negotiation has less media than local SDP, skiping extras",
@@ -520,16 +545,13 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
 void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   // finding caller info
   char uristr[PJSIP_MAX_URL_SIZE];
-  int len;
-  len =
-      pjsip_uri_print(PJSIP_URI_IN_REQ_URI,
-                        rdata->msg_info.msg->line.req.uri,
-                        uristr, sizeof(uristr));
+  int len = pjsip_uri_print(PJSIP_URI_IN_REQ_URI,
+                            rdata->msg_info.msg->line.req.uri,
+                            uristr, sizeof(uristr));
   g_debug("incomimg call req uri %.*s\n", len, uristr);
-  len =
-  pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
-                  pjsip_uri_get_uri(rdata->msg_info.from->uri),
-                  uristr, sizeof(uristr));
+  len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
+                        pjsip_uri_get_uri(rdata->msg_info.from->uri),
+                        uristr, sizeof(uristr));
   std::string from_uri(uristr, len);
   // len =
   pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
@@ -607,7 +629,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   // checking number of transport to create for receiving
   // and creating transport for receiving data offered
   std::vector<pjmedia_sdp_media *>media_to_receive;
-  auto &rtp_port = PJSIP::this_->sip_calls_->last_attributed_port_;
+  auto &rtp_port = PJSIP::this_->sip_calls_->next_port_to_attribute_;
   unsigned int j = 0;  // counting media to receive
   for (unsigned int media_index = 0; media_index < offer->media_count; media_index++) {
     bool recv = false;
@@ -627,26 +649,32 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       // finding a free port
       auto &me = PJSIP::this_->sip_calls_;
       unsigned int counter = me->port_range_/2;
-      while (NetUtils::is_used(rtp_port) && 0 != counter) {
-        rtp_port += 2;
-        if (rtp_port > me->starting_rtp_port_ + me->port_range_
-            || rtp_port < me->starting_rtp_port_)
-          rtp_port = me->starting_rtp_port_;
-        --counter;
+      auto done = false;
+      auto port_found = false;
+      while (!done) {
+        if (!NetUtils::is_used(rtp_port)) {
+          // saving media
+          media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool, tmp_media));
+          call->media.emplace_back();
+          call->media[j].rtp_port = rtp_port;
+          done = true;
+          port_found = true;
+        } else {
+          rtp_port += 2;
+          if (rtp_port > me->starting_rtp_port_ + me->port_range_
+              || rtp_port < me->starting_rtp_port_)
+            rtp_port = me->starting_rtp_port_;
+          --counter;
+          if (0 == counter) {
+            g_warning("no free port found, discarding media");
+            done = true;
+            port_found = false;  // FIXME actually discard media in this case
+          }
         }
-        rtp_port += 2;
-        if (rtp_port > me->starting_rtp_port_ + me->port_range_
-            || rtp_port < me->starting_rtp_port_)
-          rtp_port = me->starting_rtp_port_;
-      if (0 != counter) {
-        // saving media
-        media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool, tmp_media));
-        call->media.emplace_back();
-        call->media[j].rtp_port = rtp_port;
-      } else {
-        g_warning("no free port, media discarded");
       }
-      j++;
+      PJSIP::this_->sip_calls_->next_port_to_attribute_ = rtp_port + 2;
+      if (port_found)
+        j++;  // FIXME what that ???
     }
   }
   // Create SDP answer
@@ -743,17 +771,17 @@ pj_status_t PJCall::create_sdp_answer(
   return PJ_SUCCESS;
 }
 
-// void PJCall::print_sdp(const pjmedia_sdp_session *local_sdp) {
-//   char sdpbuf1[4096];
-//   pj_ssize_t len1;
-//   len1 = pjmedia_sdp_print(local_sdp, sdpbuf1, sizeof(sdpbuf1));
-//   if (len1 < 1) {
-//     g_warning("error when printing local sdp\n");
-//     return;
-//   }
-//   sdpbuf1[len1] = '\0';
-//   g_debug("sdp : \n%s \n\n ", sdpbuf1);
-// }
+void PJCall::print_sdp(const pjmedia_sdp_session *local_sdp) {
+  char sdpbuf1[4096];
+  pj_ssize_t len1;
+  len1 = pjmedia_sdp_print(local_sdp, sdpbuf1, sizeof(sdpbuf1));
+  if (len1 < 1) {
+    g_warning("error when printing local sdp\n");
+    return;
+  }
+  sdpbuf1[len1] = '\0';
+  g_debug("sdp : \n%s \n\n ", sdpbuf1);
+}
 
 // /*
 //  * COPY and REWRITE of pjsip Internal function for collecting
@@ -1064,7 +1092,7 @@ void PJCall::make_call(std::string dst_uri) {
   }
   // updating call status in the tree
   data::Tree::ptr tree = sip_instance_->
-        prune_tree(std::string(".buddy." + std::to_string(id)),
+        prune_tree(std::string(".buddies." + std::to_string(id)),
                    false);  // do not signal since the branch will be re-grafted
   if (!tree) {
     g_warning("cannot find buddy information tree, call cancelled");
@@ -1073,7 +1101,7 @@ void PJCall::make_call(std::string dst_uri) {
   tree->graft(std::string(".send_status."),
               data::Tree::make("calling"));
   sip_instance_->
-      graft_tree(std::string(".buddy." + std::to_string(id)), tree);
+      graft_tree(std::string(".buddies." + std::to_string(id)), tree);
 }
 
 void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
@@ -1090,7 +1118,7 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
   auto paths = PJSIP::this_->
       tree<std::list<std::string>, const std::string &>(
           &data::Tree::copy_leaf_values,
-          std::string(".buddy." + std::to_string(id) + ".connection"));
+          std::string(".buddies." + std::to_string(id) + ".connections"));
   // std::for_each(paths.begin(), paths.end(),
   //               [&] (const std::string &val){
   //                 g_print("----------------------- %s\n", val.c_str());
@@ -1147,10 +1175,12 @@ gboolean PJCall::send_to(gchar *sip_url, void *user_data) {
       g_debug("cancel SIP send_to because an operation is already pending");
       return FALSE;
     }
+    context->is_calling_ = true;
+    On_scope_exit{context->is_calling_ = false;};
     context->sip_instance_->run_command_sync(std::bind(&PJCall::make_call,
                                                        context,
                                                        std::string(sip_url)));
-    context->ocall_cv_.wait(lock, [context](){
+    context->ocall_cv_.wait(lock, [&context](){
         if (context->ocall_action_done_) {
           context->ocall_action_done_ = false;
           return true;
@@ -1173,11 +1203,13 @@ gboolean PJCall::hang_up(gchar *sip_url, void *user_data) {
       g_debug("cancel SIP hang_up because an operation is already pending");
       return FALSE;
     }
+    context->is_hanging_up_ = true;
+    On_scope_exit{context->is_hanging_up_ = false;};
     context->sip_instance_->
         run_command_sync(std::bind(&PJCall::make_hang_up, 
                                    context,
                                    std::string(sip_url)));
-    context->ocall_cv_.wait(lock, [context](){
+    context->ocall_cv_.wait(lock, [&context](){
         if (context->ocall_action_done_) {
           context->ocall_action_done_ = false;
           return true;
@@ -1197,7 +1229,7 @@ void PJCall::make_hang_up(std::string contact_uri) {
   //               });
   auto it = std::find_if(outgoing_call_.begin(), outgoing_call_.end(),
                           [&contact_uri](const call_t &call){
-                            return 0 == contact_uri.compare(call.peer_uri);
+                           return (0 == contact_uri.compare(call.peer_uri));
                           });
   if (outgoing_call_.end() == it) {
     g_warning("no call found with %s", contact_uri.c_str());
@@ -1243,7 +1275,7 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
   }
   if (attach) {
     data::Tree::ptr tree = sip_instance_->
-        prune_tree(std::string(".buddy." + std::to_string(id)),
+        prune_tree(std::string(".buddies." + std::to_string(id)),
                    false);  // do not signal since the branch will be re-grafted
   if (!tree)
     tree = data::Tree::make();
@@ -1252,18 +1284,20 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
                         nullptr,
                         shmpath.c_str(),
                         nullptr);
-    tree->graft(std::string(".connection." + shmpath),
+    tree->graft(std::string(".connections." + shmpath),
                             data::Tree::make(shmpath));
-    sip_instance_->graft_tree(".buddy." + std::to_string(id),
+    tree->tag_as_array(".connections", true);
+    sip_instance_->graft_tree(".buddies." + std::to_string(id),
                               tree);
   } else {
     manager_->invoke_va("siprtp",
-                        "remove_data_stream",
+                        "remove_udp_stream_to_dest",
                         nullptr,
                         shmpath.c_str(),
+                        contact_uri.c_str(),
                         nullptr);
-    sip_instance_->prune_tree(".buddy." + std::to_string(id)
-                              + ".connection." + shmpath);
+    sip_instance_->prune_tree(".buddies." + std::to_string(id)
+                              + ".connections." + shmpath);
   }
 }
 

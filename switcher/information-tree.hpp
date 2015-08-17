@@ -108,7 +108,7 @@ class Tree {
   // get leaf values in a newly allocated container
   std::list<std::string> copy_leaf_values(const std::string &path) const;
 
-  //Tree modifications:
+  // get/set:
   Any get_data() const;
   void set_data(const Any &data);
   void set_data(const char *data);

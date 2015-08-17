@@ -3,9 +3,13 @@ pluginsdir = $(prefix)/lib/nodejs
 plugins_LTLIBRARIES = \
     switcher.la
 
-#libmyplugin info
+#libplugin info
 switcher_la_SOURCES = \
-    node-switcher.cpp
+    switcher-controller.cpp \
+    switcher-addon.cpp
+
+switcher_la_include_HEADERS = \
+    switcher-controller.hpp
 
 switcher_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher

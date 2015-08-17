@@ -27,13 +27,16 @@
 
 #include "./posture.hpp"
 #include "./posture_worker.hpp"
+#include "switcher/std2.hpp"
 #include "switcher/quiddity.hpp"
-#include "switcher/segment.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-writer.hpp"
+#include "switcher/shmdata-follower.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
-class PostureMeshMerge : public Quiddity, public Segment, public StartableQuiddity {
+class PostureMeshMerge : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureMeshMerge);
   PostureMeshMerge(const std::string &);
@@ -46,6 +49,8 @@ class PostureMeshMerge : public Quiddity, public Segment, public StartableQuiddi
 
  private:
   CustomPropertyHelper::ptr custom_props_;
+  ShmdataConnector shmcntr_;
+
   std::string calibration_path_ {"default.kvc"};
   std::string devices_path_ {"devices.xml"};
   bool reload_calibration_ {false};
@@ -62,8 +67,14 @@ class PostureMeshMerge : public Quiddity, public Segment, public StartableQuiddi
   std::mutex updateMutex_ {};
   Worker worker_ {};
 
-  ShmdataAnyWriter::ptr mesh_writer_ {nullptr};
-  std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};
+  std::mutex connect_mutex_ {};
+  unsigned int shmreader_id_ {0};
+  std::map<std::string, std::unique_ptr<ShmdataFollower>> mesh_readers_ {};
+  std::map<int, std::string> mesh_readers_caps_ {};
+  std::unique_ptr<ShmdataWriter> mesh_writer_ {};
+
+  std::map<int, std::vector<unsigned char>> stock_;
+  std::mutex stock_mutex_;
 
   bool init() final;
 
@@ -80,9 +91,6 @@ class PostureMeshMerge : public Quiddity, public Segment, public StartableQuiddi
   static void set_reload_calibration(const int reload, void *user_data);
   static int get_apply_calibration(void *user_data);
   static void set_apply_calibration(const int apply, void *user_data);
-
-  static void free_sent_buffer(void* data);
-  void check_buffers();
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureMeshMerge);

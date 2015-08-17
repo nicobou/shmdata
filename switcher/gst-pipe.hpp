@@ -32,16 +32,21 @@ namespace switcher {
 
 class GstPipe {
  public:
-  GstPipe(GMainContext *context);
+  using on_msg_async_cb_t = std::function<void(GstMessage *)>;
+  using on_msg_sync_cb_t = std::function<GstBusSyncReply(GstMessage *)>;
+  GstPipe(GMainContext *context,
+          GstBusSyncReply (*bus_sync_cb)(GstBus * /*bus*/,
+                                         GstMessage *msg,
+                                         gpointer user_data),
+          gpointer user_data);
   ~GstPipe();
   GstPipe() = delete;
   GstPipe(const GstPipe &) = delete;
   GstPipe &operator=(const GstPipe &) = delete;
-  void set_on_error_function(std::function<void(GstMessage *)> fun);
   bool play(bool play);
   bool seek(gdouble position);
   bool speed(gdouble speed);
-  GstElement *get_pipeline();  // FIXME remove that
+  GstElement *get_pipeline();
   
  private:
   typedef struct {  // GstBus is a specific context:
@@ -49,17 +54,14 @@ class GstPipe {
     GstBus *bus;
     gboolean inited;
   } GstBusSource;
-
+  
   GstElement *pipeline_ {nullptr};
   GMainContext *gmaincontext_{nullptr};
   GSourceFuncs source_funcs_;
   gdouble speed_ {1.0};
-  std::mutex play_pipe_{};
-  std::condition_variable play_cond_{};
   GSource *source_ {nullptr};
+  //  GSource *bus_watch_source_ {nullptr};
   gint64 length_ {0};
-  std::function<void(GstMessage *)> on_error_function_{};
-
   void query_position_and_length();
   static gboolean source_prepare(GSource *source,
                                  gint *timeout);
@@ -68,12 +70,8 @@ class GstPipe {
                                   GSourceFunc callback,
                                   gpointer user_data);
   static void source_finalize(GSource *source);
-  
-  static gboolean bus_called(GstBus * bus, GstMessage *msg, gpointer data);
-  static GstBusSyncReply bus_sync_handler(GstBus * bus, GstMessage *msg,
-                                          gpointer user_data);
   static void play_pipe(GstPipe *pipe);
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

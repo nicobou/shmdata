@@ -94,7 +94,8 @@ std::string RtpDestination::get_sdp() {
     On_scope_exit{gst_caps_unref(caps);};
     gint port = atoi(it.second.c_str());
     SDPMedia media;
-    media.set_media_info_from_caps(caps);
+    if (!media.set_media_info_from_caps(caps))
+      g_warning("issue with sdp media info");
     media.set_port(port);
     if (!desc.add_media(media)) {
       g_warning("a media has not been added to the SDP description,"

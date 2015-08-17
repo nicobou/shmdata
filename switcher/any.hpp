@@ -75,8 +75,13 @@ struct Any {
   bool not_null() const {
     return ptr_;
   }
+  
   template<typename U> Any(U && value):
       ptr_(new AnyValueDerived<StorageType<U>> (std::forward<U>(value))) {
+  }
+
+  Any(std::nullptr_t /*value*/):
+      ptr_(nullptr) {
   }
 
   template<class U>
@@ -148,9 +153,7 @@ struct Any {
       delete ptr_;
   }
 
-  static
-  std::string
-  to_string(const Any &any) {
+  static std::string to_string(const Any &any) {
     std::stringstream ss;
     ss << any;
     return ss.str();

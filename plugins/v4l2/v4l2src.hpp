@@ -18,16 +18,24 @@
 #ifndef __SWITCHER_V4L2SRC_H__
 #define __SWITCHER_V4L2SRC_H__
 
-#include "switcher/video-source.hpp"
-#include "switcher/custom-property-helper.hpp"
 #include <memory>
+#include "switcher/std2.hpp"
+#include "switcher/quiddity.hpp"
+#include "switcher/startable-quiddity.hpp"
+#include "switcher/gst-pipeliner.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/unique-gst-element.hpp"
+#include "switcher/gst-video-codec.hpp"
+#include "switcher/custom-property-helper.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/gst-video-codec.hpp"
 
 namespace switcher {
-class V4L2Src:public VideoSource {
+class V4L2Src: public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(V4L2Src);
   V4L2Src(const std::string &);
-  ~V4L2Src();
+  ~V4L2Src() = default;
   V4L2Src(const V4L2Src &) = delete;
   V4L2Src &operator=(const V4L2Src &) = delete;
 
@@ -45,13 +53,17 @@ class V4L2Src:public VideoSource {
   bool check_folder_for_v4l2_devices(const char *dir_path);
 
  private:
-  bool on_start();
-  bool on_stop();
-  bool make_video_source(GstElement **new_element);
+  bool start() final;
+  bool stop() final;
+  bool configure_capture();
 
-  GstElement *v4l2src_{nullptr};
-  GstElement *v4l2_bin_{nullptr};
-  GstElement *capsfilter_{nullptr};
+  UGstElem v4l2src_{"v4l2src"};
+  UGstElem capsfilter_{"capsfilter"};
+  UGstElem shmsink_{"shmdatasink"};
+  std::string shmpath_{};
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  std::unique_ptr<GstVideoCodec> codecs_{nullptr};
 
   typedef struct {
     std::string card_{};
@@ -79,8 +91,7 @@ class V4L2Src:public VideoSource {
     gint frame_interval_stepwise_step_denominator_{0};
   } CaptureDescription;
 
-  bool make_elements();
-  void clean_elements();
+  bool remake_elements();
   void update_capture_device();
   void update_device_specific_properties(gint device_enum_id);
   void update_discrete_resolution(const CaptureDescription &descr);
@@ -105,13 +116,9 @@ class V4L2Src:public VideoSource {
   // static bool inspect_frame_rate(const char *file_path,
   //                                unsigned pixel_format,
   //                                unsigned width, unsigned height);
-  static const gchar *get_capture_devices_json(void *user_data);
 
   // custom properties:
   CustomPropertyHelper::ptr custom_props_{};
-  GParamSpec *capture_devices_description_spec_{nullptr};  // json formated
-  gchar *capture_devices_description_{nullptr};  // json formated
-  
   // device enum and select
   GParamSpec *devices_enum_spec_{nullptr};
   GEnumValue devices_enum_[128];
@@ -173,9 +180,10 @@ class V4L2Src:public VideoSource {
   // to GstStructure (and then caps)
   static GstStructure *gst_v4l2_object_v4l2fourcc_to_structure (guint32 fourcc);
   std::vector<CaptureDescription> capture_devices_{};  // FIXME should be static
-  bool init_gpipe() final;
+  bool init() final;
 };
 
 SWITCHER_DECLARE_PLUGIN(V4L2Src);
+
 }  // namespace switcher
 #endif

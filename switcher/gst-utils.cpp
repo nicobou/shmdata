@@ -19,6 +19,7 @@
 
 //#include <unistd.h>  // sleep
 #include <string>
+#include <algorithm>
 #include "./gst-utils.hpp"
 #include "./scope-exit.hpp"
 
@@ -136,34 +137,36 @@ void GstUtils::clean_element(GstElement *element) {
   //           GST_STATE_TARGET(element), GST_STATE_PENDING(element),
   //           GST_STATE_RETURN(element));
   
-  {  // unlinking pads
-    GstIterator *pad_iter;
-    pad_iter = gst_element_iterate_pads(element);
-    gst_iterator_foreach(pad_iter, (GFunc) GstUtils::unlink_pad, nullptr);
-    gst_iterator_free(pad_iter);
-  }
+  // FIXME {  // unlinking pads
+  //   GstIterator *pad_iter;
+  //   pad_iter = gst_element_iterate_pads(element);
+  //   gst_iterator_foreach(pad_iter, (GFunc) GstUtils::unlink_pad, nullptr);
+  //   gst_iterator_free(pad_iter);
+  // }
   
-  {  // releasing request pads
-    GstIterator *pad_iter;
-    pad_iter = gst_element_iterate_pads(element);
-    gst_iterator_foreach(pad_iter, (GFunc) GstUtils::release_request_pad, element);
-    gst_iterator_free(pad_iter);
-  }
+  // FIXME {  // releasing request pads
+  //   GstIterator *pad_iter;
+  //   pad_iter = gst_element_iterate_pads(element);
+  //   gst_iterator_foreach(pad_iter, (GFunc) GstUtils::release_request_pad, element);
+  //   gst_iterator_free(pad_iter);
+  // }
 
-  GstState state = GST_STATE_TARGET(element);
-  if (state != GST_STATE_NULL) {
-    if (GST_STATE_CHANGE_ASYNC ==
-        gst_element_set_state(element, GST_STATE_NULL)) {
-      while (GST_STATE(element) != GST_STATE_NULL) {
-        // warning this may be blocking
-        gst_element_get_state(element, nullptr, nullptr,
-                              GST_CLOCK_TIME_NONE);
-      }
-    }
-  }
-  if (GST_IS_BIN(gst_element_get_parent(element)))
-    gst_bin_remove(GST_BIN(gst_element_get_parent(element)), element);
-  else if (((GObject *) element)->ref_count > 0)
+  // GstState state = GST_STATE_TARGET(element);
+  // if (state != GST_STATE_NULL) {
+  //   if (GST_STATE_CHANGE_ASYNC ==
+  //       gst_element_set_state(element, GST_STATE_NULL)) {
+  //     while (GST_STATE(element) != GST_STATE_NULL) {
+  //       // warning this may be blocking
+  //       gst_element_get_state(element, nullptr, nullptr,
+  //                             GST_CLOCK_TIME_NONE);
+  //     }
+  //   }
+  // }
+  // if (GST_IS_BIN(gst_element_get_parent(element)))
+  //   gst_bin_remove(GST_BIN(gst_element_get_parent(element)), element);
+  // else
+    if (!GST_IS_BIN(gst_element_get_parent(element))
+        && ((GObject *) element)->ref_count > 0)
     gst_object_unref(element);
 }
 
@@ -372,7 +375,8 @@ void
 GstUtils::element_factory_list_to_g_enum(GEnumValue *target_enum,
                                          GstElementFactoryListType type,
                                          GstRank minrank,
-                                         bool insert_none_first) {
+                                         bool insert_none_first,
+                                         const std::vector<std::string> &black_list) {
   GList *element_list =
       gst_element_factory_list_get_elements(type, minrank);
 
@@ -385,15 +389,18 @@ GstUtils::element_factory_list_to_g_enum(GEnumValue *target_enum,
     i++;
   }
   while (iter != nullptr) {
-    target_enum[i].value = i;
-    target_enum[i].value_name =
-        g_strdup(gst_element_factory_get_longname
-                 ((GstElementFactory *) iter->data));
-    target_enum[i].value_nick =
-        g_strdup(gst_plugin_feature_get_name
-                 ((GstPluginFeature *) iter->data));
+    if (black_list.end() == std::find(
+            black_list.begin(),
+            black_list.end(), 
+            gst_plugin_feature_get_name((GstPluginFeature *) iter->data))){
+      target_enum[i].value = i;
+      target_enum[i].value_name =
+          g_strdup(gst_element_factory_get_longname((GstElementFactory *) iter->data));
+      target_enum[i].value_nick =
+          g_strdup(gst_plugin_feature_get_name((GstPluginFeature *) iter->data));
+      i++;
+    }
     iter = g_list_next(iter);
-    i++;
   }
   target_enum[i].value = 0;
   target_enum[i].value_name = nullptr;

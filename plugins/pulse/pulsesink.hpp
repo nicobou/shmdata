@@ -25,11 +25,15 @@
 #include <mutex>
 #include <condition_variable>
 #include <vector>
-#include "switcher/single-pad-gst-sink.hpp"
+#include "switcher/quiddity.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/gst-pipeliner.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/custom-property-helper.hpp"
+#include "switcher/unique-gst-element.hpp"
 
 namespace switcher {
-class PulseSink:public SinglePadGstSink {
+class PulseSink: public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSink);
   PulseSink(const std::string &);
@@ -49,18 +53,26 @@ class PulseSink:public SinglePadGstSink {
     std::string active_port_{};
   } DeviceDescription;
 
-  GstElement *pulsesink_bin_{nullptr};
-  bool connected_to_pulse_{false};
+  // registering connect/disconnect/can_sink_caps:
+  ShmdataConnector shmcntr_;
+  // gst pipeline:
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  // shmsubscriber (publishing to the information-tree):
+  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  // internal use:
+  std::string shmpath_{};
+  UGstElem shmsrc_{"shmdatasrc"};
+  UGstElem audioconvert_{"audioconvert"};
+  UGstElem pulsesink_{"pulsesink"};
   // custom property:
   CustomPropertyHelper::ptr custom_props_{};
-  GParamSpec *devices_description_spec_{nullptr};  // json formated
-  gchar *devices_description_{nullptr};  // json formated
   // pulse_audio
+  bool connected_to_pulse_{false};
   pa_glib_mainloop *pa_glib_mainloop_{nullptr};
   pa_mainloop_api *pa_mainloop_api_{nullptr};
   pa_context *pa_context_{nullptr};
   char *server_{nullptr};
-  std::vector<DeviceDescription> devices_{};       // indexed by pulse_device_name
+  std::vector<DeviceDescription> devices_{};  // indexed by pulse_device_name
   std::mutex devices_mutex_{};
   std::condition_variable devices_cond_{};
   // devices enumeration
@@ -71,17 +83,13 @@ class PulseSink:public SinglePadGstSink {
   std::mutex quit_mutex_{};
   std::condition_variable quit_cond_{};
 
-  bool init_gpipe() final;
-  void on_shmdata_disconnect() final;
-  void on_shmdata_connect(std::string shmdata_sochet_path) final;
-  bool can_sink_caps(std::string) final;
-  bool make_elements();
-  bool build_elements();
+  bool init() final;
+  bool on_shmdata_connect(const std::string &shmpath);
+  bool on_shmdata_disconnect();
+  bool can_sink_caps(const std::string &caps);
+  bool remake_elements();
   void make_device_description(pa_context *pulse_context);
-  void make_json_description();
   void update_output_device();
-
-  static const gchar *get_devices_json(void *user_data);
   static void pa_context_state_callback(pa_context *c, void *userdata);
   static void get_sink_info_callback(pa_context *c,
                                      const pa_sink_info *i,
@@ -96,5 +104,6 @@ class PulseSink:public SinglePadGstSink {
 };
 
 SWITCHER_DECLARE_PLUGIN(PulseSink);
+
 }  // namespace switcher
 #endif

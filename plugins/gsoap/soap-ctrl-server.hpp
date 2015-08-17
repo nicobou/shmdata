@@ -38,25 +38,25 @@ class SoapCtrlServer : public QuiddityManagerWrapper
 
   bool set_port(int port);//default port is 8080
   bool start();
-  bool stop();
+  // bool stop();
   //for invocation into soap handlers:
   std::shared_ptr<QuiddityManager> get_quiddity_manager();
   //wrappers
   static gboolean set_port_wrapped(gint port, gpointer user_data);
 
  private:
-  struct soap soap_;
-  int port_;
-  bool quit_server_thread_;
-  controlService *service_;
-  SOAP_SOCKET socket_;
-  std::thread thread_;
-  std::mutex mutex_;
+  struct soap soap_{};
+  int port_{8080};
+  bool quit_server_thread_{false};
+  controlService *service_{nullptr};
+  SOAP_SOCKET socket_{-1};
+  std::thread thread_{};
+  std::mutex mutex_{};
   void server_thread();
   static int http_get(struct soap *soap);
 };
 
 SWITCHER_DECLARE_PLUGIN(SoapCtrlServer);
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

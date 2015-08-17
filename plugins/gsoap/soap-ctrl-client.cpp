@@ -21,13 +21,15 @@
 
 namespace switcher
 {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SoapCtrlClient,
-                                     "Switcher Web Client (SOAP)",
-                                     "control client",
-                                     "controling a switcher instance through SOAP webservices",
-                                     "GPL",
-                                     "SOAPcontrolClient",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    SoapCtrlClient,
+    "SOAPcontrolClient",
+    "Switcher Web Client (SOAP)",
+    "control",
+    "",
+    "controling a switcher instance through SOAP webservices",
+    "GPL",
+    "Nicolas Bouillot");
 
 SoapCtrlClient::SoapCtrlClient(const std::string &) :
     custom_props_(new CustomPropertyHelper()){
@@ -341,15 +343,16 @@ SoapCtrlClient::create(gpointer class_name,
                        gpointer user_data)
 {
   SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
-  if (context->url_ == nullptr)
+  if (context->url_ == nullptr){
     return FALSE;
+  }
   std::string name;
   context->switcher_control_->create_named_quiddity((const char *)class_name,
                                                     (const char *)quiddity_name,
                                                     &name);
-  if (g_strcmp0((gchar *)quiddity_name, name.c_str()) != 0)
-  {
-    context->switcher_control_->delete_quiddity(name.c_str());
+  if (g_strcmp0((gchar *)quiddity_name, name.c_str()) != 0){
+    if (!name.empty())
+      context->switcher_control_->delete_quiddity(name.c_str());
     return FALSE;
   }
   return TRUE;

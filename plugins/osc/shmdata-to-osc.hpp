@@ -20,18 +20,17 @@
 #ifndef __SWITCHER_SHMDATA_TO_OSC_H__
 #define __SWITCHER_SHMDATA_TO_OSC_H__
 
+#include <lo/lo.h>
+#include <mutex>
+#include <chrono>
 #include "switcher/quiddity.hpp"
-#include "switcher/segment.hpp"
 #include "switcher/custom-property-helper.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include <lo/lo.h>
-#include <shmdata/any-data-reader.h>
-#include <mutex>
-
-#include <chrono>
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-follower.hpp"
 
 namespace switcher {
-class ShmdataToOsc:public Quiddity, public Segment, public StartableQuiddity {
+class ShmdataToOsc:public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToOsc);
   ShmdataToOsc(const std::string &);
@@ -40,27 +39,27 @@ class ShmdataToOsc:public Quiddity, public Segment, public StartableQuiddity {
   ShmdataToOsc &operator=(const ShmdataToOsc &) = delete;
 
  private:
+  // registering connect/disconnect/can_sink_caps:
+  ShmdataConnector shmcntr_;
+  // shmdata follower
+  std::unique_ptr<ShmdataFollower> shm_{nullptr};
+  // custom props
   CustomPropertyHelper::ptr custom_props_;
-  gint port_;
-  std::string host_;
-  GParamSpec *port_spec_;
-  GParamSpec *host_spec_;
-  lo_address address_;
-  std::mutex address_mutex_;
+  gint port_{1056};
+  std::string host_{"localhost"};
+  GParamSpec *port_spec_{nullptr};
+  GParamSpec *host_spec_{nullptr};
+  lo_address address_{nullptr};
+  std::mutex address_mutex_{};
 
   bool init() final;
   bool start() final;
   bool stop() final;
-
-  // segment handlers
-  bool connect(std::string shmdata_path);
-  bool can_sink_caps(std::string caps);
-
+  bool connect(const std::string &shmdata_path);
+  bool disconnect();
+  bool can_sink_caps(const std::string &caps);
   void on_shmreader_data(void *data,
-                         int data_size,
-                         unsigned long long timestamp,
-                         const char *type_description, void *user_data);
-
+                         size_t data_size);
   static void set_port(const gint value, void *user_data);
   static gint get_port(void *user_data);
   static void set_host(const gchar *value, void *user_data);
@@ -68,6 +67,6 @@ class ShmdataToOsc:public Quiddity, public Segment, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToOsc);
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

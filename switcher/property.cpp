@@ -166,18 +166,18 @@ void Property::make_description() {
   json_description_->reset();
   json_description_->begin_object();
   // long name
-  json_description_->add_string_member("long name", long_name_.c_str());
+  json_description_->add_string_member("name", long_name_.c_str());
   // name
-  json_description_->add_string_member("name", name_.c_str());
+  json_description_->add_string_member("id", name_.c_str());
   // nickname
   // json_description_->add_string_member ("nickname", g_param_spec_get_nick (property_));
 
   // short description
-  json_description_->add_string_member("short description",
+  json_description_->add_string_member("description",
                                        g_param_spec_get_blurb(property_));
-  json_description_->add_string_member("position category",
+  json_description_->add_string_member("parent",
                                        get_category().c_str());
-  json_description_->add_int_member("position weight",
+  json_description_->add_int_member("order",
                                     get_position_weight());
   // name
   // json_description_->add_string_member ("internal name", g_param_spec_get_name (property_));
@@ -470,13 +470,6 @@ void Property::make_description() {
         //  pfraction->max_num, pfraction->max_den,
         //  gst_value_get_fraction_numerator (&value),
         //  gst_value_get_fraction_denominator (&value));
-      } else if (GST_IS_PARAM_SPEC_MINI_OBJECT(property_)) {
-        // g_warning ("warning param spec mini object not handled ");
-        // g_warning ("%-23.23s MiniObject of type \"%s\"", "",
-        //   g_type_name (property_->value_type));
-        json_description_->add_string_member("type",
-                                             g_type_name
-                                             (property_->value_type));
       } else {
         g_warning("warning: unknown type");
         // g_debug ("%-23.23s Unknown type %ld \"%s\"", "", property_->value_type,

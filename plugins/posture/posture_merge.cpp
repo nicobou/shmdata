@@ -17,6 +17,7 @@
  */
 
 #include "./posture_merge.hpp"
+#include "switcher/std2.hpp"
 
 #include <iostream>
 
@@ -25,15 +26,19 @@ using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureMerge,
-                                     "Point Clouds Merge",
-                                     "video",
-                                     "Merges point clouds captured with 3D cameras",
-                                     "LGPL",
-                                     "pclmergesink", "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PostureMerge,
+    "pclmergesink",
+    "Point Clouds Merge",
+    "video",
+    "writer/reader",
+    "Merges point clouds captured with 3D cameras",
+    "LGPL",
+    "Emmanuel Durand");
 
 PostureMerge::PostureMerge(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()) {
+    custom_props_(std::make_shared<CustomPropertyHelper> ()),
+    shmcntr_(static_cast<Quiddity*>(this)) {
 }
 
 PostureMerge::~PostureMerge() {
@@ -42,8 +47,9 @@ PostureMerge::~PostureMerge() {
 
 bool
 PostureMerge::start() {
-  merger_ = make_shared<PointCloudMerger>("", source_id_);
+  merger_ = make_shared<PointCloudMerger>("");
 
+  merger_->setCloudNbr(source_id_);
   merger_->setCalibrationPath(calibration_path_);
   merger_->setDevicesPath(devices_path_);
   merger_->setCompression(compress_cloud_);
@@ -64,7 +70,6 @@ PostureMerge::stop() {
   }
 
   if (cloud_writer_ != nullptr) {
-    unregister_shmdata(cloud_writer_->get_path());
     cloud_writer_.reset();
   }
 
@@ -74,13 +79,12 @@ PostureMerge::stop() {
 bool
 PostureMerge::init() {
   init_startable(this);
-  init_segment(this);
 
-  install_connect_method(std::bind(&PostureMerge::connect, this, std::placeholders::_1),
-                         std::bind(&PostureMerge::disconnect, this, std::placeholders::_1),
-                         std::bind(&PostureMerge::disconnect_all, this),
-                         std::bind(&PostureMerge::can_sink_caps, this, std::placeholders::_1),
-                         8);
+  shmcntr_.install_connect_method([this](const std::string path){return connect(path);},
+                                  [this](const std::string path){return disconnect(path);},
+                                  [this](){return disconnect_all();},
+                                  [this](const std::string caps ){return can_sink_caps(caps);},
+                                  8);
 
   calibration_path_prop_ =
       custom_props_->make_string_property("calibration_path",
@@ -155,24 +159,34 @@ PostureMerge::init() {
 
 bool
 PostureMerge::connect(std::string shmdata_socket_path) {
+  unique_lock<mutex> connectLock(connect_mutex_);
+
   int index = source_id_;
   source_id_ += 1;
+  int shmreader_id = shmreader_id_;
+  shmreader_id_++;
 
-  ShmdataAnyReader::ptr reader = make_shared<ShmdataAnyReader>();
-  reader->set_path(shmdata_socket_path);
-
-  // This is the callback for when new clouds are received
-  reader->set_callback([=] (void *data,
-                             int size,
-                             unsigned long long /*timestamp*/,
-                             const char *type,
-                             void * /*unused */ )
-  {
-    // If another thread is trying to get the merged cloud, don't bother
+  auto reader = std2::make_unique<ShmdataFollower>(this,
+                  shmdata_socket_path,
+                  [=] (void *data, size_t size) {
+    // If another thread is trying to get the merged cloud, stock him and don't bother
     if (!mutex_.try_lock())
+    {
+      unique_lock<mutex> lock(stock_mutex_);
+      stock_[index] = vector<char> ((char*)data, (char*) data + size);
       return;
+    }
 
-    if (merger_ == nullptr || (string(type) != string(POINTCLOUD_TYPE_BASE) && string(type) != string(POINTCLOUD_TYPE_COMPRESSED)))
+    // Test if we already received the type
+    auto typeIt = cloud_readers_caps_.find(shmreader_id);
+    if (typeIt == cloud_readers_caps_.end())
+    {
+      mutex_.unlock();
+      return;
+    }
+    string type = typeIt->second;
+
+    if (merger_ == nullptr || (type != string(POINTCLOUD_TYPE_BASE) && type != string(POINTCLOUD_TYPE_COMPRESSED)))
     {
       mutex_.unlock();
       return;
@@ -182,43 +196,57 @@ PostureMerge::connect(std::string shmdata_socket_path) {
         merger_->reloadCalibration();
 
     // Setting input clouds is thread safe, so lets do it
-    merger_->setInputCloud(index,
-                           vector<char>((char*)data, (char*) data + size),
-                           string(type) != string(POINTCLOUD_TYPE_BASE));
-
-    if (cloud_writer_.get() == nullptr) {
-      cloud_writer_.reset(new ShmdataAnyWriter);
-      cloud_writer_->set_path(make_file_name("cloud"));
-      register_shmdata(cloud_writer_);
-      if (compress_cloud_)
-        cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_COMPRESSED));
-      else
-        cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_BASE));
-      cloud_writer_->start();
+    {
+      unique_lock<mutex> lock(stock_mutex_);
+      for (auto it = stock_.begin(); it != stock_.end(); ++it)
+      {
+        merger_->setInputCloud(it->first,
+                               it->second,
+                               type != string(POINTCLOUD_TYPE_BASE));
+      }
+      stock_.clear();
     }
 
-    check_buffers();
-    vector<char> cloud = merger_->getCloud();
-    shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(reinterpret_cast<const unsigned char*>(cloud.data()),
-                                                                  reinterpret_cast<const unsigned char*>(cloud.data()) + cloud.size()));
-    cloud_writer_->push_data_auto_clock((void *) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
-                                        cloud.size(),
-                                        PostureMerge::free_sent_buffer,
-                                        (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
+    merger_->setInputCloud(index,
+                           vector<char>((char*)data, (char*) data + size),
+                           type != string(POINTCLOUD_TYPE_BASE));
+    auto cloud = vector<char>();
+    merger_->getCloud(cloud);
+
+
+    if (cloud_writer_.get() == nullptr || cloud.size() > cloud_writer_->writer(&shmdata::Writer::alloc_size)) {
+      auto data_type = compress_cloud_ ? string(POINTCLOUD_TYPE_COMPRESSED) : string(POINTCLOUD_TYPE_BASE);
+      cloud_writer_.reset();
+      cloud_writer_ = std2::make_unique<ShmdataWriter>(this,
+                                                       make_file_name("cloud"),
+                                                       std::max(cloud.size() * 2, (size_t)1024),
+                                                       data_type);
+    }
+
+    cloud_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<char*>(cloud.data()), cloud.size());
+    cloud_writer_->bytes_written(cloud.size());
 
     mutex_.unlock();
-  },
-  nullptr);
+  }, [=](string caps) {
+    unique_lock<mutex> lock(mutex_);
+    cloud_readers_caps_[shmreader_id] = caps;
+  });
 
-  reader->start();
-  register_shmdata(reader);
+  cloud_readers_[shmdata_socket_path] = std::move(reader);
   return true;
 }
 
 bool
 PostureMerge::disconnect(std::string shmName) {
-  std::lock_guard<mutex> lock(mutex_);
-  unregister_shmdata(shmName);
+  unique_lock<mutex> lock(mutex_);
+  try
+  {
+    cloud_readers_.erase(shmName);
+  }
+  catch (...)
+  {
+    g_warning("An exception has been caught while trying to disconnect from shmdata %s", shmName.c_str());
+  }
   return true;
 }
 
@@ -350,21 +378,4 @@ PostureMerge::can_sink_caps(std::string caps) {
       || (caps == POINTCLOUD_TYPE_COMPRESSED);
 }
 
-void
-PostureMerge::free_sent_buffer(void* data)
-{
-  vector<unsigned char>* buffer = static_cast<vector<unsigned char>*>(data);
-  buffer->clear();
-}
-
-void
-PostureMerge::check_buffers()
-{
-  for (unsigned int i = 0; i < shmwriter_queue_.size();) {
-    if (shmwriter_queue_[i]->size() == 0)
-      shmwriter_queue_.erase(shmwriter_queue_.begin() + i);
-    else
-      i++;
-  }
-}
 }  // namespace switcher
