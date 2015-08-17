@@ -20,6 +20,10 @@
 #include "./switcher-controller.hpp"
 #include "switcher/quiddity-manager.hpp"
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 using namespace std;
 using namespace v8;
 using namespace node;
@@ -66,13 +70,15 @@ SwitcherController::SwitcherController(const std::string &name, Local<Function> 
 
     // loading plugins
     // FIXME use config.h for having the appropriate version
-    gchar *usr_plugin_dir = g_strdup_printf("/usr/switcher-0.7/plugins");
-    quiddity_manager->scan_directory_for_plugins(usr_plugin_dir);
-    g_free(usr_plugin_dir);
 
-    gchar *usr_local_plugin_dir = g_strdup_printf("/usr/local/switcher-0.7/plugins");
-    quiddity_manager->scan_directory_for_plugins(usr_local_plugin_dir);
-    g_free(usr_local_plugin_dir);
+#ifdef HAVE_CONFIG_H
+    {
+      std::string usr_plugin_dir("/usr/switcher-" LIBSWITCHER_API_VERSION "/plugins");
+      quiddity_manager->scan_directory_for_plugins(usr_plugin_dir.c_str());
+      std::string usr_local_plugin_dir("/usr/local/switcher-" LIBSWITCHER_API_VERSION "/plugins");
+      quiddity_manager->scan_directory_for_plugins(usr_local_plugin_dir);
+    }
+#endif
 
     // do not play with previous config when saving
     quiddity_manager->reset_command_history(false);
