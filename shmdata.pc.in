@@ -7,6 +7,6 @@ Name: shmdata
 Description: shares data flows between gstreamer applications
 URL: @PACKAGE_URL@
 Version: @PACKAGE_VERSION@
-Requires.private: gstreamer-0.10 >= 0.10
+Requires.private:
 Libs: -L${libdir} -lshmdata-@LIBSHMDATA_API_VERSION@
 Cflags: -I${includedir}/shmdata-@LIBSHMDATA_API_VERSION@

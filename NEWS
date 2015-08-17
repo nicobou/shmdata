@@ -1,17 +1,17 @@
 shmdata release notes
 ===================== 
 
-shmdata 0.8.16 (2015-06-15)
+shmdata 1.0.2 (2015-08-17)
 ---------------------------
-This is an official release in the 0.8 stable series. 
+This is an official release in the 1.0 stable series. 
 
 New features:
 
-* python wrapper
+* There are no new features, this is complete rewrite of 0.8
 
 Bugs fixed:
 
-* fix various minor leaks
+* none
 
 shmdata 0.8.14 (2014-08-04)
 ---------------------------

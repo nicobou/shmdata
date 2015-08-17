@@ -1,37 +1,45 @@
-export GST_PLUGIN_PATH=$(top_builddir)/gst/shm:$GST_PLUGIN_PATH
-
-AM_CFLAGS = \
-    -I$(top_srcdir) \
-    $(GST_CFLAGS) 
+AM_CXXFLAGS = \
+    -I$(top_srcdir) 
 
 LDADD = \
-    $(GST_LIBS) \
-    $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la \
-    $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
-
-#LD_LIBRARY_PATH = \
-#    $(top_builddir)/gst/shm/
+    $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la 
 
 check_PROGRAMS = \
-    check_gst_shm \
-    check_read_and_write_onoff \
-    check_read_then_write \
-    check_write_and_read_onoff \
-    check_write_read
+    check-c-wrapper \
+    check-file-monitor \
+    check-follower \
+    check-shmdata \
+    check-shmdata-stress \
+    check-sysv-sem \
+    check-sysv-shm \
+    check-unix-socket \
+    check-writer-follower
 
 TESTS = $(check_PROGRAMS)
 
-check_gst_shm_SOURCES = \
-    check_gst_shm.c
+check_c_wrapper_SOURCES = \
+    check-c-wrapper.cpp
 
-check_read_and_write_onoff_SOURCES = \
-    check_read_and_write_onoff.c
+check_file_monitor_SOURCES = \
+    check-file-monitor.cpp
 
-check_read_then_write_SOURCES = \
-    check_read_then_write.c
+check_follower_SOURCES = \
+    check-follower.cpp
 
-check_write_and_read_onoff_SOURCES = \
-    check_write_and_read_onoff.c
+check_shmdata_SOURCES = \
+    check-shmdata.cpp
 
-check_write_read_SOURCES = \
-    check_write_read.c
+check_shmdata_stress_SOURCES = \
+    check-shmdata-stress.cpp
+
+check_sysv_sem_SOURCES = \
+    check-sysv-sem.cpp
+
+check_sysv_shm_SOURCES = \
+    check-sysv-shm.cpp
+
+check_unix_socket_SOURCES = \
+    check-unix-socket.cpp
+
+check_writer_follower_SOURCES = \
+    check-writer-follower.cpp

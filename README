@@ -10,59 +10,37 @@ shmdata
 Library to share flows of data frames between processes via shared memory. 
 shmdata can be compared to the JACK audio connection kit project or to the
 VideoJack project. shmdata, however, does not provide a host server and require applications to link data streams using socket path (e.g. "/tmp/my_shmdata_stream"). 
-Note that shmdata readers and writers can hot connect/disconnect/reconnect/... 
+Note that shmdata followers and writers can hot connect/disconnect/reconnect/... 
 and that a shared memory supports a single writer with multiple readers.
-
-Several libraries are provided: 
-
-* libshmdata for hot plugging between GStreamer pipelines (C library)
-* libshmdata-any for sharing custom data flows without including GStreamer headers (C library)
-* libshmdata-osg for receiving video written to a shared memory into an OpenSceneGraph texture (C++ library)
 
 shmdata is currently used in several metalab projects:
 
 * switcher (http://code.sat.qc.ca/redmine/projects/switcher/wiki)
-* spinframework (http://code.sat.qc.ca/redmine/projects/spinframework/wiki)
+* splash (http://code.sat.qc.ca/redmine/projects/splash)
 * posturevision (http://code.sat.qc.ca/redmine/projects/kinectvision/wiki/)
 * scenic (http://code.sat.qc.ca/redmine/projects/scenic/wiki)
 
-License: LGPL for the libraries, GLP for the puredata external
+License: LGPL
 
 Project URL: http://code.sat.qc.ca/redmine/projects/libshmdata
-
-This is an outcome of the Scenic research project at the SAT[Metalab]. http://www.sat.qc.ca
 
 Installation
 ------------
 Here is how to build and install it on Debian GNU/Linux or Ubuntu::
 
   $ sudo apt-get install automake bison build-essential flex libtool 
-  $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev python3-dev
+  $ # this is only for building gstreamer plugins:
+  $ sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+  $ # this is for building python wrappers 
+  $ sudo apt-get install python3-dev
   $ ./autogen.sh
   $ ./configure
   $ make
   $ sudo make install
   $ sudo ldconfig
 
-Build the shmdata-osg library for use with openscenegraph
----------------------------------------------------------
-Before building shmdata, install the openscenegraph headers on Ubuntu::
-
-  $ sudo apt-get install libopenscenegraph-dev
-
-Build with the Puredata externals
----------------------------------
-Before building shmdata, install the puredata headers on Ubuntu::
-
-  $ sudo apt-get install puredata-dev libsamplerate0-dev
 
 Authors
 -------
-Written by:
-
-* Nicolas Bouillot (main author)
-* Emmanuel Durand (contribution to OSG library and OSX port)
-* Alexandre Quessy (help with packaging)
-* Mike Wozniewski (help with packaging)
-
+see git history
 
