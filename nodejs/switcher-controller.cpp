@@ -17,7 +17,7 @@
 
 #include <iostream>
 #include <node.h>
-#include "switcher-controller.hpp"
+#include "./switcher-controller.hpp"
 #include "switcher/quiddity-manager.hpp"
 
 using namespace std;

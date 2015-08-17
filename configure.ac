@@ -394,6 +394,8 @@ dnl =======================================================================
 dnl Finally, create Makefiles in all directories
 dnl =======================================================================
 
+dnl plugins/syphonsrc/Makefile FIXME syphon should be ported to shmdata1
+
 AC_CONFIG_FILES([
 Makefile
 doxyfile
@@ -404,7 +406,6 @@ src/Makefile
 plugins/Makefile
 plugins/example/Makefile
 plugins/systemusage/Makefile
-plugins/syphonsrc/Makefile
 plugins/gsoap/Makefile
 plugins/osc/Makefile
 plugins/portmidi/Makefile
