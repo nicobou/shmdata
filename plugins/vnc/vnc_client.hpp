@@ -74,8 +74,6 @@ class VncClientSrc:public Quiddity, public StartableQuiddity {
   int shmreader_id_ {0};
   std::map<int, std::string> shmdata_readers_caps_ {};
   std::map<std::string, std::unique_ptr<ShmdataFollower>> events_readers_ {};
-  std::atomic_bool mouse_events_connected_ {false};
-  std::atomic_bool keyboard_events_connected_ {false};
 
   bool init() final;
 
