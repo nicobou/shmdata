@@ -423,9 +423,9 @@ void GstUtils::gst_element_deleter(GstElement *element) {
   if (nullptr == GST_OBJECT_PARENT(element)) {
     if (((GObject *) element)->ref_count > 0)
       gst_object_unref(element);
-  } else {
-    GstUtils::clean_element(element);
-  }
+  } // else {
+//     GstUtils::clean_element(element);
+//   }
 }
 
 // g_signal_connect is actually a macro, so wrapping it for use with std::bind
