@@ -12,7 +12,8 @@ libpjsip_plugin_la_SOURCES = \
     pj-sip.cpp 
 
 EXTRA_DIST = \
-    more_codecs.patch
+    more_codecs.patch \
+    pjproject-2.2.1.tar.bz2
 
 nodist_libpjsip_plugin_la_SOURCES = \
     pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h
@@ -60,8 +61,7 @@ libpjsip_plugin_la_CXXFLAGS = \
     -Wno-error=unused-parameter
 
 pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h: Makefile
-	curl -O http://www.pjsip.org/release/2.2.1/pjproject-2.2.1.tar.bz2 \
-        && tar -xjvf pjproject-2.2.1.tar.bz2 \
+	tar -xjvf $(srcdir)/pjproject-2.2.1.tar.bz2 \
         && cd pjproject-2.2.1 \
         && mkdir -p install_dir \
         && patch -p0 < ../$(srcdir)/more_codecs.patch \
@@ -75,10 +75,10 @@ pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h: Makefile
         && PJPROJECT_STATIC_LIBS=`cd ..; ls pjproject-2.2.1/install_dir/lib/*.a`
 
 clean-local:
-	-rm -rf pjproject-2.2.1* 
+	-rm -rf pjproject-2.2.1
 
 distclean-local:
-	-rm -rf pjproject-2.2.1* 
+	-rm -rf pjproject-2.2.1 
 
 #### plugin unit test
 AM_CFLAGS = \
