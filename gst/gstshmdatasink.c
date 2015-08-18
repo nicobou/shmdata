@@ -57,7 +57,7 @@ enum
   // PROP_SHM_SIZE,
 };
 
-#define DEFAULT_SIZE ( 33554432 )
+#define DEFAULT_SIZE ( 3554432 )
 #define DEFAULT_WAIT_FOR_CONNECTION (TRUE)
 /* Default is user read/write, group read */
 //#define DEFAULT_PERMS ( S_IRUSR | S_IWUSR | S_IRGRP )
@@ -334,6 +334,7 @@ gst_shmdata_sink_init (GstShmdataSink * self)
 {
   g_cond_init (&self->cond);
   self->size = DEFAULT_SIZE;
+  self->socket_path = NULL;
   //  self->perms = DEFAULT_PERMS;
   gst_allocation_params_init (&self->params);
 }
@@ -453,6 +454,7 @@ gst_shmdata_sink_set_property (GObject * object, guint prop_id,
       GST_OBJECT_LOCK (object);
       g_free (self->socket_path);
       self->socket_path = g_value_dup_string (value);
+
       GST_OBJECT_UNLOCK (object);
       break;
     /* case PROP_PERMS: */
@@ -712,9 +714,9 @@ static void gst_shmdata_sink_on_client_disconnected(void *user_data, int id) {
 
 static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
   GstShmdataSink *self = GST_SHMDATA_SINK (sink);
-  if (!self->socket_path) { 
+  if (NULL == self->socket_path) { 
     GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE, 
-        ("Could not open socket."), (NULL)); 
+        ("Could not make writer with no path."), (NULL)); 
     return FALSE; 
   } 
 
@@ -740,15 +742,15 @@ static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
                                         &gst_shmdata_sink_on_client_disconnected,
                                         self,
                                         self->shmlogger); 
-  if (!self->shmwriter) { 
+  if (NULL == self->shmwriter) { 
     GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE, 
-        ("Could not open socket."), (NULL)); 
+        ("Could not make shmdata writer."), (NULL)); 
     return FALSE; 
   } 
 
   self->access = shmdata_get_one_write_access(self->shmwriter);
 
-  GST_DEBUG ("Created socket at %s", self->socket_path); 
+  GST_DEBUG ("Created shmdata writer at %s", self->socket_path); 
   self->allocator = gst_shmdata_sink_allocator_new (self); 
 
   return TRUE;
