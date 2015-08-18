@@ -62,7 +62,7 @@ GstPipe::~GstPipe() {
 
 void GstPipe::play_pipe(GstPipe *pipe) {
   gst_element_set_state(pipe->pipeline_, GST_STATE_PLAYING);
-  GstUtils::wait_state_changed(pipe->pipeline_);
+  //GstUtils::wait_state_changed(pipe->pipeline_);
 }
 
 
@@ -108,7 +108,7 @@ bool GstPipe::play(bool play)
   } else {
     gst_element_set_state(pipeline_, GST_STATE_PAUSED);
   }
-  GstUtils::wait_state_changed(pipeline_);
+  //GstUtils::wait_state_changed(pipeline_);
   return play;
 }
 
