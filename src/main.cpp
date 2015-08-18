@@ -25,7 +25,7 @@
 #include <time.h>
 #include "switcher/quiddity-manager.hpp"
 #include <locale.h>
-#ifdef HAVE_GTK
+#if HAVE_GTK
 #include <gtk/gtk.h>
 #endif
 
@@ -85,7 +85,7 @@ leave(int sig) {
     switcher::QuiddityManager::ptr empty;
     manager.swap(empty);
   }
-#ifdef HAVE_GTK
+#if HAVE_GTK
   gtk_main_quit();
 #endif
   exit(sig);
@@ -314,7 +314,7 @@ main(int argc, char *argv[]) {
   //      manager->play_command_history (histo, &prop_cb_data, &sig_cb_data);
   //      g_print ("--fin-- %s\n",manager->get_quiddities_description ().c_str ());
 
-#ifdef HAVE_GTK
+#if HAVE_GTK
   if (!gtk_init_check(nullptr, nullptr))
     std::cerr << "cannot init gtk in main" << std::endl;
   else

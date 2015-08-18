@@ -247,11 +247,17 @@ if test "x${have_gtk}" = "xfalse" ; then
 else
     GTKBUILD=enabled
 fi
+
+if ${HAVE_OSX}; then
+    GTKBUILD=disabled
+    AC_MSG_WARN([gtkwin is not going to be built on OSX])
+fi
+
 AM_CONDITIONAL(GTKBUILD, test "${GTKBUILD}" = "enabled")
 if test "${GTKBUILD}" = "enabled"; then
-    AC_DEFINE(HAVE_GTK, [1], [GTK detected])
+    AC_DEFINE(HAVE_GTK, [1], [GTK enabled])
 else
-    AC_DEFINE(HAVE_GTK, [0], [GTK not detected])
+    AC_DEFINE(HAVE_GTK, [0], [GTK disabled])
 fi
 
 #check nodejs-dev
