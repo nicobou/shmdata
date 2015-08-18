@@ -35,14 +35,15 @@ GstShmdataSubscriber::GstShmdataSubscriber(GstElement *element,
     g_warning("cannot monitor gstshmdata metadata, not a GstElement");
     return;
   }
-  g_signal_connect(G_OBJECT(element_),
-                   "notify::caps",
-                   G_CALLBACK(GstShmdataSubscriber::on_caps_cb),
-                   this);
+  g_signal_connect_object(G_OBJECT(element_),
+			  "notify::caps",
+			  G_CALLBACK(GstShmdataSubscriber::on_caps_cb),
+			  this,
+			  G_CONNECT_AFTER);
   notify_caps();
 }
-
-void GstShmdataSubscriber::on_caps_cb(GObject *gobject,
+  
+void GstShmdataSubscriber::on_caps_cb(GObject */*gobject*/,
                                       GParamSpec */*pspec*/,
                                       gpointer user_data){
   GstShmdataSubscriber *context = static_cast<GstShmdataSubscriber *>(user_data);
