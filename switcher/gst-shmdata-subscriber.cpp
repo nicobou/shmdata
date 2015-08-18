@@ -18,6 +18,7 @@
  */
 
 #include <gst/gst.h>
+#include <string>
 #include "./gst-shmdata-subscriber.hpp"
 
 namespace switcher {
@@ -57,7 +58,7 @@ void GstShmdataSubscriber::notify_caps(){
   g_value_init(&val, G_TYPE_STRING);
   g_object_get_property(G_OBJECT(element_), "caps", &val);
   if (nullptr != g_value_get_string(&val))
-    on_caps_cb_(g_value_get_string(&val));
+    on_caps_cb_(std::string(g_value_get_string(&val)));
   g_value_unset(&val);
 }
 
