@@ -12,7 +12,8 @@ libpjsip_plugin_la_SOURCES = \
     pj-sip.cpp 
 
 EXTRA_DIST = \
-    more_codecs.patch
+    more_codecs.patch \
+    pjproject-2.2.1.tar.bz2
 
 nodist_libpjsip_plugin_la_SOURCES = \
     pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h
@@ -60,7 +61,7 @@ libpjsip_plugin_la_CXXFLAGS = \
     -Wno-error=unused-parameter
 
 pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h: Makefile
-	tar -xjvf pjproject-2.2.1.tar.bz2 \
+	tar -xjvf $(srcdir)/pjproject-2.2.1.tar.bz2 \
         && cd pjproject-2.2.1 \
         && mkdir -p install_dir \
         && patch -p0 < ../$(srcdir)/more_codecs.patch \
