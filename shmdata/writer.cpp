@@ -67,7 +67,7 @@ Writer::Writer(const std::string &path,
   log_->debug("writer initialized");
 }
 
-bool Writer::copy_to_shm(void *data, size_t size){
+bool Writer::copy_to_shm(const void *data, size_t size){
   bool res = true;
   {
     if (size > connect_data_.shm_size_)

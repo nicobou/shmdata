@@ -36,7 +36,7 @@ extern "C" {
 
   // write copying data
   int shmdata_copy_to_shm(ShmdataWriter writer,
-                          void *data,
+                          const void *data,
                           size_t size);
 
   // or get write lock and notify clients when they can try locking for reading 

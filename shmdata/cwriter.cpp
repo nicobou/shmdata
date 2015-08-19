@@ -73,7 +73,7 @@ void shmdata_delete_writer(ShmdataWriter writer){
   delete static_cast<CWriter *>(writer);
 }
 
-int shmdata_copy_to_shm(ShmdataWriter writer, void *data, size_t size){
+int shmdata_copy_to_shm(ShmdataWriter writer, const void *data, size_t size){
   return static_cast<CWriter *>(writer)->writer_.copy_to_shm(data, size);
 }
 

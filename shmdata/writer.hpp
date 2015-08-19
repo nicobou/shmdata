@@ -42,7 +42,7 @@ class Writer: public SafeBoolIdiom {
 
   size_t alloc_size() const;
   // copy to shmdata
-  bool copy_to_shm(void *data, size_t size);
+  bool copy_to_shm(const void *data, size_t size);
   // direct access to the memory with lock
   std::unique_ptr<OneWriteAccess> get_one_write_access();
   // (for C wrappers) direct access without uniqueptr (user need to delete)
