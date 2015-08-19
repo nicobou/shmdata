@@ -24,10 +24,10 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include "switcher/std2.hpp"
 
 using namespace std;
-using namespace
-switcher::data;
+using namespace switcher::data;
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
@@ -53,7 +53,6 @@ SyphonSrc::~SyphonSrc() {
 
 bool SyphonSrc::init() {
   init_startable(this);
-  init_segment(this);
 
   reader_.reset(new SyphonReader(frameCallback, (void *) this));
 
@@ -111,28 +110,29 @@ SyphonSrc::frameCallback(void *context, const char *data, int &width,
   SyphonSrc *ctx = static_cast<SyphonSrc *>(context);
   static bool set = false;
   if (set == false || ctx->width_ != width || ctx->height_ != height) {
-    char buffer[256] = "";
-    ctx->writer_.reset(new ShmdataAnyWriter);
+    std::string writer_path;
     if (ctx->syphon_servername_ != "" && ctx->syphon_appname_ != "")
-      ctx->writer_->set_path(ctx->make_file_name
-                             (ctx->syphon_servername_ + "_" +
-                              ctx->syphon_appname_));
+      writer_path = ctx->make_file_name(ctx->syphon_servername_ + "-" +	ctx->syphon_appname_);
     else if (ctx->syphon_servername_ != "")
-      ctx->writer_->set_path(ctx->make_file_name(ctx->syphon_servername_));
+      writer_path = ctx->make_file_name(ctx->syphon_servername_);
     else
-      ctx->writer_->set_path(ctx->make_file_name(ctx->syphon_appname_));
-    ctx->register_shmdata(ctx->writer_);
+      writer_path = ctx->make_file_name(ctx->syphon_appname_);
+    ctx->writer_ = std2::make_unique<ShmdataWriter>(ctx, 
+						    writer_path,
+						    width * height * 4,
+						    string("video/x-raw, format=RGBA, ") 
+						    + "width=" + to_string(width)
+						    + "height=" + to_string(height));
     ctx->width_ = width;
     ctx->height_ = height;
-    sprintf(buffer,
-            "video/x-raw-rgb,bpp=32,endianness=4321,depth=32,red_mask=-16777216,green_mask=16711680,blue_mask=65280,width=%i,height=%i,framerate=30/1",
-            width, height);
-    ctx->writer_->set_data_type(string(buffer));
-    ctx->writer_->start();
-    set = true;
+    if(!ctx->writer_.get()) {
+      g_warning("syphon to shmdata failed to start");
+      ctx->writer_.reset(nullptr);
+    } else
+      set = true;
   }
-  ctx->writer_->push_data_auto_clock((void *) data, width *height * 4,
-                                     nullptr, nullptr);
+  ctx->writer_->writer(&shmdata::Writer::copy_to_shm, static_cast<const void *>(data), width *height * 4);
+  ctx->writer_->bytes_written(width *height * 4);
 }
 
 const gchar *

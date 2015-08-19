@@ -23,13 +23,13 @@
 #include <memory>
 #include <string>
 #include "switcher/quiddity.hpp"
-#include "switcher/segment.hpp"
 #include "switcher/startable-quiddity.hpp"
+#include "switcher/shmdata-writer.hpp"
 #include "switcher/custom-property-helper.hpp"
 #include "./syphonreader.hpp"
 
 namespace switcher {
-class SyphonSrc: public Quiddity, public Segment, public StartableQuiddity {
+class SyphonSrc: public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SyphonSrc);
   SyphonSrc(const std::string &);
@@ -39,22 +39,18 @@ class SyphonSrc: public Quiddity, public Segment, public StartableQuiddity {
 
  private:
   std::shared_ptr<SyphonReader> reader_;
-  ShmdataAnyWriter::ptr writer_;
-
+  std::unique_ptr<ShmdataWriter> writer_{nullptr};
   CustomPropertyHelper::ptr custom_props_;
   std::string syphon_servername_;
   GParamSpec *syphon_servername_prop_;
   std::string syphon_appname_;
   GParamSpec *syphon_appname_prop_;
-
   int width_, height_;
 
   bool init() final;
   bool start() final;
   bool stop() final;
-
   static void frameCallback(void *, const char *, int &, int &);
-
   static const gchar *get_servername(void *user_data);
   static void set_servername(const gchar *name, void *user_data);
   static const gchar *get_appname(void *user_data);
@@ -62,6 +58,6 @@ class SyphonSrc: public Quiddity, public Segment, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(SyphonSrc);
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

@@ -71,6 +71,7 @@ plugins/posture/.libs/
 plugins/pulse/.deps/
 plugins/pulse/.libs/
 plugins/pulse/check_pulsesrc
+plugins/syphonsrc/.build_syphon.sh.swo
 plugins/syphonsrc/.deps
 plugins/syphonsrc/.libs
 plugins/syphonsrc/check_syphonsrc_plugin

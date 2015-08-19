@@ -43,11 +43,8 @@ int main() {
 #endif
     
     if (!switcher::QuiddityBasicTest::test_full(manager, "syphon"))
-      success = false;
+      return 1;
   }  // end of scope is releasing the manager
   
-  if (success)
-    return 0;
-  else
-    return 1;
+  return 0;
 }
