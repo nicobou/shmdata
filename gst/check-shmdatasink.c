@@ -27,7 +27,7 @@
 
 static GMainLoop *loop = NULL;
 static int server_interactions = 0;
-static res = 1;  // fail by default
+static int res = 1;  // fail by default
 
 // *** follower callbacks
 void mylog(void *user_data, const char *str) {
