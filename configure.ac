@@ -70,7 +70,8 @@ case "$host" in *-darwin* | *-macos10*)
     LDFLAGS+=" -L/sw/lib"
   fi
   
-  AM_CONDITIONAL([HAVE_OSX], true)
+  have_osx=true;
+  AM_CONDITIONAL([HAVE_OSX], test "true" = "true")
   AC_DEFINE(HAVE_OSX,[1],[Apple Mac OS X operating system detected])
   
   # OSX does not include /usr/local/lib/pkgconfig path, so we export it here
@@ -81,7 +82,8 @@ case "$host" in *-darwin* | *-macos10*)
   LDFLAGS+=" -fPIC -L/usr/local/lib"
   ;;
 *)
-  AM_CONDITIONAL([HAVE_OSX], false)
+  have_osx=false;
+  AM_CONDITIONAL([HAVE_OSX], test "true" = "false")
   AC_DEFINE(HAVE_OSX,[0],[Apple Mac OS X operating system not detected])
   ;;
 esac
@@ -248,7 +250,7 @@ else
     GTKBUILD=enabled
 fi
 
-if ${HAVE_OSX}; then
+if test "x${have_osx}" = "xtrue"; then
     GTKBUILD=disabled
     AC_MSG_WARN([gtkwin is not going to be built on OSX])
 fi
@@ -395,12 +397,16 @@ if test "${SOAPBUILD}" = "disabled";
 fi
 AM_CONDITIONAL(SWITCHERBUILD, test "${SWITCHERBUILD}" = "enabled")
 
+dnl syphon
+SYPHONBUILD=disabled
+if test "x${have_osx}" = "xtrue"; then
+    SYPHONBUILD=enabled
+fi
+AM_CONDITIONAL(SYPHONBUILD, test "${SYPHONBUILD}" = "enabled")
 
 dnl =======================================================================
 dnl Finally, create Makefiles in all directories
 dnl =======================================================================
-
-dnl plugins/syphonsrc/Makefile FIXME syphon should be ported to shmdata1
 
 AC_CONFIG_FILES([
 Makefile
@@ -417,6 +423,7 @@ plugins/osc/Makefile
 plugins/portmidi/Makefile
 plugins/pulse/Makefile
 plugins/v4l2/Makefile
+plugins/syphonsrc/Makefile
 plugins/pjsip/Makefile
 plugins/gtk/Makefile
 plugins/jack/Makefile
@@ -436,6 +443,7 @@ AC_OUTPUT
 [echo "Pulse audio                ${PULSEBUILD}"]
 [echo "PortMidi                   ${PORTMIDIBUILD}"]
 [echo "Jack                       ${JACKBUILD}"]
+[echo "syphon reader              ${SYPHONBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]
