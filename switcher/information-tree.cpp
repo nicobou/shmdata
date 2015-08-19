@@ -156,14 +156,8 @@ Tree::get_child_iterator(const std::string &key) const {
 
 Tree::ptr Tree::prune(const std::string &path) {
   std::unique_lock<std::mutex> lock(mutex_);
-  auto found = get_node(path);
-  if (!found.first.empty()) {
-    Tree::ptr res = found.second->second;
-    found.first.erase(found.second);
-    return res;
-  }
-  Tree::ptr res;
-  return res;
+  std::istringstream iss(path);
+  return remove_next(iss);
 }
 
 Tree::ptr Tree::get(const std::string &path) {
@@ -189,10 +183,9 @@ Tree::GetNodeReturn Tree::get_node(const std::string &path) const {
   return std::make_pair(child_list, child_iterator);
 }
 
-bool
-Tree::get_next(std::istringstream &path,
-               Tree::childs_t &parent_list_result,
-               Tree::childs_t::iterator &iterator_result) const {
+bool Tree::get_next(std::istringstream &path,
+                    Tree::childs_t &parent_list_result,
+                    Tree::childs_t::iterator &iterator_result) const {
   std::string child_key;
   if (!std::getline(path, child_key, '.'))
     return true;
@@ -209,6 +202,22 @@ Tree::get_next(std::istringstream &path,
     return false;
   }
   return false;
+}
+
+Tree::ptr Tree::remove_next(std::istringstream &path) {
+  std::string child_key;
+  if (!std::getline(path, child_key, '.'))
+    return make();
+  if (child_key.empty()) {
+    return this->remove_next(path);
+  }
+  auto it = get_child_iterator(child_key);
+  if (childrens_.end() != it) {
+    Tree::ptr res = it->second;
+    childrens_.erase(it);
+    return res;
+  }
+  return make();
 }
 
 bool Tree::graft(const std::string &where, Tree::ptr tree) {
