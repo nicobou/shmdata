@@ -17,15 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
-#if HAVE_OSX
-#include <sys/socket.h>
-#include <netinet/in.h>
-#endif
-
 #include <glib/gstdio.h>  // writing sdp file
 #include <chrono>
 #include <sstream>
@@ -745,22 +736,6 @@ void RtpSession::on_rtppayloder_caps(GstElement *typefind,
                        std::string(caps_str));
 }
 
-#if HAVE_OSX
-void RtpSession::set_udp_sock(GstElement *udpsink) {
-  // turnaround for OSX: create sender socket
-  int sock;
-  if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-    g_warning("udp sink: cannot create socket");
-    return;
-  }
-  guint bc_val = 1;
-  if (setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &bc_val, sizeof(bc_val)) < 0) {
-    g_warning("udp sink: cannot set broadcast to socket");
-    return;
-  }
-  g_object_set(G_OBJECT(udpsink), "sockfd", sock, nullptr);
-}
-#endif
 
 bool RtpSession::make_udp_sinks(const std::string &shmpath,
                                 const std::string &rtp_id) {
@@ -796,9 +771,6 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
                      "have-type",
                      G_CALLBACK(RtpSession::on_rtppayloder_caps),
                      nullptr);
-#if HAVE_OSX
-    set_udp_sock(udpsink);
-#endif
     gst_bin_add_many(GST_BIN(udpsink_bin),
                      typefind, udpsink, nullptr);
     gst_element_link(typefind, udpsink);
@@ -825,9 +797,6 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
     // saving for latter controling
     GstElement *udpsink = it->second->udp_rtcp_sink;
     g_object_set(G_OBJECT(udpsink), "sync", FALSE, nullptr);
-#if HAVE_OSX
-    set_udp_sock(udpsink);
-#endif
     gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), udpsink);
     GstUtils::sync_state_with_parent(udpsink);
     GstPad *sink_pad = gst_element_get_static_pad(udpsink, "sink");
