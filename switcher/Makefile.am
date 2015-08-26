@@ -51,6 +51,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     net-utils.cpp \
     periodic-task.cpp \
     plugin-loader.cpp \
+    property-container.cpp \
     property-mapper.cpp \
     property.cpp \
     quiddity-basic-test.cpp \
@@ -74,6 +75,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     startable-quiddity.cpp \
     string-dictionary.cpp \
     string-utils.cpp \
+    type-name-registry.cpp \
     unique-gst-element.cpp \
     uridecodebin.cpp \
     video-test-source.cpp
@@ -127,8 +129,11 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     net-utils.hpp \
     periodic-task.hpp \
     plugin-loader.hpp \
+    property-container.hpp \
     property-mapper.hpp \
+    property-specification.hpp \
     property.hpp \
+    property2.hpp \
     quiddity-basic-test.hpp \
     quiddity-command.hpp \
     quiddity-documentation.hpp \
@@ -153,6 +158,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     std2.hpp \
     string-dictionary.hpp \
     string-utils.hpp \
+    type-name-registry.hpp \
     unique-gst-element.hpp \
     uridecodebin.hpp \
     video-test-source.hpp

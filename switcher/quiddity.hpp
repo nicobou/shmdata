@@ -33,6 +33,7 @@
 #include <map>
 
 #include "./property.hpp"
+#include "./property-container.hpp"
 #include "./method.hpp"
 #include "./signal-string.hpp"
 #include "./information-tree.hpp"
@@ -58,7 +59,7 @@ class Quiddity {
   Quiddity();
   Quiddity(const Quiddity &) = delete;
   Quiddity &operator=(const Quiddity &) = delete;
-  virtual ~Quiddity();
+  virtual ~Quiddity() = default;
 
   // class documentation
   virtual QuiddityDocumentation *get_documentation() = 0;
@@ -124,6 +125,9 @@ class Quiddity {
   data::Tree::ptr information_tree_;
   
   // properties
+  PropertyContainer props_{};
+  Property2<unsigned int> prop_;  // FIXME remove this fake member
+  Property2<int> prop2_;  // FIXME remove this fake member
   std::unordered_map<std::string, Property::ptr> properties_{};
   std::unordered_map<std::string, Property::ptr> disabled_properties_{};
   JSONBuilder::ptr properties_description_;
