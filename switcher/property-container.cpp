@@ -21,16 +21,25 @@
 
 namespace switcher {
 
+PropertyContainer::PropertyContainer(data::Tree::ptr tree):
+    tree_(tree){
+  tree_->graft(".property", data::Tree::make());
+  tree_->tag_as_array(".property", true);
+}
+
 PropertyContainer::prop_id_t PropertyContainer::install_property(const std::string &name,
                                                                  PropertyBase *prop){
   props_[++counter_] = prop;
   ids_[name] = counter_;
+  auto tree = prop->get_spec();
+  tree->graft("id", data::Tree::make(name));
+  tree_->graft(std::string("property.") + name, tree);
   return counter_;
 }
 
 bool PropertyContainer::reinstall_property(prop_id_t prop_id,
                                            PropertyBase *prop){
-  props_[prop_id] = prop;
+  props_[prop_id] = prop; // FIXME check in disabled, same for other methods
   return true;
 }
 

@@ -125,7 +125,7 @@ class Quiddity {
   data::Tree::ptr information_tree_;
   
   // properties
-  PropertyContainer props_{};
+  PropertyContainer props_;
   Property2<unsigned int> prop_;  // FIXME remove this fake member
   Property2<int> prop2_;  // FIXME remove this fake member
   std::unordered_map<std::string, Property::ptr> properties_{};

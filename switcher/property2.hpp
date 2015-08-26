@@ -21,6 +21,7 @@
 #define __SWITCHER_PROPERTY2_H__
 
 #include <map>
+#include "./information-tree.hpp"
 #include "./property-specification.hpp"
 
 namespace switcher {
@@ -38,6 +39,8 @@ class PropertyBase{
   return counter_;
   }
 
+  virtual data::Tree::ptr get_spec() = 0;
+  
  protected:
   size_t get_type_id_hash(){
   return type_hash_;
@@ -100,6 +103,8 @@ class Property2: public PropertyBase{
     return oss.str();
   }
 
+  data::Tree::ptr get_spec() final {return doc_.get_spec();};
+  
  private:
   PropertySpecification<V> doc_;
   set_cb_t set_;

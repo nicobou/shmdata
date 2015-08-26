@@ -34,9 +34,10 @@ std::map<std::pair<std::string, std::string>, guint> Quiddity::signals_ids_{};
 
 Quiddity::Quiddity():
     information_tree_(data::Tree::make()),
+    props_(information_tree_),
     prop_([this](unsigned int){return true;},
           [this](){return 1;},
-          "Truc Prop", "This prop is truc", 2u),
+          "Truc Prop", "This prop is truc", 2, 1),
     prop2_([this](int){return true;},
           [this](){return 1;},
           "Truc Prop2", "This prop2 is truc", 1),

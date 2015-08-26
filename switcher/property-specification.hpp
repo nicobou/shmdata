@@ -102,7 +102,7 @@ class PropertySpecification{
                << std::endl;
   }
 
-  data::Tree::ptr get_specification(){
+  data::Tree::ptr get_spec(){
     return spec_;
   }
   

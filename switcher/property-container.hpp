@@ -28,6 +28,8 @@ namespace switcher {
 class PropertyContainer{
  public:
   using prop_id_t = size_t;
+  PropertyContainer() = delete;
+  PropertyContainer(data::Tree::ptr tree);  // will own it and write into .property.
   prop_id_t install_property(const std::string &name, PropertyBase *prop);
   bool reinstall_property(prop_id_t prop_id, PropertyBase *prop);
   bool uninstall_property(prop_id_t prop_id);
@@ -39,7 +41,7 @@ class PropertyContainer{
 
   template<class T> bool property_set_by_name(const std::string &name, const T &val){
     if (props_[ids_[name]]->get_type_id_hash() != typeid(val).hash_code()){
-      std::cerr << "types do not match" << std::endl;
+      std::cerr << "types do not match" << std::endl;  // FIXME
       return false;
     }
     return static_cast<Property2<T> *>(props_[ids_[name]])->
@@ -48,7 +50,7 @@ class PropertyContainer{
 
   template<class T> T property_get_by_name(const std::string &name){
     if (props_[ids_[name]]->get_type_id_hash() != typeid(T).hash_code()){
-      std::cerr << "types do not match" << std::endl;
+      std::cerr << "types do not match" << std::endl;  //FIXME
     }
     return static_cast<Property2<T> *>(props_[ids_[name]])->get();
   }
@@ -58,6 +60,7 @@ class PropertyContainer{
   std::map<prop_id_t, PropertyBase *> props_{};
   std::map<prop_id_t, PropertyBase *> disabled_props_{};
   std::map<std::string, id_t> ids_{};
+  data::Tree::ptr tree_;
 };
 
 }  // namespace switcher
