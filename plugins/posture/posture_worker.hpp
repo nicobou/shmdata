@@ -20,6 +20,8 @@
 #ifndef __SWITCHER_POSTURE_POOL_HPP__
 #define __SWITCHER_POSTURE_POOL_HPP__
 
+#include <atomic>
+#include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -35,15 +37,14 @@ namespace switcher
   
       bool is_ready() {return ready_;}
       void set_task(std::function<void()> func);
-      void do_task();
   
     private:
-      bool ready_ {false};
-      bool do_task_ {false};
+      std::atomic_bool ready_ {false};
       bool stop_ {false};
       std::shared_ptr<std::function<void()>> task_ {nullptr};
       std::thread thread_ {};
       std::mutex mutex_ {};
+      std::condition_variable _condition {};
   
       void thread_loop();
   };

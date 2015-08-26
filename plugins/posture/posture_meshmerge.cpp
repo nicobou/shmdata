@@ -141,13 +141,7 @@ PostureMeshMerge::connect(std::string shmdata_socket_path) {
   auto reader = std2::make_unique<ShmdataFollower>(this,
                   shmdata_socket_path,
                   [=] (void *data, size_t size) {
-    if (!mutex_.try_lock())
-    {
-      unique_lock<mutex> lock(stock_mutex_);
-      stock_[index] = vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size);
-      return;
-    }
-
+    mutex_.lock();
     auto typeIt = mesh_readers_caps_.find(shmreader_id);
     if (typeIt == mesh_readers_caps_.end())
     {
@@ -158,23 +152,9 @@ PostureMeshMerge::connect(std::string shmdata_socket_path) {
     mutex_.unlock();
 
     if (merger_ == nullptr || (type != string(POLYGONMESH_TYPE_BASE)))
-    {
       return;
-    }
 
-    // Setting input meshes is thread safe, so lets do it
-    {
-      unique_lock<mutex> lock(stock_mutex_);
-      for (auto it = stock_.begin(); it != stock_.end(); ++it)
-      {
-        merger_->setInputMesh(it->first,
-                              it->second);
-      }
-      stock_.clear();
-    }
-
-
-    merger_->setInputMesh(index, vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size));
+    merger_->setInputMesh(index, vector<uint8_t>((uint8_t*)data, (uint8_t*)data + size));
 
     if (!worker_.is_ready() || !updateMutex_.try_lock())
       return;
@@ -186,22 +166,23 @@ PostureMeshMerge::connect(std::string shmdata_socket_path) {
       auto mesh = vector<unsigned char>();
       merger_->getMesh(mesh);
 
-      if (mesh_writer_ == nullptr || mesh.size() > mesh_writer_->writer(&shmdata::Writer::alloc_size)) {
-        auto data_type = string(POLYGONMESH_TYPE_BASE);
-        mesh_writer_.reset();
-        mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
-                                                        make_file_name("mesh"),
-                                                        std::max(mesh.size() * 2, (size_t)1024),
-                                                        data_type);
-      }
+      if (mesh.size() != 0)
+      {
+        if (mesh_writer_ == nullptr || mesh.size() > mesh_writer_->writer(&shmdata::Writer::alloc_size)) {
+          auto data_type = string(POLYGONMESH_TYPE_BASE);
+          mesh_writer_.reset();
+          mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
+                                                          make_file_name("mesh"),
+                                                          std::max(mesh.size() * 2, (size_t)1024),
+                                                          data_type);
+        }
 
-      mesh_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(mesh.data()), mesh.size());
-      mesh_writer_->bytes_written(mesh.size());
+        mesh_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(mesh.data()), mesh.size());
+        mesh_writer_->bytes_written(mesh.size());
+      }
 
       updateMutex_.unlock();
     });
-
-    worker_.do_task();
   }, [=](string caps) {
     unique_lock<mutex> lock(mutex_);
     mesh_readers_caps_[shmreader_id] = caps;
