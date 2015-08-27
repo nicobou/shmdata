@@ -35,19 +35,10 @@ std::map<std::pair<std::string, std::string>, guint> Quiddity::signals_ids_{};
 Quiddity::Quiddity():
     information_tree_(data::Tree::make()),
     props_(information_tree_),
-    prop_([this](unsigned int){return true;},
-          [this](){return 1;},
-          "Truc Prop", "This prop is truc", 2, 1),
-    prop2_([this](int){return true;},
-          [this](){return 1;},
-          "Truc Prop2", "This prop2 is truc", 1),
     properties_description_(std::make_shared<JSONBuilder>()),
     methods_description_(std::make_shared<JSONBuilder>()),
     signals_description_(std::make_shared<JSONBuilder>()),
     gobject_(std::make_shared<GObjectWrapper>()) {
-  props_.install_property("prop", &prop_);
-  props_.install_property("prop2", &prop2_);
-
   gobject_->property_set_default_user_data(this);
   GType arg_type[] = { G_TYPE_STRING };
   install_signal_with_class_name("Quiddity",

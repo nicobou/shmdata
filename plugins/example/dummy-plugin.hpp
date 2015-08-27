@@ -21,8 +21,10 @@
 #define __SWITCHER_DUMMY_PLUGIN_H__
 
 #include <memory>
+#include <string>
 #include "switcher/quiddity.hpp"
 #include "switcher/startable-quiddity.hpp"
+#include "switcher/property2.hpp"
 #include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
@@ -35,6 +37,24 @@ class DummyPlugin: public Quiddity, public StartableQuiddity {
   DummyPlugin &operator=(const DummyPlugin &) = delete;
 
  private:
+  // --- Properties
+  // the Property<T> object is providing access to the int_ member, accordingly
+  // declare and initialise the member (e.g. int_) before the property (e.g. int_prop_) 
+  //
+  // note: see switcher/type-name-registry.hpp for supported property types 
+  int int_{3};
+  Property2<int> int_prop_;
+  // more examples
+  unsigned int uint_{4};
+  Property2<unsigned int> uint_prop_;
+  bool bool_{false};
+  Property2<bool> bool_prop_;
+  float float_{0.1234};
+  Property2<float> float_prop_;
+  std::string string_{"hello"};
+  Property2<std::string> string_prop_;
+
+  // FIXME remove this 
   CustomPropertyHelper::ptr custom_props_;
   bool myprop_{false};
   GParamSpec *myprop_prop_{nullptr};

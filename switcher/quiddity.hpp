@@ -126,8 +126,6 @@ class Quiddity {
   
   // properties
   PropertyContainer props_;
-  Property2<unsigned int> prop_;  // FIXME remove this fake member
-  Property2<int> prop2_;  // FIXME remove this fake member
   std::unordered_map<std::string, Property::ptr> properties_{};
   std::unordered_map<std::string, Property::ptr> disabled_properties_{};
   JSONBuilder::ptr properties_description_;
@@ -208,6 +206,8 @@ class Quiddity {
                              bool do_signal = true);
   
   // property
+  Make_delegate(PropertyContainer, &props_, property);
+
   bool install_property(GObject *object,
                         const std::string &gobject_property_name,
                         const std::string &name_to_give,

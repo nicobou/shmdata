@@ -31,10 +31,49 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 DummyPlugin::DummyPlugin(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()) {
+    // for arythmetic types, min and max specifications are optionnal,
+    // if not specified, std::numeric_limits<T>::value is used
+    int_prop_([this](int val){int_ = val; return true;},   // setter
+              [this](){return int_;},                      // getter
+              "Int Example",                               // name
+              "This property is an example for type int",  // description
+              int_,                                           // default value
+              -10,                                         // min
+              10),                                         // max
+    uint_prop_([this](unsigned int val){uint_ = val; return true;},  // setter
+               [this](){return uint_;},                              // getter
+               "Unsigned Int Example",                               // name
+               "This property is an example for type unsigned int",  // description
+               uint_),                                                   // default value
+  bool_prop_([this](bool val){bool_ = val; return true;},
+             [this](){return bool_;},
+             "Bool Example",
+             "This property is an example for type bool",
+             bool_),
+  float_prop_([this](float val){float_ = val; return true;},
+              [this](){return float_;},
+              "Float Example",
+              "This property is an example for type float",
+              float_,
+              -1.f,
+              1.f),
+  string_prop_([this](const std::string &val){string_ = val; return true;},
+              [this](){return string_;},
+              "String Example",
+              "This property is an example for type string",
+              string_),
+  custom_props_(std::make_shared<CustomPropertyHelper> ()) {
 }
 
 bool DummyPlugin::init() {
+  // FIXME illustrate use of ids 
+  auto uint_id = property(&PropertyContainer::install_property, "uint_", &uint_prop_);
+  if(uint_id != uint_prop_.get_id())
+    g_warning("problem with ids");
+  // g_debug("uint property installation id is %lu", uint_id);
+  // props_.install_property("int_", &int_prop_);  
+
+
   init_startable(this);
   myprop_prop_ = custom_props_->make_boolean_property("myprop",       // name
                                                       "myprop is a boolean property",  // description

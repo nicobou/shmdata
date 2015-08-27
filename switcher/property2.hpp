@@ -25,15 +25,22 @@
 #include "./property-specification.hpp"
 
 namespace switcher {
+class PropertyContainer;
+
 class PropertyBase{
+  friend class PropertyContainer;
  public:
   using register_id_t = size_t;
   using notify_cb_t = std::function<void()>;
+  using prop_id_t = size_t;
   PropertyBase() = delete;
   virtual ~PropertyBase() = default;
   PropertyBase(size_t type_hash) :
       type_hash_(type_hash){
   }
+
+  prop_id_t get_id(){return id_;}
+  
   register_id_t subscribe(notify_cb_t fun){
     to_notify_[++counter_] = fun;
   return counter_;
@@ -42,18 +49,22 @@ class PropertyBase{
   virtual data::Tree::ptr get_spec() = 0;
   
  protected:
-  size_t get_type_id_hash(){
-  return type_hash_;
+  size_t get_type_id_hash() const{
+    return type_hash_;
   }
   void notify(){
     for(auto &it: to_notify_)
-    it.second();
+      it.second();
   }
 
  private:
   size_t type_hash_;
   register_id_t counter_{0};
   std::map<register_id_t, notify_cb_t> to_notify_{};
+  // id is given by other class but saved here in order to avoid
+  // save it along with the Property2 instance
+  prop_id_t id_{0};
+  void set_id(prop_id_t id){id_ = id;}  // for any friend class
 };
 
 template<class V>  // readonly when set_ initialized with nullptr
@@ -81,7 +92,7 @@ class Property2: public PropertyBase{
     return true;
   }
 
-  V get(){
+  V get() const{
     return get_();
   }
   
@@ -97,7 +108,7 @@ class Property2: public PropertyBase{
     return res;
   }
   
-  std::string get_str(){
+  std::string get_str() const{
     std::ostringstream oss;
     oss << get_();
     return oss.str();
