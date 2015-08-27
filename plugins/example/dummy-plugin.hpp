@@ -22,13 +22,12 @@
 
 #include <memory>
 #include <string>
+// #include "switcher/startable-quiddity.hpp" FIXME re enable this
 #include "switcher/quiddity.hpp"
-#include "switcher/startable-quiddity.hpp"
 #include "switcher/property2.hpp"
-#include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
-class DummyPlugin: public Quiddity, public StartableQuiddity {
+class DummyPlugin: public Quiddity/*FIXME re enable this, public StartableQuiddity */ {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(DummyPlugin);
   DummyPlugin(const std::string &);
@@ -54,19 +53,13 @@ class DummyPlugin: public Quiddity, public StartableQuiddity {
   std::string string_{"hello"};
   Property2<std::string> string_prop_;
 
-  // FIXME remove this 
-  CustomPropertyHelper::ptr custom_props_;
-  bool myprop_{false};
-  GParamSpec *myprop_prop_{nullptr};
+  // --- Methods
   std::string hello_{};
+  static gchar *my_hello_world_method(gchar *first_arg, void *user_data);
 
   bool init() final;
-  bool start() final;
-  bool stop() final;
-
-  static gboolean get_myprop(void *user_data);
-  static void set_myprop(gboolean myprop, void *user_data);
-  static gchar *my_hello_world_method(gchar *first_arg, void *user_data);
+  // bool start() final;
+  // bool stop() final;
 };
 
 SWITCHER_DECLARE_PLUGIN(DummyPlugin);

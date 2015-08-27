@@ -58,11 +58,10 @@ DummyPlugin::DummyPlugin(const std::string &):
               -1.f,
               1.f),
   string_prop_([this](const std::string &val){string_ = val; return true;},
-              [this](){return string_;},
-              "String Example",
-              "This property is an example for type string",
-              string_),
-  custom_props_(std::make_shared<CustomPropertyHelper> ()) {
+               [this](){return string_;},
+               "String Example",
+               "This property is an example for type string",
+               string_){
 }
 
 bool DummyPlugin::init() {
@@ -72,21 +71,6 @@ bool DummyPlugin::init() {
     g_warning("problem with ids");
   // g_debug("uint property installation id is %lu", uint_id);
   // props_.install_property("int_", &int_prop_);  
-
-
-  init_startable(this);
-  myprop_prop_ = custom_props_->make_boolean_property("myprop",       // name
-                                                      "myprop is a boolean property",  // description
-                                                      (gboolean) FALSE,  // default value
-                                                      (GParamFlags)
-                                                      G_PARAM_READWRITE,
-                                                      DummyPlugin::set_myprop,
-                                                      DummyPlugin::get_myprop,
-                                                      this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            myprop_prop_,
-                            "myprop",
-                            "My Property");  // long name
 
   install_method("Hello World",  // long name
                  "hello-world",  // name
@@ -114,18 +98,6 @@ bool DummyPlugin::init() {
   return true;
 }
 
-gboolean DummyPlugin::get_myprop(void *user_data) {
-  DummyPlugin *context = static_cast<DummyPlugin *>(user_data);
-  return context->myprop_;
-}
-
-void DummyPlugin::set_myprop(gboolean myprop, void *user_data) {
-  DummyPlugin *context = static_cast<DummyPlugin *>(user_data);
-  context->myprop_ = myprop;
-  GObjectWrapper::notify_property_changed(context->gobject_->get_gobject(),
-                                          context->myprop_prop_);
-}
-
 gchar *DummyPlugin::my_hello_world_method(gchar *first_arg, void *user_data) {
   DummyPlugin *context = static_cast<DummyPlugin *>(user_data);
   g_debug("hello world from myplugin");
@@ -134,13 +106,14 @@ gchar *DummyPlugin::my_hello_world_method(gchar *first_arg, void *user_data) {
   return g_strdup(context->hello_.c_str());  
 }
 
-bool DummyPlugin::start() {
-  g_debug("start from my plugin");
-  return true;
-}
+// bool DummyPlugin::start() {
+//   g_debug("start from my plugin");
+//   return true;
+// }
 
-bool DummyPlugin::stop() {
-  g_debug("stop from my plugin");
-  return true;
-}
-}
+// bool DummyPlugin::stop() {
+//   g_debug("stop from my plugin");
+//   return true;
+// }
+
+}  // namespace switcher
