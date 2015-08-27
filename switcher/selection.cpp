@@ -17,41 +17,30 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./type-name-registry.hpp"
+#include <glib.h>
 #include "./selection.hpp"
 
 namespace switcher {
 
-#define REGISTER_TYPE(X)                        \
-  {typeid(X).hash_code(), #X}
+Selection::Selection(std::vector<std::string> &&list, size_t current_selection):
+    list_(list),
+    current_selection_(current_selection){
+}
 
-#define REGISTER_TYPE2(X, Y)                    \
-  {typeid(X).hash_code(), #Y}
+void Selection::select(size_t current_selection){
+  if (current_selection >= list_.size()){
+    g_warning("current_selection >= list_.size()");
+    return;
+  }
+  current_selection_ = current_selection;
+}
 
-TypeNameRegistry::registry_t TypeNameRegistry::type_name_registry_ = {
-  REGISTER_TYPE(double),
-  REGISTER_TYPE(float),
-  REGISTER_TYPE(long double),
-  
-  REGISTER_TYPE(int),
-  REGISTER_TYPE(short),
-  REGISTER_TYPE(bool),
-  REGISTER_TYPE(long),
-  REGISTER_TYPE(long long),
-  REGISTER_TYPE(char),
-  REGISTER_TYPE(char16_t),
-  REGISTER_TYPE(char32_t),
-  REGISTER_TYPE(wchar_t),
+size_t Selection::get() const{
+  return current_selection_;
+}
+
+std::vector<std::string> Selection::get_list() const{
+  return list_;
+}
  
-  REGISTER_TYPE(unsigned short),
-  REGISTER_TYPE(unsigned int),
-  REGISTER_TYPE(unsigned long),
-  REGISTER_TYPE(unsigned long long),
-
-  REGISTER_TYPE2(std::string, string),
-  REGISTER_TYPE2(const char *, string),
-
-  REGISTER_TYPE2(Selection, enum)
-};
-
 }  // namespace switcher

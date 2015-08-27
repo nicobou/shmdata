@@ -29,6 +29,13 @@
 
 #include "./type-name-registry.hpp"
 #include "./information-tree.hpp"
+#include "./selection.hpp"
+
+// FIXME a voir avec Francois
+// TODO mettre current ? (depuis container peut etre)
+// "default value" -> default  // FIXME default is useless ?
+// TODO "name" -> "label" 
+// nick disparait de enum
 
 namespace switcher {
 template<typename T>
@@ -51,12 +58,7 @@ class PropertySpecification{
       default_value_(default_value),
       spec_(data::Tree::make()){
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<U>()));
-    spec_->graft("default value", data::Tree::make(static_cast<U>(default_value)));
-    
-    std::cout << "type: " << TypeNameRegistry::get_name<U>()
-              << " not numeric, default value: "
-              << default_value
-              << std::endl;
+    spec_->graft("default", data::Tree::make(static_cast<U>(default_value)));
   }
 
   template <typename U = T, typename V>
@@ -77,12 +79,6 @@ class PropertySpecification{
     spec_->graft("default", data::Tree::make(static_cast<U>(default_value)));
     spec_->graft("min", data::Tree::make(static_cast<U>(min_value)));
     spec_->graft("max", data::Tree::make(static_cast<U>(max_value)));
-
-    std::cout << "type: " << TypeNameRegistry::get_name<U>()
-              << " default value: " << std::to_string(default_value)
-              << " min: " << std::to_string(min_value)
-              << " max: " << std::to_string(max_value)
-              << std::endl;
   }
   
   template<typename U = bool>
@@ -93,13 +89,29 @@ class PropertySpecification{
       descr_(description),
       default_value_(default_value),
       spec_(data::Tree::make()){
-    spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<U>()));
-    spec_->graft("default value", data::Tree::make(static_cast<U>(default_value)));
-    
-    std::cout  << std::boolalpha
-               << "type: " << TypeNameRegistry::get_name<T>()
-               << " default value: " << default_value
-               << std::endl;
+    spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<bool>()));
+    spec_->graft("default", data::Tree::make(default_value));
+  }
+
+  template<typename U = Selection>
+  PropertySpecification(const std::string &name,
+                        const std::string &description,
+                        const Selection &default_value):
+      name_(name),
+      descr_(description),
+      default_value_(default_value),
+      spec_(data::Tree::make()){
+    spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<bool>()));
+    spec_->graft("default", data::Tree::make(default_value_.get()));
+    size_t pos = 0;
+    for (const auto &it: default_value.get_list()){
+      auto tree = data::Tree::make();
+      tree->graft(".label", data::Tree::make(it));
+      tree->graft(".value", data::Tree::make(pos));
+      spec_->graft(".values." + std::to_string(pos), tree);
+      ++pos;
+    }
+    spec_->tag_as_array(".values.", true);
   }
 
   data::Tree::ptr get_spec(){
@@ -110,7 +122,7 @@ class PropertySpecification{
   const std::string name_;
   const std::string descr_;
   const T default_value_;
-  data::Tree::ptr spec_; // need a tree for enum like types
+  data::Tree::ptr spec_;
 };
 
 }  // namespace switcher

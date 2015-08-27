@@ -61,7 +61,15 @@ DummyPlugin::DummyPlugin(const std::string &):
                [this](){return string_;},
                "String Example",
                "This property is an example for type string",
-               string_){
+               string_)
+    // FIXME lambdas have different arg types
+    // ,
+    // selection_prop_([this](size_t val){selection_.select(val); return true;},
+    //                 [this](){return selection_.get();},
+    //                 "String Example",
+    //                 "This property is an example for type string",
+    //                 selection_)
+{
 }
 
 bool DummyPlugin::init() {

@@ -25,6 +25,7 @@
 // #include "switcher/startable-quiddity.hpp" FIXME re enable this
 #include "switcher/quiddity.hpp"
 #include "switcher/property2.hpp"
+#include "switcher/selection.hpp"
 
 namespace switcher {
 class DummyPlugin: public Quiddity/*FIXME re enable this, public StartableQuiddity */ {
@@ -39,7 +40,6 @@ class DummyPlugin: public Quiddity/*FIXME re enable this, public StartableQuiddi
   // --- Properties
   // the Property<T> object is providing access to the int_ member, accordingly
   // declare and initialise the member (e.g. int_) before the property (e.g. int_prop_) 
-  //
   // note: see switcher/type-name-registry.hpp for supported property types 
   int int_{3};
   Property2<int> int_prop_;
@@ -53,6 +53,10 @@ class DummyPlugin: public Quiddity/*FIXME re enable this, public StartableQuiddi
   std::string string_{"hello"};
   Property2<std::string> string_prop_;
 
+  // advanced properties
+  Selection selection_{{"emacs", "vim", "notepad"}, 0};
+  // FIXME Property2<Selection> selection_prop_;
+  
   // --- Methods
   std::string hello_{};
   static gchar *my_hello_world_method(gchar *first_arg, void *user_data);

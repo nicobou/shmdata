@@ -67,6 +67,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     rtp-session.cpp \
     safe-bool-idiom.cpp \
     sdp-utils.cpp \
+    selection.cpp \
     shmdata-connector.cpp \
     shmdata-follower.cpp \
     shmdata-utils.cpp \
@@ -148,6 +149,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     safe-bool-idiom.hpp \
     scope-exit.hpp \
     sdp-utils.hpp \
+    selection.hpp \
     shmdata-connector.hpp \
     shmdata-glib-logger.hpp \
     shmdata-follower.hpp \
