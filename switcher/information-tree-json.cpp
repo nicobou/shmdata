@@ -15,10 +15,11 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "./information-tree-json.hpp"
-#include "./scope-exit.hpp"
 #include <json-glib/json-glib.h>
 #include <iostream>
+#include "./information-tree-json.hpp"
+#include "./scope-exit.hpp"
+#include "./any.hpp"
 
 namespace switcher {
 namespace data {
@@ -33,7 +34,32 @@ on_visiting_node(std::string key,
     json_builder_set_member_name(builder, key.c_str());
   if (node->is_leaf()){
     if (!node->read_data().is_null()) {
-      json_builder_add_string_value(builder, Any::to_string(node->read_data()).c_str());
+      switch (node->read_data().get_category()) {
+        case AnyCategory::BOOL:
+          //json_builder_add_string_value(builder, Any::to_string(node->read_data()).c_str());
+          json_builder_add_boolean_value(builder, node->read_data().copy_as<bool>());
+          break;
+        case AnyCategory::INTEGRAL:
+          //json_builder_add_string_value(builder, Any::to_string(node->read_data()).c_str());
+
+          // FIXME this should be the way it is done:
+          // json_builder_add_int_value(builder, node->read_data().copy_as<gint64>());
+          json_builder_add_int_value(builder, std::stoll(Any::to_string(node->read_data())));
+          
+          break;
+        case AnyCategory::FLOAT:
+          //json_builder_add_string_value(builder, Any::to_string(node->read_data()).c_str());
+          // FIXME this should be the way it is done:
+          // json_builder_add_double_value(builder, node->read_data().copy_as<gdouble>());
+          json_builder_add_double_value(builder, std::stold(Any::to_string(node->read_data())));
+          break;
+        case AnyCategory::OTHER:
+          json_builder_add_string_value(builder, Any::to_string(node->read_data()).c_str());
+          break;
+        case AnyCategory::NONE:
+          json_builder_add_null_value(builder);
+          break;
+      }
     } else {
       if(node->is_array()) {
         json_builder_begin_array(builder);

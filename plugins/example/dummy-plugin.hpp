@@ -46,10 +46,12 @@ class DummyPlugin: public Quiddity/*FIXME re enable this, public StartableQuiddi
   // more examples
   unsigned int uint_{4};
   Property2<unsigned int> uint_prop_;
-  bool bool_{false};
+  bool bool_{true};
   Property2<bool> bool_prop_;
   float float_{0.1234};
   Property2<float> float_prop_;
+  double double_{4.321};
+  Property2<double> double_prop_;
   std::string string_{"hello"};
   Property2<std::string> string_prop_;
 

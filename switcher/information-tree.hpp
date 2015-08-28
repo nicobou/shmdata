@@ -40,6 +40,7 @@
 #include <memory>
 #include <type_traits>
 #include <mutex>
+#include <iostream>  // FIXME
 #include "./any.hpp"
 
 namespace switcher {
@@ -60,7 +61,7 @@ class Tree {
   static Tree::ptr make();
   template<typename ValueType> static Tree::ptr make(ValueType data) {
     std::shared_ptr<Tree> tree;  //can't use make_shared because ctor is private
-    tree.reset(new Tree(data));
+    tree.reset(new Tree(std::forward<ValueType>(data)));
     tree->me_ = tree;
     return tree;
   }
@@ -137,8 +138,13 @@ class Tree {
   std::weak_ptr<Tree> me_ {};
   
   Tree() {}
+  template<typename U> Tree(const U &data): data_(Any(data)){
+  }
+  template<typename U> Tree(U &&data):
+      data_(Any(std::forward<U>(data))){
+  }
   explicit Tree(const Any &data);
-
+  explicit Tree(Any &&data);
   childs_t::iterator get_child_iterator(const std::string &key) const;
   static bool graft_next(std::istringstream &path, Tree *tree,
                          Tree::ptr leaf);

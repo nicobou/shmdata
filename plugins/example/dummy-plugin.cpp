@@ -57,6 +57,13 @@ DummyPlugin::DummyPlugin(const std::string &):
               float_,
               -1.f,
               1.f),
+  double_prop_([this](double val){double_ = val; return true;},
+               [this](){return double_;},
+              "Double Example",
+              "This property is an example for type double",
+              double_,
+              -1.d,
+              10.d),
   string_prop_([this](const std::string &val){string_ = val; return true;},
                [this](){return string_;},
                "String Example",
@@ -64,7 +71,7 @@ DummyPlugin::DummyPlugin(const std::string &):
                string_),
   selection_prop_([this](size_t val){selection_.select(val); return true;},
                   [this](){return selection_.get();},
-                  "String Example",
+                  "Selection Example",
                   "This property is an example for type enum",
                   selection_){
 }
@@ -76,7 +83,13 @@ bool DummyPlugin::init() {
     g_warning("problem with ids");
 
   property(&PContainer::install_property, "selection_", &selection_prop_);
-  // g_debug("uint property installation id is %lu", uint_id);
+
+  property(&PContainer::install_property, "bool_", &bool_prop_);
+
+  property(&PContainer::install_property, "float_", &float_prop_);
+  property(&PContainer::install_property, "double_", &double_prop_);
+
+    // g_debug("uint property installation id is %lu", uint_id);
   // props_.install_property("int_", &int_prop_);  
 
   install_method("Hello World",  // long name

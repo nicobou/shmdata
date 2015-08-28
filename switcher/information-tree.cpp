@@ -53,6 +53,9 @@ Tree::preorder_tree_walk(Tree::ptrc tree,
 Tree::Tree(const Any &data):data_(data) {
 }
 
+Tree::Tree(Any &&data):data_(data) {
+}
+
 bool Tree::is_leaf() const {
   std::unique_lock<std::mutex> lock(mutex_);
   return childrens_.empty();

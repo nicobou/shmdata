@@ -26,36 +26,40 @@
 #include <string>
 #include <ostream>
 #include <sstream>
+#include <iostream>  // FIXME remove that
 
 template<class T> using StorageType = typename std::decay<T>::type;
+
+enum AnyCategory { BOOL, INTEGRAL, FLOAT, OTHER, NONE };
 
 struct AnyValueBase {
   // AnyValueBase (const AnyValueBase &) = delete;
   virtual ~AnyValueBase() {}
   virtual AnyValueBase *clone() const = 0;
-  virtual std::string to_string()const = 0;
+  virtual std::string to_string() const = 0;
+  AnyCategory category_{AnyCategory::NONE};
 };
 
-template<typename T> struct AnyValueDerived:
-AnyValueBase {
+template<typename T> struct AnyValueDerived: AnyValueBase {
   template <typename U>
-  AnyValueDerived(U && value):
-      value_(std::forward<U> (value)) {}
+  AnyValueDerived(U &&value, AnyCategory category = AnyCategory::NONE):
+      value_(std::forward<U> (value)){
+    category_ = category;
+  }
   T value_;
-  AnyValueBase * clone() const {
-    return new AnyValueDerived <T> (value_);
+  AnyValueBase *clone() const {
+    return new AnyValueDerived <T> (value_, category_);
   }
   
   std::string to_string() const {
     std::stringstream ss;
     ss << value_;
-    return ss.str();
+    return ss.str();    
   }
 };
 
 template <>
-struct AnyValueDerived <std::nullptr_t> :
-    AnyValueBase {
+struct AnyValueDerived <std::nullptr_t> : AnyValueBase {
   template<typename U> AnyValueDerived(U && value):
       value_(std::forward<U> (value)) {
   }
@@ -75,9 +79,43 @@ struct Any {
   bool not_null() const {
     return ptr_;
   }
+
+  AnyCategory get_category() const{
+    return ptr_ ? ptr_->category_ : AnyCategory::NONE;
+  }
   
-  template<typename U> Any(U && value):
+  // default ctor
+  template<typename U> Any(U &&value,
+                           typename std::enable_if<
+                           !std::is_arithmetic<U>::value>::type* = nullptr):
       ptr_(new AnyValueDerived<StorageType<U>> (std::forward<U>(value))) {
+    ptr_->category_ = AnyCategory::OTHER;
+  }
+
+  // bool ctor
+  template<typename U = bool> Any(bool &&value):
+      ptr_(new AnyValueDerived<StorageType<U>> (std::forward<U>(value))){
+    ptr_->category_ = AnyCategory::BOOL;
+  }
+
+  // integral ctor
+  template<typename U> Any(U && value,
+                           typename std::enable_if<
+                           !std::is_same<U, bool>::value && 
+                           std::is_integral<U>::value 
+                           >::type* = nullptr):
+      ptr_(new AnyValueDerived<StorageType<U>> (std::forward<U>(value))) {
+     ptr_->category_ = AnyCategory::INTEGRAL;
+  }
+
+  // floating point ctor
+  template<typename U> Any(U && value,
+                           typename std::enable_if<
+                           !std::is_same<U, bool>::value && 
+                           std::is_floating_point<U>::value 
+                           >::type* = nullptr):
+      ptr_(new AnyValueDerived<StorageType<U>> (std::forward<U>(value))) {
+    ptr_->category_ = AnyCategory::FLOAT;
   }
 
   Any(std::nullptr_t /*value*/):
@@ -92,8 +130,8 @@ struct Any {
   }
 
   template<class U>
-  StorageType<U> &as() {
-    typedef StorageType<U> T;
+  StorageType<U> &as() const {
+    using T = StorageType<U>;
     auto derived = dynamic_cast<AnyValueDerived<T>*>(ptr_);
     if (!derived)
       return *new U;
@@ -102,32 +140,33 @@ struct Any {
   
   template<class U>
   StorageType<U> copy_as() const {
-    typedef StorageType<U> T;
+    using T = StorageType<U>;
     auto derived = dynamic_cast<AnyValueDerived<T>*>(ptr_);
     if (!derived)
       return U();
-    return U(derived->value_);
+    StorageType<U> res = derived->value_;
+    return res;
   }
   
   template<class U>
-  operator U() {
+  operator U() const {
     return as<StorageType<U>>();
   }
 
-  Any():ptr_(nullptr) {
+  Any(): ptr_(nullptr) {
   }
 
   Any(Any &that):ptr_(that.clone()) {
   }
 
-  Any(Any && that):ptr_(that.ptr_) {
+  Any(Any &&that):ptr_(that.ptr_) {
     that.ptr_ = nullptr;
   }
 
   Any(const Any &that):ptr_(that.clone()) {
   }
 
-  Any(const Any && that):
+  Any(const Any &&that):
       ptr_(that.clone()) {
   }
 
@@ -166,6 +205,7 @@ struct Any {
     else
       return nullptr;
   }
+  
   AnyValueBase *ptr_;
   friend std::ostream &operator<<(std::ostream &os, const Any &any) {
     if (any.ptr_)
