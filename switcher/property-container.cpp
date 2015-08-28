@@ -21,31 +21,31 @@
 
 namespace switcher {
 
-PropertyContainer::PropertyContainer(data::Tree::ptr tree):
+PContainer::PContainer(data::Tree::ptr tree):
     tree_(tree){
   tree_->graft(".property", data::Tree::make());
   tree_->tag_as_array(".property", true);
 }
 
-PropertyBase::prop_id_t PropertyContainer::install_property(const std::string &name,
+PropertyBase::prop_id_t PContainer::install_property(const std::string &id,
                                                             PropertyBase *prop){
   props_[++counter_] = prop;
-  ids_[name] = counter_;  //TODO remove ids_ and embed name into property base with id ? 
+  ids_[id] = counter_;  //TODO remove ids_ and embed id into property base with id ? 
   prop->set_id(counter_);
   auto tree = prop->get_spec();
-  tree->graft("id", data::Tree::make(name));
-  tree_->graft(std::string("property.") + name, tree);
+  tree->graft("id", data::Tree::make(id));
+  tree_->graft(std::string("property.") + id, tree);
   return counter_;
 }
 
-bool PropertyContainer::reinstall_property(PropertyBase::prop_id_t prop_id,
+bool PContainer::reinstall_property(PropertyBase::prop_id_t prop_id,
                                            PropertyBase *prop){
   props_[prop_id] = prop; // FIXME check in disabled, same for other methods
   prop->set_id(counter_);
   return true;
 }
 
-bool PropertyContainer::uninstall_property(PropertyBase::prop_id_t prop_id){
+bool PContainer::uninstall_property(PropertyBase::prop_id_t prop_id){
   if (0 == prop_id)
     return false;
   props_[prop_id]->set_id(0);
@@ -60,25 +60,25 @@ bool PropertyContainer::uninstall_property(PropertyBase::prop_id_t prop_id){
   return true;
 }
 
-bool PropertyContainer::disable_property(PropertyBase::prop_id_t prop_id){
+bool PContainer::disable_property(PropertyBase::prop_id_t prop_id){
   disabled_props_[prop_id] = props_[prop_id];
   props_.erase(prop_id);
   return true;
 }
 
-bool PropertyContainer::enable_property(PropertyBase::prop_id_t prop_id){
+bool PContainer::enable_property(PropertyBase::prop_id_t prop_id){
   props_[prop_id] = disabled_props_[prop_id];
   disabled_props_.erase(prop_id);
   return true;
 }
 
-PropertyBase::register_id_t PropertyContainer::subscribe_by_name(const std::string &name,
-                                                                 PropertyBase::notify_cb_t fun){
-  return props_[ids_[name]]->subscribe(std::forward<PropertyBase::notify_cb_t>(fun));
+PropertyBase::register_id_t PContainer::subscribe_by_string_id(const std::string &id,
+                                                                      PropertyBase::notify_cb_t fun){
+  return props_[ids_[id]]->subscribe(std::forward<PropertyBase::notify_cb_t>(fun));
 }
 
-PropertyBase::prop_id_t PropertyContainer::get_id_from_name(const std::string &name) const{
-  const auto &it = ids_.find(name);
+PropertyBase::prop_id_t PContainer::get_id_from_string_id(const std::string &id) const{
+  const auto &it = ids_.find(id);
   if (ids_.end() == it)
     return 0;
   return it->second;

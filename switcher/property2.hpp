@@ -23,12 +23,13 @@
 #include <map>
 #include "./information-tree.hpp"
 #include "./property-specification.hpp"
+#include "./selection.hpp"
 
 namespace switcher {
-class PropertyContainer;
+class PContainer;  // property container
 
 class PropertyBase{
-  friend class PropertyContainer;
+  friend class PContainer;
  public:
   using register_id_t = size_t;
   using notify_cb_t = std::function<void()>;
@@ -67,11 +68,11 @@ class PropertyBase{
   void set_id(prop_id_t id){id_ = id;}  // for any friend class
 };
 
-template<class V>  // readonly when set_ initialized with nullptr
+template<typename V, typename W = V>  // readonly when set_ initialized with nullptr
 class Property2: public PropertyBase{
  public:
-  using get_cb_t = std::function<V()>;
-  using set_cb_t = std::function<bool(const V &)>;
+  using get_cb_t = std::function<W()>;
+  using set_cb_t = std::function<bool(const W &)>;
   template <typename ...SpecArgs>
   Property2(set_cb_t set,
             get_cb_t get,
@@ -82,7 +83,7 @@ class Property2: public PropertyBase{
       get_(get){
   }
 
-  bool set(const V &val, bool do_notify = true){
+  bool set(const W &val, bool do_notify = true){
     if (nullptr == set_)
       return false;  // read only
     if (!set_(std::forward<const V &>(val)))
@@ -92,7 +93,7 @@ class Property2: public PropertyBase{
     return true;
   }
 
-  V get() const{
+  W get() const{
     return get_();
   }
   

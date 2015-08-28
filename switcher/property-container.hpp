@@ -25,28 +25,28 @@
 #include "./property2.hpp"
 
 namespace switcher {
-class PropertyContainer{
+class PContainer{
  public:
-  PropertyContainer() = delete;
-  PropertyContainer(data::Tree::ptr tree);  // will own it and write into .property.
-  PropertyBase::prop_id_t install_property(const std::string &name, PropertyBase *prop);
+  PContainer() = delete;
+  PContainer(data::Tree::ptr tree);  // will own it and write into .property.
+  PropertyBase::prop_id_t install_property(const std::string &id, PropertyBase *prop);
   bool reinstall_property(PropertyBase::prop_id_t prop_id, PropertyBase *prop);
   bool uninstall_property(PropertyBase::prop_id_t prop_id);
   bool disable_property(PropertyBase::prop_id_t prop_id);
   bool enable_property(PropertyBase::prop_id_t prop_id);
 
-  // return 0 if name is not found
-  PropertyBase::prop_id_t get_id_from_name(const std::string &name) const;
+  // return 0 if id is not found
+  PropertyBase::prop_id_t get_id_from_string_id(const std::string &id) const;
 
-  // FIXME remove other "by name" methods
-  PropertyBase::register_id_t subscribe_by_name(const std::string &name,
+  // FIXME remove other "by id" methods
+  PropertyBase::register_id_t subscribe_by_string_id(const std::string &id,
                                                 PropertyBase::notify_cb_t fun);
-  template<class T> bool property_set_by_name(const std::string &name, const T &val){
-    if (props_[ids_[name]]->get_type_id_hash() != typeid(val).hash_code()){
+  template<class T> bool property_set_by_string_id(const std::string &id, const T &val){
+    if (props_[ids_[id]]->get_type_id_hash() != typeid(val).hash_code()){
       std::cerr << "types do not match" << std::endl;  // FIXME
       return false;
     }
-    return static_cast<Property2<T> *>(props_[ids_[name]])->
+    return static_cast<Property2<T> *>(props_[ids_[id]])->
         set(std::forward<const T &>(val));
   }
   // template<class T> T property_get_by_name(const std::string &name) const{

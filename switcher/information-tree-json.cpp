@@ -49,7 +49,7 @@ on_visiting_node(std::string key,
     } else {
       json_builder_begin_object(builder);
       if (is_array_element) {
-        json_builder_set_member_name(builder, "name");
+        json_builder_set_member_name(builder, "id");
         json_builder_add_string_value(builder, key.c_str());
       }
       const Any value = node->read_data();

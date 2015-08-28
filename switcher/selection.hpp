@@ -26,15 +26,16 @@
 namespace switcher {
 class Selection {
  public:
+  using index_t = size_t;
   Selection() = delete;
-  Selection(std::vector<std::string> &&list, size_t current_selection = 0);
-  void select(size_t new_selection);
-  size_t get() const;
+  Selection(std::vector<std::string> &&list, index_t selection = 0);
+  void select(index_t new_selection);
+  index_t get() const;
   std::vector<std::string> get_list() const;
   
  private:
   const std::vector<std::string> list_;
-  size_t current_selection_{0};
+  index_t current_selection_{0};
 };
 
 }  // namespace switcher

@@ -44,7 +44,7 @@ DummyPlugin::DummyPlugin(const std::string &):
                [this](){return uint_;},                              // getter
                "Unsigned Int Example",                               // name
                "This property is an example for type unsigned int",  // description
-               uint_),                                                   // default value
+               uint_),                                               // default value
   bool_prop_([this](bool val){bool_ = val; return true;},
              [this](){return bool_;},
              "Bool Example",
@@ -61,22 +61,21 @@ DummyPlugin::DummyPlugin(const std::string &):
                [this](){return string_;},
                "String Example",
                "This property is an example for type string",
-               string_)
-    // FIXME lambdas have different arg types
-    // ,
-    // selection_prop_([this](size_t val){selection_.select(val); return true;},
-    //                 [this](){return selection_.get();},
-    //                 "String Example",
-    //                 "This property is an example for type string",
-    //                 selection_)
-{
+               string_),
+  selection_prop_([this](size_t val){selection_.select(val); return true;},
+                  [this](){return selection_.get();},
+                  "String Example",
+                  "This property is an example for type enum",
+                  selection_){
 }
 
 bool DummyPlugin::init() {
   // FIXME illustrate use of ids 
-  auto uint_id = property(&PropertyContainer::install_property, "uint_", &uint_prop_);
+  auto uint_id = property(&PContainer::install_property, "uint_", &uint_prop_);
   if(uint_id != uint_prop_.get_id())
     g_warning("problem with ids");
+
+  property(&PContainer::install_property, "selection_", &selection_prop_);
   // g_debug("uint property installation id is %lu", uint_id);
   // props_.install_property("int_", &int_prop_);  
 

@@ -22,12 +22,12 @@
 
 namespace switcher {
 
-Selection::Selection(std::vector<std::string> &&list, size_t current_selection):
+Selection::Selection(std::vector<std::string> &&list, index_t current_selection):
     list_(list),
     current_selection_(current_selection){
 }
 
-void Selection::select(size_t current_selection){
+void Selection::select(index_t current_selection){
   if (current_selection >= list_.size()){
     g_warning("current_selection >= list_.size()");
     return;
@@ -35,7 +35,7 @@ void Selection::select(size_t current_selection){
   current_selection_ = current_selection;
 }
 
-size_t Selection::get() const{
+Selection::index_t Selection::get() const{
   return current_selection_;
 }
 

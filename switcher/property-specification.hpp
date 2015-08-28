@@ -47,22 +47,24 @@ class PropertySpecification{
   // e.g. an unsigned int with an int
   
   template <typename U = T, typename V>
-  PropertySpecification(const std::string &name,
+  PropertySpecification(const std::string &label,
                         const std::string &description,
                         const V &default_value,
                         typename std::enable_if<
                         !std::is_arithmetic<U>::value 
                         >::type* = nullptr):
-      name_(name),
+      label_(label),
       descr_(description),
       default_value_(default_value),
       spec_(data::Tree::make()){
+    spec_->graft("label", data::Tree::make(label_));
+    spec_->graft("description", data::Tree::make(descr_));
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<U>()));
     spec_->graft("default", data::Tree::make(static_cast<U>(default_value)));
   }
 
   template <typename U = T, typename V>
-  PropertySpecification(const std::string &name,
+  PropertySpecification(const std::string &label,
                         const std::string &description,
                         const V &default_value,
                         const V &min_value = std::numeric_limits<U>::min(),
@@ -71,10 +73,12 @@ class PropertySpecification{
                         !std::is_same<U, bool>::value && 
                         std::is_arithmetic<U>::value 
                         >::type* = nullptr):
-      name_(name),
+      label_(label),
       descr_(description),
       default_value_(default_value),
       spec_(data::Tree::make()){
+    spec_->graft("label", data::Tree::make(label_));
+    spec_->graft("description", data::Tree::make(descr_));
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<U>()));
     spec_->graft("default", data::Tree::make(static_cast<U>(default_value)));
     spec_->graft("min", data::Tree::make(static_cast<U>(min_value)));
@@ -82,32 +86,36 @@ class PropertySpecification{
   }
   
   template<typename U = bool>
-  PropertySpecification(const std::string &name,
+  PropertySpecification(const std::string &label,
                         const std::string &description,
                         const bool &default_value):
-      name_(name),
+      label_(label),
       descr_(description),
       default_value_(default_value),
       spec_(data::Tree::make()){
+    spec_->graft("label", data::Tree::make(label_));
+    spec_->graft("description", data::Tree::make(descr_));
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<bool>()));
     spec_->graft("default", data::Tree::make(default_value));
   }
 
   template<typename U = Selection>
-  PropertySpecification(const std::string &name,
+  PropertySpecification(const std::string &label,
                         const std::string &description,
                         const Selection &default_value):
-      name_(name),
+      label_(label),
       descr_(description),
       default_value_(default_value),
       spec_(data::Tree::make()){
-    spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<bool>()));
+    spec_->graft("label", data::Tree::make(label_));
+    spec_->graft("description", data::Tree::make(descr_));
+    spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<Selection>()));
     spec_->graft("default", data::Tree::make(default_value_.get()));
     size_t pos = 0;
     for (const auto &it: default_value.get_list()){
       auto tree = data::Tree::make();
       tree->graft(".label", data::Tree::make(it));
-      tree->graft(".value", data::Tree::make(pos));
+      tree->graft(".id", data::Tree::make(pos));  // overhiding id set by json serializer
       spec_->graft(".values." + std::to_string(pos), tree);
       ++pos;
     }
@@ -119,7 +127,7 @@ class PropertySpecification{
   }
   
  private:
-  const std::string name_;
+  const std::string label_;
   const std::string descr_;
   const T default_value_;
   data::Tree::ptr spec_;

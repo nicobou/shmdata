@@ -125,7 +125,7 @@ class Quiddity {
   data::Tree::ptr information_tree_;
   
   // properties
-  PropertyContainer props_;
+  PContainer props_;
   std::unordered_map<std::string, Property::ptr> properties_{};
   std::unordered_map<std::string, Property::ptr> disabled_properties_{};
   JSONBuilder::ptr properties_description_;
@@ -206,7 +206,7 @@ class Quiddity {
                              bool do_signal = true);
   
   // property
-  Make_delegate(PropertyContainer, &props_, property);
+  Make_delegate(PContainer, &props_, property);
 
   bool install_property(GObject *object,
                         const std::string &gobject_property_name,

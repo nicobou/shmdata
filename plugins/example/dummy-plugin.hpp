@@ -54,8 +54,8 @@ class DummyPlugin: public Quiddity/*FIXME re enable this, public StartableQuiddi
   Property2<std::string> string_prop_;
 
   // advanced properties
-  Selection selection_{{"emacs", "vim", "notepad"}, 0};
-  // FIXME Property2<Selection> selection_prop_;
+  Selection selection_{{"emacs", "vim", "notepad", "gedit"}, 0};
+  Property2<Selection, size_t> selection_prop_;
   
   // --- Methods
   std::string hello_{};
