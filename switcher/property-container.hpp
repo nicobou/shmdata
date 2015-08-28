@@ -29,11 +29,12 @@ class PContainer{
  public:
   PContainer() = delete;
   PContainer(data::Tree::ptr tree);  // will own it and write into .property.
-  PropertyBase::prop_id_t install_property(const std::string &id, PropertyBase *prop);
-  bool reinstall_property(PropertyBase::prop_id_t prop_id, PropertyBase *prop);
-  bool uninstall_property(PropertyBase::prop_id_t prop_id);
-  bool disable_property(PropertyBase::prop_id_t prop_id);
-  bool enable_property(PropertyBase::prop_id_t prop_id);
+  PropertyBase::prop_id_t install(PropertyBase *prop,
+                                  const std::string &strid);
+  bool reinstall(PropertyBase::prop_id_t prop_id, PropertyBase *prop);
+  bool uninstall(PropertyBase::prop_id_t prop_id);
+  bool disable(PropertyBase::prop_id_t prop_id);
+  bool enable(PropertyBase::prop_id_t prop_id);
 
   // return 0 if id is not found
   PropertyBase::prop_id_t get_id_from_string_id(const std::string &id) const;

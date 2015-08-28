@@ -27,25 +27,26 @@ PContainer::PContainer(data::Tree::ptr tree):
   tree_->tag_as_array(".property", true);
 }
 
-PropertyBase::prop_id_t PContainer::install_property(const std::string &id,
-                                                            PropertyBase *prop){
+PropertyBase::prop_id_t PContainer::install(PropertyBase *prop,
+                                                     const std::string &strid){
   props_[++counter_] = prop;
-  ids_[id] = counter_;  //TODO remove ids_ and embed id into property base with id ? 
+  ids_[strid] = counter_;  //TODO remove ids_ and embed id into property base with id ? 
   prop->set_id(counter_);
   auto tree = prop->get_spec();
-  tree->graft("id", data::Tree::make(id));
-  tree_->graft(std::string("property.") + id, tree);
+  tree_->graft(std::string("property.") + strid, tree);
+  tree->graft("id", data::Tree::make(strid));
+  tree->graft("order", data::Tree::make(20 * counter_));
   return counter_;
 }
 
-bool PContainer::reinstall_property(PropertyBase::prop_id_t prop_id,
+bool PContainer::reinstall(PropertyBase::prop_id_t prop_id,
                                            PropertyBase *prop){
   props_[prop_id] = prop; // FIXME check in disabled, same for other methods
   prop->set_id(counter_);
   return true;
 }
 
-bool PContainer::uninstall_property(PropertyBase::prop_id_t prop_id){
+bool PContainer::uninstall(PropertyBase::prop_id_t prop_id){
   if (0 == prop_id)
     return false;
   props_[prop_id]->set_id(0);
@@ -60,13 +61,13 @@ bool PContainer::uninstall_property(PropertyBase::prop_id_t prop_id){
   return true;
 }
 
-bool PContainer::disable_property(PropertyBase::prop_id_t prop_id){
+bool PContainer::disable(PropertyBase::prop_id_t prop_id){
   disabled_props_[prop_id] = props_[prop_id];
   props_.erase(prop_id);
   return true;
 }
 
-bool PContainer::enable_property(PropertyBase::prop_id_t prop_id){
+bool PContainer::enable(PropertyBase::prop_id_t prop_id){
   props_[prop_id] = disabled_props_[prop_id];
   disabled_props_.erase(prop_id);
   return true;
