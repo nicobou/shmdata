@@ -64,7 +64,7 @@ DummyPlugin::DummyPlugin(const std::string &):
               double_,
               -1.d,
               10.d),
-  string_prop_([this](const std::string &val){string_ = val; return true;},
+  string_prop_(nullptr, //[this](const std::string &val){string_ = val; return true;},
                [this](){return string_;},
                "String Example",
                "This property is an example for type string",
@@ -85,6 +85,7 @@ bool DummyPlugin::init() {
   property(&PContainer::install, &bool_prop_, "bool_");
   property(&PContainer::install, &float_prop_, "float_");
   property(&PContainer::install, &double_prop_, "double_");
+  property(&PContainer::install, &string_prop_, "string_");
 
     // g_debug("uint property installation id is %lu", uint_id);
   // props_.install("int_", &int_prop_);  

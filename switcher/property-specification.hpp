@@ -47,7 +47,8 @@ class PropertySpecification{
   // e.g. an unsigned int with an int
   
   template <typename U = T, typename V>
-  PropertySpecification(const std::string &label,
+  PropertySpecification(bool is_writable,
+                        const std::string &label,
                         const std::string &description,
                         const V &default_value,
                         typename std::enable_if<
@@ -60,11 +61,13 @@ class PropertySpecification{
     spec_->graft("label", data::Tree::make(label_));
     spec_->graft("description", data::Tree::make(descr_));
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<U>()));
+    spec_->graft("writable", data::Tree::make(is_writable));
     spec_->graft("default", data::Tree::make(static_cast<U>(default_value)));
   }
 
   template <typename U = T, typename V>
-  PropertySpecification(const std::string &label,
+  PropertySpecification(bool is_writable,
+                        const std::string &label,
                         const std::string &description,
                         const V &default_value,
                         const V &min_value = std::numeric_limits<U>::min(),
@@ -80,13 +83,15 @@ class PropertySpecification{
     spec_->graft("label", data::Tree::make(label_));
     spec_->graft("description", data::Tree::make(descr_));
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<U>()));
+    spec_->graft("writable", data::Tree::make(is_writable));
     spec_->graft("default", data::Tree::make(static_cast<U>(default_value)));
     spec_->graft("min", data::Tree::make(static_cast<U>(min_value)));
     spec_->graft("max", data::Tree::make(static_cast<U>(max_value)));
   }
   
   template<typename U = bool>
-  PropertySpecification(const std::string &label,
+  PropertySpecification(bool is_writable,
+                        const std::string &label,
                         const std::string &description,
                         const bool &default_value):
       label_(label),
@@ -96,11 +101,13 @@ class PropertySpecification{
     spec_->graft("label", data::Tree::make(label_));
     spec_->graft("description", data::Tree::make(descr_));
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<bool>()));
+    spec_->graft("writable", data::Tree::make(is_writable));
     spec_->graft("default", data::Tree::make(default_value));
   }
 
   template<typename U = Selection>
-  PropertySpecification(const std::string &label,
+  PropertySpecification(bool is_writable,
+                        const std::string &label,
                         const std::string &description,
                         const Selection &default_value):
       label_(label),
@@ -110,6 +117,7 @@ class PropertySpecification{
     spec_->graft("label", data::Tree::make(label_));
     spec_->graft("description", data::Tree::make(descr_));
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<Selection>()));
+    spec_->graft("writable", data::Tree::make(is_writable));
     spec_->graft("default", data::Tree::make(default_value_.get()));
     size_t pos = 0;
     for (const auto &it: default_value.get_list()){

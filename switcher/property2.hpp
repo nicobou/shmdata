@@ -48,7 +48,7 @@ class PropertyBase{
   }
 
   virtual data::Tree::ptr get_spec() = 0;
-  
+
  protected:
   size_t get_type_id_hash() const{
     return type_hash_;
@@ -78,11 +78,11 @@ class Property2: public PropertyBase{
             get_cb_t get,
             SpecArgs ...args):
       PropertyBase(typeid(V).hash_code()),
-      doc_({args...}),
+      doc_({static_cast<bool>(set), args...}),
       set_(set),
       get_(get){
   }
-
+  
   bool set(const W &val, bool do_notify = true){
     if (nullptr == set_)
       return false;  // read only
@@ -115,8 +115,8 @@ class Property2: public PropertyBase{
     return oss.str();
   }
 
-  data::Tree::ptr get_spec() final {return doc_.get_spec();};
-  
+  data::Tree::ptr get_spec() final {return doc_.get_spec();}
+
  private:
   PropertySpecification<V> doc_;
   set_cb_t set_;

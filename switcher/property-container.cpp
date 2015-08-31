@@ -28,7 +28,7 @@ PContainer::PContainer(data::Tree::ptr tree):
 }
 
 PropertyBase::prop_id_t PContainer::install(PropertyBase *prop,
-                                                     const std::string &strid){
+                                            const std::string &strid){
   props_[++counter_] = prop;
   ids_[strid] = counter_;  //TODO remove ids_ and embed id into property base with id ? 
   prop->set_id(counter_);
