@@ -78,16 +78,19 @@ DummyPlugin::DummyPlugin(const std::string &):
 
 bool DummyPlugin::init() {
   // FIXME illustrate use of ids 
-  auto uint_id = property(&PContainer::install, &uint_prop_, "uint_");
-  if(uint_id != uint_prop_.get_id())
-    g_warning("problem with ids");
+  property(&PContainer::install, &uint_prop_, "uint_");
   property(&PContainer::install, &selection_prop_, "selection_");
+
+  // "int_" property is under "label_":
+  property(&PContainer::install, &label_prop_, "label_");
+  property(&PContainer::install_under_parent, &label_prop_, &int_prop_, "int_");
+
+  // installing more
   property(&PContainer::install, &bool_prop_, "bool_");
   property(&PContainer::install, &float_prop_, "float_");
   property(&PContainer::install, &double_prop_, "double_");
   property(&PContainer::install, &string_prop_, "string_");
-
-    // g_debug("uint property installation id is %lu", uint_id);
+  // g_debug("uint property installation id is %lu", uint_id);
   // props_.install("int_", &int_prop_);  
 
   install_method("Hello World",  // long name

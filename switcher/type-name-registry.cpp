@@ -19,6 +19,7 @@
 
 #include "./type-name-registry.hpp"
 #include "./selection.hpp"
+#include "./label.hpp"
 
 namespace switcher {
 
@@ -46,7 +47,8 @@ TypeNameRegistry::registry_t TypeNameRegistry::type_name_registry_ = {
   REGISTER_TYPE2(std::string, string),
   REGISTER_TYPE2(const char *, string),
 
-  REGISTER_TYPE2(Selection, enum)
+  REGISTER_TYPE2(Selection, enum),
+  REGISTER_TYPE2(Label, label)
 };
 
 }  // namespace switcher

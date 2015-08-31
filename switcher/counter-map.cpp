@@ -21,7 +21,7 @@
 
 namespace switcher {
 
-unsigned int CounterMap::get_count(const std::string &key) {
+size_t CounterMap::get_count(const std::string &key) {
   std::unique_lock<std::mutex> lock(mutex_);
   auto it = counters_.find(key);
   if (counters_.end() != it)

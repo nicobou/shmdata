@@ -73,6 +73,7 @@ class Property2: public PropertyBase{
  public:
   using get_cb_t = std::function<W()>;
   using set_cb_t = std::function<bool(const W &)>;
+
   template <typename ...SpecArgs>
   Property2(set_cb_t set,
             get_cb_t get,
@@ -81,6 +82,17 @@ class Property2: public PropertyBase{
       doc_({static_cast<bool>(set), args...}),
       set_(set),
       get_(get){
+  }
+
+  template <typename U = V,
+            typename std::enable_if<std::is_same<U, Label>::value>::type* = nullptr>
+  Property2(const std::string &label,
+            const std::string &description):
+      PropertyBase(typeid(Label).hash_code()),
+      doc_(std::forward<const std::string &>(label),
+           std::forward<const std::string &>(description)),
+      set_(nullptr),
+      get_(nullptr){
   }
   
   bool set(const W &val, bool do_notify = true){

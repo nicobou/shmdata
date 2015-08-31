@@ -26,6 +26,7 @@
 #include "switcher/quiddity.hpp"
 #include "switcher/property2.hpp"
 #include "switcher/selection.hpp"
+#include "switcher/label.hpp"
 
 namespace switcher {
 class DummyPlugin: public Quiddity/*FIXME re enable this, public StartableQuiddity */ {
@@ -55,6 +56,9 @@ class DummyPlugin: public Quiddity/*FIXME re enable this, public StartableQuiddi
   std::string string_{"hello"};
   Property2<std::string> string_prop_;
 
+  // Property grouping
+  Property2<Label> label_prop_{"Label Example", "This property is an example for label"};
+  
   // advanced properties
   Selection selection_{{"emacs", "vim", "notepad", "gedit"}, 0};
   Property2<Selection, size_t> selection_prop_;

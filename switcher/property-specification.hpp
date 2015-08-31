@@ -30,6 +30,7 @@
 #include "./type-name-registry.hpp"
 #include "./information-tree.hpp"
 #include "./selection.hpp"
+#include "./label.hpp"
 
 // FIXME a voir avec Francois
 // TODO mettre current ? (depuis container peut etre)
@@ -38,6 +39,7 @@
 // nick disparait de enum
 
 namespace switcher {
+
 template<typename T>
 class PropertySpecification{
  public:
@@ -128,6 +130,19 @@ class PropertySpecification{
       ++pos;
     }
     spec_->tag_as_array(".values.", true);
+  }
+
+  template<typename U = Label,
+            typename std::enable_if<std::is_same<U, Label>::value>::type* = nullptr>
+  PropertySpecification(const std::string &label,
+                        const std::string &description):
+      label_(label),
+      descr_(description),
+      default_value_(),
+      spec_(data::Tree::make()){
+    spec_->graft("label", data::Tree::make(label_));
+    spec_->graft("description", data::Tree::make(descr_));
+    spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<Label>()));
   }
 
   data::Tree::ptr get_spec(){

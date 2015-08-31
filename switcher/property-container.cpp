@@ -27,20 +27,53 @@ PContainer::PContainer(data::Tree::ptr tree):
   tree_->tag_as_array(".property", true);
 }
 
-PropertyBase::prop_id_t PContainer::install(PropertyBase *prop,
-                                            const std::string &strid){
+bool PContainer::install(PropertyBase *prop,
+                         const std::string &strid){
+  return install_full(prop,
+                      strid,
+                      "",
+                      20 * (counter_ + 1));
+}
+
+bool PContainer::install_under_parent(PropertyBase *parent,
+                                      PropertyBase *prop,
+                                      const std::string &strid){
+  //finding parent strid
+  auto parent_id = parent->get_id();
+  if (0 == parent_id)
+    return false;  // parent has not been installed
+  auto it = std::find_if(ids_.cbegin(),
+                          ids_.cend(),
+                          [&parent_id](const std::pair<std::string, id_t> &val) -> bool {
+                            return val.second == parent_id;
+                         });
+  if (ids_.end() == it)
+    return false;
+  // installing
+  return install_full(prop,
+                      strid,
+                      it->first,
+                      20 * (suborders_.get_count(it->first) + 1));
+}
+
+bool PContainer::install_full(PropertyBase *prop,
+                              const std::string &strid,
+                              const std::string &parent_strid,
+                              size_t order){
   props_[++counter_] = prop;
-  ids_[strid] = counter_;  //TODO remove ids_ and embed id into property base with id ? 
+  ids_[strid] = counter_;
   prop->set_id(counter_);
   auto tree = prop->get_spec();
   tree_->graft(std::string("property.") + strid, tree);
   tree->graft("id", data::Tree::make(strid));
-  tree->graft("order", data::Tree::make(20 * counter_));
-  return counter_;
+  tree->graft("order", data::Tree::make(order));
+  tree->graft("parent", data::Tree::make(parent_strid));
+  return true;
 }
 
+
 bool PContainer::reinstall(PropertyBase::prop_id_t prop_id,
-                                           PropertyBase *prop){
+                           PropertyBase *prop){
   props_[prop_id] = prop; // FIXME check in disabled, same for other methods
   prop->set_id(counter_);
   return true;
@@ -74,7 +107,7 @@ bool PContainer::enable(PropertyBase::prop_id_t prop_id){
 }
 
 PropertyBase::register_id_t PContainer::subscribe_by_string_id(const std::string &id,
-                                                                      PropertyBase::notify_cb_t fun){
+                                                               PropertyBase::notify_cb_t fun){
   return props_[ids_[id]]->subscribe(std::forward<PropertyBase::notify_cb_t>(fun));
 }
 

@@ -23,14 +23,18 @@
 #include <string>
 #include <map>
 #include "./property2.hpp"
+#include "./counter-map.hpp"
 
 namespace switcher {
 class PContainer{
  public:
   PContainer() = delete;
   PContainer(data::Tree::ptr tree);  // will own it and write into .property.
-  PropertyBase::prop_id_t install(PropertyBase *prop,
-                                  const std::string &strid);
+  bool install(PropertyBase *prop,
+               const std::string &strid);
+  bool install_under_parent(PropertyBase *parent,
+                            PropertyBase *prop,
+                            const std::string &strid);
   bool reinstall(PropertyBase::prop_id_t prop_id, PropertyBase *prop);
   bool uninstall(PropertyBase::prop_id_t prop_id);
   bool disable(PropertyBase::prop_id_t prop_id);
@@ -41,7 +45,7 @@ class PContainer{
 
   // FIXME remove other "by id" methods
   PropertyBase::register_id_t subscribe_by_string_id(const std::string &id,
-                                                PropertyBase::notify_cb_t fun);
+                                                     PropertyBase::notify_cb_t fun);
   template<class T> bool property_set_by_string_id(const std::string &id, const T &val){
     if (props_[ids_[id]]->get_type_id_hash() != typeid(val).hash_code()){
       std::cerr << "types do not match" << std::endl;  // FIXME
@@ -68,6 +72,13 @@ class PContainer{
   std::map<PropertyBase::prop_id_t, PropertyBase *> disabled_props_{};
   std::map<std::string, id_t> ids_{};
   data::Tree::ptr tree_;
+  CounterMap suborders_{};
+
+  bool install_full(PropertyBase *prop,
+                    const std::string &strid,
+                    const std::string &parent_strid,
+                    size_t order);
+
 };
 
 }  // namespace switcher
