@@ -42,35 +42,34 @@ bool PContainer::install_under_parent(PropertyBase *parent,
   auto parent_id = parent->get_id();
   if (0 == parent_id)
     return false;  // parent has not been installed
-  auto it = std::find_if(ids_.cbegin(),
-                          ids_.cend(),
-                          [&parent_id](const std::pair<std::string, id_t> &val) -> bool {
-                            return val.second == parent_id;
-                         });
-  if (ids_.end() == it)
-    return false;
+  const auto &it = strids_.find(parent_id);
+  if (strids_.end() == it)
+    return false;  // bug
   // installing
   return install_full(prop,
                       strid,
-                      it->first,
-                      20 * (suborders_.get_count(it->first) + 1));
+                      it->second,
+                      20 * (suborders_.get_count(it->second) + 1));
 }
 
 bool PContainer::install_full(PropertyBase *prop,
                               const std::string &strid,
                               const std::string &parent_strid,
                               size_t order){
+  if(ids_.cend() != ids_.find(strid))
+    return false;  // strid already taken
   props_[++counter_] = prop;
   ids_[strid] = counter_;
+  strids_[counter_] = strid;
   prop->set_id(counter_);
   auto tree = prop->get_spec();
   tree_->graft(std::string("property.") + strid, tree);
   tree->graft("id", data::Tree::make(strid));
   tree->graft("order", data::Tree::make(order));
   tree->graft("parent", data::Tree::make(parent_strid));
+  tree->graft("enabled", data::Tree::make(true));
   return true;
 }
-
 
 bool PContainer::reinstall(PropertyBase::prop_id_t prop_id,
                            PropertyBase *prop){
@@ -94,15 +93,11 @@ bool PContainer::uninstall(PropertyBase::prop_id_t prop_id){
   return true;
 }
 
-bool PContainer::disable(PropertyBase::prop_id_t prop_id){
-  disabled_props_[prop_id] = props_[prop_id];
-  props_.erase(prop_id);
-  return true;
-}
-
-bool PContainer::enable(PropertyBase::prop_id_t prop_id){
-  props_[prop_id] = disabled_props_[prop_id];
-  disabled_props_.erase(prop_id);
+bool PContainer::enable(PropertyBase::prop_id_t prop_id, bool enable){
+  const auto &it = strids_.find(prop_id);
+  if (strids_.end() == it)
+    return false;
+  tree_->graft(std::string("property.") + it->second + ".enabled", data::Tree::make(enable));
   return true;
 }
 

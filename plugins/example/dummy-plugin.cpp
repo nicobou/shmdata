@@ -80,11 +80,9 @@ bool DummyPlugin::init() {
   // FIXME illustrate use of ids 
   property(&PContainer::install, &uint_prop_, "uint_");
   property(&PContainer::install, &selection_prop_, "selection_");
-
   // "int_" property is under "label_":
   property(&PContainer::install, &label_prop_, "label_");
   property(&PContainer::install_under_parent, &label_prop_, &int_prop_, "int_");
-
   // installing more
   property(&PContainer::install, &bool_prop_, "bool_");
   property(&PContainer::install, &float_prop_, "float_");
@@ -92,7 +90,6 @@ bool DummyPlugin::init() {
   property(&PContainer::install, &string_prop_, "string_");
   // g_debug("uint property installation id is %lu", uint_id);
   // props_.install("int_", &int_prop_);  
-
   install_method("Hello World",  // long name
                  "hello-world",  // name
                  "say hello and repeat first argument",  // description
@@ -114,7 +111,6 @@ bool DummyPlugin::init() {
   tree->graft(".child1.child2.bla2", data::Tree::make("hub"));
   // attaching it to the quiddity (at the root)
   graft_tree(".custom.information.", tree);
-
   g_debug("hello from plugin");
   return true;
 }
