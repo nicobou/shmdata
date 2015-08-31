@@ -38,11 +38,6 @@ TypeNameRegistry::registry_t TypeNameRegistry::type_name_registry_ = {
   REGISTER_TYPE(bool),
   REGISTER_TYPE(long),
   REGISTER_TYPE(long long),
-  REGISTER_TYPE(char),
-  REGISTER_TYPE(char16_t),
-  REGISTER_TYPE(char32_t),
-  REGISTER_TYPE(wchar_t),
- 
   REGISTER_TYPE(unsigned short),
   REGISTER_TYPE(unsigned int),
   REGISTER_TYPE(unsigned long),
