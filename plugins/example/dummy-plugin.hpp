@@ -43,25 +43,26 @@ class DummyPlugin: public Quiddity/*FIXME re enable this, public StartableQuiddi
   // declare and initialise the member (e.g. int_) before the property (e.g. int_prop_) 
   // note: see switcher/type-name-registry.hpp for supported property types 
   int int_{3};
-  Property2<int> int_prop_;
-  // more examples
-  unsigned int uint_{4};
-  Property2<unsigned int> uint_prop_;
-  bool bool_{true};
-  Property2<bool> bool_prop_;
-  float float_{0.1234};
-  Property2<float> float_prop_;
-  double double_{4.321};
-  Property2<double> double_prop_;
-  std::string string_{"hello"};
-  Property2<std::string> string_prop_;
+  PContainer::prop_id_t int_id_;
+  // Property2<int> int_prop_;
+  // // more examples
+  // unsigned int uint_{4};
+  // Property2<unsigned int> uint_prop_;
+  // bool bool_{true};
+  // Property2<bool> bool_prop_;
+  // float float_{0.1234};
+  // Property2<float> float_prop_;
+  // double double_{4.321};
+  // Property2<double> double_prop_;
+  // std::string string_{"hello"};
+  // Property2<std::string> string_prop_;
 
-  // Property grouping
-  Property2<Label> label_prop_{"Label Example", "This property is an example for label"};
+  // // Property grouping
+  // Property2<Label> label_prop_{"Label Example", "This property is an example for label"};
   
-  // advanced properties
-  Selection selection_{{"emacs", "vim", "notepad", "gedit"}, 0};
-  Property2<Selection, size_t> selection_prop_;
+  // // advanced properties
+  // Selection selection_{{"emacs", "vim", "notepad", "gedit"}, 0};
+  // Property2<Selection, size_t> selection_prop_;
   
   // --- Methods
   std::string hello_{};
