@@ -59,7 +59,7 @@ class QuidditySignalSubscriber {
   bool unsubscribe(std::shared_ptr<Quiddity> quid);
 
   std::vector<std::pair<std::string, std::string>> list_subscribed_signals();
-  static void signal_cb(std::vector<std::string> params,
+  static void signal_cb(const std::vector<std::string> &params,
                         gpointer user_data);
 
   // manager_impl initialization
