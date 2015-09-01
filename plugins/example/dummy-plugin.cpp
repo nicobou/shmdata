@@ -30,68 +30,75 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Nicolas Bouillot");
 
-DummyPlugin::DummyPlugin(const std::string &)
+DummyPlugin::DummyPlugin(const std::string &) :
     // for arythmetic types, min and max specifications are optionnal,
     // if not specified, std::numeric_limits<T>::value is used
-    // : int_id_(property(&PContainer::make<int>,
-    //                  "int_",
-    //                  [this](int val){int_ = val; return true;},   // setter
-    //                  [this](){return int_;},                      // getter
-    //                  "Int Example",                               // name
-    //                  "This property is an example for type int",  // description
-    //                  int_,                                           // default value
-    //                  -10,                                         // min
-    //                  10))                                         // max
-  //,   uint_prop_([this](unsigned int val){uint_ = val; return true;},  // setter
-  //              [this](){return uint_;},                              // getter
-  //              "Unsigned Int Example",                               // name
-  //              "This property is an example for type unsigned int",  // description
-  //              uint_),                                               // default value
-  // bool_prop_([this](bool val){bool_ = val; return true;},
-  //            [this](){return bool_;},
-  //            "Bool Example",
-  //            "This property is an example for type bool",
-  //            bool_),
-  // float_prop_([this](float val){float_ = val; return true;},
-  //             [this](){return float_;},
-  //             "Float Example",
-  //             "This property is an example for type float",
-  //             float_,
-  //             -1.f,
-  //             1.f),
-  // double_prop_([this](double val){double_ = val; return true;},
-  //              [this](){return double_;},
-  //             "Double Example",
-  //             "This property is an example for type double",
-  //             double_,
-  //             -1.d,
-  //             10.d),
-  // string_prop_(nullptr, //[this](const std::string &val){string_ = val; return true;},
-  //              [this](){return string_;},
-  //              "String Example",
-  //              "This property is an example for type string",
-  //              string_),
-  // selection_prop_([this](size_t val){selection_.select(val); return true;},
-  //                 [this](){return selection_.get();},
-  //                 "Selection Example",
-  //                 "This property is an example for type enum",
-  //                 selection_)
-{
+    int_id_(prop_do(&PContainer::make_int,                       // PContainer maker
+                     "int_",                                      // string id
+                     [this](int val){int_ = val; return true;},   // setter
+                     [this](){return int_;},                      // getter
+                     "Int Example",                               // name
+                     "This property is an example for type int",  // description
+                     int_,                                           // default value
+                     -10,                                         // min
+                     10)),                                         // max
+  uint_id_(prop_do(&PContainer::make_unsigned_int,                       // PContainer maker
+                    "uint_",                                              // string id
+                    [this](unsigned int val){uint_ = val; return true;},  // setter
+                    [this](){return uint_;},                              // getter
+                    "Unsigned Int Example",                               // name
+                    "This property is an example for type unsigned int",  // description
+                    uint_,                                                // default value
+                    1,                                                    // min 
+                    4)),                                                  // max
+    bool_id_(prop_do(&PContainer::make_bool,
+                      "bool_",
+                      [this](bool val){bool_ = val; return true;},
+                      [this](){return bool_;},
+                      "Bool Example",
+                      "This property is an example for type bool",
+                      bool_)),
+  float_id_(prop_do(&PContainer::make_float,
+                     "float_",
+                     [this](float val){float_ = val; return true;},
+                     [this](){return float_;},
+                     "Float Example",
+                     "This property is an example for type float",
+                     float_,
+                     -1.f,
+                     1.f)),
+  double_id_(prop_do(&PContainer::make_double,
+                      "double_",
+                      [this](double val){double_ = val; return true;},
+                      [this](){return double_;},
+                      "Double Example",
+                      "This property is an example for type double",
+                      double_,
+                      -1.d,
+                      10.d)),
+  string_id_(prop_do(&PContainer::make_string,
+                      "string_",
+                      nullptr, //[this](const std::string &val){string_ = val; return true;},
+                      [this](){return string_;},
+                      "String Example",
+                      "This property is an example for type string",
+                      string_)),
+  selection_id_(prop_do(&PContainer::make_selection,
+                         "enum_",
+                         [this](size_t val){selection_.select(val); return true;},
+                         [this](){return selection_.get();},
+                         "Selection Example",
+                         "This property is an example for type enum",
+                         selection_)),
+  label_id_(prop_do(&PContainer::make_label,
+                    "label_",
+                    "Label Example",
+                    "This property is an example for label")){
+  std::cout << prop_do(&PContainer::get<int>, int_id_) << std::endl;
+  std::cout << prop_do(&PContainer::get<unsigned int>, uint_id_) << std::endl;
 }
 
 bool DummyPlugin::init() {
-  // // FIXME illustrate use of ids 
-  // property(&PContainer::install, &uint_prop_, "uint_");
-  // property(&PContainer::install, &selection_prop_, "selection_");
-  // // "int_" property is under "label_":
-  // property(&PContainer::install, &label_prop_, "label_");
-  // property(&PContainer::install_under_parent, &label_prop_, &int_prop_, "int_");
-  // // installing more
-  // property(&PContainer::install, &bool_prop_, "bool_");
-  // property(&PContainer::install, &float_prop_, "float_");
-  // property(&PContainer::install, &double_prop_, "double_");
-  // property(&PContainer::install, &string_prop_, "string_");
-
   
   // g_debug("uint property installation id is %lu", uint_id);
   // props_.install("int_", &int_prop_);  

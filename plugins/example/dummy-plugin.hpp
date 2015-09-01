@@ -44,25 +44,24 @@ class DummyPlugin: public Quiddity/*FIXME re enable this, public StartableQuiddi
   // note: see switcher/type-name-registry.hpp for supported property types 
   int int_{3};
   PContainer::prop_id_t int_id_;
-  // Property2<int> int_prop_;
-  // // more examples
-  // unsigned int uint_{4};
-  // Property2<unsigned int> uint_prop_;
-  // bool bool_{true};
-  // Property2<bool> bool_prop_;
-  // float float_{0.1234};
-  // Property2<float> float_prop_;
-  // double double_{4.321};
-  // Property2<double> double_prop_;
-  // std::string string_{"hello"};
-  // Property2<std::string> string_prop_;
+  // more examples
+  unsigned int uint_{4};
+  PContainer::prop_id_t uint_id_;
+  bool bool_{true};
+  PContainer::prop_id_t bool_id_;
+  float float_{0.1234};
+  PContainer::prop_id_t float_id_;
+  double double_{4.321};
+  PContainer::prop_id_t double_id_;
+  std::string string_{"hello"};
+  PContainer::prop_id_t string_id_;
 
-  // // Property grouping
-  // Property2<Label> label_prop_{"Label Example", "This property is an example for label"};
-  
-  // // advanced properties
-  // Selection selection_{{"emacs", "vim", "notepad", "gedit"}, 0};
-  // Property2<Selection, size_t> selection_prop_;
+  // selection
+  Selection selection_{{"emacs", "vim", "notepad", "gedit"}, 0};
+  PContainer::prop_id_t selection_id_;
+
+  // Property grouping  // label can be added as parent
+  PContainer::prop_id_t label_id_;
   
   // --- Methods
   std::string hello_{};

@@ -138,7 +138,7 @@ class Property2: public PropertyBase{
     return oss.str();
   }
 
-  data::Tree::ptr get_spec() const final {return doc_.get_spec();}
+  data::Tree::ptr get_spec() final {return doc_.get_spec();}
 
  private:
   PropertySpecification<V> doc_;

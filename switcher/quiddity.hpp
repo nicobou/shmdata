@@ -206,7 +206,7 @@ class Quiddity {
                              bool do_signal = true);
   
   // property
-  Make_delegate(PContainer, &props_, property);
+  Make_delegate(PContainer, &props_, prop_do);
 
   bool install_property(GObject *object,
                         const std::string &gobject_property_name,

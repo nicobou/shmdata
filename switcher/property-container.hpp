@@ -36,36 +36,137 @@ class PContainer{
   PContainer() = delete;
   PContainer(data::Tree::ptr tree);  // will own it and write into .property.
 
-  // TODO write make_int, make_selection, etc... in order to reduce compile time
-  template<typename PropType, typename ...PropArgs>
-  prop_id_t make(const std::string &strid, PropArgs ...args){
-    return make_under_parent<PropType>(std::forward<const std::string &>(strid),
-                                       "",
-                                       std::forward<PropArgs>(args)...);
-  }
-  
-  template<typename PropType, typename ...PropArgs>
-  prop_id_t make_under_parent(const std::string &strid,
-                              const std::string &parent_strid,
-                              PropArgs ...args){
-    if(ids_.cend() != ids_.find(strid))
-      return 0;  // strid already taken
-    if(ids_.cend() == ids_.find(parent_strid))
-      return 0;  // parent not found
-    props_[++counter_] = std2::make_unique<Property2<PropType>>(std::forward<PropArgs>(args)...);
-    ids_[strid] = counter_;
-    strids_[counter_] = strid;
-    auto prop = props_[counter_];
-    prop->set_id(counter_);
-    auto tree = prop->get_spec();
-    tree_->graft(std::string("property.") + strid, tree);
-    tree->graft("id", data::Tree::make(strid));
-    tree->graft("order", data::Tree::make(20 * (suborders_.get_count(parent_strid) + 1)));
-    tree->graft("parent", data::Tree::make(parent_strid));
-    tree->graft("enabled", data::Tree::make(true));
-    return counter_;
-  }
+  prop_id_t make_int(const std::string &strid,
+                     Property2<int>::set_cb_t set,
+                     Property2<int>::get_cb_t get,
+                     const std::string &label,
+                     const std::string &description,
+                     int default_value,
+                     int min,
+                     int max);
 
+  prop_id_t make_parented_int(const std::string &strid,
+                              const std::string &parent_strid,
+                              Property2<int>::set_cb_t set,
+                              Property2<int>::get_cb_t get,
+                              const std::string &label,
+                              const std::string &description,
+                              int default_value,
+                              int min,
+                              int max);
+
+  prop_id_t make_unsigned_int(const std::string &strid,
+                              Property2<unsigned int>::set_cb_t set,
+                              Property2<unsigned int>::get_cb_t get,
+                              const std::string &label,
+                              const std::string &description,
+                              unsigned int default_value,
+                              unsigned int min,
+                              unsigned int max);
+
+  prop_id_t make_parented_unsigned_int(const std::string &strid,
+                                       const std::string &parent_strid,
+                                       Property2<unsigned int>::set_cb_t set,
+                                       Property2<unsigned int>::get_cb_t get,
+                                       const std::string &label,
+                                       const std::string &description,
+                                       unsigned int default_value,
+                                       unsigned int min,
+                                       unsigned int max);
+
+  prop_id_t make_bool(const std::string &strid,
+                     Property2<bool>::set_cb_t set,
+                     Property2<bool>::get_cb_t get,
+                     const std::string &label,
+                     const std::string &description,
+                     bool default_value);
+
+  prop_id_t make_parented_bool(const std::string &strid,
+                              const std::string &parent_strid,
+                              Property2<bool>::set_cb_t set,
+                              Property2<bool>::get_cb_t get,
+                              const std::string &label,
+                              const std::string &description,
+                              bool default_value);
+
+  prop_id_t make_float(const std::string &strid,
+                     Property2<float>::set_cb_t set,
+                     Property2<float>::get_cb_t get,
+                     const std::string &label,
+                     const std::string &description,
+                     float default_value,
+                     float min,
+                     float max);
+
+  prop_id_t make_parented_float(const std::string &strid,
+                              const std::string &parent_strid,
+                              Property2<float>::set_cb_t set,
+                              Property2<float>::get_cb_t get,
+                              const std::string &label,
+                              const std::string &description,
+                              float default_value,
+                              float min,
+                              float max);
+
+  prop_id_t make_double(const std::string &strid,
+                     Property2<double>::set_cb_t set,
+                     Property2<double>::get_cb_t get,
+                     const std::string &label,
+                     const std::string &description,
+                     double default_value,
+                     double min,
+                     double max);
+
+  prop_id_t make_parented_double(const std::string &strid,
+                              const std::string &parent_strid,
+                              Property2<double>::set_cb_t set,
+                              Property2<double>::get_cb_t get,
+                              const std::string &label,
+                              const std::string &description,
+                              double default_value,
+                              double min,
+                              double max);
+
+  prop_id_t make_string(const std::string &strid,
+                        Property2<std::string>::set_cb_t set,
+                        Property2<std::string>::get_cb_t get,
+                        const std::string &label,
+                        const std::string &description,
+                        std::string default_value);
+
+  prop_id_t make_parented_string(const std::string &strid,
+                                 const std::string &parent_strid,
+                                 Property2<std::string>::set_cb_t set,
+                                 Property2<std::string>::get_cb_t get,
+                                 const std::string &label,
+                                 const std::string &description,
+                                 std::string default_value);
+
+  prop_id_t make_selection(const std::string &strid,
+                           Property2<Selection, size_t>::set_cb_t set,
+                           Property2<Selection, size_t>::get_cb_t get,
+                           const std::string &label,
+                           const std::string &description,
+                           const Selection &default_value);
+
+  prop_id_t make_parented_selection(const std::string &strid,
+                                    const std::string &parent_strid,
+                                    Property2<Selection, size_t>::set_cb_t set,
+                                    Property2<Selection, size_t>::get_cb_t get,
+                                    const std::string &label,
+                                    const std::string &description,
+                                    const Selection &default_value);
+
+  prop_id_t make_label(const std::string &strid,
+                       const std::string &label,
+                       const std::string &description);
+
+  prop_id_t make_parented_label(const std::string &strid,
+                                const std::string &parent_strid,
+                                const std::string &label,
+                                const std::string &description);
+
+  
   // TODO bool remake(prop_id_t prop_id);
 
   bool remove(prop_id_t prop_id);
@@ -91,7 +192,7 @@ class PContainer{
     if (prop_it->second->get_type_id_hash() != typeid(T).hash_code()){
       g_warning("%s: types do not match", __FUNCTION__);
     }
-    return static_cast<Property2<T> *>(prop_it->second)->get();
+    return static_cast<Property2<T> *>(prop_it->second.get())->get();
   }
 
   
@@ -103,11 +204,30 @@ class PContainer{
   data::Tree::ptr tree_;
   CounterMap suborders_{};
 
-  bool install_full(PropertyBase *prop,
-                    const std::string &strid,
-                    const std::string &parent_strid,
-                    size_t order);
-
+  template<typename PropType,
+           typename PropGetSet = PropType,
+           typename ...PropArgs>
+  prop_id_t make_under_parent(const std::string &strid,
+                              const std::string &parent_strid,
+                              PropArgs ...args){
+    if(ids_.cend() != ids_.find(strid))
+      return 0;  // strid already taken
+    if(parent_strid != "" && ids_.cend() == ids_.find(parent_strid))
+      return 0;  // parent not found
+    props_[++counter_] =
+        std2::make_unique<Property2<PropType, PropGetSet>>(std::forward<PropArgs>(args)...);
+    ids_[strid] = counter_;
+    strids_[counter_] = strid;
+    auto *prop = props_[counter_].get();
+    prop->set_id(counter_);
+    auto tree = prop->get_spec();
+    tree_->graft(std::string("property.") + strid, tree);
+    tree->graft("id", data::Tree::make(strid));
+    tree->graft("order", data::Tree::make(20 * (suborders_.get_count(parent_strid) + 1)));
+    tree->graft("parent", data::Tree::make(parent_strid));
+    tree->graft("enabled", data::Tree::make(true));
+    return counter_;
+  }
 };
 
 }  // namespace switcher
