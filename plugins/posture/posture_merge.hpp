@@ -58,6 +58,7 @@ class PostureMerge : public Quiddity, public StartableQuiddity {
   bool save_cloud_ {false};
   bool downsample_ {false};
   double downsample_resolution_ {0.1};
+  uint64_t frame_period_cap_ {33};
 
   GParamSpec *calibration_path_prop_ {nullptr};
   GParamSpec *devices_path_prop_ {nullptr};
@@ -70,6 +71,7 @@ class PostureMerge : public Quiddity, public StartableQuiddity {
   unsigned int source_id_ {0};
   std::shared_ptr<posture::PointCloudMerger> merger_ {nullptr};
   std::mutex mutex_ {};
+  uint64_t _lastUpdateTimestamp {0};
 
   std::mutex connect_mutex_ {};
   unsigned int shmreader_id_ {0};
