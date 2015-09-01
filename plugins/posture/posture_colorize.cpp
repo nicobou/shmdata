@@ -190,7 +190,7 @@ PostureColorize::connect(std::string shmdata_socket_path) {
                                                           data_type);
         }
 
-        mesh_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(texturedMesh.data()), texturedMesh.size());
+        mesh_writer_->writer(&shmdata::Writer::copy_to_shm, texturedMesh.data(), texturedMesh.size());
         mesh_writer_->bytes_written(texturedMesh.size());
 
         // Write the texture
@@ -205,7 +205,7 @@ PostureColorize::connect(std::string shmdata_socket_path) {
           prev_height_ = height;
         }
 
-        tex_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(texture.data()), texture.size());
+        tex_writer_->writer(&shmdata::Writer::copy_to_shm, texture.data(), texture.size());
         tex_writer_->bytes_written(texture.size());
 
       });

@@ -177,7 +177,7 @@ PostureMeshMerge::connect(std::string shmdata_socket_path) {
                                                           data_type);
         }
 
-        mesh_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(mesh.data()), mesh.size());
+        mesh_writer_->writer(&shmdata::Writer::copy_to_shm, mesh.data(), mesh.size());
         mesh_writer_->bytes_written(mesh.size());
       }
 
