@@ -26,7 +26,6 @@
 #include <string>
 #include <ostream>
 #include <sstream>
-#include <iostream>  // FIXME remove that
 
 template<class T> using StorageType = typename std::decay<T>::type;
 

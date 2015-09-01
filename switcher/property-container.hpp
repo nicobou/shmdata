@@ -20,6 +20,7 @@
 #ifndef __SWITCHER_PROPERTY_CONTAINER_H__
 #define __SWITCHER_PROPERTY_CONTAINER_H__
 
+#include <glib.h>  // logs
 #include <string>
 #include <map>
 #include "./property2.hpp"
@@ -28,6 +29,9 @@
 namespace switcher {
 class PContainer{
  public:
+  using prop_id_t = PropertyBase::prop_id_t;
+  using notify_cb_t = PropertyBase::notify_cb_t;
+  using register_id_t = PropertyBase::register_id_t;
   PContainer() = delete;
   PContainer(data::Tree::ptr tree);  // will own it and write into .property.
   bool install(PropertyBase *prop,
@@ -35,39 +39,36 @@ class PContainer{
   bool install_under_parent(PropertyBase *parent,
                             PropertyBase *prop,
                             const std::string &strid);
-  bool reinstall(PropertyBase::prop_id_t prop_id, PropertyBase *prop);
-  bool uninstall(PropertyBase::prop_id_t prop_id);
-  bool enable(PropertyBase::prop_id_t prop_id, bool enable);
+  bool reinstall(prop_id_t prop_id, PropertyBase *prop);
+  bool uninstall(prop_id_t prop_id);
+  bool enable(prop_id_t prop_id, bool enable);
 
   // return 0 if id is not found
-  PropertyBase::prop_id_t get_id_from_string_id(const std::string &id) const;
+  prop_id_t get_id_from_string_id(const std::string &id) const;
 
-  // FIXME remove other "by id" methods
-  PropertyBase::register_id_t subscribe_by_string_id(const std::string &id,
-                                                     PropertyBase::notify_cb_t fun);
-  template<class T> bool property_set_by_string_id(const std::string &id, const T &val){
-    if (props_[ids_[id]]->get_type_id_hash() != typeid(val).hash_code()){
-      std::cerr << "types do not match" << std::endl;  // FIXME
+  register_id_t subscribe(prop_id_t id, notify_cb_t fun);
+  bool unsubscribe(prop_id_t id, register_id_t rid);
+
+  template<typename T> bool set(prop_id_t id, const T &val){
+    auto &prop_it = props_.find(id); 
+    if (prop_it->second->get_type_id_hash() != typeid(val).hash_code()){
+      g_warning("%s: types do not match", __FUNCTION__);
       return false;
     }
-    return static_cast<Property2<T> *>(props_[ids_[id]])->
-        set(std::forward<const T &>(val));
+    return static_cast<Property2<T> *>(prop_it->second)->set(std::forward<const T &>(val));
   }
-  // template<class T> T property_get_by_name(const std::string &name) const{
-  //   const auto &it = ids_.find(name);
-  //   if (ids_.end() == it){
-  //     g_warning("name %s not found when getting property", name.c_str());
-  //     return T();
-  //   }
-  //   if (props_[ids_[name]]->get_type_id_hash() != typeid(T).hash_code()){
-  //     std::cerr << "types do not match" << std::endl;  //FIXME
-  //   }
-  //   return static_cast<Property2<T> *>(props_[ids_[name]])->get();
-  // }
+
+  template<typename T> T get(prop_id_t id) const{
+    const auto &prop_it = props_.find(id);
+    if (prop_it->second->get_type_id_hash() != typeid(T).hash_code()){
+      g_warning("%s: types do not match", __FUNCTION__);
+    }
+    return static_cast<Property2<T> *>(prop_it->second)->get();
+  }
 
  private:
-  PropertyBase::prop_id_t counter_{0};
-  std::map<PropertyBase::prop_id_t, PropertyBase *> props_{};
+  prop_id_t counter_{0};
+  std::map<prop_id_t, PropertyBase *> props_{};
   std::map<std::string, id_t> ids_{};
   std::map<id_t, std::string> strids_{};
   data::Tree::ptr tree_;

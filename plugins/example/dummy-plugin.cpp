@@ -88,6 +88,8 @@ bool DummyPlugin::init() {
   property(&PContainer::install, &float_prop_, "float_");
   property(&PContainer::install, &double_prop_, "double_");
   property(&PContainer::install, &string_prop_, "string_");
+
+  
   // g_debug("uint property installation id is %lu", uint_id);
   // props_.install("int_", &int_prop_);  
   install_method("Hello World",  // long name

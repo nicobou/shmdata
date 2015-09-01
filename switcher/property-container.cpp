@@ -71,21 +71,21 @@ bool PContainer::install_full(PropertyBase *prop,
   return true;
 }
 
-bool PContainer::reinstall(PropertyBase::prop_id_t prop_id,
+bool PContainer::reinstall(prop_id_t prop_id,
                            PropertyBase *prop){
-  props_[prop_id] = prop; // FIXME check in disabled, same for other methods
+  props_[prop_id] = prop;
   prop->set_id(counter_);
   return true;
 }
 
-bool PContainer::uninstall(PropertyBase::prop_id_t prop_id){
+bool PContainer::uninstall(prop_id_t prop_id){
   if (0 == prop_id)
     return false;
   props_[prop_id]->set_id(0);
   props_.erase(prop_id);
   auto it = std::find_if(ids_.begin(),
                          ids_.end(),
-                         [&](const std::pair<std::string, PropertyBase::prop_id_t> &it){
+                         [&](const std::pair<std::string, prop_id_t> &it){
                            return it.second == prop_id;
                          });
   if (ids_.end() != it)
@@ -93,7 +93,7 @@ bool PContainer::uninstall(PropertyBase::prop_id_t prop_id){
   return true;
 }
 
-bool PContainer::enable(PropertyBase::prop_id_t prop_id, bool enable){
+bool PContainer::enable(prop_id_t prop_id, bool enable){
   const auto &it = strids_.find(prop_id);
   if (strids_.end() == it)
     return false;
@@ -101,12 +101,17 @@ bool PContainer::enable(PropertyBase::prop_id_t prop_id, bool enable){
   return true;
 }
 
-PropertyBase::register_id_t PContainer::subscribe_by_string_id(const std::string &id,
-                                                               PropertyBase::notify_cb_t fun){
-  return props_[ids_[id]]->subscribe(std::forward<PropertyBase::notify_cb_t>(fun));
+PContainer::register_id_t PContainer::subscribe(prop_id_t id,
+                                                notify_cb_t fun){
+  return props_[id]->subscribe(std::forward<notify_cb_t>(fun));
 }
 
-PropertyBase::prop_id_t PContainer::get_id_from_string_id(const std::string &id) const{
+bool PContainer::unsubscribe(prop_id_t id,
+                             register_id_t rid){
+  return props_[id]->unsubscribe(std::forward<register_id_t>(rid));
+}
+
+PContainer::prop_id_t PContainer::get_id_from_string_id(const std::string &id) const{
   const auto &it = ids_.find(id);
   if (ids_.end() == it)
     return 0;

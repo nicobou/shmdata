@@ -25,6 +25,8 @@
 #include "./property-specification.hpp"
 #include "./selection.hpp"
 
+// FIXME put what can be in a cpp file
+
 namespace switcher {
 class PContainer;  // property container
 
@@ -45,6 +47,14 @@ class PropertyBase{
   register_id_t subscribe(notify_cb_t fun){
     to_notify_[++counter_] = fun;
   return counter_;
+  }
+
+  bool unsubscribe(register_id_t rid){
+    auto it = to_notify_.find(rid);
+    if (to_notify_.end() == it)
+      return false;
+    to_notify_.erase(it);
+  return true;
   }
 
   virtual data::Tree::ptr get_spec() = 0;
