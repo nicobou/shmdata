@@ -42,13 +42,15 @@ class PropertyBase{
       type_hash_(type_hash){
   }
 
-  prop_id_t get_id(){return id_;}
+  virtual data::Tree::ptr get_spec() = 0;
+
+  prop_id_t get_id() const {return id_;}
   
   register_id_t subscribe(notify_cb_t fun){
     to_notify_[++counter_] = fun;
-  return counter_;
+    return counter_;
   }
-
+  
   bool unsubscribe(register_id_t rid){
     auto it = to_notify_.find(rid);
     if (to_notify_.end() == it)
@@ -57,13 +59,12 @@ class PropertyBase{
   return true;
   }
 
-  virtual data::Tree::ptr get_spec() = 0;
 
- protected:
   size_t get_type_id_hash() const{
     return type_hash_;
   }
-  void notify(){
+
+  void notify() const{
     for(auto &it: to_notify_)
       it.second();
   }
@@ -89,11 +90,11 @@ class Property2: public PropertyBase{
             get_cb_t get,
             SpecArgs ...args):
       PropertyBase(typeid(V).hash_code()),
-      doc_({static_cast<bool>(set), args...}),
+      doc_({static_cast<bool>(set), std::forward<SpecArgs>(args)...}),
       set_(set),
       get_(get){
   }
-
+  
   template <typename U = V,
             typename std::enable_if<std::is_same<U, Label>::value>::type* = nullptr>
   Property2(const std::string &label,
@@ -104,7 +105,7 @@ class Property2: public PropertyBase{
       set_(nullptr),
       get_(nullptr){
   }
-  
+
   bool set(const W &val, bool do_notify = true){
     if (nullptr == set_)
       return false;  // read only
@@ -137,12 +138,13 @@ class Property2: public PropertyBase{
     return oss.str();
   }
 
-  data::Tree::ptr get_spec() final {return doc_.get_spec();}
+  data::Tree::ptr get_spec() const final {return doc_.get_spec();}
 
  private:
   PropertySpecification<V> doc_;
   set_cb_t set_;
   get_cb_t get_;
+  
 };
 
 }  // namespace switcher

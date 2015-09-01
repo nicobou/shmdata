@@ -25,6 +25,7 @@
 #include <map>
 #include "./property2.hpp"
 #include "./counter-map.hpp"
+#include "./std2.hpp"
 
 namespace switcher {
 class PContainer{
@@ -34,13 +35,40 @@ class PContainer{
   using register_id_t = PropertyBase::register_id_t;
   PContainer() = delete;
   PContainer(data::Tree::ptr tree);  // will own it and write into .property.
-  bool install(PropertyBase *prop,
-               const std::string &strid);
-  bool install_under_parent(PropertyBase *parent,
-                            PropertyBase *prop,
-                            const std::string &strid);
-  bool reinstall(prop_id_t prop_id, PropertyBase *prop);
-  bool uninstall(prop_id_t prop_id);
+
+  // TODO write make_int, make_selection, etc... in order to reduce compile time
+  template<typename PropType, typename ...PropArgs>
+  prop_id_t make(const std::string &strid, PropArgs ...args){
+    return make_under_parent<PropType>(std::forward<const std::string &>(strid),
+                                       "",
+                                       std::forward<PropArgs>(args)...);
+  }
+  
+  template<typename PropType, typename ...PropArgs>
+  prop_id_t make_under_parent(const std::string &strid,
+                              const std::string &parent_strid,
+                              PropArgs ...args){
+    if(ids_.cend() != ids_.find(strid))
+      return 0;  // strid already taken
+    if(ids_.cend() == ids_.find(parent_strid))
+      return 0;  // parent not found
+    props_[++counter_] = std2::make_unique<Property2<PropType>>(std::forward<PropArgs>(args)...);
+    ids_[strid] = counter_;
+    strids_[counter_] = strid;
+    auto prop = props_[counter_];
+    prop->set_id(counter_);
+    auto tree = prop->get_spec();
+    tree_->graft(std::string("property.") + strid, tree);
+    tree->graft("id", data::Tree::make(strid));
+    tree->graft("order", data::Tree::make(20 * (suborders_.get_count(parent_strid) + 1)));
+    tree->graft("parent", data::Tree::make(parent_strid));
+    tree->graft("enabled", data::Tree::make(true));
+    return counter_;
+  }
+
+  // TODO bool remake(prop_id_t prop_id);
+
+  bool remove(prop_id_t prop_id);
   bool enable(prop_id_t prop_id, bool enable);
 
   // return 0 if id is not found
@@ -66,9 +94,10 @@ class PContainer{
     return static_cast<Property2<T> *>(prop_it->second)->get();
   }
 
+  
  private:
   prop_id_t counter_{0};
-  std::map<prop_id_t, PropertyBase *> props_{};
+  std::map<prop_id_t, std::unique_ptr<PropertyBase>> props_{};
   std::map<std::string, id_t> ids_{};
   std::map<id_t, std::string> strids_{};
   data::Tree::ptr tree_;
