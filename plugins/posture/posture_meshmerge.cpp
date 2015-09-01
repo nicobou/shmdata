@@ -18,6 +18,7 @@
 
 #include "./posture_meshmerge.hpp"
 
+#include <chrono>
 #include <iostream>
 
 using namespace std;
@@ -160,6 +161,14 @@ PostureMeshMerge::connect(std::string shmdata_socket_path) {
       return;
 
     worker_.set_task([&]() {
+      uint64_t currentTime = chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
+      if (frame_period_cap_ > 0 && (currentTime - _lastUpdateTimestamp < frame_period_cap_))
+      {
+        updateMutex_.unlock();
+        return;
+      }
+      _lastUpdateTimestamp = currentTime;
+
       if (reload_calibration_)
           merger_->reloadCalibration();
 

@@ -55,6 +55,7 @@ class PostureMeshMerge : public Quiddity, public StartableQuiddity {
   std::string devices_path_ {"devices.xml"};
   bool reload_calibration_ {false};
   bool apply_calibration_ {true};
+  uint64_t frame_period_cap_ {33};
 
   GParamSpec *calibration_path_prop_ {nullptr};
   GParamSpec *devices_path_prop_ {nullptr};
@@ -66,6 +67,7 @@ class PostureMeshMerge : public Quiddity, public StartableQuiddity {
   std::mutex mutex_ {};
   std::mutex updateMutex_ {};
   Worker worker_ {};
+  uint64_t _lastUpdateTimestamp {0};
 
   std::mutex connect_mutex_ {};
   unsigned int shmreader_id_ {0};

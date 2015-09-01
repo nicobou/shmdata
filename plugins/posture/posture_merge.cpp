@@ -207,12 +207,19 @@ PostureMerge::connect(std::string shmdata_socket_path) {
       stock_.clear();
     }
 
+    uint64_t currentTime = chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
+    if (frame_period_cap_ > 0 && (currentTime - _lastUpdateTimestamp < frame_period_cap_))
+    {
+      mutex_.unlock();
+      return;
+    }
+    _lastUpdateTimestamp = currentTime;
+
     merger_->setInputCloud(index,
                            vector<char>((char*)data, (char*) data + size),
                            type != string(POINTCLOUD_TYPE_BASE));
     auto cloud = vector<char>();
     merger_->getCloud(cloud);
-
 
     if (cloud_writer_.get() == nullptr || cloud.size() > cloud_writer_->writer(&shmdata::Writer::alloc_size)) {
       auto data_type = compress_cloud_ ? string(POINTCLOUD_TYPE_COMPRESSED) : string(POINTCLOUD_TYPE_BASE);
