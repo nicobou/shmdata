@@ -389,18 +389,19 @@ class PContainer{
         std::forward<const std::tuple<T...> &>(default_value));
   }
 
-  // template<typename ...T>
-  // prop_id_t make_parented_tuple(const std::string &strid,
-  //                               const std::string &parent_strid,
-  //                               Property2<std::tuple<T...>>::set_cb_t set,
-  //                               Property2<std::tuple<T...>>::get_cb_t get,
-  //                               const std::string &label,
-  //                               const std::string &description,
-  //                               const std::tuple<T...> &default_value){
-  //   return make_under_parent<std::tuple<T...>>(
-  //       strid, parent_strid, set, get, label, description,
-  //       std::forward<const std::tuple<T...> &>(default_value));
-  // }
+  template<typename ...T>
+  prop_id_t make_parented_tuple(const std::string &strid,
+                                const std::string &parent_strid,
+                                std::function<bool(const std::tuple<T...> &)> set,
+                                std::function<std::tuple<T...>()> get,
+                                const std::string &label,
+                                const std::string &description,
+                                const std::tuple<T...> &default_value){
+    return make_under_parent<std::tuple<T...>>(
+        strid, parent_strid, set, get, label, description,
+        std::forward<const std::tuple<T...> &>(default_value));
+  }
+
   
   // TODO bool remake(prop_id_t prop_id);
 
@@ -414,12 +415,12 @@ class PContainer{
   bool unsubscribe(prop_id_t id, register_id_t rid);
 
   template<typename T> bool set(prop_id_t id, const T &val){
-    auto &prop_it = props_.find(id); 
+    auto prop_it = props_.find(id); 
     if (prop_it->second->get_type_id_hash() != typeid(val).hash_code()){
       g_warning("%s: types do not match", __FUNCTION__);
       return false;
     }
-    return static_cast<Property2<T> *>(prop_it->second)->set(std::forward<const T &>(val));
+    return static_cast<Property2<T> *>(prop_it->second.get())->set(std::forward<const T &>(val));
   }
 
   template<typename T> T get(prop_id_t id) const{

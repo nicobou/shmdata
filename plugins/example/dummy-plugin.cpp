@@ -94,9 +94,9 @@ DummyPlugin::DummyPlugin(const std::string &) :
                     "label_",
                     "Label Example",
                     "This property is an example for label")),
-  tuple_id_(prop_do(&PContainer::make_tuple<int, float, std::string>,
+  tuple_id_(prop_do(&PContainer::make_tuple<long long, float, std::string>,
                     "tuple_",
-                    [this](const std::tuple<int, float, std::string> &val){
+                    [this](const std::tuple<long long, float, std::string> &val){
                       tuple_ = val; return true;
                     },
                     [this](){return tuple_;},
@@ -106,6 +106,14 @@ DummyPlugin::DummyPlugin(const std::string &) :
             ){
   std::cout << prop_do(&PContainer::get<int>, int_id_) << std::endl;
   std::cout << prop_do(&PContainer::get<unsigned int>, uint_id_) << std::endl;
+
+  prop_do(&PContainer::set<std::tuple<long long, float, std::string>>,
+          tuple_id_,
+          std::make_tuple<long long, float, std::string>(2,2.2,"22"));
+
+  std::cout << std::get<0>(tuple_) << " "
+            << std::get<1>(tuple_) << " "
+            << std::get<2>(tuple_) << "\n";
 }
 
 bool DummyPlugin::init() {
