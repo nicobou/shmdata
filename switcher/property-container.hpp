@@ -377,7 +377,30 @@ class PContainer{
                                 const std::string &parent_strid,
                                 const std::string &label,
                                 const std::string &description);
+  template<typename ...T>
+  prop_id_t make_tuple(const std::string &strid,
+                       std::function<bool(const std::tuple<T...> &)> set,
+                       std::function<std::tuple<T...>()> get,
+                       const std::string &label,
+                       const std::string &description,
+                       const std::tuple<T...> &default_value){
+    return make_under_parent<std::tuple<T...>>(
+        strid, "", set, get, label, description,
+        std::forward<const std::tuple<T...> &>(default_value));
+  }
 
+  // template<typename ...T>
+  // prop_id_t make_parented_tuple(const std::string &strid,
+  //                               const std::string &parent_strid,
+  //                               Property2<std::tuple<T...>>::set_cb_t set,
+  //                               Property2<std::tuple<T...>>::get_cb_t get,
+  //                               const std::string &label,
+  //                               const std::string &description,
+  //                               const std::tuple<T...> &default_value){
+  //   return make_under_parent<std::tuple<T...>>(
+  //       strid, parent_strid, set, get, label, description,
+  //       std::forward<const std::tuple<T...> &>(default_value));
+  // }
   
   // TODO bool remake(prop_id_t prop_id);
 

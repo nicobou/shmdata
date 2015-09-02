@@ -21,11 +21,10 @@
 #define __SWITCHER_PROPERTY2_H__
 
 #include <map>
+#include <tuple>
 #include "./information-tree.hpp"
 #include "./property-specification.hpp"
 #include "./selection.hpp"
-
-// FIXME put what can be in a cpp file
 
 namespace switcher {
 class PContainer;  // property container

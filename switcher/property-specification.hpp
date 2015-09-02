@@ -29,13 +29,14 @@
 #include "./information-tree.hpp"
 #include "./selection.hpp"
 #include "./label.hpp"
+#include "./templated-sequence.hpp"
 
 // FIXME a voir avec Francois
 // TODO mettre current ? (depuis container peut etre)
 // "default value" -> default  // FIXME default is useless ?
 // TODO "name" -> "label" 
 // nick disparait de enum
-
+    
 namespace switcher {
 
 template<typename T>
@@ -118,6 +119,21 @@ class PropertySpecification{
     spec_->tag_as_array(".values.", true);
   }
 
+
+  template<typename ...TupleParams>
+  PropertySpecification(bool is_writable,
+                        const std::string &label,
+                        const std::string &description,
+                        const std::tuple<TupleParams...> &default_value):
+      spec_(data::Tree::make()){
+    spec_->graft("label", data::Tree::make(label));
+    spec_->graft("description", data::Tree::make(description));
+    spec_->graft("type", data::Tree::make("tuple"));
+    spec_->graft("writable", data::Tree::make(is_writable));
+    print_tuple(".default.", default_value);
+    spec_->tag_as_array(".default.", true);
+  }
+
   template<typename U = Label,
             typename std::enable_if<std::is_same<U, Label>::value>::type* = nullptr>
   PropertySpecification(const std::string &label,
@@ -134,6 +150,29 @@ class PropertySpecification{
   
  private:
   data::Tree::ptr spec_;
+
+  // writing tuple default value:
+  void print_targs(const std::string &, size_t){}
+  template<typename F, typename ...U>
+  void print_targs(const std::string &key, size_t pos, F first, U... args){
+    auto tree = data::Tree::make();
+    tree->graft(".id", data::Tree::make(pos));  // overhiding id set by json serializer
+    tree->graft(".value", data::Tree::make(first));
+    tree->graft(".type", data::Tree::make(TypeNameRegistry::get_name<F>()));
+    spec_->graft(key + "." + std::to_string(pos), tree);
+    print_targs(std::forward<const std::string &>(key), pos + 1, args...);
+  }
+  template <typename ...U, int ...S>
+  void print_tuple_call(const std::string &key, const std::tuple<U...> &tup, tseq<S...>){
+    print_targs(std::forward<const std::string &>(key), 0, std::get<S>(tup)...);
+  }
+  template <typename ...U>
+  void print_tuple(const std::string &key, const std::tuple<U...> &tup){
+    print_tuple_call(std::forward<const std::string &>(key),
+                     std::forward<const std::tuple<U...> &>(tup),
+                     typename gens<sizeof...(U)>::type());
+  }
+  
 };
 
 }  // namespace switcher

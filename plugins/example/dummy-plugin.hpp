@@ -63,7 +63,11 @@ class DummyPlugin: public Quiddity/*FIXME re enable this, public StartableQuiddi
 
   // Property grouping  // label can be added as parent
   PContainer::prop_id_t label_id_;
-  
+
+  // tuple
+  std::tuple<long long, float, std::string> tuple_{1, 3.14, "hello"};
+  PContainer::prop_id_t tuple_id_;
+
   // --- Methods
   std::string hello_{};
   static gchar *my_hello_world_method(gchar *first_arg, void *user_data);
