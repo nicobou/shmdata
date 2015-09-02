@@ -30,6 +30,7 @@ struct gens : gens<N-1, N-1, S...> {};
 
 template<int ...S>
 struct gens<0, S...> {
+  virtual ~gens(){};
   typedef tseq<S...> type;
 };
 

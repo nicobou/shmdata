@@ -109,11 +109,11 @@ DummyPlugin::DummyPlugin(const std::string &) :
 
   prop_do(&PContainer::set<std::tuple<long long, float, std::string>>,
           tuple_id_,
-          std::make_tuple<long long, float, std::string>(2,2.2,"22"));
+          std::make_tuple<long long, float, std::string>(2,2.2,"a22"));
 
-  std::cout << std::get<0>(tuple_) << " "
-            << std::get<1>(tuple_) << " "
-            << std::get<2>(tuple_) << "\n";
+  std::cout << std::get<0>(tuple_) << " "      // 2
+            << std::get<1>(tuple_) << " "      // 2.2
+            << std::get<2>(tuple_) << "\n";    // a22
 }
 
 bool DummyPlugin::init() {
