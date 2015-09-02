@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 // #include "switcher/startable-quiddity.hpp" FIXME re enable this
 #include "switcher/quiddity.hpp"
 #include "switcher/property2.hpp"

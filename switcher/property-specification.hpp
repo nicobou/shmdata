@@ -20,9 +20,7 @@
 #ifndef __SWITCHER_PROPERTY_SPECIFICATION_H__
 #define __SWITCHER_PROPERTY_SPECIFICATION_H__
 
-#include <iostream>  // FIXME remove
 #include <typeinfo>
-#include <algorithm> // find_if
 #include <string>
 #include <sstream>
 #include <functional>
@@ -106,7 +104,7 @@ class PropertySpecification{
       spec_(data::Tree::make()){
     spec_->graft("label", data::Tree::make(label));
     spec_->graft("description", data::Tree::make(description));
-    spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<Selection>()));
+    spec_->graft("type", data::Tree::make("selection"));
     spec_->graft("writable", data::Tree::make(is_writable));
     spec_->graft("default", data::Tree::make(default_value.get()));
     size_t pos = 0;
@@ -127,7 +125,7 @@ class PropertySpecification{
       spec_(data::Tree::make()){
     spec_->graft("label", data::Tree::make(label));
     spec_->graft("description", data::Tree::make(description));
-    spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<Label>()));
+    spec_->graft("type", data::Tree::make("label"));
   }
 
   data::Tree::ptr get_spec(){

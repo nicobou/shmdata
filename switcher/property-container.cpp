@@ -88,6 +88,81 @@ PContainer::prop_id_t PContainer::make_parented_int(const std::string &strid,
                                 default_value, min, max);
 }
 
+PContainer::prop_id_t PContainer::make_short(const std::string &strid,
+                                             Property2<short>::set_cb_t set,
+                                             Property2<short>::get_cb_t get,
+                                             const std::string &label,
+                                             const std::string &description,
+                                             short default_value,
+                                             short min,
+                                             short max){
+  return make_under_parent<short>(strid, "", set, get, label, description,
+                                  default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_parented_short(const std::string &strid,
+                                                      const std::string &parent_strid,
+                                                      Property2<short>::set_cb_t set,
+                                                      Property2<short>::get_cb_t get,
+                                                      const std::string &label,
+                                                      const std::string &description,
+                                                      short default_value,
+                                                      short min,
+                                                      short max){
+  return make_under_parent<short>(strid, parent_strid, set, get, label, description,
+                                  default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_long(const std::string &strid,
+                                            Property2<long>::set_cb_t set,
+                                            Property2<long>::get_cb_t get,
+                                            const std::string &label,
+                                            const std::string &description,
+                                            long default_value,
+                                            long min,
+                                            long max){
+  return make_under_parent<long>(strid, "", set, get, label, description,
+                                 default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_parented_long(const std::string &strid,
+                                                     const std::string &parent_strid,
+                                                     Property2<long>::set_cb_t set,
+                                                     Property2<long>::get_cb_t get,
+                                                     const std::string &label,
+                                                     const std::string &description,
+                                                     long default_value,
+                                                     long min,
+                                                     long max){
+  return make_under_parent<long>(strid, parent_strid, set, get, label, description,
+                                 default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_long_long(const std::string &strid,
+                                                 Property2<long long>::set_cb_t set,
+                                                 Property2<long long>::get_cb_t get,
+                                                 const std::string &label,
+                                                 const std::string &description,
+                                                 long long default_value,
+                                                 long long min,
+                                                 long long max){
+  return make_under_parent<long long>(strid, "", set, get, label, description,
+                                      default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_parented_long_long(const std::string &strid,
+                                                          const std::string &parent_strid,
+                                                          Property2<long long>::set_cb_t set,
+                                                          Property2<long long>::get_cb_t get,
+                                                          const std::string &label,
+                                                          const std::string &description,
+                                                          long long default_value,
+                                                          long long min,
+                                                          long long max){
+  return make_under_parent<long long>(strid, parent_strid, set, get, label, description,
+                                      default_value, min, max);
+}
+
 PContainer::prop_id_t PContainer::make_unsigned_int(
     const std::string &strid,
     Property2<unsigned int>::set_cb_t set,
@@ -117,6 +192,94 @@ PContainer::prop_id_t PContainer::make_parented_unsigned_int(
       default_value, min, max);
 }
 
+PContainer::prop_id_t PContainer::make_unsigned_short(
+    const std::string &strid,
+    Property2<unsigned short>::set_cb_t set,
+    Property2<unsigned short>::get_cb_t get,
+    const std::string &label,
+    const std::string &description,
+    unsigned short default_value,
+    unsigned short min,
+    unsigned short max){
+  return make_under_parent<unsigned short>(
+      strid, "", set, get, label, description,
+      default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_parented_unsigned_short(
+    const std::string &strid,
+    const std::string &parent_strid,
+    Property2<unsigned short>::set_cb_t set,
+    Property2<unsigned short>::get_cb_t get,
+    const std::string &label,
+    const std::string &description,
+    unsigned short default_value,
+    unsigned short min,
+    unsigned short max){
+  return make_under_parent<unsigned short>(
+      strid, parent_strid, set, get, label, description,
+      default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_unsigned_long(
+    const std::string &strid,
+    Property2<unsigned long>::set_cb_t set,
+    Property2<unsigned long>::get_cb_t get,
+    const std::string &label,
+    const std::string &description,
+    unsigned long default_value,
+    unsigned long min,
+    unsigned long max){
+  return make_under_parent<unsigned long>(
+      strid, "", set, get, label, description,
+      default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_parented_unsigned_long(
+    const std::string &strid,
+    const std::string &parent_strid,
+    Property2<unsigned long>::set_cb_t set,
+    Property2<unsigned long>::get_cb_t get,
+    const std::string &label,
+    const std::string &description,
+    unsigned long default_value,
+    unsigned long min,
+    unsigned long max){
+  return make_under_parent<unsigned long>(
+      strid, parent_strid, set, get, label, description,
+      default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_unsigned_long_long(
+    const std::string &strid,
+    Property2<unsigned long long>::set_cb_t set,
+    Property2<unsigned long long>::get_cb_t get,
+    const std::string &label,
+    const std::string &description,
+    unsigned long long default_value,
+    unsigned long long min,
+    unsigned long long max){
+  return make_under_parent<unsigned long long>(
+      strid, "", set, get, label, description,
+      default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_parented_unsigned_long_long(
+    const std::string &strid,
+    const std::string &parent_strid,
+    Property2<unsigned long long>::set_cb_t set,
+    Property2<unsigned long long>::get_cb_t get,
+    const std::string &label,
+    const std::string &description,
+    unsigned long long default_value,
+    unsigned long long min,
+    unsigned long long max){
+  return make_under_parent<unsigned long long>(
+      strid, parent_strid, set, get, label, description,
+      default_value, min, max);
+}
+
+
 PContainer::prop_id_t PContainer::make_bool(const std::string &strid,
                                             Property2<bool>::set_cb_t set,
                                             Property2<bool>::get_cb_t get,
@@ -139,63 +302,63 @@ PContainer::prop_id_t PContainer::make_parented_bool(const std::string &strid,
 }
 
 PContainer::prop_id_t PContainer::make_float(const std::string &strid,
-                                           Property2<float>::set_cb_t set,
-                                           Property2<float>::get_cb_t get,
-                                           const std::string &label,
-                                           const std::string &description,
-                                           float default_value,
-                                           float min,
-                                           float max){
+                                             Property2<float>::set_cb_t set,
+                                             Property2<float>::get_cb_t get,
+                                             const std::string &label,
+                                             const std::string &description,
+                                             float default_value,
+                                             float min,
+                                             float max){
   return make_under_parent<float>(strid, "", set, get, label, description,
-                                default_value, min, max);
+                                  default_value, min, max);
 }
 
 PContainer::prop_id_t PContainer::make_parented_float(const std::string &strid,
-                                                    const std::string &parent_strid,
-                                                    Property2<float>::set_cb_t set,
-                                                    Property2<float>::get_cb_t get,
-                                                    const std::string &label,
-                                                    const std::string &description,
-                                                    float default_value,
-                                                    float min,
-                                                    float max){
+                                                      const std::string &parent_strid,
+                                                      Property2<float>::set_cb_t set,
+                                                      Property2<float>::get_cb_t get,
+                                                      const std::string &label,
+                                                      const std::string &description,
+                                                      float default_value,
+                                                      float min,
+                                                      float max){
   return make_under_parent<float>(strid, parent_strid, set, get, label, description,
-                                default_value, min, max);
+                                  default_value, min, max);
 }
 
 PContainer::prop_id_t PContainer::make_double(const std::string &strid,
-                                           Property2<double>::set_cb_t set,
-                                           Property2<double>::get_cb_t get,
-                                           const std::string &label,
-                                           const std::string &description,
-                                           double default_value,
-                                           double min,
-                                           double max){
+                                              Property2<double>::set_cb_t set,
+                                              Property2<double>::get_cb_t get,
+                                              const std::string &label,
+                                              const std::string &description,
+                                              double default_value,
+                                              double min,
+                                              double max){
   return make_under_parent<double>(strid, "", set, get, label, description,
-                                default_value, min, max);
+                                   default_value, min, max);
 }
 
 PContainer::prop_id_t PContainer::make_parented_double(const std::string &strid,
-                                                    const std::string &parent_strid,
-                                                    Property2<double>::set_cb_t set,
-                                                    Property2<double>::get_cb_t get,
-                                                    const std::string &label,
-                                                    const std::string &description,
-                                                    double default_value,
-                                                    double min,
-                                                    double max){
+                                                       const std::string &parent_strid,
+                                                       Property2<double>::set_cb_t set,
+                                                       Property2<double>::get_cb_t get,
+                                                       const std::string &label,
+                                                       const std::string &description,
+                                                       double default_value,
+                                                       double min,
+                                                       double max){
   return make_under_parent<double>(strid, parent_strid, set, get, label, description,
-                                default_value, min, max);
+                                   default_value, min, max);
 }
 
 PContainer::prop_id_t PContainer::make_string(const std::string &strid,
                                               Property2<std::string>::set_cb_t set,
                                               Property2<std::string>::get_cb_t get,
                                               const std::string &label,
-                                           const std::string &description,
-                                           std::string default_value){
+                                              const std::string &description,
+                                              std::string default_value){
   return make_under_parent<std::string>(strid, "", set, get, label, description,
-                                default_value);
+                                        default_value);
 }
 
 PContainer::prop_id_t PContainer::make_parented_string(const std::string &strid,
@@ -217,19 +380,19 @@ PContainer::prop_id_t PContainer::make_selection(
     const std::string &description,
     const Selection &default_value){
   return make_under_parent<Selection, size_t>(strid, "", set, get, label, description,
-                                      default_value);
+                                              default_value);
 }
 
 PContainer::prop_id_t PContainer::make_parented_selection(
-      const std::string &strid,
-      const std::string &parent_strid,
-      Property2<Selection, size_t>::set_cb_t set,
-      Property2<Selection, size_t>::get_cb_t get,
-      const std::string &label,
-      const std::string &description,
-      const Selection &default_value){
+    const std::string &strid,
+    const std::string &parent_strid,
+    Property2<Selection, size_t>::set_cb_t set,
+    Property2<Selection, size_t>::get_cb_t get,
+    const std::string &label,
+    const std::string &description,
+    const Selection &default_value){
   return make_under_parent<Selection, size_t>(strid, parent_strid, set, get, label, description,
-                                      default_value);
+                                              default_value);
 }
 
 PContainer::prop_id_t PContainer::make_label(
@@ -240,11 +403,112 @@ PContainer::prop_id_t PContainer::make_label(
 }
 
 PContainer::prop_id_t PContainer::make_parented_label(
-      const std::string &strid,
-      const std::string &parent_strid,
-      const std::string &label,
-      const std::string &description){
+    const std::string &strid,
+    const std::string &parent_strid,
+    const std::string &label,
+    const std::string &description){
   return make_under_parent<Label>(strid, parent_strid, label, description);
 }
+
+PContainer::prop_id_t PContainer::make_char(const std::string &strid,
+                                            Property2<char>::set_cb_t set,
+                                            Property2<char>::get_cb_t get,
+                                            const std::string &label,
+                                            const std::string &description,
+                                            char default_value,
+                                            char min,
+                                            char max){
+  return make_under_parent<char>(strid, "", set, get, label, description,
+                                 default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_parented_char(const std::string &strid,
+                                                     const std::string &parent_strid,
+                                                     Property2<char>::set_cb_t set,
+                                                     Property2<char>::get_cb_t get,
+                                                     const std::string &label,
+                                                     const std::string &description,
+                                                     char default_value,
+                                                     char min,
+                                                     char max){
+  return make_under_parent<char>(strid, parent_strid, set, get, label, description,
+                                 default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_char16_t(const std::string &strid,
+                                                Property2<char16_t>::set_cb_t set,
+                                                Property2<char16_t>::get_cb_t get,
+                                                const std::string &label,
+                                                const std::string &description,
+                                                char16_t default_value,
+                                                char16_t min,
+                                                char16_t max){
+  return make_under_parent<char16_t>(strid, "", set, get, label, description,
+                                     default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_parented_char16_t(const std::string &strid,
+                                                         const std::string &parent_strid,
+                                                         Property2<char16_t>::set_cb_t set,
+                                                         Property2<char16_t>::get_cb_t get,
+                                                         const std::string &label,
+                                                         const std::string &description,
+                                                         char16_t default_value,
+                                                         char16_t min,
+                                                         char16_t max){
+  return make_under_parent<char16_t>(strid, parent_strid, set, get, label, description,
+                                     default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_char32_t(const std::string &strid,
+                                                Property2<char32_t>::set_cb_t set,
+                                                Property2<char32_t>::get_cb_t get,
+                                                const std::string &label,
+                                                const std::string &description,
+                                                char32_t default_value,
+                                                char32_t min,
+                                                char32_t max){
+  return make_under_parent<char32_t>(strid, "", set, get, label, description,
+                                     default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_parented_char32_t(const std::string &strid,
+                                                         const std::string &parent_strid,
+                                                         Property2<char32_t>::set_cb_t set,
+                                                         Property2<char32_t>::get_cb_t get,
+                                                         const std::string &label,
+                                                         const std::string &description,
+                                                         char32_t default_value,
+                                                         char32_t min,
+                                                         char32_t max){
+  return make_under_parent<char32_t>(strid, parent_strid, set, get, label, description,
+                                     default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_wchar_t(const std::string &strid,
+                                               Property2<wchar_t>::set_cb_t set,
+                                               Property2<wchar_t>::get_cb_t get,
+                                               const std::string &label,
+                                               const std::string &description,
+                                               wchar_t default_value,
+                                               wchar_t min,
+                                               wchar_t max){
+  return make_under_parent<wchar_t>(strid, "", set, get, label, description,
+                                    default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_parented_wchar_t(const std::string &strid,
+                                                        const std::string &parent_strid,
+                                                        Property2<wchar_t>::set_cb_t set,
+                                                        Property2<wchar_t>::get_cb_t get,
+                                                        const std::string &label,
+                                                        const std::string &description,
+                                                        wchar_t default_value,
+                                                        wchar_t min,
+                                                        wchar_t max){
+  return make_under_parent<wchar_t>(strid, parent_strid, set, get, label, description,
+                                    default_value, min, max);
+}
+
 
 }  // namespace switcher

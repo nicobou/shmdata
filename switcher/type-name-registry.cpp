@@ -18,8 +18,6 @@
  */
 
 #include "./type-name-registry.hpp"
-#include "./selection.hpp"
-#include "./label.hpp"
 
 namespace switcher {
 
@@ -34,9 +32,10 @@ TypeNameRegistry::registry_t TypeNameRegistry::type_name_registry_ = {
   REGISTER_TYPE(float),
   REGISTER_TYPE(long double),
   
+  REGISTER_TYPE(bool),
+
   REGISTER_TYPE(int),
   REGISTER_TYPE(short),
-  REGISTER_TYPE(bool),
   REGISTER_TYPE(long),
   REGISTER_TYPE(long long),
   REGISTER_TYPE(unsigned short),
@@ -44,11 +43,13 @@ TypeNameRegistry::registry_t TypeNameRegistry::type_name_registry_ = {
   REGISTER_TYPE(unsigned long),
   REGISTER_TYPE(unsigned long long),
 
+  REGISTER_TYPE(char),
+  REGISTER_TYPE(char16_t),
+  REGISTER_TYPE(char32_t),
+  REGISTER_TYPE(wchar_t),
+
   REGISTER_TYPE2(std::string, string),
   REGISTER_TYPE2(const char *, string),
-
-  REGISTER_TYPE2(Selection, enum),
-  REGISTER_TYPE2(Label, label)
 };
 
 }  // namespace switcher

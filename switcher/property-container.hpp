@@ -55,6 +55,63 @@ class PContainer{
                               int min,
                               int max);
 
+  prop_id_t make_short(const std::string &strid,
+                       Property2<short>::set_cb_t set,
+                       Property2<short>::get_cb_t get,
+                       const std::string &label,
+                       const std::string &description,
+                       short default_value,
+                       short min,
+                       short max);
+
+  prop_id_t make_parented_short(const std::string &strid,
+                                const std::string &parent_strid,
+                                Property2<short>::set_cb_t set,
+                                Property2<short>::get_cb_t get,
+                                const std::string &label,
+                                const std::string &description,
+                                short default_value,
+                                short min,
+                                short max);
+
+  prop_id_t make_long(const std::string &strid,
+                      Property2<long>::set_cb_t set,
+                      Property2<long>::get_cb_t get,
+                      const std::string &label,
+                      const std::string &description,
+                      long default_value,
+                      long min,
+                      long max);
+
+  prop_id_t make_parented_long(const std::string &strid,
+                               const std::string &parent_strid,
+                               Property2<long>::set_cb_t set,
+                               Property2<long>::get_cb_t get,
+                               const std::string &label,
+                               const std::string &description,
+                               long default_value,
+                               long min,
+                               long max);
+
+  prop_id_t make_long_long(const std::string &strid,
+                           Property2<long long>::set_cb_t set,
+                           Property2<long long>::get_cb_t get,
+                           const std::string &label,
+                           const std::string &description,
+                           long long default_value,
+                           long long min,
+                           long long max);
+  
+  prop_id_t make_parented_long_long(const std::string &strid,
+                                    const std::string &parent_strid,
+                                    Property2<long long>::set_cb_t set,
+                                    Property2<long long>::get_cb_t get,
+                                    const std::string &label,
+                                    const std::string &description,
+                                    long long default_value,
+                                    long long min,
+                                    long long max);
+    
   prop_id_t make_unsigned_int(const std::string &strid,
                               Property2<unsigned int>::set_cb_t set,
                               Property2<unsigned int>::get_cb_t get,
@@ -74,59 +131,214 @@ class PContainer{
                                        unsigned int min,
                                        unsigned int max);
 
+  prop_id_t make_unsigned_short(const std::string &strid,
+                                Property2<unsigned short>::set_cb_t set,
+                                Property2<unsigned short>::get_cb_t get,
+                                const std::string &label,
+                                const std::string &description,
+                                unsigned short default_value,
+                                unsigned short min,
+                                unsigned short max);
+
+  prop_id_t make_parented_unsigned_short(const std::string &strid,
+                                         const std::string &parent_strid,
+                                         Property2<unsigned short>::set_cb_t set,
+                                         Property2<unsigned short>::get_cb_t get,
+                                         const std::string &label,
+                                         const std::string &description,
+                                         unsigned short default_value,
+                                         unsigned short min,
+                                         unsigned short max);
+
+  prop_id_t make_unsigned_long(const std::string &strid,
+                               Property2<unsigned long>::set_cb_t set,
+                               Property2<unsigned long>::get_cb_t get,
+                               const std::string &label,
+                               const std::string &description,
+                               unsigned long default_value,
+                               unsigned long min,
+                               unsigned long max);
+
+  prop_id_t make_parented_unsigned_long(const std::string &strid,
+                                        const std::string &parent_strid,
+                                        Property2<unsigned long>::set_cb_t set,
+                                        Property2<unsigned long>::get_cb_t get,
+                                        const std::string &label,
+                                        const std::string &description,
+                                        unsigned long default_value,
+                                        unsigned long min,
+                                        unsigned long max);
+
+  prop_id_t make_unsigned_long_long(const std::string &strid,
+                                    Property2<unsigned long long>::set_cb_t set,
+                                    Property2<unsigned long long>::get_cb_t get,
+                                    const std::string &label,
+                                    const std::string &description,
+                                    unsigned long long default_value,
+                                    unsigned long long min,
+                                    unsigned long long max);
+
+  prop_id_t make_parented_unsigned_long_long(const std::string &strid,
+                                             const std::string &parent_strid,
+                                             Property2<unsigned long long>::set_cb_t set,
+                                             Property2<unsigned long long>::get_cb_t get,
+                                             const std::string &label,
+                                             const std::string &description,
+                                             unsigned long long default_value,
+                                             unsigned long long min,
+                                             unsigned long long max);
+  
   prop_id_t make_bool(const std::string &strid,
-                     Property2<bool>::set_cb_t set,
-                     Property2<bool>::get_cb_t get,
-                     const std::string &label,
-                     const std::string &description,
-                     bool default_value);
-
+                      Property2<bool>::set_cb_t set,
+                      Property2<bool>::get_cb_t get,
+                      const std::string &label,
+                      const std::string &description,
+                      bool default_value);
+  
   prop_id_t make_parented_bool(const std::string &strid,
-                              const std::string &parent_strid,
-                              Property2<bool>::set_cb_t set,
-                              Property2<bool>::get_cb_t get,
-                              const std::string &label,
-                              const std::string &description,
-                              bool default_value);
-
+                               const std::string &parent_strid,
+                               Property2<bool>::set_cb_t set,
+                               Property2<bool>::get_cb_t get,
+                               const std::string &label,
+                               const std::string &description,
+                               bool default_value);
+  
   prop_id_t make_float(const std::string &strid,
-                     Property2<float>::set_cb_t set,
-                     Property2<float>::get_cb_t get,
-                     const std::string &label,
-                     const std::string &description,
-                     float default_value,
-                     float min,
-                     float max);
-
+                       Property2<float>::set_cb_t set,
+                       Property2<float>::get_cb_t get,
+                       const std::string &label,
+                       const std::string &description,
+                       float default_value,
+                       float min,
+                       float max);
+  
   prop_id_t make_parented_float(const std::string &strid,
-                              const std::string &parent_strid,
-                              Property2<float>::set_cb_t set,
-                              Property2<float>::get_cb_t get,
-                              const std::string &label,
-                              const std::string &description,
-                              float default_value,
-                              float min,
-                              float max);
-
+                                const std::string &parent_strid,
+                                Property2<float>::set_cb_t set,
+                                Property2<float>::get_cb_t get,
+                                const std::string &label,
+                                const std::string &description,
+                                float default_value,
+                                float min,
+                                float max);
+  
   prop_id_t make_double(const std::string &strid,
-                     Property2<double>::set_cb_t set,
-                     Property2<double>::get_cb_t get,
-                     const std::string &label,
-                     const std::string &description,
-                     double default_value,
-                     double min,
-                     double max);
+                        Property2<double>::set_cb_t set,
+                        Property2<double>::get_cb_t get,
+                        const std::string &label,
+                        const std::string &description,
+                        double default_value,
+                        double min,
+                        double max);
 
   prop_id_t make_parented_double(const std::string &strid,
-                              const std::string &parent_strid,
-                              Property2<double>::set_cb_t set,
-                              Property2<double>::get_cb_t get,
-                              const std::string &label,
-                              const std::string &description,
-                              double default_value,
-                              double min,
-                              double max);
+                                 const std::string &parent_strid,
+                                 Property2<double>::set_cb_t set,
+                                 Property2<double>::get_cb_t get,
+                                 const std::string &label,
+                                 const std::string &description,
+                                 double default_value,
+                                 double min,
+                                 double max);
 
+  prop_id_t make_long_double(const std::string &strid,
+                             Property2<long double>::set_cb_t set,
+                             Property2<long double>::get_cb_t get,
+                             const std::string &label,
+                             const std::string &description,
+                             long double default_value,
+                             long double min,
+                             long double max);
+
+  prop_id_t make_parented_long_double(const std::string &strid,
+                                      const std::string &parent_strid,
+                                      Property2<long double>::set_cb_t set,
+                                      Property2<long double>::get_cb_t get,
+                                      const std::string &label,
+                                      const std::string &description,
+                                      long double default_value,
+                                      long double min,
+                                      long double max);
+
+  prop_id_t make_char(const std::string &strid,
+                      Property2<char>::set_cb_t set,
+                      Property2<char>::get_cb_t get,
+                      const std::string &label,
+                      const std::string &description,
+                      char default_value,
+                      char min,
+                      char max);
+
+  prop_id_t make_parented_char(const std::string &strid,
+                               const std::string &parent_strid,
+                               Property2<char>::set_cb_t set,
+                               Property2<char>::get_cb_t get,
+                               const std::string &label,
+                               const std::string &description,
+                               char default_value,
+                               char min,
+                               char max);
+
+  prop_id_t make_char16_t(const std::string &strid,
+                          Property2<char16_t>::set_cb_t set,
+                          Property2<char16_t>::get_cb_t get,
+                          const std::string &label,
+                          const std::string &description,
+                          char16_t default_value,
+                          char16_t min,
+                          char16_t max);
+
+  prop_id_t make_parented_char16_t(const std::string &strid,
+                                   const std::string &parent_strid,
+                                   Property2<char16_t>::set_cb_t set,
+                                   Property2<char16_t>::get_cb_t get,
+                                   const std::string &label,
+                                   const std::string &description,
+                                   char16_t default_value,
+                                   char16_t min,
+                                   char16_t max);
+
+  prop_id_t make_char32_t(const std::string &strid,
+                          Property2<char32_t>::set_cb_t set,
+                          Property2<char32_t>::get_cb_t get,
+                          const std::string &label,
+                          const std::string &description,
+                          char32_t default_value,
+                          char32_t min,
+                          char32_t max);
+
+  prop_id_t make_parented_char32_t(const std::string &strid,
+                                   const std::string &parent_strid,
+                                   Property2<char32_t>::set_cb_t set,
+                                   Property2<char32_t>::get_cb_t get,
+                                   const std::string &label,
+                                   const std::string &description,
+                                   char32_t default_value,
+                                   char32_t min,
+                                   char32_t max);
+  
+  prop_id_t make_wchar_t(const std::string &strid,
+                         Property2<wchar_t>::set_cb_t set,
+                         Property2<wchar_t>::get_cb_t get,
+                         const std::string &label,
+                         const std::string &description,
+                         wchar_t default_value,
+                         wchar_t min,
+                         wchar_t max);
+  
+  prop_id_t make_parented_wchar_t(const std::string &strid,
+                                  const std::string &parent_strid,
+                                  Property2<wchar_t>::set_cb_t set,
+                                  Property2<wchar_t>::get_cb_t get,
+                                  const std::string &label,
+                                  const std::string &description,
+                                  wchar_t default_value,
+                                  wchar_t min,
+                                  wchar_t max);
+
+
+
+  
   prop_id_t make_string(const std::string &strid,
                         Property2<std::string>::set_cb_t set,
                         Property2<std::string>::get_cb_t get,
