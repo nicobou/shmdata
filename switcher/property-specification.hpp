@@ -56,12 +56,9 @@ class PropertySpecification{
                         typename std::enable_if<
                         !std::is_arithmetic<U>::value 
                         >::type* = nullptr):
-      label_(label),
-      descr_(description),
-      default_value_(default_value),
       spec_(data::Tree::make()){
-    spec_->graft("label", data::Tree::make(label_));
-    spec_->graft("description", data::Tree::make(descr_));
+    spec_->graft("label", data::Tree::make(label));
+    spec_->graft("description", data::Tree::make(description));
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<U>()));
     spec_->graft("writable", data::Tree::make(is_writable));
     spec_->graft("default", data::Tree::make(static_cast<U>(default_value)));
@@ -78,12 +75,9 @@ class PropertySpecification{
                         !std::is_same<U, bool>::value && 
                         std::is_arithmetic<U>::value 
                         >::type* = nullptr):
-      label_(label),
-      descr_(description),
-      default_value_(default_value),
       spec_(data::Tree::make()){
-    spec_->graft("label", data::Tree::make(label_));
-    spec_->graft("description", data::Tree::make(descr_));
+    spec_->graft("label", data::Tree::make(label));
+    spec_->graft("description", data::Tree::make(description));
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<U>()));
     spec_->graft("writable", data::Tree::make(is_writable));
     spec_->graft("default", data::Tree::make(static_cast<U>(default_value)));
@@ -96,12 +90,9 @@ class PropertySpecification{
                         const std::string &label,
                         const std::string &description,
                         const bool &default_value):
-      label_(label),
-      descr_(description),
-      default_value_(default_value),
       spec_(data::Tree::make()){
-    spec_->graft("label", data::Tree::make(label_));
-    spec_->graft("description", data::Tree::make(descr_));
+    spec_->graft("label", data::Tree::make(label));
+    spec_->graft("description", data::Tree::make(description));
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<bool>()));
     spec_->graft("writable", data::Tree::make(is_writable));
     spec_->graft("default", data::Tree::make(default_value));
@@ -112,15 +103,12 @@ class PropertySpecification{
                         const std::string &label,
                         const std::string &description,
                         const Selection &default_value):
-      label_(label),
-      descr_(description),
-      default_value_(default_value),
       spec_(data::Tree::make()){
-    spec_->graft("label", data::Tree::make(label_));
-    spec_->graft("description", data::Tree::make(descr_));
+    spec_->graft("label", data::Tree::make(label));
+    spec_->graft("description", data::Tree::make(description));
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<Selection>()));
     spec_->graft("writable", data::Tree::make(is_writable));
-    spec_->graft("default", data::Tree::make(default_value_.get()));
+    spec_->graft("default", data::Tree::make(default_value.get()));
     size_t pos = 0;
     for (const auto &it: default_value.get_list()){
       auto tree = data::Tree::make();
@@ -136,12 +124,9 @@ class PropertySpecification{
             typename std::enable_if<std::is_same<U, Label>::value>::type* = nullptr>
   PropertySpecification(const std::string &label,
                         const std::string &description):
-      label_(label),
-      descr_(description),
-      default_value_(),
       spec_(data::Tree::make()){
-    spec_->graft("label", data::Tree::make(label_));
-    spec_->graft("description", data::Tree::make(descr_));
+    spec_->graft("label", data::Tree::make(label));
+    spec_->graft("description", data::Tree::make(description));
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<Label>()));
   }
 
@@ -150,9 +135,6 @@ class PropertySpecification{
   }
   
  private:
-  const std::string label_;
-  const std::string descr_;
-  const T default_value_;
   data::Tree::ptr spec_;
 };
 
