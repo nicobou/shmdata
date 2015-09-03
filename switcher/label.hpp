@@ -23,8 +23,13 @@
 // This class provide a property type
 // it is used for being parent of a group of one or several properties
 
+#include <iostream>
+
 namespace switcher {
 class Label {
+ public:
+  static Label from_string(const std::string &){return Label();}
+  std::string to_string() const {return std::string();} 
 };
 
 }  // namespace switcher

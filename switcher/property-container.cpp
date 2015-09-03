@@ -395,39 +395,6 @@ PContainer::prop_id_t PContainer::make_parented_selection(
                                               default_value);
 }
 
-PContainer::prop_id_t PContainer::make_fraction(const std::string &strid,
-                          Property2<Fraction>::set_cb_t set,
-                          Property2<Fraction>::get_cb_t get,
-                          const std::string &label,
-                          const std::string &description,
-                          const Fraction &default_value,
-                          Fraction::ator_t min_num,
-                          Fraction::ator_t min_denom,
-                          Fraction::ator_t max_num,
-                          Fraction::ator_t max_denom){
-  return make_under_parent<Fraction>(strid, "", set, get, label, description,
-                                              default_value,
-                                              min_num, min_denom,
-                                              max_num, max_denom);
-}
-  
-  PContainer::prop_id_t PContainer::make_parented_fraction(const std::string &strid,
-                                    const std::string &parent_strid,
-                                    Property2<Fraction>::set_cb_t set,
-                                    Property2<Fraction>::get_cb_t get,
-                                    const std::string &label,
-                                    const std::string &description,
-                                    const Fraction &default_value,
-                                                           Fraction::ator_t min_num,
-                                                           Fraction::ator_t min_denom,
-                                                           Fraction::ator_t max_num,
-                                                           Fraction::ator_t max_denom){
-    return make_under_parent<Fraction>(strid, parent_strid, set, get, label, description,
-                                                default_value,
-                                              min_num, min_denom,
-                                              max_num, max_denom);
-  }
-
 PContainer::prop_id_t PContainer::make_label(
     const std::string &strid,
     const std::string &label,
@@ -468,80 +435,39 @@ PContainer::prop_id_t PContainer::make_parented_char(const std::string &strid,
                                  default_value, min, max);
 }
 
-PContainer::prop_id_t PContainer::make_char16_t(const std::string &strid,
-                                                Property2<char16_t>::set_cb_t set,
-                                                Property2<char16_t>::get_cb_t get,
-                                                const std::string &label,
-                                                const std::string &description,
-                                                char16_t default_value,
-                                                char16_t min,
-                                                char16_t max){
-  return make_under_parent<char16_t>(strid, "", set, get, label, description,
-                                     default_value, min, max);
+PContainer::prop_id_t PContainer::make_fraction(
+    const std::string &strid,
+    Property2<Fraction>::set_cb_t set,
+    Property2<Fraction>::get_cb_t get,
+    const std::string &label,
+    const std::string &description,
+    const Fraction &default_value,
+    Fraction::ator_t min_num,
+    Fraction::ator_t min_denom,
+    Fraction::ator_t max_num,
+    Fraction::ator_t max_denom){
+  return make_under_parent<Fraction>(strid, "", set, get, label, description,
+                                     default_value,
+                                     min_num, min_denom,
+                                     max_num, max_denom);
 }
 
-PContainer::prop_id_t PContainer::make_parented_char16_t(const std::string &strid,
-                                                         const std::string &parent_strid,
-                                                         Property2<char16_t>::set_cb_t set,
-                                                         Property2<char16_t>::get_cb_t get,
-                                                         const std::string &label,
-                                                         const std::string &description,
-                                                         char16_t default_value,
-                                                         char16_t min,
-                                                         char16_t max){
-  return make_under_parent<char16_t>(strid, parent_strid, set, get, label, description,
-                                     default_value, min, max);
+PContainer::prop_id_t PContainer::make_parented_fraction(
+    const std::string &strid,
+    const std::string &parent_strid,
+    Property2<Fraction>::set_cb_t set,
+    Property2<Fraction>::get_cb_t get,
+    const std::string &label,
+    const std::string &description,
+    const Fraction &default_value,
+    Fraction::ator_t min_num,
+    Fraction::ator_t min_denom,
+    Fraction::ator_t max_num,
+    Fraction::ator_t max_denom){
+  return make_under_parent<Fraction>(strid, parent_strid, set, get, label, description,
+                                     default_value,
+                                     min_num, min_denom,
+                                     max_num, max_denom);
 }
-
-PContainer::prop_id_t PContainer::make_char32_t(const std::string &strid,
-                                                Property2<char32_t>::set_cb_t set,
-                                                Property2<char32_t>::get_cb_t get,
-                                                const std::string &label,
-                                                const std::string &description,
-                                                char32_t default_value,
-                                                char32_t min,
-                                                char32_t max){
-  return make_under_parent<char32_t>(strid, "", set, get, label, description,
-                                     default_value, min, max);
-}
-
-PContainer::prop_id_t PContainer::make_parented_char32_t(const std::string &strid,
-                                                         const std::string &parent_strid,
-                                                         Property2<char32_t>::set_cb_t set,
-                                                         Property2<char32_t>::get_cb_t get,
-                                                         const std::string &label,
-                                                         const std::string &description,
-                                                         char32_t default_value,
-                                                         char32_t min,
-                                                         char32_t max){
-  return make_under_parent<char32_t>(strid, parent_strid, set, get, label, description,
-                                     default_value, min, max);
-}
-
-PContainer::prop_id_t PContainer::make_wchar_t(const std::string &strid,
-                                               Property2<wchar_t>::set_cb_t set,
-                                               Property2<wchar_t>::get_cb_t get,
-                                               const std::string &label,
-                                               const std::string &description,
-                                               wchar_t default_value,
-                                               wchar_t min,
-                                               wchar_t max){
-  return make_under_parent<wchar_t>(strid, "", set, get, label, description,
-                                    default_value, min, max);
-}
-
-PContainer::prop_id_t PContainer::make_parented_wchar_t(const std::string &strid,
-                                                        const std::string &parent_strid,
-                                                        Property2<wchar_t>::set_cb_t set,
-                                                        Property2<wchar_t>::get_cb_t get,
-                                                        const std::string &label,
-                                                        const std::string &description,
-                                                        wchar_t default_value,
-                                                        wchar_t min,
-                                                        wchar_t max){
-  return make_under_parent<wchar_t>(strid, parent_strid, set, get, label, description,
-                                    default_value, min, max);
-}
-
 
 }  // namespace switcher

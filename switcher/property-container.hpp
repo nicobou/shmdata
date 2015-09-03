@@ -279,66 +279,7 @@ class PContainer{
                                char min,
                                char max);
 
-  prop_id_t make_char16_t(const std::string &strid,
-                          Property2<char16_t>::set_cb_t set,
-                          Property2<char16_t>::get_cb_t get,
-                          const std::string &label,
-                          const std::string &description,
-                          char16_t default_value,
-                          char16_t min,
-                          char16_t max);
 
-  prop_id_t make_parented_char16_t(const std::string &strid,
-                                   const std::string &parent_strid,
-                                   Property2<char16_t>::set_cb_t set,
-                                   Property2<char16_t>::get_cb_t get,
-                                   const std::string &label,
-                                   const std::string &description,
-                                   char16_t default_value,
-                                   char16_t min,
-                                   char16_t max);
-
-  prop_id_t make_char32_t(const std::string &strid,
-                          Property2<char32_t>::set_cb_t set,
-                          Property2<char32_t>::get_cb_t get,
-                          const std::string &label,
-                          const std::string &description,
-                          char32_t default_value,
-                          char32_t min,
-                          char32_t max);
-
-  prop_id_t make_parented_char32_t(const std::string &strid,
-                                   const std::string &parent_strid,
-                                   Property2<char32_t>::set_cb_t set,
-                                   Property2<char32_t>::get_cb_t get,
-                                   const std::string &label,
-                                   const std::string &description,
-                                   char32_t default_value,
-                                   char32_t min,
-                                   char32_t max);
-  
-  prop_id_t make_wchar_t(const std::string &strid,
-                         Property2<wchar_t>::set_cb_t set,
-                         Property2<wchar_t>::get_cb_t get,
-                         const std::string &label,
-                         const std::string &description,
-                         wchar_t default_value,
-                         wchar_t min,
-                         wchar_t max);
-  
-  prop_id_t make_parented_wchar_t(const std::string &strid,
-                                  const std::string &parent_strid,
-                                  Property2<wchar_t>::set_cb_t set,
-                                  Property2<wchar_t>::get_cb_t get,
-                                  const std::string &label,
-                                  const std::string &description,
-                                  wchar_t default_value,
-                                  wchar_t min,
-                                  wchar_t max);
-
-
-
-  
   prop_id_t make_string(const std::string &strid,
                         Property2<std::string>::set_cb_t set,
                         Property2<std::string>::get_cb_t get,
@@ -438,6 +379,16 @@ class PContainer{
 
   register_id_t subscribe(prop_id_t id, notify_cb_t fun);
   bool unsubscribe(prop_id_t id, register_id_t rid);
+
+  bool set_str(prop_id_t id, const std::string &val){
+    auto prop_it = props_.find(id); 
+    return prop_it->second.get()->set_str(std::forward<const std::string &>(val));
+  }
+
+  std::string get_str(prop_id_t id){
+    auto prop_it = props_.find(id); 
+    return prop_it->second.get()->get_str();
+  }
 
   template<typename T> bool set(prop_id_t id, const T &val){
     auto prop_it = props_.find(id); 

@@ -174,7 +174,7 @@ class PropertySpecification{
  private:
   data::Tree::ptr spec_;
 
-  // writing tuple default value:
+  // writing tuple:
   void print_targs(const std::string &, size_t){}
   template<typename F, typename ...U>
   void print_targs(const std::string &key, size_t pos, F first, U... args){
@@ -192,8 +192,8 @@ class PropertySpecification{
   template <typename ...U>
   void print_tuple(const std::string &key, const std::tuple<U...> &tup){
     print_tuple_call(std::forward<const std::string &>(key),
-                     std::forward<const std::tuple<U...> &>(tup),
-                     typename gens<sizeof...(U)>::type());
+                   std::forward<const std::tuple<U...> &>(tup),
+                   typename gens<sizeof...(U)>::type());
   }
   
 };

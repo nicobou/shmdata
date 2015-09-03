@@ -100,7 +100,11 @@ std::string serialize(Tree::ptrc tree) {
   if (tree->is_leaf()){
     return std::string("\"" + Any::to_string(tree->read_data()) + "\"");
   }
-  json_builder_begin_object(json_builder);
+  bool is_array = tree->is_array();
+  if (!is_array)
+    json_builder_begin_object(json_builder);
+  else
+    json_builder_begin_array(json_builder);
   Tree::preorder_tree_walk(tree,
                            std::bind(JSONSerializer::on_visiting_node,
                                      std::placeholders::_1,
@@ -111,7 +115,10 @@ std::string serialize(Tree::ptrc tree) {
                                      std::placeholders::_1,
                                      std::placeholders::_2,
                                      std::placeholders::_3, json_builder));
-  json_builder_end_object(json_builder);
+  if (!is_array)
+    json_builder_end_object(json_builder);
+  else
+    json_builder_end_array(json_builder);
   JsonNode *node = json_builder_get_root(json_builder);
   On_scope_exit {json_node_free(node);};
   if (nullptr == node)

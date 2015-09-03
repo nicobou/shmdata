@@ -94,15 +94,16 @@ DummyPlugin::DummyPlugin(const std::string &) :
                     "label_",
                     "Label Example",
                     "This property is an example for label")),
-  tuple_id_(prop_do(&PContainer::make_tuple<long long, float, std::string>,
-                    "tuple_",
-                    [this](const std::tuple<long long, float, std::string> &val){
-                      tuple_ = val; return true;
-                    },
-                    [this](){return tuple_;},
-                    "Tuple Example",
-                    "This property is an example for tuple",
-                    tuple_)
+  tuple_id_(0// FIXME write serialization-string for std::tuple
+            // prop_do(&PContainer::make_tuple<long long, float, std::string>,
+            //         "tuple_",
+            //         [this](const std::tuple<long long, float, std::string> &val){
+            //           tuple_ = val; return true;
+            //         },
+            //         [this](){return tuple_;},
+            //         "Tuple Example",
+            //         "This property is an example for tuple",
+            //         tuple_)
             ),
   fraction_id_(prop_do(&PContainer::make_fraction,
                        "fraction_",
@@ -117,13 +118,13 @@ DummyPlugin::DummyPlugin(const std::string &) :
   std::cout << prop_do(&PContainer::get<int>, int_id_) << std::endl;
   std::cout << prop_do(&PContainer::get<unsigned int>, uint_id_) << std::endl;
 
-  prop_do(&PContainer::set<std::tuple<long long, float, std::string>>,
-          tuple_id_,
-          std::make_tuple<long long, float, std::string>(2,2.2,"a22"));
+  // prop_do(&PContainer::set<std::tuple<long long, float, std::string>>,
+  //         tuple_id_,
+  //         std::make_tuple<long long, float, std::string>(2,2.2,"a22"));
 
-  std::cout << std::get<0>(tuple_) << " "      // 2
-            << std::get<1>(tuple_) << " "      // 2.2
-            << std::get<2>(tuple_) << "\n";    // a22
+  // std::cout << std::get<0>(tuple_) << " "      // 2
+  //           << std::get<1>(tuple_) << " "      // 2.2
+  //           << std::get<2>(tuple_) << "\n";    // a22
 }
 
 bool DummyPlugin::init() {

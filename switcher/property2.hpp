@@ -24,7 +24,7 @@
 #include <tuple>
 #include "./information-tree.hpp"
 #include "./property-specification.hpp"
-#include "./selection.hpp"
+#include "./serialize-string.hpp"
 
 namespace switcher {
 class PContainer;  // property container
@@ -42,7 +42,9 @@ class PropertyBase{
   }
 
   virtual data::Tree::ptr get_spec() = 0;
-
+  virtual bool set_str(const std::string &val, bool do_notify = true) = 0;
+  virtual std::string get_str() const = 0;
+  
   prop_id_t get_id() const {return id_;}
   
   register_id_t subscribe(notify_cb_t fun){
@@ -105,10 +107,11 @@ class Property2: public PropertyBase{
       get_(nullptr){
   }
 
+ 
   bool set(const W &val, bool do_notify = true){
     if (nullptr == set_)
       return false;  // read only
-    if (!set_(std::forward<const V &>(val)))
+    if (!set_(val))
       return false;
     if (do_notify)
       notify();
@@ -119,22 +122,30 @@ class Property2: public PropertyBase{
     return get_();
   }
   
-  bool set_str(const std::string &val, bool do_notify = true){
-    if (nullptr == set_)
-      return false;  // read only
-    std::istringstream iss (val);
-    V tmp;
-    iss >> tmp;
-    bool res = set_(tmp);
-    if(res && do_notify)
-      notify();
-    return res;
-  }
+  // bool set_str(const std::string &val, bool do_notify = true){
+  //   if (nullptr == set_)
+  //     return false;  // read only
+  //   std::istringstream iss (val);
+  //   V tmp;
+  //   iss >> tmp;
+  //   bool res = set_(tmp);
+  //   if(res && do_notify)
+  //     notify();
+  //   return res;
+  // }
+  
+  // std::string get_str() const{
+  //   std::ostringstream oss;
+  //   oss << get_();
+  //   return oss.str();
+  // }
+
+    bool set_str(const std::string &val, bool do_notify = true){
+      return set(deserialize::apply<W>(val), do_notify);
+    }
   
   std::string get_str() const{
-    std::ostringstream oss;
-    oss << get_();
-    return oss.str();
+    return serialize::apply<W>(get_());
   }
 
   data::Tree::ptr get_spec() final {return doc_.get_spec();}
