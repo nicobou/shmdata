@@ -23,11 +23,14 @@
 #include <memory>
 #include <string>
 #include <tuple>
+
 // #include "switcher/startable-quiddity.hpp" FIXME re enable this
 #include "switcher/quiddity.hpp"
-#include "switcher/property2.hpp"
+
+// special property types we want to use:
 #include "switcher/selection.hpp"
 #include "switcher/label.hpp"
+#include "switcher/fraction.hpp"
 
 namespace switcher {
 class DummyPlugin: public Quiddity/*FIXME re enable this, public StartableQuiddity */ {
@@ -68,6 +71,10 @@ class DummyPlugin: public Quiddity/*FIXME re enable this, public StartableQuiddi
   std::tuple<long long, float, std::string> tuple_{1, 3.14, "hello"};
   PContainer::prop_id_t tuple_id_;
 
+  // Fraction
+  Fraction fraction_{1,3};
+  PContainer::prop_id_t fraction_id_;
+  
   // --- Methods
   std::string hello_{};
   static gchar *my_hello_world_method(gchar *first_arg, void *user_data);

@@ -395,6 +395,39 @@ PContainer::prop_id_t PContainer::make_parented_selection(
                                               default_value);
 }
 
+PContainer::prop_id_t PContainer::make_fraction(const std::string &strid,
+                          Property2<Fraction>::set_cb_t set,
+                          Property2<Fraction>::get_cb_t get,
+                          const std::string &label,
+                          const std::string &description,
+                          const Fraction &default_value,
+                          Fraction::ator_t min_num,
+                          Fraction::ator_t min_denom,
+                          Fraction::ator_t max_num,
+                          Fraction::ator_t max_denom){
+  return make_under_parent<Fraction>(strid, "", set, get, label, description,
+                                              default_value,
+                                              min_num, min_denom,
+                                              max_num, max_denom);
+}
+  
+  PContainer::prop_id_t PContainer::make_parented_fraction(const std::string &strid,
+                                    const std::string &parent_strid,
+                                    Property2<Fraction>::set_cb_t set,
+                                    Property2<Fraction>::get_cb_t get,
+                                    const std::string &label,
+                                    const std::string &description,
+                                    const Fraction &default_value,
+                                                           Fraction::ator_t min_num,
+                                                           Fraction::ator_t min_denom,
+                                                           Fraction::ator_t max_num,
+                                                           Fraction::ator_t max_denom){
+    return make_under_parent<Fraction>(strid, parent_strid, set, get, label, description,
+                                                default_value,
+                                              min_num, min_denom,
+                                              max_num, max_denom);
+  }
+
 PContainer::prop_id_t PContainer::make_label(
     const std::string &strid,
     const std::string &label,

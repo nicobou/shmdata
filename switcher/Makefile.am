@@ -27,6 +27,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     custom-property-helper.cpp \
     decodebin-to-shmdata.cpp \
     external-shmdata-writer.cpp \
+    fraction.cpp \
     g-source-wrapper.cpp \
     glibmainloop.cpp \
     gobject-custom-property.cpp \
@@ -105,6 +106,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     custom-property-helper.hpp \
     decodebin-to-shmdata.hpp \
     external-shmdata-writer.hpp \
+    fraction.hpp \
     g-source-wrapper.hpp \
     glibmainloop.hpp \
     gobject-custom-property.hpp \

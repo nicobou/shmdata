@@ -29,6 +29,7 @@
 #include "./information-tree.hpp"
 #include "./selection.hpp"
 #include "./label.hpp"
+#include "./fraction.hpp"
 #include "./templated-sequence.hpp"
 
 // FIXME a voir avec Francois
@@ -117,6 +118,28 @@ class PropertySpecification{
       ++pos;
     }
     spec_->tag_as_array(".values.", true);
+  }
+
+  template<typename U = Fraction>
+  PropertySpecification(bool is_writable,
+                        const std::string &label,
+                        const std::string &description,
+                        const Fraction &default_value,
+                        Fraction::ator_t min_num,
+                        Fraction::ator_t min_denom,
+                        Fraction::ator_t max_num,
+                        Fraction::ator_t max_denom):
+      spec_(data::Tree::make()){
+    spec_->graft("label", data::Tree::make(label));
+    spec_->graft("description", data::Tree::make(description));
+    spec_->graft("type", data::Tree::make("fraction"));
+    spec_->graft("writable", data::Tree::make(is_writable));
+    spec_->graft("default numerator", data::Tree::make(default_value.numerator()));
+    spec_->graft("default denominator", data::Tree::make(default_value.denominator()));
+    spec_->graft("min numerator", data::Tree::make(min_num));
+    spec_->graft("min denominator", data::Tree::make(min_denom));
+    spec_->graft("max numerator", data::Tree::make(max_num));
+    spec_->graft("max denomaxator", data::Tree::make(max_denom));
   }
 
 

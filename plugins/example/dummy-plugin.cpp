@@ -103,7 +103,17 @@ DummyPlugin::DummyPlugin(const std::string &) :
                     "Tuple Example",
                     "This property is an example for tuple",
                     tuple_)
-            ){
+            ),
+  fraction_id_(prop_do(&PContainer::make_fraction,
+                       "fraction_",
+                       [this](const Fraction &val){fraction_ = val; return true;},
+                       [this](){return fraction_;},
+                       "Fraction Example",
+                       "This property is an example for fraction",
+                       fraction_,
+                       0, 1,  // min num/denom
+                       10, 10) // max num/denom
+               ){
   std::cout << prop_do(&PContainer::get<int>, int_id_) << std::endl;
   std::cout << prop_do(&PContainer::get<unsigned int>, uint_id_) << std::endl;
 
