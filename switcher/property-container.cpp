@@ -351,6 +351,33 @@ PContainer::prop_id_t PContainer::make_parented_double(const std::string &strid,
                                    default_value, min, max);
 }
 
+PContainer::prop_id_t PContainer::make_long_double(const std::string &strid,
+                                              Property2<long double>::set_cb_t set,
+                                              Property2<long double>::get_cb_t get,
+                                              const std::string &label,
+                                              const std::string &description,
+                                              long double default_value,
+                                              long double min,
+                                              long double max){
+  return make_under_parent<long double>(strid, "", set, get, label, description,
+                                        default_value, min, max);
+}
+
+PContainer::prop_id_t PContainer::make_parented_long_double(
+    const std::string &strid,
+    const std::string &parent_strid,
+    Property2<long double>::set_cb_t set,
+    Property2<long double>::get_cb_t get,
+    const std::string &label,
+    const std::string &description,
+    long double default_value,
+    long double min,
+    long double max){
+  return make_under_parent<long double>(
+      strid, parent_strid, set, get, label, description,
+      default_value, min, max);
+}
+
 PContainer::prop_id_t PContainer::make_string(const std::string &strid,
                                               Property2<std::string>::set_cb_t set,
                                               Property2<std::string>::get_cb_t get,

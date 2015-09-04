@@ -17,36 +17,29 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./type-name-registry.hpp"
+#ifndef __SWITCHER_FRACTION_H__
+#define __SWITCHER_FRACTION_H__
+
+#include <string>
+#include <vector>
+#include <utility>
 
 namespace switcher {
+class Fraction {
+ public:
+  using ator_t = long long;  // using stoll in from_string static method
+  using fraction_t = std::pair<ator_t, ator_t>;
+  Fraction() = delete;
+  Fraction(ator_t numerator, ator_t denominator);
+  fraction_t get() const;
+  ator_t numerator() const{return std::get<0>(fraction_);}
+  ator_t denominator() const{return std::get<1>(fraction_);}
+  static std::pair<bool, Fraction> from_string(const std::string &);
+  std::string to_string() const; 
 
-#define REGISTER_TYPE(X)                        \
-  {typeid(X).hash_code(), #X}
-
-#define REGISTER_TYPE2(X, Y)                    \
-  {typeid(X).hash_code(), #Y}
-
-TypeNameRegistry::registry_t TypeNameRegistry::type_name_registry_ = {
-  REGISTER_TYPE(double),
-  REGISTER_TYPE(float),
-  REGISTER_TYPE(long double),
-  
-  REGISTER_TYPE(bool),
-
-  REGISTER_TYPE(int),
-  REGISTER_TYPE(short),
-  REGISTER_TYPE(long),
-  REGISTER_TYPE(long long),
-  REGISTER_TYPE(unsigned int),
-  REGISTER_TYPE(unsigned short),
-  REGISTER_TYPE(unsigned long),
-  REGISTER_TYPE(unsigned long long),
-
-  REGISTER_TYPE(char),
-
-  REGISTER_TYPE2(std::string, string),
-  REGISTER_TYPE2(const char *, string),
+ private:
+  fraction_t fraction_;
 };
 
 }  // namespace switcher
+#endif

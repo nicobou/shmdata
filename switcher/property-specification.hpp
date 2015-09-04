@@ -173,7 +173,7 @@ class PropertySpecification{
     spec_->graft("min numerator", data::Tree::make(min_num));
     spec_->graft("min denominator", data::Tree::make(min_denom));
     spec_->graft("max numerator", data::Tree::make(max_num));
-    spec_->graft("max denomaxator", data::Tree::make(max_denom));
+    spec_->graft("max denominator", data::Tree::make(max_denom));
   }
 
 
