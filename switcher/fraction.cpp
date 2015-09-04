@@ -46,7 +46,7 @@ std::pair<bool, Fraction> Fraction::from_string(const std::string &str){
     return std::make_pair(false, Fraction(0, 0));
   }
   long long denom = std::stoll(str.substr(pos + 1, std::string::npos), &pos,0);
-  return std::make_pair(false, Fraction(num, denom));
+  return std::make_pair(true, Fraction(num, denom));
 }
 
 std::string Fraction::to_string() const{

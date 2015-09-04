@@ -181,7 +181,9 @@ DummyPlugin::DummyPlugin(const std::string &) :
             ),
   fraction_id_(prop_do(&PContainer::make_fraction,
                        "fraction_",
-                       [this](const Fraction &val){fraction_ = val; return true;},
+                       [this](const Fraction &val){
+                         fraction_ = val; return true;
+                       },
                        [this](){return fraction_;},
                        "Fraction Example",
                        "This property is an example for fraction",

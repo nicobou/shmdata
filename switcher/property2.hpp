@@ -109,10 +109,14 @@ class Property2: public PropertyBase{
 
  
   bool set(const W &val, bool do_notify = true){
-    if (nullptr == set_)
+    if (nullptr == set_){
+      g_debug("%s %d\n", __FUNCTION__, __LINE__);
       return false;
-    if (!doc_.is_valid(val))
+    }
+    if (!doc_.is_valid(val)){
+      g_debug("%s %d\n", __FUNCTION__, __LINE__);
       return false;
+    }
     if (!set_(val))
       return false;
     if (do_notify)
@@ -127,7 +131,7 @@ class Property2: public PropertyBase{
   bool set_str(const std::string &val, bool do_notify = true){
     auto deserialized = deserialize::apply<W>(val);
     if (!deserialized.first){
-      g_warning("set_str failled to deserialize following string: %s", val.c_str());
+      g_debug("set_str failled to deserialize following string: %s", val.c_str());
       return false;
     }
     return set(std::move(deserialized.second), do_notify);
