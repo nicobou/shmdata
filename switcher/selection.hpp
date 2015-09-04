@@ -32,7 +32,7 @@ class Selection {
   void select(index_t new_selection);
   index_t get() const;
   std::vector<std::string> get_list() const;
-  
+  index_t size() const {return list_.size();}
  private:
   const std::vector<std::string> list_;
   index_t current_selection_{0};

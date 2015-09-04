@@ -20,6 +20,8 @@
 #ifndef __SWITCHER_PROPERTY_SPECIFICATION_H__
 #define __SWITCHER_PROPERTY_SPECIFICATION_H__
 
+#include <glib.h>  //log
+
 #include <typeinfo>
 #include <string>
 #include <sstream>
@@ -40,12 +42,12 @@
     
 namespace switcher {
 
-template<typename T>
+template<typename T, typename TT = T>
 class PropertySpecification{
  public:
   PropertySpecification() = delete;
 
-  // typename V is here in order to allow default value to be initiliaed from an other type,
+  // typename V is here in order to allow default value to be initialized from an other type,
   // e.g. an unsigned int with an int
   
   template <typename U = T, typename V>
@@ -56,7 +58,8 @@ class PropertySpecification{
                         typename std::enable_if<
                         !std::is_arithmetic<U>::value 
                         >::type* = nullptr):
-      spec_(data::Tree::make()){
+      spec_(data::Tree::make()),
+      is_valid_([](const V &){return true;}){
     spec_->graft("label", data::Tree::make(label));
     spec_->graft("description", data::Tree::make(description));
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<U>()));
@@ -75,7 +78,17 @@ class PropertySpecification{
                         !std::is_same<U, bool>::value && 
                         std::is_arithmetic<U>::value 
                         >::type* = nullptr):
-      spec_(data::Tree::make()){
+  spec_(data::Tree::make()),
+    is_valid_([min_value, max_value](const V &val){
+        if (val < min_value || val > max_value){
+          g_warning("value %s is out of range [%s,%s]",
+                    std::to_string(val).c_str(),
+                    std::to_string(min_value).c_str(),
+                    std::to_string(max_value).c_str());
+          return false;
+        }
+        return true;
+      }){
     spec_->graft("label", data::Tree::make(label));
     spec_->graft("description", data::Tree::make(description));
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<U>()));
@@ -90,7 +103,8 @@ class PropertySpecification{
                         const std::string &label,
                         const std::string &description,
                         const bool &default_value):
-      spec_(data::Tree::make()){
+      spec_(data::Tree::make()),
+      is_valid_([](const bool &){return true;}){
     spec_->graft("label", data::Tree::make(label));
     spec_->graft("description", data::Tree::make(description));
     spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<bool>()));
@@ -98,12 +112,19 @@ class PropertySpecification{
     spec_->graft("default", data::Tree::make(default_value));
   }
 
-  template<typename U = Selection>
+  template<typename U = Selection, typename V = Selection::index_t>
   PropertySpecification(bool is_writable,
                         const std::string &label,
                         const std::string &description,
-                        const Selection &default_value):
-      spec_(data::Tree::make()){
+                        const Selection &default_value,
+                        Selection::index_t max):
+      spec_(data::Tree::make()),
+      is_valid_([max](const Selection::index_t &index){
+          if (index > max){
+            g_warning("selection index out of range");
+            return false;
+          }
+          return true;}){
     spec_->graft("label", data::Tree::make(label));
     spec_->graft("description", data::Tree::make(description));
     spec_->graft("type", data::Tree::make("selection"));
@@ -129,7 +150,20 @@ class PropertySpecification{
                         Fraction::ator_t min_denom,
                         Fraction::ator_t max_num,
                         Fraction::ator_t max_denom):
-      spec_(data::Tree::make()){
+      spec_(data::Tree::make()),
+      is_valid_([min_num, min_denom, max_num, max_denom](const Fraction &frac){
+          auto num = frac.numerator();
+          if (num < min_num || num > max_num){
+            g_warning("numerator out of range");
+            return false;
+          }
+          auto denom = frac.denominator();
+          if (denom < min_denom || denom > max_denom){
+             g_warning("denominator out of range");
+             return false;
+          }
+          return true;
+        }){
     spec_->graft("label", data::Tree::make(label));
     spec_->graft("description", data::Tree::make(description));
     spec_->graft("type", data::Tree::make("fraction"));
@@ -148,7 +182,8 @@ class PropertySpecification{
                         const std::string &label,
                         const std::string &description,
                         const std::tuple<TupleParams...> &default_value):
-      spec_(data::Tree::make()){
+      spec_(data::Tree::make()),
+      is_valid_([](const std::tuple<TupleParams...> &){return true;}){
     spec_->graft("label", data::Tree::make(label));
     spec_->graft("description", data::Tree::make(description));
     spec_->graft("type", data::Tree::make("tuple"));
@@ -161,19 +196,23 @@ class PropertySpecification{
             typename std::enable_if<std::is_same<U, Label>::value>::type* = nullptr>
   PropertySpecification(const std::string &label,
                         const std::string &description):
-      spec_(data::Tree::make()){
+      spec_(data::Tree::make()),
+      is_valid_([](const Label&){return false;}){
     spec_->graft("label", data::Tree::make(label));
     spec_->graft("description", data::Tree::make(description));
-    spec_->graft("type", data::Tree::make("label"));
+    spec_->graft("type", data::Tree::make("group"));
   }
 
   data::Tree::ptr get_spec(){
     return spec_;
   }
+
+  bool is_valid(const TT &val){return is_valid_(val);}
   
  private:
   data::Tree::ptr spec_;
-
+  const std::function<bool(const TT&)> is_valid_;
+  
   // writing tuple:
   void print_targs(const std::string &, size_t){}
   template<typename F, typename ...U>

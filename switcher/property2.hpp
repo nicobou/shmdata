@@ -85,7 +85,7 @@ class Property2: public PropertyBase{
  public:
   using get_cb_t = std::function<W()>;
   using set_cb_t = std::function<bool(const W &)>;
-
+  
   template <typename ...SpecArgs>
   Property2(set_cb_t set,
             get_cb_t get,
@@ -104,13 +104,15 @@ class Property2: public PropertyBase{
       doc_(std::forward<const std::string &>(label),
            std::forward<const std::string &>(description)),
       set_(nullptr),
-      get_(nullptr){
+      get_(nullptr){  // never called
   }
 
  
   bool set(const W &val, bool do_notify = true){
     if (nullptr == set_)
-      return false;  // read only
+      return false;
+    if (!doc_.is_valid(val))
+      return false;
     if (!set_(val))
       return false;
     if (do_notify)
@@ -122,39 +124,25 @@ class Property2: public PropertyBase{
     return get_();
   }
   
-  // bool set_str(const std::string &val, bool do_notify = true){
-  //   if (nullptr == set_)
-  //     return false;  // read only
-  //   std::istringstream iss (val);
-  //   V tmp;
-  //   iss >> tmp;
-  //   bool res = set_(tmp);
-  //   if(res && do_notify)
-  //     notify();
-  //   return res;
-  // }
-  
-  // std::string get_str() const{
-  //   std::ostringstream oss;
-  //   oss << get_();
-  //   return oss.str();
-  // }
-
-    bool set_str(const std::string &val, bool do_notify = true){
-      return set(deserialize::apply<W>(val), do_notify);
+  bool set_str(const std::string &val, bool do_notify = true){
+    auto deserialized = deserialize::apply<W>(val);
+    if (!deserialized.first){
+      g_warning("set_str failled to deserialize following string: %s", val.c_str());
+      return false;
     }
+    return set(std::move(deserialized.second), do_notify);
+  }
   
   std::string get_str() const{
     return serialize::apply<W>(get_());
   }
-
+  
   data::Tree::ptr get_spec() final {return doc_.get_spec();}
 
  private:
-  PropertySpecification<V> doc_;
+  PropertySpecification<V, W> doc_;
   set_cb_t set_;
   get_cb_t get_;
-  
 };
 
 }  // namespace switcher

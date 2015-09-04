@@ -24,11 +24,14 @@
 // it is used for being parent of a group of one or several properties
 
 #include <iostream>
+#include <utility>
 
 namespace switcher {
 class Label {
  public:
-  static Label from_string(const std::string &){return Label();}
+  static std::pair<bool, Label> from_string(const std::string &){
+    return std::make_pair(false, Label());
+  }
   std::string to_string() const {return std::string();} 
 };
 

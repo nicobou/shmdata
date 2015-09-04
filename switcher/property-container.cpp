@@ -379,8 +379,9 @@ PContainer::prop_id_t PContainer::make_selection(
     const std::string &label,
     const std::string &description,
     const Selection &default_value){
-  return make_under_parent<Selection, size_t>(strid, "", set, get, label, description,
-                                              default_value);
+  return make_under_parent<Selection, Selection::index_t>(
+      strid, "", set, get, label, description,
+      default_value, default_value.size() - 1);
 }
 
 PContainer::prop_id_t PContainer::make_parented_selection(
@@ -391,8 +392,9 @@ PContainer::prop_id_t PContainer::make_parented_selection(
     const std::string &label,
     const std::string &description,
     const Selection &default_value){
-  return make_under_parent<Selection, size_t>(strid, parent_strid, set, get, label, description,
-                                              default_value);
+  return make_under_parent<Selection, Selection::index_t>(
+      strid, parent_strid, set, get, label, description,
+      default_value, default_value.size() - 1);
 }
 
 PContainer::prop_id_t PContainer::make_label(
