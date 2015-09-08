@@ -109,15 +109,13 @@ class Property2: public PropertyBase{
 
  
   bool set(const W &val, bool do_notify = true){
-    if (nullptr == set_){
-      g_debug("%s %d\n", __FUNCTION__, __LINE__);
+    if (nullptr == set_){  // read only
       return false;
     }
-    if (!doc_.is_valid(val)){
-      g_debug("%s %d\n", __FUNCTION__, __LINE__);
+    if (!doc_.is_valid(val)){  // out of range
       return false;
     }
-    if (!set_(val))
+    if (!set_(val))  // implementation
       return false;
     if (do_notify)
       notify();

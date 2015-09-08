@@ -114,7 +114,8 @@ template<typename V, typename W = V,
            || std::is_same<V, long double>::value
            >::type* = nullptr>
 std::pair<bool, W> apply(const std::string &str){
-  if (!isdigit(*str.begin()))  // FIXME static assert if set type is signed for unsigned + accept negative values here
+  if (!isdigit(*str.begin())
+      && !('-' == *str.begin() && !isdigit(*str.begin())))
     return std::make_pair(false, 0);
   std::istringstream iss(str);
   W res;

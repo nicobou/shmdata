@@ -46,7 +46,7 @@ DummyPlugin::DummyPlugin(const std::string &) :
                        "This property is an example for type string",
                        string_)),
   //FIXME:
-  char_id_(0// prop_do(&PContainer::make_char, 
+  char_id_(0// prop_do(&PContainer::make_char,
            //        "char_",
            //        [this](const char &val){char_ = val; return true;},
            //        [this](){return char_;},
@@ -58,78 +58,79 @@ DummyPlugin::DummyPlugin(const std::string &) :
                              "integrals",
                              "Integral Group Example",
                              "This property is an example for grouping integrals")),
-  int_id_(prop_do(&PContainer::make_int,                 // PContainer maker
+  int_id_(prop_do(&PContainer::make_int,                       // PContainer factory
                   "int_",                                      // string id
                   [this](int val){int_ = val; return true;},   // setter
                   [this](){return int_;},                      // getter
                   "Int Example",                               // name
                   "This property is an example for type int",  // description
-                  int_,                                           // default value
+                  int_,                                        // default value
                   -10,                                         // min
-                  10)),                                         // max
-  short_id_(prop_do(&PContainer::make_short,                       // PContainer maker
-                    "short_",                                      // string id
-                    [this](short val){short_ = val; return true;},   // setter
-                    [this](){return short_;},                      // getter
-                    "Short Example",                               // name
-                    "This property is an example for type short",  // description
-                    short_,                                           // default value
-                    -11,                                         // min
-                    11)),                                         // max
-  long_id_(prop_do(&PContainer::make_long,                 // PContainer maker
-                   "long_",                                      // string id
-                   [this](long val){long_ = val; return true;},   // setter
-                   [this](){return long_;},                      // getter
-                   "Long Example",                               // name
-                   "This property is an example for type long",  // description
-                   long_,                                           // default value
-                   -20,                                         // min
-                   20)),                                         // max
-  long_long_id_(prop_do(&PContainer::make_long_long,                 // PContainer maker
-                        "long_long_",                                      // string id
-                        [this](long long val){long_long_ = val; return true;},   // setter
-                        [this](){return long_long_;},                      // getter
-                        "Long Long Example",                               // name
-                        "This property is an example for type long long",  // description
-                        long_long_,                                           // default value
-                        -21,                                         // min
-                        21)),                                         // max
-  unsigned_int_id_(prop_do(&PContainer::make_unsigned_int,                 // PContainer maker
-                           "unsigned_int_",                                      // string id
-                           [this](unsigned int val){unsigned_int_ = val; return true;},   // setter
-                           [this](){return unsigned_int_;},                      // getter
-                           "Unsigned Int Example",                               // name
-                           "This property is an example for type unsigned int",  // description
-                           unsigned_int_,                                           // default value
-                           0,                                         // min
-                           10)),                                         // max
-  unsigned_short_id_(prop_do(&PContainer::make_unsigned_short,                       // PContainer maker
-                             "unsigned_short_",                                      // string id
-                             [this](unsigned short val){unsigned_short_ = val; return true;},   // setter
-                             [this](){return unsigned_short_;},                      // getter
-                             "Unsigned Short Example",                               // name
-                             "This property is an example for type unsigned short",  // description
-                             unsigned_short_,                                           // default value
-                             0,                                         // min
-                             11)),                                         // max
-  unsigned_long_id_(prop_do(&PContainer::make_unsigned_long,                 // PContainer maker
-                            "unsigned_long_",                                      // string id
-                            [this](unsigned long val){unsigned_long_ = val; return true;},   // setter
-                            [this](){return unsigned_long_;},                      // getter
-                            "Unsigned Long Example",                               // name
-                            "This property is an example for type unsigned long",  // description
-                            unsigned_long_,                                           // default value
-                            18,                                         // min
-                            200)),                                         // max
-  unsigned_long_long_id_(prop_do(&PContainer::make_unsigned_long,                 // PContainer maker
-                                 "unsigned_long_long_",                                      // string id
-                                 [this](unsigned long long val){unsigned_long_long_ = val; return true;},   // setter
-                                 [this](){return unsigned_long_long_;},                      // getter
-                                 "Unsigned Long Long Example",                               // name
-                                 "This property is an example for type unsigned long long",  // description
-                                 unsigned_long_long_,                                           // default value
-                                 2,                                         // min
-                                 210)),                                         // max
+                  10)),                                        // max
+  short_id_(prop_do(&PContainer::make_short,
+                    "short_",
+                    [this](short val){short_ = val; return true;},
+                    [this](){return short_;},
+                    "Short Example",
+                    "This property is an example for type short",
+                    short_,
+                    -11,
+                    11)),
+  long_id_(prop_do(&PContainer::make_long,
+                   "long_",
+                   [this](long val){long_ = val; return true;},
+                   [this](){return long_;},
+                   "Long Example",
+                   "This property is an example for type long",
+                   long_,
+                   -20,
+                   20)),
+  long_long_id_(prop_do(&PContainer::make_long_long,
+                        "long_long_",
+                        [this](long long val){long_long_ = val; return true;},
+                        [this](){return long_long_;},
+                        "Long Long Example",
+                        "This property is an example for type long long",
+                        long_long_,
+                        -21,
+                        21)),
+  unsigned_int_id_(prop_do(&PContainer::make_unsigned_int,
+                           "unsigned_int_",
+                           [this](unsigned int val){unsigned_int_ = val; return true;},
+                           [this](){return unsigned_int_;},
+                           "Unsigned Int Example",
+                           "This property is an example for type unsigned int",
+                           unsigned_int_,
+                           0,
+                           10)),
+  unsigned_short_id_(prop_do(&PContainer::make_unsigned_short,
+                             "unsigned_short_",
+                             [this](unsigned short val){unsigned_short_ = val; return true;},
+                             [this](){return unsigned_short_;},
+                             "Unsigned Short Example",
+                             "This property is an example for type unsigned short",
+                             unsigned_short_,
+                             1,
+                             11)),
+  unsigned_long_id_(prop_do(&PContainer::make_unsigned_long,
+                            "unsigned_long_",
+                            [this](unsigned long val){unsigned_long_ = val; return true;},
+                            [this](){return unsigned_long_;},
+                            "Unsigned Long Example",
+                            "This property is an example for type unsigned long",
+                            unsigned_long_,
+                            18,
+                            200)),
+  unsigned_long_long_id_(prop_do(&PContainer::make_unsigned_long,
+                                 "unsigned_long_long_",
+                                 [this](unsigned long long val){
+                                   unsigned_long_long_ = val; return true;},
+                                 [this](){return unsigned_long_long_;},
+                                 "Unsigned Long Long Example",
+                                 "This property is an example for type unsigned long long",
+                                 unsigned_long_long_,
+                                 2,
+                                 210)),
   floating_point_group_id_(prop_do(&PContainer::make_label,
                                    "floats",
                                    "Floating Point Group Example",
@@ -204,9 +205,9 @@ DummyPlugin::DummyPlugin(const std::string &) :
 }
 
 bool DummyPlugin::init() {
-  
+
   // g_debug("uint property installation id is %lu", uint_id);
-  // props_.install("int_", &int_prop_);  
+  // props_.install("int_", &int_prop_);
   install_method("Hello World",  // long name
                  "hello-world",  // name
                  "say hello and repeat first argument",  // description
@@ -237,7 +238,7 @@ gchar *DummyPlugin::my_hello_world_method(gchar *first_arg, void *user_data) {
   g_debug("hello world from myplugin");
   context->hello_ = std::string("hello ") + first_arg;
   // the g_free will be invoked by the method system:
-  return g_strdup(context->hello_.c_str());  
+  return g_strdup(context->hello_.c_str());
 }
 
 // bool DummyPlugin::start() {

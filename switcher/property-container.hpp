@@ -396,8 +396,8 @@ class PContainer{
       g_warning("%s: types do not match", __FUNCTION__);
       return false;
     }
-    return
-        static_cast<Property2<T> *>(prop_it->second.get())->set(std::forward<const T &>(val));
+    return static_cast<Property2<T> *>(prop_it->second.get())->
+        set(std::forward<const T &>(val));
   }
 
   template<typename T> T get(prop_id_t id) const{
