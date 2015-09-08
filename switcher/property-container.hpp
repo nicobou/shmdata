@@ -24,6 +24,7 @@
 #include <string>
 #include <map>
 #include "./property2.hpp"
+#include "./property-internal-types.hpp"
 #include "./counter-map.hpp"
 #include "./std2.hpp"
 
@@ -37,8 +38,8 @@ class PContainer{
   PContainer(data::Tree::ptr tree);  // will own it and write into .property.
 
   prop_id_t make_int(const std::string &strid,
-                     Property2<int>::set_cb_t set,
-                     Property2<int>::get_cb_t get,
+                     prop::set_t<int> set,
+                     prop::get_t<int> get,
                      const std::string &label,
                      const std::string &description,
                      int default_value,
@@ -47,8 +48,8 @@ class PContainer{
 
   prop_id_t make_parented_int(const std::string &strid,
                               const std::string &parent_strid,
-                              Property2<int>::set_cb_t set,
-                              Property2<int>::get_cb_t get,
+                              prop::set_t<int> set,
+                              prop::get_t<int> get,
                               const std::string &label,
                               const std::string &description,
                               int default_value,
@@ -56,8 +57,8 @@ class PContainer{
                               int max);
 
   prop_id_t make_short(const std::string &strid,
-                       Property2<short>::set_cb_t set,
-                       Property2<short>::get_cb_t get,
+                       prop::set_t<short> set,
+                       prop::get_t<short> get,
                        const std::string &label,
                        const std::string &description,
                        short default_value,
@@ -66,8 +67,8 @@ class PContainer{
 
   prop_id_t make_parented_short(const std::string &strid,
                                 const std::string &parent_strid,
-                                Property2<short>::set_cb_t set,
-                                Property2<short>::get_cb_t get,
+                                prop::set_t<short> set,
+                                prop::get_t<short> get,
                                 const std::string &label,
                                 const std::string &description,
                                 short default_value,
@@ -75,8 +76,8 @@ class PContainer{
                                 short max);
 
   prop_id_t make_long(const std::string &strid,
-                      Property2<long>::set_cb_t set,
-                      Property2<long>::get_cb_t get,
+                      prop::set_t<long> set,
+                      prop::get_t<long> get,
                       const std::string &label,
                       const std::string &description,
                       long default_value,
@@ -85,8 +86,8 @@ class PContainer{
 
   prop_id_t make_parented_long(const std::string &strid,
                                const std::string &parent_strid,
-                               Property2<long>::set_cb_t set,
-                               Property2<long>::get_cb_t get,
+                               prop::set_t<long> set,
+                               prop::get_t<long> get,
                                const std::string &label,
                                const std::string &description,
                                long default_value,
@@ -189,23 +190,23 @@ class PContainer{
                                              unsigned long long max);
   
   prop_id_t make_bool(const std::string &strid,
-                      Property2<bool>::set_cb_t set,
-                      Property2<bool>::get_cb_t get,
+                      prop::set_t<bool> set,
+                      prop::get_t<bool> get,
                       const std::string &label,
                       const std::string &description,
                       bool default_value);
   
   prop_id_t make_parented_bool(const std::string &strid,
                                const std::string &parent_strid,
-                               Property2<bool>::set_cb_t set,
-                               Property2<bool>::get_cb_t get,
+                               prop::set_t<bool> set,
+                               prop::get_t<bool> get,
                                const std::string &label,
                                const std::string &description,
                                bool default_value);
   
   prop_id_t make_float(const std::string &strid,
-                       Property2<float>::set_cb_t set,
-                       Property2<float>::get_cb_t get,
+                       prop::set_t<float> set,
+                       prop::get_t<float> get,
                        const std::string &label,
                        const std::string &description,
                        float default_value,
@@ -214,8 +215,8 @@ class PContainer{
   
   prop_id_t make_parented_float(const std::string &strid,
                                 const std::string &parent_strid,
-                                Property2<float>::set_cb_t set,
-                                Property2<float>::get_cb_t get,
+                                prop::set_t<float> set,
+                                prop::get_t<float> get,
                                 const std::string &label,
                                 const std::string &description,
                                 float default_value,
@@ -223,8 +224,8 @@ class PContainer{
                                 float max);
   
   prop_id_t make_double(const std::string &strid,
-                        Property2<double>::set_cb_t set,
-                        Property2<double>::get_cb_t get,
+                        prop::set_t<double> set,
+                        prop::get_t<double> get,
                         const std::string &label,
                         const std::string &description,
                         double default_value,
@@ -233,8 +234,8 @@ class PContainer{
 
   prop_id_t make_parented_double(const std::string &strid,
                                  const std::string &parent_strid,
-                                 Property2<double>::set_cb_t set,
-                                 Property2<double>::get_cb_t get,
+                                 prop::set_t<double> set,
+                                 prop::get_t<double> get,
                                  const std::string &label,
                                  const std::string &description,
                                  double default_value,
@@ -261,8 +262,8 @@ class PContainer{
                                       long double max);
 
   prop_id_t make_char(const std::string &strid,
-                      Property2<char>::set_cb_t set,
-                      Property2<char>::get_cb_t get,
+                      prop::set_t<char> set,
+                      prop::get_t<char> get,
                       const std::string &label,
                       const std::string &description,
                       char default_value,
@@ -271,8 +272,8 @@ class PContainer{
 
   prop_id_t make_parented_char(const std::string &strid,
                                const std::string &parent_strid,
-                               Property2<char>::set_cb_t set,
-                               Property2<char>::get_cb_t get,
+                               prop::set_t<char> set,
+                               prop::get_t<char> get,
                                const std::string &label,
                                const std::string &description,
                                char default_value,
@@ -320,8 +321,8 @@ class PContainer{
                                 const std::string &description);
 
   prop_id_t make_fraction(const std::string &strid,
-                          Property2<Fraction>::set_cb_t set,
-                          Property2<Fraction>::get_cb_t get,
+                          prop::set_t<Fraction> set,
+                          prop::get_t<Fraction> get,
                           const std::string &label,
                           const std::string &description,
                           const Fraction &default_value,
@@ -332,8 +333,8 @@ class PContainer{
   
   prop_id_t make_parented_fraction(const std::string &strid,
                                     const std::string &parent_strid,
-                                    Property2<Fraction>::set_cb_t set,
-                                    Property2<Fraction>::get_cb_t get,
+                                    prop::set_t<Fraction> set,
+                                    prop::get_t<Fraction> get,
                                     const std::string &label,
                                     const std::string &description,
                                     const Fraction &default_value,

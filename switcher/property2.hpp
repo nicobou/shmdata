@@ -23,6 +23,7 @@
 #include <map>
 #include <tuple>
 #include "./information-tree.hpp"
+#include "./property-internal-types.hpp"
 #include "./property-specification.hpp"
 #include "./serialize-string.hpp"
 
@@ -32,9 +33,9 @@ class PContainer;  // property container
 class PropertyBase{
   friend class PContainer;
  public:
-  using register_id_t = size_t;
-  using notify_cb_t = std::function<void()>;
-  using prop_id_t = size_t;
+  using register_id_t = prop::register_id_t;
+  using notify_cb_t = prop::notify_cb_t;
+  using prop_id_t = prop::prop_id_t;
   PropertyBase() = delete;
   virtual ~PropertyBase() = default;
   PropertyBase(size_t type_hash) :
@@ -83,8 +84,8 @@ class PropertyBase{
 template<typename V, typename W = V>  // readonly when set_ initialized with nullptr
 class Property2: public PropertyBase{
  public:
-  using get_cb_t = std::function<W()>;
-  using set_cb_t = std::function<bool(const W &)>;
+  using get_cb_t = typename prop::get_t<W>;
+  using set_cb_t = typename prop::set_t<W>;
   
   template <typename ...SpecArgs>
   Property2(set_cb_t set,
