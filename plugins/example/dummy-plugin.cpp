@@ -45,15 +45,13 @@ DummyPlugin::DummyPlugin(const std::string &) :
                        "String Example",
                        "This property is an example for type string",
                        string_)),
-  //FIXME:
   char_id_(prop_do(&PContainer::make_char,
                    "char_",
                    [this](const char &val){char_ = val; return true;},
                    [this](){return char_;},
                    "Char Example",
                    "This property is an example for type char",
-                   char_)
-           ),
+                   char_)),
   integral_group_id_(prop_do(&PContainer::make_group,
                              "integrals",
                              "Integral Group Example",
