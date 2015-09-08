@@ -33,7 +33,7 @@ using set_t = std::function<bool(const W &)>;
 // id
 using prop_id_t = size_t;
 
-//
+// register
 using register_id_t = size_t;
 using notify_cb_t = std::function<void()>;
 

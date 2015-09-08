@@ -24,24 +24,29 @@
 
 namespace switcher {
 
-Fraction::Fraction(ator_t numerator, ator_t denominator):
-    fraction_(std::make_pair(numerator, denominator)){
+Fraction::Fraction(ator_t num, ator_t denom):
+    num_(num),
+    denom_(denom){
 }
 
 Fraction::fraction_t Fraction::get() const{
-  return fraction_;
+  return std::make_pair(num_, denom_);
 }
 
 std::pair<bool, Fraction> Fraction::from_string(const std::string &str){
-  if (str.empty() || !isdigit(*str.begin())){
+  if (!isdigit(*str.begin())
+      && !('-' == *str.begin()
+           && str.begin() + 1 != str.end()
+           && isdigit(*(str.begin() +1)))){
     g_warning("%s cannot be parsed as a fraction", str.c_str());
     return std::make_pair(false, Fraction(0, 0));
   }
   size_t pos;
   long long num = std::stoll(str, &pos,0);
+  g_print("%s\n", std::to_string(num).c_str());
   if  (std::string::npos == pos
        || pos + 1 >= str.size()
-       || !isdigit(*(str.begin() + pos+ 1))){
+       || !isdigit(*(str.begin() + pos + 1))){
     g_warning("%s cannot be parsed as a fraction", str.c_str());
     return std::make_pair(false, Fraction(0, 0));
   }

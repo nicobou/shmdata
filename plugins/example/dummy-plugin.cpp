@@ -189,7 +189,7 @@ DummyPlugin::DummyPlugin(const std::string &) :
                        "Fraction Example",
                        "This property is an example for fraction",
                        fraction_,
-                       0, 1,  // min num/denom
+                       -10, 1,  // min num/denom
                        10, 10) // max num/denom
                ){
   // std::cout << prop_do(&PContainer::get<int>, int_id_) << std::endl;

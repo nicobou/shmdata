@@ -32,13 +32,15 @@ class Fraction {
   Fraction() = delete;
   Fraction(ator_t numerator, ator_t denominator);
   fraction_t get() const;
-  ator_t numerator() const{return std::get<0>(fraction_);}
-  ator_t denominator() const{return std::get<1>(fraction_);}
-  static std::pair<bool, Fraction> from_string(const std::string &);
+  ator_t numerator() const{return num_;}
+  ator_t denominator() const{return denom_;}
   std::string to_string() const; 
 
+  static std::pair<bool, Fraction> from_string(const std::string &);
+
  private:
-  fraction_t fraction_;
+  ator_t num_;
+  ator_t denom_;
 };
 
 }  // namespace switcher
