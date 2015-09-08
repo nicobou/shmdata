@@ -98,10 +98,10 @@ class Property2: public PropertyBase{
   }
   
   template <typename U = V,
-            typename std::enable_if<std::is_same<U, Label>::value>::type* = nullptr>
+            typename std::enable_if<std::is_same<U, Group>::value>::type* = nullptr>
   Property2(const std::string &label,
             const std::string &description):
-      PropertyBase(typeid(Label).hash_code()),
+      PropertyBase(typeid(Group).hash_code()),
       doc_(std::forward<const std::string &>(label),
            std::forward<const std::string &>(description)),
       set_(nullptr),

@@ -30,16 +30,10 @@
 #include "./type-name-registry.hpp"
 #include "./information-tree.hpp"
 #include "./selection.hpp"
-#include "./label.hpp"
+#include "./group.hpp"
 #include "./fraction.hpp"
 #include "./templated-sequence.hpp"
 
-// FIXME a voir avec Francois
-// TODO mettre current ? (depuis container peut etre)
-// "default value" -> default  // FIXME default is useless ?
-// TODO "name" -> "label" 
-// nick disparait de enum
-    
 namespace switcher {
 
 template<typename T, typename TT = T>
@@ -192,12 +186,12 @@ class PropertySpecification{
     spec_->tag_as_array(".default.", true);
   }
 
-  template<typename U = Label,
-            typename std::enable_if<std::is_same<U, Label>::value>::type* = nullptr>
+  template<typename U = Group,
+            typename std::enable_if<std::is_same<U, Group>::value>::type* = nullptr>
   PropertySpecification(const std::string &label,
                         const std::string &description):
       spec_(data::Tree::make()),
-      is_valid_([](const Label&){return false;}){
+      is_valid_([](const Group&){return false;}){
     spec_->graft("label", data::Tree::make(label));
     spec_->graft("description", data::Tree::make(description));
     spec_->graft("type", data::Tree::make("group"));

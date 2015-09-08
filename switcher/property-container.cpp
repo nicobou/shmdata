@@ -424,19 +424,19 @@ PContainer::prop_id_t PContainer::make_parented_selection(
       default_value, default_value.size() - 1);
 }
 
-PContainer::prop_id_t PContainer::make_label(
+PContainer::prop_id_t PContainer::make_group(
     const std::string &strid,
     const std::string &label,
     const std::string &description){
-  return make_under_parent<Label>(strid, "", label, description);
+  return make_under_parent<Group>(strid, "", label, description);
 }
 
-PContainer::prop_id_t PContainer::make_parented_label(
+PContainer::prop_id_t PContainer::make_parented_group(
     const std::string &strid,
     const std::string &parent_strid,
     const std::string &label,
     const std::string &description){
-  return make_under_parent<Label>(strid, parent_strid, label, description);
+  return make_under_parent<Group>(strid, parent_strid, label, description);
 }
 
 PContainer::prop_id_t PContainer::make_char(const std::string &strid,

@@ -26,11 +26,6 @@
 // #include "switcher/startable-quiddity.hpp" FIXME re enable this
 #include "switcher/quiddity.hpp"
 
-// special property types we want to use:
-#include "switcher/selection.hpp"
-#include "switcher/label.hpp"
-#include "switcher/fraction.hpp"
-
 namespace switcher {
 class DummyPlugin: public Quiddity/*FIXME re enable this, public StartableQuiddity */ {
  public:

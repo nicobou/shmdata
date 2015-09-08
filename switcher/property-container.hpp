@@ -311,11 +311,11 @@ class PContainer{
                                     const std::string &description,
                                     const Selection &default_value);
 
-  prop_id_t make_label(const std::string &strid,
+  prop_id_t make_group(const std::string &strid,
                        const std::string &label,
                        const std::string &description);
 
-  prop_id_t make_parented_label(const std::string &strid,
+  prop_id_t make_parented_group(const std::string &strid,
                                 const std::string &parent_strid,
                                 const std::string &label,
                                 const std::string &description);

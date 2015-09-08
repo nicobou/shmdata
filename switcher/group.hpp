@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_LABEL_H__
-#define __SWITCHER_LABEL_H__
+#ifndef __SWITCHER_GROUP_H__
+#define __SWITCHER_GROUP_H__
 
 // This class provide a property type
 // it is used for being parent of a group of one or several properties
@@ -27,10 +27,10 @@
 #include <utility>
 
 namespace switcher {
-class Label {
+class Group {
  public:
-  static std::pair<bool, Label> from_string(const std::string &){
-    return std::make_pair(false, Label());
+  static std::pair<bool, Group> from_string(const std::string &){
+    return std::make_pair(false, Group());
   }
   std::string to_string() const {return std::string();} 
 };

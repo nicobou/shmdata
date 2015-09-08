@@ -111,6 +111,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     glibmainloop.hpp \
     gobject-custom-property.hpp \
     gobject-wrapper.hpp \
+    group.hpp \
     gst-audio-codec.hpp \
     gst-audio-encoder.hpp \
     gst-pipe.hpp \
