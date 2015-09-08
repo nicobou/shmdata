@@ -22,6 +22,7 @@
 
 #include <string>
 #include <utility>
+#include <cctype>  // tolower
 
 namespace switcher {
 namespace serialize { 
@@ -129,7 +130,12 @@ template<typename V, typename W = V,
            std::is_same<V, bool>::value
            >::type* = nullptr>
 std::pair<bool, W> apply(const std::string &str){
-  return std::make_pair(str == "true", str == "true");
+  if ('t' == tolower(*str.begin()))
+    return std::make_pair(true, true);
+  if ('f' == tolower(*str.begin()))
+    return std::make_pair(true, false);
+  // error:
+  return std::make_pair(false, true);
 } 
 
 // string
@@ -160,8 +166,8 @@ template<typename V, typename W = V,
            >::type* = nullptr>
 std::pair<bool, W> apply(const std::string &){
   static_assert(true,
-                     "wchar_t, char16_t and char32_t not supported"
-                     " by serialize-string.hpp");
+                "wchar_t, char16_t and char32_t not supported"
+                " by serialize-string.hpp");
   return std::make_pair(false, W());
 } 
 
