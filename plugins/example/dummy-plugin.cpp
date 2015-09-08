@@ -46,13 +46,13 @@ DummyPlugin::DummyPlugin(const std::string &) :
                        "This property is an example for type string",
                        string_)),
   //FIXME:
-  char_id_(0// prop_do(&PContainer::make_char,
-           //        "char_",
-           //        [this](const char &val){char_ = val; return true;},
-           //        [this](){return char_;},
-           //        "Char Example",
-           //        "This property is an example for type char",
-           //        char_)
+  char_id_(prop_do(&PContainer::make_char,
+                   "char_",
+                   [this](const char &val){char_ = val; return true;},
+                   [this](){return char_;},
+                   "Char Example",
+                   "This property is an example for type char",
+                   char_)
            ),
   integral_group_id_(prop_do(&PContainer::make_group,
                              "integrals",

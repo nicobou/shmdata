@@ -106,6 +106,20 @@ class PropertySpecification{
     spec_->graft("default", data::Tree::make(default_value));
   }
 
+  template<typename U = char>
+  PropertySpecification(bool is_writable,
+                        const std::string &label,
+                        const std::string &description,
+                        const char &default_value):
+      spec_(data::Tree::make()),
+      is_valid_([](const char &){return true;}){
+    spec_->graft("label", data::Tree::make(label));
+    spec_->graft("description", data::Tree::make(description));
+    spec_->graft("type", data::Tree::make(TypeNameRegistry::get_name<char>()));
+    spec_->graft("writable", data::Tree::make(is_writable));
+    spec_->graft("default", data::Tree::make(default_value));
+  }
+
   template<typename U = Selection, typename V = Selection::index_t>
   PropertySpecification(bool is_writable,
                         const std::string &label,

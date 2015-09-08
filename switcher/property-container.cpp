@@ -444,11 +444,9 @@ PContainer::prop_id_t PContainer::make_char(const std::string &strid,
                                             Property2<char>::get_cb_t get,
                                             const std::string &label,
                                             const std::string &description,
-                                            char default_value,
-                                            char min,
-                                            char max){
+                                            char default_value){
   return make_under_parent<char>(strid, "", set, get, label, description,
-                                 default_value, min, max);
+                                 default_value);
 }
 
 PContainer::prop_id_t PContainer::make_parented_char(const std::string &strid,
@@ -457,11 +455,9 @@ PContainer::prop_id_t PContainer::make_parented_char(const std::string &strid,
                                                      Property2<char>::get_cb_t get,
                                                      const std::string &label,
                                                      const std::string &description,
-                                                     char default_value,
-                                                     char min,
-                                                     char max){
+                                                     char default_value){
   return make_under_parent<char>(strid, parent_strid, set, get, label, description,
-                                 default_value, min, max);
+                                 default_value);
 }
 
 PContainer::prop_id_t PContainer::make_fraction(

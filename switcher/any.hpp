@@ -116,11 +116,18 @@ struct Any {
     ptr_->category_ = AnyCategory::BOOL;
   }
 
+  // char ctor
+  template<typename U = char> Any(char &&value):
+      ptr_(new AnyValueDerived<StorageType<U>> (std::forward<U>(value))){
+    ptr_->category_ = AnyCategory::OTHER;
+  }
+
   // integral ctor
   template<typename U> Any(U && value,
                            typename std::enable_if<
-                           !std::is_same<U, bool>::value && 
-                           std::is_integral<U>::value 
+                           !std::is_same<U, bool>::value
+                           && !std::is_same<U, char>::value
+                           && std::is_integral<U>::value 
                            >::type* = nullptr):
       ptr_(new AnyValueDerived<StorageType<U>> (std::forward<U>(value))) {
     ptr_->category_ = AnyCategory::INTEGRAL;

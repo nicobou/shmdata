@@ -266,9 +266,7 @@ class PContainer{
                       prop::get_t<char> get,
                       const std::string &label,
                       const std::string &description,
-                      char default_value,
-                      char min,
-                      char max);
+                      char default_value);
 
   prop_id_t make_parented_char(const std::string &strid,
                                const std::string &parent_strid,
@@ -276,9 +274,7 @@ class PContainer{
                                prop::get_t<char> get,
                                const std::string &label,
                                const std::string &description,
-                               char default_value,
-                               char min,
-                               char max);
+                               char default_value);
 
 
   prop_id_t make_string(const std::string &strid,

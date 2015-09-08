@@ -23,11 +23,10 @@
 #include <memory>
 #include <string>
 
-// #include "switcher/startable-quiddity.hpp" FIXME re enable this
 #include "switcher/quiddity.hpp"
 
 namespace switcher {
-class DummyPlugin: public Quiddity/*FIXME re enable this, public StartableQuiddity */ {
+class DummyPlugin: public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(DummyPlugin);
   DummyPlugin(const std::string &);
