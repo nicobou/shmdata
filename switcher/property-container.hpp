@@ -374,20 +374,22 @@ class PContainer{
   // return 0 if id is not found
   prop_id_t get_id_from_string_id(const std::string &id) const;
 
-  register_id_t subscribe(prop_id_t id, notify_cb_t fun);
-  bool unsubscribe(prop_id_t id, register_id_t rid);
+  register_id_t subscribe(prop_id_t id, notify_cb_t fun) const;
+  bool unsubscribe(prop_id_t id, register_id_t rid) const;
 
-  bool set_str(prop_id_t id, const std::string &val){
+  bool set_str(prop_id_t id, const std::string &val) const{
+    if(0 == id)
+      return false;
     auto prop_it = props_.find(id); 
     return prop_it->second.get()->set_str(std::forward<const std::string &>(val));
   }
 
-  std::string get_str(prop_id_t id){
+  std::string get_str(prop_id_t id) const{
     auto prop_it = props_.find(id); 
     return prop_it->second.get()->get_str();
   }
 
-  template<typename T> bool set(prop_id_t id, const T &val){
+  template<typename T> bool set(prop_id_t id, const T &val) const{
     auto prop_it = props_.find(id); 
     if (prop_it->second->get_type_id_hash() != typeid(val).hash_code()){
       g_warning("%s: types do not match", __FUNCTION__);

@@ -215,7 +215,7 @@ class PropertySpecification{
     return spec_;
   }
 
-  bool is_valid(const TT &val){return is_valid_(val);}
+  bool is_valid(const TT &val) const{return is_valid_(val);}
   
  private:
   data::Tree::ptr spec_;

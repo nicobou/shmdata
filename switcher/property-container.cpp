@@ -46,14 +46,12 @@ bool PContainer::enable(prop_id_t prop_id, bool enable){
   return true;
 }
 
-PContainer::register_id_t PContainer::subscribe(prop_id_t id,
-                                                notify_cb_t fun){
-  return props_[id]->subscribe(std::forward<notify_cb_t>(fun));
+PContainer::register_id_t PContainer::subscribe(prop_id_t id, notify_cb_t fun) const{
+  return props_.find(id)->second->subscribe(std::forward<notify_cb_t>(fun));
 }
 
-bool PContainer::unsubscribe(prop_id_t id,
-                             register_id_t rid){
-  return props_[id]->unsubscribe(std::forward<register_id_t>(rid));
+bool PContainer::unsubscribe(prop_id_t id, register_id_t rid) const{
+  return props_.find(id)->second->unsubscribe(std::forward<register_id_t>(rid));
 }
 
 PContainer::prop_id_t PContainer::get_id_from_string_id(const std::string &id) const{

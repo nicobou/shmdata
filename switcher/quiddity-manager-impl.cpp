@@ -453,8 +453,10 @@ QuiddityManager_Impl::set_property(const std::string &quiddity_name,
               quiddity_name.c_str());
     return false;
   }
-  return q_it->second->set_property(property_name.c_str(),
-                                    property_value.c_str());
+  return q_it->second->prop(&PContainer::set_str,
+                            q_it->second->prop(&PContainer::get_id_from_string_id,
+                                               property_name),
+                            property_value);
 }
 
 // higher level subscriber
@@ -611,7 +613,11 @@ QuiddityManager_Impl::get_property(const std::string &quiddity_name,
               quiddity_name.c_str());
     return "{\"error\":\"quiddity not found\"}";
   }
-  return q_it->second->get_property(property_name.c_str());
+  auto id = q_it->second->prop(&PContainer::get_id_from_string_id,
+                               property_name);
+  if (0 == id)
+    return "{\"error\":\"property not found\"}";
+  return q_it->second->prop(&PContainer::get_str, id);
 }
 
 bool
@@ -622,7 +628,7 @@ QuiddityManager_Impl::has_property(const std::string &quiddity_name,
     g_debug("quiddity %s not found", quiddity_name.c_str());
     return false;
   }
-  return q_it->second->has_property(property_name);
+  return 0 != q_it->second->prop(&PContainer::get_id_from_string_id, property_name);
 }
 
 bool

@@ -43,29 +43,24 @@ class PropertyBase{
   }
 
   virtual data::Tree::ptr get_spec() = 0;
-  virtual bool set_str(const std::string &val, bool do_notify = true) = 0;
+  virtual bool set_str(const std::string &val, bool do_notify = true) const = 0;
   virtual std::string get_str() const = 0;
-  
+
   prop_id_t get_id() const {return id_;}
-  
-  register_id_t subscribe(notify_cb_t fun){
+  register_id_t subscribe(notify_cb_t fun) const{
     to_notify_[++counter_] = fun;
     return counter_;
   }
-  
-  bool unsubscribe(register_id_t rid){
+  bool unsubscribe(register_id_t rid) const{
     auto it = to_notify_.find(rid);
     if (to_notify_.end() == it)
       return false;
     to_notify_.erase(it);
   return true;
   }
-
-
   size_t get_type_id_hash() const{
     return type_hash_;
   }
-
   void notify() const{
     for(auto &it: to_notify_)
       it.second();
@@ -73,8 +68,8 @@ class PropertyBase{
 
  private:
   size_t type_hash_;
-  register_id_t counter_{0};
-  std::map<register_id_t, notify_cb_t> to_notify_{};
+  mutable register_id_t counter_{0};
+  mutable std::map<register_id_t, notify_cb_t> to_notify_{};
   // id is given by other class but saved here in order to avoid
   // save it along with the Property2 instance
   prop_id_t id_{0};
@@ -109,7 +104,7 @@ class Property2: public PropertyBase{
   }
 
  
-  bool set(const W &val, bool do_notify = true){
+  bool set(const W &val, bool do_notify = true) const{
     if (nullptr == set_){  // read only
       return false;
     }
@@ -127,7 +122,7 @@ class Property2: public PropertyBase{
     return get_();
   }
   
-  bool set_str(const std::string &val, bool do_notify = true){
+  bool set_str(const std::string &val, bool do_notify = true) const{
     auto deserialized = deserialize::apply<W>(val);
     if (!deserialized.first){
       g_debug("set_str failled to deserialize following string: %s", val.c_str());

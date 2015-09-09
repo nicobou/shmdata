@@ -74,17 +74,20 @@ class Quiddity {
   // properties
   std::string get_property_description(const std::string &property_name);
   std::string get_properties_description();
-  bool set_property(const std::string &name,
-                    const std::string &value);
-  std::string get_property(const std::string &name);
+
+  Make_consultable(PContainer, &props_, prop);
+
+  // //FIXME remove following property wrapper:  
+  // bool set_property(const std::string &name,
+  //                   const std::string &value);
+  //std::string get_property(const std::string &name);
   bool subscribe_property(const std::string &name,
                           Property::Callback cb,
                           void *user_data);
   bool unsubscribe_property(const std::string &name,
                             Property::Callback cb,
                             void *user_data);
-  bool has_property(const std::string &property_name);
-  Property::ptr get_property_ptr(const std::string &property_name);
+  //bool has_property(const std::string &property_name);
 
   // methods
   std::string get_method_description(const std::string &method_name);
@@ -170,15 +173,6 @@ class Quiddity {
                               const std::string &return_description,
                               const Method::args_doc &arg_description);
 
-  // category and positions
-  bool put_method_in_category(const std::string &method,
-                              const std::string &category);
-  bool set_method_position_weight(const std::string &method,
-                                  int position_weight);
-  bool put_property_in_category(const std::string &property, const std::string &category);
-  bool set_property_position_weight(const std::string &property,
-                                    int position_weight);
-  
   // signals
   // bool register_signal_gobject(const std::string &signal_name,
   //                              GObject *object,
@@ -206,8 +200,9 @@ class Quiddity {
                              bool do_signal = true);
   
   // property
-  Make_delegate(PContainer, &props_, prop_do);
+  Make_delegate(PContainer, &props_, pmanage);
 
+  // FIXME remove following property wrappers
   bool install_property(GObject *object,
                         const std::string &gobject_property_name,
                         const std::string &name_to_give,
@@ -221,6 +216,7 @@ class Quiddity {
                                  const std::string &name_to_give,
                                  const std::string &long_name);
   bool uninstall_property(const std::string &name);
+  
   // properties are enabled by default during installation
   bool disable_property(const std::string &name);
   bool enable_property(const std::string &name);

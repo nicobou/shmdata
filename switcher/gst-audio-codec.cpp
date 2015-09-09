@@ -213,7 +213,9 @@ void GstAudioCodec::make_codec_properties() {
 
 gboolean GstAudioCodec::reset_codec_configuration(gpointer /*unused */ , gpointer user_data) {
   GstAudioCodec *context = static_cast<GstAudioCodec *>(user_data);
-  context->quid_->set_property("codec","opusenc");
+  auto codec_prop_id = context->quid_->prop(&PContainer::get_id_from_string_id, "codec");
+  context->quid_->prop(&PContainer::set_str, codec_prop_id, "opusenc");
+      //set_property("codec","opusenc");
   // context->make_codec_properties();
   // context->quid_->set_property("deadline","30000");  //30ms
   // context->quid_->set_property("target-bitrate", "2000000"); // 2Mbps

@@ -299,15 +299,6 @@ Quiddity::install_property_by_pspec(GObject *object,
                            name_to_give, long_name, "on-property-added");
 }
 
-Property::ptr Quiddity::get_property_ptr(const std::string &property_name) {
-  auto it = properties_.find(property_name);
-  if (properties_.end() != it)
-    return it->second;
-  g_debug("Quiddity::get_property_ptr %s not found", property_name.c_str());
-  Property::ptr result;
-  return result;
-}
-
 bool Quiddity::uninstall_property(const std::string &property_name) {
   auto it = properties_.find(property_name);
   if (properties_.end() == it)
@@ -499,48 +490,33 @@ std::string Quiddity::get_properties_description() {
 }
 
 std::string Quiddity::get_property_description(const std::string &property_name) {
-  // auto it = properties_.find(property_name);
-  // if (properties_.end() == it)
-  //   return "{ \"error\" : \"property not found\" }";
-  // return it->second->get_description();
   data::Tree::ptr tree = information_tree_->get(".property." + property_name);
   if (tree)
     return data::JSONSerializer::serialize(tree.get());
   return "null";
 }
 
-bool Quiddity::set_property(const std::string &property_name, const std::string &value) {
-  // auto it = properties_.find(property_name);
-  // if (properties_.end() == it) {
-  //   g_debug("cannot set non existing property (%s)", property_name.c_str());
-  //   return false;
-  // }
-  // it->second->set(value);
-  auto id = props_.get_id_from_string_id(property_name);
-  if (0 == id) {
-    g_warning("property %s not found", property_name.c_str());
-    return false;
-  }
-  return props_.set_str(id, value);
-}
+// bool Quiddity::set_property(const std::string &property_name, const std::string &value) {
+//   auto id = props_.get_id_from_string_id(property_name);
+//   if (0 == id) {
+//     g_warning("property %s not found", property_name.c_str());
+//     return false;
+//   }
+//   return props_.set_str(id, value);
+// }
 
-bool Quiddity::has_property(const std::string &property_name) {
-  // return (properties_.end() != properties_.find(property_name));
-  return 0 != props_.get_id_from_string_id(property_name);
-}
+// bool Quiddity::has_property(const std::string &property_name) {
+//   return 0 != props_.get_id_from_string_id(property_name);
+// }
 
-std::string Quiddity::get_property(const std::string &property_name) {
-  // auto it = properties_.find(property_name);
-  // if (properties_.end() == it)
-  //   return "{ \"error\" : \"property not found\" }";
-  // return it->second->get();
-  auto id = props_.get_id_from_string_id(property_name);
-  if (0 == id) {
-    g_warning("property %s not found", property_name.c_str());
-    return std::string();
-  }
-  return props_.get_str(id);
-}
+// std::string Quiddity::get_property(const std::string &property_name) {
+//   auto id = props_.get_id_from_string_id(property_name);
+//   if (0 == id) {
+//     g_warning("property %s not found", property_name.c_str());
+//     return std::string();
+//   }
+//   return props_.get_str(id);
+// }
 
 bool
 Quiddity::subscribe_property(const std::string &property_name,

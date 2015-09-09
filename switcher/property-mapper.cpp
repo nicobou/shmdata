@@ -138,42 +138,42 @@ PropertyMapper::set_source_property_method(gchar *quiddity_name,
     return FALSE;
   }
 
-  if (!quid->subscribe_property(property_name, property_cb, context))
-    return FALSE;
+  // if (!quid->subscribe_property(property_name, property_cb, context))
+  //   return FALSE;
 
-  // unsubscribing previously registered property
-  context->unsubscribe_source_property();
-  context->source_quiddity_ = quid;
-  context->source_property_name_ = property_name;
+  // // unsubscribing previously registered property
+  // context->unsubscribe_source_property();
+  // context->source_quiddity_ = quid;
+  // context->source_property_name_ = property_name;
 
-  GParamSpec *pspec =
-      quid->get_property_ptr(property_name)->get_paramspec();
-  switch (pspec->value_type) {
-    case G_TYPE_INT:
-      {
-        GParamSpecInt *pint = G_PARAM_SPEC_INT(pspec);
-        context->source_min_ = pint->minimum;
-        context->source_max_ = pint->maximum;
-        context->make_numerical_source_properties();
-      }
-      break;
-    case G_TYPE_DOUBLE:
-      {
-        GParamSpecDouble *pdouble = G_PARAM_SPEC_DOUBLE(pspec);
-        context->source_min_ = pdouble->minimum;
-        context->source_max_ = pdouble->maximum;
-        context->make_numerical_source_properties();
-      }
-      break;
-    default:
-      g_debug("type not handled (%s)", g_type_name(pspec->value_type));
-  }
-  auto source_tree = context->prune_tree(".source", false);
-  if (!source_tree)
-    source_tree = data::Tree::make();
-  source_tree->graft(".quiddity", data::Tree::make(std::string(quiddity_name)));
-  source_tree->graft(".property", data::Tree::make(std::string(property_name)));
-  context->graft_tree(".source.", source_tree);
+  // GParamSpec *pspec =
+  //     quid->get_property_ptr(property_name)->get_paramspec();
+  // switch (pspec->value_type) {
+  //   case G_TYPE_INT:
+  //     {
+  //       GParamSpecInt *pint = G_PARAM_SPEC_INT(pspec);
+  //       context->source_min_ = pint->minimum;
+  //       context->source_max_ = pint->maximum;
+  //       context->make_numerical_source_properties();
+  //     }
+  //     break;
+  //   case G_TYPE_DOUBLE:
+  //     {
+  //       GParamSpecDouble *pdouble = G_PARAM_SPEC_DOUBLE(pspec);
+  //       context->source_min_ = pdouble->minimum;
+  //       context->source_max_ = pdouble->maximum;
+  //       context->make_numerical_source_properties();
+  //     }
+  //     break;
+  //   default:
+  //     g_debug("type not handled (%s)", g_type_name(pspec->value_type));
+  // }
+  // auto source_tree = context->prune_tree(".source", false);
+  // if (!source_tree)
+  //   source_tree = data::Tree::make();
+  // source_tree->graft(".quiddity", data::Tree::make(std::string(quiddity_name)));
+  // source_tree->graft(".property", data::Tree::make(std::string(property_name)));
+  // context->graft_tree(".source.", source_tree);
   return TRUE;
 }
 
@@ -242,142 +242,140 @@ void PropertyMapper::make_numerical_sink_properties() {
 void
 PropertyMapper::property_cb(GObject * gobject, GParamSpec *pspec,
                             gpointer user_data) {
-  PropertyMapper *context = static_cast<PropertyMapper *>(user_data);
+  // PropertyMapper *context = static_cast<PropertyMapper *>(user_data);
 
-  // return if not property to update
-  Quiddity::ptr quid = context->sink_quiddity_.lock();
-  if (!(bool) quid)
-    return;
+  // // return if not property to update
+  // Quiddity::ptr quid = context->sink_quiddity_.lock();
+  // if (!(bool) quid)
+  //   return;
 
-  GValue val = G_VALUE_INIT;
-  const gchar *prop_name = g_param_spec_get_name(pspec);
-  gdouble new_value = 0;
-  g_value_init(&val, pspec->value_type);
-  g_object_get_property(gobject, prop_name, &val);
+  // GValue val = G_VALUE_INIT;
+  // const gchar *prop_name = g_param_spec_get_name(pspec);
+  // gdouble new_value = 0;
+  // g_value_init(&val, pspec->value_type);
+  // g_object_get_property(gobject, prop_name, &val);
 
-  // getting new value
-  switch (pspec->value_type) {
-    case G_TYPE_INT:
-      {
-        gint orig_val = g_value_get_int(&val);
-        // ignoring value out of range
-        if (orig_val < context->source_min_
-            || orig_val > context->source_max_) {
-          g_value_unset(&val);
-          return;
-        }
-        new_value = (gdouble) orig_val;
-      }
-      break;
-    case G_TYPE_DOUBLE:
-      {
-        gdouble orig_val = g_value_get_double(&val);
-        // ignoring value out of range
-        if (orig_val < context->source_min_
-            || orig_val > context->source_max_) {
-          g_value_unset(&val);
-          return;
-        }
-        new_value = (gdouble) orig_val;
-      }
-      break;
-    default:
-      {
-        g_debug("property mapper callback: type %s not handled (yet)\n",
-                g_type_name(pspec->value_type));
-        return;
-      }
-  }
-  g_value_unset(&val);
+  // // getting new value
+  // switch (pspec->value_type) {
+  //   case G_TYPE_INT:
+  //     {
+  //       gint orig_val = g_value_get_int(&val);
+  //       // ignoring value out of range
+  //       if (orig_val < context->source_min_
+  //           || orig_val > context->source_max_) {
+  //         g_value_unset(&val);
+  //         return;
+  //       }
+  //       new_value = (gdouble) orig_val;
+  //     }
+  //     break;
+  //   case G_TYPE_DOUBLE:
+  //     {
+  //       gdouble orig_val = g_value_get_double(&val);
+  //       // ignoring value out of range
+  //       if (orig_val < context->source_min_
+  //           || orig_val > context->source_max_) {
+  //         g_value_unset(&val);
+  //         return;
+  //       }
+  //       new_value = (gdouble) orig_val;
+  //     }
+  //     break;
+  //   default:
+  //     {
+  //       g_debug("property mapper callback: type %s not handled (yet)\n",
+  //               g_type_name(pspec->value_type));
+  //       return;
+  //     }
+  // }
+  // g_value_unset(&val);
 
-  // scaling and transforming the value into a gdouble value
-  gdouble transformed_val =
-      ((gdouble) new_value - context->source_min_) * (context->sink_max_ -
-                                                      context->sink_min_) /
-      (context->source_max_ - context->source_min_) + context->sink_min_;
+  // // scaling and transforming the value into a gdouble value
+  // gdouble transformed_val =
+  //     ((gdouble) new_value - context->source_min_) * (context->sink_max_ -
+  //                                                     context->sink_min_) /
+  //     (context->source_max_ - context->source_min_) + context->sink_min_;
 
-  GValue val_gdouble = G_VALUE_INIT;
-  g_value_init(&val_gdouble, G_TYPE_DOUBLE);
-  g_value_set_double(&val_gdouble, transformed_val);
+  // GValue val_gdouble = G_VALUE_INIT;
+  // g_value_init(&val_gdouble, G_TYPE_DOUBLE);
+  // g_value_set_double(&val_gdouble, transformed_val);
 
-  // applying to sink property
-  GValue val_to_apply = G_VALUE_INIT;
-  g_value_init(&val_to_apply, context->sink_quiddity_pspec_->value_type);
+  // // applying to sink property
+  // GValue val_to_apply = G_VALUE_INIT;
+  // g_value_init(&val_to_apply, context->sink_quiddity_pspec_->value_type);
 
-  g_value_transform(&val_gdouble, &val_to_apply);
+  // g_value_transform(&val_gdouble, &val_to_apply);
 
-  // g_print ("%f, %s\n", g_value_get_double(&val_gdouble),
-  //      GstUtils::gvalue_serialize (&val_to_apply));
-  if ((bool) quid && quid->has_property(context->sink_property_name_))
-    quid->set_property(context->sink_property_name_,
-                       GstUtils::gvalue_serialize(&val_to_apply));
+  // if ((bool) quid && quid->has_property(context->sink_property_name_))
+  //   quid->set_property(context->sink_property_name_,
+  //                      GstUtils::gvalue_serialize(&val_to_apply));
 
-  g_value_unset(&val_gdouble);
-  g_value_unset(&val_to_apply);
+  // g_value_unset(&val_gdouble);
+  // g_value_unset(&val_to_apply);
 }
 
 gboolean
 PropertyMapper::set_sink_property_method(gchar *quiddity_name,
                                          gchar *property_name,
                                          void *user_data) {
-  PropertyMapper *context = static_cast<PropertyMapper *>(user_data);
+  // PropertyMapper *context = static_cast<PropertyMapper *>(user_data);
 
-  QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
+  // QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
 
-  if (!(bool) manager) {
-    g_debug("manager not found");
-    return FALSE;
-  }
+  // if (!(bool) manager) {
+  //   g_debug("manager not found");
+  //   return FALSE;
+  // }
 
-  Quiddity::ptr quid = manager->get_quiddity(quiddity_name);
+  // Quiddity::ptr quid = manager->get_quiddity(quiddity_name);
 
-  if (!(bool) quid) {
-    g_debug("quiddity %s not found", quiddity_name);
-    return FALSE;
-  }
+  // if (!(bool) quid) {
+  //   g_debug("quiddity %s not found", quiddity_name);
+  //   return FALSE;
+  // }
 
-  if (!quid->has_property(property_name)) {
-    g_debug("quiddity %s does not have a property named %s",
-            quiddity_name, property_name);
-    return FALSE;
-  }
+  // if (!quid->has_property(property_name)) {
+  //   g_debug("quiddity %s does not have a property named %s",
+  //           quiddity_name, property_name);
+  //   return FALSE;
+  // }
 
-  GParamSpec *pspec =
-      quid->get_property_ptr(property_name)->get_paramspec();
-  switch (pspec->value_type) {
-    case G_TYPE_INT:
-      {
-        GParamSpecInt *pint = G_PARAM_SPEC_INT(pspec);
-        context->sink_min_ = pint->minimum;
-        context->sink_max_ = pint->maximum;
-        context->make_numerical_sink_properties();
-      }
-      break;
-    case G_TYPE_DOUBLE:
-      {
-        GParamSpecDouble *pdouble = G_PARAM_SPEC_DOUBLE(pspec);
-        context->sink_min_ = pdouble->minimum;
-        context->sink_max_ = pdouble->maximum;
-        context->make_numerical_sink_properties();
-      }
-      break;
-    default:
-      {
-        g_debug("type not handled (%s)", g_type_name(pspec->value_type));
-        return FALSE;
-      }
-  }
+  // GParamSpec *pspec =
+  //     quid->get_property_ptr(property_name)->get_paramspec();
+  // switch (pspec->value_type) {
+  //   case G_TYPE_INT:
+  //     {
+  //       GParamSpecInt *pint = G_PARAM_SPEC_INT(pspec);
+  //       context->sink_min_ = pint->minimum;
+  //       context->sink_max_ = pint->maximum;
+  //       context->make_numerical_sink_properties();
+  //     }
+  //     break;
+  //   case G_TYPE_DOUBLE:
+  //     {
+  //       GParamSpecDouble *pdouble = G_PARAM_SPEC_DOUBLE(pspec);
+  //       context->sink_min_ = pdouble->minimum;
+  //       context->sink_max_ = pdouble->maximum;
+  //       context->make_numerical_sink_properties();
+  //     }
+  //     break;
+  //   default:
+  //     {
+  //       g_debug("type not handled (%s)", g_type_name(pspec->value_type));
+  //       return FALSE;
+  //     }
+  // }
 
-  context->sink_quiddity_ = quid;
-  context->sink_property_name_ = property_name;
-  context->sink_quiddity_pspec_ =
-      quid->get_property_ptr(property_name)->get_paramspec();
-  auto sink_tree = context->prune_tree(".sink", false);
-  if (!sink_tree)
-    sink_tree = data::Tree::make();
-  sink_tree->graft(".quiddity", data::Tree::make(std::string(quiddity_name)));
-  sink_tree->graft(".property", data::Tree::make(std::string(property_name)));
-  context->graft_tree(".sink", sink_tree);
+  // context->sink_quiddity_ = quid;
+  // context->sink_property_name_ = property_name;
+  // context->sink_quiddity_pspec_ =
+  //     quid->get_property_ptr(property_name)->get_paramspec();
+  // auto sink_tree = context->prune_tree(".sink", false);
+  // if (!sink_tree)
+  //   sink_tree = data::Tree::make();
+  // sink_tree->graft(".quiddity", data::Tree::make(std::string(quiddity_name)));
+  // sink_tree->graft(".property", data::Tree::make(std::string(property_name)));
+  // context->graft_tree(".sink", sink_tree);
   return TRUE;
 }
 
