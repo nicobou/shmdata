@@ -21,6 +21,7 @@
 #define __SWITCHER_PROPERTY2_H__
 
 #include <map>
+#include <unordered_map>
 #include <tuple>
 #include "./information-tree.hpp"
 #include "./property-internal-types.hpp"
@@ -47,25 +48,25 @@ class PropertyBase{
   virtual std::string get_str() const = 0;
 
   prop_id_t get_id() const {return id_;}
-  register_id_t subscribe(notify_cb_t fun) const{
+  register_id_t subscribe(notify_cb_t fun) const {
     to_notify_[++counter_] = fun;
     return counter_;
   }
-  bool unsubscribe(register_id_t rid) const{
+  bool unsubscribe(register_id_t rid) const {
     auto it = to_notify_.find(rid);
     if (to_notify_.end() == it)
       return false;
     to_notify_.erase(it);
   return true;
   }
-  size_t get_type_id_hash() const{
+  size_t get_type_id_hash() const {
     return type_hash_;
   }
-  void notify() const{
+  void notify() const {
     for(auto &it: to_notify_)
       it.second();
   }
-
+  
  private:
   size_t type_hash_;
   mutable register_id_t counter_{0};
@@ -73,7 +74,15 @@ class PropertyBase{
   // id is given by other class but saved here in order to avoid
   // save it along with the Property2 instance
   prop_id_t id_{0};
-  void set_id(prop_id_t id){id_ = id;}  // for any friend class
+  // following is for use by friend PContainer:
+  void set_id(prop_id_t id){id_ = id;}
+  std::vector<register_id_t> get_register_ids() const{
+    std::vector<register_id_t> res;
+    res.reserve(to_notify_.size());
+    for (auto &it: to_notify_)
+      res.push_back(it.first);
+    return res;
+  }
 };
 
 template<typename V, typename W = V>  // readonly when set_ initialized with nullptr

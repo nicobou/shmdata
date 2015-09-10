@@ -43,14 +43,10 @@ class QuiddityManager
  public:
   typedef std::shared_ptr<QuiddityManager> ptr;
   typedef std::vector<QuiddityCommand::ptr> CommandHistory;
-  typedef void (*PropCallback) (const std::string &subscriber_name,
-                                const std::string &quiddity_name,
-                                const std::string &property_name,
-                                const std::string &value,
-                                void *user_data);
+  using PropCallback = std::function<void(const std::string &val)>;
   typedef void (*SignalCallback) (const std::string &subscriber_name,
                                   const std::string &quiddity_name,
-                                  const std::string &property_name,
+                                  const std::string &signal_name,
                                   const std::vector<std::string> &params,
                                   void *user_data);
   typedef std::map<std::string, std::pair<PropCallback, void *>> PropCallbackMap;
@@ -66,13 +62,11 @@ class QuiddityManager
   bool save_command_history(const char *file_path) const;
   static CommandHistory get_command_history_from_file(const char *file_path);
   std::vector<std::string>
-  get_property_subscribers_names(QuiddityManager::CommandHistory histo);
-  std::vector<std::string>
   get_signal_subscribers_names(QuiddityManager::CommandHistory histo);
   void play_command_history(QuiddityManager::CommandHistory histo,
                             QuiddityManager::PropCallbackMap *prop_cb_data,
                             QuiddityManager::SignalCallbackMap *sig_cb_data,
-                            bool mute_property_and_signal_subscribers);
+                            bool mute_signal_subscribers);
   void reset_command_history(bool remove_created_quiddities);
 
   // ************** plugins *******************************************************************
@@ -102,7 +96,6 @@ class QuiddityManager
     return manager_impl_->invoke_info_tree<R> (nick_name, fun);
   }
 
-
   Forward_consultable(QuiddityManager_Impl,
                       manager_impl_.get(),
                       use_tree,
@@ -118,6 +111,7 @@ class QuiddityManager
   std::string get_properties_description_by_class(const std::string &class_name);
   std::string get_property_description_by_class(const std::string &class_name,
                                                 const std::string &property_name);
+
   // set &get
   bool set_property(const std::string &quiddity_name,
                     const std::string &property_name,
@@ -129,36 +123,21 @@ class QuiddityManager
   bool has_property(const std::string &quiddity_name,
                     const std::string &property_name);
 
-  // property subscribtion
-  bool make_property_subscriber(const std::string &subscriber_name,
-                                QuiddityManager::PropCallback callback,
-                                void *user_data);
-  bool remove_property_subscriber(const std::string &subscriber_name);
-  bool subscribe_property(const std::string &subscriber_name,
-                          const std::string &quiddity_name,
-                          const std::string &property_name);
-  bool unsubscribe_property(const std::string &subscriber_name,
-                            const std::string &quiddity_name,
-                            const std::string &property_name);
-  std::vector<std::string> list_property_subscribers();
-  std::vector<std::pair<std::string, std::string>>
-      list_subscribed_properties(const std::string &subscriber_name);
-
-  // json // FIXME implement
-  std::string list_property_subscribers_json();
-  std::string list_subscribed_properties_json(const std::string &subscriber_name);
-
-  bool subscribe_property_glib(const std::string &quiddity_name,
-                               const std::string &name,
-                               Property::Callback cb, void *user_data);
-  bool unsubscribe_property_glib(const std::string &quiddity_name, const std::string &name, Property::Callback cb, void *user_data);        // the same called with subscribe
+  // property subscribing
+  PContainer::register_id_t subscribe_property(const std::string &quiddity_name,
+                                               const std::string &property_name,
+                                               PContainer::notify_cb_t cb,
+                                               PContainer::pstate_cb_t state_cb);
+  bool unsubscribe_property(const std::string &quiddity_name,
+                            const std::string &property_name,
+                            PContainer::register_id_t id);
 
   // *********************** methods
   // doc (json formatted)
   std::string get_methods_description(const std::string &quiddity_name);
   std::string get_method_description(const std::string &quiddity_name,
                                      const std::string &method_name);
-  // following "by_class" methods provide properties available after creation only
+  // following "by_class" methods provide methods available after creation only
   std::string get_methods_description_by_class(const std::string &class_name);
   std::string get_method_description_by_class(const std::string &class_name,
                                               const std::string &method_name);

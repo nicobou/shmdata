@@ -75,19 +75,6 @@ QuiddityBasicTest::test_create(QuiddityManager::ptr manager,
   return true;
 }
 
-void on_started_cb(const std::string & /*subscriber_name */ ,
-                   const std::string & /*quiddity_name */ ,
-                   const std::string & /*property_name */ ,
-                   const std::string & /*value */ ,
-                   void * /*user_data */ ) {
-  // g_print ("on_started_cb: %s, %s, %s, %s\n",
-  //      subscriber_name.c_str (),
-  //      quiddity_name.c_str (),
-  //      property_name.c_str (),
-  //      value.c_str ());
-  return;
-}
-
 bool
 QuiddityBasicTest::test_startable(QuiddityManager::ptr manager,
                                   const std::string &quiddity_class_name) {
@@ -101,8 +88,6 @@ QuiddityBasicTest::test_startable(QuiddityManager::ptr manager,
     return true;              // true because some quiddity may not be crated because of a missing resource
   }
   if (manager->has_property(name, "started")) {
-    manager->make_property_subscriber("sub", on_started_cb, nullptr);
-    manager->subscribe_property("sub", name, "started");
     // g_print ("has a started property\n");
     manager->set_property(name, "started", "true");
     // g_print ("started\n");
@@ -110,8 +95,6 @@ QuiddityBasicTest::test_startable(QuiddityManager::ptr manager,
     // g_print ("stoped\n");
     manager->set_property(name, "started", "true");
     // g_print ("restarted\n");
-    manager->unsubscribe_property("sub", name, "started");
-    manager->remove_property_subscriber("sub");
   }
   if (!manager->remove(name)) {
     g_warning("error while removing quiddity %s (startable test)",

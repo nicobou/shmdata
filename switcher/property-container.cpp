@@ -27,11 +27,19 @@ PContainer::PContainer(data::Tree::ptr tree):
   tree_->tag_as_array(".property", true);
 }
 
+void PContainer::notify_state_change(prop_id_t prop, pstate_t state) {
+  for (const auto &it: props_[prop]->get_register_ids()){
+    auto cb = state_cbs_.find(it);
+    if (state_cbs_.end() != cb) cb->second(state);
+  }
+}
+
 bool PContainer::remove(prop_id_t prop_id){
   auto it = strids_.find(prop_id);
   if(strids_.end() == it)
     return false;  // prop not found
   tree_->prune(std::string("property.") + it->second);
+  notify_state_change(prop_id, PContainer::REMOVED);
   ids_.erase(it->second);
   strids_.erase(it);
   props_.erase(prop_id);
@@ -43,11 +51,21 @@ bool PContainer::enable(prop_id_t prop_id, bool enable){
   if (strids_.end() == it)
     return false;
   tree_->graft(std::string("property.") + it->second + ".enabled", data::Tree::make(enable));
+  if (enable)
+    notify_state_change(prop_id, PContainer::ENABLED);
+  else
+    notify_state_change(prop_id, PContainer::DISABLED);
   return true;
 }
 
-PContainer::register_id_t PContainer::subscribe(prop_id_t id, notify_cb_t fun) const{
-  return props_.find(id)->second->subscribe(std::forward<notify_cb_t>(fun));
+PContainer::register_id_t PContainer::subscribe(
+    prop_id_t id,
+    notify_cb_t fun,
+    pstate_cb_t state_cb) const {
+  auto res = props_.find(id)->second->subscribe(std::forward<notify_cb_t>(fun));
+  if(nullptr != state_cb)
+    state_cbs_[res] = state_cb;
+  return res;
 }
 
 bool PContainer::unsubscribe(prop_id_t id, register_id_t rid) const{

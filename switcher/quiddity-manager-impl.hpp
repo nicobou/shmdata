@@ -27,13 +27,11 @@
 #include "./abstract-factory.hpp"
 #include "./quiddity.hpp"
 #include "./json-builder.hpp"
-#include "./quiddity-property-subscriber.hpp"
 #include "./quiddity-signal-subscriber.hpp"
 #include "./plugin-loader.hpp"
 #include "./glibmainloop.hpp"
 
 namespace switcher {
-class QuiddityPropertySubscriber;
 class QuidditySignalSubscriber;
 class QuiddityManager;
 
@@ -94,13 +92,19 @@ class QuiddityManager_Impl
   std::string get_info(const std::string &nick_name,
                        const std::string &path);
   
-  Forward_consultable_from_map(std::string,  // map key type
-                               Quiddity,  // map value type
-                               quiddities_,  // the map member 
-                               tree,  // method used by quiddities to access the consultable
-                               use_tree);  // public forwarding method 
+  Forward_consultable_from_map(std::string, // map key type                                       
+                               Quiddity,    // map value type                                     
+                               quiddities_, // the map member                                     
+                               tree,        // method used by quiddities to access the consultable
+                               use_tree);   // public forwarding method                           
                                
   // **** properties
+  Forward_consultable_from_map(std::string, // map key type                                       
+                               Quiddity,    // map value type                                     
+                               quiddities_, // the map member                                     
+                               prop,        // method used by quiddities to access the consultable
+                               use_prop);   // public forwarding method                           
+
   // doc (json formatted)
   std::string get_properties_description(const std::string &quiddity_name);
   std::string get_property_description(const std::string &quiddity_name,
@@ -109,42 +113,22 @@ class QuiddityManager_Impl
   std::string get_properties_description_by_class(const std::string &class_name);
   std::string get_property_description_by_class(const std::string &class_name,
                                                 const std::string &property_name);
-  // set &get
-  bool set_property(const std::string &quiddity_name,
-                    const std::string &property_name, const std::string &property_value);
-  std::string get_property(const std::string &quiddity_name,
-                           const std::string &property_name);
+  // // set &get
+  // bool set_property(const std::string &quiddity_name,
+  //                   const std::string &property_name,
+  //                   const std::string &property_value);
+  // std::string get_property(const std::string &quiddity_name,
+  //                          const std::string &property_name);
+  // bool has_property(const std::string &quiddity_name, const std::string &property_name);
 
-  bool has_property(const std::string &quiddity_name, const std::string &property_name);
+  // // property subscribing
+  // PContainer::register_id_t subscribe_property(const std::string &quiddity_name,
+  //                                              const std::string &property_name,
+  //                                              PContainer::notify_cb_t cb);
+  // bool unsubscribe_property(const std::string &quiddity_name,
+  //                           const std::string &property_name,
+  //                           PContainer::register_id_t id);
 
-  // high level property subscriber
-  bool make_property_subscriber(const std::string &subscriber_name,
-                                QuiddityPropertySubscriber::Callback cb,
-                                void *user_data);
-  bool remove_property_subscriber(const std::string &subscriber_name);
-  bool subscribe_property(const std::string &subscriber_name,
-                          const std::string &quiddity_name,
-                          const std::string &property_name);
-  bool unsubscribe_property(const std::string &subscriber_name,
-                            const std::string &quiddity_name,
-                            const std::string &property_name);
-  // property subscribers info
-  std::vector<std::string> list_property_subscribers() const;
-  std::vector<std::pair<std::string,
-                        std::string>>list_subscribed_properties(const std::string &subscriber_name);
-  std::string list_property_subscribers_json();
-  std::string
-  list_subscribed_properties_json(const std::string &subscriber_name);
-
-  // low level subscribe
-  bool subscribe_property_glib(const std::string &quiddity_name,
-                               const std::string &property_name,
-                               Property::Callback cb,
-                               void *user_data);
-  bool unsubscribe_property_glib(const std::string &quiddity_name,
-                                 const std::string &property_name,
-                                 Property::Callback cb,
-                                 void *user_data);  // the same as called with subscribe
   // **** methods
   // doc (json formatted)
   std::string get_methods_description(const std::string &quiddity_name);
@@ -184,7 +168,6 @@ class QuiddityManager_Impl
                           const std::string &signal_name);
 
   void mute_signal_subscribers(bool muted);
-  void mute_property_subscribers(bool muted);
 
   std::vector<std::string> list_signal_subscribers() const;
   std::vector<std::pair<std::string, std::string>>
@@ -216,10 +199,7 @@ class QuiddityManager_Impl
   void make_classes_doc();
   void register_classes();
   std::unordered_map<std::string, std::shared_ptr<Quiddity>>quiddities_{};
-  std::unordered_map<std::string,
-                     std::shared_ptr<QuiddityPropertySubscriber>>property_subscribers_{};
-  std::unordered_map<std::string,
-                     std::shared_ptr<QuidditySignalSubscriber>>signal_subscribers_{};
+  std::unordered_map<std::string, std::shared_ptr<QuidditySignalSubscriber>>signal_subscribers_{};
   bool init_quiddity(std::shared_ptr<Quiddity> quiddity);
   void remove_shmdata_sockets();
   JSONBuilder::ptr classes_doc_{};

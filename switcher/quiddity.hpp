@@ -72,22 +72,18 @@ class Quiddity {
   bool set_name(const std::string &name);  // can be called once
 
   // properties
-  std::string get_property_description(const std::string &property_name);
-  std::string get_properties_description();
 
   Make_consultable(PContainer, &props_, prop);
 
-  // //FIXME remove following property wrapper:  
-  // bool set_property(const std::string &name,
-  //                   const std::string &value);
-  //std::string get_property(const std::string &name);
+  // FIXME remove following property methods
+  std::string get_property_description(const std::string &property_name);
+  std::string get_properties_description();
   bool subscribe_property(const std::string &name,
                           Property::Callback cb,
                           void *user_data);
   bool unsubscribe_property(const std::string &name,
                             Property::Callback cb,
                             void *user_data);
-  //bool has_property(const std::string &property_name);
 
   // methods
   std::string get_method_description(const std::string &method_name);

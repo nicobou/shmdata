@@ -34,6 +34,8 @@ class PContainer{
   using prop_id_t = PropertyBase::prop_id_t;
   using notify_cb_t = PropertyBase::notify_cb_t;
   using register_id_t = PropertyBase::register_id_t;
+  enum pstate_t {ENABLED, DISABLED, REMOVED};
+  using pstate_cb_t = std::function<void(pstate_t state)>;
   PContainer() = delete;
   PContainer(data::Tree::ptr tree);  // will own it and write into .property.
 
@@ -374,7 +376,7 @@ class PContainer{
   // return 0 if id is not found
   prop_id_t get_id_from_string_id(const std::string &id) const;
 
-  register_id_t subscribe(prop_id_t id, notify_cb_t fun) const;
+  register_id_t subscribe(prop_id_t id, notify_cb_t fun, pstate_cb_t state_cb) const;
   bool unsubscribe(prop_id_t id, register_id_t rid) const;
 
   bool set_str(prop_id_t id, const std::string &val) const{
@@ -415,7 +417,10 @@ class PContainer{
   std::map<id_t, std::string> strids_{};
   data::Tree::ptr tree_;
   CounterMap suborders_{};
-
+  mutable std::unordered_map<register_id_t, pstate_cb_t> state_cbs_{};
+  
+  void notify_state_change(prop_id_t prop, pstate_t state);
+  
   template<typename PropType,
            typename PropGetSet = PropType,
            typename ...PropArgs>
