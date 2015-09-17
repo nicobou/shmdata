@@ -96,7 +96,8 @@ class QuiddityManager
     return manager_impl_->invoke_info_tree<R> (nick_name, fun);
   }
 
-  Forward_consultable(QuiddityManager_Impl,
+  Forward_consultable(QuiddityManager,
+                      QuiddityManager_Impl,
                       manager_impl_.get(),
                       use_tree,
                       use_tree);
@@ -112,25 +113,32 @@ class QuiddityManager
   std::string get_property_description_by_class(const std::string &class_name,
                                                 const std::string &property_name);
 
-  // set &get
-  bool set_property(const std::string &quiddity_name,
-                    const std::string &property_name,
-                    const std::string &property_value);
+  Forward_consultable(QuiddityManager,
+                      QuiddityManager_Impl,
+                      manager_impl_.get(),
+                      use_prop,
+                      use_prop);
+  
+  // FIXME implement global wrapper and hook for saving
+  // // set &get
+  // bool set_property(const std::string &quiddity_name,
+  //                   const std::string &property_name,
+  //                   const std::string &property_value);
 
-  std::string get_property(const std::string &quiddity_name,
-                           const std::string &property_name);
+  // std::string get_property(const std::string &quiddity_name,
+  //                          const std::string &property_name);
 
-  bool has_property(const std::string &quiddity_name,
-                    const std::string &property_name);
+  // bool has_property(const std::string &quiddity_name,
+  //                   const std::string &property_name);
 
-  // property subscribing
-  PContainer::register_id_t subscribe_property(const std::string &quiddity_name,
-                                               const std::string &property_name,
-                                               PContainer::notify_cb_t cb,
-                                               PContainer::pstate_cb_t state_cb);
-  bool unsubscribe_property(const std::string &quiddity_name,
-                            const std::string &property_name,
-                            PContainer::register_id_t id);
+  // // property subscribing
+  // PContainer::register_id_t subscribe_property(const std::string &quiddity_name,
+  //                                              const std::string &property_name,
+  //                                              PContainer::notify_cb_t cb,
+  //                                              PContainer::pstate_cb_t state_cb);
+  // bool unsubscribe_property(const std::string &quiddity_name,
+  //                           const std::string &property_name,
+  //                           PContainer::register_id_t id);
 
   // *********************** methods
   // doc (json formatted)

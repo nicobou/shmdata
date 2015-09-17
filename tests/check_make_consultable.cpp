@@ -63,8 +63,8 @@ class Door {
 
 class Room {
  public:
-  Make_consultable(Door, &left_door_, ldoor);
-  Make_consultable(Door, &right_door_, rdoor);
+  Make_consultable(Room, Door, &left_door_, ldoor);
+  Make_consultable(Room, Door, &right_door_, rdoor);
 
  private:
   Door right_door_{"right"};

@@ -82,19 +82,16 @@ QuiddityBasicTest::test_startable(QuiddityManager::ptr manager,
   std::string name =
       manager->create(quiddity_class_name, quiddity_class_name);
   if (name.compare(quiddity_class_name) != 0) {
-    g_warning
-        ("quiddity %s cannot be created (startable not actualy tested)",
-         quiddity_class_name.c_str());
-    return true;              // true because some quiddity may not be crated because of a missing resource
+    g_warning("quiddity %s cannot be created (startable not actualy tested)",
+              quiddity_class_name.c_str());
+    return true;  // true because some quiddity may not be created because of a missing resource
   }
-  if (manager->has_property(name, "started")) {
-    // g_print ("has a started property\n");
-    manager->set_property(name, "started", "true");
-    // g_print ("started\n");
-    manager->set_property(name, "started", "false");
-    // g_print ("stoped\n");
-    manager->set_property(name, "started", "true");
-    // g_print ("restarted\n");
+  auto started_id =
+      manager->use_prop<Method(&PContainer::get_id_from_string_id)>(name, "started");
+  if (0 != started_id) {
+    manager->use_prop<Method(&PContainer::set_str)>(name, started_id, "true");
+    manager->use_prop<Method(&PContainer::set_str)>(name, started_id, "false");
+    manager->use_prop<Method(&PContainer::set_str)>(name, started_id, "true");
   }
   if (!manager->remove(name)) {
     g_warning("error while removing quiddity %s (startable test)",

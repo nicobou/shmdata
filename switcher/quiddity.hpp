@@ -73,7 +73,7 @@ class Quiddity {
 
   // properties
 
-  Make_consultable(PContainer, &props_, prop);
+  Make_consultable(Quiddity, PContainer, &props_, prop);
 
   // FIXME remove following property methods
   std::string get_property_description(const std::string &property_name);
@@ -110,7 +110,7 @@ class Quiddity {
   }
   // FIXME remove get_info
   std::string get_info(const std::string &path);
-  Make_consultable(data::Tree, information_tree_.get(), tree);
+  Make_consultable(Quiddity, data::Tree, information_tree_.get(), tree);
     
   // shmdata socket names
   static std::string get_socket_name_prefix();
@@ -196,7 +196,7 @@ class Quiddity {
                              bool do_signal = true);
   
   // property
-  Make_delegate(PContainer, &props_, pmanage);
+  Make_delegate(Quiddity, PContainer, &props_, pmanage);
 
   // FIXME remove following property wrappers
   bool install_property(GObject *object,

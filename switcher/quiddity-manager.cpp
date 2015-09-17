@@ -301,55 +301,55 @@ QuiddityManager::get_property_description_by_class(const std::string &class_name
                     class_name.c_str(), property_name.c_str(), nullptr);
 }
 
-bool
-QuiddityManager::set_property(const std::string &quiddity_name,
-                              const std::string &property_name,
-                              const std::string &property_value) {
-  std::string res = seq_invoke(QuiddityCommand::set_property,
-                               quiddity_name.c_str(),
-                               property_name.c_str(),
-                               property_value.c_str(),
-                               nullptr);
-  if (res == "true")
-    return true;
-  else
-    return false;
-}
+// bool
+// QuiddityManager::set_property(const std::string &quiddity_name,
+//                               const std::string &property_name,
+//                               const std::string &property_value) {
+//   std::string res = seq_invoke(QuiddityCommand::set_property,
+//                                quiddity_name.c_str(),
+//                                property_name.c_str(),
+//                                property_value.c_str(),
+//                                nullptr);
+//   if (res == "true")
+//     return true;
+//   else
+//     return false;
+// }
 
-std::string
-QuiddityManager::get_property(const std::string &quiddity_name,
-                              const std::string &property_name) {
-  return seq_invoke(QuiddityCommand::get_property,
-                    quiddity_name.c_str(), property_name.c_str(), nullptr);
-}
+// std::string
+// QuiddityManager::get_property(const std::string &quiddity_name,
+//                               const std::string &property_name) {
+//   return seq_invoke(QuiddityCommand::get_property,
+//                     quiddity_name.c_str(), property_name.c_str(), nullptr);
+// }
 
-PContainer::register_id_t
-QuiddityManager::subscribe_property(const std::string &quiddity_name,
-                                    const std::string &property_name,
-                                    PContainer::notify_cb_t cb,
-                                    PContainer::pstate_cb_t state_cb) {
-  command_lock ();
-  On_scope_exit{command_unlock();};
-  command_->set_id (QuiddityCommand::subscribe_property);
-  return manager_impl_->use_prop(
-      &PContainer::subscribe,
-      quiddity_name,
-      manager_impl_->use_prop(&PContainer::get_id_from_string_id,
-                              quiddity_name,
-                              property_name),
-      cb,
-      pstate_cb);
-}
+// PContainer::register_id_t
+// QuiddityManager::subscribe_property(const std::string &quiddity_name,
+//                                     const std::string &property_name,
+//                                     PContainer::notify_cb_t cb,
+//                                     PContainer::pstate_cb_t state_cb) {
+//   command_lock ();
+//   On_scope_exit{command_unlock();};
+//   command_->set_id (QuiddityCommand::subscribe_property);
+//   return manager_impl_->use_prop(
+//       &PContainer::subscribe,
+//       quiddity_name,
+//       manager_impl_->use_prop(&PContainer::get_id_from_string_id,
+//                               quiddity_name,
+//                               property_name),
+//       cb,
+//       pstate_cb);
+// }
 
-bool
-QuiddityManager::unsubscribe_property(const std::string &quiddity_name,
-                                      const std::string &property_name,
-                                      PContainer::register_id_t id) {
-  command_lock ();
-  On_scope_exit{command_unlock();};
-  command_->set_id (QuiddityCommand::unsubscribe_property);
-  return manager_impl_->unsubscribe_property(quiddity_name, property_name, id);
-}
+// bool
+// QuiddityManager::unsubscribe_property(const std::string &quiddity_name,
+//                                       const std::string &property_name,
+//                                       PContainer::register_id_t id) {
+//   command_lock ();
+//   On_scope_exit{command_unlock();};
+//   command_->set_id (QuiddityCommand::unsubscribe_property);
+//   return manager_impl_->unsubscribe_property(quiddity_name, property_name, id);
+// }
 
 
 bool
@@ -454,11 +454,11 @@ QuiddityManager::has_method(const std::string &quiddity_name,
   return res;
 }
 
-bool
-QuiddityManager::has_property(const std::string &quiddity_name,
-                              const std::string &property_name) {
-  return manager_impl_->has_property(quiddity_name, property_name);
-}
+// bool
+// QuiddityManager::has_property(const std::string &quiddity_name,
+//                               const std::string &property_name) {
+//   return manager_impl_->has_property(quiddity_name, property_name);
+// }
 
 bool
 QuiddityManager::make_signal_subscriber(const std::string &subscriber_name,

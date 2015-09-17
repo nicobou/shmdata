@@ -92,19 +92,25 @@ class QuiddityManager_Impl
   std::string get_info(const std::string &nick_name,
                        const std::string &path);
   
-  Forward_consultable_from_map(std::string, // map key type                                       
-                               Quiddity,    // map value type                                     
-                               quiddities_, // the map member                                     
-                               tree,        // method used by quiddities to access the consultable
-                               use_tree);   // public forwarding method                           
+  Forward_consultable_from_associative_container(
+      QuiddityManager_Impl,   // self type
+      Quiddity,               // consultable type                                     
+      find_quiddity,          // accessor
+      std::string,            // key type for accessor                                       
+      construct_error_return, // what is suposed to be returned when key has not been found
+      tree,                   // method used by quiddities to access the consultable
+      use_tree);              // public forwarding method                           
                                
   // **** properties
-  Forward_consultable_from_map(std::string, // map key type                                       
-                               Quiddity,    // map value type                                     
-                               quiddities_, // the map member                                     
-                               prop,        // method used by quiddities to access the consultable
-                               use_prop);   // public forwarding method                           
-
+  Forward_consultable_from_associative_container(
+      QuiddityManager_Impl,   // self type
+      Quiddity,               // consultable type                                     
+      find_quiddity,          // accessor
+      std::string,            // accessor key type                                       
+      construct_error_return, // what is suposed to be returned when key has not been found
+      prop,                   // method used by quiddities to access the consultable
+      use_prop);              // public forwarding method                           
+  
   // doc (json formatted)
   std::string get_properties_description(const std::string &quiddity_name);
   std::string get_property_description(const std::string &quiddity_name,
@@ -198,7 +204,8 @@ class QuiddityManager_Impl
   explicit QuiddityManager_Impl(const std::string &);
   void make_classes_doc();
   void register_classes();
-  std::unordered_map<std::string, std::shared_ptr<Quiddity>>quiddities_{};
+  // mutable required for forwarding
+  mutable std::unordered_map<std::string, std::shared_ptr<Quiddity>>quiddities_{};
   std::unordered_map<std::string, std::shared_ptr<QuidditySignalSubscriber>>signal_subscribers_{};
   bool init_quiddity(std::shared_ptr<Quiddity> quiddity);
   void remove_shmdata_sockets();
@@ -211,6 +218,22 @@ class QuiddityManager_Impl
   std::weak_ptr<QuiddityManager_Impl> me_ {};
   QuiddityManager *manager_{nullptr};
   static void release_g_error(GError *error);
+
+  // forwarding accessor and return constructor on error
+  std::pair<bool, Quiddity *> find_quiddity(const std::string &name) const{
+    auto it = quiddities_.find(name);
+    if (quiddities_.end() == it){
+      return std::make_pair(false, nullptr);
+    }
+    return std::make_pair(true, it->second.get());
+  };
+  // construct result to pass when element has not been not found:
+  template<typename ReturnType>
+  ReturnType construct_error_return(const std::string &name) const{
+    g_warning("quiddity %s not found", name.c_str());
+    return ReturnType();
+  }
+
 };
 
 }  // namespace switcher
