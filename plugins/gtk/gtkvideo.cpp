@@ -155,7 +155,7 @@ gboolean GTKVideo::key_pressed_cb(GtkWidget */*widget */ ,
   GTKVideo *context = static_cast<GTKVideo *>(data);
   guint32 val = event->keyval;
   auto keybevent = KeybEvent(val, 1);
-  context->keyb_shm_->writer(&shmdata::Writer::copy_to_shm, &keybevent, sizeof(KeybEvent));
+  context->keyb_shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(&keybevent, sizeof(KeybEvent));
   context->keyb_shm_->bytes_written(sizeof(KeybEvent));
   if (context->keyb_interaction_) {
     switch (event->keyval) {
@@ -181,7 +181,7 @@ gboolean GTKVideo::key_release_cb(GtkWidget */*widget */ ,
   GTKVideo *context = static_cast<GTKVideo *>(data);
   guint32 val = event->keyval;
   auto keybevent = KeybEvent(val, 0);
-  context->keyb_shm_->writer(&shmdata::Writer::copy_to_shm, &keybevent, sizeof(KeybEvent));
+  context->keyb_shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(&keybevent, sizeof(KeybEvent));
   context->keyb_shm_->bytes_written(sizeof(KeybEvent));
   return TRUE;
 }
@@ -539,7 +539,8 @@ void GTKVideo::write_mouse_info_to_shmdata(
   if (state & GDK_BUTTON3_MASK)
     button_mask += 4;
   auto mouse_event = MouseEvent(vid_x, vid_y, button_mask);
-  mouse_shm_->writer(&shmdata::Writer::copy_to_shm, &mouse_event, sizeof(MouseEvent));
+  mouse_shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+      &mouse_event, sizeof(MouseEvent));
   mouse_shm_->bytes_written(sizeof(MouseEvent));
 }
 

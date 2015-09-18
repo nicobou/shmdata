@@ -847,20 +847,6 @@ gboolean QuiddityManager::execute_command(gpointer user_data) {
                                            (context->command_->args_[0],
                                             context->command_->args_[1]));
       break;
-    case QuiddityCommand::set_property:
-      if (context->manager_impl_->set_property(context->command_->args_[0],
-                                               context->command_->args_[1],
-                                               context->command_->args_[2]))
-        context->command_->result_.push_back("true");
-      else
-        context->command_->result_.push_back("false");
-      break;
-    case QuiddityCommand::get_property:
-      context->command_->result_.push_back(context->
-                                           manager_impl_->get_property
-                                           (context->command_->args_[0],
-                                            context->command_->args_[1]));
-      break;
     case QuiddityCommand::get_methods_description:
       context->command_->result_.push_back(context->
                                            manager_impl_->get_methods_description

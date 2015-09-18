@@ -127,9 +127,8 @@ gboolean ShmdataConnector::disconnect_all_wrapped(gpointer /*unused */ ,
                                          gpointer user_data) {
   ShmdataConnector *context = static_cast<ShmdataConnector *>(user_data);
   On_scope_exit {
-    auto keys = context->quid_->
-        tree<std::list<std::string>, const std::string &>(
-            &data::Tree::get_child_keys,
+    auto keys =
+        context->quid_->tree<MPtr(&data::Tree::get_child_keys)>(
             std::string(".shmdata.reader"));
     if (!keys.empty())
       for (auto &it: keys) {

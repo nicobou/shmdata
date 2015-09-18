@@ -41,7 +41,6 @@
 //#include "./shmdata-to-file.hpp"
 //#include "./shmdata-from-gdp-file.hpp"
 #include "./uridecodebin.hpp"
-#include "./string-dictionary.hpp"
 #include "./video-test-source.hpp"
 
 namespace switcher {
@@ -174,9 +173,6 @@ void QuiddityManager_Impl::register_classes() {
   // abstract_factory_.register_class<ShmdataToFile>
   //     (ShmdataToFile::switcher_doc_.get_class_name(),
   //      &ShmdataToFile::switcher_doc_);
-  abstract_factory_.register_class<StringDictionary>
-      (StringDictionary::switcher_doc_.get_class_name(),
-       &StringDictionary::switcher_doc_);
   abstract_factory_.register_class<Uridecodebin>
       (Uridecodebin::switcher_doc_.get_class_name(),
        &Uridecodebin::switcher_doc_);
@@ -424,18 +420,18 @@ QuiddityManager_Impl::get_properties_description_by_class(const std::string &cla
   return descr;
 }
 
-// std::string
-// QuiddityManager_Impl::get_property_description_by_class(const std::string &class_name,
-//                                                         const std::string &property_name) {
-//   if (!class_exists(class_name))
-//     return "{\"error\":\"class not found\"}";
-//   std::string quid_name = create_without_hook(class_name);
-//   if (quid_name.empty())
-//     return "{\"error\":\"cannot get property because the class cannot be instanciated\"}";
-//   std::string descr = get_property_description(quid_name, property_name);
-//   remove_without_hook(quid_name);
-//   return descr;
-// }
+std::string
+QuiddityManager_Impl::get_property_description_by_class(const std::string &class_name,
+                                                        const std::string &property_name) {
+  if (!class_exists(class_name))
+    return "{\"error\":\"class not found\"}";
+  std::string quid_name = create_without_hook(class_name);
+  if (quid_name.empty())
+    return "{\"error\":\"cannot get property because the class cannot be instanciated\"}";
+  std::string descr = get_property_description(quid_name, property_name);
+  remove_without_hook(quid_name);
+  return descr;
+}
 
 // bool
 // QuiddityManager_Impl::set_property(const std::string &quiddity_name,
@@ -514,16 +510,16 @@ QuiddityManager_Impl::get_properties_description_by_class(const std::string &cla
 //   return 0 != q_it->second->prop(&PContainer::get_id_from_string_id, property_name);
 // }
 
-// bool
-// QuiddityManager_Impl::has_method(const std::string &quiddity_name,
-//                                  const std::string &method_name) {
-//   auto q_it = quiddities_.find(quiddity_name);
-//   if (quiddities_.end() == q_it) {
-//     g_debug("quiddity %s not found", quiddity_name.c_str());
-//     return false;
-//   }
-//   return q_it->second->has_method(method_name);
-// }
+bool
+QuiddityManager_Impl::has_method(const std::string &quiddity_name,
+                                 const std::string &method_name) {
+  auto q_it = quiddities_.find(quiddity_name);
+  if (quiddities_.end() == q_it) {
+    g_debug("quiddity %s not found", quiddity_name.c_str());
+    return false;
+  }
+  return q_it->second->has_method(method_name);
+}
 
 bool
 QuiddityManager_Impl::invoke(const std::string &quiddity_name,

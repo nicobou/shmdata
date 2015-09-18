@@ -30,20 +30,20 @@
 #include <cstddef> // size_t
 #include <tuple>  // method_traits args and std::get
 
-// selecting method and Overload for template parameter of consultation method
-#define Method(_method_ptr)                     \
+// selecting method and OPtr for template parameter of consultation method
+#define MPtr(_method_ptr)                     \
   decltype(_method_ptr), _method_ptr            
 
-#define Overload(_PTR, _C, _R, ...)                             \
+#define OPtr(_PTR, _C, _R, ...)                             \
   decltype(static_cast<_R(_C::*)(__VA_ARGS__)>(_PTR)), _PTR
 
-#define Const_Overload(_PTR, _C, _R, ...)                               \
+#define COPtr(_PTR, _C, _R, ...)                               \
   decltype(static_cast<_R(_C::*)(__VA_ARGS__) const>(_PTR)), _PTR
 
-#define Const_Overload_Type(_PTR, _C, _R, ...)                  \
+#define COvT(_PTR, _C, _R, ...)                  \
   decltype(static_cast<_R(_C::*)(__VA_ARGS__) const>(_PTR))
 
-#define Overload_Type(_PTR, _C, _R, ...)                \
+#define OvT(_PTR, _C, _R, ...)                \
   decltype(static_cast<_R(_C::*)(__VA_ARGS__)>(_PTR))
 
 
@@ -215,14 +215,14 @@ struct _consult_or_fw_method##alternative_member_<                      \
   _consult_method(BTs ...args) const {                                  \
     static_assert(nicobou::method_traits<MMType, fun>::is_const,        \
                   "consultation is available for const methods only");  \
-    /* __attribute__((unused)) tells compiler encap is not used*/       \
-    auto encap __attribute__((unused)) =                                \
-        _consult_method##internal_encaps();                             \
-        auto alt =                                                      \
-            _consult_method##get_alternative<decltype(fun), fun>();     \
+    auto alt =                                                          \
+        _consult_method##get_alternative<decltype(fun), fun>();         \
         if(nullptr != alt)                                              \
           return (this->*alt)(std::forward<BTs>(args)...);              \
-        return ((_member_rawptr)->*fun)(std::forward<BTs>(args)...);    \
+        /* __attribute__((unused)) tells compiler encap is not used*/   \
+        auto encap __attribute__((unused)) =                            \
+            _consult_method##internal_encaps();                         \
+            return ((_member_rawptr)->*fun)(std::forward<BTs>(args)...); \
   }                                                                     \
                                                                         \
   /*const and void returning*/                                          \
@@ -237,15 +237,16 @@ struct _consult_or_fw_method##alternative_member_<                      \
   _consult_method(BTs ...args) const {                                  \
     static_assert(nicobou::method_traits<MMType, fun>::is_const,        \
                   "consultation is available for const methods only");  \
+    auto alt =                                                          \
+        _consult_method##get_alternative<decltype(fun), fun>();         \
+        if(nullptr != alt) {                                            \
+          (this->*alt)(std::forward<BTs>(args)...);                     \
+          return;                                                       \
+        }                                                               \
     /* __attribute__((unused)) tells compiler encap is not used*/       \
     auto encap __attribute__((unused)) =                                \
         _consult_method##internal_encaps();                             \
-    auto alt =                                                          \
-        _consult_method##get_alternative<decltype(fun), fun>();         \
-        if(nullptr != alt)                                              \
-          return (this->*alt)(std::forward<BTs>(args)...);              \
-        else                                                            \
-          ((_member_rawptr)->*fun)(std::forward<BTs>(args)...);         \
+        ((_member_rawptr)->*fun)(std::forward<BTs>(args)...);           \
   }                                                                     \
                                                                         \
   /* non const and non void return  */                                  \
@@ -266,14 +267,14 @@ struct _consult_or_fw_method##alternative_member_<                      \
                       _consult_method##non_const),                      \
                   "consultation is available for const methods only"    \
                   " (delegation is disabled)");                         \
-    /* __attribute__((unused)) tells compiler encap is not used*/       \
-    auto encap __attribute__((unused)) =                                \
-        _consult_method##internal_encaps();                             \
         auto alt =                                                      \
             _consult_method##get_alternative<decltype(fun), fun>();     \
         if(nullptr != alt)                                              \
           return (this->*alt)(std::forward<BTs>(args)...);              \
-        return ((_member_rawptr)->*fun)(std::forward<BTs>(args)...);    \
+        /* __attribute__((unused)) tells compiler encap is not used*/   \
+        auto encap __attribute__((unused)) =                            \
+            _consult_method##internal_encaps();                         \
+            return ((_member_rawptr)->*fun)(std::forward<BTs>(args)...); \
   }                                                                     \
                                                                         \
   /*non const and void returning*/                                      \
@@ -293,15 +294,16 @@ struct _consult_or_fw_method##alternative_member_<                      \
                       _consult_method##non_const),                      \
                   "consultation is available for const methods only"    \
                   "(delegation is disabled)");                          \
+    auto alt =                                                          \
+        _consult_method##get_alternative<decltype(fun), fun>();         \
+        if(nullptr != alt){                                             \
+          (this->*alt)(std::forward<BTs>(args)...);                     \
+          return;                                                        \
+        }                                                               \
     /* __attribute__((unused)) tells compiler encap is not used*/       \
     auto encap __attribute__((unused)) =                                \
         _consult_method##internal_encaps();                             \
-    auto alt =                                                          \
-        _consult_method##get_alternative<decltype(fun), fun>();         \
-        if(nullptr != alt)                                              \
-          (this->*alt)(std::forward<BTs>(args)...);                     \
-        else                                                            \
-          ((_member_rawptr)->*fun)(std::forward<BTs>(args)...);         \
+        ((_member_rawptr)->*fun)(std::forward<BTs>(args)...);           \
   }                                                                     \
                                                                         \
   
@@ -327,6 +329,7 @@ struct _consult_or_fw_method##alternative_member_<                      \
                                  _consult_method,                       \
                                  _fw_method,                            \
                                  _access_flag)                          \
+                                                                        \
   using _fw_method##self_type = _self_type;                             \
                                                                         \
   /*forwarding key type*/                                               \
@@ -369,15 +372,14 @@ struct _consult_or_fw_method##alternative_member_<                      \
   _fw_method(BTs ...args) const {                                       \
     static_assert(nicobou::method_traits<MMType, fun>::is_const,        \
                   "consultation is available for const methods only");  \
+    auto alt = _fw_method##get_alternative<decltype(fun), fun>();       \
+    if(nullptr != alt)                                                  \
+      return (this->*alt)(std::forward<BTs>(args)...);                  \
     /* __attribute__((unused)) tells compiler encap is not used*/       \
     auto encap __attribute__((unused)) =                                \
         _fw_method##internal_encaps();                                  \
-        auto alt =                                                      \
-            _fw_method##get_alternative<decltype(fun), fun>();          \
-        if(nullptr != alt)                                              \
-          return (this->*alt)(std::forward<BTs>(args)...);              \
-        return (_member_rawptr)->                                       \
-            _consult_method<MMType, fun>(std::forward<BTs>(args)...);   \
+    return (_member_rawptr)->                                           \
+        _consult_method<MMType, fun>(std::forward<BTs>(args)...);       \
   }                                                                     \
                                                                         \
   template<typename MMType,                                             \
@@ -400,16 +402,16 @@ struct _consult_or_fw_method##alternative_member_<                      \
   _fw_method(BTs ...args) const {                                       \
     static_assert(nicobou::method_traits<MMType, fun>::is_const,        \
                   "consultation is available for const methods only");  \
+    auto alt =                                                          \
+        _fw_method##get_alternative<decltype(fun), fun>();              \
+    if(nullptr != alt) {                                                \
+      (this->*alt)(std::forward<BTs>(args)...);                         \
+      return;                                                           \
+    }                                                                   \
     /* __attribute__((unused)) tells compiler encap is not used*/       \
-    auto encap __attribute__((unused)) =                                \
-        _fw_method##internal_encaps();                                  \
-        auto alt =                                                      \
-            _fw_method##get_alternative<decltype(fun), fun>();          \
-        if(nullptr != alt)                                              \
-          (this->*alt)(std::forward<BTs>(args)...);                     \
-        else                                                            \
-          (_member_rawptr)->                                            \
-              _consult_method<MMType, fun>(std::forward<BTs>(args)...); \
+    auto encap __attribute__((unused)) = _fw_method##internal_encaps(); \
+    (_member_rawptr)->                                                  \
+        _consult_method<MMType, fun>(std::forward<BTs>(args)...);       \
   }                                                                     \
                                                                         \
                                                                         \
@@ -439,13 +441,13 @@ struct _consult_or_fw_method##alternative_member_<                      \
                       _fw_method##non_const),                           \
                   "Forwarded consultation is available for const "      \
                   "methods only");                                      \
-    /* __attribute__((unused)) tells compiler encap is not used*/       \
-    auto encap __attribute__((unused)) =                                \
-        _fw_method##internal_encaps();                                  \
     auto alt =                                                          \
         _fw_method##get_alternative<decltype(fun), fun>();              \
     if(nullptr != alt)                                                  \
       return (this->*alt)(std::forward<BTs>(args)...);                  \
+    /* __attribute__((unused)) tells compiler encap is not used*/       \
+    auto encap __attribute__((unused)) =                                \
+        _fw_method##internal_encaps();                                  \
     return (_member_rawptr)->                                           \
         _consult_method<MMType, fun>(std::forward<BTs>(args)...);       \
   }                                                                     \
@@ -476,15 +478,16 @@ struct _consult_or_fw_method##alternative_member_<                      \
                       _fw_method##non_const),                           \
                   "Forwarded consultation is available for const "      \
                   "methods only");                                      \
+    auto alt =                                                          \
+        _fw_method##get_alternative<decltype(fun), fun>();              \
+    if(nullptr != alt){                                                 \
+      (this->*alt)(std::forward<BTs>(args)...);                         \
+      return;                                                           \
+    }                                                                   \
     /* __attribute__((unused)) tells compiler encap is not used*/       \
     auto encap __attribute__((unused)) =                                \
         _fw_method##internal_encaps();                                  \
-    auto alt =                                                          \
-        _fw_method##get_alternative<decltype(fun), fun>();              \
-    if(nullptr != alt)                                                  \
-      (this->*alt)(std::forward<BTs>(args)...);                         \
-    else                                                                \
-      (_member_rawptr)->                                                \
+    (_member_rawptr)->                                                  \
           _consult_method<MMType, fun>(std::forward<BTs>(args)...);     \
   }                                                                     \
                                                                         \
@@ -512,16 +515,16 @@ struct _consult_or_fw_method##alternative_member_<                      \
              BTs ...args) const {                                       \
     static_assert(nicobou::method_traits<MMType, fun>::is_const,        \
                   "consultation is available for const methods only");  \
+    auto alt =                                                          \
+        _fw_method##get_alternative<decltype(fun), fun>();              \
+    if(nullptr != alt)                                                  \
+      return (this->*alt)(std::forward<BTs>(args)...);                  \
     /* __attribute__((unused)) tells compiler encap is not used*/       \
     auto encap __attribute__((unused)) =                                \
         _fw_method##internal_encaps();                                  \
-        auto alt =                                                      \
-            _fw_method##get_alternative<decltype(fun), fun>();          \
-        if(nullptr != alt)                                              \
-          return (this->*alt)(std::forward<BTs>(args)...);              \
-        return (_member_rawptr)->                                       \
-            _consult_method<MMType, fun>(key,                           \
-                                         std::forward<BTs>(args)...);   \
+    return                                                              \
+        (_member_rawptr)->                                              \
+        _consult_method<MMType, fun>(key, std::forward<BTs>(args)...);  \
   }                                                                     \
                                                                         \
   template<typename MMType,                                             \
@@ -545,18 +548,18 @@ struct _consult_or_fw_method##alternative_member_<                      \
              BTs ...args) const {                                       \
     static_assert(nicobou::method_traits<MMType, fun>::is_const,        \
                   "consultation is available for const methods only");  \
+    auto alt =                                                          \
+        _fw_method##get_alternative<decltype(fun), fun>();              \
+    if(nullptr != alt) {                                                \
+      (this->*alt)(std::forward<BTs>(args)...);                         \
+      return;                                                           \
+    }                                                                   \
     /* __attribute__((unused)) tells compiler encap is not used*/       \
     auto encap __attribute__((unused)) =                                \
         _fw_method##internal_encaps();                                  \
-        auto alt =                                                      \
-            _fw_method##get_alternative<decltype(fun), fun>();          \
-            if(nullptr != alt)                                          \
-              (this->*alt)(std::forward<BTs>(args)...);                 \
-            else                                                        \
-              (_member_rawptr)->_consult_method<MMType, fun>(           \
-                  key,                                                  \
-                  std::forward<BTs>(args)...);                          \
-                                                                        \
+    (_member_rawptr)->_consult_method<MMType, fun>(                     \
+        key,                                                            \
+        std::forward<BTs>(args)...);                                    \
   }                                                                     \
 
 
@@ -624,15 +627,15 @@ struct _consult_or_fw_method##alternative_member_<                      \
                                            method_traits<MMType, fun>:: \
                                            return_type>(key);           \
       /*we have the object, continue*/                                  \
+      auto alt =                                                        \
+          _fw_method##get_alternative<decltype(fun), fun>();            \
+      if(nullptr != alt)                                                \
+        return (this->*alt)(std::forward<BTs>(args)...);                \
       /* __attribute__((unused)) tells compiler encap is not used: */   \
       auto encap __attribute__((unused)) =                              \
-        _fw_method##internal_encaps();                                  \
-        auto alt =                                                      \
-            _fw_method##get_alternative<decltype(fun), fun>();          \
-        if(nullptr != alt)                                              \
-          return (this->*alt)(std::forward<BTs>(args)...);              \
-        return std::get<1>(consultable)->                               \
-            _consult_method<MMType, fun>(std::forward<BTs>(args)...);   \
+          _fw_method##internal_encaps();                                \
+      return std::get<1>(consultable)->                                 \
+          _consult_method<MMType, fun>(std::forward<BTs>(args)...);     \
   }									\
                                                                         \
   template<typename MMType,                                             \
@@ -655,16 +658,17 @@ struct _consult_or_fw_method##alternative_member_<                      \
           _on_error_construct_ret_method<typename nicobou::             \
                                          method_traits<MMType, fun>::   \
                                          return_type>(key);             \
+    auto alt =                                                          \
+        _fw_method##get_alternative<decltype(fun), fun>();              \
+    if(nullptr != alt) {                                                \
+          (this->*alt)(std::forward<BTs>(args)...);                     \
+          return;                                                       \
+    }                                                                   \
     /* __attribute__((unused)) tells compiler encap is not used*/       \
     auto encap __attribute__((unused)) =                                \
         _fw_method##internal_encaps();                                  \
-        auto alt =                                                      \
-            _fw_method##get_alternative<decltype(fun), fun>();          \
-        if(nullptr != alt)                                              \
-          (this->*alt)(std::forward<BTs>(args)...);                     \
-        else                                                            \
-          std::get<1>(consultable)->                                    \
-              _consult_method<MMType, fun>(std::forward<BTs>(args)...); \
+        std::get<1>(consultable)->                                      \
+            _consult_method<MMType, fun>(std::forward<BTs>(args)...);   \
   }									\
                                                                         \
 

@@ -198,7 +198,14 @@ OscCtrlServer::osc_handler(const char *path,
       gchar *quid_name = string_from_osc_arg(types[0], argv[0]);
       gchar *prop_name = string_from_osc_arg(types[1], argv[1]);
       gchar *value = string_from_osc_arg(types[2], argv[2]);
-      manager->set_property(quid_name, prop_name, value);
+      auto id =
+          manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(
+              quid_name, prop_name);
+      if (0 != id)
+        manager->use_prop<MPtr(&PContainer::set_str)>(
+            quid_name,
+            id,
+            value);
       g_free(quid_name);
       g_free(prop_name);
       g_free(value);
@@ -231,64 +238,65 @@ OscCtrlServer::osc_handler(const char *path,
 
   // add an osc subscriber
   if (g_str_has_prefix(path, "/a") || g_str_has_prefix(path, "/A")) {
-    if (argc == 3) {
-      gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
-      gchar *host = string_from_osc_arg(types[1], argv[1]);
-      gchar *port = string_from_osc_arg(types[2], argv[2]);
-      gchar *port_int = string_float_to_string_int(port);
-      gchar *internal_subscriber_name =
-          context->make_internal_subscriber_name(subscriber_name);
-      if (context->osc_subscribers_.end() ==
-          context->osc_subscribers_.find(internal_subscriber_name)) {
-        g_warning
-            ("OscCtrlServer: a subscriber named %s is already registered",
-             subscriber_name);
-        return 0;
-      }
-      if (host == nullptr || port_int == nullptr) {
-        g_warning("OscCtrlServer: issue with host name or port");
-        return 0;
-      }
-      context->osc_subscribers_[internal_subscriber_name] =
-          std::make_pair(host, port_int);
-      if (!manager->make_property_subscriber(internal_subscriber_name,
-                                             OscCtrlServer::prop_cb,
-                                             context))
-        return 0;
+    g_warning("osc sibscriber has been disabled in code");
+    // if (argc == 3) {
+    //   gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
+    //   gchar *host = string_from_osc_arg(types[1], argv[1]);
+    //   gchar *port = string_from_osc_arg(types[2], argv[2]);
+    //   gchar *port_int = string_float_to_string_int(port);
+    //   gchar *internal_subscriber_name =
+    //       context->make_internal_subscriber_name(subscriber_name);
+    //   if (context->osc_subscribers_.end() ==
+    //       context->osc_subscribers_.find(internal_subscriber_name)) {
+    //     g_warning
+    //         ("OscCtrlServer: a subscriber named %s is already registered",
+    //          subscriber_name);
+    //     return 0;
+    //   }
+    //   if (host == nullptr || port_int == nullptr) {
+    //     g_warning("OscCtrlServer: issue with host name or port");
+    //     return 0;
+    //   }
+    //   context->osc_subscribers_[internal_subscriber_name] =
+    //       std::make_pair(host, port_int);
+    //   if (!manager->make_property_subscriber(internal_subscriber_name,
+    //                                          OscCtrlServer::prop_cb,
+    //                                          context))
+    //     return 0;
 
-      g_debug("subscriber %s, %s, %s", subscriber_name, host, port_int);
+    //   g_debug("subscriber %s, %s, %s", subscriber_name, host, port_int);
 
-      g_free(internal_subscriber_name);
-      g_free(subscriber_name);
-      g_free(host);
-      g_free(port);
-      g_free(port_int);
-    }
-    else
-      g_warning("OSCctl: add subscriber needs 3 args (name, host, port)");
+    //   g_free(internal_subscriber_name);
+    //   g_free(subscriber_name);
+    //   g_free(host);
+    //   g_free(port);
+    //   g_free(port_int);
+    // }
+    // else
+    //   g_warning("OSCctl: add subscriber needs 3 args (name, host, port)");
     return 0;
   }
 
   // delete an osc subscriber
   if (g_str_has_prefix(path, "/d") || g_str_has_prefix(path, "/D")) {
-    if (argc == 1) {
-      gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
-      gchar *internal_subscriber_name =
-          context->make_internal_subscriber_name(subscriber_name);
-      auto it = context->osc_subscribers_.find(internal_subscriber_name);
-      if (context->osc_subscribers_.end() == it) {
-        g_warning
-            ("OscCtrlServer: cannot delete non existing subscriber named %s",
-             subscriber_name);
-        return 0;
-      }
-      manager->remove_property_subscriber(internal_subscriber_name);
-      context->osc_subscribers_.erase(it);
-      g_free(internal_subscriber_name);
-      g_free(subscriber_name);
-    }
-    else
-      g_warning("OSCctl: delete subscriber needs 1 args (name)");
+    // if (argc == 1) {
+    //   gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
+    //   gchar *internal_subscriber_name =
+    //       context->make_internal_subscriber_name(subscriber_name);
+    //   auto it = context->osc_subscribers_.find(internal_subscriber_name);
+    //   if (context->osc_subscribers_.end() == it) {
+    //     g_warning
+    //         ("OscCtrlServer: cannot delete non existing subscriber named %s",
+    //          subscriber_name);
+    //     return 0;
+    //   }
+    //   manager->remove_property_subscriber(internal_subscriber_name);
+    //   context->osc_subscribers_.erase(it);
+    //   g_free(internal_subscriber_name);
+    //   g_free(subscriber_name);
+    // }
+    // else
+    //   g_warning("OSCctl: delete subscriber needs 1 args (name)");
     return 0;
   }
 
@@ -306,8 +314,10 @@ OscCtrlServer::osc_handler(const char *path,
         return 0;
       }
 
-      std::string value = manager->get_property(quiddity_name,
-                                                property_name);
+      std::string value = manager->use_prop<MPtr(&PContainer::get_str)>(
+          quiddity_name,
+          manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(
+              quiddity_name, property_name));
       lo_address response_lo_address =
           lo_address_new_from_url(response_url);
 
@@ -336,75 +346,77 @@ OscCtrlServer::osc_handler(const char *path,
   // subscribe to a property
   if (g_str_has_prefix(path, "/get_property_")
       || g_str_has_prefix(path, "/G")) {
-    if (argc == 3) {
-      gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
-      gchar *quiddity_name = string_from_osc_arg(types[1], argv[1]);
-      gchar *property_name = string_from_osc_arg(types[2], argv[2]);
-      gchar *internal_subscriber_name =
-          context->make_internal_subscriber_name(subscriber_name);
-      if (context->osc_subscribers_.end() ==
-          context->osc_subscribers_.find(internal_subscriber_name)) {
-        g_warning
-            ("OscCtrlServer: a subscriber named %s does not exist",
-             subscriber_name);
-        return 0;
-      }
-      if (quiddity_name == nullptr || property_name == nullptr) {
-        g_warning
-            ("OscCtrlServer: issue with quiddity name or property name");
-        return 0;
-      }
+    g_warning("osc subscribe property is disabled in code");
+    // if (argc == 3) {
+    //   gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
+    //   gchar *quiddity_name = string_from_osc_arg(types[1], argv[1]);
+    //   gchar *property_name = string_from_osc_arg(types[2], argv[2]);
+    //   gchar *internal_subscriber_name =
+    //       context->make_internal_subscriber_name(subscriber_name);
+    //   if (context->osc_subscribers_.end() ==
+    //       context->osc_subscribers_.find(internal_subscriber_name)) {
+    //     g_warning
+    //         ("OscCtrlServer: a subscriber named %s does not exist",
+    //          subscriber_name);
+    //     return 0;
+    //   }
+    //   if (quiddity_name == nullptr || property_name == nullptr) {
+    //     g_warning
+    //         ("OscCtrlServer: issue with quiddity name or property name");
+    //     return 0;
+    //   }
 
-      if (!manager->subscribe_property(internal_subscriber_name,
-                                       quiddity_name, property_name))
-        g_warning("OscCtrlServer: pb subscribing to %s, %s",
-                  quiddity_name, property_name);
+    //   if (!manager->subscribe_property(internal_subscriber_name,
+    //                                    quiddity_name, property_name))
+    //     g_warning("OscCtrlServer: pb subscribing to %s, %s",
+    //               quiddity_name, property_name);
 
-      g_free(internal_subscriber_name);
-      g_free(subscriber_name);
-      g_free(quiddity_name);
-      g_free(property_name);
-    }
-    else
-      g_warning
-          ("OSCctl: subscribe property needs 3 args (name, quiddity, property)");
+    //   g_free(internal_subscriber_name);
+    //   g_free(subscriber_name);
+    //   g_free(quiddity_name);
+    //   g_free(property_name);
+    // }
+    // else
+    //   g_warning
+    //       ("OSCctl: subscribe property needs 3 args (name, quiddity, property)");
     return 0;
   }
 
   // unsubscribe to a property
   if (g_str_has_prefix(path, "/u") || g_str_has_prefix(path, "/U")) {
-    if (argc == 3) {
-      gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
-      gchar *quiddity_name = string_from_osc_arg(types[1], argv[1]);
-      gchar *property_name = string_from_osc_arg(types[2], argv[2]);
-      gchar *internal_subscriber_name =
-          context->make_internal_subscriber_name(subscriber_name);
-      if (context->osc_subscribers_.end() ==
-          context->osc_subscribers_.find(internal_subscriber_name)) {
-        g_warning
-            ("OscCtrlServer: a subscriber named %s does not exist",
-             subscriber_name);
-        return 0;
-      }
-      if (quiddity_name == nullptr || property_name == nullptr) {
-        g_warning
-            ("OscCtrlServer: issue with quiddity name or property name");
-        return 0;
-      }
+    g_warning("OSC unsubscribe to prop is disabled in code");
+    // if (argc == 3) {
+    //   gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
+    //   gchar *quiddity_name = string_from_osc_arg(types[1], argv[1]);
+    //   gchar *property_name = string_from_osc_arg(types[2], argv[2]);
+    //   gchar *internal_subscriber_name =
+    //       context->make_internal_subscriber_name(subscriber_name);
+    //   if (context->osc_subscribers_.end() ==
+    //       context->osc_subscribers_.find(internal_subscriber_name)) {
+    //     g_warning
+    //         ("OscCtrlServer: a subscriber named %s does not exist",
+    //          subscriber_name);
+    //     return 0;
+    //   }
+    //   if (quiddity_name == nullptr || property_name == nullptr) {
+    //     g_warning
+    //         ("OscCtrlServer: issue with quiddity name or property name");
+    //     return 0;
+    //   }
 
-      if (!manager->unsubscribe_property(internal_subscriber_name,
-                                         quiddity_name, property_name))
-        g_warning("OscCtrlServer: pb unsubscribing to %s, %s",
-                  quiddity_name, property_name);
+    //   if (!manager->unsubscribe_property(internal_subscriber_name,
+    //                                      quiddity_name, property_name))
+    //     g_warning("OscCtrlServer: pb unsubscribing to %s, %s",
+    //               quiddity_name, property_name);
 
-      g_free(internal_subscriber_name);
-      g_free(subscriber_name);
-      g_free(quiddity_name);
-      g_free(property_name);
-    }
-    else
-      g_warning
-          ("OSCctl: unsubscribe property needs 3 args (name, quiddity, property)");
+    //   g_free(internal_subscriber_name);
+    //   g_free(subscriber_name);
+    //   g_free(quiddity_name);
+    //   g_free(property_name);
+    // }
+    // else
+    //   g_warning
+    //       ("OSCctl: unsubscribe property needs 3 args (name, quiddity, property)");
     return 0;
   }
 

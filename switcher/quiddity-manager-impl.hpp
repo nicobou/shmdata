@@ -204,8 +204,7 @@ class QuiddityManager_Impl
   explicit QuiddityManager_Impl(const std::string &);
   void make_classes_doc();
   void register_classes();
-  // mutable required for forwarding
-  mutable std::unordered_map<std::string, std::shared_ptr<Quiddity>>quiddities_{};
+  std::unordered_map<std::string, std::shared_ptr<Quiddity>>quiddities_{};
   std::unordered_map<std::string, std::shared_ptr<QuidditySignalSubscriber>>signal_subscribers_{};
   bool init_quiddity(std::shared_ptr<Quiddity> quiddity);
   void remove_shmdata_sockets();

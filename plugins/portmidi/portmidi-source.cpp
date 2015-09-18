@@ -180,7 +180,7 @@ void PortMidiSource::on_pm_event(PmEvent *event, void *user_data) {
   PmEvent *tmp_event = (PmEvent *) g_malloc(sizeof(PmEvent));
   tmp_event->message = event->message;
   tmp_event->timestamp = event->timestamp;
-  context->shm_->writer(&shmdata::Writer::copy_to_shm, tmp_event, sizeof(PmEvent));
+  context->shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(tmp_event, sizeof(PmEvent));
   context->shm_->bytes_written(sizeof(PmEvent));
   g_free(tmp_event);
 

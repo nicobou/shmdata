@@ -79,7 +79,8 @@ VncClientSrc::start() {
           return;
         if (vnc_writer_)
         {
-          vnc_writer_->writer(&shmdata::Writer::copy_to_shm, rfb_client_->frameBuffer, framebuffer_size_);
+          vnc_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+              rfb_client_->frameBuffer, framebuffer_size_);
           vnc_writer_->bytes_written(framebuffer_size_);
         }
       }
@@ -282,7 +283,7 @@ VncClientSrc::update_vnc(rfbClient *client, int, int, int, int) {
 
   that->framebuffer_size_ = width * height * depth / 8;
   if (!that->vnc_writer_ ||
-      that->framebuffer_size_ > that->vnc_writer_->writer(&shmdata::Writer::alloc_size) ||
+      that->framebuffer_size_ > that->vnc_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>() ||
       that->previous_truecolor_state_ != that->capture_truecolor_)
   {
     auto data_type = string();

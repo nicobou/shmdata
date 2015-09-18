@@ -31,32 +31,32 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 DummyPlugin::DummyPlugin(const std::string &) :
-    bool_id_(pmanage(&PContainer::make_bool,
+    bool_id_(pmanage<MPtr(&PContainer::make_bool)>(
                      "bool_",
                      [this](bool val){bool_ = val; return true;},
                      [this](){return bool_;},
                      "Bool Example",
                      "This property is an example for type bool",
                      bool_)),
-    string_id_(pmanage(&PContainer::make_string,
+    string_id_(pmanage<MPtr(&PContainer::make_string)>(
                        "string_",
                        [this](const std::string &val){string_ = val; return true;},
                        [this](){return string_;},
                        "String Example",
                        "This property is an example for type string",
                        string_)),
-  char_id_(pmanage(&PContainer::make_char,
+  char_id_(pmanage<MPtr(&PContainer::make_char)>(
                    "char_",
                    [this](const char &val){char_ = val; return true;},
                    [this](){return char_;},
                    "Char Example",
                    "This property is an example for type char",
                    char_)),
-  integral_group_id_(pmanage(&PContainer::make_group,
+  integral_group_id_(pmanage<MPtr(&PContainer::make_group)>(
                              "integrals",
                              "Integral Group Example",
                              "This property is an example for grouping integral types")),
-  int_id_(pmanage(&PContainer::make_parented_int,              // PContainer factory
+  int_id_(pmanage<MPtr(&PContainer::make_parented_int)>(              // PContainer factory
                   "int_",                                      // string id
                   "integrals",                                 // parent
                   [this](int val){int_ = val; return true;},   // setter
@@ -66,7 +66,7 @@ DummyPlugin::DummyPlugin(const std::string &) :
                   int_,                                        // default value
                   -10,                                         // min
                   10)),                                        // max
-  short_id_(pmanage(&PContainer::make_parented_short,
+  short_id_(pmanage<MPtr(&PContainer::make_parented_short)>(
                     "short_",
                     "integrals",
                     [this](short val){short_ = val; return true;},
@@ -76,7 +76,7 @@ DummyPlugin::DummyPlugin(const std::string &) :
                     short_,
                     -11,
                     11)),
-  long_id_(pmanage(&PContainer::make_parented_long,
+  long_id_(pmanage<MPtr(&PContainer::make_parented_long)>(
                    "long_",
                    "integrals",
                    [this](long val){long_ = val; return true;},
@@ -86,7 +86,7 @@ DummyPlugin::DummyPlugin(const std::string &) :
                    long_,
                    -20,
                    20)),
-  long_long_id_(pmanage(&PContainer::make_parented_long_long,
+  long_long_id_(pmanage<MPtr(&PContainer::make_parented_long_long)>(
                         "long_long_",
                         "integrals",
                         [this](long long val){long_long_ = val; return true;},
@@ -96,7 +96,7 @@ DummyPlugin::DummyPlugin(const std::string &) :
                         long_long_,
                         -21,
                         21)),
-  unsigned_int_id_(pmanage(&PContainer::make_parented_unsigned_int,
+  unsigned_int_id_(pmanage<MPtr(&PContainer::make_parented_unsigned_int)>(
                            "unsigned_int_",
                            "integrals",
                            [this](unsigned int val){unsigned_int_ = val; return true;},
@@ -106,7 +106,7 @@ DummyPlugin::DummyPlugin(const std::string &) :
                            unsigned_int_,
                            0,
                            10)),
-  unsigned_short_id_(pmanage(&PContainer::make_parented_unsigned_short,
+  unsigned_short_id_(pmanage<MPtr(&PContainer::make_parented_unsigned_short)>(
                              "unsigned_short_",
                              "integrals",
                              [this](unsigned short val){unsigned_short_ = val; return true;},
@@ -116,7 +116,7 @@ DummyPlugin::DummyPlugin(const std::string &) :
                              unsigned_short_,
                              1,
                              11)),
-  unsigned_long_id_(pmanage(&PContainer::make_parented_unsigned_long,
+  unsigned_long_id_(pmanage<MPtr(&PContainer::make_parented_unsigned_long)>(
                             "unsigned_long_",
                             "integrals",
                             [this](unsigned long val){unsigned_long_ = val; return true;},
@@ -126,7 +126,7 @@ DummyPlugin::DummyPlugin(const std::string &) :
                             unsigned_long_,
                             18,
                             200)),
-  unsigned_long_long_id_(pmanage(&PContainer::make_parented_unsigned_long_long,
+  unsigned_long_long_id_(pmanage<MPtr(&PContainer::make_parented_unsigned_long_long)>(
                                  "unsigned_long_long_",
                                  "integrals",
                                  [this](unsigned long long val){
@@ -137,11 +137,11 @@ DummyPlugin::DummyPlugin(const std::string &) :
                                  unsigned_long_long_,
                                  2,
                                  210)),
-  floating_point_group_id_(pmanage(&PContainer::make_group,
+  floating_point_group_id_(pmanage<MPtr(&PContainer::make_group)>(
                                    "floats",
                                    "Floating Point Group Example",
                                    "This property is an example for grouping floating points")),
-  float_id_(pmanage(&PContainer::make_parented_float,
+  float_id_(pmanage<MPtr(&PContainer::make_parented_float)>(
                     "float_",
                     "floats",
                     [this](float val){float_ = val; return true;},
@@ -151,7 +151,7 @@ DummyPlugin::DummyPlugin(const std::string &) :
                     float_,
                     -1.f,
                     1.f)),
-  double_id_(pmanage(&PContainer::make_parented_double,
+  double_id_(pmanage<MPtr(&PContainer::make_parented_double)>(
                      "double_",
                      "floats",
                      [this](double val){double_ = val; return true;},
@@ -161,7 +161,7 @@ DummyPlugin::DummyPlugin(const std::string &) :
                      double_,
                      -1.f,
                      10.f)),
-  long_double_id_(pmanage(&PContainer::make_parented_long_double,
+  long_double_id_(pmanage<MPtr(&PContainer::make_parented_long_double)>(
                           "long_double_",
                           "floats",
                           [this](long double val){long_double_ = val; return true;},
@@ -171,7 +171,7 @@ DummyPlugin::DummyPlugin(const std::string &) :
                           long_double_,
                           -1.f,
                           10.f)),
-  selection_id_(pmanage(&PContainer::make_selection,
+  selection_id_(pmanage<MPtr(&PContainer::make_selection)>(
                         "enum_",
                         [this](size_t val){selection_.select(val); return true;},
                         [this](){return selection_.get();},
@@ -179,7 +179,7 @@ DummyPlugin::DummyPlugin(const std::string &) :
                         "This property is an example for type enum",
                         selection_)),
   tuple_id_(0// FIXME write serialization-string for std::tuple
-            // pmanage(&PContainer::make_tuple<long long, float, std::string>,
+            // pmanage<MPtr(&PContainer::make_tuple<long long)>( float, std::string>,
             //         "tuple_",
             //         [this](const std::tuple<long long, float, std::string> &val){
             //           tuple_ = val; return true;
@@ -189,7 +189,7 @@ DummyPlugin::DummyPlugin(const std::string &) :
             //         "This property is an example for tuple",
             //         tuple_)
             ),
-  fraction_id_(pmanage(&PContainer::make_fraction,
+  fraction_id_(pmanage<MPtr(&PContainer::make_fraction)>(
                        "fraction_",
                        [this](const Fraction &val){
                          fraction_ = val; return true;
@@ -201,10 +201,10 @@ DummyPlugin::DummyPlugin(const std::string &) :
                        -10, 1,  // min num/denom
                        10, 10)  // max num/denom
                ){
-  // std::cout << pmanage(&PContainer::get<int>, int_id_) << std::endl;
-  // std::cout << pmanage(&PContainer::get<unsigned int>, uint_id_) << std::endl;
+  // std::cout << pmanage<MPtr(&PContainer::get<int>)>( int_id_) << std::endl;
+  // std::cout << pmanage<MPtr(&PContainer::get<unsigned int>)>( uint_id_) << std::endl;
 
-  // pmanage(&PContainer::set<std::tuple<long long, float, std::string>>,
+  // pmanage<MPtr(&PContainer::set<std::tuple<long long)>( float, std::string>>,
   //         tuple_id_,
   //         std::make_tuple<long long, float, std::string>(2,2.2,"a22"));
 

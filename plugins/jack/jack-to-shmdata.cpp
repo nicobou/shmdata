@@ -227,7 +227,7 @@ int JackToShmdata::jack_process (jack_nframes_t nframes, void *arg){
         }
       }
       size_t size = nframes * num_chan * sizeof(jack_sample_t);
-      context->shm_->writer(&shmdata::Writer::copy_to_shm, context->buf_.data(), size);
+      context->shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(context->buf_.data(), size);
       context->shm_->bytes_written(size);
     }  // locked
   }  // releasing lock

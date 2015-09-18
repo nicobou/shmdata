@@ -223,25 +223,25 @@ gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointe
   GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
   auto &quid = context->quid_;
   //quid->set_property("codec","vp8enc");
-  quid->prop<Method(&PContainer::set_str)>(
-      quid->prop<Method(&PContainer::get_id_from_string_id)>("codec"),
+  quid->prop<MPtr(&PContainer::set_str)>(
+      quid->prop<MPtr(&PContainer::get_id_from_string_id)>("codec"),
       "vp8enc");
   context->make_codec_properties();
   //quid->set_property("deadline","30000");  //30ms
-  quid->prop<Method(&PContainer::set_str)>(
-      quid->prop<Method(&PContainer::get_id_from_string_id)>("deadline"),
+  quid->prop<MPtr(&PContainer::set_str)>(
+      quid->prop<MPtr(&PContainer::get_id_from_string_id)>("deadline"),
       "30000");
   //quid->set_property("target-bitrate", "2000000"); // 2Mbps
-  quid->prop<Method(&PContainer::set_str)>(
-      quid->prop<Method(&PContainer::get_id_from_string_id)>("target-bitrate"),
+  quid->prop<MPtr(&PContainer::set_str)>(
+      quid->prop<MPtr(&PContainer::get_id_from_string_id)>("target-bitrate"),
       "2000000");  // 2Mbps
   //quid->set_property("end-usage", "1"); // CBR
-  quid->prop<Method(&PContainer::set_str)>(
-      quid->prop<Method(&PContainer::get_id_from_string_id)>("end-usage"),
+  quid->prop<MPtr(&PContainer::set_str)>(
+      quid->prop<MPtr(&PContainer::get_id_from_string_id)>("end-usage"),
       "1");  // CBR
   //quid->set_property("keyframe-max-dist", "5");
-  quid->prop<Method(&PContainer::set_str)>(
-      quid->prop<Method(&PContainer::get_id_from_string_id)>("keyframe-max-dist"),
+  quid->prop<MPtr(&PContainer::set_str)>(
+      quid->prop<MPtr(&PContainer::get_id_from_string_id)>("keyframe-max-dist"),
       "5");
   return TRUE;
 }

@@ -122,15 +122,6 @@ Any Tree::get_data(const std::string &path) const {
   return res;
 }
 
-const Any &Tree::branch_read_data(const std::string &path) const {
-  std::unique_lock<std::mutex> lock(mutex_);
-  auto found = get_node(path);
-  if (!found.first.empty())
-    return found.second->second->data_;
-  static Any any;
-  return any;
-}
-
 bool Tree::set_data(const std::string &path, const Any &data) {
   std::unique_lock<std::mutex> lock(mutex_);
   auto found = get_node(path);

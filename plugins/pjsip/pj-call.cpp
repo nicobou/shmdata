@@ -236,10 +236,7 @@ bool PJCall::release_incoming_call(call_t *call, pjsua_buddy_id id){
       + "-" 
       + std::string(call->peer_uri, 0, call->peer_uri.find('@'));
   auto shm_keys = PJSIP::this_->sip_calls_->manager_->
-      use_tree<std::list<std::string>, const std::string &>(
-          dec_name,
-          &data::Tree::get_child_keys,
-          std::string(".shmdata.writer."));
+      use_tree<MPtr(&data::Tree::get_child_keys)>(dec_name, std::string(".shmdata.writer."));
   for (auto &it: shm_keys)
     PJSIP::this_->prune_tree(std::string(".shmdata.writer." + it));
   if(!PJSIP::this_->sip_calls_->manager_->remove(dec_name)){
@@ -1116,8 +1113,7 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
     return;
   }
   auto paths = PJSIP::this_->
-      tree<std::list<std::string>, const std::string &>(
-          &data::Tree::copy_leaf_values,
+      tree<MPtr(&data::Tree::copy_leaf_values)>(
           std::string(".buddies." + std::to_string(id) + ".connections"));
   // std::for_each(paths.begin(), paths.end(),
   //               [&] (const std::string &val){
@@ -1130,10 +1126,9 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
   gint port = starting_rtp_port_;
   for (auto &it : paths) {
     std::string data = manager->
-        use_tree<const Any &, const std::string &>(
-        std::string("siprtp"),
-        &data::Tree::branch_read_data,
-        std::string("rtp_caps.") + it).copy_as<std::string>();
+        use_tree<MPtr(&data::Tree::branch_read_data<std::string>)>(
+            std::string("siprtp"),
+            std::string("rtp_caps.") + it);
     GstCaps *caps = gst_caps_from_string(data.c_str());
     On_scope_exit {gst_caps_unref(caps);};
     SDPMedia media;

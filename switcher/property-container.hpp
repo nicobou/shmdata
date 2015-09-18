@@ -391,6 +391,22 @@ class PContainer{
     return prop_it->second.get()->get_str();
   }
 
+  bool set_str_str(const std::string &strid, const std::string &val) const{
+    auto id = get_id_from_string_id(strid);
+    if(0 == id)
+      return false;
+    auto prop_it = props_.find(id); 
+    return prop_it->second.get()->set_str(std::forward<const std::string &>(val));
+  }
+
+  std::string get_str_str(const std::string &strid) const{
+    auto id = get_id_from_string_id(strid);
+    if(0 == id)
+      return std::string();
+    auto prop_it = props_.find(id); 
+    return prop_it->second.get()->get_str();
+  }
+
   template<typename T> bool set(prop_id_t id, const T &val) const{
     auto prop_it = props_.find(id); 
     if (prop_it->second->get_type_id_hash() != typeid(val).hash_code()){

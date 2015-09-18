@@ -84,7 +84,16 @@ class Tree {
   const Any &read_data () const;
   bool branch_is_leaf(const std::string &path) const;
   bool branch_has_data(const std::string &path) const;
-  const Any &branch_read_data (const std::string &path) const;
+  template<typename T>
+  T branch_read_data (const std::string &path) const{
+    std::unique_lock<std::mutex> lock(mutex_);
+    auto found = get_node(path);
+    if (!found.first.empty())
+      return found.second->second->data_.copy_as<T>();
+    static Any any;
+    return any.copy_as<T>();
+
+  }
   
   // get child keys - returning a newly allocated list
   std::list<std::string> get_child_keys(const std::string &path) const;

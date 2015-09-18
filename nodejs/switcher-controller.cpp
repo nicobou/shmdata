@@ -15,8 +15,9 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
 #include <node.h>
+#include <iostream>
+#include <utility>
 #include "./switcher-controller.hpp"
 #include "switcher/quiddity-manager.hpp"
 
@@ -27,6 +28,7 @@
 using namespace std;
 using namespace v8;
 using namespace node;
+using namespace switcher;
 
 SwitcherController::SwitcherController(const std::string &name, Local<Function> logger_callback) :
     quiddity_manager(switcher::QuiddityManager::make_manager(name))
@@ -49,8 +51,6 @@ SwitcherController::SwitcherController(const std::string &name, Local<Function> 
     uv_async_init(uv_default_loop(), &switcher_sig_async, NotifySignal);
 
     // subscribers
-    quiddity_manager->make_property_subscriber("log_sub", logger_cb, this);
-    quiddity_manager->make_property_subscriber("prop_sub", property_cb, this);
     quiddity_manager->make_signal_subscriber("signal_sub", signal_cb, this);
 
     // init
@@ -59,10 +59,25 @@ SwitcherController::SwitcherController(const std::string &name, Local<Function> 
     quiddity_manager->invoke_va("internal_logger", "install_log_handler", nullptr, "GStreamer", nullptr);
     quiddity_manager->invoke_va("internal_logger", "install_log_handler", nullptr, "GLib", nullptr);
     quiddity_manager->invoke_va("internal_logger", "install_log_handler", nullptr, "GLib-GObject", nullptr);
-    quiddity_manager->set_property("internal_logger", "mute", "false");
-    quiddity_manager->set_property("internal_logger", "debug", "true");
-    quiddity_manager->set_property("internal_logger", "verbose", "true");
-    quiddity_manager->subscribe_property("log_sub", "internal_logger", "last-line");
+    quiddity_manager->use_prop<MPtr(&PContainer::set_str_str)>("internal_logger", "mute", "false");
+    quiddity_manager->use_prop<MPtr(&PContainer::set_str_str)>("internal_logger", "debug", "true");
+    quiddity_manager->use_prop<MPtr(&PContainer::set_str_str)>("internal_logger", "verbose", "true");
+    auto last_line_id = quiddity_manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(
+        "internal_logger", "last-line");
+    auto manager_ptr = quiddity_manager.get();
+    if (0 != last_line_id)
+      quiddity_manager->use_prop<MPtr(&PContainer::subscribe)>(
+          "internal_logger",
+          last_line_id,
+          [last_line_id, manager_ptr, this](){
+            uv_mutex_lock(&switcher_log_mutex);
+            switcher_log_list.push_back(
+                manager_ptr->use_prop<MPtr(&PContainer::get<std::string>)>(
+                    "internal_logger", last_line_id));
+            uv_mutex_unlock(&switcher_log_mutex);
+            uv_async_send(&switcher_log_async);
+          },
+          nullptr);
 
     quiddity_manager->create("create_remove_spy", "create_remove_spy");
     quiddity_manager->subscribe_signal("signal_sub", "create_remove_spy", "on-quiddity-created");
@@ -129,7 +144,6 @@ void SwitcherController::Init(Handle<Object> exports) {
     tpl->PrototypeTemplate()->Set(String::NewSymbol("register_prop_callback"), FunctionTemplate::New(RegisterPropCallback)->GetFunction());
     tpl->PrototypeTemplate()->Set(String::NewSymbol("subscribe_to_property"), FunctionTemplate::New(SubscribeToProperty)->GetFunction());
     tpl->PrototypeTemplate()->Set(String::NewSymbol("unsubscribe_from_property"), FunctionTemplate::New(UnsubscribeFromProperty)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("list_subscribed_properties"), FunctionTemplate::New(ListSubscribedProperties)->GetFunction());
 
     // signals - 4
     tpl->PrototypeTemplate()->Set(String::NewSymbol("get_signals_description"), FunctionTemplate::New(GetSignalsDescription)->GetFunction());
@@ -200,13 +214,13 @@ Handle<Value> SwitcherController::parseJson(Handle<Value> jsonString) {
     return scope.Close(JSON_parse->Call(JSON, 1, &jsonString));
 }
 
-void SwitcherController::logger_cb(const std::string& /*subscriber_name*/, const std::string& /*quiddity_name*/, const std::string& /*property_name*/, const std::string &value, void *user_data) {
-  SwitcherController *obj = static_cast<SwitcherController*>(user_data);
-  uv_mutex_lock(&obj->switcher_log_mutex);
-  obj->switcher_log_list.push_back(value);
-  uv_mutex_unlock(&obj->switcher_log_mutex);
-  uv_async_send(&obj->switcher_log_async);
-}
+// void SwitcherController::logger_cb(const std::string& /*subscriber_name*/, const std::string& /*quiddity_name*/, const std::string& /*property_name*/, const std::string &value, void *user_data) {
+//   SwitcherController *obj = static_cast<SwitcherController*>(user_data);
+//   uv_mutex_lock(&obj->switcher_log_mutex);
+//   obj->switcher_log_list.push_back(value);
+//   uv_mutex_unlock(&obj->switcher_log_mutex);
+//   uv_async_send(&obj->switcher_log_async);
+// }
 
 void SwitcherController::NotifyLog(uv_async_t* async, int /*status*/) {
   HandleScope scope;
@@ -233,13 +247,13 @@ void SwitcherController::NotifyLog(uv_async_t* async, int /*status*/) {
   }
 }
 
-void SwitcherController::property_cb(const std::string& /*subscriber_name*/, const std::string &quiddity_name, const std::string &property_name, const std::string &value, void *user_data) {
-  SwitcherController *obj = static_cast<SwitcherController*>(user_data);
-  uv_mutex_lock(&obj->switcher_prop_mutex);
-  obj->switcher_prop_list.push_back(PropUpdate(std::move(quiddity_name), std::move(property_name), std::move(value)));
-  uv_mutex_unlock(&obj->switcher_prop_mutex);
-  uv_async_send(&obj->switcher_prop_async);
-}
+// void SwitcherController::property_cb(const std::string& /*subscriber_name*/, const std::string &quiddity_name, const std::string &property_name, const std::string &value, void *user_data) {
+//   SwitcherController *obj = static_cast<SwitcherController*>(user_data);
+//   uv_mutex_lock(&obj->switcher_prop_mutex);
+//   obj->switcher_prop_list.push_back(PropUpdate(std::move(quiddity_name), std::move(property_name), std::move(value)));
+//   uv_mutex_unlock(&obj->switcher_prop_mutex);
+//   uv_async_send(&obj->switcher_prop_async);
+// }
 
 void SwitcherController::NotifyProp(uv_async_t *async, int /*status*/) {
   HandleScope scope;
@@ -588,7 +602,11 @@ Handle<Value> SwitcherController::SetProperty(const Arguments& args) {
   String::Utf8Value property_name(args[1]->ToString());
   String::Utf8Value property_val(args[2]->ToString());
 
-  Handle<Boolean> res = Boolean::New(obj->quiddity_manager->set_property(std::string(*element_name), std::string(*property_name), std::string(*property_val)));
+  Handle<Boolean> res =
+      Boolean::New(obj->quiddity_manager->use_prop<MPtr(&PContainer::set_str_str)>(
+          std::string(*element_name),
+          std::string(*property_name),
+          std::string(*property_val)));
 
   return scope.Close(res);
 }
@@ -609,7 +627,9 @@ Handle<Value> SwitcherController::GetProperty(const Arguments& args) {
   String::Utf8Value element_name(args[0]->ToString());
   String::Utf8Value property_name(args[1]->ToString());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_property(std::string(*element_name), std::string(*property_name)).c_str());
+  Handle<String> res =
+      String::New(obj->quiddity_manager->use_prop<MPtr(&PContainer::get_str_str)>(
+          std::string(*element_name), std::string(*property_name)).c_str());
   return scope.Close(parseJson(res));
 }
 
@@ -843,7 +863,31 @@ Handle<Value> SwitcherController::SubscribeToProperty(const Arguments& args) {
   String::Utf8Value element_name(args[0]->ToString());
   String::Utf8Value property_name(args[1]->ToString());
 
-  Handle<Boolean> res = Boolean::New(obj->quiddity_manager->subscribe_property(std::string("prop_sub"), std::string(*element_name), std::string(*property_name)));
+  auto man = obj->quiddity_manager.get();
+  auto qname = std::string(*element_name);
+  auto pname = std::string(*property_name);
+  auto prop_id = man->
+      use_prop<MPtr(&PContainer::get_id_from_string_id)>(qname, pname);
+  auto reg_id = man->use_prop<MPtr(&PContainer::subscribe)>(
+          qname,
+          prop_id,
+          [obj, man, qname, pname, prop_id](){
+            std::cout << man->use_prop<MPtr(&PContainer::get_str)>(qname, prop_id) << std::endl;
+            uv_mutex_lock(&obj->switcher_prop_mutex);
+            obj->switcher_prop_list.push_back(PropUpdate(
+                qname,
+                pname,
+                man->use_prop<MPtr(&PContainer::get_str)>(qname, prop_id)));
+            uv_mutex_unlock(&obj->switcher_prop_mutex);
+            uv_async_send(&obj->switcher_prop_async);
+          },
+          nullptr);
+  if (0 == reg_id) {
+    Handle<Boolean> res = Boolean::New(false);
+    return scope.Close(res);
+  }
+  obj->prop_regs_[std::make_pair(qname,pname)] = reg_id;
+  Handle<Boolean> res = Boolean::New(true);
   return scope.Close(res);
 }
 
@@ -863,16 +907,20 @@ Handle<Value> SwitcherController::UnsubscribeFromProperty(const Arguments& args)
   String::Utf8Value element_name(args[0]->ToString());
   String::Utf8Value property_name(args[1]->ToString());
 
-  Handle<Boolean> res = Boolean::New(obj->quiddity_manager->unsubscribe_property(std::string("prop_sub"), std::string(*element_name), std::string(*property_name)));
+  auto qname = std::string(*element_name);
+  auto pname = std::string(*property_name);
+  auto it = obj->prop_regs_.find(std::make_pair(qname, pname));
+  if (obj->prop_regs_.end() == it){
+    Handle<Boolean> res = Boolean::New(false);
+    return scope.Close(res);
+  }
+  auto man = obj->quiddity_manager.get();
+  Handle<Boolean> res =
+      Boolean::New(man->use_prop<MPtr(&PContainer::unsubscribe)>(
+          qname,
+          man->use_prop<MPtr(&PContainer::get_id_from_string_id)>(qname, pname),
+          it->second));
   return scope.Close(res);
-}
-
-Handle<Value> SwitcherController::ListSubscribedProperties(const Arguments& args) {
-  HandleScope scope;
-  SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
-
-  Handle<String> res = String::New(obj->quiddity_manager->list_subscribed_properties_json("prop_sub").c_str());
-  return scope.Close(parseJson(res));
 }
 
 //  ███████╗██╗ ██████╗ ███╗   ██╗ █████╗ ██╗

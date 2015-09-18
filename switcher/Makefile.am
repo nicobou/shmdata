@@ -74,7 +74,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     shmdata-writer.cpp \
     signal-string.cpp \
     startable-quiddity.cpp \
-    string-dictionary.cpp \
     string-utils.cpp \
     type-name-registry.cpp \
     unique-gst-element.cpp \
@@ -159,7 +158,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     signal-string.hpp \
     startable-quiddity.hpp \
     std2.hpp \
-    string-dictionary.hpp \
     string-utils.hpp \
     type-name-registry.hpp \
     unique-gst-element.hpp \
