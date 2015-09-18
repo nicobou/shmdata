@@ -77,7 +77,7 @@ void QuiddityManager::reset_command_history(bool remove_created_quiddities) {
 void QuiddityManager::command_lock() {
   seq_mutex_.lock();
   command_.reset(new QuiddityCommand());
-  gint64 cur_time = g_get_monotonic_time();
+  gint64 cur_time = g_get_monotonic_time(); 
   command_->time_ = cur_time - history_begin_time_;
 }
 
@@ -922,4 +922,41 @@ gboolean QuiddityManager::execute_command(gpointer user_data) {
 
   return FALSE;               // remove from gmainloop
 }
+
+bool QuiddityManager::set_str_wrapper(const std::string &quid,
+                                      PContainer::prop_id_t id,
+                                      const std::string &val){
+  seq_mutex_.lock();
+  command_.reset(new QuiddityCommand());
+  gint64 cur_time = g_get_monotonic_time(); 
+  command_->time_ = cur_time - history_begin_time_;
+  command_->set_id(QuiddityCommand::set_property);
+  command_->add_arg(quid);
+  command_->add_arg(std::to_string(id));
+  command_->add_arg(val);
+  auto res = manager_impl_->use_prop<MPtr(&PContainer::set_str)>(quid, id, val);
+  if (must_be_saved(command_.get()))
+    command_history_.push_back(command_);
+  seq_mutex_.unlock();
+  return res;
 }
+
+bool QuiddityManager::set_str_str_wrapper(const std::string &quid,
+                                          const std::string &strid,
+                                          const std::string &val){
+  seq_mutex_.lock();
+  command_.reset(new QuiddityCommand());
+  gint64 cur_time = g_get_monotonic_time(); 
+  command_->time_ = cur_time - history_begin_time_;
+  command_->set_id(QuiddityCommand::set_property);
+  command_->add_arg(quid);
+  command_->add_arg(strid);
+  command_->add_arg(val);
+  auto res = manager_impl_->use_prop<MPtr(&PContainer::set_str_str)>(quid, strid, val);
+      if (must_be_saved(command_.get()))
+    command_history_.push_back(command_);
+  seq_mutex_.unlock();
+  return res;
+}
+
+}  // namespace switcher

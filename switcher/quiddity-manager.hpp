@@ -118,6 +118,32 @@ class QuiddityManager
                       manager_impl_.get(),
                       use_prop,
                       use_prop);
+  // FIXME no hook for set because it is templated
+  // FIXME make original set_str_str able to set from numeric
+  // id given as string
+  // FIXME from cpp_make_consultable, give key to selective hook methods
+  // Selective_hook(use_prop,
+  //                decltype(&PContainer::set_str),
+  //                &PContainer::set_str,
+  //                &QuiddityManager::set_str_wrapper);
+  // Selective_hook(use_prop,
+  //                decltype(&PContainer::set_str_str),
+  //                &PContainer::set_str_str,
+  //                &QuiddityManager::set_str_str_wrapper);
+
+  // global property wrapper
+  struct PropLock{
+    PropLock(std::mutex *seq_mutex): seq_mutex_(seq_mutex) {seq_mutex_->lock();}
+    ~PropLock(){seq_mutex_->unlock();}
+    // FIXME PropLock(PropLock &) = delete; 
+   private:
+    std::mutex *seq_mutex_;
+  };
+  PropLock prop_global_wrapper() const {return PropLock(&seq_mutex_);}
+  Global_wrap(use_prop, PropLock, prop_global_wrapper);
+
+  // propty hook for saving set prop
+  
   
   // FIXME implement global wrapper and hook for saving
   // // set &get
@@ -199,7 +225,7 @@ class QuiddityManager
   std::string name_;
   // running commands in sequence
   QuiddityCommand::ptr command_;
-  std::mutex seq_mutex_;
+  mutable std::mutex seq_mutex_;
   GAsyncQueue *command_queue_;
   std::thread invocation_thread_;
   // invokation in gmainloop
@@ -223,6 +249,13 @@ class QuiddityManager
   static gboolean execute_command(gpointer user_data);  // gmainloop source callback
   void invoke_in_thread();
   bool must_be_saved(QuiddityCommand *cmd);
+
+  bool set_str_wrapper(const std::string &quid,
+                       PContainer::prop_id_t id,
+                       const std::string &val);
+  bool set_str_str_wrapper(const std::string &quid,
+                           const std::string &strid,
+                           const std::string &val);
 };
 }  // namespace switcher
 
