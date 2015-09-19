@@ -135,7 +135,10 @@ class QuiddityManager
   struct PropLock{
     PropLock(std::mutex *seq_mutex): seq_mutex_(seq_mutex) {seq_mutex_->lock();}
     ~PropLock(){seq_mutex_->unlock();}
-    // FIXME PropLock(PropLock &) = delete; 
+    PropLock(PropLock &) = delete;
+    PropLock &operator=(const PropLock&) = delete;
+    PropLock(PropLock &&) = default;
+    PropLock &operator=(PropLock&&) = default;
    private:
     std::mutex *seq_mutex_;
   };
