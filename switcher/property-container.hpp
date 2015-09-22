@@ -374,38 +374,17 @@ class PContainer{
   bool enable(prop_id_t prop_id, bool enable);
 
   // return 0 if id is not found
-  prop_id_t get_id_from_string_id(const std::string &id) const;
+  prop_id_t get_id(const std::string &id) const;
 
   register_id_t subscribe(prop_id_t id, notify_cb_t fun, pstate_cb_t state_cb) const;
   bool unsubscribe(prop_id_t id, register_id_t rid) const;
 
-  bool set_str(prop_id_t id, const std::string &val) const{
-    if(0 == id)
-      return false;
-    auto prop_it = props_.find(id); 
-    return prop_it->second.get()->set_str(std::forward<const std::string &>(val));
-  }
+  bool set_str(prop_id_t id, const std::string &val) const;
+  std::string get_str(prop_id_t id) const;
 
-  std::string get_str(prop_id_t id) const{
-    auto prop_it = props_.find(id); 
-    return prop_it->second.get()->get_str();
-  }
+  bool set_str_str(const std::string &strid, const std::string &val) const;
 
-  bool set_str_str(const std::string &strid, const std::string &val) const{
-    auto id = get_id_from_string_id(strid);
-    if(0 == id)
-      return false;
-    auto prop_it = props_.find(id); 
-    return prop_it->second.get()->set_str(std::forward<const std::string &>(val));
-  }
-
-  std::string get_str_str(const std::string &strid) const{
-    auto id = get_id_from_string_id(strid);
-    if(0 == id)
-      return std::string();
-    auto prop_it = props_.find(id); 
-    return prop_it->second.get()->get_str();
-  }
+  std::string get_str_str(const std::string &strid) const;
 
   template<typename T> bool set(prop_id_t id, const T &val) const{
     auto prop_it = props_.find(id); 
@@ -424,7 +403,6 @@ class PContainer{
     }
     return static_cast<Property2<T> *>(prop_it->second.get())->get();
   }
-
   
  private:
   prop_id_t counter_{0};

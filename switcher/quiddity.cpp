@@ -497,7 +497,7 @@ std::string Quiddity::get_property_description(const std::string &property_name)
 }
 
 // bool Quiddity::set_property(const std::string &property_name, const std::string &value) {
-//   auto id = props_.get_id_from_string_id(property_name);
+//   auto id = props_.get_id(property_name);
 //   if (0 == id) {
 //     g_warning("property %s not found", property_name.c_str());
 //     return false;
@@ -506,11 +506,11 @@ std::string Quiddity::get_property_description(const std::string &property_name)
 // }
 
 // bool Quiddity::has_property(const std::string &property_name) {
-//   return 0 != props_.get_id_from_string_id(property_name);
+//   return 0 != props_.get_id(property_name);
 // }
 
 // std::string Quiddity::get_property(const std::string &property_name) {
-//   auto id = props_.get_id_from_string_id(property_name);
+//   auto id = props_.get_id(property_name);
 //   if (0 == id) {
 //     g_warning("property %s not found", property_name.c_str());
 //     return std::string();

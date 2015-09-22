@@ -72,7 +72,7 @@ bool PContainer::unsubscribe(prop_id_t id, register_id_t rid) const{
   return props_.find(id)->second->unsubscribe(std::forward<register_id_t>(rid));
 }
 
-PContainer::prop_id_t PContainer::get_id_from_string_id(const std::string &id) const{
+PContainer::prop_id_t PContainer::get_id(const std::string &id) const{
   const auto &it = ids_.find(id);
   if (ids_.end() == it)
     return 0;
@@ -509,6 +509,34 @@ PContainer::prop_id_t PContainer::make_parented_fraction(
                                      default_value,
                                      min_num, min_denom,
                                      max_num, max_denom);
+}
+
+bool PContainer::set_str(prop_id_t id, const std::string &val) const{
+    if(0 == id)
+      return false;
+    auto prop_it = props_.find(id); 
+    return prop_it->second.get()->set_str(std::forward<const std::string &>(val));
+  }
+
+std::string PContainer::get_str(prop_id_t id) const{
+  auto prop_it = props_.find(id); 
+  return prop_it->second.get()->get_str();
+}
+
+bool PContainer::set_str_str(const std::string &strid, const std::string &val) const{
+  auto id = get_id(strid);
+  if(0 == id)
+    return false;
+  auto prop_it = props_.find(id); 
+  return prop_it->second.get()->set_str(std::forward<const std::string &>(val));
+}
+
+std::string PContainer::get_str_str(const std::string &strid) const{
+  auto id = get_id(strid);
+  if(0 == id)
+    return std::string();
+  auto prop_it = props_.find(id); 
+  return prop_it->second.get()->get_str();
 }
 
 }  // namespace switcher

@@ -153,46 +153,46 @@ main(int argc, char *argv[]) {
   if (quiet)
     manager->use_prop<MPtr(&PContainer::set_str)>(
         "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(
+        manager->use_prop<MPtr(&PContainer::get_id)>(
             "internal_logger", "mute"),
         "true");
   else
     manager->use_prop<MPtr(&PContainer::set_str)>(
         "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(
+        manager->use_prop<MPtr(&PContainer::get_id)>(
             "internal_logger", "mute"),
         "false");
 
   if (debug)
   manager->use_prop<MPtr(&PContainer::set_str)>(
         "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(
+        manager->use_prop<MPtr(&PContainer::get_id)>(
             "internal_logger", "debug"),
         "true");
   else
     manager->use_prop<MPtr(&PContainer::set_str)>(
         "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(
+        manager->use_prop<MPtr(&PContainer::get_id)>(
             "internal_logger", "debug"),
         "false");
 
   if (verbose)
   manager->use_prop<MPtr(&PContainer::set_str)>(
         "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(
+        manager->use_prop<MPtr(&PContainer::get_id)>(
             "internal_logger", "verbose"),
         "true");
   else
     manager->use_prop<MPtr(&PContainer::set_str)>(
         "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(
+        manager->use_prop<MPtr(&PContainer::get_id)>(
             "internal_logger", "verbose"),
         "false");
 
   // subscribe to logs:
   {
     auto last_line_id =
-        manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(
+        manager->use_prop<MPtr(&PContainer::get_id)>(
             "internal_logger", "last-line");
     auto manager_ptr = manager.get(); 
     manager->use_prop<MPtr(&PContainer::subscribe)>(

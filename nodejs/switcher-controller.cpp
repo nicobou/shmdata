@@ -62,7 +62,7 @@ SwitcherController::SwitcherController(const std::string &name, Local<Function> 
     quiddity_manager->use_prop<MPtr(&PContainer::set_str_str)>("internal_logger", "mute", "false");
     quiddity_manager->use_prop<MPtr(&PContainer::set_str_str)>("internal_logger", "debug", "true");
     quiddity_manager->use_prop<MPtr(&PContainer::set_str_str)>("internal_logger", "verbose", "true");
-    auto last_line_id = quiddity_manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(
+    auto last_line_id = quiddity_manager->use_prop<MPtr(&PContainer::get_id)>(
         "internal_logger", "last-line");
     auto manager_ptr = quiddity_manager.get();
     if (0 != last_line_id)
@@ -867,7 +867,7 @@ Handle<Value> SwitcherController::SubscribeToProperty(const Arguments& args) {
   auto qname = std::string(*element_name);
   auto pname = std::string(*property_name);
   auto prop_id = man->
-      use_prop<MPtr(&PContainer::get_id_from_string_id)>(qname, pname);
+      use_prop<MPtr(&PContainer::get_id)>(qname, pname);
   auto reg_id = man->use_prop<MPtr(&PContainer::subscribe)>(
           qname,
           prop_id,
@@ -918,7 +918,7 @@ Handle<Value> SwitcherController::UnsubscribeFromProperty(const Arguments& args)
   Handle<Boolean> res =
       Boolean::New(man->use_prop<MPtr(&PContainer::unsubscribe)>(
           qname,
-          man->use_prop<MPtr(&PContainer::get_id_from_string_id)>(qname, pname),
+          man->use_prop<MPtr(&PContainer::get_id)>(qname, pname),
           it->second));
   return scope.Close(res);
 }

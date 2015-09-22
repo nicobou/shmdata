@@ -335,7 +335,7 @@ QuiddityManager::get_property_description_by_class(const std::string &class_name
 //   return manager_impl_->use_prop(
 //       &PContainer::subscribe,
 //       quiddity_name,
-//       manager_impl_->use_prop(&PContainer::get_id_from_string_id,
+//       manager_impl_->use_prop(&PContainer::get_id,
 //                               quiddity_name,
 //                               property_name),
 //       cb,

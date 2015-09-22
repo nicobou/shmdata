@@ -87,7 +87,7 @@ QuiddityBasicTest::test_startable(QuiddityManager::ptr manager,
     return true;  // true because some quiddity may not be created because of a missing resource
   }
   auto started_id =
-      manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(name, "started");
+      manager->use_prop<MPtr(&PContainer::get_id)>(name, "started");
   if (0 != started_id) {
     manager->use_prop<MPtr(&PContainer::set_str)>(name, started_id, "true");
     manager->use_prop<MPtr(&PContainer::set_str)>(name, started_id, "false");

@@ -444,7 +444,7 @@ QuiddityManager_Impl::get_property_description_by_class(const std::string &class
 //     return false;
 //   }
 //   return q_it->second->prop(&PContainer::set_str,
-//                             q_it->second->prop(&PContainer::get_id_from_string_id,
+//                             q_it->second->prop(&PContainer::get_id,
 //                                                property_name),
 //                             property_value);
 // }
@@ -461,7 +461,7 @@ QuiddityManager_Impl::get_property_description_by_class(const std::string &class
 //     return false;
 //   }
 //   return q_it->second->prop(&PContainer::subscribe,
-//                             q_it->second->prop(&PContainer::get_id_from_string_id,
+//                             q_it->second->prop(&PContainer::get_id,
 //                                                property_name),
 //                             cb,
 //                             state_cb);
@@ -478,7 +478,7 @@ QuiddityManager_Impl::get_property_description_by_class(const std::string &class
 //     return false;
 //   }
 //   return q_it->second->prop(&PContainer::unsubscribe,
-//                             q_it->second->prop(&PContainer::get_id_from_string_id,
+//                             q_it->second->prop(&PContainer::get_id,
 //                                                property_name),
 //                             reg_id);
 // }
@@ -492,7 +492,7 @@ QuiddityManager_Impl::get_property_description_by_class(const std::string &class
 //               quiddity_name.c_str());
 //     return "{\"error\":\"quiddity not found\"}";
 //   }
-//   auto id = q_it->second->prop(&PContainer::get_id_from_string_id,
+//   auto id = q_it->second->prop(&PContainer::get_id,
 //                                property_name);
 //   if (0 == id)
 //     return "{\"error\":\"property not found\"}";
@@ -507,7 +507,7 @@ QuiddityManager_Impl::get_property_description_by_class(const std::string &class
 //     g_debug("quiddity %s not found", quiddity_name.c_str());
 //     return false;
 //   }
-//   return 0 != q_it->second->prop(&PContainer::get_id_from_string_id, property_name);
+//   return 0 != q_it->second->prop(&PContainer::get_id, property_name);
 // }
 
 bool

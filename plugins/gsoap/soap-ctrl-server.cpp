@@ -460,7 +460,7 @@ controlService::set_property(std::string quiddity_name,
 
   manager->use_prop<MPtr(&PContainer::set_str)>(
       quiddity_name,
-      manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(
+      manager->use_prop<MPtr(&PContainer::get_id)>(
           quiddity_name, property_name),
       property_value);
 
@@ -481,7 +481,7 @@ controlService::get_property(std::string quiddity_name,
 
   *result = manager->use_prop<MPtr(&PContainer::get_str)>(
       quiddity_name,
-      manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(
+      manager->use_prop<MPtr(&PContainer::get_id)>(
           quiddity_name, property_name));
 
   return SOAP_OK;

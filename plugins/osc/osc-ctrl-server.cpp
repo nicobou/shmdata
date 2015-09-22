@@ -199,7 +199,7 @@ OscCtrlServer::osc_handler(const char *path,
       gchar *prop_name = string_from_osc_arg(types[1], argv[1]);
       gchar *value = string_from_osc_arg(types[2], argv[2]);
       auto id =
-          manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(
+          manager->use_prop<MPtr(&PContainer::get_id)>(
               quid_name, prop_name);
       if (0 != id)
         manager->use_prop<MPtr(&PContainer::set_str)>(
@@ -316,7 +316,7 @@ OscCtrlServer::osc_handler(const char *path,
 
       std::string value = manager->use_prop<MPtr(&PContainer::get_str)>(
           quiddity_name,
-          manager->use_prop<MPtr(&PContainer::get_id_from_string_id)>(
+          manager->use_prop<MPtr(&PContainer::get_id)>(
               quiddity_name, property_name));
       lo_address response_lo_address =
           lo_address_new_from_url(response_url);
