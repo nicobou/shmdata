@@ -32,8 +32,6 @@
 #define PROCNETDEVFILE "/proc/net/dev"
 
 using namespace std;
-using namespace
-switcher::data;
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
@@ -48,7 +46,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 
 SystemUsage::SystemUsage(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()),
-    tree_{Tree::make()},
+    tree_{InfoTree::make()},
     period_(1.0),
     pollStateTask_(std2::make_unique<PeriodicTask>([this](){
           this->pollState();
@@ -86,11 +84,11 @@ bool SystemUsage::init_tree(){
     stream >> core >> user >> nice >> system >> idle >> io >> irq >>
           softIrq >> steal >> guest;
     if (core.substr(0, 3) == "cpu") {
-      tree_->graft(".cpu." + core + ".total", Tree::make());
-      tree_->graft(".cpu." + core + ".user", Tree::make());
-      tree_->graft(".cpu." + core + ".nice", Tree::make());
-      tree_->graft(".cpu." + core + ".system", Tree::make());
-      tree_->graft(".cpu." + core + ".idle", Tree::make());
+      tree_->graft(".cpu." + core + ".total", InfoTree::make());
+      tree_->graft(".cpu." + core + ".user", InfoTree::make());
+      tree_->graft(".cpu." + core + ".nice", InfoTree::make());
+      tree_->graft(".cpu." + core + ".system", InfoTree::make());
+      tree_->graft(".cpu." + core + ".idle", InfoTree::make());
     }
   }
   file.close();
@@ -99,12 +97,12 @@ bool SystemUsage::init_tree(){
   if (!file.is_open())
     return false;
   for (string line; getline(file, line);) {
-        tree_->graft(".mem.total", Tree::make());
-        tree_->graft(".mem.free", Tree::make());
-        tree_->graft(".mem.buffers", Tree::make());
-        tree_->graft(".mem.cached", Tree::make());
-        tree_->graft(".mem.swap_total", Tree::make());
-        tree_->graft(".mem.swap_free", Tree::make());
+        tree_->graft(".mem.total", InfoTree::make());
+        tree_->graft(".mem.free", InfoTree::make());
+        tree_->graft(".mem.buffers", InfoTree::make());
+        tree_->graft(".mem.cached", InfoTree::make());
+        tree_->graft(".mem.swap_total", InfoTree::make());
+        tree_->graft(".mem.swap_free", InfoTree::make());
   }
   file.close();
   // init net
@@ -123,16 +121,16 @@ bool SystemUsage::init_tree(){
         && netI.find("face") == string::npos) {
       string netName;
       netName = netI.substr(0, netI.find(":"));
-      tree_->graft(".net." + netName + ".rx_rate", Tree::make());
-      tree_->graft(".net." + netName + ".rx_bytes", Tree::make());
-      tree_->graft(".net." + netName + ".rx_packets", Tree::make());
-      tree_->graft(".net." + netName + ".rx_errors", Tree::make());
-      tree_->graft(".net." + netName + ".rx_drop", Tree::make());
-      tree_->graft(".net." + netName + ".tx_rate", Tree::make());
-      tree_->graft(".net." + netName + ".tx_bytes", Tree::make());
-      tree_->graft(".net." + netName + ".tx_packets", Tree::make());
-      tree_->graft(".net." + netName + ".tx_errors", Tree::make());
-      tree_->graft(".net." + netName + ".tx_drop", Tree::make());
+      tree_->graft(".net." + netName + ".rx_rate", InfoTree::make());
+      tree_->graft(".net." + netName + ".rx_bytes", InfoTree::make());
+      tree_->graft(".net." + netName + ".rx_packets", InfoTree::make());
+      tree_->graft(".net." + netName + ".rx_errors", InfoTree::make());
+      tree_->graft(".net." + netName + ".rx_drop", InfoTree::make());
+      tree_->graft(".net." + netName + ".tx_rate", InfoTree::make());
+      tree_->graft(".net." + netName + ".tx_bytes", InfoTree::make());
+      tree_->graft(".net." + netName + ".tx_packets", InfoTree::make());
+      tree_->graft(".net." + netName + ".tx_errors", InfoTree::make());
+      tree_->graft(".net." + netName + ".tx_drop", InfoTree::make());
       _net[netName] = Net();
     }
   }
@@ -225,16 +223,16 @@ SystemUsage::pollState() {
         string netName;
         netName = netI.substr(0, netI.find(":"));
         if (false) {  //FIXME
-          tree_->graft(".net." + netName + ".rx_rate", Tree::make());
-          tree_->graft(".net." + netName + ".rx_bytes", Tree::make());
-          tree_->graft(".net." + netName + ".rx_packets", Tree::make());
-          tree_->graft(".net." + netName + ".rx_errors", Tree::make());
-          tree_->graft(".net." + netName + ".rx_drop", Tree::make());
-          tree_->graft(".net." + netName + ".tx_rate", Tree::make());
-          tree_->graft(".net." + netName + ".tx_bytes", Tree::make());
-          tree_->graft(".net." + netName + ".tx_packets", Tree::make());
-          tree_->graft(".net." + netName + ".tx_errors", Tree::make());
-          tree_->graft(".net." + netName + ".tx_drop", Tree::make());
+          tree_->graft(".net." + netName + ".rx_rate", InfoTree::make());
+          tree_->graft(".net." + netName + ".rx_bytes", InfoTree::make());
+          tree_->graft(".net." + netName + ".rx_packets", InfoTree::make());
+          tree_->graft(".net." + netName + ".rx_errors", InfoTree::make());
+          tree_->graft(".net." + netName + ".rx_drop", InfoTree::make());
+          tree_->graft(".net." + netName + ".tx_rate", InfoTree::make());
+          tree_->graft(".net." + netName + ".tx_bytes", InfoTree::make());
+          tree_->graft(".net." + netName + ".tx_packets", InfoTree::make());
+          tree_->graft(".net." + netName + ".tx_errors", InfoTree::make());
+          tree_->graft(".net." + netName + ".tx_drop", InfoTree::make());
           _net[netName] = Net();
         } else {
           long rx_delta = rBytes - _net[netName].rx_bytes;

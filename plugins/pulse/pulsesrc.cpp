@@ -342,7 +342,7 @@ bool PulseSrc::start() {
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
         this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
-                         data::Tree::make(byte_rate));
+                         InfoTree::make(byte_rate));
       });
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    pulsesrc_.get_raw(),

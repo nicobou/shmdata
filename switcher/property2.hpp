@@ -44,7 +44,7 @@ class PropertyBase{
       type_hash_(type_hash){
   }
 
-  virtual data::Tree::ptr get_spec() = 0;
+  virtual InfoTree::ptr get_spec() = 0;
   virtual bool set_str(const std::string &val, bool do_notify = true) const = 0;
   virtual std::string get_str() const = 0;
 
@@ -148,7 +148,7 @@ class Property2: public PropertyBase{
     return serialize::apply<W>(get_());
   }
   
-  data::Tree::ptr get_spec() final {return doc_.get_spec();}
+  InfoTree::ptr get_spec() final {return doc_.get_spec();}
 
  private:
   PropertySpecification<V, W> doc_;

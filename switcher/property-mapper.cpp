@@ -170,9 +170,9 @@ PropertyMapper::set_source_property_method(gchar *quiddity_name,
   // }
   // auto source_tree = context->prune_tree(".source", false);
   // if (!source_tree)
-  //   source_tree = data::Tree::make();
-  // source_tree->graft(".quiddity", data::Tree::make(std::string(quiddity_name)));
-  // source_tree->graft(".property", data::Tree::make(std::string(property_name)));
+  //   source_tree = InfoTree::make();
+  // source_tree->graft(".quiddity", InfoTree::make(std::string(quiddity_name)));
+  // source_tree->graft(".property", InfoTree::make(std::string(property_name)));
   // context->graft_tree(".source.", source_tree);
   return TRUE;
 }
@@ -372,9 +372,9 @@ PropertyMapper::set_sink_property_method(gchar *quiddity_name,
   //     quid->get_property_ptr(property_name)->get_paramspec();
   // auto sink_tree = context->prune_tree(".sink", false);
   // if (!sink_tree)
-  //   sink_tree = data::Tree::make();
-  // sink_tree->graft(".quiddity", data::Tree::make(std::string(quiddity_name)));
-  // sink_tree->graft(".property", data::Tree::make(std::string(property_name)));
+  //   sink_tree = InfoTree::make();
+  // sink_tree->graft(".quiddity", InfoTree::make(std::string(quiddity_name)));
+  // sink_tree->graft(".property", InfoTree::make(std::string(property_name)));
   // context->graft_tree(".sink", sink_tree);
   return TRUE;
 }

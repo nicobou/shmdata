@@ -21,9 +21,9 @@
 
 namespace switcher {
 
-PContainer::PContainer(data::Tree::ptr tree):
+PContainer::PContainer(InfoTree::ptr tree):
     tree_(tree){
-  tree_->graft(".property", data::Tree::make());
+  tree_->graft(".property", InfoTree::make());
   tree_->tag_as_array(".property", true);
 }
 
@@ -50,7 +50,7 @@ bool PContainer::enable(prop_id_t prop_id, bool enable){
   const auto &it = strids_.find(prop_id);
   if (strids_.end() == it)
     return false;
-  tree_->graft(std::string("property.") + it->second + ".enabled", data::Tree::make(enable));
+  tree_->graft(std::string("property.") + it->second + ".enabled", InfoTree::make(enable));
   if (enable)
     notify_state_change(prop_id, PContainer::ENABLED);
   else

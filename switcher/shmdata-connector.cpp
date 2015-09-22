@@ -39,8 +39,8 @@ ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
     g_warning("ShmdataConnector is created without quiddity");
     return false;
   }
-  data::Tree::ptr tree = data::Tree::make();
-  tree->graft(".max_reader", data::Tree::make(max_reader));
+  InfoTree::ptr tree = InfoTree::make();
+  tree->graft(".max_reader", InfoTree::make(max_reader));
   quid_->graft_tree(".shmdata", tree);
   on_connect_cb_ = on_connect_cb;
   on_disconnect_cb_ = on_disconnect_cb;
@@ -128,7 +128,7 @@ gboolean ShmdataConnector::disconnect_all_wrapped(gpointer /*unused */ ,
   ShmdataConnector *context = static_cast<ShmdataConnector *>(user_data);
   On_scope_exit {
     auto keys =
-        context->quid_->tree<MPtr(&data::Tree::get_child_keys)>(
+        context->quid_->tree<MPtr(&InfoTree::get_child_keys)>(
             std::string(".shmdata.reader"));
     if (!keys.empty())
       for (auto &it: keys) {

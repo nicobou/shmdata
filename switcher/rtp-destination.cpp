@@ -87,7 +87,7 @@ std::string RtpDestination::get_sdp() {
   
   for (auto &it : source_streams_) {
     std::string string_caps =
-        session_->tree<MPtr(&data::Tree::branch_read_data<std::string>)>(
+        session_->tree<MPtr(&InfoTree::branch_read_data<std::string>)>(
             std::string("rtp_caps." + it.first));
     GstCaps *caps = gst_caps_from_string(string_caps.c_str());
     On_scope_exit{gst_caps_unref(caps);};

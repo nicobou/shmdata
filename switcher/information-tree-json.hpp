@@ -33,11 +33,9 @@
 #include <string>
 
 namespace switcher {
-namespace data {
 namespace JSONSerializer {
-std::string serialize(Tree::ptrc);
-// FIXME implement this: Tree::ptr deserialize (std::string &serialized);
+std::string serialize(InfoTree::ptrc);
+// FIXME implement this: InfoTree::ptr deserialize (std::string &serialized);
 };
-}  // namespace data
 }  // namespace switcher
 #endif

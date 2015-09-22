@@ -105,12 +105,12 @@ class Quiddity {
                           void *user_data);
   // information
   template <typename R>
-  R invoke_info_tree (std::function<R(data::Tree::ptrc tree)> fun) {
+  R invoke_info_tree (std::function<R(InfoTree::ptrc tree)> fun) {
     return fun(information_tree_.get());
   }
   // FIXME remove get_info
   std::string get_info(const std::string &path);
-  Make_consultable(Quiddity, data::Tree, information_tree_.get(), tree);
+  Make_consultable(Quiddity, InfoTree, information_tree_.get(), tree);
     
   // shmdata socket names
   static std::string get_socket_name_prefix();
@@ -121,7 +121,7 @@ class Quiddity {
 
  private:
   // information tree
-  data::Tree::ptr information_tree_;
+  InfoTree::ptr information_tree_;
   
   // properties
   PContainer props_;
@@ -190,9 +190,9 @@ class Quiddity {
  protected:
   // information
   bool graft_tree(const std::string &path,
-                  data::Tree::ptr tree_to_graft,
+                  InfoTree::ptr tree_to_graft,
                   bool do_signal = true);
-  data::Tree::ptr prune_tree(const std::string &path,
+  InfoTree::ptr prune_tree(const std::string &path,
                              bool do_signal = true);
   
   // property

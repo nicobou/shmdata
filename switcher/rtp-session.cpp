@@ -519,7 +519,7 @@ bool RtpSession::add_data_stream(const std::string &shmpath) {
           },
           [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate){
             this->graft_tree(".shmdata.reader." + shmpath + ".byte_rate",
-                             data::Tree::make(std::to_string(byte_rate)));
+                             InfoTree::make(std::to_string(byte_rate)));
           }));
   g_object_set(G_OBJECT(src), "socket-path", shmpath.c_str(), nullptr);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), src);
@@ -712,7 +712,7 @@ void RtpSession::on_rtp_caps(const std::string &shmdata_path, std::string caps) 
       + label
       + "\"";
   graft_tree("rtp_caps." + std::move(shmdata_path),
-             data::Tree::make(std::move(caps)));
+             InfoTree::make(std::move(caps)));
   {  // stream ready, unlocking add_data_stream
     std::unique_lock<std::mutex> lock(this->stream_mutex_);
     this->stream_added_ = true;

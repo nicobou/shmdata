@@ -33,7 +33,7 @@ namespace switcher {
 std::map<std::pair<std::string, std::string>, guint> Quiddity::signals_ids_{};
 
 Quiddity::Quiddity():
-    information_tree_(data::Tree::make()),
+    information_tree_(InfoTree::make()),
     props_(information_tree_),
     properties_description_(std::make_shared<JSONBuilder>()),
     methods_description_(std::make_shared<JSONBuilder>()),
@@ -483,16 +483,16 @@ std::string Quiddity::get_properties_description() {
   // properties_description_->end_object();
 
   // return properties_description_->get_string(true);
-  data::Tree::ptr tree = information_tree_->get(".property");
+  InfoTree::ptr tree = information_tree_->get(".property");
   if (tree)
-    return data::JSONSerializer::serialize(tree.get());
+    return JSONSerializer::serialize(tree.get());
   return "null";
 }
 
 std::string Quiddity::get_property_description(const std::string &property_name) {
-  data::Tree::ptr tree = information_tree_->get(".property." + property_name);
+  InfoTree::ptr tree = information_tree_->get(".property." + property_name);
   if (tree)
-    return data::JSONSerializer::serialize(tree.get());
+    return JSONSerializer::serialize(tree.get());
   return "null";
 }
 
@@ -724,14 +724,14 @@ bool Quiddity::disable_method(const std::string &method_name) {
 }
 
 std::string Quiddity::get_info(const std::string &path) {
-  data::Tree::ptr tree = information_tree_->get(path);
+  InfoTree::ptr tree = information_tree_->get(path);
   if (tree)
-    return data::JSONSerializer::serialize(tree.get());
+    return JSONSerializer::serialize(tree.get());
   return "null";
 }
 
 bool Quiddity::graft_tree(const std::string &path,
-                          data::Tree::ptr tree,
+                          InfoTree::ptr tree,
                           bool do_signal) {
   if (!information_tree_->graft(path, tree))
     return false;
@@ -740,8 +740,8 @@ bool Quiddity::graft_tree(const std::string &path,
   return true;
 }
 
-data::Tree::ptr Quiddity::prune_tree(const std::string &path, bool do_signal) {
-  data::Tree::ptr result  = information_tree_->prune(path);
+InfoTree::ptr Quiddity::prune_tree(const std::string &path, bool do_signal) {
+  InfoTree::ptr result  = information_tree_->prune(path);
   if (result) {
     if (do_signal)
       signal_emit("on-tree-pruned", path.c_str(), nullptr);

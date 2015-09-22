@@ -58,7 +58,7 @@ PJCall::PJCall(PJSIP *sip_instance):
                                            + "-"
                                            + sip_instance->get_name()
                                            )),
-    contact_shm_(data::Tree::make()) {
+    contact_shm_(InfoTree::make()) {
   pj_status_t status;
   local_ips_ = NetUtils::get_ips();
   for (auto &it: local_ips_) 
@@ -236,7 +236,7 @@ bool PJCall::release_incoming_call(call_t *call, pjsua_buddy_id id){
       + "-" 
       + std::string(call->peer_uri, 0, call->peer_uri.find('@'));
   auto shm_keys = PJSIP::this_->sip_calls_->manager_->
-      use_tree<MPtr(&data::Tree::get_child_keys)>(dec_name, std::string(".shmdata.writer."));
+      use_tree<MPtr(&InfoTree::get_child_keys)>(dec_name, std::string(".shmdata.writer."));
   for (auto &it: shm_keys)
     PJSIP::this_->prune_tree(std::string(".shmdata.writer." + it));
   if(!PJSIP::this_->sip_calls_->manager_->remove(dec_name)){
@@ -246,14 +246,14 @@ bool PJCall::release_incoming_call(call_t *call, pjsua_buddy_id id){
   if (PJSIP::this_->sip_calls_->quid_uri_.end() != quid_uri_it)
     PJSIP::this_->sip_calls_->quid_uri_.erase(quid_uri_it);
   // updating recv status in the tree
-  data::Tree::ptr tree = PJSIP::this_->
+  InfoTree::ptr tree = PJSIP::this_->
       prune_tree(std::string(".buddies." + std::to_string(id)),
                  false);  // do not signal since the branch will be re-grafted
   if (!tree) {
     g_warning("cannot find buddy information tree, call status update cancelled");
   } else {
     tree->graft(std::string(".recv_status."),
-                data::Tree::make("disconnected"));
+                InfoTree::make("disconnected"));
     PJSIP::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
   }
   // removing call
@@ -278,14 +278,14 @@ bool PJCall::release_outgoing_call(call_t *call, pjsua_buddy_id id){
              nullptr,
              { call->peer_uri });
   // updating call status in the tree
-  data::Tree::ptr tree = PJSIP::this_->
+  InfoTree::ptr tree = PJSIP::this_->
       prune_tree(std::string(".buddies." + std::to_string(id)),
                  false);  // do not signal since the branch will be re-grafted
   if (!tree) {
     g_warning("cannot find buddy information tree, call status update cancelled");
   } else {
     tree->graft(std::string(".send_status."),
-                data::Tree::make("disconnected"));
+                InfoTree::make("disconnected"));
     PJSIP::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
   }
   //removing call
@@ -303,7 +303,7 @@ void PJCall::on_inv_state_confirmed(call_t *call,
                                     pjsua_buddy_id id) {
     g_debug("Call connected");
     // updating call status in the tree
-    data::Tree::ptr tree = PJSIP::this_->
+    InfoTree::ptr tree = PJSIP::this_->
         prune_tree(std::string(".buddies." + std::to_string(id)),
                    false);  // do not signal since the branch will be re-grafted
     if (!tree) {
@@ -322,9 +322,9 @@ void PJCall::on_inv_state_confirmed(call_t *call,
     PJSIP::this_->sip_calls_->ocall_cv_.notify_all();
   }
   if (calls.end() != it)
-    tree->graft(std::string(".send_status."), data::Tree::make("calling"));
+    tree->graft(std::string(".send_status."), InfoTree::make("calling"));
   else
-    tree->graft(std::string(".recv_status."), data::Tree::make("receiving"));
+    tree->graft(std::string(".recv_status."), InfoTree::make("receiving"));
   PJSIP::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
 }
 
@@ -339,7 +339,7 @@ void PJCall::on_inv_state_connecting(call_t *call,
                                      pjsip_inv_session */*inv*/,
                                      pjsua_buddy_id id) {
     // updating call status in the tree
-    data::Tree::ptr tree = PJSIP::this_->
+    InfoTree::ptr tree = PJSIP::this_->
         prune_tree(std::string(".buddies." + std::to_string(id)),
                    false);  // do not signal since the branch will be re-grafted
     if (!tree) {
@@ -353,9 +353,9 @@ void PJCall::on_inv_state_connecting(call_t *call,
                            return c.inv == call->inv;
                          });
   if (calls.end() != it)    
-    tree->graft(std::string(".send_status."), data::Tree::make("connecting"));
+    tree->graft(std::string(".send_status."), InfoTree::make("connecting"));
   else
-    tree->graft(std::string(".recv_status."), data::Tree::make("connecting"));
+    tree->graft(std::string(".recv_status."), InfoTree::make("connecting"));
   PJSIP::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
 }
 
@@ -1088,7 +1088,7 @@ void PJCall::make_call(std::string dst_uri) {
     return;
   }
   // updating call status in the tree
-  data::Tree::ptr tree = sip_instance_->
+  InfoTree::ptr tree = sip_instance_->
         prune_tree(std::string(".buddies." + std::to_string(id)),
                    false);  // do not signal since the branch will be re-grafted
   if (!tree) {
@@ -1096,7 +1096,7 @@ void PJCall::make_call(std::string dst_uri) {
     return;
   }
   tree->graft(std::string(".send_status."),
-              data::Tree::make("calling"));
+              InfoTree::make("calling"));
   sip_instance_->
       graft_tree(std::string(".buddies." + std::to_string(id)), tree);
 }
@@ -1113,7 +1113,7 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
     return;
   }
   auto paths = PJSIP::this_->
-      tree<MPtr(&data::Tree::copy_leaf_values)>(
+      tree<MPtr(&InfoTree::copy_leaf_values)>(
           std::string(".buddies." + std::to_string(id) + ".connections"));
   // std::for_each(paths.begin(), paths.end(),
   //               [&] (const std::string &val){
@@ -1126,7 +1126,7 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
   gint port = starting_rtp_port_;
   for (auto &it : paths) {
     std::string data = manager->
-        use_tree<MPtr(&data::Tree::branch_read_data<std::string>)>(
+        use_tree<MPtr(&InfoTree::branch_read_data<std::string>)>(
             std::string("siprtp"),
             std::string("rtp_caps.") + it);
     GstCaps *caps = gst_caps_from_string(data.c_str());
@@ -1269,18 +1269,18 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
     return;
   }
   if (attach) {
-    data::Tree::ptr tree = sip_instance_->
+    InfoTree::ptr tree = sip_instance_->
         prune_tree(std::string(".buddies." + std::to_string(id)),
                    false);  // do not signal since the branch will be re-grafted
   if (!tree)
-    tree = data::Tree::make();
+    tree = InfoTree::make();
     manager_->invoke_va("siprtp",
                         "add_data_stream",
                         nullptr,
                         shmpath.c_str(),
                         nullptr);
     tree->graft(std::string(".connections." + shmpath),
-                            data::Tree::make(shmpath));
+                            InfoTree::make(shmpath));
     tree->tag_as_array(".connections", true);
     sip_instance_->graft_tree(".buddies." + std::to_string(id),
                               tree);
@@ -1318,18 +1318,18 @@ PJCall::internal_manager_cb(const std::string &/*subscriber_name */,
   PJCall *context = static_cast<PJCall *>(user_data);
   if (0 == sig_name.compare("on-tree-grafted") 
       && 0 == std::string(".shmdata.writer.").compare(std::string(params[0], 0, 16))) {
-    // make a copy through serialization
+    // FIXME, this should not make a copy through serialization
     std::string stree = context->manager_->invoke_info_tree<std::string>(
         quid_name,
-        [&](data::Tree::ptrc t){
-          return data::BasicSerializer::serialize(data::Tree::get_subtree(t, params[0]));
+        [&](InfoTree::ptrc t){
+          return BasicSerializer::serialize(InfoTree::get_subtree(t, params[0]));
         });
-    auto shmtree = data::BasicSerializer::deserialize(stree);
+    auto shmtree = BasicSerializer::deserialize(stree);
     auto it = context->quid_uri_.find(quid_name);
     if (context->quid_uri_.end() == it)
       g_warning("uri not saved for internal quiddity %s", quid_name.c_str());
     else 
-      shmtree->graft("uri", data::Tree::make(it->second));
+      shmtree->graft("uri", InfoTree::make(it->second));
     context->sip_instance_->graft_tree(params[0], shmtree);
     return;
   } else if (0 == sig_name.compare("on-tree-pruned")

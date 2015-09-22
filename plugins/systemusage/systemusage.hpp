@@ -64,7 +64,7 @@ class SystemUsage: public Quiddity {
  private:
   CustomPropertyHelper::ptr custom_props_;
   GParamSpec *period_prop_{nullptr};
-  data::Tree::ptr tree_;
+  InfoTree::ptr tree_;
   double period_;
   std::map<std::string, Cpu> _cpus{};
   std::map<std::string, Net> _net{};

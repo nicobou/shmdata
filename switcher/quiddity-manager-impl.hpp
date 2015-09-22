@@ -83,10 +83,10 @@ class QuiddityManager_Impl
   // information tree
   template<typename R>
   R invoke_info_tree(const std::string &nick_name,
-                     std::function<R(data::Tree::ptrc tree)> fun){
+                     std::function<R(InfoTree::ptrc tree)> fun){
     auto it = quiddities_.find(nick_name);
     if (quiddities_.end() == it)
-      return fun(data::Tree::make ().get());
+      return fun(InfoTree::make ().get());
     return quiddities_[nick_name]->invoke_info_tree<R>(fun);
   }  
   std::string get_info(const std::string &nick_name,

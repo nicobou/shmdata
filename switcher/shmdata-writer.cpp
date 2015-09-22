@@ -60,7 +60,7 @@ void ShmdataWriter::update_quid_byte_rate(){
     bytes_written_ = 0;
   }
   quid_->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
-                    data::Tree::make(std::to_string(bytes)));
+                    InfoTree::make(std::to_string(bytes)));
 }
 
 }  // namespace switcher

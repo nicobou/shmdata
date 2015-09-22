@@ -37,7 +37,7 @@ class PContainer{
   enum pstate_t {ENABLED, DISABLED, REMOVED};
   using pstate_cb_t = std::function<void(pstate_t state)>;
   PContainer() = delete;
-  PContainer(data::Tree::ptr tree);  // will own it and write into .property.
+  PContainer(InfoTree::ptr tree);  // will own it and write into .property.
 
   prop_id_t make_int(const std::string &strid,
                      prop::set_t<int> set,
@@ -409,7 +409,7 @@ class PContainer{
   std::map<prop_id_t, std::unique_ptr<PropertyBase>> props_{};
   std::map<std::string, id_t> ids_{};
   std::map<id_t, std::string> strids_{};
-  data::Tree::ptr tree_;
+  InfoTree::ptr tree_;
   CounterMap suborders_{};
   mutable std::unordered_map<register_id_t, pstate_cb_t> state_cbs_{};
   
@@ -433,10 +433,10 @@ class PContainer{
     prop->set_id(counter_);
     auto tree = prop->get_spec();
     tree_->graft(std::string("property.") + strid, tree);
-    tree->graft("id", data::Tree::make(strid));
-    tree->graft("order", data::Tree::make(20 * (suborders_.get_count(parent_strid) + 1)));
-    tree->graft("parent", data::Tree::make(parent_strid));
-    tree->graft("enabled", data::Tree::make(true));
+    tree->graft("id", InfoTree::make(strid));
+    tree->graft("order", InfoTree::make(20 * (suborders_.get_count(parent_strid) + 1)));
+    tree->graft("parent", InfoTree::make(parent_strid));
+    tree->graft("enabled", InfoTree::make(true));
     return counter_;
   }
 };

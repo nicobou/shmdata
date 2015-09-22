@@ -231,11 +231,11 @@ bool DummyPlugin::init() {
                                                    nullptr), this);
 
   // creating some custom infos
-  data::Tree::ptr tree = data::Tree::make();
-  tree->graft(".child1.child2", data::Tree::make("switch"));
-  tree->graft(".child1.child3", data::Tree::make(1.2f));
-  tree->graft(".child1.child2.bla1", data::Tree::make("wire"));
-  tree->graft(".child1.child2.bla2", data::Tree::make("hub"));
+  InfoTree::ptr tree = InfoTree::make();
+  tree->graft(".child1.child2", InfoTree::make("switch"));
+  tree->graft(".child1.child3", InfoTree::make(1.2f));
+  tree->graft(".child1.child2.bla1", InfoTree::make("wire"));
+  tree->graft(".child1.child2.bla2", InfoTree::make("hub"));
   // attaching it to the quiddity (at the root)
   graft_tree(".custom.information.", tree);
   g_debug("hello from plugin");

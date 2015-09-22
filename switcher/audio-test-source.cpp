@@ -78,7 +78,7 @@ bool AudioTestSource::start() {
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
         this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
-                         data::Tree::make(byte_rate));
+                         InfoTree::make(byte_rate));
       });
   gst_pipeline_->play(true);
   return true;

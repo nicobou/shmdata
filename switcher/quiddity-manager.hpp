@@ -92,7 +92,7 @@ class QuiddityManager
                        const std::string &path);
   template<typename R>
   R invoke_info_tree (const std::string &nick_name,
-                      std::function<R(data::Tree::ptrc tree)> fun){
+                      std::function<R(InfoTree::ptrc tree)> fun){
     return manager_impl_->invoke_info_tree<R> (nick_name, fun);
   }
 
