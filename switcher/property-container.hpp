@@ -330,17 +330,23 @@ class PContainer{
                           Fraction::ator_t max_denom);
   
   prop_id_t make_parented_fraction(const std::string &strid,
-                                    const std::string &parent_strid,
-                                    prop::set_t<Fraction> set,
-                                    prop::get_t<Fraction> get,
-                                    const std::string &label,
-                                    const std::string &description,
-                                    const Fraction &default_value,
-                          Fraction::ator_t min_num,
+                                   const std::string &parent_strid,
+                                   prop::set_t<Fraction> set,
+                                   prop::get_t<Fraction> get,
+                                   const std::string &label,
+                                   const std::string &description,
+                                   const Fraction &default_value,
+                                   Fraction::ator_t min_num,
                           Fraction::ator_t min_denom,
                           Fraction::ator_t max_num,
                           Fraction::ator_t max_denom);
 
+  prop_id_t push(const std::string &strid,
+                 std::unique_ptr<PropertyBase> &&prop_ptr);
+
+  prop_id_t push_parented(const std::string &strid,
+                          const std::string &parent_strid,
+                          std::unique_ptr<PropertyBase> &&prop_ptr);
 
   template<typename ...T>
   prop_id_t make_tuple(const std::string &strid,
@@ -421,23 +427,10 @@ class PContainer{
   prop_id_t make_under_parent(const std::string &strid,
                               const std::string &parent_strid,
                               PropArgs ...args){
-    if(ids_.cend() != ids_.find(strid))
-      return 0;  // strid already taken
-    if(parent_strid != "" && ids_.cend() == ids_.find(parent_strid))
-      return 0;  // parent not found
-    props_[++counter_] =
-        std2::make_unique<Property2<PropType, PropGetSet>>(std::forward<PropArgs>(args)...);
-    ids_[strid] = counter_;
-    strids_[counter_] = strid;
-    auto *prop = props_[counter_].get();
-    prop->set_id(counter_);
-    auto tree = prop->get_spec();
-    tree_->graft(std::string("property.") + strid, tree);
-    tree->graft("id", InfoTree::make(strid));
-    tree->graft("order", InfoTree::make(20 * (suborders_.get_count(parent_strid) + 1)));
-    tree->graft("parent", InfoTree::make(parent_strid));
-    tree->graft("enabled", InfoTree::make(true));
-    return counter_;
+    return push_parented(
+        strid,
+        parent_strid,
+        std2::make_unique<Property2<PropType, PropGetSet>>(std::forward<PropArgs>(args)...));
   }
 };
 

@@ -539,4 +539,30 @@ std::string PContainer::get_str_str(const std::string &strid) const{
   return prop_it->second.get()->get_str();
 }
 
+PContainer::prop_id_t PContainer::push(const std::string &strid,
+                                       std::unique_ptr<PropertyBase> &&prop_ptr){
+  return push_parented(strid, "", std::forward<std::unique_ptr<PropertyBase>>(prop_ptr));
+}
+
+PContainer::prop_id_t PContainer::push_parented(const std::string &strid,
+                                                const std::string &parent_strid,
+                                                std::unique_ptr<PropertyBase> &&prop_ptr){
+  if(ids_.cend() != ids_.find(strid))
+    return 0;  // strid already taken
+  if(parent_strid != "" && ids_.cend() == ids_.find(parent_strid))
+    return 0;  // parent not found
+  props_[++counter_] = std::forward<std::unique_ptr<PropertyBase>>(prop_ptr);
+  ids_[strid] = counter_;
+  strids_[counter_] = strid;
+  auto *prop = props_[counter_].get();
+  prop->set_id(counter_);
+  auto tree = prop->get_spec();
+  tree_->graft(std::string("property.") + strid, tree);
+  tree->graft("id", InfoTree::make(strid));
+  tree->graft("order", InfoTree::make(20 * (suborders_.get_count(parent_strid) + 1)));
+  tree->graft("parent", InfoTree::make(parent_strid));
+  tree->graft("enabled", InfoTree::make(true));
+  return counter_;
+}
+
 }  // namespace switcher
