@@ -49,13 +49,13 @@ ShmdataWriter::~ShmdataWriter(){
 }
 
 void ShmdataWriter::bytes_written(size_t size){
-  std::unique_lock<std::mutex>(bytes_mutex_);
+  std::unique_lock<std::mutex> lock(bytes_mutex_);
   bytes_written_ += size;
 }
 
 void ShmdataWriter::update_quid_byte_rate(){
   decltype(bytes_written_) bytes;
-  {  std::unique_lock<std::mutex>(bytes_mutex_);
+  {  std::unique_lock<std::mutex> lock(bytes_mutex_);
     bytes = bytes_written_;
     bytes_written_ = 0;
   }

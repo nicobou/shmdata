@@ -116,34 +116,36 @@ class QuiddityManager
   Forward_consultable(QuiddityManager,
                       QuiddityManager_Impl,
                       manager_impl_.get(),
-                      use_prop,
+                      props,
                       use_prop);
   // FIXME no hook for set because it is templated
   // FIXME make original set_str_str able to set from numeric
   // id given as string
-  // FIXME from cpp_make_consultable, give key to selective hook methods
-  // Selective_hook(use_prop,
-  //                decltype(&PContainer::set_str),
-  //                &PContainer::set_str,
-  //                &QuiddityManager::set_str_wrapper);
-  // Selective_hook(use_prop,
-  //                decltype(&PContainer::set_str_str),
-  //                &PContainer::set_str_str,
-  //                &QuiddityManager::set_str_str_wrapper);
+  Selective_hook(use_prop,
+                 decltype(&PContainer::set_str),
+                 &PContainer::set_str,
+                 &QuiddityManager::set_str_wrapper);
+  Selective_hook(use_prop,
+                 decltype(&PContainer::set_str_str),
+                 &PContainer::set_str_str,
+                 &QuiddityManager::set_str_str_wrapper);
 
-  // global property wrapper
-  struct PropLock{
-    PropLock(std::mutex *seq_mutex): seq_mutex_(seq_mutex) {seq_mutex_->lock();}
-    ~PropLock(){seq_mutex_->unlock();}
-    PropLock(PropLock &) = delete;
-    PropLock &operator=(const PropLock&) = delete;
-    PropLock(PropLock &&) = default;
-    PropLock &operator=(PropLock&&) = default;
-   private:
-    std::mutex *seq_mutex_;
-  };
-  PropLock prop_global_wrapper() const {return PropLock(&seq_mutex_);}
-  Global_wrap(use_prop, PropLock, prop_global_wrapper);
+  // // global property wrapper
+  // struct PropLock{
+  //   PropLock(std::mutex *seq_mutex): seq_mutex_(seq_mutex) {
+  //       g_print("%s %d\n", __FUNCTION__, __LINE__);
+  //       seq_mutex_->lock();}
+  //   ~PropLock(){        g_print("%s %d\n", __FUNCTION__, __LINE__);
+  //     seq_mutex_->unlock();}
+  //   PropLock(PropLock &) = delete;
+  //   PropLock &operator=(const PropLock&) = delete;
+  //   PropLock(PropLock &&) = default;
+  //   PropLock &operator=(PropLock&&) = default;
+  //  private:
+  //   std::mutex *seq_mutex_;
+  // };
+  // PropLock prop_global_wrapper() const {return PropLock(&seq_mutex_);}
+  // Global_wrap(use_prop, PropLock, prop_global_wrapper);
 
   // propty hook for saving set prop
   
@@ -227,7 +229,7 @@ class QuiddityManager
   QuiddityManager_Impl::ptr manager_impl_;  // may be shared with others for automatic quiddity creation
   std::string name_;
   // running commands in sequence
-  QuiddityCommand::ptr command_;
+  mutable QuiddityCommand::ptr command_;
   mutable std::mutex seq_mutex_;
   GAsyncQueue *command_queue_;
   std::thread invocation_thread_;
@@ -236,7 +238,7 @@ class QuiddityManager
   std::mutex execution_done_mutex_;  // sync current thread and gmainloop
   std::weak_ptr<QuiddityManager> me_ {};
   // history
-  CommandHistory command_history_;
+  mutable CommandHistory command_history_;
   gint64 history_begin_time_;  // monotonic time, in microseconds
 
   QuiddityManager() = delete;
@@ -251,14 +253,14 @@ class QuiddityManager
   void invocation_thread();
   static gboolean execute_command(gpointer user_data);  // gmainloop source callback
   void invoke_in_thread();
-  bool must_be_saved(QuiddityCommand *cmd);
+  bool must_be_saved(QuiddityCommand::command id) const;
 
   bool set_str_wrapper(const std::string &quid,
                        PContainer::prop_id_t id,
-                       const std::string &val);
+                       const std::string &val) const;
   bool set_str_str_wrapper(const std::string &quid,
                            const std::string &strid,
-                           const std::string &val);
+                           const std::string &val) const;
 };
 }  // namespace switcher
 

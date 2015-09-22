@@ -81,8 +81,7 @@ void QuiddityManager::command_lock() {
   command_->time_ = cur_time - history_begin_time_;
 }
 
-bool QuiddityManager::must_be_saved(QuiddityCommand *cmd){
-  QuiddityCommand::command id = cmd->id_;
+bool QuiddityManager::must_be_saved(QuiddityCommand::command id) const{
   // actually a white list
   if (id == QuiddityCommand::create
       || id == QuiddityCommand::create_nick_named
@@ -91,9 +90,7 @@ bool QuiddityManager::must_be_saved(QuiddityCommand *cmd){
       || id == QuiddityCommand::set_property
       || id == QuiddityCommand::make_signal_subscriber
       || id == QuiddityCommand::remove_signal_subscriber
-      || (id == QuiddityCommand::invoke
-          && cmd->args_[1] != "last_midi_event_to_property"
-          && cmd->args_[1] != "next_midi_event_to_property"))
+      || id == QuiddityCommand::invoke)
     return true;
   return false;
 }
@@ -101,7 +98,11 @@ bool QuiddityManager::must_be_saved(QuiddityCommand *cmd){
 void QuiddityManager::command_unlock() {
   // command has been invoked with the return value
   // save the command
-  if (must_be_saved(command_.get()))
+  if (must_be_saved(command_->id_)
+      // // FIXME do something avoiding this horrible hack:
+      && !(QuiddityCommand::invoke == command_->id_
+           && command_->args_[1] != "last_midi_event_to_property"
+           && command_->args_[1] != "next_midi_event_to_property"))
     command_history_.push_back(command_);
   seq_mutex_.unlock();
 }
@@ -920,12 +921,12 @@ gboolean QuiddityManager::execute_command(gpointer user_data) {
               QuiddityCommand::get_string_from_id(context->command_->id_));
   }
 
-  return FALSE;               // remove from gmainloop
+  return FALSE;  // remove from gmainloop
 }
 
 bool QuiddityManager::set_str_wrapper(const std::string &quid,
                                       PContainer::prop_id_t id,
-                                      const std::string &val){
+                                      const std::string &val) const {
   seq_mutex_.lock();
   command_.reset(new QuiddityCommand());
   gint64 cur_time = g_get_monotonic_time(); 
@@ -934,16 +935,15 @@ bool QuiddityManager::set_str_wrapper(const std::string &quid,
   command_->add_arg(quid);
   command_->add_arg(std::to_string(id));
   command_->add_arg(val);
-  auto res = manager_impl_->use_prop<MPtr(&PContainer::set_str)>(quid, id, val);
-  if (must_be_saved(command_.get()))
+  if (must_be_saved(command_->id_))
     command_history_.push_back(command_);
   seq_mutex_.unlock();
-  return res;
+  return manager_impl_->props<MPtr(&PContainer::set_str)>(quid, id, val);
 }
 
 bool QuiddityManager::set_str_str_wrapper(const std::string &quid,
                                           const std::string &strid,
-                                          const std::string &val){
+                                          const std::string &val) const {
   seq_mutex_.lock();
   command_.reset(new QuiddityCommand());
   gint64 cur_time = g_get_monotonic_time(); 
@@ -952,11 +952,10 @@ bool QuiddityManager::set_str_str_wrapper(const std::string &quid,
   command_->add_arg(quid);
   command_->add_arg(strid);
   command_->add_arg(val);
-  auto res = manager_impl_->use_prop<MPtr(&PContainer::set_str_str)>(quid, strid, val);
-      if (must_be_saved(command_.get()))
+  if (must_be_saved(command_->id_))
     command_history_.push_back(command_);
   seq_mutex_.unlock();
-  return res;
+  return manager_impl_->props<MPtr(&PContainer::set_str_str)>(quid, strid, val);
 }
 
 }  // namespace switcher

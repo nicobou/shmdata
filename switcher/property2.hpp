@@ -23,6 +23,7 @@
 #include <map>
 #include <unordered_map>
 #include <tuple>
+#include <mutex>
 #include "./information-tree.hpp"
 #include "./property-internal-types.hpp"
 #include "./property-specification.hpp"
@@ -120,14 +121,17 @@ class Property2: public PropertyBase{
     if (!doc_.is_valid(val)){  // out of range
       return false;
     }
+    { std::unique_lock<std::mutex> lock(ts_);
     if (!set_(val))  // implementation
       return false;
+    }
     if (do_notify)
       notify();
     return true;
   }
 
   W get() const{
+    std::unique_lock<std::mutex> lock(ts_);
     return get_();
   }
   
@@ -150,6 +154,7 @@ class Property2: public PropertyBase{
   PropertySpecification<V, W> doc_;
   set_cb_t set_;
   get_cb_t get_;
+  mutable std::mutex ts_{};
 };
 
 }  // namespace switcher

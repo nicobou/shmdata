@@ -522,7 +522,8 @@ bool
 Quiddity::subscribe_property(const std::string &property_name,
                              Property::Callback cb,
                              void *user_data) {
-  // auto it = properties_.find(property_name);
+  // remove this FIXME
+    // auto it = properties_.find(property_name);
   // if (properties_.end() == it) {
   //   g_debug("property not found (%s)", property_name.c_str());
   //   return false;

@@ -109,7 +109,7 @@ class QuiddityManager_Impl
       std::string,            // accessor key type                                       
       construct_error_return, // what is suposed to be returned when key has not been found
       prop,                   // method used by quiddities to access the consultable
-      use_prop);              // public forwarding method                           
+      props);                 // public forwarding method                           
   
   // doc (json formatted)
   std::string get_properties_description(const std::string &quiddity_name);

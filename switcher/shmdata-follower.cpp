@@ -59,7 +59,7 @@ ShmdataFollower::~ShmdataFollower(){
 
 void ShmdataFollower::on_data(void *data, size_t size) {
   {
-    std::unique_lock<std::mutex>(bytes_mutex_);
+    std::unique_lock<std::mutex> lock(bytes_mutex_);
     bytes_written_ += size;
   }
   if (!od_) {
@@ -86,7 +86,7 @@ void ShmdataFollower::on_server_disconnected(){
 }
 
 void ShmdataFollower::update_quid_byte_rate(){
-  std::unique_lock<std::mutex>(bytes_mutex_);
+  std::unique_lock<std::mutex> lock(bytes_mutex_);
   quid_->graft_tree(tree_path_ + shmpath_ + ".byte_rate",
                     data::Tree::make(std::to_string(bytes_written_)));
   bytes_written_ = 0;
