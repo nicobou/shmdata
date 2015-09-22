@@ -21,52 +21,27 @@
 #include "./quiddity.hpp"
 
 namespace switcher {
-StartableQuiddity::StartableQuiddity():
-    startable_custom_props_(std::make_shared<CustomPropertyHelper>()) {
-}
-
-StartableQuiddity::~StartableQuiddity() {
-}
 
 void StartableQuiddity::init_startable(void *quiddity) {
   Quiddity *quid = static_cast<Quiddity *>(quiddity);
-  started_prop_ =
-      startable_custom_props_->make_boolean_property("started",
-                                                     "started or not",
-                                                     (gboolean) FALSE,
-                                                     (GParamFlags)
-                                                     G_PARAM_READWRITE,
-                                                     StartableQuiddity::set_started,
-                                                     StartableQuiddity::get_started,
-                                                     this);
-  quid->install_property_by_pspec(startable_custom_props_->get_gobject(),
-                                  started_prop_,
-                                  "started",
-                                  "Started");
-}
-
-gboolean StartableQuiddity::get_started(void *user_data) {
-  StartableQuiddity *context = static_cast<StartableQuiddity *>(user_data);
-  if (!context->started_)
-    return FALSE;
-  return TRUE;
-}
-
-void StartableQuiddity::set_started(gboolean started, void *user_data) {
-  StartableQuiddity *context = static_cast<StartableQuiddity *>(user_data);
-  if (started) {
-    if (context->start())
-      context->started_ = true;
-  } else {
-    if (context->stop())
-      context->started_ = false;
-  }
-  context->startable_custom_props_->
-      notify_property_changed(context->started_prop_);
+  quid->pmanage<MPtr(&PContainer::make_bool)>(
+      "started",
+      [this](bool val){
+        if (val) {
+          if (!start()) return false;
+        } else {
+          if (!stop()) return false;
+        }
+        __started_ = val;
+        return true;},
+      [this](){return __started_;},
+      "Started",
+      "Start/stop the processing",
+      __started_);
 }
 
 bool StartableQuiddity::is_started() const {
-  return started_;
+  return __started_;
 }
 
 }  // namespace switcher

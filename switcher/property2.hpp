@@ -47,7 +47,8 @@ class PropertyBase{
   virtual InfoTree::ptr get_spec() = 0;
   virtual bool set_str(const std::string &val, bool do_notify = true) const = 0;
   virtual std::string get_str() const = 0;
-
+  virtual std::unique_lock<std::mutex> get_lock() = 0;
+  
   prop_id_t get_id() const {return id_;}
   register_id_t subscribe(notify_cb_t fun) const {
     to_notify_[++counter_] = fun;
@@ -63,7 +64,7 @@ class PropertyBase{
   size_t get_type_id_hash() const {
     return type_hash_;
   }
-  void notify() const {
+  void notify() const {  // const ??
     for(auto &it: to_notify_)
       it.second();
   }
@@ -116,6 +117,7 @@ class Property2: public PropertyBase{
  
   bool set(const W &val, bool do_notify = true) const{
     if (nullptr == set_){  // read only
+      g_warning("set is unavailable for read-only properties");
       return false;
     }
     if (!doc_.is_valid(val)){  // out of range
@@ -125,8 +127,9 @@ class Property2: public PropertyBase{
     if (!set_(val))  // implementation
       return false;
     }
-    if (do_notify)
+    if (do_notify){
       notify();
+    }
     return true;
   }
 
@@ -149,6 +152,11 @@ class Property2: public PropertyBase{
   }
   
   InfoTree::ptr get_spec() final {return doc_.get_spec();}
+
+  
+  std::unique_lock<std::mutex> get_lock(){
+    return std::unique_lock<std::mutex> (ts_);
+  }
 
  private:
   PropertySpecification<V, W> doc_;

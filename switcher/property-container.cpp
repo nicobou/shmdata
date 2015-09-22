@@ -565,4 +565,12 @@ PContainer::prop_id_t PContainer::push_parented(const std::string &strid,
   return counter_;
 }
 
+std::unique_lock<std::mutex> PContainer::get_lock(prop_id_t id){
+  return props_.find(id)->second->get_lock();
+}
+
+void PContainer::notify(prop_id_t id){
+  props_.find(id)->second->notify();
+}
+
 }  // namespace switcher

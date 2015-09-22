@@ -207,14 +207,12 @@ main(int argc, char *argv[]) {
 
   // loading plugins from default location // FIXME add an option
 #ifdef HAVE_CONFIG_H
-  gchar *
-      usr_plugin_dir = g_strdup_printf("/usr/%s-%s/plugins", PACKAGE_NAME,
-                                       LIBSWITCHER_API_VERSION);
+  gchar *usr_plugin_dir = g_strdup_printf("/usr/%s-%s/plugins", PACKAGE_NAME,
+                                          LIBSWITCHER_API_VERSION);
   manager->scan_directory_for_plugins(usr_plugin_dir);
   g_free(usr_plugin_dir);
 
-  gchar *
-      usr_local_plugin_dir =
+  gchar *usr_local_plugin_dir =
       g_strdup_printf("/usr/local/%s-%s/plugins", PACKAGE_NAME,
                       LIBSWITCHER_API_VERSION);
   manager->scan_directory_for_plugins(usr_local_plugin_dir);

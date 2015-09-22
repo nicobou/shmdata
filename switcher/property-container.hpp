@@ -378,7 +378,11 @@ class PContainer{
 
   bool remove(prop_id_t prop_id);
   bool enable(prop_id_t prop_id, bool enable);
-
+  
+  // use when property is updated without "set" (method is read-only for instance)
+  std::unique_lock<std::mutex> get_lock(prop_id_t prop_id);
+  void notify(prop_id_t prop_id);
+  
   // return 0 if id is not found
   prop_id_t get_id(const std::string &id) const;
 

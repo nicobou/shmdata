@@ -91,8 +91,6 @@ class DummyPlugin: public Quiddity {
   static gchar *my_hello_world_method(gchar *first_arg, void *user_data);
 
   bool init() final;
-  // bool start() final;
-  // bool stop() final;
 };
 
 SWITCHER_DECLARE_PLUGIN(DummyPlugin);
