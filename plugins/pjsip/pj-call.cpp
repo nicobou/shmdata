@@ -160,22 +160,15 @@ PJCall::PJCall(PJSIP *sip_instance):
                                                        G_TYPE_BOOLEAN,
                                                        nullptr),
                      this);
-  starting_rtp_port_spec_ =
-      sip_instance_->custom_props_->
-      make_int_property("starting-rtp-port",
-                        "First RTP port to try",
-                        0, 65535,
-                        starting_rtp_port_,
-                        (GParamFlags)
-                        G_PARAM_READWRITE,
-                        PJCall::set_starting_rtp_port,
-                        PJCall::get_starting_rtp_port,
-                        this);
-  sip_instance_->
-      install_property_by_pspec(sip_instance_->custom_props_->get_gobject(),
-                                starting_rtp_port_spec_,
-                                "starting-rtp-port",
-                                "First RTP port to try");
+  sip_instance_->pmanage<MPtr(&PContainer::make_int)>(
+      "starting-rtp-port",
+      [this](const int &val){starting_rtp_port_ = val; return true;},
+      [this](){return starting_rtp_port_;},
+      "First RTP port to try",
+      "First RTP port to try",
+      starting_rtp_port_,
+      0,
+      65535);
 }
 
 PJCall::~PJCall() {
@@ -1294,19 +1287,6 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
     sip_instance_->prune_tree(".buddies." + std::to_string(id)
                               + ".connections." + shmpath);
   }
-}
-
-void PJCall::set_starting_rtp_port(const gint value, void *user_data) {
-  PJCall *context = static_cast<PJCall *>(user_data);
-  context->starting_rtp_port_ = value;
-  GObjectWrapper::notify_property_changed(context->sip_instance_->gobject_->
-                                          get_gobject(),
-                                          context->starting_rtp_port_spec_);
-}
-
-gint PJCall::get_starting_rtp_port(void *user_data) {
-  PJCall *context = static_cast<PJCall *>(user_data);
-  return context->starting_rtp_port_;
 }
 
 void

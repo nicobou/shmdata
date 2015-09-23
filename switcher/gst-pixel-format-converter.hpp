@@ -22,7 +22,6 @@
 
 #include <memory>
 #include "./quiddity.hpp"
-#include "./custom-property-helper.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/shmdata-utils.hpp"
@@ -31,9 +30,7 @@ namespace switcher {
 class GstPixelFormatConverter {
  public:
   using uptr = std::unique_ptr<GstPixelFormatConverter>;
-
   GstPixelFormatConverter(Quiddity *quid,
-                          CustomPropertyHelper *prop_helper,
                           const char *property_name,
                           const char *display_text);
   GstPixelFormatConverter() = delete;
@@ -60,18 +57,14 @@ class GstPixelFormatConverter {
   std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
   std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
   // custom properties:
-  CustomPropertyHelper *custom_props_;
   std::string prop_name_{};  // name to give to the prop to be installed
-  GParamSpec *video_format_spec_{nullptr};
-  GEnumValue video_format_[128]{};
-  gint format_{0};
-  std::vector<std::string> formats_{};
-  void make_format_property(const char *name, const char *display_text);
+  Selection video_format_;
+  PContainer::prop_id_t video_format_id_;
+
+  std::vector<std::string> get_formats();
   bool disable_property();
   bool enable_property();
   std::string get_caps_str() const;
-  static void set_format(const gint value, void *user_data);
-  static gint get_format(void *user_data);
 };
 
 }  // namespace switcher

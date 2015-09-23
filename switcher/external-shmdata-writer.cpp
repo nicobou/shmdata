@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/gst-utils.hpp"
 #include "switcher/std2.hpp"
 #include "./external-shmdata-writer.hpp"
 
@@ -32,44 +31,27 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Nicolas Bouillot");
 
-ExternalShmdataWriter::ExternalShmdataWriter(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper>()) {
+ExternalShmdataWriter::ExternalShmdataWriter(const std::string &){
 }
 
 bool ExternalShmdataWriter::init() {
-  shmdata_path_spec_ =
-      custom_props_->make_string_property("shmdata-path",
-                                          "Path Of The Shmdata The Include",
-                                          "",
-                                          (GParamFlags) G_PARAM_READWRITE,
-                                          ExternalShmdataWriter::set_shmdata_path,
-                                          ExternalShmdataWriter::get_shmdata_path,
-                                          this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            shmdata_path_spec_, "shmdata-path",
-                            "Shmdata Path");
+  pmanage<MPtr(&PContainer::make_string)>(
+      "shmdata-path",
+      [this](const std::string &val){
+        shmdata_path_ = val;
+        shm_ = std2::make_unique<ShmdataFollower>(
+            this,
+            shmdata_path_,
+            nullptr,
+            nullptr,
+            nullptr,
+            ".shmdata.writer.");
+        return true;},
+      [this](){return shmdata_path_;},
+      "Shmdata Path",
+      "Path Of The Shmdata The Include",
+      "");
   return true;
-}
-
-void
-ExternalShmdataWriter::set_shmdata_path(const gchar *value, void *user_data)
-{
-  ExternalShmdataWriter *context = static_cast<ExternalShmdataWriter *>(user_data);
-  context->shmdata_path_ = value;
-  context->shm_ = std2::make_unique<ShmdataFollower>(context,
-                                                     context->shmdata_path_,
-                                                     nullptr,
-                                                     nullptr,
-                                                     nullptr,
-                                                     ".shmdata.writer.");
-  context->custom_props_->notify_property_changed(context->shmdata_path_spec_);
-}
-
-const gchar *ExternalShmdataWriter::get_shmdata_path(void *user_data) {
-  ExternalShmdataWriter *context = static_cast<ExternalShmdataWriter *>(user_data);
-  if (context->shmdata_path_.empty())
-    return "";
-  return context->shmdata_path_.c_str();
 }
 
 }  // namespace switcher

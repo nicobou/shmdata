@@ -45,9 +45,7 @@ class PJSIP: public Quiddity {
   bool stop();
 
  private:
-  CustomPropertyHelper::ptr custom_props_;
   unsigned sip_port_ {5060};
-  GParamSpec *sip_port_spec_ {nullptr};
   pj_thread_desc thread_handler_desc_ {};
   pj_thread_t *pj_thread_ref_ {nullptr};
   pjsua_transport_id transport_id_ {-1};
@@ -80,8 +78,6 @@ class PJSIP: public Quiddity {
   bool pj_sip_init();
   void exit_cmd();
   void run_command_sync(std::function<void()> command);
-  static void set_port(const gint value, void *user_data);
-  static gint get_port(void *user_data);
   void sip_worker_thread();
   void start_tcp_transport();
 };

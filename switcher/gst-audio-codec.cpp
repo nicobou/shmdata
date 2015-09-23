@@ -17,16 +17,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "./gst-audio-codec.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/gst-utils.hpp"
 #include "switcher/std2.hpp"
 #include "switcher/scope-exit.hpp"
-#include "./gst-audio-codec.hpp"
-
+#include "switcher/gprop-to-prop.hpp"
 
 namespace switcher {
 GstAudioCodec::GstAudioCodec(Quiddity *quid,
-                             CustomPropertyHelper *prop_helper,
                              const std::string &shmpath,
                              const std::string &shmpath_encoded):
     quid_(quid),
@@ -34,39 +33,33 @@ GstAudioCodec::GstAudioCodec(Quiddity *quid,
     shm_encoded_path_(shmpath_encoded),
     custom_shmsink_path_(!shmpath_encoded.empty()),
     gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
-    prop_helper_(prop_helper){
-  GstUtils::element_factory_list_to_g_enum(primary_codec_,
-                                           GST_ELEMENT_FACTORY_TYPE_AUDIO_ENCODER,
-                                           GST_RANK_PRIMARY,
-                                           true,
-                                           {"vorbisenc"});  // black list
-  GstUtils::element_factory_list_to_g_enum(secondary_codec_,
-                                           GST_ELEMENT_FACTORY_TYPE_AUDIO_ENCODER,
-                                           GST_RANK_SECONDARY,
-                                           true,
-                                           {"vorbisenc"});
-  primary_codec_spec_ =
-      prop_helper_->make_enum_property("codec",
-                                        "Codec Short List",
-                                        codec_,
-                                        primary_codec_,
-                                        (GParamFlags) G_PARAM_READWRITE,
-                                        GstAudioCodec::set_codec,
-                                        GstAudioCodec::get_codec,
-                                        this);
-    quid_->install_property_by_pspec(prop_helper_->get_gobject(),
-                                     primary_codec_spec_,
-                                     "codec",
-                                     "Audio Codecs (Short List)");
-  secondary_codec_spec_ =
-      prop_helper_->make_enum_property("codec",
-                                       "Codec Long List",
-                                       codec_,
-                                       secondary_codec_,
-                                       (GParamFlags) G_PARAM_READWRITE,
-                                       GstAudioCodec::set_codec,
-                                       GstAudioCodec::get_codec,
-                                       this);
+    primary_codec_(GstUtils::element_factory_list_to_pair_of_vectors(
+        GST_ELEMENT_FACTORY_TYPE_AUDIO_ENCODER,
+        GST_RANK_PRIMARY,
+        true,
+        {"vorbisenc"}), 0),
+  secondary_codec_(GstUtils::element_factory_list_to_pair_of_vectors(
+      GST_ELEMENT_FACTORY_TYPE_AUDIO_ENCODER,
+      GST_RANK_SECONDARY,
+      true,
+      {"vorbisenc"}), 0),
+  codec_id_(install_codec(true/*primary*/)),
+  codec_long_list_id_(quid_->pmanage<MPtr(&PContainer::make_bool)>(
+      "more_codecs",
+      [this](const bool &val){
+        codec_long_list_ = val;
+        quid_->pmanage<MPtr(&PContainer::remove)>(codec_id_);
+        if (val) 
+          install_codec(true);   // primary
+        else
+          install_codec(false);  // secondary
+        reset_codec_configuration(nullptr, this);
+        return true;
+      },
+      [this](){return codec_long_list_;},
+      "More Codecs",
+      "Enable more codecs in selection",
+      codec_long_list_)){
   quid_->install_method("Reset codec configuration",
                         "reset",
                         "Reset codec configuration to default",
@@ -77,40 +70,24 @@ GstAudioCodec::GstAudioCodec(Quiddity *quid,
                         Method::make_arg_type_description(G_TYPE_NONE,
                                                           nullptr),
                         this);
-  codec_long_list_spec_ =
-      prop_helper_->make_boolean_property("more_codecs",
-                                           "Get More codecs",
-                                           (gboolean) FALSE,
-                                           (GParamFlags) G_PARAM_READWRITE,
-                                           GstAudioCodec::set_codec_long_list,
-                                           GstAudioCodec::get_codec_long_list,
-                                           this);
-  quid->install_property_by_pspec(prop_helper_->get_gobject(),
-                                  codec_long_list_spec_,
-                                  "more_codecs", "More Codecs");
   set_shm(shmpath);
-  reset_codec_configuration(nullptr, this);
-}
-
-GstAudioCodec::~GstAudioCodec() {
-  GstUtils::free_g_enum_values(primary_codec_);
-  GstUtils::free_g_enum_values(secondary_codec_);
+  reset_codec_configuration(nullptr, this);  
 }
 
 void GstAudioCodec::hide(){
   quid_->disable_method("reset");
-  quid_->disable_property("codec");
-  quid_->disable_property("more_codecs");
+  quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_, false);
+  quid_->pmanage<MPtr(&PContainer::enable)>(codec_long_list_id_, false);
 }
 
 void GstAudioCodec::show(){
   quid_->enable_method("reset");
-  quid_->enable_property("codec");
-  quid_->enable_property("more_codecs");
+  quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_, true);
+  quid_->pmanage<MPtr(&PContainer::enable)>(codec_long_list_id_, true);
 }
 
 void GstAudioCodec::make_bin(){
-  if (codec_ != 0) {
+  if (0 != secondary_codec_.get()) {
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmsrc_.get_raw(),
                    queue_codec_element_.get_raw(),
@@ -130,7 +107,7 @@ void GstAudioCodec::make_bin(){
 }
 
 bool GstAudioCodec::remake_codec_elements() {
-  if (codec_ != 0) {  //no codec
+  if (0 != secondary_codec_.get()) {
     if (!UGstElem::renew(shmsrc_, {"socket-path"})
         || !UGstElem::renew(shm_encoded_, {"socket-path", "sync", "async"})
         || !UGstElem::renew(audio_convert_)
@@ -144,53 +121,11 @@ bool GstAudioCodec::remake_codec_elements() {
   return true;
 }
 
-void GstAudioCodec::set_codec(const gint value, void *user_data) {
-  GstAudioCodec *context = static_cast<GstAudioCodec *>(user_data);
-  context->uninstall_codec_properties();
-  context->codec_ = value;
-  if (0 == value)
-    return;
-  std::string codec_name = context->secondary_codec_[context->codec_].value_nick;
-  context->codec_element_.mute(codec_name.c_str());
-  context->remake_codec_elements();
-  context->make_codec_properties();
-}
-
-gint GstAudioCodec::get_codec(void *user_data) {
-  GstAudioCodec *context = static_cast<GstAudioCodec *>(user_data);
-  return context->codec_;
-}
-
-gboolean GstAudioCodec::get_codec_long_list(void *user_data) {
-  GstAudioCodec *context = static_cast<GstAudioCodec *>(user_data);
-  return context->codec_long_list_;
-}
-
-void
-GstAudioCodec::set_codec_long_list(gboolean codec_long_list,
-                                 void *user_data) {
-  GstAudioCodec *context = static_cast<GstAudioCodec *>(user_data);
-  context->codec_long_list_ = codec_long_list;
-
-  if (codec_long_list) {
-    context->quid_->uninstall_property("codec");
-    context->quid_->install_property_by_pspec(context->prop_helper_->get_gobject(),
-                                              context->secondary_codec_spec_,
-                                              "codec", "Audio Codecs (Long List)");
-  } else {
-    context->quid_->uninstall_property("codec");
-    context->quid_->install_property_by_pspec(context->prop_helper_->get_gobject(),
-                                              context->primary_codec_spec_,
-                                              "codec",
-                                              "Audio Codecs (Short List)");
-  }
-  // reset codec value
-  reset_codec_configuration(nullptr, context);
-}
 
 void GstAudioCodec::uninstall_codec_properties(){
   for (auto &it : codec_properties_)
-    quid_->uninstall_property(it);
+    quid_->pmanage<MPtr(&PContainer::remove)>(
+        quid_->pmanage<MPtr(&PContainer::get_id)>(it));
   codec_properties_.clear();
 }
 
@@ -202,10 +137,9 @@ void GstAudioCodec::make_codec_properties() {
   for (guint i = 0; i < num_properties; i++) {
     auto param_name = g_param_spec_get_name(props[i]);
     if (param_black_list_.end() == param_black_list_.find(param_name)){
-      quid_->install_property_by_pspec(G_OBJECT(codec_element_.get_raw()),
-                                       props[i],
-                                       param_name,
-                                       g_param_spec_get_nick(props[i]));
+      quid_->pmanage<MPtr(&PContainer::push)>(
+          param_name,
+          GPropToProp::to_prop(G_OBJECT(codec_element_.get_raw()), param_name));
       codec_properties_.push_back(param_name);
     }
   }
@@ -213,21 +147,15 @@ void GstAudioCodec::make_codec_properties() {
 
 gboolean GstAudioCodec::reset_codec_configuration(gpointer /*unused */ , gpointer user_data) {
   GstAudioCodec *context = static_cast<GstAudioCodec *>(user_data);
-  auto codec_prop_id = context->quid_->prop<MPtr(&PContainer::get_id)>("codec");
-  context->quid_->prop<MPtr(&PContainer::set_str)>(codec_prop_id, "opusenc");
-      //set_property("codec","opusenc");
-  // context->make_codec_properties();
-  // context->quid_->set_property("deadline","30000");  //30ms
-  // context->quid_->set_property("target-bitrate", "2000000"); // 2Mbps
-  // context->quid_->set_property("end-usage", "1"); // CBR
-  // context->quid_->set_property("keyframe-max-dist", "5");
+  auto codec_prop_id = context->quid_->pmanage<MPtr(&PContainer::get_id)>("codec");
+  context->quid_->pmanage<MPtr(&PContainer::set_str)>(codec_prop_id, "opusenc");
   return TRUE;
 }
 
 bool GstAudioCodec::start(){
   hide();
   uninstall_codec_properties();
-  if (0 == codec_)
+  if (0 != secondary_codec_.get()) 
     return true;
   shmsink_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shm_encoded_.get_raw(),
@@ -267,7 +195,7 @@ bool GstAudioCodec::start(){
 
 bool GstAudioCodec::stop(){
   show();
-  if (0 != codec_) {
+  if (0 != secondary_codec_.get()) {
     shmsink_sub_.reset();
     shmsrc_sub_.reset();
     quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
@@ -291,6 +219,27 @@ void GstAudioCodec::set_shm(const std::string &shmpath){
                "sync", FALSE,
                "async", FALSE,
                nullptr);
+}
+
+PContainer::prop_id_t GstAudioCodec::install_codec(bool primary){
+  return quid_->pmanage<MPtr(&PContainer::make_selection)>(
+      "codec",
+      [this](const size_t &val){
+        uninstall_codec_properties();
+        // primary_codec_ is used for documentation, secondary is the one
+        // used for actual work
+        secondary_codec_.select(val);
+        if (0 == val)
+          return true;
+        codec_element_.mute(secondary_codec_.get_current_nick().c_str());
+        remake_codec_elements();
+        make_codec_properties();
+        return true;
+      },
+      [this](){return secondary_codec_.get();},
+      "Audio Codecs",
+      "Selected audio codec for encoding",
+      primary ? primary_codec_ : secondary_codec_);
 }
 
 }  // namespace switcher

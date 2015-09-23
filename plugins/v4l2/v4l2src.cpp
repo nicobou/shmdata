@@ -41,8 +41,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 V4L2Src::V4L2Src(const std::string &):
     gst_pipeline_(std2::make_unique<GstPipeliner>(
         nullptr,
-        nullptr)),
-    custom_props_(std::make_shared<CustomPropertyHelper>()) {
+        nullptr)) {
   init_startable(this);
 }
 
@@ -61,37 +60,35 @@ bool V4L2Src::init() {
     g_debug("no video 4 linux device detected");
     return false;
   }
-  devices_enum_spec_ =
-      custom_props_->make_enum_property("device",
-                                        "Enumeration of v4l2 capture devices",
-                                        device_,
-                                        devices_enum_,
-                                        (GParamFlags) G_PARAM_READWRITE,
-                                        V4L2Src::set_camera,
-                                        V4L2Src::get_camera, this);
 
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            devices_enum_spec_, "device", "Capture Device");
-
+  pmanage<MPtr(&PContainer::make_selection)>(
+      "device",
+      [this](const size_t &val){
+        devices_enum_.select(val);
+        update_device_specific_properties(device_);
+        return true;
+      },
+      [this](){return devices_enum_.get();},
+      "Capture Device".
+      "Enumeration of v4l2 capture devices",
+      devices_enum_);
+  
   update_device_specific_properties(device_);
   codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
-                                             custom_props_.get(),
                                              shmpath_);
   return true;
 }
 
 void V4L2Src::update_capture_device() {
   gint i = 0;
+  std::vector<std::string> names;
+  std::vector<std::string> nicks;
   for (auto &it : capture_devices_) {
-    devices_enum_[i].value = i;
-    // FIXME free previous...
-    devices_enum_[i].value_name = g_strdup(it.card_.c_str());
-    devices_enum_[i].value_nick = g_strdup(it.file_device_.c_str());
+    names.push_back(it.card_);
+    nicks.push_back(it.file_device_);
     i++;
   }
-  devices_enum_[i].value = 0;
-  devices_enum_[i].value_name = nullptr;
-  devices_enum_[i].value_nick = nullptr;
+  devices_enum_ = Selection(std::make_pair(names, nicks), 0);
 }
 
 void V4L2Src::update_device_specific_properties(gint device_enum_id) {
@@ -624,17 +621,6 @@ bool V4L2Src::stop() {
   enable_property("device");
   update_device_specific_properties(device_);
   return true;
-}
-
-void V4L2Src::set_camera(const gint value, void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  context->device_ = value;
-  context->update_device_specific_properties(context->device_);
-}
-
-gint V4L2Src::get_camera(void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  return context->device_;
 }
 
 void V4L2Src::set_pixel_format(const gint value, void *user_data) {

@@ -17,16 +17,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "./gst-video-codec.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/gst-utils.hpp"
 #include "switcher/std2.hpp"
 #include "switcher/scope-exit.hpp"
-#include "./gst-video-codec.hpp"
-
+#include "switcher/gprop-to-prop.hpp"
 
 namespace switcher {
 GstVideoCodec::GstVideoCodec(Quiddity *quid,
-                             CustomPropertyHelper *prop_helper,
                              const std::string &shmpath,
                              const std::string &shmpath_encoded):
     quid_(quid),
@@ -34,39 +33,33 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid,
     shm_encoded_path_(shmpath_encoded),
     custom_shmsink_path_(!shmpath_encoded.empty()),
     gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
-    prop_helper_(prop_helper){
-  GstUtils::element_factory_list_to_g_enum(primary_codec_,
-                                           GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
-                                           GST_RANK_PRIMARY,
-                                           true,
-                                           {"schroenc", "theoraenc"});  // black list
-  GstUtils::element_factory_list_to_g_enum(secondary_codec_,
-                                           GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
-                                           GST_RANK_SECONDARY,
-                                           true,
-                                           {"schroenc", "theoraenc"});
-  primary_codec_spec_ =
-      prop_helper_->make_enum_property("codec",
-                                        "Codec Short List",
-                                        codec_,
-                                        primary_codec_,
-                                        (GParamFlags) G_PARAM_READWRITE,
-                                        GstVideoCodec::set_codec,
-                                        GstVideoCodec::get_codec,
-                                        this);
-    quid_->install_property_by_pspec(prop_helper_->get_gobject(),
-                                     primary_codec_spec_,
-                                     "codec",
-                                     "Video Codecs (Short List)");
-  secondary_codec_spec_ =
-      prop_helper_->make_enum_property("codec",
-                                       "Codec Long List",
-                                       codec_,
-                                       secondary_codec_,
-                                       (GParamFlags) G_PARAM_READWRITE,
-                                       GstVideoCodec::set_codec,
-                                       GstVideoCodec::get_codec,
-                                       this);
+    primary_codec_(GstUtils::element_factory_list_to_pair_of_vectors(
+        GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
+        GST_RANK_PRIMARY,
+        true,
+        {"schroenc", "theoraenc"}), 0),
+  secondary_codec_(GstUtils::element_factory_list_to_pair_of_vectors(
+      GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
+      GST_RANK_SECONDARY,
+      true,
+      {"schroenc", "theoraenc"}), 0),
+  codec_id_(install_codec(true/*primary*/)),
+  codec_long_list_id_(quid_->pmanage<MPtr(&PContainer::make_bool)>(
+      "more_codecs",
+      [this](const bool &val){
+        codec_long_list_ = val;
+        quid_->pmanage<MPtr(&PContainer::remove)>(codec_id_);
+        if (val) 
+          install_codec(true);   // primary
+        else
+          install_codec(false);  // secondary
+        reset_codec_configuration(nullptr, this);
+        return true;
+      },
+      [this](){return codec_long_list_;},
+      "More Codecs",
+      "Enable more codecs in selection",
+      codec_long_list_)){
   quid_->install_method("Reset codec configuration",
                         "reset",
                         "Reset codec configuration to default",
@@ -77,59 +70,42 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid,
                         Method::make_arg_type_description(G_TYPE_NONE,
                                                           nullptr),
                         this);
-  // FIXME decide what to do with this
-  // codec_long_list_spec_ =
-  //     prop_helper_->make_boolean_property("more_codecs",
-  //                                          "Get More codecs",
-  //                                          (gboolean) FALSE,
-  //                                          (GParamFlags) G_PARAM_READWRITE,
-  //                                          GstVideoCodec::set_codec_long_list,
-  //                                          GstVideoCodec::get_codec_long_list,
-  //                                          this);
-  // install_property_by_pspec(prop_helper_->get_gobject(),
-  //                           codec_long_list_spec_,
-  //                           "more_codecs", "More Codecs");
   set_shm(shmpath);
   reset_codec_configuration(nullptr, this);
 }
 
-GstVideoCodec::~GstVideoCodec() {
-  GstUtils::free_g_enum_values(primary_codec_);
-  GstUtils::free_g_enum_values(secondary_codec_);
-}
-
 void GstVideoCodec::hide(){
   quid_->disable_method("reset");
-  quid_->disable_property("codec");
-  quid_->disable_property("more_codecs");
+  quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_, false);
+  quid_->pmanage<MPtr(&PContainer::enable)>(codec_long_list_id_, false);
 }
 
 void GstVideoCodec::show(){
   quid_->enable_method("reset");
-  quid_->enable_property("codec");
-  quid_->enable_property("more_codecs");
+  quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_, true);
+  quid_->pmanage<MPtr(&PContainer::enable)>(codec_long_list_id_, true);
 }
 
 void GstVideoCodec::make_bin(){
-  if (codec_ != 0) {
-  gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
-                   shmsrc_.get_raw(),
-                   queue_codec_element_.get_raw(),
-                   color_space_codec_element_.get_raw(),
-                   codec_element_.get_raw(),
-                   shm_encoded_.get_raw(),
-                   nullptr);
-  gst_element_link_many(shmsrc_.get_raw(),
-                        queue_codec_element_.get_raw(),
-                        color_space_codec_element_.get_raw(),
-                        codec_element_.get_raw(),
-                        shm_encoded_.get_raw(),
-                        nullptr);
+  if (0 != secondary_codec_.get()) {
+    gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
+                     shmsrc_.get_raw(),
+                     queue_codec_element_.get_raw(),
+                     color_space_codec_element_.get_raw(),
+                     codec_element_.get_raw(),
+                     shm_encoded_.get_raw(),
+                     nullptr);
+    gst_element_link_many(shmsrc_.get_raw(),
+                          queue_codec_element_.get_raw(),
+                          color_space_codec_element_.get_raw(),
+                          codec_element_.get_raw(),
+                          shm_encoded_.get_raw(),
+                          nullptr);
   }
 }
 
 bool GstVideoCodec::remake_codec_elements() {
-  if (codec_ != 0) {  //no codec
+  if (0 != secondary_codec_.get()) {
     if (!UGstElem::renew(shmsrc_, {"socket-path"})
         || !UGstElem::renew(shm_encoded_, {"socket-path", "sync", "async"})
         || !UGstElem::renew(color_space_codec_element_)
@@ -142,63 +118,11 @@ bool GstVideoCodec::remake_codec_elements() {
   return true;
 }
 
-void GstVideoCodec::set_codec(const gint value, void *user_data) {
-  GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
-  context->uninstall_codec_properties();
-  context->codec_ = value;
-  if (0 == value)
-    return;
-  std::string codec_name = context->secondary_codec_[context->codec_].value_nick;
-  context->codec_element_.mute(codec_name.c_str());
-  if (codec_name == "x264enc")
-    context->copy_buffers_ = true;
-  else
-    context->copy_buffers_ = false;
-  context->remake_codec_elements();
-  context->make_codec_properties();
-  if (codec_name == "x264enc")
-    g_object_set(G_OBJECT(context->codec_element_.get_raw()),
-                 "byte-stream", TRUE,
-                 nullptr);
-}
-
-gint GstVideoCodec::get_codec(void *user_data) {
-  GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
-  return context->codec_;
-}
-
-// gboolean GstVideoCodec::get_codec_long_list(void *user_data) {
-//   GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
-//   return context->codec_long_list_;
-// }
-
-// void
-// GstVideoCodec::set_codec_long_list(gboolean codec_long_list,
-//                                  void *user_data) {
-//   GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
-//   context->codec_long_list_ = codec_long_list;
-
-//   if (codec_long_list) {
-//     context->uninstall_property("codec");
-//     context->install_property_by_pspec(context->
-//                                        prop_helper_->get_gobject(),
-//                                        context->secondary_codec_spec_,
-//                                        "codec", "Video Codecs (Long List)");
-//   } else {
-//     context->uninstall_property("codec");
-//     context->install_property_by_pspec(context->
-//                                        prop_helper_->get_gobject(),
-//                                        context->primary_codec_spec_,
-//                                        "codec",
-//                                        "Video Codecs (Short List)");
-//   }
-//   // reset codec value
-//   set_codec(0, context);
-// }
 
 void GstVideoCodec::uninstall_codec_properties(){
   for (auto &it : codec_properties_)
-    quid_->uninstall_property(it);
+    quid_->pmanage<MPtr(&PContainer::remove)>(
+        quid_->pmanage<MPtr(&PContainer::get_id)>(it));
   codec_properties_.clear();
 }
 
@@ -210,10 +134,9 @@ void GstVideoCodec::make_codec_properties() {
   for (guint i = 0; i < num_properties; i++) {
     auto param_name = g_param_spec_get_name(props[i]);
     if (param_black_list_.end() == param_black_list_.find(param_name)){
-      quid_->install_property_by_pspec(G_OBJECT(codec_element_.get_raw()),
-                                       props[i],
-                                       param_name,
-                                       g_param_spec_get_nick(props[i]));
+      quid_->pmanage<MPtr(&PContainer::push)>(
+          param_name,
+          GPropToProp::to_prop(G_OBJECT(codec_element_.get_raw()), param_name));
       codec_properties_.push_back(param_name);
     }
   }
@@ -222,34 +145,24 @@ void GstVideoCodec::make_codec_properties() {
 gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointer user_data) {
   GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
   auto &quid = context->quid_;
-  //quid->set_property("codec","vp8enc");
   quid->prop<MPtr(&PContainer::set_str)>(
-      quid->prop<MPtr(&PContainer::get_id)>("codec"),
-      "vp8enc");
+      quid->prop<MPtr(&PContainer::get_id)>("codec"), "vp8enc");
   context->make_codec_properties();
-  //quid->set_property("deadline","30000");  //30ms
   quid->prop<MPtr(&PContainer::set_str)>(
-      quid->prop<MPtr(&PContainer::get_id)>("deadline"),
-      "30000");
-  //quid->set_property("target-bitrate", "2000000"); // 2Mbps
+      quid->prop<MPtr(&PContainer::get_id)>("deadline"), "30000");
   quid->prop<MPtr(&PContainer::set_str)>(
-      quid->prop<MPtr(&PContainer::get_id)>("target-bitrate"),
-      "2000000");  // 2Mbps
-  //quid->set_property("end-usage", "1"); // CBR
+      quid->prop<MPtr(&PContainer::get_id)>("target-bitrate"), "2000000");  // 2Mbps
   quid->prop<MPtr(&PContainer::set_str)>(
-      quid->prop<MPtr(&PContainer::get_id)>("end-usage"),
-      "1");  // CBR
-  //quid->set_property("keyframe-max-dist", "5");
+      quid->prop<MPtr(&PContainer::get_id)>("end-usage"), "1");  // CBR
   quid->prop<MPtr(&PContainer::set_str)>(
-      quid->prop<MPtr(&PContainer::get_id)>("keyframe-max-dist"),
-      "5");
+      quid->prop<MPtr(&PContainer::get_id)>("keyframe-max-dist"), "5");
   return TRUE;
 }
 
 bool GstVideoCodec::start(){
   hide();
   uninstall_codec_properties();
-  if (0 == codec_)
+  if (0 != secondary_codec_.get()) 
     return true;
   shmsink_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shm_encoded_.get_raw(),
@@ -289,7 +202,7 @@ bool GstVideoCodec::start(){
 
 bool GstVideoCodec::stop(){
   show();
-  if (0 != codec_) {
+  if (0 != secondary_codec_.get()) {
     shmsink_sub_.reset();
     shmsrc_sub_.reset();
     quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
@@ -314,5 +227,32 @@ void GstVideoCodec::set_shm(const std::string &shmpath){
                "async", FALSE,
                nullptr);
 }
+
+PContainer::prop_id_t GstVideoCodec::install_codec(bool primary){
+  return quid_->pmanage<MPtr(&PContainer::make_selection)>(
+      "codec",
+      [this](const size_t &val){
+        uninstall_codec_properties();
+        // primary_codec_ is used for documentation, secondary is the one
+        // used for actual work
+        secondary_codec_.select(val);
+        if (0 == val)
+          return true;
+        std::string codec_name = secondary_codec_.get_current_nick();
+        codec_element_.mute(codec_name.c_str());
+        if (codec_name == "x264enc") copy_buffers_ = true;
+        else copy_buffers_ = false;
+        remake_codec_elements();
+        make_codec_properties();
+        if (codec_name == "x264enc")
+          g_object_set(G_OBJECT(codec_element_.get_raw()), "byte-stream", TRUE, nullptr);
+        return true;
+      },
+      [this](){return secondary_codec_.get();},
+      "Video Codecs",
+      "Selected video codec for encoding",
+      primary ? primary_codec_ : secondary_codec_);
+}
+
 
 }  // namespace switcher

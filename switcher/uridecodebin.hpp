@@ -25,7 +25,6 @@
 #include "./std2.hpp"
 #include "./quiddity.hpp"
 #include "./gst-pipeliner.hpp"
-#include "./custom-property-helper.hpp"
 #include "./counter-map.hpp"
 #include "./gst-shmdata-subscriber.hpp"
 
@@ -45,12 +44,8 @@ class Uridecodebin: public Quiddity {
   bool discard_next_uncomplete_buffer_{false};
   QuiddityCommand *on_error_command_{nullptr};  // for the pipeline error handler
   // custom properties
-  CustomPropertyHelper::ptr custom_props_{};
-  GParamSpec *loop_prop_{nullptr};
   bool loop_{false};
-  GParamSpec *playing_prop_{nullptr};
   bool playing_{true};
-  GParamSpec *uri_spec_{nullptr};
   std::string uri_{};
   CounterMap counter_{};
   std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
@@ -60,10 +55,6 @@ class Uridecodebin: public Quiddity {
   void destroy_uridecodebin();
   void clean_on_error_command();
   void bus_async(GstMessage *msg);
-  static gboolean get_loop(void *user_data);
-  static void set_loop(gboolean mute, void *user_data);
-  static void set_uri(const gchar *value, void *user_data);
-  static const gchar *get_uri(void *user_data);
   bool to_shmdata();
   static void uridecodebin_pad_added_cb(GstElement * object, GstPad *pad,
                                         gpointer user_data);

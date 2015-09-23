@@ -125,9 +125,9 @@ class Quiddity {
   
   // properties
   PContainer props_;
-  std::unordered_map<std::string, Property::ptr> properties_{};
-  std::unordered_map<std::string, Property::ptr> disabled_properties_{};
-  JSONBuilder::ptr properties_description_;
+  // std::unordered_map<std::string, Property::ptr> properties_{};
+  // std::unordered_map<std::string, Property::ptr> disabled_properties_{};
+  // JSONBuilder::ptr properties_description_;
 
   // methods
   std::unordered_map<std::string, Method::ptr> methods_{};
@@ -150,12 +150,12 @@ class Quiddity {
   // naming
   std::string name_{};
 
-  // property
-  bool register_property(GObject *object,
-                         GParamSpec *pspec,
-                         const std::string &name_to_give,
-                         const std::string &long_name,
-                         const std::string &signal_to_emit);
+  // // property
+  // bool register_property(GObject *object,
+  //                        GParamSpec *pspec,
+  //                        const std::string &name_to_give,
+  //                        const std::string &long_name,
+  //                        const std::string &signal_to_emit);
 
   // method
   bool register_method(const std::string &method_name,
@@ -198,24 +198,24 @@ class Quiddity {
   // property
   Make_delegate(Quiddity, PContainer, &props_, pmanage);
 
-  // FIXME remove following property wrappers
-  bool install_property(GObject *object,
-                        const std::string &gobject_property_name,
-                        const std::string &name_to_give,
-                        const std::string &long_name);
-  bool reinstall_property(GObject *replacement_object,
-                          const std::string &gobject_property_name,
-                          const std::string &name,
-                          const std::string &long_name);
-  bool install_property_by_pspec(GObject *object,
-                                 GParamSpec *pspec,
-                                 const std::string &name_to_give,
-                                 const std::string &long_name);
-  bool uninstall_property(const std::string &name);
+  // // FIXME remove following property wrappers
+  // bool install_property(GObject *object,
+  //                       const std::string &gobject_property_name,
+  //                       const std::string &name_to_give,
+  //                       const std::string &long_name);
+  // bool reinstall_property(GObject *replacement_object,
+  //                         const std::string &gobject_property_name,
+  //                         const std::string &name,
+  //                         const std::string &long_name);
+  // bool install_property_by_pspec(GObject *object,
+  //                                GParamSpec *pspec,
+  //                                const std::string &name_to_give,
+  //                                const std::string &long_name);
+  // bool uninstall_property(const std::string &name);
   
-  // properties are enabled by default during installation
-  bool disable_property(const std::string &name);
-  bool enable_property(const std::string &name);
+  // // properties are enabled by default during installation
+  // bool disable_property(const std::string &name);
+  // bool enable_property(const std::string &name);
 
   // methods
   bool install_method(const std::string &long_name,

@@ -24,19 +24,22 @@
 
 namespace switcher {
 GstPixelFormatConverter::GstPixelFormatConverter(
-    Quiddity *quid,
-    CustomPropertyHelper *prop_helper,
-    const char *property_name,
-    const char *display_text):
+    Quiddity *quid, const char *property_name, const char *display_text):
     quid_(quid),
     gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
-    custom_props_(prop_helper),
-    prop_name_(property_name) {
-  make_format_property(property_name, display_text);
+    prop_name_(property_name),
+    video_format_(get_formats(), 0),
+    video_format_id_(quid_->pmanage<MPtr(&PContainer::make_selection)>(
+        prop_name_,
+        [this](const size_t &val){video_format_.select(val); return true;},
+        [this](){return video_format_.get();},
+        std::string(display_text),
+        "Pixel format to convert into",
+        video_format_)){
 }
 
-void GstPixelFormatConverter::make_format_property(const char *name,
-                                                   const char *display_text) {
+std::vector<std::string> get_formats() {
+  std::vector<std::string> formats;
   GstElementFactory *factory = gst_element_factory_find("videoconvert"); 
   On_scope_exit{gst_object_unref(factory);};
   const GList *list = gst_element_factory_get_static_pad_templates(factory);  
@@ -50,56 +53,28 @@ void GstPixelFormatConverter::make_format_property(const char *name,
       const GValue *format_list = gst_structure_get_value (structure, "format");
       if (format_list)
         for (guint j = 0; j < gst_value_list_get_size(format_list); ++j){
-          formats_.emplace_back(
+          formats.emplace_back(
               g_value_get_string(gst_value_list_get_value(format_list, j)));
-          video_format_[i].value = i;
-          video_format_[i].value_name = formats_.back().c_str();
-          video_format_[i].value_nick = formats_.back().c_str();
           ++i;
         }
       gst_caps_unref(caps);
     }  // templ->direction == GST_PAD_SRC
     list = g_list_next(list);  
   }  
-  // writing end of video_format_
-  video_format_[i].value = 0;
-  video_format_[i].value_name = nullptr;
-  video_format_[i].value_nick = nullptr;
-  video_format_spec_ =
-      custom_props_->make_enum_property(name,
-                                        display_text,
-                                        format_,
-                                        video_format_,
-                                        (GParamFlags) G_PARAM_READWRITE,
-                                        GstPixelFormatConverter::set_format,
-                                        GstPixelFormatConverter::get_format,
-                                        this);
-  quid_->install_property_by_pspec(custom_props_->get_gobject(),
-                                   video_format_spec_,
-                                   name,
-                                   display_text);
-}
-
-void GstPixelFormatConverter::set_format(const gint value, void *user_data) {
-  GstPixelFormatConverter *context = static_cast<GstPixelFormatConverter *>(user_data);
-  context->format_ = value;
-}
-
-gint GstPixelFormatConverter::get_format(void *user_data) {
-  GstPixelFormatConverter *context = static_cast<GstPixelFormatConverter *>(user_data);
-  return context->format_;
+  return formats;
 }
 
 std::string GstPixelFormatConverter::get_caps_str() const{
-  return std::string("video/x-raw, format=(string)") + video_format_[format_].value_nick;  
+  return std::string("video/x-raw, format=(string)")
+      + video_format_.get_current_nick();  
 }
 
 bool GstPixelFormatConverter::disable_property() {
-  return quid_->disable_property(prop_name_);
+  return quid_->pmanage<MPtr(&PContainer::enable)>(video_format_id_, false);
 }
 
 bool GstPixelFormatConverter::enable_property() {
-  return quid_->enable_property(prop_name_);
+  return quid_->pmanage<MPtr(&PContainer::enable)>(video_format_id_, true);
 }
 
 bool GstPixelFormatConverter::start(const std::string &shmpath_to_convert,

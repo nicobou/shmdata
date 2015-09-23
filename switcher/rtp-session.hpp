@@ -34,7 +34,6 @@
 #include "./gst-pipeliner.hpp"
 #include "./quiddity-manager.hpp"
 #include "./rtp-destination.hpp"
-#include "./custom-property-helper.hpp"
 #include "./gst-shmdata-subscriber.hpp"
 
 namespace switcher {
@@ -56,10 +55,7 @@ class RtpSession: public Quiddity {
   bool remove_destination(std::string dest_name);
 
   // destination property
-  static const gchar *get_destinations_json(void *user_data);
-  // MTU property
-  static void set_mtu_at_add_data_stream(const gint value, void *user_data);
-  static gint get_mtu_at_add_data_stream(void *user_data);
+  std::string get_destinations_json();
 
   // sending
   bool add_udp_stream_to_dest(std::string shmdata_socket_path,
@@ -102,10 +98,8 @@ class RtpSession: public Quiddity {
   guint next_id_{79};
 
   // custom properties:
-  CustomPropertyHelper::ptr custom_props_;
-  GParamSpec *destination_description_json_{nullptr};
   std::string destinations_json_{};
-  GParamSpec *mtu_at_add_data_stream_spec_{nullptr};
+  PContainer::prop_id_t destinations_json_id_;
   gint mtu_at_add_data_stream_{1400};
 
   // data streams

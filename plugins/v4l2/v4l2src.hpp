@@ -26,7 +26,6 @@
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/unique-gst-element.hpp"
 #include "switcher/gst-video-codec.hpp"
-#include "switcher/custom-property-helper.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/gst-video-codec.hpp"
 
@@ -118,64 +117,30 @@ class V4L2Src: public Quiddity, public StartableQuiddity {
   //                                unsigned width, unsigned height);
 
   // custom properties:
-  CustomPropertyHelper::ptr custom_props_{};
-  // device enum and select
-  GParamSpec *devices_enum_spec_{nullptr};
-  GEnumValue devices_enum_[128];
-  gint device_{0};
-  static void set_camera(const gint value, void *user_data);
-  static gint get_camera(void *user_data);
+  Selection devices_enum_{{"none"}, 0};
 
   // pixet format property
-  GParamSpec *pixel_format_spec_{nullptr};
-  GEnumValue pixel_format_enum_[128];
-  gint pixel_format_{0};
-  static void set_pixel_format(const gint value, void *user_data);
-  static gint get_pixel_format(void *user_data);
+  Selection pixel_format_enum_;
 
   // resolution enum and select for the currently selected device,
   // this is updated when selecting an other device
-  GParamSpec *resolutions_spec_{nullptr};
-  GEnumValue resolutions_enum_[128];
-  gint resolution_{0};
-  static void set_resolution(const gint value, void *user_data);
-  static gint get_resolution(void *user_data);
+  Selection resolutions_enum_;
 
   // width height for the currently selected device
-  GParamSpec *width_spec_{nullptr};
-  GParamSpec *height_spec_{nullptr};
   gint width_{0};
   gint height_{0};
-  static void set_width(const gint value, void *user_data);
-  static gint get_width(void *user_data);
-  static void set_height(const gint value, void *user_data);
-  static gint get_height(void *user_data);
 
   // tv standard enum and select for the currently selected device,
   // this is updated when selecting an other device
-  GParamSpec *tv_standards_spec_{nullptr};
-  GEnumValue tv_standards_enum_[128];
-  gint tv_standard_{0};
-  static void set_tv_standard(const gint value, void *user_data);
-  static gint get_tv_standard(void *user_data);
+  Selection tv_standards_enum_;
 
   // framerate enum and select for the currently selected device,
   // this is updated when selecting an other device
-  GParamSpec *framerate_spec_{nullptr};
-  GEnumValue framerates_enum_[128];
-  gint framerate_{-1};
-  static void set_framerate(const gint value, void *user_data);
-  static gint get_framerate(void *user_data);
+  Selection framerates_enum_;
 
   // width height for the currently selected device
-  GParamSpec *framerate_numerator_spec_{nullptr};
-  GParamSpec *framerate_denominator_spec_{nullptr};
-  gint framerate_numerator_{0};
-  gint framerate_denominator_{1};
-  static void set_framerate_numerator(const gint value, void *user_data);
-  static gint get_framerate_numerator(void *user_data);
-  static void set_framerate_denominator(const gint value, void *user_data);
-  static gint get_framerate_denominator(void *user_data);
+  Fraction framerate_;
+
   // copy/paste from gstv4l2object.c for converting v4l2 pixel formats
   // to GstStructure (and then caps)
   static GstStructure *gst_v4l2_object_v4l2fourcc_to_structure (guint32 fourcc);

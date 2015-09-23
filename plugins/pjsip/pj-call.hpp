@@ -76,7 +76,6 @@ class PJCall {
   uint starting_rtp_port_ {18900};
   pj_uint16_t next_port_to_attribute_{18900};  // Must be even
   uint port_range_{100};
-  GParamSpec *starting_rtp_port_spec_ {nullptr};
   // sip functions
   static pj_bool_t on_rx_request(pjsip_rx_data *rdata);
   static void call_on_state_changed(pjsip_inv_session *inv,
@@ -99,8 +98,6 @@ class PJCall {
                            pjmedia_sdp_session **res);
   Quiddity::ptr retrieve_rtp_manager();
   static gboolean send_to(gchar *sip_url, void *user_data);
-  static void set_starting_rtp_port(const gint value, void *user_data);
-  static gint get_starting_rtp_port(void *user_data);
   void make_hang_up(std::string contact_uri);
   static gboolean hang_up(gchar *sip_url, void *user_data);
   static gboolean attach_shmdata_to_contact(const gchar *shmpath,

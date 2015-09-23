@@ -21,7 +21,6 @@
 #define __SWITCHER_PROPERTY_MAPPER_H__
 
 #include "./quiddity.hpp"
-#include "./custom-property-helper.hpp"
 
 namespace switcher {
 class PropertyMapper:public Quiddity {
@@ -34,24 +33,24 @@ class PropertyMapper:public Quiddity {
   bool init();
 
  private:
-  std::weak_ptr<Quiddity> source_quiddity_;
-  std::string source_property_name_;
+  std::weak_ptr<Quiddity> source_quiddity_{};
+  std::string source_property_name_{};
 
-  std::weak_ptr<Quiddity> sink_quiddity_;
-  GParamSpec *sink_quiddity_pspec_;
-  std::string sink_property_name_;
+  std::weak_ptr<Quiddity> sink_quiddity_{};
+  //GParamSpec *sink_quiddity_pspec_;
+  std::string sink_property_name_{};
 
   // clip values (and scale accordingly)
-  CustomPropertyHelper::ptr custom_props_;
-  GParamSpec *sink_min_spec_;
-  GParamSpec *sink_max_spec_;
-  GParamSpec *source_min_spec_;
-  GParamSpec *source_max_spec_;
+  //CustomPropertyHelper::ptr custom_props_;
+  // GParamSpec *sink_min_spec_;
+  // GParamSpec *sink_max_spec_;
+  // GParamSpec *source_min_spec_;
+  // GParamSpec *source_max_spec_;
 
-  double sink_min_;
-  double sink_max_;
-  double source_min_;
-  double source_max_;
+  double sink_min_{0};
+  double sink_max_{0};
+  double source_min_{0};
+  double source_max_{0};
 
   void make_numerical_source_properties();
   void make_numerical_sink_properties();
