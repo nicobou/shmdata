@@ -34,6 +34,14 @@ void PContainer::notify_state_change(prop_id_t prop, pstate_t state) {
   }
 }
 
+bool PContainer::replace(prop_id_t prop_id, std::unique_ptr<PropertyBase> &&prop_ptr){
+  auto it = strids_.find(prop_id);
+  if(strids_.end() == it)
+    return false;  // prop not found
+  props_[prop_id] = std::forward<std::unique_ptr<PropertyBase>>(prop_ptr);
+  return true;
+}
+
 bool PContainer::remove(prop_id_t prop_id){
   auto it = strids_.find(prop_id);
   if(strids_.end() == it)

@@ -39,6 +39,49 @@ class PContainer{
   PContainer() = delete;
   PContainer(InfoTree::ptr tree);  // will own it and write into .property.
 
+  // ------------- use (const methods)
+  // return 0 if id is not found
+  prop_id_t get_id(const std::string &id) const;
+
+  register_id_t subscribe(prop_id_t id, notify_cb_t fun, pstate_cb_t state_cb) const;
+  bool unsubscribe(prop_id_t id, register_id_t rid) const;
+
+  bool set_str(prop_id_t id, const std::string &val) const;
+  std::string get_str(prop_id_t id) const;
+  bool set_str_str(const std::string &strid, const std::string &val) const;
+  std::string get_str_str(const std::string &strid) const;
+  template<typename T> bool set(prop_id_t id, const T &val) const{
+    auto prop_it = props_.find(id); 
+    if (prop_it->second->get_type_id_hash() != typeid(val).hash_code()){
+      g_warning("%s: types do not match", __FUNCTION__);
+      return false;
+    }
+    return static_cast<Property2<T> *>(prop_it->second.get())->
+        set(std::forward<const T &>(val));
+  }
+  template<typename T> T get(prop_id_t id) const{
+    const auto &prop_it = props_.find(id);
+    if (prop_it->second->get_type_id_hash() != typeid(T).hash_code()){
+      g_warning("%s: types do not match", __FUNCTION__);
+    }
+    return static_cast<Property2<T> *>(prop_it->second.get())->get();
+  }
+
+  // ----------- add/remove/update (you should prefer makers for adding)
+
+  prop_id_t push(const std::string &strid,
+                 std::unique_ptr<PropertyBase> &&prop_ptr);
+  prop_id_t push_parented(const std::string &strid,
+                          const std::string &parent_strid,
+                          std::unique_ptr<PropertyBase> &&prop_ptr);
+  bool remove(prop_id_t prop_id);
+  bool enable(prop_id_t prop_id, bool enable);
+  bool replace(prop_id_t prop_id, std::unique_ptr<PropertyBase> &&prop_ptr);  // for gprop-to-prop
+  // use when property is updated without "set" (method is read-only for instance)
+  std::unique_lock<std::mutex> get_lock(prop_id_t prop_id);
+  void notify(prop_id_t prop_id);
+
+  // ----------- makers
   prop_id_t make_int(const std::string &strid,
                      prop::set_t<int> set,
                      prop::get_t<int> get,
@@ -341,13 +384,6 @@ class PContainer{
                           Fraction::ator_t max_num,
                           Fraction::ator_t max_denom);
 
-  prop_id_t push(const std::string &strid,
-                 std::unique_ptr<PropertyBase> &&prop_ptr);
-
-  prop_id_t push_parented(const std::string &strid,
-                          const std::string &parent_strid,
-                          std::unique_ptr<PropertyBase> &&prop_ptr);
-
   template<typename ...T>
   prop_id_t make_tuple(const std::string &strid,
                        std::function<bool(const std::tuple<T...> &)> set,
@@ -371,47 +407,6 @@ class PContainer{
     return make_under_parent<std::tuple<T...>>(
         strid, parent_strid, set, get, label, description,
         std::forward<const std::tuple<T...> &>(default_value));
-  }
-
-  
-  // TODO bool remake(prop_id_t prop_id);
-
-  bool remove(prop_id_t prop_id);
-  bool enable(prop_id_t prop_id, bool enable);
-  
-  // use when property is updated without "set" (method is read-only for instance)
-  std::unique_lock<std::mutex> get_lock(prop_id_t prop_id);
-  void notify(prop_id_t prop_id);
-  
-  // return 0 if id is not found
-  prop_id_t get_id(const std::string &id) const;
-
-  register_id_t subscribe(prop_id_t id, notify_cb_t fun, pstate_cb_t state_cb) const;
-  bool unsubscribe(prop_id_t id, register_id_t rid) const;
-
-  bool set_str(prop_id_t id, const std::string &val) const;
-  std::string get_str(prop_id_t id) const;
-
-  bool set_str_str(const std::string &strid, const std::string &val) const;
-
-  std::string get_str_str(const std::string &strid) const;
-
-  template<typename T> bool set(prop_id_t id, const T &val) const{
-    auto prop_it = props_.find(id); 
-    if (prop_it->second->get_type_id_hash() != typeid(val).hash_code()){
-      g_warning("%s: types do not match", __FUNCTION__);
-      return false;
-    }
-    return static_cast<Property2<T> *>(prop_it->second.get())->
-        set(std::forward<const T &>(val));
-  }
-
-  template<typename T> T get(prop_id_t id) const{
-    const auto &prop_it = props_.find(id);
-    if (prop_it->second->get_type_id_hash() != typeid(T).hash_code()){
-      g_warning("%s: types do not match", __FUNCTION__);
-    }
-    return static_cast<Property2<T> *>(prop_it->second.get())->get();
   }
   
  private:
