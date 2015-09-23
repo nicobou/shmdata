@@ -243,148 +243,70 @@ std::unique_ptr<PropertyBase> to_prop(GObject *gobj, const std::string &gprop_na
             pdouble->maximum);
       }
       break;
-  //   default:
-  //     if (pspec->value_type == GST_TYPE_CAPS) {
-  //       const GstCaps *caps = gst_value_get_caps(&value);
-  //       json_description_->add_string_member("type", "caps");
-  //       if (!caps)
-  //         json_description_->add_string_member("default value", "");
-  //       else
-  //         json_description_->add_string_member("default value",
-  //                                              gst_caps_to_string(caps));
-  //     } else if (G_IS_PARAM_SPEC_ENUM(pspec)) {
-  //       GEnumValue *values;
-  //       guint j = 0;
-  //       gint enum_value;
-  //       const gchar *value_nick = "";
-  //       const gchar *value_name = "";
-  //       json_description_->add_string_member("type", "enum");
-  //       values =
-  //           G_ENUM_CLASS(g_type_class_ref(pspec->value_type))->values;
-  //       enum_value = g_value_get_enum(&value);
-  //       while (values[j].value_name) {
-  //         if (values[j].value == enum_value) {
-  //           value_nick = values[j].value_nick;
-  //           value_name = values[j].value_name;
-  //         }
-  //         j++;
-  //       }
-
-  //       json_description_->set_member_name("default value");
-  //       json_description_->begin_object();
-  //       gchar *value = g_strdup_printf("%d", enum_value);
-  //       json_description_->add_string_member("value", value);
-  //       g_free(value);
-  //       json_description_->add_string_member("nick", value_nick);
-  //       json_description_->add_string_member("name", value_name);
-  //       json_description_->end_object();
-
-  //       // g_debug ("Enum \"%s\" Default: %d, \"%s\" \"%s\"",
-  //       //  g_type_name (G_VALUE_TYPE (&value)),
-  //       //  enum_value,
-  //       //  value_nick,
-  //       //  value_name);
-
-  //       j = 0;
-
-  //       json_description_->set_member_name("values");
-  //       json_description_->begin_array();
-  //       while (values[j].value_name) {
-  //         json_description_->begin_object();
-  //         json_description_->add_string_member("name", values[j].value_name);
-  //         json_description_->add_string_member("nick", values[j].value_nick);
-  //         gchar *values_value = g_strdup_printf("%d", values[j].value);
-  //         json_description_->add_string_member("value", values_value);
-  //         g_free(values_value);
-  //         json_description_->end_object();
-  //         j++;
-  //       }
-  //       json_description_->end_array();
-
-  //       /* g_type_class_unref (ec); */
-  //     } else if (G_IS_PARAM_SPEC_FLAGS(pspec)) {
-  //       g_debug("warning: param spec flags not handled");
-  //       // GParamSpecFlags *pflags = G_PARAM_SPEC_FLAGS (pspec);
-  //       // GFlagsValue *vals;
-  //       // gchar *cur;
-
-  //       // vals = pflags->flags_class->values;
-
-  //       // cur = flags_to_string (vals, g_value_get_flags (&value));
-
-  //       // g_debug ("%-23.23s Flags \"%s\" Default: 0x%08x, \"%s\"", "",
-  //       //    g_type_name (G_VALUE_TYPE (&value)),
-  //       //    g_value_get_flags (&value), cur);
-
-  //       // while (vals[0].value_name) {
-  //       //   g_debug ("");
-  //       //   if (_name)
-  //       //     g_debug ("%s", _name);
-  //       //   g_debug ("%-23.23s    (0x%08x): %-16s - %s", "",
-  //       //      vals[0].value, vals[0].value_nick, vals[0].value_name);
-  //       //   ++vals;
-  //       // }
-
-  //       // g_free (cur);
-  //     } else if (G_IS_PARAM_SPEC_OBJECT(pspec)) {
-  //       g_debug("warning: param spec object not handled");
-  //       // g_debug ("%-23.23s Object of type \"%s\"", "",
-  //       //  g_type_name (pspec->value_type));
-  //     } else if (G_IS_PARAM_SPEC_BOXED(pspec)) {
-  //       g_debug("warning: param spec boxed not handled");
-  //       // g_debug ("%-23.23s Boxed pointer of type \"%s\"", "",
-  //       //  g_type_name (pspec->value_type));
-  //     } else if (G_IS_PARAM_SPEC_POINTER(pspec)) {
-  //       g_debug("warning: param spec pointer not handled");
-  //       // if (pspec->value_type != G_TYPE_POINTER) {
-  //       //   g_debug ("%-23.23s Pointer of type \"%s\".", "",
-  //       //    g_type_name (pspec->value_type));
-  //       // } else if (pspec->value_type == G_TYPE_VALUE_ARRAY) {
-  //       // GParamSpecValueArray *pvarray = G_PARAM_SPEC_VALUE_ARRAY (pspec);
-  //       // g_debug ("warning: array not handled");
-  //       // if (pvarray->element_spec) {
-  //       //   g_debug ("%-23.23s Array of GValues of type \"%s\"", "",
-  //       //    g_type_name (pvarray->element_spec->value_type));
-  //       // } else {
-  //       //   g_debug ("%-23.23s Array of GValues", "");
-  //       // }
-  //     } else if (GST_IS_PARAM_SPEC_FRACTION(pspec)) {
-  //       GstParamSpecFraction *pfraction = GST_PARAM_SPEC_FRACTION(pspec);
-  //       json_description_->add_string_member("type", "fraction");
-  //       gchar *minnum = g_strdup_printf("%d", pfraction->min_num);
-  //       gchar *minden = g_strdup_printf("%d", pfraction->min_den);
-  //       gchar *maxnum = g_strdup_printf("%d", pfraction->max_num);
-  //       gchar *maxden = g_strdup_printf("%d", pfraction->max_den);
-  //       gchar *defaultnum = g_strdup_printf("%d",
-  //                                           gst_value_get_fraction_numerator
-  //                                           (&value));
-  //       gchar *defaultden = g_strdup_printf("%d",
-  //                                           gst_value_get_fraction_denominator
-  //                                           (&value));
-  //       json_description_->add_string_member("minimum numerator", minnum);
-  //       json_description_->add_string_member("maximum numerator", minden);
-  //       json_description_->add_string_member("minimum denominator", maxnum);
-  //       json_description_->add_string_member("maximum denominator", maxden);
-  //       json_description_->add_string_member("default numerator", defaultnum);
-  //       json_description_->add_string_member("default denominator",
-  //                                            defaultden);
-  //       g_free(minnum);
-  //       g_free(minden);
-  //       g_free(maxnum);
-  //       g_free(maxden);
-  //       g_free(defaultnum);
-  //       g_free(defaultden);
-  //       // g_debug ("Range: %d/%d - %d/%d Default: %d/%d ",
-  //       //  pfraction->min_num, pfraction->min_den,
-  //       //  pfraction->max_num, pfraction->max_den,
-  //       //  gst_value_get_fraction_numerator (&value),
-  //       //  gst_value_get_fraction_denominator (&value));
-  //     } else {
-  //       g_warning("warning: unknown type");
-  //       // g_debug ("%-23.23s Unknown type %ld \"%s\"", "", pspec->value_type,
-  //       //  g_type_name (pspec->value_type));
-  //     }
-  //     break;
+    default:
+      if (pspec->value_type == GST_TYPE_CAPS) {
+        g_warning("GST_TYPE_CAPS is not a supporteed property type");
+      } else if (G_IS_PARAM_SPEC_ENUM(pspec)) {
+        std::vector<std::string> items;
+        GEnumValue *values = G_ENUM_CLASS(g_type_class_ref(pspec->value_type))->values;
+        guint j = 0;
+        while (values[j].value_name) {
+          // values[j].value_nick;
+          items.push_back(values[j].value_name);
+          j++;
+        }
+        res = std2::make_unique<Property2<Selection, Selection::index_t>>(
+            is_writable ?
+            [gobj, gprop_name](const Selection::index_t &val){
+              g_object_set(gobj, gprop_name.c_str(), val, nullptr);
+              return true;
+            } : static_cast<prop::set_t<Selection::index_t>>(nullptr),
+            [gobj, gprop_name](){
+              gint val;
+              g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
+              return val;
+            },
+            gprop_name,
+            std::string(description),
+            Selection(std::move(items), g_value_get_enum(&value)),
+            items.size() - 1);
+      } else if (G_IS_PARAM_SPEC_FLAGS(pspec)) {
+        g_warning("warning: param spec flags not handled");
+      } else if (G_IS_PARAM_SPEC_OBJECT(pspec)) {
+        g_warning("warning: param spec object not handled");
+      } else if (G_IS_PARAM_SPEC_BOXED(pspec)) {
+        g_warning("warning: param spec boxed not handled");
+      } else if (G_IS_PARAM_SPEC_POINTER(pspec)) {
+        g_warning("warning: param spec pointer not handled");
+      } else if (GST_IS_PARAM_SPEC_FRACTION(pspec)) {
+        GstParamSpecFraction *pfraction = GST_PARAM_SPEC_FRACTION(pspec);
+        res = std2::make_unique<Property2<Fraction>>(
+            is_writable ?
+            [gobj, gprop_name](const Fraction &val){
+              GValue fract = G_VALUE_INIT;  On_scope_exit{g_value_reset(&fract);};
+              g_value_init (&fract, GST_TYPE_FRACTION);
+              gst_value_set_fraction (&fract, val.numerator(), val.denominator());
+              g_object_set_property(gobj, gprop_name.c_str(), &fract);
+              return true;
+            } : static_cast<prop::set_t<Fraction>>(nullptr),
+            [gobj, gprop_name](){
+              GValue fract = G_VALUE_INIT; On_scope_exit{g_value_reset(&fract);};
+              g_object_get_property(gobj, gprop_name.c_str(), &fract);
+              return Fraction(gst_value_get_fraction_numerator (&fract),
+                              gst_value_get_fraction_denominator (&fract));
+            },
+            gprop_name,
+            std::string(description),
+            Fraction(gst_value_get_fraction_numerator(&value),
+                     gst_value_get_fraction_denominator (&value)),
+            pfraction->min_num,
+            pfraction->min_den,
+            pfraction->max_num,
+            pfraction->max_den);
+      } else {
+        g_warning("warning: gobject unknown type not handled");
+      }
+      break;
   }
   g_value_reset(&value);
 
