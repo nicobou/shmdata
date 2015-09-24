@@ -22,7 +22,6 @@
 
 #include <memory>
 #include <mutex>
-#include "switcher/custom-property-helper.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
@@ -55,17 +54,20 @@ class ShmdataToJack: public Quiddity {
   gulong handoff_handler_{0};
   unsigned short channels_{0};
   unsigned int debug_buffer_usage_{1000}; 
-  CustomPropertyHelper::ptr custom_props_{};
   std::mutex output_ports_mutex_{};
   std::vector<AudioRingBuffer<jack_sample_t>> ring_buffers_{};  // one per channel
   // jack sample is the time unit, assuming gst pipeline has the same sample rate:
   DriftObserver<jack_nframes_t> drift_observer_{};
   JackClient jack_client_;
   std::vector<JackPort> output_ports_{};
-  GParamSpec *connect_to_spec_{nullptr};
+  // properties
   std::string connect_to_{"system:playback_"};
-  GParamSpec *index_spec_{nullptr};
+  PContainer::prop_id_t connect_to_id_{0};
   unsigned int index_{1};
+  PContainer::prop_id_t index_id_{0};
+  PContainer::prop_id_t volume_id_{0};
+  PContainer::prop_id_t mute_id_{0};
+  // ports
   std::vector<std::string> ports_to_connect_{};
   std::mutex  port_to_connect_in_jack_process_mutex_{};
   std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
@@ -88,14 +90,8 @@ class ShmdataToJack: public Quiddity {
                             GstPad *pad,
                             gpointer user_data);
   static int jack_process (jack_nframes_t nframes, void *arg);
-  static void set_connect_to(const gchar *value, void *user_data);
-  static const gchar *get_connect_to(void *user_data);
-  static void set_index(const gint value, void *user_data);
-  static gint get_index(void *user_data);
-
 };
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToJack);
-
 }  // namespace switcher
 #endif

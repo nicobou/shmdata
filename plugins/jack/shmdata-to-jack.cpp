@@ -21,6 +21,7 @@
 #include "switcher/scope-exit.hpp"
 #include "switcher/std2.hpp"
 #include "switcher/shmdata-utils.hpp"
+#include "switcher/gprop-to-prop.hpp"
 #include "./shmdata-to-jack.hpp"
 #include "./audio-resampler.hpp"
 
@@ -38,7 +39,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 ShmdataToJack::ShmdataToJack(const std::string &name):
     shmcntr_(static_cast<Quiddity *>(this)),
     gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
-    custom_props_(std::make_shared<CustomPropertyHelper>()),
     jack_client_(name.c_str(),
                  &ShmdataToJack::jack_process,
                  this,
@@ -59,34 +59,34 @@ bool ShmdataToJack::init() {
       [this](){return this->on_shmdata_disconnect();},
       [this](const std::string &caps){return this->can_sink_caps(caps);},
       1);
-  install_property(G_OBJECT(volume_), "volume", "volume", "Volume");
-  install_property(G_OBJECT(volume_), "mute", "mute", "Mute");
-  connect_to_spec_ =
-      custom_props_->make_string_property("connect-to",
-                                          "auto connect to other client",
-                                          connect_to_.c_str(),
-                                          (GParamFlags) G_PARAM_READWRITE,
-                                          ShmdataToJack::set_connect_to,
-                                          ShmdataToJack::get_connect_to,
-                                          this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            connect_to_spec_,
-                            "connect-to",
-                            "Connect To");
-  index_spec_ =
-      custom_props_->make_int_property("index",
-                                       "start connecting to other client from this index",
-                                       0,
-                                       128,
-                                       index_,
-                                       (GParamFlags) G_PARAM_READWRITE,
-                                       ShmdataToJack::set_index,
-                                       ShmdataToJack::get_index,
-                                       this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            index_spec_,
-                            "index",
-                            "Index");
+  volume_id_ = pmanage<MPtr(&PContainer::push)>(
+      "volume", GPropToProp::to_prop(G_OBJECT(volume_), "volume"));
+  mute_id_ = pmanage<MPtr(&PContainer::push)>(
+      "volume", GPropToProp::to_prop(G_OBJECT(volume_), "mute"));
+  connect_to_id_= pmanage<MPtr(&PContainer::make_string)>(
+      "connect-to",
+      [this](const std::string &val){
+        connect_to_ = val;
+        update_port_to_connect();
+        return true;
+      },
+      [this](){return connect_to_;},
+      "Connect To",
+      "Auto connect to other client",
+      connect_to_);
+  index_id_ = pmanage<MPtr(&PContainer::make_int)>(
+      "index",
+      [this](const int &val){
+        index_ = val;
+        update_port_to_connect();
+        return true;
+      },
+      [this](){return index_;},
+      "Index",
+      "Start connecting to other client from this index",
+      index_,
+      0,
+      128);
   update_port_to_connect();
   return true;
 }
@@ -271,8 +271,8 @@ bool ShmdataToJack::start() {
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), audiobin_);
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
-  disable_property("connect-to");
-  disable_property("index");
+  pmanage<MPtr(&PContainer::enable)>(connect_to_id_, false);
+  pmanage<MPtr(&PContainer::enable)>(index_id_, false);
   connect_ports();
   return true;
 }
@@ -284,12 +284,12 @@ bool ShmdataToJack::stop() {
     if (!make_elements())
       return false;
   }
-  reinstall_property(G_OBJECT(volume_),
-                     "volume", "volume", "Volume");
-  reinstall_property(G_OBJECT(volume_),
-                     "mute", "mute", "Mute");
-  enable_property("connect-to");
-  enable_property("index");
+  pmanage<MPtr(&PContainer::replace)>(
+      volume_id_, GPropToProp::to_prop(G_OBJECT(volume_), "volume"));
+  pmanage<MPtr(&PContainer::replace)>(
+      mute_id_, GPropToProp::to_prop(G_OBJECT(volume_), "mute"));
+  pmanage<MPtr(&PContainer::enable)>(connect_to_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(index_id_, true);
   return true;
 }
 
@@ -305,31 +305,6 @@ bool ShmdataToJack::on_shmdata_connect(const std::string &shmpath) {
 
 bool ShmdataToJack::can_sink_caps(const std::string &caps) {
   return GstUtils::can_sink_caps("audioconvert", caps);
-}
-
-void ShmdataToJack::set_connect_to(const gchar *value, void *user_data) {
-  ShmdataToJack *context = static_cast<ShmdataToJack *>(user_data);
-  context->connect_to_ = value;
-  context->update_port_to_connect();
-  context->custom_props_->notify_property_changed(context->connect_to_spec_);
-}
-
-const gchar *ShmdataToJack::get_connect_to(void *user_data) {
-  ShmdataToJack *context = static_cast<ShmdataToJack *>(user_data);
-  return context->connect_to_.c_str();
-}
-
-void ShmdataToJack::set_index(const gint value, void *user_data) {
-  ShmdataToJack *context = static_cast<ShmdataToJack *>(user_data);
-  context->index_ = value;
-  context->update_port_to_connect();
-  GObjectWrapper::notify_property_changed(context->gobject_->get_gobject(),
-                                          context->index_spec_);
-}
-
-gint ShmdataToJack::get_index(void *user_data) {
-  ShmdataToJack *context = static_cast<ShmdataToJack *>(user_data);
-  return context->index_;
 }
 
 void ShmdataToJack::update_port_to_connect(){

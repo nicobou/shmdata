@@ -45,7 +45,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Emmanuel Durand");
 
 SystemUsage::SystemUsage(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()),
     tree_{InfoTree::make()},
     period_(1.0),
     pollStateTask_(std2::make_unique<PeriodicTask>([this](){
@@ -54,19 +53,15 @@ SystemUsage::SystemUsage(const std::string &):
 }
 
 bool SystemUsage::init() {
-  period_prop_ = custom_props_->make_double_property("period",  // name
-                                                     "Update period",  // description
-                                                     0.1,
-                                                     5.0,
-                                                     period_, (GParamFlags)
-                                                     G_PARAM_READWRITE,
-                                                     SystemUsage::setRefreshPeriod,
-                                                     SystemUsage::getRefreshPeriod,
-                                                     this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            period_prop_,
-                            "period",
-                            "Update period");   // long name
+  pmanage<MPtr(&PContainer::make_float)>(
+      "period",
+      [this](const float &val){period_ = val; return true;},
+      [this](){return period_;},
+      "Update period",
+      "Update period",
+      period_,
+      0.1,
+      5.0);
   return init_tree();
 }
 
@@ -273,16 +268,6 @@ SystemUsage::pollState() {
     file.close();
     // Graft the data to the tree
     graft_tree(".top.", tree_);
-}
-
-void SystemUsage::setRefreshPeriod(double period, void *user_data) {
-  SystemUsage *ctx = static_cast<SystemUsage *>(user_data);
-  ctx->period_ = period;
-}
-
-double SystemUsage::getRefreshPeriod(void *user_data) {
-  SystemUsage *ctx = static_cast<SystemUsage *>(user_data);
-  return ctx->period_;
 }
 
 } // namespace switcher

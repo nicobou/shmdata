@@ -25,7 +25,6 @@
 #include <mutex>
 #include <condition_variable>
 #include "switcher/quiddity.hpp"
-#include "switcher/custom-property-helper.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/unique-gst-element.hpp"
@@ -62,12 +61,12 @@ class PulseSrc: public Quiddity, public StartableQuiddity {
   bool connected_to_pulse_{false};
   std::mutex devices_mutex_{};
   std::condition_variable devices_cond_{};
-  // custom property:
-  CustomPropertyHelper::ptr custom_props_{};
+  // property:
   // device enum members
-  GParamSpec *devices_enum_spec_{nullptr};
-  GEnumValue devices_enum_[128];
-  gint device_{};
+  Selection devices_{{"none"}, 0};
+  PContainer::prop_id_t devices_id_{0};
+  PContainer::prop_id_t volume_id_{0};
+  PContainer::prop_id_t mute_id_{0};  
   // pulse_audio
   pa_glib_mainloop *pa_glib_mainloop_{nullptr};
   pa_mainloop_api *pa_mainloop_api_{nullptr};
@@ -86,8 +85,6 @@ class PulseSrc: public Quiddity, public StartableQuiddity {
   void update_capture_device();
   void make_device_description(pa_context *pulse_context);
   // device enum and select
-  static void set_device(const gint value, void *user_data);
-  static gint get_device(void *user_data);
   static void pa_context_state_callback(pa_context *c, void *userdata);
   static void get_source_info_callback(pa_context *c,
                                        const pa_source_info *i,
@@ -99,6 +96,5 @@ class PulseSrc: public Quiddity, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(PulseSrc);
-
 }  // namespace switcher
 #endif

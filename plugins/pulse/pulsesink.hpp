@@ -29,7 +29,6 @@
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
-#include "switcher/custom-property-helper.hpp"
 #include "switcher/unique-gst-element.hpp"
 
 namespace switcher {
@@ -64,10 +63,6 @@ class PulseSink: public Quiddity {
   UGstElem shmsrc_{"shmdatasrc"};
   UGstElem audioconvert_{"audioconvert"};
   UGstElem pulsesink_{"pulsesink"};
-  // custom property:
-  CustomPropertyHelper::ptr custom_props_{};
-  // pulse_audio
-  bool connected_to_pulse_{false};
   pa_glib_mainloop *pa_glib_mainloop_{nullptr};
   pa_mainloop_api *pa_mainloop_api_{nullptr};
   pa_context *pa_context_{nullptr};
@@ -75,10 +70,12 @@ class PulseSink: public Quiddity {
   std::vector<DeviceDescription> devices_{};  // indexed by pulse_device_name
   std::mutex devices_mutex_{};
   std::condition_variable devices_cond_{};
-  // devices enumeration
-  GParamSpec *devices_enum_spec_{nullptr};
-  GEnumValue devices_enum_[128];
-  gint device_{0};
+  bool connected_to_pulse_{false};
+  //  property:
+  Selection devices_enum_{{"none"}, 0};
+  PContainer::prop_id_t devices_enum_id_{0};
+  PContainer::prop_id_t volume_id_{0};
+  PContainer::prop_id_t mute_id_{0};
   // quit
   std::mutex quit_mutex_{};
   std::condition_variable quit_cond_{};
@@ -98,12 +95,9 @@ class PulseSink: public Quiddity {
                                    pa_subscription_event_type_t t,
                                    uint32_t idx, void *userdata);
   static gboolean async_get_pulse_devices(void *user_data);
-  static void set_device(const gint value, void *user_data);
-  static gint get_device(void *user_data);
   static gboolean quit_pulse(void *user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(PulseSink);
-
 }  // namespace switcher
 #endif

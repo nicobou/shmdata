@@ -38,7 +38,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Emmanuel Durand");
 
 VncClientSrc::VncClientSrc(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()),
     shmcntr_(static_cast<Quiddity*>(this)) {
 }
 
@@ -108,29 +107,26 @@ VncClientSrc::init() {
                                   [this](){return disconnect_all();},
                                   [this](const std::string caps){return can_sink_caps(caps);},
                                   2);
-
-  vnc_server_address_prop_ = custom_props_->make_string_property("vnc_server_address",
-                                            "IP address",
-                                            vnc_server_address_.c_str(),
-                                            (GParamFlags) G_PARAM_READWRITE,
-                                            VncClientSrc::set_vnc_server_address,
-                                            VncClientSrc::get_vnc_server_address,
-                                            this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            vnc_server_address_prop_, "vnc_server_address",
-                            "Address of the VNC server");
-
-  capture_truecolor_prop_ = custom_props_->make_boolean_property("capture_truecolor",
-                                            "Capture color depth",
-                                            capture_truecolor_,
-                                            (GParamFlags) G_PARAM_READWRITE,
-                                            VncClientSrc::set_capture_truecolor,
-                                            VncClientSrc::get_capture_truecolor,
-                                            this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            capture_truecolor_prop_, "capture_truecolor",
-                            "Capture in 32bits if true, 16bits otherwise");
-
+  vnc_server_address_id_ = pmanage<MPtr(&PContainer::make_string)>(
+      "vnc_server_address",
+      [this](const std::string &val){
+        vnc_server_address_ = val;
+        return true;
+      },
+      [this](){return vnc_server_address_;},
+      "IP address",
+      "Address of the VNC server",
+      vnc_server_address_);
+  capture_truecolor_id_ = pmanage<MPtr(&PContainer::make_bool)>(
+      "capture_truecolor",
+      [this](const bool &val){
+        capture_truecolor_ = val;
+        return true;
+      },
+      [this](){return capture_truecolor_;},
+      "Capture color depth",
+      "Capture in 32bits if true, 16bits otherwise",
+      capture_truecolor_);
   return true;
 }
 
@@ -207,31 +203,6 @@ bool
 VncClientSrc::can_sink_caps(string caps) {
   return (caps == string(VNC_MOUSE_EVENTS_CAPS))
       || (caps == string(VNC_KEYBOARD_EVENTS_CAPS));
-}
-
-int
-VncClientSrc::get_capture_truecolor(void *user_data) {
-  auto ctx = static_cast<VncClientSrc *>(user_data);
-  return ctx->capture_truecolor_;
-}
-
-void
-VncClientSrc::set_capture_truecolor(const int truecolor, void *user_data) {
-  auto ctx = static_cast<VncClientSrc *>(user_data);
-  ctx->capture_truecolor_ = truecolor;
-}
-
-const gchar *
-VncClientSrc::get_vnc_server_address(void *user_data) {
-  auto ctx = static_cast<VncClientSrc *>(user_data);
-  return ctx->vnc_server_address_.c_str();
-}
-
-void
-VncClientSrc::set_vnc_server_address(const gchar *address, void *user_data) {
-  auto ctx = static_cast<VncClientSrc *>(user_data);
-  if (address != nullptr)
-    ctx->vnc_server_address_ = address;
 }
 
 rfbBool

@@ -100,46 +100,39 @@ class V4L2Src: public Quiddity, public StartableQuiddity {
   void update_framerate_numerator_denominator(const CaptureDescription &cap_descr);
   void update_pixel_format(const CaptureDescription &cap_descr);
 
-  /* static gboolean capture_full_wrapped (gpointer device_file_path,  */
-  /*   gpointer width, */
-  /*   gpointer height, */
-  /*   gpointer framerate_numerator, */
-  /*   gpointer framerate_denominator, */
-  /*   gpointer tv_standard, */
-  /*   gpointer user_data); */
-
-  /* static gboolean capture_wrapped (gpointer device_file_path,  */
-  /*      gpointer user_data); */
-
   static std::string pixel_format_to_string(unsigned pf_id);
-  // static bool inspect_frame_rate(const char *file_path,
-  //                                unsigned pixel_format,
-  //                                unsigned width, unsigned height);
 
-  // custom properties:
+  // devices list:
   Selection devices_enum_{{"none"}, 0};
+  PContainer::prop_id_t devices_id_{0};
 
-  // pixet format property
-  Selection pixel_format_enum_;
+  // pixet format
+  Selection pixel_format_enum_{{"none"}, 0};
+  PContainer::prop_id_t pixel_format_id_{0};
 
   // resolution enum and select for the currently selected device,
   // this is updated when selecting an other device
-  Selection resolutions_enum_;
-
+  Selection resolutions_enum_{{"none"}, 0};
+  PContainer::prop_id_t resolutions_id_{0};
   // width height for the currently selected device
   gint width_{0};
+  PContainer::prop_id_t width_id_{0};
   gint height_{0};
+  PContainer::prop_id_t height_id_{0};
 
   // tv standard enum and select for the currently selected device,
   // this is updated when selecting an other device
-  Selection tv_standards_enum_;
+  Selection tv_standards_enum_{{"none"}, 0};
+  PContainer::prop_id_t tv_standards_id_{0};
 
   // framerate enum and select for the currently selected device,
   // this is updated when selecting an other device
-  Selection framerates_enum_;
+  Selection framerates_enum_{{"none"}, 0};
+  PContainer::prop_id_t framerates_enum_id_{0};
 
   // width height for the currently selected device
-  Fraction framerate_;
+  Fraction framerate_{30, 1};
+  PContainer::prop_id_t framerate_id_{0};
 
   // copy/paste from gstv4l2object.c for converting v4l2 pixel formats
   // to GstStructure (and then caps)

@@ -38,7 +38,7 @@ GstPixelFormatConverter::GstPixelFormatConverter(
         video_format_)){
 }
 
-std::vector<std::string> get_formats() {
+std::vector<std::string> GstPixelFormatConverter::get_formats() {
   std::vector<std::string> formats;
   GstElementFactory *factory = gst_element_factory_find("videoconvert"); 
   On_scope_exit{gst_object_unref(factory);};

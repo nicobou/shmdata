@@ -35,6 +35,7 @@
 #include <glib.h>
 #include <glib-object.h>
 #include <mutex>
+#include "switcher/selection.hpp"
 
 namespace switcher {
 class PortMidi {
@@ -48,8 +49,8 @@ class PortMidi {
 
  protected:
   // info
-  GEnumValue input_devices_enum_[128];
-  GEnumValue output_devices_enum_[128];
+  Selection input_devices_enum_{{"none"}, 0};
+  Selection output_devices_enum_{{"none"}, 0};
   // input
   // static int get_default_input_device_id();
   bool open_input_device(int id, on_pm_event_method method,

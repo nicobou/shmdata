@@ -23,6 +23,7 @@
 #include "switcher/std2.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
+#include "switcher/gprop-to-prop.hpp"
 #include "./pulsesink.hpp"
 
 namespace switcher {
@@ -39,8 +40,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 
 PulseSink::PulseSink(const std::string &):
     shmcntr_(static_cast<Quiddity *>(this)),
-    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
-    custom_props_(std::make_shared<CustomPropertyHelper>()){
+    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)){
 }
 
 bool PulseSink::init() {
@@ -67,8 +67,10 @@ bool PulseSink::init() {
     g_debug("not connected to pulse, cannot init");
     return false;
   }
-  install_property(G_OBJECT(pulsesink_.get_raw()), "volume", "volume", "Volume");
-  install_property(G_OBJECT(pulsesink_.get_raw()), "mute", "mute", "Mute");
+  volume_id_ =  pmanage<MPtr(&PContainer::push)>(
+      "volume", GPropToProp::to_prop(G_OBJECT(pulsesink_.get_raw()), "volume"));
+  mute_id_ =  pmanage<MPtr(&PContainer::push)>(
+        "mute", GPropToProp::to_prop(G_OBJECT(pulsesink_.get_raw()), "mute"));
   return true;
 }
 
@@ -121,17 +123,19 @@ gboolean PulseSink::async_get_pulse_devices(void *user_data) {
 }
 
 bool PulseSink::remake_elements() {
-  uninstall_property("volume");
-  uninstall_property("mute");
+  pmanage<MPtr(&PContainer::remove)>(volume_id_); volume_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(mute_id_); mute_id_ = 0;
   if(!UGstElem::renew(pulsesink_,{"volume", "mute", "slave-method", "client-name", "device"})
      || !UGstElem::renew(shmsrc_)
      || !UGstElem::renew(audioconvert_))
     return false;
-  install_property(G_OBJECT(pulsesink_.get_raw()), "volume", "volume", "Volume");
-  install_property(G_OBJECT(pulsesink_.get_raw()), "mute", "mute", "Mute");
+  volume_id_ =  pmanage<MPtr(&PContainer::push)>(
+      "volume", GPropToProp::to_prop(G_OBJECT(pulsesink_.get_raw()), "volume"));
+  mute_id_ =  pmanage<MPtr(&PContainer::push)>(
+      "mute", GPropToProp::to_prop(G_OBJECT(pulsesink_.get_raw()), "mute"));
   if (!devices_.empty())
     g_object_set(G_OBJECT(pulsesink_.get_raw()), "device",
-                 devices_.at(device_).name_.c_str(),
+                 devices_.at(devices_enum_.get()).name_.c_str(),
                  nullptr);
   return true;
 }
@@ -198,20 +202,13 @@ PulseSink::get_sink_info_callback(pa_context *pulse_context,
     if (operation)
       pa_operation_unref(operation);
     context->update_output_device();
-    context->devices_enum_spec_ =
-        context->custom_props_->make_enum_property("device",
-                                                   "Enumeration of Pulse output devices",
-                                                   context->device_,
-                                                   context->devices_enum_,
-                                                   (GParamFlags) G_PARAM_READWRITE,
-                                                   PulseSink::set_device,
-                                                   PulseSink::get_device,
-                                                   context);
-    context->install_property_by_pspec(context->
-                                       custom_props_->get_gobject(),
-                                       context->devices_enum_spec_,
-                                       "device",
-                                       "Ouput Device");
+    context->devices_enum_id_ = context->pmanage<MPtr(&PContainer::make_selection)>(
+        "device",
+        [context](const size_t &val){context->devices_enum_.select(val); return true;},
+        [context](){return context->devices_enum_.get();},
+        "Device",
+        "Audio playback device to use",
+        context->devices_enum_);
     std::unique_lock<std::mutex> lock(context->devices_mutex_);
     context->devices_cond_.notify_all();
     return;
@@ -323,27 +320,13 @@ PulseSink::on_pa_event_callback(pa_context *pulse_context,
   }
 }
 void PulseSink::update_output_device() {
-  gint i = 0;
+  std::vector<std::string> names;
+  std::vector<std::string> nicks;
   for (auto &it : devices_) {
-    devices_enum_[i].value = i;
-    // FIXME previous free here
-    devices_enum_[i].value_name = g_strdup(it.description_.c_str());
-    devices_enum_[i].value_nick = g_strdup(it.name_.c_str());
-    i++;
+    names.push_back(it.description_);
+    nicks.push_back(it.name_);
   }
-  devices_enum_[i].value = 0;
-  devices_enum_[i].value_name = nullptr;
-  devices_enum_[i].value_nick = nullptr;
-}
-
-void PulseSink::set_device(const gint value, void *user_data) {
-  PulseSink *context = static_cast<PulseSink *>(user_data);
-  context->device_ = value;
-}
-
-gint PulseSink::get_device(void *user_data) {
-  PulseSink *context = static_cast<PulseSink *>(user_data);
-  return context->device_;
+  devices_enum_ = Selection(std::make_pair(names, nicks), 0);
 }
 
 bool PulseSink::can_sink_caps(const std::string &caps) {
@@ -351,7 +334,7 @@ bool PulseSink::can_sink_caps(const std::string &caps) {
 };
 
 bool PulseSink::on_shmdata_disconnect() {
-  enable_property("device");
+  pmanage<MPtr(&PContainer::enable)>(devices_enum_id_, true);
   prune_tree(".shmdata.reader." + shmpath_);
   shm_sub_.reset();
   On_scope_exit{
@@ -361,14 +344,14 @@ bool PulseSink::on_shmdata_disconnect() {
 }
 
 bool PulseSink::on_shmdata_connect(const std::string &shmpath) {
-  disable_property("device");
+  pmanage<MPtr(&PContainer::enable)>(devices_enum_id_, false);
   shmpath_ = shmpath;
   g_object_set(G_OBJECT(shmsrc_.get_raw()),
                "socket-path", shmpath_.c_str(),
                nullptr);
   if (!devices_.empty())
     g_object_set(G_OBJECT(pulsesink_.get_raw()), "device",
-                 devices_.at(device_).name_.c_str(),
+                 devices_.at(devices_enum_.get()).name_.c_str(),
                  nullptr);
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),

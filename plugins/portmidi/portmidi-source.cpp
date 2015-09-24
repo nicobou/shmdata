@@ -35,55 +35,33 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Nicolas Bouillot");
 
-PortMidiSource::PortMidiSource(const std::string &):
-    last_status_(-1),
-    last_data1_(-1),
-    last_data2_(-1),
-    custom_props_(new CustomPropertyHelper()),
-    devices_enum_spec_(nullptr),
-    device_(0),
-    midi_value_spec_(nullptr),
-    make_property_for_next_midi_event_(FALSE),
-    next_property_name_(),
-    prop_specs_(),
-    midi_property_contexts_(),
-    midi_channels_(),
-    midi_values_(),
-    unused_props_specs_() {
+PortMidiSource::PortMidiSource(const std::string &) {
 }
 
 bool PortMidiSource::init() {
-  if (input_devices_enum_[0].value_name == nullptr) {
+  if (input_devices_enum_.empty()) {
     g_debug("no MIDI capture device detected");
     return false;
   }
   init_startable(this);
-  device_ = input_devices_enum_[0].value;
-  devices_enum_spec_ =
-      custom_props_->make_enum_property("device",
-                                        "Enumeration of MIDI capture devices",
-                                        device_,
-                                        input_devices_enum_,
-                                        (GParamFlags) G_PARAM_READWRITE,
-                                        PortMidiSource::set_device,
-                                        PortMidiSource::get_device, this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            devices_enum_spec_, "device", "Capture Device");
-  midi_value_spec_ =
-      custom_props_->make_int_property("last-midi-value",
-                                       "The last midi value from the device",
-                                       0,
-                                       127,
-                                       0,
-                                       (GParamFlags) G_PARAM_READABLE,
-                                       nullptr,
-                                       get_midi_value,
-                                       this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            midi_value_spec_,
-                            "last-midi-value",
-                            "Last Midi Value");
-  disable_property("last-midi-value");
+  devices_id_ = pmanage<MPtr(&PContainer::make_selection)>(
+      "device",
+      [this](const size_t &val){input_devices_enum_.select(val); return true;},
+      [this](){return input_devices_enum_.get();},
+      "Capture device",
+      "MIDI capture devices to use",
+      input_devices_enum_);
+  last_midi_value_id_ = pmanage<MPtr(&PContainer::make_int)>(
+      "last-midi-value",
+      nullptr,
+      [this](){return last_data2_;},
+      "Last MIDI value",
+      "Last MIDI value seen on capture device",
+      0,
+      0,
+      127);
+  pmanage<MPtr(&PContainer::enable)>(last_midi_value_id_, false);
+
   install_method("Next MIDI Event To Property",  // long name
                  "next_midi_event_to_property",  // name
                  "Wait for a MIDI event and make a property for this channel",  // description
@@ -145,9 +123,9 @@ bool PortMidiSource::init() {
 }
 
 bool PortMidiSource::start() {
-  disable_property("device");
-  open_input_device(device_, on_pm_event, this);
-  enable_property("last-midi-value");
+  pmanage<MPtr(&PContainer::enable)>(devices_id_, false);
+  open_input_device(std::stoi(input_devices_enum_.get_current_nick()), on_pm_event, this);
+  pmanage<MPtr(&PContainer::enable)>(last_midi_value_id_, true);
   enable_method("next_midi_event_to_property");
   enable_method("remove_midi_property");
   enable_method("map_midi_to_property");
@@ -155,23 +133,13 @@ bool PortMidiSource::start() {
 }
 
 bool PortMidiSource::stop() {
-  close_input_device(device_);
-  disable_property("last-midi-value");
+  close_input_device(std::stoi(input_devices_enum_.get_current_nick()));
+  pmanage<MPtr(&PContainer::enable)>(last_midi_value_id_, false);
   disable_method("next_midi_event_to_property");
   disable_method("remove_midi_property");
   disable_method("map_midi_to_property");
-  enable_property("device");
+  pmanage<MPtr(&PContainer::enable)>(devices_id_, true);
   return true;
-}
-
-void PortMidiSource::set_device(const gint value, void *user_data) {
-  PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
-  context->device_ = value;
-}
-
-gint PortMidiSource::get_device(void *user_data) {
-  PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
-  return context->device_;
 }
 
 void PortMidiSource::on_pm_event(PmEvent *event, void *user_data) {
@@ -190,10 +158,12 @@ void PortMidiSource::on_pm_event(PmEvent *event, void *user_data) {
 
   context->last_status_ = (gint) status;
   context->last_data1_ = (gint) data1;
-  context->last_data2_ = (gint) data2;
-  context->custom_props_->
-      notify_property_changed(context->midi_value_spec_);
 
+  {
+    auto lock = context->pmanage<MPtr(&PContainer::get_lock)>(context->last_midi_value_id_);
+    context->last_data2_ = (gint) data2;
+  }
+  context->pmanage<MPtr(&PContainer::notify)>(context->last_midi_value_id_);
   // g_print ("to shm:  %u %u %u event ts %d tmp_event_ts %d\n",
   //        status,
   //        data1,
@@ -206,8 +176,7 @@ void PortMidiSource::on_pm_event(PmEvent *event, void *user_data) {
     std::string prop_long_name =
         context->midi_channels_[std::make_pair(status, data1)];
     context->midi_values_[prop_long_name] = data2;
-    context->custom_props_->
-        notify_property_changed(context->prop_specs_[prop_long_name]);
+    context->pmanage<MPtr(&PContainer::notify)>(context->prop_ids_[prop_long_name]);
   }
 
   // making property if needed
@@ -228,24 +197,16 @@ void PortMidiSource::on_pm_event(PmEvent *event, void *user_data) {
   }
 }
 
-gboolean
-PortMidiSource::next_midi_event_to_property_method(gchar *long_name,
-                                                   void *user_data) {
+gboolean PortMidiSource::next_midi_event_to_property_method(gchar *long_name,
+                                                            void *user_data) {
   PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
   context->make_property_for_next_midi_event_ = TRUE;
   context->next_property_name_ = long_name;
   return TRUE;
 }
 
-gint PortMidiSource::get_midi_property_value(void *user_data) {
-  MidiPropertyContext *context = static_cast<MidiPropertyContext *>(user_data);
-  return context->port_midi_source_->
-      midi_values_[context->property_long_name_];
-}
-
-gboolean
-PortMidiSource::remove_property_method(gchar *long_name,
-                                       void *user_data) {
+gboolean PortMidiSource::remove_property_method(gchar *long_name,
+                                                void *user_data) {
   PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
 
   if (context->midi_property_contexts_.find(long_name) ==
@@ -264,9 +225,9 @@ PortMidiSource::remove_property_method(gchar *long_name,
 
   gchar *prop_name =
       g_strdup_printf("%u-%u", midi_channel.first, midi_channel.second);
-  context->uninstall_property(prop_name);
-  context->unused_props_specs_[prop_name] = context->prop_specs_[long_name];
-  context->prop_specs_.erase(long_name);
+  context->pmanage<MPtr(&PContainer::remove)>(context->prop_ids_[long_name]);
+  context->unused_props_specs_[prop_name] = context->prop_ids_[long_name];
+  context->prop_ids_.erase(long_name);
   context->midi_channels_.erase(midi_channel);
   context->midi_values_.erase(long_name);
   g_free(prop_name);
@@ -302,30 +263,23 @@ bool PortMidiSource::make_property(std::string property_long_name,
     midi_property_context.port_midi_source_ = this;
     midi_property_context.property_long_name_ = property_long_name;
     midi_property_contexts_[property_long_name] = midi_property_context;
-    prop_specs_[property_long_name] =
-        custom_props_->make_int_property(prop_name.c_str(),
-                                         "midi value",
-                                         0,
-                                         127,
-                                         0,
-                                         (GParamFlags) G_PARAM_READABLE,
-                                         nullptr,
-                                         get_midi_property_value,
-                                         &midi_property_contexts_
-                                         [property_long_name]);
+    prop_ids_[property_long_name] =
+        pmanage<MPtr(&PContainer::make_int)>(
+            prop_name,
+            nullptr,
+            [this, property_long_name](){
+              return midi_values_[property_long_name];},
+            property_long_name,
+            property_long_name,
+            0,
+            0,
+            127);
   }
   else {
-    prop_specs_[property_long_name] = unused_props_specs_[prop_name];
+    prop_ids_[property_long_name] = unused_props_specs_[prop_name];
     unused_props_specs_.erase(prop_name);
   }
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            prop_specs_[property_long_name],
-                            prop_name, property_long_name.c_str());
   return true;
 }
 
-gint PortMidiSource::get_midi_value(void *user_data) {
-  PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
-  return context->last_data2_;
-}
-}
+}  // namespace switcher

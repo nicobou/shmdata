@@ -21,6 +21,7 @@
 #include <glib/gprintf.h>
 
 namespace switcher {
+
 PortMidi::PortMidiScheduler *PortMidi::scheduler_ = nullptr;
 guint PortMidi::instance_counter_ = 0;
 
@@ -45,17 +46,8 @@ PortMidi::~PortMidi() {
   }
 }
 
-// int PortMidi::get_default_output_device_id() {
-//   return Pm_GetDefaultOutputDeviceID();
-// }
-
-// int PortMidi::get_default_input_device_id() {
-//   return Pm_GetDefaultInputDeviceID();
-// }
-
-bool
-PortMidi::open_input_device(int id, on_pm_event_method method,
-                            void *user_data) {
+bool PortMidi::open_input_device(int id, on_pm_event_method method,
+                                 void *user_data) {
   if (input_streams_.find(id) != input_streams_.end()) {
     g_debug("input device (id %d), already opened, cannot open", id);
     return false;
@@ -316,35 +308,24 @@ void PortMidi::PortMidiScheduler::process_midi(PtTimestamp /*timestamp */ ,
 
 void PortMidi::update_device_enum() {
   int i;
-  int input_i = 0;
-  int output_i = 0;
+  std::vector<std::string> inames;
+  std::vector<std::string> inicks;
+  std::vector<std::string> onames;
+  std::vector<std::string> onicks;
   for (i = 0; i < Pm_CountDevices(); i++) {
     const PmDeviceInfo *listinfo = Pm_GetDeviceInfo(i);
-
     if (listinfo->input) {
-      input_devices_enum_[input_i].value = i;
-      // FIXME free
-      input_devices_enum_[input_i].value_nick =
-          g_strdup_printf("%s (%s)", listinfo->name, listinfo->interf);
-      input_devices_enum_[input_i].value_name =
-          input_devices_enum_[input_i].value_nick;
-      input_i++;
-    }
-    else {
-      output_devices_enum_[output_i].value = i;
-      // FIXME free
-      output_devices_enum_[output_i].value_nick =
-          g_strdup_printf("%s (%s)", listinfo->name, listinfo->interf);
-      output_devices_enum_[output_i].value_name =
-          output_devices_enum_[output_i].value_nick;
-      output_i++;
+      // warning convert nick to int instead of taking selection index
+      inicks.push_back(std::to_string(i));
+      inames.push_back(std::string(listinfo->name) + " (" + std::string(listinfo->interf) + ")");
+    } else {
+      // warning convert nick to int instead of taking selection index
+      inicks.push_back(std::to_string(i));
+      inames.push_back(std::string(listinfo->name) + " (" + std::string(listinfo->interf) + ")");
     }
   }
-  input_devices_enum_[input_i].value = 0;
-  input_devices_enum_[input_i].value_name = nullptr;
-  input_devices_enum_[input_i].value_nick = nullptr;
-  output_devices_enum_[output_i].value = 0;
-  output_devices_enum_[output_i].value_name = nullptr;
-  output_devices_enum_[output_i].value_nick = nullptr;
+  input_devices_enum_ = Selection(std::make_pair(inames, inicks), 0);
+  output_devices_enum_ = Selection(std::make_pair(onames, onicks), 0);
 }
-}
+
+}  // namespace switcher

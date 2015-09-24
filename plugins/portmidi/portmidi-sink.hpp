@@ -22,7 +22,6 @@
 
 #include <memory>
 #include "switcher/quiddity.hpp"
-#include "switcher/custom-property-helper.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
@@ -42,10 +41,8 @@ class PortMidiSink:public Quiddity, public StartableQuiddity, public PortMidi {
   ShmdataConnector shmcntr_;
   // shmdata follower
   std::unique_ptr<ShmdataFollower> shm_{nullptr};
-  CustomPropertyHelper::ptr custom_props_;
-  GParamSpec *devices_enum_spec_{nullptr};
-  gint device_{0};
-
+  PContainer::prop_id_t devices_id_{0};
+  int device_{0};
   bool init() final;
   bool start() final;
   bool stop() final;
@@ -55,10 +52,8 @@ class PortMidiSink:public Quiddity, public StartableQuiddity, public PortMidi {
   bool can_sink_caps(std::string caps);
   // shmdata any callback
   void on_shmreader_data(void *data, size_t data_size);
-  static void set_device(const gint value, void *user_data);
-  static gint get_device(void *user_data);
 };
-SWITCHER_DECLARE_PLUGIN(PortMidiSink);
 
+SWITCHER_DECLARE_PLUGIN(PortMidiSink);
 }  // namespace switcher
 #endif

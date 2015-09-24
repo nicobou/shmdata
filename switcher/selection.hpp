@@ -38,9 +38,10 @@ class Selection {
   std::string get_current_nick() const;
   std::vector<std::string> get_list() const;
   index_t size() const {return list_.size();}
+  bool empty() const {return list_.empty();}
  private:
-  const std::vector<std::string> list_;
-  const std::vector<std::string> nicks_;
+  std::vector<std::string> list_;
+  std::vector<std::string> nicks_;
   index_t current_selection_{0};
 };
 
