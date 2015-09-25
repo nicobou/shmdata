@@ -320,8 +320,8 @@ void PortMidi::update_device_enum() {
       inames.push_back(std::string(listinfo->name) + " (" + std::string(listinfo->interf) + ")");
     } else {
       // warning convert nick to int instead of taking selection index
-      inicks.push_back(std::to_string(i));
-      inames.push_back(std::string(listinfo->name) + " (" + std::string(listinfo->interf) + ")");
+      onicks.push_back(std::to_string(i));
+      onames.push_back(std::string(listinfo->name) + " (" + std::string(listinfo->interf) + ")");
     }
   }
   input_devices_enum_ = Selection(std::make_pair(inames, inicks), 0);
