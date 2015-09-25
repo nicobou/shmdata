@@ -78,12 +78,6 @@ class Quiddity {
   // FIXME remove following property methods
   std::string get_property_description(const std::string &property_name);
   std::string get_properties_description();
-  bool subscribe_property(const std::string &name,
-                          Property::Callback cb,
-                          void *user_data);
-  bool unsubscribe_property(const std::string &name,
-                            Property::Callback cb,
-                            void *user_data);
 
   // methods
   std::string get_method_description(const std::string &method_name);
@@ -125,9 +119,6 @@ class Quiddity {
   
   // properties
   PContainer props_;
-  // std::unordered_map<std::string, Property::ptr> properties_{};
-  // std::unordered_map<std::string, Property::ptr> disabled_properties_{};
-  // JSONBuilder::ptr properties_description_;
 
   // methods
   std::unordered_map<std::string, Method::ptr> methods_{};
@@ -150,13 +141,6 @@ class Quiddity {
   // naming
   std::string name_{};
 
-  // // property
-  // bool register_property(GObject *object,
-  //                        GParamSpec *pspec,
-  //                        const std::string &name_to_give,
-  //                        const std::string &long_name,
-  //                        const std::string &signal_to_emit);
-
   // method
   bool register_method(const std::string &method_name,
                        Method::method_ptr method,
@@ -169,11 +153,6 @@ class Quiddity {
                               const std::string &return_description,
                               const Method::args_doc &arg_description);
 
-  // signals
-  // bool register_signal_gobject(const std::string &signal_name,
-  //                              GObject *object,
-  //                              const std::string &gobject_signal_name);
-  
   // allows for creation of signals in a parent class (like segment)
   bool make_custom_signal_with_class_name(const std::string &class_name,  // quiddity class name that is making the signal
                                           const std::string &signal_name,  // the name to give
@@ -197,25 +176,6 @@ class Quiddity {
   
   // property
   Make_delegate(Quiddity, PContainer, &props_, pmanage);
-
-  // // FIXME remove following property wrappers
-  // bool install_property(GObject *object,
-  //                       const std::string &gobject_property_name,
-  //                       const std::string &name_to_give,
-  //                       const std::string &long_name);
-  // bool reinstall_property(GObject *replacement_object,
-  //                         const std::string &gobject_property_name,
-  //                         const std::string &name,
-  //                         const std::string &long_name);
-  // bool install_property_by_pspec(GObject *object,
-  //                                GParamSpec *pspec,
-  //                                const std::string &name_to_give,
-  //                                const std::string &long_name);
-  // bool uninstall_property(const std::string &name);
-  
-  // // properties are enabled by default during installation
-  // bool disable_property(const std::string &name);
-  // bool enable_property(const std::string &name);
 
   // methods
   bool install_method(const std::string &long_name,

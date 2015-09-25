@@ -119,21 +119,6 @@ class QuiddityManager_Impl
   std::string get_properties_description_by_class(const std::string &class_name);
   std::string get_property_description_by_class(const std::string &class_name,
                                                 const std::string &property_name);
-  // // set &get
-  // bool set_property(const std::string &quiddity_name,
-  //                   const std::string &property_name,
-  //                   const std::string &property_value);
-  // std::string get_property(const std::string &quiddity_name,
-  //                          const std::string &property_name);
-  // bool has_property(const std::string &quiddity_name, const std::string &property_name);
-
-  // // property subscribing
-  // PContainer::register_id_t subscribe_property(const std::string &quiddity_name,
-  //                                              const std::string &property_name,
-  //                                              PContainer::notify_cb_t cb);
-  // bool unsubscribe_property(const std::string &quiddity_name,
-  //                           const std::string &property_name,
-  //                           PContainer::register_id_t id);
 
   // **** methods
   // doc (json formatted)

@@ -102,10 +102,10 @@ PropertyMapper::~PropertyMapper() {
 }
 
 void PropertyMapper::unsubscribe_source_property() {
-  Quiddity::ptr source_quid = source_quiddity_.lock();
-  if ((bool) source_quid)
-    source_quid->unsubscribe_property(source_property_name_, property_cb,
-                                      this);
+  // Quiddity::ptr source_quid = source_quiddity_.lock();
+  // if ((bool) source_quid)
+  //   source_quid->unsubscribe_property(source_property_name_, property_cb,
+  //                                     this);
 }
 
 gboolean

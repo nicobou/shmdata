@@ -147,31 +147,7 @@ class QuiddityManager
   // PropLock prop_global_wrapper() const {return PropLock(&seq_mutex_);}
   // Global_wrap(use_prop, PropLock, prop_global_wrapper);
 
-  // propty hook for saving set prop
-  
-  
-  // FIXME implement global wrapper and hook for saving
-  // // set &get
-  // bool set_property(const std::string &quiddity_name,
-  //                   const std::string &property_name,
-  //                   const std::string &property_value);
-
-  // std::string get_property(const std::string &quiddity_name,
-  //                          const std::string &property_name);
-
-  // bool has_property(const std::string &quiddity_name,
-  //                   const std::string &property_name);
-
-  // // property subscribing
-  // PContainer::register_id_t subscribe_property(const std::string &quiddity_name,
-  //                                              const std::string &property_name,
-  //                                              PContainer::notify_cb_t cb,
-  //                                              PContainer::pstate_cb_t state_cb);
-  // bool unsubscribe_property(const std::string &quiddity_name,
-  //                           const std::string &property_name,
-  //                           PContainer::register_id_t id);
-
-  // *********************** methods
+   // *********************** methods
   // doc (json formatted)
   std::string get_methods_description(const std::string &quiddity_name);
   std::string get_method_description(const std::string &quiddity_name,
