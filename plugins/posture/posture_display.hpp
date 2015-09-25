@@ -29,7 +29,6 @@
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
-#include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
 class PostureDisplay:public Quiddity {
@@ -41,7 +40,6 @@ class PostureDisplay:public Quiddity {
   PostureDisplay &operator=(const PostureDisplay &) = delete;
 
  private:
-  CustomPropertyHelper::ptr custom_props_;
   ShmdataConnector shmcntr_;
 
   std::unique_ptr<ShmdataFollower> reader_ {nullptr};
@@ -59,5 +57,4 @@ class PostureDisplay:public Quiddity {
 
 SWITCHER_DECLARE_PLUGIN(PostureDisplay);
 }  // namespace switcher
-
 #endif

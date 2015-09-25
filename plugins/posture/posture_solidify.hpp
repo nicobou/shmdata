@@ -32,7 +32,6 @@
 #include "switcher/shmdata-writer.hpp"
 #include "switcher/shmdata-follower.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
 class PostureSolidify : public Quiddity, public StartableQuiddity {
@@ -47,12 +46,9 @@ class PostureSolidify : public Quiddity, public StartableQuiddity {
   bool stop();
 
  private:
-  CustomPropertyHelper::ptr custom_props_;
   ShmdataConnector shmcntr_;
   int marching_cubes_resolution_ {16};
   bool save_mesh_ {false};
-  GParamSpec *marching_cubes_resolution_prop_ {nullptr};
-  GParamSpec *save_mesh_prop_ {nullptr};
 
   std::shared_ptr<posture::Solidify> solidify_ {nullptr};
   std::mutex mutex_ {};
@@ -68,14 +64,8 @@ class PostureSolidify : public Quiddity, public StartableQuiddity {
   bool disconnect(std::string /*unused*/);
   bool disconnect_all();
   bool can_sink_caps(std::string caps);
-
-  static int get_marching_cubes_resolution(void *user_data);
-  static void set_marching_cubes_resolution(const int res, void *user_data);
-  static int get_save_mesh(void *user_data);
-  static void set_save_mesh(const int save, void *user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureSolidify);
 }  // namespace switcher
-
 #endif

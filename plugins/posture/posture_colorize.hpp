@@ -33,7 +33,6 @@
 #include "switcher/shmdata-writer.hpp"
 #include "switcher/shmdata-follower.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
 class PostureColorize : public Quiddity, public StartableQuiddity {
@@ -48,16 +47,11 @@ class PostureColorize : public Quiddity, public StartableQuiddity {
   bool stop();
 
  private:
-  CustomPropertyHelper::ptr custom_props_;
   ShmdataConnector shmcntr_;
 
   std::string calibration_path_ {"default.kvc"};
   bool compute_tex_coords_ {false};
   bool compress_mesh_ {true};
-
-  GParamSpec *calibration_path_prop_ {nullptr};
-  GParamSpec *compute_tex_coords_prop_ {nullptr};
-  GParamSpec *compress_mesh_prop_ {nullptr};
 
   Worker worker_ {};
 
@@ -81,25 +75,21 @@ class PostureColorize : public Quiddity, public StartableQuiddity {
   std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
   std::unique_ptr<ShmdataWriter> tex_writer_ {nullptr};
 
-  unsigned int prev_width_ {0}, prev_height_ {0}; // Used to check the texture size did not change
+  // Used to check the texture size did not change:
+  unsigned int prev_width_ {0}, prev_height_ {0};
 
   bool init() final;
-
   bool connect(std::string shmdata_socket_path);
   bool disconnect(std::string /*unused*/);
   bool disconnect_all();
   bool can_sink_caps(std::string caps);
-  bool check_image_caps(std::string caps, unsigned int& width, unsigned int& height, unsigned int& channels);
+  bool check_image_caps(std::string caps,
+                        unsigned int& width,
+                        unsigned int& height,
+                        unsigned int& channels);
 
-  static const gchar *get_calibration_path(void *user_data);
-  static void set_calibration_path(const gchar *name, void *user_data);
-  static int get_compute_tex_coords(void *user_data);
-  static void set_compute_tex_coords(const int compute, void *user_data);
-  static int get_compress_mesh(void *user_data);
-  static void set_compress_mesh(const int compress, void *user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureColorize);
 }  // namespace switcher
-
 #endif

@@ -22,7 +22,6 @@
 #include <thread>
 
 using namespace std;
-using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
@@ -37,7 +36,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Emmanuel Durand");
 
 PostureDetect::PostureDetect(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()),
     shmcntr_(static_cast<Quiddity*>(this)) {
 }
 
@@ -105,7 +103,8 @@ PostureDetect::connect(std::string shmdata_socket_path) {
         detect_->getConvexHull(poly, 0);
 
         auto data_type = compress_cloud_ ? string(POINTCLOUD_TYPE_COMPRESSED) : string(POINTCLOUD_TYPE_BASE);
-        if (!cloud_writer_ || cloud.size() > cloud_writer_->writer(&shmdata::Writer::alloc_size)) {
+        if (!cloud_writer_
+            || cloud.size() > cloud_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
           cloud_writer_.reset();
           cloud_writer_ = std2::make_unique<ShmdataWriter>(this,
                                                            make_file_name("cloud"),
@@ -114,7 +113,8 @@ PostureDetect::connect(std::string shmdata_socket_path) {
         }
 
         data_type = string(POLYGONMESH_TYPE_BASE);
-        if (!mesh_writer_ || poly.size() > mesh_writer_->writer(&shmdata::Writer::alloc_size)) {
+        if (!mesh_writer_
+            || poly.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
           mesh_writer_.reset();
           mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
                                                           make_file_name("mesh"),
@@ -122,10 +122,12 @@ PostureDetect::connect(std::string shmdata_socket_path) {
                                                           data_type);
         }
 
-        cloud_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<char*>(cloud.data()), cloud.size());
+        cloud_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+            const_cast<char*>(cloud.data()), cloud.size());
         cloud_writer_->bytes_written(cloud.size());
 
-        mesh_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(poly.data()), poly.size());
+        mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+            const_cast<unsigned char*>(poly.data()), poly.size());
         mesh_writer_->bytes_written(cloud.size());
       }
 

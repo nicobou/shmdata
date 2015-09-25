@@ -24,13 +24,10 @@
 #include <memory>
 #include <mutex>
 #include <string>
-
-#include "./posture.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-writer.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/custom-property-helper.hpp"
-
+#include "./posture.hpp"
 
 namespace switcher {
 class PostureSrc:public Quiddity, public StartableQuiddity {
@@ -45,42 +42,30 @@ class PostureSrc:public Quiddity, public StartableQuiddity {
   bool stop();
 
  private:
-  CustomPropertyHelper::ptr custom_props_;
   double rgb_focal_ {0.0};
+  PContainer::prop_id_t rgb_focal_id_{0};
   double depth_focal_ {0.0};
+  PContainer::prop_id_t depth_focal_id_{0};
   std::string calibration_path_ {"default.kvc"};
   std::string devices_path_ {"devices.xml"};
   unsigned int device_index_ {0};
   bool capture_ir_ {false};
   bool build_mesh_ {false};
   int build_mesh_edge_length_ {1};
+  PContainer::prop_id_t build_mesh_edge_length_id_{0};
   bool compress_cloud_ {false};
   bool reload_calibration_ {false};
   bool downsample_ {false};
   double downsample_resolution_ {0.1};
+  PContainer::prop_id_t downsample_resolution_id_{0};
   bool filter_outliers_ {false};
   int filter_mean_k_ {8};
+  PContainer::prop_id_t filter_mean_k_id_{0};
   double filter_stddev_mul_ {1.0};
-
-  GParamSpec *rgb_focal_prop_ {nullptr};
-  GParamSpec *depth_focal_prop_ {nullptr};
-  GParamSpec *calibration_path_prop_ {nullptr};
-  GParamSpec *devices_path_prop_ {nullptr};
-  GParamSpec *device_index_prop_ {nullptr};
-  GParamSpec *capture_ir_prop_ {nullptr};
-  GParamSpec *build_mesh_prop_ {nullptr};
-  GParamSpec *build_mesh_edge_length_prop_ {nullptr};
-  GParamSpec *compress_cloud_prop_ {nullptr};
-  GParamSpec *reload_calibration_prop_ {nullptr};
-  GParamSpec *downsample_prop_ {nullptr};
-  GParamSpec *downsample_resolution_prop_ {nullptr};
-  GParamSpec *filter_outliers_prop_ {nullptr};
-  GParamSpec *filter_mean_k_prop_ {nullptr};
-  GParamSpec *filter_stddev_mul_prop_ {nullptr};
-
-  int capture_mode_ {0};
-  GParamSpec *capture_mode_prop_ {nullptr};
-  GEnumValue capture_modes_enum_[16];
+  PContainer::prop_id_t filter_stddev_mul_id_{0};
+  
+  Selection capture_modes_enum_{
+    {"Default mode", "SXGA 15Hz", "VGA 30Hz", "VGA 25Hz", "QVGA 25Hz", "QVGA 30Hz", "QVGA 60Hz", "QQVGA 25Hz", "QQVGA 30Hz",  "QQVGA 60Hz"}, 0};
 
   std::unique_ptr<posture::ZCamera> zcamera_ {nullptr};
 
@@ -97,43 +82,6 @@ class PostureSrc:public Quiddity, public StartableQuiddity {
   int ir_width_ {0}, ir_height_ {0};
 
   bool init() final;
-
-  static const gchar *get_calibration_path(void *user_data);
-  static void set_calibration_path(const gchar *name, void *user_data);
-  static const gchar *get_devices_path(void *user_data);
-  static void set_devices_path(const gchar *name, void *user_data);
-  static int get_device_index(void *user_data);
-  static void set_device_index(const int index, void *user_data);
-  static int get_capture_ir(void *user_data);
-  static void set_capture_ir(const int ir, void *user_data);
-  static int get_build_mesh(void *user_data);
-  static void set_build_mesh(const int build_mesh, void *user_data);
-  static int get_build_mesh_edge_length(void *user_data);
-  static void set_build_mesh_edge_length(const int build_mesh, void *user_data);
-  static int get_compress_cloud(void *user_data);
-  static void set_compress_cloud(const int compress, void *user_data);
-  static int get_capture_mode(void *user_data);
-  static void set_capture_mode(const int mode, void *user_data);
-  static int get_reload_calibration(void *user_data);
-  static void set_reload_calibration(const int reload, void *user_data);
-
-  static int get_downsample_active(void *user_data);
-  static void set_downsample_active(const int active, void *user_data);
-  static double get_downsampling_resolution(void *user_data);
-  static void set_downsampling_resolution(const double resolution, void *user_data);
-
-  static int get_filter_outliers(void *user_data);
-  static void set_filter_outliers(const int active, void *user_data);
-  static int get_filter_mean_k(void *user_data);
-  static void set_filter_mean_k(const int mean_k, void *user_data);
-  static double get_filter_stddev_mul(void *user_data);
-  static void set_filter_stddev_mul(const double stddev_mul, void *user_data);
-
-  static void nope(const double /*unused*/, void* /*unused*/);
-
-  static double get_rgb_focal(void *user_data);
-  static void set_depth_focal(const double focal, void *user_data);
-  static double get_depth_focal(void *user_data);
 
   static void cb_frame_cloud(void *context,
                              const std::vector<char>&& data);
@@ -152,5 +100,4 @@ class PostureSrc:public Quiddity, public StartableQuiddity {
 
 SWITCHER_DECLARE_PLUGIN(PostureSrc);
 }  // namespace switcher
-
 #endif

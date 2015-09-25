@@ -1,3 +1,21 @@
+/*
+ * This file is part of posture.
+ *
+ * posture is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
 
 #ifndef __SWITCHER_POSTURE_SCAN3D_H__
 #define __SWITCHER_POSTURE_SCAN3D_H__
@@ -12,7 +30,6 @@
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-writer.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
 class PostureSc3:public Quiddity, public StartableQuiddity {
@@ -28,31 +45,10 @@ class PostureSc3:public Quiddity, public StartableQuiddity {
  private:
   bool init() final;
 
-  static int get_input_camera(void* context);
-  static void set_input_camera(const int camera_nbr, void* user_data);
-  static const gchar *get_calibration_path(void *user_data);
-  static void set_calibration_path(const gchar *name, void *user_data);
-  static const gchar *get_devices_path(void *user_data);
-  static void set_devices_path(const gchar *name, void *user_data);
-  static int get_grid_props(void *user_data);
-  static void set_grid_props(const int resolution, void *user_data);
-  static int get_reload_calibration(void *user_data);
-  static void set_reload_calibration(const int reload, void *user_data);
-  static int get_colorize(void *user_data);
-  static void set_colorize(const int assert_colorize, void *user_data);
-
   static int get_output_mesh(std::vector<unsigned char>);
   void cb_frame_cloud(int index,
                       pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud);
   void cb_frame_rgb(std::vector<unsigned char>& image, int width, int heigth);
-
-  CustomPropertyHelper::ptr custom_props_;
-  GParamSpec *nbr_props_ {nullptr};
-  GParamSpec *calibration_path_props_ {nullptr};
-  GParamSpec *devices_path_props_ {nullptr};
-  GParamSpec *grid_res_props_ {nullptr};
-  GParamSpec *reload_calibration_props_ {nullptr};
-  GParamSpec *colorize_props_ {nullptr};
 
   std::vector<std::shared_ptr<posture::ZCamera>> cameras_ {};
   std::unique_ptr<posture::PointCloudMerger> merger_ {nullptr};
@@ -82,5 +78,4 @@ class PostureSc3:public Quiddity, public StartableQuiddity {
 
 SWITCHER_DECLARE_PLUGIN(PostureSc3);
 }  // namespace switcher
-
 #endif
