@@ -37,11 +37,10 @@ class SoapCtrlClient : public Quiddity
 
  private:
   controlProxy *switcher_control_{nullptr};
-  gchar *url_{nullptr};
+  std::string url_{"localhost"};
   GSource *try_connect_g_source_{nullptr};
   std::mutex try_connect_mutex_{};
   void reset_endpoint();
-  static const gchar *get_url(void *user_data);
   static gboolean set_remote_url(gpointer url,
                                  gpointer user_data);
   static gboolean set_remote_url_retry(gpointer url,
