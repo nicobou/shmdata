@@ -40,15 +40,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Emmanuel Durand");
 
-SyphonSrc::SyphonSrc(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()),
-    syphon_servername_(""),
-    syphon_servername_prop_(nullptr),
-    syphon_appname_(""),
-    syphon_appname_prop_(nullptr), width_(0), height_(0) {
-}
-
-SyphonSrc::~SyphonSrc() {
+SyphonSrc::SyphonSrc(const std::string &) {
 }
 
 bool SyphonSrc::init() {
@@ -56,27 +48,28 @@ bool SyphonSrc::init() {
 
   reader_.reset(new SyphonReader(frameCallback, (void *) this));
 
-  syphon_servername_prop_ =
-      custom_props_->make_string_property("servername",
-                                          "servername is the name of the Syphon server",
-                                          syphon_servername_.c_str(),
-                                          (GParamFlags) G_PARAM_READWRITE,
-                                          SyphonSrc::set_servername,
-                                          SyphonSrc::get_servername, this);
-  syphon_appname_prop_ =
-      custom_props_->make_string_property("appname",
-                                          "appname is the name of the Syphon application",
-                                          syphon_appname_.c_str(),
-                                          (GParamFlags) G_PARAM_READWRITE,
-                                          SyphonSrc::set_appname,
-                                          SyphonSrc::get_appname, this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            syphon_servername_prop_, "servername",
-                            "Syphon server name");
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            syphon_appname_prop_, "appname",
-                            "Syphon application name");
+  pmanage<MPtr(&PContainer::make_string)>(
+      "servername",
+      [this](const std::string &val){
+        syphon_servername_ = val;
+        return true;
+      },
+      [this](){return syphon_servername_;},
+      "Server name",
+      "The name of the Syphon server",
+      syphon_servername_);
 
+
+  pmanage<MPtr(&PContainer::make_string)>(
+      "appname",
+      [this](const std::string &val){
+        syphon_appname_ = val;
+        return true;
+      },
+      [this](){return syphon_appname_;},
+      "App name",
+      "The name of the Syphon application",
+      syphon_appname_);
   return true;
 }
 
@@ -135,27 +128,4 @@ SyphonSrc::frameCallback(void *context, const char *data, int &width,
   ctx->writer_->bytes_written(width *height * 4);
 }
 
-const gchar *
-SyphonSrc::get_servername(void *user_data) {
-  SyphonSrc *ctx = static_cast<SyphonSrc *>(user_data);  return ctx->syphon_servername_.c_str();
-}
-
-void
-SyphonSrc::set_servername(const gchar *name, void *user_data) {
-  SyphonSrc *ctx = static_cast<SyphonSrc *>(user_data);
-  if (name != nullptr)
-    ctx->syphon_servername_ = name;
-}
-
-const gchar *
-SyphonSrc::get_appname(void *user_data) {
-  SyphonSrc *ctx = static_cast<SyphonSrc *>(user_data);  return ctx->syphon_appname_.c_str();
-}
-
-void
-SyphonSrc::set_appname(const gchar *name, void *user_data) {
-  SyphonSrc *ctx = static_cast<SyphonSrc *>(user_data);
-  if (name != nullptr)
-    ctx->syphon_appname_ = name;
-}
-}
+}  // namespace switcher

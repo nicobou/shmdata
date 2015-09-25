@@ -19,6 +19,8 @@
 
 #include "posture_worker.hpp"
 
+#include <iostream>
+
 using namespace std;
 namespace switcher
 {
@@ -42,15 +44,9 @@ namespace switcher
   void Worker::set_task(function<void()> func)
   {
     lock_guard<mutex> lock(mutex_);
+    ready_ = false;
     task_ = make_shared<function<void()>>(func);
-  }
-  
-  /*************/
-  void Worker::do_task()
-  {
-    lock_guard<mutex> lock(mutex_);
-    if (task_ != nullptr)
-      do_task_ = true;
+    _condition.notify_one();
   }
   
   /*************/
@@ -58,17 +54,15 @@ namespace switcher
   {
     while (true)
     {
+      unique_lock<mutex> lock(mutex_);
       ready_ = true;
+      _condition.wait(lock);
 
-      while (!stop_ && (task_ == nullptr || do_task_ == false))
-        this_thread::sleep_for(chrono::milliseconds(1));
+      if (task_ == nullptr)
+        continue;
   
       if (stop_)
         return;
-  
-      lock_guard<mutex> lock(mutex_);
-      ready_ = false;
-      do_task_ = false;
   
       (*task_)();
       task_.reset();

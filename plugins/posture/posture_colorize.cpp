@@ -209,7 +209,6 @@ PostureColorize::connect(std::string shmdata_socket_path) {
         tex_writer_->bytes_written(texture.size());
 
       });
-      worker_.do_task();
     }
     // Update the input textures
     else if (check_image_caps(type, width, height, channels)) {

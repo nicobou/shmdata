@@ -137,8 +137,6 @@ PostureSolidify::connect(std::string shmdata_socket_path) {
 
       mutex_.unlock();
     });
-
-    worker_.do_task();
   }, [=](string caps) {
     unique_lock<mutex> lock(mutex_);
     pcl_reader_caps_ = caps;
