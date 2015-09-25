@@ -28,7 +28,6 @@ check_PROGRAMS = \
     check_description_by_class \
     check_gst_pipeline \
     check_information_tree \
-    check_make_consultable \
     check_manager \
     check_quiddity_create_remove \
     check_rtp_session \
@@ -48,9 +47,6 @@ check_gst_pipeline_SOURCES = \
 
 check_information_tree_SOURCES = \
     check_information_tree.cpp
-
-check_make_consultable_SOURCES = \
-    check_make_consultable.cpp
 
 check_manager_SOURCES =\
     check_manager.cpp
