@@ -32,7 +32,6 @@
 #include <unordered_map>
 #include <map>
 
-#include "./property.hpp"
 #include "./property-container.hpp"
 #include "./method.hpp"
 #include "./signal-string.hpp"

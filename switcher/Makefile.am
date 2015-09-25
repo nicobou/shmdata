@@ -24,13 +24,11 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     categorizable.cpp \
     counter-map.cpp \
     create-remove-spy.cpp \
-    custom-property-helper.cpp \
     decodebin-to-shmdata.cpp \
     external-shmdata-writer.cpp \
     fraction.cpp \
     g-source-wrapper.cpp \
     glibmainloop.cpp \
-    gobject-custom-property.cpp \
     gobject-wrapper.cpp \
     gprop-to-prop.cpp \
     gst-audio-codec.cpp \
@@ -55,7 +53,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     plugin-loader.cpp \
     property-container.cpp \
     property-mapper.cpp \
-    property.cpp \
     quiddity-basic-test.cpp \
     quiddity-command.cpp \
     quiddity-documentation.cpp \
@@ -102,13 +99,11 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     counter-map.hpp \
     create-remove-spy.hpp \
     creator.hpp \
-    custom-property-helper.hpp \
     decodebin-to-shmdata.hpp \
     external-shmdata-writer.hpp \
     fraction.hpp \
     g-source-wrapper.hpp \
     glibmainloop.hpp \
-    gobject-custom-property.hpp \
     gobject-wrapper.hpp \
     gprop-to-prop.hpp \
     group.hpp \
@@ -136,7 +131,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     property-container.hpp \
     property-mapper.hpp \
     property-specification.hpp \
-    property.hpp \
     property2.hpp \
     quiddity-basic-test.hpp \
     quiddity-command.hpp \

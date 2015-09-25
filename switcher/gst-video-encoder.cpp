@@ -33,8 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 GstVideoEncoder::GstVideoEncoder(const std::string &):
-    shmcntr_(static_cast<Quiddity *>(this)),
-    custom_props_(std::make_shared<CustomPropertyHelper>()){
+    shmcntr_(static_cast<Quiddity *>(this)){
 }
 
 bool GstVideoEncoder::init() {

@@ -25,7 +25,6 @@
 #include <condition_variable>
 #include <atomic>
 #include "switcher/quiddity.hpp"
-#include "switcher/custom-property-helper.hpp"
 #include "./pj-call.hpp"
 #include "./pj-presence.hpp"
 

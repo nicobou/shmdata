@@ -38,7 +38,6 @@ Quiddity::Quiddity():
     methods_description_(std::make_shared<JSONBuilder>()),
     signals_description_(std::make_shared<JSONBuilder>()),
     gobject_(std::make_shared<GObjectWrapper>()) {
-  gobject_->property_set_default_user_data(this);
   GType arg_type[] = { G_TYPE_STRING };
   install_signal_with_class_name("Quiddity",
                                  "On New Property",

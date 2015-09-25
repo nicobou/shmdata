@@ -25,7 +25,6 @@
 #include <algorithm>
 #include "./gst-pipeliner.hpp"
 #include "./quiddity.hpp"
-#include "./custom-property-helper.hpp"
 #include "./gst-utils.hpp"
 #include "./quiddity-command.hpp"
 #include "./quiddity-manager-impl.hpp"
