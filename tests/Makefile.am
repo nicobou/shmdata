@@ -33,7 +33,6 @@ check_PROGRAMS = \
     check_rtp_session \
     check_scope_guard \
     check_startable \
-    check_string_dictionary \
     check_ugstelem
 
 check_description_by_class_SOURCES = \
