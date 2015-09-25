@@ -16,8 +16,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./posture_solidify.hpp"
 #include "switcher/std2.hpp"
+#include "./posture_solidify.hpp"
 
 #include <iostream>
 
