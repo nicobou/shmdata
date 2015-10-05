@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <sstream>
 #include "./property-container.hpp"
 
 namespace switcher {
@@ -533,17 +534,29 @@ std::string PContainer::get_str(prop_id_t id) const{
 
 bool PContainer::set_str_str(const std::string &strid, const std::string &val) const{
   auto id = get_id(strid);
-  if(0 == id)
+  if(0 != id) {
+    auto prop_it = props_.find(id); 
+    return prop_it->second.get()->set_str(std::forward<const std::string &>(val));
+  }
+  // accepting id converted to string
+  auto prop_id = prop::id_from_string(strid);
+  auto prop_it = props_.find(prop_id);
+  if (props_.end() == prop_it)
     return false;
-  auto prop_it = props_.find(id); 
   return prop_it->second.get()->set_str(std::forward<const std::string &>(val));
 }
 
 std::string PContainer::get_str_str(const std::string &strid) const{
   auto id = get_id(strid);
-  if(0 == id)
+  if(0 != id){
+    auto prop_it = props_.find(id); 
+    return prop_it->second.get()->get_str();
+  }
+  // accepting id converted to string
+  auto prop_id = prop::id_from_string(strid);
+  auto prop_it = props_.find(prop_id); 
+  if (props_.end() == prop_it)
     return std::string();
-  auto prop_it = props_.find(id); 
   return prop_it->second.get()->get_str();
 }
 
