@@ -81,11 +81,15 @@ bool PContainer::unsubscribe(prop_id_t id, register_id_t rid) const{
   return props_.find(id)->second->unsubscribe(std::forward<register_id_t>(rid));
 }
 
-PContainer::prop_id_t PContainer::get_id(const std::string &id) const{
-  const auto &it = ids_.find(id);
-  if (ids_.end() == it)
-    return 0;
-  return it->second;
+PContainer::prop_id_t PContainer::get_id(const std::string &strid) const{
+  const auto &it = ids_.find(strid);
+  if (ids_.end() != it)
+    return it->second;
+  // accepting id converted to string
+  auto id = prop::id_from_string(strid);
+  if (props_.end() != props_.find(id))
+    return id;
+  return 0;
 }
 
 PContainer::prop_id_t PContainer::make_int(const std::string &strid,
@@ -529,6 +533,7 @@ bool PContainer::set_str(prop_id_t id, const std::string &val) const{
 
 std::string PContainer::get_str(prop_id_t id) const{
   auto prop_it = props_.find(id); 
+  std::cout << __FUNCTION__ <<  " " << id << std::endl;
   return prop_it->second.get()->get_str();
 }
 
@@ -548,15 +553,19 @@ bool PContainer::set_str_str(const std::string &strid, const std::string &val) c
 
 std::string PContainer::get_str_str(const std::string &strid) const{
   auto id = get_id(strid);
+  std::cout << __FUNCTION__ << " " << __LINE__ << std::endl;
   if(0 != id){
     auto prop_it = props_.find(id); 
+  std::cout << __FUNCTION__ << " " << __LINE__ << std::endl;
     return prop_it->second.get()->get_str();
   }
   // accepting id converted to string
+  std::cout << __FUNCTION__ << " " << __LINE__ << std::endl;
   auto prop_id = prop::id_from_string(strid);
   auto prop_it = props_.find(prop_id); 
   if (props_.end() == prop_it)
     return std::string();
+  std::cout << __FUNCTION__ << " " << __LINE__ << std::endl;
   return prop_it->second.get()->get_str();
 }
 
@@ -580,6 +589,7 @@ PContainer::prop_id_t PContainer::push_parented(const std::string &strid,
   auto tree = prop->get_spec();
   tree_->graft(std::string("property.") + strid, tree);
   tree->graft("id", InfoTree::make(strid));
+  tree->graft("prop_id", InfoTree::make(counter_));
   tree->graft("order", InfoTree::make(20 * (suborders_.get_count(parent_strid) + 1)));
   tree->graft("parent", InfoTree::make(parent_strid));
   tree->graft("enabled", InfoTree::make(true));
