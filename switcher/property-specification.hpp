@@ -41,7 +41,7 @@ class PropertySpecification{
  public:
   PropertySpecification() = delete;
 
-  // typename V is here in order to allow default value to be initialized from an other type,
+  // typename V is here in order to allow value to be initialized from an other type,
   // e.g. an unsigned int with an int
   
   template <typename U = T, typename V>
@@ -58,7 +58,7 @@ class PropertySpecification{
     spec_->graft("description", InfoTree::make(description));
     spec_->graft("type", InfoTree::make(TypeNameRegistry::get_name<U>()));
     spec_->graft("writable", InfoTree::make(is_writable));
-    spec_->graft("default", InfoTree::make(static_cast<U>(default_value)));
+    spec_->graft("value", InfoTree::make(static_cast<U>(default_value)));
   }
 
   template <typename U = T, typename V>
@@ -87,7 +87,7 @@ class PropertySpecification{
     spec_->graft("description", InfoTree::make(description));
     spec_->graft("type", InfoTree::make(TypeNameRegistry::get_name<U>()));
     spec_->graft("writable", InfoTree::make(is_writable));
-    spec_->graft("default", InfoTree::make(static_cast<U>(default_value)));
+    spec_->graft("value", InfoTree::make(static_cast<U>(default_value)));
     spec_->graft("min", InfoTree::make(static_cast<U>(min_value)));
     spec_->graft("max", InfoTree::make(static_cast<U>(max_value)));
   }
@@ -103,7 +103,7 @@ class PropertySpecification{
     spec_->graft("description", InfoTree::make(description));
     spec_->graft("type", InfoTree::make(TypeNameRegistry::get_name<bool>()));
     spec_->graft("writable", InfoTree::make(is_writable));
-    spec_->graft("default", InfoTree::make(default_value));
+    spec_->graft("value", InfoTree::make(default_value));
   }
 
   template<typename U = char>
@@ -117,7 +117,7 @@ class PropertySpecification{
     spec_->graft("description", InfoTree::make(description));
     spec_->graft("type", InfoTree::make(TypeNameRegistry::get_name<char>()));
     spec_->graft("writable", InfoTree::make(is_writable));
-    spec_->graft("default", InfoTree::make(default_value));
+    spec_->graft("value", InfoTree::make(default_value));
   }
 
   template<typename U = Selection, typename V = Selection::index_t>
@@ -137,7 +137,7 @@ class PropertySpecification{
     spec_->graft("description", InfoTree::make(description));
     spec_->graft("type", InfoTree::make("selection"));
     spec_->graft("writable", InfoTree::make(is_writable));
-    spec_->graft("default", InfoTree::make(default_value.get()));
+    spec_->graft("value", InfoTree::make(default_value.get()));
     size_t pos = 0;
     for (const auto &it: default_value.get_list()){
       auto tree = InfoTree::make();
@@ -176,12 +176,11 @@ class PropertySpecification{
     spec_->graft("description", InfoTree::make(description));
     spec_->graft("type", InfoTree::make("fraction"));
     spec_->graft("writable", InfoTree::make(is_writable));
-    spec_->graft("default numerator", InfoTree::make(default_value.numerator()));
-    spec_->graft("default denominator", InfoTree::make(default_value.denominator()));
-    spec_->graft("min numerator", InfoTree::make(min_num));
-    spec_->graft("min denominator", InfoTree::make(min_denom));
-    spec_->graft("max numerator", InfoTree::make(max_num));
-    spec_->graft("max denominator", InfoTree::make(max_denom));
+    spec_->graft("value", InfoTree::make(default_value));
+    spec_->graft("minNumerator", InfoTree::make(min_num));
+    spec_->graft("minDenominator", InfoTree::make(min_denom));
+    spec_->graft("maxNumerator", InfoTree::make(max_num));
+    spec_->graft("maxDenominator", InfoTree::make(max_denom));
   }
 
 
@@ -196,8 +195,8 @@ class PropertySpecification{
     spec_->graft("description", InfoTree::make(description));
     spec_->graft("type", InfoTree::make("tuple"));
     spec_->graft("writable", InfoTree::make(is_writable));
-    print_tuple(".default.", default_value);
-    spec_->tag_as_array(".default.", true);
+    print_tuple(".value.", default_value);
+    spec_->tag_as_array(".value.", true);
   }
 
   template<typename U = Group,

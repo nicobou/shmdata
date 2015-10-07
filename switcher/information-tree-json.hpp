@@ -29,7 +29,6 @@
 #define __SWITCHER_INFORMATION_TREE_JSON_H__
 
 #include "./information-tree.hpp"
-#include <json-glib/json-glib.h>
 #include <string>
 
 namespace switcher {

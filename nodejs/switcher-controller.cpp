@@ -872,7 +872,6 @@ Handle<Value> SwitcherController::SubscribeToProperty(const Arguments& args) {
           qname,
           prop_id,
           [obj, man, qname, pname, prop_id](){
-            std::cout << man->use_prop<MPtr(&PContainer::get_str)>(qname, prop_id) << std::endl;
             uv_mutex_lock(&obj->switcher_prop_mutex);
             obj->switcher_prop_list.push_back(PropUpdate(
                 qname,

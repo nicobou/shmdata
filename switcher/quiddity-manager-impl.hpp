@@ -111,15 +111,6 @@ class QuiddityManager_Impl
       prop,                   // method used by quiddities to access the consultable
       props);                 // public forwarding method                           
   
-  // doc (json formatted)
-  std::string get_properties_description(const std::string &quiddity_name);
-  std::string get_property_description(const std::string &quiddity_name,
-                                       const std::string &property_name);
-  // following "by_class" methods provide properties available after creation only
-  std::string get_properties_description_by_class(const std::string &class_name);
-  std::string get_property_description_by_class(const std::string &class_name,
-                                                const std::string &property_name);
-
   // **** methods
   // doc (json formatted)
   std::string get_methods_description(const std::string &quiddity_name);

@@ -33,7 +33,11 @@ class Group {
     return std::make_pair(false, Group());
   }
   std::string to_string() const {return std::string();} 
+  friend std::ostream& operator<<(std::ostream& out, const Group&grp)  {
+    out << grp.to_string();
+    return out;
+  }
 };
-
+  
 }  // namespace switcher
 #endif

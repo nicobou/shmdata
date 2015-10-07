@@ -71,12 +71,7 @@ class Quiddity {
   bool set_name(const std::string &name);  // can be called once
 
   // properties
-
   Make_consultable(Quiddity, PContainer, &props_, prop);
-
-  // FIXME remove following property methods
-  std::string get_property_description(const std::string &property_name);
-  std::string get_properties_description();
 
   // methods
   std::string get_method_description(const std::string &method_name);

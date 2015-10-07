@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <sstream>
 #include "./property-container.hpp"
 
 namespace switcher {
@@ -80,11 +81,15 @@ bool PContainer::unsubscribe(prop_id_t id, register_id_t rid) const{
   return props_.find(id)->second->unsubscribe(std::forward<register_id_t>(rid));
 }
 
-PContainer::prop_id_t PContainer::get_id(const std::string &id) const{
-  const auto &it = ids_.find(id);
-  if (ids_.end() == it)
-    return 0;
-  return it->second;
+PContainer::prop_id_t PContainer::get_id(const std::string &strid) const{
+  const auto &it = ids_.find(strid);
+  if (ids_.end() != it)
+    return it->second;
+  // accepting id converted to string
+  auto id = prop::id_from_string(strid);
+  if (props_.end() != props_.find(id))
+    return id;
+  return 0;
 }
 
 PContainer::prop_id_t PContainer::make_int(const std::string &strid,
@@ -533,17 +538,29 @@ std::string PContainer::get_str(prop_id_t id) const{
 
 bool PContainer::set_str_str(const std::string &strid, const std::string &val) const{
   auto id = get_id(strid);
-  if(0 == id)
+  if(0 != id) {
+    auto prop_it = props_.find(id); 
+    return prop_it->second.get()->set_str(std::forward<const std::string &>(val));
+  }
+  // accepting id converted to string
+  auto prop_id = prop::id_from_string(strid);
+  auto prop_it = props_.find(prop_id);
+  if (props_.end() == prop_it)
     return false;
-  auto prop_it = props_.find(id); 
   return prop_it->second.get()->set_str(std::forward<const std::string &>(val));
 }
 
 std::string PContainer::get_str_str(const std::string &strid) const{
   auto id = get_id(strid);
-  if(0 == id)
+  if(0 != id){
+    auto prop_it = props_.find(id); 
+    return prop_it->second.get()->get_str();
+  }
+  // accepting id converted to string
+  auto prop_id = prop::id_from_string(strid);
+  auto prop_it = props_.find(prop_id); 
+  if (props_.end() == prop_it)
     return std::string();
-  auto prop_it = props_.find(id); 
   return prop_it->second.get()->get_str();
 }
 
@@ -567,6 +584,7 @@ PContainer::prop_id_t PContainer::push_parented(const std::string &strid,
   auto tree = prop->get_spec();
   tree_->graft(std::string("property.") + strid, tree);
   tree->graft("id", InfoTree::make(strid));
+  tree->graft("prop_id", InfoTree::make(counter_));
   tree->graft("order", InfoTree::make(20 * (suborders_.get_count(parent_strid) + 1)));
   tree->graft("parent", InfoTree::make(parent_strid));
   tree->graft("enabled", InfoTree::make(true));
@@ -579,6 +597,15 @@ std::unique_lock<std::mutex> PContainer::get_lock(prop_id_t id){
 
 void PContainer::notify(prop_id_t id){
   props_.find(id)->second->notify();
+}
+
+void PContainer::update_values_in_tree() const{
+  for (auto &it: props_) 
+    it.second->update_value_in_spec();
+}
+
+void PContainer::update_value_in_tree(prop_id_t id) const{
+  props_.find(id)->second->update_value_in_spec();
 }
 
 }  // namespace switcher
