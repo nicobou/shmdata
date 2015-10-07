@@ -149,7 +149,7 @@ void V4L2Src::update_pixel_format(const CaptureDescription &cap_descr) {
     names.push_back(it.second); 
     nicks.push_back(it.first);
   }
-  pixel_format_enum_ = Selection(std::move(names), 0);
+  pixel_format_enum_ = Selection(std::make_pair(std::move(names), std::move(nicks)), 0);
   pixel_format_id_ = pmanage<MPtr(&PContainer::make_selection)>(
       "pixel_format",
       [this](const size_t &val){pixel_format_enum_.select(val); return true;},

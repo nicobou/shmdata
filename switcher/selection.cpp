@@ -19,6 +19,7 @@
 
 #include <glib.h>
 #include <tuple>
+#include <algorithm>
 #include "./selection.hpp"
 
 namespace switcher {
@@ -59,5 +60,20 @@ std::string Selection::get_current_nick() const{
 std::vector<std::string> Selection::get_list() const{
   return list_;
 }
- 
+
+Selection::index_t Selection::get_index(const std::string &name_or_nick){
+  {
+    const auto &it = std::find(list_.cbegin(), list_.cend(), name_or_nick);
+    if (it != list_.end())
+      return it - list_.begin();
+  }
+  {
+    const auto &it = std::find(nicks_.cbegin(), nicks_.cend(), name_or_nick);
+    if (it != nicks_.end())
+      return it - nicks_.begin();
+  }
+  g_warning("index not found for selection named %s", name_or_nick.c_str());
+  return 0;
+}
+
 }  // namespace switcher

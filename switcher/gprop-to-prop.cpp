@@ -292,6 +292,8 @@ std::unique_ptr<PropertyBase> to_prop(GObject *gobj, const std::string &gprop_na
             [gobj, gprop_name](){
               GValue fract = G_VALUE_INIT; On_scope_exit{g_value_reset(&fract);};
               g_object_get_property(gobj, gprop_name.c_str(), &fract);
+              // if (!GST_VALUE_HOLDS_FRACTION(&fract))
+              //   return Fraction(0, 0);
               return Fraction(gst_value_get_fraction_numerator (&fract),
                               gst_value_get_fraction_denominator (&fract));
             },

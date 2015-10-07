@@ -24,19 +24,14 @@ namespace switcher {
 bool
 QuiddityBasicTest::test_full(QuiddityManager::ptr manager,
                              const std::string &quiddity_class_name) {
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!test_get_info(manager, quiddity_class_name))
     return false;
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!test_create(manager, quiddity_class_name))
     return false;
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!test_description_by_class(manager, quiddity_class_name))
     return false;
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!test_startable(manager, quiddity_class_name))
     return false;
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   return true;
 }
 
@@ -44,7 +39,6 @@ bool
 QuiddityBasicTest::test_create(QuiddityManager::ptr manager,
                                const std::string &quiddity_class_name) {
   // testing with a nick name
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   std::string res_with_nick =
       manager->create(quiddity_class_name, quiddity_class_name);
   if (res_with_nick.compare(quiddity_class_name) != 0) {
@@ -56,29 +50,24 @@ QuiddityBasicTest::test_create(QuiddityManager::ptr manager,
               quiddity_class_name.c_str());
     return false;
   }
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   // testing without nick name
   std::string res_without_nick = manager->create(quiddity_class_name);
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (res_without_nick.empty()) {
     g_warning("quiddity %s cannot be created (without nickname)",
               quiddity_class_name.c_str());
     return false;
   }
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!manager->remove(res_without_nick)) {
     g_warning("error while removing quiddity %s (without nickname)",
               quiddity_class_name.c_str());
     return false;
   }
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   return true;
 }
 
 bool
 QuiddityBasicTest::test_startable(QuiddityManager::ptr manager,
                                   const std::string &quiddity_class_name) {
-  // g_print ("---- startable test for %s\n", quiddity_class_name.c_str ());
   std::string name =
       manager->create(quiddity_class_name, quiddity_class_name);
   if (name.compare(quiddity_class_name) != 0) {
