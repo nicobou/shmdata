@@ -75,7 +75,7 @@ class DummyPlugin: public Quiddity {
   PContainer::prop_id_t long_double_id_;
 
   // selection
-  Selection selection_{{"emacs", "vim", "notepad", "gedit"}, 0};
+  Selection selection_{{"emasc", "sublime", "IntelliJ IDEA", "vim", "notepad", "gedit"}, 0};
   PContainer::prop_id_t selection_id_;
 
   // tuple  // FIXME

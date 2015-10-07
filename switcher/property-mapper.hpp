@@ -23,7 +23,7 @@
 #include "./quiddity.hpp"
 
 namespace switcher {
-class PropertyMapper:public Quiddity {
+class PropertyMapper: public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PropertyMapper);
   PropertyMapper(const std::string &);
@@ -66,6 +66,6 @@ class PropertyMapper:public Quiddity {
   static void set_double_value(gdouble value, void *user_data);
   static gdouble get_double_value(void *user_data);
 };
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif
