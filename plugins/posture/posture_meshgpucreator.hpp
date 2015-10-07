@@ -42,6 +42,7 @@ namespace switcher {
   
     bool init() final;
     void cb_frame_depth(int index, std::vector<unsigned char>& depth, int width, int height);
+    void cb_frame_cloud(int index, std::vector<char>& cloud);
   };
 
   SWITCHER_DECLARE_PLUGIN(PostureMeshGPUCreator);

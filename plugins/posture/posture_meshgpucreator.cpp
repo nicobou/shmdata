@@ -13,10 +13,10 @@ using namespace posture;
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (
 					PostureMeshGPUCreator,
-					"posturescansrcgpu",
+                    "posturemeshgpucreator",
 					"Scan 3D GPU",
 					"video",
-					"writer",
+                    "writer/device",
 					"Grab mesh using zcameras on GPU",
 					"LGPL",
 					"Ludovic Schreiber");
@@ -109,8 +109,8 @@ namespace switcher {
              "grid resolution",
              "resolution for the mesh reconstruction",
              resolution_,
-             3,
-             9);
+             1,
+             99);
 
     pmanage<MPtr(&PContainer::make_double)>
             ("grid size",
@@ -125,12 +125,7 @@ namespace switcher {
              "size of the cube for the mesh reconstruction",
              size_,
              0.1f,
-             99.0f);
-
-    // We want 1 camera at construction, fix this:
-    // cameras_.resize(1);
-    // cameras_ [0] = std::shared_ptr<ZCamera> (new ZCamera ());
-    // set_number_camera(nbr_cam_, this);
+             9.0f);
   }
 
   PostureMeshGPUCreator::~PostureMeshGPUCreator ()
@@ -194,5 +189,9 @@ namespace switcher {
 							      output_.size());
     mesh_writer_->bytes_written(output_.size());
   }
+
+  void
+  PostureMeshGPUCreator::cb_frame_cloud(int index, std::vector<char>& cloud)
+  {}
 
 }  // namespace switcher
