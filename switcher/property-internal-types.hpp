@@ -33,6 +33,8 @@ using set_t = std::function<bool(const W &)>;
 // id
 using prop_id_t = size_t;
 inline prop_id_t id_from_string(const std::string &str){
+  if(!isdigit(*str.begin()))
+     return 0;
   return stoul(str, nullptr, 0);
 }
 

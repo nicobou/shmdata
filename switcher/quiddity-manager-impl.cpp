@@ -25,6 +25,7 @@
 #include "./quiddity.hpp"
 #include "./scope-exit.hpp"
 #include "./string-utils.hpp"
+#include "./information-tree-json.hpp"
 
 // the quiddities to manage (line sorted)
 #include "./audio-test-source.hpp"
@@ -384,53 +385,6 @@ bool QuiddityManager_Impl::remove(const std::string &quiddity_name) {
   if (removal_hook_ != nullptr)
     (*removal_hook_) (quiddity_name.c_str(), removal_hook_user_data_);
   return true;
-}
-
-std::string QuiddityManager_Impl::get_properties_description(const std::string &quiddity_name) {
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    g_warning("quiddity %s not found, cannot get description of properties",
-              quiddity_name.c_str());
-    return std::string();
-  }
-  return q_it->second->get_properties_description();
-}
-
-std::string
-QuiddityManager_Impl::get_property_description(const std::string &quiddity_name,
-                                               const std::string &property_name) {
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    g_warning("quiddity %s not found, cannot get description of properties",
-              quiddity_name.c_str());
-    return std::string();
-  }
-  return q_it->second->get_property_description(property_name);
-}
-
-std::string
-QuiddityManager_Impl::get_properties_description_by_class(const std::string &class_name) {
-  if (!class_exists(class_name))
-    return "{\"error\":\"class not found\"}";
-  std::string quid_name = create_without_hook(class_name);
-  if (quid_name.empty())
-    return "{\"error\":\"cannot get property because the class cannot be instanciated\"}";
-  std::string descr = get_properties_description(quid_name);
-  remove_without_hook(quid_name);
-  return descr;
-}
-
-std::string
-QuiddityManager_Impl::get_property_description_by_class(const std::string &class_name,
-                                                        const std::string &property_name) {
-  if (!class_exists(class_name))
-    return "{\"error\":\"class not found\"}";
-  std::string quid_name = create_without_hook(class_name);
-  if (quid_name.empty())
-    return "{\"error\":\"cannot get property because the class cannot be instanciated\"}";
-  std::string descr = get_property_description(quid_name, property_name);
-  remove_without_hook(quid_name);
-  return descr;
 }
 
 bool

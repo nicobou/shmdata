@@ -533,7 +533,6 @@ bool PContainer::set_str(prop_id_t id, const std::string &val) const{
 
 std::string PContainer::get_str(prop_id_t id) const{
   auto prop_it = props_.find(id); 
-  std::cout << __FUNCTION__ <<  " " << id << std::endl;
   return prop_it->second.get()->get_str();
 }
 
@@ -553,19 +552,15 @@ bool PContainer::set_str_str(const std::string &strid, const std::string &val) c
 
 std::string PContainer::get_str_str(const std::string &strid) const{
   auto id = get_id(strid);
-  std::cout << __FUNCTION__ << " " << __LINE__ << std::endl;
   if(0 != id){
     auto prop_it = props_.find(id); 
-  std::cout << __FUNCTION__ << " " << __LINE__ << std::endl;
     return prop_it->second.get()->get_str();
   }
   // accepting id converted to string
-  std::cout << __FUNCTION__ << " " << __LINE__ << std::endl;
   auto prop_id = prop::id_from_string(strid);
   auto prop_it = props_.find(prop_id); 
   if (props_.end() == prop_it)
     return std::string();
-  std::cout << __FUNCTION__ << " " << __LINE__ << std::endl;
   return prop_it->second.get()->get_str();
 }
 
@@ -602,6 +597,15 @@ std::unique_lock<std::mutex> PContainer::get_lock(prop_id_t id){
 
 void PContainer::notify(prop_id_t id){
   props_.find(id)->second->notify();
+}
+
+void PContainer::update_values_in_tree() const{
+  for (auto &it: props_) 
+    it.second->update_value_in_spec();
+}
+
+void PContainer::update_value_in_tree(prop_id_t id) const{
+  props_.find(id)->second->update_value_in_spec();
 }
 
 }  // namespace switcher

@@ -21,6 +21,7 @@
 #include <regex>
 #include <iostream>
 #include "./information-tree.hpp"
+#include "information-tree-json.hpp"
 #include "./string-utils.hpp"
 
 namespace switcher {
@@ -306,5 +307,12 @@ InfoTree::ptrc InfoTree::get_subtree(InfoTree::ptrc tree, const std::string &pat
   auto found = tree->get_node(path);
   return found.second->second.get();
 }
+
+std::string InfoTree::serialize_json(const std::string &path) const{
+  std::unique_lock<std::mutex> lock(mutex_);
+  auto found = get_node(path);
+  return JSONSerializer::serialize(found.second->second.get());
+}
+
 
 }  // namespace switcher

@@ -80,7 +80,9 @@ class PContainer{
   // use when property is updated without "set" (method is read-only for instance)
   std::unique_lock<std::mutex> get_lock(prop_id_t prop_id);
   void notify(prop_id_t prop_id);
-
+  void update_value_in_tree(prop_id_t prop) const;
+  void update_values_in_tree() const;
+  
   // ----------- makers
   prop_id_t make_int(const std::string &strid,
                      prop::set_t<int> set,

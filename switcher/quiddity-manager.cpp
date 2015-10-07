@@ -262,23 +262,9 @@ bool QuiddityManager::save_command_history(const char *file_path) const {
     g_error_free(error);
     return false;
   }
-
+  
   return true;
 }
-
-// ----------- API -----------------------------
-std::string
-QuiddityManager::get_properties_description(const std::string &quiddity_name) {
-  return seq_invoke(QuiddityCommand::get_properties_description,
-                    quiddity_name.c_str(), nullptr);
-}
-
-std::string
-QuiddityManager::get_property_description(const std::string &quiddity_name,
-                                          const std::string &property_name) {
-  return seq_invoke(QuiddityCommand::get_property_description,
-                    quiddity_name.c_str(), property_name.c_str(), nullptr);
-  }
 
 std::string
 QuiddityManager::get_info(const std::string &quiddity_name,
@@ -289,17 +275,62 @@ QuiddityManager::get_info(const std::string &quiddity_name,
 
 
 std::string
+QuiddityManager::get_properties_description(const std::string &quiddity_name) {
+  manager_impl_->props<MPtr(&PContainer::update_values_in_tree)>(quiddity_name);
+  return manager_impl_->use_tree<MPtr(&InfoTree::serialize_json)>(
+      quiddity_name,
+      std::string(".property."));
+}
+
+std::string
+QuiddityManager::get_property_description(const std::string &quiddity_name,
+                                          const std::string &property_name) {
+  auto id = manager_impl_->props<MPtr(&PContainer::get_id)>(quiddity_name, property_name);
+  if (0 == id)
+    return std::string("null");
+  manager_impl_->props<MPtr(&PContainer::update_value_in_tree)>(quiddity_name, id);
+  return manager_impl_->use_tree<MPtr(&InfoTree::serialize_json)>(
+      quiddity_name,
+      std::string(".property.") + property_name);
+}
+
+std::string
 QuiddityManager::
 get_properties_description_by_class(const std::string &class_name) {
-  return seq_invoke(QuiddityCommand::get_properties_description_by_class,
-                    class_name.c_str(), nullptr);
+  if (! manager_impl_->class_exists(class_name)){
+    g_warning("not description available for class %s (class not found)");
+    return "null";
+  }
+  std::string quid_name = manager_impl_->create_without_hook(class_name);
+  if (quid_name.empty()){
+    g_warning("not description available for class %s (cannot create instance)");
+    return "null";
+  }
+  On_scope_exit{ manager_impl_->remove_without_hook(quid_name);};
+  return manager_impl_->use_tree<MPtr(&InfoTree::serialize_json)>(
+      quid_name,
+      std::string(".property."));
 }
 
 std::string
 QuiddityManager::get_property_description_by_class(const std::string &class_name,
                                                    const std::string &property_name) {
-  return seq_invoke(QuiddityCommand::get_property_description_by_class,
-                    class_name.c_str(), property_name.c_str(), nullptr);
+  if (!manager_impl_->class_exists(class_name)){
+    g_warning("not description available for class %s (class not found)");
+    return "null";
+  }
+  std::string quid_name = manager_impl_->create_without_hook(class_name);
+  if (quid_name.empty()){
+    g_warning("not description available for class %s (cannot create instance)");
+    return "null";
+  }
+  On_scope_exit{ manager_impl_->remove_without_hook(quid_name);};
+  auto id = manager_impl_->props<MPtr(&PContainer::get_id)>(quid_name, property_name);
+  if (0 == id)
+    return std::string("null");
+  return manager_impl_->use_tree<MPtr(&InfoTree::serialize_json)>(
+      quid_name,
+      std::string(".property.") + property_name);
 }
 
 bool
@@ -770,30 +801,8 @@ gboolean QuiddityManager::execute_command(gpointer user_data) {
       else
         context->command_->result_.push_back("false");
       break;
-    case QuiddityCommand::get_properties_description:
-      context->command_->result_.push_back(context->
-                                           manager_impl_->get_properties_description
-                                           (context->command_->args_[0]));
-      break;
-    case QuiddityCommand::get_property_description:
-      context->command_->result_.push_back(context->
-                                           manager_impl_->get_property_description
-                                           (context->command_->args_[0],
-                                            context->command_->args_[1]));
-      break;
     case QuiddityCommand::get_info:
       context->command_->result_.push_back(context->manager_impl_->get_info
-                                           (context->command_->args_[0],
-                                            context->command_->args_[1]));
-      break;
-    case QuiddityCommand::get_properties_description_by_class:
-      context->command_->result_.push_back(context->
-                                           manager_impl_->get_properties_description_by_class
-                                           (context->command_->args_[0]));
-      break;
-    case QuiddityCommand::get_property_description_by_class:
-      context->command_->result_.push_back(context->
-                                           manager_impl_->get_property_description_by_class
                                            (context->command_->args_[0],
                                             context->command_->args_[1]));
       break;

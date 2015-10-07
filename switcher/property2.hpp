@@ -45,6 +45,7 @@ class PropertyBase{
   }
 
   virtual InfoTree::ptr get_spec() = 0;
+  virtual void update_value_in_spec() = 0;
   virtual bool set_str(const std::string &val, bool do_notify = true) const = 0;
   virtual std::string get_str() const = 0;
   virtual std::unique_lock<std::mutex> get_lock() = 0;
@@ -68,6 +69,7 @@ class PropertyBase{
     for(auto &it: to_notify_)
       it.second();
   }
+
   
  private:
   size_t type_hash_;
@@ -152,8 +154,11 @@ class Property2: public PropertyBase{
   }
   
   InfoTree::ptr get_spec() final {return doc_.get_spec();}
-
   
+  void update_value_in_spec() final{
+    doc_.get_spec()->graft(".value.", InfoTree::make(get())); 
+  }
+
   std::unique_lock<std::mutex> get_lock(){
     return std::unique_lock<std::mutex> (ts_);
   }

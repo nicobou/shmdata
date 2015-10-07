@@ -75,6 +75,7 @@ class InfoTree {
   static void preorder_tree_walk(InfoTree::ptrc tree,
                                  InfoTree::OnNodeFunction on_visiting_node,
                                  InfoTree::OnNodeFunction on_node_visited);
+  // FIXME replace the following with a get_copy non static method
   static InfoTree::ptrc get_subtree(InfoTree::ptrc tree, const std::string &path);
   
   //const methods
@@ -94,6 +95,9 @@ class InfoTree {
     return any.copy_as<T>();
 
   }
+
+  // serialize
+  std::string serialize_json(const std::string &path) const;
   
   // get child keys - returning a newly allocated list
   std::list<std::string> get_child_keys(const std::string &path) const;

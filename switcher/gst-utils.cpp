@@ -452,14 +452,11 @@ void GstUtils::gst_element_deleter(GstElement *element) {
 	      __FUNCTION__);
     return;
   }
-    
-  // delete if ownership has not been taken by a parent
+  // unref if ownership has not been taken by a parent
   if (nullptr == GST_OBJECT_PARENT(element)) {
     if (((GObject *) element)->ref_count > 0)
       gst_object_unref(element);
-  } // else {
-//     GstUtils::clean_element(element);
-//   }
+  }
 }
 
 // g_signal_connect is actually a macro, so wrapping it for use with std::bind
