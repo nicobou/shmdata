@@ -177,10 +177,10 @@ class PropertySpecification{
     spec_->graft("type", InfoTree::make("fraction"));
     spec_->graft("writable", InfoTree::make(is_writable));
     spec_->graft("value", InfoTree::make(default_value));
-    spec_->graft("min numerator", InfoTree::make(min_num));
-    spec_->graft("min denominator", InfoTree::make(min_denom));
-    spec_->graft("max numerator", InfoTree::make(max_num));
-    spec_->graft("max denominator", InfoTree::make(max_denom));
+    spec_->graft("minNumerator", InfoTree::make(min_num));
+    spec_->graft("minDenominator", InfoTree::make(min_denom));
+    spec_->graft("maxNumerator", InfoTree::make(max_num));
+    spec_->graft("maxDenominator", InfoTree::make(max_denom));
   }
 
 
