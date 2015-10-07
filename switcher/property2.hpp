@@ -156,7 +156,8 @@ class Property2: public PropertyBase{
   InfoTree::ptr get_spec() final {return doc_.get_spec();}
   
   void update_value_in_spec() final{
-    doc_.get_spec()->graft(".value.", InfoTree::make(get())); 
+    if (nullptr != get_)
+      doc_.get_spec()->graft(".value.", InfoTree::make(get())); 
   }
 
   std::unique_lock<std::mutex> get_lock(){
