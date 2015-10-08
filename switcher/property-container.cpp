@@ -22,13 +22,16 @@
 
 namespace switcher {
 
-PContainer::PContainer(InfoTree::ptr tree):
-    tree_(tree){
+PContainer::PContainer(InfoTree::ptr tree, all_state_cb_t cb):
+    tree_(tree),
+    state_cb_(cb){
   tree_->graft(".property", InfoTree::make());
   tree_->tag_as_array(".property", true);
 }
 
 void PContainer::notify_state_change(prop_id_t prop, pstate_t state) {
+  if (state_cb_)
+    state_cb_(prop, state);
   for (const auto &it: props_[prop]->get_register_ids()){
     auto cb = state_cbs_.find(it);
     if (state_cbs_.end() != cb) cb->second(state);
@@ -40,6 +43,7 @@ bool PContainer::replace(prop_id_t prop_id, std::unique_ptr<PropertyBase> &&prop
   if(strids_.end() == it)
     return false;  // prop not found
   props_[prop_id] = std::forward<std::unique_ptr<PropertyBase>>(prop_ptr);
+  notify_state_change(prop_id, PContainer::REPLACED);
   return true;
 }
 
@@ -90,6 +94,13 @@ PContainer::prop_id_t PContainer::get_id(const std::string &strid) const{
   if (props_.end() != props_.find(id))
     return id;
   return 0;
+}
+
+std::string PContainer::get_name(prop_id_t id) const {
+  const auto &it = strids_.find(id);
+  if (strids_.end() != it)
+    return it->second;
+  return std::string();
 }
 
 PContainer::prop_id_t PContainer::make_int(const std::string &strid,
@@ -588,6 +599,7 @@ PContainer::prop_id_t PContainer::push_parented(const std::string &strid,
   tree->graft("order", InfoTree::make(20 * (suborders_.get_count(parent_strid) + 1)));
   tree->graft("parent", InfoTree::make(parent_strid));
   tree->graft("enabled", InfoTree::make(true));
+  notify_state_change(counter_, PContainer::ADDED);
   return counter_;
 }
 

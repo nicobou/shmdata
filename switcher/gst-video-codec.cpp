@@ -43,16 +43,20 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid,
       GST_RANK_SECONDARY,
       true,
       {"schroenc", "theoraenc"}), 0),
-  codec_id_(install_codec(true/*primary*/)),
+  codec_id_(install_codec()),
   codec_long_list_id_(quid_->pmanage<MPtr(&PContainer::make_bool)>(
       "more_codecs",
       [this](const bool &val){
         codec_long_list_ = val;
         quid_->pmanage<MPtr(&PContainer::remove)>(codec_id_);
-        if (val) 
-          install_codec(true);   // primary
-        else
-          install_codec(false);  // secondary
+        if (val) {
+          use_primary_codec_ = false;
+          codec_id_ = install_codec();
+          use_primary_codec_ = true;
+        } else {
+          use_primary_codec_ = false;
+          codec_id_ = install_codec();
+        }
         reset_codec_configuration(nullptr, this);
         return true;
       },
@@ -87,7 +91,7 @@ void GstVideoCodec::show(){
 }
 
 void GstVideoCodec::make_bin(){
-  if (0 != secondary_codec_.get()) {
+  if (0 != use_primary_codec_ ? primary_codec_.get() : secondary_codec_.get()) {
     gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                      shmsrc_.get_raw(),
                      queue_codec_element_.get_raw(),
@@ -105,7 +109,7 @@ void GstVideoCodec::make_bin(){
 }
 
 bool GstVideoCodec::remake_codec_elements() {
-  if (0 != secondary_codec_.get()) {
+  if (0 != quid_->pmanage<MPtr(&PContainer::get<Selection::index_t>)>(codec_id_)) {
     if (!UGstElem::renew(shmsrc_, {"socket-path"})
         || !UGstElem::renew(shm_encoded_, {"socket-path", "sync", "async"})
         || !UGstElem::renew(color_space_codec_element_)
@@ -143,28 +147,31 @@ void GstVideoCodec::make_codec_properties() {
 }
 
 gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointer user_data) {
-  // FIXME
-  // GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
-  // auto &quid = context->quid_;
-  // quid->prop<MPtr(&PContainer::set<Selection::index_t>)>(
-  //     quid->prop<MPtr(&PContainer::get_id)>("codec"),
-  //     context->secondary_codec_.get_index("On2 VP8 Encoder"));
-  // context->make_codec_properties();
-  // quid->prop<MPtr(&PContainer::set_str)>(
-  //     quid->prop<MPtr(&PContainer::get_id)>("deadline"), "30000");
-  // quid->prop<MPtr(&PContainer::set_str)>(
-  //     quid->prop<MPtr(&PContainer::get_id)>("target-bitrate"), "2000000");  // 2Mbps
-  // quid->prop<MPtr(&PContainer::set_str)>(
-  //     quid->prop<MPtr(&PContainer::get_id)>("end-usage"), "1");  // CBR
-  // quid->prop<MPtr(&PContainer::set_str)>(
-  //     quid->prop<MPtr(&PContainer::get_id)>("keyframe-max-dist"), "5");
+  GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
+  auto &quid = context->quid_;
+  g_print("%s %d \n", __FUNCTION__, __LINE__);
+  // quid->pmanage<MPtr(&PContainer::set<Selection::index_t>)>(
+  //     context->codec_id_, 5);
+  auto *codec_sel = context->use_primary_codec_ ?
+      &context->primary_codec_ : &context->secondary_codec_;
+  codec_sel->select(context->secondary_codec_.get_index("On2 VP8 Encoder"));
+  quid->pmanage<MPtr(&PContainer::notify)>(context->codec_id_);
+  context->make_codec_properties();
+  quid->pmanage<MPtr(&PContainer::set_str)>(
+      quid->pmanage<MPtr(&PContainer::get_id)>("deadline"), "30000");
+  quid->pmanage<MPtr(&PContainer::set_str)>(
+      quid->pmanage<MPtr(&PContainer::get_id)>("target-bitrate"), "2000000");  // 2Mbps
+  quid->pmanage<MPtr(&PContainer::set_str)>(
+      quid->pmanage<MPtr(&PContainer::get_id)>("end-usage"), "1");  // CBR
+  quid->pmanage<MPtr(&PContainer::set_str)>(
+      quid->pmanage<MPtr(&PContainer::get_id)>("keyframe-max-dist"), "5");
   return TRUE;
 }
 
 bool GstVideoCodec::start(){
   hide();
   uninstall_codec_properties();
-  if (0 != secondary_codec_.get()) 
+  if (0 == quid_->pmanage<MPtr(&PContainer::get<Selection::index_t>)>(codec_id_)) 
     return true;
   shmsink_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shm_encoded_.get_raw(),
@@ -204,7 +211,7 @@ bool GstVideoCodec::start(){
 
 bool GstVideoCodec::stop(){
   show();
-  if (0 != secondary_codec_.get()) {
+  if (0 != quid_->pmanage<MPtr(&PContainer::get<Selection::index_t>)>(codec_id_)) {
     shmsink_sub_.reset();
     shmsrc_sub_.reset();
     quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
@@ -230,17 +237,16 @@ void GstVideoCodec::set_shm(const std::string &shmpath){
                nullptr);
 }
 
-PContainer::prop_id_t GstVideoCodec::install_codec(bool primary){
+PContainer::prop_id_t GstVideoCodec::install_codec(){
   return quid_->pmanage<MPtr(&PContainer::make_selection)>(
       "codec",
-      [this](const size_t &val){
+      [this](const Selection::index_t &val){
         uninstall_codec_properties();
-        // primary_codec_ is used for documentation, secondary is the one
-        // used for actual work
-        secondary_codec_.select(val);
+        use_primary_codec_ ? primary_codec_.select(val) : secondary_codec_.select(val);
         if (0 == val)
           return true;
-        std::string codec_name = secondary_codec_.get_current_nick();
+        std::string codec_name = use_primary_codec_ ?
+            primary_codec_.get_current_nick() : secondary_codec_.get_current_nick();
         codec_element_.mute(codec_name.c_str());
         if (codec_name == "x264enc") copy_buffers_ = true;
         else copy_buffers_ = false;
@@ -250,11 +256,10 @@ PContainer::prop_id_t GstVideoCodec::install_codec(bool primary){
           g_object_set(G_OBJECT(codec_element_.get_raw()), "byte-stream", TRUE, nullptr);
         return true;
       },
-      [this](){return secondary_codec_.get();},
+      [this](){return use_primary_codec_ ? primary_codec_.get() : secondary_codec_.get();},
       "Video Codecs",
       "Selected video codec for encoding",
-      primary ? primary_codec_ : secondary_codec_);
+      use_primary_codec_ ? primary_codec_ : secondary_codec_);
 }
-
 
 }  // namespace switcher

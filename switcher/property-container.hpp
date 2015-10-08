@@ -34,14 +34,16 @@ class PContainer{
   using prop_id_t = PropertyBase::prop_id_t;
   using notify_cb_t = PropertyBase::notify_cb_t;
   using register_id_t = PropertyBase::register_id_t;
-  enum pstate_t {ENABLED, DISABLED, REMOVED};
+  enum pstate_t {ENABLED, DISABLED, REMOVED, ADDED, REPLACED};
   using pstate_cb_t = std::function<void(pstate_t state)>;
+  using all_state_cb_t = std::function<void(prop_id_t prop, pstate_t state)>;
   PContainer() = delete;
-  PContainer(InfoTree::ptr tree);  // will own it and write into .property.
+  PContainer(InfoTree::ptr tree, all_state_cb_t cb);  // will own tree and write into .property.
 
   // ------------- use (const methods)
   // return 0 if id is not found
   prop_id_t get_id(const std::string &id) const;
+  std::string get_name(prop_id_t id) const;
 
   register_id_t subscribe(prop_id_t id, notify_cb_t fun, pstate_cb_t state_cb) const;
   bool unsubscribe(prop_id_t id, register_id_t rid) const;
@@ -417,6 +419,7 @@ class PContainer{
   std::map<std::string, id_t> ids_{};
   std::map<id_t, std::string> strids_{};
   InfoTree::ptr tree_;
+  all_state_cb_t state_cb_;
   CounterMap suborders_{};
   mutable std::unordered_map<register_id_t, pstate_cb_t> state_cbs_{};
   

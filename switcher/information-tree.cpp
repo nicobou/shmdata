@@ -298,9 +298,9 @@ InfoTree::ptrc InfoTree::get_subtree(InfoTree::ptrc tree, const std::string &pat
 
 std::string InfoTree::serialize_json(const std::string &path) const{
   std::unique_lock<std::mutex> lock(mutex_);
-
   auto found = get_node(path);
-  std::cout << __FUNCTION__ << __LINE__ << path << "\n";
+  if (found.first.empty())
+    return "null";
   return JSONSerializer::serialize(found.second->second.get());
 }
 
