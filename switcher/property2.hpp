@@ -99,7 +99,7 @@ class Property2: public PropertyBase{
   Property2(set_cb_t set,
             get_cb_t get,
             SpecArgs ...args):
-      PropertyBase(typeid(V).hash_code()),
+      PropertyBase(typeid(W).hash_code()),
       doc_({static_cast<bool>(set), std::forward<SpecArgs>(args)...}),
       set_(set),
       get_(get){

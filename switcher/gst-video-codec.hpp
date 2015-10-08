@@ -63,6 +63,7 @@ class GstVideoCodec {
   // codec props
   Selection primary_codec_;
   Selection secondary_codec_;
+  bool use_primary_codec_{true};
   PContainer::prop_id_t codec_id_;
   
   // short or long codec list
@@ -76,7 +77,7 @@ class GstVideoCodec {
         "snapshot",
         "temporal-scalability-target-bitrate", "temporal-scalability-rate-decimator",
         "temporal-scalability-periodicity", "temporal-scalability-layer-id",
-        "error-resilient"};
+        "error-resilient", "timebase"};
   // shmdatasrc copy-buffers property:
   bool copy_buffers_{false};
   
@@ -86,7 +87,7 @@ class GstVideoCodec {
   void make_bin();
   void show();
   void hide();
-  PContainer::prop_id_t install_codec(bool primary);  // install secondary if false
+  PContainer::prop_id_t install_codec();
   static void set_codec(const gint value, void *user_data);
   static gint get_codec(void *user_data);
   // static gboolean get_codec_long_list(void *user_data);

@@ -72,7 +72,7 @@ class Quiddity {
 
   // properties
   Make_consultable(Quiddity, PContainer, &props_, prop);
-
+  
   // methods
   std::string get_method_description(const std::string &method_name);
   std::string get_methods_description();

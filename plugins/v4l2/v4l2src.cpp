@@ -483,12 +483,12 @@ bool V4L2Src::start() {
   codecs_->start();
   pmanage<MPtr(&PContainer::enable)>(devices_id_, false);
   pmanage<MPtr(&PContainer::remove)>(resolutions_id_); resolutions_id_ = 0;
-    pmanage<MPtr(&PContainer::remove)>(width_id_); width_id_ = 0;
-    pmanage<MPtr(&PContainer::remove)>(height_id_); height_id_ = 0;
-    pmanage<MPtr(&PContainer::remove)>(tv_standards_id_); tv_standards_id_ = 0;
-    pmanage<MPtr(&PContainer::remove)>(framerates_enum_id_); framerates_enum_id_ = 0;
-    pmanage<MPtr(&PContainer::remove)>(framerate_id_); framerate_id_ = 0;
-    pmanage<MPtr(&PContainer::remove)>(pixel_format_id_); pixel_format_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(width_id_); width_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(height_id_); height_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(tv_standards_id_); tv_standards_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(framerates_enum_id_); framerates_enum_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(framerate_id_); framerate_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(pixel_format_id_); pixel_format_id_ = 0;
   return true;
 }
 
@@ -496,7 +496,6 @@ bool V4L2Src::stop() {
   shm_sub_.reset(nullptr);
   prune_tree(".shmdata.writer." + shmpath_);
   remake_elements();
-  
   gst_pipeline_ = std2::make_unique<GstPipeliner>(
       nullptr,
       nullptr);

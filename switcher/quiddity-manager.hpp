@@ -133,10 +133,8 @@ class QuiddityManager
   // // global property wrapper
   // struct PropLock{
   //   PropLock(std::mutex *seq_mutex): seq_mutex_(seq_mutex) {
-  //       g_print("%s %d\n", __FUNCTION__, __LINE__);
   //       seq_mutex_->lock();}
-  //   ~PropLock(){        g_print("%s %d\n", __FUNCTION__, __LINE__);
-  //     seq_mutex_->unlock();}
+  //   ~PropLock(){seq_mutex_->unlock();}
   //   PropLock(PropLock &) = delete;
   //   PropLock &operator=(const PropLock&) = delete;
   //   PropLock(PropLock &&) = default;
