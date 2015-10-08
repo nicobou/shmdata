@@ -31,23 +31,6 @@ namespace switcher {
              [this](const int &val)
              {
                 nbr_cam_ = val;
-                cameras_.resize(nbr_cam_);
-                mesh_creator_->setDepthMapNbr(nbr_cam_);
-                auto index = 0;
-                for (; index < nbr_cam_; index++)
-                {
-                    cameras_[index] = std2::make_unique<ZCamera>();
-                    cameras_[index]->setDeviceIndex(index);
-                    cameras_[index]->setCaptureMode(ZCamera::CaptureMode_QQVGA_30Hz);
-                    cameras_[index]->
-                    setCallbackDepth([this, index] (void*,
-                                                   std::vector<unsigned char>& depth,
-                                                   int width,
-                                                   int height) -> void
-                    {
-                        cb_frame_depth(index, depth, width, height);
-                    }, nullptr);
-                }
                 return true;
              },
              [this](){return nbr_cam_;},
@@ -70,17 +53,17 @@ namespace switcher {
              "Path to the calibration file",
              calibration_path_);
 
-    pmanage<MPtr(&PContainer::make_string)>
-            ("devices_path",
-             [this](const std::string &val)
-             {
-                devices_path_ = val;
-                return true;
-             },
-             [this](){return devices_path_;},
-             "devices_path",
-             "Path to the devices description file",
-             devices_path_);
+//    pmanage<MPtr(&PContainer::make_string)>
+//            ("devices_path",
+//             [this](const std::string &val)
+//             {
+//                devices_path_ = val;
+//                return true;
+//             },
+//             [this](){return devices_path_;},
+//             "devices_path",
+//             "Path to the devices description file",
+//             devices_path_);
 
     pmanage<MPtr(&PContainer::make_bool)>
             ("save_mesh",
@@ -136,13 +119,30 @@ namespace switcher {
   bool
   PostureMeshGPUCreator::start()
   {
+    cout << __FUNCTION__ << " " << __LINE__ << endl;
     std::lock_guard<std::mutex> lock (mutex_);
+    cameras_.resize(nbr_cam_);
+    mesh_creator_->setDepthMapNbr(nbr_cam_);
     auto index = 0;
+    cout << __FUNCTION__ << " " << __LINE__ << endl;
     for (; index < nbr_cam_; index++)
     {
+      cout << __FUNCTION__ << " " << __LINE__ << " " << index << endl;
+      cameras_[index] = std2::make_unique<ZCamera>();
+      cameras_[index]->setDeviceIndex(index);
+      cameras_[index]->setCaptureMode(ZCamera::CaptureMode_QQVGA_30Hz);
+      cameras_[index]->
+      setCallbackDepth([this, index] (void*,
+                                     std::vector<unsigned char>& depth,
+                                     int width,
+                                     int height) -> void
+      {
+        cb_frame_depth(index, depth, width, height);
+      }, nullptr);
       cameras_[index] -> start ();
     }
 
+    cout << __FUNCTION__ << " " << __LINE__ << endl;
     is_started_ = true;
     return true;
   }
@@ -172,8 +172,10 @@ namespace switcher {
     mesh_creator_->setInputDepthMap(index, depth, width, height);
     mesh_creator_->getMesh(output_);
 
+    cout << __FUNCTION__ << " " << __LINE__ << " " << output_.size() << endl;
     if (!mesh_writer_ || output_.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>())
     {
+      cout << __FUNCTION__ << " " << __LINE__ << endl;
       mesh_writer_.reset();
       mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
 						      make_file_name("mesh"),
@@ -185,6 +187,7 @@ namespace switcher {
         return;
       }
     }
+    cout << __FUNCTION__ << " " << __LINE__ << " " << output_.size() << endl;
     mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(const_cast<unsigned char*>(output_.data()), 
 							      output_.size());
     mesh_writer_->bytes_written(output_.size());

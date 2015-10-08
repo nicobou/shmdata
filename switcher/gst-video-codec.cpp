@@ -143,19 +143,21 @@ void GstVideoCodec::make_codec_properties() {
 }
 
 gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointer user_data) {
-  GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
-  auto &quid = context->quid_;
-  quid->prop<MPtr(&PContainer::set_str)>(
-      quid->prop<MPtr(&PContainer::get_id)>("codec"), "vp8enc");
-  context->make_codec_properties();
-  quid->prop<MPtr(&PContainer::set_str)>(
-      quid->prop<MPtr(&PContainer::get_id)>("deadline"), "30000");
-  quid->prop<MPtr(&PContainer::set_str)>(
-      quid->prop<MPtr(&PContainer::get_id)>("target-bitrate"), "2000000");  // 2Mbps
-  quid->prop<MPtr(&PContainer::set_str)>(
-      quid->prop<MPtr(&PContainer::get_id)>("end-usage"), "1");  // CBR
-  quid->prop<MPtr(&PContainer::set_str)>(
-      quid->prop<MPtr(&PContainer::get_id)>("keyframe-max-dist"), "5");
+  // FIXME
+  // GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
+  // auto &quid = context->quid_;
+  // quid->prop<MPtr(&PContainer::set<Selection::index_t>)>(
+  //     quid->prop<MPtr(&PContainer::get_id)>("codec"),
+  //     context->secondary_codec_.get_index("On2 VP8 Encoder"));
+  // context->make_codec_properties();
+  // quid->prop<MPtr(&PContainer::set_str)>(
+  //     quid->prop<MPtr(&PContainer::get_id)>("deadline"), "30000");
+  // quid->prop<MPtr(&PContainer::set_str)>(
+  //     quid->prop<MPtr(&PContainer::get_id)>("target-bitrate"), "2000000");  // 2Mbps
+  // quid->prop<MPtr(&PContainer::set_str)>(
+  //     quid->prop<MPtr(&PContainer::get_id)>("end-usage"), "1");  // CBR
+  // quid->prop<MPtr(&PContainer::set_str)>(
+  //     quid->prop<MPtr(&PContainer::get_id)>("keyframe-max-dist"), "5");
   return TRUE;
 }
 

@@ -28,7 +28,7 @@ namespace switcher {
 
   private:
     std::string calibration_path_ {"default.kvc"};
-    std::string devices_path_ {"devices.xml"};
+//    std::string devices_path_ {"devices.xml"};
     int resolution_ {16};
     double size_ {1.0f};
     int nbr_cam_ {1};
