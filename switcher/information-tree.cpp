@@ -21,9 +21,9 @@
 #include <regex>
 #include <iostream>
 #include "./information-tree.hpp"
-#include "information-tree-json.hpp"
+#include "./information-tree-json.hpp"
 #include "./string-utils.hpp"
-
+#include "scope-exit.hpp"
 namespace switcher {
 
 InfoTree::ptr InfoTree::make() {
@@ -151,8 +151,12 @@ InfoTree::get_child_iterator(const std::string &key) const {
 
 InfoTree::ptr InfoTree::prune(const std::string &path) {
   std::unique_lock<std::mutex> lock(mutex_);
-  std::istringstream iss(path);
-  return remove_next(iss);
+  auto found = get_node(path);
+  if (!found.first.empty()){
+    On_scope_exit{found.first.erase(found.second);};
+    return found.second->second;
+  }
+  return InfoTree::make();
 }
 
 InfoTree::ptr InfoTree::get(const std::string &path) {
@@ -197,22 +201,6 @@ bool InfoTree::get_next(std::istringstream &path,
     return false;
   }
   return false;
-}
-
-InfoTree::ptr InfoTree::remove_next(std::istringstream &path) {
-  std::string child_key;
-  if (!std::getline(path, child_key, '.'))
-    return make();
-  if (child_key.empty()) {
-    return this->remove_next(path);
-  }
-  auto it = get_child_iterator(child_key);
-  if (childrens_.end() != it) {
-    InfoTree::ptr res = it->second;
-    childrens_.erase(it);
-    return res;
-  }
-  return make();
 }
 
 bool InfoTree::graft(const std::string &where, InfoTree::ptr tree) {
@@ -310,7 +298,9 @@ InfoTree::ptrc InfoTree::get_subtree(InfoTree::ptrc tree, const std::string &pat
 
 std::string InfoTree::serialize_json(const std::string &path) const{
   std::unique_lock<std::mutex> lock(mutex_);
+
   auto found = get_node(path);
+  std::cout << __FUNCTION__ << __LINE__ << path << "\n";
   return JSONSerializer::serialize(found.second->second.get());
 }
 

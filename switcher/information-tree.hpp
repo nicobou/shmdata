@@ -161,7 +161,6 @@ class InfoTree {
   childs_t::iterator get_child_iterator(const std::string &key) const;
   static bool graft_next(std::istringstream &path, InfoTree *tree,
                          InfoTree::ptr leaf);
-  InfoTree::ptr remove_next(std::istringstream &path);
   GetNodeReturn get_node(const std::string &path) const;
   bool get_next(std::istringstream &path,
                 childs_t &parent_list_result,

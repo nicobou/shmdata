@@ -91,6 +91,13 @@ main() {
     assert(child1->is_leaf());
     assert(child2->is_leaf());
   }
+  {  // absolute prune
+    InfoTree::ptr tree = InfoTree::make();
+    tree->graft("child1.child2", InfoTree::make());
+    InfoTree::ptr child2 = tree->prune("child1.child2");
+    assert(!tree->is_leaf());
+    assert(tree->branch_is_leaf("child1"));
+  }
   {  // is_leaf with path
     InfoTree::ptr tree = InfoTree::make();
     tree->graft("child1", InfoTree::make());
