@@ -40,7 +40,7 @@
 #include <memory>
 #include <type_traits>
 #include <mutex>
-#include <iostream>  // FIXME
+#include <iostream>
 #include "./any.hpp"
 
 namespace switcher {
@@ -51,11 +51,11 @@ class InfoTree {
   using ptrc = const InfoTree *;  // const
   using rptr = InfoTree *;  // raw
   using child_type = std::pair<std::string, InfoTree::ptr>;
-  using childs_t = std::list<child_type>;
+  using childs_t = std::vector<child_type>;
   using OnNodeFunction = std::function<void(const std::string &name,
                                              InfoTree::ptrc tree,
                                              bool is_array_element)>;
-  using GetNodeReturn = std::pair<InfoTree::childs_t, InfoTree::childs_t::iterator>;
+  using GetNodeReturn = std::pair<InfoTree::childs_t *, InfoTree::childs_t::size_type>;
   
   // factory
   static InfoTree::ptr make();
@@ -89,8 +89,8 @@ class InfoTree {
   T branch_read_data (const std::string &path) const{
     std::unique_lock<std::mutex> lock(mutex_);
     auto found = get_node(path);
-    if (!found.first.empty())
-      return found.second->second->data_.copy_as<T>();
+    if (nullptr != found.first)
+      return (*found.first)[found.second].second->data_.copy_as<T>();
     static Any any;
     return any.copy_as<T>();
 
@@ -107,9 +107,9 @@ class InfoTree {
   bool copy_and_insert_child_keys(std::string path, Iter pos) const {
     std::unique_lock<std::mutex> lock(mutex_);
     auto found = get_node(path);
-    if (!found.first.empty()) {
-      std::transform(found.second->second->childrens_.begin(),
-                     found.second->second->childrens_.end(),
+    if (nullptr != found.first) {
+      std::transform((*found.first)[found.second].second->childrens_.begin(),
+                     (*found.first)[found.second].second->childrens_.end(),
                      pos,
                      [](const child_type &child) {
                        return child.first;
@@ -158,13 +158,14 @@ class InfoTree {
   }
   explicit InfoTree(const Any &data);
   explicit InfoTree(Any &&data);
-  childs_t::iterator get_child_iterator(const std::string &key) const;
+  std::pair<bool, childs_t::size_type> get_child_index(const std::string &key) const;
   static bool graft_next(std::istringstream &path, InfoTree *tree,
                          InfoTree::ptr leaf);
   GetNodeReturn get_node(const std::string &path) const;
-  bool get_next(std::istringstream &path,
-                childs_t &parent_list_result,
-                childs_t::iterator &result_iterator) const;
+  GetNodeReturn get_next(std::istringstream &path,
+                         childs_t *parent_vector_result,
+                         childs_t::size_type result_index) const;
+  static bool path_is_root(const std::string &path);
 };
 
 }  // namespace switcher
