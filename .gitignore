@@ -111,6 +111,7 @@ tests/check_scope_guard
 tests/check_signal_subscriber
 tests/check_startable
 tests/check_string_dictionary
+tests/check_test_full
 tests/check_ugstelem
 xcode/switcher.xcodeproj/project.xcworkspace/xcuserdata
 xcode/switcher.xcodeproj/xcuserdata
