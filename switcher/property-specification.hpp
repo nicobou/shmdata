@@ -208,6 +208,7 @@ class PropertySpecification{
     spec_->graft("label", InfoTree::make(label));
     spec_->graft("description", InfoTree::make(description));
     spec_->graft("type", InfoTree::make("group"));
+    spec_->graft("writable", InfoTree::make(false));
   }
 
   InfoTree::ptr get_spec(){

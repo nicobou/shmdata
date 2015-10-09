@@ -27,6 +27,8 @@ void StartableQuiddity::init_startable(void *quiddity) {
   quid->pmanage<MPtr(&PContainer::make_bool)>(
       "started",
       [this](bool val){
+        if (__started_ == val)
+          return true;
         if (val) {
           if (!start()) return false;
         } else {

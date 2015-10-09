@@ -46,11 +46,11 @@ bool ShmdataToOsc::init() {
       "port",
       [this](const int &val){
         if (val == port_)
-          return false;
+          return true;
         stop();
         port_ = val;
-        start();
-        return true;},
+        return start();
+      },
       [this](){return port_;},
       "Port",
       "OSC destination",
@@ -61,11 +61,10 @@ bool ShmdataToOsc::init() {
       "host",
       [this](const std::string &val){
         if (val == host_)
-          return false;
+          return true;
         stop();
         host_ = val;
-        start();
-        return true;
+        return start();
       },
       [this](){return host_;},
       "Destination host",

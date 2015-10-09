@@ -716,10 +716,7 @@ GstStructure *V4L2Src::gst_v4l2_object_v4l2fourcc_to_structure (guint32 fourcc){
           fourcc, GST_FOURCC_ARGS (fourcc));
       break;
   }
-
   return structure;
 }
-
-
 
 }  //namespace switcher

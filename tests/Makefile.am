@@ -19,8 +19,6 @@ AM_LDFLAGS = \
 
 # check_PROGRAMS = \
 #     check_fake_shmdata_writer \
-#     check_property_mapper \
-#     check_property_subscriber \
 #     check_signal_subscriber
 
 
@@ -33,6 +31,7 @@ check_PROGRAMS = \
     check_rtp_session \
     check_scope_guard \
     check_startable \
+    check_test_full \
     check_ugstelem
 
 check_description_by_class_SOURCES = \
@@ -73,6 +72,9 @@ check_startable_SOURCES = \
 
 check_string_dictionary_SOURCES = \
     check_string_dictionary.cpp
+
+check_test_full_SOURCES = \
+    check_test_full.cpp
 
 check_ugstelem_SOURCES = \
     check_ugstelem.cpp

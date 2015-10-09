@@ -43,7 +43,6 @@ std::pair<bool, Fraction> Fraction::from_string(const std::string &str){
   }
   size_t pos;
   long long num = std::stoll(str, &pos,0);
-  g_print("%s\n", std::to_string(num).c_str());
   if  (std::string::npos == pos
        || pos + 1 >= str.size()
        || !isdigit(*(str.begin() + pos + 1))){

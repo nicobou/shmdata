@@ -109,7 +109,7 @@ void GstVideoCodec::make_bin(){
 }
 
 bool GstVideoCodec::remake_codec_elements() {
-  if (0 != quid_->pmanage<MPtr(&PContainer::get<Selection::index_t>)>(codec_id_)) {
+  if (0 != use_primary_codec_ ? primary_codec_.get() : secondary_codec_.get()) {
     if (!UGstElem::renew(shmsrc_, {"socket-path"})
         || !UGstElem::renew(shm_encoded_, {"socket-path", "sync", "async"})
         || !UGstElem::renew(color_space_codec_element_)
@@ -149,9 +149,8 @@ void GstVideoCodec::make_codec_properties() {
 gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointer user_data) {
   GstVideoCodec *context = static_cast<GstVideoCodec *>(user_data);
   auto &quid = context->quid_;
-  g_print("%s %d \n", __FUNCTION__, __LINE__);
   // quid->pmanage<MPtr(&PContainer::set<Selection::index_t>)>(
-  //     context->codec_id_, 5);
+  //     context->codec_id_, context->secondary_codec_.get_index("On2 VP8 Encoder"));
   auto *codec_sel = context->use_primary_codec_ ?
       &context->primary_codec_ : &context->secondary_codec_;
   codec_sel->select(context->secondary_codec_.get_index("On2 VP8 Encoder"));
@@ -198,6 +197,7 @@ bool GstVideoCodec::start(){
                                 InfoTree::make(std::to_string(byte_rate)));
       });
   make_bin();
+
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()),
                "async-handling", TRUE,
                nullptr);

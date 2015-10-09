@@ -150,7 +150,7 @@ class Property2: public PropertyBase{
   }
   
   std::string get_str() const{
-    return serialize::apply<W>(get_());
+    return get_ ? serialize::apply<W>(get_()) : std::string();
   }
   
   InfoTree::ptr get_spec() final {return doc_.get_spec();}

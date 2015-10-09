@@ -139,7 +139,6 @@ logger_cb (std::string subscriber_name,
 	   std::string value, 
 	   void *user_data)
 {
-  //g_print ("%s\n", value.c_str());
   std::cout << value << std::endl;
   
   

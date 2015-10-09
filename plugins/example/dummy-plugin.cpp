@@ -124,7 +124,7 @@ DummyPlugin::DummyPlugin(const std::string &) :
                             "Unsigned Long Example",
                             "This property is an example for type unsigned long",
                             unsigned_long_,
-                            18,
+                            4,
                             200)),
   unsigned_long_long_id_(pmanage<MPtr(&PContainer::make_parented_unsigned_long_long)>(
                                  "unsigned_long_long_",
