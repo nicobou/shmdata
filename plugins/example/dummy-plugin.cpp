@@ -178,17 +178,17 @@ DummyPlugin::DummyPlugin(const std::string &) :
                         "Selection Example",
                         "This property is an example for type enum",
                         selection_)),
-  tuple_id_(0// FIXME write serialization-string for std::tuple
-            // pmanage<MPtr(&PContainer::make_tuple<long long)>( float, std::string>,
-            //         "tuple_",
-            //         [this](const std::tuple<long long, float, std::string> &val){
-            //           tuple_ = val; return true;
-            //         },
-            //         [this](){return tuple_;},
-            //         "Tuple Example",
-            //         "This property is an example for tuple",
-            //         tuple_)
-            ),
+// FIXME write serialization-string for std::tuple
+  // tuple_id_( pmanage<MPtr(&PContainer::make_tuple<long long)>( float, std::string>,
+  //         "tuple_",
+  //         [this](const std::tuple<long long, float, std::string> &val){
+  //           tuple_ = val; return true;
+  //         },
+  //         [this](){return tuple_;},
+  //         "Tuple Example",
+  //         "This property is an example for tuple",
+  //         tuple_)
+  // ),
   fraction_id_(pmanage<MPtr(&PContainer::make_fraction)>(
                        "fraction_",
                        [this](const Fraction &val){
@@ -211,6 +211,8 @@ DummyPlugin::DummyPlugin(const std::string &) :
   // std::cout << std::get<0>(tuple_) << " "      // 2
   //           << std::get<1>(tuple_) << " "      // 2.2
   //           << std::get<2>(tuple_) << "\n";    // a22
+  
+  
 }
 
 bool DummyPlugin::init() {
