@@ -37,6 +37,7 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <list>
 #include <memory>
 #include <type_traits>
 #include <mutex>
