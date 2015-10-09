@@ -15,13 +15,15 @@
 #include "switcher/shmdata-follower.hpp"
 #include "switcher/startable-quiddity.hpp"
 
+#include <boost/make_shared.hpp>
+
 namespace switcher {
   class PostureMeshGPUCreator:public Quiddity, public StartableQuiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureMeshGPUCreator);
     PostureMeshGPUCreator (const std::string &);
     PostureMeshGPUCreator(const PostureMeshGPUCreator &) = delete;
-    ~PostureMeshGPUCreator ();
+    ~PostureMeshGPUCreator();
 
     bool start();
     bool stop();
@@ -38,11 +40,15 @@ namespace switcher {
     std::unique_ptr<posture::DepthMapToMesh> mesh_creator_ {nullptr};
     std::vector<unsigned char> output_ {};
     std::mutex mutex_ {};
-    std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
+    std::mutex cb_depth_mutex_ {};
+//    std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
   
     bool init() final;
     void cb_frame_depth(int index, std::vector<unsigned char>& depth, int width, int height);
     void cb_frame_cloud(int index, std::vector<char>& cloud);
+    void cb_frame_RGB(int index, std::vector<unsigned char>& rgb, int width, int height);
+
+    posture::Display _disp;
   };
 
   SWITCHER_DECLARE_PLUGIN(PostureMeshGPUCreator);
