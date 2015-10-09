@@ -68,6 +68,7 @@ plugins/portmidi/.libs/
 plugins/portmidi/check_midi_plugins
 plugins/posture/.deps/
 plugins/posture/.libs/
+plugins/posture/check_posture
 plugins/pulse/.deps/
 plugins/pulse/.libs/
 plugins/pulse/check_pulsesrc
