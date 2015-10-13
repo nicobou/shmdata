@@ -217,8 +217,9 @@ struct Any {
              std::is_integral<U>::value && !std::is_same<U, bool>::value
              >::type* = nullptr>
       StorageType<U> copy_as() const {
-    if (AnyCategory::INTEGRAL != ptr_->category_){
-      std::cerr << "error copying back any value (is not integral)" << std::endl;
+    if (AnyCategory::FLOATING_POINT != ptr_->category_
+        && AnyCategory::INTEGRAL != ptr_->category_){
+      std::cerr << "error copying back any value (is not floating point or integral)" << std::endl;
       return 0;
     }
     if (AnyArithmeticType::INT == ptr_->arithmetic_type_)
@@ -237,6 +238,12 @@ struct Any {
       return static_cast<AnyValueDerived<unsigned long>*>(ptr_)->value_; 
     else if (AnyArithmeticType::UNSIGNED_LONG_LONG == ptr_->arithmetic_type_)
       return static_cast<AnyValueDerived<unsigned long long>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::FLOAT == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<float>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::DOUBLE == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<double>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::LONG_DOUBLE == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<long double>*>(ptr_)->value_; 
     std::cerr << "bug in copy_as for integral" << std::endl;
     return 0;
   }
@@ -246,16 +253,34 @@ struct Any {
              std::is_floating_point<U>::value && !std::is_same<U, bool>::value
              >::type* = nullptr>
       StorageType<U> copy_as() const {
-    if (AnyCategory::FLOATING_POINT != ptr_->category_){
-      std::cerr << "error copying back any value (is not floating point)" << std::endl;
+    if (AnyCategory::FLOATING_POINT != ptr_->category_
+        && AnyCategory::INTEGRAL != ptr_->category_){
+      std::cerr << "error copying back any value (is not floating point or integral)" << std::endl;
       return 0;
     }
-    if (AnyArithmeticType::FLOAT == ptr_->arithmetic_type_)
+    if (AnyArithmeticType::INT == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<int>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::SHORT == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<short>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::LONG == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<long>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::LONG_LONG == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<long long>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::UNSIGNED_INT == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<unsigned int>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::UNSIGNED_SHORT == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<unsigned short>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::UNSIGNED_LONG == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<unsigned long>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::UNSIGNED_LONG_LONG == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<unsigned long long>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::FLOAT == ptr_->arithmetic_type_)
       return static_cast<AnyValueDerived<float>*>(ptr_)->value_; 
     else if (AnyArithmeticType::DOUBLE == ptr_->arithmetic_type_)
       return static_cast<AnyValueDerived<double>*>(ptr_)->value_; 
     else if (AnyArithmeticType::LONG_DOUBLE == ptr_->arithmetic_type_)
       return static_cast<AnyValueDerived<long double>*>(ptr_)->value_; 
+
     std::cerr << "bug in copy_as for floating point" << std::endl;
     return 0.f;
   }

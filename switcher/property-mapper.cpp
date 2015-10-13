@@ -138,6 +138,7 @@ PropertyMapper::set_source_property_method(gchar *quiddity_name,
   context->source_quiddity_ = quid;
   context->source_property_name_ = property_name;
 
+  
   context->source_min_ = quid->tree<MPtr(&InfoTree::branch_read_data<double>)>(
       std::string("property.") + property_name + ".min");
   context->source_max_ = quid->tree<MPtr(&InfoTree::branch_read_data<double>)>(
@@ -221,7 +222,7 @@ void PropertyMapper::property_updated_cb() {
 
   sourcequid->prop<MPtr(&PContainer::update_value_in_tree)>(source_prop_id_);
   double val = sourcequid->tree<MPtr(&InfoTree::branch_read_data<double>)>(
-      std::string("property.") + source_property_name_);
+      std::string("property.") + source_property_name_ + ".value");
   
   // scaling and transforming the value into a gdouble value
   double transformed_val =
@@ -274,7 +275,6 @@ return TRUE;
 }
 
 void PropertyMapper::state_cb(PContainer::pstate_t /*state*/){
-  g_warning("%s NOT IMPLEMENTED", __FUNCTION__);  
 }
 
 }  // namespace switcher
