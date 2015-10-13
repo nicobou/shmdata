@@ -46,9 +46,6 @@ main() {
     // creating a "myplugin" quiddity
     assert(manager->create("dummy", "test") == "test");
 
-    // get json formated information
-    manager->get_info("test", "custom.information");
-
     // testing hello-world method
     std::string *res = nullptr;
     assert(manager->invoke_va("test", "hello-world", &res, "Nico", nullptr));

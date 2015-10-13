@@ -24,7 +24,7 @@ namespace switcher {
 bool QuiddityBasicTest::test_full(
     QuiddityManager::ptr manager,
     const std::string &quiddity_class_name) {
-  if (!test_get_info(manager, quiddity_class_name))
+  if (!test_tree(manager, quiddity_class_name))
     return false;
   if (!test_create(manager, quiddity_class_name))
     return false;
@@ -102,11 +102,11 @@ bool QuiddityBasicTest::test_description_by_class(
   return true;
 }
 
-bool QuiddityBasicTest::test_get_info(
+bool QuiddityBasicTest::test_tree(
     QuiddityManager::ptr manager,
     const std::string &quiddity_class_name) {
   std::string name = manager->create(quiddity_class_name);
-  manager->get_info(name, ".");
+  manager->use_tree<MPtr(&InfoTree::serialize_json)>(name, ".");
   manager->remove(name);
   return true;
 }

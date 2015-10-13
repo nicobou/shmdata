@@ -549,13 +549,6 @@ bool Quiddity::disable_method(const std::string &method_name) {
   return true;
 }
 
-std::string Quiddity::get_info(const std::string &path) {
-  InfoTree::ptr tree = information_tree_->get(path);
-  if (tree)
-    return JSONSerializer::serialize(tree.get());
-  return "null";
-}
-
 bool Quiddity::graft_tree(const std::string &path,
                           InfoTree::ptr tree,
                           bool do_signal) {

@@ -520,7 +520,8 @@ Handle<Value> SwitcherController::GetInfo(const Arguments& args) {
   }
 
   String::Utf8Value second_arg(args[1]->ToString());
-  Handle<String> res = String::New(obj->quiddity_manager->get_info(std::string(*first_arg), std::string(*second_arg)).c_str());
+  Handle<String> res =
+      String::New(obj->quiddity_manager->use_tree<MPtr(&InfoTree::serialize_json)>(std::string(*first_arg), std::string(*second_arg)).c_str());
 
   return scope.Close(parseJson(res));
 }

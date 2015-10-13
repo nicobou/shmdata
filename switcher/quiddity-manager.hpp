@@ -88,8 +88,6 @@ class QuiddityManager
   bool has_quiddity(const std::string &name);
   
   // ****************** informations ******
-  std::string get_info(const std::string &nick_name,
-                       const std::string &path);
   template<typename R>
   R invoke_info_tree (const std::string &nick_name,
                       std::function<R(InfoTree::ptrc tree)> fun){

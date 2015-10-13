@@ -735,13 +735,4 @@ QuiddityManager_Impl::scan_directory_for_plugins(const char
   return true;
 }
 
-std::string
-QuiddityManager_Impl::get_info(const std::string &nick_name,
-                               const std::string &path) {
-  auto it = quiddities_.find(nick_name);
-  if (quiddities_.end() == it)
-    return "{ \"error\":\"quiddity not found\"}";
-  return quiddities_[nick_name]->get_info(path);
-}
-
 }  // namespace switcher

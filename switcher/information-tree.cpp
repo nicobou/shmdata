@@ -183,13 +183,6 @@ InfoTree::ptr InfoTree::get(const std::string &path) {
 
 InfoTree::GetNodeReturn InfoTree::get_node(const std::string &path) const {
   std::istringstream iss(path);
-  // FIXME do something for __ROOT__
-  // if (get_next(iss, child_list, child_iterator)) {
-  //   // asking root node
-  //   child_list.push_back(std::make_pair("__ROOT__",
-  //                                       me_.lock()));
-  //   child_iterator = child_list.begin();
-  // }
   return get_next(iss, nullptr, 0);
 }
 
@@ -205,7 +198,7 @@ InfoTree::GetNodeReturn InfoTree::get_next(
   auto child_index = get_child_index(child_key);
   if (!child_index.first)
     return std::make_pair(nullptr, 0);
-  return childrens_[child_index.second].second->get_next(path, &childrens_, index);
+  return childrens_[child_index.second].second->get_next(path, &childrens_, child_index.second);
 }
 
 bool InfoTree::graft(const std::string &where, InfoTree::ptr tree) {
@@ -321,7 +314,6 @@ InfoTree::ptrc InfoTree::get_subtree(InfoTree::ptrc tree, const std::string &pat
 }
 
 std::string InfoTree::serialize_json(const std::string &path) const{
-  std::unique_lock<std::mutex> lock(mutex_);
   if (path_is_root(path))
     return JSONSerializer::serialize(me_.lock().get());
   auto found = get_node(path);

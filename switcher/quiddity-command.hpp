@@ -42,7 +42,6 @@ class QuiddityCommand {
     get_class_doc,
     get_classes,
     get_classes_doc,
-    get_info,
     get_method_description,
     get_method_description_by_class,
     get_methods_description,

@@ -102,10 +102,10 @@ PropertyMapper::~PropertyMapper() {
 }
 
 void PropertyMapper::unsubscribe_source_property() {
-  // Quiddity::ptr source_quid = source_quiddity_.lock();
-  // if ((bool) source_quid)
-  //   source_quid->unsubscribe_property(source_property_name_, property_cb,
-  //                                     this);
+  Quiddity::ptr source_quid = source_quiddity_.lock();
+  if ((bool) source_quid){
+    source_quid->prop<MPtr(&PContainer::unsubscribe)>(source_prop_id_, reg_id_);
+  }
 }
 
 gboolean
@@ -113,105 +113,168 @@ PropertyMapper::set_source_property_method(gchar *quiddity_name,
                                            gchar *property_name,
                                            void *user_data) {
   PropertyMapper *context = static_cast<PropertyMapper *>(user_data);
-
   QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
-
   if (!(bool) manager) {
     g_debug("manager not found");
     return FALSE;
   }
-
   Quiddity::ptr quid = manager->get_quiddity(quiddity_name);
-
   if (!(bool) quid) {
     g_debug("quiddity %s not found", quiddity_name);
     return FALSE;
   }
+  context->source_prop_id_ = quid->prop<MPtr(&PContainer::get_id)>(property_name);
+  if (0 == context->source_prop_id_){
+    g_debug("property %s not found", property_name);
+    return FALSE;
+  }
+  if (!quid->tree<MPtr(&InfoTree::branch_has_data)>(
+          std::string("property.") + property_name + ".min")){
+    g_debug("property %s has no min/max defined", property_name);
+    return FALSE;
+  }
+  // unsubscribing previously registered property
+  context->unsubscribe_source_property();
+  context->source_quiddity_ = quid;
+  context->source_property_name_ = property_name;
 
+  context->source_min_ = quid->tree<MPtr(&InfoTree::branch_read_data<double>)>(
+      std::string("property.") + property_name + ".min");
+  context->source_max_ = quid->tree<MPtr(&InfoTree::branch_read_data<double>)>(
+      std::string("property.") + property_name + ".max");
+  context->make_numerical_source_properties();
+
+  context->reg_id_ = quid->prop<MPtr(&PContainer::subscribe)>(
+      context->source_prop_id_,
+      [context](){context->property_updated_cb();},
+      [context](PContainer::pstate_t state){
+        context->state_cb(state);
+      });
+  auto source_tree = context->prune_tree(".source", false);
+  if (!source_tree)
+    source_tree = InfoTree::make();
+  source_tree->graft(".quiddity", InfoTree::make(std::string(quiddity_name)));
+  source_tree->graft(".property", InfoTree::make(std::string(property_name)));
+  context->graft_tree(".source.", source_tree);
   return TRUE;
 }
 
 void PropertyMapper::make_numerical_source_properties() {
-  // FIXME
-  // uninstall_property("source-min");
-  // source_min_spec_ =
-  //     custom_props_->make_double_property("source-min",
-  //                                         "the minimum value considered",
-  //                                         source_min_,
-  //                                         source_max_,
-  //                                         source_min_,
-  //                                         (GParamFlags) G_PARAM_READWRITE,
-  //                                         set_double_value,
-  //                                         get_double_value, &source_min_);
+  pmanage<MPtr(&PContainer::remove)>(source_min_id_);
+  source_min_id_ =
+      pmanage<MPtr(&PContainer::make_double)>(
+          "source-min",
+          [this](double val){source_min_ = val; return true;},
+          [this](){return source_min_;},
+          "Source Property Minimum",
+          "The minimum value to be applyed when mapping",
+          source_min_,
+          std::numeric_limits<double>::min(),
+          std::numeric_limits<double>::max());
 
-  // install_property_by_pspec(custom_props_->get_gobject(),
-  //                           source_min_spec_,
-  //                           "source-min", "Source Property Minimum");
-
-  // uninstall_property("source-max");
-  // source_max_spec_ =
-  //     custom_props_->make_double_property("source-max",
-  //                                         "the maximum value considered",
-  //                                         source_min_,
-  //                                         source_max_,
-  //                                         source_max_,
-  //                                         (GParamFlags) G_PARAM_READWRITE,
-  //                                         set_double_value,
-  //                                         get_double_value, &source_max_);
-  // install_property_by_pspec(custom_props_->get_gobject(),
-  //                           source_max_spec_,
-  //                           "source-max", "Source Property Maximum");
+  pmanage<MPtr(&PContainer::remove)>(source_max_id_);
+      pmanage<MPtr(&PContainer::make_double)>(
+          "source-max",
+          [this](double val){source_max_ = val; return true;},
+          [this](){return source_max_;},
+          "Source Property Maximum",
+          "The maximmum value to be applyed when mapping",
+          source_max_,
+          std::numeric_limits<double>::min(),
+          std::numeric_limits<double>::max());
 }
 
 void PropertyMapper::make_numerical_sink_properties() {
-  // FIXME
-  // uninstall_property("sink-min");
-  // sink_min_spec_ =
-  //     custom_props_->make_double_property("sink-min",
-  //                                         "the minimum value considered",
-  //                                         sink_min_,
-  //                                         sink_max_,
-  //                                         sink_min_,
-  //                                         (GParamFlags) G_PARAM_READWRITE,
-  //                                         set_double_value,
-  //                                         get_double_value, &sink_min_);
+  pmanage<MPtr(&PContainer::remove)>(sink_min_id_);
+  sink_min_id_ =
+      pmanage<MPtr(&PContainer::make_double)>(
+          "sink-min",
+          [this](double val){sink_min_ = val; return true;},
+          [this](){return sink_min_;},
+          "Sink Property Minimum",
+          "The minimum value to be applyed when mapping",
+          sink_min_,
+          std::numeric_limits<double>::min(),
+          std::numeric_limits<double>::max());
 
-  // install_property_by_pspec(custom_props_->get_gobject(),
-  //                           sink_min_spec_,
-  //                           "sink-min", "Sink Property Minimum");
-
-  // uninstall_property("sink-max");
-  // sink_max_spec_ =
-  //     custom_props_->make_double_property("sink-max",
-  //                                         "the maximum value considered",
-  //                                         sink_min_,
-  //                                         sink_max_,
-  //                                         sink_max_,
-  //                                         (GParamFlags) G_PARAM_READWRITE,
-  //                                         set_double_value,
-  //                                         get_double_value, &sink_max_);
-  // install_property_by_pspec(custom_props_->get_gobject(),
-  //                           sink_max_spec_,
-  //                           "sink-max", "Sink Property Maximum");
+  pmanage<MPtr(&PContainer::remove)>(sink_max_id_);
+      pmanage<MPtr(&PContainer::make_double)>(
+          "sink-max",
+          [this](double val){sink_max_ = val; return true;},
+          [this](){return sink_max_;},
+          "Sink Property Maximum",
+          "The maximmum value to be applyed when mapping",
+          sink_max_,
+          std::numeric_limits<double>::min(),
+          std::numeric_limits<double>::max());
 }
 
-void
-PropertyMapper::property_cb(GObject * gobject, GParamSpec *pspec,
-                            gpointer user_data) {
+void PropertyMapper::property_updated_cb() {
+  // return if not property to update
+  Quiddity::ptr sinkquid = sink_quiddity_.lock();
+  if (!(bool) sinkquid)
+    return;
+
+  Quiddity::ptr sourcequid = source_quiddity_.lock();
+  if (!(bool) sourcequid)
+    return;
+
+  sourcequid->prop<MPtr(&PContainer::update_value_in_tree)>(source_prop_id_);
+  double val = sourcequid->tree<MPtr(&InfoTree::branch_read_data<double>)>(
+      std::string("property.") + source_property_name_);
+  
+  // scaling and transforming the value into a gdouble value
+  double transformed_val =
+      ((double) val - source_min_) * (sink_max_ - sink_min_) /
+      (source_max_ - source_min_) + sink_min_;
+
+  sinkquid->prop<MPtr(&PContainer::set_str)>(
+      sink_prop_id_, std::to_string(transformed_val));
 }
 
 gboolean
 PropertyMapper::set_sink_property_method(gchar *quiddity_name,
                                          gchar *property_name,
                                          void *user_data) {
-  return TRUE;
+  PropertyMapper *context = static_cast<PropertyMapper *>(user_data);
+  QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
+  if (!(bool) manager) {
+    g_debug("manager not found");
+    return FALSE;
+  }
+  Quiddity::ptr quid = manager->get_quiddity(quiddity_name);
+  if (!(bool) quid) {
+    g_debug("quiddity %s not found", quiddity_name);
+    return FALSE;
+  }
+  context->sink_prop_id_ = quid->prop<MPtr(&PContainer::get_id)>(property_name);
+  if (0 == context->sink_prop_id_){
+    g_debug("property %s not found", property_name);
+    return FALSE;
+  }
+  if (!quid->tree<MPtr(&InfoTree::branch_has_data)>(
+          std::string("property.") + property_name + ".min")){
+    g_debug("property %s has no min/max defined", property_name);
+    return FALSE;
+  }
+  context->sink_min_ = quid->tree<MPtr(&InfoTree::branch_read_data<double>)>(
+      std::string("property.") + property_name + ".min");
+  context->sink_max_ = quid->tree<MPtr(&InfoTree::branch_read_data<double>)>(
+      std::string("property.") + property_name + ".max");
+  context->make_numerical_sink_properties();
+  context->sink_quiddity_ = quid;
+  context->sink_property_name_ = property_name;
+  auto sink_tree = context->prune_tree(".sink", false);
+  if (!sink_tree)
+    sink_tree = InfoTree::make();
+  sink_tree->graft(".quiddity", InfoTree::make(std::string(quiddity_name)));
+  sink_tree->graft(".property", InfoTree::make(std::string(property_name)));
+  context->graft_tree(".sink", sink_tree);
+return TRUE;
 }
 
-void PropertyMapper::set_double_value(gdouble value, void *user_data) {
-  *(gdouble *) user_data = value;
+void PropertyMapper::state_cb(PContainer::pstate_t /*state*/){
+  g_warning("%s NOT IMPLEMENTED", __FUNCTION__);  
 }
 
-gdouble PropertyMapper::get_double_value(void *user_data) {
-  return *(gdouble *) user_data;
-}
-}
+}  // namespace switcher

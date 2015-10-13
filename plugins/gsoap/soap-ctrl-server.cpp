@@ -782,7 +782,7 @@ controlService::get_information_tree(std::string quiddity_name,
   if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager();
 
-  *result = manager->get_info(quiddity_name, path);
+  *result = manager->use_tree<MPtr(&InfoTree::serialize_json)>(quiddity_name, path);
 
   return SOAP_OK;
 }

@@ -96,8 +96,7 @@ class Quiddity {
   R invoke_info_tree (std::function<R(InfoTree::ptrc tree)> fun) {
     return fun(information_tree_.get());
   }
-  // FIXME remove get_info
-  std::string get_info(const std::string &path);
+
   Make_consultable(Quiddity, InfoTree, information_tree_.get(), tree);
     
   // shmdata socket names

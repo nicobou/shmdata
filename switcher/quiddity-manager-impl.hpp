@@ -89,9 +89,7 @@ class QuiddityManager_Impl
       return fun(InfoTree::make ().get());
     return quiddities_[nick_name]->invoke_info_tree<R>(fun);
   }  
-  std::string get_info(const std::string &nick_name,
-                       const std::string &path);
-  
+
   Forward_consultable_from_associative_container(
       QuiddityManager_Impl,   // self type
       Quiddity,               // consultable type                                     

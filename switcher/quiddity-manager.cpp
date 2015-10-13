@@ -267,14 +267,6 @@ bool QuiddityManager::save_command_history(const char *file_path) const {
 }
 
 std::string
-QuiddityManager::get_info(const std::string &quiddity_name,
-                          const std::string &path) {
-  return seq_invoke(QuiddityCommand::get_info,
-                    quiddity_name.c_str(), path.c_str(), nullptr);
-}
-
-
-std::string
 QuiddityManager::get_properties_description(const std::string &quiddity_name) {
   manager_impl_->props<MPtr(&PContainer::update_values_in_tree)>(quiddity_name);
   return manager_impl_->use_tree<MPtr(&InfoTree::serialize_json)>(
@@ -800,11 +792,6 @@ gboolean QuiddityManager::execute_command(gpointer user_data) {
         context->command_->result_.push_back("true");
       else
         context->command_->result_.push_back("false");
-      break;
-    case QuiddityCommand::get_info:
-      context->command_->result_.push_back(context->manager_impl_->get_info
-                                           (context->command_->args_[0],
-                                            context->command_->args_[1]));
       break;
     case QuiddityCommand::get_methods_description:
       context->command_->result_.push_back(context->

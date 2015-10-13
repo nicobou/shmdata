@@ -40,31 +40,30 @@ class PropertyMapper: public Quiddity {
   //GParamSpec *sink_quiddity_pspec_;
   std::string sink_property_name_{};
 
-  // clip values (and scale accordingly)
-  //CustomPropertyHelper::ptr custom_props_;
-  // GParamSpec *sink_min_spec_;
-  // GParamSpec *sink_max_spec_;
-  // GParamSpec *source_min_spec_;
-  // GParamSpec *source_max_spec_;
-
+  PContainer::register_id_t reg_id_{0};
+  PContainer::prop_id_t source_prop_id_{0};
+  PContainer::prop_id_t sink_prop_id_{0};
+  // scale values (local properties):
+  PContainer::prop_id_t sink_min_id_{0};
+  PContainer::prop_id_t sink_max_id_{0};
+  PContainer::prop_id_t source_min_id_{0};
+  PContainer::prop_id_t source_max_id_{0};
   double sink_min_{0};
   double sink_max_{0};
   double source_min_{0};
   double source_max_{0};
-
+  
   void make_numerical_source_properties();
   void make_numerical_sink_properties();
+  void property_updated_cb();
+  void state_cb(PContainer::pstate_t state);
   static gboolean set_source_property_method(gchar *quiddity_name,
                                              gchar *property_name,
                                              void *user_data);
-  static void property_cb(GObject *gobject,
-                          GParamSpec *pspec, gpointer user_data);
   static gboolean set_sink_property_method(gchar *quiddity_name,
                                            gchar *property_name,
                                            void *user_data);
   void unsubscribe_source_property();
-  static void set_double_value(gdouble value, void *user_data);
-  static gdouble get_double_value(void *user_data);
 };
 
 }  // namespace switcher
