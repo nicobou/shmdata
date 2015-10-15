@@ -86,7 +86,7 @@ namespace switcher {
              "resolution for the mesh reconstruction",
              resolution_,
              1,
-             99);
+             513);
 
     pmanage<MPtr(&PContainer::make_double)>
             ("grid size",
