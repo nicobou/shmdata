@@ -38,7 +38,7 @@ namespace switcher {
     bool is_started_ {false};
     std::vector<std::unique_ptr<posture::ZCamera>> cameras_ {};
     std::unique_ptr<posture::DepthMapToMesh> mesh_creator_ {nullptr};
-    std::vector<unsigned char> output_ {};
+//    std::vector<unsigned char> output_ {};
     std::mutex mutex_ {};
     std::mutex cb_depth_mutex_ {};
 //    std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
