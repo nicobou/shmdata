@@ -157,8 +157,24 @@ namespace switcher {
 
   void
   PostureMeshGPUCreator::cb_frame_depth(int index, std::vector<unsigned char>& depth, int width, int height) {
-    std::lock_guard<std::mutex> lock (cb_depth_mutex_);
+//    std::lock_guard<std::mutex> lock (cb_depth_mutex_);
 
+    if (!mutex_.try_lock())
+    {
+        std::lock_guard<std::mutex> lock (stock_mutex_);
+        stock_[index]=depth;
+        return;
+    }
+
+    if (stock_.size() > 0)
+    {
+      unique_lock<mutex> lock(stock_mutex_);
+      for (auto it = stock_.begin(); it != stock_.end(); ++it)
+      {
+        mesh_creator_->setInputDepthMap(it->first, it->second, width, height);
+      }
+      stock_.clear();
+    }
     mesh_creator_->setInputDepthMap(index, depth, width, height);
 //    mesh_creator_->getMesh(output_);
 
@@ -185,6 +201,7 @@ namespace switcher {
 
 //    _disp.setPolygonMesh(output_);
     _disp.setPolygonMesh(Mesh);
+    mutex_.unlock();
   }
 
   void

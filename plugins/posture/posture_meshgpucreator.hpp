@@ -40,8 +40,11 @@ namespace switcher {
     std::unique_ptr<posture::DepthMapToMesh> mesh_creator_ {nullptr};
 //    std::vector<unsigned char> output_ {};
     std::mutex mutex_ {};
-    std::mutex cb_depth_mutex_ {};
+//    std::mutex cb_depth_mutex_ {};
 //    std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
+
+    std::map<int, std::vector<unsigned char>> stock_ {};
+    std::mutex stock_mutex_ {};
   
     bool init() final;
     void cb_frame_depth(int index, std::vector<unsigned char>& depth, int width, int height);
