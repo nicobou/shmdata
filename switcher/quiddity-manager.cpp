@@ -90,6 +90,10 @@ bool QuiddityManager::must_be_saved(QuiddityCommand::command id) const{
       || id == QuiddityCommand::set_property
       || id == QuiddityCommand::make_signal_subscriber
       || id == QuiddityCommand::remove_signal_subscriber
+      || id == QuiddityCommand::subscribe_property
+      || id == QuiddityCommand::subscribe_signal
+      || id == QuiddityCommand::unsubscribe_property
+      || id == QuiddityCommand::unsubscribe_signal
       || id == QuiddityCommand::invoke)
     return true;
   return false;
@@ -100,9 +104,11 @@ void QuiddityManager::command_unlock() {
   // save the command
   if (must_be_saved(command_->id_)
       // FIXME do something avoiding this horrible hack:
-      && !(QuiddityCommand::invoke == command_->id_
-           && command_->args_[1] != "last_midi_event_to_property"
-           && command_->args_[1] != "next_midi_event_to_property"))
+      && !((QuiddityCommand::invoke == command_->id_
+            && command_->args_[1] == "last_midi_event_to_property")
+           || (QuiddityCommand::invoke == command_->id_
+               && command_->args_[1] == "next_midi_event_to_property"))
+      )
     command_history_.push_back(command_);
   seq_mutex_.unlock();
 }
@@ -747,6 +753,15 @@ gboolean QuiddityManager::execute_command(gpointer user_data) {
   QuiddityManager *context = static_cast<QuiddityManager *>(user_data);
 
   switch (context->command_->id_) {
+    case QuiddityCommand::set_property:
+      if (context->manager_impl_->props<MPtr(&PContainer::set_str_str)>(
+              context->command_->args_[0],
+              context->command_->args_[1],
+              context->command_->args_[2]))
+        context->command_->result_.push_back("true");
+      else
+        context->command_->result_.push_back("false");
+      break;
     case QuiddityCommand::get_classes:
       context->command_->result_ = context->manager_impl_->get_classes();
       break;
