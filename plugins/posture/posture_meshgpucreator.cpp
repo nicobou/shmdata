@@ -86,7 +86,7 @@ namespace switcher {
              "resolution for the mesh reconstruction",
              resolution_,
              1,
-             99);
+             513);
 
     pmanage<MPtr(&PContainer::make_double)>
             ("grid size",
@@ -99,7 +99,7 @@ namespace switcher {
              "size of the cube for the mesh reconstruction",
              size_,
              0.1f,
-             9.0f);
+             100.0f);
   }
 
   PostureMeshGPUCreator::~PostureMeshGPUCreator() {
@@ -113,7 +113,7 @@ namespace switcher {
     mesh_creator_->setDepthMapNbr(nbr_cam_);
     mesh_creator_->setGridSize(size_);
     mesh_creator_->setGridResolution(resolution_);
-    mesh_creator_->setSaveMesh (save_mesh_);
+    mesh_creator_->setSaveMesh(save_mesh_);
     mesh_creator_->setCalibrationPath(calibration_path_);
     auto index = 0;
     for (; index < nbr_cam_; index++)
@@ -129,7 +129,7 @@ namespace switcher {
       {
         cb_frame_depth(index, depth, width, height);
       }, nullptr);
-      cameras_[index] -> start ();
+      cameras_[index] -> start();
     }
 
     is_started_ = true;
@@ -157,13 +157,29 @@ namespace switcher {
 
   void
   PostureMeshGPUCreator::cb_frame_depth(int index, std::vector<unsigned char>& depth, int width, int height) {
-    std::lock_guard<std::mutex> lock (cb_depth_mutex_);
+//    std::lock_guard<std::mutex> lock (cb_depth_mutex_);
 
+    if (!mutex_.try_lock())
+    {
+        std::lock_guard<std::mutex> lock (stock_mutex_);
+        stock_[index]=depth;
+        return;
+    }
+
+    if (stock_.size() > 0)
+    {
+      unique_lock<mutex> lock(stock_mutex_);
+      for (auto it = stock_.begin(); it != stock_.end(); ++it)
+      {
+        mesh_creator_->setInputDepthMap(it->first, it->second, width, height);
+      }
+      stock_.clear();
+    }
     mesh_creator_->setInputDepthMap(index, depth, width, height);
 //    mesh_creator_->getMesh(output_);
 
     pcl::PolygonMesh::Ptr Mesh;
-    Mesh = boost::make_shared<pcl::PolygonMesh> ();
+    Mesh = boost::make_shared<pcl::PolygonMesh>();
     mesh_creator_->getMesh(Mesh);
 
 //    if (!mesh_writer_ || output_.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>())
@@ -185,6 +201,7 @@ namespace switcher {
 
 //    _disp.setPolygonMesh(output_);
     _disp.setPolygonMesh(Mesh);
+    mutex_.unlock();
   }
 
   void
