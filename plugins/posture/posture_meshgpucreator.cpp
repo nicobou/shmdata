@@ -78,6 +78,7 @@ namespace switcher {
              if (val >= 3)
              {
                 resolution_ = val;
+                mesh_creator_->setGridResolution(resolution_);
              }
              return true;
              },
@@ -92,6 +93,7 @@ namespace switcher {
             ("grid size",
              [this](double val) {
                 size_ = val;
+                mesh_creator_->setGridSize(size_);
                 return true;
              },
              [this]() {return size_;},
@@ -111,8 +113,6 @@ namespace switcher {
     std::lock_guard<std::mutex> lock (mutex_);
     cameras_.resize(nbr_cam_);
     mesh_creator_->setDepthMapNbr(nbr_cam_);
-    mesh_creator_->setGridSize(size_);
-    mesh_creator_->setGridResolution(resolution_);
     mesh_creator_->setSaveMesh(save_mesh_);
     mesh_creator_->setCalibrationPath(calibration_path_);
     auto index = 0;
