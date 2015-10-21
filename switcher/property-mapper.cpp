@@ -170,7 +170,7 @@ void PropertyMapper::make_numerical_source_properties() {
           "Source Property Minimum",
           "The minimum value to be applyed when mapping",
           source_min_,
-          std::numeric_limits<double>::min(),
+          std::numeric_limits<double>::lowest(),
           std::numeric_limits<double>::max());
 
   pmanage<MPtr(&PContainer::remove)>(source_max_id_);
@@ -181,7 +181,7 @@ void PropertyMapper::make_numerical_source_properties() {
           "Source Property Maximum",
           "The maximmum value to be applyed when mapping",
           source_max_,
-          std::numeric_limits<double>::min(),
+          std::numeric_limits<double>::lowest(),
           std::numeric_limits<double>::max());
 }
 
@@ -195,7 +195,7 @@ void PropertyMapper::make_numerical_sink_properties() {
           "Sink Property Minimum",
           "The minimum value to be applyed when mapping",
           sink_min_,
-          std::numeric_limits<double>::min(),
+          std::numeric_limits<double>::lowest(),
           std::numeric_limits<double>::max());
 
   pmanage<MPtr(&PContainer::remove)>(sink_max_id_);
@@ -206,7 +206,7 @@ void PropertyMapper::make_numerical_sink_properties() {
           "Sink Property Maximum",
           "The maximmum value to be applyed when mapping",
           sink_max_,
-          std::numeric_limits<double>::min(),
+          std::numeric_limits<double>::lowest(),
           std::numeric_limits<double>::max());
 }
 
