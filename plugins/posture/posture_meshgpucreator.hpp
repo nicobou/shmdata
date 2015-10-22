@@ -31,8 +31,14 @@ namespace switcher {
   private:
     std::string calibration_path_ {"default.kvc"};
     std::string devices_path_ {"devices.xml"};
-    int resolution_ {16};
+    double resolution_ {50.0};
     double size_ {1.0f};
+    double sizeX_ {1.0f};
+    double sizeY_ {1.0f};
+    double sizeZ_ {1.0f};
+    PContainer::prop_id_t sizeX_id_{0};
+    PContainer::prop_id_t sizeY_id_{0};
+    PContainer::prop_id_t sizeZ_id_{0};
     int nbr_cam_ {1};
     bool save_mesh_ {false};
     bool is_started_ {false};

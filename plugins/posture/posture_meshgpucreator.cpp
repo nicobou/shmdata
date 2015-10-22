@@ -72,36 +72,84 @@ namespace switcher {
              "Save the current mesh if true",
              save_mesh_);
 
-    pmanage<MPtr(&PContainer::make_int)>
+    pmanage<MPtr(&PContainer::make_double)>
             ("grid resolution",
-             [this](int val) {
-             if (val >= 3)
-             {
+             [this](double val) {
                 resolution_ = val;
                 mesh_creator_->setGridResolution(resolution_);
-             }
-             return true;
+                return true;
              },
              [this]() {return resolution_;},
              "grid resolution",
-             "resolution for the mesh reconstruction",
+             "resolution in mm for the mesh reconstruction",
              resolution_,
-             1,
-             513);
+             10.0f,
+             100.0f);
 
     pmanage<MPtr(&PContainer::make_double)>
             ("grid size",
              [this](double val) {
                 size_ = val;
-                mesh_creator_->setGridSize(size_);
+                sizeX_ = val;
+                sizeY_ = val;
+                sizeZ_ = val;
+//                mesh_creator_->setGridSize(size_);
+                mesh_creator_->setGridSizeX(sizeX_);
+                mesh_creator_->setGridSizeY(sizeY_);
+                mesh_creator_->setGridSizeZ(sizeZ_);
+                pmanage<MPtr(&PContainer::notify)>(sizeX_id_);
+                pmanage<MPtr(&PContainer::notify)>(sizeY_id_);
+                pmanage<MPtr(&PContainer::notify)>(sizeZ_id_);
                 return true;
              },
              [this]() {return size_;},
              "grid size",
              "size of the cube for the mesh reconstruction",
              size_,
-             0.1f,
-             100.0f);
+             0.0f,
+             10.0f);
+
+    sizeX_id_ = pmanage<MPtr(&PContainer::make_double)>
+            ("grid size X",
+             [this](double val) {
+                sizeX_ = val;
+                mesh_creator_->setGridSizeX(sizeX_);
+                return true;
+             },
+             [this]() {return sizeX_;},
+             "grid size X",
+             "size of the cube for the mesh reconstruction",
+             sizeX_,
+             0.0f,
+             10.0f);
+
+    sizeY_id_ = pmanage<MPtr(&PContainer::make_double)>
+            ("grid size Y",
+             [this](double val) {
+                sizeY_ = val;
+                mesh_creator_->setGridSizeY(sizeY_);
+                return true;
+             },
+             [this]() {return sizeY_;},
+             "grid size Y",
+             "size of the cube for the mesh reconstruction",
+             sizeY_,
+             0.0f,
+             10.0f);
+
+    sizeZ_id_ = pmanage<MPtr(&PContainer::make_double)>
+            ("grid size Z",
+             [this](double val) {
+                sizeZ_ = val;
+                mesh_creator_->setGridSizeZ(sizeZ_);
+                return true;
+             },
+             [this]() {return sizeZ_;},
+             "grid size Z",
+             "size of the cube for the mesh reconstruction",
+             sizeZ_,
+             0.0f,
+             10.0f);
   }
 
   PostureMeshGPUCreator::~PostureMeshGPUCreator() {
