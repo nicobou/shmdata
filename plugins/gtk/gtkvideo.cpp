@@ -27,6 +27,7 @@
 #include "switcher/shmdata-utils.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/std2.hpp"
+#include "switcher/gprop-to-prop.hpp"
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
@@ -46,12 +47,12 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 guint GTKVideo::instances_counter_ = 0;
 std::thread GTKVideo::gtk_main_thread_ {};
 
-GTKVideo::GTKVideo(const std::string &):
+GTKVideo::GTKVideo(const std::string &name):
     shmcntr_(static_cast<Quiddity *>(this)),
     gst_pipeline_(std2::make_unique<GstPipeliner>(
         nullptr,
         [this](GstMessage *msg){return this->bus_sync(msg);})),
-    gtk_custom_props_(std::make_shared<CustomPropertyHelper>()) {
+    title_(name){
 }
 
 bool GTKVideo::init() {
@@ -72,51 +73,60 @@ bool GTKVideo::init() {
       [this](){return this->on_shmdata_disconnect();},
       [this](const std::string &caps){return this->can_sink_caps(caps);},
       1);
-  fullscreen_prop_spec_ =
-      gtk_custom_props_->make_boolean_property("fullscreen",
-                                               "Enable/Disable Fullscreen",
-                                               (gboolean) FALSE, (GParamFlags)
-                                               G_PARAM_READWRITE,
-                                               GTKVideo::set_fullscreen,
-                                               GTKVideo::get_fullscreen,
-                                               this);
-  install_property_by_pspec(gtk_custom_props_->get_gobject(),
-                            fullscreen_prop_spec_,
-                            "fullscreen",
-                            "Fullscreen");
-  keyb_interaction_spec_ =
-      gtk_custom_props_->make_boolean_property("keyb_interaction",
-                                               "Enable/Disable keybord interaction",
-                                               keyb_interaction_,
-                                               (GParamFlags) G_PARAM_READWRITE,
-                                               GTKVideo::set_keyb_interaction,
-                                               GTKVideo::get_keyb_interaction,
-                                               this);
-  install_property_by_pspec(gtk_custom_props_->get_gobject(),
-                            keyb_interaction_spec_,
-                            "keyb_interaction",
-                            "Keyboard Interaction");
+  fullscreen_id_ = pmanage<MPtr(&PContainer::make_bool)>(
+      "fullscreen",
+      [this](const bool &val){
+        if (val && main_window_ != nullptr) {
+          gdk_window_set_cursor(GDK_WINDOW(video_window_->window),
+                                blank_cursor_);
+          gtk_window_fullscreen(GTK_WINDOW(main_window_));
+        }
+        else if (main_window_ != nullptr) {
+          gdk_window_set_cursor(GDK_WINDOW(video_window_->window),
+                                nullptr);
+          gtk_window_unfullscreen(GTK_WINDOW(main_window_));
+        }
+        is_fullscreen_ = val;
+        return true;
+      },
+      [this](){return is_fullscreen_;},
+      "Fullscreen",
+      "Enable/Disable Fullscreen",
+      is_fullscreen_);
 
-  install_property(G_OBJECT(videoflip_.get_raw()),
-                   "method", "method", "Flip Method");
-  install_property(G_OBJECT(gamma_.get_raw()), "gamma", "gamma", "Gamma");
-  install_property(G_OBJECT(videobalance_.get_raw()),
-                   "contrast", "contrast", "Contrast");
-  install_property(G_OBJECT(videobalance_.get_raw()),
-                   "brightness", "brightness", "Brightness");
-  install_property(G_OBJECT(videobalance_.get_raw()), "hue", "hue", "Hue");
-  install_property(G_OBJECT(videobalance_.get_raw()),
-                   "saturation", "saturation", "Saturation");
-  title_ = g_strdup(get_name().c_str());
-  title_prop_spec_ =
-      gtk_custom_props_->make_string_property("title",
-                                              "Window Title",
-                                              title_,
-                                              (GParamFlags)G_PARAM_READWRITE,
-                                              GTKVideo::set_title,
-                                              GTKVideo::get_title, this);
-  install_property_by_pspec(gtk_custom_props_->get_gobject(),
-                            title_prop_spec_, "title", "Window Title");
+    pmanage<MPtr(&PContainer::make_bool)>(
+      "keyb_interaction",
+      [this](const bool &val){keyb_interaction_ = val; return true;},
+      [this](){return keyb_interaction_;},
+      "Keyboard Interaction",
+      "Enable/Disable keybord interaction",
+      keyb_interaction_);
+
+    pmanage<MPtr(&PContainer::make_string)>(
+        "title",
+        [this](const std::string &val){
+          title_ = val;
+          gtk_window_set_title(GTK_WINDOW(main_window_), title_.c_str());
+          return true;
+        },
+        [this](){return title_;},
+        "Window Title",
+        "Window Title",
+        title_);
+
+    pmanage<MPtr(&PContainer::push)>(
+        "method", GPropToProp::to_prop(G_OBJECT(videoflip_.get_raw()), "method"));
+    pmanage<MPtr(&PContainer::push)>(
+        "gamma", GPropToProp::to_prop(G_OBJECT(gamma_.get_raw()), "gamma"));
+    pmanage<MPtr(&PContainer::push)>(
+        "contrast", GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "contrast"));
+    pmanage<MPtr(&PContainer::push)>(
+        "brightness", GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "brightness"));
+    pmanage<MPtr(&PContainer::push)>(
+        "hue", GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "hue"));
+    pmanage<MPtr(&PContainer::push)>(
+       "saturation" , GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "saturation"));
+    
   std::unique_lock<std::mutex> lock(wait_window_mutex_);
   gtk_idle_add((GtkFunction) create_ui, this);
   wait_window_cond_.wait(lock);
@@ -155,7 +165,7 @@ gboolean GTKVideo::key_pressed_cb(GtkWidget */*widget */ ,
   GTKVideo *context = static_cast<GTKVideo *>(data);
   guint32 val = event->keyval;
   auto keybevent = KeybEvent(val, 1);
-  context->keyb_shm_->writer(&shmdata::Writer::copy_to_shm, &keybevent, sizeof(KeybEvent));
+  context->keyb_shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(&keybevent, sizeof(KeybEvent));
   context->keyb_shm_->bytes_written(sizeof(KeybEvent));
   if (context->keyb_interaction_) {
     switch (event->keyval) {
@@ -181,7 +191,7 @@ gboolean GTKVideo::key_release_cb(GtkWidget */*widget */ ,
   GTKVideo *context = static_cast<GTKVideo *>(data);
   guint32 val = event->keyval;
   auto keybevent = KeybEvent(val, 0);
-  context->keyb_shm_->writer(&shmdata::Writer::copy_to_shm, &keybevent, sizeof(KeybEvent));
+  context->keyb_shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(&keybevent, sizeof(KeybEvent));
   context->keyb_shm_->bytes_written(sizeof(KeybEvent));
   return TRUE;
 }
@@ -202,8 +212,6 @@ gboolean GTKVideo::destroy_window(gpointer user_data) {
 GTKVideo::~GTKVideo() {
   gst_pipeline_.reset();
   g_idle_remove_by_data(this);
-  if (nullptr != title_)
-    g_free(title_);
   // destroy child widgets too
   if (main_window_ != nullptr && GTK_IS_WIDGET(main_window_)) {
     std::unique_lock<std::mutex> lock(window_destruction_mutex_);
@@ -300,7 +308,7 @@ gboolean GTKVideo::create_ui(void *user_data) {
   gtk_container_add(GTK_CONTAINER(context->main_window_),
                     context->video_window_);
   gtk_window_set_default_size(GTK_WINDOW(context->main_window_), 640, 480);
-  gtk_window_set_title(GTK_WINDOW(context->main_window_), context->title_);
+  gtk_window_set_title(GTK_WINDOW(context->main_window_), context->title_.c_str());
   context->blank_cursor_ = gdk_cursor_new(GDK_BLANK_CURSOR);
   gtk_widget_set_events(context->main_window_, GDK_KEY_PRESS_MASK);
   g_signal_connect(G_OBJECT(context->main_window_),
@@ -318,52 +326,9 @@ gboolean GTKVideo::create_ui(void *user_data) {
 
 void GTKVideo::toggle_fullscreen() {
   if (is_fullscreen_)
-    set_fullscreen(FALSE, this);
+    pmanage<MPtr(&PContainer::set<bool>)>(fullscreen_id_, true);
   else
-    set_fullscreen(TRUE, this);
-}
-
-gboolean GTKVideo::get_fullscreen(void *user_data) {
-  GTKVideo *context = static_cast<GTKVideo *>(user_data);
-  return context->is_fullscreen_;
-}
-
-void GTKVideo::set_fullscreen(gboolean fullscreen, void *user_data) {
-  GTKVideo *context = static_cast<GTKVideo *>(user_data);
-  if (fullscreen) {
-    if (context->main_window_ != nullptr) {
-      gdk_window_set_cursor(GDK_WINDOW
-                            (context->video_window_->window),
-                            context->blank_cursor_);
-      gtk_window_fullscreen(GTK_WINDOW(context->main_window_));
-    }
-    context->is_fullscreen_ = TRUE;
-  }
-  else {
-    if (context->main_window_ != nullptr) {
-      gdk_window_set_cursor(GDK_WINDOW
-                            (context->video_window_->window), nullptr);
-      gtk_window_unfullscreen(GTK_WINDOW(context->main_window_));
-    }
-    context->is_fullscreen_ = FALSE;
-  }
-  context->gtk_custom_props_->
-      notify_property_changed(context->fullscreen_prop_spec_);
-}
-
-void GTKVideo::set_title(const gchar *value, void *user_data) {
-  GTKVideo *context = static_cast<GTKVideo *>(user_data);
-  if (nullptr != context->title_)
-    g_free(context->title_);
-  context->title_ = g_strdup(value);
-  gtk_window_set_title(GTK_WINDOW(context->main_window_), context->title_);
-  context->gtk_custom_props_->
-      notify_property_changed(context->title_prop_spec_);
-}
-
-const gchar *GTKVideo::get_title(void *user_data) {
-  GTKVideo *context = static_cast<GTKVideo *>(user_data);
-  return context->title_;
+    pmanage<MPtr(&PContainer::set<bool>)>(fullscreen_id_, false);
 }
 
 bool GTKVideo::remake_elements(){
@@ -415,7 +380,7 @@ bool GTKVideo::on_shmdata_connect(const std::string &shmpath) {
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
         this->graft_tree(".shmdata.reader." + shmpath_ + ".byte_rate",
-                         data::Tree::make(std::to_string(byte_rate)));
+                         InfoTree::make(std::to_string(byte_rate)));
       });
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmsrc_.get_raw(),
@@ -450,18 +415,6 @@ GstBusSyncReply GTKVideo::bus_sync(GstMessage *msg){
   gst_video_overlay_set_window_handle (overlay, window_handle_);
   gst_message_unref (msg);
   return GST_BUS_DROP;
-}
-
-gboolean GTKVideo::get_keyb_interaction(void *user_data) {
-  GTKVideo *context = static_cast<GTKVideo *>(user_data);
-  return context->keyb_interaction_;
-}
-
-void GTKVideo::set_keyb_interaction(gboolean keyb_interaction, void *user_data) {
-  GTKVideo *context = static_cast<GTKVideo *>(user_data);
-  context->keyb_interaction_ = keyb_interaction;
-  context->gtk_custom_props_->
-      notify_property_changed(context->keyb_interaction_spec_);
 }
 
 gboolean GTKVideo::button_event (GtkWidget */*widget*/,
@@ -539,7 +492,8 @@ void GTKVideo::write_mouse_info_to_shmdata(
   if (state & GDK_BUTTON3_MASK)
     button_mask += 4;
   auto mouse_event = MouseEvent(vid_x, vid_y, button_mask);
-  mouse_shm_->writer(&shmdata::Writer::copy_to_shm, &mouse_event, sizeof(MouseEvent));
+  mouse_shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+      &mouse_event, sizeof(MouseEvent));
   mouse_shm_->bytes_written(sizeof(MouseEvent));
 }
 

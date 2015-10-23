@@ -63,13 +63,11 @@ std::string QuiddityManager::get_name() const {
 
 void QuiddityManager::reset_command_history(bool remove_created_quiddities) {
   if (remove_created_quiddities) {
-    manager_impl_->mute_property_subscribers(true);
     manager_impl_->mute_signal_subscribers(true);
     for (auto &it : command_history_) {
       if (g_str_has_prefix(QuiddityCommand::get_string_from_id(it->id_), "create"))
         manager_impl_->remove(it->result_[0]);
     }
-    manager_impl_->mute_property_subscribers(false);
     manager_impl_->mute_signal_subscribers(false);
   }
   history_begin_time_ = g_get_monotonic_time();
@@ -79,29 +77,24 @@ void QuiddityManager::reset_command_history(bool remove_created_quiddities) {
 void QuiddityManager::command_lock() {
   seq_mutex_.lock();
   command_.reset(new QuiddityCommand());
-  gint64 cur_time = g_get_monotonic_time();
+  gint64 cur_time = g_get_monotonic_time(); 
   command_->time_ = cur_time - history_begin_time_;
 }
 
-bool QuiddityManager::must_be_saved(QuiddityCommand *cmd){
-  QuiddityCommand::command id = cmd->id_;
+bool QuiddityManager::must_be_saved(QuiddityCommand::command id) const{
   // actually a white list
   if (id == QuiddityCommand::create
       || id == QuiddityCommand::create_nick_named
       || id == QuiddityCommand::remove
       || id == QuiddityCommand::scan_directory_for_plugins
       || id == QuiddityCommand::set_property
-      || id == QuiddityCommand::make_property_subscriber
       || id == QuiddityCommand::make_signal_subscriber
-      || id == QuiddityCommand::remove_property_subscriber
       || id == QuiddityCommand::remove_signal_subscriber
       || id == QuiddityCommand::subscribe_property
       || id == QuiddityCommand::subscribe_signal
       || id == QuiddityCommand::unsubscribe_property
       || id == QuiddityCommand::unsubscribe_signal
-      || (id == QuiddityCommand::invoke
-          && cmd->args_[1] != "last_midi_event_to_property"
-          && cmd->args_[1] != "next_midi_event_to_property"))
+      || id == QuiddityCommand::invoke)
     return true;
   return false;
 }
@@ -109,7 +102,13 @@ bool QuiddityManager::must_be_saved(QuiddityCommand *cmd){
 void QuiddityManager::command_unlock() {
   // command has been invoked with the return value
   // save the command
-  if (must_be_saved(command_.get()))
+  if (must_be_saved(command_->id_)
+      // FIXME do something avoiding this horrible hack:
+      && !((QuiddityCommand::invoke == command_->id_
+            && command_->args_[1] == "last_midi_event_to_property")
+           || (QuiddityCommand::invoke == command_->id_
+               && command_->args_[1] == "next_midi_event_to_property"))
+      )
     command_history_.push_back(command_);
   seq_mutex_.unlock();
 }
@@ -117,27 +116,17 @@ void QuiddityManager::command_unlock() {
 void
 QuiddityManager::
 play_command_history(QuiddityManager::CommandHistory histo,
-                     QuiddityManager::PropCallbackMap *prop_cb_data,
+                     QuiddityManager::PropCallbackMap */*prop_cb_data*/,
                      QuiddityManager::SignalCallbackMap *sig_cb_data,
                      bool mute_existing_subscribers) {
   bool debug = false;
   if (mute_existing_subscribers) {
-    manager_impl_->mute_property_subscribers(true);
     manager_impl_->mute_signal_subscribers(true);
   }
   if (debug)
     g_print("start playing history\n");
   for (auto &it : histo) {
-    if (it->id_ == QuiddityCommand::make_property_subscriber) {
-      if (prop_cb_data != nullptr) {
-        QuiddityManager::PropCallbackMap::iterator prop_it =
-            prop_cb_data->find(it->args_[0]);
-        if (prop_it != prop_cb_data->end())
-          make_property_subscriber(it->args_[0],
-                                   prop_it->second.first,
-                                   prop_it->second.second);
-      }
-    } else if (it->id_ == QuiddityCommand::make_signal_subscriber) {
+    if (it->id_ == QuiddityCommand::make_signal_subscriber) {
       if (sig_cb_data != nullptr) {
         QuiddityManager::SignalCallbackMap::iterator sig_it =
             sig_cb_data->find(it->args_[0]);
@@ -182,19 +171,9 @@ play_command_history(QuiddityManager::CommandHistory histo,
     g_print("finished playing history\n");
   if (mute_existing_subscribers) {
     manager_impl_->mute_signal_subscribers(false);
-    manager_impl_->mute_property_subscribers(false);
   }
 }
 
-std::vector<std::string>
-QuiddityManager::
-get_property_subscribers_names(QuiddityManager::CommandHistory histo) {
-  std::vector<std::string> res;
-  for (auto &it : histo)
-    if (it->id_ == QuiddityCommand::make_property_subscriber)
-      res.push_back(it->args_[0]);
-  return res;
-}
 
 std::vector<std::string>
 QuiddityManager::
@@ -289,217 +268,67 @@ bool QuiddityManager::save_command_history(const char *file_path) const {
     g_error_free(error);
     return false;
   }
-
+  
   return true;
 }
 
-// ----------- API -----------------------------
 std::string
 QuiddityManager::get_properties_description(const std::string &quiddity_name) {
-  return seq_invoke(QuiddityCommand::get_properties_description,
-                    quiddity_name.c_str(), nullptr);
+  manager_impl_->props<MPtr(&PContainer::update_values_in_tree)>(quiddity_name);
+  return manager_impl_->use_tree<MPtr(&InfoTree::serialize_json)>(
+      quiddity_name,
+      std::string(".property."));
 }
 
 std::string
 QuiddityManager::get_property_description(const std::string &quiddity_name,
                                           const std::string &property_name) {
-  return seq_invoke(QuiddityCommand::get_property_description,
-                    quiddity_name.c_str(), property_name.c_str(), nullptr);
-  }
-
-std::string
-QuiddityManager::get_info(const std::string &quiddity_name,
-                          const std::string &path) {
-  return seq_invoke(QuiddityCommand::get_info,
-                    quiddity_name.c_str(), path.c_str(), nullptr);
+  auto id = manager_impl_->props<MPtr(&PContainer::get_id)>(quiddity_name, property_name);
+  if (0 == id)
+    return std::string("null");
+  manager_impl_->props<MPtr(&PContainer::update_value_in_tree)>(quiddity_name, id);
+  return manager_impl_->use_tree<MPtr(&InfoTree::serialize_json)>(
+      quiddity_name,
+      std::string(".property.") + property_name);
 }
-
 
 std::string
 QuiddityManager::
 get_properties_description_by_class(const std::string &class_name) {
-  return seq_invoke(QuiddityCommand::get_properties_description_by_class,
-                    class_name.c_str(), nullptr);
+  if (! manager_impl_->class_exists(class_name)){
+    g_warning("not description available for class %s (class not found)");
+    return "null";
+  }
+  std::string quid_name = manager_impl_->create_without_hook(class_name);
+  if (quid_name.empty()){
+    g_warning("not description available for class %s (cannot create instance)");
+    return "null";
+  }
+  On_scope_exit{ manager_impl_->remove_without_hook(quid_name);};
+  return manager_impl_->use_tree<MPtr(&InfoTree::serialize_json)>(
+      quid_name,
+      std::string(".property."));
 }
 
 std::string
 QuiddityManager::get_property_description_by_class(const std::string &class_name,
                                                    const std::string &property_name) {
-  return seq_invoke(QuiddityCommand::get_property_description_by_class,
-                    class_name.c_str(), property_name.c_str(), nullptr);
-}
-
-bool
-QuiddityManager::set_property(const std::string &quiddity_name,
-                              const std::string &property_name,
-                              const std::string &property_value) {
-  std::string res = seq_invoke(QuiddityCommand::set_property,
-                               quiddity_name.c_str(),
-                               property_name.c_str(),
-                               property_value.c_str(),
-                               nullptr);
-  if (res == "true")
-    return true;
-  else
-    return false;
-}
-
-std::string
-QuiddityManager::get_property(const std::string &quiddity_name,
-                              const std::string &property_name) {
-  return seq_invoke(QuiddityCommand::get_property,
-                    quiddity_name.c_str(), property_name.c_str(), nullptr);
-}
-
-bool
-QuiddityManager::make_property_subscriber(const std::string &subscriber_name,
-                                          QuiddityManager::PropCallback callback,
-                                          void *user_data) {
-  command_lock();
-  command_->set_id(QuiddityCommand::make_property_subscriber);
-  command_->add_arg(subscriber_name);
-  bool res =
-      manager_impl_->make_property_subscriber(subscriber_name,
-                                              callback,
-                                              user_data);
-  if (res)
-    command_->result_.push_back("true");
-  else
-    command_->result_.push_back("false");
-  command_unlock();
-
-  return res;
-}
-
-bool
-QuiddityManager::remove_property_subscriber(const std::string &subscriber_name) {
-  command_lock();
-  command_->set_id(QuiddityCommand::remove_property_subscriber);
-  command_->add_arg(subscriber_name);
-  bool res = manager_impl_->remove_property_subscriber(subscriber_name);
-  if (res)
-    command_->result_.push_back("true");
-  else
-    command_->result_.push_back("false");
-  command_unlock();
-  return res;
-}
-
-bool
-QuiddityManager::subscribe_property(const std::string &subscriber_name,
-                                    const std::string &quiddity_name,
-                                    const std::string &property_name) {
-  std::string res = seq_invoke(QuiddityCommand::subscribe_property,
-                               subscriber_name.c_str(),
-                               quiddity_name.c_str(),
-                               property_name.c_str(), nullptr);
-  if (g_strcmp0(res.c_str(), "true") == 0)
-    return true;
-  return false;
-
-  // command_lock ();
-  // command_->set_id (QuiddityCommand::subscribe_property);
-  // command_->add_arg (subscriber_name);
-  // command_->add_arg (quiddity_name);
-  // command_->add_arg (property_name);
-
-  // bool res = manager_impl_->subscribe_property (subscriber_name, quiddity_name, property_name);
-  // if (res)
-  //   command_->result_.push_back("true");
-  // else
-  //   command_->result_.push_back("false");
-  // command_unlock ();
-  // return res;
-}
-
-bool
-QuiddityManager::unsubscribe_property(const std::string &subscriber_name,
-                                      const std::string &quiddity_name,
-                                      const std::string &property_name) {
-  std::string res = seq_invoke(QuiddityCommand::unsubscribe_property,
-                               subscriber_name.c_str(),
-                               quiddity_name.c_str(),
-                               property_name.c_str(), nullptr);
-  if (g_strcmp0(res.c_str(), "true") == 0)
-    return true;
-  return false;
-  // command_lock ();
-  // command_->set_id (QuiddityCommand::unsubscribe_property);
-  // command_->add_arg (subscriber_name);
-  // command_->add_arg (quiddity_name);
-  // command_->add_arg (property_name);
-  //  bool res = manager_impl_->unsubscribe_property (subscriber_name, quiddity_name, property_name);
-  // if (res)
-  //   command_->result_.push_back("true");
-  // else
-  //   command_->result_.push_back("false");
-  // command_unlock ();
-  // return res;
-}
-
-std::vector<std::string> QuiddityManager::list_property_subscribers() {
-  command_lock();
-  command_->set_id(QuiddityCommand::list_property_subscribers);
-  std::vector<std::string> res =
-      manager_impl_->list_property_subscribers();
-  command_->result_ = res;
-  command_unlock();
-  return res;
-}
-
-std::vector<std::pair<std::string, std::string>>
-    QuiddityManager::list_subscribed_properties(const std::string &subscriber_name)
-{
-  command_lock();
-  command_->set_id(QuiddityCommand::list_subscribed_properties);
-  std::vector<std::pair<std::string, std::string>>res =
-      manager_impl_->list_subscribed_properties(subscriber_name);
-  // FIXME no result...
-  command_unlock();
-  return res;
-}
-
-std::string QuiddityManager::list_property_subscribers_json() {
-  command_lock();
-  command_->set_id(QuiddityCommand::list_property_subscribers_json);
-  std::string res = manager_impl_->list_property_subscribers_json();
-  command_->result_.push_back(res);
-  command_unlock();
-  return res;
-}
-
-std::string
-QuiddityManager::
-list_subscribed_properties_json(const std::string &subscriber_name) {
-  command_lock();
-  command_->set_id(QuiddityCommand::list_subscribed_properties_json);
-  command_->add_arg(subscriber_name);
-  std::string res =
-      manager_impl_->list_subscribed_properties_json(subscriber_name);
-  command_->result_.push_back(res);
-  command_unlock();
-  return res;
-}
-
-// lower level subscription
-bool
-QuiddityManager::subscribe_property_glib(const std::string &quiddity_name,
-                                         const std::string &property_name,
-                                         Property::Callback cb,
-                                         void *user_data) {
-  return manager_impl_->subscribe_property_glib(quiddity_name,
-                                                property_name,
-                                                cb, user_data);
-}
-
-bool
-QuiddityManager::unsubscribe_property_glib(const std::string &quiddity_name,
-                                           const std::string &property_name,
-                                           Property::Callback cb,
-                                           void *user_data) {
-  return manager_impl_->unsubscribe_property_glib(quiddity_name,
-                                                  property_name,
-                                                  cb, user_data);
+  if (!manager_impl_->class_exists(class_name)){
+    g_warning("not description available for class %s (class not found)");
+    return "null";
+  }
+  std::string quid_name = manager_impl_->create_without_hook(class_name);
+  if (quid_name.empty()){
+    g_warning("not description available for class %s (cannot create instance)");
+    return "null";
+  }
+  On_scope_exit{ manager_impl_->remove_without_hook(quid_name);};
+  auto id = manager_impl_->props<MPtr(&PContainer::get_id)>(quid_name, property_name);
+  if (0 == id)
+    return std::string("null");
+  return manager_impl_->use_tree<MPtr(&InfoTree::serialize_json)>(
+      quid_name,
+      std::string(".property.") + property_name);
 }
 
 bool
@@ -604,11 +433,11 @@ QuiddityManager::has_method(const std::string &quiddity_name,
   return res;
 }
 
-bool
-QuiddityManager::has_property(const std::string &quiddity_name,
-                              const std::string &property_name) {
-  return manager_impl_->has_property(quiddity_name, property_name);
-}
+// bool
+// QuiddityManager::has_property(const std::string &quiddity_name,
+//                               const std::string &property_name) {
+//   return manager_impl_->has_property(quiddity_name, property_name);
+// }
 
 bool
 QuiddityManager::make_signal_subscriber(const std::string &subscriber_name,
@@ -924,6 +753,15 @@ gboolean QuiddityManager::execute_command(gpointer user_data) {
   QuiddityManager *context = static_cast<QuiddityManager *>(user_data);
 
   switch (context->command_->id_) {
+    case QuiddityCommand::set_property:
+      if (context->manager_impl_->props<MPtr(&PContainer::set_str_str)>(
+              context->command_->args_[0],
+              context->command_->args_[1],
+              context->command_->args_[2]))
+        context->command_->result_.push_back("true");
+      else
+        context->command_->result_.push_back("false");
+      break;
     case QuiddityCommand::get_classes:
       context->command_->result_ = context->manager_impl_->get_classes();
       break;
@@ -969,47 +807,6 @@ gboolean QuiddityManager::execute_command(gpointer user_data) {
         context->command_->result_.push_back("true");
       else
         context->command_->result_.push_back("false");
-      break;
-    case QuiddityCommand::get_properties_description:
-      context->command_->result_.push_back(context->
-                                           manager_impl_->get_properties_description
-                                           (context->command_->args_[0]));
-      break;
-    case QuiddityCommand::get_property_description:
-      context->command_->result_.push_back(context->
-                                           manager_impl_->get_property_description
-                                           (context->command_->args_[0],
-                                            context->command_->args_[1]));
-      break;
-    case QuiddityCommand::get_info:
-      context->command_->result_.push_back(context->manager_impl_->get_info
-                                           (context->command_->args_[0],
-                                            context->command_->args_[1]));
-      break;
-    case QuiddityCommand::get_properties_description_by_class:
-      context->command_->result_.push_back(context->
-                                           manager_impl_->get_properties_description_by_class
-                                           (context->command_->args_[0]));
-      break;
-    case QuiddityCommand::get_property_description_by_class:
-      context->command_->result_.push_back(context->
-                                           manager_impl_->get_property_description_by_class
-                                           (context->command_->args_[0],
-                                            context->command_->args_[1]));
-      break;
-    case QuiddityCommand::set_property:
-      if (context->manager_impl_->set_property(context->command_->args_[0],
-                                               context->command_->args_[1],
-                                               context->command_->args_[2]))
-        context->command_->result_.push_back("true");
-      else
-        context->command_->result_.push_back("false");
-      break;
-    case QuiddityCommand::get_property:
-      context->command_->result_.push_back(context->
-                                           manager_impl_->get_property
-                                           (context->command_->args_[0],
-                                            context->command_->args_[1]));
       break;
     case QuiddityCommand::get_methods_description:
       context->command_->result_.push_back(context->
@@ -1079,29 +876,46 @@ gboolean QuiddityManager::execute_command(gpointer user_data) {
       else
         context->command_->result_.push_back("false");
       break;
-    case QuiddityCommand::subscribe_property:
-      if (context->
-          manager_impl_->subscribe_property(context->command_->args_[0],
-                                            context->command_->args_[1],
-                                            context->command_->args_[2]))
-        context->command_->result_.push_back("true");
-      else
-        context->command_->result_.push_back("false");
-      break;
-    case QuiddityCommand::unsubscribe_property:
-      if (context->
-          manager_impl_->unsubscribe_property(context->command_->args_[0],
-                                              context->command_->args_[1],
-                                              context->command_->args_[2]))
-        context->command_->result_.push_back("true");
-      else
-        context->command_->result_.push_back("false");
-      break;
     default:
       g_debug("** unknown command, cannot launch %s\n",
               QuiddityCommand::get_string_from_id(context->command_->id_));
   }
 
-  return FALSE;               // remove from gmainloop
+  return FALSE;  // remove from gmainloop
 }
+
+bool QuiddityManager::set_str_wrapper(const std::string &quid,
+                                      PContainer::prop_id_t id,
+                                      const std::string &val) const {
+  seq_mutex_.lock();
+  command_.reset(new QuiddityCommand());
+  gint64 cur_time = g_get_monotonic_time(); 
+  command_->time_ = cur_time - history_begin_time_;
+  command_->set_id(QuiddityCommand::set_property);
+  command_->add_arg(quid);
+  command_->add_arg(std::to_string(id));
+  command_->add_arg(val);
+  if (must_be_saved(command_->id_))
+    command_history_.push_back(command_);
+  seq_mutex_.unlock();
+  return manager_impl_->props<MPtr(&PContainer::set_str)>(quid, id, val);
 }
+
+bool QuiddityManager::set_str_str_wrapper(const std::string &quid,
+                                          const std::string &strid,
+                                          const std::string &val) const {
+  seq_mutex_.lock();
+  command_.reset(new QuiddityCommand());
+  gint64 cur_time = g_get_monotonic_time(); 
+  command_->time_ = cur_time - history_begin_time_;
+  command_->set_id(QuiddityCommand::set_property);
+  command_->add_arg(quid);
+  command_->add_arg(strid);
+  command_->add_arg(val);
+  if (must_be_saved(command_->id_))
+    command_history_.push_back(command_);
+  seq_mutex_.unlock();
+  return manager_impl_->props<MPtr(&PContainer::set_str_str)>(quid, strid, val);
+}
+
+}  // namespace switcher

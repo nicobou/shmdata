@@ -41,7 +41,8 @@ class ShmdataWriter: public SafeBoolIdiom {
   ShmdataWriter& operator=(const ShmdataWriter&) = delete;
   ShmdataWriter& operator=(ShmdataWriter&&) = default;
 
-  Make_delegate(shmdata::Writer, &shm_, writer);
+  Make_delegate(ShmdataWriter, shmdata::Writer, &shm_, writer);
+  // FIXME use consultable Global Wrapping
   // this is used in order to monitor traffic in the shmdata,
   // i.e. you need to update this at each write with the size writen,
   // regardless of the shmdata::Writer method you are using 

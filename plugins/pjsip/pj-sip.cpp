@@ -40,7 +40,6 @@ PJSIP *PJSIP::this_ = nullptr;  // static pointer to the instance
 std::atomic<unsigned short> PJSIP::sip_endpt_used_(0);
 
 PJSIP::PJSIP(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper>()),
     cp_() {
 }
 
@@ -68,18 +67,23 @@ bool PJSIP::init() {
   }
   i_m_the_one_ = true;
   this_ = this;
-  sip_port_spec_ =
-      custom_props_->make_int_property("port",
-                                       "SIP port used when registering",
-                                       0,
-                                       65535,
-                                       sip_port_,
-                                       (GParamFlags) G_PARAM_READWRITE,
-                                       set_port,
-                                       get_port, this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            sip_port_spec_,
-                            "port", "SIP port used when registering");
+
+  pmanage<MPtr(&PContainer::make_unsigned_int)>(
+      "port",
+      [this](const unsigned int &val){
+        if (val == sip_port_)
+          return true;
+        sip_port_ = val;
+        run_command_sync([this](){start_tcp_transport();});
+        return true;
+      },
+      [this](){return sip_port_;},
+      "SIP Port",
+      "SIP port used when registering",
+      sip_port_,
+      0u,
+      65535u);
+
   std::unique_lock<std::mutex> lock(pj_init_mutex_);
   sip_thread_ = std::thread(&PJSIP::sip_handling_thread, this);
   pj_init_cond_.wait(lock);
@@ -241,22 +245,6 @@ void PJSIP::start_tcp_transport() {
     g_warning("Error creating transport");
     return;
   }
-}
-
-void PJSIP::set_port(const gint value, void *user_data) {
-  PJSIP *context = static_cast<PJSIP *>(user_data);
-  if (value == (gint)context->sip_port_)
-    return;
-  context->sip_port_ = value;
-  context->run_command_sync(std::bind(&PJSIP::start_tcp_transport,
-                                      context));
-  GObjectWrapper::notify_property_changed(context->gobject_->get_gobject(),
-                                          context->sip_port_spec_);
-}
-
-gint PJSIP::get_port(void *user_data) {
-  PJSIP *context = static_cast<PJSIP *>(user_data);
-  return context->sip_port_;
 }
 
 }  // namespace switcher

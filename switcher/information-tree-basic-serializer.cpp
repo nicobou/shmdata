@@ -21,8 +21,8 @@
 #include <iterator>
 
 namespace switcher {
-namespace data {
 namespace BasicSerializer {
+
 typedef struct {
   std::list<std::string> path_ {};
   std::string result_ {};
@@ -38,7 +38,7 @@ std::string path_to_string(std::list<std::string> path) {
 
 void
 on_visiting_node(std::string key,
-                 const Tree::ptrc node,
+                 const InfoTree::ptrc node,
                  bool,
                  BasicSerializerData *data) {
   data->path_.push_back(key);
@@ -52,15 +52,15 @@ on_visiting_node(std::string key,
 
 void
 on_node_visited(std::string,
-                const Tree::ptrc, 
+                const InfoTree::ptrc, 
 		bool, 
 		BasicSerializerData *data) {
   data->path_.pop_back();
 }
 
-std::string serialize(Tree::ptrc tree) {
+std::string serialize(InfoTree::ptrc tree) {
   BasicSerializerData data;
-  Tree::preorder_tree_walk(tree,
+  InfoTree::preorder_tree_walk(tree,
                            std::bind(BasicSerializer::on_visiting_node,
                                      std::placeholders::_1,
                                      std::placeholders::_2,
@@ -73,8 +73,8 @@ std::string serialize(Tree::ptrc tree) {
   return data.result_;
 }
 
-Tree::ptr deserialize(const std::string &serialized) {
-  Tree::ptr tree = Tree::make();
+InfoTree::ptr deserialize(const std::string &serialized) {
+  InfoTree::ptr tree = InfoTree::make();
   std::istringstream ss(serialized);
   std::string line;
   while (std::getline(ss, line)) {
@@ -91,11 +91,10 @@ Tree::ptr deserialize(const std::string &serialized) {
     if (!val_cont.empty())
       value += ' ' + val_cont;
     if (!absolute_key.empty() && !value.empty())
-      tree->graft(absolute_key, Tree::make(value));
+      tree->graft(absolute_key, InfoTree::make(value));
   }
   return tree;
 }
 
 }  // namespace BasicSerializer
-}  // namespace data
 }  // namespace switcher

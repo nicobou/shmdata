@@ -25,6 +25,7 @@
 #include "./quiddity.hpp"
 #include "./scope-exit.hpp"
 #include "./string-utils.hpp"
+#include "./information-tree-json.hpp"
 
 // the quiddities to manage (line sorted)
 #include "./audio-test-source.hpp"
@@ -41,7 +42,6 @@
 //#include "./shmdata-to-file.hpp"
 //#include "./shmdata-from-gdp-file.hpp"
 #include "./uridecodebin.hpp"
-#include "./string-dictionary.hpp"
 #include "./video-test-source.hpp"
 
 namespace switcher {
@@ -174,9 +174,6 @@ void QuiddityManager_Impl::register_classes() {
   // abstract_factory_.register_class<ShmdataToFile>
   //     (ShmdataToFile::switcher_doc_.get_class_name(),
   //      &ShmdataToFile::switcher_doc_);
-  abstract_factory_.register_class<StringDictionary>
-      (StringDictionary::switcher_doc_.get_class_name(),
-       &StringDictionary::switcher_doc_);
   abstract_factory_.register_class<Uridecodebin>
       (Uridecodebin::switcher_doc_.get_class_name(),
        &Uridecodebin::switcher_doc_);
@@ -369,8 +366,6 @@ bool QuiddityManager_Impl::remove_without_hook(const std::string &quiddity_name)
             quiddity_name.c_str());
     return false;
   }
-  for (auto &it : property_subscribers_)
-    it.second->unsubscribe(q_it->second);
   for (auto &it : signal_subscribers_)
     it.second->unsubscribe(q_it->second);
   quiddities_.erase(quiddity_name);
@@ -384,245 +379,12 @@ bool QuiddityManager_Impl::remove(const std::string &quiddity_name) {
               quiddity_name.c_str());
     return false;
   }
-  for (auto &it : property_subscribers_)
-    it.second->unsubscribe(q_it->second);
   for (auto &it : signal_subscribers_)
     it.second->unsubscribe(q_it->second);
   quiddities_.erase(quiddity_name);
   if (removal_hook_ != nullptr)
     (*removal_hook_) (quiddity_name.c_str(), removal_hook_user_data_);
   return true;
-}
-
-std::string
-QuiddityManager_Impl::
-get_properties_description(const std::string &quiddity_name) {
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    g_warning("quiddity %s not found, cannot get description of properties",
-              quiddity_name.c_str());
-    return std::string();
-  }
-  return q_it->second->get_properties_description();
-}
-
-std::string
-QuiddityManager_Impl::get_property_description(const std::string &quiddity_name,
-                                               const std::string &property_name) {
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    g_warning("quiddity %s not found, cannot get description of properties",
-              quiddity_name.c_str());
-    return std::string();
-  }
-  return q_it->second->get_property_description(property_name);
-}
-
-std::string
-QuiddityManager_Impl::get_properties_description_by_class(const std::string &class_name) {
-  if (!class_exists(class_name))
-    return "{\"error\":\"class not found\"}";
-  std::string quid_name = create_without_hook(class_name);
-  if (quid_name.empty())
-    return "{\"error\":\"cannot get property because the class cannot be instanciated\"}";
-  std::string descr = get_properties_description(quid_name);
-  remove_without_hook(quid_name);
-  return descr;
-}
-
-std::string
-QuiddityManager_Impl::get_property_description_by_class(const std::string &class_name,
-                                                        const std::string &property_name) {
-  if (!class_exists(class_name))
-    return "{\"error\":\"class not found\"}";
-  std::string quid_name = create_without_hook(class_name);
-  if (quid_name.empty())
-    return "{\"error\":\"cannot get property because the class cannot be instanciated\"}";
-  std::string descr = get_property_description(quid_name, property_name);
-  remove_without_hook(quid_name);
-  return descr;
-}
-
-bool
-QuiddityManager_Impl::set_property(const std::string &quiddity_name,
-                                   const std::string &property_name,
-                                   const std::string &property_value) {
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    g_warning("quiddity %s not found, cannot set property",
-              quiddity_name.c_str());
-    return false;
-  }
-  return q_it->second->set_property(property_name.c_str(),
-                                    property_value.c_str());
-}
-
-// higher level subscriber
-bool
-QuiddityManager_Impl::make_property_subscriber(const std::string &subscriber_name,
-                                               QuiddityPropertySubscriber::Callback cb,
-                                               void *user_data) {
-  auto it = property_subscribers_.find(subscriber_name);
-  if (property_subscribers_.end() != it) {
-    g_warning("QuiddityManager_Impl, a subscriber named %s already exists",
-              subscriber_name.c_str());
-    return false;
-  }
-  QuiddityPropertySubscriber::ptr subscriber(std::make_shared<QuiddityPropertySubscriber>());
-  subscriber->set_manager_impl(me_.lock());
-  subscriber->set_name(subscriber_name.c_str());
-  subscriber->set_user_data(user_data);
-  subscriber->set_callback(cb);
-  property_subscribers_[subscriber_name] = subscriber;
-  return true;
-}
-
-bool
-QuiddityManager_Impl::
-remove_property_subscriber(const std::string &subscriber_name) {
-  auto it = property_subscribers_.find(subscriber_name);
-  if (property_subscribers_.end() == it) {
-    g_warning("a subscriber named %s does not exists\n",
-              subscriber_name.c_str());
-    return false;
-  }
-  property_subscribers_.erase(it);
-  return true;
-}
-
-bool
-QuiddityManager_Impl::subscribe_property(const std::string &subscriber_name,
-                                         const std::string &quiddity_name,
-                                         const std::string &property_name) {
-  auto it = property_subscribers_.find(subscriber_name);
-  if (property_subscribers_.end() == it) {
-    g_warning
-        ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
-         subscriber_name.c_str());
-    return false;
-  }
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    g_warning("quiddity %s not found, cannot subscribe to property",
-              quiddity_name.c_str());
-    return false;
-  }
-  return it->second->subscribe(q_it->second, property_name);
-}
-
-bool
-QuiddityManager_Impl::unsubscribe_property(const std::string &subscriber_name,
-                                           const std::string &quiddity_name,
-                                           const std::string &property_name) {
-  auto it = property_subscribers_.find(subscriber_name);
-  if (property_subscribers_.end() == it) {
-    g_warning("QuiddityManager_Impl, a subscriber named %s does not exists\n",
-              subscriber_name.c_str());
-    return false;
-  }
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    g_warning("quiddity %s not found, cannot subscribe to property",
-              quiddity_name.c_str());
-    return false;
-  }
-  return it->second->unsubscribe(q_it->second, property_name);
-}
-
-std::vector<std::string>
-QuiddityManager_Impl::list_property_subscribers() const {
-  std::vector<std::string> res;
-  for (auto &it : property_subscribers_)
-    res.push_back(it.first);
-  return res;
-}
-
-std::vector<std::pair<std::string, std::string>>
-    QuiddityManager_Impl::list_subscribed_properties(const std::string &subscriber_name) {
-  auto it = property_subscribers_.find(subscriber_name);
-  if (property_subscribers_.end() == it) {
-    g_warning("QuiddityManager_Impl, a subscriber named %s does not exists\n",
-              subscriber_name.c_str());
-    return std::vector<std::pair<std::string, std::string>>();
-  }
-  return it->second->list_subscribed_properties();
-}
-
-std::string QuiddityManager_Impl::list_property_subscribers_json() {
-  return "{\"error\":\"to be implemented\"}";  // FIXME (list_property_subscriber_json)
-}
-
-std::string
-QuiddityManager_Impl::list_subscribed_properties_json(const std::string &subscriber_name) {
-  auto subscribed_props = list_subscribed_properties(subscriber_name);
-
-  JSONBuilder *doc = new JSONBuilder();
-  doc->reset();
-  doc->begin_object();
-  doc->set_member_name("subscribed properties");
-  doc->begin_array();
-  for (auto &it : subscribed_props) {
-    doc->begin_object();
-    doc->add_string_member("quiddity", it.first.c_str());
-    doc->add_string_member("property", it.second.c_str());
-    doc->end_object();
-  }
-  doc->end_array();
-  doc->end_object();
-
-  return doc->get_string(true);
-}
-
-// lower level subscriber
-bool
-QuiddityManager_Impl::subscribe_property_glib(const std::string &quiddity_name,
-                                              const std::string &property_name,
-                                              Property::Callback cb,
-                                              void *user_data) {
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    g_warning("quiddity %s not found, cannot subscribe to property",
-              quiddity_name.c_str());
-    return false;
-  }
-  return q_it->second->subscribe_property(property_name.c_str(), cb, user_data);
-}
-
-bool
-QuiddityManager_Impl::unsubscribe_property_glib(const std::string &quiddity_name,
-                                                const std::string &property_name,
-                                                Property::Callback cb,
-                                                void *user_data) {
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    g_warning("quiddity %s not found, cannot unsubscribe to property",
-              quiddity_name.c_str());
-    return false;
-  }
-  return q_it->second->unsubscribe_property(property_name.c_str(), cb, user_data);
-}
-
-std::string
-QuiddityManager_Impl::get_property(const std::string &quiddity_name,
-                                   const std::string &property_name) {
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    g_warning("quiddity %s not found, cannot get property",
-              quiddity_name.c_str());
-    return "{\"error\":\"quiddity not found\"}";
-  }
-  return q_it->second->get_property(property_name.c_str());
-}
-
-bool
-QuiddityManager_Impl::has_property(const std::string &quiddity_name,
-                                   const std::string &property_name) {
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    g_debug("quiddity %s not found", quiddity_name.c_str());
-    return false;
-  }
-  return q_it->second->has_property(property_name);
 }
 
 bool
@@ -751,11 +513,6 @@ std::string QuiddityManager_Impl::get_signal_description_by_class(const std::str
 // higher level subscriber
 void QuiddityManager_Impl::mute_signal_subscribers(bool muted) {
   for (auto &it : signal_subscribers_)
-    it.second->mute(muted);
-}
-
-void QuiddityManager_Impl::mute_property_subscribers(bool muted) {
-  for (auto &it : property_subscribers_)
     it.second->mute(muted);
 }
 
@@ -976,15 +733,6 @@ QuiddityManager_Impl::scan_directory_for_plugins(const char
   make_classes_doc();
 
   return true;
-}
-
-std::string
-QuiddityManager_Impl::get_info(const std::string &nick_name,
-                               const std::string &path) {
-  auto it = quiddities_.find(nick_name);
-  if (quiddities_.end() == it)
-    return "{ \"error\":\"quiddity not found\"}";
-  return quiddities_[nick_name]->get_info(path);
 }
 
 }  // namespace switcher

@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/json-builder.hpp"
 #include "./shmdata-to-osc.hpp"
 
 namespace switcher {
@@ -32,8 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 ShmdataToOsc::ShmdataToOsc(const std::string &):
-    shmcntr_(static_cast<Quiddity *>(this)),
-    custom_props_(new CustomPropertyHelper()) {
+    shmcntr_(static_cast<Quiddity *>(this)){
 }
 
 bool ShmdataToOsc::init() {
@@ -44,45 +42,39 @@ bool ShmdataToOsc::init() {
       [this](){return this->disconnect();},
       [this](const std::string &caps){return this->can_sink_caps(caps);},
       1);
-  port_spec_ =
-      custom_props_->make_int_property("Port",
-                                       "OSC destination port",
-                                       1,
-                                       65536,
-                                       port_,
-                                       (GParamFlags) G_PARAM_READWRITE,
-                                       set_port, get_port, this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            port_spec_, "port", "Port");
-  host_spec_ =
-      custom_props_->make_string_property("host",
-                                          "destination host",
-                                          host_.c_str(),
-                                          (GParamFlags) G_PARAM_READWRITE,
-                                          ShmdataToOsc::set_host,
-                                          ShmdataToOsc::get_host, this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            host_spec_, "host", "Destination Host");
+  pmanage<MPtr(&PContainer::make_int)>(
+      "port",
+      [this](const int &val){
+        if (val == port_)
+          return true;
+        stop();
+        port_ = val;
+        return start();
+      },
+      [this](){return port_;},
+      "Port",
+      "OSC destination",
+      port_,
+      1,
+      65536);
+  pmanage<MPtr(&PContainer::make_string)>(
+      "host",
+      [this](const std::string &val){
+        if (val == host_)
+          return true;
+        stop();
+        host_ = val;
+        return start();
+      },
+      [this](){return host_;},
+      "Destination host",
+      "Destination host",
+      host_);
   return true;
 }
 
 ShmdataToOsc::~ShmdataToOsc() {
   stop();
-}
-
-void ShmdataToOsc::set_port(const gint value, void *user_data) {
-  ShmdataToOsc *context = static_cast<ShmdataToOsc *>(user_data);
-  if (value == context->port_)
-    return;
-  context->stop();
-  context->port_ = value;
-  context->start();
-  context->custom_props_->notify_property_changed(context->port_spec_);
-}
-
-gint ShmdataToOsc::get_port(void *user_data) {
-  ShmdataToOsc *context = static_cast<ShmdataToOsc *>(user_data);
-  return context->port_;
 }
 
 bool ShmdataToOsc::start() {
@@ -103,21 +95,6 @@ bool ShmdataToOsc::stop() {
     address_ = nullptr;
   }
   return true;
-}
-
-void ShmdataToOsc::set_host(const gchar *value, void *user_data) {
-  ShmdataToOsc *context = static_cast<ShmdataToOsc *>(user_data);
-  if (0 == context->host_.compare(value))
-    return;
-  context->stop();
-  context->host_ = value;
-  context->start();
-  context->custom_props_->notify_property_changed(context->host_spec_);
-}
-
-const gchar *ShmdataToOsc::get_host(void *user_data) {
-  ShmdataToOsc *context = static_cast<ShmdataToOsc *>(user_data);
-  return context->host_.c_str();
 }
 
 bool ShmdataToOsc::connect(const std::string &path) {

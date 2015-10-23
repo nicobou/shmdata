@@ -24,13 +24,13 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     categorizable.cpp \
     counter-map.cpp \
     create-remove-spy.cpp \
-    custom-property-helper.cpp \
     decodebin-to-shmdata.cpp \
     external-shmdata-writer.cpp \
+    fraction.cpp \
     g-source-wrapper.cpp \
     glibmainloop.cpp \
-    gobject-custom-property.cpp \
     gobject-wrapper.cpp \
+    gprop-to-prop.cpp \
     gst-audio-codec.cpp \
     gst-audio-encoder.cpp \
     gst-pipe.cpp \
@@ -51,29 +51,29 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     net-utils.cpp \
     periodic-task.cpp \
     plugin-loader.cpp \
+    property-container.cpp \
     property-mapper.cpp \
-    property.cpp \
     quiddity-basic-test.cpp \
     quiddity-command.cpp \
     quiddity-documentation.cpp \
     quiddity-manager-impl.cpp \
     quiddity-manager-wrapper.cpp \
     quiddity-manager.cpp \
-    quiddity-property-subscriber.cpp \
     quiddity-signal-subscriber.cpp \
     quiddity.cpp \
     rtp-destination.cpp \
     rtp-session.cpp \
     safe-bool-idiom.cpp \
     sdp-utils.cpp \
+    selection.cpp \
     shmdata-connector.cpp \
     shmdata-follower.cpp \
     shmdata-utils.cpp \
     shmdata-writer.cpp \
     signal-string.cpp \
     startable-quiddity.cpp \
-    string-dictionary.cpp \
     string-utils.cpp \
+    type-name-registry.cpp \
     unique-gst-element.cpp \
     uridecodebin.cpp \
     video-test-source.cpp
@@ -99,13 +99,14 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     counter-map.hpp \
     create-remove-spy.hpp \
     creator.hpp \
-    custom-property-helper.hpp \
     decodebin-to-shmdata.hpp \
     external-shmdata-writer.hpp \
+    fraction.hpp \
     g-source-wrapper.hpp \
     glibmainloop.hpp \
-    gobject-custom-property.hpp \
     gobject-wrapper.hpp \
+    gprop-to-prop.hpp \
+    group.hpp \
     gst-audio-codec.hpp \
     gst-audio-encoder.hpp \
     gst-pipe.hpp \
@@ -127,15 +128,16 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     net-utils.hpp \
     periodic-task.hpp \
     plugin-loader.hpp \
+    property-container.hpp \
     property-mapper.hpp \
-    property.hpp \
+    property-specification.hpp \
+    property2.hpp \
     quiddity-basic-test.hpp \
     quiddity-command.hpp \
     quiddity-documentation.hpp \
     quiddity-manager-impl.hpp \
     quiddity-manager-wrapper.hpp \
     quiddity-manager.hpp \
-    quiddity-property-subscriber.hpp \
     quiddity-signal-subscriber.hpp \
     quiddity.hpp \
     rtp-destination.hpp \
@@ -143,6 +145,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     safe-bool-idiom.hpp \
     scope-exit.hpp \
     sdp-utils.hpp \
+    selection.hpp \
     shmdata-connector.hpp \
     shmdata-glib-logger.hpp \
     shmdata-follower.hpp \
@@ -151,8 +154,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     signal-string.hpp \
     startable-quiddity.hpp \
     std2.hpp \
-    string-dictionary.hpp \
     string-utils.hpp \
+    type-name-registry.hpp \
     unique-gst-element.hpp \
     uridecodebin.hpp \
     video-test-source.hpp

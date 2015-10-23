@@ -24,16 +24,42 @@
 
 namespace switcher {
 
-std::string StringUtils::replace(const std::string &orig,
-                                 const char to_replace,
-                                 const std::string &replacement){
-  std::istringstream ss(orig); // Turn the string into a stream
-  std::string tok;
-  std::getline(ss, tok, to_replace);
-  std::string res = tok;
-  while(std::getline(ss, tok, ' '))
-    res += replacement + tok;
-  return res;
+std::string StringUtils::replace_char(const std::string &orig,
+                                      const char to_replace,
+                                      const std::string &replacement){
+  std::string escaped = std::string();
+  std::size_t i = 0;
+  while (std::string::npos != i) {
+    auto found = orig.find(to_replace, i);
+    if (i != found)
+      escaped += std::string(orig, i, found - i);
+    if (std::string::npos != found) {
+      escaped += replacement;
+      i = ++found;
+    } else {
+      i = std::string::npos;
+    }
+  }
+  return escaped;
+}
+
+std::string StringUtils::replace_string(const std::string &orig,
+                                        const std::string &to_replace,
+                                        const std::string &replacement){
+  std::string unescaped = std::string();
+  std::size_t i = 0;
+  while(std::string::npos != i) {
+    std::size_t found = orig.find(to_replace, i);
+    if (i != found)
+      unescaped += std::string(orig, i , found - i);
+    if (std::string::npos != found) {
+      unescaped += replacement;
+      i = found + to_replace.size();
+    } else {
+      i = std::string::npos;
+    }
+  }
+  return unescaped;
 }
 
 std::string StringUtils::replace_chars(const std::string &orig,

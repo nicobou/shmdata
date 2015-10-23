@@ -52,7 +52,7 @@ main() {
     auto audio_shmdata = manager->
         use_tree<std::list<std::string>, const std::string &>(
             "audio",
-            &switcher::data::Tree::get_child_keys,
+            &switcher::InfoTree::get_child_keys,
             std::string(".shmdata.writer."));
     assert(!audio_shmdata.empty());
     //assert(manager->set_property("audio", "started", "false"));
@@ -68,7 +68,7 @@ main() {
     auto fakeshm_shm = manager->
         use_tree<std::list<std::string>, const std::string &>(
             "fakeshmsrc",
-            &switcher::data::Tree::get_child_keys,
+            &switcher::InfoTree::get_child_keys,
             std::string(".shmdata.writer."));
     // FIXME assert(!fakeshm_shm.empty());
     // checking fakeshmsrc is exposing the same shmdata path

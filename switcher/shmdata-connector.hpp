@@ -23,7 +23,6 @@
 #include <vector>
 #include <unordered_map>
 #include "./json-builder.hpp"
-#include "./custom-property-helper.hpp"
 
 namespace switcher {
 class Quiddity;

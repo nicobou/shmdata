@@ -1,0 +1,320 @@
+/*
+ * This file is part of libswitcher.
+ *
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+#include <gst/gst.h>
+#include "./gprop-to-prop.hpp"
+#include "./scope-exit.hpp"
+
+namespace switcher {
+namespace GPropToProp{
+
+std::unique_ptr<PropertyBase> to_prop(GObject *gobj, const std::string &gprop_name){
+  GParamSpec *pspec =
+      g_object_class_find_property(G_OBJECT_GET_CLASS(gobj), gprop_name.c_str());
+  if (nullptr == pspec){
+    g_warning("property %s not found for the gobject calss %s",
+              gprop_name.c_str(),
+              G_OBJECT_CLASS_NAME(G_OBJECT_GET_CLASS(gobj)));
+    return std::unique_ptr<PropertyBase>();
+  }
+
+  GValue value = G_VALUE_INIT;
+  g_value_init(&value, pspec->value_type);
+  g_object_get_property(gobj, pspec->name, &value);
+  std::string description = std::string(g_param_spec_get_blurb(pspec));
+  bool is_writable = false;
+  if (pspec->flags &G_PARAM_WRITABLE)
+    is_writable = true;
+
+  auto res = std::unique_ptr<PropertyBase>();
+  switch (G_VALUE_TYPE(&value)) {
+    case G_TYPE_STRING:
+      res = std2::make_unique<Property2<std::string>>(
+          is_writable ?
+          [gobj, gprop_name](const std::string &val){
+            g_object_set(gobj, gprop_name.c_str(), val.c_str(), nullptr);
+            return true;
+          } : static_cast<prop::set_t<std::string>>(nullptr),  // FIXME
+          [gobj, gprop_name](){
+            gchar *strval; On_scope_exit{g_free(strval);};
+            g_object_get(gobj, gprop_name.c_str(), &strval, nullptr);
+            return std::string(strval);},
+          gprop_name,
+          std::string(description),
+          std::string(g_value_get_string(&value)));
+      break;
+    case G_TYPE_BOOLEAN:
+      res = std2::make_unique<Property2<bool>>(
+          is_writable ?
+          [gobj, gprop_name](const bool &val){
+            g_object_set(gobj, gprop_name.c_str(), val ? TRUE : FALSE, nullptr);
+            return true;
+          } : static_cast<prop::set_t<bool>>(nullptr),
+          [gobj, gprop_name](){
+            gboolean val;
+            g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
+            return val ? true : false;
+          },
+          gprop_name,
+          std::string(description),
+          g_value_get_boolean(&value) ? true : false);
+      break;
+    case G_TYPE_ULONG:
+      {
+        GParamSpecULong *pulong = G_PARAM_SPEC_ULONG(pspec);
+        res = std2::make_unique<Property2<gulong>>(
+            is_writable ?
+            [gobj, gprop_name](const gulong &val){
+              g_object_set(gobj, gprop_name.c_str(), val, nullptr);
+              return true;
+            } : static_cast<prop::set_t<gulong>>(nullptr),
+            [gobj, gprop_name](){
+              gulong val;
+              g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
+              return val;
+            },
+            gprop_name,
+            std::string(description),
+            g_value_get_ulong(&value),
+            pulong->minimum,
+            pulong->maximum);
+      }
+        break;
+          case G_TYPE_LONG:
+      {
+        GParamSpecLong *plong = G_PARAM_SPEC_LONG(pspec);
+        res = std2::make_unique<Property2<glong>>(
+            is_writable ?
+            [gobj, gprop_name](const glong &val){
+              g_object_set(gobj, gprop_name.c_str(), val, nullptr);
+              return true;
+            } : static_cast<prop::set_t<glong>>(nullptr),
+            [gobj, gprop_name](){
+              glong val;
+              g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
+              return val;
+            },
+            gprop_name,
+            std::string(description),
+            g_value_get_long(&value),
+            plong->minimum,
+            plong->maximum);
+      }
+        break;
+    case G_TYPE_UINT:
+      {
+        GParamSpecUInt *puint = G_PARAM_SPEC_UINT(pspec);
+        res = std2::make_unique<Property2<guint>>(
+            is_writable ?
+            [gobj, gprop_name](const guint &val){
+              g_object_set(gobj, gprop_name.c_str(), val, nullptr);
+              return true;
+            } : static_cast<prop::set_t<guint>>(nullptr),
+            [gobj, gprop_name](){
+              guint val;
+              g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
+              return val;
+            },
+            gprop_name,
+            std::string(description),
+            g_value_get_uint(&value),
+            puint->minimum,
+            puint->maximum);
+      }
+      break;
+    case G_TYPE_INT:
+      {
+        GParamSpecInt *pint = G_PARAM_SPEC_INT(pspec);
+        res = std2::make_unique<Property2<gint>>(
+            is_writable ?
+            [gobj, gprop_name](const gint &val){
+              g_object_set(gobj, gprop_name.c_str(), val, nullptr);
+              return true;
+            } : static_cast<prop::set_t<gint>>(nullptr),
+            [gobj, gprop_name](){
+              gint val;
+              g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
+              return val;
+            },
+            gprop_name,
+            std::string(description),
+            g_value_get_int(&value),
+            pint->minimum,
+            pint->maximum);
+      }
+      break;
+    case G_TYPE_UINT64:
+      {
+        GParamSpecUInt64 *puint64 = G_PARAM_SPEC_UINT64(pspec);
+         res = std2::make_unique<Property2<guint64>>(
+            is_writable ?
+            [gobj, gprop_name](const guint64 &val){
+              g_object_set(gobj, gprop_name.c_str(), val, nullptr);
+              return true;
+            } : static_cast<prop::set_t<guint64>>(nullptr),
+            [gobj, gprop_name](){
+              guint64 val;
+              g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
+              return val;
+            },
+            gprop_name,
+            std::string(description),
+            g_value_get_uint64(&value),
+            puint64->minimum,
+            puint64->maximum);
+     }
+      break;
+    case G_TYPE_INT64:
+      {
+        GParamSpecInt64 *pint64 = G_PARAM_SPEC_INT64(pspec);
+         res = std2::make_unique<Property2<gint64>>(
+            is_writable ?
+            [gobj, gprop_name](const gint64 &val){
+              g_object_set(gobj, gprop_name.c_str(), val, nullptr);
+              return true;
+            } : static_cast<prop::set_t<gint64>>(nullptr),
+            [gobj, gprop_name](){
+              gint64 val;
+              g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
+              return val;
+            },
+            gprop_name,
+            std::string(description),
+            g_value_get_int64(&value),
+            pint64->minimum,
+            pint64->maximum);
+      }
+      break;
+    case G_TYPE_FLOAT:
+      {
+        GParamSpecFloat *pfloat = G_PARAM_SPEC_FLOAT(pspec);
+         res = std2::make_unique<Property2<gfloat>>(
+            is_writable ?
+            [gobj, gprop_name](const gfloat &val){
+              g_object_set(gobj, gprop_name.c_str(), val, nullptr);
+              return true;
+            } : static_cast<prop::set_t<gfloat>>(nullptr),
+            [gobj, gprop_name](){
+              gfloat val;
+              g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
+              return val;
+            },
+            gprop_name,
+            std::string(description),
+            g_value_get_float(&value),
+            pfloat->minimum,
+            pfloat->maximum);
+      }
+      break;
+    case G_TYPE_DOUBLE:
+      {
+        GParamSpecDouble *pdouble = G_PARAM_SPEC_DOUBLE(pspec);
+         res = std2::make_unique<Property2<gdouble>>(
+            is_writable ?
+            [gobj, gprop_name](const gdouble &val){
+              g_object_set(gobj, gprop_name.c_str(), val, nullptr);
+              return true;
+            } : static_cast<prop::set_t<gdouble>>(nullptr),
+            [gobj, gprop_name](){
+              gdouble val;
+              g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
+              return val;
+            },
+            gprop_name,
+            std::string(description),
+            g_value_get_double(&value),
+            pdouble->minimum,
+            pdouble->maximum);
+      }
+      break;
+    default:
+      if (pspec->value_type == GST_TYPE_CAPS) {
+        g_warning("GST_TYPE_CAPS is not a supporteed property type");
+      } else if (G_IS_PARAM_SPEC_ENUM(pspec)) {
+        std::vector<std::string> items;
+        GEnumValue *values = G_ENUM_CLASS(g_type_class_ref(pspec->value_type))->values;
+        guint j = 0;
+        while (values[j].value_name) {
+          // values[j].value_nick;
+          items.push_back(values[j].value_name);
+          j++;
+        }
+        res = std2::make_unique<Property2<Selection, Selection::index_t>>(
+            is_writable ?
+            [gobj, gprop_name](const Selection::index_t &val){
+              g_object_set(gobj, gprop_name.c_str(), val, nullptr);
+              return true;
+            } : static_cast<prop::set_t<Selection::index_t>>(nullptr),
+            [gobj, gprop_name](){
+              gint val;
+              g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
+              return val;
+            },
+            gprop_name,
+            std::string(description),
+            Selection(std::move(items), g_value_get_enum(&value)),
+            items.size() - 1);
+      } else if (G_IS_PARAM_SPEC_FLAGS(pspec)) {
+        g_warning("warning: param spec flags not handled");
+      } else if (G_IS_PARAM_SPEC_OBJECT(pspec)) {
+        g_warning("warning: param spec object not handled");
+      } else if (G_IS_PARAM_SPEC_BOXED(pspec)) {
+        g_warning("warning: param spec boxed not handled");
+      } else if (G_IS_PARAM_SPEC_POINTER(pspec)) {
+        g_warning("warning: param spec pointer not handled");
+      } else if (GST_IS_PARAM_SPEC_FRACTION(pspec)) {
+        GstParamSpecFraction *pfraction = GST_PARAM_SPEC_FRACTION(pspec);
+        res = std2::make_unique<Property2<Fraction>>(
+            is_writable ?
+            [gobj, gprop_name](const Fraction &val){
+              GValue fract = G_VALUE_INIT;  On_scope_exit{g_value_reset(&fract);};
+              g_value_init (&fract, GST_TYPE_FRACTION);
+              gst_value_set_fraction (&fract, val.numerator(), val.denominator());
+              g_object_set_property(gobj, gprop_name.c_str(), &fract);
+              return true;
+            } : static_cast<prop::set_t<Fraction>>(nullptr),
+            [gobj, gprop_name](){
+              GValue fract = G_VALUE_INIT; On_scope_exit{g_value_reset(&fract);};
+              g_object_get_property(gobj, gprop_name.c_str(), &fract);
+              // if (!GST_VALUE_HOLDS_FRACTION(&fract))
+              //   return Fraction(0, 0);
+              return Fraction(gst_value_get_fraction_numerator (&fract),
+                              gst_value_get_fraction_denominator (&fract));
+            },
+            gprop_name,
+            std::string(description),
+            Fraction(gst_value_get_fraction_numerator(&value),
+                     gst_value_get_fraction_denominator (&value)),
+            pfraction->min_num,
+            pfraction->min_den,
+            pfraction->max_num,
+            pfraction->max_den);
+      } else {
+        g_warning("warning: gobject unknown type not handled");
+      }
+      break;
+  }
+  g_value_reset(&value);
+
+  // FIXME register to prop and notify notification
+  return res;
+}
+
+}  // namespace GPropToProp
+}  // namespace switcher

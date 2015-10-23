@@ -22,6 +22,7 @@
 #include "switcher/std2.hpp"
 #include "switcher/shmdata-utils.hpp"
 #include "switcher/scope-exit.hpp"
+#include "switcher/gprop-to-prop.hpp"
 #include "./video-test-source.hpp"
 
 namespace switcher {
@@ -36,7 +37,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 VideoTestSource::VideoTestSource(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper>()),
     gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)){
   init_startable(this);
 }
@@ -46,7 +46,6 @@ bool VideoTestSource::init() {
     return false;
   shmpath_ = make_file_name("video");
   codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
-                                             custom_props_.get(),
                                              shmpath_);
   g_object_set(G_OBJECT(videotestsrc_.get_raw()), "is-live", TRUE, nullptr);
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
@@ -54,8 +53,8 @@ bool VideoTestSource::init() {
                    shmdatasink_.get_raw(), videotestsrc_.get_raw(),
                    nullptr);
   gst_element_link(videotestsrc_.get_raw(), shmdatasink_.get_raw());
-  install_property(G_OBJECT(videotestsrc_.get_raw()),
-                   "pattern", "pattern", "Video Pattern");
+  pmanage<MPtr(&PContainer::push)>(
+      "pattern", GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
   return true;
 }
 
@@ -72,15 +71,16 @@ bool VideoTestSource::start() {
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
         this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
-                         data::Tree::make(std::to_string(byte_rate)));
+                         InfoTree::make(std::to_string(byte_rate)));
       });
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()),
                "async-handling", TRUE,
                nullptr);
   gst_pipeline_->play(true);
   codecs_->start();
-  reinstall_property(G_OBJECT(videotestsrc_.get_raw()),
-                     "pattern", "pattern", "Video Pattern");
+  pmanage<MPtr(&PContainer::replace)>(
+      pmanage<MPtr(&PContainer::get_id)>("pattern"),
+      GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
   return true;
 }
 
@@ -99,8 +99,9 @@ bool VideoTestSource::stop() {
                    nullptr);
   gst_element_link(videotestsrc_.get_raw(), shmdatasink_.get_raw());
   codecs_->stop();
-  reinstall_property(G_OBJECT(videotestsrc_.get_raw()),
-                     "pattern", "pattern", "Video Pattern");
+  pmanage<MPtr(&PContainer::replace)>(pmanage<MPtr(&PContainer::get_id)>("pattern"),
+                                      GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()),
+                                                           "pattern"));
   return true;
 }
 

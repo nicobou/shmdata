@@ -24,7 +24,6 @@
 #include <mutex>
 #include <chrono>
 #include "switcher/quiddity.hpp"
-#include "switcher/custom-property-helper.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
@@ -43,12 +42,9 @@ class ShmdataToOsc:public Quiddity, public StartableQuiddity {
   ShmdataConnector shmcntr_;
   // shmdata follower
   std::unique_ptr<ShmdataFollower> shm_{nullptr};
-  // custom props
-  CustomPropertyHelper::ptr custom_props_;
+  // props
   gint port_{1056};
   std::string host_{"localhost"};
-  GParamSpec *port_spec_{nullptr};
-  GParamSpec *host_spec_{nullptr};
   lo_address address_{nullptr};
   std::mutex address_mutex_{};
 
@@ -58,15 +54,9 @@ class ShmdataToOsc:public Quiddity, public StartableQuiddity {
   bool connect(const std::string &shmdata_path);
   bool disconnect();
   bool can_sink_caps(const std::string &caps);
-  void on_shmreader_data(void *data,
-                         size_t data_size);
-  static void set_port(const gint value, void *user_data);
-  static gint get_port(void *user_data);
-  static void set_host(const gchar *value, void *user_data);
-  static const gchar *get_host(void *user_data);
+  void on_shmreader_data(void *data, size_t data_size);
 };
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToOsc);
-
 }  // namespace switcher
 #endif

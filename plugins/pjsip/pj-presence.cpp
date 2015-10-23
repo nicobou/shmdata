@@ -19,21 +19,13 @@
 #include <list>
 #include "switcher/scope-exit.hpp"
 #include "switcher/information-tree-basic-serializer.hpp"
+#include "switcher/selection.hpp"
 #include "./pj-presence.hpp"
 #include "./pj-sip.hpp"
 
 namespace switcher {
-GEnumValue PJPresence::status_enum_[5] = {
-  {PJPresence::AVAILABLE, "Available", "AVAILABLE"},
-  {PJPresence::BUSY, "Busy", "BUSY"},
-  {PJPresence::AWAY, "Away", "AWAY"},
-  {PJPresence::OFFLINE, "Offline", "OFFLINE"},
-  {0, nullptr, nullptr}
-};
-
 PJPresence::PJPresence(PJSIP *sip_instance):
-    sip_instance_(sip_instance),
-    status_(PJPresence::OFFLINE) {
+    sip_instance_(sip_instance){
   // registering account
   sip_instance_->
       install_method("Register SIP Account",  // long name
@@ -128,50 +120,46 @@ PJPresence::PJPresence(PJSIP *sip_instance):
     //                                                      nullptr),
     //                    this);
     // online status
-    status_enum_spec_ =
-        sip_instance_->custom_props_->
-        make_enum_property("status",
-                           "Possible Status",
-                           status_,
-                           status_enum_,
-                           (GParamFlags)
-                           G_PARAM_READWRITE,
-                           PJPresence::set_status,
-                           PJPresence::get_status,
-                           this);
-    sip_instance_->
-        install_property_by_pspec(sip_instance_->custom_props_->
-                                  get_gobject(),
-                                  status_enum_spec_,
-                                  "status",
-                                  "Online Status");
-    custom_status_spec_ = sip_instance_->custom_props_->
-        make_string_property("status-note",
-                             "Custom status note",
-                             "",
-                             (GParamFlags)G_PARAM_READWRITE,
-                             PJPresence::set_note,
-                             PJPresence::get_note,
-                             this);
-    sip_instance_->
-        install_property_by_pspec(sip_instance_->custom_props_->get_gobject(),
-                                  custom_status_spec_,
-                                  "status-note",
-                                  "Custom status note");
-    sip_reg_status_spec_ = sip_instance_->custom_props_->
-        make_boolean_property("sip-registration",
-                              "Self SIP registration status",
-                              FALSE,
-                              (GParamFlags)G_PARAM_READABLE,
-                             nullptr,
-                             PJPresence::get_sip_registration_status,
-                             this);
-    sip_instance_->
-        install_property_by_pspec(sip_instance_->custom_props_->get_gobject(),
-                                  sip_reg_status_spec_,
-                                  "sip-registration",
-                                  "Self SIP registration status");
-    sip_instance_->graft_tree(".self.", data::Tree::make(nullptr));
+
+    sip_instance_->pmanage<MPtr(&PContainer::make_selection)>(
+        "status",
+        [this](const size_t &val){
+          if (-1 == account_id_) {
+            g_warning("cannot set online status when not registered");
+            return false;
+          }
+          status_.select(val);
+          sip_instance_->run_command_sync([this](){
+              change_online_status(status_.get());
+            });
+          return true;
+        },
+        [this](){return status_.get();},
+        "Online Status",
+        "Online Status",
+        status_);
+
+    sip_instance->pmanage<MPtr(&PContainer::make_string)>(
+        "status-note",
+        [this](const std::string &val){
+          custom_status_ = val;
+          sip_instance_->run_command_sync([this](){
+              change_online_status(status_.get());});
+          return true;
+        },
+        [this](){return custom_status_;},
+        "Custom status note",
+        "Custom status note",
+        custom_status_);
+
+    sip_instance->pmanage<MPtr(&PContainer::make_bool)>(
+        "sip-registration",
+        nullptr,
+        [this](){return registered_;},
+        "Registered",
+        "Self SIP registration status",
+        registered_);
+    sip_instance_->graft_tree(".self.", InfoTree::make(nullptr));
 }
 
 PJPresence::~PJPresence() {
@@ -255,9 +243,9 @@ PJPresence::register_account(const std::string &sip_user,
   registration_cond_.wait(lock);
   change_online_status(PJPresence::AVAILABLE);
   // notifying sip registration status
-  sip_instance_->graft_tree(".self.", data::Tree::make(sip_user));
-  GObjectWrapper::notify_property_changed(sip_instance_->custom_props_->get_gobject(),
-                                          sip_reg_status_spec_);
+  sip_instance_->graft_tree(".self.", InfoTree::make(sip_user));
+  sip_instance_->pmanage<MPtr(&PContainer::notify)>(
+      sip_instance_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
   sip_local_user_ = std::string("sip:") + sip_user +
       + ":" + std::to_string(sip_instance_->sip_port_);
 
@@ -299,10 +287,9 @@ void PJPresence::unregister_account() {
   account_id_ = -1;
   sip_local_user_.clear();
   registered_ = false;
-  sip_instance_->graft_tree(".self.", data::Tree::make(nullptr));
-  GObjectWrapper::notify_property_changed(sip_instance_->custom_props_->
-                                          get_gobject(),
-                                          sip_reg_status_spec_);
+  sip_instance_->graft_tree(".self.", InfoTree::make(nullptr));
+  sip_instance_->pmanage<MPtr(&PContainer::notify)>(
+      sip_instance_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
   return;
 }
 
@@ -340,13 +327,13 @@ void PJPresence::add_buddy(const std::string &sip_user) {
   buddy_id_[sip_user] = buddy_id;
   sip_instance_->
       graft_tree(".buddies." + std::to_string(buddy_id) + ".uri",
-                 data::Tree::make(sip_user));
+                 InfoTree::make(sip_user));
   sip_instance_->
       graft_tree(".buddies." + std::to_string(buddy_id) + ".send_status",
-                 data::Tree::make("disconnected"));
+                 InfoTree::make("disconnected"));
   sip_instance_->
       graft_tree(".buddies." + std::to_string(buddy_id) + ".recv_status",
-                 data::Tree::make("disconnected"));
+                 InfoTree::make("disconnected"));
   return;
 }
 
@@ -410,7 +397,7 @@ void PJPresence::name_buddy(std::string name, std::string sip_user) {
   }
   sip_instance_->
       graft_tree(".buddies." + std::to_string(it->second) + ".name",
-                 data::Tree::make(std::string(name)));
+                 InfoTree::make(std::string(name)));
   return;
 }
 
@@ -449,9 +436,8 @@ PJPresence::on_registration_state(pjsua_acc_id acc_id,
     else
       context->registered_ = false;
   }
-  GObjectWrapper::notify_property_changed(context->sip_instance_->custom_props_->
-                                          get_gobject(),
-                                          context->sip_reg_status_spec_);
+  context->sip_instance_->pmanage<MPtr(&PContainer::notify)>(
+      context->sip_instance_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
   g_debug("registration SIP status code %d\n", info->cbparam->code);
   context->registration_cond_.notify_one();
 }
@@ -485,7 +471,7 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   //         static_cast<int>(info.rpid.note.slen),
   //         info.rpid.note.ptr);
   // std::string buddy_url(info.uri.ptr, (size_t) info.uri.slen);
-  // tree->graft(".sip_url", data::Tree::make(buddy_url));
+  // tree->graft(".sip_url", InfoTree::make(buddy_url));
   std::string status("unknown");
   switch (info.status) {
     case PJSUA_BUDDY_STATUS_UNKNOWN:
@@ -504,46 +490,21 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
     status = "busy";
   
-  data::Tree::ptr tree = context->sip_instance_->
+  InfoTree::ptr tree = context->sip_instance_->
       prune_tree(std::string(".buddies." + std::to_string(buddy_id)),
                  false);  // do not signal since the tree will be updated
   if (!tree)
-    tree = data::Tree::make();
+    tree = InfoTree::make();
   // writing status and state
-  tree->graft(".status", data::Tree::make(status));
+  tree->graft(".status", InfoTree::make(status));
   tree->graft(".status_text",
-              data::Tree::make(std::string(info.status_text.ptr,
+              InfoTree::make(std::string(info.status_text.ptr,
                                           (size_t) info.status_text.slen)));
   tree->graft(".subscription_state",
-              data::Tree::make(std::string(info.sub_state_name)));
+              InfoTree::make(std::string(info.sub_state_name)));
   // replacing old one
   context->sip_instance_->
       graft_tree(std::string(".buddies." + std::to_string(buddy_id)), tree);
-}
-
-void PJPresence::set_status(const gint value, void *user_data) {
-  PJPresence *context = static_cast<PJPresence *>(user_data);
-  if (value < 0 || value >= OPT_MAX) {
-    g_warning("invalid online status code");
-    return;
-  }
-  if (-1 == context->account_id_) {
-    g_warning("cannot set online status when not registered");
-    return;
-  }
-  context->status_ = value;
-  context->sip_instance_->
-      run_command_sync(std::bind(&PJPresence::change_online_status,
-                                 context,
-                                 context->status_));
-  GObjectWrapper::notify_property_changed(context->sip_instance_->custom_props_->
-                                          get_gobject(),
-                                          context->status_enum_spec_);
-}
-
-gint PJPresence::get_status(void *user_data) {
-  PJPresence *context = static_cast<PJPresence *>(user_data);
-  return context->status_;
 }
 
 void PJPresence::change_online_status(gint status) {
@@ -595,24 +556,6 @@ void PJPresence::change_online_status(gint status) {
       break;
   }
   pjsua_acc_set_online_status2(account_id_, online_status, &elem);
-}
-
-void PJPresence::set_note(const gchar *custom_status, void *user_data) {
-  PJPresence *context = static_cast<PJPresence *>(user_data);
-  if (0 == context->custom_status_.compare(custom_status))
-    return;
-  context->custom_status_ = custom_status;
-  context->sip_instance_->run_command_sync(std::bind
-                                           (&PJPresence::change_online_status,
-                                            context,
-                                            context->status_));
-  context->sip_instance_->custom_props_->
-      notify_property_changed(context->custom_status_spec_);
-}
-
-const gchar *PJPresence::get_note(void *user_data) {
-  PJPresence *context = static_cast<PJPresence *>(user_data);
-  return context->custom_status_.c_str();
 }
 
 /*
@@ -671,21 +614,14 @@ PJPresence::on_buddy_evsub_state(pjsua_buddy_id /*buddy_id*/,
 //                                           void *user_data) {
 //   PJPresence *context = static_cast<PJPresence *>(user_data);
 //   // HERE
-//   // auto serialize_buddies = [&] (data::Tree::ptrc tree) {
-//   //   data::Tree::ptr buds = tree->get("buddy");
-//   //   return data::BasicSerializer::serialize(bud);
+//   // auto serialize_buddies = [&] (InfoTree::ptrc tree) {
+//   //   InfoTree::ptr buds = tree->get("buddy");
+//   //   return BasicSerializer::serialize(bud);
 //   // };
 //   context->sip_instance_->
-//       invoke_info_tree<std::string>(data::BasicSerializer::serialize); 
+//       invoke_info_tree<std::string>(BasicSerializer::serialize); 
 //   return TRUE;
 // }
-
-gboolean PJPresence::get_sip_registration_status(void *user_data) {
-  PJPresence *context = static_cast<PJPresence *>(user_data);
-  if (!context->registered_)
-    return FALSE;
-  return TRUE;
-}
 
 pjsua_buddy_id PJPresence::get_id_from_buddy_name(const std::string &name) {
   auto bud = std::find_if(

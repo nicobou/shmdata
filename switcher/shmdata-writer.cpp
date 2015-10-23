@@ -35,7 +35,7 @@ ShmdataWriter::ShmdataWriter(Quiddity *quid,
           std2::make_unique<PeriodicTask>([this](){
               this->update_quid_byte_rate();
             }, std::chrono::milliseconds(1000))
-          : nullptr) {
+          : nullptr){
   if (shm_ && nullptr != quid_)
     quid_->graft_tree(".shmdata.writer." + shmpath_,
                       ShmdataUtils::make_tree(data_type_,
@@ -49,15 +49,18 @@ ShmdataWriter::~ShmdataWriter(){
 }
 
 void ShmdataWriter::bytes_written(size_t size){
-  std::unique_lock<std::mutex>(bytes_mutex_);
+  std::unique_lock<std::mutex> lock(bytes_mutex_);
   bytes_written_ += size;
 }
 
 void ShmdataWriter::update_quid_byte_rate(){
-  std::unique_lock<std::mutex>(bytes_mutex_);
+  decltype(bytes_written_) bytes;
+  {  std::unique_lock<std::mutex> lock(bytes_mutex_);
+    bytes = bytes_written_;
+    bytes_written_ = 0;
+  }
   quid_->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
-                    data::Tree::make(std::to_string(bytes_written_)));
-  bytes_written_ = 0;
+                    InfoTree::make(std::to_string(bytes)));
 }
 
 }  // namespace switcher

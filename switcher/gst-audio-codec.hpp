@@ -23,7 +23,6 @@
 #include <vector>
 #include <unordered_set>
 #include "switcher/unique-gst-element.hpp"
-#include "switcher/custom-property-helper.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/shmdata-utils.hpp"
@@ -34,11 +33,10 @@ class quiddity;
 class GstAudioCodec {
  public:
   GstAudioCodec(Quiddity *quid,
-                CustomPropertyHelper *prop_helper,
                 const std::string &shmpath_to_encode,
                 const std::string &shmpath_encoded = {});
   GstAudioCodec() = delete;
-  ~GstAudioCodec();
+  ~GstAudioCodec() = default;
   GstAudioCodec(const GstAudioCodec &) = delete;
   GstAudioCodec &operator=(const GstAudioCodec &) = delete;
 
@@ -64,16 +62,13 @@ class GstAudioCodec {
   std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
   std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
   // codec props
-  GParamSpec *primary_codec_spec_{nullptr};
-  GEnumValue primary_codec_[128]{};
-  GParamSpec *secondary_codec_spec_{nullptr};
-  GEnumValue secondary_codec_[128]{};
-  gint codec_{0};
+  Selection primary_codec_;
+  Selection secondary_codec_;
+  PContainer::prop_id_t codec_id_;
   // short or long codec list
-  GParamSpec *codec_long_list_spec_{nullptr};
   bool codec_long_list_{false};
+  PContainer::prop_id_t codec_long_list_id_;
   std::vector<std::string> codec_properties_{};
-  CustomPropertyHelper *prop_helper_;
   // codec params black list
   std::unordered_set<std::string> param_black_list_{"name", "parent",
         "hard-resync", "mark-granule", "perfect-timestamp", "tolerance"};
@@ -86,10 +81,7 @@ class GstAudioCodec {
   void make_bin();
   void show();
   void hide();
-  static void set_codec(const gint value, void *user_data);
-  static gint get_codec(void *user_data);
-  static gboolean get_codec_long_list(void *user_data);
-  static void set_codec_long_list(gboolean mute, void *user_data);
+  PContainer::prop_id_t install_codec(bool primary);  // install secondary if false
   static gboolean sink_factory_filter(GstPluginFeature *feature,
                                       gpointer data);
   static gint sink_compare_ranks(GstPluginFeature *f1,

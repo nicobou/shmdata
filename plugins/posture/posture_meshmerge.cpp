@@ -21,7 +21,6 @@
 #include <iostream>
 
 using namespace std;
-using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
@@ -36,7 +35,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Emmanuel Durand");
 
 PostureMeshMerge::PostureMeshMerge(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()),
     shmcntr_(static_cast<Quiddity*>(this)) {
 }
 
@@ -80,52 +78,38 @@ PostureMeshMerge::init() {
                                   [this](const std::string caps){return can_sink_caps(caps);},
                                   8);
 
-  calibration_path_prop_ =
-      custom_props_->make_string_property("calibration_path",
-                                          "Path to the calibration file",
-                                          calibration_path_.c_str(),
-                                          (GParamFlags) G_PARAM_READWRITE,
-                                          PostureMeshMerge::set_calibration_path,
-                                          PostureMeshMerge::get_calibration_path,
-                                          this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            calibration_path_prop_, "calibration_path",
-                            "Path to the calibration file");
+  pmanage<MPtr(&PContainer::make_string)>(
+      "calibration_path",
+      [this](const std::string &val){calibration_path_ = val; return true;},
+      [this](){return calibration_path_;},
+      "Calibration path",
+      "Path to the calibration file",
+      calibration_path_);
 
-  devices_path_prop_ = custom_props_->make_string_property("devices_path",
-                                                           "Path to the devices description file",
-                                                           devices_path_.c_str
-                                                           (), (GParamFlags)
-                                                           G_PARAM_READWRITE,
-                                                           PostureMeshMerge::set_devices_path,
-                                                           PostureMeshMerge::get_devices_path,
-                                                           this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            devices_path_prop_, "devices",
-                            "Path to the devices description file");
+  pmanage<MPtr(&PContainer::make_string)>(
+      "devices_path",
+      [this](const std::string &val){devices_path_ = val; return true;},
+      [this](){return devices_path_;},
+      "Devices path",
+      "Path to the devices description file",
+      devices_path_);
 
-  reload_calibration_prop_ = custom_props_->make_boolean_property("reload_calibration",
-                                "Reload calibration at each frame",
-                                reload_calibration_,
-                                (GParamFlags) G_PARAM_READWRITE,
-                                PostureMeshMerge::set_reload_calibration,
-                                PostureMeshMerge::get_reload_calibration,
-                                this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            reload_calibration_prop_, "reload_calibration",
-                            "Reload calibration at each frame");
+  pmanage<MPtr(&PContainer::make_bool)>(
+      "reload_calibration",
+      [this](const bool &val){reload_calibration_ = val; return true;},
+      [this](){return reload_calibration_;},
+      "Per frame calibration",
+      "Reload calibration at each frame",
+      reload_calibration_);
 
-  apply_calibration_prop_ = custom_props_->make_boolean_property("apply_calibration",
-                                "Apply loaded calibration to meshes",
-                                apply_calibration_,
-                                (GParamFlags) G_PARAM_READWRITE,
-                                PostureMeshMerge::set_apply_calibration,
-                                PostureMeshMerge::get_apply_calibration,
-                                this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            apply_calibration_prop_, "apply_calibration",
-                            "Apply loaded calibration to meshes");
-
+  pmanage<MPtr(&PContainer::make_bool)>(
+      "apply_calibration",
+      [this](const bool &val){apply_calibration_ = val; return true;},
+      [this](){return apply_calibration_;},
+      "Apply calibration",
+      "Apply loaded calibration to meshes",
+      apply_calibration_);
+  
   return true;
 }
 
@@ -168,7 +152,8 @@ PostureMeshMerge::connect(std::string shmdata_socket_path) {
 
       if (mesh.size() != 0)
       {
-        if (mesh_writer_ == nullptr || mesh.size() > mesh_writer_->writer(&shmdata::Writer::alloc_size)) {
+        if (mesh_writer_ == nullptr
+            || mesh.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
           auto data_type = string(POLYGONMESH_TYPE_BASE);
           mesh_writer_.reset();
           mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
@@ -177,7 +162,8 @@ PostureMeshMerge::connect(std::string shmdata_socket_path) {
                                                           data_type);
         }
 
-        mesh_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(mesh.data()), mesh.size());
+        mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+            const_cast<unsigned char*>(mesh.data()), mesh.size());
         mesh_writer_->bytes_written(mesh.size());
       }
 
@@ -202,56 +188,6 @@ bool
 PostureMeshMerge::disconnect_all() {
   source_id_ = 0;
   return true;
-}
-
-const gchar *
-PostureMeshMerge::get_calibration_path(void *user_data) {
-  PostureMeshMerge *ctx = (PostureMeshMerge *) user_data;
-  return ctx->calibration_path_.c_str();
-}
-
-void
-PostureMeshMerge::set_calibration_path(const gchar *name, void *user_data) {
-  PostureMeshMerge *ctx = (PostureMeshMerge *) user_data;
-  if (name != nullptr)
-    ctx->calibration_path_ = name;
-}
-
-const gchar *
-PostureMeshMerge::get_devices_path(void *user_data) {
-  PostureMeshMerge *ctx = (PostureMeshMerge *) user_data;
-  return ctx->devices_path_.c_str();
-}
-
-void
-PostureMeshMerge::set_devices_path(const gchar *name, void *user_data) {
-  PostureMeshMerge *ctx = (PostureMeshMerge *) user_data;
-  if (name != nullptr)
-    ctx->devices_path_ = name;
-}
-
-int
-PostureMeshMerge::get_reload_calibration(void *user_data) {
-  PostureMeshMerge *ctx = (PostureMeshMerge *) user_data;
-  return ctx->reload_calibration_;
-}
-
-void
-PostureMeshMerge::set_reload_calibration(const int reload, void *user_data) {
-  PostureMeshMerge *ctx = (PostureMeshMerge *) user_data;
-  ctx->reload_calibration_ = reload;
-}
-
-int
-PostureMeshMerge::get_apply_calibration(void *user_data) {
-  PostureMeshMerge *ctx = (PostureMeshMerge *) user_data;
-  return ctx->apply_calibration_;
-}
-
-void
-PostureMeshMerge::set_apply_calibration(const int apply, void *user_data) {
-  PostureMeshMerge *ctx = (PostureMeshMerge *) user_data;
-  ctx->apply_calibration_ = apply;
 }
 
 bool

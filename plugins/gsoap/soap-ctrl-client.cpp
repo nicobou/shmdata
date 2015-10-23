@@ -31,8 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "GPL",
     "Nicolas Bouillot");
 
-SoapCtrlClient::SoapCtrlClient(const std::string &) :
-    custom_props_(new CustomPropertyHelper()){
+SoapCtrlClient::SoapCtrlClient(const std::string &){
 }
 
 bool
@@ -41,23 +40,15 @@ SoapCtrlClient::init()
   switcher_control_ = new controlProxy(SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);
   switcher_control_->send_timeout = 1;  // 1 seconds
   switcher_control_->recv_timeout = 1;  // 1 seconds
-  url_ = nullptr;
-  switcher_control_->soap_endpoint = url_;
+  switcher_control_->soap_endpoint = url_.c_str();
 
-  url_prop_ =
-      custom_props_->make_string_property("url",
-                                          "remote server url",
-                                          "",
-                                          (GParamFlags)G_PARAM_READABLE,
-                                          nullptr,
-                                          SoapCtrlClient::get_url,
-                                          this);
-
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            url_prop_,
-                            "url",
-                            "Remote URL");
-  
+  pmanage<MPtr(&PContainer::make_string)>(
+      "url",
+      nullptr,
+      [this](){return url_;},
+      "Remote server URL",
+      "Remote server URL",
+      url_);
   install_method("Set Remote Switcher",
                  "set_remote_url",
                  "set remote url to control (for instance http://localhost:8080)",
@@ -264,8 +255,6 @@ void
 SoapCtrlClient::reset_endpoint()
 {
   std::unique_lock<std::mutex> lock(try_connect_mutex_);
-  if (url_ != nullptr)
-    g_free(url_);
   if (nullptr != try_connect_g_source_ && !g_source_is_destroyed(try_connect_g_source_))
   {
     g_source_destroy(try_connect_g_source_);
@@ -279,8 +268,8 @@ SoapCtrlClient::set_remote_url(gpointer url,
 {
   SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
   context->reset_endpoint();
-  context->url_ = g_strdup((char *)url);
-  context->switcher_control_->soap_endpoint = context->url_;
+  context->url_ = std::string((const char *)url);
+  context->switcher_control_->soap_endpoint = context->url_.c_str();
 
   std::vector<std::string> resultlist;
   context->switcher_control_->get_quiddity_names(&resultlist);
@@ -288,8 +277,6 @@ SoapCtrlClient::set_remote_url(gpointer url,
   if (context->switcher_control_->error)
   {
     g_warning("SoapCtrlClient::set_remote_url, url not valid or not responding");
-    g_free(context->url_);
-    context->url_ = nullptr;
     return FALSE;
   }
   return TRUE;
@@ -301,8 +288,8 @@ SoapCtrlClient::set_remote_url_retry(gpointer url,
 {
   SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
   context->reset_endpoint();
-  context->url_ = g_strdup((char *)url);
-  context->switcher_control_->soap_endpoint = context->url_;
+  context->url_ = std::string((const char *)url);
+  context->switcher_control_->soap_endpoint = context->url_.c_str();
   if (TRUE == context->try_connect(context))
   {
     context->try_connect_g_source_ =
@@ -318,8 +305,6 @@ gboolean
 SoapCtrlClient::try_connect(gpointer user_data)
 {
   SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
-  if (context->url_ == nullptr)
-    return FALSE;
 
   std::unique_lock<std::mutex> lock(context->try_connect_mutex_);
 
@@ -329,11 +314,11 @@ SoapCtrlClient::try_connect(gpointer user_data)
   if (context->switcher_control_->error)
   {
     g_debug("SoapCtrlClient::try_connect (%s) failled, will retry",
-            context->url_);
-    context->signal_emit("on-connection-tried", context->url_, FALSE);
+            context->url_.c_str());
+    context->signal_emit("on-connection-tried", context->url_.c_str(), FALSE);
     return TRUE;
   }
-  context->signal_emit("on-connection-tried", context->url_, TRUE);
+  context->signal_emit("on-connection-tried", context->url_.c_str(), TRUE);
   return FALSE;
 }
 
@@ -343,9 +328,6 @@ SoapCtrlClient::create(gpointer class_name,
                        gpointer user_data)
 {
   SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
-  if (context->url_ == nullptr){
-    return FALSE;
-  }
   std::string name;
   context->switcher_control_->create_named_quiddity((const char *)class_name,
                                                     (const char *)quiddity_name,
@@ -363,8 +345,6 @@ SoapCtrlClient::remove(gpointer quiddity_name,
                        gpointer user_data)
 {
   SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
-  if (context->url_ == nullptr)
-    return FALSE;
   context->switcher_control_->delete_quiddity((gchar *)quiddity_name);
   if (context->switcher_control_->error)
     return FALSE;
@@ -379,8 +359,6 @@ SoapCtrlClient::set_property(gpointer quiddity_name,
                              gpointer user_data)
 {
   SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
-  if (context->url_ == nullptr)
-    return FALSE;
   context->switcher_control_->send_set_property((gchar *)quiddity_name,
                                                 (gchar *)property_name,
                                                 (gchar *)value);
@@ -400,9 +378,6 @@ SoapCtrlClient::invoke1(gpointer quiddity_name,
                         gpointer user_data)
 {
   SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
-  if (context->url_ == nullptr)
-    return FALSE;
-
   std::vector<std::string> args;
   args.push_back((char *) arg1);
   std::string result;
@@ -421,9 +396,6 @@ SoapCtrlClient::invoke2(gpointer quiddity_name,
                         gpointer user_data)
 {
   SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
-  if (context->url_ == nullptr)
-    return FALSE;
-
   std::vector<std::string> args;
   args.push_back((char *) arg1);
   args.push_back((char *) arg2);
@@ -444,9 +416,6 @@ SoapCtrlClient::invoke3(gpointer quiddity_name,
                         gpointer user_data)
 {
   SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
-  if (context->url_ == nullptr)
-    return FALSE;
-
   std::vector<std::string> args;
   args.push_back((char *) arg1);
   args.push_back((char *) arg2);
@@ -469,9 +438,6 @@ SoapCtrlClient::invoke4(gpointer quiddity_name,
                         gpointer user_data)
 {
   SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
-  if (context->url_ == nullptr)
-    return FALSE;
-
   std::vector<std::string> args;
   args.push_back((char *) arg1);
   args.push_back((char *) arg2);
@@ -485,9 +451,4 @@ SoapCtrlClient::invoke4(gpointer quiddity_name,
   return TRUE;
 }
 
-const gchar *SoapCtrlClient::get_url(void *user_data) {
-  SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
-  return context->url_;
-}
-
-}
+}  // namespace switcher

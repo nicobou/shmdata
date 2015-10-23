@@ -15,25 +15,41 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "./information-tree-json.hpp"
-#include "./scope-exit.hpp"
 #include <json-glib/json-glib.h>
 #include <iostream>
+#include "./information-tree-json.hpp"
+#include "./scope-exit.hpp"
+#include "./any.hpp"
 
 namespace switcher {
-namespace data {
 namespace JSONSerializer {
 void
 on_visiting_node(std::string key,
-                 Tree::ptrc node,
+                 InfoTree::ptrc node,
                  bool is_array_element,
                  JsonBuilder *builder) {
-  key = data::Tree::unescape_dots(key);
+  key = InfoTree::unescape_dots(key);
   if (!is_array_element)  // discarding here to get it as a member called "name"
     json_builder_set_member_name(builder, key.c_str());
   if (node->is_leaf()){
     if (!node->read_data().is_null()) {
-      json_builder_add_string_value(builder, Any::to_string(node->read_data()).c_str());
+      switch (node->read_data().get_category()) {
+        case AnyCategory::BOOL:
+          json_builder_add_boolean_value(builder, node->read_data().copy_as<bool>());
+          break;
+        case AnyCategory::INTEGRAL:
+          json_builder_add_int_value(builder, node->read_data().copy_as<gint64>());
+          break;
+        case AnyCategory::FLOATING_POINT:
+          json_builder_add_double_value(builder, node->read_data().copy_as<gdouble>());
+          break;
+        case AnyCategory::OTHER:
+          json_builder_add_string_value(builder, Any::to_string(node->read_data()).c_str());
+          break;
+        case AnyCategory::NONE:
+          json_builder_add_null_value(builder);
+          break;
+      }
     } else {
       if(node->is_array()) {
         json_builder_begin_array(builder);
@@ -49,7 +65,7 @@ on_visiting_node(std::string key,
     } else {
       json_builder_begin_object(builder);
       if (is_array_element) {
-        json_builder_set_member_name(builder, "name");
+        json_builder_set_member_name(builder, "id");
         json_builder_add_string_value(builder, key.c_str());
       }
       const Any value = node->read_data();
@@ -63,7 +79,7 @@ on_visiting_node(std::string key,
 
 void
 on_node_visited(std::string,
-                Tree::ptrc node,
+                InfoTree::ptrc node,
                 bool /*is_array_element*/, 
 		JsonBuilder *builder) {
   if (node->is_array()) {
@@ -75,7 +91,7 @@ on_node_visited(std::string,
     json_builder_end_object(builder);
 }
 
-std::string serialize(Tree::ptrc tree) {
+std::string serialize(InfoTree::ptrc tree) {
   JsonBuilder *json_builder = json_builder_new();
   On_scope_exit {
     g_object_unref(json_builder);
@@ -83,8 +99,12 @@ std::string serialize(Tree::ptrc tree) {
   if (tree->is_leaf()){
     return std::string("\"" + Any::to_string(tree->read_data()) + "\"");
   }
-  json_builder_begin_object(json_builder);
-  Tree::preorder_tree_walk(tree,
+  bool is_array = tree->is_array();
+  if (!is_array)
+    json_builder_begin_object(json_builder);
+  else
+    json_builder_begin_array(json_builder);
+  InfoTree::preorder_tree_walk(tree,
                            std::bind(JSONSerializer::on_visiting_node,
                                      std::placeholders::_1,
                                      std::placeholders::_2,
@@ -94,7 +114,10 @@ std::string serialize(Tree::ptrc tree) {
                                      std::placeholders::_1,
                                      std::placeholders::_2,
                                      std::placeholders::_3, json_builder));
-  json_builder_end_object(json_builder);
+  if (!is_array)
+    json_builder_end_object(json_builder);
+  else
+    json_builder_end_array(json_builder);
   JsonNode *node = json_builder_get_root(json_builder);
   On_scope_exit {json_node_free(node);};
   if (nullptr == node)
@@ -110,7 +133,7 @@ std::string serialize(Tree::ptrc tree) {
   return result;
 }
 
-// Tree::ptr
+// InfoTree::ptr
 // deserialize (std::string &serialized)
 // {
 //   // JsonParser *parser = json_parser_new ();
@@ -123,10 +146,9 @@ std::string serialize(Tree::ptrc tree) {
 //   //   g_warning ("%s",error->message);
 //   //   g_object_unref(parser);
 //   //   g_error_free (error);
-//   //   return Tree::ptr ();
+//   //   return InfoTree::ptr ();
 //   // }
 //   return tree;
 // }
 }  // namespace JSONSerializer
-}  // namespace data
 }  // namespace switcher

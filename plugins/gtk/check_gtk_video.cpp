@@ -17,12 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/quiddity-manager.hpp"
-#include "switcher/quiddity-basic-test.hpp"
 #include <vector>
 #include <string>
 #include <iostream>
-#include <unistd.h>             // sleep
+#include <unistd.h>  // sleep
+#include "switcher/quiddity-manager.hpp"
+#include "switcher/quiddity-basic-test.hpp"
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
@@ -52,7 +52,7 @@ main() {
     if (manager->create("videotestsrc", "vid").compare("vid") != 0)
       return 1;
 
-    if (!manager->set_property("vid", "started", "true"))
+    if (!manager->use_prop<MPtr(&switcher::PContainer::set_str_str)>("vid", "started", "true"))
       return 1;
 
     // usleep (1000000);

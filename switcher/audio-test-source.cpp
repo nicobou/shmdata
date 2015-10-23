@@ -23,6 +23,7 @@
 #include "./audio-test-source.hpp"
 #include "./std2.hpp"
 #include "./information-tree-basic-serializer.hpp"
+#include "./gprop-to-prop.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
@@ -48,9 +49,12 @@ bool AudioTestSource::init() {
                "socket-path", shmpath_.c_str(),
                nullptr);
   // registering
-  install_property(G_OBJECT(audiotestsrc_.get_raw()), "volume", "volume", "Volume");
-  install_property(G_OBJECT(audiotestsrc_.get_raw()), "freq", "freq", "Frequency");
-  install_property(G_OBJECT(audiotestsrc_.get_raw()), "wave", "wave", "Signal Form");
+  pmanage<MPtr(&PContainer::push)>(
+      "volume", GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "volume"));
+  pmanage<MPtr(&PContainer::push)>(
+      "freq", GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "freq"));
+  pmanage<MPtr(&PContainer::push)>(
+      "wave", GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "wave"));
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    audiotestsrc_.get_raw(),
                    shmdatasink_.get_raw(),
@@ -78,7 +82,7 @@ bool AudioTestSource::start() {
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
         this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
-                         data::Tree::make(byte_rate));
+                         InfoTree::make(byte_rate));
       });
   gst_pipeline_->play(true);
   return true;

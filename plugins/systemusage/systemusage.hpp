@@ -23,7 +23,6 @@
 #include <memory>
 #include "switcher/quiddity.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/custom-property-helper.hpp"
 #include "switcher/periodic-task.hpp"
 
 namespace switcher {
@@ -62,10 +61,8 @@ class SystemUsage: public Quiddity {
   SystemUsage &operator=(const SystemUsage &) = delete;
 
  private:
-  CustomPropertyHelper::ptr custom_props_;
-  GParamSpec *period_prop_{nullptr};
-  data::Tree::ptr tree_;
-  double period_;
+  InfoTree::ptr tree_;
+  float period_;
   std::map<std::string, Cpu> _cpus{};
   std::map<std::string, Net> _net{};
   std::unique_ptr<PeriodicTask> pollStateTask_;
@@ -73,11 +70,8 @@ class SystemUsage: public Quiddity {
   bool init() final;
   bool init_tree();
   void pollState();
-  static void setRefreshPeriod(double period, void *user_data);
-  static double getRefreshPeriod(void *user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(SystemUsage);
-
 }  // namespace switcher
 #endif

@@ -33,12 +33,20 @@ namespace switcher {
 std::map<std::pair<std::string, std::string>, guint> Quiddity::signals_ids_{};
 
 Quiddity::Quiddity():
-    information_tree_(data::Tree::make()),
-    properties_description_(std::make_shared<JSONBuilder>()),
+    information_tree_(InfoTree::make()),
+    props_(information_tree_,
+           [this](PContainer::prop_id_t prop, PContainer::pstate_t state){
+             std::string pname = props_.get_name(prop);
+             if (PContainer::REMOVED == state ||  PContainer::DISABLED == state)
+               signal_emit("on-property-removed", pname.c_str(), nullptr);
+             else if (PContainer::ADDED == state ||  PContainer::ENABLED == state)
+               signal_emit("on-property-added", pname.c_str(), nullptr);
+             else if (PContainer::REPLACED == state)
+               signal_emit("on-property-reinstalled", pname.c_str(), nullptr); 
+           }),
     methods_description_(std::make_shared<JSONBuilder>()),
     signals_description_(std::make_shared<JSONBuilder>()),
     gobject_(std::make_shared<GObjectWrapper>()) {
-  gobject_->property_set_default_user_data(this);
   GType arg_type[] = { G_TYPE_STRING };
   install_signal_with_class_name("Quiddity",
                                  "On New Property",
@@ -135,9 +143,6 @@ Quiddity::Quiddity():
                                  arg_type);
 }
 
-Quiddity::~Quiddity() {
-}
-
 const std::string &Quiddity::get_name() const {
   return name_;
 }
@@ -148,27 +153,6 @@ bool Quiddity::set_name(const std::string &name) {
   name_ = name;
   return true;
 }
-
-// bool
-// Quiddity::register_signal_gobject(const std::string &signal_name,
-//                                   GObject *object,
-//                                   const std::string &gobject_signal_name) {
-//   if (signals_.find(signal_name) != signals_.end()) {
-//     g_warning
-//         ("signals: a signal named %s has already been registered for this class",
-//          signal_name.c_str());
-//     return false;
-//   }
-
-//   Signal::ptr signal;
-//   signal.reset(new Signal());
-//   if (!signal->set_gobject_signame(object, gobject_signal_name))
-//     return false;
-//   signals_[signal_name] = signal;
-//   g_debug("signal %s registered with name %s",
-//           gobject_signal_name.c_str(), signal_name.c_str());
-//   return true;
-// }
 
 bool
 Quiddity::install_signal(const std::string &long_name,
@@ -267,114 +251,6 @@ Quiddity::set_signal_description(const std::string &long_name,
   //  (JSONBuilder::get_string (signals_[signal_name]->get_json_root_node (), true)).c_str ());
   return true;
 }
-
-bool
-Quiddity::register_property(GObject *object,
-                            GParamSpec *pspec,
-                            const std::string &name_to_give,
-                            const std::string &long_name,
-                            const std::string &signal_to_emit) {
-  auto it = properties_.find(name_to_give);
-  if (properties_.end() != it) {
-    g_debug("registering name %s already exists", name_to_give.c_str());
-    return false;
-  }
-  Property::ptr prop(new Property());
-  prop->set_gobject_pspec(object, pspec);
-  prop->set_long_name(long_name);
-  prop->set_name(name_to_give);
-  prop->set_position_weight(position_weight_counter_);
-  position_weight_counter_ += 20;
-
-  properties_[name_to_give] = prop;
-  signal_emit(signal_to_emit.c_str(), name_to_give.c_str(), nullptr);
-  return true;
-}
-
-bool
-Quiddity::install_property_by_pspec(GObject *object,
-                                    GParamSpec *pspec,
-                                    const std::string &name_to_give,
-                                    const std::string &long_name) {
-  return register_property(object,
-                           pspec,
-                           name_to_give, long_name, "on-property-added");
-}
-
-Property::ptr Quiddity::get_property_ptr(const std::string &property_name) {
-  auto it = properties_.find(property_name);
-  if (properties_.end() != it)
-    return it->second;
-  g_debug("Quiddity::get_property_ptr %s not found", property_name.c_str());
-  Property::ptr result;
-  return result;
-}
-
-bool Quiddity::uninstall_property(const std::string &property_name) {
-  auto it = properties_.find(property_name);
-  if (properties_.end() == it)
-    return false;
-  properties_.erase(it);
-  signal_emit("on-property-removed", property_name.c_str(), nullptr);
-  return true;
-}
-
-bool Quiddity::enable_property(const std::string &property_name) {
-  auto it = disabled_properties_.find(property_name);
-  if (disabled_properties_.end() == it)
-    return false;
-  properties_[property_name] = it->second;
-  disabled_properties_.erase(it);
-  signal_emit("on-property-added", property_name.c_str(), nullptr);
-  return true;
-}
-
-bool Quiddity::disable_property(const std::string &property_name) {
-  auto it = properties_.find(property_name);
-  if (properties_.end() == it)
-    return false;
-  disabled_properties_[property_name] = it->second;
-  properties_.erase(it);
-  signal_emit("on-property-removed", property_name.c_str(), nullptr);
-  return true;
-}
-
-bool
-Quiddity::install_property(GObject *object,
-                           const std::string &gobject_property_name,
-                           const std::string &name_to_give,
-                           const std::string &long_name) {
-  GParamSpec *pspec =
-      g_object_class_find_property(G_OBJECT_GET_CLASS(object),
-                                   gobject_property_name.c_str());
-  if (pspec == nullptr) {
-    g_debug("property not found %s", gobject_property_name.c_str());
-    return false;
-  }
-
-  return install_property_by_pspec(object, pspec, name_to_give, long_name);
-}
-
-bool
-Quiddity::reinstall_property(GObject *object,
-                             const std::string &gobject_property_name,
-                             const std::string &name, const std::string &long_name) {
-  auto it = properties_.find(name);
-  if (properties_.end() == it)
-    return false;
-  properties_.erase(it);
-
-  GParamSpec *pspec =
-      g_object_class_find_property(G_OBJECT_GET_CLASS(object),
-                                   gobject_property_name.c_str());
-  if (pspec == nullptr) {
-    g_debug("property not found %s", gobject_property_name.c_str());
-    return false;
-  }
-  return register_property(object, pspec, name, long_name,
-                           "on-property-reinstalled");
-}
-
 bool Quiddity::has_method(const std::string &method_name) {
   return (methods_.end() != methods_.find(method_name));
 }
@@ -478,73 +354,20 @@ std::string Quiddity::get_method_description(const std::string &method_name) {
   return it->second->get_description();
 }
 
-std::string Quiddity::get_properties_description() {
-  properties_description_->reset();
-  properties_description_->begin_object();
-  properties_description_->set_member_name("properties");
-  properties_description_->begin_array();
-  std::vector<Property::ptr> properties;
-  for (auto &it : properties_)
-    properties.push_back(it.second);
-  std::sort(properties.begin(),
-            properties.end(), Categorizable::compare_ptr);
-  for (auto &it : properties)
-    properties_description_->add_node_value(it->get_json_root_node());
-  properties_description_->end_array();
-  properties_description_->end_object();
+// FIXME remove the following
+// std::string Quiddity::get_properties_description() {
+//   InfoTree::ptr tree = information_tree_->get(".property");
+//   if (tree)
+//     return JSONSerializer::serialize(tree.get());
+//   return "null";
+// }
 
-  return properties_description_->get_string(true);
-}
-
-std::string Quiddity::get_property_description(const std::string &property_name) {
-  auto it = properties_.find(property_name);
-  if (properties_.end() == it)
-    return "{ \"error\" : \"property not found\" }";
-  return it->second->get_description();
-}
-
-bool Quiddity::set_property(const std::string &property_name, const std::string &value) {
-  auto it = properties_.find(property_name);
-  if (properties_.end() == it) {
-    g_debug("cannot set non existing property (%s)", property_name.c_str());
-    return false;
-  }
-  it->second->set(value);
-  return true;
-}
-
-bool Quiddity::has_property(const std::string &property_name) {
-  return (properties_.end() != properties_.find(property_name));
-}
-
-std::string Quiddity::get_property(const std::string &property_name) {
-  auto it = properties_.find(property_name);
-  if (properties_.end() == it)
-    return "{ \"error\" : \"property not found\" }";
-  return it->second->get();
-}
-
-bool
-Quiddity::subscribe_property(const std::string &property_name,
-                             Property::Callback cb,
-                             void *user_data) {
-  auto it = properties_.find(property_name);
-  if (properties_.end() == it) {
-    g_debug("property not found (%s)", property_name.c_str());
-    return false;
-  }
-  return it->second->subscribe(cb, user_data);
-}
-
-bool
-Quiddity::unsubscribe_property(const std::string &property_name,
-                               Property::Callback cb,
-                               void *user_data) {
-  auto it = properties_.find(property_name);
-  if (properties_.end() == it)
-    return false;
-  return it->second->unsubscribe(cb, user_data);
-}
+// std::string Quiddity::get_property_description(const std::string &property_name) {
+//   InfoTree::ptr tree = information_tree_->get(".property." + property_name);
+//   if (tree)
+//     return JSONSerializer::serialize(tree.get());
+//   return "null";
+// }
 
 bool
 Quiddity::subscribe_signal(const std::string &signal_name,
@@ -726,15 +549,8 @@ bool Quiddity::disable_method(const std::string &method_name) {
   return true;
 }
 
-std::string Quiddity::get_info(const std::string &path) {
-  data::Tree::ptr tree = information_tree_->get(path);
-  if (tree)
-    return data::JSONSerializer::serialize(tree.get());
-  return "null";
-}
-
 bool Quiddity::graft_tree(const std::string &path,
-                          data::Tree::ptr tree,
+                          InfoTree::ptr tree,
                           bool do_signal) {
   if (!information_tree_->graft(path, tree))
     return false;
@@ -743,8 +559,8 @@ bool Quiddity::graft_tree(const std::string &path,
   return true;
 }
 
-data::Tree::ptr Quiddity::prune_tree(const std::string &path, bool do_signal) {
-  data::Tree::ptr result  = information_tree_->prune(path);
+InfoTree::ptr Quiddity::prune_tree(const std::string &path, bool do_signal) {
+  InfoTree::ptr result  = information_tree_->prune(path);
   if (result) {
     if (do_signal)
       signal_emit("on-tree-pruned", path.c_str(), nullptr);

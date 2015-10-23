@@ -22,6 +22,7 @@
 #include "switcher/gst-utils.hpp"
 #include "switcher/std2.hpp"
 #include "switcher/shmdata-utils.hpp" 
+#include "switcher/gprop-to-prop.hpp"
 #include "./pulsesrc.hpp"
 
 namespace switcher {
@@ -36,8 +37,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 PulseSrc::PulseSrc(const std::string &):
-    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
-    custom_props_(std::make_shared<CustomPropertyHelper>()) {
+    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)) {
 }
 
 bool PulseSrc::init() {
@@ -59,8 +59,10 @@ bool PulseSrc::init() {
     g_debug("not connected to pulse, cannot init");
     return false;
   }
-  install_property(G_OBJECT(pulsesrc_.get_raw()), "volume", "volume", "Volume");
-  install_property(G_OBJECT(pulsesrc_.get_raw()), "mute", "mute", "Mute");
+  volume_id_ =  pmanage<MPtr(&PContainer::push)>(
+      "volume", GPropToProp::to_prop(G_OBJECT(pulsesrc_.get_raw()), "volume"));
+  mute_id_ =  pmanage<MPtr(&PContainer::push)>(
+      "mute", GPropToProp::to_prop(G_OBJECT(pulsesrc_.get_raw()), "mute"));
   return true;
 }
 
@@ -187,20 +189,14 @@ PulseSrc::get_source_info_callback(pa_context *pulse_context,
       pa_operation_unref(operation);
     // registering enum for devices
     context->update_capture_device();
-    context->devices_enum_spec_ =
-        context->custom_props_->make_enum_property("device",
-                                                   "Enumeration of Pulse capture devices",
-                                                   context->device_,
-                                                   context->devices_enum_,
-                                                   (GParamFlags)
-                                                   G_PARAM_READWRITE,
-                                                   PulseSrc::set_device,
-                                                   PulseSrc::get_device,
-                                                   context);
-    context->install_property_by_pspec(context->
-                                       custom_props_->get_gobject(),
-                                       context->devices_enum_spec_,
-                                       "device", "Capture Device");
+
+    context->devices_id_ = context->pmanage<MPtr(&PContainer::make_selection)>(
+        "device",
+        [context](const size_t &val){context->devices_.select(val); return true;},
+        [context](){return context->devices_.get();},
+        "Device",
+        "Audio capture device to use",
+        context->devices_);
     // signal init we are done
     std::unique_lock<std::mutex> lock(context->devices_mutex_);
     context->devices_cond_.notify_all();
@@ -315,22 +311,18 @@ PulseSrc::on_pa_event_callback(pa_context *pulse_context,
 }
 
 void PulseSrc::update_capture_device() {
-  gint i = 0;
-  for (auto &it : capture_devices_) {
-    devices_enum_[i].value = i;
-    // FIXME previous free here
-    devices_enum_[i].value_name = g_strdup(it.description_.c_str());
-    devices_enum_[i].value_nick = g_strdup(it.name_.c_str());
-    i++;
+  std::vector<std::string> names;
+  std::vector<std::string> nicks;
+  for (auto &it : capture_devices_){
+    names.push_back(it.description_);
+    nicks.push_back(it.name_);
   }
-  devices_enum_[i].value = 0;
-  devices_enum_[i].value_name = nullptr;
-  devices_enum_[i].value_nick = nullptr;
+  devices_ = Selection(std::make_pair(names, nicks), 0);
 }
 
 bool PulseSrc::start() {
   g_object_set(G_OBJECT(pulsesrc_.get_raw()),
-               "device", capture_devices_.at(device_).name_.c_str(),
+               "device", capture_devices_.at(devices_.get()).name_.c_str(),
                nullptr);
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsink_.get_raw(),
@@ -342,7 +334,7 @@ bool PulseSrc::start() {
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
         this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
-                         data::Tree::make(byte_rate));
+                         InfoTree::make(byte_rate));
       });
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    pulsesrc_.get_raw(),
@@ -356,25 +348,16 @@ bool PulseSrc::start() {
 bool PulseSrc::stop() {
   shm_sub_.reset(nullptr);
   prune_tree(".shmdata.writer." + shmpath_);
-  uninstall_property("volume");
-  uninstall_property("mute");
+  pmanage<MPtr(&PContainer::remove)>(volume_id_); volume_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(mute_id_); mute_id_ = 0;
   if (!remake_elements())
     return false;
-  install_property(G_OBJECT(pulsesrc_.get_raw()), "volume", "volume", "Volume");
-  install_property(G_OBJECT(pulsesrc_.get_raw()), "mute", "mute", "Mute");
+  volume_id_ =  pmanage<MPtr(&PContainer::push)>(
+      "volume", GPropToProp::to_prop(G_OBJECT(pulsesrc_.get_raw()), "volume"));
+  mute_id_ =  pmanage<MPtr(&PContainer::push)>(
+      "mute", GPropToProp::to_prop(G_OBJECT(pulsesrc_.get_raw()), "mute"));
   gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
   return true;
-}
-
-void PulseSrc::set_device(const gint value, void *user_data) {
-  PulseSrc *context = static_cast<PulseSrc *>(user_data);
-  context->device_ = value;
-  
-}
-
-gint PulseSrc::get_device(void *user_data) {
-  PulseSrc *context = static_cast<PulseSrc *>(user_data);
-  return context->device_;
 }
 
 }  // namespace switcher

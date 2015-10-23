@@ -17,29 +17,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gobject-custom-property.hpp"
+#ifndef __SWITCHER_GPROP_TO_PROP_H__
+#define __SWITCHER_GPROP_TO_PROP_H__
+
+#include <glib.h>
+#include <memory>
+#include "./property2.hpp"
+#include "./std2.hpp"
 
 namespace switcher {
-GObjectCustomProperty::GObjectCustomProperty() {
-}
+namespace GPropToProp{
 
-GObjectCustomProperty::~GObjectCustomProperty() {
-}
+std::unique_ptr<PropertyBase> to_prop(GObject *object, const std::string &gprop_name);
 
-GObjectCustomProperty::ptr
-GObjectCustomProperty::make_custom_property(set_method_pointer
-                                            set_method,
-                                            get_method_pointer
-                                            get_method) {
-  GObjectCustomProperty::ptr custom_prop(new GObjectCustomProperty);
-  custom_prop->set_members(set_method, get_method);
-  return custom_prop;
-}
-
-void
-GObjectCustomProperty::set_members(set_method_pointer set_method,
-                                   get_method_pointer get_method) {
-  set_method_ = set_method;
-  get_method_ = get_method;
-}
-}
+}  // namespace GPropToProp
+}  // namespace switcher
+#endif

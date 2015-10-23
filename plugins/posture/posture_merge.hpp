@@ -33,7 +33,6 @@
 #include "switcher/shmdata-writer.hpp"
 #include "switcher/shmdata-follower.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
 class PostureMerge : public Quiddity, public StartableQuiddity {
@@ -48,7 +47,6 @@ class PostureMerge : public Quiddity, public StartableQuiddity {
   bool stop();
 
  private:
-  CustomPropertyHelper::ptr custom_props_;
   ShmdataConnector shmcntr_;
 
   std::string calibration_path_ {"default.kvc"};
@@ -58,15 +56,7 @@ class PostureMerge : public Quiddity, public StartableQuiddity {
   bool save_cloud_ {false};
   bool downsample_ {false};
   double downsample_resolution_ {0.1};
-
-  GParamSpec *calibration_path_prop_ {nullptr};
-  GParamSpec *devices_path_prop_ {nullptr};
-  GParamSpec *compress_cloud_prop_ {nullptr};
-  GParamSpec *reload_calibration_prop_ {nullptr};
-  GParamSpec *save_cloud_prop_ {nullptr};
-  GParamSpec *downsample_prop_ {nullptr};
-  GParamSpec *downsample_resolution_prop_ {nullptr};
-
+  PContainer::prop_id_t downsample_resolution_id_{0};
   unsigned int source_id_ {0};
   std::shared_ptr<posture::PointCloudMerger> merger_ {nullptr};
   std::mutex mutex_ {};
@@ -82,30 +72,12 @@ class PostureMerge : public Quiddity, public StartableQuiddity {
   std::mutex stock_mutex_ {};
 
   bool init() final;
-
   bool connect(std::string shmdata_socket_path);
   bool disconnect(std::string shmName);
   bool disconnect_all();
   bool can_sink_caps(std::string caps);
-
-  static const gchar *get_calibration_path(void *user_data);
-  static void set_calibration_path(const gchar *name, void *user_data);
-  static const gchar *get_devices_path(void *user_data);
-  static void set_devices_path(const gchar *name, void *user_data);
-  static int get_compress_cloud(void *user_data);
-  static void set_compress_cloud(const int compress, void *user_data);
-  static int get_reload_calibration(void *user_data);
-  static void set_reload_calibration(const int reload, void *user_data);
-  static int get_save_cloud(void *user_data);
-  static void set_save_cloud(const int save, void *user_data);
-
-  static int get_downsample_active(void *user_data);
-  static void set_downsample_active(const int active, void *user_data);
-  static double get_downsampling_resolution(void *user_data);
-  static void set_downsampling_resolution(const double resolution, void *user_data);  
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureMerge);
 }  // namespace switcher
-
 #endif

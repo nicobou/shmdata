@@ -40,7 +40,13 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 
 RtpSession::RtpSession(const std::string &):
     gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
-    custom_props_(new CustomPropertyHelper()) {
+    destinations_json_id_(pmanage<MPtr(&PContainer::make_string)>(
+      "destinations-json",
+      nullptr,
+      [this](){return get_destinations_json();},
+      "Destinations",
+      "json formated description of destinations",
+      "")){
 }
 
 bool RtpSession::init() {
@@ -177,28 +183,16 @@ bool RtpSession::init() {
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
-  destination_description_json_ =
-      custom_props_->make_string_property("destinations-json",
-                                          "json formated description of destinations",
-                                          "", (GParamFlags) G_PARAM_READABLE,
-                                          nullptr,
-                                          RtpSession::get_destinations_json,
-                                          this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            destination_description_json_,
-                            "destinations-json", "Destinations");
-  mtu_at_add_data_stream_spec_ =
-      custom_props_->make_int_property("mtu-at-add-data-stream",
-                                       "MTU that will be set during add_data_stream invokation",
-                                       0, 15000, 1400,
-                                       (GParamFlags) G_PARAM_READWRITE,
-                                       RtpSession::set_mtu_at_add_data_stream,
-                                       RtpSession::get_mtu_at_add_data_stream,
-                                       this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            mtu_at_add_data_stream_spec_,
-                            "mtu-at-add-data-stream",
-                            "MTU At Add Data Stream");
+  
+  pmanage<MPtr(&PContainer::make_int)>(
+      "mtu-at-add-data-stream",
+      [this](const int &val){mtu_at_add_data_stream_ = val; return true;},
+      [this](){return mtu_at_add_data_stream_;},
+      "MTU At Add Data Stream",
+      "MTU that will be set during add_data_stream invokation",
+      1400,
+      1,
+      15000);
   return true;
 }
 
@@ -346,7 +340,7 @@ RtpSession::add_destination(std::string nick_name, std::string host_name)
   dest->set_name(nick_name);
   dest->set_host_name(host_name);
   destinations_[nick_name] = dest;
-  custom_props_->notify_property_changed(destination_description_json_);
+  pmanage<MPtr(&PContainer::notify)>(destinations_json_id_);
   return true;
 }
 
@@ -372,7 +366,7 @@ bool RtpSession::remove_destination(std::string nick_name) {
   for (auto &iter: it->second->get_shmdata())
     remove_udp_stream_to_dest(iter, nick_name);
   destinations_.erase(it);
-  custom_props_->notify_property_changed(destination_description_json_);
+  pmanage<MPtr(&PContainer::notify)>(destinations_json_id_);
   return true;
 }
 
@@ -425,7 +419,7 @@ RtpSession::add_udp_stream_to_dest(std::string shmpath,
                          dest->get_host_name().c_str(),
                          rtp_port + 1,
                          nullptr);
-  custom_props_->notify_property_changed(destination_description_json_);
+  pmanage<MPtr(&PContainer::notify)>(destinations_json_id_);
   return true;
 }
 
@@ -481,7 +475,7 @@ RtpSession::remove_udp_stream_to_dest(std::string shmpath,
                          dest->get_host_name().c_str(),
                          rtp_port + 1,
                          nullptr);
-  custom_props_->notify_property_changed(destination_description_json_);
+  pmanage<MPtr(&PContainer::notify)>(destinations_json_id_);
   return true;
 }
 
@@ -519,7 +513,7 @@ bool RtpSession::add_data_stream(const std::string &shmpath) {
           },
           [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate){
             this->graft_tree(".shmdata.reader." + shmpath + ".byte_rate",
-                             data::Tree::make(std::to_string(byte_rate)));
+                             InfoTree::make(std::to_string(byte_rate)));
           }));
   g_object_set(G_OBJECT(src), "socket-path", shmpath.c_str(), nullptr);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), src);
@@ -672,32 +666,18 @@ void RtpSession::on_no_more_pad(GstElement * /*gstelement */ ,
   // g_debug("on_no_more_pad");
 }
 
-const gchar *RtpSession::get_destinations_json(void *user_data) {
-  RtpSession *context = static_cast<RtpSession *>(user_data);
-
+std::string RtpSession::get_destinations_json() {
   JSONBuilder::ptr destinations_json = std::make_shared<JSONBuilder>();
   destinations_json->reset();
   destinations_json->begin_object();
   destinations_json->set_member_name("destinations");
   destinations_json->begin_array();
-  for (auto &it : context->destinations_)
+  for (auto &it : destinations_)
     destinations_json->add_node_value(it.second->get_json_root_node());
   destinations_json->end_array();
   destinations_json->end_object();
-  context->destinations_json_ = destinations_json->get_string(true);
-return context->destinations_json_.c_str();
-}
-
-void
-RtpSession::set_mtu_at_add_data_stream(const gint value, void *user_data)
-{
-  RtpSession *context = static_cast<RtpSession *>(user_data);
-  context->mtu_at_add_data_stream_ = value;
-}
-
-gint RtpSession::get_mtu_at_add_data_stream(void *user_data) {
-  RtpSession *context = static_cast<RtpSession *>(user_data);
-  return context->mtu_at_add_data_stream_;
+  destinations_json_ = destinations_json->get_string(true);
+  return destinations_json_;
 }
 
 void RtpSession::on_rtp_caps(const std::string &shmdata_path, std::string caps) {
@@ -712,7 +692,7 @@ void RtpSession::on_rtp_caps(const std::string &shmdata_path, std::string caps) 
       + label
       + "\"";
   graft_tree("rtp_caps." + std::move(shmdata_path),
-             data::Tree::make(std::move(caps)));
+             InfoTree::make(std::move(caps)));
   {  // stream ready, unlocking add_data_stream
     std::unique_lock<std::mutex> lock(this->stream_mutex_);
     this->stream_added_ = true;

@@ -37,11 +37,9 @@
 #include <string>
 
 namespace switcher {
-namespace data {
 namespace BasicSerializer {
-std::string serialize(Tree::ptrc);
-Tree::ptr deserialize(const std::string &serialized);
+std::string serialize(InfoTree::ptrc);
+InfoTree::ptr deserialize(const std::string &serialized);
 }  // namespace BasicSerializer
-}  // namespace data
 }  // namespace switcher
 #endif

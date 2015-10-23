@@ -55,13 +55,13 @@ std::string ShmdataUtils::get_category(const std::string &caps){
   return category;
 }
 
-data::Tree::ptr ShmdataUtils::make_tree(const std::string &caps,
+InfoTree::ptr ShmdataUtils::make_tree(const std::string &caps,
                                         const std::string &category,
                                         GstShmdataSubscriber::num_bytes_t num_bytes){
-  data::Tree::ptr tree = data::Tree::make();
-  tree->graft(".caps", data::Tree::make(caps));
-  tree->graft(".category", data::Tree::make(category));
-  tree->graft(".byte_rate", data::Tree::make(num_bytes));
+  InfoTree::ptr tree = InfoTree::make();
+  tree->graft(".caps", InfoTree::make(caps));
+  tree->graft(".category", InfoTree::make(category));
+  tree->graft(".byte_rate", InfoTree::make(num_bytes));
   return tree;
 }
 

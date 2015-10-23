@@ -27,13 +27,11 @@
 #include "./abstract-factory.hpp"
 #include "./quiddity.hpp"
 #include "./json-builder.hpp"
-#include "./quiddity-property-subscriber.hpp"
 #include "./quiddity-signal-subscriber.hpp"
 #include "./plugin-loader.hpp"
 #include "./glibmainloop.hpp"
 
 namespace switcher {
-class QuiddityPropertySubscriber;
 class QuidditySignalSubscriber;
 class QuiddityManager;
 
@@ -85,66 +83,32 @@ class QuiddityManager_Impl
   // information tree
   template<typename R>
   R invoke_info_tree(const std::string &nick_name,
-                     std::function<R(data::Tree::ptrc tree)> fun){
+                     std::function<R(InfoTree::ptrc tree)> fun){
     auto it = quiddities_.find(nick_name);
     if (quiddities_.end() == it)
-      return fun(data::Tree::make ().get());
+      return fun(InfoTree::make ().get());
     return quiddities_[nick_name]->invoke_info_tree<R>(fun);
   }  
-  std::string get_info(const std::string &nick_name,
-                       const std::string &path);
-  
-  Forward_consultable_from_map(std::string,  // map key type
-                               Quiddity,  // map value type
-                               quiddities_,  // the map member 
-                               tree,  // method used by quiddities to access the consultable
-                               use_tree);  // public forwarding method 
+
+  Forward_consultable_from_associative_container(
+      QuiddityManager_Impl,   // self type
+      Quiddity,               // consultable type                                     
+      find_quiddity,          // accessor
+      std::string,            // key type for accessor                                       
+      construct_error_return, // what is suposed to be returned when key has not been found
+      tree,                   // method used by quiddities to access the consultable
+      use_tree);              // public forwarding method                           
                                
   // **** properties
-  // doc (json formatted)
-  std::string get_properties_description(const std::string &quiddity_name);
-  std::string get_property_description(const std::string &quiddity_name,
-                                       const std::string &property_name);
-  // following "by_class" methods provide properties available after creation only
-  std::string get_properties_description_by_class(const std::string &class_name);
-  std::string get_property_description_by_class(const std::string &class_name,
-                                                const std::string &property_name);
-  // set &get
-  bool set_property(const std::string &quiddity_name,
-                    const std::string &property_name, const std::string &property_value);
-  std::string get_property(const std::string &quiddity_name,
-                           const std::string &property_name);
-
-  bool has_property(const std::string &quiddity_name, const std::string &property_name);
-
-  // high level property subscriber
-  bool make_property_subscriber(const std::string &subscriber_name,
-                                QuiddityPropertySubscriber::Callback cb,
-                                void *user_data);
-  bool remove_property_subscriber(const std::string &subscriber_name);
-  bool subscribe_property(const std::string &subscriber_name,
-                          const std::string &quiddity_name,
-                          const std::string &property_name);
-  bool unsubscribe_property(const std::string &subscriber_name,
-                            const std::string &quiddity_name,
-                            const std::string &property_name);
-  // property subscribers info
-  std::vector<std::string> list_property_subscribers() const;
-  std::vector<std::pair<std::string,
-                        std::string>>list_subscribed_properties(const std::string &subscriber_name);
-  std::string list_property_subscribers_json();
-  std::string
-  list_subscribed_properties_json(const std::string &subscriber_name);
-
-  // low level subscribe
-  bool subscribe_property_glib(const std::string &quiddity_name,
-                               const std::string &property_name,
-                               Property::Callback cb,
-                               void *user_data);
-  bool unsubscribe_property_glib(const std::string &quiddity_name,
-                                 const std::string &property_name,
-                                 Property::Callback cb,
-                                 void *user_data);  // the same as called with subscribe
+  Forward_consultable_from_associative_container(
+      QuiddityManager_Impl,   // self type
+      Quiddity,               // consultable type                                     
+      find_quiddity,          // accessor
+      std::string,            // accessor key type                                       
+      construct_error_return, // what is suposed to be returned when key has not been found
+      prop,                   // method used by quiddities to access the consultable
+      props);                 // public forwarding method                           
+  
   // **** methods
   // doc (json formatted)
   std::string get_methods_description(const std::string &quiddity_name);
@@ -184,7 +148,6 @@ class QuiddityManager_Impl
                           const std::string &signal_name);
 
   void mute_signal_subscribers(bool muted);
-  void mute_property_subscribers(bool muted);
 
   std::vector<std::string> list_signal_subscribers() const;
   std::vector<std::pair<std::string, std::string>>
@@ -216,10 +179,7 @@ class QuiddityManager_Impl
   void make_classes_doc();
   void register_classes();
   std::unordered_map<std::string, std::shared_ptr<Quiddity>>quiddities_{};
-  std::unordered_map<std::string,
-                     std::shared_ptr<QuiddityPropertySubscriber>>property_subscribers_{};
-  std::unordered_map<std::string,
-                     std::shared_ptr<QuidditySignalSubscriber>>signal_subscribers_{};
+  std::unordered_map<std::string, std::shared_ptr<QuidditySignalSubscriber>>signal_subscribers_{};
   bool init_quiddity(std::shared_ptr<Quiddity> quiddity);
   void remove_shmdata_sockets();
   JSONBuilder::ptr classes_doc_{};
@@ -231,6 +191,22 @@ class QuiddityManager_Impl
   std::weak_ptr<QuiddityManager_Impl> me_ {};
   QuiddityManager *manager_{nullptr};
   static void release_g_error(GError *error);
+
+  // forwarding accessor and return constructor on error
+  std::pair<bool, Quiddity *> find_quiddity(const std::string &name) const{
+    auto it = quiddities_.find(name);
+    if (quiddities_.end() == it){
+      return std::make_pair(false, nullptr);
+    }
+    return std::make_pair(true, it->second.get());
+  };
+  // construct result to pass when element has not been not found:
+  template<typename ReturnType>
+  ReturnType construct_error_return(const std::string &name) const{
+    g_warning("quiddity %s not found", name.c_str());
+    return ReturnType();
+  }
+
 };
 
 }  // namespace switcher

@@ -34,11 +34,11 @@
 namespace switcher {
 class CounterMap {
  public:
-  unsigned int get_count(const std::string &key);
+  size_t get_count(const std::string &key);
   void reset_counter_map();
 
  private:
-  std::map<std::string, unsigned int> counters_{};
+  std::map<std::string, size_t> counters_{};
   std::mutex mutex_{};
 };
 

@@ -21,7 +21,6 @@
 #include <iostream>
 
 using namespace std;
-using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
@@ -36,7 +35,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Emmanuel Durand");
 
 PostureDisplay::PostureDisplay(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()),
     shmcntr_(static_cast<Quiddity*>(this)) {
 }
 
@@ -113,4 +111,5 @@ PostureDisplay::can_sink_caps(std::string caps) {
       || (caps == POINTCLOUD_TYPE_COMPRESSED)
       || (caps == POLYGONMESH_TYPE_BASE);
 }
+
 }  // namespace switcher

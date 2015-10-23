@@ -42,8 +42,8 @@ void on_tree_grafted(const std::string &/*subscriber_name */ ,
   // std::printf("%s: %s \n", signal_name.c_str(), params[0].c_str());
   GstShmdataSubscriber::num_bytes_t byte_rate =
       //std::string byte_rate =
-      manager->use_tree<Any, const std::string &>(
-          std::string("uri"), &data::Tree::get_data, params[0] + ".byte_rate");
+      manager->use_tree<COPtr(&InfoTree::get_data, InfoTree, Any, const std::string &)>(
+          std::string("uri"), params[0] + ".byte_rate");
   if(0 != byte_rate && std::string::npos != params[0].find("audio")){
     audio_success = true;
     do_continue = false;
@@ -75,12 +75,12 @@ main() {
                        nullptr);
     // audio
     assert("a" == manager->create("audiotestsrc", "a"));
-    manager->set_property("a", "started", "true");
+    manager->use_prop<MPtr(&PContainer::set_str_str)>("a", "started", "true");
     assert("a2" == manager->create("audiotestsrc", "a2"));
-    manager->set_property("a2", "started", "true");
+    manager->use_prop<MPtr(&PContainer::set_str_str)>("a2", "started", "true");
     // // video
     // manager->create("videotestsrc", "v");
-    // manager->set_property("v", "started", "true");
+    // manager->pmanage<&PContainer::set_str_str)>("v", "started", "true");
     // rtp
     assert("rtp" == manager->create("rtpsession", "rtp"));
     manager->invoke_va("rtp",

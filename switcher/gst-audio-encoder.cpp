@@ -33,13 +33,11 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 GstAudioEncoder::GstAudioEncoder(const std::string &):
-    shmcntr_(static_cast<Quiddity *>(this)),
-    custom_props_(std::make_shared<CustomPropertyHelper>()){
+    shmcntr_(static_cast<Quiddity *>(this)){
 }
 
 bool GstAudioEncoder::init() {
   codecs_ = std2::make_unique<GstAudioCodec>(static_cast<Quiddity *>(this),
-                                             custom_props_.get(),
                                              std::string(),
                                              make_file_name("audio-encoded"));
   shmcntr_.install_connect_method(

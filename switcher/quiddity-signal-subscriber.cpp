@@ -49,9 +49,8 @@ void QuidditySignalSubscriber::mute(bool muted) {
   muted_ = muted;
 }
 
-void
-QuidditySignalSubscriber::signal_cb(std::vector<std::string> params,
-                                    gpointer user_data) {
+void QuidditySignalSubscriber::signal_cb(const std::vector<std::string> &params,
+                                         gpointer user_data) {
   SignalData *signal = static_cast<SignalData *>(user_data);
   if (!signal->subscriber->muted_)
     signal->user_callback(signal->name.c_str(),

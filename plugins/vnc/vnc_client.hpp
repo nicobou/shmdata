@@ -32,7 +32,6 @@
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/custom-property-helper.hpp"
 
 #include <rfb/rfbclient.h>
 
@@ -52,16 +51,13 @@ class VncClientSrc:public Quiddity, public StartableQuiddity {
   bool stop();
 
  private:
-  CustomPropertyHelper::ptr custom_props_;
   ShmdataConnector shmcntr_;
-
+  // prop
   std::string vnc_server_address_ {"localhost"};
+  PContainer::prop_id_t vnc_server_address_id_{0};
+  PContainer::prop_id_t capture_truecolor_id_{0};
   bool capture_truecolor_ {true};
   bool previous_truecolor_state_ {true};
-
-  GParamSpec *vnc_server_address_prop_ {nullptr};
-  GParamSpec *capture_truecolor_prop_ {nullptr};
-
   rfbClient *rfb_client_ {nullptr};
   std::vector<unsigned char> framebuffer_ {};
   size_t framebuffer_size_ {0};
@@ -76,16 +72,10 @@ class VncClientSrc:public Quiddity, public StartableQuiddity {
   std::map<std::string, std::unique_ptr<ShmdataFollower>> events_readers_ {};
 
   bool init() final;
-
   bool connect(std::string shmdata_socket_path);
   bool disconnect(std::string shmName);
   bool disconnect_all();
   bool can_sink_caps(std::string caps);
-
-  static const gchar *get_vnc_server_address(void *user_data);
-  static void set_vnc_server_address(const gchar *address, void *user_data);
-  static int get_capture_truecolor(void *user_data);
-  static void set_capture_truecolor(const int truecolor, void *user_data);
 
   static rfbBool resize_vnc(rfbClient *client);
   static void update_vnc(rfbClient *client, int x, int y, int w, int h);
@@ -93,5 +83,4 @@ class VncClientSrc:public Quiddity, public StartableQuiddity {
 
 SWITCHER_DECLARE_PLUGIN(VncClientSrc);
 }  // namespace switcher
-
 #endif

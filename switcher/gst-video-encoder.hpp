@@ -37,7 +37,6 @@ class GstVideoEncoder: public Quiddity {
  private:
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
-  CustomPropertyHelper::ptr custom_props_;
   std::unique_ptr<GstVideoCodec> codecs_{nullptr};
   bool init() final;
   bool on_shmdata_disconnect();

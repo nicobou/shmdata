@@ -43,70 +43,77 @@ std::ostream &operator<<(std::ostream &os, const SerializableWidget &) {
 //---------------- test
 int
 main() {
-  using namespace switcher::data;
+  using namespace switcher;
 
   auto string_compare =
       [](const std::string &first, const std::string &second)
       { return (0 == first.compare(second)); };
 
   {  // node data as std::string
-    Tree::ptr tree = Tree::make(std::string("truc"));
+    InfoTree::ptr tree = InfoTree::make(std::string("truc"));
     assert(tree->is_leaf());
     std::string data = tree->get_data();
     assert(0 == data.compare("truc"));
   }
   {  // node data as const char * (converted to std::string)
-    Tree::ptr tree = Tree::make("test");
+    InfoTree::ptr tree = InfoTree::make("test");
     assert(tree->is_leaf());
   }
   {  // node data as float
-    Tree::ptr tree = Tree::make(1.2f);
+    InfoTree::ptr tree = InfoTree::make(1.2f);
     float val = tree->get_data();
     assert(1.2f == val);
   }
   {  // graft a multiple childs and get them
-    Tree::ptr tree = Tree::make();
-    tree->graft("...child1....child2..", Tree::make(1.2f));
+    InfoTree::ptr tree = InfoTree::make();
+    tree->graft("...child1....child2..", InfoTree::make(1.2f));
     assert(!tree->is_leaf());
-    Tree::ptr child2 = tree->get("..child1.child2");
+    InfoTree::ptr child2 = tree->get("..child1.child2");
     assert(child2);
     assert(child2->is_leaf());
     float data = child2->get_data();
     assert(1.2f == data);
-    Tree::ptr child1 = tree->get(".child1..");
+    InfoTree::ptr child1 = tree->get(".child1..");
     assert(!child1->is_leaf());
     assert(!tree->get("child1.foo"));   // this is not a child
   }
   {  // graft a childs and prune it
-    Tree::ptr tree = Tree::make();
-    tree->graft("child1.child2", Tree::make());
+    InfoTree::ptr tree = InfoTree::make();
+    tree->graft("child1.child2", InfoTree::make());
     assert(!tree->is_leaf());
-    Tree::ptr child1 = tree->prune("child1");
+    InfoTree::ptr child1 = tree->prune("child1");
     assert(child1);
     assert(tree->is_leaf());
     assert(!child1->is_leaf());
     // child2 from the pruned child1
-    Tree::ptr child2 = child1->prune("child2");
+    InfoTree::ptr child2 = child1->prune("child2");
     assert(child2);
     assert(child1->is_leaf());
     assert(child2->is_leaf());
   }
+  {  // absolute prune
+    InfoTree::ptr tree = InfoTree::make();
+    tree->graft("child1.child2", InfoTree::make());
+    InfoTree::ptr child2 = tree->prune("child1.child2");
+    assert(!tree->is_leaf());
+    assert(tree->branch_is_leaf("child1"));
+  }
   {  // is_leaf with path
-    Tree::ptr tree = Tree::make();
-    tree->graft("child1", Tree::make());
-    tree->graft("child1.child2", Tree::make());
-    tree->graft("child1.child2.child3", Tree::make());
+    InfoTree::ptr tree = InfoTree::make();
+    tree->graft("child1", InfoTree::make());
+    tree->graft("child1.child2", InfoTree::make());
+    tree->graft("child1.child2.child3", InfoTree::make());
     assert(tree->branch_is_leaf("child1.child2.child3"));
     assert(!tree->branch_is_leaf("child1.child2"));
     assert(!tree->branch_is_leaf("child1"));
     assert(!tree->branch_is_leaf("foofoo"));
   }
   {  // set/get data with path
-    Tree::ptr tree = Tree::make();
+    InfoTree::ptr tree = InfoTree::make();
     // tree->set_data ("", 1.2f);  // this is not possible
     // float tree_data = tree->get_data (".");  // this is not possible
     // assert (1.2f == tree_data);
-    tree->graft("child1.child2", Tree::make());
+    tree->graft("child1.child2", InfoTree::make());
     assert(tree->set_data("child1.child2", "test"));
     assert(tree->set_data("child1", 1.2f));
     std::string child2_data = tree->get_data("child1.child2");
@@ -115,12 +122,12 @@ main() {
     assert(1.2f == child1_data);
   }
   {  // removing using empty data
-    Tree::ptr tree = Tree::make();
+    InfoTree::ptr tree = InfoTree::make();
     tree->set_data("test");
     assert(tree->has_data());
     tree->set_data(Any());
     assert(!tree->has_data());
-    tree->graft("child1.child2", Tree::make());
+    tree->graft("child1.child2", InfoTree::make());
     assert(tree->set_data("child1.child2", "test"));
     assert(tree->set_data("child1", "test"));
     assert(tree->branch_has_data("child1.child2"));
@@ -145,16 +152,16 @@ main() {
     assert(0 == ss.str().compare("null-test-1.2-not serializable-hello"));
   }
   {  // basic serialization
-    Tree::ptr tree = Tree::make();
-    tree->graft(".child1.child2", Tree::make("switch"));
-    tree->graft(".child1.child3", Tree::make(1.2f));
-    tree->graft(".child1.child2.bla1", Tree::make("wire"));
-    tree->graft(".child1.child2.bla2", Tree::make("hub"));
+    InfoTree::ptr tree = InfoTree::make();
+    tree->graft(".child1.child2", InfoTree::make("switch"));
+    tree->graft(".child1.child3", InfoTree::make(1.2f));
+    tree->graft(".child1.child2.bla1", InfoTree::make("wire"));
+    tree->graft(".child1.child2.bla2", InfoTree::make("hub"));
 
     std::string serialized = BasicSerializer::serialize(tree.get());
     std::cout << serialized << std::endl;
 
-    Tree::ptr tree2 = BasicSerializer::deserialize(serialized);
+    InfoTree::ptr tree2 = BasicSerializer::deserialize(serialized);
     assert(tree2);
     std::string serialized2 = BasicSerializer::serialize(tree2.get());
     std::cout << serialized2 << std::endl;
@@ -163,7 +170,7 @@ main() {
   }
   {
     // JSON serialization with child1.child2 as an array
-    Tree::ptr tree = Tree::make();
+    InfoTree::ptr tree = InfoTree::make();
 
     // if children are grafted to child3, its value
     // will be serialized with "key_value, as follow:
@@ -171,21 +178,21 @@ main() {
     //  "key_value" : "1.2",
     //  "child4" : "float"
     //  }
-    tree->graft(".child1.child3", Tree::make(3.1f));
-    tree->graft(".child1.child3.child4", Tree::make("child4_value"));
+    tree->graft(".child1.child3", InfoTree::make(3.1f));
+    tree->graft(".child1.child3.child4", InfoTree::make("child4_value"));
 
     // if the array is made with a value, it will not be serialized
     // a node trageted as an array should be created like this :
-    // tree->graft (".child1.child2", Tree::make ());
+    // tree->graft (".child1.child2", InfoTree::make ());
     // however, this is accepted:
-    tree->graft(".child1.child2", Tree::make("switch"));
+    tree->graft(".child1.child2", InfoTree::make("switch"));
     //
-    Tree::ptr elem1 = Tree::make();
-    elem1->graft("equipment", Tree::make("door"));
-    elem1->graft("color", Tree::make("red"));
-    Tree::ptr elem2 = Tree::make();
-    elem2->graft("equipment", Tree::make("door"));
-    elem2->graft("color", Tree::make("black"));
+    InfoTree::ptr elem1 = InfoTree::make();
+    elem1->graft("equipment", InfoTree::make("door"));
+    elem1->graft("color", InfoTree::make("red"));
+    InfoTree::ptr elem2 = InfoTree::make();
+    elem2->graft("equipment", InfoTree::make("door"));
+    elem2->graft("color", InfoTree::make("black"));
     tree->graft(".child1.child2.red_door", elem1);
     tree->graft(".child1.child2.black_door", elem2);
     tree->tag_as_array(".child1.child2", true);
@@ -195,14 +202,14 @@ main() {
   }
 
   {  // get childs keys inserting in an existing container
-    Tree::ptr tree = Tree::make();
+    InfoTree::ptr tree = InfoTree::make();
     std::list<std::string> childs {
       "child1", "child2", "child3",
           "child4", "child5", "child6", "child7", "child8", "child9"};
     std::for_each(childs.begin(),
                   childs.end(),
                   [tree] (const std::string &val) {
-                    tree->graft(".root." + val, Tree::make("val"));
+                    tree->graft(".root." + val, InfoTree::make("val"));
                   });
     std::vector<std::string> child_keys;
     auto insert_it =
@@ -219,13 +226,13 @@ main() {
   }
 
   {  // get childs keys in a newly allocated container
-    Tree::ptr tree = Tree::make();
+    InfoTree::ptr tree = InfoTree::make();
     std::list<std::string> childs { "child1", "child2", "child3", "child4",
           "child5", "child6", "child7", "child8", "child9"};
     std::for_each(childs.begin(),
                   childs.end(),
                   [tree] (const std::string &val) {
-                    tree->graft(".root." + val, Tree::make("val"));
+                    tree->graft(".root." + val, InfoTree::make("val"));
                   });
 
     // using a default container
@@ -239,12 +246,12 @@ main() {
   }
 
   {  // copy_leaf_values
-    Tree::ptr tree = Tree::make();
+    InfoTree::ptr tree = InfoTree::make();
     std::list<std::string> original_values {"0", "1", "2"};
     for (auto &it : original_values)
       tree->graft(std::string(".branch.item"+it),
-                              Tree::make(it));
-    tree->graft(".other.branch", Tree::make());  // not into copy_leaf_values
+                              InfoTree::make(it));
+    tree->graft(".other.branch", InfoTree::make());  // not into copy_leaf_values
     tree->tag_as_array("branch.", true);
     // std::string serialized = JSONSerializer::serialize(tree);
     // std::cout << serialized << std::endl;

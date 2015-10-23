@@ -20,7 +20,6 @@
 
 #include <pjsua-lib/pjsua.h>
 #include <glib.h>               // gboolean
-#include <glib-object.h>        // GEnumValue
 
 #include <mutex>
 #include <condition_variable>
@@ -53,14 +52,10 @@ class PJPresence {
   std::mutex registration_mutex_{};
   std::condition_variable registration_cond_{};
   // online status
-  GParamSpec *status_enum_spec_{nullptr};
-  static GEnumValue status_enum_[5];
-  gint status_;
-  GParamSpec *custom_status_spec_{nullptr};
-  std::string custom_status_{};
+  Selection status_{{"Available", "Busy", "Away", "Offline"}, 0};
+  std::string custom_status_{""};
   // sip registration status (read only)
   bool registered_{false};
-  GParamSpec *sip_reg_status_spec_{nullptr};
   // account info
   std::string sip_local_user_{};
   pj_pool_t *acc_info_pool_{nullptr};
@@ -88,13 +83,7 @@ class PJPresence {
   // static gboolean save_buddies_wrapped(gchar *file_name,
   //                                      void *user_data);
   // online status
-  static void set_status(const gint value, void *user_data);
-  static gint get_status(void *user_data);
-  static void set_note(const gchar *cutom_status, void *user_data);
-  static const gchar *get_note(void *user_data);
   void change_online_status(gint status);
-  // SIP registration prop
-  static gboolean get_sip_registration_status(void *user_data);
   // name buddy method
   static gboolean name_buddy_wrapped(gchar *name,
                                      gchar *uri,
