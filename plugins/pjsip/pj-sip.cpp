@@ -68,9 +68,11 @@ bool PJSIP::init() {
   i_m_the_one_ = true;
   this_ = this;
 
-  pmanage<MPtr(&PContainer::make_int)>(
+  pmanage<MPtr(&PContainer::make_unsigned_int)>(
       "port",
-      [this](const int &val){
+      [this](const unsigned int &val){
+        if (val == sip_port_)
+          return true;
         sip_port_ = val;
         run_command_sync([this](){start_tcp_transport();});
         return true;
@@ -79,8 +81,8 @@ bool PJSIP::init() {
       "SIP Port",
       "SIP port used when registering",
       sip_port_,
-      0,
-      65535);
+      0u,
+      65535u);
 
   std::unique_lock<std::mutex> lock(pj_init_mutex_);
   sip_thread_ = std::thread(&PJSIP::sip_handling_thread, this);
