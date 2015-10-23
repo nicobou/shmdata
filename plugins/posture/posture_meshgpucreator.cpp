@@ -100,6 +100,7 @@ namespace switcher {
                 pmanage<MPtr(&PContainer::notify)>(sizeX_id_);
                 pmanage<MPtr(&PContainer::notify)>(sizeY_id_);
                 pmanage<MPtr(&PContainer::notify)>(sizeZ_id_);
+                mesh_creator_->setGridResolution(resolution_);
                 return true;
              },
              [this]() {return size_;},
@@ -114,6 +115,7 @@ namespace switcher {
              [this](double val) {
                 sizeX_ = val;
                 mesh_creator_->setGridSizeX(sizeX_);
+                mesh_creator_->setGridResolution(resolution_);
                 return true;
              },
              [this]() {return sizeX_;},
@@ -128,6 +130,7 @@ namespace switcher {
              [this](double val) {
                 sizeY_ = val;
                 mesh_creator_->setGridSizeY(sizeY_);
+                mesh_creator_->setGridResolution(resolution_);
                 return true;
              },
              [this]() {return sizeY_;},
@@ -142,6 +145,7 @@ namespace switcher {
              [this](double val) {
                 sizeZ_ = val;
                 mesh_creator_->setGridSizeZ(sizeZ_);
+                mesh_creator_->setGridResolution(resolution_);
                 return true;
              },
              [this]() {return sizeZ_;},
@@ -224,31 +228,32 @@ namespace switcher {
       stock_.clear();
     }
     mesh_creator_->setInputDepthMap(index, depth, width, height);
-//    mesh_creator_->getMesh(output_);
+    mesh_creator_->getMesh(output_);
 
-    pcl::PolygonMesh::Ptr Mesh;
-    Mesh = boost::make_shared<pcl::PolygonMesh>();
-    mesh_creator_->getMesh(Mesh);
+//    pcl::PolygonMesh::Ptr Mesh;
+//    Mesh = boost::make_shared<pcl::PolygonMesh>();
 
-//    if (!mesh_writer_ || output_.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>())
-//    {
-//      mesh_writer_.reset();
-//      mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
-//						      make_file_name("mesh"),
-//						      output_.size() * 2,
-//						      string(POLYGONMESH_TYPE_BASE));
-//      if (!mesh_writer_)
-//      {
-//        g_warning("Unable to create mesh callback");
-//        return;
-//      }
-//    }
-//    mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(const_cast<unsigned char*>(output_.data()),
-//							      output_.size());
-//    mesh_writer_->bytes_written(output_.size());
+//    mesh_creator_->getMesh(Mesh);
+
+    if (!mesh_writer_ || output_.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>())
+    {
+      mesh_writer_.reset();
+      mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
+                              make_file_name("mesh"),
+                              output_.size() * 2,
+                              string(POLYGONMESH_TYPE_BASE));
+      if (!mesh_writer_)
+      {
+        g_warning("Unable to create mesh callback");
+        return;
+      }
+    }
+    mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(const_cast<unsigned char*>(output_.data()),
+                                  output_.size());
+    mesh_writer_->bytes_written(output_.size());
 
 //    _disp.setPolygonMesh(output_);
-    _disp.setPolygonMesh(Mesh);
+//    _disp.setPolygonMesh(Mesh);
     mutex_.unlock();
   }
 

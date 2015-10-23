@@ -44,10 +44,10 @@ namespace switcher {
     bool is_started_ {false};
     std::vector<std::unique_ptr<posture::ZCamera>> cameras_ {};
     std::unique_ptr<posture::DepthMapToMesh> mesh_creator_ {nullptr};
-//    std::vector<unsigned char> output_ {};
+    std::vector<unsigned char> output_ {};
     std::mutex mutex_ {};
-//    std::mutex cb_depth_mutex_ {};
-//    std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
+    std::mutex cb_depth_mutex_ {};
+    std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
 
     std::map<int, std::vector<unsigned char>> stock_ {};
     std::mutex stock_mutex_ {};
@@ -57,7 +57,7 @@ namespace switcher {
     void cb_frame_cloud(int index, std::vector<char>& cloud);
     void cb_frame_RGB(int index, std::vector<unsigned char>& rgb, int width, int height);
 
-    posture::Display _disp;
+//    posture::Display _disp;
   };
 
   SWITCHER_DECLARE_PLUGIN(PostureMeshGPUCreator);
