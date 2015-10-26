@@ -6,6 +6,7 @@
 
 //#include <boost/make_shared.hpp>
 #include <pcl/io/obj_io.h>
+#include "switcher/scope-exit.hpp"
 
 using namespace std;
 using namespace posture;
@@ -100,6 +101,7 @@ namespace switcher {
                 pmanage<MPtr(&PContainer::notify)>(sizeX_id_);
                 pmanage<MPtr(&PContainer::notify)>(sizeY_id_);
                 pmanage<MPtr(&PContainer::notify)>(sizeZ_id_);
+                mesh_creator_->setGridResolution(resolution_);
                 return true;
              },
              [this]() {return size_;},
@@ -114,6 +116,7 @@ namespace switcher {
              [this](double val) {
                 sizeX_ = val;
                 mesh_creator_->setGridSizeX(sizeX_);
+                mesh_creator_->setGridResolution(resolution_);
                 return true;
              },
              [this]() {return sizeX_;},
@@ -128,6 +131,7 @@ namespace switcher {
              [this](double val) {
                 sizeY_ = val;
                 mesh_creator_->setGridSizeY(sizeY_);
+                mesh_creator_->setGridResolution(resolution_);
                 return true;
              },
              [this]() {return sizeY_;},
@@ -142,6 +146,7 @@ namespace switcher {
              [this](double val) {
                 sizeZ_ = val;
                 mesh_creator_->setGridSizeZ(sizeZ_);
+                mesh_creator_->setGridResolution(resolution_);
                 return true;
              },
              [this]() {return sizeZ_;},
@@ -160,6 +165,7 @@ namespace switcher {
   PostureMeshGPUCreator::start() {
     std::lock_guard<std::mutex> lock (mutex_);
     cameras_.resize(nbr_cam_);
+    rgb_writers_.resize(nbr_cam_);
     mesh_creator_->setDepthMapNbr(nbr_cam_);
     mesh_creator_->setSaveMesh(save_mesh_);
     mesh_creator_->setCalibrationPath(calibration_path_);
@@ -177,6 +183,15 @@ namespace switcher {
       {
         cb_frame_depth(index, depth, width, height);
       }, nullptr);
+      cameras_[index]->
+      setCallbackRgb([=] (void *,
+                          std::vector<unsigned char>& rgb,
+                          int width,
+                          int height)
+      {
+          cb_frame_RGB (index, rgb, width, height);
+      }, nullptr);
+
       cameras_[index] -> start();
     }
 
@@ -205,57 +220,74 @@ namespace switcher {
 
   void
   PostureMeshGPUCreator::cb_frame_depth(int index, std::vector<unsigned char>& depth, int width, int height) {
-//    std::lock_guard<std::mutex> lock (cb_depth_mutex_);
-
     if (!mutex_.try_lock())
     {
         std::lock_guard<std::mutex> lock (stock_mutex_);
-        stock_[index]=depth;
+        depth_stock_[index]=depth;
         return;
     }
+    On_scope_exit{mutex_.unlock();};
 
-    if (stock_.size() > 0)
+    if (depth_stock_.size() > 0)
     {
       unique_lock<mutex> lock(stock_mutex_);
-      for (auto it = stock_.begin(); it != stock_.end(); ++it)
+      for (auto it = depth_stock_.begin(); it != depth_stock_.end(); ++it)
       {
         mesh_creator_->setInputDepthMap(it->first, it->second, width, height);
       }
-      stock_.clear();
+      depth_stock_.clear();
     }
     mesh_creator_->setInputDepthMap(index, depth, width, height);
-//    mesh_creator_->getMesh(output_);
+    mesh_creator_->getMesh(output_);
 
-    pcl::PolygonMesh::Ptr Mesh;
-    Mesh = boost::make_shared<pcl::PolygonMesh>();
-    mesh_creator_->getMesh(Mesh);
+//    pcl::PolygonMesh::Ptr Mesh;
+//    Mesh = boost::make_shared<pcl::PolygonMesh>();
 
-//    if (!mesh_writer_ || output_.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>())
-//    {
-//      mesh_writer_.reset();
-//      mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
-//						      make_file_name("mesh"),
-//						      output_.size() * 2,
-//						      string(POLYGONMESH_TYPE_BASE));
-//      if (!mesh_writer_)
-//      {
-//        g_warning("Unable to create mesh callback");
-//        return;
-//      }
-//    }
-//    mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(const_cast<unsigned char*>(output_.data()),
-//							      output_.size());
-//    mesh_writer_->bytes_written(output_.size());
+//    mesh_creator_->getMesh(Mesh);
+
+    if (!mesh_writer_ || output_.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>())
+    {
+      mesh_writer_.reset();
+      mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
+                              make_file_name("mesh"),
+                              output_.size() * 2,
+                              string(POLYGONMESH_TYPE_BASE));
+      if (!mesh_writer_)
+      {
+        g_warning("Unable to create mesh callback");
+        return;
+      }
+    }
+    mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(const_cast<unsigned char*>(output_.data()),
+                                  output_.size());
+    mesh_writer_->bytes_written(output_.size());
 
 //    _disp.setPolygonMesh(output_);
-    _disp.setPolygonMesh(Mesh);
-    mutex_.unlock();
+//    _disp.setPolygonMesh(Mesh);
   }
 
   void
   PostureMeshGPUCreator::cb_frame_cloud(int index, std::vector<char>& cloud)  {}
 
   void
-  PostureMeshGPUCreator::cb_frame_RGB(int index, std::vector<unsigned char>& rgb, int width, int height) {}
+  PostureMeshGPUCreator::cb_frame_RGB(int index, std::vector<unsigned char>& rgb, int width, int height) {
+      if (!rgb_writers_[index] || rgb.size() > rgb_writers_[index]->writer<MPtr(&shmdata::Writer::alloc_size)>())
+      {
+        rgb_writers_[index].reset();
+        rgb_writers_[index] = std2::make_unique<ShmdataWriter>(this,
+                                make_file_name("rgb " + to_string(index)),
+                                rgb.size() * 2,
+                                string("video/x-raw,format=(string)RGB,width=(int)" + to_string(width)
+                                       + ",height=(int)" + to_string(height) + ",framerate=30/1"));
+        if (!rgb_writers_[index])
+        {
+          g_warning("Unable to create mesh callback");
+          return;
+        }
+      }
+      rgb_writers_[index]->writer<MPtr(&shmdata::Writer::copy_to_shm)>(rgb.data(),
+                                    rgb.size());
+      rgb_writers_[index]->bytes_written(rgb.size());
+  }
 
 }  // namespace switcher

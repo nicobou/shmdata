@@ -2,14 +2,15 @@ pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
 plugins_LTLIBRARIES = \
 	libposturecolorize.la \
+	libposturecolorizeGL.la \
 	libposturedetect.la \
 	libposturedisplay.la \
 	libposturemerge.la \
 	libposturemeshmerge.la \
-        libposturescan3d.la \
+	libposturescan3d.la \
 	libposturesource.la \
-        libposturesolidify.la \
-        libposturemeshgpucreator.la
+	libposturesolidify.la \
+	libposturemeshgpucreator.la
 
 noinst_HEADERS = \
 	posture.hpp
@@ -42,6 +43,36 @@ libposturecolorize_la_CXXFLAGS = \
 
 noinst_HEADERS += \
 	posture_colorize.hpp \
+	posture_worker.hpp
+
+#libposturecolorizeGL info
+libposturecolorizeGL_la_SOURCES = \
+	posture_colorizeGL.cpp \
+	posture_worker.cpp
+
+libposturecolorizeGL_la_LDFLAGS = \
+	$(GLIB_LIBS) \
+	$(GST_LIBS) \
+	$(GMODULE_LIBS) \
+	$(JSONGLIB_LIBS) \
+	$(POSTURE_LIBS) \
+	$(SHMDATA_LIBS) \
+	-avoid-version \
+	-L$(top_builddir)/switcher/.libs \
+	-lswitcher-@LIBSWITCHER_API_VERSION@
+
+libposturecolorizeGL_la_CXXFLAGS = \
+	$(GLIB_CFLAGS) \
+	$(GMODULE_CFLAGS) \
+	$(GST_CFLAGS) \
+	$(JSONGLIB_CFLAGS) \
+	$(POSTURE_CFLAGS) \
+	$(SHMDATA_CFLAGS) \
+	-I$(top_srcdir) \
+	-DG_LOG_DOMAIN=\"switcher\"
+
+noinst_HEADERS += \
+	posture_colorizeGL.hpp \
 	posture_worker.hpp
 
 #libposturedetect info
