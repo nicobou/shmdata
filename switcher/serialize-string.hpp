@@ -23,6 +23,11 @@
 #include <string>
 #include <utility>
 #include <cctype>  // tolower
+#include <sstream>  // fallback to operator << for serialize
+#include <iostream>
+#include "./is-specialization-of.hpp"
+#include "./templated-sequence.hpp"  // tuple serialization
+#include "./string-utils.hpp"
 
 namespace switcher {
 namespace serialize { 
@@ -86,16 +91,76 @@ template<typename V, typename W = V,
   return std::string();
 }
 
-// others 
+
+// tuple
+void append_targs(std::string *, size_t);
+template<typename F, typename ...U>
+void append_targs(std::string *res, size_t pos, F first, U... args){
+  if (0 == pos)
+    res->append(StringUtils::replace_char(apply<F>(first), ',', "__coma__"));
+  else
+    res->append(std::string(",") + StringUtils::replace_char(apply<F>(first), ',', "__coma__"));
+  append_targs(res, pos + 1, args...);
+}
+template <typename ...U, int ...S>
+void append_tuple_call(std::string *res, const std::tuple<U...> &tup, tseq<S...>){
+  append_targs(res, 0, std::get<S>(tup)...);
+}
+template <typename ...U>
+std::string tuple_to_str(const std::tuple<U...> &tup){
+  std::string res;
+  append_tuple_call(&res,
+                    std::forward<const std::tuple<U...> &>(tup),
+                    typename gens<sizeof...(U)>::type());
+  return res;
+}
+
+template<typename V, typename W = V,
+         typename std::enable_if<
+           is_specialization_of<std::tuple, V>::value
+           >::type* = nullptr>
+    std::string apply(const W &tup){
+  return tuple_to_str(std::forward<const W &>(tup));
+}
+
+
+// others
+/* testing existance of a to_string method */
+template <typename Tested>              
+class has_to_string_method {
+  template <typename C> static char test(        
+      decltype(&C::to_string));
+  template <typename C> static long test(...);            
+ public:                                                  
+  enum { value = sizeof(test<Tested>(nullptr)) == sizeof(char) };
+};                                                              
+
+// if the class has to_string:
 template<typename V, typename W = V,
          typename std::enable_if<
            !std::is_arithmetic<V>::value
            && !std::is_same<V, std::string>::value
+           && !is_specialization_of<std::tuple, V>::value
+           && has_to_string_method<V>::value
            >::type* = nullptr>  
-std::string apply(const W &val){
-  // FIXME static_assert existance of to_string member
+    std::string apply(const W &val){
   return val.to_string();
 }
+
+// no to string method, fall back to << operator
+template<typename V, typename W = V,
+         typename std::enable_if<
+           !std::is_arithmetic<V>::value
+           && !std::is_same<V, std::string>::value
+           && !is_specialization_of<std::tuple, V>::value
+           && !has_to_string_method<V>::value
+           >::type* = nullptr>  
+std::string apply(const W &val){
+  std::stringstream ss;
+  ss << val;
+  return ss.str();
+}
+
 }  // namespace serialize 
 
 namespace deserialize{
@@ -171,16 +236,75 @@ std::pair<bool, W> apply(const std::string &){
   return std::make_pair(false, W());
 } 
 
+
+// tuple
+template<int, typename ...TUP>
+bool append_targs(const std::string &, std::tuple<TUP...> *){ return true; }
+
+// FIXME remove int template parameter and use reference for F and U
+template<int POS, typename ...TUP, typename F, typename ...U>
+bool append_targs(const std::string &res, std::tuple<TUP...> *tup, F /*first*/, U... args){
+  auto coma_pos = res.find(',');
+  auto deserialized = apply<F>(std::string(res, 0, coma_pos));  // FIXME de-escape __coma__
+  if (!deserialized.first)
+    return false;
+  std::get<POS>(*tup) = deserialized.second;
+  //first = deserialized.second;
+  auto next_str = std::string(); 
+  if (std::string::npos != coma_pos)
+    next_str = std::string(res, coma_pos + 1);
+  return append_targs<POS + 1>(std::forward<const std::string &>(next_str),
+                               std::forward<std::tuple<TUP...> *>(tup),
+                               std::forward<U>(args)...);
+}
+
+template <typename ...U, int ...S>
+bool append_tuple_call(const std::string &res, std::tuple<U...> *tup, tseq<S...>){
+  return append_targs<0>(
+      std::forward<const std::string &>(res),
+      std::forward<std::tuple<U...> *>(tup),
+      std::get<S>(*tup)...);
+}
+
+template<typename ...U>
+bool str_to_tuple(const std::string &str_tup, std::tuple<U...> *tup){
+  return append_tuple_call(std::forward<const std::string &>(str_tup),
+                              std::forward<std::tuple<U...> *>(tup),
+                              typename gens<sizeof...(U)>::type());
+}
+
+template<typename V, typename W = V,
+         typename std::enable_if<
+           is_specialization_of<std::tuple, V>::value
+           >::type* = nullptr>
+std::pair<bool, W> apply(const std::string &str_tup){
+  W tup;
+  return std::make_pair(str_to_tuple(std::forward<const std::string &>(str_tup), &tup),
+                        tup);
+} 
+
+// template<typename V, typename W = V,
+//          typename std::enable_if<
+//            is_specialization_of<std::tuple, V>::value
+//            >::type* = nullptr>
+// std::pair<bool, W> apply(const std::string &val){
+//   // FIXME static_assert<>
+//   return str_to_tuple<W>(std::forward<const std::string &>(val));
+// }
+
+
 // other
 template<typename V, typename W = V,
          typename std::enable_if<
            !std::is_arithmetic<V>::value
            && !std::is_same<V, std::string>::value
+           && !is_specialization_of<std::tuple, V>::value
            >::type* = nullptr>  
-std::pair<bool, W> apply(const std::string &val){
+    std::pair<bool, W> apply(const std::string &val){
   // FIXME static_assert<>
   return V::from_string(std::forward<const std::string &>(val));
 }
+
 }  // namespace deserialize
 
 }  // namespace switcher

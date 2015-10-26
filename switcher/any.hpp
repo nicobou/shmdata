@@ -24,8 +24,9 @@
 #include <utility>
 #include <typeinfo>
 #include <string>
-#include <ostream>
+#include <ostream>  // FIXME use serialize-string.hpp instead
 #include <sstream>
+#include "./serialize-string.hpp"
 
 template<class T> using StorageType = typename std::decay<T>::type;
 
@@ -69,9 +70,7 @@ template<typename T> struct AnyValueDerived: AnyValueBase {
   }
   
   std::string to_string() const {
-    std::stringstream ss;
-    ss << value_;
-    return ss.str();
+    return switcher::serialize::apply<T>(value_);
   }
 
 };

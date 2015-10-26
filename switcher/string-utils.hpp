@@ -37,7 +37,7 @@ std::string replace_chars(const std::string &orig,
                           const char replacement);
 
 
-}  // namespace NetUtils
+}  // namespace StringUtils
 }  // namespace switcher
 #endif
 

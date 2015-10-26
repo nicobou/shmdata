@@ -163,13 +163,13 @@ struct _consult_or_fw_method##alternative_member_<                      \
      enum { value = sizeof(test<Tested>(nullptr)) == sizeof(char) };    \
     };                                                                  \
     /*dummy encaspulation method if none has been declared*/            \
-    template<typename EncapsRet = bool,                                 \
+    template<typename EncapsRet = std::nullptr_t,                       \
              typename SelfType = _consult_or_fw_method##self_type,      \
              typename std::                                             \
              enable_if<(!_consult_or_fw_method##_has_encaps_method<     \
                         SelfType>::value)>::type* = nullptr>            \
     inline EncapsRet _consult_or_fw_method##internal_encaps() const {   \
-      return true;                                                      \
+      return nullptr;                                                   \
     }                                                                   \
 
 

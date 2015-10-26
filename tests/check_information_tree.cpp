@@ -148,8 +148,8 @@ main() {
 
     std::stringstream ss;
     ss << n << "-" << a << "-" << b << "-" << w << "-" << sw;
-    // std::cout << ss.str () << std::endl;
-    assert(0 == ss.str().compare("null-test-1.2-not serializable-hello"));
+    //std::cout << ss.str () << std::endl;
+    assert(0 == ss.str().compare("null-test-1.200000-not serializable-hello"));
   }
   {  // basic serialization
     InfoTree::ptr tree = InfoTree::make();
