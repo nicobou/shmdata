@@ -66,6 +66,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     safe-bool-idiom.cpp \
     sdp-utils.cpp \
     selection.cpp \
+    serialize-string.cpp \
     shmdata-connector.cpp \
     shmdata-follower.cpp \
     shmdata-utils.cpp \
@@ -146,6 +147,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     scope-exit.hpp \
     sdp-utils.hpp \
     selection.hpp \
+    serialize-string.hpp \
     shmdata-connector.hpp \
     shmdata-glib-logger.hpp \
     shmdata-follower.hpp \

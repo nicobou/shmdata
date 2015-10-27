@@ -17,29 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_STRING_UTILS_H__
-#define __SWITCHER_STRING_UTILS_H__
-
-#include <string>
-#include <vector>
+#include "./serialize-string.hpp"
 
 namespace switcher {
-namespace StringUtils {
-
-std::string replace_char(const std::string &orig,
-                         const char to_replace,
-                         const std::string &replacement);
-std::string replace_string(const std::string &orig,
-                           const std::string &to_replace,
-                           const std::string &replacement);
-std::string replace_chars(const std::string &orig,
-                          const std::vector<char> &to_replace,
-                          const char replacement);
-
-
-}  // namespace StringUtils
+namespace serialize {
+void append_targs(std::string *, size_t){}
+}  // namespace serialize
 }  // namespace switcher
-#endif
-
-
-

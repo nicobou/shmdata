@@ -27,7 +27,6 @@
 #include "switcher/std2.hpp"
 
 using namespace std;
-using namespace switcher::data;
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
@@ -124,7 +123,7 @@ SyphonSrc::frameCallback(void *context, const char *data, int &width,
     } else
       set = true;
   }
-  ctx->writer_->writer(&shmdata::Writer::copy_to_shm, static_cast<const void *>(data), width *height * 4);
+  ctx->writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(static_cast<const void *>(data), width *height * 4);
   ctx->writer_->bytes_written(width *height * 4);
 }
 

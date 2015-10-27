@@ -326,15 +326,15 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
 ])
           
 dnl check if compiler understands -Weffc++ (if yes, add -Weffc++ to CFLAGS)
-AC_MSG_CHECKING([to see if compiler understands -Weffc++])
-saved_CXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CXXFLAGS -Weffc++ -Wno-error=effc++"
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
-  AC_MSG_RESULT([yes])
-], [
-  CXXFLAGS="$saved_CXXFLAGS"
-  AC_MSG_RESULT([no])
-])
+dnl AC_MSG_CHECKING([to see if compiler understands -Weffc++])
+dnl saved_CXXFLAGS="$CXXFLAGS"
+dnl CXXFLAGS="$CXXFLAGS -Weffc++ -Wno-error=effc++"
+dnl AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+dnl   AC_MSG_RESULT([yes])
+dnl ], [
+dnl   CXXFLAGS="$saved_CXXFLAGS"
+dnl   AC_MSG_RESULT([no])
+dnl ])
 
 dnl check if compiler understands -Werror (if yes, add it to CFLAGS)
 dnl -Wno-error=unused-parameter is required for gsoap generated code compiling

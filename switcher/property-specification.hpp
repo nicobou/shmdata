@@ -33,6 +33,7 @@
 #include "./group.hpp"
 #include "./fraction.hpp"
 #include "./templated-sequence.hpp"
+#include "./is-specialization-of.hpp"
 
 namespace switcher {
 
@@ -50,7 +51,8 @@ class PropertySpecification{
                         const std::string &description,
                         const V &default_value,
                         typename std::enable_if<
-                        !std::is_arithmetic<U>::value 
+                        !std::is_arithmetic<U>::value
+                        && !is_specialization_of<std::tuple, U>::value
                         >::type* = nullptr):
       spec_(InfoTree::make()),
       is_valid_([](const V &){return true;}){
@@ -184,13 +186,16 @@ class PropertySpecification{
   }
 
 
-  template<typename ...TupleParams>
+  template<typename U = T, typename V>
   PropertySpecification(bool is_writable,
                         const std::string &label,
                         const std::string &description,
-                        const std::tuple<TupleParams...> &default_value):
+                        const V &default_value,
+                        typename std::enable_if<
+                        is_specialization_of<std::tuple, U>::value 
+                        >::type* = nullptr):
       spec_(InfoTree::make()),
-      is_valid_([](const std::tuple<TupleParams...> &){return true;}){
+      is_valid_([](const U &){return true;}){
     spec_->graft("label", InfoTree::make(label));
     spec_->graft("description", InfoTree::make(description));
     spec_->graft("type", InfoTree::make("tuple"));
@@ -216,6 +221,33 @@ class PropertySpecification{
   }
 
   bool is_valid(const TT &val) const{return is_valid_(val);}
+
+  // updating current value 
+  template<typename U,
+           typename std::enable_if<
+             !std::is_same<U, Selection>::value
+             && !is_specialization_of<std::tuple, U>::value 
+             >::type* = nullptr>
+      void update_current_value(const U &cur_val){
+    spec_->graft("value", InfoTree::make(cur_val));
+  }
+  
+  template<typename U,
+           typename std::enable_if<
+             std::is_same<U, Selection>::value
+             >::type* = nullptr>
+  void update_current_value(const U &cur_val){
+    spec_->graft("value", InfoTree::make(cur_val.get()));
+  }
+  
+  template<typename U,
+           typename std::enable_if<
+             is_specialization_of<std::tuple, U>::value 
+             >::type* = nullptr>
+  void update_current_value(const U &cur_val){
+    print_tuple(".value.", cur_val);
+    spec_->tag_as_array(".value.", true);
+  }
   
  private:
   InfoTree::ptr spec_;

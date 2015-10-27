@@ -179,27 +179,26 @@ DummyPlugin::DummyPlugin(const std::string &) :
                         "This property is an example for type enum",
                         selection_)),
 // FIXME write serialization-string for std::tuple
-  // tuple_id_( pmanage<MPtr(&PContainer::make_tuple<long long)>( float, std::string>,
-  //         "tuple_",
-  //         [this](const std::tuple<long long, float, std::string> &val){
-  //           tuple_ = val; return true;
-  //         },
-  //         [this](){return tuple_;},
-  //         "Tuple Example",
-  //         "This property is an example for tuple",
-  //         tuple_)
-  // ),
+  tuple_id_(pmanage<MPtr(&PContainer::make_tuple<MyTuple>)>(
+      "tuple_",
+      [this](const MyTuple &val){
+        tuple_ = val; return true;
+      },
+      [this](){return tuple_;},
+      "Tuple Example",
+      "This property is an example for tuple",
+      tuple_)),
   fraction_id_(pmanage<MPtr(&PContainer::make_fraction)>(
-                       "fraction_",
-                       [this](const Fraction &val){
-                         fraction_ = val; return true;
-                       },
-                       [this](){return fraction_;},
-                       "Fraction Example",
-                       "This property is an example for fraction",
-                       fraction_,
-                       -10, 1,  // min num/denom
-                       10, 10)  // max num/denom
+      "fraction_",
+      [this](const Fraction &val){
+        fraction_ = val; return true;
+      },
+      [this](){return fraction_;},
+      "Fraction Example",
+      "This property is an example for fraction",
+      fraction_,
+      -10, 1,  // min num/denom
+      10, 10)  // max num/denom
                ){
   // std::cout << pmanage<MPtr(&PContainer::get<int>)>( int_id_) << std::endl;
   // std::cout << pmanage<MPtr(&PContainer::get<unsigned int>)>( uint_id_) << std::endl;

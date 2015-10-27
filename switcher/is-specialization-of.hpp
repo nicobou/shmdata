@@ -17,29 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_STRING_UTILS_H__
-#define __SWITCHER_STRING_UTILS_H__
+#ifndef __SWITCHER_IS_SPECIALIZATION_OF_H__
+#define __SWITCHER_IS_SPECIALIZATION_OF_H__
 
-#include <string>
-#include <vector>
+#include <type_traits>
 
 namespace switcher {
-namespace StringUtils {
 
-std::string replace_char(const std::string &orig,
-                         const char to_replace,
-                         const std::string &replacement);
-std::string replace_string(const std::string &orig,
-                           const std::string &to_replace,
-                           const std::string &replacement);
-std::string replace_chars(const std::string &orig,
-                          const std::vector<char> &to_replace,
-                          const char replacement);
+template<template<typename...> class Template, typename T>
+struct is_specialization_of : std::false_type {};
 
+template<template<typename...> class Template, typename... Args>
+struct is_specialization_of<Template, Template<Args...>> : std::true_type {};
 
-}  // namespace StringUtils
 }  // namespace switcher
 #endif
-
-
-

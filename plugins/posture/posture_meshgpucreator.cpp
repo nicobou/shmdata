@@ -88,7 +88,7 @@ namespace switcher {
              0.1f);
 
     pmanage<MPtr(&PContainer::make_double)>
-            ("grid size in mm",
+            ("grid size in m",
              [this](double val) {
                 size_ = val;
                 sizeX_ = val;

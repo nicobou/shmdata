@@ -27,6 +27,7 @@
 #include "./property-internal-types.hpp"
 #include "./counter-map.hpp"
 #include "./std2.hpp"
+#include "./is-specialization-of.hpp"
 
 namespace switcher {
 class PContainer{
@@ -388,16 +389,19 @@ class PContainer{
                           Fraction::ator_t max_num,
                           Fraction::ator_t max_denom);
 
-  template<typename ...T>
+  template<typename T>
   prop_id_t make_tuple(const std::string &strid,
-                       std::function<bool(const std::tuple<T...> &)> set,
-                       std::function<std::tuple<T...>()> get,
+                       std::function<bool(const T &)> set,
+                       std::function<T()> get,
                        const std::string &label,
                        const std::string &description,
-                       const std::tuple<T...> &default_value){
-    return make_under_parent<std::tuple<T...>>(
+                       const T &default_value){
+    static_assert(is_specialization_of<std::tuple, T>::value,
+                  "make_tuple requires a std::tuple as template parameter,"
+                  " something else was given");
+    return make_under_parent<T>(
         strid, "", set, get, label, description,
-        std::forward<const std::tuple<T...> &>(default_value));
+        std::forward<const T &>(default_value));
   }
 
   template<typename ...T>
