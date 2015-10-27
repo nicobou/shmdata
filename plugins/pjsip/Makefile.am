@@ -65,8 +65,8 @@ pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h: Makefile
         && cd pjproject-2.2.1 \
         && mkdir -p install_dir \
         && patch -p0 < ../$(srcdir)/more_codecs.patch \
-        && sed -i 's/isblank/MACROIsBlank/' pjlib/include/pj/compat/ctype.h \
-        && sed -i 's/isblank/MACROIsBlank/' pjlib/include/pj/ctype.h \
+        && sed -iold 's/isblank/MACROIsBlank/' pjlib/include/pj/compat/ctype.h \
+        && sed -iold 's/isblank/MACROIsBlank/' pjlib/include/pj/ctype.h \
         && ./configure --prefix `pwd`/install_dir --disable-video  \
            --disable-sound --disable-g711-codec --disable-g7221-codec  \
            --disable-g722-codec --disable-gsm-codec --disable-ilbc-codec \
