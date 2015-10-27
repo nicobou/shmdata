@@ -296,12 +296,14 @@ std::string
 QuiddityManager::
 get_properties_description_by_class(const std::string &class_name) {
   if (! manager_impl_->class_exists(class_name)){
-    g_warning("not description available for class %s (class not found)");
+    g_warning("no description available for class %s (not found)",
+	      class_name.c_str());
     return "null";
   }
   std::string quid_name = manager_impl_->create_without_hook(class_name);
   if (quid_name.empty()){
-    g_warning("not description available for class %s (cannot create instance)");
+    g_warning("no description available for class %s (cannot create instance)",
+	      class_name.c_str());
     return "null";
   }
   On_scope_exit{ manager_impl_->remove_without_hook(quid_name);};
@@ -314,12 +316,14 @@ std::string
 QuiddityManager::get_property_description_by_class(const std::string &class_name,
                                                    const std::string &property_name) {
   if (!manager_impl_->class_exists(class_name)){
-    g_warning("not description available for class %s (class not found)");
+    g_warning("no description available for class %s (class not found)",
+	      class_name.c_str());
     return "null";
   }
   std::string quid_name = manager_impl_->create_without_hook(class_name);
   if (quid_name.empty()){
-    g_warning("not description available for class %s (cannot create instance)");
+    g_warning("no description available for class %s (cannot create instance)",
+	      class_name.c_str());
     return "null";
   }
   On_scope_exit{ manager_impl_->remove_without_hook(quid_name);};
