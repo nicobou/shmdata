@@ -82,19 +82,18 @@ namespace switcher {
              },
              [this]() {return resolution_;},
              "grid resolution",
-             "resolution in mm for the mesh reconstruction",
+             "resolution for the mesh reconstruction in mm",
              resolution_,
-             10.0f,
-             100.0f);
+             0.01f,
+             0.1f);
 
     pmanage<MPtr(&PContainer::make_double)>
-            ("grid size",
+            ("grid size in mm",
              [this](double val) {
                 size_ = val;
                 sizeX_ = val;
                 sizeY_ = val;
                 sizeZ_ = val;
-//                mesh_creator_->setGridSize(size_);
                 mesh_creator_->setGridSizeX(sizeX_);
                 mesh_creator_->setGridSizeY(sizeY_);
                 mesh_creator_->setGridSizeZ(sizeZ_);
@@ -106,7 +105,7 @@ namespace switcher {
              },
              [this]() {return size_;},
              "grid size",
-             "size of the cube for the mesh reconstruction",
+             "size of all dimentions of the cube for the mesh reconstruction in m",
              size_,
              0.0f,
              10.0f);
@@ -121,7 +120,7 @@ namespace switcher {
              },
              [this]() {return sizeX_;},
              "grid size X",
-             "size of the cube for the mesh reconstruction",
+             "size of the X dimention of the parallelepiped for the mesh reconstruction in m",
              sizeX_,
              0.0f,
              10.0f);
@@ -136,7 +135,7 @@ namespace switcher {
              },
              [this]() {return sizeY_;},
              "grid size Y",
-             "size of the cube for the mesh reconstruction",
+             "size of the Y dimention of the parallelepiped for the mesh reconstruction in m",
              sizeY_,
              0.0f,
              10.0f);
@@ -151,7 +150,7 @@ namespace switcher {
              },
              [this]() {return sizeZ_;},
              "grid size Z",
-             "size of the cube for the mesh reconstruction",
+             "size of the Z dimention of the parallelepiped for the mesh reconstruction in m",
              sizeZ_,
              0.0f,
              10.0f);
