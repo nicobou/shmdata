@@ -82,7 +82,7 @@ namespace switcher {
              },
              [this]() {return resolution_;},
              "grid resolution",
-             "resolution for the mesh reconstruction in mm",
+             "resolution for the mesh reconstruction in m",
              resolution_,
              0.01f,
              0.1f);
