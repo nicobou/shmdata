@@ -404,6 +404,39 @@ if test "x${have_osx}" = "xtrue"; then
 fi
 AM_CONDITIONAL(SYPHONBUILD, test "${SYPHONBUILD}" = "enabled")
 
+dnl nvenc
+NVENCBUILD=disabled
+PKG_CHECK_MODULES([CUDA], [cuda-7.5 cudart-7.5],, [
+      PKG_CHECK_MODULES([CUDA], [cuda-7.0 cudart-7.0],, [
+        PKG_CHECK_MODULES([CUDA], [cuda-6.5 cudart-6.5],, [
+          AC_MSG_WARN([Could not find cuda headers/libraries])])])])
+HAVE_CUDA_H=no
+HAVE_CUDART_H=no
+save_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CUDA_CFLAGS $save_CPPFLAGS "
+AC_CHECK_HEADER([cuda.h], [HAVE_CUDA_H=yes],
+    AC_MSG_WARN([Could not find cuda.h]))
+AC_CHECK_HEADER([cuda_runtime_api.h], [HAVE_CUDART_H=yes],
+    AC_MSG_WARN([Could not find cuda_runtime_api.h]))
+CPPFLAGS=$save_CPPFLAGS
+save_LIBS="$LIBS"
+LIBS="$CUDA_LIBS $save_LIBS"
+HAVE_CUDART_LIB="no"
+AC_CHECK_LIB(cudart,cudaGetErrorString,[HAVE_CUDART_LIB="yes"], [
+    AC_MSG_WARN([Could not find cudart library])])
+HAVE_CUDA_LIB="no"
+AC_CHECK_LIB(cuda,cuInit,[HAVE_CUDA_LIB="yes"], [
+    AC_MSG_WARN([Could not find cuda library])])
+LIBS="$save_LIBS"
+
+if test "x$HAVE_CUDA_H" = "xyes" \
+    -a "x$HAVE_CUDART_H" = "xyes" \
+    -a "x$HAVE_CUDA_LIB" = "xyes" \
+    -a "x$HAVE_CUDART_LIB" = "xyes"; then
+  NVENCBUILD="enabled"
+fi
+AM_CONDITIONAL(NVENCBUILD, test "x${NVENCBUILD}" = "xenabled")
+
 dnl =======================================================================
 dnl Finally, create Makefiles in all directories
 dnl =======================================================================
@@ -417,17 +450,18 @@ tests/Makefile
 src/Makefile
 plugins/Makefile
 plugins/example/Makefile
-plugins/systemusage/Makefile
 plugins/gsoap/Makefile
-plugins/osc/Makefile
-plugins/portmidi/Makefile
-plugins/pulse/Makefile
-plugins/v4l2/Makefile
-plugins/syphonsrc/Makefile
-plugins/pjsip/Makefile
 plugins/gtk/Makefile
 plugins/jack/Makefile
+plugins/nvenc/Makefile
+plugins/osc/Makefile
+plugins/pjsip/Makefile
+plugins/portmidi/Makefile
 plugins/posture/Makefile
+plugins/pulse/Makefile
+plugins/syphonsrc/Makefile
+plugins/systemusage/Makefile
+plugins/v4l2/Makefile
 plugins/vnc/Makefile
 nodejs/Makefile
 ])
@@ -443,6 +477,7 @@ AC_OUTPUT
 [echo "Pulse audio                ${PULSEBUILD}"]
 [echo "PortMidi                   ${PORTMIDIBUILD}"]
 [echo "Jack                       ${JACKBUILD}"]
+[echo "nvenc                      ${NVENCBUILD}"]
 [echo "syphon reader              ${SYPHONBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
