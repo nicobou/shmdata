@@ -31,7 +31,24 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Nicolas Bouillot");
 
-NVencPlugin::NVencPlugin(const std::string &){
+NVencPlugin::NVencPlugin(const std::string &){ 
+  auto devices = CudaContext::get_devices();
+  std::vector<std::string> names;
+  for(auto &it: devices){
+    devices_nv_ids_.push_back(it.first);
+    names.push_back(std::string("GPU #")
+                    + std::to_string(it.first)
+                    + " "
+                    + it.second);
+  }
+  devices_ = Selection(std::move(names), 0);
+  pmanage<MPtr(&PContainer::make_selection)>(
+      "gpu",
+      [this](size_t val){devices_.select(val); return true;},
+      [this](){return devices_.get();},
+      "encoder GPU",
+      "Selection of the GPU used for encoding",
+      devices_);
 }
 
 bool NVencPlugin::init() {

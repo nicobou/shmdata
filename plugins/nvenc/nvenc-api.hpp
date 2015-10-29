@@ -33,8 +33,8 @@ class NVencAPI: public SafeBoolIdiom {
   NVencAPI &operator=(const NVencAPI &) = delete;
   NVencAPI &operator=(NVencAPI &&) = delete;
   
+  static NV_ENCODE_API_FUNCTION_LIST api;
  private:
-  static NV_ENCODE_API_FUNCTION_LIST nvenc_api;
   static bool nvenc_api_has_been_set_;
   bool safe_bool_idiom() const {return nvenc_api_has_been_set_;}
 };

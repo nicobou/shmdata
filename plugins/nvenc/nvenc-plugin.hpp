@@ -21,7 +21,9 @@
 #define __SWITCHER_NVENC_PLUGIN_H__
 
 #include <cuda.h>
+#include <memory>
 #include "switcher/quiddity.hpp"
+#include "./nvenc-encode-session.hpp"
 
 namespace switcher {
 class NVencPlugin: public Quiddity {
@@ -33,6 +35,10 @@ class NVencPlugin: public Quiddity {
   NVencPlugin &operator=(const NVencPlugin &) = delete;
 
   bool init() final;
+ private:
+  Selection devices_{{"none"}, 0};
+  std::vector<int> devices_nv_ids_{};
+  std::unique_ptr<NVencES> es_{};
 };
 
 SWITCHER_DECLARE_PLUGIN(NVencPlugin);

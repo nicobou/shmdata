@@ -21,8 +21,10 @@
 #define __SWITCHER_NVENC_ENCODE_SESSION_H__
 
 #include <cstdint>  // uint32_t
-#include <nvEncodeAPI.h>
+#include <array>
+#include <map>
 #include "switcher/safe-bool-idiom.hpp"
+#include "./nvenc-api.hpp"
 #include "./cuda-context.hpp"
 
 namespace switcher {
@@ -36,10 +38,16 @@ class NVencES: public SafeBoolIdiom {
   NVencES &operator=(const NVencES &) = delete;
   NVencES &operator=(NVencES &&) = delete;
 
+  
  private:
+  NVencAPI api_{};
   void *encoder_{nullptr};
   CudaContext cu_ctx_;
+  static constexpr unsigned int num_buf_{48};
+  std::array<NV_ENC_INPUT_PTR, num_buf_> input_bufs_{{}};
+  std::array<NV_ENC_OUTPUT_PTR, num_buf_> output_bufs_{{}};
   bool safe_bool_idiom() const {return nullptr != encoder_;}
+  static bool is_same(GUID g1, GUID g2);
 };
 
 }  // namespace switcher

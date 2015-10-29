@@ -30,7 +30,8 @@ libnvenc_plugin_la_LDFLAGS = \
     -avoid-version \
     -module \
     -L$(top_builddir)/switcher/.libs \
-    -lswitcher-@LIBSWITCHER_API_VERSION@
+    -lswitcher-@LIBSWITCHER_API_VERSION@ \
+    -lnvidia-encode
 
 libnvenc_plugin_la_CXXFLAGS = \
     $(GLIB_CFLAGS) \

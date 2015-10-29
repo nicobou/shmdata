@@ -21,6 +21,9 @@
 #define __SWITCHER_CUDA_CONTEXT_H__
 
 #include <cstdint>  // uint32_t
+#include <vector>
+#include <utility>
+#include <string>
 #include <cuda.h>
 #include "switcher/safe-bool-idiom.hpp"
 
@@ -38,7 +41,8 @@ class CudaContext: public SafeBoolIdiom {
   CudaContext(CudaContext &&) = delete;
   CudaContext &operator=(const CudaContext &) = delete;
   CudaContext &operator=(CudaContext &&) = delete;
-  
+
+  static std::vector<std::pair<int, std::string>> get_devices();
  private:
   CUdevice cuda_dev_{-1};
   CUcontext cuda_ctx_{nullptr};
