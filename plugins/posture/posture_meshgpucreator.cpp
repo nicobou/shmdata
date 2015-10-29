@@ -157,6 +157,10 @@ namespace switcher {
   }
 
   PostureMeshGPUCreator::~PostureMeshGPUCreator() {
+    {
+       std::lock_guard<std::mutex> lock (mutex_);
+       quit_ = true;
+    }
     stop();
   }
 
@@ -226,7 +230,8 @@ namespace switcher {
         return;
     }
     On_scope_exit{mutex_.unlock();};
-
+    if(quit_) 
+      return;
     if (depth_stock_.size() > 0)
     {
       unique_lock<mutex> lock(stock_mutex_);
