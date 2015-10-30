@@ -22,7 +22,8 @@
 
 #include <cstdint>  // uint32_t
 #include <array>
-#include <map>
+#include <vector>
+#include <utility>
 #include "switcher/safe-bool-idiom.hpp"
 #include "./nvenc-api.hpp"
 #include "./cuda-context.hpp"
@@ -38,7 +39,8 @@ class NVencES: public SafeBoolIdiom {
   NVencES &operator=(const NVencES &) = delete;
   NVencES &operator=(NVencES &&) = delete;
 
-  
+  std::vector<std::pair<std::string, GUID>> get_supported_codecs();  
+
  private:
   NVencAPI api_{};
   void *encoder_{nullptr};

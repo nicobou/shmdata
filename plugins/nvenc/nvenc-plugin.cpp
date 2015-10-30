@@ -18,6 +18,7 @@
  */
 
 #include "./nvenc-plugin.hpp"
+#include "switcher/std2.hpp"
 #include "./cuda-context.hpp"
 
 namespace switcher {
@@ -41,10 +42,19 @@ NVencPlugin::NVencPlugin(const std::string &){
                     + " "
                     + it.second);
   }
+  if (names.empty())
+    return;
   devices_ = Selection(std::move(names), 0);
+  update_device();
   pmanage<MPtr(&PContainer::make_selection)>(
       "gpu",
-      [this](size_t val){devices_.select(val); return true;},
+      [this](size_t val){
+        if (devices_.get() == val)
+          return true;
+        devices_.select(val);
+        update_device();
+        return true;
+      },
       [this](){return devices_.get();},
       "encoder GPU",
       "Selection of the GPU used for encoding",
@@ -52,7 +62,35 @@ NVencPlugin::NVencPlugin(const std::string &){
 }
 
 bool NVencPlugin::init() {
-  return true;
+  return static_cast<bool>(*es_.get());
+}
+
+void NVencPlugin::update_device(){
+  es_.reset();
+  es_ = std2::make_unique<NVencES>(devices_nv_ids_[devices_.get()]);
+  //update_codec();
+}
+
+void NVencPlugin::update_codec(){
+  codecs_guids_ = es_->get_supported_codecs();
+  std::vector<std::string> names;
+  for(auto &it: codecs_guids_)
+    names.push_back(it.first);
+  codecs_ = Selection(std::move(names), 0);
+  auto set = [this](size_t val){
+    if (codecs_.get() != val)
+      codecs_.select(val);
+    return true;
+  };
+  auto get = [this](){return codecs_.get();};
+  if (0 == codecs_id_)
+    codecs_id_ = pmanage<MPtr(&PContainer::make_selection)>(
+        "codec", set, get, "Codec", "Codec Selection", codecs_);
+  else
+    pmanage<MPtr(&PContainer::replace)>(
+        codecs_id_,
+        std2::make_unique<Property2<Selection, Selection::index_t>>(
+            set, get, "Codec", "Codec Selection", codecs_, codecs_.size() - 1));
 }
 
 }  // namespace switcher

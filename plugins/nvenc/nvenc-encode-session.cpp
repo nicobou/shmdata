@@ -72,23 +72,29 @@ NVencES::NVencES(uint32_t device_id
   //   it = buf.bitstreamBuffer;
   // }
 
+}
+
+NVencES::~NVencES(){
+  if (safe_bool_idiom() && !(NV_ENC_SUCCESS == NVencAPI::api.nvEncDestroyEncoder(encoder_)))
+    g_warning("BUG! (destroying NV encoder session)");
+}
+
+std::vector<std::pair<std::string, GUID>> NVencES::get_supported_codecs(){
+  std::vector<std::pair<std::string, GUID>> res;
   // supported codecs
   uint32_t i, num = 0;
   GUID guids[16];
   NVencAPI::api.nvEncGetEncodeGUIDs (encoder_, guids, 16, &num);
   for (i = 0; i < num; ++i) {
-    if (is_same(guids[i], NV_ENC_CODEC_H264_GUID))
-      g_print("NV_ENC_CODEC_H264_GUID");
-    else if (is_same(guids[i], NV_ENC_CODEC_HEVC_GUID))
-      g_print("NV_ENC_CODEC_HEVC_GUID");
-    else
-      g_print("unknown guid");
+    if (is_same(guids[i], NV_ENC_CODEC_H264_GUID)){
+      res.push_back(std::make_pair(std::string("H264"), guids[i]));
+    } else if (is_same(guids[i], NV_ENC_CODEC_HEVC_GUID)) {
+      //g_print("NV_ENC_CODEC_HEVC_GUID");
+      res.push_back(std::make_pair(std::string("HEVC"), guids[i]));
+    } else
+      g_warning("unknown guid from nvenc");
   }
-}
-
-NVencES::~NVencES(){
-  if (safe_bool_idiom() && !(NV_ENC_SUCCESS == NVencAPI::api.nvEncDestroyEncoder (encoder_)))
-    g_warning("BUG! (destroying NV encoder session)");
+  return res;
 }
 
 bool NVencES::is_same(GUID g1, GUID g2){
