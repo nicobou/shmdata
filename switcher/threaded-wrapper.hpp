@@ -24,6 +24,7 @@
 #include <future>
 #include <atomic>
 #include <vector>
+#include <memory>
 
 namespace switcher {
 template<typename T>
@@ -36,7 +37,7 @@ class ThreadedWrapper{
                          threaded_wrap();
                        })){
     do_sync_task([&](){
-        member_ = T(args...);
+        member_.reset(new T(args...));
       });
   }
   ~ThreadedWrapper(){
@@ -88,7 +89,7 @@ class ThreadedWrapper{
   typename method_traits<MType, fun>::return_t invoke(ARGs ...args){
     typename method_traits<MType, fun>::return_t res;
     auto task = [&](){
-      res = ((&this->member_) ->* fun)(std::forward<ARGs>(args)...);
+      res = (this->member_.get() ->* fun)(std::forward<ARGs>(args)...);
       std::unique_lock<std::mutex> lock(this->task_done_m_);
       this->task_done_cv_.notify_one();
     };
@@ -106,9 +107,9 @@ class ThreadedWrapper{
     { std::unique_lock<std::mutex> lock_sync(async_mtx_);
       async_tasks_.emplace_back([=](){
           if (on_result)
-            on_result(((&this->member_) ->* fun)(args...));
+            on_result((this->member_.get() ->* fun)(args...));
           else
-            ((&this->member_) ->* fun)(args...);
+            (this->member_.get() ->* fun)(args...);
         });
     }
     return;
@@ -122,7 +123,7 @@ class ThreadedWrapper{
              >::type* = nullptr>
   typename method_traits<MType, fun>::return_t invoke(ARGs ...args){
     auto task = [&](){
-      ((&this->member_) ->* fun)(std::forward<ARGs>(args)...);
+      (this->member_.get() ->* fun)(std::forward<ARGs>(args)...);
       std::unique_lock<std::mutex> lock(this->task_done_m_);
       this->task_done_cv_.notify_one();
     };
@@ -140,10 +141,10 @@ class ThreadedWrapper{
     { std::unique_lock<std::mutex> lock_sync(async_mtx_);
       async_tasks_.emplace_back([=](){
           if (on_result) {
-            ((&this->member_) ->* fun)(args...);
+            (this->member_.get() ->* fun)(args...);
             on_result();
           } else {
-            ((&this->member_) ->* fun)(args...);
+            (this->member_.get() ->* fun)(args...);
           }
         });
     }
@@ -151,7 +152,7 @@ class ThreadedWrapper{
   }
   
  private:
-  T member_;
+  std::unique_ptr<T> member_;
   // sync task
   std::function<void()> sync_task_{nullptr};
   std::mutex cv_m_{};
