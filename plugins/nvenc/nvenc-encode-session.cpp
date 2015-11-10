@@ -37,7 +37,7 @@ NVencES::NVencES(uint32_t device_id
   params.apiVersion = NVENCAPI_VERSION;
   params.device = cu_ctx_.cuda_ctx_;
   params.deviceType = NV_ENC_DEVICE_TYPE_CUDA;
-  if (NV_ENC_SUCCESS != NVencAPI::api.nvEncOpenEncodeSessionEx (&params, &encoder_))
+  if (NV_ENC_SUCCESS != NVencAPI::api.nvEncOpenEncodeSessionEx(&params, &encoder_))
       encoder_ = nullptr;
   // // input buffers
   // for (auto &it: input_bufs_){

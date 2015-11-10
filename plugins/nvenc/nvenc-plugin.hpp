@@ -23,6 +23,7 @@
 #include <cuda.h>
 #include <memory>
 #include "switcher/quiddity.hpp"
+#include "switcher/threaded-wrapper.hpp"
 #include "./nvenc-encode-session.hpp"
 
 namespace switcher {
@@ -36,7 +37,7 @@ class NVencPlugin: public Quiddity {
 
   bool init() final;
  private:
-  std::unique_ptr<NVencES> es_{};
+  std::unique_ptr<ThreadedWrapper<NVencES>> es_{};
   Selection devices_{{"none"}, 0};
   std::vector<int> devices_nv_ids_{};
   Selection codecs_{{"none"}, 0};

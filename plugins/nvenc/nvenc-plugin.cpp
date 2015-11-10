@@ -62,17 +62,17 @@ NVencPlugin::NVencPlugin(const std::string &){
 }
 
 bool NVencPlugin::init() {
-  return static_cast<bool>(*es_.get());
+  return static_cast<bool>(es_.get()->invoke<MPtr(&NVencES::safe_bool_idiom)>());
 }
 
 void NVencPlugin::update_device(){
   es_.reset();
-  es_ = std2::make_unique<NVencES>(devices_nv_ids_[devices_.get()]);
-  //update_codec();
+  es_ = std2::make_unique<ThreadedWrapper<NVencES>>(devices_nv_ids_[devices_.get()]);
+  update_codec();
 }
 
 void NVencPlugin::update_codec(){
-  codecs_guids_ = es_->get_supported_codecs();
+  codecs_guids_ = es_->invoke<MPtr(&NVencES::get_supported_codecs)>();
   std::vector<std::string> names;
   for(auto &it: codecs_guids_)
     names.push_back(it.first);

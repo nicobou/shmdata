@@ -40,6 +40,7 @@ class NVencES: public SafeBoolIdiom {
   NVencES &operator=(NVencES &&) = delete;
 
   std::vector<std::pair<std::string, GUID>> get_supported_codecs();  
+  bool safe_bool_idiom() const {return nullptr != encoder_;}
 
  private:
   NVencAPI api_{};
@@ -48,7 +49,6 @@ class NVencES: public SafeBoolIdiom {
   static constexpr unsigned int num_buf_{48};
   std::array<NV_ENC_INPUT_PTR, num_buf_> input_bufs_{{}};
   std::array<NV_ENC_OUTPUT_PTR, num_buf_> output_bufs_{{}};
-  bool safe_bool_idiom() const {return nullptr != encoder_;}
   static bool is_same(GUID g1, GUID g2);
 };
 
