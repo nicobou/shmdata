@@ -38,7 +38,8 @@ AC_SUBST([LIBSWITCHER_API_VERSION], [0.8])
 AC_DEFINE(LIBSWITCHER_API_VERSION, ["0.8"], [API version])
 
 dnl check for tools (compiler etc.)
-AC_PROG_CXX
+dnl g++-4.9 is here in order to get threaded-wrapper compiling on ubuntu 14.04
+AC_PROG_CXX([g++-4.9])
 AM_PROG_CC_C_O
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
@@ -300,6 +301,21 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
 ], [
   AC_MSG_RESULT([no])
   AC_MSG_ERROR([compiler does not understand -std=c++11])
+])
+
+AC_MSG_CHECKING([to see if compiler can expand variadic template in lambda])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[void do_nothing(int, double){} template<typename ...Args> void do_lambda(Args... args){ [&](){ do_nothing(args...); }(); } ]], 
+[[ do_lambda(1, 2.0); ]])], [
+  AC_MSG_RESULT([yes])
+], [
+  AC_MSG_RESULT([no])
+  AC_MSG_ERROR([
+     compiler cannot expand variadic template in lambda (require g++ >= 4.9)
+     on Unbuntu 14.04, you can install g++-4.9 doing the following:
+     sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+     sudo apt-get update
+     sudo apt-get install g++-4.9
+])
 ])
 
 

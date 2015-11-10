@@ -157,6 +157,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     startable-quiddity.hpp \
     std2.hpp \
     string-utils.hpp \
+    threaded-wrapper.hpp \
     type-name-registry.hpp \
     unique-gst-element.hpp \
     uridecodebin.hpp \
