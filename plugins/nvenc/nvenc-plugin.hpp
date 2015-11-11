@@ -43,8 +43,16 @@ class NVencPlugin: public Quiddity {
   Selection codecs_{{"none"}, 0};
   std::vector<std::pair<std::string, GUID>> codecs_guids_{};
   PContainer::prop_id_t codecs_id_{0};
+  Selection presets_{{"none"}, 0};
+  std::vector<std::pair<std::string, GUID>> presets_guids_{};
+  PContainer::prop_id_t presets_id_{0};
+  Selection profiles_{{"none"}, 0};
+  std::vector<std::pair<std::string, GUID>> profiles_guids_{};
+  PContainer::prop_id_t profiles_id_{0};
   void update_device();
   void update_codec();
+  void update_preset();
+  void update_profile();
 };
 
 SWITCHER_DECLARE_PLUGIN(NVencPlugin);

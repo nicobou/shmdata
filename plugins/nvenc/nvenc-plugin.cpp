@@ -78,8 +78,11 @@ void NVencPlugin::update_codec(){
     names.push_back(it.first);
   codecs_ = Selection(std::move(names), 0);
   auto set = [this](size_t val){
-    if (codecs_.get() != val)
+    if (codecs_.get() != val){
       codecs_.select(val);
+      update_preset();
+      update_profile();
+    }
     return true;
   };
   auto get = [this](){return codecs_.get();};
@@ -91,6 +94,64 @@ void NVencPlugin::update_codec(){
         codecs_id_,
         std2::make_unique<Property2<Selection, Selection::index_t>>(
             set, get, "Codec", "Codec Selection", codecs_, codecs_.size() - 1));
+  update_preset();
+  update_profile();
+}
+
+void NVencPlugin::update_preset(){
+  auto cur_codec = codecs_.get_current();
+  auto guid_iter = std::find_if(
+      codecs_guids_.begin(), codecs_guids_.end(),
+      [&](const std::pair<std::string, GUID> &codec){
+        return codec.first == cur_codec;
+      });
+  presets_guids_ = es_->invoke<MPtr(&NVencES::get_presets)>(guid_iter->second);
+  std::vector<std::string> names;
+  for(auto &it: presets_guids_)
+    names.push_back(it.first);
+  presets_ = Selection(std::move(names), 0);
+  auto set = [this](size_t val){
+    if (presets_.get() != val)
+      presets_.select(val);
+    return true;
+  };
+  auto get = [this](){return presets_.get();};
+  if (0 == presets_id_)
+    presets_id_ = pmanage<MPtr(&PContainer::make_selection)>(
+        "preset", set, get, "Preset", "Preset Selection", presets_);
+  else
+    pmanage<MPtr(&PContainer::replace)>(
+        presets_id_,
+        std2::make_unique<Property2<Selection, Selection::index_t>>(
+            set, get, "Preset", "Preset Selection", presets_, presets_.size() - 1));
+}
+
+void NVencPlugin::update_profile(){
+  auto cur_codec = codecs_.get_current();
+  auto guid_iter = std::find_if(
+      codecs_guids_.begin(), codecs_guids_.end(),
+      [&](const std::pair<std::string, GUID> &codec){
+        return codec.first == cur_codec;
+      });
+  profiles_guids_ = es_->invoke<MPtr(&NVencES::get_profiles)>(guid_iter->second);
+  std::vector<std::string> names;
+  for(auto &it: profiles_guids_)
+    names.push_back(it.first);
+  profiles_ = Selection(std::move(names), 0);
+  auto set = [this](size_t val){
+    if (profiles_.get() != val)
+      profiles_.select(val);
+    return true;
+  };
+  auto get = [this](){return profiles_.get();};
+  if (0 == profiles_id_)
+    profiles_id_ = pmanage<MPtr(&PContainer::make_selection)>(
+        "profile", set, get, "Profile", "Profile Selection", profiles_);
+  else
+    pmanage<MPtr(&PContainer::replace)>(
+        profiles_id_,
+        std2::make_unique<Property2<Selection, Selection::index_t>>(
+            set, get, "Profile", "Profile Selection", profiles_, profiles_.size() - 1));
 }
 
 }  // namespace switcher

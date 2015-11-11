@@ -40,6 +40,8 @@ class NVencES: public SafeBoolIdiom {
   NVencES &operator=(NVencES &&) = delete;
 
   std::vector<std::pair<std::string, GUID>> get_supported_codecs();  
+  std::vector<std::pair<std::string, GUID>> get_presets(GUID encodeGUID);
+  std::vector<std::pair<std::string, GUID>> get_profiles(GUID encodeGUID);
   bool safe_bool_idiom() const {return nullptr != encoder_;}
 
  private:
