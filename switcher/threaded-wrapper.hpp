@@ -25,6 +25,7 @@
 #include <atomic>
 #include <vector>
 #include <memory>
+#include <iostream>
 
 namespace switcher {
 template<typename T>
@@ -48,6 +49,7 @@ class ThreadedWrapper{
     }
     if (fut_.valid()) 
       fut_.get();
+    member_.reset();
   }
 
   
