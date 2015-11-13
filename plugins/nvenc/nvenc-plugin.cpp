@@ -17,22 +17,24 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./nvenc-plugin.hpp"
 #include "switcher/std2.hpp"
+#include "switcher/scope-exit.hpp"
+#include "./nvenc-plugin.hpp"
 #include "./cuda-context.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     NVencPlugin,
     "nvenc",
-    "NVidia video encoder Plugin",
+    "Hardware video encoder (NVenc)",
     "video",
-    "",
+    "writer/reader",
     "CUDA-based video encoder",
     "LGPL",
     "Nicolas Bouillot");
 
-NVencPlugin::NVencPlugin(const std::string &){ 
+NVencPlugin::NVencPlugin(const std::string &) :
+    shmcntr_(static_cast<Quiddity *>(this)){ 
   auto devices = CudaContext::get_devices();
   std::vector<std::string> names;
   for(auto &it: devices){
@@ -62,7 +64,17 @@ NVencPlugin::NVencPlugin(const std::string &){
 }
 
 bool NVencPlugin::init() {
-  return static_cast<bool>(es_.get()->invoke<MPtr(&NVencES::safe_bool_idiom)>());
+  if (!es_) {
+    g_warning("CUDA initialization failled (probably need to reboot)");
+    return false;
+  }
+  shmcntr_.install_connect_method(
+      [this](const std::string &shmpath){return this->on_shmdata_connect(shmpath);},
+      [this](const std::string &){return this->on_shmdata_disconnect();},
+      [this](){return this->on_shmdata_disconnect();},
+      [this](const std::string &caps){return this->can_sink_caps(caps);},
+      1);
+  return es_.get()->invoke<MPtr(&NVencES::safe_bool_idiom)>();
 }
 
 void NVencPlugin::update_device(){
@@ -82,6 +94,8 @@ void NVencPlugin::update_codec(){
       codecs_.select(val);
       update_preset();
       update_profile();
+      update_max_width_height();
+      update_input_formats();
     }
     return true;
   };
@@ -96,6 +110,8 @@ void NVencPlugin::update_codec(){
             set, get, "Codec", "Codec Selection", codecs_, codecs_.size() - 1));
   update_preset();
   update_profile();
+  update_max_width_height();
+  update_input_formats();
 }
 
 void NVencPlugin::update_preset(){
@@ -152,6 +168,85 @@ void NVencPlugin::update_profile(){
         profiles_id_,
         std2::make_unique<Property2<Selection, Selection::index_t>>(
             set, get, "Profile", "Profile Selection", profiles_, profiles_.size() - 1));
+}
+
+void NVencPlugin::update_max_width_height(){
+  auto cur_codec = codecs_.get_current();
+  auto guid_iter = std::find_if(
+      codecs_guids_.begin(), codecs_guids_.end(),
+      [&](const std::pair<std::string, GUID> &codec){
+        return codec.first == cur_codec;
+      });
+  auto mwh = es_->invoke<MPtr(&NVencES::get_max_width_height)>(guid_iter->second);
+  max_width_ = mwh.first;
+  max_height_ = mwh.second;
+  auto getwidth = [this](){return this->max_width_;};
+  if (0 != max_width_id_)
+    pmanage<MPtr(&PContainer::remove)>(max_width_id_);
+  max_width_id_ = pmanage<MPtr(&PContainer::make_int)>(
+      "maxwidth", nullptr, getwidth, "Max width", "Max video source width",
+      max_width_, max_width_, max_width_);
+  auto getheight = [this](){return max_height_;};
+  if (0 != max_height_id_)
+    pmanage<MPtr(&PContainer::remove)>(max_height_id_);
+  max_height_id_ = pmanage<MPtr(&PContainer::make_int)>(
+      "maxheight", nullptr, getheight, "Max height", "Max video source height",
+      max_height_, max_height_, max_height_);
+}
+
+void NVencPlugin::update_input_formats(){
+  auto cur_codec = codecs_.get_current();
+  auto guid_iter = std::find_if(
+      codecs_guids_.begin(), codecs_guids_.end(),
+      [&](const std::pair<std::string, GUID> &codec){
+        return codec.first == cur_codec;
+      });
+  video_formats_.clear();
+  video_formats_ = es_->invoke<MPtr(&NVencES::get_input_formats)>(guid_iter->second);
+  for (auto &it: video_formats_){
+    if ("NV12_PL" == it.first || "NV12_TILED16x16" == it.first || "NV12_TILED64x16" == it.first)
+      it.first = std::string("video/x-raw, " "format = (string) ") + "NV12";
+    else if ("YV12_PL" == it.first || "YV12_TILED16x16" == it.first || "YV12_TILED64x16" == it.first)
+      it.first = std::string("video/x-raw, " "format = (string) ") + "YV12";
+    else if ("IYUV_PL" == it.first || "IYUV_TILED16x16" == it.first || "IYUV_TILED64x16" == it.first)
+      it.first = std::string("video/x-raw, " "format = (string) ") + "I420";
+    else if ("YUV444_PL" == it.first || "YUV444_TILED16x16" == it.first || "YUV444_TILED64x16" == it.first)
+      it.first = std::string("video/x-raw, " "format = (string) ") + "Y444";
+    else
+      g_warning("unknown format in NVencPlugin %s\n", it.first.c_str());
+  }
+}
+
+bool NVencPlugin::on_shmdata_disconnect() {
+  shm_.reset(nullptr);
+  return true;
+}
+
+bool NVencPlugin::on_shmdata_connect(const std::string &shmpath) {
+  shm_.reset(new ShmdataFollower(this,
+                                 shmpath,
+                                 [this](void *data, size_t size){
+                                   this->on_shmreader_data(data, size);
+                                 }));
+  return true;
+}
+
+bool NVencPlugin::can_sink_caps(const std::string &strcaps) {
+  GstCaps *caps = gst_caps_from_string(strcaps.c_str());
+  On_scope_exit{ if (nullptr != caps) gst_caps_unref(caps); };
+  return video_formats_.end() !=
+      std::find_if(video_formats_.begin(), video_formats_.end(),
+                   [&](const std::pair<std::string, NV_ENC_BUFFER_FORMAT> &caps_iter){
+                     GstCaps *curcaps = gst_caps_from_string(caps_iter.first.c_str());
+                     On_scope_exit{ if (nullptr != curcaps) gst_caps_unref(curcaps); };
+                     return gst_caps_can_intersect(curcaps, caps); 
+                   });
+  if (nullptr != caps)
+    gst_caps_unref(caps);
+}
+
+void NVencPlugin::on_shmreader_data(void *data, size_t data_size) {
+  g_print("data %p %lu\n", data, data_size);
 }
 
 }  // namespace switcher

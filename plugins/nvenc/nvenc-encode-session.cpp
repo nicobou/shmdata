@@ -41,8 +41,7 @@ NVencES::NVencES(uint32_t device_id
       encoder_ = nullptr;
       return;
   }
-  
-  
+    
   // // input buffers
   // for (auto &it: input_bufs_){
   //   NV_ENC_CREATE_INPUT_BUFFER buf;
@@ -170,7 +169,58 @@ std::vector<std::pair<std::string, GUID>> NVencES::get_profiles(GUID encodeGUID)
   return res;
 }
 
+std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>>
+    NVencES::get_input_formats(GUID encodeGUID){
+  std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> res;
+  // supported codecs
+  uint32_t i, num = 0;
+  NV_ENC_BUFFER_FORMAT buf_format[16];
+  NVencAPI::api.nvEncGetInputFormats (encoder_, encodeGUID, buf_format, 16, &num);
+  for (i = 0; i < num; ++i) {
+    if (NV_ENC_BUFFER_FORMAT_UNDEFINED == buf_format[i]) {
+      //res.push_back(std::make_pair(std::string("Undefined"), buf_format[i]));
+      g_warning("nvEncGetInputFormats gives NV_ENC_BUFFER_FORMAT_UNDEFINED (?)");
+    } else if (NV_ENC_BUFFER_FORMAT_NV12_PL == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("NV12_PL"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_NV12_TILED16x16 == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("NV12_TILED16x16"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_NV12_TILED64x16 == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("NV12_TILED64x16"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_YV12_PL == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("YV12_PL"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_YV12_TILED16x16 == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("YV12_TILED16x16"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_YV12_TILED64x16 == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("YV12_TILED64x16"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_IYUV_PL == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("IYUV_PL"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_IYUV_TILED16x16 == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("IYUV_TILED16x16"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_IYUV_TILED64x16 == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("IYUV_TILED64x16"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_YUV444_PL == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("YUV444_PL"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_YUV444_TILED16x16 == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("YUV444_TILED16x16"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_YUV444_TILED64x16 == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("YUV444_TILED64x16"), buf_format[i]));
+    } else
+      g_warning("unknown input format from nvenc");
+  }
+  return res;
+}
 
+std::pair<int,int> NVencES::get_max_width_height(GUID encodeGUID){
+  NV_ENC_CAPS_PARAM params =
+      { NV_ENC_CAPS_PARAM_VER,
+        NV_ENC_CAPS_WIDTH_MAX,
+        {}};
+  int width=0, height = 0;
+  NVencAPI::api.nvEncGetEncodeCaps(encoder_, encodeGUID, &params, &width);
+  params.capsToQuery = NV_ENC_CAPS_HEIGHT_MAX;
+  NVencAPI::api.nvEncGetEncodeCaps(encoder_, encodeGUID, &params, &height);
+  return std::make_pair(width, height);
+}
 
 bool NVencES::is_same(GUID g1, GUID g2){
   return (g1.Data1 == g2.Data1 && g1.Data2 == g2.Data2 && g1.Data3 == g2.Data3

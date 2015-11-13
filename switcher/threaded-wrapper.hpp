@@ -40,16 +40,18 @@ class ThreadedWrapper{
     do_sync_task([&](){
         member_.reset(new T(args...));
       });
-  }
+      }
   ~ThreadedWrapper(){
-    {
-      canceled_.store(true);
-      std::unique_lock<std::mutex> lock(cv_m_);
-      cv_.notify_one();
-    }
+    do_sync_task([&](){
+        run_async_tasks();
+        // destroy member from the thread:
+        member_.reset(nullptr);
+        // stop the thread
+        canceled_.store(true);
+      });
+    // wait for the thread
     if (fut_.valid()) 
       fut_.get();
-    member_.reset();
   }
 
   
@@ -69,7 +71,6 @@ class ThreadedWrapper{
       run_async_tasks();
       cv_.wait_for(lock, std::chrono::milliseconds(1));
     }
-    run_async_tasks();
   }
   
   // methods return type introspection

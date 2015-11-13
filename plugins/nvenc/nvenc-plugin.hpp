@@ -24,6 +24,8 @@
 #include <memory>
 #include "switcher/quiddity.hpp"
 #include "switcher/threaded-wrapper.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-follower.hpp"
 #include "./nvenc-encode-session.hpp"
 
 namespace switcher {
@@ -37,6 +39,8 @@ class NVencPlugin: public Quiddity {
 
   bool init() final;
  private:
+  ShmdataConnector shmcntr_;
+  std::unique_ptr<ShmdataFollower> shm_{nullptr};
   std::unique_ptr<ThreadedWrapper<NVencES>> es_{};
   Selection devices_{{"none"}, 0};
   std::vector<int> devices_nv_ids_{};
@@ -49,10 +53,23 @@ class NVencPlugin: public Quiddity {
   Selection profiles_{{"none"}, 0};
   std::vector<std::pair<std::string, GUID>> profiles_guids_{};
   PContainer::prop_id_t profiles_id_{0};
+  int max_width_{0};
+  PContainer::prop_id_t max_width_id_{0};
+  int max_height_{0};
+  PContainer::prop_id_t max_height_id_{0};
+  std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> video_formats_{};
   void update_device();
   void update_codec();
   void update_preset();
   void update_profile();
+  void update_max_width_height();
+  void update_input_formats();
+
+  bool on_shmdata_disconnect();
+  bool on_shmdata_connect(const std::string &shmdata_sochet_path);
+  bool can_sink_caps(const std::string &caps);
+  void on_shmreader_data(void *data, size_t data_size);
+
 };
 
 SWITCHER_DECLARE_PLUGIN(NVencPlugin);
