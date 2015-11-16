@@ -174,7 +174,7 @@ std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>>
   std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> res;
   // supported codecs
   uint32_t i, num = 0;
-  NV_ENC_BUFFER_FORMAT buf_format[16];
+  NV_ENC_BUFFER_FORMAT buf_format[64];
   NVencAPI::api.nvEncGetInputFormats (encoder_, encodeGUID, buf_format, 16, &num);
   for (i = 0; i < num; ++i) {
     if (NV_ENC_BUFFER_FORMAT_UNDEFINED == buf_format[i]) {
