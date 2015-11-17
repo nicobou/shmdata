@@ -219,6 +219,7 @@ void NVencPlugin::update_input_formats(){
 
 bool NVencPlugin::on_shmdata_disconnect() {
   shm_.reset(nullptr);
+  update_device();
   return true;
 }
 
@@ -227,6 +228,9 @@ bool NVencPlugin::on_shmdata_connect(const std::string &shmpath) {
                                  shmpath,
                                  [this](void *data, size_t size){
                                    this->on_shmreader_data(data, size);
+                                 },
+                                 [this](const std::string &data_descr){
+                                   this->on_shmreader_server_connected(data_descr);
                                  }));
   return true;
 }
@@ -246,7 +250,30 @@ bool NVencPlugin::can_sink_caps(const std::string &strcaps) {
 }
 
 void NVencPlugin::on_shmreader_data(void *data, size_t data_size) {
-  g_print("data %p %lu\n", data, data_size);
+  //g_print("data %p %lu\n", data, data_size);
+}
+
+void NVencPlugin::on_shmreader_server_connected(const std::string &data_descr) {
+  g_print("data descr %s\n", data_descr.c_str());
+  GstCaps *caps = gst_caps_from_string(data_descr.c_str());
+  On_scope_exit{ if (nullptr != caps) gst_caps_unref(caps); };
+  auto cur_codec = codecs_.get_current();
+  auto guid_iter = std::find_if(
+      codecs_guids_.begin(), codecs_guids_.end(),
+      [&](const std::pair<std::string, GUID> &codec){
+        return codec.first == cur_codec;
+      });
+  auto cur_preset = presets_.get_current();
+  auto preset_iter = std::find_if(
+      presets_guids_.begin(), presets_guids_.end(),
+      [&](const std::pair<std::string, GUID> &preset){
+        return preset.first == cur_preset;
+      });
+  es_.get()->invoke_async<MPtr(&NVencES::initialize_encoder)>(
+      nullptr,
+      guid_iter->second, preset_iter->second,
+      320, 240,
+      NV_ENC_BUFFER_FORMAT_IYUV_PL);
 }
 
 }  // namespace switcher

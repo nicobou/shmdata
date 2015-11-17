@@ -7,6 +7,7 @@ plugins_LTLIBRARIES = \
 libnvenc_plugin_la_SOURCES = \
     cuda-context.cpp \
     nvenc-api.cpp \
+    nvenc-buffers.cpp \
     nvenc-encode-session.cpp \
     nvenc-plugin.cpp
 
@@ -14,6 +15,7 @@ libnvenc_plugin_la_include_HEADERS = \
     cu-res.hpp \
     cuda-context.hpp \
     nvenc-api.hpp \
+    nvenc-buffers.hpp \
     nvenc-encode-session.hpp \
     nvenc-plugin.hpp
 

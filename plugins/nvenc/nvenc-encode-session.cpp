@@ -18,6 +18,7 @@
  */
 
 #include <glib.h>  // log
+#include <cstring>  // memset
 #include "./nvenc-encode-session.hpp"
 #include "switcher/scope-exit.hpp"
 
@@ -41,40 +42,6 @@ NVencES::NVencES(uint32_t device_id
       encoder_ = nullptr;
       return;
   }
-    
-  // // input buffers
-  // for (auto &it: input_bufs_){
-  //   NV_ENC_CREATE_INPUT_BUFFER buf;
-  //   buf.version = NV_ENC_CREATE_INPUT_BUFFER_VER;
-  //   buf.width = width;
-  //   buf.height = height;
-  //   buf.memoryHeap = NV_ENC_MEMORY_HEAP_SYSMEM_CACHED;
-  //   buf.bufferFmt = format;
-  //   if (NV_ENC_SUCCESS != NVencAPI::api.nvEncCreateInputBuffer (encoder_, &buf)){
-  //     g_warning("nvenc cannot create input buffer");
-  //     NVencAPI::api.nvEncDestroyEncoder (encoder_);
-  //     encoder_ = nullptr;
-  //     return;
-  //   }
-  //   it = cin_buf.inputBuffer;
-  // }
-  // // output buffers
-  // for (auto &it: output_bufs_){
-  //   NV_ENC_CREATE_BITSTREAM_BUFFER buf;
-  //   cout_buf.version = NV_ENC_CREATE_BITSTREAM_BUFFER_VER;
-  //   /* 2 MB should be large enough to hold most output frames.
-  //    * NVENC will automatically increase this if it's not enough. */
-  //   buf.size = 2 * 1024 * 1024;
-  //   buf.memoryHeap = NV_ENC_MEMORY_HEAP_SYSMEM_CACHED;
-  //   if (NV_ENC_SUCCESS != NVencAPI::api.nvEncCreateBitstreamBuffer (encoder_, &buf)){
-  //     g_warning("nvenc cannot create output buffer");
-  //     NVencAPI::api.nvEncDestroyEncoder (encoder_);
-  //     encoder_ = nullptr;
-  //     return;
-  //   }
-  //   it = buf.bitstreamBuffer;
-  // }
-
 }
 
 NVencES::~NVencES(){
@@ -228,6 +195,55 @@ bool NVencES::is_same(GUID g1, GUID g2){
           && g1.Data4[2] == g2.Data4[2] && g1.Data4[3] == g2.Data4[3]
           && g1.Data4[4] == g2.Data4[4] && g1.Data4[5] == g2.Data4[5]
           && g1.Data4[6] == g2.Data4[6] && g1.Data4[7] == g2.Data4[7]);
+}
+
+bool NVencES::initialize_encoder(GUID encodeGuid,
+                                 GUID presetGuid,
+                                 uint32_t width,
+                                 uint32_t height,
+                                 NV_ENC_BUFFER_FORMAT format){
+  memset(&init_params_, 0, sizeof(init_params_));
+  init_params_.version = NV_ENC_INITIALIZE_PARAMS_VER;
+  init_params_.encodeGUID = encodeGuid;
+  init_params_.presetGUID = presetGuid;
+  init_params_.encodeWidth = width;
+  init_params_.encodeHeight = height;
+  NVENCSTATUS status = NVencAPI::api.nvEncInitializeEncoder(encoder_, &init_params_);
+  if (NV_ENC_SUCCESS != status) {
+    g_warning("encode session initialization failed");
+    return false;
+    }
+
+  //HERE use nvenc-buffers
+  // // input buffers
+  // for (auto &it: input_bufs_){
+  //   NV_ENC_CREATE_INPUT_BUFFER buf;
+  //   buf.version = NV_ENC_CREATE_INPUT_BUFFER_VER;
+  //   buf.width = width;
+  //   buf.height = height;
+  //   buf.memoryHeap = NV_ENC_MEMORY_HEAP_SYSMEM_CACHED;
+  //   buf.bufferFmt = format;
+  //   if (NV_ENC_SUCCESS != NVencAPI::api.nvEncCreateInputBuffer (encoder_, &buf)){
+  //     g_warning("nvenc cannot create input buffer");
+  //     return false;
+  //   }
+  //   it = buf.inputBuffer;
+  // }
+  // // output buffers
+  // for (auto &it: output_bufs_){
+  //   NV_ENC_CREATE_BITSTREAM_BUFFER buf;
+  //   buf.version = NV_ENC_CREATE_BITSTREAM_BUFFER_VER;
+  //   /* 2 MB should be large enough to hold most output frames.
+  //    * NVENC will automatically increase this if it's not enough. */
+  //   buf.size = 2 * 1024 * 1024;
+  //   buf.memoryHeap = NV_ENC_MEMORY_HEAP_SYSMEM_CACHED;
+  //   if (NV_ENC_SUCCESS != NVencAPI::api.nvEncCreateBitstreamBuffer (encoder_, &buf)){
+  //     g_warning("nvenc cannot create output buffer");
+  //     return false;
+  //   }
+  //   it = buf.bitstreamBuffer;
+  // }
+  return true;
 }
 
 }  // namespace switcher

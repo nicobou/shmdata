@@ -21,7 +21,6 @@
 #define __SWITCHER_NVENC_ENCODE_SESSION_H__
 
 #include <cstdint>  // uint32_t
-#include <array>
 #include <vector>
 #include <utility>
 #include "switcher/safe-bool-idiom.hpp"
@@ -46,14 +45,18 @@ class NVencES: public SafeBoolIdiom {
 
   std::pair<int,int> get_max_width_height(GUID encodeGUID);
   bool safe_bool_idiom() const {return nullptr != encoder_;}
+  bool initialize_encoder(GUID encodeGuid, GUID presetGuid,
+                          uint32_t width, uint32_t height,
+                          NV_ENC_BUFFER_FORMAT format);
 
  private:
   NVencAPI api_{};
   void *encoder_{nullptr};
+  NV_ENC_INITIALIZE_PARAMS init_params_;
   CudaContext cu_ctx_;
-  static constexpr unsigned int num_buf_{48};
-  std::array<NV_ENC_INPUT_PTR, num_buf_> input_bufs_{{}};
-  std::array<NV_ENC_OUTPUT_PTR, num_buf_> output_bufs_{{}};
+  // static constexpr unsigned int num_buf_{48};
+  // std::array<NV_ENC_INPUT_PTR, num_buf_> input_bufs_{{}};
+  // std::array<NV_ENC_OUTPUT_PTR, num_buf_> output_bufs_{{}};
   static bool is_same(GUID g1, GUID g2);
 };
 
