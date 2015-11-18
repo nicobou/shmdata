@@ -251,6 +251,13 @@ bool NVencPlugin::can_sink_caps(const std::string &strcaps) {
 
 void NVencPlugin::on_shmreader_data(void *data, size_t data_size) {
   //g_print("data %p %lu\n", data, data_size);
+  // HERE
+  // if (!es_.get()->invoke<MPtr(&NVencES::copy_to_next_input_buffer)>(data, size))
+  //   g_warning("error copying data to nvenc");
+  // es_.get()->invoke_async<MPtr(&NVencES::encode_current_input)>(
+  //     [](bool res) {
+  //       if (!res) g_warning("error copying data to nvenc");
+  //     });
 }
 
 void NVencPlugin::on_shmreader_server_connected(const std::string &data_descr) {

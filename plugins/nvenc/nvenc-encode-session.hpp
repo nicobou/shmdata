@@ -22,10 +22,12 @@
 
 #include <cstdint>  // uint32_t
 #include <vector>
+#include <memory>
 #include <utility>
 #include "switcher/safe-bool-idiom.hpp"
 #include "./nvenc-api.hpp"
 #include "./cuda-context.hpp"
+#include "./nvenc-buffers.hpp"
 
 namespace switcher {
 class NVencES: public SafeBoolIdiom {
@@ -54,6 +56,7 @@ class NVencES: public SafeBoolIdiom {
   void *encoder_{nullptr};
   NV_ENC_INITIALIZE_PARAMS init_params_;
   CudaContext cu_ctx_;
+  std::unique_ptr<NVencBuffers> buffers_{nullptr};
   // static constexpr unsigned int num_buf_{48};
   // std::array<NV_ENC_INPUT_PTR, num_buf_> input_bufs_{{}};
   // std::array<NV_ENC_OUTPUT_PTR, num_buf_> output_bufs_{{}};
