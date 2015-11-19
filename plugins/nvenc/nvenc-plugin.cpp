@@ -249,19 +249,20 @@ bool NVencPlugin::can_sink_caps(const std::string &strcaps) {
     gst_caps_unref(caps);
 }
 
-void NVencPlugin::on_shmreader_data(void *data, size_t data_size) {
-  //g_print("data %p %lu\n", data, data_size);
-  // HERE
-  // if (!es_.get()->invoke<MPtr(&NVencES::copy_to_next_input_buffer)>(data, size))
-  //   g_warning("error copying data to nvenc");
-  // es_.get()->invoke_async<MPtr(&NVencES::encode_current_input)>(
-  //     [](bool res) {
-  //       if (!res) g_warning("error copying data to nvenc");
-  //     });
+void NVencPlugin::on_shmreader_data(void *data, size_t size) {
+  if (!es_.get()->invoke<MPtr(&NVencES::copy_to_next_input_buffer)>(data, size)){
+    g_warning("error copying data to nvenc");
+    return;
+  }
+  // FIXME make following async:
+  es_.get()->invoke<MPtr(&NVencES::encode_current_input)>();
+  es_.get()->invoke<MPtr(&NVencES::process_encoded_frame)>(
+      [](void *, uint32_t size){
+        g_print("coucou, %u\n", size);
+      });
 }
 
 void NVencPlugin::on_shmreader_server_connected(const std::string &data_descr) {
-  g_print("data descr %s\n", data_descr.c_str());
   GstCaps *caps = gst_caps_from_string(data_descr.c_str());
   On_scope_exit{ if (nullptr != caps) gst_caps_unref(caps); };
   auto cur_codec = codecs_.get_current();

@@ -51,15 +51,17 @@ class NVencES: public SafeBoolIdiom {
                           uint32_t width, uint32_t height,
                           NV_ENC_BUFFER_FORMAT format);
 
+  // these three following methods must be invoked in sequence:
+  bool copy_to_next_input_buffer(void *data, size_t size);
+  bool encode_current_input();
+  bool process_encoded_frame(std::function<void(void *, uint32_t)> fun);
+
  private:
   NVencAPI api_{};
   void *encoder_{nullptr};
   NV_ENC_INITIALIZE_PARAMS init_params_;
   CudaContext cu_ctx_;
   std::unique_ptr<NVencBuffers> buffers_{nullptr};
-  // static constexpr unsigned int num_buf_{48};
-  // std::array<NV_ENC_INPUT_PTR, num_buf_> input_bufs_{{}};
-  // std::array<NV_ENC_OUTPUT_PTR, num_buf_> output_bufs_{{}};
   static bool is_same(GUID g1, GUID g2);
 };
 

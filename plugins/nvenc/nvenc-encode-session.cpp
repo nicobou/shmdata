@@ -209,6 +209,8 @@ bool NVencES::initialize_encoder(GUID encodeGuid,
   init_params_.presetGUID = presetGuid;
   init_params_.encodeWidth = width;
   init_params_.encodeHeight = height;
+  init_params_.enablePTD = 1; // enable the Picture Type Decision is be
+                              // taken by the NvEncodeAPI interface.
   NVENCSTATUS status = NVencAPI::api.nvEncInitializeEncoder(encoder_, &init_params_);
   if (NV_ENC_SUCCESS != status) {
     g_warning("encode session initialization failed");
@@ -217,6 +219,24 @@ bool NVencES::initialize_encoder(GUID encodeGuid,
 
   buffers_ = std2::make_unique<NVencBuffers>(encoder_, width, height, format);
   return true;
+}
+
+bool NVencES::copy_to_next_input_buffer(void *data, size_t size){
+  if (!buffers_)
+    return false;
+  return buffers_->copy_to_next_input_buffer(data, size);
+}
+bool NVencES::encode_current_input(){
+  if (!buffers_)
+    return false;
+  return buffers_->encode_current_input();
+}
+
+bool NVencES::process_encoded_frame(std::function<void(void *, uint32_t)> fun){
+  if (!buffers_)
+    return false;
+  return buffers_->process_encoded_frame(fun);
+
 }
 
 }  // namespace switcher
