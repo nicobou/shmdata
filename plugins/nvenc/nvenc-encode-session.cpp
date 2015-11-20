@@ -209,14 +209,51 @@ bool NVencES::initialize_encoder(GUID encodeGuid,
   init_params_.presetGUID = presetGuid;
   init_params_.encodeWidth = width;
   init_params_.encodeHeight = height;
+  init_params_.frameRateNum = 30;  // FIXME
+  init_params_.frameRateDen = 1;
   init_params_.enablePTD = 1; // enable the Picture Type Decision is be
                               // taken by the NvEncodeAPI interface.
+
+  NV_ENC_PRESET_CONFIG preset_config;
+  memset(&preset_config, 0, sizeof(preset_config));
+  preset_config.version = NV_ENC_PRESET_CONFIG_VER;
+  preset_config.presetCfg.version = NV_ENC_CONFIG_VER;
+  if (NV_ENC_SUCCESS != NVencAPI::api.nvEncGetEncodePresetConfig(
+          encoder_,
+          encodeGuid,
+          presetGuid,
+          &preset_config)){
+    g_warning("nvenc cannot get encode preset config");
+  } else {
+    preset_config.presetCfg.version = NV_ENC_CONFIG_VER;
+    preset_config.presetCfg.profileGUID = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
+    preset_config.presetCfg.encodeCodecConfig.h264Config.level = NV_ENC_LEVEL_AUTOSELECT; 
+    preset_config.presetCfg.encodeCodecConfig.h264Config.chromaFormatIDC = 1;
+      // if (GST_VIDEO_INFO_FORMAT (info) == GST_VIDEO_FORMAT_Y444) {
+    // GST_DEBUG_OBJECT (h264enc, "have Y444 input, setting config accordingly");
+    // preset_config.presetCfg.encodeCodecConfig.
+    //     h264Config.separateColourPlaneFlag = 1;
+    //preset_config.presetCfg.encodeCodecConfig.h264Config.chromaFormatIDC = 3;
+    preset_config.presetCfg.encodeCodecConfig.h264Config.outputAUD = 1;
+    //}
+     // if (GST_VIDEO_INFO_IS_INTERLACED (info)) {
+     //   if (GST_VIDEO_INFO_INTERLACE_MODE (info) ==
+     //       GST_VIDEO_INTERLACE_MODE_INTERLEAVED
+     //       || GST_VIDEO_INFO_INTERLACE_MODE (info) ==
+     //       GST_VIDEO_INTERLACE_MODE_MIXED) {
+         // preset_config.presetCfg.frameFieldMode =
+         //     NV_ENC_PARAMS_FRAME_FIELD_MODE_FIELD;
+     //   }
+     // }
+     init_params_.encodeConfig = &preset_config.presetCfg;
+  }
+  
   NVENCSTATUS status = NVencAPI::api.nvEncInitializeEncoder(encoder_, &init_params_);
   if (NV_ENC_SUCCESS != status) {
     g_warning("encode session initialization failed");
     return false;
-    }
-
+  }
+  
   buffers_ = std2::make_unique<NVencBuffers>(encoder_, width, height, format);
   return true;
 }

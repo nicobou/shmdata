@@ -219,6 +219,7 @@ void NVencPlugin::update_input_formats(){
 
 bool NVencPlugin::on_shmdata_disconnect() {
   shm_.reset(nullptr);
+  shmw_.reset(nullptr);
   update_device();
   return true;
 }
@@ -257,8 +258,10 @@ void NVencPlugin::on_shmreader_data(void *data, size_t size) {
   // FIXME make following async:
   es_.get()->invoke<MPtr(&NVencES::encode_current_input)>();
   es_.get()->invoke<MPtr(&NVencES::process_encoded_frame)>(
-      [](void *, uint32_t size){
+      [&](void *data, uint32_t size){
         g_print("coucou, %u\n", size);
+         shmw_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, size);
+         shmw_->bytes_written(size);
       });
 }
 
@@ -282,6 +285,10 @@ void NVencPlugin::on_shmreader_server_connected(const std::string &data_descr) {
       guid_iter->second, preset_iter->second,
       320, 240,
       NV_ENC_BUFFER_FORMAT_IYUV_PL);
+  shmw_ =std2::make_unique<ShmdataWriter>(this,
+                                          make_file_name("encdoded-video"),
+                                          1048576,
+                                          "video/x-h264, stream-format=(string)byte-stream, alignment=(string)au, profile=(string)baseline, width=(int)320, height=(int)240, pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)30/1");
 }
 
 }  // namespace switcher

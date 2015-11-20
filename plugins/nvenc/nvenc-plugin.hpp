@@ -26,6 +26,7 @@
 #include "switcher/threaded-wrapper.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
+#include "switcher/shmdata-writer.hpp"
 #include "./nvenc-encode-session.hpp"
 
 namespace switcher {
@@ -41,6 +42,7 @@ class NVencPlugin: public Quiddity {
  private:
   ShmdataConnector shmcntr_;
   std::unique_ptr<ShmdataFollower> shm_{nullptr};
+  std::unique_ptr<ShmdataWriter> shmw_{nullptr};
   std::unique_ptr<ThreadedWrapper<NVencES>> es_{};
   Selection devices_{{"none"}, 0};
   std::vector<int> devices_nv_ids_{};
