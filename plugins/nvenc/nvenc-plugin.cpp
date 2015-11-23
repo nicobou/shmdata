@@ -213,7 +213,7 @@ void NVencPlugin::update_input_formats(){
     else if ("YUV444_PL" == it.first || "YUV444_TILED16x16" == it.first || "YUV444_TILED64x16" == it.first)
       it.first = std::string("video/x-raw, " "format = (string) ") + "Y444";
     else
-      g_warning("unknown format in NVencPlugin %s\n", it.first.c_str());
+      g_warning("format not supported by NVencPlugin (%s)\n", it.first.c_str());
   }
 }
 
@@ -255,19 +255,52 @@ void NVencPlugin::on_shmreader_data(void *data, size_t size) {
     g_warning("error copying data to nvenc");
     return;
   }
+  //g_print("coucou, data size %lu\n", size);
   // FIXME make following async:
   es_.get()->invoke<MPtr(&NVencES::encode_current_input)>();
   es_.get()->invoke<MPtr(&NVencES::process_encoded_frame)>(
-      [&](void *data, uint32_t size){
-        g_print("coucou, %u\n", size);
-         shmw_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, size);
-         shmw_->bytes_written(size);
+      [&](void *data, uint32_t enc_size){
+        //g_print("coucou,encoded size: %u\n", enc_size);
+         shmw_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, enc_size);
+         shmw_->bytes_written(enc_size);
       });
 }
 
 void NVencPlugin::on_shmreader_server_connected(const std::string &data_descr) {
   GstCaps *caps = gst_caps_from_string(data_descr.c_str());
   On_scope_exit{ if (nullptr != caps) gst_caps_unref(caps); };
+  GstStructure *s = gst_caps_get_structure(caps, 0);
+  if (nullptr == s) {
+    g_warning("cannot get structure from caps (nvenc)");
+    return;
+  }
+  gint width = 0, height = 0;
+  if (!gst_structure_get_int(s, "width", &width)
+      || !gst_structure_get_int(s, "height", &height)){
+    g_warning("cannot get width/height from shmdata description (nvenc)");
+    return;
+  }
+  const char *format = gst_structure_get_string(s, "format");
+  if (nullptr == format){
+    g_warning("cannot get video format from shmdata description (nvenc)");
+    return;
+  }
+  auto format_str = std::string(format);
+  auto buf_format = NV_ENC_BUFFER_FORMAT_UNDEFINED;
+  if (format_str == "NV12")
+    buf_format = NV_ENC_BUFFER_FORMAT_NV12_PL;
+  else if (format_str == "YV12")
+    buf_format = NV_ENC_BUFFER_FORMAT_YV12_PL;
+  else if (format_str == "I420")
+    buf_format = NV_ENC_BUFFER_FORMAT_IYUV_PL;
+  else if (format_str == "Y444")
+    buf_format = NV_ENC_BUFFER_FORMAT_YUV444_PL;
+  else {
+    g_warning("video format %s not supported by switcher nvenc plugin", format_str.c_str());
+    return;
+  }
+    
+  g_print("format: %s\n", format);
   auto cur_codec = codecs_.get_current();
   auto guid_iter = std::find_if(
       codecs_guids_.begin(), codecs_guids_.end(),
@@ -283,12 +316,17 @@ void NVencPlugin::on_shmreader_server_connected(const std::string &data_descr) {
   es_.get()->invoke_async<MPtr(&NVencES::initialize_encoder)>(
       nullptr,
       guid_iter->second, preset_iter->second,
-      320, 240,
-      NV_ENC_BUFFER_FORMAT_IYUV_PL);
-  shmw_ =std2::make_unique<ShmdataWriter>(this,
-                                          make_file_name("encdoded-video"),
-                                          1048576,
-                                          "video/x-h264, stream-format=(string)byte-stream, alignment=(string)au, profile=(string)baseline, width=(int)320, height=(int)240, pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)30/1");
+      width, height,
+      buf_format);
+  shmw_ = std2::make_unique<ShmdataWriter>(
+      this,
+      make_file_name("encoded-video"),
+      10048576,
+      std::string("video/x-h264, stream-format=(string)byte-stream, "
+                  "alignment=(string)au, profile=(string)baseline")
+      + ", width=(int)" + std::to_string(width)
+      + ", height=(int)" + std::to_string(height)
+      + ", pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)30/1");
 }
 
 }  // namespace switcher
