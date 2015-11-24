@@ -311,7 +311,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[void do_nothing(int, double){} template<typ
   AC_MSG_RESULT([no])
   AC_MSG_ERROR([
      compiler cannot expand variadic template in lambda (require g++ >= 4.9)
-     on Unbuntu 14.04, you can install g++-4.9 doing the following:
+     on Ubuntu 14.04, you can install g++-4.9 doing the following:
      sudo add-apt-repository ppa:ubuntu-toolchain-r/test
      sudo apt-get update
      sudo apt-get install g++-4.9
