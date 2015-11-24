@@ -83,19 +83,6 @@ bool NVencBuffers::safe_bool_idiom() const {
                                          nullptr);
 }
 
-void convertYUVpitchtoYUV444(unsigned char *yuv_luma, unsigned char *yuv_cb, unsigned char *yuv_cr,
-    unsigned char *surf_luma, unsigned char *surf_cb, unsigned char *surf_cr, int width, int height, int srcStride, int dstStride)
-{
-    int h;
-
-    for (h = 0; h < height; h++)
-    {
-        memcpy(surf_luma + dstStride * h, yuv_luma + srcStride * h, width);
-        memcpy(surf_cb + dstStride * h, yuv_cb + srcStride * h, width);
-        memcpy(surf_cr + dstStride * h, yuv_cr + srcStride * h, width);
-    }
-}
-
 bool NVencBuffers::copy_to_next_input_buffer(void *data, size_t size){
   if (nullptr != next_input_)
     return false;
@@ -123,39 +110,42 @@ bool NVencBuffers::copy_to_next_input_buffer(void *data, size_t size){
       dest += dest_stride;
       src += src_stride;
     }
-  } else {
-    // HERE
-    // if (size != width_ * height_ * 2)
-    //   g_print("coucou size %lu, width %u, height %u \n", size, width_, height_);
+  } else if (format_ == NV_ENC_BUFFER_FORMAT_YV12_PL
+             || format_ == NV_ENC_BUFFER_FORMAT_YV12_PL) {
     guint8 *src = (guint8 *)data;
     guint src_stride = width_;
     guint8 *dest = (guint8 *) lockInputBufferParams.bufferDataPtr;
     guint dest_stride = lockInputBufferParams.pitch;
     for (guint y = 0; y < height_; ++y) {
-      memcpy (dest, src, width_);
+      memcpy(dest, src, width_);
       dest += dest_stride;
       src += src_stride;
     }
     for (guint y = 0; y < height_; ++y) {
-      memcpy (dest, src, width_/2);
+      memcpy(dest, src, width_/2);
+      dest += dest_stride/2;
+      src += width_/2;
+    }
+  } else if (format_ == NV_ENC_BUFFER_FORMAT_YUV444_PL) {
+    // if (size != width_ * height_ * 2)
+      // g_print("coucou size %lu, width %u, height %u pitch %u, format %d\n",
+      //         size, width_, height_,
+      //         lockInputBufferParams.pitch,
+      //         format_);
+    guint8 *src = (guint8 *)data;
+    guint src_stride = width_;
+    guint8 *dest = (guint8 *) lockInputBufferParams.bufferDataPtr;
+    guint dest_stride = lockInputBufferParams.pitch;
+    for (guint y = 0; y < 3 * height_; ++y) {
+      memcpy(dest, src, width_);
       dest += dest_stride;
       src += src_stride;
     }
-    //     unsigned char *pInputSurfaceCb =
-    //     pInputSurface + (height_ * lockedPitch);
-    // unsigned char *pInputSurfaceCr =
-    //     pInputSurfaceCb + (height_ * lockedPitch);
-    // convertYUVpitchtoYUV444((unsigned char *)data,
-    //                         (unsigned char *)data + size/3,
-    //                         (unsigned char *)data + size * 2 / 3,
-    //                         pInputSurface,
-    //                         pInputSurfaceCb,
-    //                         pInputSurfaceCr,
-    //                         width_,
-    //                         height_,
-    //                         width_,
-    //                         lockedPitch);
+
+  } else {
+    g_warning("bug in nvenc-buffer line %d (switcher nvenc plugin)", __LINE__);
   }
+  
   if (NV_ENC_SUCCESS !=
       NVencAPI::api.nvEncUnlockInputBuffer(encoder_, input_bufs_[cur_buf_]))
     return false;
