@@ -425,29 +425,33 @@ NVENCBUILD=disabled
 PKG_CHECK_MODULES([CUDA], [cuda-7.5 cudart-7.5],, [
       PKG_CHECK_MODULES([CUDA], [cuda-7.0 cudart-7.0],, [
         PKG_CHECK_MODULES([CUDA], [cuda-6.5 cudart-6.5],, [
-          AC_MSG_WARN([Could not find cuda headers/libraries])])])])
+          AC_MSG_WARN([Could not find cuda headers/libraries (nvenc plugin)])])])])
 HAVE_CUDA_H=no
 HAVE_CUDART_H=no
 save_CPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CUDA_CFLAGS $save_CPPFLAGS "
 AC_CHECK_HEADER([cuda.h], [HAVE_CUDA_H=yes],
-    AC_MSG_WARN([Could not find cuda.h]))
+    AC_MSG_WARN([Could not find cuda.h  (nvenc plugin)]))
 AC_CHECK_HEADER([cuda_runtime_api.h], [HAVE_CUDART_H=yes],
-    AC_MSG_WARN([Could not find cuda_runtime_api.h]))
+    AC_MSG_WARN([Could not find cuda_runtime_api.h  (nvenc plugin)]))
 CPPFLAGS=$save_CPPFLAGS
 save_LIBS="$LIBS"
 LIBS="$CUDA_LIBS $save_LIBS"
 HAVE_CUDART_LIB="no"
 AC_CHECK_LIB(cudart,cudaGetErrorString,[HAVE_CUDART_LIB="yes"], [
-    AC_MSG_WARN([Could not find cudart library])])
+    AC_MSG_WARN([Could not find cudart library  (nvenc plugin)])])
 HAVE_CUDA_LIB="no"
 AC_CHECK_LIB(cuda,cuInit,[HAVE_CUDA_LIB="yes"], [
-    AC_MSG_WARN([Could not find cuda library])])
+    AC_MSG_WARN([Could not find cuda library  (nvenc plugin)])])
+HAVE_NVIDIA_ENCODE_LIB="no"
+AC_CHECK_LIB(nvidia-encode,NvEncodeAPICreateInstance,[HAVE_NVIDIA_ENCODE_LIB="yes"], [
+    AC_MSG_WARN([Could not find nvidia-encode library (nvenc plugin)])])
 LIBS="$save_LIBS"
 
 if test "x$HAVE_CUDA_H" = "xyes" \
     -a "x$HAVE_CUDART_H" = "xyes" \
     -a "x$HAVE_CUDA_LIB" = "xyes" \
+    -a "x$HAVE_NVIDIA_ENCODE_LIB" = "xyes" \
     -a "x$HAVE_CUDART_LIB" = "xyes"; then
   NVENCBUILD="enabled"
 fi
