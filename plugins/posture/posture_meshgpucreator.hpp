@@ -52,7 +52,7 @@ namespace switcher {
 
     std::map<int, std::vector<unsigned char>> depth_stock_ {};
     std::mutex stock_mutex_ {};
-  
+    bool quit_{false};
     bool init() final;
     void cb_frame_depth(int index, std::vector<unsigned char>& depth, int width, int height);
     void cb_frame_cloud(int index, std::vector<char>& cloud);
