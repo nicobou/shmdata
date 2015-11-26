@@ -1289,21 +1289,30 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
   }
 }
 
-void
-PJCall::internal_manager_cb(const std::string &/*subscriber_name */,
-                            const std::string &quid_name ,
-                            const std::string &sig_name,
-                            const std::vector<std::string> &params,
-                            void *user_data) {
+void PJCall::internal_manager_cb(const std::string &/*subscriber_name */,
+                                 const std::string &quid_name ,
+                                 const std::string &sig_name,
+                                 const std::vector<std::string> &params,
+                                 void *user_data) {
   PJCall *context = static_cast<PJCall *>(user_data);
   if (0 == sig_name.compare("on-tree-grafted") 
-      && 0 == std::string(".shmdata.writer.").compare(std::string(params[0], 0, 16))) {
+      && 0 == std::string(".shmdata.writer").compare(std::string(params[0], 0, 15))) {
+    if (std::string::npos != params[0].find(".byte_rate")){
+      context->sip_instance_->
+          graft_tree(params[0],
+                     InfoTree::make(
+                         context->manager_->use_tree<MPtr(&InfoTree::branch_read_data<int>)>(
+                         quid_name,
+                         params[0])));
+      return;
+    }
     // FIXME, this should not make a copy through serialization
     std::string stree = context->manager_->invoke_info_tree<std::string>(
         quid_name,
         [&](InfoTree::ptrc t){
           return BasicSerializer::serialize(InfoTree::get_subtree(t, params[0]));
         });
+    g_print("param[0] %s stree %s\n", params[0].c_str(), stree.c_str());
     auto shmtree = BasicSerializer::deserialize(stree);
     auto it = context->quid_uri_.find(quid_name);
     if (context->quid_uri_.end() == it)
@@ -1313,11 +1322,14 @@ PJCall::internal_manager_cb(const std::string &/*subscriber_name */,
     context->sip_instance_->graft_tree(params[0], shmtree);
     return;
   } else if (0 == sig_name.compare("on-tree-pruned")
-             && 0 == std::string(".shmdata.writer.").compare(std::string(params[0], 0, 16))) {
+             && 0 == std::string(".shmdata.writer").compare(std::string(params[0], 0, 15))) {
     context->sip_instance_->prune_tree(params[0]);
     return;
   }
-  g_warning("PJCall::%s unhandled signal (%s)", __FUNCTION__, sig_name.c_str());
+  g_warning("PJCall::%s unhandled signal (%s, %s)",
+            __FUNCTION__,
+            sig_name.c_str(),
+            params[0].c_str());
 }
 
 void PJCall::call_on_rx_offer(pjsip_inv_session */*inv*/,
