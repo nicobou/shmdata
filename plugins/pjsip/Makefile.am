@@ -67,12 +67,13 @@ pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h: Makefile
         && patch -p0 < ../$(srcdir)/more_codecs.patch \
         && sed -iold 's/isblank/MACROIsBlank/' pjlib/include/pj/compat/ctype.h \
         && sed -iold 's/isblank/MACROIsBlank/' pjlib/include/pj/ctype.h \
-        && ./configure --prefix `pwd`/install_dir --disable-video  \
+        && CFLAGS="-DPJ_ICE_COMP_BITS=8 -DPJ_ICE_MAX_CAND=1024 -DPJ_ICE_CAND_TYPE_PREF_BITS=16" \
+           ./configure --prefix `pwd`/install_dir --disable-video  \
            --disable-sound --disable-g711-codec --disable-g7221-codec  \
            --disable-g722-codec --disable-gsm-codec --disable-ilbc-codec \
            --disable-l16-codec --disable-speex-aec  --disable-speex-codec \
-        && CFLAGS=-fPIC make -j dep \
-        && CFLAGS=-fPIC make -j \
+        && CFLAGS="-fPIC" make -j dep \
+        && CFLAGS="-fPIC" make -j \
         && make install \
         && PJPROJECT_STATIC_LIBS=`cd ..; ls pjproject-2.2.1/install_dir/lib/*.a`
 
