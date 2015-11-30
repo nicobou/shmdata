@@ -27,11 +27,13 @@
 #include "switcher/quiddity.hpp"
 #include "./pj-call.hpp"
 #include "./pj-presence.hpp"
+#include "./pj-stun-turn.hpp"
 
 namespace switcher {
 class PJSIP: public Quiddity {
   friend PJCall;
   friend PJPresence;
+  friend PJStunTurn;
 
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PJSIP);
@@ -62,6 +64,7 @@ class PJSIP: public Quiddity {
   pjsip_endpoint *sip_endpt_{nullptr};
   PJCall *sip_calls_ {nullptr};
   PJPresence *sip_presence_ {nullptr};
+  PJStunTurn *stun_turn_ {nullptr};
   std::thread sip_worker_ {};
   bool sip_work_ {true};
   pj_thread_desc worker_handler_desc_ {};

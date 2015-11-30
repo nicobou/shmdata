@@ -183,11 +183,8 @@ PJPresence::register_account_wrapped(gchar *user,
     g_warning("cannot register without connection to server");
     return FALSE;
   }
-  context->sip_instance_->run_command_sync(std::bind
-                                           (&PJPresence::register_account,
-                                            context,
-                                            std::string(user),
-                                            std::string(password)));
+  context->sip_instance_->run_command_sync(
+      [&](){context->register_account(std::string(user), std::string(password));});
   if (context->registered_)
     return TRUE;
   return FALSE;
@@ -255,8 +252,7 @@ gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */ ,
                                                 void *user_data) {
   PJPresence *context = static_cast<PJPresence *>(user_data);
   context->sip_instance_->
-      run_command_sync(std::bind(&PJPresence::unregister_account,
-                                 context));
+      run_command_sync([&](){context->unregister_account();});
   if (-1 != context->account_id_)
     return FALSE;
   return TRUE;
@@ -368,9 +364,7 @@ gboolean PJPresence::add_buddy_wrapped(gchar *buddy_uri,
   }
 
   context->sip_instance_->
-      run_command_sync(std::bind(&PJPresence::add_buddy,
-                                 context,
-                                 buddy_uri));
+      run_command_sync([&](){context->add_buddy(buddy_uri);});
   return TRUE;
 }
 
@@ -378,9 +372,7 @@ gboolean PJPresence::del_buddy_wrapped(gchar *buddy_uri,
                                        void *user_data) {
   PJPresence *context = static_cast<PJPresence *>(user_data);
   context->sip_instance_->
-      run_command_sync(std::bind(&PJPresence::del_buddy,
-                                 context,
-                                 buddy_uri));
+      run_command_sync([&](){context->del_buddy(buddy_uri);});
   return TRUE;
 }
 
@@ -406,10 +398,9 @@ gboolean PJPresence::name_buddy_wrapped(gchar *name,
                                         void *user_data) {
   PJPresence *context = static_cast<PJPresence *>(user_data);
   context->sip_instance_->
-      run_command_sync(std::bind(&PJPresence::name_buddy,
-                                 context,
-                                 std::string(name),
-                                 std::string(buddy_uri)));
+      run_command_sync([&](){context->name_buddy(
+          std::string(name),
+          std::string(buddy_uri));});
   return TRUE;
 }
 

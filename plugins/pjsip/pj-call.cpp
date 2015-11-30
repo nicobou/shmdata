@@ -1165,9 +1165,9 @@ gboolean PJCall::send_to(gchar *sip_url, void *user_data) {
     }
     context->is_calling_ = true;
     On_scope_exit{context->is_calling_ = false;};
-    context->sip_instance_->run_command_sync(std::bind(&PJCall::make_call,
-                                                       context,
-                                                       std::string(sip_url)));
+    context->sip_instance_->run_command_sync([&](){
+        context->make_call(std::string(sip_url));
+      });
     context->ocall_cv_.wait(lock, [&context](){
         if (context->ocall_action_done_) {
           context->ocall_action_done_ = false;
@@ -1193,10 +1193,9 @@ gboolean PJCall::hang_up(gchar *sip_url, void *user_data) {
     }
     context->is_hanging_up_ = true;
     On_scope_exit{context->is_hanging_up_ = false;};
-    context->sip_instance_->
-        run_command_sync(std::bind(&PJCall::make_hang_up, 
-                                   context,
-                                   std::string(sip_url)));
+    context->sip_instance_->run_command_sync(
+        [&](){ context->make_hang_up(std::string(sip_url)); }
+      );
     context->ocall_cv_.wait(lock, [&context](){
         if (context->ocall_action_done_) {
           context->ocall_action_done_ = false;
@@ -1240,11 +1239,11 @@ gboolean PJCall::attach_shmdata_to_contact(const gchar *shmpath,
   }
   PJCall *context = static_cast<PJCall *>(user_data);
   context->sip_instance_->run_command_sync(
-      std::bind(&PJCall::make_attach_shmdata_to_contact,
-                context,
-                std::string(shmpath),
-                std::string(contact_uri),
-                attach));
+      [&](){context->make_attach_shmdata_to_contact(
+          std::string(shmpath),
+          std::string(contact_uri),
+          attach);
+      });
   return TRUE;
 }
 

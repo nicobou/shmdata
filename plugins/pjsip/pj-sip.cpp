@@ -48,7 +48,7 @@ PJSIP::~PJSIP() {
     return;
   }
   if (pj_sip_inited_) {
-    run_command_sync(std::bind(&PJSIP::exit_cmd, this));
+    run_command_sync([this](){ exit_cmd();});
     if (sip_thread_.joinable())
       sip_thread_.join();
     if (sip_worker_.joinable()) {
@@ -146,7 +146,7 @@ bool PJSIP::pj_sip_init() {
     // cfg.cb.on_snd_dev_operation = &on_snd_dev_operation;
     // cfg.cb.on_call_media_event = &on_call_media_event;
     pjsua_logging_config_default(&log_cfg);
-    log_cfg.console_level = 0;
+    log_cfg.console_level = 6;
     status = pjsua_init(&cfg, &log_cfg, nullptr);
     if (status != PJ_SUCCESS) {
       g_warning("Error in pjsua_init()");
