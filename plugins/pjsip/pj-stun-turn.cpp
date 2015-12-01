@@ -17,20 +17,19 @@
 
 #include <pjnath.h>
 #include <glib.h>
-#include "./pj-sip.hpp"
+#include "./pj-sip-plugin.hpp"
 #include "./pj-stun-turn.hpp"
 
 namespace switcher {
-PJStunTurn::PJStunTurn(PJSIP *sip_instance):
-    sip_instance_(sip_instance){
+PJStunTurn::PJStunTurn(){
   if (PJ_SUCCESS != pjnath_init()){
     g_warning("cannot init pjnath");
     return;
   }
   pj_ice_strans_cfg_default(&ice_cfg_);
-  pj_timer_heap_create(sip_instance->pool_, 100, 
+  pj_timer_heap_create(PJSIP::this_->pool_, 100, 
                        &ice_cfg_.stun_cfg.timer_heap);
-  pj_ioqueue_create(sip_instance_->pool_, 128, 
+  pj_ioqueue_create(PJSIP::this_->pool_, 128, 
                     &ice_cfg_.stun_cfg.ioqueue);
   ice_cfg_.af = pj_AF_INET();
   

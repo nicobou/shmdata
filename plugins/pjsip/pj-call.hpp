@@ -25,16 +25,17 @@
 #include <condition_variable>
 #include "switcher/rtp-session.hpp"
 #include "switcher/quiddity-manager.hpp"
+#include "./pj-sip-plugin.hpp"
+#include "./pj-sip.hpp"
 #include "./pj-codec.hpp"
 
 namespace switcher {
-class PJSIP;
+class SIPPlugin;
 class PJCall {
   friend PJCodec;
 
  public:
-  PJCall() = delete;
-  explicit PJCall(PJSIP *sip_instance);
+  PJCall();
   ~PJCall();
   PJCall(const PJCall &) = delete;
   PJCall &operator=(const PJCall &) = delete;
@@ -51,12 +52,13 @@ class PJCall {
   using call_t = struct call {
     pjsip_inv_session *inv {nullptr};
     std::vector<media_t> media{};
-    std::string peer_uri {};
+    std::string peer_uri{};
   };
 
  private:
   static pjmedia_endpt *med_endpt_;
   static pjsip_module mod_siprtp_;
+  SIPPlugin *sip_plugin_;
   pj_str_t local_addr_ {nullptr, 0};
   std::vector<call_t> outgoing_call_{};
   std::mutex ocall_m_{};
@@ -67,7 +69,6 @@ class PJCall {
   std::vector<call_t> incoming_call_{};
   std::vector<call_t> call_{};
   std::map<std::string, std::string> local_ips_{};
-  PJSIP *sip_instance_;
   // internal rtp
   QuiddityManager::ptr manager_;
   // saving association between reception quids (httpsdpdec) and uris:
@@ -76,6 +77,7 @@ class PJCall {
   uint starting_rtp_port_ {18900};
   pj_uint16_t next_port_to_attribute_{18900};  // Must be even
   uint port_range_{100};
+
   // sip functions
   static pj_bool_t on_rx_request(pjsip_rx_data *rdata);
   static void call_on_state_changed(pjsip_inv_session *inv,

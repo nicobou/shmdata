@@ -22,22 +22,20 @@
 #include <condition_variable>
 
 namespace switcher {
-class PJSIP;
+class SIPPlugin;
 class PJCall;
 
 class PJStunTurn {
-  friend PJSIP;
+  friend SIPPlugin;
   friend PJCall;
 
  public:
-  PJStunTurn() = delete;
-  explicit PJStunTurn(PJSIP *sip_instance);
+  PJStunTurn();
   ~PJStunTurn();
   PJStunTurn(const PJStunTurn &) = delete;
   PJStunTurn &operator=(const PJStunTurn &) = delete;
 
  private:
-  PJSIP *sip_instance_{nullptr};
   std::mutex connection_mutex_{};
   std::condition_variable connection_cond_{};
   bool connected_{false};
