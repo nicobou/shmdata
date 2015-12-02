@@ -8,6 +8,7 @@ libpjsip_plugin_la_SOURCES = \
     pj-call.cpp \
     pj-codec-utils.cpp \
     pj-codec.cpp \
+    pj-ice-stream-trans.cpp \
     pj-presence.cpp \
     pj-sip-plugin.cpp \
     pj-sip.cpp \
@@ -27,6 +28,7 @@ libpjsip_plugin_la_include_HEADERS = \
     pj-call.hpp \
     pj-codec.hpp \
     pj-codec-utils.hpp \
+    pj-ice-stream-trans.hpp \
     pj-presence.hpp \
     pj-sip-plugin.hpp \
     pj-sip.hpp \

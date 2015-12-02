@@ -48,9 +48,9 @@ class SIPPlugin: public Quiddity {
   std::unique_ptr<ThreadedWrapper<PJSIP>> pjsip_{};
   unsigned sip_port_ {5060};
   pjsua_transport_id transport_id_ {-1};
-  PJCall *sip_calls_ {nullptr};
-  PJPresence *sip_presence_ {nullptr};
-  PJStunTurn *stun_turn_ {nullptr};
+  std::unique_ptr<PJCall> sip_calls_{nullptr};
+  std::unique_ptr<PJPresence> sip_presence_{nullptr};
+  std::unique_ptr<PJStunTurn> stun_turn_{nullptr};
 
   // singleton related members:
   bool i_m_the_one_{false};

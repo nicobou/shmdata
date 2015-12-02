@@ -40,6 +40,20 @@ class PJStunTurn {
   std::condition_variable connection_cond_{};
   bool connected_{false};
   pj_ice_strans_cfg ice_cfg_;
+  bool worker_quit_{false};
+  pj_thread_t *thread_{nullptr};
+  std::string stun_srv_;
+  unsigned stun_port_;
+  std::string turn_srv_;
+  unsigned turn_port_;
+  std::string turn_user_;
+  std::string turn_pass_;
+  
+  static int worker_thread(void *data);
+  pj_status_t handle_events(unsigned max_msec, unsigned *p_count);
+  static gboolean set_stun_turn(gchar *stun, gchar *turn,
+                                gchar *turn_user, char *turn_pass,
+                                void *user_data);
 };
 
 }  // namespace switcher

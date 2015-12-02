@@ -74,20 +74,16 @@ bool SIPPlugin::init() {
       // init
       [&](){
         start_sip_transport();
-        sip_calls_ = new PJCall();
-        sip_presence_ = new PJPresence();
+        sip_calls_ = std2::make_unique<PJCall>();
+        sip_presence_ = std2::make_unique<PJPresence>();
+        stun_turn_  = std2::make_unique<PJStunTurn>();
         return true;
       },
       // destruct
       [&](){
-        if (nullptr != sip_calls_) {
-          delete(sip_calls_);
-          sip_calls_ = nullptr;
-        }
-        if (nullptr == sip_presence_) {
-          delete(sip_presence_);
-          sip_presence_ = nullptr;
-        }
+        sip_calls_.reset(nullptr);
+        sip_presence_.reset(nullptr);
+        stun_turn_.reset(nullptr);
       });
   return pjsip_->invoke<MPtr(&PJSIP::safe_bool_idiom)>();
 }
