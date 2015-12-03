@@ -20,6 +20,7 @@
 
 #include <mutex>
 #include <condition_variable>
+#include "./pj-ice-stream-trans.hpp"
 
 namespace switcher {
 class SIPPlugin;
@@ -43,9 +44,7 @@ class PJStunTurn {
   bool worker_quit_{false};
   pj_thread_t *thread_{nullptr};
   std::string stun_srv_;
-  unsigned stun_port_;
   std::string turn_srv_;
-  unsigned turn_port_;
   std::string turn_user_;
   std::string turn_pass_;
   
