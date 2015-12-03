@@ -16,12 +16,15 @@
  */
 
 #include "glib.h"
+#include <thread>
+#include <chrono>
 #include "./pj-ice-stream-trans.hpp"
 
 namespace switcher {
 PJICEStreamTrans::PJICEStreamTrans(pj_ice_strans_cfg &ice_cfg,
                                    unsigned comp_cnt,
-                                   pj_ice_sess_role role){
+                                   pj_ice_sess_role role):
+    comp_cnt_(comp_cnt) {
   pj_ice_strans_cb icecb;
   /* init the callback */
   pj_bzero(&icecb, sizeof(icecb));
@@ -31,12 +34,13 @@ PJICEStreamTrans::PJICEStreamTrans(pj_ice_strans_cfg &ice_cfg,
   if (PJ_SUCCESS != pj_ice_strans_create("icetest", /* object name */
                                          &ice_cfg,  /* settings */
                                          comp_cnt,  /* comp_cnt */
-                                         NULL,      /* user data */
+                                         this,      /* user data */
                                          &icecb,    /* callback */
                                          &icest_)){ /* instance ptr */
     g_warning("error creating ice");
     return;
   }
+  std::unique_lock<std::mutex> lock(cand_ready_mtx_);
   if (PJ_SUCCESS != pj_ice_strans_init_ice(icest_,
                                            role,
                                            NULL,
@@ -44,6 +48,9 @@ PJICEStreamTrans::PJICEStreamTrans(pj_ice_strans_cfg &ice_cfg,
     g_warning("error initializing ICE");
     return;
   }
+  while (!cand_ready_)
+    if (cand_ready_cv_.wait_for(lock, std::chrono::seconds(3)) == std::cv_status::timeout)
+      return;
   //done
   is_valid_ = true;
 }
@@ -93,16 +100,79 @@ void PJICEStreamTrans::cb_on_ice_complete(pj_ice_strans *ice_st,
   const char *opname = 
       (op==PJ_ICE_STRANS_OP_INIT? "initialization" :
        (op==PJ_ICE_STRANS_OP_NEGOTIATION ? "negotiation" : "unknown_op"));
+
+  g_warning("ICE state %s\n",
+            pj_ice_strans_state_name (pj_ice_strans_get_state (ice_st)));
+
+  PJICEStreamTrans *context =
+      static_cast<PJICEStreamTrans *>(pj_ice_strans_get_user_data(ice_st));
+  if (op == PJ_ICE_STRANS_OP_INIT){
+    std::unique_lock<std::mutex>lock(context->cand_ready_mtx_);
+    if (status == PJ_SUCCESS)
+      context->cand_ready_ = true;
+    context->cand_ready_cv_.notify_one();
+  }
   
   if (status == PJ_SUCCESS) {
-    g_debug("ICE %s successful", opname);
+    g_warning("ICE %s successful", opname);
   } else {
     char errmsg[PJ_ERR_MSG_SIZE];
     pj_strerror(status, errmsg, sizeof(errmsg));
     g_warning("ICE %s failed: %s", opname, errmsg);
     // pj_ice_strans_destroy(ice_st);
-    // icedemo.icest = NULL;
+    // icest_ = NULL;
   }
 }
+
+std::string PJICEStreamTrans::get_ufrag_and_passwd(){
+  pj_str_t local_ufrag, local_pwd;
+  /* Get ufrag and pwd from current session */
+  pj_ice_strans_get_ufrag_pwd(icest_, &local_ufrag, &local_pwd,
+                              nullptr, nullptr);
+  return std::string("a=ice-ufrag:")
+      + std::string(local_ufrag.ptr, 0, local_ufrag.slen)
+      + "\na=ice-pwd:"
+      + std::string(local_pwd.ptr, 0, local_pwd.slen)
+      + "\n";
+}
+
+std::vector<std::string> PJICEStreamTrans::get_components(){
+  std::vector<std::string> res;
+  /* Write each component */
+  for (unsigned comp = 0; comp < comp_cnt_; ++comp) {
+    unsigned j, cand_cnt;
+    pj_ice_sess_cand cand[PJ_ICE_ST_MAX_CAND];
+    char ipaddr[PJ_INET6_ADDRSTRLEN];
+    
+    /* Get default candidate for the component */
+    if (!PJ_SUCCESS == pj_ice_strans_get_def_cand(icest_, comp+1, &cand[0])){
+      g_warning("issue with pj_ice_strans_get_def_cand");
+      return res;
+    }
+    
+    /* Enumerate all candidates for this component */
+    cand_cnt = PJ_ARRAY_SIZE(cand);
+    if (!PJ_SUCCESS == pj_ice_strans_enum_cands(icest_, comp+1, &cand_cnt, cand)){
+      g_warning("issue with pj_ice_strans_enum_cands");
+      return res;
+    }
+    g_warning("cand_cnt %u\n", cand_cnt);
+    /* And encode the candidates as SDP */
+    for (j = 0; j < cand_cnt; ++j) {
+      res.emplace_back(
+          std::string("a=candidate:")
+          + std::string(cand[j].foundation.ptr, 0, cand[j].foundation.slen)
+          + " " + std::to_string(cand[j].comp_id)
+          + " UDP " + std::to_string(cand[j].prio)
+          + " " + std::string(pj_sockaddr_print(&cand[j].addr, ipaddr, 
+                                                sizeof(ipaddr), 0))
+          + " " + std::to_string(pj_sockaddr_get_port(&cand[j].addr))
+          + " typ " + pj_ice_get_cand_type_name(cand[j].type)
+          + "\n");
+    }
+  }
+  return res;
+}
+
 
 }  // namespace switcher

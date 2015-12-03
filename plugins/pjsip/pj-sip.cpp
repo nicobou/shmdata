@@ -45,7 +45,7 @@ PJSIP::PJSIP(std::function<bool()> init_fun,
     g_warning("cannot init pjsip library");
     return;
   }
-  pj_log_set_level(0);
+  pj_log_set_level(6);
   // Register the thread, after pj_init() is called
   pj_thread_register("switcher-pjsip-singleton",
                      thread_handler_desc_, &pj_thread_ref_);
@@ -84,6 +84,7 @@ PJSIP::PJSIP(std::function<bool()> init_fun,
     // cfg.cb.on_call_media_event = &on_call_media_event;
     pjsua_logging_config_default(&log_cfg);
     log_cfg.console_level = 6;
+    //log_cfg.console_level = 0;
     status = pjsua_init(&cfg, &log_cfg, nullptr);
     if (status != PJ_SUCCESS) {
       g_warning("Error in pjsua_init()");

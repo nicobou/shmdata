@@ -28,6 +28,7 @@
 #include "./pj-sip-plugin.hpp"
 #include "./pj-sip.hpp"
 #include "./pj-codec.hpp"
+#include "./pj-ice-stream-trans.hpp"
 
 namespace switcher {
 class SIPPlugin;

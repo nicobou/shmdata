@@ -19,6 +19,10 @@
 #define __SWITCHER_PJ_ICE_STREAM_TRANS_H__
 
 #include <pjnath.h>
+#include <string>
+#include <vector>
+#include <mutex>
+#include <condition_variable>
 #include "switcher/safe-bool-idiom.hpp"
 
 namespace switcher {
@@ -32,10 +36,17 @@ class PJICEStreamTrans : public SafeBoolIdiom {
   PJICEStreamTrans(const PJICEStreamTrans &) = delete;
   PJICEStreamTrans &operator=(const PJICEStreamTrans &) = delete;
 
+  std::string get_ufrag_and_passwd();
+  std::vector<std::string> get_components();
+  
  private:
   bool is_valid_{false};
   pj_ice_strans	*icest_{nullptr};
-  unsigned comp_cnt_{1};
+  unsigned comp_cnt_;
+  // candidates are ready to be used
+  bool cand_ready_{false};
+  std::mutex cand_ready_mtx_{};
+  std::condition_variable cand_ready_cv_{};
 
   bool safe_bool_idiom() const final {return is_valid_;}
   static void cb_on_rx_data(pj_ice_strans *ice_st,

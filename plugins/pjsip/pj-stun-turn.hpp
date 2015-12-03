@@ -36,6 +36,8 @@ class PJStunTurn {
   PJStunTurn(const PJStunTurn &) = delete;
   PJStunTurn &operator=(const PJStunTurn &) = delete;
 
+  std::unique_ptr<PJICEStreamTrans> get_ice_transport(unsigned comp_cnt,
+                                                      pj_ice_sess_role role);
  private:
   std::mutex connection_mutex_{};
   std::condition_variable connection_cond_{};
@@ -47,6 +49,7 @@ class PJStunTurn {
   std::string turn_srv_;
   std::string turn_user_;
   std::string turn_pass_;
+  bool stun_turn_valid_{false};
   
   static int worker_thread(void *data);
   pj_status_t handle_events(unsigned max_msec, unsigned *p_count);

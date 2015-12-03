@@ -1017,9 +1017,6 @@ void PJCall::make_call(std::string dst_uri) {
   pjmedia_sdp_session *sdp = nullptr;
   pjsip_tx_data *tdata = nullptr;
   pj_status_t status;
-  // Find unused call slot
-  outgoing_call_.emplace_back();
-  cur_call = &outgoing_call_.back();
   pj_str_t dest_str;
   std::string tmp_dest_uri("sip:"+ dst_uri // + ";transport=tcp"
                            );
@@ -1030,6 +1027,9 @@ void PJCall::make_call(std::string dst_uri) {
               dst_uri.c_str());
     return;
   }
+  // Find unused call slot
+  outgoing_call_.emplace_back();
+  cur_call = &outgoing_call_.back();
   // Create UAC dialog
   status = pjsip_dlg_create_uac(pjsip_ua_instance(),
                                 &local_uri,  /* local URI */

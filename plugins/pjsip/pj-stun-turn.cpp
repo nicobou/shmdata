@@ -43,7 +43,6 @@ PJStunTurn::PJStunTurn(){
         g_warning("STUN TURN thread creating failled");
         return;
       }
-      
   ice_cfg_.af = pj_AF_INET();
   ice_cfg_.opt.aggressive = PJ_TRUE;
 
@@ -236,19 +235,27 @@ gboolean PJStunTurn::set_stun_turn(gchar *stun,
         context->ice_cfg_.turn.alloc_param.ka_interval = 300;
     }
 
-    if (SIPPlugin::this_->pjsip_->run<bool>([&]()->bool{
+ if (SIPPlugin::this_->pjsip_->run<bool>([&]()->bool{
           return static_cast<bool>(
               PJICEStreamTrans(context->ice_cfg_, 1, PJ_ICE_SESS_ROLE_CONTROLLING));
         })){
-      success = true;
-      g_print("******************************************************************\n");
+      success = true; //validate current config
+      context->stun_turn_valid_ = true;
       return TRUE;
     } else {
       return FALSE;
     }
-     
 }
 
-
+std::unique_ptr<PJICEStreamTrans> PJStunTurn::get_ice_transport(
+    unsigned comp_cnt,
+    pj_ice_sess_role role){
+  // if (!stun_turn_valid_)
+  //   return std::unique_ptr<PJICEStreamTrans>(nullptr);
+  auto res = std2::make_unique<PJICEStreamTrans>(ice_cfg_, comp_cnt, role);
+  if (!static_cast<bool>(*res.get()))
+    res.reset(nullptr);
+  return res;
+}
 
 }  // namespace switcher
