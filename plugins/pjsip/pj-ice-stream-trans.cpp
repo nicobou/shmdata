@@ -101,8 +101,8 @@ void PJICEStreamTrans::cb_on_ice_complete(pj_ice_strans *ice_st,
       (op==PJ_ICE_STRANS_OP_INIT? "initialization" :
        (op==PJ_ICE_STRANS_OP_NEGOTIATION ? "negotiation" : "unknown_op"));
 
-  g_warning("ICE state %s\n",
-            pj_ice_strans_state_name (pj_ice_strans_get_state (ice_st)));
+  g_debug("ICE state %s\n",
+          pj_ice_strans_state_name (pj_ice_strans_get_state (ice_st)));
 
   PJICEStreamTrans *context =
       static_cast<PJICEStreamTrans *>(pj_ice_strans_get_user_data(ice_st));
@@ -114,7 +114,7 @@ void PJICEStreamTrans::cb_on_ice_complete(pj_ice_strans *ice_st,
   }
   
   if (status == PJ_SUCCESS) {
-    g_warning("ICE %s successful", opname);
+    g_debug("ICE %s successful", opname);
   } else {
     char errmsg[PJ_ERR_MSG_SIZE];
     pj_strerror(status, errmsg, sizeof(errmsg));
@@ -124,22 +124,24 @@ void PJICEStreamTrans::cb_on_ice_complete(pj_ice_strans *ice_st,
   }
 }
 
-std::string PJICEStreamTrans::get_ufrag_and_passwd(){
+std::pair<pj_str_t,  pj_str_t> PJICEStreamTrans::get_ufrag_and_passwd(){
   pj_str_t local_ufrag, local_pwd;
   /* Get ufrag and pwd from current session */
   pj_ice_strans_get_ufrag_pwd(icest_, &local_ufrag, &local_pwd,
                               nullptr, nullptr);
-  return std::string("a=ice-ufrag:")
-      + std::string(local_ufrag.ptr, 0, local_ufrag.slen)
-      + "\na=ice-pwd:"
-      + std::string(local_pwd.ptr, 0, local_pwd.slen)
-      + "\n";
+  // return std::string("a=ice-ufrag:")
+  //     + std::string(local_ufrag.ptr, 0, local_ufrag.slen)
+  //     + "\na=ice-pwd:"
+  //     + std::string(local_pwd.ptr, 0, local_pwd.slen)
+  //     + "\n";
+  return std::make_pair(local_ufrag, local_pwd);
 }
 
-std::vector<std::string> PJICEStreamTrans::get_components(){
-  std::vector<std::string> res;
+std::vector<std::vector<std::string>> PJICEStreamTrans::get_components(){
+  std::vector<std::vector<std::string>> res;
   /* Write each component */
   for (unsigned comp = 0; comp < comp_cnt_; ++comp) {
+    res.emplace_back();
     unsigned j, cand_cnt;
     pj_ice_sess_cand cand[PJ_ICE_ST_MAX_CAND];
     char ipaddr[PJ_INET6_ADDRSTRLEN];
@@ -156,19 +158,19 @@ std::vector<std::string> PJICEStreamTrans::get_components(){
       g_warning("issue with pj_ice_strans_enum_cands");
       return res;
     }
-    g_warning("cand_cnt %u\n", cand_cnt);
     /* And encode the candidates as SDP */
     for (j = 0; j < cand_cnt; ++j) {
-      res.emplace_back(
-          std::string("a=candidate:")
-          + std::string(cand[j].foundation.ptr, 0, cand[j].foundation.slen)
+      res.back().emplace_back(
+          //std::string("a=candidate:") +
+          std::string(cand[j].foundation.ptr, 0, cand[j].foundation.slen)
           + " " + std::to_string(cand[j].comp_id)
           + " UDP " + std::to_string(cand[j].prio)
           + " " + std::string(pj_sockaddr_print(&cand[j].addr, ipaddr, 
                                                 sizeof(ipaddr), 0))
           + " " + std::to_string(pj_sockaddr_get_port(&cand[j].addr))
           + " typ " + pj_ice_get_cand_type_name(cand[j].type)
-          + "\n");
+          //+ "\n"
+                         );
     }
   }
   return res;

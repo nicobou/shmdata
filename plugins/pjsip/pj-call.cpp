@@ -459,6 +459,47 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
       g_debug("sending data to %s\n",
               std::string(remote_sdp->origin.addr.ptr,
                           remote_sdp->origin.addr.slen).c_str());
+      // finding ice infos & candidates
+      g_print("%s %d attr_count "
+              "%u \n",
+              __FUNCTION__, __LINE__,
+              remote_sdp->attr_count);
+      pjmedia_sdp_attr *ufrag =  pjmedia_sdp_attr_find2(remote_sdp->attr_count,
+                                                       remote_sdp->attr,
+                                                       "ice-ufrag",
+                                                       nullptr);
+      g_print("%s %d\n", __FUNCTION__, __LINE__);
+      g_print("#####################################################################"
+              "%s\n", std::string(ufrag->value.ptr, 0, ufrag->value.slen).c_str());
+      g_print("%s %d\n", __FUNCTION__, __LINE__);
+      pjmedia_sdp_attr *pwd =  pjmedia_sdp_attr_find2(remote_sdp->attr_count,
+                                                     remote_sdp->attr,
+                                                     "ice-pwd",
+                                                     nullptr);
+      g_print("#####################################################################"
+              "%s\n", std::string(pwd->value.ptr, 0, pwd->value.slen).c_str());
+      // candidates
+      unsigned cand_cnt = 0;
+      //pj_ice_sess_cand cand[PJ_ICE_ST_MAX_CAND];
+      for (unsigned i = 0; i < remote_sdp->media_count; ++i ){
+        for (unsigned j = 0; j < remote_sdp->media[i]->attr_count; ++j){
+          if ("candidate" ==
+              std::string(remote_sdp->media[i]->attr[j]->name.ptr, 0 ,
+                          remote_sdp->media[i]->attr[j]->name.slen)){
+            ++cand_cnt;
+            // HERE write info into cand and start negotiation
+            g_print ("candidate %s\n",
+                     std::string(remote_sdp->media[i]->attr[j]->value.ptr, 0 ,
+                                 remote_sdp->media[i]->attr[j]->value.slen).c_str());
+          }
+        }
+      }
+      call->ice_trans_send_ = SIPPlugin::this_->stun_turn_->get_ice_transport(
+          remote_sdp->media_count, PJ_ICE_SESS_ROLE_CONTROLLED);
+      if (!call->ice_trans_)
+        g_warning("cannot init ICE transport for sending");
+
+      // sending with switcher/gst
       SIPPlugin::this_->sip_calls_->manager_->
           invoke("siprtp",
                  "add_destination",
@@ -674,8 +715,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   create_sdp_answer(dlg->pool, call, media_to_receive, &sdp);
   // preparing initial answer
   int initial_answer_code = 200;
-  pjmedia_sdp_session *outgoing_sdp = nullptr;
-  SIPPlugin::this_->sip_calls_->create_outgoing_sdp(dlg, call, &outgoing_sdp);
   // Create UAS invite session
   status = pjsip_inv_create_uas(dlg, rdata, sdp, 0, &call->inv);
   if (status != PJ_SUCCESS) {
@@ -709,24 +748,16 @@ pj_status_t PJCall::create_sdp_answer(
     call_t *call,
     const std::vector<pjmedia_sdp_media *> &media_to_receive,
     pjmedia_sdp_session **p_sdp) {
-  pj_time_val tv;
-  pjmedia_sdp_session *sdp;
   PJ_ASSERT_RETURN(pool && p_sdp, PJ_EINVAL);
   /* Create and initialize basic SDP session */
-  sdp =  static_cast<pjmedia_sdp_session *>(
-      pj_pool_zalloc(pool, sizeof(pjmedia_sdp_session)));
+  pjmedia_sdp_session *sdp =
+      static_cast<pjmedia_sdp_session *>(pj_pool_zalloc(pool, sizeof(pjmedia_sdp_session)));
+  pj_time_val tv;
   pj_gettimeofday(&tv);
   pj_cstr(&sdp->origin.user, "pjsip-siprtp");
   sdp->origin.version = sdp->origin.id = tv.sec + 2208988800UL;
   pj_cstr(&sdp->origin.net_type, "IN");
   pj_cstr(&sdp->origin.addr_type, "IP4");
-  // pj_uint32_t ipv4 = pj_gethostaddr().s_addr;
-  // std::string localip(std::to_string(ipv4 & 0xff)
-  //                     + "." + std::to_string((ipv4 >> 8) & 0xff)
-  //                     + "." + std::to_string((ipv4 >> 16) & 0xff)
-  //                     + "." + std::to_string((ipv4 >> 24) & 0xff));
-  // g_debug("using local ip %s when creating sdp answer");
-  // pj_cstr(&sdp->origin.addr, localip.c_str());
   sdp->origin.addr = SIPPlugin::this_->sip_calls_->local_addr_;
   pj_cstr(&sdp->name, "pjsip");
   sdp->conn = static_cast<pjmedia_sdp_conn *>(
@@ -737,7 +768,23 @@ pj_status_t PJCall::create_sdp_answer(
   /* SDP time and attributes. */
   sdp->time.start = sdp->time.stop = 0;
   sdp->attr_count = 0;
+  if (call->ice_trans_){
+    auto ufrag_pwd = call->ice_trans_->get_ufrag_and_passwd();
+    pjmedia_sdp_attr *ufrag =
+        static_cast<pjmedia_sdp_attr *>(pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr)));
+    ufrag->name = pj_str("ice-ufrag");
+    ufrag->value = ufrag_pwd.first;
+    sdp->attr[sdp->attr_count] = ufrag;
+    ++sdp->attr_count;
+    pjmedia_sdp_attr *pwd =
+        static_cast<pjmedia_sdp_attr *>(pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr)));
+    pwd->name = pj_str("ice-pwd");
+    pwd->value = ufrag_pwd.second;
+    sdp->attr[sdp->attr_count] = pwd;
+    ++sdp->attr_count;
+  }
   sdp->media_count = 0;
+  auto candidates = call->ice_trans_->get_components();
   for (unsigned i = 0; i < media_to_receive.size(); i++) {
     // getting offer media to receive
     pjmedia_sdp_media *sdp_media = media_to_receive[i];
@@ -756,6 +803,14 @@ pj_status_t PJCall::create_sdp_answer(
     // }
     // set port
     sdp_media->desc.port = call->media[i].rtp_port;
+    for (auto &it : candidates[i]){
+      pjmedia_sdp_attr *cand =
+          static_cast<pjmedia_sdp_attr *>(pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr)));
+      cand->name = pj_str("candidate");
+      cand->value = pj_strdup3(pool, it.c_str());
+      sdp_media->attr[sdp_media->attr_count] = cand;
+      ++sdp_media->attr_count;
+    }
     // put media in answer
     sdp->media[i] = sdp_media;
     sdp->media_count++;
@@ -765,7 +820,7 @@ pj_status_t PJCall::create_sdp_answer(
 }
 
 void PJCall::print_sdp(const pjmedia_sdp_session *local_sdp) {
-  char sdpbuf1[4096];
+  char sdpbuf1[65536];
   pj_ssize_t len1;
   len1 = pjmedia_sdp_print(local_sdp, sdpbuf1, sizeof(sdpbuf1));
   if (len1 < 1) {

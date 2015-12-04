@@ -55,6 +55,7 @@ class PJCall {
     std::vector<media_t> media{};
     std::string peer_uri{};
     std::unique_ptr<PJICEStreamTrans> ice_trans_{};
+    std::unique_ptr<PJICEStreamTrans> ice_trans_send_{};
   };
 
  private:

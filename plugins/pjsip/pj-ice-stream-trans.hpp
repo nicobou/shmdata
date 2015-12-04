@@ -23,6 +23,7 @@
 #include <vector>
 #include <mutex>
 #include <condition_variable>
+#include <utility>
 #include "switcher/safe-bool-idiom.hpp"
 
 namespace switcher {
@@ -36,8 +37,8 @@ class PJICEStreamTrans : public SafeBoolIdiom {
   PJICEStreamTrans(const PJICEStreamTrans &) = delete;
   PJICEStreamTrans &operator=(const PJICEStreamTrans &) = delete;
 
-  std::string get_ufrag_and_passwd();
-  std::vector<std::string> get_components();
+  std::pair<pj_str_t,  pj_str_t> get_ufrag_and_passwd();
+  std::vector<std::vector<std::string>> get_components();
   
  private:
   bool is_valid_{false};
