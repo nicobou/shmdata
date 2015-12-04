@@ -41,16 +41,16 @@ PJICEStreamTrans::PJICEStreamTrans(pj_ice_strans_cfg &ice_cfg,
     return;
   }
   std::unique_lock<std::mutex> lock(cand_ready_mtx_);
-  if (PJ_SUCCESS != pj_ice_strans_init_ice(icest_,
-                                           role,
-                                           NULL,
-                                           NULL)){
-    g_warning("error initializing ICE");
-    return;
-  }
   while (!cand_ready_)
     if (cand_ready_cv_.wait_for(lock, std::chrono::seconds(3)) == std::cv_status::timeout)
       return;
+  if (PJ_SUCCESS != pj_ice_strans_init_ice(icest_,
+                                           role,
+                                           nullptr,
+                                           nullptr)){
+    g_warning("error initializing ICE");
+    return;
+  }
   //done
   is_valid_ = true;
 }

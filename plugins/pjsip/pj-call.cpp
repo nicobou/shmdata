@@ -112,25 +112,25 @@ PJCall::PJCall():
     g_warning("Install codecs failed");
   // properties and methods for user
   SIPPlugin::this_->
-      install_method("Send to a contact",  // long name
-                     "send",  // name
-                     "invite a contact to receive data",  // description
-                     "the invitation has been initiated or not",  // return desc
-                     Method::make_arg_description("SIP url",  // long name
-                                                  "url",  // name
-                                                  "string",  // description
+      install_method("Send to a contact",                        // long name
+                     "send",                                     // name
+                     "invite a contact to receive data",         // description
+                     "the invitation has been initiated or not", // return desc
+                     Method::make_arg_description("SIP url",     // long name
+                                                  "url",         // name
+                                                  "string",      // description
                                                   nullptr),
                      (Method::method_ptr) &send_to,
                      G_TYPE_BOOLEAN,
                      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
                      this);
   SIPPlugin::this_->
-      install_method("Hang Up",  // long name
-                     "hang-up",  // name
-                     "Hang up a call",  // description
-                     "success of not",  // return description
-                     Method::make_arg_description("SIP url",  // long name
-                                                  "url",  // name
+      install_method("Hang Up",                              // long name
+                     "hang-up",                              // name
+                     "Hang up a call",                       // description
+                     "success of not",                       // return description
+                     Method::make_arg_description("SIP url", // long name
+                                                  "url",     // name
                                                   "string",  // description
                                                   nullptr),
                      (Method::method_ptr) &hang_up,
@@ -138,19 +138,19 @@ PJCall::PJCall():
                      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
                      this);
   SIPPlugin::this_->
-      install_method("Attach Shmdata To Contact",  // long name
-                     "attach_shmdata_to_contact",       // name
-                     "Register a shmdata for this contact",  // description
-                     "success or not",  // return desc
-                     Method::make_arg_description("Shmdata Path",  // long name
-                                                  "shmpath",  // name
-                                                  "string",  // description
-                                                  "Contact URI",  // long name
-                                                  "contact_uri",  // name
-                                                  "string",  // description
-                                                  "Attaching",  // long name
-                                                  "attach",  // name
-                                                  "gboolean",  // description
+      install_method("Attach Shmdata To Contact",                 // long name
+                     "attach_shmdata_to_contact",                 // name
+                     "Register a shmdata for this contact",       // description
+                     "success or not",                            // return desc
+                     Method::make_arg_description("Shmdata Path", // long name
+                                                  "shmpath",      // name
+                                                  "string",       // description
+                                                  "Contact URI",  
+                                                  "contact_uri",  
+                                                  "string",       
+                                                  "Attaching",    
+                                                  "attach",       
+                                                  "gboolean",     
                                                   nullptr),
                      (Method::method_ptr) &attach_shmdata_to_contact,
                      G_TYPE_BOOLEAN,
@@ -537,7 +537,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   int len = pjsip_uri_print(PJSIP_URI_IN_REQ_URI,
                             rdata->msg_info.msg->line.req.uri,
                             uristr, sizeof(uristr));
-  g_debug("incomimg call req uri %.*s\n", len, uristr);
+  g_message("incomimg call from %.*s\n", len, uristr);
   len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                         pjsip_uri_get_uri(rdata->msg_info.from->uri),
                         uristr, sizeof(uristr));
@@ -546,19 +546,10 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                   rdata->msg_info.to->uri, uristr, sizeof(uristr));
   // g_print("----------- call to %.*s\n", len, uristr);
-  call_t *call;
   pjsip_dialog *dlg;
   pjmedia_sdp_session *sdp;
   pjsip_tx_data *tdata;
   pj_status_t status;
-  SIPPlugin::this_->sip_calls_->incoming_call_.emplace_back();
-  call = &SIPPlugin::this_->sip_calls_->incoming_call_.back();
-  call->peer_uri = std::string(from_uri, 4, std::string::npos);  // do not save 'sip:'
-  auto &buddy_list = SIPPlugin::this_->sip_presence_->buddy_id_;
-  if (buddy_list.end() == buddy_list.find(call->peer_uri)) {
-    SIPPlugin::this_->sip_presence_->add_buddy(call->peer_uri);
-    SIPPlugin::this_->sip_presence_->name_buddy(call->peer_uri, call->peer_uri);
-  }
   /* Parse SDP from incoming request and
      verify that we can handle the request. */
   pjmedia_sdp_session *offer = nullptr;
@@ -613,8 +604,17 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   /* we expect the outgoing INVITE to be challenged*/
   pjsip_auth_clt_set_credentials(&dlg->auth_sess,
                                  1,
-                                 &SIPPlugin::this_->
-                                 sip_presence_->cfg_.cred_info[0]);
+                                 &SIPPlugin::this_->sip_presence_->cfg_.cred_info[0]);
+  // incoming call is valid, starting processing it
+  call_t *call;
+  SIPPlugin::this_->sip_calls_->incoming_call_.emplace_back();
+  call = &SIPPlugin::this_->sip_calls_->incoming_call_.back();
+  call->peer_uri = std::string(from_uri, 4, std::string::npos);  // do not save 'sip:'
+  auto &buddy_list = SIPPlugin::this_->sip_presence_->buddy_id_;
+  if (buddy_list.end() == buddy_list.find(call->peer_uri)) {
+    SIPPlugin::this_->sip_presence_->add_buddy(call->peer_uri);
+    SIPPlugin::this_->sip_presence_->name_buddy(call->peer_uri, call->peer_uri);
+  }
   // checking number of transport to create for receiving
   // and creating transport for receiving data offered
   std::vector<pjmedia_sdp_media *>media_to_receive;
@@ -666,6 +666,10 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
         j++;  // FIXME what that ???
     }
   }
+  call->ice_trans_ = SIPPlugin::this_->stun_turn_->get_ice_transport(
+      media_to_receive.size(), PJ_ICE_SESS_ROLE_CONTROLLING);
+  if (!call->ice_trans_)
+    g_warning("ICE transport initialization failled");
   // Create SDP answer
   create_sdp_answer(dlg->pool, call, media_to_receive, &sdp);
   // preparing initial answer

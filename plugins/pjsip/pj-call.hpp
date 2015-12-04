@@ -54,6 +54,7 @@ class PJCall {
     pjsip_inv_session *inv {nullptr};
     std::vector<media_t> media{};
     std::string peer_uri{};
+    std::unique_ptr<PJICEStreamTrans> ice_trans_{};
   };
 
  private:
