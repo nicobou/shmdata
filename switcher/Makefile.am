@@ -36,6 +36,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gst-pipe.cpp \
     gst-pipeliner.cpp \
     gst-pixel-format-converter.cpp \
+    gst-rtppayloader-finder.cpp \
     gst-shmdata-subscriber.cpp \
     gst-utils.cpp \
     gst-video-codec.cpp \
@@ -113,6 +114,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gst-pipe.hpp \
     gst-pipeliner.hpp \
     gst-pixel-format-converter.hpp \
+    gst-rtppayloader-finder.hpp \
     gst-shmdata-subscriber.hpp \
     gst-utils.hpp \
     gst-video-codec.hpp \

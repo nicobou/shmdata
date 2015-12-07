@@ -116,10 +116,6 @@ class RtpSession: public Quiddity {
   // return RTP internal pad 
   std::string make_rtp_payloader(GstElement *shmdatasrc,
                           const std::string &caps);
-  static gboolean sink_factory_filter(GstPluginFeature *feature,
-                                      gpointer data);
-  static gint sink_compare_ranks(GstPluginFeature *f1,
-                                 GstPluginFeature *f2);
   // internal rtpbin signals
   static void on_bye_ssrc(GstElement *rtpbin, guint session, guint ssrc,
                           gpointer user_data);
