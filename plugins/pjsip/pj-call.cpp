@@ -22,6 +22,7 @@
 #include <list>
 #include <forward_list>
 #include <vector>
+#include <cstdio>
 #include "switcher/sdp-utils.hpp"
 #include "switcher/information-tree.hpp"
 #include "switcher/scope-exit.hpp"
@@ -480,25 +481,73 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
               "%s\n", std::string(pwd->value.ptr, 0, pwd->value.slen).c_str());
       // candidates
       unsigned cand_cnt = 0;
-      //pj_ice_sess_cand cand[PJ_ICE_ST_MAX_CAND];
+      pj_ice_sess_cand candidates[PJ_ICE_ST_MAX_CAND];
       for (unsigned i = 0; i < remote_sdp->media_count; ++i ){
         for (unsigned j = 0; j < remote_sdp->media[i]->attr_count; ++j){
           if ("candidate" ==
               std::string(remote_sdp->media[i]->attr[j]->name.ptr, 0 ,
                           remote_sdp->media[i]->attr[j]->name.slen)){
-            ++cand_cnt;
+            pj_ice_sess_cand *cand = &candidates[cand_cnt];
+            pj_bzero(cand, sizeof(pj_ice_sess_cand));
+            ++cand_cnt;  
             // HERE write info into cand and start negotiation
             g_print ("candidate %s\n",
                      std::string(remote_sdp->media[i]->attr[j]->value.ptr, 0 ,
                                  remote_sdp->media[i]->attr[j]->value.slen).c_str());
+            int af;
+            char foundation[32], transport[12], ipaddr[80], type[32];
+            pj_str_t tmpaddr;
+            int comp_id, prio, port;
+            int cnt = sscanf(std::string(remote_sdp->media[i]->attr[j]->value.ptr, 0 ,
+                                         remote_sdp->media[i]->attr[j]->value.slen).c_str(),
+                             "%s %d %s %d %s %d typ %s",
+                             foundation,
+                             &comp_id,
+                             transport,
+                             &prio,
+                             ipaddr,
+                             &port,
+                             type);
+            if (cnt != 7) {
+              g_warning("error: Invalid ICE candidate line");
+            }
+            if (strcmp(type, "host")==0)
+              cand->type = PJ_ICE_CAND_TYPE_HOST;
+            else if (strcmp(type, "srflx")==0)
+              cand->type = PJ_ICE_CAND_TYPE_SRFLX;
+            else if (strcmp(type, "relay")==0)
+              cand->type = PJ_ICE_CAND_TYPE_RELAYED;
+            else {
+              g_warning("Error: invalid candidate type '%s'", type);
+            }
+            cand->comp_id = (pj_uint8_t)comp_id;
+            pj_strdup2(inv->dlg->pool, &cand->foundation, foundation);
+            cand->prio = prio;
+            if (strchr(ipaddr, ':'))
+              af = pj_AF_INET6();
+            else
+              af = pj_AF_INET();
+            tmpaddr = pj_str(ipaddr);
+            pj_sockaddr_init(af, &cand->addr, NULL, 0);
+            if (PJ_SUCCESS != pj_sockaddr_set_str_addr(af, &cand->addr, &tmpaddr)) {
+              g_warning("Error: invalid IP address '%s'", ipaddr);
+            }
+            pj_sockaddr_set_port(&cand->addr, (pj_uint16_t)port);
           }
         }
       }
-      call->ice_trans_send_ = SIPPlugin::this_->stun_turn_->get_ice_transport(
-          remote_sdp->media_count, PJ_ICE_SESS_ROLE_CONTROLLED);
-      if (!call->ice_trans_)
-        g_warning("cannot init ICE transport for sending");
-
+      if (cand_cnt > 0) {
+        call->ice_trans_send_ = SIPPlugin::this_->stun_turn_->get_ice_transport(
+            remote_sdp->media_count, PJ_ICE_SESS_ROLE_CONTROLLING);
+        if (!call->ice_trans_send_)
+          g_warning("cannot init ICE transport for sending, %u", remote_sdp->media_count);
+        if (!call->ice_trans_send_->start_nego(&ufrag->value,
+                                               &pwd->value,
+                                               cand_cnt,
+                                               candidates)){
+          g_warning("Error starting ICE negotiation");
+        }
+      }
       // sending with switcher/gst
       SIPPlugin::this_->sip_calls_->manager_->
           invoke("siprtp",
@@ -708,7 +757,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
     }
   }
   call->ice_trans_ = SIPPlugin::this_->stun_turn_->get_ice_transport(
-      media_to_receive.size(), PJ_ICE_SESS_ROLE_CONTROLLING);
+      media_to_receive.size(), PJ_ICE_SESS_ROLE_CONTROLLED);
   if (!call->ice_trans_)
     g_warning("ICE transport initialization failled");
   // Create SDP answer

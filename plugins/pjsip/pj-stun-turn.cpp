@@ -44,7 +44,7 @@ PJStunTurn::PJStunTurn(){
         return;
       }
   ice_cfg_.af = pj_AF_INET();
-  ice_cfg_.opt.aggressive = PJ_TRUE;
+  ice_cfg_.opt.aggressive = PJ_FALSE;
 
   // set stun/turn config
   SIPPlugin::this_->

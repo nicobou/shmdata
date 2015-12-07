@@ -176,5 +176,68 @@ std::vector<std::vector<std::string>> PJICEStreamTrans::get_components(){
   return res;
 }
 
+#define PRINT(...)	    \
+	printed = pj_ansi_snprintf(p, maxlen - (p-buffer),  \
+				   __VA_ARGS__); \
+	if (printed <= 0 || printed >= (int)(maxlen - (p-buffer))) \
+	    return -PJ_ETOOSMALL; \
+	p += printed
+
+
+
+/* Utility to create a=candidate SDP attribute */
+static int print_cand(char buffer[], unsigned maxlen,
+		      const pj_ice_sess_cand *cand)
+{
+    char ipaddr[PJ_INET6_ADDRSTRLEN];
+    char *p = buffer;
+    int printed;
+
+    PRINT("a=candidate:%.*s %u UDP %u %s %u typ ",
+	  (int)cand->foundation.slen,
+	  cand->foundation.ptr,
+	  (unsigned)cand->comp_id,
+	  cand->prio,
+	  pj_sockaddr_print(&cand->addr, ipaddr, 
+			    sizeof(ipaddr), 0),
+	  (unsigned)pj_sockaddr_get_port(&cand->addr));
+
+    PRINT("%s\n",
+	  pj_ice_get_cand_type_name(cand->type));
+
+    if (p == buffer+maxlen)
+	return -PJ_ETOOSMALL;
+
+    *p = '\0';
+
+    return (int)(p-buffer);
+}
+
+
+bool PJICEStreamTrans::start_nego(const pj_str_t *rem_ufrag,
+                                  const pj_str_t *rem_passwd,
+                                  unsigned rcand_cnt,
+                                  const pj_ice_sess_cand rcand[]){
+  pj_status_t status = pj_ice_strans_start_ice(icest_, rem_ufrag, rem_passwd, rcand_cnt, rcand);
+  char buffer[100000];
+  char *p = buffer;
+  for (unsigned j=0; j<rcand_cnt; ++j) {
+    int printed = print_cand(p, 100000 - (unsigned)(p-buffer), &rcand[j]);
+    if (printed < 0)
+      return -PJ_ETOOSMALL;
+    p += printed;
+  }
+  *p = '\0';
+  g_print("CANIDATES START NEGO \n\n%s\nn", buffer);
+  if (PJ_SUCCESS != status) {
+    char errmsg[PJ_ERR_MSG_SIZE];
+    pj_strerror(status, errmsg, sizeof(errmsg));
+    g_warning("ICE negociation issue: %s", errmsg);
+    return false;
+  }
+  return true;
+}
+
+
 
 }  // namespace switcher

@@ -37,8 +37,14 @@ class PJICEStreamTrans : public SafeBoolIdiom {
   PJICEStreamTrans(const PJICEStreamTrans &) = delete;
   PJICEStreamTrans &operator=(const PJICEStreamTrans &) = delete;
 
+  // role CONTROLLED:
   std::pair<pj_str_t,  pj_str_t> get_ufrag_and_passwd();
   std::vector<std::vector<std::string>> get_components();
+  // role CONTROLLING:
+  bool start_nego(const pj_str_t *rem_ufrag,
+                  const pj_str_t *rem_passwd,
+                  unsigned rcand_cnt,
+                  const pj_ice_sess_cand rcand[]);
   
  private:
   bool is_valid_{false};

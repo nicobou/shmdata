@@ -59,6 +59,7 @@ class PJSIP: public SafeBoolIdiom {
   static std::atomic<unsigned short> sip_endpt_used_;
   static PJSIP *this_;
   std::function<void()> destruct_fun_;
+  int log_level_{2};
   bool safe_bool_idiom() const final {return is_valid_;}
   void sip_worker_thread();
 };
