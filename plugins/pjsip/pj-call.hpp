@@ -21,10 +21,12 @@
 #include <pjsua-lib/pjsua.h>
 #include <string>
 #include <vector>
+#include <map>
 #include <mutex>
 #include <condition_variable>
 #include "switcher/rtp-session.hpp"
 #include "switcher/quiddity-manager.hpp"
+#include "switcher/gst-shmdata-to-cb.hpp"
 #include "./pj-sip-plugin.hpp"
 #include "./pj-sip.hpp"
 #include "./pj-codec.hpp"
@@ -74,6 +76,8 @@ class PJCall {
   std::map<std::string, std::string> local_ips_{};
   // internal rtp
   QuiddityManager::ptr manager_;
+  std::map<std::string, std::unique_ptr<GstShmdataToCb>> readers_{};
+  std::map<std::string, unsigned> reader_ref_count_{};
   // saving association between reception quids (httpsdpdec) and uris:
   std::map<std::string, std::string> quid_uri_{};
   InfoTree::ptr contact_shm_;
@@ -132,6 +136,10 @@ class PJCall {
   static bool release_incoming_call(call_t *call, pjsua_buddy_id id);
   static bool release_outgoing_call(call_t *call, pjsua_buddy_id id);
   static void print_sdp(const pjmedia_sdp_session *local_sdp);
+
+  static std::unique_ptr<PJICEStreamTrans> negociate_ice_transport(
+      const pjmedia_sdp_session *remote_sdp,
+      pj_pool_t *dlg_pool);
 };
 
 }  // namespace switcher

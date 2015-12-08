@@ -23,12 +23,14 @@
 #include <forward_list>
 #include <vector>
 #include <cstdio>
+#include <numeric>
 #include "switcher/sdp-utils.hpp"
 #include "switcher/information-tree.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/information-tree-basic-serializer.hpp"
 #include "switcher/net-utils.hpp"
 #include "./pj-call.hpp"
+#include "./pj-call-utils.hpp"
 
 namespace switcher {
 pjmedia_endpt *PJCall::med_endpt_ = nullptr;
@@ -56,8 +58,7 @@ PJCall::PJCall():
         SIPPlugin::this_->get_manager_name()
         // per Pierre-Antoine request:
         + "-"
-        + SIPPlugin::this_->get_name()
-                                           )),
+        + SIPPlugin::this_->get_name())),
     contact_shm_(InfoTree::make()) {
   pj_status_t status;
   local_ips_ = NetUtils::get_ips();
@@ -431,7 +432,6 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
                                   pj_status_t status) {
   const pjmedia_sdp_session *local_sdp, *remote_sdp;
   call_t *call = static_cast<call_t *>(inv->mod_data[mod_siprtp_.id]);
-  bool receiving = false;
   /* Do nothing if media negotiation has failed */
   if (status != PJ_SUCCESS) {
     g_warning("SDP negotiation failed");
@@ -442,112 +442,15 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
   pjmedia_sdp_neg_get_active_remote(inv->neg, &remote_sdp);
   print_sdp(local_sdp);
   print_sdp(remote_sdp);
+  call->ice_trans_send_ = negociate_ice_transport(remote_sdp, inv->dlg->pool);
+
   for (uint i = 0; i < call->media.size(); i++) {
-    if (i >= local_sdp->media_count) {
-      g_warning("%s local SDP negotiation has less media than local SDP, skiping extras",
-                __FUNCTION__);
-      break;
-    }
     const pjmedia_sdp_media *local_m = local_sdp->media[i];;
-    // testing if receiving
-    if (pjmedia_sdp_media_find_attr2(local_m, "recvonly", nullptr) != nullptr
-        || pjmedia_sdp_media_find_attr2(local_m, "sendrecv", nullptr) != nullptr) {
-      receiving = true;
-    }  // end receiving
     // send streams
-    if (pjmedia_sdp_media_find_attr2(local_m, "sendonly", nullptr) != nullptr
-        || pjmedia_sdp_media_find_attr2(local_m, "sendrecv", nullptr) != nullptr) {
+    if (PJCallUtils::is_send_media(local_m)) {
       g_debug("sending data to %s\n",
               std::string(remote_sdp->origin.addr.ptr,
                           remote_sdp->origin.addr.slen).c_str());
-      // finding ice infos & candidates
-      g_print("%s %d attr_count "
-              "%u \n",
-              __FUNCTION__, __LINE__,
-              remote_sdp->attr_count);
-      pjmedia_sdp_attr *ufrag =  pjmedia_sdp_attr_find2(remote_sdp->attr_count,
-                                                       remote_sdp->attr,
-                                                       "ice-ufrag",
-                                                       nullptr);
-      g_print("%s %d\n", __FUNCTION__, __LINE__);
-      g_print("#####################################################################"
-              "%s\n", std::string(ufrag->value.ptr, 0, ufrag->value.slen).c_str());
-      g_print("%s %d\n", __FUNCTION__, __LINE__);
-      pjmedia_sdp_attr *pwd =  pjmedia_sdp_attr_find2(remote_sdp->attr_count,
-                                                     remote_sdp->attr,
-                                                     "ice-pwd",
-                                                     nullptr);
-      g_print("#####################################################################"
-              "%s\n", std::string(pwd->value.ptr, 0, pwd->value.slen).c_str());
-      // candidates
-      unsigned cand_cnt = 0;
-      pj_ice_sess_cand candidates[PJ_ICE_ST_MAX_CAND];
-      for (unsigned i = 0; i < remote_sdp->media_count; ++i ){
-        for (unsigned j = 0; j < remote_sdp->media[i]->attr_count; ++j){
-          if ("candidate" ==
-              std::string(remote_sdp->media[i]->attr[j]->name.ptr, 0 ,
-                          remote_sdp->media[i]->attr[j]->name.slen)){
-            pj_ice_sess_cand *cand = &candidates[cand_cnt];
-            pj_bzero(cand, sizeof(pj_ice_sess_cand));
-            ++cand_cnt;  
-            // HERE write info into cand and start negotiation
-            g_print ("candidate %s\n",
-                     std::string(remote_sdp->media[i]->attr[j]->value.ptr, 0 ,
-                                 remote_sdp->media[i]->attr[j]->value.slen).c_str());
-            int af;
-            char foundation[32], transport[12], ipaddr[80], type[32];
-            pj_str_t tmpaddr;
-            int comp_id, prio, port;
-            int cnt = sscanf(std::string(remote_sdp->media[i]->attr[j]->value.ptr, 0 ,
-                                         remote_sdp->media[i]->attr[j]->value.slen).c_str(),
-                             "%s %d %s %d %s %d typ %s",
-                             foundation,
-                             &comp_id,
-                             transport,
-                             &prio,
-                             ipaddr,
-                             &port,
-                             type);
-            if (cnt != 7) {
-              g_warning("error: Invalid ICE candidate line");
-            }
-            if (strcmp(type, "host")==0)
-              cand->type = PJ_ICE_CAND_TYPE_HOST;
-            else if (strcmp(type, "srflx")==0)
-              cand->type = PJ_ICE_CAND_TYPE_SRFLX;
-            else if (strcmp(type, "relay")==0)
-              cand->type = PJ_ICE_CAND_TYPE_RELAYED;
-            else {
-              g_warning("Error: invalid candidate type '%s'", type);
-            }
-            cand->comp_id = (pj_uint8_t)comp_id;
-            pj_strdup2(inv->dlg->pool, &cand->foundation, foundation);
-            cand->prio = prio;
-            if (strchr(ipaddr, ':'))
-              af = pj_AF_INET6();
-            else
-              af = pj_AF_INET();
-            tmpaddr = pj_str(ipaddr);
-            pj_sockaddr_init(af, &cand->addr, NULL, 0);
-            if (PJ_SUCCESS != pj_sockaddr_set_str_addr(af, &cand->addr, &tmpaddr)) {
-              g_warning("Error: invalid IP address '%s'", ipaddr);
-            }
-            pj_sockaddr_set_port(&cand->addr, (pj_uint16_t)port);
-          }
-        }
-      }
-      if (cand_cnt > 0) {
-        call->ice_trans_send_ = SIPPlugin::this_->stun_turn_->get_ice_transport(
-            remote_sdp->media_count, PJ_ICE_SESS_ROLE_CONTROLLING);
-        if (!call->ice_trans_send_)
-          g_warning("cannot init ICE transport for sending, %u", remote_sdp->media_count);
-        if (!call->ice_trans_send_->start_nego(&ufrag->value,
-                                               &pwd->value,
-                                               cand_cnt,
-                                               candidates)){
-          g_warning("Error starting ICE negotiation");
-        }
-      }
       // sending with switcher/gst
       SIPPlugin::this_->sip_calls_->manager_->
           invoke("siprtp",
@@ -567,7 +470,7 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
       //         std::to_string(remote_sdp->media[i]->desc.port).c_str());
     }
   }  // end iterating media
-  if (receiving) {  // preparing the switcher SDP decoder
+  if (PJCallUtils::is_receiving(local_sdp)) {  // preparing the switcher SDP decoder
     // getting sdp string
     char sdpbuf[4096];
     pj_ssize_t len = pjmedia_sdp_print(local_sdp, sdpbuf, sizeof(sdpbuf));
@@ -587,14 +490,14 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
     SIPPlugin::this_->sip_calls_->quid_uri_[dec_name] = std::string(call->peer_uri);
     SIPPlugin::this_->sip_calls_->manager_->create("httpsdpdec", dec_name);
     SIPPlugin::this_->sip_calls_->manager_->subscribe_signal("signal_subscriber",
-                                                         dec_name,
-                                                         "on-tree-grafted");
+                                                             dec_name,
+                                                             "on-tree-grafted");
     SIPPlugin::this_->sip_calls_->manager_->subscribe_signal("signal_subscriber",
-                                                         dec_name,
-                                                         "on-tree-pruned");
+                                                             dec_name,
+                                                             "on-tree-pruned");
     SIPPlugin::this_->sip_calls_->manager_->
         invoke_va(dec_name, "to_shmdata", nullptr, b64sdp, nullptr);
-   }
+  }
 }
 
 // std::string PJCall::make_extra_params(const std::string &raw_extra_params){
@@ -1371,28 +1274,39 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
     InfoTree::ptr tree = SIPPlugin::this_->
         prune_tree(std::string(".buddies." + std::to_string(id)),
                    false);  // do not signal since the branch will be re-grafted
-  if (!tree)
-    tree = InfoTree::make();
+    if (!tree)
+      tree = InfoTree::make();
+    // TODO here create or ref a reader
+    if (readers_.find(shmpath) != readers_.cend()){
+      readers_.emplace(shmpath, std2::make_unique<GstShmdataToCb>(shmpath, nullptr));
+      reader_ref_count_[shmpath] = 0;
+      // TODO here register callback
+    } else {
+      ++reader_ref_count_[shmpath];
+    }
+      
     manager_->invoke_va("siprtp",
                         "add_data_stream",
                         nullptr,
                         shmpath.c_str(),
                         nullptr);
     tree->graft(std::string(".connections." + shmpath),
-                            InfoTree::make(shmpath));
+                InfoTree::make(shmpath));
     tree->tag_as_array(".connections", true);
     SIPPlugin::this_->graft_tree(".buddies." + std::to_string(id),
-                              tree);
-  } else {
-    manager_->invoke_va("siprtp",
-                        "remove_udp_stream_to_dest",
-                        nullptr,
-                        shmpath.c_str(),
-                        contact_uri.c_str(),
-                        nullptr);
-    SIPPlugin::this_->prune_tree(".buddies." + std::to_string(id)
-                              + ".connections." + shmpath);
+                                 tree);
+    return;
   }
+  // detach
+  // TODO here unref reader
+  manager_->invoke_va("siprtp",
+                      "remove_udp_stream_to_dest",
+                      nullptr,
+                      shmpath.c_str(),
+                      contact_uri.c_str(),
+                      nullptr);
+  SIPPlugin::this_->prune_tree(".buddies." + std::to_string(id)
+                               + ".connections." + shmpath);
 }
 
 void PJCall::internal_manager_cb(const std::string &/*subscriber_name */,
@@ -1418,7 +1332,6 @@ void PJCall::internal_manager_cb(const std::string &/*subscriber_name */,
         [&](InfoTree::ptrc t){
           return BasicSerializer::serialize(InfoTree::get_subtree(t, params[0]));
         });
-    g_print("param[0] %s stree %s\n", params[0].c_str(), stree.c_str());
     auto shmtree = BasicSerializer::deserialize(stree);
     auto it = context->quid_uri_.find(quid_name);
     if (context->quid_uri_.end() == it)
@@ -1441,6 +1354,99 @@ void PJCall::internal_manager_cb(const std::string &/*subscriber_name */,
 void PJCall::call_on_rx_offer(pjsip_inv_session */*inv*/,
                               const pjmedia_sdp_session */*offer*/){
   // print_sdp(offer);
+}
+
+std::unique_ptr<PJICEStreamTrans> PJCall::negociate_ice_transport(
+    const pjmedia_sdp_session *remote_sdp,
+    pj_pool_t *dlg_pool){
+  std::unique_ptr<PJICEStreamTrans> res;
+  // checking ICE
+  pjmedia_sdp_attr *ufrag =
+      pjmedia_sdp_attr_find2(remote_sdp->attr_count, remote_sdp->attr, "ice-ufrag", nullptr);
+  if (nullptr == ufrag)
+    return res;
+  g_debug("ICE ufrag received: %s", std::string(ufrag->value.ptr, 0, ufrag->value.slen).c_str());
+  pjmedia_sdp_attr *pwd =
+      pjmedia_sdp_attr_find2(remote_sdp->attr_count, remote_sdp->attr, "ice-pwd", nullptr);
+  if (nullptr == pwd)
+    return res;
+  g_debug("ICE pwd received: %s", std::string(pwd->value.ptr, 0, pwd->value.slen).c_str());
+  // candidates
+  unsigned cand_cnt = 0;
+  pj_ice_sess_cand candidates[PJ_ICE_ST_MAX_CAND];
+  std::vector<unsigned> sending_medias(remote_sdp->media_count, 0);
+  for (unsigned i = 0; i < remote_sdp->media_count; ++i ){
+    for (unsigned j = 0; j < remote_sdp->media[i]->attr_count; ++j){
+      if ("candidate" ==
+          std::string(remote_sdp->media[i]->attr[j]->name.ptr, 0 ,
+                      remote_sdp->media[i]->attr[j]->name.slen)){
+        sending_medias[i] = 1;
+        pj_ice_sess_cand *cand = &candidates[cand_cnt];
+        pj_bzero(cand, sizeof(pj_ice_sess_cand));
+        ++cand_cnt;  
+        g_debug ("ICE candidate received: %s\n",
+                 std::string(remote_sdp->media[i]->attr[j]->value.ptr, 0 ,
+                             remote_sdp->media[i]->attr[j]->value.slen).c_str());
+        int af;
+        char foundation[32], transport[12], ipaddr[80], type[32];
+        pj_str_t tmpaddr;
+        int comp_id, prio, port;
+        int cnt = sscanf(std::string(remote_sdp->media[i]->attr[j]->value.ptr, 0 ,
+                                     remote_sdp->media[i]->attr[j]->value.slen).c_str(),
+                         "%s %d %s %d %s %d typ %s",
+                         foundation,
+                         &comp_id,
+                         transport,
+                         &prio,
+                         ipaddr,
+                         &port,
+                         type);
+        if (cnt != 7) {
+          g_warning("error: Invalid ICE candidate line");
+          return res;
+        }
+        if (strcmp(type, "host")==0)
+          cand->type = PJ_ICE_CAND_TYPE_HOST;
+        else if (strcmp(type, "srflx")==0)
+          cand->type = PJ_ICE_CAND_TYPE_SRFLX;
+        else if (strcmp(type, "relay")==0)
+          cand->type = PJ_ICE_CAND_TYPE_RELAYED;
+        else {
+          g_warning("Error: invalid candidate type '%s'", type);
+          return res;
+        }
+        cand->comp_id = (pj_uint8_t)comp_id;
+        pj_strdup2(dlg_pool, &cand->foundation, foundation);
+        cand->prio = prio;
+        if (strchr(ipaddr, ':'))
+          af = pj_AF_INET6();
+        else
+          af = pj_AF_INET();
+        tmpaddr = pj_str(ipaddr);
+        pj_sockaddr_init(af, &cand->addr, NULL, 0);
+        if (PJ_SUCCESS != pj_sockaddr_set_str_addr(af, &cand->addr, &tmpaddr)) {
+          g_warning("Error: invalid IP address '%s'", ipaddr);
+        }
+        pj_sockaddr_set_port(&cand->addr, (pj_uint16_t)port);
+      }
+    }
+  }
+  if (0 == cand_cnt)
+    return res;
+  auto num_media_to_send = std::accumulate(sending_medias.begin(), sending_medias.end(), 0u);
+  res = SIPPlugin::this_->stun_turn_->get_ice_transport(
+      num_media_to_send,
+      PJ_ICE_SESS_ROLE_CONTROLLING);
+  if (!res){
+    g_warning("cannot init ICE transport for sending, %u", remote_sdp->media_count);
+    return res;
+  }
+  if (!res->start_nego(&ufrag->value, &pwd->value, cand_cnt, candidates)){
+    g_warning("Error starting ICE negotiation");
+    res.reset(nullptr);
+    return res;
+  }
+  return res;
 }
 
 }  // namespace switcher
