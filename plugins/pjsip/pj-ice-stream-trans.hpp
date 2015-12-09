@@ -45,6 +45,11 @@ class PJICEStreamTrans : public SafeBoolIdiom {
                   const pj_str_t *rem_passwd,
                   unsigned rcand_cnt,
                   const pj_ice_sess_cand rcand[]);
+  bool sendto(unsigned comp_id,
+              const void *data,
+              pj_size_t data_len,
+              const pj_sockaddr_t *dst_addr,
+              int dst_addr_len);
   
  private:
   bool is_valid_{false};

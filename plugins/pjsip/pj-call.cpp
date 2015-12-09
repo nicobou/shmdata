@@ -265,7 +265,11 @@ bool PJCall::release_outgoing_call(call_t *call, pjsua_buddy_id id){
   if (calls.end() == it)
     return false;
   // removing destination to siprtp
-  
+  for (auto &media: it->media)
+    if (0 != media.cb_id)
+      SIPPlugin::this_->sip_calls_->
+          readers_[media.shm_path_to_send]->remove_cb(media.cb_id);
+
   SIPPlugin::this_->sip_calls_->manager_->
       invoke("siprtp",
              "remove_destination",
@@ -444,30 +448,53 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
   print_sdp(remote_sdp);
   call->ice_trans_send_ = negociate_ice_transport(remote_sdp, inv->dlg->pool);
 
+  // sending streams
   for (uint i = 0; i < call->media.size(); i++) {
-    const pjmedia_sdp_media *local_m = local_sdp->media[i];;
-    // send streams
-    if (PJCallUtils::is_send_media(local_m)) {
+    if (PJCallUtils::is_send_media(local_sdp->media[i])) {
       g_debug("sending data to %s\n",
               std::string(remote_sdp->origin.addr.ptr,
                           remote_sdp->origin.addr.slen).c_str());
-      // sending with switcher/gst
-      SIPPlugin::this_->sip_calls_->manager_->
-          invoke("siprtp",
-                 "add_destination",
-                 nullptr,
-                 { call->peer_uri,
-                       std::string(remote_sdp->origin.addr.ptr,
-                                   remote_sdp->origin.addr.slen)});
-      SIPPlugin::this_->sip_calls_->manager_->
-          invoke("siprtp",
-                 "add_udp_stream_to_dest",
-                 nullptr,
-                 { call->media[i].shm_path_to_send, call->peer_uri,
-                       std::to_string(remote_sdp->media[i]->desc.port)});
-      // g_print("----------- sending data to %s, port %s\n",
-      //         call->peer_uri.c_str(),
-      //         std::to_string(remote_sdp->media[i]->desc.port).c_str());
+       auto it = SIPPlugin::this_->sip_calls_->
+           readers_.find(call->media[i].shm_path_to_send);
+       if (it == SIPPlugin::this_->sip_calls_->readers_.end()){
+         g_warning("no GstShmdataToCb found for sending %s (PJCall)",
+                   call->media[i].shm_path_to_send.c_str());
+       } else {
+         // set default address for ICE sending
+         pj_sockaddr_init(pj_AF_INET(), &call->media[i].def_addr, NULL, 0);
+         pj_sockaddr_set_str_addr(pj_AF_INET(), &call->media[i].def_addr,
+                                  &remote_sdp->origin.addr);
+         pj_sockaddr_set_port(&call->media[i].def_addr,
+                              (pj_uint16_t)remote_sdp->media[i]->desc.port);
+         auto *def_addr= &call->media[i].def_addr;
+         // add a callback for sending when data is available
+         call->media[i].cb_id = it->second->add_cb([=](void *data, size_t size){
+             auto comp_id = i+1;
+             SIPPlugin::this_->pjsip_->run([&](){
+             if (!call->ice_trans_send_->sendto(comp_id, data, size,
+                                                def_addr,
+                                                pj_sockaddr_get_len(def_addr))){
+               g_warning("issue sending data with ICE");
+             }});
+           });
+       } 
+       // sending with switcher/gst
+       SIPPlugin::this_->sip_calls_->manager_->
+           invoke("siprtp",
+                  "add_destination",
+                  nullptr,
+                  { call->peer_uri,
+                        std::string(remote_sdp->origin.addr.ptr,
+                                    remote_sdp->origin.addr.slen)});
+       SIPPlugin::this_->sip_calls_->manager_->
+           invoke("siprtp",
+                  "add_udp_stream_to_dest",
+                  nullptr,
+                  { call->media[i].shm_path_to_send, call->peer_uri,
+                        std::to_string(remote_sdp->media[i]->desc.port)});
+       // g_print("----------- sending data to %s, port %s\n",
+       //         call->peer_uri.c_str(),
+       //         std::to_string(remote_sdp->media[i]->desc.port).c_str());
     }
   }  // end iterating media
   if (PJCallUtils::is_receiving(local_sdp)) {  // preparing the switcher SDP decoder
@@ -1276,11 +1303,10 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
                    false);  // do not signal since the branch will be re-grafted
     if (!tree)
       tree = InfoTree::make();
-    // TODO here create or ref a reader
-    if (readers_.find(shmpath) != readers_.cend()){
+    if (readers_.find(shmpath) == readers_.cend()){
+      // HERE make rtppayloader
       readers_.emplace(shmpath, std2::make_unique<GstShmdataToCb>(shmpath, nullptr));
-      reader_ref_count_[shmpath] = 0;
-      // TODO here register callback
+      reader_ref_count_[shmpath] = 1;
     } else {
       ++reader_ref_count_[shmpath];
     }
@@ -1298,7 +1324,17 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
     return;
   }
   // detach
-  // TODO here unref reader
+  auto it = readers_.find(shmpath);
+  if (it == readers_.end()){
+    g_warning("error detaching a shmdata not attached (PJCall)");
+    return;
+  }
+  auto remaining = --reader_ref_count_[shmpath];
+  if (0 == remaining){
+    readers_.erase(it);
+    reader_ref_count_.erase(shmpath);
+  }
+  
   manager_->invoke_va("siprtp",
                       "remove_udp_stream_to_dest",
                       nullptr,

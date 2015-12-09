@@ -57,54 +57,18 @@ void GstShmdataToCb::on_handoff_cb(GstElement */*object*/,
                                   GstBuffer *buf,
                                   GstPad *pad,
                                   gpointer user_data) {
-  g_print("%s\n", __FUNCTION__);
-  // GstShmdataToCb *context = static_cast<GstShmdataToCb *>(user_data);
-  // auto current_time = jack_frame_time(context->jack_client_.get_raw());
-  // GstCaps *caps = gst_pad_get_current_caps(pad);
-  // if (nullptr == caps)
-  //   return;
-  // On_scope_exit {gst_caps_unref(caps);};
-  // // gchar *string_caps = gst_caps_to_string(caps);
-  // // On_scope_exit {if (nullptr != string_caps) g_free(string_caps);};
-  // // g_print("on handoff, negotiated caps is %s\n", string_caps);
-  // const GValue *val =
-  //     gst_structure_get_value(gst_caps_get_structure(caps, 0),
-  //                             "channels");
-  // const int channels = g_value_get_int(val);
-  // context->check_output_ports(channels);
-  // //getting buffer infomation:
-  // GstMapInfo map;
-  // if (!gst_buffer_map (buf, &map, GST_MAP_READ)) {
-  //   g_warning("gst_buffer_map failled: canceling audio buffer access");
-  //   return;
-  // }
-  // On_scope_exit{gst_buffer_unmap (buf, &map);};
-  // jack_nframes_t duration = map.size / (4 * channels);
-  // // setting the smoothing value affecting (20 sec)
-  // context->drift_observer_.set_smoothing_factor(
-  //     (double)duration / (20.0 * (double)context->jack_client_.get_sample_rate()));
-  // std::size_t new_size = 
-  //     (std::size_t)context->drift_observer_.set_current_time_info(current_time, duration);
-  // --context->debug_buffer_usage_;
-  // if (0 == context->debug_buffer_usage_){
-  //   g_debug("buffer load is %lu, ratio is %f\n",
-  //           context->ring_buffers_[0].get_usage(),
-  //           context->drift_observer_.get_ratio());
-  //   context->debug_buffer_usage_ = 1000;
-  // }
-  // jack_sample_t *tmp_buf = (jack_sample_t *)map.data;
-  // for (int i = 0; i < channels; ++i) {
-  //   AudioResampler<jack_sample_t> resample(duration, new_size, tmp_buf, i, channels);
-  //   auto emplaced =
-  //       context->ring_buffers_[i].put_samples(
-  //       new_size,
-  //       [&resample]() {
-  //         // return resample.zero_pole_get_next_sample();
-  //         return resample.linear_get_next_sample();
-  //       });
-  //   if (emplaced != new_size)
-  //     g_warning("overflow of %lu samples", new_size - emplaced);
-  // }
+  //g_print("%s\n", __FUNCTION__);
+  GstShmdataToCb *context = static_cast<GstShmdataToCb *>(user_data);
+  //getting buffer infomation:
+  GstMapInfo map;
+  if (!gst_buffer_map (buf, &map, GST_MAP_READ)) {
+    g_warning("gst_buffer_map failled: canceling audio buffer access");
+    return;
+  }
+  On_scope_exit{gst_buffer_unmap (buf, &map);};
+  std::unique_lock<std::mutex> lock(context->mtx_);
+  for (auto &it: context->data_cbs_)
+    it.second (map.data, map.size);
 }
 
 void GstShmdataToCb::on_caps(GstElement *typefind,
@@ -118,7 +82,6 @@ void GstShmdataToCb::on_caps(GstElement *typefind,
                "signal-handoffs", TRUE,
                "sync", FALSE,
                nullptr);
-  //handoff_handler_ =
   g_signal_connect(fakesink, "handoff", (GCallback)on_handoff_cb, context);
   gst_bin_add(GST_BIN(context->pipe_.get_pipeline()),
               fakesink);
@@ -139,6 +102,23 @@ void GstShmdataToCb::on_caps(GstElement *typefind,
       g_warning("issue linking typefind with fakesink in GstShmdataToCb::on_caps");
     GstUtils::sync_state_with_parent(fakesink);
   }
+}
+
+GstShmdataToCb::id_t GstShmdataToCb::add_cb(data_cb_t fun){
+  if (!fun) return 0;
+  std::unique_lock<std::mutex> lock(mtx_);
+  auto res = ++counter_;
+  data_cbs_[res] = fun;
+  return res;
+}
+
+bool GstShmdataToCb::remove_cb(id_t cb_id){
+  std::unique_lock<std::mutex> lock(mtx_);
+  auto it = data_cbs_.find(cb_id);
+  if (it == data_cbs_.end())
+    return false;
+  data_cbs_.erase(it);
+  return true;
 }
 
 }  // namespace switcher

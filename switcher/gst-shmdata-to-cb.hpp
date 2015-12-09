@@ -20,6 +20,9 @@
 #ifndef __SWITCHER_GST_SHMDATA_TO_CB_H__
 #define __SWITCHER_GST_SHMDATA_TO_CB_H__
 
+#include <map>
+#include <functional>
+#include <mutex>
 #include "./gst-pipeliner.hpp"
 #include "./safe-bool-idiom.hpp"
 
@@ -27,6 +30,8 @@ namespace switcher {
 
 class GstShmdataToCb: public SafeBoolIdiom {
  public:
+  using id_t = size_t;
+  using data_cb_t = std::function<void(void *, size_t)>;
   using on_caps_cb_t = std::function<GstElement *(const std::string &caps)>;
   // on_caps can be used for making a filter that will be inserted between the shmdata reader
   // and the callback
@@ -38,12 +43,18 @@ class GstShmdataToCb: public SafeBoolIdiom {
   GstShmdataToCb(GstShmdataToCb &&) = delete;
   GstShmdataToCb &operator=(const GstShmdataToCb &) = delete;
 
+  id_t add_cb(data_cb_t fun);
+  bool remove_cb(id_t cb_id);
+  
  private:
+  id_t counter_{0};
   bool is_valid_{false};
   bool safe_bool_idiom() const {return is_valid_;}
   GstPipeliner pipe_;
   on_caps_cb_t filter_cb_;
-  //gulong handoff_handler_{0};
+  std::map<id_t, data_cb_t> data_cbs_{};
+  std::mutex mtx_{};
+
   static void on_handoff_cb(GstElement */*object*/,
                             GstBuffer *buf,
                             GstPad *pad,

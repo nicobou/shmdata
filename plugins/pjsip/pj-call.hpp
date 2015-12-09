@@ -46,8 +46,10 @@ class PJCall {
  private:
   /* Media stream created when the call is active. */
   using media_t = struct media_stream {
-    pj_uint16_t rtp_port{0};  // sending
-    std::string shm_path_to_send {};
+    pj_uint16_t rtp_port{0};  // sending  // FIXME remove this, using ICE only
+    std::string shm_path_to_send{};
+    GstShmdataToCb::id_t cb_id{0};
+    pj_sockaddr	def_addr;
   };
 
   // This is a call structure that is created when the application starts
