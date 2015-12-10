@@ -65,6 +65,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     quiddity.cpp \
     rtp-destination.cpp \
     rtp-session.cpp \
+    rtp-session2.cpp \
     safe-bool-idiom.cpp \
     sdp-utils.cpp \
     selection.cpp \
@@ -147,6 +148,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     quiddity.hpp \
     rtp-destination.hpp \
     rtp-session.hpp \
+    rtp-session2.hpp \
     safe-bool-idiom.hpp \
     scope-exit.hpp \
     sdp-utils.hpp \

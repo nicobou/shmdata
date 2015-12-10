@@ -29,6 +29,7 @@
 namespace switcher {
 class PJICEStreamTrans : public SafeBoolIdiom {
  public:
+  using on_data_cb_t = std::function<void(void *data, size_t size)>;
   PJICEStreamTrans() = delete;
   PJICEStreamTrans(pj_ice_strans_cfg &ice_cfg,
                    unsigned comp_cnt,  // number of wanted UDP channels
@@ -40,6 +41,7 @@ class PJICEStreamTrans : public SafeBoolIdiom {
   // role CONTROLLED:
   std::pair<pj_str_t,  pj_str_t> get_ufrag_and_passwd();
   std::vector<std::vector<std::string>> get_components();
+  bool set_data_cb(unsigned comp_id, on_data_cb_t cb);
   // role CONTROLLING:
   bool start_nego(const pj_str_t *rem_ufrag,
                   const pj_str_t *rem_passwd,
@@ -59,7 +61,8 @@ class PJICEStreamTrans : public SafeBoolIdiom {
   bool cand_ready_{false};
   std::mutex cand_ready_mtx_{};
   std::condition_variable cand_ready_cv_{};
-
+  std::vector<on_data_cb_t> data_cbs_;
+  
   bool safe_bool_idiom() const final {return is_valid_;}
   static void cb_on_rx_data(pj_ice_strans *ice_st,
                             unsigned comp_id, 

@@ -73,7 +73,7 @@ PJCall::PJCall():
   if (nullptr == local_addr_.ptr)
     pj_cstr(&local_addr_, "127.0.0.1");
   // configuring internal manager
-  manager_->create("rtpsession", "siprtp");
+  //manager_->create("rtpsession", "siprtp");
   manager_->make_signal_subscriber("signal_subscriber",
                                    internal_manager_cb,
                                    this);
@@ -272,11 +272,11 @@ bool PJCall::release_outgoing_call(call_t *call, pjsua_buddy_id id){
       SIPPlugin::this_->sip_calls_->
           readers_[media.shm_path_to_send]->remove_cb(media.cb_id);
 
-  SIPPlugin::this_->sip_calls_->manager_->
-      invoke("siprtp",
-             "remove_destination",
-             nullptr,
-             { call->peer_uri });
+  // SIPPlugin::this_->sip_calls_->manager_->
+  //     invoke("siprtp",
+  //            "remove_destination",
+  //            nullptr,
+  //            { call->peer_uri });
   // updating call status in the tree
   InfoTree::ptr tree = SIPPlugin::this_->
       prune_tree(std::string(".buddies." + std::to_string(id)),
@@ -481,19 +481,19 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
            });
        } 
        // sending with switcher/gst
-       SIPPlugin::this_->sip_calls_->manager_->
-           invoke("siprtp",
-                  "add_destination",
-                  nullptr,
-                  { call->peer_uri,
-                        std::string(remote_sdp->origin.addr.ptr,
-                                    remote_sdp->origin.addr.slen)});
-       SIPPlugin::this_->sip_calls_->manager_->
-           invoke("siprtp",
-                  "add_udp_stream_to_dest",
-                  nullptr,
-                  { call->media[i].shm_path_to_send, call->peer_uri,
-                        std::to_string(remote_sdp->media[i]->desc.port)});
+       // SIPPlugin::this_->sip_calls_->manager_->
+       //     invoke("siprtp",
+       //            "add_destination",
+       //            nullptr,
+       //            { call->peer_uri,
+       //                  std::string(remote_sdp->origin.addr.ptr,
+       //                              remote_sdp->origin.addr.slen)});
+       // SIPPlugin::this_->sip_calls_->manager_->
+       //     invoke("siprtp",
+       //            "add_udp_stream_to_dest",
+       //            nullptr,
+       //            { call->media[i].shm_path_to_send, call->peer_uri,
+       //                  std::to_string(remote_sdp->media[i]->desc.port)});
        // g_print("----------- sending data to %s, port %s\n",
        //         call->peer_uri.c_str(),
        //         std::to_string(remote_sdp->media[i]->desc.port).c_str());
@@ -1157,10 +1157,10 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
   QuiddityManager::ptr manager = SIPPlugin::this_->sip_calls_->manager_;
   gint port = starting_rtp_port_;
   for (auto &it : paths) {
-    std::string data = manager->
-        use_tree<MPtr(&InfoTree::branch_read_data<std::string>)>(
-            std::string("siprtp"),
-            std::string("rtp_caps.") + it);
+    // std::string data = manager->
+    //     use_tree<MPtr(&InfoTree::branch_read_data<std::string>)>(
+    //         std::string("siprtp"),
+    //         std::string("rtp_caps.") + it);
     std::string rtpcaps = readers_[it]->get_caps();
     std::string rawlabel = SIPPlugin::this_->get_quiddity_name_from_file_name(it);
     std::istringstream ss(rawlabel); // Turn the string into a stream
@@ -1170,9 +1170,9 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
     while(std::getline(ss, tok, ' '))
       label += "\\ " + tok;
     rtpcaps += ", media-label=(string)\"" + label  + "\"";
-    g_print("rtpssession caps: %s \n shmdataToCb: %s\n", data.c_str(), rtpcaps.c_str());
-    GstCaps *caps = gst_caps_from_string(data.c_str());
-    // HERE GstCaps *caps = gst_caps_from_string(rtpcaps.c_str());
+    //g_print("rtpssession caps: %s \n shmdataToCb: %s\n", data.c_str(), rtpcaps.c_str());
+    //GstCaps *caps = gst_caps_from_string(data.c_str());
+    GstCaps *caps = gst_caps_from_string(rtpcaps.c_str());
     On_scope_exit {gst_caps_unref(caps);};
     SDPMedia media;
     media.set_media_info_from_caps(caps);
@@ -1331,11 +1331,11 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
       ++reader_ref_count_[shmpath];
     }
       
-    manager_->invoke_va("siprtp",
-                        "add_data_stream",
-                        nullptr,
-                        shmpath.c_str(),
-                        nullptr);
+    // manager_->invoke_va("siprtp",
+    //                     "add_data_stream",
+    //                     nullptr,
+    //                     shmpath.c_str(),
+    //                     nullptr);
     tree->graft(std::string(".connections." + shmpath),
                 InfoTree::make(shmpath));
     tree->tag_as_array(".connections", true);
@@ -1354,13 +1354,12 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
     readers_.erase(it);
     reader_ref_count_.erase(shmpath);
   }
-  
-  manager_->invoke_va("siprtp",
-                      "remove_udp_stream_to_dest",
-                      nullptr,
-                      shmpath.c_str(),
-                      contact_uri.c_str(),
-                      nullptr);
+  // manager_->invoke_va("siprtp",
+  //                     "remove_udp_stream_to_dest",
+  //                     nullptr,
+  //                     shmpath.c_str(),
+  //                     contact_uri.c_str(),
+  //                     nullptr);
   SIPPlugin::this_->prune_tree(".buddies." + std::to_string(id)
                                + ".connections." + shmpath);
 }
@@ -1493,6 +1492,7 @@ std::unique_ptr<PJICEStreamTrans> PJCall::negociate_ice_transport(
   res = SIPPlugin::this_->stun_turn_->get_ice_transport(
       num_media_to_send,
       PJ_ICE_SESS_ROLE_CONTROLLING);
+  // HERE make shmdata writers and set ice_transport cb
   if (!res){
     g_warning("cannot init ICE transport for sending, %u", remote_sdp->media_count);
     return res;

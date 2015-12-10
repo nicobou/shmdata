@@ -24,7 +24,8 @@ namespace switcher {
 PJICEStreamTrans::PJICEStreamTrans(pj_ice_strans_cfg &ice_cfg,
                                    unsigned comp_cnt,
                                    pj_ice_sess_role role):
-    comp_cnt_(comp_cnt) {
+    comp_cnt_(comp_cnt),
+    data_cbs_(comp_cnt, nullptr){
   pj_ice_strans_cb icecb;
   /* init the callback */
   pj_bzero(&icecb, sizeof(icecb));
@@ -75,20 +76,24 @@ PJICEStreamTrans::~PJICEStreamTrans() {
 void PJICEStreamTrans::cb_on_rx_data(pj_ice_strans *ice_st,
                                      unsigned comp_id, 
                                      void *pkt, pj_size_t size,
-                                     const pj_sockaddr_t *src_addr,
-                                     unsigned src_addr_len){
-  char ipstr[PJ_INET6_ADDRSTRLEN+10];
-  PJ_UNUSED_ARG(ice_st);
-  PJ_UNUSED_ARG(src_addr_len);
-  PJ_UNUSED_ARG(pkt);
+                                     const pj_sockaddr_t */*src_addr*/,
+                                     unsigned /*src_addr_len*/){
+  // char ipstr[PJ_INET6_ADDRSTRLEN+10];
+  // PJ_UNUSED_ARG(ice_st);
+  // PJ_UNUSED_ARG(src_addr_len);
+  // PJ_UNUSED_ARG(pkt);
   // Don't do this! It will ruin the packet buffer in case TCP is used!
   //((char*)pkt)[size] = '\0';
-  g_print("Component %d: received %lu bytes data from %s",//: \"%.*s\"",
-          comp_id, size,
-          pj_sockaddr_print(src_addr, ipstr, sizeof(ipstr), 3)
-          // , (unsigned)size,
-          // (char*)pkt
-          );
+  // g_print("Component %d: received %lu bytes data from %s",//: \"%.*s\"",
+  //         comp_id, size,
+  //         pj_sockaddr_print(src_addr, ipstr, sizeof(ipstr), 3)
+  //         // , (unsigned)size,
+  //         // (char*)pkt
+  //         );
+  PJICEStreamTrans *context =
+      static_cast<PJICEStreamTrans *>(pj_ice_strans_get_user_data(ice_st));
+  if (nullptr != context->data_cbs_[comp_id - 1])
+    context->data_cbs_[comp_id - 1](pkt, size);
 }
 
 /*
@@ -210,6 +215,13 @@ bool PJICEStreamTrans::sendto(unsigned comp_id,
                               int dst_addr_len){
   return PJ_SUCCESS ==
       pj_ice_strans_sendto(icest_, comp_id, data, size, dst_addr, dst_addr_len);
+}
+
+bool PJICEStreamTrans::set_data_cb(unsigned comp_id, on_data_cb_t cb){
+  if (comp_id > data_cbs_.size())
+    return false;
+  data_cbs_[comp_id - 1] = cb;
+  return true;
 }
 
 }  // namespace switcher
