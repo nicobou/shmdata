@@ -29,6 +29,8 @@
 #include "switcher/scope-exit.hpp"
 #include "switcher/information-tree-basic-serializer.hpp"
 #include "switcher/net-utils.hpp"
+#include "switcher/gst-utils.hpp"
+#include "switcher/gst-rtppayloader-finder.hpp"
 #include "./pj-call.hpp"
 #include "./pj-call-utils.hpp"
 
@@ -1159,7 +1161,18 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
         use_tree<MPtr(&InfoTree::branch_read_data<std::string>)>(
             std::string("siprtp"),
             std::string("rtp_caps.") + it);
+    std::string rtpcaps = readers_[it]->get_caps();
+    std::string rawlabel = SIPPlugin::this_->get_quiddity_name_from_file_name(it);
+    std::istringstream ss(rawlabel); // Turn the string into a stream
+    std::string tok;
+    std::getline(ss, tok, ' ');
+    std::string label = tok;
+    while(std::getline(ss, tok, ' '))
+      label += "\\ " + tok;
+    rtpcaps += ", media-label=(string)\"" + label  + "\"";
+    g_print("rtpssession caps: %s \n shmdataToCb: %s\n", data.c_str(), rtpcaps.c_str());
     GstCaps *caps = gst_caps_from_string(data.c_str());
+    // HERE GstCaps *caps = gst_caps_from_string(rtpcaps.c_str());
     On_scope_exit {gst_caps_unref(caps);};
     SDPMedia media;
     media.set_media_info_from_caps(caps);
@@ -1305,7 +1318,14 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
       tree = InfoTree::make();
     if (readers_.find(shmpath) == readers_.cend()){
       // HERE make rtppayloader
-      readers_.emplace(shmpath, std2::make_unique<GstShmdataToCb>(shmpath, nullptr));
+      readers_.emplace(shmpath, std2::make_unique<GstShmdataToCb>(
+          shmpath,
+          [](const std::string &caps){
+            GstElementFactory *fact = GstRTPPayloaderFinder::get_factory(caps);
+            if (nullptr != fact)
+              return gst_element_factory_create(fact, nullptr);
+            return GstUtils::make_element("rtpgstpay", nullptr);
+          }));
       reader_ref_count_[shmpath] = 1;
     } else {
       ++reader_ref_count_[shmpath];

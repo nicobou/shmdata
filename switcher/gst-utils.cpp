@@ -24,16 +24,16 @@
 #include "./scope-exit.hpp"
 
 namespace switcher {
-bool
-GstUtils::make_element(const gchar *class_name,
-                       GstElement **target_element) {
-  *target_element = gst_element_factory_make(class_name, nullptr);
-  if (*target_element == nullptr) {
+GstElement *GstUtils::make_element(const gchar *class_name,
+                            GstElement **target_element) {
+  GstElement *res = gst_element_factory_make(class_name, nullptr);
+  if (res == nullptr) {
     g_debug("gstreamer element class %s cannot be instanciated",
             class_name);
-    return false;
+    return nullptr;
   }
-  return true;
+  *target_element = res;
+  return res;
 }
 
 

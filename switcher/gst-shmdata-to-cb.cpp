@@ -36,16 +36,9 @@ GstShmdataToCb::GstShmdataToCb(const std::string &shmpath, on_caps_cb_t fun):
     g_warning("GstShmdataToCb failled to create GStreamer element");
     return;
   } 
-  g_signal_connect(typefind,
-                   "have-type",
-                   G_CALLBACK(on_caps),
-                   this);
-  g_object_set(G_OBJECT(shmdatasrc),
-               "socket-path", shmpath.c_str(),
-               nullptr);
-  gst_bin_add_many(GST_BIN(pipe_.get_pipeline()),
-                   shmdatasrc, typefind,
-                   nullptr);
+  g_signal_connect(typefind, "have-type", G_CALLBACK(on_caps), this);
+  g_object_set(G_OBJECT(shmdatasrc), "socket-path", shmpath.c_str(), nullptr);
+  gst_bin_add_many(GST_BIN(pipe_.get_pipeline()), shmdatasrc, typefind, nullptr);
   if (!gst_element_link(shmdatasrc, typefind))
     return;
   pipe_.play(true);
@@ -53,11 +46,11 @@ GstShmdataToCb::GstShmdataToCb(const std::string &shmpath, on_caps_cb_t fun):
 }
 
 
-void GstShmdataToCb::on_handoff_cb(GstElement */*object*/,
-                                  GstBuffer *buf,
-                                  GstPad *pad,
-                                  gpointer user_data) {
-  //g_print("%s\n", __FUNCTION__);
+void GstShmdataToCb::on_handoff_cb(
+    GstElement */*object*/,
+    GstBuffer *buf,
+    GstPad */*pad*/,
+    gpointer user_data) {
   GstShmdataToCb *context = static_cast<GstShmdataToCb *>(user_data);
   //getting buffer infomation:
   GstMapInfo map;
@@ -76,15 +69,14 @@ void GstShmdataToCb::on_caps(GstElement *typefind,
                              GstCaps *caps,
                              gpointer user_data){
   GstShmdataToCb *context = static_cast<GstShmdataToCb *>(user_data);
-  GstElement *fakesink = gst_element_factory_make("fakesink", nullptr);
-  g_object_set(G_OBJECT(fakesink),
+  context->fakesink_ = gst_element_factory_make("fakesink", nullptr);
+  g_object_set(G_OBJECT(context->fakesink_),
                "silent", TRUE,
                "signal-handoffs", TRUE,
                "sync", FALSE,
                nullptr);
-  g_signal_connect(fakesink, "handoff", (GCallback)on_handoff_cb, context);
-  gst_bin_add(GST_BIN(context->pipe_.get_pipeline()),
-              fakesink);
+  g_signal_connect(context->fakesink_, "handoff", (GCallback)on_handoff_cb, context);
+  gst_bin_add(GST_BIN(context->pipe_.get_pipeline()), context->fakesink_);
   GstElement *filter = nullptr;
   if (context->filter_cb_){
     gchar *caps_str = gst_caps_to_string(caps);
@@ -93,14 +85,15 @@ void GstShmdataToCb::on_caps(GstElement *typefind,
   }
   if (nullptr != filter) {
     gst_bin_add(GST_BIN(context->pipe_.get_pipeline()), filter);
-    if (!gst_element_link_many(typefind, filter, fakesink, nullptr))
+    if (!gst_element_link_many(typefind, filter, context->fakesink_, nullptr))
       g_warning("issue linking typefind with fakesink in GstShmdataToCb::on_caps");
     GstUtils::sync_state_with_parent(filter);
-    GstUtils::sync_state_with_parent(fakesink);
+    GstUtils::sync_state_with_parent(context->fakesink_);
   } else {
-    if (!gst_element_link(typefind, fakesink))
+    if (!gst_element_link(typefind, context->fakesink_))
       g_warning("issue linking typefind with fakesink in GstShmdataToCb::on_caps");
-    GstUtils::sync_state_with_parent(fakesink);
+    else
+      GstUtils::sync_state_with_parent(context->fakesink_);
   }
 }
 
@@ -119,6 +112,29 @@ bool GstShmdataToCb::remove_cb(id_t cb_id){
     return false;
   data_cbs_.erase(it);
   return true;
+}
+
+std::string GstShmdataToCb::get_caps() const{
+  if (!fakesink_caps_.empty())
+    return fakesink_caps_;
+  if (nullptr == fakesink_){
+    g_warning("GstShmdataToCb::get_caps, source data type not known"
+              ", returning empty string");
+    return std::string();
+  }
+  GstPad *pad = gst_element_get_static_pad (fakesink_, "sink");
+  if (nullptr == pad) return fakesink_caps_;
+  On_scope_exit{gst_object_unref(pad);};
+  GstCaps *caps = gst_pad_get_current_caps(pad);
+  if (nullptr == caps) return fakesink_caps_;
+  On_scope_exit{gst_caps_unref(caps);};
+  gchar *str = gst_caps_to_string(caps);
+  if (nullptr == str) return fakesink_caps_;
+  On_scope_exit{g_free(str);};
+  fakesink_caps_ = std::string(str);
+  if (fakesink_caps_.empty())
+    g_warning("GstShmdataToCb::get_caps, caps not available returning empty string");
+  return fakesink_caps_;
 }
 
 }  // namespace switcher

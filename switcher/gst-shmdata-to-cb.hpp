@@ -45,7 +45,9 @@ class GstShmdataToCb: public SafeBoolIdiom {
 
   id_t add_cb(data_cb_t fun);
   bool remove_cb(id_t cb_id);
-  
+  // get caps for data in the callback:
+  std::string get_caps() const;
+
  private:
   id_t counter_{0};
   bool is_valid_{false};
@@ -54,7 +56,8 @@ class GstShmdataToCb: public SafeBoolIdiom {
   on_caps_cb_t filter_cb_;
   std::map<id_t, data_cb_t> data_cbs_{};
   std::mutex mtx_{};
-
+  GstElement *fakesink_{nullptr};
+  mutable std::string fakesink_caps_{};
   static void on_handoff_cb(GstElement */*object*/,
                             GstBuffer *buf,
                             GstPad *pad,
