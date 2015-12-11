@@ -74,9 +74,9 @@ PJCall::PJCall():
     pj_cstr(&local_addr_, "127.0.0.1");
   // configuring internal manager
   //manager_->create("rtpsession", "siprtp");
-  manager_->make_signal_subscriber("signal_subscriber",
-                                   internal_manager_cb,
-                                   this);
+  // manager_->make_signal_subscriber("signal_subscriber",
+  //                                  internal_manager_cb,
+  //                                  this);
   /*  Init invite session module. */
   {
     pjsip_inv_callback inv_cb;
@@ -228,19 +228,19 @@ bool PJCall::release_incoming_call(call_t *call, pjsua_buddy_id id){
   if (calls.end() == it)
     return false;
   // removing the corresponding httpsdpdec
-  std::string dec_name = std::string(SIPPlugin::this_->get_name())
-      + "-" 
-      + std::string(call->peer_uri, 0, call->peer_uri.find('@'));
-  auto shm_keys = SIPPlugin::this_->sip_calls_->manager_->
-      use_tree<MPtr(&InfoTree::get_child_keys)>(dec_name, std::string(".shmdata.writer."));
-  for (auto &it: shm_keys)
-    SIPPlugin::this_->prune_tree(std::string(".shmdata.writer." + it));
-  if(!SIPPlugin::this_->sip_calls_->manager_->remove(dec_name)){
-    g_warning("SIP internal httpsdpdec cannot be removed (%s)", dec_name.c_str());
-  }
-  auto quid_uri_it = SIPPlugin::this_->sip_calls_->quid_uri_.find(dec_name);
-  if (SIPPlugin::this_->sip_calls_->quid_uri_.end() != quid_uri_it)
-    SIPPlugin::this_->sip_calls_->quid_uri_.erase(quid_uri_it);
+  // std::string dec_name = std::string(SIPPlugin::this_->get_name())
+  //     + "-" 
+  //     + std::string(call->peer_uri, 0, call->peer_uri.find('@'));
+  // auto shm_keys = SIPPlugin::this_->sip_calls_->manager_->
+  //     use_tree<MPtr(&InfoTree::get_child_keys)>(dec_name, std::string(".shmdata.writer."));
+  // for (auto &it: shm_keys)
+  //   SIPPlugin::this_->prune_tree(std::string(".shmdata.writer." + it));
+  // if(!SIPPlugin::this_->sip_calls_->manager_->remove(dec_name)){
+  //   g_warning("SIP internal httpsdpdec cannot be removed (%s)", dec_name.c_str());
+  // }
+  // auto quid_uri_it = SIPPlugin::this_->sip_calls_->quid_uri_.find(dec_name);
+  // if (SIPPlugin::this_->sip_calls_->quid_uri_.end() != quid_uri_it)
+  //   SIPPlugin::this_->sip_calls_->quid_uri_.erase(quid_uri_it);
   // updating recv status in the tree
   InfoTree::ptr tree = SIPPlugin::this_->
       prune_tree(std::string(".buddies." + std::to_string(id)),
@@ -500,32 +500,32 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
     }
   }  // end iterating media
   if (PJCallUtils::is_receiving(local_sdp)) {  // preparing the switcher SDP decoder
-    // getting sdp string
-    char sdpbuf[4096];
-    pj_ssize_t len = pjmedia_sdp_print(local_sdp, sdpbuf, sizeof(sdpbuf));
-    if (len < 1)
-      g_warning("error when converting sdp to string\n");
-    sdpbuf[len] = '\0';
-    // converting to base64
-    gchar *b64sdp = g_base64_encode((const guchar *)sdpbuf, len * sizeof(char) / sizeof(guchar));
-    On_scope_exit{g_free(b64sdp);};
-    std::string dec_name =
-        std::string(SIPPlugin::this_->get_name())
-        + "-"
-        + std::string(call->peer_uri, 0, call->peer_uri.find('@'));
-    if(SIPPlugin::this_->sip_calls_->quid_uri_.end()
-       != SIPPlugin::this_->sip_calls_->quid_uri_.find(dec_name))
-      g_warning("a recever named %s already exist, overwritting", dec_name.c_str());
-    SIPPlugin::this_->sip_calls_->quid_uri_[dec_name] = std::string(call->peer_uri);
-    SIPPlugin::this_->sip_calls_->manager_->create("httpsdpdec", dec_name);
-    SIPPlugin::this_->sip_calls_->manager_->subscribe_signal("signal_subscriber",
-                                                             dec_name,
-                                                             "on-tree-grafted");
-    SIPPlugin::this_->sip_calls_->manager_->subscribe_signal("signal_subscriber",
-                                                             dec_name,
-                                                             "on-tree-pruned");
-    SIPPlugin::this_->sip_calls_->manager_->
-        invoke_va(dec_name, "to_shmdata", nullptr, b64sdp, nullptr);
+    // // getting sdp string
+    // char sdpbuf[4096];
+    // pj_ssize_t len = pjmedia_sdp_print(local_sdp, sdpbuf, sizeof(sdpbuf));
+    // if (len < 1)
+    //   g_warning("error when converting sdp to string\n");
+    // sdpbuf[len] = '\0';
+    // // converting to base64
+    // gchar *b64sdp = g_base64_encode((const guchar *)sdpbuf, len * sizeof(char) / sizeof(guchar));
+    // On_scope_exit{g_free(b64sdp);};
+    // std::string dec_name =
+    //     std::string(SIPPlugin::this_->get_name())
+    //     + "-"
+    //     + std::string(call->peer_uri, 0, call->peer_uri.find('@'));
+    // if(SIPPlugin::this_->sip_calls_->quid_uri_.end()
+    //    != SIPPlugin::this_->sip_calls_->quid_uri_.find(dec_name))
+    //   g_warning("a recever named %s already exist, overwritting", dec_name.c_str());
+    // SIPPlugin::this_->sip_calls_->quid_uri_[dec_name] = std::string(call->peer_uri);
+    // SIPPlugin::this_->sip_calls_->manager_->create("httpsdpdec", dec_name);
+    // SIPPlugin::this_->sip_calls_->manager_->subscribe_signal("signal_subscriber",
+    //                                                          dec_name,
+    //                                                          "on-tree-grafted");
+    // SIPPlugin::this_->sip_calls_->manager_->subscribe_signal("signal_subscriber",
+    //                                                          dec_name,
+    //                                                          "on-tree-pruned");
+    // SIPPlugin::this_->sip_calls_->manager_->
+    //     invoke_va(dec_name, "to_shmdata", nullptr, b64sdp, nullptr);
   }
 }
 
@@ -588,33 +588,22 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       g_warning("Bad SDP in incoming INVITE");
   }
   unsigned options = 0;
-  status = pjsip_inv_verify_request(rdata,
-                                    &options,
-                                    nullptr,
-                                    nullptr,
-                                    PJSIP::this_->sip_endpt_,
-                                    &tdata);
+  status = pjsip_inv_verify_request(
+      rdata, &options, nullptr, nullptr, PJSIP::this_->sip_endpt_, &tdata);
   if (status != PJ_SUCCESS) {
     g_warning("%s: can't handle incoming INVITE request", __FUNCTION__);
     if (tdata) {
       pjsip_response_addr res_addr;
       pjsip_get_response_addr(tdata->pool, rdata, &res_addr);
-      pjsip_endpt_send_response(PJSIP::this_->sip_endpt_,
-                                &res_addr,
-                                tdata,
-                                nullptr,
-                                nullptr);
+      pjsip_endpt_send_response(
+          PJSIP::this_->sip_endpt_, &res_addr, tdata, nullptr, nullptr);
     } else {  /* Respond with 500 (Internal Server Error) */
-      pjsip_endpt_respond_stateless(PJSIP::this_->sip_endpt_,
-                                    rdata,
-                                    500,
-                                    nullptr,
-                                    nullptr,
-                                    nullptr);
+      pjsip_endpt_respond_stateless(
+          PJSIP::this_->sip_endpt_, rdata, 500, nullptr, nullptr, nullptr);
     }
     return;
   }
-  /* Create UAS dialog */
+  // Create UAS dialog
   status = pjsip_dlg_create_uas(pjsip_ua_instance(), rdata, nullptr, &dlg);
   if (status != PJ_SUCCESS) {
     pj_str_t reason;
@@ -623,15 +612,13 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
                                   rdata, 500, &reason, nullptr, nullptr);
     return;
   }
-  /* we expect the outgoing INVITE to be challenged*/
-  pjsip_auth_clt_set_credentials(&dlg->auth_sess,
-                                 1,
-                                 &SIPPlugin::this_->sip_presence_->cfg_.cred_info[0]);
+  // we expect the outgoing INVITE to be challenged
+  pjsip_auth_clt_set_credentials(
+      &dlg->auth_sess, 1, &SIPPlugin::this_->sip_presence_->cfg_.cred_info[0]);
   // incoming call is valid, starting processing it
-  call_t *call;
   SIPPlugin::this_->sip_calls_->incoming_call_.emplace_back();
-  call = &SIPPlugin::this_->sip_calls_->incoming_call_.back();
-  call->peer_uri = std::string(from_uri, 4, std::string::npos);  // do not save 'sip:'
+  call_t *call = &SIPPlugin::this_->sip_calls_->incoming_call_.back();
+  call->peer_uri = std::string(from_uri, 4, std::string::npos);  // we do not save 'sip:'
   auto &buddy_list = SIPPlugin::this_->sip_presence_->buddy_id_;
   if (buddy_list.end() == buddy_list.find(call->peer_uri)) {
     SIPPlugin::this_->sip_presence_->add_buddy(call->peer_uri);
@@ -692,6 +679,33 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       media_to_receive.size(), PJ_ICE_SESS_ROLE_CONTROLLED);
   if (!call->ice_trans_)
     g_warning("ICE transport initialization failled");
+  // initializing shmdata writers and linking with ICE transport
+  // and (TODO) with the rtp session
+  for (auto &it: media_to_receive){
+    auto rtp_shmpath = SIPPlugin::this_->get_file_name_prefix()
+        + SIPPlugin::this_->get_manager_name()
+        + "_" + SIPPlugin::this_->get_name()
+        + "-" + std::string(call->peer_uri, 0, call->peer_uri.find('@'))
+        + "_rtp-" + PJCallUtils::get_media_label(it);
+    g_print("rtp shmpath %s\n", rtp_shmpath.c_str());
+    call->rtp_writers_.emplace_back(
+        std2::make_unique<ShmdataWriter>(
+            SIPPlugin::this_,
+            rtp_shmpath,
+            9000, // ethernet jumbo frame
+            std::string("application/x-rtp")));  // TODO
+    SIPPlugin::this_->graft_tree(
+        std::string(".shmdata.writer.") + rtp_shmpath + ".uri",
+        InfoTree::make(call->peer_uri));
+    auto *writer = call->rtp_writers_.back().get();
+    call->ice_trans_->set_data_cb(
+        call->rtp_writers_.size(),
+        [writer](void *data, size_t size){
+          writer->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, size);
+          writer->bytes_written(size);
+        });
+  }
+  
   // Create SDP answer
   create_sdp_answer(dlg->pool, call, media_to_receive, &sdp);
   // preparing initial answer
@@ -1154,7 +1168,7 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
   if (paths.empty())
     return;
   SDPDescription desc;
-  QuiddityManager::ptr manager = SIPPlugin::this_->sip_calls_->manager_;
+  //QuiddityManager::ptr manager = SIPPlugin::this_->sip_calls_->manager_;
   gint port = starting_rtp_port_;
   for (auto &it : paths) {
     // std::string data = manager->
@@ -1364,47 +1378,47 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
                                + ".connections." + shmpath);
 }
 
-void PJCall::internal_manager_cb(const std::string &/*subscriber_name */,
-                                 const std::string &quid_name ,
-                                 const std::string &sig_name,
-                                 const std::vector<std::string> &params,
-                                 void *user_data) {
-  PJCall *context = static_cast<PJCall *>(user_data);
-  if (0 == sig_name.compare("on-tree-grafted") 
-      && 0 == std::string(".shmdata.writer").compare(std::string(params[0], 0, 15))) {
-    if (std::string::npos != params[0].find(".byte_rate")){
-      SIPPlugin::this_->
-          graft_tree(params[0],
-                     InfoTree::make(
-                         context->manager_->use_tree<MPtr(&InfoTree::branch_read_data<int>)>(
-                             quid_name,
-                             params[0])));
-      return;
-    }
-    // FIXME, this should not make a copy through serialization
-    std::string stree = context->manager_->invoke_info_tree<std::string>(
-        quid_name,
-        [&](InfoTree::ptrc t){
-          return BasicSerializer::serialize(InfoTree::get_subtree(t, params[0]));
-        });
-    auto shmtree = BasicSerializer::deserialize(stree);
-    auto it = context->quid_uri_.find(quid_name);
-    if (context->quid_uri_.end() == it)
-      g_warning("uri not saved for internal quiddity %s", quid_name.c_str());
-    else 
-      shmtree->graft("uri", InfoTree::make(it->second));
-    SIPPlugin::this_->graft_tree(params[0], shmtree);
-    return;
-  } else if (0 == sig_name.compare("on-tree-pruned")
-             && 0 == std::string(".shmdata.writer").compare(std::string(params[0], 0, 15))) {
-    SIPPlugin::this_->prune_tree(params[0]);
-    return;
-  }
-  g_warning("PJCall::%s unhandled signal (%s, %s)",
-            __FUNCTION__,
-            sig_name.c_str(),
-            params[0].c_str());
-}
+// void PJCall::internal_manager_cb(const std::string &/*subscriber_name */,
+//                                  const std::string &quid_name ,
+//                                  const std::string &sig_name,
+//                                  const std::vector<std::string> &params,
+//                                  void *user_data) {
+//   PJCall *context = static_cast<PJCall *>(user_data);
+//   if (0 == sig_name.compare("on-tree-grafted") 
+//       && 0 == std::string(".shmdata.writer").compare(std::string(params[0], 0, 15))) {
+//     if (std::string::npos != params[0].find(".byte_rate")){
+//       SIPPlugin::this_->
+//           graft_tree(params[0],
+//                      InfoTree::make(
+//                          context->manager_->use_tree<MPtr(&InfoTree::branch_read_data<int>)>(
+//                              quid_name,
+//                              params[0])));
+//       return;
+//     }
+//     // FIXME, this should not make a copy through serialization
+//     std::string stree = context->manager_->invoke_info_tree<std::string>(
+//         quid_name,
+//         [&](InfoTree::ptrc t){
+//           return BasicSerializer::serialize(InfoTree::get_subtree(t, params[0]));
+//         });
+//     auto shmtree = BasicSerializer::deserialize(stree);
+//     auto it = context->quid_uri_.find(quid_name);
+//     if (context->quid_uri_.end() == it)
+//       g_warning("uri not saved for internal quiddity %s", quid_name.c_str());
+//     else 
+//       shmtree->graft("uri", InfoTree::make(it->second));
+//     SIPPlugin::this_->graft_tree(params[0], shmtree);
+//     return;
+//   } else if (0 == sig_name.compare("on-tree-pruned")
+//              && 0 == std::string(".shmdata.writer").compare(std::string(params[0], 0, 15))) {
+//     SIPPlugin::this_->prune_tree(params[0]);
+//     return;
+//   }
+//   g_warning("PJCall::%s unhandled signal (%s, %s)",
+//             __FUNCTION__,
+//             sig_name.c_str(),
+//             params[0].c_str());
+// }
 
 void PJCall::call_on_rx_offer(pjsip_inv_session */*inv*/,
                               const pjmedia_sdp_session */*offer*/){

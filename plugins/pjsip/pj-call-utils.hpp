@@ -19,6 +19,7 @@
 #define PLUGINS_PJSIP_PJ_CALL_UTILS_H_
 
 #include <pjsua-lib/pjsua.h>
+#include <glib.h>
 
 namespace switcher {
 namespace PJCallUtils {
@@ -38,6 +39,34 @@ bool is_receiving(const pjmedia_sdp_session *sdp){
     if (PJCallUtils::is_receive_media(sdp->media[i]))
       return true;
   return false;
+}
+
+std::string get_media_label(const pjmedia_sdp_media *media){
+  std::string res = std::string("media-label");
+  // for (unsigned i=0; i < media->desc.fmt_count; i++){
+  //   g_print("fmt ------------ %.*s\n",
+  //           (int)media->desc.fmt[i].slen,
+  //           media->desc.fmt[i].ptr);
+  // }
+  // for (unsigned i=0; i < media->attr_count; i++){
+  //   g_print("attr------------name %.*s value %.*s\n",
+  //           (int)media->attr[i]->name.slen,
+  //           media->attr[i]->name.ptr,
+  //           (int)media->attr[i]->value.slen,
+  //           media->attr[i]->value.ptr);
+  // }
+  auto name = std::string("media-label=");
+  for (unsigned i=0; i < media->attr_count; i++){
+    auto value = std::string(media->attr[i]->value.ptr, 0, media->attr[i]->value.slen);
+    auto pos = value.find(name);
+    if (std::string::npos != pos) {
+      auto index = pos + name.size();
+      return std::string(value, index, value.find(';', index));
+    }
+  }
+  
+
+  return res;
 }
 
 }  // namespace PJCallUtils

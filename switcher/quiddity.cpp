@@ -143,7 +143,7 @@ Quiddity::Quiddity():
                                  arg_type);
 }
 
-const std::string &Quiddity::get_name() const {
+std::string Quiddity::get_name() const {
   return name_;
 }
 
@@ -436,16 +436,20 @@ std::string Quiddity::get_signal_description(const std::string &signal_name) {
   return sig->get_description();
 }
 
-std::string Quiddity::make_file_name(const std::string &suffix) {
+std::string Quiddity::make_file_name(const std::string &suffix) const {
   std::string connector_name;
   QuiddityManager_Impl::ptr manager = manager_impl_.lock();
   if ((bool) manager)
-    connector_name.append("/tmp/switcher_" + manager->get_name() + "_" +
+    connector_name.append(get_file_name_prefix() + manager->get_name() + "_" +
                           name_ + "_" + suffix);
   return connector_name;
 }
 
-std::string Quiddity::get_quiddity_name_from_file_name(const std::string &path) {
+std::string Quiddity::get_file_name_prefix() const {
+  return "/tmp/switcher_";
+}
+
+std::string Quiddity::get_quiddity_name_from_file_name(const std::string &path) const {
    auto file_begin = path.find("switcher_");
    if (std::string::npos == file_begin) {
      g_warning("%s: not a switcher generated path", __FUNCTION__);

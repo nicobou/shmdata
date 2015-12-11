@@ -27,6 +27,7 @@
 #include "switcher/rtp-session.hpp"
 #include "switcher/quiddity-manager.hpp"
 #include "switcher/gst-shmdata-to-cb.hpp"
+#include "switcher/shmdata-writer.hpp"
 #include "./pj-sip-plugin.hpp"
 #include "./pj-sip.hpp"
 #include "./pj-codec.hpp"
@@ -58,7 +59,10 @@ class PJCall {
     pjsip_inv_session *inv {nullptr};
     std::vector<media_t> media{};
     std::string peer_uri{};
+    // as receiver
     std::unique_ptr<PJICEStreamTrans> ice_trans_{};
+    std::vector<std::unique_ptr<ShmdataWriter>> rtp_writers_{};
+    // as sender
     std::unique_ptr<PJICEStreamTrans> ice_trans_send_{};
   };
 
@@ -80,8 +84,8 @@ class PJCall {
   QuiddityManager::ptr manager_;
   std::map<std::string, std::unique_ptr<GstShmdataToCb>> readers_{};
   std::map<std::string, unsigned> reader_ref_count_{};
-  // saving association between reception quids (httpsdpdec) and uris:
-  std::map<std::string, std::string> quid_uri_{};
+  // // saving association between reception quids (httpsdpdec) and uris:
+  // std::map<std::string, std::string> quid_uri_{};
   InfoTree::ptr contact_shm_;
   uint starting_rtp_port_ {18900};
   pj_uint16_t next_port_to_attribute_{18900};  // Must be even
@@ -118,11 +122,11 @@ class PJCall {
   void make_attach_shmdata_to_contact(const std::string &shmpath,
                                       const std::string &contact_uri,
                                       bool attach);
-  static void internal_manager_cb(const std::string &/*subscriber_name */,
-                                  const std::string &/*quiddity_name */,
-                                  const std::string &signal_name,
-                                  const std::vector<std::string> &params,
-                                  void */*user_data */);
+  // static void internal_manager_cb(const std::string &/*subscriber_name */,
+  //                                 const std::string &/*quiddity_name */,
+  //                                 const std::string &signal_name,
+  //                                 const std::vector<std::string> &params,
+  //                                 void */*user_data */);
   static void on_inv_state_disconnected(struct call *call,
                                         pjsip_inv_session *inv,
                                         pjsua_buddy_id id);

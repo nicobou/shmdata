@@ -67,7 +67,7 @@ class Quiddity {
   virtual bool init() = 0;
 
   // instance name
-  const std::string &get_name() const ;
+  std::string get_name() const ;
   bool set_name(const std::string &name);  // can be called once
 
   // properties
@@ -203,10 +203,11 @@ class Quiddity {
   void emit_on_interface_changed();   // in order to tell properties/methods has changed
 
   // use a consistent naming for shmdatas
-  std::string make_file_name(const std::string &suffix);
-  std::string get_quiddity_name_from_file_name(const std::string &shmdata_path);
+  std::string make_file_name(const std::string &suffix) const;
   std::string get_manager_name();
-  
+  std::string get_quiddity_name_from_file_name(const std::string &shmdata_path) const;
+  std::string get_file_name_prefix() const;
+      
   // used in order to dynamically create other quiddity, weak_ptr is used in order to
   // avoid circular references to the manager_impl
   std::weak_ptr<QuiddityManager_Impl> manager_impl_{};
