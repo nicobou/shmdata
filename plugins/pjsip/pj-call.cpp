@@ -688,12 +688,15 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
         + "-" + std::string(call->peer_uri, 0, call->peer_uri.find('@'))
         + "_rtp-" + PJCallUtils::get_media_label(it);
     g_print("rtp shmpath %s\n", rtp_shmpath.c_str());
+    auto rtp_caps = PJCallUtils::get_rtp_caps(it);
+    if (rtp_caps.empty()) rtp_caps = "unknown_data_type";
+    g_print("rtp caps %s\n", rtp_caps.c_str());
     call->rtp_writers_.emplace_back(
         std2::make_unique<ShmdataWriter>(
             SIPPlugin::this_,
             rtp_shmpath,
             9000, // ethernet jumbo frame
-            std::string("application/x-rtp")));  // TODO
+            rtp_caps));  // TODO HERE see get_rtp_caps
     SIPPlugin::this_->graft_tree(
         std::string(".shmdata.writer.") + rtp_shmpath + ".uri",
         InfoTree::make(call->peer_uri));

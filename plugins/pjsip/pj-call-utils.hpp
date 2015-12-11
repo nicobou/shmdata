@@ -64,8 +64,48 @@ std::string get_media_label(const pjmedia_sdp_media *media){
       return std::string(value, index, value.find(';', index));
     }
   }
-  
+  return res;
+}
 
+std::string get_rtp_caps(const pjmedia_sdp_media *media){
+  if (std::string(media->desc.transport.ptr, 0, media->desc.transport.slen) != "RTP/AVP"){
+    g_warning("sdp media is not using RTP transport");
+    return std::string();
+  }
+  if (media->desc.fmt_count > 1)
+    g_warning("sdp media with several format (unhandled)");
+  std::string res = std::string("application/x-rtp");
+  g_print("media --------------  %.*s\n",
+          (int)media->desc.media.slen,
+          media->desc.media.ptr);
+  std::string clock_rate;
+  std::string encoding_name;
+  std::string more;
+  for (unsigned i=0; i < media->attr_count; i++){
+    // g_print("attr------------name %.*s value %.*s\n",
+    //         (int)media->attr[i]->name.slen, media->attr[i]->name.ptr,
+    //         (int)media->attr[i]->value.slen, media->attr[i]->value.ptr);
+    if (std::string(media->attr[i]->name.ptr, 0 , media->attr[i]->name.slen) == "rtpmap"){
+      auto value = std::string(media->attr[i]->value.ptr, 0 , media->attr[i]->value.slen);
+      auto index = value.find(' ');
+      auto sep = value.find('/');
+      encoding_name = std::string(", encoding-name=")
+          + std::string(value, index + 1, sep - (index + 1));
+      clock_rate = std::string(", clock-rate=")
+          +  std::string(value, sep + 1, std::string::npos);
+    }
+    if (std::string(media->attr[i]->name.ptr, 0 , media->attr[i]->name.slen) == "fmtp"){
+      auto value = std::string(media->attr[i]->value.ptr, 0 , media->attr[i]->value.slen);
+      auto index = value.find(' ');
+      // HERE split parameter ';' -> ', '
+      more = std::string(", ") + std::string(value, index + 1, std::string::npos);
+    }
+  }
+  res += clock_rate
+      + std::string(", media=")
+      + std::string(media->desc.media.ptr, 0, media->desc.media.slen)
+      + encoding_name
+      + more;
   return res;
 }
 
