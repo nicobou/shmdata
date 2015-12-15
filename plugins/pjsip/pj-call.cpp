@@ -687,10 +687,10 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
         + "_" + SIPPlugin::this_->get_name()
         + "-" + std::string(call->peer_uri, 0, call->peer_uri.find('@'))
         + "_rtp-" + PJCallUtils::get_media_label(it);
-    g_print("rtp shmpath %s\n", rtp_shmpath.c_str());
+    // g_print("rtp shmpath %s\n", rtp_shmpath.c_str());
     auto rtp_caps = PJCallUtils::get_rtp_caps(it);
     if (rtp_caps.empty()) rtp_caps = "unknown_data_type";
-    g_print("rtp caps %s\n", rtp_caps.c_str());
+    // g_print("rtp caps %s\n", rtp_caps.c_str());
     call->rtp_writers_.emplace_back(
         std2::make_unique<ShmdataWriter>(
             SIPPlugin::this_,
@@ -1185,8 +1185,8 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
     std::getline(ss, tok, ' ');
     std::string label = tok;
     while(std::getline(ss, tok, ' '))
-      label += "\\ " + tok;
-    rtpcaps += ", media-label=(string)\"" + label  + "\"";
+      label += tok;
+    rtpcaps += ", media-label=(string)" + label ;
     //g_print("rtpssession caps: %s \n shmdataToCb: %s\n", data.c_str(), rtpcaps.c_str());
     //GstCaps *caps = gst_caps_from_string(data.c_str());
     GstCaps *caps = gst_caps_from_string(rtpcaps.c_str());

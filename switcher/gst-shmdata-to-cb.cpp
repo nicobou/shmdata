@@ -18,6 +18,7 @@
  */
 
 #include <gst/gst.h>
+#include "./string-utils.hpp"
 #include "./gst-shmdata-to-cb.hpp"
 #include "./scope-exit.hpp"
 
@@ -134,6 +135,8 @@ std::string GstShmdataToCb::get_caps() const{
   fakesink_caps_ = std::string(str);
   if (fakesink_caps_.empty())
     g_warning("GstShmdataToCb::get_caps, caps not available returning empty string");
+  // fakesink_caps_ = StringUtils::replace_string(fakesink_caps_, "=, ", ", ");
+  g_print("-------------------- %s\n", fakesink_caps_.c_str());
   return fakesink_caps_;
 }
 
