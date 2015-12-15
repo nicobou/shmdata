@@ -30,12 +30,14 @@ class SIPPlugin;
 class PJCall;
 class PJPresence;
 class PJStunTurn;
+class PJMediaEndpt;
 
 class PJSIP: public SafeBoolIdiom {
   friend SIPPlugin;
   friend PJCall;
   friend PJPresence;
   friend PJStunTurn;
+  friend PJMediaEndpt;
 
  public:
   PJSIP(std::function<bool()> init_fun,

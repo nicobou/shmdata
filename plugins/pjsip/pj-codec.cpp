@@ -18,7 +18,7 @@
 #include <glib.h> // g_warning
 #include <algorithm>
 #include "./pj-codec.hpp"
-#include "./pj-call.hpp"
+#include "./pj-media-endpt.hpp"
 #include "./pj-codec-utils.hpp"
 
 namespace switcher {
@@ -140,18 +140,18 @@ PJCodec::alt_codec_dealloc_codec(pjmedia_codec_factory */*factory*/,
 }
 
 pj_status_t PJCodec::alt_codec_deinit(void) {
-  if (nullptr == PJCall::med_endpt_) {
+  if (nullptr == PJMediaEndpt::med_endpt_) {
     g_warning("media endpoint is nullptr, cannot deinit");
     return PJ_TRUE;           // failure
   }
   pjmedia_codec_mgr *codec_mgr;
-  codec_mgr = pjmedia_endpt_get_codec_mgr(PJCall::med_endpt_);
+  codec_mgr = pjmedia_endpt_get_codec_mgr(PJMediaEndpt::med_endpt_);
   return pjmedia_codec_mgr_unregister_factory(codec_mgr,
                                               &alt_codec_factory.base);
 }
 
 pj_status_t PJCodec::install_codecs() {
-  if (nullptr == PJCall::med_endpt_) {
+  if (nullptr == PJMediaEndpt::med_endpt_) {
     g_warning("cannot install codec (nullptr media endpoint)");
     return PJ_TRUE;           // failure
   }
@@ -161,7 +161,7 @@ pj_status_t PJCodec::install_codecs() {
 
   /* Register our "dummy" codecs */
   alt_codec_factory.base.op = &alt_codec_factory_op;
-  codec_mgr = pjmedia_endpt_get_codec_mgr(PJCall::med_endpt_);
+  codec_mgr = pjmedia_endpt_get_codec_mgr(PJMediaEndpt::med_endpt_);
   status = pjmedia_codec_mgr_register_factory(codec_mgr,
                                               &alt_codec_factory.base);
   if (status != PJ_SUCCESS)

@@ -32,15 +32,15 @@
 #include "./pj-sip.hpp"
 #include "./pj-codec.hpp"
 #include "./pj-ice-stream-trans.hpp"
+#include "./pj-media-endpt.hpp"
 
 namespace switcher {
 class SIPPlugin;
 class PJCall {
-  friend PJCodec;
 
  public:
   PJCall();
-  ~PJCall();
+  ~PJCall() = default;
   PJCall(const PJCall &) = delete;
   PJCall &operator=(const PJCall &) = delete;
 
@@ -57,32 +57,28 @@ class PJCall {
   // and only destroyed when the application quits.
   using call_t = struct call {
     pjsip_inv_session *inv {nullptr};
-    std::vector<media_t> media{};
-    std::string peer_uri{};
     // as receiver
     std::unique_ptr<PJICEStreamTrans> ice_trans_{};
     std::vector<std::unique_ptr<ShmdataWriter>> rtp_writers_{};
     // as sender
     std::unique_ptr<PJICEStreamTrans> ice_trans_send_{};
+    // media
+    std::vector<media_t> media{};
+    std::string peer_uri{};
   };
 
  private:
-  static pjmedia_endpt *med_endpt_;
   static pjsip_module mod_siprtp_;
   SIPPlugin *sip_plugin_;
   pj_str_t local_addr_ {nullptr, 0};
-  std::vector<call_t> outgoing_call_{};
+  bool is_calling_{false};
+  bool is_hanging_up_{false};
+  std::map<std::string, std::string> local_ips_{};
   std::mutex ocall_m_{};
   std::condition_variable ocall_cv_{};
   bool ocall_action_done_{false};
-  bool is_calling_{false};
-  bool is_hanging_up_{false};
-  std::vector<call_t> incoming_call_{};
-  std::vector<call_t> call_{};
-  std::map<std::string, std::string> local_ips_{};
   // internal rtp
   QuiddityManager::ptr manager_;
-  std::map<std::string, std::unique_ptr<GstShmdataToCb>> readers_{};
   std::map<std::string, unsigned> reader_ref_count_{};
   // // saving association between reception quids (httpsdpdec) and uris:
   // std::map<std::string, std::string> quid_uri_{};
@@ -90,6 +86,11 @@ class PJCall {
   uint starting_rtp_port_ {18900};
   pj_uint16_t next_port_to_attribute_{18900};  // Must be even
   uint port_range_{100};
+
+  std::unique_ptr<PJMediaEndpt> med_endpt_{nullptr};
+  std::vector<call_t> incoming_call_{};
+  std::vector<call_t> outgoing_call_{};
+  std::map<std::string, std::unique_ptr<GstShmdataToCb>> readers_{};
 
   // sip functions
   static pj_bool_t on_rx_request(pjsip_rx_data *rdata);

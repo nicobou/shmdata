@@ -35,7 +35,7 @@
 #include "./pj-call-utils.hpp"
 
 namespace switcher {
-pjmedia_endpt *PJCall::med_endpt_ = nullptr;
+//pjmedia_endpt *PJCall::med_endpt_ = nullptr;
 char *pjcall_pjsip_module_name = strdup("mod-siprtpapp");
 
 pjsip_module PJCall::mod_siprtp_ = {
@@ -103,11 +103,12 @@ PJCall::PJCall():
                                   &mod_siprtp_);
   if (status != PJ_SUCCESS)
     g_warning("Register mod_siprtp_ failed");
-  // /* Init media */
-  status = pjmedia_endpt_create(&PJSIP::this_->cp_.factory,
-                                nullptr,
-                                1,
-                                &med_endpt_);
+  // Init media
+  med_endpt_ = std2::make_unique<PJMediaEndpt>();
+  // status = pjmedia_endpt_create(&PJSIP::this_->cp_.factory,
+  //                               nullptr,
+  //                               1,
+  //                               &med_endpt_);
   if (status != PJ_SUCCESS)
     g_warning("Init media failed");
   // registering codecs
@@ -172,13 +173,6 @@ PJCall::PJCall():
       starting_rtp_port_,
       0,
       65535);
-}
-
-PJCall::~PJCall() {
-  if (med_endpt_) {
-    pjmedia_endpt_destroy(med_endpt_);
-    med_endpt_ = nullptr;
-  }
 }
 
 /* Callback to be called to handle incoming requests outside dialogs: */
