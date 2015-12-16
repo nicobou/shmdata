@@ -25,9 +25,12 @@
 #include "./gst-pipeliner.hpp"
 #include "./std2.hpp"
 #include "./safe-bool-idiom.hpp"
+#include "./rtp-sender.hpp"
+
 
 namespace switcher {
 class RtpSession2: public SafeBoolIdiom {
+  friend RTPSender;
  public:
   RtpSession2();
   ~RtpSession2() = default;

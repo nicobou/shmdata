@@ -53,7 +53,7 @@ void GstShmdataToCb::on_handoff_cb(
     GstPad */*pad*/,
     gpointer user_data) {
   GstShmdataToCb *context = static_cast<GstShmdataToCb *>(user_data);
-  //getting buffer infomation:
+  //getting buffer information:
   GstMapInfo map;
   if (!gst_buffer_map (buf, &map, GST_MAP_READ)) {
     g_warning("gst_buffer_map failled: canceling audio buffer access");

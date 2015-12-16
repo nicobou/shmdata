@@ -51,6 +51,12 @@ return g_strcmp0(gst_plugin_feature_get_name(f2),
 GstElementFactory *get_factory(const std::string &caps_str){
   GstCaps *caps = gst_caps_from_string (caps_str.c_str());
   On_scope_exit{if (nullptr != caps) gst_caps_unref(caps);};
+  return get_factory_by_caps(caps);
+}
+
+GstElementFactory *get_factory_by_caps(GstCaps *caps){
+  if (nullptr == caps)
+    return nullptr;
   GList *list = gst_registry_feature_filter(
       gst_registry_get(),
       (GstPluginFeatureFilter)sink_factory_filter,
