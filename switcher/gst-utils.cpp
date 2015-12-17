@@ -32,7 +32,8 @@ GstElement *GstUtils::make_element(const gchar *class_name,
             class_name);
     return nullptr;
   }
-  *target_element = res;
+  if (target_element)
+    *target_element = res;
   return res;
 }
 

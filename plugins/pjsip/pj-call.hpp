@@ -24,7 +24,7 @@
 #include <map>
 #include <mutex>
 #include <condition_variable>
-#include "switcher/rtp-session.hpp"
+#include "switcher/rtp-session2.hpp"
 #include "switcher/quiddity-manager.hpp"
 #include "switcher/gst-shmdata-to-cb.hpp"
 #include "switcher/shmdata-writer.hpp"
@@ -49,7 +49,7 @@ class PJCall {
   using media_t = struct media_stream {
     pj_uint16_t rtp_port{0};  // sending  // FIXME remove this, using ICE only
     std::string shm_path_to_send{};
-    GstShmdataToCb::id_t cb_id{0};
+    RTPSender::id_t cb_id{0};
     pj_sockaddr	def_addr;
   };
 
@@ -87,10 +87,11 @@ class PJCall {
   pj_uint16_t next_port_to_attribute_{18900};  // Must be even
   uint port_range_{100};
 
+  RtpSession2 rtp_session_{};
   std::unique_ptr<PJMediaEndpt> med_endpt_{nullptr};
   std::vector<call_t> incoming_call_{};
   std::vector<call_t> outgoing_call_{};
-  std::map<std::string, std::unique_ptr<GstShmdataToCb>> readers_{};
+  std::map<std::string, std::unique_ptr<RTPSender>> readers_{};
 
   // sip functions
   static pj_bool_t on_rx_request(pjsip_rx_data *rdata);

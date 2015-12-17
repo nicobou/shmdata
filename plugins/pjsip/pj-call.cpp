@@ -1329,14 +1329,10 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
       tree = InfoTree::make();
     if (readers_.find(shmpath) == readers_.cend()){
       // HERE make rtppayloader
-      readers_.emplace(shmpath, std2::make_unique<GstShmdataToCb>(
+      readers_.emplace(shmpath, std2::make_unique<RTPSender>(
+          &rtp_session_,
           shmpath,
-          [](const std::string &caps){
-            GstElementFactory *fact = GstRTPPayloaderFinder::get_factory(caps);
-            if (nullptr != fact)
-              return gst_element_factory_create(fact, nullptr);
-            return GstUtils::make_element("rtpgstpay", nullptr);
-          }));
+          1440));
       reader_ref_count_[shmpath] = 1;
     } else {
       ++reader_ref_count_[shmpath];
