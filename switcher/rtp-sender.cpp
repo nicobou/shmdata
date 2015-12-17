@@ -26,11 +26,9 @@ namespace switcher {
 
 RTPSender::RTPSender(RtpSession2 *session,
                      const std::string &shmpath,
-                     unsigned int rtp_id,
                      unsigned int mtu):
     session_(session),
     shmpath_(shmpath),
-    rtp_id_(rtp_id),
     mtu_(mtu),
     shmdatasrc_(gst_element_factory_make("shmdatasrc", nullptr)),
     typefind_(gst_element_factory_make("typefind", nullptr)),
@@ -60,6 +58,16 @@ RTPSender::RTPSender(RtpSession2 *session,
 }
 
 RTPSender::~RTPSender(){
+  if (shmdatasrc_)
+    GstUtils::clean_element(shmdatasrc_);
+  if (typefind_)
+    GstUtils::clean_element(typefind_);
+  if (rtp_payloader_)
+    GstUtils::clean_element(rtp_payloader_);
+  if (fakesink_)
+    GstUtils::clean_element(fakesink_);
+  if (rtp_sink_pad_)
+    gst_element_release_request_pad(session_->rtpsession_, rtp_sink_pad_);
 }
 
 void RTPSender::on_caps(GstElement *typefind,
@@ -67,6 +75,7 @@ void RTPSender::on_caps(GstElement *typefind,
                         GstCaps *caps,
                         gpointer user_data){
   RTPSender *context = static_cast<RTPSender *>(user_data);
+  // making the RTP payloader
   GstElementFactory *fact = GstRTPPayloaderFinder::get_factory_by_caps(caps);
   if (nullptr != fact)
     context->rtp_payloader_ = gst_element_factory_create(fact, nullptr);
@@ -76,11 +85,37 @@ void RTPSender::on_caps(GstElement *typefind,
                    context->rtp_payloader_,
                    context->fakesink_,
                    nullptr);
-  if (!gst_element_link_many(typefind,
-                             context->rtp_payloader_,
-                             context->fakesink_,
-                             nullptr))
+  if (!gst_element_link(typefind, context->rtp_payloader_))
     g_error("BUG issue linking typefind with fakesink in RTPSender::on_caps");
+  std::string rtp_id;
+  // link the payloader with the rtpbin
+  { context->rtp_sink_pad_ =
+        gst_element_get_request_pad(context->session_->rtpsession_, "send_rtp_sink_%u");
+    On_scope_exit {gst_object_unref(context->rtp_sink_pad_);}; 
+    GstPad *srcpad = gst_element_get_static_pad(context->rtp_payloader_, "src");
+    On_scope_exit {gst_object_unref(srcpad);}; 
+    if (gst_pad_link(srcpad, context->rtp_sink_pad_) != GST_PAD_LINK_OK)
+      g_warning("failed to link payloader to rtpbin");
+    gchar *rtp_sink_pad_name = gst_pad_get_name(context->rtp_sink_pad_);
+    On_scope_exit{g_free(rtp_sink_pad_name);};
+    gchar **rtpsession_array = g_strsplit_set(rtp_sink_pad_name, "_", 0);
+    On_scope_exit{g_strfreev(rtpsession_array);};
+    rtp_id = std::string(rtpsession_array[3]);
+    // TODO receive RTCP
+  }
+  // linking rtpbin to fakesink
+  { GstPad *src_pad =
+        gst_element_get_static_pad(context->session_->rtpsession_,
+                                   std::string("send_rtp_src_" + rtp_id).c_str());
+    On_scope_exit{gst_object_unref(src_pad);};
+    GstPad *sink_pad = gst_element_get_static_pad(context->fakesink_, "sink");
+    On_scope_exit{gst_object_unref(sink_pad);}; 
+    if (gst_pad_link(src_pad, sink_pad) != GST_PAD_LINK_OK)
+      g_warning("failed to link rtpbin to fakesink");
+    // TODO send RTCP
+  }
+  
+  // syncing gst elements with pipeline
   GstUtils::sync_state_with_parent(context->rtp_payloader_);
   GstUtils::sync_state_with_parent(context->fakesink_);
 }

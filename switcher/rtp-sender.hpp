@@ -34,7 +34,6 @@ class RTPSender {
   using frame_cb_t = std::function<void(void *, size_t)>;
   RTPSender(RtpSession2 *session,
             const std::string &shmpath,
-            unsigned int rtp_id,
             unsigned int mtu // = 1400
             );
   RTPSender() = delete;
@@ -50,13 +49,14 @@ class RTPSender {
   
   RtpSession2 *session_;
   std::string shmpath_;
-  unsigned int rtp_id_;
   unsigned int mtu_;
   GstElement *shmdatasrc_;
   GstElement *typefind_;
   GstElement *rtp_payloader_{nullptr};
   GstElement *fakesink_;
+  GstPad *rtp_sink_pad_{nullptr};
   id_t counter_{0};
+  //std::string rtp_id_{};
   std::map<id_t, frame_cb_t> rtp_frame_cbs_{};
   std::mutex mtx_{};
   mutable std::string fakesink_caps_{};
