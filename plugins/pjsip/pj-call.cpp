@@ -690,7 +690,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
             SIPPlugin::this_,
             rtp_shmpath,
             9000, // ethernet jumbo frame
-            rtp_caps));  // TODO HERE see get_rtp_caps
+            rtp_caps));
     SIPPlugin::this_->graft_tree(
         std::string(".shmdata.writer.") + rtp_shmpath + ".uri",
         InfoTree::make(call->peer_uri));
@@ -1328,7 +1328,6 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
     if (!tree)
       tree = InfoTree::make();
     if (readers_.find(shmpath) == readers_.cend()){
-      // HERE make rtppayloader
       readers_.emplace(shmpath, std2::make_unique<RTPSender>(
           &rtp_session_,
           shmpath,
@@ -1499,7 +1498,6 @@ std::unique_ptr<PJICEStreamTrans> PJCall::negociate_ice_transport(
   res = SIPPlugin::this_->stun_turn_->get_ice_transport(
       num_media_to_send,
       PJ_ICE_SESS_ROLE_CONTROLLING);
-  // HERE make shmdata writers and set ice_transport cb
   if (!res){
     g_warning("cannot init ICE transport for sending, %u", remote_sdp->media_count);
     return res;

@@ -605,7 +605,6 @@ PJPresence::on_buddy_evsub_state(pjsua_buddy_id /*buddy_id*/,
 // gboolean PJPresence::save_buddies_wrapped(gchar *file_name,
 //                                           void *user_data) {
 //   PJPresence *context = static_cast<PJPresence *>(user_data);
-//   // HERE
 //   // auto serialize_buddies = [&] (InfoTree::ptrc tree) {
 //   //   InfoTree::ptr buds = tree->get("buddy");
 //   //   return BasicSerializer::serialize(bud);

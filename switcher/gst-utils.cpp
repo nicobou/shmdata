@@ -166,9 +166,16 @@ void GstUtils::clean_element(GstElement *element) {
   // if (GST_IS_BIN(gst_element_get_parent(element)))
   //   gst_bin_remove(GST_BIN(gst_element_get_parent(element)), element);
   // else
-    if (!GST_IS_BIN(gst_element_get_parent(element))
-        && ((GObject *) element)->ref_count > 0)
-    gst_object_unref(element);
+
+  gst_element_set_state(element, GST_STATE_NULL);
+  GstObject *parent = gst_element_get_parent(element);
+  On_scope_exit{if (parent) gst_object_unref(parent);};
+  if (GST_IS_BIN(parent)) {
+    gst_bin_remove (GST_BIN_CAST(parent), element);
+  } else {
+    if (((GObject *) element)->ref_count > 0)
+      gst_object_unref(element);
+  }
 }
 
 void GstUtils::wait_state_changed(GstElement *bin) {

@@ -47,6 +47,7 @@ class RTPSender {
   // get caps for data in the callback:
   std::string get_caps() const;
   
+ private:
   RtpSession2 *session_;
   std::string shmpath_;
   unsigned int mtu_;
