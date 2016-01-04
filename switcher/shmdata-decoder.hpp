@@ -30,7 +30,13 @@ class RtpSession2;
 
 class ShmdataDecoder {
  public:
-  ShmdataDecoder(Quiddity *quid, GstPipeliner *pipeliner, const std::string &shmpath);
+  using on_shmwriter_path_t = std::function<void(const std::string &)>;
+  ShmdataDecoder(Quiddity *quid,
+                 GstPipeliner *pipeliner,
+                 const std::string &shmpath,
+                 const std::string &shm_prefix,   // if empty, use quid's prefix method
+                 const std::string &media_label,  // ignored if empty
+                 on_shmwriter_path_t cb);
   ShmdataDecoder() = delete;
   ~ShmdataDecoder();
   ShmdataDecoder(const ShmdataDecoder &) = delete;
@@ -44,9 +50,13 @@ class ShmdataDecoder {
   Quiddity *quid_;
   GstPipeliner *pipeliner_;
   std::string shmpath_;
+  std::string shmwriter_path_{};
+  std::string shm_prefix_;
+  std::string media_label_;
   GstElement *shmdatasrc_;
   DecodebinToShmdata decodebin_;
   std::unique_ptr<GstShmdataSubscriber> shm_sub_{};
+  on_shmwriter_path_t on_shmwriter_path_cb_;
 };
 
 }  // namespace switcher

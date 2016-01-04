@@ -28,6 +28,8 @@
 #include "switcher/quiddity-manager.hpp"
 #include "switcher/gst-shmdata-to-cb.hpp"
 #include "switcher/shmdata-writer.hpp"
+#include "switcher/shmdata-decoder.hpp"
+#include "switcher/gst-pipeliner.hpp"
 #include "./pj-sip-plugin.hpp"
 #include "./pj-sip.hpp"
 #include "./pj-codec.hpp"
@@ -60,6 +62,8 @@ class PJCall {
     // as receiver
     std::unique_ptr<PJICEStreamTrans> ice_trans_{};
     std::vector<std::unique_ptr<ShmdataWriter>> rtp_writers_{};
+    std::unique_ptr<GstPipeliner> pipeliner_{};
+    std::vector<std::unique_ptr<ShmdataDecoder>> rtp_decoders_{};
     // as sender
     std::unique_ptr<PJICEStreamTrans> ice_trans_send_{};
     // media

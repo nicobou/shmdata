@@ -73,12 +73,12 @@ class DecodebinToShmdata {
                                 GstCaps *caps,
                                 GstElementFactory *factory,
                                 gpointer user_data);
-  static gboolean gstrtpdepay_buffer_probe_cb(GstPad */*pad */,
-                                              GstMiniObject */*mini_obj */,
-                                              gpointer user_data);
-  static gboolean gstrtpdepay_event_probe_cb(GstPad */*pad */,
-                                             GstEvent *event,
-                                             gpointer user_data);
+  static GstPadProbeReturn gstrtpdepay_buffer_probe_cb(GstPad */*pad */,
+                                                       GstPadProbeInfo */*info*/,
+                                                       gpointer user_data);
+  static GstPadProbeReturn gstrtpdepay_event_probe_cb(GstPad */*pad */,
+                                                      GstPadProbeInfo */*info*/,
+                                                      gpointer user_data);
   void pad_to_shmdata_writer(GstElement *bin, GstPad *pad);
   static gboolean eos_probe_cb(GstPad *pad, GstEvent *event,
                                gpointer user_data);

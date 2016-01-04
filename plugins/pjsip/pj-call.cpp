@@ -674,13 +674,17 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   if (!call->ice_trans_)
     g_warning("ICE transport initialization failled");
   // initializing shmdata writers and linking with ICE transport
-  // and (TODO) with the rtp session
+  // and (TODO) with the rtp session instead of directly with decodebin
+  call->pipeliner_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
+  call->pipeliner_->play(true);
   for (auto &it: media_to_receive){
-    auto rtp_shmpath = SIPPlugin::this_->get_file_name_prefix()
+    auto shm_prefix = SIPPlugin::this_->get_file_name_prefix()
         + SIPPlugin::this_->get_manager_name()
         + "_" + SIPPlugin::this_->get_name()
         + "-" + std::string(call->peer_uri, 0, call->peer_uri.find('@'))
-        + "_rtp-" + PJCallUtils::get_media_label(it);
+        + "_";
+    auto media_label = PJCallUtils::get_media_label(it);
+    auto rtp_shmpath = shm_prefix + "rtp-" + media_label;
     // g_print("rtp shmpath %s\n", rtp_shmpath.c_str());
     auto rtp_caps = PJCallUtils::get_rtp_caps(it);
     if (rtp_caps.empty()) rtp_caps = "unknown_data_type";
@@ -701,8 +705,21 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
           writer->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, size);
           writer->bytes_written(size);
         });
+    // setting a decoder for this shmdata
+    auto peer_uri = call->peer_uri;
+    call->rtp_decoders_.emplace_back(
+        std2::make_unique<ShmdataDecoder>(
+            SIPPlugin::this_,
+            call->pipeliner_.get(),
+            rtp_shmpath,
+            shm_prefix,
+            media_label,
+            [=](const std::string &shmwriter_path){
+              SIPPlugin::this_->graft_tree(
+                  std::string(".shmdata.writer.") + shmwriter_path + ".uri",
+                  InfoTree::make(peer_uri));
+            }));
   }
-  
   // Create SDP answer
   create_sdp_answer(dlg->pool, call, media_to_receive, &sdp);
   // preparing initial answer
