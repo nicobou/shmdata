@@ -34,6 +34,8 @@ DecodebinToShmdata::DecodebinToShmdata(
                             std::placeholders::_1,
                             "async-handling",
                             TRUE,
+                            "expose-all-streams",
+                            TRUE,
                             nullptr);
   decodebin_.g_invoke(std::move(set_prop));
   g_print("%s %d\n", __FUNCTION__, __LINE__);
@@ -48,14 +50,13 @@ DecodebinToShmdata::DecodebinToShmdata(
                     (std::move(pad_added)));
   g_print("%s %d\n", __FUNCTION__, __LINE__);
   // autoplug callback
-  auto autoplug = std::bind(GstUtils::g_signal_connect_function,
-                            std::placeholders::_1,
-                            "autoplug-select",
-                            (GCallback)
-                            DecodebinToShmdata::on_autoplug_select,
-                            (gpointer) this);
-  cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>
-                    (std::move(autoplug)));
+  // auto autoplug = std::bind(GstUtils::g_signal_connect_function,
+  //                           std::placeholders::_1,
+  //                           "autoplug-select",
+  //                           (GCallback)
+  //                           DecodebinToShmdata::on_autoplug_select,
+  //                           (gpointer) this);
+  // cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>(std::move(autoplug)));
   g_print("%s %d\n", __FUNCTION__, __LINE__);
 }
 
@@ -63,7 +64,7 @@ DecodebinToShmdata::~DecodebinToShmdata() {
   std::unique_lock<std::mutex> lock(thread_safe_);
   // // for (auto &it: cb_ids_)
   // //   if (0 != it)
-  // // decodebin_.g_invoke (std::bind (g_signal_handler_disconnect,
+  // // decodebin_.g_invoke (std::bind(g_signal_handler_disconnect,
   // // std::placeholders::_1,
   // // it));
 }
@@ -124,39 +125,39 @@ void DecodebinToShmdata::on_pad_added(GstElement *object,
   context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), pad);
 }
 
-int DecodebinToShmdata::on_autoplug_select(GstElement * /*bin */ ,
-                                           GstPad *pad,
-                                           GstCaps *caps,
-                                           GstElementFactory *factory,
-                                           gpointer /*user_data */ ) {
-  //     typedef enum {
-  //   GST_AUTOPLUG_SELECT_TRY,
-  //   GST_AUTOPLUG_SELECT_EXPOSE,
-  //   GST_AUTOPLUG_SELECT_SKIP
-  // } GstAutoplugSelectResult;
-  g_print("%s %d %s\n", __FUNCTION__, __LINE__, GST_OBJECT_NAME(factory));
-  if (g_strcmp0(GST_OBJECT_NAME(factory), "rtpgstdepay") == 0) {
-    int return_val = 1;
-    const GValue *val =
-        gst_structure_get_value(gst_caps_get_structure(gst_pad_get_current_caps(pad), 0),
-                                "caps");
-    gsize taille = 256;
-    guchar *string_caps = g_base64_decode(g_value_get_string(val),
-                                          &taille);
-    gchar *string_caps_char = g_strdup_printf("%s", string_caps);
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
-    if (g_str_has_prefix(string_caps_char, "audio/")
-        || g_str_has_prefix(string_caps_char, "video/")
-        || g_str_has_prefix(string_caps_char, "image/"))
-      return_val = 0;
-    g_free(string_caps_char);
-    g_free(string_caps);
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
-    return return_val;        // expose
-  }
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
-  return 0;                   // try
-}
+// GstAutoplugSelectResult DecodebinToShmdata::on_autoplug_select(GstElement */*bin */,
+//                                                                GstPad *pad,
+//                                                                GstCaps *caps,
+//                                                                GstElementFactory *factory,
+//                                                                gpointer /*user_data */) {
+//   //     typedef enum {
+//   //   GST_AUTOPLUG_SELECT_TRY,
+//   //   GST_AUTOPLUG_SELECT_EXPOSE,
+//   //   GST_AUTOPLUG_SELECT_SKIP
+//   // } GstAutoplugSelectResult;
+//   g_print("%s %d %s\n", __FUNCTION__, __LINE__, GST_OBJECT_NAME(factory));
+//   if (g_strcmp0(GST_OBJECT_NAME(factory), "rtpgstdepay") == 0) {
+//     GstAutoplugSelectResult return_val = GST_AUTOPLUG_SELECT_EXPOSE;
+//     GstCaps *caps = gst_pad_get_current_caps(pad);
+//     On_scope_exit{ gst_caps_unref(caps);}
+//     const GValue *val = gst_structure_get_value(gst_caps_get_structure(caps, 0), "caps");
+//     gsize taille = 2048;
+//     guchar *string_caps = g_base64_decode(g_value_get_string(val), &taille);
+//     gchar *string_caps_char = g_strdup_printf("%s", string_caps);
+//     g_print("%s %d\n", __FUNCTION__, __LINE__);
+//     if (g_str_has_prefix(string_caps_char, "audio/")
+//         || g_str_has_prefix(string_caps_char, "video/")
+//         || g_str_has_prefix(string_caps_char, "image/"))
+//       return_val = GST_AUTOPLUG_SELECT_TRY;
+//     g_free(string_caps_char);
+//     g_free(string_caps);
+//   g_print("%s %d\n", __FUNCTION__, __LINE__);
+//     return return_val;        // expose
+//   }
+  
+//   g_print("%s %d\n", __FUNCTION__, __LINE__);
+//   return GST_AUTOPLUG_SELECT_TRY;
+// }
 
 GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_buffer_probe_cb(GstPad * /*pad */ ,
                                                          GstPadProbeInfo *
