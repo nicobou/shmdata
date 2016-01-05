@@ -64,6 +64,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     quiddity-signal-subscriber.cpp \
     quiddity.cpp \
     rtp-destination.cpp \
+    rtp-receiver.cpp \
     rtp-sender.cpp \
     rtp-session.cpp \
     rtp-session2.cpp \
@@ -149,6 +150,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     quiddity-signal-subscriber.hpp \
     quiddity.hpp \
     rtp-destination.hpp \
+    rtp-receiver.hpp \
     rtp-sender.hpp \
     rtp-session.hpp \
     rtp-session2.hpp \
