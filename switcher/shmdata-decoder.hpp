@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_RTP_RECEIVER_H__
-#define __SWITCHER_RTP_RECEIVER_H__
+#ifndef __SWITCHER_SHMDATA_DECODER_H__
+#define __SWITCHER_SHMDATA_DECODER_H__
 
 #include "./quiddity.hpp"
 #include "./gst-pipeliner.hpp"
