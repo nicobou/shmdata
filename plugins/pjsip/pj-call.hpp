@@ -62,8 +62,10 @@ class PJCall {
     // as receiver
     std::unique_ptr<PJICEStreamTrans> ice_trans_{};
     std::vector<std::unique_ptr<ShmdataWriter>> rtp_writers_{};
-    std::unique_ptr<GstPipeliner> pipeliner_{};
-    std::vector<std::unique_ptr<ShmdataDecoder>> rtp_decoders_{};
+    // std::unique_ptr<GstPipeliner> pipeliner_{};
+    // std::vector<std::unique_ptr<ShmdataDecoder>> rtp_decoders_{};
+    std::unique_ptr<RtpSession2> recv_rtp_session_{};
+    std::vector<std::unique_ptr<RTPReceiver>> rtp_receivers_{};
     // as sender
     std::unique_ptr<PJICEStreamTrans> ice_trans_send_{};
     // media

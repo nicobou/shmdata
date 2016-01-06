@@ -29,7 +29,11 @@ RtpSession2::RtpSession2():
       gst_object_unref(rtpsession_);
     return;    
   }
-  g_object_set(G_OBJECT(rtpsession_), "ntp-sync", TRUE, "async-handling", TRUE, nullptr);
+  g_object_set(G_OBJECT(rtpsession_),
+               //"ntp-sync", TRUE,
+               "async-handling", TRUE,
+               //"do-lost", TRUE,
+               nullptr);
   g_signal_connect(G_OBJECT(rtpsession_), "on-bye-ssrc",
                    (GCallback) on_bye_ssrc, (gpointer) this);
   g_signal_connect(G_OBJECT(rtpsession_), "on-bye-timeout",

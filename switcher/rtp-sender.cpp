@@ -80,7 +80,9 @@ void RTPSender::on_caps(GstElement *typefind,
   if (nullptr != fact)
     context->rtp_payloader_ = gst_element_factory_create(fact, nullptr);
   else
-     context->rtp_payloader_ = gst_element_factory_make("rtpgstpay", nullptr);
+    context->rtp_payloader_ = gst_element_factory_make("rtpgstpay", nullptr);
+  g_object_set(G_OBJECT(context->rtp_payloader_), "mtu", (guint)context->mtu_, nullptr);
+  //g_object_set(G_OBJECT(context->rtp_payloader_), "mtu", 5000, nullptr);
   gst_bin_add_many(GST_BIN(context->session_->gst_pipeline_->get_pipeline()),
                    context->rtp_payloader_,
                    context->fakesink_,

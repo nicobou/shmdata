@@ -674,9 +674,9 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   if (!call->ice_trans_)
     g_warning("ICE transport initialization failled");
   // initializing shmdata writers and linking with ICE transport
-  // and (TODO) with the rtp session instead of directly with decodebin
-  call->pipeliner_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
-  call->pipeliner_->play(true);
+  // call->pipeliner_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
+  // call->pipeliner_->play(true);
+  call->recv_rtp_session_ = std2::make_unique<RtpSession2>();
   for (auto &it: media_to_receive){
     auto shm_prefix = SIPPlugin::this_->get_file_name_prefix()
         + SIPPlugin::this_->get_manager_name()
@@ -707,18 +707,22 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
         });
     // setting a decoder for this shmdata
     auto peer_uri = call->peer_uri;
-    call->rtp_decoders_.emplace_back(
-        std2::make_unique<ShmdataDecoder>(
-            SIPPlugin::this_,
-            call->pipeliner_.get(),
-            rtp_shmpath,
-            shm_prefix,
-            media_label,
-            [=](const std::string &shmwriter_path){
-              SIPPlugin::this_->graft_tree(
-                  std::string(".shmdata.writer.") + shmwriter_path + ".uri",
-                  InfoTree::make(peer_uri));
-            }));
+    call->rtp_receivers_.emplace_back(
+        std2::make_unique<RTPReceiver>(
+            call->recv_rtp_session_.get(),
+            rtp_shmpath));
+    // call->rtp_decoders_.emplace_back(
+    //     std2::make_unique<ShmdataDecoder>(
+    //         SIPPlugin::this_,
+    //         call->pipeliner_.get(),
+    //         rtp_shmpath,
+    //         shm_prefix,
+    //         media_label,
+    //         [=](const std::string &shmwriter_path){
+    //           SIPPlugin::this_->graft_tree(
+    //               std::string(".shmdata.writer.") + shmwriter_path + ".uri",
+    //               InfoTree::make(peer_uri));
+    //         }));
   }
   // Create SDP answer
   create_sdp_answer(dlg->pool, call, media_to_receive, &sdp);
@@ -1348,7 +1352,7 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
       readers_.emplace(shmpath, std2::make_unique<RTPSender>(
           &rtp_session_,
           shmpath,
-          1440));
+          1400));
       reader_ref_count_[shmpath] = 1;
     } else {
       ++reader_ref_count_[shmpath];
