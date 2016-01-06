@@ -153,14 +153,14 @@ std::vector<std::vector<std::string>> PJICEStreamTrans::get_components(){
     char ipaddr[PJ_INET6_ADDRSTRLEN];
     
     /* Get default candidate for the component */
-    if (!PJ_SUCCESS == pj_ice_strans_get_def_cand(icest_, comp+1, &cand[0])){
+    if (PJ_SUCCESS != pj_ice_strans_get_def_cand(icest_, comp+1, &cand[0])){
       g_warning("issue with pj_ice_strans_get_def_cand");
       return res;
     }
     
     /* Enumerate all candidates for this component */
     cand_cnt = PJ_ARRAY_SIZE(cand);
-    if (!PJ_SUCCESS == pj_ice_strans_enum_cands(icest_, comp+1, &cand_cnt, cand)){
+    if (PJ_SUCCESS != pj_ice_strans_enum_cands(icest_, comp+1, &cand_cnt, cand)){
       g_warning("issue with pj_ice_strans_enum_cands");
       return res;
     }
