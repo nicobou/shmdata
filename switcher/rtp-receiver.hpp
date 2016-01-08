@@ -54,7 +54,6 @@ class RTPReceiver {
   DecodebinToShmdata decodebin_;
   GstCaps *shmsrc_caps_{nullptr};
   GstPad *rtp_sink_pad_{nullptr};  // check if this needs to be a member
-  id_t counter_{0};
   std::string rtp_src_pad_prefix_{};
 
   static void on_caps(GstElement *typefind, guint /*prob*/, GstCaps *caps, gpointer data);
