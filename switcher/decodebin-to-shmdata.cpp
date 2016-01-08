@@ -28,27 +28,20 @@ DecodebinToShmdata::DecodebinToShmdata(
     decodebin_("decodebin"),
     gpipe_(gpipe),
     on_gstshm_configure_(on_gstshm_configure){
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   // set async property
   auto set_prop = std::bind(g_object_set,
                             std::placeholders::_1,
-                            "async-handling",
-                            TRUE,
-                            "expose-all-streams",
-                            TRUE,
+                            "async-handling", TRUE,
+                            "expose-all-streams", TRUE,
                             nullptr);
   decodebin_.g_invoke(std::move(set_prop));
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   // pad added callback
   auto pad_added = std::bind(GstUtils::g_signal_connect_function,
                              std::placeholders::_1,
-                             "pad-added",
-                             (GCallback) DecodebinToShmdata::on_pad_added,
-                             (gpointer) this);
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
+                             "pad-added", (GCallback)DecodebinToShmdata::on_pad_added,
+                             (gpointer)this);
   cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>
                     (std::move(pad_added)));
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   // autoplug callback
   // auto autoplug = std::bind(GstUtils::g_signal_connect_function,
   //                           std::placeholders::_1,
@@ -57,7 +50,6 @@ DecodebinToShmdata::DecodebinToShmdata(
   //                           DecodebinToShmdata::on_autoplug_select,
   //                           (gpointer) this);
   // cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>(std::move(autoplug)));
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
 }
 
 DecodebinToShmdata::~DecodebinToShmdata() {
@@ -72,7 +64,6 @@ DecodebinToShmdata::~DecodebinToShmdata() {
 void DecodebinToShmdata::on_pad_added(GstElement *object,
                                  GstPad *pad,
                                  gpointer user_data) {
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   DecodebinToShmdata *context =
       static_cast<DecodebinToShmdata *>(user_data);
   std::unique_lock<std::mutex> lock(context->thread_safe_);
@@ -85,11 +76,9 @@ void DecodebinToShmdata::on_pad_added(GstElement *object,
   On_scope_exit {
     gst_caps_unref(padcaps);
   };
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (gst_caps_can_intersect(rtpcaps, padcaps)) {
       // asking rtpbin to send an event when a packet is lost (do-lost property)
-      GstUtils::set_element_property_in_bin(object, "gstrtpbin", "do-lost",
-                                            TRUE);
+      GstUtils::set_element_property_in_bin(object, "gstrtpbin", "do-lost", TRUE);
       g_message("custom rtp stream found");
       GstElement *rtpgstdepay;
       GstUtils::make_element("rtpgstdepay", &rtpgstdepay);
@@ -121,7 +110,6 @@ void DecodebinToShmdata::on_pad_added(GstElement *object,
     gst_object_unref(srcpad);
     return;
   }
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), pad);
 }
 
@@ -163,7 +151,6 @@ GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_buffer_probe_cb(GstPad * /*pad
                                                          GstPadProbeInfo *
                                                          /*info */ ,
                                                          gpointer user_data) {
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   DecodebinToShmdata *context =
       static_cast<DecodebinToShmdata *>(user_data);
   std::unique_lock<std::mutex> lock(context->thread_safe_);
@@ -172,7 +159,6 @@ GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_buffer_probe_cb(GstPad * /*pad
     context->discard_next_uncomplete_buffer_ = false;
     return GST_PAD_PROBE_DROP;  // drop buffer
   }
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   return GST_PAD_PROBE_PASS;  // pass buffer
 }
 
@@ -194,7 +180,6 @@ GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_event_probe_cb(GstPad */*pad *
 }
 
 void DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad){
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   // looking for type of media
   std::string padname;
   {
@@ -215,7 +200,6 @@ void DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad){
         padname = gst_structure_get_name(gst_caps_get_structure(padcaps, 0));
     }
   }
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   g_debug("decodebin-to-shmdata new pad name is %s\n", padname.c_str());
   GstElement *shmdatasink;
   GstUtils::make_element("shmdatasink", &shmdatasink);
@@ -245,7 +229,6 @@ void DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad){
   else
     on_gstshm_configure_(shmdatasink, media_name, media_label_);
   GstUtils::sync_state_with_parent(shmdatasink);
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
 }
 
 gboolean DecodebinToShmdata::eos_probe_cb(GstPad *pad,

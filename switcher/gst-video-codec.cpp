@@ -163,7 +163,7 @@ gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointe
   quid->pmanage<MPtr(&PContainer::set_str)>(
       quid->pmanage<MPtr(&PContainer::get_id)>("end-usage"), "1");  // CBR
   quid->pmanage<MPtr(&PContainer::set_str)>(
-      quid->pmanage<MPtr(&PContainer::get_id)>("keyframe-max-dist"), "5");
+      quid->pmanage<MPtr(&PContainer::get_id)>("keyframe-max-dist"), "1");
   return TRUE;
 }
 

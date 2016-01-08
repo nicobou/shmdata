@@ -31,6 +31,7 @@
 #include "switcher/net-utils.hpp"
 #include "switcher/gst-utils.hpp"
 #include "switcher/gst-rtppayloader-finder.hpp"
+#include "switcher/shmdata-utils.hpp"
 #include "./pj-call.hpp"
 #include "./pj-call-utils.hpp"
 
@@ -674,8 +675,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   if (!call->ice_trans_)
     g_warning("ICE transport initialization failled");
   // initializing shmdata writers and linking with ICE transport
-  // call->pipeliner_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
-  // call->pipeliner_->play(true);
   call->recv_rtp_session_ = std2::make_unique<RtpSession2>();
   for (auto &it: media_to_receive){
     auto shm_prefix = SIPPlugin::this_->get_file_name_prefix()
@@ -685,19 +684,18 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
         + "_";
     auto media_label = PJCallUtils::get_media_label(it);
     auto rtp_shmpath = shm_prefix + "rtp-" + media_label;
-    // g_print("rtp shmpath %s\n", rtp_shmpath.c_str());
     auto rtp_caps = PJCallUtils::get_rtp_caps(it);
     if (rtp_caps.empty()) rtp_caps = "unknown_data_type";
-    // g_print("rtp caps %s\n", rtp_caps.c_str());
     call->rtp_writers_.emplace_back(
         std2::make_unique<ShmdataWriter>(
             SIPPlugin::this_,
             rtp_shmpath,
             9000, // ethernet jumbo frame
             rtp_caps));
-    SIPPlugin::this_->graft_tree(
-        std::string(".shmdata.writer.") + rtp_shmpath + ".uri",
-        InfoTree::make(call->peer_uri));
+    // FIXME ? uncomment the following in order to get rtp shmdata shown in scenic:
+    // SIPPlugin::this_->graft_tree(
+    //     std::string(".shmdata.writer.") + rtp_shmpath + ".uri",
+    //     InfoTree::make(call->peer_uri));
     auto *writer = call->rtp_writers_.back().get();
     call->ice_trans_->set_data_cb(
         call->rtp_writers_.size(),
@@ -710,19 +708,30 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
     call->rtp_receivers_.emplace_back(
         std2::make_unique<RTPReceiver>(
             call->recv_rtp_session_.get(),
-            rtp_shmpath));
-    // call->rtp_decoders_.emplace_back(
-    //     std2::make_unique<ShmdataDecoder>(
-    //         SIPPlugin::this_,
-    //         call->pipeliner_.get(),
-    //         rtp_shmpath,
-    //         shm_prefix,
-    //         media_label,
-    //         [=](const std::string &shmwriter_path){
-    //           SIPPlugin::this_->graft_tree(
-    //               std::string(".shmdata.writer.") + shmwriter_path + ".uri",
-    //               InfoTree::make(peer_uri));
-    //         }));
+            rtp_shmpath,
+            [=](GstElement *el, const std::string &media_type,
+                const std::string &){
+              auto shmpath = shm_prefix + media_label + "-" + media_type;
+              g_object_set(G_OBJECT(el), "socket-path", shmpath.c_str(), nullptr);
+              call->shm_subs_.emplace_back(
+                  std2::make_unique<GstShmdataSubscriber>(
+                      el,
+                      [=](const std::string &caps){
+                        SIPPlugin::this_->
+                            graft_tree(".shmdata.writer." + shmpath,
+                                       ShmdataUtils::make_tree(caps,
+                                                               ShmdataUtils::get_category(caps),
+                                                               0));
+                        SIPPlugin::this_->
+                            graft_tree(std::string(".shmdata.writer.") + shmpath + ".uri",
+                                       InfoTree::make(call->peer_uri));
+
+                      },
+                      [shmpath](GstShmdataSubscriber::num_bytes_t byte_rate){
+                        SIPPlugin::this_->graft_tree(".shmdata.writer." + shmpath + ".byte_rate",
+                                                     InfoTree::make(byte_rate));
+                      }));
+            }));
   }
   // Create SDP answer
   create_sdp_answer(dlg->pool, call, media_to_receive, &sdp);

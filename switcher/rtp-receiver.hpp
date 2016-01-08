@@ -32,8 +32,13 @@ class RtpSession2;
 class RTPReceiver {
  public:
   using id_t = size_t;
+  using configure_shmsink_cb_t =
+      std::function<void(GstElement *el,
+                         const std::string &media_type,
+                         const std::string &media_label)>;
   RTPReceiver(RtpSession2 *session,
-              const std::string &rtpshmpath);
+              const std::string &rtpshmpath,
+              configure_shmsink_cb_t cb);
   RTPReceiver() = delete;
   ~RTPReceiver();
   RTPReceiver(const RTPReceiver &) = delete;
@@ -45,6 +50,7 @@ class RTPReceiver {
   std::string rtpshmpath_;
   GstElement *shmdatasrc_;
   GstElement *typefind_;
+  configure_shmsink_cb_t configure_shmsink_cb_;
   DecodebinToShmdata decodebin_;
   GstCaps *shmsrc_caps_{nullptr};
   GstPad *rtp_sink_pad_{nullptr};  // check if this needs to be a member

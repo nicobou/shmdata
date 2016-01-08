@@ -30,6 +30,7 @@
 #include "switcher/shmdata-writer.hpp"
 #include "switcher/shmdata-decoder.hpp"
 #include "switcher/gst-pipeliner.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
 #include "./pj-sip-plugin.hpp"
 #include "./pj-sip.hpp"
 #include "./pj-codec.hpp"
@@ -62,9 +63,8 @@ class PJCall {
     // as receiver
     std::unique_ptr<PJICEStreamTrans> ice_trans_{};
     std::vector<std::unique_ptr<ShmdataWriter>> rtp_writers_{};
-    // std::unique_ptr<GstPipeliner> pipeliner_{};
-    // std::vector<std::unique_ptr<ShmdataDecoder>> rtp_decoders_{};
     std::unique_ptr<RtpSession2> recv_rtp_session_{};
+    std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
     std::vector<std::unique_ptr<RTPReceiver>> rtp_receivers_{};
     // as sender
     std::unique_ptr<PJICEStreamTrans> ice_trans_send_{};
