@@ -24,7 +24,7 @@ namespace switcher {
 
   PostureMeshGPUCreator::PostureMeshGPUCreator(const std::string &) {
     init_startable (this);
-    mesh_creator_ = std::unique_ptr<DepthMapToMesh> (new DepthMapToMesh ());
+    mesh_creator_ = std::unique_ptr<SolidifyGPU> (new SolidifyGPU ());
 
     pmanage<MPtr(&PContainer::make_int)>
             ("camera_number",

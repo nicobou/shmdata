@@ -269,7 +269,6 @@ PostureColorizeGL::check_image_caps(string caps, unsigned int& width, unsigned i
   try
   {
     regVideo = regex("(.*video/x-raw)(.*)", regex_constants::extended);
-    regHap = regex("(.*video/x-gst-fourcc-HapY)(.*)", regex_constants::extended);
     regFormat = regex("(.*format=\\(string\\))(.*)", regex_constants::extended);
     regWidth = regex("(.*width=\\(int\\))(.*)", regex_constants::extended);
     regHeight = regex("(.*height=\\(int\\))(.*)", regex_constants::extended);
