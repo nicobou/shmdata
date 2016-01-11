@@ -113,7 +113,6 @@ void RTPReceiver::on_pad_added(GstElement *object,
   if (!context->rtp_src_pad_prefix_.empty() &&
       0 == std::string(name).compare(0, context->rtp_src_pad_prefix_.size(),
                                      context->rtp_src_pad_prefix_)) {
-    g_print("%s -- %s\n", name_cstr, context->rtp_src_pad_prefix_.c_str());
     if(!context->decodebin_.invoke_with_return<bool>(
            [&](GstElement *el) {
              if (!gst_bin_add(GST_BIN(context->session_->gst_pipeline_->get_pipeline()), el)) {

@@ -25,10 +25,12 @@ namespace switcher {
 
 GstShmdataSubscriber::GstShmdataSubscriber(GstElement *element,
                                            on_caps_cb_t on_caps_cb,
-                                           on_byte_monitor_t on_byte_monitor_cb) :
+                                           on_byte_monitor_t on_byte_monitor_cb,
+                                           on_delete_t on_delete_cb) :
     element_(element),
     on_caps_cb_(on_caps_cb),
     on_byte_monitor_cb_(on_byte_monitor_cb),
+    on_delete_cb_(on_delete_cb),
     ptask_ ([this](){this->byte_monitor();},
             std::chrono::milliseconds (1000)) {
   if (!GST_IS_ELEMENT(element_)){
@@ -45,6 +47,8 @@ GstShmdataSubscriber::GstShmdataSubscriber(GstElement *element,
 }
   
 GstShmdataSubscriber::~GstShmdataSubscriber(){
+  if (on_delete_cb_)
+    on_delete_cb_();
   if (GST_IS_ELEMENT(element_)){
     if (0 != signal_handler_id_)
       g_signal_handler_disconnect(element_, signal_handler_id_);

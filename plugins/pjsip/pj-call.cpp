@@ -283,7 +283,7 @@ bool PJCall::release_outgoing_call(call_t *call, pjsua_buddy_id id){
                 InfoTree::make("disconnected"));
     SIPPlugin::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
   }
-  //removing call
+  // removing call
   calls.erase(it);
   if (SIPPlugin::this_->sip_calls_->is_hanging_up_ || SIPPlugin::this_->sip_calls_->is_calling_ ){
     std::unique_lock<std::mutex> lock(SIPPlugin::this_->sip_calls_->ocall_m_);
@@ -709,8 +709,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
         std2::make_unique<RTPReceiver>(
             call->recv_rtp_session_.get(),
             rtp_shmpath,
-            [=](GstElement *el, const std::string &media_type,
-                const std::string &){
+            [=](GstElement *el, const std::string &media_type, const std::string &){
               auto shmpath = shm_prefix + media_label + "-" + media_type;
               g_object_set(G_OBJECT(el), "socket-path", shmpath.c_str(), nullptr);
               call->shm_subs_.emplace_back(
@@ -730,6 +729,9 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
                       [shmpath](GstShmdataSubscriber::num_bytes_t byte_rate){
                         SIPPlugin::this_->graft_tree(".shmdata.writer." + shmpath + ".byte_rate",
                                                      InfoTree::make(byte_rate));
+                      },
+                      [=](){
+                        SIPPlugin::this_->prune_tree(".shmdata.writer." + shmpath);
                       }));
             }));
   }

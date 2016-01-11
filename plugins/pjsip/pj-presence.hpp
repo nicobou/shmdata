@@ -69,7 +69,7 @@ class PJPresence {
   static gboolean register_account_wrapped(gchar *user,
                                            gchar *password,
                                            void *user_data);
-  void unregister_account();
+  void unregister_account(bool notify_tree = true);
   static gboolean unregister_account_wrapped(gpointer /*unused */ ,
                                              void *user_data);
 

@@ -41,6 +41,11 @@ SIPPlugin::SIPPlugin(const std::string &) {
 SIPPlugin::~SIPPlugin() {
   if (!i_m_the_one_)
     return;
+  pjsip_->run([this](){
+      sip_presence_.reset(nullptr);
+      sip_calls_.reset(nullptr);
+      stun_turn_.reset(nullptr);
+    });
   pjsip_.reset(nullptr);
   this_ = nullptr;
   i_m_the_one_ = false;

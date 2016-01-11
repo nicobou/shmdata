@@ -162,11 +162,11 @@ PJPresence::PJPresence(){
 }
 
 PJPresence::~PJPresence() {
+  unregister_account(false);
   if(nullptr != acc_info_pool_) {
     pj_pool_release(acc_info_pool_);
     acc_info_pool_ = nullptr;
   }
-  unregister_account();
 }
 
 gboolean
@@ -258,7 +258,7 @@ gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */ ,
   return TRUE;
 }
 
-void PJPresence::unregister_account() {
+void PJPresence::unregister_account(bool notify_tree) {
   std::unique_lock<std::mutex> lock(registration_mutex_);
   if (-1 == account_id_) {
     g_warning("no account to unregister");
@@ -277,15 +277,18 @@ void PJPresence::unregister_account() {
       g_warning("cannot remove buddy");
       return;
     }
-    SIPPlugin::this_->prune_tree(".buddies."+ std::to_string(it->second));
+    if (notify_tree)
+      SIPPlugin::this_->prune_tree(".buddies."+ std::to_string(it->second));
     buddy_id_.erase(it);
   }
   account_id_ = -1;
   sip_local_user_.clear();
   registered_ = false;
-  SIPPlugin::this_->graft_tree(".self.", InfoTree::make(nullptr));
-  SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
-      SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
+  if (notify_tree) {
+    SIPPlugin::this_->graft_tree(".self.", InfoTree::make(nullptr));
+    SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
+        SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
+  }
   return;
 }
 
