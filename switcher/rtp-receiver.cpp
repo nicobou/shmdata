@@ -113,6 +113,7 @@ void RTPReceiver::on_pad_added(GstElement *object,
   if (!context->rtp_src_pad_prefix_.empty() &&
       0 == std::string(name).compare(0, context->rtp_src_pad_prefix_.size(),
                                      context->rtp_src_pad_prefix_)) {
+    //g_print("%s -- %s\n", name_cstr, context->rtp_src_pad_prefix_.c_str());
     if(!context->decodebin_.invoke_with_return<bool>(
            [&](GstElement *el) {
              if (!gst_bin_add(GST_BIN(context->session_->gst_pipeline_->get_pipeline()), el)) {
@@ -135,7 +136,9 @@ void RTPReceiver::on_pad_added(GstElement *object,
 
 GstCaps *RTPReceiver::request_pt_map(GstElement *sess, guint session, guint pt, gpointer user_data){
   RTPReceiver *context = static_cast<RTPReceiver *>(user_data);
-  return context->shmsrc_caps_;
+  auto caps = context->shmsrc_caps_;
+  context->shmsrc_caps_ = nullptr;
+  return caps;
 }
 
 
