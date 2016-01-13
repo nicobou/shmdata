@@ -83,23 +83,23 @@ PostureColorizeGL::init() {
                                   [this](const std::string caps){return can_sink_caps(caps);},
                                   std::numeric_limits<unsigned int>::max());
 
-    pmanage<MPtr(&PContainer::make_string)>(
-        "calibration_path",
-        [this](const std::string &val){calibration_path_ = val; return true;},
-        [this](){return calibration_path_;},
-        "Calibration path",
-        "Path to the calibration file",
-        calibration_path_);
+  pmanage<MPtr(&PContainer::make_string)>(
+      "calibration_path",
+      [this](const std::string &val){calibration_path_ = val; return true;},
+      [this](){return calibration_path_;},
+      "Calibration path",
+      "Path to the calibration file",
+      calibration_path_);
 
-    pmanage<MPtr(&PContainer::make_bool)>(
-        "compress_mesh",
-        [this](const bool &val){compress_mesh_ = val; return true;},
-        [this](){return compress_mesh_;},
-        "Compress the output mesh",
-        "Compress the output mesh",
-        compress_mesh_);
-    
-    return true;
+  pmanage<MPtr(&PContainer::make_bool)>(
+      "compress_mesh",
+      [this](const bool &val){compress_mesh_ = val; return true;},
+      [this](){return compress_mesh_;},
+      "Compress the output mesh",
+      "Compress the output mesh",
+      compress_mesh_);
+  
+  return true;
 }
 
 bool

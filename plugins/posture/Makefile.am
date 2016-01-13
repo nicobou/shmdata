@@ -10,7 +10,7 @@ plugins_LTLIBRARIES = \
 	libposturescan3d.la \
 	libposturesource.la \
 	libposturesolidify.la \
-	libposturemeshgpucreator.la
+	libposturescan3dGPU.la
 
 noinst_HEADERS = \
 	posture.hpp
@@ -275,11 +275,11 @@ libposturescan3d_la_CXXFLAGS = \
 noinst_HEADERS = \
     posture_scan3d.hpp
 
-#libposturemeshgpucreator info
-libposturemeshgpucreator_la_SOURCES = \
-    posture_meshgpucreator.cpp
+#libposturescan3dGPU info
+libposturescan3dGPU_la_SOURCES = \
+    posture_scan3dGPU.cpp
 
-libposturemeshgpucreator_la_LDFLAGS = \
+libposturescan3dGPU_la_LDFLAGS = \
     $(GLIB_LIBS) \
     $(GST_LIBS) \
     $(GMODULE_LIBS) \
@@ -290,7 +290,7 @@ libposturemeshgpucreator_la_LDFLAGS = \
     -L$(top_builddir)/switcher/.libs \
     -lswitcher-@LIBSWITCHER_API_VERSION@
 
-libposturemeshgpucreator_la_CXXFLAGS = \
+libposturescan3dGPU_la_CXXFLAGS = \
     $(GLIB_CFLAGS) \
     $(GMODULE_CFLAGS) \
     $(GST_CFLAGS) \
@@ -301,7 +301,7 @@ libposturemeshgpucreator_la_CXXFLAGS = \
     -DG_LOG_DOMAIN=\"switcher\"
 
 noinst_HEADERS = \
-    posture_meshgpucreator.hpp
+    posture_scan3dGPU.hpp
 
 #### plugin unit test
  AM_CFLAGS = \
