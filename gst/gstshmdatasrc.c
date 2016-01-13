@@ -419,7 +419,7 @@ gst_shmdata_src_create (GstPushSrc *psrc, GstBuffer **outbuf)
                                                   self->current_size,
                                                   NULL,
                                                   NULL);
-    *outbuf = gst_buffer_copy (tmp); 
+    *outbuf = gst_buffer_copy_deep (tmp); 
     gst_shmdata_src_on_data_rendered(self);
     gst_buffer_unref(tmp);
   }
@@ -428,7 +428,6 @@ gst_shmdata_src_create (GstPushSrc *psrc, GstBuffer **outbuf)
     gst_shmdata_src_make_data_rendered(self);
     self->is_first_read = FALSE;
   }
-
   g_mutex_unlock (&self->on_data_mutex);
 
   return GST_FLOW_OK;
