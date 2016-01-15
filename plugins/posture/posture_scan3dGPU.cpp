@@ -207,6 +207,8 @@ namespace switcher {
         grid_size_[0] = val;
         grid_size_[1] = val;
         grid_size_[2] = val;
+        if (solidifyGPU_)
+          reset_solidify();
         return true;
       },
       [this](){return std::max(grid_size_[0], std::max(grid_size_[1], grid_size_[2]));},
@@ -216,9 +218,59 @@ namespace switcher {
       0.2,
       2.0);
 
+    pmanage<MPtr(&PContainer::make_double)>(
+      "grid_size_x",
+      [this](const double &val){
+        grid_size_[0] = val;
+        if (solidifyGPU_)
+          reset_solidify();
+        return true;
+      },
+      [this](){return grid_size_[0];},
+      "Mesh grid size along X",
+      "Size in meters of the grid along the X axis",
+      grid_size_[0],
+      0.2,
+      2.0);
+
+    pmanage<MPtr(&PContainer::make_double)>(
+      "grid_size_y",
+      [this](const double &val){
+        grid_size_[1] = val;
+        if (solidifyGPU_)
+          reset_solidify();
+        return true;
+      },
+      [this](){return grid_size_[1];},
+      "Mesh grid size along Y",
+      "Size in meters of the grid along the Y axis",
+      grid_size_[1],
+      0.2,
+      2.0);
+
+    pmanage<MPtr(&PContainer::make_double)>(
+      "grid_size_z",
+      [this](const double &val){
+        grid_size_[2] = val;
+        if (solidifyGPU_)
+          reset_solidify();
+        return true;
+      },
+      [this](){return grid_size_[2];},
+      "Mesh grid size along Z",
+      "Size in meters of the grid along the Z axis",
+      grid_size_[2],
+      0.2,
+      2.0);
+
     pmanage<MPtr(&PContainer::make_int)>(
       "grid_resolution",
-      [this](const int &val){grid_resolution_ = val; return true;},
+      [this](const int &val){
+        grid_resolution_ = val;
+        if (solidifyGPU_)
+          reset_solidify();
+        return true;
+      },
       [this](){return grid_resolution_;},
       "Mesh grid resolution",
       "Resolution of the grid enclosing the mesh, along the larger axis",
@@ -227,6 +279,19 @@ namespace switcher {
       256);
 
     return true;
+  }
+
+  void
+  PostureScan3DGPU::reset_solidify()
+  {
+    unique_lock<mutex> lock(update_mutex_);
+    solidifyGPU_ = unique_ptr<posture::SolidifyGPU>(new posture::SolidifyGPU());
+    solidifyGPU_->setCalibrationPath(calibration_path_);
+    solidifyGPU_->setGridSizeX(grid_size_[0]);
+    solidifyGPU_->setGridSizeY(grid_size_[1]);
+    solidifyGPU_->setGridSizeZ(grid_size_[2]);
+    solidifyGPU_->setGridResolution(std::max(std::max(grid_size_[0], grid_size_[1]), grid_size_[2]) / (double)grid_resolution_);
+    solidifyGPU_->setDepthMapNbr(camera_nbr_);
   }
 
   bool

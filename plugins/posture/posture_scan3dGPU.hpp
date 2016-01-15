@@ -69,6 +69,7 @@ namespace switcher {
 
     bool init() final;
     void update_loop();
+    void reset_solidify();
 
     bool all(const std::vector<bool>& status);
     void zero(std::vector<bool>& status);
