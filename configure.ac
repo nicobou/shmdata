@@ -5,8 +5,8 @@ dnl package name and package version
 AC_INIT([switcher],[0.8.5])
 
 dnl required version of gstreamer and gst-plugins-base
-GST_REQUIRED=1.6.0
-GSTPB_REQUIRED=1.6.0
+GST_REQUIRED=1.0.0
+GSTPB_REQUIRED=1.0.0
 
 dnl AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
