@@ -32,6 +32,7 @@
  * </refsect2>
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include <gst/gst.h>
 #include "./gstshmdatasrc.h"
@@ -412,16 +413,18 @@ gst_shmdata_src_create (GstPushSrc *psrc, GstBuffer **outbuf)
                                            self,
                                            gst_shmdata_src_on_data_rendered);
   } else {
-    GstBuffer *tmp = gst_buffer_new_wrapped_full (GST_MEMORY_FLAG_READONLY, 
-                                                  self->current_data,
-                                                  self->current_size,
-                                                  0,
-                                                  self->current_size,
-                                                  NULL,
-                                                  NULL);
-    *outbuf = gst_buffer_copy_deep (tmp); 
+    void *data = malloc(self->current_size); 
+    memcpy(data,  self->current_data, self->current_size);
+    *outbuf = gst_buffer_new_wrapped_full (GST_MEMORY_FLAG_READONLY, 
+                                           data,
+                                           self->current_size,
+                                           0,
+                                           self->current_size,
+                                           data,  // user_data
+                                           g_free);
+    //*outbuf = gst_buffer_copy_deep (tmp);  // not available with earlier gst 1.0
     gst_shmdata_src_on_data_rendered(self);
-    gst_buffer_unref(tmp);
+    //gst_buffer_unref(tmp);
   }
 
   if (self->is_first_read) {
