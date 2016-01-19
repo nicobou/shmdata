@@ -48,7 +48,7 @@ RTPReceiver::RTPReceiver(RtpSession2 *session,
   }
   // monitoring rtp-session new pads for received rtp packet
   g_signal_connect(session_->rtpsession_, "pad-added", G_CALLBACK(on_pad_added), this);
-  g_signal_connect(session_->rtpsession_, "request-pt-map", (GCallback)request_pt_map, this);
+  //FIXME have this in rtpsession2: g_signal_connect(session_->rtpsession_, "request-pt-map", (GCallback)request_pt_map, this);
   // configuring shmdatasrc and typefind
   g_signal_connect(typefind_, "have-type", G_CALLBACK(on_caps), this);
   g_object_set(G_OBJECT(shmdatasrc_),
