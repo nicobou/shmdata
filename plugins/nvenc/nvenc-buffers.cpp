@@ -18,9 +18,7 @@
  */
 
 #include <glib.h>  // log
-//#include <gst/gst.h>
 #include <cstring> // memset
-#include <iostream> // TODO remove
 #include "./nvenc-buffers.hpp"
 
 namespace switcher {

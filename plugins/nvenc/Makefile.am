@@ -42,9 +42,10 @@ libnvenc_plugin_la_CXXFLAGS = \
     $(JSONGLIB_CFLAGS) \
     $(SHMDATA_CFLAGS) \
     $(CUBA_LIBS) \
+    $(NVENC_LIBS) \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) \
-    -I$(top_srcdir)/plugins/nvenc/nvenc_5.0.1_sdk/Samples/common/inc/
+    -I$(NVENC_SDK_PATH)/Samples/common/inc/
 
 
 #### plugin unit test

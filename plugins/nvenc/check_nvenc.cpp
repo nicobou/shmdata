@@ -20,7 +20,6 @@
 #include <cassert>
 #include <vector>
 #include <string>
-#include <iostream>
 #include "switcher/quiddity-manager.hpp"
 #include "switcher/quiddity-basic-test.hpp"
 
