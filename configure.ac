@@ -472,7 +472,7 @@ AC_CHECK_HEADER(Samples/common/inc/nvEncodeAPI.h,
     -----------------------])],
                 [])
 AC_SUBST(NVENC_SDK_PATH)
-CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$save_CPPFLAGS"
 
 
 if test "x$HAVE_CUDA_H" = "xyes" \
