@@ -56,13 +56,7 @@ namespace switcher {
       }, nullptr);
     }
 
-    solidifyGPU_ = unique_ptr<posture::SolidifyGPU>(new posture::SolidifyGPU());
-    solidifyGPU_->setCalibrationPath(calibration_path_);
-    solidifyGPU_->setGridSizeX(grid_size_[0]);
-    solidifyGPU_->setGridSizeY(grid_size_[1]);
-    solidifyGPU_->setGridSizeZ(grid_size_[2]);
-    solidifyGPU_->setGridResolution(std::max(std::max(grid_size_[0], grid_size_[1]), grid_size_[2]) / (double)grid_resolution_);
-    solidifyGPU_->setDepthMapNbr(camera_nbr_);
+    reset_solidify();
 
     colorize_ = unique_ptr<posture::ColorizeGL>(new posture::ColorizeGL());
     colorize_->setCalibrationPath(calibration_path_);
@@ -278,6 +272,51 @@ namespace switcher {
       16,
       256);
 
+    pmanage<MPtr(&PContainer::make_int)>(
+      "kernel_filter_size",
+      [this](const int &val){
+        kernel_filter_size_ = val;
+        if (solidifyGPU_)
+          solidifyGPU_->setDepthFiltering(kernel_filter_size_, kernel_spatial_sigma_, kernel_value_sigma_);
+        return true;
+      },
+      [this](){return kernel_filter_size_;},
+      "Filter kernel size",
+      "Depth map filter kernel size",
+      kernel_filter_size_,
+      1,
+      15);
+
+    pmanage<MPtr(&PContainer::make_float)>(
+      "kernel_spatial_sigma_",
+      [this](const float &val){
+        kernel_spatial_sigma_ = val;
+        if (solidifyGPU_)
+          solidifyGPU_->setDepthFiltering(kernel_filter_size_, kernel_spatial_sigma_, kernel_value_sigma_);
+        return true;
+      },
+      [this](){return kernel_spatial_sigma_;},
+      "Filter spatial sigma",
+      "Depth map filter spatial sigma",
+      kernel_spatial_sigma_,
+      0.1,
+      16.0);
+
+    pmanage<MPtr(&PContainer::make_float)>(
+      "kernel_value_sigma_",
+      [this](const float &val){
+        kernel_value_sigma_ = val;
+        if (solidifyGPU_)
+          solidifyGPU_->setDepthFiltering(kernel_filter_size_, kernel_spatial_sigma_, kernel_value_sigma_);
+        return true;
+      },
+      [this](){return kernel_value_sigma_;},
+      "Filter value sigma",
+      "Depth map filter value sigma",
+      kernel_value_sigma_,
+      1.0,
+      16000.0);
+
     return true;
   }
 
@@ -292,6 +331,7 @@ namespace switcher {
     solidifyGPU_->setGridSizeZ(grid_size_[2]);
     solidifyGPU_->setGridResolution(std::max(std::max(grid_size_[0], grid_size_[1]), grid_size_[2]) / (double)grid_resolution_);
     solidifyGPU_->setDepthMapNbr(camera_nbr_);
+    solidifyGPU_->setDepthFiltering(kernel_filter_size_, kernel_spatial_sigma_, kernel_value_sigma_);
   }
 
   bool

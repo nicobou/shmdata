@@ -49,6 +49,10 @@ namespace switcher {
     std::vector<double> grid_size_ {1.0, 1.0, 1.0};
     uint32_t grid_resolution_ {64};
 
+    int kernel_filter_size_ {3};
+    float kernel_spatial_sigma_ {5.0};
+    float kernel_value_sigma_ {1000.0};
+
     std::mutex camera_mutex_;
     std::vector<std::unique_ptr<posture::ZCamera>> cameras_ {};
     std::unique_ptr<posture::SolidifyGPU> solidifyGPU_ {nullptr};
