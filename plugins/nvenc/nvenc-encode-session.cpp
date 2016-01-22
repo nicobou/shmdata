@@ -198,10 +198,9 @@ bool NVencES::is_same(GUID g1, GUID g2){
           && g1.Data4[6] == g2.Data4[6] && g1.Data4[7] == g2.Data4[7]);
 }
 
-bool NVencES::initialize_encoder(GUID encodeGuid,
-                                 GUID presetGuid,
-                                 uint32_t width,
-                                 uint32_t height,
+bool NVencES::initialize_encoder(GUID encodeGuid, GUID presetGuid,
+                                 uint32_t width, uint32_t height,
+                                 uint32_t frameRateNum, uint32_t framerateDen,
                                  NV_ENC_BUFFER_FORMAT format){
   memset(&init_params_, 0, sizeof(init_params_));
   init_params_.version = NV_ENC_INITIALIZE_PARAMS_VER;
@@ -209,8 +208,8 @@ bool NVencES::initialize_encoder(GUID encodeGuid,
   init_params_.presetGUID = presetGuid;
   init_params_.encodeWidth = width;
   init_params_.encodeHeight = height;
-  init_params_.frameRateNum = 30;  // FIXME
-  init_params_.frameRateDen = 1;
+  init_params_.frameRateNum = frameRateNum;
+  init_params_.frameRateDen = framerateDen;
   init_params_.enablePTD = 1; // enable the Picture Type Decision is be
                               // taken by the NvEncodeAPI interface.
 

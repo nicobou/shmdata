@@ -255,12 +255,10 @@ void NVencPlugin::on_shmreader_data(void *data, size_t size) {
     g_warning("error copying data to nvenc");
     return;
   }
-  //g_print("coucou, data size %lu\n", size);
   // FIXME make following async:
   es_.get()->invoke<MPtr(&NVencES::encode_current_input)>();
   es_.get()->invoke<MPtr(&NVencES::process_encoded_frame)>(
       [&](void *data, uint32_t enc_size){
-        //g_print("coucou,encoded size: %u\n", enc_size);
          shmw_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, enc_size);
          shmw_->bytes_written(enc_size);
       });
@@ -278,6 +276,11 @@ void NVencPlugin::on_shmreader_server_connected(const std::string &data_descr) {
   if (!gst_structure_get_int(s, "width", &width)
       || !gst_structure_get_int(s, "height", &height)){
     g_warning("cannot get width/height from shmdata description (nvenc)");
+    return;
+  }
+  gint frameNum = 0, frameDen = 0;
+  if (!gst_structure_get_fraction(s, "framerate", &frameNum, &frameDen)){
+    g_warning("cannot get framerate from shmdata description (nvenc)");
     return;
   }
   const char *format = gst_structure_get_string(s, "format");
@@ -300,7 +303,7 @@ void NVencPlugin::on_shmreader_server_connected(const std::string &data_descr) {
     return;
   }
     
-  g_print("format: %s\n", format);
+  //g_print("format: %s\n", format);
   auto cur_codec = codecs_.get_current();
   auto guid_iter = std::find_if(
       codecs_guids_.begin(), codecs_guids_.end(),
@@ -317,6 +320,7 @@ void NVencPlugin::on_shmreader_server_connected(const std::string &data_descr) {
       nullptr,
       guid_iter->second, preset_iter->second,
       width, height,
+      frameNum, frameDen,
       buf_format);
   shmw_ = std2::make_unique<ShmdataWriter>(
       this,
@@ -326,7 +330,8 @@ void NVencPlugin::on_shmreader_server_connected(const std::string &data_descr) {
                   "alignment=(string)au, profile=(string)baseline")
       + ", width=(int)" + std::to_string(width)
       + ", height=(int)" + std::to_string(height)
-      + ", pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)30/1");
+      + ", pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)"
+      + std::to_string(frameNum) + "/" + std::to_string(frameDen));
 }
 
 }  // namespace switcher

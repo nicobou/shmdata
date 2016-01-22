@@ -19,6 +19,7 @@
 
 #include <glib.h>  // log
 #include <cstring> // memset
+#include <cmath>
 #include "./nvenc-buffers.hpp"
 
 namespace switcher {
@@ -34,7 +35,8 @@ NVencBuffers::NVencBuffers(void *encoder,
   for (auto &it: input_bufs_){
     NV_ENC_CREATE_INPUT_BUFFER buf;
     buf.version = NV_ENC_CREATE_INPUT_BUFFER_VER;
-    buf.width = width;  // FIXME find puissnce de 2 superieure a width
+    // find nearest superior or equal power of 2
+    buf.width = std::pow(2, std::ceil(std::log(width)/std::log(2)));
     buf.height = height;
     buf.memoryHeap = NV_ENC_MEMORY_HEAP_SYSMEM_CACHED;
     buf.bufferFmt = format;
