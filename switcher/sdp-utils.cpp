@@ -124,11 +124,15 @@ SDPMedia::add_to_sdp_description(GstSDPMessage *sdp_description,
     if (nullptr == struct_str)
       continue;
     std::string val = std::string(struct_str);
-    if (0 == fname.compare("sprop-parameter-sets")
-        && '=' == val.back()) {
-      g_warning("removing buggy trailing = at the end of sprop-parameter-sets");
-      val = std::string(val, 0, val.size() - 1) ;
+    if (0 == fname.compare("sprop-parameter-sets")){
+        auto equal_pos = val.find('=');
+        if (std::string::npos != equal_pos) {
+          g_warning("removing buggy trailing = at the end of sprop-parameter-sets");
+          val = std::string(val, 0, equal_pos) ;
+        }
     }
+    if (0 == fname.compare("sprop-parameter-sets"))
+        g_print("-------sprop---------- %s\n", val.c_str());
     std::string fname_value(fname + "=" + val);
     if (gst_structure_get_string(caps_structure_, fname.c_str())) {
       if (!first)

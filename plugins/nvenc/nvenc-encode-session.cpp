@@ -228,12 +228,19 @@ bool NVencES::initialize_encoder(GUID encodeGuid, GUID presetGuid,
     preset_config.presetCfg.profileGUID = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
     preset_config.presetCfg.encodeCodecConfig.h264Config.level = NV_ENC_LEVEL_AUTOSELECT; 
     preset_config.presetCfg.encodeCodecConfig.h264Config.chromaFormatIDC = 1;
+
+    // preset_config.presetCfg.encodeCodecConfig.h264Config.outputBufferingPeriodSEI = 1;
+    // preset_config.presetCfg.encodeCodecConfig.h264Config.outputPictureTimingSEI = 1;
+    // preset_config.presetCfg.encodeCodecConfig.h264Config.outputAUD = 1;
+    // preset_config.presetCfg.encodeCodecConfig.h264Config.outputFramePackingSEI = 1;
+    // preset_config.presetCfg.encodeCodecConfig.h264Config.outputRecoveryPointSEI = 1;
+    preset_config.presetCfg.encodeCodecConfig.h264Config.repeatSPSPPS = 1;
       // if (GST_VIDEO_INFO_FORMAT (info) == GST_VIDEO_FORMAT_Y444) {
     // GST_DEBUG_OBJECT (h264enc, "have Y444 input, setting config accordingly");
     // preset_config.presetCfg.encodeCodecConfig.
     //     h264Config.separateColourPlaneFlag = 1;
     //preset_config.presetCfg.encodeCodecConfig.h264Config.chromaFormatIDC = 3;
-    preset_config.presetCfg.encodeCodecConfig.h264Config.outputAUD = 1;
+    //preset_config.presetCfg.encodeCodecConfig.h264Config.outputAUD = 1;
     //}
      // if (GST_VIDEO_INFO_IS_INTERLACED (info)) {
      //   if (GST_VIDEO_INFO_INTERLACE_MODE (info) ==

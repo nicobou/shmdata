@@ -37,8 +37,6 @@ class ThreadedWrapper{
                        [&](){
                          threaded_wrap();
                        })){
-    { std::unique_lock<std::mutex> lock(start_m_);
-      start_cv_.wait(lock); }
     do_sync_task([&](){
         member_.reset(new T(args...));
       });
@@ -61,11 +59,6 @@ class ThreadedWrapper{
     // work loop
     while (!canceled_.load()) {
       std::unique_lock<std::mutex> lock(cv_m_);
-      if (!started_){
-        std::unique_lock<std::mutex> lock(start_m_);
-        start_cv_.notify_one();
-        started_ = true;
-      }
       // sync task
       if(sync_task_){
         sync_task_();
@@ -220,10 +213,6 @@ class ThreadedWrapper{
   
  private:
   std::unique_ptr<T> member_;
-  // sync ctor
-  std::mutex start_m_{};
-  std::condition_variable start_cv_{};
-  bool started_{false};
   // sync task
   std::function<void()> sync_task_{nullptr};
   std::mutex cv_m_{};
@@ -237,8 +226,8 @@ class ThreadedWrapper{
   std::vector<std::function<void()>> async_tasks_{};
 
   // thread
-  std::future<void> fut_;
   std::atomic<bool> canceled_{false};
+  std::future<void> fut_;
   
  void do_sync_task(std::function<void()> fun){
    std::unique_lock<std::mutex> lock_sync(sync_mtx_);
