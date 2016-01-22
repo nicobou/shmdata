@@ -210,7 +210,7 @@ namespace switcher {
       "Size in meters of the grid enclosing the mesh",
       grid_size_[0],
       0.2,
-      2.0);
+      10.0);
 
     pmanage<MPtr(&PContainer::make_double)>(
       "grid_size_x",
@@ -225,7 +225,7 @@ namespace switcher {
       "Size in meters of the grid along the X axis",
       grid_size_[0],
       0.2,
-      2.0);
+      10.0);
 
     pmanage<MPtr(&PContainer::make_double)>(
       "grid_size_y",
@@ -240,7 +240,7 @@ namespace switcher {
       "Size in meters of the grid along the Y axis",
       grid_size_[1],
       0.2,
-      2.0);
+      10.0);
 
     pmanage<MPtr(&PContainer::make_double)>(
       "grid_size_z",
@@ -255,7 +255,7 @@ namespace switcher {
       "Size in meters of the grid along the Z axis",
       grid_size_[2],
       0.2,
-      2.0);
+      10.0);
 
     pmanage<MPtr(&PContainer::make_int)>(
       "grid_resolution",
