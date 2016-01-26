@@ -37,7 +37,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Emmanuel Durand");
 
 PostureSrc::PostureSrc(const std::string &) {
-  zcamera_ = std2::make_unique<ZCamera> ();
+  calibration_reader_ = std2::make_unique<CalibrationReader>("default.kvc");
+  zcamera_ = std2::make_unique<ZCamera>();
   
   zcamera_->setCallbackCloud(cb_frame_cloud, this);
   zcamera_->setCallbackMesh(cb_frame_mesh, this);
@@ -52,8 +53,8 @@ PostureSrc::~PostureSrc() {
 
 bool
 PostureSrc::start() {
-  zcamera_->setCalibrationPath(calibration_path_);
-  zcamera_->setDevicesPath(devices_path_);
+  calibration_reader_->loadCalibration(calibration_path_);
+  zcamera_->setCalibration(calibration_reader_->getCalibrationParams()[device_index_]);
   zcamera_->setDeviceIndex(device_index_);
   zcamera_->setCaptureIR(capture_ir_);
   zcamera_->setBuildMesh(build_mesh_);
@@ -122,14 +123,6 @@ PostureSrc::init() {
       "Calibration path",
       "Path to the calibration file",
       calibration_path_);
-
-  pmanage<MPtr(&PContainer::make_string)>(
-      "devices_path",
-      [this](const std::string &val){devices_path_ = val; return true;},
-      [this](){return devices_path_;},
-      "Devices path",
-      "Path to the devices description file",
-      devices_path_);
   
   pmanage<MPtr(&PContainer::make_int)>(
       "device_index",
@@ -315,7 +308,10 @@ PostureSrc::cb_frame_cloud(void *context, const vector<char>&& data) {
   }
 
   if (ctx->reload_calibration_)
-    ctx->zcamera_->reloadCalibration();
+  {
+    ctx->calibration_reader_->loadCalibration(ctx->calibration_path_);
+    ctx->zcamera_->setCalibration(ctx->calibration_reader_->getCalibrationParams()[ctx->device_index_]);
+  }
 
   ctx->cloud_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
       const_cast<char*>(data.data()), data.size());

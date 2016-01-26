@@ -47,7 +47,6 @@ class PostureSrc:public Quiddity, public StartableQuiddity {
   double depth_focal_ {0.0};
   PContainer::prop_id_t depth_focal_id_{0};
   std::string calibration_path_ {"default.kvc"};
-  std::string devices_path_ {"devices.xml"};
   unsigned int device_index_ {0};
   bool capture_ir_ {false};
   bool build_mesh_ {false};
@@ -67,6 +66,7 @@ class PostureSrc:public Quiddity, public StartableQuiddity {
   Selection capture_modes_enum_{
     {"Default mode", "SXGA 15Hz", "VGA 30Hz", "VGA 25Hz", "QVGA 25Hz", "QVGA 30Hz", "QVGA 60Hz", "QQVGA 25Hz", "QQVGA 30Hz",  "QQVGA 60Hz"}, 0};
 
+  std::unique_ptr<posture::CalibrationReader> calibration_reader_ {nullptr};
   std::unique_ptr<posture::ZCamera> zcamera_ {nullptr};
 
   std::unique_ptr<ShmdataWriter> cloud_writer_ {nullptr};

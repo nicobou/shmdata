@@ -6,7 +6,9 @@
 
 #include <boost/make_shared.hpp>
 #include <pcl/io/obj_io.h>
+
 #include "switcher/scope-exit.hpp"
+#include "switcher/std2.hpp"
 
 using namespace std;
 using namespace posture;
@@ -14,15 +16,16 @@ using namespace posture;
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (
 					PostureScan3DGPU,
-          "posturesolidifygpu",
+                    "posturesolidifygpu",
 					"RGBD to textured mesh",
 					"video",
-          "writer/device",
+                    "writer/device",
 					"Create a textured mesh from rgbd cameras on GPU",
 					"LGPL",
 					"Emmanuel Durand");
 
   PostureScan3DGPU::PostureScan3DGPU(const std::string &) {
+    calibration_reader_ = std2::make_unique<CalibrationReader>("default.kvc");
   }
 
   PostureScan3DGPU::~PostureScan3DGPU() {
@@ -40,11 +43,13 @@ namespace switcher {
     images_dims_.resize(camera_nbr_);
     cameras_updated_.resize(camera_nbr_);
 
+    calibration_reader_->loadCalibration(calibration_path_);
+
     for (int i = 0; i < camera_nbr_; ++i)
     {
       cameras_.emplace_back(new posture::ZCamera());
       cameras_.back()->setCaptureMode((posture::ZCamera::CaptureMode)capture_modes_enum_.get());
-      cameras_.back()->setCalibrationPath(calibration_path_);
+      cameras_.back()->setCalibration(calibration_reader_->getCalibrationParams()[i]);
       cameras_.back()->setDeviceIndex(i);
 
       cameras_.back()->setCallbackDepth([=](void*, std::vector<uint8_t>& depth, int width, int height) {
@@ -59,7 +64,7 @@ namespace switcher {
     reset_solidify();
 
     colorize_ = unique_ptr<posture::ColorizeGL>(new posture::ColorizeGL());
-    colorize_->setCalibrationPath(calibration_path_);
+    colorize_->setCalibration(calibration_reader_->getCalibrationParams());
 
     update_loop_started_ = true;
     update_thread_ = thread([&](){
@@ -168,14 +173,6 @@ namespace switcher {
       "Calibration path",
       "Path to the calibration file",
       calibration_path_);
-
-    pmanage<MPtr(&PContainer::make_string)>(
-      "devices_path",
-      [this](const std::string &val){devices_path_ = val; return true;},
-      [this](){return devices_path_;},
-      "Devices path",
-      "Path to the devices description file",
-      devices_path_);
 
     pmanage<MPtr(&PContainer::make_selection)>(
       "capture_mode",
@@ -325,7 +322,7 @@ namespace switcher {
   {
     unique_lock<mutex> lock(update_mutex_);
     solidifyGPU_ = unique_ptr<posture::SolidifyGPU>(new posture::SolidifyGPU());
-    solidifyGPU_->setCalibrationPath(calibration_path_);
+    solidifyGPU_->setCalibration(calibration_reader_->getCalibrationParams());
     solidifyGPU_->setGridSizeX(grid_size_[0]);
     solidifyGPU_->setGridSizeY(grid_size_[1]);
     solidifyGPU_->setGridSizeZ(grid_size_[2]);

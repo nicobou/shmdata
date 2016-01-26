@@ -49,9 +49,10 @@ PostureColorizeGL::start() {
   if (is_started())
     return false;
 
+  calibration_reader_ = unique_ptr<CalibrationReader>(new CalibrationReader(calibration_path_));
   colorize_ = make_shared<ColorizeGL>();
 
-  colorize_->setCalibrationPath(calibration_path_);
+  colorize_->setCalibration(calibration_reader_->getCalibrationParams());
   colorize_->setCompressMesh(compress_mesh_);
 
   return true;
@@ -85,7 +86,14 @@ PostureColorizeGL::init() {
 
   pmanage<MPtr(&PContainer::make_string)>(
       "calibration_path",
-      [this](const std::string &val){calibration_path_ = val; return true;},
+      [this](const std::string &val){
+        calibration_path_ = val;
+        if (calibration_reader_) {
+          calibration_reader_->loadCalibration(calibration_path_);
+          colorize_->setCalibration(calibration_reader_->getCalibrationParams());
+        }
+        return true;
+      },
       [this](){return calibration_path_;},
       "Calibration path",
       "Path to the calibration file",

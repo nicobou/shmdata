@@ -30,7 +30,6 @@ namespace switcher {
 
   private:
     std::string calibration_path_ {"default.kvc"};
-    std::string devices_path_ {"devices.xml"};
 
     int camera_nbr_ {1};
     Selection capture_modes_enum_{
@@ -57,6 +56,7 @@ namespace switcher {
     std::vector<std::unique_ptr<posture::ZCamera>> cameras_ {};
     std::unique_ptr<posture::SolidifyGPU> solidifyGPU_ {nullptr};
     std::unique_ptr<posture::ColorizeGL> colorize_ {nullptr};
+    std::unique_ptr<posture::CalibrationReader> calibration_reader_ {nullptr};
 
     std::vector<bool> cameras_updated_ {};
     std::vector<std::vector<uint8_t>> images_ {};

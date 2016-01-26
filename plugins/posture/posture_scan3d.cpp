@@ -117,22 +117,14 @@ bool PostureSc3::init ()
       "calibration_path",
       [this](const std::string &val){
         calibration_path_ = val;
-        merger_->setCalibrationPath(calibration_path_);
+        if (!calibration_reader_)
+            calibration_reader_ = unique_ptr<CalibrationReader>(new CalibrationReader(calibration_path_));
+        merger_->setCalibration(calibration_reader_->getCalibrationParams());
         return true;},
       [this](){return calibration_path_;},
       "Calibration path",
       "Path to the calibration file",
       calibration_path_);
-
-  pmanage<MPtr(&PContainer::make_string)>(
-      "devices_path",
-      [this](const std::string &val){devices_path_ = val;
-        merger_->setDevicesPath(devices_path_);
-        return true;},
-      [this](){return devices_path_;},
-      "Devices path",
-      "Path to the devices description file",
-      devices_path_);
 
   pmanage<MPtr(&PContainer::make_int)>(
       "grid resolution",
@@ -184,7 +176,10 @@ void PostureSc3::cb_frame_cloud (int index,pcl::PointCloud<pcl::PointXYZRGBNorma
   if (!is_started_)
     return;
   if (reload_calibration_)
-    merger_->reloadCalibration();
+  {
+    calibration_reader_->loadCalibration(calibration_path_);
+    merger_->setCalibration(calibration_reader_->getCalibrationParams());
+  }
   merger_->setInputCloud (index, cloud);
   pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr temp_cloud = boost::make_shared <pcl::PointCloud<pcl::PointXYZRGBNormal>>();
   merger_->getCloud (temp_cloud);
@@ -234,7 +229,10 @@ void PostureSc3::cb_frame_rgb(std::vector<unsigned char>& image, int width, int 
     return;
 
   if (reload_calibration_)
-    merger_->reloadCalibration ();
+  {
+    calibration_reader_->loadCalibration(calibration_path_);
+    merger_->setCalibration(calibration_reader_->getCalibrationParams());
+  }
 
   std::vector<std::vector<unsigned char>> Images;
   Images.push_back(image);

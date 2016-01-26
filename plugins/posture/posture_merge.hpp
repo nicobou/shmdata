@@ -49,8 +49,8 @@ class PostureMerge : public Quiddity, public StartableQuiddity {
  private:
   ShmdataConnector shmcntr_;
 
+  std::unique_ptr<posture::CalibrationReader> calibration_reader_ {nullptr};
   std::string calibration_path_ {"default.kvc"};
-  std::string devices_path_ {"devices.xml"};
   bool compress_cloud_ {false};
   bool reload_calibration_ {false};
   bool save_cloud_ {false};
