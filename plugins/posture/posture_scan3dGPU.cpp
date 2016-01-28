@@ -123,7 +123,7 @@ namespace switcher {
 
       // The registerer runs in a separate thread and is updated at
       // its own pace
-      if (auto_registering_ && !is_registering_)
+      if (improve_registering_ && !is_registering_)
       {
         if (registering_thread_.joinable())
             registering_thread_.join();
@@ -138,12 +138,13 @@ namespace switcher {
 
           // The previous call can take some time, so we check again that
           // automatic registration is active
-          if (auto_registering_) {
+          if (improve_registering_) {
             solidifyGPU_->setCalibration(calibration);
             colorize_->setCalibration(calibration);
           }
 
           is_registering_ = false;
+          pmanage<MPtr(&PContainer::set<bool>)>(register_id_, false);
         });
       }
 
@@ -199,14 +200,6 @@ namespace switcher {
 
   bool PostureScan3DGPU::init() {
     init_startable(this);
-    
-    pmanage<MPtr(&PContainer::make_string)>(
-      "calibration_path",
-      [this](const std::string &val){calibration_path_ = val; return true;},
-      [this](){return calibration_path_;},
-      "Calibration path",
-      "Path to the calibration file",
-      calibration_path_);
 
     pmanage<MPtr(&PContainer::make_selection)>(
       "capture_mode",
@@ -225,23 +218,49 @@ namespace switcher {
       camera_nbr_,
       1,
       7);
+    
+    pmanage<MPtr(&PContainer::make_group)>(
+      "calibration",
+      "Calibration",
+      "Camera calibration parameters");
 
-    pmanage<MPtr(&PContainer::make_bool)>(
-        "auto_register",
-        [this](const bool &val){auto_registering_ = val; return true;},
-        [this](){return auto_registering_;},
-        "Automatic registration",
-        "Use ICP to automatically register clouds, based on manual calibration",
-        auto_registering_);
+    pmanage<MPtr(&PContainer::make_parented_string)>(
+      "calibration_path",
+      "calibration",
+      [this](const std::string &val){calibration_path_ = val; return true;},
+      [this](){return calibration_path_;},
+      "Calibration path",
+      "Path to the calibration file",
+      calibration_path_);
 
-    pmanage<MPtr(&PContainer::make_double)>(
+    register_id_ = pmanage<MPtr(&PContainer::make_parented_bool)>(
+      "improve_registration",
+      "calibration",
+      [this](const bool &val){improve_registering_ = val; return true;},
+      [this](){return improve_registering_;},
+      "Improve registration",
+      "Automatically improve cameras calibration",
+      improve_registering_);
+
+    pmanage<MPtr(&PContainer::make_group)>(
+        "grid",
+        "Grid parameters",
+        "Reconstruction grid parameters");
+
+    pmanage<MPtr(&PContainer::make_parented_double)>(
       "grid_size",
+      "grid",
       [this](const double &val){
         grid_size_[0] = val;
         grid_size_[1] = val;
         grid_size_[2] = val;
         if (solidifyGPU_)
           reset_solidify();
+
+        pmanage<MPtr(&PContainer::notify)>(grid_size_x_id_);
+        pmanage<MPtr(&PContainer::notify)>(grid_size_y_id_);
+        pmanage<MPtr(&PContainer::notify)>(grid_size_z_id_);
+
         return true;
       },
       [this](){return std::max(grid_size_[0], std::max(grid_size_[1], grid_size_[2]));},
@@ -251,8 +270,9 @@ namespace switcher {
       0.2,
       10.0);
 
-    pmanage<MPtr(&PContainer::make_double)>(
+    grid_size_x_id_ = pmanage<MPtr(&PContainer::make_parented_double)>(
       "grid_size_x",
+      "grid",
       [this](const double &val){
         grid_size_[0] = val;
         if (solidifyGPU_)
@@ -266,8 +286,9 @@ namespace switcher {
       0.2,
       10.0);
 
-    pmanage<MPtr(&PContainer::make_double)>(
+    grid_size_y_id_ = pmanage<MPtr(&PContainer::make_parented_double)>(
       "grid_size_y",
+      "grid",
       [this](const double &val){
         grid_size_[1] = val;
         if (solidifyGPU_)
@@ -281,8 +302,9 @@ namespace switcher {
       0.2,
       10.0);
 
-    pmanage<MPtr(&PContainer::make_double)>(
+    grid_size_z_id_ = pmanage<MPtr(&PContainer::make_parented_double)>(
       "grid_size_z",
+      "grid",
       [this](const double &val){
         grid_size_[2] = val;
         if (solidifyGPU_)
@@ -296,8 +318,9 @@ namespace switcher {
       0.2,
       10.0);
 
-    pmanage<MPtr(&PContainer::make_int)>(
+    pmanage<MPtr(&PContainer::make_parented_int)>(
       "grid_resolution",
+      "grid",
       [this](const int &val){
         grid_resolution_ = val;
         if (solidifyGPU_)
@@ -311,8 +334,14 @@ namespace switcher {
       16,
       256);
 
-    pmanage<MPtr(&PContainer::make_int)>(
+    pmanage<MPtr(&PContainer::make_group)>(
+      "depth_map_filtering",
+      "Depth map filtering",
+      "Bilateral filtering of the input depth maps");
+
+    pmanage<MPtr(&PContainer::make_parented_int)>(
       "kernel_filter_size",
+      "depth_map_filtering",
       [this](const int &val){
         kernel_filter_size_ = val;
         if (solidifyGPU_)
@@ -326,8 +355,9 @@ namespace switcher {
       1,
       15);
 
-    pmanage<MPtr(&PContainer::make_float)>(
+    pmanage<MPtr(&PContainer::make_parented_float)>(
       "kernel_spatial_sigma_",
+      "depth_map_filtering",
       [this](const float &val){
         kernel_spatial_sigma_ = val;
         if (solidifyGPU_)
@@ -341,8 +371,9 @@ namespace switcher {
       0.1,
       16.0);
 
-    pmanage<MPtr(&PContainer::make_float)>(
+    pmanage<MPtr(&PContainer::make_parented_float)>(
       "kernel_value_sigma_",
+      "depth_map_filtering",
       [this](const float &val){
         kernel_value_sigma_ = val;
         if (solidifyGPU_)

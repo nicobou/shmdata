@@ -46,6 +46,7 @@ namespace switcher {
       0};
 
     std::vector<double> grid_size_ {1.0, 1.0, 1.0};
+    PropertyBase::prop_id_t grid_size_x_id_, grid_size_y_id_, grid_size_z_id_;
     uint32_t grid_resolution_ {64};
 
     int kernel_filter_size_ {5};
@@ -59,7 +60,8 @@ namespace switcher {
     std::unique_ptr<posture::Register> register_ {nullptr};
     std::unique_ptr<posture::CalibrationReader> calibration_reader_ {nullptr};
 
-    bool auto_registering_ {false};
+    PropertyBase::prop_id_t register_id_;
+    bool improve_registering_ {false};
     std::thread registering_thread_ {};
     std::atomic_bool is_registering_ {false};
 
