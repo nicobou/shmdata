@@ -26,6 +26,7 @@ namespace switcher {
 
   PostureScan3DGPU::PostureScan3DGPU(const std::string &) {
     calibration_reader_ = std2::make_unique<CalibrationReader>("default.kvc");
+    register_ = std2::make_unique<Register>();
   }
 
   PostureScan3DGPU::~PostureScan3DGPU() {
@@ -51,6 +52,10 @@ namespace switcher {
       cameras_.back()->setCaptureMode((posture::ZCamera::CaptureMode)capture_modes_enum_.get());
       cameras_.back()->setCalibration(calibration_reader_->getCalibrationParams()[i]);
       cameras_.back()->setDeviceIndex(i);
+
+      cameras_.back()->setCallbackCloud([=](void*, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud) {
+        cb_frame_cloud(i, cloud);
+      }, nullptr);
 
       cameras_.back()->setCallbackDepth([=](void*, std::vector<uint8_t>& depth, int width, int height) {
         cb_frame_depth(i, depth, width, height);
@@ -82,6 +87,9 @@ namespace switcher {
     if (update_thread_.joinable())
       update_thread_.join();
 
+    if (registering_thread_.joinable())
+      registering_thread_.join();
+
     cameras_.clear();
     solidifyGPU_.reset();
     colorize_.reset();
@@ -112,6 +120,32 @@ namespace switcher {
 
       if (!update_loop_started_)
         break;
+
+      // The registerer runs in a separate thread and is updated at
+      // its own pace
+      if (auto_registering_ && !is_registering_)
+      {
+        if (registering_thread_.joinable())
+            registering_thread_.join();
+
+        is_registering_ = true;
+        registering_thread_ = thread([=]() {
+          calibration_reader_->reload();
+          auto calibration = calibration_reader_->getCalibrationParams();
+
+          register_->setGuessCalibration(calibration);
+          calibration = register_->getCalibration();
+
+          // The previous call can take some time, so we check again that
+          // automatic registration is active
+          if (auto_registering_) {
+            solidifyGPU_->setCalibration(calibration);
+            colorize_->setCalibration(calibration);
+          }
+
+          is_registering_ = false;
+        });
+      }
 
       solidifyGPU_->getMesh(mesh);
       lock.unlock();
@@ -191,6 +225,14 @@ namespace switcher {
       camera_nbr_,
       1,
       7);
+
+    pmanage<MPtr(&PContainer::make_bool)>(
+        "auto_register",
+        [this](const bool &val){auto_registering_ = val; return true;},
+        [this](){return auto_registering_;},
+        "Automatic registration",
+        "Use ICP to automatically register clouds, based on manual calibration",
+        auto_registering_);
 
     pmanage<MPtr(&PContainer::make_double)>(
       "grid_size",
@@ -349,8 +391,13 @@ namespace switcher {
   }
 
   void
-  PostureScan3DGPU::cb_frame_depth(int index, std::vector<unsigned char>& depth, int width, int height) {
+  PostureScan3DGPU::cb_frame_cloud(int index, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud) {
+    unique_lock<mutex> lockCamera(camera_mutex_);
+    register_->setInputCloud(index, cloud);
+  }
 
+  void
+  PostureScan3DGPU::cb_frame_depth(int index, std::vector<unsigned char>& depth, int width, int height) {
     unique_lock<mutex> lockCamera(update_mutex_, std::try_to_lock);
     if (lockCamera.owns_lock()) {
       solidifyGPU_->setInputDepthMap(index, depth, width, height);
