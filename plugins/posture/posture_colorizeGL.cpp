@@ -49,9 +49,10 @@ PostureColorizeGL::start() {
   if (is_started())
     return false;
 
+  calibration_reader_ = unique_ptr<CalibrationReader>(new CalibrationReader(calibration_path_));
   colorize_ = make_shared<ColorizeGL>();
 
-  colorize_->setCalibrationPath(calibration_path_);
+  colorize_->setCalibration(calibration_reader_->getCalibrationParams());
   colorize_->setCompressMesh(compress_mesh_);
 
   return true;
@@ -83,23 +84,30 @@ PostureColorizeGL::init() {
                                   [this](const std::string caps){return can_sink_caps(caps);},
                                   std::numeric_limits<unsigned int>::max());
 
-    pmanage<MPtr(&PContainer::make_string)>(
-        "calibration_path",
-        [this](const std::string &val){calibration_path_ = val; return true;},
-        [this](){return calibration_path_;},
-        "Calibration path",
-        "Path to the calibration file",
-        calibration_path_);
+  pmanage<MPtr(&PContainer::make_string)>(
+      "calibration_path",
+      [this](const std::string &val){
+        calibration_path_ = val;
+        if (calibration_reader_) {
+          calibration_reader_->loadCalibration(calibration_path_);
+          colorize_->setCalibration(calibration_reader_->getCalibrationParams());
+        }
+        return true;
+      },
+      [this](){return calibration_path_;},
+      "Calibration path",
+      "Path to the calibration file",
+      calibration_path_);
 
-    pmanage<MPtr(&PContainer::make_bool)>(
-        "compress_mesh",
-        [this](const bool &val){compress_mesh_ = val; return true;},
-        [this](){return compress_mesh_;},
-        "Compress the output mesh",
-        "Compress the output mesh",
-        compress_mesh_);
-    
-    return true;
+  pmanage<MPtr(&PContainer::make_bool)>(
+      "compress_mesh",
+      [this](const bool &val){compress_mesh_ = val; return true;},
+      [this](){return compress_mesh_;},
+      "Compress the output mesh",
+      "Compress the output mesh",
+      compress_mesh_);
+  
+  return true;
 }
 
 bool
@@ -269,7 +277,6 @@ PostureColorizeGL::check_image_caps(string caps, unsigned int& width, unsigned i
   try
   {
     regVideo = regex("(.*video/x-raw)(.*)", regex_constants::extended);
-    regHap = regex("(.*video/x-gst-fourcc-HapY)(.*)", regex_constants::extended);
     regFormat = regex("(.*format=\\(string\\))(.*)", regex_constants::extended);
     regWidth = regex("(.*width=\\(int\\))(.*)", regex_constants::extended);
     regHeight = regex("(.*height=\\(int\\))(.*)", regex_constants::extended);

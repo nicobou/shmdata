@@ -58,9 +58,9 @@ bool PostureSc3::start ()
   std::lock_guard<std::mutex> lock (mutex_);
   for (index_=0; index_<nbr_; index_++)
   {
-    cameras_ [index_] -> start ();
+    cameras_ [index_]->start ();
   }
-  merger_ -> start ();
+  merger_->start ();
 
   is_started_ = true;
   return true;
@@ -71,9 +71,9 @@ bool PostureSc3::stop ()
   std::lock_guard<std::mutex> lock (mutex_);
   for (index_=0; index_<nbr_; index_++)
   {
-    cameras_ [index_] -> stop ();
+    cameras_ [index_]->stop ();
   }
-  merger_ -> stop ();
+  merger_->stop ();
 
   mesh_writer_.reset ();
   rgb_writer_.reset ();
@@ -99,7 +99,7 @@ bool PostureSc3::init ()
           cameras_[index_]->setCaptureMode(ZCamera::CaptureMode_QQVGA_30Hz);
           int index = index_;
           cameras_[index_]->setCallbackCloud (
-              [=](void*, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud) -> void {
+              [=](void*, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud)->void {
                 cb_frame_cloud (index, std::move(cloud));
               }, nullptr);
         }
@@ -117,22 +117,14 @@ bool PostureSc3::init ()
       "calibration_path",
       [this](const std::string &val){
         calibration_path_ = val;
-        merger_->setCalibrationPath(calibration_path_);
+        if (!calibration_reader_)
+            calibration_reader_ = unique_ptr<CalibrationReader>(new CalibrationReader(calibration_path_));
+        merger_->setCalibration(calibration_reader_->getCalibrationParams());
         return true;},
       [this](){return calibration_path_;},
       "Calibration path",
       "Path to the calibration file",
       calibration_path_);
-
-  pmanage<MPtr(&PContainer::make_string)>(
-      "devices_path",
-      [this](const std::string &val){devices_path_ = val;
-        merger_->setDevicesPath(devices_path_);
-        return true;},
-      [this](){return devices_path_;},
-      "Devices path",
-      "Path to the devices description file",
-      devices_path_);
 
   pmanage<MPtr(&PContainer::make_int)>(
       "grid resolution",
@@ -163,7 +155,7 @@ bool PostureSc3::init ()
         for (index_ = 0; index_ < nbr_; index_++){
           if (colorize_or_not_){
             cameras_[index_]->setCallbackRgb (
-                [=] (void*, std::vector<unsigned char>& image, int width, int heigth) -> void {
+                [=] (void*, std::vector<unsigned char>& image, int width, int heigth)->void {
                   cb_frame_rgb (image, width, heigth);
                 }, nullptr);
           }
@@ -184,10 +176,13 @@ void PostureSc3::cb_frame_cloud (int index,pcl::PointCloud<pcl::PointXYZRGBNorma
   if (!is_started_)
     return;
   if (reload_calibration_)
-    merger_ -> reloadCalibration();
-  merger_ -> setInputCloud (index, cloud);
+  {
+    calibration_reader_->loadCalibration(calibration_path_);
+    merger_->setCalibration(calibration_reader_->getCalibrationParams());
+  }
+  merger_->setInputCloud (index, cloud);
   pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr temp_cloud = boost::make_shared <pcl::PointCloud<pcl::PointXYZRGBNormal>>();
-  merger_ -> getCloud (temp_cloud);
+  merger_->getCloud (temp_cloud);
 
   if (colorize_or_not_)
   {
@@ -196,8 +191,8 @@ void PostureSc3::cb_frame_cloud (int index,pcl::PointCloud<pcl::PointXYZRGBNorma
     return;
   }
 
-  sol_ -> setInputCloud (temp_cloud);
-  sol_ -> getMesh (output_);
+  sol_->setInputCloud (temp_cloud);
+  sol_->getMesh (output_);
 
   if (!mesh_writer_ || output_.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
     mesh_writer_.reset();
@@ -234,16 +229,19 @@ void PostureSc3::cb_frame_rgb(std::vector<unsigned char>& image, int width, int 
     return;
 
   if (reload_calibration_)
-    merger_ -> reloadCalibration ();
+  {
+    calibration_reader_->loadCalibration(calibration_path_);
+    merger_->setCalibration(calibration_reader_->getCalibrationParams());
+  }
 
   std::vector<std::vector<unsigned char>> Images;
   Images.push_back(image);
   std::vector<std::vector<unsigned int>> Dims;
   Dims.push_back({(unsigned int) width,(unsigned int) heigth, 3});
 
-  colorize_ -> setInput (intermediate_mesh_, Images, Dims);
-  colorize_ -> getTexturedMesh (output_);
-  texture_ = colorize_ -> getTexture ((unsigned int&) width, (unsigned int&) heigth);
+  colorize_->setInput (intermediate_mesh_, Images, Dims);
+  colorize_->getTexturedMesh (output_);
+  texture_ = colorize_->getTexture ((unsigned int&) width, (unsigned int&) heigth);
 
   if (!mesh_writer_ || output_.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
     mesh_writer_.reset();
