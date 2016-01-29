@@ -18,7 +18,6 @@
 #include <algorithm>
 #include <string>
 #include <vector>
-
 #include "./pj-codec-utils.hpp"
 
 namespace switcher {

@@ -46,8 +46,7 @@ class PostureSc3:public Quiddity, public StartableQuiddity {
   bool init() final;
 
   static int get_output_mesh(std::vector<unsigned char>);
-  void cb_frame_cloud(int index,
-                      pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud);
+  void cb_frame_cloud(int index, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud);
   void cb_frame_rgb(std::vector<unsigned char>& image, int width, int heigth);
 
   std::vector<std::shared_ptr<posture::ZCamera>> cameras_ {};
@@ -62,10 +61,11 @@ class PostureSc3:public Quiddity, public StartableQuiddity {
   std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
   std::unique_ptr<ShmdataWriter> rgb_writer_ {nullptr};
 
+  std::unique_ptr<posture::CalibrationReader> calibration_reader_ {nullptr};
+
   int index_ {0};
   int nbr_ {1};
   std::string calibration_path_ {"default.kvc"};
-  std::string devices_path_ {"devices.xml"};
   int grid_res_ {3};
   bool reload_calibration_ {false};
   bool colorize_or_not_ {false};

@@ -25,18 +25,20 @@
 #include <condition_variable>
 #include <string>
 #include <map>
+#include "switcher/selection.hpp"
 
 namespace switcher {
-class PJSIP;
+class SIPPlugin;
 class PJCall;
+class PJSIP;
 
 class PJPresence {
   friend PJSIP;
+  friend SIPPlugin;
   friend PJCall;  // for account local uri
 
  public:
-  PJPresence() = delete;
-  explicit PJPresence(PJSIP *sip_instance);
+  PJPresence();
   ~PJPresence();
   PJPresence(const PJPresence &) = delete;
   PJPresence &operator=(const PJPresence &) = delete;
@@ -46,7 +48,6 @@ class PJPresence {
   };
 
  private:
-  PJSIP *sip_instance_{nullptr};
   pjsua_acc_id account_id_{-1};
   pjsua_acc_config cfg_;
   std::mutex registration_mutex_{};
@@ -68,7 +69,7 @@ class PJPresence {
   static gboolean register_account_wrapped(gchar *user,
                                            gchar *password,
                                            void *user_data);
-  void unregister_account();
+  void unregister_account(bool notify_tree = true);
   static gboolean unregister_account_wrapped(gpointer /*unused */ ,
                                              void *user_data);
 

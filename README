@@ -56,3 +56,19 @@ Once you have it, here is how to build and install switcher from command line::
   $ sudo make install
   $ sudo ldconfig
 
+Build nvenc plugin
+-------------------
+1) check you are runing nvidia drivers:
+$ nvidia-settings
+2) download and unzip nvenc SDK version 5.0.1:
+https://developer.nvidia.com/nvidia-video-codec-sdk
+3) install cuda headers
+$ nvidia-cuda-dev
+4) in the switcher directory, configure switcher as follow
+$ NVENC_SDK_PATH='<your-path>' NVENC_LIBS='-L/usr/lib/nvidia-<driver-version-number>' ./configure
+replacing information by yours, for instance:
+$ NVENC_SDK_PATH='/var/tmp/nvenc_5.0.1_sdk' NVENC_LIBS='-L/usr/lib/nvidia-352' ./configure
+5) compile and install as usual
+$ make
+$ sudo make install
+

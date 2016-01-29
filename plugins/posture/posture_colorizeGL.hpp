@@ -54,6 +54,7 @@ class PostureColorizeGL : public Quiddity, public StartableQuiddity {
 
   Worker worker_ {};
 
+  std::unique_ptr<posture::CalibrationReader> calibration_reader_ {nullptr};
   std::shared_ptr<posture::ColorizeGL> colorize_ {nullptr};
   std::mutex mutex_ {};
   std::mutex imageMutex_ {};

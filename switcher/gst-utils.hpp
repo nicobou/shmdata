@@ -27,7 +27,7 @@
 
 namespace switcher {
 namespace GstUtils {
-bool make_element(const gchar *class_name, GstElement ** target_element);
+GstElement *make_element(const gchar *class_name, GstElement ** target_element);
 bool link_static_to_request(GstElement * src, GstElement *sink);
 bool link_static_to_request(GstPad * srcpad, GstElement *sink);
 bool check_pad_link_return(GstPadLinkReturn res);

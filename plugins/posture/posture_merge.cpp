@@ -45,10 +45,10 @@ PostureMerge::~PostureMerge() {
 
 bool
 PostureMerge::start() {
-  merger_ = make_shared<PointCloudMerger>("");
+  calibration_reader_ = unique_ptr<CalibrationReader>(new CalibrationReader(calibration_path_));
+  merger_ = make_shared<PointCloudMerger>();
   merger_->setCloudNbr(source_id_);
-  merger_->setCalibrationPath(calibration_path_);
-  merger_->setDevicesPath(devices_path_);
+  merger_->setCalibration(calibration_reader_->getCalibrationParams());
   merger_->setCompression(compress_cloud_);
   merger_->setSaveCloud(save_cloud_);
   merger_->start();
@@ -83,19 +83,18 @@ PostureMerge::init() {
 
   pmanage<MPtr(&PContainer::make_string)>(
       "calibration_path",
-      [this](const std::string &val){calibration_path_ = val; return true;},
+      [this](const std::string &val){
+        calibration_path_ = val;
+        if (calibration_reader_) {
+          calibration_reader_->loadCalibration(calibration_path_);
+          merger_->setCalibration(calibration_reader_->getCalibrationParams());
+        }
+        return true;
+      },
       [this](){return calibration_path_;},
       "Calibration path",
       "Path to the calibration file",
       calibration_path_);
-
-  pmanage<MPtr(&PContainer::make_string)>(
-      "devices_path",
-      [this](const std::string &val){devices_path_ = val; return true;},
-      [this](){return devices_path_;},
-      "Devices path",
-      "Path to the devices description file",
-      devices_path_);
 
   pmanage<MPtr(&PContainer::make_bool)>(
       "compress_cloud",
@@ -190,7 +189,10 @@ PostureMerge::connect(std::string shmdata_socket_path) {
     }
 
     if (reload_calibration_)
-        merger_->reloadCalibration();
+    {
+        calibration_reader_->loadCalibration(calibration_path_);
+        merger_->setCalibration(calibration_reader_->getCalibrationParams());
+    }
 
     // Setting input clouds is thread safe, so lets do it
     {

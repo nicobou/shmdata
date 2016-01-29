@@ -20,7 +20,6 @@
 #ifndef __SWITCHER_SAFE_BOOL_IDIOM_H__
 #define __SWITCHER_SAFE_BOOL_IDIOM_H__
 
-
 namespace switcher {
 class SafeBoolIdiom {
  public:

@@ -26,6 +26,7 @@
 #include "./json-builder.hpp"
 #include "./std2.hpp"
 #include "./shmdata-utils.hpp"
+#include "./gst-rtppayloader-finder.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
@@ -220,71 +221,14 @@ bool RtpSession::write_sdp_file(std::string dest_name) {
   return it->second->write_to_file(std::move(sdp_file));
 }
 
-// function used as a filter for selecting the appropriate rtp payloader
-gboolean
-RtpSession::sink_factory_filter(GstPluginFeature *feature,
-                                gpointer data) {
-  const gchar *klass;
-
-  GstCaps *caps = (GstCaps *)data;
-
-  // searching element factories only
-  if (!GST_IS_ELEMENT_FACTORY(feature))
-    return FALSE;
-
-  klass = gst_element_factory_get_klass(GST_ELEMENT_FACTORY(feature));
-  if (!(g_strrstr(klass, "Payloader") && g_strrstr(klass, "RTP")))
-    return FALSE;
-
-  if (!gst_element_factory_can_sink_all_caps(GST_ELEMENT_FACTORY(feature), caps))
-    return FALSE;
-
-  return TRUE;
-}
-
-// sorting factory by rank
-gint
-RtpSession::sink_compare_ranks(GstPluginFeature *f1,
-                               GstPluginFeature *f2) {
-  gint diff;
-
-  diff = gst_plugin_feature_get_rank(f2) - gst_plugin_feature_get_rank(f1);
-  if (diff != 0)
-    return diff;
-  return g_strcmp0(gst_plugin_feature_get_name(f2),
-                   gst_plugin_feature_get_name(f1));
-}
-
 // this is a typefind function, called when type of input stream from a shmdata is found
 std::string RtpSession::make_rtp_payloader(GstElement *shmdatasrc,
                                            const std::string &caps_str) {
+
+  GstElementFactory *factory = GstRTPPayloaderFinder::get_factory(caps_str);
   GstElement *pay = nullptr;
-  GstCaps *caps = gst_caps_from_string (caps_str.c_str());
-  On_scope_exit{if (nullptr != caps) gst_caps_unref(caps);};
-  GList *list = gst_registry_feature_filter(
-      gst_registry_get(),
-      (GstPluginFeatureFilter)sink_factory_filter,
-      FALSE,
-      caps);
-  list = g_list_sort(list, (GCompareFunc) sink_compare_ranks);
-  // bypassing jpeg for high dimensions
-  bool jpeg_payloader = true;
-  GstStructure *caps_structure = gst_caps_get_structure(caps, 0);
-  // check jpeg dimension are suported by jpeg payloader
-  if (g_str_has_prefix(gst_structure_get_name(caps_structure), "image/jpeg")) {
-    jpeg_payloader = false;
-    // gint width = 0, height = 0;
-    // if (gst_structure_get_int(caps_structure, "height", &height)) {
-    //   if (height <= 0 || height > 2040)
-    //     jpeg_payloader = false;
-    // }
-    // if (gst_structure_get_int(caps_structure, "width", &width)) {
-    //   if (width <= 0 || width > 2040)
-    //     jpeg_payloader = false;
-    // }
-  }
-  if (list != nullptr && jpeg_payloader)
-    pay = gst_element_factory_create(GST_ELEMENT_FACTORY(list->data), nullptr);
+  if (nullptr != factory)
+    pay = gst_element_factory_create(factory, nullptr);
   else 
     GstUtils::make_element("rtpgstpay", &pay);
   g_debug("using %s payloader for %s",
@@ -801,4 +745,4 @@ RtpSession::DataStream_t::~DataStream_t() {
   GstUtils::clean_element(udp_rtcp_sink);
 }
 
-}
+}  // namespace switcher

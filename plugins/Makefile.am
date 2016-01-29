@@ -22,6 +22,11 @@ SUBDIRS += \
     gtk
 endif
 
+if NVENCBUILD
+SUBDIRS += \
+    nvenc
+endif
+
 if PULSEBUILD
 SUBDIRS += \
     pulse

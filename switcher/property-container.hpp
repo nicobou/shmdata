@@ -72,14 +72,15 @@ class PContainer{
 
   // ----------- add/remove/update (you should prefer makers for adding)
 
+  bool remove(prop_id_t prop_id);
+  bool enable(prop_id_t prop_id, bool enable);
   prop_id_t push(const std::string &strid,
                  std::unique_ptr<PropertyBase> &&prop_ptr);
   prop_id_t push_parented(const std::string &strid,
                           const std::string &parent_strid,
                           std::unique_ptr<PropertyBase> &&prop_ptr);
-  bool remove(prop_id_t prop_id);
-  bool enable(prop_id_t prop_id, bool enable);
   bool replace(prop_id_t prop_id, std::unique_ptr<PropertyBase> &&prop_ptr);  // for gprop-to-prop
+
   // use when property is updated without "set" (method is read-only for instance)
   std::unique_lock<std::mutex> get_lock(prop_id_t prop_id);
   void notify(prop_id_t prop_id);

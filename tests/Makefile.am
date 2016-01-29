@@ -32,6 +32,7 @@ check_PROGRAMS = \
     check_scope_guard \
     check_startable \
     check_test_full \
+    check_threaded_wrapper \
     check_ugstelem
 
 check_description_by_class_SOURCES = \
@@ -75,6 +76,9 @@ check_string_dictionary_SOURCES = \
 
 check_test_full_SOURCES = \
     check_test_full.cpp
+
+check_threaded_wrapper_SOURCES = \
+    check_threaded_wrapper.cpp
 
 check_ugstelem_SOURCES = \
     check_ugstelem.cpp

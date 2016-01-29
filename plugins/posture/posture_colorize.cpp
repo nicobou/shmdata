@@ -49,9 +49,10 @@ PostureColorize::start() {
   if (is_started())
     return false;
 
+  calibration_reader_ = unique_ptr<posture::CalibrationReader>(new posture::CalibrationReader(calibration_path_));
   colorize_ = make_shared<Colorize>();
 
-  colorize_->setCalibrationPath(calibration_path_);
+  colorize_->setCalibration(calibration_reader_->getCalibrationParams());
   colorize_->setComputeTexCoords(compute_tex_coords_);
   colorize_->setCompressMesh(compress_mesh_);
 

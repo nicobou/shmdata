@@ -36,7 +36,9 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gst-pipe.cpp \
     gst-pipeliner.cpp \
     gst-pixel-format-converter.cpp \
+    gst-rtppayloader-finder.cpp \
     gst-shmdata-subscriber.cpp \
+    gst-shmdata-to-cb.cpp \
     gst-utils.cpp \
     gst-video-codec.cpp \
     gst-video-converter.cpp \
@@ -62,12 +64,16 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     quiddity-signal-subscriber.cpp \
     quiddity.cpp \
     rtp-destination.cpp \
+    rtp-receiver.cpp \
+    rtp-sender.cpp \
     rtp-session.cpp \
+    rtp-session2.cpp \
     safe-bool-idiom.cpp \
     sdp-utils.cpp \
     selection.cpp \
     serialize-string.cpp \
     shmdata-connector.cpp \
+    shmdata-decoder.cpp \
     shmdata-follower.cpp \
     shmdata-utils.cpp \
     shmdata-writer.cpp \
@@ -113,7 +119,9 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gst-pipe.hpp \
     gst-pipeliner.hpp \
     gst-pixel-format-converter.hpp \
+    gst-rtppayloader-finder.hpp \
     gst-shmdata-subscriber.hpp \
+    gst-shmdata-to-cb.hpp \
     gst-utils.hpp \
     gst-video-codec.hpp \
     gst-video-converter.hpp \
@@ -142,13 +150,17 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     quiddity-signal-subscriber.hpp \
     quiddity.hpp \
     rtp-destination.hpp \
+    rtp-receiver.hpp \
+    rtp-sender.hpp \
     rtp-session.hpp \
+    rtp-session2.hpp \
     safe-bool-idiom.hpp \
     scope-exit.hpp \
     sdp-utils.hpp \
     selection.hpp \
     serialize-string.hpp \
     shmdata-connector.hpp \
+    shmdata-decoder.hpp \
     shmdata-glib-logger.hpp \
     shmdata-follower.hpp \
     shmdata-utils.hpp \
@@ -157,6 +169,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     startable-quiddity.hpp \
     std2.hpp \
     string-utils.hpp \
+    threaded-wrapper.hpp \
     type-name-registry.hpp \
     unique-gst-element.hpp \
     uridecodebin.hpp \

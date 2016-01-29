@@ -24,16 +24,17 @@
 #include "./scope-exit.hpp"
 
 namespace switcher {
-bool
-GstUtils::make_element(const gchar *class_name,
-                       GstElement **target_element) {
-  *target_element = gst_element_factory_make(class_name, nullptr);
-  if (*target_element == nullptr) {
+GstElement *GstUtils::make_element(const gchar *class_name,
+                            GstElement **target_element) {
+  GstElement *res = gst_element_factory_make(class_name, nullptr);
+  if (res == nullptr) {
     g_debug("gstreamer element class %s cannot be instanciated",
             class_name);
-    return false;
+    return nullptr;
   }
-  return true;
+  if (target_element)
+    *target_element = res;
+  return res;
 }
 
 
@@ -165,9 +166,16 @@ void GstUtils::clean_element(GstElement *element) {
   // if (GST_IS_BIN(gst_element_get_parent(element)))
   //   gst_bin_remove(GST_BIN(gst_element_get_parent(element)), element);
   // else
-    if (!GST_IS_BIN(gst_element_get_parent(element))
-        && ((GObject *) element)->ref_count > 0)
-    gst_object_unref(element);
+
+  gst_element_set_state(element, GST_STATE_NULL);
+  GstObject *parent = gst_element_get_parent(element);
+  On_scope_exit{if (parent) gst_object_unref(parent);};
+  if (GST_IS_BIN(parent)) {
+    gst_bin_remove (GST_BIN_CAST(parent), element);
+  } else {
+    if (((GObject *) element)->ref_count > 0)
+      gst_object_unref(element);
+  }
 }
 
 void GstUtils::wait_state_changed(GstElement *bin) {
