@@ -138,8 +138,7 @@ QuiddityCommand::parse_command_from_json_reader(JsonReader *reader) {
 
   // command
   json_reader_read_member(reader, "command");
-  command->set_id(QuiddityCommand::get_id_from_string
-                  (json_reader_get_string_value(reader)));
+  command->set_id(QuiddityCommand::get_id_from_string(json_reader_get_string_value(reader)));
   json_reader_end_member(reader);
   // ---
 
