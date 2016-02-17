@@ -37,6 +37,7 @@ RTPSender::RTPSender(RtpSession2 *session,
     g_warning("RTPSender failled to create GStreamer element");
     return;
   }
+  std::unique_lock<std::mutex> lock (start_m_);
   // configuring shmdatasrc and typefind
   g_signal_connect(typefind_, "have-type", G_CALLBACK(on_caps), this);
   g_object_set(G_OBJECT(shmdatasrc_),
@@ -46,8 +47,6 @@ RTPSender::RTPSender(RtpSession2 *session,
                    shmdatasrc_, typefind_, nullptr);
   if (!gst_element_link(shmdatasrc_, typefind_))
     return;
-  GstUtils::sync_state_with_parent(shmdatasrc_);
-  GstUtils::sync_state_with_parent(typefind_);
   // configuring fakesink
   g_object_set(G_OBJECT(fakesink_),
                "silent", TRUE,
@@ -55,6 +54,9 @@ RTPSender::RTPSender(RtpSession2 *session,
                "sync", FALSE,
                nullptr);
   g_signal_connect(fakesink_, "handoff", (GCallback)on_handoff_cb, this);
+  GstUtils::sync_state_with_parent(shmdatasrc_);
+  GstUtils::sync_state_with_parent(typefind_);
+  start_cv_.wait_for(lock, std::chrono::milliseconds(200));
 }
 
 RTPSender::~RTPSender(){
@@ -113,13 +115,14 @@ void RTPSender::on_caps(GstElement *typefind,
     GstPad *sink_pad = gst_element_get_static_pad(context->fakesink_, "sink");
     On_scope_exit{gst_object_unref(sink_pad);}; 
     if (gst_pad_link(src_pad, sink_pad) != GST_PAD_LINK_OK)
-      g_warning("failed to link rtpbin to fakesink");
-    // TODO send RTCP
+      g_warning("failed to link rtpbin to fakesink");    // TODO send RTCP
   }
   
   // syncing gst elements with pipeline
   GstUtils::sync_state_with_parent(context->rtp_payloader_);
   GstUtils::sync_state_with_parent(context->fakesink_);
+  std::unique_lock<std::mutex> lock(context->start_m_);
+  context->start_cv_.notify_one();
 }
 
 void RTPSender::on_handoff_cb(
@@ -149,6 +152,7 @@ std::string RTPSender::get_caps() const{
     return std::string();
   }
   GstPad *pad = gst_element_get_static_pad(fakesink_, "sink");
+  //GstPad *pad = gst_element_get_static_pad(rtp_payloader_, "src");
   if (nullptr == pad) return fakesink_caps_;
   On_scope_exit{gst_object_unref(pad);};
   GstCaps *caps = gst_pad_get_current_caps(pad);
