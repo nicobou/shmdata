@@ -15,6 +15,10 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//FIXME remove those chrono and thread
+#include <chrono>
+#include <thread>
+
 #include <pjnath.h>
 #include <glib.h>
 #include "switcher/scope-exit.hpp"
@@ -30,7 +34,7 @@ PJStunTurn::PJStunTurn(){
   pj_ice_strans_cfg_default(&ice_cfg_);
   pj_timer_heap_create(PJSIP::this_->pool_, 100, 
                        &ice_cfg_.stun_cfg.timer_heap);
-  pj_ioqueue_create(PJSIP::this_->pool_, 128, 
+  pj_ioqueue_create(PJSIP::this_->pool_, 512, 
                     &ice_cfg_.stun_cfg.ioqueue);
   ice_cfg_.stun_cfg.pf = PJSIP::this_->pool_->factory;
   if (PJ_SUCCESS != pj_thread_create(PJSIP::this_->pool_,
@@ -255,6 +259,7 @@ std::unique_ptr<PJICEStreamTrans> PJStunTurn::get_ice_transport(
   auto res = std2::make_unique<PJICEStreamTrans>(ice_cfg_, comp_cnt, role);
   if (!static_cast<bool>(*res.get()))
     res.reset(nullptr);
+  std::this_thread::sleep_for(std::chrono::seconds(1));
   return res;
 }
 

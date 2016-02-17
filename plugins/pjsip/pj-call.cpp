@@ -444,7 +444,6 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
   print_sdp(local_sdp);
   print_sdp(remote_sdp);
   call->ice_trans_send_ = negociate_ice_transport(remote_sdp, inv->dlg->pool);
-
   // sending streams
   for (uint i = 0; i < call->media.size(); i++) {
     if (PJCallUtils::is_send_media(local_sdp->media[i])) {
@@ -567,8 +566,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   pjmedia_sdp_session *sdp;
   pjsip_tx_data *tdata;
   pj_status_t status;
-  /* Parse SDP from incoming request and
-     verify that we can handle the request. */
+  /* Parse SDP from incoming request and verify that we can handle the request. */
   pjmedia_sdp_session *offer = nullptr;
   if (rdata->msg_info.msg->body) {
     pjsip_rdata_sdp_info *sdp_info;
@@ -670,8 +668,8 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
         j++;  // FIXME what that ???
     }
   }
-  call->ice_trans_ = SIPPlugin::this_->stun_turn_->get_ice_transport(
-      media_to_receive.size(), PJ_ICE_SESS_ROLE_CONTROLLED);
+  call->ice_trans_ = SIPPlugin::this_->stun_turn_->
+    get_ice_transport(media_to_receive.size(), PJ_ICE_SESS_ROLE_CONTROLLED);
   if (!call->ice_trans_)
     g_warning("ICE transport initialization failled");
   // initializing shmdata writers and linking with ICE transport
@@ -1084,17 +1082,16 @@ void PJCall::print_sdp(const pjmedia_sdp_session *local_sdp) {
 /*
  * Make outgoing call.
  */
-void PJCall::make_call(std::string dst_uri) {
+bool PJCall::make_call(std::string dst_uri) {
   if (SIPPlugin::this_->sip_presence_->sip_local_user_.empty()) {
     g_warning("cannot call if not registered");
-    return;
+    return false;
   }
   pj_str_t local_uri;
   std::string local_uri_tmp(SIPPlugin::this_->sip_presence_->
                             sip_local_user_ // + ";transport=tcp"
                             );
-  pj_cstr(&local_uri,
-          local_uri_tmp.c_str());
+  pj_cstr(&local_uri, local_uri_tmp.c_str());
   call_t *cur_call = nullptr;
   pjsip_dialog *dlg = nullptr;
   pjmedia_sdp_session *sdp = nullptr;
@@ -1108,7 +1105,15 @@ void PJCall::make_call(std::string dst_uri) {
   if (PJSUA_INVALID_ID == id) {
     g_warning("buddy not found: cannot call %s",
               dst_uri.c_str());
-    return;
+    return false;
+  }
+  auto paths = SIPPlugin::this_->
+    tree<MPtr(&InfoTree::copy_leaf_values)>(std::string(".buddies."
+							+ std::to_string(id)
+							+ ".connections"));
+  if (paths.empty()){
+    g_warning("not calling %s since no shmdata path has been attached", dst_uri.c_str());
+    return false;
   }
   // Find unused call slot
   outgoing_call_.emplace_back();
@@ -1124,7 +1129,7 @@ void PJCall::make_call(std::string dst_uri) {
     char errstr[1024];
     pj_strerror(status, errstr, 1024); 	
     g_warning("pjsip_dlg_create_uac FAILLED %s", errstr);
-    return;
+    return false;
   }
   /* we expect the outgoing INVITE to be challenged*/
   pjsip_auth_clt_set_credentials(&dlg->auth_sess,
@@ -1135,12 +1140,15 @@ void PJCall::make_call(std::string dst_uri) {
   create_outgoing_sdp(dlg, cur_call, &sdp);
   if (nullptr == sdp)
     g_warning("%s failled creating sdp", __FUNCTION__);
+
+  print_sdp(sdp);
+
   // Create the INVITE session.
   status = pjsip_inv_create_uac(dlg, sdp, 0, &cur_call->inv);
   if (status != PJ_SUCCESS) {
     pjsip_dlg_terminate(dlg);
     g_warning("pjsip_inv_create_uac FAILLED");
-    return;
+    return false;
   }
   // Attach call data to invite session
   cur_call->inv->mod_data[mod_siprtp_.id] = cur_call;
@@ -1151,7 +1159,7 @@ void PJCall::make_call(std::string dst_uri) {
   status = pjsip_inv_invite(cur_call->inv, &tdata);
   if (status != PJ_SUCCESS) {
     g_warning("pjsip_inv_invite error");
-    return;
+    return false;
   }
   /* Send initial INVITE request.
    * From now on, the invite session's state will be reported to us
@@ -1160,7 +1168,7 @@ void PJCall::make_call(std::string dst_uri) {
   status = pjsip_inv_send_msg(cur_call->inv, tdata);
   if (status != PJ_SUCCESS) {
     g_warning("pjsip_inv_send_msg error");
-    return;
+    return false;
   }
   // updating call status in the tree
   InfoTree::ptr tree = SIPPlugin::this_->
@@ -1168,15 +1176,16 @@ void PJCall::make_call(std::string dst_uri) {
                    false);  // do not signal since the branch will be re-grafted
   if (!tree) {
     g_warning("cannot find buddy information tree, call cancelled");
-    return;
+    return false;
   }
   tree->graft(std::string(".send_status."),
               InfoTree::make("calling"));
   SIPPlugin::this_->
       graft_tree(std::string(".buddies." + std::to_string(id)), tree);
+  return true;
 }
 
-void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
+bool PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
                                  call_t *call,
                                  pjmedia_sdp_session **res) {
   pj_str_t contact;
@@ -1185,7 +1194,7 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
   auto id = pjsua_buddy_find(&contact);
   if (PJSUA_INVALID_ID == id) {
     g_warning("buddy not found: cannot call %s", call->peer_uri.c_str());
-    return;
+    return false;
   }
   auto paths = SIPPlugin::this_->
       tree<MPtr(&InfoTree::copy_leaf_values)>(
@@ -1195,7 +1204,7 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
   //                 g_print("----------------------- %s\n", val.c_str());
   //               });
   if (paths.empty())
-    return;
+    return false;
   SDPDescription desc;
   //QuiddityManager::ptr manager = SIPPlugin::this_->sip_calls_->manager_;
   gint port = starting_rtp_port_;
@@ -1231,7 +1240,7 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
   std::string desc_str = desc.get_string();
   if (desc_str.empty()) {
     g_warning("%s: empty SDP description", __FUNCTION__);
-    return;
+    return false;
   }
   pj_str_t sdp_str;
   pj_strdup2(dlg->pool, &sdp_str, desc_str.c_str());
@@ -1241,7 +1250,9 @@ void PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
                                          res);
   if (status != PJ_SUCCESS) {
     g_warning("pjmedia_sdp_parse FAILLED in %s", __FUNCTION__);
+    return false;
   }
+  return true;
 }
 
 gboolean PJCall::send_to(gchar *sip_url, void *user_data) {
@@ -1258,16 +1269,17 @@ gboolean PJCall::send_to(gchar *sip_url, void *user_data) {
     }
     context->is_calling_ = true;
     On_scope_exit{context->is_calling_ = false;};
-    SIPPlugin::this_->pjsip_->run([&](){
-        context->make_call(std::string(sip_url));
+    auto res = SIPPlugin::this_->pjsip_->run<bool>([&](){
+        return context->make_call(std::string(sip_url));
       });
-    context->ocall_cv_.wait(lock, [&context](){
-        if (context->ocall_action_done_) {
-          context->ocall_action_done_ = false;
-          return true;
-        }
-        return false;
-      }); 
+    if (res)
+      context->ocall_cv_.wait(lock, [&context](){
+	  if (context->ocall_action_done_) {
+	    context->ocall_action_done_ = false;
+	    return true;
+	  }
+	  return false;
+	}); 
   }
   return TRUE;
 }
@@ -1452,6 +1464,7 @@ void PJCall::call_on_rx_offer(pjsip_inv_session */*inv*/,
 std::unique_ptr<PJICEStreamTrans> PJCall::negociate_ice_transport(
     const pjmedia_sdp_session *remote_sdp,
     pj_pool_t *dlg_pool){
+
   std::unique_ptr<PJICEStreamTrans> res;
   // checking ICE
   pjmedia_sdp_attr *ufrag =

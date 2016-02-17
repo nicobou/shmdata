@@ -115,8 +115,8 @@ class PJCall {
                                        pjmedia_sdp_session **p_sdp);
   static pj_status_t parse_SDP_from_incoming_request(pjsip_rx_data *rdata,
                                                      pjmedia_sdp_session *offer);
-  void make_call(std::string contact_uri);
-  void create_outgoing_sdp(pjsip_dialog *dlg,
+  bool make_call(std::string contact_uri);
+  bool create_outgoing_sdp(pjsip_dialog *dlg,
                            call_t *call,
                            pjmedia_sdp_session **res);
   Quiddity::ptr retrieve_rtp_manager();
