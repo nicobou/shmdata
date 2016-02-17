@@ -187,7 +187,7 @@ class QuiddityManager_Impl
   quiddity_removed_hook removal_hook_{nullptr};
   void *creation_hook_user_data_{nullptr};
   void *removal_hook_user_data_{nullptr};
-  guint quiddity_created_counter_{0};
+  CounterMap counters_{};
   std::weak_ptr<QuiddityManager_Impl> me_ {};
   QuiddityManager *manager_{nullptr};
   static void release_g_error(GError *error);
