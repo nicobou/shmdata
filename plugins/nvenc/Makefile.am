@@ -64,6 +64,8 @@ AM_LDFLAGS = \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
     $(JSONGLIB_LIBS) \
+    $(CUBA_LIBS) \
+    $(NVENC_LIBS) \
     $(SHMDATA_LIBS) \
     $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
 

@@ -23,6 +23,7 @@
 #include <map>
 #include <functional>
 #include <mutex>
+#include <condition_variable>
 
 
 namespace switcher {
@@ -61,7 +62,9 @@ class RTPSender {
   std::map<id_t, frame_cb_t> rtp_frame_cbs_{};
   std::mutex mtx_{};
   mutable std::string fakesink_caps_{};
-
+  std::mutex start_m_{};
+  std::condition_variable start_cv_{};
+  
   static void on_handoff_cb(GstElement */*object*/,
                             GstBuffer *buf,
                             GstPad *pad,

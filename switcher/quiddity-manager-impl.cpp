@@ -234,8 +234,9 @@ std::string
 QuiddityManager_Impl::create_without_hook(const std::string &quiddity_class) {
   if (!class_exists(quiddity_class))
     return std::string();
-  std::string name = quiddity_class + std::to_string(quiddity_created_counter_);
-  quiddity_created_counter_++;
+  std::string name = quiddity_class + std::to_string(counters_.get_count(quiddity_class));
+  while (quiddities_.end() != quiddities_.find(name))
+    name = quiddity_class + std::to_string(counters_.get_count(quiddity_class));
   Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class, name);
   if (nullptr == quiddity.get())
     return "{\"error\":\"cannot make quiddity\"}";
@@ -250,8 +251,9 @@ QuiddityManager_Impl::create_without_hook(const std::string &quiddity_class) {
 std::string QuiddityManager_Impl::create(const std::string &quiddity_class) {
   if (!class_exists(quiddity_class))
     return std::string();
-  std::string name = quiddity_class + std::to_string(quiddity_created_counter_);
-  quiddity_created_counter_++;
+  std::string name = quiddity_class + std::to_string(counters_.get_count(quiddity_class));
+  while (quiddities_.end() != quiddities_.find(name))
+    name = quiddity_class + std::to_string(counters_.get_count(quiddity_class));
   Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class, name);
   if (quiddity.get() != nullptr) {
     quiddity->set_name(name);

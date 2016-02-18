@@ -203,8 +203,7 @@ QuiddityManager::get_command_history_from_file(const char *file_path) {
   if (!json_reader_read_member(reader, "history")) {
     g_object_unref(reader);
     g_object_unref(parser);
-    g_debug
-        ("QuiddityManager::replay_command_history, no \"history\" member found");
+    g_debug("QuiddityManager::replay_command_history, no \"history\" member found");
     return res;
   }
 
@@ -899,6 +898,7 @@ bool QuiddityManager::set_str_wrapper(const std::string &quid,
   command_->add_arg(quid);
   command_->add_arg(std::to_string(id));
   command_->add_arg(val);
+  command_->result_ = {"n/a"};
   if (must_be_saved(command_->id_))
     command_history_.push_back(command_);
   seq_mutex_.unlock();
@@ -916,6 +916,7 @@ bool QuiddityManager::set_str_str_wrapper(const std::string &quid,
   command_->add_arg(quid);
   command_->add_arg(strid);
   command_->add_arg(val);
+  command_->result_ = {"n/a"};
   if (must_be_saved(command_->id_))
     command_history_.push_back(command_);
   seq_mutex_.unlock();
