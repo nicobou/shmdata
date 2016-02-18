@@ -335,13 +335,13 @@ namespace switcher {
       256);
 
     pmanage<MPtr(&PContainer::make_group)>(
-      "depth_map_filtering",
-      "Depth map filtering",
-      "Bilateral filtering of the input depth maps");
+      "filtering",
+      "filtering",
+      "Filtering");
 
     pmanage<MPtr(&PContainer::make_parented_int)>(
       "kernel_filter_size",
-      "depth_map_filtering",
+      "filtering",
       [this](const int &val){
         kernel_filter_size_ = val;
         if (solidifyGPU_)
@@ -357,7 +357,7 @@ namespace switcher {
 
     pmanage<MPtr(&PContainer::make_parented_float)>(
       "kernel_spatial_sigma_",
-      "depth_map_filtering",
+      "filtering",
       [this](const float &val){
         kernel_spatial_sigma_ = val;
         if (solidifyGPU_)
@@ -373,7 +373,7 @@ namespace switcher {
 
     pmanage<MPtr(&PContainer::make_parented_float)>(
       "kernel_value_sigma_",
-      "depth_map_filtering",
+      "filtering",
       [this](const float &val){
         kernel_value_sigma_ = val;
         if (solidifyGPU_)
@@ -386,6 +386,22 @@ namespace switcher {
       kernel_value_sigma_,
       1.0,
       16000.0);
+
+    pmanage<MPtr(&PContainer::make_parented_int)>(
+      "hole_filling_iterations",
+      "filtering",
+      [this](const int &val){
+        hole_filling_iterations_ = val;
+        if (solidifyGPU_)
+          solidifyGPU_->setHoleFillingIterations(val);
+        return true;
+      },
+      [this](){return hole_filling_iterations_;},
+      "Hole filling iterations",
+      "Number of iterations for the hole filling algorithm",
+      hole_filling_iterations_,
+      0,
+      15);
 
     return true;
   }
