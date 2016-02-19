@@ -145,15 +145,6 @@ pjsip_module PJCall::mod_siprtp_ = {
                                                        G_TYPE_BOOLEAN,
                                                        nullptr),
                      this);
-  SIPPlugin::this_->pmanage<MPtr(&PContainer::make_int)>(
-      "starting-rtp-port",
-      [this](const int &val){starting_rtp_port_ = val; return true;},
-      [this](){return starting_rtp_port_;},
-      "First RTP port to try",
-      "First RTP port to try",
-      starting_rtp_port_,
-      0,
-      65535);
 }
 
 
@@ -416,7 +407,7 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
   // sending streams
   for (uint i = 0; i < call->media.size(); i++) {
     if (PJCallUtils::is_send_media(local_sdp->media[i])) {
-      g_debug("sending data to %s\n",
+      g_debug("sending data to %s",
               std::string(remote_sdp->origin.addr.ptr,
                           remote_sdp->origin.addr.slen).c_str());
        auto it = SIPPlugin::this_->sip_calls_->
@@ -453,7 +444,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   int len = pjsip_uri_print(PJSIP_URI_IN_REQ_URI,
                             rdata->msg_info.msg->line.req.uri,
                             uristr, sizeof(uristr));
-  g_message("incomimg call from %.*s\n", len, uristr);
+  g_message("incomimg call from %.*s", len, uristr);
   len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                         pjsip_uri_get_uri(rdata->msg_info.from->uri),
                         uristr, sizeof(uristr));
@@ -461,7 +452,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   // len =
   pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                   rdata->msg_info.to->uri, uristr, sizeof(uristr));
-  // g_print("----------- call to %.*s\n", len, uristr);
+  // g_print("----------- call to %.*s", len, uristr);
   pjsip_dialog *dlg;
   pjmedia_sdp_session *sdp;
   pjsip_tx_data *tdata;
@@ -520,8 +511,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   // checking number of transport to create for receiving
   // and creating transport for receiving data offered
   std::vector<pjmedia_sdp_media *>media_to_receive;
-  auto &rtp_port = SIPPlugin::this_->sip_calls_->next_port_to_attribute_;
-  unsigned int j = 0;  // counting media to receive
   for (unsigned int media_index = 0; media_index < offer->media_count; media_index++) {
     bool recv = false;
     pjmedia_sdp_media *tmp_media = nullptr;
@@ -530,44 +519,17 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
                           "sendrecv")
           || 0 == pj_strcmp2(&offer->media[media_index]->attr[j]->name,
                              "sendonly")) {
-        tmp_media = pjmedia_sdp_media_clone(dlg->pool,
-                                            offer->media[media_index]);
+        tmp_media = pjmedia_sdp_media_clone(dlg->pool, offer->media[media_index]);
         pj_cstr(&tmp_media->attr[j]->name, "recvonly");
         recv = true;
       }
     }
     if (recv && nullptr != tmp_media) {
-      // finding a free port
-      auto &me = SIPPlugin::this_->sip_calls_;
-      unsigned int counter = me->port_range_/2;
-      auto done = false;
-      auto port_found = false;
-      while (!done) {
-        if (!NetUtils::is_used(rtp_port)) {
-          // saving media
-          media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool, tmp_media));
-          call->media.emplace_back();
-          call->media[j].rtp_port = rtp_port;
-          done = true;
-          port_found = true;
-        } else {
-          rtp_port += 2;
-          if (rtp_port > me->starting_rtp_port_ + me->port_range_
-              || rtp_port < me->starting_rtp_port_)
-            rtp_port = me->starting_rtp_port_;
-          --counter;
-          if (0 == counter) {
-            g_warning("no free port found, discarding media");
-            done = true;
-            port_found = false;  // FIXME actually discard media in this case
-          }
-        }
-      }
-      SIPPlugin::this_->sip_calls_->next_port_to_attribute_ = rtp_port + 2;
-      if (port_found)
-        j++;  // FIXME what that ???
+      media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool, tmp_media));
+      call->media.emplace_back();
     }
   }
+  std::cout << media_to_receive.size() << std::endl;
   call->ice_trans_ = SIPPlugin::this_->stun_turn_->
     get_ice_transport(media_to_receive.size(), PJ_ICE_SESS_ROLE_CONTROLLED);
   if (!call->ice_trans_)
@@ -707,6 +669,7 @@ pj_status_t PJCall::create_sdp_answer(
   }
   sdp->media_count = 0;
   auto candidates = call->ice_trans_->get_components();
+  auto default_ports = call->ice_trans_->get_first_candidate_ports();
   for (unsigned i = 0; i < media_to_receive.size(); i++) {
     // getting offer media to receive
     pjmedia_sdp_media *sdp_media = media_to_receive[i];
@@ -724,7 +687,7 @@ pj_status_t PJCall::create_sdp_answer(
     //     u++;
     // }
     // set port
-    sdp_media->desc.port = call->media[i].rtp_port;
+    sdp_media->desc.port =  default_ports[i];
     for (auto &it : candidates[i]){
       pjmedia_sdp_attr *cand =
           static_cast<pjmedia_sdp_attr *>(pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr)));
@@ -746,11 +709,11 @@ void PJCall::print_sdp(const pjmedia_sdp_session *local_sdp) {
   pj_ssize_t len1;
   len1 = pjmedia_sdp_print(local_sdp, sdpbuf1, sizeof(sdpbuf1));
   if (len1 < 1) {
-    g_warning("error when printing local sdp\n");
+    g_warning("error when printing local sdp");
     return;
   }
   sdpbuf1[len1] = '\0';
-  g_debug("sdp : \n%s \n\n ", sdpbuf1);
+  g_debug("sdp : \n%s \n ", sdpbuf1);
 }
 
 bool PJCall::make_call(std::string dst_uri) {
@@ -877,8 +840,7 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
   if (paths.empty())
     return false;
   SDPDescription desc;
-  //QuiddityManager::ptr manager = SIPPlugin::this_->sip_calls_->manager_;
-  gint port = starting_rtp_port_;
+  gint port = 18000;  // arbitrary first port to propose (must be divisible by two)
   for (auto &it : paths) {
     // std::string data = manager->
     //     use_tree<MPtr(&InfoTree::branch_read_data<std::string>)>(
@@ -899,13 +861,13 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
     SDPMedia media;
     media.set_media_info_from_caps(caps);
     media.set_port(port);
+    port += 2;
     if (!desc.add_media(media)) {
       g_warning("a media has not been added to the SDP description");
     } else {
       call->media.emplace_back();
       call->media.back().shm_path_to_send = it;
     }
-    port += 2;
   }
   std::string desc_str = desc.get_string();
   if (desc_str.empty()) {
@@ -972,8 +934,7 @@ gboolean PJCall::hang_up(const gchar *sip_url, void *user_data) {
         context->make_hang_up(std::string(sip_url));
       });
     context->ocall_cv_.wait(lock, [&context](){
-	if (true//context->ocall_action_done_  // FIXME
-	    ) {
+	if (context->ocall_action_done_) {
           context->ocall_action_done_ = false;
           return true;
         }
@@ -1107,7 +1068,7 @@ std::unique_ptr<PJICEStreamTrans> PJCall::negociate_ice_transport(
         pj_ice_sess_cand *cand = &candidates[cand_cnt];
         pj_bzero(cand, sizeof(pj_ice_sess_cand));
         ++cand_cnt;  
-        g_debug ("ICE candidate received: %s\n",
+        g_debug ("ICE candidate received: %s",
                  std::string(remote_sdp->media[i]->attr[j]->value.ptr, 0 ,
                              remote_sdp->media[i]->attr[j]->value.slen).c_str());
         int af;

@@ -142,8 +142,8 @@ std::pair<pj_str_t,  pj_str_t> PJICEStreamTrans::get_ufrag_and_passwd(){
   return std::make_pair(local_ufrag, local_pwd);
 }
 
-std::vector<std::vector<std::string>> PJICEStreamTrans::get_components(){
-  std::vector<std::vector<std::string>> res;
+  std::vector<std::vector<std::string>> PJICEStreamTrans::get_components(){
+    std::vector<std::vector<std::string>> res;
   /* Write each component */
   for (unsigned comp = 0; comp < comp_cnt_; ++comp) {
     res.emplace_back();
@@ -175,13 +175,26 @@ std::vector<std::vector<std::string>> PJICEStreamTrans::get_components(){
           + " " + std::to_string(pj_sockaddr_get_port(&cand[j].addr))
           + " typ " + pj_ice_get_cand_type_name(cand[j].type)
           //+ "\n"
-                         );
+			      );
     }
   }
   return res;
 }
 
-
+std::vector<pj_uint16_t> PJICEStreamTrans::get_first_candidate_ports(){
+  std::vector<pj_uint16_t> res;
+  /* Write each component */
+  for (unsigned comp = 0; comp < comp_cnt_; ++comp) {
+    pj_ice_sess_cand cand[PJ_ICE_ST_MAX_CAND];
+    /* Get default candidate for the component */
+    if (PJ_SUCCESS != pj_ice_strans_get_def_cand(icest_, comp+1, &cand[0])){
+      g_warning("issue with pj_ice_strans_get_def_cand");
+      return res;
+    }
+    res.emplace_back(pj_sockaddr_get_port(&cand[0].addr));
+  }
+  return res;
+}
 
 bool PJICEStreamTrans::start_nego(const pj_str_t *rem_ufrag,
                                   const pj_str_t *rem_passwd,

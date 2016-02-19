@@ -50,7 +50,6 @@ class PJCall {
  private:
   /* Media stream created when the call is active. */
   using media_t = struct media_stream {
-    pj_uint16_t rtp_port{0};  // sending  // FIXME remove this, using ICE only
     std::string shm_path_to_send{};
     RTPSender::id_t cb_id{0};
     pj_sockaddr	def_addr;
@@ -86,9 +85,6 @@ class PJCall {
   // internal rtp
   RtpSession2 rtp_session_{};
   std::map<std::string, unsigned> reader_ref_count_{};
-  uint starting_rtp_port_ {18900};
-  pj_uint16_t next_port_to_attribute_{18900};  // Must be even
-  uint port_range_{100};
   std::vector<call_t> incoming_call_{};
   std::vector<call_t> outgoing_call_{};
   std::map<std::string, std::unique_ptr<RTPSender>> readers_{};
