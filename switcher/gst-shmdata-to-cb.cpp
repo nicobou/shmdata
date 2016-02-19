@@ -34,7 +34,7 @@ GstShmdataToCb::GstShmdataToCb(const std::string &shmpath, on_caps_cb_t fun):
       if (nullptr != typefind) gst_object_unref(typefind);
     }};
   if (nullptr == shmdatasrc || nullptr == typefind){
-    g_warning("GstShmdataToCb failled to create GStreamer element");
+    g_warning("GstShmdataToCb failed to create GStreamer element");
     return;
   } 
   g_signal_connect(typefind, "have-type", G_CALLBACK(on_caps), this);
@@ -56,7 +56,7 @@ void GstShmdataToCb::on_handoff_cb(
   //getting buffer information:
   GstMapInfo map;
   if (!gst_buffer_map (buf, &map, GST_MAP_READ)) {
-    g_warning("gst_buffer_map failled: canceling audio buffer access");
+    g_warning("gst_buffer_map failed: canceling audio buffer access");
     return;
   }
   On_scope_exit{gst_buffer_unmap (buf, &map);};

@@ -34,7 +34,7 @@ RTPSender::RTPSender(RtpSession2 *session,
     typefind_(gst_element_factory_make("typefind", nullptr)),
     fakesink_(gst_element_factory_make("fakesink", nullptr)) {
   if (nullptr == shmdatasrc_ || nullptr == typefind_ || nullptr == fakesink_){
-    g_warning("RTPSender failled to create GStreamer element");
+    g_warning("RTPSender failed to create GStreamer element");
     return;
   }
   std::unique_lock<std::mutex> lock (start_m_);
@@ -134,7 +134,7 @@ void RTPSender::on_handoff_cb(
   //getting buffer information:
   GstMapInfo map;
   if (!gst_buffer_map (buf, &map, GST_MAP_READ)) {
-    g_warning("gst_buffer_map failled: canceling audio buffer access");
+    g_warning("gst_buffer_map failed: canceling audio buffer access");
     return;
   }
   On_scope_exit{gst_buffer_unmap (buf, &map);};

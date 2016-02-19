@@ -25,7 +25,7 @@
 namespace switcher {
 
 CudaContext::CudaContext(uint32_t device_id){
-  On_scope_exit{if (!safe_bool_idiom()) g_warning("cuda context creation failled");};
+  On_scope_exit{if (!safe_bool_idiom()) g_warning("cuda context creation failed");};
   if(!CuRes(cuInit(0))) return;
   int dev_count = 0;
   if(!CuRes(cuDeviceGetCount(&dev_count)))

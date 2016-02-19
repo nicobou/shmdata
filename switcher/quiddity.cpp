@@ -268,7 +268,7 @@ Quiddity::invoke_method(const std::string &method_name,
 
   GValue res = G_VALUE_INIT;
   if (false == it->second->invoke(args, &res)) {
-    g_debug("invokation of %s failled (missing argments ?)",
+    g_debug("invokation of %s failed (missing argments ?)",
             method_name.c_str());
     return false;
   }

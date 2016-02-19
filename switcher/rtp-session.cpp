@@ -705,7 +705,7 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
     gst_element_add_pad(udpsink_bin, ghost_sinkpad);
     gst_object_unref(sink_pad);
     if (GST_PAD_LINK_OK != gst_pad_link (src_pad, ghost_sinkpad))
-      g_warning ("linking with multiudpsink bin failled");
+      g_warning ("linking with multiudpsink bin failed");
     GstUtils::sync_state_with_parent(udpsink_bin);
     GstUtils::wait_state_changed(udpsink_bin);
   }
@@ -726,7 +726,7 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
     GstPad *sink_pad = gst_element_get_static_pad(udpsink, "sink");
     On_scope_exit{gst_object_unref(sink_pad);};
     if (GST_PAD_LINK_OK != gst_pad_link (rtcp_src_pad, sink_pad))
-      g_warning ("linking with multiudpsink bin failled");
+      g_warning ("linking with multiudpsink bin failed");
   }
   return true;
 }

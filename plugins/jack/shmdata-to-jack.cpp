@@ -154,7 +154,7 @@ void ShmdataToJack::on_handoff_cb(GstElement */*object*/,
   //getting buffer infomation:
   GstMapInfo map;
   if (!gst_buffer_map (buf, &map, GST_MAP_READ)) {
-    g_warning("gst_buffer_map failled: canceling audio buffer access");
+    g_warning("gst_buffer_map failed: canceling audio buffer access");
     return;
   }
   On_scope_exit{gst_buffer_unmap (buf, &map);};

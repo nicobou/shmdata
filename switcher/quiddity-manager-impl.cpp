@@ -258,7 +258,7 @@ std::string QuiddityManager_Impl::create(const std::string &quiddity_class) {
   if (quiddity.get() != nullptr) {
     quiddity->set_name(name);
     if (!init_quiddity(quiddity)) {
-      g_debug("initialization of %s failled", quiddity_class.c_str());
+      g_debug("initialization of %s failed", quiddity_class.c_str());
       return std::string();
     }
   }
@@ -283,13 +283,13 @@ QuiddityManager_Impl::create(const std::string &quiddity_class,
   Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class,
                                                     nick_name);
   if (!quiddity) {
-    g_warning("abstract factory failled to create %s (class %s)",
+    g_warning("abstract factory failed to create %s (class %s)",
               nick_name.c_str(), quiddity_class.c_str());
     return std::string();
   }
   quiddity->set_name(nick_name);
   if (!init_quiddity(quiddity)) {
-    g_debug("initialization of %s with name %s failled",
+    g_debug("initialization of %s with name %s failed",
             quiddity_class.c_str(), quiddity->get_name().c_str());
     return std::string();
   }

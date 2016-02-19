@@ -137,7 +137,7 @@ bool GTKVideo::init() {
                                                sizeof(KeybEvent),
                                                "application/x-keyboard-events");
   if(!keyb_shm_.get()) {
-    g_warning("GTK keyboard event shmdata writer failled");
+    g_warning("GTK keyboard event shmdata writer failed");
     keyb_shm_.reset(nullptr);
   }
   mouse_shm_ = std2::make_unique<ShmdataWriter>(this,
@@ -145,7 +145,7 @@ bool GTKVideo::init() {
                                                sizeof(MouseEvent),
                                                "application/x-mouse-events");
   if(!mouse_shm_.get()) {
-    g_warning("GTK mouse event shmdata writer failled");
+    g_warning("GTK mouse event shmdata writer failed");
     mouse_shm_.reset(nullptr);
   }
   return true;

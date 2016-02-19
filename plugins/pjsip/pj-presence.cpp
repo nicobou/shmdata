@@ -404,7 +404,7 @@ PJPresence::on_registration_state(pjsua_acc_id acc_id,
     if (-1 != context->account_id_) {
       pj_status_t status = pjsua_acc_del(context->account_id_);
       if (PJ_SUCCESS != status)
-        g_warning("Error deleting account after registration failled");
+        g_warning("Error deleting account after registration failed");
       context->account_id_ = -1;
     }
     context->registered_ = false;

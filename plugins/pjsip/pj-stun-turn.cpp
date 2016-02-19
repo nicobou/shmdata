@@ -40,7 +40,7 @@ PJStunTurn::PJStunTurn(){
                                     0,
                                     0,
                                      &thread_)){
-        g_warning("STUN TURN thread creating failled");
+        g_warning("STUN TURN thread creating failed");
         return;
       }
   ice_cfg_.af = pj_AF_INET();

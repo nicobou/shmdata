@@ -533,7 +533,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   call->ice_trans_ = SIPPlugin::this_->stun_turn_->
     get_ice_transport(media_to_receive.size(), PJ_ICE_SESS_ROLE_CONTROLLED);
   if (!call->ice_trans_)
-    g_warning("ICE transport initialization failled");
+    g_warning("ICE transport initialization failed");
   // initializing shmdata writers and linking with ICE transport
   call->recv_rtp_session_ = std2::make_unique<RtpSession2>();
   for (auto &it: media_to_receive){
@@ -773,7 +773,7 @@ bool PJCall::make_call(std::string dst_uri) {
   // Create SDP
   create_outgoing_sdp(dlg, cur_call, &sdp);
   if (nullptr == sdp)
-    g_warning("%s failled creating sdp", __FUNCTION__);
+    g_warning("%s failed creating sdp", __FUNCTION__);
 
   print_sdp(sdp);
 

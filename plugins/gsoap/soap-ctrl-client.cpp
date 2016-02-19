@@ -313,7 +313,7 @@ SoapCtrlClient::try_connect(gpointer user_data)
 
   if (context->switcher_control_->error)
   {
-    g_debug("SoapCtrlClient::try_connect (%s) failled, will retry",
+    g_debug("SoapCtrlClient::try_connect (%s) failed, will retry",
             context->url_.c_str());
     context->signal_emit("on-connection-tried", context->url_.c_str(), FALSE);
     return TRUE;

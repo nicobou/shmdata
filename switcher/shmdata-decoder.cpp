@@ -42,7 +42,7 @@ ShmdataDecoder::ShmdataDecoder(Quiddity *quid,
   on_shmwriter_path_cb_(cb){
   g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (nullptr == shmdatasrc_){
-    g_warning("ShmdataDecoder failled to create GStreamer element");
+    g_warning("ShmdataDecoder failed to create GStreamer element");
     return;
   }
     g_print("%s %d\n", __FUNCTION__, __LINE__);

@@ -30,7 +30,7 @@ NVencES::NVencES(uint32_t device_id
     cu_ctx_(device_id){
   On_scope_exit{
     if (!safe_bool_idiom())
-      g_warning("NV encoder session initialization failled");
+      g_warning("NV encoder session initialization failed");
   };
   if (!cu_ctx_)
     return;

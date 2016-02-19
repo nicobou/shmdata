@@ -143,7 +143,7 @@ class Property2: public PropertyBase{
   bool set_str(const std::string &val, bool do_notify = true) const{
     auto deserialized = deserialize::apply<W>(val);
     if (!deserialized.first){
-      g_debug("set_str failled to deserialize following string: %s", val.c_str());
+      g_debug("set_str failed to deserialize following string: %s", val.c_str());
       return false;
     }
     return set(std::move(deserialized.second), do_notify);

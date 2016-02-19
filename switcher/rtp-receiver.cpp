@@ -43,7 +43,7 @@ RTPReceiver::RTPReceiver(RtpSession2 *session,
           }
         }){
   if (nullptr == shmdatasrc_ || nullptr == typefind_){
-    g_warning("RTPReceiver failled to create GStreamer element");
+    g_warning("RTPReceiver failed to create GStreamer element");
     return;
   }
   // monitoring rtp-session new pads for received rtp packet

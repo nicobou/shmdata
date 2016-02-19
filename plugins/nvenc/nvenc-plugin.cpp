@@ -65,7 +65,7 @@ NVencPlugin::NVencPlugin(const std::string &) :
 
 bool NVencPlugin::init() {
   if (!es_) {
-    g_warning("CUDA initialization failled (probably need to reboot)");
+    g_warning("CUDA initialization failed (probably need to reboot)");
     return false;
   }
   shmcntr_.install_connect_method(

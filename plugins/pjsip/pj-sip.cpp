@@ -104,7 +104,7 @@ PJSIP::PJSIP(std::function<bool()> init_fun,
   pj_dns_resolver_set_ns(resv, 1, &nameserver, &port);
   pjsip_endpt_set_resolver(sip_endpt_, resv);
   if (!init_fun()){
-    g_warning("pj-sip custom initialization failled");
+    g_warning("pj-sip custom initialization failed");
     return;
   }
   sip_work_ = true;
