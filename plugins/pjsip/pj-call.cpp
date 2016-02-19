@@ -529,7 +529,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       call->media.emplace_back();
     }
   }
-  std::cout << media_to_receive.size() << std::endl;
   call->ice_trans_ = SIPPlugin::this_->stun_turn_->
     get_ice_transport(media_to_receive.size(), PJ_ICE_SESS_ROLE_CONTROLLED);
   if (!call->ice_trans_)
