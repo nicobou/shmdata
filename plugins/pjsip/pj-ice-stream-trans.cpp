@@ -106,7 +106,7 @@ void PJICEStreamTrans::cb_on_ice_complete(pj_ice_strans *ice_st,
       (op==PJ_ICE_STRANS_OP_INIT? "initialization" :
        (op==PJ_ICE_STRANS_OP_NEGOTIATION ? "negotiation" : "unknown_op"));
 
-  g_debug("ICE state %s\n",
+  g_debug("ICE state %s",
           pj_ice_strans_state_name (pj_ice_strans_get_state (ice_st)));
 
   PJICEStreamTrans *context =
@@ -173,9 +173,7 @@ std::pair<pj_str_t,  pj_str_t> PJICEStreamTrans::get_ufrag_and_passwd(){
           + " " + std::string(pj_sockaddr_print(&cand[j].addr, ipaddr, 
                                                 sizeof(ipaddr), 0))
           + " " + std::to_string(pj_sockaddr_get_port(&cand[j].addr))
-          + " typ " + pj_ice_get_cand_type_name(cand[j].type)
-          //+ "\n"
-			      );
+          + " typ " + pj_ice_get_cand_type_name(cand[j].type));
     }
   }
   return res;

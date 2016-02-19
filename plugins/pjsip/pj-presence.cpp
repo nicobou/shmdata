@@ -416,7 +416,7 @@ PJPresence::on_registration_state(pjsua_acc_id acc_id,
   }
   SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
       SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
-  g_debug("registration SIP status code %d\n", info->cbparam->code);
+  g_debug("registration SIP status code %d", info->cbparam->code);
   context->registration_cond_.notify_one();
 }
 

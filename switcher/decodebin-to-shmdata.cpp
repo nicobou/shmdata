@@ -171,7 +171,7 @@ GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_event_probe_cb(GstPad */*pad *
   // if (GST_EVENT_TYPE(GST_PAD_PROBE_INFO_EVENT(info)) == GST_EVENT_CUSTOM_DOWNSTREAM) {
   const GstStructure *s;
   s = gst_event_get_structure(GST_PAD_PROBE_INFO_EVENT(info));
-  g_debug ("event probed (%s)\n", gst_structure_get_name (s));
+  g_debug ("event probed (%s)", gst_structure_get_name (s));
   //   if (gst_structure_has_name(s, "GstRTPPacketLost"))
   //     context->discard_next_uncomplete_buffer_ = true;
   //   return GST_PAD_PROBE_DROP;
@@ -200,7 +200,7 @@ void DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad){
         padname = gst_structure_get_name(gst_caps_get_structure(padcaps, 0));
     }
   }
-  g_debug("decodebin-to-shmdata new pad name is %s\n", padname.c_str());
+  g_debug("decodebin-to-shmdata new pad name is %s", padname.c_str());
   GstElement *shmdatasink;
   GstUtils::make_element("shmdatasink", &shmdatasink);
   gst_bin_add(GST_BIN(bin), shmdatasink);
@@ -222,7 +222,7 @@ void DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad){
       media_name = "unknown";
     else
       media_name = padname_splitted[0];
-    g_debug("decodebin-to-shmdata: new media of type %s \n", media_name.c_str());
+    g_debug("decodebin-to-shmdata: new media of type %s", media_name.c_str());
   }
   if(!on_gstshm_configure_)
     g_warning("decodebin-to-shmdata has no configuration function for shmdatasink");
@@ -292,7 +292,7 @@ gboolean DecodebinToShmdata::rewind(gpointer user_data) {
                        0.0 * GST_SECOND,
                        GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
   if (!ret)
-    g_debug("looping error\n");
+    g_debug("looping error");
   g_debug("finish looping");
   return FALSE;
 }
