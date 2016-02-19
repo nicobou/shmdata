@@ -43,7 +43,7 @@ class PJCall {
 
  public:
   PJCall();
-  ~PJCall() = default;
+  ~PJCall();
   PJCall(const PJCall &) = delete;
   PJCall &operator=(const PJCall &) = delete;
 
@@ -84,17 +84,11 @@ class PJCall {
   std::condition_variable ocall_cv_{};
   bool ocall_action_done_{false};
   // internal rtp
-  QuiddityManager::ptr manager_;
+  RtpSession2 rtp_session_{};
   std::map<std::string, unsigned> reader_ref_count_{};
-  // // saving association between reception quids (httpsdpdec) and uris:
-  // std::map<std::string, std::string> quid_uri_{};
-  InfoTree::ptr contact_shm_;
   uint starting_rtp_port_ {18900};
   pj_uint16_t next_port_to_attribute_{18900};  // Must be even
   uint port_range_{100};
-
-  RtpSession2 rtp_session_{};
-  std::unique_ptr<PJMediaEndpt> med_endpt_{nullptr};
   std::vector<call_t> incoming_call_{};
   std::vector<call_t> outgoing_call_{};
   std::map<std::string, std::unique_ptr<RTPSender>> readers_{};
@@ -122,7 +116,7 @@ class PJCall {
   Quiddity::ptr retrieve_rtp_manager();
   static gboolean send_to(gchar *sip_url, void *user_data);
   void make_hang_up(std::string contact_uri);
-  static gboolean hang_up(gchar *sip_url, void *user_data);
+  static gboolean hang_up(const gchar *sip_url, void *user_data);
   static gboolean attach_shmdata_to_contact(const gchar *shmpath,
                                             const gchar *contact_uri,
                                             gboolean attach,
@@ -130,11 +124,6 @@ class PJCall {
   void make_attach_shmdata_to_contact(const std::string &shmpath,
                                       const std::string &contact_uri,
                                       bool attach);
-  // static void internal_manager_cb(const std::string &/*subscriber_name */,
-  //                                 const std::string &/*quiddity_name */,
-  //                                 const std::string &signal_name,
-  //                                 const std::vector<std::string> &params,
-  //                                 void */*user_data */);
   static void on_inv_state_disconnected(struct call *call,
                                         pjsip_inv_session *inv,
                                         pjsua_buddy_id id);
