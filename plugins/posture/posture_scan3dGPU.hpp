@@ -52,6 +52,7 @@ namespace switcher {
     int kernel_filter_size_ {5};
     float kernel_spatial_sigma_ {5.0};
     float kernel_value_sigma_ {100.0};
+    int hole_filling_iterations_ {1};
 
     std::mutex camera_mutex_;
     std::vector<std::unique_ptr<posture::ZCamera>> cameras_ {};
