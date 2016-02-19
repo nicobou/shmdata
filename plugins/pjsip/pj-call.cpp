@@ -590,7 +590,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
             rtp_shmpath,
             9000, // ethernet jumbo frame
             rtp_caps));
-    // FIXME ? uncomment the following in order to get rtp shmdata shown in scenic:
+    // uncomment the following in order to get rtp shmdata shown in scenic:
     // SIPPlugin::this_->graft_tree(
     //     std::string(".shmdata.writer.") + rtp_shmpath + ".uri",
     //     InfoTree::make(call->peer_uri));

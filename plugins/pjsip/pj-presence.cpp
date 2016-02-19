@@ -103,23 +103,7 @@ PJPresence::PJPresence(){
                      Method::make_arg_type_description(G_TYPE_STRING,
                                                        nullptr),
                      this);
-    // FIXME remove or implement
-    // SIPPlugin::this_->
-    //     install_method("Save Buddies",  // long name
-    //                    "save_buddies",  // name
-    //                    "save buddy informations",  // description
-    //                    "success",  // return description
-    //                    Method::make_arg_description("File Name",  // long name
-    //                                                 "file",  // name
-    //                                                 "string",  // description
-    //                                                 nullptr),
-    //                    (Method::method_ptr)&save_buddies_wrapped,
-    //                    G_TYPE_BOOLEAN,
-    //                    Method::make_arg_type_description(G_TYPE_STRING,
-    //                                                      nullptr),
-    //                    this);
     // online status
-
     SIPPlugin::this_->pmanage<MPtr(&PContainer::make_selection)>(
         "status",
         [this](const size_t &val){
@@ -137,7 +121,6 @@ PJPresence::PJPresence(){
         "Online Status",
         "Online Status",
         status_);
-
     SIPPlugin::this_->pmanage<MPtr(&PContainer::make_string)>(
         "status-note",
         [this](const std::string &val){
@@ -605,17 +588,6 @@ PJPresence::on_buddy_evsub_state(pjsua_buddy_id /*buddy_id*/,
   //        pjsip_event_str(event->type), event_info);
 }
 
-// gboolean PJPresence::save_buddies_wrapped(gchar *file_name,
-//                                           void *user_data) {
-//   PJPresence *context = static_cast<PJPresence *>(user_data);
-//   // auto serialize_buddies = [&] (InfoTree::ptrc tree) {
-//   //   InfoTree::ptr buds = tree->get("buddy");
-//   //   return BasicSerializer::serialize(bud);
-//   // };
-//   SIPPlugin::this_->
-//       invoke_info_tree<std::string>(BasicSerializer::serialize); 
-//   return TRUE;
-// }
 
 pjsua_buddy_id PJPresence::get_id_from_buddy_name(const std::string &name) {
   auto bud = std::find_if(

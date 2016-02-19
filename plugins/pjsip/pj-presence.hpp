@@ -81,8 +81,6 @@ class PJPresence {
   static gboolean del_buddy_wrapped(gchar *buddy_uri,
                                     void *user_data);
   static void on_buddy_state(pjsua_buddy_id buddy_id);
-  // static gboolean save_buddies_wrapped(gchar *file_name,
-  //                                      void *user_data);
   // online status
   void change_online_status(gint status);
   // name buddy method
@@ -90,7 +88,6 @@ class PJPresence {
                                      gchar *uri,
                                      void *user_data);
   void name_buddy(std::string name, std::string sip_user);
-  // FIXME this should get id with checking the domain also
   pjsua_buddy_id get_id_from_buddy_name(const std::string &name);
   // pjsip functions
   static void on_reg_state(pjsua_acc_id acc_id);

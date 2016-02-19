@@ -104,7 +104,6 @@ PJCodec::alt_codec_enum_codecs(pjmedia_codec_factory */*factory*/,
     if (i >= *count)  // default pjsip is 32, need a patch to get more, like 128
       break;
     pj_bzero(&codecs[i], sizeof(pjmedia_codec_info));
-    // FIXME is the following leaking?
     pj_cstr(&codecs[i].encoding_name, it->encoding_name_.c_str());
     codecs[i].pt = it->payload_;
     if (0 == it->media_.compare("audio"))
