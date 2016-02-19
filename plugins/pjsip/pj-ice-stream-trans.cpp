@@ -19,7 +19,6 @@
 #include <thread>
 #include <chrono>
 #include "./pj-ice-stream-trans.hpp"
-#include <iostream>  // FIXME remove this
 
 namespace switcher {
 PJICEStreamTrans::PJICEStreamTrans(pj_ice_strans_cfg &ice_cfg,
@@ -65,7 +64,6 @@ PJICEStreamTrans::~PJICEStreamTrans() {
     }
     pj_ice_strans_destroy(icest_);
   }
-  // FIXME wait for destruction done ??
 }
 
 /*

@@ -185,14 +185,10 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
     std::for_each(encoding_names.begin(),
                   encoding_names.end(),
                   [&res] (const std::string &str) {
-                    // g_print ("writing encoding in res\n");
-                    // FIXME use make_unique and emplace_back when c++14
                     res.push_back(RTPCodec::ptr(new RTPCodec()));
                     res.back()->encoding_name_ = std::move(str);
                   });
   }
-  // g_print ("------ encoding, res size %lu\n", res.size ());
-
   //-- payloads
   {
     std::vector<gint> payloads =

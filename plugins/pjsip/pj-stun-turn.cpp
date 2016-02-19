@@ -15,10 +15,6 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//FIXME remove those chrono and thread
-#include <chrono>
-#include <thread>
-
 #include <pjnath.h>
 #include <glib.h>
 #include "switcher/scope-exit.hpp"
