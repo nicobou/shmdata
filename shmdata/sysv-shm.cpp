@@ -22,13 +22,17 @@
 #include "../config.h"
 #endif
 
+#if HAVE_OSX
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#else
 #ifndef SHMMAX_SYS_FILE
 #define SHMMAX_SYS_FILE "/proc/sys/kernel/shmmax"
 #endif
-
 #ifndef SHMMNI_SYS_FILE
 #define SHMMNI_SYS_FILE "/proc/sys/kernel/shmmni"
 #endif
+#endif  // HAVE_OSX
 
 namespace shmdata{
 
@@ -91,7 +95,13 @@ bool sysVShm::is_valid() const {
   
 unsigned long sysVShm::get_shmmax(AbstractLogger *log){
 #if HAVE_OSX
-  return 1;
+  unsigned long shmmax = 0;
+  size_t len = sizeof(shmmax);
+  if (-1 == sysctlbyname("kern.sysv.shmmax", &shmmax, &len, NULL, 0)){
+    int err = errno;
+    log->error("trying to get kern.sysv.shmmax: ", strerror(err));
+  }
+  return shmmax;
 #else
   unsigned long shmmax = 0;
   FILE *shmmax_file = fopen(SHMMAX_SYS_FILE, "r");
@@ -115,7 +125,13 @@ unsigned long sysVShm::get_shmmax(AbstractLogger *log){
 
 unsigned long sysVShm::get_shmmni(AbstractLogger *log){
 #if HAVE_OSX
-  return 1;
+  unsigned long shmmni = 0;
+  size_t len = sizeof(shmmni);
+  if (-1 == sysctlbyname("kern.sysv.shmmni", &shmmni, &len, NULL, 0)){
+    int err = errno;
+    log->error("trying to get kern.sysv.shmmni: ", strerror(err));
+  }
+  return shmmni;
 #else
   unsigned long shmmni = 0;
   FILE *shmmni_file = fopen(SHMMNI_SYS_FILE, "r");
