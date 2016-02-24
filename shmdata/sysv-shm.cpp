@@ -14,8 +14,21 @@
 
 #include <sys/types.h>
 #include <errno.h>
-#include <string.h>  // memset
+#include <string.h>        // memset
+#include <stdio.h>         // fopen 
 #include "./sysv-shm.hpp"
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
+#ifndef SHMMAX_SYS_FILE
+#define SHMMAX_SYS_FILE "/proc/sys/kernel/shmmax"
+#endif
+
+#ifndef SHMMNI_SYS_FILE
+#define SHMMNI_SYS_FILE "/proc/sys/kernel/shmmni"
+#endif
 
 namespace shmdata{
 
@@ -75,5 +88,54 @@ sysVShm::~sysVShm() {
 bool sysVShm::is_valid() const {
   return (-1 != key_) && (shmid_ >= 0) && (shm_ != (void *) -1);
 }
+  
+unsigned long sysVShm::get_shmmax(AbstractLogger *log){
+#if HAVE_OSX
+  return 1;
+#else
+  unsigned long shmmax = 0;
+  FILE *shmmax_file = fopen(SHMMAX_SYS_FILE, "r");
+  if (!shmmax_file) {
+    if (nullptr != log)
+      //FIXME errno
+      log->error("Failed to open shmmax from file:" SHMMAX_SYS_FILE);
+    return 0;
+  }
+  if (fscanf(shmmax_file, "%lu", &shmmax) != 1) {
+    if (nullptr != log)
+      // FIXME errno
+      log->error("Failed to read shmmax from file:" SHMMAX_SYS_FILE);
+    fclose(shmmax_file);
+    return 0;
+  }
+  fclose(shmmax_file);
+  return shmmax;
+#endif  // HAVE_OSX
+}
 
+unsigned long sysVShm::get_shmmni(AbstractLogger *log){
+#if HAVE_OSX
+  return 1;
+#else
+  unsigned long shmmni = 0;
+  FILE *shmmni_file = fopen(SHMMNI_SYS_FILE, "r");
+  if (!shmmni_file) {
+    if (nullptr != log)
+      //FIXME errno
+      log->error("Failed to open shmmni from file:" SHMMNI_SYS_FILE);
+    return 0;
+  }
+  if (fscanf(shmmni_file, "%lu", &shmmni) != 1) {
+    if (nullptr != log)
+      // FIXME errno
+      log->error("Failed to read shmmni from file:" SHMMNI_SYS_FILE);
+    fclose(shmmni_file);
+    return 0;
+  }
+  fclose(shmmni_file);
+  return shmmni;
+#endif  // HAVE_OSX
+}
+
+  
 }  // namespace shmdata

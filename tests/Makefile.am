@@ -10,6 +10,7 @@ check_PROGRAMS = \
     check-follower \
     check-shmdata \
     check-shmdata-stress \
+    check-shm-size \
     check-sysv-sem \
     check-sysv-shm \
     check-unix-socket \
@@ -43,3 +44,6 @@ check_unix_socket_SOURCES = \
 
 check_writer_follower_SOURCES = \
     check-writer-follower.cpp
+
+check_shm_size_SOURCES = \
+    check-shm-size.cpp
