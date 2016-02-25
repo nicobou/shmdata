@@ -45,6 +45,11 @@ extern "C" {
   short shmdata_notify_clients(ShmdataWriterAccess access, size_t size);
   void shmdata_release_one_write_access(ShmdataWriterAccess access);
 
+  // Maximum size in bytes for a shared memory segment
+  unsigned long shmdata_get_shmmax(ShmdataLogger log);
+  // System-wide limit on the number of shared memory segments
+  unsigned long shmdata_get_shmmni(ShmdataLogger log);
+
 #ifdef __cplusplus
 }
 #endif

@@ -14,6 +14,7 @@
 
 #include "./cwriter.h"
 #include "./writer.hpp"
+#include "./sysv-shm.hpp" 
 
 namespace shmdata{
 struct CWriter {
@@ -94,3 +95,12 @@ short shmdata_notify_clients(ShmdataWriterAccess access, size_t size){
 void shmdata_release_one_write_access(ShmdataWriterAccess access){
   delete static_cast<OneWriteAccess *>(access);
 }
+
+unsigned long shmdata_get_shmmax(ShmdataLogger log){
+  return sysVShm::get_shmmax(static_cast<AbstractLogger *>(log));
+}
+
+unsigned long shmdata_get_shmmni(ShmdataLogger log){
+  return sysVShm::get_shmmni(static_cast<AbstractLogger *>(log));
+}
+
