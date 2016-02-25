@@ -70,7 +70,7 @@ Writer::Writer(const std::string &path,
 bool Writer::copy_to_shm(const void *data, size_t size){
   bool res = true;
   {
-    if (size > connect_data_.shm_size_)
+    if (size > connect_data_.shm_size_)  // FIXME resize if possible
       return false;
     WriteLock wlock(sem_.get());
     auto num_readers = srv_->notify_update(size);
@@ -96,6 +96,24 @@ OneWriteAccess *Writer::get_one_write_access_ptr() {
                             shm_->get_mem(),
                             srv_.get(),
                             log_);
+}
+
+std::unique_ptr<OneWriteAccess> Writer::get_one_write_access_resize(size_t new_size) {
+  auto res = std::unique_ptr<OneWriteAccess>(new OneWriteAccess(sem_.get(),
+								shm_->get_mem(),
+								srv_.get(),
+								log_));
+  // FIXME make new shm and give it to the write access + see with connect_data_ 
+  return res;
+}
+
+OneWriteAccess *Writer::get_one_write_access_ptr_resize(size_t new_size) {
+  auto res = new OneWriteAccess(sem_.get(),
+				shm_->get_mem(),
+				srv_.get(),
+				log_);
+  // FIXME make new shm and give it to the write access
+  return res;
 }
 
 size_t Writer::alloc_size() const{

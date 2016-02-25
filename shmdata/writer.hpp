@@ -45,8 +45,10 @@ class Writer: public SafeBoolIdiom {
   bool copy_to_shm(const void *data, size_t size);
   // direct access to the memory with lock
   std::unique_ptr<OneWriteAccess> get_one_write_access();
+  std::unique_ptr<OneWriteAccess> get_one_write_access_resize(size_t new_size);
   // (for C wrappers) direct access without uniqueptr (user need to delete)
   OneWriteAccess *get_one_write_access_ptr();
+  OneWriteAccess *get_one_write_access_ptr_resize(size_t new_size);
  private:
   std::string path_; 
   UnixSocketProtocol::onConnectData connect_data_;
