@@ -106,15 +106,19 @@ unsigned long sysVShm::get_shmmax(AbstractLogger *log){
   unsigned long shmmax = 0;
   FILE *shmmax_file = fopen(SHMMAX_SYS_FILE, "r");
   if (!shmmax_file) {
-    if (nullptr != log)
-      //FIXME errno
-      log->error("Failed to open shmmax from file:" SHMMAX_SYS_FILE);
+    if (nullptr != log){
+      int err = errno;
+      log->error("Failed to open shmmax from file " SHMMAX_SYS_FILE" (%s)",
+		 strerror(err));
+    }
     return 0;
   }
   if (fscanf(shmmax_file, "%lu", &shmmax) != 1) {
-    if (nullptr != log)
-      // FIXME errno
-      log->error("Failed to read shmmax from file:" SHMMAX_SYS_FILE);
+    if (nullptr != log){
+      int err = errno;
+      log->error("Failed to read shmmax from file " SHMMAX_SYS_FILE" (%s)",
+		 strerror(err));
+    }
     fclose(shmmax_file);
     return 0;
   }
@@ -136,15 +140,19 @@ unsigned long sysVShm::get_shmmni(AbstractLogger *log){
   unsigned long shmmni = 0;
   FILE *shmmni_file = fopen(SHMMNI_SYS_FILE, "r");
   if (!shmmni_file) {
-    if (nullptr != log)
-      //FIXME errno
-      log->error("Failed to open shmmni from file:" SHMMNI_SYS_FILE);
+    if (nullptr != log){
+      int err = errno;
+      log->error("Failed to open shmmni from file " SHMMNI_SYS_FILE" (%s)",
+		 strerror(err));
+    }
     return 0;
   }
   if (fscanf(shmmni_file, "%lu", &shmmni) != 1) {
-    if (nullptr != log)
-      // FIXME errno
-      log->error("Failed to read shmmni from file:" SHMMNI_SYS_FILE);
+    if (nullptr != log){
+      int err = errno;
+      log->error("Failed to read shmmni from file " SHMMNI_SYS_FILE" (%s)",
+		 strerror(err));
+    }
     fclose(shmmni_file);
     return 0;
   }
