@@ -43,6 +43,7 @@ class Reader: public SafeBoolIdiom {
  private:
   AbstractLogger *log_;
   std::string path_;
+  size_t cur_size_{0};  // 0 for unknown
   onData on_data_cb_;
   onServerConnected on_server_connected_cb_;
   onServerDisconnected on_server_disconnected_cb_;

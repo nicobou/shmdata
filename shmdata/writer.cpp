@@ -24,6 +24,7 @@ Writer::Writer(const std::string &path,
                AbstractLogger *log,
                UnixSocketProtocol::ServerSide::onClientConnect on_client_connect,
                UnixSocketProtocol::ServerSide::onClientDisconnect on_client_disconnect):
+  path_(path),
   connect_data_(memsize, data_descr),
   proto_(on_client_connect,
 	 on_client_disconnect,
@@ -70,8 +71,20 @@ Writer::Writer(const std::string &path,
 bool Writer::copy_to_shm(const void *data, size_t size){
   bool res = true;
   {
-    if (size > connect_data_.shm_size_)  // FIXME resize if possible
-      return false;
+    if (size > connect_data_.shm_size_){
+      log_->debug("resizing shmdata (%) from % bytes to % bytes",
+		  path_,
+		  std::to_string(connect_data_.shm_size_),
+		  std::to_string(size));
+      shm_.reset();
+      shm_.reset(new sysVShm(ftok(path_.c_str(), 'n'),
+			     size, log_, /*owner = */ true));  
+      connect_data_.shm_size_ = size;
+      if (!shm_) {
+	log_->warning("error resizing shared memory");
+	return false;
+      }
+    }
     WriteLock wlock(sem_.get());
     auto num_readers = srv_->notify_update(size);
     if (0 < num_readers) {
@@ -100,19 +113,25 @@ OneWriteAccess *Writer::get_one_write_access_ptr() {
 
 std::unique_ptr<OneWriteAccess> Writer::get_one_write_access_resize(size_t new_size) {
   auto res = std::unique_ptr<OneWriteAccess>(new OneWriteAccess(sem_.get(),
-								shm_->get_mem(),
+								nullptr,
 								srv_.get(),
 								log_));
-  // FIXME make new shm and give it to the write access + see with connect_data_ 
+  shm_.reset();
+  shm_.reset(new sysVShm(ftok(path_.c_str(), 'n'), new_size, log_, /*owner = */ true));
+  res->mem_ = shm_->get_mem();
+  connect_data_.shm_size_ = new_size;
   return res;
 }
 
 OneWriteAccess *Writer::get_one_write_access_ptr_resize(size_t new_size) {
   auto res = new OneWriteAccess(sem_.get(),
-				shm_->get_mem(),
+				nullptr,
 				srv_.get(),
 				log_);
-  // FIXME make new shm and give it to the write access
+  shm_.reset();
+  shm_.reset(new sysVShm(ftok(path_.c_str(), 'n'), new_size, log_, /*owner = */ true));
+  res->mem_ = shm_->get_mem();
+  connect_data_.shm_size_ = new_size;
   return res;
 }
 
