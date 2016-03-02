@@ -25,7 +25,6 @@ using namespace shmdata;
 int main () {
   using namespace shmdata;
   ConsoleLogger logger;
-
   {
     unsigned long max_size = sysVShm::get_shmmax(&logger);
     // std::cout << max_size << '\n';
@@ -33,12 +32,12 @@ int main () {
     // std::cout << mni << '\n';
     if (max_size > 268435456) //256MB
       max_size = 268435456;
-    Writer w("/tmp/check-writer-follower",
+    Writer w("/tmp/check-shm-size",
              max_size,
              "application/x-check-shmdata",
              &logger);
     assert(w);
-    return 0;
   }
+  return 0;
 }
   
