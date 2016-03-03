@@ -116,6 +116,10 @@ std::unique_ptr<OneWriteAccess> Writer::get_one_write_access_resize(size_t new_s
 								nullptr,
 								srv_.get(),
 								log_));
+  log_->debug("resizing shmdata (%) from % bytes to % bytes",
+              path_,
+              std::to_string(connect_data_.shm_size_),
+              std::to_string(new_size));
   shm_.reset();
   shm_.reset(new sysVShm(ftok(path_.c_str(), 'n'), new_size, log_, /*owner = */ true));
   res->mem_ = shm_->get_mem();
@@ -128,6 +132,10 @@ OneWriteAccess *Writer::get_one_write_access_ptr_resize(size_t new_size) {
 				nullptr,
 				srv_.get(),
 				log_);
+  log_->debug("resizing shmdata (%) from % bytes to % bytes",
+              path_,
+              std::to_string(connect_data_.shm_size_),
+              std::to_string(new_size));
   shm_.reset();
   shm_.reset(new sysVShm(ftok(path_.c_str(), 'n'), new_size, log_, /*owner = */ true));
   res->mem_ = shm_->get_mem();

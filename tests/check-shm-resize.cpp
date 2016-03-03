@@ -13,6 +13,7 @@
  */
 
 #include <cassert>
+#include <cstring>  // memcpy
 #include <array>
 #include <iostream>
 #include <thread>
@@ -37,9 +38,29 @@ void writer(AbstractLogger *logger) {
              logger);
     assert(w);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    std::cout << "********* copy_to_shm" << std::endl;
     auto i = 1;
-    while (i < 66) {
+    while (i < 30) {
       assert(w.copy_to_shm(&data, i * sizeof(int)));
+      i++;
+    }
+    std::cout << "********* get_one_write_access_ptr_resize" << std::endl;
+    while (i < 40) {
+      auto newsize = i * sizeof(int);
+      OneWriteAccess *access = w.get_one_write_access_ptr_resize(newsize);
+      assert(access);
+      std::memcpy(access->get_mem(), &data, newsize);
+      access->notify_clients(newsize);
+      delete(access);
+      i++;
+    }
+    std::cout << "********* get_one_write_access_resize" << std::endl;
+    while (i < 60) { 
+      auto newsize = i * sizeof(int);
+      auto access = w.get_one_write_access_resize(newsize);
+      assert(access);
+      std::memcpy(access->get_mem(), &data, newsize);
+      access->notify_clients(newsize);
       i++;
     }
 }
