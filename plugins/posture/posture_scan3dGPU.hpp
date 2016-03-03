@@ -62,6 +62,7 @@ namespace switcher {
     std::unique_ptr<posture::CalibrationReader> calibration_reader_ {nullptr};
 
     PropertyBase::prop_id_t register_id_;
+    bool reload_calibration_ {false};
     bool improve_registering_ {false};
     std::thread registering_thread_ {};
     std::atomic_bool is_registering_ {false};

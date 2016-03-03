@@ -148,6 +148,14 @@ namespace switcher {
         });
       }
 
+      if (reload_calibration_)
+      {
+        calibration_reader_->reload();
+        auto calibration = calibration_reader_->getCalibrationParams();
+        solidifyGPU_->setCalibration(calibration);
+        colorize_->setCalibration(calibration);
+      }
+
       solidifyGPU_->getMesh(mesh);
       lock.unlock();
 
@@ -232,6 +240,15 @@ namespace switcher {
       "Calibration path",
       "Path to the calibration file",
       calibration_path_);
+
+    register_id_ = pmanage<MPtr(&PContainer::make_parented_bool)>(
+      "reload_calibration",
+      "calibration",
+      [this](const bool &val){reload_calibration_ = val; return true;},
+      [this](){return reload_calibration_;},
+      "Reload calibration",
+      "Reload the calibration from the given file",
+      reload_calibration_);
 
     register_id_ = pmanage<MPtr(&PContainer::make_parented_bool)>(
       "improve_registration",
