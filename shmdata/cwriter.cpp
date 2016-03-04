@@ -84,6 +84,18 @@ ShmdataWriterAccess shmdata_get_one_write_access(ShmdataWriter writer){
                           get_one_write_access_ptr());
 }
 
+ShmdataWriterAccess shmdata_get_one_write_access_resize(ShmdataWriter writer,
+	 						size_t new_size){
+  return
+      static_cast<void *>(static_cast<CWriter *>(writer)->writer_.
+                          get_one_write_access_ptr_resize(new_size));
+}
+
+size_t shmdata_shm_resize(ShmdataWriterAccess access, size_t new_size){
+  return static_cast<OneWriteAccess *>(access)->shm_resize(new_size);
+  
+}
+
 void *shmdata_get_mem(ShmdataWriterAccess access){
   return static_cast<OneWriteAccess *>(access)->get_mem();
 }

@@ -27,6 +27,7 @@
 namespace shmdata{
 class OneWriteAccess;
 class Writer: public SafeBoolIdiom {
+  friend OneWriteAccess;
  public:
   Writer(const std::string &path,
          size_t memsize,
@@ -67,6 +68,8 @@ class OneWriteAccess {
   friend Writer;
  public:
   void *get_mem() {return mem_;};
+  size_t shm_resize(size_t newsize); /* this will reallocate a new 
+					uninitialized shared memory space */
   short notify_clients(size_t size); /* must be called only once,
                                         return number of clients notified */
   ~OneWriteAccess() = default;
@@ -76,11 +79,12 @@ class OneWriteAccess {
   OneWriteAccess& operator=(OneWriteAccess&&) = default;
   
  private:
-  OneWriteAccess(sysVSem *sem,
+  OneWriteAccess(Writer *writer,
+		 sysVSem *sem,
                  void *mem,
                  UnixSocketServer *srv,
                  AbstractLogger *log);
-
+  Writer *writer_;
   WriteLock wlock_;
   void *mem_;
   UnixSocketServer *srv_;

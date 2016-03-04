@@ -41,6 +41,9 @@ extern "C" {
 
   // or get write lock and notify clients when they can try locking for reading 
   ShmdataWriterAccess shmdata_get_one_write_access(ShmdataWriter writer);
+  ShmdataWriterAccess shmdata_get_one_write_access_resize(ShmdataWriter writer, size_t newsize);
+  // this will allocate a new uninitialized shared memory space  
+  size_t shmdata_shm_resize(ShmdataWriterAccess access, size_t new_size);
   void *shmdata_get_mem(ShmdataWriterAccess access);
   short shmdata_notify_clients(ShmdataWriterAccess access, size_t size);
   void shmdata_release_one_write_access(ShmdataWriterAccess access);

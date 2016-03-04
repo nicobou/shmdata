@@ -98,21 +98,24 @@ bool Writer::copy_to_shm(const void *data, size_t size){
 }
 
 std::unique_ptr<OneWriteAccess> Writer::get_one_write_access() {
-  return std::unique_ptr<OneWriteAccess>(new OneWriteAccess(sem_.get(),
+  return std::unique_ptr<OneWriteAccess>(new OneWriteAccess(this,
+							    sem_.get(),
                                                             shm_->get_mem(),
                                                             srv_.get(),
                                                             log_));
 }
 
 OneWriteAccess *Writer::get_one_write_access_ptr() {
-  return new OneWriteAccess(sem_.get(),
+  return new OneWriteAccess(this,
+			    sem_.get(),
                             shm_->get_mem(),
                             srv_.get(),
                             log_);
 }
 
 std::unique_ptr<OneWriteAccess> Writer::get_one_write_access_resize(size_t new_size) {
-  auto res = std::unique_ptr<OneWriteAccess>(new OneWriteAccess(sem_.get(),
+  auto res = std::unique_ptr<OneWriteAccess>(new OneWriteAccess(this,
+								sem_.get(),
 								nullptr,
 								srv_.get(),
 								log_));
@@ -128,7 +131,8 @@ std::unique_ptr<OneWriteAccess> Writer::get_one_write_access_resize(size_t new_s
 }
 
 OneWriteAccess *Writer::get_one_write_access_ptr_resize(size_t new_size) {
-  auto res = new OneWriteAccess(sem_.get(),
+  auto res = new OneWriteAccess(this,
+				sem_.get(),
 				nullptr,
 				srv_.get(),
 				log_);
@@ -148,14 +152,27 @@ size_t Writer::alloc_size() const{
 }
 
 
-OneWriteAccess::OneWriteAccess(sysVSem *sem,
+OneWriteAccess::OneWriteAccess(Writer *writer,
+			       sysVSem *sem,
                                void *mem,
                                UnixSocketServer *srv,
                                AbstractLogger *log) :
-    wlock_(sem),
-    mem_(mem),
-    srv_(srv),
-    log_(log){
+  writer_(writer),
+  wlock_(sem),
+  mem_(mem),
+  srv_(srv),
+  log_(log){
+}
+
+size_t OneWriteAccess::shm_resize(size_t new_size){
+  writer_->shm_.reset();
+  writer_->shm_.reset(new sysVShm(ftok(writer_->path_.c_str(), 'n'),
+				  new_size, log_, /*owner = */ true));
+  if (!writer_->shm_)
+    return 0;
+  mem_ = writer_->shm_->get_mem();
+  writer_->connect_data_.shm_size_ = new_size;
+  return new_size;
 }
 
 short OneWriteAccess::notify_clients(size_t size){
