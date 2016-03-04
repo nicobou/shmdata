@@ -27,7 +27,7 @@
  * <refsect2>
  * <title>Example launch lines</title>
  * |[
- * gst-launch -v videotestsrc !  shmdatasink socket-path=/tmp/blah shm-size=1000000
+ * gst-launch -v videotestsrc !  shmdatasink socket-path=/tmp/blah initial-size=1000000
  * ]| Send video to shm buffers.
  * </refsect2>
  */
@@ -246,6 +246,15 @@ gst_shmdata_sink_allocator_alloc_locked (GstShmdataSinkAllocator * self, gsize s
   /* allocate more to compensate for alignment */
   maxsize += align;
 
+  if (self->sink->size < size){
+    if (0 == shmdata_shm_resize(self->sink->access, size))
+      GST_ELEMENT_ERROR (self, RESOURCE, NO_SPACE_LEFT, 
+                         ("Cannot resize shared memory area"), 
+                         ("from %" G_GSIZE_FORMAT " to %" G_GSIZE_FORMAT,
+			  self->sink->size, 
+                          size)); 
+    self->sink->size = size;
+  }
   void *data = shmdata_get_mem(self->sink->access);
   if (data) {
     GstShmdataSinkMemory *mymem;
