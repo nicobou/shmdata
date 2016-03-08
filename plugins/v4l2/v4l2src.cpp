@@ -69,10 +69,14 @@ bool V4L2Src::init() {
       "Capture Device",
       "Enumeration of v4l2 capture devices",
       devices_enum_);
-  
+  group_id_ = pmanage<MPtr(&PContainer::make_group)>(
+     "config",
+     "capture device configuration",
+     "device specific parameters");
   update_device_specific_properties(devices_enum_.get());
   codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
                                              shmpath_);
+  
   return true;
 }
 
@@ -110,8 +114,9 @@ void V4L2Src::update_discrete_resolution(const CaptureDescription &cap_descr) {
     for (auto &it : cap_descr.frame_size_discrete_)
       names.push_back(std::string(it.first) + "x" + std::string(it.second));
     resolutions_enum_ = Selection(std::move(names), 0);
-    resolutions_id_ = pmanage<MPtr(&PContainer::make_selection)>(
+    resolutions_id_ = pmanage<MPtr(&PContainer::make_parented_selection)>(
         "resolution",
+	"config",
         [this](const size_t &val){resolutions_enum_.select(val); return true;},
         [this](){return resolutions_enum_.get();},
         "Resolution",
@@ -130,8 +135,9 @@ void V4L2Src::update_discrete_framerate(const CaptureDescription &cap_descr) {
     // framerate while v4l2 gives frame interval
     names.push_back(it.second + "/" + it.first);
     framerates_enum_ = Selection(std::move(names), 0);
-    framerates_enum_id_ = pmanage<MPtr(&PContainer::make_selection)>(
+    framerates_enum_id_ = pmanage<MPtr(&PContainer::make_parented_selection)>(
         "framerate",
+	"config",
         [this](const size_t &val){framerates_enum_.select(val); return true;},
         [this](){return framerates_enum_.get();},
         "Framerate",
@@ -150,8 +156,9 @@ void V4L2Src::update_pixel_format(const CaptureDescription &cap_descr) {
     nicks.push_back(it.first);
   }
   pixel_format_enum_ = Selection(std::make_pair(std::move(names), std::move(nicks)), 0);
-  pixel_format_id_ = pmanage<MPtr(&PContainer::make_selection)>(
+  pixel_format_id_ = pmanage<MPtr(&PContainer::make_parented_selection)>(
       "pixel_format",
+      "config",
       [this](const size_t &val){pixel_format_enum_.select(val); return true;},
       [this](){return pixel_format_enum_.get();},
       "Pixel format",
@@ -167,8 +174,9 @@ void V4L2Src::update_width_height(const CaptureDescription &cap_descr) {
     return;
   
   width_ = cap_descr.frame_size_stepwise_max_width_ / 2;
-  width_id_ = pmanage<MPtr(&PContainer::make_int)>(
+  width_id_ = pmanage<MPtr(&PContainer::make_parented_int)>(
       "width",
+      "config",
       [this](const int &val){width_ = val; return true;},
       [this](){return width_;},
       "Width",
@@ -177,8 +185,9 @@ void V4L2Src::update_width_height(const CaptureDescription &cap_descr) {
       cap_descr.frame_size_stepwise_min_width_,
       cap_descr.frame_size_stepwise_max_width_);
   height_ = cap_descr.frame_size_stepwise_max_height_ / 2;
-  height_id_ = pmanage<MPtr(&PContainer::make_int)>(
+  height_id_ = pmanage<MPtr(&PContainer::make_parented_int)>(
       "height",
+      "config",
       [this](const int &val){height_ = val; return true;},
       [this](){return height_;},
       "Height",
@@ -192,8 +201,9 @@ void V4L2Src::update_framerate_numerator_denominator(const CaptureDescription &c
   pmanage<MPtr(&PContainer::remove)>(framerate_id_); framerate_id_ = 0;
   if (cap_descr.frame_interval_stepwise_max_numerator_ < 1)
     return;
-  framerate_id_ = pmanage<MPtr(&PContainer::make_fraction)>(
+  framerate_id_ = pmanage<MPtr(&PContainer::make_parented_fraction)>(
       "framerate",
+      "config",
       [this](const Fraction &val){framerate_ = val; return true;},
       [this](){return framerate_;},
       "Framerate",
@@ -214,8 +224,9 @@ void V4L2Src::update_tv_standard(const CaptureDescription &cap_descr) {
   for (auto &it : cap_descr.tv_standards_)
     names.push_back(it);
   tv_standards_enum_ = Selection(std::move(names), 0);
-  tv_standards_id_ = pmanage<MPtr(&PContainer::make_selection)>(
+  tv_standards_id_ = pmanage<MPtr(&PContainer::make_parented_selection)>(
       "tv_standard",
+      "config",
       [this](const size_t &val){tv_standards_enum_.select(val); return true;},
         [this](){return tv_standards_enum_.get();},
       "TV standard",

@@ -134,6 +134,9 @@ class V4L2Src: public Quiddity, public StartableQuiddity {
   Fraction framerate_{30, 1};
   PContainer::prop_id_t framerate_id_{0};
 
+  // grouping of capture device configuration
+  PContainer::prop_id_t group_id_{0};
+  
   // copy/paste from gstv4l2object.c for converting v4l2 pixel formats
   // to GstStructure (and then caps)
   static GstStructure *gst_v4l2_object_v4l2fourcc_to_structure (guint32 fourcc);
