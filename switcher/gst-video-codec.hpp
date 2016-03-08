@@ -80,6 +80,8 @@ class GstVideoCodec {
         "error-resilient", "timebase"};
   // shmdatasrc copy-buffers property:
   bool copy_buffers_{false};
+  // parameter grouping
+  PContainer::prop_id_t param_group_id_;
   
   bool remake_codec_elements();
   void make_codec_properties();
