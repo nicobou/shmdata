@@ -40,16 +40,15 @@ DecodebinToShmdata::DecodebinToShmdata(
                              std::placeholders::_1,
                              "pad-added", (GCallback)DecodebinToShmdata::on_pad_added,
                              (gpointer)this);
-  cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>
-                    (std::move(pad_added)));
+  cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>(std::move(pad_added)));
   // autoplug callback
-  // auto autoplug = std::bind(GstUtils::g_signal_connect_function,
-  //                           std::placeholders::_1,
-  //                           "autoplug-select",
-  //                           (GCallback)
-  //                           DecodebinToShmdata::on_autoplug_select,
-  //                           (gpointer) this);
-  // cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>(std::move(autoplug)));
+  auto autoplug = std::bind(GstUtils::g_signal_connect_function,
+                            std::placeholders::_1,
+                            "autoplug-select",
+                            (GCallback)
+                            DecodebinToShmdata::on_autoplug_select,
+                            (gpointer) this);
+  cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>(std::move(autoplug)));
 }
 
 DecodebinToShmdata::~DecodebinToShmdata() {
@@ -113,39 +112,36 @@ void DecodebinToShmdata::on_pad_added(GstElement *object,
   context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), pad);
 }
 
-// GstAutoplugSelectResult DecodebinToShmdata::on_autoplug_select(GstElement */*bin */,
-//                                                                GstPad *pad,
-//                                                                GstCaps *caps,
-//                                                                GstElementFactory *factory,
-//                                                                gpointer /*user_data */) {
-//   //     typedef enum {
-//   //   GST_AUTOPLUG_SELECT_TRY,
-//   //   GST_AUTOPLUG_SELECT_EXPOSE,
-//   //   GST_AUTOPLUG_SELECT_SKIP
-//   // } GstAutoplugSelectResult;
-//   g_print("%s %d %s\n", __FUNCTION__, __LINE__, GST_OBJECT_NAME(factory));
-//   if (g_strcmp0(GST_OBJECT_NAME(factory), "rtpgstdepay") == 0) {
-//     GstAutoplugSelectResult return_val = GST_AUTOPLUG_SELECT_EXPOSE;
-//     GstCaps *caps = gst_pad_get_current_caps(pad);
-//     On_scope_exit{ gst_caps_unref(caps);}
-//     const GValue *val = gst_structure_get_value(gst_caps_get_structure(caps, 0), "caps");
-//     gsize taille = 2048;
-//     guchar *string_caps = g_base64_decode(g_value_get_string(val), &taille);
-//     gchar *string_caps_char = g_strdup_printf("%s", string_caps);
-//     g_print("%s %d\n", __FUNCTION__, __LINE__);
-//     if (g_str_has_prefix(string_caps_char, "audio/")
-//         || g_str_has_prefix(string_caps_char, "video/")
-//         || g_str_has_prefix(string_caps_char, "image/"))
-//       return_val = GST_AUTOPLUG_SELECT_TRY;
-//     g_free(string_caps_char);
-//     g_free(string_caps);
-//   g_print("%s %d\n", __FUNCTION__, __LINE__);
-//     return return_val;        // expose
-//   }
-  
-//   g_print("%s %d\n", __FUNCTION__, __LINE__);
-//   return GST_AUTOPLUG_SELECT_TRY;
-// }
+  int/*GstAutoplugSelectResult*/ DecodebinToShmdata::on_autoplug_select(GstElement */*bin */,
+									GstPad *pad,
+									GstCaps *caps,
+									GstElementFactory *factory,
+									gpointer /*user_data */) {
+  //     typedef enum {
+  //   GST_AUTOPLUG_SELECT_TRY,
+  //   GST_AUTOPLUG_SELECT_EXPOSE,
+  //   GST_AUTOPLUG_SELECT_SKIP
+  // } GstAutoplugSelectResult;
+  //g_print("%s %d %s\n", __FUNCTION__, __LINE__, GST_OBJECT_NAME(factory));
+  if (g_strcmp0(GST_OBJECT_NAME(factory), "rtpgstdepay") == 0) {
+    //GstAutoplugSelectResult return_val = GST_AUTOPLUG_SELECT_EXPOSE;
+    int return_val = 1;  // expose
+    GstCaps *caps = gst_pad_get_current_caps(pad);
+    On_scope_exit{ gst_caps_unref(caps);};
+    const GValue *val = gst_structure_get_value(gst_caps_get_structure(caps, 0), "caps");
+    gsize taille = 2048;
+    guchar *string_caps = g_base64_decode(g_value_get_string(val), &taille);
+    gchar *string_caps_char = g_strdup_printf("%s", string_caps);
+    if (g_str_has_prefix(string_caps_char, "audio/")
+        || g_str_has_prefix(string_caps_char, "video/")
+        || g_str_has_prefix(string_caps_char, "image/"))
+      return_val = 0;//GST_AUTOPLUG_SELECT_TRY;
+    g_free(string_caps_char);
+    g_free(string_caps);
+    return return_val;        // expose
+  }
+  return 0; //GST_AUTOPLUG_SELECT_TRY;
+}
 
 GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_buffer_probe_cb(GstPad * /*pad */ ,
                                                          GstPadProbeInfo *
@@ -232,8 +228,8 @@ void DecodebinToShmdata::pad_to_shmdata_writer(GstElement *bin, GstPad *pad){
 }
 
 gboolean DecodebinToShmdata::eos_probe_cb(GstPad *pad,
-                                 GstEvent *event,
-                                 gpointer user_data) {
+					  GstEvent *event,
+					  gpointer user_data) {
   DecodebinToShmdata *context =
       static_cast<DecodebinToShmdata *>(user_data);
   std::unique_lock<std::mutex> lock(context->thread_safe_);
