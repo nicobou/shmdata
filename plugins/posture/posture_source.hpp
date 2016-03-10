@@ -31,7 +31,7 @@
 
 namespace switcher {
 class PostureSrc:public Quiddity, public StartableQuiddity {
- public:
+public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureSrc);
   PostureSrc(const std::string &);
   ~PostureSrc();
@@ -41,7 +41,13 @@ class PostureSrc:public Quiddity, public StartableQuiddity {
   bool start();
   bool stop();
 
- private:
+private:
+  // If true, does not connect to a camera
+  // but outputs random cloud and mesh
+  bool random_data_ {false};
+  bool do_random_data_ {false};
+  std::thread random_data_thread_ {};
+
   double rgb_focal_ {0.0};
   PContainer::prop_id_t rgb_focal_id_{0};
   double depth_focal_ {0.0};
@@ -96,6 +102,9 @@ class PostureSrc:public Quiddity, public StartableQuiddity {
   static void cb_frame_ir(void *context,
                           const std::vector<unsigned char>& data,
                           int width, int height);
+
+  // For debug purpose: generates random data
+  void generateRandomData();
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureSrc);

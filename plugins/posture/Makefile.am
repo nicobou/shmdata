@@ -326,9 +326,13 @@ noinst_HEADERS = \
      $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
 
  check_PROGRAMS = \
-     check_posture
+     check_posture \
+	 check_rtp_posture
 
  check_posture_SOURCES = \
      check_posture.cpp
+
+ check_rtp_posture_SOURCES = \
+     check_rtp_posture.cpp
 
 TESTS = $(check_PROGRAMS)
