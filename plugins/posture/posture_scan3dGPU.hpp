@@ -29,6 +29,7 @@ namespace switcher {
     bool stop();
 
   private:
+    bool compress_mesh_ {false};
     std::string calibration_path_ {"default.kvc"};
 
     int camera_nbr_ {1};

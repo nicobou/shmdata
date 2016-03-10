@@ -70,6 +70,7 @@ namespace switcher {
 
     colorize_ = unique_ptr<posture::ColorizeGL>(new posture::ColorizeGL());
     colorize_->setCalibration(calibration_reader_->getCalibrationParams());
+    colorize_->setCompressMesh(compress_mesh_);
 
     update_loop_started_ = true;
     update_thread_ = thread([&](){
@@ -226,6 +227,18 @@ namespace switcher {
       camera_nbr_,
       1,
       7);
+
+    pmanage<MPtr(&PContainer::make_bool)>(
+      "compress_mesh",
+      [this](const bool &val){
+        compress_mesh_ = val;
+        if (solidifyGPU_)
+          colorize_->setCompressMesh(compress_mesh_);
+        return true;},
+      [this](){return compress_mesh_;},
+      "Compress mesh",
+      "Compress the generated mesh",
+      compress_mesh_);
     
     pmanage<MPtr(&PContainer::make_group)>(
       "calibration",
