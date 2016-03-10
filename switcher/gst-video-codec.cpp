@@ -63,7 +63,11 @@ GstVideoCodec::GstVideoCodec(Quiddity *quid,
       [this](){return codec_long_list_;},
       "More Codecs",
       "Enable more codecs in selection",
-      codec_long_list_)){
+      codec_long_list_)),
+    param_group_id_(quid_->pmanage<MPtr(&PContainer::make_group)>(
+       "codec_params",
+       "Codec configuration",
+       "Codec specific parameters")){
   quid_->install_method("Reset codec configuration",
                         "reset",
                         "Reset codec configuration to default",
@@ -138,8 +142,9 @@ void GstVideoCodec::make_codec_properties() {
   for (guint i = 0; i < num_properties; i++) {
     auto param_name = g_param_spec_get_name(props[i]);
     if (param_black_list_.end() == param_black_list_.find(param_name)){
-      quid_->pmanage<MPtr(&PContainer::push)>(
+      quid_->pmanage<MPtr(&PContainer::push_parented)>(
           param_name,
+	  "codec_params",
           GPropToProp::to_prop(G_OBJECT(codec_element_.get_raw()), param_name));
       codec_properties_.push_back(param_name);
     }

@@ -45,8 +45,6 @@ bool VideoTestSource::init() {
   if(!videotestsrc_ || !shmdatasink_)
     return false;
   shmpath_ = make_file_name("video");
-  codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
-                                             shmpath_);
   g_object_set(G_OBJECT(videotestsrc_.get_raw()), "is-live", TRUE, nullptr);
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
@@ -55,6 +53,8 @@ bool VideoTestSource::init() {
   gst_element_link(videotestsrc_.get_raw(), shmdatasink_.get_raw());
   pmanage<MPtr(&PContainer::push)>(
       "pattern", GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
+  codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
+                                             shmpath_);
   return true;
 }
 
