@@ -103,6 +103,7 @@ std::string get_rtp_caps(const pjmedia_sdp_media *media){
       // transforming caps=... into caps=(string)""
       std::regex e ("\\b(caps=)([^;]*)");
       more = std::regex_replace (more, e, "$1(string)\"$2\"");
+      more = StringUtils::replace_string(more, "==\";", "\\==\";");
       more = StringUtils::replace_string(more, "=\";", "\\=\";");
       more = StringUtils::replace_char(more, ';', ", ");
     }

@@ -131,13 +131,13 @@ SDPMedia::add_to_sdp_description(GstSDPMessage *sdp_description,
           val = std::string(val, 0, equal_pos) ;
         }
     }
-    if (0 == fname.compare("caps")){
-        auto equal_pos = val.find('=');
-        if (fname.size() - 2 != equal_pos) {
-          g_warning("(sdp) removing buggy trailing = at the end of caps parameter");
-          val = std::string(val, 0, equal_pos + 1) ;
-        }
-    }
+    // if (0 == fname.compare("caps")){
+    //     auto equal_pos = val.find('=');
+    //     if (fname.size() - 2 != equal_pos) {
+    //       g_warning("(sdp) removing buggy trailing = at the end of caps parameter");
+    //       val = std::string(val, 0, equal_pos + 1) ;
+    //     }
+    // }
     std::string fname_value(fname + "=" + val);
     if (gst_structure_get_string(caps_structure_, fname.c_str())) {
       if (!first)
