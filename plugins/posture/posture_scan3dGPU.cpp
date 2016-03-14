@@ -215,15 +215,15 @@ namespace switcher {
       [this](const size_t &val){capture_modes_enum_.select(val); return true;},
       [this](){return capture_modes_enum_.get();},
       "Capture mode",
-      "Capture mode of the device",
+      "Capture mode for the cameras",
       capture_modes_enum_);
 
     pmanage<MPtr(&PContainer::make_int)>(
       "camera_nbr",
       [this](const int &val){camera_nbr_ = std::max(1, val); return true;},
       [this](){return camera_nbr_;},
-      "Cameras number",
-      "Number of cameras to use",
+      "Number of cameras",
+      "Number of cameras to grab from",
       camera_nbr_,
       1,
       7);
@@ -269,7 +269,7 @@ namespace switcher {
       [this](const bool &val){improve_registering_ = val; return true;},
       [this](){return improve_registering_;},
       "Improve registration",
-      "Automatically improve cameras calibration",
+      "Automatically improve cameras calibration, once",
       improve_registering_);
 
     pmanage<MPtr(&PContainer::make_group)>(
