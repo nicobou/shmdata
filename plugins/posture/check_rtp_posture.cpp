@@ -43,7 +43,7 @@ void on_tree_grafted(const std::string &/*subscriber_name */ ,
       //std::string byte_rate =
       manager->use_tree<COPtr(&InfoTree::get_data, InfoTree, Any, const std::string &)>(
           std::string("uri"), params[0] + ".byte_rate");
-  if(0 != byte_rate && std::string::npos != params[0].find("mesh")){
+  if(0 != byte_rate && std::string::npos != params[0].find("custom")){
     mesh_success = true;
     do_continue = false;
   }
