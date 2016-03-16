@@ -55,16 +55,16 @@ bool Timelaps::init() {
 }
 
 bool Timelaps::on_shmdata_disconnect() {
-  //  return codecs_->stop();
+  if (!timelaps_)
+    return true;
+  timelaps_.reset();
   return true;
 }
 
 bool Timelaps::on_shmdata_connect(const std::string &shmpath) {
-  if (!timelaps_)
-    timelaps_config_ = GstVideoTimelapsConfig(shmpath, shmpath + "%05d.jpg");
-  else
-    timelaps_config_ = timelaps_->get_config();
-  timelaps_config_.image_path_ = img_path_.empty() ? shmpath + "%05d.jpg" : img_path_;
+  timelaps_config_ =
+      GstVideoTimelapsConfig(shmpath,
+                             img_path_.empty() ? shmpath + "%05d.jpg" : img_path_);
   timelaps_ = std2::make_unique<GstVideoTimelaps>(this, timelaps_config_);
   return true;  // FIXME make videotimelaps testable
 }

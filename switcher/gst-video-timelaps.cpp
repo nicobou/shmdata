@@ -29,7 +29,53 @@ GstVideoTimelaps::GstVideoTimelaps(Quiddity *quid,
                                    const GstVideoTimelapsConfig &config):
   quid_(quid),
   config_(config),
-  gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)){
+  gst_pipeline_(std2::make_unique<GstPipeliner>(
+      [](GstMessage *msg){
+        if (msg->type != GST_MESSAGE_ELEMENT)
+          return;
+        const GstStructure *s = gst_message_get_structure (msg);
+        auto name = std::string(gst_structure_get_name(s));
+        if (name != "GstMultiFileSink")
+          return;
+        g_print("filename: %s\n", gst_structure_get_string(s, "filename"));
+      },
+      nullptr)){
+  GError *error = nullptr;
+  std::string description(std::string("shmdatasrc socket-path=")
+                          + config_.orig_shmpath_
+                          + " copy-buffers=true do-timestamp=true ! queue "
+                          + " ! videorate ! video/x-raw,framerate=1/1 ! videoconvert "
+                          + " ! jpegenc ! multifilesink post-messages=true location=\""
+                          + config_.image_path_
+                          + "\"");
+  GstElement *bin = gst_parse_bin_from_description(description.c_str(), TRUE, &error);
+  if (error != nullptr) {
+    g_warning("%s", error->message);
+    g_error_free(error);
+  }
+  GstElement *shmdatasrc =
+      GstUtils::get_first_element_from_factory_name(GST_BIN(bin),
+                                                    "shmdatasrc");
+
+  shmsrc_sub_ = std2::make_unique<GstShmdataSubscriber>(
+      shmdatasrc,
+      [this](const std::string &caps) {
+        this->quid_->graft_tree(".shmdata.reader." + this->config_.orig_shmpath_,
+                                ShmdataUtils::make_tree(caps,
+                                                        ShmdataUtils::get_category(caps),
+                                                        0));
+      },
+      [this](GstShmdataSubscriber::num_bytes_t byte_rate){
+        this->quid_->
+        graft_tree(".shmdata.reader." + this->config_.orig_shmpath_ + ".byte_rate",
+                   InfoTree::make(std::to_string(byte_rate)));
+      });
+  gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), bin);
+  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
+  gst_pipeline_->play(true);
+  //is_valid_ = true;  FIXME 
 }
+
+
 
 }  // namespace switcher

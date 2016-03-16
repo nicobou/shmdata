@@ -52,10 +52,6 @@ class GstVideoTimelaps {
   GstVideoTimelaps(const GstVideoTimelaps &) = delete;
   GstVideoTimelaps &operator=(const GstVideoTimelaps &) = delete;
 
-  GstVideoTimelapsConfig get_config() const{
-    return config_;
-  }
-
  private:
   Quiddity *quid_;
   GstVideoTimelapsConfig config_;
