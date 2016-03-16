@@ -41,6 +41,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gst-shmdata-to-cb.cpp \
     gst-utils.cpp \
     gst-video-codec.cpp \
+    gst-video-timelaps.cpp \
     gst-video-converter.cpp \
     gst-video-encoder.cpp \
     http-sdp-dec.cpp \
@@ -80,6 +81,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     signal-string.cpp \
     startable-quiddity.cpp \
     string-utils.cpp \
+    timelaps.cpp \
     type-name-registry.cpp \
     unique-gst-element.cpp \
     uridecodebin.cpp \
@@ -124,6 +126,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gst-shmdata-to-cb.hpp \
     gst-utils.hpp \
     gst-video-codec.hpp \
+    gst-video-timelaps.hpp \
     gst-video-converter.hpp \
     gst-video-encoder.hpp \
     http-sdp-dec.hpp \
@@ -170,6 +173,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     std2.hpp \
     string-utils.hpp \
     threaded-wrapper.hpp \
+    timelaps.hpp \
     type-name-registry.hpp \
     unique-gst-element.hpp \
     uridecodebin.hpp \

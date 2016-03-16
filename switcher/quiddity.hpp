@@ -52,6 +52,7 @@ class Quiddity {
   friend class GstPixelFormatConverter;
   friend class GstVideoCodec;
   friend class GstAudioCodec;
+  friend class GstVideoTimelaps;
   friend class ShmdataDecoder;
   
  public:
