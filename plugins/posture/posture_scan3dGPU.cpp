@@ -45,6 +45,8 @@ namespace switcher {
     cameras_updated_.resize(camera_nbr_);
 
     calibration_reader_->loadCalibration(calibration_path_);
+    if (!(*calibration_reader_) || calibration_reader_->getCalibrationParams().size() < (uint32_t)camera_nbr_)
+        return false;
 
     for (int i = 0; i < camera_nbr_; ++i)
     {
@@ -132,16 +134,19 @@ namespace switcher {
         is_registering_ = true;
         registering_thread_ = thread([=]() {
           calibration_reader_->reload();
-          auto calibration = calibration_reader_->getCalibrationParams();
+          if (*calibration_reader_ && calibration_reader_->getCalibrationParams().size() >= (uint32_t)camera_nbr_)
+          {
+            auto calibration = calibration_reader_->getCalibrationParams();
 
-          register_->setGuessCalibration(calibration);
-          calibration = register_->getCalibration();
+            register_->setGuessCalibration(calibration);
+            calibration = register_->getCalibration();
 
-          // The previous call can take some time, so we check again that
-          // automatic registration is active
-          if (improve_registering_) {
-            solidifyGPU_->setCalibration(calibration);
-            colorize_->setCalibration(calibration);
+            // The previous call can take some time, so we check again that
+            // automatic registration is active
+            if (improve_registering_) {
+              solidifyGPU_->setCalibration(calibration);
+              colorize_->setCalibration(calibration);
+            }
           }
 
           is_registering_ = false;
@@ -152,9 +157,12 @@ namespace switcher {
       if (reload_calibration_)
       {
         calibration_reader_->reload();
-        auto calibration = calibration_reader_->getCalibrationParams();
-        solidifyGPU_->setCalibration(calibration);
-        colorize_->setCalibration(calibration);
+        if (*calibration_reader_ && calibration_reader_->getCalibrationParams().size() >= (uint32_t)camera_nbr_)
+        {
+            auto calibration = calibration_reader_->getCalibrationParams();
+            solidifyGPU_->setCalibration(calibration);
+            colorize_->setCalibration(calibration);
+        }
       }
 
       solidifyGPU_->getMesh(mesh);

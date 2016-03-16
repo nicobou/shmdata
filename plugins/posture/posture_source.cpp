@@ -59,6 +59,9 @@ PostureSrc::start() {
   }
   else {
     calibration_reader_->loadCalibration(calibration_path_);
+    if (!(*calibration_reader_) || calibration_reader_->getCalibrationParams().size() < device_index_)
+        return false;
+
     zcamera_->setCalibration(calibration_reader_->getCalibrationParams()[device_index_]);
     zcamera_->setDeviceIndex(device_index_);
     zcamera_->setCaptureIR(capture_ir_);
@@ -341,6 +344,8 @@ PostureSrc::cb_frame_cloud(void *context, const vector<char>&& data) {
   if (ctx->reload_calibration_)
   {
     ctx->calibration_reader_->loadCalibration(ctx->calibration_path_);
+    if (!(*ctx->calibration_reader_) || ctx->calibration_reader_->getCalibrationParams().size() < ctx->device_index_)
+        return;
     ctx->zcamera_->setCalibration(ctx->calibration_reader_->getCalibrationParams()[ctx->device_index_]);
   }
 
