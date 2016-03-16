@@ -423,7 +423,7 @@ namespace switcher {
       "Depth map filter value sigma",
       kernel_value_sigma_,
       1.0,
-      16000.0);
+      1600.0);
 
     pmanage<MPtr(&PContainer::make_parented_int)>(
       "hole_filling_iterations",
