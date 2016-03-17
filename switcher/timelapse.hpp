@@ -39,11 +39,9 @@ class Timelapse: public Quiddity {
   ShmdataConnector shmcntr_;
   GstVideoTimelapseConfig timelapse_config_; 
   std::unique_ptr<GstVideoTimelapse> timelapse_{nullptr};
-
   std::string img_path_;
   PContainer::prop_id_t img_path_id_;
 
-  
   bool init() final;
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string &shmdata_sochet_path);
