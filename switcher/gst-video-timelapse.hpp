@@ -39,6 +39,8 @@ struct GstVideoTimelapseConfig{
   // config members:
   std::string orig_shmpath_{};
   std::string image_path_{};
+  unsigned int framerate_num_{1};
+  unsigned int framerate_denom_{1};
 };
 
 class GstVideoTimelapse {

@@ -25,8 +25,8 @@
 #include "switcher/gprop-to-prop.hpp"
 
 namespace switcher {
-GstVideoTimelapse::GstVideoTimelapse(Quiddity *quid,
-                                   const GstVideoTimelapseConfig &config):
+GstVideoTimelapse::GstVideoTimelapse(Quiddity *quid, // FIXME remove quid from this class
+                                     const GstVideoTimelapseConfig &config):
   quid_(quid),
   config_(config),
   gst_pipeline_(std2::make_unique<GstPipeliner>(
@@ -37,17 +37,23 @@ GstVideoTimelapse::GstVideoTimelapse(Quiddity *quid,
         auto name = std::string(gst_structure_get_name(s));
         if (name != "GstMultiFileSink")
           return;
-        g_print("filename: %s\n", gst_structure_get_string(s, "filename"));
+        g_print("filename: %s\n", gst_structure_get_string(s, "filename")); // FIXME on new file
       },
       nullptr)){
   GError *error = nullptr;
   std::string description(std::string("shmdatasrc socket-path=")
                           + config_.orig_shmpath_
                           + " copy-buffers=true do-timestamp=true ! queue "
-                          + " ! videorate ! video/x-raw, framerate=1/1 ! videoconvert "
+                          + " ! videorate ! video/x-raw, framerate="
+                          + std::to_string(config_.framerate_num_)
+                          + "/"
+                          + std::to_string(config_.framerate_denom_)
+                          + " ! videoconvert "
                           + " ! jpegenc ! multifilesink post-messages=true location=\""
                           + config_.image_path_
                           + "\"");
+
+  g_print("%s\n", description.c_str());
   GstElement *bin = gst_parse_bin_from_description(description.c_str(), TRUE, &error);
   if (error != nullptr) {
     g_warning("%s", error->message);

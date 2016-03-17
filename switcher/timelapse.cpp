@@ -41,8 +41,20 @@ Timelapse::Timelapse(const std::string &):
         [this](){return img_path_;},
         "Image Path",
         "Path the the jpeg file to write. if empty, the path will be <video_shmdata_path>%05d.jpg",
-        img_path_)){
-}
+        img_path_)),
+    framerate_id_(pmanage<MPtr(&PContainer::make_fraction)>(
+        "framerate",
+        [this](const Fraction &val){
+          framerate_ = val; return true;
+      },
+        [this](){return framerate_;},
+        "Framerate",
+        "Number of image to be produced by seconds",
+        framerate_,
+        1, 1,  // min num/denom
+        60, 5)  // max num/denom
+                 ){
+    }
 
 bool Timelapse::init() {
   shmcntr_.install_connect_method(
@@ -64,7 +76,9 @@ bool Timelapse::on_shmdata_disconnect() {
 bool Timelapse::on_shmdata_connect(const std::string &shmpath) {
   timelapse_config_ =
       GstVideoTimelapseConfig(shmpath,
-                             img_path_.empty() ? shmpath + "%05d.jpg" : img_path_);
+                              img_path_.empty() ? shmpath + "%05d.jpg" : img_path_);
+  timelapse_config_.framerate_num_ = framerate_.numerator();
+  timelapse_config_.framerate_denom_ = framerate_.denominator();
   timelapse_ = std2::make_unique<GstVideoTimelapse>(this, timelapse_config_);
   return true;  // FIXME make videotimelapse testable
 }

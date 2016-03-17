@@ -24,6 +24,7 @@
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/gst-video-timelapse.hpp"
+#include "switcher/fraction.hpp"
 
 namespace switcher {
 class Timelapse: public Quiddity {
@@ -39,9 +40,13 @@ class Timelapse: public Quiddity {
   ShmdataConnector shmcntr_;
   GstVideoTimelapseConfig timelapse_config_; 
   std::unique_ptr<GstVideoTimelapse> timelapse_{nullptr};
+  // images path 
   std::string img_path_;
   PContainer::prop_id_t img_path_id_;
-
+  // framerate
+  Fraction framerate_{1,1};
+  PContainer::prop_id_t framerate_id_;
+  
   bool init() final;
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string &shmdata_sochet_path);
