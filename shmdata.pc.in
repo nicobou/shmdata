@@ -4,7 +4,7 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: shmdata
-Description: shares data flows between gstreamer applications
+Description: shares data flows between applications
 URL: @PACKAGE_URL@
 Version: @PACKAGE_VERSION@
 Requires.private:
