@@ -1,3 +1,5 @@
+if HAVE_PYTHON3
+
 plugins_LTLIBRARIES = \
 	pyshmdata.la
 
@@ -25,4 +27,6 @@ pyshmdata_la_LDFLAGS = \
 
 if HAVE_OSX
 pyshmdata_la_LDFLAGS += -L/opt/local/lib
+endif
+
 endif

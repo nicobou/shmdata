@@ -14,8 +14,25 @@
 
 #include <sys/types.h>
 #include <errno.h>
-#include <string.h>  // memset
+#include <string.h>        // memset
+#include <stdio.h>         // fopen 
 #include "./sysv-shm.hpp"
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
+#if HAVE_OSX
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#else
+#ifndef SHMMAX_SYS_FILE
+#define SHMMAX_SYS_FILE "/proc/sys/kernel/shmmax"
+#endif
+#ifndef SHMMNI_SYS_FILE
+#define SHMMNI_SYS_FILE "/proc/sys/kernel/shmmni"
+#endif
+#endif  // HAVE_OSX
 
 namespace shmdata{
 
@@ -75,5 +92,74 @@ sysVShm::~sysVShm() {
 bool sysVShm::is_valid() const {
   return (-1 != key_) && (shmid_ >= 0) && (shm_ != (void *) -1);
 }
+  
+unsigned long sysVShm::get_shmmax(AbstractLogger *log){
+#if HAVE_OSX
+  unsigned long shmmax = 0;
+  size_t len = sizeof(shmmax);
+  if (-1 == sysctlbyname("kern.sysv.shmmax", &shmmax, &len, NULL, 0)){
+    int err = errno;
+    log->error("trying to get kern.sysv.shmmax: ", strerror(err));
+  }
+  return shmmax;
+#else
+  unsigned long shmmax = 0;
+  FILE *shmmax_file = fopen(SHMMAX_SYS_FILE, "r");
+  if (!shmmax_file) {
+    if (nullptr != log){
+      int err = errno;
+      log->error("Failed to open shmmax from file " SHMMAX_SYS_FILE" (%s)",
+		 strerror(err));
+    }
+    return 0;
+  }
+  if (fscanf(shmmax_file, "%lu", &shmmax) != 1) {
+    if (nullptr != log){
+      int err = errno;
+      log->error("Failed to read shmmax from file " SHMMAX_SYS_FILE" (%s)",
+		 strerror(err));
+    }
+    fclose(shmmax_file);
+    return 0;
+  }
+  fclose(shmmax_file);
+  return shmmax;
+#endif  // HAVE_OSX
+}
 
+unsigned long sysVShm::get_shmmni(AbstractLogger *log){
+#if HAVE_OSX
+  unsigned long shmmni = 0;
+  size_t len = sizeof(shmmni);
+  if (-1 == sysctlbyname("kern.sysv.shmmni", &shmmni, &len, NULL, 0)){
+    int err = errno;
+    log->error("trying to get kern.sysv.shmmni: ", strerror(err));
+  }
+  return shmmni;
+#else
+  unsigned long shmmni = 0;
+  FILE *shmmni_file = fopen(SHMMNI_SYS_FILE, "r");
+  if (!shmmni_file) {
+    if (nullptr != log){
+      int err = errno;
+      log->error("Failed to open shmmni from file " SHMMNI_SYS_FILE" (%s)",
+		 strerror(err));
+    }
+    return 0;
+  }
+  if (fscanf(shmmni_file, "%lu", &shmmni) != 1) {
+    if (nullptr != log){
+      int err = errno;
+      log->error("Failed to read shmmni from file " SHMMNI_SYS_FILE" (%s)",
+		 strerror(err));
+    }
+    fclose(shmmni_file);
+    return 0;
+  }
+  fclose(shmmni_file);
+  return shmmni;
+#endif  // HAVE_OSX
+}
+
+  
 }  // namespace shmdata

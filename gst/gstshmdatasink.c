@@ -27,7 +27,7 @@
  * <refsect2>
  * <title>Example launch lines</title>
  * |[
- * gst-launch -v videotestsrc !  shmdatasink socket-path=/tmp/blah shm-size=1000000
+ * gst-launch -v videotestsrc !  shmdatasink socket-path=/tmp/blah initial-size=1000000
  * ]| Send video to shm buffers.
  * </refsect2>
  */
@@ -36,7 +36,7 @@
 #include "./gstshmdatasink.h"
 #include "./gstshmdatalogger.h"
 
-// TODO perms, size
+// TODO perms
 
 /* signals */
 enum
@@ -52,12 +52,12 @@ enum
   PROP_0,
   PROP_SOCKET_PATH,
   PROP_CAPS,
-  PROP_BYTES_SINCE_LAST_REQUEST
+  PROP_BYTES_SINCE_LAST_REQUEST,
   // PROP_PERMS,
-  // PROP_SHM_SIZE,
+  PROP_INITIAL_SHM_SIZE
 };
 
-#define DEFAULT_SIZE ( 33554432 )
+#define DEFAULT_INITIAL_SIZE ( 3554432 )  // 3MB
 #define DEFAULT_WAIT_FOR_CONNECTION (TRUE)
 /* Default is user read/write, group read */
 //#define DEFAULT_PERMS ( S_IRUSR | S_IWUSR | S_IRGRP )
@@ -246,6 +246,15 @@ gst_shmdata_sink_allocator_alloc_locked (GstShmdataSinkAllocator * self, gsize s
   /* allocate more to compensate for alignment */
   maxsize += align;
 
+  if (self->sink->size < size){
+    if (0 == shmdata_shm_resize(self->sink->access, size))
+      GST_ELEMENT_ERROR (self, RESOURCE, NO_SPACE_LEFT, 
+                         ("Cannot resize shared memory area"), 
+                         ("from %" G_GSIZE_FORMAT " to %" G_GSIZE_FORMAT,
+			  self->sink->size, 
+                          size)); 
+    self->sink->size = size;
+  }
   void *data = shmdata_get_mem(self->sink->access);
   if (data) {
     GstShmdataSinkMemory *mymem;
@@ -333,7 +342,8 @@ static void
 gst_shmdata_sink_init (GstShmdataSink * self)
 {
   g_cond_init (&self->cond);
-  self->size = DEFAULT_SIZE;
+  self->size = DEFAULT_INITIAL_SIZE;
+  self->socket_path = NULL;
   //  self->perms = DEFAULT_PERMS;
   gst_allocation_params_init (&self->params);
 }
@@ -400,17 +410,22 @@ gst_shmdata_sink_class_init (GstShmdataSinkClass * klass)
   /*         "Permissions to set on the shm area", */
   /*         0, 07777, DEFAULT_PERMS, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)); */
 
-  /* g_object_class_install_property (gobject_class, PROP_SHM_SIZE, */
-  /*     g_param_spec_uint ("shm-size", */
-  /*         "Size of the shm area", */
-  /*         "Size of the shared memory area", */
-  /*         0, G_MAXUINT, DEFAULT_SIZE, */
-  /*         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)); */
-
-  signals[SIGNAL_CLIENT_CONNECTED] = g_signal_new ("client-connected",
-      GST_TYPE_SHMDATA_SINK, G_SIGNAL_RUN_LAST, 0, NULL, NULL,
-      g_cclosure_marshal_VOID__INT, G_TYPE_NONE, 1, G_TYPE_INT);
-
+  unsigned long shmmax = shmdata_get_shmmax(NULL);
+  if (0 == shmmax ||shmmax > 268435456)  // clip to 256MB
+    shmmax = 268435456;
+  g_object_class_install_property (
+      gobject_class, PROP_INITIAL_SHM_SIZE, 
+      g_param_spec_ulong ("initial-size", 
+			  "Initial memory size", 
+			  "Initial size of the shared memory area (will be automatically resized if needed)", 
+			  1, shmmax, DEFAULT_INITIAL_SIZE, 
+			  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)); 
+  
+  signals[SIGNAL_CLIENT_CONNECTED] =
+    g_signal_new ("client-connected",
+		  GST_TYPE_SHMDATA_SINK, G_SIGNAL_RUN_LAST, 0, NULL, NULL,
+		  g_cclosure_marshal_VOID__INT, G_TYPE_NONE, 1, G_TYPE_INT);
+  
   signals[SIGNAL_CLIENT_DISCONNECTED] = g_signal_new ("client-disconnected",
       GST_TYPE_SHMDATA_SINK, G_SIGNAL_RUN_LAST, 0, NULL, NULL,
       g_cclosure_marshal_VOID__INT, G_TYPE_NONE, 1, G_TYPE_INT);
@@ -453,6 +468,7 @@ gst_shmdata_sink_set_property (GObject * object, guint prop_id,
       GST_OBJECT_LOCK (object);
       g_free (self->socket_path);
       self->socket_path = g_value_dup_string (value);
+
       GST_OBJECT_UNLOCK (object);
       break;
     /* case PROP_PERMS: */
@@ -465,25 +481,11 @@ gst_shmdata_sink_set_property (GObject * object, guint prop_id,
     /*     GST_WARNING_OBJECT (object, "Could not set permissions on pipe: %s", */
     /*         strerror (ret)); */
     /*   break; */
-    /* case PROP_SHM_SIZE: */
-    /*   GST_OBJECT_LOCK (object); */
-    /*   if (self->shmwriter) { */
-    /*     if (sp_writer_resize (self->pipe, g_value_get_uint (value)) < 0) { */
-    /*       /\* Swap allocators, so we can know immediately if the memory is */
-    /*        * ours *\/ */
-    /*       gst_object_unref (self->allocator); */
-    /*       self->allocator = gst_shmdata_sink_allocator_new (self); */
-
-    /*       GST_DEBUG_OBJECT (self, "Resized shared memory area from %u to " */
-    /*           "%u bytes", self->size, g_value_get_uint (value)); */
-    /*     } else { */
-    /*       GST_WARNING_OBJECT (self, "Could not resize shared memory area from" */
-    /*           "%u to %u bytes", self->size, g_value_get_uint (value)); */
-    /*     } */
-    /*   } */
-    /*   self->size = g_value_get_uint (value); */
-    /*   GST_OBJECT_UNLOCK (object); */
-    /*   break; */
+    case PROP_INITIAL_SHM_SIZE: 
+      GST_OBJECT_LOCK (object); 
+      self->size = g_value_get_ulong (value); 
+      GST_OBJECT_UNLOCK (object); 
+      break; 
     default:
       break;
   }
@@ -511,9 +513,9 @@ gst_shmdata_sink_get_property (GObject * object, guint prop_id,
     /* case PROP_PERMS: */
     /*   g_value_set_uint (value, self->perms); */
     /*   break; */
-    /* case PROP_SHM_SIZE: */
-    /*   g_value_set_uint (value, self->size); */
-    /*   break; */
+    case PROP_INITIAL_SHM_SIZE: 
+      g_value_set_ulong (value, self->size); 
+      break; 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -712,9 +714,9 @@ static void gst_shmdata_sink_on_client_disconnected(void *user_data, int id) {
 
 static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
   GstShmdataSink *self = GST_SHMDATA_SINK (sink);
-  if (!self->socket_path) { 
+  if (NULL == self->socket_path) { 
     GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE, 
-        ("Could not open socket."), (NULL)); 
+        ("Could not make writer with no path."), (NULL)); 
     return FALSE; 
   } 
 
@@ -740,15 +742,15 @@ static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
                                         &gst_shmdata_sink_on_client_disconnected,
                                         self,
                                         self->shmlogger); 
-  if (!self->shmwriter) { 
+  if (NULL == self->shmwriter) { 
     GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE, 
-        ("Could not open socket."), (NULL)); 
+        ("Could not make shmdata writer."), (NULL)); 
     return FALSE; 
   } 
 
   self->access = shmdata_get_one_write_access(self->shmwriter);
 
-  GST_DEBUG ("Created socket at %s", self->socket_path); 
+  GST_DEBUG ("Created shmdata writer at %s", self->socket_path); 
   self->allocator = gst_shmdata_sink_allocator_new (self); 
 
   return TRUE;

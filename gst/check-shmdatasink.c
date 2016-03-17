@@ -27,7 +27,7 @@
 
 static GMainLoop *loop = NULL;
 static int server_interactions = 0;
-static res = 1;  // fail by default
+static int res = 1;  // fail by default
 
 // *** follower callbacks
 void mylog(void *user_data, const char *str) {
@@ -114,7 +114,11 @@ return -1;
   shmdatasink = gst_element_factory_make("shmdatasink", "shmdata-output");
   if (!pipeline || !audiosource || !shmdatasink) {
     g_printerr("One element could not be created. Exiting.\n"); return -1; }
-  g_object_set(G_OBJECT(shmdatasink), "socket-path", "/tmp/check-shmdatasink", NULL);
+  g_object_set(G_OBJECT(shmdatasink),
+	       "socket-path", "/tmp/check-shmdatasink",
+	       "initial-size", 10, /* Forcing initial size to be smaller that actual size, 
+				      testing internal resizing */
+	       NULL);
   bus = gst_pipeline_get_bus(GST_PIPELINE(pipeline));
   bus_watch_id = gst_bus_add_watch(bus, bus_call, loop);
   gst_object_unref(bus);

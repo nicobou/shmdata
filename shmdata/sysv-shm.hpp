@@ -36,8 +36,12 @@ class sysVShm: public SafeBoolIdiom {
   sysVShm& operator=(sysVShm&&) = default;
 
   void *get_mem() {return shm_;};
+  // Maximum size in bytes for a shared memory segment
+  static unsigned long get_shmmax(AbstractLogger *log);
+  // System-wide limit on the number of shared memory segments
+  static unsigned long get_shmmni(AbstractLogger *log);
   
- private:
+private:
   AbstractLogger *log_;
   key_t key_;
   size_t size_;

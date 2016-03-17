@@ -54,7 +54,7 @@ int main () {
       }
     }  // end first method
    
-    { // second method: access the memory and update only what need to be updated 
+    {  // second method: access the memory and update only what need to be updated 
       size_t i = 300;
       Frame frame;
       // optional memory initialization with a copy
@@ -66,11 +66,11 @@ int main () {
         auto frame = static_cast<Frame *>(access->get_mem());
         frame->count++;
         access->notify_clients(sizeof(Frame)); /* they will start reading
-                                                  after w lock is release,
+                                                  after w lock is released,
                                                   at destruction */
       }  // access is released, lock is freed
     }
-  }// end writer example
+  }  // end writer example
 
   {  // copy writer with one reader
     Writer w("/tmp/check-shmdata",

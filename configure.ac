@@ -1,5 +1,5 @@
 AC_PREREQ([2.61])
-AC_INIT(shmdata, [1.0.2], [http://codered.sat.qc.ca/redmine/projects/libshmdata/issues], [shmdata], [http://codered.sat.qc.ca/redmine/projects/libshmdata])
+AC_INIT(shmdata, [1.2.0], [http://codered.sat.qc.ca/redmine/projects/libshmdata/issues], [shmdata], [http://codered.sat.qc.ca/redmine/projects/libshmdata])
 #AC_CONFIG_MACRO_DIR([m4])
 AC_MSG_NOTICE([Configuring libshmdata])
 AM_INIT_AUTOMAKE([subdir-objects -Wno-portability])
@@ -17,10 +17,10 @@ AC_CANONICAL_HOST # fills $host variable
 #  * current: Increment when the interface changes. (and set revision to 0)
 #  * revision: Increment when the implementation changes, but not the interface.
 #  * age: Backward-compatible with how many interface numbers.
-AC_SUBST([LIBSHMDATA_SO_VERSION], [5:0:0])
+AC_SUBST([LIBSHMDATA_SO_VERSION], [6:0:0])
 
 # The version of the API. Should be major.minor and not change until not backward-compatible
-AC_SUBST([LIBSHMDATA_API_VERSION], [1.0])
+AC_SUBST([LIBSHMDATA_API_VERSION], [1.2])
 
 # -- checks for programs --
 AC_PROG_CXX
@@ -151,7 +151,7 @@ AC_SUBST(GST_PLUGIN_LDFLAGS)
 
 # Check for Python to build a wrapper
 AC_CHECK_PROG(HAVE_PYTHON3,
-  python3-config,
+  python3.4-config,
   [ ],
   [AC_MSG_WARN([Python3.4 not detected, module will not be built])])
 AM_CONDITIONAL(HAVE_PYTHON3, test "x${HAVE_PYTHON3}", = "xtrue")

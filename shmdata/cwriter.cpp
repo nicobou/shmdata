@@ -14,6 +14,7 @@
 
 #include "./cwriter.h"
 #include "./writer.hpp"
+#include "./sysv-shm.hpp" 
 
 namespace shmdata{
 struct CWriter {
@@ -73,7 +74,7 @@ void shmdata_delete_writer(ShmdataWriter writer){
   delete static_cast<CWriter *>(writer);
 }
 
-int shmdata_copy_to_shm(ShmdataWriter writer, void *data, size_t size){
+int shmdata_copy_to_shm(ShmdataWriter writer, const void *data, size_t size){
   return static_cast<CWriter *>(writer)->writer_.copy_to_shm(data, size);
 }
 
@@ -81,6 +82,18 @@ ShmdataWriterAccess shmdata_get_one_write_access(ShmdataWriter writer){
   return
       static_cast<void *>(static_cast<CWriter *>(writer)->writer_.
                           get_one_write_access_ptr());
+}
+
+ShmdataWriterAccess shmdata_get_one_write_access_resize(ShmdataWriter writer,
+	 						size_t new_size){
+  return
+      static_cast<void *>(static_cast<CWriter *>(writer)->writer_.
+                          get_one_write_access_ptr_resize(new_size));
+}
+
+size_t shmdata_shm_resize(ShmdataWriterAccess access, size_t new_size){
+  return static_cast<OneWriteAccess *>(access)->shm_resize(new_size);
+  
 }
 
 void *shmdata_get_mem(ShmdataWriterAccess access){
@@ -94,3 +107,12 @@ short shmdata_notify_clients(ShmdataWriterAccess access, size_t size){
 void shmdata_release_one_write_access(ShmdataWriterAccess access){
   delete static_cast<OneWriteAccess *>(access);
 }
+
+unsigned long shmdata_get_shmmax(ShmdataLogger log){
+  return sysVShm::get_shmmax(static_cast<AbstractLogger *>(log));
+}
+
+unsigned long shmdata_get_shmmni(ShmdataLogger log){
+  return sysVShm::get_shmmni(static_cast<AbstractLogger *>(log));
+}
+

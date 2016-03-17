@@ -47,7 +47,7 @@ Follower::~Follower(){
 void Follower::monitor(){
   auto do_sleep = true;
   // give the change the reader to fail twice before cleaning dead shmdata:
-  auto successive_fail = 0;  
+  //auto successive_fail = 0;  
   while (!quit_.load()) {
     if (fileMonitor::is_unix_socket(path_, log_)) {
       do_sleep = false;

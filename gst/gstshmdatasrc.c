@@ -32,6 +32,7 @@
  * </refsect2>
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include <gst/gst.h>
 #include "./gstshmdatasrc.h"
@@ -86,7 +87,7 @@ static gboolean gst_shmdata_src_unlock (GstBaseSrc *bsrc);
 static gboolean gst_shmdata_src_unlock_stop (GstBaseSrc *bsrc);
 static GstStateChangeReturn gst_shmdata_src_change_state (GstElement *element,
                                                           GstStateChange transition);
-
+static GstCaps *gst_shmdata_src_getcaps (GstBaseSrc * src, GstCaps * filter);
 // static guint gst_shmdata_src_signals[LAST_SIGNAL] = { 0 };
 
 static void
@@ -112,7 +113,8 @@ gst_shmdata_src_class_init (GstShmdataSrcClass * klass)
   gstbasesrc_class->stop = GST_DEBUG_FUNCPTR (gst_shmdata_src_stop);
   gstbasesrc_class->unlock = GST_DEBUG_FUNCPTR (gst_shmdata_src_unlock);
   gstbasesrc_class->unlock_stop = GST_DEBUG_FUNCPTR (gst_shmdata_src_unlock_stop);
-
+  gstbasesrc_class->get_caps = gst_shmdata_src_getcaps;
+  
   gstpush_src_class->create = gst_shmdata_src_create;
 
   g_object_class_install_property (gobject_class, PROP_SOCKET_PATH,
@@ -177,8 +179,8 @@ gst_shmdata_src_init (GstShmdataSrc *self)
   self->data_rendered = FALSE;
   g_mutex_init (&self->data_rendered_mutex);
   g_cond_init (&self->data_rendered_cond);
-  gst_base_src_set_format (GST_BASE_SRC (self), GST_FORMAT_TIME);
   gst_base_src_set_live(GST_BASE_SRC (self), TRUE);
+  gst_base_src_set_format (GST_BASE_SRC (self), GST_FORMAT_TIME);
 }
 
 static void
@@ -334,11 +336,11 @@ static void gst_shmdata_src_on_data(void *user_data, void *data, size_t size) {
   GstShmdataSrc *self = GST_SHMDATA_SRC (user_data);
   if (self->stop_read)
     return;
+  // synchronizing with gst_shmdata_src_create
+  g_mutex_lock (&self->on_data_mutex);
   self->current_data = data;
   self->current_size = size;
   self->bytes_since_last_request += size;
-  // synchronizing with gst_shmdata_src_create
-  g_mutex_lock (&self->on_data_mutex);
   self->on_data = TRUE;
   g_cond_broadcast (&self->on_data_cond);
   g_mutex_unlock (&self->on_data_mutex);
@@ -384,13 +386,11 @@ gst_shmdata_src_create (GstPushSrc *psrc, GstBuffer **outbuf)
     gst_shmdata_src_make_data_rendered(self);
     return GST_FLOW_FLUSHING;
   }
-  self->on_data = FALSE;
-  g_mutex_unlock (&self->on_data_mutex);
-
-  if (self->is_first_read) {
-    gst_shmdata_src_make_data_rendered(self);
-    self->is_first_read = FALSE;
+  if (FALSE == self->on_data) {
+    g_mutex_unlock (&self->on_data_mutex);
+    return GST_FLOW_FLUSHING;
   }
+  self->on_data = FALSE;
 
   if (self->has_new_caps &&
       (GST_STATE_PAUSED == GST_STATE(self) || GST_STATE_PLAYING == GST_STATE(self))) {
@@ -413,18 +413,26 @@ gst_shmdata_src_create (GstPushSrc *psrc, GstBuffer **outbuf)
                                            self,
                                            gst_shmdata_src_on_data_rendered);
   } else {
-    GstBuffer *tmp = gst_buffer_new_wrapped_full (GST_MEMORY_FLAG_READONLY, 
-                                                  self->current_data,
-                                                  self->current_size,
-                                                  0,
-                                                  self->current_size,
-                                                  NULL,
-                                                  NULL);
-    *outbuf = gst_buffer_copy (tmp); 
+    void *data = malloc(self->current_size); 
+    memcpy(data,  self->current_data, self->current_size);
+    *outbuf = gst_buffer_new_wrapped_full (GST_MEMORY_FLAG_READONLY, 
+                                           data,
+                                           self->current_size,
+                                           0,
+                                           self->current_size,
+                                           data,  // user_data
+                                           g_free);
+    //*outbuf = gst_buffer_copy_deep (tmp);  // not available with earlier gst 1.0
     gst_shmdata_src_on_data_rendered(self);
-    gst_buffer_unref(tmp);
+    //gst_buffer_unref(tmp);
   }
-  
+
+  if (self->is_first_read) {
+    gst_shmdata_src_make_data_rendered(self);
+    self->is_first_read = FALSE;
+  }
+  g_mutex_unlock (&self->on_data_mutex);
+
   return GST_FLOW_OK;
 }
 
@@ -474,4 +482,30 @@ gst_shmdata_src_unlock_stop (GstBaseSrc * bsrc)
   GstShmdataSrc *self = GST_SHMDATA_SRC (bsrc);
   self->unlocked = FALSE;
   return TRUE;
+}
+
+static GstCaps *
+gst_shmdata_src_getcaps (GstBaseSrc * src, GstCaps * filter)
+{
+  GstShmdataSrc *shmdatasrc;
+  GstCaps *caps, *result;
+  
+  shmdatasrc = GST_SHMDATA_SRC (src);
+
+  GST_OBJECT_LOCK (src);
+  if ((caps = shmdatasrc->caps))
+    gst_caps_ref (caps);
+  GST_OBJECT_UNLOCK (src);
+
+  if (caps) {
+    if (filter) {
+      result = gst_caps_intersect_full (filter, caps, GST_CAPS_INTERSECT_FIRST);
+      gst_caps_unref (caps);
+    } else {
+      result = caps;
+    }
+  } else {
+    result = (filter) ? gst_caps_ref (filter) : gst_caps_new_any ();
+  }
+  return result;
 }

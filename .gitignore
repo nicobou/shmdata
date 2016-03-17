@@ -50,6 +50,8 @@ test-driver
 tests/check-c-wrapper
 tests/check-file-monitor
 tests/check-follower
+tests/check-shm-resize
+tests/check-shm-size
 tests/check-shmdata
 tests/check-shmdata-stress
 tests/check-sysv-sem
