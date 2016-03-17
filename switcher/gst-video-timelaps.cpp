@@ -76,6 +76,4 @@ GstVideoTimelaps::GstVideoTimelaps(Quiddity *quid,
   //is_valid_ = true;  FIXME 
 }
 
-
-
 }  // namespace switcher

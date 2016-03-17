@@ -28,8 +28,6 @@
 #include "switcher/shmdata-utils.hpp"
 
 
-// FIXME do this: GST_DEBUG=2 gst-launch -v shmdatasrc socket-path= /tmp/switcher_scenic8000_v4l2src0_video copy-buffers=true do-timestamp=true ! queue ! videorate ! video/x-raw,framerate=1/1 ! videoconvert ! jpegenc ! multifilesink location="coucou%01d.jpg"
-
 namespace switcher {
 class quiddity;
 
@@ -59,7 +57,6 @@ class GstVideoTimelaps {
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   // UGstElem shmsrc_{"shmdatasrc"};
   std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
-  
 };
 
 }  // namespace switcher
