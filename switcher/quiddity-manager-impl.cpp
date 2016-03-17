@@ -41,7 +41,7 @@
 #include "./rtp-session.hpp"
 //#include "./shmdata-to-file.hpp"
 //#include "./shmdata-from-gdp-file.hpp"
-#include "./timelaps.hpp"
+#include "./timelapse.hpp"
 #include "./uridecodebin.hpp"
 #include "./video-test-source.hpp"
 
@@ -175,9 +175,9 @@ void QuiddityManager_Impl::register_classes() {
   // abstract_factory_.register_class<ShmdataToFile>
   //     (ShmdataToFile::switcher_doc_.get_class_name(),
   //      &ShmdataToFile::switcher_doc_);
-  abstract_factory_.register_class<Timelaps>
-      (Timelaps::switcher_doc_.get_class_name(),
-       &Timelaps::switcher_doc_);
+  abstract_factory_.register_class<Timelapse>
+      (Timelapse::switcher_doc_.get_class_name(),
+       &Timelapse::switcher_doc_);
   abstract_factory_.register_class<Uridecodebin>
       (Uridecodebin::switcher_doc_.get_class_name(),
        &Uridecodebin::switcher_doc_);

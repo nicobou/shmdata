@@ -45,6 +45,7 @@ namespace switcher {
 class QuiddityManager_Impl;
 
 class Quiddity {
+  // FIXME do something for this (to many friend class in quiddity.hpp):
   friend class StartableQuiddity;
   friend class ShmdataConnector;
   friend class ShmdataWriter;
@@ -52,7 +53,7 @@ class Quiddity {
   friend class GstPixelFormatConverter;
   friend class GstVideoCodec;
   friend class GstAudioCodec;
-  friend class GstVideoTimelaps;
+  friend class GstVideoTimelapse;
   friend class ShmdataDecoder;
   
  public:

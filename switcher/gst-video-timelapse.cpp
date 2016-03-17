@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gst-video-timelaps.hpp"
+#include "./gst-video-timelapse.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/gst-utils.hpp"
 #include "switcher/std2.hpp"
@@ -25,8 +25,8 @@
 #include "switcher/gprop-to-prop.hpp"
 
 namespace switcher {
-GstVideoTimelaps::GstVideoTimelaps(Quiddity *quid,
-                                   const GstVideoTimelapsConfig &config):
+GstVideoTimelapse::GstVideoTimelapse(Quiddity *quid,
+                                   const GstVideoTimelapseConfig &config):
   quid_(quid),
   config_(config),
   gst_pipeline_(std2::make_unique<GstPipeliner>(
@@ -44,7 +44,7 @@ GstVideoTimelaps::GstVideoTimelaps(Quiddity *quid,
   std::string description(std::string("shmdatasrc socket-path=")
                           + config_.orig_shmpath_
                           + " copy-buffers=true do-timestamp=true ! queue "
-                          + " ! videorate ! video/x-raw,framerate=1/1 ! videoconvert "
+                          + " ! videorate ! video/x-raw, framerate=1/1 ! videoconvert "
                           + " ! jpegenc ! multifilesink post-messages=true location=\""
                           + config_.image_path_
                           + "\"");
@@ -56,7 +56,6 @@ GstVideoTimelaps::GstVideoTimelaps(Quiddity *quid,
   GstElement *shmdatasrc =
       GstUtils::get_first_element_from_factory_name(GST_BIN(bin),
                                                     "shmdatasrc");
-
   shmsrc_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmdatasrc,
       [this](const std::string &caps) {
@@ -76,4 +75,4 @@ GstVideoTimelaps::GstVideoTimelaps(Quiddity *quid,
   //is_valid_ = true;  FIXME 
 }
 
-}  // namespace switcher
+}  // namespace Switcher

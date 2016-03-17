@@ -17,28 +17,28 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_TIMELAPS_H__
-#define __SWITCHER_TIMELAPS_H__
+#ifndef __SWITCHER_TIMELAPSE_H__
+#define __SWITCHER_TIMELAPSE_H__
 
 #include <memory>
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
-#include "switcher/gst-video-timelaps.hpp"
+#include "switcher/gst-video-timelapse.hpp"
 
 namespace switcher {
-class Timelaps: public Quiddity {
+class Timelapse: public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Timelaps);
-  Timelaps(const std::string &);
-  ~Timelaps() = default;
-  Timelaps(const Timelaps &) = delete;
-  Timelaps &operator=(const Timelaps &) = delete;
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Timelapse);
+  Timelapse(const std::string &);
+  ~Timelapse() = default;
+  Timelapse(const Timelapse &) = delete;
+  Timelapse &operator=(const Timelapse &) = delete;
 
  private:
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
-  GstVideoTimelapsConfig timelaps_config_; 
-  std::unique_ptr<GstVideoTimelaps> timelaps_{nullptr};
+  GstVideoTimelapseConfig timelapse_config_; 
+  std::unique_ptr<GstVideoTimelapse> timelapse_{nullptr};
 
   std::string img_path_;
   PContainer::prop_id_t img_path_id_;

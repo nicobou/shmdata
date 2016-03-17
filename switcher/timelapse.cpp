@@ -19,22 +19,22 @@
 
 #include "switcher/std2.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "./timelaps.hpp"
+#include "./timelapse.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    Timelaps,
-    "timelaps",
-    "Timelaps",
+    Timelapse,
+    "timelapse",
+    "Timelapse",
     "video",
     "reader",
-    "Make an image timelaps from raw video stream",
+    "Make an image timelapse from raw video stream",
     "LGPL",
     "Nicolas Bouillot");
 
-Timelaps::Timelaps(const std::string &):
+Timelapse::Timelapse(const std::string &):
     shmcntr_(static_cast<Quiddity *>(this)),
-    timelaps_config_{std::string(), std::string()},
+    timelapse_config_{std::string(), std::string()},
     img_path_id_(pmanage<MPtr(&PContainer::make_string)>(
         "imgpath",
         [this](const std::string &val){img_path_ = val; return true;},
@@ -44,7 +44,7 @@ Timelaps::Timelaps(const std::string &):
         img_path_)){
 }
 
-bool Timelaps::init() {
+bool Timelapse::init() {
   shmcntr_.install_connect_method(
       [this](const std::string &shmpath){return this->on_shmdata_connect(shmpath);},
       [this](const std::string &){return this->on_shmdata_disconnect();},
@@ -54,23 +54,23 @@ bool Timelaps::init() {
   return true;
 }
 
-bool Timelaps::on_shmdata_disconnect() {
-  if (!timelaps_)
+bool Timelapse::on_shmdata_disconnect() {
+  if (!timelapse_)
     return true;
-  timelaps_.reset();
+  timelapse_.reset();
   return true;
 }
 
-bool Timelaps::on_shmdata_connect(const std::string &shmpath) {
-  timelaps_config_ =
-      GstVideoTimelapsConfig(shmpath,
+bool Timelapse::on_shmdata_connect(const std::string &shmpath) {
+  timelapse_config_ =
+      GstVideoTimelapseConfig(shmpath,
                              img_path_.empty() ? shmpath + "%05d.jpg" : img_path_);
-  timelaps_ = std2::make_unique<GstVideoTimelaps>(this, timelaps_config_);
-  return true;  // FIXME make videotimelaps testable
+  timelapse_ = std2::make_unique<GstVideoTimelapse>(this, timelapse_config_);
+  return true;  // FIXME make videotimelapse testable
 }
 
-bool Timelaps::can_sink_caps(const std::string &caps) {
-  // assuming timelaps_ is internally using videoconvert as first caps negotiating gst element: 
+bool Timelapse::can_sink_caps(const std::string &caps) {
+  // assuming timelapse_ is internally using videoconvert as first caps negotiating gst element: 
   return GstUtils::can_sink_caps("videoconvert", caps);
 }
 

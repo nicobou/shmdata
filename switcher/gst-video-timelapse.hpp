@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_GST_VIDEO_TIMELAPS_H__
-#define __SWITCHER_GST_VIDEO_TIMELAPS_H__
+#ifndef __SWITCHER_GST_VIDEO_TIMELAPSE_H__
+#define __SWITCHER_GST_VIDEO_TIMELAPSE_H__
 
 #include <vector>
 #include <unordered_set>
@@ -31,8 +31,8 @@
 namespace switcher {
 class quiddity;
 
-struct GstVideoTimelapsConfig{
-  GstVideoTimelapsConfig(const std::string &orig_shmpath,
+struct GstVideoTimelapseConfig{
+  GstVideoTimelapseConfig(const std::string &orig_shmpath,
                          const std::string &image_path): // "for instance /tmp/img_%05d.jpg"
       orig_shmpath_(orig_shmpath),
       image_path_(image_path){};
@@ -41,18 +41,18 @@ struct GstVideoTimelapsConfig{
   std::string image_path_{};
 };
 
-class GstVideoTimelaps {
+class GstVideoTimelapse {
  public:
-  GstVideoTimelaps(Quiddity *quid,
-                   const GstVideoTimelapsConfig &config);
-  GstVideoTimelaps() = delete;
-  ~GstVideoTimelaps() = default;
-  GstVideoTimelaps(const GstVideoTimelaps &) = delete;
-  GstVideoTimelaps &operator=(const GstVideoTimelaps &) = delete;
+  GstVideoTimelapse(Quiddity *quid,
+                   const GstVideoTimelapseConfig &config);
+  GstVideoTimelapse() = delete;
+  ~GstVideoTimelapse() = default;
+  GstVideoTimelapse(const GstVideoTimelapse &) = delete;
+  GstVideoTimelapse &operator=(const GstVideoTimelapse &) = delete;
 
  private:
   Quiddity *quid_;
-  GstVideoTimelapsConfig config_;
+  GstVideoTimelapseConfig config_;
   // gst pipeline
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   // UGstElem shmsrc_{"shmdatasrc"};
