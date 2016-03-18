@@ -37,7 +37,7 @@ GstVideoTimelapse::GstVideoTimelapse(Quiddity *quid, // FIXME remove quid from t
         auto name = std::string(gst_structure_get_name(s));
         if (name != "GstMultiFileSink")
           return;
-        g_print("filename: %s\n", gst_structure_get_string(s, "filename")); // FIXME on new file
+        //g_print("filename: %s\n", gst_structure_get_string(s, "filename")); // FIXME on new file
       },
       nullptr)){
   GError *error = nullptr;

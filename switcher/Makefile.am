@@ -133,6 +133,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     information-tree-basic-serializer.hpp \
     information-tree-json.hpp \
     information-tree.hpp \
+    is-specialization-of.hpp \
     json-builder.hpp \
     logger.hpp \
     make-consultable.hpp \
@@ -141,6 +142,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     periodic-task.hpp \
     plugin-loader.hpp \
     property-container.hpp \
+    property-internal-types.hpp \
     property-mapper.hpp \
     property-specification.hpp \
     property2.hpp \
@@ -172,6 +174,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     startable-quiddity.hpp \
     std2.hpp \
     string-utils.hpp \
+    templated-sequence.hpp \
     threaded-wrapper.hpp \
     timelapse.hpp \
     type-name-registry.hpp \

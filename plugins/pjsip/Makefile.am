@@ -27,6 +27,7 @@ BUILT_SOURCES = \
 
 libpjsip_plugin_la_include_HEADERS = \
     pj-call.hpp \
+    pj-call-utils.hpp \
     pj-codec.hpp \
     pj-codec-utils.hpp \
     pj-ice-stream-trans.hpp \
