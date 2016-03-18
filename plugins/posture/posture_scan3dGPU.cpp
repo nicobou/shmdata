@@ -37,6 +37,7 @@ namespace switcher {
     cameras_.clear();
     solidifyGPU_.reset();
     colorize_.reset();
+    sculpt_.reset();
     mesh_writer_.reset();
     texture_writer_.reset();
 
@@ -69,6 +70,13 @@ namespace switcher {
     }
 
     reset_solidify();
+
+    if (refine_mesh_)
+    {
+        sculpt_ = unique_ptr<posture::SculptGL>(new posture::SculptGL());
+        sculpt_->setPointSeparation(refine_mesh_point_separation_);
+        sculpt_->setMaxNeighbors(refine_mesh_max_neighbours_);
+    }
 
     colorize_ = unique_ptr<posture::ColorizeGL>(new posture::ColorizeGL());
     colorize_->setCalibration(calibration_reader_->getCalibrationParams());
@@ -166,6 +174,13 @@ namespace switcher {
       }
 
       solidifyGPU_->getMesh(mesh);
+
+      if (refine_mesh_)
+      {
+        sculpt_->setInputMesh(mesh);
+        sculpt_->getMesh(mesh);
+      }
+
       lock.unlock();
 
       unique_lock<mutex> lockCamera(camera_mutex_);
@@ -248,6 +263,8 @@ namespace switcher {
       "Compress the generated mesh",
       compress_mesh_);
     
+    //
+    // Calibration
     pmanage<MPtr(&PContainer::make_group)>(
       "calibration",
       "Calibration",
@@ -280,6 +297,8 @@ namespace switcher {
       "Automatically improve cameras calibration, once",
       improve_registering_);
 
+    //
+    // Grid parameters
     pmanage<MPtr(&PContainer::make_group)>(
         "grid",
         "Grid parameters",
@@ -372,9 +391,11 @@ namespace switcher {
       16,
       256);
 
+    //
+    // Filtering
     pmanage<MPtr(&PContainer::make_group)>(
       "filtering",
-      "filtering",
+      "Filtering",
       "Filtering");
 
     pmanage<MPtr(&PContainer::make_parented_int)>(
@@ -440,6 +461,50 @@ namespace switcher {
       hole_filling_iterations_,
       0,
       15);
+
+    //
+    // Refine mesh
+    pmanage<MPtr(&PContainer::make_group)>(
+      "refine_mesh",
+      "Refine mesh",
+      "Refine mesh");
+
+    register_id_ = pmanage<MPtr(&PContainer::make_parented_bool)>(
+      "active_refine_mesh",
+      "refine_mesh",
+      [this](const bool &val){refine_mesh_ = val; return true;},
+      [this](){return refine_mesh_;},
+      "Refine mesh",
+      "Add details where point density is high",
+      refine_mesh_);
+
+    pmanage<MPtr(&PContainer::make_parented_int)>(
+      "refine_mesh_max_neighbours",
+      "refine_mesh",
+      [this](const int &val){
+        refine_mesh_max_neighbours_ = val;
+        return true;
+      },
+      [this](){return refine_mesh_max_neighbours_;},
+      "Max neighbours",
+      "Maximum number of points to consider for refinement",
+      refine_mesh_max_neighbours_,
+      1,
+      32);
+
+    pmanage<MPtr(&PContainer::make_parented_float)>(
+      "refine_mesh_point_separation",
+      "refine_mesh",
+      [this](const float &val){
+        refine_mesh_point_separation_ = val;
+        return true;
+      },
+      [this](){return refine_mesh_point_separation_;},
+      "Point separation",
+      "Point separation of the cloud used for refinement",
+      refine_mesh_point_separation_,
+      0.0,
+      1.0);
 
     return true;
   }

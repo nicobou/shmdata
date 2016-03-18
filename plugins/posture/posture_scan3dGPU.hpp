@@ -55,10 +55,15 @@ namespace switcher {
     float kernel_value_sigma_ {100.0};
     int hole_filling_iterations_ {1};
 
+    bool refine_mesh_ {false};
+    float refine_mesh_point_separation_ {0.1f};
+    int refine_mesh_max_neighbours_ {8};
+
     std::mutex camera_mutex_;
     std::vector<std::unique_ptr<posture::ZCamera>> cameras_ {};
     std::unique_ptr<posture::SolidifyGPU> solidifyGPU_ {nullptr};
     std::unique_ptr<posture::ColorizeGL> colorize_ {nullptr};
+    std::unique_ptr<posture::SculptGL> sculpt_ {nullptr};
     std::unique_ptr<posture::Register> register_ {nullptr};
     std::unique_ptr<posture::CalibrationReader> calibration_reader_ {nullptr};
 
