@@ -33,7 +33,6 @@
 #include "switcher/shmdata-writer.hpp"
 #include "switcher/shmdata-follower.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
 class PostureMeshMerge : public Quiddity, public StartableQuiddity {
@@ -48,18 +47,12 @@ class PostureMeshMerge : public Quiddity, public StartableQuiddity {
   bool stop();
 
  private:
-  CustomPropertyHelper::ptr custom_props_;
   ShmdataConnector shmcntr_;
 
+  std::unique_ptr<posture::CalibrationReader> calibration_reader_ {nullptr};
   std::string calibration_path_ {"default.kvc"};
-  std::string devices_path_ {"devices.xml"};
   bool reload_calibration_ {false};
   bool apply_calibration_ {true};
-
-  GParamSpec *calibration_path_prop_ {nullptr};
-  GParamSpec *devices_path_prop_ {nullptr};
-  GParamSpec *reload_calibration_prop_ {nullptr};
-  GParamSpec *apply_calibration_prop_ {nullptr};
 
   unsigned int source_id_ {0};
   std::shared_ptr<posture::MeshMerger> merger_ {nullptr};
@@ -73,27 +66,14 @@ class PostureMeshMerge : public Quiddity, public StartableQuiddity {
   std::map<int, std::string> mesh_readers_caps_ {};
   std::unique_ptr<ShmdataWriter> mesh_writer_ {};
 
-  std::map<int, std::vector<unsigned char>> stock_;
-  std::mutex stock_mutex_;
-
   bool init() final;
 
   bool connect(std::string shmdata_socket_path);
   bool disconnect(std::string shmName);
   bool disconnect_all();
   bool can_sink_caps(std::string caps);
-
-  static const gchar *get_calibration_path(void *user_data);
-  static void set_calibration_path(const gchar *name, void *user_data);
-  static const gchar *get_devices_path(void *user_data);
-  static void set_devices_path(const gchar *name, void *user_data);
-  static int get_reload_calibration(void *user_data);
-  static void set_reload_calibration(const int reload, void *user_data);
-  static int get_apply_calibration(void *user_data);
-  static void set_apply_calibration(const int apply, void *user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureMeshMerge);
 }  // namespace switcher
-
 #endif

@@ -59,6 +59,6 @@ class UGstElem : public SafeBoolIdiom {
   // safe bool idiom implementation
   bool safe_bool_idiom() const final;
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

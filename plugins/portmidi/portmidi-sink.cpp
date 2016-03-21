@@ -31,8 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 PortMidiSink::PortMidiSink(const std::string &):
-    shmcntr_(static_cast<Quiddity *>(this)),
-    custom_props_(new CustomPropertyHelper()) {
+    shmcntr_(static_cast<Quiddity *>(this)) {
 }
 
 bool PortMidiSink::init() {
@@ -43,17 +42,18 @@ bool PortMidiSink::init() {
       [this](){return this->disconnect();},
       [this](const std::string &caps){return this->can_sink_caps(caps);},
       1);
-  device_ = output_devices_enum_[0].value;
-  devices_enum_spec_ =
-      custom_props_->make_enum_property("device",
-                                        "Enumeration of MIDI capture devices",
-                                        device_,
-                                        output_devices_enum_,
-                                        (GParamFlags) G_PARAM_READWRITE,
-                                        PortMidiSink::set_device,
-                                        PortMidiSink::get_device, this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            devices_enum_spec_, "device", "Capture Device");
+
+  devices_id_ = pmanage<MPtr(&PContainer::make_selection)>(
+        "device",
+        [this](const size_t &val){
+          output_devices_enum_.select(val);
+          device_ = stoi(output_devices_enum_.get_current_nick());
+          return true;},
+        [this](){return output_devices_enum_.get();},
+        "Capture device",
+        "MIDI capture device to use",
+         output_devices_enum_);
+  device_ = stoi(output_devices_enum_.get_current_nick());
   return true;
 }
 
@@ -65,18 +65,8 @@ void PortMidiSink::on_shmreader_data(void *data, size_t /*size */) {
                     Pm_MessageData2(event->message));
 }
 
-void PortMidiSink::set_device(const gint value, void *user_data) {
-  PortMidiSink *context = static_cast<PortMidiSink *>(user_data);
-  context->device_ = value;
-}
-
-gint PortMidiSink::get_device(void *user_data) {
-  PortMidiSink *context = static_cast<PortMidiSink *>(user_data);
-  return context->device_;
-}
-
 bool PortMidiSink::start() {
-  disable_property("device");
+  pmanage<MPtr(&PContainer::enable)>(devices_id_, false);
   open_output_device(device_);
   // FIXME the following might not be necessary
   gint stat = 165;
@@ -91,7 +81,7 @@ bool PortMidiSink::start() {
 
 bool PortMidiSink::stop() {
   close_output_device(device_);
-  enable_property("device");
+  pmanage<MPtr(&PContainer::enable)>(devices_id_, true);
   return true;
 }
 

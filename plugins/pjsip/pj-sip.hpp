@@ -19,71 +19,51 @@
 #define __SWITCHER_PJSIP_H__
 
 #include <pjsua-lib/pjsua.h>
-#include <memory>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
 #include <atomic>
-#include "switcher/quiddity.hpp"
-#include "switcher/custom-property-helper.hpp"
-#include "./pj-call.hpp"
-#include "./pj-presence.hpp"
+#include "switcher/safe-bool-idiom.hpp"
 
 namespace switcher {
-class PJSIP: public Quiddity {
+class SIPPlugin;
+class PJCall;
+class PJPresence;
+class PJStunTurn;
+class PJMediaEndpt;
+
+class PJSIP: public SafeBoolIdiom {
+  friend SIPPlugin;
   friend PJCall;
   friend PJPresence;
+  friend PJStunTurn;
+  friend PJMediaEndpt;
 
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PJSIP);
-  PJSIP(const std::string &);
+  PJSIP(std::function<bool()> init_fun,
+        std::function<void()> destruct_fun);
   ~PJSIP();
   PJSIP(const PJSIP &) = delete;
   PJSIP &operator=(const PJSIP &) = delete;
-  bool init();
-  bool start();
-  bool stop();
-
  private:
-  CustomPropertyHelper::ptr custom_props_;
-  unsigned sip_port_ {5060};
-  GParamSpec *sip_port_spec_ {nullptr};
+  bool is_valid_{false};
   pj_thread_desc thread_handler_desc_ {};
   pj_thread_t *pj_thread_ref_ {nullptr};
-  pjsua_transport_id transport_id_ {-1};
-  std::thread sip_thread_ {};
-  std::mutex pj_init_mutex_ {};
-  std::condition_variable pj_init_cond_ {};
-  bool pj_sip_inited_ {false};
-  std::mutex work_mutex_ {};
-  std::condition_variable work_cond_ {};
-  std::mutex done_mutex_ {};
-  std::condition_variable done_cond_ {};
-  bool continue_ {true};
-  std::function<void()> command_ {};
   pj_pool_t *pool_ {nullptr};
   pjsip_endpoint *sip_endpt_{nullptr};
-  PJCall *sip_calls_ {nullptr};
-  PJPresence *sip_presence_ {nullptr};
   std::thread sip_worker_ {};
   bool sip_work_ {true};
   pj_thread_desc worker_handler_desc_ {};
   pj_thread_t *worker_thread_ref_ {nullptr};
   pj_caching_pool cp_;
-  bool i_m_the_one_{false};
   // singleton related members:
+  bool i_m_the_one_{false};
   static std::atomic<unsigned short> sip_endpt_used_;
   static PJSIP *this_;
-  // methods:
-  void sip_init_shutdown_thread();
-  void sip_handling_thread();
-  bool pj_sip_init();
-  void exit_cmd();
-  void run_command_sync(std::function<void()> command);
-  static void set_port(const gint value, void *user_data);
-  static gint get_port(void *user_data);
+  std::function<void()> destruct_fun_;
+  int log_level_{2};
+  bool safe_bool_idiom() const final {return is_valid_;}
   void sip_worker_thread();
-  void start_tcp_transport();
 };
 
 }  // namespace switcher

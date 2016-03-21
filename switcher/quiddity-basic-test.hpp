@@ -21,19 +21,19 @@
 #define __SWITCHER_QUIDDITY_BASIC_TEST_H__
 
 namespace switcher {
-class QuiddityBasicTest {
- public:
-  static bool test_full(QuiddityManager::ptr manager,
-                        const std::string &quiddity_class_name);
-  static bool test_get_info(QuiddityManager::ptr manager,
-                            const std::string &quiddity_class_name);
-  static bool test_create(QuiddityManager::ptr manager,
-                          const std::string &quiddity_class_name);
-  static bool test_description_by_class(QuiddityManager::ptr manager,
-                                        const std::string &quiddity_class_name);
-  static bool test_startable(QuiddityManager::ptr manager,
-                             const std::string &quiddity_class_name);
-};
-
+namespace QuiddityBasicTest {
+bool test_full(QuiddityManager::ptr manager,
+               const std::string &quiddity_class_name);
+bool test_tree(QuiddityManager::ptr manager,
+               const std::string &quiddity_class_name);
+bool test_create(QuiddityManager::ptr manager,
+                 const std::string &quiddity_class_name);
+bool test_description_by_class(QuiddityManager::ptr manager,
+                               const std::string &quiddity_class_name);
+bool test_startable(QuiddityManager::ptr manager,
+                    const std::string &quiddity_class_name);
+bool test_properties(QuiddityManager::ptr manager,
+                     const std::string &quiddity_class_name);
+}  // namespace QuiddityBasicTest
 }  // namespace switcher
 #endif

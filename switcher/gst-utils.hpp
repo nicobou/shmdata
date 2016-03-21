@@ -27,7 +27,7 @@
 
 namespace switcher {
 namespace GstUtils {
-bool make_element(const gchar *class_name, GstElement ** target_element);
+GstElement *make_element(const gchar *class_name, GstElement ** target_element);
 bool link_static_to_request(GstElement * src, GstElement *sink);
 bool link_static_to_request(GstPad * srcpad, GstElement *sink);
 bool check_pad_link_return(GstPadLinkReturn res);
@@ -58,6 +58,14 @@ void element_factory_list_to_g_enum(GEnumValue *target_enum,
                                     GstRank minrank,
                                     bool insert_none_first = true,
                                     const std::vector<std::string> &black_list = {});
+std::pair<std::vector<std::string>/*names*/,
+          std::vector<std::string>/*nicks*/>
+element_factory_list_to_pair_of_vectors(
+    GstElementFactoryListType type,
+    GstRank minrank,
+    bool insert_none_first = true,
+    const std::vector<std::string> &black_list = {});
+
 void gst_element_deleter(GstElement *element);
 gulong g_signal_connect_function(gpointer gobject,
                                  const gchar *signal,

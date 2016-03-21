@@ -20,16 +20,11 @@
 #ifndef __SWITCHER_STARTABLE_QUIDDITY_H__
 #define __SWITCHER_STARTABLE_QUIDDITY_H__
 
-#include <glib.h>
-#include <memory>
-#include "./custom-property-helper.hpp"
-
 namespace switcher {
 class StartableQuiddity {
  public:
-  typedef std::shared_ptr<StartableQuiddity> ptr;
-  StartableQuiddity();
-  virtual ~StartableQuiddity();
+  StartableQuiddity() = default;
+  virtual ~StartableQuiddity() = default;
   StartableQuiddity(const StartableQuiddity &) = delete;
   StartableQuiddity &operator=(const StartableQuiddity &) = delete;
 
@@ -41,12 +36,8 @@ class StartableQuiddity {
  private:
   virtual bool start() = 0;
   virtual bool stop() = 0;
-  static gboolean get_started(void *user_data);
-  static void set_started(gboolean started, void *user_data);
 
-  bool started_{false};
-  GParamSpec *started_prop_{nullptr};  // FIXME should be static
-  CustomPropertyHelper::ptr startable_custom_props_;
+  bool __started_{false};
 };
 }  // namespace switcher
 #endif

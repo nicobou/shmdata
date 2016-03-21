@@ -38,7 +38,6 @@ class VideoTestSource: public Quiddity, public StartableQuiddity {
   VideoTestSource &operator=(const VideoTestSource &) = delete;
 
  private:
-  CustomPropertyHelper::ptr custom_props_;
   std::string shmpath_{};
   UGstElem videotestsrc_{"videotestsrc"};
   UGstElem shmdatasink_{"shmdatasink"};

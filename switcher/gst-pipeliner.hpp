@@ -54,19 +54,11 @@ class GstPipeliner {
   void looping(gboolean looping);
   
  private:
-    typedef struct {
-    GstPipeliner *self;
-    QuiddityCommand *command;
-    GSource *src;
-  } QuidCommandArg;
-
- private:
   GstPipe::on_msg_async_cb_t on_msg_async_cb_;
   GstPipe::on_msg_sync_cb_t on_msg_sync_cb_;
   std::unique_ptr<GlibMainLoop> main_loop_;
   std::unique_ptr<GstPipe> gst_pipeline_;
   std::list<GstMessage *> msgs_{};
-  std::vector<QuidCommandArg *>commands_ {};
   GstBusSyncReply on_gst_error(GstMessage *msg);
   static gboolean bus_async(gpointer user_data);
   static GstBusSyncReply bus_sync_handler(GstBus * bus,

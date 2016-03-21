@@ -24,21 +24,24 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     categorizable.cpp \
     counter-map.cpp \
     create-remove-spy.cpp \
-    custom-property-helper.cpp \
     decodebin-to-shmdata.cpp \
     external-shmdata-writer.cpp \
+    fraction.cpp \
     g-source-wrapper.cpp \
     glibmainloop.cpp \
-    gobject-custom-property.cpp \
     gobject-wrapper.cpp \
+    gprop-to-prop.cpp \
     gst-audio-codec.cpp \
     gst-audio-encoder.cpp \
     gst-pipe.cpp \
     gst-pipeliner.cpp \
     gst-pixel-format-converter.cpp \
+    gst-rtppayloader-finder.cpp \
     gst-shmdata-subscriber.cpp \
+    gst-shmdata-to-cb.cpp \
     gst-utils.cpp \
     gst-video-codec.cpp \
+    gst-video-timelapse.cpp \
     gst-video-converter.cpp \
     gst-video-encoder.cpp \
     http-sdp-dec.cpp \
@@ -51,29 +54,35 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     net-utils.cpp \
     periodic-task.cpp \
     plugin-loader.cpp \
+    property-container.cpp \
     property-mapper.cpp \
-    property.cpp \
     quiddity-basic-test.cpp \
     quiddity-command.cpp \
     quiddity-documentation.cpp \
     quiddity-manager-impl.cpp \
     quiddity-manager-wrapper.cpp \
     quiddity-manager.cpp \
-    quiddity-property-subscriber.cpp \
     quiddity-signal-subscriber.cpp \
     quiddity.cpp \
     rtp-destination.cpp \
+    rtp-receiver.cpp \
+    rtp-sender.cpp \
     rtp-session.cpp \
+    rtp-session2.cpp \
     safe-bool-idiom.cpp \
     sdp-utils.cpp \
+    selection.cpp \
+    serialize-string.cpp \
     shmdata-connector.cpp \
+    shmdata-decoder.cpp \
     shmdata-follower.cpp \
     shmdata-utils.cpp \
     shmdata-writer.cpp \
     signal-string.cpp \
     startable-quiddity.cpp \
-    string-dictionary.cpp \
     string-utils.cpp \
+    timelapse.cpp \
+    type-name-registry.cpp \
     unique-gst-element.cpp \
     uridecodebin.cpp \
     video-test-source.cpp
@@ -99,27 +108,32 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     counter-map.hpp \
     create-remove-spy.hpp \
     creator.hpp \
-    custom-property-helper.hpp \
     decodebin-to-shmdata.hpp \
     external-shmdata-writer.hpp \
+    fraction.hpp \
     g-source-wrapper.hpp \
     glibmainloop.hpp \
-    gobject-custom-property.hpp \
     gobject-wrapper.hpp \
+    gprop-to-prop.hpp \
+    group.hpp \
     gst-audio-codec.hpp \
     gst-audio-encoder.hpp \
     gst-pipe.hpp \
     gst-pipeliner.hpp \
     gst-pixel-format-converter.hpp \
+    gst-rtppayloader-finder.hpp \
     gst-shmdata-subscriber.hpp \
+    gst-shmdata-to-cb.hpp \
     gst-utils.hpp \
     gst-video-codec.hpp \
+    gst-video-timelapse.hpp \
     gst-video-converter.hpp \
     gst-video-encoder.hpp \
     http-sdp-dec.hpp \
     information-tree-basic-serializer.hpp \
     information-tree-json.hpp \
     information-tree.hpp \
+    is-specialization-of.hpp \
     json-builder.hpp \
     logger.hpp \
     make-consultable.hpp \
@@ -127,23 +141,31 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     net-utils.hpp \
     periodic-task.hpp \
     plugin-loader.hpp \
+    property-container.hpp \
+    property-internal-types.hpp \
     property-mapper.hpp \
-    property.hpp \
+    property-specification.hpp \
+    property2.hpp \
     quiddity-basic-test.hpp \
     quiddity-command.hpp \
     quiddity-documentation.hpp \
     quiddity-manager-impl.hpp \
     quiddity-manager-wrapper.hpp \
     quiddity-manager.hpp \
-    quiddity-property-subscriber.hpp \
     quiddity-signal-subscriber.hpp \
     quiddity.hpp \
     rtp-destination.hpp \
+    rtp-receiver.hpp \
+    rtp-sender.hpp \
     rtp-session.hpp \
+    rtp-session2.hpp \
     safe-bool-idiom.hpp \
     scope-exit.hpp \
     sdp-utils.hpp \
+    selection.hpp \
+    serialize-string.hpp \
     shmdata-connector.hpp \
+    shmdata-decoder.hpp \
     shmdata-glib-logger.hpp \
     shmdata-follower.hpp \
     shmdata-utils.hpp \
@@ -151,8 +173,11 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     signal-string.hpp \
     startable-quiddity.hpp \
     std2.hpp \
-    string-dictionary.hpp \
     string-utils.hpp \
+    templated-sequence.hpp \
+    threaded-wrapper.hpp \
+    timelapse.hpp \
+    type-name-registry.hpp \
     unique-gst-element.hpp \
     uridecodebin.hpp \
     video-test-source.hpp

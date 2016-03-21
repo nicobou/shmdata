@@ -24,38 +24,59 @@
 #include <utility>
 #include <typeinfo>
 #include <string>
-#include <ostream>
+#include <ostream>  // FIXME use serialize-string.hpp instead
 #include <sstream>
+#include "./serialize-string.hpp"
 
 template<class T> using StorageType = typename std::decay<T>::type;
+
+enum AnyCategory { OTHER,
+                   BOOL,
+                   INTEGRAL,
+                   FLOATING_POINT,
+                   NONE };
+
+enum AnyArithmeticType{ NOT_DEFINED,
+                     INT,
+                     SHORT,
+                     LONG,
+                     LONG_LONG,
+                     UNSIGNED_INT,
+                     UNSIGNED_SHORT,
+                     UNSIGNED_LONG,
+                     UNSIGNED_LONG_LONG,
+                     DOUBLE,
+                     FLOAT,
+                     LONG_DOUBLE };
 
 struct AnyValueBase {
   // AnyValueBase (const AnyValueBase &) = delete;
   virtual ~AnyValueBase() {}
   virtual AnyValueBase *clone() const = 0;
-  virtual std::string to_string()const = 0;
+  virtual std::string to_string() const = 0;
+  AnyCategory category_{AnyCategory::NONE};
+  AnyArithmeticType arithmetic_type_{AnyArithmeticType::NOT_DEFINED};
 };
 
-template<typename T> struct AnyValueDerived:
-AnyValueBase {
+template<typename T> struct AnyValueDerived: AnyValueBase {
   template <typename U>
-  AnyValueDerived(U && value):
-      value_(std::forward<U> (value)) {}
+  AnyValueDerived(U &&value, AnyCategory category = AnyCategory::NONE):
+      value_(std::forward<U> (value)){
+    category_ = category;
+  }
   T value_;
-  AnyValueBase * clone() const {
-    return new AnyValueDerived <T> (value_);
+  AnyValueBase *clone() const {
+    return new AnyValueDerived <T> (value_, category_);
   }
   
   std::string to_string() const {
-    std::stringstream ss;
-    ss << value_;
-    return ss.str();
+    return switcher::serialize::apply<T>(value_);
   }
+
 };
 
 template <>
-struct AnyValueDerived <std::nullptr_t> :
-    AnyValueBase {
+struct AnyValueDerived <std::nullptr_t> : AnyValueBase {
   template<typename U> AnyValueDerived(U && value):
       value_(std::forward<U> (value)) {
   }
@@ -75,9 +96,72 @@ struct Any {
   bool not_null() const {
     return ptr_;
   }
+
+  AnyCategory get_category() const{
+    return ptr_ ? ptr_->category_ : AnyCategory::NONE;
+  }
   
-  template<typename U> Any(U && value):
+  // default ctor
+  template<typename U> Any(U &&value,
+                           typename std::enable_if<
+                           !std::is_arithmetic<U>::value>::type* = nullptr):
       ptr_(new AnyValueDerived<StorageType<U>> (std::forward<U>(value))) {
+    ptr_->category_ = AnyCategory::OTHER;
+  }
+
+  // bool ctor
+  template<typename U = bool> Any(bool &&value):
+      ptr_(new AnyValueDerived<StorageType<U>> (std::forward<U>(value))){
+    ptr_->category_ = AnyCategory::BOOL;
+  }
+
+  // char ctor
+  template<typename U = char> Any(char &&value):
+      ptr_(new AnyValueDerived<StorageType<U>> (std::forward<U>(value))){
+    ptr_->category_ = AnyCategory::OTHER;
+  }
+
+  // integral ctor
+  template<typename U> Any(U && value,
+                           typename std::enable_if<
+                           !std::is_same<U, bool>::value
+                           && !std::is_same<U, char>::value
+                           && std::is_integral<U>::value 
+                           >::type* = nullptr):
+      ptr_(new AnyValueDerived<StorageType<U>> (std::forward<U>(value))) {
+    ptr_->category_ = AnyCategory::INTEGRAL;
+    if (std::is_same<U,int>::value)
+      ptr_->arithmetic_type_ = AnyArithmeticType::INT;
+    else if (std::is_same<U,short>::value)
+      ptr_->arithmetic_type_ = AnyArithmeticType::SHORT;
+    else if (std::is_same<U,long>::value)
+      ptr_->arithmetic_type_ = AnyArithmeticType::LONG;
+    else if (std::is_same<U,long long>::value)
+      ptr_->arithmetic_type_ = AnyArithmeticType::LONG_LONG;
+    else if (std::is_same<U,unsigned int>::value)
+      ptr_->arithmetic_type_ = AnyArithmeticType::UNSIGNED_INT;
+    else if (std::is_same<U,unsigned short>::value)
+      ptr_->arithmetic_type_ = AnyArithmeticType::UNSIGNED_SHORT;
+    else if (std::is_same<U,unsigned long>::value)
+      ptr_->arithmetic_type_ = AnyArithmeticType::UNSIGNED_LONG;
+    else if (std::is_same<U,unsigned long long>::value)
+      ptr_->arithmetic_type_ = AnyArithmeticType::UNSIGNED_LONG_LONG;
+  }
+
+  // floating point ctor
+  template<typename U> Any(U && value,
+                           typename std::enable_if<
+                           !std::is_same<U, bool>::value && 
+                           std::is_floating_point<U>::value 
+                           >::type* = nullptr):
+      ptr_(new AnyValueDerived<StorageType<U>> (std::forward<U>(value))) {
+    ptr_->category_ = AnyCategory::FLOATING_POINT;
+    if (std::is_same<U, float>::value)
+      ptr_->arithmetic_type_ = AnyArithmeticType::FLOAT;
+    else if (std::is_same<U, double>::value)
+      ptr_->arithmetic_type_ = AnyArithmeticType::DOUBLE;
+    else if (std::is_same<U, long double>::value)
+      ptr_->arithmetic_type_ = AnyArithmeticType::LONG_DOUBLE;
   }
 
   Any(std::nullptr_t /*value*/):
@@ -92,42 +176,134 @@ struct Any {
   }
 
   template<class U>
-  StorageType<U> &as() {
-    typedef StorageType<U> T;
+  StorageType<U> &as() const {
+    using T = StorageType<U>;
     auto derived = dynamic_cast<AnyValueDerived<T>*>(ptr_);
     if (!derived)
       return *new U;
     return derived->value_;
   }
   
-  template<class U>
-  StorageType<U> copy_as() const {
-    typedef StorageType<U> T;
+  template<class U,
+           typename std::enable_if<
+             !std::is_arithmetic<U>::value
+             >::type* = nullptr>
+      StorageType<U> copy_as() const {
+    if (AnyCategory::OTHER != ptr_->category_)
+      std::cerr << "error copying back any value (is not other)" << std::endl;
+    using T = StorageType<U>;
     auto derived = dynamic_cast<AnyValueDerived<T>*>(ptr_);
     if (!derived)
       return U();
-    return U(derived->value_);
+    StorageType<U> res = derived->value_;
+    return res;
   }
-  
+
+  template<typename U,
+           typename std::enable_if<
+             std::is_same<U, bool>::value
+             >::type* = nullptr>
+  U copy_as() const {
+    if (AnyCategory::BOOL != ptr_->category_){
+      std::cerr << "error copying back any value (is not other)" << std::endl;
+      return false;
+    }
+    return static_cast<AnyValueDerived<bool>*>(ptr_)->value_;
+  }
+
+  template<class U,
+           typename std::enable_if<
+             std::is_integral<U>::value && !std::is_same<U, bool>::value
+             >::type* = nullptr>
+      StorageType<U> copy_as() const {
+    if (AnyCategory::FLOATING_POINT != ptr_->category_
+        && AnyCategory::INTEGRAL != ptr_->category_){
+      std::cerr << "error copying back any value (is not floating point or integral)" << std::endl;
+      return 0;
+    }
+    if (AnyArithmeticType::INT == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<int>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::SHORT == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<short>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::LONG == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<long>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::LONG_LONG == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<long long>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::UNSIGNED_INT == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<unsigned int>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::UNSIGNED_SHORT == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<unsigned short>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::UNSIGNED_LONG == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<unsigned long>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::UNSIGNED_LONG_LONG == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<unsigned long long>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::FLOAT == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<float>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::DOUBLE == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<double>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::LONG_DOUBLE == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<long double>*>(ptr_)->value_; 
+    std::cerr << "bug in copy_as for integral" << std::endl;
+    return 0;
+  }
+
+    template<class U,
+           typename std::enable_if<
+             std::is_floating_point<U>::value && !std::is_same<U, bool>::value
+             >::type* = nullptr>
+      StorageType<U> copy_as() const {
+    if (AnyCategory::FLOATING_POINT != ptr_->category_
+        && AnyCategory::INTEGRAL != ptr_->category_){
+      std::cerr << "error copying back any value (is not floating point or integral)" << std::endl;
+      return 0;
+    }
+    if (AnyArithmeticType::INT == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<int>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::SHORT == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<short>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::LONG == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<long>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::LONG_LONG == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<long long>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::UNSIGNED_INT == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<unsigned int>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::UNSIGNED_SHORT == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<unsigned short>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::UNSIGNED_LONG == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<unsigned long>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::UNSIGNED_LONG_LONG == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<unsigned long long>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::FLOAT == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<float>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::DOUBLE == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<double>*>(ptr_)->value_; 
+    else if (AnyArithmeticType::LONG_DOUBLE == ptr_->arithmetic_type_)
+      return static_cast<AnyValueDerived<long double>*>(ptr_)->value_; 
+
+    std::cerr << "bug in copy_as for floating point" << std::endl;
+    return 0.f;
+  }
+
+
   template<class U>
-  operator U() {
+  operator U() const {
     return as<StorageType<U>>();
   }
 
-  Any():ptr_(nullptr) {
+  Any(): ptr_(nullptr) {
   }
 
   Any(Any &that):ptr_(that.clone()) {
   }
 
-  Any(Any && that):ptr_(that.ptr_) {
+  Any(Any &&that):ptr_(that.ptr_) {
     that.ptr_ = nullptr;
   }
 
   Any(const Any &that):ptr_(that.clone()) {
   }
 
-  Any(const Any && that):
+  Any(const Any &&that):
       ptr_(that.clone()) {
   }
 
@@ -166,6 +342,7 @@ struct Any {
     else
       return nullptr;
   }
+  
   AnyValueBase *ptr_;
   friend std::ostream &operator<<(std::ostream &os, const Any &any) {
     if (any.ptr_)

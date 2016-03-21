@@ -25,7 +25,6 @@
 #include "switcher/shmdata-writer.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/custom-property-helper.hpp"
 #include "./jack-client.hpp"
 
 namespace switcher {
@@ -38,15 +37,14 @@ class JackToShmdata: public Quiddity, public StartableQuiddity {
   JackToShmdata &operator=(const JackToShmdata &) = delete;
 
  private:
-  CustomPropertyHelper::ptr custom_props_;
-  GParamSpec *num_channels_spec_{nullptr};
   unsigned int num_channels_{1};
-  GParamSpec *client_name_spec_{nullptr};
+  PContainer::prop_id_t num_channels_id_{0};
   std::string client_name_{};
-  GParamSpec *connect_to_spec_{nullptr};
+  PContainer::prop_id_t client_name_id_{0};
   std::string connect_to_{"system:capture_"};
-  GParamSpec *index_spec_{nullptr};
+  PContainer::prop_id_t connect_to_id_{0};
   unsigned int index_{1};
+  PContainer::prop_id_t index_id_{0};
   std::unique_ptr<ShmdataWriter> shm_{nullptr};
   std::mutex input_ports_mutex_{};
   JackClient jack_client_;
@@ -62,14 +60,6 @@ class JackToShmdata: public Quiddity, public StartableQuiddity {
   void update_port_to_connect();
   void connect_ports();
   void on_port(jack_port_t *port);
-  static void set_num_channels(const gint value, void *user_data);
-  static gint get_num_channels(void *user_data);
-  static void set_client_name(const gchar *value, void *user_data);
-  static const gchar *get_client_name(void *user_data);
-  static void set_connect_to(const gchar *value, void *user_data);
-  static const gchar *get_connect_to(void *user_data);
-  static void set_index(const gint value, void *user_data);
-  static gint get_index(void *user_data);
   static int jack_process (jack_nframes_t nframes, void *arg);
   void on_xrun(uint num_of_missed_samples);
 };

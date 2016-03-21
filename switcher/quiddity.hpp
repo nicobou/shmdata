@@ -32,7 +32,7 @@
 #include <unordered_map>
 #include <map>
 
-#include "./property.hpp"
+#include "./property-container.hpp"
 #include "./method.hpp"
 #include "./signal-string.hpp"
 #include "./information-tree.hpp"
@@ -45,6 +45,7 @@ namespace switcher {
 class QuiddityManager_Impl;
 
 class Quiddity {
+  // FIXME do something for this (to many friend class in quiddity.hpp):
   friend class StartableQuiddity;
   friend class ShmdataConnector;
   friend class ShmdataWriter;
@@ -52,13 +53,15 @@ class Quiddity {
   friend class GstPixelFormatConverter;
   friend class GstVideoCodec;
   friend class GstAudioCodec;
+  friend class GstVideoTimelapse;
+  friend class ShmdataDecoder;
   
  public:
   typedef std::shared_ptr<Quiddity> ptr;
   Quiddity();
   Quiddity(const Quiddity &) = delete;
   Quiddity &operator=(const Quiddity &) = delete;
-  virtual ~Quiddity();
+  virtual ~Quiddity() = default;
 
   // class documentation
   virtual QuiddityDocumentation *get_documentation() = 0;
@@ -67,24 +70,12 @@ class Quiddity {
   virtual bool init() = 0;
 
   // instance name
-  const std::string &get_name() const ;
+  std::string get_name() const ;
   bool set_name(const std::string &name);  // can be called once
 
   // properties
-  std::string get_property_description(const std::string &property_name);
-  std::string get_properties_description();
-  bool set_property(const std::string &name,
-                    const std::string &value);
-  std::string get_property(const std::string &name);
-  bool subscribe_property(const std::string &name,
-                          Property::Callback cb,
-                          void *user_data);
-  bool unsubscribe_property(const std::string &name,
-                            Property::Callback cb,
-                            void *user_data);
-  bool has_property(const std::string &property_name);
-  Property::ptr get_property_ptr(const std::string &property_name);
-
+  Make_consultable(Quiddity, PContainer, &props_, prop);
+  
   // methods
   std::string get_method_description(const std::string &method_name);
   std::string get_methods_description();
@@ -105,12 +96,11 @@ class Quiddity {
                           void *user_data);
   // information
   template <typename R>
-  R invoke_info_tree (std::function<R(data::Tree::ptrc tree)> fun) {
+  R invoke_info_tree (std::function<R(InfoTree::ptrc tree)> fun) {
     return fun(information_tree_.get());
   }
-  // FIXME remove get_info
-  std::string get_info(const std::string &path);
-  Make_consultable(data::Tree, information_tree_.get(), tree);
+
+  Make_consultable(Quiddity, InfoTree, information_tree_.get(), tree);
     
   // shmdata socket names
   static std::string get_socket_name_prefix();
@@ -119,14 +109,18 @@ class Quiddity {
   // manager_impl  initialization
   void set_manager_impl(std::shared_ptr<QuiddityManager_Impl> manager_impl);
 
+  // use a consistent naming for shmdatas
+  std::string make_file_name(const std::string &suffix) const;
+  std::string get_manager_name();
+  std::string get_quiddity_name_from_file_name(const std::string &shmdata_path) const;
+  std::string get_file_name_prefix() const;
+
  private:
   // information tree
-  data::Tree::ptr information_tree_;
+  InfoTree::ptr information_tree_;
   
   // properties
-  std::unordered_map<std::string, Property::ptr> properties_{};
-  std::unordered_map<std::string, Property::ptr> disabled_properties_{};
-  JSONBuilder::ptr properties_description_;
+  PContainer props_;
 
   // methods
   std::unordered_map<std::string, Method::ptr> methods_{};
@@ -149,13 +143,6 @@ class Quiddity {
   // naming
   std::string name_{};
 
-  // property
-  bool register_property(GObject *object,
-                         GParamSpec *pspec,
-                         const std::string &name_to_give,
-                         const std::string &long_name,
-                         const std::string &signal_to_emit);
-
   // method
   bool register_method(const std::string &method_name,
                        Method::method_ptr method,
@@ -168,20 +155,6 @@ class Quiddity {
                               const std::string &return_description,
                               const Method::args_doc &arg_description);
 
-  // category and positions
-  bool put_method_in_category(const std::string &method,
-                              const std::string &category);
-  bool set_method_position_weight(const std::string &method,
-                                  int position_weight);
-  bool put_property_in_category(const std::string &property, const std::string &category);
-  bool set_property_position_weight(const std::string &property,
-                                    int position_weight);
-  
-  // signals
-  // bool register_signal_gobject(const std::string &signal_name,
-  //                              GObject *object,
-  //                              const std::string &gobject_signal_name);
-  
   // allows for creation of signals in a parent class (like segment)
   bool make_custom_signal_with_class_name(const std::string &class_name,  // quiddity class name that is making the signal
                                           const std::string &signal_name,  // the name to give
@@ -198,28 +171,13 @@ class Quiddity {
  protected:
   // information
   bool graft_tree(const std::string &path,
-                  data::Tree::ptr tree_to_graft,
+                  InfoTree::ptr tree_to_graft,
                   bool do_signal = true);
-  data::Tree::ptr prune_tree(const std::string &path,
+  InfoTree::ptr prune_tree(const std::string &path,
                              bool do_signal = true);
   
   // property
-  bool install_property(GObject *object,
-                        const std::string &gobject_property_name,
-                        const std::string &name_to_give,
-                        const std::string &long_name);
-  bool reinstall_property(GObject *replacement_object,
-                          const std::string &gobject_property_name,
-                          const std::string &name,
-                          const std::string &long_name);
-  bool install_property_by_pspec(GObject *object,
-                                 GParamSpec *pspec,
-                                 const std::string &name_to_give,
-                                 const std::string &long_name);
-  bool uninstall_property(const std::string &name);
-  // properties are enabled by default during installation
-  bool disable_property(const std::string &name);
-  bool enable_property(const std::string &name);
+  Make_delegate(Quiddity, PContainer, &props_, pmanage);
 
   // methods
   bool install_method(const std::string &long_name,
@@ -253,11 +211,7 @@ class Quiddity {
   // custom signals
   void emit_on_interface_changed();   // in order to tell properties/methods has changed
 
-  // use a consistent naming for shmdatas
-  std::string make_file_name(const std::string &suffix);
-  std::string get_quiddity_name_from_file_name(const std::string &shmdata_path);
-  std::string get_manager_name();
-  
+ 
   // used in order to dynamically create other quiddity, weak_ptr is used in order to
   // avoid circular references to the manager_impl
   std::weak_ptr<QuiddityManager_Impl> manager_impl_{};

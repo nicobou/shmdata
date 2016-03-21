@@ -33,14 +33,12 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 GstVideoConverter::GstVideoConverter(const std::string &):
-    shmcntr_(static_cast<Quiddity *>(this)),
-    custom_props_(std::make_shared<CustomPropertyHelper>()){
+    shmcntr_(static_cast<Quiddity *>(this)){
 }
 
 bool GstVideoConverter::init() {
   converter_ = std2::make_unique<GstPixelFormatConverter>(
       static_cast<Quiddity *>(this),
-      custom_props_.get(),
       "Pixel format",
       "Convert to selected pixel format");
   shmcntr_.install_connect_method(

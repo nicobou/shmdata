@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <gst/gst.h>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -31,8 +30,6 @@ main() {
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("startable");
     for (auto &it : manager->get_classes()) {
-      g_warning("(((((((((((((((((((((( %s ))))))))))))))))))))))\n",
-              it.c_str());
       if (!switcher::QuiddityBasicTest::test_startable(manager, it))
         success = false;
     }

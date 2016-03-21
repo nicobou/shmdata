@@ -23,7 +23,6 @@
 #include <iostream>
 
 using namespace std;
-using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
@@ -37,9 +36,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Emmanuel Durand");
 
-PostureSrc::PostureSrc(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()) {
-  zcamera_ = std2::make_unique<ZCamera> ();
+PostureSrc::PostureSrc(const std::string &) {
+  calibration_reader_ = std2::make_unique<CalibrationReader>("default.kvc");
+  zcamera_ = std2::make_unique<ZCamera>();
   
   zcamera_->setCallbackCloud(cb_frame_cloud, this);
   zcamera_->setCallbackMesh(cb_frame_mesh, this);
@@ -54,63 +53,82 @@ PostureSrc::~PostureSrc() {
 
 bool
 PostureSrc::start() {
-  zcamera_->setCalibrationPath(calibration_path_);
-  zcamera_->setDevicesPath(devices_path_);
-  zcamera_->setDeviceIndex(device_index_);
-  zcamera_->setCaptureIR(capture_ir_);
-  zcamera_->setBuildMesh(build_mesh_);
-  zcamera_->setCompression(compress_cloud_);
-  zcamera_->setCaptureMode((posture::ZCamera::CaptureMode) capture_mode_);
-  zcamera_->setOutlierFilterParameters(filter_outliers_, filter_mean_k_, filter_stddev_mul_);
+  if (random_data_) {
+    random_data_thread_ = thread([this](){generateRandomData();});
+    return true;
+  }
+  else {
+    calibration_reader_->loadCalibration(calibration_path_);
+    if (!(*calibration_reader_) || calibration_reader_->getCalibrationParams().size() < device_index_)
+        return false;
 
-  zcamera_->start();
+    zcamera_->setCalibration(calibration_reader_->getCalibrationParams()[device_index_]);
+    zcamera_->setDeviceIndex(device_index_);
+    zcamera_->setCaptureIR(capture_ir_);
+    zcamera_->setBuildMesh(build_mesh_);
+    zcamera_->setCompression(compress_cloud_);
+    zcamera_->setCaptureMode((posture::ZCamera::CaptureMode) capture_modes_enum_.get());
+    zcamera_->setOutlierFilterParameters(filter_outliers_, filter_mean_k_, filter_stddev_mul_);
 
-  rgb_focal_ = zcamera_->getRGBFocal();
-  depth_focal_ = zcamera_->getDepthFocal();
-  // TODO: G_PARAM_READABLE are not displayed in Scenic2
-  rgb_focal_prop_ = custom_props_->make_double_property("rgb_focal",
-                              "RGB focal length",
-                              0.0,
-                              10000.0,
-                              rgb_focal_,
-                              (GParamFlags)
-                              G_PARAM_READABLE,
-                              PostureSrc::nope,
-                              PostureSrc::get_rgb_focal,
-                              this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            rgb_focal_prop_, "rgb_focal",
-                            "RGB focal length");
+    zcamera_->start();
 
-  depth_focal_prop_ = custom_props_->make_double_property("depth_focal",
-                              "Depth focal length",
-                              0.0,
-                              10000.0,
-                              depth_focal_,
-                              (GParamFlags)
-                              G_PARAM_READWRITE,
-                              PostureSrc::set_depth_focal,
-                              PostureSrc::get_depth_focal,
-                              this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            depth_focal_prop_, "depth_focal",
-                            "Depth focal length");
+    rgb_focal_ = zcamera_->getRGBFocal();
+    depth_focal_ = zcamera_->getDepthFocal();
 
-  return true;
+    rgb_focal_id_ = pmanage<MPtr(&PContainer::make_double)>(
+      "rgb_focal",
+      nullptr,
+      [this](){return rgb_focal_;},
+      "RGB focal length",
+      "RGB focal length",
+      rgb_focal_,
+      0.0,
+      10000.0);
+
+    depth_focal_id_ = pmanage<MPtr(&PContainer::make_double)>(
+      "depth_focal",
+      [this](const double &val){
+        zcamera_->setDepthFocal(val);
+        depth_focal_ = zcamera_->getDepthFocal();
+        return true;
+      },
+      [this](){
+        depth_focal_ = zcamera_->getDepthFocal();
+        return depth_focal_;
+      },
+      "Depth focal length",
+      "Depth focal length",
+      depth_focal_,
+      0.0,
+      10000.0);
+
+    return true;
+  }
 }
 
 bool
 PostureSrc::stop() {
-  zcamera_->stop();
+  if (random_data_) {
+    do_random_data_ = false;
+    if (random_data_thread_.joinable())
+      random_data_thread_.join();
 
-  cloud_writer_.reset();
-  mesh_writer_.reset();
-  depth_writer_.reset();
-  rgb_writer_.reset();
-  ir_writer_.reset();
+    cloud_writer_.reset();
+    mesh_writer_.reset();
+  }
+  else {
+    if (zcamera_)
+      zcamera_->stop();
 
-  uninstall_property("rgb_focal_x");
-  uninstall_property("rgb_focal_y");
+    cloud_writer_.reset();
+    mesh_writer_.reset();
+    depth_writer_.reset();
+    rgb_writer_.reset();
+    ir_writer_.reset();
+
+    pmanage<MPtr(&PContainer::remove)>(depth_focal_id_);
+    pmanage<MPtr(&PContainer::remove)>(rgb_focal_id_);
+  }
 
   return true;
 }
@@ -119,474 +137,204 @@ bool
 PostureSrc::init() {
   init_startable(this);
 
-  calibration_path_prop_ =
-      custom_props_->make_string_property("calibration_path",
-                            "Path to the calibration file",
-                            calibration_path_.c_str(),
-                            (GParamFlags) G_PARAM_READWRITE,
-                            PostureSrc::set_calibration_path,
-                            PostureSrc::get_calibration_path,
-                            this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            calibration_path_prop_, "calibration_path",
-                            "Path to the calibration file");
+  pmanage<MPtr(&PContainer::make_string)>(
+    "calibration_path",
+    [this](const std::string &val){calibration_path_ = val; return true;},
+    [this](){return calibration_path_;},
+    "Calibration path",
+    "Path to the calibration file",
+    calibration_path_);
+  
+  pmanage<MPtr(&PContainer::make_int)>(
+    "device_index",
+    [this](const int &val){device_index_ = val; return true;},
+    [this](){return device_index_;},
+    "Device index",
+    "Index of the device to use",
+    device_index_,
+    0,
+    7);
 
-  devices_path_prop_ = custom_props_->make_string_property("devices_path",
-                            "Path to the devices description file",
-                            devices_path_.c_str
-                            (), (GParamFlags)
-                            G_PARAM_READWRITE,
-                            PostureSrc::set_devices_path,
-                            PostureSrc::get_devices_path,
-                            this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            devices_path_prop_, "devices",
-                            "Path to the devices description file");
+  pmanage<MPtr(&PContainer::make_bool)>(
+    "random_data",
+    [this](const bool &val) {
+      if (!is_started())
+        random_data_ = val;
+      return true;
+    },
+    [this](){return random_data_;},
+    "Random data",
+    "Generate random data",
+    random_data_);
 
-  device_index_prop_ = custom_props_->make_int_property("device_index",
-                            "Index of the device to use",
-                            0,
-                            7,
-                            device_index_,
-                            (GParamFlags)
-                            G_PARAM_READWRITE,
-                            PostureSrc::set_device_index,
-                            PostureSrc::get_device_index,
-                            this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            device_index_prop_, "device_index",
-                            "Index of the device to use");
+  pmanage<MPtr(&PContainer::make_bool)>(
+    "capture_ir",
+    [this](const bool &val){capture_ir_ = val; return true;},
+    [this](){return capture_ir_;},
+    "Capture ir",
+    "Grab the IR image if true",
+    capture_ir_);
 
-  capture_ir_prop_ = custom_props_->make_boolean_property("capture_ir",
-                            "Grab the IR image if true",
-                            capture_ir_,
-                            (GParamFlags)
-                            G_PARAM_READWRITE,
-                            PostureSrc::set_capture_ir,
-                            PostureSrc::get_capture_ir,
-                            this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            capture_ir_prop_, "capture_ir",
-                            "Grab the IR image if true");
+  pmanage<MPtr(&PContainer::make_bool)>(
+    "build_mesh",
+    [this](const bool &val){
+      if (build_mesh_ != val && val == true) {
+        build_mesh_ = val;
+        build_mesh_edge_length_id_ = pmanage<MPtr(&PContainer::make_int)>(
+            "build_mesh_edge_length",
+            [this](const int &val){
+              build_mesh_edge_length_ = val;
+              if (zcamera_)
+                zcamera_->setBuildEdgeLength(build_mesh_edge_length_);
+              return true;
+            },
+            [this](){return build_mesh_edge_length_;},
+            "Build mesh edge length",
+            "Edge length of the build mesh, in pixels",
+            build_mesh_edge_length_,
+            1,
+            16);
+      } else if (build_mesh_edge_length_ != val && val == false) {
+        build_mesh_edge_length_ = false;
+        pmanage<MPtr(&PContainer::remove)>(build_mesh_edge_length_id_);
+      }
+      if (zcamera_)
+        zcamera_->setBuildEdgeLength(build_mesh_edge_length_);
+      return true;
+    },
+    [this](){return build_mesh_;},
+    "Build mesh",
+    "Build a mesh from the cloud",
+    build_mesh_);
 
-  build_mesh_prop_ = custom_props_->make_boolean_property("build_mesh",
-                            "Build a mesh from the cloud",
-                            build_mesh_,
-                            (GParamFlags)
-                            G_PARAM_READWRITE,
-                            PostureSrc::set_build_mesh,
-                            PostureSrc::get_build_mesh,
-                            this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            build_mesh_prop_, "build_mesh",
-                            "Build a mesh from the cloud");
+  pmanage<MPtr(&PContainer::make_bool)>(
+    "compress_cloud",
+    [this](const bool &val){compress_cloud_ = val; return true;},
+    [this](){return compress_cloud_;},
+    "Compress cloud",
+    "Compress the cloud if true",
+    compress_cloud_);
 
-  compress_cloud_prop_ = custom_props_->make_boolean_property("compress_cloud",
-                            "Compress the cloud if true",
-                            compress_cloud_,
-                            (GParamFlags) G_PARAM_READWRITE,
-                            PostureSrc::set_compress_cloud,
-                            PostureSrc::get_compress_cloud,
-                            this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            compress_cloud_prop_, "compress_cloud",
-                            "Compress the cloud if true");
+  pmanage<MPtr(&PContainer::make_bool)>(
+    "reload_calibration",
+    [this](const bool &val){reload_calibration_ = val; return true;},
+    [this](){return reload_calibration_;},
+    "Pre frame calibration",
+    "Reload calibration at each frame",
+    reload_calibration_);
 
-  reload_calibration_prop_ = custom_props_->make_boolean_property("reload_calibration",
-                                "Reload calibration at each frame",
-                                reload_calibration_,
-                                (GParamFlags) G_PARAM_READWRITE,
-                                PostureSrc::set_reload_calibration,
-                                PostureSrc::get_reload_calibration,
-                                this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            reload_calibration_prop_, "reload_calibration",
-                            "Reload calibration at each frame");
+  pmanage<MPtr(&PContainer::make_bool)>(
+    "downsample",
+    [this](const bool &val){
+      if (downsample_ != val && val == true) {
+        downsample_ = val;
+        downsample_resolution_id_ =
+            pmanage<MPtr(&PContainer::make_double)>(
+                "downsample_resolution",
+                [this](const double &val){
+                  downsample_resolution_ = val;
+                  if (zcamera_)
+                    zcamera_->setDownsampling(downsample_, downsample_resolution_);
+                  return true;},
+                [this](){return downsample_resolution_;},
+                "Resampling resolution",
+                "Resampling resolution",
+                downsample_resolution_,
+                0.01,
+                1.0);
+      } else if (downsample_ != val && val == false) {
+        downsample_ = false;
+        pmanage<MPtr(&PContainer::remove)>(downsample_resolution_id_);
+      }
+      if (zcamera_)
+        zcamera_->setDownsampling(downsample_, downsample_resolution_);
+      return true;
+    },
+    [this](){return downsample_;},
+    "Downsample",
+    "Activate the cloud downsampling",
+    downsample_);
 
-  downsample_prop_ = custom_props_->make_boolean_property("downsample",
-                                "Activate the cloud downsampling",
-                                downsample_,
-                                (GParamFlags) G_PARAM_READWRITE,
-                                PostureSrc::set_downsample_active,
-                                PostureSrc::get_downsample_active,
-                                this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            downsample_prop_, "downsample",
-                            "Activate the cloud downsampling");
+  pmanage<MPtr(&PContainer::make_bool)>(
+    "filter_outliers",
+    [this](const bool &val){
+      if (filter_outliers_ != val && val == true){
+        filter_outliers_ = val;
+        filter_mean_k_id_ = pmanage<MPtr(&PContainer::make_int)>(
+            "filter_mean_k",
+            [this](const int &val){
+              filter_mean_k_ = val;
+              if (zcamera_)
+                zcamera_->setOutlierFilterParameters(filter_outliers_,
+                                                     filter_mean_k_,
+                                                     filter_stddev_mul_);
+              return true;
+            },
+            [this](){return filter_mean_k_;},
+            "Filter mean k",
+            "Number of points to consider for the outlier filtering",
+            filter_mean_k_,
+            0,
+            16);            
+        filter_stddev_mul_id_ = pmanage<MPtr(&PContainer::make_double)>(
+            "filter_stddev_mul",
+            [this](const double &val){
+              filter_stddev_mul_ = val;
+              if (zcamera_)
+                zcamera_->setOutlierFilterParameters(filter_outliers_,
+                                                     filter_mean_k_,
+                                                     filter_stddev_mul_);
+              return true;
+            },
+            [this](){return filter_stddev_mul_ ;},
+            "Filter stddev mul",
+            "Multiplier threshold on the statistical outlier filter (see PCL doc)",
+            filter_stddev_mul_,
+            0.0,
+            8.0);
+      } else if (filter_outliers_ != val && val == false) {
+        filter_outliers_ = val;
+        pmanage<MPtr(&PContainer::remove)>(filter_mean_k_id_);
+        pmanage<MPtr(&PContainer::remove)>(filter_stddev_mul_id_);
+      }
+      if (zcamera_)
+        zcamera_->setOutlierFilterParameters(filter_outliers_,
+                                             filter_mean_k_,
+                                             filter_stddev_mul_);
+        return true;
+    },
+    [this](){return filter_outliers_;},
+    "Filter outliers",
+    "Filter outlier points from the cloud",
+    filter_outliers_);
 
-  filter_outliers_prop_ = custom_props_->make_boolean_property("filter_outliers",
-                                "Filter outlier points from the cloud",
-                                filter_outliers_,
-                                (GParamFlags) G_PARAM_READWRITE,
-                                PostureSrc::set_filter_outliers,
-                                PostureSrc::get_filter_outliers,
-                                this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            filter_outliers_prop_, "filter_outliers",
-                            "Filter outlier points from the cloud");
-
-  capture_modes_enum_[0].value = 0;
-  capture_modes_enum_[0].value_name = "Default mode";
-  capture_modes_enum_[0].value_nick = capture_modes_enum_[0].value_name;
-  capture_modes_enum_[1].value = 1;
-  capture_modes_enum_[1].value_name = "SXGA 15Hz";
-  capture_modes_enum_[1].value_nick = capture_modes_enum_[1].value_name;
-  capture_modes_enum_[2].value = 2;
-  capture_modes_enum_[2].value_name = "VGA 30Hz";
-  capture_modes_enum_[2].value_nick = capture_modes_enum_[2].value_name;
-  capture_modes_enum_[3].value = 3;
-  capture_modes_enum_[3].value_name = "VGA 25Hz";
-  capture_modes_enum_[3].value_nick = capture_modes_enum_[3].value_name;
-  capture_modes_enum_[4].value = 4;
-  capture_modes_enum_[4].value_name = "QVGA 25Hz";
-  capture_modes_enum_[4].value_nick = capture_modes_enum_[4].value_name;
-  capture_modes_enum_[5].value = 5;
-  capture_modes_enum_[5].value_name = "QVGA 30Hz";
-  capture_modes_enum_[5].value_nick = capture_modes_enum_[5].value_name;
-  capture_modes_enum_[6].value = 6;
-  capture_modes_enum_[6].value_name = "QVGA 60Hz";
-  capture_modes_enum_[6].value_nick = capture_modes_enum_[6].value_name;
-  capture_modes_enum_[7].value = 7;
-  capture_modes_enum_[7].value_name = "QQVGA 25Hz";
-  capture_modes_enum_[7].value_nick = capture_modes_enum_[7].value_name;
-  capture_modes_enum_[8].value = 8;
-  capture_modes_enum_[8].value_name = "QQVGA 30Hz";
-  capture_modes_enum_[8].value_nick = capture_modes_enum_[8].value_name;
-  capture_modes_enum_[9].value = 9;
-  capture_modes_enum_[9].value_name = "QQVGA 60Hz";
-  capture_modes_enum_[9].value_nick = capture_modes_enum_[9].value_name;
-  capture_modes_enum_[10].value = 0;
-  capture_modes_enum_[10].value_name = nullptr;
-  capture_modes_enum_[10].value_nick = nullptr;
-
-  capture_mode_prop_ = custom_props_->make_enum_property("capture_mode",
-                                                         "Capture mode of the device",
-                                                         0,
-                                                         capture_modes_enum_,
-                                                         (GParamFlags)
-                                                         G_PARAM_READWRITE,
-                                                         PostureSrc::set_capture_mode,
-                                                         PostureSrc::get_capture_mode,
-                                                         this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            capture_mode_prop_, "capture_mode",
-                            "Capture mode of the device");
+  pmanage<MPtr(&PContainer::make_selection)>(
+    "capture_mode",
+    [this](const size_t &val){capture_modes_enum_.select(val); return true;},
+    [this](){return capture_modes_enum_.get();},
+    "Capture mode",
+    "Capture mode of the device",
+    capture_modes_enum_);
 
   return true;
-}
-
-const gchar *
-PostureSrc::get_calibration_path(void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  return ctx->calibration_path_.c_str();
-}
-
-void
-PostureSrc::set_calibration_path(const gchar *name, void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  if (name != nullptr)
-    ctx->calibration_path_ = name;
-}
-
-const gchar *
-PostureSrc::get_devices_path(void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  return ctx->devices_path_.c_str();
-}
-
-void
-PostureSrc::set_devices_path(const gchar *name, void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  if (name != nullptr)
-    ctx->devices_path_ = name;
-}
-
-int
-PostureSrc::get_device_index(void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  return ctx->device_index_;
-}
-
-void
-PostureSrc::set_device_index(const int index, void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  ctx->device_index_ = index;
-}
-
-int
-PostureSrc::get_capture_ir(void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  return ctx->capture_ir_;
-}
-
-void
-PostureSrc::set_capture_ir(const int ir, void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  ctx->capture_ir_ = ir;
-}
-
-int
-PostureSrc::get_build_mesh(void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  return ctx->build_mesh_;
-}
-
-void
-PostureSrc::set_build_mesh(const int build_mesh, void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-
-  if (ctx->build_mesh_ != build_mesh && build_mesh == true)
-  {
-    ctx->build_mesh_ = build_mesh;
-
-    ctx->build_mesh_edge_length_prop_ = ctx->custom_props_->make_int_property("build_mesh_edge_length",
-                                "Edge length of the build mesh, in pixels",
-                                1,
-                                16,
-                                ctx->build_mesh_edge_length_,
-                                (GParamFlags)
-                                G_PARAM_READWRITE,
-                                PostureSrc::set_build_mesh_edge_length,
-                                PostureSrc::get_build_mesh_edge_length,
-                                ctx);
-    ctx->install_property_by_pspec(ctx->custom_props_->get_gobject(),
-                              ctx->build_mesh_edge_length_prop_, "build_mesh_edge_length",
-                              "Edge length of the  build mesh, in pixels");
-  }
-  else if (ctx->build_mesh_edge_length_ != build_mesh && build_mesh == false)
-  {
-    ctx->build_mesh_edge_length_ = false;
-    ctx->uninstall_property("build_mesh_edge_length");
-  }
-
-  if (ctx->zcamera_)
-    ctx->zcamera_->setBuildEdgeLength(ctx->build_mesh_edge_length_);
-}
-
-int
-PostureSrc::get_build_mesh_edge_length(void *user_data) {
-    PostureSrc *ctx = (PostureSrc*) user_data;
-    return ctx->build_mesh_edge_length_;
-}
-
-void
-PostureSrc::set_build_mesh_edge_length(const int edge_length, void *user_data) {
-    PostureSrc *ctx = (PostureSrc*) user_data;
-    ctx->build_mesh_edge_length_ = edge_length;
-
-    if (ctx->zcamera_)
-        ctx->zcamera_->setBuildEdgeLength(ctx->build_mesh_edge_length_);
-}
-
-int
-PostureSrc::get_compress_cloud(void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  return ctx->compress_cloud_;
-}
-
-void
-PostureSrc::set_compress_cloud(const int compress, void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  ctx->compress_cloud_ = compress;
-}
-
-int
-PostureSrc::get_capture_mode(void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  return ctx->capture_mode_;
-}
-
-void
-PostureSrc::set_capture_mode(const int mode, void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  ctx->capture_mode_ = mode;
-}
-
-int
-PostureSrc::get_reload_calibration(void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  return ctx->reload_calibration_;
-}
-
-void
-PostureSrc::set_reload_calibration(const int reload, void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  ctx->reload_calibration_ = reload;
-}
-
-int
-PostureSrc::get_downsample_active(void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  return ctx->downsample_;
-}
-
-void
-PostureSrc::set_downsample_active(const int active, void *user_data){
-  PostureSrc *ctx = (PostureSrc *) user_data;
-
-  if (ctx->downsample_ != active && active == true)
-  {
-    ctx->downsample_ = active;
-
-    ctx->downsample_resolution_prop_ = ctx->custom_props_->make_double_property("downsample_resolution",
-                                "Resampling resolution",
-                                0.01,
-                                1.0,
-                                ctx->downsample_resolution_,
-                                (GParamFlags)
-                                G_PARAM_READWRITE,
-                                PostureSrc::set_downsampling_resolution,
-                                PostureSrc::get_downsampling_resolution,
-                                ctx);
-    ctx->install_property_by_pspec(ctx->custom_props_->get_gobject(),
-                              ctx->downsample_resolution_prop_, "downsample_resolution",
-                              "Resampling resolution");
-  }
-  else if (ctx->downsample_ != active && active == false)
-  {
-    ctx->downsample_ = false;
-    ctx->uninstall_property("downsample_resolution");
-  }
-
-  if (ctx->zcamera_)
-    ctx->zcamera_->setDownsampling(ctx->downsample_, ctx->downsample_resolution_);
-}
-
-double
-PostureSrc::get_downsampling_resolution(void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  return ctx->downsample_resolution_;
-}
-
-void
-PostureSrc::set_downsampling_resolution(const double resolution, void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  ctx->downsample_resolution_ = resolution;
-
-  if (ctx->zcamera_)
-    ctx->zcamera_->setDownsampling(ctx->downsample_, ctx->downsample_resolution_);
-}
-
-int
-PostureSrc::get_filter_outliers(void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  return ctx->filter_outliers_;
-}
-
-void
-PostureSrc::set_filter_outliers(const int active, void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-
-  if (ctx->filter_outliers_ != active && active == true)
-  {
-    ctx->filter_outliers_ = active;
-    ctx->filter_mean_k_prop_ = ctx->custom_props_->make_int_property("filter_mean_k",
-                              "Number of points to consider for the outlier filtering",
-                              0,
-                              16,
-                              ctx->filter_mean_k_,
-                              (GParamFlags)
-                              G_PARAM_READWRITE,
-                              PostureSrc::set_filter_mean_k,
-                              PostureSrc::get_filter_mean_k,
-                              ctx);
-    ctx->install_property_by_pspec(ctx->custom_props_->get_gobject(),
-                              ctx->filter_mean_k_prop_, "filter_mean_k",
-                              "Number of points to consider for the outlier filtering");
-
-    ctx->filter_stddev_mul_prop_ = ctx->custom_props_->make_double_property("filter_stddev_mul",
-                                "Multiplier threshold on the statistical outlier filter (see PCL doc)",
-                                0.0,
-                                8.0,
-                                ctx->filter_stddev_mul_,
-                                (GParamFlags)
-                                G_PARAM_READWRITE,
-                                PostureSrc::set_filter_stddev_mul,
-                                PostureSrc::get_filter_stddev_mul,
-                                ctx);
-    ctx->install_property_by_pspec(ctx->custom_props_->get_gobject(),
-                              ctx->filter_stddev_mul_prop_, "filter_stddev_mul",
-                              "Multiplier threshold on the statistical outlier filter (see PCL doc)");
-  } 
-  else if (ctx->filter_outliers_ != active && active == false)
-  {
-    ctx->filter_outliers_ = active;
-    ctx->uninstall_property("filter_mean_k");
-    ctx->uninstall_property("filter_stddev_mul");
-  }
-
-  if (ctx->zcamera_)
-    ctx->zcamera_->setOutlierFilterParameters(ctx->filter_outliers_, ctx->filter_mean_k_, ctx->filter_stddev_mul_);
-}
-
-int
-PostureSrc::get_filter_mean_k(void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  return ctx->filter_mean_k_;
-}
-
-void
-PostureSrc::set_filter_mean_k(const int mean_k, void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  ctx->filter_mean_k_ = mean_k;
-
-  if (ctx->zcamera_)
-    ctx->zcamera_->setOutlierFilterParameters(ctx->filter_outliers_, ctx->filter_mean_k_, ctx->filter_stddev_mul_);
-}
-
-double
-PostureSrc::get_filter_stddev_mul(void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  return ctx->filter_stddev_mul_;
-}
-
-void
-PostureSrc::set_filter_stddev_mul(const double stddev_mul, void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  ctx->filter_stddev_mul_ = stddev_mul;
-
-  if (ctx->zcamera_)
-    ctx->zcamera_->setOutlierFilterParameters(ctx->filter_outliers_, ctx->filter_mean_k_, ctx->filter_stddev_mul_);
-}
-
-double
-PostureSrc::get_rgb_focal(void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  return ctx->rgb_focal_;
-}
-
-void
-PostureSrc::set_depth_focal(const double focal, void *user_data) {
-    PostureSrc *ctx = (PostureSrc *) user_data;
-    ctx->zcamera_->setDepthFocal(focal);
-    ctx->depth_focal_ = ctx->zcamera_->getDepthFocal();
-}
-
-double
-PostureSrc::get_depth_focal(void *user_data) {
-  PostureSrc *ctx = (PostureSrc *) user_data;
-  ctx->depth_focal_ = ctx->zcamera_->getDepthFocal();
-  return ctx->depth_focal_;
-}
-
-void
-PostureSrc::nope(const double /*unused*/, void* /*unused*/)
-{
-  return;
 }
 
 void
 PostureSrc::cb_frame_cloud(void *context, const vector<char>&& data) {
   PostureSrc *ctx = (PostureSrc *) context;
 
-  if (!ctx->cloud_writer_ || data.size() > ctx->cloud_writer_->writer(&shmdata::Writer::alloc_size)) {
-    auto data_type = ctx->compress_cloud_ ? string(POINTCLOUD_TYPE_COMPRESSED) : string(POINTCLOUD_TYPE_BASE);
+  if (!ctx->cloud_writer_
+      || data.size() > ctx->cloud_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+    auto data_type = ctx->compress_cloud_ ?
+        string(POINTCLOUD_TYPE_COMPRESSED)
+        : string(POINTCLOUD_TYPE_BASE);
     ctx->cloud_writer_.reset();
-    ctx->cloud_writer_ = std2::make_unique<ShmdataWriter>(ctx,
-                                                    ctx->make_file_name("cloud"),
-                                                    data.size() * 2,
-                                                    data_type);
-
+    ctx->cloud_writer_ = std2::make_unique<ShmdataWriter>(
+        ctx,
+        ctx->make_file_name("cloud"),
+        data.size() * 2,
+        data_type);
+    
     if (!ctx->cloud_writer_) {
       g_warning("Unable to create mesh callback");
       return;
@@ -594,18 +342,24 @@ PostureSrc::cb_frame_cloud(void *context, const vector<char>&& data) {
   }
 
   if (ctx->reload_calibration_)
-    ctx->zcamera_->reloadCalibration();
+  {
+    ctx->calibration_reader_->loadCalibration(ctx->calibration_path_);
+    if (!(*ctx->calibration_reader_) || ctx->calibration_reader_->getCalibrationParams().size() < ctx->device_index_)
+        return;
+    ctx->zcamera_->setCalibration(ctx->calibration_reader_->getCalibrationParams()[ctx->device_index_]);
+  }
 
-  ctx->cloud_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<char*>(data.data()), data.size());
+  ctx->cloud_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+      const_cast<char*>(data.data()), data.size());
   ctx->cloud_writer_->bytes_written(data.size());
 }
 
 void
-PostureSrc::cb_frame_mesh(void* context, vector<unsigned char>&& data)
-{
+PostureSrc::cb_frame_mesh(void* context, vector<unsigned char>&& data) {
   PostureSrc *ctx = static_cast<PostureSrc*>(context);
   
-  if (!ctx->mesh_writer_ || data.size() > ctx->mesh_writer_->writer(&shmdata::Writer::alloc_size)) {
+  if (!ctx->mesh_writer_
+      || data.size() > ctx->mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
     ctx->mesh_writer_.reset();
     ctx->mesh_writer_ = std2::make_unique<ShmdataWriter>(ctx,
                                                      ctx->make_file_name("mesh"),
@@ -618,7 +372,8 @@ PostureSrc::cb_frame_mesh(void* context, vector<unsigned char>&& data)
     }
   }
 
-  ctx->mesh_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(data.data()), data.size());
+  ctx->mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+      const_cast<unsigned char*>(data.data()), data.size());
   ctx->mesh_writer_->bytes_written(data.size());
 }
 
@@ -646,7 +401,8 @@ PostureSrc::cb_frame_depth(void *context,
     }
   }
 
-  ctx->depth_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(data.data()), data.size());
+  ctx->depth_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+      const_cast<unsigned char*>(data.data()), data.size());
   ctx->depth_writer_->bytes_written(data.size());
 }
 
@@ -676,7 +432,8 @@ PostureSrc::cb_frame_rgb(void *context,
     }
   }
 
-  ctx->rgb_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(data.data()), data.size());
+  ctx->rgb_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+      const_cast<unsigned char*>(data.data()), data.size());
   ctx->rgb_writer_->bytes_written(data.size());
 }
 
@@ -704,8 +461,56 @@ PostureSrc::cb_frame_ir(void *context, const vector<unsigned char>&data,
     }
   }
 
-  ctx->ir_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(data.data()), data.size());
+  ctx->ir_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+      const_cast<unsigned char*>(data.data()), data.size());
   ctx->ir_writer_->bytes_written(data.size());
 }
 
+void
+PostureSrc::generateRandomData() {
+  do_random_data_ = true;
+
+  while (do_random_data_) {
+    // Random cloud
+    vector<char> cloud;
+    posture::ZCamera::getNoise(1, 1, 1, 1000, cloud);
+
+    if (!cloud_writer_) {
+      cloud_writer_ = std2::make_unique<ShmdataWriter>(this,
+                      make_file_name("cloud"),
+                      cloud.size() * 2,
+                      string(POINTCLOUD_TYPE_BASE));
+      if (!cloud_writer_) {
+        g_warning("Unable to create mesh shmdata writer");
+        return;
+      }
+    }
+
+    cloud_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+      const_cast<char*>(cloud.data()), cloud.size());
+    cloud_writer_->bytes_written(cloud.size());
+
+    // Random mesh
+    vector<unsigned char> mesh;
+    posture::ZCamera::getRandomMesh(1, 1, 1, 100, mesh);
+
+    if (!mesh_writer_) {
+      mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
+                      make_file_name("mesh"),
+                      mesh.size() * 2,
+                      string(POLYGONMESH_TYPE_BASE));
+      if (!mesh_writer_) {
+        g_warning("Unable to create mesh shmdata writer");
+        return;
+      }
+    }
+
+    mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+      const_cast<unsigned char*>(mesh.data()), mesh.size());
+    mesh_writer_->bytes_written(mesh.size());
+
+    this_thread::sleep_for(chrono::milliseconds(33));
+  }
 }
+
+}  // namespace switcher

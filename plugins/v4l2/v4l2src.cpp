@@ -39,10 +39,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 V4L2Src::V4L2Src(const std::string &):
-    gst_pipeline_(std2::make_unique<GstPipeliner>(
-        nullptr,
-        nullptr)),
-    custom_props_(std::make_shared<CustomPropertyHelper>()) {
+    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)) {
   init_startable(this);
 }
 
@@ -61,37 +58,38 @@ bool V4L2Src::init() {
     g_debug("no video 4 linux device detected");
     return false;
   }
-  devices_enum_spec_ =
-      custom_props_->make_enum_property("device",
-                                        "Enumeration of v4l2 capture devices",
-                                        device_,
-                                        devices_enum_,
-                                        (GParamFlags) G_PARAM_READWRITE,
-                                        V4L2Src::set_camera,
-                                        V4L2Src::get_camera, this);
-
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            devices_enum_spec_, "device", "Capture Device");
-
-  update_device_specific_properties(device_);
+  devices_id_ = pmanage<MPtr(&PContainer::make_selection)>(
+      "device",
+      [this](const size_t &val){
+        devices_enum_.select(val);
+        update_device_specific_properties(devices_enum_.get());
+        return true;
+      },
+      [this](){return devices_enum_.get();},
+      "Capture Device",
+      "Enumeration of v4l2 capture devices",
+      devices_enum_);
+  group_id_ = pmanage<MPtr(&PContainer::make_group)>(
+     "config",
+     "capture device configuration",
+     "device specific parameters");
+  update_device_specific_properties(devices_enum_.get());
   codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
-                                             custom_props_.get(),
                                              shmpath_);
+  
   return true;
 }
 
 void V4L2Src::update_capture_device() {
   gint i = 0;
+  std::vector<std::string> names;
+  std::vector<std::string> nicks;
   for (auto &it : capture_devices_) {
-    devices_enum_[i].value = i;
-    // FIXME free previous...
-    devices_enum_[i].value_name = g_strdup(it.card_.c_str());
-    devices_enum_[i].value_nick = g_strdup(it.file_device_.c_str());
+    names.push_back(it.card_);
+    nicks.push_back(it.file_device_);
     i++;
   }
-  devices_enum_[i].value = 0;
-  devices_enum_[i].value_name = nullptr;
-  devices_enum_[i].value_nick = nullptr;
+  devices_enum_ = Selection(std::make_pair(names, nicks), 0);
 }
 
 void V4L2Src::update_device_specific_properties(gint device_enum_id) {
@@ -107,228 +105,133 @@ void V4L2Src::update_device_specific_properties(gint device_enum_id) {
 }
 
 void V4L2Src::update_discrete_resolution(const CaptureDescription &cap_descr) {
-  uninstall_property("resolution");
+  pmanage<MPtr(&PContainer::remove)>(resolutions_id_); resolutions_id_ = 0;
   // resolution_ = -1;
   if (!cap_descr.frame_size_discrete_.empty()) {
     width_ = -1;
     height_ = -1;
-    gint i = 0;
-    for (auto &it : cap_descr.frame_size_discrete_) {
-      resolutions_enum_[i].value = i;
-      // FIXME free previous here
-      resolutions_enum_[i].value_name = g_strdup_printf("%sx%s",
-                                                        it.first.c_str(),
-                                                        it.second.c_str());
-      resolutions_enum_[i].value_nick = resolutions_enum_[i].value_name;
-      i++;
-    }
-    resolutions_enum_[i].value = 0;
-    resolutions_enum_[i].value_name = nullptr;
-    resolutions_enum_[i].value_nick = nullptr;
-
-    if (resolutions_spec_ == nullptr)
-      resolutions_spec_ = custom_props_->make_enum_property("resolution",
-                                                            "resolution of selected capture devices",
-                                                            0,
-                                                            resolutions_enum_,
-                                                            (GParamFlags)
-                                                            G_PARAM_READWRITE,
-                                                            V4L2Src::set_resolution,
-                                                            V4L2Src::get_resolution,
-                                                            this);
-    // resolution_ = 0;
-    install_property_by_pspec(custom_props_->get_gobject(),
-                              resolutions_spec_,
-                              "resolution", "Resolution");
+    std::vector<std::string> names;
+    for (auto &it : cap_descr.frame_size_discrete_)
+      names.push_back(std::string(it.first) + "x" + std::string(it.second));
+    resolutions_enum_ = Selection(std::move(names), 0);
+    resolutions_id_ = pmanage<MPtr(&PContainer::make_parented_selection)>(
+        "resolution",
+	"config",
+        [this](const size_t &val){resolutions_enum_.select(val); return true;},
+        [this](){return resolutions_enum_.get();},
+        "Resolution",
+        "Resolution of selected capture devices",
+        resolutions_enum_);
   }
 }
 
 void V4L2Src::update_discrete_framerate(const CaptureDescription &cap_descr) {
-  uninstall_property("framerate");
-  if (cap_descr.frame_interval_discrete_.empty()) {
-    framerate_ = -1;
+  pmanage<MPtr(&PContainer::remove)>(framerates_enum_id_); framerates_enum_id_ = 0;
+  if (cap_descr.frame_interval_discrete_.empty())
     return;
-  }
-  gint i = 0;
-  for (auto &it : cap_descr.frame_interval_discrete_) {
-    framerates_enum_[i].value = i;
-    // FIXME free previous here
+  std::vector<std::string> names;
+  for (auto &it : cap_descr.frame_interval_discrete_)
     // inversing enumerator and denominator because gst wants
     // framerate while v4l2 gives frame interval
-    framerates_enum_[i].value_name = g_strdup_printf("%s/%s",
-                                                     it.second.c_str(),
-                                                     it.first.c_str());
-    framerates_enum_[i].value_nick = framerates_enum_[i].value_name;
-    i++;
-  }
-  framerates_enum_[i].value = 0;
-  framerates_enum_[i].value_name = nullptr;
-  framerates_enum_[i].value_nick = nullptr;
-  
-  if (framerate_spec_ == nullptr)
-    framerate_spec_ =
-        custom_props_->make_enum_property("framerate",
-                                          "framerate of selected capture devices",
-                                          0,
-                                          framerates_enum_,
-                                          (GParamFlags)
-                                          G_PARAM_READWRITE,
-                                          V4L2Src::set_framerate,
-                                          V4L2Src::get_framerate,
-                                          this);
-  framerate_ = 0;
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            framerate_spec_, "framerate", "Framerate");
+    names.push_back(it.second + "/" + it.first);
+    framerates_enum_ = Selection(std::move(names), 0);
+    framerates_enum_id_ = pmanage<MPtr(&PContainer::make_parented_selection)>(
+        "framerate",
+	"config",
+        [this](const size_t &val){framerates_enum_.select(val); return true;},
+        [this](){return framerates_enum_.get();},
+        "Framerate",
+        "Framerate of selected capture devices",
+        framerates_enum_);
 }
 
 void V4L2Src::update_pixel_format(const CaptureDescription &cap_descr) {
-  uninstall_property("pixelformat");
-  if (!cap_descr.pixel_formats_.empty()) {
-    gint i = 0;
-    for (auto &it : cap_descr.pixel_formats_) {
-      pixel_format_enum_[i].value = i;
-      // FIXME free previous here
-      // inversing enumerator and denominator because gst wants
-      // framerate while v4l2 gives frame interval
-      pixel_format_enum_[i].value_name = g_strdup(it.second.c_str()); 
-      pixel_format_enum_[i].value_nick = g_strdup(it.first.c_str());
-      i++;
-    }
-    pixel_format_enum_[i].value = 0;
-    pixel_format_enum_[i].value_name = nullptr;
-    pixel_format_enum_[i].value_nick = nullptr;
-
-    if (pixel_format_spec_ == nullptr)
-      pixel_format_spec_ =
-          custom_props_->make_enum_property("pixelformat",
-                                            "Capture Pixel Format",
-                                            0,
-                                            pixel_format_enum_,
-                                            (GParamFlags)
-                                            G_PARAM_READWRITE,
-                                            V4L2Src::set_pixel_format,
-                                            V4L2Src::get_pixel_format,
-                                            this);
-    install_property_by_pspec(custom_props_->get_gobject(),
-                              pixel_format_spec_,
-                              "pixelformat",
-                              "Capture Pixel Format");
+  pmanage<MPtr(&PContainer::remove)>(pixel_format_id_); pixel_format_id_ = 0;
+  if (cap_descr.pixel_formats_.empty())
+    return;
+  std::vector<std::string> names;
+  std::vector<std::string> nicks;
+  for (auto &it : cap_descr.pixel_formats_) {
+    names.push_back(it.second); 
+    nicks.push_back(it.first);
   }
+  pixel_format_enum_ = Selection(std::make_pair(std::move(names), std::move(nicks)), 0);
+  pixel_format_id_ = pmanage<MPtr(&PContainer::make_parented_selection)>(
+      "pixel_format",
+      "config",
+      [this](const size_t &val){pixel_format_enum_.select(val); return true;},
+      [this](){return pixel_format_enum_.get();},
+      "Pixel format",
+      "Pixel format of selected capture devices",
+      pixel_format_enum_);
 }
 
 void V4L2Src::update_width_height(const CaptureDescription &cap_descr) {
-  uninstall_property("width");
-  uninstall_property("height");
-  // width_ = -1;
-  // height_ = -1;
-  if (cap_descr.frame_size_stepwise_max_width_ > 0) {
-    // width_ = cap_descr.frame_size_stepwise_max_width_;
-    if (width_spec_ == nullptr)
-      width_spec_ =
-          custom_props_->make_int_property("width",
-                                           "width of selected capture devices",
-                                           cap_descr.frame_size_stepwise_min_width_,
-                                           cap_descr.frame_size_stepwise_max_width_,
-                                           cap_descr.frame_size_stepwise_max_width_,
-                                           (GParamFlags) G_PARAM_READWRITE,
-                                           V4L2Src::set_width,
-                                           V4L2Src::get_width, this);
-
-    install_property_by_pspec(custom_props_->get_gobject(),
-                              width_spec_, "width", "Width");
-
-    width_ = cap_descr.frame_size_stepwise_max_width_ / 2;
-    // height_ = cap_descr.frame_size_stepwise_max_height_;
-
-    if (height_spec_ == nullptr)
-      height_spec_ =
-          custom_props_->make_int_property("height",
-                                           "height of selected capture devices",
-                                           cap_descr.frame_size_stepwise_min_height_,
-                                           cap_descr.frame_size_stepwise_max_height_,
-                                           cap_descr.frame_size_stepwise_max_height_,
-                                           (GParamFlags) G_PARAM_READWRITE,
-                                           V4L2Src::set_height,
-                                           V4L2Src::get_height, this);
-
-    install_property_by_pspec(custom_props_->get_gobject(),
-                              height_spec_, "height", "Height");
-    height_ = cap_descr.frame_size_stepwise_max_height_ / 2;
-  }
+  pmanage<MPtr(&PContainer::remove)>(width_id_); width_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(height_id_); height_id_ = 0;
+  
+  if (cap_descr.frame_size_stepwise_max_width_ < 1)
+    return;
+  
+  width_ = cap_descr.frame_size_stepwise_max_width_ / 2;
+  width_id_ = pmanage<MPtr(&PContainer::make_parented_int)>(
+      "width",
+      "config",
+      [this](const int &val){width_ = val; return true;},
+      [this](){return width_;},
+      "Width",
+      "Capture width",
+      width_,
+      cap_descr.frame_size_stepwise_min_width_,
+      cap_descr.frame_size_stepwise_max_width_);
+  height_ = cap_descr.frame_size_stepwise_max_height_ / 2;
+  height_id_ = pmanage<MPtr(&PContainer::make_parented_int)>(
+      "height",
+      "config",
+      [this](const int &val){height_ = val; return true;},
+      [this](){return height_;},
+      "Height",
+      "Capture height",
+      height_,
+      cap_descr.frame_size_stepwise_min_height_,
+      cap_descr.frame_size_stepwise_max_height_);
 }
 
 void V4L2Src::update_framerate_numerator_denominator(const CaptureDescription &cap_descr) {
-  uninstall_property("framerate_numerator");
-  uninstall_property("framerate_denominator");
-  if (cap_descr.frame_interval_stepwise_max_numerator_ > 0) {
-    if (framerate_numerator_spec_ == nullptr)
-      framerate_numerator_spec_ = custom_props_->
-          make_int_property("framerate_numerator",
-                            "framerate numerator",
-                            1, // FIXME do actually use values
-                            60,
-                            30,
-                            (GParamFlags)
-                            G_PARAM_READWRITE,
-                            V4L2Src::set_framerate_numerator,
-                            V4L2Src::get_framerate_numerator,
-                            this);
-    install_property_by_pspec(custom_props_->get_gobject(),
-                              framerate_numerator_spec_,
-                              "framerate_numerator",
-                              "Framerate Numerator");
-    framerate_denominator_ = 1;
-    if (framerate_denominator_spec_ == nullptr)
-      framerate_denominator_spec_ =
-          custom_props_->make_int_property("framerate_denominator",
-                                           "Framerate denominator",
-                                           1,
-                                           1,
-                                           1,
-                                           (GParamFlags) G_PARAM_READWRITE,
-                                           V4L2Src::set_framerate_denominator,
-                                           V4L2Src::get_framerate_denominator,
-                                           this);
-
-    install_property_by_pspec(custom_props_->get_gobject(),
-                              framerate_denominator_spec_,
-                              "framerate_denominator",
-                              "Framerate Denominator");
-  }
+  pmanage<MPtr(&PContainer::remove)>(framerate_id_); framerate_id_ = 0;
+  if (cap_descr.frame_interval_stepwise_max_numerator_ < 1)
+    return;
+  framerate_id_ = pmanage<MPtr(&PContainer::make_parented_fraction)>(
+      "framerate",
+      "config",
+      [this](const Fraction &val){framerate_ = val; return true;},
+      [this](){return framerate_;},
+      "Framerate",
+      "Capture framerate",
+      framerate_,
+      1,
+      1,
+      120,
+      120);
 }
 
 void V4L2Src::update_tv_standard(const CaptureDescription &cap_descr) {
-  uninstall_property("tv_standard");
+    pmanage<MPtr(&PContainer::remove)>(tv_standards_id_); tv_standards_id_ = 0;
   // tv_standard_ = -1;
-  if (!cap_descr.tv_standards_.empty()) {
-    gint i = 0;
-    for (auto &it : cap_descr.tv_standards_) {
-      tv_standards_enum_[i].value = i;
-      // FIXME free previous here
-      tv_standards_enum_[i].value_name = g_strdup(it.c_str());
-      tv_standards_enum_[i].value_nick = tv_standards_enum_[i].value_name;
-      i++;
-    }
-    tv_standards_enum_[i].value = 0;
-    tv_standards_enum_[i].value_name = nullptr;
-    tv_standards_enum_[i].value_nick = nullptr;
-
-    if (tv_standards_spec_ == nullptr)
-      tv_standards_spec_ =
-          custom_props_->make_enum_property("tv_standard",
-                                            "tv standard of selected capture devices",
-                                            0, tv_standards_enum_,
-                                            (GParamFlags)
-                                            G_PARAM_READWRITE,
-                                            V4L2Src::set_tv_standard,
-                                            V4L2Src::get_tv_standard, this);
-
-    // tv_standard_ = 0;
-    install_property_by_pspec(custom_props_->get_gobject(),
-                              tv_standards_spec_,
-                              "tv_standard",
-                              "TV Standard");
-  }
+  if (cap_descr.tv_standards_.empty())
+    return;
+  std::vector<std::string> names;
+  for (auto &it : cap_descr.tv_standards_)
+    names.push_back(it);
+  tv_standards_enum_ = Selection(std::move(names), 0);
+  tv_standards_id_ = pmanage<MPtr(&PContainer::make_parented_selection)>(
+      "tv_standard",
+      "config",
+      [this](const size_t &val){tv_standards_enum_.select(val); return true;},
+        [this](){return tv_standards_enum_.get();},
+      "TV standard",
+      "TV standard of selected capture devices",
+      tv_standards_enum_);
 }
 
 bool V4L2Src::remake_elements() {
@@ -507,8 +410,6 @@ bool V4L2Src::inspect_file_device(const char *file_path) {
         frmival.stepwise.step.numerator;
     description.frame_interval_stepwise_step_denominator_ =
         frmival.stepwise.step.denominator;
-    framerate_numerator_ = 60;        // FIXME use actual values
-    framerate_denominator_ = 60;      // FIXME use actual values
   }
   else {
     description.frame_interval_stepwise_max_numerator_ = -1;
@@ -567,15 +468,6 @@ bool V4L2Src::check_folder_for_v4l2_devices(const char *dir_path) {
   return true;
 }
 
-// bool V4L2Src::inspect_frame_rate(const char * /*file_path */ ,
-//                                  unsigned /*pixel_format */ ,
-//                                  unsigned /*width */ ,
-//                                  unsigned /*height */ ) {
-//   // FIXME, framerate can change according to pixel_format and resolution
-//   g_debug("  V4L2Src::inspect_frame_rate: TODO");
-//   return false;
-// }
-
 bool V4L2Src::start() {
   configure_capture();
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()),
@@ -595,20 +487,19 @@ bool V4L2Src::start() {
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
         this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
-                         data::Tree::make(std::to_string(byte_rate)));
+                         InfoTree::make(std::to_string(byte_rate)));
       });
 
   gst_pipeline_->play(true);
   codecs_->start();
-  disable_property("device");
-  uninstall_property("resolution");
-  uninstall_property("width");
-  uninstall_property("height");
-  uninstall_property("tv_standard");
-  uninstall_property("framerate");
-  uninstall_property("framerate_numerator");
-  uninstall_property("framerate_denominator");
-  uninstall_property("pixelformat");
+  pmanage<MPtr(&PContainer::enable)>(devices_id_, false);
+  pmanage<MPtr(&PContainer::remove)>(resolutions_id_); resolutions_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(width_id_); width_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(height_id_); height_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(tv_standards_id_); tv_standards_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(framerates_enum_id_); framerates_enum_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(framerate_id_); framerate_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(pixel_format_id_); pixel_format_id_ = 0;
   return true;
 }
 
@@ -616,120 +507,13 @@ bool V4L2Src::stop() {
   shm_sub_.reset(nullptr);
   prune_tree(".shmdata.writer." + shmpath_);
   remake_elements();
-  
   gst_pipeline_ = std2::make_unique<GstPipeliner>(
       nullptr,
       nullptr);
   codecs_->stop();
-  enable_property("device");
-  update_device_specific_properties(device_);
+  pmanage<MPtr(&PContainer::enable)>(devices_id_, true);
+  update_device_specific_properties(devices_enum_.get());
   return true;
-}
-
-void V4L2Src::set_camera(const gint value, void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  context->device_ = value;
-  context->update_device_specific_properties(context->device_);
-}
-
-gint V4L2Src::get_camera(void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  return context->device_;
-}
-
-void V4L2Src::set_pixel_format(const gint value, void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  // FIXME need to disabling VideoSource codec property if necessary  
-  // std::string caps(context->pixel_format_enum_[value].value_nick);
-  // if (std::string::npos != caps.find("video/x-raw-yuv"))
-  //   caps = "video/x-raw-yuv";
-  // g_print("%s %s\n",
-  //         __FUNCTION__,
-  //         caps.c_str());
-  // if (!GstUtils::can_sink_caps("ffmpegcolorspace",
-  //                              caps)) {
-  //   g_print("disable");
-  //   context->disable_property("format");
-  // } else {
-  //   g_print("enable");
-  //   context->enable_property("format");
-  // }
-  context->pixel_format_ = value;
-}
-
-gint V4L2Src::get_pixel_format(void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  return context->pixel_format_;
-}
-
-void V4L2Src::set_resolution(const gint value, void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  context->resolution_ = value;
-}
-
-gint V4L2Src::get_resolution(void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  return context->resolution_;
-}
-
-void V4L2Src::set_width(const gint value, void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  context->width_ = value;
-}
-
-gint V4L2Src::get_width(void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  return context->width_;
-}
-
-void V4L2Src::set_height(const gint value, void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  context->height_ = value;
-}
-
-gint V4L2Src::get_height(void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  return context->height_;
-}
-
-void V4L2Src::set_tv_standard(const gint value, void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  context->tv_standard_ = value;
-}
-
-gint V4L2Src::get_tv_standard(void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  return context->tv_standard_;
-}
-
-void V4L2Src::set_framerate(const gint value, void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  context->framerate_ = value;
-}
-
-gint V4L2Src::get_framerate(void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  return context->framerate_;
-}
-
-void V4L2Src::set_framerate_numerator(const gint value, void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  context->framerate_numerator_ = value;
-}
-
-gint V4L2Src::get_framerate_numerator(void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  return context->framerate_numerator_;
-}
-
-void V4L2Src::set_framerate_denominator(const gint value, void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  context->framerate_denominator_ = value;
-}
-
-gint V4L2Src::get_framerate_denominator(void *user_data) {
-  V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  return context->framerate_denominator_;
 }
 
 bool V4L2Src::configure_capture() {
@@ -738,37 +522,33 @@ bool V4L2Src::configure_capture() {
     return false;
   }
   g_object_set(G_OBJECT(v4l2src_.get_raw()),
-               "device", capture_devices_[device_].file_device_.c_str(),
+               "device", devices_enum_.get_current_nick().c_str(),
                nullptr);
-  if (tv_standard_ > 0)       //0 is none
+  if (tv_standards_id_ != 0 && tv_standards_enum_.get() > 0)  //0 is none
     g_object_set(G_OBJECT(v4l2src_.get_raw()),
                  "norm",
-                 capture_devices_[device_].
-                 tv_standards_[tv_standard_].c_str(),
+                 tv_standards_enum_.get_current().c_str(),
                  nullptr);
-  std::string caps = std::string(pixel_format_enum_[pixel_format_].value_nick);
-  if (width_ > 0) {
+  std::string caps = pixel_format_enum_.get_current_nick();
+  if (0 != width_id_)
     caps = caps
         + ", width=(int)" + std::to_string(width_)
         + ", height=(int)" + std::to_string(height_);
-  }
-  else if (resolution_ > -1) {
+  else if (0 != resolutions_id_)
     caps = caps
         + ", width=(int)"
-        + capture_devices_[device_].frame_size_discrete_[resolution_].first.c_str()
-        + ", height=(int)" +
-        capture_devices_[device_].frame_size_discrete_[resolution_].second.c_str();
-  }
-  if (framerate_ > -1) {
+        + capture_devices_[devices_enum_.get()].frame_size_discrete_[resolutions_enum_.get()].first.c_str()
+        + ", height=(int)"
+        + capture_devices_[devices_enum_.get()].frame_size_discrete_[resolutions_enum_.get()].second.c_str();
+  if (0 != framerates_enum_id_)
     caps = caps
         + ", framerate=(fraction)"
-        + capture_devices_[device_].frame_interval_discrete_[framerate_].second.c_str()
+        + capture_devices_[devices_enum_.get()].frame_interval_discrete_[framerates_enum_.get()].second.c_str()
         + "/"
-        + capture_devices_[device_].frame_interval_discrete_[framerate_].first.c_str();
-  }
-  else if (framerate_numerator_ > 0) {
+        + capture_devices_[devices_enum_.get()].frame_interval_discrete_[framerates_enum_.get()].first.c_str();
+  else if (0 != framerate_id_) {
     caps = caps + ", framerate=(fraction)"
-        + std::to_string(framerate_numerator_) + "/" + std::to_string(framerate_denominator_);
+        + std::to_string(framerate_.numerator()) + "/" + std::to_string(framerate_.denominator());
   }
   g_debug("caps for v4l2src %s", caps.c_str());
   GstCaps *usercaps = gst_caps_from_string(caps.c_str());
@@ -947,10 +727,7 @@ GstStructure *V4L2Src::gst_v4l2_object_v4l2fourcc_to_structure (guint32 fourcc){
           fourcc, GST_FOURCC_ARGS (fourcc));
       break;
   }
-
   return structure;
 }
-
-
 
 }  //namespace switcher

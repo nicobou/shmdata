@@ -22,6 +22,11 @@ SUBDIRS += \
     gtk
 endif
 
+if NVENCBUILD
+SUBDIRS += \
+    nvenc
+endif
+
 if PULSEBUILD
 SUBDIRS += \
     pulse
@@ -34,14 +39,13 @@ endif
 
 if POSTUREBUILD
 SUBDIRS += \
-	posture
+    posture
 endif
 
-# FIXME port to shmdata1
-# if HAVE_OSX
-# SUBDIRS += \
-#     syphonsrc
-# endif
+if SYPHONBUILD
+SUBDIRS += \
+    syphonsrc
+endif
 
 if !HAVE_OSX
 SUBDIRS += \

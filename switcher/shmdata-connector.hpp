@@ -20,10 +20,11 @@
 #ifndef __SWITCHER_SHMDATA_CONNECTOR_H__
 #define __SWITCHER_SHMDATA_CONNECTOR_H__
 
+#include <glib.h>
 #include <vector>
 #include <unordered_map>
-#include "./json-builder.hpp"
-#include "./custom-property-helper.hpp"
+#include <functional>
+
 
 namespace switcher {
 class Quiddity;

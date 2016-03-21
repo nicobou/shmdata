@@ -32,19 +32,40 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Nicolas Bouillot");
 
-Logger::Logger(const std::string &):
-    i_am_the_one_(false),
-    last_line_(),
-    mute_(false),
-    debug_(true),
-    verbose_(true),
-    handler_ids_(),
-    custom_props_(new CustomPropertyHelper()),
-    last_line_prop_(nullptr),
-    mute_prop_(nullptr),
-    debug_prop_(nullptr),
-    verbose_prop_(nullptr),
-    last_line_mutex_() {
+Logger::Logger(const std::string &) :
+    last_line_id_(pmanage<MPtr(&PContainer::make_string)>(
+        "last-line",
+        nullptr,
+        [this](){
+          std::unique_lock<std::mutex> lock(last_line_mutex_);
+          return last_line_;
+        },
+        "Last Log Line",
+        "Provide last log line",
+        last_line_)){
+  pmanage<MPtr(&PContainer::make_bool)>(
+      "mute",
+      [this](bool val){mute_ = val; return true;},
+      [this](){return mute_;},
+      "Mute",
+      "Mute log messages",
+      mute_);
+  
+  pmanage<MPtr(&PContainer::make_bool)>(
+      "debug",
+      [this](bool val){debug_ = val; return true;},
+      [this](){return debug_;},
+      "Debug",
+      "Enable debug log level",
+      debug_);
+
+  pmanage<MPtr(&PContainer::make_bool)>(
+      "verbose",
+      [this](bool val){verbose_ = val; return true;},
+      [this](){return verbose_;},
+      "Verbose",
+      "Enable verbose log level",
+      verbose_);
 }
 
 bool Logger::init() {
@@ -56,59 +77,16 @@ bool Logger::init() {
     i_am_the_one_ = true;
   }
 
-  // FIXME: make the following not necessary,
-  // avoid the following warnings:
-  // Attempt to add property MyObject::customprop1 after class was initialised
   guint quiet_handler_id = g_log_set_handler("GLib-GObject",
                                              G_LOG_LEVEL_MASK,
                                              quiet_log_handler,
                                              nullptr);
 
-  last_line_prop_ =
-      custom_props_->make_string_property("last-line",
-                                          "last log line",
-                                          "",
-                                          (GParamFlags) G_PARAM_READABLE,
-                                          nullptr,
-                                          Logger::get_last_line, this);
-
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            last_line_prop_, "last-line", "Last Line");
-
-  mute_prop_ =
-      custom_props_->make_boolean_property("mute",
-                                           "mute log messages",
-                                           (gboolean) FALSE,
-                                           (GParamFlags) G_PARAM_READWRITE,
-                                           Logger::set_mute,
-                                           Logger::get_mute, this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            mute_prop_, "mute", "Mute");
-
-  debug_prop_ =
-      custom_props_->make_boolean_property("debug",
-                                           "enable debug messages",
-                                           (gboolean) TRUE,
-                                           (GParamFlags) G_PARAM_READWRITE,
-                                           Logger::set_debug,
-                                           Logger::get_debug, this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            debug_prop_, "debug", "Debug");
-
-  verbose_prop_ =
-      custom_props_->make_boolean_property("verbose",
-                                           "enable log messages",
-                                           TRUE,
-                                           (GParamFlags) G_PARAM_READWRITE,
-                                           Logger::set_verbose,
-                                           Logger::get_verbose, this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            verbose_prop_, "verbose", "Verbose");
-
   // handler must be installed after custom property creation
   handler_ids_["switcher"] = g_log_set_handler("switcher",
                                                G_LOG_LEVEL_MASK,
-                                               log_handler, this);
+                                               log_handler,
+                                               this);
 
   g_log_remove_handler("GLib-GObject", quiet_handler_id);
 
@@ -208,11 +186,6 @@ Logger::log_handler(const gchar *log_domain,
       std::string((nullptr == log_domain) ? "null-log-domain" : log_domain);
   std::string tmp_level = std::string("unknown");
 
-  // FIXME:
-  if (0 == tmp_log_domain.compare("GLib-GObject")
-      && 0 == tmp_message.compare(0, 23, "Attempt to add property"))
-    return;
-
   switch (log_level) {
     case G_LOG_LEVEL_ERROR:
       tmp_level = std::string("error");
@@ -244,47 +217,14 @@ Logger::log_handler(const gchar *log_domain,
     default:
       break;
   }
-  if (update_last_line) {
-    context->replace_last_line(tmp_log_domain + "-" + tmp_level + ": " +
-                               tmp_message);
-    context->custom_props_->
-        notify_property_changed(context->last_line_prop_);
+
+  if (update_last_line){
+    {
+      auto lock = context->pmanage<MPtr(&PContainer::get_lock)>(context->last_line_id_);
+      context->last_line_ = tmp_log_domain + "-" + tmp_level + ": " + tmp_message;
+    }
+    context->pmanage<MPtr(&PContainer::notify)>(context->last_line_id_);
   }
 }
 
-const gchar *Logger::get_last_line(void *user_data) {
-  Logger *context = static_cast<Logger *>(user_data);
-  std::unique_lock<std::mutex> lock(context->last_line_mutex_);
-  return context->last_line_.c_str();
-}
-
-gboolean Logger::get_mute(void *user_data) {
-  Logger *context = static_cast<Logger *>(user_data);
-  return context->mute_;
-}
-
-void Logger::set_mute(gboolean mute, void *user_data) {
-  Logger *context = static_cast<Logger *>(user_data);
-  context->mute_ = mute;
-}
-
-gboolean Logger::get_debug(void *user_data) {
-  Logger *context = static_cast<Logger *>(user_data);
-  return context->debug_;
-}
-
-void Logger::set_debug(gboolean debug, void *user_data) {
-  Logger *context = static_cast<Logger *>(user_data);
-  context->debug_ = debug;
-}
-
-gboolean Logger::get_verbose(void *user_data) {
-  Logger *context = static_cast<Logger *>(user_data);
-  return context->verbose_;
-}
-
-void Logger::set_verbose(gboolean verbose, void *user_data) {
-  Logger *context = static_cast<Logger *>(user_data);
-  context->verbose_ = verbose;
-}
-}
+}  // namespace switcher

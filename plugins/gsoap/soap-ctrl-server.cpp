@@ -458,7 +458,11 @@ controlService::set_property(std::string quiddity_name,
   if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager();
 
-  manager->set_property(quiddity_name, property_name, property_value);
+  manager->use_prop<MPtr(&PContainer::set_str)>(
+      quiddity_name,
+      manager->use_prop<MPtr(&PContainer::get_id)>(
+          quiddity_name, property_name),
+      property_value);
 
   return send_set_property_empty_response(SOAP_OK);
 }
@@ -475,7 +479,10 @@ controlService::get_property(std::string quiddity_name,
   if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager();
 
-  *result = manager->get_property(quiddity_name, property_name);
+  *result = manager->use_prop<MPtr(&PContainer::get_str)>(
+      quiddity_name,
+      manager->use_prop<MPtr(&PContainer::get_id)>(
+          quiddity_name, property_name));
 
   return SOAP_OK;
 }
@@ -775,7 +782,7 @@ controlService::get_information_tree(std::string quiddity_name,
   if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager();
 
-  *result = manager->get_info(quiddity_name, path);
+  *result = manager->use_tree<MPtr(&InfoTree::serialize_json)>(quiddity_name, path);
 
   return SOAP_OK;
 }

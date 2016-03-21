@@ -2,7 +2,7 @@ dnl required version of autoconf
 AC_PREREQ([2.53])
 
 dnl package name and package version
-AC_INIT([switcher],[0.8.4])
+AC_INIT([switcher],[0.8.6])
 
 dnl required version of gstreamer and gst-plugins-base
 GST_REQUIRED=1.0.0
@@ -38,7 +38,8 @@ AC_SUBST([LIBSWITCHER_API_VERSION], [0.8])
 AC_DEFINE(LIBSWITCHER_API_VERSION, ["0.8"], [API version])
 
 dnl check for tools (compiler etc.)
-AC_PROG_CXX
+dnl g++-4.9 is here in order to get threaded-wrapper compiling on ubuntu 14.04
+AC_PROG_CXX([g++-4.9])
 AM_PROG_CC_C_O
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
@@ -70,7 +71,8 @@ case "$host" in *-darwin* | *-macos10*)
     LDFLAGS+=" -L/sw/lib"
   fi
   
-  AM_CONDITIONAL([HAVE_OSX], true)
+  have_osx=true;
+  AM_CONDITIONAL([HAVE_OSX], test "true" = "true")
   AC_DEFINE(HAVE_OSX,[1],[Apple Mac OS X operating system detected])
   
   # OSX does not include /usr/local/lib/pkgconfig path, so we export it here
@@ -81,7 +83,8 @@ case "$host" in *-darwin* | *-macos10*)
   LDFLAGS+=" -fPIC -L/usr/local/lib"
   ;;
 *)
-  AM_CONDITIONAL([HAVE_OSX], false)
+  have_osx=false;
+  AM_CONDITIONAL([HAVE_OSX], test "true" = "false")
   AC_DEFINE(HAVE_OSX,[0],[Apple Mac OS X operating system not detected])
   ;;
 esac
@@ -130,9 +133,9 @@ if test "x${have_gmodule}" = "xfalse" ; then
 fi
 
 #shmdata
-PKG_CHECK_MODULES(SHMDATA, shmdata-1.0, have_shmdata=true, have_shmdata=false)
+PKG_CHECK_MODULES(SHMDATA, shmdata-1.2, have_shmdata=true, have_shmdata=false)
 if test "x${have_shmdata}" = "xfalse" ; then
-    AC_MSG_ERROR([Missing libshmdata-1.0 development files])
+    AC_MSG_ERROR([Missing libshmdata-1.2 development files])
 fi
 
 #gsoap
@@ -246,11 +249,17 @@ if test "x${have_gtk}" = "xfalse" ; then
 else
     GTKBUILD=enabled
 fi
+
+if test "x${have_osx}" = "xtrue"; then
+    GTKBUILD=disabled
+    AC_MSG_WARN([gtkwin is not going to be built on OSX])
+fi
+
 AM_CONDITIONAL(GTKBUILD, test "${GTKBUILD}" = "enabled")
 if test "${GTKBUILD}" = "enabled"; then
-    AC_DEFINE(HAVE_GTK, [1], [GTK detected])
+    AC_DEFINE(HAVE_GTK, [1], [GTK enabled])
 else
-    AC_DEFINE(HAVE_GTK, [0], [GTK not detected])
+    AC_DEFINE(HAVE_GTK, [0], [GTK disabled])
 fi
 
 #check nodejs-dev
@@ -293,6 +302,21 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
   AC_MSG_ERROR([compiler does not understand -std=c++11])
 ])
 
+AC_MSG_CHECKING([to see if compiler can expand variadic template in lambda])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[void do_nothing(int, double){} template<typename ...Args> void do_lambda(Args... args){ [&](){ do_nothing(args...); }(); } ]], 
+[[ do_lambda(1, 2.0); ]])], [
+  AC_MSG_RESULT([yes])
+], [
+  AC_MSG_RESULT([no])
+  AC_MSG_ERROR([
+     compiler cannot expand variadic template in lambda (require g++ >= 4.9)
+     on Ubuntu 14.04, you can install g++-4.9 doing the following:
+     sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+     sudo apt-get update
+     sudo apt-get install g++-4.9
+])
+])
+
 
 dnl check if compiler understands -Wall (if yes, add -Wall to CFLAGS)
 AC_MSG_CHECKING([to see if compiler understands -Wall])
@@ -317,15 +341,15 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
 ])
           
 dnl check if compiler understands -Weffc++ (if yes, add -Weffc++ to CFLAGS)
-AC_MSG_CHECKING([to see if compiler understands -Weffc++])
-saved_CXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CXXFLAGS -Weffc++ -Wno-error=effc++"
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
-  AC_MSG_RESULT([yes])
-], [
-  CXXFLAGS="$saved_CXXFLAGS"
-  AC_MSG_RESULT([no])
-])
+dnl AC_MSG_CHECKING([to see if compiler understands -Weffc++])
+dnl saved_CXXFLAGS="$CXXFLAGS"
+dnl CXXFLAGS="$CXXFLAGS -Weffc++ -Wno-error=effc++"
+dnl AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+dnl   AC_MSG_RESULT([yes])
+dnl ], [
+dnl   CXXFLAGS="$saved_CXXFLAGS"
+dnl   AC_MSG_RESULT([no])
+dnl ])
 
 dnl check if compiler understands -Werror (if yes, add it to CFLAGS)
 dnl -Wno-error=unused-parameter is required for gsoap generated code compiling
@@ -388,10 +412,80 @@ if test "${SOAPBUILD}" = "disabled";
 fi
 AM_CONDITIONAL(SWITCHERBUILD, test "${SWITCHERBUILD}" = "enabled")
 
+dnl syphon
+SYPHONBUILD=disabled
+if test "x${have_osx}" = "xtrue"; then
+    SYPHONBUILD=enabled
+fi
+AM_CONDITIONAL(SYPHONBUILD, test "${SYPHONBUILD}" = "enabled")
+
+dnl nvenc
+NVENCBUILD=disabled
+
+PKG_CHECK_MODULES([CUDA], [cuda-7.5 cudart-7.5],, [
+      PKG_CHECK_MODULES([CUDA], [cuda-7.0 cudart-7.0],, [
+        PKG_CHECK_MODULES([CUDA], [cuda-6.5 cudart-6.5],, [
+          AC_MSG_WARN([Could not find cuda headers/libraries (nvenc plugin)])])])])
+HAVE_CUDA_H=no
+HAVE_CUDART_H=no
+save_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CUDA_CFLAGS $save_CPPFLAGS "
+AC_CHECK_HEADER([cuda.h], [HAVE_CUDA_H=yes],
+    AC_MSG_WARN([Could not find cuda.h  (nvenc plugin)]))
+AC_CHECK_HEADER([cuda_runtime_api.h], [HAVE_CUDART_H=yes],
+    AC_MSG_WARN([Could not find cuda_runtime_api.h  (nvenc plugin)]))
+CPPFLAGS=$save_CPPFLAGS
+save_LIBS="$LIBS"
+LIBS="$CUDA_LIBS $save_LIBS"
+HAVE_CUDART_LIB="no"
+AC_CHECK_LIB(cudart,cudaGetErrorString,[HAVE_CUDART_LIB="yes"], [
+    AC_MSG_WARN([Could not find cudart library  (nvenc plugin)])])
+HAVE_CUDA_LIB="no"
+AC_CHECK_LIB(cuda,cuInit,[HAVE_CUDA_LIB="yes"], [
+    AC_MSG_WARN([Could not find cuda library  (nvenc plugin)])])
+
+HAVE_NVIDIA_ENCODE_LIB="no"
+AC_ARG_VAR(NVENC_LIBS, [linker flags for nvidia-encode])
+LIBS="$NVENC_LIBS $save_LIBS"
+AC_CHECK_LIB(nvidia-encode,NvEncodeAPICreateInstance,[HAVE_NVIDIA_ENCODE_LIB="yes"], [
+    AC_MSG_WARN([
+    -----------------------
+    Could not find nvidia-encode library (nvenc plugin), try configure with
+    NVENC_LIBS='-L/usr/lib/nvidia-<driver-version-number>' ./configure
+    -----------------------
+])])
+NVENCODE_LIBS="$NVENCODE_LIBS -lnvidia-encode"
+AC_SUBST(NVENCODE_LIBS)
+LIBS="$saved_LIBS"
+
+HAVE_NVENC_SDK_PATH="no"
+save_CPPFLAGS="$CPPFLAGS"
+AC_ARG_VAR(NVENC_SDK_PATH, [path to nvenc 5.0.1 SDK])
+CPPFLAGS="-I$NVENC_SDK_PATH $CPPFLAGS"
+AC_CHECK_HEADER(Samples/common/inc/nvEncodeAPI.h,
+                [HAVE_NVENC_SDK_PATH="yes"],
+                [AC_MSG_WARN([
+    -----------------------
+    Could not find header from nvenc SDK version 5.0.1, try configure with
+    NVENC_SDK_PATH='<path-to-nvenc-sdk>' NVENC_LIBS='-L/usr/lib/nvidia-<driver-version-number>' ./configure
+    -----------------------])],
+                [])
+AC_SUBST(NVENC_SDK_PATH)
+CPPFLAGS="$save_CPPFLAGS"
+
+
+if test "x$HAVE_CUDA_H" = "xyes" \
+    -a "x$HAVE_CUDART_H" = "xyes" \
+    -a "x$HAVE_CUDA_LIB" = "xyes" \
+    -a "x$HAVE_NVIDIA_ENCODE_LIB" = "xyes" \
+    -a "x$HAVE_NVENC_SDK_PATH" = "xyes" \
+    -a "x$HAVE_CUDART_LIB" = "xyes"; then
+  NVENCBUILD="enabled"
+fi
+AM_CONDITIONAL(NVENCBUILD, test "x${NVENCBUILD}" = "xenabled")
+
 dnl =======================================================================
 dnl Finally, create Makefiles in all directories
-
-dnl plugins/syphonsrc/Makefile FIXME syphon should be ported to shmdata1
 
 AC_CONFIG_FILES([
 Makefile
@@ -402,16 +496,18 @@ tests/Makefile
 src/Makefile
 plugins/Makefile
 plugins/example/Makefile
-plugins/systemusage/Makefile
 plugins/gsoap/Makefile
-plugins/osc/Makefile
-plugins/portmidi/Makefile
-plugins/pulse/Makefile
-plugins/v4l2/Makefile
-plugins/pjsip/Makefile
 plugins/gtk/Makefile
 plugins/jack/Makefile
+plugins/nvenc/Makefile
+plugins/osc/Makefile
+plugins/pjsip/Makefile
+plugins/portmidi/Makefile
 plugins/posture/Makefile
+plugins/pulse/Makefile
+plugins/syphonsrc/Makefile
+plugins/systemusage/Makefile
+plugins/v4l2/Makefile
 plugins/vnc/Makefile
 nodejs/Makefile
 ])
@@ -427,6 +523,8 @@ AC_OUTPUT
 [echo "Pulse audio                ${PULSEBUILD}"]
 [echo "PortMidi                   ${PORTMIDIBUILD}"]
 [echo "Jack                       ${JACKBUILD}"]
+[echo "nvenc                      ${NVENCBUILD}"]
+[echo "syphon reader              ${SYPHONBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]

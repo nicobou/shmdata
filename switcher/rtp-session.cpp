@@ -17,15 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
-#if HAVE_OSX
-#include <sys/socket.h>
-#include <netinet/in.h>
-#endif
-
 #include <glib/gstdio.h>  // writing sdp file
 #include <chrono>
 #include <sstream>
@@ -35,6 +26,7 @@
 #include "./json-builder.hpp"
 #include "./std2.hpp"
 #include "./shmdata-utils.hpp"
+#include "./gst-rtppayloader-finder.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
@@ -49,7 +41,13 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 
 RtpSession::RtpSession(const std::string &):
     gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
-    custom_props_(new CustomPropertyHelper()) {
+    destinations_json_id_(pmanage<MPtr(&PContainer::make_string)>(
+      "destinations-json",
+      nullptr,
+      [this](){return get_destinations_json();},
+      "Destinations",
+      "json formated description of destinations",
+      "")){
 }
 
 bool RtpSession::init() {
@@ -186,28 +184,16 @@ bool RtpSession::init() {
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
-  destination_description_json_ =
-      custom_props_->make_string_property("destinations-json",
-                                          "json formated description of destinations",
-                                          "", (GParamFlags) G_PARAM_READABLE,
-                                          nullptr,
-                                          RtpSession::get_destinations_json,
-                                          this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            destination_description_json_,
-                            "destinations-json", "Destinations");
-  mtu_at_add_data_stream_spec_ =
-      custom_props_->make_int_property("mtu-at-add-data-stream",
-                                       "MTU that will be set during add_data_stream invokation",
-                                       0, 15000, 1400,
-                                       (GParamFlags) G_PARAM_READWRITE,
-                                       RtpSession::set_mtu_at_add_data_stream,
-                                       RtpSession::get_mtu_at_add_data_stream,
-                                       this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            mtu_at_add_data_stream_spec_,
-                            "mtu-at-add-data-stream",
-                            "MTU At Add Data Stream");
+  
+  pmanage<MPtr(&PContainer::make_int)>(
+      "mtu-at-add-data-stream",
+      [this](const int &val){mtu_at_add_data_stream_ = val; return true;},
+      [this](){return mtu_at_add_data_stream_;},
+      "MTU At Add Data Stream",
+      "MTU that will be set during add_data_stream invokation",
+      1400,
+      1,
+      15000);
   return true;
 }
 
@@ -235,71 +221,14 @@ bool RtpSession::write_sdp_file(std::string dest_name) {
   return it->second->write_to_file(std::move(sdp_file));
 }
 
-// function used as a filter for selecting the appropriate rtp payloader
-gboolean
-RtpSession::sink_factory_filter(GstPluginFeature *feature,
-                                gpointer data) {
-  const gchar *klass;
-
-  GstCaps *caps = (GstCaps *)data;
-
-  // searching element factories only
-  if (!GST_IS_ELEMENT_FACTORY(feature))
-    return FALSE;
-
-  klass = gst_element_factory_get_klass(GST_ELEMENT_FACTORY(feature));
-  if (!(g_strrstr(klass, "Payloader") && g_strrstr(klass, "RTP")))
-    return FALSE;
-
-  if (!gst_element_factory_can_sink_all_caps(GST_ELEMENT_FACTORY(feature), caps))
-    return FALSE;
-
-  return TRUE;
-}
-
-// sorting factory by rank
-gint
-RtpSession::sink_compare_ranks(GstPluginFeature *f1,
-                               GstPluginFeature *f2) {
-  gint diff;
-
-  diff = gst_plugin_feature_get_rank(f2) - gst_plugin_feature_get_rank(f1);
-  if (diff != 0)
-    return diff;
-  return g_strcmp0(gst_plugin_feature_get_name(f2),
-                   gst_plugin_feature_get_name(f1));
-}
-
 // this is a typefind function, called when type of input stream from a shmdata is found
 std::string RtpSession::make_rtp_payloader(GstElement *shmdatasrc,
                                            const std::string &caps_str) {
+
+  GstElementFactory *factory = GstRTPPayloaderFinder::get_factory(caps_str);
   GstElement *pay = nullptr;
-  GstCaps *caps = gst_caps_from_string (caps_str.c_str());
-  On_scope_exit{if (nullptr != caps) gst_caps_unref(caps);};
-  GList *list = gst_registry_feature_filter(
-      gst_registry_get(),
-      (GstPluginFeatureFilter)sink_factory_filter,
-      FALSE,
-      caps);
-  list = g_list_sort(list, (GCompareFunc) sink_compare_ranks);
-  // bypassing jpeg for high dimensions
-  bool jpeg_payloader = true;
-  GstStructure *caps_structure = gst_caps_get_structure(caps, 0);
-  // check jpeg dimension are suported by jpeg payloader
-  if (g_str_has_prefix(gst_structure_get_name(caps_structure), "image/jpeg")) {
-    jpeg_payloader = false;
-    // gint width = 0, height = 0;
-    // if (gst_structure_get_int(caps_structure, "height", &height)) {
-    //   if (height <= 0 || height > 2040)
-    //     jpeg_payloader = false;
-    // }
-    // if (gst_structure_get_int(caps_structure, "width", &width)) {
-    //   if (width <= 0 || width > 2040)
-    //     jpeg_payloader = false;
-    // }
-  }
-  if (list != nullptr && jpeg_payloader)
-    pay = gst_element_factory_create(GST_ELEMENT_FACTORY(list->data), nullptr);
+  if (nullptr != factory)
+    pay = gst_element_factory_create(factory, nullptr);
   else 
     GstUtils::make_element("rtpgstpay", &pay);
   g_debug("using %s payloader for %s",
@@ -355,7 +284,7 @@ RtpSession::add_destination(std::string nick_name, std::string host_name)
   dest->set_name(nick_name);
   dest->set_host_name(host_name);
   destinations_[nick_name] = dest;
-  custom_props_->notify_property_changed(destination_description_json_);
+  pmanage<MPtr(&PContainer::notify)>(destinations_json_id_);
   return true;
 }
 
@@ -381,7 +310,7 @@ bool RtpSession::remove_destination(std::string nick_name) {
   for (auto &iter: it->second->get_shmdata())
     remove_udp_stream_to_dest(iter, nick_name);
   destinations_.erase(it);
-  custom_props_->notify_property_changed(destination_description_json_);
+  pmanage<MPtr(&PContainer::notify)>(destinations_json_id_);
   return true;
 }
 
@@ -434,7 +363,7 @@ RtpSession::add_udp_stream_to_dest(std::string shmpath,
                          dest->get_host_name().c_str(),
                          rtp_port + 1,
                          nullptr);
-  custom_props_->notify_property_changed(destination_description_json_);
+  pmanage<MPtr(&PContainer::notify)>(destinations_json_id_);
   return true;
 }
 
@@ -490,7 +419,7 @@ RtpSession::remove_udp_stream_to_dest(std::string shmpath,
                          dest->get_host_name().c_str(),
                          rtp_port + 1,
                          nullptr);
-  custom_props_->notify_property_changed(destination_description_json_);
+  pmanage<MPtr(&PContainer::notify)>(destinations_json_id_);
   return true;
 }
 
@@ -528,7 +457,7 @@ bool RtpSession::add_data_stream(const std::string &shmpath) {
           },
           [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate){
             this->graft_tree(".shmdata.reader." + shmpath + ".byte_rate",
-                             data::Tree::make(std::to_string(byte_rate)));
+                             InfoTree::make(std::to_string(byte_rate)));
           }));
   g_object_set(G_OBJECT(src), "socket-path", shmpath.c_str(), nullptr);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), src);
@@ -681,32 +610,18 @@ void RtpSession::on_no_more_pad(GstElement * /*gstelement */ ,
   // g_debug("on_no_more_pad");
 }
 
-const gchar *RtpSession::get_destinations_json(void *user_data) {
-  RtpSession *context = static_cast<RtpSession *>(user_data);
-
+std::string RtpSession::get_destinations_json() {
   JSONBuilder::ptr destinations_json = std::make_shared<JSONBuilder>();
   destinations_json->reset();
   destinations_json->begin_object();
   destinations_json->set_member_name("destinations");
   destinations_json->begin_array();
-  for (auto &it : context->destinations_)
+  for (auto &it : destinations_)
     destinations_json->add_node_value(it.second->get_json_root_node());
   destinations_json->end_array();
   destinations_json->end_object();
-  context->destinations_json_ = destinations_json->get_string(true);
-return context->destinations_json_.c_str();
-}
-
-void
-RtpSession::set_mtu_at_add_data_stream(const gint value, void *user_data)
-{
-  RtpSession *context = static_cast<RtpSession *>(user_data);
-  context->mtu_at_add_data_stream_ = value;
-}
-
-gint RtpSession::get_mtu_at_add_data_stream(void *user_data) {
-  RtpSession *context = static_cast<RtpSession *>(user_data);
-  return context->mtu_at_add_data_stream_;
+  destinations_json_ = destinations_json->get_string(true);
+  return destinations_json_;
 }
 
 void RtpSession::on_rtp_caps(const std::string &shmdata_path, std::string caps) {
@@ -721,7 +636,7 @@ void RtpSession::on_rtp_caps(const std::string &shmdata_path, std::string caps) 
       + label
       + "\"";
   graft_tree("rtp_caps." + std::move(shmdata_path),
-             data::Tree::make(std::move(caps)));
+             InfoTree::make(std::move(caps)));
   {  // stream ready, unlocking add_data_stream
     std::unique_lock<std::mutex> lock(this->stream_mutex_);
     this->stream_added_ = true;
@@ -745,22 +660,6 @@ void RtpSession::on_rtppayloder_caps(GstElement *typefind,
                        std::string(caps_str));
 }
 
-#if HAVE_OSX
-void RtpSession::set_udp_sock(GstElement *udpsink) {
-  // turnaround for OSX: create sender socket
-  int sock;
-  if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-    g_warning("udp sink: cannot create socket");
-    return;
-  }
-  guint bc_val = 1;
-  if (setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &bc_val, sizeof(bc_val)) < 0) {
-    g_warning("udp sink: cannot set broadcast to socket");
-    return;
-  }
-  g_object_set(G_OBJECT(udpsink), "sockfd", sock, nullptr);
-}
-#endif
 
 bool RtpSession::make_udp_sinks(const std::string &shmpath,
                                 const std::string &rtp_id) {
@@ -796,9 +695,6 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
                      "have-type",
                      G_CALLBACK(RtpSession::on_rtppayloder_caps),
                      nullptr);
-#if HAVE_OSX
-    set_udp_sock(udpsink);
-#endif
     gst_bin_add_many(GST_BIN(udpsink_bin),
                      typefind, udpsink, nullptr);
     gst_element_link(typefind, udpsink);
@@ -809,7 +705,7 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
     gst_element_add_pad(udpsink_bin, ghost_sinkpad);
     gst_object_unref(sink_pad);
     if (GST_PAD_LINK_OK != gst_pad_link (src_pad, ghost_sinkpad))
-      g_warning ("linking with multiudpsink bin failled");
+      g_warning ("linking with multiudpsink bin failed");
     GstUtils::sync_state_with_parent(udpsink_bin);
     GstUtils::wait_state_changed(udpsink_bin);
   }
@@ -825,15 +721,12 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
     // saving for latter controling
     GstElement *udpsink = it->second->udp_rtcp_sink;
     g_object_set(G_OBJECT(udpsink), "sync", FALSE, nullptr);
-#if HAVE_OSX
-    set_udp_sock(udpsink);
-#endif
     gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), udpsink);
     GstUtils::sync_state_with_parent(udpsink);
     GstPad *sink_pad = gst_element_get_static_pad(udpsink, "sink");
     On_scope_exit{gst_object_unref(sink_pad);};
     if (GST_PAD_LINK_OK != gst_pad_link (rtcp_src_pad, sink_pad))
-      g_warning ("linking with multiudpsink bin failled");
+      g_warning ("linking with multiudpsink bin failed");
   }
   return true;
 }
@@ -852,4 +745,4 @@ RtpSession::DataStream_t::~DataStream_t() {
   GstUtils::clean_element(udp_rtcp_sink);
 }
 
-}
+}  // namespace switcher

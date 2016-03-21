@@ -31,17 +31,10 @@ const std::map<int, const char *>QuiddityCommand::command_names_ = {
   {get_class_doc, "get_class_doc"},
   {get_classes, "get_classes"},
   {get_classes_doc, "get_classes_doc"},
-  {get_info, "get_info"},
   {get_method_description, "get_method_description"},
   {get_method_description_by_class, "get_method_description_by_class"},
   {get_methods_description, "get_methods_description"},
   {get_methods_description_by_class, "get_methods_description_by_class"},
-  {get_properties_description, "get_properties_description"},
-  {get_properties_description_by_class,
-   "get_properties_description_by_class"},
-  {get_property, "get_property"},
-  {get_property_description, "get_property_description"},
-  {get_property_description_by_class, "get_property_description_by_class"},
   {get_quiddities, "get_quiddities"},
   {get_quiddities_description, "get_quiddities_description"},
   {get_quiddity_description, "get_quiddity_description"},
@@ -52,19 +45,13 @@ const std::map<int, const char *>QuiddityCommand::command_names_ = {
   {has_method, "has_method"},
   {invalid_command, "invalid_command"},
   {invoke, "invoke"},
-  {list_property_subscribers, "list_property_subscribers"},
-  {list_property_subscribers_json, "list_property_subscribers_json"},
   {list_signal_subscribers, "list_signal_subscribers"},
   {list_signal_subscribers_json, "list_signal_subscribers_json"},
-  {list_subscribed_properties, "list_subscribed_properties"},
-  {list_subscribed_properties_json, "list_subscribed_properties_json"},
   {list_subscribed_signals, "list_subscribed_signals"},
   {list_subscribed_signals_json, "list_subscribed_signals_json"},
-  {make_property_subscriber, "make_property_subscriber"},
   {make_signal_subscriber, "make_signal_subscriber"},
   {quit, "quit"},
   {remove, "remove"},
-  {remove_property_subscriber, "remove_property_subscriber"},
   {remove_signal_subscriber, "remove_signal_subscriber"},
   {scan_directory_for_plugins, "scan_directory_for_plugins"},
   {set_property, "set_property"},
@@ -151,8 +138,7 @@ QuiddityCommand::parse_command_from_json_reader(JsonReader *reader) {
 
   // command
   json_reader_read_member(reader, "command");
-  command->set_id(QuiddityCommand::get_id_from_string
-                  (json_reader_get_string_value(reader)));
+  command->set_id(QuiddityCommand::get_id_from_string(json_reader_get_string_value(reader)));
   json_reader_end_member(reader);
   // ---
 

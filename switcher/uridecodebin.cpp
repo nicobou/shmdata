@@ -39,8 +39,7 @@ Uridecodebin::Uridecodebin(const std::string &):
         [this](GstMessage *msg){
           this->bus_async(msg);
         },
-        nullptr)),
-    custom_props_(std::make_shared<CustomPropertyHelper>()) {
+        nullptr)){
 }
 
 void Uridecodebin::bus_async(GstMessage *msg){
@@ -53,25 +52,25 @@ void Uridecodebin::bus_async(GstMessage *msg){
 bool Uridecodebin::init() {  
   if (!GstUtils::make_element("uridecodebin", &uridecodebin_))
     return false;
-  uri_spec_ =
-      custom_props_->make_string_property("uri",
-                                          "URI To Be Redirected Into Shmdata(s)",
-                                          "",
-                                          (GParamFlags) G_PARAM_READWRITE,
-                                          Uridecodebin::set_uri,
-                                          Uridecodebin::get_uri,
-                                          this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            uri_spec_, "uri", "URI");
-  loop_prop_ =
-      custom_props_->make_boolean_property("loop",
-                                           "loop media",
-                                           (gboolean) FALSE,
-                                           (GParamFlags) G_PARAM_READWRITE,
-                                           Uridecodebin::set_loop,
-                                           Uridecodebin::get_loop, this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            loop_prop_, "loop", "Looping");
+
+  pmanage<MPtr(&PContainer::make_string)>(
+      "uri",
+      [this](const std::string &val){
+        uri_ = val;
+        return to_shmdata();
+      },
+      [this](){return uri_;},
+      "URI",
+      "URI To Be Redirected Into Shmdata(s)",
+      "");
+  
+  pmanage<MPtr(&PContainer::make_bool)>(
+      "loop",
+      [this](const bool &val){loop_ = val; return true;},
+      [this](){return loop_;},
+      "Looping",
+      "Loop media",
+      loop_);
   return true;
 }
 
@@ -243,7 +242,7 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement *bin, GstPad *pad) {
           },
           [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate){
             this->graft_tree(".shmdata.writer." + shmpath + ".byte_rate",
-                             data::Tree::make(byte_rate));
+                             InfoTree::make(byte_rate));
           }));
   GstUtils::sync_state_with_parent(shmdatasink);
 }
@@ -335,29 +334,6 @@ bool Uridecodebin::to_shmdata() {
   gst_pipeline_->play(true);
   //GstUtils::sync_state_with_parent(uridecodebin_);
   return true;
-}
-
-void Uridecodebin::set_loop(gboolean loop, void *user_data) {
-  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-  context->loop_ = loop;
-}
-
-gboolean Uridecodebin::get_loop(void *user_data) {
-  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-  return context->loop_;
-}
-
-void Uridecodebin::set_uri(const gchar *value, void *user_data) {
-  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-  context->uri_ = value;
-  context->to_shmdata();
-  //context->query_position_and_length();
-  context->custom_props_->notify_property_changed(context->uri_spec_);
-}
-
-const gchar *Uridecodebin::get_uri(void *user_data) {
-  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-  return context->uri_.c_str();
 }
 
 }  // namespace switcher

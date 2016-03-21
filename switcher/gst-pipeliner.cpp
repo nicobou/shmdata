@@ -25,7 +25,6 @@
 #include <algorithm>
 #include "./gst-pipeliner.hpp"
 #include "./quiddity.hpp"
-#include "./custom-property-helper.hpp"
 #include "./gst-utils.hpp"
 #include "./quiddity-command.hpp"
 #include "./quiddity-manager-impl.hpp"
@@ -65,15 +64,8 @@ GstPipeliner::GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
 }
 
 GstPipeliner::~GstPipeliner() {
-  // FIXME clean msgs_
-  if (!commands_.empty())
-    while (commands_.begin() != commands_.end())
-    {
-      delete (*commands_.begin())->command;
-      if (!g_source_is_destroyed((*commands_.begin())->src))
-        g_source_destroy((*commands_.begin())->src);
-      commands_.erase(commands_.begin());
-    }
+  for (auto &it: msgs_)
+    gst_message_unref(it);
 }
 
 void GstPipeliner::play(gboolean play) {

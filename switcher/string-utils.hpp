@@ -26,15 +26,18 @@
 namespace switcher {
 namespace StringUtils {
 
-std::string replace(const std::string &orig,
-                    const char to_replace,
-                    const std::string &replacement);
+std::string replace_char(const std::string &orig,
+                         const char to_replace,
+                         const std::string &replacement);
+std::string replace_string(const std::string &orig,
+                           const std::string &to_replace,
+                           const std::string &replacement);
 std::string replace_chars(const std::string &orig,
                           const std::vector<char> &to_replace,
                           const char replacement);
 
 
-}  // namespace NetUtils
+}  // namespace StringUtils
 }  // namespace switcher
 #endif
 

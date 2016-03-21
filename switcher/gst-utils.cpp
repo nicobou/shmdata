@@ -24,16 +24,17 @@
 #include "./scope-exit.hpp"
 
 namespace switcher {
-bool
-GstUtils::make_element(const gchar *class_name,
-                       GstElement **target_element) {
-  *target_element = gst_element_factory_make(class_name, nullptr);
-  if (*target_element == nullptr) {
+GstElement *GstUtils::make_element(const gchar *class_name,
+                            GstElement **target_element) {
+  GstElement *res = gst_element_factory_make(class_name, nullptr);
+  if (res == nullptr) {
     g_debug("gstreamer element class %s cannot be instanciated",
             class_name);
-    return false;
+    return nullptr;
   }
-  return true;
+  if (target_element)
+    *target_element = res;
+  return res;
 }
 
 
@@ -165,9 +166,16 @@ void GstUtils::clean_element(GstElement *element) {
   // if (GST_IS_BIN(gst_element_get_parent(element)))
   //   gst_bin_remove(GST_BIN(gst_element_get_parent(element)), element);
   // else
-    if (!GST_IS_BIN(gst_element_get_parent(element))
-        && ((GObject *) element)->ref_count > 0)
-    gst_object_unref(element);
+
+  gst_element_set_state(element, GST_STATE_NULL);
+  GstObject *parent = gst_element_get_parent(element);
+  On_scope_exit{if (parent) gst_object_unref(parent);};
+  if (GST_IS_BIN(parent)) {
+    gst_bin_remove (GST_BIN_CAST(parent), element);
+  } else {
+    if (((GObject *) element)->ref_count > 0)
+      gst_object_unref(element);
+  }
 }
 
 void GstUtils::wait_state_changed(GstElement *bin) {
@@ -408,6 +416,40 @@ GstUtils::element_factory_list_to_g_enum(GEnumValue *target_enum,
   gst_plugin_feature_list_free(element_list);
 }
 
+std::pair<std::vector<std::string>/*names*/,
+          std::vector<std::string>/*nicks*/>
+GstUtils::element_factory_list_to_pair_of_vectors(
+    GstElementFactoryListType type,
+    GstRank minrank,
+    bool insert_none_first,
+    const std::vector<std::string> &black_list) {
+  std::vector<std::string> names{};
+  std::vector<std::string> nicks{};
+  GList *element_list =
+      gst_element_factory_list_get_elements(type, minrank);
+
+  GList *iter = element_list;
+  gint i = 0;
+  if (insert_none_first) {
+    names.emplace_back("None");
+    nicks.emplace_back("None");
+    i++;
+  }
+  while (iter != nullptr) {
+    if (black_list.end() == std::find(
+            black_list.begin(),
+            black_list.end(), 
+            gst_plugin_feature_get_name((GstPluginFeature *) iter->data))){
+      names.emplace_back(gst_element_factory_get_longname((GstElementFactory *) iter->data));
+      nicks.emplace_back(gst_plugin_feature_get_name((GstPluginFeature *) iter->data));
+      i++;
+    }
+    iter = g_list_next(iter);
+  }
+  gst_plugin_feature_list_free(element_list);
+  return std::make_pair(names, nicks);
+}
+
 void GstUtils::gst_element_deleter(GstElement *element) {
   if (nullptr == element) {
     g_warning("%s is trying to delete a null element", __FUNCTION__);
@@ -418,13 +460,10 @@ void GstUtils::gst_element_deleter(GstElement *element) {
 	      __FUNCTION__);
     return;
   }
-    
-  // delete if ownership has not been taken by a parent
+  // unref if ownership has not been taken by a parent
   if (nullptr == GST_OBJECT_PARENT(element)) {
     if (((GObject *) element)->ref_count > 0)
       gst_object_unref(element);
-  } else {
-    GstUtils::clean_element(element);
   }
 }
 

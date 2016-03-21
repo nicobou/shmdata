@@ -16,13 +16,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./posture_solidify.hpp"
 #include "switcher/std2.hpp"
+#include "./posture_solidify.hpp"
 
 #include <iostream>
 
 using namespace std;
-using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
@@ -37,7 +36,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Emmanuel Durand");
 
 PostureSolidify::PostureSolidify(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()),
     shmcntr_(static_cast<Quiddity*>(this)) {
 }
 
@@ -72,31 +70,33 @@ PostureSolidify::init() {
                                   [this](const std::string caps){return can_sink_caps(caps);},
                                   1);
 
-  save_mesh_prop_ = custom_props_->make_boolean_property("save_mesh",
-                                           "Save the current mesh if true",
-                                           save_mesh_,
-                                           (GParamFlags) G_PARAM_READWRITE,
-                                           PostureSolidify::set_save_mesh,
-                                           PostureSolidify::get_save_mesh,
-                                           this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            save_mesh_prop_, "save_mesh",
-                            "Save the current mesh if true");
+  pmanage<MPtr(&PContainer::make_bool)>(
+      "save_mesh",
+      [this](const bool &val){
+        save_mesh_ = val;
+        if (solidify_ != nullptr)
+          solidify_->setSaveMesh(val);
+        return true;
+      },
+      [this](){return save_mesh_;},
+      "Save mesh",
+      "Save the current mesh if true",
+      save_mesh_);
 
-  marching_cubes_resolution_prop_ = custom_props_->make_int_property("marching_cubes_resolution",
-                                      "Resolution of the marching cubes reconstruction",
-                                      8,
-                                      256,
-                                      marching_cubes_resolution_,
-                                      (GParamFlags)
-                                      G_PARAM_READWRITE,
-                                      PostureSolidify::set_marching_cubes_resolution,
-                                      PostureSolidify::get_marching_cubes_resolution,
-                                      this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            marching_cubes_resolution_prop_, "marching_cubes_resolution",
-                            "Resolution of the marching cubes reconstruction");
-
+  pmanage<MPtr(&PContainer::make_int)>(
+      "marching_cubes_resolution",
+      [this](const int &val){
+        marching_cubes_resolution_= val;
+        if (solidify_ != nullptr)
+          solidify_->setGridResolution(val);
+        return true;
+      },
+      [this](){return marching_cubes_resolution_;},
+      "Marching cubes resolution",
+      "Resolution of the marching cubes reconstruction",
+      marching_cubes_resolution_,
+      8,
+      256);
   return true;
 }
 
@@ -122,7 +122,8 @@ PostureSolidify::connect(std::string shmdata_socket_path) {
       // Get the result mesh, and send it through shmdata
       auto mesh = vector<unsigned char>();
       solidify_->getMesh(mesh);
-      if (mesh_writer_ == nullptr || mesh.size() > mesh_writer_->writer(&shmdata::Writer::alloc_size))
+      if (mesh_writer_ == nullptr
+          || mesh.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>())
       {
         auto data_type = string(POLYGONMESH_TYPE_BASE);
         mesh_writer_.reset();
@@ -132,13 +133,12 @@ PostureSolidify::connect(std::string shmdata_socket_path) {
                                                         data_type);
       }
 
-      mesh_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(mesh.data()), mesh.size());
+      mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+          const_cast<unsigned char*>(mesh.data()), mesh.size());
       mesh_writer_->bytes_written(mesh.size());
 
       mutex_.unlock();
     });
-
-    worker_.do_task();
   }, [=](string caps) {
     unique_lock<mutex> lock(mutex_);
     pcl_reader_caps_ = caps;
@@ -163,36 +163,6 @@ bool
 PostureSolidify::can_sink_caps(std::string caps) {
   return (caps == POINTCLOUD_TYPE_BASE)
       || (caps == POINTCLOUD_TYPE_COMPRESSED);
-}
-
-int
-PostureSolidify::get_marching_cubes_resolution(void *user_data) {
-  PostureSolidify *ctx = (PostureSolidify *) user_data;
-  return ctx->marching_cubes_resolution_;
-}
-
-void
-PostureSolidify::set_marching_cubes_resolution(const int res, void *user_data) {
-  PostureSolidify *ctx = (PostureSolidify *) user_data;
-  ctx->marching_cubes_resolution_ = res;
-
-  if (ctx->solidify_ != nullptr)
-    ctx->solidify_->setGridResolution(res);
-}
-
-int
-PostureSolidify::get_save_mesh(void *user_data) {
-  PostureSolidify *ctx = (PostureSolidify *) user_data;
-  return ctx->save_mesh_;
-}
-
-void
-PostureSolidify::set_save_mesh(const int save, void *user_data) {
-  PostureSolidify *ctx = (PostureSolidify *) user_data;
-  ctx->save_mesh_ = save;
-
-  if (ctx->solidify_ != nullptr)
-    ctx->solidify_->setSaveMesh(save);
 }
 
 }  // namespace switcher

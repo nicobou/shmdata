@@ -42,16 +42,11 @@ main() {
 #else
     return 1;
 #endif
-    g_print("%s %d\n",__FUNCTION__, __LINE__);
     if (!switcher::QuiddityBasicTest::test_full(manager, "pulsesrc"))
       success = false;
-    g_print("%s %d\n",__FUNCTION__, __LINE__);
-
     if (!switcher::QuiddityBasicTest::test_full(manager, "pulsesink"))
       success = false;
-    g_print("%s %d\n",__FUNCTION__, __LINE__);
   }  // end of scope is releasing the manager
-    g_print("%s %d\n",__FUNCTION__, __LINE__);
 
   if (success)
     return 0;

@@ -28,7 +28,6 @@
 #include "switcher/shmdata-writer.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
-#include "switcher/custom-property-helper.hpp"
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
@@ -86,12 +85,9 @@ class GTKVideo: public Quiddity {
   guintptr window_handle_{0};
 #endif
   GdkCursor *blank_cursor_{nullptr};
-  CustomPropertyHelper::ptr gtk_custom_props_{};
-  GParamSpec *fullscreen_prop_spec_{nullptr};
-  gboolean is_fullscreen_{FALSE};
-  GParamSpec *title_prop_spec_{nullptr};
-  gchar *title_{nullptr};
-  GParamSpec *keyb_interaction_spec_{nullptr};
+  bool is_fullscreen_{false};
+  PContainer::prop_id_t fullscreen_id_{0};
+  std::string title_;
   gboolean keyb_interaction_{TRUE};
   std::mutex wait_window_mutex_{};
   std::condition_variable wait_window_cond_{};
@@ -125,16 +121,12 @@ class GTKVideo: public Quiddity {
   static gboolean key_release_cb(GtkWidget */*widget */,
                                  GdkEventKey *event,
                                  gpointer data);
-  static gboolean get_fullscreen(void *user_data);
-  static void set_fullscreen(gboolean fullscreen, void *user_data);
   static gboolean on_destroy_event(GtkWidget *widget,
                                    GdkEvent *event, gpointer user_data);
   static void window_destroyed(gpointer data);
   static gboolean destroy_window(gpointer data);
   static void set_title(const gchar *value, void *user_data);
   static const gchar *get_title(void *user_data);
-  static gboolean get_keyb_interaction(void *user_data);
-  static void set_keyb_interaction(gboolean keyb_interaction, void *user_data);
   static gboolean button_event (GtkWidget *widget, GdkEventButton *event, gpointer data);
   static gboolean motion_notify_event (GtkWidget *widget, GdkEventMotion *event, gpointer data);
   static void widget_getsize(GtkWidget *widget, GtkAllocation *allocation, void *data);

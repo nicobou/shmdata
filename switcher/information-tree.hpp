@@ -36,45 +36,48 @@
 
 #include <string>
 #include <algorithm>
+#include <vector>
 #include <list>
 #include <memory>
 #include <type_traits>
 #include <mutex>
+#include <iostream>
 #include "./any.hpp"
 
 namespace switcher {
-namespace data {
-class Tree {
+
+class InfoTree {
  public:
-  using ptr = std::shared_ptr<Tree>;  // shared
-  using ptrc = const Tree *;  // const
-  using rptr = Tree *;  // raw
-  using child_type = std::pair<std::string, Tree::ptr>;
-  using childs_t = std::list<child_type>;
+  using ptr = std::shared_ptr<InfoTree>;  // shared
+  using ptrc = const InfoTree *;  // const
+  using rptr = InfoTree *;  // raw
+  using child_type = std::pair<std::string, InfoTree::ptr>;
+  using childs_t = std::vector<child_type>;
   using OnNodeFunction = std::function<void(const std::string &name,
-                                             Tree::ptrc tree,
+                                             InfoTree::ptrc tree,
                                              bool is_array_element)>;
-  using GetNodeReturn = std::pair<Tree::childs_t, Tree::childs_t::iterator>;
+  using GetNodeReturn = std::pair<InfoTree::childs_t *, InfoTree::childs_t::size_type>;
   
   // factory
-  static Tree::ptr make();
-  template<typename ValueType> static Tree::ptr make(ValueType data) {
-    std::shared_ptr<Tree> tree;  //can't use make_shared because ctor is private
-    tree.reset(new Tree(data));
+  static InfoTree::ptr make();
+  template<typename ValueType> static InfoTree::ptr make(ValueType data) {
+    std::shared_ptr<InfoTree> tree;  //can't use make_shared because ctor is private
+    tree.reset(new InfoTree(std::forward<ValueType>(data)));
     tree->me_ = tree;
     return tree;
   }
-  static Tree::ptr make(const char *data);  // Tree will store a std::string
+  static InfoTree::ptr make(const char *data);  // InfoTree will store a std::string
   
   // escaping dots from a keys ("." internally replaced by "__DOT__")
   static std::string escape_dots(const std::string &str);
   static std::string unescape_dots(const std::string &str);
 
   //walk
-  static void preorder_tree_walk(Tree::ptrc tree,
-                                 Tree::OnNodeFunction on_visiting_node,
-                                 Tree::OnNodeFunction on_node_visited);
-  static Tree::ptrc get_subtree(Tree::ptrc tree, const std::string &path);
+  static void preorder_tree_walk(InfoTree::ptrc tree,
+                                 InfoTree::OnNodeFunction on_visiting_node,
+                                 InfoTree::OnNodeFunction on_node_visited);
+  // FIXME replace the following with a get_copy non static method
+  static InfoTree::ptrc get_subtree(InfoTree::ptrc tree, const std::string &path);
   
   //const methods
   bool is_leaf() const;
@@ -83,7 +86,19 @@ class Tree {
   const Any &read_data () const;
   bool branch_is_leaf(const std::string &path) const;
   bool branch_has_data(const std::string &path) const;
-  const Any &branch_read_data (const std::string &path) const;
+  template<typename T>
+  T branch_read_data (const std::string &path) const{
+    std::unique_lock<std::mutex> lock(mutex_);
+    auto found = get_node(path);
+    if (nullptr != found.first)
+      return (*found.first)[found.second].second->data_.copy_as<T>();
+    static Any any;
+    return any.copy_as<T>();
+
+  }
+
+  // serialize
+  std::string serialize_json(const std::string &path) const;
   
   // get child keys - returning a newly allocated list
   std::list<std::string> get_child_keys(const std::string &path) const;
@@ -93,9 +108,9 @@ class Tree {
   bool copy_and_insert_child_keys(std::string path, Iter pos) const {
     std::unique_lock<std::mutex> lock(mutex_);
     auto found = get_node(path);
-    if (!found.first.empty()) {
-      std::transform(found.second->second->childrens_.begin(),
-                     found.second->second->childrens_.end(),
+    if (nullptr != found.first) {
+      std::transform((*found.first)[found.second].second->childrens_.begin(),
+                     (*found.first)[found.second].second->childrens_.end(),
                      pos,
                      [](const child_type &child) {
                        return child.first;
@@ -119,11 +134,11 @@ class Tree {
   bool set_data(const std::string &path, std::nullptr_t ptr);
   // graft will create the path and graft the tree,
   // or remove old one and replace will the new tree
-  bool graft(const std::string &path, Tree::ptr);
+  bool graft(const std::string &path, InfoTree::ptr);
   // return empty tree if nothing can be pruned
-  Tree::ptr prune(const std::string &path);
+  InfoTree::ptr prune(const std::string &path);
   // get but not remove
-  Tree::ptr get(const std::string &path);
+  InfoTree::ptr get(const std::string &path);
   // return false if the path does not exist
   // when a path is tagged as an array, keys might be discarded
   // by some serializers, such as JSON
@@ -134,20 +149,25 @@ class Tree {
   bool is_array_ {false};
   mutable childs_t childrens_ {};
   mutable std::mutex mutex_ {};
-  std::weak_ptr<Tree> me_ {};
+  std::weak_ptr<InfoTree> me_ {};
   
-  Tree() {}
-  explicit Tree(const Any &data);
-
-  childs_t::iterator get_child_iterator(const std::string &key) const;
-  static bool graft_next(std::istringstream &path, Tree *tree,
-                         Tree::ptr leaf);
+  InfoTree() {}
+  template<typename U> InfoTree(const U &data): data_(Any(data)){
+  }
+  template<typename U> InfoTree(U &&data):
+      data_(Any(std::forward<U>(data))){
+  }
+  explicit InfoTree(const Any &data);
+  explicit InfoTree(Any &&data);
+  std::pair<bool, childs_t::size_type> get_child_index(const std::string &key) const;
+  static bool graft_next(std::istringstream &path, InfoTree *tree,
+                         InfoTree::ptr leaf);
   GetNodeReturn get_node(const std::string &path) const;
-  bool get_next(std::istringstream &path,
-                childs_t &parent_list_result,
-                childs_t::iterator &result_iterator) const;
+  GetNodeReturn get_next(std::istringstream &path,
+                         childs_t *parent_vector_result,
+                         childs_t::size_type result_index) const;
+  static bool path_is_root(const std::string &path);
 };
 
-}  // namespace data
 }  // namespace switcher
 #endif

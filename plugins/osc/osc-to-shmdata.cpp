@@ -32,41 +32,25 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Nicolas Bouillot");
 
 OscToShmdata::OscToShmdata(const std::string &):
-    custom_props_(new CustomPropertyHelper()),
-    port_(1056),
-    osc_thread_(nullptr),
-    port_spec_(nullptr) {
+    port_(1056) {
 }
 
 bool OscToShmdata::init() {
   init_startable(this);
-  port_spec_ =
-      custom_props_->make_int_property("Port",
-                                       "OSC port to listen",
-                                       1,
-                                       65536,
-                                       port_,
-                                       (GParamFlags) G_PARAM_READWRITE,
-                                       set_port, get_port, this);
-
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            port_spec_, "port", "Port");
-
+  pmanage<MPtr(&PContainer::make_int)>(
+      "port",
+      [this](const int &val){port_ = val; return true;},
+      [this](){return port_;},
+      "Port",
+      "OSC port to listen",
+      port_,
+      1,
+      65536);
   return true;
 }
 
 OscToShmdata::~OscToShmdata() {
   stop();
-}
-
-void OscToShmdata::set_port(const gint value, void *user_data) {
-  OscToShmdata *context = static_cast<OscToShmdata *>(user_data);
-  context->port_ = value;
-}
-
-gint OscToShmdata::get_port(void *user_data) {
-  OscToShmdata *context = static_cast<OscToShmdata *>(user_data);
-  return context->port_;
 }
 
 bool OscToShmdata::start() {
@@ -119,14 +103,14 @@ OscToShmdata::osc_handler(const char *path,
   }
   size_t size;
   void *buftmp = lo_message_serialise(m, path, nullptr, &size);
-  if (context->shm_->writer(&shmdata::Writer::alloc_size) < size) {
+  if (context->shm_->writer<MPtr(&shmdata::Writer::alloc_size)>() < size) {
     context->shm_.reset(nullptr);
     context->shm_.reset(new ShmdataWriter(context,
                                           context->make_file_name("osc"),
                                           size,
                                           "application/x-libloserialized-osc"));
   }
-  context->shm_->writer(&shmdata::Writer::copy_to_shm, buftmp, size);
+  context->shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(buftmp, size);
   context->shm_->bytes_written(size);
   g_free(buftmp);
   return 0;

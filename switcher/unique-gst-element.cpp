@@ -40,6 +40,8 @@ UGstElem::UGstElem(const gchar *class_name):
     class_name_(class_name),
     element_(gst_element_factory_make(class_name, nullptr),
              &GstUtils::gst_element_deleter) {
+  if(nullptr == element_)
+    g_warning("GStreamer element can be made (type %s)", class_name);
 }
 
 bool UGstElem::safe_bool_idiom() const {

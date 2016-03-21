@@ -32,7 +32,6 @@
 #include "switcher/shmdata-follower.hpp"
 #include "switcher/shmdata-writer.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
 class PostureDetect : public Quiddity, public StartableQuiddity {
@@ -47,9 +46,7 @@ class PostureDetect : public Quiddity, public StartableQuiddity {
   bool stop();
 
  private:
-  CustomPropertyHelper::ptr custom_props_;
   ShmdataConnector shmcntr_;
-
   bool compress_cloud_ {false};
 
   std::shared_ptr<posture::Detect> detect_ {nullptr};
@@ -70,5 +67,4 @@ class PostureDetect : public Quiddity, public StartableQuiddity {
 
 SWITCHER_DECLARE_PLUGIN(PostureDetect);
 }  // namespace switcher
-
 #endif

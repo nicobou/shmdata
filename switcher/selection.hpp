@@ -17,33 +17,34 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_GOBJECT_CUSTOM_PROPERTY_H__
-#define __SWITCHER_GOBJECT_CUSTOM_PROPERTY_H__
+#ifndef __SWITCHER_SELECTION_H__
+#define __SWITCHER_SELECTION_H__
 
-#include <memory>
 #include <string>
-#include <glib-object.h>
+#include <vector>
 
 namespace switcher {
-class GObjectCustomProperty {
+class Selection {
  public:
-  typedef std::shared_ptr<GObjectCustomProperty> ptr;
-  typedef bool(*set_method_pointer) (const GValue *val, void *user_data);
-  typedef bool(*get_method_pointer) (GValue *val, void *user_data);
-  ~GObjectCustomProperty();
-
-  static GObjectCustomProperty::ptr
-  make_custom_property(set_method_pointer set_method,
-                       get_method_pointer get_method);
-
-  set_method_pointer set_method_;
-  get_method_pointer get_method_;
-
+  using index_t = size_t;
+  Selection() = delete;
+  Selection(std::vector<std::string> &&list, index_t selection);
+  Selection(std::pair<
+            std::vector<std::string>/*names*/,
+            std::vector<std::string/*nicks*/>> &&list, index_t selection);
+  void select(index_t new_selection);
+  index_t get() const;
+  std::string get_current() const;
+  std::string get_current_nick() const;
+  std::vector<std::string> get_list() const;
+  index_t get_index(const std::string &name_or_nick);
+  index_t size() const {return list_.size();}
+  bool empty() const {return list_.empty();}
  private:
-  GObjectCustomProperty();
-  void set_members(set_method_pointer set_method,
-                   get_method_pointer get_method);
+  std::vector<std::string> list_;
+  std::vector<std::string> nicks_;
+  index_t current_selection_{0};
 };
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

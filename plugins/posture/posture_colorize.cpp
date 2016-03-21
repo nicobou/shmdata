@@ -23,7 +23,6 @@
 #include <regex>
 
 using namespace std;
-using namespace switcher::data;
 using namespace posture;
 
 namespace switcher {
@@ -38,7 +37,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Emmanuel Durand");
 
 PostureColorize::PostureColorize(const std::string &):
-    custom_props_(std::make_shared<CustomPropertyHelper> ()),
     shmcntr_(static_cast<Quiddity*>(this)) {
 }
 
@@ -51,9 +49,10 @@ PostureColorize::start() {
   if (is_started())
     return false;
 
+  calibration_reader_ = unique_ptr<posture::CalibrationReader>(new posture::CalibrationReader(calibration_path_));
   colorize_ = make_shared<Colorize>();
 
-  colorize_->setCalibrationPath(calibration_path_);
+  colorize_->setCalibration(calibration_reader_->getCalibrationParams());
   colorize_->setComputeTexCoords(compute_tex_coords_);
   colorize_->setCompressMesh(compress_mesh_);
 
@@ -86,40 +85,31 @@ PostureColorize::init() {
                                   [this](const std::string caps){return can_sink_caps(caps);},
                                   std::numeric_limits<unsigned int>::max());
 
-  calibration_path_prop_ = custom_props_->make_string_property("calibration_path",
-                                          "Path to the calibration file",
-                                          calibration_path_.c_str(),
-                                          (GParamFlags) G_PARAM_READWRITE,
-                                          PostureColorize::set_calibration_path,
-                                          PostureColorize::get_calibration_path,
-                                          this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            calibration_path_prop_, "calibration_path",
-                            "Path to the calibration file");
+    pmanage<MPtr(&PContainer::make_string)>(
+        "calibration_path",
+        [this](const std::string &val){calibration_path_ = val; return true;},
+        [this](){return calibration_path_;},
+        "Calibration path",
+        "Path to the calibration file",
+        calibration_path_);
 
-  compute_tex_coords_prop_ = custom_props_->make_boolean_property("compute_tex_coords",
-                                         "Compute texture coordinates",
-                                         compute_tex_coords_,
-                                         (GParamFlags) G_PARAM_READWRITE,
-                                         PostureColorize::set_compute_tex_coords,
-                                         PostureColorize::get_compute_tex_coords,
-                                         this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            compute_tex_coords_prop_, "compute_tex_coords",
-                            "Compute texture coordinates");
+    pmanage<MPtr(&PContainer::make_bool)>(
+        "compute_tex_coords",
+        [this](const bool &val){compute_tex_coords_ = val; return true;},
+        [this](){return compute_tex_coords_;},
+        "Compute texture coordinates",
+        "Compute texture coordinates",
+        compute_tex_coords_);
 
-  compress_mesh_prop_ = custom_props_->make_boolean_property("compress_mesh",
-                                         "Compress the output mesh",
-                                         compress_mesh_,
-                                         (GParamFlags) G_PARAM_READWRITE,
-                                         PostureColorize::set_compress_mesh,
-                                         PostureColorize::get_compress_mesh,
-                                         this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            compress_mesh_prop_, "compress_mesh",
-                            "Compress the output mesh");
-
-  return true;
+    pmanage<MPtr(&PContainer::make_bool)>(
+        "compress_mesh",
+        [this](const bool &val){compress_mesh_ = val; return true;},
+        [this](){return compress_mesh_;},
+        "Compress the output mesh",
+        "Compress the output mesh",
+        compress_mesh_);
+    
+    return true;
 }
 
 bool
@@ -181,21 +171,26 @@ PostureColorize::connect(std::string shmdata_socket_path) {
             return;
 
         // Write the mesh
-        if (!mesh_writer_ || texturedMesh.size() > mesh_writer_->writer(&shmdata::Writer::alloc_size)) {
+        if (!mesh_writer_
+            || texturedMesh.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
           auto data_type = string(POLYGONMESH_TYPE_BASE);
           mesh_writer_.reset();
-          mesh_writer_ = std2::make_unique<ShmdataWriter>(this,
-                                                          make_file_name("mesh"),
-                                                          std::max(texturedMesh.size() * 2, (size_t)1024),
-                                                          data_type);
+          mesh_writer_ = std2::make_unique<ShmdataWriter>(
+              this,
+              make_file_name("mesh"),
+              std::max(texturedMesh.size() * 2, (size_t)1024),
+              data_type);
         }
 
-        mesh_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(texturedMesh.data()), texturedMesh.size());
+        mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+            const_cast<unsigned char*>(texturedMesh.data()), texturedMesh.size());
         mesh_writer_->bytes_written(texturedMesh.size());
 
         // Write the texture
         if (!tex_writer_ || width != prev_width_ || height != prev_height_) {
-          auto data_type = "video/x-raw,format=(string)BGR,width=(int)" + to_string(width) + ",height=(int)" + to_string(height) + ",framerate=30/1";
+          auto data_type =
+              "video/x-raw,format=(string)BGR,width=(int)" + to_string(width)
+              + ",height=(int)" + to_string(height) + ",framerate=30/1";
           tex_writer_.reset();
           tex_writer_ = std2::make_unique<ShmdataWriter>(this,
                                                          make_file_name("texture"),
@@ -205,11 +200,11 @@ PostureColorize::connect(std::string shmdata_socket_path) {
           prev_height_ = height;
         }
 
-        tex_writer_->writer(&shmdata::Writer::copy_to_shm, const_cast<unsigned char*>(texture.data()), texture.size());
+        tex_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+            const_cast<unsigned char*>(texture.data()), texture.size());
         tex_writer_->bytes_written(texture.size());
 
       });
-      worker_.do_task();
     }
     // Update the input textures
     else if (check_image_caps(type, width, height, channels)) {
@@ -353,43 +348,6 @@ PostureColorize::check_image_caps(string caps, unsigned int& width, unsigned int
   {
     return false;
   }
-}
-
-const gchar *
-PostureColorize::get_calibration_path(void *user_data) {
-  PostureColorize *ctx = (PostureColorize *) user_data;
-  return ctx->calibration_path_.c_str();
-}
-
-void
-PostureColorize::set_calibration_path(const gchar *name, void *user_data) {
-  PostureColorize *ctx = (PostureColorize *) user_data;
-  if (name != nullptr)
-    ctx->calibration_path_ = name;
-}
-
-int
-PostureColorize::get_compute_tex_coords(void *user_data) {
-    PostureColorize *ctx = (PostureColorize *) user_data;
-    return ctx->compute_tex_coords_;
-}
-
-void
-PostureColorize::set_compute_tex_coords(const int compute, void *user_data) {
-    PostureColorize *ctx = (PostureColorize *) user_data;
-    ctx->compute_tex_coords_ = compute;
-}
-
-int
-PostureColorize::get_compress_mesh(void *user_data) {
-    PostureColorize *ctx = (PostureColorize *) user_data;
-    return ctx->compress_mesh_;
-}
-
-void
-PostureColorize::set_compress_mesh(const int compress, void *user_data) {
-    PostureColorize *ctx = (PostureColorize *) user_data;
-    ctx->compress_mesh_ = compress;
 }
 
 }  // namespace switcher

@@ -19,15 +19,17 @@
 #include "../config.h"
 #endif
 
-#include <vector>
-#include <iostream>
 #include <signal.h>
 #include <time.h>
-#include "switcher/quiddity-manager.hpp"
 #include <locale.h>
-#ifdef HAVE_GTK
+#if HAVE_GTK
 #include <gtk/gtk.h>
 #endif
+#include <vector>
+#include <iostream>  // FIXME ??
+#include "switcher/quiddity-manager.hpp"
+
+using namespace switcher;
 
 static const gchar *server_name = nullptr;
 static const gchar *port_number = nullptr;
@@ -44,7 +46,7 @@ static gchar *listpropbyclass = nullptr;
 static gchar *listmethodsbyclass = nullptr;
 static gchar *listsignalsbyclass = nullptr;
 static gchar *extraplugindir = nullptr;
-static switcher::QuiddityManager::ptr manager;
+static QuiddityManager::ptr manager;
 static GOptionEntry entries[15] = {
   {"version", 'V', 0, G_OPTION_ARG_NONE, &display_version,
    "display switcher version number", nullptr},
@@ -82,10 +84,10 @@ void
 leave(int sig) {
   // removing reference to manager in order to delete it
   {
-    switcher::QuiddityManager::ptr empty;
+    QuiddityManager::ptr empty;
     manager.swap(empty);
   }
-#ifdef HAVE_GTK
+#if HAVE_GTK
   gtk_main_quit();
 #endif
   exit(sig);
@@ -96,15 +98,6 @@ quiet_log_handler(const gchar * /*log_domain */ ,
                   GLogLevelFlags /*log_level */ ,
                   const gchar * /*message */ ,
                   gpointer /*user_data */ ) {
-}
-
-static void
-logger_cb(const std::string &/*subscriber_name */ ,
-          const std::string &/*quiddity_name */ ,
-          const std::string &/*property_name */ ,
-          const std::string &value,
-          void * /*user_data */ ) {
-  g_print("%s\n", value.c_str());
 }
 
 int
@@ -140,7 +133,7 @@ main(int argc, char *argv[]) {
   if (port_number == nullptr)
     port_number = "27182";
 
-  manager = switcher::QuiddityManager::make_manager(server_name);
+  manager = QuiddityManager::make_manager(server_name);
 
   // create logger managing switcher log domain
   manager->create("logger", "internal_logger");
@@ -158,32 +151,68 @@ main(int argc, char *argv[]) {
                      "GLib-GObject", nullptr);
 
   if (quiet)
-    manager->set_property("internal_logger", "mute", "true");
+    manager->use_prop<MPtr(&PContainer::set_str)>(
+        "internal_logger",
+        manager->use_prop<MPtr(&PContainer::get_id)>(
+            "internal_logger", "mute"),
+        "true");
   else
-    manager->set_property("internal_logger", "mute", "false");
+    manager->use_prop<MPtr(&PContainer::set_str)>(
+        "internal_logger",
+        manager->use_prop<MPtr(&PContainer::get_id)>(
+            "internal_logger", "mute"),
+        "false");
+
   if (debug)
-    manager->set_property("internal_logger", "debug", "true");
+  manager->use_prop<MPtr(&PContainer::set_str)>(
+        "internal_logger",
+        manager->use_prop<MPtr(&PContainer::get_id)>(
+            "internal_logger", "debug"),
+        "true");
   else
-    manager->set_property("internal_logger", "debug", "false");
+    manager->use_prop<MPtr(&PContainer::set_str)>(
+        "internal_logger",
+        manager->use_prop<MPtr(&PContainer::get_id)>(
+            "internal_logger", "debug"),
+        "false");
+
   if (verbose)
-    manager->set_property("internal_logger", "verbose", "true");
+  manager->use_prop<MPtr(&PContainer::set_str)>(
+        "internal_logger",
+        manager->use_prop<MPtr(&PContainer::get_id)>(
+            "internal_logger", "verbose"),
+        "true");
   else
-    manager->set_property("internal_logger", "verbose", "false");
+    manager->use_prop<MPtr(&PContainer::set_str)>(
+        "internal_logger",
+        manager->use_prop<MPtr(&PContainer::get_id)>(
+            "internal_logger", "verbose"),
+        "false");
 
   // subscribe to logs:
-  manager->make_property_subscriber("log_sub", logger_cb, nullptr);
-  manager->subscribe_property("log_sub", "internal_logger", "last-line");
+  {
+    auto last_line_id =
+        manager->use_prop<MPtr(&PContainer::get_id)>(
+            "internal_logger", "last-line");
+    auto manager_ptr = manager.get(); 
+    manager->use_prop<MPtr(&PContainer::subscribe)>(
+        "internal_logger",
+        last_line_id,
+        [last_line_id, manager_ptr](){
+          g_print("%s\n", manager->use_prop<MPtr(&PContainer::get_str)>(
+              "internal_logger", last_line_id).c_str());
+        },
+        nullptr);
+  }
 
   // loading plugins from default location // FIXME add an option
 #ifdef HAVE_CONFIG_H
-  gchar *
-      usr_plugin_dir = g_strdup_printf("/usr/%s-%s/plugins", PACKAGE_NAME,
-                                       LIBSWITCHER_API_VERSION);
+  gchar *usr_plugin_dir = g_strdup_printf("/usr/%s-%s/plugins", PACKAGE_NAME,
+                                          LIBSWITCHER_API_VERSION);
   manager->scan_directory_for_plugins(usr_plugin_dir);
   g_free(usr_plugin_dir);
 
-  gchar *
-      usr_local_plugin_dir =
+  gchar *usr_local_plugin_dir =
       g_strdup_printf("/usr/local/%s-%s/plugins", PACKAGE_NAME,
                       LIBSWITCHER_API_VERSION);
   manager->scan_directory_for_plugins(usr_local_plugin_dir);
@@ -255,14 +284,8 @@ main(int argc, char *argv[]) {
   manager->reset_command_history(false);
 
   if (load_file != nullptr) {
-    switcher::QuiddityManager::CommandHistory histo =
+    QuiddityManager::CommandHistory histo =
         manager->get_command_history_from_file(load_file);
-    std::vector<std::string> prop_subscriber_names =
-        manager->get_property_subscribers_names(histo);
-    if (!prop_subscriber_names.empty())
-      g_warning
-          ("creation of property subscriber not handled when loading file %s",
-           load_file);
 
     std::vector<std::string> signal_subscriber_names =
         manager->get_signal_subscribers_names(histo);
@@ -292,7 +315,7 @@ main(int argc, char *argv[]) {
   // g_print ("---- reset done ----\n");
   // g_print ("--- %s\n",manager->get_quiddities_description ().c_str ());
 
-  // switcher::QuiddityManager::CommandHistory histo =
+  // QuiddityManager::CommandHistory histo =
   //   manager->get_command_history_from_file ("trup.switcher");
 
   // // std::vector <std::string> prop_subscriber_names =
@@ -307,14 +330,14 @@ main(int argc, char *argv[]) {
   // //    // for (auto &it: signal_subscriber_names)
   // //    //   g_print ("signal sub %s\n", it.c_str ());
 
-  //      switcher::QuiddityManager::PropCallbackMap prop_cb_data;
+  //      QuiddityManager::PropCallbackMap prop_cb_data;
   //      prop_cb_data ["log_sub"] = std::make_pair (logger_cb, (void *)nullptr);
-  //      switcher::QuiddityManager::SignalCallbackMap sig_cb_data;
+  //      QuiddityManager::SignalCallbackMap sig_cb_data;
   //      sig_cb_data["create_remove_subscriber"] = std::make_pair (quiddity_created_removed_cb, (void *)nullptr);
   //      manager->play_command_history (histo, &prop_cb_data, &sig_cb_data);
   //      g_print ("--fin-- %s\n",manager->get_quiddities_description ().c_str ());
 
-#ifdef HAVE_GTK
+#if HAVE_GTK
   if (!gtk_init_check(nullptr, nullptr))
     std::cerr << "cannot init gtk in main" << std::endl;
   else
