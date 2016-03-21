@@ -71,7 +71,7 @@ bool V4L2Src::init() {
       devices_enum_);
   group_id_ = pmanage<MPtr(&PContainer::make_group)>(
      "config",
-     "capture device configuration",
+     "Capture device configuration",
      "device specific parameters");
   update_device_specific_properties(devices_enum_.get());
   codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
@@ -493,13 +493,14 @@ bool V4L2Src::start() {
   gst_pipeline_->play(true);
   codecs_->start();
   pmanage<MPtr(&PContainer::enable)>(devices_id_, false);
-  pmanage<MPtr(&PContainer::remove)>(resolutions_id_); resolutions_id_ = 0;
-  pmanage<MPtr(&PContainer::remove)>(width_id_); width_id_ = 0;
-  pmanage<MPtr(&PContainer::remove)>(height_id_); height_id_ = 0;
-  pmanage<MPtr(&PContainer::remove)>(tv_standards_id_); tv_standards_id_ = 0;
-  pmanage<MPtr(&PContainer::remove)>(framerates_enum_id_); framerates_enum_id_ = 0;
-  pmanage<MPtr(&PContainer::remove)>(framerate_id_); framerate_id_ = 0;
-  pmanage<MPtr(&PContainer::remove)>(pixel_format_id_); pixel_format_id_ = 0;
+  pmanage<MPtr(&PContainer::enable)>(group_id_, false);
+  pmanage<MPtr(&PContainer::enable)>(resolutions_id_, false); 
+  pmanage<MPtr(&PContainer::enable)>(width_id_, false); 
+  pmanage<MPtr(&PContainer::enable)>(height_id_, false); 
+  pmanage<MPtr(&PContainer::enable)>(tv_standards_id_, false); 
+  pmanage<MPtr(&PContainer::enable)>(framerates_enum_id_, false); 
+  pmanage<MPtr(&PContainer::enable)>(framerate_id_, false); 
+  pmanage<MPtr(&PContainer::enable)>(pixel_format_id_, false); 
   return true;
 }
 
@@ -512,7 +513,14 @@ bool V4L2Src::stop() {
       nullptr);
   codecs_->stop();
   pmanage<MPtr(&PContainer::enable)>(devices_id_, true);
-  update_device_specific_properties(devices_enum_.get());
+  pmanage<MPtr(&PContainer::enable)>(group_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(resolutions_id_, true); 
+  pmanage<MPtr(&PContainer::enable)>(width_id_, true); 
+  pmanage<MPtr(&PContainer::enable)>(height_id_, true); 
+  pmanage<MPtr(&PContainer::enable)>(tv_standards_id_, true); 
+  pmanage<MPtr(&PContainer::enable)>(framerates_enum_id_, true); 
+  pmanage<MPtr(&PContainer::enable)>(framerate_id_, true); 
+  pmanage<MPtr(&PContainer::enable)>(pixel_format_id_, true); 
   return true;
 }
 
