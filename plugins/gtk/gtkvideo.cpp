@@ -210,6 +210,8 @@ gboolean GTKVideo::destroy_window(gpointer user_data) {
 }
 
 GTKVideo::~GTKVideo() {
+  keyb_shm_.reset();
+  mouse_shm_.reset();
   gst_pipeline_.reset();
   g_idle_remove_by_data(this);
   // destroy child widgets too
