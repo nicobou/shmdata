@@ -86,12 +86,14 @@ void GstVideoCodec::hide(){
   quid_->disable_method("reset");
   quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_, false);
   quid_->pmanage<MPtr(&PContainer::enable)>(codec_long_list_id_, false);
+  quid_->pmanage<MPtr(&PContainer::enable)>(param_group_id_, false);
 }
 
 void GstVideoCodec::show(){
   quid_->enable_method("reset");
   quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_, true);
   quid_->pmanage<MPtr(&PContainer::enable)>(codec_long_list_id_, true);
+  quid_->pmanage<MPtr(&PContainer::enable)>(param_group_id_, true);
 }
 
 void GstVideoCodec::make_bin(){
@@ -135,6 +137,7 @@ void GstVideoCodec::uninstall_codec_properties(){
 }
 
 void GstVideoCodec::make_codec_properties() {
+  uninstall_codec_properties();
   guint num_properties = 0;
   GParamSpec **props = g_object_class_list_properties(
       G_OBJECT_GET_CLASS(codec_element_.get_raw()), &num_properties);
@@ -174,7 +177,6 @@ gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointe
 
 bool GstVideoCodec::start(){
   hide();
-  uninstall_codec_properties();
   if (0 == quid_->pmanage<MPtr(&PContainer::get<Selection::index_t>)>(codec_id_)) 
     return true;
   shmsink_sub_ = std2::make_unique<GstShmdataSubscriber>(
