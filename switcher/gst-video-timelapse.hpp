@@ -22,15 +22,12 @@
 
 #include <vector>
 #include <unordered_set>
-#include "switcher/unique-gst-element.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/shmdata-utils.hpp"
 
 
 namespace switcher {
-class quiddity;
-
 struct GstVideoTimelapseConfig{
   GstVideoTimelapseConfig(const std::string &orig_shmpath,
                          const std::string &image_path): // "for instance /tmp/img_%05d.jpg"
@@ -43,22 +40,30 @@ struct GstVideoTimelapseConfig{
   unsigned int framerate_denom_{1};
 };
 
-class GstVideoTimelapse {
+class GstVideoTimelapse : public SafeBoolIdiom  {
  public:
-  GstVideoTimelapse(Quiddity *quid,
-                   const GstVideoTimelapseConfig &config);
+  GstVideoTimelapse(const GstVideoTimelapseConfig &config,
+                    GstShmdataSubscriber::on_caps_cb_t on_caps,
+                    GstShmdataSubscriber::on_byte_monitor_t on_byte_monitor,
+                    GstShmdataSubscriber::on_delete_t on_delete);
   GstVideoTimelapse() = delete;
   ~GstVideoTimelapse() = default;
   GstVideoTimelapse(const GstVideoTimelapse &) = delete;
   GstVideoTimelapse &operator=(const GstVideoTimelapse &) = delete;
 
  private:
-  Quiddity *quid_;
   GstVideoTimelapseConfig config_;
+  GstShmdataSubscriber::on_caps_cb_t on_caps_;
+  GstShmdataSubscriber::on_byte_monitor_t on_byte_monitor_;
+  GstShmdataSubscriber::on_delete_t on_delete_;
   // gst pipeline
   std::unique_ptr<GstPipeliner> gst_pipeline_;
-  // UGstElem shmsrc_{"shmdatasrc"};
   std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
+
+  // safe bool idiom
+  bool is_valid_{false};
+  bool safe_bool_idiom() const final{return is_valid_;};
+
 };
 
 }  // namespace switcher

@@ -79,8 +79,22 @@ bool Timelapse::on_shmdata_connect(const std::string &shmpath) {
                               img_path_.empty() ? shmpath + "%05d.jpg" : img_path_);
   timelapse_config_.framerate_num_ = framerate_.numerator();
   timelapse_config_.framerate_denom_ = framerate_.denominator();
-  timelapse_ = std2::make_unique<GstVideoTimelapse>(this, timelapse_config_);
-  return true;  // FIXME make videotimelapse testable
+  timelapse_ = std2::make_unique<GstVideoTimelapse>(
+      timelapse_config_,
+      [this](const std::string &caps) {
+        graft_tree(".shmdata.reader." + timelapse_config_.orig_shmpath_,
+                   ShmdataUtils::make_tree(caps,
+                                           ShmdataUtils::get_category(caps),
+                                           0));
+      },
+      [this](GstShmdataSubscriber::num_bytes_t byte_rate){
+        graft_tree(".shmdata.reader." + timelapse_config_.orig_shmpath_ + ".byte_rate",
+                   InfoTree::make(std::to_string(byte_rate)));
+      },
+      nullptr);
+  if (!*timelapse_.get())
+    return false;
+  return true;
 }
 
 bool Timelapse::can_sink_caps(const std::string &caps) {
