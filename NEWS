@@ -1,3 +1,19 @@
+switcher 0.8.6 (2016-03-21)
+---------------------------
+This is an official release in the 0.8 stable series. 
+
+New features:
+
+* property system refactored
+* posture GPU
+* nvenc support
+* STUN/TURN support
+* video timelapse
+
+Bugs fixed:
+
+* too many to be listed here
+
 switcher 0.8.4 (2015-08-18)
 ---------------------------
 This is an official release in the 0.8 stable series. 
@@ -39,7 +55,7 @@ New features:
 
 Bugs fixed:
 
-* two many to be listed here
+* too many to be listed here
 
 switcher 0.6.2 (2014-08-04)
 ---------------------------
