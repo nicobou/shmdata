@@ -62,8 +62,12 @@ Build nvenc plugin
 $ nvidia-settings
 2) download and unzip nvenc SDK version 5.0.1:
 https://developer.nvidia.com/nvidia-video-codec-sdk
-3) install cuda headers
-$ sudo apt-get install nvidia-cuda-dev
+3) install cuda with headers
+download and install cuda 7.5 from here:
+https://developer.nvidia.com/cuda-downloads
+then install cuda headers
+$ sudo apt-get update
+$ sudo apt-get install cuda nvidia-cuda-dev
 4) in the switcher directory, configure switcher as follow
 $ NVENC_SDK_PATH='<your-path>' NVENC_LIBS='-L/usr/lib/nvidia-<driver-version-number>' ./configure
 replacing information by yours, for instance:
