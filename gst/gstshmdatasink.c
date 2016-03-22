@@ -582,8 +582,8 @@ gst_shmdata_sink_render (GstBaseSink * bsink, GstBuffer * buf)
   }
 
   if (need_new_memory) {
-    if (gst_buffer_get_size (buf) > self->size) { 
-      gsize area_size = self->size; 
+    if (gst_buffer_get_size (buf) >  shmdata_get_shmmax(NULL)) { 
+      gsize area_size = shmdata_get_shmmax(NULL); 
       GST_OBJECT_UNLOCK (self); 
       GST_ELEMENT_ERROR (self, RESOURCE, NO_SPACE_LEFT, 
                          ("Shared memory area is too small"), 
