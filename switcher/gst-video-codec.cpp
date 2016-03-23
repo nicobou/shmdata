@@ -269,4 +269,9 @@ PContainer::prop_id_t GstVideoCodec::install_codec(){
       use_primary_codec_ ? primary_codec_ : secondary_codec_);
 }
 
+void GstVideoCodec::set_none(){
+  quid_->pmanage<MPtr(&PContainer::set<Selection::index_t>)>(
+      quid_->pmanage<MPtr(&PContainer::get_id)>("codec"), 0);
+}
+
 }  // namespace switcher

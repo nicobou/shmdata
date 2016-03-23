@@ -102,6 +102,8 @@ class V4L2Src: public Quiddity, public StartableQuiddity {
 
   static std::string pixel_format_to_string(unsigned pf_id);
 
+  bool is_current_pixel_format_raw_video() const;
+  
   // devices list:
   Selection devices_enum_{{"none"}, 0};
   PContainer::prop_id_t devices_id_{0};
