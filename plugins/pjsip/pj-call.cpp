@@ -770,17 +770,19 @@ bool PJCall::make_call(std::string dst_uri) {
                                  &SIPPlugin::this_->sip_presence_->cfg_.cred_info[0]);
   cur_call->peer_uri = dst_uri;
   // Create SDP
-  create_outgoing_sdp(dlg, cur_call, &sdp);
-  if (nullptr == sdp)
+  if (!create_outgoing_sdp(dlg, cur_call, &sdp)){
     g_warning("%s failed creating sdp", __FUNCTION__);
-
+    pjsip_dlg_terminate(dlg);
+    outgoing_call_.pop_back();
+    return false;
+  }
   print_sdp(sdp);
-
   // Create the INVITE session.
   status = pjsip_inv_create_uac(dlg, sdp, 0, &cur_call->inv);
   if (status != PJ_SUCCESS) {
     pjsip_dlg_terminate(dlg);
     g_warning("pjsip_inv_create_uac FAILLED");
+    outgoing_call_.pop_back();
     return false;
   }
   // Attach call data to invite session
@@ -867,6 +869,10 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
       call->media.emplace_back();
       call->media.back().shm_path_to_send = it;
     }
+  }
+  if (call->media.empty()){
+    g_warning("no valid media stream found, aborting call");
+    return false;
   }
   std::string desc_str = desc.get_string();
   if (desc_str.empty()) {
