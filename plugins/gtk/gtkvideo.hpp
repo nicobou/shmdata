@@ -132,6 +132,8 @@ class GTKVideo: public Quiddity {
   static void widget_getsize(GtkWidget *widget, GtkAllocation *allocation, void *data);
   void update_padding(GtkWidget *widget);
   void write_mouse_info_to_shmdata(int x, int y, const GdkModifierType &state);
+  void install_gst_properties();  
+  void remove_gst_properties();  
   
   struct KeybEvent{
     KeybEvent (guint32 keyval, guint32 down) : keyval_(keyval), down_(down){}
