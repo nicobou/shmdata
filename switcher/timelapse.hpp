@@ -49,6 +49,13 @@ class Timelapse: public Quiddity {
   // last image 
   std::string last_image_{};
   PContainer::prop_id_t last_image_id_;
+  // scaling image
+  bool scale_{false};
+  PContainer::prop_id_t scale_id_;
+  unsigned int width_{0};
+  PContainer::prop_id_t width_id_;
+  unsigned int height_{0};
+  PContainer::prop_id_t height_id_;
   
   bool init() final;
   bool on_shmdata_disconnect();
