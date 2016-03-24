@@ -40,20 +40,26 @@ Timelapse::Timelapse(const std::string &):
         [this](const std::string &val){img_path_ = val; return true;},
         [this](){return img_path_;},
         "Image Path",
-        "Path the the jpeg file to write. if empty, the path will be <video_shmdata_path>%05d.jpg",
+        "Path for the jpeg files to be produced. if empty, the path will be <video_shmdata_path>%05d.jpg",
         img_path_)),
     framerate_id_(pmanage<MPtr(&PContainer::make_fraction)>(
         "framerate",
         [this](const Fraction &val){
           framerate_ = val; return true;
-      },
+        },
         [this](){return framerate_;},
         "Framerate",
         "Number of image to be produced by seconds",
         framerate_,
         1, 1,  // min num/denom
-        60, 5)  // max num/denom
-                 ){
+        60, 5)),  // max num/denom
+    last_image_id_(pmanage<MPtr(&PContainer::make_string)>(
+        "last_image",
+        nullptr,
+        [this](){return last_image_;},
+        "Last image written",
+        "Path of the last jpeg file written",
+        last_image_)){
     }
 
 bool Timelapse::init() {
@@ -70,6 +76,8 @@ bool Timelapse::on_shmdata_disconnect() {
   if (!timelapse_)
     return true;
   timelapse_.reset();
+  pmanage<MPtr(&PContainer::enable)>(img_path_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(framerate_id_, true);
   return true;
 }
 
@@ -91,9 +99,17 @@ bool Timelapse::on_shmdata_connect(const std::string &shmpath) {
         graft_tree(".shmdata.reader." + timelapse_config_.orig_shmpath_ + ".byte_rate",
                    InfoTree::make(std::to_string(byte_rate)));
       },
-      nullptr);
+      nullptr,
+      [this](std::string &&file_name){
+        { auto lock = pmanage<MPtr(&PContainer::get_lock)>(last_image_id_);
+          last_image_ = file_name;
+        }
+        pmanage<MPtr(&PContainer::notify)>(last_image_id_);
+      });  // FIXME this should update information
   if (!*timelapse_.get())
     return false;
+  pmanage<MPtr(&PContainer::enable)>(framerate_id_, false);
+  pmanage<MPtr(&PContainer::enable)>(img_path_id_, false);
   return true;
 }
 

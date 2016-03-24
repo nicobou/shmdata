@@ -29,19 +29,23 @@ GstVideoTimelapse::GstVideoTimelapse(
     const GstVideoTimelapseConfig &config,
     GstShmdataSubscriber::on_caps_cb_t on_caps,
     GstShmdataSubscriber::on_byte_monitor_t on_byte_monitor,
-    GstShmdataSubscriber::on_delete_t on_delete):
+    GstShmdataSubscriber::on_delete_t on_delete,
+    on_new_file_t on_new_file):
     config_(config),
     on_caps_(on_caps),
     on_byte_monitor_(on_byte_monitor),
     on_delete_(on_delete),
+    on_new_file_(on_new_file),
     gst_pipeline_(std2::make_unique<GstPipeliner>(
-        [](GstMessage *msg){
+        [this](GstMessage *msg){
           if (msg->type != GST_MESSAGE_ELEMENT)
             return;
           const GstStructure *s = gst_message_get_structure (msg);
           auto name = std::string(gst_structure_get_name(s));
           if (name != "GstMultiFileSink")
             return;
+          if (on_new_file_)
+            on_new_file_(gst_structure_get_string(s, "filename"));
           //g_print("filename: %s\n", gst_structure_get_string(s, "filename")); // FIXME on new file
         },
         nullptr)){

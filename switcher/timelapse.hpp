@@ -46,6 +46,9 @@ class Timelapse: public Quiddity {
   // framerate
   Fraction framerate_{1,1};
   PContainer::prop_id_t framerate_id_;
+  // last image 
+  std::string last_image_{};
+  PContainer::prop_id_t last_image_id_;
   
   bool init() final;
   bool on_shmdata_disconnect();

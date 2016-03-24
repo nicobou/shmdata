@@ -42,10 +42,12 @@ struct GstVideoTimelapseConfig{
 
 class GstVideoTimelapse : public SafeBoolIdiom  {
  public:
+  using on_new_file_t = std::function<void(std::string &&)>;
   GstVideoTimelapse(const GstVideoTimelapseConfig &config,
                     GstShmdataSubscriber::on_caps_cb_t on_caps,
                     GstShmdataSubscriber::on_byte_monitor_t on_byte_monitor,
-                    GstShmdataSubscriber::on_delete_t on_delete);
+                    GstShmdataSubscriber::on_delete_t on_delete,
+                    on_new_file_t on_new_file);
   GstVideoTimelapse() = delete;
   ~GstVideoTimelapse() = default;
   GstVideoTimelapse(const GstVideoTimelapse &) = delete;
@@ -56,6 +58,7 @@ class GstVideoTimelapse : public SafeBoolIdiom  {
   GstShmdataSubscriber::on_caps_cb_t on_caps_;
   GstShmdataSubscriber::on_byte_monitor_t on_byte_monitor_;
   GstShmdataSubscriber::on_delete_t on_delete_;
+  on_new_file_t on_new_file_;
   // gst pipeline
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
