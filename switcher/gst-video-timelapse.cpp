@@ -50,24 +50,22 @@ GstVideoTimelapse::GstVideoTimelapse(
         nullptr)){
   GError *error = nullptr;
   std::string width_height;
-  if (config_.scale_ ) {
-    if (0 != config_.width_ && 0 != config_.height_)
-      width_height =
-          std::string(" ! videoscale ! video/x-raw, ")
-          + " width=" + std::to_string(config_.width_)
-          + ", height=" + std::to_string(config_.height_)
-          + ", pixel-aspect-ratio=1/1";
-    else if (0 != config_.width_ && 0 == config_.height_)
-      width_height =
-          std::string(" ! videoscale ! video/x-raw, ")
-          + " width=" + std::to_string(config_.width_)
-          + ", pixel-aspect-ratio=1/1";
-    else if (0 == config_.width_ && 0 != config_.height_)
-      width_height =
-          std::string(" ! videoscale ! video/x-raw, ")
-          + " height=" + std::to_string(config_.height_)
-          + ", pixel-aspect-ratio=1/1";
-  }
+  if (0 != config_.width_ && 0 != config_.height_)
+    width_height =
+        std::string(" ! videoscale ! video/x-raw, ")
+        + " width=" + std::to_string(config_.width_)
+        + ", height=" + std::to_string(config_.height_)
+        + ", pixel-aspect-ratio=1/1";
+  else if (0 != config_.width_ && 0 == config_.height_)
+    width_height =
+        std::string(" ! videoscale ! video/x-raw, ")
+        + " width=" + std::to_string(config_.width_)
+        + ", pixel-aspect-ratio=1/1";
+  else if (0 == config_.width_ && 0 != config_.height_)
+    width_height =
+        std::string(" ! videoscale ! video/x-raw, ")
+        + " height=" + std::to_string(config_.height_)
+        + ", pixel-aspect-ratio=1/1";
   std::string description(
       std::string("shmdatasrc socket-path=")
       + config_.orig_shmpath_
@@ -78,7 +76,9 @@ GstVideoTimelapse::GstVideoTimelapse(
       + std::to_string(config_.framerate_denom_)
       + width_height
       + " ! videoconvert "
-      + " ! jpegenc ! multifilesink post-messages=true location=\""
+      + " ! jpegenc quality="
+      +  std::to_string(config_.jpg_quality_)
+      + " ! multifilesink post-messages=true location=\""
       + config_.image_path_
       + "\"");
   GstElement *bin = gst_parse_bin_from_description(description.c_str(), TRUE, &error);

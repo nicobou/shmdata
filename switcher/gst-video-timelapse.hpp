@@ -38,9 +38,9 @@ struct GstVideoTimelapseConfig{
   std::string image_path_{};
   unsigned int framerate_num_{1};
   unsigned int framerate_denom_{1};
-  bool scale_{false};
   unsigned int width_{0};
   unsigned int height_{0};
+  unsigned int jpg_quality_{85};
 };
 
 class GstVideoTimelapse : public SafeBoolIdiom  {

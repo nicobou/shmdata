@@ -37,7 +37,11 @@ Timelapse::Timelapse(const std::string &):
     timelapse_config_{std::string(), std::string()},
     img_path_id_(pmanage<MPtr(&PContainer::make_string)>(
         "imgpath",
-        [this](const std::string &val){img_path_ = val; return true;},
+        [this](const std::string &val){
+          img_path_ = val;
+          updated_config_.store(true);
+          return true;
+        },
         [this](){return img_path_;},
         "Image Path",
         "Path for the jpeg files to be produced. if empty, the path will be <video_shmdata_path>%05d.jpg",
@@ -45,7 +49,9 @@ Timelapse::Timelapse(const std::string &):
     framerate_id_(pmanage<MPtr(&PContainer::make_fraction)>(
         "framerate",
         [this](const Fraction &val){
-          framerate_ = val; return true;
+          framerate_ = val;
+          updated_config_.store(true);
+          return true;
         },
         [this](){return framerate_;},
         "Framerate",
@@ -53,6 +59,17 @@ Timelapse::Timelapse(const std::string &):
         framerate_,
         1, 1,  // min num/denom
         60, 5)),  // max num/denom
+    jpg_quality_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
+        "quality",
+        [this](unsigned int val){
+          jpg_quality_ = val;
+          updated_config_.store(true);
+          return true;
+        },
+        [this](){return jpg_quality_;},
+        "JPEG quality",
+        "Quality of the produced jpeg image",
+        jpg_quality_, 0, 100)),
     last_image_id_(pmanage<MPtr(&PContainer::make_string)>(
         "last_image",
         nullptr,
@@ -60,34 +77,28 @@ Timelapse::Timelapse(const std::string &):
         "Last image written",
         "Path of the last jpeg file written",
         last_image_)),
-    scale_id_(pmanage<MPtr(&PContainer::make_bool)>(
-        "scale",
-        [this](bool val){
-          scale_ = val;
-          pmanage<MPtr(&PContainer::enable)>(width_id_, scale_);
-          pmanage<MPtr(&PContainer::enable)>(height_id_, scale_);
-          return true;
-        },
-        [this](){return scale_;},
-        "Scale image",
-        "scale image width and height",
-        scale_)),
     width_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
         "width_",
-        [this](unsigned int val){width_ = val; return true;},
+        [this](unsigned int val){
+          width_ = val;
+          updated_config_.store(true);
+          return true;
+        },
         [this](){return width_;},
         "Width",
         "Width of the scaled image",
         width_, 0, 8192)),
     height_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
         "height",
-        [this](unsigned int val){height_ = val; return true;},
+        [this](unsigned int val){
+          height_ = val;
+          updated_config_.store(true);
+          return true;
+        },
         [this](){return height_;},
         "Height",
         "Height of the scaled image",
         height_, 0, 8192)){
-      pmanage<MPtr(&PContainer::enable)>(width_id_, scale_);
-      pmanage<MPtr(&PContainer::enable)>(height_id_, scale_);
     }
 
 bool Timelapse::init() {
@@ -101,26 +112,34 @@ bool Timelapse::init() {
 }
 
 bool Timelapse::on_shmdata_disconnect() {
-  if (!timelapse_)
-    return true;
-  timelapse_.reset();
-  pmanage<MPtr(&PContainer::enable)>(img_path_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(framerate_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(scale_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(width_id_, scale_);
-  pmanage<MPtr(&PContainer::enable)>(height_id_, scale_);
-  return true;
+  return stop_timelapse();
 }
 
 bool Timelapse::on_shmdata_connect(const std::string &shmpath) {
+  shmpath_ = shmpath;
+  return start_timelapse();
+}
+
+bool Timelapse::stop_timelapse(){
+  std::unique_lock<std::mutex> lock(timelapse_mtx_);
+  if (!timelapse_)
+    return true;
+  timelapse_.reset();
+  return true;
+}
+
+bool Timelapse::start_timelapse(){
+  std::unique_lock<std::mutex> lock(timelapse_mtx_);
+  timelapse_.reset();
   timelapse_config_ =
-      GstVideoTimelapseConfig(shmpath,
-                              img_path_.empty() ? shmpath + "%05d.jpg" : img_path_);
+      GstVideoTimelapseConfig(shmpath_,
+                              img_path_.empty() ? shmpath_ + "%05d.jpg" : img_path_);
   timelapse_config_.framerate_num_ = framerate_.numerator();
   timelapse_config_.framerate_denom_ = framerate_.denominator();
-  timelapse_config_.scale_ = scale_;
+  timelapse_config_.jpg_quality_ = jpg_quality_;
   timelapse_config_.width_ = width_;
   timelapse_config_.height_ = height_;
+  updated_config_.store(false);
   timelapse_ = std2::make_unique<GstVideoTimelapse>(
       timelapse_config_,
       [this](const std::string &caps) {
@@ -138,15 +157,16 @@ bool Timelapse::on_shmdata_connect(const std::string &shmpath) {
         { auto lock = pmanage<MPtr(&PContainer::get_lock)>(last_image_id_);
           last_image_ = file_name;
         }
+        if (updated_config_.load()){
+          updated_config_.store(false);
+          fut_ = std::async(
+              std::launch::async,
+              [this](){start_timelapse();});
+        }
         pmanage<MPtr(&PContainer::notify)>(last_image_id_);
       });
   if (!*timelapse_.get())
     return false;
-  pmanage<MPtr(&PContainer::enable)>(framerate_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(img_path_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(scale_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(width_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(height_id_, false);
   return true;
 }
 

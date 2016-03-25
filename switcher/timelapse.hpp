@@ -21,6 +21,9 @@
 #define __SWITCHER_TIMELAPSE_H__
 
 #include <memory>
+#include <atomic>
+#include <mutex>
+#include <future>
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/gst-video-timelapse.hpp"
@@ -40,27 +43,37 @@ class Timelapse: public Quiddity {
   ShmdataConnector shmcntr_;
   GstVideoTimelapseConfig timelapse_config_; 
   std::unique_ptr<GstVideoTimelapse> timelapse_{nullptr};
+  // vid shmpath
+  std::string shmpath_{};
   // images path 
   std::string img_path_;
   PContainer::prop_id_t img_path_id_;
   // framerate
   Fraction framerate_{1,1};
   PContainer::prop_id_t framerate_id_;
+  // image quality
+  unsigned int jpg_quality_{85};
+  PContainer::prop_id_t jpg_quality_id_;
   // last image 
   std::string last_image_{};
   PContainer::prop_id_t last_image_id_;
   // scaling image
-  bool scale_{false};
-  PContainer::prop_id_t scale_id_;
   unsigned int width_{0};
   PContainer::prop_id_t width_id_;
   unsigned int height_{0};
   PContainer::prop_id_t height_id_;
+
+  // making dynamically configurable timelapse
+  std::atomic_bool updated_config_{false};
+  std::mutex timelapse_mtx_{};
+  std::future<void> fut_{};
   
   bool init() final;
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string &shmdata_sochet_path);
   bool can_sink_caps(const std::string &caps);
+  bool start_timelapse();
+  bool stop_timelapse();
 };
 
 }  // namespace switcher
