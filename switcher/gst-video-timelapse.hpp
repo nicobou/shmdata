@@ -41,6 +41,7 @@ struct GstVideoTimelapseConfig{
   unsigned int width_{0};
   unsigned int height_{0};
   unsigned int jpg_quality_{85};
+  unsigned int max_files_{0};
 };
 
 class GstVideoTimelapse : public SafeBoolIdiom  {

@@ -59,6 +59,17 @@ Timelapse::Timelapse(const std::string &):
         framerate_,
         1, 1,  // min num/denom
         60, 5)),  // max num/denom
+    max_files_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
+        "maxfiles",
+        [this](unsigned int val){
+          max_files_ = val;
+          updated_config_.store(true);
+          return true;
+        },
+        [this](){return max_files_;},
+        "Max files",
+        "Maximum number of files simultaneously present on disk",
+        max_files_, 0, 4294967295)),
     jpg_quality_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
         "quality",
         [this](unsigned int val){
@@ -131,15 +142,18 @@ bool Timelapse::stop_timelapse(){
 bool Timelapse::start_timelapse(){
   std::unique_lock<std::mutex> lock(timelapse_mtx_);
   timelapse_.reset();
+  auto img_path = img_path_.empty() ? shmpath_ + "%05d.jpg" : img_path_;
+  if (std::string::npos == img_path.find('%'))
+    img_path += "_%d.jpg";
   timelapse_config_ =
       GstVideoTimelapseConfig(shmpath_,
-                              img_path_.empty() ? shmpath_ + "%05d.jpg" : img_path_);
+                              img_path);
   timelapse_config_.framerate_num_ = framerate_.numerator();
   timelapse_config_.framerate_denom_ = framerate_.denominator();
-  timelapse_config_.jpg_quality_ = jpg_quality_;
   timelapse_config_.width_ = width_;
   timelapse_config_.height_ = height_;
-  updated_config_.store(false);
+  timelapse_config_.jpg_quality_ = jpg_quality_;
+  timelapse_config_.max_files_ = max_files_;
   timelapse_ = std2::make_unique<GstVideoTimelapse>(
       timelapse_config_,
       [this](const std::string &caps) {

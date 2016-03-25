@@ -78,9 +78,9 @@ GstVideoTimelapse::GstVideoTimelapse(
       + " ! videoconvert "
       + " ! jpegenc quality="
       +  std::to_string(config_.jpg_quality_)
-      + " ! multifilesink post-messages=true location=\""
-      + config_.image_path_
-      + "\"");
+      + " ! multifilesink post-messages=true "+
+      + " max-files=" + std::to_string(config_.max_files_)
+      + " location=\"" + config_.image_path_ + "\"");
   GstElement *bin = gst_parse_bin_from_description(description.c_str(), TRUE, &error);
   if (error != nullptr) {
     g_warning("%s", error->message);

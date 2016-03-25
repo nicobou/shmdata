@@ -51,6 +51,9 @@ class Timelapse: public Quiddity {
   // framerate
   Fraction framerate_{1,1};
   PContainer::prop_id_t framerate_id_;
+  // max files
+  unsigned int max_files_{10};
+  PContainer::prop_id_t max_files_id_;
   // image quality
   unsigned int jpg_quality_{85};
   PContainer::prop_id_t jpg_quality_id_;
