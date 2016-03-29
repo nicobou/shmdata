@@ -46,8 +46,13 @@ class Timelapse: public Quiddity {
   // vid shmpath
   std::string shmpath_{};
   // images path 
-  std::string img_path_;
-  PContainer::prop_id_t img_path_id_;
+  std::string img_dir_;
+  PContainer::prop_id_t img_dir_id_;
+  std::string img_name_;
+  PContainer::prop_id_t img_name_id_;
+  // numerate files
+  bool num_files_{true};
+  PContainer::prop_id_t num_files_id_;
   // framerate
   Fraction framerate_{1,1};
   PContainer::prop_id_t framerate_id_;

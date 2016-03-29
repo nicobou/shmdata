@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <limits>
 #include "switcher/std2.hpp"
 #include "switcher/shmdata-utils.hpp"
 #include "./timelapse.hpp"
@@ -35,17 +36,41 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 Timelapse::Timelapse(const std::string &):
     shmcntr_(static_cast<Quiddity *>(this)),
     timelapse_config_{std::string(), std::string()},
-    img_path_id_(pmanage<MPtr(&PContainer::make_string)>(
-        "imgpath",
+    img_dir_id_(pmanage<MPtr(&PContainer::make_string)>(
+        "imgdir",
         [this](const std::string &val){
-          img_path_ = val;
+          img_dir_ = val;
+          if (!img_dir_.empty() && img_dir_.back() != '/')
+            img_dir_ += '/';
           updated_config_.store(true);
           return true;
         },
-        [this](){return img_path_;},
-        "Image Path",
-        "Path for the jpeg files to be produced. if empty, the path will be <video_shmdata_path>%05d.jpg",
-        img_path_)),
+        [this](){return img_dir_;},
+        "Image Directory",
+        "Directory where to store jpeg files to be produced. If empty, the path will be <video_shmdata_path>.jpg",
+        img_dir_)),
+    img_name_id_(pmanage<MPtr(&PContainer::make_string)>(
+        "imgname",
+        [this](const std::string &val){
+          img_name_ = val;
+          updated_config_.store(true);
+          return true;
+        },
+        [this](){return img_name_;},
+        "Image Name",
+        "Name of the jpeg files to be produced. You can use printf format for numbering files (%05d). If empty, the name will take the input shmdata name with option file number and jpg extension",
+        img_name_)),
+    num_files_id_(pmanage<MPtr(&PContainer::make_bool)>(
+        "num_files",
+        [this](const bool &num_files){
+          num_files_ = num_files;
+          updated_config_.store(true);
+          return true;
+        },
+        [this](){return num_files_;},
+        "Number Files",
+        "Automatically number produced files",
+        num_files_)),
     framerate_id_(pmanage<MPtr(&PContainer::make_fraction)>(
         "framerate",
         [this](const Fraction &val){
@@ -118,7 +143,8 @@ bool Timelapse::init() {
       [this](const std::string &){return this->on_shmdata_disconnect();},
       [this](){return this->on_shmdata_disconnect();},
       [this](const std::string &caps){return this->can_sink_caps(caps);},
-      1);
+      1 //std::numeric_limits<unsigned int>::max()
+                                  );
   return true;
 }
 
@@ -142,9 +168,17 @@ bool Timelapse::stop_timelapse(){
 bool Timelapse::start_timelapse(){
   std::unique_lock<std::mutex> lock(timelapse_mtx_);
   timelapse_.reset();
-  auto img_path = img_path_.empty() ? shmpath_ + "%05d.jpg" : img_path_;
-  if (std::string::npos == img_path.find('%'))
+  auto img_path = img_dir_;
+  auto img_from_shmpath = img_dir_.empty() ?
+      shmpath_
+      : shmpath_.substr(shmpath_.find_last_of("/") + 1);
+  img_path += img_name_.empty() ?
+      img_from_shmpath
+      : img_name_;
+  if (num_files_ && std::string::npos == img_path.find('%'))
     img_path += "_%d.jpg";
+  else if(img_name_.empty())
+    img_path += ".jpg";
   timelapse_config_ =
       GstVideoTimelapseConfig(shmpath_,
                               img_path);
