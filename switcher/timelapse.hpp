@@ -24,10 +24,12 @@
 #include <atomic>
 #include <mutex>
 #include <future>
+#include <map>
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/gst-video-timelapse.hpp"
 #include "switcher/fraction.hpp"
+#include "switcher/periodic-task.hpp"
 
 namespace switcher {
 class Timelapse: public Quiddity {
@@ -42,9 +44,7 @@ class Timelapse: public Quiddity {
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
   GstVideoTimelapseConfig timelapse_config_; 
-  std::unique_ptr<GstVideoTimelapse> timelapse_{nullptr};
-  // vid shmpath
-  std::string shmpath_{};
+  std::map<std::string, std::unique_ptr<GstVideoTimelapse>> timelapse_{};
   // images path 
   std::string img_dir_;
   PContainer::prop_id_t img_dir_id_;
@@ -53,6 +53,9 @@ class Timelapse: public Quiddity {
   // numerate files
   bool num_files_{true};
   PContainer::prop_id_t num_files_id_;
+  // bool notify last file
+  bool notify_last_file_{false};
+  PContainer::prop_id_t notify_last_file_id_;
   // framerate
   Fraction framerate_{1,1};
   PContainer::prop_id_t framerate_id_;
@@ -75,13 +78,17 @@ class Timelapse: public Quiddity {
   std::atomic_bool updated_config_{false};
   std::mutex timelapse_mtx_{};
   std::future<void> fut_{};
+
+  // tracking parameter changes and update timelapse pipeline
+  PeriodicTask relaunch_task_; 
   
   bool init() final;
-  bool on_shmdata_disconnect();
+  bool on_shmdata_disconnect(const std::string &shmdata_sochet_path);
   bool on_shmdata_connect(const std::string &shmdata_sochet_path);
+  bool on_shmdata_disconnect_all();
   bool can_sink_caps(const std::string &caps);
-  bool start_timelapse();
-  bool stop_timelapse();
+  bool start_timelapse(const std::string &shmpath);
+  bool stop_timelapse(const std::string &shmpath);
 };
 
 }  // namespace switcher

@@ -71,6 +71,16 @@ Timelapse::Timelapse(const std::string &):
         "Number Files",
         "Automatically number produced files",
         num_files_)),
+    notify_last_file_id_(pmanage<MPtr(&PContainer::make_bool)>(
+        "notify_last_files",
+        [this](const bool &notify){
+          notify_last_file_ = notify;
+          return true;
+        },
+        [this](){return notify_last_file_;},
+        "Notify last file produced",
+        "Update last file property with produced jpg file",
+        notify_last_file_)),
     framerate_id_(pmanage<MPtr(&PContainer::make_fraction)>(
         "framerate",
         [this](const Fraction &val){
@@ -134,44 +144,74 @@ Timelapse::Timelapse(const std::string &):
         [this](){return height_;},
         "Height",
         "Height of the scaled image",
-        height_, 0, 8192)){
-    }
+        height_, 0, 8192)),
+    relaunch_task_([this](){
+        if (updated_config_.exchange(false)){
+          std::unique_lock<std::mutex> lock(timelapse_mtx_);
+          std::vector<std::string> shmdatas;
+          for (auto &it: timelapse_)
+            shmdatas.push_back(it.first);
+          timelapse_.clear();
+          for (auto &it: shmdatas)
+            start_timelapse(it);
+        }
+      }, std::chrono::milliseconds(200)){
+    }  // end ctor
 
 bool Timelapse::init() {
   shmcntr_.install_connect_method(
       [this](const std::string &shmpath){return this->on_shmdata_connect(shmpath);},
-      [this](const std::string &){return this->on_shmdata_disconnect();},
-      [this](){return this->on_shmdata_disconnect();},
+      [this](const std::string &shmpath){return this->on_shmdata_disconnect(shmpath);},
+      [this](){return this->on_shmdata_disconnect_all();},
       [this](const std::string &caps){return this->can_sink_caps(caps);},
-      1 //std::numeric_limits<unsigned int>::max()
-                                  );
+      std::numeric_limits<unsigned int>::max());
   return true;
 }
 
-bool Timelapse::on_shmdata_disconnect() {
-  return stop_timelapse();
+bool Timelapse::on_shmdata_disconnect(const std::string &shmpath) {
+  std::unique_lock<std::mutex> lock(timelapse_mtx_);
+  pmanage<MPtr(&PContainer::enable)>(img_name_id_, true);
+  if (!stop_timelapse(shmpath))
+    return false;
+  if (timelapse_.size() == 1)
+    pmanage<MPtr(&PContainer::enable)>(img_name_id_, true);
+  return true;
+}
+
+bool Timelapse::on_shmdata_disconnect_all() {
+  std::unique_lock<std::mutex> lock(timelapse_mtx_);
+  pmanage<MPtr(&PContainer::enable)>(img_name_id_, true);
+  timelapse_.clear();
+  return true;
 }
 
 bool Timelapse::on_shmdata_connect(const std::string &shmpath) {
-  shmpath_ = shmpath;
-  return start_timelapse();
+  std::unique_lock<std::mutex> lock(timelapse_mtx_);
+  if (timelapse_.size() == 1){
+    pmanage<MPtr(&PContainer::enable)>(img_name_id_, false);
+    img_name_.clear();
+  }
+  return start_timelapse(shmpath);
 }
 
-bool Timelapse::stop_timelapse(){
-  std::unique_lock<std::mutex> lock(timelapse_mtx_);
-  if (!timelapse_)
+bool Timelapse::stop_timelapse(const std::string &shmpath){
+  auto timelapse = timelapse_.find(shmpath);
+  if (timelapse_.end() == timelapse)
     return true;
-  timelapse_.reset();
+  timelapse_.erase(timelapse);
   return true;
 }
 
-bool Timelapse::start_timelapse(){
-  std::unique_lock<std::mutex> lock(timelapse_mtx_);
-  timelapse_.reset();
+bool Timelapse::start_timelapse(const std::string &shmpath){
+  {
+    auto timelapse = timelapse_.find(shmpath);
+    if (timelapse_.end() != timelapse)
+      timelapse_.erase(timelapse);
+  }
   auto img_path = img_dir_;
   auto img_from_shmpath = img_dir_.empty() ?
-      shmpath_
-      : shmpath_.substr(shmpath_.find_last_of("/") + 1);
+      shmpath
+      : shmpath.substr(shmpath.find_last_of("/") + 1);
   img_path += img_name_.empty() ?
       img_from_shmpath
       : img_name_;
@@ -180,7 +220,7 @@ bool Timelapse::start_timelapse(){
   else if(img_name_.empty())
     img_path += ".jpg";
   timelapse_config_ =
-      GstVideoTimelapseConfig(shmpath_,
+      GstVideoTimelapseConfig(shmpath,
                               img_path);
   timelapse_config_.framerate_num_ = framerate_.numerator();
   timelapse_config_.framerate_denom_ = framerate_.denominator();
@@ -188,7 +228,7 @@ bool Timelapse::start_timelapse(){
   timelapse_config_.height_ = height_;
   timelapse_config_.jpg_quality_ = jpg_quality_;
   timelapse_config_.max_files_ = max_files_;
-  timelapse_ = std2::make_unique<GstVideoTimelapse>(
+  timelapse_[shmpath] = std2::make_unique<GstVideoTimelapse>(
       timelapse_config_,
       [this](const std::string &caps) {
         graft_tree(".shmdata.reader." + timelapse_config_.orig_shmpath_,
@@ -201,19 +241,15 @@ bool Timelapse::start_timelapse(){
                    InfoTree::make(std::to_string(byte_rate)));
       },
       nullptr,
-      [this](std::string &&file_name){
+      [this, shmpath](std::string &&file_name){
+        if (!notify_last_file_)
+          return;
         { auto lock = pmanage<MPtr(&PContainer::get_lock)>(last_image_id_);
           last_image_ = file_name;
         }
-        if (updated_config_.load()){
-          updated_config_.store(false);
-          fut_ = std::async(
-              std::launch::async,
-              [this](){start_timelapse();});
-        }
         pmanage<MPtr(&PContainer::notify)>(last_image_id_);
       });
-  if (!*timelapse_.get())
+  if (!*(timelapse_[shmpath]).get())
     return false;
   return true;
 }
