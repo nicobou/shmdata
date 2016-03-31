@@ -30,7 +30,7 @@
 namespace switcher {
 struct GstVideoTimelapseConfig{
   GstVideoTimelapseConfig(const std::string &orig_shmpath,
-                         const std::string &image_path): // "for instance /tmp/img_%05d.jpg"
+                          const std::string &image_path): // "for instance /tmp/img_%05d.jpg"
       orig_shmpath_(orig_shmpath),
       image_path_(image_path){};
   // config members:

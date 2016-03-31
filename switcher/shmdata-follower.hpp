@@ -37,7 +37,7 @@ class ShmdataFollower {
                   shmdata::Reader::onData cb,
                   shmdata::Reader::onServerConnected osc = nullptr,
                   shmdata::Reader::onServerDisconnected osd = nullptr,
-                  std::string tree_path_ = ".shmdata.reader.");
+                  const std::string &tree_path_ = ".shmdata.reader.");
   ~ShmdataFollower();
   ShmdataFollower(const ShmdataFollower &) = delete;
   ShmdataFollower &operator=(const ShmdataFollower &) = delete;

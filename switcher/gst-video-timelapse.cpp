@@ -81,7 +81,8 @@ GstVideoTimelapse::GstVideoTimelapse(
       + " ! multifilesink post-messages=true "+
       + " max-files=" + std::to_string(config_.max_files_)
       + " location=\"" + config_.image_path_ + "\"");
-  GstElement *bin = gst_parse_bin_from_description(description.c_str(), TRUE, &error);
+  GstElement *bin =
+      gst_parse_bin_from_description(description.c_str(), TRUE, &error);
   if (error != nullptr) {
     g_warning("%s", error->message);
     g_error_free(error);
@@ -91,7 +92,9 @@ GstVideoTimelapse::GstVideoTimelapse(
   shmsrc_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmdatasrc, on_caps_, on_byte_monitor_, on_delete_);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), bin);
-  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
+  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()),
+               "async-handling", TRUE,
+               nullptr);
   gst_pipeline_->play(true);
   is_valid_ = true;  
 }

@@ -28,7 +28,7 @@ ShmdataFollower::ShmdataFollower(Quiddity *quid,
                                  shmdata::Reader::onData od,
                                  shmdata::Reader::onServerConnected osc,
                                  shmdata::Reader::onServerDisconnected osd,
-                                 std::string tree_path):
+                                 const std::string &tree_path):
     quid_(quid),
     shmpath_(path),
     od_(od),
