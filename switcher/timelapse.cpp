@@ -124,7 +124,7 @@ Timelapse::Timelapse(const std::string &):
         "Path of the last jpeg file written",
         last_image_)),
     width_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
-        "width_",
+        "width",
         [this](unsigned int val){
           width_ = val;
           updated_config_.store(true);
