@@ -146,7 +146,7 @@ main(int argc, char *argv[]) {
 
   if (save) {
     std::string result;
-    if (remaining_args[0] == nullptr) {
+    if (remaining_args == nullptr) {
       g_printerr("file name missing\n");
       return false;
     }
@@ -155,7 +155,7 @@ main(int argc, char *argv[]) {
   }
   else if (load) {
     std::string result;
-    if (remaining_args[0] == nullptr) {
+    if (remaining_args == nullptr) {
       g_printerr("file name missing\n");
       return false;
     }
@@ -164,7 +164,7 @@ main(int argc, char *argv[]) {
   }
   else if (run) {
     std::string result;
-    if (remaining_args[0] == nullptr) {
+    if (remaining_args == nullptr) {
       g_printerr("file name missing\n");
       return false;
     }
@@ -184,7 +184,7 @@ main(int argc, char *argv[]) {
   }
   else if (classdoc) {
     std::string resultlist;
-    if (remaining_args[0] == nullptr) {
+    if (remaining_args == nullptr) {
       g_printerr("class name missing\n");
       return false;
     }
@@ -193,7 +193,7 @@ main(int argc, char *argv[]) {
   }
   else if (quidditydescr) {
     std::string resultlist;
-    if (remaining_args[0] == nullptr) {
+    if (remaining_args == nullptr) {
       g_printerr("quiddity name missing\n");
       return false;
     }
@@ -214,7 +214,7 @@ main(int argc, char *argv[]) {
   }
   else if (listprop) {
     std::string resultlist;
-    if (remaining_args[0] == nullptr) {
+    if (remaining_args == nullptr) {
       g_printerr("quiddity name missing for listing properties\n");
       return false;
     }
@@ -229,7 +229,7 @@ main(int argc, char *argv[]) {
   }
   else if (print_tree) {
     std::string resultlist;
-    if (remaining_args[0] == nullptr) {
+    if (remaining_args == nullptr) {
       g_printerr("quiddity name missing for printing the tree\n");
       return false;
     }
@@ -243,7 +243,7 @@ main(int argc, char *argv[]) {
   }
   else if (listpropbyclass) {
     std::string resultlist;
-    if (remaining_args[0] == nullptr) {
+    if (remaining_args == nullptr) {
       g_printerr("class name missing for listing properties\n");
       return false;
     }
@@ -257,7 +257,7 @@ main(int argc, char *argv[]) {
     std::cout << resultlist << std::endl;
   }
   else if (setprop) {
-    if (remaining_args[0] == nullptr || remaining_args[1] == nullptr
+    if (remaining_args == nullptr || remaining_args[1] == nullptr
         || remaining_args[2] == nullptr) {
       g_printerr("missing argument for set property\n");
       return false;
@@ -273,7 +273,7 @@ main(int argc, char *argv[]) {
     return 0;
   }
   else if (getprop) {
-    if (remaining_args[0] == nullptr || remaining_args[1] == nullptr) {
+    if (remaining_args == nullptr || remaining_args[1] == nullptr) {
       g_printerr("missing argument for get property\n");
       return false;
     }
@@ -282,7 +282,7 @@ main(int argc, char *argv[]) {
     std::cout << val << std::endl;
   }
   else if (createquiddity) {
-    if (remaining_args[0] == nullptr) {
+    if (remaining_args == nullptr) {
       g_printerr("missing class name for creating quiddity\n");
       return false;
     }
@@ -295,15 +295,16 @@ main(int argc, char *argv[]) {
     std::cout << name << std::endl;
   }
   else if (deletequiddity) {
-    if (remaining_args[0] == nullptr) {
+    if (remaining_args == nullptr) {
       g_printerr("missing quiddity name for deleting quiddity\n");
       return false;
     }
-
+    g_print("%s %d\n", __FUNCTION__, __LINE__);
     switcher_control.delete_quiddity(remaining_args[0]);
+    g_print("%s %d\n", __FUNCTION__, __LINE__);
   }
   else if (listsignals) {
-    if (remaining_args[0] == nullptr) {
+    if (remaining_args == nullptr) {
       g_printerr("missing quiddity name for list signals\n");
       return false;
     }
@@ -317,7 +318,7 @@ main(int argc, char *argv[]) {
     std::cout << resultlist << std::endl;
   }
   else if (listsignalsbyclass) {
-    if (remaining_args[0] == nullptr) {
+    if (remaining_args == nullptr) {
       g_printerr("missing quiddity name for list signals\n");
       return false;
     }
@@ -333,7 +334,7 @@ main(int argc, char *argv[]) {
     std::cout << resultlist << std::endl;
   }
   else if (listmethods) {
-    if (remaining_args[0] == nullptr) {
+    if (remaining_args == nullptr) {
       g_printerr("missing quiddity name for list methods\n");
       return false;
     }
@@ -348,7 +349,7 @@ main(int argc, char *argv[]) {
     std::cout << resultlist << std::endl;
   }
   else if (listmethodsbyclass) {
-    if (remaining_args[0] == nullptr) {
+    if (remaining_args == nullptr) {
       g_printerr("missing quiddity name for list methods\n");
       return false;
     }
@@ -364,7 +365,7 @@ main(int argc, char *argv[]) {
     std::cout << resultlist << std::endl;
   }
   else if (invokemethod) {
-    if (remaining_args[0] == nullptr || remaining_args[1] == nullptr) {
+    if (remaining_args == nullptr || remaining_args[1] == nullptr) {
       g_printerr("not enough argument for invoking a function\n");
       return false;
     }
