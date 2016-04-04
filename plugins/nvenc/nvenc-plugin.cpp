@@ -225,6 +225,7 @@ bool NVencPlugin::on_shmdata_disconnect() {
 }
 
 bool NVencPlugin::on_shmdata_connect(const std::string &shmpath) {
+  shm_.reset();
   shm_.reset(new ShmdataFollower(this,
                                  shmpath,
                                  [this](void *data, size_t size){
@@ -322,6 +323,7 @@ void NVencPlugin::on_shmreader_server_connected(const std::string &data_descr) {
       width, height,
       frameNum, frameDen,
       buf_format);
+  shmw_.reset();
   shmw_ = std2::make_unique<ShmdataWriter>(
       this,
       make_file_name("encoded-video"),

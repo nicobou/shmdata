@@ -151,7 +151,7 @@ pjsip_module PJCall::mod_siprtp_ = {
 PJCall::~PJCall(){
   std::vector<std::string> uris;
   for (auto &it: outgoing_call_)
-    uris.push_back(it.peer_uri);
+    uris.push_back(it->peer_uri);
   for (auto &it: uris)
     hang_up(it.c_str(), this);
 }  
@@ -222,13 +222,13 @@ bool PJCall::release_outgoing_call(call_t *call, pjsua_buddy_id id){
   auto &calls = SIPPlugin::this_->sip_calls_->outgoing_call_;
   auto it = std::find_if(calls.begin(),
                          calls.end(),
-                         [&call](const call_t &c){
-                           return c.inv == call->inv;
+                         [&call](const std::unique_ptr<call_t> &c){
+                           return c->inv == call->inv;
                          });
   if (calls.end() == it)
     return false;
   // removing destination to siprtp
-  for (auto &media: it->media)
+  for (auto &media: (*it)->media)
     if (0 != media.cb_id)
       SIPPlugin::this_->sip_calls_->
           readers_[media.shm_path_to_send]->remove_cb(media.cb_id);
@@ -239,13 +239,13 @@ bool PJCall::release_outgoing_call(call_t *call, pjsua_buddy_id id){
   if (!tree) {
     g_warning("cannot find buddy information tree, call status update cancelled");
   } else {
-    tree->graft(std::string(".send_status."),
-                InfoTree::make("disconnected"));
+    tree->graft(std::string(".send_status."), InfoTree::make("disconnected"));
     SIPPlugin::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
   }
   // removing call
   calls.erase(it);
-  if (SIPPlugin::this_->sip_calls_->is_hanging_up_ || SIPPlugin::this_->sip_calls_->is_calling_ ){
+  if (SIPPlugin::this_->sip_calls_->is_hanging_up_
+      || SIPPlugin::this_->sip_calls_->is_calling_ ){
     std::unique_lock<std::mutex> lock(SIPPlugin::this_->sip_calls_->ocall_m_);
     SIPPlugin::this_->sip_calls_->ocall_action_done_ = true;
     SIPPlugin::this_->sip_calls_->ocall_cv_.notify_all();
@@ -268,8 +268,8 @@ void PJCall::on_inv_state_confirmed(call_t *call,
   auto &calls = SIPPlugin::this_->sip_calls_->outgoing_call_;
   auto it = std::find_if(calls.begin(),
                          calls.end(),
-                         [&call](const call_t &c){
-                           return c.inv == call->inv;
+                         [&call](const std::unique_ptr<call_t> &c){
+                           return c->inv == call->inv;
                          });
   if( SIPPlugin::this_->sip_calls_->is_calling_) {
     std::unique_lock<std::mutex> lock(SIPPlugin::this_->sip_calls_->ocall_m_);
@@ -304,8 +304,8 @@ void PJCall::on_inv_state_connecting(call_t *call,
   auto &calls = SIPPlugin::this_->sip_calls_->outgoing_call_;
   auto it = std::find_if(calls.begin(),
                          calls.end(),
-                         [&call](const call_t &c){
-                           return c.inv == call->inv;
+                         [&call](const std::unique_ptr<call_t> &c){
+                           return c->inv == call->inv;
                          });
   if (calls.end() != it)    
     tree->graft(std::string(".send_status."), InfoTree::make("connecting"));
@@ -749,8 +749,8 @@ bool PJCall::make_call(std::string dst_uri) {
     return false;
   }
   // Find unused call slot
-  outgoing_call_.emplace_back();
-  cur_call = &outgoing_call_.back();
+  outgoing_call_.emplace_back(std2::make_unique<call_t>());
+  cur_call = outgoing_call_.back().get();
   // Create UAC dialog
   status = pjsip_dlg_create_uac(pjsip_ua_instance(),
                                 &local_uri,  /* local URI */
@@ -770,17 +770,19 @@ bool PJCall::make_call(std::string dst_uri) {
                                  &SIPPlugin::this_->sip_presence_->cfg_.cred_info[0]);
   cur_call->peer_uri = dst_uri;
   // Create SDP
-  create_outgoing_sdp(dlg, cur_call, &sdp);
-  if (nullptr == sdp)
+  if (!create_outgoing_sdp(dlg, cur_call, &sdp)){
     g_warning("%s failed creating sdp", __FUNCTION__);
-
+    pjsip_dlg_terminate(dlg);
+    outgoing_call_.pop_back();
+    return false;
+  }
   print_sdp(sdp);
-
   // Create the INVITE session.
   status = pjsip_inv_create_uac(dlg, sdp, 0, &cur_call->inv);
   if (status != PJ_SUCCESS) {
     pjsip_dlg_terminate(dlg);
     g_warning("pjsip_inv_create_uac FAILLED");
+    outgoing_call_.pop_back();
     return false;
   }
   // Attach call data to invite session
@@ -868,6 +870,10 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog *dlg,
       call->media.back().shm_path_to_send = it;
     }
   }
+  if (call->media.empty()){
+    g_warning("no valid media stream found, aborting call");
+    return false;
+  }
   std::string desc_str = desc.get_string();
   if (desc_str.empty()) {
     g_warning("%s: empty SDP description", __FUNCTION__);
@@ -951,16 +957,16 @@ void PJCall::make_hang_up(std::string contact_uri) {
   //                 g_print ("call with %s\n", call.peer_uri.c_str());
   //               });
   auto it = std::find_if(outgoing_call_.begin(), outgoing_call_.end(),
-                          [&contact_uri](const call_t &call){
-                           return (0 == contact_uri.compare(call.peer_uri));
+                         [&contact_uri](const std::unique_ptr<call_t> &call){
+                           return (0 == contact_uri.compare(call->peer_uri));
                           });
   if (outgoing_call_.end() == it) {
     g_warning("no call found with %s", contact_uri.c_str());
     return;
   }
-  status = pjsip_inv_end_session(it->inv, 603, nullptr, &tdata);
+  status = pjsip_inv_end_session((*it)->inv, 603, nullptr, &tdata);
   if (status == PJ_SUCCESS && tdata != nullptr) 
-    pjsip_inv_send_msg(it->inv, tdata);
+    pjsip_inv_send_msg((*it)->inv, tdata);
   else
     g_warning("BYE has not been sent");
 }

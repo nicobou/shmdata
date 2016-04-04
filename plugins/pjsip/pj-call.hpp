@@ -86,7 +86,7 @@ class PJCall {
   RtpSession2 rtp_session_{};
   std::map<std::string, unsigned> reader_ref_count_{};
   std::vector<call_t> incoming_call_{};
-  std::vector<call_t> outgoing_call_{};
+  std::vector<std::unique_ptr<call_t>> outgoing_call_{};
   std::map<std::string, std::unique_ptr<RTPSender>> readers_{};
 
   // sip functions

@@ -86,12 +86,14 @@ void GstVideoCodec::hide(){
   quid_->disable_method("reset");
   quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_, false);
   quid_->pmanage<MPtr(&PContainer::enable)>(codec_long_list_id_, false);
+  quid_->pmanage<MPtr(&PContainer::enable)>(param_group_id_, false);
 }
 
 void GstVideoCodec::show(){
   quid_->enable_method("reset");
   quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_, true);
   quid_->pmanage<MPtr(&PContainer::enable)>(codec_long_list_id_, true);
+  quid_->pmanage<MPtr(&PContainer::enable)>(param_group_id_, true);
 }
 
 void GstVideoCodec::make_bin(){
@@ -135,6 +137,7 @@ void GstVideoCodec::uninstall_codec_properties(){
 }
 
 void GstVideoCodec::make_codec_properties() {
+  uninstall_codec_properties();
   guint num_properties = 0;
   GParamSpec **props = g_object_class_list_properties(
       G_OBJECT_GET_CLASS(codec_element_.get_raw()), &num_properties);
@@ -162,7 +165,7 @@ gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointe
   quid->pmanage<MPtr(&PContainer::notify)>(context->codec_id_);
   context->make_codec_properties();
   quid->pmanage<MPtr(&PContainer::set_str)>(
-      quid->pmanage<MPtr(&PContainer::get_id)>("deadline"), "30000");
+      quid->pmanage<MPtr(&PContainer::get_id)>("lag-in-frames"), "1");
   quid->pmanage<MPtr(&PContainer::set_str)>(
       quid->pmanage<MPtr(&PContainer::get_id)>("target-bitrate"), "2000000");  // 2Mbps
   quid->pmanage<MPtr(&PContainer::set_str)>(
@@ -174,7 +177,6 @@ gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */ , gpointe
 
 bool GstVideoCodec::start(){
   hide();
-  uninstall_codec_properties();
   if (0 == quid_->pmanage<MPtr(&PContainer::get<Selection::index_t>)>(codec_id_)) 
     return true;
   shmsink_sub_ = std2::make_unique<GstShmdataSubscriber>(
@@ -233,6 +235,7 @@ void GstVideoCodec::set_shm(const std::string &shmpath){
   if (!custom_shmsink_path_)
     shm_encoded_path_ = shmpath_to_encode_ + "-encoded";
   g_object_set(G_OBJECT(shmsrc_.get_raw()),
+               "do-timestamp", TRUE,
                "socket-path", shmpath_to_encode_.c_str(),
                nullptr);
   g_object_set(G_OBJECT(shm_encoded_.get_raw()),
@@ -265,6 +268,11 @@ PContainer::prop_id_t GstVideoCodec::install_codec(){
       "Video Codecs",
       "Selected video codec for encoding",
       use_primary_codec_ ? primary_codec_ : secondary_codec_);
+}
+
+void GstVideoCodec::set_none(){
+  quid_->pmanage<MPtr(&PContainer::set<Selection::index_t>)>(
+      quid_->pmanage<MPtr(&PContainer::get_id)>("codec"), 0);
 }
 
 }  // namespace switcher

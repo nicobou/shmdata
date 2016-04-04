@@ -391,11 +391,16 @@ gboolean PJPresence::name_buddy_wrapped(gchar *name,
   return TRUE;
 }
 
-void
-PJPresence::on_registration_state(pjsua_acc_id acc_id,
-                                  pjsua_reg_info *info) {
+void PJPresence::on_registration_state(pjsua_acc_id acc_id,
+                                       pjsua_reg_info *info) {
   PJPresence *context =
       static_cast<PJPresence *>(pjsua_acc_get_user_data(acc_id));
+  if(nullptr == context) {
+    g_warning("SIP registration failed");
+    SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
+        SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
+    return;
+  }
   std::unique_lock<std::mutex> lock(context->registration_mutex_);
   if (PJ_SUCCESS != info->cbparam->status) {
     g_warning("registration failed (%.*s)",

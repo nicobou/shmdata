@@ -114,41 +114,30 @@ bool GTKVideo::init() {
         "Window Title",
         title_);
 
-    pmanage<MPtr(&PContainer::push)>(
-        "method", GPropToProp::to_prop(G_OBJECT(videoflip_.get_raw()), "method"));
-    pmanage<MPtr(&PContainer::push)>(
-        "gamma", GPropToProp::to_prop(G_OBJECT(gamma_.get_raw()), "gamma"));
-    pmanage<MPtr(&PContainer::push)>(
-        "contrast", GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "contrast"));
-    pmanage<MPtr(&PContainer::push)>(
-        "brightness", GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "brightness"));
-    pmanage<MPtr(&PContainer::push)>(
-        "hue", GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "hue"));
-    pmanage<MPtr(&PContainer::push)>(
-       "saturation" , GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "saturation"));
-    
-  std::unique_lock<std::mutex> lock(wait_window_mutex_);
-  gtk_idle_add((GtkFunction) create_ui, this);
-  wait_window_cond_.wait(lock);
-  if (nullptr == display_)
-    return false;
-  keyb_shm_ = std2::make_unique<ShmdataWriter>(this,
-                                               make_file_name("keyb"),
-                                               sizeof(KeybEvent),
-                                               "application/x-keyboard-events");
-  if(!keyb_shm_.get()) {
-    g_warning("GTK keyboard event shmdata writer failed");
-    keyb_shm_.reset(nullptr);
-  }
-  mouse_shm_ = std2::make_unique<ShmdataWriter>(this,
-                                               make_file_name("mouse"),
-                                               sizeof(MouseEvent),
-                                               "application/x-mouse-events");
-  if(!mouse_shm_.get()) {
-    g_warning("GTK mouse event shmdata writer failed");
-    mouse_shm_.reset(nullptr);
-  }
-  return true;
+    install_gst_properties();    
+
+    std::unique_lock<std::mutex> lock(wait_window_mutex_);
+    gtk_idle_add((GtkFunction) create_ui, this);
+    wait_window_cond_.wait(lock);
+    if (nullptr == display_)
+      return false;
+    keyb_shm_ = std2::make_unique<ShmdataWriter>(this,
+                                                 make_file_name("keyb"),
+                                                 sizeof(KeybEvent),
+                                                 "application/x-keyboard-events");
+    if(!keyb_shm_.get()) {
+      g_warning("GTK keyboard event shmdata writer failed");
+      keyb_shm_.reset(nullptr);
+    }
+    mouse_shm_ = std2::make_unique<ShmdataWriter>(this,
+                                                  make_file_name("mouse"),
+                                                  sizeof(MouseEvent),
+                                                  "application/x-mouse-events");
+    if(!mouse_shm_.get()) {
+      g_warning("GTK mouse event shmdata writer failed");
+      mouse_shm_.reset(nullptr);
+    }
+    return true;
 }
 
 void GTKVideo::gtk_main_loop_thread() {
@@ -210,6 +199,8 @@ gboolean GTKVideo::destroy_window(gpointer user_data) {
 }
 
 GTKVideo::~GTKVideo() {
+  keyb_shm_.reset();
+  mouse_shm_.reset();
   gst_pipeline_.reset();
   g_idle_remove_by_data(this);
   // destroy child widgets too
@@ -332,11 +323,15 @@ void GTKVideo::toggle_fullscreen() {
 }
 
 bool GTKVideo::remake_elements(){
+  remove_gst_properties();
   if (!UGstElem::renew(shmsrc_) || !UGstElem::renew(queue_)
       || !UGstElem::renew(videoconvert_) || !UGstElem::renew(videoflip_)
       || !UGstElem::renew(gamma_) || !UGstElem::renew(videobalance_)
-      || !UGstElem::renew(xvimagesink_))
+      || !UGstElem::renew(xvimagesink_)){
+    g_error("gtkvideo could not renew GStreamer elements");
     return false;
+  }
+  install_gst_properties();
   g_object_set(G_OBJECT(xvimagesink_.get_raw()),
                "force-aspect-ratio", TRUE,
                "draw-borders", FALSE,
@@ -496,5 +491,30 @@ void GTKVideo::write_mouse_info_to_shmdata(
       &mouse_event, sizeof(MouseEvent));
   mouse_shm_->bytes_written(sizeof(MouseEvent));
 }
+
+void GTKVideo::install_gst_properties(){
+  pmanage<MPtr(&PContainer::push)>(
+      "method", GPropToProp::to_prop(G_OBJECT(videoflip_.get_raw()), "method"));
+  pmanage<MPtr(&PContainer::push)>(
+      "gamma", GPropToProp::to_prop(G_OBJECT(gamma_.get_raw()), "gamma"));
+  pmanage<MPtr(&PContainer::push)>(
+      "contrast", GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "contrast"));
+  pmanage<MPtr(&PContainer::push)>(
+      "brightness", GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "brightness"));
+  pmanage<MPtr(&PContainer::push)>(
+      "hue", GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "hue"));
+  pmanage<MPtr(&PContainer::push)>(
+      "saturation" , GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "saturation"));
+}
+
+void GTKVideo::remove_gst_properties(){
+  pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("method"));
+  pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("gamma"));
+  pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("contrast"));
+  pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("brightness"));
+  pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("hue"));
+  pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("saturation"));
+}
+
 
 }  // namespace switcher

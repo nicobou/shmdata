@@ -21,10 +21,15 @@
 #define __SWITCHER_TIMELAPSE_H__
 
 #include <memory>
+#include <atomic>
+#include <mutex>
+#include <future>
+#include <map>
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/gst-video-timelapse.hpp"
 #include "switcher/fraction.hpp"
+#include "switcher/periodic-task.hpp"
 
 namespace switcher {
 class Timelapse: public Quiddity {
@@ -39,18 +44,51 @@ class Timelapse: public Quiddity {
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
   GstVideoTimelapseConfig timelapse_config_; 
-  std::unique_ptr<GstVideoTimelapse> timelapse_{nullptr};
+  std::map<std::string, std::unique_ptr<GstVideoTimelapse>> timelapse_{};
   // images path 
-  std::string img_path_;
-  PContainer::prop_id_t img_path_id_;
+  std::string img_dir_;
+  PContainer::prop_id_t img_dir_id_;
+  std::string img_name_;
+  PContainer::prop_id_t img_name_id_;
+  // numerate files
+  bool num_files_{true};
+  PContainer::prop_id_t num_files_id_;
+  // bool notify last file
+  bool notify_last_file_{false};
+  PContainer::prop_id_t notify_last_file_id_;
   // framerate
   Fraction framerate_{1,1};
   PContainer::prop_id_t framerate_id_;
+  // max files
+  unsigned int max_files_{10};
+  PContainer::prop_id_t max_files_id_;
+  // image quality
+  unsigned int jpg_quality_{85};
+  PContainer::prop_id_t jpg_quality_id_;
+  // last image 
+  std::string last_image_{};
+  PContainer::prop_id_t last_image_id_;
+  // scaling image
+  unsigned int width_{0};
+  PContainer::prop_id_t width_id_;
+  unsigned int height_{0};
+  PContainer::prop_id_t height_id_;
+
+  // making dynamically configurable timelapse
+  std::atomic_bool updated_config_{false};
+  std::mutex timelapse_mtx_{};
+  std::future<void> fut_{};
+
+  // tracking parameter changes and update timelapse pipeline
+  PeriodicTask relaunch_task_; 
   
   bool init() final;
-  bool on_shmdata_disconnect();
+  bool on_shmdata_disconnect(const std::string &shmdata_sochet_path);
   bool on_shmdata_connect(const std::string &shmdata_sochet_path);
+  bool on_shmdata_disconnect_all();
   bool can_sink_caps(const std::string &caps);
+  bool start_timelapse(const std::string &shmpath);
+  bool stop_timelapse(const std::string &shmpath);
 };
 
 }  // namespace switcher

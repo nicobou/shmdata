@@ -44,8 +44,8 @@ ShmdataWriter::ShmdataWriter(Quiddity *quid,
 }
 
 ShmdataWriter::~ShmdataWriter(){
-  if (shm_)
-    quid_->prune_tree(".shmdata.writer." + shmpath_);
+  if (shm_ && nullptr != quid_)
+    quid_->prune_tree(std::string(".shmdata.writer.") + shmpath_);
 }
 
 void ShmdataWriter::bytes_written(size_t size){

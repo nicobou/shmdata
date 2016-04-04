@@ -71,12 +71,11 @@ bool V4L2Src::init() {
       devices_enum_);
   group_id_ = pmanage<MPtr(&PContainer::make_group)>(
      "config",
-     "capture device configuration",
+     "Capture device configuration",
      "device specific parameters");
   update_device_specific_properties(devices_enum_.get());
   codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
                                              shmpath_);
-  
   return true;
 }
 
@@ -145,6 +144,14 @@ void V4L2Src::update_discrete_framerate(const CaptureDescription &cap_descr) {
         framerates_enum_);
 }
 
+bool V4L2Src::is_current_pixel_format_raw_video() const {
+  std::string video_raw("video/x-raw");
+  if(std::string(pixel_format_enum_.get_current_nick(), 0, video_raw.size())
+     != video_raw)
+    return false;
+  return true;
+}
+
 void V4L2Src::update_pixel_format(const CaptureDescription &cap_descr) {
   pmanage<MPtr(&PContainer::remove)>(pixel_format_id_); pixel_format_id_ = 0;
   if (cap_descr.pixel_formats_.empty())
@@ -159,7 +166,12 @@ void V4L2Src::update_pixel_format(const CaptureDescription &cap_descr) {
   pixel_format_id_ = pmanage<MPtr(&PContainer::make_parented_selection)>(
       "pixel_format",
       "config",
-      [this](const size_t &val){pixel_format_enum_.select(val); return true;},
+      [this](const size_t &val){
+        pixel_format_enum_.select(val);
+        if(!is_current_pixel_format_raw_video())
+          codecs_->set_none();
+        return true;
+      },
       [this](){return pixel_format_enum_.get();},
       "Pixel format",
       "Pixel format of selected capture devices",
@@ -491,15 +503,18 @@ bool V4L2Src::start() {
       });
 
   gst_pipeline_->play(true);
+  if(!is_current_pixel_format_raw_video())
+    codecs_->set_none();
   codecs_->start();
   pmanage<MPtr(&PContainer::enable)>(devices_id_, false);
-  pmanage<MPtr(&PContainer::remove)>(resolutions_id_); resolutions_id_ = 0;
-  pmanage<MPtr(&PContainer::remove)>(width_id_); width_id_ = 0;
-  pmanage<MPtr(&PContainer::remove)>(height_id_); height_id_ = 0;
-  pmanage<MPtr(&PContainer::remove)>(tv_standards_id_); tv_standards_id_ = 0;
-  pmanage<MPtr(&PContainer::remove)>(framerates_enum_id_); framerates_enum_id_ = 0;
-  pmanage<MPtr(&PContainer::remove)>(framerate_id_); framerate_id_ = 0;
-  pmanage<MPtr(&PContainer::remove)>(pixel_format_id_); pixel_format_id_ = 0;
+  pmanage<MPtr(&PContainer::enable)>(group_id_, false);
+  pmanage<MPtr(&PContainer::enable)>(resolutions_id_, false); 
+  pmanage<MPtr(&PContainer::enable)>(width_id_, false); 
+  pmanage<MPtr(&PContainer::enable)>(height_id_, false); 
+  pmanage<MPtr(&PContainer::enable)>(tv_standards_id_, false); 
+  pmanage<MPtr(&PContainer::enable)>(framerates_enum_id_, false); 
+  pmanage<MPtr(&PContainer::enable)>(framerate_id_, false); 
+  pmanage<MPtr(&PContainer::enable)>(pixel_format_id_, false); 
   return true;
 }
 
@@ -507,12 +522,17 @@ bool V4L2Src::stop() {
   shm_sub_.reset(nullptr);
   prune_tree(".shmdata.writer." + shmpath_);
   remake_elements();
-  gst_pipeline_ = std2::make_unique<GstPipeliner>(
-      nullptr,
-      nullptr);
+  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
   codecs_->stop();
   pmanage<MPtr(&PContainer::enable)>(devices_id_, true);
-  update_device_specific_properties(devices_enum_.get());
+  pmanage<MPtr(&PContainer::enable)>(group_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(resolutions_id_, true); 
+  pmanage<MPtr(&PContainer::enable)>(width_id_, true); 
+  pmanage<MPtr(&PContainer::enable)>(height_id_, true); 
+  pmanage<MPtr(&PContainer::enable)>(tv_standards_id_, true); 
+  pmanage<MPtr(&PContainer::enable)>(framerates_enum_id_, true); 
+  pmanage<MPtr(&PContainer::enable)>(framerate_id_, true); 
+  pmanage<MPtr(&PContainer::enable)>(pixel_format_id_, true); 
   return true;
 }
 
