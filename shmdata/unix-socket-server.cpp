@@ -66,7 +66,7 @@ UnixSocketServer::UnixSocketServer(const std::string &path,
     return;
   struct sockaddr_un sock_un;
   if (path_.size() >= sizeof(sock_un.sun_path)) {
-    log_->error("path name %", strerror(ENAMETOOLONG));
+    log_->error("% (%)", strerror(ENAMETOOLONG), path_);
     return;
   }
   memset(&sock_un, 0, sizeof(sock_un));
@@ -74,14 +74,14 @@ UnixSocketServer::UnixSocketServer(const std::string &path,
   strcpy(sock_un.sun_path, path_.c_str());
   if (bind(socket_.fd_, (struct sockaddr *) &sock_un, sizeof(struct sockaddr_un)) < 0) {
     int err = errno;
-    log_->error("bind: %", strerror(err));
+    log_->error("bind: % (%)", strerror(err), path_);
     return;
   } else {
     is_binded_ = true;
   }
   if (listen (socket_.fd_, max_pending_cnx_) < 0) {
     int err = errno;
-    log_->error("listen %", strerror(err));
+    log_->error("listen: % (%)", strerror(err), path_);
     return;
   } else {
     is_listening_ = true;
@@ -97,7 +97,7 @@ UnixSocketServer::~UnixSocketServer() {
     for (auto &it: clients_){
       if (-1 == send(it, &proto_->quit_msg_, sizeof(proto_->quit_msg_), MSG_NOSIGNAL)) {
         int err = errno;
-        log_->error("send (quit): %", strerror(err));
+        log_->error("send (quit): % (%)", strerror(err), path_);
       } 
     }
   }
@@ -155,7 +155,7 @@ void UnixSocketServer::client_interaction() {
     auto rset = allset;  /* rset gets modified each time around */
     if (select(maxfd + 1, &rset, NULL, NULL, &tv) < 0) {
       int err = errno;
-      log_->error("select %", strerror(err));
+      log_->error("select % (&)", strerror(err), path_);
       continue;
     }
     { std::unique_lock<std::mutex> lock(clients_mutex_);
@@ -164,7 +164,7 @@ void UnixSocketServer::client_interaction() {
         auto clifd = accept(socket_.fd_, NULL, NULL);
         if (clifd < 0) {
           int err = errno;
-          log_->error("accept %", strerror(err));
+          log_->error("accept % (%)", strerror(err), path_);
         }
         FD_SET(clifd, &allset);
         // if (clifd > maxfd)
@@ -173,7 +173,7 @@ void UnixSocketServer::client_interaction() {
         auto res = send(clifd, &cnx_msg, sizeof(cnx_msg), MSG_NOSIGNAL);
         if (-1 == res) {
           int err = errno;
-          log_->debug("send: %", strerror(err));
+          log_->debug("send: % (%)", strerror(err), path_);
         } else {
           if (clifd > maxfd)
             maxfd = clifd;  // max fd for select()
@@ -187,16 +187,18 @@ void UnixSocketServer::client_interaction() {
           auto nread = read(it, &msg_placeholder, sizeof(msg_placeholder));
           if (nread < 0) {
             int err = errno;
-            log_->error("server reading file descriptor (%)", strerror(err));
+            log_->error("server reading file descriptor for %: (%)",
+                        path_,
+                        strerror(err));
             if (clients_notified_.end() != clients_notified_.find(it)) {
-              log_->error("notified client quit, recovery");
+              log_->error("notified client quit, recovery (%)", path_);
               on_client_error_(it);
             }
             clients_to_remove.push_back(it);
             FD_CLR(it, &allset);
             close(it);
           } else if (nread == 0) {
-            log_->debug("(server) closed: fd %", std::to_string(it));
+            log_->debug("(server) closed: fd % (%)", std::to_string(it), path_);
             clients_to_remove.push_back(it);
             FD_CLR(it, &allset);
             close(it);
