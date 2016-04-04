@@ -1,3 +1,28 @@
+switcher 0.8.8 (2016-04-04)
+---------------------------
+This is an official release in the 0.8 stable series. 
+
+New features:
+
+* video timelapse for multiple video shmdata
+* option to number files or not
+* max number of file for timelapse
+* width and height in timelapse
+* timelapse notifies last file written
+
+Bugs fixed:
+
+* default video encoding ugly on ubuntu 15.10
+* segfault when trying to register with network and without STUN/TURN
+* v4l2 trying to compress video when camera is producing compressed video
+* SIP cannot send to multiple destinations
+* SIP call issue when no media add to SDP
+* gtk property issues
+* nvenc bug when start/stop input video
+* lost property values for video-codec when start stop
+* v4l2src capture configuration lost after start/stop
+* gtk dtor bug
+
 switcher 0.8.6 (2016-03-21)
 ---------------------------
 This is an official release in the 0.8 stable series. 
