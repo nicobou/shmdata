@@ -12,6 +12,9 @@ pyshmdata_la_SOURCES = \
 noinst_HEADERS = \
     pyshmdata.h
 
+noinst_HEADERS = \
+	pyshmdata.h
+
 pyshmdata_la_CXXFLAGS = \
 	$(AM_CXXFLAGS) \
 	`python3.4-config --cflags` \
