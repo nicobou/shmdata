@@ -20,6 +20,7 @@
 #include <limits>
 #include "switcher/std2.hpp"
 #include "switcher/shmdata-utils.hpp"
+#include "switcher/file-utils.hpp"
 #include "./timelapse.hpp"
 
 namespace switcher {
@@ -42,6 +43,12 @@ Timelapse::Timelapse(const std::string &):
           img_dir_ = val;
           if (!img_dir_.empty() && img_dir_.back() != '/')
             img_dir_ += '/';
+          auto file_prepared = FileUtils::prepare_writable_dir(val);
+          if (!file_prepared.first){
+            g_warning("error preparing %s directory for writing: %s",
+                      val.c_str(), file_prepared.second.c_str());
+            return false;
+          }
           updated_config_.store(true);
           return true;
         },
@@ -58,7 +65,7 @@ Timelapse::Timelapse(const std::string &):
         },
         [this](){return img_name_;},
         "Image Name",
-        "Name of the jpeg files to be produced. You can use printf format for numbering files (%05d). If empty, the name will take the input shmdata name with option file number and jpg extension",
+        "Name of the jpeg files to be produced. You can use printf format for numbering files (for instance %05d). If empty, the name will take the input shmdata name with option file number and jpg extension",
         img_name_)),
     num_files_id_(pmanage<MPtr(&PContainer::make_bool)>(
         "num_files",

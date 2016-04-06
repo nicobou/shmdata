@@ -27,6 +27,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     decodebin-to-shmdata.cpp \
     external-shmdata-writer.cpp \
     fraction.cpp \
+    file-utils.cpp \
     g-source-wrapper.cpp \
     glibmainloop.cpp \
     gobject-wrapper.cpp \
@@ -110,6 +111,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     creator.hpp \
     decodebin-to-shmdata.hpp \
     external-shmdata-writer.hpp \
+    file-utils.hpp \
     fraction.hpp \
     g-source-wrapper.hpp \
     glibmainloop.hpp \
