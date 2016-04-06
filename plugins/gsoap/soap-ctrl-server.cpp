@@ -277,7 +277,7 @@ controlService::get_factory_capabilities(std::vector<std::string> *result){//FIX
   {
     char *s = (char*)soap_malloc(this, 1024);
     g_debug("controlService::get_factory_capabilities: cannot get manager from SoapCtrlServer (nullptr)");
-    sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
+    sprintf(s, "controlService::get_factory_capabilities: cannot get manager (nullptr)");
     return soap_senderfault("error in get_factory_capabilities", s);
   }
 
@@ -298,7 +298,7 @@ controlService::get_classes_doc(std::string *result){
   {
     char *s = (char*)soap_malloc(this, 1024);
     g_debug("controlService::get_classes_doc: cannot get manager from SoapCtrlServer (nullptr)");
-    sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
+    sprintf(s, "controlService::get_factory_capabilities: cannot get manager (nullptr)");
     return soap_senderfault("error in get_classes_doc", s);
   }
 
@@ -319,7 +319,7 @@ controlService::get_quiddity_description(std::string quiddity_name, std::string 
   {
     char *s = (char*)soap_malloc(this, 1024);
     g_debug("controlService::get_class_doc: cannot get manager from SoapCtrlServer (nullptr)");
-    sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
+    sprintf(s, "controlService::get_factory_capabilities: cannot get manager (nullptr)");
     return soap_senderfault("error in get_class_doc", s);
   }
 
@@ -340,7 +340,7 @@ controlService::get_quiddities_description(std::string *result){
   {
     char *s = (char*)soap_malloc(this, 1024);
     g_debug("controlService::get_quiddities_description: cannot get manager from SoapCtrlServer (nullptr)");
-    sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_quiddities_description: cannot get manager (nullptr)</error>");
+    sprintf(s, "controlService::get_quiddities_description: cannot get manager (nullptr)");
     return soap_senderfault("error in get_classes_doc", s);
   }
 
@@ -361,7 +361,7 @@ controlService::get_class_doc(std::string class_name, std::string *result){
   {
     char *s = (char*)soap_malloc(this, 1024);
     g_debug("controlService::get_class_doc: cannot get manager from SoapCtrlServer (nullptr)");
-    sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
+    sprintf(s, "controlService::get_factory_capabilities: cannot get manager (nullptr)");
     return soap_senderfault("error in get_class_doc", s);
   }
 
@@ -458,12 +458,15 @@ controlService::set_property(std::string quiddity_name,
   if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager();
 
+  auto id = manager->use_prop<MPtr(&PContainer::get_id)>(
+      quiddity_name, property_name);
+  if (0 == id) {
+    char *s = (char*)soap_malloc(this, 1024);
+    sprintf(s, "property %s not found for quiddity %s", property_name.c_str(), quiddity_name.c_str());
+    return soap_senderfault("set property error", s);
+  }
   manager->use_prop<MPtr(&PContainer::set_str)>(
-      quiddity_name,
-      manager->use_prop<MPtr(&PContainer::get_id)>(
-          quiddity_name, property_name),
-      property_value);
-
+      quiddity_name, id, property_value);
   return send_set_property_empty_response(SOAP_OK);
 }
 
@@ -479,11 +482,13 @@ controlService::get_property(std::string quiddity_name,
   if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager();
 
-  *result = manager->use_prop<MPtr(&PContainer::get_str)>(
-      quiddity_name,
-      manager->use_prop<MPtr(&PContainer::get_id)>(
-          quiddity_name, property_name));
-
+  auto id = manager->use_prop<MPtr(&PContainer::get_id)>(
+      quiddity_name, property_name);
+  if (0 == id)
+    *result = std::string();
+  else
+    *result = manager->use_prop<MPtr(&PContainer::get_str)>(
+        quiddity_name, id);
   return SOAP_OK;
 }
 
@@ -547,7 +552,7 @@ controlService::delete_quiddity(std::string quiddity_name)
   else
   {
     char *s = (char*)soap_malloc(this, 1024);
-    sprintf(s, "<error xmlns=\"http://tempuri.org/\">%s is not found, not deleting</error>", quiddity_name.c_str());
+    sprintf(s, "%s is not found, not deleting", quiddity_name.c_str());
     return send_set_property_empty_response(soap_senderfault("Quiddity creation error", s));
   }
 }
@@ -574,7 +579,7 @@ controlService::invoke_method(std::string quiddity_name,
   else
   {
     char *s = (char*)soap_malloc(this, 1024);
-    sprintf(s, "<error xmlns=\"http://tempuri.org/\">invoking %s/%s returned false</error>", quiddity_name.c_str(), method_name.c_str());
+    sprintf(s, "invoking %s/%s returned false", quiddity_name.c_str(), method_name.c_str());
     return soap_senderfault("Method invocation error", s);
   }
 }
