@@ -45,14 +45,14 @@ class JackToShmdata: public Quiddity, public StartableQuiddity {
   PContainer::prop_id_t connect_to_id_{0};
   unsigned int index_{1};
   PContainer::prop_id_t index_id_{0};
-  std::unique_ptr<ShmdataWriter> shm_{nullptr};
   std::mutex input_ports_mutex_{};
-  JackClient jack_client_;
-  std::vector<JackPort> input_ports_{};
   std::vector<jack_sample_t> buf_{};
   std::vector<std::string> ports_to_connect_{};
   std::mutex  port_to_connect_in_jack_process_mutex_{};
   std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
+  std::unique_ptr<ShmdataWriter> shm_{nullptr};
+  JackClient jack_client_;
+  std::vector<JackPort> input_ports_{};
   
   bool init() final;
   bool start() final;
