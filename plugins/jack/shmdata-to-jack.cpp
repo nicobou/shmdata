@@ -104,7 +104,8 @@ int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
     if (lock.try_lock()) {
       auto write_zero = false;
       auto num_channels = context->output_ports_.size();
-      if (num_channels > 0 &&  context->ring_buffers_[0].get_usage() < nframes){
+      if (context->ring_buffers_.empty()
+          || (num_channels > 0 && context->ring_buffers_[0].get_usage() < nframes)){
         //g_print("jack missed a buffer\n");
         write_zero = true;
       }
