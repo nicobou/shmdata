@@ -98,8 +98,8 @@ bool GTKVideo::init() {
       "keyb_interaction",
       [this](const bool &val){keyb_interaction_ = val; return true;},
       [this](){return keyb_interaction_;},
-      "Keyboard Interaction",
-      "Enable/Disable keybord interaction",
+      "Keyboard Shortcuts",
+      "Enable/Disable keybord shortcuts",
       keyb_interaction_);
 
     pmanage<MPtr(&PContainer::make_string)>(
@@ -316,7 +316,7 @@ gboolean GTKVideo::create_ui(void *user_data) {
 }
 
 void GTKVideo::toggle_fullscreen() {
-  if (is_fullscreen_)
+  if (!is_fullscreen_)
     pmanage<MPtr(&PContainer::set<bool>)>(fullscreen_id_, true);
   else
     pmanage<MPtr(&PContainer::set<bool>)>(fullscreen_id_, false);
