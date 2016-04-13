@@ -325,13 +325,13 @@ void GTKVideo::toggle_fullscreen() {
 bool GTKVideo::remake_elements(){
   remove_gst_properties();
   if (!UGstElem::renew(shmsrc_) || !UGstElem::renew(queue_)
-      || !UGstElem::renew(videoconvert_) || !UGstElem::renew(videoflip_)
-      || !UGstElem::renew(gamma_) || !UGstElem::renew(videobalance_)
+      || !UGstElem::renew(videoconvert_) || !UGstElem::renew(videoflip_, {"method"})
+      || !UGstElem::renew(gamma_, {"gamma"})
+      || !UGstElem::renew(videobalance_, {"contrast", "brightness", "hue", "saturation"})
       || !UGstElem::renew(xvimagesink_)){
     g_error("gtkvideo could not renew GStreamer elements");
     return false;
   }
-  install_gst_properties();
   g_object_set(G_OBJECT(xvimagesink_.get_raw()),
                "force-aspect-ratio", TRUE,
                "draw-borders", FALSE,
@@ -396,6 +396,7 @@ bool GTKVideo::on_shmdata_connect(const std::string &shmpath) {
                         nullptr);
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
+  install_gst_properties();
   return true;
 }
 
