@@ -8,7 +8,6 @@
 *.tar.gz
 *.trs
 *~
-INSTALL
 Makefile
 aclocal.m4
 autom4te.cache/output.0
