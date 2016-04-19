@@ -76,17 +76,18 @@ bool GTKVideo::init() {
   fullscreen_id_ = pmanage<MPtr(&PContainer::make_bool)>(
       "fullscreen",
       [this](const bool &val){
-        if (val && main_window_ != nullptr) {
-          gdk_window_set_cursor(GDK_WINDOW(video_window_->window),
-                                blank_cursor_);
-          gtk_window_fullscreen(GTK_WINDOW(main_window_));
-        }
-        else if (main_window_ != nullptr) {
-          gdk_window_set_cursor(GDK_WINDOW(video_window_->window),
-                                nullptr);
-          gtk_window_unfullscreen(GTK_WINDOW(main_window_));
-        }
+        // if (val && main_window_ != nullptr) {
+        //   gdk_window_set_cursor(GDK_WINDOW(video_window_->window),
+        //                         blank_cursor_);
+        //   gtk_window_fullscreen(GTK_WINDOW(main_window_));
+        // }
+        // else if (main_window_ != nullptr) {
+        //   gdk_window_set_cursor(GDK_WINDOW(video_window_->window),
+        //                         nullptr);
+        //   gtk_window_unfullscreen(GTK_WINDOW(main_window_));
+        // }
         is_fullscreen_ = val;
+        gtk_idle_add((GtkFunction) set_fullscreen, this);
         return true;
       },
       [this](){return is_fullscreen_;},
@@ -106,7 +107,7 @@ bool GTKVideo::init() {
         "title",
         [this](const std::string &val){
           title_ = val;
-          gtk_window_set_title(GTK_WINDOW(main_window_), title_.c_str());
+          gtk_idle_add((GtkFunction) set_title, this);
           return true;
         },
         [this](){return title_;},
@@ -324,8 +325,10 @@ void GTKVideo::toggle_fullscreen() {
 
 bool GTKVideo::remake_elements(){
   remove_gst_properties();
-  if (!UGstElem::renew(shmsrc_) || !UGstElem::renew(queue_)
-      || !UGstElem::renew(videoconvert_) || !UGstElem::renew(videoflip_, {"method"})
+  if (!UGstElem::renew(shmsrc_)
+      || !UGstElem::renew(queue_)
+      || !UGstElem::renew(videoconvert_)
+      || !UGstElem::renew(videoflip_, {"method"})
       || !UGstElem::renew(gamma_, {"gamma"})
       || !UGstElem::renew(videobalance_, {"contrast", "brightness", "hue", "saturation"})
       || !UGstElem::renew(xvimagesink_)){
@@ -517,5 +520,25 @@ void GTKVideo::remove_gst_properties(){
   pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("saturation"));
 }
 
+gboolean GTKVideo::set_title(void *user_data) {
+  GTKVideo *context = static_cast<GTKVideo *>(user_data);
+  gtk_window_set_title(GTK_WINDOW(context->main_window_), context->title_.c_str());
+  return FALSE;
+}
+
+gboolean GTKVideo::set_fullscreen(void *user_data) {
+  GTKVideo *context = static_cast<GTKVideo *>(user_data);
+  if (context->is_fullscreen_ && context->main_window_ != nullptr) {
+    gdk_window_set_cursor(GDK_WINDOW(context->video_window_->window),
+                          context->blank_cursor_);
+    gtk_window_fullscreen(GTK_WINDOW(context->main_window_));
+  }
+  else if (context->main_window_ != nullptr) {
+    gdk_window_set_cursor(GDK_WINDOW(context->video_window_->window),
+                          nullptr);
+    gtk_window_unfullscreen(GTK_WINDOW(context->main_window_));
+  }
+  return FALSE;
+}
 
 }  // namespace switcher

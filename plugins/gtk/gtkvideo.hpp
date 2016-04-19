@@ -112,6 +112,8 @@ class GTKVideo: public Quiddity {
   bool can_sink_caps(std::string caps);
   GstBusSyncReply bus_sync(GstMessage *msg);
   static gboolean create_ui(void *user_data);
+  static gboolean set_title(void *user_data);
+  static gboolean set_fullscreen(void *user_data);
   static void realize_cb(GtkWidget *widget, void *user_data);
   static void delete_event_cb(GtkWidget *widget,
                               GdkEvent *event, void *user_data);
