@@ -5,6 +5,8 @@ switcher
 
 See instructions for [installing](INSTALL.md).
 
+See instructions for [coding style](CODING.md).
+
 License
 -------
 switcher is released under the terms of the GNU GPL v3 or above.
