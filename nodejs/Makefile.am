@@ -41,6 +41,7 @@ switcher_la_CXXFLAGS = \
     -D_GNU_SOURCE \
     -D_LARGEFILE_SOURCE \
     -I$(top_srcdir) \
+    -I/usr/include/nodejs/deps/v8/include/ \
     -I/usr/include/nodejs/deps/uv/include/ \
     -I/usr/include/nodejs/src \
     -fPIC

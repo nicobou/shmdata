@@ -19,12 +19,13 @@
 #define SWITCHERCTRL_H
 
 #include <node.h>
-#include <unordered_map>
+#include <node_object_wrap.h>
+#include <uv.h>
 #include "switcher/quiddity-manager.hpp"
 
 class SwitcherController : public node::ObjectWrap {
  public:
-  static void Init(v8::Handle<v8::Object> target);
+  static void Init(v8::Handle<v8::Object> exports);
 
   v8::Persistent<v8::Function> user_log_cb;                  // must be disposed
   v8::Persistent<v8::Function> user_prop_cb;                 // must be disposed
@@ -34,11 +35,13 @@ class SwitcherController : public node::ObjectWrap {
   SwitcherController(const std::string &name, v8::Local<v8::Function> logger_callbac);
   ~SwitcherController();
 
+  static v8::Persistent<v8::Function> constructor;
+
   void release();
-  
+
   switcher::QuiddityManager::ptr quiddity_manager;
-  
-  
+
+
   //async log
   uv_async_t switcher_log_async;
   uv_mutex_t switcher_log_mutex;  // protecting the list
@@ -58,7 +61,7 @@ class SwitcherController : public node::ObjectWrap {
     std::pair<std::string, std::string>,
     switcher::PContainer::register_id_t
     > prop_regs_{};
-  
+
   //async signals
   using SigUpdate = struct SigUpdate_t {
     SigUpdate_t(std::string q, std::string p, std::vector<std::string> v):
@@ -74,51 +77,51 @@ class SwitcherController : public node::ObjectWrap {
   static v8::Handle<v8::Value> parseJson(v8::Handle<v8::Value> jsonString);
 
   static void signal_cb(const std::string &subscriber_name, const std::string &quiddity_name, const std::string &signal_name, const std::vector<std::string> &params, void *user_data);
-  static void NotifySignal(uv_async_t *async, int status);
+  static void NotifySignal(uv_async_s *async);
 
   // static void property_cb(const std::string &subscriber_name, const std::string &quiddity_name, const std::string &property_name, const std::string &value, void *user_data);
-  static void NotifyProp(uv_async_t *async, int status);
+  static void NotifyProp(uv_async_s *async);
 
   // static void logger_cb(const std::string &subscriber_name, const std::string &quiddity_name, const std::string &property_name, const std::string &value, void *user_data);
-  static void NotifyLog(uv_async_t *async, int status);
+  static void NotifyLog(uv_async_s *async);
 
-  static v8::Handle<v8::Value> New(const v8::Arguments& args);
-  static v8::Handle<v8::Value> SaveHistory(const v8::Arguments& args);
-  static v8::Handle<v8::Value> LoadHistoryFromCurrentState(const v8::Arguments& args);
-  static v8::Handle<v8::Value> LoadHistoryFromScratch(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Remove(const v8::Arguments& args);
-  static v8::Handle<v8::Value> HasQuiddity(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Create(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetInfo(const v8::Arguments& args);
-  static v8::Handle<v8::Value> SwitcherClose(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetClassesDoc(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetClassDoc(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetQuiddityDescription(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetQuidditiesDescription(const v8::Arguments& args);
-  static v8::Handle<v8::Value> SetProperty(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetProperty(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetPropertiesDescription(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetPropertyDescription(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetPropertiesDescriptionByClass(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetPropertyDescriptionByClass(const v8::Arguments& args);
-  static v8::Handle<v8::Value> Invoke(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetMethodsDescription(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetMethodDescription(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetMethodsDescriptionByClass(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetMethodDescriptionByClass(const v8::Arguments& args);
-  static v8::Handle<v8::Value> RegisterLogCallback(const v8::Arguments& args);
-  static v8::Handle<v8::Value> RegisterPropCallback(const v8::Arguments& args);
-  static v8::Handle<v8::Value> SubscribeToProperty(const v8::Arguments& args);
-  static v8::Handle<v8::Value> UnsubscribeFromProperty(const v8::Arguments& args);
-  static v8::Handle<v8::Value> ListSubscribedProperties(const v8::Arguments& args);
-  static v8::Handle<v8::Value> RegisterSignalCallback(const v8::Arguments& args);
-  static v8::Handle<v8::Value> SubscribeToSignal(const v8::Arguments& args);
-  static v8::Handle<v8::Value> UnsubscribeToSignal(const v8::Arguments& args);
-  static v8::Handle<v8::Value> ListSubscribedSignals(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetSignalsDescription(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetSignalDescription(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetSignalsDescriptionByClass(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetSignalDescriptionByClass(const v8::Arguments& args);
+  static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void SaveHistory(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void LoadHistoryFromCurrentState(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void LoadHistoryFromScratch(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void Remove(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void HasQuiddity(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void Create(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetInfo(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void SwitcherClose(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetClassesDoc(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetClassDoc(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetQuiddityDescription(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetQuidditiesDescription(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void SetProperty(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetProperty(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetPropertiesDescription(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetPropertyDescription(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetPropertiesDescriptionByClass(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetPropertyDescriptionByClass(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void Invoke(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetMethodsDescription(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetMethodDescription(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetMethodsDescriptionByClass(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetMethodDescriptionByClass(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void RegisterLogCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void RegisterPropCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void SubscribeToProperty(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void UnsubscribeFromProperty(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void ListSubscribedProperties(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void RegisterSignalCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void SubscribeToSignal(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void UnsubscribeToSignal(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void ListSubscribedSignals(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetSignalsDescription(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetSignalDescription(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetSignalsDescriptionByClass(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetSignalDescriptionByClass(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 #endif

@@ -16,6 +16,7 @@
  */
 
 #include <node.h>
+#include <uv.h>
 #include <iostream>
 #include <utility>
 #include "./switcher-controller.hpp"
@@ -30,10 +31,14 @@ using namespace v8;
 using namespace node;
 using namespace switcher;
 
+Persistent<Function> SwitcherController::constructor;
+
 SwitcherController::SwitcherController(const std::string &name, Local<Function> logger_callback) :
     quiddity_manager(switcher::QuiddityManager::make_manager(name))
 {
-    user_log_cb = Persistent<Function>::New(logger_callback);
+    Isolate* isolate = Isolate::GetCurrent();
+
+    user_log_cb.Reset(isolate, logger_callback);
 
     // mutex
     uv_mutex_init(&switcher_log_mutex);
@@ -102,64 +107,66 @@ SwitcherController::SwitcherController(const std::string &name, Local<Function> 
 SwitcherController::~SwitcherController() {};
 
 void SwitcherController::Init(Handle<Object> exports) {
+    Isolate* isolate = Isolate::GetCurrent();
+
     // Prepare constructor template
-    Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
-    tpl->SetClassName(String::NewSymbol("Switcher"));
+    Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New);
+    tpl->SetClassName(String::NewFromUtf8(isolate, "Switcher"));
     tpl->InstanceTemplate()->SetInternalFieldCount(35);
 
     // lifecycle - 1
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("close"), FunctionTemplate::New(SwitcherClose)->GetFunction());
+    NODE_SET_PROTOTYPE_METHOD( tpl, "close", SwitcherClose );
 
     // history - 3
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("save_history"), FunctionTemplate::New(SaveHistory)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("load_history_from_current_state"), FunctionTemplate::New(LoadHistoryFromCurrentState)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("load_history_from_scratch"), FunctionTemplate::New(LoadHistoryFromScratch)->GetFunction());
+    NODE_SET_PROTOTYPE_METHOD( tpl, "save_history", SaveHistory );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "load_history_from_current_state", LoadHistoryFromCurrentState );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "load_history_from_scratch", LoadHistoryFromScratch );
 
     // life manager - 8
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("create"), FunctionTemplate::New(Create)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("remove"), FunctionTemplate::New(Remove)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("has_quiddity"), FunctionTemplate::New(HasQuiddity)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_classes_doc"), FunctionTemplate::New(GetClassesDoc)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_class_doc"), FunctionTemplate::New(GetClassDoc)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_quiddity_description"), FunctionTemplate::New(GetQuiddityDescription)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_quiddities_description"), FunctionTemplate::New(GetQuidditiesDescription)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_info"), FunctionTemplate::New(GetInfo)->GetFunction());
+    NODE_SET_PROTOTYPE_METHOD( tpl, "create", Create );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "remove", Remove );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "has_quiddity", HasQuiddity );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_classes_doc", GetClassesDoc );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_class_doc", GetClassDoc );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_quiddity_description", GetQuiddityDescription );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_quiddities_description", GetQuidditiesDescription );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_info", GetInfo );
 
     // properties - 6
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_properties_description"), FunctionTemplate::New(GetPropertiesDescription)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_property_description"), FunctionTemplate::New(GetPropertyDescription)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_properties_description_by_class"), FunctionTemplate::New(GetPropertiesDescriptionByClass)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_property_description_by_class"), FunctionTemplate::New(GetPropertyDescriptionByClass)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("set_property_value"), FunctionTemplate::New(SetProperty)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_property_value"), FunctionTemplate::New(GetProperty)->GetFunction());
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_properties_description", GetPropertiesDescription );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_property_description", GetPropertyDescription );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_properties_description_by_class", GetPropertiesDescriptionByClass );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_property_description_by_class", GetPropertyDescriptionByClass );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "set_property_value", SetProperty );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_property_value", GetProperty );
 
     // methods - 5
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_methods_description"), FunctionTemplate::New(GetMethodsDescription)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_method_description"), FunctionTemplate::New(GetMethodDescription)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_methods_description_by_class"), FunctionTemplate::New(GetMethodsDescriptionByClass)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_method_description_by_class"), FunctionTemplate::New(GetMethodDescriptionByClass)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("invoke"), FunctionTemplate::New(Invoke)->GetFunction());
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_methods_description", GetMethodsDescription );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_method_description", GetMethodDescription );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_methods_description_by_class", GetMethodsDescriptionByClass );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_method_description_by_class", GetMethodDescriptionByClass );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "invoke", Invoke );
 
     // property subscription - 4
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("register_prop_callback"), FunctionTemplate::New(RegisterPropCallback)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("subscribe_to_property"), FunctionTemplate::New(SubscribeToProperty)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("unsubscribe_from_property"), FunctionTemplate::New(UnsubscribeFromProperty)->GetFunction());
+    NODE_SET_PROTOTYPE_METHOD( tpl, "register_prop_callback", RegisterPropCallback );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "subscribe_to_property", SubscribeToProperty );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "unsubscribe_from_property", UnsubscribeFromProperty );
 
     // signals - 4
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_signals_description"), FunctionTemplate::New(GetSignalsDescription)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_signal_description"), FunctionTemplate::New(GetSignalDescription)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_signals_description_by_class"), FunctionTemplate::New(GetSignalsDescriptionByClass)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("get_signal_description_by_class"), FunctionTemplate::New(GetSignalDescriptionByClass)->GetFunction());
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_signals_description", GetSignalsDescription );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_signal_description", GetSignalDescription );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_signals_description_by_class", GetSignalsDescriptionByClass );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "get_signal_description_by_class", GetSignalDescriptionByClass );
 
     // signal subscription - 4
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("register_signal_callback"), FunctionTemplate::New(RegisterSignalCallback)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("subscribe_to_signal"), FunctionTemplate::New(SubscribeToSignal)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("unsubscribe_to_signal"), FunctionTemplate::New(UnsubscribeToSignal)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("list_subscribed_signals"), FunctionTemplate::New(ListSubscribedSignals)->GetFunction());
+    NODE_SET_PROTOTYPE_METHOD( tpl, "register_signal_callback", RegisterSignalCallback );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "subscribe_to_signal", SubscribeToSignal );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "unsubscribe_to_signal", UnsubscribeToSignal );
+    NODE_SET_PROTOTYPE_METHOD( tpl, "list_subscribed_signals", ListSubscribedSignals );
 
     // constructor
-    Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
-    exports->Set(String::NewSymbol("Switcher"), constructor);
+    constructor.Reset(isolate, tpl->GetFunction());
+    exports->Set(String::NewFromUtf8(isolate, "Switcher"), tpl->GetFunction());
 }
 
 
@@ -180,38 +187,48 @@ void SwitcherController::release( ) {
   uv_mutex_destroy(&switcher_prop_mutex);
   uv_mutex_destroy(&switcher_log_mutex);
 
-  user_log_cb.Dispose();
-  user_prop_cb.Dispose();
-  user_signal_cb.Dispose();
+  user_log_cb.Reset();
+  user_prop_cb.Reset();
+  user_signal_cb.Reset();
 }
 
-Handle<Value> SwitcherController::New(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::New(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    HandleScope scope(isolate);
 
-  if ( args.Length() < 2 || !args[0]->IsString() || !args[1]->IsFunction() ) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments. Switcher requires a name and logger callback.")));
-    return scope.Close(Undefined());
-  }
+    if (args.IsConstructCall()) {
+        // Invoked as constructor: `new SwitcherController(...)`
+        if ( args.Length() < 2 || !args[0]->IsString() || !args[1]->IsFunction() ) {
+            isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments. Switcher requires a name and logger callback.")));
+            return;
+        }
 
-  // Construction
-  String::Utf8Value name( ( args.Length() >= 1 && !args[0]->IsString() ) ? String::New("nodeserver") : args[0]->ToString());
-  SwitcherController* obj = new SwitcherController(std::string(*name), Local<Function>::Cast(args[1]));
+        // Construction
+        String::Utf8Value name( ( args.Length() >= 1 && !args[0]->IsString() ) ? String::NewFromUtf8(isolate, "nodeserver") : args[0]->ToString());
+        SwitcherController* obj = new SwitcherController(std::string(*name), Local<Function>::Cast(args[1]));
+        obj->Wrap(args.This());
+        args.GetReturnValue().Set(args.This());
 
-  obj->Wrap(args.This());
+      } else {
+        // Invoked as plain function `MyObject(...)`, turn into construct call.
+        const int argc = 1;
+        Local<Value> argv[argc] = { args[0] };
+        Local<Function> cons = Local<Function>::New(isolate, constructor);
+        args.GetReturnValue().Set(cons->NewInstance(argc, argv));
 
-  return args.This();
+      }
 }
 
 Handle<Value> SwitcherController::parseJson(Handle<Value> jsonString) {
-    HandleScope scope;
+    Isolate* isolate = Isolate::GetCurrent();
+    HandleScope scope(isolate);
 
-    Handle<Context> context = Context::GetCurrent();
-    Handle<Object> global = context->Global();
+    Handle<Object> global = isolate->GetCurrentContext()->Global();
 
-    Handle<Object> JSON = global->Get(String::New("JSON"))->ToObject();
-    Handle<Function> JSON_parse = Handle<Function>::Cast(JSON->Get(String::New("parse")));
+    Handle<Object> JSON = global->Get(String::NewFromUtf8(isolate, "JSON"))->ToObject();
+    Handle<Function> JSON_parse = Handle<Function>::Cast(JSON->Get(String::NewFromUtf8(isolate, "parse")));
 
-    return scope.Close(JSON_parse->Call(JSON, 1, &jsonString));
+    return JSON_parse->Call(JSON, 1, &jsonString);
 }
 
 // void SwitcherController::logger_cb(const std::string& /*subscriber_name*/, const std::string& /*quiddity_name*/, const std::string& /*property_name*/, const std::string &value, void *user_data) {
@@ -222,29 +239,39 @@ Handle<Value> SwitcherController::parseJson(Handle<Value> jsonString) {
 //   uv_async_send(&obj->switcher_log_async);
 // }
 
-void SwitcherController::NotifyLog(uv_async_t* async, int /*status*/) {
-  HandleScope scope;
+void SwitcherController::NotifyLog(uv_async_s* async) {
+    Isolate* isolate = Isolate::GetCurrent();
+    HandleScope scope(isolate);
+    SwitcherController *obj = static_cast<SwitcherController*>(async->data);
+    bool cleanup = false;
 
-  SwitcherController *obj = static_cast<SwitcherController*>(async->data);
+    if (!obj->user_log_cb.IsEmpty() ) {
+        Local<Function> cb = Local<Function>::New(isolate, obj->user_log_cb);
+        if ( cb->IsCallable() ) {
+            TryCatch try_catch;
+            uv_mutex_lock(&obj->switcher_log_mutex);
+            for (auto &it: obj->switcher_log_list) {
+                Local<Value> argv[] = { String::NewFromUtf8(isolate, it.c_str())};
+                cb->Call(isolate->GetCurrentContext()->Global(), 1, argv);
+            }
+            obj->switcher_log_list.clear();
+            uv_mutex_unlock(&obj->switcher_log_mutex);
 
-  if (!obj->user_log_cb.IsEmpty() && obj->user_log_cb->IsCallable()) {
-    TryCatch try_catch;
-    uv_mutex_lock(&obj->switcher_log_mutex);
-    for (auto &it: obj->switcher_log_list) {
-      Local<Value> argv[] = { Local<Value>::New(String::New(it.c_str()))};
-      obj->user_log_cb->Call(obj->user_log_cb, 1, argv);
+            if (try_catch.HasCaught()) {
+                FatalException(isolate, try_catch);
+            }
+        } else {
+            cleanup = true;
+        }
+    } else {
+        cleanup = true;
     }
-    obj->switcher_log_list.clear();
-    uv_mutex_unlock(&obj->switcher_log_mutex);
 
-    if (try_catch.HasCaught()) {
-      node::FatalException(try_catch);
+    if ( cleanup ) {
+            uv_mutex_lock(&obj->switcher_log_mutex);
+            obj->switcher_log_list.clear();
+            uv_mutex_unlock(&obj->switcher_log_mutex);
     }
-  } else {
-    uv_mutex_lock(&obj->switcher_log_mutex);
-    obj->switcher_log_list.clear();
-    uv_mutex_unlock(&obj->switcher_log_mutex);
-  }
 }
 
 // void SwitcherController::property_cb(const std::string& /*subscriber_name*/, const std::string &quiddity_name, const std::string &property_name, const std::string &value, void *user_data) {
@@ -255,31 +282,43 @@ void SwitcherController::NotifyLog(uv_async_t* async, int /*status*/) {
 //   uv_async_send(&obj->switcher_prop_async);
 // }
 
-void SwitcherController::NotifyProp(uv_async_t *async, int /*status*/) {
-  HandleScope scope;
-  SwitcherController *obj = static_cast<SwitcherController*>(async->data);
+void SwitcherController::NotifyProp(uv_async_s *async) {
+    Isolate* isolate = Isolate::GetCurrent();
+    HandleScope scope(isolate);
+    SwitcherController *obj = static_cast<SwitcherController*>(async->data);
 
-  if (!obj->user_prop_cb.IsEmpty() && obj->user_prop_cb->IsCallable()) {
-    TryCatch try_catch;
-    uv_mutex_lock(&obj->switcher_prop_mutex);
-    for (auto &it: obj->switcher_prop_list) {
-      Local<Value> argv[3];
-      argv[0] = {Local<Value>::New(String::New(it.quid_.c_str()))};
-      argv[1] = {Local<Value>::New(String::New(it.prop_.c_str()))};
-      argv[2] = {Local<Value>::New(String::New(it.val_.c_str()))};
-      obj->user_prop_cb->Call(obj->user_prop_cb, 3, argv);
-    }
-    obj->switcher_prop_list.clear();
-    uv_mutex_unlock(&obj->switcher_prop_mutex);
+    bool cleanup = false;
 
-    if (try_catch.HasCaught()) {
-      node::FatalException(try_catch);
+    if (!obj->user_prop_cb.IsEmpty() ) {
+        Local<Function> cb = Local<Function>::New(isolate, obj->user_prop_cb);
+        if ( cb->IsCallable() ) {
+            TryCatch try_catch;
+            uv_mutex_lock(&obj->switcher_prop_mutex);
+            for (auto &it: obj->switcher_prop_list) {
+                Local<Value> argv[3];
+                argv[0] = {String::NewFromUtf8(isolate, it.quid_.c_str())};
+                argv[1] = {String::NewFromUtf8(isolate, it.prop_.c_str())};
+                argv[2] = {String::NewFromUtf8(isolate, it.val_.c_str())};
+                cb->Call(isolate->GetCurrentContext()->Global(), 3, argv);
+            }
+            obj->switcher_prop_list.clear();
+            uv_mutex_unlock(&obj->switcher_prop_mutex);
+
+            if (try_catch.HasCaught()) {
+                FatalException(isolate, try_catch);
+            }
+        } else {
+            cleanup = true;
+        }
+    } else {
+        cleanup = true;
     }
-  } else {
-    uv_mutex_lock(&obj->switcher_prop_mutex);
-    obj->switcher_prop_list.clear();
-    uv_mutex_unlock(&obj->switcher_prop_mutex);
-  }
+
+    if ( cleanup ) {
+        uv_mutex_lock(&obj->switcher_prop_mutex);
+        obj->switcher_prop_list.clear();
+        uv_mutex_unlock(&obj->switcher_prop_mutex);
+    }
 }
 
 void SwitcherController::signal_cb(const std::string& /*subscriber_name*/, const std::string &quiddity_name, const std::string &signal_name, const std::vector<std::string> &params, void *user_data) {
@@ -290,39 +329,53 @@ void SwitcherController::signal_cb(const std::string& /*subscriber_name*/, const
   uv_async_send(&obj->switcher_sig_async);
 }
 
-void SwitcherController::NotifySignal(uv_async_t *async, int /*status*/) {
-  HandleScope scope;
+void SwitcherController::NotifySignal(uv_async_s *async) {
+    Isolate* isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
   SwitcherController *obj = static_cast<SwitcherController*>(async->data);
 
-  if (!obj->user_signal_cb.IsEmpty() && obj->user_signal_cb->IsCallable()) {
-    TryCatch try_catch;
+  bool cleanup = false;
 
-    uv_mutex_lock(&obj->switcher_sig_mutex);
-    // Performing a copy in order to avoid deadlock from signal handlers having to call the addon themselves
-    // For example, on-quiddity-removed has to also remove associated quiddities
-    auto sig_list = obj->switcher_sig_list;
-    obj->switcher_sig_list.clear();
-    uv_mutex_unlock(&obj->switcher_sig_mutex);
+  if (!obj->user_signal_cb.IsEmpty() ) {
+      Local<Function> cb = Local<Function>::New(isolate, obj->user_signal_cb);
 
-    for (auto &it: sig_list) {
-      Local<Value> argv[3];
-      Local<Array> array = Array::New(it.val_.size());
-      for (auto &item: it.val_) {
-        array->Set(0, String::New(item.c_str()));
-      }
-      argv[0] = {Local<Value>::New(String::New(it.quid_.c_str()))};
-      argv[1] = {Local<Value>::New(String::New(it.sig_.c_str()))};
-      argv[2] = {Local<Value>::New(array)};
-      obj->user_signal_cb->Call(obj->user_signal_cb, 3, argv);
-    }
+      if (!obj->user_signal_cb.IsEmpty() && cb->IsCallable()) {
+        TryCatch try_catch;
 
-    if (try_catch.HasCaught()) {
-      node::FatalException(try_catch);
+        uv_mutex_lock(&obj->switcher_sig_mutex);
+        // Performing a copy in order to avoid deadlock from signal handlers having to call the addon themselves
+        // For example, on-quiddity-removed has to also remove associated quiddities
+        auto sig_list = obj->switcher_sig_list;
+        obj->switcher_sig_list.clear();
+        uv_mutex_unlock(&obj->switcher_sig_mutex);
+
+        for (auto &it: sig_list) {
+          Local<Value> argv[3];
+          Local<Array> array = Array::New(isolate, it.val_.size());
+          for (auto &item: it.val_) {
+            array->Set(0, String::NewFromUtf8(isolate, item.c_str()));
+          }
+          argv[0] = {String::NewFromUtf8(isolate, it.quid_.c_str())};
+          argv[1] = {String::NewFromUtf8(isolate, it.sig_.c_str())};
+          argv[2] = {array};
+
+          cb->Call(isolate->GetCurrentContext()->Global(), 3, argv);
+        }
+
+        if (try_catch.HasCaught()) {
+          FatalException(isolate, try_catch);
+        }
+    } else {
+        cleanup = true;
     }
   } else {
-    uv_mutex_lock(&obj->switcher_sig_mutex);
-    obj->switcher_sig_list.clear();
-    uv_mutex_unlock(&obj->switcher_sig_mutex);
+    cleanup = true;
+  }
+
+  if ( cleanup ) {
+      uv_mutex_lock(&obj->switcher_sig_mutex);
+      obj->switcher_sig_list.clear();
+      uv_mutex_unlock(&obj->switcher_sig_mutex);
   }
 }
 
@@ -333,11 +386,12 @@ void SwitcherController::NotifySignal(uv_async_t *async, int /*status*/) {
 //  ███████╗██║██║     ███████╗╚██████╗   ██║   ╚██████╗███████╗███████╗
 //  ╚══════╝╚═╝╚═╝     ╚══════╝ ╚═════╝   ╚═╝    ╚═════╝╚══════╝╚══════╝
 
-Handle<Value> SwitcherController::SwitcherClose(const Arguments &args) {
-  HandleScope scope;
+void SwitcherController::SwitcherClose(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
   obj->release();
-  return scope.Close(Boolean::New(true));
+  args.GetReturnValue().Set(Boolean::New( isolate, true));
 }
 
 //  ██╗  ██╗██╗███████╗████████╗ ██████╗ ██████╗ ██╗   ██╗
@@ -347,38 +401,40 @@ Handle<Value> SwitcherController::SwitcherClose(const Arguments &args) {
 //  ██║  ██║██║███████║   ██║   ╚██████╔╝██║  ██║   ██║
 //  ╚═╝  ╚═╝╚═╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝   ╚═╝
 
-Handle<Value> SwitcherController::SaveHistory(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::SaveHistory(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value file_path(args[0]->ToString());
 
   if (obj->quiddity_manager->save_command_history(std::string(*file_path).c_str())) {
-    return scope.Close(Boolean::New(true));
+    args.GetReturnValue().Set(Boolean::New( isolate, true));
   }
-  return scope.Close(Boolean::New(false));
+  args.GetReturnValue().Set(Boolean::New( isolate, false));
 }
 
-Handle<Value> SwitcherController::LoadHistoryFromCurrentState(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::LoadHistoryFromCurrentState(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value file_path(args[0]->ToString());
@@ -386,25 +442,26 @@ Handle<Value> SwitcherController::LoadHistoryFromCurrentState(const Arguments& a
   switcher::QuiddityManager::CommandHistory histo = obj->quiddity_manager->get_command_history_from_file(std::string(*file_path).c_str());
 
   if (histo.empty()) {
-    return scope.Close(Boolean::New(false));
+    args.GetReturnValue().Set(Boolean::New( isolate, false));
   }
 
   obj->quiddity_manager->play_command_history(histo, nullptr, nullptr, true);
 
-  return scope.Close(Boolean::New(true));
+  args.GetReturnValue().Set(Boolean::New( isolate, true));
 }
 
-Handle<Value> SwitcherController::LoadHistoryFromScratch(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::LoadHistoryFromScratch(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value file_path(args[0]->ToString());
@@ -412,13 +469,13 @@ Handle<Value> SwitcherController::LoadHistoryFromScratch(const Arguments& args) 
   switcher::QuiddityManager::CommandHistory histo = obj->quiddity_manager->get_command_history_from_file(std::string(*file_path).c_str());
 
   if (histo.empty()) {
-    return scope.Close(Boolean::New(false));
+    args.GetReturnValue().Set(Boolean::New( isolate, false));
   }
 
   obj->quiddity_manager->reset_command_history(true);
   obj->quiddity_manager->play_command_history(histo, nullptr, nullptr, true);
 
-  return scope.Close(Boolean::New(true));
+  args.GetReturnValue().Set(Boolean::New( isolate, true));
 }
 
 //   ██████╗ ██╗   ██╗██╗██████╗ ██████╗ ██╗████████╗██╗███████╗███████╗
@@ -428,155 +485,163 @@ Handle<Value> SwitcherController::LoadHistoryFromScratch(const Arguments& args) 
 //  ╚██████╔╝╚██████╔╝██║██████╔╝██████╔╝██║   ██║   ██║███████╗███████║
 //   ╚══▀▀═╝  ╚═════╝ ╚═╝╚═════╝ ╚═════╝ ╚═╝   ╚═╝   ╚═╝╚══════╝╚══════╝
 
-Handle<Value> SwitcherController::Remove(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::Remove(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("switcher remove: Wrong first arguments type")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "switcher remove: Wrong first arguments type")));
+    return;
   }
 
   String::Utf8Value first_arg(args[0]->ToString());
 
   if (obj->quiddity_manager->remove(std::string(*first_arg))) {
-    return scope.Close(Boolean::New(true));
+    args.GetReturnValue().Set(Boolean::New( isolate, true));
   }
-  return scope.Close(Boolean::New(false));
+  args.GetReturnValue().Set(Boolean::New( isolate, false));
 }
 
-Handle<Value> SwitcherController::HasQuiddity(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::HasQuiddity(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("switcher has_quiddity: Wrong first arguments type")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "switcher has_quiddity: Wrong first arguments type")));
+    return;
   }
 
   String::Utf8Value first_arg(args[0]->ToString());
 
   if (obj->quiddity_manager->has_quiddity(std::string(*first_arg))) {
-    return scope.Close(Boolean::New(true));
+    args.GetReturnValue().Set(Boolean::New( isolate, true));
   }
-  return scope.Close(Boolean::New(false));
+  args.GetReturnValue().Set(Boolean::New( isolate, false));
 }
 
-Handle<Value> SwitcherController::Create(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::Create(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1 && args.Length() != 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("switcher create: Wrong first arg type")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "switcher create: Wrong first arg type")));
+    return;
   }
 
   String::Utf8Value first_arg(args[0]->ToString());
 
   if (args.Length() == 2) {
     if (!args[1]->IsString()) {
-      ThrowException(Exception::TypeError(String::New("switcher create: Wrong second arg type")));
-      return scope.Close(Undefined());
+      isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "switcher create: Wrong second arg type")));
+      return;
     }
 
     String::Utf8Value second_arg(args[1]->ToString());
 
-    return scope.Close(String::New(obj->quiddity_manager->create(std::string(*first_arg), std::string(*second_arg)).c_str()));
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, obj->quiddity_manager->create(std::string(*first_arg), std::string(*second_arg)).c_str()));
   } else {
-    return scope.Close(String::New(obj->quiddity_manager->create(std::string(*first_arg)).c_str()));
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, obj->quiddity_manager->create(std::string(*first_arg)).c_str()));
   }
 }
 
-Handle<Value> SwitcherController::GetInfo(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetInfo(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("switcher get_info: Wrong first arg type")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "switcher get_info: Wrong first arg type")));
+    return;
   }
 
   String::Utf8Value first_arg(args[0]->ToString());
 
   if (!args[1]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("switcher get_info: Wrong second arg type")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "switcher get_info: Wrong second arg type")));
+    return;
   }
 
   String::Utf8Value second_arg(args[1]->ToString());
   Handle<String> res =
-      String::New(obj->quiddity_manager->use_tree<MPtr(&InfoTree::serialize_json)>(std::string(*first_arg), std::string(*second_arg)).c_str());
+      String::NewFromUtf8(isolate, obj->quiddity_manager->use_tree<MPtr(&InfoTree::serialize_json)>(std::string(*first_arg), std::string(*second_arg)).c_str());
 
-  return scope.Close(parseJson(res));
+  args.GetReturnValue().Set(parseJson(res));
 }
 
-Handle<Value> SwitcherController::GetClassesDoc(const Arguments &args) {
-  HandleScope scope;
+void SwitcherController::GetClassesDoc(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_classes_doc().c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_classes_doc().c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
-Handle<Value> SwitcherController::GetClassDoc(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetClassDoc(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value class_name(args[0]->ToString());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_class_doc(std::string(*class_name)).c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_class_doc(std::string(*class_name)).c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
-Handle<Value> SwitcherController::GetQuiddityDescription(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetQuiddityDescription(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value quiddity_name(args[0]->ToString());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_quiddity_description(std::string(*quiddity_name)).c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_quiddity_description(std::string(*quiddity_name)).c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
-Handle<Value> SwitcherController::GetQuidditiesDescription(const Arguments &args) {
-  HandleScope scope;
+void SwitcherController::GetQuidditiesDescription(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
-  Handle<String> res = String::New(obj->quiddity_manager->get_quiddities_description().c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_quiddities_description().c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
 //  ██████╗ ██████╗  ██████╗ ██████╗ ███████╗██████╗ ████████╗██╗███████╗███████╗
@@ -586,17 +651,18 @@ Handle<Value> SwitcherController::GetQuidditiesDescription(const Arguments &args
 //  ██║     ██║  ██║╚██████╔╝██║     ███████╗██║  ██║   ██║   ██║███████╗███████║
 //  ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝╚══════╝╚══════╝
 
-Handle<Value> SwitcherController::SetProperty(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::SetProperty(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 3) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString() || !args[1]->IsString() || !args[2]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value element_name(args[0]->ToString());
@@ -604,112 +670,117 @@ Handle<Value> SwitcherController::SetProperty(const Arguments& args) {
   String::Utf8Value property_val(args[2]->ToString());
 
   Handle<Boolean> res =
-      Boolean::New(obj->quiddity_manager->use_prop<MPtr(&PContainer::set_str_str)>(
+      Boolean::New( isolate, obj->quiddity_manager->use_prop<MPtr(&PContainer::set_str_str)>(
           std::string(*element_name),
           std::string(*property_name),
           std::string(*property_val)));
 
-  return scope.Close(res);
+  args.GetReturnValue().Set(res);
 }
 
-Handle<Value> SwitcherController::GetProperty(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetProperty(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString() || !args[1]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value element_name(args[0]->ToString());
   String::Utf8Value property_name(args[1]->ToString());
 
   Handle<String> res =
-      String::New(obj->quiddity_manager->use_prop<MPtr(&PContainer::get_str_str)>(
+      String::NewFromUtf8(isolate, obj->quiddity_manager->use_prop<MPtr(&PContainer::get_str_str)>(
           std::string(*element_name), std::string(*property_name)).c_str());
-  return scope.Close(parseJson(res));
+  args.GetReturnValue().Set(parseJson(res));
 }
 
-Handle<Value> SwitcherController::GetPropertiesDescription(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetPropertiesDescription(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value element_name(args[0]->ToString());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_properties_description(std::string(*element_name)).c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_properties_description(std::string(*element_name)).c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
-Handle<Value> SwitcherController::GetPropertyDescription(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetPropertyDescription(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString() || !args[1]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value element_name(args[0]->ToString());
   String::Utf8Value property_name(args[1]->ToString());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_property_description(std::string(*element_name), std::string(*property_name)).c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_property_description(std::string(*element_name), std::string(*property_name)).c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
-Handle<Value> SwitcherController::GetPropertiesDescriptionByClass(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetPropertiesDescriptionByClass(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value class_name(args[0]->ToString());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_properties_description_by_class(std::string(*class_name)).c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_properties_description_by_class(std::string(*class_name)).c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
-Handle<Value> SwitcherController::GetPropertyDescriptionByClass(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetPropertyDescriptionByClass(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString() || !args[1]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value class_name(args[0]->ToString());
   String::Utf8Value property_name(args[1]->ToString());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_property_description_by_class(std::string(*class_name), std::string(*property_name)).c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_property_description_by_class(std::string(*class_name), std::string(*property_name)).c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
 //  ███╗   ███╗███████╗████████╗██╗  ██╗ ██████╗ ██████╗ ███████╗
@@ -719,17 +790,18 @@ Handle<Value> SwitcherController::GetPropertyDescriptionByClass(const Arguments&
 //  ██║ ╚═╝ ██║███████╗   ██║   ██║  ██║╚██████╔╝██████╔╝███████║
 //  ╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝
 
-Handle<Value> SwitcherController::Invoke(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::Invoke(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() < 3) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString() || !args[1]->IsString() || !args[2]->IsArray()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value element_name(args[0]->ToString());
@@ -746,90 +818,94 @@ Handle<Value> SwitcherController::Invoke(const Arguments& args) {
   std::string *return_value = nullptr;
   obj->quiddity_manager->invoke(std::string(*element_name), std::string(*method_name), &return_value, vector_arg);
   if (nullptr != return_value) {
-    Handle<String> res = String::New((*return_value).c_str());
+    Handle<String> res = String::NewFromUtf8(isolate, (*return_value).c_str());
     delete return_value;  // FIXME this should not be necessary
-    return scope.Close(parseJson(res));
+    args.GetReturnValue().Set(parseJson(res));
   }
 
-  return scope.Close(Undefined());
+  return;
 }
 
-Handle<Value> SwitcherController::GetMethodsDescription(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetMethodsDescription(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value element_name(args[0]->ToString());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_methods_description(std::string(*element_name)).c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_methods_description(std::string(*element_name)).c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
-Handle<Value> SwitcherController::GetMethodDescription(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetMethodDescription(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString() || !args[1]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value element_name(args[0]->ToString());
   String::Utf8Value method_name(args[1]->ToString());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_method_description(std::string(*element_name), std::string(*method_name)).c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_method_description(std::string(*element_name), std::string(*method_name)).c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
-Handle<Value> SwitcherController::GetMethodsDescriptionByClass(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetMethodsDescriptionByClass(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value class_name(args[0]->ToString());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_methods_description_by_class(std::string(*class_name)).c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_methods_description_by_class(std::string(*class_name)).c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
-Handle<Value> SwitcherController::GetMethodDescriptionByClass(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetMethodDescriptionByClass(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString() || !args[1]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value class_name(args[0]->ToString());
   String::Utf8Value method_name(args[1]->ToString());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_method_description_by_class(std::string(*class_name), std::string(*method_name)).c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_method_description_by_class(std::string(*class_name), std::string(*method_name)).c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
 //  ██████╗ ██████╗  ██████╗ ██████╗ ███████╗██████╗ ████████╗██╗   ██╗
@@ -839,26 +915,28 @@ Handle<Value> SwitcherController::GetMethodDescriptionByClass(const Arguments& a
 //  ██║     ██║  ██║╚██████╔╝██║     ███████╗██║  ██║   ██║      ██║
 //  ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝      ╚═╝
 
-Handle<Value> SwitcherController::RegisterPropCallback(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::RegisterPropCallback(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
-  obj->user_prop_cb = Persistent<Function>::New(Local<Function>::Cast(args[0]));
+  obj->user_prop_cb.Reset(isolate, Local<Function>::Cast(args[0]));
 
-  return scope.Close(Undefined());
+  return;
 }
 
-Handle<Value> SwitcherController::SubscribeToProperty(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::SubscribeToProperty(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString() || !args[1]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value element_name(args[0]->ToString());
@@ -883,25 +961,26 @@ Handle<Value> SwitcherController::SubscribeToProperty(const Arguments& args) {
           },
           nullptr);
   if (0 == reg_id) {
-    Handle<Boolean> res = Boolean::New(false);
-    return scope.Close(res);
+    Handle<Boolean> res = Boolean::New( isolate, false);
+    args.GetReturnValue().Set(res);
   }
   obj->prop_regs_[std::make_pair(qname,pname)] = reg_id;
-  Handle<Boolean> res = Boolean::New(true);
-  return scope.Close(res);
+  Handle<Boolean> res = Boolean::New( isolate, true);
+  args.GetReturnValue().Set(res);
 }
 
-Handle<Value> SwitcherController::UnsubscribeFromProperty(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::UnsubscribeFromProperty(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString() || !args[1]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value element_name(args[0]->ToString());
@@ -911,16 +990,16 @@ Handle<Value> SwitcherController::UnsubscribeFromProperty(const Arguments& args)
   auto pname = std::string(*property_name);
   auto it = obj->prop_regs_.find(std::make_pair(qname, pname));
   if (obj->prop_regs_.end() == it){
-    Handle<Boolean> res = Boolean::New(false);
-    return scope.Close(res);
+    Handle<Boolean> res = Boolean::New( isolate, false);
+    args.GetReturnValue().Set(res);
   }
   auto man = obj->quiddity_manager.get();
   Handle<Boolean> res =
-      Boolean::New(man->use_prop<MPtr(&PContainer::unsubscribe)>(
+      Boolean::New( isolate, man->use_prop<MPtr(&PContainer::unsubscribe)>(
           qname,
           man->use_prop<MPtr(&PContainer::get_id)>(qname, pname),
           it->second));
-  return scope.Close(res);
+  args.GetReturnValue().Set(res);
 }
 
 //  ███████╗██╗ ██████╗ ███╗   ██╗ █████╗ ██╗
@@ -930,137 +1009,145 @@ Handle<Value> SwitcherController::UnsubscribeFromProperty(const Arguments& args)
 //  ███████║██║╚██████╔╝██║ ╚████║██║  ██║███████╗
 //  ╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝
 
-Handle<Value> SwitcherController::RegisterSignalCallback(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::RegisterSignalCallback(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
-  obj->user_signal_cb = Persistent<Function>::New(Local<Function>::Cast(args[0]));
+  obj->user_signal_cb.Reset(isolate, Local<Function>::Cast(args[0]));
 
-  return scope.Close(Undefined());
+  return;
 }
 
-Handle<Value> SwitcherController::SubscribeToSignal(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::SubscribeToSignal(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString() || !args[1]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value element_name(args[0]->ToString());
   String::Utf8Value signal_name(args[1]->ToString());
 
-  Handle<Boolean> res = Boolean::New(obj->quiddity_manager->subscribe_signal(std::string("signal_sub"), std::string(*element_name), std::string(*signal_name)));
-  return scope.Close(res);
+  Handle<Boolean> res = Boolean::New( isolate, obj->quiddity_manager->subscribe_signal(std::string("signal_sub"), std::string(*element_name), std::string(*signal_name)));
+  args.GetReturnValue().Set(res);
 }
 
-Handle<Value> SwitcherController::UnsubscribeToSignal(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::UnsubscribeToSignal(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString() || !args[1]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value element_name(args[0]->ToString());
   String::Utf8Value signal_name(args[1]->ToString());
 
-  Handle<Boolean> res = Boolean::New(obj->quiddity_manager->unsubscribe_signal(std::string("signal_sub"), std::string(*element_name), std::string(*signal_name)));
-  return scope.Close(res);
+  Handle<Boolean> res = Boolean::New( isolate, obj->quiddity_manager->unsubscribe_signal(std::string("signal_sub"), std::string(*element_name), std::string(*signal_name)));
+  args.GetReturnValue().Set(res);
 }
 
-Handle<Value> SwitcherController::ListSubscribedSignals(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::ListSubscribedSignals(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
-  Handle<String> res = String::New(obj->quiddity_manager->list_subscribed_signals_json("signal_sub").c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->list_subscribed_signals_json("signal_sub").c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
-Handle<Value> SwitcherController::GetSignalsDescription(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetSignalsDescription(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value element_name(args[0]->ToString());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_signals_description(std::string(*element_name)).c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_signals_description(std::string(*element_name)).c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
-Handle<Value> SwitcherController::GetSignalDescription(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetSignalDescription(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString() || !args[1]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value element_name(args[0]->ToString());
   String::Utf8Value signal_name(args[1]->ToString());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_signal_description(std::string(*element_name), std::string(*signal_name)).c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_signal_description(std::string(*element_name), std::string(*signal_name)).c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
-Handle<Value> SwitcherController::GetSignalsDescriptionByClass(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetSignalsDescriptionByClass(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 1) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value class_name(args[0]->ToString());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_signals_description_by_class(std::string(*class_name)).c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_signals_description_by_class(std::string(*class_name)).c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
 
-Handle<Value> SwitcherController::GetSignalDescriptionByClass(const Arguments& args) {
-  HandleScope scope;
+void SwitcherController::GetSignalDescriptionByClass(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  HandleScope scope(isolate);
   SwitcherController* obj = ObjectWrap::Unwrap<SwitcherController>(args.This());
 
   if (args.Length() != 2) {
-    ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
   }
   if (!args[0]->IsString() || !args[1]->IsString()) {
-    ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-    return scope.Close(Undefined());
+    isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments")));
+    return;
   }
 
   String::Utf8Value class_name(args[0]->ToString());
   String::Utf8Value signal_name(args[1]->ToString());
 
-  Handle<String> res = String::New(obj->quiddity_manager->get_signal_description_by_class(std::string(*class_name), std::string(*signal_name)).c_str());
-  return scope.Close(parseJson(res));
+  Handle<String> res = String::NewFromUtf8(isolate, obj->quiddity_manager->get_signal_description_by_class(std::string(*class_name), std::string(*signal_name)).c_str());
+  args.GetReturnValue().Set(parseJson(res));
 }
