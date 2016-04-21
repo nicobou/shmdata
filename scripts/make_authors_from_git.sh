@@ -10,8 +10,8 @@ then
 	exit
     fi
 fi
-   
-   # order by number of commits
+
+# order by number of commits
 git log --format='%aN' | \
     sed 's/Francois/François/' | \
     sed 's/nicolas/Nicolas Bouillot/' | \
