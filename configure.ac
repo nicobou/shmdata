@@ -370,12 +370,28 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
 dnl clang++
 dnl check if compiler understands -Wno-error=return-type-c-linkage 
 dnl (if yes, add it to CFLAGS)
-dnl -Wno-error=unused-parameter is required for gsoap generated code compiling
+dnl -Wno-error=return-typer-c-linkage is required for gsoap generated code compiling
 AC_MSG_CHECKING([to see if compiler understands -Wno-error=return-type-c-linkage])
 saved_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$CXXFLAGS -Wno-error=return-type-c-linkage"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
   CXXFLAGS="$saved_CXXFLAGS -Wno-error=return-type-c-linkage"
+  AC_MSG_RESULT([yes])
+], [
+  CXXFLAGS="$saved_CXXFLAGS"
+  AC_MSG_RESULT([no])
+])
+
+dnl clang++
+dnl check if compiler understands -Wno-error=extra 
+dnl (if yes, add it to CFLAGS)
+dnl -Wno-error=extra is required for gsoap generated code compiling
+AC_MSG_CHECKING([to see if compiler understands -Wno-error=extra])
+saved_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -Wno-error=extra"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  CXXFLAGS="$saved_CXXFLAGS -Wno-error=extra"
+  AC_SUBST([W_NO_ERROR_EXTRA], "-Wno-error=extra")
   AC_MSG_RESULT([yes])
 ], [
   CXXFLAGS="$saved_CXXFLAGS"
