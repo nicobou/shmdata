@@ -12,7 +12,8 @@ dnl AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
 
 dnl required version of automake
-AM_INIT_AUTOMAKE([1.10])
+dnl 'foreign' allows for accepting README.md instead of README 
+AM_INIT_AUTOMAKE([foreign])  
 
 dnl enable mainainer mode by default
 dnl AM_MAINTAINER_MODE([enable])

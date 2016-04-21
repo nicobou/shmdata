@@ -1,3 +1,7 @@
+NEWS
+====
+Here you will find a high level list of new features and bugfixes for each releases. 
+
 switcher 0.8.8 (2016-04-04)
 ---------------------------
 This is an official release in the 0.8 stable series. 
