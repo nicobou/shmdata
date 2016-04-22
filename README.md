@@ -5,7 +5,7 @@ switcher
 
 See instructions for [installing](INSTALL.md).
 
-See instructions for [coding style](CODING.md).
+See instructions for [coding](CODING.md).
 
 License
 -------
