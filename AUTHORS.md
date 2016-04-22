@@ -5,3 +5,4 @@
 * Michal Seta
 * Mike Wozniewski
 * Alexandre Quessy
+* Jérémie Soria

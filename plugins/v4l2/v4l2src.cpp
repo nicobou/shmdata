@@ -43,13 +43,19 @@ V4L2Src::V4L2Src(const std::string &):
   init_startable(this);
 }
 
-bool V4L2Src::init() {
-  if (!v4l2src_ || !capsfilter_ || !shmsink_)
-    return false;
-  shmpath_ = make_file_name("video");
+void V4L2Src::set_shm_suffix(){
+  if(is_current_pixel_format_raw_video())
+    shmpath_ = make_file_name(raw_suffix_);
+  else
+    shmpath_ = make_file_name(enc_suffix_);
   g_object_set(G_OBJECT(shmsink_.get_raw()),
                "socket-path", shmpath_.c_str(),
                nullptr);
+}
+
+bool V4L2Src::init() {
+  if (!v4l2src_ || !capsfilter_ || !shmsink_)
+    return false;
   // device inspector
   check_folder_for_v4l2_devices("/dev");
   update_capture_device();
@@ -75,7 +81,8 @@ bool V4L2Src::init() {
      "device specific parameters");
   update_device_specific_properties(devices_enum_.get());
   codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
-                                             shmpath_);
+                                             make_file_name(raw_suffix_));
+  set_shm_suffix();
   return true;
 }
 
@@ -168,6 +175,7 @@ void V4L2Src::update_pixel_format(const CaptureDescription &cap_descr) {
       "config",
       [this](const size_t &val){
         pixel_format_enum_.select(val);
+        set_shm_suffix();
         if(!is_current_pixel_format_raw_video())
           codecs_->set_none();
         return true;
