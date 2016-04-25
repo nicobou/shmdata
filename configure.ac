@@ -264,13 +264,6 @@ else
     AC_DEFINE(HAVE_GTK, [0], [GTK disabled])
 fi
 
-#check nodejs-dev
-AC_CHECK_FILE([/usr/include/nodejs/src/node.h],
-              [NODEADDONBUILD=enabled],
-              [NODEADDONBUILD=disabled
-               AC_MSG_WARN([Missing nodejs-dev package])])
-AM_CONDITIONAL(NODEADDONBUILD, test "x${NODEADDONBUILD}" = "xenabled")
-
 # check for posturevision
 PKG_CHECK_MODULES(POSTURE, posture, have_posture=true, have_posture=false)
 if test "x${have_posture}" = "xfalse" ; then
@@ -528,7 +521,6 @@ plugins/syphonsrc/Makefile
 plugins/systemusage/Makefile
 plugins/v4l2/Makefile
 plugins/vnc/Makefile
-nodejs/Makefile
 ])
 AC_OUTPUT
 
@@ -556,7 +548,6 @@ AC_OUTPUT
 [echo ""]
 [echo "SWITCHER OPTIONAL FEATURE"]
 [echo ""]
-[echo "nodejs addon               ${NODEADDONBUILD}"]
 [echo "python                     ${PYTHONBUILD}"]
 [echo "posture support            ${POSTUREBUILD}"]
 [echo "vnc client support         ${VNCBUILD}"]
