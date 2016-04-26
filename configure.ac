@@ -150,6 +150,7 @@ AC_SUBST(GST_PLUGIN_LDFLAGS)
 
 
 # Check for Python to build a wrapper
+# As there is no python3-config alias on OSX, other variation are hardcoded
 AC_CHECK_PROGS(PYTHON3_CONFIG, python3-config python3.4-config python3.5-config, "false")
 AM_CONDITIONAL(HAVE_PYTHON3, test "x${PYTHON3_CONFIG}" != "xfalse")
 
