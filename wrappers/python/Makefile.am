@@ -17,12 +17,12 @@ noinst_HEADERS = \
 
 pyshmdata_la_CXXFLAGS = \
 	$(AM_CXXFLAGS) \
-	`python3-config --cflags` \
+	`${PYTHON3_CONFIG} --cflags` \
 	-I$(top_srcdir)
 
 pyshmdata_la_LDFLAGS = \
 	-module -fPIC \
-	`python3-config --ldflags` \
+	`${PYTHON3_CONFIG} --ldflags` \
 	$(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la
 
 if HAVE_OSX

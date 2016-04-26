@@ -150,11 +150,9 @@ AC_SUBST(GST_PLUGIN_LDFLAGS)
 
 
 # Check for Python to build a wrapper
-AC_CHECK_PROG(HAVE_PYTHON3,
-  python3-config,
-  [ ],
-  [AC_MSG_WARN([Python3 not detected, module will not be built])])
-AM_CONDITIONAL(HAVE_PYTHON3, test "x${HAVE_PYTHON3}", = "xtrue")
+# As there is no python3-config alias on OSX, other variation are hardcoded
+AC_CHECK_PROGS(PYTHON3_CONFIG, python3-config python3.4-config python3.5-config, "false")
+AM_CONDITIONAL(HAVE_PYTHON3, test "x${PYTHON3_CONFIG}" != "xfalse")
 
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
@@ -176,4 +174,3 @@ AC_CONFIG_FILES([
         ])
 
 AC_OUTPUT
-
