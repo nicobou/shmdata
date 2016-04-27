@@ -47,6 +47,8 @@ void on_server_disconnect(void *user_data) {
 
 void on_data(void *user_data, void *data, size_t size) {
   printf("new data for client: size %zu ptr %p\n", size, data);
+  // the following is copying the buffer in order to ensure
+  // it can be read
   void *tmp_data = malloc(size); 
   memcpy(tmp_data, data, size);
   free(tmp_data);
