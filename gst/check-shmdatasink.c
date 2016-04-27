@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>  // malloc free
 #include <gst/gst.h>
 #include <glib.h>
 #include "shmdata/clogger.h"
@@ -40,12 +41,17 @@ void on_server_connect(void *user_data, const char *type_descr) {
 }
 
 void on_server_disconnect(void *user_data) {
-  printf("server dicsonnect");
+  printf("server disconnect");
   ++server_interactions;
 }
 
 void on_data(void *user_data, void *data, size_t size) {
   printf("new data for client: size %zu ptr %p\n", size, data);
+  // the following is copying the buffer in order to ensure
+  // it can be read
+  void *tmp_data = malloc(size); 
+  memcpy(tmp_data, data, size);
+  free(tmp_data);
   res = 0;
   g_main_loop_quit(loop);
 }
@@ -96,7 +102,7 @@ int main() {
                                                    logger); 
   assert(NULL != follower); 
   //gstreamer shmdatasink for writing
-  GstElement *pipeline, *audiosource, *shmdatasink;
+  GstElement *pipeline, *videosource, *capsfilter, *shmdatasink;
   GstBus *bus;
   guint bus_watch_id;
   gst_init(NULL, NULL);
@@ -109,21 +115,25 @@ return -1;
 #endif
   loop = g_main_loop_new(NULL, FALSE);
   /* Create gstreamer elements */
-  pipeline = gst_pipeline_new("audio-player");
-  audiosource = gst_element_factory_make("audiotestsrc", "audiosource");
+  pipeline = gst_pipeline_new("video-player");
+  videosource = gst_element_factory_make("videotestsrc", "videosource");
+  capsfilter = gst_element_factory_make("capsfilter", "capsfilter");
   shmdatasink = gst_element_factory_make("shmdatasink", "shmdata-output");
-  if (!pipeline || !audiosource || !shmdatasink) {
+  if (!pipeline || !videosource || !shmdatasink) {
     g_printerr("One element could not be created. Exiting.\n"); return -1; }
   g_object_set(G_OBJECT(shmdatasink),
 	       "socket-path", "/tmp/check-shmdatasink",
-	       "initial-size", 10, /* Forcing initial size to be smaller that actual size, 
+	       "initial-size", 2, /* Forcing initial size to be smaller that actual size, 
 				      testing internal resizing */
 	       NULL);
+  GstCaps *caps = gst_caps_from_string("video/x-raw, format=RGBA, width=32, height=32");
+  if (NULL == caps) return 1;
+  g_object_set(G_OBJECT(capsfilter), "caps", caps, NULL);
   bus = gst_pipeline_get_bus(GST_PIPELINE(pipeline));
   bus_watch_id = gst_bus_add_watch(bus, bus_call, loop);
   gst_object_unref(bus);
-  gst_bin_add_many(GST_BIN(pipeline), audiosource, shmdatasink, NULL);
-  gst_element_link(audiosource, shmdatasink);
+  gst_bin_add_many(GST_BIN(pipeline), videosource, capsfilter, shmdatasink, NULL);
+  gst_element_link_many(videosource, capsfilter, shmdatasink, NULL);
   gst_element_set_state(pipeline, GST_STATE_PLAYING);
   g_main_loop_run(loop);
   // cleaning gst
