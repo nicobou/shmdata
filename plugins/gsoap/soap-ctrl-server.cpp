@@ -43,8 +43,7 @@ SoapCtrlServer::SoapCtrlServer(const std::string &){
 }
 
 bool
-SoapCtrlServer::init()
-{
+SoapCtrlServer::init() {
   soap_init(&soap_);
   //release port
   soap_.connect_flags = SO_LINGER;
@@ -68,7 +67,7 @@ SoapCtrlServer::init()
   return true;
 }
 
-SoapCtrlServer::~SoapCtrlServer(){
+SoapCtrlServer::~SoapCtrlServer() {
   quit_server_thread_ = true;
   if (thread_.joinable())
     thread_.join();
@@ -85,15 +84,13 @@ SoapCtrlServer::~SoapCtrlServer(){
   soap_done(&soap_);
 }
 
-std::shared_ptr<QuiddityManager>
-SoapCtrlServer::get_quiddity_manager(){
+std::shared_ptr<QuiddityManager> SoapCtrlServer::get_quiddity_manager() {
   return manager_.lock();
 }
 
 
 int
-SoapCtrlServer::http_get(struct soap *soap)
-{
+SoapCtrlServer::http_get(struct soap *soap) {
   std::string rtpsession_name;
   std::string destination_name;
 
@@ -155,9 +152,7 @@ SoapCtrlServer::http_get(struct soap *soap)
   return 404;
 }
 
-gboolean
-SoapCtrlServer::set_port_wrapped(gint port, gpointer user_data)
-{
+gboolean SoapCtrlServer::set_port_wrapped(gint port, gpointer user_data) {
   SoapCtrlServer *context = static_cast<SoapCtrlServer*>(user_data);
   if (context->set_port(port))
     return TRUE;
@@ -165,16 +160,20 @@ SoapCtrlServer::set_port_wrapped(gint port, gpointer user_data)
     return FALSE;
 }
 
-bool
-SoapCtrlServer::set_port(int port)
-{
+bool SoapCtrlServer::set_port(int port) {
+  if (0 != port_) {
+    g_warning("soap port can be set only once");
+    return false;
+  }
   port_ = port;
-  return start();
+  if (!start()){
+    return false;
+  }
+  disable_method("set_port");
+  return true;
 }
 
-bool
-SoapCtrlServer::start()
-{
+bool SoapCtrlServer::start() {
   soap_.user =(void *)this;
   quit_server_thread_ = false;
   service_ = new controlService(soap_);
@@ -218,9 +217,7 @@ SoapCtrlServer::start()
 //   return true;
 // }
 
-void
-SoapCtrlServer::server_thread()
-{
+void SoapCtrlServer::server_thread() {
   // /* run iterative server on port until fatal error */
   // if (context->service_->run(context->port_))
   //   { context->service_->soap_stream_fault(std::cerr);
@@ -265,8 +262,7 @@ SoapCtrlServer::server_thread()
  * below is the implementation of the service *
  **********************************************/
 
-int
-controlService::get_factory_capabilities(std::vector<std::string> *result){//FIXME rename that to get_classes
+int controlService::get_classes(std::vector<std::string> *result) {
   using namespace switcher;
   SoapCtrlServer *ctrl_server = static_cast<SoapCtrlServer *>(this->user);
   QuiddityManager::ptr manager;
@@ -276,9 +272,10 @@ controlService::get_factory_capabilities(std::vector<std::string> *result){//FIX
   if (ctrl_server == nullptr || !(bool)manager)
   {
     char *s = (char*)soap_malloc(this, 1024);
-    g_debug("controlService::get_factory_capabilities: cannot get manager from SoapCtrlServer (nullptr)");
-    sprintf(s, "controlService::get_factory_capabilities: cannot get manager (nullptr)");
-    return soap_senderfault("error in get_factory_capabilities", s);
+    g_debug("controlService::get_classes: "
+            "cannot get manager from SoapCtrlServer (nullptr)");
+    sprintf(s, "controlService::get_classes: cannot get manager (nullptr)");
+    return soap_senderfault("error in get_classes", s);
   }
 
   *result = manager->get_classes();
@@ -298,7 +295,7 @@ controlService::get_classes_doc(std::string *result){
   {
     char *s = (char*)soap_malloc(this, 1024);
     g_debug("controlService::get_classes_doc: cannot get manager from SoapCtrlServer (nullptr)");
-    sprintf(s, "controlService::get_factory_capabilities: cannot get manager (nullptr)");
+    sprintf(s, "controlService::get_classes: cannot get manager (nullptr)");
     return soap_senderfault("error in get_classes_doc", s);
   }
 
@@ -319,7 +316,7 @@ controlService::get_quiddity_description(std::string quiddity_name, std::string 
   {
     char *s = (char*)soap_malloc(this, 1024);
     g_debug("controlService::get_class_doc: cannot get manager from SoapCtrlServer (nullptr)");
-    sprintf(s, "controlService::get_factory_capabilities: cannot get manager (nullptr)");
+    sprintf(s, "controlService::get_classes: cannot get manager (nullptr)");
     return soap_senderfault("error in get_class_doc", s);
   }
 
@@ -361,7 +358,7 @@ controlService::get_class_doc(std::string class_name, std::string *result){
   {
     char *s = (char*)soap_malloc(this, 1024);
     g_debug("controlService::get_class_doc: cannot get manager from SoapCtrlServer (nullptr)");
-    sprintf(s, "controlService::get_factory_capabilities: cannot get manager (nullptr)");
+    sprintf(s, "controlService::get_classes: cannot get manager (nullptr)");
     return soap_senderfault("error in get_class_doc", s);
   }
 

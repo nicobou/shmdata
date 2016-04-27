@@ -36,9 +36,8 @@ class SoapCtrlServer : public QuiddityManagerWrapper
   SoapCtrlServer &operator=(const SoapCtrlServer &) = delete;
   bool init() final;
 
-  bool set_port(int port);//default port is 8080
+  bool set_port(int port);
   bool start();
-  // bool stop();
   //for invocation into soap handlers:
   std::shared_ptr<QuiddityManager> get_quiddity_manager();
   //wrappers
@@ -46,7 +45,7 @@ class SoapCtrlServer : public QuiddityManagerWrapper
 
  private:
   struct soap soap_{};
-  int port_{8080};
+  int port_{0};
   bool quit_server_thread_{false};
   controlService *service_{nullptr};
   SOAP_SOCKET socket_{-1};

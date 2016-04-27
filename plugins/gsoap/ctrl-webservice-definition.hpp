@@ -26,7 +26,7 @@
 //gsoap switcher schema namespace:	urn:control
 
 //gsoap switcher service method-documentation: get available names
-int switcher__get_factory_capabilities(std::vector<std::string> *result);
+int switcher__get_classes(std::vector<std::string> *result);
 
 //gsoap switcher service method-documentation: get available json doc *without* props and methods
 int switcher__get_classes_doc(std::string *result);
