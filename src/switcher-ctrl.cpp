@@ -173,7 +173,7 @@ main(int argc, char *argv[]) {
   }
   else if (listclasses) {
     std::vector<std::string> resultlist;
-    switcher_control.get_factory_capabilities(&resultlist);
+    switcher_control.get_classes(&resultlist);
     for (uint i = 0; i < resultlist.size(); i++)
       std::cout << resultlist[i] << std::endl;
   }
