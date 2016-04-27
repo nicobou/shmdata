@@ -50,6 +50,9 @@ void V4L2Src::set_shm_suffix(){
     shmpath_ = make_file_name(enc_suffix_);
   g_object_set(G_OBJECT(shmsink_.get_raw()),
                "socket-path", shmpath_.c_str(),
+               // set large initial size in order to avoid automatic resize
+               // for first frame, 67108864 is enough for 4096x4096 RGBA
+               "initial-size", 67108864,
                nullptr);
 }
 
@@ -261,7 +264,7 @@ bool V4L2Src::remake_elements() {
   }
    if (!UGstElem::renew(v4l2src_, {"device", "norm"})
        || !UGstElem::renew(capsfilter_, {"caps"})
-       || !UGstElem::renew(shmsink_, {"socket-path"})){
+       || !UGstElem::renew(shmsink_, {"socket-path", "initial-size"})){
     g_warning("V4L2Src: issue when with elements for video capture");
     return false;
   }
