@@ -42,7 +42,6 @@ static gboolean verbose;
 static gboolean listclasses;
 static gboolean classesdoc;
 static gchar *classdoc = nullptr;
-static gchar *listpropbyclass = nullptr;
 static gchar *listmethodsbyclass = nullptr;
 static gchar *listsignalsbyclass = nullptr;
 static gchar *extraplugindir = nullptr;
@@ -64,8 +63,6 @@ static GOptionEntry entries[15] = {
    "display all messages, including debug", nullptr},
   {"list-classes", 'C', 0, G_OPTION_ARG_NONE, &listclasses,
    "list quiddity classes", nullptr},
-  {"list-props-by-class", 'P', 0, G_OPTION_ARG_STRING, &listpropbyclass,
-   "list properties of a class", nullptr},
   {"list-methods-by-class", 'M', 0, G_OPTION_ARG_STRING, &listmethodsbyclass,
    "list methods of a class", nullptr},
   {"list-signals-by-class", 'S', 0, G_OPTION_ARG_STRING, &listsignalsbyclass,
@@ -239,12 +236,6 @@ main(int argc, char *argv[]) {
   if (classdoc != nullptr) {
     g_log_set_default_handler(quiet_log_handler, nullptr);
     g_print("%s\n", manager->get_class_doc(classdoc).c_str());
-    return 0;
-  }
-  if (listpropbyclass != nullptr) {
-    g_log_set_default_handler(quiet_log_handler, nullptr);
-    g_print("%s\n", manager->
-            get_properties_description_by_class(listpropbyclass).c_str());
     return 0;
   }
   if (listmethodsbyclass != nullptr) {

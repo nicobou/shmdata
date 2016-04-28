@@ -271,69 +271,6 @@ bool QuiddityManager::save_command_history(const char *file_path) const {
   return true;
 }
 
-std::string
-QuiddityManager::get_properties_description(const std::string &quiddity_name) {
-  manager_impl_->props<MPtr(&PContainer::update_values_in_tree)>(quiddity_name);
-  return manager_impl_->use_tree<MPtr(&InfoTree::serialize_json)>(
-      quiddity_name,
-      std::string(".property."));
-}
-
-std::string
-QuiddityManager::get_property_description(const std::string &quiddity_name,
-                                          const std::string &property_name) {
-  auto id = manager_impl_->props<MPtr(&PContainer::get_id)>(quiddity_name, property_name);
-  if (0 == id)
-    return std::string("null");
-  manager_impl_->props<MPtr(&PContainer::update_value_in_tree)>(quiddity_name, id);
-  return manager_impl_->use_tree<MPtr(&InfoTree::serialize_json)>(
-      quiddity_name,
-      std::string(".property.") + property_name);
-}
-
-std::string
-QuiddityManager::
-get_properties_description_by_class(const std::string &class_name) {
-  if (! manager_impl_->class_exists(class_name)){
-    g_warning("no description available for class %s (not found)",
-	      class_name.c_str());
-    return "null";
-  }
-  std::string quid_name = manager_impl_->create_without_hook(class_name);
-  if (quid_name.empty()){
-    g_warning("no description available for class %s (cannot create instance)",
-	      class_name.c_str());
-    return "null";
-  }
-  On_scope_exit{ manager_impl_->remove_without_hook(quid_name);};
-  return manager_impl_->use_tree<MPtr(&InfoTree::serialize_json)>(
-      quid_name,
-      std::string(".property."));
-}
-
-std::string
-QuiddityManager::get_property_description_by_class(const std::string &class_name,
-                                                   const std::string &property_name) {
-  if (!manager_impl_->class_exists(class_name)){
-    g_warning("no description available for class %s (class not found)",
-	      class_name.c_str());
-    return "null";
-  }
-  std::string quid_name = manager_impl_->create_without_hook(class_name);
-  if (quid_name.empty()){
-    g_warning("no description available for class %s (cannot create instance)",
-	      class_name.c_str());
-    return "null";
-  }
-  On_scope_exit{ manager_impl_->remove_without_hook(quid_name);};
-  auto id = manager_impl_->props<MPtr(&PContainer::get_id)>(quid_name, property_name);
-  if (0 == id)
-    return std::string("null");
-  return manager_impl_->use_tree<MPtr(&InfoTree::serialize_json)>(
-      quid_name,
-      std::string(".property.") + property_name);
-}
-
 bool
 QuiddityManager::invoke_va(const std::string &quiddity_name,
                            const std::string &method_name,
