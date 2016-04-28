@@ -456,6 +456,8 @@ bool V4L2Src::inspect_file_device(const char *file_path) {
     return false;
   }
 
+  On_scope_exit{ close(fd); };
+
   CaptureDescription description;
   description.absolute_path_ = file_path;
   struct v4l2_capability vcap;
@@ -517,8 +519,6 @@ bool V4L2Src::inspect_file_device(const char *file_path) {
   }
 
   capture_devices_.push_back(description);
-
-  close(fd);
 
   return true;
 }
