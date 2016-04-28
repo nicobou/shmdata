@@ -56,7 +56,6 @@ class PropertyMapper: public Quiddity {
   void make_numerical_source_properties();
   void make_numerical_sink_properties();
   void property_updated_cb();
-  void state_cb(PContainer::pstate_t state);
   static gboolean set_source_property_method(gchar *quiddity_name,
                                              gchar *property_name,
                                              void *user_data);

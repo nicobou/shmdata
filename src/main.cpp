@@ -201,8 +201,7 @@ main(int argc, char *argv[]) {
         [last_line_id, manager_ptr](){
           g_print("%s\n", manager->use_prop<MPtr(&PContainer::get_str)>(
               "internal_logger", last_line_id).c_str());
-        },
-        nullptr);
+        });
   }
 
   // loading plugins from default location // FIXME add an option

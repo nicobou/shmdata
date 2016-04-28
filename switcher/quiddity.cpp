@@ -35,14 +35,11 @@ std::map<std::pair<std::string, std::string>, guint> Quiddity::signals_ids_{};
 Quiddity::Quiddity():
     information_tree_(InfoTree::make()),
     props_(information_tree_,
-           [this](PContainer::prop_id_t prop, PContainer::pstate_t state){
-             std::string pname = props_.get_name(prop);
-             if (PContainer::REMOVED == state ||  PContainer::DISABLED == state)
-               signal_emit("on-property-removed", pname.c_str(), nullptr);
-             else if (PContainer::ADDED == state ||  PContainer::ENABLED == state)
-               signal_emit("on-property-added", pname.c_str(), nullptr);
-             else if (PContainer::REPLACED == state)
-               signal_emit("on-property-reinstalled", pname.c_str(), nullptr); 
+           [this](const std::string &key){
+             signal_emit("on-tree-grafted", key.c_str(), nullptr);
+           },
+           [this](const std::string &key){
+             signal_emit("on-tree-pruned", key.c_str(), nullptr);
            }),
     methods_description_(std::make_shared<JSONBuilder>()),
     signals_description_(std::make_shared<JSONBuilder>()),

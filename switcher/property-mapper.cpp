@@ -147,10 +147,7 @@ PropertyMapper::set_source_property_method(gchar *quiddity_name,
 
   context->reg_id_ = quid->prop<MPtr(&PContainer::subscribe)>(
       context->source_prop_id_,
-      [context](){context->property_updated_cb();},
-      [context](PContainer::pstate_t state){
-        context->state_cb(state);
-      });
+      [context](){context->property_updated_cb();});
   auto source_tree = context->prune_tree(".source", false);
   if (!source_tree)
     source_tree = InfoTree::make();
@@ -272,9 +269,6 @@ PropertyMapper::set_sink_property_method(gchar *quiddity_name,
   sink_tree->graft(".property", InfoTree::make(std::string(property_name)));
   context->graft_tree(".sink", sink_tree);
 return TRUE;
-}
-
-void PropertyMapper::state_cb(PContainer::pstate_t /*state*/){
 }
 
 }  // namespace switcher

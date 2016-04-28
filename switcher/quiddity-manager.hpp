@@ -101,6 +101,7 @@ class QuiddityManager
                       use_tree);
 
   // ****************** properties ********
+  // FIXME remove these get_prop...
   // doc (json formatted)
   std::string get_properties_description(const std::string &quiddity_name);
   std::string get_property_description(const std::string &quiddity_name,
