@@ -53,12 +53,14 @@ class V4L2Src: public Quiddity, public StartableQuiddity {
 
  private:
   typedef struct {
+    std::string absolute_path_{};
     std::string card_{};
     std::string file_device_{};
     std::string bus_info_{};
     std::string driver_{};
-    std::vector<std::pair<std::string/*name*/,
-                          std::string/*description*/>>pixel_formats_{};
+    std::vector<std::tuple<uint32_t   /*fourcc pixel format*/,
+                           std::string/*name*/,
+                           std::string/*description*/>>pixel_formats_{};
     std::vector<std::pair<std::string/*width*/,
                           std::string/*height*/>>frame_size_discrete_{};
     gint frame_size_stepwise_max_width_{0};
@@ -133,14 +135,18 @@ class V4L2Src: public Quiddity, public StartableQuiddity {
   bool init() final;
   bool configure_capture();
   bool remake_elements();
+
+  bool fetch_available_resolutions();
+  bool fetch_available_frame_intervals();
+
   void update_capture_device();
-  void update_device_specific_properties(gint device_enum_id);
-  void update_discrete_resolution(const CaptureDescription &descr);
-  void update_width_height(const CaptureDescription &descr);
-  void update_tv_standard(const CaptureDescription &descr);
-  void update_discrete_framerate(const CaptureDescription &cap_descr);
-  void update_framerate_numerator_denominator(const CaptureDescription &cap_descr);
-  void update_pixel_format(const CaptureDescription &cap_descr);
+  void update_device_specific_properties();
+  void update_discrete_resolution();
+  void update_width_height();
+  void update_tv_standard();
+  void update_discrete_framerate();
+  void update_framerate_numerator_denominator();
+  void update_pixel_format();
   static std::string pixel_format_to_string(unsigned pf_id);
   bool is_current_pixel_format_raw_video() const;
   void set_shm_suffix();
