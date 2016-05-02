@@ -97,7 +97,6 @@ std::string serialize(InfoTree::ptrc tree) {
     g_object_unref(json_builder);
   };
   if (tree->is_leaf()){
-    //return std::string("\"" + Any::to_string(tree->read_data()) + "\"")
     if (!tree->read_data().is_null()) {
       switch (tree->read_data().get_category()) {
         case AnyCategory::BOOL:

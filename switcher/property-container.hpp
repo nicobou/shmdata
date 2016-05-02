@@ -35,8 +35,6 @@ class PContainer{
   using prop_id_t = PropertyBase::prop_id_t;
   using notify_cb_t = PropertyBase::notify_cb_t;
   using register_id_t = PropertyBase::register_id_t;
-  // enum pstate_t {ENABLED, DISABLED, REMOVED, ADDED, REPLACED};
-  // using pstate_cb_t = std::function<void(pstate_t state)>;
   using on_tree_grafted_cb_t = std::function<void(const std::string &key)>;
   using on_tree_pruned_cb_t = std::function<void(const std::string &key)>;
   PContainer() = delete;
@@ -431,9 +429,7 @@ class PContainer{
   on_tree_grafted_cb_t on_tree_grafted_cb_;
   on_tree_pruned_cb_t on_tree_pruned_cb_;
   CounterMap suborders_{};
-  
-  //void notify_state_change(prop_id_t prop, pstate_t state);
-  
+
   template<typename PropType,
            typename PropGetSet = PropType,
            typename ...PropArgs>
