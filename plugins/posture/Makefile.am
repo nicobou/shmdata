@@ -8,6 +8,7 @@ plugins_LTLIBRARIES = \
     libposturemerge.la \
     libposturemeshmerge.la \
     libposturescan3d.la \
+    libposturemeshserialization.la \
     libposturesource.la \
     libposturesolidify.la \
     libposturescan3dGPU.la
@@ -204,6 +205,37 @@ libposturemeshmerge_la_CXXFLAGS = \
 libposturemeshmerge_la_include_HEADERS = \
     posture_meshmerge.hpp \
     posture_worker.hpp
+
+#libposturemeshserialization info
+libposturemeshserialization_la_SOURCES = \
+    posture_meshserialization.cpp
+
+libposturemeshserialization_la_includedir = \
+    $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
+
+libposturemeshserialization_la_LDFLAGS = \
+    $(GLIB_LIBS) \
+    $(GST_LIBS) \
+    $(GMODULE_LIBS) \
+    $(JSONGLIB_LIBS) \
+    $(POSTURE_LIBS) \
+    $(SHMDATA_LIBS) \
+    -avoid-version \
+    -L$(top_builddir)/switcher/.libs \
+    -lswitcher-@LIBSWITCHER_API_VERSION@
+
+libposturemeshserialization_la_CXXFLAGS = \
+    $(GLIB_CFLAGS) \
+    $(GMODULE_CFLAGS) \
+    $(GST_CFLAGS) \
+    $(JSONGLIB_CFLAGS) \
+    $(POSTURE_CFLAGS) \
+    $(SHMDATA_CFLAGS) \
+    -I$(top_srcdir) \
+    -DG_LOG_DOMAIN=\"switcher\"
+
+libposturemeshserialization_la_include_HEADERS = \
+    posture_meshserialization.hpp
 
 #libposturesolidify info
 libposturesolidify_la_SOURCES = \
