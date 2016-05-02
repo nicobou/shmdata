@@ -351,21 +351,6 @@ std::string Quiddity::get_method_description(const std::string &method_name) {
   return it->second->get_description();
 }
 
-// FIXME remove the following
-// std::string Quiddity::get_properties_description() {
-//   InfoTree::ptr tree = information_tree_->get(".property");
-//   if (tree)
-//     return JSONSerializer::serialize(tree.get());
-//   return "null";
-// }
-
-// std::string Quiddity::get_property_description(const std::string &property_name) {
-//   InfoTree::ptr tree = information_tree_->get(".property." + property_name);
-//   if (tree)
-//     return JSONSerializer::serialize(tree.get());
-//   return "null";
-// }
-
 bool
 Quiddity::subscribe_signal(const std::string &signal_name,
                            Signal::OnEmittedCallback cb, void *user_data)
