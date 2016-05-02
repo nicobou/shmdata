@@ -42,9 +42,6 @@ PostureMeshSerialization::PostureMeshSerialization(const std::string &):
   serializer_->setCompressionMethod(compression_method_, compression_level_, compression_precision_);
 }
 
-PostureMeshSerialization::~PostureMeshSerialization() {
-}
-
 bool
 PostureMeshSerialization::init() {
   shmcntr_.install_connect_method([this](const std::string path){return connect(path);},

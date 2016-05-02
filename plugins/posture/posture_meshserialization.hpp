@@ -38,7 +38,6 @@ class PostureMeshSerialization : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureMeshSerialization);
   PostureMeshSerialization(const std::string &);
-  ~PostureMeshSerialization();
   PostureMeshSerialization(const PostureMeshSerialization &) = delete;
   PostureMeshSerialization &operator=(const PostureMeshSerialization &) = delete;
 
