@@ -97,7 +97,29 @@ std::string serialize(InfoTree::ptrc tree) {
     g_object_unref(json_builder);
   };
   if (tree->is_leaf()){
-    return std::string("\"" + Any::to_string(tree->read_data()) + "\"");
+    //return std::string("\"" + Any::to_string(tree->read_data()) + "\"")
+    if (!tree->read_data().is_null()) {
+      switch (tree->read_data().get_category()) {
+        case AnyCategory::BOOL:
+          return std::string(tree->read_data().copy_as<bool>() ? "true" : "false");
+          break;
+        case AnyCategory::INTEGRAL:
+          return std::string(Any::to_string(tree->read_data()));
+          break;
+        case AnyCategory::FLOATING_POINT:
+          return std::string(Any::to_string(tree->read_data()));
+          break;
+        case AnyCategory::OTHER:
+          // We tried to get known types but sometimes values are of type OTHER because they were created as strings
+          return std::string("\"" + Any::to_string(tree->read_data()) + "\"");
+          break;
+        case AnyCategory::NONE:
+          return std::string("null");
+          break;
+      }
+    } else {
+        return std::string("null");
+    }
   }
   bool is_array = tree->is_array();
   if (!is_array)

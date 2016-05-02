@@ -363,7 +363,7 @@ bool PulseSink::on_shmdata_connect(const std::string &shmpath) {
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
         this->graft_tree(".shmdata.reader." + shmpath_ + ".byte_rate",
-                         InfoTree::make(std::to_string(byte_rate)));
+                         InfoTree::make(byte_rate));
       });
 
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
