@@ -1,0 +1,42 @@
+#!/bin/bash
+
+CLANG_FORMAT="clang-format"
+CLANG_FORMAT_CMD=""
+
+if ! type $CLANG_FORMAT > /dev/null
+then
+  echo "Error: clang-format executable not found."
+  exit 1
+fi
+
+cpp_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.cpp$\|\.hpp$')
+
+# Nothing to test if no file was added, changed or modified.
+[ -z "$cpp_files" ] && exit 0
+
+unformatted_files=""
+
+for file in $cpp_files
+do
+  output=$(${CLANG_FORMAT} ${file} -style=file -output-replacements-xml | grep "<replacement " > /dev/null)
+  if [ $? -ne 1 ]
+  then
+    unformatted_files+="\t${file}\n"
+  fi
+done
+
+# All .[c|h]pp files are properly formatted.
+[ -z "$unformatted_files" ] && exit 0
+
+echo "The following files are not formatted properly, please apply 'clang-format <your_file> -i -style=file' from your project directory for each badly formatted file:"
+echo -e $unformatted_files
+while true
+do
+  read -p "Do you want to ignore the formatting and commit anyway (not recommended)? [y/N]" reply < /dev/tty
+  case $reply in
+    [Yy]) echo "Formatting ignored, please do it soon!"; exit 0;;
+    "") ;& # Fallthrough default behaviour, the commit is aborted.
+    [Nn]) echo "Commit aborted, awaiting reformatting of the staged files."; exit 1;;
+    *) echo "Unrecognized option." ;;
+  esac
+done
