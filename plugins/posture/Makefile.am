@@ -395,4 +395,4 @@ libposturescan3dGPU_la_include_HEADERS = \
  check_rtp_posture_SOURCES = \
      check_rtp_posture.cpp
 
-TESTS = $(check_PROGRAMS)
+# TESTS = $(check_PROGRAMS)
