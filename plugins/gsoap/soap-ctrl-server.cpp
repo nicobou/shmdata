@@ -373,60 +373,6 @@ int controlService::get_quiddity_names(std::vector<std::string> *result) {
   return SOAP_OK;
 }
 
-int controlService::get_properties_description(std::string quiddity_name,
-                                               std::string *result) {
-  using namespace switcher;
-  SoapCtrlServer *ctrl_server = static_cast<SoapCtrlServer *>(this->user);
-  QuiddityManager::ptr manager;
-  if (ctrl_server != nullptr)
-    manager = ctrl_server->get_quiddity_manager();
-
-  *result = manager->get_properties_description(quiddity_name);
-
-  return SOAP_OK;
-}
-
-int controlService::get_properties_description_by_class(std::string class_name,
-                                                        std::string *result) {
-  using namespace switcher;
-  SoapCtrlServer *ctrl_server = static_cast<SoapCtrlServer *>(this->user);
-  QuiddityManager::ptr manager;
-  if (ctrl_server != nullptr)
-    manager = ctrl_server->get_quiddity_manager();
-
-  *result = manager->get_properties_description_by_class(class_name);
-
-  return SOAP_OK;
-}
-
-int controlService::get_property_description(std::string quiddity_name,
-                                             std::string property_name,
-                                             std::string *result) {
-  using namespace switcher;
-  SoapCtrlServer *ctrl_server = static_cast<SoapCtrlServer *>(this->user);
-  QuiddityManager::ptr manager;
-  if (ctrl_server != nullptr)
-    manager = ctrl_server->get_quiddity_manager();
-
-  *result = manager->get_property_description(quiddity_name, property_name);
-
-  return SOAP_OK;
-}
-
-int controlService::get_property_description_by_class(std::string class_name,
-                                                      std::string property_name,
-                                                      std::string *result) {
-  using namespace switcher;
-  SoapCtrlServer *ctrl_server = static_cast<SoapCtrlServer *>(this->user);
-  QuiddityManager::ptr manager;
-  if (ctrl_server != nullptr)
-    manager = ctrl_server->get_quiddity_manager();
-
-  *result = manager->get_property_description_by_class(class_name, property_name);
-
-  return SOAP_OK;
-}
-
 int controlService::set_property(std::string quiddity_name,
                                  std::string property_name,
                                  std::string property_value) {

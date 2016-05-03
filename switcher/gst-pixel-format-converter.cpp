@@ -111,7 +111,7 @@ bool GstPixelFormatConverter::start(const std::string &shmpath_to_convert,
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
         this->quid_->graft_tree(".shmdata.writer." + shmpath_converted_ + ".byte_rate",
-                                InfoTree::make(std::to_string(byte_rate)));
+                                InfoTree::make(byte_rate));
       });
   shmsrc_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
@@ -123,7 +123,7 @@ bool GstPixelFormatConverter::start(const std::string &shmpath_to_convert,
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
         this->quid_->graft_tree(".shmdata.reader." + shmpath_to_convert_ + ".byte_rate",
-                                InfoTree::make(std::to_string(byte_rate)));
+                                InfoTree::make(byte_rate));
       });
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmsrc_.get_raw(),

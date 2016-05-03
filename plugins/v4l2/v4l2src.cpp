@@ -586,7 +586,7 @@ bool V4L2Src::start() {
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
         this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
-                         InfoTree::make(std::to_string(byte_rate)));
+                         InfoTree::make(byte_rate));
       });
 
   gst_pipeline_->play(true);

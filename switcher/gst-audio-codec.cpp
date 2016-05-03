@@ -167,7 +167,7 @@ bool GstAudioCodec::start(){
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
         this->quid_->graft_tree(".shmdata.writer." + shm_encoded_path_ + ".byte_rate",
-                                InfoTree::make(std::to_string(byte_rate)));
+                                InfoTree::make(byte_rate));
       });
   shmsrc_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
@@ -179,7 +179,7 @@ bool GstAudioCodec::start(){
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
         this->quid_->graft_tree(".shmdata.reader." + shmpath_to_encode_ + ".byte_rate",
-                                InfoTree::make(std::to_string(byte_rate)));
+                                InfoTree::make(byte_rate));
       });
   make_bin();
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()),

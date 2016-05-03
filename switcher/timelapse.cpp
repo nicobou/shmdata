@@ -245,7 +245,7 @@ bool Timelapse::start_timelapse(const std::string &shmpath){
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate){
         graft_tree(".shmdata.reader." + timelapse_config_.orig_shmpath_ + ".byte_rate",
-                   InfoTree::make(std::to_string(byte_rate)));
+                   InfoTree::make(byte_rate));
       },
       nullptr,
       [this, shmpath](std::string &&file_name){

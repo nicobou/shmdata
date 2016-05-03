@@ -22,20 +22,14 @@
 
 namespace switcher {
 
-PContainer::PContainer(InfoTree::ptr tree, all_state_cb_t cb):
+PContainer::PContainer(InfoTree::ptr tree,
+                       on_tree_grafted_cb_t on_tree_grafted_cb,
+                       on_tree_pruned_cb_t on_tree_pruned_cb):
     tree_(tree),
-    state_cb_(cb){
+    on_tree_grafted_cb_(on_tree_grafted_cb),
+    on_tree_pruned_cb_(on_tree_pruned_cb) {
   tree_->graft(".property", InfoTree::make());
   tree_->tag_as_array(".property", true);
-}
-
-void PContainer::notify_state_change(prop_id_t prop, pstate_t state) {
-  if (state_cb_)
-    state_cb_(prop, state);
-  for (const auto &it: props_[prop]->get_register_ids()){
-    auto cb = state_cbs_.find(it);
-    if (state_cbs_.end() != cb) cb->second(state);
-  }
 }
 
 bool PContainer::replace(prop_id_t prop_id, std::unique_ptr<PropertyBase> &&prop_ptr){
@@ -43,7 +37,6 @@ bool PContainer::replace(prop_id_t prop_id, std::unique_ptr<PropertyBase> &&prop
   if(strids_.end() == it)
     return false;  // prop not found
   props_[prop_id] = std::forward<std::unique_ptr<PropertyBase>>(prop_ptr);
-  notify_state_change(prop_id, PContainer::REPLACED);
   return true;
 }
 
@@ -51,8 +44,10 @@ bool PContainer::remove(prop_id_t prop_id){
   auto it = strids_.find(prop_id);
   if(strids_.end() == it)
     return false;  // prop not found
-  tree_->prune(std::string("property.") + it->second);
-  notify_state_change(prop_id, PContainer::REMOVED);
+  auto key = std::string("property.") + it->second;
+  tree_->prune(key);
+  if (on_tree_pruned_cb_)
+    on_tree_pruned_cb_(key);
   ids_.erase(it->second);
   strids_.erase(it);
   props_.erase(prop_id);
@@ -63,22 +58,17 @@ bool PContainer::enable(prop_id_t prop_id, bool enable){
   const auto &it = strids_.find(prop_id);
   if (strids_.end() == it)
     return false;
-  tree_->graft(std::string("property.") + it->second + ".enabled", InfoTree::make(enable));
-  if (enable)
-    notify_state_change(prop_id, PContainer::ENABLED);
-  else
-    notify_state_change(prop_id, PContainer::DISABLED);
+  auto key = std::string("property.") + it->second + ".enabled";
+  tree_->graft(key, InfoTree::make(enable));
+  if (on_tree_grafted_cb_)
+    on_tree_grafted_cb_(key);
   return true;
 }
 
 PContainer::register_id_t PContainer::subscribe(
     prop_id_t id,
-    notify_cb_t fun,
-    pstate_cb_t state_cb) const {
-  auto res = props_.find(id)->second->subscribe(std::forward<notify_cb_t>(fun));
-  if(nullptr != state_cb)
-    state_cbs_[res] = state_cb;
-  return res;
+    notify_cb_t fun) const {
+  return props_.find(id)->second->subscribe(std::forward<notify_cb_t>(fun));
 }
 
 bool PContainer::unsubscribe(prop_id_t id, register_id_t rid) const{
@@ -593,13 +583,15 @@ PContainer::prop_id_t PContainer::push_parented(const std::string &strid,
   auto *prop = props_[counter_].get();
   prop->set_id(counter_);
   auto tree = prop->get_spec();
-  tree_->graft(std::string("property.") + strid, tree);
+  auto key = std::string("property.") + strid;
+  tree_->graft(key, tree);
   tree->graft("id", InfoTree::make(strid));
   tree->graft("prop_id", InfoTree::make(counter_));
   tree->graft("order", InfoTree::make(20 * (suborders_.get_count(parent_strid) + 1)));
   tree->graft("parent", InfoTree::make(parent_strid));
   tree->graft("enabled", InfoTree::make(true));
-  notify_state_change(counter_, PContainer::ADDED);
+  if (on_tree_grafted_cb_)
+    on_tree_grafted_cb_(key);
   return counter_;
 }
 

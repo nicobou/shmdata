@@ -34,8 +34,6 @@ static gboolean classdoc = FALSE;
 static gboolean listquiddities = FALSE;
 static gboolean quidditydescr = FALSE;
 static gboolean quidditiesdescr = FALSE;
-static gboolean listprop = FALSE;
-static gboolean listpropbyclass = FALSE;
 static gboolean listmethods = FALSE;
 static gboolean listmethodsbyclass = FALSE;
 static gboolean listsignals = FALSE;
@@ -63,10 +61,6 @@ static GOptionEntry entries[24] = {
    "list quiddity classes", nullptr},
   {"list-quiddities", 'e', 0, G_OPTION_ARG_NONE, &listquiddities,
    "list quiddity instances", nullptr},
-  {"list-props", 'p', 0, G_OPTION_ARG_NONE, &listprop,
-   "list properties of a quiddity", nullptr},
-  {"list-props-by-class", 'P', 0, G_OPTION_ARG_NONE, &listpropbyclass,
-   "list properties of a class", nullptr},
   {"list-methods", 'm', 0, G_OPTION_ARG_NONE, &listmethods,
    "list methods of a quiddity", nullptr},
   {"list-methods-by-class", 'M', 0, G_OPTION_ARG_NONE, &listmethodsbyclass,
@@ -124,8 +118,6 @@ main(int argc, char *argv[]) {
         ^ listquiddities
         ^ quidditydescr
         ^ quidditiesdescr
-        ^ listprop
-        ^ listpropbyclass
         ^ setprop
         ^ getprop
         ^ createquiddity
@@ -212,21 +204,6 @@ main(int argc, char *argv[]) {
       std::cout << resultlist[i] << std::endl;
     }
   }
-  else if (listprop) {
-    std::string resultlist;
-    if (remaining_args == nullptr) {
-      g_printerr("quiddity name missing for listing properties\n");
-      return false;
-    }
-    if (remaining_args[1] == nullptr)
-      switcher_control.get_properties_description(remaining_args[0],
-                                                  &resultlist);
-    else
-      switcher_control.get_property_description(remaining_args[0],
-                                                remaining_args[1],
-                                                &resultlist);
-    std::cout << resultlist << std::endl;
-  }
   else if (print_tree) {
     std::string resultlist;
     if (remaining_args == nullptr) {
@@ -239,21 +216,6 @@ main(int argc, char *argv[]) {
     else
       switcher_control.get_information_tree(remaining_args[0],
                                             remaining_args[1], &resultlist);
-    std::cout << resultlist << std::endl;
-  }
-  else if (listpropbyclass) {
-    std::string resultlist;
-    if (remaining_args == nullptr) {
-      g_printerr("class name missing for listing properties\n");
-      return false;
-    }
-    if (remaining_args[1] == nullptr)
-      switcher_control.get_properties_description_by_class(remaining_args
-                                                           [0], &resultlist);
-    else
-      switcher_control.get_property_description_by_class(remaining_args[0],
-                                                         remaining_args[1],
-                                                         &resultlist);
     std::cout << resultlist << std::endl;
   }
   else if (setprop) {
