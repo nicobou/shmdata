@@ -88,12 +88,6 @@ bool QuiddityManager::must_be_saved(QuiddityCommand::command id) const{
       || id == QuiddityCommand::remove
       || id == QuiddityCommand::scan_directory_for_plugins
       || id == QuiddityCommand::set_property
-      || id == QuiddityCommand::make_signal_subscriber
-      || id == QuiddityCommand::remove_signal_subscriber
-      || id == QuiddityCommand::subscribe_property
-      || id == QuiddityCommand::subscribe_signal
-      || id == QuiddityCommand::unsubscribe_property
-      || id == QuiddityCommand::unsubscribe_signal
       || id == QuiddityCommand::invoke)
     return true;
   return false;
@@ -126,47 +120,45 @@ play_command_history(QuiddityManager::CommandHistory histo,
   if (debug)
     g_print("start playing history\n");
   for (auto &it : histo) {
-    if (it->id_ == QuiddityCommand::make_signal_subscriber) {
-      if (sig_cb_data != nullptr) {
-        QuiddityManager::SignalCallbackMap::iterator sig_it =
-            sig_cb_data->find(it->args_[0]);
-        if (sig_it != sig_cb_data->end())
-          make_signal_subscriber(it->args_[0], sig_it->second.first,
-                                 sig_it->second.second);
-      }
-    } else {
-      // it is not propable that create will return the same original name,
-      // so converting create into create_nick_named with
-      // the name that was given first
-      if (QuiddityCommand::create == it->id_) {
-        it->id_ = QuiddityCommand::create_nick_named;
-        it->args_.push_back(it->expected_result_[0]);
-      }
-      command_lock();
-      command_ = it;
-      if (debug) {
-        g_print("running command %s args:", QuiddityCommand::get_string_from_id(command_->id_));
-        for (auto &iter: command_->args_)
-          g_print(" %s ", iter.c_str());
-        g_print("\n");
-        if (!command_->vector_arg_.empty()){
-          g_print("            vector args:");
+    // do not run commands that not supposed to be saved
+    if (!must_be_saved(it->id_))
+      continue;
+    // do not run creates that failed
+    if (QuiddityCommand::create == it->id_ && it->expected_result_.empty())
+      continue;
+    if (QuiddityCommand::create_nick_named == it->id_ && it->expected_result_.empty())
+      continue;
+    // it is not propable that create will return the same original name,
+    // so converting create into create_nick_named with
+    // the name that was given first
+    if (QuiddityCommand::create == it->id_) {
+      it->id_ = QuiddityCommand::create_nick_named;
+      it->args_.push_back(it->expected_result_[0]);
+    }
+    command_lock();
+    command_ = it;
+    if (debug) {
+      g_print("running command %s args:", QuiddityCommand::get_string_from_id(command_->id_));
+      for (auto &iter: command_->args_)
+        g_print(" %s ", iter.c_str());
+      g_print("\n");
+      if (!command_->vector_arg_.empty()){
+        g_print("            vector args:");
         for (auto &iter: command_->vector_arg_)
           g_print(" %s ", iter.c_str());
         g_print("\n");
-        }
       }
-      invoke_in_thread();
-      // TODO test result consistency
-      command_unlock();
-      if (command_->id_ == QuiddityCommand::create
-          || command_->id_ == QuiddityCommand::create_nick_named)
+    }
+    invoke_in_thread();
+    command_unlock();
+    if (command_->id_ == QuiddityCommand::create
+        || command_->id_ == QuiddityCommand::create_nick_named) {
+      if (command_->success_)
         auto_init(command_->result_[0]);
       if (debug)
         g_print("done result is %s\n\n", command_->result_[0].c_str());
     }
-        
-  }
+  }  // end for (auto &it : histo) 
   if (debug)
     g_print("finished playing history\n");
   if (mute_existing_subscribers) {
