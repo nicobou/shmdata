@@ -88,6 +88,12 @@ bool QuiddityManager::must_be_saved(QuiddityCommand::command id) const{
       || id == QuiddityCommand::remove
       || id == QuiddityCommand::scan_directory_for_plugins
       || id == QuiddityCommand::set_property
+      || id == QuiddityCommand::make_signal_subscriber
+      || id == QuiddityCommand::remove_signal_subscriber
+      || id == QuiddityCommand::subscribe_property
+      || id == QuiddityCommand::subscribe_signal
+      || id == QuiddityCommand::unsubscribe_property
+      || id == QuiddityCommand::unsubscribe_signal
       || id == QuiddityCommand::invoke)
     return true;
   return false;
@@ -128,6 +134,16 @@ play_command_history(QuiddityManager::CommandHistory histo,
       continue;
     if (QuiddityCommand::create_nick_named == it->id_ && it->expected_result_.empty())
       continue;
+    
+    if (it->id_ == QuiddityCommand::make_signal_subscriber) {
+      if (sig_cb_data != nullptr) {
+        QuiddityManager::SignalCallbackMap::iterator sig_it =
+            sig_cb_data->find(it->args_[0]);
+        if (sig_it != sig_cb_data->end())
+          make_signal_subscriber(it->args_[0], sig_it->second.first,
+                                 sig_it->second.second);
+      }
+    }
     // it is not propable that create will return the same original name,
     // so converting create into create_nick_named with
     // the name that was given first
@@ -135,6 +151,7 @@ play_command_history(QuiddityManager::CommandHistory histo,
       it->id_ = QuiddityCommand::create_nick_named;
       it->args_.push_back(it->expected_result_[0]);
     }
+    
     command_lock();
     command_ = it;
     if (debug) {
