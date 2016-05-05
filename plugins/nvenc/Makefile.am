@@ -33,7 +33,8 @@ libnvenc_plugin_la_LDFLAGS = \
     -module \
     -L$(top_builddir)/switcher/.libs \
     -lswitcher-@LIBSWITCHER_API_VERSION@ \
-    -lnvidia-encode
+    -lnvidia-encode \
+    -lcuda
 
 libnvenc_plugin_la_CXXFLAGS = \
     $(GLIB_CFLAGS) \
