@@ -40,20 +40,20 @@ char* pjcall_pjsip_module_name = strdup("mod-siprtpapp");
 
 pjsip_module PJCall::mod_siprtp_ = {
     nullptr,
-    nullptr,                          /* prev, next.  */
-    pj_str(pjcall_pjsip_module_name), /* Name.   */
-    -1,                               /* Id   */
+    nullptr,                          /* prev, next. */
+    pj_str(pjcall_pjsip_module_name), /* Name.       */
+    -1,                               /* Id          */
     // (before PJSIP_MOD_PRIORITY_UA_PROXY_LAYER):
-    30,             /* Priority */
-    nullptr,        /* load()   */
-    nullptr,        /* start()   */
-    nullptr,        /* stop()   */
-    nullptr,        /* unload()   */
+    30,             /* Priority         */
+    nullptr,        /* load()           */
+    nullptr,        /* start()          */
+    nullptr,        /* stop()           */
+    nullptr,        /* unload()         */
     &on_rx_request, /* on_rx_request()  */
-    nullptr,        /* on_rx_response()  */
-    nullptr,        /* on_tx_request.  */
-    nullptr,        /* on_tx_response()  */
-    nullptr,        /* on_tsx_state()  */
+    nullptr,        /* on_rx_response() */
+    nullptr,        /* on_tx_request.   */
+    nullptr,        /* on_tx_response() */
+    nullptr,        /* on_tsx_state()   */
 };
 
 PJCall::PJCall() {
@@ -445,9 +445,20 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
                         uristr,
                         sizeof(uristr));
   std::string from_uri(uristr, len);
+  // find related buddy id ('sip:' is not saved)
+  auto peer_uri = std::string(from_uri, 4, std::string::npos);
+  // release existing incoming calls from this buddy
+  for (auto& it : SIPPlugin::this_->sip_calls_->incoming_call_) {
+    if (it.peer_uri == peer_uri) {
+      auto buddy_id = SIPPlugin::this_->sip_presence_->buddy_id_.find(peer_uri);
+      if (SIPPlugin::this_->sip_presence_->buddy_id_.end() != buddy_id)
+        release_incoming_call(&it, buddy_id->second);
+    }
+  }
   // len =
-  pjsip_uri_print(
-      PJSIP_URI_IN_FROMTO_HDR, rdata->msg_info.to->uri, uristr, sizeof(uristr));
+  // pjsip_uri_print(
+  //     PJSIP_URI_IN_FROMTO_HDR, rdata->msg_info.to->uri, uristr,
+  //     sizeof(uristr));
   // g_print("----------- call to %.*s", len, uristr);
   pjsip_dialog* dlg;
   pjmedia_sdp_session* sdp;
@@ -497,8 +508,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
   // incoming call is valid, starting processing it
   SIPPlugin::this_->sip_calls_->incoming_call_.emplace_back();
   call_t* call = &SIPPlugin::this_->sip_calls_->incoming_call_.back();
-  call->peer_uri =
-      std::string(from_uri, 4, std::string::npos);  // we do not save 'sip:'
+  call->peer_uri = peer_uri;
   auto& buddy_list = SIPPlugin::this_->sip_presence_->buddy_id_;
   if (buddy_list.end() == buddy_list.find(call->peer_uri)) {
     SIPPlugin::this_->sip_presence_->add_buddy(call->peer_uri);
