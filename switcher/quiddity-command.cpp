@@ -185,9 +185,11 @@ QuiddityCommand::parse_command_from_json_reader(JsonReader *reader) {
   std::vector<std::string> expected_result;
   for (j = 0; j < num_elements; j++) {
     json_reader_read_element(reader, j);
-    const char *string_value = json_reader_get_string_value(reader);
-    if (nullptr != string_value)
-      expected_result.push_back(string_value);
+    if (!json_reader_get_null_value(reader)) {
+      const char *string_value = json_reader_get_string_value(reader);
+      if (nullptr != string_value)
+        expected_result.push_back(string_value);
+    }
     json_reader_end_element(reader);
   }
   json_reader_end_member(reader);
