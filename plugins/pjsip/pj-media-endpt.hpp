@@ -27,16 +27,17 @@ class PJCodec;
 
 class PJMediaEndpt {
   friend PJCodec;
+
  public:
   PJMediaEndpt();
   ~PJMediaEndpt();
-  PJMediaEndpt(const PJMediaEndpt &) = delete;
-  PJMediaEndpt &operator=(const PJMediaEndpt &) = delete;
+  PJMediaEndpt(const PJMediaEndpt&) = delete;
+  PJMediaEndpt& operator=(const PJMediaEndpt&) = delete;
 
-  pjmedia_endpt *get() {return med_endpt_;};
-  
+  pjmedia_endpt* get() { return med_endpt_; };
+
  private:
-  static pjmedia_endpt *med_endpt_;
+  static pjmedia_endpt* med_endpt_;
 };
 
 }  // namespace switcher

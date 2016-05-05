@@ -20,31 +20,28 @@
 #include "./sdp-utils.hpp"
 
 namespace switcher {
-SDPMedia::SDPMedia() {
-  gst_sdp_media_new(&media_);
-}
+SDPMedia::SDPMedia() { gst_sdp_media_new(&media_); }
 
 SDPMedia::~SDPMedia() {
   gst_sdp_media_free(media_);
-  if (nullptr != caps_structure_)
-    gst_structure_free(caps_structure_);
+  if (nullptr != caps_structure_) gst_structure_free(caps_structure_);
 }
 
-bool SDPMedia::set_media_info_from_caps(const GstCaps *media_caps) {
-  if (nullptr == media_caps){
+bool SDPMedia::set_media_info_from_caps(const GstCaps* media_caps) {
+  if (nullptr == media_caps) {
     g_warning("media description is missing when generating SDP media");
     return false;
   }
-  GstStructure *s = gst_caps_get_structure(media_caps, 0);
+  GstStructure* s = gst_caps_get_structure(media_caps, 0);
   if (nullptr == s) {
     g_warning("cannot get structure from caps when generating SDP media");
     return false;
   }
   gint value;
-  if (nullptr == gst_structure_get_string(s, "media")
-      || nullptr == gst_structure_get_string(s, "encoding-name")
-      || !gst_structure_get_int(s, "payload", &value)
-      || !gst_structure_get_int(s, "clock-rate", &value)) {
+  if (nullptr == gst_structure_get_string(s, "media") ||
+      nullptr == gst_structure_get_string(s, "encoding-name") ||
+      !gst_structure_get_int(s, "payload", &value) ||
+      !gst_structure_get_int(s, "clock-rate", &value)) {
     g_warning("invalide media caps for SDP media");
     return false;
   }
@@ -57,9 +54,8 @@ bool SDPMedia::set_port(uint port) {
   return true;
 }
 
-bool
-SDPMedia::add_to_sdp_description(GstSDPMessage *sdp_description,
-                                 uint index) const {
+bool SDPMedia::add_to_sdp_description(GstSDPMessage* sdp_description,
+                                      uint index) const {
   if (0 == port_ || nullptr == caps_structure_) {
     g_warning("missing information for adding media to sdp description");
     return false;
@@ -85,12 +81,12 @@ SDPMedia::add_to_sdp_description(GstSDPMessage *sdp_description,
   /* get clock-rate, media type and params for the rtpmap attribute */
   gint caps_rate = 0;
   gst_structure_get_int(caps_structure_, "clock-rate", &caps_rate);
-  std::string
-      caps_enc(gst_structure_get_string(caps_structure_, "encoding-name"));
+  std::string caps_enc(
+      gst_structure_get_string(caps_structure_, "encoding-name"));
   std::string rtpmap(std::to_string(caps_pt) + " " + caps_enc + "/" +
                      std::to_string(caps_rate));
 
-  const gchar *caps_params =
+  const gchar* caps_params =
       gst_structure_get_string(caps_structure_, "encoding-params");
   if (nullptr != caps_params) {
     rtpmap.append("/");
@@ -106,35 +102,33 @@ SDPMedia::add_to_sdp_description(GstSDPMessage *sdp_description,
   bool first = true;
   guint n_fields = gst_structure_n_fields(caps_structure_);
   for (uint j = 0; j < n_fields; j++) {
-    const gchar *fname_c = gst_structure_nth_field_name(caps_structure_, j);
-    if (nullptr == fname_c)
-      continue;
+    const gchar* fname_c = gst_structure_nth_field_name(caps_structure_, j);
+    if (nullptr == fname_c) continue;
     std::string fname(fname_c);
     /* filter out standard properties */
-    if (fname.compare("media") == 0
-        || fname.compare("payload") == 0
-        || fname.compare("clock-rate") == 0
-        || fname.compare("encoding-name") == 0
-        || fname.compare("encoding-params") == 0
-        || fname.compare("ssrc") == 0
-        || fname.compare("clock-base") == 0
-        || fname.compare("seqnum-base") == 0)
+    if (fname.compare("media") == 0 || fname.compare("payload") == 0 ||
+        fname.compare("clock-rate") == 0 ||
+        fname.compare("encoding-name") == 0 ||
+        fname.compare("encoding-params") == 0 || fname.compare("ssrc") == 0 ||
+        fname.compare("clock-base") == 0 || fname.compare("seqnum-base") == 0)
       continue;
-    const gchar *struct_str = gst_structure_get_string(caps_structure_, fname.c_str());
-    if (nullptr == struct_str)
-      continue;
+    const gchar* struct_str =
+        gst_structure_get_string(caps_structure_, fname.c_str());
+    if (nullptr == struct_str) continue;
     std::string val = std::string(struct_str);
-    if (0 == fname.compare("sprop-parameter-sets")){
-        auto equal_pos = val.find('=');
-        if (std::string::npos != equal_pos) {
-          g_warning("removing buggy trailing = at the end of sprop-parameter-sets");
-          val = std::string(val, 0, equal_pos) ;
-        }
+    if (0 == fname.compare("sprop-parameter-sets")) {
+      auto equal_pos = val.find('=');
+      if (std::string::npos != equal_pos) {
+        g_warning(
+            "removing buggy trailing = at the end of sprop-parameter-sets");
+        val = std::string(val, 0, equal_pos);
+      }
     }
     // if (0 == fname.compare("caps")){
     //     auto equal_pos = val.find('=');
     //     if (fname.size() - 2 != equal_pos) {
-    //       g_warning("(sdp) removing buggy trailing = at the end of caps parameter");
+    //       g_warning("(sdp) removing buggy trailing = at the end of caps
+    //       parameter");
     //       val = std::string(val, 0, equal_pos + 1) ;
     //     }
     // }
@@ -147,8 +141,7 @@ SDPMedia::add_to_sdp_description(GstSDPMessage *sdp_description,
       fmtp.append(fname_value);
     }
   }
-  if (!first)
-    gst_sdp_media_add_attribute(media_, "fmtp", fmtp.c_str());
+  if (!first) gst_sdp_media_add_attribute(media_, "fmtp", fmtp.c_str());
   gst_sdp_message_add_media(sdp_description, media_);
   return true;
 }
@@ -159,12 +152,13 @@ SDPDescription::SDPDescription() {
   gst_sdp_message_set_version(sdp_description_, "0");
   // FIXME check and chose between IP4 and IP6, IP4 hardcoded
   // FIXME generate proper session id &version
-  gst_sdp_message_set_origin(sdp_description_, "-",   // the user name
-                             "1188340656180883",      // a session id
-                             "1",     // a session version
-                             "IN",    // a network type
-                             "IP4",   // an address type
-                             "127.0.0.1");    // an address
+  gst_sdp_message_set_origin(sdp_description_,
+                             "-",                 // the user name
+                             "1188340656180883",  // a session id
+                             "1",                 // a session version
+                             "IN",                // a network type
+                             "IP4",               // an address type
+                             "127.0.0.1");        // an address
   gst_sdp_message_set_session_name(sdp_description_, "switcher session");
   gst_sdp_message_set_information(sdp_description_, "telepresence");
   gst_sdp_message_add_time(sdp_description_, "0", "0", nullptr);
@@ -173,20 +167,17 @@ SDPDescription::SDPDescription() {
   gst_sdp_message_add_attribute(sdp_description_, "control", "*");
 }
 
-SDPDescription::~SDPDescription() {
-  gst_sdp_message_free(sdp_description_);
-}
+SDPDescription::~SDPDescription() { gst_sdp_message_free(sdp_description_); }
 
 std::string SDPDescription::get_string() {
-  gchar *tmp = gst_sdp_message_as_text(sdp_description_);
+  gchar* tmp = gst_sdp_message_as_text(sdp_description_);
   std::string res(tmp);
   g_free(tmp);
   return res;
 }
 
-bool SDPDescription::add_media(const SDPMedia &media) {
-  if (!media.add_to_sdp_description(sdp_description_, index_))
-    return false;
+bool SDPDescription::add_media(const SDPMedia& media) {
+  if (!media.add_to_sdp_description(sdp_description_, index_)) return false;
   index_++;
   return true;
 }

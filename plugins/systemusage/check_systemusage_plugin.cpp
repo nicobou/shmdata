@@ -18,39 +18,38 @@
  */
 
 #include <chrono>
-#include <vector>
-#include <string>
 #include <iostream>
+#include <string>
 #include <thread>
-#include "switcher/quiddity-manager.hpp"
+#include <vector>
 #include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity-manager.hpp"
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
 
-void
-quiddity_created_removed_cb(std::string /*subscriber_name */ ,
-                            std::string quiddity_name,
-                            std::string signal_name,
-                            std::vector<std::string> params,
-                            void *user_data) {
-  //g_print("%s: %s\n", signal_name.c_str(), params[0].c_str());
-  switcher::QuiddityManager *ctx =
-      static_cast<switcher::QuiddityManager *>(user_data);
-  std::cout << ctx->use_tree<MPtr(&switcher::InfoTree::serialize_json)>(quiddity_name, params[0])
+void quiddity_created_removed_cb(std::string /*subscriber_name */,
+                                 std::string quiddity_name,
+                                 std::string signal_name,
+                                 std::vector<std::string> params,
+                                 void* user_data) {
+  // g_print("%s: %s\n", signal_name.c_str(), params[0].c_str());
+  switcher::QuiddityManager* ctx =
+      static_cast<switcher::QuiddityManager*>(user_data);
+  std::cout << ctx->use_tree<MPtr(&switcher::InfoTree::serialize_json)>(
+                   quiddity_name, params[0])
             << std::endl;
 }
 
-int
-main() {
+int main() {
   bool success = true;
 
   {
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("test_manager");
 #ifdef HAVE_CONFIG_H
-    gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
+    gchar* usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
     manager->scan_directory_for_plugins(usr_plugin_dir);
     g_free(usr_plugin_dir);
 #else

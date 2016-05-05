@@ -21,18 +21,18 @@
 #define __SWITCHER_GST_VIDEO_CONVERTER_H__
 
 #include <memory>
+#include "switcher/gst-pixel-format-converter.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
-#include "switcher/gst-pixel-format-converter.hpp"
 
 namespace switcher {
-class GstVideoConverter: public Quiddity {
+class GstVideoConverter : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstVideoConverter);
-  GstVideoConverter(const std::string &);
+  GstVideoConverter(const std::string&);
   ~GstVideoConverter() = default;
-  GstVideoConverter(const GstVideoConverter &) = delete;
-  GstVideoConverter &operator=(const GstVideoConverter &) = delete;
+  GstVideoConverter(const GstVideoConverter&) = delete;
+  GstVideoConverter& operator=(const GstVideoConverter&) = delete;
 
  private:
   // registering connect/disconnect/can_sink_caps:
@@ -40,8 +40,8 @@ class GstVideoConverter: public Quiddity {
   std::unique_ptr<GstPixelFormatConverter> converter_{nullptr};
   bool init() final;
   bool on_shmdata_disconnect();
-  bool on_shmdata_connect(const std::string &shmdata_sochet_path);
-  bool can_sink_caps(const std::string &caps);
+  bool on_shmdata_connect(const std::string& shmdata_sochet_path);
+  bool can_sink_caps(const std::string& caps);
 };
 
 }  // namespace switcher

@@ -17,13 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/quiddity-manager.hpp"
-#include "switcher/quiddity-basic-test.hpp"
 #include <chrono>
-#include <vector>
-#include <string>
 #include <iostream>
+#include <string>
 #include <thread>
+#include <vector>
+#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity-manager.hpp"
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
@@ -33,18 +33,17 @@ int main() {
   {
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("test_manager");
-    
+
 #ifdef HAVE_CONFIG_H
-    gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
+    gchar* usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
     manager->scan_directory_for_plugins(usr_plugin_dir);
     g_free(usr_plugin_dir);
 #else
     return 1;
 #endif
-    
-    if (!switcher::QuiddityBasicTest::test_full(manager, "syphon"))
-      return 1;
+
+    if (!switcher::QuiddityBasicTest::test_full(manager, "syphon")) return 1;
   }  // end of scope is releasing the manager
-  
+
   return 0;
 }

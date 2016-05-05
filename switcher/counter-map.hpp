@@ -20,9 +20,9 @@
 #ifndef __SWITCHER_COUNTER_MAP_H__
 #define __SWITCHER_COUNTER_MAP_H__
 
-#include <string>
 #include <map>
 #include <mutex>
+#include <string>
 
 /**
  *
@@ -34,7 +34,7 @@
 namespace switcher {
 class CounterMap {
  public:
-  size_t get_count(const std::string &key);
+  size_t get_count(const std::string& key);
   void reset_counter_map();
 
  private:

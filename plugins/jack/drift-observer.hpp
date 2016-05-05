@@ -20,19 +20,19 @@
 #ifndef __SWITCHER_DRIFT_OBSERVER_H__
 #define __SWITCHER_DRIFT_OBSERVER_H__
 
-
 namespace switcher {
-template<typename TimeType>
+template <typename TimeType>
 class DriftObserver {
  public:
   DriftObserver() = default;
   ~DriftObserver() = default;
-  void set_smoothing_factor(const double &sf);  // data race with set_current_time_info 
+  void set_smoothing_factor(
+      const double& sf);  // data race with set_current_time_info
   // this is returning the duration this duration should have
-  TimeType set_current_time_info(const TimeType date,
-                                 const TimeType duration);
-  double get_ratio() const {return ratio_;}
-  double get_smoothing_factor() const {return smoothing_factor_;}
+  TimeType set_current_time_info(const TimeType date, const TimeType duration);
+  double get_ratio() const { return ratio_; }
+  double get_smoothing_factor() const { return smoothing_factor_; }
+
  private:
   TimeType current_buffer_date_{0};
   TimeType current_buffer_duration_{0};

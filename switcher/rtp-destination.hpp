@@ -25,9 +25,10 @@
  */
 
 #include <gst/gst.h>
+#include <forward_list>
 #include <map>
 #include <string>
-#include <forward_list>
+#include <vector>
 #include "./json-builder.hpp"
 
 namespace switcher {
@@ -36,22 +37,21 @@ class RtpDestination {
  public:
   using ptr = std::shared_ptr<RtpDestination>;
   RtpDestination() = delete;
-  RtpDestination(RtpSession *session); 
+  RtpDestination(RtpSession* session);
   ~RtpDestination();
-  RtpDestination(const RtpDestination &) = delete;
-  RtpDestination &operator=(const RtpDestination &) = delete;
-  
+  RtpDestination(const RtpDestination&) = delete;
+  RtpDestination& operator=(const RtpDestination&) = delete;
+
   void set_name(std::string name);
   void set_host_name(std::string host_name);
   std::string get_host_name() const;
-  std::string get_port(const std::string &shmndata_path);
+  std::string get_port(const std::string& shmndata_path);
   // the reader of the rtp stream sent
-  bool add_stream(const std::string &orig_shmdata_path,
-                  std::string port);
-  bool has_shmdata(const std::string &shmdata_path);
-  bool remove_stream(const std::string &shmdata_stream_path);
+  bool add_stream(const std::string& orig_shmdata_path, std::string port);
+  bool has_shmdata(const std::string& shmdata_path);
+  bool remove_stream(const std::string& shmdata_stream_path);
   std::string get_sdp();
-  bool write_to_file (std::string file_name);
+  bool write_to_file(std::string file_name);
   std::vector<std::string> get_shmdata() const;
   // get json doc:
   JSONBuilder::Node get_json_root_node();
@@ -63,7 +63,7 @@ class RtpDestination {
   std::map<std::string, std::string> source_streams_{};
   JSONBuilder::ptr json_description_{};
   std::forward_list<std::string> files_{};
-  RtpSession *session_{nullptr};
+  RtpSession* session_{nullptr};
   void make_json_description();
 };
 

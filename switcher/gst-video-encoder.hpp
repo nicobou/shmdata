@@ -21,18 +21,18 @@
 #define __SWITCHER_GST_VIDEO_ENCODER_H__
 
 #include <memory>
+#include "switcher/gst-video-codec.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
-#include "switcher/gst-video-codec.hpp"
 
 namespace switcher {
-class GstVideoEncoder: public Quiddity {
+class GstVideoEncoder : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstVideoEncoder);
-  GstVideoEncoder(const std::string &);
+  GstVideoEncoder(const std::string&);
   ~GstVideoEncoder() = default;
-  GstVideoEncoder(const GstVideoEncoder &) = delete;
-  GstVideoEncoder &operator=(const GstVideoEncoder &) = delete;
+  GstVideoEncoder(const GstVideoEncoder&) = delete;
+  GstVideoEncoder& operator=(const GstVideoEncoder&) = delete;
 
  private:
   // registering connect/disconnect/can_sink_caps:
@@ -40,8 +40,8 @@ class GstVideoEncoder: public Quiddity {
   std::unique_ptr<GstVideoCodec> codecs_{nullptr};
   bool init() final;
   bool on_shmdata_disconnect();
-  bool on_shmdata_connect(const std::string &shmdata_sochet_path);
-  bool can_sink_caps(const std::string &caps);
+  bool on_shmdata_connect(const std::string& shmdata_sochet_path);
+  bool can_sink_caps(const std::string& caps);
 };
 
 }  // namespace switcher

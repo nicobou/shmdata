@@ -23,25 +23,26 @@
 #include "./audio-ring-buffer.hpp"
 
 namespace switcher {
-template<typename SampleT>
+template <typename SampleT>
 class AudioResampler {
  public:
   AudioResampler() = delete;
   explicit AudioResampler(std::size_t original_size,
                           std::size_t resampled_size,
-                          const SampleT *samplebuf,
+                          const SampleT* samplebuf,
                           unsigned int channel_number = 0,
                           unsigned int number_of_channels = 1);
   inline SampleT zero_pole_get_next_sample();
   inline SampleT linear_get_next_sample();
   inline SampleT copy_get_next_sample();
+
  private:
   std::size_t original_size_;
   std::size_t resampled_size_;
   double ratio_;
   unsigned int channel_number_;
   unsigned int number_of_channels_;
-  const SampleT *samplebuf_;
+  const SampleT* samplebuf_;
   std::size_t cur_pos_{0};
 };
 

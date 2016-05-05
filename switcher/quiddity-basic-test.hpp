@@ -20,20 +20,22 @@
 #ifndef __SWITCHER_QUIDDITY_BASIC_TEST_H__
 #define __SWITCHER_QUIDDITY_BASIC_TEST_H__
 
+#include "./quiddity-manager.hpp"
+
 namespace switcher {
 namespace QuiddityBasicTest {
 bool test_full(QuiddityManager::ptr manager,
-               const std::string &quiddity_class_name);
+               const std::string& quiddity_class_name);
 bool test_tree(QuiddityManager::ptr manager,
-               const std::string &quiddity_class_name);
+               const std::string& quiddity_class_name);
 bool test_create(QuiddityManager::ptr manager,
-                 const std::string &quiddity_class_name);
+                 const std::string& quiddity_class_name);
 bool test_description_by_class(QuiddityManager::ptr manager,
-                               const std::string &quiddity_class_name);
+                               const std::string& quiddity_class_name);
 bool test_startable(QuiddityManager::ptr manager,
-                    const std::string &quiddity_class_name);
+                    const std::string& quiddity_class_name);
 bool test_properties(QuiddityManager::ptr manager,
-                     const std::string &quiddity_class_name);
+                     const std::string& quiddity_class_name);
 }  // namespace QuiddityBasicTest
 }  // namespace switcher
 #endif

@@ -20,28 +20,30 @@
 #ifndef __SWITCHER_GST_SHMDATA_TO_CB_H__
 #define __SWITCHER_GST_SHMDATA_TO_CB_H__
 
-#include <map>
 #include <functional>
+#include <map>
 #include <mutex>
 #include "./gst-pipeliner.hpp"
 #include "./safe-bool-idiom.hpp"
 
 namespace switcher {
 
-class GstShmdataToCb: public SafeBoolIdiom {
+class GstShmdataToCb : public SafeBoolIdiom {
  public:
   using id_t = size_t;
-  using data_cb_t = std::function<void(void *, size_t)>;
-  using on_caps_cb_t = std::function<GstElement *(const std::string &caps)>;
-  // on_caps can be used for making a filter that will be inserted between the shmdata reader
+  using data_cb_t = std::function<void(void*, size_t)>;
+  using on_caps_cb_t = std::function<GstElement*(const std::string& caps)>;
+  // on_caps can be used for making a filter that will be inserted between the
+  // shmdata reader
   // and the callback
-  // After fun has been invoked, filter is owned by the created GstShmdataToCb object
-  GstShmdataToCb(const std::string &shmpath, on_caps_cb_t fun);
+  // After fun has been invoked, filter is owned by the created GstShmdataToCb
+  // object
+  GstShmdataToCb(const std::string& shmpath, on_caps_cb_t fun);
   ~GstShmdataToCb() = default;
   GstShmdataToCb() = delete;
-  GstShmdataToCb(const GstShmdataToCb &) = delete;
-  GstShmdataToCb(GstShmdataToCb &&) = delete;
-  GstShmdataToCb &operator=(const GstShmdataToCb &) = delete;
+  GstShmdataToCb(const GstShmdataToCb&) = delete;
+  GstShmdataToCb(GstShmdataToCb&&) = delete;
+  GstShmdataToCb& operator=(const GstShmdataToCb&) = delete;
 
   id_t add_cb(data_cb_t fun);
   bool remove_cb(id_t cb_id);
@@ -51,21 +53,21 @@ class GstShmdataToCb: public SafeBoolIdiom {
  private:
   id_t counter_{0};
   bool is_valid_{false};
-  bool safe_bool_idiom() const {return is_valid_;}
+  bool safe_bool_idiom() const { return is_valid_; }
   GstPipeliner pipe_;
   on_caps_cb_t filter_cb_;
   std::map<id_t, data_cb_t> data_cbs_{};
   std::mutex mtx_{};
-  GstElement *fakesink_{nullptr};
+  GstElement* fakesink_{nullptr};
   mutable std::string fakesink_caps_{};
-  static void on_handoff_cb(GstElement */*object*/,
-                            GstBuffer *buf,
-                            GstPad *pad,
+  static void on_handoff_cb(GstElement* /*object*/,
+                            GstBuffer* buf,
+                            GstPad* pad,
                             gpointer user_data);
 
-  static void on_caps(GstElement *typefind,
+  static void on_caps(GstElement* typefind,
                       guint /*probability */,
-                      GstCaps *caps,
+                      GstCaps* caps,
                       gpointer /*user_data*/);
 };
 

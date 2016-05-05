@@ -19,24 +19,24 @@
 #define __SWITCHER_V4L2SRC_H__
 
 #include <memory>
-#include "switcher/std2.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/startable-quiddity.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
-#include "switcher/unique-gst-element.hpp"
-#include "switcher/gst-video-codec.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/gst-video-codec.hpp"
+#include "switcher/gst-video-codec.hpp"
+#include "switcher/quiddity.hpp"
+#include "switcher/startable-quiddity.hpp"
+#include "switcher/std2.hpp"
+#include "switcher/unique-gst-element.hpp"
 
 namespace switcher {
-class V4L2Src: public Quiddity, public StartableQuiddity {
+class V4L2Src : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(V4L2Src);
-  V4L2Src(const std::string &);
+  V4L2Src(const std::string&);
   ~V4L2Src() = default;
-  V4L2Src(const V4L2Src &) = delete;
-  V4L2Src &operator=(const V4L2Src &) = delete;
+  V4L2Src(const V4L2Src&) = delete;
+  V4L2Src& operator=(const V4L2Src&) = delete;
 
   // use "NONE" for used arguments
   /* bool capture_full (const char *device_file_path,  */
@@ -46,10 +46,10 @@ class V4L2Src: public Quiddity, public StartableQuiddity {
   /*        const char *framerate_denominator, */
   /*        const char *tv_standard); */
 
-  static bool is_v4l_device(const char *file);
+  static bool is_v4l_device(const char* file);
 
-  bool inspect_file_device(const char *file_path);
-  bool check_folder_for_v4l2_devices(const char *dir_path);
+  bool inspect_file_device(const char* file_path);
+  bool check_folder_for_v4l2_devices(const char* dir_path);
 
  private:
   typedef struct {
@@ -58,11 +58,12 @@ class V4L2Src: public Quiddity, public StartableQuiddity {
     std::string file_device_{};
     std::string bus_info_{};
     std::string driver_{};
-    std::vector<std::tuple<uint32_t   /*fourcc pixel format*/,
-                           std::string/*name*/,
-                           std::string/*description*/>>pixel_formats_{};
-    std::vector<std::pair<std::string/*width*/,
-                          std::string/*height*/>>frame_size_discrete_{};
+    std::vector<std::tuple<uint32_t /*fourcc pixel format*/,
+                           std::string /*name*/,
+                           std::string /*description*/>>
+        pixel_formats_{};
+    std::vector<std::pair<std::string /*width*/, std::string /*height*/>>
+        frame_size_discrete_{};
     gint frame_size_stepwise_max_width_{0};
     gint frame_size_stepwise_min_width_{0};
     gint frame_size_stepwise_step_width_{0};
@@ -70,8 +71,9 @@ class V4L2Src: public Quiddity, public StartableQuiddity {
     gint frame_size_stepwise_min_height_{0};
     gint frame_size_stepwise_step_height_{0};
     std::vector<std::string> tv_standards_{};
-    std::vector<std::pair<std::string/*numerator*/,
-                          std::string/*denominator*/>>frame_interval_discrete_{};
+    std::vector<
+        std::pair<std::string /*numerator*/, std::string /*denominator*/>>
+        frame_interval_discrete_{};
     gint frame_interval_stepwise_min_numerator_{0};
     gint frame_interval_stepwise_min_denominator_{0};
     gint frame_interval_stepwise_max_numerator_{0};
@@ -152,7 +154,7 @@ class V4L2Src: public Quiddity, public StartableQuiddity {
   void set_shm_suffix();
   // copy/paste from gstv4l2object.c for converting v4l2 pixel formats
   // to GstStructure (and then caps)
-  static GstStructure *gst_v4l2_object_v4l2fourcc_to_structure (guint32 fourcc);
+  static GstStructure* gst_v4l2_object_v4l2fourcc_to_structure(guint32 fourcc);
 };
 
 SWITCHER_DECLARE_PLUGIN(V4L2Src);

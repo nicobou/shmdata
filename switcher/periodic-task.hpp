@@ -20,14 +20,14 @@
 #ifndef __SWITCHER_PERIODIC_TASK_H__
 #define __SWITCHER_PERIODIC_TASK_H__
 
-#include <future>
 #include <atomic>
 #include <chrono>
+#include <future>
 
 namespace switcher {
 
 class PeriodicTask {
-  using task_t = std::function<void()>;   
+  using task_t = std::function<void()>;
 
  public:
   PeriodicTask() = delete;

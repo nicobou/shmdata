@@ -25,8 +25,8 @@
 namespace switcher {
 struct CuRes {
   CuRes() = delete;
-  explicit CuRes(CUresult ret) : ret_(ret){}
-  explicit operator bool() const {return CUDA_SUCCESS == ret_;}
+  explicit CuRes(CUresult ret) : ret_(ret) {}
+  explicit operator bool() const { return CUDA_SUCCESS == ret_; }
   const CUresult ret_;
 };
 

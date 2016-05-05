@@ -24,28 +24,29 @@
 #include <vector>
 
 namespace switcher {
-typedef void (*syphonCallback) (void *context, const char *buffer,
-                                int &width, int &height);
+typedef void (*syphonCallback)(void* context,
+                               const char* buffer,
+                               int& width,
+                               int& height);
 
 class SyphonReader {
  public:
   SyphonReader();
-  SyphonReader(syphonCallback, void *);
+  SyphonReader(syphonCallback, void*);
   ~SyphonReader();
-  void connect(const char *serveName = nullptr, const char *appName =
-               nullptr);
+  void connect(const char* serveName = nullptr, const char* appName = nullptr);
   void disconnect();
-  void getFrame(int &width, int &height, char *pixels);
+  void getFrame(int& width, int& height, char* pixels);
 
  protected:
   syphonCallback callback_;
-  void *context_;
-  void *client_;              // Holds the real Syphon client
-  void *glContext_;           // CGL context
+  void* context_;
+  void* client_;     // Holds the real Syphon client
+  void* glContext_;  // CGL context
 
-  void *texture_;
+  void* texture_;
   int width_, height_;
-  std::vector<char>frame_;
+  std::vector<char> frame_;
 
   unsigned int drawTex_, fbo_;
 
@@ -55,4 +56,4 @@ class SyphonReader {
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif  // ifndef

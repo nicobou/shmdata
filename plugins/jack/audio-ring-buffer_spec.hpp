@@ -21,71 +21,62 @@
 
 namespace switcher {
 
-template<typename SampleType>
-AudioRingBuffer<SampleType>::AudioRingBuffer(std::size_t size_in_sample):
-    buffer_size_(size_in_sample),
-    buffer_(size_in_sample),
-    available_size_(size_in_sample){
-}
+template <typename SampleType>
+AudioRingBuffer<SampleType>::AudioRingBuffer(std::size_t size_in_sample)
+    : buffer_size_(size_in_sample),
+      buffer_(size_in_sample),
+      available_size_(size_in_sample) {}
 
-template<typename SampleType>
+template <typename SampleType>
 std::size_t AudioRingBuffer<SampleType>::put_samples(
-    std::size_t num,
-    std::function<SampleType()> sample_getter){
+    std::size_t num, std::function<SampleType()> sample_getter) {
   std::size_t available = available_size_.load();
-  std::size_t res = num; 
-  if (available < num)
-    res = available;
-  //g_print("%s available %lu\n", __FUNCTION__, available);
-  if (0 == res)
-    return res;
-  for (std::size_t i = 0; i < res; ++i){
+  std::size_t res = num;
+  if (available < num) res = available;
+  // g_print("%s available %lu\n", __FUNCTION__, available);
+  if (0 == res) return res;
+  for (std::size_t i = 0; i < res; ++i) {
     buffer_[write_] = sample_getter();
     ++write_;
-    if (buffer_size_ == write_)
-      write_ = 0;
+    if (buffer_size_ == write_) write_ = 0;
   }
   available_size_.fetch_sub(res);
   return res;
 }
 
-template<typename SampleType>
+template <typename SampleType>
 std::size_t AudioRingBuffer<SampleType>::pop_samples(std::size_t num,
-                                                     SampleType *dest) {
+                                                     SampleType* dest) {
   std::size_t available = buffer_size_ - available_size_.load();
-  std::size_t res = num; 
-  if (available < num)
-    res = available;
-  if (0 == res)
-    return res;
+  std::size_t res = num;
+  if (available < num) res = available;
+  if (0 == res) return res;
   if (nullptr == dest) {
     read_ = (read_ + res) % buffer_size_;
     return res;
   }
-  for (std::size_t i = 0; i < res; ++i){
+  for (std::size_t i = 0; i < res; ++i) {
     dest[i] = buffer_[read_];
     ++read_;
-    if (buffer_size_ == read_)
-      read_ = 0;
+    if (buffer_size_ == read_) read_ = 0;
   }
   available_size_.fetch_add(res);
   return res;
 }
 
-template<typename SampleType>
-std::size_t AudioRingBuffer<SampleType>::get_usage(){
+template <typename SampleType>
+std::size_t AudioRingBuffer<SampleType>::get_usage() {
   return buffer_size_ - available_size_.load();
 }
 
-template<typename SampleType>
+template <typename SampleType>
 std::size_t AudioRingBuffer<SampleType>::shrink_to(std::size_t size) {
   std::size_t available = buffer_size_ - available_size_.load();
-   if (available < size)
-     return 0;
-   std::size_t res = available - size;
-   read_ = (read_ + res) % buffer_size_;
-   available_size_.fetch_add(res);
-   return res;
+  if (available < size) return 0;
+  std::size_t res = available - size;
+  read_ = (read_ + res) % buffer_size_;
+  available_size_.fetch_add(res);
+  return res;
 }
 
 }  // namespace switcher

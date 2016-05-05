@@ -27,21 +27,21 @@
 
 #include "./posture.hpp"
 #include "./posture_worker.hpp"
-#include "switcher/std2.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-writer.hpp"
 #include "switcher/shmdata-follower.hpp"
+#include "switcher/shmdata-writer.hpp"
 #include "switcher/startable-quiddity.hpp"
+#include "switcher/std2.hpp"
 
 namespace switcher {
 class PostureMeshMerge : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureMeshMerge);
-  PostureMeshMerge(const std::string &);
+  PostureMeshMerge(const std::string&);
   ~PostureMeshMerge();
-  PostureMeshMerge(const PostureMeshMerge &) = delete;
-  PostureMeshMerge &operator=(const PostureMeshMerge &) = delete;
+  PostureMeshMerge(const PostureMeshMerge&) = delete;
+  PostureMeshMerge& operator=(const PostureMeshMerge&) = delete;
 
   bool start();
   bool stop();
@@ -49,22 +49,22 @@ class PostureMeshMerge : public Quiddity, public StartableQuiddity {
  private:
   ShmdataConnector shmcntr_;
 
-  std::unique_ptr<posture::CalibrationReader> calibration_reader_ {nullptr};
-  std::string calibration_path_ {"default.kvc"};
-  bool reload_calibration_ {false};
-  bool apply_calibration_ {true};
+  std::unique_ptr<posture::CalibrationReader> calibration_reader_{nullptr};
+  std::string calibration_path_{"default.kvc"};
+  bool reload_calibration_{false};
+  bool apply_calibration_{true};
 
-  unsigned int source_id_ {0};
-  std::shared_ptr<posture::MeshMerger> merger_ {nullptr};
-  std::mutex mutex_ {};
-  std::mutex updateMutex_ {};
-  Worker worker_ {};
+  unsigned int source_id_{0};
+  std::shared_ptr<posture::MeshMerger> merger_{nullptr};
+  std::mutex mutex_{};
+  std::mutex updateMutex_{};
+  Worker worker_{};
 
-  std::mutex connect_mutex_ {};
-  unsigned int shmreader_id_ {0};
-  std::map<std::string, std::unique_ptr<ShmdataFollower>> mesh_readers_ {};
-  std::map<int, std::string> mesh_readers_caps_ {};
-  std::unique_ptr<ShmdataWriter> mesh_writer_ {};
+  std::mutex connect_mutex_{};
+  unsigned int shmreader_id_{0};
+  std::map<std::string, std::unique_ptr<ShmdataFollower>> mesh_readers_{};
+  std::map<int, std::string> mesh_readers_caps_{};
+  std::unique_ptr<ShmdataWriter> mesh_writer_{};
 
   bool init() final;
 

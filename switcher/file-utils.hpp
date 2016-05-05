@@ -20,24 +20,21 @@
 #ifndef __SWITCHER_FILE_UTILS_H__
 #define __SWITCHER_FILE_UTILS_H__
 
-#include <utility>
 #include <string>
+#include <utility>
 
 namespace switcher {
 namespace FileUtils {
 
 // A message is given in case of error
-std::pair<bool, std::string> prepare_writable_dir(const std::string &path);
+std::pair<bool, std::string> prepare_writable_dir(const std::string& path);
 
 // A message is given in case of error
 // all subdirs must exist
-std::pair<bool, std::string> create_writable_dir(const std::string &path);
+std::pair<bool, std::string> create_writable_dir(const std::string& path);
 
-bool is_dir(const std::string &path);
+bool is_dir(const std::string& path);
 
 }  // namespace FileUtils
 }  // namespace switcher
 #endif
-
-
-

@@ -29,15 +29,15 @@
 namespace switcher {
 class Group {
  public:
-  static std::pair<bool, Group> from_string(const std::string &){
+  static std::pair<bool, Group> from_string(const std::string&) {
     return std::make_pair(false, Group());
   }
-  std::string to_string() const {return std::string();} 
-  friend std::ostream& operator<<(std::ostream& out, const Group&grp)  {
+  std::string to_string() const { return std::string(); }
+  friend std::ostream& operator<<(std::ostream& out, const Group& grp) {
     out << grp.to_string();
     return out;
   }
 };
-  
+
 }  // namespace switcher
 #endif

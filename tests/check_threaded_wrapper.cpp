@@ -18,60 +18,56 @@
  */
 
 #include <cassert>
-#include <string>
 #include <iostream>
-#include "switcher/threaded-wrapper.hpp"
+#include <string>
 #include "switcher/make-consultable.hpp"  // for MPtr
+#include "switcher/threaded-wrapper.hpp"
 
 using namespace std;
 using namespace switcher;
 
-// struct that will be instanciaded and invoked in a specific thread 
-struct A{
+// struct that will be instanciaded and invoked in a specific thread
+struct A {
   A() = default;
-  A(const string &str) : str_(str){
-  }
+  A(const string& str) : str_(str) {}
 
-  void do_nothing(){}
-  
-  string hello(int i, const string &msg){
-    if (0 == i)
-      cout << str_ << to_string(i) << " " << msg << endl;
+  void do_nothing() {}
+
+  string hello(int i, const string& msg) {
+    if (0 == i) cout << str_ << to_string(i) << " " << msg << endl;
     return string("hello") + to_string(i);
   }
+
  private:
   string str_{};
 };
 
 // other threads using struct A
-void use_A(ThreadedWrapper<A> &twa, const string &str){
+void use_A(ThreadedWrapper<A>& twa, const string& str) {
   int i = 100;
-  while (--i >= 0){
-    auto res = twa.invoke<MPtr(&A::hello)>(i, str); 
+  while (--i >= 0) {
+    auto res = twa.invoke<MPtr(&A::hello)>(i, str);
     assert(res == string("hello") + to_string(i));
     twa.invoke<MPtr(&A::do_nothing)>();
   }
 }
 
-void use_A_async(ThreadedWrapper<A> &twa, const string &str){
+void use_A_async(ThreadedWrapper<A>& twa, const string& str) {
   int i = 100;
-  while (--i >= 0){
+  while (--i >= 0) {
     twa.invoke_async<MPtr(&A::hello)>(
-        [=](const string &str){
+        [=](const string& str) {
           assert(str == string("hello") + to_string(i));
         },
         i,
         str);
-    twa.invoke_async<MPtr(&A::do_nothing)>([=](){
-        if (0 == i)
-          cout << str << ": last do_nothing invocation done" << endl;
-      });
+    twa.invoke_async<MPtr(&A::do_nothing)>([=]() {
+      if (0 == i) cout << str << ": last do_nothing invocation done" << endl;
+    });
   }
 }
 
-
-int
-main() {
+int main() {
   ThreadedWrapper<A> twa("coucou");
   thread th1(use_A, ref(twa), "th1 (sync)");
   thread th2(use_A, ref(twa), "th2 (sync)");

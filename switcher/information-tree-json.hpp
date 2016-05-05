@@ -28,8 +28,8 @@
 #ifndef __SWITCHER_INFORMATION_TREE_JSON_H__
 #define __SWITCHER_INFORMATION_TREE_JSON_H__
 
-#include "./information-tree.hpp"
 #include <string>
+#include "./information-tree.hpp"
 
 namespace switcher {
 namespace JSONSerializer {

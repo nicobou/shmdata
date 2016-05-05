@@ -20,40 +20,41 @@
 #ifndef __SWITCHER_SHMDATA_DECODER_H__
 #define __SWITCHER_SHMDATA_DECODER_H__
 
-#include "./quiddity.hpp"
-#include "./gst-pipeliner.hpp"
 #include "./decodebin-to-shmdata.hpp"
+#include "./gst-pipeliner.hpp"
 #include "./gst-shmdata-subscriber.hpp"
+#include "./quiddity.hpp"
 
 namespace switcher {
 class RtpSession2;
 
 class ShmdataDecoder {
  public:
-  using on_shmwriter_path_t = std::function<void(const std::string &)>;
-  ShmdataDecoder(Quiddity *quid,
-                 GstPipeliner *pipeliner,
-                 const std::string &shmpath,
-                 const std::string &shm_prefix,   // if empty, use quid's prefix method
-                 const std::string &media_label,  // ignored if empty
-                 on_shmwriter_path_t cb);
+  using on_shmwriter_path_t = std::function<void(const std::string&)>;
+  ShmdataDecoder(
+      Quiddity* quid,
+      GstPipeliner* pipeliner,
+      const std::string& shmpath,
+      const std::string& shm_prefix,   // if empty, use quid's prefix method
+      const std::string& media_label,  // ignored if empty
+      on_shmwriter_path_t cb);
   ShmdataDecoder() = delete;
   ~ShmdataDecoder();
-  ShmdataDecoder(const ShmdataDecoder &) = delete;
-  ShmdataDecoder(ShmdataDecoder &&) = delete;
-  ShmdataDecoder &operator=(const ShmdataDecoder &) = delete;
+  ShmdataDecoder(const ShmdataDecoder&) = delete;
+  ShmdataDecoder(ShmdataDecoder&&) = delete;
+  ShmdataDecoder& operator=(const ShmdataDecoder&) = delete;
 
  private:
-  void configure_shmdatasink(GstElement *element,
-                             const std::string &media_type,
-                             const std::string &media_label);
-  Quiddity *quid_;
-  GstPipeliner *pipeliner_;
+  void configure_shmdatasink(GstElement* element,
+                             const std::string& media_type,
+                             const std::string& media_label);
+  Quiddity* quid_;
+  GstPipeliner* pipeliner_;
   std::string shmpath_;
   std::string shmwriter_path_{};
   std::string shm_prefix_;
   std::string media_label_;
-  GstElement *shmdatasrc_;
+  GstElement* shmdatasrc_;
   DecodebinToShmdata decodebin_;
   std::unique_ptr<GstShmdataSubscriber> shm_sub_{};
   on_shmwriter_path_t on_shmwriter_path_cb_;

@@ -29,31 +29,31 @@ class Quiddity;
 class QuiddityDocumentation;
 
 // the types of the class factories for quiddity pluggins
-typedef Quiddity *create_t(const std::string &);
-typedef void destroy_t(switcher::Quiddity *);
-typedef QuiddityDocumentation *get_documentation_t();
+typedef Quiddity* create_t(const std::string&);
+typedef void destroy_t(switcher::Quiddity*);
+typedef QuiddityDocumentation* get_documentation_t();
 
 class PluginLoader {
  public:
   typedef std::shared_ptr<PluginLoader> ptr;
   PluginLoader();
   ~PluginLoader();
-  PluginLoader(const PluginLoader &) = delete;
-  PluginLoader &operator=(const PluginLoader &) = delete;
+  PluginLoader(const PluginLoader&) = delete;
+  PluginLoader& operator=(const PluginLoader&) = delete;
 
-  bool load(const char *filename);
+  bool load(const char* filename);
   bool close();
   std::string get_class_name() const;
   JSONBuilder::Node get_json_root_node();
-  QuiddityDocumentation *get_doc();
-  
-  create_t *create_{nullptr};
-  destroy_t *destroy_{nullptr};
+  QuiddityDocumentation* get_doc();
+
+  create_t* create_{nullptr};
+  destroy_t* destroy_{nullptr};
 
  private:
-  GModule *module_{nullptr};
-  get_documentation_t *get_documentation_{nullptr};
-  //JSONBuilder::Node json_doc_{};
+  GModule* module_{nullptr};
+  get_documentation_t* get_documentation_{nullptr};
+  // JSONBuilder::Node json_doc_{};
   std::string class_name_{};
 };
 }  // namespace switcher

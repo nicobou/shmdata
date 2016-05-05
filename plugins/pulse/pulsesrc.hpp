@@ -20,24 +20,24 @@
 #ifndef __SWITCHER_PULSE_SRC_H__
 #define __SWITCHER_PULSE_SRC_H__
 
-#include <pulse/pulseaudio.h>
 #include <pulse/glib-mainloop.h>
-#include <mutex>
+#include <pulse/pulseaudio.h>
 #include <condition_variable>
+#include <mutex>
+#include "switcher/gst-pipeliner.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/gst-pipeliner.hpp"
 #include "switcher/unique-gst-element.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"
 
 namespace switcher {
-class PulseSrc: public Quiddity, public StartableQuiddity {
+class PulseSrc : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSrc);
-  PulseSrc(const std::string &);
+  PulseSrc(const std::string&);
   ~PulseSrc();
-  PulseSrc(const PulseSrc &) = delete;
-  PulseSrc &operator=(const PulseSrc &) = delete;
+  PulseSrc(const PulseSrc&) = delete;
+  PulseSrc& operator=(const PulseSrc&) = delete;
 
  private:
   typedef struct {
@@ -47,8 +47,8 @@ class PulseSrc: public Quiddity, public StartableQuiddity {
     std::string sample_format_{};
     std::string sample_rate_{};
     std::string channels_{};
-    std::vector<std::pair<std::string/*port*/,
-                          std::string/*description*/>> ports_{};
+    std::vector<std::pair<std::string /*port*/, std::string /*description*/>>
+        ports_{};
     std::string active_port_{};
   } DeviceDescription;
 
@@ -66,12 +66,12 @@ class PulseSrc: public Quiddity, public StartableQuiddity {
   Selection devices_{{"none"}, 0};
   PContainer::prop_id_t devices_id_{0};
   PContainer::prop_id_t volume_id_{0};
-  PContainer::prop_id_t mute_id_{0};  
+  PContainer::prop_id_t mute_id_{0};
   // pulse_audio
-  pa_glib_mainloop *pa_glib_mainloop_{nullptr};
-  pa_mainloop_api *pa_mainloop_api_{nullptr};
-  pa_context *pa_context_{nullptr};
-  char *server_{nullptr};
+  pa_glib_mainloop* pa_glib_mainloop_{nullptr};
+  pa_mainloop_api* pa_mainloop_api_{nullptr};
+  pa_context* pa_context_{nullptr};
+  char* server_{nullptr};
   std::vector<DeviceDescription> capture_devices_{};
   // quit
   std::mutex quit_mutex_{};
@@ -81,18 +81,20 @@ class PulseSrc: public Quiddity, public StartableQuiddity {
   bool start() final;
   bool stop() final;
   bool remake_elements();
-  static gboolean async_get_pulse_devices(void *user_data);
+  static gboolean async_get_pulse_devices(void* user_data);
   void update_capture_device();
-  void make_device_description(pa_context *pulse_context);
+  void make_device_description(pa_context* pulse_context);
   // device enum and select
-  static void pa_context_state_callback(pa_context *c, void *userdata);
-  static void get_source_info_callback(pa_context *c,
-                                       const pa_source_info *i,
-                                       int is_last, void *userdata);
-  static void on_pa_event_callback(pa_context *c,
+  static void pa_context_state_callback(pa_context* c, void* userdata);
+  static void get_source_info_callback(pa_context* c,
+                                       const pa_source_info* i,
+                                       int is_last,
+                                       void* userdata);
+  static void on_pa_event_callback(pa_context* c,
                                    pa_subscription_event_type_t t,
-                                   uint32_t idx, void *userdata);
-  static gboolean quit_pulse(void *user_data);
+                                   uint32_t idx,
+                                   void* userdata);
+  static gboolean quit_pulse(void* user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(PulseSrc);

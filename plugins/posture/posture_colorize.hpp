@@ -30,18 +30,18 @@
 #include "./posture_worker.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-writer.hpp"
 #include "switcher/shmdata-follower.hpp"
+#include "switcher/shmdata-writer.hpp"
 #include "switcher/startable-quiddity.hpp"
 
 namespace switcher {
 class PostureColorize : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureColorize);
-  PostureColorize(const std::string &);
+  PostureColorize(const std::string&);
   ~PostureColorize();
-  PostureColorize(const PostureColorize &) = delete;
-  PostureColorize &operator=(const PostureColorize &) = delete;
+  PostureColorize(const PostureColorize&) = delete;
+  PostureColorize& operator=(const PostureColorize&) = delete;
 
   bool start();
   bool stop();
@@ -49,35 +49,35 @@ class PostureColorize : public Quiddity, public StartableQuiddity {
  private:
   ShmdataConnector shmcntr_;
 
-  std::string calibration_path_ {"default.kvc"};
-  bool compute_tex_coords_ {false};
-  bool compress_mesh_ {true};
+  std::string calibration_path_{"default.kvc"};
+  bool compute_tex_coords_{false};
+  bool compress_mesh_{true};
 
-  Worker worker_ {};
+  Worker worker_{};
 
-  std::unique_ptr<posture::CalibrationReader> calibration_reader_ {nullptr};
-  std::shared_ptr<posture::Colorize> colorize_ {nullptr};
-  std::mutex mutex_ {};
-  std::mutex imageMutex_ {};
+  std::unique_ptr<posture::CalibrationReader> calibration_reader_{nullptr};
+  std::shared_ptr<posture::Colorize> colorize_{nullptr};
+  std::mutex mutex_{};
+  std::mutex imageMutex_{};
 
-  bool has_input_mesh_ {false};
-  int mesh_index_ {-1};
-  std::map<unsigned int, unsigned int> shm_index_ {};
-  //std::vector<unsigned char> mesh_ {};
-  std::vector<std::vector<unsigned char>> images_ {};
-  std::vector<std::vector<unsigned int>> dims_ {};
-  unsigned int source_id_ {0};
+  bool has_input_mesh_{false};
+  int mesh_index_{-1};
+  std::map<unsigned int, unsigned int> shm_index_{};
+  // std::vector<unsigned char> mesh_ {};
+  std::vector<std::vector<unsigned char>> images_{};
+  std::vector<std::vector<unsigned int>> dims_{};
+  unsigned int source_id_{0};
 
-  std::mutex connect_mutex_ {};
-  std::map<std::string, std::unique_ptr<ShmdataFollower>> shmdata_readers_ {};
-  std::map<int, std::string> shmdata_reader_caps_ {};
-  unsigned int shmdata_reader_id_ {0};
+  std::mutex connect_mutex_{};
+  std::map<std::string, std::unique_ptr<ShmdataFollower>> shmdata_readers_{};
+  std::map<int, std::string> shmdata_reader_caps_{};
+  unsigned int shmdata_reader_id_{0};
 
-  std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
-  std::unique_ptr<ShmdataWriter> tex_writer_ {nullptr};
+  std::unique_ptr<ShmdataWriter> mesh_writer_{nullptr};
+  std::unique_ptr<ShmdataWriter> tex_writer_{nullptr};
 
   // Used to check the texture size did not change:
-  unsigned int prev_width_ {0}, prev_height_ {0};
+  unsigned int prev_width_{0}, prev_height_{0};
 
   bool init() final;
   bool connect(std::string shmdata_socket_path);
@@ -88,7 +88,6 @@ class PostureColorize : public Quiddity, public StartableQuiddity {
                         unsigned int& width,
                         unsigned int& height,
                         unsigned int& channels);
-
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureColorize);

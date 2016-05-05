@@ -20,7 +20,5 @@
 #include "./safe-bool-idiom.hpp"
 
 namespace switcher {
-SafeBoolIdiom::operator bool() const {
-  return safe_bool_idiom();
-}
+SafeBoolIdiom::operator bool() const { return safe_bool_idiom(); }
 }  // namespace switcher

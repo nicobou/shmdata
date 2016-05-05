@@ -26,10 +26,11 @@
 namespace switcher {
 class QuiddityManager;
 
-class QuiddityManagerWrapper: public Quiddity {
+class QuiddityManagerWrapper : public Quiddity {
  public:
   typedef std::shared_ptr<QuiddityManagerWrapper> ptr;
   void set_quiddity_manager(std::shared_ptr<QuiddityManager> manager);
+
  protected:
   std::weak_ptr<QuiddityManager> manager_{};
 };

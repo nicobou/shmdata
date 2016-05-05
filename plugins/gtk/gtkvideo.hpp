@@ -20,21 +20,21 @@
 #ifndef __SWITCHER_GTK_VIDEO_H__
 #define __SWITCHER_GTK_VIDEO_H__
 
-#include <memory>
-#include <thread>
-#include <mutex>
 #include <condition_variable>
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-writer.hpp"
+#include <memory>
+#include <mutex>
+#include <thread>
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-writer.hpp"
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
 
-#include <gtk/gtk.h>
 #include <gdk/gdk.h>
+#include <gtk/gtk.h>
 #if defined(GDK_WINDOWING_X11)
 #include <gdk/gdkx.h>
 #elif defined(GDK_WINDOWING_WIN32)
@@ -44,13 +44,13 @@
 #endif
 
 namespace switcher {
-class GTKVideo: public Quiddity {
+class GTKVideo : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GTKVideo);
-  GTKVideo(const std::string &);
+  GTKVideo(const std::string&);
   ~GTKVideo();
-  GTKVideo(const GTKVideo &) = delete;
-  GTKVideo &operator=(const GTKVideo &) = delete;
+  GTKVideo(const GTKVideo&) = delete;
+  GTKVideo& operator=(const GTKVideo&) = delete;
   void toggle_fullscreen();
 
  private:
@@ -61,9 +61,9 @@ class GTKVideo: public Quiddity {
   // gst pipeline:
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   // gtk:
-  GdkDisplay *display_{nullptr};
-  GtkWidget *main_window_{nullptr};
-  GtkWidget *video_window_{nullptr};
+  GdkDisplay* display_{nullptr};
+  GtkWidget* main_window_{nullptr};
+  GtkWidget* video_window_{nullptr};
   // shmsubscriber (publishing to the information-tree):
   std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
   std::string shmpath_{};
@@ -80,11 +80,11 @@ class GTKVideo: public Quiddity {
   UGstElem xvimagesink_{"xvimagesink"};
 #endif
 #if HAVE_OSX
-  NSView *window_handle_{nullptr};
+  NSView* window_handle_{nullptr};
 #else
   guintptr window_handle_{0};
 #endif
-  GdkCursor *blank_cursor_{nullptr};
+  GdkCursor* blank_cursor_{nullptr};
   bool is_fullscreen_{false};
   PContainer::prop_id_t fullscreen_id_{0};
   std::string title_;
@@ -104,48 +104,57 @@ class GTKVideo: public Quiddity {
   int vertical_padding_{0};
   float drawed_video_width_{-1};
   float drawed_video_height_{-1};
-  
+
   bool init() final;
   bool remake_elements();
-  bool on_shmdata_connect(const std::string &shmpath);
+  bool on_shmdata_connect(const std::string& shmpath);
   bool on_shmdata_disconnect();
   bool can_sink_caps(std::string caps);
-  GstBusSyncReply bus_sync(GstMessage *msg);
-  static gboolean create_ui(void *user_data);
-  static gboolean set_title(void *user_data);
-  static gboolean set_fullscreen(void *user_data);
-  static void realize_cb(GtkWidget *widget, void *user_data);
-  static void delete_event_cb(GtkWidget *widget,
-                              GdkEvent *event, void *user_data);
+  GstBusSyncReply bus_sync(GstMessage* msg);
+  static gboolean create_ui(void* user_data);
+  static gboolean set_title(void* user_data);
+  static gboolean set_fullscreen(void* user_data);
+  static void realize_cb(GtkWidget* widget, void* user_data);
+  static void delete_event_cb(GtkWidget* widget,
+                              GdkEvent* event,
+                              void* user_data);
   static void gtk_main_loop_thread();
-  static gboolean key_pressed_cb(GtkWidget *widget,
-                                 GdkEventKey *event, gpointer data);
-  static gboolean key_release_cb(GtkWidget */*widget */,
-                                 GdkEventKey *event,
+  static gboolean key_pressed_cb(GtkWidget* widget,
+                                 GdkEventKey* event,
                                  gpointer data);
-  static gboolean on_destroy_event(GtkWidget *widget,
-                                   GdkEvent *event, gpointer user_data);
+  static gboolean key_release_cb(GtkWidget* /*widget */,
+                                 GdkEventKey* event,
+                                 gpointer data);
+  static gboolean on_destroy_event(GtkWidget* widget,
+                                   GdkEvent* event,
+                                   gpointer user_data);
   static void window_destroyed(gpointer data);
   static gboolean destroy_window(gpointer data);
-  static void set_title(const gchar *value, void *user_data);
-  static const gchar *get_title(void *user_data);
-  static gboolean button_event (GtkWidget *widget, GdkEventButton *event, gpointer data);
-  static gboolean motion_notify_event (GtkWidget *widget, GdkEventMotion *event, gpointer data);
-  static void widget_getsize(GtkWidget *widget, GtkAllocation *allocation, void *data);
-  void update_padding(GtkWidget *widget);
-  void write_mouse_info_to_shmdata(int x, int y, const GdkModifierType &state);
-  void install_gst_properties();  
-  void remove_gst_properties();  
-  
-  struct KeybEvent{
-    KeybEvent (guint32 keyval, guint32 down) : keyval_(keyval), down_(down){}
+  static void set_title(const gchar* value, void* user_data);
+  static const gchar* get_title(void* user_data);
+  static gboolean button_event(GtkWidget* widget,
+                               GdkEventButton* event,
+                               gpointer data);
+  static gboolean motion_notify_event(GtkWidget* widget,
+                                      GdkEventMotion* event,
+                                      gpointer data);
+  static void widget_getsize(GtkWidget* widget,
+                             GtkAllocation* allocation,
+                             void* data);
+  void update_padding(GtkWidget* widget);
+  void write_mouse_info_to_shmdata(int x, int y, const GdkModifierType& state);
+  void install_gst_properties();
+  void remove_gst_properties();
+
+  struct KeybEvent {
+    KeybEvent(guint32 keyval, guint32 down) : keyval_(keyval), down_(down) {}
     guint32 keyval_{0};
     guint32 down_{0};
   };
 
-  struct MouseEvent{
-    MouseEvent (guint32 x, guint32 y, guint32 button_mask):
-        x_(x), y_(y), button_mask_(button_mask){}
+  struct MouseEvent {
+    MouseEvent(guint32 x, guint32 y, guint32 button_mask)
+        : x_(x), y_(y), button_mask_(button_mask) {}
     guint32 x_{0};
     guint32 y_{0};
     guint32 button_mask_{0};

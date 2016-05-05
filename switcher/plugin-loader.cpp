@@ -21,15 +21,13 @@
 #include "./quiddity-documentation.hpp"
 
 namespace switcher {
-PluginLoader::PluginLoader() {
-}
+PluginLoader::PluginLoader() {}
 
 PluginLoader::~PluginLoader() {
-  if (module_ != nullptr)
-    g_module_close(module_);
+  if (module_ != nullptr) g_module_close(module_);
 }
 
-bool PluginLoader::load(const char *filename) {
+bool PluginLoader::load(const char* filename) {
   if (!g_module_supported()) {
     g_debug("g_module not supported !, cannot load %s", filename);
     return false;
@@ -43,7 +41,7 @@ bool PluginLoader::load(const char *filename) {
     return false;
   }
 
-  if (!g_module_symbol(module_, "create", (gpointer *) &create_)) {
+  if (!g_module_symbol(module_, "create", (gpointer*)&create_)) {
     g_debug("loading %s: %s", filename, g_module_error());
     close();
     return false;
@@ -55,7 +53,7 @@ bool PluginLoader::load(const char *filename) {
     return false;
   }
 
-  if (!g_module_symbol(module_, "destroy", (gpointer *) &destroy_)) {
+  if (!g_module_symbol(module_, "destroy", (gpointer*)&destroy_)) {
     g_debug("%s: %s", filename, g_module_error());
     close();
     return false;
@@ -67,8 +65,8 @@ bool PluginLoader::load(const char *filename) {
     return false;
   }
 
-  if (!g_module_symbol
-      (module_, "get_documentation", (gpointer *) &get_documentation_)) {
+  if (!g_module_symbol(
+          module_, "get_documentation", (gpointer*)&get_documentation_)) {
     g_debug("%s: %s", filename, g_module_error());
     close();
     return false;
@@ -80,15 +78,14 @@ bool PluginLoader::load(const char *filename) {
     return false;
   }
 
-  QuiddityDocumentation *doc = get_documentation_();
+  QuiddityDocumentation* doc = get_documentation_();
   class_name_ = doc->get_class_name();
-  //json_doc_ = doc.get_json_root_node();
+  // json_doc_ = doc.get_json_root_node();
   return true;
 }
 
 bool PluginLoader::close() {
-  if (module_ == nullptr)
-    return false;
+  if (module_ == nullptr) return false;
 
   if (!g_module_close(module_)) {
     g_debug("closing module: %s", g_module_error());
@@ -99,18 +96,14 @@ bool PluginLoader::close() {
 }
 
 std::string PluginLoader::get_class_name() const {
-  if (module_ == nullptr)
-    return std::string();
+  if (module_ == nullptr) return std::string();
   return class_name_;
 }
 
 JSONBuilder::Node PluginLoader::get_json_root_node() {
-  if (module_ == nullptr)
-    return nullptr;
+  if (module_ == nullptr) return nullptr;
   return get_documentation_()->get_json_root_node();
 }
 
-QuiddityDocumentation *PluginLoader::get_doc() {
-  return get_documentation_();
-}
+QuiddityDocumentation* PluginLoader::get_doc() { return get_documentation_(); }
 }

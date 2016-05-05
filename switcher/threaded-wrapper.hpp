@@ -20,47 +20,40 @@
 #ifndef __SWITCHER_THREADED_WRAPPER_H__
 #define __SWITCHER_THREADED_WRAPPER_H__
 
+#include <atomic>
 #include <functional>
 #include <future>
-#include <atomic>
-#include <vector>
-#include <memory>
 #include <iostream>
+#include <memory>
+#include <vector>
 
 namespace switcher {
-template<typename T>
-class ThreadedWrapper{
+template <typename T>
+class ThreadedWrapper {
  public:
-  template<typename ...Args>
-  ThreadedWrapper(Args... args):
-      fut_ (std::async(std::launch::async,
-                       [&](){
-                         threaded_wrap();
-                       })){
-    do_sync_task([&](){
-        member_.reset(new T(args...));
-      });
+  template <typename... Args>
+  ThreadedWrapper(Args... args)
+      : fut_(std::async(std::launch::async, [&]() { threaded_wrap(); })) {
+    do_sync_task([&]() { member_.reset(new T(args...)); });
   }
-  ~ThreadedWrapper(){
-    do_sync_task([&](){
-        run_async_tasks();
-        // destroy member from the thread:
-        member_.reset(nullptr);
-        // stop the thread
-        canceled_.store(true);
-      });
+  ~ThreadedWrapper() {
+    do_sync_task([&]() {
+      run_async_tasks();
+      // destroy member from the thread:
+      member_.reset(nullptr);
+      // stop the thread
+      canceled_.store(true);
+    });
     // wait for the thread
-    if (fut_.valid()) 
-      fut_.get();
+    if (fut_.valid()) fut_.get();
   }
 
-  
-  void threaded_wrap(){
+  void threaded_wrap() {
     // work loop
     while (!canceled_.load()) {
       std::unique_lock<std::mutex> lock(cv_m_);
       // sync task
-      if(sync_task_){
+      if (sync_task_) {
         sync_task_();
         sync_task_ = nullptr;
         std::unique_lock<std::mutex> lock2(task_done_m_);
@@ -72,26 +65,36 @@ class ThreadedWrapper{
       cv_.wait_for(lock, std::chrono::milliseconds(1));
     }
   }
-  
+
   // introspection of methods return type
-  template<typename F, F f>
+  template <typename F, F f>
   struct method_traits;
   // const
-  template<typename C, typename R, typename ...Args, R(C::*fn_ptr)(Args...) const>
-  struct method_traits<R(C::*)(Args...) const, fn_ptr>{using return_t = R;};
+  template <typename C,
+            typename R,
+            typename... Args,
+            R (C::*fn_ptr)(Args...) const>
+  struct method_traits<R (C::*)(Args...) const, fn_ptr> {
+    using return_t = R;
+  };
   // non const
-  template<typename C, typename R, typename ...Args, R(C::*fn_ptr)(Args... )>
-  struct method_traits<R(C::*)(Args...), fn_ptr>{ using return_t = R; };
+  template <typename C, typename R, typename... Args, R (C::*fn_ptr)(Args...)>
+  struct method_traits<R (C::*)(Args...), fn_ptr> {
+    using return_t = R;
+  };
 
   // returning methods
-  template<typename MType, MType fun, typename ...ARGs,
-           typename std::enable_if<
-             !std::is_same<void, typename method_traits<MType, fun>::return_t>::value
-             >::type* = nullptr>
-  typename method_traits<MType, fun>::return_t invoke(ARGs ...args){
+  template <typename MType,
+            MType fun,
+            typename... ARGs,
+            typename std::enable_if<!std::is_same<
+                void,
+                typename method_traits<MType, fun>::return_t>::value>::type* =
+                nullptr>
+  typename method_traits<MType, fun>::return_t invoke(ARGs... args) {
     typename method_traits<MType, fun>::return_t res;
-    auto task = [&](){
-      res = (this->member_.get() ->* fun)(std::forward<ARGs>(args)...);
+    auto task = [&]() {
+      res = (this->member_.get()->*fun)(std::forward<ARGs>(args)...);
       std::unique_lock<std::mutex> lock(this->task_done_m_);
       this->task_done_cv_.notify_one();
     };
@@ -99,32 +102,40 @@ class ThreadedWrapper{
     return res;
   }
 
-  template<typename MType, MType fun, typename ...ARGs,
-           typename std::enable_if<
-             !std::is_same<void, typename method_traits<MType, fun>::return_t>::value
-             >::type* = nullptr>
+  template <typename MType,
+            MType fun,
+            typename... ARGs,
+            typename std::enable_if<!std::is_same<
+                void,
+                typename method_traits<MType, fun>::return_t>::value>::type* =
+                nullptr>
   void invoke_async(
-      std::function<void(typename method_traits<MType, fun>::return_t)>  on_result,
-      ARGs ...args){
-    { std::unique_lock<std::mutex> lock_sync(async_mtx_);
-      async_tasks_.emplace_back([=](){
-          if (on_result)
-            on_result((this->member_.get() ->* fun)(args...));
-          else
-            (this->member_.get() ->* fun)(args...);
-        });
+      std::function<void(typename method_traits<MType, fun>::return_t)>
+          on_result,
+      ARGs... args) {
+    {
+      std::unique_lock<std::mutex> lock_sync(async_mtx_);
+      async_tasks_.emplace_back([=]() {
+        if (on_result)
+          on_result((this->member_.get()->*fun)(args...));
+        else
+          (this->member_.get()->*fun)(args...);
+      });
     }
     return;
   }
 
   // void methods
-  template<typename MType, MType fun, typename ...ARGs,
-           typename std::enable_if<
-             std::is_same<void, typename method_traits<MType, fun>::return_t>::value
-             >::type* = nullptr>
-  typename method_traits<MType, fun>::return_t invoke(ARGs ...args){
-    auto task = [&](){
-      (this->member_.get() ->* fun)(std::forward<ARGs>(args)...);
+  template <typename MType,
+            MType fun,
+            typename... ARGs,
+            typename std::enable_if<std::is_same<
+                void,
+                typename method_traits<MType, fun>::return_t>::value>::type* =
+                nullptr>
+  typename method_traits<MType, fun>::return_t invoke(ARGs... args) {
+    auto task = [&]() {
+      (this->member_.get()->*fun)(std::forward<ARGs>(args)...);
       std::unique_lock<std::mutex> lock(this->task_done_m_);
       this->task_done_cv_.notify_one();
     };
@@ -132,34 +143,35 @@ class ThreadedWrapper{
     return;
   }
 
-  template<typename MType, MType fun, typename ...ARGs,
-           typename std::enable_if<
-             std::is_same<void, typename method_traits<MType, fun>::return_t>::value
-             >::type* = nullptr>
-  void invoke_async(
-      std::function<void()>  on_result,
-      ARGs ...args){
-    { std::unique_lock<std::mutex> lock_sync(async_mtx_);
-      async_tasks_.emplace_back([=](){
-          if (on_result) {
-            (this->member_.get() ->* fun)(args...);
-            on_result();
-          } else {
-            (this->member_.get() ->* fun)(args...);
-          }
-        });
+  template <typename MType,
+            MType fun,
+            typename... ARGs,
+            typename std::enable_if<std::is_same<
+                void,
+                typename method_traits<MType, fun>::return_t>::value>::type* =
+                nullptr>
+  void invoke_async(std::function<void()> on_result, ARGs... args) {
+    {
+      std::unique_lock<std::mutex> lock_sync(async_mtx_);
+      async_tasks_.emplace_back([=]() {
+        if (on_result) {
+          (this->member_.get()->*fun)(args...);
+          on_result();
+        } else {
+          (this->member_.get()->*fun)(args...);
+        }
+      });
     }
     return;
   }
 
-  //returning functions
-  template<typename R,
-           typename std::enable_if<
-             !std::is_same<void, R>::value
-             >::type* = nullptr>
-  R run(std::function<R()> fun){
+  // returning functions
+  template <
+      typename R,
+      typename std::enable_if<!std::is_same<void, R>::value>::type* = nullptr>
+  R run(std::function<R()> fun) {
     R res;
-    auto task = [&](){
+    auto task = [&]() {
       res = fun();
       std::unique_lock<std::mutex> lock(this->task_done_m_);
       this->task_done_cv_.notify_one();
@@ -168,24 +180,28 @@ class ThreadedWrapper{
     return res;
   }
 
-  template<typename R,
-           typename std::enable_if<
-             !std::is_same<void, R>::value>::type* = nullptr>
-  void run_async(std::function<void()> fun, std::function<void(R)> on_result){
-    { std::unique_lock<std::mutex> lock_sync(async_mtx_);
-      async_tasks_.emplace_back([=](){
-          if (on_result) on_result(fun());
-          else fun();
-        });
+  template <
+      typename R,
+      typename std::enable_if<!std::is_same<void, R>::value>::type* = nullptr>
+  void run_async(std::function<void()> fun, std::function<void(R)> on_result) {
+    {
+      std::unique_lock<std::mutex> lock_sync(async_mtx_);
+      async_tasks_.emplace_back([=]() {
+        if (on_result)
+          on_result(fun());
+        else
+          fun();
+      });
     }
     return;
   }
 
   // void functions
-  template<typename R = void,
-           typename std::enable_if<std::is_same<void, R>::value>::type* = nullptr>
-  R run(std::function<void()> fun){
-    auto task = [&](){
+  template <
+      typename R = void,
+      typename std::enable_if<std::is_same<void, R>::value>::type* = nullptr>
+  R run(std::function<void()> fun) {
+    auto task = [&]() {
       fun();
       std::unique_lock<std::mutex> lock(this->task_done_m_);
       this->task_done_cv_.notify_one();
@@ -194,23 +210,25 @@ class ThreadedWrapper{
     return;
   }
 
-  template<typename R = void,
-           typename std::enable_if<std::is_same<void, R>::value>::type* = nullptr>
+  template <
+      typename R = void,
+      typename std::enable_if<std::is_same<void, R>::value>::type* = nullptr>
   void run_async(std::function<void()> fun,
-                 std::function<void()> on_done = nullptr){
-    { std::unique_lock<std::mutex> lock_sync(async_mtx_);
-      async_tasks_.emplace_back([=](){
-          if (on_done) {
-            fun();
-            on_done();
-          } else {
-            fun();
-          }
-        });
+                 std::function<void()> on_done = nullptr) {
+    {
+      std::unique_lock<std::mutex> lock_sync(async_mtx_);
+      async_tasks_.emplace_back([=]() {
+        if (on_done) {
+          fun();
+          on_done();
+        } else {
+          fun();
+        }
+      });
     }
     return;
   }
-  
+
  private:
   std::unique_ptr<T> member_;
   // sync task
@@ -228,34 +246,33 @@ class ThreadedWrapper{
   // thread
   std::atomic<bool> canceled_{false};
   std::future<void> fut_;
-  
- void do_sync_task(std::function<void()> fun){
-   std::unique_lock<std::mutex> lock_sync(sync_mtx_);
-   sync_task_ = fun;
-   {
-     std::unique_lock<std::mutex> lock2(cv_m_);
-     cv_.notify_one();
-     while (!task_done_){
-       task_done_cv_.wait(lock2);
-     }
-   }
-   task_done_ = false;
+
+  void do_sync_task(std::function<void()> fun) {
+    std::unique_lock<std::mutex> lock_sync(sync_mtx_);
+    sync_task_ = fun;
+    {
+      std::unique_lock<std::mutex> lock2(cv_m_);
+      cv_.notify_one();
+      while (!task_done_) {
+        task_done_cv_.wait(lock2);
+      }
+    }
+    task_done_ = false;
   }
 
-  void run_async_tasks(){
+  void run_async_tasks() {
     std::vector<std::function<void()>> tasks_to_do{};
-    { std::unique_lock<std::mutex> lock_sync(async_mtx_);
+    {
+      std::unique_lock<std::mutex> lock_sync(async_mtx_);
       auto num_tasks = async_tasks_.size();
-      if (0 != num_tasks){
+      if (0 != num_tasks) {
         tasks_to_do.resize(num_tasks);
-        std::move(async_tasks_.begin(),
-                  async_tasks_.end(),
-                  tasks_to_do.begin());
+        std::move(
+            async_tasks_.begin(), async_tasks_.end(), tasks_to_do.begin());
         async_tasks_.clear();
       }
     }
-    for (auto &it: tasks_to_do)
-      it();
+    for (auto& it : tasks_to_do) it();
     tasks_to_do.clear();
   }
 };

@@ -15,37 +15,33 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "./pj-sip-plugin.hpp"
 #include "switcher/net-utils.hpp"
 #include "switcher/std2.hpp"
-#include "./pj-sip-plugin.hpp"
 
 namespace switcher {
 SWITCHER_DECLARE_PLUGIN(SIPPlugin);
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    SIPPlugin,
-    "sip",
-    "SIP (Session Initiation Protocol)",
-    "network",
-    "writer",
-    "Manages user sessions",
-    "LGPL",
-    "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SIPPlugin,
+                                     "sip",
+                                     "SIP (Session Initiation Protocol)",
+                                     "network",
+                                     "writer",
+                                     "Manages user sessions",
+                                     "LGPL",
+                                     "Nicolas Bouillot");
 
-SIPPlugin *SIPPlugin::this_ = nullptr;
+SIPPlugin* SIPPlugin::this_ = nullptr;
 std::atomic<unsigned short> SIPPlugin::sip_plugin_used_(0);
 
-
-SIPPlugin::SIPPlugin(const std::string &) {
-}
+SIPPlugin::SIPPlugin(const std::string&) {}
 
 SIPPlugin::~SIPPlugin() {
-  if (!i_m_the_one_)
-    return;
-  pjsip_->run([this](){
-      sip_calls_.reset(nullptr);
-      stun_turn_.reset(nullptr);
-      sip_presence_.reset(nullptr);
-    });
+  if (!i_m_the_one_) return;
+  pjsip_->run([this]() {
+    sip_calls_.reset(nullptr);
+    stun_turn_.reset(nullptr);
+    sip_presence_.reset(nullptr);
+  });
   pjsip_.reset(nullptr);
   this_ = nullptr;
   i_m_the_one_ = false;
@@ -62,13 +58,12 @@ bool SIPPlugin::init() {
 
   pmanage<MPtr(&PContainer::make_unsigned_int)>(
       "port",
-      [this](const unsigned int &val){
-        if (val == sip_port_)
-          return true;
+      [this](const unsigned int& val) {
+        if (val == sip_port_) return true;
         sip_port_ = val;
-        return pjsip_->run<bool>([this](){return start_sip_transport();});
+        return pjsip_->run<bool>([this]() { return start_sip_transport(); });
       },
-      [this](){return sip_port_;},
+      [this]() { return sip_port_; },
       "SIP Port",
       "SIP port used when registering",
       sip_port_,
@@ -77,15 +72,15 @@ bool SIPPlugin::init() {
 
   pjsip_ = std2::make_unique<ThreadedWrapper<PJSIP>>(
       // init
-      [&](){
+      [&]() {
         start_sip_transport();
         sip_calls_ = std2::make_unique<PJCall>();
         sip_presence_ = std2::make_unique<PJPresence>();
-        stun_turn_  = std2::make_unique<PJStunTurn>();
+        stun_turn_ = std2::make_unique<PJStunTurn>();
         return true;
       },
       // destruct
-      [&](){
+      [&]() {
         sip_calls_.reset(nullptr);
         sip_presence_.reset(nullptr);
         stun_turn_.reset(nullptr);
@@ -94,8 +89,7 @@ bool SIPPlugin::init() {
 }
 
 bool SIPPlugin::start_sip_transport() {
-  if (-1 != transport_id_)
-    pjsua_transport_close(transport_id_, PJ_FALSE);
+  if (-1 != transport_id_) pjsua_transport_close(transport_id_, PJ_FALSE);
   if (NetUtils::is_used(sip_port_)) {
     g_warning("SIP port cannot be binded (%u)", sip_port_);
     return false;

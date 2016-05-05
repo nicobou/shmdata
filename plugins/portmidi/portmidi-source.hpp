@@ -20,25 +20,25 @@
 #ifndef __SWITCHER_PORTMIDI_SOURCE_H__
 #define __SWITCHER_PORTMIDI_SOURCE_H__
 
-#include "switcher/quiddity.hpp"
-#include "switcher/startable-quiddity.hpp"
-#include "switcher/shmdata-writer.hpp"
 #include "./portmidi-devices.hpp"
+#include "switcher/quiddity.hpp"
+#include "switcher/shmdata-writer.hpp"
+#include "switcher/startable-quiddity.hpp"
 
 namespace switcher {
-class PortMidiSource: public Quiddity,
-                      public StartableQuiddity,
-                      public PortMidi {
+class PortMidiSource : public Quiddity,
+                       public StartableQuiddity,
+                       public PortMidi {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSource);
-  PortMidiSource(const std::string &);
+  PortMidiSource(const std::string&);
   ~PortMidiSource() = default;
-  PortMidiSource(const PortMidiSource &) = delete;
-  PortMidiSource &operator=(const PortMidiSource &) = delete;
+  PortMidiSource(const PortMidiSource&) = delete;
+  PortMidiSource& operator=(const PortMidiSource&) = delete;
 
  private:
   typedef struct {
-    PortMidiSource *port_midi_source_{nullptr};
+    PortMidiSource* port_midi_source_{nullptr};
     std::string property_long_name_{};
   } MidiPropertyContext;
 
@@ -52,31 +52,32 @@ class PortMidiSource: public Quiddity,
   PContainer::prop_id_t last_midi_value_id_{0};
   gboolean make_property_for_next_midi_event_{false};
   std::string next_property_name_{};
-  std::map<std::string, PContainer::prop_id_t>prop_ids_{};
+  std::map<std::string, PContainer::prop_id_t> prop_ids_{};
   // this is persistent to the quiddity:
-  std::map<std::string, MidiPropertyContext> midi_property_contexts_{};  
+  std::map<std::string, MidiPropertyContext> midi_property_contexts_{};
   std::map<std::pair<guint, guint>, std::string> midi_channels_{};
   std::map<std::string, guint> midi_values_{};
   // using property name instead of long name:
-  std::map<std::string, PContainer::prop_id_t>unused_props_specs_{};
+  std::map<std::string, PContainer::prop_id_t> unused_props_specs_{};
 
   bool init() final;
   bool start() final;
   bool stop() final;
 
-  bool make_property(std::string property_long_name, gint last_status, gint last_data);
-  static gint get_midi_value(void *user_data);
+  bool make_property(std::string property_long_name,
+                     gint last_status,
+                     gint last_data);
+  static gint get_midi_value(void* user_data);
   // midi properties
-  static gboolean next_midi_event_to_property_method(gchar *long_name,
-                                                     void *user_data);
-  static gboolean remove_property_method(gchar *long_name,
-                                         void *user_data);
-  static gint get_midi_property_value(void *user_data);
-  static void on_pm_event(PmEvent *event, void *user_data);
-  static gboolean make_property_wrapped(const gchar *property_long_name,
+  static gboolean next_midi_event_to_property_method(gchar* long_name,
+                                                     void* user_data);
+  static gboolean remove_property_method(gchar* long_name, void* user_data);
+  static gint get_midi_property_value(void* user_data);
+  static void on_pm_event(PmEvent* event, void* user_data);
+  static gboolean make_property_wrapped(const gchar* property_long_name,
                                         gint last_status,
                                         gint last_data1,
-                                        void *user_data);
+                                        void* user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSource);

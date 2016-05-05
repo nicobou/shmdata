@@ -21,8 +21,7 @@
 #include "switcher/quiddity-manager.hpp"
 //#include "switcher/quiddity-basic-test.hpp"
 
-int
-main() {
+int main() {
   {
     int c = 10;
     while (--c > 0)

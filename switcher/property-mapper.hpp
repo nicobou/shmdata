@@ -23,13 +23,13 @@
 #include "./quiddity.hpp"
 
 namespace switcher {
-class PropertyMapper: public Quiddity {
+class PropertyMapper : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PropertyMapper);
-  PropertyMapper(const std::string &);
+  PropertyMapper(const std::string&);
   ~PropertyMapper();
-  PropertyMapper(const PropertyMapper &);
-  PropertyMapper &operator=(const PropertyMapper &);
+  PropertyMapper(const PropertyMapper&);
+  PropertyMapper& operator=(const PropertyMapper&);
   bool init();
 
  private:
@@ -37,7 +37,7 @@ class PropertyMapper: public Quiddity {
   std::string source_property_name_{};
 
   std::weak_ptr<Quiddity> sink_quiddity_{};
-  //GParamSpec *sink_quiddity_pspec_;
+  // GParamSpec *sink_quiddity_pspec_;
   std::string sink_property_name_{};
 
   PContainer::register_id_t reg_id_{0};
@@ -52,16 +52,16 @@ class PropertyMapper: public Quiddity {
   double sink_max_{0};
   double source_min_{0};
   double source_max_{0};
-  
+
   void make_numerical_source_properties();
   void make_numerical_sink_properties();
   void property_updated_cb();
-  static gboolean set_source_property_method(gchar *quiddity_name,
-                                             gchar *property_name,
-                                             void *user_data);
-  static gboolean set_sink_property_method(gchar *quiddity_name,
-                                           gchar *property_name,
-                                           void *user_data);
+  static gboolean set_source_property_method(gchar* quiddity_name,
+                                             gchar* property_name,
+                                             void* user_data);
+  static gboolean set_sink_property_method(gchar* quiddity_name,
+                                           gchar* property_name,
+                                           void* user_data);
   void unsubscribe_source_property();
 };
 

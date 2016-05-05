@@ -20,25 +20,25 @@
 #ifndef __SWITCHER_PULSE_SINK_H__
 #define __SWITCHER_PULSE_SINK_H__
 
-#include <pulse/pulseaudio.h>
 #include <pulse/glib-mainloop.h>
-#include <mutex>
+#include <pulse/pulseaudio.h>
 #include <condition_variable>
+#include <mutex>
 #include <vector>
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/quiddity.hpp"
+#include "switcher/shmdata-connector.hpp"
 #include "switcher/unique-gst-element.hpp"
 
 namespace switcher {
-class PulseSink: public Quiddity {
+class PulseSink : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSink);
-  PulseSink(const std::string &);
+  PulseSink(const std::string&);
   ~PulseSink();
-  PulseSink(const PulseSink &) = delete;
-  PulseSink &operator=(const PulseSink &) = delete;
+  PulseSink(const PulseSink&) = delete;
+  PulseSink& operator=(const PulseSink&) = delete;
 
  private:
   typedef struct {
@@ -48,7 +48,8 @@ class PulseSink: public Quiddity {
     std::string sample_format_{};
     std::string sample_rate_{};
     std::string channels_{};
-    std::vector<std::pair<std::string/*port */, std::string/*description */>> ports_{};
+    std::vector<std::pair<std::string /*port */, std::string /*description */>>
+        ports_{};
     std::string active_port_{};
   } DeviceDescription;
 
@@ -63,10 +64,10 @@ class PulseSink: public Quiddity {
   UGstElem shmsrc_{"shmdatasrc"};
   UGstElem audioconvert_{"audioconvert"};
   UGstElem pulsesink_{"pulsesink"};
-  pa_glib_mainloop *pa_glib_mainloop_{nullptr};
-  pa_mainloop_api *pa_mainloop_api_{nullptr};
-  pa_context *pa_context_{nullptr};
-  char *server_{nullptr};
+  pa_glib_mainloop* pa_glib_mainloop_{nullptr};
+  pa_mainloop_api* pa_mainloop_api_{nullptr};
+  pa_context* pa_context_{nullptr};
+  char* server_{nullptr};
   std::vector<DeviceDescription> devices_{};  // indexed by pulse_device_name
   std::mutex devices_mutex_{};
   std::condition_variable devices_cond_{};
@@ -81,21 +82,23 @@ class PulseSink: public Quiddity {
   std::condition_variable quit_cond_{};
 
   bool init() final;
-  bool on_shmdata_connect(const std::string &shmpath);
+  bool on_shmdata_connect(const std::string& shmpath);
   bool on_shmdata_disconnect();
-  bool can_sink_caps(const std::string &caps);
+  bool can_sink_caps(const std::string& caps);
   bool remake_elements();
-  void make_device_description(pa_context *pulse_context);
+  void make_device_description(pa_context* pulse_context);
   void update_output_device();
-  static void pa_context_state_callback(pa_context *c, void *userdata);
-  static void get_sink_info_callback(pa_context *c,
-                                     const pa_sink_info *i,
-                                     int is_last, void *userdata);
-  static void on_pa_event_callback(pa_context *c,
+  static void pa_context_state_callback(pa_context* c, void* userdata);
+  static void get_sink_info_callback(pa_context* c,
+                                     const pa_sink_info* i,
+                                     int is_last,
+                                     void* userdata);
+  static void on_pa_event_callback(pa_context* c,
                                    pa_subscription_event_type_t t,
-                                   uint32_t idx, void *userdata);
-  static gboolean async_get_pulse_devices(void *user_data);
-  static gboolean quit_pulse(void *user_data);
+                                   uint32_t idx,
+                                   void* userdata);
+  static gboolean async_get_pulse_devices(void* user_data);
+  static gboolean quit_pulse(void* user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(PulseSink);

@@ -24,24 +24,22 @@ namespace switcher {
 namespace prop {
 
 // set/get
-template<typename W>
+template <typename W>
 using get_t = std::function<W()>;
 
-template<typename W>
-using set_t = std::function<bool(const W &)>;
+template <typename W>
+using set_t = std::function<bool(const W&)>;
 
 // id
 using prop_id_t = size_t;
-inline prop_id_t id_from_string(const std::string &str){
-  if(!isdigit(*str.begin()))
-     return 0;
+inline prop_id_t id_from_string(const std::string& str) {
+  if (!isdigit(*str.begin())) return 0;
   return stoul(str, nullptr, 0);
 }
 
 // register
 using register_id_t = size_t;
 using notify_cb_t = std::function<void()>;
-
 
 }  // namespace propsetget
 }  // namespace switcher

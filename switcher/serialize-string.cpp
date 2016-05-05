@@ -21,6 +21,6 @@
 
 namespace switcher {
 namespace serialize {
-void append_targs(std::string *, size_t){}
+void append_targs(std::string*, size_t) {}
 }  // namespace serialize
 }  // namespace switcher

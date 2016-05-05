@@ -17,65 +17,65 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <gst/gst.h>
-#include "switcher/gst-utils.hpp"
-#include "switcher/std2.hpp"
-#include "switcher/shmdata-utils.hpp"
-#include "switcher/scope-exit.hpp"
-#include "switcher/gprop-to-prop.hpp"
 #include "./video-test-source.hpp"
+#include <gst/gst.h>
+#include "switcher/gprop-to-prop.hpp"
+#include "switcher/gst-utils.hpp"
+#include "switcher/scope-exit.hpp"
+#include "switcher/shmdata-utils.hpp"
+#include "switcher/std2.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    VideoTestSource,
-    "videotestsrc",
-    "Video Pattern",
-    "video",
-    "writer",
-    "Creates a test video stream",
-    "LGPL",
-    "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
+                                     "videotestsrc",
+                                     "Video Pattern",
+                                     "video",
+                                     "writer",
+                                     "Creates a test video stream",
+                                     "LGPL",
+                                     "Nicolas Bouillot");
 
-VideoTestSource::VideoTestSource(const std::string &):
-    gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)){
+VideoTestSource::VideoTestSource(const std::string&)
+    : gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)) {
   init_startable(this);
 }
 
 bool VideoTestSource::init() {
-  if(!videotestsrc_ || !shmdatasink_)
-    return false;
+  if (!videotestsrc_ || !shmdatasink_) return false;
   shmpath_ = make_file_name("video");
   g_object_set(G_OBJECT(videotestsrc_.get_raw()), "is-live", TRUE, nullptr);
-  g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
+  g_object_set(G_OBJECT(shmdatasink_.get_raw()),
+               "socket-path",
+               shmpath_.c_str(),
+               nullptr);
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
-                   shmdatasink_.get_raw(), videotestsrc_.get_raw(),
+                   shmdatasink_.get_raw(),
+                   videotestsrc_.get_raw(),
                    nullptr);
   gst_element_link(videotestsrc_.get_raw(), shmdatasink_.get_raw());
   pmanage<MPtr(&PContainer::push)>(
-      "pattern", GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
-  codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity *>(this),
-                                             shmpath_);
+      "pattern",
+      GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
+  codecs_ =
+      std2::make_unique<GstVideoCodec>(static_cast<Quiddity*>(this), shmpath_);
   return true;
 }
 
 bool VideoTestSource::start() {
-  if (!gst_pipeline_)
-    return false;
+  if (!gst_pipeline_) return false;
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmdatasink_.get_raw(),
-      [this]( const std::string &caps){
-        this->graft_tree(".shmdata.writer." + shmpath_,
-                         ShmdataUtils::make_tree(caps,
-                                                 ShmdataUtils::get_category(caps),
-                                                 0));
+      [this](const std::string& caps) {
+        this->graft_tree(
+            ".shmdata.writer." + shmpath_,
+            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
       },
-      [this](GstShmdataSubscriber::num_bytes_t byte_rate){
+      [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
         this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
                          InfoTree::make(byte_rate));
       });
-  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()),
-               "async-handling", TRUE,
-               nullptr);
+  g_object_set(
+      G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
   codecs_->start();
   pmanage<MPtr(&PContainer::replace)>(
@@ -87,21 +87,22 @@ bool VideoTestSource::start() {
 bool VideoTestSource::stop() {
   shm_sub_.reset(nullptr);
   prune_tree(".shmdata.writer." + shmpath_);
-  if (!UGstElem::renew(videotestsrc_, {"is-live", "pattern"})
-      || !UGstElem::renew(shmdatasink_, {"socket-path"})) {
+  if (!UGstElem::renew(videotestsrc_, {"is-live", "pattern"}) ||
+      !UGstElem::renew(shmdatasink_, {"socket-path"})) {
     g_warning("error initializing gst element for videotestsrc");
     gst_pipeline_.reset();
     return false;
   }
   gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
-                   shmdatasink_.get_raw(), videotestsrc_.get_raw(),
+                   shmdatasink_.get_raw(),
+                   videotestsrc_.get_raw(),
                    nullptr);
   gst_element_link(videotestsrc_.get_raw(), shmdatasink_.get_raw());
   codecs_->stop();
-  pmanage<MPtr(&PContainer::replace)>(pmanage<MPtr(&PContainer::get_id)>("pattern"),
-                                      GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()),
-                                                           "pattern"));
+  pmanage<MPtr(&PContainer::replace)>(
+      pmanage<MPtr(&PContainer::get_id)>("pattern"),
+      GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
   return true;
 }
 

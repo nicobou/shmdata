@@ -17,43 +17,40 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "./glibmainloop.hpp"
 #include <gst/gst.h>
 #include <chrono>
-#include "./glibmainloop.hpp"
 
 namespace switcher {
 
-GlibMainLoop::GlibMainLoop():
-    main_context_(g_main_context_new()),
-    mainloop_(g_main_loop_new(main_context_, FALSE)),
-    thread_() {
-  std::unique_lock<std::mutex> lock_begin (begin_);
+GlibMainLoop::GlibMainLoop()
+    : main_context_(g_main_context_new()),
+      mainloop_(g_main_loop_new(main_context_, FALSE)),
+      thread_() {
+  std::unique_lock<std::mutex> lock_begin(begin_);
   thread_ = std::thread(&GlibMainLoop::main_loop_thread, this);
   thread_.detach();
 }
 
-GMainContext *GlibMainLoop::get_main_context() {
-  return main_context_;
-}
+GMainContext* GlibMainLoop::get_main_context() { return main_context_; }
 
 GlibMainLoop::~GlibMainLoop() {
-  while (!g_main_loop_is_running(mainloop_)){
+  while (!g_main_loop_is_running(mainloop_)) {
     g_debug("waiting for mainloop to be running");
     std::this_thread::sleep_for(std::chrono::milliseconds(2));
   }
   g_main_loop_quit(mainloop_);
-  std::unique_lock<std::mutex> lock_begin (begin_);
+  std::unique_lock<std::mutex> lock_begin(begin_);
   g_main_loop_unref(mainloop_);
   g_main_context_unref(main_context_);
 }
 
-
 void GlibMainLoop::main_loop_thread() {
   {
-    std::unique_lock<std::mutex> lock_begin (begin_);
+    std::unique_lock<std::mutex> lock_begin(begin_);
     g_main_loop_run(mainloop_);
   }
-  //std::unique_lock<std::mutex> lock_end (end_);
+  // std::unique_lock<std::mutex> lock_end (end_);
 }
 
 }  // namespace switcher

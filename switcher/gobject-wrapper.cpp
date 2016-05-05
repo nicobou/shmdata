@@ -21,36 +21,32 @@
  * Class wrapping gobject for custum signals
  */
 
-#include <glib/gprintf.h>
 #include "./gobject-wrapper.hpp"
+#include <glib/gprintf.h>
 #include "./scope-exit.hpp"
 
 namespace switcher {
 // gobject
 typedef struct _MyObject {
   GObject parent_instance;
-  void *context;
+  void* context;
 } MyObject;
 
-typedef struct _MyObjectClass {
-  GObjectClass parent_class;
-} MyObjectClass;
+typedef struct _MyObjectClass { GObjectClass parent_class; } MyObjectClass;
 
 static GType my_object_get_type(void);
 G_DEFINE_TYPE(MyObject, my_object, G_TYPE_OBJECT);
 
-static void my_object_finalize(GObject *gobject) {
+static void my_object_finalize(GObject* gobject) {
   G_OBJECT_CLASS(my_object_parent_class)->finalize(gobject);
 }
 
-
-static void my_object_class_init(MyObjectClass *klass) {
-  GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+static void my_object_class_init(MyObjectClass* klass) {
+  GObjectClass* gobject_class = G_OBJECT_CLASS(klass);
   gobject_class->finalize = my_object_finalize;
 }
 
-static void my_object_init(MyObject * /*self */ ) {
-}
+static void my_object_init(MyObject* /*self */) {}
 
 // ---------------------------------- CPP CLASS ----------------------------
 // signals
@@ -58,28 +54,27 @@ guint GObjectWrapper::next_signal_num_ = 1;
 // std::map<guint, GObjectCustomSignal::ptr> GObjectWrapper::custom_signals_;
 
 GObjectWrapper::GObjectWrapper() {
-  my_object_ = (MyObject *) g_object_new(my_object_get_type(), nullptr);
+  my_object_ = (MyObject*)g_object_new(my_object_get_type(), nullptr);
   my_object_->context = this;
 }
 
-guint
-GObjectWrapper::make_signal(GType return_type,
-                            guint n_params, GType *param_types) {
+guint GObjectWrapper::make_signal(GType return_type,
+                                  guint n_params,
+                                  GType* param_types) {
   guint sig_id = next_signal_num_;
   next_signal_num_++;
-  gchar *name = g_strdup_printf("custom_signal_%d", sig_id);
-  On_scope_exit{g_free(name);};
+  gchar* name = g_strdup_printf("custom_signal_%d", sig_id);
+  On_scope_exit { g_free(name); };
 
   // TODO find a way to get CLASS without instanciating an unused object
-  MyObject *obj = (MyObject *) g_object_new(my_object_get_type(), nullptr);
+  MyObject* obj = (MyObject*)g_object_new(my_object_get_type(), nullptr);
   guint signal_id = g_signal_newv(name,
-                                  G_TYPE_FROM_CLASS(G_OBJECT_GET_CLASS
-                                                    (obj)),
+                                  G_TYPE_FROM_CLASS(G_OBJECT_GET_CLASS(obj)),
                                   G_SIGNAL_RUN_LAST,
                                   0,
-                                  nullptr,    // GSignalAccumulator
-                                  nullptr,    // gpointer accu_data
-                                  nullptr,    // GSignalCMarshaller
+                                  nullptr,  // GSignalAccumulator
+                                  nullptr,  // gpointer accu_data
+                                  nullptr,  // GSignalCMarshaller
                                   return_type,
                                   n_params,
                                   param_types);
@@ -88,13 +83,8 @@ GObjectWrapper::make_signal(GType return_type,
   return signal_id;
 }
 
-GObject *GObjectWrapper::get_gobject() {
-  return G_OBJECT(my_object_);
-}
+GObject* GObjectWrapper::get_gobject() { return G_OBJECT(my_object_); }
 
-GObjectWrapper::~GObjectWrapper() {
-  g_object_unref(my_object_);
-}
+GObjectWrapper::~GObjectWrapper() { g_object_unref(my_object_); }
 
 }  // namespace switcher
- 

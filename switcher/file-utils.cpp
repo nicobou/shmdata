@@ -17,19 +17,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
-#include <errno.h>
-#include <glib.h>
 #include "./file-utils.hpp"
+#include <errno.h>
+#include <fcntl.h>
+#include <glib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 namespace switcher {
 
-std::pair<bool, std::string>
-FileUtils::prepare_writable_dir(const std::string &path) {
+std::pair<bool, std::string> FileUtils::prepare_writable_dir(
+    const std::string& path) {
   if (is_dir(path)) {
     if (0 != access(path.c_str(), W_OK | X_OK)) {  // not writable
       int err = errno;
@@ -37,17 +37,16 @@ FileUtils::prepare_writable_dir(const std::string &path) {
     }
     return std::make_pair(true, std::string());
   }
- 
+
   // trying to create the directory
   std::size_t i = 0;
-  while(std::string::npos != i) {
+  while (std::string::npos != i) {
     std::size_t found = path.find('/', i);
-    if (i != found){
+    if (i != found) {
       auto dir = std::string(path, 0, found);
-      if (!is_dir(dir)){
+      if (!is_dir(dir)) {
         auto res = create_writable_dir(dir);
-        if (!res.first)
-          return res;
+        if (!res.first) return res;
       }
     }
     if (std::string::npos != found) {
@@ -59,16 +58,17 @@ FileUtils::prepare_writable_dir(const std::string &path) {
   return std::make_pair(true, std::string());
 }
 
-bool FileUtils::is_dir(const std::string &path){
+bool FileUtils::is_dir(const std::string& path) {
   struct stat sb;
-  if (stat(path.c_str(), &sb) == -1) // does not exists
+  if (stat(path.c_str(), &sb) == -1)  // does not exists
     return false;
   if ((sb.st_mode & S_IFMT) != S_IFDIR)  // is not a directory
     return false;
   return true;
 }
 
-std::pair<bool, std::string> FileUtils::create_writable_dir(const std::string &path){
+std::pair<bool, std::string> FileUtils::create_writable_dir(
+    const std::string& path) {
   if (-1 == mkdir(path.c_str(), S_IRWXU)) {
     int err = errno;
     return std::make_pair(false, std::string(strerror(err)));

@@ -20,33 +20,35 @@
 #ifndef __SWITCHER_CUDA_CONTEXT_H__
 #define __SWITCHER_CUDA_CONTEXT_H__
 
-#include <cstdint>  // uint32_t
-#include <vector>
-#include <utility>
-#include <string>
 #include <cuda.h>
+#include <cstdint>  // uint32_t
+#include <string>
+#include <utility>
+#include <vector>
 #include "switcher/safe-bool-idiom.hpp"
 
 namespace switcher {
 
 class NVencES;
 // Creates a new CUDA context and associates it with the calling thread:
-class CudaContext: public SafeBoolIdiom {
+class CudaContext : public SafeBoolIdiom {
   friend NVencES;
+
  public:
   CudaContext(uint32_t device_id);
-  CudaContext(): CudaContext (0){}
+  CudaContext() : CudaContext(0) {}
   ~CudaContext();
-  CudaContext(const CudaContext &) = delete;
-  CudaContext(CudaContext &&) = delete;
-  CudaContext &operator=(const CudaContext &) = delete;
-  CudaContext &operator=(CudaContext &&) = delete;
+  CudaContext(const CudaContext&) = delete;
+  CudaContext(CudaContext&&) = delete;
+  CudaContext& operator=(const CudaContext&) = delete;
+  CudaContext& operator=(CudaContext&&) = delete;
 
   static std::vector<std::pair<int, std::string>> get_devices();
+
  private:
   CUdevice cuda_dev_{-1};
   CUcontext cuda_ctx_{nullptr};
-  bool safe_bool_idiom() const {return nullptr != cuda_ctx_;}
+  bool safe_bool_idiom() const { return nullptr != cuda_ctx_; }
 };
 
 }  // namespace switcher
