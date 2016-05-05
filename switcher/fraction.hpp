@@ -20,10 +20,10 @@
 #ifndef __SWITCHER_FRACTION_H__
 #define __SWITCHER_FRACTION_H__
 
-#include <string>
-#include <vector>
-#include <utility>
 #include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace switcher {
 class Fraction {
@@ -33,17 +33,16 @@ class Fraction {
   Fraction() = delete;
   Fraction(ator_t numerator, ator_t denominator);
   fraction_t get() const;
-  ator_t numerator() const{return num_;}
-  ator_t denominator() const{return denom_;}
-  std::string to_string() const; 
-  static std::pair<bool, Fraction> from_string(const std::string &);
+  ator_t numerator() const { return num_; }
+  ator_t denominator() const { return denom_; }
+  std::string to_string() const;
+  static std::pair<bool, Fraction> from_string(const std::string&);
 
-  friend std::ostream& operator<<(std::ostream& out, const Fraction& fract)  {
+  friend std::ostream& operator<<(std::ostream& out, const Fraction& fract) {
     out << fract.to_string();
     return out;
-}
+  }
 
-  
  private:
   ator_t num_;
   ator_t denom_;

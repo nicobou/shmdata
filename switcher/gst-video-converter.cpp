@@ -17,49 +17,48 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/std2.hpp"
-#include "switcher/shmdata-utils.hpp"
 #include "./gst-video-converter.hpp"
+#include "switcher/shmdata-utils.hpp"
+#include "switcher/std2.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    GstVideoConverter,
-    "videoconvert",
-    "Video converter",
-    "video",
-    "writer/reader",
-    "Convert pixel format of raw video stream",
-    "LGPL",
-    "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoConverter,
+                                     "videoconvert",
+                                     "Video converter",
+                                     "video",
+                                     "writer/reader",
+                                     "Convert pixel format of raw video stream",
+                                     "LGPL",
+                                     "Nicolas Bouillot");
 
-GstVideoConverter::GstVideoConverter(const std::string &):
-    shmcntr_(static_cast<Quiddity *>(this)){
-}
+GstVideoConverter::GstVideoConverter(const std::string&)
+    : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 bool GstVideoConverter::init() {
   converter_ = std2::make_unique<GstPixelFormatConverter>(
-      static_cast<Quiddity *>(this),
+      static_cast<Quiddity*>(this),
       "Pixel format",
       "Convert to selected pixel format");
   shmcntr_.install_connect_method(
-      [this](const std::string &shmpath){return this->on_shmdata_connect(shmpath);},
-      [this](const std::string &){return this->on_shmdata_disconnect();},
-      [this](){return this->on_shmdata_disconnect();},
-      [this](const std::string &caps){return this->can_sink_caps(caps);},
+      [this](const std::string& shmpath) {
+        return this->on_shmdata_connect(shmpath);
+      },
+      [this](const std::string&) { return this->on_shmdata_disconnect(); },
+      [this]() { return this->on_shmdata_disconnect(); },
+      [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
   return true;
 }
 
-bool GstVideoConverter::on_shmdata_disconnect() {
-  return converter_->stop();
-}
+bool GstVideoConverter::on_shmdata_disconnect() { return converter_->stop(); }
 
-bool GstVideoConverter::on_shmdata_connect(const std::string &shmpath) {
+bool GstVideoConverter::on_shmdata_connect(const std::string& shmpath) {
   return converter_->start(shmpath, make_file_name("video-converted"));
 }
 
-bool GstVideoConverter::can_sink_caps(const std::string &caps) {
-  // assuming codecs_ is internally using videoconvert as first caps negotiating gst element: 
+bool GstVideoConverter::can_sink_caps(const std::string& caps) {
+  // assuming codecs_ is internally using videoconvert as first caps negotiating
+  // gst element:
   return GstUtils::can_sink_caps("videoconvert", caps);
 }
 

@@ -32,11 +32,11 @@
 #include "switcher/startable-quiddity.hpp"
 
 namespace switcher {
-class PostureSc3:public Quiddity, public StartableQuiddity {
+class PostureSc3 : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureSc3);
-  PostureSc3(const std::string &);
-  PostureSc3(const PostureSc3 &) = delete;
+  PostureSc3(const std::string&);
+  PostureSc3(const PostureSc3&) = delete;
   ~PostureSc3();
 
   bool start();
@@ -46,34 +46,35 @@ class PostureSc3:public Quiddity, public StartableQuiddity {
   bool init() final;
 
   static int get_output_mesh(std::vector<unsigned char>);
-  void cb_frame_cloud(int index, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud);
+  void cb_frame_cloud(int index,
+                      pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud);
   void cb_frame_rgb(std::vector<unsigned char>& image, int width, int heigth);
 
-  std::vector<std::shared_ptr<posture::ZCamera>> cameras_ {};
-  std::unique_ptr<posture::PointCloudMerger> merger_ {nullptr};
-  std::unique_ptr<posture::Solidify> sol_ {nullptr};
-  std::unique_ptr<posture::Colorize> colorize_ {nullptr};
+  std::vector<std::shared_ptr<posture::ZCamera>> cameras_{};
+  std::unique_ptr<posture::PointCloudMerger> merger_{nullptr};
+  std::unique_ptr<posture::Solidify> sol_{nullptr};
+  std::unique_ptr<posture::Colorize> colorize_{nullptr};
 
-  std::vector<unsigned char> output_ {};
+  std::vector<unsigned char> output_{};
 
-  mutable std::mutex mutex_ {};
+  mutable std::mutex mutex_{};
 
-  std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
-  std::unique_ptr<ShmdataWriter> rgb_writer_ {nullptr};
+  std::unique_ptr<ShmdataWriter> mesh_writer_{nullptr};
+  std::unique_ptr<ShmdataWriter> rgb_writer_{nullptr};
 
-  std::unique_ptr<posture::CalibrationReader> calibration_reader_ {nullptr};
+  std::unique_ptr<posture::CalibrationReader> calibration_reader_{nullptr};
 
-  int index_ {0};
-  int nbr_ {1};
-  std::string calibration_path_ {"default.kvc"};
-  int grid_res_ {3};
-  bool reload_calibration_ {false};
-  bool colorize_or_not_ {false};
+  int index_{0};
+  int nbr_{1};
+  std::string calibration_path_{"default.kvc"};
+  int grid_res_{3};
+  bool reload_calibration_{false};
+  bool colorize_or_not_{false};
 
-  bool is_started_ {false};
+  bool is_started_{false};
 
-  pcl::PolygonMesh::Ptr intermediate_mesh_ {nullptr};
-  std::vector<unsigned char> texture_ {};
+  pcl::PolygonMesh::Ptr intermediate_mesh_{nullptr};
+  std::vector<unsigned char> texture_{};
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureSc3);

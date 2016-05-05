@@ -29,58 +29,52 @@
 using namespace std;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    SyphonSrc,
-    "syphonsrc",
-    "Video capture (through Syphon)",
-    "video",
-    "writer/device",
-    "Reads video input from a Syphon source",
-    "LGPL",
-    "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SyphonSrc,
+                                     "syphonsrc",
+                                     "Video capture (through Syphon)",
+                                     "video",
+                                     "writer/device",
+                                     "Reads video input from a Syphon source",
+                                     "LGPL",
+                                     "Emmanuel Durand");
 
-SyphonSrc::SyphonSrc(const std::string &) {
-}
+SyphonSrc::SyphonSrc(const std::string&) {}
 
 bool SyphonSrc::init() {
   init_startable(this);
 
-  reader_.reset(new SyphonReader(frameCallback, (void *) this));
+  reader_.reset(new SyphonReader(frameCallback, (void*)this));
 
   pmanage<MPtr(&PContainer::make_string)>(
       "servername",
-      [this](const std::string &val){
+      [this](const std::string& val) {
         syphon_servername_ = val;
         return true;
       },
-      [this](){return syphon_servername_;},
+      [this]() { return syphon_servername_; },
       "Server name",
       "The name of the Syphon server",
       syphon_servername_);
 
-
-  pmanage<MPtr(&PContainer::make_string)>(
-      "appname",
-      [this](const std::string &val){
-        syphon_appname_ = val;
-        return true;
-      },
-      [this](){return syphon_appname_;},
-      "App name",
-      "The name of the Syphon application",
-      syphon_appname_);
+  pmanage<MPtr(&PContainer::make_string)>("appname",
+                                          [this](const std::string& val) {
+                                            syphon_appname_ = val;
+                                            return true;
+                                          },
+                                          [this]() { return syphon_appname_; },
+                                          "App name",
+                                          "The name of the Syphon application",
+                                          syphon_appname_);
   return true;
 }
 
-bool
-SyphonSrc::start() {
+bool SyphonSrc::start() {
   if (syphon_servername_ == "" && syphon_appname_ == "") {
-    cout <<
-        "SyphonSrc::start - No servername nor appname specified, using the first available server"
+    cout << "SyphonSrc::start - No servername nor appname specified, using the "
+            "first available server"
          << endl;
     reader_->connect(nullptr, nullptr);
-  }
-  else if (syphon_servername_ != "" && syphon_appname_ == "")
+  } else if (syphon_servername_ != "" && syphon_appname_ == "")
     reader_->connect(syphon_servername_.c_str(), nullptr);
   else if (syphon_servername_ == "" && syphon_appname_ != "")
     reader_->connect(nullptr, syphon_appname_.c_str());
@@ -90,41 +84,43 @@ SyphonSrc::start() {
   return true;
 }
 
-bool
-SyphonSrc::stop() {
+bool SyphonSrc::stop() {
   reader_->disconnect();
   return true;
 }
 
-void
-SyphonSrc::frameCallback(void *context, const char *data, int &width,
-                         int &height) {
-  SyphonSrc *ctx = static_cast<SyphonSrc *>(context);
+void SyphonSrc::frameCallback(void* context,
+                              const char* data,
+                              int& width,
+                              int& height) {
+  SyphonSrc* ctx = static_cast<SyphonSrc*>(context);
   static bool set = false;
   if (set == false || ctx->width_ != width || ctx->height_ != height) {
     std::string writer_path;
     if (ctx->syphon_servername_ != "" && ctx->syphon_appname_ != "")
-      writer_path = ctx->make_file_name(ctx->syphon_servername_ + "-" +	ctx->syphon_appname_);
+      writer_path = ctx->make_file_name(ctx->syphon_servername_ + "-" +
+                                        ctx->syphon_appname_);
     else if (ctx->syphon_servername_ != "")
       writer_path = ctx->make_file_name(ctx->syphon_servername_);
     else
       writer_path = ctx->make_file_name(ctx->syphon_appname_);
-    ctx->writer_ = std2::make_unique<ShmdataWriter>(ctx, 
-						    writer_path,
-						    width * height * 4,
-						    string("video/x-raw, format=RGBA, ") 
-						    + "width=" + to_string(width)
-						    + "height=" + to_string(height));
+    ctx->writer_ = std2::make_unique<ShmdataWriter>(
+        ctx,
+        writer_path,
+        width * height * 4,
+        string("video/x-raw, format=RGBA, ") + "width=" + to_string(width) +
+            "height=" + to_string(height));
     ctx->width_ = width;
     ctx->height_ = height;
-    if(!ctx->writer_.get()) {
+    if (!ctx->writer_.get()) {
       g_warning("syphon to shmdata failed to start");
       ctx->writer_.reset(nullptr);
     } else
       set = true;
   }
-  ctx->writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(static_cast<const void *>(data), width *height * 4);
-  ctx->writer_->bytes_written(width *height * 4);
+  ctx->writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+      static_cast<const void*>(data), width * height * 4);
+  ctx->writer_->bytes_written(width * height * 4);
 }
 
 }  // namespace switcher

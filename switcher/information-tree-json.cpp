@@ -15,52 +15,56 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "./information-tree-json.hpp"
 #include <json-glib/json-glib.h>
 #include <iostream>
-#include "./information-tree-json.hpp"
-#include "./scope-exit.hpp"
 #include "./any.hpp"
+#include "./scope-exit.hpp"
 
 namespace switcher {
 namespace JSONSerializer {
-void
-on_visiting_node(std::string key,
-                 InfoTree::ptrc node,
-                 bool is_array_element,
-                 JsonBuilder *builder) {
+void on_visiting_node(std::string key,
+                      InfoTree::ptrc node,
+                      bool is_array_element,
+                      JsonBuilder* builder) {
   key = InfoTree::unescape_dots(key);
   if (!is_array_element)  // discarding here to get it as a member called "name"
     json_builder_set_member_name(builder, key.c_str());
-  if (node->is_leaf()){
+  if (node->is_leaf()) {
     if (!node->read_data().is_null()) {
       switch (node->read_data().get_category()) {
         case AnyCategory::BOOL:
-          json_builder_add_boolean_value(builder, node->read_data().copy_as<bool>());
+          json_builder_add_boolean_value(builder,
+                                         node->read_data().copy_as<bool>());
           break;
         case AnyCategory::INTEGRAL:
-          json_builder_add_int_value(builder, node->read_data().copy_as<gint64>());
+          json_builder_add_int_value(builder,
+                                     node->read_data().copy_as<gint64>());
           break;
         case AnyCategory::FLOATING_POINT:
-          json_builder_add_double_value(builder, node->read_data().copy_as<gdouble>());
+          json_builder_add_double_value(builder,
+                                        node->read_data().copy_as<gdouble>());
           break;
         case AnyCategory::OTHER:
-          json_builder_add_string_value(builder, Any::to_string(node->read_data()).c_str());
+          json_builder_add_string_value(
+              builder, Any::to_string(node->read_data()).c_str());
           break;
         case AnyCategory::NONE:
           json_builder_add_null_value(builder);
           break;
       }
     } else {
-      if(node->is_array()) {
+      if (node->is_array()) {
         json_builder_begin_array(builder);
       } else {
         json_builder_add_null_value(builder);
       }
     }
     return;
-  } else {  // adding node value with the key "key_value" along with other childrens
+  } else {  // adding node value with the key "key_value" along with other
+            // childrens
     if (node->is_array()) {
-    json_builder_begin_array(builder);
+      json_builder_begin_array(builder);
       // json_builder_begin_object (builder);
     } else {
       json_builder_begin_object(builder);
@@ -77,30 +81,27 @@ on_visiting_node(std::string key,
   }
 }
 
-void
-on_node_visited(std::string,
-                InfoTree::ptrc node,
-                bool /*is_array_element*/, 
-		JsonBuilder *builder) {
+void on_node_visited(std::string,
+                     InfoTree::ptrc node,
+                     bool /*is_array_element*/,
+                     JsonBuilder* builder) {
   if (node->is_array()) {
     // json_builder_end_object (builder);
     json_builder_end_array(builder);
     return;
   }
-  if (!node->is_leaf())
-    json_builder_end_object(builder);
+  if (!node->is_leaf()) json_builder_end_object(builder);
 }
 
 std::string serialize(InfoTree::ptrc tree) {
-  JsonBuilder *json_builder = json_builder_new();
-  On_scope_exit {
-    g_object_unref(json_builder);
-  };
-  if (tree->is_leaf()){
+  JsonBuilder* json_builder = json_builder_new();
+  On_scope_exit { g_object_unref(json_builder); };
+  if (tree->is_leaf()) {
     if (!tree->read_data().is_null()) {
       switch (tree->read_data().get_category()) {
         case AnyCategory::BOOL:
-          return std::string(tree->read_data().copy_as<bool>() ? "true" : "false");
+          return std::string(tree->read_data().copy_as<bool>() ? "true"
+                                                               : "false");
           break;
         case AnyCategory::INTEGRAL:
           return std::string(Any::to_string(tree->read_data()));
@@ -109,7 +110,8 @@ std::string serialize(InfoTree::ptrc tree) {
           return std::string(Any::to_string(tree->read_data()));
           break;
         case AnyCategory::OTHER:
-          // We tried to get known types but sometimes values are of type OTHER because they were created as strings
+          // We tried to get known types but sometimes values are of type OTHER
+          // because they were created as strings
           return std::string("\"" + Any::to_string(tree->read_data()) + "\"");
           break;
         case AnyCategory::NONE:
@@ -117,7 +119,7 @@ std::string serialize(InfoTree::ptrc tree) {
           break;
       }
     } else {
-        return std::string("null");
+      return std::string("null");
     }
   }
   bool is_array = tree->is_array();
@@ -126,30 +128,30 @@ std::string serialize(InfoTree::ptrc tree) {
   else
     json_builder_begin_array(json_builder);
   InfoTree::preorder_tree_walk(tree,
-                           std::bind(JSONSerializer::on_visiting_node,
-                                     std::placeholders::_1,
-                                     std::placeholders::_2,
-                                     std::placeholders::_3,
-                                     json_builder),
-                           std::bind(JSONSerializer::on_node_visited,
-                                     std::placeholders::_1,
-                                     std::placeholders::_2,
-                                     std::placeholders::_3, json_builder));
+                               std::bind(JSONSerializer::on_visiting_node,
+                                         std::placeholders::_1,
+                                         std::placeholders::_2,
+                                         std::placeholders::_3,
+                                         json_builder),
+                               std::bind(JSONSerializer::on_node_visited,
+                                         std::placeholders::_1,
+                                         std::placeholders::_2,
+                                         std::placeholders::_3,
+                                         json_builder));
   if (!is_array)
     json_builder_end_object(json_builder);
   else
     json_builder_end_array(json_builder);
-  JsonNode *node = json_builder_get_root(json_builder);
-  On_scope_exit {json_node_free(node);};
-  if (nullptr == node)
-    return std::string();
-  JsonGenerator *generator = json_generator_new();
-  On_scope_exit {g_object_unref(generator);};
+  JsonNode* node = json_builder_get_root(json_builder);
+  On_scope_exit { json_node_free(node); };
+  if (nullptr == node) return std::string();
+  JsonGenerator* generator = json_generator_new();
+  On_scope_exit { g_object_unref(generator); };
   json_generator_set_pretty(generator, TRUE);
   json_generator_set_root(generator, node);
   gsize length = 0;
-  gchar *data = json_generator_to_data(generator, &length);
-  On_scope_exit {g_free(data);};
+  gchar* data = json_generator_to_data(generator, &length);
+  On_scope_exit { g_free(data); };
   std::string result(data);
   return result;
 }

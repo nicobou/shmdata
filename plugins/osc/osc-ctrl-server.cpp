@@ -17,12 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "./osc-ctrl-server.hpp"
+#include <lo/lo.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <lo/lo.h>
 #include <utility>  // std::make_pair (,)
-#include "./osc-ctrl-server.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
@@ -35,54 +35,44 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Nicolas Bouillot");
 
-OscCtrlServer::OscCtrlServer(const std::string &):
-    port_(),
-    osc_subscribers_(),
-    osc_thread_(nullptr) {
-}
+OscCtrlServer::OscCtrlServer(const std::string&)
+    : port_(), osc_subscribers_(), osc_thread_(nullptr) {}
 
 bool OscCtrlServer::init() {
   osc_thread_ = nullptr;
-  install_method("Set Port",
-                 "set_port",
-                 "set the port used by the osc server and start listening messages",
-                 "success or fail",
-                 Method::make_arg_description("Port",
-                                              "port",
-                                              "the port to bind",
-                                              nullptr),
-                 (Method::method_ptr) &set_port_wrapped,
-                 G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING,
-                                                   nullptr), this);
+  install_method(
+      "Set Port",
+      "set_port",
+      "set the port used by the osc server and start listening messages",
+      "success or fail",
+      Method::make_arg_description("Port", "port", "the port to bind", nullptr),
+      (Method::method_ptr)&set_port_wrapped,
+      G_TYPE_BOOLEAN,
+      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
+      this);
   return true;
 }
 
-OscCtrlServer::~OscCtrlServer() {
-  stop();
-}
+OscCtrlServer::~OscCtrlServer() { stop(); }
 
-void
-OscCtrlServer::prop_cb(const std::string &internal_subscriber_name,
-                       const std::string &quiddity_name,
-                       const std::string &property_name,
-                       const std::string &value,
-                       void *user_data) {
-  OscCtrlServer *context = static_cast<OscCtrlServer *>(user_data);
+void OscCtrlServer::prop_cb(const std::string& internal_subscriber_name,
+                            const std::string& quiddity_name,
+                            const std::string& property_name,
+                            const std::string& value,
+                            void* user_data) {
+  OscCtrlServer* context = static_cast<OscCtrlServer*>(user_data);
 
   auto it = context->osc_subscribers_.find(internal_subscriber_name);
-  if (context->osc_subscribers_.end() == it)
-    return;
+  if (context->osc_subscribers_.end() == it) return;
 
   std::pair<std::string, std::string> address =
       context->osc_subscribers_[internal_subscriber_name];
 
-  lo_address t = lo_address_new(address.first.c_str(),
-                                address.second.c_str());
+  lo_address t = lo_address_new(address.first.c_str(), address.second.c_str());
 
-  gchar *subscriber_name =
+  gchar* subscriber_name =
       context->retrieve_subscriber_name(internal_subscriber_name.c_str());
-  gchar *message = g_strdup_printf("/property/%s/%s/%s",
+  gchar* message = g_strdup_printf("/property/%s/%s/%s",
                                    subscriber_name,
                                    quiddity_name.c_str(),
                                    property_name.c_str());
@@ -96,38 +86,34 @@ std::shared_ptr<QuiddityManager> OscCtrlServer::get_quiddity_manager() {
   return manager_.lock();
 }
 
-gchar *OscCtrlServer::make_internal_subscriber_name(const gchar *name) {
+gchar* OscCtrlServer::make_internal_subscriber_name(const gchar* name) {
   return g_strdup_printf("%s%s", get_name().c_str(), name);
 }
 
-gchar *OscCtrlServer::retrieve_subscriber_name(const gchar *internal_name) {
-  gchar *res;
-  gchar **split = g_strsplit(internal_name,
-                             get_name().c_str(),
-                             2);
+gchar* OscCtrlServer::retrieve_subscriber_name(const gchar* internal_name) {
+  gchar* res;
+  gchar** split = g_strsplit(internal_name, get_name().c_str(), 2);
   res = g_strdup(split[1]);
   g_strfreev(split);
   return res;
 }
 
 // floor
-gchar *OscCtrlServer::string_float_to_string_int(const gchar *string_float) {
-  gchar *res;
-  gchar **split = g_strsplit(string_float,
-                             ".",
-                             2);
+gchar* OscCtrlServer::string_float_to_string_int(const gchar* string_float) {
+  gchar* res;
+  gchar** split = g_strsplit(string_float, ".", 2);
   res = g_strdup(split[0]);
   g_strfreev(split);
   return res;
 }
 
 gboolean OscCtrlServer::set_port_wrapped(gpointer port, gpointer user_data) {
-  OscCtrlServer *context = static_cast<OscCtrlServer *>(user_data);
-  context->set_port((char *) port);
+  OscCtrlServer* context = static_cast<OscCtrlServer*>(user_data);
+  context->set_port((char*)port);
   return TRUE;
 }
 
-void OscCtrlServer::set_port(const std::string &port) {
+void OscCtrlServer::set_port(const std::string& port) {
   stop();
   port_ = port;
   start();
@@ -136,27 +122,25 @@ void OscCtrlServer::set_port(const std::string &port) {
 void OscCtrlServer::start() {
   osc_thread_ = lo_server_thread_new(port_.c_str(), osc_error);
   /* add method that will match any path and args */
-  lo_server_thread_add_method(osc_thread_, nullptr, nullptr, osc_handler,
-                              this);
+  lo_server_thread_add_method(osc_thread_, nullptr, nullptr, osc_handler, this);
   lo_server_thread_start(osc_thread_);
 }
 
 void OscCtrlServer::stop() {
-  if (osc_thread_ != nullptr)
-    lo_server_thread_free(osc_thread_);
+  if (osc_thread_ != nullptr) lo_server_thread_free(osc_thread_);
   osc_thread_ = nullptr;
 }
 
 /* catch any osc incoming messages. */
-int
-OscCtrlServer::osc_handler(const char *path,
-                           const char *types,
-                           lo_arg ** argv, int argc, void * /*data */ ,
-                           void *user_data) {
-  OscCtrlServer *context = static_cast<OscCtrlServer *>(user_data);
-  std::shared_ptr<QuiddityManager> manager =
-      context->get_quiddity_manager();
-  if (!(bool) manager) {
+int OscCtrlServer::osc_handler(const char* path,
+                               const char* types,
+                               lo_arg** argv,
+                               int argc,
+                               void* /*data */,
+                               void* user_data) {
+  OscCtrlServer* context = static_cast<OscCtrlServer*>(user_data);
+  std::shared_ptr<QuiddityManager> manager = context->get_quiddity_manager();
+  if (!(bool)manager) {
     g_warning("OscCtrlServer: cannot get quiddity manager");
     return 0;
   }
@@ -164,18 +148,16 @@ OscCtrlServer::osc_handler(const char *path,
   // create
   if (g_str_has_prefix(path, "/c") || g_str_has_prefix(path, "/C")) {
     if (argc == 1) {
-      gchar *class_name = string_from_osc_arg(types[0], argv[0]);
+      gchar* class_name = string_from_osc_arg(types[0], argv[0]);
       manager->create(class_name);
       g_free(class_name);
-    }
-    else if (argc == 2) {
-      gchar *class_name = string_from_osc_arg(types[0], argv[0]);
-      gchar *quid_name = string_from_osc_arg(types[1], argv[1]);
+    } else if (argc == 2) {
+      gchar* class_name = string_from_osc_arg(types[0], argv[0]);
+      gchar* quid_name = string_from_osc_arg(types[1], argv[1]);
       manager->create(class_name, quid_name);
       g_free(class_name);
       g_free(quid_name);
-    }
-    else
+    } else
       g_warning("OSCctl: wrong arg number for create");
     return 0;
   }
@@ -183,11 +165,10 @@ OscCtrlServer::osc_handler(const char *path,
   // remove
   if (g_str_has_prefix(path, "/r") || g_str_has_prefix(path, "/R")) {
     if (argc == 1) {
-      gchar *quid_name = string_from_osc_arg(types[0], argv[0]);
+      gchar* quid_name = string_from_osc_arg(types[0], argv[0]);
       manager->remove(quid_name);
       g_free(quid_name);
-    }
-    else
+    } else
       g_warning("OSCctl: wrong arg number for remove");
     return 0;
   }
@@ -195,22 +176,17 @@ OscCtrlServer::osc_handler(const char *path,
   // set_property
   if (g_str_has_prefix(path, "/s") || g_str_has_prefix(path, "/S")) {
     if (argc == 3) {
-      gchar *quid_name = string_from_osc_arg(types[0], argv[0]);
-      gchar *prop_name = string_from_osc_arg(types[1], argv[1]);
-      gchar *value = string_from_osc_arg(types[2], argv[2]);
+      gchar* quid_name = string_from_osc_arg(types[0], argv[0]);
+      gchar* prop_name = string_from_osc_arg(types[1], argv[1]);
+      gchar* value = string_from_osc_arg(types[2], argv[2]);
       auto id =
-          manager->use_prop<MPtr(&PContainer::get_id)>(
-              quid_name, prop_name);
+          manager->use_prop<MPtr(&PContainer::get_id)>(quid_name, prop_name);
       if (0 != id)
-        manager->use_prop<MPtr(&PContainer::set_str)>(
-            quid_name,
-            id,
-            value);
+        manager->use_prop<MPtr(&PContainer::set_str)>(quid_name, id, value);
       g_free(quid_name);
       g_free(prop_name);
       g_free(value);
-    }
-    else
+    } else
       g_warning("OSCctl: wrong arg number for set_property");
     return 0;
   }
@@ -218,20 +194,19 @@ OscCtrlServer::osc_handler(const char *path,
   // invoke
   if (g_str_has_prefix(path, "/i") || g_str_has_prefix(path, "/I")) {
     if (argc >= 2) {
-      gchar *quid_name = string_from_osc_arg(types[0], argv[0]);
-      gchar *method_name = string_from_osc_arg(types[1], argv[1]);
+      gchar* quid_name = string_from_osc_arg(types[0], argv[0]);
+      gchar* method_name = string_from_osc_arg(types[1], argv[1]);
       int i;
       std::vector<std::string> args;
       for (i = 2; i < argc; i++) {
-        gchar *val = string_from_osc_arg(types[i], argv[i]);
+        gchar* val = string_from_osc_arg(types[i], argv[i]);
         args.push_back(val);
         g_free(val);
       }
       manager->invoke(quid_name, method_name, nullptr, args);
       g_free(quid_name);
       g_free(method_name);
-    }
-    else
+    } else
       g_warning("OSCctl: wrong arg number for invoke");
     return 0;
   }
@@ -303,49 +278,46 @@ OscCtrlServer::osc_handler(const char *path,
   // subscribe to a property
   if (g_strcmp0(path, "/get") == 0) {
     if (argc == 3) {
-      gchar *quiddity_name = string_from_osc_arg(types[0], argv[0]);
-      gchar *property_name = string_from_osc_arg(types[1], argv[1]);
-      gchar *response_url = string_from_osc_arg(types[2], argv[2]);
+      gchar* quiddity_name = string_from_osc_arg(types[0], argv[0]);
+      gchar* property_name = string_from_osc_arg(types[1], argv[1]);
+      gchar* response_url = string_from_osc_arg(types[2], argv[2]);
 
-      if (quiddity_name == nullptr || property_name == nullptr
-          || response_url == nullptr) {
-        g_warning
-            ("OscCtrlServer: issue with quiddity name or property name or response url");
+      if (quiddity_name == nullptr || property_name == nullptr ||
+          response_url == nullptr) {
+        g_warning(
+            "OscCtrlServer: issue with quiddity name or property name or "
+            "response url");
         return 0;
       }
 
       std::string value = manager->use_prop<MPtr(&PContainer::get_str)>(
           quiddity_name,
-          manager->use_prop<MPtr(&PContainer::get_id)>(
-              quiddity_name, property_name));
-      lo_address response_lo_address =
-          lo_address_new_from_url(response_url);
+          manager->use_prop<MPtr(&PContainer::get_id)>(quiddity_name,
+                                                       property_name));
+      lo_address response_lo_address = lo_address_new_from_url(response_url);
 
-      if (response_lo_address != nullptr
-          && !lo_address_errno(response_lo_address)) {
-        gchar *message = g_strdup_printf("/%s/%s",
-                                         quiddity_name,
-                                         property_name);
+      if (response_lo_address != nullptr &&
+          !lo_address_errno(response_lo_address)) {
+        gchar* message =
+            g_strdup_printf("/%s/%s", quiddity_name, property_name);
         lo_send(response_lo_address, message, "s", value.c_str());
         lo_address_free(response_lo_address);
         g_free(message);
-      }
-      else
+      } else
         g_debug("url osc error in get");
 
       g_free(quiddity_name);
       g_free(property_name);
       g_free(response_url);
-    }
-    else
-      g_warning
-          ("OSCctl: subscribe property needs 3 args (name, quiddity, property)");
+    } else
+      g_warning(
+          "OSCctl: subscribe property needs 3 args (name, quiddity, property)");
     return 0;
   }
 
   // subscribe to a property
-  if (g_str_has_prefix(path, "/get_property_")
-      || g_str_has_prefix(path, "/G")) {
+  if (g_str_has_prefix(path, "/get_property_") ||
+      g_str_has_prefix(path, "/G")) {
     g_warning("osc subscribe property is disabled in code");
     // if (argc == 3) {
     //   gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
@@ -378,7 +350,8 @@ OscCtrlServer::osc_handler(const char *path,
     // }
     // else
     //   g_warning
-    //       ("OSCctl: subscribe property needs 3 args (name, quiddity, property)");
+    //       ("OSCctl: subscribe property needs 3 args (name, quiddity,
+    //       property)");
     return 0;
   }
 
@@ -416,7 +389,8 @@ OscCtrlServer::osc_handler(const char *path,
     // }
     // else
     //   g_warning
-    //       ("OSCctl: unsubscribe property needs 3 args (name, quiddity, property)");
+    //       ("OSCctl: unsubscribe property needs 3 args (name, quiddity,
+    //       property)");
     return 0;
   }
 
@@ -424,11 +398,11 @@ OscCtrlServer::osc_handler(const char *path,
   return 0;
 }
 
-gchar *OscCtrlServer::string_from_osc_arg(char type, lo_arg *data) {
+gchar* OscCtrlServer::string_from_osc_arg(char type, lo_arg* data) {
   // lo_arg_host_endian ((lo_type) type, data);
-  gchar *res = nullptr;       // = g_strdup_printf ("videotestsrc");
+  gchar* res = nullptr;  // = g_strdup_printf ("videotestsrc");
 
-  gchar *tmp;
+  gchar* tmp;
   switch (type) {
     case LO_INT32:
       res = g_strdup_printf("%d", data->i);
@@ -436,17 +410,16 @@ gchar *OscCtrlServer::string_from_osc_arg(char type, lo_arg *data) {
 
     case LO_FLOAT:
       tmp = g_strdup_printf("%f", data->f);
-      if (g_str_has_suffix(tmp, ".000000"))     // for pd
+      if (g_str_has_suffix(tmp, ".000000"))  // for pd
       {
         res = string_float_to_string_int(tmp);
         g_free(tmp);
-      }
-      else
+      } else
         res = tmp;
       break;
 
     case LO_STRING:
-      res = g_strdup_printf("%s", (char *) data);
+      res = g_strdup_printf("%s", (char*)data);
       break;
 
     case LO_BLOB:
@@ -454,7 +427,7 @@ gchar *OscCtrlServer::string_from_osc_arg(char type, lo_arg *data) {
       break;
 
     case LO_INT64:
-      res = g_strdup_printf("%lld", (long long int) data->i);
+      res = g_strdup_printf("%lld", (long long int)data->i);
       break;
 
     case LO_TIMETAG:
@@ -463,21 +436,20 @@ gchar *OscCtrlServer::string_from_osc_arg(char type, lo_arg *data) {
 
     case LO_DOUBLE:
       tmp = g_strdup_printf("%f", data->f);
-      if (g_str_has_suffix(tmp, ".000000"))     // for pd
+      if (g_str_has_suffix(tmp, ".000000"))  // for pd
       {
         res = string_float_to_string_int(tmp);
         g_free(tmp);
-      }
-      else
+      } else
         res = tmp;
       break;
 
     case LO_SYMBOL:
-      res = g_strdup_printf("'%s", (char *) data);
+      res = g_strdup_printf("'%s", (char*)data);
       break;
 
     case LO_CHAR:
-      res = g_strdup_printf("'%c'", (char) data->c);
+      res = g_strdup_printf("'%c'", (char)data->c);
       break;
 
     case LO_MIDI:
@@ -512,7 +484,7 @@ gchar *OscCtrlServer::string_from_osc_arg(char type, lo_arg *data) {
   return res;
 }
 
-void OscCtrlServer::osc_error(int num, const char *msg, const char *path) {
+void OscCtrlServer::osc_error(int num, const char* msg, const char* path) {
   g_debug("liblo server error %d in path %s: %s", num, path, msg);
 }
-}                               // end of OscCtrlServer class
+}  // end of OscCtrlServer class

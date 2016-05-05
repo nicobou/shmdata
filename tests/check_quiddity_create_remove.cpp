@@ -18,11 +18,11 @@
  */
 
 #include <gst/gst.h>
-#include <vector>
-#include <string>
 #include <iostream>
-#include "switcher/quiddity-manager.hpp"
+#include <string>
+#include <vector>
 #include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity-manager.hpp"
 
 int main() {
   bool success = true;
@@ -30,9 +30,8 @@ int main() {
       switcher::QuiddityManager::make_manager("test_manager");
   std::vector<std::string> classes = manager->get_classes();
 
-  for (auto &it : classes) {
-    if (!switcher::QuiddityBasicTest::test_create(manager, it))
-      success = false;
+  for (auto& it : classes) {
+    if (!switcher::QuiddityBasicTest::test_create(manager, it)) success = false;
   }
 
   gst_deinit();

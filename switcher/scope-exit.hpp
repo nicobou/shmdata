@@ -25,22 +25,20 @@
 #include <utility>
 
 namespace scope_guard {
-template<typename Fun> class ScopeGuard {
+template <typename Fun>
+class ScopeGuard {
  public:
-  explicit ScopeGuard(Fun &&fun):
-      fun_(std::move(fun)) {
-  }
-  ~ScopeGuard() {
-    fun_();
-  }
+  explicit ScopeGuard(Fun&& fun) : fun_(std::move(fun)) {}
+  ~ScopeGuard() { fun_(); }
+
  private:
   Fun fun_;
 };
 
-enum class ScopeGuardOnExit { };
-template<typename Fun>
-ScopeGuard<Fun> operator+(ScopeGuardOnExit, Fun && fn) {
-  return ScopeGuard<Fun > (std::forward < Fun> (fn));
+enum class ScopeGuardOnExit {};
+template <typename Fun>
+ScopeGuard<Fun> operator+(ScopeGuardOnExit, Fun&& fn) {
+  return ScopeGuard<Fun>(std::forward<Fun>(fn));
 }
 }  // namespace scope_guard
 
@@ -48,8 +46,8 @@ ScopeGuard<Fun> operator+(ScopeGuardOnExit, Fun && fn) {
 #define CONCATENATE(s1, s2) CONCATENATE_IMPL(s1, s2)
 
 // could replace __LINE__ with __COUNTER__ but not always available
-#define On_scope_exit                           \
-  auto CONCATENATE(on_scope_exit_var, __LINE__) \
-  = ::scope_guard::ScopeGuardOnExit() + [&]()
+#define On_scope_exit                             \
+  auto CONCATENATE(on_scope_exit_var, __LINE__) = \
+      ::scope_guard::ScopeGuardOnExit() + [&]()
 
 #endif

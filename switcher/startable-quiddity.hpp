@@ -25,11 +25,11 @@ class StartableQuiddity {
  public:
   StartableQuiddity() = default;
   virtual ~StartableQuiddity() = default;
-  StartableQuiddity(const StartableQuiddity &) = delete;
-  StartableQuiddity &operator=(const StartableQuiddity &) = delete;
+  StartableQuiddity(const StartableQuiddity&) = delete;
+  StartableQuiddity& operator=(const StartableQuiddity&) = delete;
 
  protected:
-  void init_startable(void *quiddity);
+  void init_startable(void* quiddity);
   bool is_started() const;
   // find a way to avoid invoking init_startable (this) in quiddities (policies)
 

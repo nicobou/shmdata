@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/std2.hpp"
 #include "./osc-to-shmdata.hpp"
+#include "switcher/std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
@@ -31,47 +31,40 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Nicolas Bouillot");
 
-OscToShmdata::OscToShmdata(const std::string &):
-    port_(1056) {
-}
+OscToShmdata::OscToShmdata(const std::string&) : port_(1056) {}
 
 bool OscToShmdata::init() {
   init_startable(this);
-  pmanage<MPtr(&PContainer::make_int)>(
-      "port",
-      [this](const int &val){port_ = val; return true;},
-      [this](){return port_;},
-      "Port",
-      "OSC port to listen",
-      port_,
-      1,
-      65536);
+  pmanage<MPtr(&PContainer::make_int)>("port",
+                                       [this](const int& val) {
+                                         port_ = val;
+                                         return true;
+                                       },
+                                       [this]() { return port_; },
+                                       "Port",
+                                       "OSC port to listen",
+                                       port_,
+                                       1,
+                                       65536);
   return true;
 }
 
-OscToShmdata::~OscToShmdata() {
-  stop();
-}
+OscToShmdata::~OscToShmdata() { stop(); }
 
 bool OscToShmdata::start() {
   // creating a shmdata
-  shm_ = std2::make_unique<ShmdataWriter>(this,
-                                          make_file_name("osc"),
-                                          4096,
-                                          "application/x-libloserialized-osc");
-  if(!shm_.get()) {
+  shm_ = std2::make_unique<ShmdataWriter>(
+      this, make_file_name("osc"), 4096, "application/x-libloserialized-osc");
+  if (!shm_.get()) {
     g_warning("OscToShmdata failed to start");
     shm_.reset(nullptr);
     return false;
   }
-  
-  osc_thread_ =
-      lo_server_thread_new(std::to_string(port_).c_str(), osc_error);
-  if (nullptr == osc_thread_)
-    return false;
+
+  osc_thread_ = lo_server_thread_new(std::to_string(port_).c_str(), osc_error);
+  if (nullptr == osc_thread_) return false;
   /* add method that will match any path and args */
-  lo_server_thread_add_method(osc_thread_, nullptr, nullptr, osc_handler,
-                              this);
+  lo_server_thread_add_method(osc_thread_, nullptr, nullptr, osc_handler, this);
   lo_server_thread_start(osc_thread_);
   return true;
 }
@@ -87,14 +80,13 @@ bool OscToShmdata::stop() {
 }
 
 /* catch any osc incoming messages. */
-int
-OscToShmdata::osc_handler(const char *path,
-                          const char */*types*/,
-                          lo_arg **/*argv*/,
-                          int /*argc*/,
-                          lo_message m,
-                          void *user_data) {
-  OscToShmdata *context = static_cast<OscToShmdata *>(user_data);
+int OscToShmdata::osc_handler(const char* path,
+                              const char* /*types*/,
+                              lo_arg** /*argv*/,
+                              int /*argc*/,
+                              lo_message m,
+                              void* user_data) {
+  OscToShmdata* context = static_cast<OscToShmdata*>(user_data);
   lo_timetag timetag = lo_message_get_timestamp(m);
   // g_print ("timestamp %u %u", path, timetag.sec, timetag.frac);
   if (0 != timetag.sec) {
@@ -102,7 +94,7 @@ OscToShmdata::osc_handler(const char *path,
     // note: this is not implemented in osc-send
   }
   size_t size;
-  void *buftmp = lo_message_serialise(m, path, nullptr, &size);
+  void* buftmp = lo_message_serialise(m, path, nullptr, &size);
   if (context->shm_->writer<MPtr(&shmdata::Writer::alloc_size)>() < size) {
     context->shm_.reset(nullptr);
     context->shm_.reset(new ShmdataWriter(context,
@@ -116,7 +108,7 @@ OscToShmdata::osc_handler(const char *path,
   return 0;
 }
 
-void OscToShmdata::osc_error(int num, const char *msg, const char *path) {
+void OscToShmdata::osc_error(int num, const char* msg, const char* path) {
   g_debug("liblo server error %d in path %s: %s", num, path, msg);
 }
-}                               // end of OscToShmdata class
+}  // end of OscToShmdata class

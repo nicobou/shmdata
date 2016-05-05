@@ -20,19 +20,17 @@
 #include <unistd.h>  // usleep
 #include <cassert>
 
-#include <vector>
-#include <string>
-#include <list>
 #include <iostream>
+#include <list>
+#include <string>
+#include <vector>
 
-#include "switcher/quiddity-manager.hpp"
-#include "switcher/quiddity-basic-test.hpp"
 #include "switcher/information-tree.hpp"
+#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity-manager.hpp"
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
 
-int main() {
-    return 0;
-}
+int main() { return 0; }

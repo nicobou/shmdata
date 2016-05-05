@@ -26,8 +26,8 @@
 namespace switcher {
 namespace GstRTPPayloaderFinder {
 
-GstElementFactory *get_factory(const std::string &caps_str);
-GstElementFactory *get_factory_by_caps(GstCaps *caps);
+GstElementFactory* get_factory(const std::string& caps_str);
+GstElementFactory* get_factory_by_caps(GstCaps* caps);
 
 }  // namespace GstRTPPayloaderFinder
 }  // namespace switcher

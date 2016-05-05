@@ -26,35 +26,35 @@
 #include <string>
 
 #include "./posture.hpp"
-#include "switcher/std2.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-writer.hpp"
 #include "switcher/shmdata-follower.hpp"
+#include "switcher/shmdata-writer.hpp"
 #include "switcher/startable-quiddity.hpp"
+#include "switcher/std2.hpp"
 
 namespace switcher {
 class PostureMeshSerialization : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureMeshSerialization);
-  PostureMeshSerialization(const std::string &);
-  PostureMeshSerialization(const PostureMeshSerialization &) = delete;
-  PostureMeshSerialization &operator=(const PostureMeshSerialization &) = delete;
+  PostureMeshSerialization(const std::string&);
+  PostureMeshSerialization(const PostureMeshSerialization&) = delete;
+  PostureMeshSerialization& operator=(const PostureMeshSerialization&) = delete;
 
  private:
   ShmdataConnector shmcntr_;
 
-  std::shared_ptr<posture::MeshSerializer> serializer_ {nullptr};
-  std::mutex mutex_ {};
+  std::shared_ptr<posture::MeshSerializer> serializer_{nullptr};
+  std::mutex mutex_{};
 
-  std::unique_ptr<ShmdataFollower> mesh_reader_ {};
-  std::string mesh_reader_caps_ {""};
-  std::unique_ptr<ShmdataWriter> mesh_writer_ {};
+  std::unique_ptr<ShmdataFollower> mesh_reader_{};
+  std::string mesh_reader_caps_{""};
+  std::unique_ptr<ShmdataWriter> mesh_writer_{};
 
-  bool compress_ {false};
-  CTMenum compression_method_ {CTM_METHOD_RAW};
-  double compression_level_ {1};
-  double compression_precision_ {0.001};
+  bool compress_{false};
+  CTMenum compression_method_{CTM_METHOD_RAW};
+  double compression_level_{1};
+  double compression_precision_{0.001};
 
   bool init() final;
 

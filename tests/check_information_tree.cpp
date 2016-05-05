@@ -14,40 +14,38 @@
  * You should have received a copy of the GNU General Public License
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <string>
+#include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <memory>
-#include <algorithm>
 #include <list>
+#include <memory>
+#include <string>
 #include <vector>
 
-#include "switcher/information-tree.hpp"
 #include "switcher/information-tree-basic-serializer.hpp"
 #include "switcher/information-tree-json.hpp"
+#include "switcher/information-tree.hpp"
 
 //----------------- a custom struct without operator <<
-struct Widget: public DefaultSerializable<Widget> {
-};
+struct Widget : public DefaultSerializable<Widget> {};
 
 //----------------- a custom struct with operator <<
 struct SerializableWidget {
-  friend std::ostream &operator<<(std::ostream &os,
-                                  const SerializableWidget &);
+  friend std::ostream& operator<<(std::ostream& os, const SerializableWidget&);
 };
-std::ostream &operator<<(std::ostream &os, const SerializableWidget &) {
+std::ostream& operator<<(std::ostream& os, const SerializableWidget&) {
   os << "hello";
   return os;
 }
 
 //---------------- test
-int
-main() {
+int main() {
   using namespace switcher;
 
-  auto string_compare =
-      [](const std::string &first, const std::string &second)
-      { return (0 == first.compare(second)); };
+  auto string_compare = [](const std::string& first,
+                           const std::string& second) {
+    return (0 == first.compare(second));
+  };
 
   {  // node data as std::string
     InfoTree::ptr tree = InfoTree::make(std::string("truc"));
@@ -75,7 +73,7 @@ main() {
     assert(1.2f == data);
     InfoTree::ptr child1 = tree->get(".child1..");
     assert(!child1->is_leaf());
-    assert(!tree->get("child1.foo"));   // this is not a child
+    assert(!tree->get("child1.foo"));  // this is not a child
   }
   {  // graft a childs and prune it
     InfoTree::ptr tree = InfoTree::make();
@@ -148,7 +146,7 @@ main() {
 
     std::stringstream ss;
     ss << n << "-" << a << "-" << b << "-" << w << "-" << sw;
-    //std::cout << ss.str () << std::endl;
+    // std::cout << ss.str () << std::endl;
     assert(0 == ss.str().compare("null-test-1.200000-not serializable-hello"));
   }
   {  // basic serialization
@@ -203,60 +201,64 @@ main() {
 
   {  // get childs keys inserting in an existing container
     InfoTree::ptr tree = InfoTree::make();
-    std::list<std::string> childs {
-      "child1", "child2", "child3",
-          "child4", "child5", "child6", "child7", "child8", "child9"};
-    std::for_each(childs.begin(),
-                  childs.end(),
-                  [tree] (const std::string &val) {
-                    tree->graft(".root." + val, InfoTree::make("val"));
-                  });
+    std::list<std::string> childs{"child1",
+                                  "child2",
+                                  "child3",
+                                  "child4",
+                                  "child5",
+                                  "child6",
+                                  "child7",
+                                  "child8",
+                                  "child9"};
+    std::for_each(childs.begin(), childs.end(), [tree](const std::string& val) {
+      tree->graft(".root." + val, InfoTree::make("val"));
+    });
     std::vector<std::string> child_keys;
-    auto insert_it =
-        std::insert_iterator<decltype(child_keys)>(child_keys, child_keys.begin());
-    tree->copy_and_insert_child_keys(".root",
-                                     insert_it);
+    auto insert_it = std::insert_iterator<decltype(child_keys)>(
+        child_keys, child_keys.begin());
+    tree->copy_and_insert_child_keys(".root", insert_it);
     assert(std::equal(childs.begin(),
                       childs.end(),
                       child_keys.begin(),
-                      [](const std::string &first,
-                         const std::string &second) {
+                      [](const std::string& first, const std::string& second) {
                         return (0 == first.compare(second));
                       }));
   }
 
   {  // get childs keys in a newly allocated container
     InfoTree::ptr tree = InfoTree::make();
-    std::list<std::string> childs { "child1", "child2", "child3", "child4",
-          "child5", "child6", "child7", "child8", "child9"};
-    std::for_each(childs.begin(),
-                  childs.end(),
-                  [tree] (const std::string &val) {
-                    tree->graft(".root." + val, InfoTree::make("val"));
-                  });
+    std::list<std::string> childs{"child1",
+                                  "child2",
+                                  "child3",
+                                  "child4",
+                                  "child5",
+                                  "child6",
+                                  "child7",
+                                  "child8",
+                                  "child9"};
+    std::for_each(childs.begin(), childs.end(), [tree](const std::string& val) {
+      tree->graft(".root." + val, InfoTree::make("val"));
+    });
 
     // using a default container
-    auto child_keys_list =
-        tree->get_child_keys (".root");
-    assert(std::equal
-           (childs.begin(), childs.end(),
-            child_keys_list.begin(),
-            string_compare));
-
+    auto child_keys_list = tree->get_child_keys(".root");
+    assert(std::equal(
+        childs.begin(), childs.end(), child_keys_list.begin(), string_compare));
   }
 
   {  // copy_leaf_values
     InfoTree::ptr tree = InfoTree::make();
-    std::list<std::string> original_values {"0", "1", "2"};
-    for (auto &it : original_values)
-      tree->graft(std::string(".branch.item"+it),
-                              InfoTree::make(it));
-    tree->graft(".other.branch", InfoTree::make());  // not into copy_leaf_values
+    std::list<std::string> original_values{"0", "1", "2"};
+    for (auto& it : original_values)
+      tree->graft(std::string(".branch.item" + it), InfoTree::make(it));
+    tree->graft(".other.branch",
+                InfoTree::make());  // not into copy_leaf_values
     tree->tag_as_array("branch.", true);
     // std::string serialized = JSONSerializer::serialize(tree);
     // std::cout << serialized << std::endl;
     std::list<std::string> values = tree->copy_leaf_values(".branch");
-    assert(std::equal(original_values.begin(), original_values.end(),
+    assert(std::equal(original_values.begin(),
+                      original_values.end(),
                       values.begin(),
                       string_compare));
     // for (auto &it : values)

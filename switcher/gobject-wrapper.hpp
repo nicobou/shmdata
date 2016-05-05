@@ -20,10 +20,10 @@
 #ifndef __SWITCHER_GOBJECT_WRAPPER_H__
 #define __SWITCHER_GOBJECT_WRAPPER_H__
 
-#include <memory>
-#include <map>
-#include <string>
 #include <glib-object.h>
+#include <map>
+#include <memory>
+#include <string>
 // #include "./gobject-custom-property.hpp"
 // #include "./gobject-custom-signal.hpp"
 
@@ -36,22 +36,24 @@ class GObjectWrapper {
   typedef std::shared_ptr<GObjectWrapper> ptr;
   GObjectWrapper();
   ~GObjectWrapper();
-  GObjectWrapper(const GObjectWrapper &) = delete;
-  GObjectWrapper &operator=(const GObjectWrapper &) = delete;
+  GObjectWrapper(const GObjectWrapper&) = delete;
+  GObjectWrapper& operator=(const GObjectWrapper&) = delete;
 
-  GObject *get_gobject();
+  GObject* get_gobject();
 
   // signal
-  static guint
-  make_signal(GType return_type, guint n_params, GType *param_types);
+  static guint make_signal(GType return_type,
+                           guint n_params,
+                           GType* param_types);
 
  private:
-  struct _MyObject *my_object_;
+  struct _MyObject* my_object_;
 
   // ---------- signals
   // static std::map<guint, GObjectCustomSignal::ptr> custom_signals_;
-  static guint next_signal_num_;      // this is only for generation of unique signal names
-  std::map < std::string, void *>signal_user_datas_;
+  static guint
+      next_signal_num_;  // this is only for generation of unique signal names
+  std::map<std::string, void*> signal_user_datas_;
 };
 
 }  // namespace switcher

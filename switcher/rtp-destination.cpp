@@ -17,24 +17,20 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <glib/gstdio.h>  // writing sdp file
-#include <string>
-#include <sstream>
-#include "./rtp-session.hpp"
 #include "./rtp-destination.hpp"
-#include "./sdp-utils.hpp"
-#include "./scope-exit.hpp"
+#include <glib/gstdio.h>  // writing sdp file
+#include <sstream>
 #include "./information-tree.hpp"
+#include "./rtp-session.hpp"
+#include "./scope-exit.hpp"
+#include "./sdp-utils.hpp"
 
 namespace switcher {
-RtpDestination::RtpDestination(RtpSession *session) :
-    json_description_(std::make_shared<JSONBuilder>()),
-    session_ (session) {
-}
+RtpDestination::RtpDestination(RtpSession* session)
+    : json_description_(std::make_shared<JSONBuilder>()), session_(session) {}
 
 RtpDestination::~RtpDestination() {
-  for (auto &it : files_)
-    g_remove(it.c_str());
+  for (auto& it : files_) g_remove(it.c_str());
 }
 
 void RtpDestination::set_name(std::string name) {
@@ -47,30 +43,26 @@ void RtpDestination::set_host_name(std::string host_name) {
   make_json_description();
 }
 
-std::string RtpDestination::get_host_name() const {
-  return host_name_;
-}
+std::string RtpDestination::get_host_name() const { return host_name_; }
 
-std::string RtpDestination::get_port(const std::string &shmdata_path) {
+std::string RtpDestination::get_port(const std::string& shmdata_path) {
   auto it = source_streams_.find(shmdata_path);
-  if (source_streams_.end() == it)
-    return std::string();
+  if (source_streams_.end() == it) return std::string();
   return it->second;
 }
 
-bool
-RtpDestination::add_stream(const std::string &shmdata_path,
-                           std::string port) {
+bool RtpDestination::add_stream(const std::string& shmdata_path,
+                                std::string port) {
   source_streams_[shmdata_path] = port;
   make_json_description();
   return true;
 }
 
-bool RtpDestination::has_shmdata(const std::string &shmdata_path) {
+bool RtpDestination::has_shmdata(const std::string& shmdata_path) {
   return (source_streams_.end() != source_streams_.find(shmdata_path));
 }
 
-bool RtpDestination::remove_stream(const std::string &shmdata_stream_path) {
+bool RtpDestination::remove_stream(const std::string& shmdata_stream_path) {
   auto it = source_streams_.find(shmdata_stream_path);
   if (source_streams_.end() == it) {
     g_warning("RtpDestination: stream not found, cannot remove %s",
@@ -84,21 +76,22 @@ bool RtpDestination::remove_stream(const std::string &shmdata_stream_path) {
 
 std::string RtpDestination::get_sdp() {
   SDPDescription desc;
-  
-  for (auto &it : source_streams_) {
+
+  for (auto& it : source_streams_) {
     std::string string_caps =
         session_->tree<MPtr(&InfoTree::branch_read_data<std::string>)>(
             std::string("rtp_caps." + it.first));
-    GstCaps *caps = gst_caps_from_string(string_caps.c_str());
-    On_scope_exit{gst_caps_unref(caps);};
+    GstCaps* caps = gst_caps_from_string(string_caps.c_str());
+    On_scope_exit { gst_caps_unref(caps); };
     gint port = atoi(it.second.c_str());
     SDPMedia media;
     if (!media.set_media_info_from_caps(caps))
       g_warning("issue with sdp media info");
     media.set_port(port);
     if (!desc.add_media(media)) {
-      g_warning("a media has not been added to the SDP description,"
-                "returning empty description");
+      g_warning(
+          "a media has not been added to the SDP description,"
+          "returning empty description");
       return std::string();
     }
   }
@@ -112,7 +105,7 @@ void RtpDestination::make_json_description() {
   json_description_->add_string_member("host_name", host_name_.c_str());
   json_description_->set_member_name("data_streams");
   json_description_->begin_array();
-  for (auto &it : source_streams_) {
+  for (auto& it : source_streams_) {
     json_description_->begin_object();
     json_description_->add_string_member("path", it.first.c_str());
     json_description_->add_string_member("port", it.second.c_str());
@@ -128,14 +121,13 @@ JSONBuilder::Node RtpDestination::get_json_root_node() {
 
 bool RtpDestination::write_to_file(std::string file_name) {
   std::string sdp = get_sdp();
-  if (sdp.empty())
-    return false;
-  GError *error = NULL;
+  if (sdp.empty()) return false;
+  GError* error = NULL;
   if (!g_file_set_contents(file_name.c_str(),
                            sdp.c_str(),
                            -1,  // no size, res is a null terminated string
                            &error)) {
-    g_warning("%s",error->message);
+    g_warning("%s", error->message);
     g_error_free(error);
     return false;
   }
@@ -145,7 +137,7 @@ bool RtpDestination::write_to_file(std::string file_name) {
 
 std::vector<std::string> RtpDestination::get_shmdata() const {
   std::vector<std::string> res;
-  for (auto &it: source_streams_) {
+  for (auto& it : source_streams_) {
     res.push_back(it.first);
   }
   return res;

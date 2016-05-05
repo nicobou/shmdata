@@ -20,15 +20,15 @@
 #ifndef __SWITCHER_TEMPLATED_SEQUENCE_H__
 #define __SWITCHER_TEMPLATED_SEQUENCE_H__
 
-namespace switcher{
+namespace switcher {
 
-template<int ...>
+template <int...>
 struct tseq {};
 
-template<int N, int ...S>
-struct gens : gens<N-1, N-1, S...> {};
+template <int N, int... S>
+struct gens : gens<N - 1, N - 1, S...> {};
 
-template<int ...S>
+template <int... S>
 struct gens<0, S...> {
   virtual ~gens(){};
   typedef tseq<S...> type;

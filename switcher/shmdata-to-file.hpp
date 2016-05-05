@@ -23,20 +23,20 @@
 #include <gst/gst.h>
 #include <string>
 #include <unordered_map>
+#include "./custom-property-helper.hpp"
 #include "./gst-pipeliner.hpp"
 #include "./quiddity.hpp"
 #include "./segment.hpp"
 #include "./startable-quiddity.hpp"
-#include "./custom-property-helper.hpp"
 
 namespace switcher {
-class ShmdataToFile:public GstPipeliner, public StartableQuiddity {
+class ShmdataToFile : public GstPipeliner, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToFile);
-  ShmdataToFile(const std::string &);
+  ShmdataToFile(const std::string&);
   ~ShmdataToFile();
-  ShmdataToFile(const ShmdataToFile &) = delete;
-  ShmdataToFile &operator=(const ShmdataToFile &) = delete;
+  ShmdataToFile(const ShmdataToFile&) = delete;
+  ShmdataToFile& operator=(const ShmdataToFile&) = delete;
 
   bool start();
   bool stop();
@@ -48,9 +48,9 @@ class ShmdataToFile:public GstPipeliner, public StartableQuiddity {
   // custom properties:
   CustomPropertyHelper::ptr custom_prop_;
 
-  std::string output_prefix_ {"shmfile_"};
+  std::string output_prefix_{"shmfile_"};
 
-  GParamSpec *output_prefix_param_ {nullptr};
+  GParamSpec* output_prefix_param_{nullptr};
 
   bool init_gpipe() final;
 
@@ -60,13 +60,12 @@ class ShmdataToFile:public GstPipeliner, public StartableQuiddity {
 
   bool make_recorders();
   bool clean_recorders();
-  std::unordered_map<std::string, std::string> file_names_ {};
+  std::unordered_map<std::string, std::string> file_names_{};
 
-  static const gchar *get_output_prefix(void *user_data);
-  static void set_output_prefix(const gchar *prefix, void *user_data);
-
+  static const gchar* get_output_prefix(void* user_data);
+  static void set_output_prefix(const gchar* prefix, void* user_data);
 };
 
 }  // namespace switcher
 
-#endif // ifndef
+#endif  // ifndef

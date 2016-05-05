@@ -28,18 +28,19 @@ class Selection {
  public:
   using index_t = size_t;
   Selection() = delete;
-  Selection(std::vector<std::string> &&list, index_t selection);
-  Selection(std::pair<
-            std::vector<std::string>/*names*/,
-            std::vector<std::string/*nicks*/>> &&list, index_t selection);
+  Selection(std::vector<std::string>&& list, index_t selection);
+  Selection(std::pair<std::vector<std::string> /*names*/,
+                      std::vector<std::string /*nicks*/>>&& list,
+            index_t selection);
   void select(index_t new_selection);
   index_t get() const;
   std::string get_current() const;
   std::string get_current_nick() const;
   std::vector<std::string> get_list() const;
-  index_t get_index(const std::string &name_or_nick);
-  index_t size() const {return list_.size();}
-  bool empty() const {return list_.empty();}
+  index_t get_index(const std::string& name_or_nick);
+  index_t size() const { return list_.size(); }
+  bool empty() const { return list_.empty(); }
+
  private:
   std::vector<std::string> list_;
   std::vector<std::string> nicks_;

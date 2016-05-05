@@ -17,13 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <algorithm>
 #include "./shmdata-utils.hpp"
+#include <algorithm>
 #include "./gst-shmdata-subscriber.hpp"
 
 namespace switcher {
 
-std::string ShmdataUtils::get_category(const std::string &caps){
+std::string ShmdataUtils::get_category(const std::string& caps) {
   std::string category;
   std::string mime_type(caps.begin(),
                         std::find(caps.begin(), caps.end(), (',')));
@@ -41,13 +41,11 @@ std::string ShmdataUtils::get_category(const std::string &caps){
              mime_type.find("application/x-libloserialized-osc")) {
     category = "osc";
   } else if (std::string::npos != mime_type.find("application/x-")) {
-    auto it = std::find(mime_type.begin(),
-                        mime_type.end(),
-                        '-');
+    auto it = std::find(mime_type.begin(), mime_type.end(), '-');
     it++;
     if (mime_type.end() == it)
       category = "unknown";
-    else 
+    else
       category = std::string(it, mime_type.end());
   } else {
     category = mime_type;
@@ -55,15 +53,15 @@ std::string ShmdataUtils::get_category(const std::string &caps){
   return category;
 }
 
-InfoTree::ptr ShmdataUtils::make_tree(const std::string &caps,
-                                        const std::string &category,
-                                        GstShmdataSubscriber::num_bytes_t num_bytes){
+InfoTree::ptr ShmdataUtils::make_tree(
+    const std::string& caps,
+    const std::string& category,
+    GstShmdataSubscriber::num_bytes_t num_bytes) {
   InfoTree::ptr tree = InfoTree::make();
   tree->graft(".caps", InfoTree::make(caps));
   tree->graft(".category", InfoTree::make(category));
   tree->graft(".byte_rate", InfoTree::make(num_bytes));
   return tree;
 }
-
 
 }  // namespace switcher

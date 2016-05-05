@@ -22,8 +22,8 @@
 
 #include <posture/posturevision.h>
 
-#define POINTCLOUD_TYPE_BASE          "application/x-pcl"
-#define POINTCLOUD_TYPE_COMPRESSED    "application/x-pcd"
-#define POLYGONMESH_TYPE_BASE         "application/x-polymesh"
+#define POINTCLOUD_TYPE_BASE "application/x-pcl"
+#define POINTCLOUD_TYPE_COMPRESSED "application/x-pcd"
+#define POLYGONMESH_TYPE_BASE "application/x-polymesh"
 
 #endif

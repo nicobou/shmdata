@@ -17,49 +17,48 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "./gst-shmdata-subscriber.hpp"
 #include <gst/gst.h>
 #include <string>
-#include "./gst-shmdata-subscriber.hpp"
 
 namespace switcher {
 
-GstShmdataSubscriber::GstShmdataSubscriber(GstElement *element,
+GstShmdataSubscriber::GstShmdataSubscriber(GstElement* element,
                                            on_caps_cb_t on_caps_cb,
                                            on_byte_monitor_t on_byte_monitor_cb,
-                                           on_delete_t on_delete_cb) :
-    element_(element),
-    on_caps_cb_(on_caps_cb),
-    on_byte_monitor_cb_(on_byte_monitor_cb),
-    on_delete_cb_(on_delete_cb),
-    ptask_ ([this](){this->byte_monitor();},
-            std::chrono::milliseconds (1000)) {
-  if (!GST_IS_ELEMENT(element_)){
+                                           on_delete_t on_delete_cb)
+    : element_(element),
+      on_caps_cb_(on_caps_cb),
+      on_byte_monitor_cb_(on_byte_monitor_cb),
+      on_delete_cb_(on_delete_cb),
+      ptask_([this]() { this->byte_monitor(); },
+             std::chrono::milliseconds(1000)) {
+  if (!GST_IS_ELEMENT(element_)) {
     g_warning("cannot monitor gstshmdata metadata, not a GstElement");
     return;
   }
   gst_object_ref(static_cast<gpointer>(element));
-  signal_handler_id_ = 
-    g_signal_connect(G_OBJECT(element_),
-		     "notify::caps",
-		     G_CALLBACK(GstShmdataSubscriber::on_caps_cb),
-		     this);
+  signal_handler_id_ =
+      g_signal_connect(G_OBJECT(element_),
+                       "notify::caps",
+                       G_CALLBACK(GstShmdataSubscriber::on_caps_cb),
+                       this);
   notify_caps();
 }
-  
-GstShmdataSubscriber::~GstShmdataSubscriber(){
-  if (on_delete_cb_)
-    on_delete_cb_();
-  if (GST_IS_ELEMENT(element_)){
+
+GstShmdataSubscriber::~GstShmdataSubscriber() {
+  if (on_delete_cb_) on_delete_cb_();
+  if (GST_IS_ELEMENT(element_)) {
     if (0 != signal_handler_id_)
       g_signal_handler_disconnect(element_, signal_handler_id_);
     gst_object_unref(static_cast<gpointer>(element_));
   }
 }
 
-void GstShmdataSubscriber::on_caps_cb(GObject */*gobject*/,
-                                      GParamSpec */*pspec*/,
-                                      gpointer user_data){
-  GstShmdataSubscriber *context = static_cast<GstShmdataSubscriber *>(user_data);
+void GstShmdataSubscriber::on_caps_cb(GObject* /*gobject*/,
+                                      GParamSpec* /*pspec*/,
+                                      gpointer user_data) {
+  GstShmdataSubscriber* context = static_cast<GstShmdataSubscriber*>(user_data);
   if (!context->on_caps_cb_) {
     g_debug("got caps, but no caps callback in GstShmdataSubscriber");
     return;
@@ -67,7 +66,7 @@ void GstShmdataSubscriber::on_caps_cb(GObject */*gobject*/,
   context->notify_caps();
 }
 
-void GstShmdataSubscriber::notify_caps(){
+void GstShmdataSubscriber::notify_caps() {
   GValue val = G_VALUE_INIT;
   g_value_init(&val, G_TYPE_STRING);
   g_object_get_property(G_OBJECT(element_), "caps", &val);
@@ -76,7 +75,7 @@ void GstShmdataSubscriber::notify_caps(){
   g_value_unset(&val);
 }
 
-void GstShmdataSubscriber::byte_monitor(){
+void GstShmdataSubscriber::byte_monitor() {
   if (!on_byte_monitor_cb_) {
     g_debug("no byte monitor callback, not monitoring");
     return;

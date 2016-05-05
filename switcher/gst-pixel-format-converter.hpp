@@ -30,20 +30,20 @@ namespace switcher {
 class GstPixelFormatConverter {
  public:
   using uptr = std::unique_ptr<GstPixelFormatConverter>;
-  GstPixelFormatConverter(Quiddity *quid,
-                          const char *property_name,
-                          const char *display_text);
+  GstPixelFormatConverter(Quiddity* quid,
+                          const char* property_name,
+                          const char* display_text);
   GstPixelFormatConverter() = delete;
   ~GstPixelFormatConverter() = default;
-  GstPixelFormatConverter(const GstPixelFormatConverter &) = delete;
-  GstPixelFormatConverter &operator=(const GstPixelFormatConverter &) = delete;
+  GstPixelFormatConverter(const GstPixelFormatConverter&) = delete;
+  GstPixelFormatConverter& operator=(const GstPixelFormatConverter&) = delete;
 
-  bool start(const std::string &shmpath_to_convert,
-             const std::string &shmpath_converted);
+  bool start(const std::string& shmpath_to_convert,
+             const std::string& shmpath_converted);
   bool stop();
 
  private:
-  Quiddity *quid_;
+  Quiddity* quid_;
   // shmdata path
   std::string shmpath_to_convert_{};
   std::string shmpath_converted_{};

@@ -21,39 +21,40 @@
 
 #include <gst/gst.h>
 #include <cassert>
-#include <vector>
 #include <string>
-#include "switcher/quiddity-manager.hpp"
+#include <vector>
 #include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/quiddity-manager.hpp"
 
 static bool audio_success;
 static bool video_success;
 static bool do_continue;
 
-
 using namespace switcher;
 
-void on_tree_grafted(const std::string &/*subscriber_name */ ,
-                     const std::string &/*quiddity_name */ ,
-                     const std::string &signal_name,
-                     const std::vector<std::string> &params,
-                     void *user_data) {
-  auto manager = static_cast<QuiddityManager *>(user_data);
+void on_tree_grafted(const std::string& /*subscriber_name */,
+                     const std::string& /*quiddity_name */,
+                     const std::string& signal_name,
+                     const std::vector<std::string>& params,
+                     void* user_data) {
+  auto manager = static_cast<QuiddityManager*>(user_data);
   // std::printf("%s: %s \n", signal_name.c_str(), params[0].c_str());
   GstShmdataSubscriber::num_bytes_t byte_rate =
-      //std::string byte_rate =
-      manager->use_tree<COPtr(&InfoTree::get_data, InfoTree, Any, const std::string &)>(
+      // std::string byte_rate =
+      manager->use_tree<COPtr(
+          &InfoTree::get_data, InfoTree, Any, const std::string&)>(
           std::string("uri"), params[0] + ".byte_rate");
-  if(0 != byte_rate && std::string::npos != params[0].find("audio")){
+  if (0 != byte_rate && std::string::npos != params[0].find("audio")) {
     audio_success = true;
     do_continue = false;
   }
   std::printf("%s: %s %s\n",
-              signal_name.c_str(), params[0].c_str(), std::to_string(byte_rate).c_str());
+              signal_name.c_str(),
+              params[0].c_str(),
+              std::to_string(byte_rate).c_str());
 }
 
-int
-main() {
+int main() {
   audio_success = false;
   // video_success = false;
   video_success = true;
@@ -61,18 +62,14 @@ main() {
   {
     QuiddityManager::ptr manager = QuiddityManager::make_manager("rtptest");
 #ifdef HAVE_CONFIG_H
-    gchar *usr_plugin_dir = g_strdup_printf("../plugins/gsoap/%s", LT_OBJDIR);
+    gchar* usr_plugin_dir = g_strdup_printf("../plugins/gsoap/%s", LT_OBJDIR);
     manager->scan_directory_for_plugins(usr_plugin_dir);
     g_free(usr_plugin_dir);
 #else
     return 1;
 #endif
     manager->create("SOAPcontrolServer", "soapserver");
-    manager->invoke_va("soapserver",
-                       "set_port",
-                       nullptr,
-                       "38084",
-                       nullptr);
+    manager->invoke_va("soapserver", "set_port", nullptr, "38084", nullptr);
     // audio
     assert("a" == manager->create("audiotestsrc", "a"));
     manager->use_prop<MPtr(&PContainer::set_str_str)>("a", "started", "true");
@@ -98,12 +95,8 @@ main() {
     //                    nullptr,
     //                    "/tmp/switcher_rtptest_v_encoded-video",
     //                    nullptr);
-    manager->invoke_va("rtp",
-                       "add_destination",
-                       nullptr,
-                       "local",
-                       "127.0.0.1",
-                       nullptr);
+    manager->invoke_va(
+        "rtp", "add_destination", nullptr, "local", "127.0.0.1", nullptr);
     manager->invoke_va("rtp",
                        "add_udp_stream_to_dest",
                        nullptr,
@@ -127,18 +120,17 @@ main() {
     //                    nullptr);
     // receiving
     manager->create("httpsdpdec", "uri");
-    manager->invoke_va("uri",
-                       "to_shmdata",
-                       nullptr,
-                       "http://127.0.0.1:38084/sdp?rtpsession=rtp&destination=local",
-                       nullptr);
+    manager->invoke_va(
+        "uri",
+        "to_shmdata",
+        nullptr,
+        "http://127.0.0.1:38084/sdp?rtpsession=rtp&destination=local",
+        nullptr);
     // checking http-sdp-dec is updating positive byte_rate in tree:
-    assert(manager->make_signal_subscriber("signal_subscriber",
-                                           on_tree_grafted,
-                                           manager.get()));
-    assert(manager->subscribe_signal("signal_subscriber",
-                                     "uri",
-                                     "on-tree-grafted"));
+    assert(manager->make_signal_subscriber(
+        "signal_subscriber", on_tree_grafted, manager.get()));
+    assert(manager->subscribe_signal(
+        "signal_subscriber", "uri", "on-tree-grafted"));
     // wait 3 seconds
     uint count = 3;
     while (do_continue) {

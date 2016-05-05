@@ -24,10 +24,10 @@
 #ifndef __SWITCHER_QUIDDITY_COMMAND_H__
 #define __SWITCHER_QUIDDITY_COMMAND_H__
 
-#include <string>
-#include <vector>
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 #include "./json-builder.hpp"
 
 namespace switcher {
@@ -83,12 +83,13 @@ class QuiddityCommand {
   void set_id(command id);
   void add_arg(std::string arg);
   void set_vector_arg(std::vector<std::string> vector_arg);
-  static command get_id_from_string(const char *com);
-  static const char *get_string_from_id(QuiddityCommand::command id);
-  static QuiddityCommand::ptr parse_command_from_json_reader(JsonReader *reader);
+  static command get_id_from_string(const char* com);
+  static const char* get_string_from_id(QuiddityCommand::command id);
+  static QuiddityCommand::ptr parse_command_from_json_reader(
+      JsonReader* reader);
   JSONBuilder::Node get_json_root_node();
   JSONBuilder::ptr json_builder_{};
-  static const std::map<int, const char *>command_names_;
+  static const std::map<int, const char*> command_names_;
 };
 }  // namespace switcher
 

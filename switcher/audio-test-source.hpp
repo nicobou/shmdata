@@ -20,23 +20,23 @@
 #ifndef __SWITCHER_AUDIO_TEST_SOURCE_H__
 #define __SWITCHER_AUDIO_TEST_SOURCE_H__
 
-#include <memory>
-#include <future>
 #include <atomic>
+#include <future>
+#include <memory>
+#include "switcher/gst-pipeliner.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/gst-pipeliner.hpp"
 #include "switcher/unique-gst-element.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"
 
 namespace switcher {
-class AudioTestSource: public Quiddity, public StartableQuiddity {
+class AudioTestSource : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AudioTestSource);
-  AudioTestSource(const std::string &);
+  AudioTestSource(const std::string&);
   ~AudioTestSource() = default;
-  AudioTestSource(const AudioTestSource &) = delete;
-  AudioTestSource &operator=(const AudioTestSource &) = delete;
+  AudioTestSource(const AudioTestSource&) = delete;
+  AudioTestSource& operator=(const AudioTestSource&) = delete;
 
  private:
   std::string shmpath_{};

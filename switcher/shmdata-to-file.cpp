@@ -19,61 +19,64 @@
 
 #include <glib/gstdio.h>
 
-#include "./shmdata-to-file.hpp"
 #include "./gst-utils.hpp"
 #include "./scope-exit.hpp"
+#include "./shmdata-to-file.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    ShmdataToFile,
-    "shmtofile",
-    "Shmdata Recorder",
-    "file",
-    "reader",
-    "record shmdata(s) to file(s)",
-    "LGPL",
-    "Nicolas Bouillot, Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToFile,
+                                     "shmtofile",
+                                     "Shmdata Recorder",
+                                     "file",
+                                     "reader",
+                                     "record shmdata(s) to file(s)",
+                                     "LGPL",
+                                     "Nicolas Bouillot, Emmanuel Durand");
 
-ShmdataToFile::ShmdataToFile(const std::string &):
-    custom_prop_(std::make_shared<CustomPropertyHelper>()) {
-}
+ShmdataToFile::ShmdataToFile(const std::string&)
+    : custom_prop_(std::make_shared<CustomPropertyHelper>()) {}
 
 ShmdataToFile::~ShmdataToFile() {
-  //clean_recorders();
+  // clean_recorders();
 }
 
 bool ShmdataToFile::init_gpipe() {
   init_startable(this);
   init_segment(this);
 
-  install_connect_method(std::bind(&ShmdataToFile::connect, this, std::placeholders::_1),
-                         nullptr,
-                         std::bind(&ShmdataToFile::disconnect_all, this),
-                         std::bind(&ShmdataToFile::can_sink_caps, this, std::placeholders::_1), 8); // Temporary maximum number
+  install_connect_method(
+      std::bind(&ShmdataToFile::connect, this, std::placeholders::_1),
+      nullptr,
+      std::bind(&ShmdataToFile::disconnect_all, this),
+      std::bind(&ShmdataToFile::can_sink_caps, this, std::placeholders::_1),
+      8);  // Temporary maximum number
 
-  output_prefix_param_ = custom_prop_->make_string_property("filename_prefix",
-                          "Prefix to add to the file names",
-                          output_prefix_.c_str(),
-                          (GParamFlags) G_PARAM_READWRITE,
-                          ShmdataToFile::set_output_prefix,
-                          ShmdataToFile::get_output_prefix,
-                          this);
+  output_prefix_param_ =
+      custom_prop_->make_string_property("filename_prefix",
+                                         "Prefix to add to the file names",
+                                         output_prefix_.c_str(),
+                                         (GParamFlags)G_PARAM_READWRITE,
+                                         ShmdataToFile::set_output_prefix,
+                                         ShmdataToFile::get_output_prefix,
+                                         this);
   install_property_by_pspec(custom_prop_->get_gobject(),
-                          output_prefix_param_,
-                          "filename_prefix",
-                          "Prefix to add to the file names");
+                            output_prefix_param_,
+                            "filename_prefix",
+                            "Prefix to add to the file names");
 
   return true;
 }
 
-bool
-ShmdataToFile::connect(std::string shmdata_socket_path) {
+bool ShmdataToFile::connect(std::string shmdata_socket_path) {
   if (file_names_.find(shmdata_socket_path) != file_names_.end()) {
-    g_warning("ShmdataToFile::connect: %s is already added", shmdata_socket_path.c_str());
+    g_warning("ShmdataToFile::connect: %s is already added",
+              shmdata_socket_path.c_str());
     return false;
   }
 
-  file_names_[shmdata_socket_path] = output_prefix_ + shmdata_socket_path.substr(shmdata_socket_path.rfind("/") + 1);
+  file_names_[shmdata_socket_path] =
+      output_prefix_ +
+      shmdata_socket_path.substr(shmdata_socket_path.rfind("/") + 1);
 
   return true;
 }
@@ -81,59 +84,50 @@ ShmdataToFile::connect(std::string shmdata_socket_path) {
 bool
 
 ShmdataToFile::disconnect_all() {
-  if (is_started())
-    return false;
+  if (is_started()) return false;
   file_names_.clear();
 
   return true;
 }
 
-bool
-ShmdataToFile::start() {
-  if (is_started())
-    return false;
+bool ShmdataToFile::start() {
+  if (is_started()) return false;
 
   make_recorders();
   return true;
 }
 
-bool
-ShmdataToFile::stop() {
-  if (!is_started())
-    return false;
+bool ShmdataToFile::stop() {
+  if (!is_started()) return false;
 
   clean_recorders();
   return true;
 }
 
-const gchar *
-ShmdataToFile::get_output_prefix(void *user_data) {
-  ShmdataToFile *ctx = static_cast<ShmdataToFile *>(user_data);
+const gchar* ShmdataToFile::get_output_prefix(void* user_data) {
+  ShmdataToFile* ctx = static_cast<ShmdataToFile*>(user_data);
   return ctx->output_prefix_.c_str();
 }
 
-void
-ShmdataToFile::set_output_prefix(const gchar *prefix, void *user_data) {
-  ShmdataToFile *ctx = static_cast<ShmdataToFile *>(user_data);
-  if (prefix != nullptr)
-    ctx->output_prefix_ = prefix;
+void ShmdataToFile::set_output_prefix(const gchar* prefix, void* user_data) {
+  ShmdataToFile* ctx = static_cast<ShmdataToFile*>(user_data);
+  if (prefix != nullptr) ctx->output_prefix_ = prefix;
 }
 
-bool
-ShmdataToFile::can_sink_caps(std::string /*unused*/) {
-  return true; // We can record anything!
+bool ShmdataToFile::can_sink_caps(std::string /*unused*/) {
+  return true;  // We can record anything!
 }
-
 
 bool ShmdataToFile::make_recorders() {
-  for (auto &it : file_names_) {
+  for (auto& it : file_names_) {
     // FIXME check file
-    GError *error = nullptr;
-    gchar *pipe = g_strdup_printf("gdppay ! filesink location=%s",
-                                  it.second.c_str());
-    On_scope_exit{g_free(pipe);};
+    GError* error = nullptr;
+    gchar* pipe =
+        g_strdup_printf("gdppay ! filesink location=%s", it.second.c_str());
+    On_scope_exit { g_free(pipe); };
 
-    GstElement *recorder_bin = gst_parse_bin_from_description(pipe, TRUE, &error);
+    GstElement* recorder_bin =
+        gst_parse_bin_from_description(pipe, TRUE, &error);
     if (error != nullptr) {
       g_warning("%s", error->message);
       g_error_free(error);

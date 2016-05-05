@@ -23,8 +23,9 @@
 namespace switcher {
 class SafeBoolIdiom {
  public:
-  virtual ~SafeBoolIdiom(){}
+  virtual ~SafeBoolIdiom() {}
   explicit operator bool() const;
+
  private:
   virtual bool safe_bool_idiom() const = 0;
 };

@@ -21,27 +21,26 @@
 #define __SWITCHER_GLIB_MAINLOOP_H__
 
 #include <glib.h>
-#include <memory>
-#include <thread>
-#include <mutex>
 #include <condition_variable>
+#include <memory>
+#include <mutex>
+#include <thread>
 
 namespace switcher {
 
-class GlibMainLoop
-{
+class GlibMainLoop {
  public:
   typedef std::shared_ptr<GlibMainLoop> ptr;
   GlibMainLoop();
   ~GlibMainLoop();
-  GlibMainLoop(const GlibMainLoop &) = delete;
-  GlibMainLoop &operator=(const GlibMainLoop &) = delete;
+  GlibMainLoop(const GlibMainLoop&) = delete;
+  GlibMainLoop& operator=(const GlibMainLoop&) = delete;
 
-  GMainContext *get_main_context();
-  
+  GMainContext* get_main_context();
+
  private:
-  GMainContext *main_context_{nullptr};
-  GMainLoop *mainloop_{nullptr};
+  GMainContext* main_context_{nullptr};
+  GMainLoop* mainloop_{nullptr};
   std::mutex begin_{};
   std::mutex end_{};
   std::condition_variable end_cond_{};

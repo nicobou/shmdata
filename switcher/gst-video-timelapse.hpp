@@ -20,19 +20,19 @@
 #ifndef __SWITCHER_GST_VIDEO_TIMELAPSE_H__
 #define __SWITCHER_GST_VIDEO_TIMELAPSE_H__
 
-#include <vector>
 #include <unordered_set>
+#include <vector>
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/shmdata-utils.hpp"
 
-
 namespace switcher {
-struct GstVideoTimelapseConfig{
-  GstVideoTimelapseConfig(const std::string &orig_shmpath,
-                          const std::string &image_path): // "for instance /tmp/img_%05d.jpg"
-      orig_shmpath_(orig_shmpath),
-      image_path_(image_path){};
+struct GstVideoTimelapseConfig {
+  GstVideoTimelapseConfig(const std::string& orig_shmpath,
+                          const std::string& image_path)
+      :  // "for instance /tmp/img_%05d.jpg"
+        orig_shmpath_(orig_shmpath),
+        image_path_(image_path){};
   // config members:
   std::string orig_shmpath_{};
   std::string image_path_{};
@@ -44,18 +44,18 @@ struct GstVideoTimelapseConfig{
   unsigned int max_files_{0};
 };
 
-class GstVideoTimelapse : public SafeBoolIdiom  {
+class GstVideoTimelapse : public SafeBoolIdiom {
  public:
-  using on_new_file_t = std::function<void(std::string &&)>;
-  GstVideoTimelapse(const GstVideoTimelapseConfig &config,
+  using on_new_file_t = std::function<void(std::string&&)>;
+  GstVideoTimelapse(const GstVideoTimelapseConfig& config,
                     GstShmdataSubscriber::on_caps_cb_t on_caps,
                     GstShmdataSubscriber::on_byte_monitor_t on_byte_monitor,
                     GstShmdataSubscriber::on_delete_t on_delete,
                     on_new_file_t on_new_file);
   GstVideoTimelapse() = delete;
   ~GstVideoTimelapse() = default;
-  GstVideoTimelapse(const GstVideoTimelapse &) = delete;
-  GstVideoTimelapse &operator=(const GstVideoTimelapse &) = delete;
+  GstVideoTimelapse(const GstVideoTimelapse&) = delete;
+  GstVideoTimelapse& operator=(const GstVideoTimelapse&) = delete;
 
  private:
   GstVideoTimelapseConfig config_;
@@ -69,8 +69,7 @@ class GstVideoTimelapse : public SafeBoolIdiom  {
 
   // safe bool idiom
   bool is_valid_{false};
-  bool safe_bool_idiom() const final{return is_valid_;};
-
+  bool safe_bool_idiom() const final { return is_valid_; };
 };
 
 }  // namespace switcher

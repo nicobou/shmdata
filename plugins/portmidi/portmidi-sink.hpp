@@ -21,20 +21,22 @@
 #define __SWITCHER_PORTMIDI_SINK_H__
 
 #include <memory>
+#include "./portmidi-devices.hpp"
 #include "switcher/quiddity.hpp"
-#include "switcher/startable-quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
-#include "./portmidi-devices.hpp"
+#include "switcher/startable-quiddity.hpp"
 
 namespace switcher {
-class PortMidiSink:public Quiddity, public StartableQuiddity, public PortMidi {
+class PortMidiSink : public Quiddity,
+                     public StartableQuiddity,
+                     public PortMidi {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSink);
-  PortMidiSink(const std::string &);
+  PortMidiSink(const std::string&);
   ~PortMidiSink() = default;
-  PortMidiSink(const PortMidiSink &) = delete;
-  PortMidiSink &operator=(const PortMidiSink &) = delete;
+  PortMidiSink(const PortMidiSink&) = delete;
+  PortMidiSink& operator=(const PortMidiSink&) = delete;
 
  private:
   // registering connect/disconnect/can_sink_caps:
@@ -51,7 +53,7 @@ class PortMidiSink:public Quiddity, public StartableQuiddity, public PortMidi {
   bool disconnect();
   bool can_sink_caps(std::string caps);
   // shmdata any callback
-  void on_shmreader_data(void *data, size_t data_size);
+  void on_shmreader_data(void* data, size_t data_size);
 };
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSink);

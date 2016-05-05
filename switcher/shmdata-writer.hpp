@@ -20,24 +20,24 @@
 #ifndef __SWITCHER_SHMDATA_WRITER_H__
 #define __SWITCHER_SHMDATA_WRITER_H__
 
-#include <mutex> 
+#include <mutex>
 #include "shmdata/writer.hpp"
+#include "switcher/make-consultable.hpp"
+#include "switcher/periodic-task.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/safe-bool-idiom.hpp"
 #include "switcher/shmdata-glib-logger.hpp"
-#include "switcher/make-consultable.hpp"
-#include "switcher/periodic-task.hpp"
 
 namespace switcher {
-class ShmdataWriter: public SafeBoolIdiom {
+class ShmdataWriter : public SafeBoolIdiom {
  public:
-  ShmdataWriter(Quiddity *quid,
-                const std::string &path,
+  ShmdataWriter(Quiddity* quid,
+                const std::string& path,
                 size_t memsize,
-                const std::string &data_descr);
+                const std::string& data_descr);
   ShmdataWriter() = delete;
   ~ShmdataWriter();
-  ShmdataWriter(const ShmdataWriter &) = delete;
+  ShmdataWriter(const ShmdataWriter&) = delete;
   ShmdataWriter& operator=(const ShmdataWriter&) = delete;
   ShmdataWriter& operator=(ShmdataWriter&&) = default;
 
@@ -45,11 +45,11 @@ class ShmdataWriter: public SafeBoolIdiom {
   // FIXME use consultable Global Wrapping
   // this is used in order to monitor traffic in the shmdata,
   // i.e. you need to update this at each write with the size writen,
-  // regardless of the shmdata::Writer method you are using 
+  // regardless of the shmdata::Writer method you are using
   void bytes_written(size_t size);
-  
+
  private:
-  Quiddity *quid_;
+  Quiddity* quid_;
   std::string shmpath_;
   std::string data_type_;
   ShmdataGlibLogger shmlog_{};
@@ -57,8 +57,8 @@ class ShmdataWriter: public SafeBoolIdiom {
   std::unique_ptr<PeriodicTask> task_;
   size_t bytes_written_{0};
   std::mutex bytes_mutex_{};
-  
-  bool safe_bool_idiom() const final{return static_cast<bool>(shm_);};
+
+  bool safe_bool_idiom() const final { return static_cast<bool>(shm_); };
   void update_quid_byte_rate();
 };
 

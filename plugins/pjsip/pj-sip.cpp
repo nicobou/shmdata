@@ -15,8 +15,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <glib.h>
 #include "./pj-sip.hpp"
+#include <glib.h>
 #include "./pj-presence.hpp"
 
 namespace switcher {
@@ -24,22 +24,20 @@ namespace switcher {
 // Application should only instantiate
 // one SIP endpoint instance for every process.
 // Accordingly, SIPPlugin is a singleton
-PJSIP *PJSIP::this_ = nullptr;  // static pointer to the instance
+PJSIP* PJSIP::this_ = nullptr;  // static pointer to the instance
 // std::atomic<bool> does not have fetch_* speciliazed members,
 // using unsigned short instead
 std::atomic<unsigned short> PJSIP::sip_endpt_used_(0);
 
-PJSIP::PJSIP(std::function<bool()> init_fun,
-             std::function<void()> destruct_fun) :
-    cp_(),
-    destruct_fun_(destruct_fun){
+PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
+    : cp_(), destruct_fun_(destruct_fun) {
   if (1 == sip_endpt_used_.fetch_or(1)) {
     g_warning("an other sip quiddity is instancied, cannot init");
     return;
   }
   i_m_the_one_ = true;
   this_ = this;
-  
+
   pj_status_t status = pj_init();
   if (status != PJ_SUCCESS) {
     g_warning("cannot init pjsip library");
@@ -47,8 +45,8 @@ PJSIP::PJSIP(std::function<bool()> init_fun,
   }
   pj_log_set_level(log_level_);
   // Register the thread, after pj_init() is called
-  pj_thread_register("switcher-pjsip-singleton",
-                     thread_handler_desc_, &pj_thread_ref_);
+  pj_thread_register(
+      "switcher-pjsip-singleton", thread_handler_desc_, &pj_thread_ref_);
   status = pjsua_create();
   if (status != PJ_SUCCESS) {
     g_warning("Error in pjsua_create()");
@@ -97,13 +95,14 @@ PJSIP::PJSIP(std::function<bool()> init_fun,
   pool_ = pj_pool_create(&cp_.factory, "switcher_sip", 1000, 1000, nullptr);
   // pj_dns_resolver *resv = pjsip_endpt_get_resolver(sip_endpt_);
   // if (nullptr == resv) printf ("NULL RESOLVER -------------------------\n");
-  pj_dns_resolver *resv;
+  pj_dns_resolver* resv;
   pjsip_endpt_create_resolver(sip_endpt_, &resv);
-  pj_str_t nameserver = pj_str("8.8.8.8");;
+  pj_str_t nameserver = pj_str("8.8.8.8");
+  ;
   pj_uint16_t port = 53;
   pj_dns_resolver_set_ns(resv, 1, &nameserver, &port);
   pjsip_endpt_set_resolver(sip_endpt_, resv);
-  if (!init_fun()){
+  if (!init_fun()) {
     g_warning("pj-sip custom initialization failed");
     return;
   }
@@ -134,16 +133,15 @@ PJSIP::~PJSIP() {
 
 void PJSIP::sip_worker_thread() {
   // Register the thread, after pj_init() is called
-  pj_thread_register("sip_worker_thread",
-                     worker_handler_desc_, &worker_thread_ref_);
+  pj_thread_register(
+      "sip_worker_thread", worker_handler_desc_, &worker_thread_ref_);
   while (sip_work_) {
-    pj_time_val timeout = { 0, 10 };
+    pj_time_val timeout = {0, 10};
     pjsip_endpt_handle_events(sip_endpt_, &timeout);
   }
 
   /* Shutting down... */
-  if (destruct_fun_)
-    destruct_fun_();
+  if (destruct_fun_) destruct_fun_();
   if (nullptr != pool_) {
     pj_pool_release(pool_);
     pool_ = nullptr;

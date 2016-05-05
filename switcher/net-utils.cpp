@@ -17,22 +17,22 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "./net-utils.hpp"
 #include <arpa/inet.h>
-#include <ifaddrs.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <netdb.h>
 #include <errno.h>
 #include <glib.h>  // g_warning
+#include <ifaddrs.h>
+#include <netdb.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <unistd.h>
 #include <string>
-#include "./net-utils.hpp"
 
 namespace switcher {
 
-bool NetUtils::is_used(std::uint16_t port){
+bool NetUtils::is_used(std::uint16_t port) {
   bool res = true;
   struct addrinfo hints;
   memset(&hints, 0, sizeof(struct addrinfo));
@@ -43,7 +43,7 @@ bool NetUtils::is_used(std::uint16_t port){
   hints.ai_canonname = NULL;
   hints.ai_addr = NULL;
   hints.ai_next = NULL;
-  struct addrinfo *result;
+  struct addrinfo* result;
   int s = getaddrinfo(NULL, std::to_string(port).c_str(), &hints, &result);
   if (s != 0) {
     return false;
@@ -52,12 +52,10 @@ bool NetUtils::is_used(std::uint16_t port){
      Try each address until we successfully bind(2).
      If socket(2) (or bind(2)) fails, we (close the socket
      and) try the next address. */
-  struct addrinfo *rp;
+  struct addrinfo* rp;
   for (rp = result; rp != NULL; rp = rp->ai_next) {
-    int sfd = socket(rp->ai_family, rp->ai_socktype,
-                     rp->ai_protocol);
-    if (sfd == -1)
-      continue;
+    int sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+    if (sfd == -1) continue;
     if (bind(sfd, rp->ai_addr, rp->ai_addrlen) == 0) {
       res = false;
     }
@@ -67,7 +65,8 @@ bool NetUtils::is_used(std::uint16_t port){
   return res;
 }
 
-std::map</* interface name */std::string, /* ip */std::string> NetUtils::get_ips(){
+std::map</* interface name */ std::string, /* ip */ std::string>
+NetUtils::get_ips() {
   std::map<std::string, std::string> res;
   struct ifaddrs *ifaddr, *ifa;
   int family, s;
@@ -80,8 +79,7 @@ std::map</* interface name */std::string, /* ip */std::string> NetUtils::get_ips
   /* Walk through linked list, maintaining head pointer so we
      can free list later */
   for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-    if (ifa->ifa_addr == NULL)
-      continue;
+    if (ifa->ifa_addr == NULL) continue;
     family = ifa->ifa_addr->sa_family;
     // /* Display interface name and family (including symbolic
     //    form of the latter for the common families) */
@@ -93,9 +91,13 @@ std::map</* interface name */std::string, /* ip */std::string> NetUtils::get_ips
     /* For an AF_INET* interface address, display the address */
     if (family == AF_INET /*|| family == AF_INET6*/) {
       s = getnameinfo(ifa->ifa_addr,
-                      (family == AF_INET) ? sizeof(struct sockaddr_in) :
-                      sizeof(struct sockaddr_in6),
-                      host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+                      (family == AF_INET) ? sizeof(struct sockaddr_in)
+                                          : sizeof(struct sockaddr_in6),
+                      host,
+                      NI_MAXHOST,
+                      NULL,
+                      0,
+                      NI_NUMERICHOST);
       if (s != 0) {
         g_warning("getnameinfo() failed: %s\n", gai_strerror(s));
         return res;
@@ -106,6 +108,5 @@ std::map</* interface name */std::string, /* ip */std::string> NetUtils::get_ips
   freeifaddrs(ifaddr);
   return res;
 }
-
 
 }  // namespace switcher

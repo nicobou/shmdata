@@ -21,21 +21,21 @@
 #define __SWITCHER_SHMDATA_TO_OSC_H__
 
 #include <lo/lo.h>
-#include <mutex>
 #include <chrono>
+#include <mutex>
 #include "switcher/quiddity.hpp"
-#include "switcher/startable-quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
+#include "switcher/startable-quiddity.hpp"
 
 namespace switcher {
-class ShmdataToOsc:public Quiddity, public StartableQuiddity {
+class ShmdataToOsc : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToOsc);
-  ShmdataToOsc(const std::string &);
+  ShmdataToOsc(const std::string&);
   ~ShmdataToOsc();
-  ShmdataToOsc(const ShmdataToOsc &) = delete;
-  ShmdataToOsc &operator=(const ShmdataToOsc &) = delete;
+  ShmdataToOsc(const ShmdataToOsc&) = delete;
+  ShmdataToOsc& operator=(const ShmdataToOsc&) = delete;
 
  private:
   // registering connect/disconnect/can_sink_caps:
@@ -51,10 +51,10 @@ class ShmdataToOsc:public Quiddity, public StartableQuiddity {
   bool init() final;
   bool start() final;
   bool stop() final;
-  bool connect(const std::string &shmdata_path);
+  bool connect(const std::string& shmdata_path);
   bool disconnect();
-  bool can_sink_caps(const std::string &caps);
-  void on_shmreader_data(void *data, size_t data_size);
+  bool can_sink_caps(const std::string& caps);
+  void on_shmreader_data(void* data, size_t data_size);
 };
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToOsc);

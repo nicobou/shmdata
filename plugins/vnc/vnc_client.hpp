@@ -28,9 +28,9 @@
 #include <vector>
 
 #include "switcher/quiddity.hpp"
-#include "switcher/shmdata-writer.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
+#include "switcher/shmdata-writer.hpp"
 #include "switcher/startable-quiddity.hpp"
 
 #include <rfb/rfbclient.h>
@@ -39,13 +39,13 @@
 #define VNC_KEYBOARD_EVENTS_CAPS "application/x-keyboard-events"
 
 namespace switcher {
-class VncClientSrc:public Quiddity, public StartableQuiddity {
+class VncClientSrc : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VncClientSrc);
-  VncClientSrc(const std::string &);
+  VncClientSrc(const std::string&);
   ~VncClientSrc();
-  VncClientSrc(const VncClientSrc &) = delete;
-  VncClientSrc &operator=(const VncClientSrc &) = delete;
+  VncClientSrc(const VncClientSrc&) = delete;
+  VncClientSrc& operator=(const VncClientSrc&) = delete;
 
   bool start();
   bool stop();
@@ -53,23 +53,23 @@ class VncClientSrc:public Quiddity, public StartableQuiddity {
  private:
   ShmdataConnector shmcntr_;
   // prop
-  std::string vnc_server_address_ {"localhost"};
+  std::string vnc_server_address_{"localhost"};
   PContainer::prop_id_t vnc_server_address_id_{0};
   PContainer::prop_id_t capture_truecolor_id_{0};
-  bool capture_truecolor_ {true};
-  bool previous_truecolor_state_ {true};
-  rfbClient *rfb_client_ {nullptr};
-  std::vector<unsigned char> framebuffer_ {};
-  size_t framebuffer_size_ {0};
-  std::unique_ptr<ShmdataWriter> vnc_writer_ {nullptr};
-  std::atomic_bool vnc_continue_update_ {false};
-  std::thread vnc_update_thread_ {};
+  bool capture_truecolor_{true};
+  bool previous_truecolor_state_{true};
+  rfbClient* rfb_client_{nullptr};
+  std::vector<unsigned char> framebuffer_{};
+  size_t framebuffer_size_{0};
+  std::unique_ptr<ShmdataWriter> vnc_writer_{nullptr};
+  std::atomic_bool vnc_continue_update_{false};
+  std::thread vnc_update_thread_{};
 
-  std::mutex mutex_ {};
-  std::mutex connect_mutex_ {};
-  int shmreader_id_ {0};
-  std::map<int, std::string> shmdata_readers_caps_ {};
-  std::map<std::string, std::unique_ptr<ShmdataFollower>> events_readers_ {};
+  std::mutex mutex_{};
+  std::mutex connect_mutex_{};
+  int shmreader_id_{0};
+  std::map<int, std::string> shmdata_readers_caps_{};
+  std::map<std::string, std::unique_ptr<ShmdataFollower>> events_readers_{};
 
   bool init() final;
   bool connect(std::string shmdata_socket_path);
@@ -77,8 +77,8 @@ class VncClientSrc:public Quiddity, public StartableQuiddity {
   bool disconnect_all();
   bool can_sink_caps(std::string caps);
 
-  static rfbBool resize_vnc(rfbClient *client);
-  static void update_vnc(rfbClient *client, int x, int y, int w, int h);
+  static rfbBool resize_vnc(rfbClient* client);
+  static void update_vnc(rfbClient* client, int x, int y, int w, int h);
 };
 
 SWITCHER_DECLARE_PLUGIN(VncClientSrc);

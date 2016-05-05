@@ -21,9 +21,9 @@
 #define __SWITCHER_SYSTEM_USAGE_H__
 
 #include <memory>
+#include "switcher/periodic-task.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/periodic-task.hpp"
 
 namespace switcher {
 struct Cpu {
@@ -52,13 +52,13 @@ struct Net {
   long tx_drop{0};
 };
 
-class SystemUsage: public Quiddity {
+class SystemUsage : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SystemUsage);
-  SystemUsage(const std::string &);
+  SystemUsage(const std::string&);
   ~SystemUsage() = default;
-  SystemUsage(const SystemUsage &) = delete;
-  SystemUsage &operator=(const SystemUsage &) = delete;
+  SystemUsage(const SystemUsage&) = delete;
+  SystemUsage& operator=(const SystemUsage&) = delete;
 
  private:
   InfoTree::ptr tree_;

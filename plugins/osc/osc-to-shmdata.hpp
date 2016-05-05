@@ -22,17 +22,17 @@
 
 #include "lo/lo.h"
 #include "switcher/quiddity.hpp"
-#include "switcher/startable-quiddity.hpp"
 #include "switcher/shmdata-writer.hpp"
+#include "switcher/startable-quiddity.hpp"
 
 namespace switcher {
-class OscToShmdata:public Quiddity, public StartableQuiddity {
+class OscToShmdata : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(OscToShmdata);
-  OscToShmdata(const std::string &);
+  OscToShmdata(const std::string&);
   ~OscToShmdata();
-  OscToShmdata(const OscToShmdata &) = delete;
-  OscToShmdata &operator=(const OscToShmdata &) = delete;
+  OscToShmdata(const OscToShmdata&) = delete;
+  OscToShmdata& operator=(const OscToShmdata&) = delete;
 
  private:
   gint port_;
@@ -42,10 +42,13 @@ class OscToShmdata:public Quiddity, public StartableQuiddity {
   bool init() final;
   bool start() final;
   bool stop() final;
-  static int osc_handler(const char *path, const char *types,
-                         lo_arg **argv, int argc, void *data,
-                         void *user_data);
-  static void osc_error(int num, const char *msg, const char *path);
+  static int osc_handler(const char* path,
+                         const char* types,
+                         lo_arg** argv,
+                         int argc,
+                         void* data,
+                         void* user_data);
+  static void osc_error(int num, const char* msg, const char* path);
 };
 
 SWITCHER_DECLARE_PLUGIN(OscToShmdata);

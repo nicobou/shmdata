@@ -17,21 +17,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <vector>
-#include <string>
 #include <iostream>
-#include "switcher/quiddity-manager.hpp"
+#include <string>
+#include <vector>
 #include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity-manager.hpp"
 
-int
-main() {
+int main() {
   bool success = true;
   {
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("startable");
-    for (auto &it : manager->get_classes()) {
-      if (!switcher::QuiddityBasicTest::test_full(manager, it))
-        success = false;
+    for (auto& it : manager->get_classes()) {
+      if (!switcher::QuiddityBasicTest::test_full(manager, it)) success = false;
     }
   }
 

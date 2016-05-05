@@ -21,14 +21,16 @@
 #define __SWITCHER_GPROP_TO_PROP_H__
 
 #include <glib.h>
+#include <gst/gst.h>
 #include <memory>
 #include "./property2.hpp"
 #include "./std2.hpp"
 
 namespace switcher {
-namespace GPropToProp{
+namespace GPropToProp {
 
-std::unique_ptr<PropertyBase> to_prop(GObject *object, const std::string &gprop_name);
+std::unique_ptr<PropertyBase> to_prop(GObject* object,
+                                      const std::string& gprop_name);
 
 }  // namespace GPropToProp
 }  // namespace switcher

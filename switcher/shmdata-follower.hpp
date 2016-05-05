@@ -22,28 +22,28 @@
 
 #include <functional>
 #include <memory>
-#include <string>
 #include <shmdata/follower.hpp>
-#include "switcher/shmdata-glib-logger.hpp"
+#include <string>
 #include "switcher/periodic-task.hpp"
+#include "switcher/shmdata-glib-logger.hpp"
 
 namespace switcher {
 class Quiddity;
 
 class ShmdataFollower {
  public:
-  ShmdataFollower(Quiddity *quid,
-                  const std::string &path,
+  ShmdataFollower(Quiddity* quid,
+                  const std::string& path,
                   shmdata::Reader::onData cb,
                   shmdata::Reader::onServerConnected osc = nullptr,
                   shmdata::Reader::onServerDisconnected osd = nullptr,
-                  const std::string &tree_path_ = ".shmdata.reader.");
+                  const std::string& tree_path_ = ".shmdata.reader.");
   ~ShmdataFollower();
-  ShmdataFollower(const ShmdataFollower &) = delete;
-  ShmdataFollower &operator=(const ShmdataFollower &) = delete;
+  ShmdataFollower(const ShmdataFollower&) = delete;
+  ShmdataFollower& operator=(const ShmdataFollower&) = delete;
 
  private:
-  Quiddity *quid_;
+  Quiddity* quid_;
   ShmdataGlibLogger logger_{};
   std::string shmpath_;
   std::string data_type_{};
@@ -56,9 +56,9 @@ class ShmdataFollower {
   size_t bytes_written_{0};
   std::mutex bytes_mutex_{};
   std::unique_ptr<PeriodicTask> task_;
-  
-  void on_data(void *data, size_t data_size);
-  void on_server_connected(const std::string &data_type);
+
+  void on_data(void* data, size_t data_size);
+  void on_server_connected(const std::string& data_type);
   void on_server_disconnected();
   void update_quid_byte_rate();
 };

@@ -21,11 +21,10 @@
 
 namespace switcher {
 
-size_t CounterMap::get_count(const std::string &key) {
+size_t CounterMap::get_count(const std::string& key) {
   std::unique_lock<std::mutex> lock(mutex_);
   auto it = counters_.find(key);
-  if (counters_.end() != it)
-    return ++(it->second);
+  if (counters_.end() != it) return ++(it->second);
   // else init to 0 for this key
   counters_[key] = 0;
   return 0;

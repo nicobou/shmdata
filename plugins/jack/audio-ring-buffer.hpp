@@ -21,21 +21,24 @@
 #define __SWITCHER_AUDIO_RING_BUFFER_H__
 
 #include <atomic>
+#include <vector>
 
 namespace switcher {
-template<typename SampleType> class AudioRingBuffer {
+template <typename SampleType>
+class AudioRingBuffer {
  public:
   AudioRingBuffer(std::size_t size_in_sample = 96000);
   ~AudioRingBuffer() = default;
   // put and pop are returning the number of sample actually processed
-  std::size_t put_samples(std::size_t num, std::function<SampleType()> sample_factory);
-  std::size_t pop_samples(std::size_t num, SampleType *dest);
+  std::size_t put_samples(std::size_t num,
+                          std::function<SampleType()> sample_factory);
+  std::size_t pop_samples(std::size_t num, SampleType* dest);
   // return the number of samples dropped
   std::size_t shrink_to(std::size_t size);
-  std::size_t get_usage();  
-  
+  std::size_t get_usage();
+
  private:
-  const std::size_t buffer_size_; 
+  const std::size_t buffer_size_;
   std::vector<SampleType> buffer_;
   std::atomic_ulong available_size_;
   std::size_t read_{0};

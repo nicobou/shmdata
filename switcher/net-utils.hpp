@@ -28,11 +28,8 @@ namespace NetUtils {
 
 bool is_used(std::uint16_t port);
 
-std::map</* interface name */std::string, /* ip */std::string> get_ips();
+std::map</* interface name */ std::string, /* ip */ std::string> get_ips();
 
 }  // namespace NetUtils
 }  // namespace switcher
 #endif
-
-
-

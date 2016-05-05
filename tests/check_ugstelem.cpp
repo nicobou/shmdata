@@ -22,11 +22,10 @@
 // #include "switcher/glibmainloop.hpp"
 // #include "switcher/gst-pipe.hpp"
 
-int
-main() {
+int main() {
   using namespace switcher;
 
-  gst_init (nullptr, nullptr);
+  gst_init(nullptr, nullptr);
   {
     UGstElem elem("tee");
     if (!elem) return 1;
@@ -36,11 +35,10 @@ main() {
     if (elem) return 1;
   }
   {
-    UGstElem elem1("tee"); 
-    UGstElem elem2("tee"); 
+    UGstElem elem1("tee");
+    UGstElem elem2("tee");
     elem2 = std::move(elem1);
-    if (elem1 || !elem2)
-      return 1;
+    if (elem1 || !elem2) return 1;
   }
   gst_deinit();
   return 0;

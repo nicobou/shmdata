@@ -20,18 +20,18 @@
 #ifndef __SWITCHER_LOGGER_H__
 #define __SWITCHER_LOGGER_H__
 
-#include <unordered_map>
 #include <mutex>
+#include <unordered_map>
 #include "./quiddity.hpp"
 
 namespace switcher {
-class Logger: public Quiddity {
+class Logger : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Logger);
-  Logger(const std::string &);
+  Logger(const std::string&);
   ~Logger();
-  Logger(const Logger &) = delete;
-  Logger &operator=(const Logger &) = delete;
+  Logger(const Logger&) = delete;
+  Logger& operator=(const Logger&) = delete;
   bool init() final;
 
  private:
@@ -46,19 +46,21 @@ class Logger: public Quiddity {
   std::mutex last_line_mutex_{};
 
   void replace_last_line(std::string next_line);
-  gboolean install_log_handler(const gchar *log_domain);
-  gboolean remove_log_handler(const gchar *log_domain);
+  gboolean install_log_handler(const gchar* log_domain);
+  gboolean remove_log_handler(const gchar* log_domain);
 
   static gboolean install_log_handler_wrapped(gpointer log_domain,
                                               gpointer user_data);
   static gboolean remove_log_handler_wrapped(gpointer log_domain,
                                              gpointer user_data);
-  static void log_handler(const gchar *log_domain,
-                          GLogLevelFlags log_level, const gchar *message,
+  static void log_handler(const gchar* log_domain,
+                          GLogLevelFlags log_level,
+                          const gchar* message,
                           gpointer user_data);
-  static void quiet_log_handler(const gchar *log_domain,
+  static void quiet_log_handler(const gchar* log_domain,
                                 GLogLevelFlags log_level,
-                                const gchar *message, gpointer user_data);
+                                const gchar* message,
+                                gpointer user_data);
 };
 
 }  // namespace switcher
