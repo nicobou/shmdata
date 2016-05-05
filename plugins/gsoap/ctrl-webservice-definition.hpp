@@ -1,3 +1,5 @@
+// clang-format off
+
 /*
  * This file is part of switcher-gsoap.
  *
@@ -125,3 +127,4 @@ int switcher__get_signal_description_by_class(std::string class_name,
 int switcher__get_information_tree(std::string quiddity_name,
                                    std::string path,
                                    std::string *result);
+

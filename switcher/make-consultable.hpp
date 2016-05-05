@@ -1,3 +1,4 @@
+// clang-format off
 /* The MIT License (MIT)
  *
  * Copyright (c) 2015 Nicolas Bouillot
@@ -695,3 +696,4 @@ struct _consult_or_fw_method##alternative_member_<                      \
                                                                         \
 
 #endif
+
