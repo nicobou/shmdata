@@ -215,10 +215,17 @@ bool PJCall::release_outgoing_call(call_t* call, pjsua_buddy_id id) {
       });
   if (calls.end() == it) return false;
   // removing destination to siprtp
-  for (auto& media : (*it)->media)
-    if (0 != media.cb_id)
-      SIPPlugin::this_->sip_calls_->readers_[media.shm_path_to_send]->remove_cb(
-          media.cb_id);
+  for (auto& media : (*it)->media) {
+    if (0 != media.cb_id) {
+      auto reader =
+          SIPPlugin::this_->sip_calls_->readers_.find(media.shm_path_to_send);
+      if (reader != SIPPlugin::this_->sip_calls_->readers_.cend() &&
+          reader->second) {
+        reader->second->remove_cb(media.cb_id);
+      }
+    }
+  }
+
   // updating call status in the tree
   InfoTree::ptr tree = SIPPlugin::this_->prune_tree(
       std::string(".buddies." + std::to_string(id)),
@@ -844,7 +851,13 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg,
     //     use_tree<MPtr(&InfoTree::branch_read_data<std::string>)>(
     //         std::string("siprtp"),
     //         std::string("rtp_caps.") + it);
-    std::string rtpcaps = readers_[it]->get_caps();
+    std::string rtpcaps;
+    auto reader = readers_.find(it);
+    if (reader != readers_.cend() && reader->second) {
+      rtpcaps = reader->second->get_caps();
+    } else {
+      break;
+    }
     std::string rawlabel =
         SIPPlugin::this_->get_quiddity_name_from_file_name(it);
     std::istringstream ss(rawlabel);  // Turn the string into a stream
