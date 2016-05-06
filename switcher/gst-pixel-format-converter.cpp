@@ -104,6 +104,8 @@ bool GstPixelFormatConverter::start(const std::string& shmpath_to_convert,
   g_object_set(G_OBJECT(shm_converted_.get_raw()),
                "socket-path",
                shmpath_converted.c_str(),
+               "initial-size",
+               default_initial_shmsize_,
                "sync",
                false,
                nullptr);
@@ -155,7 +157,8 @@ bool GstPixelFormatConverter::stop() {
   quid_->prune_tree(".shmdata.writer." + shmpath_converted_);
   quid_->prune_tree(".shmdata.reader." + shmpath_to_convert_);
   if (!UGstElem::renew(shmsrc_, {"socket-path"}) ||
-      !UGstElem::renew(shm_converted_, {"socket-path", "sync"}) ||
+      !UGstElem::renew(shm_converted_,
+                       {"socket-path", "sync", "initial-size"}) ||
       !UGstElem::renew(color_space_codec_element_) ||
       !UGstElem::renew(capsfilter_) || !UGstElem::renew(queue_codec_element_)) {
     g_warning("error renewing a pixel format converter related gst element");

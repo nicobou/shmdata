@@ -54,6 +54,7 @@ class GstPixelFormatConverter {
   UGstElem color_space_codec_element_{"videoconvert"};
   UGstElem capsfilter_{"capsfilter"};
   UGstElem shm_converted_{"shmdatasink"};
+  static const size_t default_initial_shmsize_{67108864};
   std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
   std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
   // custom properties:
