@@ -80,7 +80,7 @@ void NVencPlugin::update_device() {
         "nvenc failed to create encoding session "
         "(the total number of simultaneous sessions "
         "may be reached)");
-    es_.reset();  // this make init method failing
+    es_.reset();  // this makes init method failing
     return;
   }
   update_codec();
