@@ -59,10 +59,7 @@ NVencPlugin::NVencPlugin(const std::string&)
 }
 
 bool NVencPlugin::init() {
-  if (!es_) {
-    g_warning("CUDA initialization failed (probably need to reboot)");
-    return false;
-  }
+  if (!es_) return false;
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) {
         return this->on_shmdata_connect(shmpath);
@@ -74,11 +71,20 @@ bool NVencPlugin::init() {
   return es_.get()->invoke<MPtr(&NVencES::safe_bool_idiom)>();
 }
 
-void NVencPlugin::update_device() {
+bool NVencPlugin::update_device() {
   es_.reset();
   es_ = std2::make_unique<ThreadedWrapper<NVencES>>(
       devices_nv_ids_[devices_.get()]);
+  if (!es_->invoke<MPtr(&NVencES::safe_bool_idiom)>()) {
+    g_warning(
+        "nvenc failed to create encoding session "
+        "(the total number of simultaneous sessions "
+        "may be reached)");
+    es_.reset();  // this make init method failing
+    return false;
+  }
   update_codec();
+  return true;
 }
 
 void NVencPlugin::update_codec() {

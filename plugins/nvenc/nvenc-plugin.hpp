@@ -61,7 +61,7 @@ class NVencPlugin : public Quiddity {
   int max_height_{0};
   PContainer::prop_id_t max_height_id_{0};
   std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> video_formats_{};
-  void update_device();
+  bool update_device();
   void update_codec();
   void update_preset();
   void update_profile();
