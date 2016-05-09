@@ -43,10 +43,11 @@ class ShmdataFollower {
   ShmdataFollower& operator=(const ShmdataFollower&) = delete;
 
  private:
-  // monitoring byte rate
+  Quiddity* quid_;
+  // monitoring byte rate:
   size_t bytes_written_{0};
   std::mutex bytes_mutex_{};
-  Quiddity* quid_;
+  // shmdata follower related members:
   ShmdataGlibLogger logger_{};
   std::string shmpath_;
   std::string data_type_{};
