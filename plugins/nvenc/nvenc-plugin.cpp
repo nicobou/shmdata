@@ -71,7 +71,7 @@ bool NVencPlugin::init() {
   return es_.get()->invoke<MPtr(&NVencES::safe_bool_idiom)>();
 }
 
-bool NVencPlugin::update_device() {
+void NVencPlugin::update_device() {
   es_.reset();
   es_ = std2::make_unique<ThreadedWrapper<NVencES>>(
       devices_nv_ids_[devices_.get()]);
@@ -81,10 +81,9 @@ bool NVencPlugin::update_device() {
         "(the total number of simultaneous sessions "
         "may be reached)");
     es_.reset();  // this make init method failing
-    return false;
+    return;
   }
   update_codec();
-  return true;
 }
 
 void NVencPlugin::update_codec() {
