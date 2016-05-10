@@ -44,6 +44,10 @@ class ShmdataFollower {
 
  private:
   Quiddity* quid_;
+  // monitoring byte rate:
+  size_t bytes_written_{0};
+  std::mutex bytes_mutex_{};
+  // shmdata follower related members:
   ShmdataGlibLogger logger_{};
   std::string shmpath_;
   std::string data_type_{};
@@ -52,9 +56,6 @@ class ShmdataFollower {
   shmdata::Reader::onServerDisconnected osd_;
   std::string tree_path_;
   std::unique_ptr<shmdata::Follower> follower_;
-  // monitoring byte rate
-  size_t bytes_written_{0};
-  std::mutex bytes_mutex_{};
   std::unique_ptr<PeriodicTask> task_;
 
   void on_data(void* data, size_t data_size);
