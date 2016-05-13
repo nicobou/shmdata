@@ -42,9 +42,10 @@ class SIPPlugin;
 class PJCall {
  public:
   PJCall();
-  ~PJCall();
+  ~PJCall(){};
   PJCall(const PJCall&) = delete;
   PJCall& operator=(const PJCall&) = delete;
+  void finalize_calls();
 
  private:
   /* Media stream created when the call is active. */
@@ -78,9 +79,15 @@ class PJCall {
   bool is_calling_{false};
   bool is_hanging_up_{false};
   std::map<std::string, std::string> local_ips_{};
-  std::mutex ocall_m_{};
-  std::condition_variable ocall_cv_{};
-  bool ocall_action_done_{false};
+  std::mutex call_m_{};
+
+  // We need separate mutexes for the special case of a contact calling itself.
+  std::mutex finalize_incoming_calls_m_{};
+  std::mutex finalize_outgoing_calls_m_{};
+
+  bool can_create_calls_{true};
+  std::condition_variable call_cv_{};
+  bool call_action_done_{false};
   // internal rtp
   RtpSession2 rtp_session_{};
   std::map<std::string, unsigned> reader_ref_count_{};
@@ -109,7 +116,7 @@ class PJCall {
                            pjmedia_sdp_session** res);
   Quiddity::ptr retrieve_rtp_manager();
   static gboolean send_to(gchar* sip_url, void* user_data);
-  void make_hang_up(std::string contact_uri);
+  void make_hang_up(pjsip_inv_session* inv, std::string sip_url);
   static gboolean hang_up(const gchar* sip_url, void* user_data);
   static gboolean attach_shmdata_to_contact(const gchar* shmpath,
                                             const gchar* contact_uri,
