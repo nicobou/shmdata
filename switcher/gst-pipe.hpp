@@ -55,8 +55,8 @@ class GstPipe {
     gboolean inited;
   } GstBusSource;
 
-  GstElement* pipeline_{nullptr};
   GMainContext* gmaincontext_{nullptr};
+  GstElement* pipeline_{nullptr};
   GSourceFuncs source_funcs_;
   gdouble speed_{1.0};
   GSource* source_{nullptr};
