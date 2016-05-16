@@ -52,6 +52,10 @@ class ThreadedWrapper {
     // work loop
     while (!canceled_.load()) {
       std::unique_lock<std::mutex> lock(cv_m_);
+
+      // async tasks
+      run_async_tasks();
+
       // sync task
       if (sync_task_) {
         sync_task_();
@@ -60,8 +64,6 @@ class ThreadedWrapper {
         task_done_ = true;
         task_done_cv_.notify_one();
       }
-      // async tasks
-      run_async_tasks();
       cv_.wait_for(lock, std::chrono::milliseconds(1));
     }
   }
