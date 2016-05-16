@@ -32,8 +32,9 @@ GstPipe::GstPipe(GMainContext* context,
                                                 GstMessage* msg,
                                                 gpointer user_data),
                  gpointer user_data)
-    : pipeline_(gst_pipeline_new(nullptr)),
-      gmaincontext_(context),
+
+    : gmaincontext_(context),
+      pipeline_(gst_pipeline_new(nullptr)),
       source_funcs_() {
   source_funcs_.prepare = source_prepare;
   source_funcs_.check = source_check;

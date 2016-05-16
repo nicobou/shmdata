@@ -58,8 +58,11 @@ class GstPipeliner {
   GstPipe::on_msg_sync_cb_t on_msg_sync_cb_;
   std::unique_ptr<GlibMainLoop> main_loop_;
   std::unique_ptr<GstPipe> gst_pipeline_;
-  std::list<GstMessage*> msgs_{};
   GstBusSyncReply on_gst_error(GstMessage* msg);
+  static gboolean push_thread_context(gpointer user_data);
+  static gboolean bus_watch(GstBus* bus,
+                            GstMessage* message,
+                            gpointer user_data);
   static gboolean bus_async(gpointer user_data);
   static GstBusSyncReply bus_sync_handler(GstBus* bus,
                                           GstMessage* msg,

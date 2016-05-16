@@ -59,10 +59,24 @@ GstPipeliner::GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
     g_warning("error initializing gstreamer pipeline");
     return;
   }
+
+  GstUtils::g_idle_add_full_with_context(main_loop_->get_main_context(),
+                                         G_PRIORITY_DEFAULT_IDLE,
+                                         push_thread_context,
+                                         this,
+                                         nullptr);
 }
 
-GstPipeliner::~GstPipeliner() {
-  for (auto& it : msgs_) gst_message_unref(it);
+GstPipeliner::~GstPipeliner() {}
+
+gboolean GstPipeliner::push_thread_context(gpointer user_data) {
+  auto context = static_cast<GstPipeliner*>(user_data);
+  g_main_context_push_thread_default(context->main_loop_->get_main_context());
+
+  gst_bus_add_watch(gst_pipeline_get_bus(GST_PIPELINE(context->get_pipeline())),
+                    bus_watch,
+                    user_data);
+  return FALSE;
 }
 
 void GstPipeliner::play(gboolean play) {
@@ -167,17 +181,12 @@ GstBusSyncReply GstPipeliner::on_gst_error(GstMessage* msg) {
   return GST_BUS_DROP;
 }
 
-gboolean GstPipeliner::bus_async(gpointer user_data) {
+gboolean GstPipeliner::bus_watch(GstBus* /*bus*/,
+                                 GstMessage* message,
+                                 gpointer user_data) {
   auto context = static_cast<GstPipeliner*>(user_data);
-  if (context->msgs_.empty()) {
-    g_debug("bus_async called with no msg...");
-    return FALSE;
-  }
-  auto msg = *context->msgs_.begin();
-  context->msgs_.pop_front();
-  if (context->on_msg_async_cb_) context->on_msg_async_cb_(msg);
-  gst_message_unref(msg);
-  return FALSE;
+  if (context && context->on_msg_async_cb_) context->on_msg_async_cb_(message);
+  return TRUE;
 }
 
 GstBusSyncReply GstPipeliner::bus_sync_handler(GstBus* /*bus*/,
@@ -191,16 +200,6 @@ GstBusSyncReply GstPipeliner::bus_sync_handler(GstBus* /*bus*/,
     if (context->on_msg_sync_cb_) {
       if (GST_BUS_DROP == context->on_msg_sync_cb_(msg)) return GST_BUS_DROP;
     }
-  }
-  if (context->on_msg_async_cb_) {
-    gst_message_ref(msg);
-    context->msgs_.push_back(msg);
-    GstUtils::g_idle_add_full_with_context(
-        context->main_loop_->get_main_context(),
-        G_PRIORITY_DEFAULT_IDLE,
-        (GSourceFunc)bus_async,
-        (gpointer)context,
-        nullptr);
   }
 
   // if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_QOS) {
