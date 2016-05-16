@@ -46,7 +46,7 @@ ShmdataToJack::ShmdataToJack(const std::string& name)
 
 bool ShmdataToJack::init() {
   if (!jack_client_) {
-    g_warning("JackClient cannot be instancied");
+    g_warning("JackClient cannot be instanciated");
     return false;
   }
   if (!make_elements()) return false;
@@ -62,6 +62,20 @@ bool ShmdataToJack::init() {
       "volume", GPropToProp::to_prop(G_OBJECT(volume_), "volume"));
   mute_id_ = pmanage<MPtr(&PContainer::push)>(
       "volume", GPropToProp::to_prop(G_OBJECT(volume_), "mute"));
+  auto_connect_id_ = pmanage<MPtr(&PContainer::make_bool)>(
+      "auto_connect",
+      [this](const bool& val) {
+        auto_connect_ = val;
+        update_port_to_connect();
+        pmanage<MPtr(&PContainer::enable)>(connect_to_id_, auto_connect_);
+        pmanage<MPtr(&PContainer::enable)>(index_id_, auto_connect_);
+        return true;
+      },
+      [this]() { return auto_connect_; },
+      "Auto Connect",
+      "Auto Connect to another client",
+      auto_connect_);
+
   connect_to_id_ =
       pmanage<MPtr(&PContainer::make_string)>("connect-to",
                                               [this](const std::string& val) {
@@ -71,7 +85,7 @@ bool ShmdataToJack::init() {
                                               },
                                               [this]() { return connect_to_; },
                                               "Connect To",
-                                              "Auto connect to other client",
+                                              "Which client to connect to",
                                               connect_to_);
   index_id_ = pmanage<MPtr(&PContainer::make_int)>(
       "index",
@@ -264,6 +278,7 @@ bool ShmdataToJack::start() {
   g_object_set(
       G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
+  pmanage<MPtr(&PContainer::enable)>(auto_connect_id_, false);
   pmanage<MPtr(&PContainer::enable)>(connect_to_id_, false);
   pmanage<MPtr(&PContainer::enable)>(index_id_, false);
   connect_ports();
@@ -283,6 +298,7 @@ bool ShmdataToJack::stop() {
       volume_id_, GPropToProp::to_prop(G_OBJECT(volume_), "volume"));
   pmanage<MPtr(&PContainer::replace)>(
       mute_id_, GPropToProp::to_prop(G_OBJECT(volume_), "mute"));
+  pmanage<MPtr(&PContainer::enable)>(auto_connect_id_, true);
   pmanage<MPtr(&PContainer::enable)>(connect_to_id_, true);
   pmanage<MPtr(&PContainer::enable)>(index_id_, true);
   return true;
@@ -302,14 +318,28 @@ bool ShmdataToJack::can_sink_caps(const std::string& caps) {
 
 void ShmdataToJack::update_port_to_connect() {
   ports_to_connect_.clear();
+
+  if (!auto_connect_) {
+    g_warning("Auto-connect for jack is disabled.");
+    return;
+  }
+
   for (unsigned int i = index_; i < index_ + output_ports_.size(); ++i)
     ports_to_connect_.emplace_back(connect_to_ + std::to_string(i));
 }
 
 void ShmdataToJack::connect_ports() {
   update_port_to_connect();
-  if (ports_to_connect_.size() != output_ports_.size())
-    g_warning("bug in jack to shmdata autoconnect");
+
+  if (!auto_connect_) return;
+
+  if (ports_to_connect_.size() != output_ports_.size()) {
+    g_warning(
+        "Port number mismatch in jack to shmdata autoconnect, should not "
+        "happen.");
+    return;
+  }
+
   for (unsigned int i = 0; i < output_ports_.size(); ++i) {
     jack_connect(
         jack_client_.get_raw(),
