@@ -671,7 +671,13 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
   }
   /* Send the initial response. */
   status = pjsip_inv_send_msg(call->inv, tdata);
-  PJ_ASSERT_ON_FAIL(status == PJ_SUCCESS, return );
+  if (PJ_SUCCESS != status) {
+    g_warning("cannot answer to a call, it probably has too many streams");
+    pjsip_response_addr res_addr;
+    pjsip_get_response_addr(tdata->pool, rdata, &res_addr);
+    pjsip_endpt_send_response(
+        PJSIP::this_->sip_endpt_, &res_addr, tdata, nullptr, nullptr);
+  }
 }
 
 pj_status_t PJCall::create_sdp_answer(
