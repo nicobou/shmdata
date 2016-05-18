@@ -158,18 +158,20 @@ std::string serialize(InfoTree::ptrc tree) {
 }
 
 InfoTree::ptr deserialize(const std::string& serialized) {
-  // JsonParser *parser = json_parser_new ();
-  // GError *error = nullptr;
-  // json_parser_load_from_data (parser,
-  //   serialized.c_str (),
-  //   &error);
-  // if (error != nullptr)
-  // {
-  //   g_warning ("%s",error->message);
-  //   g_object_unref(parser);
-  //   g_error_free (error);
-  //   return InfoTree::ptr ();
-  // }
+  JsonParser* parser = json_parser_new();
+  On_scope_exit { g_object_unref(parser); };
+  GError* error = nullptr;
+  json_parser_load_from_data(
+      parser, serialized.c_str(), serialized.size(), &error);
+  if (error != nullptr) {
+    g_warning("%s", error->message);
+    g_error_free(error);
+    return InfoTree::make();
+  }
+  JsonNode* root_node = json_parser_get_root(parser);
+  JsonReader* reader = json_reader_new(root_node);
+  On_scope_exit { g_object_unref(reader); };
+
   return InfoTree::make();
 }
 
