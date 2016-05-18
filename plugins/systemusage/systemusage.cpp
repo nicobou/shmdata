@@ -50,17 +50,22 @@ SystemUsage::SystemUsage(const std::string&)
           std::chrono::milliseconds(static_cast<int>(1000 * period_)))) {}
 
 bool SystemUsage::init() {
-  pmanage<MPtr(&PContainer::make_float)>("period",
-                                         [this](const float& val) {
-                                           period_ = val;
-                                           return true;
-                                         },
-                                         [this]() { return period_; },
-                                         "Update period",
-                                         "Update period",
-                                         period_,
-                                         0.1,
-                                         5.0);
+  pmanage<MPtr(&PContainer::make_float)>(
+      "period",
+      [this](const float& val) {
+        period_ = val;
+        pollStateTask_.reset();
+        pollStateTask_ = std2::make_unique<PeriodicTask>(
+            [this]() { this->pollState(); },
+            std::chrono::milliseconds(static_cast<int>(1000 * period_)));
+        return true;
+      },
+      [this]() { return period_; },
+      "Update period",
+      "Update period",
+      period_,
+      0.1,
+      5.0);
   return init_tree();
 }
 
