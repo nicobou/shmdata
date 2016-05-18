@@ -23,6 +23,27 @@
 
 namespace switcher {
 namespace JSONSerializer {
+
+void write_typed_member(JsonBuilder* builder, const Any& value) {
+  switch (value.get_category()) {
+    case AnyCategory::BOOL:
+      json_builder_add_boolean_value(builder, value.copy_as<bool>());
+      break;
+    case AnyCategory::INTEGRAL:
+      json_builder_add_int_value(builder, value.copy_as<gint64>());
+      break;
+    case AnyCategory::FLOATING_POINT:
+      json_builder_add_double_value(builder, value.copy_as<gdouble>());
+      break;
+    case AnyCategory::OTHER:
+      json_builder_add_string_value(builder, Any::to_string(value).c_str());
+      break;
+    case AnyCategory::NONE:
+      json_builder_add_null_value(builder);
+      break;
+  }
+}
+
 void on_visiting_node(std::string key,
                       InfoTree::ptrc node,
                       bool is_array_element,
@@ -32,27 +53,7 @@ void on_visiting_node(std::string key,
     json_builder_set_member_name(builder, key.c_str());
   if (node->is_leaf()) {
     if (!node->read_data().is_null()) {
-      switch (node->read_data().get_category()) {
-        case AnyCategory::BOOL:
-          json_builder_add_boolean_value(builder,
-                                         node->read_data().copy_as<bool>());
-          break;
-        case AnyCategory::INTEGRAL:
-          json_builder_add_int_value(builder,
-                                     node->read_data().copy_as<gint64>());
-          break;
-        case AnyCategory::FLOATING_POINT:
-          json_builder_add_double_value(builder,
-                                        node->read_data().copy_as<gdouble>());
-          break;
-        case AnyCategory::OTHER:
-          json_builder_add_string_value(
-              builder, Any::to_string(node->read_data()).c_str());
-          break;
-        case AnyCategory::NONE:
-          json_builder_add_null_value(builder);
-          break;
-      }
+      write_typed_member(builder, node->read_data());
     } else {
       if (node->is_array()) {
         json_builder_begin_array(builder);
@@ -72,10 +73,10 @@ void on_visiting_node(std::string key,
         json_builder_set_member_name(builder, "id");
         json_builder_add_string_value(builder, key.c_str());
       }
-      const Any value = node->read_data();
+      const Any& value = node->read_data();
       if (value.not_null()) {
         json_builder_set_member_name(builder, "key_value");
-        json_builder_add_string_value(builder, Any::to_string(value).c_str());
+        write_typed_member(builder, value);
       }
     }
   }
@@ -156,22 +157,21 @@ std::string serialize(InfoTree::ptrc tree) {
   return result;
 }
 
-// InfoTree::ptr
-// deserialize (std::string &serialized)
-// {
-//   // JsonParser *parser = json_parser_new ();
-//   // GError *error = nullptr;
-//   // json_parser_load_from_data (parser,
-//   //   serialized.c_str (),
-//   //   &error);
-//   // if (error != nullptr)
-//   // {
-//   //   g_warning ("%s",error->message);
-//   //   g_object_unref(parser);
-//   //   g_error_free (error);
-//   //   return InfoTree::ptr ();
-//   // }
-//   return tree;
-// }
+InfoTree::ptr deserialize(const std::string& serialized) {
+  // JsonParser *parser = json_parser_new ();
+  // GError *error = nullptr;
+  // json_parser_load_from_data (parser,
+  //   serialized.c_str (),
+  //   &error);
+  // if (error != nullptr)
+  // {
+  //   g_warning ("%s",error->message);
+  //   g_object_unref(parser);
+  //   g_error_free (error);
+  //   return InfoTree::ptr ();
+  // }
+  return InfoTree::make();
+}
+
 }  // namespace JSONSerializer
 }  // namespace switcher
