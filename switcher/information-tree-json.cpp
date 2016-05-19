@@ -157,7 +157,27 @@ std::string serialize(InfoTree::ptrc tree) {
   return result;
 }
 
+InfoTree::rptr add_json_node(InfoTree::rptr, JsonReader* reader) {
+  if (json_reader_is_array(reader)) {
+    std::cout << "is array" << '\n';
+    return nullptr;
+  }
+  if (json_reader_is_object(reader)) {
+    // auto num_members = json_reader_count_members(reader);
+    std::cout << "is object" << '\n';
+    return nullptr;
+  }
+  if (json_reader_is_value(reader)) {
+    std::cout << "is value" << '\n';
+    return nullptr;
+  }
+  g_warning("%s: reader current cursor is invalid", __FUNCTION__);
+  return nullptr;
+}
+
 InfoTree::ptr deserialize(const std::string& serialized) {
+  auto res = InfoTree::make();
+
   JsonParser* parser = json_parser_new();
   On_scope_exit { g_object_unref(parser); };
   GError* error = nullptr;
@@ -172,7 +192,9 @@ InfoTree::ptr deserialize(const std::string& serialized) {
   JsonReader* reader = json_reader_new(root_node);
   On_scope_exit { g_object_unref(reader); };
 
-  return InfoTree::make();
+  add_json_node(res.get(), reader);
+
+  return res;
 }
 
 }  // namespace JSONSerializer
