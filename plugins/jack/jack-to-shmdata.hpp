@@ -41,6 +41,8 @@ class JackToShmdata : public Quiddity, public StartableQuiddity {
   PContainer::prop_id_t num_channels_id_{0};
   std::string client_name_{};
   PContainer::prop_id_t client_name_id_{0};
+  bool auto_connect_{true};
+  PContainer::prop_id_t auto_connect_id_{0};
   std::string connect_to_{"system:capture_"};
   PContainer::prop_id_t connect_to_id_{0};
   unsigned int index_{1};

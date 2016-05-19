@@ -335,7 +335,7 @@ void ShmdataToJack::connect_ports() {
 
   if (ports_to_connect_.size() != output_ports_.size()) {
     g_warning(
-        "Port number mismatch in jack to shmdata autoconnect, should not "
+        "Port number mismatch in shmdata to jack autoconnect, should not "
         "happen.");
     return;
   }
