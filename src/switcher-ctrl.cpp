@@ -41,6 +41,9 @@ static gboolean listsignalsbyclass = FALSE;
 static gboolean setprop = FALSE;
 static gboolean getprop = FALSE;
 static gboolean print_tree = FALSE;
+static gboolean print_user_data = FALSE;
+static gboolean prune_user_data = FALSE;
+static gboolean graft_user_data = FALSE;
 static gboolean invokemethod = FALSE;
 static gchar** remaining_args = nullptr;
 
@@ -145,6 +148,28 @@ static GOptionEntry entries[24] = {
      &print_tree,
      "print information tree (-t quiddity_name [branch])",
      nullptr},
+    {"print-user-data",
+     'u',
+     0,
+     G_OPTION_ARG_NONE,
+     &print_user_data,
+     "print user data tree (-u quiddity_name [branch])",
+     nullptr},
+    {"prune-user-data",
+     'r',
+     0,
+     G_OPTION_ARG_NONE,
+     &prune_user_data,
+     "prune user data tree (-r quiddity_name branch)",
+     nullptr},
+    {"graft-user-data",
+     'a',
+     0,
+     G_OPTION_ARG_NONE,
+     &graft_user_data,
+     "graft user data tree (-a quiddity_name branch type value), accepted "
+     "types are int, float, bool, and string",
+     nullptr},
     {"invoke-method",
      'i',
      0,
@@ -206,10 +231,11 @@ int main(int argc, char* argv[]) {
   if (!(save ^ load ^ run ^ listclasses ^ classesdoc ^ classdoc ^
         listquiddities ^ quidditydescr ^ quidditiesdescr ^ setprop ^ getprop ^
         createquiddity ^ deletequiddity ^ listmethods ^ listmethodsbyclass ^
-        listsignals ^ listsignalsbyclass ^ invokemethod ^ print_tree)) {
+        listsignals ^ listsignalsbyclass ^ invokemethod ^ print_tree ^
+        print_user_data ^ prune_user_data ^ graft_user_data)) {
     g_printerr(
         "I am very sorry for the inconvenience, "
-        "but I am able to process only one command at a time. \n");
+        "but I am able to process only exactly one command at a time. \n");
     exit(1);
   }
 
@@ -287,6 +313,39 @@ int main(int argc, char* argv[]) {
     else
       switcher_control.get_information_tree(
           remaining_args[0], remaining_args[1], &resultlist);
+    std::cout << resultlist << std::endl;
+  } else if (print_user_data) {
+    std::string resultlist;
+    if (remaining_args == nullptr) {
+      g_printerr("quiddity name missing for printing the user data tree\n");
+      return false;
+    }
+    if (remaining_args[1] == nullptr)
+      switcher_control.get_user_data(remaining_args[0], ".", &resultlist);
+    else
+      switcher_control.get_user_data(
+          remaining_args[0], remaining_args[1], &resultlist);
+    std::cout << resultlist << std::endl;
+  } else if (prune_user_data) {
+    std::string resultlist;
+    if (remaining_args == nullptr) {
+      g_printerr("quiddity name missing\n");
+      return false;
+    }
+    switcher_control.prune_user_data(
+        remaining_args[0], remaining_args[1], &resultlist);
+    std::cout << resultlist << std::endl;
+  } else if (graft_user_data) {
+    std::string resultlist;
+    if (remaining_args == nullptr) {
+      g_printerr("quiddity name missing\n");
+      return false;
+    }
+    switcher_control.graft_user_data(remaining_args[0],
+                                     remaining_args[1],
+                                     remaining_args[2],
+                                     remaining_args[3],
+                                     &resultlist);
     std::cout << resultlist << std::endl;
   } else if (setprop) {
     if (remaining_args == nullptr || remaining_args[1] == nullptr ||

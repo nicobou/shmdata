@@ -123,8 +123,32 @@ int switcher__get_signal_description_by_class(std::string class_name,
                                               std::string signal_name,
                                               std::string *result);
 
-//gsoap switcher service method-documentation: get a json formated description of the properties
+//gsoap switcher service read info tree
 int switcher__get_information_tree(std::string quiddity_name,
                                    std::string path,
                                    std::string *result);
+
+//gsoap switcher service read user data
+int switcher__get_user_data(std::string quiddity_name,
+                            std::string path,
+                            std::string *result);
+
+//gsoap switcher service prune user data
+int switcher__prune_user_data(std::string quiddity_name,
+                              std::string path,
+                              std::string *result);
+
+//gsoap switcher service set user data
+int switcher__graft_user_data(std::string quiddity_name,
+                              std::string path,
+                              std::string type,
+                              std::string value,
+                              std::string *result);
+
+//gsoap switcher service set user data
+int switcher__tag_as_array_user_data(std::string quiddity_name,
+                                     std::string path,
+                                     bool is_array,
+                                     std::string *result);
+
 

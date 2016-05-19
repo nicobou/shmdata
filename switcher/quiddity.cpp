@@ -34,6 +34,7 @@ std::map<std::pair<std::string, std::string>, guint> Quiddity::signals_ids_{};
 
 Quiddity::Quiddity()
     : information_tree_(InfoTree::make()),
+      structured_user_data_(InfoTree::make()),
       props_(information_tree_,
              [this](const std::string& key) {
                signal_emit("on-tree-grafted", key.c_str(), nullptr);

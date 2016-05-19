@@ -102,6 +102,9 @@ class Quiddity {
 
   Make_consultable(Quiddity, InfoTree, information_tree_.get(), tree);
 
+  // user data
+  Make_delegate(Quiddity, InfoTree, structured_user_data_.get(), user_data);
+
   // shmdata socket names
   static std::string get_socket_name_prefix();
   static std::string get_socket_dir();
@@ -117,8 +120,12 @@ class Quiddity {
   std::string get_file_name_prefix() const;
 
  private:
-  // information tree
+  // tree used by quiddity to communicate info to user, read-only by user,
+  // read/write by quiddity
   InfoTree::ptr information_tree_;
+
+  // writable tree for custom user data, should not be used by quiddity
+  InfoTree::ptr structured_user_data_;
 
   // properties
   PContainer props_;

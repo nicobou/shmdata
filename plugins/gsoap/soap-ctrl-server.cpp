@@ -638,3 +638,97 @@ int controlService::get_information_tree(std::string quiddity_name,
 
   return SOAP_OK;
 }
+
+int controlService::get_user_data(std::string quiddity_name,
+                                  std::string path,
+                                  std::string* result) {
+  using namespace switcher;
+  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  QuiddityManager::ptr manager;
+  if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
+
+  *result =
+      manager->user_data<MPtr(&InfoTree::serialize_json)>(quiddity_name, path);
+
+  return SOAP_OK;
+}
+
+int controlService::prune_user_data(std::string quiddity_name,
+                                    std::string path,
+                                    std::string* result) {
+  using namespace switcher;
+  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  QuiddityManager::ptr manager;
+  if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
+
+  *result = static_cast<bool>(
+                manager->user_data<MPtr(&InfoTree::prune)>(quiddity_name, path))
+                ? "true"
+                : "false";
+
+  return SOAP_OK;
+}
+
+int controlService::graft_user_data(std::string quiddity_name,
+                                    std::string path,
+                                    std::string type,
+                                    std::string value,
+                                    std::string* result) {
+  using namespace switcher;
+  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  QuiddityManager::ptr manager;
+  if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
+
+  auto res = false;
+  if (type == "int") {
+    auto deserialized = deserialize::apply<int>(value);
+    if (deserialized.first &&
+        manager->user_data<MPtr(&InfoTree::graft)>(
+            quiddity_name, path, InfoTree::make(deserialized.second)))
+      res = true;
+  } else if (type == "float") {
+    auto deserialized = deserialize::apply<float>(value);
+    if (deserialized.first &&
+        manager->user_data<MPtr(&InfoTree::graft)>(
+            quiddity_name, path, InfoTree::make(deserialized.second)))
+      res = true;
+  } else if (type == "bool") {
+    auto deserialized = deserialize::apply<bool>(value);
+    if (deserialized.first &&
+        manager->user_data<MPtr(&InfoTree::graft)>(
+            quiddity_name, path, InfoTree::make(deserialized.second)))
+      res = true;
+  } else if (type == "string") {
+    if (manager->user_data<MPtr(&InfoTree::graft)>(
+            quiddity_name, path, InfoTree::make(value)))
+      res = true;
+  } else {
+    char* s = (char*)soap_malloc(this, 1024);
+    sprintf(s, "type not handled with soap");
+    return soap_senderfault("error in get_classes", s);
+  }
+
+  if (res)
+    *result = "true";
+  else
+    *result = "false";
+
+  return SOAP_OK;
+}
+
+int controlService::tag_as_array_user_data(std::string quiddity_name,
+                                           std::string path,
+                                           bool is_array,
+                                           std::string* result) {
+  using namespace switcher;
+  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  QuiddityManager::ptr manager;
+  if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
+
+  *result = static_cast<bool>(manager->user_data<MPtr(&InfoTree::tag_as_array)>(
+                quiddity_name, path, is_array))
+                ? "true"
+                : "false";
+
+  return SOAP_OK;
+}
