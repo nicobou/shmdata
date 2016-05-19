@@ -48,7 +48,7 @@ class QuiddityManager_Impl {
   static QuiddityManager_Impl::ptr make_manager(
       QuiddityManager* root_manager, const std::string& name = "default");
   QuiddityManager_Impl() = delete;
-  virtual ~QuiddityManager_Impl() {}
+  virtual ~QuiddityManager_Impl();
   QuiddityManager_Impl(const QuiddityManager_Impl&) = delete;
   QuiddityManager_Impl& operator=(const QuiddityManager_Impl&) = delete;
 

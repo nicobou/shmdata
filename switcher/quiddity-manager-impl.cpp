@@ -63,6 +63,22 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string& name)
   make_classes_doc();
 }
 
+QuiddityManager_Impl::~QuiddityManager_Impl() {
+  Quiddity::ptr logger;
+  std::find_if(
+      quiddities_.begin(),
+      quiddities_.end(),
+      [&logger](const std::pair<std::string, std::shared_ptr<Quiddity>> quid) {
+        if (quid.second->get_documentation()->get_class_name() == "logger") {
+          // We increment the logger ref count so it's not destroyed by clear().
+          logger = quid.second;
+          return true;
+        }
+        return false;
+      });
+  quiddities_.clear();
+}
+
 void QuiddityManager_Impl::release_g_error(GError* error) {
   if (nullptr != error) {
     g_debug("GError message: %s\n", error->message);
