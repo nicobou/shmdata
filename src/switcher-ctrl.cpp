@@ -44,10 +44,11 @@ static gboolean print_tree = FALSE;
 static gboolean print_user_data = FALSE;
 static gboolean prune_user_data = FALSE;
 static gboolean graft_user_data = FALSE;
+static gboolean tag_as_array_user_data = FALSE;
 static gboolean invokemethod = FALSE;
 static gchar** remaining_args = nullptr;
 
-static GOptionEntry entries[24] = {
+static GOptionEntry entries[25] = {
     {"server",
      0,
      0,
@@ -167,8 +168,16 @@ static GOptionEntry entries[24] = {
      0,
      G_OPTION_ARG_NONE,
      &graft_user_data,
-     "graft user data tree (-a quiddity_name branch type value), accepted "
-     "types are int, float, bool, and string",
+     "graft user data tree "
+     "(-a quiddity_name branch [int|float|bool|string] value)",
+     nullptr},
+    {"tag-as-array-user-data",
+     'y',
+     0,
+     G_OPTION_ARG_NONE,
+     &tag_as_array_user_data,
+     "tag branch as array in the user data tree "
+     "(-a quiddity_name branch)",
      nullptr},
     {"invoke-method",
      'i',
@@ -232,7 +241,8 @@ int main(int argc, char* argv[]) {
         listquiddities ^ quidditydescr ^ quidditiesdescr ^ setprop ^ getprop ^
         createquiddity ^ deletequiddity ^ listmethods ^ listmethodsbyclass ^
         listsignals ^ listsignalsbyclass ^ invokemethod ^ print_tree ^
-        print_user_data ^ prune_user_data ^ graft_user_data)) {
+        print_user_data ^ prune_user_data ^ graft_user_data ^
+        tag_as_array_user_data)) {
     g_printerr(
         "I am very sorry for the inconvenience, "
         "but I am able to process only exactly one command at a time. \n");
@@ -317,7 +327,7 @@ int main(int argc, char* argv[]) {
   } else if (print_user_data) {
     std::string resultlist;
     if (remaining_args == nullptr) {
-      g_printerr("quiddity name missing for printing the user data tree\n");
+      g_printerr("quiddity name missing\n");
       return false;
     }
     if (remaining_args[1] == nullptr)
@@ -332,6 +342,10 @@ int main(int argc, char* argv[]) {
       g_printerr("quiddity name missing\n");
       return false;
     }
+    if (remaining_args[1] == nullptr) {
+      g_printerr("branch path missing\n");
+      return false;
+    }
     switcher_control.prune_user_data(
         remaining_args[0], remaining_args[1], &resultlist);
     std::cout << resultlist << std::endl;
@@ -341,11 +355,47 @@ int main(int argc, char* argv[]) {
       g_printerr("quiddity name missing\n");
       return false;
     }
+    if (remaining_args[1] == nullptr) {
+      g_printerr("branch name missing\n");
+      return false;
+    }
+    if (remaining_args[2] == nullptr) {
+      g_printerr("type name missing\n");
+      return false;
+    }
+    if (remaining_args[3] == nullptr) {
+      g_printerr("value missing\n");
+      return false;
+    }
     switcher_control.graft_user_data(remaining_args[0],
                                      remaining_args[1],
                                      remaining_args[2],
                                      remaining_args[3],
                                      &resultlist);
+    std::cout << resultlist << std::endl;
+  } else if (tag_as_array_user_data) {
+    std::string resultlist;
+    if (remaining_args == nullptr) {
+      g_printerr("quiddity name missing\n");
+      return false;
+    }
+    if (remaining_args[1] == nullptr) {
+      g_printerr("branch name missing\n");
+      return false;
+    }
+    if (remaining_args[2] == nullptr) {
+      g_printerr("value missing\n");
+      return false;
+    }
+    auto val = std::string(remaining_args[2]);
+    if (val != "true" && val != "false") {
+      g_printerr("value must be true or false\n");
+      return false;
+    }
+    switcher_control.tag_as_array_user_data(remaining_args[0],
+                                            remaining_args[1],
+                                            val == "true" ? true : false,
+                                            &resultlist);
     std::cout << resultlist << std::endl;
   } else if (setprop) {
     if (remaining_args == nullptr || remaining_args[1] == nullptr ||
