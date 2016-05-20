@@ -42,7 +42,7 @@ JackToShmdata::JackToShmdata(const std::string& name)
 
 bool JackToShmdata::init() {
   if (!jack_client_) {
-    g_warning("JackClient cannot be instancied");
+    g_warning("JackClient cannot be instanciated");
     return false;
   }
   init_startable(this);
@@ -69,6 +69,19 @@ bool JackToShmdata::init() {
                                               "Client Name",
                                               "The jack client name",
                                               client_name_);
+  auto_connect_id_ = pmanage<MPtr(&PContainer::make_bool)>(
+      "auto_connect",
+      [this](const bool& val) {
+        auto_connect_ = val;
+        update_port_to_connect();
+        pmanage<MPtr(&PContainer::enable)>(connect_to_id_, auto_connect_);
+        pmanage<MPtr(&PContainer::enable)>(index_id_, auto_connect_);
+        return true;
+      },
+      [this]() { return auto_connect_; },
+      "Auto Connect",
+      "Auto Connect to another client",
+      auto_connect_);
   connect_to_id_ =
       pmanage<MPtr(&PContainer::make_string)>("connect-to",
                                               [this](const std::string& val) {
@@ -117,6 +130,7 @@ bool JackToShmdata::start() {
     shm_.reset(nullptr);
     return false;
   }
+  pmanage<MPtr(&PContainer::enable)>(auto_connect_id_, false);
   pmanage<MPtr(&PContainer::enable)>(num_channels_id_, false);
   pmanage<MPtr(&PContainer::enable)>(client_name_id_, false);
   pmanage<MPtr(&PContainer::enable)>(connect_to_id_, false);
@@ -136,6 +150,7 @@ bool JackToShmdata::stop() {
     input_ports_.clear();
   }
   shm_.reset(nullptr);
+  pmanage<MPtr(&PContainer::enable)>(auto_connect_id_, true);
   pmanage<MPtr(&PContainer::enable)>(num_channels_id_, true);
   pmanage<MPtr(&PContainer::enable)>(client_name_id_, true);
   pmanage<MPtr(&PContainer::enable)>(connect_to_id_, true);
@@ -186,13 +201,26 @@ void JackToShmdata::on_xrun(uint num_of_missed_samples) {
 
 void JackToShmdata::update_port_to_connect() {
   ports_to_connect_.clear();
+
+  if (!auto_connect_) {
+    g_warning("Auto-connect for jack is disabled.");
+    return;
+  }
+
   for (unsigned int i = index_; i < index_ + num_channels_; ++i)
     ports_to_connect_.emplace_back(connect_to_ + std::to_string(i));
 }
 
 void JackToShmdata::connect_ports() {
-  if (ports_to_connect_.size() != input_ports_.size())
-    g_warning("bug in jack autoconnect");
+  if (!auto_connect_) return;
+
+  if (ports_to_connect_.size() != input_ports_.size()) {
+    g_warning(
+        "Port number mismatch in jack to shmdata autoconnect, should not "
+        "happen.");
+    return;
+  }
+
   for (unsigned int i = 0; i < num_channels_; ++i) {
     jack_connect(
         jack_client_.get_raw(),
