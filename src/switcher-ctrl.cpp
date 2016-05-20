@@ -388,9 +388,7 @@ int main(int argc, char* argv[]) {
       g_printerr("missing quiddity name for deleting quiddity\n");
       return false;
     }
-    g_print("%s %d\n", __FUNCTION__, __LINE__);
     switcher_control.delete_quiddity(remaining_args[0]);
-    g_print("%s %d\n", __FUNCTION__, __LINE__);
   } else if (listsignals) {
     if (remaining_args == nullptr) {
       g_printerr("missing quiddity name for list signals\n");
