@@ -104,6 +104,14 @@ class Quiddity {
 
   // user data
   Make_delegate(Quiddity, InfoTree, structured_user_data_.get(), user_data);
+  Selective_hook(user_data,
+                 decltype(&InfoTree::graft),
+                 &InfoTree::graft,
+                 &Quiddity::user_data_graft_hook);
+  Selective_hook(user_data,
+                 decltype(&InfoTree::prune),
+                 &InfoTree::prune,
+                 &Quiddity::user_data_prune_hook);
 
   // shmdata socket names
   static std::string get_socket_name_prefix();
@@ -120,11 +128,12 @@ class Quiddity {
   std::string get_file_name_prefix() const;
 
  private:
-  // tree used by quiddity to communicate info to user, read-only by user,
-  // read/write by quiddity
+  // tree used by quiddity to communicate info to user,
+  // read-only by user, read/write by quiddity
   InfoTree::ptr information_tree_;
 
   // writable tree for custom user data, should not be used by quiddity
+  // (hooks are installed for signaling graft and prune)
   InfoTree::ptr structured_user_data_;
 
   // properties
@@ -133,12 +142,10 @@ class Quiddity {
   // methods
   std::unordered_map<std::string, Method::ptr> methods_{};
   std::unordered_map<std::string, Method::ptr> disabled_methods_{};
-  bool method_is_registered(const std::string& method_name);
   JSONBuilder::ptr methods_description_;
 
   // position weight
   gint position_weight_counter_{0};
-  bool compare_properties(const std::string& first, const std::string& second);
 
   // pair is <class_name, signal_name>
   // this map is static in order to avoid re-creation of the same signal
@@ -150,7 +157,15 @@ class Quiddity {
   // naming
   std::string name_{};
 
+  // user data hooks
+  bool user_data_graft_hook(const std::string& path, InfoTree::ptr tree);
+  InfoTree::ptr user_data_prune_hook(const std::string& path);
+
+  // position weight
+  bool compare_properties(const std::string& first, const std::string& second);
+
   // method
+  bool method_is_registered(const std::string& method_name);
   bool register_method(const std::string& method_name,
                        Method::method_ptr method,
                        Method::return_type return_type,
@@ -226,7 +241,7 @@ class Quiddity {
   // avoid circular references to the manager_impl
   std::weak_ptr<QuiddityManager_Impl> manager_impl_{};
 
-  // gobject wrapper for custom signals and properties
+  // gobject wrapper for custom signals
   GObjectWrapper::ptr gobject_;
 
   GMainContext* get_g_main_context();

@@ -150,6 +150,36 @@ Quiddity::Quiddity()
                                    nullptr),
       1,
       arg_type);
+
+  install_signal_with_class_name(
+      "Quiddity",
+      "On User Data Pruned",
+      "on-user-data-pruned",
+      "A branch has been pruned from the quiddity's user data tree",
+      Signal::make_arg_description("Quiddity Name",
+                                   "quiddity_name",
+                                   "the quiddity name",
+                                   "Branch Name",
+                                   "branch_name",
+                                   "the branch name",
+                                   nullptr),
+      1,
+      arg_type);
+
+  install_signal_with_class_name(
+      "Quiddity",
+      "On User Data Grafted",
+      "on-user-data-grafted",
+      "A tree has been grafted to the quiddity's user data tree",
+      Signal::make_arg_description("Quiddity Name",
+                                   "quiddity_name",
+                                   "the quiddity name",
+                                   "Branch Name",
+                                   "branch_name",
+                                   "the branch name",
+                                   nullptr),
+      1,
+      arg_type);
 }
 
 std::string Quiddity::get_name() const { return name_; }
@@ -534,6 +564,20 @@ InfoTree::ptr Quiddity::prune_tree(const std::string& path, bool do_signal) {
     g_debug("cannot prune %s", path.c_str());
   }
   return result;
+}
+
+bool Quiddity::user_data_graft_hook(const std::string& path,
+                                    InfoTree::ptr tree) {
+  if (!structured_user_data_->graft(path, std::forward<InfoTree::ptr>(tree)))
+    return false;
+  signal_emit("on-user-data-grafted", path.c_str(), nullptr);
+  return true;
+}
+
+InfoTree::ptr Quiddity::user_data_prune_hook(const std::string& path) {
+  auto res = structured_user_data_->prune(path);
+  if (res) signal_emit("on-user-data-pruned", path.c_str(), nullptr);
+  return res;
 }
 
 }  // namespace switcher
