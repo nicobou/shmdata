@@ -157,19 +157,41 @@ std::string serialize(InfoTree::ptrc tree) {
   return result;
 }
 
-InfoTree::rptr add_json_node(InfoTree::rptr, JsonReader* reader) {
+InfoTree::rptr add_json_node(InfoTree::rptr tree, JsonReader* reader) {
   if (json_reader_is_array(reader)) {
-    std::cout << "is array" << '\n';
+    std::cout << "FIXME !!! is array" << '\n';
     return nullptr;
   }
   if (json_reader_is_object(reader)) {
-    // auto num_members = json_reader_count_members(reader);
-    std::cout << "is object" << '\n';
-    return nullptr;
+    for (gint i = 0; i < json_reader_count_members(reader); ++i) {
+      json_reader_read_element(reader, i);
+      auto member_name = json_reader_get_member_name(reader);
+      if (!tree->graft(member_name, InfoTree::make())) {  // FIXME do escape
+        g_warning("issue grafting tree during json deserialization");
+        return nullptr;
+      }
+      add_json_node(tree->get(member_name).get(), reader);
+      json_reader_end_element(reader);
+    }
+    return tree;
   }
   if (json_reader_is_value(reader)) {
-    std::cout << "is value" << '\n';
-    return nullptr;
+    auto val = json_reader_get_value(reader);
+    if (json_node_is_null(val))
+      return tree;
+    else if (G_TYPE_INT64 == json_node_get_value_type(val))
+      tree->set_data(static_cast<uint64_t>(json_node_get_int(val)));
+    else if (G_TYPE_BOOLEAN == json_node_get_value_type(val))
+      tree->set_data(static_cast<bool>(json_node_get_boolean(val)));
+    else if (G_TYPE_DOUBLE == json_node_get_value_type(val))
+      tree->set_data(static_cast<double>(json_node_get_double(val)));
+    else if (G_TYPE_STRING == json_node_get_value_type(val))
+      tree->set_data(json_node_get_string(val));
+    else {
+      g_warning("issue setting value during json deserialization");
+      return nullptr;
+    }
+    return tree;
   }
   g_warning("%s: reader current cursor is invalid", __FUNCTION__);
   return nullptr;
