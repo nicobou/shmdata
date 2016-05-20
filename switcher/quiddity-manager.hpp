@@ -105,6 +105,12 @@ class QuiddityManager {
                       use_tree,
                       use_tree);
 
+  Forward_delegate(QuiddityManager,
+                   QuiddityManager_Impl,
+                   manager_impl_.get(),
+                   user_data,
+                   user_data);
+
   // ****************** properties ********
   Forward_consultable(QuiddityManager,
                       QuiddityManager_Impl,

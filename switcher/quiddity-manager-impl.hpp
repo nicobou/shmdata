@@ -100,6 +100,16 @@ class QuiddityManager_Impl {
       tree,       // method used by quiddities to access the consultable
       use_tree);  // public forwarding method
 
+  Forward_delegate_from_associative_container(
+      QuiddityManager_Impl,    // self type
+      Quiddity,                // consultable type
+      find_quiddity,           // accessor
+      std::string,             // key type for accessor
+      construct_error_return,  // what is suposed to be returned when key has
+                               // not been found
+      user_data,   // method used by quiddities to access the consultable
+      user_data);  // public forwarding method
+
   // **** properties
   Forward_consultable_from_associative_container(
       QuiddityManager_Impl,    // self type
