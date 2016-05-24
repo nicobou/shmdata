@@ -247,15 +247,14 @@ bool Timelapse::start_timelapse(const std::string& shmpath) {
   timelapse_config_.max_files_ = max_files_;
   timelapse_[shmpath] = std2::make_unique<GstVideoTimelapse>(
       timelapse_config_,
-      [this](const std::string& caps) {
+      [this, shmpath](const std::string& caps) {
         graft_tree(
-            ".shmdata.reader." + timelapse_config_.orig_shmpath_,
+            ".shmdata.reader." + shmpath,
             ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
       },
-      [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        graft_tree(
-            ".shmdata.reader." + timelapse_config_.orig_shmpath_ + ".byte_rate",
-            InfoTree::make(byte_rate));
+      [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate) {
+        graft_tree(".shmdata.reader." + shmpath + ".byte_rate",
+                   InfoTree::make(byte_rate));
       },
       nullptr,
       [this, shmpath](std::string&& file_name) {
