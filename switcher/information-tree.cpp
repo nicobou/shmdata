@@ -141,7 +141,7 @@ bool InfoTree::set_data(const std::string& path, std::nullptr_t ptr) {
   return set_data(path, Any(ptr));
 }
 
-std::pair<bool, InfoTree::childs_t::size_type> InfoTree::get_child_index(
+std::pair<bool, InfoTree::children_t::size_type> InfoTree::get_child_index(
     const std::string& key) const {
   auto found = std::find_if(childrens_.begin(),
                             childrens_.end(),
@@ -179,8 +179,8 @@ InfoTree::GetNodeReturn InfoTree::get_node(const std::string& path) const {
 }
 
 InfoTree::GetNodeReturn InfoTree::get_next(std::istringstream& path,
-                                           InfoTree::childs_t* parent_vector,
-                                           childs_t::size_type index) const {
+                                           InfoTree::children_t* parent_vector,
+                                           children_t::size_type index) const {
   std::string child_key;
   if (!std::getline(path, child_key, '.'))
     return std::make_pair(parent_vector, index);
@@ -230,6 +230,11 @@ bool InfoTree::tag_as_array(const std::string& path, bool is_array) {
   InfoTree::ptr tree = InfoTree::get(path);
   if (!(bool)tree) return false;
   tree->is_array_ = is_array;
+  return true;
+}
+
+bool InfoTree::make_array(bool is_array) {
+  is_array_ = is_array;
   return true;
 }
 

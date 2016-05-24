@@ -54,11 +54,11 @@ class InfoTree {
   using ptrc = const InfoTree*;           // const
   using rptr = InfoTree*;                 // raw
   using child_type = std::pair<std::string, InfoTree::ptr>;
-  using childs_t = std::vector<child_type>;
+  using children_t = std::vector<child_type>;
   using OnNodeFunction = std::function<void(
       const std::string& name, InfoTree::ptrc tree, bool is_array_element)>;
   using GetNodeReturn =
-      std::pair<InfoTree::childs_t*, InfoTree::childs_t::size_type>;
+      std::pair<InfoTree::children_t*, InfoTree::children_t::size_type>;
 
   // factory
   static InfoTree::ptr make();
@@ -146,11 +146,12 @@ class InfoTree {
   // when a path is tagged as an array, keys might be discarded
   // by some serializers, such as JSON
   bool tag_as_array(const std::string& path, bool is_array);
+  bool make_array(bool is_array);
 
  private:
   Any data_{};
   bool is_array_{false};
-  mutable childs_t childrens_{};
+  mutable children_t childrens_{};
   mutable std::mutex mutex_{};
   std::weak_ptr<InfoTree> me_{};
 
@@ -161,15 +162,15 @@ class InfoTree {
   InfoTree(U&& data) : data_(Any(std::forward<U>(data))) {}
   explicit InfoTree(const Any& data);
   explicit InfoTree(Any&& data);
-  std::pair<bool, childs_t::size_type> get_child_index(
+  std::pair<bool, children_t::size_type> get_child_index(
       const std::string& key) const;
   static bool graft_next(std::istringstream& path,
                          InfoTree* tree,
                          InfoTree::ptr leaf);
   GetNodeReturn get_node(const std::string& path) const;
   GetNodeReturn get_next(std::istringstream& path,
-                         childs_t* parent_vector_result,
-                         childs_t::size_type result_index) const;
+                         children_t* parent_vector_result,
+                         children_t::size_type result_index) const;
   static bool path_is_root(const std::string& path);
 };
 

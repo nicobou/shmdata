@@ -60,13 +60,19 @@ struct AnyValueBase {
 template <typename T>
 struct AnyValueDerived : AnyValueBase {
   template <typename U>
-  AnyValueDerived(U&& value, AnyCategory category = AnyCategory::NONE)
+  AnyValueDerived(
+      U&& value,
+      AnyCategory category = AnyCategory::NONE,
+      AnyArithmeticType arithmetic_type = AnyArithmeticType::NOT_DEFINED)
       : value_(std::forward<U>(value)) {
     category_ = category;
+    arithmetic_type_ = arithmetic_type;
   }
+
   T value_;
+
   AnyValueBase* clone() const {
-    return new AnyValueDerived<T>(value_, category_);
+    return new AnyValueDerived<T>(value_, category_, arithmetic_type_);
   }
 
   std::string to_string() const {
@@ -139,6 +145,8 @@ struct Any {
       ptr_->arithmetic_type_ = AnyArithmeticType::UNSIGNED_LONG;
     else if (std::is_same<U, unsigned long long>::value)
       ptr_->arithmetic_type_ = AnyArithmeticType::UNSIGNED_LONG_LONG;
+    else
+      std::cerr << "unassigned arithmetic_type_ integral\n";
   }
 
   // floating point ctor
@@ -155,6 +163,8 @@ struct Any {
       ptr_->arithmetic_type_ = AnyArithmeticType::DOUBLE;
     else if (std::is_same<U, long double>::value)
       ptr_->arithmetic_type_ = AnyArithmeticType::LONG_DOUBLE;
+    else
+      std::cerr << "unassigned arithmetic_type_ float\n";
   }
 
   Any(std::nullptr_t /*value*/) : ptr_(nullptr) {}

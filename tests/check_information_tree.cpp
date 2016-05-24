@@ -200,10 +200,12 @@ int main() {
     tree->tag_as_array(".child1.child2", true);
 
     std::string serialized = JSONSerializer::serialize(tree.get());
-    std::cout << serialized << '\n';
-    std::cout << "---------------------------" << '\n';
+    // std::cout << serialized << '\n';
     auto deserialized_tree = JSONSerializer::deserialize(serialized);
-    std::cout << JSONSerializer::serialize(deserialized_tree.get()) << '\n';
+    auto deserialized_string =
+        JSONSerializer::serialize(deserialized_tree.get());
+    // std::cout << deserialized_string << '\n';
+    assert(serialized == deserialized_string);
   }
 
   {  // get childs keys inserting in an existing container
