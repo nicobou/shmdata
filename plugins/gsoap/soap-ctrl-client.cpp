@@ -17,6 +17,7 @@
 
 #include "soap-ctrl-client.hpp"
 #include "switcher/gst-utils.hpp"
+#include "switcher/std2.hpp"
 #include "webservices/control.nsmap"
 
 namespace switcher {
@@ -30,7 +31,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "GPL",
     "Nicolas Bouillot");
 
-SoapCtrlClient::SoapCtrlClient(const std::string&) {}
+SoapCtrlClient::SoapCtrlClient(const std::string&)
+    : mainloop_(std2::make_unique<GlibMainLoop>()) {}
 
 bool SoapCtrlClient::init() {
   switcher_control_ = new controlProxy(SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);
@@ -284,7 +286,7 @@ gboolean SoapCtrlClient::set_remote_url_retry(gpointer url,
         2000,  // must be higher than gsoap timeouts
         try_connect,
         context,
-        context->get_g_main_context());
+        context->mainloop_->get_main_context());
   }
   return TRUE;
 }

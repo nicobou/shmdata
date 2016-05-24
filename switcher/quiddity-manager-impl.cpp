@@ -55,9 +55,7 @@ QuiddityManager_Impl::ptr QuiddityManager_Impl::make_manager(
 }
 
 QuiddityManager_Impl::QuiddityManager_Impl(const std::string& name)
-    : mainloop_(std::make_shared<GlibMainLoop>()),
-      name_(name),
-      classes_doc_(std::make_shared<JSONBuilder>()) {
+    : name_(name), classes_doc_(std::make_shared<JSONBuilder>()) {
   remove_shmdata_sockets();
   register_classes();
   make_classes_doc();
@@ -654,10 +652,6 @@ void QuiddityManager_Impl::reset_create_remove_hooks() {
   removal_hook_ = nullptr;
   creation_hook_user_data_ = nullptr;
   removal_hook_user_data_ = nullptr;
-}
-
-GMainContext* QuiddityManager_Impl::get_g_main_context() {
-  return mainloop_->get_main_context();
 }
 
 bool QuiddityManager_Impl::load_plugin(const char* filename) {

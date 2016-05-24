@@ -24,6 +24,7 @@
 #include <pulse/pulseaudio.h>
 #include <condition_variable>
 #include <mutex>
+#include "switcher/glibmainloop.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/quiddity.hpp"
@@ -52,6 +53,7 @@ class PulseSrc : public Quiddity, public StartableQuiddity {
     std::string active_port_{};
   } DeviceDescription;
 
+  std::unique_ptr<GlibMainLoop> mainloop_;
   std::string shmpath_{};
   UGstElem pulsesrc_{"pulsesrc"};
   UGstElem shmsink_{"shmdatasink"};

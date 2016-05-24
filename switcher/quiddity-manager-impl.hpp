@@ -25,7 +25,6 @@
 #include <unordered_map>
 
 #include "./abstract-factory.hpp"
-#include "./glibmainloop.hpp"
 #include "./json-builder.hpp"
 #include "./plugin-loader.hpp"
 #include "./quiddity-signal-subscriber.hpp"
@@ -171,9 +170,6 @@ class QuiddityManager_Impl {
   std::string list_signal_subscribers_json();
   std::string list_subscribed_signals_json(const std::string& subscriber_name);
 
-  // mainloop
-  GMainContext* get_g_main_context();
-
   // for use of "get description by class"
   // and from quiddity that creates other quiddity in the same manager
   std::string create_without_hook(const std::string& quiddity_class);
@@ -181,7 +177,6 @@ class QuiddityManager_Impl {
   QuiddityManager* get_root_manager() { return manager_; };
 
  private:
-  GlibMainLoop::ptr mainloop_;
   std::unordered_map<std::string, PluginLoader::ptr> plugins_{};
   std::string name_{};
   AbstractFactory<Quiddity,

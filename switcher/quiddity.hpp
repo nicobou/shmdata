@@ -243,8 +243,6 @@ class Quiddity {
 
   // gobject wrapper for custom signals
   GObjectWrapper::ptr gobject_;
-
-  GMainContext* get_g_main_context();
 };
 
 #define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(cpp_quiddity_class,       \

@@ -402,12 +402,7 @@ void Quiddity::signal_emit(std::string signal_name, ...) {
   Signal::ptr signal = signals_[signal_name];
   va_list var_args;
   va_start(var_args, signal_name);
-  //     va_list va_cp;
-  //     va_copy (va_cp, var_args);
-  //     signal->signal_emit (/*get_g_main_context (), */ signal_name.c_str (),
-  //     va_cp);
-  signal->signal_emit(/*get_g_main_context (), */ signal_name.c_str(),
-                      var_args);
+  signal->signal_emit(signal_name.c_str(), var_args);
   va_end(var_args);
 }
 
@@ -497,13 +492,6 @@ std::string Quiddity::get_socket_dir() { return "/tmp"; }
 
 void Quiddity::set_manager_impl(QuiddityManager_Impl::ptr manager_impl) {
   manager_impl_ = manager_impl;
-}
-
-GMainContext* Quiddity::get_g_main_context() {
-  QuiddityManager_Impl::ptr manager = manager_impl_.lock();
-  if ((bool)manager) return manager->get_g_main_context();
-  g_warning("%s: returning nullptr\n", __PRETTY_FUNCTION__);
-  return nullptr;
 }
 
 // methods
