@@ -436,12 +436,9 @@ std::string Quiddity::get_signal_description(const std::string& signal_name) {
 }
 
 std::string Quiddity::make_file_name(const std::string& suffix) const {
-  std::string connector_name;
-  QuiddityManager_Impl::ptr manager = manager_impl_.lock();
-  if ((bool)manager)
-    connector_name.append(get_file_name_prefix() + manager->get_name() + "_" +
-                          name_ + "_" + suffix);
-  return connector_name;
+  if (manager_name_.empty()) return std::string();
+  return std::string(get_file_name_prefix() + manager_name_ + "_" + name_ +
+                     "_" + suffix);
 }
 
 std::string Quiddity::get_file_name_prefix() const { return "/tmp/switcher_"; }
@@ -478,13 +475,7 @@ std::string Quiddity::get_quiddity_name_from_file_name(
       filename, underscores[1] + 1, underscores[2] - (underscores[1] + 1));
 }
 
-std::string Quiddity::get_manager_name() {
-  QuiddityManager_Impl::ptr manager = manager_impl_.lock();
-  if ((bool)manager) return manager->get_name();
-
-  g_warning("manager name not accessible");
-  return std::string();
-}
+std::string Quiddity::get_manager_name() { return manager_name_; }
 
 std::string Quiddity::get_socket_name_prefix() { return "switcher_"; }
 
@@ -492,6 +483,7 @@ std::string Quiddity::get_socket_dir() { return "/tmp"; }
 
 void Quiddity::set_manager_impl(QuiddityManager_Impl::ptr manager_impl) {
   manager_impl_ = manager_impl;
+  manager_name_ = manager_impl->get_name();
 }
 
 // methods

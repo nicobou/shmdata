@@ -240,6 +240,7 @@ class Quiddity {
   // order to
   // avoid circular references to the manager_impl
   std::weak_ptr<QuiddityManager_Impl> manager_impl_{};
+  std::string manager_name_{};
 
   // gobject wrapper for custom signals
   GObjectWrapper::ptr gobject_;
