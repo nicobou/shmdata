@@ -1138,7 +1138,7 @@ void PJCall::make_attach_shmdata_to_contact(const std::string& shmpath,
   }
   auto tree = SIPPlugin::this_->prune_tree(
       ".buddies." + std::to_string(id) + ".connections", false);
-  tree->prune(".connections." + shmpath);
+  tree->prune(shmpath);
   SIPPlugin::this_->graft_tree(
       ".buddies." + std::to_string(id) + ".connections", tree);
 }

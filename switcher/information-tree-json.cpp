@@ -118,6 +118,8 @@ std::string serialize(InfoTree::ptrc tree) {
           return std::string("null");
           break;
       }
+    } else if (tree->is_array()) {
+      return std::string("[]");
     } else {
       return std::string("null");
     }
