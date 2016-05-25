@@ -74,6 +74,10 @@ class QuiddityManager {
   // *******************************************************************
   bool scan_directory_for_plugins(const std::string& directory);
 
+  // ************** configuration
+  // *******************************************************************
+  bool load_configuration_file(const std::string& file_path);
+
   // ***************** inspect
   // ****************************************************************
   std::vector<std::string>

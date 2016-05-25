@@ -35,6 +35,7 @@ std::map<std::pair<std::string, std::string>, guint> Quiddity::signals_ids_{};
 Quiddity::Quiddity()
     : information_tree_(InfoTree::make()),
       structured_user_data_(InfoTree::make()),
+      configuration_tree_(InfoTree::make()),
       props_(information_tree_,
              [this](const std::string& key) {
                signal_emit("on-tree-grafted", key.c_str(), nullptr);
@@ -45,6 +46,7 @@ Quiddity::Quiddity()
       methods_description_(std::make_shared<JSONBuilder>()),
       signals_description_(std::make_shared<JSONBuilder>()),
       gobject_(std::make_shared<GObjectWrapper>()) {
+  configuration_tree_->graft(".", InfoTree::make());
   GType arg_type[] = {G_TYPE_STRING};
   install_signal_with_class_name(
       "Quiddity",
@@ -558,6 +560,10 @@ InfoTree::ptr Quiddity::user_data_prune_hook(const std::string& path) {
   auto res = structured_user_data_->prune(path);
   if (res) signal_emit("on-user-data-pruned", path.c_str(), nullptr);
   return res;
+}
+
+void Quiddity::set_configuration(InfoTree::ptr config) {
+  // configuration_tree_ = config;
 }
 
 }  // namespace switcher

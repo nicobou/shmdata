@@ -70,7 +70,11 @@ class Quiddity {
 
   // instance name
   std::string get_name() const;
+  // FIXME name should be a ctor arg
   bool set_name(const std::string& name);  // can be called once
+
+  // FIXME configuration should be a ctor arg
+  void set_configuration(InfoTree::ptr config);
 
   // properties
   Make_consultable(Quiddity, PContainer, &props_, prop);
@@ -117,7 +121,7 @@ class Quiddity {
   static std::string get_socket_name_prefix();
   static std::string get_socket_dir();
 
-  // manager_impl  initialization
+  // manager_impl initialization
   void set_manager_impl(std::shared_ptr<QuiddityManager_Impl> manager_impl);
 
   // use a consistent naming for shmdatas
@@ -135,6 +139,12 @@ class Quiddity {
   // writable tree for custom user data, should not be used by quiddity
   // (hooks are installed for signaling graft and prune)
   InfoTree::ptr structured_user_data_;
+
+  // configuration tree. When manager is loaded with a config file,
+  // the branch of the tree corresponding to the quiddity type
+  // is given to the quiddity. There is no constrain about how quiddity
+  // sjhould use this configuration
+  InfoTree::ptr configuration_tree_;
 
   // properties
   PContainer props_;
@@ -201,6 +211,9 @@ class Quiddity {
 
   // property
   Make_delegate(Quiddity, PContainer, &props_, pmanage);
+
+  // configuration
+  Make_consultable(Quiddity, InfoTree, configuration_tree_.get(), config);
 
   // methods
   bool install_method(const std::string& long_name,

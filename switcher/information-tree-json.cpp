@@ -219,7 +219,7 @@ InfoTree::ptr deserialize(const std::string& serialized) {
   if (error != nullptr) {
     g_warning("%s", error->message);
     g_error_free(error);
-    return InfoTree::make();
+    return InfoTree::ptr();
   }
   JsonNode* root_node = json_parser_get_root(parser);
   JsonReader* reader = json_reader_new(root_node);
