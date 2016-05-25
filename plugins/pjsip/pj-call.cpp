@@ -103,7 +103,7 @@ PJCall::PJCall() {
                                    "url",          // name
                                    "string",       // description
                                    nullptr),
-      (Method::method_ptr)&send_to,
+      (Method::method_ptr) & send_to,
       G_TYPE_BOOLEAN,
       Method::make_arg_type_description(G_TYPE_STRING, nullptr),
       this);
@@ -116,7 +116,7 @@ PJCall::PJCall() {
                                    "url",      // name
                                    "string",   // description
                                    nullptr),
-      (Method::method_ptr)&hang_up,
+      (Method::method_ptr) & hang_up,
       G_TYPE_BOOLEAN,
       Method::make_arg_type_description(G_TYPE_STRING, nullptr),
       this);
@@ -135,7 +135,7 @@ PJCall::PJCall() {
                                    "attach",
                                    "gboolean",
                                    nullptr),
-      (Method::method_ptr)&attach_shmdata_to_contact,
+      (Method::method_ptr) & attach_shmdata_to_contact,
       G_TYPE_BOOLEAN,
       Method::make_arg_type_description(
           G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, nullptr),
@@ -203,9 +203,10 @@ bool PJCall::release_incoming_call(call_t* call, pjsua_buddy_id id) {
   std::lock_guard<std::mutex> lock(SIPPlugin::this_->sip_calls_->call_m_);
 
   auto& calls = SIPPlugin::this_->sip_calls_->incoming_call_;
-  auto it = std::find_if(calls.begin(), calls.end(), [&call](const call_t& c) {
-    return c.inv == call->inv;
-  });
+  auto it =
+      std::find_if(calls.begin(),
+                   calls.end(),
+                   [&call](const call_t& c) { return c.inv == call->inv; });
   if (calls.end() == it) return false;
   // updating recv status in the tree
   InfoTree::ptr tree = SIPPlugin::this_->prune_tree(
@@ -234,10 +235,11 @@ bool PJCall::release_incoming_call(call_t* call, pjsua_buddy_id id) {
 bool PJCall::release_outgoing_call(call_t* call, pjsua_buddy_id id) {
   std::lock_guard<std::mutex> lock(SIPPlugin::this_->sip_calls_->call_m_);
   auto& calls = SIPPlugin::this_->sip_calls_->outgoing_call_;
-  auto it = std::find_if(
-      calls.begin(), calls.end(), [&call](const std::unique_ptr<call_t>& c) {
-        return c->inv == call->inv;
-      });
+  auto it = std::find_if(calls.begin(),
+                         calls.end(),
+                         [&call](const std::unique_ptr<call_t>& c) {
+                           return c->inv == call->inv;
+                         });
   if (calls.end() == it) return false;
   // removing destination to siprtp
   for (auto& media : (*it)->media) {
@@ -287,10 +289,11 @@ void PJCall::on_inv_state_confirmed(call_t* call,
     return;
   }
   auto& calls = SIPPlugin::this_->sip_calls_->outgoing_call_;
-  auto it = std::find_if(
-      calls.begin(), calls.end(), [&call](const std::unique_ptr<call_t>& c) {
-        return c->inv == call->inv;
-      });
+  auto it = std::find_if(calls.begin(),
+                         calls.end(),
+                         [&call](const std::unique_ptr<call_t>& c) {
+                           return c->inv == call->inv;
+                         });
   if (SIPPlugin::this_->sip_calls_->is_calling_) {
     std::unique_lock<std::mutex> lock(SIPPlugin::this_->sip_calls_->call_m_);
     SIPPlugin::this_->sip_calls_->call_action_done_ = true;
@@ -323,10 +326,11 @@ void PJCall::on_inv_state_connecting(call_t* call,
     return;
   }
   auto& calls = SIPPlugin::this_->sip_calls_->outgoing_call_;
-  auto it = std::find_if(
-      calls.begin(), calls.end(), [&call](const std::unique_ptr<call_t>& c) {
-        return c->inv == call->inv;
-      });
+  auto it = std::find_if(calls.begin(),
+                         calls.end(),
+                         [&call](const std::unique_ptr<call_t>& c) {
+                           return c->inv == call->inv;
+                         });
   if (calls.end() != it)
     tree->graft(std::string(".send_status."), InfoTree::make("connecting"));
   else
@@ -416,7 +420,7 @@ void PJCall::call_on_forked(pjsip_inv_session* /*inv*/, pjsip_event* /*e*/) {}
 
 /* Callback to be called when SDP negotiation is done in the call: */
 void PJCall::call_on_media_update(pjsip_inv_session* inv, pj_status_t status) {
-  const pjmedia_sdp_session *local_sdp, *remote_sdp;
+  const pjmedia_sdp_session* local_sdp, *remote_sdp;
   call_t* call = static_cast<call_t*>(inv->mod_data[mod_siprtp_.id]);
   /* Do nothing if media negotiation has failed */
   if (status != PJ_SUCCESS) {
@@ -432,10 +436,9 @@ void PJCall::call_on_media_update(pjsip_inv_session* inv, pj_status_t status) {
   // sending streams
   for (uint i = 0; i < call->media.size(); i++) {
     if (PJCallUtils::is_send_media(local_sdp->media[i])) {
-      g_debug(
-          "sending data to %s",
-          std::string(remote_sdp->origin.addr.ptr, remote_sdp->origin.addr.slen)
-              .c_str());
+      g_debug("sending data to %s",
+              std::string(remote_sdp->origin.addr.ptr,
+                          remote_sdp->origin.addr.slen).c_str());
       auto it = SIPPlugin::this_->sip_calls_->readers_.find(
           call->media[i].shm_path_to_send);
       if (it == SIPPlugin::this_->sip_calls_->readers_.end()) {
@@ -608,7 +611,8 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     //     InfoTree::make(call->peer_uri));
     auto* writer = call->rtp_writers_.back().get();
     call->ice_trans_->set_data_cb(
-        call->rtp_writers_.size(), [writer](void* data, size_t size) {
+        call->rtp_writers_.size(),
+        [writer](void* data, size_t size) {
           writer->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, size);
           writer->bytes_written(size);
         });
@@ -963,13 +967,14 @@ gboolean PJCall::send_to(gchar* sip_url, void* user_data) {
     auto res = SIPPlugin::this_->pjsip_->run<bool>(
         [&]() { return context->make_call(std::string(sip_url)); });
     if (res) {
-      context->call_cv_.wait(lock, [&context]() {
-        if (context->call_action_done_) {
-          context->call_action_done_ = false;
-          return true;
-        }
-        return false;
-      });
+      context->call_cv_.wait(lock,
+                             [&context]() {
+                               if (context->call_action_done_) {
+                                 context->call_action_done_ = false;
+                                 return true;
+                               }
+                               return false;
+                             });
     }
   }
   return TRUE;
@@ -1002,13 +1007,14 @@ gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
       SIPPlugin::this_->pjsip_->run_async([&]() {
         context->make_hang_up((*it_out)->inv, std::string(sip_url));
       });
-      context->call_cv_.wait(lock, [&context]() {
-        if (context->call_action_done_) {
-          context->call_action_done_ = false;
-          return true;
-        }
-        return false;
-      });
+      context->call_cv_.wait(lock,
+                             [&context]() {
+                               if (context->call_action_done_) {
+                                 context->call_action_done_ = false;
+                                 return true;
+                               }
+                               return false;
+                             });
 
       ret = TRUE;
     }
@@ -1023,13 +1029,14 @@ gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
       SIPPlugin::this_->pjsip_->run_async([&]() {
         context->make_hang_up((*it_inc).inv, std::string(sip_url));
       });
-      context->call_cv_.wait(lock, [&context]() {
-        if (context->call_action_done_) {
-          context->call_action_done_ = false;
-          return true;
-        }
-        return false;
-      });
+      context->call_cv_.wait(lock,
+                             [&context]() {
+                               if (context->call_action_done_) {
+                                 context->call_action_done_ = false;
+                                 return true;
+                               }
+                               return false;
+                             });
 
       ret = TRUE;
     }
@@ -1129,8 +1136,11 @@ void PJCall::make_attach_shmdata_to_contact(const std::string& shmpath,
     readers_.erase(it);
     reader_ref_count_.erase(shmpath);
   }
-  SIPPlugin::this_->prune_tree(".buddies." + std::to_string(id) +
-                               ".connections." + shmpath);
+  auto tree = SIPPlugin::this_->prune_tree(
+      ".buddies." + std::to_string(id) + ".connections", false);
+  tree->prune(".connections." + shmpath);
+  SIPPlugin::this_->graft_tree(
+      ".buddies." + std::to_string(id) + ".connections", tree);
 }
 
 void PJCall::call_on_rx_offer(pjsip_inv_session* /*inv*/,
@@ -1169,24 +1179,23 @@ std::unique_ptr<PJICEStreamTrans> PJCall::negociate_ice_transport(
         g_debug("ICE candidate received: %s",
                 std::string(remote_sdp->media[i]->attr[j]->value.ptr,
                             0,
-                            remote_sdp->media[i]->attr[j]->value.slen)
-                    .c_str());
+                            remote_sdp->media[i]->attr[j]->value.slen).c_str());
         int af;
         char foundation[32], transport[12], ipaddr[80], type[32];
         pj_str_t tmpaddr;
         int comp_id, prio, port;
-        int cnt = sscanf(std::string(remote_sdp->media[i]->attr[j]->value.ptr,
-                                     0,
-                                     remote_sdp->media[i]->attr[j]->value.slen)
-                             .c_str(),
-                         "%s %d %s %d %s %d typ %s",
-                         foundation,
-                         &comp_id,
-                         transport,
-                         &prio,
-                         ipaddr,
-                         &port,
-                         type);
+        int cnt = sscanf(
+            std::string(remote_sdp->media[i]->attr[j]->value.ptr,
+                        0,
+                        remote_sdp->media[i]->attr[j]->value.slen).c_str(),
+            "%s %d %s %d %s %d typ %s",
+            foundation,
+            &comp_id,
+            transport,
+            &prio,
+            ipaddr,
+            &port,
+            type);
         if (cnt != 7) {
           g_warning("error: Invalid ICE candidate line");
           return res;
