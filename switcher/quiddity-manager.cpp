@@ -420,8 +420,7 @@ bool QuiddityManager::subscribe_signal(const std::string& subscriber_name,
                                quiddity_name.c_str(),
                                signal_name.c_str(),
                                nullptr);
-  if (g_strcmp0(res.c_str(), "true") == 0) return true;
-  return false;
+  return res == "true";
 }
 
 bool QuiddityManager::unsubscribe_signal(const std::string& subscriber_name,
@@ -432,9 +431,7 @@ bool QuiddityManager::unsubscribe_signal(const std::string& subscriber_name,
                                quiddity_name.c_str(),
                                signal_name.c_str(),
                                nullptr);
-  if (g_strcmp0(res.c_str(), "true") == 0) return true;
-  return false;
-
+  return res == "true";
   // command_lock ();
   // command_->set_id (QuiddityCommand::unsubscribe_signal);
   // command_->add_arg (subscriber_name);
@@ -616,13 +613,15 @@ std::string QuiddityManager::get_quiddity_description(
                     nullptr);
 }
 
-std::vector<std::string> QuiddityManager::get_quiddities() {
+std::vector<std::string> QuiddityManager::get_quiddities() const {
   std::vector<std::string> res;
-  command_lock();
-  command_->set_id(QuiddityCommand::get_quiddities);
-  invoke_in_thread();
-  res = command_->result_;
-  command_unlock();
+  // command_lock();
+  // command_->set_id(QuiddityCommand::get_quiddities);
+  // invoke_in_thread();
+  // res = command_->result_;
+  std::lock_guard<std::mutex> lock(seq_mutex_);
+  res = manager_impl_->get_instances();
+  // command_unlock();
   return res;
 }
 
@@ -702,9 +701,6 @@ gboolean QuiddityManager::execute_command(gpointer user_data) {
     case QuiddityCommand::get_class_doc:
       context->command_->result_.push_back(
           context->manager_impl_->get_class_doc(context->command_->args_[0]));
-      break;
-    case QuiddityCommand::get_quiddities:
-      context->command_->result_ = context->manager_impl_->get_instances();
       break;
     case QuiddityCommand::get_quiddities_description:
       context->command_->result_.push_back(
