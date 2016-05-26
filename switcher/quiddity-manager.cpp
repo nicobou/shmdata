@@ -245,6 +245,28 @@ bool QuiddityManager::save_command_history(const char* file_path) const {
   builder->set_member_name("history");
   builder->begin_array();
 
+  // FIXME: Remove when new save system is in place.
+  // Here to manage properties set by code and not by the UI.
+  for (auto& quid_name : get_quiddities()) {
+    auto type = use_tree<MPtr(&InfoTree::branch_read_data<std::string>)>(
+        quid_name, ".type");
+    if (type == "gtkwin") {
+      std::vector<std::string> props_to_save = {"position_x",
+                                                "position_y",
+                                                "width",
+                                                "height",
+                                                "fullscreen",
+                                                "decorated",
+                                                "always_on_top"};
+      for (auto& prop : props_to_save) {
+        use_prop<MPtr(&PContainer::set_str_str)>(
+            quid_name,
+            prop,
+            use_prop<MPtr(&PContainer::get_str_str)>(quid_name, prop));
+      }
+    }
+  }
+
   for (auto& it : command_history_)
     builder->add_node_value(it->get_json_root_node());
   builder->end_array();
@@ -615,13 +637,8 @@ std::string QuiddityManager::get_quiddity_description(
 
 std::vector<std::string> QuiddityManager::get_quiddities() const {
   std::vector<std::string> res;
-  // command_lock();
-  // command_->set_id(QuiddityCommand::get_quiddities);
-  // invoke_in_thread();
-  // res = command_->result_;
   std::lock_guard<std::mutex> lock(seq_mutex_);
   res = manager_impl_->get_instances();
-  // command_unlock();
   return res;
 }
 

@@ -26,6 +26,7 @@
 #include <thread>
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/periodic-task.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-writer.hpp"
 
@@ -51,11 +52,11 @@ class GTKVideo : public Quiddity {
   ~GTKVideo();
   GTKVideo(const GTKVideo&) = delete;
   GTKVideo& operator=(const GTKVideo&) = delete;
-  void toggle_fullscreen();
 
  private:
   static guint instances_counter_;
   static std::thread gtk_main_thread_;
+  bool is_valid_{false};
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
   // gst pipeline:
@@ -85,9 +86,9 @@ class GTKVideo : public Quiddity {
   guintptr window_handle_{0};
 #endif
   GdkCursor* blank_cursor_{nullptr};
+  std::string title_;
   bool is_fullscreen_{false};
   PContainer::prop_id_t fullscreen_id_{0};
-  std::string title_;
   gboolean keyb_interaction_{TRUE};
   std::mutex wait_window_mutex_{};
   std::condition_variable wait_window_cond_{};
@@ -104,6 +105,21 @@ class GTKVideo : public Quiddity {
   int vertical_padding_{0};
   float drawed_video_width_{-1};
   float drawed_video_height_{-1};
+  // window geometry
+  bool decorated_{false};
+  PContainer::prop_id_t decorated_id_{0};
+  bool always_on_top_{false};
+  PContainer::prop_id_t always_on_top_id_{0};
+  int width_{640};
+  PContainer::prop_id_t width_id_{0};
+  int height_{480};
+  PContainer::prop_id_t height_id_{0};
+  int position_x_{0};
+  PContainer::prop_id_t position_x_id_{0};
+  int position_y_{0};
+  PContainer::prop_id_t position_y_id_{0};
+
+  PeriodicTask position_task_;
 
   bool init() final;
   bool remake_elements();
@@ -113,6 +129,7 @@ class GTKVideo : public Quiddity {
   GstBusSyncReply bus_sync(GstMessage* msg);
   static gboolean create_ui(void* user_data);
   static gboolean set_title(void* user_data);
+  static gboolean set_geometry(void* user_data);
   static gboolean set_fullscreen(void* user_data);
   static void realize_cb(GtkWidget* widget, void* user_data);
   static void delete_event_cb(GtkWidget* widget,
@@ -141,6 +158,8 @@ class GTKVideo : public Quiddity {
   static void widget_getsize(GtkWidget* widget,
                              GtkAllocation* allocation,
                              void* data);
+  static gboolean window_update_position(void* data);
+  static gboolean window_update_size(void* data);
   void update_padding(GtkWidget* widget);
   void write_mouse_info_to_shmdata(int x, int y, const GdkModifierType& state);
   void install_gst_properties();
