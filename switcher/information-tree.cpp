@@ -113,7 +113,7 @@ bool InfoTree::branch_has_data(const std::string& path) const {
   return false;
 }
 
-Any InfoTree::get_data(const std::string& path) const {
+Any InfoTree::branch_get_data(const std::string& path) const {
   std::unique_lock<std::mutex> lock(mutex_);
   if (path_is_root(path)) return data_;
   auto found = get_node(path);
@@ -122,7 +122,7 @@ Any InfoTree::get_data(const std::string& path) const {
   return res;
 }
 
-bool InfoTree::set_data(const std::string& path, const Any& data) {
+bool InfoTree::branch_set_data(const std::string& path, const Any& data) {
   std::unique_lock<std::mutex> lock(mutex_);
   if (path_is_root(path)) return data_ = data;
   auto found = get_node(path);
@@ -133,12 +133,12 @@ bool InfoTree::set_data(const std::string& path, const Any& data) {
   return false;
 }
 
-bool InfoTree::set_data(const std::string& path, const char* data) {
-  return set_data(path, std::string(data));
+bool InfoTree::branch_set_data(const std::string& path, const char* data) {
+  return branch_set_data(path, std::string(data));
 }
 
-bool InfoTree::set_data(const std::string& path, std::nullptr_t ptr) {
-  return set_data(path, Any(ptr));
+bool InfoTree::branch_set_data(const std::string& path, std::nullptr_t ptr) {
+  return branch_set_data(path, Any(ptr));
 }
 
 std::pair<bool, InfoTree::children_t::size_type> InfoTree::get_child_index(
@@ -163,7 +163,7 @@ InfoTree::ptr InfoTree::prune(const std::string& path) {
   return InfoTree::make();
 }
 
-InfoTree::ptr InfoTree::get(const std::string& path) {
+InfoTree::ptr InfoTree::get_tree(const std::string& path) {
   std::unique_lock<std::mutex> lock(mutex_);
   if (path_is_root(path)) return me_.lock();
   auto found = get_node(path);
@@ -227,7 +227,7 @@ bool InfoTree::graft_next(std::istringstream& path,
 }
 
 bool InfoTree::tag_as_array(const std::string& path, bool is_array) {
-  InfoTree::ptr tree = InfoTree::get(path);
+  InfoTree::ptr tree = InfoTree::get_tree(path);
   if (!(bool)tree) return false;
   tree->is_array_ = is_array;
   return true;

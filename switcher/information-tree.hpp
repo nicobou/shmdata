@@ -131,17 +131,17 @@ class InfoTree {
   void set_data(const Any& data);
   void set_data(const char* data);
   void set_data(std::nullptr_t ptr);
-  Any get_data(const std::string& path) const;
-  bool set_data(const std::string& path, const Any& data);
-  bool set_data(const std::string& path, const char* data);
-  bool set_data(const std::string& path, std::nullptr_t ptr);
+  Any branch_get_data(const std::string& path) const;
+  bool branch_set_data(const std::string& path, const Any& data);
+  bool branch_set_data(const std::string& path, const char* data);
+  bool branch_set_data(const std::string& path, std::nullptr_t ptr);
   // graft will create the path and graft the tree,
   // or remove old one and replace will the new tree
   bool graft(const std::string& path, InfoTree::ptr);
   // return empty tree if nothing can be pruned
   InfoTree::ptr prune(const std::string& path);
   // get but not remove
-  InfoTree::ptr get(const std::string& path);
+  InfoTree::ptr get_tree(const std::string& path);
   // return false if the path does not exist
   // when a path is tagged as an array, keys might be discarded
   // by some serializers, such as JSON

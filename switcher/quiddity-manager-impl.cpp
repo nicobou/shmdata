@@ -246,7 +246,7 @@ std::string QuiddityManager_Impl::create_without_hook(
   quiddity->set_manager_impl(me_.lock());
   quiddity->set_name(name);
   if (configurations_)
-    quiddity->set_configuration(configurations_->get(quiddity_class));
+    quiddity->set_configuration(configurations_->get_tree(quiddity_class));
   if (!quiddity->init()) return "{\"error\":\"cannot init quiddity class\"}";
   quiddities_[name] = quiddity;
   return name;
@@ -262,7 +262,7 @@ std::string QuiddityManager_Impl::create(const std::string& quiddity_class) {
   if (quiddity.get() != nullptr) {
     quiddity->set_name(name);
     if (configurations_)
-      quiddity->set_configuration(configurations_->get(quiddity_class));
+      quiddity->set_configuration(configurations_->get_tree(quiddity_class));
     if (!init_quiddity(quiddity)) {
       g_debug("initialization of %s failed", quiddity_class.c_str());
       return std::string();
@@ -306,7 +306,7 @@ std::string QuiddityManager_Impl::create(const std::string& quiddity_class,
   }
   quiddity->set_name(nick_name);
   if (configurations_)
-    quiddity->set_configuration(configurations_->get(quiddity_class));
+    quiddity->set_configuration(configurations_->get_tree(quiddity_class));
   if (!init_quiddity(quiddity)) {
     g_debug("initialization of %s with name %s failed",
             quiddity_class.c_str(),

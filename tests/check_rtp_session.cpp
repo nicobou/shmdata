@@ -41,8 +41,7 @@ void on_tree_grafted(const std::string& /*subscriber_name */,
   // std::printf("%s: %s \n", signal_name.c_str(), params[0].c_str());
   GstShmdataSubscriber::num_bytes_t byte_rate =
       // std::string byte_rate =
-      manager->use_tree<COPtr(
-          &InfoTree::get_data, InfoTree, Any, const std::string&)>(
+      manager->use_tree<MPtr(&InfoTree::branch_get_data)>(
           std::string("uri"), params[0] + ".byte_rate");
   if (0 != byte_rate && std::string::npos != params[0].find("audio")) {
     audio_success = true;

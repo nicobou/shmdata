@@ -167,7 +167,7 @@ InfoTree::rptr add_json_node(InfoTree::rptr tree, JsonReader* reader) {
             "issue grafting tree with array index during json deserialization");
         return nullptr;
       }
-      add_json_node(tree->get(index).get(), reader);
+      add_json_node(tree->get_tree(index).get(), reader);
       json_reader_end_element(reader);
     }
     tree->make_array(true);
@@ -181,7 +181,7 @@ InfoTree::rptr add_json_node(InfoTree::rptr tree, JsonReader* reader) {
         g_warning("issue grafting tree during json deserialization");
         return nullptr;
       }
-      add_json_node(tree->get(member_name).get(), reader);
+      add_json_node(tree->get_tree(member_name).get(), reader);
       json_reader_end_element(reader);
     }
     return tree;

@@ -66,14 +66,14 @@ int main() {
     InfoTree::ptr tree = InfoTree::make();
     tree->graft("...child1....child2..", InfoTree::make(1.2f));
     assert(!tree->is_leaf());
-    InfoTree::ptr child2 = tree->get("..child1.child2");
+    InfoTree::ptr child2 = tree->get_tree("..child1.child2");
     assert(child2);
     assert(child2->is_leaf());
     float data = child2->get_data();
     assert(1.2f == data);
-    InfoTree::ptr child1 = tree->get(".child1..");
+    InfoTree::ptr child1 = tree->get_tree(".child1..");
     assert(!child1->is_leaf());
-    assert(!tree->get("child1.foo"));  // this is not a child
+    assert(!tree->get_tree("child1.foo"));  // this is not a child
   }
   {  // graft a childs and prune it
     InfoTree::ptr tree = InfoTree::make();
@@ -112,11 +112,11 @@ int main() {
     // float tree_data = tree->get_data (".");  // this is not possible
     // assert (1.2f == tree_data);
     tree->graft("child1.child2", InfoTree::make());
-    assert(tree->set_data("child1.child2", "test"));
-    assert(tree->set_data("child1", 1.2f));
-    std::string child2_data = tree->get_data("child1.child2");
+    assert(tree->branch_set_data("child1.child2", "test"));
+    assert(tree->branch_set_data("child1", 1.2f));
+    std::string child2_data = tree->branch_get_data("child1.child2");
     assert(0 == child2_data.compare("test"));
-    float child1_data = tree->get_data("child1");
+    float child1_data = tree->branch_get_data("child1");
     assert(1.2f == child1_data);
   }
   {  // removing using empty data
@@ -126,12 +126,12 @@ int main() {
     tree->set_data(Any());
     assert(!tree->has_data());
     tree->graft("child1.child2", InfoTree::make());
-    assert(tree->set_data("child1.child2", "test"));
-    assert(tree->set_data("child1", "test"));
+    assert(tree->branch_set_data("child1.child2", "test"));
+    assert(tree->branch_set_data("child1", "test"));
     assert(tree->branch_has_data("child1.child2"));
     assert(tree->branch_has_data("child1"));
-    assert(tree->set_data("child1.child2", Any()));
-    assert(tree->set_data("child1", Any()));
+    assert(tree->branch_set_data("child1.child2", Any()));
+    assert(tree->branch_set_data("child1", Any()));
     assert(!tree->branch_has_data("child1.child2"));
     assert(!tree->branch_has_data("child1"));
   }
