@@ -45,7 +45,7 @@ int main() {
     for (auto& it : manager->get_quiddities()) {
       manager->remove(it);
     }
-    manager->load_configuration_file("./sip_config.json");
+    manager->load_configuration_file("./config.json");
     assert(manager->create("sip", "test") == "test");
   }  // end of scope is releasing the manager
   return 0;

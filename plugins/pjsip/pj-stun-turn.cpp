@@ -140,10 +140,10 @@ pj_status_t PJStunTurn::handle_events(unsigned max_msec, unsigned* p_count) {
   return PJ_SUCCESS;
 }
 
-gboolean PJStunTurn::set_stun_turn(gchar* stun,
-                                   gchar* turn,
-                                   gchar* turn_user,
-                                   gchar* turn_pass,
+gboolean PJStunTurn::set_stun_turn(const gchar* stun,
+                                   const gchar* turn,
+                                   const gchar* turn_user,
+                                   const gchar* turn_pass,
                                    void* user_data) {
   PJStunTurn* context = static_cast<PJStunTurn*>(user_data);
 
