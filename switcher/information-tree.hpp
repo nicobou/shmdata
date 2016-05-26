@@ -127,14 +127,14 @@ class InfoTree {
   std::list<std::string> copy_leaf_values(const std::string& path) const;
 
   // get/set:
-  Any get_data() const;
-  void set_data(const Any& data);
-  void set_data(const char* data);
-  void set_data(std::nullptr_t ptr);
-  Any branch_get_data(const std::string& path) const;
-  bool branch_set_data(const std::string& path, const Any& data);
-  bool branch_set_data(const std::string& path, const char* data);
-  bool branch_set_data(const std::string& path, std::nullptr_t ptr);
+  Any get_value() const;
+  void set_value(const Any& data);
+  void set_value(const char* data);
+  void set_value(std::nullptr_t ptr);
+  Any branch_get_value(const std::string& path) const;
+  bool branch_set_value(const std::string& path, const Any& data);
+  bool branch_set_value(const std::string& path, const char* data);
+  bool branch_set_value(const std::string& path, std::nullptr_t ptr);
   // graft will create the path and graft the tree,
   // or remove old one and replace will the new tree
   bool graft(const std::string& path, InfoTree::ptr);

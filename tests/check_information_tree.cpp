@@ -50,7 +50,7 @@ int main() {
   {  // node data as std::string
     InfoTree::ptr tree = InfoTree::make(std::string("truc"));
     assert(tree->is_leaf());
-    std::string data = tree->get_data();
+    std::string data = tree->get_value();
     assert(0 == data.compare("truc"));
   }
   {  // node data as const char * (converted to std::string)
@@ -59,7 +59,7 @@ int main() {
   }
   {  // node data as float
     InfoTree::ptr tree = InfoTree::make(1.2f);
-    float val = tree->get_data();
+    float val = tree->get_value();
     assert(1.2f == val);
   }
   {  // graft a multiple childs and get them
@@ -69,7 +69,7 @@ int main() {
     InfoTree::ptr child2 = tree->get_tree("..child1.child2");
     assert(child2);
     assert(child2->is_leaf());
-    float data = child2->get_data();
+    float data = child2->get_value();
     assert(1.2f == data);
     InfoTree::ptr child1 = tree->get_tree(".child1..");
     assert(!child1->is_leaf());
@@ -108,30 +108,30 @@ int main() {
   }
   {  // set/get data with path
     InfoTree::ptr tree = InfoTree::make();
-    // tree->set_data ("", 1.2f);  // this is not possible
-    // float tree_data = tree->get_data (".");  // this is not possible
+    // tree->set_value ("", 1.2f);  // this is not possible
+    // float tree_data = tree->get_value (".");  // this is not possible
     // assert (1.2f == tree_data);
     tree->graft("child1.child2", InfoTree::make());
-    assert(tree->branch_set_data("child1.child2", "test"));
-    assert(tree->branch_set_data("child1", 1.2f));
-    std::string child2_data = tree->branch_get_data("child1.child2");
+    assert(tree->branch_set_value("child1.child2", "test"));
+    assert(tree->branch_set_value("child1", 1.2f));
+    std::string child2_data = tree->branch_get_value("child1.child2");
     assert(0 == child2_data.compare("test"));
-    float child1_data = tree->branch_get_data("child1");
+    float child1_data = tree->branch_get_value("child1");
     assert(1.2f == child1_data);
   }
   {  // removing using empty data
     InfoTree::ptr tree = InfoTree::make();
-    tree->set_data("test");
+    tree->set_value("test");
     assert(tree->has_data());
-    tree->set_data(Any());
+    tree->set_value(Any());
     assert(!tree->has_data());
     tree->graft("child1.child2", InfoTree::make());
-    assert(tree->branch_set_data("child1.child2", "test"));
-    assert(tree->branch_set_data("child1", "test"));
+    assert(tree->branch_set_value("child1.child2", "test"));
+    assert(tree->branch_set_value("child1", "test"));
     assert(tree->branch_has_data("child1.child2"));
     assert(tree->branch_has_data("child1"));
-    assert(tree->branch_set_data("child1.child2", Any()));
-    assert(tree->branch_set_data("child1", Any()));
+    assert(tree->branch_set_value("child1.child2", Any()));
+    assert(tree->branch_set_value("child1", Any()));
     assert(!tree->branch_has_data("child1.child2"));
     assert(!tree->branch_has_data("child1"));
   }

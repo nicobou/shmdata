@@ -70,7 +70,7 @@ bool InfoTree::has_data() const {
   return !data_.is_null();
 }
 
-Any InfoTree::get_data() const {
+Any InfoTree::get_value() const {
   std::unique_lock<std::mutex> lock(mutex_);
   return data_;
 }
@@ -80,17 +80,17 @@ const Any& InfoTree::read_data() const {
   return data_;
 }
 
-void InfoTree::set_data(const Any& data) {
+void InfoTree::set_value(const Any& data) {
   std::unique_lock<std::mutex> lock(mutex_);
   data_ = data;
 }
 
-void InfoTree::set_data(const char* data) {
+void InfoTree::set_value(const char* data) {
   std::unique_lock<std::mutex> lock(mutex_);
   data_ = std::string(data);
 }
 
-void InfoTree::set_data(std::nullptr_t ptr) {
+void InfoTree::set_value(std::nullptr_t ptr) {
   std::unique_lock<std::mutex> lock(mutex_);
   data_ = ptr;
 }
@@ -113,7 +113,7 @@ bool InfoTree::branch_has_data(const std::string& path) const {
   return false;
 }
 
-Any InfoTree::branch_get_data(const std::string& path) const {
+Any InfoTree::branch_get_value(const std::string& path) const {
   std::unique_lock<std::mutex> lock(mutex_);
   if (path_is_root(path)) return data_;
   auto found = get_node(path);
@@ -122,7 +122,7 @@ Any InfoTree::branch_get_data(const std::string& path) const {
   return res;
 }
 
-bool InfoTree::branch_set_data(const std::string& path, const Any& data) {
+bool InfoTree::branch_set_value(const std::string& path, const Any& data) {
   std::unique_lock<std::mutex> lock(mutex_);
   if (path_is_root(path)) return data_ = data;
   auto found = get_node(path);
@@ -133,12 +133,12 @@ bool InfoTree::branch_set_data(const std::string& path, const Any& data) {
   return false;
 }
 
-bool InfoTree::branch_set_data(const std::string& path, const char* data) {
-  return branch_set_data(path, std::string(data));
+bool InfoTree::branch_set_value(const std::string& path, const char* data) {
+  return branch_set_value(path, std::string(data));
 }
 
-bool InfoTree::branch_set_data(const std::string& path, std::nullptr_t ptr) {
-  return branch_set_data(path, Any(ptr));
+bool InfoTree::branch_set_value(const std::string& path, std::nullptr_t ptr) {
+  return branch_set_value(path, Any(ptr));
 }
 
 std::pair<bool, InfoTree::children_t::size_type> InfoTree::get_child_index(

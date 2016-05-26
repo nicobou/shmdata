@@ -191,13 +191,13 @@ InfoTree::rptr add_json_node(InfoTree::rptr tree, JsonReader* reader) {
     if (!val || json_node_is_null(val))
       return tree;
     else if (G_TYPE_INT64 == json_node_get_value_type(val)) {
-      tree->set_data(json_node_get_int(val));
+      tree->set_value(json_node_get_int(val));
     } else if (G_TYPE_BOOLEAN == json_node_get_value_type(val))
-      tree->set_data(static_cast<bool>(json_node_get_boolean(val)));
+      tree->set_value(static_cast<bool>(json_node_get_boolean(val)));
     else if (G_TYPE_DOUBLE == json_node_get_value_type(val))
-      tree->set_data(json_node_get_double(val));
+      tree->set_value(json_node_get_double(val));
     else if (G_TYPE_STRING == json_node_get_value_type(val))
-      tree->set_data(json_node_get_string(val));
+      tree->set_value(json_node_get_string(val));
     else {
       g_warning("issue setting value during json deserialization");
       return nullptr;
