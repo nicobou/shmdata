@@ -563,7 +563,7 @@ InfoTree::ptr Quiddity::user_data_prune_hook(const std::string& path) {
 }
 
 void Quiddity::set_configuration(InfoTree::ptr config) {
-  // configuration_tree_ = config;
+  configuration_tree_ = config;
 }
 
 }  // namespace switcher

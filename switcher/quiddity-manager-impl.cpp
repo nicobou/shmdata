@@ -753,7 +753,11 @@ bool QuiddityManager_Impl::load_configuration_file(
                 std::istreambuf_iterator<char>());
   // building the tree
   auto tree = JSONSerializer::deserialize(config);
-  if (!tree) return false;
+  if (!tree) {
+    g_warning("configuration tree cannot be constructed from file %s",
+              file_path.c_str());
+    return false;
+  }
   // writing new configuration
   configurations_ = tree;
   return true;

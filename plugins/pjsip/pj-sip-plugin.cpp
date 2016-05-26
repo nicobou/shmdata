@@ -92,8 +92,12 @@ bool SIPPlugin::init() {
   // FIXME we should not need to use "branch_has_data" but instead get "user"
   // empty
   if (config<MPtr(&InfoTree::branch_has_data)>("user")) {
-    auto user = config<MPtr(&InfoTree::branch_read_data<std::string>)>(".user");
+    auto user = config<MPtr(&InfoTree::branch_read_data<std::string>)>("user");
     g_print("config user %s\n", user.c_str());
+  }
+  if (config<MPtr(&InfoTree::branch_has_data)>("pass")) {
+    auto pass = config<MPtr(&InfoTree::branch_read_data<std::string>)>("pass");
+    g_print("config pass %s\n", pass.c_str());
   }
 
   return pjsip_->invoke<MPtr(&PJSIP::safe_bool_idiom)>();
