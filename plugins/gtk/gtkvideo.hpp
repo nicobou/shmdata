@@ -94,6 +94,8 @@ class GTKVideo : public Quiddity {
   std::condition_variable wait_window_cond_{};
   std::mutex window_destruction_mutex_{};
   std::condition_variable window_destruction_cond_{};
+  bool xevents_to_shmdata{false};
+  PContainer::prop_id_t xevents_to_shmdata_id_{0};
   // keyboard to shmdata
   std::unique_ptr<ShmdataWriter> keyb_shm_{nullptr};
   // mouse to shmdata (relative to the video, not the window)

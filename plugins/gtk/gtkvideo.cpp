@@ -38,7 +38,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GTKVideo,
                                      "gtkwin",
                                      "Video Display (configurable)",
                                      "video",
-                                     "reader/device/writer",
+                                     "reader/device/occasional-writer",
                                      "Video window with fullscreen",
                                      "LGPL",
                                      "Nicolas Bouillot");
@@ -62,6 +62,40 @@ GTKVideo::GTKVideo(const std::string& name)
           "Fullscreen",
           "Enable/Disable Fullscreen",
           is_fullscreen_)),
+      xevents_to_shmdata_id_(pmanage<MPtr(&PContainer::make_bool)>(
+          "xevents",
+          [this](bool val) {
+            xevents_to_shmdata_id_ = val;
+            if (xevents_to_shmdata_id_) {
+              keyb_shm_ = std2::make_unique<ShmdataWriter>(
+                  this,
+                  make_file_name("keyb"),
+                  sizeof(KeybEvent),
+                  "application/x-keyboard-events");
+              if (!keyb_shm_.get()) {
+                g_warning("GTK keyboard event shmdata writer failed");
+                keyb_shm_.reset(nullptr);
+              }
+
+              mouse_shm_ = std2::make_unique<ShmdataWriter>(
+                  this,
+                  make_file_name("mouse"),
+                  sizeof(MouseEvent),
+                  "application/x-mouse-events");
+              if (!mouse_shm_.get()) {
+                g_warning("GTK mouse event shmdata writer failed");
+                mouse_shm_.reset(nullptr);
+              }
+            } else {
+              mouse_shm_.reset(nullptr);
+              keyb_shm_.reset(nullptr);
+            }
+            return true;
+          },
+          [this]() { return xevents_to_shmdata_id_; },
+          "Keyboard/Mouse Events",
+          "Capture Keyboard/Mouse Events",
+          true)),
       decorated_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "decorated",
           [this](bool val) {
@@ -201,27 +235,7 @@ GTKVideo::GTKVideo(const std::string& name)
   is_valid_ = true;
 }
 
-bool GTKVideo::init() {
-  keyb_shm_ = std2::make_unique<ShmdataWriter>(this,
-                                               make_file_name("keyb"),
-                                               sizeof(KeybEvent),
-                                               "application/x-keyboard-events");
-  if (!keyb_shm_.get()) {
-    g_warning("GTK keyboard event shmdata writer failed");
-    keyb_shm_.reset(nullptr);
-  }
-
-  mouse_shm_ = std2::make_unique<ShmdataWriter>(this,
-                                                make_file_name("mouse"),
-                                                sizeof(MouseEvent),
-                                                "application/x-mouse-events");
-  if (!mouse_shm_.get()) {
-    g_warning("GTK mouse event shmdata writer failed");
-    mouse_shm_.reset(nullptr);
-  }
-
-  return is_valid_;
-}
+bool GTKVideo::init() { return is_valid_; }
 
 GTKVideo::~GTKVideo() {
   keyb_shm_.reset();
@@ -249,11 +263,14 @@ gboolean GTKVideo::key_pressed_cb(GtkWidget* /*widget */,
                                   GdkEventKey* event,
                                   gpointer data) {
   GTKVideo* context = static_cast<GTKVideo*>(data);
-  guint32 val = event->keyval;
-  auto keybevent = KeybEvent(val, 1);
-  context->keyb_shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
-      &keybevent, sizeof(KeybEvent));
-  context->keyb_shm_->bytes_written(sizeof(KeybEvent));
+
+  if (context->keyb_shm_.get()) {
+    guint32 val = event->keyval;
+    auto keybevent = KeybEvent(val, 1);
+    context->keyb_shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
+        &keybevent, sizeof(KeybEvent));
+    context->keyb_shm_->bytes_written(sizeof(KeybEvent));
+  }
 
   if (context->keyb_interaction_) {
     switch (event->keyval) {
@@ -288,6 +305,8 @@ gboolean GTKVideo::key_release_cb(GtkWidget* /*widget */,
                                   GdkEventKey* event,
                                   gpointer data) {
   GTKVideo* context = static_cast<GTKVideo*>(data);
+
+  if (!context->keyb_shm_.get()) return TRUE;
   guint32 val = event->keyval;
   auto keybevent = KeybEvent(val, 0);
   context->keyb_shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
@@ -611,6 +630,7 @@ void GTKVideo::update_padding(GtkWidget* widget) {
 void GTKVideo::write_mouse_info_to_shmdata(int x,
                                            int y,
                                            const GdkModifierType& state) {
+  if (!mouse_shm_.get()) return;
   int vid_x = (x - horizontal_padding_) * 100000. / drawed_video_width_;
   int vid_y = (y - vertical_padding_) * 100000. / drawed_video_height_;
   if (0 > vid_x || 100000 < vid_x || 0 > vid_y || 100000 < vid_y)
