@@ -36,6 +36,7 @@
 #include "switcher/shmdata-utils.hpp"
 
 namespace switcher {
+
 char* pjcall_pjsip_module_name = strdup("mod-siprtpapp");
 
 pjsip_module PJCall::mod_siprtp_ = {
