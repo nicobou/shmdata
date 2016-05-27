@@ -31,9 +31,24 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SIPPlugin,
                                      "Nicolas Bouillot");
 
 SIPPlugin* SIPPlugin::this_ = nullptr;
+
 std::atomic<unsigned short> SIPPlugin::sip_plugin_used_(0);
 
-SIPPlugin::SIPPlugin(const std::string&) {}
+SIPPlugin::SIPPlugin(const std::string&)
+    : port_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
+          "port",
+          [this](const unsigned int& val) {
+            if (val == sip_port_) return true;
+            sip_port_ = val;
+            return pjsip_->run<bool>(
+                [this]() { return start_sip_transport(); });
+          },
+          [this]() { return sip_port_; },
+          "SIP Port",
+          "SIP port used when registering",
+          sip_port_,
+          0u,
+          65535u)) {}
 
 SIPPlugin::~SIPPlugin() {
   if (!i_m_the_one_) return;
@@ -60,20 +75,6 @@ bool SIPPlugin::init() {
   i_m_the_one_ = true;
   this_ = this;
 
-  auto port_id = pmanage<MPtr(&PContainer::make_unsigned_int)>(
-      "port",
-      [this](const unsigned int& val) {
-        if (val == sip_port_) return true;
-        sip_port_ = val;
-        return pjsip_->run<bool>([this]() { return start_sip_transport(); });
-      },
-      [this]() { return sip_port_; },
-      "SIP Port",
-      "SIP port used when registering",
-      sip_port_,
-      0u,
-      65535u);
-
   pjsip_ = std2::make_unique<ThreadedWrapper<PJSIP>>(
       // init
       [&]() {
@@ -91,12 +92,16 @@ bool SIPPlugin::init() {
       });
 
   if (!pjsip_->invoke<MPtr(&PJSIP::safe_bool_idiom)>()) return false;
+  apply_configuration();
+  return true;
+}
 
+void SIPPlugin::apply_configuration() {
   // trying to set port if configuration found
   if (config<MPtr(&InfoTree::branch_has_data)>("port")) {
     auto port = config<MPtr(&InfoTree::branch_get_value)>("port");
     if (pmanage<MPtr(&PContainer::set<unsigned int>)>(
-            port_id, port.copy_as<unsigned int>()))
+            port_id_, port.copy_as<unsigned int>()))
       g_message("sip has set port from configuration");
     else
       g_warning("sip failed setting port from configuration");
@@ -133,8 +138,6 @@ bool SIPPlugin::init() {
     else
       g_warning("sip failed registration from configuration");
   }
-
-  return true;
 }
 
 bool SIPPlugin::start_sip_transport() {
