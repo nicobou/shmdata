@@ -157,7 +157,7 @@ std::string serialize(InfoTree::ptrc tree) {
   return result;
 }
 
-InfoTree::rptr add_json_node(InfoTree::rptr tree, JsonReader* reader) {
+void add_json_node(InfoTree::rptr tree, JsonReader* reader) {
   if (json_reader_is_array(reader)) {
     for (gint i = 0; i < json_reader_count_elements(reader); ++i) {
       auto index = std::to_string(i);
@@ -165,13 +165,13 @@ InfoTree::rptr add_json_node(InfoTree::rptr tree, JsonReader* reader) {
       if (!tree->graft(index, InfoTree::make())) {
         g_warning(
             "issue grafting tree with array index during json deserialization");
-        return nullptr;
+        return;
       }
       add_json_node(tree->get_tree(index).get(), reader);
       json_reader_end_element(reader);
     }
     tree->make_array(true);
-    return tree;
+    return;
   }
   if (json_reader_is_object(reader)) {
     for (gint i = 0; i < json_reader_count_members(reader); ++i) {
@@ -179,17 +179,17 @@ InfoTree::rptr add_json_node(InfoTree::rptr tree, JsonReader* reader) {
       auto member_name = json_reader_get_member_name(reader);
       if (!tree->graft(member_name, InfoTree::make())) {  // FIXME do escape
         g_warning("issue grafting tree during json deserialization");
-        return nullptr;
+        return;
       }
       add_json_node(tree->get_tree(member_name).get(), reader);
       json_reader_end_element(reader);
     }
-    return tree;
+    return;
   }
   if (json_reader_is_value(reader)) {
     auto val = json_reader_get_value(reader);
     if (!val || json_node_is_null(val))
-      return tree;
+      return;
     else if (G_TYPE_INT64 == json_node_get_value_type(val)) {
       tree->set_value(json_node_get_int(val));
     } else if (G_TYPE_BOOLEAN == json_node_get_value_type(val))
@@ -200,12 +200,12 @@ InfoTree::rptr add_json_node(InfoTree::rptr tree, JsonReader* reader) {
       tree->set_value(json_node_get_string(val));
     else {
       g_warning("issue setting value during json deserialization");
-      return nullptr;
+      return;
     }
-    return tree;
+    return;
   }
   g_warning("%s: reader current cursor is invalid", __FUNCTION__);
-  return nullptr;
+  return;
 }
 
 InfoTree::ptr deserialize(const std::string& serialized) {
@@ -222,7 +222,15 @@ InfoTree::ptr deserialize(const std::string& serialized) {
     return InfoTree::ptr();
   }
   JsonNode* root_node = json_parser_get_root(parser);
+  if (!root_node) {
+    g_warning("deserialization failed (root_node)");
+    return res;
+  }
   JsonReader* reader = json_reader_new(root_node);
+  if (!reader) {
+    g_warning("deserialization failed (reader)");
+    return res;
+  }
   On_scope_exit { g_object_unref(reader); };
 
   add_json_node(res.get(), reader);

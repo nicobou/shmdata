@@ -42,8 +42,8 @@ void InfoTree::preorder_tree_walk(InfoTree::ptrc tree,
                                   InfoTree::OnNodeFunction on_visiting_node,
                                   InfoTree::OnNodeFunction on_node_visited) {
   std::unique_lock<std::mutex> lock(tree->mutex_);
-  if (!tree->childrens_.empty()) {
-    for (auto& it : tree->childrens_) {
+  if (!tree->children_.empty()) {
+    for (auto& it : tree->children_) {
       on_visiting_node(it.first, it.second.get(), tree->is_array_);
       preorder_tree_walk(it.second.get(), on_visiting_node, on_node_visited);
       on_node_visited(it.first, it.second.get(), tree->is_array_);
@@ -57,7 +57,7 @@ InfoTree::InfoTree(Any&& data) : data_(data) {}
 
 bool InfoTree::is_leaf() const {
   std::unique_lock<std::mutex> lock(mutex_);
-  return childrens_.empty();
+  return children_.empty();
 }
 
 bool InfoTree::is_array() const {
@@ -97,10 +97,10 @@ void InfoTree::set_value(std::nullptr_t ptr) {
 
 bool InfoTree::branch_is_leaf(const std::string& path) const {
   std::unique_lock<std::mutex> lock(mutex_);
-  if (path_is_root(path)) return childrens_.empty();
+  if (path_is_root(path)) return children_.empty();
   auto found = get_node(path);
   if (nullptr != found.first)
-    return (*found.first)[found.second].second->childrens_.empty();
+    return (*found.first)[found.second].second->children_.empty();
   return false;
 }
 
@@ -143,14 +143,13 @@ bool InfoTree::branch_set_value(const std::string& path, std::nullptr_t ptr) {
 
 std::pair<bool, InfoTree::children_t::size_type> InfoTree::get_child_index(
     const std::string& key) const {
-  auto found = std::find_if(childrens_.begin(),
-                            childrens_.end(),
-                            [key](const InfoTree::child_type& s) {
-                              return (0 == s.first.compare(key));
-                            });
+  auto found = std::find_if(
+      children_.begin(), children_.end(), [key](const InfoTree::child_type& s) {
+        return (0 == s.first.compare(key));
+      });
   return std::make_pair(
-      childrens_.end() != found,
-      childrens_.end() != found ? found - childrens_.begin() : 0);
+      children_.end() != found,
+      children_.end() != found ? found - children_.begin() : 0);
 }
 
 InfoTree::ptr InfoTree::prune(const std::string& path) {
@@ -188,8 +187,8 @@ InfoTree::GetNodeReturn InfoTree::get_next(std::istringstream& path,
 
   auto child_index = get_child_index(child_key);
   if (!child_index.first) return std::make_pair(nullptr, 0);
-  return childrens_[child_index.second].second->get_next(
-      path, &childrens_, child_index.second);
+  return children_[child_index.second].second->get_next(
+      path, &children_, child_index.second);
 }
 
 bool InfoTree::graft(const std::string& where, InfoTree::ptr tree) {
@@ -208,19 +207,19 @@ bool InfoTree::graft_next(std::istringstream& path,
     return graft_next(path, tree, leaf);
   auto index = tree->get_child_index(child);
   if (index.first) {
-    if (graft_next(path, tree->childrens_[index.second].second.get(), leaf))
+    if (graft_next(path, tree->children_[index.second].second.get(), leaf))
       // graft on already existing child
-      tree->childrens_[index.second].second =
+      tree->children_[index.second].second =
           leaf;  // replacing the previously empy tree with the one to graft
   } else {
     InfoTree::ptr child_node = make();
-    tree->childrens_.emplace_back(child, child_node);
+    tree->children_.emplace_back(child, child_node);
     if (graft_next(
             path, child_node.get(), leaf))  // graft on already existing child
     {
       // replacing empty tree for replacement by leaf
-      tree->childrens_.pop_back();
-      tree->childrens_.emplace_back(child, leaf);
+      tree->children_.pop_back();
+      tree->children_.emplace_back(child, leaf);
     }
   }
   return false;
@@ -251,9 +250,9 @@ std::list<std::string> InfoTree::get_child_keys(const std::string& path) const {
   std::unique_lock<std::mutex> lock(mutex_);
   // if root is asked
   if (path_is_root(path)) {
-    res.resize(childrens_.size());
-    std::transform(childrens_.cbegin(),
-                   childrens_.cend(),
+    res.resize(children_.size());
+    std::transform(children_.cbegin(),
+                   children_.cend(),
                    res.begin(),
                    [](const child_type& child) { return child.first; });
     return res;
@@ -261,9 +260,9 @@ std::list<std::string> InfoTree::get_child_keys(const std::string& path) const {
   // else looking into childrens
   auto found = get_node(path);
   if (nullptr != found.first) {
-    res.resize((*found.first)[found.second].second->childrens_.size());
-    std::transform((*found.first)[found.second].second->childrens_.cbegin(),
-                   (*found.first)[found.second].second->childrens_.cend(),
+    res.resize((*found.first)[found.second].second->children_.size());
+    std::transform((*found.first)[found.second].second->children_.cbegin(),
+                   (*found.first)[found.second].second->children_.cend(),
                    res.begin(),
                    [](const child_type& child) { return child.first; });
   }

@@ -114,8 +114,8 @@ class InfoTree {
     std::unique_lock<std::mutex> lock(mutex_);
     auto found = get_node(path);
     if (nullptr != found.first) {
-      std::transform((*found.first)[found.second].second->childrens_.begin(),
-                     (*found.first)[found.second].second->childrens_.end(),
+      std::transform((*found.first)[found.second].second->children_.begin(),
+                     (*found.first)[found.second].second->children_.end(),
                      pos,
                      [](const child_type& child) { return child.first; });
       return true;
@@ -151,7 +151,7 @@ class InfoTree {
  private:
   Any data_{};
   bool is_array_{false};
-  mutable children_t childrens_{};
+  mutable children_t children_{};
   mutable std::mutex mutex_{};
   std::weak_ptr<InfoTree> me_{};
 
