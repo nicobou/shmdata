@@ -40,7 +40,7 @@ int main() {
     return 1;
 #endif
 
-    // assert(switcher::QuiddityBasicTest::test_full(manager, "sip"));
+    assert(switcher::QuiddityBasicTest::test_full(manager, "sip"));
 
     for (auto& it : manager->get_quiddities()) {
       manager->remove(it);
