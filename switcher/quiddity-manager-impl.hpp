@@ -25,7 +25,6 @@
 #include <unordered_map>
 
 #include "./abstract-factory.hpp"
-#include "./glibmainloop.hpp"
 #include "./json-builder.hpp"
 #include "./plugin-loader.hpp"
 #include "./quiddity-signal-subscriber.hpp"
@@ -53,7 +52,10 @@ class QuiddityManager_Impl {
   QuiddityManager_Impl& operator=(const QuiddityManager_Impl&) = delete;
 
   // plugins
-  bool scan_directory_for_plugins(const char* directory_path);
+  bool scan_directory_for_plugins(const std::string& directory_path);
+
+  // configuration
+  bool load_configuration_file(const std::string& file_path);
 
   // **** info about manager
   std::string get_name() const;
@@ -171,9 +173,6 @@ class QuiddityManager_Impl {
   std::string list_signal_subscribers_json();
   std::string list_subscribed_signals_json(const std::string& subscriber_name);
 
-  // mainloop
-  GMainContext* get_g_main_context();
-
   // for use of "get description by class"
   // and from quiddity that creates other quiddity in the same manager
   std::string create_without_hook(const std::string& quiddity_class);
@@ -181,7 +180,7 @@ class QuiddityManager_Impl {
   QuiddityManager* get_root_manager() { return manager_; };
 
  private:
-  GlibMainLoop::ptr mainloop_;
+  InfoTree::ptr configurations_{};
   std::unordered_map<std::string, PluginLoader::ptr> plugins_{};
   std::string name_{};
   AbstractFactory<Quiddity,
@@ -189,6 +188,7 @@ class QuiddityManager_Impl {
                   QuiddityDocumentation*,
                   const std::string&>
       abstract_factory_{};
+  static const int max_configuration_file_size_{100000000};  // 100Mo
 
   bool load_plugin(const char* filename);
   void close_plugin(const std::string& class_name);
@@ -218,7 +218,7 @@ class QuiddityManager_Impl {
     }
     return std::make_pair(true, it->second.get());
   };
-  // construct result to pass when element has not been not found:
+  // construct result to pass when element has not been found:
   template <typename ReturnType>
   ReturnType construct_error_return(const std::string& name) const {
     g_warning("quiddity %s not found", name.c_str());

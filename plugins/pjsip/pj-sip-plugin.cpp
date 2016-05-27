@@ -31,9 +31,24 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SIPPlugin,
                                      "Nicolas Bouillot");
 
 SIPPlugin* SIPPlugin::this_ = nullptr;
+
 std::atomic<unsigned short> SIPPlugin::sip_plugin_used_(0);
 
-SIPPlugin::SIPPlugin(const std::string&) {}
+SIPPlugin::SIPPlugin(const std::string&)
+    : port_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
+          "port",
+          [this](const unsigned int& val) {
+            if (val == sip_port_) return true;
+            sip_port_ = val;
+            return pjsip_->run<bool>(
+                [this]() { return start_sip_transport(); });
+          },
+          [this]() { return sip_port_; },
+          "SIP Port",
+          "SIP port used when registering",
+          sip_port_,
+          0u,
+          65535u)) {}
 
 SIPPlugin::~SIPPlugin() {
   if (!i_m_the_one_) return;
@@ -60,20 +75,6 @@ bool SIPPlugin::init() {
   i_m_the_one_ = true;
   this_ = this;
 
-  pmanage<MPtr(&PContainer::make_unsigned_int)>(
-      "port",
-      [this](const unsigned int& val) {
-        if (val == sip_port_) return true;
-        sip_port_ = val;
-        return pjsip_->run<bool>([this]() { return start_sip_transport(); });
-      },
-      [this]() { return sip_port_; },
-      "SIP Port",
-      "SIP port used when registering",
-      sip_port_,
-      0u,
-      65535u);
-
   pjsip_ = std2::make_unique<ThreadedWrapper<PJSIP>>(
       // init
       [&]() {
@@ -89,7 +90,54 @@ bool SIPPlugin::init() {
         sip_presence_.reset(nullptr);
         stun_turn_.reset(nullptr);
       });
-  return pjsip_->invoke<MPtr(&PJSIP::safe_bool_idiom)>();
+
+  if (!pjsip_->invoke<MPtr(&PJSIP::safe_bool_idiom)>()) return false;
+  apply_configuration();
+  return true;
+}
+
+void SIPPlugin::apply_configuration() {
+  // trying to set port if configuration found
+  if (config<MPtr(&InfoTree::branch_has_data)>("port")) {
+    auto port = config<MPtr(&InfoTree::branch_get_value)>("port");
+    if (pmanage<MPtr(&PContainer::set<unsigned int>)>(
+            port_id_, port.copy_as<unsigned int>()))
+      g_message("sip has set port from configuration");
+    else
+      g_warning("sip failed setting port from configuration");
+  }
+
+  // trying to set stun/turn from configuration
+  std::string stun = config<MPtr(&InfoTree::branch_get_value)>("stun");
+  std::string turn = config<MPtr(&InfoTree::branch_get_value)>("turn");
+  std::string turn_user =
+      config<MPtr(&InfoTree::branch_get_value)>("turn_user");
+  std::string turn_pass =
+      config<MPtr(&InfoTree::branch_get_value)>("turn_pass");
+  if (!stun.empty()) {
+    pjsip_->run([&]() {
+      if (PJStunTurn::set_stun_turn(stun.c_str(),
+                                    turn.c_str(),
+                                    turn_user.c_str(),
+                                    turn_pass.c_str(),
+                                    stun_turn_.get())) {
+        g_message("sip has set STUN/TURN from configuration");
+      } else {
+        g_warning("sip failed setting STUN/TURN from configuration");
+      }
+    });
+  }
+
+  // trying to register if a user is given
+  std::string user = config<MPtr(&InfoTree::branch_get_value)>("user");
+  if (!user.empty()) {
+    std::string pass = config<MPtr(&InfoTree::branch_get_value)>("pass");
+    pjsip_->run([&]() { sip_presence_->register_account(user, pass); });
+    if (sip_presence_->registered_)
+      g_message("sip registered using configuration file");
+    else
+      g_warning("sip failed registration from configuration");
+  }
 }
 
 bool SIPPlugin::start_sip_transport() {

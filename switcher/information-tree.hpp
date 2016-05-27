@@ -54,11 +54,11 @@ class InfoTree {
   using ptrc = const InfoTree*;           // const
   using rptr = InfoTree*;                 // raw
   using child_type = std::pair<std::string, InfoTree::ptr>;
-  using childs_t = std::vector<child_type>;
+  using children_t = std::vector<child_type>;
   using OnNodeFunction = std::function<void(
       const std::string& name, InfoTree::ptrc tree, bool is_array_element)>;
   using GetNodeReturn =
-      std::pair<InfoTree::childs_t*, InfoTree::childs_t::size_type>;
+      std::pair<InfoTree::children_t*, InfoTree::children_t::size_type>;
 
   // factory
   static InfoTree::ptr make();
@@ -114,8 +114,8 @@ class InfoTree {
     std::unique_lock<std::mutex> lock(mutex_);
     auto found = get_node(path);
     if (nullptr != found.first) {
-      std::transform((*found.first)[found.second].second->childrens_.begin(),
-                     (*found.first)[found.second].second->childrens_.end(),
+      std::transform((*found.first)[found.second].second->children_.begin(),
+                     (*found.first)[found.second].second->children_.end(),
                      pos,
                      [](const child_type& child) { return child.first; });
       return true;
@@ -127,30 +127,31 @@ class InfoTree {
   std::list<std::string> copy_leaf_values(const std::string& path) const;
 
   // get/set:
-  Any get_data() const;
-  void set_data(const Any& data);
-  void set_data(const char* data);
-  void set_data(std::nullptr_t ptr);
-  Any get_data(const std::string& path) const;
-  bool set_data(const std::string& path, const Any& data);
-  bool set_data(const std::string& path, const char* data);
-  bool set_data(const std::string& path, std::nullptr_t ptr);
+  Any get_value() const;
+  void set_value(const Any& data);
+  void set_value(const char* data);
+  void set_value(std::nullptr_t ptr);
+  Any branch_get_value(const std::string& path) const;
+  bool branch_set_value(const std::string& path, const Any& data);
+  bool branch_set_value(const std::string& path, const char* data);
+  bool branch_set_value(const std::string& path, std::nullptr_t ptr);
   // graft will create the path and graft the tree,
   // or remove old one and replace will the new tree
   bool graft(const std::string& path, InfoTree::ptr);
   // return empty tree if nothing can be pruned
   InfoTree::ptr prune(const std::string& path);
   // get but not remove
-  InfoTree::ptr get(const std::string& path);
+  InfoTree::ptr get_tree(const std::string& path);
   // return false if the path does not exist
   // when a path is tagged as an array, keys might be discarded
   // by some serializers, such as JSON
   bool tag_as_array(const std::string& path, bool is_array);
+  bool make_array(bool is_array);
 
  private:
   Any data_{};
   bool is_array_{false};
-  mutable childs_t childrens_{};
+  mutable children_t children_{};
   mutable std::mutex mutex_{};
   std::weak_ptr<InfoTree> me_{};
 
@@ -161,15 +162,15 @@ class InfoTree {
   InfoTree(U&& data) : data_(Any(std::forward<U>(data))) {}
   explicit InfoTree(const Any& data);
   explicit InfoTree(Any&& data);
-  std::pair<bool, childs_t::size_type> get_child_index(
+  std::pair<bool, children_t::size_type> get_child_index(
       const std::string& key) const;
   static bool graft_next(std::istringstream& path,
                          InfoTree* tree,
                          InfoTree::ptr leaf);
   GetNodeReturn get_node(const std::string& path) const;
   GetNodeReturn get_next(std::istringstream& path,
-                         childs_t* parent_vector_result,
-                         childs_t::size_type result_index) const;
+                         children_t* parent_vector_result,
+                         children_t::size_type result_index) const;
   static bool path_is_root(const std::string& path);
 };
 

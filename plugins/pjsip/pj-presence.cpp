@@ -98,11 +98,11 @@ PJPresence::PJPresence() {
   SIPPlugin::this_->pmanage<MPtr(&PContainer::make_selection)>(
       "status",
       [this](const size_t& val) {
-        if (-1 == account_id_) {
-          g_warning("cannot set online status when not registered");
-          return false;
-        }
         status_.select(val);
+        if (-1 == account_id_) {
+          g_warning("cannot send online status when not registered");
+          return true;
+        }
         SIPPlugin::this_->pjsip_->run(
             [this]() { change_online_status(status_.get()); });
         return true;

@@ -55,10 +55,10 @@ class PJStunTurn {
 
   static int worker_thread(void* data);
   pj_status_t handle_events(unsigned max_msec, unsigned* p_count);
-  static gboolean set_stun_turn(gchar* stun,
-                                gchar* turn,
-                                gchar* turn_user,
-                                char* turn_pass,
+  static gboolean set_stun_turn(const gchar* stun,
+                                const gchar* turn,
+                                const gchar* turn_user,
+                                const gchar* turn_pass,
                                 void* user_data);
 };
 

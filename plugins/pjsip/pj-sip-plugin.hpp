@@ -47,6 +47,7 @@ class SIPPlugin : public Quiddity {
  private:
   std::unique_ptr<ThreadedWrapper<PJSIP>> pjsip_{};
   unsigned sip_port_{5060};
+  PContainer::prop_id_t port_id_;
   pjsua_transport_id transport_id_{-1};
   std::unique_ptr<PJCall> sip_calls_{nullptr};
   std::unique_ptr<PJPresence> sip_presence_{nullptr};
@@ -58,6 +59,7 @@ class SIPPlugin : public Quiddity {
   static SIPPlugin* this_;
 
   bool start_sip_transport();
+  void apply_configuration();
 };
 
 }  // namespace switcher

@@ -159,11 +159,11 @@ void SystemUsage::pollState() {
       idleP = (float)(idle - _cpus[core].idle) /
               (float)(totalTime - _cpus[core].totalTime);
       totalP = userP + niceP + systemP;
-      tree_->set_data(".cpu." + core + ".total", totalP);
-      tree_->set_data(".cpu." + core + ".user", userP);
-      tree_->set_data(".cpu." + core + ".nice", niceP);
-      tree_->set_data(".cpu." + core + ".system", systemP);
-      tree_->set_data(".cpu." + core + ".idle", idleP);
+      tree_->branch_set_value(".cpu." + core + ".total", totalP);
+      tree_->branch_set_value(".cpu." + core + ".user", userP);
+      tree_->branch_set_value(".cpu." + core + ".nice", niceP);
+      tree_->branch_set_value(".cpu." + core + ".system", systemP);
+      tree_->branch_set_value(".cpu." + core + ".idle", idleP);
       _cpus[core].user = user;
       _cpus[core].nice = nice;
       _cpus[core].system = system;
@@ -187,18 +187,18 @@ void SystemUsage::pollState() {
     istringstream stream(line);
     stream >> type >> qty;
     if (type.find("MemTotal") != string::npos)
-      tree_->set_data("mem.total", qty);
+      tree_->branch_set_value("mem.total", qty);
     else if (type.find("MemFree") != string::npos)
-      tree_->set_data("mem.free", qty);
+      tree_->branch_set_value("mem.free", qty);
     else if (type.find("Buffers") != string::npos)
-      tree_->set_data("mem.buffers", qty);
+      tree_->branch_set_value("mem.buffers", qty);
     else if (type.find("Cached") != string::npos &&
              type.find("SwapCached") == string::npos)
-      tree_->set_data("mem.cached", qty);
+      tree_->branch_set_value("mem.cached", qty);
     else if (type.find("SwapTotal") != string::npos)
-      tree_->set_data("mem.swap_total", qty);
+      tree_->branch_set_value("mem.swap_total", qty);
     else if (type.find("SwapFree") != string::npos)
-      tree_->set_data("mem.swap_free", qty);
+      tree_->branch_set_value("mem.swap_free", qty);
   }
   file.close();
 
@@ -234,8 +234,10 @@ void SystemUsage::pollState() {
         long tx_delta = tBytes - _net[netName].tx_bytes;
         _net[netName].rx_rate = (long)((double)rx_delta / period_);
         _net[netName].tx_rate = (long)((double)tx_delta / period_);
-        tree_->set_data(".net." + netName + ".rx_rate", _net[netName].rx_rate);
-        tree_->set_data(".net." + netName + ".tx_rate", _net[netName].tx_rate);
+        tree_->branch_set_value(".net." + netName + ".rx_rate",
+                                _net[netName].rx_rate);
+        tree_->branch_set_value(".net." + netName + ".tx_rate",
+                                _net[netName].tx_rate);
       }
       _net[netName].rx_bytes = rBytes;
       _net[netName].rx_packets = rPackets;
@@ -245,18 +247,22 @@ void SystemUsage::pollState() {
       _net[netName].tx_packets = tPackets;
       _net[netName].tx_errors = tErrs;
       _net[netName].tx_drop = tDrop;
-      tree_->set_data(".net." + netName + ".rx_bytes", _net[netName].rx_bytes);
-      tree_->set_data(".net." + netName + ".rx_packets",
-                      _net[netName].rx_packets);
-      tree_->set_data(".net." + netName + ".rx_errors",
-                      _net[netName].rx_errors);
-      tree_->set_data(".net." + netName + ".rx_drop", _net[netName].rx_drop);
-      tree_->set_data(".net." + netName + ".tx_bytes", _net[netName].tx_bytes);
-      tree_->set_data(".net." + netName + ".tx_packets",
-                      _net[netName].tx_packets);
-      tree_->set_data(".net." + netName + ".tx_errors",
-                      _net[netName].tx_errors);
-      tree_->set_data(".net." + netName + ".tx_drop", _net[netName].tx_drop);
+      tree_->branch_set_value(".net." + netName + ".rx_bytes",
+                              _net[netName].rx_bytes);
+      tree_->branch_set_value(".net." + netName + ".rx_packets",
+                              _net[netName].rx_packets);
+      tree_->branch_set_value(".net." + netName + ".rx_errors",
+                              _net[netName].rx_errors);
+      tree_->branch_set_value(".net." + netName + ".rx_drop",
+                              _net[netName].rx_drop);
+      tree_->branch_set_value(".net." + netName + ".tx_bytes",
+                              _net[netName].tx_bytes);
+      tree_->branch_set_value(".net." + netName + ".tx_packets",
+                              _net[netName].tx_packets);
+      tree_->branch_set_value(".net." + netName + ".tx_errors",
+                              _net[netName].tx_errors);
+      tree_->branch_set_value(".net." + netName + ".tx_drop",
+                              _net[netName].tx_drop);
     }
   }
   file.close();

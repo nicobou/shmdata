@@ -34,7 +34,7 @@
 namespace switcher {
 namespace JSONSerializer {
 std::string serialize(InfoTree::ptrc);
-// FIXME implement this: InfoTree::ptr deserialize (std::string &serialized);
+InfoTree::ptr deserialize(const std::string& serialized);
 };
 }  // namespace switcher
 #endif

@@ -19,6 +19,7 @@
 #define __SWITCHER_SOAP_CTRL_CLIENT_H__
 
 #include <mutex>
+#include "switcher/glibmainloop.hpp"
 #include "switcher/quiddity.hpp"
 #include "webservices/soapcontrolProxy.h"
 
@@ -33,6 +34,7 @@ class SoapCtrlClient : public Quiddity {
   bool init() final;
 
  private:
+  std::unique_ptr<GlibMainLoop> mainloop_;
   controlProxy* switcher_control_{nullptr};
   std::string url_{"localhost"};
   GSource* try_connect_g_source_{nullptr};

@@ -25,6 +25,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <vector>
+#include "switcher/glibmainloop.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/quiddity.hpp"
@@ -53,6 +54,7 @@ class PulseSink : public Quiddity {
     std::string active_port_{};
   } DeviceDescription;
 
+  std::unique_ptr<GlibMainLoop> mainloop_;
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
   // gst pipeline:

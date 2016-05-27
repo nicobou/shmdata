@@ -35,6 +35,7 @@ std::map<std::pair<std::string, std::string>, guint> Quiddity::signals_ids_{};
 Quiddity::Quiddity()
     : information_tree_(InfoTree::make()),
       structured_user_data_(InfoTree::make()),
+      configuration_tree_(InfoTree::make()),
       props_(information_tree_,
              [this](const std::string& key) {
                signal_emit("on-tree-grafted", key.c_str(), nullptr);
@@ -45,6 +46,7 @@ Quiddity::Quiddity()
       methods_description_(std::make_shared<JSONBuilder>()),
       signals_description_(std::make_shared<JSONBuilder>()),
       gobject_(std::make_shared<GObjectWrapper>()) {
+  configuration_tree_->graft(".", InfoTree::make());
   GType arg_type[] = {G_TYPE_STRING};
   install_signal_with_class_name(
       "Quiddity",
@@ -402,12 +404,7 @@ void Quiddity::signal_emit(std::string signal_name, ...) {
   Signal::ptr signal = signals_[signal_name];
   va_list var_args;
   va_start(var_args, signal_name);
-  //     va_list va_cp;
-  //     va_copy (va_cp, var_args);
-  //     signal->signal_emit (/*get_g_main_context (), */ signal_name.c_str (),
-  //     va_cp);
-  signal->signal_emit(/*get_g_main_context (), */ signal_name.c_str(),
-                      var_args);
+  signal->signal_emit(signal_name.c_str(), var_args);
   va_end(var_args);
 }
 
@@ -441,12 +438,9 @@ std::string Quiddity::get_signal_description(const std::string& signal_name) {
 }
 
 std::string Quiddity::make_file_name(const std::string& suffix) const {
-  std::string connector_name;
-  QuiddityManager_Impl::ptr manager = manager_impl_.lock();
-  if ((bool)manager)
-    connector_name.append(get_file_name_prefix() + manager->get_name() + "_" +
-                          name_ + "_" + suffix);
-  return connector_name;
+  if (manager_name_.empty()) return std::string();
+  return std::string(get_file_name_prefix() + manager_name_ + "_" + name_ +
+                     "_" + suffix);
 }
 
 std::string Quiddity::get_file_name_prefix() const { return "/tmp/switcher_"; }
@@ -483,13 +477,7 @@ std::string Quiddity::get_quiddity_name_from_file_name(
       filename, underscores[1] + 1, underscores[2] - (underscores[1] + 1));
 }
 
-std::string Quiddity::get_manager_name() {
-  QuiddityManager_Impl::ptr manager = manager_impl_.lock();
-  if ((bool)manager) return manager->get_name();
-
-  g_warning("manager name not accessible");
-  return std::string();
-}
+std::string Quiddity::get_manager_name() { return manager_name_; }
 
 std::string Quiddity::get_socket_name_prefix() { return "switcher_"; }
 
@@ -497,13 +485,7 @@ std::string Quiddity::get_socket_dir() { return "/tmp"; }
 
 void Quiddity::set_manager_impl(QuiddityManager_Impl::ptr manager_impl) {
   manager_impl_ = manager_impl;
-}
-
-GMainContext* Quiddity::get_g_main_context() {
-  QuiddityManager_Impl::ptr manager = manager_impl_.lock();
-  if ((bool)manager) return manager->get_g_main_context();
-  g_warning("%s: returning nullptr\n", __PRETTY_FUNCTION__);
-  return nullptr;
+  manager_name_ = manager_impl->get_name();
 }
 
 // methods
@@ -578,6 +560,10 @@ InfoTree::ptr Quiddity::user_data_prune_hook(const std::string& path) {
   auto res = structured_user_data_->prune(path);
   if (res) signal_emit("on-user-data-pruned", path.c_str(), nullptr);
   return res;
+}
+
+void Quiddity::set_configuration(InfoTree::ptr config) {
+  configuration_tree_ = config;
 }
 
 }  // namespace switcher

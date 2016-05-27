@@ -20,6 +20,11 @@
 // removing shmdata
 #include <gio/gio.h>
 
+#include <fstream>
+#include <streambuf>
+#include <string>
+
+#include "./information-tree-json.hpp"
 #include "./information-tree-json.hpp"
 #include "./quiddity-documentation.hpp"
 #include "./quiddity-manager-impl.hpp"
@@ -55,9 +60,7 @@ QuiddityManager_Impl::ptr QuiddityManager_Impl::make_manager(
 }
 
 QuiddityManager_Impl::QuiddityManager_Impl(const std::string& name)
-    : mainloop_(std::make_shared<GlibMainLoop>()),
-      name_(name),
-      classes_doc_(std::make_shared<JSONBuilder>()) {
+    : name_(name), classes_doc_(std::make_shared<JSONBuilder>()) {
   remove_shmdata_sockets();
   register_classes();
   make_classes_doc();
@@ -242,6 +245,8 @@ std::string QuiddityManager_Impl::create_without_hook(
   if (nullptr == quiddity.get()) return "{\"error\":\"cannot make quiddity\"}";
   quiddity->set_manager_impl(me_.lock());
   quiddity->set_name(name);
+  if (configurations_)
+    quiddity->set_configuration(configurations_->get_tree(quiddity_class));
   if (!quiddity->init()) return "{\"error\":\"cannot init quiddity class\"}";
   quiddities_[name] = quiddity;
   return name;
@@ -256,6 +261,8 @@ std::string QuiddityManager_Impl::create(const std::string& quiddity_class) {
   Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class, name);
   if (quiddity.get() != nullptr) {
     quiddity->set_name(name);
+    if (configurations_)
+      quiddity->set_configuration(configurations_->get_tree(quiddity_class));
     if (!init_quiddity(quiddity)) {
       g_debug("initialization of %s failed", quiddity_class.c_str());
       return std::string();
@@ -298,6 +305,8 @@ std::string QuiddityManager_Impl::create(const std::string& quiddity_class,
     return std::string();
   }
   quiddity->set_name(nick_name);
+  if (configurations_)
+    quiddity->set_configuration(configurations_->get_tree(quiddity_class));
   if (!init_quiddity(quiddity)) {
     g_debug("initialization of %s with name %s failed",
             quiddity_class.c_str(),
@@ -656,10 +665,6 @@ void QuiddityManager_Impl::reset_create_remove_hooks() {
   removal_hook_user_data_ = nullptr;
 }
 
-GMainContext* QuiddityManager_Impl::get_g_main_context() {
-  return mainloop_->get_main_context();
-}
-
 bool QuiddityManager_Impl::load_plugin(const char* filename) {
   PluginLoader::ptr plugin = std::make_shared<PluginLoader>();
   if (!plugin->load(filename)) return false;
@@ -682,8 +687,8 @@ void QuiddityManager_Impl::close_plugin(const std::string& class_name) {
 }
 
 bool QuiddityManager_Impl::scan_directory_for_plugins(
-    const char* directory_path) {
-  GFile* dir = g_file_new_for_commandline_arg(directory_path);
+    const std::string& directory_path) {
+  GFile* dir = g_file_new_for_commandline_arg(directory_path.c_str());
   gboolean res;
   GError* error;
   GFileEnumerator* enumerator;
@@ -717,6 +722,44 @@ bool QuiddityManager_Impl::scan_directory_for_plugins(
   classes_doc_.reset(new JSONBuilder());
   make_classes_doc();
 
+  return true;
+}
+
+bool QuiddityManager_Impl::load_configuration_file(
+    const std::string& file_path) {
+  // opening file
+  std::ifstream file_stream(file_path);
+  if (!file_stream) {
+    g_warning("cannot open %s for loading configuration", file_path.c_str());
+    return false;
+  }
+  // get file content into a string
+  std::string config;
+  file_stream.seekg(0, std::ios::end);
+  auto size = file_stream.tellg();
+  if (0 == size) {
+    g_warning("file %s is empty", file_path.c_str());
+    return false;
+  }
+  if (size > max_configuration_file_size_) {
+    g_warning("file %s is too large, max is %d bytes",
+              file_path.c_str(),
+              max_configuration_file_size_);
+    return false;
+  }
+  config.reserve(size);
+  file_stream.seekg(0, std::ios::beg);
+  config.assign((std::istreambuf_iterator<char>(file_stream)),
+                std::istreambuf_iterator<char>());
+  // building the tree
+  auto tree = JSONSerializer::deserialize(config);
+  if (!tree) {
+    g_warning("configuration tree cannot be constructed from file %s",
+              file_path.c_str());
+    return false;
+  }
+  // writing new configuration
+  configurations_ = tree;
   return true;
 }
 

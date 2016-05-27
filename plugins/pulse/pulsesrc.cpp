@@ -36,7 +36,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
                                      "Nicolas Bouillot");
 
 PulseSrc::PulseSrc(const std::string&)
-    : gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)) {}
+    : mainloop_(std2::make_unique<GlibMainLoop>()),
+      gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)) {}
 
 bool PulseSrc::init() {
   init_startable(this);
@@ -49,7 +50,7 @@ bool PulseSrc::init() {
   g_object_set(
       G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   std::unique_lock<std::mutex> lock(devices_mutex_);
-  GstUtils::g_idle_add_full_with_context(get_g_main_context(),
+  GstUtils::g_idle_add_full_with_context(mainloop_->get_main_context(),
                                          G_PRIORITY_DEFAULT_IDLE,
                                          async_get_pulse_devices,
                                          this,
@@ -70,7 +71,7 @@ bool PulseSrc::init() {
 gboolean PulseSrc::async_get_pulse_devices(void* user_data) {
   PulseSrc* context = static_cast<PulseSrc*>(user_data);
   context->pa_glib_mainloop_ =
-      pa_glib_mainloop_new(context->get_g_main_context());
+      pa_glib_mainloop_new(context->mainloop_->get_main_context());
   context->pa_mainloop_api_ =
       pa_glib_mainloop_get_api(context->pa_glib_mainloop_);
   context->pa_context_ = pa_context_new(context->pa_mainloop_api_, nullptr);
@@ -93,7 +94,7 @@ gboolean PulseSrc::async_get_pulse_devices(void* user_data) {
 }
 
 PulseSrc::~PulseSrc() {
-  GMainContext* main_context = get_g_main_context();
+  GMainContext* main_context = mainloop_->get_main_context();
   if (nullptr != main_context && connected_to_pulse_) {
     std::unique_lock<std::mutex> lock(quit_mutex_);
     GstUtils::g_idle_add_full_with_context(

@@ -53,7 +53,6 @@ const std::map<int, const char*> QuiddityCommand::command_names_ = {
     {quit, "quit"},
     {remove, "remove"},
     {remove_signal_subscriber, "remove_signal_subscriber"},
-    {scan_directory_for_plugins, "scan_directory_for_plugins"},
     {set_property, "set_property"},
     {subscribe_property, "subscribe_property"},
     {subscribe_signal, "subscribe_signal"},

@@ -50,7 +50,7 @@ int main() {
   {  // node data as std::string
     InfoTree::ptr tree = InfoTree::make(std::string("truc"));
     assert(tree->is_leaf());
-    std::string data = tree->get_data();
+    std::string data = tree->get_value();
     assert(0 == data.compare("truc"));
   }
   {  // node data as const char * (converted to std::string)
@@ -59,21 +59,21 @@ int main() {
   }
   {  // node data as float
     InfoTree::ptr tree = InfoTree::make(1.2f);
-    float val = tree->get_data();
+    float val = tree->get_value();
     assert(1.2f == val);
   }
   {  // graft a multiple childs and get them
     InfoTree::ptr tree = InfoTree::make();
     tree->graft("...child1....child2..", InfoTree::make(1.2f));
     assert(!tree->is_leaf());
-    InfoTree::ptr child2 = tree->get("..child1.child2");
+    InfoTree::ptr child2 = tree->get_tree("..child1.child2");
     assert(child2);
     assert(child2->is_leaf());
-    float data = child2->get_data();
+    float data = child2->get_value();
     assert(1.2f == data);
-    InfoTree::ptr child1 = tree->get(".child1..");
+    InfoTree::ptr child1 = tree->get_tree(".child1..");
     assert(!child1->is_leaf());
-    assert(!tree->get("child1.foo"));  // this is not a child
+    assert(!tree->get_tree("child1.foo"));  // this is not a child
   }
   {  // graft a childs and prune it
     InfoTree::ptr tree = InfoTree::make();
@@ -108,30 +108,30 @@ int main() {
   }
   {  // set/get data with path
     InfoTree::ptr tree = InfoTree::make();
-    // tree->set_data ("", 1.2f);  // this is not possible
-    // float tree_data = tree->get_data (".");  // this is not possible
+    // tree->set_value ("", 1.2f);  // this is not possible
+    // float tree_data = tree->get_value (".");  // this is not possible
     // assert (1.2f == tree_data);
     tree->graft("child1.child2", InfoTree::make());
-    assert(tree->set_data("child1.child2", "test"));
-    assert(tree->set_data("child1", 1.2f));
-    std::string child2_data = tree->get_data("child1.child2");
+    assert(tree->branch_set_value("child1.child2", "test"));
+    assert(tree->branch_set_value("child1", 1.2f));
+    std::string child2_data = tree->branch_get_value("child1.child2");
     assert(0 == child2_data.compare("test"));
-    float child1_data = tree->get_data("child1");
+    float child1_data = tree->branch_get_value("child1");
     assert(1.2f == child1_data);
   }
   {  // removing using empty data
     InfoTree::ptr tree = InfoTree::make();
-    tree->set_data("test");
+    tree->set_value("test");
     assert(tree->has_data());
-    tree->set_data(Any());
+    tree->set_value(Any());
     assert(!tree->has_data());
     tree->graft("child1.child2", InfoTree::make());
-    assert(tree->set_data("child1.child2", "test"));
-    assert(tree->set_data("child1", "test"));
+    assert(tree->branch_set_value("child1.child2", "test"));
+    assert(tree->branch_set_value("child1", "test"));
     assert(tree->branch_has_data("child1.child2"));
     assert(tree->branch_has_data("child1"));
-    assert(tree->set_data("child1.child2", Any()));
-    assert(tree->set_data("child1", Any()));
+    assert(tree->branch_set_value("child1.child2", Any()));
+    assert(tree->branch_set_value("child1", Any()));
     assert(!tree->branch_has_data("child1.child2"));
     assert(!tree->branch_has_data("child1"));
   }
@@ -146,7 +146,7 @@ int main() {
 
     std::stringstream ss;
     ss << n << "-" << a << "-" << b << "-" << w << "-" << sw;
-    // std::cout << ss.str () << std::endl;
+    // std::cout << ss.str () << '\n';
     assert(0 == ss.str().compare("null-test-1.200000-not serializable-hello"));
   }
   {  // basic serialization
@@ -157,12 +157,12 @@ int main() {
     tree->graft(".child1.child2.bla2", InfoTree::make("hub"));
 
     std::string serialized = BasicSerializer::serialize(tree.get());
-    std::cout << serialized << std::endl;
+    // std::cout << serialized << '\n';
 
     InfoTree::ptr tree2 = BasicSerializer::deserialize(serialized);
     assert(tree2);
     std::string serialized2 = BasicSerializer::serialize(tree2.get());
-    std::cout << serialized2 << std::endl;
+    // std::cout << serialized2 << '\n';
 
     assert(serialized == serialized2);
   }
@@ -173,11 +173,15 @@ int main() {
     // if children are grafted to child3, its value
     // will be serialized with "key_value, as follow:
     // "child3" : {
-    //  "key_value" : "1.2",
+    //  "key_value" : 1.2,
     //  "child4" : "float"
     //  }
-    tree->graft(".child1.child3", InfoTree::make(3.1f));
-    tree->graft(".child1.child3.child4", InfoTree::make("child4_value"));
+    tree->graft(".child1.child3", InfoTree::make(1.2f));
+    tree->graft(".child1.child3.child4", InfoTree::make("a string value"));
+    tree->graft(".int_type", InfoTree::make(9));
+    tree->graft(".bool_type", InfoTree::make(true));
+    tree->graft(".float_type", InfoTree::make(3.14));
+    tree->graft(".null_type", InfoTree::make());
 
     // if the array is made with a value, it will not be serialized
     // a node trageted as an array should be created like this :
@@ -196,7 +200,12 @@ int main() {
     tree->tag_as_array(".child1.child2", true);
 
     std::string serialized = JSONSerializer::serialize(tree.get());
-    std::cout << serialized << std::endl;
+    // std::cout << serialized << '\n';
+    auto deserialized_tree = JSONSerializer::deserialize(serialized);
+    auto deserialized_string =
+        JSONSerializer::serialize(deserialized_tree.get());
+    // std::cout << deserialized_string << '\n';
+    assert(serialized == deserialized_string);
   }
 
   {  // get childs keys inserting in an existing container
@@ -255,14 +264,14 @@ int main() {
                 InfoTree::make());  // not into copy_leaf_values
     tree->tag_as_array("branch.", true);
     // std::string serialized = JSONSerializer::serialize(tree);
-    // std::cout << serialized << std::endl;
+    // std::cout << serialized << '\n';
     std::list<std::string> values = tree->copy_leaf_values(".branch");
     assert(std::equal(original_values.begin(),
                       original_values.end(),
                       values.begin(),
                       string_compare));
     // for (auto &it : values)
-    //   std::cout << it << std::endl;
+    //   std::cout << it << '\n';
   }
 
   return 0;

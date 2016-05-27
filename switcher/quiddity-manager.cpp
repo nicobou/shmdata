@@ -85,7 +85,6 @@ bool QuiddityManager::must_be_saved(QuiddityCommand::command id) const {
   if (id == QuiddityCommand::create ||
       id == QuiddityCommand::create_nick_named ||
       id == QuiddityCommand::remove ||
-      id == QuiddityCommand::scan_directory_for_plugins ||
       id == QuiddityCommand::set_property ||
       id == QuiddityCommand::make_signal_subscriber ||
       id == QuiddityCommand::remove_signal_subscriber ||
@@ -556,12 +555,11 @@ std::string QuiddityManager::create(const std::string& quiddity_class) {
 }
 
 bool QuiddityManager::scan_directory_for_plugins(const std::string& directory) {
-  std::string res = seq_invoke(
-      QuiddityCommand::scan_directory_for_plugins, directory.c_str(), nullptr);
-  if (res == "true")
-    return true;
-  else
-    return false;
+  return manager_impl_->scan_directory_for_plugins(directory);
+}
+
+bool QuiddityManager::load_configuration_file(const std::string& file_path) {
+  return manager_impl_->load_configuration_file(file_path);
 }
 
 std::string QuiddityManager::create(const std::string& quiddity_class,
@@ -778,13 +776,6 @@ gboolean QuiddityManager::execute_command(gpointer user_data) {
               context->command_->args_[0],
               context->command_->args_[1],
               context->command_->args_[2]))
-        context->command_->result_.push_back("true");
-      else
-        context->command_->result_.push_back("false");
-      break;
-    case QuiddityCommand::scan_directory_for_plugins:
-      if (context->manager_impl_->scan_directory_for_plugins(
-              context->command_->args_[0].c_str()))
         context->command_->result_.push_back("true");
       else
         context->command_->result_.push_back("false");
