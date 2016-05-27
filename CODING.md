@@ -28,3 +28,17 @@ Branching strategy with git
 ---------------------------
 
 The [master](https://github.com/sat-metalab/switcher/tree/master) branch contains switcher releases. Validated new developments are into the [develop](https://github.com/sat-metalab/switcher/tree/master) branch.
+
+When merging your branch into develop:
+* please specify who reviewed your code in your message (use none if nobody reviewed your code). 
+* if your branch contains more than one commit, do not use fast-forward when merging and write a higher level message including the reviewer, for instance (from the develop branch):
+~~~~~~~~~~~~~~~~~~~~
+git merge --no-ff feature/serialization -m'adding data structure serialization, reviewer: jsoria'
+~~~~~~~~~~~~~~~~~~~~
+* if your branch has only one commit, merge it with fast-forward and rename your commit with the reviewer name, for instance (from the develop branch):
+~~~~~~~~~~~~~~~~~~~~
+# merge with fast forward
+git merge feature/serialization
+# add reviewer into your commit
+git commit --amend
+~~~~~~~~~~~~~~~~~~~~
