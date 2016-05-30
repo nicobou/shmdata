@@ -73,20 +73,23 @@ class GstVideoCodec {
   std::vector<std::string> codec_properties_{};
   // codec params black list
   std::unordered_set<std::string> param_black_list_{
+      "analyse",  // x264enc
+      "timebase",
+      "error-resilient",
+      "frame-packing",  // x264enc
+      "multipass-cache-file",
+      "multipass-mode",
       "name",
       "parent",
-      "twopass-vbr-bias",
-      "twopass-vbr-minsection",
-      "twopass-vbr-maxsection",
-      "multipass-mode",
-      "multipass-cache-file",
       "snapshot",
-      "temporal-scalability-target-bitrate",
-      "temporal-scalability-rate-decimator",
-      "temporal-scalability-periodicity",
       "temporal-scalability-layer-id",
-      "error-resilient",
-      "timebase"};
+      "temporal-scalability-periodicity",
+      "temporal-scalability-rate-decimator",
+      "temporal-scalability-target-bitrate",
+      "tune",  // x264enc
+      "twopass-vbr-bias",
+      "twopass-vbr-maxsection",
+      "twopass-vbr-minsection"};
   // shmdatasrc copy-buffers property:
   bool copy_buffers_{false};
   // parameter grouping
