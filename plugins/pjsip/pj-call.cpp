@@ -983,7 +983,6 @@ gboolean PJCall::send_to(gchar* sip_url, void* user_data) {
 }
 
 gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
-  auto ret = FALSE;
   if (nullptr == sip_url || nullptr == user_data) {
     g_warning("hang up received nullptr url");
     return FALSE;
@@ -1017,7 +1016,7 @@ gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
         return false;
       });
 
-      ret = TRUE;
+      return TRUE;  // stop here, do not hangup incoming call
     }
 
     auto it_inc = std::find_if(context->incoming_call_.begin(),
@@ -1038,10 +1037,10 @@ gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
         return false;
       });
 
-      ret = TRUE;
+      return TRUE;
     }
   }
-  return ret;
+  return FALSE;
 }
 
 void PJCall::make_hang_up(pjsip_inv_session* inv, std::string sip_url) {
