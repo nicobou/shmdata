@@ -46,7 +46,6 @@ class QuiddityCommand {
     get_method_description_by_class,
     get_methods_description,
     get_methods_description_by_class,
-    get_quiddities,
     get_quiddities_description,
     get_quiddity_description,
     get_signal_description,

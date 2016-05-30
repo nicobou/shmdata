@@ -189,6 +189,8 @@ std::string Quiddity::get_name() const { return name_; }
 bool Quiddity::set_name(const std::string& name) {
   if (!name_.empty()) return false;
   name_ = name;
+  information_tree_->graft(
+      ".type", InfoTree::make(get_documentation()->get_class_name()));
   return true;
 }
 

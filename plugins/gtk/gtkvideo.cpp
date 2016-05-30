@@ -50,10 +50,97 @@ GTKVideo::GTKVideo(const std::string& name)
     : shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std2::make_unique<GstPipeliner>(
           nullptr, [this](GstMessage* msg) { return this->bus_sync(msg); })),
-      title_(name) {}
+      title_(name),
+      fullscreen_id_(pmanage<MPtr(&PContainer::make_bool)>(
+          "fullscreen",
+          [this](const bool& val) {
+            is_fullscreen_ = val;
+            g_idle_add((GtkFunction)set_fullscreen, this);
+            return true;
+          },
+          [this]() { return is_fullscreen_; },
+          "Fullscreen",
+          "Enable/Disable Fullscreen",
+          is_fullscreen_)),
+      decorated_id_(pmanage<MPtr(&PContainer::make_bool)>(
+          "decorated",
+          [this](bool val) {
+            decorated_ = val;
+            g_idle_add((GtkFunction)set_geometry, this);
+            return true;
+          },
+          [this]() { return decorated_; },
+          "Window Decoration",
+          "Show/Hide Window Decoration",
+          true)),
+      always_on_top_id_(pmanage<MPtr(&PContainer::make_bool)>(
+          "always_on_top",
+          [this](bool val) {
+            always_on_top_ = val;
+            g_idle_add((GtkFunction)set_geometry, this);
+            return true;
+          },
+          [this]() { return always_on_top_; },
+          "Always On Top",
+          "Toggle Window Always On Top",
+          true)),
+      width_id_(pmanage<MPtr(&PContainer::make_int)>(
+          "width",
+          [this](const int& val) {
+            width_ = val;
+            g_idle_add((GtkFunction)set_geometry, this);
+            return true;
+          },
+          [this]() { return width_; },
+          "Window Width",
+          "Set Window Width",
+          640,
+          1,
+          4096)),
+      height_id_(pmanage<MPtr(&PContainer::make_int)>(
+          "height",
+          [this](const int& val) {
+            height_ = val;
+            g_idle_add((GtkFunction)set_geometry, this);
+            return true;
+          },
+          [this]() { return height_; },
+          "Window Height",
+          "Set Window Height",
+          480,
+          1,
+          4096)),
+      position_x_id_(pmanage<MPtr(&PContainer::make_int)>(
+          "position_x",
+          [this](const int& val) {
+            position_x_ = val;
+            g_idle_add((GtkFunction)set_geometry, this);
+            return true;
+          },
+          [this]() { return position_x_; },
+          "Window Position X",
+          "Set Window Horizontal Position",
+          0,
+          -1024,
+          4096)),
+      position_y_id_(pmanage<MPtr(&PContainer::make_int)>(
+          "position_y",
+          [this](const int& val) {
+            position_y_ = val;
+            g_idle_add((GtkFunction)set_geometry, this);
+            return true;
+          },
+          [this]() { return position_y_; },
+          "Window Position Y",
+          "Set Window Vertical Position",
+          0,
+          -1024,
+          4096)),
+      position_task_(
+          [this]() { g_idle_add((GtkFunction)window_update_position, this); },
+          std::chrono::milliseconds(500)) {
+  if (!remake_elements()) return;
 
-bool GTKVideo::init() {
-  if (!remake_elements()) return false;
   if (instances_counter_ == 0) {
     if (0 == gtk_main_level()) {
       gtk_main_thread_ = std::thread(&GTKVideo::gtk_main_loop_thread);
@@ -61,7 +148,9 @@ bool GTKVideo::init() {
     } else
       g_debug("gtkvideosink: GTK main loop detected, using it");
   }
+
   instances_counter_++;
+
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) {
         return this->on_shmdata_connect(shmpath);
@@ -70,27 +159,6 @@ bool GTKVideo::init() {
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-  fullscreen_id_ = pmanage<MPtr(&PContainer::make_bool)>(
-      "fullscreen",
-      [this](const bool& val) {
-        // if (val && main_window_ != nullptr) {
-        //   gdk_window_set_cursor(GDK_WINDOW(video_window_->window),
-        //                         blank_cursor_);
-        //   gtk_window_fullscreen(GTK_WINDOW(main_window_));
-        // }
-        // else if (main_window_ != nullptr) {
-        //   gdk_window_set_cursor(GDK_WINDOW(video_window_->window),
-        //                         nullptr);
-        //   gtk_window_unfullscreen(GTK_WINDOW(main_window_));
-        // }
-        is_fullscreen_ = val;
-        gtk_idle_add((GtkFunction)set_fullscreen, this);
-        return true;
-      },
-      [this]() { return is_fullscreen_; },
-      "Fullscreen",
-      "Enable/Disable Fullscreen",
-      is_fullscreen_);
 
   pmanage<MPtr(&PContainer::make_bool)>("keyb_interaction",
                                         [this](const bool& val) {
@@ -105,8 +173,8 @@ bool GTKVideo::init() {
   pmanage<MPtr(&PContainer::make_string)>("title",
                                           [this](const std::string& val) {
                                             title_ = val;
-                                            gtk_idle_add((GtkFunction)set_title,
-                                                         this);
+                                            g_idle_add((GtkFunction)set_title,
+                                                       this);
                                             return true;
                                           },
                                           [this]() { return title_; },
@@ -117,9 +185,15 @@ bool GTKVideo::init() {
   install_gst_properties();
 
   std::unique_lock<std::mutex> lock(wait_window_mutex_);
-  gtk_idle_add((GtkFunction)create_ui, this);
+  g_idle_add((GtkFunction)create_ui, this);
   wait_window_cond_.wait(lock);
-  if (nullptr == display_) return false;
+
+  if (nullptr == display_) return;
+
+  is_valid_ = true;
+}
+
+bool GTKVideo::init() {
   keyb_shm_ = std2::make_unique<ShmdataWriter>(this,
                                                make_file_name("keyb"),
                                                sizeof(KeybEvent),
@@ -128,6 +202,7 @@ bool GTKVideo::init() {
     g_warning("GTK keyboard event shmdata writer failed");
     keyb_shm_.reset(nullptr);
   }
+
   mouse_shm_ = std2::make_unique<ShmdataWriter>(this,
                                                 make_file_name("mouse"),
                                                 sizeof(MouseEvent),
@@ -136,7 +211,22 @@ bool GTKVideo::init() {
     g_warning("GTK mouse event shmdata writer failed");
     mouse_shm_.reset(nullptr);
   }
-  return true;
+
+  return is_valid_;
+}
+
+GTKVideo::~GTKVideo() {
+  keyb_shm_.reset();
+  mouse_shm_.reset();
+  gst_pipeline_.reset();
+  g_idle_remove_by_data(this);
+  // destroy child widgets too
+  if (main_window_ != nullptr && GTK_IS_WIDGET(main_window_)) {
+    std::unique_lock<std::mutex> lock(window_destruction_mutex_);
+    g_idle_add(destroy_window, this);
+    window_destruction_cond_.wait(lock);
+  }
+  if (blank_cursor_ != nullptr) gdk_cursor_destroy(blank_cursor_);
 }
 
 void GTKVideo::gtk_main_loop_thread() {
@@ -156,21 +246,33 @@ gboolean GTKVideo::key_pressed_cb(GtkWidget* /*widget */,
   context->keyb_shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
       &keybevent, sizeof(KeybEvent));
   context->keyb_shm_->bytes_written(sizeof(KeybEvent));
+
   if (context->keyb_interaction_) {
     switch (event->keyval) {
       case GDK_f:
-        context->toggle_fullscreen();
-        break;
       case GDK_F:
-        context->toggle_fullscreen();
-        break;
       case GDK_Escape:
-        context->toggle_fullscreen();
+        context->pmanage<MPtr(&PContainer::set<bool>)>(
+            context->fullscreen_id_,
+            !context->is_fullscreen_);  // toggle fullscreen
+        break;
+      case GDK_d:
+      case GDK_D:
+        context->pmanage<MPtr(&PContainer::set<bool>)>(
+            context->decorated_id_,
+            !context->decorated_);  // toggle decoration
+        break;
+      case GDK_t:
+      case GDK_T:
+        context->pmanage<MPtr(&PContainer::set<bool>)>(
+            context->always_on_top_id_,
+            !context->always_on_top_);  // toggle always on top status
         break;
       default:
         break;
     }
   }  // if (context->keyb_interaction_)
+
   return TRUE;
 }
 
@@ -199,30 +301,6 @@ gboolean GTKVideo::destroy_window(gpointer user_data) {
   return FALSE;
 }
 
-GTKVideo::~GTKVideo() {
-  keyb_shm_.reset();
-  mouse_shm_.reset();
-  gst_pipeline_.reset();
-  g_idle_remove_by_data(this);
-  // destroy child widgets too
-  if (main_window_ != nullptr && GTK_IS_WIDGET(main_window_)) {
-    std::unique_lock<std::mutex> lock(window_destruction_mutex_);
-    // g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
-    //     destroy_window,
-    //     this,
-    //     window_destroyed);
-    gtk_idle_add(destroy_window, this);
-    window_destruction_cond_.wait(lock);
-  }
-  if (blank_cursor_ != nullptr) gdk_cursor_destroy(blank_cursor_);
-  // instances_counter_ --;
-  // if (instances_counter_ == 0)
-  //   {
-  // g_debug ("GTKVideo::~GTKVideo invoking gtk_main_quit");
-  // gtk_main_quit ();
-  //   }
-}
-
 void GTKVideo::realize_cb(GtkWidget* widget, void* user_data) {
   GTKVideo* context = static_cast<GTKVideo*>(user_data);
   GdkWindow* window = gtk_widget_get_window(widget);
@@ -230,7 +308,6 @@ void GTKVideo::realize_cb(GtkWidget* widget, void* user_data) {
     g_debug("Couldn't create native window needed for GstXOverlay!");
   gdk_threads_enter();
   gdk_display_sync(context->display_);
-// gdk_error_trap_pop ();
 /* Retrieve window handler from GDK */
 #if defined(GDK_WINDOWING_WIN32)
   context->window_handle_ = reinterpret_cast<guintptr>(GDK_WINDOW_HWND(window));
@@ -302,7 +379,13 @@ gboolean GTKVideo::create_ui(void* user_data) {
                             GDK_POINTER_MOTION_HINT_MASK);
   gtk_container_add(GTK_CONTAINER(context->main_window_),
                     context->video_window_);
-  gtk_window_set_default_size(GTK_WINDOW(context->main_window_), 640, 480);
+  gtk_window_set_decorated(GTK_WINDOW(context->main_window_),
+                           context->decorated_);
+  gtk_window_resize(
+      GTK_WINDOW(context->main_window_), context->width_, context->height_);
+  gtk_window_move(GTK_WINDOW(context->main_window_),
+                  context->position_x_,
+                  context->position_y_);
   gtk_window_set_title(GTK_WINDOW(context->main_window_),
                        context->title_.c_str());
   context->blank_cursor_ = gdk_cursor_new(GDK_BLANK_CURSOR);
@@ -318,13 +401,6 @@ gboolean GTKVideo::create_ui(void* user_data) {
 
   gtk_widget_show_all((GtkWidget*)context->main_window_);
   return FALSE;
-}
-
-void GTKVideo::toggle_fullscreen() {
-  if (!is_fullscreen_)
-    pmanage<MPtr(&PContainer::set<bool>)>(fullscreen_id_, true);
-  else
-    pmanage<MPtr(&PContainer::set<bool>)>(fullscreen_id_, false);
 }
 
 bool GTKVideo::remake_elements() {
@@ -463,6 +539,42 @@ void GTKVideo::widget_getsize(GtkWidget* widget,
   context->drawed_video_width_ = widget->allocation.width;
   context->drawed_video_height_ = widget->allocation.height;
   context->update_padding(widget);
+  window_update_size(context);
+}
+
+gboolean GTKVideo::window_update_position(void* data) {
+  GTKVideo* context = static_cast<GTKVideo*>(data);
+  auto lock_position_x =
+      context->pmanage<MPtr(&PContainer::get_lock)>(context->position_x_id_);
+  auto lock_position_y =
+      context->pmanage<MPtr(&PContainer::get_lock)>(context->position_y_id_);
+
+  if (gtk_window_get_decorated(GTK_WINDOW(context->main_window_))) {
+    gtk_window_get_position(GTK_WINDOW(context->main_window_),
+                            &context->position_x_,
+                            &context->position_y_);
+  } else {
+    gdk_window_get_origin(gtk_widget_get_window(context->main_window_),
+                          &context->position_x_,
+                          &context->position_y_);
+  }
+
+  context->pmanage<MPtr(&PContainer::notify)>(context->position_x_id_);
+  context->pmanage<MPtr(&PContainer::notify)>(context->position_y_id_);
+  return FALSE;
+}
+
+gboolean GTKVideo::window_update_size(void* data) {
+  GTKVideo* context = static_cast<GTKVideo*>(data);
+  auto lock_width =
+      context->pmanage<MPtr(&PContainer::get_lock)>(context->width_id_);
+  auto lock_height =
+      context->pmanage<MPtr(&PContainer::get_lock)>(context->height_id_);
+  gtk_window_get_size(
+      GTK_WINDOW(context->main_window_), &context->width_, &context->height_);
+  context->pmanage<MPtr(&PContainer::notify)>(context->width_id_);
+  context->pmanage<MPtr(&PContainer::notify)>(context->height_id_);
+  return FALSE;
 }
 
 void GTKVideo::update_padding(GtkWidget* widget) {
@@ -532,6 +644,39 @@ gboolean GTKVideo::set_title(void* user_data) {
   GTKVideo* context = static_cast<GTKVideo*>(user_data);
   gtk_window_set_title(GTK_WINDOW(context->main_window_),
                        context->title_.c_str());
+  return FALSE;
+}
+
+gboolean GTKVideo::set_geometry(void* user_data) {
+  GTKVideo* context = static_cast<GTKVideo*>(user_data);
+
+  // Only update position if the decoration is changing, otherwise the position
+  // won't be settable by the property. We need to update it in this case
+  // because the position reference differs with or without decoration.
+  if (gtk_window_get_decorated(GTK_WINDOW(context->main_window_)) !=
+      context->decorated_) {
+    window_update_position(context);
+    gtk_window_set_decorated(GTK_WINDOW(context->main_window_),
+                             context->decorated_);
+  }
+
+  gtk_window_set_keep_above(GTK_WINDOW(context->main_window_),
+                            context->always_on_top_);
+
+  auto lock_width =
+      context->pmanage<MPtr(&PContainer::get_lock)>(context->width_id_);
+  auto lock_height =
+      context->pmanage<MPtr(&PContainer::get_lock)>(context->height_id_);
+  auto lock_position_x =
+      context->pmanage<MPtr(&PContainer::get_lock)>(context->position_x_id_);
+  auto lock_position_y =
+      context->pmanage<MPtr(&PContainer::get_lock)>(context->position_y_id_);
+
+  gtk_window_resize(
+      GTK_WINDOW(context->main_window_), context->width_, context->height_);
+  gtk_window_move(GTK_WINDOW(context->main_window_),
+                  context->position_x_,
+                  context->position_y_);
   return FALSE;
 }
 

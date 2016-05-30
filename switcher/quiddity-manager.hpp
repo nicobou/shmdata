@@ -82,7 +82,7 @@ class QuiddityManager {
   // ****************************************************************
   std::vector<std::string>
   get_classes();  // know which quiddities can be created
-  std::vector<std::string> get_quiddities();  // know instances
+  std::vector<std::string> get_quiddities() const;  // know instances
   // doc (json formatted)
   std::string get_classes_doc();
   std::string get_class_doc(const std::string& class_name);

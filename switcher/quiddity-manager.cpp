@@ -244,6 +244,28 @@ bool QuiddityManager::save_command_history(const char* file_path) const {
   builder->set_member_name("history");
   builder->begin_array();
 
+  // FIXME: Remove when new save system is in place.
+  // Here to manage properties set by code and not by the UI.
+  for (auto& quid_name : get_quiddities()) {
+    auto type = use_tree<MPtr(&InfoTree::branch_read_data<std::string>)>(
+        quid_name, ".type");
+    if (type == "gtkwin") {
+      std::vector<std::string> props_to_save = {"position_x",
+                                                "position_y",
+                                                "width",
+                                                "height",
+                                                "fullscreen",
+                                                "decorated",
+                                                "always_on_top"};
+      for (auto& prop : props_to_save) {
+        use_prop<MPtr(&PContainer::set_str_str)>(
+            quid_name,
+            prop,
+            use_prop<MPtr(&PContainer::get_str_str)>(quid_name, prop));
+      }
+    }
+  }
+
   for (auto& it : command_history_)
     builder->add_node_value(it->get_json_root_node());
   builder->end_array();
@@ -419,8 +441,7 @@ bool QuiddityManager::subscribe_signal(const std::string& subscriber_name,
                                quiddity_name.c_str(),
                                signal_name.c_str(),
                                nullptr);
-  if (g_strcmp0(res.c_str(), "true") == 0) return true;
-  return false;
+  return res == "true";
 }
 
 bool QuiddityManager::unsubscribe_signal(const std::string& subscriber_name,
@@ -431,9 +452,7 @@ bool QuiddityManager::unsubscribe_signal(const std::string& subscriber_name,
                                quiddity_name.c_str(),
                                signal_name.c_str(),
                                nullptr);
-  if (g_strcmp0(res.c_str(), "true") == 0) return true;
-  return false;
-
+  return res == "true";
   // command_lock ();
   // command_->set_id (QuiddityCommand::unsubscribe_signal);
   // command_->add_arg (subscriber_name);
@@ -614,13 +633,10 @@ std::string QuiddityManager::get_quiddity_description(
                     nullptr);
 }
 
-std::vector<std::string> QuiddityManager::get_quiddities() {
+std::vector<std::string> QuiddityManager::get_quiddities() const {
   std::vector<std::string> res;
-  command_lock();
-  command_->set_id(QuiddityCommand::get_quiddities);
-  invoke_in_thread();
-  res = command_->result_;
-  command_unlock();
+  std::lock_guard<std::mutex> lock(seq_mutex_);
+  res = manager_impl_->get_instances();
   return res;
 }
 
@@ -700,9 +716,6 @@ gboolean QuiddityManager::execute_command(gpointer user_data) {
     case QuiddityCommand::get_class_doc:
       context->command_->result_.push_back(
           context->manager_impl_->get_class_doc(context->command_->args_[0]));
-      break;
-    case QuiddityCommand::get_quiddities:
-      context->command_->result_ = context->manager_impl_->get_instances();
       break;
     case QuiddityCommand::get_quiddities_description:
       context->command_->result_.push_back(
