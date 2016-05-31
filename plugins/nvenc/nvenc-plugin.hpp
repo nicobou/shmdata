@@ -41,10 +41,10 @@ class NVencPlugin : public Quiddity {
   bool init() final;
 
  private:
-  ShmdataConnector shmcntr_;
-  std::unique_ptr<ShmdataFollower> shm_{nullptr};
   std::unique_ptr<ShmdataWriter> shmw_{nullptr};
   std::unique_ptr<ThreadedWrapper<NVencES>> es_{};
+  std::unique_ptr<ShmdataFollower> shm_{nullptr};
+  ShmdataConnector shmcntr_;
   Selection devices_{{"none"}, 0};
   std::vector<int> devices_nv_ids_{};
   Selection codecs_{{"none"}, 0};
