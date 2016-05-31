@@ -549,6 +549,9 @@ gboolean GTKVideo::window_update_position(void* data) {
   auto lock_position_y =
       context->pmanage<MPtr(&PContainer::get_lock)>(context->position_y_id_);
 
+  int position_x = context->position_x_;
+  int position_y = context->position_y_;
+
   if (gtk_window_get_decorated(GTK_WINDOW(context->main_window_))) {
     gtk_window_get_position(GTK_WINDOW(context->main_window_),
                             &context->position_x_,
@@ -559,8 +562,10 @@ gboolean GTKVideo::window_update_position(void* data) {
                           &context->position_y_);
   }
 
-  context->pmanage<MPtr(&PContainer::notify)>(context->position_x_id_);
-  context->pmanage<MPtr(&PContainer::notify)>(context->position_y_id_);
+  if (position_x != context->position_x_)
+    context->pmanage<MPtr(&PContainer::notify)>(context->position_x_id_);
+  if (position_y != context->position_y_)
+    context->pmanage<MPtr(&PContainer::notify)>(context->position_y_id_);
   return FALSE;
 }
 
@@ -570,8 +575,10 @@ gboolean GTKVideo::window_update_size(void* data) {
       context->pmanage<MPtr(&PContainer::get_lock)>(context->width_id_);
   auto lock_height =
       context->pmanage<MPtr(&PContainer::get_lock)>(context->height_id_);
+
   gtk_window_get_size(
       GTK_WINDOW(context->main_window_), &context->width_, &context->height_);
+
   context->pmanage<MPtr(&PContainer::notify)>(context->width_id_);
   context->pmanage<MPtr(&PContainer::notify)>(context->height_id_);
   return FALSE;
