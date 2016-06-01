@@ -83,62 +83,7 @@ GTKVideo::GTKVideo(const std::string& name)
           [this]() { return always_on_top_; },
           "Always On Top",
           "Toggle Window Always On Top",
-          true)),
-      width_id_(pmanage<MPtr(&PContainer::make_int)>(
-          "width",
-          [this](const int& val) {
-            width_ = val;
-            g_idle_add((GtkFunction)set_geometry, this);
-            return true;
-          },
-          [this]() { return width_; },
-          "Window Width",
-          "Set Window Width",
-          640,
-          1,
-          4096)),
-      height_id_(pmanage<MPtr(&PContainer::make_int)>(
-          "height",
-          [this](const int& val) {
-            height_ = val;
-            g_idle_add((GtkFunction)set_geometry, this);
-            return true;
-          },
-          [this]() { return height_; },
-          "Window Height",
-          "Set Window Height",
-          480,
-          1,
-          4096)),
-      position_x_id_(pmanage<MPtr(&PContainer::make_int)>(
-          "position_x",
-          [this](const int& val) {
-            position_x_ = val;
-            g_idle_add((GtkFunction)set_geometry, this);
-            return true;
-          },
-          [this]() { return position_x_; },
-          "Window Position X",
-          "Set Window Horizontal Position",
-          0,
-          -1024,
-          4096)),
-      position_y_id_(pmanage<MPtr(&PContainer::make_int)>(
-          "position_y",
-          [this](const int& val) {
-            position_y_ = val;
-            g_idle_add((GtkFunction)set_geometry, this);
-            return true;
-          },
-          [this]() { return position_y_; },
-          "Window Position Y",
-          "Set Window Vertical Position",
-          0,
-          -1024,
-          4096)),
-      position_task_(
-          [this]() { g_idle_add((GtkFunction)window_update_position, this); },
-          std::chrono::milliseconds(500)) {
+          true)) {
   if (!remake_elements()) return;
 
   if (instances_counter_ == 0) {
@@ -182,13 +127,76 @@ GTKVideo::GTKVideo(const std::string& name)
                                           "Window Title",
                                           title_);
 
-  install_gst_properties();
-
   std::unique_lock<std::mutex> lock(wait_window_mutex_);
   g_idle_add((GtkFunction)create_ui, this);
   wait_window_cond_.wait(lock);
 
   if (nullptr == display_) return;
+
+  int max_width = gdk_screen_get_width(gdk_screen_get_default());
+  int max_height = gdk_screen_get_height(gdk_screen_get_default());
+
+  width_id_ = pmanage<MPtr(&PContainer::make_int)>(
+      "width",
+      [this](const int& val) {
+        width_ = val;
+        g_idle_add((GtkFunction)set_geometry, this);
+        return true;
+      },
+      [this]() { return width_; },
+      "Window Width",
+      "Set Window Width",
+      640,
+      1,
+      max_width);
+
+  height_id_ = pmanage<MPtr(&PContainer::make_int)>(
+      "height",
+      [this](const int& val) {
+        height_ = val;
+        g_idle_add((GtkFunction)set_geometry, this);
+        return true;
+      },
+      [this]() { return height_; },
+      "Window Height",
+      "Set Window Height",
+      480,
+      1,
+      max_height);
+
+  position_x_id_ = pmanage<MPtr(&PContainer::make_int)>(
+      "position_x",
+      [this](const int& val) {
+        position_x_ = val;
+        g_idle_add((GtkFunction)set_geometry, this);
+        return true;
+      },
+      [this]() { return position_x_; },
+      "Window Position X",
+      "Set Window Horizontal Position",
+      0,
+      0,
+      max_width);
+
+  position_y_id_ = pmanage<MPtr(&PContainer::make_int)>(
+      "position_y",
+      [this](const int& val) {
+        position_y_ = val;
+        g_idle_add((GtkFunction)set_geometry, this);
+        return true;
+      },
+      [this]() { return position_y_; },
+      "Window Position Y",
+      "Set Window Vertical Position",
+      0,
+      0,
+      max_height);
+
+  position_task_ = std2::make_unique<PeriodicTask>(
+      [this]() { g_idle_add((GtkFunction)window_update_position, this); },
+      std::chrono::milliseconds(500));
+
+  install_gst_properties();
 
   is_valid_ = true;
 }
@@ -566,11 +574,13 @@ gboolean GTKVideo::window_update_position(void* data) {
     context->pmanage<MPtr(&PContainer::notify)>(context->position_x_id_);
   if (position_y != context->position_y_)
     context->pmanage<MPtr(&PContainer::notify)>(context->position_y_id_);
+
   return FALSE;
 }
 
 gboolean GTKVideo::window_update_size(void* data) {
   GTKVideo* context = static_cast<GTKVideo*>(data);
+  if (!context->is_valid_) return FALSE;
   auto lock_width =
       context->pmanage<MPtr(&PContainer::get_lock)>(context->width_id_);
   auto lock_height =

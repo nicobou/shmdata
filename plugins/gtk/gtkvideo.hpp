@@ -56,7 +56,7 @@ class GTKVideo : public Quiddity {
  private:
   static guint instances_counter_;
   static std::thread gtk_main_thread_;
-  bool is_valid_{false};
+  std::atomic<bool> is_valid_{false};
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
   // gst pipeline:
@@ -119,7 +119,7 @@ class GTKVideo : public Quiddity {
   int position_y_{0};
   PContainer::prop_id_t position_y_id_{0};
 
-  PeriodicTask position_task_;
+  std::unique_ptr<PeriodicTask> position_task_;
 
   bool init() final;
   bool remake_elements();
