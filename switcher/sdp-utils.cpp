@@ -123,6 +123,13 @@ bool SDPMedia::add_to_sdp_description(GstSDPMessage* sdp_description,
             "removing buggy trailing = at the end of sprop-parameter-sets");
         val = std::string(val, 0, equal_pos);
       }
+      auto comma_pos = val.find(',');
+      if (std::string::npos != comma_pos) {
+        g_warning(
+            "removing buggy trailing comma and the rest from "
+            "sprop-parameter-sets");
+        val = std::string(val, 0, comma_pos);
+      }
     }
     // if (0 == fname.compare("caps")){
     //     auto equal_pos = val.find('=');
