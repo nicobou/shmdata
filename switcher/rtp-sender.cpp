@@ -40,7 +40,12 @@ RTPSender::RTPSender(RtpSession2* session,
   std::unique_lock<std::mutex> lock(start_m_);
   // configuring shmdatasrc and typefind
   g_signal_connect(typefind_, "have-type", G_CALLBACK(on_caps), this);
-  g_object_set(G_OBJECT(shmdatasrc_), "socket-path", shmpath_.c_str(), nullptr);
+  g_object_set(G_OBJECT(shmdatasrc_),
+               "socket-path",
+               shmpath_.c_str(),
+               "copy-buffers",
+               TRUE,
+               nullptr);
   gst_bin_add_many(GST_BIN(session_->gst_pipeline_->get_pipeline()),
                    shmdatasrc_,
                    typefind_,
@@ -163,7 +168,6 @@ std::string RTPSender::get_caps() const {
   fakesink_caps_ = std::string(str);
   if (fakesink_caps_.empty())
     g_warning("RTPSender::get_caps, caps not available returning empty string");
-  // g_print("-------------------- %s\n", fakesink_caps_.c_str());
   return fakesink_caps_;
 }
 
