@@ -54,6 +54,7 @@ GstPipe::GstPipe(GMainContext* context,
 }
 
 GstPipe::~GstPipe() {
+  GstUtils::wait_state_changed(pipeline_);
   gst_element_set_state(pipeline_, GST_STATE_NULL);
   gst_object_unref(GST_OBJECT(pipeline_));
   g_source_destroy(source_);
