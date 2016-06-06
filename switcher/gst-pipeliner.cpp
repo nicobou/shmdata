@@ -151,9 +151,9 @@ GstBusSyncReply GstPipeliner::on_gst_error(GstMessage* msg) {
   GError* error = nullptr;
   gst_message_parse_error(msg, &error, &debug);
   g_free(debug);
-  g_debug("Gstreamer error: %s (element %s)",
-          error->message,
-          GST_MESSAGE_SRC_NAME(msg));
+  g_warning("GStreamer error: %s (element %s)",
+            error->message,
+            GST_MESSAGE_SRC_NAME(msg));
   g_error_free(error);
   // on-error-gsource
   GSourceWrapper* gsrc = static_cast<GSourceWrapper*>(
@@ -219,9 +219,9 @@ GstBusSyncReply GstPipeliner::bus_sync_handler(GstBus* /*bus*/,
     GError* error = nullptr;
     gst_message_parse_error(msg, &error, &debug);
     g_free(debug);
-    g_debug("Gstreamer error: %s (element %s)",
-            error->message,
-            GST_MESSAGE_SRC_NAME(msg));
+    g_warning("GStreamer error: %s (element %s)",
+              error->message,
+              GST_MESSAGE_SRC_NAME(msg));
     g_error_free(error);
     res = GST_BUS_DROP;
   }
