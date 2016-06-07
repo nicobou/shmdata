@@ -109,6 +109,20 @@ bool GstPixelFormatConverter::start(const std::string& shmpath_to_convert,
                "sync",
                false,
                nullptr);
+  gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
+                   shmsrc_.get_raw(),
+                   queue_codec_element_.get_raw(),
+                   color_space_codec_element_.get_raw(),
+                   capsfilter_.get_raw(),
+                   shm_converted_.get_raw(),
+                   nullptr);
+  gst_element_link_many(shmsrc_.get_raw(),
+                        queue_codec_element_.get_raw(),
+                        color_space_codec_element_.get_raw(),
+                        capsfilter_.get_raw(),
+                        shm_converted_.get_raw(),
+                        nullptr);
+  gst_pipeline_->play(true);
   shmsink_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shm_converted_.get_raw(),
       [this](const std::string& caps) {
@@ -133,20 +147,6 @@ bool GstPixelFormatConverter::start(const std::string& shmpath_to_convert,
             ".shmdata.reader." + shmpath_to_convert_ + ".byte_rate",
             InfoTree::make(byte_rate));
       });
-  gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
-                   shmsrc_.get_raw(),
-                   queue_codec_element_.get_raw(),
-                   color_space_codec_element_.get_raw(),
-                   capsfilter_.get_raw(),
-                   shm_converted_.get_raw(),
-                   nullptr);
-  gst_element_link_many(shmsrc_.get_raw(),
-                        queue_codec_element_.get_raw(),
-                        color_space_codec_element_.get_raw(),
-                        capsfilter_.get_raw(),
-                        shm_converted_.get_raw(),
-                        nullptr);
-  gst_pipeline_->play(true);
   return true;
 }
 

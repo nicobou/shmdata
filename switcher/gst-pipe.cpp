@@ -54,6 +54,7 @@ GstPipe::GstPipe(GMainContext* context,
 }
 
 GstPipe::~GstPipe() {
+  GstUtils::wait_state_changed(pipeline_);
   gst_element_set_state(pipeline_, GST_STATE_NULL);
   gst_object_unref(GST_OBJECT(pipeline_));
   g_source_destroy(source_);
@@ -61,8 +62,9 @@ GstPipe::~GstPipe() {
 }
 
 void GstPipe::play_pipe(GstPipe* pipe) {
+  gst_element_set_state(pipe->pipeline_, GST_STATE_READY);
+  GstUtils::wait_state_changed(pipe->pipeline_);
   gst_element_set_state(pipe->pipeline_, GST_STATE_PLAYING);
-  // GstUtils::wait_state_changed(pipe->pipeline_);
 }
 
 gboolean GstPipe::source_prepare(GSource* source, gint* timeout) {
