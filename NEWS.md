@@ -1,5 +1,6 @@
-shmdata release notes
-===================== 
+NEWS
+====
+Here you will find a high level list of new features and bugfixes for each releases. 
 
 shmdata 1.2.2 (2016-04-04)
 ---------------------------
