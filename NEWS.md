@@ -2,6 +2,14 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.2.4 (2016-06-07)
+---------------------------
+This is an official release in the 1.2 stable series.
+
+* improved gstshmdatasink test
+* Fixed pyshmdata compilation,
+* use python3-config instead of pythpon3.4-config
+
 shmdata 1.2.2 (2016-04-04)
 ---------------------------
 New features:
@@ -174,57 +182,4 @@ This is an official release in the 0.6 stable series.
 Bugs fixed:
 
 * occasional seg fault when deleting OSG reader
-* occasionnal seg fault when deleting base reader
-* occasionnal seg fault when deleting and then creating with the same path 
-
-New features:
-
-* dynamic setPath for OSG reader
-* play/pause texture writing in the OSG reader
-* get width and get height provided by OSG reader
-
-shmdata 0.4.0 (2012-07-05)
----------------------------
-This is an official release in the 0.4 stable series.
-
-See the release notes for the 0.3.0 version.
-
-
-shmdata 0.3.0 (2012-07-05)
----------------------------
-This release is a developer snapshot in the 0.3 series.
-
-New features:
-
-* upgrade to pcl 1.5
-* API provide set_path functions
-* command line options in several examples
- 
-
-shmdata 0.2.0 (2012-04-02)
----------------------------
-This release is the first stable release.
-
-Bugs fixed:
-
-* clutter example fixed
-
-
-shmdata 0.1.2 (2012-03-26)
----------------------------
-This release is a developer snapshot in the 0.1 series.
-
-New features:
-
-* libshmdata-osg supports alpha channel
-* doxygen documentation
-
-Bugs fixed:
-
-* fixing GStreamer warnings when closing reader and writer
-
-
-shmdata 0.1.0 (2012-03-20)
---------------------------
-This is the first developer snapshot of shmdata.
-
+* occasionnal seg fault when deleting ba
