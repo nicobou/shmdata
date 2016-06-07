@@ -774,6 +774,15 @@ bool PJCall::make_call(std::string dst_uri) {
     g_warning("cannot call if not registered");
     return false;
   }
+  auto it = std::find_if(outgoing_call_.begin(),
+                         outgoing_call_.end(),
+                         [&dst_uri](const std::unique_ptr<call_t>& c) {
+                           return c->peer_uri == dst_uri;
+                         });
+  if (it != outgoing_call_.end()) {
+    g_warning("cannot call %s (already calling)", dst_uri.c_str());
+    return false;
+  }
   pj_str_t local_uri;
   std::string local_uri_tmp(
       SIPPlugin::this_->sip_presence_->sip_local_user_  // + ";transport=tcp"
