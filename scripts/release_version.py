@@ -225,6 +225,7 @@ if __name__ == '__main__':
     os.chdir(os.path.join(libs_root_path, lib))
     git_checkout(working_branch)
     version_release = parse_version_number(lib, version_regex)
+    version_release = increase_version_number(version_release, version_increase)
 
     print 'Version number found for all libraries, now executing unit tests.'
 
@@ -233,7 +234,6 @@ if __name__ == '__main__':
 
     print 'All unit tests passed successfully, now creating new branches for release.'
 
-    version_release = increase_version_number(version_release, version_increase)
     update_changelog(lib, version_release)
     new_branch = '{}/version-{}.{}.{}'.format(release_branch, version_release[0], version_release[1], version_release[2])
     print 'Creating branch {} for release of {} library.'.format(new_branch, lib)
