@@ -26,6 +26,7 @@ bringup_branch  = 'master'
 working_branch  = 'develop'
 release_branch  = 'release'
 changelog_file  = 'changelog'
+check_success   = False
 
 
 def parse_version_number(lib, version_regex):
@@ -77,7 +78,7 @@ def commit_version_number(lib, new_version, version_regex):
     assert git_commit('Version {}.{}.{}'.format(new_version[0], new_version[1], new_version[2])) == 0, 'Failed to commit version number.'
 
 
-def git_push_branch(remote_repo, remote_branch):
+def git_push(remote_repo, remote_branch):
     return subprocess.call('git push {} {}'.format(remote_repo, remote_branch), shell=True)
 
 
@@ -130,7 +131,7 @@ def update_changelog(lib, version):
     git_checkout(working_branch)
     latest_tag = subprocess.check_output('git describe --tags --abbrev=0', shell=True)
     tag_date = subprocess.check_output('git log -1 --format=%ai {}'.format(latest_tag), shell=True)
-    commits = subprocess.check_output('git log --first-parent --since="{}"'.format(tag_date), shell=True).strip().split('commit')
+    commits = re.split(r'commit [a-z0-9]+' , subprocess.check_output('git log --first-parent --since="{}"'.format(tag_date), shell=True).strip())
     with open(new_file_name, 'w') as new_file:
         with open(orig_file_name, 'r') as old_file:
             for i, line in enumerate(old_file.readlines()):
@@ -141,24 +142,26 @@ def update_changelog(lib, version):
                                'This is an official release in the {}.{} stable series.\n\n'
                                .format(lib, version[0], version[1], version[2], datetime.date.today(), version[0], version[1]))
                 for commit in commits:
-                    elements = commit.split('\n')
-                    if len(elements) < 4:
+                    elements = commit.split('\n    ')
+                    if len(elements) < 2:
                         continue
-                    commit_message = elements[4]
+                    commit_message = ''
+                    for message in elements[1:]:
+                        commit_message += message + ' '
                     if commit_message:
                         commit_message = re.sub(r'reviewer\s*:\s*[a-z]+', r'', commit_message, flags=re.IGNORECASE)
-                        new_file.write('* {}\n'.format(commit_message))
+                        new_file.write('* {}\n'.format(commit_message.strip()))
                 new_file.write('\n')
         subprocess.call([get_git_config('core.editor', 'vim'), new_file_name])
     os.rename(new_file_name, orig_file_name)
-    subprocess.call('scripts/make_authors_from_git.sh', shell=True)
+    subprocess.call(os.path.join(sys.path[0], 'make_authors_from_git.sh'), shell=True)
     git_add([orig_file_name, authors_file_name])
     git_commit('Updated changelog for version {}.{}.{}.'.format(version[0], version[1], version[2]))
 
 
 @atexit.register
 def cleanup_folder():
-    if os.path.exists(libs_root_path):
+    if os.path.exists(libs_root_path) and check_success:
         shutil.rmtree(libs_root_path)
 
 
@@ -229,9 +232,10 @@ if __name__ == '__main__':
 
     print 'Version number found for all libraries, now executing unit tests.'
 
-    if subprocess.call('./autogen.sh && ./configure && make check', shell=True) != 0:
+    if subprocess.call('./autogen.sh && ./configure && make distcheck', shell=True) != 0:
         printerr('{} unit tests failed, stopping the release.'.format(lib))
 
+    check_success = True
     print 'All unit tests passed successfully, now creating new branches for release.'
 
     update_changelog(lib, version_release)
