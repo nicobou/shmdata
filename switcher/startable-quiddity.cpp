@@ -22,28 +22,26 @@
 
 namespace switcher {
 
-void StartableQuiddity::init_startable(void *quiddity) {
-  Quiddity *quid = static_cast<Quiddity *>(quiddity);
-  quid->pmanage<MPtr(&PContainer::make_bool)>(
-      "started",
-      [this](bool val){
-        if (__started_ == val)
-          return true;
-        if (val) {
-          if (!start()) return false;
-        } else {
-          if (!stop()) return false;
-        }
-        __started_ = val;
-        return true;},
-      [this](){return __started_;},
-      "Started",
-      "Start/stop the processing",
-      __started_);
+void StartableQuiddity::init_startable(void* quiddity) {
+  Quiddity* quid = static_cast<Quiddity*>(quiddity);
+  quid->pmanage<MPtr(&PContainer::make_bool)>("started",
+                                              [this](bool val) {
+                                                if (__started_ == val)
+                                                  return true;
+                                                if (val) {
+                                                  if (!start()) return false;
+                                                } else {
+                                                  if (!stop()) return false;
+                                                }
+                                                __started_ = val;
+                                                return true;
+                                              },
+                                              [this]() { return __started_; },
+                                              "Started",
+                                              "Start/stop the processing",
+                                              __started_);
 }
 
-bool StartableQuiddity::is_started() const {
-  return __started_;
-}
+bool StartableQuiddity::is_started() const { return __started_; }
 
 }  // namespace switcher

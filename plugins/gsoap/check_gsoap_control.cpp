@@ -18,8 +18,8 @@
  */
 
 #include <unistd.h>
-#include "switcher/quiddity-manager.hpp"
 #include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity-manager.hpp"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -27,25 +27,21 @@
 
 static bool success = false;
 
-void
-quiddity_created_removed_cb(const std::string & /* subscriber_name */,
-			     const std::string & /* quiddity_name */,
-			     const std::string &signal_name,
-			     const std::vector<std::string> &params,
-			     void *  /* user_data */)
-{
-  if (params[1].compare("true"))
-    success = true;
+void quiddity_created_removed_cb(const std::string& /* subscriber_name */,
+                                 const std::string& /* quiddity_name */,
+                                 const std::string& signal_name,
+                                 const std::vector<std::string>& params,
+                                 void* /* user_data */) {
+  if (params[1].compare("true")) success = true;
 }
 
-int
-main()
-{
+int main() {
   {
-    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");
+    switcher::QuiddityManager::ptr manager =
+        switcher::QuiddityManager::make_manager("test_manager");
 
 #ifdef HAVE_CONFIG_H
-    gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
+    gchar* usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
     manager->scan_directory_for_plugins(usr_plugin_dir);
     g_free(usr_plugin_dir);
 #else
@@ -59,22 +55,25 @@ main()
       success = false;
 
     manager->create("SOAPcontrolClient", "soapclient");
-    manager->make_signal_subscriber("signal_subscriber", quiddity_created_removed_cb, manager.get());
-    manager->subscribe_signal("signal_subscriber","soapclient","on-connection-tried");
-    manager->invoke_va("soapclient", "set_remote_url_retry", nullptr, "http://localhost:38084", nullptr);
+    manager->make_signal_subscriber(
+        "signal_subscriber", quiddity_created_removed_cb, manager.get());
+    manager->subscribe_signal(
+        "signal_subscriber", "soapclient", "on-connection-tried");
+    manager->invoke_va("soapclient",
+                       "set_remote_url_retry",
+                       nullptr,
+                       "http://localhost:38084",
+                       nullptr);
 
     manager->create("SOAPcontrolServer", "soapserver");
     manager->invoke_va("soapserver", "set_port", nullptr, "38084", nullptr);
 
-    //soapclient is waiting 1 sec between retries
+    // soapclient is waiting 1 sec between retries
     usleep(1100000);
-  }//end of scope is releasing the manager
+  }  // end of scope is releasing the manager
 
   if (success)
     return 0;
   else
     return 1;
 }
-
-
-

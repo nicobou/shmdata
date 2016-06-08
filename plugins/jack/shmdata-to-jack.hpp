@@ -22,21 +22,21 @@
 
 #include <memory>
 #include <mutex>
-#include "switcher/shmdata-connector.hpp"
+#include "./audio-ring-buffer.hpp"
+#include "./drift-observer.hpp"
+#include "./jack-client.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
-#include "./jack-client.hpp"
-#include "./drift-observer.hpp"
-#include "./audio-ring-buffer.hpp"
+#include "switcher/shmdata-connector.hpp"
 
 namespace switcher {
-class ShmdataToJack: public Quiddity {
+class ShmdataToJack : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToJack);
-  ShmdataToJack(const std::string &);
+  ShmdataToJack(const std::string&);
   ~ShmdataToJack() = default;
-  ShmdataToJack(const ShmdataToJack &) = delete;
-  ShmdataToJack &operator=(const ShmdataToJack &) = delete;
+  ShmdataToJack(const ShmdataToJack&) = delete;
+  ShmdataToJack& operator=(const ShmdataToJack&) = delete;
 
  private:
   // registering connect/disconnect/can_sink_caps:
@@ -47,49 +47,54 @@ class ShmdataToJack: public Quiddity {
   std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
   // internal use:
   std::string shmpath_{};
-  GstElement *shmdatasrc_{nullptr};
-  GstElement *audiobin_{nullptr};
-  GstElement *volume_{nullptr};
-  GstElement *fakesink_{nullptr};
+  GstElement* shmdatasrc_{nullptr};
+  GstElement* audiobin_{nullptr};
+  GstElement* volume_{nullptr};
+  GstElement* fakesink_{nullptr};
   gulong handoff_handler_{0};
   unsigned short channels_{0};
-  unsigned int debug_buffer_usage_{1000}; 
+  unsigned int debug_buffer_usage_{1000};
   std::mutex output_ports_mutex_{};
-  std::vector<AudioRingBuffer<jack_sample_t>> ring_buffers_{};  // one per channel
-  // jack sample is the time unit, assuming gst pipeline has the same sample rate:
+  std::vector<AudioRingBuffer<jack_sample_t>>
+      ring_buffers_{};  // one per channel
+  // jack sample is the time unit, assuming gst pipeline has the same sample
+  // rate:
   DriftObserver<jack_nframes_t> drift_observer_{};
   JackClient jack_client_;
   std::vector<JackPort> output_ports_{};
   // properties
+  bool auto_connect_{true};
   std::string connect_to_{"system:playback_"};
   PContainer::prop_id_t connect_to_id_{0};
   unsigned int index_{1};
   PContainer::prop_id_t index_id_{0};
   PContainer::prop_id_t volume_id_{0};
   PContainer::prop_id_t mute_id_{0};
+  PContainer::prop_id_t auto_connect_id_{0};
   // ports
   std::vector<std::string> ports_to_connect_{};
-  std::mutex  port_to_connect_in_jack_process_mutex_{};
-  std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
-  
+  std::mutex port_to_connect_in_jack_process_mutex_{};
+  std::vector<std::pair<std::string, std::string>>
+      port_to_connect_in_jack_process_{};
+
   bool init() final;
   bool start();
   bool stop();
   void update_port_to_connect();
   void connect_ports();
   void disconnect_ports();
-  void on_port(jack_port_t *port);
+  void on_port(jack_port_t* port);
   bool on_shmdata_disconnect();
-  bool on_shmdata_connect(const std::string &shmdata_sochet_path);
-  bool can_sink_caps(const std::string &caps);
+  bool on_shmdata_connect(const std::string& shmdata_sochet_path);
+  bool can_sink_caps(const std::string& caps);
   bool make_elements();
   void check_output_ports(unsigned int channels);
   void on_xrun(uint num_of_missed_samples);
-  static void on_handoff_cb(GstElement *object,
-                            GstBuffer *buf,
-                            GstPad *pad,
+  static void on_handoff_cb(GstElement* object,
+                            GstBuffer* buf,
+                            GstPad* pad,
                             gpointer user_data);
-  static int jack_process (jack_nframes_t nframes, void *arg);
+  static int jack_process(jack_nframes_t nframes, void* arg);
 };
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToJack);

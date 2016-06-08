@@ -17,45 +17,39 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "./fraction.hpp"
 #include <glib.h>
 #include <cctype>
 #include <utility>
-#include "./fraction.hpp"
 
 namespace switcher {
 
-Fraction::Fraction(ator_t num, ator_t denom):
-    num_(num),
-    denom_(denom){
-}
+Fraction::Fraction(ator_t num, ator_t denom) : num_(num), denom_(denom) {}
 
-Fraction::fraction_t Fraction::get() const{
+Fraction::fraction_t Fraction::get() const {
   return std::make_pair(num_, denom_);
 }
 
-std::pair<bool, Fraction> Fraction::from_string(const std::string &str){
-  if (!isdigit(*str.begin())
-      && !('-' == *str.begin()
-           && str.begin() + 1 != str.end()
-           && isdigit(*(str.begin() +1)))){
+std::pair<bool, Fraction> Fraction::from_string(const std::string& str) {
+  if (!isdigit(*str.begin()) &&
+      !('-' == *str.begin() && str.begin() + 1 != str.end() &&
+        isdigit(*(str.begin() + 1)))) {
     g_warning("%s cannot be parsed as a fraction", str.c_str());
     return std::make_pair(false, Fraction(0, 0));
   }
   size_t pos;
-  long long num = std::stoll(str, &pos,0);
-  if  (std::string::npos == pos
-       || pos + 1 >= str.size()
-       || !isdigit(*(str.begin() + pos + 1))){
+  long long num = std::stoll(str, &pos, 0);
+  if (std::string::npos == pos || pos + 1 >= str.size() ||
+      !isdigit(*(str.begin() + pos + 1))) {
     g_warning("%s cannot be parsed as a fraction", str.c_str());
     return std::make_pair(false, Fraction(0, 0));
   }
-  long long denom = std::stoll(str.substr(pos + 1, std::string::npos), &pos,0);
+  long long denom = std::stoll(str.substr(pos + 1, std::string::npos), &pos, 0);
   return std::make_pair(true, Fraction(num, denom));
 }
 
-std::string Fraction::to_string() const{
+std::string Fraction::to_string() const {
   return std::to_string(numerator()) + "/" + std::to_string(denominator());
-} 
-
+}
 
 }  // namespace switcher

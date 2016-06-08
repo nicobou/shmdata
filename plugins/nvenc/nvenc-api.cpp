@@ -17,18 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <glib.h>  // log
 #include "./nvenc-api.hpp"
+#include <glib.h>  // log
 
 namespace switcher {
 
 bool NVencAPI::nvenc_api_has_been_set_ = false;
 NV_ENCODE_API_FUNCTION_LIST NVencAPI::api;
 
-NVencAPI::NVencAPI(){
+NVencAPI::NVencAPI() {
   if (!nvenc_api_has_been_set_) {
     api.version = NV_ENCODE_API_FUNCTION_LIST_VER;
-    if (NvEncodeAPICreateInstance (&api) == NV_ENC_SUCCESS)
+    if (NvEncodeAPICreateInstance(&api) == NV_ENC_SUCCESS)
       nvenc_api_has_been_set_ = true;
   }
 }

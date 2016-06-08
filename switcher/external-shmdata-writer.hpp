@@ -25,13 +25,13 @@
 #include "switcher/shmdata-follower.hpp"
 
 namespace switcher {
-class ExternalShmdataWriter: public Quiddity {
+class ExternalShmdataWriter : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ExternalShmdataWriter);
-  ExternalShmdataWriter(const std::string &);
+  ExternalShmdataWriter(const std::string&);
   ~ExternalShmdataWriter() = default;
-  ExternalShmdataWriter(const ExternalShmdataWriter &) = delete;
-  ExternalShmdataWriter &operator=(const ExternalShmdataWriter &) = delete;
+  ExternalShmdataWriter(const ExternalShmdataWriter&) = delete;
+  ExternalShmdataWriter& operator=(const ExternalShmdataWriter&) = delete;
 
  private:
   std::string shmdata_path_{};

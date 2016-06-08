@@ -17,31 +17,126 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <atomic>
 #include <cassert>
-#include <vector>
+#include <chrono>
+#include <future>
 #include <string>
-#include "switcher/quiddity-manager.hpp"
+#include <vector>
+#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/property-container.hpp"
 #include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity-manager.hpp"
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
 
-int
-main() {
+static bool success = false;
+static std::atomic<bool> do_continue{true};
+static std::condition_variable cond_var{};
+static std::mutex mut{};
+
+using namespace switcher;
+
+void on_tree_grafted(const std::string& /*subscriber_name */,
+                     const std::string& quid_name,
+                     const std::string& signal_name,
+                     const std::vector<std::string>& params,
+                     void* user_data) {
+  auto manager = static_cast<QuiddityManager*>(user_data);
+  GstShmdataSubscriber::num_bytes_t byte_rate =
+      manager->use_tree<MPtr(&InfoTree::branch_get_value)>(
+          quid_name, params[0] + ".byte_rate");
+  if (0 != byte_rate) {
+    std::unique_lock<std::mutex> lock(mut);
+    success = true;
+    do_continue.store(false);
+    cond_var.notify_one();
+  }
+  std::printf("%s: %s %s\n",
+              signal_name.c_str(),
+              params[0].c_str(),
+              std::to_string(byte_rate).c_str());
+}
+
+int main() {
   {
-    switcher::QuiddityManager::ptr manager =
-        switcher::QuiddityManager::make_manager("test_manager");
+    QuiddityManager::ptr manager =
+        QuiddityManager::make_manager("test_manager");
 #ifdef HAVE_CONFIG_H
-    gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
+    gchar* usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
     manager->scan_directory_for_plugins(usr_plugin_dir);
     g_free(usr_plugin_dir);
 #else
     return 1;
 #endif
 
-    assert(switcher::QuiddityBasicTest::test_full(manager, "nvenc"));
+    assert(QuiddityBasicTest::test_full(manager, "nvenc"));
+    manager->remove("nvenc");
 
+    // testing if nvenc can be used, if not stop the test
+    {
+      auto nvenc_quid = manager->create("nvenc");
+      if (nvenc_quid.empty()) {
+        g_warning("nvenc encoding not tested");
+        return 0;
+      }
+      manager->remove(nvenc_quid);
+    }
+
+    // testing if nvenc can be created successfully several times
+    for (int i = 0; i < 16; ++i) {
+      auto nvenc_quid = manager->create("nvenc");
+      if (nvenc_quid.empty()) {
+        g_warning("nvenc creating failed after being created %d time(s)", i);
+        return 1;
+      }
+      manager->remove(nvenc_quid);
+    }
+
+    // testing nvenc is encoding
+    auto video_quid = manager->create("videotestsrc");
+    assert(!video_quid.empty());
+    manager->use_prop<MPtr(&PContainer::set_str_str)>(
+        video_quid.c_str(), "codec", "0");
+    manager->use_prop<MPtr(&PContainer::set_str_str)>(
+        video_quid.c_str(), "started", "true");
+    // wait for video to be started
+    usleep(100000);
+    auto vid_shmdata_list = manager->use_tree<MPtr(&InfoTree::get_child_keys)>(
+        video_quid.c_str(), "shmdata.writer");
+    auto vid_shmpath = vid_shmdata_list.front();
+    assert(!vid_shmpath.empty());
+
+    auto nvenc_quid = manager->create("nvenc");
+    assert(!nvenc_quid.empty());
+    manager->invoke_va(
+        nvenc_quid.c_str(), "connect", nullptr, vid_shmpath.c_str(), nullptr);
+
+    // tracking nvenc shmdata writer byterate for evaluating success
+    assert(manager->make_signal_subscriber(
+        "signal_subscriber", on_tree_grafted, manager.get()));
+    assert(manager->subscribe_signal(
+        "signal_subscriber", nvenc_quid.c_str(), "on-tree-grafted"));
+
+    // wait 3 seconds
+    uint count = 3;
+    while (do_continue.load()) {
+      std::unique_lock<std::mutex> lock(mut);
+      if (count == 0) {
+        do_continue.store(false);
+      } else {
+        --count;
+        cond_var.wait_for(lock, std::chrono::seconds(1), []() {
+          return !do_continue.load();
+        });
+      }
+    }
   }  // end of scope is releasing the manager
-  return 0;
+  gst_deinit();
+  if (success)
+    return 0;
+  else
+    return 1;
 }

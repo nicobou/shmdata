@@ -8,11 +8,6 @@ SUBDIRS += \
     src
 endif
 
-if NODEADDONBUILD
-SUBDIRS += \
-    nodejs
-endif
-
 EXTRA_DIST=autogen.sh
 
 # pkg-config file:
@@ -25,19 +20,14 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = \
     switcher-@LIBSWITCHER_API_VERSION@.pc 
 
+# Documentation:
 html-local: htmldoc
 htmldoc:
 	@if [ -z `which doxygen` ]; then echo "No Doxygen!"; else doxygen; fi
-
-# Documentation:
+doc: htmldoc
 
 if HAVE_DOXYGEN
-doxyfile.stamp:
-	echo "/*! \mainpage Switcher for audio, video, data and network streams " > doxymain.h
-	echo " * \verbatim" >> doxymain.h
-	cat $(srcdir)/README >> doxymain.h
-	echo " \endverbatim" >> doxymain.h
-	echo " */" >> doxymain.h
+doxyfile.stamp: doxyfile.in
 	$(DOXYGEN) doxyfile
 	echo `date -R` > doxyfile.stamp
 

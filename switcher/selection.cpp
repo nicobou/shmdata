@@ -17,60 +17,49 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <glib.h>
-#include <tuple>
-#include <algorithm>
 #include "./selection.hpp"
+#include <glib.h>
+#include <algorithm>
+#include <tuple>
 
 namespace switcher {
 
-Selection::Selection(std::vector<std::string> &&list, index_t current_selection):
-    list_(list),
-    nicks_(list),
-    current_selection_(current_selection){
-}
+Selection::Selection(std::vector<std::string>&& list, index_t current_selection)
+    : list_(list), nicks_(list), current_selection_(current_selection) {}
 
-Selection::Selection(std::pair<std::vector<std::string>/*names*/,
-          std::vector<std::string/*nicks*/>> &&list, index_t current_selection):
-    list_(std::get<0>(list)),
-    nicks_(std::get<1>(list)),
-    current_selection_(current_selection){
-}
+Selection::Selection(std::pair<std::vector<std::string> /*names*/,
+                               std::vector<std::string /*nicks*/>>&& list,
+                     index_t current_selection)
+    : list_(std::get<0>(list)),
+      nicks_(std::get<1>(list)),
+      current_selection_(current_selection) {}
 
-void Selection::select(index_t current_selection){
-  if (current_selection >= list_.size()){
+void Selection::select(index_t current_selection) {
+  if (current_selection >= list_.size()) {
     g_warning("current_selection >= list_.size()");
     return;
   }
   current_selection_ = current_selection;
 }
 
-Selection::index_t Selection::get() const{
-  return current_selection_;
-}
+Selection::index_t Selection::get() const { return current_selection_; }
 
-std::string Selection::get_current() const{
-  return list_[current_selection_];
-}
+std::string Selection::get_current() const { return list_[current_selection_]; }
 
-std::string Selection::get_current_nick() const{
+std::string Selection::get_current_nick() const {
   return nicks_[current_selection_];
 }
 
-std::vector<std::string> Selection::get_list() const{
-  return list_;
-}
+std::vector<std::string> Selection::get_list() const { return list_; }
 
-Selection::index_t Selection::get_index(const std::string &name_or_nick){
+Selection::index_t Selection::get_index(const std::string& name_or_nick) {
   {
-    const auto &it = std::find(list_.cbegin(), list_.cend(), name_or_nick);
-    if (it != list_.end())
-      return it - list_.begin();
+    const auto& it = std::find(list_.cbegin(), list_.cend(), name_or_nick);
+    if (it != list_.end()) return it - list_.begin();
   }
   {
-    const auto &it = std::find(nicks_.cbegin(), nicks_.cend(), name_or_nick);
-    if (it != nicks_.end())
-      return it - nicks_.begin();
+    const auto& it = std::find(nicks_.cbegin(), nicks_.cend(), name_or_nick);
+    if (it != nicks_.end()) return it - nicks_.begin();
   }
   g_warning("index not found for selection named %s", name_or_nick.c_str());
   return 0;

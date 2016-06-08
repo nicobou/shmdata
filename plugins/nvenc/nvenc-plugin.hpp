@@ -22,28 +22,29 @@
 
 #include <cuda.h>
 #include <memory>
+#include "./nvenc-encode-session.hpp"
 #include "switcher/quiddity.hpp"
-#include "switcher/threaded-wrapper.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
 #include "switcher/shmdata-writer.hpp"
-#include "./nvenc-encode-session.hpp"
+#include "switcher/threaded-wrapper.hpp"
 
 namespace switcher {
-class NVencPlugin: public Quiddity {
+class NVencPlugin : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(NVencPlugin);
-  NVencPlugin(const std::string &);
+  NVencPlugin(const std::string&);
   ~NVencPlugin() = default;
-  NVencPlugin(const NVencPlugin &) = delete;
-  NVencPlugin &operator=(const NVencPlugin &) = delete;
+  NVencPlugin(const NVencPlugin&) = delete;
+  NVencPlugin& operator=(const NVencPlugin&) = delete;
 
   bool init() final;
+
  private:
-  ShmdataConnector shmcntr_;
-  std::unique_ptr<ShmdataFollower> shm_{nullptr};
   std::unique_ptr<ShmdataWriter> shmw_{nullptr};
   std::unique_ptr<ThreadedWrapper<NVencES>> es_{};
+  std::unique_ptr<ShmdataFollower> shm_{nullptr};
+  ShmdataConnector shmcntr_;
   Selection devices_{{"none"}, 0};
   std::vector<int> devices_nv_ids_{};
   Selection codecs_{{"none"}, 0};
@@ -68,10 +69,10 @@ class NVencPlugin: public Quiddity {
   void update_input_formats();
 
   bool on_shmdata_disconnect();
-  bool on_shmdata_connect(const std::string &shmdata_sochet_path);
-  bool can_sink_caps(const std::string &caps);
-  void on_shmreader_data(void *data, size_t data_size);
-  void on_shmreader_server_connected(const std::string &data_descr);
+  bool on_shmdata_connect(const std::string& shmdata_sochet_path);
+  bool can_sink_caps(const std::string& caps);
+  void on_shmreader_data(void* data, size_t data_size);
+  void on_shmreader_server_connected(const std::string& data_descr);
 };
 
 SWITCHER_DECLARE_PLUGIN(NVencPlugin);

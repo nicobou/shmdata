@@ -20,19 +20,20 @@
 #ifndef __SWITCHER_TYPE_NAME_REGISTRY_H__
 #define __SWITCHER_TYPE_NAME_REGISTRY_H__
 
-#include <string>
 #include <map>
+#include <string>
 #include <typeinfo>
 
-namespace switcher{
+namespace switcher {
 
-class TypeNameRegistry{
+class TypeNameRegistry {
  public:
   TypeNameRegistry() = delete;
-  template<typename T>
-  static std::string get_name(){
+  template <typename T>
+  static std::string get_name() {
     return type_name_registry_[typeid(T).hash_code()];
   }
+
  private:
   using registry_t = std::map<size_t, std::string>;
   static registry_t type_name_registry_;

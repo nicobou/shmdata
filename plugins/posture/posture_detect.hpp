@@ -26,36 +26,36 @@
 #include <string>
 
 #include "./posture.hpp"
-#include "switcher/std2.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
 #include "switcher/shmdata-writer.hpp"
 #include "switcher/startable-quiddity.hpp"
+#include "switcher/std2.hpp"
 
 namespace switcher {
 class PostureDetect : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureDetect);
-  PostureDetect(const std::string &);
+  PostureDetect(const std::string&);
   ~PostureDetect();
-  PostureDetect(const PostureDetect &) = delete;
-  PostureDetect &operator=(const PostureDetect &) = delete;
+  PostureDetect(const PostureDetect&) = delete;
+  PostureDetect& operator=(const PostureDetect&) = delete;
 
   bool start();
   bool stop();
 
  private:
   ShmdataConnector shmcntr_;
-  bool compress_cloud_ {false};
+  bool compress_cloud_{false};
 
-  std::shared_ptr<posture::Detect> detect_ {nullptr};
-  std::mutex mutex_ {};
+  std::shared_ptr<posture::Detect> detect_{nullptr};
+  std::mutex mutex_{};
 
-  std::unique_ptr<ShmdataFollower> reader_ {nullptr};
-  std::string reader_caps_ {};
-  std::unique_ptr<ShmdataWriter> cloud_writer_ {nullptr};
-  std::unique_ptr<ShmdataWriter> mesh_writer_ {nullptr};
+  std::unique_ptr<ShmdataFollower> reader_{nullptr};
+  std::string reader_caps_{};
+  std::unique_ptr<ShmdataWriter> cloud_writer_{nullptr};
+  std::unique_ptr<ShmdataWriter> mesh_writer_{nullptr};
 
   bool init() final;
 

@@ -19,35 +19,36 @@
 #define __SWITCHER_PJSIP_PLUGIN_H__
 
 #include <pjsua-lib/pjsua.h>
-#include <memory>
 #include <atomic>
-#include "switcher/threaded-wrapper.hpp"
-#include "switcher/quiddity.hpp"
-#include "./pj-sip.hpp"
+#include <memory>
 #include "./pj-call.hpp"
 #include "./pj-presence.hpp"
+#include "./pj-sip.hpp"
 #include "./pj-stun-turn.hpp"
+#include "switcher/quiddity.hpp"
+#include "switcher/threaded-wrapper.hpp"
 
 namespace switcher {
-class SIPPlugin: public Quiddity {
+class SIPPlugin : public Quiddity {
   friend PJCall;
   friend PJPresence;
   friend PJStunTurn;
 
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SIPPlugin);
-  SIPPlugin(const std::string &);
+  SIPPlugin(const std::string&);
   ~SIPPlugin();
-  SIPPlugin(const SIPPlugin &) = delete;
-  SIPPlugin &operator=(const SIPPlugin &) = delete;
+  SIPPlugin(const SIPPlugin&) = delete;
+  SIPPlugin& operator=(const SIPPlugin&) = delete;
   bool init();
   bool start();
   bool stop();
 
  private:
   std::unique_ptr<ThreadedWrapper<PJSIP>> pjsip_{};
-  unsigned sip_port_ {5060};
-  pjsua_transport_id transport_id_ {-1};
+  unsigned sip_port_{5060};
+  PContainer::prop_id_t port_id_;
+  pjsua_transport_id transport_id_{-1};
   std::unique_ptr<PJCall> sip_calls_{nullptr};
   std::unique_ptr<PJPresence> sip_presence_{nullptr};
   std::unique_ptr<PJStunTurn> stun_turn_{nullptr};
@@ -55,9 +56,10 @@ class SIPPlugin: public Quiddity {
   // singleton related members:
   bool i_m_the_one_{false};
   static std::atomic<unsigned short> sip_plugin_used_;
-  static SIPPlugin *this_;
-  
+  static SIPPlugin* this_;
+
   bool start_sip_transport();
+  void apply_configuration();
 };
 
 }  // namespace switcher

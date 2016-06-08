@@ -22,19 +22,19 @@
 
 #include <memory>
 #include <string>
-#include "switcher/quiddity.hpp"
-#include "switcher/startable-quiddity.hpp"
-#include "switcher/shmdata-writer.hpp"
 #include "./syphonreader.hpp"
+#include "switcher/quiddity.hpp"
+#include "switcher/shmdata-writer.hpp"
+#include "switcher/startable-quiddity.hpp"
 
 namespace switcher {
-class SyphonSrc: public Quiddity, public StartableQuiddity {
+class SyphonSrc : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SyphonSrc);
-  SyphonSrc(const std::string &);
+  SyphonSrc(const std::string&);
   ~SyphonSrc() = default;
-  SyphonSrc(const SyphonSrc &) = delete;
-  SyphonSrc &operator=(const SyphonSrc &) = delete;
+  SyphonSrc(const SyphonSrc&) = delete;
+  SyphonSrc& operator=(const SyphonSrc&) = delete;
 
  private:
   std::shared_ptr<SyphonReader> reader_{};
@@ -46,7 +46,7 @@ class SyphonSrc: public Quiddity, public StartableQuiddity {
   bool init() final;
   bool start() final;
   bool stop() final;
-  static void frameCallback(void *, const char *, int &, int &);
+  static void frameCallback(void*, const char*, int&, int&);
 };
 
 SWITCHER_DECLARE_PLUGIN(SyphonSrc);

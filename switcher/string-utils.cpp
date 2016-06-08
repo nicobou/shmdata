@@ -17,22 +17,21 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <gst/gst.h>
-#include <sstream>
-#include <algorithm>
 #include "./string-utils.hpp"
+#include <gst/gst.h>
+#include <algorithm>
+#include <sstream>
 
 namespace switcher {
 
-std::string StringUtils::replace_char(const std::string &orig,
+std::string StringUtils::replace_char(const std::string& orig,
                                       const char to_replace,
-                                      const std::string &replacement){
+                                      const std::string& replacement) {
   std::string escaped = std::string();
   std::size_t i = 0;
   while (std::string::npos != i) {
     auto found = orig.find(to_replace, i);
-    if (i != found)
-      escaped += std::string(orig, i, found - i);
+    if (i != found) escaped += std::string(orig, i, found - i);
     if (std::string::npos != found) {
       escaped += replacement;
       i = ++found;
@@ -43,15 +42,14 @@ std::string StringUtils::replace_char(const std::string &orig,
   return escaped;
 }
 
-std::string StringUtils::replace_string(const std::string &orig,
-                                        const std::string &to_replace,
-                                        const std::string &replacement){
+std::string StringUtils::replace_string(const std::string& orig,
+                                        const std::string& to_replace,
+                                        const std::string& replacement) {
   std::string unescaped = std::string();
   std::size_t i = 0;
-  while(std::string::npos != i) {
+  while (std::string::npos != i) {
     std::size_t found = orig.find(to_replace, i);
-    if (i != found)
-      unescaped += std::string(orig, i , found - i);
+    if (i != found) unescaped += std::string(orig, i, found - i);
     if (std::string::npos != found) {
       unescaped += replacement;
       i = found + to_replace.size();
@@ -62,13 +60,13 @@ std::string StringUtils::replace_string(const std::string &orig,
   return unescaped;
 }
 
-std::string StringUtils::replace_chars(const std::string &orig,
-                                       const std::vector<char> &to_replace,
-                                       const char replacement){
+std::string StringUtils::replace_chars(const std::string& orig,
+                                       const std::vector<char>& to_replace,
+                                       const char replacement) {
   std::string res = orig;
   // FIXME iterate only once
-  for (auto &it: to_replace) 
-    std::replace( res.begin(), res.end(), it, replacement);
+  for (auto& it : to_replace)
+    std::replace(res.begin(), res.end(), it, replacement);
   return res;
 }
 

@@ -22,50 +22,61 @@
  */
 
 // #include <gst/interfaces/xoverlay.h>
-#include <algorithm>
 #include "./gst-pipeliner.hpp"
-#include "./quiddity.hpp"
+#include <algorithm>
+#include "./g-source-wrapper.hpp"
 #include "./gst-utils.hpp"
 #include "./quiddity-command.hpp"
 #include "./quiddity-manager-impl.hpp"
+#include "./quiddity.hpp"
 #include "./scope-exit.hpp"
 #include "./std2.hpp"
-#include "./g-source-wrapper.hpp"
 
 namespace switcher {
 GstPipeliner::GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
-                           GstPipe::on_msg_sync_cb_t on_msg_sync_cb):
-    on_msg_async_cb_(on_msg_async_cb),
-    on_msg_sync_cb_(on_msg_sync_cb),
-    main_loop_(std2::make_unique<GlibMainLoop>()),
-    gst_pipeline_(
-        std2::make_unique<GstPipe>(main_loop_->get_main_context(),
-                                   &GstPipeliner::bus_sync_handler,
-                                   this
-                                   // [this](GstMessage *msg){
-                                   //   if(this->on_msg_async_cb_)
-                                   //     this->on_msg_async_cb_(msg);
-                                   // },
-                                   // [this](GstMessage *msg){
-                                   //   if (GST_BUS_DROP == this->on_gst_error(msg))
-                                   //     return GST_BUS_DROP;
-                                   //   else {
-                                   //     if (this->on_msg_sync_cb_)
-                                   //       return this->on_msg_sync_cb_(msg);
-                                   //     else
-                                   //       return GST_BUS_PASS;
-                                   //   }
-                                   // }
-                                   )){
+                           GstPipe::on_msg_sync_cb_t on_msg_sync_cb)
+    : on_msg_async_cb_(on_msg_async_cb),
+      on_msg_sync_cb_(on_msg_sync_cb),
+      main_loop_(std2::make_unique<GlibMainLoop>()),
+      gst_pipeline_(std2::make_unique<GstPipe>(
+          main_loop_->get_main_context(), &GstPipeliner::bus_sync_handler, this
+          // [this](GstMessage *msg){
+          //   if(this->on_msg_async_cb_)
+          //     this->on_msg_async_cb_(msg);
+          // },
+          // [this](GstMessage *msg){
+          //   if (GST_BUS_DROP == this->on_gst_error(msg))
+          //     return GST_BUS_DROP;
+          //   else {
+          //     if (this->on_msg_sync_cb_)
+          //       return this->on_msg_sync_cb_(msg);
+          //     else
+          //       return GST_BUS_PASS;
+          //   }
+          // }
+          )) {
   if (!gst_pipeline_) {
     g_warning("error initializing gstreamer pipeline");
     return;
   }
+
+  GstUtils::g_idle_add_full_with_context(main_loop_->get_main_context(),
+                                         G_PRIORITY_DEFAULT_IDLE,
+                                         push_thread_context,
+                                         this,
+                                         nullptr);
 }
 
-GstPipeliner::~GstPipeliner() {
-  for (auto &it: msgs_)
-    gst_message_unref(it);
+GstPipeliner::~GstPipeliner() {}
+
+gboolean GstPipeliner::push_thread_context(gpointer user_data) {
+  auto context = static_cast<GstPipeliner*>(user_data);
+  g_main_context_push_thread_default(context->main_loop_->get_main_context());
+
+  gst_bus_add_watch(gst_pipeline_get_bus(GST_PIPELINE(context->get_pipeline())),
+                    bus_watch,
+                    user_data);
+  return FALSE;
 }
 
 void GstPipeliner::play(gboolean play) {
@@ -80,7 +91,6 @@ bool GstPipeliner::seek(gdouble position_in_ms) {
   return gst_pipeline_->seek(position_in_ms);
 }
 
-
 // gboolean GstPipeliner::run_remove_quid(gpointer user_data) {
 //   GstPipeliner *context = static_cast<GstPipeliner *>(user_data);
 //   QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
@@ -88,7 +98,7 @@ bool GstPipeliner::seek(gdouble position_in_ms) {
 //     // copying in case of self destruction
 //     std::list<std::string> tmp = context->quids_to_remove_;
 //     context->quids_to_remove_.clear();
-//     for (auto &it: tmp) 
+//     for (auto &it: tmp)
 //       manager->remove(it);
 //   } else {
 //     g_warning("cannot recover from error (no manager available)");
@@ -96,7 +106,7 @@ bool GstPipeliner::seek(gdouble position_in_ms) {
 //   return FALSE;
 // }
 
-GstElement *GstPipeliner::get_pipeline() {
+GstElement* GstPipeliner::get_pipeline() {
   return gst_pipeline_->get_pipeline();
 }
 
@@ -110,7 +120,8 @@ GstElement *GstPipeliner::get_pipeline() {
 //   // for (i = 0; i < num; ++i) {
 //   //   const GValue *val;
 
-//   //   /* Note: when looking for specific tags, use the g_tag_list_get_xyz() API,
+//   //   /* Note: when looking for specific tags, use the g_tag_list_get_xyz()
+//   API,
 //   //    * we only use the GValue approach here because it is more generic */
 //   //   val = gst_tag_list_get_value_index (list, tag, i);
 //   //   if (G_VALUE_HOLDS_STRING (val)) {
@@ -134,37 +145,32 @@ GstElement *GstPipeliner::get_pipeline() {
 //   // }
 // }
 
-GstBusSyncReply GstPipeliner::on_gst_error(GstMessage *msg) {
-  if (GST_MESSAGE_TYPE(msg) != GST_MESSAGE_ERROR)
-    return GST_BUS_PASS;
-  gchar *debug = nullptr;
-  GError *error = nullptr;
+GstBusSyncReply GstPipeliner::on_gst_error(GstMessage* msg) {
+  if (GST_MESSAGE_TYPE(msg) != GST_MESSAGE_ERROR) return GST_BUS_PASS;
+  gchar* debug = nullptr;
+  GError* error = nullptr;
   gst_message_parse_error(msg, &error, &debug);
   g_free(debug);
-  g_debug("Gstreamer error: %s (element %s)", error->message,
-          GST_MESSAGE_SRC_NAME(msg));
+  g_warning("GStreamer error: %s (element %s)",
+            error->message,
+            GST_MESSAGE_SRC_NAME(msg));
   g_error_free(error);
   // on-error-gsource
-  GSourceWrapper *gsrc =
-      static_cast<GSourceWrapper *>(g_object_get_data(G_OBJECT(msg->src),
-                                                      "on-error-gsource"));
-  if(nullptr != gsrc) {
+  GSourceWrapper* gsrc = static_cast<GSourceWrapper*>(
+      g_object_get_data(G_OBJECT(msg->src), "on-error-gsource"));
+  if (nullptr != gsrc) {
     // removing command in order to get it invoked once
-    g_object_set_data(G_OBJECT(msg->src),
-                      "on-error-gsource",
-                      nullptr);
+    g_object_set_data(G_OBJECT(msg->src), "on-error-gsource", nullptr);
     gsrc->attach(main_loop_->get_main_context());
   }
-  
+
   // on-error-delete
-  const char *name =
-      (const char *) g_object_get_data(G_OBJECT(msg->src),
-                                       "on-error-delete");
+  const char* name =
+      (const char*)g_object_get_data(G_OBJECT(msg->src), "on-error-delete");
   if (nullptr != name) {
     // removing command in order to get it invoked once
-    g_object_set_data(G_OBJECT(msg->src),
-                      "on-error-delete",
-                      (gpointer) nullptr);
+    g_object_set_data(
+        G_OBJECT(msg->src), "on-error-delete", (gpointer) nullptr);
     g_warning("FIXME, handle on-error-delete");
     // GstUtils::g_idle_add_full_with_context(main_loop_->get_main_context(),
     //                                        G_PRIORITY_DEFAULT_IDLE,
@@ -173,47 +179,29 @@ GstBusSyncReply GstPipeliner::on_gst_error(GstMessage *msg) {
     //                                        nullptr);
   }
   return GST_BUS_DROP;
-  
 }
 
-gboolean GstPipeliner::bus_async(gpointer user_data) {
-  auto context = static_cast<GstPipeliner *>(user_data);
-  if (context->msgs_.empty()){
-    g_debug("bus_async called with no msg...");
-    return FALSE;
-  }
-  auto msg = *context->msgs_.begin();
-  context->msgs_.pop_front();
-  if(context->on_msg_async_cb_)
-    context->on_msg_async_cb_(msg);
-  gst_message_unref(msg);
-  return FALSE;
+gboolean GstPipeliner::bus_watch(GstBus* /*bus*/,
+                                 GstMessage* message,
+                                 gpointer user_data) {
+  auto context = static_cast<GstPipeliner*>(user_data);
+  if (context && context->on_msg_async_cb_) context->on_msg_async_cb_(message);
+  return TRUE;
 }
 
-
-GstBusSyncReply GstPipeliner::bus_sync_handler(GstBus * /*bus*/,
-                                          GstMessage *msg,
-                                          gpointer user_data) {
-  GstPipeliner *context = static_cast<GstPipeliner *>(user_data);
+GstBusSyncReply GstPipeliner::bus_sync_handler(GstBus* /*bus*/,
+                                               GstMessage* msg,
+                                               gpointer user_data) {
+  GstPipeliner* context = static_cast<GstPipeliner*>(user_data);
   auto res = GST_BUS_PASS;
   if (GST_BUS_DROP == context->on_gst_error(msg))
     return GST_BUS_DROP;
   else {
     if (context->on_msg_sync_cb_) {
-      if (GST_BUS_DROP == context->on_msg_sync_cb_(msg))
-            return GST_BUS_DROP;
+      if (GST_BUS_DROP == context->on_msg_sync_cb_(msg)) return GST_BUS_DROP;
     }
   }
-  if (context->on_msg_async_cb_) {
-    gst_message_ref(msg);
-    context->msgs_.push_back(msg);
-    GstUtils::g_idle_add_full_with_context(context->main_loop_->get_main_context(),
-                                           G_PRIORITY_DEFAULT_IDLE,
-                                           (GSourceFunc) bus_async,
-                                           (gpointer) context,
-                                           nullptr);
-  }
-  
+
   // if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_QOS) {
   //   GstFormat format;
   //   guint64 processed;
@@ -227,14 +215,15 @@ GstBusSyncReply GstPipeliner::bus_sync_handler(GstBus * /*bus*/,
   // }
 
   if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_ERROR) {
-    gchar *debug = nullptr;
-    GError *error = nullptr;
+    gchar* debug = nullptr;
+    GError* error = nullptr;
     gst_message_parse_error(msg, &error, &debug);
     g_free(debug);
-    g_debug("Gstreamer error: %s (element %s)", error->message,
-            GST_MESSAGE_SRC_NAME(msg));
+    g_warning("GStreamer error: %s (element %s)",
+              error->message,
+              GST_MESSAGE_SRC_NAME(msg));
     g_error_free(error);
-    res =  GST_BUS_DROP;
+    res = GST_BUS_DROP;
   }
 
   // if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_EOS) {
@@ -265,7 +254,7 @@ GstBusSyncReply GstPipeliner::bus_sync_handler(GstBus * /*bus*/,
   //   // g_print ("\n");
   //   // gst_tag_list_free (tags);
   // }
-  
+
   return res;
 }
 

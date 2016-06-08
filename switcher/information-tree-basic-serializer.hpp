@@ -33,13 +33,13 @@
 #ifndef __SWITCHER_INFORMATION_TREE_BASIC_SERIALIZER_H__
 #define __SWITCHER_INFORMATION_TREE_BASIC_SERIALIZER_H__
 
-#include "./information-tree.hpp"
 #include <string>
+#include "./information-tree.hpp"
 
 namespace switcher {
 namespace BasicSerializer {
 std::string serialize(InfoTree::ptrc);
-InfoTree::ptr deserialize(const std::string &serialized);
+InfoTree::ptr deserialize(const std::string& serialized);
 }  // namespace BasicSerializer
 }  // namespace switcher
 #endif

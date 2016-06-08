@@ -20,32 +20,32 @@
 #ifndef __SWITCHER_GST_AUDIO_CODEC_H__
 #define __SWITCHER_GST_AUDIO_CODEC_H__
 
-#include <vector>
 #include <unordered_set>
-#include "switcher/unique-gst-element.hpp"
+#include <vector>
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/shmdata-utils.hpp"
+#include "switcher/unique-gst-element.hpp"
 
 namespace switcher {
 class quiddity;
 
 class GstAudioCodec {
  public:
-  GstAudioCodec(Quiddity *quid,
-                const std::string &shmpath_to_encode,
-                const std::string &shmpath_encoded = {});
+  GstAudioCodec(Quiddity* quid,
+                const std::string& shmpath_to_encode,
+                const std::string& shmpath_encoded = {});
   GstAudioCodec() = delete;
   ~GstAudioCodec() = default;
-  GstAudioCodec(const GstAudioCodec &) = delete;
-  GstAudioCodec &operator=(const GstAudioCodec &) = delete;
+  GstAudioCodec(const GstAudioCodec&) = delete;
+  GstAudioCodec& operator=(const GstAudioCodec&) = delete;
 
-  void set_shm(const std::string &shmpath);
+  void set_shm(const std::string& shmpath);
   bool start();
   bool stop();
-  
+
  private:
-  Quiddity *quid_;
+  Quiddity* quid_;
   // shmdata path
   std::string shmpath_to_encode_;
   std::string shm_encoded_path_;
@@ -70,23 +70,27 @@ class GstAudioCodec {
   PContainer::prop_id_t codec_long_list_id_;
   std::vector<std::string> codec_properties_{};
   // codec params black list
-  std::unordered_set<std::string> param_black_list_{"name", "parent",
-        "hard-resync", "mark-granule", "perfect-timestamp", "tolerance"};
+  std::unordered_set<std::string> param_black_list_{"name",
+                                                    "parent",
+                                                    "hard-resync",
+                                                    "mark-granule",
+                                                    "perfect-timestamp",
+                                                    "tolerance"};
   // shmdatasrc copy-buffers property:
   bool copy_buffers_{true};
-  
+
   bool remake_codec_elements();
   void make_codec_properties();
   void uninstall_codec_properties();
   void make_bin();
   void show();
   void hide();
-  PContainer::prop_id_t install_codec(bool primary);  // install secondary if false
-  static gboolean sink_factory_filter(GstPluginFeature *feature,
-                                      gpointer data);
-  static gint sink_compare_ranks(GstPluginFeature *f1,
-                                 GstPluginFeature *f2);
-  static gboolean reset_codec_configuration(gpointer /*unused */ , gpointer user_data);
+  PContainer::prop_id_t install_codec(
+      bool primary);  // install secondary if false
+  static gboolean sink_factory_filter(GstPluginFeature* feature, gpointer data);
+  static gint sink_compare_ranks(GstPluginFeature* f1, GstPluginFeature* f2);
+  static gboolean reset_codec_configuration(gpointer /*unused */,
+                                            gpointer user_data);
 };
 
 }  // namespace switcher

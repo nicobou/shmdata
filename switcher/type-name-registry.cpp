@@ -21,32 +21,32 @@
 
 namespace switcher {
 
-#define REGISTER_TYPE(X)                        \
-  {typeid(X).hash_code(), #X}
+#define REGISTER_TYPE(X) \
+  { typeid(X).hash_code(), #X }
 
-#define REGISTER_TYPE2(X, Y)                    \
-  {typeid(X).hash_code(), #Y}
+#define REGISTER_TYPE2(X, Y) \
+  { typeid(X).hash_code(), #Y }
 
 TypeNameRegistry::registry_t TypeNameRegistry::type_name_registry_ = {
-  REGISTER_TYPE(double),
-  REGISTER_TYPE(float),
-  REGISTER_TYPE(long double),
-  
-  REGISTER_TYPE(bool),
+    REGISTER_TYPE(double),
+    REGISTER_TYPE(float),
+    REGISTER_TYPE(long double),
 
-  REGISTER_TYPE(int),
-  REGISTER_TYPE(short),
-  REGISTER_TYPE(long),
-  REGISTER_TYPE(long long),
-  REGISTER_TYPE(unsigned int),
-  REGISTER_TYPE(unsigned short),
-  REGISTER_TYPE(unsigned long),
-  REGISTER_TYPE(unsigned long long),
+    REGISTER_TYPE(bool),
 
-  REGISTER_TYPE(char),
+    REGISTER_TYPE(int),
+    REGISTER_TYPE(short),
+    REGISTER_TYPE(long),
+    REGISTER_TYPE(long long),
+    REGISTER_TYPE(unsigned int),
+    REGISTER_TYPE(unsigned short),
+    REGISTER_TYPE(unsigned long),
+    REGISTER_TYPE(unsigned long long),
 
-  REGISTER_TYPE2(std::string, string),
-  REGISTER_TYPE2(const char *, string),
+    REGISTER_TYPE(char),
+
+    REGISTER_TYPE2(std::string, string),
+    REGISTER_TYPE2(const char*, string),
 };
 
 }  // namespace switcher

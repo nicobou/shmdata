@@ -20,8 +20,8 @@
 #ifndef __SWITCHER_CATEGORIZABLE_H__
 #define __SWITCHER_CATEGORIZABLE_H__
 
-#include <string>
 #include <memory>
+#include <string>
 
 namespace switcher {
 // FIXME remove caterory and call it positionnable
@@ -37,8 +37,7 @@ class Categorizable {
   void set_position_weight(int position_weight);
   std::string get_category() const;
   int get_position_weight() const;
-  static bool compare_ptr(Categorizable::ptr first,
-                          Categorizable::ptr second);
+  static bool compare_ptr(Categorizable::ptr first, Categorizable::ptr second);
   static bool compare(Categorizable first, Categorizable second);
 
  private:

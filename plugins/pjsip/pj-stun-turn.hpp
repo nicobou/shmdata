@@ -18,8 +18,9 @@
 #ifndef __SWITCHER_PJ_STUN_TURN_H__
 #define __SWITCHER_PJ_STUN_TURN_H__
 
-#include <mutex>
+#include <glib.h>
 #include <condition_variable>
+#include <mutex>
 #include "./pj-ice-stream-trans.hpp"
 
 namespace switcher {
@@ -33,29 +34,32 @@ class PJStunTurn {
  public:
   PJStunTurn();
   ~PJStunTurn();
-  PJStunTurn(const PJStunTurn &) = delete;
-  PJStunTurn &operator=(const PJStunTurn &) = delete;
+  PJStunTurn(const PJStunTurn&) = delete;
+  PJStunTurn& operator=(const PJStunTurn&) = delete;
 
   std::unique_ptr<PJICEStreamTrans> get_ice_transport(unsigned comp_cnt,
                                                       pj_ice_sess_role role);
+
  private:
   std::mutex connection_mutex_{};
   std::condition_variable connection_cond_{};
   bool connected_{false};
   pj_ice_strans_cfg ice_cfg_;
   bool worker_quit_{false};
-  pj_thread_t *thread_{nullptr};
+  pj_thread_t* thread_{nullptr};
   std::string stun_srv_;
   std::string turn_srv_;
   std::string turn_user_;
   std::string turn_pass_;
   bool stun_turn_valid_{false};
-  
-  static int worker_thread(void *data);
-  pj_status_t handle_events(unsigned max_msec, unsigned *p_count);
-  static gboolean set_stun_turn(gchar *stun, gchar *turn,
-                                gchar *turn_user, char *turn_pass,
-                                void *user_data);
+
+  static int worker_thread(void* data);
+  pj_status_t handle_events(unsigned max_msec, unsigned* p_count);
+  static gboolean set_stun_turn(const gchar* stun,
+                                const gchar* turn,
+                                const gchar* turn_user,
+                                const gchar* turn_pass,
+                                void* user_data);
 };
 
 }  // namespace switcher

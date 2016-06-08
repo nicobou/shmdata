@@ -17,36 +17,34 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "./quiddity-documentation.hpp"
 #include <iostream>
 #include <sstream>
-#include "./quiddity-documentation.hpp"
 
 namespace switcher {
-QuiddityDocumentation::QuiddityDocumentation(const std::string &long_name,
-                                             const std::string &class_name,
-                                             const std::string &category,
-                                             const std::string &tags,
-                                             const std::string &short_description,
-                                             const std::string &license,
-                                             const std::string &author) :
-    category_(category),
-  class_name_(class_name),
-  description_(short_description),
-  long_name_(long_name),
-  author_(author),
-  license_(license),
-  json_description_(std::make_shared<JSONBuilder>()) {
+QuiddityDocumentation::QuiddityDocumentation(
+    const std::string& long_name,
+    const std::string& class_name,
+    const std::string& category,
+    const std::string& tags,
+    const std::string& short_description,
+    const std::string& license,
+    const std::string& author)
+    : category_(category),
+      class_name_(class_name),
+      description_(short_description),
+      long_name_(long_name),
+      author_(author),
+      license_(license),
+      json_description_(std::make_shared<JSONBuilder>()) {
   // parsing tags since vector initialization like {"writer", "reader"} does
   // not pass MACRO arguments:
-  std::istringstream ss(tags); // Turn the string into a stream
-  std::string tok;  
-  while(std::getline(ss, tok, '/'))
-    tags_.push_back(tok);
+  std::istringstream ss(tags);  // Turn the string into a stream
+  std::string tok;
+  while (std::getline(ss, tok, '/')) tags_.push_back(tok);
 }
 
-std::string QuiddityDocumentation::get_category() const {
-  return category_;
-}
+std::string QuiddityDocumentation::get_category() const { return category_; }
 
 std::string QuiddityDocumentation::get_class_name() const {
   return class_name_;
@@ -56,17 +54,11 @@ std::string QuiddityDocumentation::get_description() const {
   return description_;
 }
 
-std::string QuiddityDocumentation::get_long_name() const {
-  return long_name_;
-}
+std::string QuiddityDocumentation::get_long_name() const { return long_name_; }
 
-std::string QuiddityDocumentation::get_author() const {
-  return author_;
-}
+std::string QuiddityDocumentation::get_author() const { return author_; }
 
-std::string QuiddityDocumentation::get_license() const {
-  return license_;
-}
+std::string QuiddityDocumentation::get_license() const { return license_; }
 
 void QuiddityDocumentation::make_json_description() {
   json_description_ = std::make_shared<JSONBuilder>();
@@ -77,11 +69,9 @@ void QuiddityDocumentation::make_json_description() {
   json_description_->add_string_member("category", category_.c_str());
   json_description_->set_member_name("tags");
   json_description_->begin_array();
-  for (auto &it: tags_)
-    json_description_->add_string_value(it.c_str());
+  for (auto& it : tags_) json_description_->add_string_value(it.c_str());
   json_description_->end_array();
-  json_description_->add_string_member("description",
-                                       description_.c_str());
+  json_description_->add_string_member("description", description_.c_str());
   json_description_->add_string_member("license", license_.c_str());
   json_description_->add_string_member("author", author_.c_str());
   json_description_->end_object();

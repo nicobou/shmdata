@@ -1,3 +1,4 @@
+// clang-format off
 /* The MIT License (MIT)
  *
  * Copyright (c) 2015 Nicolas Bouillot
@@ -526,7 +527,8 @@ struct _consult_or_fw_method##alternative_member_<                      \
 		      /* type as nullptr then this forward does */	\
 		      /* not require map key forwarding*/		\
 		      !std::is_same<decltype(nullptr),			\
-		      _fw_method##MapKey_t >::value)>::type* = nullptr>	\
+		      _fw_method##MapKey_t >::value)>::type* = nullptr, \
+           int flag=_fw_method##_access_flag>                           \
   inline typename std::                                                 \
   enable_if<!std::is_same<void,                                         \
                           typename nicobou::                            \
@@ -535,12 +537,16 @@ struct _consult_or_fw_method##alternative_member_<                      \
             >::type                                                     \
   _fw_method(_fw_method##MapKey_t key,                                  \
              BTs ...args) const {                                       \
-    static_assert(nicobou::method_traits<MMType, fun>::is_const,        \
+    static_assert(nicobou::method_traits<MMType, fun>::is_const         \
+                  || flag == _fw_method##NonConst_t::                   \
+                  _fw_method##non_const,                                \
                   "consultation is available for const methods only");  \
     auto alt =                                                          \
         _fw_method##get_alternative<decltype(fun), fun>();              \
     if(nullptr != alt)                                                  \
-      return (this->*alt)(key, std::forward<BTs>(args)...);             \
+      /*FIXME (_self_type *) is here for forward_delegate, */           \
+      /* must be implemented in a non const forwarder*/                 \
+      return ((_self_type *)this->*alt)(key, std::forward<BTs>(args)...); \
     /* __attribute__((unused)) tells compiler encap is not used*/       \
     auto encap __attribute__((unused)) =                                \
         _fw_method##internal_encaps();                                  \
@@ -560,7 +566,8 @@ struct _consult_or_fw_method##alternative_member_<                      \
 		      /* type as nullptr then this forward does */	\
 		      /* not require map key forwarding*/		\
 		      !std::is_same<decltype(nullptr),			\
-		      _fw_method##MapKey_t >::value)>::type* = nullptr>	\
+		      _fw_method##MapKey_t >::value)>::type* = nullptr, \
+           int flag=_fw_method##_access_flag>                           \
   inline typename std::                                                 \
   enable_if<std::is_same<void,                                          \
                          typename nicobou::                             \
@@ -573,7 +580,9 @@ struct _consult_or_fw_method##alternative_member_<                      \
     auto alt =                                                          \
         _fw_method##get_alternative<decltype(fun), fun>();              \
     if(nullptr != alt) {                                                \
-      (this->*alt)(key, std::forward<BTs>(args)...);                     \
+      /*FIXME (_self_type *) is here for forward_delegate, */           \
+      /* must be implemented in a non const forwarder*/                 \
+      ((_self_type *)this->*alt)(key, std::forward<BTs>(args)...);      \
       return;                                                           \
     }                                                                   \
     /* __attribute__((unused)) tells compiler encap is not used*/       \
@@ -694,4 +703,94 @@ struct _consult_or_fw_method##alternative_member_<                      \
   }									\
                                                                         \
 
+
+// returns default constructed R if key not found
+// assuming the map is storing shared or unique pointers
+#define Forward_delegate_from_associative_container(                    \
+    _self_type,                                                         \
+    _map_member_type,                                                   \
+    _accessor_method,                                                   \
+    _map_key_type,                                                      \
+    _on_error_construct_ret_method,                                     \
+    _consult_method,                                                    \
+    _fw_method)                                                         \
+    using _fw_method##self_type = _self_type;                           \
+                                                                        \
+    /*saving key type for later forward*/                               \
+    using _fw_method##MapKey_t =                                        \
+        const std::decay<_map_key_type>::type &;                        \
+                                                                        \
+    /*forwarding consultable type for other forwarder(s)*/              \
+    using _fw_method##Consult_t = typename                              \
+        std::decay<_map_member_type>::type::                            \
+        _consult_method##Consult_t;                                     \
+                                                                        \
+    Define_Global_Wrapping(_fw_method);                                 \
+                                                                        \
+    Define_Selective_Hooking(_fw_method);                               \
+                                                                        \
+    template<typename MMType,                                           \
+             MMType fun,                                                \
+           typename ...BTs>                                             \
+    inline typename std::                                               \
+    enable_if<!std::is_same<void,                                       \
+                            typename nicobou::                          \
+                            method_traits<MMType, fun>::return_type>::value, \
+              typename nicobou::method_traits<MMType, fun>::return_type \
+              >::type                                                   \
+    _fw_method(                                                         \
+        const _map_key_type &key,                                       \
+        BTs ...args) const {                                            \
+      auto alt =                                                        \
+          _fw_method##get_alternative<decltype(fun), fun>();            \
+      if(nullptr != alt)                                                \
+        return ((_self_type *)this->*alt)(key, std::forward<BTs>(args)...); \
+      /* finding object */                                              \
+      auto consultable = _accessor_method (key);                        \
+      if (!std::get<0>(consultable))                                    \
+        return                                                          \
+            _on_error_construct_ret_method<typename nicobou::           \
+                                           method_traits<MMType, fun>:: \
+                                           return_type>(key);           \
+      /*we have the object, continue*/                                  \
+      /* __attribute__((unused)) tells compiler encap is not used: */   \
+      auto encap __attribute__((unused)) =                              \
+          _fw_method##internal_encaps();                                \
+      return std::get<1>(consultable)->                                 \
+          _consult_method<MMType, fun>(std::forward<BTs>(args)...);     \
+  }									\
+                                                                        \
+  template<typename MMType,                                             \
+           MMType fun,                                                  \
+           typename ...BTs>                                             \
+  inline typename std::                                                 \
+  enable_if<std::is_same<void,                                          \
+                         typename nicobou::                             \
+                         method_traits<MMType, fun>::return_type>::value \
+            >::type                                                     \
+  _fw_method(                                                           \
+      const typename std::decay<_map_key_type>::type &key,              \
+      BTs ...args) const {                                              \
+    auto alt =                                                          \
+        _fw_method##get_alternative<decltype(fun), fun>();              \
+    if(nullptr != alt) {                                                \
+      (this->*alt)(key, std::forward<BTs>(args)...);                    \
+          return;                                                       \
+    }                                                                   \
+      /* finding object */                                              \
+    auto consultable = _accessor_method(key);                           \
+    if (!std::get<0>(consultable))                                      \
+      return                                                            \
+          _on_error_construct_ret_method<typename nicobou::             \
+                                         method_traits<MMType, fun>::   \
+                                         return_type>(key);             \
+    /* __attribute__((unused)) tells compiler encap is not used*/       \
+    auto encap __attribute__((unused)) =                                \
+        _fw_method##internal_encaps();                                  \
+        std::get<1>(consultable)->                                      \
+            _consult_method<MMType, fun>(std::forward<BTs>(args)...);   \
+  }									\
+                                                                        \
+
 #endif
+

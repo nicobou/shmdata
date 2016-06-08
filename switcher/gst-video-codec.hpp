@@ -20,33 +20,33 @@
 #ifndef __SWITCHER_GST_VIDEO_CODEC_H__
 #define __SWITCHER_GST_VIDEO_CODEC_H__
 
-#include <vector>
 #include <unordered_set>
-#include "switcher/unique-gst-element.hpp"
+#include <vector>
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/shmdata-utils.hpp"
+#include "switcher/unique-gst-element.hpp"
 
 namespace switcher {
 class quiddity;
 
 class GstVideoCodec {
  public:
-  GstVideoCodec(Quiddity *quid,
-                const std::string &shmpath_to_encode,
-                const std::string &shmpath_encoded = {});
+  GstVideoCodec(Quiddity* quid,
+                const std::string& shmpath_to_encode,
+                const std::string& shmpath_encoded = {});
   GstVideoCodec() = delete;
   ~GstVideoCodec() = default;
-  GstVideoCodec(const GstVideoCodec &) = delete;
-  GstVideoCodec &operator=(const GstVideoCodec &) = delete;
+  GstVideoCodec(const GstVideoCodec&) = delete;
+  GstVideoCodec& operator=(const GstVideoCodec&) = delete;
 
-  void set_shm(const std::string &shmpath);
+  void set_shm(const std::string& shmpath);
   void set_none();
   bool start();
   bool stop();
-  
+
  private:
-  Quiddity *quid_;
+  Quiddity* quid_;
   // shmdata path
   std::string shmpath_to_encode_;
   std::string shm_encoded_path_;
@@ -66,24 +66,35 @@ class GstVideoCodec {
   Selection secondary_codec_;
   bool use_primary_codec_{true};
   PContainer::prop_id_t codec_id_;
-  
+
   // short or long codec list
   bool codec_long_list_{false};
   PContainer::prop_id_t codec_long_list_id_;
   std::vector<std::string> codec_properties_{};
   // codec params black list
-  std::unordered_set<std::string> param_black_list_{"name", "parent",
-        "twopass-vbr-bias", "twopass-vbr-minsection", "twopass-vbr-maxsection",
-        "multipass-mode", "multipass-cache-file",
-        "snapshot",
-        "temporal-scalability-target-bitrate", "temporal-scalability-rate-decimator",
-        "temporal-scalability-periodicity", "temporal-scalability-layer-id",
-        "error-resilient", "timebase"};
+  std::unordered_set<std::string> param_black_list_{
+      "analyse",  // x264enc
+      "timebase",
+      "error-resilient",
+      "frame-packing",  // x264enc
+      "multipass-cache-file",
+      "multipass-mode",
+      "name",
+      "parent",
+      "snapshot",
+      "temporal-scalability-layer-id",
+      "temporal-scalability-periodicity",
+      "temporal-scalability-rate-decimator",
+      "temporal-scalability-target-bitrate",
+      "tune",  // x264enc
+      "twopass-vbr-bias",
+      "twopass-vbr-maxsection",
+      "twopass-vbr-minsection"};
   // shmdatasrc copy-buffers property:
   bool copy_buffers_{false};
   // parameter grouping
   PContainer::prop_id_t param_group_id_;
-  
+
   bool remake_codec_elements();
   void make_codec_properties();
   void uninstall_codec_properties();
@@ -91,15 +102,14 @@ class GstVideoCodec {
   void show();
   void hide();
   PContainer::prop_id_t install_codec();
-  static void set_codec(const gint value, void *user_data);
-  static gint get_codec(void *user_data);
+  static void set_codec(const gint value, void* user_data);
+  static gint get_codec(void* user_data);
   // static gboolean get_codec_long_list(void *user_data);
   // static void set_codec_long_list(gboolean mute, void *user_data);
-  static gboolean sink_factory_filter(GstPluginFeature *feature,
-                                      gpointer data);
-  static gint sink_compare_ranks(GstPluginFeature *f1,
-                                 GstPluginFeature *f2);
-  static gboolean reset_codec_configuration(gpointer /*unused */ , gpointer user_data);
+  static gboolean sink_factory_filter(GstPluginFeature* feature, gpointer data);
+  static gint sink_compare_ranks(GstPluginFeature* f1, GstPluginFeature* f2);
+  static gboolean reset_codec_configuration(gpointer /*unused */,
+                                            gpointer user_data);
 };
 
 }  // namespace switcher

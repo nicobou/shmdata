@@ -29,32 +29,35 @@ class SDPDescription;
 
 class SDPMedia {
   friend SDPDescription;
+
  public:
   SDPMedia();
   ~SDPMedia();
-  SDPMedia &operator=(const SDPMedia &) = delete;
-  SDPMedia(const SDPMedia &) = delete;
-  bool set_media_info_from_caps(const GstCaps *media_caps);  // caps from a gst RTP payloader
+  SDPMedia& operator=(const SDPMedia&) = delete;
+  SDPMedia(const SDPMedia&) = delete;
+  bool set_media_info_from_caps(
+      const GstCaps* media_caps);  // caps from a gst RTP payloader
   bool set_port(uint port);
 
  private:
-  GstSDPMedia *media_{nullptr};
-  GstStructure *caps_structure_{nullptr};
+  GstSDPMedia* media_{nullptr};
+  GstStructure* caps_structure_{nullptr};
   uint port_{0};  // "0" means disabled media
-  bool add_to_sdp_description(GstSDPMessage *sdp_description, uint index) const;
+  bool add_to_sdp_description(GstSDPMessage* sdp_description, uint index) const;
 };
 
 class SDPDescription {
  public:
   SDPDescription();
   ~SDPDescription();
-  SDPDescription &operator=(const SDPDescription &) = delete;
-  SDPDescription(const SDPDescription &) = delete;
+  SDPDescription& operator=(const SDPDescription&) = delete;
+  SDPDescription(const SDPDescription&) = delete;
 
-  bool add_media(const SDPMedia &media);
+  bool add_media(const SDPMedia& media);
   std::string get_string();
+
  private:
-  GstSDPMessage *sdp_description_{nullptr};
+  GstSDPMessage* sdp_description_{nullptr};
   uint index_{0};
 };
 

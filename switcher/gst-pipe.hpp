@@ -18,59 +18,58 @@
  */
 
 /**
- * RAII GStreamer pipeline  
+ * RAII GStreamer pipeline
  */
 
 #ifndef __SWITCHER_GST_PIPELINE_H__
 #define __SWITCHER_GST_PIPELINE_H__
 
 #include <gst/gst.h>
-#include <mutex>
 #include <condition_variable>
+#include <mutex>
 
 namespace switcher {
 
 class GstPipe {
  public:
-  using on_msg_async_cb_t = std::function<void(GstMessage *)>;
-  using on_msg_sync_cb_t = std::function<GstBusSyncReply(GstMessage *)>;
-  GstPipe(GMainContext *context,
-          GstBusSyncReply (*bus_sync_cb)(GstBus * /*bus*/,
-                                         GstMessage *msg,
+  using on_msg_async_cb_t = std::function<void(GstMessage*)>;
+  using on_msg_sync_cb_t = std::function<GstBusSyncReply(GstMessage*)>;
+  GstPipe(GMainContext* context,
+          GstBusSyncReply (*bus_sync_cb)(GstBus* /*bus*/,
+                                         GstMessage* msg,
                                          gpointer user_data),
           gpointer user_data);
   ~GstPipe();
   GstPipe() = delete;
-  GstPipe(const GstPipe &) = delete;
-  GstPipe &operator=(const GstPipe &) = delete;
+  GstPipe(const GstPipe&) = delete;
+  GstPipe& operator=(const GstPipe&) = delete;
   bool play(bool play);
   bool seek(gdouble position);
   bool speed(gdouble speed);
-  GstElement *get_pipeline();
-  
+  GstElement* get_pipeline();
+
  private:
   typedef struct {  // GstBus is a specific context:
     GSource source;
-    GstBus *bus;
+    GstBus* bus;
     gboolean inited;
   } GstBusSource;
-  
-  GstElement *pipeline_ {nullptr};
-  GMainContext *gmaincontext_{nullptr};
+
+  GMainContext* gmaincontext_{nullptr};
+  GstElement* pipeline_{nullptr};
   GSourceFuncs source_funcs_;
-  gdouble speed_ {1.0};
-  GSource *source_ {nullptr};
+  gdouble speed_{1.0};
+  GSource* source_{nullptr};
   //  GSource *bus_watch_source_ {nullptr};
-  gint64 length_ {0};
+  gint64 length_{0};
   void query_position_and_length();
-  static gboolean source_prepare(GSource *source,
-                                 gint *timeout);
-  static gboolean source_check(GSource *source);
-  static gboolean source_dispatch(GSource *source,
+  static gboolean source_prepare(GSource* source, gint* timeout);
+  static gboolean source_check(GSource* source);
+  static gboolean source_dispatch(GSource* source,
                                   GSourceFunc callback,
                                   gpointer user_data);
-  static void source_finalize(GSource *source);
-  static void play_pipe(GstPipe *pipe);
+  static void source_finalize(GSource* source);
+  static void play_pipe(GstPipe* pipe);
 };
 
 }  // namespace switcher

@@ -19,10 +19,10 @@
 #define __SWITCHER_PJSIP_H__
 
 #include <pjsua-lib/pjsua.h>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
 #include <atomic>
+#include <condition_variable>
+#include <mutex>
+#include <thread>
 #include "switcher/safe-bool-idiom.hpp"
 
 namespace switcher {
@@ -32,7 +32,7 @@ class PJPresence;
 class PJStunTurn;
 class PJMediaEndpt;
 
-class PJSIP: public SafeBoolIdiom {
+class PJSIP : public SafeBoolIdiom {
   friend SIPPlugin;
   friend PJCall;
   friend PJPresence;
@@ -40,29 +40,29 @@ class PJSIP: public SafeBoolIdiom {
   friend PJMediaEndpt;
 
  public:
-  PJSIP(std::function<bool()> init_fun,
-        std::function<void()> destruct_fun);
+  PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun);
   ~PJSIP();
-  PJSIP(const PJSIP &) = delete;
-  PJSIP &operator=(const PJSIP &) = delete;
+  PJSIP(const PJSIP&) = delete;
+  PJSIP& operator=(const PJSIP&) = delete;
+
  private:
   bool is_valid_{false};
-  pj_thread_desc thread_handler_desc_ {};
-  pj_thread_t *pj_thread_ref_ {nullptr};
-  pj_pool_t *pool_ {nullptr};
-  pjsip_endpoint *sip_endpt_{nullptr};
-  std::thread sip_worker_ {};
-  bool sip_work_ {true};
-  pj_thread_desc worker_handler_desc_ {};
-  pj_thread_t *worker_thread_ref_ {nullptr};
+  pj_thread_desc thread_handler_desc_{};
+  pj_thread_t* pj_thread_ref_{nullptr};
+  pj_pool_t* pool_{nullptr};
+  pjsip_endpoint* sip_endpt_{nullptr};
+  std::thread sip_worker_{};
+  bool sip_work_{true};
+  pj_thread_desc worker_handler_desc_{};
+  pj_thread_t* worker_thread_ref_{nullptr};
   pj_caching_pool cp_;
   // singleton related members:
   bool i_m_the_one_{false};
   static std::atomic<unsigned short> sip_endpt_used_;
-  static PJSIP *this_;
+  static PJSIP* this_;
   std::function<void()> destruct_fun_;
   int log_level_{2};
-  bool safe_bool_idiom() const final {return is_valid_;}
+  bool safe_bool_idiom() const final { return is_valid_; }
   void sip_worker_thread();
 };
 

@@ -20,32 +20,32 @@
 #ifndef __SWITCHER_TIMELAPSE_H__
 #define __SWITCHER_TIMELAPSE_H__
 
-#include <memory>
 #include <atomic>
-#include <mutex>
 #include <future>
 #include <map>
+#include <memory>
+#include <mutex>
+#include "switcher/fraction.hpp"
+#include "switcher/gst-video-timelapse.hpp"
+#include "switcher/periodic-task.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
-#include "switcher/gst-video-timelapse.hpp"
-#include "switcher/fraction.hpp"
-#include "switcher/periodic-task.hpp"
 
 namespace switcher {
-class Timelapse: public Quiddity {
+class Timelapse : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Timelapse);
-  Timelapse(const std::string &);
+  Timelapse(const std::string&);
   ~Timelapse() = default;
-  Timelapse(const Timelapse &) = delete;
-  Timelapse &operator=(const Timelapse &) = delete;
+  Timelapse(const Timelapse&) = delete;
+  Timelapse& operator=(const Timelapse&) = delete;
 
  private:
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
-  GstVideoTimelapseConfig timelapse_config_; 
+  GstVideoTimelapseConfig timelapse_config_;
   std::map<std::string, std::unique_ptr<GstVideoTimelapse>> timelapse_{};
-  // images path 
+  // images path
   std::string img_dir_;
   PContainer::prop_id_t img_dir_id_;
   std::string img_name_;
@@ -57,7 +57,7 @@ class Timelapse: public Quiddity {
   bool notify_last_file_{false};
   PContainer::prop_id_t notify_last_file_id_;
   // framerate
-  Fraction framerate_{1,1};
+  Fraction framerate_{1, 1};
   PContainer::prop_id_t framerate_id_;
   // max files
   unsigned int max_files_{10};
@@ -65,7 +65,7 @@ class Timelapse: public Quiddity {
   // image quality
   unsigned int jpg_quality_{85};
   PContainer::prop_id_t jpg_quality_id_;
-  // last image 
+  // last image
   std::string last_image_{};
   PContainer::prop_id_t last_image_id_;
   // scaling image
@@ -80,15 +80,15 @@ class Timelapse: public Quiddity {
   std::future<void> fut_{};
 
   // tracking parameter changes and update timelapse pipeline
-  PeriodicTask relaunch_task_; 
-  
+  PeriodicTask relaunch_task_;
+
   bool init() final;
-  bool on_shmdata_disconnect(const std::string &shmdata_sochet_path);
-  bool on_shmdata_connect(const std::string &shmdata_sochet_path);
+  bool on_shmdata_disconnect(const std::string& shmdata_sochet_path);
+  bool on_shmdata_connect(const std::string& shmdata_sochet_path);
   bool on_shmdata_disconnect_all();
-  bool can_sink_caps(const std::string &caps);
-  bool start_timelapse(const std::string &shmpath);
-  bool stop_timelapse(const std::string &shmpath);
+  bool can_sink_caps(const std::string& caps);
+  bool start_timelapse(const std::string& shmpath);
+  bool stop_timelapse(const std::string& shmpath);
 };
 
 }  // namespace switcher

@@ -17,22 +17,36 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <unistd.h>  // usleep
 #include <cassert>
-
-#include <vector>
-#include <string>
-#include <list>
 #include <iostream>
-
-#include "switcher/quiddity-manager.hpp"
+#include <string>
+#include <vector>
 #include "switcher/quiddity-basic-test.hpp"
-#include "switcher/information-tree.hpp"
+#include "switcher/quiddity-manager.hpp"
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
 
 int main() {
-    return 0;
+  {
+    switcher::QuiddityManager::ptr manager =
+        switcher::QuiddityManager::make_manager("siptest");
+#ifdef HAVE_CONFIG_H
+    gchar* usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
+    manager->scan_directory_for_plugins(usr_plugin_dir);
+    g_free(usr_plugin_dir);
+#else
+    return 1;
+#endif
+
+    assert(switcher::QuiddityBasicTest::test_full(manager, "sip"));
+
+    for (auto& it : manager->get_quiddities()) {
+      manager->remove(it);
+    }
+    manager->load_configuration_file("./config.json");
+    assert(manager->create("sip", "test") == "test");
+  }  // end of scope is releasing the manager
+  return 0;
 }

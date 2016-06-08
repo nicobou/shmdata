@@ -17,16 +17,24 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_LOCAL_IP_H__
-#define __SWITCHER_LOCAL_IP_H__
+#ifndef __SWITCHER_FILE_UTILS_H__
+#define __SWITCHER_FILE_UTILS_H__
 
-#include <cstdint>
+#include <string>
+#include <utility>
 
 namespace switcher {
-namespace LocalIp {
+namespace FileUtils {
 
-std::map</* interface name */std::string, /* ip */std::string> get_ips();
+// A message is given in case of error
+std::pair<bool, std::string> prepare_writable_dir(const std::string& path);
 
-}  // namespace PortChecker
+// A message is given in case of error
+// all subdirs must exist
+std::pair<bool, std::string> create_writable_dir(const std::string& path);
+
+bool is_dir(const std::string& path);
+
+}  // namespace FileUtils
 }  // namespace switcher
 #endif

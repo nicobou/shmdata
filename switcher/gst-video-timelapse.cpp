@@ -18,85 +18,72 @@
  */
 
 #include "./gst-video-timelapse.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/gst-utils.hpp"
-#include "switcher/std2.hpp"
-#include "switcher/scope-exit.hpp"
 #include "switcher/gprop-to-prop.hpp"
+#include "switcher/gst-utils.hpp"
+#include "switcher/quiddity.hpp"
+#include "switcher/scope-exit.hpp"
+#include "switcher/std2.hpp"
 
 namespace switcher {
 GstVideoTimelapse::GstVideoTimelapse(
-    const GstVideoTimelapseConfig &config,
+    const GstVideoTimelapseConfig& config,
     GstShmdataSubscriber::on_caps_cb_t on_caps,
     GstShmdataSubscriber::on_byte_monitor_t on_byte_monitor,
     GstShmdataSubscriber::on_delete_t on_delete,
-    on_new_file_t on_new_file):
-    config_(config),
-    on_caps_(on_caps),
-    on_byte_monitor_(on_byte_monitor),
-    on_delete_(on_delete),
-    on_new_file_(on_new_file),
-    gst_pipeline_(std2::make_unique<GstPipeliner>(
-        [this](GstMessage *msg){
-          if (msg->type != GST_MESSAGE_ELEMENT)
-            return;
-          const GstStructure *s = gst_message_get_structure (msg);
-          auto name = std::string(gst_structure_get_name(s));
-          if (name != "GstMultiFileSink")
-            return;
-          if (on_new_file_)
-            on_new_file_(gst_structure_get_string(s, "filename"));
-        },
-        nullptr)){
-  GError *error = nullptr;
+    on_new_file_t on_new_file)
+    : config_(config),
+      on_caps_(on_caps),
+      on_byte_monitor_(on_byte_monitor),
+      on_delete_(on_delete),
+      on_new_file_(on_new_file),
+      gst_pipeline_(std2::make_unique<GstPipeliner>(
+          [this](GstMessage* msg) {
+            if (msg->type != GST_MESSAGE_ELEMENT) return;
+            const GstStructure* s = gst_message_get_structure(msg);
+            auto name = std::string(gst_structure_get_name(s));
+            if (name != "GstMultiFileSink") return;
+            if (on_new_file_)
+              on_new_file_(gst_structure_get_string(s, "filename"));
+          },
+          nullptr)) {
+  GError* error = nullptr;
   std::string width_height;
   if (0 != config_.width_ && 0 != config_.height_)
-    width_height =
-        std::string(" ! videoscale ! video/x-raw, ")
-        + " width=" + std::to_string(config_.width_)
-        + ", height=" + std::to_string(config_.height_)
-        + ", pixel-aspect-ratio=1/1";
+    width_height = std::string(" ! videoscale ! video/x-raw, ") + " width=" +
+                   std::to_string(config_.width_) + ", height=" +
+                   std::to_string(config_.height_) + ", pixel-aspect-ratio=1/1";
   else if (0 != config_.width_ && 0 == config_.height_)
-    width_height =
-        std::string(" ! videoscale ! video/x-raw, ")
-        + " width=" + std::to_string(config_.width_)
-        + ", pixel-aspect-ratio=1/1";
+    width_height = std::string(" ! videoscale ! video/x-raw, ") + " width=" +
+                   std::to_string(config_.width_) + ", pixel-aspect-ratio=1/1";
   else if (0 == config_.width_ && 0 != config_.height_)
-    width_height =
-        std::string(" ! videoscale ! video/x-raw, ")
-        + " height=" + std::to_string(config_.height_)
-        + ", pixel-aspect-ratio=1/1";
+    width_height = std::string(" ! videoscale ! video/x-raw, ") + " height=" +
+                   std::to_string(config_.height_) + ", pixel-aspect-ratio=1/1";
   std::string description(
-      std::string("shmdatasrc socket-path=")
-      + config_.orig_shmpath_
-      + " copy-buffers=true do-timestamp=true ! queue "
-      + " ! videorate ! video/x-raw, framerate="
-      + std::to_string(config_.framerate_num_)
-      + "/"
-      + std::to_string(config_.framerate_denom_)
-      + width_height
-      + " ! videoconvert "
-      + " ! jpegenc quality="
-      +  std::to_string(config_.jpg_quality_)
-      + " ! multifilesink post-messages=true "+
-      + " max-files=" + std::to_string(config_.max_files_)
-      + " location=\"" + config_.image_path_ + "\"");
-  GstElement *bin =
+      std::string("shmdatasrc socket-path=") + config_.orig_shmpath_ +
+      " copy-buffers=true do-timestamp=true ! queue " +
+      " ! videorate ! video/x-raw, framerate=" +
+      std::to_string(config_.framerate_num_) + "/" +
+      std::to_string(config_.framerate_denom_) + width_height +
+      " ! videoconvert " + " ! jpegenc quality=" +
+      std::to_string(config_.jpg_quality_) +
+      " ! multifilesink post-messages=true " + +" max-files=" +
+      std::to_string(config_.max_files_) + " location=\"" +
+      config_.image_path_ + "\"");
+  GstElement* bin =
       gst_parse_bin_from_description(description.c_str(), TRUE, &error);
   if (error != nullptr) {
     g_warning("%s", error->message);
     g_error_free(error);
   }
-  GstElement *shmdatasrc =
+  GstElement* shmdatasrc =
       GstUtils::get_first_element_from_factory_name(GST_BIN(bin), "shmdatasrc");
   shmsrc_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmdatasrc, on_caps_, on_byte_monitor_, on_delete_);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), bin);
-  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()),
-               "async-handling", TRUE,
-               nullptr);
+  g_object_set(
+      G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
-  is_valid_ = true;  
+  is_valid_ = true;
 }
 
 }  // namespace Switcher

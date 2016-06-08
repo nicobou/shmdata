@@ -15,23 +15,19 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "./pj-media-endpt.hpp"
 #include <glib.h>
 #include "./pj-sip.hpp"
-#include "./pj-media-endpt.hpp"
 
 namespace switcher {
-pjmedia_endpt *PJMediaEndpt::med_endpt_ = nullptr;
+pjmedia_endpt* PJMediaEndpt::med_endpt_ = nullptr;
 
 PJMediaEndpt::PJMediaEndpt() {
   if (med_endpt_ != nullptr)
     g_error("BUG pjmedia_endpt is suposed to be a singleton");
   pj_status_t status =
-      pjmedia_endpt_create(&PJSIP::this_->cp_.factory,
-                           nullptr,
-                           1,
-                           &med_endpt_);
-  if (status != PJ_SUCCESS)
-    g_warning("Init media failed");
+      pjmedia_endpt_create(&PJSIP::this_->cp_.factory, nullptr, 1, &med_endpt_);
+  if (status != PJ_SUCCESS) g_warning("Init media failed");
 }
 
 PJMediaEndpt::~PJMediaEndpt() {

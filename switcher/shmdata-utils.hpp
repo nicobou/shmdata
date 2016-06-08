@@ -21,16 +21,16 @@
 #define __SWITCHER_SHMDATA_UTILS_H__
 
 #include <string>
-#include "./information-tree.hpp"
 #include "./gst-shmdata-subscriber.hpp"
+#include "./information-tree.hpp"
 
 namespace switcher {
 namespace ShmdataUtils {
 
-std::string get_category(const std::string &caps);
-InfoTree::ptr make_tree(const std::string &caps,
-                          const std::string &category,
-                          GstShmdataSubscriber::num_bytes_t num_bytes);
+std::string get_category(const std::string& caps);
+InfoTree::ptr make_tree(const std::string& caps,
+                        const std::string& category,
+                        GstShmdataSubscriber::num_bytes_t num_bytes);
 
 }  // namespace ShmdataUtils
 }  // namespace switcher

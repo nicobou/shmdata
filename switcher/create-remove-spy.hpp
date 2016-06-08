@@ -24,16 +24,18 @@
 #include "./quiddity.hpp"
 
 namespace switcher {
-class CreateRemoveSpy: public Quiddity {
+class CreateRemoveSpy : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(CreateRemoveSpy);
-  CreateRemoveSpy(const std::string &);
+  CreateRemoveSpy(const std::string&);
   ~CreateRemoveSpy();
-  CreateRemoveSpy(const CreateRemoveSpy &) = delete;
-  CreateRemoveSpy &operator=(const CreateRemoveSpy &) = delete;
+  CreateRemoveSpy(const CreateRemoveSpy&) = delete;
+  CreateRemoveSpy& operator=(const CreateRemoveSpy&) = delete;
   bool init();
-  static void on_created(const std::string &quiddity_nick_name, void *user_data);
-  static void on_removed(const std::string &quiddity_nick_name, void *user_data);
+  static void on_created(const std::string& quiddity_nick_name,
+                         void* user_data);
+  static void on_removed(const std::string& quiddity_nick_name,
+                         void* user_data);
 
  private:
   bool i_am_the_one_;

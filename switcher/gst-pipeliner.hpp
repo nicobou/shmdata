@@ -21,14 +21,14 @@
 #define __SWITCHER_GST_PIPELINER_H__
 
 #include <gst/gst.h>
-#include <memory>
-#include <vector>
-#include <mutex>
 #include <list>
+#include <memory>
+#include <mutex>
 #include <string>
-#include "./quiddity.hpp"
+#include <vector>
 #include "./glibmainloop.hpp"
 #include "./gst-pipe.hpp"
+#include "./quiddity.hpp"
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
@@ -45,24 +45,27 @@ class GstPipeliner {
                GstPipe::on_msg_sync_cb_t on_msg_sync_cb);
   GstPipeliner() = delete;
   virtual ~GstPipeliner();
-  GstPipeliner(const GstPipeliner &) = delete;
-  GstPipeliner &operator=(const GstPipeliner &) = delete;
+  GstPipeliner(const GstPipeliner&) = delete;
+  GstPipeliner& operator=(const GstPipeliner&) = delete;
 
-  GstElement *get_pipeline();
+  GstElement* get_pipeline();
   void play(gboolean play);
   bool seek(gdouble position_in_ms);
   void looping(gboolean looping);
-  
+
  private:
   GstPipe::on_msg_async_cb_t on_msg_async_cb_;
   GstPipe::on_msg_sync_cb_t on_msg_sync_cb_;
   std::unique_ptr<GlibMainLoop> main_loop_;
   std::unique_ptr<GstPipe> gst_pipeline_;
-  std::list<GstMessage *> msgs_{};
-  GstBusSyncReply on_gst_error(GstMessage *msg);
+  GstBusSyncReply on_gst_error(GstMessage* msg);
+  static gboolean push_thread_context(gpointer user_data);
+  static gboolean bus_watch(GstBus* bus,
+                            GstMessage* message,
+                            gpointer user_data);
   static gboolean bus_async(gpointer user_data);
-  static GstBusSyncReply bus_sync_handler(GstBus * bus,
-                                          GstMessage *msg,
+  static GstBusSyncReply bus_sync_handler(GstBus* bus,
+                                          GstMessage* msg,
                                           gpointer user_data);
 };
 

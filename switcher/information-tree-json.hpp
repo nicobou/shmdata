@@ -28,13 +28,13 @@
 #ifndef __SWITCHER_INFORMATION_TREE_JSON_H__
 #define __SWITCHER_INFORMATION_TREE_JSON_H__
 
-#include "./information-tree.hpp"
 #include <string>
+#include "./information-tree.hpp"
 
 namespace switcher {
 namespace JSONSerializer {
 std::string serialize(InfoTree::ptrc);
-// FIXME implement this: InfoTree::ptr deserialize (std::string &serialized);
+InfoTree::ptr deserialize(const std::string& serialized);
 };
 }  // namespace switcher
 #endif

@@ -1,3 +1,5 @@
+// clang-format off
+
 /*
  * This file is part of switcher-gsoap.
  *
@@ -26,7 +28,7 @@
 //gsoap switcher schema namespace:	urn:control
 
 //gsoap switcher service method-documentation: get available names
-int switcher__get_factory_capabilities(std::vector<std::string> *result);
+int switcher__get_classes(std::vector<std::string> *result);
 
 //gsoap switcher service method-documentation: get available json doc *without* props and methods
 int switcher__get_classes_doc(std::string *result);
@@ -42,24 +44,6 @@ int switcher__get_class_doc(std::string class_name, std::string *result);
 
 //gsoap switcher service method-documentation: get names of instances
 int switcher__get_quiddity_names(std::vector<std::string> *result);
-
-//gsoap switcher service method-documentation: get a json formated description of the properties
-int switcher__get_properties_description(std::string quiddity_name,
-                                         std::string *result);
-
-//gsoap switcher service method-documentation: get a json formated description of the properties
-int switcher__get_property_description(std::string quiddity_name,
-                                       std::string property_name,
-                                       std::string *result);
-
-//gsoap switcher service method-documentation: get a json formated description of the properties
-int switcher__get_properties_description_by_class(std::string class_name,
-                                                  std::string *result);
-
-//gsoap switcher service method-documentation: get a json formated description of the properties
-int switcher__get_property_description_by_class(std::string class_name,
-                                                std::string property_name,
-                                                std::string *result);
 
 //gsoap switcher service method-documentation: set a value of a property from an quiddity instance
 int switcher__set_property(std::string quiddity_name,
@@ -139,7 +123,32 @@ int switcher__get_signal_description_by_class(std::string class_name,
                                               std::string signal_name,
                                               std::string *result);
 
-//gsoap switcher service method-documentation: get a json formated description of the properties
+//gsoap switcher service read info tree
 int switcher__get_information_tree(std::string quiddity_name,
                                    std::string path,
                                    std::string *result);
+
+//gsoap switcher service read user data
+int switcher__get_user_data(std::string quiddity_name,
+                            std::string path,
+                            std::string *result);
+
+//gsoap switcher service prune user data
+int switcher__prune_user_data(std::string quiddity_name,
+                              std::string path,
+                              std::string *result);
+
+//gsoap switcher service set user data
+int switcher__graft_user_data(std::string quiddity_name,
+                              std::string path,
+                              std::string type,
+                              std::string value,
+                              std::string *result);
+
+//gsoap switcher service set user data
+int switcher__tag_as_array_user_data(std::string quiddity_name,
+                                     std::string path,
+                                     bool is_array,
+                                     std::string *result);
+
+

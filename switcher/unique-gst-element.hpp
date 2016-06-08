@@ -20,37 +20,39 @@
 #ifndef __SWITCHER_UNIQUE_GST_ELEMENT_H__
 #define __SWITCHER_UNIQUE_GST_ELEMENT_H__
 
-#include <memory>
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
-#include "./safe-bool-idiom.hpp"
 #include "./gst-utils.hpp"
+#include "./safe-bool-idiom.hpp"
 
 namespace switcher {
 class UGstElem : public SafeBoolIdiom {
  public:
-  explicit UGstElem(const gchar *class_name);
+  explicit UGstElem(const gchar* class_name);
   // invoke as g_object
-  template<typename Return_type>
-  Return_type
-  g_invoke_with_return(std::function<Return_type(gpointer)> command) {
+  template <typename Return_type>
+  Return_type g_invoke_with_return(
+      std::function<Return_type(gpointer)> command) {
     return command(G_OBJECT(element_.get()));
   }
   void g_invoke(std::function<void(gpointer)> command);
   // invoke as GstElement
-  template<typename Return_type>
-  Return_type
-  invoke_with_return(std::function<Return_type(GstElement *)> command) {
+  template <typename Return_type>
+  Return_type invoke_with_return(
+      std::function<Return_type(GstElement*)> command) {
     return command(element_.get());
   }
-  void invoke(std::function<void(GstElement *)> command);
+  void invoke(std::function<void(GstElement*)> command);
   // get raw without taking ownership (do not unref)
-  GstElement *get_raw();
+  GstElement* get_raw();
   // renew
-  static bool renew(UGstElem &element, const std::vector<std::string> &props_to_apply = {});
+  static bool renew(UGstElem& element,
+                    const std::vector<std::string>& props_to_apply = {});
   // mute (will be instanciated with a new class at renew)
-  void mute(const gchar *class_name);
+  void mute(const gchar* class_name);
+
  private:
   std::string class_name_{};
   using gst_element_handle =

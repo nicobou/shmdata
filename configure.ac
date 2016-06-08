@@ -2,7 +2,7 @@ dnl required version of autoconf
 AC_PREREQ([2.53])
 
 dnl package name and package version
-AC_INIT([switcher],[0.8.8])
+AC_INIT([switcher],[0.8.10])
 
 dnl required version of gstreamer and gst-plugins-base
 GST_REQUIRED=1.0.0
@@ -12,7 +12,8 @@ dnl AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
 
 dnl required version of automake
-AM_INIT_AUTOMAKE([1.10])
+dnl 'foreign' allows for accepting README.md instead of README 
+AM_INIT_AUTOMAKE([foreign])  
 
 dnl enable mainainer mode by default
 dnl AM_MAINTAINER_MODE([enable])
@@ -262,13 +263,6 @@ else
     AC_DEFINE(HAVE_GTK, [0], [GTK disabled])
 fi
 
-#check nodejs-dev
-AC_CHECK_FILE([/usr/include/nodejs/src/node.h],
-              [NODEADDONBUILD=enabled],
-              [NODEADDONBUILD=disabled
-               AC_MSG_WARN([Missing nodejs-dev package])])
-AM_CONDITIONAL(NODEADDONBUILD, test "x${NODEADDONBUILD}" = "xenabled")
-
 # check for posturevision
 PKG_CHECK_MODULES(POSTURE, posture, have_posture=true, have_posture=false)
 if test "x${have_posture}" = "xfalse" ; then
@@ -368,12 +362,28 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
 dnl clang++
 dnl check if compiler understands -Wno-error=return-type-c-linkage 
 dnl (if yes, add it to CFLAGS)
-dnl -Wno-error=unused-parameter is required for gsoap generated code compiling
+dnl -Wno-error=return-typer-c-linkage is required for gsoap generated code compiling
 AC_MSG_CHECKING([to see if compiler understands -Wno-error=return-type-c-linkage])
 saved_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$CXXFLAGS -Wno-error=return-type-c-linkage"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
   CXXFLAGS="$saved_CXXFLAGS -Wno-error=return-type-c-linkage"
+  AC_MSG_RESULT([yes])
+], [
+  CXXFLAGS="$saved_CXXFLAGS"
+  AC_MSG_RESULT([no])
+])
+
+dnl clang++
+dnl check if compiler understands -Wno-error=extra 
+dnl (if yes, add it to CFLAGS)
+dnl -Wno-error=extra is required for gsoap generated code compiling
+AC_MSG_CHECKING([to see if compiler understands -Wno-error=extra])
+saved_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -Wno-error=extra"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  CXXFLAGS="$saved_CXXFLAGS -Wno-error=extra"
+  AC_SUBST([W_NO_ERROR_EXTRA], "-Wno-error=extra")
   AC_MSG_RESULT([yes])
 ], [
   CXXFLAGS="$saved_CXXFLAGS"
@@ -509,7 +519,6 @@ plugins/syphonsrc/Makefile
 plugins/systemusage/Makefile
 plugins/v4l2/Makefile
 plugins/vnc/Makefile
-nodejs/Makefile
 ])
 AC_OUTPUT
 
@@ -537,7 +546,6 @@ AC_OUTPUT
 [echo ""]
 [echo "SWITCHER OPTIONAL FEATURE"]
 [echo ""]
-[echo "nodejs addon               ${NODEADDONBUILD}"]
 [echo "python                     ${PYTHONBUILD}"]
 [echo "posture support            ${POSTUREBUILD}"]
 [echo "vnc client support         ${VNCBUILD}"]

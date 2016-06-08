@@ -20,31 +20,31 @@
 #ifndef __SWITCHER_NVENC_BUFFER_H__
 #define __SWITCHER_NVENC_BUFFER_H__
 
-#include <array>
 #include <algorithm>
+#include <array>
 #include <functional>
-#include "switcher/safe-bool-idiom.hpp"
 #include "./nvenc-api.hpp"
+#include "switcher/safe-bool-idiom.hpp"
 
 namespace switcher {
-class NVencBuffers: public SafeBoolIdiom {
+class NVencBuffers : public SafeBoolIdiom {
  public:
-  NVencBuffers(void *encoder,
+  NVencBuffers(void* encoder,
                uint32_t width,
                uint32_t height,
                NV_ENC_BUFFER_FORMAT format);
   ~NVencBuffers();
-  NVencBuffers(const NVencBuffers &) = delete;
-  NVencBuffers(NVencBuffers &&) = delete;
-  NVencBuffers &operator=(const NVencBuffers &) = delete;
-  NVencBuffers &operator=(NVencBuffers &&) = delete;
-  
-  bool copy_to_next_input_buffer(void *data, size_t size);
+  NVencBuffers(const NVencBuffers&) = delete;
+  NVencBuffers(NVencBuffers&&) = delete;
+  NVencBuffers& operator=(const NVencBuffers&) = delete;
+  NVencBuffers& operator=(NVencBuffers&&) = delete;
+
+  bool copy_to_next_input_buffer(void* data, size_t size);
   bool encode_current_input();
-  bool process_encoded_frame(std::function<void(void *, uint32_t)> fun);
-    
+  bool process_encoded_frame(std::function<void(void*, uint32_t)> fun);
+
  private:
-  void *encoder_; // must remain valid during NVencBuffers lifetime
+  void* encoder_;  // must remain valid during NVencBuffers lifetime
   uint32_t width_;
   uint32_t height_;
   NV_ENC_BUFFER_FORMAT format_;

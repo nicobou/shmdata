@@ -20,9 +20,9 @@
 #ifndef __SWITCHER_G_SOURCE_WRAPPER_H__
 #define __SWITCHER_G_SOURCE_WRAPPER_H__
 
-#include <memory>
-#include <future>
 #include <glib.h>
+#include <future>
+#include <memory>
 
 namespace switcher {
 class GSourceWrapper {
@@ -31,27 +31,23 @@ class GSourceWrapper {
   using uptr = std::unique_ptr<GSourceWrapper>;
 
   // for imediate invocation
-  GSourceWrapper(callback &&cb,
-                 bool async_invocation = false);
+  GSourceWrapper(callback&& cb, bool async_invocation = false);
   // for delayed invocation
-  GSourceWrapper(callback &&cb,
-                 guint delay_ms,
-                 bool async_invocation = false);
-  bool attach(GMainContext *gcontext);
-  
+  GSourceWrapper(callback&& cb, guint delay_ms, bool async_invocation = false);
+  bool attach(GMainContext* gcontext);
+
   GSourceWrapper() = delete;
   ~GSourceWrapper();
-  GSourceWrapper(const GSourceWrapper &) = delete;
-  GSourceWrapper &operator=(const GSourceWrapper &) = delete;
+  GSourceWrapper(const GSourceWrapper&) = delete;
+  GSourceWrapper& operator=(const GSourceWrapper&) = delete;
 
-  
  private:
   callback cb_;
   bool attached_{false};
   bool async_invocation_;
   std::future<void> fut_{};
-  GSource *gsource_{nullptr};  // a valid ID is greater than 0
-  //the GSourceFunc that will be passed to glib
+  GSource* gsource_{nullptr};  // a valid ID is greater than 0
+  // the GSourceFunc that will be passed to glib
   static gboolean source_func(gpointer user_data);
 };
 

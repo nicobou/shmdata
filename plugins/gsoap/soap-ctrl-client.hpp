@@ -15,43 +15,39 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef __SWITCHER_SOAP_CTRL_CLIENT_H__
 #define __SWITCHER_SOAP_CTRL_CLIENT_H__
 
 #include <mutex>
+#include "switcher/glibmainloop.hpp"
 #include "switcher/quiddity.hpp"
 #include "webservices/soapcontrolProxy.h"
 
-namespace switcher
-{
-class SoapCtrlClient : public Quiddity
-{
+namespace switcher {
+class SoapCtrlClient : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SoapCtrlClient);
-  SoapCtrlClient(const std::string &);
+  SoapCtrlClient(const std::string&);
   ~SoapCtrlClient();
-  SoapCtrlClient(const SoapCtrlClient &) = delete;
-  SoapCtrlClient &operator=(const SoapCtrlClient &) = delete;
+  SoapCtrlClient(const SoapCtrlClient&) = delete;
+  SoapCtrlClient& operator=(const SoapCtrlClient&) = delete;
   bool init() final;
 
  private:
-  controlProxy *switcher_control_{nullptr};
+  std::unique_ptr<GlibMainLoop> mainloop_;
+  controlProxy* switcher_control_{nullptr};
   std::string url_{"localhost"};
-  GSource *try_connect_g_source_{nullptr};
+  GSource* try_connect_g_source_{nullptr};
   std::mutex try_connect_mutex_{};
   void reset_endpoint();
-  static gboolean set_remote_url(gpointer url,
-                                 gpointer user_data);
-  static gboolean set_remote_url_retry(gpointer url,
-                                       gpointer user_data);
+  static gboolean set_remote_url(gpointer url, gpointer user_data);
+  static gboolean set_remote_url_retry(gpointer url, gpointer user_data);
   static gboolean try_connect(gpointer user_data);
 
   static gboolean create(gpointer class_name,
                          gpointer quiddity_name,
                          gpointer user_data);
-  static gboolean remove(gpointer quiddity_name,
-                         gpointer user_data);
+  static gboolean remove(gpointer quiddity_name, gpointer user_data);
   static gboolean set_property(gpointer quiddity_name,
                                gpointer property_name,
                                gpointer value,

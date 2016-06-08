@@ -18,22 +18,20 @@
  */
 
 #include <gst/gst.h>
-#include <vector>
 #include <string>
+#include <vector>
 #include "switcher/quiddity-manager.hpp"
 
-void
-property_cb(const std::string &/*subscriber_name */ ,
-            const std::string &/*quiddity_name */ ,
-            const std::string &/*property_name */ ,
-            const std::string &/*value */ ,
-            void *user_data) {
-  uint *val = (uint *) user_data;
+void property_cb(const std::string& /*subscriber_name */,
+                 const std::string& /*quiddity_name */,
+                 const std::string& /*property_name */,
+                 const std::string& /*value */,
+                 void* user_data) {
+  uint* val = (uint*)user_data;
   *val = *val + 1;
 }
 
-int
-main() {
+int main() {
   uint count = 0;
   {
     switcher::QuiddityManager::ptr mgr =
@@ -42,25 +40,27 @@ main() {
 
     // map freq  property from audio1 to audio 2
     std::string audio1 = mgr->create("audiotestsrc", "audio1");
-    if (!mgr->set_property(audio1, "started", "true"))
-      return 1;
+    if (!mgr->set_property(audio1, "started", "true")) return 1;
     std::string audio2 = mgr->create("audiotestsrc", "audio2");
-    if (!mgr->set_property(audio2, "started", "true"))
-      return 1;
+    if (!mgr->set_property(audio2, "started", "true")) return 1;
     mgr->subscribe_property("sub", audio2.c_str(), "freq");
     std::string mapper = mgr->create("property-mapper", "mapper");
     if (!mgr->invoke_va(mapper.c_str(),
                         "set-source-property",
-                        nullptr, audio1.c_str(), "freq", nullptr))
+                        nullptr,
+                        audio1.c_str(),
+                        "freq",
+                        nullptr))
       return 1;
     if (!mgr->invoke_va(mapper.c_str(),
                         "set-sink-property",
-                        nullptr, audio2.c_str(), "freq", nullptr))
+                        nullptr,
+                        audio2.c_str(),
+                        "freq",
+                        nullptr))
       return 1;
-    if (!mgr->set_property(audio1, "freq", "1000"))
-      return 1;
-    if (!mgr->set_property(audio1, "freq", "100"))
-      return 1;
+    if (!mgr->set_property(audio1, "freq", "1000")) return 1;
+    if (!mgr->set_property(audio1, "freq", "100")) return 1;
   }
 
   gst_deinit();

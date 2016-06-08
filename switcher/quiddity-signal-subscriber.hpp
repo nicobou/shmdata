@@ -24,9 +24,9 @@
 #ifndef __SWITCHER_QUIDDITY_SIGNAL_SUBSCRIBER_H__
 #define __SWITCHER_QUIDDITY_SIGNAL_SUBSCRIBER_H__
 
-#include <string>
-#include <memory>
 #include <map>
+#include <memory>
+#include <string>
 #include <vector>
 #include "./signal-string.hpp"
 
@@ -37,53 +37,51 @@ class QuiddityManager_Impl;
 class QuidditySignalSubscriber {
  public:
   typedef std::shared_ptr<QuidditySignalSubscriber> ptr;
-  typedef void (*OnEmittedCallback) (const std::string &subscriber_name,
-                                     const std::string &quiddity_name,
-                                     const std::string &signal_name,
-                                     const std::vector<std::string> &params,
-                                     void *user_data);
+  typedef void (*OnEmittedCallback)(const std::string& subscriber_name,
+                                    const std::string& quiddity_name,
+                                    const std::string& signal_name,
+                                    const std::vector<std::string>& params,
+                                    void* user_data);
   QuidditySignalSubscriber();
   ~QuidditySignalSubscriber();
-  QuidditySignalSubscriber(const QuidditySignalSubscriber &) = delete;
-  QuidditySignalSubscriber &operator=(const QuidditySignalSubscriber &)
-  = delete;
+  QuidditySignalSubscriber(const QuidditySignalSubscriber&) = delete;
+  QuidditySignalSubscriber& operator=(const QuidditySignalSubscriber&) = delete;
   void mute(bool muted);
 
   void set_callback(OnEmittedCallback cb);
-  void set_user_data(void *user_data);
-  void set_name(const gchar *name);
+  void set_user_data(void* user_data);
+  void set_name(const gchar* name);
   bool subscribe(std::shared_ptr<Quiddity> quid,
-                 const std::string &signal_name);
+                 const std::string& signal_name);
   bool unsubscribe(std::shared_ptr<Quiddity> quid,
-                   const std::string &signal_name);
+                   const std::string& signal_name);
   bool unsubscribe(std::shared_ptr<Quiddity> quid);
 
   std::vector<std::pair<std::string, std::string>> list_subscribed_signals();
-  static void signal_cb(const std::vector<std::string> &params,
+  static void signal_cb(const std::vector<std::string>& params,
                         gpointer user_data);
 
   // manager_impl initialization
-  void set_manager_impl(std::shared_ptr<QuiddityManager_Impl>
-                        manager_impl);
+  void set_manager_impl(std::shared_ptr<QuiddityManager_Impl> manager_impl);
 
  private:
   bool muted_{false};
   OnEmittedCallback user_callback_{nullptr};
-  void *user_data_{nullptr};
+  void* user_data_{nullptr};
   std::string name_{};
   std::weak_ptr<QuiddityManager_Impl> manager_impl_{};
 
   typedef struct {
-    QuidditySignalSubscriber *subscriber{nullptr};
+    QuidditySignalSubscriber* subscriber{nullptr};
     std::string name{};
     std::string quiddity_name{};
     std::string signal_name{};
     OnEmittedCallback user_callback{nullptr};
-    void *user_data{nullptr};
+    void* user_data{nullptr};
     std::weak_ptr<Quiddity> quid{};
   } SignalData;
-  typedef std::map<std::pair<std::string, std::string>,
-                   SignalData *>SignalDataMap;
+  typedef std::map<std::pair<std::string, std::string>, SignalData*>
+      SignalDataMap;
   SignalDataMap signal_datas_{};
 };
 }  // namespace switcher

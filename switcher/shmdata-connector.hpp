@@ -21,27 +21,25 @@
 #define __SWITCHER_SHMDATA_CONNECTOR_H__
 
 #include <glib.h>
-#include <vector>
-#include <unordered_map>
 #include <functional>
-
+#include <unordered_map>
+#include <vector>
 
 namespace switcher {
 class Quiddity;
 
-class ShmdataConnector
-{
+class ShmdataConnector {
  public:
-  using OnConnect = std::function<bool(const std::string &/*shmpath*/)>;
-  using OnDisconnect = std::function<bool(const std::string &/*shmpath*/)>;
+  using OnConnect = std::function<bool(const std::string& /*shmpath*/)>;
+  using OnDisconnect = std::function<bool(const std::string& /*shmpath*/)>;
   using OnDisconnectAll = std::function<bool()>;
-  using CanSinkCaps = std::function<bool(const std::string &/*caps*/)>;
+  using CanSinkCaps = std::function<bool(const std::string& /*caps*/)>;
 
-  explicit ShmdataConnector(Quiddity *quid);
+  explicit ShmdataConnector(Quiddity* quid);
   ShmdataConnector() = delete;
   virtual ~ShmdataConnector(){};
-  ShmdataConnector(const ShmdataConnector &) = delete;
-  ShmdataConnector &operator=(const ShmdataConnector &) = delete;
+  ShmdataConnector(const ShmdataConnector&) = delete;
+  ShmdataConnector& operator=(const ShmdataConnector&) = delete;
   bool install_connect_method(OnConnect on_connect_cb,
                               OnDisconnect on_disconnect_cb,
                               OnDisconnectAll on_disconnect_all_cb,
@@ -49,12 +47,12 @@ class ShmdataConnector
                               uint max_reader);
 
  private:
-  Quiddity *quid_ {nullptr};
+  Quiddity* quid_{nullptr};
   // methods to install
-  OnConnect on_connect_cb_ {nullptr};
-  OnDisconnect on_disconnect_cb_ {nullptr};
-  OnDisconnectAll on_disconnect_all_cb_ {nullptr};
-  CanSinkCaps on_can_sink_caps_cb_ {nullptr};
+  OnConnect on_connect_cb_{nullptr};
+  OnDisconnect on_disconnect_cb_{nullptr};
+  OnDisconnectAll on_disconnect_all_cb_{nullptr};
+  CanSinkCaps on_can_sink_caps_cb_{nullptr};
   static gboolean connect_wrapped(gpointer path, gpointer user_data);
   static gboolean disconnect_wrapped(gpointer path, gpointer user_data);
   static gboolean disconnect_all_wrapped(gpointer /*unused */,

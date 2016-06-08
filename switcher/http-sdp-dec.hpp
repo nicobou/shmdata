@@ -20,23 +20,23 @@
 #ifndef __SWITCHER_HTTP_SDP_DEC_H__
 #define __SWITCHER_HTTP_SDP_DEC_H__
 
-#include <memory>
 #include <map>
+#include <memory>
 #include <string>
-#include "./gst-pipeliner.hpp"
-#include "./quiddity-command.hpp"
+#include "./counter-map.hpp"
 #include "./decodebin-to-shmdata.hpp"
 #include "./g-source-wrapper.hpp"
+#include "./gst-pipeliner.hpp"
+#include "./quiddity-command.hpp"
 #include "./unique-gst-element.hpp"
-#include "./counter-map.hpp"
 
 namespace switcher {
 class GstShmdataSubscriber;
 
-class HTTPSDPDec: public Quiddity {
+class HTTPSDPDec : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);
-  HTTPSDPDec(const std::string &);
+  HTTPSDPDec(const std::string&);
 
  private:
   std::unique_ptr<GstPipeliner> gst_pipeline_;
@@ -45,7 +45,7 @@ class HTTPSDPDec: public Quiddity {
   bool is_dataurisrc_{false};
   guint retry_delay_{1000};
   // will maintain a max of two GSourceWrapper in order to avoid destructing
-  // itself from inside the GSource 
+  // itself from inside the GSource
   std::list<GSourceWrapper::uptr> on_error_{};
   std::string uri_{};
   std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_{};
@@ -58,14 +58,15 @@ class HTTPSDPDec: public Quiddity {
   void make_new_error_handler();
   bool init() final;
   void uri_to_shmdata();
-  void configure_shmdatasink(GstElement *element,
-                             const std::string &media_type,
-                             const std::string &media_label);
-  static void httpsdpdec_pad_added_cb(GstElement *object,
-                                      GstPad *pad, gpointer user_data);
+  void configure_shmdatasink(GstElement* element,
+                             const std::string& media_type,
+                             const std::string& media_label);
+  static void httpsdpdec_pad_added_cb(GstElement* object,
+                                      GstPad* pad,
+                                      gpointer user_data);
   static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);
-  static void on_new_element_in_sdpdemux(GstBin *bin,
-                                         GstElement *element,
+  static void on_new_element_in_sdpdemux(GstBin* bin,
+                                         GstElement* element,
                                          gpointer user_data);
 };
 

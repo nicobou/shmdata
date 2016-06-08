@@ -17,37 +17,31 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/std2.hpp"
 #include "./external-shmdata-writer.hpp"
+#include "switcher/std2.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    ExternalShmdataWriter,
-    "extshmsrc",
-    "Raw Shmdata",
-    "other",
-    "writer",
-    "import an external shmdata writer",
-    "LGPL",
-    "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalShmdataWriter,
+                                     "extshmsrc",
+                                     "Raw Shmdata",
+                                     "other",
+                                     "writer",
+                                     "import an external shmdata writer",
+                                     "LGPL",
+                                     "Nicolas Bouillot");
 
-ExternalShmdataWriter::ExternalShmdataWriter(const std::string &){
-}
+ExternalShmdataWriter::ExternalShmdataWriter(const std::string&) {}
 
 bool ExternalShmdataWriter::init() {
   pmanage<MPtr(&PContainer::make_string)>(
       "shmdata-path",
-      [this](const std::string &val){
+      [this](const std::string& val) {
         shmdata_path_ = val;
         shm_ = std2::make_unique<ShmdataFollower>(
-            this,
-            shmdata_path_,
-            nullptr,
-            nullptr,
-            nullptr,
-            ".shmdata.writer.");
-        return true;},
-      [this](){return shmdata_path_;},
+            this, shmdata_path_, nullptr, nullptr, nullptr, ".shmdata.writer.");
+        return true;
+      },
+      [this]() { return shmdata_path_; },
       "Shmdata Path",
       "Path Of The Shmdata The Include",
       "");

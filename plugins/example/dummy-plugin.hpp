@@ -26,18 +26,19 @@
 #include "switcher/quiddity.hpp"
 
 namespace switcher {
-class DummyPlugin: public Quiddity {
+class DummyPlugin : public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(DummyPlugin);
-  DummyPlugin(const std::string &);
+  DummyPlugin(const std::string&);
   ~DummyPlugin() = default;
-  DummyPlugin(const DummyPlugin &) = delete;
-  DummyPlugin &operator=(const DummyPlugin &) = delete;
+  DummyPlugin(const DummyPlugin&) = delete;
+  DummyPlugin& operator=(const DummyPlugin&) = delete;
 
  private:
   // --- Properties
   // the Property<T> object is providing access to the int_ member, accordingly
-  // declare and initialise the member (e.g. bool_) before the property (e.g. bool_id_) 
+  // declare and initialise the member (e.g. bool_) before the property (e.g.
+  // bool_id_)
   bool bool_{true};
   PContainer::prop_id_t bool_id_;
   // an other property
@@ -45,7 +46,7 @@ class DummyPlugin: public Quiddity {
   PContainer::prop_id_t string_id_;
   char char_{'@'};
   PContainer::prop_id_t char_id_;
-  
+
   // grouping integral types
   PContainer::prop_id_t integral_group_id_;
   int int_{3};
@@ -64,7 +65,7 @@ class DummyPlugin: public Quiddity {
   PContainer::prop_id_t unsigned_long_id_;
   unsigned long long unsigned_long_long_{6};
   PContainer::prop_id_t unsigned_long_long_id_;
-  
+
   // floating point types (also grouped)
   PContainer::prop_id_t floating_point_group_id_;
   float float_{0.1234};
@@ -75,7 +76,8 @@ class DummyPlugin: public Quiddity {
   PContainer::prop_id_t long_double_id_;
 
   // selection
-  Selection selection_{{"emasc", "sublime", "IntelliJ IDEA", "vim", "notepad", "gedit"}, 0};
+  Selection selection_{
+      {"emasc", "sublime", "IntelliJ IDEA", "vim", "notepad", "gedit"}, 0};
   PContainer::prop_id_t selection_id_;
 
   // tuple
@@ -84,12 +86,12 @@ class DummyPlugin: public Quiddity {
   PContainer::prop_id_t tuple_id_;
 
   // Fraction
-  Fraction fraction_{1,3};
+  Fraction fraction_{1, 3};
   PContainer::prop_id_t fraction_id_;
-  
+
   // --- Methods
   std::string hello_{};
-  static gchar *my_hello_world_method(gchar *first_arg, void *user_data);
+  static gchar* my_hello_world_method(gchar* first_arg, void* user_data);
 
   bool init() final;
 };

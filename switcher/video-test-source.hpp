@@ -21,21 +21,21 @@
 #define __SWITCHER_VIDEO_TEST_SOURCE_H__
 
 #include <memory>
-#include "switcher/quiddity.hpp"
-#include "switcher/startable-quiddity.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
-#include "switcher/unique-gst-element.hpp"
 #include "switcher/gst-video-codec.hpp"
+#include "switcher/quiddity.hpp"
+#include "switcher/startable-quiddity.hpp"
+#include "switcher/unique-gst-element.hpp"
 
 namespace switcher {
-class VideoTestSource: public Quiddity, public StartableQuiddity {
+class VideoTestSource : public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VideoTestSource);
-  VideoTestSource(const std::string &);
+  VideoTestSource(const std::string&);
   ~VideoTestSource() = default;
-  VideoTestSource(const VideoTestSource &) = delete;
-  VideoTestSource &operator=(const VideoTestSource &) = delete;
+  VideoTestSource(const VideoTestSource&) = delete;
+  VideoTestSource& operator=(const VideoTestSource&) = delete;
 
  private:
   std::string shmpath_{};

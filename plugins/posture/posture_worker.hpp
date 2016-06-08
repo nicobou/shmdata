@@ -27,27 +27,25 @@
 #include <thread>
 
 /*************/
-namespace switcher
-{
-  class Worker
-  {
-    public:
-      Worker();
-      ~Worker();
-  
-      bool is_ready() {return ready_;}
-      void set_task(std::function<void()> func);
-  
-    private:
-      std::atomic_bool ready_ {false};
-      bool stop_ {false};
-      std::shared_ptr<std::function<void()>> task_ {nullptr};
-      std::thread thread_ {};
-      std::mutex mutex_ {};
-      std::condition_variable _condition {};
-  
-      void thread_loop();
-  };
-} // end of namespace
+namespace switcher {
+class Worker {
+ public:
+  Worker();
+  ~Worker();
+
+  bool is_ready() { return ready_; }
+  void set_task(std::function<void()> func);
+
+ private:
+  std::atomic_bool ready_{false};
+  bool stop_{false};
+  std::shared_ptr<std::function<void()>> task_{nullptr};
+  std::thread thread_{};
+  std::mutex mutex_{};
+  std::condition_variable _condition{};
+
+  void thread_loop();
+};
+}  // end of namespace
 
 #endif

@@ -19,30 +19,25 @@
 
 namespace switcher {
 
-PeriodicTask::PeriodicTask(task_t task, std::chrono::milliseconds period):
-    task_(task),
-    period_(period),
-    fut_(task ?
-         std::async(std::launch::async, [this](){this->do_work();})
-         : std::future<void>()) {
-}
+PeriodicTask::PeriodicTask(task_t task, std::chrono::milliseconds period)
+    : task_(task),
+      period_(period),
+      fut_(task ? std::async(std::launch::async, [this]() { this->do_work(); })
+                : std::future<void>()) {}
 
-PeriodicTask::~PeriodicTask(){
+PeriodicTask::~PeriodicTask() {
   {
     canceled_.store(true);
     std::unique_lock<std::mutex> lock(cv_m_);
     cv_.notify_one();
   }
-  if (fut_.valid()) 
-    fut_.get();
+  if (fut_.valid()) fut_.get();
 }
 
-void PeriodicTask::do_work(){
+void PeriodicTask::do_work() {
   while (!canceled_.load()) {
     std::unique_lock<std::mutex> lock(cv_m_);
-    if(!cv_.wait_for(lock,
-                     period_,
-                     [this](){return canceled_.load();})){
+    if (!cv_.wait_for(lock, period_, [this]() { return canceled_.load(); })) {
       task_();
     }
   }

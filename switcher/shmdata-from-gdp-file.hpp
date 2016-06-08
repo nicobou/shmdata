@@ -31,13 +31,13 @@
 #include "./startable-quiddity.hpp"
 
 namespace switcher {
-class ShmdataFromGDPFile:public GstPipeliner, public StartableQuiddity {
+class ShmdataFromGDPFile : public GstPipeliner, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataFromGDPFile);
-  ShmdataFromGDPFile(const std::string &);
+  ShmdataFromGDPFile(const std::string&);
   ~ShmdataFromGDPFile();
-  ShmdataFromGDPFile(const ShmdataFromGDPFile &) = delete;
-  ShmdataFromGDPFile &operator=(const ShmdataFromGDPFile &) = delete;
+  ShmdataFromGDPFile(const ShmdataFromGDPFile&) = delete;
+  ShmdataFromGDPFile& operator=(const ShmdataFromGDPFile&) = delete;
 
   bool start();
   bool stop();
@@ -48,22 +48,22 @@ class ShmdataFromGDPFile:public GstPipeliner, public StartableQuiddity {
   // custom properties:
   CustomPropertyHelper::ptr custom_prop_;
 
-  std::string input_prefix_ {"shmfile_"};
-  GParamSpec *input_prefix_param_ {nullptr};
+  std::string input_prefix_{"shmfile_"};
+  GParamSpec* input_prefix_param_{nullptr};
 
-  std::map<std::string, std::string> shmdata_names_ {};
-  unsigned int shm_counter_ {0};
+  std::map<std::string, std::string> shmdata_names_{};
+  unsigned int shm_counter_{0};
 
   bool init_gpipe() final;
 
   bool make_players();
   bool clean_players();
 
-  static const gchar *get_input_prefix(void *user_data);
-  static void set_input_prefix(const gchar *prefix, void *user_data);
+  static const gchar* get_input_prefix(void* user_data);
+  static void set_input_prefix(const gchar* prefix, void* user_data);
 
   static std::map<std::string, std::string> getFilenames(std::string prefix);
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif  // ifndef

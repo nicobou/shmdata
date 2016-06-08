@@ -20,21 +20,21 @@
 #ifndef __SWITCHER_OSC_CTRL_SERVER_H__
 #define __SWITCHER_OSC_CTRL_SERVER_H__
 
-#include "switcher/quiddity-manager-wrapper.hpp"
-#include "lo/lo.h"
-#include <memory>
 #include <map>
+#include <memory>
 #include <string>
+#include "lo/lo.h"
+#include "switcher/quiddity-manager-wrapper.hpp"
 
 namespace switcher {
-class OscCtrlServer:public QuiddityManagerWrapper {
+class OscCtrlServer : public QuiddityManagerWrapper {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(OscCtrlServer);
-  OscCtrlServer(const std::string &);
+  OscCtrlServer(const std::string&);
   ~OscCtrlServer();
-  OscCtrlServer(const OscCtrlServer &) = delete;
-  OscCtrlServer &operator=(const OscCtrlServer &) = delete;
-  void set_port(const std::string &port);
+  OscCtrlServer(const OscCtrlServer&) = delete;
+  OscCtrlServer& operator=(const OscCtrlServer&) = delete;
+  void set_port(const std::string& port);
   // for invocation into osc handlers:
   std::shared_ptr<QuiddityManager> get_quiddity_manager();
   // wrappers
@@ -42,29 +42,30 @@ class OscCtrlServer:public QuiddityManagerWrapper {
 
  private:
   std::string port_;
-  std::map<std::string, std::pair<std::string, std::string>>osc_subscribers_;  //(host + port)
+  std::map<std::string, std::pair<std::string, std::string>>
+      osc_subscribers_;  //(host + port)
   lo_server_thread osc_thread_;
 
   bool init() final;
 
   void start();
   void stop();
-  static void prop_cb(const std::string &subscriber_name,
-                      const std::string &quiddity_name,
-                      const std::string &property_name,
-                      const std::string &value,
-                      void *user_data);
-  static int osc_handler(const char *path,
-                         const char *types,
-                         lo_arg ** argv,
+  static void prop_cb(const std::string& subscriber_name,
+                      const std::string& quiddity_name,
+                      const std::string& property_name,
+                      const std::string& value,
+                      void* user_data);
+  static int osc_handler(const char* path,
+                         const char* types,
+                         lo_arg** argv,
                          int argc,
-                         void *data,
-                         void *user_data);
-  static void osc_error(int num, const char *msg, const char *path);
-  static gchar *string_from_osc_arg(char types, lo_arg *data);
-  static gchar *string_float_to_string_int(const gchar *string_float);
-  gchar *make_internal_subscriber_name(const gchar *name);
-  gchar *retrieve_subscriber_name(const gchar *internal_name);
+                         void* data,
+                         void* user_data);
+  static void osc_error(int num, const char* msg, const char* path);
+  static gchar* string_from_osc_arg(char types, lo_arg* data);
+  static gchar* string_float_to_string_int(const gchar* string_float);
+  gchar* make_internal_subscriber_name(const gchar* name);
+  gchar* retrieve_subscriber_name(const gchar* internal_name);
 };
 
 SWITCHER_DECLARE_PLUGIN(OscCtrlServer);
