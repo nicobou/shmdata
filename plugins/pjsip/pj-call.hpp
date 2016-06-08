@@ -34,7 +34,6 @@
 #include "switcher/gst-shmdata-to-cb.hpp"
 #include "switcher/quiddity-manager.hpp"
 #include "switcher/rtp-session2.hpp"
-#include "switcher/shmdata-decoder.hpp"
 #include "switcher/shmdata-writer.hpp"
 
 namespace switcher {
