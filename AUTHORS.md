@@ -1,8 +1,8 @@
-* Nicolas Bouillot (lead programmer)
+* Nicolas Bouillot
 * Emmanuel Durand
 * Ludovic Schreiber
-* François Ubald Brien
 * Jérémie Soria
+* François Ubald Brien
 * Michal Seta
 * Mike Wozniewski
 * Alexandre Quessy
