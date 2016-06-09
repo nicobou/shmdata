@@ -34,6 +34,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gprop-to-prop.cpp \
     gst-audio-codec.cpp \
     gst-audio-encoder.cpp \
+    gst-decodebin.cpp \
     gst-pipe.cpp \
     gst-pipeliner.cpp \
     gst-pixel-format-converter.cpp \
@@ -119,6 +120,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     group.hpp \
     gst-audio-codec.hpp \
     gst-audio-encoder.hpp \
+    gst-decodebin.hpp \
     gst-pipe.hpp \
     gst-pipeliner.hpp \
     gst-pixel-format-converter.hpp \
