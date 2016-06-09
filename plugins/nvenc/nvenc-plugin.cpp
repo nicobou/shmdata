@@ -44,7 +44,7 @@ NVencPlugin::NVencPlugin(const std::string&)
   if (names.empty()) return;
   devices_ = Selection(std::move(names), 0);
   update_device();
-  pmanage<MPtr(&PContainer::make_selection)>(
+  devices_id_ = pmanage<MPtr(&PContainer::make_selection)>(
       "gpu",
       [this](size_t val) {
         if (devices_.get() == val) return true;
@@ -257,11 +257,20 @@ bool NVencPlugin::on_shmdata_disconnect() {
   shm_.reset(nullptr);
   shmw_.reset(nullptr);
   update_device();
+
+  pmanage<MPtr(&PContainer::enable)>(devices_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(presets_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(profiles_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(codecs_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(max_width_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(max_height_id_, true);
+
   return true;
 }
 
 bool NVencPlugin::on_shmdata_connect(const std::string& shmpath) {
-  shm_.reset();
+  // Needed to avoid concurrency with old shmdata follower.
+  shm_.reset(nullptr);
   shm_.reset(new ShmdataFollower(
       this,
       shmpath,
@@ -269,6 +278,14 @@ bool NVencPlugin::on_shmdata_connect(const std::string& shmpath) {
       [this](const std::string& data_descr) {
         this->on_shmreader_server_connected(data_descr);
       }));
+
+  pmanage<MPtr(&PContainer::enable)>(devices_id_, false);
+  pmanage<MPtr(&PContainer::enable)>(presets_id_, false);
+  pmanage<MPtr(&PContainer::enable)>(profiles_id_, false);
+  pmanage<MPtr(&PContainer::enable)>(codecs_id_, false);
+  pmanage<MPtr(&PContainer::enable)>(max_width_id_, false);
+  pmanage<MPtr(&PContainer::enable)>(max_height_id_, false);
+
   return true;
 }
 
