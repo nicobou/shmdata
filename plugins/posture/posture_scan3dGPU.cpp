@@ -169,6 +169,15 @@ void PostureScan3DGPU::update_loop() {
       }
     }
 
+    // Update focal length from calibration files with data from cameras
+    {
+      auto calibration = calibration_reader_->getCalibrationParams();
+      for (unsigned int i = 0; i < cameras_.size(); ++i)
+        calibration[i].rgb_focal = cameras_[i]->getRGBFocal();
+      solidifyGPU_->setCalibration(calibration);
+      colorize_->setCalibration(calibration);
+    }
+
     solidifyGPU_->getMesh(mesh);
 
     if (refine_mesh_) {
@@ -215,11 +224,12 @@ void PostureScan3DGPU::update_loop() {
               texture_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
         auto data_type = string(POINTCLOUD_TYPE_BASE);
         texture_writer_.reset();
+
         texture_writer_ = std2::make_unique<ShmdataWriter>(
             this,
             make_file_name("texture"),
             texture.size() * 2,
-            "video/x-raw,format=(string)BGR,width=(int)" + to_string(width) +
+            "video/x-raw,format=(string)RGB,width=(int)" + to_string(width) +
                 ",height=(int)" + to_string(height) + ",framerate=30/1");
 
         if (!texture_writer_) {

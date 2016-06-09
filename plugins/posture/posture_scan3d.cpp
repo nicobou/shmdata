@@ -88,7 +88,7 @@ bool PostureSc3::init() {
               std::shared_ptr<ZCamera>(new ZCamera());
           cameras_[index_] = newCam;
           cameras_[index_]->setDeviceIndex(index_);
-          cameras_[index_]->setCaptureMode(ZCamera::CaptureMode_QQVGA_30Hz);
+          cameras_[index_]->setCaptureMode(ZCamera::CaptureMode::QQVGA_30Hz);
           int index = index_;
           cameras_[index_]->setCallbackCloud(
               [=](void*, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud)

@@ -153,7 +153,7 @@ bool PostureSrc::init() {
                                        "Index of the device to use",
                                        device_index_,
                                        0,
-                                       7);
+                                       ZCamera::getDeviceCount() - 1);
 
   pmanage<MPtr(&PContainer::make_bool)>("random_data",
                                         [this](const bool& val) {
@@ -422,16 +422,33 @@ void PostureSrc::cb_frame_rgb(void* context,
   using namespace std::placeholders;
 
   PostureSrc* ctx = (PostureSrc*)context;
+  auto format = ctx->zcamera_->getCaptureFormat();
 
   if (!ctx->rgb_writer_ || ctx->rgb_width_ != width ||
-      ctx->rgb_height_ != height) {
+      ctx->rgb_height_ != height || ctx->rgb_format_ != format) {
     ctx->rgb_width_ = width;
     ctx->rgb_height_ = height;
+    ctx->rgb_format_ = format;
+
+    string formatStr;
+    switch (format) {
+      default:
+        formatStr = "RGB";
+        break;
+      case ZCamera::CaptureFormat::RGB:
+        formatStr = "RGB";
+        break;
+      case ZCamera::CaptureFormat::BGR:
+        formatStr = "BGR";
+        break;
+    }
+
     char buffer[256] = "";
     sprintf(buffer,
             "video/"
-            "x-raw,format=(string)BGR,width=(int)%i,height=(int)%i,framerate="
+            "x-raw,format=(string)%s,width=(int)%i,height=(int)%i,framerate="
             "30/1",
+            formatStr.c_str(),
             width,
             height);
 
