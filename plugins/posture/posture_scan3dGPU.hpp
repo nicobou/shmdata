@@ -30,6 +30,7 @@ class PostureScan3DGPU : public Quiddity, public StartableQuiddity {
 
  private:
   bool compress_mesh_{false};
+  bool compress_multicore_{true};
   std::string calibration_path_{"default.kvc"};
 
   int camera_nbr_{1};
