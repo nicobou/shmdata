@@ -79,7 +79,7 @@ def commit_version_number(lib, new_version, version_regex):
 
 
 def git_push(remote_repo, remote_branch):
-    return subprocess.call('git push {} {}'.format(remote_repo, remote_branch), shell=True)
+    return subprocess.call('git push {} {} --tags'.format(remote_repo, remote_branch), shell=True)
 
 
 def git_checkout(branch_name, is_new=False):
