@@ -35,10 +35,8 @@ namespace switcher {
 class Quiddity;
 class QuiddityCommand;
 class CustomPropertyHelper;
-class DecodebinToShmdata;
 
 class GstPipeliner {
-  friend DecodebinToShmdata;
 
  public:
   GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,

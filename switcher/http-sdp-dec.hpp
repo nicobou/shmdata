@@ -27,7 +27,7 @@
 #include "./decodebin-to-shmdata.hpp"
 #include "./g-source-wrapper.hpp"
 #include "./gst-pipeliner.hpp"
-#include "./quiddity-command.hpp"
+#include "./gst-shmdata-subscriber.hpp"
 #include "./unique-gst-element.hpp"
 
 namespace switcher {

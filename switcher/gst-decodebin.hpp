@@ -17,47 +17,43 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_SHMDATA_DECODER_H__
-#define __SWITCHER_SHMDATA_DECODER_H__
+#ifndef __SWITCHER_GST_DECODER_H__
+#define __SWITCHER_GST_DECODER_H__
 
+#include <memory>
 #include "./decodebin-to-shmdata.hpp"
 #include "./gst-pipeliner.hpp"
 #include "./gst-shmdata-subscriber.hpp"
 #include "./quiddity.hpp"
+#include "./shmdata-connector.hpp"
+#include "./unique-gst-element.hpp"
+#include "./unique-gst-element.hpp"
 
 namespace switcher {
-class RtpSession2;
-
-class ShmdataDecoder {
+class GstDecodebin : public Quiddity {
  public:
-  using on_shmwriter_path_t = std::function<void(const std::string&)>;
-  ShmdataDecoder(
-      Quiddity* quid,
-      GstPipeliner* pipeliner,
-      const std::string& shmpath,
-      const std::string& shm_prefix,   // if empty, use quid's prefix method
-      const std::string& media_label,  // ignored if empty
-      on_shmwriter_path_t cb);
-  ShmdataDecoder() = delete;
-  ~ShmdataDecoder();
-  ShmdataDecoder(const ShmdataDecoder&) = delete;
-  ShmdataDecoder(ShmdataDecoder&&) = delete;
-  ShmdataDecoder& operator=(const ShmdataDecoder&) = delete;
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstDecodebin);
+  GstDecodebin(const std::string&);
+  ~GstDecodebin() = default;
+  GstDecodebin(const GstDecodebin&) = delete;
+  GstDecodebin& operator=(const GstDecodebin&) = delete;
 
  private:
+  CounterMap counter_{};
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  UGstElem shmsrc_;
+  // registering connect/disconnect/can_sink_caps:
+  ShmdataConnector shmcntr_;
+  std::unique_ptr<DecodebinToShmdata> decoder_{nullptr};
+  std::unique_ptr<GstShmdataSubscriber> shmw_sub_{};
+  std::unique_ptr<GstShmdataSubscriber> shmr_sub_{};
+  bool init() final;
+  bool on_shmdata_disconnect();
+  bool on_shmdata_connect(const std::string& shmdata_sochet_path);
+  bool can_sink_caps(const std::string& caps);
   void configure_shmdatasink(GstElement* element,
                              const std::string& media_type,
                              const std::string& media_label);
-  Quiddity* quid_;
-  GstPipeliner* pipeliner_;
-  std::string shmpath_;
-  std::string shmwriter_path_{};
-  std::string shm_prefix_;
-  std::string media_label_;
-  GstElement* shmdatasrc_;
-  DecodebinToShmdata decodebin_;
-  std::unique_ptr<GstShmdataSubscriber> shm_sub_{};
-  on_shmwriter_path_t on_shmwriter_path_cb_;
 };
 
 }  // namespace switcher
