@@ -191,7 +191,6 @@ pj_bool_t PJCall::on_rx_request(pjsip_rx_data* rdata) {
 void PJCall::on_inv_state_disconnected(call_t* call,
                                        pjsip_inv_session* inv,
                                        pjsua_buddy_id id) {
-  // pj_time_val null_time = {0, 0};
   g_debug("Call disconnected. Reason=%d (%.*s)",
           inv->cause,
           static_cast<int>(inv->cause_text.slen),
@@ -1025,7 +1024,11 @@ gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
         return false;
       });
 
-      return TRUE;  // stop here, do not hangup incoming call
+      // stop here, do not hangup incoming call, except for self-call.
+      if (SIPPlugin::this_->sip_presence_->sip_local_user_.find(sip_url) ==
+          std::string::npos) {
+        return TRUE;
+      }
     }
 
     auto it_inc = std::find_if(context->incoming_call_.begin(),
@@ -1055,16 +1058,12 @@ gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
 void PJCall::make_hang_up(pjsip_inv_session* inv, std::string sip_url) {
   pjsip_tx_data* tdata;
   pj_status_t status;
-  // std::for_each(call.begin(), call.end(),
-  //               [](const call_t &call){
-  //                 g_print ("call with %s\n", call.peer_uri.c_str());
-  //               });
+
   status = pjsip_inv_end_session(inv, 603, nullptr, &tdata);
 
   if (SIPPlugin::this_->sip_presence_->sip_local_user_.find(sip_url) !=
       std::string::npos) {
     // finding id of the buddy related to the call
-    // SIPPlugin::this_->pjsip_->run_async([&inv]() {
     call_t* call = (call_t*)inv->mod_data[mod_siprtp_.id];
     auto endpos = call->peer_uri.find('@');
     auto beginpos = call->peer_uri.find("sip:");
