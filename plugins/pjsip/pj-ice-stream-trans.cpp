@@ -224,8 +224,11 @@ bool PJICEStreamTrans::sendto(unsigned comp_id,
                               pj_size_t size,
                               const pj_sockaddr_t* dst_addr,
                               int dst_addr_len) {
-  return PJ_SUCCESS == pj_ice_strans_sendto(
-                           icest_, comp_id, data, size, dst_addr, dst_addr_len);
+  if (pj_ice_strans_sess_is_complete(icest_))
+    return PJ_SUCCESS ==
+           pj_ice_strans_sendto(
+               icest_, comp_id, data, size, dst_addr, dst_addr_len);
+  return false;
 }
 
 bool PJICEStreamTrans::set_data_cb(unsigned comp_id, on_data_cb_t cb) {

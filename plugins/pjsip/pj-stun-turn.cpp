@@ -42,7 +42,10 @@ PJStunTurn::PJStunTurn() {
     return;
   }
   ice_cfg_.af = pj_AF_INET();
+  ice_cfg_.stun.cfg.max_pkt_size = 8192;
+  ice_cfg_.turn.cfg.max_pkt_size = 8192;
   ice_cfg_.opt.aggressive = PJ_FALSE;
+  ice_cfg_.stun_cfg.rto_msec = 500;
 
   // set stun/turn config
   SIPPlugin::this_->install_method(
@@ -215,12 +218,9 @@ gboolean PJStunTurn::set_stun_turn(const gchar* stun,
     }
 
     // /* Connection type to TURN server */
-    // if (tcp)
-    //   context->ice_cfg_.turn.conn_type = PJ_TURN_TP_TCP;
-    // else
     context->ice_cfg_.turn.conn_type = PJ_TURN_TP_UDP;
 
-    /* For this demo app, configure longer keep-alive time
+    /* configure longer keep-alive time
      * so that it does't clutter the screen output.
      */
     context->ice_cfg_.turn.alloc_param.ka_interval = 300;

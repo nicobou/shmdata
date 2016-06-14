@@ -539,7 +539,8 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     return;
   }
   // Create UAS dialog
-  status = pjsip_dlg_create_uas(pjsip_ua_instance(), rdata, nullptr, &dlg);
+  status = pjsip_dlg_create_uas_and_inc_lock(
+      pjsip_ua_instance(), rdata, nullptr, &dlg);
   if (status != PJ_SUCCESS) {
     pj_str_t reason;
     pj_cstr(&reason, "Unable to create dialog");
@@ -547,6 +548,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
         PJSIP::this_->sip_endpt_, rdata, 500, &reason, nullptr, nullptr);
     return;
   }
+  pjsip_dlg_dec_lock(dlg);
   // we expect the outgoing INVITE to be challenged
   pjsip_auth_clt_set_credentials(
       &dlg->auth_sess, 1, &SIPPlugin::this_->sip_presence_->cfg_.cred_info[0]);
