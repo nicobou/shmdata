@@ -70,8 +70,9 @@ class InfoTree {
     tree->me_ = tree;
     return tree;
   }
-  static InfoTree::ptr make(
-      const char* data);  // InfoTree will store a std::string
+  // InfoTree will store a std::string
+  static InfoTree::ptr make(const char* data);
+  static InfoTree::ptr make_null();
 
   // escaping dots from a keys ("." internally replaced by "__DOT__")
   static std::string escape_dots(const std::string& str);

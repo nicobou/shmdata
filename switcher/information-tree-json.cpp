@@ -51,6 +51,12 @@ void on_visiting_node(std::string key,
   key = InfoTree::unescape_dots(key);
   if (!is_array_element)  // discarding here to get it as a member called "name"
     json_builder_set_member_name(builder, key.c_str());
+
+  if (!node) {
+    json_builder_add_null_value(builder);
+    return;
+  }
+
   if (node->is_leaf()) {
     if (!node->read_data().is_null()) {
       write_typed_member(builder, node->read_data());
@@ -86,6 +92,7 @@ void on_node_visited(std::string,
                      InfoTree::ptrc node,
                      bool /*is_array_element*/,
                      JsonBuilder* builder) {
+  if (!node) return;
   if (node->is_array()) {
     // json_builder_end_object (builder);
     json_builder_end_array(builder);
@@ -130,17 +137,19 @@ std::string serialize(InfoTree::ptrc tree) {
     json_builder_begin_object(json_builder);
   else
     json_builder_begin_array(json_builder);
-  InfoTree::preorder_tree_walk(tree,
-                               std::bind(JSONSerializer::on_visiting_node,
-                                         std::placeholders::_1,
-                                         std::placeholders::_2,
-                                         std::placeholders::_3,
-                                         json_builder),
-                               std::bind(JSONSerializer::on_node_visited,
-                                         std::placeholders::_1,
-                                         std::placeholders::_2,
-                                         std::placeholders::_3,
-                                         json_builder));
+  InfoTree::preorder_tree_walk(
+      tree,
+      [&json_builder](
+          std::string key, InfoTree::ptrc node, bool is_array_element) {
+        JSONSerializer::on_visiting_node(
+            key, node, is_array_element, json_builder);
+      },
+      [&json_builder](
+          std::string key, InfoTree::ptrc node, bool is_array_element) {
+        JSONSerializer::on_node_visited(
+            key, node, is_array_element, json_builder);
+      });
+
   if (!is_array)
     json_builder_end_object(json_builder);
   else

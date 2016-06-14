@@ -38,6 +38,11 @@ InfoTree::ptr InfoTree::make(const char* data) {
   return make(std::string(data));
 }
 
+InfoTree::ptr InfoTree::make_null() {
+  std::shared_ptr<InfoTree> tree;
+  return tree;
+}
+
 void InfoTree::preorder_tree_walk(InfoTree::ptrc tree,
                                   InfoTree::OnNodeFunction on_visiting_node,
                                   InfoTree::OnNodeFunction on_node_visited) {
@@ -45,7 +50,8 @@ void InfoTree::preorder_tree_walk(InfoTree::ptrc tree,
   if (!tree->children_.empty()) {
     for (auto& it : tree->children_) {
       on_visiting_node(it.first, it.second.get(), tree->is_array_);
-      preorder_tree_walk(it.second.get(), on_visiting_node, on_node_visited);
+      if (it.second.get())  // FIXME: figure out why children might be null
+        preorder_tree_walk(it.second.get(), on_visiting_node, on_node_visited);
       on_node_visited(it.first, it.second.get(), tree->is_array_);
     }
   }
@@ -159,7 +165,7 @@ InfoTree::ptr InfoTree::prune(const std::string& path) {
     On_scope_exit { found.first->erase(found.first->begin() + found.second); };
     return (*found.first)[found.second].second;
   }
-  return InfoTree::make();
+  return InfoTree::make_null();
 }
 
 InfoTree::ptr InfoTree::get_tree(const std::string& path) {
