@@ -56,47 +56,47 @@ InfoTree::InfoTree(const Any& data) : data_(data) {}
 InfoTree::InfoTree(Any&& data) : data_(data) {}
 
 bool InfoTree::is_leaf() const {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   return children_.empty();
 }
 
 bool InfoTree::is_array() const {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   return is_array_;
 }
 
 bool InfoTree::has_data() const {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   return !data_.is_null();
 }
 
 Any InfoTree::get_value() const {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   return data_;
 }
 
 const Any& InfoTree::read_data() const {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   return data_;
 }
 
 void InfoTree::set_value(const Any& data) {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   data_ = data;
 }
 
 void InfoTree::set_value(const char* data) {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   data_ = std::string(data);
 }
 
 void InfoTree::set_value(std::nullptr_t ptr) {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   data_ = ptr;
 }
 
 bool InfoTree::branch_is_leaf(const std::string& path) const {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   if (path_is_root(path)) return children_.empty();
   auto found = get_node(path);
   if (nullptr != found.first)
@@ -105,7 +105,7 @@ bool InfoTree::branch_is_leaf(const std::string& path) const {
 }
 
 bool InfoTree::branch_has_data(const std::string& path) const {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   if (path_is_root(path)) return data_.not_null();
   auto found = get_node(path);
   if (nullptr != found.first)
@@ -114,7 +114,7 @@ bool InfoTree::branch_has_data(const std::string& path) const {
 }
 
 Any InfoTree::branch_get_value(const std::string& path) const {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   if (path_is_root(path)) return data_;
   auto found = get_node(path);
   if (nullptr != found.first) return (*found.first)[found.second].second->data_;
@@ -123,7 +123,7 @@ Any InfoTree::branch_get_value(const std::string& path) const {
 }
 
 bool InfoTree::branch_set_value(const std::string& path, const Any& data) {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   if (path_is_root(path)) return data_ = data;
   auto found = get_node(path);
   if (nullptr != found.first) {
@@ -153,7 +153,7 @@ std::pair<bool, InfoTree::children_t::size_type> InfoTree::get_child_index(
 }
 
 InfoTree::ptr InfoTree::prune(const std::string& path) {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   auto found = get_node(path);
   if (nullptr != found.first) {
     On_scope_exit { found.first->erase(found.first->begin() + found.second); };
@@ -163,7 +163,7 @@ InfoTree::ptr InfoTree::prune(const std::string& path) {
 }
 
 InfoTree::ptr InfoTree::get_tree(const std::string& path) {
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   if (path_is_root(path)) return me_.lock();
   auto found = get_node(path);
   if (nullptr != found.first) return (*found.first)[found.second].second;
@@ -193,7 +193,7 @@ InfoTree::GetNodeReturn InfoTree::get_next(std::istringstream& path,
 
 bool InfoTree::graft(const std::string& where, InfoTree::ptr tree) {
   if (!tree) return false;
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   std::istringstream iss(where);
   return !graft_next(iss, this, tree);
 }
@@ -247,7 +247,7 @@ std::string InfoTree::unescape_dots(const std::string& str) {
 
 std::list<std::string> InfoTree::get_child_keys(const std::string& path) const {
   std::list<std::string> res;
-  std::unique_lock<std::mutex> lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   // if root is asked
   if (path_is_root(path)) {
     res.resize(children_.size());
@@ -274,7 +274,7 @@ std::list<std::string> InfoTree::copy_leaf_values(
   std::list<std::string> res;
   InfoTree::ptr tree;
   {  // finding the node
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     if (path_is_root(path))
       tree = me_.lock();
     else {
@@ -295,7 +295,7 @@ std::list<std::string> InfoTree::copy_leaf_values(
 
 InfoTree::ptrc InfoTree::get_subtree(InfoTree::ptrc tree,
                                      const std::string& path) {
-  std::unique_lock<std::mutex> lock(tree->mutex_);
+  std::lock_guard<std::mutex> lock(tree->mutex_);
   auto found = tree->get_node(path);
   if (nullptr == found.first) return nullptr;
   return (*found.first)[found.second].second.get();
