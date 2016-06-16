@@ -274,7 +274,7 @@ void Uridecodebin::uridecodebin_pad_added_cb(GstElement* object,
   if (gst_caps_can_intersect(context->rtpgstcaps_, newcaps)) {
     // asking rtpbin to send an event when a packet is lost (do-lost property)
     GstUtils::set_element_property_in_bin(object, "gstrtpbin", "do-lost", TRUE);
-    g_message("custom rtp stream found");
+    g_debug("custom rtp stream found");
     GstElement* rtpgstdepay = nullptr;
     GstUtils::make_element("rtpgstdepay", &rtpgstdepay);
 

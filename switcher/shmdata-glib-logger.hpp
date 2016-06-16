@@ -27,7 +27,9 @@ namespace switcher {
 
 class ShmdataGlibLogger : public shmdata::AbstractLogger {
  private:
-  void on_error(std::string&& str) final { g_warning("ERROR: %s", str.c_str()); }
+  void on_error(std::string&& str) final {
+    g_warning("ERROR: %s", str.c_str());
+  }
   void on_critical(std::string&& str) final { g_critical("%s", str.c_str()); }
   void on_warning(std::string&& str) final { g_warning("%s", str.c_str()); }
   void on_message(std::string&& str) final { g_message("%s", str.c_str()); }

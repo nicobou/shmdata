@@ -41,7 +41,10 @@ NVencPlugin::NVencPlugin(const std::string&)
     names.push_back(std::string("GPU #") + std::to_string(it.first) + " " +
                     it.second);
   }
-  if (names.empty()) return;
+  if (names.empty()) {
+    g_message("ERROR:Could not find any NVENC-enabled GPU.");
+    return;
+  }
   devices_ = Selection(std::move(names), 0);
   update_device();
   devices_id_ = pmanage<MPtr(&PContainer::make_selection)>(

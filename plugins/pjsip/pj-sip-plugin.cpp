@@ -102,7 +102,7 @@ void SIPPlugin::apply_configuration() {
     auto port = config<MPtr(&InfoTree::branch_get_value)>("port");
     if (pmanage<MPtr(&PContainer::set<unsigned int>)>(
             port_id_, port.copy_as<unsigned int>()))
-      g_message("sip has set port from configuration");
+      g_debug("sip has set port from configuration");
     else
       g_warning("sip failed setting port from configuration");
   }
@@ -121,7 +121,7 @@ void SIPPlugin::apply_configuration() {
                                     turn_user.c_str(),
                                     turn_pass.c_str(),
                                     stun_turn_.get())) {
-        g_message("sip has set STUN/TURN from configuration");
+        g_debug("sip has set STUN/TURN from configuration");
       } else {
         g_warning("sip failed setting STUN/TURN from configuration");
       }
@@ -134,7 +134,7 @@ void SIPPlugin::apply_configuration() {
     std::string pass = config<MPtr(&InfoTree::branch_get_value)>("pass");
     pjsip_->run([&]() { sip_presence_->register_account(user, pass); });
     if (sip_presence_->registered_)
-      g_message("sip registered using configuration file");
+      g_debug("sip registered using configuration file");
     else
       g_warning("sip failed registration from configuration");
   }

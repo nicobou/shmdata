@@ -147,11 +147,11 @@ gboolean PJPresence::register_account_wrapped(gchar* user,
                                               void* user_data) {
   PJPresence* context = static_cast<PJPresence*>(user_data);
   if (nullptr == user || nullptr == password) {
-    g_warning("register sip account missing user or domain or password");
+    g_message("ERROR:register sip account missing user or domain or password");
     return FALSE;
   }
   if (-1 == SIPPlugin::this_->transport_id_) {
-    g_warning("cannot register without connection to server");
+    g_message("ERROR:cannot register without connection to server");
     return FALSE;
   }
   SIPPlugin::this_->pjsip_->run([&]() {
@@ -265,18 +265,18 @@ void PJPresence::add_buddy(const std::string& sip_user) {
   pj_status_t status = PJ_SUCCESS;
 
   if (-1 == account_id_) {
-    g_warning("cannot add buddy with invalid account");
+    g_message("ERROR:cannot add buddy with invalid account");
     return;
   }
 
   std::string buddy_full_uri("sip:" + sip_user  // + ";transport=tcp"
                              );
   if (pjsua_verify_url(buddy_full_uri.c_str()) != PJ_SUCCESS) {
-    g_warning("Invalid buddy URI (%s)", sip_user.c_str());
+    g_message("ERROR:Invalid buddy URI (%s)", sip_user.c_str());
     return;
   }
   if (buddy_id_.end() != buddy_id_.find(sip_user)) {
-    g_message("buddy %s already added", sip_user.c_str());
+    g_message("ERROR:buddy %s already added", sip_user.c_str());
     return;
   }
 
@@ -305,12 +305,12 @@ void PJPresence::add_buddy(const std::string& sip_user) {
 void PJPresence::del_buddy(const std::string& sip_user) {
   pj_status_t status = PJ_SUCCESS;
   if (pjsua_verify_url(std::string("sip:" + sip_user).c_str()) != PJ_SUCCESS) {
-    g_warning("Invalid buddy URI (%s) for deletion", sip_user.c_str());
+    g_message("ERROR:Invalid buddy URI (%s) for deletion", sip_user.c_str());
     return;
   }
   auto it = buddy_id_.find(sip_user);
   if (buddy_id_.end() == it) {
-    g_debug("%s is not in buddy list, cannot delete", sip_user.c_str());
+    g_message("ERROR:%s is not in buddy list, cannot delete", sip_user.c_str());
     return;
   }
   status = pjsua_buddy_del(it->second);
@@ -327,7 +327,7 @@ void PJPresence::del_buddy(const std::string& sip_user) {
 gboolean PJPresence::add_buddy_wrapped(gchar* buddy_uri, void* user_data) {
   PJPresence* context = static_cast<PJPresence*>(user_data);
   if (-1 == SIPPlugin::this_->transport_id_) {
-    g_warning("cannot add buddy without connection to server");
+    g_message("ERROR:cannot add buddy without connection to server");
     return FALSE;
   }
 
@@ -349,7 +349,7 @@ void PJPresence::name_buddy(std::string name, std::string sip_user) {
   }
   auto it = buddy_id_.find(sip_user);
   if (buddy_id_.end() == it) {
-    g_warning("%s is not in buddy list", sip_user.c_str());
+    g_message("ERROR:%s is not in buddy list", sip_user.c_str());
     return;
   }
   SIPPlugin::this_->graft_tree(

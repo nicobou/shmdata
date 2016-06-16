@@ -165,7 +165,11 @@ GTKVideo::GTKVideo(const std::string& name)
   g_idle_add((GtkFunction)create_ui, this);
   wait_window_cond_.wait(lock);
 
-  if (nullptr == display_) return;
+  if (nullptr == display_) {
+    g_message(
+        "ERROR:GDK could not find a display (is the server running in ssh?)");
+    return;
+  }
 
   int max_width = gdk_screen_get_width(gdk_screen_get_default());
   int max_height = gdk_screen_get_height(gdk_screen_get_default());

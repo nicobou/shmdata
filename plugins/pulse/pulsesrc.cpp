@@ -58,7 +58,7 @@ bool PulseSrc::init() {
   // waiting for devices to be updated
   devices_cond_.wait(lock);
   if (!connected_to_pulse_) {
-    g_debug("not connected to pulse, cannot init");
+    g_message("ERROR:Not connected to pulse, cannot initialize.");
     return false;
   }
   volume_id_ = pmanage<MPtr(&PContainer::push)>(

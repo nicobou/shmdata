@@ -46,7 +46,8 @@ ShmdataToJack::ShmdataToJack(const std::string& name)
 
 bool ShmdataToJack::init() {
   if (!jack_client_) {
-    g_warning("JackClient cannot be instanciated");
+    g_message(
+        "ERROR:JackClient cannot be instanciated (is jack server running?)");
     return false;
   }
   if (!make_elements()) return false;

@@ -37,7 +37,7 @@ PJICEStreamTrans::PJICEStreamTrans(pj_ice_strans_cfg& ice_cfg,
                                          this,       /* user data */
                                          &icecb,     /* callback */
                                          &icest_)) { /* instance ptr */
-    g_warning("error creating ice");
+    g_message("ERROR:Error creating ICE");
     return;
   }
   std::unique_lock<std::mutex> lock(cand_ready_mtx_);
@@ -46,7 +46,7 @@ PJICEStreamTrans::PJICEStreamTrans(pj_ice_strans_cfg& ice_cfg,
         std::cv_status::timeout)
       return;
   if (PJ_SUCCESS != pj_ice_strans_init_ice(icest_, role, nullptr, nullptr)) {
-    g_warning("error initializing ICE");
+    g_message("ERROR:Error initializing ICE");
     return;
   }
   // done

@@ -56,7 +56,7 @@ bool PortMidi::open_input_device(int id,
   PmStream* stream = scheduler_->add_input_stream(id, method, user_data);
   if (stream == nullptr) return false;
   input_streams_[id] = stream;
-  g_message("Midi input device opened (id %d)", id);
+  g_debug("Midi input device opened (id %d)", id);
   return true;
 }
 
@@ -69,7 +69,7 @@ bool PortMidi::open_output_device(int id) {
   PmStream* stream = scheduler_->add_output_stream(id);
   if (stream == nullptr) return false;
   output_streams_[id] = stream;
-  g_message("Midi output device opened (id %d)", id);
+  g_debug("Midi output device opened (id %d)", id);
   return true;
 }
 
@@ -87,7 +87,7 @@ bool PortMidi::close_input_device(int id) {
   if (it == input_streams_.end()) return false;
   scheduler_->remove_input_stream(it->second);
   input_streams_.erase(id);
-  g_message("Midi input device closed (id %d)", id);
+  g_debug("Midi input device closed (id %d)", id);
   return true;
 }
 
@@ -97,7 +97,7 @@ bool PortMidi::close_output_device(int id) {
 
   scheduler_->remove_output_stream(it->second);
   output_streams_.erase(id);
-  g_message("Midi input device closed (id %d)", id);
+  g_debug("Midi input device closed (id %d)", id);
   return true;
 }
 

@@ -483,7 +483,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
                             rdata->msg_info.msg->line.req.uri,
                             uristr,
                             sizeof(uristr));
-  g_message("incomimg call from %.*s", len, uristr);
+  g_debug("incomimg call from %.*s", len, uristr);
   len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                         pjsip_uri_get_uri(rdata->msg_info.from->uri),
                         uristr,

@@ -63,7 +63,7 @@ bool V4L2Src::init() {
   update_capture_device();
 
   if (capture_devices_.empty()) {
-    g_debug("no video 4 linux device detected");
+    g_message("ERROR:No video4linux device detected.");
     return false;
   }
   devices_id_ = pmanage<MPtr(&PContainer::make_selection)>(

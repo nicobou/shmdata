@@ -38,7 +38,7 @@ PortMidiSource::PortMidiSource(const std::string&) {}
 
 bool PortMidiSource::init() {
   if (input_devices_enum_.empty()) {
-    g_debug("no MIDI capture device detected");
+    g_message("ERROR:No MIDI capture device detected.");
     return false;
   }
   init_startable(this);
@@ -115,7 +115,7 @@ bool PortMidiSource::init() {
   shm_ = std2::make_unique<ShmdataWriter>(
       this, make_file_name("midi"), sizeof(PmEvent), "audio/midi");
   if (!shm_.get()) {
-    g_warning("midi failed to start");
+    g_message("ERROR:Midi failed to start");
     shm_.reset(nullptr);
     return false;
   }
@@ -253,11 +253,13 @@ bool PortMidiSource::make_property(std::string property_long_name,
                                    gint last_data1) {
   if (midi_channels_.find(std::make_pair(last_status, last_data1)) !=
       midi_channels_.end()) {
-    g_debug("Midi Channels %u %u is already a property (is currently named %s)",
-            last_status,
-            last_data1,
-            midi_channels_.find(std::make_pair(last_status, last_data1))
-                ->second.c_str());
+    g_message(
+        "ERROR:Midi Channels %u %u is already a property (is currently named "
+        "%s)",
+        last_status,
+        last_data1,
+        midi_channels_.find(std::make_pair(last_status, last_data1))
+            ->second.c_str());
     return false;
   }
   midi_channels_[std::make_pair(last_status, last_data1)] = property_long_name;

@@ -76,7 +76,7 @@ void DecodebinToShmdata::on_pad_added(GstElement* object,
   if (gst_caps_can_intersect(rtpcaps, padcaps)) {
     // asking rtpbin to send an event when a packet is lost (do-lost property)
     GstUtils::set_element_property_in_bin(object, "gstrtpbin", "do-lost", TRUE);
-    g_message("custom rtp stream found");
+    g_debug("custom rtp stream found");
     GstElement* rtpgstdepay;
     GstUtils::make_element("rtpgstdepay", &rtpgstdepay);
     // adding a probe for discarding uncomplete packets
