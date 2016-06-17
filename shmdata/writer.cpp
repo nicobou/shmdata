@@ -39,7 +39,7 @@ Writer::Writer(const std::string &path,
     // checking if a server is responding with at this shmdata path
     bool can_read = false;
     {
-      log_->debug("checking if a shmdata having the same path is already active"); 
+      log_->debug("checking if a shmdata having the same path is already active");
       Reader inspector(path, nullptr, nullptr, nullptr, log_);
       can_read = static_cast<bool>(inspector);
     }
@@ -71,6 +71,7 @@ Writer::Writer(const std::string &path,
 bool Writer::copy_to_shm(const void *data, size_t size){
   bool res = true;
   {
+    WriteLock wlock(sem_.get());
     if (size > connect_data_.shm_size_){
       log_->debug("resizing shmdata (%) from % bytes to % bytes",
 		  path_,
@@ -78,14 +79,13 @@ bool Writer::copy_to_shm(const void *data, size_t size){
 		  std::to_string(size));
       shm_.reset();
       shm_.reset(new sysVShm(ftok(path_.c_str(), 'n'),
-			     size, log_, /*owner = */ true));  
+			     size, log_, /*owner = */ true));
       connect_data_.shm_size_ = size;
       if (!shm_) {
 	log_->warning("error resizing shared memory");
 	return false;
       }
     }
-    WriteLock wlock(sem_.get());
     auto num_readers = srv_->notify_update(size);
     if (0 < num_readers) {
       wlock.commit_readers(num_readers);
