@@ -28,14 +28,16 @@ JackClient::JackClient(const char* name,
                        JackProcessCallback process_cb,
                        void* process_user_data,
                        XRunCallback_t xrun_cb,
-                       PortCallback_t port_cb)
+                       PortCallback_t port_cb,
+                       JackShutdown_t shutdown_cb)
     : client_(jack_client_open(
-                  name, JackNoStartServer, &status_, nullptr /* server name */),
+                  name, JackNullOption, &status_, nullptr /* server name */),
               &jack_client_close),
       user_cb_(process_cb),
       user_cb_arg_(process_user_data),
       xrun_cb_(xrun_cb),
-      port_cb_(port_cb) {
+      port_cb_(port_cb),
+      shutdown_cb_(shutdown_cb) {
   if ((client_ == NULL) && !(status_ & JackServerFailed)) {
     g_warning(
         "jack_client_open() failed, "
@@ -53,8 +55,8 @@ JackClient::JackClient(const char* name,
   // }
   sample_rate_ = jack_get_sample_rate(client_.get());
   buffer_size_ = jack_get_buffer_size(client_.get());
-  // g_print("sample rate %" PRIu32 "\n", sample_rate_);
-  // g_print("buffer size %" PRIu32 " \n", jack_get_buffer_size(client_.get()));
+  g_debug("jackd sample rate %" PRIu32, sample_rate_);
+  g_debug("jackd buffer size %" PRIu32, jack_get_buffer_size(client_.get()));
   jack_set_xrun_callback(client_.get(), on_xrun, this);
   jack_set_process_callback(client_.get(), jack_process, this);
   if (port_cb_)
@@ -117,9 +119,10 @@ int JackClient::jack_process(jack_nframes_t nframes, void* arg) {
 
 bool JackClient::safe_bool_idiom() const { return static_cast<bool>(client_); }
 
-void JackClient::on_jack_shutdown(void* /*arg*/) {
-  g_warning("jack shut down");
-  // TODO invalidate client_
+void JackClient::on_jack_shutdown(void* arg) {
+  JackClient* context = static_cast<JackClient*>(arg);
+  g_message("ERROR:spurious jack shutdown");
+  if (context->shutdown_cb_) context->shutdown_cb_();
 }
 
 jack_client_t* JackClient::get_raw() { return client_.get(); }

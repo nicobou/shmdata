@@ -47,7 +47,7 @@ GstShmdataSubscriber::GstShmdataSubscriber(GstElement* element,
 }
 
 GstShmdataSubscriber::~GstShmdataSubscriber() {
-  if (on_delete_cb_) on_delete_cb_();
+  if (nullptr != on_delete_cb_) on_delete_cb_();
   if (GST_IS_ELEMENT(element_)) {
     if (0 != signal_handler_id_)
       g_signal_handler_disconnect(element_, signal_handler_id_);

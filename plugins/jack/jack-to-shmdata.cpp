@@ -20,6 +20,7 @@
 #include "./jack-to-shmdata.hpp"
 #include <gst/gst.h>
 #include <string.h>
+#include "switcher/quiddity-manager-impl.hpp"
 #include "switcher/std2.hpp"
 
 namespace switcher {
@@ -38,7 +39,18 @@ JackToShmdata::JackToShmdata(const std::string& name)
                    &JackToShmdata::jack_process,
                    this,
                    [this](uint n) { on_xrun(n); },
-                   [this](jack_port_t* port) { on_port(port); }) {}
+                   [this](jack_port_t* port) { on_port(port); },
+                   [this]() {
+                     auto thread = std::thread([this]() {
+                       auto manager = manager_impl_.lock();
+                       if (!manager) return;
+                       if (!manager->remove(get_name()))
+                         g_warning(
+                             "%s did not self destruct after jack shutdown",
+                             get_name().c_str());
+                     });
+                     thread.detach();
+                   }) {}
 
 bool JackToShmdata::init() {
   if (!jack_client_) {
@@ -177,9 +189,12 @@ int JackToShmdata::jack_process(jack_nframes_t nframes, void* arg) {
       std::size_t num_chan = context->input_ports_.size();
       if (0 == num_chan) return 0;
       std::vector<jack_sample_t*> jack_bufs;
-      for (unsigned int i = 0; i < num_chan; ++i)
-        jack_bufs.emplace_back((jack_sample_t*)jack_port_get_buffer(
-            context->input_ports_[i].get_raw(), nframes));
+      for (unsigned int i = 0; i < num_chan; ++i) {
+        jack_sample_t* buf = (jack_sample_t*)jack_port_get_buffer(
+            context->input_ports_[i].get_raw(), nframes);
+        if (!buf) return 0;
+        jack_bufs.emplace_back(buf);
+      }
       std::size_t index = 0;
       for (unsigned int j = 0; j < nframes; ++j) {
         for (unsigned int i = 0; i < num_chan; ++i) {

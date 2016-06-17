@@ -39,12 +39,6 @@ class ShmdataToJack : public Quiddity {
   ShmdataToJack& operator=(const ShmdataToJack&) = delete;
 
  private:
-  // registering connect/disconnect/can_sink_caps:
-  ShmdataConnector shmcntr_;
-  // gst pipeline:
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
-  // shmsubscriber (publishing to the information-tree):
-  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
   // internal use:
   std::string shmpath_{};
   GstElement* shmdatasrc_{nullptr};
@@ -76,6 +70,12 @@ class ShmdataToJack : public Quiddity {
   std::mutex port_to_connect_in_jack_process_mutex_{};
   std::vector<std::pair<std::string, std::string>>
       port_to_connect_in_jack_process_{};
+  // registering connect/disconnect/can_sink_caps:
+  ShmdataConnector shmcntr_;
+  // gst pipeline:
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  // shmsubscriber (publishing to the information-tree):
+  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
 
   bool init() final;
   bool start();

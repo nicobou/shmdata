@@ -21,6 +21,7 @@
 #include "./audio-resampler.hpp"
 #include "switcher/gprop-to-prop.hpp"
 #include "switcher/gst-utils.hpp"
+#include "switcher/quiddity-manager-impl.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
 #include "switcher/std2.hpp"
@@ -36,13 +37,24 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
                                      "Nicolas Bouillot");
 
 ShmdataToJack::ShmdataToJack(const std::string& name)
-    : shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
-      jack_client_(name.c_str(),
+    : jack_client_(name.c_str(),
                    &ShmdataToJack::jack_process,
                    this,
                    [this](uint n) { on_xrun(n); },
-                   [this](jack_port_t* port) { on_port(port); }) {}
+                   [this](jack_port_t* port) { on_port(port); },
+                   [this]() {
+                     auto thread = std::thread([this]() {
+                       auto manager = manager_impl_.lock();
+                       if (!manager) return;
+                       if (!manager->remove(get_name()))
+                         g_warning(
+                             "%s did not self destruct after jack shutdown",
+                             get_name().c_str());
+                     });
+                     thread.detach();
+                   }),
+      shmcntr_(static_cast<Quiddity*>(this)),
+      gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)) {}
 
 bool ShmdataToJack::init() {
   if (!jack_client_) {
@@ -124,12 +136,12 @@ int ShmdataToJack::jack_process(jack_nframes_t nframes, void* arg) {
       if (context->ring_buffers_.empty() ||
           (num_channels > 0 &&
            context->ring_buffers_[0].get_usage() < nframes)) {
-        // g_print("jack missed a buffer\n");
         write_zero = true;
       }
       for (unsigned int i = 0; i < context->output_ports_.size(); ++i) {
         jack_sample_t* buf = (jack_sample_t*)jack_port_get_buffer(
             context->output_ports_[i].get_raw(), nframes);
+        if (!buf) return 0;
         if (!write_zero) {
           context->ring_buffers_[i].pop_samples((std::size_t)nframes, buf);
         } else {
@@ -287,7 +299,7 @@ bool ShmdataToJack::start() {
 }
 
 bool ShmdataToJack::stop() {
-  shm_sub_.reset();
+  shm_sub_.reset(nullptr);
   disconnect_ports();
   {
     On_scope_exit {

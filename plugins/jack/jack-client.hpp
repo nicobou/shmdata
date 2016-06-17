@@ -34,6 +34,7 @@ class JackClient : public SafeBoolIdiom {
   // warning, number of missed samples is estimated from the xrun duration.
   using XRunCallback_t = std::function<void(uint number_of_missed_samples)>;
   using PortCallback_t = std::function<void(jack_port_t* port)>;
+  using JackShutdown_t = std::function<void()>;
 
  public:
   // note the xrun callback is called in jack_process
@@ -42,7 +43,8 @@ class JackClient : public SafeBoolIdiom {
                       JackProcessCallback process_cb,
                       void* process_user_data,
                       XRunCallback_t xrun_cb,
-                      PortCallback_t port_cb);
+                      PortCallback_t port_cb,
+                      JackShutdown_t shutdown_cb);
   JackClient() = delete;
   JackClient(const JackClient&) = delete;
   JackClient& operator=(const JackClient&) = delete;
@@ -62,6 +64,7 @@ class JackClient : public SafeBoolIdiom {
   std::atomic_uint xrun_count_{0};
   XRunCallback_t xrun_cb_;
   PortCallback_t port_cb_;
+  JackShutdown_t shutdown_cb_;
   bool safe_bool_idiom() const final;
   static void port_callback(jack_port_id_t port, int yn, void* user_data);
   static void on_jack_shutdown(void* arg);
