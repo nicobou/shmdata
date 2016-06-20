@@ -57,7 +57,7 @@ class ThreadedWrapper {
       run_async_tasks();
 
       // sync task
-      if (sync_task_) {
+      if (nullptr != sync_task_ && sync_task_) {
         sync_task_();
         sync_task_ = nullptr;
         std::unique_lock<std::mutex> lock2(task_done_m_);
@@ -251,9 +251,9 @@ class ThreadedWrapper {
 
   void do_sync_task(std::function<void()> fun) {
     std::unique_lock<std::mutex> lock_sync(sync_mtx_);
-    sync_task_ = fun;
     {
       std::unique_lock<std::mutex> lock2(cv_m_);
+      sync_task_ = fun;
       cv_.notify_one();
       while (!task_done_) {
         task_done_cv_.wait(lock2);
