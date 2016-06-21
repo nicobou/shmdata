@@ -75,13 +75,7 @@ static GOptionEntry entries[15] = {
      &load_file,
      "load state from history file (-l filename)",
      nullptr},
-    {"quiet",
-     'q',
-     0,
-     G_OPTION_ARG_NONE,
-     &quiet,
-     "do not display any message",
-     nullptr},
+    {"quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet, "do not display any message", nullptr},
     {"verbose",
      'v',
      0,
@@ -89,20 +83,8 @@ static GOptionEntry entries[15] = {
      &verbose,
      "display all messages, excluding debug",
      nullptr},
-    {"debug",
-     'd',
-     0,
-     G_OPTION_ARG_NONE,
-     &debug,
-     "display all messages, including debug",
-     nullptr},
-    {"list-classes",
-     'C',
-     0,
-     G_OPTION_ARG_NONE,
-     &listclasses,
-     "list quiddity classes",
-     nullptr},
+    {"debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "display all messages, including debug", nullptr},
+    {"list-classes", 'C', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", nullptr},
     {"list-methods-by-class",
      'M',
      0,
@@ -198,20 +180,13 @@ int main(int argc, char* argv[]) {
   // create logger managing switcher log domain
   manager->create("logger", "internal_logger");
   // manage logs from shmdata
-  manager->invoke_va(
-      "internal_logger", "install_log_handler", nullptr, "shmdata", nullptr);
+  manager->invoke_va("internal_logger", "install_log_handler", nullptr, "shmdata", nullptr);
   // manage logs from GStreamer
-  manager->invoke_va(
-      "internal_logger", "install_log_handler", nullptr, "GStreamer", nullptr);
+  manager->invoke_va("internal_logger", "install_log_handler", nullptr, "GStreamer", nullptr);
   // manage logs from Glib
-  manager->invoke_va(
-      "internal_logger", "install_log_handler", nullptr, "GLib", nullptr);
+  manager->invoke_va("internal_logger", "install_log_handler", nullptr, "GLib", nullptr);
   // manage logs from Glib-GObject
-  manager->invoke_va("internal_logger",
-                     "install_log_handler",
-                     nullptr,
-                     "GLib-GObject",
-                     nullptr);
+  manager->invoke_va("internal_logger", "install_log_handler", nullptr, "GLib-GObject", nullptr);
 
   if (quiet)
     manager->use_prop<MPtr(&PContainer::set_str)>(
@@ -227,68 +202,60 @@ int main(int argc, char* argv[]) {
   if (debug)
     manager->use_prop<MPtr(&PContainer::set_str)>(
         "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger",
-                                                     "debug"),
+        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger", "debug"),
         "true");
   else
     manager->use_prop<MPtr(&PContainer::set_str)>(
         "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger",
-                                                     "debug"),
+        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger", "debug"),
         "false");
 
   if (verbose)
     manager->use_prop<MPtr(&PContainer::set_str)>(
         "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger",
-                                                     "verbose"),
+        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger", "verbose"),
         "true");
   else
     manager->use_prop<MPtr(&PContainer::set_str)>(
         "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger",
-                                                     "verbose"),
+        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger", "verbose"),
         "false");
 
   // subscribe to logs:
   {
-    auto last_line_id = manager->use_prop<MPtr(&PContainer::get_id)>(
-        "internal_logger", "last-line");
+    auto last_line_id =
+        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger", "last-line");
     auto manager_ptr = manager.get();
     manager->use_prop<MPtr(&PContainer::subscribe)>(
         "internal_logger", last_line_id, [last_line_id, manager_ptr]() {
           g_print("%s\n",
-                  manager
-                      ->use_prop<MPtr(&PContainer::get_str)>("internal_logger",
-                                                             last_line_id)
+                  manager->use_prop<MPtr(&PContainer::get_str)>("internal_logger", last_line_id)
                       .c_str());
         });
   }
 
 // loading plugins from default location // FIXME add an option
 #ifdef HAVE_CONFIG_H
-  gchar* usr_plugin_dir = g_strdup_printf(
-      "/usr/%s-%s/plugins", PACKAGE_NAME, LIBSWITCHER_API_VERSION);
+  gchar* usr_plugin_dir =
+      g_strdup_printf("/usr/%s-%s/plugins", PACKAGE_NAME, LIBSWITCHER_API_VERSION);
   manager->scan_directory_for_plugins(usr_plugin_dir);
   g_free(usr_plugin_dir);
 
-  gchar* usr_local_plugin_dir = g_strdup_printf(
-      "/usr/local/%s-%s/plugins", PACKAGE_NAME, LIBSWITCHER_API_VERSION);
+  gchar* usr_local_plugin_dir =
+      g_strdup_printf("/usr/local/%s-%s/plugins", PACKAGE_NAME, LIBSWITCHER_API_VERSION);
   manager->scan_directory_for_plugins(usr_local_plugin_dir);
   g_free(usr_local_plugin_dir);
 #else
   g_warning("plugins from default location not loaded (config.h missing)");
 #endif
 
-  if (extraplugindir != nullptr)
-    manager->scan_directory_for_plugins(extraplugindir);
+  if (extraplugindir != nullptr) manager->scan_directory_for_plugins(extraplugindir);
 
   // checking if this is printing info only
   if (listclasses) {
     g_log_set_default_handler(quiet_log_handler, nullptr);
     std::vector<std::string> resultlist = manager->get_classes();
-    for (uint i = 0; i < resultlist.size(); i++)
-      g_print("%s\n", resultlist[i].c_str());
+    for (uint i = 0; i < resultlist.size(); i++) g_print("%s\n", resultlist[i].c_str());
     return 0;
   }
   if (classesdoc) {
@@ -303,16 +270,12 @@ int main(int argc, char* argv[]) {
   }
   if (listmethodsbyclass != nullptr) {
     g_log_set_default_handler(quiet_log_handler, nullptr);
-    g_print(
-        "%s\n",
-        manager->get_methods_description_by_class(listmethodsbyclass).c_str());
+    g_print("%s\n", manager->get_methods_description_by_class(listmethodsbyclass).c_str());
     return 0;
   }
   if (listsignalsbyclass != nullptr) {
     g_log_set_default_handler(quiet_log_handler, nullptr);
-    g_print(
-        "%s\n",
-        manager->get_signals_description_by_class(listsignalsbyclass).c_str());
+    g_print("%s\n", manager->get_signals_description_by_class(listsignalsbyclass).c_str());
     return 0;
   }
 
@@ -321,8 +284,7 @@ int main(int argc, char* argv[]) {
   port_arg.push_back(port_number);
   std::string* result;
   manager->invoke(soap_name, "set_port", &result, port_arg);
-  if (g_strcmp0("false", result->c_str()) == 0 && osc_port_number == nullptr)
-    return 0;
+  if (g_strcmp0("false", result->c_str()) == 0 && osc_port_number == nullptr) return 0;
 
   // start osc if port number has been set
   if (osc_port_number != nullptr) {
@@ -330,22 +292,17 @@ int main(int argc, char* argv[]) {
     if (osc_name.compare("") == 0)
       g_warning("osc plugin not found");
     else
-      manager->invoke_va(
-          osc_name.c_str(), "set_port", nullptr, osc_port_number, nullptr);
+      manager->invoke_va(osc_name.c_str(), "set_port", nullptr, osc_port_number, nullptr);
   }
 
   manager->reset_command_history(false);
 
   if (load_file != nullptr) {
-    QuiddityManager::CommandHistory histo =
-        manager->get_command_history_from_file(load_file);
+    QuiddityManager::CommandHistory histo = manager->get_command_history_from_file(load_file);
 
-    std::vector<std::string> signal_subscriber_names =
-        manager->get_signal_subscribers_names(histo);
+    std::vector<std::string> signal_subscriber_names = manager->get_signal_subscribers_names(histo);
     if (!signal_subscriber_names.empty())
-      g_warning(
-          "creation of signal subscriber not handled when loading file %s",
-          load_file);
+      g_warning("creation of signal subscriber not handled when loading file %s", load_file);
 
     manager->play_command_history(histo, nullptr, nullptr, true);
   }

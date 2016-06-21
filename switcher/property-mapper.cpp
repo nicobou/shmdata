@@ -23,54 +23,49 @@
 #include "./quiddity-manager-impl.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    PropertyMapper,
-    "property-mapper",
-    "Switcher Property Mapper",
-    "utils",
-    "",
-    "map two properties, one being slave of the other",
-    "LGPL",
-    "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyMapper,
+                                     "property-mapper",
+                                     "Switcher Property Mapper",
+                                     "utils",
+                                     "",
+                                     "map two properties, one being slave of the other",
+                                     "LGPL",
+                                     "Nicolas Bouillot");
 
 PropertyMapper::PropertyMapper(const std::string&) {}
 
 bool PropertyMapper::init() {
-  install_method(
-      "Set Source Property",      // long name
-      "set-source-property",      // name
-      "set the master property",  // description
-      "success of fail",          // return description
-      Method::make_arg_description(
-          "Quiddity Name",         // first arg long name
-          "quiddity_name",         // fisrt arg name
-          "Name of the quiddity",  // first arg description
-          "property Name",         // first arg long name
-          "property_name",         // fisrt arg name
-          "Name of the property",  // first arg description
-          nullptr),
-      (Method::method_ptr)&set_source_property_method,
-      G_TYPE_BOOLEAN,
-      Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, nullptr),
-      this);
+  install_method("Set Source Property",                                // long name
+                 "set-source-property",                                // name
+                 "set the master property",                            // description
+                 "success of fail",                                    // return description
+                 Method::make_arg_description("Quiddity Name",         // first arg long name
+                                              "quiddity_name",         // fisrt arg name
+                                              "Name of the quiddity",  // first arg description
+                                              "property Name",         // first arg long name
+                                              "property_name",         // fisrt arg name
+                                              "Name of the property",  // first arg description
+                                              nullptr),
+                 (Method::method_ptr)&set_source_property_method,
+                 G_TYPE_BOOLEAN,
+                 Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, nullptr),
+                 this);
 
-  install_method(
-      "Set Sink Property",       // long name
-      "set-sink-property",       // name
-      "set the slave property",  // description
-      "success of fail",         // return description
-      Method::make_arg_description(
-          "Quiddity Name",         // first arg long name
-          "quiddity_name",         // fisrt arg name
-          "Name of the quiddity",  // first arg description
-          "property Name",         // first arg long name
-          "property_name",         // fisrt arg name
-          "Name of the property",  // first arg description
-          nullptr),
-      (Method::method_ptr)&set_sink_property_method,
-      G_TYPE_BOOLEAN,
-      Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, nullptr),
-      this);
+  install_method("Set Sink Property",                                  // long name
+                 "set-sink-property",                                  // name
+                 "set the slave property",                             // description
+                 "success of fail",                                    // return description
+                 Method::make_arg_description("Quiddity Name",         // first arg long name
+                                              "quiddity_name",         // fisrt arg name
+                                              "Name of the quiddity",  // first arg description
+                                              "property Name",         // first arg long name
+                                              "property_name",         // fisrt arg name
+                                              "Name of the property",  // first arg description
+                                              nullptr),
+                 (Method::method_ptr)&set_sink_property_method,
+                 G_TYPE_BOOLEAN,
+                 Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, nullptr),
+                 this);
 
 #ifdef HAVE_PYTHON
 // Py_Initialize();
@@ -121,14 +116,13 @@ gboolean PropertyMapper::set_source_property_method(gchar* quiddity_name,
     g_debug("quiddity %s not found", quiddity_name);
     return FALSE;
   }
-  context->source_prop_id_ =
-      quid->prop<MPtr(&PContainer::get_id)>(property_name);
+  context->source_prop_id_ = quid->prop<MPtr(&PContainer::get_id)>(property_name);
   if (0 == context->source_prop_id_) {
     g_debug("property %s not found", property_name);
     return FALSE;
   }
-  if (!quid->tree<MPtr(&InfoTree::branch_has_data)>(std::string("property.") +
-                                                    property_name + ".min")) {
+  if (!quid->tree<MPtr(&InfoTree::branch_has_data)>(std::string("property.") + property_name +
+                                                    ".min")) {
     g_debug("property %s has no min/max defined", property_name);
     return FALSE;
   }
@@ -144,8 +138,7 @@ gboolean PropertyMapper::set_source_property_method(gchar* quiddity_name,
   context->make_numerical_source_properties();
 
   context->reg_id_ = quid->prop<MPtr(&PContainer::subscribe)>(
-      context->source_prop_id_,
-      [context]() { context->property_updated_cb(); });
+      context->source_prop_id_, [context]() { context->property_updated_cb(); });
   auto source_tree = context->prune_tree(".source", false);
   if (!source_tree) source_tree = InfoTree::make();
   source_tree->graft(".quiddity", InfoTree::make(std::string(quiddity_name)));
@@ -156,62 +149,60 @@ gboolean PropertyMapper::set_source_property_method(gchar* quiddity_name,
 
 void PropertyMapper::make_numerical_source_properties() {
   pmanage<MPtr(&PContainer::remove)>(source_min_id_);
-  source_min_id_ = pmanage<MPtr(&PContainer::make_double)>(
-      "source-min",
-      [this](double val) {
-        source_min_ = val;
-        return true;
-      },
-      [this]() { return source_min_; },
-      "Source Property Minimum",
-      "The minimum value to be applyed when mapping",
-      source_min_,
-      std::numeric_limits<double>::lowest(),
-      std::numeric_limits<double>::max());
+  source_min_id_ =
+      pmanage<MPtr(&PContainer::make_double)>("source-min",
+                                              [this](double val) {
+                                                source_min_ = val;
+                                                return true;
+                                              },
+                                              [this]() { return source_min_; },
+                                              "Source Property Minimum",
+                                              "The minimum value to be applyed when mapping",
+                                              source_min_,
+                                              std::numeric_limits<double>::lowest(),
+                                              std::numeric_limits<double>::max());
 
   pmanage<MPtr(&PContainer::remove)>(source_max_id_);
-  pmanage<MPtr(&PContainer::make_double)>(
-      "source-max",
-      [this](double val) {
-        source_max_ = val;
-        return true;
-      },
-      [this]() { return source_max_; },
-      "Source Property Maximum",
-      "The maximmum value to be applyed when mapping",
-      source_max_,
-      std::numeric_limits<double>::lowest(),
-      std::numeric_limits<double>::max());
+  pmanage<MPtr(&PContainer::make_double)>("source-max",
+                                          [this](double val) {
+                                            source_max_ = val;
+                                            return true;
+                                          },
+                                          [this]() { return source_max_; },
+                                          "Source Property Maximum",
+                                          "The maximmum value to be applyed when mapping",
+                                          source_max_,
+                                          std::numeric_limits<double>::lowest(),
+                                          std::numeric_limits<double>::max());
 }
 
 void PropertyMapper::make_numerical_sink_properties() {
   pmanage<MPtr(&PContainer::remove)>(sink_min_id_);
-  sink_min_id_ = pmanage<MPtr(&PContainer::make_double)>(
-      "sink-min",
-      [this](double val) {
-        sink_min_ = val;
-        return true;
-      },
-      [this]() { return sink_min_; },
-      "Sink Property Minimum",
-      "The minimum value to be applyed when mapping",
-      sink_min_,
-      std::numeric_limits<double>::lowest(),
-      std::numeric_limits<double>::max());
+  sink_min_id_ =
+      pmanage<MPtr(&PContainer::make_double)>("sink-min",
+                                              [this](double val) {
+                                                sink_min_ = val;
+                                                return true;
+                                              },
+                                              [this]() { return sink_min_; },
+                                              "Sink Property Minimum",
+                                              "The minimum value to be applyed when mapping",
+                                              sink_min_,
+                                              std::numeric_limits<double>::lowest(),
+                                              std::numeric_limits<double>::max());
 
   pmanage<MPtr(&PContainer::remove)>(sink_max_id_);
-  pmanage<MPtr(&PContainer::make_double)>(
-      "sink-max",
-      [this](double val) {
-        sink_max_ = val;
-        return true;
-      },
-      [this]() { return sink_max_; },
-      "Sink Property Maximum",
-      "The maximmum value to be applyed when mapping",
-      sink_max_,
-      std::numeric_limits<double>::lowest(),
-      std::numeric_limits<double>::max());
+  pmanage<MPtr(&PContainer::make_double)>("sink-max",
+                                          [this](double val) {
+                                            sink_max_ = val;
+                                            return true;
+                                          },
+                                          [this]() { return sink_max_; },
+                                          "Sink Property Maximum",
+                                          "The maximmum value to be applyed when mapping",
+                                          sink_max_,
+                                          std::numeric_limits<double>::lowest(),
+                                          std::numeric_limits<double>::max());
 }
 
 void PropertyMapper::property_updated_cb() {
@@ -227,13 +218,11 @@ void PropertyMapper::property_updated_cb() {
       std::string("property.") + source_property_name_ + ".value");
 
   // scaling and transforming the value into a gdouble value
-  double transformed_val = ((double)val - source_min_) *
-                               (sink_max_ - sink_min_) /
-                               (source_max_ - source_min_) +
-                           sink_min_;
+  double transformed_val =
+      ((double)val - source_min_) * (sink_max_ - sink_min_) / (source_max_ - source_min_) +
+      sink_min_;
 
-  sinkquid->prop<MPtr(&PContainer::set_str)>(sink_prop_id_,
-                                             std::to_string(transformed_val));
+  sinkquid->prop<MPtr(&PContainer::set_str)>(sink_prop_id_, std::to_string(transformed_val));
 }
 
 gboolean PropertyMapper::set_sink_property_method(gchar* quiddity_name,
@@ -255,8 +244,8 @@ gboolean PropertyMapper::set_sink_property_method(gchar* quiddity_name,
     g_debug("property %s not found", property_name);
     return FALSE;
   }
-  if (!quid->tree<MPtr(&InfoTree::branch_has_data)>(std::string("property.") +
-                                                    property_name + ".min")) {
+  if (!quid->tree<MPtr(&InfoTree::branch_has_data)>(std::string("property.") + property_name +
+                                                    ".min")) {
     g_debug("property %s has no min/max defined", property_name);
     return FALSE;
   }

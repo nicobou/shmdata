@@ -30,54 +30,51 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(DummyPlugin,
                                      "Nicolas Bouillot");
 
 DummyPlugin::DummyPlugin(const std::string&)
-    : bool_id_(pmanage<MPtr(&PContainer::make_bool)>(
-          "bool_",
-          [this](bool val) {
-            bool_ = val;
-            return true;
-          },
-          [this]() { return bool_; },
-          "Bool Example",
-          "This property is an example for type bool",
-          bool_)),
-      string_id_(pmanage<MPtr(&PContainer::make_string)>(
-          "string_",
-          [this](const std::string& val) {
-            string_ = val;
-            return true;
-          },
-          [this]() { return string_; },
-          "String Example",
-          "This property is an example for type string",
-          string_)),
-      char_id_(pmanage<MPtr(&PContainer::make_char)>(
-          "char_",
-          [this](const char& val) {
-            char_ = val;
-            return true;
-          },
-          [this]() { return char_; },
-          "Char Example",
-          "This property is an example for type char",
-          char_)),
+    : bool_id_(pmanage<MPtr(&PContainer::make_bool)>("bool_",
+                                                     [this](bool val) {
+                                                       bool_ = val;
+                                                       return true;
+                                                     },
+                                                     [this]() { return bool_; },
+                                                     "Bool Example",
+                                                     "This property is an example for type bool",
+                                                     bool_)),
+      string_id_(
+          pmanage<MPtr(&PContainer::make_string)>("string_",
+                                                  [this](const std::string& val) {
+                                                    string_ = val;
+                                                    return true;
+                                                  },
+                                                  [this]() { return string_; },
+                                                  "String Example",
+                                                  "This property is an example for type string",
+                                                  string_)),
+      char_id_(pmanage<MPtr(&PContainer::make_char)>("char_",
+                                                     [this](const char& val) {
+                                                       char_ = val;
+                                                       return true;
+                                                     },
+                                                     [this]() { return char_; },
+                                                     "Char Example",
+                                                     "This property is an example for type char",
+                                                     char_)),
       integral_group_id_(pmanage<MPtr(&PContainer::make_group)>(
           "integrals",
           "Integral Group Example",
           "This property is an example for grouping integral types")),
-      int_id_(
-          pmanage<MPtr(&PContainer::make_parented_int)>(  // PContainer factory
-              "int_",                                     // string id
-              "integrals",                                // parent
-              [this](int val) {
-                int_ = val;
-                return true;
-              },                                           // setter
-              [this]() { return int_; },                   // getter
-              "Int Example",                               // name
-              "This property is an example for type int",  // description
-              int_,                                        // default value
-              -10,                                         // min
-              10)),                                        // max
+      int_id_(pmanage<MPtr(&PContainer::make_parented_int)>(  // PContainer factory
+          "int_",                                             // string id
+          "integrals",                                        // parent
+          [this](int val) {
+            int_ = val;
+            return true;
+          },                                           // setter
+          [this]() { return int_; },                   // getter
+          "Int Example",                               // name
+          "This property is an example for type int",  // description
+          int_,                                        // default value
+          -10,                                         // min
+          10)),                                        // max
       short_id_(pmanage<MPtr(&PContainer::make_parented_short)>(
           "short_",
           "integrals",
@@ -130,20 +127,19 @@ DummyPlugin::DummyPlugin(const std::string&)
           unsigned_int_,
           0,
           10)),
-      unsigned_short_id_(
-          pmanage<MPtr(&PContainer::make_parented_unsigned_short)>(
-              "unsigned_short_",
-              "integrals",
-              [this](unsigned short val) {
-                unsigned_short_ = val;
-                return true;
-              },
-              [this]() { return unsigned_short_; },
-              "Unsigned Short Example",
-              "This property is an example for type unsigned short",
-              unsigned_short_,
-              1,
-              11)),
+      unsigned_short_id_(pmanage<MPtr(&PContainer::make_parented_unsigned_short)>(
+          "unsigned_short_",
+          "integrals",
+          [this](unsigned short val) {
+            unsigned_short_ = val;
+            return true;
+          },
+          [this]() { return unsigned_short_; },
+          "Unsigned Short Example",
+          "This property is an example for type unsigned short",
+          unsigned_short_,
+          1,
+          11)),
       unsigned_long_id_(pmanage<MPtr(&PContainer::make_parented_unsigned_long)>(
           "unsigned_long_",
           "integrals",
@@ -157,20 +153,19 @@ DummyPlugin::DummyPlugin(const std::string&)
           unsigned_long_,
           4,
           200)),
-      unsigned_long_long_id_(
-          pmanage<MPtr(&PContainer::make_parented_unsigned_long_long)>(
-              "unsigned_long_long_",
-              "integrals",
-              [this](unsigned long long val) {
-                unsigned_long_long_ = val;
-                return true;
-              },
-              [this]() { return unsigned_long_long_; },
-              "Unsigned Long Long Example",
-              "This property is an example for type unsigned long long",
-              unsigned_long_long_,
-              2,
-              210)),
+      unsigned_long_long_id_(pmanage<MPtr(&PContainer::make_parented_unsigned_long_long)>(
+          "unsigned_long_long_",
+          "integrals",
+          [this](unsigned long long val) {
+            unsigned_long_long_ = val;
+            return true;
+          },
+          [this]() { return unsigned_long_long_; },
+          "Unsigned Long Long Example",
+          "This property is an example for type unsigned long long",
+          unsigned_long_long_,
+          2,
+          210)),
       floating_point_group_id_(pmanage<MPtr(&PContainer::make_group)>(
           "floats",
           "Floating Point Group Example",
@@ -214,42 +209,42 @@ DummyPlugin::DummyPlugin(const std::string&)
           long_double_,
           -1.f,
           10.f)),
-      selection_id_(pmanage<MPtr(&PContainer::make_selection)>(
-          "enum_",
-          [this](size_t val) {
-            selection_.select(val);
-            return true;
-          },
-          [this]() { return selection_.get(); },
-          "Selection Example",
-          "This property is an example for type enum",
-          selection_)),
+      selection_id_(
+          pmanage<MPtr(&PContainer::make_selection)>("enum_",
+                                                     [this](size_t val) {
+                                                       selection_.select(val);
+                                                       return true;
+                                                     },
+                                                     [this]() { return selection_.get(); },
+                                                     "Selection Example",
+                                                     "This property is an example for type enum",
+                                                     selection_)),
       // FIXME write serialization-string for std::tuple
-      tuple_id_(pmanage<MPtr(&PContainer::make_tuple<MyTuple>)>(
-          "tuple_",
-          [this](const MyTuple& val) {
-            tuple_ = val;
-            return true;
-          },
-          [this]() { return tuple_; },
-          "Tuple Example",
-          "This property is an example for tuple",
-          tuple_)),
-      fraction_id_(pmanage<MPtr(&PContainer::make_fraction)>(
-          "fraction_",
-          [this](const Fraction& val) {
-            fraction_ = val;
-            return true;
-          },
-          [this]() { return fraction_; },
-          "Fraction Example",
-          "This property is an example for fraction",
-          fraction_,
-          -10,
-          1,  // min num/denom
-          10,
-          10)  // max num/denom
-                   ) {
+      tuple_id_(
+          pmanage<MPtr(&PContainer::make_tuple<MyTuple>)>("tuple_",
+                                                          [this](const MyTuple& val) {
+                                                            tuple_ = val;
+                                                            return true;
+                                                          },
+                                                          [this]() { return tuple_; },
+                                                          "Tuple Example",
+                                                          "This property is an example for tuple",
+                                                          tuple_)),
+      fraction_id_(
+          pmanage<MPtr(&PContainer::make_fraction)>("fraction_",
+                                                    [this](const Fraction& val) {
+                                                      fraction_ = val;
+                                                      return true;
+                                                    },
+                                                    [this]() { return fraction_; },
+                                                    "Fraction Example",
+                                                    "This property is an example for fraction",
+                                                    fraction_,
+                                                    -10,
+                                                    1,  // min num/denom
+                                                    10,
+                                                    10)  // max num/denom
+          ) {
   // std::cout << pmanage<MPtr(&PContainer::get<int>)>( int_id_) << std::endl;
   // std::cout << pmanage<MPtr(&PContainer::get<unsigned int>)>( uint_id_) <<
   // std::endl;
@@ -266,19 +261,18 @@ DummyPlugin::DummyPlugin(const std::string&)
 bool DummyPlugin::init() {
   // g_debug("uint property installation id is %lu", uint_id);
   // props_.install("int_", &int_prop_);
-  install_method(
-      "Hello World",                                  // long name
-      "hello-world",                                  // name
-      "say hello and repeat first argument",          // description
-      "the hello answer",                             // return description
-      Method::make_arg_description("Text To Repeat",  // first arg long name
-                                   "text",            // fisrt arg name
-                                   "string",          // first arg description
-                                   nullptr),
-      (Method::method_ptr)&my_hello_world_method,
-      G_TYPE_STRING,
-      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-      this);
+  install_method("Hello World",                                  // long name
+                 "hello-world",                                  // name
+                 "say hello and repeat first argument",          // description
+                 "the hello answer",                             // return description
+                 Method::make_arg_description("Text To Repeat",  // first arg long name
+                                              "text",            // fisrt arg name
+                                              "string",          // first arg description
+                                              nullptr),
+                 (Method::method_ptr)&my_hello_world_method,
+                 G_TYPE_STRING,
+                 Method::make_arg_type_description(G_TYPE_STRING, nullptr),
+                 this);
 
   // creating some custom infos
   InfoTree::ptr tree = InfoTree::make();

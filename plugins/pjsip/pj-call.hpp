@@ -99,20 +99,16 @@ class PJCall {
   static void call_on_state_changed(pjsip_inv_session* inv, pjsip_event* e);
   static void call_on_forked(pjsip_inv_session* inv, pjsip_event* e);
   static void call_on_media_update(pjsip_inv_session* inv, pj_status_t status);
-  static void call_on_rx_offer(pjsip_inv_session* inv,
-                               const pjmedia_sdp_session* offer);
+  static void call_on_rx_offer(pjsip_inv_session* inv, const pjmedia_sdp_session* offer);
   static void process_incoming_call(pjsip_rx_data* rdata);
-  static pj_status_t create_sdp_answer(
-      pj_pool_t* pool,
-      struct call* call,
-      const std::vector<pjmedia_sdp_media*>& media_to_receive,
-      pjmedia_sdp_session** p_sdp);
-  static pj_status_t parse_SDP_from_incoming_request(
-      pjsip_rx_data* rdata, pjmedia_sdp_session* offer);
+  static pj_status_t create_sdp_answer(pj_pool_t* pool,
+                                       struct call* call,
+                                       const std::vector<pjmedia_sdp_media*>& media_to_receive,
+                                       pjmedia_sdp_session** p_sdp);
+  static pj_status_t parse_SDP_from_incoming_request(pjsip_rx_data* rdata,
+                                                     pjmedia_sdp_session* offer);
   bool make_call(std::string contact_uri);
-  bool create_outgoing_sdp(pjsip_dialog* dlg,
-                           call_t* call,
-                           pjmedia_sdp_session** res);
+  bool create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_session** res);
   Quiddity::ptr retrieve_rtp_manager();
   static gboolean send_to(gchar* sip_url, void* user_data);
   void make_hang_up(pjsip_inv_session* inv, std::string sip_url);
@@ -127,15 +123,9 @@ class PJCall {
   static void on_inv_state_disconnected(struct call* call,
                                         pjsip_inv_session* inv,
                                         pjsua_buddy_id id);
-  static void on_inv_state_confirmed(struct call* call,
-                                     pjsip_inv_session* inv,
-                                     pjsua_buddy_id id);
-  static void on_inv_state_early(struct call* call,
-                                 pjsip_inv_session* inv,
-                                 pjsua_buddy_id id);
-  static void on_inv_state_connecting(struct call* call,
-                                      pjsip_inv_session* inv,
-                                      pjsua_buddy_id id);
+  static void on_inv_state_confirmed(struct call* call, pjsip_inv_session* inv, pjsua_buddy_id id);
+  static void on_inv_state_early(struct call* call, pjsip_inv_session* inv, pjsua_buddy_id id);
+  static void on_inv_state_connecting(struct call* call, pjsip_inv_session* inv, pjsua_buddy_id id);
   static bool release_incoming_call(call_t* call, pjsua_buddy_id id);
   static bool release_outgoing_call(call_t* call, pjsua_buddy_id id);
   static void print_sdp(const pjmedia_sdp_session* local_sdp);

@@ -24,9 +24,7 @@
 
 namespace switcher {
 
-RTPSender::RTPSender(RtpSession2* session,
-                     const std::string& shmpath,
-                     unsigned int mtu)
+RTPSender::RTPSender(RtpSession2* session, const std::string& shmpath, unsigned int mtu)
     : session_(session),
       shmpath_(shmpath),
       mtu_(mtu),
@@ -40,26 +38,14 @@ RTPSender::RTPSender(RtpSession2* session,
   std::unique_lock<std::mutex> lock(start_m_);
   // configuring shmdatasrc and typefind
   g_signal_connect(typefind_, "have-type", G_CALLBACK(on_caps), this);
-  g_object_set(G_OBJECT(shmdatasrc_),
-               "socket-path",
-               shmpath_.c_str(),
-               "copy-buffers",
-               TRUE,
-               nullptr);
-  gst_bin_add_many(GST_BIN(session_->gst_pipeline_->get_pipeline()),
-                   shmdatasrc_,
-                   typefind_,
-                   nullptr);
+  g_object_set(
+      G_OBJECT(shmdatasrc_), "socket-path", shmpath_.c_str(), "copy-buffers", TRUE, nullptr);
+  gst_bin_add_many(
+      GST_BIN(session_->gst_pipeline_->get_pipeline()), shmdatasrc_, typefind_, nullptr);
   if (!gst_element_link(shmdatasrc_, typefind_)) return;
   // configuring fakesink
-  g_object_set(G_OBJECT(fakesink_),
-               "silent",
-               TRUE,
-               "signal-handoffs",
-               TRUE,
-               "sync",
-               FALSE,
-               nullptr);
+  g_object_set(
+      G_OBJECT(fakesink_), "silent", TRUE, "signal-handoffs", TRUE, "sync", FALSE, nullptr);
   g_signal_connect(fakesink_, "handoff", (GCallback)on_handoff_cb, this);
   GstUtils::sync_state_with_parent(shmdatasrc_);
   GstUtils::sync_state_with_parent(typefind_);
@@ -71,8 +57,7 @@ RTPSender::~RTPSender() {
   if (typefind_) GstUtils::clean_element(typefind_);
   if (rtp_payloader_) GstUtils::clean_element(rtp_payloader_);
   if (fakesink_) GstUtils::clean_element(fakesink_);
-  if (rtp_sink_pad_)
-    gst_element_release_request_pad(session_->rtpsession_, rtp_sink_pad_);
+  if (rtp_sink_pad_) gst_element_release_request_pad(session_->rtpsession_, rtp_sink_pad_);
 }
 
 void RTPSender::on_caps(GstElement* typefind,
@@ -86,8 +71,7 @@ void RTPSender::on_caps(GstElement* typefind,
     context->rtp_payloader_ = gst_element_factory_create(fact, nullptr);
   else
     context->rtp_payloader_ = gst_element_factory_make("rtpgstpay", nullptr);
-  g_object_set(
-      G_OBJECT(context->rtp_payloader_), "mtu", (guint)context->mtu_, nullptr);
+  g_object_set(G_OBJECT(context->rtp_payloader_), "mtu", (guint)context->mtu_, nullptr);
   // g_object_set(G_OBJECT(context->rtp_payloader_), "mtu", 5000, nullptr);
   gst_bin_add_many(GST_BIN(context->session_->gst_pipeline_->get_pipeline()),
                    context->rtp_payloader_,
@@ -98,8 +82,8 @@ void RTPSender::on_caps(GstElement* typefind,
   std::string rtp_id;
   // link the payloader with the rtpbin
   {
-    context->rtp_sink_pad_ = gst_element_get_request_pad(
-        context->session_->rtpsession_, "send_rtp_sink_%u");
+    context->rtp_sink_pad_ =
+        gst_element_get_request_pad(context->session_->rtpsession_, "send_rtp_sink_%u");
     On_scope_exit { gst_object_unref(context->rtp_sink_pad_); };
     GstPad* srcpad = gst_element_get_static_pad(context->rtp_payloader_, "src");
     On_scope_exit { gst_object_unref(srcpad); };
@@ -114,9 +98,8 @@ void RTPSender::on_caps(GstElement* typefind,
   }
   // linking rtpbin to fakesink
   {
-    GstPad* src_pad = gst_element_get_static_pad(
-        context->session_->rtpsession_,
-        std::string("send_rtp_src_" + rtp_id).c_str());
+    GstPad* src_pad = gst_element_get_static_pad(context->session_->rtpsession_,
+                                                 std::string("send_rtp_src_" + rtp_id).c_str());
     On_scope_exit { gst_object_unref(src_pad); };
     GstPad* sink_pad = gst_element_get_static_pad(context->fakesink_, "sink");
     On_scope_exit { gst_object_unref(sink_pad); };

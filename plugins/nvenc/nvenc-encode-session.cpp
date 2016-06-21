@@ -24,14 +24,12 @@
 #include "switcher/std2.hpp"
 
 namespace switcher {
-NVencES::NVencES(
-    uint32_t device_id
-    //, uint32_t width, uint32_t height,  NV_ENC_BUFFER_FORMAT format
-    )
+NVencES::NVencES(uint32_t device_id
+                 //, uint32_t width, uint32_t height,  NV_ENC_BUFFER_FORMAT format
+                 )
     : cu_ctx_(device_id) {
   On_scope_exit {
-    if (!safe_bool_idiom())
-      g_warning("NV encoder session initialization failed");
+    if (!safe_bool_idiom()) g_warning("NV encoder session initialization failed");
   };
   if (!cu_ctx_) return;
   NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS params;
@@ -39,16 +37,14 @@ NVencES::NVencES(
   params.apiVersion = NVENCAPI_VERSION;
   params.device = cu_ctx_.cuda_ctx_;
   params.deviceType = NV_ENC_DEVICE_TYPE_CUDA;
-  if (NV_ENC_SUCCESS !=
-      NVencAPI::api.nvEncOpenEncodeSessionEx(&params, &encoder_)) {
+  if (NV_ENC_SUCCESS != NVencAPI::api.nvEncOpenEncodeSessionEx(&params, &encoder_)) {
     encoder_ = nullptr;
     return;
   }
 }
 
 NVencES::~NVencES() {
-  if (safe_bool_idiom() &&
-      !(NV_ENC_SUCCESS == NVencAPI::api.nvEncDestroyEncoder(encoder_)))
+  if (safe_bool_idiom() && !(NV_ENC_SUCCESS == NVencAPI::api.nvEncDestroyEncoder(encoder_)))
     g_warning("BUG! (destroying NV encoder session)");
 }
 
@@ -57,8 +53,7 @@ std::vector<std::pair<std::string, GUID>> NVencES::get_supported_codecs() {
   // supported codecs
   uint32_t i, num = 0;
   GUID guids[16];
-  if (NV_ENC_SUCCESS !=
-      NVencAPI::api.nvEncGetEncodeGUIDs(encoder_, guids, 16, &num)) {
+  if (NV_ENC_SUCCESS != NVencAPI::api.nvEncGetEncodeGUIDs(encoder_, guids, 16, &num)) {
     g_warning("issue with nvEncGetEncodeGUIDs");
     return res;
   }
@@ -73,15 +68,13 @@ std::vector<std::pair<std::string, GUID>> NVencES::get_supported_codecs() {
   return res;
 }
 
-std::vector<std::pair<std::string, GUID>> NVencES::get_presets(
-    GUID encodeGUID) {
+std::vector<std::pair<std::string, GUID>> NVencES::get_presets(GUID encodeGUID) {
   std::vector<std::pair<std::string, GUID>> res;
   // supported codecs
   uint32_t i, num = 0;
   GUID guids[16];
   if (NV_ENC_SUCCESS !=
-      NVencAPI::api.nvEncGetEncodePresetGUIDs(
-          encoder_, encodeGUID, guids, 16, &num)) {
+      NVencAPI::api.nvEncGetEncodePresetGUIDs(encoder_, encodeGUID, guids, 16, &num)) {
     g_warning("issue with nvEncGetEncodePresetGUIDs");
     return res;
   }
@@ -95,8 +88,7 @@ std::vector<std::pair<std::string, GUID>> NVencES::get_presets(
     } else if (is_same(guids[i], NV_ENC_PRESET_BD_GUID)) {
       res.push_back(std::make_pair(std::string("BD"), guids[i]));
     } else if (is_same(guids[i], NV_ENC_PRESET_LOW_LATENCY_DEFAULT_GUID)) {
-      res.push_back(
-          std::make_pair(std::string("Low Latency default"), guids[i]));
+      res.push_back(std::make_pair(std::string("Low Latency default"), guids[i]));
     } else if (is_same(guids[i], NV_ENC_PRESET_LOW_LATENCY_HQ_GUID)) {
       res.push_back(std::make_pair(std::string("Low Latency HQ"), guids[i]));
     } else if (is_same(guids[i], NV_ENC_PRESET_LOW_LATENCY_HP_GUID)) {
@@ -111,14 +103,12 @@ std::vector<std::pair<std::string, GUID>> NVencES::get_presets(
   return res;
 }
 
-std::vector<std::pair<std::string, GUID>> NVencES::get_profiles(
-    GUID encodeGUID) {
+std::vector<std::pair<std::string, GUID>> NVencES::get_profiles(GUID encodeGUID) {
   std::vector<std::pair<std::string, GUID>> res;
   // supported codecs
   uint32_t i, num = 0;
   GUID guids[16];
-  NVencAPI::api.nvEncGetEncodeProfileGUIDs(
-      encoder_, encodeGUID, guids, 16, &num);
+  NVencAPI::api.nvEncGetEncodeProfileGUIDs(encoder_, encodeGUID, guids, 16, &num);
   for (i = 0; i < num; ++i) {
     if (is_same(guids[i], NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID)) {
       res.push_back(std::make_pair(std::string("Autoselect"), guids[i]));
@@ -133,8 +123,7 @@ std::vector<std::pair<std::string, GUID>> NVencES::get_profiles(
     } else if (is_same(guids[i], NV_ENC_H264_PROFILE_STEREO_GUID)) {
       res.push_back(std::make_pair(std::string("Stereo"), guids[i]));
     } else if (is_same(guids[i], NV_ENC_H264_PROFILE_SVC_TEMPORAL_SCALABILTY)) {
-      res.push_back(
-          std::make_pair(std::string("SVC temporal scalability"), guids[i]));
+      res.push_back(std::make_pair(std::string("SVC temporal scalability"), guids[i]));
     } else if (is_same(guids[i], NV_ENC_H264_PROFILE_CONSTRAINED_HIGH_GUID)) {
       res.push_back(std::make_pair(std::string("Constrained high"), guids[i]));
     } else if (is_same(guids[i], NV_ENC_HEVC_PROFILE_MAIN_GUID)) {
@@ -145,51 +134,41 @@ std::vector<std::pair<std::string, GUID>> NVencES::get_profiles(
   return res;
 }
 
-std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>>
-NVencES::get_input_formats(GUID encodeGUID) {
+std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> NVencES::get_input_formats(
+    GUID encodeGUID) {
   std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> res;
   // supported codecs
   uint32_t i, num = 0;
   NV_ENC_BUFFER_FORMAT buf_format[64];
-  NVencAPI::api.nvEncGetInputFormats(
-      encoder_, encodeGUID, buf_format, 16, &num);
+  NVencAPI::api.nvEncGetInputFormats(encoder_, encodeGUID, buf_format, 16, &num);
   for (i = 0; i < num; ++i) {
     if (NV_ENC_BUFFER_FORMAT_UNDEFINED == buf_format[i]) {
       // res.push_back(std::make_pair(std::string("Undefined"), buf_format[i]));
-      g_warning(
-          "nvEncGetInputFormats gives NV_ENC_BUFFER_FORMAT_UNDEFINED (?)");
+      g_warning("nvEncGetInputFormats gives NV_ENC_BUFFER_FORMAT_UNDEFINED (?)");
     } else if (NV_ENC_BUFFER_FORMAT_NV12_PL == buf_format[i]) {
       res.push_back(std::make_pair(std::string("NV12_PL"), buf_format[i]));
     } else if (NV_ENC_BUFFER_FORMAT_NV12_TILED16x16 == buf_format[i]) {
-      res.push_back(
-          std::make_pair(std::string("NV12_TILED16x16"), buf_format[i]));
+      res.push_back(std::make_pair(std::string("NV12_TILED16x16"), buf_format[i]));
     } else if (NV_ENC_BUFFER_FORMAT_NV12_TILED64x16 == buf_format[i]) {
-      res.push_back(
-          std::make_pair(std::string("NV12_TILED64x16"), buf_format[i]));
+      res.push_back(std::make_pair(std::string("NV12_TILED64x16"), buf_format[i]));
     } else if (NV_ENC_BUFFER_FORMAT_YV12_PL == buf_format[i]) {
       res.push_back(std::make_pair(std::string("YV12_PL"), buf_format[i]));
     } else if (NV_ENC_BUFFER_FORMAT_YV12_TILED16x16 == buf_format[i]) {
-      res.push_back(
-          std::make_pair(std::string("YV12_TILED16x16"), buf_format[i]));
+      res.push_back(std::make_pair(std::string("YV12_TILED16x16"), buf_format[i]));
     } else if (NV_ENC_BUFFER_FORMAT_YV12_TILED64x16 == buf_format[i]) {
-      res.push_back(
-          std::make_pair(std::string("YV12_TILED64x16"), buf_format[i]));
+      res.push_back(std::make_pair(std::string("YV12_TILED64x16"), buf_format[i]));
     } else if (NV_ENC_BUFFER_FORMAT_IYUV_PL == buf_format[i]) {
       res.push_back(std::make_pair(std::string("IYUV_PL"), buf_format[i]));
     } else if (NV_ENC_BUFFER_FORMAT_IYUV_TILED16x16 == buf_format[i]) {
-      res.push_back(
-          std::make_pair(std::string("IYUV_TILED16x16"), buf_format[i]));
+      res.push_back(std::make_pair(std::string("IYUV_TILED16x16"), buf_format[i]));
     } else if (NV_ENC_BUFFER_FORMAT_IYUV_TILED64x16 == buf_format[i]) {
-      res.push_back(
-          std::make_pair(std::string("IYUV_TILED64x16"), buf_format[i]));
+      res.push_back(std::make_pair(std::string("IYUV_TILED64x16"), buf_format[i]));
     } else if (NV_ENC_BUFFER_FORMAT_YUV444_PL == buf_format[i]) {
       res.push_back(std::make_pair(std::string("YUV444_PL"), buf_format[i]));
     } else if (NV_ENC_BUFFER_FORMAT_YUV444_TILED16x16 == buf_format[i]) {
-      res.push_back(
-          std::make_pair(std::string("YUV444_TILED16x16"), buf_format[i]));
+      res.push_back(std::make_pair(std::string("YUV444_TILED16x16"), buf_format[i]));
     } else if (NV_ENC_BUFFER_FORMAT_YUV444_TILED64x16 == buf_format[i]) {
-      res.push_back(
-          std::make_pair(std::string("YUV444_TILED64x16"), buf_format[i]));
+      res.push_back(std::make_pair(std::string("YUV444_TILED64x16"), buf_format[i]));
     } else
       g_warning("unknown input format from nvenc");
   }
@@ -206,12 +185,10 @@ std::pair<int, int> NVencES::get_max_width_height(GUID encodeGUID) {
 }
 
 bool NVencES::is_same(GUID g1, GUID g2) {
-  return (g1.Data1 == g2.Data1 && g1.Data2 == g2.Data2 &&
-          g1.Data3 == g2.Data3 && g1.Data4[0] == g2.Data4[0] &&
-          g1.Data4[1] == g2.Data4[1] && g1.Data4[2] == g2.Data4[2] &&
-          g1.Data4[3] == g2.Data4[3] && g1.Data4[4] == g2.Data4[4] &&
-          g1.Data4[5] == g2.Data4[5] && g1.Data4[6] == g2.Data4[6] &&
-          g1.Data4[7] == g2.Data4[7]);
+  return (g1.Data1 == g2.Data1 && g1.Data2 == g2.Data2 && g1.Data3 == g2.Data3 &&
+          g1.Data4[0] == g2.Data4[0] && g1.Data4[1] == g2.Data4[1] && g1.Data4[2] == g2.Data4[2] &&
+          g1.Data4[3] == g2.Data4[3] && g1.Data4[4] == g2.Data4[4] && g1.Data4[5] == g2.Data4[5] &&
+          g1.Data4[6] == g2.Data4[6] && g1.Data4[7] == g2.Data4[7]);
 }
 
 bool NVencES::initialize_encoder(GUID encodeGuid,
@@ -237,14 +214,12 @@ bool NVencES::initialize_encoder(GUID encodeGuid,
   preset_config.version = NV_ENC_PRESET_CONFIG_VER;
   preset_config.presetCfg.version = NV_ENC_CONFIG_VER;
   if (NV_ENC_SUCCESS !=
-      NVencAPI::api.nvEncGetEncodePresetConfig(
-          encoder_, encodeGuid, presetGuid, &preset_config)) {
+      NVencAPI::api.nvEncGetEncodePresetConfig(encoder_, encodeGuid, presetGuid, &preset_config)) {
     g_warning("nvenc cannot get encode preset config");
   } else {
     preset_config.presetCfg.version = NV_ENC_CONFIG_VER;
     preset_config.presetCfg.profileGUID = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
-    preset_config.presetCfg.encodeCodecConfig.h264Config.level =
-        NV_ENC_LEVEL_AUTOSELECT;
+    preset_config.presetCfg.encodeCodecConfig.h264Config.level = NV_ENC_LEVEL_AUTOSELECT;
     preset_config.presetCfg.encodeCodecConfig.h264Config.chromaFormatIDC = 1;
 
     // preset_config.presetCfg.encodeCodecConfig.h264Config.outputBufferingPeriodSEI
@@ -277,8 +252,7 @@ bool NVencES::initialize_encoder(GUID encodeGuid,
     init_params_.encodeConfig = &preset_config.presetCfg;
   }
 
-  NVENCSTATUS status =
-      NVencAPI::api.nvEncInitializeEncoder(encoder_, &init_params_);
+  NVENCSTATUS status = NVencAPI::api.nvEncInitializeEncoder(encoder_, &init_params_);
   if (NV_ENC_SUCCESS != status) {
     g_warning("encode session initialization failed");
     return false;

@@ -45,16 +45,15 @@ bool SyphonSrc::init() {
 
   reader_.reset(new SyphonReader(frameCallback, (void*)this));
 
-  pmanage<MPtr(&PContainer::make_string)>(
-      "servername",
-      [this](const std::string& val) {
-        syphon_servername_ = val;
-        return true;
-      },
-      [this]() { return syphon_servername_; },
-      "Server name",
-      "The name of the Syphon server",
-      syphon_servername_);
+  pmanage<MPtr(&PContainer::make_string)>("servername",
+                                          [this](const std::string& val) {
+                                            syphon_servername_ = val;
+                                            return true;
+                                          },
+                                          [this]() { return syphon_servername_; },
+                                          "Server name",
+                                          "The name of the Syphon server",
+                                          syphon_servername_);
 
   pmanage<MPtr(&PContainer::make_string)>("appname",
                                           [this](const std::string& val) {
@@ -89,27 +88,23 @@ bool SyphonSrc::stop() {
   return true;
 }
 
-void SyphonSrc::frameCallback(void* context,
-                              const char* data,
-                              int& width,
-                              int& height) {
+void SyphonSrc::frameCallback(void* context, const char* data, int& width, int& height) {
   SyphonSrc* ctx = static_cast<SyphonSrc*>(context);
   static bool set = false;
   if (set == false || ctx->width_ != width || ctx->height_ != height) {
     std::string writer_path;
     if (ctx->syphon_servername_ != "" && ctx->syphon_appname_ != "")
-      writer_path = ctx->make_file_name(ctx->syphon_servername_ + "-" +
-                                        ctx->syphon_appname_);
+      writer_path = ctx->make_file_name(ctx->syphon_servername_ + "-" + ctx->syphon_appname_);
     else if (ctx->syphon_servername_ != "")
       writer_path = ctx->make_file_name(ctx->syphon_servername_);
     else
       writer_path = ctx->make_file_name(ctx->syphon_appname_);
-    ctx->writer_ = std2::make_unique<ShmdataWriter>(
-        ctx,
-        writer_path,
-        width * height * 4,
-        string("video/x-raw, format=RGBA, ") + "width=" + to_string(width) +
-            "height=" + to_string(height));
+    ctx->writer_ =
+        std2::make_unique<ShmdataWriter>(ctx,
+                                         writer_path,
+                                         width * height * 4,
+                                         string("video/x-raw, format=RGBA, ") + "width=" +
+                                             to_string(width) + "height=" + to_string(height));
     ctx->width_ = width;
     ctx->height_ = height;
     if (!ctx->writer_.get()) {
@@ -118,8 +113,8 @@ void SyphonSrc::frameCallback(void* context,
     } else
       set = true;
   }
-  ctx->writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
-      static_cast<const void*>(data), width * height * 4);
+  ctx->writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(static_cast<const void*>(data),
+                                                            width * height * 4);
   ctx->writer_->bytes_written(width * height * 4);
 }
 

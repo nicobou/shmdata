@@ -34,8 +34,7 @@ void property_cb(const std::string& /*subscriber_name */,
 int main() {
   uint count = 0;
   {
-    switcher::QuiddityManager::ptr mgr =
-        switcher::QuiddityManager::make_manager("property_mapper");
+    switcher::QuiddityManager::ptr mgr = switcher::QuiddityManager::make_manager("property_mapper");
     mgr->make_property_subscriber("sub", property_cb, &count);
 
     // map freq  property from audio1 to audio 2
@@ -45,19 +44,11 @@ int main() {
     if (!mgr->set_property(audio2, "started", "true")) return 1;
     mgr->subscribe_property("sub", audio2.c_str(), "freq");
     std::string mapper = mgr->create("property-mapper", "mapper");
-    if (!mgr->invoke_va(mapper.c_str(),
-                        "set-source-property",
-                        nullptr,
-                        audio1.c_str(),
-                        "freq",
-                        nullptr))
+    if (!mgr->invoke_va(
+            mapper.c_str(), "set-source-property", nullptr, audio1.c_str(), "freq", nullptr))
       return 1;
-    if (!mgr->invoke_va(mapper.c_str(),
-                        "set-sink-property",
-                        nullptr,
-                        audio2.c_str(),
-                        "freq",
-                        nullptr))
+    if (!mgr->invoke_va(
+            mapper.c_str(), "set-sink-property", nullptr, audio2.c_str(), "freq", nullptr))
       return 1;
     if (!mgr->set_property(audio1, "freq", "1000")) return 1;
     if (!mgr->set_property(audio1, "freq", "100")) return 1;

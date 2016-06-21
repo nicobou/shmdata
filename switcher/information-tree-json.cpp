@@ -108,8 +108,7 @@ std::string serialize(InfoTree::ptrc tree) {
     if (!tree->read_data().is_null()) {
       switch (tree->read_data().get_category()) {
         case AnyCategory::BOOL:
-          return std::string(tree->read_data().copy_as<bool>() ? "true"
-                                                               : "false");
+          return std::string(tree->read_data().copy_as<bool>() ? "true" : "false");
           break;
         case AnyCategory::INTEGRAL:
           return std::string(Any::to_string(tree->read_data()));
@@ -139,15 +138,11 @@ std::string serialize(InfoTree::ptrc tree) {
     json_builder_begin_array(json_builder);
   InfoTree::preorder_tree_walk(
       tree,
-      [&json_builder](
-          std::string key, InfoTree::ptrc node, bool is_array_element) {
-        JSONSerializer::on_visiting_node(
-            key, node, is_array_element, json_builder);
+      [&json_builder](std::string key, InfoTree::ptrc node, bool is_array_element) {
+        JSONSerializer::on_visiting_node(key, node, is_array_element, json_builder);
       },
-      [&json_builder](
-          std::string key, InfoTree::ptrc node, bool is_array_element) {
-        JSONSerializer::on_node_visited(
-            key, node, is_array_element, json_builder);
+      [&json_builder](std::string key, InfoTree::ptrc node, bool is_array_element) {
+        JSONSerializer::on_node_visited(key, node, is_array_element, json_builder);
       });
 
   if (!is_array)
@@ -174,8 +169,7 @@ void add_json_node(InfoTree::rptr tree, JsonReader* reader) {
       auto index = std::to_string(i);
       json_reader_read_element(reader, i);
       if (!tree->graft(index, InfoTree::make())) {
-        g_warning(
-            "issue grafting tree with array index during json deserialization");
+        g_warning("issue grafting tree with array index during json deserialization");
         return;
       }
       add_json_node(tree->get_tree(index).get(), reader);
@@ -225,8 +219,7 @@ InfoTree::ptr deserialize(const std::string& serialized) {
   JsonParser* parser = json_parser_new();
   On_scope_exit { g_object_unref(parser); };
   GError* error = nullptr;
-  json_parser_load_from_data(
-      parser, serialized.c_str(), serialized.size(), &error);
+  json_parser_load_from_data(parser, serialized.c_str(), serialized.size(), &error);
   if (error != nullptr) {
     g_warning("%s", error->message);
     g_error_free(error);

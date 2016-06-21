@@ -48,8 +48,7 @@ std::vector<std::string> GstPixelFormatConverter::get_formats() {
   const GList* list = gst_element_factory_get_static_pad_templates(factory);
   guint i = 0;
   while (nullptr != list) {
-    GstStaticPadTemplate* templ =
-        reinterpret_cast<GstStaticPadTemplate*>(list->data);
+    GstStaticPadTemplate* templ = reinterpret_cast<GstStaticPadTemplate*>(list->data);
     if (templ->direction == GST_PAD_SRC) {
       GstCaps* caps = gst_static_pad_template_get_caps(templ);
       // copying for removing fields in struture
@@ -57,8 +56,7 @@ std::vector<std::string> GstPixelFormatConverter::get_formats() {
       const GValue* format_list = gst_structure_get_value(structure, "format");
       if (format_list)
         for (guint j = 0; j < gst_value_list_get_size(format_list); ++j) {
-          formats.emplace_back(
-              g_value_get_string(gst_value_list_get_value(format_list, j)));
+          formats.emplace_back(g_value_get_string(gst_value_list_get_value(format_list, j)));
           ++i;
         }
       gst_caps_unref(caps);
@@ -69,8 +67,7 @@ std::vector<std::string> GstPixelFormatConverter::get_formats() {
 }
 
 std::string GstPixelFormatConverter::get_caps_str() const {
-  return std::string("video/x-raw, format=(string)") +
-         video_format_.get_current_nick();
+  return std::string("video/x-raw, format=(string)") + video_format_.get_current_nick();
 }
 
 bool GstPixelFormatConverter::disable_property() {
@@ -97,10 +94,7 @@ bool GstPixelFormatConverter::start(const std::string& shmpath_to_convert,
   GstCaps* caps = gst_caps_from_string(get_caps_str().c_str());
   g_object_set(G_OBJECT(capsfilter_.get_raw()), "caps", caps, nullptr);
   gst_caps_unref(caps);
-  g_object_set(G_OBJECT(shmsrc_.get_raw()),
-               "socket-path",
-               shmpath_to_convert.c_str(),
-               nullptr);
+  g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_to_convert.c_str(), nullptr);
   g_object_set(G_OBJECT(shm_converted_.get_raw()),
                "socket-path",
                shmpath_converted.c_str(),
@@ -126,26 +120,22 @@ bool GstPixelFormatConverter::start(const std::string& shmpath_to_convert,
   shmsink_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shm_converted_.get_raw(),
       [this](const std::string& caps) {
-        this->quid_->graft_tree(
-            ".shmdata.writer." + shmpath_converted_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->quid_->graft_tree(".shmdata.writer." + shmpath_converted_,
+                                ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->quid_->graft_tree(
-            ".shmdata.writer." + shmpath_converted_ + ".byte_rate",
-            InfoTree::make(byte_rate));
+        this->quid_->graft_tree(".shmdata.writer." + shmpath_converted_ + ".byte_rate",
+                                InfoTree::make(byte_rate));
       });
   shmsrc_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
       [this](const std::string& caps) {
-        this->quid_->graft_tree(
-            ".shmdata.reader." + shmpath_to_convert_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->quid_->graft_tree(".shmdata.reader." + shmpath_to_convert_,
+                                ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->quid_->graft_tree(
-            ".shmdata.reader." + shmpath_to_convert_ + ".byte_rate",
-            InfoTree::make(byte_rate));
+        this->quid_->graft_tree(".shmdata.reader." + shmpath_to_convert_ + ".byte_rate",
+                                InfoTree::make(byte_rate));
       });
   return true;
 }
@@ -157,10 +147,9 @@ bool GstPixelFormatConverter::stop() {
   quid_->prune_tree(".shmdata.writer." + shmpath_converted_);
   quid_->prune_tree(".shmdata.reader." + shmpath_to_convert_);
   if (!UGstElem::renew(shmsrc_, {"socket-path"}) ||
-      !UGstElem::renew(shm_converted_,
-                       {"socket-path", "sync", "initial-size"}) ||
-      !UGstElem::renew(color_space_codec_element_) ||
-      !UGstElem::renew(capsfilter_) || !UGstElem::renew(queue_codec_element_)) {
+      !UGstElem::renew(shm_converted_, {"socket-path", "sync", "initial-size"}) ||
+      !UGstElem::renew(color_space_codec_element_) || !UGstElem::renew(capsfilter_) ||
+      !UGstElem::renew(queue_codec_element_)) {
     g_warning("error renewing a pixel format converter related gst element");
     return false;
   }

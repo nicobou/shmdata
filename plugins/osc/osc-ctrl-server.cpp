@@ -25,31 +25,29 @@
 #include <utility>  // std::make_pair (,)
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    OscCtrlServer,
-    "OSCctl",
-    "Switcher OSC Controler",
-    "control",
-    "",
-    "OSCcontrolServer allows for managing switcher through OSC",
-    "LGPL",
-    "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscCtrlServer,
+                                     "OSCctl",
+                                     "Switcher OSC Controler",
+                                     "control",
+                                     "",
+                                     "OSCcontrolServer allows for managing switcher through OSC",
+                                     "LGPL",
+                                     "Nicolas Bouillot");
 
 OscCtrlServer::OscCtrlServer(const std::string&)
     : port_(), osc_subscribers_(), osc_thread_(nullptr) {}
 
 bool OscCtrlServer::init() {
   osc_thread_ = nullptr;
-  install_method(
-      "Set Port",
-      "set_port",
-      "set the port used by the osc server and start listening messages",
-      "success or fail",
-      Method::make_arg_description("Port", "port", "the port to bind", nullptr),
-      (Method::method_ptr)&set_port_wrapped,
-      G_TYPE_BOOLEAN,
-      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-      this);
+  install_method("Set Port",
+                 "set_port",
+                 "set the port used by the osc server and start listening messages",
+                 "success or fail",
+                 Method::make_arg_description("Port", "port", "the port to bind", nullptr),
+                 (Method::method_ptr)&set_port_wrapped,
+                 G_TYPE_BOOLEAN,
+                 Method::make_arg_type_description(G_TYPE_STRING, nullptr),
+                 this);
   return true;
 }
 
@@ -65,26 +63,20 @@ void OscCtrlServer::prop_cb(const std::string& internal_subscriber_name,
   auto it = context->osc_subscribers_.find(internal_subscriber_name);
   if (context->osc_subscribers_.end() == it) return;
 
-  std::pair<std::string, std::string> address =
-      context->osc_subscribers_[internal_subscriber_name];
+  std::pair<std::string, std::string> address = context->osc_subscribers_[internal_subscriber_name];
 
   lo_address t = lo_address_new(address.first.c_str(), address.second.c_str());
 
-  gchar* subscriber_name =
-      context->retrieve_subscriber_name(internal_subscriber_name.c_str());
-  gchar* message = g_strdup_printf("/property/%s/%s/%s",
-                                   subscriber_name,
-                                   quiddity_name.c_str(),
-                                   property_name.c_str());
+  gchar* subscriber_name = context->retrieve_subscriber_name(internal_subscriber_name.c_str());
+  gchar* message = g_strdup_printf(
+      "/property/%s/%s/%s", subscriber_name, quiddity_name.c_str(), property_name.c_str());
   lo_send(t, message, "s", value.c_str());
   g_free(subscriber_name);
   g_free(message);
   lo_address_free(t);
 }
 
-std::shared_ptr<QuiddityManager> OscCtrlServer::get_quiddity_manager() {
-  return manager_.lock();
-}
+std::shared_ptr<QuiddityManager> OscCtrlServer::get_quiddity_manager() { return manager_.lock(); }
 
 gchar* OscCtrlServer::make_internal_subscriber_name(const gchar* name) {
   return g_strdup_printf("%s%s", get_name().c_str(), name);
@@ -179,10 +171,8 @@ int OscCtrlServer::osc_handler(const char* path,
       gchar* quid_name = string_from_osc_arg(types[0], argv[0]);
       gchar* prop_name = string_from_osc_arg(types[1], argv[1]);
       gchar* value = string_from_osc_arg(types[2], argv[2]);
-      auto id =
-          manager->use_prop<MPtr(&PContainer::get_id)>(quid_name, prop_name);
-      if (0 != id)
-        manager->use_prop<MPtr(&PContainer::set_str)>(quid_name, id, value);
+      auto id = manager->use_prop<MPtr(&PContainer::get_id)>(quid_name, prop_name);
+      if (0 != id) manager->use_prop<MPtr(&PContainer::set_str)>(quid_name, id, value);
       g_free(quid_name);
       g_free(prop_name);
       g_free(value);
@@ -282,8 +272,7 @@ int OscCtrlServer::osc_handler(const char* path,
       gchar* property_name = string_from_osc_arg(types[1], argv[1]);
       gchar* response_url = string_from_osc_arg(types[2], argv[2]);
 
-      if (quiddity_name == nullptr || property_name == nullptr ||
-          response_url == nullptr) {
+      if (quiddity_name == nullptr || property_name == nullptr || response_url == nullptr) {
         g_warning(
             "OscCtrlServer: issue with quiddity name or property name or "
             "response url");
@@ -292,14 +281,11 @@ int OscCtrlServer::osc_handler(const char* path,
 
       std::string value = manager->use_prop<MPtr(&PContainer::get_str)>(
           quiddity_name,
-          manager->use_prop<MPtr(&PContainer::get_id)>(quiddity_name,
-                                                       property_name));
+          manager->use_prop<MPtr(&PContainer::get_id)>(quiddity_name, property_name));
       lo_address response_lo_address = lo_address_new_from_url(response_url);
 
-      if (response_lo_address != nullptr &&
-          !lo_address_errno(response_lo_address)) {
-        gchar* message =
-            g_strdup_printf("/%s/%s", quiddity_name, property_name);
+      if (response_lo_address != nullptr && !lo_address_errno(response_lo_address)) {
+        gchar* message = g_strdup_printf("/%s/%s", quiddity_name, property_name);
         lo_send(response_lo_address, message, "s", value.c_str());
         lo_address_free(response_lo_address);
         g_free(message);
@@ -310,14 +296,12 @@ int OscCtrlServer::osc_handler(const char* path,
       g_free(property_name);
       g_free(response_url);
     } else
-      g_warning(
-          "OSCctl: subscribe property needs 3 args (name, quiddity, property)");
+      g_warning("OSCctl: subscribe property needs 3 args (name, quiddity, property)");
     return 0;
   }
 
   // subscribe to a property
-  if (g_str_has_prefix(path, "/get_property_") ||
-      g_str_has_prefix(path, "/G")) {
+  if (g_str_has_prefix(path, "/get_property_") || g_str_has_prefix(path, "/G")) {
     g_warning("osc subscribe property is disabled in code");
     // if (argc == 3) {
     //   gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);

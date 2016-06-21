@@ -22,14 +22,13 @@
 #include <sstream>
 
 namespace switcher {
-QuiddityDocumentation::QuiddityDocumentation(
-    const std::string& long_name,
-    const std::string& class_name,
-    const std::string& category,
-    const std::string& tags,
-    const std::string& short_description,
-    const std::string& license,
-    const std::string& author)
+QuiddityDocumentation::QuiddityDocumentation(const std::string& long_name,
+                                             const std::string& class_name,
+                                             const std::string& category,
+                                             const std::string& tags,
+                                             const std::string& short_description,
+                                             const std::string& license,
+                                             const std::string& author)
     : category_(category),
       class_name_(class_name),
       description_(short_description),
@@ -46,13 +45,9 @@ QuiddityDocumentation::QuiddityDocumentation(
 
 std::string QuiddityDocumentation::get_category() const { return category_; }
 
-std::string QuiddityDocumentation::get_class_name() const {
-  return class_name_;
-}
+std::string QuiddityDocumentation::get_class_name() const { return class_name_; }
 
-std::string QuiddityDocumentation::get_description() const {
-  return description_;
-}
+std::string QuiddityDocumentation::get_description() const { return description_; }
 
 std::string QuiddityDocumentation::get_long_name() const { return long_name_; }
 

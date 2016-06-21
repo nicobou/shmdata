@@ -23,8 +23,8 @@
 namespace switcher {
 
 template <typename TimeType>
-TimeType DriftObserver<TimeType>::set_current_time_info(
-    const TimeType date, const TimeType duration) {
+TimeType DriftObserver<TimeType>::set_current_time_info(const TimeType date,
+                                                        const TimeType duration) {
   // collect data only at first call
   if (0 == current_buffer_duration_) {
     current_buffer_date_ = date;
@@ -32,11 +32,9 @@ TimeType DriftObserver<TimeType>::set_current_time_info(
     return duration;
   }
   // udating statistics for the previous duration
-  const double measured_ratio =
-      (double)(date - current_buffer_date_) / current_buffer_duration_;
+  const double measured_ratio = (double)(date - current_buffer_date_) / current_buffer_duration_;
   if (0.9 < measured_ratio && measured_ratio < 1.1)
-    ratio_ =
-        (1 - smoothing_factor_) * ratio_ + smoothing_factor_ * measured_ratio;
+    ratio_ = (1 - smoothing_factor_) * ratio_ + smoothing_factor_ * measured_ratio;
   else
     ratio_ = 1;
   current_buffer_date_ = date;

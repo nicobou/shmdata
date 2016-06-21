@@ -60,10 +60,7 @@ class PortMidi {
   // static int get_default_output_device_id();
   bool open_output_device(int id);
   bool close_output_device(int id);
-  bool push_midi_message(int id,
-                         unsigned char status,
-                         unsigned char data1,
-                         unsigned char data2);
+  bool push_midi_message(int id, unsigned char status, unsigned char data1, unsigned char data2);
 
  private:
   std::map<guint, PmStream*> input_streams_{};
@@ -77,9 +74,7 @@ class PortMidi {
    public:
     PortMidiScheduler();
     ~PortMidiScheduler();
-    PmStream* add_input_stream(int id,
-                               on_pm_event_method method,
-                               void* user_data);
+    PmStream* add_input_stream(int id, on_pm_event_method method, void* user_data);
     bool remove_input_stream(PmStream* stream);
 
     PmStream* add_output_stream(int id);

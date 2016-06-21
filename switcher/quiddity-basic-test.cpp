@@ -33,28 +33,23 @@ bool QuiddityBasicTest::test_full(QuiddityManager::ptr manager,
 bool QuiddityBasicTest::test_create(QuiddityManager::ptr manager,
                                     const std::string& quiddity_class_name) {
   // testing with a nick name
-  std::string res_with_nick =
-      manager->create(quiddity_class_name, quiddity_class_name);
+  std::string res_with_nick = manager->create(quiddity_class_name, quiddity_class_name);
   if (res_with_nick.compare(quiddity_class_name) != 0) {
-    g_warning("quiddity %s cannot be created (with nickname)",
-              quiddity_class_name.c_str());
+    g_warning("quiddity %s cannot be created (with nickname)", quiddity_class_name.c_str());
     return true;  // true because some quiddity may not be crated because of a
                   // missing resource
   } else if (!manager->remove(res_with_nick)) {
-    g_warning("error while removing quiddity %s (with nickname)",
-              quiddity_class_name.c_str());
+    g_warning("error while removing quiddity %s (with nickname)", quiddity_class_name.c_str());
     return false;
   }
   // testing without nick name
   std::string res_without_nick = manager->create(quiddity_class_name);
   if (res_without_nick.empty()) {
-    g_warning("quiddity %s cannot be created (without nickname)",
-              quiddity_class_name.c_str());
+    g_warning("quiddity %s cannot be created (without nickname)", quiddity_class_name.c_str());
     return false;
   }
   if (!manager->remove(res_without_nick)) {
-    g_warning("error while removing quiddity %s (without nickname)",
-              quiddity_class_name.c_str());
+    g_warning("error while removing quiddity %s (without nickname)", quiddity_class_name.c_str());
     return false;
   }
   return true;
@@ -69,23 +64,21 @@ bool QuiddityBasicTest::test_startable(QuiddityManager::ptr manager,
     return true;  // true because some quiddity may not be created because of a
                   // missing resource
   }
-  auto started_id =
-      manager->use_prop<MPtr(&PContainer::get_id)>(name, "started");
+  auto started_id = manager->use_prop<MPtr(&PContainer::get_id)>(name, "started");
   if (0 != started_id) {
     manager->use_prop<MPtr(&PContainer::set_str)>(name, started_id, "true");
     manager->use_prop<MPtr(&PContainer::set_str)>(name, started_id, "false");
     manager->use_prop<MPtr(&PContainer::set_str)>(name, started_id, "true");
   }
   if (!manager->remove(name)) {
-    g_warning("error while removing quiddity %s (startable test)",
-              quiddity_class_name.c_str());
+    g_warning("error while removing quiddity %s (startable test)", quiddity_class_name.c_str());
     return false;
   }
   return true;
 }
 
-bool QuiddityBasicTest::test_description_by_class(
-    QuiddityManager::ptr manager, const std::string& quiddity_class_name) {
+bool QuiddityBasicTest::test_description_by_class(QuiddityManager::ptr manager,
+                                                  const std::string& quiddity_class_name) {
   // by class
   manager->get_methods_description_by_class(quiddity_class_name);
   manager->get_signals_description_by_class(quiddity_class_name);
@@ -100,22 +93,19 @@ bool QuiddityBasicTest::test_tree(QuiddityManager::ptr manager,
   return true;
 }
 
-bool QuiddityBasicTest::test_properties(
-    QuiddityManager::ptr manager, const std::string& quiddity_class_name) {
+bool QuiddityBasicTest::test_properties(QuiddityManager::ptr manager,
+                                        const std::string& quiddity_class_name) {
   std::string name = manager->create(quiddity_class_name);
-  auto properties =
-      manager->use_tree<MPtr(&InfoTree::get_child_keys)>(name, ".property.");
+  auto properties = manager->use_tree<MPtr(&InfoTree::get_child_keys)>(name, ".property.");
   for (auto& it : properties) {
     // do not test if the property has been disabled
     if (manager->use_tree<MPtr(&InfoTree::branch_read_data<bool>)>(
             name, std::string(".property.") + it + ".enabled.")) {
-      auto default_value =
-          manager->use_prop<MPtr(&PContainer::get_str_str)>(name, it);
+      auto default_value = manager->use_prop<MPtr(&PContainer::get_str_str)>(name, it);
       if (!default_value.empty() &&
           manager->use_tree<MPtr(&InfoTree::branch_read_data<bool>)>(
               name, std::string(".property.") + it + ".writable.")) {
-        bool res = manager->use_prop<MPtr(&PContainer::set_str_str)>(
-            name, it, default_value);
+        bool res = manager->use_prop<MPtr(&PContainer::set_str_str)>(name, it, default_value);
         if (!res) {
           g_warning(
               "property %s for quiddity named %s (class %s)"

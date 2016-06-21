@@ -26,11 +26,9 @@
 int main() {
   bool success = true;
   {
-    switcher::QuiddityManager::ptr manager =
-        switcher::QuiddityManager::make_manager("startable");
+    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("startable");
     for (auto& it : manager->get_classes()) {
-      if (!switcher::QuiddityBasicTest::test_startable(manager, it))
-        success = false;
+      if (!switcher::QuiddityBasicTest::test_startable(manager, it)) success = false;
     }
   }
 

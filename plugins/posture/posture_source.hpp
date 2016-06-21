@@ -95,8 +95,7 @@ class PostureSrc : public Quiddity, public StartableQuiddity {
   int depth_width_{0}, depth_height_{0};
   int rgb_width_{0}, rgb_height_{0};
   int ir_width_{0}, ir_height_{0};
-  posture::ZCamera::CaptureFormat rgb_format_{
-      posture::ZCamera::CaptureFormat::RGB};
+  posture::ZCamera::CaptureFormat rgb_format_{posture::ZCamera::CaptureFormat::RGB};
 
   bool init() final;
 

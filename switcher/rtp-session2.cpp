@@ -34,61 +34,28 @@ RtpSession2::RtpSession2()
                TRUE,
                //"do-lost", TRUE,
                nullptr);
-  g_signal_connect(G_OBJECT(rtpsession_),
-                   "on-bye-ssrc",
-                   (GCallback)on_bye_ssrc,
-                   (gpointer) this);
-  g_signal_connect(G_OBJECT(rtpsession_),
-                   "on-bye-timeout",
-                   (GCallback)on_bye_timeout,
-                   (gpointer) this);
-  g_signal_connect(G_OBJECT(rtpsession_),
-                   "on-new-ssrc",
-                   (GCallback)on_new_ssrc,
-                   (gpointer) this);
-  g_signal_connect(G_OBJECT(rtpsession_),
-                   "on-npt-stop",
-                   (GCallback)on_npt_stop,
-                   (gpointer) this);
-  g_signal_connect(G_OBJECT(rtpsession_),
-                   "on-sender-timeout",
-                   (GCallback)on_sender_timeout,
-                   (gpointer) this);
-  g_signal_connect(G_OBJECT(rtpsession_),
-                   "on-ssrc-active",
-                   (GCallback)on_ssrc_active,
-                   (gpointer) this);
-  g_signal_connect(G_OBJECT(rtpsession_),
-                   "on-ssrc-collision",
-                   (GCallback)on_ssrc_collision,
-                   (gpointer) this);
-  g_signal_connect(G_OBJECT(rtpsession_),
-                   "on-ssrc-sdes",
-                   (GCallback)on_ssrc_sdes,
-                   (gpointer) this);
-  g_signal_connect(G_OBJECT(rtpsession_),
-                   "on-ssrc-validated",
-                   (GCallback)on_ssrc_validated,
-                   (gpointer) this);
-  g_signal_connect(G_OBJECT(rtpsession_),
-                   "on-timeout",
-                   (GCallback)on_timeout,
-                   (gpointer) this);
-  g_signal_connect(G_OBJECT(rtpsession_),
-                   "pad-added",
-                   (GCallback)on_pad_added,
-                   (gpointer) this);
-  g_signal_connect(G_OBJECT(rtpsession_),
-                   "pad-removed",
-                   (GCallback)on_pad_removed,
-                   (gpointer) this);
-  g_signal_connect(G_OBJECT(rtpsession_),
-                   "no-more-pads",
-                   (GCallback)on_no_more_pad,
-                   (gpointer) this);
+  g_signal_connect(G_OBJECT(rtpsession_), "on-bye-ssrc", (GCallback)on_bye_ssrc, (gpointer) this);
+  g_signal_connect(
+      G_OBJECT(rtpsession_), "on-bye-timeout", (GCallback)on_bye_timeout, (gpointer) this);
+  g_signal_connect(G_OBJECT(rtpsession_), "on-new-ssrc", (GCallback)on_new_ssrc, (gpointer) this);
+  g_signal_connect(G_OBJECT(rtpsession_), "on-npt-stop", (GCallback)on_npt_stop, (gpointer) this);
+  g_signal_connect(
+      G_OBJECT(rtpsession_), "on-sender-timeout", (GCallback)on_sender_timeout, (gpointer) this);
+  g_signal_connect(
+      G_OBJECT(rtpsession_), "on-ssrc-active", (GCallback)on_ssrc_active, (gpointer) this);
+  g_signal_connect(
+      G_OBJECT(rtpsession_), "on-ssrc-collision", (GCallback)on_ssrc_collision, (gpointer) this);
+  g_signal_connect(G_OBJECT(rtpsession_), "on-ssrc-sdes", (GCallback)on_ssrc_sdes, (gpointer) this);
+  g_signal_connect(
+      G_OBJECT(rtpsession_), "on-ssrc-validated", (GCallback)on_ssrc_validated, (gpointer) this);
+  g_signal_connect(G_OBJECT(rtpsession_), "on-timeout", (GCallback)on_timeout, (gpointer) this);
+  g_signal_connect(G_OBJECT(rtpsession_), "pad-added", (GCallback)on_pad_added, (gpointer) this);
+  g_signal_connect(
+      G_OBJECT(rtpsession_), "pad-removed", (GCallback)on_pad_removed, (gpointer) this);
+  g_signal_connect(
+      G_OBJECT(rtpsession_), "no-more-pads", (GCallback)on_no_more_pad, (gpointer) this);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), rtpsession_);
-  g_object_set(
-      G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
+  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
 }
 
@@ -187,8 +154,7 @@ void RtpSession2::on_pad_removed(GstElement* /*gstelement */,
   // g_debug("on_pad_removed");
 }
 
-void RtpSession2::on_no_more_pad(GstElement* /*gstelement */,
-                                 gpointer /*user_data */) {
+void RtpSession2::on_no_more_pad(GstElement* /*gstelement */, gpointer /*user_data */) {
   // RtpSession2 *context = static_cast<RtpSession2 *>(user_data);
   // g_debug("on_no_more_pad");
 }

@@ -41,30 +41,28 @@ PJPresence::PJPresence() {
       G_TYPE_BOOLEAN,
       Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, nullptr),
       this);
-  SIPPlugin::this_->install_method(
-      "Unregister SIP Account",  // long name
-      "unregister",              // name
-      "unregister SIP account",  // description
-      "success",                 // return description
-      Method::make_arg_description("none", nullptr),
-      (Method::method_ptr)&unregister_account_wrapped,
-      G_TYPE_BOOLEAN,
-      Method::make_arg_type_description(G_TYPE_NONE, nullptr),
-      this);
+  SIPPlugin::this_->install_method("Unregister SIP Account",  // long name
+                                   "unregister",              // name
+                                   "unregister SIP account",  // description
+                                   "success",                 // return description
+                                   Method::make_arg_description("none", nullptr),
+                                   (Method::method_ptr)&unregister_account_wrapped,
+                                   G_TYPE_BOOLEAN,
+                                   Method::make_arg_type_description(G_TYPE_NONE, nullptr),
+                                   this);
   // buddies
-  SIPPlugin::this_->install_method(
-      "Add Buddy",                                   // long name
-      "add_buddy",                                   // name
-      "add a buddy",                                 // description
-      "success",                                     // return description
-      Method::make_arg_description("SIP User Name",  // long name
-                                   "user",           // name
-                                   "string",         // description
-                                   nullptr),
-      (Method::method_ptr)&add_buddy_wrapped,
-      G_TYPE_BOOLEAN,
-      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-      this);
+  SIPPlugin::this_->install_method("Add Buddy",    // long name
+                                   "add_buddy",    // name
+                                   "add a buddy",  // description
+                                   "success",      // return description
+                                   Method::make_arg_description("SIP User Name",  // long name
+                                                                "user",           // name
+                                                                "string",         // description
+                                                                nullptr),
+                                   (Method::method_ptr)&add_buddy_wrapped,
+                                   G_TYPE_BOOLEAN,
+                                   Method::make_arg_type_description(G_TYPE_STRING, nullptr),
+                                   this);
   SIPPlugin::this_->install_method(
       "Set Buddy Name",                        // long name
       "name_buddy",                            // name
@@ -81,19 +79,18 @@ PJPresence::PJPresence() {
       G_TYPE_BOOLEAN,
       Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, nullptr),
       this);
-  SIPPlugin::this_->install_method(
-      "Del Buddy",                                   // long name
-      "del_buddy",                                   // name
-      "Delete a buddy",                              // description
-      "success",                                     // return description
-      Method::make_arg_description("SIP User Name",  // long name
-                                   "user",           // name
-                                   "string",         // description
-                                   nullptr),
-      (Method::method_ptr)&del_buddy_wrapped,
-      G_TYPE_BOOLEAN,
-      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-      this);
+  SIPPlugin::this_->install_method("Del Buddy",       // long name
+                                   "del_buddy",       // name
+                                   "Delete a buddy",  // description
+                                   "success",         // return description
+                                   Method::make_arg_description("SIP User Name",  // long name
+                                                                "user",           // name
+                                                                "string",         // description
+                                                                nullptr),
+                                   (Method::method_ptr)&del_buddy_wrapped,
+                                   G_TYPE_BOOLEAN,
+                                   Method::make_arg_type_description(G_TYPE_STRING, nullptr),
+                                   this);
   // online status
   SIPPlugin::this_->pmanage<MPtr(&PContainer::make_selection)>(
       "status",
@@ -103,8 +100,7 @@ PJPresence::PJPresence() {
           g_warning("cannot send online status when not registered");
           return true;
         }
-        SIPPlugin::this_->pjsip_->run(
-            [this]() { change_online_status(status_.get()); });
+        SIPPlugin::this_->pjsip_->run([this]() { change_online_status(status_.get()); });
         return true;
       },
       [this]() { return status_.get(); },
@@ -115,8 +111,7 @@ PJPresence::PJPresence() {
       "status-note",
       [this](const std::string& val) {
         custom_status_ = val;
-        SIPPlugin::this_->pjsip_->run(
-            [this]() { change_online_status(status_.get()); });
+        SIPPlugin::this_->pjsip_->run([this]() { change_online_status(status_.get()); });
         return true;
       },
       [this]() { return custom_status_; },
@@ -124,13 +119,12 @@ PJPresence::PJPresence() {
       "Custom status note",
       custom_status_);
 
-  SIPPlugin::this_->pmanage<MPtr(&PContainer::make_bool)>(
-      "sip-registration",
-      nullptr,
-      [this]() { return registered_; },
-      "Registered",
-      "Self SIP registration status",
-      registered_);
+  SIPPlugin::this_->pmanage<MPtr(&PContainer::make_bool)>("sip-registration",
+                                                          nullptr,
+                                                          [this]() { return registered_; },
+                                                          "Registered",
+                                                          "Self SIP registration status",
+                                                          registered_);
   SIPPlugin::this_->graft_tree(".self.", InfoTree::make(nullptr));
 }
 
@@ -142,9 +136,7 @@ PJPresence::~PJPresence() {
   }
 }
 
-gboolean PJPresence::register_account_wrapped(gchar* user,
-                                              gchar* password,
-                                              void* user_data) {
+gboolean PJPresence::register_account_wrapped(gchar* user, gchar* password, void* user_data) {
   PJPresence* context = static_cast<PJPresence*>(user_data);
   if (nullptr == user || nullptr == password) {
     g_message("ERROR:register sip account missing user or domain or password");
@@ -154,15 +146,13 @@ gboolean PJPresence::register_account_wrapped(gchar* user,
     g_message("ERROR:cannot register without connection to server");
     return FALSE;
   }
-  SIPPlugin::this_->pjsip_->run([&]() {
-    context->register_account(std::string(user), std::string(password));
-  });
+  SIPPlugin::this_->pjsip_->run(
+      [&]() { context->register_account(std::string(user), std::string(password)); });
   if (context->registered_) return TRUE;
   return FALSE;
 }
 
-void PJPresence::register_account(const std::string& sip_user,
-                                  const std::string& sip_password) {
+void PJPresence::register_account(const std::string& sip_user, const std::string& sip_password) {
   std::unique_lock<std::mutex> lock(registration_mutex_);
   // Register to SIP server by creating SIP account.
   //  pjsua_acc_config cfg;
@@ -177,8 +167,8 @@ void PJPresence::register_account(const std::string& sip_user,
     pj_pool_release(acc_info_pool_);
     acc_info_pool_ = nullptr;
   }
-  acc_info_pool_ = pj_pool_create(
-      &PJSIP::this_->cp_.factory, "account_config", 1024, 1024, nullptr);
+  acc_info_pool_ =
+      pj_pool_create(&PJSIP::this_->cp_.factory, "account_config", 1024, 1024, nullptr);
   // setting pjsip account data structure
   pjsua_acc_config_default(&cfg_);
   cfg_.id = pj_strdup3(acc_info_pool_,
@@ -190,8 +180,7 @@ void PJPresence::register_account(const std::string& sip_user,
                                         )
                                 .c_str());
   cfg_.cred_count = 1;
-  cfg_.cred_info[0].realm =
-      pj_strdup3(acc_info_pool_, std::string(at + 1, sip_user.end()).c_str());
+  cfg_.cred_info[0].realm = pj_strdup3(acc_info_pool_, std::string(at + 1, sip_user.end()).c_str());
   cfg_.cred_info[0].scheme = pj_strdup3(acc_info_pool_, "digest");
   cfg_.cred_info[0].username =
       pj_strdup3(acc_info_pool_, std::string(sip_user.begin(), at).c_str());
@@ -212,12 +201,11 @@ void PJPresence::register_account(const std::string& sip_user,
   SIPPlugin::this_->graft_tree(".self.", InfoTree::make(sip_user));
   SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
       SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
-  sip_local_user_ = std::string("sip:") + sip_user + +":" +
-                    std::to_string(SIPPlugin::this_->sip_port_);
+  sip_local_user_ =
+      std::string("sip:") + sip_user + +":" + std::to_string(SIPPlugin::this_->sip_port_);
 }
 
-gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */,
-                                                void* user_data) {
+gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */, void* user_data) {
   PJPresence* context = static_cast<PJPresence*>(user_data);
   SIPPlugin::this_->pjsip_->run([&]() { context->unregister_account(); });
   if (-1 != context->account_id_) return FALSE;
@@ -243,8 +231,7 @@ void PJPresence::unregister_account(bool notify_tree) {
       g_warning("cannot remove buddy");
       return;
     }
-    if (notify_tree)
-      SIPPlugin::this_->prune_tree(".buddies." + std::to_string(it->second));
+    if (notify_tree) SIPPlugin::this_->prune_tree(".buddies." + std::to_string(it->second));
     buddy_id_.erase(it);
   }
   account_id_ = -1;
@@ -253,8 +240,7 @@ void PJPresence::unregister_account(bool notify_tree) {
   if (notify_tree) {
     SIPPlugin::this_->graft_tree(".self.", InfoTree::make(nullptr));
     SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
-        SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>(
-            "sip-registration"));
+        SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
   }
   return;
 }
@@ -293,12 +279,10 @@ void PJPresence::add_buddy(const std::string& sip_user) {
   buddy_id_[sip_user] = buddy_id;
   SIPPlugin::this_->graft_tree(".buddies." + std::to_string(buddy_id) + ".uri",
                                InfoTree::make(sip_user));
-  SIPPlugin::this_->graft_tree(
-      ".buddies." + std::to_string(buddy_id) + ".send_status",
-      InfoTree::make("disconnected"));
-  SIPPlugin::this_->graft_tree(
-      ".buddies." + std::to_string(buddy_id) + ".recv_status",
-      InfoTree::make("disconnected"));
+  SIPPlugin::this_->graft_tree(".buddies." + std::to_string(buddy_id) + ".send_status",
+                               InfoTree::make("disconnected"));
+  SIPPlugin::this_->graft_tree(".buddies." + std::to_string(buddy_id) + ".recv_status",
+                               InfoTree::make("disconnected"));
   return;
 }
 
@@ -343,8 +327,7 @@ gboolean PJPresence::del_buddy_wrapped(gchar* buddy_uri, void* user_data) {
 
 void PJPresence::name_buddy(std::string name, std::string sip_user) {
   if (pjsua_verify_url(std::string("sip:" + sip_user).c_str()) != PJ_SUCCESS) {
-    g_warning("Invalid buddy URI (%s) when giving a nick name",
-              sip_user.c_str());
+    g_warning("Invalid buddy URI (%s) when giving a nick name", sip_user.c_str());
     return;
   }
   auto it = buddy_id_.find(sip_user);
@@ -352,31 +335,24 @@ void PJPresence::name_buddy(std::string name, std::string sip_user) {
     g_message("ERROR:%s is not in buddy list", sip_user.c_str());
     return;
   }
-  SIPPlugin::this_->graft_tree(
-      ".buddies." + std::to_string(it->second) + ".name",
-      InfoTree::make(std::string(name)));
+  SIPPlugin::this_->graft_tree(".buddies." + std::to_string(it->second) + ".name",
+                               InfoTree::make(std::string(name)));
   return;
 }
 
-gboolean PJPresence::name_buddy_wrapped(gchar* name,
-                                        gchar* buddy_uri,
-                                        void* user_data) {
+gboolean PJPresence::name_buddy_wrapped(gchar* name, gchar* buddy_uri, void* user_data) {
   PJPresence* context = static_cast<PJPresence*>(user_data);
-  SIPPlugin::this_->pjsip_->run([&]() {
-    context->name_buddy(std::string(name), std::string(buddy_uri));
-  });
+  SIPPlugin::this_->pjsip_->run(
+      [&]() { context->name_buddy(std::string(name), std::string(buddy_uri)); });
   return TRUE;
 }
 
-void PJPresence::on_registration_state(pjsua_acc_id acc_id,
-                                       pjsua_reg_info* info) {
-  PJPresence* context =
-      static_cast<PJPresence*>(pjsua_acc_get_user_data(acc_id));
+void PJPresence::on_registration_state(pjsua_acc_id acc_id, pjsua_reg_info* info) {
+  PJPresence* context = static_cast<PJPresence*>(pjsua_acc_get_user_data(acc_id));
   if (nullptr == context) {
     g_warning("SIP registration failed");
     SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
-        SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>(
-            "sip-registration"));
+        SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
     return;
   }
   std::unique_lock<std::mutex> lock(context->registration_mutex_);
@@ -386,8 +362,7 @@ void PJPresence::on_registration_state(pjsua_acc_id acc_id,
               info->cbparam->reason.ptr);
     if (-1 != context->account_id_) {
       pj_status_t status = pjsua_acc_del(context->account_id_);
-      if (PJ_SUCCESS != status)
-        g_warning("Error deleting account after registration failed");
+      if (PJ_SUCCESS != status) g_warning("Error deleting account after registration failed");
       context->account_id_ = -1;
     }
     context->registered_ = false;
@@ -404,8 +379,7 @@ void PJPresence::on_registration_state(pjsua_acc_id acc_id,
 }
 
 void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
-  PJPresence* context =
-      static_cast<PJPresence*>(pjsua_buddy_get_user_data(buddy_id));
+  PJPresence* context = static_cast<PJPresence*>(pjsua_buddy_get_user_data(buddy_id));
   if (nullptr == context) return;
   pjsua_buddy_info info;
   pjsua_buddy_get_info(buddy_id, &info);
@@ -448,20 +422,17 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   if (PJRPID_ACTIVITY_AWAY == info.rpid.activity) status = "away";
   if (PJRPID_ACTIVITY_BUSY == info.rpid.activity) status = "busy";
 
-  InfoTree::ptr tree = SIPPlugin::this_->prune_tree(
-      std::string(".buddies." + std::to_string(buddy_id)),
-      false);  // do not signal since the tree will be updated
+  InfoTree::ptr tree =
+      SIPPlugin::this_->prune_tree(std::string(".buddies." + std::to_string(buddy_id)),
+                                   false);  // do not signal since the tree will be updated
   if (!tree) tree = InfoTree::make();
   // writing status and state
   tree->graft(".status", InfoTree::make(status));
   tree->graft(".status_text",
-              InfoTree::make(std::string(info.status_text.ptr,
-                                         (size_t)info.status_text.slen)));
-  tree->graft(".subscription_state",
-              InfoTree::make(std::string(info.sub_state_name)));
+              InfoTree::make(std::string(info.status_text.ptr, (size_t)info.status_text.slen)));
+  tree->graft(".subscription_state", InfoTree::make(std::string(info.sub_state_name)));
   // replacing old one
-  SIPPlugin::this_->graft_tree(
-      std::string(".buddies." + std::to_string(buddy_id)), tree);
+  SIPPlugin::this_->graft_tree(std::string(".buddies." + std::to_string(buddy_id)), tree);
 }
 
 void PJPresence::change_online_status(gint status) {
@@ -475,9 +446,8 @@ void PJPresence::change_online_status(gint status) {
   On_scope_exit {
     if (nullptr != tmp) g_free(tmp);
   };
-  if (custom_status_.empty() || custom_status_ == "" ||
-      custom_status_ == "Available" || custom_status_ == "Away" ||
-      custom_status_ == "Busy") {
+  if (custom_status_.empty() || custom_status_ == "" || custom_status_ == "Available" ||
+      custom_status_ == "Away" || custom_status_ == "Busy") {
     has_custom_status = false;
   } else {
     tmp = g_strdup(custom_status_.c_str());
@@ -550,13 +520,9 @@ void PJPresence::on_buddy_evsub_state(pjsua_buddy_id /*buddy_id*/,
   char event_info[80];
   PJ_UNUSED_ARG(sub);
   event_info[0] = '\0';
-  if (event->type == PJSIP_EVENT_TSX_STATE &&
-      event->body.tsx_state.type == PJSIP_EVENT_RX_MSG) {
+  if (event->type == PJSIP_EVENT_TSX_STATE && event->body.tsx_state.type == PJSIP_EVENT_RX_MSG) {
     pjsip_rx_data* rdata = event->body.tsx_state.src.rdata;
-    snprintf(event_info,
-             sizeof(event_info),
-             " (RX %s)",
-             pjsip_rx_data_get_info(rdata));
+    snprintf(event_info, sizeof(event_info), " (RX %s)", pjsip_rx_data_get_info(rdata));
   }
   // g_debug("Buddy %d: subscription state: %s (event: %s%s)",
   //        buddy_id, pjsip_evsub_get_state_name(sub),
@@ -564,10 +530,8 @@ void PJPresence::on_buddy_evsub_state(pjsua_buddy_id /*buddy_id*/,
 }
 
 pjsua_buddy_id PJPresence::get_id_from_buddy_name(const std::string& name) {
-  auto bud = std::find_if(
-      buddy_id_.begin(),
-      buddy_id_.end(),
-      [&name](decltype(*buddy_id_.begin())& it) {
+  auto bud =
+      std::find_if(buddy_id_.begin(), buddy_id_.end(), [&name](decltype(*buddy_id_.begin())& it) {
         return 0 == std::string(it.first, 0, name.size()).compare(name);
       });
   if (buddy_id_.end() != bud) return bud->second;

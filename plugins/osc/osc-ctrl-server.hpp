@@ -42,8 +42,7 @@ class OscCtrlServer : public QuiddityManagerWrapper {
 
  private:
   std::string port_;
-  std::map<std::string, std::pair<std::string, std::string>>
-      osc_subscribers_;  //(host + port)
+  std::map<std::string, std::pair<std::string, std::string>> osc_subscribers_;  //(host + port)
   lo_server_thread osc_thread_;
 
   bool init() final;
@@ -55,12 +54,8 @@ class OscCtrlServer : public QuiddityManagerWrapper {
                       const std::string& property_name,
                       const std::string& value,
                       void* user_data);
-  static int osc_handler(const char* path,
-                         const char* types,
-                         lo_arg** argv,
-                         int argc,
-                         void* data,
-                         void* user_data);
+  static int osc_handler(
+      const char* path, const char* types, lo_arg** argv, int argc, void* data, void* user_data);
   static void osc_error(int num, const char* msg, const char* path);
   static gchar* string_from_osc_arg(char types, lo_arg* data);
   static gchar* string_float_to_string_int(const gchar* string_float);

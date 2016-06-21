@@ -30,8 +30,7 @@ int main() {
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("description-by-class");
     for (auto& it : manager->get_classes())
-      if (!switcher::QuiddityBasicTest::test_description_by_class(manager, it))
-        success = false;
+      if (!switcher::QuiddityBasicTest::test_description_by_class(manager, it)) success = false;
   }
 
   gst_deinit();

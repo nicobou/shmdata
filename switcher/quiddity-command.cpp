@@ -75,8 +75,7 @@ void QuiddityCommand::set_vector_arg(std::vector<std::string> vector_arg) {
   vector_arg_ = vector_arg;
 }
 
-QuiddityCommand::QuiddityCommand()
-    : json_builder_(std::make_shared<JSONBuilder>()) {}
+QuiddityCommand::QuiddityCommand() : json_builder_(std::make_shared<JSONBuilder>()) {}
 
 JSONBuilder::Node QuiddityCommand::get_json_root_node() {
   json_builder_->reset();
@@ -106,20 +105,17 @@ JSONBuilder::Node QuiddityCommand::get_json_root_node() {
 QuiddityCommand::command QuiddityCommand::get_id_from_string(const char* com) {
   std::map<int, const char*>::const_iterator it;
   for (it = command_names_.begin(); it != command_names_.end(); ++it)
-    if (g_strcmp0(it->second, com) == 0)
-      return (QuiddityCommand::command)it->first;
+    if (g_strcmp0(it->second, com) == 0) return (QuiddityCommand::command)it->first;
   return invalid_command;
 }
 
 const char* QuiddityCommand::get_string_from_id(QuiddityCommand::command id) {
   std::map<int, const char*>::const_iterator it = command_names_.find(id);
-  if (it == command_names_.end())
-    return command_names_.at(QuiddityCommand::invalid_command);
+  if (it == command_names_.end()) return command_names_.at(QuiddityCommand::invalid_command);
   return it->second;
 }
 
-QuiddityCommand::ptr QuiddityCommand::parse_command_from_json_reader(
-    JsonReader* reader) {
+QuiddityCommand::ptr QuiddityCommand::parse_command_from_json_reader(JsonReader* reader) {
   int j;
   int num_elements;
 
@@ -127,8 +123,7 @@ QuiddityCommand::ptr QuiddityCommand::parse_command_from_json_reader(
 
   // command
   json_reader_read_member(reader, "command");
-  command->set_id(QuiddityCommand::get_id_from_string(
-      json_reader_get_string_value(reader)));
+  command->set_id(QuiddityCommand::get_id_from_string(json_reader_get_string_value(reader)));
   json_reader_end_member(reader);
   // ---
 

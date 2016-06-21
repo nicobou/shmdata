@@ -96,9 +96,7 @@ class Property2 : public PropertyBase {
         set_(set),
         get_(get) {}
 
-  template <
-      typename U = V,
-      typename std::enable_if<std::is_same<U, Group>::value>::type* = nullptr>
+  template <typename U = V, typename std::enable_if<std::is_same<U, Group>::value>::type* = nullptr>
   Property2(const std::string& label, const std::string& description)
       : PropertyBase(typeid(Group).hash_code()),
         doc_(std::forward<const std::string&>(label),
@@ -134,16 +132,13 @@ class Property2 : public PropertyBase {
   bool set_str(const std::string& val, bool do_notify = true) const {
     auto deserialized = deserialize::apply<W>(val);
     if (!deserialized.first) {
-      g_debug("set_str failed to deserialize following string: %s",
-              val.c_str());
+      g_debug("set_str failed to deserialize following string: %s", val.c_str());
       return false;
     }
     return set(std::move(deserialized.second), do_notify);
   }
 
-  std::string get_str() const {
-    return get_ ? serialize::apply<W>(get_()) : std::string();
-  }
+  std::string get_str() const { return get_ ? serialize::apply<W>(get_()) : std::string(); }
 
   InfoTree::ptr get_spec() final { return doc_.get_spec(); }
 
@@ -153,9 +148,7 @@ class Property2 : public PropertyBase {
     if (nullptr != get_) doc_.update_current_value(get());
   }
 
-  std::unique_lock<std::mutex> get_lock() {
-    return std::unique_lock<std::mutex>(ts_);
-  }
+  std::unique_lock<std::mutex> get_lock() { return std::unique_lock<std::mutex>(ts_); }
 
  private:
   PropertySpecification<V, W> doc_;

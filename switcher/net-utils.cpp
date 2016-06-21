@@ -65,8 +65,7 @@ bool NetUtils::is_used(std::uint16_t port) {
   return res;
 }
 
-std::map</* interface name */ std::string, /* ip */ std::string>
-NetUtils::get_ips() {
+std::map</* interface name */ std::string, /* ip */ std::string> NetUtils::get_ips() {
   std::map<std::string, std::string> res;
   struct ifaddrs *ifaddr, *ifa;
   int family, s;
@@ -90,14 +89,14 @@ NetUtils::get_ips() {
     //        (family == AF_INET6) ?  " (AF_INET6)" : "");
     /* For an AF_INET* interface address, display the address */
     if (family == AF_INET /*|| family == AF_INET6*/) {
-      s = getnameinfo(ifa->ifa_addr,
-                      (family == AF_INET) ? sizeof(struct sockaddr_in)
-                                          : sizeof(struct sockaddr_in6),
-                      host,
-                      NI_MAXHOST,
-                      NULL,
-                      0,
-                      NI_NUMERICHOST);
+      s = getnameinfo(
+          ifa->ifa_addr,
+          (family == AF_INET) ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6),
+          host,
+          NI_MAXHOST,
+          NULL,
+          0,
+          NI_NUMERICHOST);
       if (s != 0) {
         g_warning("getnameinfo() failed: %s\n", gai_strerror(s));
         return res;

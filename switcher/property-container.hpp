@@ -62,8 +62,7 @@ class PContainer {
       g_warning("%s: types do not match", __FUNCTION__);
       return false;
     }
-    return static_cast<Property2<T>*>(prop_it->second.get())
-        ->set(std::forward<const T&>(val));
+    return static_cast<Property2<T>*>(prop_it->second.get())->set(std::forward<const T&>(val));
   }
   template <typename T>
   T get(prop_id_t id) const {
@@ -78,13 +77,11 @@ class PContainer {
 
   bool remove(prop_id_t prop_id);
   bool enable(prop_id_t prop_id, bool enable);
-  prop_id_t push(const std::string& strid,
-                 std::unique_ptr<PropertyBase>&& prop_ptr);
+  prop_id_t push(const std::string& strid, std::unique_ptr<PropertyBase>&& prop_ptr);
   prop_id_t push_parented(const std::string& strid,
                           const std::string& parent_strid,
                           std::unique_ptr<PropertyBase>&& prop_ptr);
-  bool replace(prop_id_t prop_id,
-               std::unique_ptr<PropertyBase>&& prop_ptr);  // for gprop-to-prop
+  bool replace(prop_id_t prop_id, std::unique_ptr<PropertyBase>&& prop_ptr);  // for gprop-to-prop
 
   // use when property is updated without "set" (method is read-only for
   // instance)
@@ -198,16 +195,15 @@ class PContainer {
                                 unsigned short min,
                                 unsigned short max);
 
-  prop_id_t make_parented_unsigned_short(
-      const std::string& strid,
-      const std::string& parent_strid,
-      Property2<unsigned short>::set_cb_t set,
-      Property2<unsigned short>::get_cb_t get,
-      const std::string& label,
-      const std::string& description,
-      unsigned short default_value,
-      unsigned short min,
-      unsigned short max);
+  prop_id_t make_parented_unsigned_short(const std::string& strid,
+                                         const std::string& parent_strid,
+                                         Property2<unsigned short>::set_cb_t set,
+                                         Property2<unsigned short>::get_cb_t get,
+                                         const std::string& label,
+                                         const std::string& description,
+                                         unsigned short default_value,
+                                         unsigned short min,
+                                         unsigned short max);
 
   prop_id_t make_unsigned_long(const std::string& strid,
                                Property2<unsigned long>::set_cb_t set,
@@ -237,16 +233,15 @@ class PContainer {
                                     unsigned long long min,
                                     unsigned long long max);
 
-  prop_id_t make_parented_unsigned_long_long(
-      const std::string& strid,
-      const std::string& parent_strid,
-      Property2<unsigned long long>::set_cb_t set,
-      Property2<unsigned long long>::get_cb_t get,
-      const std::string& label,
-      const std::string& description,
-      unsigned long long default_value,
-      unsigned long long min,
-      unsigned long long max);
+  prop_id_t make_parented_unsigned_long_long(const std::string& strid,
+                                             const std::string& parent_strid,
+                                             Property2<unsigned long long>::set_cb_t set,
+                                             Property2<unsigned long long>::get_cb_t get,
+                                             const std::string& label,
+                                             const std::string& description,
+                                             unsigned long long default_value,
+                                             unsigned long long min,
+                                             unsigned long long max);
 
   prop_id_t make_bool(const std::string& strid,
                       prop::set_t<bool> set,
@@ -407,24 +402,18 @@ class PContainer {
     static_assert(is_specialization_of<std::tuple, T>::value,
                   "make_tuple requires a std::tuple as template parameter,"
                   " something else was given");
-    return make_under_parent<T>(strid,
-                                "",
-                                set,
-                                get,
-                                label,
-                                description,
-                                std::forward<const T&>(default_value));
+    return make_under_parent<T>(
+        strid, "", set, get, label, description, std::forward<const T&>(default_value));
   }
 
   template <typename... T>
-  prop_id_t make_parented_tuple(
-      const std::string& strid,
-      const std::string& parent_strid,
-      std::function<bool(const std::tuple<T...>&)> set,
-      std::function<std::tuple<T...>()> get,
-      const std::string& label,
-      const std::string& description,
-      const std::tuple<T...>& default_value) {
+  prop_id_t make_parented_tuple(const std::string& strid,
+                                const std::string& parent_strid,
+                                std::function<bool(const std::tuple<T...>&)> set,
+                                std::function<std::tuple<T...>()> get,
+                                const std::string& label,
+                                const std::string& description,
+                                const std::tuple<T...>& default_value) {
     return make_under_parent<std::tuple<T...>>(
         strid,
         parent_strid,
@@ -445,16 +434,14 @@ class PContainer {
   on_tree_pruned_cb_t on_tree_pruned_cb_;
   CounterMap suborders_{};
 
-  template <typename PropType,
-            typename PropGetSet = PropType,
-            typename... PropArgs>
+  template <typename PropType, typename PropGetSet = PropType, typename... PropArgs>
   prop_id_t make_under_parent(const std::string& strid,
                               const std::string& parent_strid,
                               PropArgs... args) {
-    return push_parented(strid,
-                         parent_strid,
-                         std2::make_unique<Property2<PropType, PropGetSet>>(
-                             std::forward<PropArgs>(args)...));
+    return push_parented(
+        strid,
+        parent_strid,
+        std2::make_unique<Property2<PropType, PropGetSet>>(std::forward<PropArgs>(args)...));
   }
 };
 

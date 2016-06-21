@@ -34,8 +34,7 @@ CudaContext::CudaContext(uint32_t device_id) {
   char name[256];
   int min = 0, maj = 0;
   CUdevice cdev = 0;
-  if (CuRes(cuDeviceGet(&cdev, device_id)) &&
-      CuRes(cuDeviceGetName(name, sizeof(name), cdev)) &&
+  if (CuRes(cuDeviceGet(&cdev, device_id)) && CuRes(cuDeviceGetName(name, sizeof(name), cdev)) &&
       CuRes(cuDeviceComputeCapability(&maj, &min, cdev)))
     cuda_dev_ = cdev;
   else
@@ -57,11 +56,9 @@ std::vector<std::pair<int, std::string>> CudaContext::get_devices() {
   int min = 0, maj = 0;
   CUdevice cdev = 0;
   for (int i = 0; i < dev_count; ++i) {
-    if (CuRes(cuDeviceGet(&cdev, i)) &&
-        CuRes(cuDeviceGetName(name, sizeof(name), cdev)) &&
+    if (CuRes(cuDeviceGet(&cdev, i)) && CuRes(cuDeviceGetName(name, sizeof(name), cdev)) &&
         CuRes(cuDeviceComputeCapability(&maj, &min, cdev))) {
-      if (((maj << 4) + min) >= 0x30)
-        res.push_back(std::make_pair(i, std::string(name)));
+      if (((maj << 4) + min) >= 0x30) res.push_back(std::make_pair(i, std::string(name)));
       g_debug("GPU #%d supports NVENC: %s (%s) (Compute SM %d.%d)",
               i,
               (((maj << 4) + min) >= 0x30) ? "yes" : "no",

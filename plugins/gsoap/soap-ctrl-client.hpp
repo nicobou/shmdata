@@ -44,9 +44,7 @@ class SoapCtrlClient : public Quiddity {
   static gboolean set_remote_url_retry(gpointer url, gpointer user_data);
   static gboolean try_connect(gpointer user_data);
 
-  static gboolean create(gpointer class_name,
-                         gpointer quiddity_name,
-                         gpointer user_data);
+  static gboolean create(gpointer class_name, gpointer quiddity_name, gpointer user_data);
   static gboolean remove(gpointer quiddity_name, gpointer user_data);
   static gboolean set_property(gpointer quiddity_name,
                                gpointer property_name,

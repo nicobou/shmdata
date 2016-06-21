@@ -61,14 +61,10 @@ class PJPresence {
   std::map<std::string, pjsua_buddy_id> buddy_id_{};
   // registration
   static void on_registration_state(pjsua_acc_id acc_id, pjsua_reg_info* info);
-  void register_account(const std::string& sip_user,
-                        const std::string& sip_password);
-  static gboolean register_account_wrapped(gchar* user,
-                                           gchar* password,
-                                           void* user_data);
+  void register_account(const std::string& sip_user, const std::string& sip_password);
+  static gboolean register_account_wrapped(gchar* user, gchar* password, void* user_data);
   void unregister_account(bool notify_tree = true);
-  static gboolean unregister_account_wrapped(gpointer /*unused */,
-                                             void* user_data);
+  static gboolean unregister_account_wrapped(gpointer /*unused */, void* user_data);
 
   // buddies
   void add_buddy(const std::string& sip_user);
@@ -92,9 +88,7 @@ class PJPresence {
                                     pjsip_status_code* code,
                                     pj_str_t* reason,
                                     pjsua_msg_data* msg_data);
-  static void on_buddy_evsub_state(pjsua_buddy_id buddy_id,
-                                   pjsip_evsub* sub,
-                                   pjsip_event* event);
+  static void on_buddy_evsub_state(pjsua_buddy_id buddy_id, pjsip_evsub* sub, pjsip_event* event);
 };
 
 }  // namespace switcher

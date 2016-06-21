@@ -37,7 +37,6 @@ class QuiddityCommand;
 class CustomPropertyHelper;
 
 class GstPipeliner {
-
  public:
   GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
                GstPipe::on_msg_sync_cb_t on_msg_sync_cb);
@@ -58,13 +57,9 @@ class GstPipeliner {
   std::unique_ptr<GstPipe> gst_pipeline_;
   GstBusSyncReply on_gst_error(GstMessage* msg);
   static gboolean push_thread_context(gpointer user_data);
-  static gboolean bus_watch(GstBus* bus,
-                            GstMessage* message,
-                            gpointer user_data);
+  static gboolean bus_watch(GstBus* bus, GstMessage* message, gpointer user_data);
   static gboolean bus_async(gpointer user_data);
-  static GstBusSyncReply bus_sync_handler(GstBus* bus,
-                                          GstMessage* msg,
-                                          gpointer user_data);
+  static GstBusSyncReply bus_sync_handler(GstBus* bus, GstMessage* msg, gpointer user_data);
 };
 
 }  // namespace switcher

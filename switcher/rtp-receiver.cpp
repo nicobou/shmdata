@@ -31,42 +31,31 @@ RTPReceiver::RTPReceiver(RtpSession2* session,
       shmdatasrc_(gst_element_factory_make("shmdatasrc", nullptr)),
       typefind_(gst_element_factory_make("typefind", nullptr)),
       configure_shmsink_cb_(cb),
-      decodebin_(session_->gst_pipeline_.get(),
-                 [this](GstElement* el,
-                        const std::string& media_type,
-                        const std::string& media_label) {
-                   if (configure_shmsink_cb_) {
-                     configure_shmsink_cb_(el, media_type, media_label);
-                   } else {
-                     std::string path =
-                         std::string("/tmp/") + media_type + "-" + media_label;
-                     g_warning("BUG, rtp receiver using custom path (%s)",
-                               path.c_str());
-                     g_object_set(
-                         G_OBJECT(el), "socket-path", path.c_str(), nullptr);
-                   }
-                 }) {
+      decodebin_(
+          session_->gst_pipeline_.get(),
+          [this](GstElement* el, const std::string& media_type, const std::string& media_label) {
+            if (configure_shmsink_cb_) {
+              configure_shmsink_cb_(el, media_type, media_label);
+            } else {
+              std::string path = std::string("/tmp/") + media_type + "-" + media_label;
+              g_warning("BUG, rtp receiver using custom path (%s)", path.c_str());
+              g_object_set(G_OBJECT(el), "socket-path", path.c_str(), nullptr);
+            }
+          }) {
   if (nullptr == shmdatasrc_ || nullptr == typefind_) {
     g_warning("RTPReceiver failed to create GStreamer element");
     return;
   }
   // monitoring rtp-session new pads for received rtp packet
-  g_signal_connect(
-      session_->rtpsession_, "pad-added", G_CALLBACK(on_pad_added), this);
+  g_signal_connect(session_->rtpsession_, "pad-added", G_CALLBACK(on_pad_added), this);
   // FIXME have this in rtpsession2: g_signal_connect(session_->rtpsession_,
   // "request-pt-map", (GCallback)request_pt_map, this);
   // configuring shmdatasrc and typefind
   g_signal_connect(typefind_, "have-type", G_CALLBACK(on_caps), this);
-  g_object_set(G_OBJECT(shmdatasrc_),
-               "socket-path",
-               rtpshmpath_.c_str(),
-               "copy-buffers",
-               TRUE,
-               nullptr);
-  gst_bin_add_many(GST_BIN(session_->gst_pipeline_->get_pipeline()),
-                   shmdatasrc_,
-                   typefind_,
-                   nullptr);
+  g_object_set(
+      G_OBJECT(shmdatasrc_), "socket-path", rtpshmpath_.c_str(), "copy-buffers", TRUE, nullptr);
+  gst_bin_add_many(
+      GST_BIN(session_->gst_pipeline_->get_pipeline()), shmdatasrc_, typefind_, nullptr);
   if (!gst_element_link(shmdatasrc_, typefind_)) {
     g_warning("RTPReceiver: shmdatasrc not linked with typefind");
     return;
@@ -77,8 +66,7 @@ RTPReceiver::RTPReceiver(RtpSession2* session,
 
 RTPReceiver::~RTPReceiver() {
   if (shmdatasrc_) GstUtils::clean_element(shmdatasrc_);
-  if (rtp_sink_pad_)
-    gst_element_release_request_pad(session_->rtpsession_, rtp_sink_pad_);
+  if (rtp_sink_pad_) gst_element_release_request_pad(session_->rtpsession_, rtp_sink_pad_);
   if (shmsrc_caps_) gst_caps_unref(shmsrc_caps_);
 }
 
@@ -93,8 +81,8 @@ void RTPReceiver::on_caps(GstElement* typefind,
   context->shmsrc_caps_ = gst_caps_copy(caps);
   // link the payloader with the rtpbin
   {
-    context->rtp_sink_pad_ = gst_element_get_request_pad(
-        context->session_->rtpsession_, "recv_rtp_sink_%u");
+    context->rtp_sink_pad_ =
+        gst_element_get_request_pad(context->session_->rtpsession_, "recv_rtp_sink_%u");
     On_scope_exit { gst_object_unref(context->rtp_sink_pad_); };
     GstPad* srcpad = gst_element_get_static_pad(context->typefind_, "src");
     On_scope_exit { gst_object_unref(srcpad); };
@@ -110,9 +98,7 @@ void RTPReceiver::on_caps(GstElement* typefind,
   }
 }
 
-void RTPReceiver::on_pad_added(GstElement* object,
-                               GstPad* pad,
-                               gpointer user_data) {
+void RTPReceiver::on_pad_added(GstElement* object, GstPad* pad, gpointer user_data) {
   RTPReceiver* context = static_cast<RTPReceiver*>(user_data);
   gchar* name_cstr = gst_pad_get_name(pad);
   On_scope_exit { g_free(name_cstr); };
@@ -121,14 +107,11 @@ void RTPReceiver::on_pad_added(GstElement* object,
   //   return;
   if (!context->rtp_src_pad_prefix_.empty() &&
       0 ==
-          std::string(name).compare(0,
-                                    context->rtp_src_pad_prefix_.size(),
-                                    context->rtp_src_pad_prefix_)) {
+          std::string(name).compare(
+              0, context->rtp_src_pad_prefix_.size(), context->rtp_src_pad_prefix_)) {
     // g_print("%s -- %s\n", name_cstr, context->rtp_src_pad_prefix_.c_str());
     if (!context->decodebin_.invoke_with_return<bool>([&](GstElement* el) {
-          if (!gst_bin_add(
-                  GST_BIN(context->session_->gst_pipeline_->get_pipeline()),
-                  el)) {
+          if (!gst_bin_add(GST_BIN(context->session_->gst_pipeline_->get_pipeline()), el)) {
             g_warning("RTPReceiver decodebin cannot be added to pipeline");
             return false;
           }

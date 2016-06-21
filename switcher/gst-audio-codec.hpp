@@ -70,12 +70,8 @@ class GstAudioCodec {
   PContainer::prop_id_t codec_long_list_id_;
   std::vector<std::string> codec_properties_{};
   // codec params black list
-  std::unordered_set<std::string> param_black_list_{"name",
-                                                    "parent",
-                                                    "hard-resync",
-                                                    "mark-granule",
-                                                    "perfect-timestamp",
-                                                    "tolerance"};
+  std::unordered_set<std::string> param_black_list_{
+      "name", "parent", "hard-resync", "mark-granule", "perfect-timestamp", "tolerance"};
   // shmdatasrc copy-buffers property:
   bool copy_buffers_{true};
 
@@ -85,12 +81,10 @@ class GstAudioCodec {
   void make_bin();
   void show();
   void hide();
-  PContainer::prop_id_t install_codec(
-      bool primary);  // install secondary if false
+  PContainer::prop_id_t install_codec(bool primary);  // install secondary if false
   static gboolean sink_factory_filter(GstPluginFeature* feature, gpointer data);
   static gint sink_compare_ranks(GstPluginFeature* f1, GstPluginFeature* f2);
-  static gboolean reset_codec_configuration(gpointer /*unused */,
-                                            gpointer user_data);
+  static gboolean reset_codec_configuration(gpointer /*unused */, gpointer user_data);
 };
 
 }  // namespace switcher

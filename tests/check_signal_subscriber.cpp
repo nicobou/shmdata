@@ -41,14 +41,13 @@ int main() {
         switcher::QuiddityManager::make_manager("testing_signals");
 
     // make on-quiddity-created and on-quiddity-removed signals
-    assert("create_remove_spy" ==
-           manager->create("create_remove_spy", "create_remove_spy"));
+    assert("create_remove_spy" == manager->create("create_remove_spy", "create_remove_spy"));
     assert(manager->make_signal_subscriber(
         "signal_subscriber", quiddity_created_removed_cb, manager.get()));
-    assert(manager->subscribe_signal(
-        "signal_subscriber", "create_remove_spy", "on-quiddity-created"));
-    assert(manager->subscribe_signal(
-        "signal_subscriber", "create_remove_spy", "on-quiddity-removed"));
+    assert(
+        manager->subscribe_signal("signal_subscriber", "create_remove_spy", "on-quiddity-created"));
+    assert(
+        manager->subscribe_signal("signal_subscriber", "create_remove_spy", "on-quiddity-removed"));
 
     assert("vid1" == manager->create("videotestsrc", "vid1"));
     assert("fake1" == manager->create("fakesink", "fake1"));

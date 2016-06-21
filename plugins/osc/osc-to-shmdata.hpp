@@ -42,12 +42,8 @@ class OscToShmdata : public Quiddity, public StartableQuiddity {
   bool init() final;
   bool start() final;
   bool stop() final;
-  static int osc_handler(const char* path,
-                         const char* types,
-                         lo_arg** argv,
-                         int argc,
-                         void* data,
-                         void* user_data);
+  static int osc_handler(
+      const char* path, const char* types, lo_arg** argv, int argc, void* data, void* user_data);
   static void osc_error(int num, const char* msg, const char* path);
 };
 

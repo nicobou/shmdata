@@ -35,10 +35,8 @@ void quiddity_created_removed_cb(std::string /*subscriber_name */,
                                  std::vector<std::string> params,
                                  void* user_data) {
   // g_print("%s: %s\n", signal_name.c_str(), params[0].c_str());
-  switcher::QuiddityManager* ctx =
-      static_cast<switcher::QuiddityManager*>(user_data);
-  std::cout << ctx->use_tree<MPtr(&switcher::InfoTree::serialize_json)>(
-                   quiddity_name, params[0])
+  switcher::QuiddityManager* ctx = static_cast<switcher::QuiddityManager*>(user_data);
+  std::cout << ctx->use_tree<MPtr(&switcher::InfoTree::serialize_json)>(quiddity_name, params[0])
             << std::endl;
 }
 
@@ -55,8 +53,7 @@ int main() {
 #else
     return 1;
 #endif
-    if (!switcher::QuiddityBasicTest::test_full(manager, "systemusage"))
-      success = false;
+    if (!switcher::QuiddityBasicTest::test_full(manager, "systemusage")) success = false;
   }  // end of scope is releasing the manager
   if (success)
     return 0;

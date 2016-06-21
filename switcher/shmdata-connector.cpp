@@ -27,12 +27,11 @@ namespace switcher {
 
 ShmdataConnector::ShmdataConnector(Quiddity* quid) : quid_(quid) {}
 
-bool ShmdataConnector::install_connect_method(
-    OnConnect on_connect_cb,
-    OnDisconnect on_disconnect_cb,
-    OnDisconnectAll on_disconnect_all_cb,
-    CanSinkCaps on_can_sink_caps_cb,
-    uint max_reader) {
+bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
+                                              OnDisconnect on_disconnect_cb,
+                                              OnDisconnectAll on_disconnect_all_cb,
+                                              CanSinkCaps on_can_sink_caps_cb,
+                                              uint max_reader) {
   if (quid_ == nullptr) {
     g_warning("ShmdataConnector is created without quiddity");
     return false;
@@ -49,8 +48,7 @@ bool ShmdataConnector::install_connect_method(
       "connect",
       "connect to a shmdata",
       "success or fail",
-      Method::make_arg_description(
-          "Shmdata Path", "path", "shmdata path to connect with", nullptr),
+      Method::make_arg_description("Shmdata Path", "path", "shmdata path to connect with", nullptr),
       (Method::method_ptr)&ShmdataConnector::connect_wrapped,
       G_TYPE_BOOLEAN,
       Method::make_arg_type_description(G_TYPE_STRING, nullptr),
@@ -60,29 +58,26 @@ bool ShmdataConnector::install_connect_method(
       "disconnect",
       "disconnect a shmdata",
       "success or fail",
-      Method::make_arg_description(
-          "Shmdata Path", "path", "shmdata path to connect with", nullptr),
+      Method::make_arg_description("Shmdata Path", "path", "shmdata path to connect with", nullptr),
       (Method::method_ptr)&ShmdataConnector::disconnect_wrapped,
       G_TYPE_BOOLEAN,
       Method::make_arg_type_description(G_TYPE_STRING, nullptr),
       this);
-  quid_->install_method(
-      "Disconnect All",
-      "disconnect-all",
-      "disconnect all shmdata reader",
-      "success or fail",
-      Method::make_arg_description("none", nullptr),
-      (Method::method_ptr)&ShmdataConnector::disconnect_all_wrapped,
-      G_TYPE_BOOLEAN,
-      Method::make_arg_type_description(G_TYPE_NONE, nullptr),
-      this);
+  quid_->install_method("Disconnect All",
+                        "disconnect-all",
+                        "disconnect all shmdata reader",
+                        "success or fail",
+                        Method::make_arg_description("none", nullptr),
+                        (Method::method_ptr)&ShmdataConnector::disconnect_all_wrapped,
+                        G_TYPE_BOOLEAN,
+                        Method::make_arg_type_description(G_TYPE_NONE, nullptr),
+                        this);
   quid_->install_method(
       "Can sink caps",
       "can-sink-caps",
       "can we connect with this caps",
       "true or false",
-      Method::make_arg_description(
-          "String Caps", "caps", "caps as a string", nullptr),
+      Method::make_arg_description("String Caps", "caps", "caps as a string", nullptr),
       (Method::method_ptr)&ShmdataConnector::can_sink_caps_wrapped,
       G_TYPE_BOOLEAN,
       Method::make_arg_type_description(G_TYPE_STRING, nullptr),
@@ -102,12 +97,10 @@ gboolean ShmdataConnector::connect_wrapped(gpointer path, gpointer user_data) {
     return FALSE;
 }
 
-gboolean ShmdataConnector::disconnect_wrapped(gpointer path,
-                                              gpointer user_data) {
+gboolean ShmdataConnector::disconnect_wrapped(gpointer path, gpointer user_data) {
   ShmdataConnector* context = static_cast<ShmdataConnector*>(user_data);
   On_scope_exit {
-    context->quid_->prune_tree(std::string(".shmdata.reader.") +
-                               static_cast<char*>(path));
+    context->quid_->prune_tree(std::string(".shmdata.reader.") + static_cast<char*>(path));
   };
   if (nullptr == context->on_disconnect_cb_) {
     g_warning("on disconnect callback not installed\n");
@@ -120,12 +113,11 @@ gboolean ShmdataConnector::disconnect_wrapped(gpointer path,
   }
 }
 
-gboolean ShmdataConnector::disconnect_all_wrapped(gpointer /*unused */,
-                                                  gpointer user_data) {
+gboolean ShmdataConnector::disconnect_all_wrapped(gpointer /*unused */, gpointer user_data) {
   ShmdataConnector* context = static_cast<ShmdataConnector*>(user_data);
   On_scope_exit {
-    auto keys = context->quid_->tree<MPtr(&InfoTree::get_child_keys)>(
-        std::string(".shmdata.reader"));
+    auto keys =
+        context->quid_->tree<MPtr(&InfoTree::get_child_keys)>(std::string(".shmdata.reader"));
     if (!keys.empty())
       for (auto& it : keys) {
         context->quid_->prune_tree(std::string(".shmdata.reader." + it));
@@ -141,8 +133,7 @@ gboolean ShmdataConnector::disconnect_all_wrapped(gpointer /*unused */,
     return FALSE;
 }
 
-gboolean ShmdataConnector::can_sink_caps_wrapped(gpointer caps,
-                                                 gpointer user_data) {
+gboolean ShmdataConnector::can_sink_caps_wrapped(gpointer caps, gpointer user_data) {
   ShmdataConnector* context = static_cast<ShmdataConnector*>(user_data);
   if (nullptr == context->on_can_sink_caps_cb_) {
     g_warning("on disconnect callback not installed\n");

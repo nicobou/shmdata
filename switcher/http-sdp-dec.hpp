@@ -61,13 +61,9 @@ class HTTPSDPDec : public Quiddity {
   void configure_shmdatasink(GstElement* element,
                              const std::string& media_type,
                              const std::string& media_label);
-  static void httpsdpdec_pad_added_cb(GstElement* object,
-                                      GstPad* pad,
-                                      gpointer user_data);
+  static void httpsdpdec_pad_added_cb(GstElement* object, GstPad* pad, gpointer user_data);
   static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);
-  static void on_new_element_in_sdpdemux(GstBin* bin,
-                                         GstElement* element,
-                                         gpointer user_data);
+  static void on_new_element_in_sdpdemux(GstBin* bin, GstElement* element, gpointer user_data);
 };
 
 }  // namespace switcher

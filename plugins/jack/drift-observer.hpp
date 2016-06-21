@@ -26,8 +26,7 @@ class DriftObserver {
  public:
   DriftObserver() = default;
   ~DriftObserver() = default;
-  void set_smoothing_factor(
-      const double& sf);  // data race with set_current_time_info
+  void set_smoothing_factor(const double& sf);  // data race with set_current_time_info
   // this is returning the duration this duration should have
   TimeType set_current_time_info(const TimeType date, const TimeType duration);
   double get_ratio() const { return ratio_; }

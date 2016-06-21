@@ -84,15 +84,15 @@ bool PostureSc3::init() {
         cameras_.resize(nbr_);
         merger_->setCloudNbr(nbr_);
         for (index_ = 0; index_ < nbr_; index_++) {
-          std::shared_ptr<ZCamera> newCam =
-              std::shared_ptr<ZCamera>(new ZCamera());
+          std::shared_ptr<ZCamera> newCam = std::shared_ptr<ZCamera>(new ZCamera());
           cameras_[index_] = newCam;
           cameras_[index_]->setDeviceIndex(index_);
           cameras_[index_]->setCaptureMode(ZCamera::CaptureMode::QQVGA_30Hz);
           int index = index_;
           cameras_[index_]->setCallbackCloud(
-              [=](void*, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud)
-                  -> void { cb_frame_cloud(index, std::move(cloud)); },
+              [=](void*, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud) -> void {
+                cb_frame_cloud(index, std::move(cloud));
+              },
               nullptr);
         }
         return true;
@@ -110,8 +110,8 @@ bool PostureSc3::init() {
       [this](const std::string& val) {
         calibration_path_ = val;
         if (!calibration_reader_)
-          calibration_reader_ = unique_ptr<CalibrationReader>(
-              new CalibrationReader(calibration_path_));
+          calibration_reader_ =
+              unique_ptr<CalibrationReader>(new CalibrationReader(calibration_path_));
         merger_->setCalibration(calibration_reader_->getCalibrationParams());
         return true;
       },
@@ -133,16 +133,15 @@ bool PostureSc3::init() {
                                        3,
                                        99);
 
-  pmanage<MPtr(&PContainer::make_bool)>(
-      "reload_calibration",
-      [this](const bool& val) {
-        reload_calibration_ = val;
-        return true;
-      },
-      [this]() { return reload_calibration_; },
-      "Reload calibration",
-      "Reload calibration at each frame",
-      reload_calibration_);
+  pmanage<MPtr(&PContainer::make_bool)>("reload_calibration",
+                                        [this](const bool& val) {
+                                          reload_calibration_ = val;
+                                          return true;
+                                        },
+                                        [this]() { return reload_calibration_; },
+                                        "Reload calibration",
+                                        "Reload calibration at each frame",
+                                        reload_calibration_);
 
   pmanage<MPtr(&PContainer::make_bool)>(
       "colorize",
@@ -151,10 +150,9 @@ bool PostureSc3::init() {
         for (index_ = 0; index_ < nbr_; index_++) {
           if (colorize_or_not_) {
             cameras_[index_]->setCallbackRgb(
-                [=](void*,
-                    std::vector<unsigned char>& image,
-                    int width,
-                    int heigth) -> void { cb_frame_rgb(image, width, heigth); },
+                [=](void*, std::vector<unsigned char>& image, int width, int heigth) -> void {
+                  cb_frame_rgb(image, width, heigth);
+                },
                 nullptr);
           }
         }
@@ -167,8 +165,7 @@ bool PostureSc3::init() {
   return true;
 }
 
-void PostureSc3::cb_frame_cloud(
-    int index, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud) {
+void PostureSc3::cb_frame_cloud(int index, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud) {
   std::lock_guard<std::mutex> lock(mutex_);
 
   if (!is_started_) return;
@@ -191,15 +188,11 @@ void PostureSc3::cb_frame_cloud(
   sol_->getMesh(output_);
 
   if (!mesh_writer_ ||
-      output_.size() >
-          mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+      output_.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
     mesh_writer_.reset();
     if (output_.size() >= 256) {
-      mesh_writer_ =
-          std2::make_unique<ShmdataWriter>(this,
-                                           make_file_name("mesh"),
-                                           output_.size() * 2,
-                                           string(POLYGONMESH_TYPE_BASE));
+      mesh_writer_ = std2::make_unique<ShmdataWriter>(
+          this, make_file_name("mesh"), output_.size() * 2, string(POLYGONMESH_TYPE_BASE));
     } else {
       mesh_writer_ = std2::make_unique<ShmdataWriter>(
           this, make_file_name("mesh"), 512, string(POLYGONMESH_TYPE_BASE));
@@ -211,14 +204,11 @@ void PostureSc3::cb_frame_cloud(
     }
   }
 
-  mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>((void*)&output_,
-                                                            output_.size());
+  mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>((void*)&output_, output_.size());
   mesh_writer_->bytes_written(output_.size());
 }
 
-void PostureSc3::cb_frame_rgb(std::vector<unsigned char>& image,
-                              int width,
-                              int heigth) {
+void PostureSc3::cb_frame_rgb(std::vector<unsigned char>& image, int width, int heigth) {
   std::lock_guard<std::mutex> lock(mutex_);
 
   if (!is_started_) return;
@@ -238,15 +228,11 @@ void PostureSc3::cb_frame_rgb(std::vector<unsigned char>& image,
   texture_ = colorize_->getTexture((unsigned int&)width, (unsigned int&)heigth);
 
   if (!mesh_writer_ ||
-      output_.size() >
-          mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+      output_.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
     mesh_writer_.reset();
     if (output_.size() >= 256) {
-      mesh_writer_ =
-          std2::make_unique<ShmdataWriter>(this,
-                                           make_file_name("mesh"),
-                                           output_.size() * 2,
-                                           string(POLYGONMESH_TYPE_BASE));
+      mesh_writer_ = std2::make_unique<ShmdataWriter>(
+          this, make_file_name("mesh"), output_.size() * 2, string(POLYGONMESH_TYPE_BASE));
     } else {
       mesh_writer_ = std2::make_unique<ShmdataWriter>(
           this, make_file_name("mesh"), 512, string(POLYGONMESH_TYPE_BASE));
@@ -258,20 +244,14 @@ void PostureSc3::cb_frame_rgb(std::vector<unsigned char>& image,
     }
   }
 
-  mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>((void*)&texture_,
-                                                            texture_.size());
+  mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>((void*)&texture_, texture_.size());
   mesh_writer_->bytes_written(texture_.size());
 
-  if (!rgb_writer_ ||
-      texture_.size() >
-          rgb_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+  if (!rgb_writer_ || texture_.size() > rgb_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
     rgb_writer_.reset();
     if (texture_.size() >= 256) {
-      rgb_writer_ =
-          std2::make_unique<ShmdataWriter>(this,
-                                           make_file_name("rgb"),
-                                           texture_.size() * 2,
-                                           string(POLYGONMESH_TYPE_BASE));
+      rgb_writer_ = std2::make_unique<ShmdataWriter>(
+          this, make_file_name("rgb"), texture_.size() * 2, string(POLYGONMESH_TYPE_BASE));
     } else {
       rgb_writer_ = std2::make_unique<ShmdataWriter>(
           this, make_file_name("rgb"), 512, string(POLYGONMESH_TYPE_BASE));
@@ -283,17 +263,15 @@ void PostureSc3::cb_frame_rgb(std::vector<unsigned char>& image,
     }
   }
 
-  rgb_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>((void*)&texture_,
-                                                           texture_.size());
+  rgb_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>((void*)&texture_, texture_.size());
   rgb_writer_->bytes_written(texture_.size());
 
   std::cout << texture_.size() << std::endl;
-  std::cout << texture_[0] << " " << texture_[100000] << " " << texture_[230000]
-            << " " << std::endl;
+  std::cout << texture_[0] << " " << texture_[100000] << " " << texture_[230000] << " "
+            << std::endl;
 
   std::cout << output_.size() << std::endl;
-  std::cout << output_[0] << " " << output_[100000] << " " << output_[230000]
-            << " " << std::endl;
+  std::cout << output_[0] << " " << output_[100000] << " " << output_[230000] << " " << std::endl;
 }
 
 }  // namespace switcher

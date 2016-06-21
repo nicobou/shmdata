@@ -22,27 +22,26 @@
 namespace switcher {
 bool Logger::installed_ = false;
 
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    Logger,
-    "logger",
-    "Switcher Logger",
-    "utils",
-    "",
-    "manage switcher logs and other glib log domains.",
-    "LGPL",
-    "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Logger,
+                                     "logger",
+                                     "Switcher Logger",
+                                     "utils",
+                                     "",
+                                     "manage switcher logs and other glib log domains.",
+                                     "LGPL",
+                                     "Nicolas Bouillot");
 
 Logger::Logger(const std::string&)
-    : last_line_id_(pmanage<MPtr(&PContainer::make_string)>(
-          "last-line",
-          nullptr,
-          [this]() {
-            std::unique_lock<std::mutex> lock(last_line_mutex_);
-            return last_line_;
-          },
-          "Last Log Line",
-          "Provide last log line",
-          last_line_)) {
+    : last_line_id_(pmanage<MPtr(&PContainer::make_string)>("last-line",
+                                                            nullptr,
+                                                            [this]() {
+                                                              std::unique_lock<std::mutex> lock(
+                                                                  last_line_mutex_);
+                                                              return last_line_;
+                                                            },
+                                                            "Last Log Line",
+                                                            "Provide last log line",
+                                                            last_line_)) {
   pmanage<MPtr(&PContainer::make_bool)>("mute",
                                         [this](bool val) {
                                           mute_ = val;
@@ -83,42 +82,41 @@ bool Logger::init() {
     i_am_the_one_ = true;
   }
 
-  guint quiet_handler_id = g_log_set_handler(
-      "GLib-GObject", G_LOG_LEVEL_MASK, quiet_log_handler, nullptr);
+  guint quiet_handler_id =
+      g_log_set_handler("GLib-GObject", G_LOG_LEVEL_MASK, quiet_log_handler, nullptr);
 
   // handler must be installed after custom property creation
-  handler_ids_["switcher"] =
-      g_log_set_handler("switcher", G_LOG_LEVEL_MASK, log_handler, this);
+  handler_ids_["switcher"] = g_log_set_handler("switcher", G_LOG_LEVEL_MASK, log_handler, this);
 
   g_log_remove_handler("GLib-GObject", quiet_handler_id);
 
-  install_method("Install Log Handler",
-                 "install_log_handler",
-                 "make the logger managing the log domain",
-                 "success or fail",
-                 Method::make_arg_description(
-                     "LogDomain",
-                     "log domain",
-                     "the glib log domain (e.g. shmdata, Glib or GStreamer)",
-                     nullptr),
-                 (Method::method_ptr)&install_log_handler_wrapped,
-                 G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-                 this);
+  install_method(
+      "Install Log Handler",
+      "install_log_handler",
+      "make the logger managing the log domain",
+      "success or fail",
+      Method::make_arg_description("LogDomain",
+                                   "log domain",
+                                   "the glib log domain (e.g. shmdata, Glib or GStreamer)",
+                                   nullptr),
+      (Method::method_ptr)&install_log_handler_wrapped,
+      G_TYPE_BOOLEAN,
+      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
+      this);
 
-  install_method("Remove Log Handler",
-                 "remove_log_handler",
-                 "make the logger stop managing the log domain",
-                 "success or fail",
-                 Method::make_arg_description(
-                     "Log Domain",
-                     "log domain",
-                     "the glib log domain (e.g. shmdata, Glib or GStreamer)",
-                     nullptr),
-                 (Method::method_ptr)&remove_log_handler_wrapped,
-                 G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-                 this);
+  install_method(
+      "Remove Log Handler",
+      "remove_log_handler",
+      "make the logger stop managing the log domain",
+      "success or fail",
+      Method::make_arg_description("Log Domain",
+                                   "log domain",
+                                   "the glib log domain (e.g. shmdata, Glib or GStreamer)",
+                                   nullptr),
+      (Method::method_ptr)&remove_log_handler_wrapped,
+      G_TYPE_BOOLEAN,
+      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
+      this);
 
   return true;
 }
@@ -130,20 +128,17 @@ void Logger::quiet_log_handler(const gchar* /*log_domain */,
 
 Logger::~Logger() {
   if (i_am_the_one_) {
-    for (auto& it : handler_ids_)
-      g_log_remove_handler(it.first.c_str(), it.second);
+    for (auto& it : handler_ids_) g_log_remove_handler(it.first.c_str(), it.second);
     installed_ = false;
   }
 }
 
-gboolean Logger::install_log_handler_wrapped(gpointer log_domain,
-                                             gpointer user_data) {
+gboolean Logger::install_log_handler_wrapped(gpointer log_domain, gpointer user_data) {
   Logger* context = static_cast<Logger*>(user_data);
   return context->install_log_handler((gchar*)log_domain);
 }
 
-gboolean Logger::remove_log_handler_wrapped(gpointer log_domain,
-                                            gpointer user_data) {
+gboolean Logger::remove_log_handler_wrapped(gpointer log_domain, gpointer user_data) {
   Logger* context = static_cast<Logger*>(user_data);
   return context->remove_log_handler((gchar*)log_domain);
 }
@@ -152,8 +147,7 @@ gboolean Logger::install_log_handler(const gchar* log_domain) {
   auto it = handler_ids_.find(log_domain);
   if (handler_ids_.end() != it) return FALSE;
 
-  handler_ids_[log_domain] =
-      g_log_set_handler(log_domain, G_LOG_LEVEL_MASK, log_handler, this);
+  handler_ids_[log_domain] = g_log_set_handler(log_domain, G_LOG_LEVEL_MASK, log_handler, this);
   return TRUE;
 }
 
@@ -177,8 +171,7 @@ void Logger::log_handler(const gchar* log_domain,
   Logger* context = static_cast<Logger*>(user_data);
   if (context->mute_) return;
   gboolean update_last_line = TRUE;
-  std::string tmp_message =
-      std::string((nullptr == message) ? "null-message" : message);
+  std::string tmp_message = std::string((nullptr == message) ? "null-message" : message);
   std::string tmp_log_domain =
       std::string((nullptr == log_domain) ? "null-log-domain" : log_domain);
   std::string tmp_level = std::string("unknown");
@@ -217,10 +210,8 @@ void Logger::log_handler(const gchar* log_domain,
 
   if (update_last_line) {
     {
-      auto lock =
-          context->pmanage<MPtr(&PContainer::get_lock)>(context->last_line_id_);
-      context->last_line_ =
-          tmp_log_domain + "-" + tmp_level + ": " + tmp_message;
+      auto lock = context->pmanage<MPtr(&PContainer::get_lock)>(context->last_line_id_);
+      context->last_line_ = tmp_log_domain + "-" + tmp_level + ": " + tmp_message;
     }
     context->pmanage<MPtr(&PContainer::notify)>(context->last_line_id_);
   }

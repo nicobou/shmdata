@@ -51,8 +51,7 @@ std::string RtpDestination::get_port(const std::string& shmdata_path) {
   return it->second;
 }
 
-bool RtpDestination::add_stream(const std::string& shmdata_path,
-                                std::string port) {
+bool RtpDestination::add_stream(const std::string& shmdata_path, std::string port) {
   source_streams_[shmdata_path] = port;
   make_json_description();
   return true;
@@ -65,8 +64,7 @@ bool RtpDestination::has_shmdata(const std::string& shmdata_path) {
 bool RtpDestination::remove_stream(const std::string& shmdata_stream_path) {
   auto it = source_streams_.find(shmdata_stream_path);
   if (source_streams_.end() == it) {
-    g_warning("RtpDestination: stream not found, cannot remove %s",
-              shmdata_stream_path.c_str());
+    g_warning("RtpDestination: stream not found, cannot remove %s", shmdata_stream_path.c_str());
     return false;
   }
   source_streams_.erase(it);
@@ -78,15 +76,13 @@ std::string RtpDestination::get_sdp() {
   SDPDescription desc;
 
   for (auto& it : source_streams_) {
-    std::string string_caps =
-        session_->tree<MPtr(&InfoTree::branch_read_data<std::string>)>(
-            std::string("rtp_caps." + it.first));
+    std::string string_caps = session_->tree<MPtr(&InfoTree::branch_read_data<std::string>)>(
+        std::string("rtp_caps." + it.first));
     GstCaps* caps = gst_caps_from_string(string_caps.c_str());
     On_scope_exit { gst_caps_unref(caps); };
     gint port = atoi(it.second.c_str());
     SDPMedia media;
-    if (!media.set_media_info_from_caps(caps))
-      g_warning("issue with sdp media info");
+    if (!media.set_media_info_from_caps(caps)) g_warning("issue with sdp media info");
     media.set_port(port);
     if (!desc.add_media(media)) {
       g_warning(
@@ -115,9 +111,7 @@ void RtpDestination::make_json_description() {
   json_description_->end_object();
 }
 
-JSONBuilder::Node RtpDestination::get_json_root_node() {
-  return json_description_->get_root();
-}
+JSONBuilder::Node RtpDestination::get_json_root_node() { return json_description_->get_root(); }
 
 bool RtpDestination::write_to_file(std::string file_name) {
   std::string sdp = get_sdp();

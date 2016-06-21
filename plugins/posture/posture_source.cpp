@@ -26,15 +26,14 @@ using namespace std;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    PostureSrc,
-    "posturesrc",
-    "Depth Camera",
-    "video",
-    "writer/device",
-    "Grabs point clouds/meshes using a zcamera",
-    "LGPL",
-    "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureSrc,
+                                     "posturesrc",
+                                     "Depth Camera",
+                                     "video",
+                                     "writer/device",
+                                     "Grabs point clouds/meshes using a zcamera",
+                                     "LGPL",
+                                     "Emmanuel Durand");
 
 PostureSrc::PostureSrc(const std::string&) {
   calibration_reader_ = std2::make_unique<CalibrationReader>("default.kvc");
@@ -59,48 +58,44 @@ bool PostureSrc::start() {
         calibration_reader_->getCalibrationParams().size() < device_index_)
       return false;
 
-    zcamera_->setCalibration(
-        calibration_reader_->getCalibrationParams()[device_index_]);
+    zcamera_->setCalibration(calibration_reader_->getCalibrationParams()[device_index_]);
     zcamera_->setDeviceIndex(device_index_);
     zcamera_->setCaptureIR(capture_ir_);
     zcamera_->setBuildMesh(build_mesh_);
     zcamera_->setCompression(compress_cloud_);
-    zcamera_->setCaptureMode(
-        (posture::ZCamera::CaptureMode)capture_modes_enum_.get());
-    zcamera_->setOutlierFilterParameters(
-        filter_outliers_, filter_mean_k_, filter_stddev_mul_);
+    zcamera_->setCaptureMode((posture::ZCamera::CaptureMode)capture_modes_enum_.get());
+    zcamera_->setOutlierFilterParameters(filter_outliers_, filter_mean_k_, filter_stddev_mul_);
 
     zcamera_->start();
 
     rgb_focal_ = zcamera_->getRGBFocal();
     depth_focal_ = zcamera_->getDepthFocal();
 
-    rgb_focal_id_ =
-        pmanage<MPtr(&PContainer::make_double)>("rgb_focal",
-                                                nullptr,
-                                                [this]() { return rgb_focal_; },
-                                                "RGB focal length",
-                                                "RGB focal length",
-                                                rgb_focal_,
+    rgb_focal_id_ = pmanage<MPtr(&PContainer::make_double)>("rgb_focal",
+                                                            nullptr,
+                                                            [this]() { return rgb_focal_; },
+                                                            "RGB focal length",
+                                                            "RGB focal length",
+                                                            rgb_focal_,
+                                                            0.0,
+                                                            10000.0);
+
+    depth_focal_id_ =
+        pmanage<MPtr(&PContainer::make_double)>("depth_focal",
+                                                [this](const double& val) {
+                                                  zcamera_->setDepthFocal(val);
+                                                  depth_focal_ = zcamera_->getDepthFocal();
+                                                  return true;
+                                                },
+                                                [this]() {
+                                                  depth_focal_ = zcamera_->getDepthFocal();
+                                                  return depth_focal_;
+                                                },
+                                                "Depth focal length",
+                                                "Depth focal length",
+                                                depth_focal_,
                                                 0.0,
                                                 10000.0);
-
-    depth_focal_id_ = pmanage<MPtr(&PContainer::make_double)>(
-        "depth_focal",
-        [this](const double& val) {
-          zcamera_->setDepthFocal(val);
-          depth_focal_ = zcamera_->getDepthFocal();
-          return true;
-        },
-        [this]() {
-          depth_focal_ = zcamera_->getDepthFocal();
-          return depth_focal_;
-        },
-        "Depth focal length",
-        "Depth focal length",
-        depth_focal_,
-        0.0,
-        10000.0);
 
     return true;
   }
@@ -132,16 +127,15 @@ bool PostureSrc::stop() {
 bool PostureSrc::init() {
   init_startable(this);
 
-  pmanage<MPtr(&PContainer::make_string)>(
-      "calibration_path",
-      [this](const std::string& val) {
-        calibration_path_ = val;
-        return true;
-      },
-      [this]() { return calibration_path_; },
-      "Calibration path",
-      "Path to the calibration file",
-      calibration_path_);
+  pmanage<MPtr(&PContainer::make_string)>("calibration_path",
+                                          [this](const std::string& val) {
+                                            calibration_path_ = val;
+                                            return true;
+                                          },
+                                          [this]() { return calibration_path_; },
+                                          "Calibration path",
+                                          "Path to the calibration file",
+                                          calibration_path_);
 
   pmanage<MPtr(&PContainer::make_int)>("device_index",
                                        [this](const int& val) {
@@ -184,8 +178,7 @@ bool PostureSrc::init() {
               "build_mesh_edge_length",
               [this](const int& val) {
                 build_mesh_edge_length_ = val;
-                if (zcamera_)
-                  zcamera_->setBuildEdgeLength(build_mesh_edge_length_);
+                if (zcamera_) zcamera_->setBuildEdgeLength(build_mesh_edge_length_);
                 return true;
               },
               [this]() { return build_mesh_edge_length_; },
@@ -216,16 +209,15 @@ bool PostureSrc::init() {
                                         "Compress the cloud if true",
                                         compress_cloud_);
 
-  pmanage<MPtr(&PContainer::make_bool)>(
-      "reload_calibration",
-      [this](const bool& val) {
-        reload_calibration_ = val;
-        return true;
-      },
-      [this]() { return reload_calibration_; },
-      "Pre frame calibration",
-      "Reload calibration at each frame",
-      reload_calibration_);
+  pmanage<MPtr(&PContainer::make_bool)>("reload_calibration",
+                                        [this](const bool& val) {
+                                          reload_calibration_ = val;
+                                          return true;
+                                        },
+                                        [this]() { return reload_calibration_; },
+                                        "Pre frame calibration",
+                                        "Reload calibration at each frame",
+                                        reload_calibration_);
 
   pmanage<MPtr(&PContainer::make_bool)>(
       "downsample",
@@ -236,9 +228,7 @@ bool PostureSrc::init() {
               "downsample_resolution",
               [this](const double& val) {
                 downsample_resolution_ = val;
-                if (zcamera_)
-                  zcamera_->setDownsampling(downsample_,
-                                            downsample_resolution_);
+                if (zcamera_) zcamera_->setDownsampling(downsample_, downsample_resolution_);
                 return true;
               },
               [this]() { return downsample_resolution_; },
@@ -251,8 +241,7 @@ bool PostureSrc::init() {
           downsample_ = false;
           pmanage<MPtr(&PContainer::remove)>(downsample_resolution_id_);
         }
-        if (zcamera_)
-          zcamera_->setDownsampling(downsample_, downsample_resolution_);
+        if (zcamera_) zcamera_->setDownsampling(downsample_, downsample_resolution_);
         return true;
       },
       [this]() { return downsample_; },
@@ -311,16 +300,15 @@ bool PostureSrc::init() {
       "Filter outlier points from the cloud",
       filter_outliers_);
 
-  pmanage<MPtr(&PContainer::make_selection)>(
-      "capture_mode",
-      [this](const size_t& val) {
-        capture_modes_enum_.select(val);
-        return true;
-      },
-      [this]() { return capture_modes_enum_.get(); },
-      "Capture mode",
-      "Capture mode of the device",
-      capture_modes_enum_);
+  pmanage<MPtr(&PContainer::make_selection)>("capture_mode",
+                                             [this](const size_t& val) {
+                                               capture_modes_enum_.select(val);
+                                               return true;
+                                             },
+                                             [this]() { return capture_modes_enum_.get(); },
+                                             "Capture mode",
+                                             "Capture mode of the device",
+                                             capture_modes_enum_);
 
   return true;
 }
@@ -329,10 +317,9 @@ void PostureSrc::cb_frame_cloud(void* context, const vector<char>&& data) {
   PostureSrc* ctx = (PostureSrc*)context;
 
   if (!ctx->cloud_writer_ ||
-      data.size() >
-          ctx->cloud_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
-    auto data_type = ctx->compress_cloud_ ? string(POINTCLOUD_TYPE_COMPRESSED)
-                                          : string(POINTCLOUD_TYPE_BASE);
+      data.size() > ctx->cloud_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+    auto data_type =
+        ctx->compress_cloud_ ? string(POINTCLOUD_TYPE_COMPRESSED) : string(POINTCLOUD_TYPE_BASE);
     ctx->cloud_writer_.reset();
     ctx->cloud_writer_ = std2::make_unique<ShmdataWriter>(
         ctx, ctx->make_file_name("cloud"), data.size() * 2, data_type);
@@ -346,15 +333,14 @@ void PostureSrc::cb_frame_cloud(void* context, const vector<char>&& data) {
   if (ctx->reload_calibration_) {
     ctx->calibration_reader_->loadCalibration(ctx->calibration_path_);
     if (!(*ctx->calibration_reader_) ||
-        ctx->calibration_reader_->getCalibrationParams().size() <
-            ctx->device_index_)
+        ctx->calibration_reader_->getCalibrationParams().size() < ctx->device_index_)
       return;
     ctx->zcamera_->setCalibration(
         ctx->calibration_reader_->getCalibrationParams()[ctx->device_index_]);
   }
 
-  ctx->cloud_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
-      const_cast<char*>(data.data()), data.size());
+  ctx->cloud_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(const_cast<char*>(data.data()),
+                                                                  data.size());
   ctx->cloud_writer_->bytes_written(data.size());
 }
 
@@ -362,14 +348,10 @@ void PostureSrc::cb_frame_mesh(void* context, vector<unsigned char>&& data) {
   PostureSrc* ctx = static_cast<PostureSrc*>(context);
 
   if (!ctx->mesh_writer_ ||
-      data.size() >
-          ctx->mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+      data.size() > ctx->mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
     ctx->mesh_writer_.reset();
-    ctx->mesh_writer_ =
-        std2::make_unique<ShmdataWriter>(ctx,
-                                         ctx->make_file_name("mesh"),
-                                         data.size() * 2,
-                                         string(POLYGONMESH_TYPE_BASE));
+    ctx->mesh_writer_ = std2::make_unique<ShmdataWriter>(
+        ctx, ctx->make_file_name("mesh"), data.size() * 2, string(POLYGONMESH_TYPE_BASE));
 
     if (!ctx->mesh_writer_) {
       g_warning("Unable to create mesh callback");
@@ -388,8 +370,7 @@ void PostureSrc::cb_frame_depth(void* context,
                                 int height) {
   PostureSrc* ctx = (PostureSrc*)context;
 
-  if (!ctx->depth_writer_ || ctx->depth_width_ != width ||
-      ctx->depth_height_ != height) {
+  if (!ctx->depth_writer_ || ctx->depth_width_ != width || ctx->depth_height_ != height) {
     ctx->depth_width_ = width;
     ctx->depth_height_ = height;
     char buffer[256] = "";
@@ -424,8 +405,8 @@ void PostureSrc::cb_frame_rgb(void* context,
   PostureSrc* ctx = (PostureSrc*)context;
   auto format = ctx->zcamera_->getCaptureFormat();
 
-  if (!ctx->rgb_writer_ || ctx->rgb_width_ != width ||
-      ctx->rgb_height_ != height || ctx->rgb_format_ != format) {
+  if (!ctx->rgb_writer_ || ctx->rgb_width_ != width || ctx->rgb_height_ != height ||
+      ctx->rgb_format_ != format) {
     ctx->rgb_width_ = width;
     ctx->rgb_height_ = height;
     ctx->rgb_format_ = format;
@@ -473,8 +454,7 @@ void PostureSrc::cb_frame_ir(void* context,
                              int height) {
   PostureSrc* ctx = (PostureSrc*)context;
 
-  if (!ctx->ir_writer_ || ctx->ir_width_ != width ||
-      ctx->ir_height_ != height) {
+  if (!ctx->ir_writer_ || ctx->ir_width_ != width || ctx->ir_height_ != height) {
     ctx->ir_width_ = width;
     ctx->ir_height_ = height;
 
@@ -510,19 +490,16 @@ void PostureSrc::generateRandomData() {
     posture::ZCamera::getNoise(1, 1, 1, 1000, cloud);
 
     if (!cloud_writer_) {
-      cloud_writer_ =
-          std2::make_unique<ShmdataWriter>(this,
-                                           make_file_name("cloud"),
-                                           cloud.size() * 2,
-                                           string(POINTCLOUD_TYPE_BASE));
+      cloud_writer_ = std2::make_unique<ShmdataWriter>(
+          this, make_file_name("cloud"), cloud.size() * 2, string(POINTCLOUD_TYPE_BASE));
       if (!cloud_writer_) {
         g_warning("Unable to create mesh shmdata writer");
         return;
       }
     }
 
-    cloud_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
-        const_cast<char*>(cloud.data()), cloud.size());
+    cloud_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(const_cast<char*>(cloud.data()),
+                                                               cloud.size());
     cloud_writer_->bytes_written(cloud.size());
 
     // Random mesh
@@ -530,11 +507,8 @@ void PostureSrc::generateRandomData() {
     posture::ZCamera::getRandomMesh(1, 1, 1, 100, mesh);
 
     if (!mesh_writer_) {
-      mesh_writer_ =
-          std2::make_unique<ShmdataWriter>(this,
-                                           make_file_name("mesh"),
-                                           mesh.size() * 2,
-                                           string(POLYGONMESH_TYPE_BASE));
+      mesh_writer_ = std2::make_unique<ShmdataWriter>(
+          this, make_file_name("mesh"), mesh.size() * 2, string(POLYGONMESH_TYPE_BASE));
       if (!mesh_writer_) {
         g_warning("Unable to create mesh shmdata writer");
         return;

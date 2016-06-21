@@ -24,9 +24,7 @@
 #include "./method.hpp"
 
 namespace switcher {
-Method::Method() : closure_(nullptr) {
-  json_description_.reset(new JSONBuilder());
-}
+Method::Method() : closure_(nullptr) { json_description_.reset(new JSONBuilder()); }
 
 Method::~Method() {
   if (closure_ != nullptr) g_closure_unref(closure_);
@@ -67,8 +65,7 @@ bool Method::set_method(method_ptr method,
     g_debug("Method::set_method is called with a nullptr function");
     return false;
   }
-  closure_ =
-      g_cclosure_new(G_CALLBACK(method), user_data, Method::destroy_data);
+  closure_ = g_cclosure_new(G_CALLBACK(method), user_data, Method::destroy_data);
   g_closure_set_marshal(closure_, g_cclosure_marshal_generic);
   return_type_ = return_type;
   arg_types_ = arg_types;
@@ -136,14 +133,11 @@ void Method::make_description() {
   json_description_->begin_object();
   json_description_->add_string_member("name", long_name_.c_str());
   json_description_->add_string_member("id", method_name_.c_str());
-  json_description_->add_string_member("description",
-                                       short_description_.c_str());
+  json_description_->add_string_member("description", short_description_.c_str());
   json_description_->add_string_member("parent", get_category().c_str());
   json_description_->add_int_member("order", get_position_weight());
-  json_description_->add_string_member("return type",
-                                       g_type_name(return_type_));
-  json_description_->add_string_member("return description",
-                                       return_description_.c_str());
+  json_description_->add_string_member("return type", g_type_name(return_type_));
+  json_description_->add_string_member("return description", return_description_.c_str());
 
   json_description_->set_member_name("arguments");
   json_description_->begin_array();
@@ -151,14 +145,11 @@ void Method::make_description() {
   if (!arg_description_.empty()) {
     for (auto& it : arg_description_) {
       json_description_->begin_object();
-      json_description_->add_string_member("long name",
-                                           std::get<0>(it).c_str());
+      json_description_->add_string_member("long name", std::get<0>(it).c_str());
       json_description_->add_string_member("name", std::get<1>(it).c_str());
-      json_description_->add_string_member("description",
-                                           std::get<2>(it).c_str());
-      json_description_->add_string_member(
-          "type",  // FIXME only the first arg ?
-          g_type_name(arg_types_[0]));
+      json_description_->add_string_member("description", std::get<2>(it).c_str());
+      json_description_->add_string_member("type",  // FIXME only the first arg ?
+                                           g_type_name(arg_types_[0]));
       json_description_->end_object();
     }
   }
@@ -177,8 +168,7 @@ JSONBuilder::Node Method::get_json_root_node() {
   return json_description_->get_root();
 }
 
-std::vector<GType> Method::make_arg_type_description(GType first_arg_type,
-                                                     ...) {
+std::vector<GType> Method::make_arg_type_description(GType first_arg_type, ...) {
   std::vector<GType> res;
   GType arg_type;
   va_list vl;
@@ -190,15 +180,14 @@ std::vector<GType> Method::make_arg_type_description(GType first_arg_type,
 }
 
 // FIXME, make this more robust to user missing strings
-Method::args_doc Method::make_arg_description(const char* first_arg_long_name,
-                                              ...) {
+Method::args_doc Method::make_arg_description(const char* first_arg_long_name, ...) {
   args_doc res;
   va_list vl;
   char* arg_name;
   char* arg_desc;
   va_start(vl, first_arg_long_name);
-  if (g_strcmp0(first_arg_long_name, "none") != 0 &&
-      (arg_name = va_arg(vl, char*)) && (arg_desc = va_arg(vl, char*)))
+  if (g_strcmp0(first_arg_long_name, "none") != 0 && (arg_name = va_arg(vl, char*)) &&
+      (arg_desc = va_arg(vl, char*)))
     res.push_back(std::make_tuple(first_arg_long_name, arg_name, arg_desc));
   gboolean parsing = true;
   do {

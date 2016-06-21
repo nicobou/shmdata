@@ -34,8 +34,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureSolidify,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-PostureSolidify::PostureSolidify(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)) {}
+PostureSolidify::PostureSolidify(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 PostureSolidify::~PostureSolidify() { stop(); }
 
@@ -57,18 +56,16 @@ bool PostureSolidify::stop() {
 bool PostureSolidify::init() {
   init_startable(this);
 
-  shmcntr_.install_connect_method(
-      [this](const std::string path) { return connect(path); },
-      [this](const std::string path) { return disconnect(path); },
-      [this]() { return disconnect_all(); },
-      [this](const std::string caps) { return can_sink_caps(caps); },
-      1);
+  shmcntr_.install_connect_method([this](const std::string path) { return connect(path); },
+                                  [this](const std::string path) { return disconnect(path); },
+                                  [this]() { return disconnect_all(); },
+                                  [this](const std::string caps) { return can_sink_caps(caps); },
+                                  1);
 
   pmanage<MPtr(&PContainer::make_bool)>("save_mesh",
                                         [this](const bool& val) {
                                           save_mesh_ = val;
-                                          if (solidify_ != nullptr)
-                                            solidify_->setSaveMesh(val);
+                                          if (solidify_ != nullptr) solidify_->setSaveMesh(val);
                                           return true;
                                         },
                                         [this]() { return save_mesh_; },
@@ -76,19 +73,19 @@ bool PostureSolidify::init() {
                                         "Save the current mesh if true",
                                         save_mesh_);
 
-  pmanage<MPtr(&PContainer::make_int)>(
-      "marching_cubes_resolution",
-      [this](const int& val) {
-        marching_cubes_resolution_ = val;
-        if (solidify_ != nullptr) solidify_->setGridResolution(val);
-        return true;
-      },
-      [this]() { return marching_cubes_resolution_; },
-      "Marching cubes resolution",
-      "Resolution of the marching cubes reconstruction",
-      marching_cubes_resolution_,
-      8,
-      256);
+  pmanage<MPtr(&PContainer::make_int)>("marching_cubes_resolution",
+                                       [this](const int& val) {
+                                         marching_cubes_resolution_ = val;
+                                         if (solidify_ != nullptr)
+                                           solidify_->setGridResolution(val);
+                                         return true;
+                                       },
+                                       [this]() { return marching_cubes_resolution_; },
+                                       "Marching cubes resolution",
+                                       "Resolution of the marching cubes reconstruction",
+                                       marching_cubes_resolution_,
+                                       8,
+                                       256);
   return true;
 }
 
@@ -99,32 +96,26 @@ bool PostureSolidify::connect(std::string shmdata_socket_path) {
       [=](void* data, size_t size) {
         if (!worker_.is_ready() || !mutex_.try_lock()) return;
 
-        if (solidify_ == nullptr ||
-            (pcl_reader_caps_ != string(POINTCLOUD_TYPE_BASE) &&
-             pcl_reader_caps_ != string(POINTCLOUD_TYPE_COMPRESSED))) {
+        if (solidify_ == nullptr || (pcl_reader_caps_ != string(POINTCLOUD_TYPE_BASE) &&
+                                     pcl_reader_caps_ != string(POINTCLOUD_TYPE_COMPRESSED))) {
           mutex_.unlock();
           return;
         }
 
         // Setting input clouds is thread safe, so lets do it
-        solidify_->setInputCloud(
-            vector<char>((char*)data, (char*)data + size),
-            pcl_reader_caps_ != string(POINTCLOUD_TYPE_BASE));
+        solidify_->setInputCloud(vector<char>((char*)data, (char*)data + size),
+                                 pcl_reader_caps_ != string(POINTCLOUD_TYPE_BASE));
 
         worker_.set_task([=]() {
           // Get the result mesh, and send it through shmdata
           auto mesh = vector<unsigned char>();
           solidify_->getMesh(mesh);
           if (mesh_writer_ == nullptr ||
-              mesh.size() >
-                  mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+              mesh.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
             auto data_type = string(POLYGONMESH_TYPE_BASE);
             mesh_writer_.reset();
             mesh_writer_ = std2::make_unique<ShmdataWriter>(
-                this,
-                make_file_name("mesh"),
-                std::max(mesh.size() * 2, (size_t)1024),
-                data_type);
+                this, make_file_name("mesh"), std::max(mesh.size() * 2, (size_t)1024), data_type);
           }
 
           mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
@@ -142,9 +133,7 @@ bool PostureSolidify::connect(std::string shmdata_socket_path) {
   return true;
 }
 
-bool PostureSolidify::disconnect(std::string /*unused*/) {
-  return disconnect_all();
-}
+bool PostureSolidify::disconnect(std::string /*unused*/) { return disconnect_all(); }
 
 bool PostureSolidify::disconnect_all() {
   std::lock_guard<mutex> lock(mutex_);

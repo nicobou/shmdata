@@ -21,15 +21,14 @@
 #include "switcher/std2.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    OscToShmdata,
-    "OSCsrc",
-    "OSC Receiver",
-    "network",
-    "writer",
-    "receives OSC messages and write to shmdata",
-    "LGPL",
-    "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
+                                     "OSCsrc",
+                                     "OSC Receiver",
+                                     "network",
+                                     "writer",
+                                     "receives OSC messages and write to shmdata",
+                                     "LGPL",
+                                     "Nicolas Bouillot");
 
 OscToShmdata::OscToShmdata(const std::string&) : port_(1056) {}
 
@@ -97,10 +96,8 @@ int OscToShmdata::osc_handler(const char* path,
   void* buftmp = lo_message_serialise(m, path, nullptr, &size);
   if (context->shm_->writer<MPtr(&shmdata::Writer::alloc_size)>() < size) {
     context->shm_.reset(nullptr);
-    context->shm_.reset(new ShmdataWriter(context,
-                                          context->make_file_name("osc"),
-                                          size,
-                                          "application/x-libloserialized-osc"));
+    context->shm_.reset(new ShmdataWriter(
+        context, context->make_file_name("osc"), size, "application/x-libloserialized-osc"));
   }
   context->shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(buftmp, size);
   context->shm_->bytes_written(size);

@@ -25,24 +25,21 @@ using namespace std;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    PostureMerge,
-    "pclmergesink",
-    "Point Clouds Merge",
-    "video",
-    "writer/reader",
-    "Merges point clouds captured with 3D cameras",
-    "LGPL",
-    "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureMerge,
+                                     "pclmergesink",
+                                     "Point Clouds Merge",
+                                     "video",
+                                     "writer/reader",
+                                     "Merges point clouds captured with 3D cameras",
+                                     "LGPL",
+                                     "Emmanuel Durand");
 
-PostureMerge::PostureMerge(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)) {}
+PostureMerge::PostureMerge(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 PostureMerge::~PostureMerge() { stop(); }
 
 bool PostureMerge::start() {
-  calibration_reader_ =
-      unique_ptr<CalibrationReader>(new CalibrationReader(calibration_path_));
+  calibration_reader_ = unique_ptr<CalibrationReader>(new CalibrationReader(calibration_path_));
   merger_ = make_shared<PointCloudMerger>();
   merger_->setCloudNbr(source_id_);
   merger_->setCalibration(calibration_reader_->getCalibrationParams());
@@ -70,12 +67,11 @@ bool PostureMerge::stop() {
 bool PostureMerge::init() {
   init_startable(this);
 
-  shmcntr_.install_connect_method(
-      [this](const std::string path) { return connect(path); },
-      [this](const std::string path) { return disconnect(path); },
-      [this]() { return disconnect_all(); },
-      [this](const std::string caps) { return can_sink_caps(caps); },
-      8);
+  shmcntr_.install_connect_method([this](const std::string path) { return connect(path); },
+                                  [this](const std::string path) { return disconnect(path); },
+                                  [this]() { return disconnect_all(); },
+                                  [this](const std::string caps) { return can_sink_caps(caps); },
+                                  8);
 
   pmanage<MPtr(&PContainer::make_string)>(
       "calibration_path",
@@ -102,16 +98,15 @@ bool PostureMerge::init() {
                                         "Compress the cloud if true",
                                         compress_cloud_);
 
-  pmanage<MPtr(&PContainer::make_bool)>(
-      "reload_calibration",
-      [this](const bool& val) {
-        reload_calibration_ = val;
-        return true;
-      },
-      [this]() { return reload_calibration_; },
-      "Reload calibration",
-      "Reload calibration at each frame",
-      reload_calibration_);
+  pmanage<MPtr(&PContainer::make_bool)>("reload_calibration",
+                                        [this](const bool& val) {
+                                          reload_calibration_ = val;
+                                          return true;
+                                        },
+                                        [this]() { return reload_calibration_; },
+                                        "Reload calibration",
+                                        "Reload calibration at each frame",
+                                        reload_calibration_);
 
   pmanage<MPtr(&PContainer::make_bool)>("save_cloud",
                                         [this](const bool& val) {
@@ -146,8 +141,7 @@ bool PostureMerge::init() {
           downsample_ = false;
           pmanage<MPtr(&PContainer::remove)>(downsample_resolution_id_);
         }
-        if (merger_ != nullptr)
-          merger_->setDownsampling(downsample_, downsample_resolution_);
+        if (merger_ != nullptr) merger_->setDownsampling(downsample_, downsample_resolution_);
         return true;
       },
       [this]() { return downsample_; },
@@ -186,8 +180,7 @@ bool PostureMerge::connect(std::string shmdata_socket_path) {
         string type = typeIt->second;
 
         if (merger_ == nullptr ||
-            (type != string(POINTCLOUD_TYPE_BASE) &&
-             type != string(POINTCLOUD_TYPE_COMPRESSED))) {
+            (type != string(POINTCLOUD_TYPE_BASE) && type != string(POINTCLOUD_TYPE_COMPRESSED))) {
           mutex_.unlock();
           return;
         }
@@ -201,8 +194,7 @@ bool PostureMerge::connect(std::string shmdata_socket_path) {
         {
           unique_lock<mutex> lock(stock_mutex_);
           for (auto it = stock_.begin(); it != stock_.end(); ++it) {
-            merger_->setInputCloud(
-                it->first, it->second, type != string(POINTCLOUD_TYPE_BASE));
+            merger_->setInputCloud(it->first, it->second, type != string(POINTCLOUD_TYPE_BASE));
           }
           stock_.clear();
         }
@@ -214,20 +206,16 @@ bool PostureMerge::connect(std::string shmdata_socket_path) {
         merger_->getCloud(cloud);
 
         if (cloud_writer_.get() == nullptr ||
-            cloud.size() >
-                cloud_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
-          auto data_type = compress_cloud_ ? string(POINTCLOUD_TYPE_COMPRESSED)
-                                           : string(POINTCLOUD_TYPE_BASE);
+            cloud.size() > cloud_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+          auto data_type =
+              compress_cloud_ ? string(POINTCLOUD_TYPE_COMPRESSED) : string(POINTCLOUD_TYPE_BASE);
           cloud_writer_.reset();
           cloud_writer_ = std2::make_unique<ShmdataWriter>(
-              this,
-              make_file_name("cloud"),
-              std::max(cloud.size() * 2, (size_t)1024),
-              data_type);
+              this, make_file_name("cloud"), std::max(cloud.size() * 2, (size_t)1024), data_type);
         }
 
-        cloud_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
-            const_cast<char*>(cloud.data()), cloud.size());
+        cloud_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(const_cast<char*>(cloud.data()),
+                                                                   cloud.size());
         cloud_writer_->bytes_written(cloud.size());
 
         mutex_.unlock();

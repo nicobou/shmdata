@@ -26,26 +26,24 @@ using namespace std;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    PostureColorize,
-    "texturetomesh",
-    "Project texture onto mesh",
-    "video",
-    "reader/writer",
-    "Project texture onto mesh, based on calibration",
-    "LGPL",
-    "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureColorize,
+                                     "texturetomesh",
+                                     "Project texture onto mesh",
+                                     "video",
+                                     "reader/writer",
+                                     "Project texture onto mesh, based on calibration",
+                                     "LGPL",
+                                     "Emmanuel Durand");
 
-PostureColorize::PostureColorize(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)) {}
+PostureColorize::PostureColorize(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 PostureColorize::~PostureColorize() { stop(); }
 
 bool PostureColorize::start() {
   if (is_started()) return false;
 
-  calibration_reader_ = unique_ptr<posture::CalibrationReader>(
-      new posture::CalibrationReader(calibration_path_));
+  calibration_reader_ =
+      unique_ptr<posture::CalibrationReader>(new posture::CalibrationReader(calibration_path_));
   colorize_ = make_shared<Colorize>();
 
   colorize_->setCalibration(calibration_reader_->getCalibrationParams());
@@ -72,34 +70,31 @@ bool PostureColorize::stop() {
 bool PostureColorize::init() {
   init_startable(this);
 
-  shmcntr_.install_connect_method(
-      [this](const std::string path) { return connect(path); },
-      [this](const std::string path) { return disconnect(path); },
-      [this]() { return disconnect_all(); },
-      [this](const std::string caps) { return can_sink_caps(caps); },
-      std::numeric_limits<unsigned int>::max());
+  shmcntr_.install_connect_method([this](const std::string path) { return connect(path); },
+                                  [this](const std::string path) { return disconnect(path); },
+                                  [this]() { return disconnect_all(); },
+                                  [this](const std::string caps) { return can_sink_caps(caps); },
+                                  std::numeric_limits<unsigned int>::max());
 
-  pmanage<MPtr(&PContainer::make_string)>(
-      "calibration_path",
-      [this](const std::string& val) {
-        calibration_path_ = val;
-        return true;
-      },
-      [this]() { return calibration_path_; },
-      "Calibration path",
-      "Path to the calibration file",
-      calibration_path_);
+  pmanage<MPtr(&PContainer::make_string)>("calibration_path",
+                                          [this](const std::string& val) {
+                                            calibration_path_ = val;
+                                            return true;
+                                          },
+                                          [this]() { return calibration_path_; },
+                                          "Calibration path",
+                                          "Path to the calibration file",
+                                          calibration_path_);
 
-  pmanage<MPtr(&PContainer::make_bool)>(
-      "compute_tex_coords",
-      [this](const bool& val) {
-        compute_tex_coords_ = val;
-        return true;
-      },
-      [this]() { return compute_tex_coords_; },
-      "Compute texture coordinates",
-      "Compute texture coordinates",
-      compute_tex_coords_);
+  pmanage<MPtr(&PContainer::make_bool)>("compute_tex_coords",
+                                        [this](const bool& val) {
+                                          compute_tex_coords_ = val;
+                                          return true;
+                                        },
+                                        [this]() { return compute_tex_coords_; },
+                                        "Compute texture coordinates",
+                                        "Compute texture coordinates",
+                                        compute_tex_coords_);
 
   pmanage<MPtr(&PContainer::make_bool)>("compress_mesh",
                                         [this](const bool& val) {
@@ -145,9 +140,9 @@ bool PostureColorize::connect(std::string shmdata_socket_path) {
 
           has_input_mesh_ = true;
           mesh_index_ = id;
-          vector<unsigned char> mesh = vector<unsigned char>(
-              reinterpret_cast<unsigned char*>(data),
-              reinterpret_cast<unsigned char*>(data) + size);
+          vector<unsigned char> mesh =
+              vector<unsigned char>(reinterpret_cast<unsigned char*>(data),
+                                    reinterpret_cast<unsigned char*>(data) + size);
 
           imageMutex_.lock();
           if (images_.size() == 0) {
@@ -163,36 +158,30 @@ bool PostureColorize::connect(std::string shmdata_socket_path) {
             colorize_->getTexturedMesh(texturedMesh);
 
             unsigned int width, height;
-            vector<unsigned char> texture =
-                colorize_->getTexture(width, height);
+            vector<unsigned char> texture = colorize_->getTexture(width, height);
 
             if (texturedMesh.size() == 0 || texture.size() == 0) return;
 
             // Write the mesh
             if (!mesh_writer_ ||
-                texturedMesh.size() >
-                    mesh_writer_
-                        ->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+                texturedMesh.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
               auto data_type = string(POLYGONMESH_TYPE_BASE);
               mesh_writer_.reset();
-              mesh_writer_ = std2::make_unique<ShmdataWriter>(
-                  this,
-                  make_file_name("mesh"),
-                  std::max(texturedMesh.size() * 2, (size_t)1024),
-                  data_type);
+              mesh_writer_ =
+                  std2::make_unique<ShmdataWriter>(this,
+                                                   make_file_name("mesh"),
+                                                   std::max(texturedMesh.size() * 2, (size_t)1024),
+                                                   data_type);
             }
 
             mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
-                const_cast<unsigned char*>(texturedMesh.data()),
-                texturedMesh.size());
+                const_cast<unsigned char*>(texturedMesh.data()), texturedMesh.size());
             mesh_writer_->bytes_written(texturedMesh.size());
 
             // Write the texture
-            if (!tex_writer_ || width != prev_width_ ||
-                height != prev_height_) {
-              auto data_type = "video/x-raw,format=(string)BGR,width=(int)" +
-                               to_string(width) + ",height=(int)" +
-                               to_string(height) + ",framerate=30/1";
+            if (!tex_writer_ || width != prev_width_ || height != prev_height_) {
+              auto data_type = "video/x-raw,format=(string)BGR,width=(int)" + to_string(width) +
+                               ",height=(int)" + to_string(height) + ",framerate=30/1";
               tex_writer_.reset();
               tex_writer_ = std2::make_unique<ShmdataWriter>(
                   this, make_file_name("texture"), texture.size(), data_type);
@@ -225,8 +214,8 @@ bool PostureColorize::connect(std::string shmdata_socket_path) {
             }
             int index = shm_index_[id];
 
-            images_[index] = vector<unsigned char>((unsigned char*)data,
-                                                   (unsigned char*)data + size);
+            images_[index] =
+                vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size);
             dims_[index] = vector<unsigned int>({width, height, channels});
           }
         }
@@ -270,14 +259,12 @@ bool PostureColorize::check_image_caps(string caps,
   regex regVideo, regFormat;
   try {
     regVideo = regex("(.*video/x-raw)(.*)", regex_constants::extended);
-    regHap =
-        regex("(.*video/x-gst-fourcc-HapY)(.*)", regex_constants::extended);
+    regHap = regex("(.*video/x-gst-fourcc-HapY)(.*)", regex_constants::extended);
     regFormat = regex("(.*format=\\(string\\))(.*)", regex_constants::extended);
     regWidth = regex("(.*width=\\(int\\))(.*)", regex_constants::extended);
     regHeight = regex("(.*height=\\(int\\))(.*)", regex_constants::extended);
   } catch (const regex_error& e) {
-    cout << "PostureColorize::" << __FUNCTION__
-         << " - Regex error code: " << e.code() << endl;
+    cout << "PostureColorize::" << __FUNCTION__ << " - Regex error code: " << e.code() << endl;
     return false;
   }
 

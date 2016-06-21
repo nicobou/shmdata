@@ -22,11 +22,8 @@
 #include "./scope-exit.hpp"
 
 namespace switcher {
-DecodebinToShmdata::DecodebinToShmdata(GstPipeliner* gpipe,
-                                       on_configure_t on_gstshm_configure)
-    : decodebin_("decodebin"),
-      gpipe_(gpipe),
-      on_gstshm_configure_(on_gstshm_configure) {
+DecodebinToShmdata::DecodebinToShmdata(GstPipeliner* gpipe, on_configure_t on_gstshm_configure)
+    : decodebin_("decodebin"), gpipe_(gpipe), on_gstshm_configure_(on_gstshm_configure) {
   // set async property
   auto set_prop = std::bind(g_object_set,
                             std::placeholders::_1,
@@ -42,16 +39,14 @@ DecodebinToShmdata::DecodebinToShmdata(GstPipeliner* gpipe,
                              "pad-added",
                              (GCallback)DecodebinToShmdata::on_pad_added,
                              (gpointer) this);
-  cb_ids_.push_back(
-      decodebin_.g_invoke_with_return<gulong>(std::move(pad_added)));
+  cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>(std::move(pad_added)));
   // autoplug callback
   auto autoplug = std::bind(GstUtils::g_signal_connect_function,
                             std::placeholders::_1,
                             "autoplug-select",
                             (GCallback)DecodebinToShmdata::on_autoplug_select,
                             (gpointer) this);
-  cb_ids_.push_back(
-      decodebin_.g_invoke_with_return<gulong>(std::move(autoplug)));
+  cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>(std::move(autoplug)));
 }
 
 DecodebinToShmdata::~DecodebinToShmdata() {
@@ -63,13 +58,10 @@ DecodebinToShmdata::~DecodebinToShmdata() {
   // // it));
 }
 
-void DecodebinToShmdata::on_pad_added(GstElement* object,
-                                      GstPad* pad,
-                                      gpointer user_data) {
+void DecodebinToShmdata::on_pad_added(GstElement* object, GstPad* pad, gpointer user_data) {
   DecodebinToShmdata* context = static_cast<DecodebinToShmdata*>(user_data);
   std::unique_lock<std::mutex> lock(context->thread_safe_);
-  GstCaps* rtpcaps =
-      gst_caps_from_string("application/x-rtp, media=(string)application");
+  GstCaps* rtpcaps = gst_caps_from_string("application/x-rtp, media=(string)application");
   On_scope_exit { gst_caps_unref(rtpcaps); };
   GstCaps* padcaps = gst_pad_get_current_caps(pad);
   On_scope_exit { gst_caps_unref(padcaps); };
@@ -109,12 +101,11 @@ void DecodebinToShmdata::on_pad_added(GstElement* object,
   context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), pad);
 }
 
-int /*GstAutoplugSelectResult*/ DecodebinToShmdata::on_autoplug_select(
-    GstElement* /*bin */,
-    GstPad* pad,
-    GstCaps* caps,
-    GstElementFactory* factory,
-    gpointer /*user_data */) {
+int /*GstAutoplugSelectResult*/ DecodebinToShmdata::on_autoplug_select(GstElement* /*bin */,
+                                                                       GstPad* pad,
+                                                                       GstCaps* caps,
+                                                                       GstElementFactory* factory,
+                                                                       gpointer /*user_data */) {
   //     typedef enum {
   //   GST_AUTOPLUG_SELECT_TRY,
   //   GST_AUTOPLUG_SELECT_EXPOSE,
@@ -126,8 +117,7 @@ int /*GstAutoplugSelectResult*/ DecodebinToShmdata::on_autoplug_select(
     int return_val = 1;  // expose
     GstCaps* caps = gst_pad_get_current_caps(pad);
     On_scope_exit { gst_caps_unref(caps); };
-    const GValue* val =
-        gst_structure_get_value(gst_caps_get_structure(caps, 0), "caps");
+    const GValue* val = gst_structure_get_value(gst_caps_get_structure(caps, 0), "caps");
     gsize taille = 2048;
     guchar* string_caps = g_base64_decode(g_value_get_string(val), &taille);
     gchar* string_caps_char = g_strdup_printf("%s", string_caps);
@@ -142,11 +132,10 @@ int /*GstAutoplugSelectResult*/ DecodebinToShmdata::on_autoplug_select(
   return 0;  // GST_AUTOPLUG_SELECT_TRY;
 }
 
-GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_buffer_probe_cb(
-    GstPad* /*pad */,
-    GstPadProbeInfo*
-    /*info */,
-    gpointer user_data) {
+GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_buffer_probe_cb(GstPad* /*pad */,
+                                                                  GstPadProbeInfo*
+                                                                  /*info */,
+                                                                  gpointer user_data) {
   DecodebinToShmdata* context = static_cast<DecodebinToShmdata*>(user_data);
   std::unique_lock<std::mutex> lock(context->thread_safe_);
   if (true == context->discard_next_uncomplete_buffer_) {
@@ -157,8 +146,9 @@ GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_buffer_probe_cb(
   return GST_PAD_PROBE_PASS;  // pass buffer
 }
 
-GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_event_probe_cb(
-    GstPad* /*pad */, GstPadProbeInfo* info, gpointer user_data) {
+GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_event_probe_cb(GstPad* /*pad */,
+                                                                 GstPadProbeInfo* info,
+                                                                 gpointer user_data) {
   DecodebinToShmdata* context = static_cast<DecodebinToShmdata*>(user_data);
   std::unique_lock<std::mutex> lock(context->thread_safe_);
   // if (GST_EVENT_TYPE(GST_PAD_PROBE_INFO_EVENT(info)) ==
@@ -197,8 +187,7 @@ void DecodebinToShmdata::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   // probing eos
   GstPad* sinkpad = gst_element_get_static_pad(shmdatasink, "sink");
   On_scope_exit { gst_object_unref(sinkpad); };
-  if (nullptr == main_pad_)
-    main_pad_ = sinkpad;  // saving first pad for looping
+  if (nullptr == main_pad_) main_pad_ = sinkpad;  // saving first pad for looping
   // FIXME
   // gst_pad_add_event_probe(srcpad, (GCallback) eos_probe_cb, this);
   if (GST_PAD_LINK_OK != gst_pad_link(pad, sinkpad))
@@ -215,16 +204,13 @@ void DecodebinToShmdata::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
     g_debug("decodebin-to-shmdata: new media of type %s", media_name.c_str());
   }
   if (!on_gstshm_configure_)
-    g_warning(
-        "decodebin-to-shmdata has no configuration function for shmdatasink");
+    g_warning("decodebin-to-shmdata has no configuration function for shmdatasink");
   else
     on_gstshm_configure_(shmdatasink, media_name, media_label_);
   GstUtils::sync_state_with_parent(shmdatasink);
 }
 
-gboolean DecodebinToShmdata::eos_probe_cb(GstPad* pad,
-                                          GstEvent* event,
-                                          gpointer user_data) {
+gboolean DecodebinToShmdata::eos_probe_cb(GstPad* pad, GstEvent* event, gpointer user_data) {
   DecodebinToShmdata* context = static_cast<DecodebinToShmdata*>(user_data);
   std::unique_lock<std::mutex> lock(context->thread_safe_);
   if (GST_EVENT_TYPE(event) == GST_EVENT_EOS) {
@@ -270,18 +256,17 @@ gboolean DecodebinToShmdata::rewind(gpointer user_data) {
   }
   gst_query_unref(query);
   gboolean ret;
-  ret = gst_element_seek(
-      GST_ELEMENT(gst_pad_get_parent(context->main_pad_)),
-      rate,
-      GST_FORMAT_TIME,
-      (GstSeekFlags)(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE),
-      // | GST_SEEK_FLAG_SKIP
-      // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking
-      // synchronization
-      GST_SEEK_TYPE_SET,
-      0.0 * GST_SECOND,
-      GST_SEEK_TYPE_NONE,
-      GST_CLOCK_TIME_NONE);
+  ret = gst_element_seek(GST_ELEMENT(gst_pad_get_parent(context->main_pad_)),
+                         rate,
+                         GST_FORMAT_TIME,
+                         (GstSeekFlags)(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE),
+                         // | GST_SEEK_FLAG_SKIP
+                         // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking
+                         // synchronization
+                         GST_SEEK_TYPE_SET,
+                         0.0 * GST_SECOND,
+                         GST_SEEK_TYPE_NONE,
+                         GST_CLOCK_TIME_NONE);
   if (!ret) g_debug("looping error");
   g_debug("finish looping");
   return FALSE;

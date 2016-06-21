@@ -28,8 +28,7 @@ NV_ENCODE_API_FUNCTION_LIST NVencAPI::api;
 NVencAPI::NVencAPI() {
   if (!nvenc_api_has_been_set_) {
     api.version = NV_ENCODE_API_FUNCTION_LIST_VER;
-    if (NvEncodeAPICreateInstance(&api) == NV_ENC_SUCCESS)
-      nvenc_api_has_been_set_ = true;
+    if (NvEncodeAPICreateInstance(&api) == NV_ENC_SUCCESS) nvenc_api_has_been_set_ = true;
   }
 }
 

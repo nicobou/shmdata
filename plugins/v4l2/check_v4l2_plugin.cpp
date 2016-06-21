@@ -41,8 +41,7 @@ int main() {
 #endif
     assert(switcher::QuiddityBasicTest::test_full(manager, "v4l2src"));
     // creating a "myplugin" quiddity
-    if (manager->create("v4l2src", "test") != "test")
-      return 0;  // no camera in this computer
+    if (manager->create("v4l2src", "test") != "test") return 0;  // no camera in this computer
     assert(manager->remove("test"));
   }  // end of scope is releasing the manager
   return 0;

@@ -24,8 +24,7 @@
 #include "./scope-exit.hpp"
 
 namespace switcher {
-GstElement* GstUtils::make_element(const gchar* class_name,
-                                   GstElement** target_element) {
+GstElement* GstUtils::make_element(const gchar* class_name, GstElement** target_element) {
   GstElement* res = gst_element_factory_make(class_name, nullptr);
   if (res == nullptr) {
     g_debug("gstreamer element class %s cannot be instanciated", class_name);
@@ -37,10 +36,10 @@ GstElement* GstUtils::make_element(const gchar* class_name,
 
 bool GstUtils::link_static_to_request(GstElement* src, GstElement* sink) {
   GstPad* srcpad = gst_element_get_static_pad(src, "src");
-  GstPad* sinkpad = gst_element_get_compatible_pad(
-      sink,
-      srcpad,
-      nullptr);  // const GstCaps *caps to use as a filter
+  GstPad* sinkpad =
+      gst_element_get_compatible_pad(sink,
+                                     srcpad,
+                                     nullptr);  // const GstCaps *caps to use as a filter
   bool res = GstUtils::check_pad_link_return(gst_pad_link(srcpad, sinkpad));
   if (GST_IS_PAD(src)) gst_object_unref(srcpad);
 
@@ -50,10 +49,10 @@ bool GstUtils::link_static_to_request(GstElement* src, GstElement* sink) {
 }
 
 bool GstUtils::link_static_to_request(GstPad* srcpad, GstElement* sink) {
-  GstPad* sinkpad = gst_element_get_compatible_pad(
-      sink,
-      srcpad,
-      nullptr);  // const GstCaps *caps to use as a filter
+  GstPad* sinkpad =
+      gst_element_get_compatible_pad(sink,
+                                     srcpad,
+                                     nullptr);  // const GstCaps *caps to use as a filter
   bool res = GstUtils::check_pad_link_return(gst_pad_link(srcpad, sinkpad));
 
   if (GST_IS_PAD(sinkpad)) gst_object_unref(sinkpad);
@@ -104,8 +103,7 @@ void GstUtils::unlink_pad(GstPad* pad) {
 void GstUtils::release_request_pad(GstPad* pad, gpointer user_data) {
   // checking if the pad has been requested and releasing it needed
   GstPadTemplate* pad_templ = gst_pad_get_pad_template(pad);
-  if (nullptr != pad_templ &&
-      GST_PAD_TEMPLATE_PRESENCE(pad_templ) == GST_PAD_REQUEST) {
+  if (nullptr != pad_templ && GST_PAD_TEMPLATE_PRESENCE(pad_templ) == GST_PAD_REQUEST) {
     gst_element_release_request_pad((GstElement*)user_data, pad);
     gst_object_unref(pad);  // release does not free
   }
@@ -205,8 +203,7 @@ void GstUtils::sync_state_with_parent(GstElement* element) {
     else
       gst_element_sync_state_with_parent(element);
   } else
-    g_warning(
-        "GstUtils::sync_state_with_parent, cannot sync an orphan element");
+    g_warning("GstUtils::sync_state_with_parent, cannot sync an orphan element");
 }
 
 void GstUtils::set_element_property_in_bin(GstElement* bin,
@@ -225,12 +222,9 @@ void GstUtils::set_element_property_in_bin(GstElement* bin,
       //  gst_plugin_feature_get_name (GST_PLUGIN_FEATURE (sub_factory)),
       //  gst_element_factory_get_klass (sub_factory),
       //  gst_element_factory_get_description (sub_factory));
-      if (g_strcmp0(factory_name,
-                    gst_plugin_feature_get_name(GST_PLUGIN_FEATURE(factory))) ==
-          0) {
+      if (g_strcmp0(factory_name, gst_plugin_feature_get_name(GST_PLUGIN_FEATURE(factory))) == 0) {
         g_debug("GstUtils: setting property for %s", factory_name);
-        g_object_set(
-            G_OBJECT(current_element), property_name, property_value, nullptr);
+        g_object_set(G_OBJECT(current_element), property_name, property_value, nullptr);
       }
 
       if (GST_IS_BIN(current_element)) {  // recursive
@@ -241,8 +235,8 @@ void GstUtils::set_element_property_in_bin(GstElement* bin,
   }
 }
 
-GstElement* GstUtils::get_first_element_from_factory_name(
-    GstBin* bin, const std::string& factory_name) {
+GstElement* GstUtils::get_first_element_from_factory_name(GstBin* bin,
+                                                          const std::string& factory_name) {
   if (!GST_IS_BIN(bin)) {
     g_warning("%s: first argument is not a bin", __FUNCTION__);
     return nullptr;
@@ -257,8 +251,7 @@ GstElement* GstUtils::get_first_element_from_factory_name(
   for (child = children; child != nullptr; child = g_list_next(child)) {
     GstElement* current_element = GST_ELEMENT(child->data);
     GstElementFactory* factory = gst_element_get_factory(current_element);
-    if (factory_name ==
-        gst_plugin_feature_get_name(GST_PLUGIN_FEATURE(factory))) {
+    if (factory_name == gst_plugin_feature_get_name(GST_PLUGIN_FEATURE(factory))) {
       return current_element;
     }
   }
@@ -284,8 +277,7 @@ GSource* GstUtils::g_idle_add_full_with_context(GMainContext* context,
   GSource* source;
   if (function == nullptr) return nullptr;
   source = g_idle_source_new();
-  if (priority != G_PRIORITY_DEFAULT_IDLE)
-    g_source_set_priority(source, priority);
+  if (priority != G_PRIORITY_DEFAULT_IDLE) g_source_set_priority(source, priority);
   g_source_set_callback(source, function, data, notify);
   g_source_attach(source, context);
   g_source_unref(source);
@@ -310,8 +302,7 @@ bool GstUtils::apply_property_value(GObject* g_object_master,
                                     const char* property_name) {
   if (g_object_master == nullptr || g_object_slave == nullptr) return false;
 
-  if (!G_IS_OBJECT(g_object_master) || !G_IS_OBJECT(g_object_slave))
-    return false;
+  if (!G_IS_OBJECT(g_object_master) || !G_IS_OBJECT(g_object_slave)) return false;
 
   GParamSpec* pspec_master = g_object_class_find_property(
       G_OBJECT_CLASS(G_OBJECT_GET_CLASS(g_object_master)), property_name);
@@ -355,12 +346,11 @@ void GstUtils::free_g_enum_values(GEnumValue* target_enum) {
   }
 }
 
-void GstUtils::element_factory_list_to_g_enum(
-    GEnumValue* target_enum,
-    GstElementFactoryListType type,
-    GstRank minrank,
-    bool insert_none_first,
-    const std::vector<std::string>& black_list) {
+void GstUtils::element_factory_list_to_g_enum(GEnumValue* target_enum,
+                                              GstElementFactoryListType type,
+                                              GstRank minrank,
+                                              bool insert_none_first,
+                                              const std::vector<std::string>& black_list) {
   GList* element_list = gst_element_factory_list_get_elements(type, minrank);
 
   GList* iter = element_list;
@@ -372,13 +362,12 @@ void GstUtils::element_factory_list_to_g_enum(
     i++;
   }
   while (iter != nullptr) {
-    if (black_list.end() ==
-        std::find(black_list.begin(),
-                  black_list.end(),
-                  gst_plugin_feature_get_name((GstPluginFeature*)iter->data))) {
+    if (black_list.end() == std::find(black_list.begin(),
+                                      black_list.end(),
+                                      gst_plugin_feature_get_name((GstPluginFeature*)iter->data))) {
       target_enum[i].value = i;
-      target_enum[i].value_name = g_strdup(
-          gst_element_factory_get_longname((GstElementFactory*)iter->data));
+      target_enum[i].value_name =
+          g_strdup(gst_element_factory_get_longname((GstElementFactory*)iter->data));
       target_enum[i].value_nick =
           g_strdup(gst_plugin_feature_get_name((GstPluginFeature*)iter->data));
       i++;
@@ -391,13 +380,11 @@ void GstUtils::element_factory_list_to_g_enum(
   gst_plugin_feature_list_free(element_list);
 }
 
-std::pair<std::vector<std::string> /*names*/,
-          std::vector<std::string> /*nicks*/>
-GstUtils::element_factory_list_to_pair_of_vectors(
-    GstElementFactoryListType type,
-    GstRank minrank,
-    bool insert_none_first,
-    const std::vector<std::string>& black_list) {
+std::pair<std::vector<std::string> /*names*/, std::vector<std::string> /*nicks*/>
+GstUtils::element_factory_list_to_pair_of_vectors(GstElementFactoryListType type,
+                                                  GstRank minrank,
+                                                  bool insert_none_first,
+                                                  const std::vector<std::string>& black_list) {
   std::vector<std::string> names{};
   std::vector<std::string> nicks{};
   GList* element_list = gst_element_factory_list_get_elements(type, minrank);
@@ -410,14 +397,11 @@ GstUtils::element_factory_list_to_pair_of_vectors(
     i++;
   }
   while (iter != nullptr) {
-    if (black_list.end() ==
-        std::find(black_list.begin(),
-                  black_list.end(),
-                  gst_plugin_feature_get_name((GstPluginFeature*)iter->data))) {
-      names.emplace_back(
-          gst_element_factory_get_longname((GstElementFactory*)iter->data));
-      nicks.emplace_back(
-          gst_plugin_feature_get_name((GstPluginFeature*)iter->data));
+    if (black_list.end() == std::find(black_list.begin(),
+                                      black_list.end(),
+                                      gst_plugin_feature_get_name((GstPluginFeature*)iter->data))) {
+      names.emplace_back(gst_element_factory_get_longname((GstElementFactory*)iter->data));
+      nicks.emplace_back(gst_plugin_feature_get_name((GstPluginFeature*)iter->data));
       i++;
     }
     iter = g_list_next(iter);
@@ -460,9 +444,8 @@ bool GstUtils::can_sink_caps(std::string factory_name, std::string caps) {
 
   GstElementFactory* factory = gst_element_factory_find(factory_name.c_str());
   if (nullptr == factory) {
-    g_warning("%s: factory %s cannot be found, returning false",
-              __FUNCTION__,
-              factory_name.c_str());
+    g_warning(
+        "%s: factory %s cannot be found, returning false", __FUNCTION__, factory_name.c_str());
     return false;
   }
   On_scope_exit { gst_object_unref(factory); };

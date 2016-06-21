@@ -28,15 +28,14 @@
 #include "switcher/scope-exit.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    V4L2Src,
-    "v4l2src",
-    "v4l2 Video Capture",
-    "video",
-    "writer/device",
-    "Discover and use v4l2 supported capture cards and cameras",
-    "GPL",
-    "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(V4L2Src,
+                                     "v4l2src",
+                                     "v4l2 Video Capture",
+                                     "video",
+                                     "writer/device",
+                                     "Discover and use v4l2 supported capture cards and cameras",
+                                     "GPL",
+                                     "Nicolas Bouillot");
 
 V4L2Src::V4L2Src(const std::string&)
     : gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)) {
@@ -66,22 +65,21 @@ bool V4L2Src::init() {
     g_message("ERROR:No video4linux device detected.");
     return false;
   }
-  devices_id_ = pmanage<MPtr(&PContainer::make_selection)>(
-      "device",
-      [this](const size_t& val) {
-        devices_enum_.select(val);
-        update_device_specific_properties();
-        return true;
-      },
-      [this]() { return devices_enum_.get(); },
-      "Capture Device",
-      "Enumeration of v4l2 capture devices",
-      devices_enum_);
+  devices_id_ = pmanage<MPtr(&PContainer::make_selection)>("device",
+                                                           [this](const size_t& val) {
+                                                             devices_enum_.select(val);
+                                                             update_device_specific_properties();
+                                                             return true;
+                                                           },
+                                                           [this]() { return devices_enum_.get(); },
+                                                           "Capture Device",
+                                                           "Enumeration of v4l2 capture devices",
+                                                           devices_enum_);
   group_id_ = pmanage<MPtr(&PContainer::make_group)>(
       "config", "Capture device configuration", "device specific parameters");
   update_device_specific_properties();
-  codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity*>(this),
-                                             make_file_name(raw_suffix_));
+  codecs_ =
+      std2::make_unique<GstVideoCodec>(static_cast<Quiddity*>(this), make_file_name(raw_suffix_));
   set_shm_suffix();
   return true;
 }
@@ -97,8 +95,7 @@ bool V4L2Src::fetch_available_resolutions() {
 
   v4l2_frmsizeenum frmsize;
   memset(&frmsize, 0, sizeof(frmsize));
-  frmsize.pixel_format =
-      std::get<0>(description.pixel_formats_[pixel_format_enum_.get()]);
+  frmsize.pixel_format = std::get<0>(description.pixel_formats_[pixel_format_enum_.get()]);
   frmsize.index = 0;
   unsigned default_width = 0;
   unsigned default_height = 0;
@@ -111,9 +108,8 @@ bool V4L2Src::fetch_available_resolutions() {
       default_height = frmsize.discrete.height;
     }
 
-    description.frame_size_discrete_.push_back(
-        std::make_pair(std::to_string(frmsize.discrete.width),
-                       std::to_string(frmsize.discrete.height)));
+    description.frame_size_discrete_.push_back(std::make_pair(
+        std::to_string(frmsize.discrete.width), std::to_string(frmsize.discrete.height)));
     frmsize.index++;
   }
 
@@ -153,23 +149,18 @@ bool V4L2Src::fetch_available_frame_intervals() {
 
   v4l2_frmivalenum frmival;
   memset(&frmival, 0, sizeof(frmival));
-  frmival.pixel_format =
-      std::get<0>(description.pixel_formats_[pixel_format_enum_.get()]);
+  frmival.pixel_format = std::get<0>(description.pixel_formats_[pixel_format_enum_.get()]);
 
   // Only true with continuous resolution devices.
   if (width_ != -1) {
     frmival.width = width_;
   } else {
-    frmival.width =
-        atoi(description.frame_size_discrete_[resolutions_enum_.get()]
-                 .first.c_str());
+    frmival.width = atoi(description.frame_size_discrete_[resolutions_enum_.get()].first.c_str());
   }
   if (height_ != -1) {
     frmival.height = width_;
   } else {
-    frmival.height =
-        atoi(description.frame_size_discrete_[resolutions_enum_.get()]
-                 .second.c_str());
+    frmival.height = atoi(description.frame_size_discrete_[resolutions_enum_.get()].second.c_str());
   }
 
   frmival.index = 0;
@@ -194,18 +185,12 @@ bool V4L2Src::fetch_available_frame_intervals() {
     //  frmival.stepwise.max.denominator,
     //  frmival.stepwise.step.numerator,
     //  frmival.stepwise.step.denominator);
-    description.frame_interval_stepwise_max_numerator_ =
-        frmival.stepwise.max.numerator;
-    description.frame_interval_stepwise_max_denominator_ =
-        frmival.stepwise.max.denominator;
-    description.frame_interval_stepwise_min_numerator_ =
-        frmival.stepwise.max.numerator;
-    description.frame_interval_stepwise_min_denominator_ =
-        frmival.stepwise.max.denominator;
-    description.frame_interval_stepwise_step_numerator_ =
-        frmival.stepwise.step.numerator;
-    description.frame_interval_stepwise_step_denominator_ =
-        frmival.stepwise.step.denominator;
+    description.frame_interval_stepwise_max_numerator_ = frmival.stepwise.max.numerator;
+    description.frame_interval_stepwise_max_denominator_ = frmival.stepwise.max.denominator;
+    description.frame_interval_stepwise_min_numerator_ = frmival.stepwise.max.numerator;
+    description.frame_interval_stepwise_min_denominator_ = frmival.stepwise.max.denominator;
+    description.frame_interval_stepwise_step_numerator_ = frmival.stepwise.step.numerator;
+    description.frame_interval_stepwise_step_denominator_ = frmival.stepwise.step.denominator;
   } else {
     description.frame_interval_stepwise_max_numerator_ = -1;
     description.frame_interval_stepwise_max_denominator_ = -1;
@@ -303,8 +288,7 @@ void V4L2Src::update_discrete_framerate() {
 
 bool V4L2Src::is_current_pixel_format_raw_video() const {
   std::string video_raw("video/x-raw");
-  if (std::string(pixel_format_enum_.get_current_nick(), 0, video_raw.size()) !=
-      video_raw)
+  if (std::string(pixel_format_enum_.get_current_nick(), 0, video_raw.size()) != video_raw)
     return false;
   return true;
 }
@@ -320,8 +304,7 @@ void V4L2Src::update_pixel_format() {
     nicks.push_back(std::get<1>(it));
     names.push_back(std::get<2>(it));
   }
-  pixel_format_enum_ =
-      Selection(std::make_pair(std::move(names), std::move(nicks)), 0);
+  pixel_format_enum_ = Selection(std::make_pair(std::move(names), std::move(nicks)), 0);
   pixel_format_id_ = pmanage<MPtr(&PContainer::make_parented_selection)>(
       "pixel_format",
       "config",
@@ -353,37 +336,37 @@ void V4L2Src::update_width_height() {
   if (cap_descr.frame_size_stepwise_max_width_ < 1) return;
 
   width_ = cap_descr.frame_size_stepwise_max_width_ / 2;
-  width_id_ = pmanage<MPtr(&PContainer::make_parented_int)>(
-      "width",
-      "config",
-      [this](const int& val) {
-        width_ = val;
-        fetch_available_frame_intervals();
-        update_framerate_numerator_denominator();
-        return true;
-      },
-      [this]() { return width_; },
-      "Width",
-      "Capture width",
-      width_,
-      cap_descr.frame_size_stepwise_min_width_,
-      cap_descr.frame_size_stepwise_max_width_);
+  width_id_ =
+      pmanage<MPtr(&PContainer::make_parented_int)>("width",
+                                                    "config",
+                                                    [this](const int& val) {
+                                                      width_ = val;
+                                                      fetch_available_frame_intervals();
+                                                      update_framerate_numerator_denominator();
+                                                      return true;
+                                                    },
+                                                    [this]() { return width_; },
+                                                    "Width",
+                                                    "Capture width",
+                                                    width_,
+                                                    cap_descr.frame_size_stepwise_min_width_,
+                                                    cap_descr.frame_size_stepwise_max_width_);
   height_ = cap_descr.frame_size_stepwise_max_height_ / 2;
-  height_id_ = pmanage<MPtr(&PContainer::make_parented_int)>(
-      "height",
-      "config",
-      [this](const int& val) {
-        height_ = val;
-        fetch_available_frame_intervals();
-        update_framerate_numerator_denominator();
-        return true;
-      },
-      [this]() { return height_; },
-      "Height",
-      "Capture height",
-      height_,
-      cap_descr.frame_size_stepwise_min_height_,
-      cap_descr.frame_size_stepwise_max_height_);
+  height_id_ =
+      pmanage<MPtr(&PContainer::make_parented_int)>("height",
+                                                    "config",
+                                                    [this](const int& val) {
+                                                      height_ = val;
+                                                      fetch_available_frame_intervals();
+                                                      update_framerate_numerator_denominator();
+                                                      return true;
+                                                    },
+                                                    [this]() { return height_; },
+                                                    "Height",
+                                                    "Capture height",
+                                                    height_,
+                                                    cap_descr.frame_size_stepwise_min_height_,
+                                                    cap_descr.frame_size_stepwise_max_height_);
 
   fetch_available_frame_intervals();
   pmanage<MPtr(&PContainer::set<int>)>(width_id_, width_);
@@ -395,21 +378,21 @@ void V4L2Src::update_framerate_numerator_denominator() {
   pmanage<MPtr(&PContainer::remove)>(framerate_id_);
   framerate_id_ = 0;
   if (cap_descr.frame_interval_stepwise_max_numerator_ < 1) return;
-  framerate_id_ = pmanage<MPtr(&PContainer::make_parented_fraction)>(
-      "framerate",
-      "config",
-      [this](const Fraction& val) {
-        framerate_ = val;
-        return true;
-      },
-      [this]() { return framerate_; },
-      "Framerate",
-      "Capture framerate",
-      framerate_,
-      1,
-      1,
-      120,
-      120);
+  framerate_id_ =
+      pmanage<MPtr(&PContainer::make_parented_fraction)>("framerate",
+                                                         "config",
+                                                         [this](const Fraction& val) {
+                                                           framerate_ = val;
+                                                           return true;
+                                                         },
+                                                         [this]() { return framerate_; },
+                                                         "Framerate",
+                                                         "Capture framerate",
+                                                         framerate_,
+                                                         1,
+                                                         1,
+                                                         120,
+                                                         120);
 }
 
 void V4L2Src::update_tv_standard() {
@@ -438,8 +421,7 @@ bool V4L2Src::remake_elements() {
     g_debug("V4L2Src: no capture device available for starting capture");
     return false;
   }
-  if (!UGstElem::renew(v4l2src_, {"device", "norm"}) ||
-      !UGstElem::renew(capsfilter_, {"caps"}) ||
+  if (!UGstElem::renew(v4l2src_, {"device", "norm"}) || !UGstElem::renew(capsfilter_, {"caps"}) ||
       !UGstElem::renew(shmsink_, {"socket-path", "initial-size"})) {
     g_warning("V4L2Src: issue when with elements for video capture");
     return false;
@@ -490,17 +472,14 @@ bool V4L2Src::inspect_file_device(const char* file_path) {
       // g_print ("******** pixel format  %s \n %s",
       //          pixel_format_to_string(fmt.pixelformat).c_str (),
       //          (const char *)fmt.description);
-      GstStructure* structure =
-          gst_v4l2_object_v4l2fourcc_to_structure(fmt.pixelformat);
+      GstStructure* structure = gst_v4l2_object_v4l2fourcc_to_structure(fmt.pixelformat);
       if (nullptr != structure) {
         GstCaps* caps = gst_caps_new_full(structure, nullptr);
         On_scope_exit { gst_caps_unref(caps); };
         gchar* tmp = gst_caps_to_string(caps);
         On_scope_exit { g_free(tmp); };
         description.pixel_formats_.push_back(
-            std::make_tuple(fmt.pixelformat,
-                            tmp,
-                            reinterpret_cast<const char*>(fmt.description)));
+            std::make_tuple(fmt.pixelformat, tmp, reinterpret_cast<const char*>(fmt.description)));
       } else {
         g_warning("v4l2: pixel format %s not suported",
                   pixel_format_to_string(fmt.pixelformat).c_str());
@@ -542,8 +521,7 @@ bool V4L2Src::check_folder_for_v4l2_devices(const char* dir_path) {
   error = nullptr;
   info = g_file_enumerator_next_file(enumerator, nullptr, &error);
   while ((info) && (!error)) {
-    GFile* descend =
-        g_file_get_child(inspected_dir, g_file_info_get_name(info));
+    GFile* descend = g_file_get_child(inspected_dir, g_file_info_get_name(info));
     char* absolute_path = g_file_get_path(descend);
     On_scope_exit {
       if (nullptr != absolute_path) g_free(absolute_path);
@@ -570,25 +548,21 @@ bool V4L2Src::check_folder_for_v4l2_devices(const char* dir_path) {
 
 bool V4L2Src::start() {
   configure_capture();
-  g_object_set(
-      G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
+  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    v4l2src_.get_raw(),
                    capsfilter_.get_raw(),
                    shmsink_.get_raw(),
                    nullptr);
-  gst_element_link_many(
-      v4l2src_.get_raw(), capsfilter_.get_raw(), shmsink_.get_raw(), nullptr);
+  gst_element_link_many(v4l2src_.get_raw(), capsfilter_.get_raw(), shmsink_.get_raw(), nullptr);
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsink_.get_raw(),
       [this](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.writer." + shmpath_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(".shmdata.writer." + shmpath_,
+                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
-                         InfoTree::make(byte_rate));
+        this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate", InfoTree::make(byte_rate));
       });
 
   gst_pipeline_->play(true);
@@ -629,15 +603,11 @@ bool V4L2Src::configure_capture() {
     g_debug("V4L2Src:: no capture device available for starting capture");
     return false;
   }
-  g_object_set(G_OBJECT(v4l2src_.get_raw()),
-               "device",
-               devices_enum_.get_current_nick().c_str(),
-               nullptr);
+  g_object_set(
+      G_OBJECT(v4l2src_.get_raw()), "device", devices_enum_.get_current_nick().c_str(), nullptr);
   if (tv_standards_id_ != 0 && tv_standards_enum_.get() > 0)  // 0 is none
-    g_object_set(G_OBJECT(v4l2src_.get_raw()),
-                 "norm",
-                 tv_standards_enum_.get_current().c_str(),
-                 nullptr);
+    g_object_set(
+        G_OBJECT(v4l2src_.get_raw()), "norm", tv_standards_enum_.get_current().c_str(), nullptr);
   std::string caps = pixel_format_enum_.get_current_nick();
   if (0 != width_id_)
     caps = caps + ", width=(int)" + std::to_string(width_) + ", height=(int)" +
@@ -661,8 +631,7 @@ bool V4L2Src::configure_capture() {
                .frame_interval_discrete_[framerates_enum_.get()]
                .first.c_str();
   else if (0 != framerate_id_) {
-    caps = caps + ", framerate=(fraction)" +
-           std::to_string(framerate_.numerator()) + "/" +
+    caps = caps + ", framerate=(fraction)" + std::to_string(framerate_.numerator()) + "/" +
            std::to_string(framerate_.denominator());
   }
   g_debug("caps for v4l2src %s", caps.c_str());
@@ -689,20 +658,13 @@ GstStructure* V4L2Src::gst_v4l2_object_v4l2fourcc_to_structure(guint32 fourcc) {
       break;
 #ifdef V4L2_PIX_FMT_MPEG4
     case V4L2_PIX_FMT_MPEG4:
-      structure = gst_structure_new("video/mpeg",
-                                    "mpegversion",
-                                    G_TYPE_INT,
-                                    4,
-                                    "systemstream",
-                                    G_TYPE_BOOLEAN,
-                                    FALSE,
-                                    NULL);
+      structure = gst_structure_new(
+          "video/mpeg", "mpegversion", G_TYPE_INT, 4, "systemstream", G_TYPE_BOOLEAN, FALSE, NULL);
       break;
 #endif
 #ifdef V4L2_PIX_FMT_H263
     case V4L2_PIX_FMT_H263:
-      structure = gst_structure_new(
-          "video/x-h263", "variant", G_TYPE_STRING, "itu", NULL);
+      structure = gst_structure_new("video/x-h263", "variant", G_TYPE_STRING, "itu", NULL);
       break;
 #endif
 #ifdef V4L2_PIX_FMT_H264
@@ -807,20 +769,15 @@ GstStructure* V4L2Src::gst_v4l2_object_v4l2fourcc_to_structure(guint32 fourcc) {
           g_assert_not_reached();
           break;
       }
-      structure = gst_structure_new("video/x-raw",
-                                    "format",
-                                    G_TYPE_STRING,
-                                    gst_video_format_to_string(format),
-                                    NULL);
+      structure = gst_structure_new(
+          "video/x-raw", "format", G_TYPE_STRING, gst_video_format_to_string(format), NULL);
       break;
     }
     case V4L2_PIX_FMT_DV:
-      structure = gst_structure_new(
-          "video/x-dv", "systemstream", G_TYPE_BOOLEAN, TRUE, NULL);
+      structure = gst_structure_new("video/x-dv", "systemstream", G_TYPE_BOOLEAN, TRUE, NULL);
       break;
     case V4L2_PIX_FMT_MPEG: /* MPEG          */
-      structure = gst_structure_new(
-          "video/mpegts", "systemstream", G_TYPE_BOOLEAN, TRUE, NULL);
+      structure = gst_structure_new("video/mpegts", "systemstream", G_TYPE_BOOLEAN, TRUE, NULL);
       break;
     case V4L2_PIX_FMT_WNVA: /* Winnov hw compres */
       break;
@@ -845,9 +802,7 @@ GstStructure* V4L2Src::gst_v4l2_object_v4l2fourcc_to_structure(guint32 fourcc) {
       break;
 #endif
     default:
-      GST_DEBUG("Unknown fourcc 0x%08x %" GST_FOURCC_FORMAT,
-                fourcc,
-                GST_FOURCC_ARGS(fourcc));
+      GST_DEBUG("Unknown fourcc 0x%08x %" GST_FOURCC_FORMAT, fourcc, GST_FOURCC_ARGS(fourcc));
       break;
   }
   return structure;

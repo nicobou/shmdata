@@ -43,9 +43,7 @@ class DerivedCreator : public Creator<T, ATs...> {
 template <class T, typename... ATs>
 class CustomDerivedCreator : public Creator<T, ATs...> {
  public:
-  T* Create(ATs... args) {
-    return (*custom_create_)(std::forward<ATs>(args)...);
-  }
+  T* Create(ATs... args) { return (*custom_create_)(std::forward<ATs>(args)...); }
   T* (*custom_create_)(ATs...);
 
   CustomDerivedCreator() : custom_create_() {}

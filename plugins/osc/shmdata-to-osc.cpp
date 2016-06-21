@@ -30,8 +30,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Nicolas Bouillot");
 
-ShmdataToOsc::ShmdataToOsc(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)) {}
+ShmdataToOsc::ShmdataToOsc(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 bool ShmdataToOsc::init() {
   init_startable(this);
@@ -90,9 +89,8 @@ bool ShmdataToOsc::stop() {
 }
 
 bool ShmdataToOsc::connect(const std::string& path) {
-  shm_.reset(new ShmdataFollower(this, path, [this](void* data, size_t size) {
-    this->on_shmreader_data(data, size);
-  }));
+  shm_.reset(new ShmdataFollower(
+      this, path, [this](void* data, size_t size) { this->on_shmreader_data(data, size); }));
   return true;
 }
 
@@ -103,9 +101,7 @@ bool ShmdataToOsc::disconnect() {
 
 void ShmdataToOsc::on_shmreader_data(void* data, size_t data_size) {
   const char* path = lo_get_path(data, data_size);
-  lo_message msg = lo_message_deserialise(data,
-                                          data_size,
-                                          nullptr);  // error code
+  lo_message msg = lo_message_deserialise(data, data_size, nullptr);  // error code
   if (nullptr != msg) {
     std::unique_lock<std::mutex> lock(address_mutex_);
     // lo_message_pp (msg);

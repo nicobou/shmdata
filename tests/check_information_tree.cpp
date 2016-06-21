@@ -42,8 +42,7 @@ std::ostream& operator<<(std::ostream& os, const SerializableWidget&) {
 int main() {
   using namespace switcher;
 
-  auto string_compare = [](const std::string& first,
-                           const std::string& second) {
+  auto string_compare = [](const std::string& first, const std::string& second) {
     return (0 == first.compare(second));
   };
 
@@ -202,29 +201,20 @@ int main() {
     std::string serialized = JSONSerializer::serialize(tree.get());
     // std::cout << serialized << '\n';
     auto deserialized_tree = JSONSerializer::deserialize(serialized);
-    auto deserialized_string =
-        JSONSerializer::serialize(deserialized_tree.get());
+    auto deserialized_string = JSONSerializer::serialize(deserialized_tree.get());
     // std::cout << deserialized_string << '\n';
     assert(serialized == deserialized_string);
   }
 
   {  // get childs keys inserting in an existing container
     InfoTree::ptr tree = InfoTree::make();
-    std::list<std::string> childs{"child1",
-                                  "child2",
-                                  "child3",
-                                  "child4",
-                                  "child5",
-                                  "child6",
-                                  "child7",
-                                  "child8",
-                                  "child9"};
+    std::list<std::string> childs{
+        "child1", "child2", "child3", "child4", "child5", "child6", "child7", "child8", "child9"};
     std::for_each(childs.begin(), childs.end(), [tree](const std::string& val) {
       tree->graft(".root." + val, InfoTree::make("val"));
     });
     std::vector<std::string> child_keys;
-    auto insert_it = std::insert_iterator<decltype(child_keys)>(
-        child_keys, child_keys.begin());
+    auto insert_it = std::insert_iterator<decltype(child_keys)>(child_keys, child_keys.begin());
     tree->copy_and_insert_child_keys(".root", insert_it);
     assert(std::equal(childs.begin(),
                       childs.end(),
@@ -236,23 +226,15 @@ int main() {
 
   {  // get childs keys in a newly allocated container
     InfoTree::ptr tree = InfoTree::make();
-    std::list<std::string> childs{"child1",
-                                  "child2",
-                                  "child3",
-                                  "child4",
-                                  "child5",
-                                  "child6",
-                                  "child7",
-                                  "child8",
-                                  "child9"};
+    std::list<std::string> childs{
+        "child1", "child2", "child3", "child4", "child5", "child6", "child7", "child8", "child9"};
     std::for_each(childs.begin(), childs.end(), [tree](const std::string& val) {
       tree->graft(".root." + val, InfoTree::make("val"));
     });
 
     // using a default container
     auto child_keys_list = tree->get_child_keys(".root");
-    assert(std::equal(
-        childs.begin(), childs.end(), child_keys_list.begin(), string_compare));
+    assert(std::equal(childs.begin(), childs.end(), child_keys_list.begin(), string_compare));
   }
 
   {  // copy_leaf_values
@@ -260,16 +242,13 @@ int main() {
     std::list<std::string> original_values{"0", "1", "2"};
     for (auto& it : original_values)
       tree->graft(std::string(".branch.item" + it), InfoTree::make(it));
-    tree->graft(".other.branch",
-                InfoTree::make());  // not into copy_leaf_values
+    tree->graft(".other.branch", InfoTree::make());  // not into copy_leaf_values
     tree->tag_as_array("branch.", true);
     // std::string serialized = JSONSerializer::serialize(tree);
     // std::cout << serialized << '\n';
     std::list<std::string> values = tree->copy_leaf_values(".branch");
-    assert(std::equal(original_values.begin(),
-                      original_values.end(),
-                      values.begin(),
-                      string_compare));
+    assert(
+        std::equal(original_values.begin(), original_values.end(), values.begin(), string_compare));
     // for (auto &it : values)
     //   std::cout << it << '\n';
   }

@@ -26,9 +26,7 @@
 #include "switcher/startable-quiddity.hpp"
 
 namespace switcher {
-class PortMidiSource : public Quiddity,
-                       public StartableQuiddity,
-                       public PortMidi {
+class PortMidiSource : public Quiddity, public StartableQuiddity, public PortMidi {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSource);
   PortMidiSource(const std::string&);
@@ -64,13 +62,10 @@ class PortMidiSource : public Quiddity,
   bool start() final;
   bool stop() final;
 
-  bool make_property(std::string property_long_name,
-                     gint last_status,
-                     gint last_data);
+  bool make_property(std::string property_long_name, gint last_status, gint last_data);
   static gint get_midi_value(void* user_data);
   // midi properties
-  static gboolean next_midi_event_to_property_method(gchar* long_name,
-                                                     void* user_data);
+  static gboolean next_midi_event_to_property_method(gchar* long_name, void* user_data);
   static gboolean remove_property_method(gchar* long_name, void* user_data);
   static gint get_midi_property_value(void* user_data);
   static void on_pm_event(PmEvent* event, void* user_data);

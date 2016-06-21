@@ -54,19 +54,16 @@ bool apply_property_value(GObject* g_object_master,
                           GObject* g_object_slave,
                           const char* property_name);
 void free_g_enum_values(GEnumValue* target_enum);
-void element_factory_list_to_g_enum(
-    GEnumValue* target_enum,
-    GstElementFactoryListType type,
-    GstRank minrank,
-    bool insert_none_first = true,
-    const std::vector<std::string>& black_list = {});
-std::pair<std::vector<std::string> /*names*/,
-          std::vector<std::string> /*nicks*/>
-element_factory_list_to_pair_of_vectors(
-    GstElementFactoryListType type,
-    GstRank minrank,
-    bool insert_none_first = true,
-    const std::vector<std::string>& black_list = {});
+void element_factory_list_to_g_enum(GEnumValue* target_enum,
+                                    GstElementFactoryListType type,
+                                    GstRank minrank,
+                                    bool insert_none_first = true,
+                                    const std::vector<std::string>& black_list = {});
+std::pair<std::vector<std::string> /*names*/, std::vector<std::string> /*nicks*/>
+element_factory_list_to_pair_of_vectors(GstElementFactoryListType type,
+                                        GstRank minrank,
+                                        bool insert_none_first = true,
+                                        const std::vector<std::string>& black_list = {});
 
 void gst_element_deleter(GstElement* element);
 gulong g_signal_connect_function(gpointer gobject,
@@ -74,8 +71,7 @@ gulong g_signal_connect_function(gpointer gobject,
                                  GCallback cb,
                                  gpointer user_data);
 bool can_sink_caps(std::string factory_name, std::string caps);
-GstElement* get_first_element_from_factory_name(
-    GstBin* bin, const std::string& factory_name);
+GstElement* get_first_element_from_factory_name(GstBin* bin, const std::string& factory_name);
 }  // namespace GstUtils
 }  // namespace switcher
 #endif

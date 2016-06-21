@@ -26,8 +26,7 @@
 int main() {
   bool success = true;
   {
-    switcher::QuiddityManager::ptr manager =
-        switcher::QuiddityManager::make_manager("test_full");
+    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_full");
     for (auto& it : manager->get_classes()) {
       if (!switcher::QuiddityBasicTest::test_full(manager, it)) success = false;
     }

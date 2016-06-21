@@ -51,15 +51,12 @@ class QuidditySignalSubscriber {
   void set_callback(OnEmittedCallback cb);
   void set_user_data(void* user_data);
   void set_name(const gchar* name);
-  bool subscribe(std::shared_ptr<Quiddity> quid,
-                 const std::string& signal_name);
-  bool unsubscribe(std::shared_ptr<Quiddity> quid,
-                   const std::string& signal_name);
+  bool subscribe(std::shared_ptr<Quiddity> quid, const std::string& signal_name);
+  bool unsubscribe(std::shared_ptr<Quiddity> quid, const std::string& signal_name);
   bool unsubscribe(std::shared_ptr<Quiddity> quid);
 
   std::vector<std::pair<std::string, std::string>> list_subscribed_signals();
-  static void signal_cb(const std::vector<std::string>& params,
-                        gpointer user_data);
+  static void signal_cb(const std::vector<std::string>& params, gpointer user_data);
 
   // manager_impl initialization
   void set_manager_impl(std::shared_ptr<QuiddityManager_Impl> manager_impl);
@@ -80,8 +77,7 @@ class QuidditySignalSubscriber {
     void* user_data{nullptr};
     std::weak_ptr<Quiddity> quid{};
   } SignalData;
-  typedef std::map<std::pair<std::string, std::string>, SignalData*>
-      SignalDataMap;
+  typedef std::map<std::pair<std::string, std::string>, SignalData*> SignalDataMap;
   SignalDataMap signal_datas_{};
 };
 }  // namespace switcher

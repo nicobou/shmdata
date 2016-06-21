@@ -23,9 +23,8 @@
 namespace switcher {
 bool UGstElem::renew(UGstElem& element, const std::vector<std::string>& props) {
   g_debug("renewing gst element of class %s", element.class_name_.c_str());
-  gst_element_handle tmp(
-      gst_element_factory_make(element.class_name_.c_str(), nullptr),
-      &GstUtils::gst_element_deleter);
+  gst_element_handle tmp(gst_element_factory_make(element.class_name_.c_str(), nullptr),
+                         &GstUtils::gst_element_deleter);
   for (auto& it : props)
     GstUtils::apply_property_value(
         G_OBJECT(element.element_.get()), G_OBJECT(tmp.get()), it.c_str());
@@ -36,10 +35,8 @@ bool UGstElem::renew(UGstElem& element, const std::vector<std::string>& props) {
 
 UGstElem::UGstElem(const gchar* class_name)
     : class_name_(class_name),
-      element_(gst_element_factory_make(class_name, nullptr),
-               &GstUtils::gst_element_deleter) {
-  if (nullptr == element_)
-    g_warning("GStreamer element can be made (type %s)", class_name);
+      element_(gst_element_factory_make(class_name, nullptr), &GstUtils::gst_element_deleter) {
+  if (nullptr == element_) g_warning("GStreamer element can be made (type %s)", class_name);
 }
 
 bool UGstElem::safe_bool_idiom() const { return static_cast<bool>(element_); }
@@ -56,8 +53,6 @@ void UGstElem::invoke(std::function<void(GstElement*)> command) {
 
 GstElement* UGstElem::get_raw() { return element_.get(); }
 
-void UGstElem::mute(const gchar* class_name) {
-  class_name_ = std::string(class_name);
-}
+void UGstElem::mute(const gchar* class_name) { class_name_ = std::string(class_name); }
 
 }  // namespace switcher

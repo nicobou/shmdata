@@ -71,9 +71,7 @@ class PJICEStreamTrans : public SafeBoolIdiom {
                             pj_size_t size,
                             const pj_sockaddr_t* src_addr,
                             unsigned src_addr_len);
-  static void cb_on_ice_complete(pj_ice_strans* ice_st,
-                                 pj_ice_strans_op op,
-                                 pj_status_t status);
+  static void cb_on_ice_complete(pj_ice_strans* ice_st, pj_ice_strans_op op, pj_status_t status);
 };
 
 }  // namespace switcher

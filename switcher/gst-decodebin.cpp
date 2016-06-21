@@ -41,9 +41,7 @@ bool GstDecodebin::init() {
   if (!shmsrc_) return false;
 
   shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) {
-        return this->on_shmdata_connect(shmpath);
-      },
+      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
       [this](const std::string&) { return this->on_shmdata_disconnect(); },
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
@@ -78,45 +76,34 @@ void GstDecodebin::configure_shmdatasink(GstElement* element,
   shmw_sub_ = std2::make_unique<GstShmdataSubscriber>(
       element,
       [this, shmpath](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.writer." + shmpath,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(".shmdata.writer." + shmpath,
+                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
       },
       [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.writer." + shmpath + ".byte_rate",
-                         InfoTree::make(byte_rate));
+        this->graft_tree(".shmdata.writer." + shmpath + ".byte_rate", InfoTree::make(byte_rate));
       });
 }
 
 bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
   // creating shmdata reader
-  g_object_set(G_OBJECT(shmsrc_.get_raw()),
-               "copy-buffers",
-               TRUE,
-               "socket-path",
-               shmpath.c_str(),
-               nullptr);
+  g_object_set(
+      G_OBJECT(shmsrc_.get_raw()), "copy-buffers", TRUE, "socket-path", shmpath.c_str(), nullptr);
   shmr_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
       [this, shmpath](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.reader." + shmpath,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(".shmdata.reader." + shmpath,
+                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
       },
       [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.reader." + shmpath + ".byte_rate",
-                         InfoTree::make(byte_rate));
+        this->graft_tree(".shmdata.reader." + shmpath + ".byte_rate", InfoTree::make(byte_rate));
       });
 
   // creating decodebin
-  std::unique_ptr<DecodebinToShmdata> decodebin =
-      std2::make_unique<DecodebinToShmdata>(
-          gst_pipeline_.get(),
-          [this](GstElement* el,
-                 const std::string& media_type,
-                 const std::string& media_label) {
-            configure_shmdatasink(el, media_type, media_label);
-          });
+  std::unique_ptr<DecodebinToShmdata> decodebin = std2::make_unique<DecodebinToShmdata>(
+      gst_pipeline_.get(),
+      [this](GstElement* el, const std::string& media_type, const std::string& media_label) {
+        configure_shmdatasink(el, media_type, media_label);
+      });
   // adding to pipeline
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), shmsrc_.get_raw());
   if (!decodebin->invoke_with_return<gboolean>([this](GstElement* el) {
@@ -130,8 +117,7 @@ bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
   GstPad* sinkpad = decodebin->invoke_with_return<GstPad*>(
       [](GstElement* el) { return gst_element_get_static_pad(el, "sink"); });
   On_scope_exit { gst_object_unref(GST_OBJECT(sinkpad)); };
-  if (!GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad)))
-    return false;
+  if (!GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad))) return false;
   // set media label if relevant
   auto caps = gst_pad_get_allowed_caps(pad);
   if (0 < gst_caps_get_size(caps)) {
@@ -139,8 +125,7 @@ bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
     auto structure = gst_caps_get_structure(caps, 0);
     auto media_label = gst_structure_get_string(structure, "media-label");
     if (nullptr != media_label)
-      decodebin->set_media_label(
-          gst_structure_get_string(structure, "media-label"));
+      decodebin->set_media_label(gst_structure_get_string(structure, "media-label"));
   }
   // save the decodebin
   decoder_ = std::move(decodebin);

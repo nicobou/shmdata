@@ -45,43 +45,39 @@ JackToShmdata::JackToShmdata(const std::string& name)
                        auto manager = manager_impl_.lock();
                        if (!manager) return;
                        if (!manager->remove(get_name()))
-                         g_warning(
-                             "%s did not self destruct after jack shutdown",
-                             get_name().c_str());
+                         g_warning("%s did not self destruct after jack shutdown",
+                                   get_name().c_str());
                      });
                      thread.detach();
                    }) {}
 
 bool JackToShmdata::init() {
   if (!jack_client_) {
-    g_message(
-        "ERROR:JackClient cannot be instanciated (is jack server running?)");
+    g_message("ERROR:JackClient cannot be instanciated (is jack server running?)");
     return false;
   }
   init_startable(this);
-  num_channels_id_ =
-      pmanage<MPtr(&PContainer::make_int)>("channels",
-                                           [this](const int& val) {
-                                             num_channels_ = val;
-                                             update_port_to_connect();
-                                             return true;
-                                           },
-                                           [this]() { return num_channels_; },
-                                           "Channels",
-                                           "number of channels",
-                                           num_channels_,
-                                           1,
-                                           128);
-  client_name_id_ =
-      pmanage<MPtr(&PContainer::make_string)>("jack-client-name",
-                                              [this](const std::string& val) {
-                                                client_name_ = val;
-                                                return true;
-                                              },
-                                              [this]() { return client_name_; },
-                                              "Client Name",
-                                              "The jack client name",
-                                              client_name_);
+  num_channels_id_ = pmanage<MPtr(&PContainer::make_int)>("channels",
+                                                          [this](const int& val) {
+                                                            num_channels_ = val;
+                                                            update_port_to_connect();
+                                                            return true;
+                                                          },
+                                                          [this]() { return num_channels_; },
+                                                          "Channels",
+                                                          "number of channels",
+                                                          num_channels_,
+                                                          1,
+                                                          128);
+  client_name_id_ = pmanage<MPtr(&PContainer::make_string)>("jack-client-name",
+                                                            [this](const std::string& val) {
+                                                              client_name_ = val;
+                                                              return true;
+                                                            },
+                                                            [this]() { return client_name_; },
+                                                            "Client Name",
+                                                            "The jack client name",
+                                                            client_name_);
   auto_connect_id_ = pmanage<MPtr(&PContainer::make_bool)>(
       "auto_connect",
       [this](const bool& val) {
@@ -95,30 +91,29 @@ bool JackToShmdata::init() {
       "Auto Connect",
       "Auto Connect to another client",
       auto_connect_);
-  connect_to_id_ =
-      pmanage<MPtr(&PContainer::make_string)>("connect-to",
-                                              [this](const std::string& val) {
-                                                connect_to_ = val;
-                                                update_port_to_connect();
-                                                return true;
-                                              },
-                                              [this]() { return connect_to_; },
-                                              "Connect To",
-                                              "Auto connect to an other client",
-                                              connect_to_);
-  index_id_ = pmanage<MPtr(&PContainer::make_int)>(
-      "index",
-      [this](const int& val) {
-        index_ = val;
-        update_port_to_connect();
-        return true;
-      },
-      [this]() { return index_; },
-      "Index",
-      "Start connecting to other client from this index",
-      num_channels_,
-      1,
-      128);
+  connect_to_id_ = pmanage<MPtr(&PContainer::make_string)>("connect-to",
+                                                           [this](const std::string& val) {
+                                                             connect_to_ = val;
+                                                             update_port_to_connect();
+                                                             return true;
+                                                           },
+                                                           [this]() { return connect_to_; },
+                                                           "Connect To",
+                                                           "Auto connect to an other client",
+                                                           connect_to_);
+  index_id_ =
+      pmanage<MPtr(&PContainer::make_int)>("index",
+                                           [this](const int& val) {
+                                             index_ = val;
+                                             update_port_to_connect();
+                                             return true;
+                                           },
+                                           [this]() { return index_; },
+                                           "Index",
+                                           "Start connecting to other client from this index",
+                                           num_channels_,
+                                           1,
+                                           128);
   update_port_to_connect();
   return true;
 }
@@ -174,24 +169,21 @@ bool JackToShmdata::stop() {
 int JackToShmdata::jack_process(jack_nframes_t nframes, void* arg) {
   auto context = static_cast<JackToShmdata*>(arg);
   {
-    std::unique_lock<std::mutex> lock(
-        context->port_to_connect_in_jack_process_mutex_);
+    std::unique_lock<std::mutex> lock(context->port_to_connect_in_jack_process_mutex_);
     for (auto& it : context->port_to_connect_in_jack_process_)
-      jack_connect(
-          context->jack_client_.get_raw(), it.first.c_str(), it.second.c_str());
+      jack_connect(context->jack_client_.get_raw(), it.first.c_str(), it.second.c_str());
     context->port_to_connect_in_jack_process_.clear();
   }
 
   {
-    std::unique_lock<std::mutex> lock(context->input_ports_mutex_,
-                                      std::defer_lock);
+    std::unique_lock<std::mutex> lock(context->input_ports_mutex_, std::defer_lock);
     if (lock.try_lock()) {
       std::size_t num_chan = context->input_ports_.size();
       if (0 == num_chan) return 0;
       std::vector<jack_sample_t*> jack_bufs;
       for (unsigned int i = 0; i < num_chan; ++i) {
-        jack_sample_t* buf = (jack_sample_t*)jack_port_get_buffer(
-            context->input_ports_[i].get_raw(), nframes);
+        jack_sample_t* buf =
+            (jack_sample_t*)jack_port_get_buffer(context->input_ports_[i].get_raw(), nframes);
         if (!buf) return 0;
         jack_bufs.emplace_back(buf);
       }
@@ -203,8 +195,7 @@ int JackToShmdata::jack_process(jack_nframes_t nframes, void* arg) {
         }
       }
       size_t size = nframes * num_chan * sizeof(jack_sample_t);
-      context->shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
-          context->buf_.data(), size);
+      context->shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(context->buf_.data(), size);
       context->shm_->bytes_written(size);
     }  // locked
   }    // releasing lock
@@ -238,25 +229,22 @@ void JackToShmdata::connect_ports() {
   }
 
   for (unsigned int i = 0; i < num_channels_; ++i) {
-    jack_connect(
-        jack_client_.get_raw(),
-        ports_to_connect_[i].c_str(),
-        std::string(client_name_ + ":" + input_ports_[i].get_name()).c_str());
+    jack_connect(jack_client_.get_raw(),
+                 ports_to_connect_[i].c_str(),
+                 std::string(client_name_ + ":" + input_ports_[i].get_name()).c_str());
   }
 }
 
 void JackToShmdata::on_port(jack_port_t* port) {
   int flags = jack_port_flags(port);
   if (!(flags & JackPortIsOutput)) return;
-  auto it = std::find(
-      ports_to_connect_.begin(), ports_to_connect_.end(), jack_port_name(port));
+  auto it = std::find(ports_to_connect_.begin(), ports_to_connect_.end(), jack_port_name(port));
   if (ports_to_connect_.end() == it) return;
   {
     std::unique_lock<std::mutex> lock(port_to_connect_in_jack_process_mutex_);
     port_to_connect_in_jack_process_.push_back(std::make_pair(
         *it,
-        std::string(client_name_ + ":" +
-                    input_ports_[it - ports_to_connect_.begin()].get_name())));
+        std::string(client_name_ + ":" + input_ports_[it - ports_to_connect_.begin()].get_name())));
   }
 }
 

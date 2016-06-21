@@ -36,8 +36,7 @@ void AbstractFactory<T, Key, Doc, ATs...>::register_class(Key Id, Doc doc) {
 template <typename T, typename Key, typename Doc, typename... ATs>
 void AbstractFactory<T, Key, Doc, ATs...>::register_class_with_custom_factory(
     Key Id, Doc doc, T* (*custom_create)(ATs...), void (*custom_destroy)(T*)) {
-  CustomDerivedCreator<T, ATs...>* creator =
-      new CustomDerivedCreator<T, ATs...>();
+  CustomDerivedCreator<T, ATs...>* creator = new CustomDerivedCreator<T, ATs...>();
   creator->custom_create_ = custom_create;
   Creator<T, ATs...>* Fn = (Creator<T, ATs...>*)creator;
   constructor_map_[Id] = Fn;
@@ -53,8 +52,7 @@ std::vector<Key> AbstractFactory<T, Key, Doc, ATs...>::get_keys() {
 }
 
 template <typename T, typename Key, typename Doc, typename... ATs>
-std::vector<Doc>
-AbstractFactory<T, Key, Doc, ATs...>::get_classes_documentation() {
+std::vector<Doc> AbstractFactory<T, Key, Doc, ATs...>::get_classes_documentation() {
   std::vector<Doc> tmp;
   typename std::map<Key, Doc>::iterator i = classes_documentation_.begin();
   while (i != classes_documentation_.end()) {
@@ -88,13 +86,11 @@ bool AbstractFactory<T, Key, Doc, ATs...>::unregister_class(Key Id) {
 }
 
 template <typename T, typename Key, typename Doc, typename... ATs>
-std::shared_ptr<T> AbstractFactory<T, Key, Doc, ATs...>::create(Key Id,
-                                                                ATs... args) {
+std::shared_ptr<T> AbstractFactory<T, Key, Doc, ATs...>::create(Key Id, ATs... args) {
   std::shared_ptr<T> pointer;
   if (constructor_map_.find(Id) != constructor_map_.end()) {
     if (destructor_map_.find(Id) != destructor_map_.end())
-      pointer.reset(constructor_map_[Id]->Create(std::forward<ATs>(args)...),
-                    destructor_map_[Id]);
+      pointer.reset(constructor_map_[Id]->Create(std::forward<ATs>(args)...), destructor_map_[Id]);
     else
       pointer.reset(constructor_map_[Id]->Create(std::forward<ATs>(args)...));
   }

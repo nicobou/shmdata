@@ -52,9 +52,8 @@ class PropertySpecification {
       const std::string& label,
       const std::string& description,
       const V& default_value,
-      typename std::enable_if<
-          !std::is_arithmetic<U>::value &&
-          !is_specialization_of<std::tuple, U>::value>::type* = nullptr)
+      typename std::enable_if<!std::is_arithmetic<U>::value &&
+                              !is_specialization_of<std::tuple, U>::value>::type* = nullptr)
       : spec_(InfoTree::make()), is_valid_([](const V&) { return true; }) {
     spec_->graft("label", InfoTree::make(label));
     spec_->graft("description", InfoTree::make(description));
@@ -64,17 +63,15 @@ class PropertySpecification {
   }
 
   template <typename U = T, typename V>
-  PropertySpecification(
-      bool is_writable,
-      const std::string& label,
-      const std::string& description,
-      const V& default_value,
-      const V& min_value = std::numeric_limits<U>::min(),
-      const V& max_value = std::numeric_limits<U>::max(),
-      typename std::enable_if<!std::is_same<U, bool>::value &&
-                              std::is_arithmetic<U>::value>::type* = nullptr)
-      : spec_(InfoTree::make()),
-        is_valid_([min_value, max_value](const V& val) {
+  PropertySpecification(bool is_writable,
+                        const std::string& label,
+                        const std::string& description,
+                        const V& default_value,
+                        const V& min_value = std::numeric_limits<U>::min(),
+                        const V& max_value = std::numeric_limits<U>::max(),
+                        typename std::enable_if<!std::is_same<U, bool>::value &&
+                                                std::is_arithmetic<U>::value>::type* = nullptr)
+      : spec_(InfoTree::make()), is_valid_([min_value, max_value](const V& val) {
           if (val < min_value || val > max_value) {
             g_warning("value %s is out of range [%s,%s]",
                       std::to_string(val).c_str(),
@@ -125,8 +122,7 @@ class PropertySpecification {
                         const std::string& description,
                         const Selection& default_value,
                         Selection::index_t max)
-      : spec_(InfoTree::make()),
-        is_valid_([max](const Selection::index_t& index) {
+      : spec_(InfoTree::make()), is_valid_([max](const Selection::index_t& index) {
           if (index > max) {
             g_warning("selection index out of range");
             return false;
@@ -142,8 +138,7 @@ class PropertySpecification {
     for (const auto& it : default_value.get_list()) {
       auto tree = InfoTree::make();
       tree->graft(".label", InfoTree::make(it));
-      tree->graft(".id",
-                  InfoTree::make(pos));  // overhiding id set by json serializer
+      tree->graft(".id", InfoTree::make(pos));  // overhiding id set by json serializer
       spec_->graft(".values." + std::to_string(pos), tree);
       ++pos;
     }
@@ -160,20 +155,19 @@ class PropertySpecification {
                         Fraction::ator_t max_num,
                         Fraction::ator_t max_denom)
       : spec_(InfoTree::make()),
-        is_valid_(
-            [min_num, min_denom, max_num, max_denom](const Fraction& frac) {
-              auto num = frac.numerator();
-              if (num < min_num || num > max_num) {
-                g_warning("numerator out of range");
-                return false;
-              }
-              auto denom = frac.denominator();
-              if (denom < min_denom || denom > max_denom) {
-                g_warning("denominator out of range");
-                return false;
-              }
-              return true;
-            }) {
+        is_valid_([min_num, min_denom, max_num, max_denom](const Fraction& frac) {
+          auto num = frac.numerator();
+          if (num < min_num || num > max_num) {
+            g_warning("numerator out of range");
+            return false;
+          }
+          auto denom = frac.denominator();
+          if (denom < min_denom || denom > max_denom) {
+            g_warning("denominator out of range");
+            return false;
+          }
+          return true;
+        }) {
     spec_->graft("label", InfoTree::make(label));
     spec_->graft("description", InfoTree::make(description));
     spec_->graft("type", InfoTree::make("fraction"));
@@ -191,8 +185,7 @@ class PropertySpecification {
       const std::string& label,
       const std::string& description,
       const V& default_value,
-      typename std::enable_if<
-          is_specialization_of<std::tuple, U>::value>::type* = nullptr)
+      typename std::enable_if<is_specialization_of<std::tuple, U>::value>::type* = nullptr)
       : spec_(InfoTree::make()), is_valid_([](const U&) { return true; }) {
     spec_->graft("label", InfoTree::make(label));
     spec_->graft("description", InfoTree::make(description));
@@ -202,11 +195,9 @@ class PropertySpecification {
     spec_->tag_as_array(".value.", true);
   }
 
-  template <
-      typename U = Group,
-      typename std::enable_if<std::is_same<U, Group>::value>::type* = nullptr>
-  PropertySpecification(const std::string& label,
-                        const std::string& description)
+  template <typename U = Group,
+            typename std::enable_if<std::is_same<U, Group>::value>::type* = nullptr>
+  PropertySpecification(const std::string& label, const std::string& description)
       : spec_(InfoTree::make()), is_valid_([](const Group&) { return false; }) {
     spec_->graft("label", InfoTree::make(label));
     spec_->graft("description", InfoTree::make(description));
@@ -220,23 +211,19 @@ class PropertySpecification {
 
   // updating current value
   template <typename U,
-            typename std::enable_if<
-                !std::is_same<U, Selection>::value &&
-                !is_specialization_of<std::tuple, U>::value>::type* = nullptr>
+            typename std::enable_if<!std::is_same<U, Selection>::value &&
+                                    !is_specialization_of<std::tuple, U>::value>::type* = nullptr>
   void update_current_value(const U& cur_val) {
     spec_->graft("value", InfoTree::make(cur_val));
   }
 
-  template <typename U,
-            typename std::enable_if<std::is_same<U, Selection>::value>::type* =
-                nullptr>
+  template <typename U, typename std::enable_if<std::is_same<U, Selection>::value>::type* = nullptr>
   void update_current_value(const U& cur_val) {
     spec_->graft("value", InfoTree::make(cur_val.get()));
   }
 
   template <typename U,
-            typename std::enable_if<
-                is_specialization_of<std::tuple, U>::value>::type* = nullptr>
+            typename std::enable_if<is_specialization_of<std::tuple, U>::value>::type* = nullptr>
   void update_current_value(const U& cur_val) {
     print_tuple(".value.", cur_val);
     spec_->tag_as_array(".value.", true);
@@ -251,17 +238,14 @@ class PropertySpecification {
   template <typename F, typename... U>
   void print_targs(const std::string& key, size_t pos, F first, U... args) {
     auto tree = InfoTree::make();
-    tree->graft(".id",
-                InfoTree::make(pos));  // overhiding id set by json serializer
+    tree->graft(".id", InfoTree::make(pos));  // overhiding id set by json serializer
     tree->graft(".value", InfoTree::make(first));
     tree->graft(".type", InfoTree::make(TypeNameRegistry::get_name<F>()));
     spec_->graft(key + "." + std::to_string(pos), tree);
     print_targs(std::forward<const std::string&>(key), pos + 1, args...);
   }
   template <typename... U, int... S>
-  void print_tuple_call(const std::string& key,
-                        const std::tuple<U...>& tup,
-                        tseq<S...>) {
+  void print_tuple_call(const std::string& key, const std::tuple<U...>& tup, tseq<S...>) {
     print_targs(std::forward<const std::string&>(key), 0, std::get<S>(tup)...);
   }
   template <typename... U>

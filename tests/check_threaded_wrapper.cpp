@@ -56,11 +56,7 @@ void use_A_async(ThreadedWrapper<A>& twa, const string& str) {
   int i = 100;
   while (--i >= 0) {
     twa.invoke_async<MPtr(&A::hello)>(
-        [=](const string& str) {
-          assert(str == string("hello") + to_string(i));
-        },
-        i,
-        str);
+        [=](const string& str) { assert(str == string("hello") + to_string(i)); }, i, str);
     twa.invoke_async<MPtr(&A::do_nothing)>([=]() {
       if (0 == i) cout << str << ": last do_nothing invocation done" << endl;
     });

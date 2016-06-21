@@ -52,11 +52,9 @@ int main() {
     else
       success = false;
 
-    if (!switcher::QuiddityBasicTest::test_full(manager, "midisrc"))
-      success = false;
+    if (!switcher::QuiddityBasicTest::test_full(manager, "midisrc")) success = false;
 
-    if (!switcher::QuiddityBasicTest::test_full(manager, "midisink"))
-      success = false;
+    if (!switcher::QuiddityBasicTest::test_full(manager, "midisink")) success = false;
   }  // end of scope is releasing the manager
 
   if (success)

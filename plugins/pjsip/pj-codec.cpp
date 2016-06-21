@@ -24,22 +24,19 @@
 namespace switcher {
 PJCodec::alt_codec_factory_t PJCodec::alt_codec_factory;
 
-pjmedia_codec_factory_op PJCodec::alt_codec_factory_op = {
-    &PJCodec::alt_codec_test_alloc,
-    &PJCodec::alt_codec_default_attr,
-    &PJCodec::alt_codec_enum_codecs,
-    &PJCodec::alt_codec_alloc_codec,
-    &PJCodec::alt_codec_dealloc_codec,
-    &PJCodec::alt_codec_deinit};
+pjmedia_codec_factory_op PJCodec::alt_codec_factory_op = {&PJCodec::alt_codec_test_alloc,
+                                                          &PJCodec::alt_codec_default_attr,
+                                                          &PJCodec::alt_codec_enum_codecs,
+                                                          &PJCodec::alt_codec_alloc_codec,
+                                                          &PJCodec::alt_codec_dealloc_codec,
+                                                          &PJCodec::alt_codec_deinit};
 
 pj_status_t PJCodec::alt_codec_test_alloc(pjmedia_codec_factory* /*factory*/,
                                           const pjmedia_codec_info* id) {
   // "available_codecs" could become static and reused here
   PJCodecUtils::codecs available_codecs = PJCodecUtils::inspect_rtp_codecs();
   auto it = std::find_if(
-      available_codecs.begin(),
-      available_codecs.end(),
-      [&id](const RTPCodec::ptr& codec) {
+      available_codecs.begin(), available_codecs.end(), [&id](const RTPCodec::ptr& codec) {
         return 0 ==
                codec->encoding_name_.compare(
                    0, id->encoding_name.slen, pj_strbuf(&id->encoding_name));
@@ -55,9 +52,7 @@ pj_status_t PJCodec::alt_codec_default_attr(pjmedia_codec_factory* /*factory*/,
   PJCodecUtils::codecs available_codecs = PJCodecUtils::inspect_rtp_codecs();
 
   auto it = std::find_if(
-      available_codecs.begin(),
-      available_codecs.end(),
-      [&id](const RTPCodec::ptr& codec) {
+      available_codecs.begin(), available_codecs.end(), [&id](const RTPCodec::ptr& codec) {
         return 0 ==
                codec->encoding_name_.compare(
                    0, id->encoding_name.slen, pj_strbuf(&id->encoding_name));
@@ -130,8 +125,7 @@ pj_status_t PJCodec::alt_codec_deinit(void) {
   }
   pjmedia_codec_mgr* codec_mgr;
   codec_mgr = pjmedia_endpt_get_codec_mgr(PJMediaEndpt::med_endpt_);
-  return pjmedia_codec_mgr_unregister_factory(codec_mgr,
-                                              &alt_codec_factory.base);
+  return pjmedia_codec_mgr_unregister_factory(codec_mgr, &alt_codec_factory.base);
 }
 
 pj_status_t PJCodec::install_codecs() {
@@ -146,8 +140,7 @@ pj_status_t PJCodec::install_codecs() {
   /* Register our "dummy" codecs */
   alt_codec_factory.base.op = &alt_codec_factory_op;
   codec_mgr = pjmedia_endpt_get_codec_mgr(PJMediaEndpt::med_endpt_);
-  status =
-      pjmedia_codec_mgr_register_factory(codec_mgr, &alt_codec_factory.base);
+  status = pjmedia_codec_mgr_register_factory(codec_mgr, &alt_codec_factory.base);
   if (status != PJ_SUCCESS) return status;
 
   /* initialize your evil library here */

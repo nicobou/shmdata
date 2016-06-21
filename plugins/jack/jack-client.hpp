@@ -53,8 +53,7 @@ class JackClient : public SafeBoolIdiom {
   jack_client_t* get_raw();
 
  private:
-  using jack_client_handle =
-      std::unique_ptr<jack_client_t, decltype(&jack_client_close)>;
+  using jack_client_handle = std::unique_ptr<jack_client_t, decltype(&jack_client_close)>;
   jack_client_handle client_;
   jack_status_t status_{};
   jack_nframes_t sample_rate_{0};  // actually uint32_t
@@ -79,8 +78,7 @@ class JackPort : public SafeBoolIdiom {
   std::string get_name() const;
 
  private:
-  using port_handle =
-      std::unique_ptr<jack_port_t, std::function<void(jack_port_t*)>>;
+  using port_handle = std::unique_ptr<jack_port_t, std::function<void(jack_port_t*)>>;
   std::string port_name_;
   port_handle port_;
   bool safe_bool_idiom() const final;

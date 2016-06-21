@@ -58,9 +58,7 @@ GObjectWrapper::GObjectWrapper() {
   my_object_->context = this;
 }
 
-guint GObjectWrapper::make_signal(GType return_type,
-                                  guint n_params,
-                                  GType* param_types) {
+guint GObjectWrapper::make_signal(GType return_type, guint n_params, GType* param_types) {
   guint sig_id = next_signal_num_;
   next_signal_num_++;
   gchar* name = g_strdup_printf("custom_signal_%d", sig_id);

@@ -62,8 +62,7 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
                            std::string /*name*/,
                            std::string /*description*/>>
         pixel_formats_{};
-    std::vector<std::pair<std::string /*width*/, std::string /*height*/>>
-        frame_size_discrete_{};
+    std::vector<std::pair<std::string /*width*/, std::string /*height*/>> frame_size_discrete_{};
     gint frame_size_stepwise_max_width_{0};
     gint frame_size_stepwise_min_width_{0};
     gint frame_size_stepwise_step_width_{0};
@@ -71,8 +70,7 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
     gint frame_size_stepwise_min_height_{0};
     gint frame_size_stepwise_step_height_{0};
     std::vector<std::string> tv_standards_{};
-    std::vector<
-        std::pair<std::string /*numerator*/, std::string /*denominator*/>>
+    std::vector<std::pair<std::string /*numerator*/, std::string /*denominator*/>>
         frame_interval_discrete_{};
     gint frame_interval_stepwise_min_numerator_{0};
     gint frame_interval_stepwise_min_denominator_{0};

@@ -33,30 +33,26 @@ class UGstElem : public SafeBoolIdiom {
   explicit UGstElem(const gchar* class_name);
   // invoke as g_object
   template <typename Return_type>
-  Return_type g_invoke_with_return(
-      std::function<Return_type(gpointer)> command) {
+  Return_type g_invoke_with_return(std::function<Return_type(gpointer)> command) {
     return command(G_OBJECT(element_.get()));
   }
   void g_invoke(std::function<void(gpointer)> command);
   // invoke as GstElement
   template <typename Return_type>
-  Return_type invoke_with_return(
-      std::function<Return_type(GstElement*)> command) {
+  Return_type invoke_with_return(std::function<Return_type(GstElement*)> command) {
     return command(element_.get());
   }
   void invoke(std::function<void(GstElement*)> command);
   // get raw without taking ownership (do not unref)
   GstElement* get_raw();
   // renew
-  static bool renew(UGstElem& element,
-                    const std::vector<std::string>& props_to_apply = {});
+  static bool renew(UGstElem& element, const std::vector<std::string>& props_to_apply = {});
   // mute (will be instanciated with a new class at renew)
   void mute(const gchar* class_name);
 
  private:
   std::string class_name_{};
-  using gst_element_handle =
-      std::unique_ptr<GstElement, decltype(&GstUtils::gst_element_deleter)>;
+  using gst_element_handle = std::unique_ptr<GstElement, decltype(&GstUtils::gst_element_deleter)>;
   gst_element_handle element_;
   // safe bool idiom implementation
   bool safe_bool_idiom() const final;

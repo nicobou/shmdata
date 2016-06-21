@@ -32,13 +32,9 @@ class RtpSession2;
 class RTPReceiver {
  public:
   using id_t = size_t;
-  using configure_shmsink_cb_t =
-      std::function<void(GstElement* el,
-                         const std::string& media_type,
-                         const std::string& media_label)>;
-  RTPReceiver(RtpSession2* session,
-              const std::string& rtpshmpath,
-              configure_shmsink_cb_t cb);
+  using configure_shmsink_cb_t = std::function<void(
+      GstElement* el, const std::string& media_type, const std::string& media_label)>;
+  RTPReceiver(RtpSession2* session, const std::string& rtpshmpath, configure_shmsink_cb_t cb);
   RTPReceiver() = delete;
   ~RTPReceiver();
   RTPReceiver(const RTPReceiver&) = delete;
@@ -56,15 +52,9 @@ class RTPReceiver {
   GstPad* rtp_sink_pad_{nullptr};  // check if this needs to be a member
   std::string rtp_src_pad_prefix_{};
 
-  static void on_caps(GstElement* typefind,
-                      guint /*prob*/,
-                      GstCaps* caps,
-                      gpointer data);
+  static void on_caps(GstElement* typefind, guint /*prob*/, GstCaps* caps, gpointer data);
   static void on_pad_added(GstElement* object, GstPad* pad, gpointer user_data);
-  static GstCaps* request_pt_map(GstElement* sess,
-                                 guint session,
-                                 guint pt,
-                                 gpointer user_data);
+  static GstCaps* request_pt_map(GstElement* sess, guint session, guint pt, gpointer user_data);
 };
 
 }  // namespace switcher

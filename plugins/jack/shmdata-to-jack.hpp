@@ -49,8 +49,7 @@ class ShmdataToJack : public Quiddity {
   unsigned short channels_{0};
   unsigned int debug_buffer_usage_{1000};
   std::mutex output_ports_mutex_{};
-  std::vector<AudioRingBuffer<jack_sample_t>>
-      ring_buffers_{};  // one per channel
+  std::vector<AudioRingBuffer<jack_sample_t>> ring_buffers_{};  // one per channel
   // jack sample is the time unit, assuming gst pipeline has the same sample
   // rate:
   DriftObserver<jack_nframes_t> drift_observer_{};
@@ -68,8 +67,7 @@ class ShmdataToJack : public Quiddity {
   // ports
   std::vector<std::string> ports_to_connect_{};
   std::mutex port_to_connect_in_jack_process_mutex_{};
-  std::vector<std::pair<std::string, std::string>>
-      port_to_connect_in_jack_process_{};
+  std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
   // gst pipeline:
@@ -90,10 +88,7 @@ class ShmdataToJack : public Quiddity {
   bool make_elements();
   void check_output_ports(unsigned int channels);
   void on_xrun(uint num_of_missed_samples);
-  static void on_handoff_cb(GstElement* object,
-                            GstBuffer* buf,
-                            GstPad* pad,
-                            gpointer user_data);
+  static void on_handoff_cb(GstElement* object, GstBuffer* buf, GstPad* pad, gpointer user_data);
   static int jack_process(jack_nframes_t nframes, void* arg);
 };
 

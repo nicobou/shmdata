@@ -36,18 +36,14 @@ class Method : public Categorizable {
   typedef std::shared_ptr<Method> ptr;
   typedef GType return_type;
   typedef std::vector<GType> args_types;
-  typedef std::vector<std::tuple<std::string, std::string, std::string>>
-      args_doc;
+  typedef std::vector<std::tuple<std::string, std::string, std::string>> args_doc;
   typedef void* method_ptr;
 
   Method();
   ~Method();
   Method(const Method& source);
   Method& operator=(const Method& source);
-  bool set_method(method_ptr method,
-                  return_type rtype,
-                  args_types atypes,
-                  gpointer user_data);
+  bool set_method(method_ptr method, return_type rtype, args_types atypes, gpointer user_data);
   bool invoke(std::vector<std::string> args, GValue* return_value);
   void set_description(std::string long_name,
                        std::string method_name,
@@ -56,8 +52,7 @@ class Method : public Categorizable {
                        args_doc arg_description);
   std::string get_description();  // json formated description
   // helper methods, use nullptr sentinel
-  static args_types make_arg_type_description(
-      GType arg_type, ...);  // use G_TYPE_NONE if no arg
+  static args_types make_arg_type_description(GType arg_type, ...);  // use G_TYPE_NONE if no arg
   static args_doc make_arg_description(const char* first_arg_long_name, ...);
   // Building complex json descriptions incuding this
   JSONBuilder::Node get_json_root_node();

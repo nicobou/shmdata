@@ -31,17 +31,13 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoEncoder,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-GstVideoEncoder::GstVideoEncoder(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)) {}
+GstVideoEncoder::GstVideoEncoder(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 bool GstVideoEncoder::init() {
-  codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity*>(this),
-                                             std::string(),
-                                             make_file_name("video-encoded"));
+  codecs_ = std2::make_unique<GstVideoCodec>(
+      static_cast<Quiddity*>(this), std::string(), make_file_name("video-encoded"));
   shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) {
-        return this->on_shmdata_connect(shmpath);
-      },
+      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
       [this](const std::string&) { return this->on_shmdata_disconnect(); },
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
