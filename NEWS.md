@@ -2,6 +2,28 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.12 (2016-06-21)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* Generic decoder quiddity
+* PostureScan3DGPU: added support for multicore compression,
+* Reflecting modifications to PostureVision to support RS cameras,
+
+Bug fixes:
+* Fixed regex for version and set git merge strategy to 'theirs' in release script.
+* Fix bug with threaded wrapper sync task
+* jack fixes and jack server is starting if not running,
+* using pjsip 2.5.1 instead of 2.2.1
+* Created a script to parse and print translatable error messages from switcher to scenic.
+* Use g_message to give information to the interface from switcher (temporary solution awaiting quiddity manager refactoring).
+* Fix SIGSEGV and SIGABRT errors happening during property changes (race conditions). 
+* Hang up incoming call after outgoing call in case of self-call, otherwise shmdata would not be disconnected properly when hanging up.
+* X events capture is now optional for gtk window.
+* Disable nvenc options when an encoding session is ongoing.
+* Manage error case in property subscription mechanism.
+
 switcher 0.8.10 (2016-06-08)
 ---------------------------
 This is an official release in the 0.8 stable series.
