@@ -150,4 +150,158 @@ New features:
 
 Bugs fixed:
 
-* remov
+* remove dependency to curl (not working with launchpad ppa)
+
+switcher 0.8.2 (2015-08-17)
+---------------------------
+This is an official release in the 0.8 stable series. 
+
+New features:
+
+* none
+
+Bugs fixed:
+
+* switcher plugin not loaded from nodejs addon
+
+switcher 0.8.0 (2015-08-17)
+---------------------------
+This is an official release in the 0.8 stable series. 
+
+New features:
+
+* SIP
+* VNC (compatible with gtkwin)
+* jack (resampling + autoconnection)
+* audio encoder
+* more option with v4l2 capture
+* ported to gstreamer 1.0
+* ported to shmdata 1.0
+* using internal information tree
+
+Bugs fixed:
+
+* too many to be listed here
+
+switcher 0.6.2 (2014-08-04)
+---------------------------
+This is an official release in the 0.6 stable series. 
+
+New features:
+
+* none
+ 
+Bugs fixed:
+
+* nodejs not loading plugins
+
+switcher 0.6.0 (2014-08-04)
+---------------------------
+This is an official release in the 0.6 stable series. 
+
+New features:
+
+* information tree
+* syphon (OSX)
+* improved per-quiddity shmdata dynamic description
+* shmdata-any support
+* system usage quiddity
+* SIP
+* posture plugins
+ 
+Bugs fixed:
+
+* too many for being listed here 
+
+switcher 0.4.6 (2014-03-07)
+---------------------------
+This is an official release in the 0.4 stable series. 
+
+New features:
+
+* none
+
+Bugs fixed:
+
+* node-switcher is better integrated with nodejs
+
+switcher 0.4.4 (2014-03-05)
+---------------------------
+This is an official release in the 0.4 stable series. 
+
+New features:
+
+* adding node-switchon addons in sources
+
+Bugs fixed:
+
+* fix segfault in soap-ctrl-client
+* make node-switcher encoding strings in utf8 instead of ascii
+
+switcher 0.4.2 (2014-02-27)
+---------------------------
+This is an official release in the 0.4 stable series. 
+
+New features:
+
+* title property for gtkvideosink
+* adding videoflip, video balance and gamma to gtk video sink
+
+Bugs fixed:
+
+* too many for being listed here
+
+switcher 0.4.0 (2014-01-28)
+---------------------------
+This is an official release in the 0.4 stable series. 
+
+New features:
+
+* many video encoders are available with video-sources 
+* dynamic presence of properties
+* property mapper
+* supporting plugins
+* gtk video sink with fullscreen
+* portmidi plugins
+* pulse plugins
+* v4l2 plugins
+* dictionnary
+* osc controler
+* several internal features for developing quiddities
+* no need to invoke set_runtime anymore
+
+Bugs fixed:
+
+* too many for being listed here
+
+switcher 0.2.2 (2013-06-20)
+---------------------------
+This is an official release in the 0.2 stable series. 
+
+New features:
+
+* none
+
+Bugs fixed:
+
+* gsoap packaging
+
+switcher 0.2.0 (2013-06-19)
+---------------------------
+
+This is the first official release in the 0.2 stable series. 
+
+New features:
+
+* signals
+* save/load command history
+* soap client
+
+Bugs fixed:
+
+* too many to listed here
+
+switcher 0.1.2 (2013-04-26)
+---------------------------
+This is the first developer snapshot of switcher.
+
