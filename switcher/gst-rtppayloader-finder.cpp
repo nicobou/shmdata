@@ -28,12 +28,9 @@ gboolean sink_factory_filter(GstPluginFeature* feature, gpointer data) {
   GstCaps* caps = (GstCaps*)data;
   // searching element factories only
   if (!GST_IS_ELEMENT_FACTORY(feature)) return FALSE;
-  const gchar* klass =
-      gst_element_factory_get_klass(GST_ELEMENT_FACTORY(feature));
+  const gchar* klass = gst_element_factory_get_klass(GST_ELEMENT_FACTORY(feature));
   if (!(g_strrstr(klass, "Payloader") && g_strrstr(klass, "RTP"))) return FALSE;
-  if (!gst_element_factory_can_sink_all_caps(GST_ELEMENT_FACTORY(feature),
-                                             caps))
-    return FALSE;
+  if (!gst_element_factory_can_sink_all_caps(GST_ELEMENT_FACTORY(feature), caps)) return FALSE;
   return TRUE;
 }
 
@@ -41,8 +38,7 @@ gboolean sink_factory_filter(GstPluginFeature* feature, gpointer data) {
 gint sink_compare_ranks(GstPluginFeature* f1, GstPluginFeature* f2) {
   gint diff = gst_plugin_feature_get_rank(f2) - gst_plugin_feature_get_rank(f1);
   if (diff != 0) return diff;
-  return g_strcmp0(gst_plugin_feature_get_name(f2),
-                   gst_plugin_feature_get_name(f1));
+  return g_strcmp0(gst_plugin_feature_get_name(f2), gst_plugin_feature_get_name(f1));
 }
 
 GstElementFactory* get_factory(const std::string& caps_str) {
@@ -55,11 +51,8 @@ GstElementFactory* get_factory(const std::string& caps_str) {
 
 GstElementFactory* get_factory_by_caps(GstCaps* caps) {
   if (nullptr == caps) return nullptr;
-  GList* list =
-      gst_registry_feature_filter(gst_registry_get(),
-                                  (GstPluginFeatureFilter)sink_factory_filter,
-                                  FALSE,
-                                  caps);
+  GList* list = gst_registry_feature_filter(
+      gst_registry_get(), (GstPluginFeatureFilter)sink_factory_filter, FALSE, caps);
   On_scope_exit { gst_plugin_feature_list_free(list); };
   list = g_list_sort(list, (GCompareFunc)sink_compare_ranks);
   // bypassing jpeg for high dimensions

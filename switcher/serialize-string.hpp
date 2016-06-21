@@ -32,27 +32,23 @@
 namespace switcher {
 namespace serialize {
 // arithmetic
-template <
-    typename V,
-    typename W = V,
-    typename std::enable_if<
-        std::is_same<V, int>::value || std::is_same<V, short>::value ||
-        std::is_same<V, long>::value || std::is_same<V, long long>::value ||
-        std::is_same<V, unsigned int>::value ||
-        std::is_same<V, unsigned short>::value ||
-        std::is_same<V, unsigned long>::value ||
-        std::is_same<V, unsigned long long>::value ||
-        std::is_same<V, float>::value || std::is_same<V, double>::value ||
-        std::is_same<V, long double>::value>::type* = nullptr>
+template <typename V,
+          typename W = V,
+          typename std::enable_if<
+              std::is_same<V, int>::value || std::is_same<V, short>::value ||
+              std::is_same<V, long>::value || std::is_same<V, long long>::value ||
+              std::is_same<V, unsigned int>::value || std::is_same<V, unsigned short>::value ||
+              std::is_same<V, unsigned long>::value || std::is_same<V, unsigned long long>::value ||
+              std::is_same<V, float>::value || std::is_same<V, double>::value ||
+              std::is_same<V, long double>::value>::type* = nullptr>
 std::string apply(const W& val) {
   return std::to_string(val);
 }
 
 // boolean
-template <
-    typename V,
-    typename W = V,
-    typename std::enable_if<std::is_same<V, bool>::value>::type* = nullptr>
+template <typename V,
+          typename W = V,
+          typename std::enable_if<std::is_same<V, bool>::value>::type* = nullptr>
 std::string apply(const W& val) {
   if (val) return std::string("true");
   return std::string("false");
@@ -61,17 +57,15 @@ std::string apply(const W& val) {
 // string
 template <typename V,
           typename W = V,
-          typename std::enable_if<std::is_same<V, std::string>::value>::type* =
-              nullptr>
+          typename std::enable_if<std::is_same<V, std::string>::value>::type* = nullptr>
 std::string apply(const W& val) {
   return std::string(val);
 }
 
 // char
-template <
-    typename V,
-    typename W = V,
-    typename std::enable_if<std::is_same<V, char>::value>::type* = nullptr>
+template <typename V,
+          typename W = V,
+          typename std::enable_if<std::is_same<V, char>::value>::type* = nullptr>
 std::string apply(const W& val) {
   return std::string(&val);
 }
@@ -79,13 +73,10 @@ std::string apply(const W& val) {
 template <
     typename V,
     typename W = V,
-    typename std::enable_if<std::is_same<V, wchar_t>::value ||
-                            std::is_same<V, char32_t>::value ||
+    typename std::enable_if<std::is_same<V, wchar_t>::value || std::is_same<V, char32_t>::value ||
                             std::is_same<V, char16_t>::value>::type* = nullptr>
 std::string apply(const W&) {
-  static_assert(
-      true,
-      "wchar_t, char16_t and char32_t not supported by serialize-string.hpp");
+  static_assert(true, "wchar_t, char16_t and char32_t not supported by serialize-string.hpp");
   return std::string();
 }
 
@@ -96,29 +87,24 @@ void append_targs(std::string* res, size_t pos, F first, U... args) {
   if (0 == pos)
     res->append(StringUtils::replace_char(apply<F>(first), ',', "__coma__"));
   else
-    res->append(std::string(",") +
-                StringUtils::replace_char(apply<F>(first), ',', "__coma__"));
+    res->append(std::string(",") + StringUtils::replace_char(apply<F>(first), ',', "__coma__"));
   append_targs(res, pos + 1, args...);
 }
 template <typename... U, int... S>
-void append_tuple_call(std::string* res,
-                       const std::tuple<U...>& tup,
-                       tseq<S...>) {
+void append_tuple_call(std::string* res, const std::tuple<U...>& tup, tseq<S...>) {
   append_targs(res, 0, std::get<S>(tup)...);
 }
 template <typename... U>
 std::string tuple_to_str(const std::tuple<U...>& tup) {
   std::string res;
-  append_tuple_call(&res,
-                    std::forward<const std::tuple<U...>&>(tup),
-                    typename gens<sizeof...(U)>::type());
+  append_tuple_call(
+      &res, std::forward<const std::tuple<U...>&>(tup), typename gens<sizeof...(U)>::type());
   return res;
 }
 
 template <typename V,
           typename W = V,
-          typename std::enable_if<
-              is_specialization_of<std::tuple, V>::value>::type* = nullptr>
+          typename std::enable_if<is_specialization_of<std::tuple, V>::value>::type* = nullptr>
 std::string apply(const W& tup) {
   return tuple_to_str(std::forward<const W&>(tup));
 }
@@ -140,8 +126,7 @@ class has_to_string_method {
 template <
     typename V,
     typename W = V,
-    typename std::enable_if<!std::is_arithmetic<V>::value &&
-                            !std::is_same<V, std::string>::value &&
+    typename std::enable_if<!std::is_arithmetic<V>::value && !std::is_same<V, std::string>::value &&
                             !is_specialization_of<std::tuple, V>::value &&
                             has_to_string_method<V>::value>::type* = nullptr>
 std::string apply(const W& val) {
@@ -152,8 +137,7 @@ std::string apply(const W& val) {
 template <
     typename V,
     typename W = V,
-    typename std::enable_if<!std::is_arithmetic<V>::value &&
-                            !std::is_same<V, std::string>::value &&
+    typename std::enable_if<!std::is_arithmetic<V>::value && !std::is_same<V, std::string>::value &&
                             !is_specialization_of<std::tuple, V>::value &&
                             !has_to_string_method<V>::value>::type* = nullptr>
 std::string apply(const W& val) {
@@ -166,21 +150,17 @@ std::string apply(const W& val) {
 
 namespace deserialize {
 // arithmetic
-template <
-    typename V,
-    typename W = V,
-    typename std::enable_if<
-        std::is_same<V, int>::value || std::is_same<V, short>::value ||
-        std::is_same<V, long>::value || std::is_same<V, long long>::value ||
-        std::is_same<V, unsigned int>::value ||
-        std::is_same<V, unsigned short>::value ||
-        std::is_same<V, unsigned long>::value ||
-        std::is_same<V, unsigned long long>::value ||
-        std::is_same<V, float>::value || std::is_same<V, double>::value ||
-        std::is_same<V, long double>::value>::type* = nullptr>
+template <typename V,
+          typename W = V,
+          typename std::enable_if<
+              std::is_same<V, int>::value || std::is_same<V, short>::value ||
+              std::is_same<V, long>::value || std::is_same<V, long long>::value ||
+              std::is_same<V, unsigned int>::value || std::is_same<V, unsigned short>::value ||
+              std::is_same<V, unsigned long>::value || std::is_same<V, unsigned long long>::value ||
+              std::is_same<V, float>::value || std::is_same<V, double>::value ||
+              std::is_same<V, long double>::value>::type* = nullptr>
 std::pair<bool, W> apply(const std::string& str) {
-  if (!isdigit(*str.begin()) &&
-      !('-' == *str.begin() && !isdigit(*str.begin())))
+  if (!isdigit(*str.begin()) && !('-' == *str.begin() && !isdigit(*str.begin())))
     return std::make_pair(false, 0);
   std::istringstream iss(str);
   W res;
@@ -189,10 +169,9 @@ std::pair<bool, W> apply(const std::string& str) {
 }
 
 // boolean
-template <
-    typename V,
-    typename W = V,
-    typename std::enable_if<std::is_same<V, bool>::value>::type* = nullptr>
+template <typename V,
+          typename W = V,
+          typename std::enable_if<std::is_same<V, bool>::value>::type* = nullptr>
 std::pair<bool, W> apply(const std::string& str) {
   if ('t' == tolower(*str.begin())) return std::make_pair(true, true);
   if ('f' == tolower(*str.begin())) return std::make_pair(true, false);
@@ -203,17 +182,15 @@ std::pair<bool, W> apply(const std::string& str) {
 // string
 template <typename V,
           typename W = V,
-          typename std::enable_if<std::is_same<V, std::string>::value>::type* =
-              nullptr>
+          typename std::enable_if<std::is_same<V, std::string>::value>::type* = nullptr>
 std::pair<bool, W> apply(const std::string& str) {
   return std::make_pair(true, std::string(str));
 }
 
 // char
-template <
-    typename V,
-    typename W = V,
-    typename std::enable_if<std::is_same<V, char>::value>::type* = nullptr>
+template <typename V,
+          typename W = V,
+          typename std::enable_if<std::is_same<V, char>::value>::type* = nullptr>
 std::pair<bool, W> apply(const std::string& str) {
   if (!str.empty()) return std::make_pair(true, *str.cbegin());
   return std::make_pair(false, W());
@@ -222,8 +199,7 @@ std::pair<bool, W> apply(const std::string& str) {
 template <
     typename V,
     typename W = V,
-    typename std::enable_if<std::is_same<V, wchar_t>::value ||
-                            std::is_same<V, char32_t>::value ||
+    typename std::enable_if<std::is_same<V, wchar_t>::value || std::is_same<V, char32_t>::value ||
                             std::is_same<V, char16_t>::value>::type* = nullptr>
 std::pair<bool, W> apply(const std::string&) {
   static_assert(true,
@@ -240,13 +216,9 @@ bool append_targs(const std::string&, std::tuple<TUP...>*) {
 
 // FIXME remove int template parameter and use reference for F and U
 template <int POS, typename... TUP, typename F, typename... U>
-bool append_targs(const std::string& res,
-                  std::tuple<TUP...>* tup,
-                  F /*first*/,
-                  U... args) {
+bool append_targs(const std::string& res, std::tuple<TUP...>* tup, F /*first*/, U... args) {
   auto coma_pos = res.find(',');
-  auto deserialized =
-      apply<F>(std::string(res, 0, coma_pos));  // FIXME de-escape __coma__
+  auto deserialized = apply<F>(std::string(res, 0, coma_pos));  // FIXME de-escape __coma__
   if (!deserialized.first) return false;
   std::get<POS>(*tup) = deserialized.second;
   // first = deserialized.second;
@@ -258,9 +230,7 @@ bool append_targs(const std::string& res,
 }
 
 template <typename... U, int... S>
-bool append_tuple_call(const std::string& res,
-                       std::tuple<U...>* tup,
-                       tseq<S...>) {
+bool append_tuple_call(const std::string& res, std::tuple<U...>* tup, tseq<S...>) {
   return append_targs<0>(std::forward<const std::string&>(res),
                          std::forward<std::tuple<U...>*>(tup),
                          std::get<S>(*tup)...);
@@ -275,12 +245,10 @@ bool str_to_tuple(const std::string& str_tup, std::tuple<U...>* tup) {
 
 template <typename V,
           typename W = V,
-          typename std::enable_if<
-              is_specialization_of<std::tuple, V>::value>::type* = nullptr>
+          typename std::enable_if<is_specialization_of<std::tuple, V>::value>::type* = nullptr>
 std::pair<bool, W> apply(const std::string& str_tup) {
   W tup;
-  return std::make_pair(
-      str_to_tuple(std::forward<const std::string&>(str_tup), &tup), tup);
+  return std::make_pair(str_to_tuple(std::forward<const std::string&>(str_tup), &tup), tup);
 }
 
 // template<typename V, typename W = V,
@@ -296,9 +264,8 @@ std::pair<bool, W> apply(const std::string& str_tup) {
 template <
     typename V,
     typename W = V,
-    typename std::enable_if<
-        !std::is_arithmetic<V>::value && !std::is_same<V, std::string>::value &&
-        !is_specialization_of<std::tuple, V>::value>::type* = nullptr>
+    typename std::enable_if<!std::is_arithmetic<V>::value && !std::is_same<V, std::string>::value &&
+                            !is_specialization_of<std::tuple, V>::value>::type* = nullptr>
 std::pair<bool, W> apply(const std::string& val) {
   // FIXME static_assert<>
   return V::from_string(std::forward<const std::string&>(val));

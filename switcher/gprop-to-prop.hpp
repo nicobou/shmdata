@@ -29,8 +29,7 @@
 namespace switcher {
 namespace GPropToProp {
 
-std::unique_ptr<PropertyBase> to_prop(GObject* object,
-                                      const std::string& gprop_name);
+std::unique_ptr<PropertyBase> to_prop(GObject* object, const std::string& gprop_name);
 
 }  // namespace GPropToProp
 }  // namespace switcher

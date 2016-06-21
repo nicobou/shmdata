@@ -50,9 +50,7 @@ class PJCodec {
     // unsigned max_bps;
   } alt_codec_t;
 
-  typedef struct alt_codec_factory {
-    pjmedia_codec_factory base;
-  } alt_codec_factory_t;
+  typedef struct alt_codec_factory { pjmedia_codec_factory base; } alt_codec_factory_t;
 
  private:
   static alt_codec_t codec_list[];
@@ -69,8 +67,7 @@ class PJCodec {
   static pj_status_t alt_codec_alloc_codec(pjmedia_codec_factory* factory,
                                            const pjmedia_codec_info* id,
                                            pjmedia_codec** p_codec);
-  static pj_status_t alt_codec_dealloc_codec(pjmedia_codec_factory* factory,
-                                             pjmedia_codec* codec);
+  static pj_status_t alt_codec_dealloc_codec(pjmedia_codec_factory* factory, pjmedia_codec* codec);
   static pj_status_t alt_codec_deinit(void);
 };
 }  // namespace switcher

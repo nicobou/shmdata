@@ -49,10 +49,8 @@ class Logger : public Quiddity {
   gboolean install_log_handler(const gchar* log_domain);
   gboolean remove_log_handler(const gchar* log_domain);
 
-  static gboolean install_log_handler_wrapped(gpointer log_domain,
-                                              gpointer user_data);
-  static gboolean remove_log_handler_wrapped(gpointer log_domain,
-                                             gpointer user_data);
+  static gboolean install_log_handler_wrapped(gpointer log_domain, gpointer user_data);
+  static gboolean remove_log_handler_wrapped(gpointer log_domain, gpointer user_data);
   static void log_handler(const gchar* log_domain,
                           GLogLevelFlags log_level,
                           const gchar* message,

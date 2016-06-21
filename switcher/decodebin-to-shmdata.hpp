@@ -32,14 +32,11 @@ namespace switcher {
 // this class has been designed for being possessed by a gpipe
 
 class DecodebinToShmdata {
-  using on_configure_t =
-      std::function<void(GstElement*,
-                         const std::string& /*media_type*/,
-                         const std::string& /*media_label*/)>;
+  using on_configure_t = std::function<void(
+      GstElement*, const std::string& /*media_type*/, const std::string& /*media_label*/)>;
 
  public:
-  explicit DecodebinToShmdata(GstPipeliner* gpipe,
-                              on_configure_t on_gstshm_configure);
+  explicit DecodebinToShmdata(GstPipeliner* gpipe, on_configure_t on_gstshm_configure);
   ~DecodebinToShmdata();
   DecodebinToShmdata() = delete;
   DecodebinToShmdata(const DecodebinToShmdata&) = delete;
@@ -47,8 +44,7 @@ class DecodebinToShmdata {
 
   // invoke a std::function on the internal decodebin as GstElement
   template <typename Return_type>
-  Return_type invoke_with_return(
-      std::function<Return_type(GstElement*)> command) {
+  Return_type invoke_with_return(std::function<Return_type(GstElement*)> command) {
     std::unique_lock<std::mutex> lock(thread_safe_);
     return decodebin_.invoke_with_return<Return_type>(command);
   }
@@ -69,20 +65,15 @@ class DecodebinToShmdata {
   std::string media_label_{};
   static void on_pad_added(GstElement* object, GstPad* pad, gpointer user_data);
   static int /*GstAutoplugSelectResult*/ on_autoplug_select(
-      GstElement* bin,
-      GstPad* pad,
-      GstCaps* caps,
-      GstElementFactory* factory,
-      gpointer user_data);
-  static GstPadProbeReturn gstrtpdepay_buffer_probe_cb(
-      GstPad* /*pad */, GstPadProbeInfo* /*info*/, gpointer user_data);
+      GstElement* bin, GstPad* pad, GstCaps* caps, GstElementFactory* factory, gpointer user_data);
+  static GstPadProbeReturn gstrtpdepay_buffer_probe_cb(GstPad* /*pad */,
+                                                       GstPadProbeInfo* /*info*/,
+                                                       gpointer user_data);
   static GstPadProbeReturn gstrtpdepay_event_probe_cb(GstPad* /*pad */,
                                                       GstPadProbeInfo* /*info*/,
                                                       gpointer user_data);
   void pad_to_shmdata_writer(GstElement* bin, GstPad* pad);
-  static gboolean eos_probe_cb(GstPad* pad,
-                               GstEvent* event,
-                               gpointer user_data);
+  static gboolean eos_probe_cb(GstPad* pad, GstEvent* event, gpointer user_data);
   static gboolean rewind(gpointer user_data);
 };
 

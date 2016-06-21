@@ -35,9 +35,7 @@ class GstPipe {
   using on_msg_async_cb_t = std::function<void(GstMessage*)>;
   using on_msg_sync_cb_t = std::function<GstBusSyncReply(GstMessage*)>;
   GstPipe(GMainContext* context,
-          GstBusSyncReply (*bus_sync_cb)(GstBus* /*bus*/,
-                                         GstMessage* msg,
-                                         gpointer user_data),
+          GstBusSyncReply (*bus_sync_cb)(GstBus* /*bus*/, GstMessage* msg, gpointer user_data),
           gpointer user_data);
   ~GstPipe();
   GstPipe() = delete;
@@ -65,9 +63,7 @@ class GstPipe {
   void query_position_and_length();
   static gboolean source_prepare(GSource* source, gint* timeout);
   static gboolean source_check(GSource* source);
-  static gboolean source_dispatch(GSource* source,
-                                  GSourceFunc callback,
-                                  gpointer user_data);
+  static gboolean source_dispatch(GSource* source, GSourceFunc callback, gpointer user_data);
   static void source_finalize(GSource* source);
   static void play_pipe(GstPipe* pipe);
 };

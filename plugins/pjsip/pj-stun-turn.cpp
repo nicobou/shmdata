@@ -31,18 +31,16 @@ PJStunTurn::PJStunTurn() {
   pj_timer_heap_create(PJSIP::this_->pool_, 100, &ice_cfg_.stun_cfg.timer_heap);
   pj_ioqueue_create(PJSIP::this_->pool_, 512, &ice_cfg_.stun_cfg.ioqueue);
   ice_cfg_.stun_cfg.pf = PJSIP::this_->pool_->factory;
-  if (PJ_SUCCESS != pj_thread_create(PJSIP::this_->pool_,
-                                     "switcherSIP",
-                                     &worker_thread,
-                                     this,
-                                     0,
-                                     0,
-                                     &thread_)) {
+  if (PJ_SUCCESS !=
+      pj_thread_create(PJSIP::this_->pool_, "switcherSIP", &worker_thread, this, 0, 0, &thread_)) {
     g_warning("STUN TURN thread creating failed");
     return;
   }
   ice_cfg_.af = pj_AF_INET();
+  ice_cfg_.stun.cfg.max_pkt_size = 8192;
+  ice_cfg_.turn.cfg.max_pkt_size = 8192;
   ice_cfg_.opt.aggressive = PJ_FALSE;
+  ice_cfg_.stun_cfg.rto_msec = 500;
 
   // set stun/turn config
   SIPPlugin::this_->install_method(
@@ -78,8 +76,7 @@ PJStunTurn::~PJStunTurn() {
   }
   if (ice_cfg_.stun_cfg.ioqueue) pj_ioqueue_destroy(ice_cfg_.stun_cfg.ioqueue);
 
-  if (ice_cfg_.stun_cfg.timer_heap)
-    pj_timer_heap_destroy(ice_cfg_.stun_cfg.timer_heap);
+  if (ice_cfg_.stun_cfg.timer_heap) pj_timer_heap_destroy(ice_cfg_.stun_cfg.timer_heap);
 }
 
 int PJStunTurn::worker_thread(void* data) {
@@ -163,8 +160,7 @@ gboolean PJStunTurn::set_stun_turn(const gchar* stun,
       context->stun_srv_ = std::string(stun, 0, pos);
       context->ice_cfg_.stun.server.ptr = (char*)context->stun_srv_.c_str();
       context->ice_cfg_.stun.server.slen = context->stun_srv_.size();
-      context->ice_cfg_.stun.port =
-          (pj_uint16_t)atoi(tmp_stun.c_str() + pos + 1);
+      context->ice_cfg_.stun.port = (pj_uint16_t)atoi(tmp_stun.c_str() + pos + 1);
     } else {
       context->stun_srv_ = tmp_stun;
       context->ice_cfg_.stun.server.ptr = (char*)context->stun_srv_.c_str();
@@ -186,8 +182,7 @@ gboolean PJStunTurn::set_stun_turn(const gchar* stun,
       context->turn_srv_ = std::string(turn, 0, pos);
       context->ice_cfg_.turn.server.ptr = (char*)context->turn_srv_.c_str();
       context->ice_cfg_.turn.server.slen = context->turn_srv_.size();
-      context->ice_cfg_.turn.port =
-          (pj_uint16_t)atoi(tmp_turn.c_str() + pos + 1);
+      context->ice_cfg_.turn.port = (pj_uint16_t)atoi(tmp_turn.c_str() + pos + 1);
     } else {
       context->turn_srv_ = tmp_turn;
       context->ice_cfg_.turn.server.ptr = (char*)context->turn_srv_.c_str();
@@ -201,34 +196,28 @@ gboolean PJStunTurn::set_stun_turn(const gchar* stun,
       context->turn_user_ = std::string(turn_user);
       context->ice_cfg_.turn.auth_cred.data.static_cred.username.ptr =
           (char*)context->turn_user_.c_str();
-      context->ice_cfg_.turn.auth_cred.data.static_cred.username.slen =
-          context->turn_user_.size();
+      context->ice_cfg_.turn.auth_cred.data.static_cred.username.slen = context->turn_user_.size();
     }
-    context->ice_cfg_.turn.auth_cred.data.static_cred.data_type =
-        PJ_STUN_PASSWD_PLAIN;
+    context->ice_cfg_.turn.auth_cred.data.static_cred.data_type = PJ_STUN_PASSWD_PLAIN;
     if (nullptr != turn_pass) {
       context->turn_pass_ = std::string(turn_pass);
       context->ice_cfg_.turn.auth_cred.data.static_cred.data.ptr =
           (char*)context->turn_pass_.c_str();
-      context->ice_cfg_.turn.auth_cred.data.static_cred.data.slen =
-          context->turn_pass_.size();
+      context->ice_cfg_.turn.auth_cred.data.static_cred.data.slen = context->turn_pass_.size();
     }
 
     // /* Connection type to TURN server */
-    // if (tcp)
-    //   context->ice_cfg_.turn.conn_type = PJ_TURN_TP_TCP;
-    // else
     context->ice_cfg_.turn.conn_type = PJ_TURN_TP_UDP;
 
-    /* For this demo app, configure longer keep-alive time
+    /* configure longer keep-alive time
      * so that it does't clutter the screen output.
      */
     context->ice_cfg_.turn.alloc_param.ka_interval = 300;
   }
 
   if (SIPPlugin::this_->pjsip_->run<bool>([&]() -> bool {
-        return static_cast<bool>(PJICEStreamTrans(
-            context->ice_cfg_, 1, PJ_ICE_SESS_ROLE_CONTROLLING));
+        return static_cast<bool>(
+            PJICEStreamTrans(context->ice_cfg_, 1, PJ_ICE_SESS_ROLE_CONTROLLING));
       })) {
     success = true;  // validate current config
     context->stun_turn_valid_ = true;
@@ -238,8 +227,8 @@ gboolean PJStunTurn::set_stun_turn(const gchar* stun,
   }
 }
 
-std::unique_ptr<PJICEStreamTrans> PJStunTurn::get_ice_transport(
-    unsigned comp_cnt, pj_ice_sess_role role) {
+std::unique_ptr<PJICEStreamTrans> PJStunTurn::get_ice_transport(unsigned comp_cnt,
+                                                                pj_ice_sess_role role) {
   // if (!stun_turn_valid_)
   //   return std::unique_ptr<PJICEStreamTrans>(nullptr);
   auto res = std2::make_unique<PJICEStreamTrans>(ice_cfg_, comp_cnt, role);

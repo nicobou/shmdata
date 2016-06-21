@@ -45,20 +45,18 @@ HTTPSDPDec::HTTPSDPDec(const std::string&)
 
 bool HTTPSDPDec::init() {
   if (!souphttpsrc_ || !sdpdemux_) return false;
-  install_method("To Shmdata",
-                 "to_shmdata",
-                 "get streams from sdp description over http, "
-                 "accept also base64 encoded SDP string",
-                 "success or fail",
-                 Method::make_arg_description(
-                     "URL",
-                     "url",
-                     "URL to the sdp file, or a base64 encoded SDP description",
-                     nullptr),
-                 (Method::method_ptr)to_shmdata_wrapped,
-                 G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-                 this);
+  install_method(
+      "To Shmdata",
+      "to_shmdata",
+      "get streams from sdp description over http, "
+      "accept also base64 encoded SDP string",
+      "success or fail",
+      Method::make_arg_description(
+          "URL", "url", "URL to the sdp file, or a base64 encoded SDP description", nullptr),
+      (Method::method_ptr)to_shmdata_wrapped,
+      G_TYPE_BOOLEAN,
+      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
+      this);
   return true;
 }
 
@@ -71,10 +69,8 @@ void HTTPSDPDec::init_httpsdpdec() {
                    nullptr);
   g_object_set(G_OBJECT(sdpdemux_.get_raw()), "latency", 0, nullptr);
   g_object_set(G_OBJECT(sdpdemux_.get_raw()), "async-handling", TRUE, nullptr);
-  g_signal_connect(G_OBJECT(sdpdemux_.get_raw()),
-                   "pad-added",
-                   (GCallback)httpsdpdec_pad_added_cb,
-                   this);
+  g_signal_connect(
+      G_OBJECT(sdpdemux_.get_raw()), "pad-added", (GCallback)httpsdpdec_pad_added_cb, this);
 }
 
 void HTTPSDPDec::destroy_httpsdpdec() {
@@ -93,8 +89,8 @@ void HTTPSDPDec::on_new_element_in_sdpdemux(GstBin* /*bin*/,
 }
 
 void HTTPSDPDec::make_new_error_handler() {
-  on_error_.emplace_back(std2::make_unique<GSourceWrapper>(
-      [&]() { uri_to_shmdata(); }, retry_delay_, true));
+  on_error_.emplace_back(
+      std2::make_unique<GSourceWrapper>([&]() { uri_to_shmdata(); }, retry_delay_, true));
   // cleaning old sources
   if (2 < on_error_.size()) on_error_.pop_front();
 }
@@ -115,28 +111,21 @@ void HTTPSDPDec::configure_shmdatasink(GstElement* element,
   shm_subs_.emplace_back(std2::make_unique<GstShmdataSubscriber>(
       element,
       [this, shmpath](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.writer." + shmpath,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(".shmdata.writer." + shmpath,
+                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
       },
       [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.writer." + shmpath + ".byte_rate",
-                         InfoTree::make(byte_rate));
+        this->graft_tree(".shmdata.writer." + shmpath + ".byte_rate", InfoTree::make(byte_rate));
       }));
 }
 
-void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement* /*object */,
-                                         GstPad* pad,
-                                         gpointer user_data) {
+void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement* /*object */, GstPad* pad, gpointer user_data) {
   HTTPSDPDec* context = static_cast<HTTPSDPDec*>(user_data);
-  std::unique_ptr<DecodebinToShmdata> decodebin =
-      std2::make_unique<DecodebinToShmdata>(
-          context->gst_pipeline_.get(),
-          [context](GstElement* el,
-                    const std::string& media_type,
-                    const std::string& media_label) {
-            context->configure_shmdatasink(el, media_type, media_label);
-          });
+  std::unique_ptr<DecodebinToShmdata> decodebin = std2::make_unique<DecodebinToShmdata>(
+      context->gst_pipeline_.get(),
+      [context](GstElement* el, const std::string& media_type, const std::string& media_label) {
+        context->configure_shmdatasink(el, media_type, media_label);
+      });
   if (!decodebin->invoke_with_return<gboolean>([context](GstElement* el) {
         return gst_bin_add(GST_BIN(context->gst_pipeline_->get_pipeline()), el);
       })) {
@@ -151,10 +140,8 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement* /*object */,
   auto structure = gst_caps_get_structure(caps, 0);
   auto media_label = gst_structure_get_string(structure, "media-label");
   if (nullptr != media_label)
-    decodebin->set_media_label(
-        gst_structure_get_string(structure, "media-label"));
-  decodebin->invoke(
-      [](GstElement* el) { GstUtils::sync_state_with_parent(el); });
+    decodebin->set_media_label(gst_structure_get_string(structure, "media-label"));
+  decodebin->invoke([](GstElement* el) { GstUtils::sync_state_with_parent(el); });
   context->decodebins_.push_back(std::move(decodebin));
 }
 
@@ -183,20 +170,15 @@ void HTTPSDPDec::uri_to_shmdata() {
   destroy_httpsdpdec();
   prune_tree(".shmdata.writer");
   init_httpsdpdec();
-  g_object_set_data(G_OBJECT(sdpdemux_.get_raw()),
-                    "on-error-gsource",
-                    (gpointer)on_error_.back().get());
+  g_object_set_data(
+      G_OBJECT(sdpdemux_.get_raw()), "on-error-gsource", (gpointer)on_error_.back().get());
   g_debug("httpsdpdec: to_shmdata set uri %s", uri_.c_str());
   if (!is_dataurisrc_)  // for souphttpsrc
-    g_object_set(
-        G_OBJECT(souphttpsrc_.get_raw()), "location", uri_.c_str(), nullptr);
+    g_object_set(G_OBJECT(souphttpsrc_.get_raw()), "location", uri_.c_str(), nullptr);
   else  // for dataurisrc
-    g_object_set(
-        G_OBJECT(souphttpsrc_.get_raw()), "uri", uri_.c_str(), nullptr);
-  gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
-                   souphttpsrc_.get_raw(),
-                   sdpdemux_.get_raw(),
-                   nullptr);
+    g_object_set(G_OBJECT(souphttpsrc_.get_raw()), "uri", uri_.c_str(), nullptr);
+  gst_bin_add_many(
+      GST_BIN(gst_pipeline_->get_pipeline()), souphttpsrc_.get_raw(), sdpdemux_.get_raw(), nullptr);
   gst_element_link(souphttpsrc_.get_raw(), sdpdemux_.get_raw());
   gst_pipeline_->play(true);
 }

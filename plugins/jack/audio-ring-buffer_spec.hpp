@@ -23,13 +23,11 @@ namespace switcher {
 
 template <typename SampleType>
 AudioRingBuffer<SampleType>::AudioRingBuffer(std::size_t size_in_sample)
-    : buffer_size_(size_in_sample),
-      buffer_(size_in_sample),
-      available_size_(size_in_sample) {}
+    : buffer_size_(size_in_sample), buffer_(size_in_sample), available_size_(size_in_sample) {}
 
 template <typename SampleType>
-std::size_t AudioRingBuffer<SampleType>::put_samples(
-    std::size_t num, std::function<SampleType()> sample_getter) {
+std::size_t AudioRingBuffer<SampleType>::put_samples(std::size_t num,
+                                                     std::function<SampleType()> sample_getter) {
   std::size_t available = available_size_.load();
   std::size_t res = num;
   if (available < num) res = available;
@@ -45,8 +43,7 @@ std::size_t AudioRingBuffer<SampleType>::put_samples(
 }
 
 template <typename SampleType>
-std::size_t AudioRingBuffer<SampleType>::pop_samples(std::size_t num,
-                                                     SampleType* dest) {
+std::size_t AudioRingBuffer<SampleType>::pop_samples(std::size_t num, SampleType* dest) {
   std::size_t available = buffer_size_ - available_size_.load();
   std::size_t res = num;
   if (available < num) res = available;

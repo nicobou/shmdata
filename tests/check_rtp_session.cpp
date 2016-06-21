@@ -41,16 +41,14 @@ void on_tree_grafted(const std::string& /*subscriber_name */,
   // std::printf("%s: %s \n", signal_name.c_str(), params[0].c_str());
   GstShmdataSubscriber::num_bytes_t byte_rate =
       // std::string byte_rate =
-      manager->use_tree<MPtr(&InfoTree::branch_get_value)>(
-          std::string("uri"), params[0] + ".byte_rate");
+      manager->use_tree<MPtr(&InfoTree::branch_get_value)>(std::string("uri"),
+                                                           params[0] + ".byte_rate");
   if (0 != byte_rate && std::string::npos != params[0].find("audio")) {
     audio_success = true;
     do_continue = false;
   }
-  std::printf("%s: %s %s\n",
-              signal_name.c_str(),
-              params[0].c_str(),
-              std::to_string(byte_rate).c_str());
+  std::printf(
+      "%s: %s %s\n", signal_name.c_str(), params[0].c_str(), std::to_string(byte_rate).c_str());
 }
 
 int main() {
@@ -79,23 +77,15 @@ int main() {
     // manager->pmanage<&PContainer::set_str_str)>("v", "started", "true");
     // rtp
     assert("rtp" == manager->create("rtpsession", "rtp"));
-    manager->invoke_va("rtp",
-                       "add_data_stream",
-                       nullptr,
-                       "/tmp/switcher_rtptest_a_audio",
-                       nullptr);
-    manager->invoke_va("rtp",
-                       "add_data_stream",
-                       nullptr,
-                       "/tmp/switcher_rtptest_a2_audio",
-                       nullptr);
+    manager->invoke_va("rtp", "add_data_stream", nullptr, "/tmp/switcher_rtptest_a_audio", nullptr);
+    manager->invoke_va(
+        "rtp", "add_data_stream", nullptr, "/tmp/switcher_rtptest_a2_audio", nullptr);
     // manager->invoke_va("rtp",
     //                    "add_data_stream",
     //                    nullptr,
     //                    "/tmp/switcher_rtptest_v_encoded-video",
     //                    nullptr);
-    manager->invoke_va(
-        "rtp", "add_destination", nullptr, "local", "127.0.0.1", nullptr);
+    manager->invoke_va("rtp", "add_destination", nullptr, "local", "127.0.0.1", nullptr);
     manager->invoke_va("rtp",
                        "add_udp_stream_to_dest",
                        nullptr,
@@ -119,17 +109,14 @@ int main() {
     //                    nullptr);
     // receiving
     manager->create("httpsdpdec", "uri");
-    manager->invoke_va(
-        "uri",
-        "to_shmdata",
-        nullptr,
-        "http://127.0.0.1:38084/sdp?rtpsession=rtp&destination=local",
-        nullptr);
+    manager->invoke_va("uri",
+                       "to_shmdata",
+                       nullptr,
+                       "http://127.0.0.1:38084/sdp?rtpsession=rtp&destination=local",
+                       nullptr);
     // checking http-sdp-dec is updating positive byte_rate in tree:
-    assert(manager->make_signal_subscriber(
-        "signal_subscriber", on_tree_grafted, manager.get()));
-    assert(manager->subscribe_signal(
-        "signal_subscriber", "uri", "on-tree-grafted"));
+    assert(manager->make_signal_subscriber("signal_subscriber", on_tree_grafted, manager.get()));
+    assert(manager->subscribe_signal("signal_subscriber", "uri", "on-tree-grafted"));
     // wait 3 seconds
     uint count = 3;
     while (do_continue) {

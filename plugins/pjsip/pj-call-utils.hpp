@@ -58,8 +58,7 @@ std::string get_media_label(const pjmedia_sdp_media* media) {
   // }
   auto name = std::string("media-label=");
   for (unsigned i = 0; i < media->attr_count; i++) {
-    auto value =
-        std::string(media->attr[i]->value.ptr, 0, media->attr[i]->value.slen);
+    auto value = std::string(media->attr[i]->value.ptr, 0, media->attr[i]->value.slen);
     auto pos = value.find(name);
     if (std::string::npos != pos) {
       auto index = pos + name.size();
@@ -70,13 +69,11 @@ std::string get_media_label(const pjmedia_sdp_media* media) {
 }
 
 std::string get_rtp_caps(const pjmedia_sdp_media* media) {
-  if (std::string(media->desc.transport.ptr, 0, media->desc.transport.slen) !=
-      "RTP/AVP") {
+  if (std::string(media->desc.transport.ptr, 0, media->desc.transport.slen) != "RTP/AVP") {
     g_warning("sdp media is not using RTP transport");
     return std::string();
   }
-  if (media->desc.fmt_count > 1)
-    g_warning("sdp media with several format (unhandled)");
+  if (media->desc.fmt_count > 1) g_warning("sdp media with several format (unhandled)");
   std::string res = std::string("application/x-rtp");
   // g_print("media --------------  %.*s\n",
   //         (int)media->desc.media.slen,
@@ -88,24 +85,19 @@ std::string get_rtp_caps(const pjmedia_sdp_media* media) {
     // g_print("attr------------name %.*s value %.*s\n",
     //         (int)media->attr[i]->name.slen, media->attr[i]->name.ptr,
     //         (int)media->attr[i]->value.slen, media->attr[i]->value.ptr);
-    if (std::string(media->attr[i]->name.ptr, 0, media->attr[i]->name.slen) ==
-        "rtpmap") {
-      auto value =
-          std::string(media->attr[i]->value.ptr, 0, media->attr[i]->value.slen);
+    if (std::string(media->attr[i]->name.ptr, 0, media->attr[i]->name.slen) == "rtpmap") {
+      auto value = std::string(media->attr[i]->value.ptr, 0, media->attr[i]->value.slen);
       auto index = value.find(' ');
       auto sep = value.find('/');
       encoding_name = std::string(", encoding-name=(string)") +
                       std::string(value, index + 1, sep - (index + 1));
-      clock_rate = std::string(", clock-rate=(int)") +
-                   std::string(value, sep + 1, std::string::npos);
+      clock_rate =
+          std::string(", clock-rate=(int)") + std::string(value, sep + 1, std::string::npos);
     }
-    if (std::string(media->attr[i]->name.ptr, 0, media->attr[i]->name.slen) ==
-        "fmtp") {
-      auto value =
-          std::string(media->attr[i]->value.ptr, 0, media->attr[i]->value.slen);
+    if (std::string(media->attr[i]->name.ptr, 0, media->attr[i]->name.slen) == "fmtp") {
+      auto value = std::string(media->attr[i]->value.ptr, 0, media->attr[i]->value.slen);
       auto index = value.find(' ');
-      more =
-          std::string(", ") + std::string(value, index + 1, std::string::npos);
+      more = std::string(", ") + std::string(value, index + 1, std::string::npos);
       // transforming caps=... into caps=(string)""
       std::regex e("\\b(caps=)([^;]*)");
       more = std::regex_replace(more, e, "$1(string)\"$2\"");
@@ -115,8 +107,8 @@ std::string get_rtp_caps(const pjmedia_sdp_media* media) {
     }
   }
   res += std::string(", media=(string)") +
-         std::string(media->desc.media.ptr, 0, media->desc.media.slen) +
-         clock_rate + encoding_name + more;
+         std::string(media->desc.media.ptr, 0, media->desc.media.slen) + clock_rate +
+         encoding_name + more;
   return res;
 }
 

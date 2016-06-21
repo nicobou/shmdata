@@ -37,8 +37,7 @@ class PJStunTurn {
   PJStunTurn(const PJStunTurn&) = delete;
   PJStunTurn& operator=(const PJStunTurn&) = delete;
 
-  std::unique_ptr<PJICEStreamTrans> get_ice_transport(unsigned comp_cnt,
-                                                      pj_ice_sess_role role);
+  std::unique_ptr<PJICEStreamTrans> get_ice_transport(unsigned comp_cnt, pj_ice_sess_role role);
 
  private:
   std::mutex connection_mutex_{};

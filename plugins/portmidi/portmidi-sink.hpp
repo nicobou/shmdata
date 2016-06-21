@@ -28,9 +28,7 @@
 #include "switcher/startable-quiddity.hpp"
 
 namespace switcher {
-class PortMidiSink : public Quiddity,
-                     public StartableQuiddity,
-                     public PortMidi {
+class PortMidiSink : public Quiddity, public StartableQuiddity, public PortMidi {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSink);
   PortMidiSink(const std::string&);

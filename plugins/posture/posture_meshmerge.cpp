@@ -33,14 +33,12 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureMeshMerge,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-PostureMeshMerge::PostureMeshMerge(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)) {}
+PostureMeshMerge::PostureMeshMerge(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 PostureMeshMerge::~PostureMeshMerge() { stop(); }
 
 bool PostureMeshMerge::start() {
-  calibration_reader_ =
-      unique_ptr<CalibrationReader>(new CalibrationReader(calibration_path_));
+  calibration_reader_ = unique_ptr<CalibrationReader>(new CalibrationReader(calibration_path_));
   merger_ = make_shared<MeshMerger>(source_id_);
   merger_->setCalibration(calibration_reader_->getCalibrationParams());
   merger_->setApplyCalibration(apply_calibration_);
@@ -65,12 +63,11 @@ bool PostureMeshMerge::stop() {
 bool PostureMeshMerge::init() {
   init_startable(this);
 
-  shmcntr_.install_connect_method(
-      [this](const std::string path) { return connect(path); },
-      [this](const std::string path) { return disconnect(path); },
-      [this]() { return disconnect_all(); },
-      [this](const std::string caps) { return can_sink_caps(caps); },
-      8);
+  shmcntr_.install_connect_method([this](const std::string path) { return connect(path); },
+                                  [this](const std::string path) { return disconnect(path); },
+                                  [this]() { return disconnect_all(); },
+                                  [this](const std::string caps) { return can_sink_caps(caps); },
+                                  8);
 
   pmanage<MPtr(&PContainer::make_string)>(
       "calibration_path",
@@ -87,16 +84,15 @@ bool PostureMeshMerge::init() {
       "Path to the calibration file",
       calibration_path_);
 
-  pmanage<MPtr(&PContainer::make_bool)>(
-      "reload_calibration",
-      [this](const bool& val) {
-        reload_calibration_ = val;
-        return true;
-      },
-      [this]() { return reload_calibration_; },
-      "Per frame calibration",
-      "Reload calibration at each frame",
-      reload_calibration_);
+  pmanage<MPtr(&PContainer::make_bool)>("reload_calibration",
+                                        [this](const bool& val) {
+                                          reload_calibration_ = val;
+                                          return true;
+                                        },
+                                        [this]() { return reload_calibration_; },
+                                        "Per frame calibration",
+                                        "Reload calibration at each frame",
+                                        reload_calibration_);
 
   pmanage<MPtr(&PContainer::make_bool)>("apply_calibration",
                                         [this](const bool& val) {
@@ -132,19 +128,16 @@ bool PostureMeshMerge::connect(std::string shmdata_socket_path) {
         string type = typeIt->second;
         mutex_.unlock();
 
-        if (merger_ == nullptr || (type != string(POLYGONMESH_TYPE_BASE)))
-          return;
+        if (merger_ == nullptr || (type != string(POLYGONMESH_TYPE_BASE))) return;
 
-        merger_->setInputMesh(
-            index, vector<uint8_t>((uint8_t*)data, (uint8_t*)data + size));
+        merger_->setInputMesh(index, vector<uint8_t>((uint8_t*)data, (uint8_t*)data + size));
 
         if (!worker_.is_ready() || !updateMutex_.try_lock()) return;
 
         worker_.set_task([&]() {
           if (reload_calibration_) {
             calibration_reader_->loadCalibration(calibration_path_);
-            merger_->setCalibration(
-                calibration_reader_->getCalibrationParams());
+            merger_->setCalibration(calibration_reader_->getCalibrationParams());
           }
 
           auto mesh = vector<unsigned char>();
@@ -152,16 +145,11 @@ bool PostureMeshMerge::connect(std::string shmdata_socket_path) {
 
           if (mesh.size() != 0) {
             if (mesh_writer_ == nullptr ||
-                mesh.size() >
-                    mesh_writer_
-                        ->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+                mesh.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
               auto data_type = string(POLYGONMESH_TYPE_BASE);
               mesh_writer_.reset();
               mesh_writer_ = std2::make_unique<ShmdataWriter>(
-                  this,
-                  make_file_name("mesh"),
-                  std::max(mesh.size() * 2, (size_t)1024),
-                  data_type);
+                  this, make_file_name("mesh"), std::max(mesh.size() * 2, (size_t)1024), data_type);
             }
 
             mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
@@ -191,8 +179,6 @@ bool PostureMeshMerge::disconnect_all() {
   return true;
 }
 
-bool PostureMeshMerge::can_sink_caps(std::string caps) {
-  return (caps == POLYGONMESH_TYPE_BASE);
-}
+bool PostureMeshMerge::can_sink_caps(std::string caps) { return (caps == POLYGONMESH_TYPE_BASE); }
 
 }  // namespace switcher

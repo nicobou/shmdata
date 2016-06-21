@@ -29,10 +29,7 @@
 namespace switcher {
 class NVencBuffers : public SafeBoolIdiom {
  public:
-  NVencBuffers(void* encoder,
-               uint32_t width,
-               uint32_t height,
-               NV_ENC_BUFFER_FORMAT format);
+  NVencBuffers(void* encoder, uint32_t width, uint32_t height, NV_ENC_BUFFER_FORMAT format);
   ~NVencBuffers();
   NVencBuffers(const NVencBuffers&) = delete;
   NVencBuffers(NVencBuffers&&) = delete;

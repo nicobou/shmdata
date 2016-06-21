@@ -63,7 +63,7 @@ plugins/pjsip/.deps
 plugins/pjsip/.libs
 plugins/pjsip/check_pjsip
 plugins/pjsip/config.json
-plugins/pjsip/pjproject-2.2.1
+plugins/pjsip/pjproject-2.5.1
 plugins/portmidi/.deps/
 plugins/portmidi/.libs/
 plugins/portmidi/check_midi_plugins

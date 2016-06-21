@@ -27,12 +27,10 @@ namespace switcher {
 Selection::Selection(std::vector<std::string>&& list, index_t current_selection)
     : list_(list), nicks_(list), current_selection_(current_selection) {}
 
-Selection::Selection(std::pair<std::vector<std::string> /*names*/,
-                               std::vector<std::string /*nicks*/>>&& list,
-                     index_t current_selection)
-    : list_(std::get<0>(list)),
-      nicks_(std::get<1>(list)),
-      current_selection_(current_selection) {}
+Selection::Selection(
+    std::pair<std::vector<std::string> /*names*/, std::vector<std::string /*nicks*/>>&& list,
+    index_t current_selection)
+    : list_(std::get<0>(list)), nicks_(std::get<1>(list)), current_selection_(current_selection) {}
 
 void Selection::select(index_t current_selection) {
   if (current_selection >= list_.size()) {
@@ -46,9 +44,7 @@ Selection::index_t Selection::get() const { return current_selection_; }
 
 std::string Selection::get_current() const { return list_[current_selection_]; }
 
-std::string Selection::get_current_nick() const {
-  return nicks_[current_selection_];
-}
+std::string Selection::get_current_nick() const { return nicks_[current_selection_]; }
 
 std::vector<std::string> Selection::get_list() const { return list_; }
 

@@ -46,24 +46,20 @@ void on_tree_grafted(const std::string& /*subscriber_name */,
                      void* user_data) {
   auto manager = static_cast<QuiddityManager*>(user_data);
   GstShmdataSubscriber::num_bytes_t byte_rate =
-      manager->use_tree<MPtr(&InfoTree::branch_get_value)>(
-          quid_name, params[0] + ".byte_rate");
+      manager->use_tree<MPtr(&InfoTree::branch_get_value)>(quid_name, params[0] + ".byte_rate");
   if (0 != byte_rate) {
     std::unique_lock<std::mutex> lock(mut);
     success = true;
     do_continue.store(false);
     cond_var.notify_one();
   }
-  std::printf("%s: %s %s\n",
-              signal_name.c_str(),
-              params[0].c_str(),
-              std::to_string(byte_rate).c_str());
+  std::printf(
+      "%s: %s %s\n", signal_name.c_str(), params[0].c_str(), std::to_string(byte_rate).c_str());
 }
 
 int main() {
   {
-    QuiddityManager::ptr manager =
-        QuiddityManager::make_manager("test_manager");
+    QuiddityManager::ptr manager = QuiddityManager::make_manager("test_manager");
 #ifdef HAVE_CONFIG_H
     gchar* usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
     manager->scan_directory_for_plugins(usr_plugin_dir);
@@ -98,27 +94,22 @@ int main() {
     // testing nvenc is encoding
     auto video_quid = manager->create("videotestsrc");
     assert(!video_quid.empty());
-    manager->use_prop<MPtr(&PContainer::set_str_str)>(
-        video_quid.c_str(), "codec", "0");
-    manager->use_prop<MPtr(&PContainer::set_str_str)>(
-        video_quid.c_str(), "started", "true");
+    manager->use_prop<MPtr(&PContainer::set_str_str)>(video_quid.c_str(), "codec", "0");
+    manager->use_prop<MPtr(&PContainer::set_str_str)>(video_quid.c_str(), "started", "true");
     // wait for video to be started
     usleep(100000);
-    auto vid_shmdata_list = manager->use_tree<MPtr(&InfoTree::get_child_keys)>(
-        video_quid.c_str(), "shmdata.writer");
+    auto vid_shmdata_list =
+        manager->use_tree<MPtr(&InfoTree::get_child_keys)>(video_quid.c_str(), "shmdata.writer");
     auto vid_shmpath = vid_shmdata_list.front();
     assert(!vid_shmpath.empty());
 
     auto nvenc_quid = manager->create("nvenc");
     assert(!nvenc_quid.empty());
-    manager->invoke_va(
-        nvenc_quid.c_str(), "connect", nullptr, vid_shmpath.c_str(), nullptr);
+    manager->invoke_va(nvenc_quid.c_str(), "connect", nullptr, vid_shmpath.c_str(), nullptr);
 
     // tracking nvenc shmdata writer byterate for evaluating success
-    assert(manager->make_signal_subscriber(
-        "signal_subscriber", on_tree_grafted, manager.get()));
-    assert(manager->subscribe_signal(
-        "signal_subscriber", nvenc_quid.c_str(), "on-tree-grafted"));
+    assert(manager->make_signal_subscriber("signal_subscriber", on_tree_grafted, manager.get()));
+    assert(manager->subscribe_signal("signal_subscriber", nvenc_quid.c_str(), "on-tree-grafted"));
 
     // wait 3 seconds
     uint count = 3;
@@ -128,9 +119,7 @@ int main() {
         do_continue.store(false);
       } else {
         --count;
-        cond_var.wait_for(lock, std::chrono::seconds(1), []() {
-          return !do_continue.load();
-        });
+        cond_var.wait_for(lock, std::chrono::seconds(1), []() { return !do_continue.load(); });
       }
     }
   }  // end of scope is releasing the manager

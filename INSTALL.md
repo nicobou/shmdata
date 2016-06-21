@@ -6,13 +6,7 @@ Quick build and installation (latest Ubuntu)
 First, make sure you have [shmdata](https://github.com/sat-metalab/shmdata) installed. Then here is how to build and install switcher from command line:
 
 ~~~~~~~~~~~~~~~~~~~~~
-    # mandatory dependencies
-    sudo apt-get install automake bison build-essential flex libtool
-    sudo apt-get install libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev
-    # dependencies for building plugins 
-    sudo apt-get install liblo-dev  linux-libc-dev libgtk2.0-dev libpulse-dev libportmidi-dev libjack-jackd2-dev libvncserver-dev
-    # gstreamer plugins
-    sudo apt-get install gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly
+    sudo apt-get install automake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev  linux-libc-dev libgtk2.0-dev libpulse-dev libportmidi-dev libjack-jackd2-dev libvncserver-dev
     ./autogen.sh
     ./configure
     make -j

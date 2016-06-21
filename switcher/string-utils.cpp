@@ -65,8 +65,7 @@ std::string StringUtils::replace_chars(const std::string& orig,
                                        const char replacement) {
   std::string res = orig;
   // FIXME iterate only once
-  for (auto& it : to_replace)
-    std::replace(res.begin(), res.end(), it, replacement);
+  for (auto& it : to_replace) std::replace(res.begin(), res.end(), it, replacement);
   return res;
 }
 

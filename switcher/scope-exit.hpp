@@ -46,8 +46,7 @@ ScopeGuard<Fun> operator+(ScopeGuardOnExit, Fun&& fn) {
 #define CONCATENATE(s1, s2) CONCATENATE_IMPL(s1, s2)
 
 // could replace __LINE__ with __COUNTER__ but not always available
-#define On_scope_exit                             \
-  auto CONCATENATE(on_scope_exit_var, __LINE__) = \
-      ::scope_guard::ScopeGuardOnExit() + [&]()
+#define On_scope_exit \
+  auto CONCATENATE(on_scope_exit_var, __LINE__) = ::scope_guard::ScopeGuardOnExit() + [&]()
 
 #endif

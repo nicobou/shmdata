@@ -24,15 +24,14 @@
 #include "switcher/std2.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    Timelapse,
-    "timelapse",
-    "Timelapse",
-    "video",
-    "reader",
-    "Make an image timelapse from raw video stream",
-    "LGPL",
-    "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Timelapse,
+                                     "timelapse",
+                                     "Timelapse",
+                                     "video",
+                                     "reader",
+                                     "Make an image timelapse from raw video stream",
+                                     "LGPL",
+                                     "Nicolas Bouillot");
 
 Timelapse::Timelapse(const std::string&)
     : shmcntr_(static_cast<Quiddity*>(this)),
@@ -71,42 +70,41 @@ Timelapse::Timelapse(const std::string&)
           "take the input shmdata name with option file number and jpg "
           "extension",
           img_name_)),
-      num_files_id_(pmanage<MPtr(&PContainer::make_bool)>(
-          "num_files",
-          [this](const bool& num_files) {
-            num_files_ = num_files;
-            updated_config_.store(true);
-            return true;
-          },
-          [this]() { return num_files_; },
-          "Number Files",
-          "Automatically number produced files",
-          num_files_)),
-      notify_last_file_id_(pmanage<MPtr(&PContainer::make_bool)>(
-          "notify_last_files",
-          [this](const bool& notify) {
-            notify_last_file_ = notify;
-            return true;
-          },
-          [this]() { return notify_last_file_; },
-          "Notify last file produced",
-          "Update last file property with produced jpg file",
-          notify_last_file_)),
-      framerate_id_(pmanage<MPtr(&PContainer::make_fraction)>(
-          "framerate",
-          [this](const Fraction& val) {
-            framerate_ = val;
-            updated_config_.store(true);
-            return true;
-          },
-          [this]() { return framerate_; },
-          "Framerate",
-          "Number of image to be produced by seconds",
-          framerate_,
-          1,
-          1,  // min num/denom
-          60,
-          5)),  // max num/denom
+      num_files_id_(pmanage<MPtr(&PContainer::make_bool)>("num_files",
+                                                          [this](const bool& num_files) {
+                                                            num_files_ = num_files;
+                                                            updated_config_.store(true);
+                                                            return true;
+                                                          },
+                                                          [this]() { return num_files_; },
+                                                          "Number Files",
+                                                          "Automatically number produced files",
+                                                          num_files_)),
+      notify_last_file_id_(
+          pmanage<MPtr(&PContainer::make_bool)>("notify_last_files",
+                                                [this](const bool& notify) {
+                                                  notify_last_file_ = notify;
+                                                  return true;
+                                                },
+                                                [this]() { return notify_last_file_; },
+                                                "Notify last file produced",
+                                                "Update last file property with produced jpg file",
+                                                notify_last_file_)),
+      framerate_id_(
+          pmanage<MPtr(&PContainer::make_fraction)>("framerate",
+                                                    [this](const Fraction& val) {
+                                                      framerate_ = val;
+                                                      updated_config_.store(true);
+                                                      return true;
+                                                    },
+                                                    [this]() { return framerate_; },
+                                                    "Framerate",
+                                                    "Number of image to be produced by seconds",
+                                                    framerate_,
+                                                    1,
+                                                    1,  // min num/denom
+                                                    60,
+                                                    5)),  // max num/denom
       max_files_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
           "maxfiles",
           [this](unsigned int val) {
@@ -120,52 +118,49 @@ Timelapse::Timelapse(const std::string&)
           max_files_,
           0,
           4294967295)),
-      jpg_quality_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
-          "quality",
-          [this](unsigned int val) {
-            jpg_quality_ = val;
-            updated_config_.store(true);
-            return true;
-          },
-          [this]() { return jpg_quality_; },
-          "JPEG quality",
-          "Quality of the produced jpeg image",
-          jpg_quality_,
-          0,
-          100)),
-      last_image_id_(pmanage<MPtr(&PContainer::make_string)>(
-          "last_image",
-          nullptr,
-          [this]() { return last_image_; },
-          "Last image written",
-          "Path of the last jpeg file written",
-          last_image_)),
-      width_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
-          "width",
-          [this](unsigned int val) {
-            width_ = val;
-            updated_config_.store(true);
-            return true;
-          },
-          [this]() { return width_; },
-          "Width",
-          "Width of the scaled image",
-          width_,
-          0,
-          8192)),
-      height_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
-          "height",
-          [this](unsigned int val) {
-            height_ = val;
-            updated_config_.store(true);
-            return true;
-          },
-          [this]() { return height_; },
-          "Height",
-          "Height of the scaled image",
-          height_,
-          0,
-          8192)),
+      jpg_quality_id_(
+          pmanage<MPtr(&PContainer::make_unsigned_int)>("quality",
+                                                        [this](unsigned int val) {
+                                                          jpg_quality_ = val;
+                                                          updated_config_.store(true);
+                                                          return true;
+                                                        },
+                                                        [this]() { return jpg_quality_; },
+                                                        "JPEG quality",
+                                                        "Quality of the produced jpeg image",
+                                                        jpg_quality_,
+                                                        0,
+                                                        100)),
+      last_image_id_(pmanage<MPtr(&PContainer::make_string)>("last_image",
+                                                             nullptr,
+                                                             [this]() { return last_image_; },
+                                                             "Last image written",
+                                                             "Path of the last jpeg file written",
+                                                             last_image_)),
+      width_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>("width",
+                                                              [this](unsigned int val) {
+                                                                width_ = val;
+                                                                updated_config_.store(true);
+                                                                return true;
+                                                              },
+                                                              [this]() { return width_; },
+                                                              "Width",
+                                                              "Width of the scaled image",
+                                                              width_,
+                                                              0,
+                                                              8192)),
+      height_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>("height",
+                                                               [this](unsigned int val) {
+                                                                 height_ = val;
+                                                                 updated_config_.store(true);
+                                                                 return true;
+                                                               },
+                                                               [this]() { return height_; },
+                                                               "Height",
+                                                               "Height of the scaled image",
+                                                               height_,
+                                                               0,
+                                                               8192)),
       relaunch_task_(
           [this]() {
             if (updated_config_.exchange(false)) {
@@ -180,12 +175,8 @@ Timelapse::Timelapse(const std::string&)
 
 bool Timelapse::init() {
   shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) {
-        return this->on_shmdata_connect(shmpath);
-      },
-      [this](const std::string& shmpath) {
-        return this->on_shmdata_disconnect(shmpath);
-      },
+      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
+      [this](const std::string& shmpath) { return this->on_shmdata_disconnect(shmpath); },
       [this]() { return this->on_shmdata_disconnect_all(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       std::numeric_limits<unsigned int>::max());
@@ -196,8 +187,7 @@ bool Timelapse::on_shmdata_disconnect(const std::string& shmpath) {
   std::unique_lock<std::mutex> lock(timelapse_mtx_);
   pmanage<MPtr(&PContainer::enable)>(img_name_id_, true);
   if (!stop_timelapse(shmpath)) return false;
-  if (timelapse_.size() == 1)
-    pmanage<MPtr(&PContainer::enable)>(img_name_id_, true);
+  if (timelapse_.size() == 1) pmanage<MPtr(&PContainer::enable)>(img_name_id_, true);
   return true;
 }
 
@@ -230,9 +220,8 @@ bool Timelapse::start_timelapse(const std::string& shmpath) {
     if (timelapse_.end() != timelapse) timelapse_.erase(timelapse);
   }
   auto img_path = img_dir_;
-  auto img_from_shmpath = img_dir_.empty()
-                              ? shmpath
-                              : shmpath.substr(shmpath.find_last_of("/") + 1);
+  auto img_from_shmpath =
+      img_dir_.empty() ? shmpath : shmpath.substr(shmpath.find_last_of("/") + 1);
   img_path += img_name_.empty() ? img_from_shmpath : img_name_;
   if (num_files_ && std::string::npos == img_path.find('%'))
     img_path += "_%d.jpg";
@@ -248,13 +237,11 @@ bool Timelapse::start_timelapse(const std::string& shmpath) {
   timelapse_[shmpath] = std2::make_unique<GstVideoTimelapse>(
       timelapse_config_,
       [this, shmpath](const std::string& caps) {
-        graft_tree(
-            ".shmdata.reader." + shmpath,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        graft_tree(".shmdata.reader." + shmpath,
+                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
       },
       [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        graft_tree(".shmdata.reader." + shmpath + ".byte_rate",
-                   InfoTree::make(byte_rate));
+        graft_tree(".shmdata.reader." + shmpath + ".byte_rate", InfoTree::make(byte_rate));
       },
       nullptr,
       [this, shmpath](std::string&& file_name) {

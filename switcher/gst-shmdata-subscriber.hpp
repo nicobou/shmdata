@@ -48,9 +48,7 @@ class GstShmdataSubscriber {
   on_delete_t on_delete_cb_;
   PeriodicTask ptask_;
   gulong signal_handler_id_{0};
-  static void on_caps_cb(GObject* gobject,
-                         GParamSpec* pspec,
-                         gpointer user_data);
+  static void on_caps_cb(GObject* gobject, GParamSpec* pspec, gpointer user_data);
   void byte_monitor();
   void notify_caps();
 };

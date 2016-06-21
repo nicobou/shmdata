@@ -35,20 +35,20 @@ SIPPlugin* SIPPlugin::this_ = nullptr;
 std::atomic<unsigned short> SIPPlugin::sip_plugin_used_(0);
 
 SIPPlugin::SIPPlugin(const std::string&)
-    : port_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
-          "port",
-          [this](const unsigned int& val) {
-            if (val == sip_port_) return true;
-            sip_port_ = val;
-            return pjsip_->run<bool>(
-                [this]() { return start_sip_transport(); });
-          },
-          [this]() { return sip_port_; },
-          "SIP Port",
-          "SIP port used when registering",
-          sip_port_,
-          0u,
-          65535u)) {}
+    : port_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>("port",
+                                                             [this](const unsigned int& val) {
+                                                               if (val == sip_port_) return true;
+                                                               sip_port_ = val;
+                                                               return pjsip_->run<bool>([this]() {
+                                                                 return start_sip_transport();
+                                                               });
+                                                             },
+                                                             [this]() { return sip_port_; },
+                                                             "SIP Port",
+                                                             "SIP port used when registering",
+                                                             sip_port_,
+                                                             0u,
+                                                             65535u)) {}
 
 SIPPlugin::~SIPPlugin() {
   if (!i_m_the_one_) return;
@@ -100,9 +100,8 @@ void SIPPlugin::apply_configuration() {
   // trying to set port if configuration found
   if (config<MPtr(&InfoTree::branch_has_data)>("port")) {
     auto port = config<MPtr(&InfoTree::branch_get_value)>("port");
-    if (pmanage<MPtr(&PContainer::set<unsigned int>)>(
-            port_id_, port.copy_as<unsigned int>()))
-      g_message("sip has set port from configuration");
+    if (pmanage<MPtr(&PContainer::set<unsigned int>)>(port_id_, port.copy_as<unsigned int>()))
+      g_debug("sip has set port from configuration");
     else
       g_warning("sip failed setting port from configuration");
   }
@@ -110,18 +109,13 @@ void SIPPlugin::apply_configuration() {
   // trying to set stun/turn from configuration
   std::string stun = config<MPtr(&InfoTree::branch_get_value)>("stun");
   std::string turn = config<MPtr(&InfoTree::branch_get_value)>("turn");
-  std::string turn_user =
-      config<MPtr(&InfoTree::branch_get_value)>("turn_user");
-  std::string turn_pass =
-      config<MPtr(&InfoTree::branch_get_value)>("turn_pass");
+  std::string turn_user = config<MPtr(&InfoTree::branch_get_value)>("turn_user");
+  std::string turn_pass = config<MPtr(&InfoTree::branch_get_value)>("turn_pass");
   if (!stun.empty()) {
     pjsip_->run([&]() {
-      if (PJStunTurn::set_stun_turn(stun.c_str(),
-                                    turn.c_str(),
-                                    turn_user.c_str(),
-                                    turn_pass.c_str(),
-                                    stun_turn_.get())) {
-        g_message("sip has set STUN/TURN from configuration");
+      if (PJStunTurn::set_stun_turn(
+              stun.c_str(), turn.c_str(), turn_user.c_str(), turn_pass.c_str(), stun_turn_.get())) {
+        g_debug("sip has set STUN/TURN from configuration");
       } else {
         g_warning("sip failed setting STUN/TURN from configuration");
       }
@@ -134,7 +128,7 @@ void SIPPlugin::apply_configuration() {
     std::string pass = config<MPtr(&InfoTree::branch_get_value)>("pass");
     pjsip_->run([&]() { sip_presence_->register_account(user, pass); });
     if (sip_presence_->registered_)
-      g_message("sip registered using configuration file");
+      g_debug("sip registered using configuration file");
     else
       g_warning("sip failed registration from configuration");
   }
@@ -149,8 +143,7 @@ bool SIPPlugin::start_sip_transport() {
   pjsua_transport_config cfg;
   pjsua_transport_config_default(&cfg);
   cfg.port = sip_port_;
-  pj_status_t status =
-      pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, &transport_id_);
+  pj_status_t status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, &transport_id_);
   if (status != PJ_SUCCESS) {
     g_warning("Error creating transport");
     return false;

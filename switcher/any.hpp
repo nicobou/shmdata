@@ -60,10 +60,9 @@ struct AnyValueBase {
 template <typename T>
 struct AnyValueDerived : AnyValueBase {
   template <typename U>
-  AnyValueDerived(
-      U&& value,
-      AnyCategory category = AnyCategory::NONE,
-      AnyArithmeticType arithmetic_type = AnyArithmeticType::NOT_DEFINED)
+  AnyValueDerived(U&& value,
+                  AnyCategory category = AnyCategory::NONE,
+                  AnyArithmeticType arithmetic_type = AnyArithmeticType::NOT_DEFINED)
       : value_(std::forward<U>(value)) {
     category_ = category;
     arithmetic_type_ = arithmetic_type;
@@ -75,9 +74,7 @@ struct AnyValueDerived : AnyValueBase {
     return new AnyValueDerived<T>(value_, category_, arithmetic_type_);
   }
 
-  std::string to_string() const {
-    return switcher::serialize::apply<T>(value_);
-  }
+  std::string to_string() const { return switcher::serialize::apply<T>(value_); }
 };
 
 template <>
@@ -85,9 +82,7 @@ struct AnyValueDerived<std::nullptr_t> : AnyValueBase {
   template <typename U>
   AnyValueDerived(U&& value) : value_(std::forward<U>(value)) {}
   std::nullptr_t value_;
-  AnyValueBase* clone() const {
-    return new AnyValueDerived<std::nullptr_t>(value_);
-  }
+  AnyValueBase* clone() const { return new AnyValueDerived<std::nullptr_t>(value_); }
   std::string to_string() const { return std::string("null"); }
 };
 
@@ -95,37 +90,31 @@ struct Any {
   bool is_null() const { return !ptr_; }
   bool not_null() const { return ptr_; }
 
-  AnyCategory get_category() const {
-    return ptr_ ? ptr_->category_ : AnyCategory::NONE;
-  }
+  AnyCategory get_category() const { return ptr_ ? ptr_->category_ : AnyCategory::NONE; }
 
   // default ctor
   template <typename U>
-  Any(U&& value,
-      typename std::enable_if<!std::is_arithmetic<U>::value>::type* = nullptr)
+  Any(U&& value, typename std::enable_if<!std::is_arithmetic<U>::value>::type* = nullptr)
       : ptr_(new AnyValueDerived<StorageType<U>>(std::forward<U>(value))) {
     ptr_->category_ = AnyCategory::OTHER;
   }
 
   // bool ctor
   template <typename U = bool>
-  Any(bool&& value)
-      : ptr_(new AnyValueDerived<StorageType<U>>(std::forward<U>(value))) {
+  Any(bool&& value) : ptr_(new AnyValueDerived<StorageType<U>>(std::forward<U>(value))) {
     ptr_->category_ = AnyCategory::BOOL;
   }
 
   // char ctor
   template <typename U = char>
-  Any(char&& value)
-      : ptr_(new AnyValueDerived<StorageType<U>>(std::forward<U>(value))) {
+  Any(char&& value) : ptr_(new AnyValueDerived<StorageType<U>>(std::forward<U>(value))) {
     ptr_->category_ = AnyCategory::OTHER;
   }
 
   // integral ctor
   template <typename U>
   Any(U&& value,
-      typename std::enable_if<!std::is_same<U, bool>::value &&
-                              !std::is_same<U, char>::value &&
+      typename std::enable_if<!std::is_same<U, bool>::value && !std::is_same<U, char>::value &&
                               std::is_integral<U>::value>::type* = nullptr)
       : ptr_(new AnyValueDerived<StorageType<U>>(std::forward<U>(value))) {
     ptr_->category_ = AnyCategory::INTEGRAL;
@@ -153,8 +142,7 @@ struct Any {
   template <typename U>
   Any(U&& value,
       typename std::enable_if<!std::is_same<U, bool>::value &&
-                              std::is_floating_point<U>::value>::type* =
-          nullptr)
+                              std::is_floating_point<U>::value>::type* = nullptr)
       : ptr_(new AnyValueDerived<StorageType<U>>(std::forward<U>(value))) {
     ptr_->category_ = AnyCategory::FLOATING_POINT;
     if (std::is_same<U, float>::value)
@@ -184,9 +172,7 @@ struct Any {
     return derived->value_;
   }
 
-  template <
-      class U,
-      typename std::enable_if<!std::is_arithmetic<U>::value>::type* = nullptr>
+  template <class U, typename std::enable_if<!std::is_arithmetic<U>::value>::type* = nullptr>
   StorageType<U> copy_as() const {
     if (AnyCategory::OTHER != ptr_->category_)
       std::cerr << "error copying back any value (is not other)" << std::endl;
@@ -197,9 +183,7 @@ struct Any {
     return res;
   }
 
-  template <
-      typename U,
-      typename std::enable_if<std::is_same<U, bool>::value>::type* = nullptr>
+  template <typename U, typename std::enable_if<std::is_same<U, bool>::value>::type* = nullptr>
   U copy_as() const {
     if (AnyCategory::BOOL != ptr_->category_) {
       std::cerr << "error copying back any value (is not other)" << std::endl;
@@ -208,16 +192,13 @@ struct Any {
     return static_cast<AnyValueDerived<bool>*>(ptr_)->value_;
   }
 
-  template <
-      class U,
-      typename std::enable_if<std::is_integral<U>::value &&
-                              !std::is_same<U, bool>::value>::type* = nullptr>
+  template <class U,
+            typename std::enable_if<std::is_integral<U>::value &&
+                                    !std::is_same<U, bool>::value>::type* = nullptr>
   StorageType<U> copy_as() const {
     if (AnyCategory::FLOATING_POINT != ptr_->category_ &&
         AnyCategory::INTEGRAL != ptr_->category_) {
-      std::cerr
-          << "error copying back any value (is not floating point or integral)"
-          << std::endl;
+      std::cerr << "error copying back any value (is not floating point or integral)" << std::endl;
       return 0;
     }
     if (AnyArithmeticType::INT == ptr_->arithmetic_type_)
@@ -246,16 +227,13 @@ struct Any {
     return 0;
   }
 
-  template <
-      class U,
-      typename std::enable_if<std::is_floating_point<U>::value &&
-                              !std::is_same<U, bool>::value>::type* = nullptr>
+  template <class U,
+            typename std::enable_if<std::is_floating_point<U>::value &&
+                                    !std::is_same<U, bool>::value>::type* = nullptr>
   StorageType<U> copy_as() const {
     if (AnyCategory::FLOATING_POINT != ptr_->category_ &&
         AnyCategory::INTEGRAL != ptr_->category_) {
-      std::cerr
-          << "error copying back any value (is not floating point or integral)"
-          << std::endl;
+      std::cerr << "error copying back any value (is not floating point or integral)" << std::endl;
       return 0;
     }
     if (AnyArithmeticType::INT == ptr_->arithmetic_type_)
@@ -349,8 +327,7 @@ template <typename T>
 struct DefaultSerializable {
   virtual ~DefaultSerializable() {}
   template <typename U>
-  friend std::ostream& operator<<(std::ostream& os,
-                                  const DefaultSerializable<U>&) {
+  friend std::ostream& operator<<(std::ostream& os, const DefaultSerializable<U>&) {
     os << "not serializable";
     return os;
   }

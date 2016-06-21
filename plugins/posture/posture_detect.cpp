@@ -25,18 +25,16 @@ using namespace std;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    PostureDetect,
-    "pcldetectsink",
-    "Point Cloud Detect",
-    "video",
-    "reader/writer",
-    "Detect shapes and objects in point clouds",
-    "LGPL",
-    "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureDetect,
+                                     "pcldetectsink",
+                                     "Point Cloud Detect",
+                                     "video",
+                                     "reader/writer",
+                                     "Detect shapes and objects in point clouds",
+                                     "LGPL",
+                                     "Emmanuel Durand");
 
-PostureDetect::PostureDetect(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)) {}
+PostureDetect::PostureDetect(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 PostureDetect::~PostureDetect() { stop(); }
 
@@ -60,12 +58,11 @@ bool PostureDetect::stop() {
 bool PostureDetect::init() {
   init_startable(this);
 
-  shmcntr_.install_connect_method(
-      [this](const string path) { return connect(path); },
-      [this](const string path) { return disconnect(path); },
-      [this]() { return disconnect_all(); },
-      [this](const string caps) { return can_sink_caps(caps); },
-      1);
+  shmcntr_.install_connect_method([this](const string path) { return connect(path); },
+                                  [this](const string path) { return disconnect(path); },
+                                  [this]() { return disconnect_all(); },
+                                  [this](const string caps) { return can_sink_caps(caps); },
+                                  1);
 
   return true;
 }
@@ -78,9 +75,8 @@ bool PostureDetect::connect(std::string shmdata_socket_path) {
         // If another thread is trying to get the merged cloud, don't bother
         if (!mutex_.try_lock()) return;
 
-        if (detect_ == nullptr ||
-            (reader_caps_ != string(POINTCLOUD_TYPE_BASE) &&
-             reader_caps_ != string(POINTCLOUD_TYPE_COMPRESSED))) {
+        if (detect_ == nullptr || (reader_caps_ != string(POINTCLOUD_TYPE_BASE) &&
+                                   reader_caps_ != string(POINTCLOUD_TYPE_COMPRESSED))) {
           mutex_.unlock();
           return;
         }
@@ -96,32 +92,24 @@ bool PostureDetect::connect(std::string shmdata_socket_path) {
             auto poly = vector<unsigned char>();
             detect_->getConvexHull(poly, 0);
 
-            auto data_type = compress_cloud_
-                                 ? string(POINTCLOUD_TYPE_COMPRESSED)
-                                 : string(POINTCLOUD_TYPE_BASE);
+            auto data_type =
+                compress_cloud_ ? string(POINTCLOUD_TYPE_COMPRESSED) : string(POINTCLOUD_TYPE_BASE);
             if (!cloud_writer_ ||
-                cloud.size() >
-                    cloud_writer_
-                        ->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+                cloud.size() > cloud_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
               cloud_writer_.reset();
-              cloud_writer_ = std2::make_unique<ShmdataWriter>(
-                  this,
-                  make_file_name("cloud"),
-                  std::max(cloud.size() * 2, (size_t)1024),
-                  data_type);
+              cloud_writer_ =
+                  std2::make_unique<ShmdataWriter>(this,
+                                                   make_file_name("cloud"),
+                                                   std::max(cloud.size() * 2, (size_t)1024),
+                                                   data_type);
             }
 
             data_type = string(POLYGONMESH_TYPE_BASE);
             if (!mesh_writer_ ||
-                poly.size() >
-                    mesh_writer_
-                        ->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+                poly.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
               mesh_writer_.reset();
               mesh_writer_ = std2::make_unique<ShmdataWriter>(
-                  this,
-                  make_file_name("mesh"),
-                  std::max(poly.size() * 2, (size_t)1024),
-                  data_type);
+                  this, make_file_name("mesh"), std::max(poly.size() * 2, (size_t)1024), data_type);
             }
 
             cloud_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(

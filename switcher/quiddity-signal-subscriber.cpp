@@ -57,27 +57,19 @@ void QuidditySignalSubscriber::signal_cb(const std::vector<std::string>& params,
                           (gchar*)signal->user_data);
 }
 
-void QuidditySignalSubscriber::set_manager_impl(
-    QuiddityManager_Impl::ptr manager_impl) {
+void QuidditySignalSubscriber::set_manager_impl(QuiddityManager_Impl::ptr manager_impl) {
   manager_impl_ = manager_impl;
 }
 
-void QuidditySignalSubscriber::set_user_data(void* user_data) {
-  user_data_ = user_data;
-}
+void QuidditySignalSubscriber::set_user_data(void* user_data) { user_data_ = user_data; }
 
 void QuidditySignalSubscriber::set_name(const gchar* name) { name_ = name; }
 
-void QuidditySignalSubscriber::set_callback(OnEmittedCallback cb) {
-  user_callback_ = cb;
-}
+void QuidditySignalSubscriber::set_callback(OnEmittedCallback cb) { user_callback_ = cb; }
 
-bool QuidditySignalSubscriber::subscribe(Quiddity::ptr quid,
-                                         const std::string& signal_name) {
+bool QuidditySignalSubscriber::subscribe(Quiddity::ptr quid, const std::string& signal_name) {
   if (!quid || user_callback_ == nullptr) {
-    g_warning("cannot subscribe to signal (%s %s)",
-              quid->get_name().c_str(),
-              signal_name.c_str());
+    g_warning("cannot subscribe to signal (%s %s)", quid->get_name().c_str(), signal_name.c_str());
     return false;
   }
   std::pair<std::string, std::string> cur_pair;
@@ -105,8 +97,7 @@ bool QuidditySignalSubscriber::subscribe(Quiddity::ptr quid,
   return false;
 }
 
-bool QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid,
-                                           const std::string& signal_name) {
+bool QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid, const std::string& signal_name) {
   if (!quid) return false;
   std::pair<std::string, std::string> cur_pair;
   cur_pair = std::make_pair(quid->get_name(), signal_name);

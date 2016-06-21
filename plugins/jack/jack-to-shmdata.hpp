@@ -51,8 +51,7 @@ class JackToShmdata : public Quiddity, public StartableQuiddity {
   std::vector<jack_sample_t> buf_{};
   std::vector<std::string> ports_to_connect_{};
   std::mutex port_to_connect_in_jack_process_mutex_{};
-  std::vector<std::pair<std::string, std::string>>
-      port_to_connect_in_jack_process_{};
+  std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
   std::unique_ptr<ShmdataWriter> shm_{nullptr};
   JackClient jack_client_;
   std::vector<JackPort> input_ports_{};

@@ -43,12 +43,8 @@ bool PulseSrc::init() {
   init_startable(this);
   if (!pulsesrc_ || !shmsink_) return false;
   shmpath_ = make_file_name("audio");
-  g_object_set(G_OBJECT(pulsesrc_.get_raw()),
-               "client-name",
-               get_name().c_str(),
-               nullptr);
-  g_object_set(
-      G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
+  g_object_set(G_OBJECT(pulsesrc_.get_raw()), "client-name", get_name().c_str(), nullptr);
+  g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   std::unique_lock<std::mutex> lock(devices_mutex_);
   GstUtils::g_idle_add_full_with_context(mainloop_->get_main_context(),
                                          G_PRIORITY_DEFAULT_IDLE,
@@ -58,7 +54,7 @@ bool PulseSrc::init() {
   // waiting for devices to be updated
   devices_cond_.wait(lock);
   if (!connected_to_pulse_) {
-    g_debug("not connected to pulse, cannot init");
+    g_message("ERROR:Not connected to pulse, cannot initialize.");
     return false;
   }
   volume_id_ = pmanage<MPtr(&PContainer::push)>(
@@ -70,23 +66,17 @@ bool PulseSrc::init() {
 
 gboolean PulseSrc::async_get_pulse_devices(void* user_data) {
   PulseSrc* context = static_cast<PulseSrc*>(user_data);
-  context->pa_glib_mainloop_ =
-      pa_glib_mainloop_new(context->mainloop_->get_main_context());
-  context->pa_mainloop_api_ =
-      pa_glib_mainloop_get_api(context->pa_glib_mainloop_);
+  context->pa_glib_mainloop_ = pa_glib_mainloop_new(context->mainloop_->get_main_context());
+  context->pa_mainloop_api_ = pa_glib_mainloop_get_api(context->pa_glib_mainloop_);
   context->pa_context_ = pa_context_new(context->pa_mainloop_api_, nullptr);
   if (nullptr == context->pa_context_) {
     g_debug("PulseSrc:: pa_context_new() failed.");
     return FALSE;
   }
-  pa_context_set_state_callback(
-      context->pa_context_, pa_context_state_callback, context);
-  if (pa_context_connect(context->pa_context_,
-                         context->server_,
-                         (pa_context_flags_t)0,
-                         nullptr) < 0) {
-    g_debug("pa_context_connect() failed: %s",
-            pa_strerror(pa_context_errno(context->pa_context_)));
+  pa_context_set_state_callback(context->pa_context_, pa_context_state_callback, context);
+  if (pa_context_connect(context->pa_context_, context->server_, (pa_context_flags_t)0, nullptr) <
+      0) {
+    g_debug("pa_context_connect() failed: %s", pa_strerror(pa_context_errno(context->pa_context_)));
     return FALSE;
   }
   context->connected_to_pulse_ = true;
@@ -115,15 +105,13 @@ gboolean PulseSrc::quit_pulse(void* user_data) {
 }
 
 bool PulseSrc::remake_elements() {
-  if (!UGstElem::renew(pulsesrc_,
-                       {"client-name", "volume", "mute", "device"}) ||
+  if (!UGstElem::renew(pulsesrc_, {"client-name", "volume", "mute", "device"}) ||
       !UGstElem::renew(shmsink_, {"socket-path"}))
     return false;
   return true;
 }
 
-void PulseSrc::pa_context_state_callback(pa_context* pulse_context,
-                                         void* user_data) {
+void PulseSrc::pa_context_state_callback(pa_context* pulse_context, void* user_data) {
   PulseSrc* context = static_cast<PulseSrc*>(user_data);
   switch (pa_context_get_state(pulse_context)) {
     case PA_CONTEXT_CONNECTING:
@@ -141,16 +129,15 @@ void PulseSrc::pa_context_state_callback(pa_context* pulse_context,
       // pa_operation_unref(pa_context_get_source_info_list(pulse_context,
       //  get_source_info_callback,
       //  nullptr));
-      pa_context_set_subscribe_callback(
-          pulse_context, on_pa_event_callback, nullptr);
+      pa_context_set_subscribe_callback(pulse_context, on_pa_event_callback, nullptr);
       pa_operation_unref(pa_context_subscribe(
           pulse_context,
           static_cast<pa_subscription_mask_t>(
               PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE |
-              PA_SUBSCRIPTION_MASK_SINK_INPUT |
-              PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT | PA_SUBSCRIPTION_MASK_MODULE |
-              PA_SUBSCRIPTION_MASK_CLIENT | PA_SUBSCRIPTION_MASK_SAMPLE_CACHE |
-              PA_SUBSCRIPTION_MASK_SERVER | PA_SUBSCRIPTION_MASK_CARD),
+              PA_SUBSCRIPTION_MASK_SINK_INPUT | PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT |
+              PA_SUBSCRIPTION_MASK_MODULE | PA_SUBSCRIPTION_MASK_CLIENT |
+              PA_SUBSCRIPTION_MASK_SAMPLE_CACHE | PA_SUBSCRIPTION_MASK_SERVER |
+              PA_SUBSCRIPTION_MASK_CARD),
           nullptr,    // pa_context_success_cb_t cb,
           nullptr));  // void *userdata);
       break;
@@ -161,8 +148,7 @@ void PulseSrc::pa_context_state_callback(pa_context* pulse_context,
       g_debug("PA_CONTEXT_FAILED");
       break;
     default:
-      g_debug("PulseSrc Context error: %s",
-              pa_strerror(pa_context_errno(pulse_context)));
+      g_debug("PulseSrc Context error: %s", pa_strerror(pa_context_errno(pulse_context)));
   }
 }
 
@@ -172,8 +158,7 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
                                         void* user_data) {
   PulseSrc* context = static_cast<PulseSrc*>(user_data);
   if (is_last < 0) {
-    g_debug("Failed to get source information: %s",
-            pa_strerror(pa_context_errno(pulse_context)));
+    g_debug("Failed to get source information: %s", pa_strerror(pa_context_errno(pulse_context)));
     return;
   }
   if (is_last) {
@@ -229,8 +214,7 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
     description.description_ = "";
   else
     description.description_ = i->description;
-  description.sample_format_ =
-      pa_sample_format_to_string(i->sample_spec.format);
+  description.sample_format_ = pa_sample_format_to_string(i->sample_spec.format);
   gchar* rate = g_strdup_printf("%u", i->sample_spec.rate);
   description.sample_rate_ = rate;
   g_free(rate);
@@ -256,8 +240,7 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
     for (p = i->ports; *p; p++) {
       // printf("\t\t%s: %s (priority. %u)\n", (*p)->name, (*p)->description,
       // (*p)->priority);
-      description.ports_.push_back(
-          std::make_pair((*p)->name, (*p)->description));
+      description.ports_.push_back(std::make_pair((*p)->name, (*p)->description));
     }
   }
   if (i->active_port) {
@@ -276,28 +259,23 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
 
 void PulseSrc::make_device_description(pa_context* pulse_context) {
   if (!capture_devices_.empty()) capture_devices_.clear();
-  pa_operation_unref(pa_context_get_source_info_list(
-      pulse_context, get_source_info_callback, this));
+  pa_operation_unref(
+      pa_context_get_source_info_list(pulse_context, get_source_info_callback, this));
 }
 
-void PulseSrc::on_pa_event_callback(
-    pa_context* pulse_context,
-    pa_subscription_event_type_t pulse_event_type,
-    uint32_t /*index */,
-    void* user_data) {
+void PulseSrc::on_pa_event_callback(pa_context* pulse_context,
+                                    pa_subscription_event_type_t pulse_event_type,
+                                    uint32_t /*index */,
+                                    void* user_data) {
   PulseSrc* context = static_cast<PulseSrc*>(user_data);
-  if ((pulse_event_type & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) ==
-      PA_SUBSCRIPTION_EVENT_SOURCE) {
-    if ((pulse_event_type & PA_SUBSCRIPTION_EVENT_TYPE_MASK) ==
-        PA_SUBSCRIPTION_EVENT_NEW) {
+  if ((pulse_event_type & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SOURCE) {
+    if ((pulse_event_type & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_NEW) {
       context->make_device_description(pulse_context);
       return;
     }
   }
-  if ((pulse_event_type & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) ==
-      PA_SUBSCRIPTION_EVENT_SOURCE) {
-    if ((pulse_event_type & PA_SUBSCRIPTION_EVENT_TYPE_MASK) ==
-        PA_SUBSCRIPTION_EVENT_REMOVE) {
+  if ((pulse_event_type & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SOURCE) {
+    if ((pulse_event_type & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_REMOVE) {
       context->make_device_description(pulse_context);
       return;
     }
@@ -322,18 +300,14 @@ bool PulseSrc::start() {
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsink_.get_raw(),
       [this](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.writer." + shmpath_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(".shmdata.writer." + shmpath_,
+                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
-                         InfoTree::make(byte_rate));
+        this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate", InfoTree::make(byte_rate));
       });
-  gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
-                   pulsesrc_.get_raw(),
-                   shmsink_.get_raw(),
-                   nullptr);
+  gst_bin_add_many(
+      GST_BIN(gst_pipeline_->get_pipeline()), pulsesrc_.get_raw(), shmsink_.get_raw(), nullptr);
   gst_element_link_many(pulsesrc_.get_raw(), shmsink_.get_raw(), nullptr);
   gst_pipeline_->play(true);
   return true;

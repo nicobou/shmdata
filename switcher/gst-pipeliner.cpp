@@ -60,11 +60,8 @@ GstPipeliner::GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
     return;
   }
 
-  GstUtils::g_idle_add_full_with_context(main_loop_->get_main_context(),
-                                         G_PRIORITY_DEFAULT_IDLE,
-                                         push_thread_context,
-                                         this,
-                                         nullptr);
+  GstUtils::g_idle_add_full_with_context(
+      main_loop_->get_main_context(), G_PRIORITY_DEFAULT_IDLE, push_thread_context, this, nullptr);
 }
 
 GstPipeliner::~GstPipeliner() {}
@@ -73,9 +70,8 @@ gboolean GstPipeliner::push_thread_context(gpointer user_data) {
   auto context = static_cast<GstPipeliner*>(user_data);
   g_main_context_push_thread_default(context->main_loop_->get_main_context());
 
-  gst_bus_add_watch(gst_pipeline_get_bus(GST_PIPELINE(context->get_pipeline())),
-                    bus_watch,
-                    user_data);
+  gst_bus_add_watch(
+      gst_pipeline_get_bus(GST_PIPELINE(context->get_pipeline())), bus_watch, user_data);
   return FALSE;
 }
 
@@ -87,9 +83,7 @@ void GstPipeliner::play(gboolean play) {
   }
 }
 
-bool GstPipeliner::seek(gdouble position_in_ms) {
-  return gst_pipeline_->seek(position_in_ms);
-}
+bool GstPipeliner::seek(gdouble position_in_ms) { return gst_pipeline_->seek(position_in_ms); }
 
 // gboolean GstPipeliner::run_remove_quid(gpointer user_data) {
 //   GstPipeliner *context = static_cast<GstPipeliner *>(user_data);
@@ -106,9 +100,7 @@ bool GstPipeliner::seek(gdouble position_in_ms) {
 //   return FALSE;
 // }
 
-GstElement* GstPipeliner::get_pipeline() {
-  return gst_pipeline_->get_pipeline();
-}
+GstElement* GstPipeliner::get_pipeline() { return gst_pipeline_->get_pipeline(); }
 
 // void
 // GstPipeliner::print_one_tag(const GstTagList */*list*/,
@@ -151,13 +143,11 @@ GstBusSyncReply GstPipeliner::on_gst_error(GstMessage* msg) {
   GError* error = nullptr;
   gst_message_parse_error(msg, &error, &debug);
   g_free(debug);
-  g_warning("GStreamer error: %s (element %s)",
-            error->message,
-            GST_MESSAGE_SRC_NAME(msg));
+  g_warning("GStreamer error: %s (element %s)", error->message, GST_MESSAGE_SRC_NAME(msg));
   g_error_free(error);
   // on-error-gsource
-  GSourceWrapper* gsrc = static_cast<GSourceWrapper*>(
-      g_object_get_data(G_OBJECT(msg->src), "on-error-gsource"));
+  GSourceWrapper* gsrc =
+      static_cast<GSourceWrapper*>(g_object_get_data(G_OBJECT(msg->src), "on-error-gsource"));
   if (nullptr != gsrc) {
     // removing command in order to get it invoked once
     g_object_set_data(G_OBJECT(msg->src), "on-error-gsource", nullptr);
@@ -165,12 +155,10 @@ GstBusSyncReply GstPipeliner::on_gst_error(GstMessage* msg) {
   }
 
   // on-error-delete
-  const char* name =
-      (const char*)g_object_get_data(G_OBJECT(msg->src), "on-error-delete");
+  const char* name = (const char*)g_object_get_data(G_OBJECT(msg->src), "on-error-delete");
   if (nullptr != name) {
     // removing command in order to get it invoked once
-    g_object_set_data(
-        G_OBJECT(msg->src), "on-error-delete", (gpointer) nullptr);
+    g_object_set_data(G_OBJECT(msg->src), "on-error-delete", (gpointer) nullptr);
     g_warning("FIXME, handle on-error-delete");
     // GstUtils::g_idle_add_full_with_context(main_loop_->get_main_context(),
     //                                        G_PRIORITY_DEFAULT_IDLE,
@@ -181,9 +169,7 @@ GstBusSyncReply GstPipeliner::on_gst_error(GstMessage* msg) {
   return GST_BUS_DROP;
 }
 
-gboolean GstPipeliner::bus_watch(GstBus* /*bus*/,
-                                 GstMessage* message,
-                                 gpointer user_data) {
+gboolean GstPipeliner::bus_watch(GstBus* /*bus*/, GstMessage* message, gpointer user_data) {
   auto context = static_cast<GstPipeliner*>(user_data);
   if (context && context->on_msg_async_cb_) context->on_msg_async_cb_(message);
   return TRUE;
@@ -219,9 +205,7 @@ GstBusSyncReply GstPipeliner::bus_sync_handler(GstBus* /*bus*/,
     GError* error = nullptr;
     gst_message_parse_error(msg, &error, &debug);
     g_free(debug);
-    g_warning("GStreamer error: %s (element %s)",
-              error->message,
-              GST_MESSAGE_SRC_NAME(msg));
+    g_warning("GStreamer error: %s (element %s)", error->message, GST_MESSAGE_SRC_NAME(msg));
     g_error_free(error);
     res = GST_BUS_DROP;
   }

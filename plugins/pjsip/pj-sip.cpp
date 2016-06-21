@@ -45,8 +45,7 @@ PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
   }
   pj_log_set_level(log_level_);
   // Register the thread, after pj_init() is called
-  pj_thread_register(
-      "switcher-pjsip-singleton", thread_handler_desc_, &pj_thread_ref_);
+  pj_thread_register("switcher-pjsip-singleton", thread_handler_desc_, &pj_thread_ref_);
   status = pjsua_create();
   if (status != PJ_SUCCESS) {
     g_warning("Error in pjsua_create()");
@@ -133,8 +132,7 @@ PJSIP::~PJSIP() {
 
 void PJSIP::sip_worker_thread() {
   // Register the thread, after pj_init() is called
-  pj_thread_register(
-      "sip_worker_thread", worker_handler_desc_, &worker_thread_ref_);
+  pj_thread_register("sip_worker_thread", worker_handler_desc_, &worker_thread_ref_);
   while (sip_work_) {
     pj_time_val timeout = {0, 10};
     pjsip_endpt_handle_events(sip_endpt_, &timeout);

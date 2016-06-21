@@ -41,10 +41,8 @@ int main() {
 #else
     return 1;
 #endif
-    if (!switcher::QuiddityBasicTest::test_full(manager, "pulsesrc"))
-      success = false;
-    if (!switcher::QuiddityBasicTest::test_full(manager, "pulsesink"))
-      success = false;
+    if (!switcher::QuiddityBasicTest::test_full(manager, "pulsesrc")) success = false;
+    if (!switcher::QuiddityBasicTest::test_full(manager, "pulsesink")) success = false;
   }  // end of scope is releasing the manager
 
   if (success)

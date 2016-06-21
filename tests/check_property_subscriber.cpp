@@ -32,28 +32,22 @@ void mon_property_cb(const std::string& /*subscriber_name */,
                      const std::string& value,
                      void* user_data) {
   if (0 != quiddity_name.compare("vid")) {
-    g_warning("quiddity name does not match, got %s instead of \"vid\"",
-              quiddity_name.c_str());
+    g_warning("quiddity name does not match, got %s instead of \"vid\"", quiddity_name.c_str());
     return;
   }
 
   if (0 != property_name.compare("pattern")) {
-    g_warning("property name does not match, got %s instead of \"pattern\"",
-              property_name.c_str());
+    g_warning("property name does not match, got %s instead of \"pattern\"", property_name.c_str());
     return;
   }
 
   if (0 != value.compare("Random (television snow)")) {
-    g_warning(
-        "value does not match, got %s instead of Random (television snow)",
-        value.c_str());
+    g_warning("value does not match, got %s instead of Random (television snow)", value.c_str());
     return;
   }
 
   if (0 != g_strcmp0((char*)user_data, "hello world")) {
-    g_warning(
-        "user_data name does not match, got %s instead of \"hello world\"",
-        (char*)user_data);
+    g_warning("user_data name does not match, got %s instead of \"hello world\"", (char*)user_data);
     return;
   }
 
@@ -66,22 +60,19 @@ int main() {
   {
     manager = switcher::QuiddityManager::make_manager("test_manager");
 
-    manager->make_property_subscriber(
-        "sub", mon_property_cb, (void*)user_string);
+    manager->make_property_subscriber("sub", mon_property_cb, (void*)user_string);
     manager->create("videotestsrc", "vid");
     manager->subscribe_property("sub", "vid", "pattern");
 
     std::vector<std::string> subscribers = manager->list_property_subscribers();
-    if (subscribers.size() != 1 ||
-        g_strcmp0(subscribers.at(0).c_str(), "sub") != 0) {
+    if (subscribers.size() != 1 || g_strcmp0(subscribers.at(0).c_str(), "sub") != 0) {
       g_warning("pb with list_property_subscribers");
       return 1;
     }
 
     std::vector<std::pair<std::string, std::string>> properties =
         manager->list_subscribed_properties("sub");
-    if (properties.size() != 1 ||
-        g_strcmp0(properties.at(0).first.c_str(), "vid") ||
+    if (properties.size() != 1 || g_strcmp0(properties.at(0).first.c_str(), "vid") ||
         g_strcmp0(properties.at(0).second.c_str(), "pattern")) {
       g_warning("pb with list_subscribed_properties");
       return 1;

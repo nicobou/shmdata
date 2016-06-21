@@ -28,8 +28,7 @@
 
 namespace switcher {
 
-std::pair<bool, std::string> FileUtils::prepare_writable_dir(
-    const std::string& path) {
+std::pair<bool, std::string> FileUtils::prepare_writable_dir(const std::string& path) {
   if (is_dir(path)) {
     if (0 != access(path.c_str(), W_OK | X_OK)) {  // not writable
       int err = errno;
@@ -67,8 +66,7 @@ bool FileUtils::is_dir(const std::string& path) {
   return true;
 }
 
-std::pair<bool, std::string> FileUtils::create_writable_dir(
-    const std::string& path) {
+std::pair<bool, std::string> FileUtils::create_writable_dir(const std::string& path) {
   if (-1 == mkdir(path.c_str(), S_IRWXU)) {
     int err = errno;
     return std::make_pair(false, std::string(strerror(err)));

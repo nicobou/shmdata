@@ -33,18 +33,14 @@ GstAudioCodec::GstAudioCodec(Quiddity* quid,
       shm_encoded_path_(shmpath_encoded),
       custom_shmsink_path_(!shmpath_encoded.empty()),
       gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
-      primary_codec_(GstUtils::element_factory_list_to_pair_of_vectors(
-                         GST_ELEMENT_FACTORY_TYPE_AUDIO_ENCODER,
-                         GST_RANK_PRIMARY,
-                         true,
-                         {"vorbisenc"}),
-                     0),
-      secondary_codec_(GstUtils::element_factory_list_to_pair_of_vectors(
-                           GST_ELEMENT_FACTORY_TYPE_AUDIO_ENCODER,
-                           GST_RANK_SECONDARY,
-                           true,
-                           {"vorbisenc"}),
-                       0),
+      primary_codec_(
+          GstUtils::element_factory_list_to_pair_of_vectors(
+              GST_ELEMENT_FACTORY_TYPE_AUDIO_ENCODER, GST_RANK_PRIMARY, true, {"vorbisenc"}),
+          0),
+      secondary_codec_(
+          GstUtils::element_factory_list_to_pair_of_vectors(
+              GST_ELEMENT_FACTORY_TYPE_AUDIO_ENCODER, GST_RANK_SECONDARY, true, {"vorbisenc"}),
+          0),
       codec_id_(install_codec(true /*primary*/)),
       codec_long_list_id_(quid_->pmanage<MPtr(&PContainer::make_bool)>(
           "more_codecs",
@@ -123,32 +119,28 @@ bool GstAudioCodec::remake_codec_elements() {
 
 void GstAudioCodec::uninstall_codec_properties() {
   for (auto& it : codec_properties_)
-    quid_->pmanage<MPtr(&PContainer::remove)>(
-        quid_->pmanage<MPtr(&PContainer::get_id)>(it));
+    quid_->pmanage<MPtr(&PContainer::remove)>(quid_->pmanage<MPtr(&PContainer::get_id)>(it));
   codec_properties_.clear();
 }
 
 void GstAudioCodec::make_codec_properties() {
   guint num_properties = 0;
-  GParamSpec** props = g_object_class_list_properties(
-      G_OBJECT_GET_CLASS(codec_element_.get_raw()), &num_properties);
+  GParamSpec** props =
+      g_object_class_list_properties(G_OBJECT_GET_CLASS(codec_element_.get_raw()), &num_properties);
   On_scope_exit { g_free(props); };
   for (guint i = 0; i < num_properties; i++) {
     auto param_name = g_param_spec_get_name(props[i]);
     if (param_black_list_.end() == param_black_list_.find(param_name)) {
       quid_->pmanage<MPtr(&PContainer::push)>(
-          param_name,
-          GPropToProp::to_prop(G_OBJECT(codec_element_.get_raw()), param_name));
+          param_name, GPropToProp::to_prop(G_OBJECT(codec_element_.get_raw()), param_name));
       codec_properties_.push_back(param_name);
     }
   }
 }
 
-gboolean GstAudioCodec::reset_codec_configuration(gpointer /*unused */,
-                                                  gpointer user_data) {
+gboolean GstAudioCodec::reset_codec_configuration(gpointer /*unused */, gpointer user_data) {
   GstAudioCodec* context = static_cast<GstAudioCodec*>(user_data);
-  auto codec_prop_id =
-      context->quid_->pmanage<MPtr(&PContainer::get_id)>("codec");
+  auto codec_prop_id = context->quid_->pmanage<MPtr(&PContainer::get_id)>("codec");
   context->quid_->pmanage<MPtr(&PContainer::set_str)>(codec_prop_id, "opusenc");
   return TRUE;
 }
@@ -160,32 +152,26 @@ bool GstAudioCodec::start() {
   shmsink_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shm_encoded_.get_raw(),
       [this](const std::string& caps) {
-        this->quid_->graft_tree(
-            ".shmdata.writer." + shm_encoded_path_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->quid_->graft_tree(".shmdata.writer." + shm_encoded_path_,
+                                ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->quid_->graft_tree(
-            ".shmdata.writer." + shm_encoded_path_ + ".byte_rate",
-            InfoTree::make(byte_rate));
+        this->quid_->graft_tree(".shmdata.writer." + shm_encoded_path_ + ".byte_rate",
+                                InfoTree::make(byte_rate));
       });
   shmsrc_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
       [this](const std::string& caps) {
-        this->quid_->graft_tree(
-            ".shmdata.reader." + shmpath_to_encode_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->quid_->graft_tree(".shmdata.reader." + shmpath_to_encode_,
+                                ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->quid_->graft_tree(
-            ".shmdata.reader." + shmpath_to_encode_ + ".byte_rate",
-            InfoTree::make(byte_rate));
+        this->quid_->graft_tree(".shmdata.reader." + shmpath_to_encode_ + ".byte_rate",
+                                InfoTree::make(byte_rate));
       });
   make_bin();
-  g_object_set(
-      G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
-  if (copy_buffers_)
-    g_object_set(G_OBJECT(shmsrc_.get_raw()), "copy-buffers", TRUE, nullptr);
+  g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
+  if (copy_buffers_) g_object_set(G_OBJECT(shmsrc_.get_raw()), "copy-buffers", TRUE, nullptr);
   gst_pipeline_->play(true);
   return true;
 }
@@ -206,12 +192,8 @@ bool GstAudioCodec::stop() {
 
 void GstAudioCodec::set_shm(const std::string& shmpath) {
   shmpath_to_encode_ = shmpath;
-  if (!custom_shmsink_path_)
-    shm_encoded_path_ = shmpath_to_encode_ + "-encoded";
-  g_object_set(G_OBJECT(shmsrc_.get_raw()),
-               "socket-path",
-               shmpath_to_encode_.c_str(),
-               nullptr);
+  if (!custom_shmsink_path_) shm_encoded_path_ = shmpath_to_encode_ + "-encoded";
+  g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_to_encode_.c_str(), nullptr);
   g_object_set(G_OBJECT(shm_encoded_.get_raw()),
                "socket-path",
                shm_encoded_path_.c_str(),

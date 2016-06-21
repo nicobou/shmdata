@@ -31,18 +31,13 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoConverter,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-GstVideoConverter::GstVideoConverter(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)) {}
+GstVideoConverter::GstVideoConverter(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 bool GstVideoConverter::init() {
   converter_ = std2::make_unique<GstPixelFormatConverter>(
-      static_cast<Quiddity*>(this),
-      "Pixel format",
-      "Convert to selected pixel format");
+      static_cast<Quiddity*>(this), "Pixel format", "Convert to selected pixel format");
   shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) {
-        return this->on_shmdata_connect(shmpath);
-      },
+      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
       [this](const std::string&) { return this->on_shmdata_disconnect(); },
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },

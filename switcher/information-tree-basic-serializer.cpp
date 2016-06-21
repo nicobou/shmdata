@@ -30,27 +30,19 @@ typedef struct {
 
 std::string path_to_string(std::list<std::string> path) {
   std::stringstream result;
-  std::copy(path.begin(),
-            path.end(),
-            std::ostream_iterator<std::string>(result, "."));
+  std::copy(path.begin(), path.end(), std::ostream_iterator<std::string>(result, "."));
   return result.str();
 }
 
-void on_visiting_node(std::string key,
-                      const InfoTree::ptrc node,
-                      bool,
-                      BasicSerializerData* data) {
+void on_visiting_node(std::string key, const InfoTree::ptrc node, bool, BasicSerializerData* data) {
   data->path_.push_back(key);
   auto value = node->read_data();
   if (value.not_null())
-    data->result_.append("." + BasicSerializer::path_to_string(data->path_) +
-                         " " + Any::to_string(value) + "\n");
+    data->result_.append("." + BasicSerializer::path_to_string(data->path_) + " " +
+                         Any::to_string(value) + "\n");
 }
 
-void on_node_visited(std::string,
-                     const InfoTree::ptrc,
-                     bool,
-                     BasicSerializerData* data) {
+void on_node_visited(std::string, const InfoTree::ptrc, bool, BasicSerializerData* data) {
   data->path_.pop_back();
 }
 
@@ -86,8 +78,7 @@ InfoTree::ptr deserialize(const std::string& serialized) {
     std::string val_cont;
     std::getline(line_ss, val_cont);
     if (!val_cont.empty()) value += ' ' + val_cont;
-    if (!absolute_key.empty() && !value.empty())
-      tree->graft(absolute_key, InfoTree::make(value));
+    if (!absolute_key.empty() && !value.empty()) tree->graft(absolute_key, InfoTree::make(value));
   }
   return tree;
 }

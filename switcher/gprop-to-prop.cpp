@@ -23,10 +23,8 @@
 namespace switcher {
 namespace GPropToProp {
 
-std::unique_ptr<PropertyBase> to_prop(GObject* gobj,
-                                      const std::string& gprop_name) {
-  GParamSpec* pspec = g_object_class_find_property(G_OBJECT_GET_CLASS(gobj),
-                                                   gprop_name.c_str());
+std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_name) {
+  GParamSpec* pspec = g_object_class_find_property(G_OBJECT_GET_CLASS(gobj), gprop_name.c_str());
   if (nullptr == pspec) {
     g_warning("property %s not found for the gobject calss %s",
               gprop_name.c_str(),
@@ -231,8 +229,7 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj,
         g_warning("GST_TYPE_CAPS is not a supporteed property type");
       } else if (G_IS_PARAM_SPEC_ENUM(pspec)) {
         std::vector<std::string> items;
-        GEnumValue* values =
-            G_ENUM_CLASS(g_type_class_ref(pspec->value_type))->values;
+        GEnumValue* values = G_ENUM_CLASS(g_type_class_ref(pspec->value_type))->values;
         guint j = 0;
         while (values[j].value_name) {
           // values[j].value_nick;

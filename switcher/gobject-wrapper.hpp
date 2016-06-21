@@ -42,17 +42,14 @@ class GObjectWrapper {
   GObject* get_gobject();
 
   // signal
-  static guint make_signal(GType return_type,
-                           guint n_params,
-                           GType* param_types);
+  static guint make_signal(GType return_type, guint n_params, GType* param_types);
 
  private:
   struct _MyObject* my_object_;
 
   // ---------- signals
   // static std::map<guint, GObjectCustomSignal::ptr> custom_signals_;
-  static guint
-      next_signal_num_;  // this is only for generation of unique signal names
+  static guint next_signal_num_;  // this is only for generation of unique signal names
   std::map<std::string, void*> signal_user_datas_;
 };
 

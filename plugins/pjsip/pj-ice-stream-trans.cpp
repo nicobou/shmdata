@@ -37,16 +37,14 @@ PJICEStreamTrans::PJICEStreamTrans(pj_ice_strans_cfg& ice_cfg,
                                          this,       /* user data */
                                          &icecb,     /* callback */
                                          &icest_)) { /* instance ptr */
-    g_warning("error creating ice");
+    g_message("ERROR:Error creating ICE");
     return;
   }
   std::unique_lock<std::mutex> lock(cand_ready_mtx_);
   while (!cand_ready_)
-    if (cand_ready_cv_.wait_for(lock, std::chrono::seconds(3)) ==
-        std::cv_status::timeout)
-      return;
+    if (cand_ready_cv_.wait_for(lock, std::chrono::seconds(3)) == std::cv_status::timeout) return;
   if (PJ_SUCCESS != pj_ice_strans_init_ice(icest_, role, nullptr, nullptr)) {
-    g_warning("error initializing ICE");
+    g_message("ERROR:Error initializing ICE");
     return;
   }
   // done
@@ -56,8 +54,7 @@ PJICEStreamTrans::PJICEStreamTrans(pj_ice_strans_cfg& ice_cfg,
 PJICEStreamTrans::~PJICEStreamTrans() {
   if (nullptr != icest_) {
     if (pj_ice_strans_has_sess(icest_)) {
-      if (PJ_SUCCESS != pj_ice_strans_stop_ice(icest_))
-        g_warning("issue stoping ICE session");
+      if (PJ_SUCCESS != pj_ice_strans_stop_ice(icest_)) g_warning("issue stoping ICE session");
     }
     pj_ice_strans_destroy(icest_);
   }
@@ -87,10 +84,8 @@ void PJICEStreamTrans::cb_on_rx_data(pj_ice_strans* ice_st,
   //         // , (unsigned)size,
   //         // (char*)pkt
   //         );
-  PJICEStreamTrans* context =
-      static_cast<PJICEStreamTrans*>(pj_ice_strans_get_user_data(ice_st));
-  if (nullptr != context->data_cbs_[comp_id - 1])
-    context->data_cbs_[comp_id - 1](pkt, size);
+  PJICEStreamTrans* context = static_cast<PJICEStreamTrans*>(pj_ice_strans_get_user_data(ice_st));
+  if (nullptr != context->data_cbs_[comp_id - 1]) context->data_cbs_[comp_id - 1](pkt, size);
 }
 
 /*
@@ -100,17 +95,13 @@ void PJICEStreamTrans::cb_on_rx_data(pj_ice_strans* ice_st,
 void PJICEStreamTrans::cb_on_ice_complete(pj_ice_strans* ice_st,
                                           pj_ice_strans_op op,
                                           pj_status_t status) {
-  const char* opname =
-      (op == PJ_ICE_STRANS_OP_INIT
-           ? "initialization"
-           : (op == PJ_ICE_STRANS_OP_NEGOTIATION ? "negotiation"
-                                                 : "unknown_op"));
+  const char* opname = (op == PJ_ICE_STRANS_OP_INIT
+                            ? "initialization"
+                            : (op == PJ_ICE_STRANS_OP_NEGOTIATION ? "negotiation" : "unknown_op"));
 
-  g_debug("ICE state %s",
-          pj_ice_strans_state_name(pj_ice_strans_get_state(ice_st)));
+  g_debug("ICE state %s", pj_ice_strans_state_name(pj_ice_strans_get_state(ice_st)));
 
-  PJICEStreamTrans* context =
-      static_cast<PJICEStreamTrans*>(pj_ice_strans_get_user_data(ice_st));
+  PJICEStreamTrans* context = static_cast<PJICEStreamTrans*>(pj_ice_strans_get_user_data(ice_st));
   if (op == PJ_ICE_STRANS_OP_INIT) {
     std::unique_lock<std::mutex> lock(context->cand_ready_mtx_);
     if (status == PJ_SUCCESS) context->cand_ready_ = true;
@@ -131,8 +122,7 @@ void PJICEStreamTrans::cb_on_ice_complete(pj_ice_strans* ice_st,
 std::pair<pj_str_t, pj_str_t> PJICEStreamTrans::get_ufrag_and_passwd() {
   pj_str_t local_ufrag, local_pwd;
   /* Get ufrag and pwd from current session */
-  pj_ice_strans_get_ufrag_pwd(
-      icest_, &local_ufrag, &local_pwd, nullptr, nullptr);
+  pj_ice_strans_get_ufrag_pwd(icest_, &local_ufrag, &local_pwd, nullptr, nullptr);
   // return std::string("a=ice-ufrag:")
   //     + std::string(local_ufrag.ptr, 0, local_ufrag.slen)
   //     + "\na=ice-pwd:"
@@ -158,8 +148,7 @@ std::vector<std::vector<std::string>> PJICEStreamTrans::get_components() {
 
     /* Enumerate all candidates for this component */
     cand_cnt = PJ_ARRAY_SIZE(cand);
-    if (PJ_SUCCESS !=
-        pj_ice_strans_enum_cands(icest_, comp + 1, &cand_cnt, cand)) {
+    if (PJ_SUCCESS != pj_ice_strans_enum_cands(icest_, comp + 1, &cand_cnt, cand)) {
       g_warning("issue with pj_ice_strans_enum_cands");
       return res;
     }
@@ -167,12 +156,10 @@ std::vector<std::vector<std::string>> PJICEStreamTrans::get_components() {
     for (j = 0; j < cand_cnt; ++j) {
       res.back().emplace_back(
           // std::string("a=candidate:") +
-          std::string(cand[j].foundation.ptr, 0, cand[j].foundation.slen) +
-          " " + std::to_string(cand[j].comp_id) + " UDP " +
-          std::to_string(cand[j].prio) + " " +
-          std::string(
-              pj_sockaddr_print(&cand[j].addr, ipaddr, sizeof(ipaddr), 0)) +
-          " " + std::to_string(pj_sockaddr_get_port(&cand[j].addr)) + " typ " +
+          std::string(cand[j].foundation.ptr, 0, cand[j].foundation.slen) + " " +
+          std::to_string(cand[j].comp_id) + " UDP " + std::to_string(cand[j].prio) + " " +
+          std::string(pj_sockaddr_print(&cand[j].addr, ipaddr, sizeof(ipaddr), 0)) + " " +
+          std::to_string(pj_sockaddr_get_port(&cand[j].addr)) + " typ " +
           pj_ice_get_cand_type_name(cand[j].type));
     }
   }
@@ -198,8 +185,7 @@ bool PJICEStreamTrans::start_nego(const pj_str_t* rem_ufrag,
                                   const pj_str_t* rem_passwd,
                                   unsigned rcand_cnt,
                                   const pj_ice_sess_cand rcand[]) {
-  pj_status_t status =
-      pj_ice_strans_start_ice(icest_, rem_ufrag, rem_passwd, rcand_cnt, rcand);
+  pj_status_t status = pj_ice_strans_start_ice(icest_, rem_ufrag, rem_passwd, rcand_cnt, rcand);
   // char buffer[100000];
   // char *p = buffer;
   // for (unsigned j=0; j<rcand_cnt; ++j) {
@@ -224,8 +210,9 @@ bool PJICEStreamTrans::sendto(unsigned comp_id,
                               pj_size_t size,
                               const pj_sockaddr_t* dst_addr,
                               int dst_addr_len) {
-  return PJ_SUCCESS == pj_ice_strans_sendto(
-                           icest_, comp_id, data, size, dst_addr, dst_addr_len);
+  if (pj_ice_strans_sess_is_complete(icest_))
+    return PJ_SUCCESS == pj_ice_strans_sendto(icest_, comp_id, data, size, dst_addr, dst_addr_len);
+  return false;
 }
 
 bool PJICEStreamTrans::set_data_cb(unsigned comp_id, on_data_cb_t cb) {

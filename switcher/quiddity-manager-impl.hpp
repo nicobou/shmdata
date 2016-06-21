@@ -37,15 +37,13 @@ class QuiddityManager;
 class QuiddityManager_Impl {
  public:
   typedef std::shared_ptr<QuiddityManager_Impl> ptr;
-  typedef void (*quiddity_created_hook)(const std::string& nick_name,
-                                        void* user_data);
-  typedef void (*quiddity_removed_hook)(const std::string& nick_name,
-                                        void* user_data);
+  typedef void (*quiddity_created_hook)(const std::string& nick_name, void* user_data);
+  typedef void (*quiddity_removed_hook)(const std::string& nick_name, void* user_data);
 
   //  static QuiddityManager_Impl::ptr make_manager();    // will get name
   //  "default"
-  static QuiddityManager_Impl::ptr make_manager(
-      QuiddityManager* root_manager, const std::string& name = "default");
+  static QuiddityManager_Impl::ptr make_manager(QuiddityManager* root_manager,
+                                                const std::string& name = "default");
   QuiddityManager_Impl() = delete;
   virtual ~QuiddityManager_Impl();
   QuiddityManager_Impl(const QuiddityManager_Impl&) = delete;
@@ -72,8 +70,7 @@ class QuiddityManager_Impl {
 
   // **** creation/remove/get
   std::string create(const std::string& quiddity_class);
-  std::string create(const std::string& quiddity_class,
-                     const std::string& nick_name);
+  std::string create(const std::string& quiddity_class, const std::string& nick_name);
   bool remove(const std::string& quiddity_name);
   std::shared_ptr<Quiddity> get_quiddity(const std::string& quiddity_nick_name);
   // only one hook is allowed now,
@@ -85,8 +82,7 @@ class QuiddityManager_Impl {
 
   // information tree
   template <typename R>
-  R invoke_info_tree(const std::string& nick_name,
-                     std::function<R(InfoTree::ptrc tree)> fun) {
+  R invoke_info_tree(const std::string& nick_name, std::function<R(InfoTree::ptrc tree)> fun) {
     auto it = quiddities_.find(nick_name);
     if (quiddities_.end() == it) return fun(InfoTree::make().get());
     return quiddities_[nick_name]->invoke_info_tree<R>(fun);
@@ -99,8 +95,8 @@ class QuiddityManager_Impl {
       std::string,             // key type for accessor
       construct_error_return,  // what is suposed to be returned when key has
                                // not been found
-      tree,       // method used by quiddities to access the consultable
-      use_tree);  // public forwarding method
+      tree,                    // method used by quiddities to access the consultable
+      use_tree);               // public forwarding method
 
   Forward_delegate_from_associative_container(
       QuiddityManager_Impl,    // self type
@@ -109,8 +105,8 @@ class QuiddityManager_Impl {
       std::string,             // key type for accessor
       construct_error_return,  // what is suposed to be returned when key has
                                // not been found
-      user_data,   // method used by quiddities to access the consultable
-      user_data);  // public forwarding method
+      user_data,               // method used by quiddities to access the consultable
+      user_data);              // public forwarding method
 
   // **** properties
   Forward_consultable_from_associative_container(
@@ -120,8 +116,8 @@ class QuiddityManager_Impl {
       std::string,             // accessor key type
       construct_error_return,  // what is suposed to be returned when key has
                                // not been found
-      prop,    // method used by quiddities to access the consultable
-      props);  // public forwarding method
+      prop,                    // method used by quiddities to access the consultable
+      props);                  // public forwarding method
 
   // **** methods
   // doc (json formatted)
@@ -139,8 +135,7 @@ class QuiddityManager_Impl {
               std::string** return_value,
               const std::vector<std::string>& args);
 
-  bool has_method(const std::string& quiddity_name,
-                  const std::string& method_name);
+  bool has_method(const std::string& quiddity_name, const std::string& method_name);
 
   // **** signals
   // doc (json formatted)
@@ -183,10 +178,7 @@ class QuiddityManager_Impl {
   InfoTree::ptr configurations_{};
   std::unordered_map<std::string, PluginLoader::ptr> plugins_{};
   std::string name_{};
-  AbstractFactory<Quiddity,
-                  std::string,
-                  QuiddityDocumentation*,
-                  const std::string&>
+  AbstractFactory<Quiddity, std::string, QuiddityDocumentation*, const std::string&>
       abstract_factory_{};
   static const int max_configuration_file_size_{100000000};  // 100Mo
 
@@ -196,8 +188,7 @@ class QuiddityManager_Impl {
   void make_classes_doc();
   void register_classes();
   std::unordered_map<std::string, std::shared_ptr<Quiddity>> quiddities_{};
-  std::unordered_map<std::string, std::shared_ptr<QuidditySignalSubscriber>>
-      signal_subscribers_{};
+  std::unordered_map<std::string, std::shared_ptr<QuidditySignalSubscriber>> signal_subscribers_{};
   bool init_quiddity(std::shared_ptr<Quiddity> quiddity);
   void remove_shmdata_sockets();
   JSONBuilder::ptr classes_doc_{};

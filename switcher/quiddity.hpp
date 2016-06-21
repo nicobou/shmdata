@@ -92,12 +92,8 @@ class Quiddity {
   // signals
   std::string get_signals_description();
   std::string get_signal_description(const std::string& signal_name);
-  bool subscribe_signal(const std::string& name,
-                        Signal::OnEmittedCallback cb,
-                        void* user_data);
-  bool unsubscribe_signal(const std::string& name,
-                          Signal::OnEmittedCallback cb,
-                          void* user_data);
+  bool subscribe_signal(const std::string& name, Signal::OnEmittedCallback cb, void* user_data);
+  bool unsubscribe_signal(const std::string& name, Signal::OnEmittedCallback cb, void* user_data);
   // information
   template <typename R>
   R invoke_info_tree(std::function<R(InfoTree::ptrc tree)> fun) {
@@ -127,8 +123,7 @@ class Quiddity {
   // use a consistent naming for shmdatas
   std::string make_file_name(const std::string& suffix) const;
   std::string get_manager_name();
-  std::string get_quiddity_name_from_file_name(
-      const std::string& shmdata_path) const;
+  std::string get_quiddity_name_from_file_name(const std::string& shmdata_path) const;
   std::string get_file_name_prefix() const;
 
  private:
@@ -189,8 +184,7 @@ class Quiddity {
 
   // allows for creation of signals in a parent class (like segment)
   bool make_custom_signal_with_class_name(
-      const std::string&
-          class_name,  // quiddity class name that is making the signal
+      const std::string& class_name,   // quiddity class name that is making the signal
       const std::string& signal_name,  // the name to give
       GType return_type,
       guint n_params,  // number of params
@@ -204,9 +198,7 @@ class Quiddity {
 
  protected:
   // information
-  bool graft_tree(const std::string& path,
-                  InfoTree::ptr tree_to_graft,
-                  bool do_signal = true);
+  bool graft_tree(const std::string& path, InfoTree::ptr tree_to_graft, bool do_signal = true);
   InfoTree::ptr prune_tree(const std::string& path, bool do_signal = true);
 
   // property
@@ -259,32 +251,22 @@ class Quiddity {
   GObjectWrapper::ptr gobject_;
 };
 
-#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(cpp_quiddity_class,       \
-                                             class_name,               \
-                                             name,                     \
-                                             category,                 \
-                                             tags,                     \
-                                             description,              \
-                                             license,                  \
-                                             author)                   \
-  QuiddityDocumentation cpp_quiddity_class::switcher_doc_(             \
-      name, class_name, category, tags, description, license, author); \
-  QuiddityDocumentation* cpp_quiddity_class::get_documentation() {     \
-    return &switcher_doc_;                                             \
-  }
+#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(                                           \
+    cpp_quiddity_class, class_name, name, category, tags, description, license, author) \
+  QuiddityDocumentation cpp_quiddity_class::switcher_doc_(                              \
+      name, class_name, category, tags, description, license, author);                  \
+  QuiddityDocumentation* cpp_quiddity_class::get_documentation() { return &switcher_doc_; }
 
 #define SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(cpp_quiddity_class) \
   typedef std::shared_ptr<cpp_quiddity_class> ptr;                   \
   QuiddityDocumentation* get_documentation();                        \
   static QuiddityDocumentation switcher_doc_;
 
-#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                \
-  extern "C" Quiddity* create(const std::string& name) {           \
-    return new cpp_quiddity_class(name);                           \
-  }                                                                \
-  extern "C" void destroy(Quiddity* quiddity) { delete quiddity; } \
-  extern "C" QuiddityDocumentation* get_documentation() {          \
-    return &cpp_quiddity_class::switcher_doc_;                     \
+#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                                             \
+  extern "C" Quiddity* create(const std::string& name) { return new cpp_quiddity_class(name); } \
+  extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }                              \
+  extern "C" QuiddityDocumentation* get_documentation() {                                       \
+    return &cpp_quiddity_class::switcher_doc_;                                                  \
   }
 
 }  // namespace switcher

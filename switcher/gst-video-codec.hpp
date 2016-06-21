@@ -72,24 +72,23 @@ class GstVideoCodec {
   PContainer::prop_id_t codec_long_list_id_;
   std::vector<std::string> codec_properties_{};
   // codec params black list
-  std::unordered_set<std::string> param_black_list_{
-      "analyse",  // x264enc
-      "timebase",
-      "error-resilient",
-      "frame-packing",  // x264enc
-      "multipass-cache-file",
-      "multipass-mode",
-      "name",
-      "parent",
-      "snapshot",
-      "temporal-scalability-layer-id",
-      "temporal-scalability-periodicity",
-      "temporal-scalability-rate-decimator",
-      "temporal-scalability-target-bitrate",
-      "tune",  // x264enc
-      "twopass-vbr-bias",
-      "twopass-vbr-maxsection",
-      "twopass-vbr-minsection"};
+  std::unordered_set<std::string> param_black_list_{"analyse",  // x264enc
+                                                    "timebase",
+                                                    "error-resilient",
+                                                    "frame-packing",  // x264enc
+                                                    "multipass-cache-file",
+                                                    "multipass-mode",
+                                                    "name",
+                                                    "parent",
+                                                    "snapshot",
+                                                    "temporal-scalability-layer-id",
+                                                    "temporal-scalability-periodicity",
+                                                    "temporal-scalability-rate-decimator",
+                                                    "temporal-scalability-target-bitrate",
+                                                    "tune",  // x264enc
+                                                    "twopass-vbr-bias",
+                                                    "twopass-vbr-maxsection",
+                                                    "twopass-vbr-minsection"};
   // shmdatasrc copy-buffers property:
   bool copy_buffers_{false};
   // parameter grouping
@@ -108,8 +107,7 @@ class GstVideoCodec {
   // static void set_codec_long_list(gboolean mute, void *user_data);
   static gboolean sink_factory_filter(GstPluginFeature* feature, gpointer data);
   static gint sink_compare_ranks(GstPluginFeature* f1, GstPluginFeature* f2);
-  static gboolean reset_codec_configuration(gpointer /*unused */,
-                                            gpointer user_data);
+  static gboolean reset_codec_configuration(gpointer /*unused */, gpointer user_data);
 };
 
 }  // namespace switcher

@@ -41,23 +41,17 @@ AudioTestSource::AudioTestSource(const std::string&)
 }
 
 bool AudioTestSource::init() {
-  shmpath_ =
-      make_file_name("audio");  // FIXME make_file name should work in ctor...
+  shmpath_ = make_file_name("audio");  // FIXME make_file name should work in ctor...
   g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "is-live", TRUE, nullptr);
-  g_object_set(
-      G_OBJECT(audiotestsrc_.get_raw()), "samplesperbuffer", 512, nullptr);
-  g_object_set(G_OBJECT(shmdatasink_.get_raw()),
-               "socket-path",
-               shmpath_.c_str(),
-               nullptr);
+  g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "samplesperbuffer", 512, nullptr);
+  g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   // registering
   pmanage<MPtr(&PContainer::push)>(
-      "volume",
-      GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "volume"));
-  pmanage<MPtr(&PContainer::push)>(
-      "freq", GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "freq"));
-  pmanage<MPtr(&PContainer::push)>(
-      "wave", GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "wave"));
+      "volume", GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "volume"));
+  pmanage<MPtr(&PContainer::push)>("freq",
+                                   GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "freq"));
+  pmanage<MPtr(&PContainer::push)>("wave",
+                                   GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "wave"));
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    audiotestsrc_.get_raw(),
                    shmdatasink_.get_raw(),
@@ -78,13 +72,11 @@ bool AudioTestSource::start() {
   shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
       shmdatasink_.get_raw(),
       [this](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.writer." + shmpath_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(".shmdata.writer." + shmpath_,
+                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
       },
       [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
-                         InfoTree::make(byte_rate));
+        this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate", InfoTree::make(byte_rate));
       });
   gst_pipeline_->play(true);
   return true;

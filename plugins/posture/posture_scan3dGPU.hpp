@@ -30,6 +30,7 @@ class PostureScan3DGPU : public Quiddity, public StartableQuiddity {
 
  private:
   bool compress_mesh_{false};
+  bool compress_multicore_{true};
   std::string calibration_path_{"default.kvc"};
 
   int camera_nbr_{1};
@@ -91,16 +92,9 @@ class PostureScan3DGPU : public Quiddity, public StartableQuiddity {
 
   bool all(const std::vector<bool>& status);
   void zero(std::vector<bool>& status);
-  void cb_frame_cloud(int index,
-                      pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud);
-  void cb_frame_depth(int index,
-                      std::vector<unsigned char>& depth,
-                      int width,
-                      int height);
-  void cb_frame_RGB(int index,
-                    std::vector<unsigned char>& rgb,
-                    int width,
-                    int height);
+  void cb_frame_cloud(int index, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud);
+  void cb_frame_depth(int index, std::vector<unsigned char>& depth, int width, int height);
+  void cb_frame_RGB(int index, std::vector<unsigned char>& rgb, int width, int height);
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureScan3DGPU);

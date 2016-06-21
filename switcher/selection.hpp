@@ -29,9 +29,9 @@ class Selection {
   using index_t = size_t;
   Selection() = delete;
   Selection(std::vector<std::string>&& list, index_t selection);
-  Selection(std::pair<std::vector<std::string> /*names*/,
-                      std::vector<std::string /*nicks*/>>&& list,
-            index_t selection);
+  Selection(
+      std::pair<std::vector<std::string> /*names*/, std::vector<std::string /*nicks*/>>&& list,
+      index_t selection);
   void select(index_t new_selection);
   index_t get() const;
   std::string get_current() const;

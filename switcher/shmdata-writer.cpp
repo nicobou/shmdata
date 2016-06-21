@@ -31,20 +31,17 @@ ShmdataWriter::ShmdataWriter(Quiddity* quid,
       shmpath_(path),
       data_type_(data_descr),
       shm_(shmpath_, memsize, data_type_, &shmlog_),
-      task_(shm_ ? std2::make_unique<PeriodicTask>(
-                       [this]() { this->update_quid_byte_rate(); },
-                       std::chrono::milliseconds(1000))
+      task_(shm_ ? std2::make_unique<PeriodicTask>([this]() { this->update_quid_byte_rate(); },
+                                                   std::chrono::milliseconds(1000))
                  : nullptr) {
   if (shm_ && nullptr != quid_)
     quid_->graft_tree(
         ".shmdata.writer." + shmpath_,
-        ShmdataUtils::make_tree(
-            data_type_, ShmdataUtils::get_category(data_type_), 0));
+        ShmdataUtils::make_tree(data_type_, ShmdataUtils::get_category(data_type_), 0));
 }
 
 ShmdataWriter::~ShmdataWriter() {
-  if (shm_ && nullptr != quid_)
-    quid_->prune_tree(std::string(".shmdata.writer.") + shmpath_);
+  if (shm_ && nullptr != quid_) quid_->prune_tree(std::string(".shmdata.writer.") + shmpath_);
 }
 
 void ShmdataWriter::bytes_written(size_t size) {
@@ -59,8 +56,7 @@ void ShmdataWriter::update_quid_byte_rate() {
     bytes = bytes_written_;
     bytes_written_ = 0;
   }
-  quid_->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate",
-                    InfoTree::make(bytes));
+  quid_->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate", InfoTree::make(bytes));
 }
 
 }  // namespace switcher

@@ -48,8 +48,7 @@ class PulseSrc : public Quiddity, public StartableQuiddity {
     std::string sample_format_{};
     std::string sample_rate_{};
     std::string channels_{};
-    std::vector<std::pair<std::string /*port*/, std::string /*description*/>>
-        ports_{};
+    std::vector<std::pair<std::string /*port*/, std::string /*description*/>> ports_{};
     std::string active_port_{};
   } DeviceDescription;
 

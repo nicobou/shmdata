@@ -94,6 +94,8 @@ class GTKVideo : public Quiddity {
   std::condition_variable wait_window_cond_{};
   std::mutex window_destruction_mutex_{};
   std::condition_variable window_destruction_cond_{};
+  bool xevents_to_shmdata{false};
+  PContainer::prop_id_t xevents_to_shmdata_id_{0};
   // keyboard to shmdata
   std::unique_ptr<ShmdataWriter> keyb_shm_{nullptr};
   // mouse to shmdata (relative to the video, not the window)
@@ -132,32 +134,18 @@ class GTKVideo : public Quiddity {
   static gboolean set_geometry(void* user_data);
   static gboolean set_fullscreen(void* user_data);
   static void realize_cb(GtkWidget* widget, void* user_data);
-  static void delete_event_cb(GtkWidget* widget,
-                              GdkEvent* event,
-                              void* user_data);
+  static void delete_event_cb(GtkWidget* widget, GdkEvent* event, void* user_data);
   static void gtk_main_loop_thread();
-  static gboolean key_pressed_cb(GtkWidget* widget,
-                                 GdkEventKey* event,
-                                 gpointer data);
-  static gboolean key_release_cb(GtkWidget* /*widget */,
-                                 GdkEventKey* event,
-                                 gpointer data);
-  static gboolean on_destroy_event(GtkWidget* widget,
-                                   GdkEvent* event,
-                                   gpointer user_data);
+  static gboolean key_pressed_cb(GtkWidget* widget, GdkEventKey* event, gpointer data);
+  static gboolean key_release_cb(GtkWidget* /*widget */, GdkEventKey* event, gpointer data);
+  static gboolean on_destroy_event(GtkWidget* widget, GdkEvent* event, gpointer user_data);
   static void window_destroyed(gpointer data);
   static gboolean destroy_window(gpointer data);
   static void set_title(const gchar* value, void* user_data);
   static const gchar* get_title(void* user_data);
-  static gboolean button_event(GtkWidget* widget,
-                               GdkEventButton* event,
-                               gpointer data);
-  static gboolean motion_notify_event(GtkWidget* widget,
-                                      GdkEventMotion* event,
-                                      gpointer data);
-  static void widget_getsize(GtkWidget* widget,
-                             GtkAllocation* allocation,
-                             void* data);
+  static gboolean button_event(GtkWidget* widget, GdkEventButton* event, gpointer data);
+  static gboolean motion_notify_event(GtkWidget* widget, GdkEventMotion* event, gpointer data);
+  static void widget_getsize(GtkWidget* widget, GtkAllocation* allocation, void* data);
   static gboolean window_update_position(void* data);
   static gboolean window_update_size(void* data);
   void update_padding(GtkWidget* widget);

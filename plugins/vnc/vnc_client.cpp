@@ -27,18 +27,16 @@ using namespace std;
 
 namespace switcher {
 
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    VncClientSrc,
-    "vncclientsrc",
-    "VNC client",
-    "video",
-    "writer/reader",
-    "Connects to a VNC server and outputs the video to a shmdata",
-    "LGPL",
-    "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VncClientSrc,
+                                     "vncclientsrc",
+                                     "VNC client",
+                                     "video",
+                                     "writer/reader",
+                                     "Connects to a VNC server and outputs the video to a shmdata",
+                                     "LGPL",
+                                     "Emmanuel Durand");
 
-VncClientSrc::VncClientSrc(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)) {}
+VncClientSrc::VncClientSrc(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 VncClientSrc::~VncClientSrc() { stop(); }
 
@@ -51,9 +49,7 @@ bool VncClientSrc::start() {
   if (!rfb_client_) return false;
 
   rfbClientSetClientData(
-      rfb_client_,
-      (void*)(&VncClientSrc::resize_vnc) /*pointer as a tag, never called*/,
-      this);
+      rfb_client_, (void*)(&VncClientSrc::resize_vnc) /*pointer as a tag, never called*/, this);
   rfb_client_->MallocFrameBuffer = VncClientSrc::resize_vnc;
   rfb_client_->canHandleNewFBSize = TRUE;
   rfb_client_->GotFrameBufferUpdate = VncClientSrc::update_vnc;
@@ -71,8 +67,8 @@ bool VncClientSrc::start() {
       if (i > 0) {
         if (!HandleRFBServerMessage(rfb_client_)) return;
         if (vnc_writer_) {
-          vnc_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
-              rfb_client_->frameBuffer, framebuffer_size_);
+          vnc_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(rfb_client_->frameBuffer,
+                                                                   framebuffer_size_);
           vnc_writer_->bytes_written(framebuffer_size_);
         }
       }
@@ -92,32 +88,31 @@ bool VncClientSrc::stop() {
 bool VncClientSrc::init() {
   init_startable(this);
 
-  shmcntr_.install_connect_method(
-      [this](const std::string path) { return connect(path); },
-      [this](const std::string path) { return disconnect(path); },
-      [this]() { return disconnect_all(); },
-      [this](const std::string caps) { return can_sink_caps(caps); },
-      2);
-  vnc_server_address_id_ = pmanage<MPtr(&PContainer::make_string)>(
-      "vnc_server_address",
-      [this](const std::string& val) {
-        vnc_server_address_ = val;
-        return true;
-      },
-      [this]() { return vnc_server_address_; },
-      "IP address",
-      "Address of the VNC server",
-      vnc_server_address_);
-  capture_truecolor_id_ = pmanage<MPtr(&PContainer::make_bool)>(
-      "capture_truecolor",
-      [this](const bool& val) {
-        capture_truecolor_ = val;
-        return true;
-      },
-      [this]() { return capture_truecolor_; },
-      "Capture color depth",
-      "Capture in 32bits if true, 16bits otherwise",
-      capture_truecolor_);
+  shmcntr_.install_connect_method([this](const std::string path) { return connect(path); },
+                                  [this](const std::string path) { return disconnect(path); },
+                                  [this]() { return disconnect_all(); },
+                                  [this](const std::string caps) { return can_sink_caps(caps); },
+                                  2);
+  vnc_server_address_id_ =
+      pmanage<MPtr(&PContainer::make_string)>("vnc_server_address",
+                                              [this](const std::string& val) {
+                                                vnc_server_address_ = val;
+                                                return true;
+                                              },
+                                              [this]() { return vnc_server_address_; },
+                                              "IP address",
+                                              "Address of the VNC server",
+                                              vnc_server_address_);
+  capture_truecolor_id_ =
+      pmanage<MPtr(&PContainer::make_bool)>("capture_truecolor",
+                                            [this](const bool& val) {
+                                              capture_truecolor_ = val;
+                                              return true;
+                                            },
+                                            [this]() { return capture_truecolor_; },
+                                            "Capture color depth",
+                                            "Capture in 32bits if true, 16bits otherwise",
+                                            capture_truecolor_);
   return true;
 }
 
@@ -145,11 +140,9 @@ bool VncClientSrc::connect(string shmdata_socket_path) {
 
           // Position is stored in integer, and correspond to the position in
           // [0, 1] multiplied by 100000.
-          int xPos = (static_cast<float>(static_cast<std::uint32_t*>(data)[0]) /
-                      100000.f) *
+          int xPos = (static_cast<float>(static_cast<std::uint32_t*>(data)[0]) / 100000.f) *
                      static_cast<float>(rfb_client_->width);
-          int yPos = (static_cast<float>(static_cast<std::uint32_t*>(data)[1]) /
-                      100000.f) *
+          int yPos = (static_cast<float>(static_cast<std::uint32_t*>(data)[1]) / 100000.f) *
                      static_cast<float>(rfb_client_->height);
           int buttons = static_cast<std::uint32_t*>(data)[2];
           SendPointerEvent(rfb_client_, xPos, yPos, buttons);
@@ -187,8 +180,7 @@ bool VncClientSrc::disconnect_all() {
 }
 
 bool VncClientSrc::can_sink_caps(string caps) {
-  return (caps == string(VNC_MOUSE_EVENTS_CAPS)) ||
-         (caps == string(VNC_KEYBOARD_EVENTS_CAPS));
+  return (caps == string(VNC_MOUSE_EVENTS_CAPS)) || (caps == string(VNC_KEYBOARD_EVENTS_CAPS));
 }
 
 rfbBool VncClientSrc::resize_vnc(rfbClient* client) {
@@ -238,18 +230,15 @@ void VncClientSrc::update_vnc(rfbClient* client, int, int, int, int) {
 
   that->framebuffer_size_ = width * height * depth / 8;
   if (!that->vnc_writer_ ||
-      that->framebuffer_size_ >
-          that->vnc_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>() ||
+      that->framebuffer_size_ > that->vnc_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>() ||
       that->previous_truecolor_state_ != that->capture_truecolor_) {
     auto data_type = string();
     if (that->capture_truecolor_)
-      data_type = "video/x-raw,format=(string)RGBA,width=(int)" +
-                  to_string(width) + ",height=(int)" + to_string(height) +
-                  ",framerate=30/1";
+      data_type = "video/x-raw,format=(string)RGBA,width=(int)" + to_string(width) +
+                  ",height=(int)" + to_string(height) + ",framerate=30/1";
     else
-      data_type = "video/x-raw,format=(string)RGB16,width=(int)" +
-                  to_string(width) + ",height=(int)" + to_string(height) +
-                  ",framerate=30/1";
+      data_type = "video/x-raw,format=(string)RGB16,width=(int)" + to_string(width) +
+                  ",height=(int)" + to_string(height) + ",framerate=30/1";
 
     that->previous_truecolor_state_ = that->capture_truecolor_;
 

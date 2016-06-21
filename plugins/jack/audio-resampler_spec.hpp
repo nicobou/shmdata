@@ -55,10 +55,8 @@ SampleT AudioResampler<SampleT>::linear_get_next_sample() {
   }
   SampleT sample =
       (1. - decimals) *
-          samplebuf_[(std::size_t)std::floor(pos) * number_of_channels_ +
-                     channel_number_] +
-      decimals * samplebuf_[(std::size_t)std::ceil(pos) * number_of_channels_ +
-                            channel_number_];
+          samplebuf_[(std::size_t)std::floor(pos) * number_of_channels_ + channel_number_] +
+      decimals * samplebuf_[(std::size_t)std::ceil(pos) * number_of_channels_ + channel_number_];
   // if (original_size_ != resampled_size_ && 1 == channel_number_) {
   //   g_print("pos %f, decimals %f, curpos %lu, sample %f\n",
   //           pos, decimals, cur_pos_, sample);

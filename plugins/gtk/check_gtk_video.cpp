@@ -30,8 +30,7 @@
 
 int main() {
   {
-    switcher::QuiddityManager::ptr manager =
-        switcher::QuiddityManager::make_manager("gtktest");
+    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("gtktest");
 
 #ifdef HAVE_CONFIG_H
     gchar* usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
@@ -50,18 +49,13 @@ int main() {
     // creating a video source quiddity
     if (manager->create("videotestsrc", "vid").compare("vid") != 0) return 1;
 
-    if (!manager->use_prop<MPtr(&switcher::PContainer::set_str_str)>(
-            "vid", "started", "true"))
+    if (!manager->use_prop<MPtr(&switcher::PContainer::set_str_str)>("vid", "started", "true"))
       return 1;
 
     // usleep (1000000);
 
     // connecting
-    if (!manager->invoke_va("win",
-                            "connect",
-                            nullptr,
-                            "/tmp/switcher_gtktest_vid_video",
-                            nullptr))
+    if (!manager->invoke_va("win", "connect", nullptr, "/tmp/switcher_gtktest_vid_video", nullptr))
       return 1;
 
     // usleep (10000000);
@@ -71,8 +65,7 @@ int main() {
 
     if (!manager->remove("vid")) return 1;
 
-    if (!switcher::QuiddityBasicTest::test_full(manager, "gtkvideosink"))
-      return 1;
+    if (!switcher::QuiddityBasicTest::test_full(manager, "gtkvideosink")) return 1;
   }  // end of scope is releasing the manager
 
   return 0;  // success

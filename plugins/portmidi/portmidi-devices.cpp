@@ -45,9 +45,7 @@ PortMidi::~PortMidi() {
   }
 }
 
-bool PortMidi::open_input_device(int id,
-                                 on_pm_event_method method,
-                                 void* user_data) {
+bool PortMidi::open_input_device(int id, on_pm_event_method method, void* user_data) {
   if (input_streams_.find(id) != input_streams_.end()) {
     g_debug("input device (id %d), already opened, cannot open", id);
     return false;
@@ -56,7 +54,7 @@ bool PortMidi::open_input_device(int id,
   PmStream* stream = scheduler_->add_input_stream(id, method, user_data);
   if (stream == nullptr) return false;
   input_streams_[id] = stream;
-  g_message("Midi input device opened (id %d)", id);
+  g_debug("Midi input device opened (id %d)", id);
   return true;
 }
 
@@ -69,7 +67,7 @@ bool PortMidi::open_output_device(int id) {
   PmStream* stream = scheduler_->add_output_stream(id);
   if (stream == nullptr) return false;
   output_streams_[id] = stream;
-  g_message("Midi output device opened (id %d)", id);
+  g_debug("Midi output device opened (id %d)", id);
   return true;
 }
 
@@ -87,7 +85,7 @@ bool PortMidi::close_input_device(int id) {
   if (it == input_streams_.end()) return false;
   scheduler_->remove_input_stream(it->second);
   input_streams_.erase(id);
-  g_message("Midi input device closed (id %d)", id);
+  g_debug("Midi input device closed (id %d)", id);
   return true;
 }
 
@@ -97,7 +95,7 @@ bool PortMidi::close_output_device(int id) {
 
   scheduler_->remove_output_stream(it->second);
   output_streams_.erase(id);
-  g_message("Midi input device closed (id %d)", id);
+  g_debug("Midi input device closed (id %d)", id);
   return true;
 }
 
@@ -112,8 +110,7 @@ PortMidi::PortMidiScheduler::PortMidiScheduler()
       app_sysex_in_progress_(false),
       thru_sysex_in_progress_(false) {
   /* always start the timer before you start midi */
-  Pt_Start(
-      1, &process_midi, this); /* start a timer with 1 millisecond accuracy */
+  Pt_Start(1, &process_midi, this); /* start a timer with 1 millisecond accuracy */
   /* the timer will call our function, process_midi() every millisecond */
   Pm_Initialize();
   portmidi_initialized_ = true;
@@ -127,8 +124,9 @@ PortMidi::PortMidiScheduler::~PortMidiScheduler() {
   Pm_Terminate();
 }
 
-PmStream* PortMidi::PortMidiScheduler::add_input_stream(
-    int id, on_pm_event_method method, void* user_data) {
+PmStream* PortMidi::PortMidiScheduler::add_input_stream(int id,
+                                                        on_pm_event_method method,
+                                                        void* user_data) {
   PmStream* midi_in;
   if (pmNoError != Pm_OpenInput(&midi_in,
                                 id,
@@ -198,8 +196,7 @@ bool PortMidi::PortMidiScheduler::push_message(PmStream* stream,
    Incoming data from midi_in is copied with low latency to  midi_out.
    Sysex messages from either source block messages from the other.
 */
-void PortMidi::PortMidiScheduler::process_midi(PtTimestamp /*timestamp */,
-                                               void* user_data) {
+void PortMidi::PortMidiScheduler::process_midi(PtTimestamp /*timestamp */, void* user_data) {
   PortMidiScheduler* context = static_cast<PortMidiScheduler*>(user_data);
 
   PmError result;
@@ -260,8 +257,7 @@ void PortMidi::PortMidiScheduler::process_midi(PtTimestamp /*timestamp */,
     /* see if there is application midi data to process */
     while (!itr.second->empty()) {
       /* see if it is time to output the next message */
-      PmEvent* next =
-          &(itr.second->front());  //(PmEvent *) Pm_QueuePeek(out_queue);
+      PmEvent* next = &(itr.second->front());  //(PmEvent *) Pm_QueuePeek(out_queue);
       // assert(next); /* must be non-null because queue is not empty */
       /* time to send a message, first make sure it's not blocked */
       int status = Pm_MessageStatus(next->message);
@@ -289,8 +285,7 @@ void PortMidi::PortMidiScheduler::process_midi(PtTimestamp /*timestamp */,
         context->app_sysex_in_progress_ = false;
       }
       if (context->app_sysex_in_progress_ && /* look for EOX */
-          (((buffer.message & 0xFF) == MIDI_EOX) ||
-           (((buffer.message >> 8) & 0xFF) == MIDI_EOX) ||
+          (((buffer.message & 0xFF) == MIDI_EOX) || (((buffer.message >> 8) & 0xFF) == MIDI_EOX) ||
            (((buffer.message >> 16) & 0xFF) == MIDI_EOX) ||
            (((buffer.message >> 24) & 0xFF) == MIDI_EOX))) {
         context->app_sysex_in_progress_ = false;
@@ -310,13 +305,11 @@ void PortMidi::update_device_enum() {
     if (listinfo->input) {
       // warning convert nick to int instead of taking selection index
       inicks.push_back(std::to_string(i));
-      inames.push_back(std::string(listinfo->name) + " (" +
-                       std::string(listinfo->interf) + ")");
+      inames.push_back(std::string(listinfo->name) + " (" + std::string(listinfo->interf) + ")");
     } else {
       // warning convert nick to int instead of taking selection index
       onicks.push_back(std::to_string(i));
-      onames.push_back(std::string(listinfo->name) + " (" +
-                       std::string(listinfo->interf) + ")");
+      onames.push_back(std::string(listinfo->name) + " (" + std::string(listinfo->interf) + ")");
     }
   }
   input_devices_enum_ = Selection(std::make_pair(inames, inicks), 0);

@@ -49,8 +49,7 @@ class QuiddityManager {
                                  const std::vector<std::string>& params,
                                  void* user_data);
   typedef std::map<std::string, std::pair<PropCallback, void*>> PropCallbackMap;
-  typedef std::map<std::string, std::pair<SignalCallback, void*>>
-      SignalCallbackMap;
+  typedef std::map<std::string, std::pair<SignalCallback, void*>> SignalCallbackMap;
 
   ~QuiddityManager();  // FIXME should be private?
   static QuiddityManager::ptr make_manager(const std::string& name);
@@ -62,8 +61,7 @@ class QuiddityManager {
   // ***********************************************************
   bool save_command_history(const char* file_path) const;
   static CommandHistory get_command_history_from_file(const char* file_path);
-  std::vector<std::string> get_signal_subscribers_names(
-      QuiddityManager::CommandHistory histo);
+  std::vector<std::string> get_signal_subscribers_names(QuiddityManager::CommandHistory histo);
   void play_command_history(QuiddityManager::CommandHistory histo,
                             QuiddityManager::PropCallbackMap* prop_cb_data,
                             QuiddityManager::SignalCallbackMap* sig_cb_data,
@@ -80,8 +78,7 @@ class QuiddityManager {
 
   // ***************** inspect
   // ****************************************************************
-  std::vector<std::string>
-  get_classes();  // know which quiddities can be created
+  std::vector<std::string> get_classes();           // know which quiddities can be created
   std::vector<std::string> get_quiddities() const;  // know instances
   // doc (json formatted)
   std::string get_classes_doc();
@@ -91,36 +88,24 @@ class QuiddityManager {
   // create/remove
   std::string create(const std::string& class_name);
   // &?= chars are not allowed in nicknames
-  std::string create(const std::string& class_name,
-                     const std::string& nick_name);
+  std::string create(const std::string& class_name, const std::string& nick_name);
   bool remove(const std::string& quiddity_name);
   bool has_quiddity(const std::string& name);
 
   // ****************** informations ******
   template <typename R>
-  R invoke_info_tree(const std::string& nick_name,
-                     std::function<R(InfoTree::ptrc tree)> fun) {
+  R invoke_info_tree(const std::string& nick_name, std::function<R(InfoTree::ptrc tree)> fun) {
     return manager_impl_->invoke_info_tree<R>(nick_name, fun);
   }
 
-  Forward_consultable(QuiddityManager,
-                      QuiddityManager_Impl,
-                      manager_impl_.get(),
-                      use_tree,
-                      use_tree);
+  Forward_consultable(
+      QuiddityManager, QuiddityManager_Impl, manager_impl_.get(), use_tree, use_tree);
 
-  Forward_delegate(QuiddityManager,
-                   QuiddityManager_Impl,
-                   manager_impl_.get(),
-                   user_data,
-                   user_data);
+  Forward_delegate(
+      QuiddityManager, QuiddityManager_Impl, manager_impl_.get(), user_data, user_data);
 
   // ****************** properties ********
-  Forward_consultable(QuiddityManager,
-                      QuiddityManager_Impl,
-                      manager_impl_.get(),
-                      props,
-                      use_prop);
+  Forward_consultable(QuiddityManager, QuiddityManager_Impl, manager_impl_.get(), props, use_prop);
   // FIXME no hook for set because it is templated
   // FIXME make original set_str_str able to set from numeric
   // id given as string
@@ -167,8 +152,7 @@ class QuiddityManager {
                  std::string** return_value,
                  ...);
 
-  bool has_method(const std::string& quiddity_name,
-                  const std::string& method_name);
+  bool has_method(const std::string& quiddity_name, const std::string& method_name);
 
   // ************************ signals
   // doc (json formatted)
@@ -182,15 +166,14 @@ class QuiddityManager {
   std::string get_signal_description_by_class(const std::string& class_name,
                                               const std::string& signal_name);
 
-  bool make_signal_subscriber(
-      const std::string& subscriber_name,
-      /* void (*callback)(std::string subscriber_name, */
-      /*     std::string quiddity_name, */
-      /*     std::string signal_name, */
-      /*     std::vector<std::string> params, */
-      /*     void *user_data) */
-      QuiddityManager::SignalCallback callback,
-      void* user_data);
+  bool make_signal_subscriber(const std::string& subscriber_name,
+                              /* void (*callback)(std::string subscriber_name, */
+                              /*     std::string quiddity_name, */
+                              /*     std::string signal_name, */
+                              /*     std::vector<std::string> params, */
+                              /*     void *user_data) */
+                              QuiddityManager::SignalCallback callback,
+                              void* user_data);
   bool remove_signal_subscriber(const std::string& subscriber_name);
   bool subscribe_signal(const std::string& subscriber_name,
                         const std::string& quiddity_name,
@@ -216,9 +199,8 @@ class QuiddityManager {
   GAsyncQueue* command_queue_;
   std::thread invocation_thread_;
   // invokation in gmainloop
-  std::condition_variable
-      execution_done_cond_;          // sync current thread and gmainloop
-  std::mutex execution_done_mutex_;  // sync current thread and gmainloop
+  std::condition_variable execution_done_cond_;  // sync current thread and gmainloop
+  std::mutex execution_done_mutex_;              // sync current thread and gmainloop
   std::weak_ptr<QuiddityManager> me_{};
   // history
   mutable CommandHistory command_history_;
@@ -234,8 +216,7 @@ class QuiddityManager {
   std::string seq_invoke(QuiddityCommand::command command, ...);
   void clear_command_sync();
   void invocation_thread();
-  static gboolean execute_command(
-      gpointer user_data);  // gmainloop source callback
+  static gboolean execute_command(gpointer user_data);  // gmainloop source callback
   void invoke_in_thread();
   bool must_be_saved(QuiddityCommand::command id) const;
 

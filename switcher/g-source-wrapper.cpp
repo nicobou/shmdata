@@ -23,9 +23,7 @@
 
 namespace switcher {
 GSourceWrapper::GSourceWrapper(callback&& cb, bool async_invocation)
-    : cb_(std::move(cb)),
-      async_invocation_(async_invocation),
-      gsource_(g_idle_source_new()) {
+    : cb_(std::move(cb)), async_invocation_(async_invocation), gsource_(g_idle_source_new()) {
   g_source_set_priority(gsource_, G_PRIORITY_DEFAULT_IDLE);
   g_source_set_callback(gsource_,
                         (GSourceFunc)&GSourceWrapper::source_func,
@@ -33,14 +31,11 @@ GSourceWrapper::GSourceWrapper(callback&& cb, bool async_invocation)
                         nullptr);  // GDestroyNotify
 }
 
-GSourceWrapper::GSourceWrapper(callback&& cb,
-                               guint delay_ms,
-                               bool async_invocation)
+GSourceWrapper::GSourceWrapper(callback&& cb, guint delay_ms, bool async_invocation)
     : cb_(std::move(cb)),
       async_invocation_(async_invocation),
       gsource_(g_timeout_source_new(delay_ms)) {
-  g_source_set_callback(
-      gsource_, (GSourceFunc)&GSourceWrapper::source_func, this, nullptr);
+  g_source_set_callback(gsource_, (GSourceFunc)&GSourceWrapper::source_func, this, nullptr);
 }
 
 bool GSourceWrapper::attach(GMainContext* gcontext) {

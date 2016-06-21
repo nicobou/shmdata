@@ -69,8 +69,7 @@ void JSONBuilder::set_member_name(const gchar* member_name) {
   json_builder_set_member_name(builder_, member_name);
 }
 
-void JSONBuilder::add_string_member(const gchar* member_name,
-                                    const gchar* string_value) {
+void JSONBuilder::add_string_member(const gchar* member_name, const gchar* string_value) {
   std::unique_lock<std::mutex> lock(thread_safe_);
   json_builder_set_member_name(builder_, member_name);
   json_builder_add_string_value(builder_, string_value);
@@ -94,8 +93,7 @@ void JSONBuilder::add_node_value(JsonNode* node_value) {
   json_builder_add_value(builder_, copy);
 }
 
-void JSONBuilder::add_JsonNode_member(const gchar* member_name,
-                                      Node JsonNode_value) {
+void JSONBuilder::add_JsonNode_member(const gchar* member_name, Node JsonNode_value) {
   std::unique_lock<std::mutex> lock(thread_safe_);
   json_builder_set_member_name(builder_, member_name);
   JsonNode* copy = json_node_copy(JsonNode_value->get());

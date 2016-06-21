@@ -29,8 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSink,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PortMidiSink::PortMidiSink(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)) {}
+PortMidiSink::PortMidiSink(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 bool PortMidiSink::init() {
   init_startable(this);
@@ -71,8 +70,7 @@ bool PortMidiSink::start() {
   gint stat = 165;
   gint data1 = 1;
   gint data2 = 67;
-  push_midi_message(
-      device_, (unsigned char)stat, (unsigned char)data1, (unsigned char)data2);
+  push_midi_message(device_, (unsigned char)stat, (unsigned char)data1, (unsigned char)data2);
   return true;
 }
 
@@ -83,9 +81,8 @@ bool PortMidiSink::stop() {
 }
 
 bool PortMidiSink::connect(std::string path) {
-  shm_.reset(new ShmdataFollower(this, path, [this](void* data, size_t size) {
-    this->on_shmreader_data(data, size);
-  }));
+  shm_.reset(new ShmdataFollower(
+      this, path, [this](void* data, size_t size) { this->on_shmreader_data(data, size); }));
   return true;
 }
 
@@ -94,8 +91,6 @@ bool PortMidiSink::disconnect() {
   return true;
 }
 
-bool PortMidiSink::can_sink_caps(std::string caps) {
-  return (0 == caps.find("audio/midi"));
-}
+bool PortMidiSink::can_sink_caps(std::string caps) { return (0 == caps.find("audio/midi")); }
 
 }  // namespace switcher

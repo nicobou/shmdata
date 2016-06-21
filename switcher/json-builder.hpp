@@ -36,8 +36,7 @@ class JSONBuilder {
  public:
   class RootNodeCopy {
    public:
-    RootNodeCopy(JsonBuilder* builder)
-        : copy_(json_builder_get_root(builder)) {}
+    RootNodeCopy(JsonBuilder* builder) : copy_(json_builder_get_root(builder)) {}
     ~RootNodeCopy() {
       if (nullptr != copy_) json_node_free(copy_);
     }

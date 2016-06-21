@@ -55,8 +55,7 @@ class ShmdataConnector {
   CanSinkCaps on_can_sink_caps_cb_{nullptr};
   static gboolean connect_wrapped(gpointer path, gpointer user_data);
   static gboolean disconnect_wrapped(gpointer path, gpointer user_data);
-  static gboolean disconnect_all_wrapped(gpointer /*unused */,
-                                         gpointer user_data);
+  static gboolean disconnect_all_wrapped(gpointer /*unused */, gpointer user_data);
   static gboolean can_sink_caps_wrapped(gpointer caps, gpointer user_data);
 };
 

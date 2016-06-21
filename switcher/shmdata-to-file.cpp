@@ -44,21 +44,19 @@ bool ShmdataToFile::init_gpipe() {
   init_startable(this);
   init_segment(this);
 
-  install_connect_method(
-      std::bind(&ShmdataToFile::connect, this, std::placeholders::_1),
-      nullptr,
-      std::bind(&ShmdataToFile::disconnect_all, this),
-      std::bind(&ShmdataToFile::can_sink_caps, this, std::placeholders::_1),
-      8);  // Temporary maximum number
+  install_connect_method(std::bind(&ShmdataToFile::connect, this, std::placeholders::_1),
+                         nullptr,
+                         std::bind(&ShmdataToFile::disconnect_all, this),
+                         std::bind(&ShmdataToFile::can_sink_caps, this, std::placeholders::_1),
+                         8);  // Temporary maximum number
 
-  output_prefix_param_ =
-      custom_prop_->make_string_property("filename_prefix",
-                                         "Prefix to add to the file names",
-                                         output_prefix_.c_str(),
-                                         (GParamFlags)G_PARAM_READWRITE,
-                                         ShmdataToFile::set_output_prefix,
-                                         ShmdataToFile::get_output_prefix,
-                                         this);
+  output_prefix_param_ = custom_prop_->make_string_property("filename_prefix",
+                                                            "Prefix to add to the file names",
+                                                            output_prefix_.c_str(),
+                                                            (GParamFlags)G_PARAM_READWRITE,
+                                                            ShmdataToFile::set_output_prefix,
+                                                            ShmdataToFile::get_output_prefix,
+                                                            this);
   install_property_by_pspec(custom_prop_->get_gobject(),
                             output_prefix_param_,
                             "filename_prefix",
@@ -69,14 +67,12 @@ bool ShmdataToFile::init_gpipe() {
 
 bool ShmdataToFile::connect(std::string shmdata_socket_path) {
   if (file_names_.find(shmdata_socket_path) != file_names_.end()) {
-    g_warning("ShmdataToFile::connect: %s is already added",
-              shmdata_socket_path.c_str());
+    g_warning("ShmdataToFile::connect: %s is already added", shmdata_socket_path.c_str());
     return false;
   }
 
   file_names_[shmdata_socket_path] =
-      output_prefix_ +
-      shmdata_socket_path.substr(shmdata_socket_path.rfind("/") + 1);
+      output_prefix_ + shmdata_socket_path.substr(shmdata_socket_path.rfind("/") + 1);
 
   return true;
 }
@@ -122,12 +118,10 @@ bool ShmdataToFile::make_recorders() {
   for (auto& it : file_names_) {
     // FIXME check file
     GError* error = nullptr;
-    gchar* pipe =
-        g_strdup_printf("gdppay ! filesink location=%s", it.second.c_str());
+    gchar* pipe = g_strdup_printf("gdppay ! filesink location=%s", it.second.c_str());
     On_scope_exit { g_free(pipe); };
 
-    GstElement* recorder_bin =
-        gst_parse_bin_from_description(pipe, TRUE, &error);
+    GstElement* recorder_bin = gst_parse_bin_from_description(pipe, TRUE, &error);
     if (error != nullptr) {
       g_warning("%s", error->message);
       g_error_free(error);

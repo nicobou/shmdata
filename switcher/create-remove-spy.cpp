@@ -37,10 +37,8 @@ CreateRemoveSpy::CreateRemoveSpy(const std::string&) : i_am_the_one_(false) {}
 bool CreateRemoveSpy::init() {
   QuiddityManager_Impl::ptr manager = manager_impl_.lock();
   if ((bool)manager) {
-    if (!manager->set_created_hook(CreateRemoveSpy::on_created, this))
-      return false;
-    if (!manager->set_removed_hook(CreateRemoveSpy::on_removed, this))
-      return false;
+    if (!manager->set_created_hook(CreateRemoveSpy::on_created, this)) return false;
+    if (!manager->set_removed_hook(CreateRemoveSpy::on_removed, this)) return false;
   } else
     return false;
 
@@ -52,8 +50,7 @@ bool CreateRemoveSpy::init() {
       "On Quiddity Created",
       "on-quiddity-created",
       "a quiddity has been created",
-      Signal::make_arg_description(
-          "Quiddity Name", "quiddity_name", "the quiddity name", nullptr),
+      Signal::make_arg_description("Quiddity Name", "quiddity_name", "the quiddity name", nullptr),
       1,
       string_type);
 
@@ -61,8 +58,7 @@ bool CreateRemoveSpy::init() {
       "On Quiddity Removed",
       "on-quiddity-removed",
       "a quiddity has been removed",
-      Signal::make_arg_description(
-          "Quiddity Name", "quiddity_name", "the quiddity name", nullptr),
+      Signal::make_arg_description("Quiddity Name", "quiddity_name", "the quiddity name", nullptr),
       1,
       string_type);
   return true;
@@ -75,14 +71,12 @@ CreateRemoveSpy::~CreateRemoveSpy() {
   }
 }
 
-void CreateRemoveSpy::on_created(const std::string& quiddity_nick_name,
-                                 void* user_data) {
+void CreateRemoveSpy::on_created(const std::string& quiddity_nick_name, void* user_data) {
   CreateRemoveSpy* context = static_cast<CreateRemoveSpy*>(user_data);
   context->signal_emit("on-quiddity-created", quiddity_nick_name.c_str());
 }
 
-void CreateRemoveSpy::on_removed(const std::string& quiddity_nick_name,
-                                 void* user_data) {
+void CreateRemoveSpy::on_removed(const std::string& quiddity_nick_name, void* user_data) {
   CreateRemoveSpy* context = static_cast<CreateRemoveSpy*>(user_data);
   context->signal_emit("on-quiddity-removed", quiddity_nick_name.c_str());
 }

@@ -33,18 +33,16 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureDisplay,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-PostureDisplay::PostureDisplay(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)) {}
+PostureDisplay::PostureDisplay(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 PostureDisplay::~PostureDisplay() { disconnect_all(); }
 
 bool PostureDisplay::init() {
-  shmcntr_.install_connect_method(
-      [this](const string path) { return connect(path); },
-      [this](const string path) { return disconnect(path); },
-      [this]() { return disconnect_all(); },
-      [this](const string caps) { return can_sink_caps(caps); },
-      1);
+  shmcntr_.install_connect_method([this](const string path) { return connect(path); },
+                                  [this](const string path) { return disconnect(path); },
+                                  [this]() { return disconnect_all(); },
+                                  [this](const string caps) { return can_sink_caps(caps); },
+                                  1);
 
   return true;
 }
@@ -68,11 +66,9 @@ bool PostureDisplay::connect(std::string shmdata_socket_path) {
         if (reader_caps_ == string(POINTCLOUD_TYPE_COMPRESSED) ||
             reader_caps_ == string(POINTCLOUD_TYPE_BASE)) {
           vector<char> buffer((char*)data, (char*)data + size);
-          display_->setInputCloud(
-              buffer, reader_caps_ == string(POINTCLOUD_TYPE_COMPRESSED));
+          display_->setInputCloud(buffer, reader_caps_ == string(POINTCLOUD_TYPE_COMPRESSED));
         } else if (reader_caps_ == string(POLYGONMESH_TYPE_BASE)) {
-          vector<unsigned char> buffer((unsigned char*)data,
-                                       (unsigned char*)data + size);
+          vector<unsigned char> buffer((unsigned char*)data, (unsigned char*)data + size);
           display_->setPolygonMesh(buffer);
         }
 
@@ -86,9 +82,7 @@ bool PostureDisplay::connect(std::string shmdata_socket_path) {
   return true;
 }
 
-bool PostureDisplay::disconnect(std::string /*unused*/) {
-  return disconnect_all();
-}
+bool PostureDisplay::disconnect(std::string /*unused*/) { return disconnect_all(); }
 
 bool PostureDisplay::disconnect_all() {
   std::lock_guard<mutex> lock(display_mutex_);
@@ -98,8 +92,7 @@ bool PostureDisplay::disconnect_all() {
 }
 
 bool PostureDisplay::can_sink_caps(std::string caps) {
-  return (caps == POINTCLOUD_TYPE_BASE) ||
-         (caps == POINTCLOUD_TYPE_COMPRESSED) ||
+  return (caps == POINTCLOUD_TYPE_BASE) || (caps == POINTCLOUD_TYPE_COMPRESSED) ||
          (caps == POLYGONMESH_TYPE_BASE);
 }
 

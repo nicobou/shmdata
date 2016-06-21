@@ -62,8 +62,7 @@ class RtpSession : public Quiddity {
   bool add_udp_stream_to_dest(std::string shmdata_socket_path,
                               std::string dest_name,
                               std::string port);
-  bool remove_udp_stream_to_dest(std::string shmdata_socket_path,
-                                 std::string dest_name);
+  bool remove_udp_stream_to_dest(std::string shmdata_socket_path, std::string dest_name);
   bool write_sdp_file(std::string dest_name);
 
   // // will be called by shmdata reader
@@ -116,75 +115,37 @@ class RtpSession : public Quiddity {
   bool init() final;
   void on_rtp_caps(const std::string& shmdata_path, std::string caps);
   // return RTP internal pad
-  std::string make_rtp_payloader(GstElement* shmdatasrc,
-                                 const std::string& caps);
+  std::string make_rtp_payloader(GstElement* shmdatasrc, const std::string& caps);
   // internal rtpbin signals
-  static void on_bye_ssrc(GstElement* rtpbin,
-                          guint session,
-                          guint ssrc,
-                          gpointer user_data);
-  static void on_bye_timeout(GstElement* rtpbin,
-                             guint session,
-                             guint ssrc,
-                             gpointer user_data);
-  static void on_new_ssrc(GstElement* rtpbin,
-                          guint session,
-                          guint ssrc,
-                          gpointer user_data);
-  static void on_npt_stop(GstElement* rtpbin,
-                          guint session,
-                          guint ssrc,
-                          gpointer user_data);
-  static void on_sender_timeout(GstElement* rtpbin,
-                                guint session,
-                                guint ssrc,
-                                gpointer user_data);
-  static void on_ssrc_active(GstElement* rtpbin,
-                             guint session,
-                             guint ssrc,
-                             gpointer user_data);
-  static void on_ssrc_collision(GstElement* rtpbin,
-                                guint session,
-                                guint ssrc,
-                                gpointer user_data);
-  static void on_ssrc_sdes(GstElement* rtpbin,
-                           guint session,
-                           guint ssrc,
-                           gpointer user_data);
-  static void on_ssrc_validated(GstElement* rtpbin,
-                                guint session,
-                                guint ssrc,
-                                gpointer user_data);
-  static void on_timeout(GstElement* rtpbin,
-                         guint session,
-                         guint ssrc,
-                         gpointer user_data);
-  static void on_pad_added(GstElement* gstelement,
-                           GstPad* new_pad,
-                           gpointer user_data);
-  static void on_pad_removed(GstElement* gstelement,
-                             GstPad* new_pad,
-                             gpointer user_data);
+  static void on_bye_ssrc(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
+  static void on_bye_timeout(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
+  static void on_new_ssrc(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
+  static void on_npt_stop(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
+  static void on_sender_timeout(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
+  static void on_ssrc_active(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
+  static void on_ssrc_collision(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
+  static void on_ssrc_sdes(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
+  static void on_ssrc_validated(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
+  static void on_timeout(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
+  static void on_pad_added(GstElement* gstelement, GstPad* new_pad, gpointer user_data);
+  static void on_pad_removed(GstElement* gstelement, GstPad* new_pad, gpointer user_data);
   static void on_no_more_pad(GstElement* gstelement, gpointer user_data);
 
   // wrapper for registering the data_stream functions
-  static gboolean add_data_stream_wrapped(gpointer shmdata_socket_path,
-                                          gpointer user_data);
-  static gboolean remove_data_stream_wrapped(gpointer shmdata_socket_path,
-                                             gpointer user_data);
+  static gboolean add_data_stream_wrapped(gpointer shmdata_socket_path, gpointer user_data);
+  static gboolean remove_data_stream_wrapped(gpointer shmdata_socket_path, gpointer user_data);
   static gboolean add_destination_wrapped(gpointer desst_name,
                                           gpointer host_name,
                                           gpointer user_data);
-  static gboolean remove_destination_wrapped(gpointer nick_name,
-                                             gpointer user_data);
+  static gboolean remove_destination_wrapped(gpointer nick_name, gpointer user_data);
   static gboolean add_udp_stream_to_dest_wrapped(gpointer shmdata_name,
                                                  gpointer dest_name,
                                                  gpointer port,
                                                  gpointer user_data);
-  static gboolean remove_udp_stream_to_dest_wrapped(
-      gpointer shmdata_socket_path, gpointer dest_name, gpointer user_data);
-  static gboolean write_sdp_file_wrapped(gpointer nick_name,
-                                         gpointer user_data);
+  static gboolean remove_udp_stream_to_dest_wrapped(gpointer shmdata_socket_path,
+                                                    gpointer dest_name,
+                                                    gpointer user_data);
+  static gboolean write_sdp_file_wrapped(gpointer nick_name, gpointer user_data);
   static void on_rtppayloder_caps(GstElement* typefind,
                                   guint probability,
                                   GstCaps* caps,

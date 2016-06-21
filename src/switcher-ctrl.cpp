@@ -56,13 +56,7 @@ static GOptionEntry entries[25] = {
      &server,
      "server URI (default http://localhost:27182)",
      nullptr},
-    {"save",
-     'w',
-     0,
-     G_OPTION_ARG_NONE,
-     &save,
-     "save history to file (--save filename)",
-     nullptr},
+    {"save", 'w', 0, G_OPTION_ARG_NONE, &save, "save history to file (--save filename)", nullptr},
     {"load",
      'x',
      0,
@@ -86,13 +80,7 @@ static GOptionEntry entries[25] = {
      &deletequiddity,
      "delete a quiddity instance by its name",
      nullptr},
-    {"list-classes",
-     'c',
-     0,
-     G_OPTION_ARG_NONE,
-     &listclasses,
-     "list quiddity classes",
-     nullptr},
+    {"list-classes", 'c', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", nullptr},
     {"list-quiddities",
      'e',
      0,
@@ -227,8 +215,7 @@ int main(int argc, char* argv[]) {
   setlocale(LC_ALL, "");
   // command line options
   GError* error = nullptr;
-  GOptionContext* context =
-      g_option_context_new(" switcher control via webservice");
+  GOptionContext* context = g_option_context_new(" switcher control via webservice");
   g_option_context_add_main_entries(context, entries, nullptr);
   if (!g_option_context_parse(context, &argc, &argv, &error)) {
     g_printerr("option parsing failed: %s\n", error->message);
@@ -237,12 +224,10 @@ int main(int argc, char* argv[]) {
 
   if (server == nullptr) server = g_strdup("http://localhost:27182");
 
-  if (!(save ^ load ^ run ^ listclasses ^ classesdoc ^ classdoc ^
-        listquiddities ^ quidditydescr ^ quidditiesdescr ^ setprop ^ getprop ^
-        createquiddity ^ deletequiddity ^ listmethods ^ listmethodsbyclass ^
-        listsignals ^ listsignalsbyclass ^ invokemethod ^ print_tree ^
-        print_user_data ^ prune_user_data ^ graft_user_data ^
-        tag_as_array_user_data)) {
+  if (!(save ^ load ^ run ^ listclasses ^ classesdoc ^ classdoc ^ listquiddities ^ quidditydescr ^
+        quidditiesdescr ^ setprop ^ getprop ^ createquiddity ^ deletequiddity ^ listmethods ^
+        listmethodsbyclass ^ listsignals ^ listsignalsbyclass ^ invokemethod ^ print_tree ^
+        print_user_data ^ prune_user_data ^ graft_user_data ^ tag_as_array_user_data)) {
     g_printerr(
         "I am very sorry for the inconvenience, "
         "but I am able to process only exactly one command at a time. \n");
@@ -279,8 +264,7 @@ int main(int argc, char* argv[]) {
   } else if (listclasses) {
     std::vector<std::string> resultlist;
     switcher_control.get_classes(&resultlist);
-    for (uint i = 0; i < resultlist.size(); i++)
-      std::cout << resultlist[i] << std::endl;
+    for (uint i = 0; i < resultlist.size(); i++) std::cout << resultlist[i] << std::endl;
   } else if (classesdoc) {
     std::string result;
     switcher_control.get_classes_doc(&result);
@@ -318,11 +302,9 @@ int main(int argc, char* argv[]) {
       return false;
     }
     if (remaining_args[1] == nullptr)
-      switcher_control.get_information_tree(
-          remaining_args[0], ".", &resultlist);
+      switcher_control.get_information_tree(remaining_args[0], ".", &resultlist);
     else
-      switcher_control.get_information_tree(
-          remaining_args[0], remaining_args[1], &resultlist);
+      switcher_control.get_information_tree(remaining_args[0], remaining_args[1], &resultlist);
     std::cout << resultlist << std::endl;
   } else if (print_user_data) {
     std::string resultlist;
@@ -333,8 +315,7 @@ int main(int argc, char* argv[]) {
     if (remaining_args[1] == nullptr)
       switcher_control.get_user_data(remaining_args[0], ".", &resultlist);
     else
-      switcher_control.get_user_data(
-          remaining_args[0], remaining_args[1], &resultlist);
+      switcher_control.get_user_data(remaining_args[0], remaining_args[1], &resultlist);
     std::cout << resultlist << std::endl;
   } else if (prune_user_data) {
     std::string resultlist;
@@ -346,8 +327,7 @@ int main(int argc, char* argv[]) {
       g_printerr("branch path missing\n");
       return false;
     }
-    switcher_control.prune_user_data(
-        remaining_args[0], remaining_args[1], &resultlist);
+    switcher_control.prune_user_data(remaining_args[0], remaining_args[1], &resultlist);
     std::cout << resultlist << std::endl;
   } else if (graft_user_data) {
     std::string resultlist;
@@ -367,11 +347,8 @@ int main(int argc, char* argv[]) {
       g_printerr("value missing\n");
       return false;
     }
-    switcher_control.graft_user_data(remaining_args[0],
-                                     remaining_args[1],
-                                     remaining_args[2],
-                                     remaining_args[3],
-                                     &resultlist);
+    switcher_control.graft_user_data(
+        remaining_args[0], remaining_args[1], remaining_args[2], remaining_args[3], &resultlist);
     std::cout << resultlist << std::endl;
   } else if (tag_as_array_user_data) {
     std::string resultlist;
@@ -392,20 +369,16 @@ int main(int argc, char* argv[]) {
       g_printerr("value must be true or false\n");
       return false;
     }
-    switcher_control.tag_as_array_user_data(remaining_args[0],
-                                            remaining_args[1],
-                                            val == "true" ? true : false,
-                                            &resultlist);
+    switcher_control.tag_as_array_user_data(
+        remaining_args[0], remaining_args[1], val == "true" ? true : false, &resultlist);
     std::cout << resultlist << std::endl;
   } else if (setprop) {
-    if (remaining_args == nullptr || remaining_args[1] == nullptr ||
-        remaining_args[2] == nullptr) {
+    if (remaining_args == nullptr || remaining_args[1] == nullptr || remaining_args[2] == nullptr) {
       g_printerr("missing argument for set property\n");
       return false;
     }
     // special since on
-    switcher_control.send_set_property(
-        remaining_args[0], remaining_args[1], remaining_args[2]);
+    switcher_control.send_set_property(remaining_args[0], remaining_args[1], remaining_args[2]);
     if (switcher_control.recv_set_property_empty_response())
       switcher_control.soap_print_fault(stderr);
     // connection should not be kept alive after the last call: be nice to the
@@ -430,8 +403,7 @@ int main(int argc, char* argv[]) {
     if (remaining_args[1] == nullptr)
       switcher_control.create_quiddity(remaining_args[0], &name);
     else
-      switcher_control.create_named_quiddity(
-          remaining_args[0], remaining_args[1], &name);
+      switcher_control.create_named_quiddity(remaining_args[0], remaining_args[1], &name);
     std::cout << name << std::endl;
   } else if (deletequiddity) {
     if (remaining_args == nullptr) {
@@ -448,8 +420,7 @@ int main(int argc, char* argv[]) {
     if (remaining_args[1] == nullptr)
       switcher_control.get_signals_description(remaining_args[0], &resultlist);
     else
-      switcher_control.get_signal_description(
-          remaining_args[0], remaining_args[1], &resultlist);
+      switcher_control.get_signal_description(remaining_args[0], remaining_args[1], &resultlist);
     std::cout << resultlist << std::endl;
   } else if (listsignalsbyclass) {
     if (remaining_args == nullptr) {
@@ -459,8 +430,7 @@ int main(int argc, char* argv[]) {
 
     std::string resultlist;
     if (remaining_args[1] == nullptr)
-      switcher_control.get_signals_description_by_class(remaining_args[0],
-                                                        &resultlist);
+      switcher_control.get_signals_description_by_class(remaining_args[0], &resultlist);
     else
       switcher_control.get_signal_description_by_class(
           remaining_args[0], remaining_args[1], &resultlist);
@@ -475,8 +445,7 @@ int main(int argc, char* argv[]) {
     if (remaining_args[1] == nullptr)
       switcher_control.get_methods_description(remaining_args[0], &resultlist);
     else
-      switcher_control.get_method_description(
-          remaining_args[0], remaining_args[1], &resultlist);
+      switcher_control.get_method_description(remaining_args[0], remaining_args[1], &resultlist);
     std::cout << resultlist << std::endl;
   } else if (listmethodsbyclass) {
     if (remaining_args == nullptr) {
@@ -486,8 +455,7 @@ int main(int argc, char* argv[]) {
 
     std::string resultlist;
     if (remaining_args[1] == nullptr)
-      switcher_control.get_methods_description_by_class(remaining_args[0],
-                                                        &resultlist);
+      switcher_control.get_methods_description_by_class(remaining_args[0], &resultlist);
     else
       switcher_control.get_method_description_by_class(
           remaining_args[0], remaining_args[1], &resultlist);
@@ -505,8 +473,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::string result;
-    switcher_control.invoke_method(
-        remaining_args[0], remaining_args[1], args, &result);
+    switcher_control.invoke_method(remaining_args[0], remaining_args[1], args, &result);
     g_print("%s\n", result.c_str());
   }
 

@@ -46,14 +46,13 @@ bool ShmdataFromGDPFile::init_gpipe() {
   init_segment(this);
   install_play_pause();
 
-  input_prefix_param_ =
-      custom_prop_->make_string_property("filename_prefix",
-                                         "Prefix of the files to look for",
-                                         input_prefix_.c_str(),
-                                         (GParamFlags)G_PARAM_READWRITE,
-                                         ShmdataFromGDPFile::set_input_prefix,
-                                         ShmdataFromGDPFile::get_input_prefix,
-                                         this);
+  input_prefix_param_ = custom_prop_->make_string_property("filename_prefix",
+                                                           "Prefix of the files to look for",
+                                                           input_prefix_.c_str(),
+                                                           (GParamFlags)G_PARAM_READWRITE,
+                                                           ShmdataFromGDPFile::set_input_prefix,
+                                                           ShmdataFromGDPFile::get_input_prefix,
+                                                           this);
   install_property_by_pspec(custom_prop_->get_gobject(),
                             input_prefix_param_,
                             "filename_prefix",
@@ -67,8 +66,7 @@ const gchar* ShmdataFromGDPFile::get_input_prefix(void* user_data) {
   return ctx->input_prefix_.c_str();
 }
 
-void ShmdataFromGDPFile::set_input_prefix(const gchar* prefix,
-                                          void* user_data) {
+void ShmdataFromGDPFile::set_input_prefix(const gchar* prefix, void* user_data) {
   ShmdataFromGDPFile* ctx = static_cast<ShmdataFromGDPFile*>(user_data);
   if (prefix != nullptr) ctx->input_prefix_ = prefix;
 }
@@ -95,8 +93,7 @@ bool ShmdataFromGDPFile::make_players() {
   for (auto& it : shmdata_names_) {
     GError* error = nullptr;
     gchar* pipe =
-        g_strdup_printf("filesrc location=%s ! gdpdepay ! identity sync=true",
-                        it.first.c_str());
+        g_strdup_printf("filesrc location=%s ! gdpdepay ! identity sync=true", it.first.c_str());
     On_scope_exit { g_free(pipe); };
     GstElement* reader_bin = gst_parse_bin_from_description(pipe, TRUE, &error);
 
@@ -111,8 +108,7 @@ bool ShmdataFromGDPFile::make_players() {
     gst_bin_add(GST_BIN(get_bin()), reader_bin);
 
     ShmdataWriter::ptr writer = std::make_shared<ShmdataWriter>();
-    writer->set_path(
-        make_file_name("shmfromfile" + std::to_string(shm_counter_)));
+    writer->set_path(make_file_name("shmfromfile" + std::to_string(shm_counter_)));
     shm_counter_++;
     writer->plug(get_bin(), src_pad);
     register_shmdata(writer);
@@ -132,8 +128,7 @@ bool ShmdataFromGDPFile::clean_players() {
   return true;
 }
 
-std::map<std::string, std::string> ShmdataFromGDPFile::getFilenames(
-    std::string prefix) {
+std::map<std::string, std::string> ShmdataFromGDPFile::getFilenames(std::string prefix) {
   std::map<std::string, std::string> filenames{};
   std::string dirName{};
   std::string prefixName{};
@@ -155,8 +150,8 @@ std::map<std::string, std::string> ShmdataFromGDPFile::getFilenames(
   while (file != NULL) {
     if (std::string(file).rfind(prefixName) != std::string::npos) {
       std::string filename = dirName + "/" + std::string(file);
-      std::string shmname = std::string(file).substr(
-          std::string(file).rfind(prefixName) + prefixName.size());
+      std::string shmname =
+          std::string(file).substr(std::string(file).rfind(prefixName) + prefixName.size());
       filenames[filename] = shmname;
     }
     file = const_cast<char*>(g_dir_read_name(dir));

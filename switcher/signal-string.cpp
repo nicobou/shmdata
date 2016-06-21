@@ -42,19 +42,14 @@ bool Signal::set_gobject_sigid(GObject* object, guint gobject_signal_id) {
   object_ = object;
   id_ = gobject_signal_id;
   inspect_gobject_signal();
-  hook_id_ =
-      g_signal_add_emission_hook(id_, 0, on_signal_emitted, this, nullptr);
+  hook_id_ = g_signal_add_emission_hook(id_, 0, on_signal_emitted, this, nullptr);
 
   return true;
 }
 
-std::string Signal::get_description() {
-  return json_description_->get_string(true);
-}
+std::string Signal::get_description() { return json_description_->get_string(true); }
 
-JSONBuilder::Node Signal::get_json_root_node() {
-  return json_description_->get_root();
-}
+JSONBuilder::Node Signal::get_json_root_node() { return json_description_->get_root(); }
 
 // make json formated description
 void Signal::inspect_gobject_signal() {
@@ -86,25 +81,20 @@ void Signal::set_description(std::string long_name,
   json_description_->begin_object();
   json_description_->add_string_member("long name", long_name.c_str());
   json_description_->add_string_member("name", signal_name.c_str());
-  json_description_->add_string_member("description",
-                                       short_description.c_str());
+  json_description_->add_string_member("description", short_description.c_str());
 
   json_description_->add_string_member("type", "signal");
-  json_description_->add_string_member("return type",
-                                       g_type_name(return_type_));
-  json_description_->add_string_member("return description",
-                                       return_description.c_str());
+  json_description_->add_string_member("return type", g_type_name(return_type_));
+  json_description_->add_string_member("return description", return_description.c_str());
   json_description_->set_member_name("arguments");
   json_description_->begin_array();
   args_doc::iterator it;
   if (!arg_description.empty()) {
     for (auto& it : arg_description) {
       json_description_->begin_object();
-      json_description_->add_string_member("long name",
-                                           std::get<0>(it).c_str());
+      json_description_->add_string_member("long name", std::get<0>(it).c_str());
       json_description_->add_string_member("name", std::get<1>(it).c_str());
-      json_description_->add_string_member("description",
-                                           std::get<2>(it).c_str());
+      json_description_->add_string_member("description", std::get<2>(it).c_str());
       json_description_->end_object();
     }
   }
@@ -112,8 +102,7 @@ void Signal::set_description(std::string long_name,
   json_description_->end_object();
 }
 
-std::vector<GType> Signal::make_arg_type_description(GType first_arg_type,
-                                                     ...) {
+std::vector<GType> Signal::make_arg_type_description(GType first_arg_type, ...) {
   std::vector<GType> res;
   GType arg_type;
   va_list vl;
@@ -124,15 +113,14 @@ std::vector<GType> Signal::make_arg_type_description(GType first_arg_type,
   return res;
 }
 
-Signal::args_doc Signal::make_arg_description(const gchar* first_arg_long_name,
-                                              ...) {
+Signal::args_doc Signal::make_arg_description(const gchar* first_arg_long_name, ...) {
   args_doc res;
   va_list vl;
   char* arg_name;
   char* arg_desc;
   va_start(vl, first_arg_long_name);
-  if (g_strcmp0(first_arg_long_name, "none") != 0 &&
-      (arg_name = va_arg(vl, char*)) && (arg_desc = va_arg(vl, char*)))
+  if (g_strcmp0(first_arg_long_name, "none") != 0 && (arg_name = va_arg(vl, char*)) &&
+      (arg_desc = va_arg(vl, char*)))
     res.push_back(std::make_tuple(first_arg_long_name, arg_name, arg_desc));
 
   gboolean parsing = true;
@@ -194,9 +182,7 @@ gboolean Signal::on_signal_emitted(GSignalInvocationHint*,
   {
     gchar* val_str = GstUtils::gvalue_serialize(&param_values[i]);
     if (val_str == nullptr) {  // gst-streamer cannot serialize this
-      g_warning("%s param error with signal %s",
-                __FUNCTION__,
-                context->name_.c_str());
+      g_warning("%s param error with signal %s", __FUNCTION__, context->name_.c_str());
       return TRUE;
     }
     params.push_back(val_str);
@@ -204,8 +190,7 @@ gboolean Signal::on_signal_emitted(GSignalInvocationHint*,
     g_free(val_str);
   }
 
-  for (auto& it : context->subscribed_on_emitted_callbacks_)
-    it.first(params, it.second);
+  for (auto& it : context->subscribed_on_emitted_callbacks_) it.first(params, it.second);
 
   return TRUE;  // keep the hook alive
 }
@@ -227,9 +212,8 @@ bool Signal::subscribe(OnEmittedCallback cb, void* user_data) {
 bool Signal::unsubscribe(OnEmittedCallback cb, void* user_data) {
   std::pair<OnEmittedCallback, void*> cb_pair = std::make_pair(cb, user_data);
   std::vector<std::pair<OnEmittedCallback, void*>>::iterator it;
-  it = std::find(subscribed_on_emitted_callbacks_.begin(),
-                 subscribed_on_emitted_callbacks_.end(),
-                 cb_pair);
+  it = std::find(
+      subscribed_on_emitted_callbacks_.begin(), subscribed_on_emitted_callbacks_.end(), cb_pair);
   if (it != subscribed_on_emitted_callbacks_.end()) {
     subscribed_on_emitted_callbacks_.erase(it);
     return true;
@@ -237,8 +221,7 @@ bool Signal::unsubscribe(OnEmittedCallback cb, void* user_data) {
     return false;
 }
 
-void Signal::signal_emit(/*GMainContext *context, */ const gchar* /*unused*/,
-                         va_list var_args) {
+void Signal::signal_emit(/*GMainContext *context, */ const gchar* /*unused*/, va_list var_args) {
   g_signal_emit_valist(object_, id_, 0, var_args);
   // EmitArgs *args = new EmitArgs;
   // args->object_ = object_;

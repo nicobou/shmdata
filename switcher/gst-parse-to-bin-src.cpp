@@ -21,15 +21,14 @@
 #include "./gst-utils.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    GstParseToBinSrc,
-    "gstsrc",
-    "GStreamer Pipeline",
-    "other",
-    "reader/writer",
-    "GStreamer (src) pipeline description to a *single* shmdata",
-    "LGPL",
-    "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstParseToBinSrc,
+                                     "gstsrc",
+                                     "GStreamer Pipeline",
+                                     "other",
+                                     "reader/writer",
+                                     "GStreamer (src) pipeline description to a *single* shmdata",
+                                     "LGPL",
+                                     "Nicolas Bouillot");
 
 GstParseToBinSrc::GstParseToBinSrc(const std::string&)
     : gst_parse_to_bin_src_(nullptr),
@@ -41,14 +40,14 @@ GstParseToBinSrc::~GstParseToBinSrc() { g_free(gst_launch_pipeline_); }
 
 bool GstParseToBinSrc::init_gpipe() {
   init_startable(this);
-  gst_launch_pipeline_spec_ = custom_props_->make_string_property(
-      "gst-pipeline",
-      "GStreamer Launch Source Pipeline",
-      "videotestsrc is-live=true",
-      (GParamFlags)G_PARAM_READWRITE,
-      GstParseToBinSrc::set_gst_launch_pipeline,
-      GstParseToBinSrc::get_gst_launch_pipeline,
-      this);
+  gst_launch_pipeline_spec_ =
+      custom_props_->make_string_property("gst-pipeline",
+                                          "GStreamer Launch Source Pipeline",
+                                          "videotestsrc is-live=true",
+                                          (GParamFlags)G_PARAM_READWRITE,
+                                          GstParseToBinSrc::set_gst_launch_pipeline,
+                                          GstParseToBinSrc::get_gst_launch_pipeline,
+                                          this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             gst_launch_pipeline_spec_,
                             "gst-pipeline",
@@ -59,8 +58,7 @@ bool GstParseToBinSrc::init_gpipe() {
 
 bool GstParseToBinSrc::to_shmdata() {
   GError* error = nullptr;
-  gst_parse_to_bin_src_ =
-      gst_parse_bin_from_description(gst_launch_pipeline_, TRUE, &error);
+  gst_parse_to_bin_src_ = gst_parse_bin_from_description(gst_launch_pipeline_, TRUE, &error);
 
   if (error != nullptr) {
     g_debug("%s", error->message);
@@ -69,8 +67,7 @@ bool GstParseToBinSrc::to_shmdata() {
     return false;
   }
 
-  g_object_set(
-      G_OBJECT(gst_parse_to_bin_src_), "async-handling", TRUE, nullptr);
+  g_object_set(G_OBJECT(gst_parse_to_bin_src_), "async-handling", TRUE, nullptr);
   // GstUtils::wait_state_changed (get_bin());
 
   GstPad* src_pad = gst_element_get_static_pad(gst_parse_to_bin_src_, "src");
@@ -87,13 +84,11 @@ bool GstParseToBinSrc::to_shmdata() {
   return true;
 }
 
-void GstParseToBinSrc::set_gst_launch_pipeline(const gchar* value,
-                                               void* user_data) {
+void GstParseToBinSrc::set_gst_launch_pipeline(const gchar* value, void* user_data) {
   GstParseToBinSrc* context = static_cast<GstParseToBinSrc*>(user_data);
   g_free(context->gst_launch_pipeline_);
   context->gst_launch_pipeline_ = g_strdup(value);
-  context->custom_props_->notify_property_changed(
-      context->gst_launch_pipeline_spec_);
+  context->custom_props_->notify_property_changed(context->gst_launch_pipeline_spec_);
 }
 
 const gchar* GstParseToBinSrc::get_gst_launch_pipeline(void* user_data) {

@@ -17,13 +17,13 @@ libpjsip_plugin_la_SOURCES = \
 
 EXTRA_DIST = \
     more_codecs.patch \
-    pjproject-2.2.1.tar.bz2
+    pjproject-2.5.1.tar.bz2
 
 nodist_libpjsip_plugin_la_SOURCES = \
-    pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h
+    pjproject-2.5.1/install_dir/include/pjsua-lib/pjsua.h
 
 BUILT_SOURCES = \
-    pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h
+    pjproject-2.5.1/install_dir/include/pjsua-lib/pjsua.h
 
 libpjsip_plugin_la_include_HEADERS = \
     pj-call.hpp \
@@ -50,7 +50,7 @@ libpjsip_plugin_la_LDFLAGS = \
     -avoid-version \
     -lswitcher-@LIBSWITCHER_API_VERSION@ \
     -module \
-    `pkg-config --libs pjproject-2.2.1/install_dir/lib/pkgconfig/libpjproject.pc`
+    `pkg-config --libs pjproject-2.5.1/install_dir/lib/pkgconfig/libpjproject.pc`
 
 export PJPROJECT_STATIC_LIBS=''
 
@@ -62,16 +62,16 @@ libpjsip_plugin_la_CXXFLAGS = \
     $(GMODULE_CFLAGS) \
     $(GST_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
-    `pkg-config --cflags pjproject-2.2.1/install_dir/lib/pkgconfig/libpjproject.pc` \
+    `pkg-config --cflags pjproject-2.5.1/install_dir/lib/pkgconfig/libpjproject.pc` \
     $(SHMDATA_CFLAGS) \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) \
     -Wno-error=write-strings \
     -Wno-error=unused-parameter
 
-pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h: Makefile
-	tar -xjf $(srcdir)/pjproject-2.2.1.tar.bz2 \
-        && cd pjproject-2.2.1 \
+pjproject-2.5.1/install_dir/include/pjsua-lib/pjsua.h: Makefile
+	tar -xjf $(srcdir)/pjproject-2.5.1.tar.bz2 \
+        && cd pjproject-2.5.1 \
         && mkdir -p install_dir \
         && patch -p0 < ../$(srcdir)/more_codecs.patch \
         && sed -iold 's/isblank/MACROIsBlank/' pjlib/include/pj/compat/ctype.h \
@@ -86,13 +86,13 @@ pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h: Makefile
         && CFLAGS="-fPIC" make -j dep \
         && CFLAGS="-fPIC" make -j \
         && make install \
-        && PJPROJECT_STATIC_LIBS=`cd ..; ls pjproject-2.2.1/install_dir/lib/*.a`
+        && PJPROJECT_STATIC_LIBS=`cd ..; ls pjproject-2.5.1/install_dir/lib/*.a`
 
 clean-local:
-	-rm -rf pjproject-2.2.1
+	-rm -rf pjproject-2.5.1
 
 distclean-local:
-	-rm -rf pjproject-2.2.1 
+	-rm -rf pjproject-2.5.1 
 
 #### plugin unit test
 AM_CFLAGS = \

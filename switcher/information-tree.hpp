@@ -55,23 +55,22 @@ class InfoTree {
   using rptr = InfoTree*;                 // raw
   using child_type = std::pair<std::string, InfoTree::ptr>;
   using children_t = std::vector<child_type>;
-  using OnNodeFunction = std::function<void(
-      const std::string& name, InfoTree::ptrc tree, bool is_array_element)>;
-  using GetNodeReturn =
-      std::pair<InfoTree::children_t*, InfoTree::children_t::size_type>;
+  using OnNodeFunction =
+      std::function<void(const std::string& name, InfoTree::ptrc tree, bool is_array_element)>;
+  using GetNodeReturn = std::pair<InfoTree::children_t*, InfoTree::children_t::size_type>;
 
   // factory
   static InfoTree::ptr make();
   template <typename ValueType>
   static InfoTree::ptr make(ValueType data) {
-    std::shared_ptr<InfoTree>
-        tree;  // can't use make_shared because ctor is private
+    std::shared_ptr<InfoTree> tree;  // can't use make_shared because ctor is private
     tree.reset(new InfoTree(std::forward<ValueType>(data)));
     tree->me_ = tree;
     return tree;
   }
-  static InfoTree::ptr make(
-      const char* data);  // InfoTree will store a std::string
+  // InfoTree will store a std::string
+  static InfoTree::ptr make(const char* data);
+  static InfoTree::ptr make_null();
 
   // escaping dots from a keys ("." internally replaced by "__DOT__")
   static std::string escape_dots(const std::string& str);
@@ -82,8 +81,7 @@ class InfoTree {
                                  InfoTree::OnNodeFunction on_visiting_node,
                                  InfoTree::OnNodeFunction on_node_visited);
   // FIXME replace the following with a get_copy non static method
-  static InfoTree::ptrc get_subtree(InfoTree::ptrc tree,
-                                    const std::string& path);
+  static InfoTree::ptrc get_subtree(InfoTree::ptrc tree, const std::string& path);
 
   // const methods
   bool is_leaf() const;
@@ -96,8 +94,7 @@ class InfoTree {
   T branch_read_data(const std::string& path) const {
     std::unique_lock<std::mutex> lock(mutex_);
     auto found = get_node(path);
-    if (nullptr != found.first)
-      return (*found.first)[found.second].second->data_.copy_as<T>();
+    if (nullptr != found.first) return (*found.first)[found.second].second->data_.copy_as<T>();
     static Any any;
     return any.copy_as<T>();
   }
@@ -162,11 +159,8 @@ class InfoTree {
   InfoTree(U&& data) : data_(Any(std::forward<U>(data))) {}
   explicit InfoTree(const Any& data);
   explicit InfoTree(Any&& data);
-  std::pair<bool, children_t::size_type> get_child_index(
-      const std::string& key) const;
-  static bool graft_next(std::istringstream& path,
-                         InfoTree* tree,
-                         InfoTree::ptr leaf);
+  std::pair<bool, children_t::size_type> get_child_index(const std::string& key) const;
+  static bool graft_next(std::istringstream& path, InfoTree* tree, InfoTree::ptr leaf);
   GetNodeReturn get_node(const std::string& path) const;
   GetNodeReturn get_next(std::istringstream& path,
                          children_t* parent_vector_result,

@@ -14,15 +14,14 @@ using namespace std;
 using namespace posture;
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    PostureScan3DGPU,
-    "posturesolidifygpu",
-    "RGBD to textured mesh",
-    "video",
-    "writer/device",
-    "Create a textured mesh from rgbd cameras on GPU",
-    "LGPL",
-    "Emmanuel Durand");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureScan3DGPU,
+                                     "posturescan3dgpu",
+                                     "RGBD to textured mesh",
+                                     "video",
+                                     "writer/device",
+                                     "Create a textured mesh from rgbd cameras on GPU",
+                                     "LGPL",
+                                     "Emmanuel Durand");
 
 PostureScan3DGPU::PostureScan3DGPU(const std::string&) {
   calibration_reader_ = std2::make_unique<CalibrationReader>("default.kvc");
@@ -45,16 +44,13 @@ bool PostureScan3DGPU::start() {
 
   calibration_reader_->loadCalibration(calibration_path_);
   if (!(*calibration_reader_) ||
-      calibration_reader_->getCalibrationParams().size() <
-          (uint32_t)camera_nbr_)
+      calibration_reader_->getCalibrationParams().size() < (uint32_t)camera_nbr_)
     return false;
 
   for (int i = 0; i < camera_nbr_; ++i) {
     cameras_.emplace_back(new posture::ZCamera());
-    cameras_.back()->setCaptureMode(
-        (posture::ZCamera::CaptureMode)capture_modes_enum_.get());
-    cameras_.back()->setCalibration(
-        calibration_reader_->getCalibrationParams()[i]);
+    cameras_.back()->setCaptureMode((posture::ZCamera::CaptureMode)capture_modes_enum_.get());
+    cameras_.back()->setCalibration(calibration_reader_->getCalibrationParams()[i]);
     cameras_.back()->setDeviceIndex(i);
 
     cameras_.back()->setCallbackCloud(
@@ -117,7 +113,9 @@ void PostureScan3DGPU::update_loop() {
     if (!cam->isReady()) return;
   }
 
+  std::vector<pcl::PolygonMesh::Ptr> multimesh;
   pcl::PolygonMesh::Ptr mesh = boost::make_shared<pcl::PolygonMesh>();
+
   pcl::TextureMesh::Ptr texturedMesh = boost::make_shared<pcl::TextureMesh>();
   std::vector<uint8_t> mesh_serialized{};
 
@@ -138,8 +136,7 @@ void PostureScan3DGPU::update_loop() {
       registering_thread_ = thread([=]() {
         calibration_reader_->reload();
         if (*calibration_reader_ &&
-            calibration_reader_->getCalibrationParams().size() >=
-                (uint32_t)camera_nbr_) {
+            calibration_reader_->getCalibrationParams().size() >= (uint32_t)camera_nbr_) {
           auto calibration = calibration_reader_->getCalibrationParams();
 
           register_->setGuessCalibration(calibration);
@@ -161,17 +158,21 @@ void PostureScan3DGPU::update_loop() {
     if (reload_calibration_) {
       calibration_reader_->reload();
       if (*calibration_reader_ &&
-          calibration_reader_->getCalibrationParams().size() >=
-              (uint32_t)camera_nbr_) {
+          calibration_reader_->getCalibrationParams().size() >= (uint32_t)camera_nbr_) {
         auto calibration = calibration_reader_->getCalibrationParams();
         solidifyGPU_->setCalibration(calibration);
         colorize_->setCalibration(calibration);
       }
     }
 
-    solidifyGPU_->getMesh(mesh);
+    // get geometry from Marching Cubes running on the depth images
+    if (compress_multicore_)
+      solidifyGPU_->getMesh(multimesh);
+    else
+      solidifyGPU_->getMesh(mesh);
 
-    if (refine_mesh_) {
+    // sculpt not working on multimeshes
+    if (refine_mesh_ && !compress_multicore_) {
       sculpt_->setInputMesh(mesh);
       sculpt_->getMesh(mesh);
     }
@@ -179,25 +180,25 @@ void PostureScan3DGPU::update_loop() {
     lock.unlock();
 
     unique_lock<mutex> lockCamera(camera_mutex_);
-    colorize_->setInput(mesh, images_, images_dims_);
+    if (compress_multicore_)
+      colorize_->setInput(multimesh, images_, images_dims_);
+    else
+      colorize_->setInput(mesh, images_, images_dims_);
     lockCamera.unlock();
-
-    colorize_->getTexturedMesh(texturedMesh);
     colorize_->getTexturedMesh(mesh_serialized);
+
+    // retrieve the merged image and its dimensions
     uint32_t width, height;
     auto texture = colorize_->getTexture(width, height);
 
-    if (texturedMesh->tex_polygons.size() > 0) {
+    // write the serialization to a shmdata
+    if (mesh_serialized.size() > 0) {
       if (!mesh_writer_ ||
-          mesh_serialized.size() >
-              mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
-        auto data_type = string(POLYGONMESH_TYPE_BASE);
+          mesh_serialized.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+        string data_type = compress_multicore_ ? POLYGONMESH_TYPE_MULTIMESH : POLYGONMESH_TYPE_BASE;
         mesh_writer_.reset();
-        mesh_writer_ =
-            std2::make_unique<ShmdataWriter>(this,
-                                             make_file_name("mesh"),
-                                             mesh_serialized.size() * 2,
-                                             data_type);
+        mesh_writer_ = std2::make_unique<ShmdataWriter>(
+            this, make_file_name("mesh"), mesh_serialized.size() * 2, data_type);
 
         if (!mesh_writer_) {
           g_warning("Unable to create mesh writer");
@@ -206,21 +207,18 @@ void PostureScan3DGPU::update_loop() {
       }
 
       mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
-          reinterpret_cast<char*>(mesh_serialized.data()),
-          mesh_serialized.size());
+          reinterpret_cast<char*>(mesh_serialized.data()), mesh_serialized.size());
       mesh_writer_->bytes_written(mesh_serialized.size());
 
       if (!texture_writer_ ||
-          texture.size() >
-              texture_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
-        auto data_type = string(POINTCLOUD_TYPE_BASE);
+          texture.size() > texture_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
         texture_writer_.reset();
         texture_writer_ = std2::make_unique<ShmdataWriter>(
             this,
             make_file_name("texture"),
             texture.size() * 2,
-            "video/x-raw,format=(string)BGR,width=(int)" + to_string(width) +
-                ",height=(int)" + to_string(height) + ",framerate=30/1");
+            "video/x-raw,format=(string)RGB,width=(int)" + to_string(width) + ",height=(int)" +
+                to_string(height) + ",framerate=30/1");
 
         if (!texture_writer_) {
           g_warning("Unable to create texture writer");
@@ -232,22 +230,21 @@ void PostureScan3DGPU::update_loop() {
           reinterpret_cast<char*>(texture.data()), texture.size());
       texture_writer_->bytes_written(texture.size());
     }
-  }
-}
+  }  // while(update_loop_started_)
+}  // update_loop()
 
 bool PostureScan3DGPU::init() {
   init_startable(this);
 
-  pmanage<MPtr(&PContainer::make_selection)>(
-      "capture_mode",
-      [this](const size_t& val) {
-        capture_modes_enum_.select(val);
-        return true;
-      },
-      [this]() { return capture_modes_enum_.get(); },
-      "Capture mode",
-      "Capture mode for the cameras",
-      capture_modes_enum_);
+  pmanage<MPtr(&PContainer::make_selection)>("capture_mode",
+                                             [this](const size_t& val) {
+                                               capture_modes_enum_.select(val);
+                                               return true;
+                                             },
+                                             [this]() { return capture_modes_enum_.get(); },
+                                             "Capture mode",
+                                             "Capture mode for the cameras",
+                                             capture_modes_enum_);
 
   pmanage<MPtr(&PContainer::make_int)>("camera_nbr",
                                        [this](const int& val) {
@@ -261,46 +258,55 @@ bool PostureScan3DGPU::init() {
                                        1,
                                        7);
 
-  pmanage<MPtr(&PContainer::make_bool)>(
-      "compress_mesh",
-      [this](const bool& val) {
-        compress_mesh_ = val;
-        if (solidifyGPU_) colorize_->setCompressMesh(compress_mesh_);
-        return true;
-      },
-      [this]() { return compress_mesh_; },
-      "Compress mesh",
-      "Compress the generated mesh",
-      compress_mesh_);
+  pmanage<MPtr(&PContainer::make_bool)>("compress_mesh",
+                                        [this](const bool& val) {
+                                          compress_mesh_ = val;
+                                          if (solidifyGPU_)
+                                            colorize_->setCompressMesh(compress_mesh_);
+                                          return true;
+                                        },
+                                        [this]() { return compress_mesh_; },
+                                        "Compress mesh",
+                                        "Compress the generated mesh",
+                                        compress_mesh_);
+
+  pmanage<MPtr(&PContainer::make_bool)>("compress_multicore",
+                                        [this](const bool& val) {
+                                          compress_multicore_ = val;
+                                          return true;
+                                        },
+                                        [this]() { return compress_multicore_; },
+                                        "Multithreaded compression",
+                                        "Compress on multiple cores if true",
+                                        compress_multicore_);
 
   //
   // Calibration
   pmanage<MPtr(&PContainer::make_group)>(
       "calibration", "Calibration", "Camera calibration parameters");
 
-  pmanage<MPtr(&PContainer::make_parented_string)>(
-      "calibration_path",
-      "calibration",
-      [this](const std::string& val) {
-        calibration_path_ = val;
-        return true;
-      },
-      [this]() { return calibration_path_; },
-      "Calibration path",
-      "Path to the calibration file",
-      calibration_path_);
+  pmanage<MPtr(&PContainer::make_parented_string)>("calibration_path",
+                                                   "calibration",
+                                                   [this](const std::string& val) {
+                                                     calibration_path_ = val;
+                                                     return true;
+                                                   },
+                                                   [this]() { return calibration_path_; },
+                                                   "Calibration path",
+                                                   "Path to the calibration file",
+                                                   calibration_path_);
 
-  register_id_ = pmanage<MPtr(&PContainer::make_parented_bool)>(
-      "reload_calibration",
-      "calibration",
-      [this](const bool& val) {
-        reload_calibration_ = val;
-        return true;
-      },
-      [this]() { return reload_calibration_; },
-      "Reload calibration",
-      "Reload the calibration from the given file",
-      reload_calibration_);
+  register_id_ =
+      pmanage<MPtr(&PContainer::make_parented_bool)>("reload_calibration",
+                                                     "calibration",
+                                                     [this](const bool& val) {
+                                                       reload_calibration_ = val;
+                                                       return true;
+                                                     },
+                                                     [this]() { return reload_calibration_; },
+                                                     "Reload calibration",
+                                                     "Reload the calibration from the given file",
+                                                     reload_calibration_);
 
   register_id_ = pmanage<MPtr(&PContainer::make_parented_bool)>(
       "improve_registration",
@@ -334,9 +340,7 @@ bool PostureScan3DGPU::init() {
 
         return true;
       },
-      [this]() {
-        return std::max(grid_size_[0], std::max(grid_size_[1], grid_size_[2]));
-      },
+      [this]() { return std::max(grid_size_[0], std::max(grid_size_[1], grid_size_[2])); },
       "Mesh grid size",
       "Size in meters of the grid enclosing the mesh",
       grid_size_[0],
@@ -475,20 +479,19 @@ bool PostureScan3DGPU::init() {
 
   //
   // Refine mesh
-  pmanage<MPtr(&PContainer::make_group)>(
-      "refine_mesh", "Refine mesh", "Refine mesh");
+  pmanage<MPtr(&PContainer::make_group)>("refine_mesh", "Refine mesh", "Refine mesh");
 
-  register_id_ = pmanage<MPtr(&PContainer::make_parented_bool)>(
-      "active_refine_mesh",
-      "refine_mesh",
-      [this](const bool& val) {
-        refine_mesh_ = val;
-        return true;
-      },
-      [this]() { return refine_mesh_; },
-      "Refine mesh",
-      "Add details where point density is high",
-      refine_mesh_);
+  register_id_ =
+      pmanage<MPtr(&PContainer::make_parented_bool)>("active_refine_mesh",
+                                                     "refine_mesh",
+                                                     [this](const bool& val) {
+                                                       refine_mesh_ = val;
+                                                       return true;
+                                                     },
+                                                     [this]() { return refine_mesh_; },
+                                                     "Refine mesh",
+                                                     "Add details where point density is high",
+                                                     refine_mesh_);
 
   pmanage<MPtr(&PContainer::make_parented_int)>(
       "refine_mesh_max_neighbours",
@@ -528,12 +531,10 @@ void PostureScan3DGPU::reset_solidify() {
   solidifyGPU_->setGridSizeX(grid_size_[0]);
   solidifyGPU_->setGridSizeY(grid_size_[1]);
   solidifyGPU_->setGridSizeZ(grid_size_[2]);
-  solidifyGPU_->setGridResolution(
-      std::max(std::max(grid_size_[0], grid_size_[1]), grid_size_[2]) /
-      (double)grid_resolution_);
+  solidifyGPU_->setGridResolution(std::max(std::max(grid_size_[0], grid_size_[1]), grid_size_[2]) /
+                                  (double)grid_resolution_);
   solidifyGPU_->setDepthMapNbr(camera_nbr_);
-  solidifyGPU_->setDepthFiltering(
-      kernel_filter_size_, kernel_spatial_sigma_, kernel_value_sigma_);
+  solidifyGPU_->setDepthFiltering(kernel_filter_size_, kernel_spatial_sigma_, kernel_value_sigma_);
 }
 
 bool PostureScan3DGPU::all(const vector<bool>& status) {
@@ -547,8 +548,8 @@ void PostureScan3DGPU::zero(vector<bool>& status) {
   for (uint32_t i = 0; i < status.size(); ++i) status[i] = false;
 }
 
-void PostureScan3DGPU::cb_frame_cloud(
-    int index, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud) {
+void PostureScan3DGPU::cb_frame_cloud(int index,
+                                      pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud) {
   unique_lock<mutex> lockCamera(camera_mutex_);
   register_->setInputCloud(index, cloud);
 }

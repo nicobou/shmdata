@@ -33,10 +33,8 @@ class Signal {
   typedef std::shared_ptr<Signal> ptr;
   typedef std::vector<GType> args_types;
   // long name, name, description
-  typedef std::vector<std::tuple<std::string, std::string, std::string>>
-      args_doc;
-  typedef void (*OnEmittedCallback)(const std::vector<std::string>& params,
-                                    gpointer user_data);
+  typedef std::vector<std::tuple<std::string, std::string, std::string>> args_doc;
+  typedef void (*OnEmittedCallback)(const std::vector<std::string>& params, gpointer user_data);
 
   Signal();
   ~Signal();
@@ -68,8 +66,7 @@ class Signal {
   JSONBuilder::ptr json_description_;
   void inspect_gobject_signal();
   gulong hook_id_;
-  std::vector<std::pair<OnEmittedCallback, void*>>
-      subscribed_on_emitted_callbacks_;
+  std::vector<std::pair<OnEmittedCallback, void*>> subscribed_on_emitted_callbacks_;
   std::string name_{};
   static gboolean on_signal_emitted(GSignalInvocationHint* ihint,
                                     guint n_param_values,

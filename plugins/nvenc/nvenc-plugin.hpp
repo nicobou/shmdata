@@ -46,6 +46,7 @@ class NVencPlugin : public Quiddity {
   std::unique_ptr<ShmdataFollower> shm_{nullptr};
   ShmdataConnector shmcntr_;
   Selection devices_{{"none"}, 0};
+  PContainer::prop_id_t devices_id_{0};
   std::vector<int> devices_nv_ids_{};
   Selection codecs_{{"none"}, 0};
   std::vector<std::pair<std::string, GUID>> codecs_guids_{};

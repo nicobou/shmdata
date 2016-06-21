@@ -48,22 +48,16 @@ int main() {
     return 1;
 #endif
 
-    if (!switcher::QuiddityBasicTest::test_full(manager, "SOAPcontrolClient"))
-      success = false;
+    if (!switcher::QuiddityBasicTest::test_full(manager, "SOAPcontrolClient")) success = false;
 
-    if (!switcher::QuiddityBasicTest::test_full(manager, "SOAPcontrolServer"))
-      success = false;
+    if (!switcher::QuiddityBasicTest::test_full(manager, "SOAPcontrolServer")) success = false;
 
     manager->create("SOAPcontrolClient", "soapclient");
     manager->make_signal_subscriber(
         "signal_subscriber", quiddity_created_removed_cb, manager.get());
-    manager->subscribe_signal(
-        "signal_subscriber", "soapclient", "on-connection-tried");
-    manager->invoke_va("soapclient",
-                       "set_remote_url_retry",
-                       nullptr,
-                       "http://localhost:38084",
-                       nullptr);
+    manager->subscribe_signal("signal_subscriber", "soapclient", "on-connection-tried");
+    manager->invoke_va(
+        "soapclient", "set_remote_url_retry", nullptr, "http://localhost:38084", nullptr);
 
     manager->create("SOAPcontrolServer", "soapserver");
     manager->invoke_va("soapserver", "set_port", nullptr, "38084", nullptr);

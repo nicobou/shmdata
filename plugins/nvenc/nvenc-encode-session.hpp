@@ -43,8 +43,7 @@ class NVencES : public SafeBoolIdiom {
   std::vector<std::pair<std::string, GUID>> get_supported_codecs();
   std::vector<std::pair<std::string, GUID>> get_presets(GUID encodeGUID);
   std::vector<std::pair<std::string, GUID>> get_profiles(GUID encodeGUID);
-  std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> get_input_formats(
-      GUID encodeGUID);
+  std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> get_input_formats(GUID encodeGUID);
 
   std::pair<int, int> get_max_width_height(GUID encodeGUID);
   bool safe_bool_idiom() const { return nullptr != encoder_; }

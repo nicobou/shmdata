@@ -35,8 +35,7 @@ class SDPMedia {
   ~SDPMedia();
   SDPMedia& operator=(const SDPMedia&) = delete;
   SDPMedia(const SDPMedia&) = delete;
-  bool set_media_info_from_caps(
-      const GstCaps* media_caps);  // caps from a gst RTP payloader
+  bool set_media_info_from_caps(const GstCaps* media_caps);  // caps from a gst RTP payloader
   bool set_port(uint port);
 
  private:

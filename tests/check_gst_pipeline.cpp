@@ -24,8 +24,7 @@ int main() {
   gst_init(nullptr, nullptr);
   {
     auto ml = std2::make_unique<GlibMainLoop>();
-    auto gp =
-        std2::make_unique<GstPipe>(ml->get_main_context(), nullptr, nullptr);
+    auto gp = std2::make_unique<GstPipe>(ml->get_main_context(), nullptr, nullptr);
   }
   gst_deinit();
 
