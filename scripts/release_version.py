@@ -71,7 +71,7 @@ def commit_version_number(lib, new_version, version_regex):
             for line in old_file:
                 version_line = version_regex.search(line)
                 if version_line:
-                    line = re.sub(r'\d.\d.\d', '{}.{}.{}'.format(new_version[0], new_version[1], new_version[2]), line)
+                    line = re.sub(r'\d+.\d+.\d+', '{}.{}.{}'.format(new_version[0], new_version[1], new_version[2]), line)
                 new_file.write(line)
     os.rename(changed_file, config_file)
     git_add([config_file])
@@ -93,8 +93,11 @@ def git_commit(message):
     return subprocess.call('git commit -m "{}"'.format(message), shell=True)
 
 
-def git_merge(branch_name):
-    return subprocess.call('git merge {}'.format(branch_name), shell=True)
+def git_merge(branch_name, force=False):
+    if force:
+        return subprocess.call('git merge -X theirs {}'.format(branch_name), shell=True)
+    else:
+        return subprocess.call('git merge {}'.format(branch_name), shell=True)
 
 
 def git_tag(tag_name):
@@ -151,8 +154,9 @@ def update_changelog(lib, version):
                     if commit_message:
                         commit_message = re.sub(r'reviewer\s*:\s*[a-z]+', r'', commit_message, flags=re.IGNORECASE)
                         new_file.write('* {}\n'.format(commit_message.strip()))
+
                 new_file.write('\n')
-        subprocess.call([get_git_config('core.editor', 'vim'), new_file_name])
+    subprocess.call([get_git_config('core.editor', 'vim'), new_file_name])
     os.rename(new_file_name, orig_file_name)
     subprocess.call(os.path.join(sys.path[0], 'make_authors_from_git.sh'), shell=True)
     git_add([orig_file_name, authors_file_name])
@@ -243,14 +247,15 @@ if __name__ == '__main__':
     print 'Creating branch {} for release of {} library.'.format(new_branch, lib)
     git_checkout(new_branch, True)
     commit_version_number(lib, version_release, version_regex)
-    # If it's a bugfix release, we keep an odd number for develop and even for master.
-    if version_increase == 3:
-        assert (git_checkout(working_branch) == 0), 'Could not checkout branch {}'.format(working_branch)
-        version_develop = increase_version_number(list(version_release), version_increase)
-        commit_version_number(lib, version_develop, version_regex)
     assert git_checkout(bringup_branch) == 0, 'Could not checkout branch {}'.format(bringup_branch)
-    assert git_merge(new_branch) == 0, 'Merge from branch {} into {} did not work.'.format(new_branch, bringup_branch)
+    assert git_merge(new_branch, True) == 0, 'Merge from branch {} into {} did not work.'.format(new_branch, bringup_branch)
     git_tag('{}.{}.{}'.format(version_release[0], version_release[1], version_release[2]))
     assert git_push(remote_repo, bringup_branch) == 0, 'Failed to push branch {} into {}/{}'.format(bringup_branch, remote_repo, bringup_branch)
+    # If it's a bugfix release, we keep an odd number for develop and even for master.
     assert git_checkout(working_branch) == 0, 'Could not checkout branch {}'.format(working_branch)
+    version_develop = list(version_release)
+    if version_increase == 3:
+        version_develop = increase_version_number(version_develop, version_increase)
+    commit_version_number(lib, version_develop, version_regex)
+    git_tag('{}.{}.{}'.format(version_develop[0], version_develop[1], version_develop[2]))
     assert git_push(remote_repo, working_branch) == 0, 'Failed to push branch {} into {}/{}'.format(working_branch, remote_repo, working_branch)
