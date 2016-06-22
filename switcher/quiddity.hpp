@@ -60,7 +60,7 @@ class Quiddity {
   Quiddity();
   Quiddity(const Quiddity&) = delete;
   Quiddity& operator=(const Quiddity&) = delete;
-  virtual ~Quiddity() = default;
+  virtual ~Quiddity();
 
   // class documentation
   virtual QuiddityDocumentation* get_documentation() = 0;
@@ -162,6 +162,8 @@ class Quiddity {
   // naming
   std::string name_{};
 
+  std::mutex self_destruct_mtx_{};
+
   // user data hooks
   bool user_data_graft_hook(const std::string& path, InfoTree::ptr tree);
   InfoTree::ptr user_data_prune_hook(const std::string& path);
@@ -240,6 +242,8 @@ class Quiddity {
   // custom signals
   void emit_on_interface_changed();  // in order to tell properties/methods has
                                      // changed
+
+  void self_destruct();
 
   // used in order to dynamically create other quiddity, weak_ptr is used in
   // order to

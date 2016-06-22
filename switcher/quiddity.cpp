@@ -27,6 +27,7 @@
 #include "./gst-utils.hpp"
 #include "./information-tree-json.hpp"
 #include "./quiddity-manager-impl.hpp"
+#include "./quiddity-manager.hpp"
 #include "./quiddity.hpp"
 
 namespace switcher {
@@ -171,6 +172,8 @@ Quiddity::Quiddity()
                                  1,
                                  arg_type);
 }
+
+Quiddity::~Quiddity() { std::lock_guard<std::mutex> lock(self_destruct_mtx_); }
 
 std::string Quiddity::get_name() const { return name_; }
 
@@ -521,5 +524,18 @@ InfoTree::ptr Quiddity::user_data_prune_hook(const std::string& path) {
 }
 
 void Quiddity::set_configuration(InfoTree::ptr config) { configuration_tree_ = config; }
+
+void Quiddity::self_destruct() {
+  std::unique_lock<std::mutex> lock(self_destruct_mtx_);
+  auto thread = std::thread([ this, th_lock = std::move(lock) ]() mutable {
+    auto manager = manager_impl_.lock();
+    auto self_name = get_name();
+    th_lock.unlock();
+    if (!manager) return;
+    if (!manager->get_root_manager()->remove(self_name))
+      g_warning("%s did not self destruct", get_name().c_str());
+  });
+  thread.detach();
+}
 
 }  // namespace switcher

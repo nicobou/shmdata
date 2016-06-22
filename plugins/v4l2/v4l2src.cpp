@@ -38,7 +38,10 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(V4L2Src,
                                      "Nicolas Bouillot");
 
 V4L2Src::V4L2Src(const std::string&)
-    : gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)) {
+    : gst_pipeline_(std2::make_unique<GstPipeliner>(
+          nullptr, nullptr, [this](GstObject* gstobj, GError * err) {
+            on_gst_error(gstobj, err);
+          })) {
   init_startable(this);
 }
 
@@ -584,7 +587,8 @@ bool V4L2Src::stop() {
   shm_sub_.reset(nullptr);
   prune_tree(".shmdata.writer." + shmpath_);
   remake_elements();
-  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std2::make_unique<GstPipeliner>(
+      nullptr, nullptr, [this](GstObject* gstobj, GError* err) { on_gst_error(gstobj, err); });
   codecs_->stop();
   pmanage<MPtr(&PContainer::enable)>(devices_id_, true);
   pmanage<MPtr(&PContainer::enable)>(group_id_, true);
@@ -806,6 +810,11 @@ GstStructure* V4L2Src::gst_v4l2_object_v4l2fourcc_to_structure(guint32 fourcc) {
       break;
   }
   return structure;
+}
+
+void V4L2Src::on_gst_error(GstObject*, GError* err) {
+  g_message("ERROR:camera error %s", err->message);
+  self_destruct();
 }
 
 }  // namespace switcher
