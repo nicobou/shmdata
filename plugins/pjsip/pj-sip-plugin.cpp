@@ -17,7 +17,6 @@
 
 #include "./pj-sip-plugin.hpp"
 #include "switcher/net-utils.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 SWITCHER_DECLARE_PLUGIN(SIPPlugin);
@@ -75,13 +74,13 @@ bool SIPPlugin::init() {
   i_m_the_one_ = true;
   this_ = this;
 
-  pjsip_ = std2::make_unique<ThreadedWrapper<PJSIP>>(
+  pjsip_ = std::make_unique<ThreadedWrapper<PJSIP>>(
       // init
       [&]() {
         start_sip_transport();
-        sip_calls_ = std2::make_unique<PJCall>();
-        sip_presence_ = std2::make_unique<PJPresence>();
-        stun_turn_ = std2::make_unique<PJStunTurn>();
+        sip_calls_ = std::make_unique<PJCall>();
+        sip_presence_ = std::make_unique<PJPresence>();
+        stun_turn_ = std::make_unique<PJStunTurn>();
         return true;
       },
       // destruct

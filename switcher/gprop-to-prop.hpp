@@ -24,7 +24,6 @@
 #include <gst/gst.h>
 #include <memory>
 #include "./property2.hpp"
-#include "./std2.hpp"
 
 namespace switcher {
 namespace GPropToProp {

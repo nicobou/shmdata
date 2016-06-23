@@ -18,7 +18,6 @@
  */
 
 #include "./posture_scan3d.hpp"
-#include "switcher/std2.hpp"
 
 #include <functional>
 #include <iostream>
@@ -191,10 +190,10 @@ void PostureSc3::cb_frame_cloud(int index, pcl::PointCloud<pcl::PointXYZRGBNorma
       output_.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
     mesh_writer_.reset();
     if (output_.size() >= 256) {
-      mesh_writer_ = std2::make_unique<ShmdataWriter>(
+      mesh_writer_ = std::make_unique<ShmdataWriter>(
           this, make_file_name("mesh"), output_.size() * 2, string(POLYGONMESH_TYPE_BASE));
     } else {
-      mesh_writer_ = std2::make_unique<ShmdataWriter>(
+      mesh_writer_ = std::make_unique<ShmdataWriter>(
           this, make_file_name("mesh"), 512, string(POLYGONMESH_TYPE_BASE));
     }
 
@@ -231,10 +230,10 @@ void PostureSc3::cb_frame_rgb(std::vector<unsigned char>& image, int width, int 
       output_.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
     mesh_writer_.reset();
     if (output_.size() >= 256) {
-      mesh_writer_ = std2::make_unique<ShmdataWriter>(
+      mesh_writer_ = std::make_unique<ShmdataWriter>(
           this, make_file_name("mesh"), output_.size() * 2, string(POLYGONMESH_TYPE_BASE));
     } else {
-      mesh_writer_ = std2::make_unique<ShmdataWriter>(
+      mesh_writer_ = std::make_unique<ShmdataWriter>(
           this, make_file_name("mesh"), 512, string(POLYGONMESH_TYPE_BASE));
     }
 
@@ -250,10 +249,10 @@ void PostureSc3::cb_frame_rgb(std::vector<unsigned char>& image, int width, int 
   if (!rgb_writer_ || texture_.size() > rgb_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
     rgb_writer_.reset();
     if (texture_.size() >= 256) {
-      rgb_writer_ = std2::make_unique<ShmdataWriter>(
+      rgb_writer_ = std::make_unique<ShmdataWriter>(
           this, make_file_name("rgb"), texture_.size() * 2, string(POLYGONMESH_TYPE_BASE));
     } else {
-      rgb_writer_ = std2::make_unique<ShmdataWriter>(
+      rgb_writer_ = std::make_unique<ShmdataWriter>(
           this, make_file_name("rgb"), 512, string(POLYGONMESH_TYPE_BASE));
     }
 

@@ -17,7 +17,6 @@
  */
 
 #include "./vnc_client.hpp"
-#include "switcher/std2.hpp"
 
 #include <cstdint>
 #include <functional>
@@ -122,7 +121,7 @@ bool VncClientSrc::connect(string shmdata_socket_path) {
   int shmreader_id = shmreader_id_;
   shmreader_id_++;
 
-  auto reader = std2::make_unique<ShmdataFollower>(
+  auto reader = std::make_unique<ShmdataFollower>(
       this,
       shmdata_socket_path,
       [=](void* data, size_t size) {
@@ -243,7 +242,7 @@ void VncClientSrc::update_vnc(rfbClient* client, int, int, int, int) {
     that->previous_truecolor_state_ = that->capture_truecolor_;
 
     that->vnc_writer_.reset();
-    that->vnc_writer_ = std2::make_unique<ShmdataWriter>(
+    that->vnc_writer_ = std::make_unique<ShmdataWriter>(
         that, that->make_file_name("vnc"), that->framebuffer_size_, data_type);
     if (!that->vnc_writer_) {
       g_warning("Unable to create VNC writer");

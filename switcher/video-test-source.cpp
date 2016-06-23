@@ -23,7 +23,6 @@
 #include "switcher/gst-utils.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
@@ -36,7 +35,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
                                      "Nicolas Bouillot");
 
 VideoTestSource::VideoTestSource(const std::string&)
-    : gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)) {
+    : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   init_startable(this);
 }
 
@@ -52,13 +51,13 @@ bool VideoTestSource::init() {
   gst_element_link(videotestsrc_.get_raw(), shmdatasink_.get_raw());
   pmanage<MPtr(&PContainer::push)>(
       "pattern", GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
-  codecs_ = std2::make_unique<GstVideoCodec>(static_cast<Quiddity*>(this), shmpath_);
+  codecs_ = std::make_unique<GstVideoCodec>(static_cast<Quiddity*>(this), shmpath_);
   return true;
 }
 
 bool VideoTestSource::start() {
   if (!gst_pipeline_) return false;
-  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmdatasink_.get_raw(),
       [this](const std::string& caps) {
         this->graft_tree(".shmdata.writer." + shmpath_,
@@ -85,7 +84,7 @@ bool VideoTestSource::stop() {
     gst_pipeline_.reset();
     return false;
   }
-  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmdatasink_.get_raw(),
                    videotestsrc_.get_raw(),

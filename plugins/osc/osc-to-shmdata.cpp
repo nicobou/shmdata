@@ -18,7 +18,6 @@
  */
 
 #include "./osc-to-shmdata.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
@@ -52,7 +51,7 @@ OscToShmdata::~OscToShmdata() { stop(); }
 
 bool OscToShmdata::start() {
   // creating a shmdata
-  shm_ = std2::make_unique<ShmdataWriter>(
+  shm_ = std::make_unique<ShmdataWriter>(
       this, make_file_name("osc"), 4096, "application/x-libloserialized-osc");
   if (!shm_.get()) {
     g_warning("OscToShmdata failed to start");

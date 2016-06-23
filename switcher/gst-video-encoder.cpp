@@ -19,7 +19,6 @@
 
 #include "./gst-video-encoder.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoEncoder,
@@ -34,7 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoEncoder,
 GstVideoEncoder::GstVideoEncoder(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 bool GstVideoEncoder::init() {
-  codecs_ = std2::make_unique<GstVideoCodec>(
+  codecs_ = std::make_unique<GstVideoCodec>(
       static_cast<Quiddity*>(this), std::string(), make_file_name("video-encoded"));
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },

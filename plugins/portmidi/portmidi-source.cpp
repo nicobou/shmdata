@@ -22,7 +22,6 @@
 #include <switcher/quiddity-manager-impl.hpp>
 #include <switcher/quiddity-manager.hpp>
 #include <switcher/scope-exit.hpp>
-#include <switcher/std2.hpp>
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSource,
@@ -109,7 +108,7 @@ bool PortMidiSource::init() {
                  this);
   disable_method("map_midi_to_property");
   shm_ =
-      std2::make_unique<ShmdataWriter>(this, make_file_name("midi"), sizeof(PmEvent), "audio/midi");
+      std::make_unique<ShmdataWriter>(this, make_file_name("midi"), sizeof(PmEvent), "audio/midi");
   if (!shm_.get()) {
     g_message("ERROR:Midi failed to start");
     shm_.reset(nullptr);

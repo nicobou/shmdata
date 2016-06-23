@@ -24,7 +24,6 @@
 #include <map>
 #include <string>
 #include "switcher/information-tree-basic-serializer.hpp"
-#include "switcher/std2.hpp"
 
 #define PROCSTATFILE "/proc/stat"
 #define PROCMEMINFOFILE "/proc/meminfo"
@@ -45,7 +44,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SystemUsage,
 SystemUsage::SystemUsage(const std::string&)
     : tree_{InfoTree::make()},
       period_(1.0),
-      pollStateTask_(std2::make_unique<PeriodicTask>(
+      pollStateTask_(std::make_unique<PeriodicTask>(
           [this]() { this->pollState(); },
           std::chrono::milliseconds(static_cast<int>(1000 * period_)))) {}
 
@@ -55,7 +54,7 @@ bool SystemUsage::init() {
       [this](const float& val) {
         period_ = val;
         pollStateTask_.reset();
-        pollStateTask_ = std2::make_unique<PeriodicTask>(
+        pollStateTask_ = std::make_unique<PeriodicTask>(
             [this]() { this->pollState(); },
             std::chrono::milliseconds(static_cast<int>(1000 * period_)));
         return true;

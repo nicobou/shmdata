@@ -22,7 +22,6 @@
 #include "switcher/gst-utils.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/scope-exit.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 GstVideoTimelapse::GstVideoTimelapse(const GstVideoTimelapseConfig& config,
@@ -35,7 +34,7 @@ GstVideoTimelapse::GstVideoTimelapse(const GstVideoTimelapseConfig& config,
       on_byte_monitor_(on_byte_monitor),
       on_delete_(on_delete),
       on_new_file_(on_new_file),
-      gst_pipeline_(std2::make_unique<GstPipeliner>(
+      gst_pipeline_(std::make_unique<GstPipeliner>(
           [this](GstMessage* msg) {
             if (msg->type != GST_MESSAGE_ELEMENT) return;
             const GstStructure* s = gst_message_get_structure(msg);
@@ -72,7 +71,7 @@ GstVideoTimelapse::GstVideoTimelapse(const GstVideoTimelapseConfig& config,
   GstElement* shmdatasrc =
       GstUtils::get_first_element_from_factory_name(GST_BIN(bin), "shmdatasrc");
   shmsrc_sub_ =
-      std2::make_unique<GstShmdataSubscriber>(shmdatasrc, on_caps_, on_byte_monitor_, on_delete_);
+      std::make_unique<GstShmdataSubscriber>(shmdatasrc, on_caps_, on_byte_monitor_, on_delete_);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), bin);
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);

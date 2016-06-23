@@ -26,7 +26,6 @@
 #include "./json-builder.hpp"
 #include "./scope-exit.hpp"
 #include "./shmdata-utils.hpp"
-#include "./std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RtpSession,
@@ -39,7 +38,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RtpSession,
                                      "Nicolas Bouillot");
 
 RtpSession::RtpSession(const std::string&)
-    : gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
+    : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       destinations_json_id_(
           pmanage<MPtr(&PContainer::make_string)>("destinations-json",
                                                   nullptr,
@@ -373,7 +372,7 @@ gboolean RtpSession::add_data_stream_wrapped(gpointer connector_name, gpointer u
 bool RtpSession::add_data_stream(const std::string& shmpath) {
   remove_data_stream(shmpath);
   std::unique_lock<std::mutex> lock(stream_mutex_);
-  DataStream::ptr ds = std2::make_unique<DataStream>(rtpsession_);
+  DataStream::ptr ds = std::make_unique<DataStream>(rtpsession_);
   ds->id = next_id_;
   next_id_++;
   data_streams_[shmpath] = std::move(ds);

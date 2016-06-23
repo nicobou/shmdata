@@ -24,7 +24,6 @@
 #include "switcher/gst-utils.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 
@@ -38,9 +37,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSink,
                                      "Nicolas Bouillot");
 
 PulseSink::PulseSink(const std::string&)
-    : mainloop_(std2::make_unique<GlibMainLoop>()),
+    : mainloop_(std::make_unique<GlibMainLoop>()),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)) {}
+      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {}
 
 bool PulseSink::init() {
   if (!shmsrc_ || !audioconvert_ || !pulsesink_) return false;
@@ -316,7 +315,7 @@ bool PulseSink::on_shmdata_disconnect() {
   pmanage<MPtr(&PContainer::enable)>(devices_enum_id_, true);
   prune_tree(".shmdata.reader." + shmpath_);
   shm_sub_.reset();
-  On_scope_exit { gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr); };
+  On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };
   return remake_elements();
 }
 
@@ -329,7 +328,7 @@ bool PulseSink::on_shmdata_connect(const std::string& shmpath) {
                  "device",
                  devices_.at(devices_enum_.get()).name_.c_str(),
                  nullptr);
-  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
       [this](const std::string& caps) {
         this->graft_tree(".shmdata.reader." + shmpath_,

@@ -17,7 +17,6 @@
  */
 
 #include "./posture_merge.hpp"
-#include "switcher/std2.hpp"
 
 #include <iostream>
 
@@ -159,7 +158,7 @@ bool PostureMerge::connect(std::string shmdata_socket_path) {
   int shmreader_id = shmreader_id_;
   shmreader_id_++;
 
-  auto reader = std2::make_unique<ShmdataFollower>(
+  auto reader = std::make_unique<ShmdataFollower>(
       this,
       shmdata_socket_path,
       [=](void* data, size_t size) {
@@ -210,7 +209,7 @@ bool PostureMerge::connect(std::string shmdata_socket_path) {
           auto data_type =
               compress_cloud_ ? string(POINTCLOUD_TYPE_COMPRESSED) : string(POINTCLOUD_TYPE_BASE);
           cloud_writer_.reset();
-          cloud_writer_ = std2::make_unique<ShmdataWriter>(
+          cloud_writer_ = std::make_unique<ShmdataWriter>(
               this, make_file_name("cloud"), std::max(cloud.size() * 2, (size_t)1024), data_type);
         }
 

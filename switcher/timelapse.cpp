@@ -21,7 +21,6 @@
 #include <limits>
 #include "switcher/file-utils.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Timelapse,
@@ -234,7 +233,7 @@ bool Timelapse::start_timelapse(const std::string& shmpath) {
   timelapse_config_.height_ = height_;
   timelapse_config_.jpg_quality_ = jpg_quality_;
   timelapse_config_.max_files_ = max_files_;
-  timelapse_[shmpath] = std2::make_unique<GstVideoTimelapse>(
+  timelapse_[shmpath] = std::make_unique<GstVideoTimelapse>(
       timelapse_config_,
       [this, shmpath](const std::string& caps) {
         graft_tree(".shmdata.reader." + shmpath,

@@ -26,7 +26,6 @@
 #include "./gst-pipeliner.hpp"
 #include "./gst-shmdata-subscriber.hpp"
 #include "./quiddity.hpp"
-#include "./std2.hpp"
 
 namespace switcher {
 class Uridecodebin : public Quiddity {

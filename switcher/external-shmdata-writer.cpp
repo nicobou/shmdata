@@ -18,7 +18,6 @@
  */
 
 #include "./external-shmdata-writer.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalShmdataWriter,
@@ -37,7 +36,7 @@ bool ExternalShmdataWriter::init() {
       "shmdata-path",
       [this](const std::string& val) {
         shmdata_path_ = val;
-        shm_ = std2::make_unique<ShmdataFollower>(
+        shm_ = std::make_unique<ShmdataFollower>(
             this, shmdata_path_, nullptr, nullptr, nullptr, ".shmdata.writer.");
         return true;
       },

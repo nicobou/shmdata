@@ -34,7 +34,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
                                      "Nicolas Bouillot");
 
 Uridecodebin::Uridecodebin(const std::string&)
-    : gst_pipeline_(std2::make_unique<GstPipeliner>(
+    : gst_pipeline_(std::make_unique<GstPipeliner>(
           [this](GstMessage* msg) { this->bus_async(msg); }, nullptr)) {}
 
 void Uridecodebin::bus_async(GstMessage* msg) {
@@ -105,7 +105,7 @@ void Uridecodebin::init_uridecodebin() {
 
 void Uridecodebin::destroy_uridecodebin() {
   gst_pipeline_ =
-      std2::make_unique<GstPipeliner>([this](GstMessage* msg) { this->bus_async(msg); }, nullptr);
+      std::make_unique<GstPipeliner>([this](GstMessage* msg) { this->bus_async(msg); }, nullptr);
   clean_on_error_command();
   prune_tree(".shmdata.writer.");
 }
@@ -214,7 +214,7 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   g_debug("uridecodebin: new media %s\n", media_name.c_str());
   std::string shmpath = make_file_name(media_name);
   g_object_set(G_OBJECT(shmdatasink), "socket-path", shmpath.c_str(), nullptr);
-  shm_subs_.emplace_back(std2::make_unique<GstShmdataSubscriber>(
+  shm_subs_.emplace_back(std::make_unique<GstShmdataSubscriber>(
       shmdatasink,
       [this, shmpath](const std::string& caps) {
         this->graft_tree(".shmdata.writer." + shmpath,

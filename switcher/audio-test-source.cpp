@@ -23,7 +23,6 @@
 #include "./gprop-to-prop.hpp"
 #include "./information-tree-basic-serializer.hpp"
 #include "./shmdata-utils.hpp"
-#include "./std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
@@ -36,7 +35,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
                                      "Nicolas Bouillot");
 
 AudioTestSource::AudioTestSource(const std::string&)
-    : gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)) {
+    : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   init_startable(this);
 }
 
@@ -69,7 +68,7 @@ bool AudioTestSource::init() {
 }
 
 bool AudioTestSource::start() {
-  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmdatasink_.get_raw(),
       [this](const std::string& caps) {
         this->graft_tree(".shmdata.writer." + shmpath_,

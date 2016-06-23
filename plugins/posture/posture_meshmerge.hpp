@@ -32,7 +32,6 @@
 #include "switcher/shmdata-follower.hpp"
 #include "switcher/shmdata-writer.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 class PostureMeshMerge : public Quiddity, public StartableQuiddity {

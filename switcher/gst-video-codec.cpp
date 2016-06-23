@@ -22,7 +22,6 @@
 #include "switcher/gst-utils.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/scope-exit.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 GstVideoCodec::GstVideoCodec(Quiddity* quid,
@@ -32,7 +31,7 @@ GstVideoCodec::GstVideoCodec(Quiddity* quid,
       shmpath_to_encode_(shmpath),
       shm_encoded_path_(shmpath_encoded),
       custom_shmsink_path_(!shmpath_encoded.empty()),
-      gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
+      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       primary_codec_(
           GstUtils::element_factory_list_to_pair_of_vectors(GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
                                                             GST_RANK_PRIMARY,
@@ -176,7 +175,7 @@ gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */, gpointer
 bool GstVideoCodec::start() {
   hide();
   if (0 == quid_->pmanage<MPtr(&PContainer::get<Selection::index_t>)>(codec_id_)) return true;
-  shmsink_sub_ = std2::make_unique<GstShmdataSubscriber>(
+  shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
       shm_encoded_.get_raw(),
       [this](const std::string& caps) {
         this->quid_->graft_tree(".shmdata.writer." + shm_encoded_path_,
@@ -186,7 +185,7 @@ bool GstVideoCodec::start() {
         this->quid_->graft_tree(".shmdata.writer." + shm_encoded_path_ + ".byte_rate",
                                 InfoTree::make(byte_rate));
       });
-  shmsrc_sub_ = std2::make_unique<GstShmdataSubscriber>(
+  shmsrc_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
       [this](const std::string& caps) {
         this->quid_->graft_tree(".shmdata.reader." + shmpath_to_encode_,
@@ -213,7 +212,7 @@ bool GstVideoCodec::stop() {
     quid_->prune_tree(".shmdata.reader." + shmpath_to_encode_);
     remake_codec_elements();
     make_codec_properties();
-    gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
+    gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
   }
   return true;
 }

@@ -19,7 +19,6 @@
 
 #include "./gst-audio-encoder.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstAudioEncoder,
@@ -34,7 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstAudioEncoder,
 GstAudioEncoder::GstAudioEncoder(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 bool GstAudioEncoder::init() {
-  codecs_ = std2::make_unique<GstAudioCodec>(
+  codecs_ = std::make_unique<GstAudioCodec>(
       static_cast<Quiddity*>(this), std::string(), make_file_name("audio-encoded"));
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },

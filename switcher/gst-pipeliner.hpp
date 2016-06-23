@@ -38,8 +38,12 @@ class CustomPropertyHelper;
 
 class GstPipeliner {
  public:
+  using on_error_cb_t = std::function<void(GstObject*, GError*)>;
   GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
                GstPipe::on_msg_sync_cb_t on_msg_sync_cb);
+  GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
+               GstPipe::on_msg_sync_cb_t on_msg_sync_cb,
+               on_error_cb_t on_error_cb);
   GstPipeliner() = delete;
   virtual ~GstPipeliner();
   GstPipeliner(const GstPipeliner&) = delete;
@@ -53,6 +57,7 @@ class GstPipeliner {
  private:
   GstPipe::on_msg_async_cb_t on_msg_async_cb_;
   GstPipe::on_msg_sync_cb_t on_msg_sync_cb_;
+  on_error_cb_t on_error_cb_;
   std::unique_ptr<GlibMainLoop> main_loop_;
   std::unique_ptr<GstPipe> gst_pipeline_;
   GstBusSyncReply on_gst_error(GstMessage* msg);

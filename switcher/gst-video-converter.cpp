@@ -19,7 +19,6 @@
 
 #include "./gst-video-converter.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoConverter,
@@ -34,7 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoConverter,
 GstVideoConverter::GstVideoConverter(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 bool GstVideoConverter::init() {
-  converter_ = std2::make_unique<GstPixelFormatConverter>(
+  converter_ = std::make_unique<GstPixelFormatConverter>(
       static_cast<Quiddity*>(this), "Pixel format", "Convert to selected pixel format");
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },

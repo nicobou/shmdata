@@ -17,7 +17,6 @@
  */
 
 #include "./posture_source.hpp"
-#include "switcher/std2.hpp"
 
 #include <functional>
 #include <iostream>
@@ -36,8 +35,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureSrc,
                                      "Emmanuel Durand");
 
 PostureSrc::PostureSrc(const std::string&) {
-  calibration_reader_ = std2::make_unique<CalibrationReader>("default.kvc");
-  zcamera_ = std2::make_unique<ZCamera>();
+  calibration_reader_ = std::make_unique<CalibrationReader>("default.kvc");
+  zcamera_ = std::make_unique<ZCamera>();
 
   zcamera_->setCallbackCloud(cb_frame_cloud, this);
   zcamera_->setCallbackMesh(cb_frame_mesh, this);
@@ -321,7 +320,7 @@ void PostureSrc::cb_frame_cloud(void* context, const vector<char>&& data) {
     auto data_type =
         ctx->compress_cloud_ ? string(POINTCLOUD_TYPE_COMPRESSED) : string(POINTCLOUD_TYPE_BASE);
     ctx->cloud_writer_.reset();
-    ctx->cloud_writer_ = std2::make_unique<ShmdataWriter>(
+    ctx->cloud_writer_ = std::make_unique<ShmdataWriter>(
         ctx, ctx->make_file_name("cloud"), data.size() * 2, data_type);
 
     if (!ctx->cloud_writer_) {
@@ -350,7 +349,7 @@ void PostureSrc::cb_frame_mesh(void* context, vector<unsigned char>&& data) {
   if (!ctx->mesh_writer_ ||
       data.size() > ctx->mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
     ctx->mesh_writer_.reset();
-    ctx->mesh_writer_ = std2::make_unique<ShmdataWriter>(
+    ctx->mesh_writer_ = std::make_unique<ShmdataWriter>(
         ctx, ctx->make_file_name("mesh"), data.size() * 2, string(POLYGONMESH_TYPE_BASE));
 
     if (!ctx->mesh_writer_) {
@@ -382,7 +381,7 @@ void PostureSrc::cb_frame_depth(void* context,
             height);
 
     ctx->depth_writer_.reset();
-    ctx->depth_writer_ = std2::make_unique<ShmdataWriter>(
+    ctx->depth_writer_ = std::make_unique<ShmdataWriter>(
         ctx, ctx->make_file_name("depth"), data.size(), string(buffer));
 
     if (!ctx->depth_writer_) {
@@ -434,7 +433,7 @@ void PostureSrc::cb_frame_rgb(void* context,
             height);
 
     ctx->rgb_writer_.reset();
-    ctx->rgb_writer_ = std2::make_unique<ShmdataWriter>(
+    ctx->rgb_writer_ = std::make_unique<ShmdataWriter>(
         ctx, ctx->make_file_name("rgb"), data.size(), string(buffer));
 
     if (!ctx->rgb_writer_) {
@@ -467,7 +466,7 @@ void PostureSrc::cb_frame_ir(void* context,
             height);
 
     ctx->ir_writer_.reset();
-    ctx->ir_writer_ = std2::make_unique<ShmdataWriter>(
+    ctx->ir_writer_ = std::make_unique<ShmdataWriter>(
         ctx, ctx->make_file_name("ir"), data.size(), string(buffer));
 
     if (!ctx->ir_writer_) {
@@ -490,7 +489,7 @@ void PostureSrc::generateRandomData() {
     posture::ZCamera::getNoise(1, 1, 1, 1000, cloud);
 
     if (!cloud_writer_) {
-      cloud_writer_ = std2::make_unique<ShmdataWriter>(
+      cloud_writer_ = std::make_unique<ShmdataWriter>(
           this, make_file_name("cloud"), cloud.size() * 2, string(POINTCLOUD_TYPE_BASE));
       if (!cloud_writer_) {
         g_warning("Unable to create mesh shmdata writer");
@@ -507,7 +506,7 @@ void PostureSrc::generateRandomData() {
     posture::ZCamera::getRandomMesh(1, 1, 1, 100, mesh);
 
     if (!mesh_writer_) {
-      mesh_writer_ = std2::make_unique<ShmdataWriter>(
+      mesh_writer_ = std::make_unique<ShmdataWriter>(
           this, make_file_name("mesh"), mesh.size() * 2, string(POLYGONMESH_TYPE_BASE));
       if (!mesh_writer_) {
         g_warning("Unable to create mesh shmdata writer");

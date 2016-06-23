@@ -17,7 +17,6 @@
  */
 
 #include "./posture_colorizeGL.hpp"
-#include "switcher/std2.hpp"
 
 #include <iostream>
 #include <regex>
@@ -110,7 +109,7 @@ bool PostureColorizeGL::connect(std::string shmdata_socket_path) {
   int shmid = shmdata_reader_id_;
   shmdata_reader_id_++;
 
-  auto reader = std2::make_unique<ShmdataFollower>(
+  auto reader = std::make_unique<ShmdataFollower>(
       this,
       shmdata_socket_path,
       [=](void* data, int size) {
@@ -161,10 +160,10 @@ bool PostureColorizeGL::connect(std::string shmdata_socket_path) {
               auto data_type = string(POLYGONMESH_TYPE_BASE);
               mesh_writer_.reset();
               mesh_writer_ =
-                  std2::make_unique<ShmdataWriter>(this,
-                                                   make_file_name("mesh"),
-                                                   std::max(texturedMesh.size() * 2, (size_t)1024),
-                                                   data_type);
+                  std::make_unique<ShmdataWriter>(this,
+                                                  make_file_name("mesh"),
+                                                  std::max(texturedMesh.size() * 2, (size_t)1024),
+                                                  data_type);
             }
 
             mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(
@@ -176,7 +175,7 @@ bool PostureColorizeGL::connect(std::string shmdata_socket_path) {
               auto data_type = "video/x-raw,format=(string)BGR,width=(int)" + to_string(width) +
                                ",height=(int)" + to_string(height) + ",framerate=30/1";
               tex_writer_.reset();
-              tex_writer_ = std2::make_unique<ShmdataWriter>(
+              tex_writer_ = std::make_unique<ShmdataWriter>(
                   this, make_file_name("texture"), texture.size(), data_type);
               prev_width_ = width;
               prev_height_ = height;

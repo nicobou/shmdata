@@ -23,7 +23,6 @@
 #include "switcher/gprop-to-prop.hpp"
 #include "switcher/gst-utils.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
@@ -36,8 +35,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
                                      "Nicolas Bouillot");
 
 PulseSrc::PulseSrc(const std::string&)
-    : mainloop_(std2::make_unique<GlibMainLoop>()),
-      gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)) {}
+    : mainloop_(std::make_unique<GlibMainLoop>()),
+      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {}
 
 bool PulseSrc::init() {
   init_startable(this);
@@ -297,7 +296,7 @@ bool PulseSrc::start() {
                "device",
                capture_devices_.at(devices_.get()).name_.c_str(),
                nullptr);
-  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsink_.get_raw(),
       [this](const std::string& caps) {
         this->graft_tree(".shmdata.writer." + shmpath_,
@@ -325,7 +324,7 @@ bool PulseSrc::stop() {
       "volume", GPropToProp::to_prop(G_OBJECT(pulsesrc_.get_raw()), "volume"));
   mute_id_ = pmanage<MPtr(&PContainer::push)>(
       "mute", GPropToProp::to_prop(G_OBJECT(pulsesrc_.get_raw()), "mute"));
-  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
   return true;
 }
 

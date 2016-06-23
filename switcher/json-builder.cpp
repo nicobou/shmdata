@@ -22,7 +22,6 @@
  */
 
 #include "./json-builder.hpp"
-#include "./std2.hpp"
 
 namespace switcher {
 JSONBuilder::JSONBuilder() : builder_(json_builder_new()) {}
@@ -102,7 +101,7 @@ void JSONBuilder::add_JsonNode_member(const gchar* member_name, Node JsonNode_va
 
 std::string JSONBuilder::get_string(bool pretty) {
   std::unique_lock<std::mutex> lock(thread_safe_);
-  Node node = std2::make_unique<RootNodeCopy>(builder_);
+  Node node = std::make_unique<RootNodeCopy>(builder_);
   std::string res = get_string(std::move(node), pretty);
   return res;
 }
@@ -124,7 +123,7 @@ std::string JSONBuilder::get_string(Node root_node, bool pretty) {
 
 JSONBuilder::Node JSONBuilder::get_root() {
   std::unique_lock<std::mutex> lock(thread_safe_);
-  return std2::make_unique<RootNodeCopy>(builder_);
+  return std::make_unique<RootNodeCopy>(builder_);
 }
 
 }  // namespace switcher
