@@ -288,13 +288,13 @@ AM_CONDITIONAL(VNCBUILD, test "${VNCBUILD}" = "enabled")
 dnl Use the C++ compiler for the compile tests
 AC_LANG(C++)
 
-AC_MSG_CHECKING([to see if compiler understands -std=c++11])
-CXXFLAGS="$CXXFLAGS -std=c++11"
+AC_MSG_CHECKING([to see if compiler understands -std=c++14])
+CXXFLAGS="$CXXFLAGS -std=c++14"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
   AC_MSG_RESULT([yes])
 ], [
   AC_MSG_RESULT([no])
-  AC_MSG_ERROR([compiler does not understand -std=c++11])
+  AC_MSG_ERROR([compiler does not understand -std=c++14])
 ])
 
 AC_MSG_CHECKING([to see if compiler can expand variadic template in lambda])
