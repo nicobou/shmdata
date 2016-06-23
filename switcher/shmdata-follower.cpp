@@ -20,7 +20,6 @@
 #include "./shmdata-follower.hpp"
 #include "./quiddity.hpp"
 #include "./shmdata-utils.hpp"
-#include "./std2.hpp"
 
 namespace switcher {
 ShmdataFollower::ShmdataFollower(Quiddity* quid,
@@ -35,14 +34,14 @@ ShmdataFollower::ShmdataFollower(Quiddity* quid,
       osc_(osc),
       osd_(osd),
       tree_path_(tree_path),
-      follower_(std2::make_unique<shmdata::Follower>(
+      follower_(std::make_unique<shmdata::Follower>(
           shmpath_,
           [this](void* data, size_t size) { this->on_data(data, size); },
           [this](const std::string& data_type) { this->on_server_connected(data_type); },
           [this]() { this->on_server_disconnected(); },
           &logger_)),
-      task_(std2::make_unique<PeriodicTask>([this]() { this->update_quid_byte_rate(); },
-                                            std::chrono::milliseconds(1000))) {}
+      task_(std::make_unique<PeriodicTask>([this]() { this->update_quid_byte_rate(); },
+                                           std::chrono::milliseconds(1000))) {}
 
 ShmdataFollower::~ShmdataFollower() {
   follower_.reset(nullptr);

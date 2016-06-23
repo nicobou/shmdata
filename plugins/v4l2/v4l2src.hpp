@@ -26,7 +26,6 @@
 #include "switcher/gst-video-codec.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/std2.hpp"
 #include "switcher/unique-gst-element.hpp"
 
 namespace switcher {

@@ -19,7 +19,6 @@
 
 #include "./shmdata-writer.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 
@@ -31,8 +30,8 @@ ShmdataWriter::ShmdataWriter(Quiddity* quid,
       shmpath_(path),
       data_type_(data_descr),
       shm_(shmpath_, memsize, data_type_, &shmlog_),
-      task_(shm_ ? std2::make_unique<PeriodicTask>([this]() { this->update_quid_byte_rate(); },
-                                                   std::chrono::milliseconds(1000))
+      task_(shm_ ? std::make_unique<PeriodicTask>([this]() { this->update_quid_byte_rate(); },
+                                                  std::chrono::milliseconds(1000))
                  : nullptr) {
   if (shm_ && nullptr != quid_)
     quid_->graft_tree(

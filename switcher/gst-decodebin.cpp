@@ -20,7 +20,6 @@
 #include "./gst-decodebin.hpp"
 #include "./scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstDecodebin,
@@ -33,7 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstDecodebin,
                                      "Nicolas Bouillot");
 
 GstDecodebin::GstDecodebin(const std::string&)
-    : gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
+    : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       shmsrc_("shmdatasrc"),
       shmcntr_(static_cast<Quiddity*>(this)) {}
 
@@ -54,7 +53,7 @@ bool GstDecodebin::on_shmdata_disconnect() {
   shmr_sub_.reset(nullptr);
   prune_tree(".shmdata.writer");
   if (!UGstElem::renew(shmsrc_)) return false;
-  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
   counter_.reset_counter_map();
 
   return true;
@@ -73,7 +72,7 @@ void GstDecodebin::configure_shmdatasink(GstElement* element,
     shmpath = make_file_name(media_label + "-" + media_name);
 
   g_object_set(G_OBJECT(element), "socket-path", shmpath.c_str(), nullptr);
-  shmw_sub_ = std2::make_unique<GstShmdataSubscriber>(
+  shmw_sub_ = std::make_unique<GstShmdataSubscriber>(
       element,
       [this, shmpath](const std::string& caps) {
         this->graft_tree(".shmdata.writer." + shmpath,
@@ -88,7 +87,7 @@ bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
   // creating shmdata reader
   g_object_set(
       G_OBJECT(shmsrc_.get_raw()), "copy-buffers", TRUE, "socket-path", shmpath.c_str(), nullptr);
-  shmr_sub_ = std2::make_unique<GstShmdataSubscriber>(
+  shmr_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
       [this, shmpath](const std::string& caps) {
         this->graft_tree(".shmdata.reader." + shmpath,
@@ -99,7 +98,7 @@ bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
       });
 
   // creating decodebin
-  std::unique_ptr<DecodebinToShmdata> decodebin = std2::make_unique<DecodebinToShmdata>(
+  std::unique_ptr<DecodebinToShmdata> decodebin = std::make_unique<DecodebinToShmdata>(
       gst_pipeline_.get(),
       [this](GstElement* el, const std::string& media_type, const std::string& media_label) {
         configure_shmdatasink(el, media_type, media_label);

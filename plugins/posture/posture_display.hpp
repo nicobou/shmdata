@@ -28,7 +28,6 @@
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 class PostureDisplay : public Quiddity {

@@ -20,7 +20,6 @@
 #include "./nvenc-plugin.hpp"
 #include "./cuda-context.hpp"
 #include "switcher/scope-exit.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(NVencPlugin,
@@ -71,7 +70,7 @@ bool NVencPlugin::init() {
 
 void NVencPlugin::update_device() {
   es_.reset();
-  es_ = std2::make_unique<ThreadedWrapper<NVencES>>(devices_nv_ids_[devices_.get()]);
+  es_ = std::make_unique<ThreadedWrapper<NVencES>>(devices_nv_ids_[devices_.get()]);
   if (!es_->invoke<MPtr(&NVencES::safe_bool_idiom)>()) {
     g_warning(
         "nvenc failed to create encoding session "
@@ -105,7 +104,7 @@ void NVencPlugin::update_codec() {
   else
     pmanage<MPtr(&PContainer::replace)>(
         codecs_id_,
-        std2::make_unique<Property2<Selection, Selection::index_t>>(
+        std::make_unique<Property2<Selection, Selection::index_t>>(
             set, get, "Codec", "Codec Selection", codecs_, codecs_.size() - 1));
   update_preset();
   update_profile();
@@ -134,7 +133,7 @@ void NVencPlugin::update_preset() {
   else
     pmanage<MPtr(&PContainer::replace)>(
         presets_id_,
-        std2::make_unique<Property2<Selection, Selection::index_t>>(
+        std::make_unique<Property2<Selection, Selection::index_t>>(
             set, get, "Preset", "Preset Selection", presets_, presets_.size() - 1));
 }
 
@@ -159,7 +158,7 @@ void NVencPlugin::update_profile() {
   else
     pmanage<MPtr(&PContainer::replace)>(
         profiles_id_,
-        std2::make_unique<Property2<Selection, Selection::index_t>>(
+        std::make_unique<Property2<Selection, Selection::index_t>>(
             set, get, "Profile", "Profile Selection", profiles_, profiles_.size() - 1));
 }
 
@@ -356,7 +355,7 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
                                                               frameDen,
                                                               buf_format);
   shmw_.reset();
-  shmw_ = std2::make_unique<ShmdataWriter>(
+  shmw_ = std::make_unique<ShmdataWriter>(
       this,
       make_file_name("encoded-video"),
       10048576,

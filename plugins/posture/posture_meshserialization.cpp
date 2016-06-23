@@ -90,7 +90,7 @@ bool PostureMeshSerialization::init() {
 }
 
 bool PostureMeshSerialization::connect(std::string shmdata_socket_path) {
-  mesh_reader_ = std2::make_unique<ShmdataFollower>(
+  mesh_reader_ = std::make_unique<ShmdataFollower>(
       this,
       shmdata_socket_path,
       [=](void* data, size_t size) {
@@ -112,10 +112,10 @@ bool PostureMeshSerialization::connect(std::string shmdata_socket_path) {
             auto data_type = string(POLYGONMESH_TYPE_BASE);
             mesh_writer_.reset();
             mesh_writer_ =
-                std2::make_unique<ShmdataWriter>(this,
-                                                 make_file_name("mesh"),
-                                                 std::max(serializedMesh.size(), (size_t)1024),
-                                                 data_type);
+                std::make_unique<ShmdataWriter>(this,
+                                                make_file_name("mesh"),
+                                                std::max(serializedMesh.size(), (size_t)1024),
+                                                data_type);
           }
 
           mesh_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(

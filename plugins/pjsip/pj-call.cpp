@@ -536,7 +536,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
                                                                      PJ_ICE_SESS_ROLE_CONTROLLED);
   if (!call->ice_trans_) g_warning("ICE transport initialization failed");
   // initializing shmdata writers and linking with ICE transport
-  call->recv_rtp_session_ = std2::make_unique<RtpSession2>();
+  call->recv_rtp_session_ = std::make_unique<RtpSession2>();
   for (auto& it : media_to_receive) {
     auto shm_prefix = SIPPlugin::this_->get_file_name_prefix() +
                       SIPPlugin::this_->get_manager_name() + "_" + SIPPlugin::this_->get_name() +
@@ -545,10 +545,10 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     auto rtp_shmpath = shm_prefix + "rtp-" + media_label;
     auto rtp_caps = PJCallUtils::get_rtp_caps(it);
     if (rtp_caps.empty()) rtp_caps = "unknown_data_type";
-    call->rtp_writers_.emplace_back(std2::make_unique<ShmdataWriter>(SIPPlugin::this_,
-                                                                     rtp_shmpath,
-                                                                     9000,  // ethernet jumbo frame
-                                                                     rtp_caps));
+    call->rtp_writers_.emplace_back(std::make_unique<ShmdataWriter>(SIPPlugin::this_,
+                                                                    rtp_shmpath,
+                                                                    9000,  // ethernet jumbo frame
+                                                                    rtp_caps));
     // uncomment the following in order to get rtp shmdata shown in scenic:
     // SIPPlugin::this_->graft_tree(
     //     std::string(".shmdata.writer.") + rtp_shmpath + ".uri",
@@ -560,13 +560,13 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     });
     // setting a decoder for this shmdata
     auto peer_uri = call->peer_uri;
-    call->rtp_receivers_.emplace_back(std2::make_unique<RTPReceiver>(
+    call->rtp_receivers_.emplace_back(std::make_unique<RTPReceiver>(
         call->recv_rtp_session_.get(),
         rtp_shmpath,
         [=](GstElement* el, const std::string& media_type, const std::string&) {
           auto shmpath = shm_prefix + media_label + "-" + media_type;
           g_object_set(G_OBJECT(el), "socket-path", shmpath.c_str(), nullptr);
-          call->shm_subs_.emplace_back(std2::make_unique<GstShmdataSubscriber>(
+          call->shm_subs_.emplace_back(std::make_unique<GstShmdataSubscriber>(
               el,
               [=](const std::string& caps) {
                 SIPPlugin::this_->graft_tree(
@@ -744,7 +744,7 @@ bool PJCall::make_call(std::string dst_uri) {
     return false;
   }
   // Find unused call slot
-  outgoing_call_.emplace_back(std2::make_unique<call_t>());
+  outgoing_call_.emplace_back(std::make_unique<call_t>());
   cur_call = outgoing_call_.back().get();
   // Create UAC dialog
   status = pjsip_dlg_create_uac(pjsip_ua_instance(),
@@ -1040,7 +1040,7 @@ void PJCall::make_attach_shmdata_to_contact(const std::string& shmpath,
                                      false);  // do not signal since the branch will be re-grafted
     if (!tree) tree = InfoTree::make();
     if (readers_.find(shmpath) == readers_.cend()) {
-      readers_.emplace(shmpath, std2::make_unique<RTPSender>(&rtp_session_, shmpath, 1400));
+      readers_.emplace(shmpath, std::make_unique<RTPSender>(&rtp_session_, shmpath, 1400));
       reader_ref_count_[shmpath] = 1;
     } else {
       ++reader_ref_count_[shmpath];

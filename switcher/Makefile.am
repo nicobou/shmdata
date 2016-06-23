@@ -174,7 +174,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     shmdata-writer.hpp \
     signal-string.hpp \
     startable-quiddity.hpp \
-    std2.hpp \
     string-utils.hpp \
     templated-sequence.hpp \
     threaded-wrapper.hpp \

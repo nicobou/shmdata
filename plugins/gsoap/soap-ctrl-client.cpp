@@ -17,7 +17,6 @@
 
 #include "soap-ctrl-client.hpp"
 #include "switcher/gst-utils.hpp"
-#include "switcher/std2.hpp"
 #include "webservices/control.nsmap"
 
 namespace switcher {
@@ -30,7 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SoapCtrlClient,
                                      "GPL",
                                      "Nicolas Bouillot");
 
-SoapCtrlClient::SoapCtrlClient(const std::string&) : mainloop_(std2::make_unique<GlibMainLoop>()) {}
+SoapCtrlClient::SoapCtrlClient(const std::string&) : mainloop_(std::make_unique<GlibMainLoop>()) {}
 
 bool SoapCtrlClient::init() {
   switcher_control_ = new controlProxy(SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);

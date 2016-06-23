@@ -22,7 +22,7 @@
 namespace switcher {
 
 RtpSession2::RtpSession2()
-    : gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
+    : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       rtpsession_(GstUtils::make_element("rtpbin", nullptr)) {
   if (!gst_pipeline_ || !rtpsession_) {
     if (rtpsession_) gst_object_unref(rtpsession_);

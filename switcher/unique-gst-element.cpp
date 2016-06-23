@@ -18,7 +18,6 @@
  */
 
 #include "./unique-gst-element.hpp"
-#include "./std2.hpp"
 
 namespace switcher {
 bool UGstElem::renew(UGstElem& element, const std::vector<std::string>& props) {

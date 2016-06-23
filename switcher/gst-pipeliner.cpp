@@ -30,7 +30,6 @@
 #include "./quiddity-manager-impl.hpp"
 #include "./quiddity.hpp"
 #include "./scope-exit.hpp"
-#include "./std2.hpp"
 
 namespace switcher {
 GstPipeliner::GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
@@ -43,8 +42,8 @@ GstPipeliner::GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
     : on_msg_async_cb_(on_msg_async_cb),
       on_msg_sync_cb_(on_msg_sync_cb),
       on_error_cb_(on_error_cb),
-      main_loop_(std2::make_unique<GlibMainLoop>()),
-      gst_pipeline_(std2::make_unique<GstPipe>(
+      main_loop_(std::make_unique<GlibMainLoop>()),
+      gst_pipeline_(std::make_unique<GstPipe>(
           main_loop_->get_main_context(), &GstPipeliner::bus_sync_handler, this
           // [this](GstMessage *msg){
           //   if(this->on_msg_async_cb_)

@@ -18,7 +18,6 @@
 #include <gst/gst.h>
 #include <cassert>
 #include "switcher/unique-gst-element.hpp"
-//#include "switcher/std2.hpp"
 // #include "switcher/glibmainloop.hpp"
 // #include "switcher/gst-pipe.hpp"
 

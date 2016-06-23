@@ -231,7 +231,7 @@ std::unique_ptr<PJICEStreamTrans> PJStunTurn::get_ice_transport(unsigned comp_cn
                                                                 pj_ice_sess_role role) {
   // if (!stun_turn_valid_)
   //   return std::unique_ptr<PJICEStreamTrans>(nullptr);
-  auto res = std2::make_unique<PJICEStreamTrans>(ice_cfg_, comp_cnt, role);
+  auto res = std::make_unique<PJICEStreamTrans>(ice_cfg_, comp_cnt, role);
   if (!static_cast<bool>(*res.get())) res.reset(nullptr);
   std::this_thread::sleep_for(std::chrono::seconds(1));
   return res;

@@ -115,7 +115,7 @@ bool PostureMeshMerge::connect(std::string shmdata_socket_path) {
   int shmreader_id = shmreader_id_;
   shmreader_id_++;
 
-  auto reader = std2::make_unique<ShmdataFollower>(
+  auto reader = std::make_unique<ShmdataFollower>(
       this,
       shmdata_socket_path,
       [=](void* data, size_t size) {
@@ -148,7 +148,7 @@ bool PostureMeshMerge::connect(std::string shmdata_socket_path) {
                 mesh.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
               auto data_type = string(POLYGONMESH_TYPE_BASE);
               mesh_writer_.reset();
-              mesh_writer_ = std2::make_unique<ShmdataWriter>(
+              mesh_writer_ = std::make_unique<ShmdataWriter>(
                   this, make_file_name("mesh"), std::max(mesh.size() * 2, (size_t)1024), data_type);
             }
 

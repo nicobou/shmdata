@@ -17,7 +17,6 @@
  */
 
 #include "./posture_solidify.hpp"
-#include "switcher/std2.hpp"
 
 #include <iostream>
 
@@ -90,7 +89,7 @@ bool PostureSolidify::init() {
 }
 
 bool PostureSolidify::connect(std::string shmdata_socket_path) {
-  pcl_reader_ = std2::make_unique<ShmdataFollower>(
+  pcl_reader_ = std::make_unique<ShmdataFollower>(
       this,
       shmdata_socket_path,
       [=](void* data, size_t size) {
@@ -114,7 +113,7 @@ bool PostureSolidify::connect(std::string shmdata_socket_path) {
               mesh.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
             auto data_type = string(POLYGONMESH_TYPE_BASE);
             mesh_writer_.reset();
-            mesh_writer_ = std2::make_unique<ShmdataWriter>(
+            mesh_writer_ = std::make_unique<ShmdataWriter>(
                 this, make_file_name("mesh"), std::max(mesh.size() * 2, (size_t)1024), data_type);
           }
 

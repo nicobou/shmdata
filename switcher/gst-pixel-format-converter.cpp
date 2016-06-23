@@ -20,14 +20,13 @@
 #include "./gst-pixel-format-converter.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 GstPixelFormatConverter::GstPixelFormatConverter(Quiddity* quid,
                                                  const char* property_name,
                                                  const char* display_text)
     : quid_(quid),
-      gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)),
+      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       prop_name_(property_name),
       video_format_(get_formats(), 0),
       video_format_id_(quid_->pmanage<MPtr(&PContainer::make_selection)>(
@@ -117,7 +116,7 @@ bool GstPixelFormatConverter::start(const std::string& shmpath_to_convert,
                         shm_converted_.get_raw(),
                         nullptr);
   gst_pipeline_->play(true);
-  shmsink_sub_ = std2::make_unique<GstShmdataSubscriber>(
+  shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
       shm_converted_.get_raw(),
       [this](const std::string& caps) {
         this->quid_->graft_tree(".shmdata.writer." + shmpath_converted_,
@@ -127,7 +126,7 @@ bool GstPixelFormatConverter::start(const std::string& shmpath_to_convert,
         this->quid_->graft_tree(".shmdata.writer." + shmpath_converted_ + ".byte_rate",
                                 InfoTree::make(byte_rate));
       });
-  shmsrc_sub_ = std2::make_unique<GstShmdataSubscriber>(
+  shmsrc_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
       [this](const std::string& caps) {
         this->quid_->graft_tree(".shmdata.reader." + shmpath_to_convert_,
@@ -153,7 +152,7 @@ bool GstPixelFormatConverter::stop() {
     g_warning("error renewing a pixel format converter related gst element");
     return false;
   }
-  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
   return true;
 }
 
