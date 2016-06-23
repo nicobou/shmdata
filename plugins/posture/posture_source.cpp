@@ -374,9 +374,9 @@ void PostureSrc::cb_frame_depth(void* context,
     ctx->depth_height_ = height;
     char buffer[256] = "";
     sprintf(buffer,
-            "video/"
-            "x-raw,format=(string)GRAY16_BE,width=(int)%i,height=(int)%i,"
-            "framerate=30/1",
+            "video/x-raw, format=(string)GRAY16_BE, "
+            "width=(int)%i, height=(int)%i, "
+            "framerate=30/1, pixel-aspect-ratio=1/1",
             width,
             height);
 
@@ -425,9 +425,8 @@ void PostureSrc::cb_frame_rgb(void* context,
 
     char buffer[256] = "";
     sprintf(buffer,
-            "video/"
-            "x-raw,format=(string)%s,width=(int)%i,height=(int)%i,framerate="
-            "30/1",
+            "video/x-raw, format=(string)%s, width=(int)%i, "
+            "height=(int)%i, framerate=30/1, pixel-aspect-ratio=1/1",
             formatStr.c_str(),
             width,
             height);
@@ -459,9 +458,8 @@ void PostureSrc::cb_frame_ir(void* context,
 
     char buffer[256] = "";
     sprintf(buffer,
-            "video/"
-            "x-raw,format=(string)GRAY16_BE,width=(int)%i,height=(int)%i,"
-            "framerate=30/1",
+            "video/x-raw, format=(string)GRAY16_BE, width=(int)%i, height=(int)%i, "
+            "framerate=30/1, pixel-aspect-ratio=1/1",
             width,
             height);
 
