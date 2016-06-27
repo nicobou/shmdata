@@ -22,6 +22,7 @@
 
 #include <glib.h>  // logs
 #include <map>
+#include <memory>
 #include <string>
 #include "./counter-map.hpp"
 #include "./is-specialization-of.hpp"
