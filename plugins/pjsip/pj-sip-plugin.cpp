@@ -24,7 +24,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SIPPlugin,
                                      "sip",
                                      "SIP (Session Initiation Protocol)",
                                      "network",
-                                     "writer",
+                                     "occasional-writer",
                                      "Manages user sessions",
                                      "LGPL",
                                      "Nicolas Bouillot");
