@@ -247,9 +247,121 @@ bool PostureSrc::init() {
       "Downsample",
       "Activate the cloud downsampling",
       downsample_);
+  //
+  // Filtering
+  pmanage<MPtr(&PContainer::make_group)>("filtering", "Filtering", "Filtering");
 
-  pmanage<MPtr(&PContainer::make_bool)>(
+  pmanage<MPtr(&PContainer::make_parented_int)>("bilateral_filter_kernel_size",
+                                                "filtering",
+                                                [this](const int& val) {
+                                                  bilateral_filter_kernel_size_ = val;
+                                                  if (zcamera_)
+                                                    zcamera_->setBilateralFiltering(
+                                                        bilateral_filter_kernel_size_,
+                                                        bilateral_filter_sigma_pos_,
+                                                        bilateral_filter_sigma_value_,
+                                                        bilateral_filter_iterations_);
+                                                  return true;
+                                                },
+                                                [this]() { return bilateral_filter_kernel_size_; },
+                                                "Filter kernel size",
+                                                "Depth map filter kernel size",
+                                                bilateral_filter_kernel_size_,
+                                                1,
+                                                32);
+
+  pmanage<MPtr(&PContainer::make_parented_float)>("bilateral_filter_sigma_pos_",
+                                                  "filtering",
+                                                  [this](const float& val) {
+                                                    bilateral_filter_sigma_pos_ = val;
+                                                    if (zcamera_)
+                                                      zcamera_->setBilateralFiltering(
+                                                          bilateral_filter_kernel_size_,
+                                                          bilateral_filter_sigma_pos_,
+                                                          bilateral_filter_sigma_value_,
+                                                          bilateral_filter_iterations_);
+                                                    return true;
+                                                  },
+                                                  [this]() { return bilateral_filter_sigma_pos_; },
+                                                  "Filter spatial sigma",
+                                                  "Depth map filter spatial sigma",
+                                                  bilateral_filter_sigma_pos_,
+                                                  0.1,
+                                                  16.0);
+
+  pmanage<MPtr(&PContainer::make_parented_float)>(
+      "bilateral_filter_sigma_value_",
+      "filtering",
+      [this](const float& val) {
+        bilateral_filter_sigma_value_ = val;
+        if (zcamera_)
+          zcamera_->setBilateralFiltering(bilateral_filter_kernel_size_,
+                                          bilateral_filter_sigma_pos_,
+                                          bilateral_filter_sigma_value_,
+                                          bilateral_filter_iterations_);
+        return true;
+      },
+      [this]() { return bilateral_filter_sigma_value_; },
+      "Filter value sigma",
+      "Depth map filter value sigma",
+      bilateral_filter_sigma_value_,
+      1.0,
+      2000.0);
+
+  pmanage<MPtr(&PContainer::make_parented_int)>("bilateral_filter_iterations",
+                                                "filtering",
+                                                [this](const int& val) {
+                                                  bilateral_filter_iterations_ = val;
+                                                  if (zcamera_)
+                                                    zcamera_->setBilateralFiltering(
+                                                        bilateral_filter_kernel_size_,
+                                                        bilateral_filter_sigma_pos_,
+                                                        bilateral_filter_sigma_value_,
+                                                        bilateral_filter_iterations_);
+                                                  return true;
+                                                },
+                                                [this]() { return bilateral_filter_iterations_; },
+                                                "Filter iterations",
+                                                "Depth map filter iteration count",
+                                                bilateral_filter_iterations_,
+                                                1,
+                                                8);
+
+  pmanage<MPtr(&PContainer::make_parented_int)>(
+      "hole_filling_kernel_size",
+      "filtering",
+      [this](const int& val) {
+        hole_filling_kernel_size_ = val;
+        if (zcamera_)
+          zcamera_->setHoleFiltering(hole_filling_kernel_size_, hole_filling_iterations_);
+        return true;
+      },
+      [this]() { return hole_filling_kernel_size_; },
+      "Hole filling kernel size",
+      "Hole filling kernel size",
+      hole_filling_kernel_size_,
+      0,
+      4);
+
+  pmanage<MPtr(&PContainer::make_parented_int)>(
+      "hole_filling_iterations",
+      "filtering",
+      [this](const int& val) {
+        hole_filling_iterations_ = val;
+        if (zcamera_)
+          zcamera_->setHoleFiltering(hole_filling_kernel_size_, hole_filling_iterations_);
+        return true;
+      },
+      [this]() { return hole_filling_iterations_; },
+      "Hole filling iterations",
+      "Hole filling iterations",
+      hole_filling_iterations_,
+      0,
+      8);
+
+  pmanage<MPtr(&PContainer::make_parented_bool)>(
       "filter_outliers",
+      "filtering",
       [this](const bool& val) {
         if (filter_outliers_ != val && val == true) {
           filter_outliers_ = val;

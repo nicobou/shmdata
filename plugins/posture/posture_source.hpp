@@ -68,6 +68,12 @@ class PostureSrc : public Quiddity, public StartableQuiddity {
   PContainer::prop_id_t filter_mean_k_id_{0};
   double filter_stddev_mul_{1.0};
   PContainer::prop_id_t filter_stddev_mul_id_{0};
+  int bilateral_filter_kernel_size_{5};
+  double bilateral_filter_sigma_pos_{5.f};
+  double bilateral_filter_sigma_value_{1000.f};
+  int bilateral_filter_iterations_{1};
+  int hole_filling_kernel_size_{1};
+  int hole_filling_iterations_{1};
 
   Selection capture_modes_enum_{{"Default mode",
                                  "SXGA 15Hz",
