@@ -54,7 +54,9 @@ bool SDPMedia::set_port(uint port) {
   return true;
 }
 
-bool SDPMedia::add_to_sdp_description(GstSDPMessage* sdp_description, uint index) const {
+bool SDPMedia::add_to_sdp_description(GstSDPMessage* sdp_description,
+                                      uint index,
+                                      const std::string& ip_addr) const {
   if (0 == port_ || nullptr == caps_structure_) {
     g_warning("missing information for adding media to sdp description");
     return false;
@@ -72,7 +74,7 @@ bool SDPMedia::add_to_sdp_description(GstSDPMessage* sdp_description, uint index
   gst_sdp_media_set_proto(media_, "RTP/AVP");
 
   /* for the c= line */
-  gst_sdp_media_add_connection(media_, "IN", "IP4", "127.0.0.1", 16, 0);
+  gst_sdp_media_add_connection(media_, "IN", "IP4", ip_addr.c_str(), 16, 0);
 
   // sendonly
   gst_sdp_media_add_attribute(media_, "sendonly", nullptr);
@@ -142,11 +144,21 @@ bool SDPMedia::add_to_sdp_description(GstSDPMessage* sdp_description, uint index
     }
   }
   if (!first) gst_sdp_media_add_attribute(media_, "fmtp", fmtp.c_str());
+  for (auto& it : ice_candidate_values_) {
+    gst_sdp_media_add_attribute(media_, "candidate", it.c_str());
+  }
   gst_sdp_message_add_media(sdp_description, media_);
   return true;
 }
 
-SDPDescription::SDPDescription() {
+bool SDPMedia::add_ice_candidate(const std::string& candidate_value) {
+  ice_candidate_values_.push_back(candidate_value);
+  return true;
+}
+
+SDPDescription::SDPDescription() : SDPDescription("127.0.0.1") {}
+
+SDPDescription::SDPDescription(const std::string& ip_addr) : ip_addr_(ip_addr) {
   gst_sdp_message_new(&sdp_description_);
   /* some standard things first */
   gst_sdp_message_set_version(sdp_description_, "0");
@@ -158,8 +170,8 @@ SDPDescription::SDPDescription() {
                              "1",                 // a session version
                              "IN",                // a network type
                              "IP4",               // an address type
-                             "127.0.0.1");        // an address
-  gst_sdp_message_set_session_name(sdp_description_, "switcher session");
+                             ip_addr.c_str());    // an address
+  gst_sdp_message_set_session_name(sdp_description_, "switcher");
   gst_sdp_message_set_information(sdp_description_, "telepresence");
   gst_sdp_message_add_time(sdp_description_, "0", "0", nullptr);
   gst_sdp_message_add_attribute(sdp_description_, "tool", "switcher");
@@ -169,6 +181,10 @@ SDPDescription::SDPDescription() {
 
 SDPDescription::~SDPDescription() { gst_sdp_message_free(sdp_description_); }
 
+bool SDPDescription::add_msg_attribute(const std::string& name, const std::string& value) {
+  return GST_SDP_OK == gst_sdp_message_add_attribute(sdp_description_, name.c_str(), value.c_str());
+}
+
 std::string SDPDescription::get_string() {
   gchar* tmp = gst_sdp_message_as_text(sdp_description_);
   std::string res(tmp);
@@ -177,7 +193,7 @@ std::string SDPDescription::get_string() {
 }
 
 bool SDPDescription::add_media(const SDPMedia& media) {
-  if (!media.add_to_sdp_description(sdp_description_, index_)) return false;
+  if (!media.add_to_sdp_description(sdp_description_, index_, ip_addr_)) return false;
   index_++;
   return true;
 }

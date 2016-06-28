@@ -129,9 +129,9 @@ class PJCall {
   static bool release_incoming_call(call_t* call, pjsua_buddy_id id);
   static bool release_outgoing_call(call_t* call, pjsua_buddy_id id);
   static void print_sdp(const pjmedia_sdp_session* local_sdp);
-
-  static std::unique_ptr<PJICEStreamTrans> negociate_ice_transport(
-      const pjmedia_sdp_session* remote_sdp, pj_pool_t* dlg_pool);
+  static bool negotiate_ice(PJICEStreamTrans* ice_trans,
+                            const pjmedia_sdp_session* remote_sdp,
+                            pj_pool_t* dlg_pool);
 };
 
 }  // namespace switcher
