@@ -34,20 +34,19 @@ SIPPlugin* SIPPlugin::this_ = nullptr;
 std::atomic<unsigned short> SIPPlugin::sip_plugin_used_(0);
 
 SIPPlugin::SIPPlugin(const std::string&)
-    : port_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>("port",
-                                                             [this](const unsigned int& val) {
-                                                               if (val == sip_port_) return true;
-                                                               sip_port_ = val;
-                                                               return pjsip_->run<bool>([this]() {
-                                                                 return start_sip_transport();
-                                                               });
-                                                             },
-                                                             [this]() { return sip_port_; },
-                                                             "SIP Port",
-                                                             "SIP port used when registering",
-                                                             sip_port_,
-                                                             0u,
-                                                             65535u)) {}
+    : port_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
+          "port",
+          [this](const unsigned int& val) {
+            if (val == sip_port_ && transport_id_ != 1) return true;
+            sip_port_ = val;
+            return pjsip_->run<bool>([this]() { return start_sip_transport(); });
+          },
+          [this]() { return sip_port_; },
+          "SIP Port",
+          "SIP port used when registering",
+          sip_port_,
+          0u,
+          65535u)) {}
 
 SIPPlugin::~SIPPlugin() {
   if (!i_m_the_one_) return;
@@ -136,7 +135,8 @@ void SIPPlugin::apply_configuration() {
 bool SIPPlugin::start_sip_transport() {
   if (-1 != transport_id_) pjsua_transport_close(transport_id_, PJ_FALSE);
   if (NetUtils::is_used(sip_port_)) {
-    g_warning("SIP port cannot be binded (%u)", sip_port_);
+    g_warning("SIP port cannot be bound (%u)", sip_port_);
+    g_message("ERROR: SIP port is not available (%u)", sip_port_);
     return false;
   }
   pjsua_transport_config cfg;
@@ -145,6 +145,8 @@ bool SIPPlugin::start_sip_transport() {
   pj_status_t status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, &transport_id_);
   if (status != PJ_SUCCESS) {
     g_warning("Error creating transport");
+    g_message("ERROR: SIP port is not available (%u)", sip_port_);
+    transport_id_ = -1;
     return false;
   }
   return true;

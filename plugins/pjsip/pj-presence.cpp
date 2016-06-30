@@ -98,6 +98,7 @@ PJPresence::PJPresence() {
         status_.select(val);
         if (-1 == account_id_) {
           g_warning("cannot send online status when not registered");
+          g_message("ERROR:cannot send online status when not registered");
           return true;
         }
         SIPPlugin::this_->pjsip_->run([this]() { change_online_status(status_.get()); });
@@ -143,7 +144,7 @@ gboolean PJPresence::register_account_wrapped(gchar* user, gchar* password, void
     return FALSE;
   }
   if (-1 == SIPPlugin::this_->transport_id_) {
-    g_message("ERROR:cannot register without connection to server");
+    g_message("ERROR:cannot register, SIP port is not available (%u)", SIPPlugin::this_->sip_port_);
     return FALSE;
   }
   SIPPlugin::this_->pjsip_->run(
@@ -356,7 +357,13 @@ void PJPresence::on_registration_state(pjsua_acc_id acc_id, pjsua_reg_info* info
     return;
   }
   std::unique_lock<std::mutex> lock(context->registration_mutex_);
-  if (PJ_SUCCESS != info->cbparam->status) {
+  // SIP code higher to 299 are error code
+  if (PJ_SUCCESS != info->cbparam->status || info->cbparam->code > 299) {
+    g_message(
+        "ERROR: registration failed "
+        "(%.*s)",
+        static_cast<int>(info->cbparam->reason.slen),
+        info->cbparam->reason.ptr);
     g_warning("registration failed (%.*s)",
               static_cast<int>(info->cbparam->reason.slen),
               info->cbparam->reason.ptr);
