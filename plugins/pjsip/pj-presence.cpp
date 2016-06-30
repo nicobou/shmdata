@@ -359,11 +359,19 @@ void PJPresence::on_registration_state(pjsua_acc_id acc_id, pjsua_reg_info* info
   std::unique_lock<std::mutex> lock(context->registration_mutex_);
   // SIP code higher to 299 are error code
   if (PJ_SUCCESS != info->cbparam->status || info->cbparam->code > 299) {
-    g_message(
-        "ERROR: registration failed "
-        "(%.*s)",
-        static_cast<int>(info->cbparam->reason.slen),
-        info->cbparam->reason.ptr);
+    if (info->cbparam->code == 408) {
+      g_message(
+          "ERROR: registration failed, SIP server did not answer"
+          "(%.*s)",
+          static_cast<int>(info->cbparam->reason.slen),
+          info->cbparam->reason.ptr);
+    } else {
+      g_message(
+          "ERROR: registration failed "
+          "(%.*s)",
+          static_cast<int>(info->cbparam->reason.slen),
+          info->cbparam->reason.ptr);
+    }
     g_warning("registration failed (%.*s)",
               static_cast<int>(info->cbparam->reason.slen),
               info->cbparam->reason.ptr);
