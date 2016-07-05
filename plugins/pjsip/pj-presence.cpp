@@ -203,7 +203,7 @@ void PJPresence::register_account(const std::string& sip_user, const std::string
   SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
       SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
   sip_local_user_ =
-      std::string("sip:") + sip_user + +":" + std::to_string(SIPPlugin::this_->sip_port_);
+      std::string("sip:") + sip_user + ":" + std::to_string(SIPPlugin::this_->sip_port_);
 }
 
 gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */, void* user_data) {
@@ -259,11 +259,13 @@ void PJPresence::add_buddy(const std::string& sip_user) {
   std::string buddy_full_uri("sip:" + sip_user  // + ";transport=tcp"
                              );
   if (pjsua_verify_url(buddy_full_uri.c_str()) != PJ_SUCCESS) {
-    g_message("ERROR:Invalid buddy URI (%s)", sip_user.c_str());
+    g_message("ERROR:Invalid buddy URI (sip:%s)", sip_user.c_str());
     return;
   }
+
   if (buddy_id_.end() != buddy_id_.find(sip_user)) {
     g_message("ERROR:buddy %s already added", sip_user.c_str());
+    g_warning("buddy %s already added", sip_user.c_str());
     return;
   }
 

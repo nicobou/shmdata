@@ -178,6 +178,9 @@ pj_bool_t PJCall::on_rx_request(pjsip_rx_data* rdata) {
 }
 
 void PJCall::on_inv_state_disconnected(call_t* call, pjsip_inv_session* inv, pjsua_buddy_id id) {
+  g_message("ERROR:Call disconnected. (%.*s)",
+            static_cast<int>(inv->cause_text.slen),
+            inv->cause_text.ptr);
   g_debug("Call disconnected. Reason=%d (%.*s)",
           inv->cause,
           static_cast<int>(inv->cause_text.slen),
@@ -724,9 +727,16 @@ bool PJCall::make_call(std::string dst_uri) {
     g_warning("cannot call %s (already calling)", dst_uri.c_str());
     return false;
   }
+  auto& sip_local_user = SIPPlugin::this_->sip_presence_->sip_local_user_;
+  if (std::string("sip:") + dst_uri ==
+      std::string(sip_local_user, 0, sip_local_user.find_last_of(':'))) {
+    g_message("ERROR:cannot self call");
+    g_warning("cannot self call");
+    return false;
+  }
+
   pj_str_t local_uri;
-  std::string local_uri_tmp(SIPPlugin::this_->sip_presence_->sip_local_user_  // + ";transport=tcp"
-                            );
+  std::string local_uri_tmp(sip_local_user);
   pj_cstr(&local_uri, local_uri_tmp.c_str());
   call_t* cur_call = nullptr;
   pjsip_dialog* dlg = nullptr;
@@ -734,8 +744,7 @@ bool PJCall::make_call(std::string dst_uri) {
   pjsip_tx_data* tdata = nullptr;
   pj_status_t status;
   pj_str_t dest_str;
-  std::string tmp_dest_uri("sip:" + dst_uri  // + ";transport=tcp"
-                           );
+  std::string tmp_dest_uri("sip:" + dst_uri);
   pj_cstr(&dest_str, tmp_dest_uri.c_str());
   auto id = pjsua_buddy_find(&dest_str);
   if (PJSUA_INVALID_ID == id) {
@@ -967,10 +976,8 @@ gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
         return false;
       });
 
-      // stop here, do not hangup incoming call, except for self-call.
-      if (SIPPlugin::this_->sip_presence_->sip_local_user_.find(sip_url) == std::string::npos) {
-        return TRUE;
-      }
+      // stop here, do not hangup incoming call.
+      return TRUE;
     }
 
     auto it_inc = std::find_if(
@@ -1001,23 +1008,6 @@ void PJCall::make_hang_up(pjsip_inv_session* inv, std::string sip_url) {
 
   status = pjsip_inv_end_session(inv, 603, nullptr, &tdata);
 
-  if (SIPPlugin::this_->sip_presence_->sip_local_user_.find(sip_url) != std::string::npos) {
-    // finding id of the buddy related to the call
-    call_t* call = (call_t*)inv->mod_data[mod_siprtp_.id];
-    auto endpos = call->peer_uri.find('@');
-    auto beginpos = call->peer_uri.find("sip:");
-    if (0 == beginpos)
-      beginpos = 4;
-    else
-      beginpos = 0;
-
-    auto id = SIPPlugin::this_->sip_presence_->get_id_from_buddy_name(
-        std::string(call->peer_uri, beginpos, endpos));
-
-    if (!release_outgoing_call(call, id)) release_incoming_call(call, id);
-    return;
-  }
-
   if (status == PJ_SUCCESS && tdata != nullptr)
     pjsip_inv_send_msg(inv, tdata);
   else
@@ -1042,6 +1032,14 @@ gboolean PJCall::attach_shmdata_to_contact(const gchar* shmpath,
 void PJCall::make_attach_shmdata_to_contact(const std::string& shmpath,
                                             const std::string& contact_uri,
                                             bool attach) {
+  auto& sip_local_user = SIPPlugin::this_->sip_presence_->sip_local_user_;
+  if (std::string("sip:") + contact_uri ==
+      std::string(sip_local_user, 0, sip_local_user.find_last_of(':'))) {
+    g_message("ERROR:cannot attach shmdata to self");
+    g_warning("cannot attach shmdata to self");
+    return;
+  }
+
   pj_str_t contact;
   std::string tmpstr("sip:" + contact_uri);
   pj_cstr(&contact, tmpstr.c_str());
