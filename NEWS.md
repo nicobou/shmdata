@@ -2,6 +2,23 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.14 (2016-07-06)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* Fixed stun negotiation for SIP. NAT traversal works now
+* c++14 support
+* Posture_Source: added new filtering parameters (bilateral filter and hole filling)
+
+Bug fixes:
+* prevent self call through SIP
+* fix sometimes failing check_rtp_session
+* reduce registration timeout to 3 seconds when server name is wrong
+* message to user when SIP port cannot be bound plus other messages
+* add pixel-aspect-ratio to caps in posture_source.cpp
+* fix v4l2src issue when error from the GStreamer pipeline
+
 switcher 0.8.12 (2016-06-21)
 ---------------------------
 This is an official release in the 0.8 stable series.
