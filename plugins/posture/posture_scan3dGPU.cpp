@@ -1,5 +1,4 @@
 #include "./posture_scan3dGPU.hpp"
-#include "switcher/std2.hpp"
 
 #include <functional>
 #include <iostream>
@@ -8,7 +7,6 @@
 #include <boost/make_shared.hpp>
 
 #include "switcher/scope-exit.hpp"
-#include "switcher/std2.hpp"
 
 using namespace std;
 using namespace posture;
@@ -24,8 +22,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureScan3DGPU,
                                      "Emmanuel Durand");
 
 PostureScan3DGPU::PostureScan3DGPU(const std::string&) {
-  calibration_reader_ = std2::make_unique<CalibrationReader>("default.kvc");
-  register_ = std2::make_unique<Register>();
+  calibration_reader_ = std::make_unique<CalibrationReader>("default.kvc");
+  register_ = std::make_unique<Register>();
 }
 
 PostureScan3DGPU::~PostureScan3DGPU() {}
@@ -197,7 +195,7 @@ void PostureScan3DGPU::update_loop() {
           mesh_serialized.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
         string data_type = compress_multicore_ ? POLYGONMESH_TYPE_MULTIMESH : POLYGONMESH_TYPE_BASE;
         mesh_writer_.reset();
-        mesh_writer_ = std2::make_unique<ShmdataWriter>(
+        mesh_writer_ = std::make_unique<ShmdataWriter>(
             this, make_file_name("mesh"), mesh_serialized.size() * 2, data_type);
 
         if (!mesh_writer_) {
@@ -213,7 +211,7 @@ void PostureScan3DGPU::update_loop() {
       if (!texture_writer_ ||
           texture.size() > texture_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
         texture_writer_.reset();
-        texture_writer_ = std2::make_unique<ShmdataWriter>(
+        texture_writer_ = std::make_unique<ShmdataWriter>(
             this,
             make_file_name("texture"),
             texture.size() * 2,

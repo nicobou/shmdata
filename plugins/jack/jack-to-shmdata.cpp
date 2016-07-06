@@ -21,7 +21,6 @@
 #include <gst/gst.h>
 #include <string.h>
 #include "switcher/quiddity-manager-impl.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackToShmdata,
@@ -131,7 +130,7 @@ bool JackToShmdata::start() {
       std::to_string(num_channels_) + ", channel-mask=(bitmask)0x0");
 
   std::string shmpath = make_file_name("audio");
-  shm_ = std2::make_unique<ShmdataWriter>(
+  shm_ = std::make_unique<ShmdataWriter>(
       this, shmpath, buf_.size() * sizeof(jack_sample_t), data_type);
   if (!shm_.get()) {
     g_warning("JackToShmdata failed to start");

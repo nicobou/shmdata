@@ -40,8 +40,6 @@ class QuiddityManager_Impl {
   typedef void (*quiddity_created_hook)(const std::string& nick_name, void* user_data);
   typedef void (*quiddity_removed_hook)(const std::string& nick_name, void* user_data);
 
-  //  static QuiddityManager_Impl::ptr make_manager();    // will get name
-  //  "default"
   static QuiddityManager_Impl::ptr make_manager(QuiddityManager* root_manager,
                                                 const std::string& name = "default");
   QuiddityManager_Impl() = delete;

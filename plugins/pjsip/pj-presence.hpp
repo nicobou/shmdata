@@ -56,7 +56,7 @@ class PJPresence {
   // sip registration status (read only)
   bool registered_{false};
   // account info
-  std::string sip_local_user_{};
+  std::string sip_local_user_{};  // full uri like 'sip:me@mydomain.ca:5060'
   pj_pool_t* acc_info_pool_{nullptr};
   std::map<std::string, pjsua_buddy_id> buddy_id_{};
   // registration

@@ -50,9 +50,9 @@ bool PostureDisplay::init() {
 bool PostureDisplay::connect(std::string shmdata_socket_path) {
   if (display_ != nullptr) return false;
 
-  display_ = std2::make_unique<Display>(shmdata_socket_path);
+  display_ = std::make_unique<Display>(shmdata_socket_path);
 
-  reader_ = std2::make_unique<ShmdataFollower>(
+  reader_ = std::make_unique<ShmdataFollower>(
       this,
       shmdata_socket_path,
       [=](void* data, size_t size) {

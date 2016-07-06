@@ -26,7 +26,6 @@
 #include "./rtp-receiver.hpp"
 #include "./rtp-sender.hpp"
 #include "./safe-bool-idiom.hpp"
-#include "./std2.hpp"
 
 namespace switcher {
 class RtpSession2 : public SafeBoolIdiom {

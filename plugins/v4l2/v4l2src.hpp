@@ -26,7 +26,6 @@
 #include "switcher/gst-video-codec.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/startable-quiddity.hpp"
-#include "switcher/std2.hpp"
 #include "switcher/unique-gst-element.hpp"
 
 namespace switcher {
@@ -150,6 +149,7 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   static std::string pixel_format_to_string(unsigned pf_id);
   bool is_current_pixel_format_raw_video() const;
   void set_shm_suffix();
+  void on_gst_error(GstObject*, GError* err);
   // copy/paste from gstv4l2object.c for converting v4l2 pixel formats
   // to GstStructure (and then caps)
   static GstStructure* gst_v4l2_object_v4l2fourcc_to_structure(guint32 fourcc);

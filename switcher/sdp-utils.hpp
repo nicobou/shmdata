@@ -23,6 +23,7 @@
 #include <gst/gst.h>
 #include <gst/sdp/gstsdpmessage.h>
 #include <string>
+#include <vector>
 
 namespace switcher {
 class SDPDescription;
@@ -37,26 +38,33 @@ class SDPMedia {
   SDPMedia(const SDPMedia&) = delete;
   bool set_media_info_from_caps(const GstCaps* media_caps);  // caps from a gst RTP payloader
   bool set_port(uint port);
+  bool add_ice_candidate(const std::string& candidate_value);
 
  private:
   GstSDPMedia* media_{nullptr};
   GstStructure* caps_structure_{nullptr};
   uint port_{0};  // "0" means disabled media
-  bool add_to_sdp_description(GstSDPMessage* sdp_description, uint index) const;
+  std::vector<std::string> ice_candidate_values_{};
+  bool add_to_sdp_description(GstSDPMessage* sdp_description,
+                              uint index,
+                              const std::string& ip_addr) const;
 };
 
 class SDPDescription {
  public:
   SDPDescription();
+  SDPDescription(const std::string& ip_addr);
   ~SDPDescription();
   SDPDescription& operator=(const SDPDescription&) = delete;
   SDPDescription(const SDPDescription&) = delete;
 
   bool add_media(const SDPMedia& media);
+  bool add_msg_attribute(const std::string& name, const std::string& value);
   std::string get_string();
 
  private:
   GstSDPMessage* sdp_description_{nullptr};
+  std::string ip_addr_;
   uint index_{0};
 };
 

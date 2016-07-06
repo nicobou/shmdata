@@ -178,6 +178,9 @@ pj_bool_t PJCall::on_rx_request(pjsip_rx_data* rdata) {
 }
 
 void PJCall::on_inv_state_disconnected(call_t* call, pjsip_inv_session* inv, pjsua_buddy_id id) {
+  g_message("ERROR:Call disconnected. (%.*s)",
+            static_cast<int>(inv->cause_text.slen),
+            inv->cause_text.ptr);
   g_debug("Call disconnected. Reason=%d (%.*s)",
           inv->cause,
           static_cast<int>(inv->cause_text.slen),
@@ -388,12 +391,16 @@ void PJCall::call_on_media_update(pjsip_inv_session* inv, pj_status_t status) {
     g_warning("SDP negotiation failed");
     return;
   }
-  // get stream definition from the SDP, (local contains negociated data)
+  // get stream definition from the SDP, (local contains negotiated data)
   pjmedia_sdp_neg_get_active_local(inv->neg, &local_sdp);
   pjmedia_sdp_neg_get_active_remote(inv->neg, &remote_sdp);
   print_sdp(local_sdp);
   print_sdp(remote_sdp);
-  call->ice_trans_send_ = negociate_ice_transport(remote_sdp, inv->dlg->pool);
+  if (call->ice_trans_send_ &&
+      !negotiate_ice(call->ice_trans_send_.get(), remote_sdp, inv->dlg->pool))
+    g_warning("ice negotiation as sender failed");
+  if (call->ice_trans_ && !negotiate_ice(call->ice_trans_.get(), remote_sdp, inv->dlg->pool))
+    g_warning("ice negotiation as receiver failed");
   // sending streams
   for (uint i = 0; i < call->media.size(); i++) {
     if (PJCallUtils::is_send_media(local_sdp->media[i])) {
@@ -416,7 +423,7 @@ void PJCall::call_on_media_update(pjsip_inv_session* inv, pj_status_t status) {
           SIPPlugin::this_->pjsip_->run([&]() {
             if (!call->ice_trans_send_->sendto(
                     comp_id, data, size, def_addr, pj_sockaddr_get_len(def_addr))) {
-              g_warning("issue sending data with ICE");
+              g_debug("issue sending data with ICE");
             }
           });
         });
@@ -516,6 +523,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
   // checking number of transport to create for receiving
   // and creating transport for receiving data offered
   std::vector<pjmedia_sdp_media*> media_to_receive;
+
   for (unsigned int media_index = 0; media_index < offer->media_count; media_index++) {
     bool recv = false;
     pjmedia_sdp_media* tmp_media = nullptr;
@@ -527,6 +535,19 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
         recv = true;
       }
     }
+    // checking remote ICE candidate(s) and remove them from answer
+    if (nullptr != tmp_media) {
+      std::vector<pjmedia_sdp_attr*> attr_to_remove;
+      for (unsigned int j = 0; j < tmp_media->attr_count; j++) {
+        if (0 == pj_strcmp2(&tmp_media->attr[j]->name, "candidate")) {
+          attr_to_remove.push_back(tmp_media->attr[j]);
+        }
+      }
+      for (auto& it : attr_to_remove) {
+        pjmedia_sdp_media_remove_attr(tmp_media, it);
+      }
+    }
+    // save media for the answer
     if (recv && nullptr != tmp_media) {
       media_to_receive.push_back(pjmedia_sdp_media_clone(dlg->pool, tmp_media));
       call->media.emplace_back();
@@ -536,7 +557,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
                                                                      PJ_ICE_SESS_ROLE_CONTROLLED);
   if (!call->ice_trans_) g_warning("ICE transport initialization failed");
   // initializing shmdata writers and linking with ICE transport
-  call->recv_rtp_session_ = std2::make_unique<RtpSession2>();
+  call->recv_rtp_session_ = std::make_unique<RtpSession2>();
   for (auto& it : media_to_receive) {
     auto shm_prefix = SIPPlugin::this_->get_file_name_prefix() +
                       SIPPlugin::this_->get_manager_name() + "_" + SIPPlugin::this_->get_name() +
@@ -545,10 +566,10 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     auto rtp_shmpath = shm_prefix + "rtp-" + media_label;
     auto rtp_caps = PJCallUtils::get_rtp_caps(it);
     if (rtp_caps.empty()) rtp_caps = "unknown_data_type";
-    call->rtp_writers_.emplace_back(std2::make_unique<ShmdataWriter>(SIPPlugin::this_,
-                                                                     rtp_shmpath,
-                                                                     9000,  // ethernet jumbo frame
-                                                                     rtp_caps));
+    call->rtp_writers_.emplace_back(std::make_unique<ShmdataWriter>(SIPPlugin::this_,
+                                                                    rtp_shmpath,
+                                                                    9000,  // Ethernet jumbo frame
+                                                                    rtp_caps));
     // uncomment the following in order to get rtp shmdata shown in scenic:
     // SIPPlugin::this_->graft_tree(
     //     std::string(".shmdata.writer.") + rtp_shmpath + ".uri",
@@ -560,13 +581,13 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     });
     // setting a decoder for this shmdata
     auto peer_uri = call->peer_uri;
-    call->rtp_receivers_.emplace_back(std2::make_unique<RTPReceiver>(
+    call->rtp_receivers_.emplace_back(std::make_unique<RTPReceiver>(
         call->recv_rtp_session_.get(),
         rtp_shmpath,
         [=](GstElement* el, const std::string& media_type, const std::string&) {
           auto shmpath = shm_prefix + media_label + "-" + media_type;
           g_object_set(G_OBJECT(el), "socket-path", shmpath.c_str(), nullptr);
-          call->shm_subs_.emplace_back(std2::make_unique<GstShmdataSubscriber>(
+          call->shm_subs_.emplace_back(std::make_unique<GstShmdataSubscriber>(
               el,
               [=](const std::string& caps) {
                 SIPPlugin::this_->graft_tree(
@@ -629,12 +650,12 @@ pj_status_t PJCall::create_sdp_answer(pj_pool_t* pool,
       static_cast<pjmedia_sdp_session*>(pj_pool_zalloc(pool, sizeof(pjmedia_sdp_session)));
   pj_time_val tv;
   pj_gettimeofday(&tv);
-  pj_cstr(&sdp->origin.user, "pjsip-siprtp");
+  pj_cstr(&sdp->origin.user, "-");
   sdp->origin.version = sdp->origin.id = tv.sec + 2208988800UL;
   pj_cstr(&sdp->origin.net_type, "IN");
   pj_cstr(&sdp->origin.addr_type, "IP4");
   sdp->origin.addr = SIPPlugin::this_->sip_calls_->local_addr_;
-  pj_cstr(&sdp->name, "pjsip");
+  pj_cstr(&sdp->name, "switcher");
   sdp->conn = static_cast<pjmedia_sdp_conn*>(pj_pool_zalloc(pool, sizeof(pjmedia_sdp_conn)));
   pj_cstr(&sdp->conn->net_type, "IN");
   pj_cstr(&sdp->conn->addr_type, "IP4");
@@ -663,19 +684,6 @@ pj_status_t PJCall::create_sdp_answer(pj_pool_t* pool,
   for (unsigned i = 0; i < media_to_receive.size(); i++) {
     // getting offer media to receive
     pjmedia_sdp_media* sdp_media = media_to_receive[i];
-    // for (unsigned u = 0; u < sdp_media->desc.fmt_count;) {
-    //   bool remove_it = false;
-    //   // // removing unassigned payload type (ekiga)
-    //   // unsigned pt = 0;
-    //   // pt = pj_strtoul(&sdp_media->desc.fmt[u]);
-    //   // if (77 <= pt && pt <= 95)
-    //   //   remove_it = true;
-    //   // apply removal if necessary
-    //   if (remove_it)
-    //     remove_from_sdp_media(sdp_media, u);
-    //   else
-    //     u++;
-    // }
     // set port
     sdp_media->desc.port = default_ports[i];
     for (auto& it : candidates[i]) {
@@ -719,9 +727,16 @@ bool PJCall::make_call(std::string dst_uri) {
     g_warning("cannot call %s (already calling)", dst_uri.c_str());
     return false;
   }
+  auto& sip_local_user = SIPPlugin::this_->sip_presence_->sip_local_user_;
+  if (std::string("sip:") + dst_uri ==
+      std::string(sip_local_user, 0, sip_local_user.find_last_of(':'))) {
+    g_message("ERROR:cannot self call");
+    g_warning("cannot self call");
+    return false;
+  }
+
   pj_str_t local_uri;
-  std::string local_uri_tmp(SIPPlugin::this_->sip_presence_->sip_local_user_  // + ";transport=tcp"
-                            );
+  std::string local_uri_tmp(sip_local_user);
   pj_cstr(&local_uri, local_uri_tmp.c_str());
   call_t* cur_call = nullptr;
   pjsip_dialog* dlg = nullptr;
@@ -729,8 +744,7 @@ bool PJCall::make_call(std::string dst_uri) {
   pjsip_tx_data* tdata = nullptr;
   pj_status_t status;
   pj_str_t dest_str;
-  std::string tmp_dest_uri("sip:" + dst_uri  // + ";transport=tcp"
-                           );
+  std::string tmp_dest_uri("sip:" + dst_uri);
   pj_cstr(&dest_str, tmp_dest_uri.c_str());
   auto id = pjsua_buddy_find(&dest_str);
   if (PJSUA_INVALID_ID == id) {
@@ -744,7 +758,7 @@ bool PJCall::make_call(std::string dst_uri) {
     return false;
   }
   // Find unused call slot
-  outgoing_call_.emplace_back(std2::make_unique<call_t>());
+  outgoing_call_.emplace_back(std::make_unique<call_t>());
   cur_call = outgoing_call_.back().get();
   // Create UAC dialog
   status = pjsip_dlg_create_uac(pjsip_ua_instance(),
@@ -823,18 +837,26 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
   }
   auto paths = SIPPlugin::this_->tree<MPtr(&InfoTree::copy_leaf_values)>(
       std::string(".buddies." + std::to_string(id) + ".connections"));
-  // std::for_each(paths.begin(), paths.end(),
-  //               [&] (const std::string &val){
-  //                 g_print("----------------------- %s\n", val.c_str());
-  //               });
   if (paths.empty()) return false;
-  SDPDescription desc;
-  gint port = 18000;  // arbitrary first port to propose (must be divisible by two)
+  // creating ice transport for sending
+  call->ice_trans_send_ =
+      SIPPlugin::this_->stun_turn_->get_ice_transport(paths.size(), PJ_ICE_SESS_ROLE_CONTROLLING);
+  if (!call->ice_trans_send_) {
+    g_warning("cannot init ICE transport for sending");
+    return false;
+  }
+  // making SDP description
+  SDPDescription desc(call->ice_trans_send_->get_first_candidate_host());
+  // adding ICE ufrag and pwd to sdp session
+  auto ufrag_pwd = call->ice_trans_send_->get_ufrag_and_passwd();
+  if (!desc.add_msg_attribute("ice-ufrag", std::string(ufrag_pwd.first.ptr, ufrag_pwd.first.slen)))
+    g_warning("issue adding ice-ufrag");
+  if (!desc.add_msg_attribute("ice-pwd", std::string(ufrag_pwd.second.ptr, ufrag_pwd.second.slen)))
+    g_warning("issue adding ice-pwd");
+  // adding media and candidate lines to each the media
+  auto default_ports = call->ice_trans_send_->get_first_candidate_ports();
+  auto candidates = call->ice_trans_send_->get_components();
   for (auto& it : paths) {
-    // std::string data = manager->
-    //     use_tree<MPtr(&InfoTree::branch_read_data<std::string>)>(
-    //         std::string("siprtp"),
-    //         std::string("rtp_caps.") + it);
     std::string rtpcaps;
     auto reader = readers_.find(it);
     if (reader != readers_.cend() && reader->second) {
@@ -849,14 +871,16 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
     std::string label = tok;
     while (std::getline(ss, tok, ' ')) label += tok;
     rtpcaps += ", media-label=(string)" + label;
-    // g_print("rtpssession caps: %s \n shmdataToCb: %s\n", data.c_str(),
-    // rtpcaps.c_str());
     GstCaps* caps = gst_caps_from_string(rtpcaps.c_str());
     On_scope_exit { gst_caps_unref(caps); };
     SDPMedia media;
     media.set_media_info_from_caps(caps);
-    media.set_port(port);
-    port += 2;
+    media.set_port(default_ports.back());
+    for (auto& it : candidates.back()) {
+      media.add_ice_candidate(it);
+    }
+    default_ports.pop_back();
+    candidates.pop_back();
     if (!desc.add_media(media)) {
       g_warning("a media has not been added to the SDP description");
     } else {
@@ -868,6 +892,7 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
     g_warning("no valid media stream found, aborting call");
     return false;
   }
+  // checking produced SDP
   std::string desc_str = desc.get_string();
   if (desc_str.empty()) {
     g_warning("%s: empty SDP description", __FUNCTION__);
@@ -951,10 +976,8 @@ gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
         return false;
       });
 
-      // stop here, do not hangup incoming call, except for self-call.
-      if (SIPPlugin::this_->sip_presence_->sip_local_user_.find(sip_url) == std::string::npos) {
-        return TRUE;
-      }
+      // stop here, do not hangup incoming call.
+      return TRUE;
     }
 
     auto it_inc = std::find_if(
@@ -985,23 +1008,6 @@ void PJCall::make_hang_up(pjsip_inv_session* inv, std::string sip_url) {
 
   status = pjsip_inv_end_session(inv, 603, nullptr, &tdata);
 
-  if (SIPPlugin::this_->sip_presence_->sip_local_user_.find(sip_url) != std::string::npos) {
-    // finding id of the buddy related to the call
-    call_t* call = (call_t*)inv->mod_data[mod_siprtp_.id];
-    auto endpos = call->peer_uri.find('@');
-    auto beginpos = call->peer_uri.find("sip:");
-    if (0 == beginpos)
-      beginpos = 4;
-    else
-      beginpos = 0;
-
-    auto id = SIPPlugin::this_->sip_presence_->get_id_from_buddy_name(
-        std::string(call->peer_uri, beginpos, endpos));
-
-    if (!release_outgoing_call(call, id)) release_incoming_call(call, id);
-    return;
-  }
-
   if (status == PJ_SUCCESS && tdata != nullptr)
     pjsip_inv_send_msg(inv, tdata);
   else
@@ -1026,6 +1032,14 @@ gboolean PJCall::attach_shmdata_to_contact(const gchar* shmpath,
 void PJCall::make_attach_shmdata_to_contact(const std::string& shmpath,
                                             const std::string& contact_uri,
                                             bool attach) {
+  auto& sip_local_user = SIPPlugin::this_->sip_presence_->sip_local_user_;
+  if (std::string("sip:") + contact_uri ==
+      std::string(sip_local_user, 0, sip_local_user.find_last_of(':'))) {
+    g_message("ERROR:cannot attach shmdata to self");
+    g_warning("cannot attach shmdata to self");
+    return;
+  }
+
   pj_str_t contact;
   std::string tmpstr("sip:" + contact_uri);
   pj_cstr(&contact, tmpstr.c_str());
@@ -1040,7 +1054,7 @@ void PJCall::make_attach_shmdata_to_contact(const std::string& shmpath,
                                      false);  // do not signal since the branch will be re-grafted
     if (!tree) tree = InfoTree::make();
     if (readers_.find(shmpath) == readers_.cend()) {
-      readers_.emplace(shmpath, std2::make_unique<RTPSender>(&rtp_session_, shmpath, 1400));
+      readers_.emplace(shmpath, std::make_unique<RTPSender>(&rtp_session_, shmpath, 1400));
       reader_ref_count_[shmpath] = 1;
     } else {
       ++reader_ref_count_[shmpath];
@@ -1071,17 +1085,17 @@ void PJCall::call_on_rx_offer(pjsip_inv_session* /*inv*/, const pjmedia_sdp_sess
   // print_sdp(offer);
 }
 
-std::unique_ptr<PJICEStreamTrans> PJCall::negociate_ice_transport(
-    const pjmedia_sdp_session* remote_sdp, pj_pool_t* dlg_pool) {
-  std::unique_ptr<PJICEStreamTrans> res;
+bool PJCall::negotiate_ice(PJICEStreamTrans* ice_trans,
+                           const pjmedia_sdp_session* remote_sdp,
+                           pj_pool_t* dlg_pool) {
   // checking ICE
   pjmedia_sdp_attr* ufrag =
       pjmedia_sdp_attr_find2(remote_sdp->attr_count, remote_sdp->attr, "ice-ufrag", nullptr);
-  if (nullptr == ufrag) return res;
+  if (nullptr == ufrag) return false;
   g_debug("ICE ufrag received: %s", std::string(ufrag->value.ptr, 0, ufrag->value.slen).c_str());
   pjmedia_sdp_attr* pwd =
       pjmedia_sdp_attr_find2(remote_sdp->attr_count, remote_sdp->attr, "ice-pwd", nullptr);
-  if (nullptr == pwd) return res;
+  if (nullptr == pwd) return false;
   g_debug("ICE pwd received: %s", std::string(pwd->value.ptr, 0, pwd->value.slen).c_str());
   // candidates
   unsigned cand_cnt = 0;
@@ -1119,7 +1133,7 @@ std::unique_ptr<PJICEStreamTrans> PJCall::negociate_ice_transport(
                          type);
         if (cnt != 7) {
           g_warning("error: Invalid ICE candidate line");
-          return res;
+          return false;
         }
         if (strcmp(type, "host") == 0)
           cand->type = PJ_ICE_CAND_TYPE_HOST;
@@ -1129,7 +1143,7 @@ std::unique_ptr<PJICEStreamTrans> PJCall::negociate_ice_transport(
           cand->type = PJ_ICE_CAND_TYPE_RELAYED;
         else {
           g_warning("Error: invalid candidate type '%s'", type);
-          return res;
+          return false;
         }
         cand->comp_id = (pj_uint8_t)comp_id;
         pj_strdup2(dlg_pool, &cand->foundation, foundation);
@@ -1147,20 +1161,13 @@ std::unique_ptr<PJICEStreamTrans> PJCall::negociate_ice_transport(
       }
     }
   }
-  if (0 == cand_cnt) return res;
-  auto num_media_to_send = std::accumulate(sending_medias.begin(), sending_medias.end(), 0u);
-  res = SIPPlugin::this_->stun_turn_->get_ice_transport(num_media_to_send,
-                                                        PJ_ICE_SESS_ROLE_CONTROLLING);
-  if (!res) {
-    g_warning("cannot init ICE transport for sending, %u", remote_sdp->media_count);
-    return res;
-  }
-  if (!res->start_nego(&ufrag->value, &pwd->value, cand_cnt, candidates)) {
+  if (0 == cand_cnt) return false;
+
+  if (!ice_trans->start_nego(&ufrag->value, &pwd->value, cand_cnt, candidates)) {
     g_warning("Error starting ICE negotiation");
-    res.reset(nullptr);
-    return res;
+    return false;
   }
-  return res;
+  return true;
 }
 
 }  // namespace switcher

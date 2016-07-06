@@ -17,7 +17,6 @@
 
 #include "./pj-sip-plugin.hpp"
 #include "switcher/net-utils.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 SWITCHER_DECLARE_PLUGIN(SIPPlugin);
@@ -25,7 +24,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SIPPlugin,
                                      "sip",
                                      "SIP (Session Initiation Protocol)",
                                      "network",
-                                     "writer",
+                                     "occasional-writer",
                                      "Manages user sessions",
                                      "LGPL",
                                      "Nicolas Bouillot");
@@ -35,20 +34,19 @@ SIPPlugin* SIPPlugin::this_ = nullptr;
 std::atomic<unsigned short> SIPPlugin::sip_plugin_used_(0);
 
 SIPPlugin::SIPPlugin(const std::string&)
-    : port_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>("port",
-                                                             [this](const unsigned int& val) {
-                                                               if (val == sip_port_) return true;
-                                                               sip_port_ = val;
-                                                               return pjsip_->run<bool>([this]() {
-                                                                 return start_sip_transport();
-                                                               });
-                                                             },
-                                                             [this]() { return sip_port_; },
-                                                             "SIP Port",
-                                                             "SIP port used when registering",
-                                                             sip_port_,
-                                                             0u,
-                                                             65535u)) {}
+    : port_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
+          "port",
+          [this](const unsigned int& val) {
+            if (val == sip_port_ && transport_id_ != 1) return true;
+            sip_port_ = val;
+            return pjsip_->run<bool>([this]() { return start_sip_transport(); });
+          },
+          [this]() { return sip_port_; },
+          "SIP Port",
+          "SIP port used when registering",
+          sip_port_,
+          0u,
+          65535u)) {}
 
 SIPPlugin::~SIPPlugin() {
   if (!i_m_the_one_) return;
@@ -75,13 +73,13 @@ bool SIPPlugin::init() {
   i_m_the_one_ = true;
   this_ = this;
 
-  pjsip_ = std2::make_unique<ThreadedWrapper<PJSIP>>(
+  pjsip_ = std::make_unique<ThreadedWrapper<PJSIP>>(
       // init
       [&]() {
         start_sip_transport();
-        sip_calls_ = std2::make_unique<PJCall>();
-        sip_presence_ = std2::make_unique<PJPresence>();
-        stun_turn_ = std2::make_unique<PJStunTurn>();
+        sip_calls_ = std::make_unique<PJCall>();
+        sip_presence_ = std::make_unique<PJPresence>();
+        stun_turn_ = std::make_unique<PJStunTurn>();
         return true;
       },
       // destruct
@@ -137,7 +135,8 @@ void SIPPlugin::apply_configuration() {
 bool SIPPlugin::start_sip_transport() {
   if (-1 != transport_id_) pjsua_transport_close(transport_id_, PJ_FALSE);
   if (NetUtils::is_used(sip_port_)) {
-    g_warning("SIP port cannot be binded (%u)", sip_port_);
+    g_warning("SIP port cannot be bound (%u)", sip_port_);
+    g_message("ERROR: SIP port is not available (%u)", sip_port_);
     return false;
   }
   pjsua_transport_config cfg;
@@ -146,6 +145,8 @@ bool SIPPlugin::start_sip_transport() {
   pj_status_t status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, &transport_id_);
   if (status != PJ_SUCCESS) {
     g_warning("Error creating transport");
+    g_message("ERROR: SIP port is not available (%u)", sip_port_);
+    transport_id_ = -1;
     return false;
   }
   return true;

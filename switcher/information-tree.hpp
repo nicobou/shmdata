@@ -95,8 +95,7 @@ class InfoTree {
     std::unique_lock<std::mutex> lock(mutex_);
     auto found = get_node(path);
     if (nullptr != found.first) return (*found.first)[found.second].second->data_.copy_as<T>();
-    static Any any;
-    return any.copy_as<T>();
+    return T();
   }
 
   // serialize

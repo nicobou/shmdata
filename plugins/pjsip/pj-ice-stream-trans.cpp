@@ -181,6 +181,17 @@ std::vector<pj_uint16_t> PJICEStreamTrans::get_first_candidate_ports() {
   return res;
 }
 
+std::string PJICEStreamTrans::get_first_candidate_host() {
+  pj_ice_sess_cand cand[PJ_ICE_ST_MAX_CAND];
+  if (PJ_SUCCESS != pj_ice_strans_get_def_cand(icest_, 1, &cand[0])) {
+    g_warning("issue with %s", __FUNCTION__);
+    return std::string();
+  }
+  char addr_buf[128];
+  pj_sockaddr_print(&cand[0].addr, addr_buf, 128, 0);
+  return std::string(addr_buf);
+}
+
 bool PJICEStreamTrans::start_nego(const pj_str_t* rem_ufrag,
                                   const pj_str_t* rem_passwd,
                                   unsigned rcand_cnt,
@@ -212,7 +223,7 @@ bool PJICEStreamTrans::sendto(unsigned comp_id,
                               int dst_addr_len) {
   if (pj_ice_strans_sess_is_complete(icest_))
     return PJ_SUCCESS == pj_ice_strans_sendto(icest_, comp_id, data, size, dst_addr, dst_addr_len);
-  return false;
+  return true;  // not sent, but this is an expected behaviour
 }
 
 bool PJICEStreamTrans::set_data_cb(unsigned comp_id, on_data_cb_t cb) {

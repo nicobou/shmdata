@@ -27,7 +27,6 @@
 #include "switcher/quiddity-manager-impl.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "switcher/std2.hpp"
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
@@ -48,7 +47,7 @@ std::thread GTKVideo::gtk_main_thread_{};
 
 GTKVideo::GTKVideo(const std::string& name)
     : shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std2::make_unique<GstPipeliner>(
+      gst_pipeline_(std::make_unique<GstPipeliner>(
           nullptr, [this](GstMessage* msg) { return this->bus_sync(msg); })),
       title_(name),
       fullscreen_id_(pmanage<MPtr(&PContainer::make_bool)>("fullscreen",
@@ -67,14 +66,14 @@ GTKVideo::GTKVideo(const std::string& name)
           [this](bool val) {
             xevents_to_shmdata_id_ = val;
             if (xevents_to_shmdata_id_) {
-              keyb_shm_ = std2::make_unique<ShmdataWriter>(
+              keyb_shm_ = std::make_unique<ShmdataWriter>(
                   this, make_file_name("keyb"), sizeof(KeybEvent), "application/x-keyboard-events");
               if (!keyb_shm_.get()) {
                 g_warning("GTK keyboard event shmdata writer failed");
                 keyb_shm_.reset(nullptr);
               }
 
-              mouse_shm_ = std2::make_unique<ShmdataWriter>(
+              mouse_shm_ = std::make_unique<ShmdataWriter>(
                   this, make_file_name("mouse"), sizeof(MouseEvent), "application/x-mouse-events");
               if (!mouse_shm_.get()) {
                 g_warning("GTK mouse event shmdata writer failed");
@@ -218,7 +217,7 @@ GTKVideo::GTKVideo(const std::string& name)
                                            0,
                                            max_height);
 
-  position_task_ = std2::make_unique<PeriodicTask>(
+  position_task_ = std::make_unique<PeriodicTask>(
       [this]() { g_idle_add((GtkFunction)window_update_position, this); },
       std::chrono::milliseconds(500));
 
@@ -422,7 +421,7 @@ bool GTKVideo::on_shmdata_disconnect() {
   prune_tree(".shmdata.reader." + shmpath_);
   shm_sub_.reset();
   On_scope_exit {
-    gst_pipeline_ = std2::make_unique<GstPipeliner>(
+    gst_pipeline_ = std::make_unique<GstPipeliner>(
         nullptr, [this](GstMessage* msg) { return this->bus_sync(msg); });
   };
   return remake_elements();
@@ -431,7 +430,7 @@ bool GTKVideo::on_shmdata_disconnect() {
 bool GTKVideo::on_shmdata_connect(const std::string& shmpath) {
   shmpath_ = shmpath;
   g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
-  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
       [this](const std::string& caps) {
         this->graft_tree(".shmdata.reader." + shmpath_,

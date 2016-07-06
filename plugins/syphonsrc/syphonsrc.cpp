@@ -24,7 +24,6 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include "switcher/std2.hpp"
 
 using namespace std;
 
@@ -100,11 +99,11 @@ void SyphonSrc::frameCallback(void* context, const char* data, int& width, int& 
     else
       writer_path = ctx->make_file_name(ctx->syphon_appname_);
     ctx->writer_ =
-        std2::make_unique<ShmdataWriter>(ctx,
-                                         writer_path,
-                                         width * height * 4,
-                                         string("video/x-raw, format=RGBA, ") + "width=" +
-                                             to_string(width) + "height=" + to_string(height));
+        std::make_unique<ShmdataWriter>(ctx,
+                                        writer_path,
+                                        width * height * 4,
+                                        string("video/x-raw, format=RGBA, ") + "width=" +
+                                            to_string(width) + "height=" + to_string(height));
     ctx->width_ = width;
     ctx->height_ = height;
     if (!ctx->writer_.get()) {

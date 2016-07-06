@@ -22,12 +22,12 @@
 
 #include <glib.h>  // logs
 #include <map>
+#include <memory>
 #include <string>
 #include "./counter-map.hpp"
 #include "./is-specialization-of.hpp"
 #include "./property-internal-types.hpp"
 #include "./property2.hpp"
-#include "./std2.hpp"
 
 namespace switcher {
 class PContainer {
@@ -441,7 +441,7 @@ class PContainer {
     return push_parented(
         strid,
         parent_strid,
-        std2::make_unique<Property2<PropType, PropGetSet>>(std::forward<PropArgs>(args)...));
+        std::make_unique<Property2<PropType, PropGetSet>>(std::forward<PropArgs>(args)...));
   }
 };
 

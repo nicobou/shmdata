@@ -38,7 +38,10 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(V4L2Src,
                                      "Nicolas Bouillot");
 
 V4L2Src::V4L2Src(const std::string&)
-    : gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)) {
+    : gst_pipeline_(
+          std::make_unique<GstPipeliner>(nullptr, nullptr, [this](GstObject* gstobj, GError * err) {
+            on_gst_error(gstobj, err);
+          })) {
   init_startable(this);
 }
 
@@ -79,7 +82,7 @@ bool V4L2Src::init() {
       "config", "Capture device configuration", "device specific parameters");
   update_device_specific_properties();
   codecs_ =
-      std2::make_unique<GstVideoCodec>(static_cast<Quiddity*>(this), make_file_name(raw_suffix_));
+      std::make_unique<GstVideoCodec>(static_cast<Quiddity*>(this), make_file_name(raw_suffix_));
   set_shm_suffix();
   return true;
 }
@@ -555,7 +558,7 @@ bool V4L2Src::start() {
                    shmsink_.get_raw(),
                    nullptr);
   gst_element_link_many(v4l2src_.get_raw(), capsfilter_.get_raw(), shmsink_.get_raw(), nullptr);
-  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsink_.get_raw(),
       [this](const std::string& caps) {
         this->graft_tree(".shmdata.writer." + shmpath_,
@@ -584,7 +587,8 @@ bool V4L2Src::stop() {
   shm_sub_.reset(nullptr);
   prune_tree(".shmdata.writer." + shmpath_);
   remake_elements();
-  gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<GstPipeliner>(
+      nullptr, nullptr, [this](GstObject* gstobj, GError* err) { on_gst_error(gstobj, err); });
   codecs_->stop();
   pmanage<MPtr(&PContainer::enable)>(devices_id_, true);
   pmanage<MPtr(&PContainer::enable)>(group_id_, true);
@@ -806,6 +810,11 @@ GstStructure* V4L2Src::gst_v4l2_object_v4l2fourcc_to_structure(guint32 fourcc) {
       break;
   }
   return structure;
+}
+
+void V4L2Src::on_gst_error(GstObject*, GError* err) {
+  g_message("ERROR:camera error %s", err->message);
+  self_destruct();
 }
 
 }  // namespace switcher

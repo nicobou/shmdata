@@ -98,6 +98,7 @@ PJPresence::PJPresence() {
         status_.select(val);
         if (-1 == account_id_) {
           g_warning("cannot send online status when not registered");
+          g_message("ERROR:cannot send online status when not registered");
           return true;
         }
         SIPPlugin::this_->pjsip_->run([this]() { change_online_status(status_.get()); });
@@ -143,7 +144,7 @@ gboolean PJPresence::register_account_wrapped(gchar* user, gchar* password, void
     return FALSE;
   }
   if (-1 == SIPPlugin::this_->transport_id_) {
-    g_message("ERROR:cannot register without connection to server");
+    g_message("ERROR:cannot register, SIP port is not available (%u)", SIPPlugin::this_->sip_port_);
     return FALSE;
   }
   SIPPlugin::this_->pjsip_->run(
@@ -202,7 +203,7 @@ void PJPresence::register_account(const std::string& sip_user, const std::string
   SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
       SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
   sip_local_user_ =
-      std::string("sip:") + sip_user + +":" + std::to_string(SIPPlugin::this_->sip_port_);
+      std::string("sip:") + sip_user + ":" + std::to_string(SIPPlugin::this_->sip_port_);
 }
 
 gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */, void* user_data) {
@@ -258,11 +259,13 @@ void PJPresence::add_buddy(const std::string& sip_user) {
   std::string buddy_full_uri("sip:" + sip_user  // + ";transport=tcp"
                              );
   if (pjsua_verify_url(buddy_full_uri.c_str()) != PJ_SUCCESS) {
-    g_message("ERROR:Invalid buddy URI (%s)", sip_user.c_str());
+    g_message("ERROR:Invalid buddy URI (sip:%s)", sip_user.c_str());
     return;
   }
+
   if (buddy_id_.end() != buddy_id_.find(sip_user)) {
     g_message("ERROR:buddy %s already added", sip_user.c_str());
+    g_warning("buddy %s already added", sip_user.c_str());
     return;
   }
 
@@ -356,7 +359,21 @@ void PJPresence::on_registration_state(pjsua_acc_id acc_id, pjsua_reg_info* info
     return;
   }
   std::unique_lock<std::mutex> lock(context->registration_mutex_);
-  if (PJ_SUCCESS != info->cbparam->status) {
+  // SIP code higher to 299 are error code
+  if (PJ_SUCCESS != info->cbparam->status || info->cbparam->code > 299) {
+    if (info->cbparam->code == 408) {
+      g_message(
+          "ERROR: registration failed, SIP server did not answer"
+          "(%.*s)",
+          static_cast<int>(info->cbparam->reason.slen),
+          info->cbparam->reason.ptr);
+    } else {
+      g_message(
+          "ERROR: registration failed "
+          "(%.*s)",
+          static_cast<int>(info->cbparam->reason.slen),
+          info->cbparam->reason.ptr);
+    }
     g_warning("registration failed (%.*s)",
               static_cast<int>(info->cbparam->reason.slen),
               info->cbparam->reason.ptr);

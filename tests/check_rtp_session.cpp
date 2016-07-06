@@ -21,42 +21,96 @@
 
 #include <gst/gst.h>
 #include <cassert>
+#include <chrono>
 #include <string>
+#include <thread>
 #include <vector>
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/quiddity-manager.hpp"
 
-static bool audio_success;
-static bool video_success;
-static bool do_continue;
+static bool audio_success = false;
+static bool audio_added = false;
+static bool audio_to_rtp_done = false;
+static const std::string rtp_port = std::string("9066");
+// waiting for success
+std::mutex cv_m{};
+std::condition_variable cv{};
 
 using namespace switcher;
 
 void on_tree_grafted(const std::string& /*subscriber_name */,
-                     const std::string& /*quiddity_name */,
+                     const std::string& /* quiddity_name */,
                      const std::string& signal_name,
                      const std::vector<std::string>& params,
                      void* user_data) {
   auto manager = static_cast<QuiddityManager*>(user_data);
-  // std::printf("%s: %s \n", signal_name.c_str(), params[0].c_str());
+  // interested here in byte_rate information from httpsdpdec
+  if (std::string::npos == params[0].find("byte_rate")) return;
+  // check the received byte rate
   GstShmdataSubscriber::num_bytes_t byte_rate =
-      // std::string byte_rate =
-      manager->use_tree<MPtr(&InfoTree::branch_get_value)>(std::string("uri"),
-                                                           params[0] + ".byte_rate");
-  if (0 != byte_rate && std::string::npos != params[0].find("audio")) {
+      manager->use_tree<MPtr(&InfoTree::branch_get_value)>(std::string("uri"), params[0]);
+  if (0 != byte_rate) {
     audio_success = true;
-    do_continue = false;
+    cv.notify_one();
+    std::printf(
+        "%s: %s %s\n", signal_name.c_str(), params[0].c_str(), std::to_string(byte_rate).c_str());
   }
-  std::printf(
-      "%s: %s %s\n", signal_name.c_str(), params[0].c_str(), std::to_string(byte_rate).c_str());
+}
+
+void receive_audio(QuiddityManager* manager) {
+  // configure an httpsdpdec
+  manager->create("httpsdpdec", "uri");
+  manager->invoke_va("uri",
+                     "to_shmdata",
+                     nullptr,
+                     "http://127.0.0.1:38084/sdp?rtpsession=rtp&destination=local",
+                     nullptr);
+  // checking http-sdp-dec is updating positive byte_rate in tree
+  assert(manager->make_signal_subscriber("signal_subscriber", on_tree_grafted, manager));
+  assert(manager->subscribe_signal("signal_subscriber", "uri", "on-tree-grafted"));
+}
+
+void on_audio_info(const std::string& /*subscriber_name */,
+                   const std::string& quiddity_name,
+                   const std::string& /*signal_name*/,
+                   const std::vector<std::string>& /*params*/,
+                   void* user_data) {
+  auto manager = static_cast<QuiddityManager*>(user_data);
+  // checking for shmdata writer path
+  auto audio_shmpath =
+      manager->use_tree<MPtr(&InfoTree::get_child_keys)>(quiddity_name, "shmdata.writer");
+  if (audio_shmpath.empty()) return;
+  if (!audio_to_rtp_done) {
+    GstShmdataSubscriber::num_bytes_t byte_rate =
+        manager->use_tree<MPtr(&InfoTree::branch_get_value)>(
+            quiddity_name, std::string("shmdata.writer.") + audio_shmpath.front() + ".byte_rate");
+    if (!audio_added) {
+      manager->invoke_va("rtp", "add_data_stream", nullptr, audio_shmpath.front().c_str(), nullptr);
+      audio_added = true;
+    }
+    if (byte_rate != 0) {
+      auto thread = std::thread([=]() {
+        manager->invoke_va("rtp",
+                           "add_udp_stream_to_dest",
+                           nullptr,
+                           audio_shmpath.front().c_str(),
+                           "local",
+                           rtp_port.c_str(),
+                           nullptr);
+        audio_to_rtp_done = true;
+        // ready to:
+        receive_audio(manager);
+      });
+      thread.detach();
+    }
+  }
 }
 
 int main() {
-  audio_success = false;
-  // video_success = false;
-  video_success = true;
-  do_continue = true;
   {
+    // this lock is used with a condition variable that notifies success
+    std::unique_lock<std::mutex> lock(cv_m);
+
     QuiddityManager::ptr manager = QuiddityManager::make_manager("rtptest");
 #ifdef HAVE_CONFIG_H
     gchar* usr_plugin_dir = g_strdup_printf("../plugins/gsoap/%s", LT_OBJDIR);
@@ -65,72 +119,30 @@ int main() {
 #else
     return 1;
 #endif
+    // creating a SOAP server that will also distribute SDP file through the 'magic' url
+    // magic url is
+    // http://<soap_server>:<soap_port>/sdp?rtpsession=<rtp_quiddity_name>&destination=<rtp_destination_name>
     manager->create("SOAPcontrolServer", "soapserver");
     manager->invoke_va("soapserver", "set_port", nullptr, "38084", nullptr);
-    // audio
-    assert("a" == manager->create("audiotestsrc", "a"));
-    manager->use_prop<MPtr(&PContainer::set_str_str)>("a", "started", "true");
-    assert("a2" == manager->create("audiotestsrc", "a2"));
-    manager->use_prop<MPtr(&PContainer::set_str_str)>("a2", "started", "true");
-    // // video
-    // manager->create("videotestsrc", "v");
-    // manager->pmanage<&PContainer::set_str_str)>("v", "started", "true");
-    // rtp
+
+    // creating rtp quiddity
     assert("rtp" == manager->create("rtpsession", "rtp"));
-    manager->invoke_va("rtp", "add_data_stream", nullptr, "/tmp/switcher_rtptest_a_audio", nullptr);
-    manager->invoke_va(
-        "rtp", "add_data_stream", nullptr, "/tmp/switcher_rtptest_a2_audio", nullptr);
-    // manager->invoke_va("rtp",
-    //                    "add_data_stream",
-    //                    nullptr,
-    //                    "/tmp/switcher_rtptest_v_encoded-video",
-    //                    nullptr);
     manager->invoke_va("rtp", "add_destination", nullptr, "local", "127.0.0.1", nullptr);
-    manager->invoke_va("rtp",
-                       "add_udp_stream_to_dest",
-                       nullptr,
-                       "/tmp/switcher_rtptest_a_audio",
-                       "local",
-                       "9066",
-                       nullptr);
-    manager->invoke_va("rtp",
-                       "add_udp_stream_to_dest",
-                       nullptr,
-                       "/tmp/switcher_rtptest_a2_audio",
-                       "local",
-                       "9068",
-                       nullptr);
-    // manager->invoke_va("rtp",
-    //                    "add_udp_stream_to_dest",
-    //                    nullptr,
-    //                    "/tmp/switcher_rtptest_v_encoded-video",
-    //                    "local",
-    //                    "9076",
-    //                    nullptr);
-    // receiving
-    manager->create("httpsdpdec", "uri");
-    manager->invoke_va("uri",
-                       "to_shmdata",
-                       nullptr,
-                       "http://127.0.0.1:38084/sdp?rtpsession=rtp&destination=local",
-                       nullptr);
-    // checking http-sdp-dec is updating positive byte_rate in tree:
-    assert(manager->make_signal_subscriber("signal_subscriber", on_tree_grafted, manager.get()));
-    assert(manager->subscribe_signal("signal_subscriber", "uri", "on-tree-grafted"));
-    // wait 3 seconds
-    uint count = 3;
-    while (do_continue) {
-      if (count == 0)
-        do_continue = false;
-      else {
-        --count;
-        usleep(1000000);
-      }
-    }
+
+    // creating two audio shmdatas
+    std::string audio_quid = "a";
+    assert(audio_quid == manager->create("audiotestsrc", audio_quid.c_str()));
+    manager->use_prop<MPtr(&PContainer::set_str_str)>(audio_quid.c_str(), "started", "true");
+
+    assert(manager->make_signal_subscriber("audio_subscriber", on_audio_info, manager.get()));
+    assert(manager->subscribe_signal("audio_subscriber", audio_quid.c_str(), "on-tree-grafted"));
+
+    // stop waiting result after 5 seconds
+    cv.wait_for(lock, std::chrono::seconds(5));
   }
 
   gst_deinit();
-  if (audio_success && video_success)
+  if (audio_success)
     return 0;
   else
     return 1;

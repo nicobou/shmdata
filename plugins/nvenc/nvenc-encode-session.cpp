@@ -21,7 +21,6 @@
 #include <glib.h>   // log
 #include <cstring>  // memset
 #include "switcher/scope-exit.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 NVencES::NVencES(uint32_t device_id
@@ -258,7 +257,7 @@ bool NVencES::initialize_encoder(GUID encodeGuid,
     return false;
   }
 
-  buffers_ = std2::make_unique<NVencBuffers>(encoder_, width, height, format);
+  buffers_ = std::make_unique<NVencBuffers>(encoder_, width, height, format);
   return true;
 }
 

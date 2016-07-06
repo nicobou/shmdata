@@ -68,7 +68,7 @@ bool PostureDetect::init() {
 }
 
 bool PostureDetect::connect(std::string shmdata_socket_path) {
-  reader_ = std2::make_unique<ShmdataFollower>(
+  reader_ = std::make_unique<ShmdataFollower>(
       this,
       shmdata_socket_path,
       [=](void* data, size_t size) {
@@ -98,17 +98,17 @@ bool PostureDetect::connect(std::string shmdata_socket_path) {
                 cloud.size() > cloud_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
               cloud_writer_.reset();
               cloud_writer_ =
-                  std2::make_unique<ShmdataWriter>(this,
-                                                   make_file_name("cloud"),
-                                                   std::max(cloud.size() * 2, (size_t)1024),
-                                                   data_type);
+                  std::make_unique<ShmdataWriter>(this,
+                                                  make_file_name("cloud"),
+                                                  std::max(cloud.size() * 2, (size_t)1024),
+                                                  data_type);
             }
 
             data_type = string(POLYGONMESH_TYPE_BASE);
             if (!mesh_writer_ ||
                 poly.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
               mesh_writer_.reset();
-              mesh_writer_ = std2::make_unique<ShmdataWriter>(
+              mesh_writer_ = std::make_unique<ShmdataWriter>(
                   this, make_file_name("mesh"), std::max(poly.size() * 2, (size_t)1024), data_type);
             }
 

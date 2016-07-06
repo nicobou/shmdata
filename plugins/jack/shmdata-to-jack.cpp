@@ -24,7 +24,6 @@
 #include "switcher/quiddity-manager-impl.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
@@ -53,7 +52,7 @@ ShmdataToJack::ShmdataToJack(const std::string& name)
                      thread.detach();
                    }),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std2::make_unique<GstPipeliner>(nullptr, nullptr)) {}
+      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {}
 
 bool ShmdataToJack::init() {
   if (!jack_client_) {
@@ -255,7 +254,7 @@ bool ShmdataToJack::start() {
     return false;
   }
   g_object_set(G_OBJECT(shmdatasrc_), "socket-path", shmpath_.c_str(), nullptr);
-  shm_sub_ = std2::make_unique<GstShmdataSubscriber>(
+  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmdatasrc_,
       [this](const std::string& caps) {
         this->graft_tree(".shmdata.reader." + this->shmpath_,
@@ -279,7 +278,7 @@ bool ShmdataToJack::stop() {
   shm_sub_.reset(nullptr);
   disconnect_ports();
   {
-    On_scope_exit { gst_pipeline_ = std2::make_unique<GstPipeliner>(nullptr, nullptr); };
+    On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };
     if (!make_elements()) return false;
   }
   pmanage<MPtr(&PContainer::replace)>(volume_id_,

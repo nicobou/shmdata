@@ -30,15 +30,20 @@
 #include "./quiddity-manager-impl.hpp"
 #include "./quiddity.hpp"
 #include "./scope-exit.hpp"
-#include "./std2.hpp"
 
 namespace switcher {
 GstPipeliner::GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
                            GstPipe::on_msg_sync_cb_t on_msg_sync_cb)
+    : GstPipeliner(on_msg_async_cb, on_msg_sync_cb, nullptr) {}
+
+GstPipeliner::GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
+                           GstPipe::on_msg_sync_cb_t on_msg_sync_cb,
+                           on_error_cb_t on_error_cb)
     : on_msg_async_cb_(on_msg_async_cb),
       on_msg_sync_cb_(on_msg_sync_cb),
-      main_loop_(std2::make_unique<GlibMainLoop>()),
-      gst_pipeline_(std2::make_unique<GstPipe>(
+      on_error_cb_(on_error_cb),
+      main_loop_(std::make_unique<GlibMainLoop>()),
+      gst_pipeline_(std::make_unique<GstPipe>(
           main_loop_->get_main_context(), &GstPipeliner::bus_sync_handler, this
           // [this](GstMessage *msg){
           //   if(this->on_msg_async_cb_)
@@ -144,7 +149,9 @@ GstBusSyncReply GstPipeliner::on_gst_error(GstMessage* msg) {
   gst_message_parse_error(msg, &error, &debug);
   g_free(debug);
   g_warning("GStreamer error: %s (element %s)", error->message, GST_MESSAGE_SRC_NAME(msg));
-  g_error_free(error);
+  On_scope_exit {
+    if (error) g_error_free(error);
+  };
   // on-error-gsource
   GSourceWrapper* gsrc =
       static_cast<GSourceWrapper*>(g_object_get_data(G_OBJECT(msg->src), "on-error-gsource"));
@@ -153,19 +160,7 @@ GstBusSyncReply GstPipeliner::on_gst_error(GstMessage* msg) {
     g_object_set_data(G_OBJECT(msg->src), "on-error-gsource", nullptr);
     gsrc->attach(main_loop_->get_main_context());
   }
-
-  // on-error-delete
-  const char* name = (const char*)g_object_get_data(G_OBJECT(msg->src), "on-error-delete");
-  if (nullptr != name) {
-    // removing command in order to get it invoked once
-    g_object_set_data(G_OBJECT(msg->src), "on-error-delete", (gpointer) nullptr);
-    g_warning("FIXME, handle on-error-delete");
-    // GstUtils::g_idle_add_full_with_context(main_loop_->get_main_context(),
-    //                                        G_PRIORITY_DEFAULT_IDLE,
-    //                                        (GSourceFunc)run_remove_quid,
-    //                                        (gpointer)this,
-    //                                        nullptr);
-  }
+  if (on_error_cb_) on_error_cb_(GST_MESSAGE_SRC(msg), error);
   return GST_BUS_DROP;
 }
 
