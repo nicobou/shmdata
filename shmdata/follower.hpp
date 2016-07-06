@@ -15,27 +15,25 @@
 #ifndef _SHMDATA_FOLLOWER_H_
 #define _SHMDATA_FOLLOWER_H_
 
-#include <string>
-#include <future>
-#include <atomic>
-#include "./reader.hpp"
 #include "./abstract-logger.hpp"
+#include "./reader.hpp"
+#include <atomic>
+#include <future>
+#include <string>
 
-namespace shmdata{
+namespace shmdata {
 class Follower {
- public:
-  Follower(const std::string &path,
-           Reader::onData cb,
-           Reader::onServerConnected osc,
-           Reader::onServerDisconnected osd,
+public:
+  Follower(const std::string &path, Reader::onData cb,
+           Reader::onServerConnected osc, Reader::onServerDisconnected osd,
            AbstractLogger *log);
   ~Follower();
   Follower() = delete;
   Follower(const Follower &) = delete;
-  Follower& operator=(const Follower&) = delete;
-  Follower& operator=(Follower&&) = delete;
+  Follower &operator=(const Follower &) = delete;
+  Follower &operator=(Follower &&) = delete;
 
- private:
+private:
   bool is_destructing_{false};
   AbstractLogger *log_;
   std::string path_;
@@ -43,11 +41,11 @@ class Follower {
   Reader::onServerConnected osc_;
   Reader::onServerDisconnected osd_;
   std::future<void> monitor_{};
-  std::unique_ptr<Reader> reader_;
   std::atomic<bool> quit_{false};
+  std::unique_ptr<Reader> reader_;
   void monitor();
   void on_server_disconnected();
 };
 
-}  // namespace shmdata
+} // namespace shmdata
 #endif
