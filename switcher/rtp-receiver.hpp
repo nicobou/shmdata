@@ -34,7 +34,10 @@ class RTPReceiver {
   using id_t = size_t;
   using configure_shmsink_cb_t = std::function<void(
       GstElement* el, const std::string& media_type, const std::string& media_label)>;
-  RTPReceiver(RtpSession2* session, const std::string& rtpshmpath, configure_shmsink_cb_t cb);
+  RTPReceiver(RtpSession2* session,
+              const std::string& rtpshmpath,
+              configure_shmsink_cb_t cb,
+              bool decompress);
   RTPReceiver() = delete;
   ~RTPReceiver();
   RTPReceiver(const RTPReceiver&) = delete;
@@ -46,6 +49,7 @@ class RTPReceiver {
   std::string rtpshmpath_;
   GstElement* shmdatasrc_;
   GstElement* typefind_;
+  bool decompress_;
   configure_shmsink_cb_t configure_shmsink_cb_;
   DecodebinToShmdata decodebin_;
   GstCaps* shmsrc_caps_{nullptr};

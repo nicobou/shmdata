@@ -59,8 +59,8 @@ class PJCall {
   using call_t = struct call {
     pjsip_inv_session* inv{nullptr};
     // as receiver
-    std::unique_ptr<PJICEStreamTrans> ice_trans_{};
     std::vector<std::unique_ptr<ShmdataWriter>> rtp_writers_{};
+    std::unique_ptr<PJICEStreamTrans> ice_trans_{};
     std::unique_ptr<RtpSession2> recv_rtp_session_{};
     std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
     std::vector<std::unique_ptr<RTPReceiver>> rtp_receivers_{};
@@ -111,7 +111,7 @@ class PJCall {
   bool create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_session** res);
   Quiddity::ptr retrieve_rtp_manager();
   static gboolean send_to(gchar* sip_url, void* user_data);
-  void make_hang_up(pjsip_inv_session* inv, std::string sip_url);
+  void make_hang_up(pjsip_inv_session* inv);
   static gboolean hang_up(const gchar* sip_url, void* user_data);
   static gboolean attach_shmdata_to_contact(const gchar* shmpath,
                                             const gchar* contact_uri,

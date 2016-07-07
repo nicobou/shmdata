@@ -44,6 +44,8 @@ class HTTPSDPDec : public Quiddity {
   UGstElem sdpdemux_;
   bool is_dataurisrc_{false};
   guint retry_delay_{1000};
+  bool decompress_streams_{true};
+  PContainer::prop_id_t decompress_streams_id_;
   // will maintain a max of two GSourceWrapper in order to avoid destructing
   // itself from inside the GSource
   std::list<GSourceWrapper::uptr> on_error_{};
