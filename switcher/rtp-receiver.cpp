@@ -25,11 +25,13 @@ namespace switcher {
 
 RTPReceiver::RTPReceiver(RtpSession2* session,
                          const std::string& rtpshmpath,
-                         configure_shmsink_cb_t cb)
+                         configure_shmsink_cb_t cb,
+                         bool decompress)
     : session_(session),
       rtpshmpath_(rtpshmpath),
       shmdatasrc_(gst_element_factory_make("shmdatasrc", nullptr)),
       typefind_(gst_element_factory_make("typefind", nullptr)),
+      decompress_(decompress),
       configure_shmsink_cb_(cb),
       decodebin_(
           session_->gst_pipeline_.get(),
@@ -41,7 +43,8 @@ RTPReceiver::RTPReceiver(RtpSession2* session,
               g_warning("BUG, rtp receiver using custom path (%s)", path.c_str());
               g_object_set(G_OBJECT(el), "socket-path", path.c_str(), nullptr);
             }
-          }) {
+          },
+          decompress_) {
   if (nullptr == shmdatasrc_ || nullptr == typefind_) {
     g_warning("RTPReceiver failed to create GStreamer element");
     return;
@@ -70,7 +73,7 @@ RTPReceiver::~RTPReceiver() {
   if (shmsrc_caps_) gst_caps_unref(shmsrc_caps_);
 }
 
-void RTPReceiver::on_caps(GstElement* typefind,
+void RTPReceiver::on_caps(GstElement* /*typefind*/,
                           guint /*probability */,
                           GstCaps* caps,
                           gpointer user_data) {
@@ -98,7 +101,7 @@ void RTPReceiver::on_caps(GstElement* typefind,
   }
 }
 
-void RTPReceiver::on_pad_added(GstElement* object, GstPad* pad, gpointer user_data) {
+void RTPReceiver::on_pad_added(GstElement* /*object*/, GstPad* pad, gpointer user_data) {
   RTPReceiver* context = static_cast<RTPReceiver*>(user_data);
   gchar* name_cstr = gst_pad_get_name(pad);
   On_scope_exit { g_free(name_cstr); };
@@ -129,9 +132,9 @@ void RTPReceiver::on_pad_added(GstElement* object, GstPad* pad, gpointer user_da
   }
 }
 
-GstCaps* RTPReceiver::request_pt_map(GstElement* sess,
-                                     guint session,
-                                     guint pt,
+GstCaps* RTPReceiver::request_pt_map(GstElement* /*sess*/,
+                                     guint /*session*/,
+                                     guint /*pt*/,
                                      gpointer user_data) {
   RTPReceiver* context = static_cast<RTPReceiver*>(user_data);
   auto caps = context->shmsrc_caps_;

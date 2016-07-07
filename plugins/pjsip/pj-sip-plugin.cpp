@@ -46,7 +46,17 @@ SIPPlugin::SIPPlugin(const std::string&)
           "SIP port used when registering",
           sip_port_,
           0u,
-          65535u)) {}
+          65535u)),
+      decompress_streams_id_(
+          pmanage<MPtr(&PContainer::make_bool)>("decompress",
+                                                [this](const bool& val) {
+                                                  decompress_streams_ = val;
+                                                  return true;
+                                                },
+                                                [this]() { return decompress_streams_; },
+                                                "Decompress",
+                                                "Decompress received streams",
+                                                decompress_streams_)) {}
 
 SIPPlugin::~SIPPlugin() {
   if (!i_m_the_one_) return;

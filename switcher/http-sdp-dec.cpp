@@ -40,7 +40,17 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 HTTPSDPDec::HTTPSDPDec(const std::string&)
     : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       souphttpsrc_("souphttpsrc"),
-      sdpdemux_("sdpdemux") {}
+      sdpdemux_("sdpdemux"),
+      decompress_streams_id_(
+          pmanage<MPtr(&PContainer::make_bool)>("decompress",
+                                                [this](const bool& val) {
+                                                  decompress_streams_ = val;
+                                                  return true;
+                                                },
+                                                [this]() { return decompress_streams_; },
+                                                "Decompress",
+                                                "Decompress received streams",
+                                                decompress_streams_)) {}
 
 bool HTTPSDPDec::init() {
   if (!souphttpsrc_ || !sdpdemux_) return false;
@@ -124,7 +134,8 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement* /*object */, GstPad* pad, g
       context->gst_pipeline_.get(),
       [context](GstElement* el, const std::string& media_type, const std::string& media_label) {
         context->configure_shmdatasink(el, media_type, media_label);
-      });
+      },
+      context->decompress_streams_);
   if (!decodebin->invoke_with_return<gboolean>([context](GstElement* el) {
         return gst_bin_add(GST_BIN(context->gst_pipeline_->get_pipeline()), el);
       })) {
