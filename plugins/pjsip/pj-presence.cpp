@@ -149,6 +149,8 @@ gboolean PJPresence::register_account_wrapped(gchar* user, gchar* password, void
   }
   SIPPlugin::this_->pjsip_->run(
       [&]() { context->register_account(std::string(user), std::string(password)); });
+  SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
+      SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
   if (context->registered_) return TRUE;
   return FALSE;
 }
@@ -197,13 +199,13 @@ void PJPresence::register_account(const std::string& sip_user, const std::string
   }
   pjsua_acc_set_user_data(account_id_, this);
   registration_cond_.wait(lock);
-  change_online_status(PJPresence::AVAILABLE);
-  // notifying sip registration status
-  SIPPlugin::this_->graft_tree(".self.", InfoTree::make(sip_user));
-  SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
-      SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
-  sip_local_user_ =
-      std::string("sip:") + sip_user + ":" + std::to_string(SIPPlugin::this_->sip_port_);
+  if (registered_) {
+    change_online_status(PJPresence::AVAILABLE);
+    // notifying sip registration status
+    SIPPlugin::this_->graft_tree(".self.", InfoTree::make(sip_user));
+    sip_local_user_ =
+        std::string("sip:") + sip_user + ":" + std::to_string(SIPPlugin::this_->sip_port_);
+  }
 }
 
 gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */, void* user_data) {
@@ -389,8 +391,6 @@ void PJPresence::on_registration_state(pjsua_acc_id acc_id, pjsua_reg_info* info
     else
       context->registered_ = false;
   }
-  SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
-      SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
   g_debug("registration SIP status code %d", info->cbparam->code);
   context->registration_cond_.notify_one();
 }

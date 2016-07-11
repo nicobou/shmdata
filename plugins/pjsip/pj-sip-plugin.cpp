@@ -17,6 +17,7 @@
 
 #include "./pj-sip-plugin.hpp"
 #include "switcher/net-utils.hpp"
+#include "switcher/scope-exit.hpp"
 
 namespace switcher {
 SWITCHER_DECLARE_PLUGIN(SIPPlugin);
@@ -34,19 +35,22 @@ SIPPlugin* SIPPlugin::this_ = nullptr;
 std::atomic<unsigned short> SIPPlugin::sip_plugin_used_(0);
 
 SIPPlugin::SIPPlugin(const std::string&)
-    : port_id_(pmanage<MPtr(&PContainer::make_unsigned_int)>(
+    : port_id_(pmanage<MPtr(&PContainer::make_string)>(
           "port",
-          [this](const unsigned int& val) {
-            if (val == sip_port_ && transport_id_ != 1) return true;
+          [this](const std::string& valstr) {
+            if (valstr.empty()) return false;
+            unsigned int val;
+            if (!isdigit(valstr[0])) return false;
+            val = atoi(valstr.c_str());
+            if (sip_port_ == val && -1 != transport_id_) return true;
+            if (val > 65535) return false;
             sip_port_ = val;
             return pjsip_->run<bool>([this]() { return start_sip_transport(); });
           },
-          [this]() { return sip_port_; },
+          [this]() { return std::to_string(sip_port_); },
           "SIP Port",
           "SIP port used when registering",
-          sip_port_,
-          0u,
-          65535u)),
+          std::to_string(sip_port_))),
       decompress_streams_id_(
           pmanage<MPtr(&PContainer::make_bool)>("decompress",
                                                 [this](const bool& val) {
@@ -143,7 +147,15 @@ void SIPPlugin::apply_configuration() {
 }
 
 bool SIPPlugin::start_sip_transport() {
-  if (-1 != transport_id_) pjsua_transport_close(transport_id_, PJ_FALSE);
+  if (-1 != transport_id_) {
+    On_scope_exit { transport_id_ = -1; };
+    if (pjsua_transport_close(transport_id_, PJ_FALSE) != PJ_SUCCESS) {
+      g_warning("cannot close current transport");
+      g_message("ERROR: (bug) cannot close current transport");
+      return false;
+    }
+  }
+
   if (NetUtils::is_used(sip_port_)) {
     g_warning("SIP port cannot be bound (%u)", sip_port_);
     g_message("ERROR: SIP port is not available (%u)", sip_port_);
