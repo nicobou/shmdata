@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_NVENC_API_H__
 #define __SWITCHER_NVENC_API_H__
 
-#include <nvEncodeAPI.h>
+#include "nvidia/nvEncodeAPI.h"
 #include "switcher/safe-bool-idiom.hpp"
 
 namespace switcher {

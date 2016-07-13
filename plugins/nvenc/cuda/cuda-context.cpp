@@ -39,6 +39,7 @@ CudaContext::CudaContext(uint32_t device_id) {
     cuda_dev_ = cdev;
   else
     return;
+
   if (!CuRes(cuCtxCreate(&cuda_ctx_, 0, cuda_dev_))) cuda_ctx_ = nullptr;
 }
 

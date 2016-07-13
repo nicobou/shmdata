@@ -5,19 +5,19 @@ plugins_LTLIBRARIES = \
 
 #libnvenc-plugin info
 libnvenc_plugin_la_SOURCES = \
-    cuda-context.cpp \
-    nvenc-api.cpp \
-    nvenc-buffers.cpp \
-    nvenc-encode-session.cpp \
-    nvenc-plugin.cpp
+    cuda/cuda-context.cpp \
+    encoder/nvenc-api.cpp \
+    encoder/nvenc-buffers.cpp \
+    encoder/nvenc-encode-session.cpp \
+    encoder/nvenc-plugin.cpp
 
 libnvenc_plugin_la_include_HEADERS = \
-    cu-res.hpp \
-    cuda-context.hpp \
-    nvenc-api.hpp \
-    nvenc-buffers.hpp \
-    nvenc-encode-session.hpp \
-    nvenc-plugin.hpp
+    cuda/cu-res.hpp \
+    cuda/cuda-context.hpp \
+    encoder/nvenc-api.hpp \
+    encoder/nvenc-buffers.hpp \
+    encoder/nvenc-encode-session.hpp \
+    encoder/nvenc-plugin.hpp
 
 libnvenc_plugin_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher

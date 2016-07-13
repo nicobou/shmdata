@@ -16,7 +16,6 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-
 #include "./nvenc-encode-session.hpp"
 #include <glib.h>   // log
 #include <cstring>  // memset
@@ -142,32 +141,19 @@ std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> NVencES::get_input_for
   NVencAPI::api.nvEncGetInputFormats(encoder_, encodeGUID, buf_format, 16, &num);
   for (i = 0; i < num; ++i) {
     if (NV_ENC_BUFFER_FORMAT_UNDEFINED == buf_format[i]) {
-      // res.push_back(std::make_pair(std::string("Undefined"), buf_format[i]));
       g_warning("nvEncGetInputFormats gives NV_ENC_BUFFER_FORMAT_UNDEFINED (?)");
-    } else if (NV_ENC_BUFFER_FORMAT_NV12_PL == buf_format[i]) {
-      res.push_back(std::make_pair(std::string("NV12_PL"), buf_format[i]));
-    } else if (NV_ENC_BUFFER_FORMAT_NV12_TILED16x16 == buf_format[i]) {
-      res.push_back(std::make_pair(std::string("NV12_TILED16x16"), buf_format[i]));
-    } else if (NV_ENC_BUFFER_FORMAT_NV12_TILED64x16 == buf_format[i]) {
-      res.push_back(std::make_pair(std::string("NV12_TILED64x16"), buf_format[i]));
-    } else if (NV_ENC_BUFFER_FORMAT_YV12_PL == buf_format[i]) {
-      res.push_back(std::make_pair(std::string("YV12_PL"), buf_format[i]));
-    } else if (NV_ENC_BUFFER_FORMAT_YV12_TILED16x16 == buf_format[i]) {
-      res.push_back(std::make_pair(std::string("YV12_TILED16x16"), buf_format[i]));
-    } else if (NV_ENC_BUFFER_FORMAT_YV12_TILED64x16 == buf_format[i]) {
-      res.push_back(std::make_pair(std::string("YV12_TILED64x16"), buf_format[i]));
-    } else if (NV_ENC_BUFFER_FORMAT_IYUV_PL == buf_format[i]) {
-      res.push_back(std::make_pair(std::string("IYUV_PL"), buf_format[i]));
-    } else if (NV_ENC_BUFFER_FORMAT_IYUV_TILED16x16 == buf_format[i]) {
-      res.push_back(std::make_pair(std::string("IYUV_TILED16x16"), buf_format[i]));
-    } else if (NV_ENC_BUFFER_FORMAT_IYUV_TILED64x16 == buf_format[i]) {
-      res.push_back(std::make_pair(std::string("IYUV_TILED64x16"), buf_format[i]));
-    } else if (NV_ENC_BUFFER_FORMAT_YUV444_PL == buf_format[i]) {
-      res.push_back(std::make_pair(std::string("YUV444_PL"), buf_format[i]));
-    } else if (NV_ENC_BUFFER_FORMAT_YUV444_TILED16x16 == buf_format[i]) {
-      res.push_back(std::make_pair(std::string("YUV444_TILED16x16"), buf_format[i]));
-    } else if (NV_ENC_BUFFER_FORMAT_YUV444_TILED64x16 == buf_format[i]) {
-      res.push_back(std::make_pair(std::string("YUV444_TILED64x16"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_NV12 == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("NV12"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_YV12 == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("YV12"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_IYUV == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("IYUV"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_YUV444 == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("YUV444"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_ARGB == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("ARGB"), buf_format[i]));
+    } else if (NV_ENC_BUFFER_FORMAT_AYUV == buf_format[i]) {
+      res.push_back(std::make_pair(std::string("AYUV"), buf_format[i]));
     } else
       g_warning("unknown input format from nvenc");
   }
@@ -220,34 +206,7 @@ bool NVencES::initialize_encoder(GUID encodeGuid,
     preset_config.presetCfg.profileGUID = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
     preset_config.presetCfg.encodeCodecConfig.h264Config.level = NV_ENC_LEVEL_AUTOSELECT;
     preset_config.presetCfg.encodeCodecConfig.h264Config.chromaFormatIDC = 1;
-
-    // preset_config.presetCfg.encodeCodecConfig.h264Config.outputBufferingPeriodSEI
-    // = 1;
-    // preset_config.presetCfg.encodeCodecConfig.h264Config.outputPictureTimingSEI
-    // = 1;
-    // preset_config.presetCfg.encodeCodecConfig.h264Config.outputAUD = 1;
-    // preset_config.presetCfg.encodeCodecConfig.h264Config.outputFramePackingSEI
-    // = 1;
-    // preset_config.presetCfg.encodeCodecConfig.h264Config.outputRecoveryPointSEI
-    // = 1;
     preset_config.presetCfg.encodeCodecConfig.h264Config.repeatSPSPPS = 1;
-    // if (GST_VIDEO_INFO_FORMAT (info) == GST_VIDEO_FORMAT_Y444) {
-    // GST_DEBUG_OBJECT (h264enc, "have Y444 input, setting config
-    // accordingly");
-    // preset_config.presetCfg.encodeCodecConfig.
-    //     h264Config.separateColourPlaneFlag = 1;
-    // preset_config.presetCfg.encodeCodecConfig.h264Config.chromaFormatIDC = 3;
-    // preset_config.presetCfg.encodeCodecConfig.h264Config.outputAUD = 1;
-    //}
-    // if (GST_VIDEO_INFO_IS_INTERLACED (info)) {
-    //   if (GST_VIDEO_INFO_INTERLACE_MODE (info) ==
-    //       GST_VIDEO_INTERLACE_MODE_INTERLEAVED
-    //       || GST_VIDEO_INFO_INTERLACE_MODE (info) ==
-    //       GST_VIDEO_INTERLACE_MODE_MIXED) {
-    // preset_config.presetCfg.frameFieldMode =
-    //     NV_ENC_PARAMS_FRAME_FIELD_MODE_FIELD;
-    //   }
-    // }
     init_params_.encodeConfig = &preset_config.presetCfg;
   }
 
