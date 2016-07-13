@@ -222,7 +222,7 @@ void NVencPlugin::update_input_formats() {
     else
       g_warning("format not supported by NVencPlugin (%s)\n", it.first.c_str());
 
-    if (!format.empty()) it.first = std::string("video/x-raw, format = (string) ") + format;
+    if (!format.empty()) it.first = std::string("video/x-raw, format=(string)") + format;
   }
 }
 
