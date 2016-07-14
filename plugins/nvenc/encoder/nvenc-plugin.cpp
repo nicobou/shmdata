@@ -72,6 +72,10 @@ void NVencPlugin::update_device() {
   es_.reset();
   es_ = std::make_unique<ThreadedWrapper<NVencES>>(devices_nv_ids_[devices_.get()]);
   if (!es_->invoke<MPtr(&NVencES::safe_bool_idiom)>()) {
+    g_message(
+        "ERROR: nvenc failed to create encoding session "
+        "(the total number of simultaneous sessions "
+        "may be reached)");
     g_warning(
         "nvenc failed to create encoding session "
         "(the total number of simultaneous sessions "
