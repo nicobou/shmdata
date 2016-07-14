@@ -41,10 +41,6 @@ class Timelapse : public Quiddity {
   Timelapse& operator=(const Timelapse&) = delete;
 
  private:
-  // registering connect/disconnect/can_sink_caps:
-  ShmdataConnector shmcntr_;
-  GstVideoTimelapseConfig timelapse_config_;
-  std::map<std::string, std::unique_ptr<GstVideoTimelapse>> timelapse_{};
   // images path
   std::string img_dir_;
   PContainer::prop_id_t img_dir_id_;
@@ -81,6 +77,11 @@ class Timelapse : public Quiddity {
 
   // tracking parameter changes and update timelapse pipeline
   PeriodicTask relaunch_task_;
+
+  // registering connect/disconnect/can_sink_caps:
+  ShmdataConnector shmcntr_;
+  GstVideoTimelapseConfig timelapse_config_;
+  std::map<std::string, std::unique_ptr<GstVideoTimelapse>> timelapse_{};
 
   bool init() final;
   bool on_shmdata_disconnect(const std::string& shmdata_sochet_path);

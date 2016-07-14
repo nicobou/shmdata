@@ -91,7 +91,7 @@ PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
   /* Must create a pool factory before we can allocate any memory. */
   pj_caching_pool_init(&cp_, &pj_pool_factory_default_policy, 0);
   /* Create application pool for misc. */
-  pool_ = pj_pool_create(&cp_.factory, "switcher_sip", 1000, 1000, nullptr);
+  pool_ = pj_pool_create(&cp_.factory, "switcher_sip", 8000, 8000, nullptr);
   // pj_dns_resolver *resv = pjsip_endpt_get_resolver(sip_endpt_);
   // if (nullptr == resv) printf ("NULL RESOLVER -------------------------\n");
   pj_dns_resolver* resv;

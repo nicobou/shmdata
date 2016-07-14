@@ -39,9 +39,9 @@ class VideoTestSource : public Quiddity, public StartableQuiddity {
 
  private:
   std::string shmpath_{};
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
   UGstElem videotestsrc_{"videotestsrc"};
   UGstElem shmdatasink_{"shmdatasink"};
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
   std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
   std::unique_ptr<GstVideoCodec> codecs_{nullptr};
   bool start() final;

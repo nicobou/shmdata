@@ -23,7 +23,6 @@
 #include <gst/gst.h>
 #include <functional>
 #include <map>
-#include <mutex>
 #include "decodebin-to-shmdata.hpp"
 
 namespace switcher {
