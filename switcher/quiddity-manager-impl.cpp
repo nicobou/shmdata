@@ -21,6 +21,7 @@
 #include <gio/gio.h>
 
 #include <fstream>
+#include <regex>
 #include <streambuf>
 #include <string>
 
@@ -254,11 +255,16 @@ std::string QuiddityManager_Impl::create(const std::string& quiddity_class) {
 
 std::string QuiddityManager_Impl::create(const std::string& quiddity_class,
                                          const std::string& raw_nick_name) {
-  std::string nick_name = StringUtils::replace_chars(
-      raw_nick_name,
-      {';', '/', '[', ']', '&', '~', '*', '`', '#', '$', '|', '\'', '"', '<', '>'},
-      ' ');
-  if (!class_exists(quiddity_class) || nick_name.empty()) return std::string();
+  // only alphanum char, space and '-' are allowed
+  std::string nick_name = std::regex_replace(raw_nick_name, std::regex("[^[:alnum:]| ]"), "-");
+  if (!class_exists(quiddity_class)) {
+    g_warning("cannot create quiddity: class %s is unknown", quiddity_class.c_str());
+    return std::string();
+  }
+  if (nick_name.empty()) {
+    g_warning("cannot create quiddity: nick name is empty");
+    return std::string();
+  }
   auto it = quiddities_.find(nick_name);
   if (quiddities_.end() != it) {
     g_warning("cannot create a quiddity named %s, name is already taken", nick_name.c_str());

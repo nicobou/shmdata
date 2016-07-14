@@ -32,10 +32,6 @@ std::string replace_char(const std::string& orig,
 std::string replace_string(const std::string& orig,
                            const std::string& to_replace,
                            const std::string& replacement);
-std::string replace_chars(const std::string& orig,
-                          const std::vector<char>& to_replace,
-                          const char replacement);
-
 }  // namespace StringUtils
 }  // namespace switcher
 #endif
