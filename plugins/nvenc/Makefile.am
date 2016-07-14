@@ -74,6 +74,6 @@ check_PROGRAMS = \
     check_nvenc
 
 check_nvenc_SOURCES = \
-    check_nvenc.cpp
+    encoder/check_nvenc.cpp
 
 TESTS = $(check_PROGRAMS)
