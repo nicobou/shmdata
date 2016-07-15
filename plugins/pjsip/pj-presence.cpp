@@ -444,7 +444,10 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
                                    false);  // do not signal since the tree will be updated
   if (!tree) tree = InfoTree::make();
   // writing status and state
-  tree->graft(".status", InfoTree::make(status));
+  if (std::string(info.status_text.ptr, (size_t)info.status_text.slen) == "Offline")
+    tree->graft(".status", InfoTree::make("Offline"));
+  else
+    tree->graft(".status", InfoTree::make(status));
   tree->graft(".status_text",
               InfoTree::make(std::string(info.status_text.ptr, (size_t)info.status_text.slen)));
   tree->graft(".subscription_state", InfoTree::make(std::string(info.sub_state_name)));
@@ -453,8 +456,8 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
 }
 
 void PJPresence::change_online_status(gint status) {
+  if (custom_status_ == "Offline") custom_status_.clear();
   if (-1 == account_id_) return;
-  pj_bool_t online_status = PJ_TRUE;
   pjrpid_element elem;
   pj_bzero(&elem, sizeof(elem));
   elem.type = PJRPID_ELEMENT_TYPE_PERSON;
@@ -470,32 +473,30 @@ void PJPresence::change_online_status(gint status) {
     tmp = g_strdup(custom_status_.c_str());
     elem.note = pj_str(tmp);
   }
+  std::string tmp_status;
   switch (status) {
     case AVAILABLE:
-      if (!has_custom_status) {
-        pj_cstr(&elem.note, "Available");
-        custom_status_ = "Available";
-      }
+      tmp_status = "Available";
       break;
     case BUSY:
       elem.activity = PJRPID_ACTIVITY_BUSY;
-      if (!has_custom_status) {
-        pj_cstr(&elem.note, "Busy");
-        custom_status_ = "Busy";
-      }
+      tmp_status = "Busy";
       break;
     case AWAY:
       elem.activity = PJRPID_ACTIVITY_AWAY;
-      if (!has_custom_status) {
-        pj_cstr(&elem.note, "Away");
-        custom_status_ = "Away";
-      }
+      tmp_status = "Away";
       break;
     case OFFLINE:
-      online_status = PJ_FALSE;
+      // use away since we do not want to actually go offline
+      elem.activity = PJRPID_ACTIVITY_AWAY;
+      tmp_status = "Offline";
       break;
   }
-  pjsua_acc_set_online_status2(account_id_, online_status, &elem);
+  if (!has_custom_status && !tmp_status.empty()) {
+    pj_cstr(&elem.note, tmp_status.c_str());
+    custom_status_ = tmp_status;
+  }
+  pjsua_acc_set_online_status2(account_id_, PJ_TRUE, &elem);
 }
 
 /*
