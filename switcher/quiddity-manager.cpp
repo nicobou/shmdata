@@ -18,8 +18,12 @@
  */
 
 #include <string.h>
+#include <fstream>
+#include <streambuf>
+#include <string>
 
 #include "./gst-utils.hpp"
+#include "./information-tree-json.hpp"
 #include "./quiddity-manager.hpp"
 #include "./quiddity.hpp"
 #include "./scope-exit.hpp"
@@ -61,14 +65,15 @@ std::string QuiddityManager::get_name() const { return name_; }
 void QuiddityManager::reset_command_history(bool remove_created_quiddities) {
   if (remove_created_quiddities) {
     manager_impl_->mute_signal_subscribers(true);
-    for (auto& it : command_history_) {
+    for (auto& it : command_history_.history_) {
       if (g_str_has_prefix(QuiddityCommand::get_string_from_id(it->id_), "create"))
         manager_impl_->remove(it->result_[0]);
     }
     manager_impl_->mute_signal_subscribers(false);
   }
   history_begin_time_ = g_get_monotonic_time();
-  command_history_.clear();
+  command_history_.history_.clear();
+  command_history_.quiddities_user_data_ = InfoTree::make();
 }
 
 void QuiddityManager::command_lock() {
@@ -101,7 +106,7 @@ void QuiddityManager::command_unlock() {
          command_->args_[1] == "last_midi_event_to_property") ||
         (QuiddityCommand::invoke == command_->id_ &&
          command_->args_[1] == "next_midi_event_to_property")))
-    command_history_.push_back(command_);
+    command_history_.history_.push_back(command_);
   seq_mutex_.unlock();
 }
 
@@ -114,7 +119,7 @@ void QuiddityManager::play_command_history(QuiddityManager::CommandHistory histo
     manager_impl_->mute_signal_subscribers(true);
   }
   if (debug) g_print("start playing history\n");
-  for (auto& it : histo) {
+  for (auto& it : histo.history_) {
     // do not run commands that not supposed to be saved
     if (!must_be_saved(it->id_)) continue;
     // do not run creates that failed
@@ -157,51 +162,66 @@ void QuiddityManager::play_command_history(QuiddityManager::CommandHistory histo
     }
   }  // end for (auto &it : histo)
   if (debug) g_print("finished playing history\n");
+  // applying user data to quiddities
+  if (histo.quiddities_user_data_) {
+    auto quids = histo.quiddities_user_data_->get_child_keys(".");
+    for (auto& it : quids) {
+      if (manager_impl_->has_instance(it)) {
+        auto child_keys = histo.quiddities_user_data_->get_child_keys(it);
+        for (auto& kit : child_keys) {
+          manager_impl_->user_data<MPtr(&InfoTree::graft)>(
+              it, kit, histo.quiddities_user_data_->get_tree(it + "." + kit));
+        }
+      }
+    }
+  }
   if (mute_existing_subscribers) {
     manager_impl_->mute_signal_subscribers(false);
   }
 }
 
 std::vector<std::string> QuiddityManager::get_signal_subscribers_names(
-    QuiddityManager::CommandHistory histo) {
+    const CommandHistory& histo) {
   std::vector<std::string> res;
-  for (auto& it : histo)
+  for (auto& it : histo.history_)
     if (it->id_ == QuiddityCommand::make_signal_subscriber) res.push_back(it->args_[0]);
   return res;
 }
 
 QuiddityManager::CommandHistory QuiddityManager::get_command_history_from_file(
     const char* file_path) {
-  std::vector<QuiddityCommand::ptr> res;
-  JsonParser* parser = json_parser_new();
-  GError* error = nullptr;
-  json_parser_load_from_file(parser, file_path, &error);
-  if (error != nullptr) {
-    g_warning("%s", error->message);
-    g_object_unref(parser);
-    g_error_free(error);
+  CommandHistory res;
+  // opening file
+  std::ifstream file_stream(file_path);
+  if (!file_stream) {
+    g_warning("cannot open %s for loading history", file_path);
     return res;
   }
-
-  JsonNode* root_node = json_parser_get_root(parser);
-  JsonReader* reader = json_reader_new(root_node);
-  if (!json_reader_read_member(reader, "history")) {
-    g_object_unref(reader);
-    g_object_unref(parser);
-    g_debug("QuiddityManager::replay_command_history, no \"history\" member found");
+  // get file content into a string
+  file_stream.seekg(0, std::ios::end);
+  auto size = file_stream.tellg();
+  if (0 == size) {
+    g_warning("file %s is empty", file_path);
     return res;
   }
-
-  gint num_elements = json_reader_count_elements(reader);
-  int i;
-  for (i = 0; i < num_elements; i++) {
-    json_reader_read_element(reader, i);
-    res.push_back(QuiddityCommand::parse_command_from_json_reader(reader));
+  std::string file_str;
+  file_str.reserve(size);
+  file_stream.seekg(0, std::ios::beg);
+  file_str.assign((std::istreambuf_iterator<char>(file_stream)), std::istreambuf_iterator<char>());
+  // building the tree
+  auto tree = JSONSerializer::deserialize(file_str);
+  if (!tree) {
+    g_warning("saved history cannot be constructed from file %s", file_path);
+    return res;
   }
-  json_reader_end_element(reader);
-
-  g_object_unref(reader);
-  g_object_unref(parser);
+  // history
+  auto histo_str = std::string("history.");
+  auto commands_paths = tree->get_child_keys(histo_str);
+  for (auto& it : commands_paths) {
+    res.history_.push_back(QuiddityCommand::make_command_from_tree(tree->get_tree(histo_str + it)));
+  }
+  // user data tree
+  res.quiddities_user_data_ = tree->get_tree("userdata.");
   return res;
 }
 
@@ -222,12 +242,7 @@ bool QuiddityManager::save_command_history(const char* file_path) const {
     return false;
   }
 
-  JSONBuilder::ptr builder;
-  builder.reset(new JSONBuilder());
-  builder->reset();
-  builder->begin_object();
-  builder->set_member_name("history");
-  builder->begin_array();
+  InfoTree::ptr tree = InfoTree::make();
 
   // FIXME: Remove when new save system is in place.
   // Here to manage properties set by code and not by the UI.
@@ -248,11 +263,20 @@ bool QuiddityManager::save_command_history(const char* file_path) const {
     }
   }
 
-  for (auto& it : command_history_) builder->add_node_value(it->get_json_root_node());
-  builder->end_array();
-  builder->end_object();
+  for (unsigned int i = 0; i < command_history_.history_.size(); i++) {
+    tree->graft(std::string("history.") + std::to_string(i),
+                command_history_.history_[i]->get_info_tree());
+  }
+  tree->tag_as_array("history", true);
 
-  gchar* history = g_strdup(builder->get_string(true).c_str());
+  for (auto& quid_name : get_quiddities()) {
+    auto quid_user_data_tree = user_data<MPtr(&InfoTree::get_tree)>(quid_name, ".");
+    if (!quid_user_data_tree->empty()) {
+      tree->graft(".userdata." + quid_name, user_data<MPtr(&InfoTree::get_tree)>(quid_name, "."));
+    }
+  }
+
+  gchar* history = g_strdup(JSONSerializer::serialize(tree.get()).c_str());
   g_output_stream_write(
       (GOutputStream*)file_stream, history, sizeof(gchar) * strlen(history), nullptr, &error);
   g_free(history);
@@ -757,7 +781,7 @@ bool QuiddityManager::set_str_wrapper(const std::string& quid,
   command_->add_arg(std::to_string(id));
   command_->add_arg(val);
   command_->result_ = {"n/a"};
-  if (must_be_saved(command_->id_)) command_history_.push_back(command_);
+  if (must_be_saved(command_->id_)) command_history_.history_.push_back(command_);
   seq_mutex_.unlock();
   return manager_impl_->props<MPtr(&PContainer::set_str)>(quid, id, val);
 }
@@ -774,7 +798,7 @@ bool QuiddityManager::set_str_str_wrapper(const std::string& quid,
   command_->add_arg(strid);
   command_->add_arg(val);
   command_->result_ = {"n/a"};
-  if (must_be_saved(command_->id_)) command_history_.push_back(command_);
+  if (must_be_saved(command_->id_)) command_history_.history_.push_back(command_);
   seq_mutex_.unlock();
   return manager_impl_->props<MPtr(&PContainer::set_str_str)>(quid, strid, val);
 }

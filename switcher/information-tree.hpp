@@ -84,6 +84,7 @@ class InfoTree {
   static InfoTree::ptrc get_subtree(InfoTree::ptrc tree, const std::string& path);
 
   // const methods
+  bool empty() const;
   bool is_leaf() const;
   bool is_array() const;
   bool has_data() const;

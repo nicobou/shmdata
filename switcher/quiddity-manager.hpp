@@ -40,16 +40,20 @@
 namespace switcher {
 class QuiddityManager {
  public:
-  typedef std::shared_ptr<QuiddityManager> ptr;
-  typedef std::vector<QuiddityCommand::ptr> CommandHistory;
+  using ptr = std::shared_ptr<QuiddityManager>;
+  struct CommandHistory {
+    std::vector<QuiddityCommand::ptr> history_{};
+    InfoTree::ptr quiddities_user_data_{nullptr};
+    bool empty() { return history_.empty(); }
+  };
   using PropCallback = std::function<void(const std::string& val)>;
-  typedef void (*SignalCallback)(const std::string& subscriber_name,
-                                 const std::string& quiddity_name,
-                                 const std::string& signal_name,
-                                 const std::vector<std::string>& params,
-                                 void* user_data);
-  typedef std::map<std::string, std::pair<PropCallback, void*>> PropCallbackMap;
-  typedef std::map<std::string, std::pair<SignalCallback, void*>> SignalCallbackMap;
+  using SignalCallback = void (*)(const std::string& subscriber_name,
+                                  const std::string& quiddity_name,
+                                  const std::string& signal_name,
+                                  const std::vector<std::string>& params,
+                                  void* user_data);
+  using PropCallbackMap = std::map<std::string, std::pair<PropCallback, void*>>;
+  using SignalCallbackMap = std::map<std::string, std::pair<SignalCallback, void*>>;
 
   ~QuiddityManager();  // FIXME should be private?
   static QuiddityManager::ptr make_manager(const std::string& name);
@@ -61,7 +65,7 @@ class QuiddityManager {
   // ***********************************************************
   bool save_command_history(const char* file_path) const;
   static CommandHistory get_command_history_from_file(const char* file_path);
-  std::vector<std::string> get_signal_subscribers_names(QuiddityManager::CommandHistory histo);
+  std::vector<std::string> get_signal_subscribers_names(const CommandHistory& histo);
   void play_command_history(QuiddityManager::CommandHistory histo,
                             QuiddityManager::PropCallbackMap* prop_cb_data,
                             QuiddityManager::SignalCallbackMap* sig_cb_data,

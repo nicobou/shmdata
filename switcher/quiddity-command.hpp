@@ -24,11 +24,12 @@
 #ifndef __SWITCHER_QUIDDITY_COMMAND_H__
 #define __SWITCHER_QUIDDITY_COMMAND_H__
 
+#include <glib.h>  // gint64
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-#include "./json-builder.hpp"
+#include "./information-tree.hpp"
 
 namespace switcher {
 class QuiddityCommand {
@@ -69,7 +70,6 @@ class QuiddityCommand {
     unsubscribe_signal
   };
 
-  QuiddityCommand();
   command id_{invalid_command};
   std::vector<std::string> args_{};
   std::vector<std::string> vector_arg_{};
@@ -83,11 +83,10 @@ class QuiddityCommand {
   void set_vector_arg(std::vector<std::string> vector_arg);
   static command get_id_from_string(const char* com);
   static const char* get_string_from_id(QuiddityCommand::command id);
-  static QuiddityCommand::ptr parse_command_from_json_reader(JsonReader* reader);
-  JSONBuilder::Node get_json_root_node();
-  JSONBuilder::ptr json_builder_{};
+  static QuiddityCommand::ptr make_command_from_tree(InfoTree::ptr tree);
   static const std::map<int, const char*> command_names_;
+  InfoTree::ptr get_info_tree() const;
 };
-}  // namespace switcher
 
+}  // namespace switcher
 #endif

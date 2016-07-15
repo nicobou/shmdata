@@ -58,6 +58,11 @@ InfoTree::InfoTree(const Any& data) : data_(data) {}
 
 InfoTree::InfoTree(Any&& data) : data_(data) {}
 
+bool InfoTree::empty() const {
+  std::lock_guard<std::mutex> lock(mutex_);
+  return children_.empty() && data_.is_null();
+}
+
 bool InfoTree::is_leaf() const {
   std::lock_guard<std::mutex> lock(mutex_);
   return children_.empty();
