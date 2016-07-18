@@ -14,38 +14,40 @@
 
 #include "./reader.hpp"
 
-namespace shmdata{
+namespace shmdata {
 
-Reader::Reader(const std::string &path,
+Reader::Reader(const std::string& path,
                onData cb,
                onServerConnected osc,
                onServerDisconnected osd,
-               AbstractLogger *log) :
-    log_(log),
-    path_(path),
-    on_data_cb_(cb),
-    on_server_connected_cb_(osc),
-    on_server_disconnected_cb_(osd),
-    proto_([this](){on_server_connected();},
-           [this](){on_server_disconnected();},
-           [this](size_t size){
-	     if (0 == cur_size_)
-	       cur_size_ = size;
-	     if (size > cur_size_)  // a resize has been done
-	       shm_.reset(new sysVShm(ftok(path_.c_str(), 'n'), 0, log_, /* owner = */ false));
-	     on_buffer(this->sem_.get(), size);
-	   }),  // read when update is received
-    cli_(new UnixSocketClient(path, log_)){
+               AbstractLogger* log)
+    : log_(log),
+      path_(path),
+      on_data_cb_(cb),
+      on_server_connected_cb_(osc),
+      on_server_disconnected_cb_(osd),
+      proto_([this]() { on_server_connected(); },
+             [this]() { on_server_disconnected(); },
+             [this](size_t size) {
+               if (0 == cur_size_) cur_size_ = size;
+               if (size > cur_size_)  // a resize has been done
+                 shm_.reset(new sysVShm(ftok(path_.c_str(), 'n'),
+                                        0,
+                                        log_,
+                                        /* owner = */ false));
+               on_buffer(this->sem_.get(), size);
+             }),  // read when update is received
+      cli_(new UnixSocketClient(path, log_)) {
   if (!cli_ || !(*cli_.get())) {
-    //log_->debug("reader initialization failed (initializing socket client)");
+    // log_->debug("reader initialization failed (initializing socket client)");
     cli_.reset(nullptr);
-  
+
     return;
   }
   shm_.reset(new sysVShm(ftok(path.c_str(), 'n'), 0, log_, /* owner = */ false));
   sem_.reset(new sysVSem(ftok(path.c_str(), 'm'), log_, /* owner = */ false));
-  if (!*shm_.get() || !*sem_.get() || !cli_->start(&proto_)){
-    //log_->debug("reader initialization failed");
+  if (!*shm_.get() || !*sem_.get() || !cli_->start(&proto_)) {
+    // log_->debug("reader initialization failed");
     cli_.reset();
     shm_.reset();
     sem_.reset();
@@ -55,26 +57,22 @@ Reader::Reader(const std::string &path,
   log_->debug("reader initialization done");
 }
 
-void Reader::on_server_connected(){
+void Reader::on_server_connected() {
   log_->debug("received server info, shm_size %, type %",
-                std::to_string(proto_.data_.shm_size_),
-                proto_.data_.user_data_.data());
-  if (on_server_connected_cb_)
-    on_server_connected_cb_(proto_.data_.user_data_.data());
+              std::to_string(proto_.data_.shm_size_),
+              proto_.data_.user_data_.data());
+  if (on_server_connected_cb_) on_server_connected_cb_(proto_.data_.user_data_.data());
 }
 
-void Reader::on_server_disconnected(){
+void Reader::on_server_disconnected() {
   log_->debug("disconnected from server");
-  if (on_server_disconnected_cb_)
-    on_server_disconnected_cb_();
+  if (on_server_disconnected_cb_) on_server_disconnected_cb_();
 }
 
-bool Reader::on_buffer(sysVSem *sem, size_t size){
+bool Reader::on_buffer(sysVSem* sem, size_t size) {
   ReadLock lock(sem);
-  if (!lock) 
-    return false;
-  if (on_data_cb_)
-    on_data_cb_(shm_->get_mem(), size);
+  if (!lock) return false;
+  if (on_data_cb_) on_data_cb_(shm_->get_mem(), size);
   return true;
 }
 

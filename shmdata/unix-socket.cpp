@@ -12,21 +12,19 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/un.h>
-#include <errno.h>
-#include <string.h>
-#include <string>
 #include "./unix-socket.hpp"
+#include <errno.h>
+#include <fcntl.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/un.h>
+#include <unistd.h>
+#include <string>
 
-namespace shmdata{
+namespace shmdata {
 
-UnixSocket::UnixSocket(AbstractLogger *log) :
-    log_(log),
-    fd_(socket(AF_UNIX, SOCK_STREAM, 0)){
+UnixSocket::UnixSocket(AbstractLogger* log) : log_(log), fd_(socket(AF_UNIX, SOCK_STREAM, 0)) {
   if (-1 == fd_) {
     int err = errno;
     log_->error("socket: %", strerror(err));
@@ -36,26 +34,24 @@ UnixSocket::UnixSocket(AbstractLogger *log) :
     int err = errno;
     log_->error("fcntl(F_GETFL): %", strerror(err));
   }
-  if (fcntl(fd_, F_SETFL, flags | O_NONBLOCK | FD_CLOEXEC) < 0){
+  if (fcntl(fd_, F_SETFL, flags | O_NONBLOCK | FD_CLOEXEC) < 0) {
     int err = errno;
     log_->error("fcntl(F_SETFL): %", strerror(err));
   }
 #ifdef SO_NOSIGPIPE
   int set = 1;
-  setsockopt(fd_, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
+  setsockopt(fd_, SOL_SOCKET, SO_NOSIGPIPE, (void*)&set, sizeof(int));
 #endif
 }
 
 UnixSocket::~UnixSocket() {
-  if(is_valid()) {
-    if (0 != close(fd_)){
+  if (is_valid()) {
+    if (0 != close(fd_)) {
       int err = errno;
       log_->error("closing socket %", strerror(err));
     }
   }
 }
-bool UnixSocket::is_valid() const {
-  return -1 != fd_;
-}
+bool UnixSocket::is_valid() const { return -1 != fd_; }
 
 }  // namespace shmdata

@@ -1,0 +1,5 @@
+BasedOnStyle: Google
+BinPackArguments: false
+BinPackParameters: false
+DerivePointerAlignment: false
+ColumnLimit: 100

@@ -15,33 +15,33 @@
 #ifndef _SHMDATA_READER_H_
 #define _SHMDATA_READER_H_
 
-#include <string>
 #include <memory>
-#include "shmdata/sysv-shm.hpp"
-#include "shmdata/sysv-sem.hpp"
-#include "shmdata/unix-socket-client.hpp"
-#include "./safe-bool-idiom.hpp"
+#include <string>
 #include "./abstract-logger.hpp"
+#include "./safe-bool-idiom.hpp"
+#include "shmdata/sysv-sem.hpp"
+#include "shmdata/sysv-shm.hpp"
+#include "shmdata/unix-socket-client.hpp"
 
-namespace shmdata{
-class Reader: public SafeBoolIdiom {
+namespace shmdata {
+class Reader : public SafeBoolIdiom {
  public:
-  using onData = std::function<void(void *, size_t)>;
-  using onServerConnected = std::function<void(const std::string &)>;
+  using onData = std::function<void(void*, size_t)>;
+  using onServerConnected = std::function<void(const std::string&)>;
   using onServerDisconnected = std::function<void()>;
-  Reader(const std::string &path,
+  Reader(const std::string& path,
          onData cb,
          onServerConnected osc,
          onServerDisconnected osd,
-         AbstractLogger *log);
+         AbstractLogger* log);
   ~Reader() = default;
   Reader() = delete;
-  Reader(const Reader &) = delete;
+  Reader(const Reader&) = delete;
   Reader& operator=(const Reader&) = delete;
   Reader& operator=(Reader&&) = default;
 
  private:
-  AbstractLogger *log_;
+  AbstractLogger* log_;
   std::string path_;
   size_t cur_size_{0};  // 0 for unknown
   onData on_data_cb_;
@@ -52,10 +52,10 @@ class Reader: public SafeBoolIdiom {
   UnixSocketProtocol::ClientSide proto_;
   std::unique_ptr<UnixSocketClient> cli_;
   bool is_valid_{false};
-  bool is_valid() const final{return is_valid_;}
+  bool is_valid() const final { return is_valid_; }
   void on_server_connected();
   void on_server_disconnected();
-  bool on_buffer(sysVSem *sem, size_t size);
+  bool on_buffer(sysVSem* sem, size_t size);
 };
 
 }  // namespace shmdata

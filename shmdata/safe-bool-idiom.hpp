@@ -20,12 +20,12 @@
 #ifndef __SHMDATA_SAFE_BOOL_IDIOM_H__
 #define __SHMDATA_SAFE_BOOL_IDIOM_H__
 
-
 namespace shmdata {
 class SafeBoolIdiom {
  public:
-  virtual ~SafeBoolIdiom(){}
-  explicit operator bool() const {return is_valid();}
+  virtual ~SafeBoolIdiom() {}
+  explicit operator bool() const { return is_valid(); }
+
  private:
   virtual bool is_valid() const = 0;
 };

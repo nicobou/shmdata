@@ -12,38 +12,35 @@
  * GNU Lesser General Public License for more details.
  */
 
-
 #ifndef _SHMDATA_UNIX_SOCKET_PROTOCOL_H_
 #define _SHMDATA_UNIX_SOCKET_PROTOCOL_H_
 
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <string>
-#include <functional>
+#include <sys/types.h>
 #include <array>
+#include <functional>
+#include <string>
 
-namespace shmdata{
-namespace UnixSocketProtocol{
+namespace shmdata {
+namespace UnixSocketProtocol {
 
 struct onConnectData {
-  onConnectData(size_t shm_size,
-                const std::string &user_data);
+  onConnectData(size_t shm_size, const std::string& user_data);
   onConnectData() = default;
   // data to distribute by server at connection
-  const unsigned short msg_type_{0}; 
+  const unsigned short msg_type_{0};
   size_t shm_size_{0};
-  std::array<char, 4096> user_data_{{}};  
+  std::array<char, 4096> user_data_{{}};
 };
 
 struct UpdateMsg {
-  const unsigned short msg_type_{1}; 
+  const unsigned short msg_type_{1};
   size_t size_{0};
 };
 
 struct QuitMsg {
-  const unsigned short msg_type_{2}; 
+  const unsigned short msg_type_{2};
 };
-
 
 // Server -----------------------------------------------------
 struct ServerSide {
@@ -56,13 +53,8 @@ struct ServerSide {
   MsgOnConnect get_connect_msg_;
   UpdateMsg update_msg_{};
   QuitMsg quit_msg_{};
-  ServerSide(onClientConnect occ,
-             onClientDisconnect ocd,
-             MsgOnConnect gocm) :
-      on_connect_cb_(occ),
-      on_disconnect_cb_(ocd),
-      get_connect_msg_(gocm) {
-  }
+  ServerSide(onClientConnect occ, onClientDisconnect ocd, MsgOnConnect gocm)
+      : on_connect_cb_(occ), on_disconnect_cb_(ocd), get_connect_msg_(gocm) {}
 };
 
 // Client -----------------------------------------------------
@@ -77,15 +69,9 @@ struct ClientSide {
   onUpdate on_update_cb_{};
   UpdateMsg update_msg_{};
   QuitMsg quit_msg_{};
-  ClientSide(onServerConnected osc,
-             onServerDisconnected osd,
-             onUpdate ou) :
-      on_connect_cb_(osc),
-      on_disconnect_cb_(osd),
-      on_update_cb_(ou) {
-  }
+  ClientSide(onServerConnected osc, onServerDisconnected osd, onUpdate ou)
+      : on_connect_cb_(osc), on_disconnect_cb_(osd), on_update_cb_(ou) {}
 };
-
 
 }  // namespace UnixSocketProtocol
 }  // namespace shmdata

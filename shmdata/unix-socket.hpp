@@ -12,30 +12,30 @@
  * GNU Lesser General Public License for more details.
  */
 
-
 #ifndef _SHMDATA_UNIX_SOCKET_H_
 #define _SHMDATA_UNIX_SOCKET_H_
 
 #include <string>
-#include "./safe-bool-idiom.hpp"
 #include "./abstract-logger.hpp"
+#include "./safe-bool-idiom.hpp"
 
-namespace shmdata{
+namespace shmdata {
 class UnixSocketServer;
 class UnixSocketClient;
 
-class UnixSocket: public SafeBoolIdiom {
+class UnixSocket : public SafeBoolIdiom {
   friend UnixSocketServer;
   friend UnixSocketClient;
+
  public:
-  UnixSocket(AbstractLogger *log);
+  UnixSocket(AbstractLogger* log);
   ~UnixSocket();
-  UnixSocket(const UnixSocket &) = delete;
+  UnixSocket(const UnixSocket&) = delete;
   UnixSocket& operator=(const UnixSocket&) = delete;
   UnixSocket& operator=(UnixSocket&&) = default;
-  
+
  private:
-  AbstractLogger *log_;
+  AbstractLogger* log_;
   int fd_{-1};
   bool is_valid() const final;
 };

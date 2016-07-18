@@ -12,18 +12,18 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <time.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
 #include "./file-monitor.hpp"
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <time.h>
 
-namespace shmdata{
-namespace fileMonitor{
+namespace shmdata {
+namespace fileMonitor {
 
-bool is_unix_socket(const std::string &path, AbstractLogger *log){
+bool is_unix_socket(const std::string& path, AbstractLogger* log) {
   struct stat sb;
   if (stat(path.c_str(), &sb) == -1) {
     // int err = errno;

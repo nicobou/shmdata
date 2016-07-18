@@ -12,54 +12,53 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/un.h>
-#include <stddef.h>
-#include <sys/uio.h>
+#include "./unix-socket-server.hpp"
 #include <errno.h>
+#include <fcntl.h>
+#include <stddef.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <sys/un.h>
+#include <unistd.h>
 #include <algorithm>
 #include <vector>
-#include "./unix-socket-server.hpp"
 
 #ifndef MSG_NOSIGNAL
 #define MSG_NOSIGNAL SO_NOSIGPIPE
 #endif
 
-namespace shmdata{
+namespace shmdata {
 
-bool force_sockserv_cleaning(const std::string &path, AbstractLogger *log){
+bool force_sockserv_cleaning(const std::string& path, AbstractLogger* log) {
   struct stat info;
   if (0 != stat(path.c_str(), &info))
-    return true;  // the dead shmdata may not have left the sochet file 
-  if(!S_ISSOCK(info.st_mode)){
+    return true;  // the dead shmdata may not have left the sochet file
+  if (!S_ISSOCK(info.st_mode)) {
     log->warning("trying to clean something not a socket");
     return false;
   }
-  if (0 == unlink (path.c_str())){
+  if (0 == unlink(path.c_str())) {
     int err = errno;
     log->debug("unlink: %", strerror(err));
-    if (EACCES == err)
-      return false;
+    if (EACCES == err) return false;
   }
   return true;
 }
 
-UnixSocketServer::UnixSocketServer(const std::string &path,
-                                   UnixSocketProtocol::ServerSide *proto,
-                                   AbstractLogger *log,
+UnixSocketServer::UnixSocketServer(const std::string& path,
+                                   UnixSocketProtocol::ServerSide* proto,
+                                   AbstractLogger* log,
                                    std::function<void(int)> on_client_error,
-                                   int max_pending_cnx) :
-    log_(log),
-    path_(path),
-    socket_(log),
-    max_pending_cnx_(max_pending_cnx),
-    proto_(proto),
-    on_client_error_(on_client_error){
+                                   int max_pending_cnx)
+    : log_(log),
+      path_(path),
+      socket_(log),
+      max_pending_cnx_(max_pending_cnx),
+      proto_(proto),
+      on_client_error_(on_client_error) {
   if (!socket_)  // server not valid if socket is not valid
     return;
   if (nullptr == proto)  // server not valid without protocol
@@ -72,14 +71,14 @@ UnixSocketServer::UnixSocketServer(const std::string &path,
   memset(&sock_un, 0, sizeof(sock_un));
   sock_un.sun_family = AF_UNIX;
   strcpy(sock_un.sun_path, path_.c_str());
-  if (bind(socket_.fd_, (struct sockaddr *) &sock_un, sizeof(struct sockaddr_un)) < 0) {
+  if (bind(socket_.fd_, (struct sockaddr*)&sock_un, sizeof(struct sockaddr_un)) < 0) {
     int err = errno;
     log_->error("bind: % (%)", strerror(err), path_);
     return;
   } else {
     is_binded_ = true;
   }
-  if (listen (socket_.fd_, max_pending_cnx_) < 0) {
+  if (listen(socket_.fd_, max_pending_cnx_) < 0) {
     int err = errno;
     log_->error("listen: % (%)", strerror(err), path_);
     return;
@@ -90,28 +89,28 @@ UnixSocketServer::UnixSocketServer(const std::string &path,
 
 UnixSocketServer::~UnixSocketServer() {
   if (done_.valid()) {
-    unlink (path_.c_str());
+    unlink(path_.c_str());
     quit_.store(1);
     done_.get();
     // sending quit
-    for (auto &it: clients_){
+    for (auto& it : clients_) {
       if (-1 == send(it, &proto_->quit_msg_, sizeof(proto_->quit_msg_), MSG_NOSIGNAL)) {
         int err = errno;
         log_->error("send (quit): % (%)", strerror(err), path_);
-      } 
+      }
     }
   }
 }
 
-void UnixSocketServer::start_serving(){
-  if (done_.valid()){
-    log_->warning("shmdata socket server has been asked to start more than once,"
-                  "cancelling invocation");
+void UnixSocketServer::start_serving() {
+  if (done_.valid()) {
+    log_->warning(
+        "shmdata socket server has been asked to start more than once,"
+        "cancelling invocation");
     return;
   }
-  done_ = std::async(std::launch::async,
-                     [](UnixSocketServer *self){self->client_interaction();},
-                     this);
+  done_ = std::async(
+      std::launch::async, [](UnixSocketServer* self) { self->client_interaction(); }, this);
 }
 
 short UnixSocketServer::notify_update(size_t size) {
@@ -120,9 +119,9 @@ short UnixSocketServer::notify_update(size_t size) {
     clients_notified_.clear();
     proto_->update_msg_.size_ = size;
     // re-sending connect message
-    //auto msg = proto_->get_connect_msg_();
-    for (auto &it: clients_){
-      //auto res = send(it, &msg, sizeof(msg), MSG_NOSIGNAL);
+    // auto msg = proto_->get_connect_msg_();
+    for (auto& it : clients_) {
+      // auto res = send(it, &msg, sizeof(msg), MSG_NOSIGNAL);
       auto res = send(it, &proto_->update_msg_, sizeof(proto_->update_msg_), MSG_NOSIGNAL);
       if (-1 == res) {
         int err = errno;
@@ -135,9 +134,7 @@ short UnixSocketServer::notify_update(size_t size) {
   return clients_notified_.size();
 }
 
-bool UnixSocketServer::is_valid() const {
-  return is_binded_ && is_listening_;
-}
+bool UnixSocketServer::is_valid() const { return is_binded_ && is_listening_; }
 
 void UnixSocketServer::client_interaction() {
   fd_set allset;
@@ -158,7 +155,8 @@ void UnixSocketServer::client_interaction() {
       log_->error("select % (&)", strerror(err), path_);
       continue;
     }
-    { std::unique_lock<std::mutex> lock(clients_mutex_);
+    {
+      std::unique_lock<std::mutex> lock(clients_mutex_);
       if (FD_ISSET(socket_.fd_, &rset)) {
         // accept new client request
         auto clifd = accept(socket_.fd_, NULL, NULL);
@@ -175,21 +173,18 @@ void UnixSocketServer::client_interaction() {
           int err = errno;
           log_->debug("send: % (%)", strerror(err), path_);
         } else {
-          if (clifd > maxfd)
-            maxfd = clifd;  // max fd for select()
+          if (clifd > maxfd) maxfd = clifd;  // max fd for select()
           pending_clients_.insert(clifd);
         }
         continue;
       }
       // checking disconnection
-      for (auto &it : clients_) {
+      for (auto& it : clients_) {
         if (FD_ISSET(it, &rset)) {
           auto nread = read(it, &msg_placeholder, sizeof(msg_placeholder));
           if (nread < 0) {
             int err = errno;
-            log_->error("server reading file descriptor for %: (%)",
-                        path_,
-                        strerror(err));
+            log_->error("server reading file descriptor for %: (%)", path_, strerror(err));
             if (clients_notified_.end() != clients_notified_.find(it)) {
               log_->error("notified client quit, recovery (%)", path_);
               on_client_error_(it);
@@ -209,8 +204,7 @@ void UnixSocketServer::client_interaction() {
               int err = errno;
               log_->error("send (ack quit) %", strerror(err));
             }
-            if (proto_->on_disconnect_cb_)
-              proto_->on_disconnect_cb_(it);
+            if (proto_->on_disconnect_cb_) proto_->on_disconnect_cb_(it);
             clients_to_remove.push_back(it);
             FD_CLR(it, &allset);
             close(it);
@@ -218,14 +212,14 @@ void UnixSocketServer::client_interaction() {
         }
       }
       // cleaning clients_ if necessary
-      for (auto &it : clients_to_remove) {
+      for (auto& it : clients_to_remove) {
         auto cli = std::find(clients_.begin(), clients_.end(), it);
         clients_.erase(cli);
         log_->debug("client removed, remaining %", std::to_string(clients_.size()));
       }
       clients_to_remove.clear();
       // checking ack from clients
-      for (auto &it : pending_clients_) {
+      for (auto& it : pending_clients_) {
         if (FD_ISSET(it, &rset)) {
           auto nread = read(it, &msg_placeholder, sizeof(msg_placeholder));
           if (nread < 0) {
@@ -237,21 +231,20 @@ void UnixSocketServer::client_interaction() {
             clients_to_remove.push_back(it);
             FD_CLR(it, &allset);
             close(it);
-          } else { 
+          } else {
             clients_.push_back(it);
             clients_to_remove.push_back(it);
-            if (proto_->on_connect_cb_)
-              proto_->on_connect_cb_(it);
+            if (proto_->on_connect_cb_) proto_->on_connect_cb_(it);
           }
         }
       }
       // removing pending client if necessary
-      for (auto &it : clients_to_remove) {
+      for (auto& it : clients_to_remove) {
         pending_clients_.erase(it);
       }
       clients_to_remove.clear();
     }  // end unique lock
-  }  // while (!quit_)
+  }    // while (!quit_)
 }
 
 }  // namespace shmdata

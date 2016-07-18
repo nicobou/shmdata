@@ -12,46 +12,45 @@
  * GNU Lesser General Public License for more details.
  */
 
-
 #ifndef _SHMDATA_UNIX_SOCKET_SERVER_H_
 #define _SHMDATA_UNIX_SOCKET_SERVER_H_
 
-#include <future>
-#include <vector>
-#include <string>
 #include <atomic>
-#include <unordered_set>
-#include <mutex>
 #include <functional>
 #include <future>
-#include "./safe-bool-idiom.hpp"
-#include "./unix-socket.hpp"
-#include "./unix-socket-protocol.hpp"
+#include <future>
+#include <mutex>
+#include <string>
+#include <unordered_set>
+#include <vector>
 #include "./abstract-logger.hpp"
+#include "./safe-bool-idiom.hpp"
+#include "./unix-socket-protocol.hpp"
+#include "./unix-socket.hpp"
 
-namespace shmdata{
+namespace shmdata {
 
-bool force_sockserv_cleaning(const std::string &path, AbstractLogger *log);
+bool force_sockserv_cleaning(const std::string& path, AbstractLogger* log);
 
-class UnixSocketServer: public SafeBoolIdiom {
+class UnixSocketServer : public SafeBoolIdiom {
  public:
-  UnixSocketServer(const std::string &path,
-                   UnixSocketProtocol::ServerSide *proto,
-                   AbstractLogger *log,
-                   std::function<void(int)> on_client_error = [](int){},
+  UnixSocketServer(const std::string& path,
+                   UnixSocketProtocol::ServerSide* proto,
+                   AbstractLogger* log,
+                   std::function<void(int)> on_client_error = [](int) {},
                    int max_pending_cnx = 10);
   ~UnixSocketServer();
   UnixSocketServer() = delete;
-  UnixSocketServer(const UnixSocketServer &) = delete;
+  UnixSocketServer(const UnixSocketServer&) = delete;
   UnixSocketServer& operator=(const UnixSocketServer&) = delete;
   UnixSocketServer& operator=(UnixSocketServer&&) = default;
 
   void start_serving();
   // return true if at least one notification has been sent
   short notify_update(size_t size = 0);
-  
+
  private:
-  AbstractLogger *log_;
+  AbstractLogger* log_;
   std::string path_;
   UnixSocket socket_;
   int max_pending_cnx_;
@@ -63,7 +62,7 @@ class UnixSocketServer: public SafeBoolIdiom {
   std::mutex clients_mutex_{};
   std::unordered_set<int> clients_notified_{};
   std::unordered_set<int> pending_clients_{};
-  UnixSocketProtocol::ServerSide *proto_;
+  UnixSocketProtocol::ServerSide* proto_;
   std::function<void(int)> on_client_error_;
   bool is_valid() const final;
   void client_interaction();
