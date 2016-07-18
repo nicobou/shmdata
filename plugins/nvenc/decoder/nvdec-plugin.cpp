@@ -127,13 +127,27 @@ void NVdecPlugin::on_shmreader_data(void* data, size_t size) {
   ds_.get()->invoke<MPtr(&NVencDS::process_decoded)>([&](const unsigned char* data_decoded,
                                                          unsigned int data_width,
                                                          unsigned int data_height,
-                                                         unsigned int pitch) {
+                                                         unsigned int pitch,
+                                                         bool& scaled) {
     if (!pitch) return;
     guint8* src = (guint8*)data_decoded;
     guint height = data_height * 3 / 2;  // Only NV12 support for now, 12bpp.
     size_t size = data_width * height;
 
     {
+      if (scaled) {
+        size_t start_width = caps_.find("width=") + 6;
+        size_t end_width = caps_.find_first_of(",", start_width);
+        size_t start_height = caps_.find("height=") + 7;
+        size_t end_height = caps_.find_first_of(",", start_height);
+        caps_.replace(start_width, end_width - start_width, std::to_string(data_width));
+        caps_.replace(start_height, end_height - start_height, std::to_string(data_height));
+        scaled = false;
+        shmwriter_.reset(nullptr);
+        shmwriter_ = std::make_unique<ShmdataWriter>(
+            this, make_file_name("video"), data_width * data_height * 3 / 2, caps_);
+      }
+
       std::unique_ptr<shmdata::OneWriteAccess> shm_ptr;
 
       if (size > shmwriter_->writer<MPtr(&shmdata::Writer::alloc_size)>())
@@ -202,14 +216,18 @@ void NVdecPlugin::on_shmreader_server_connected(const std::string& data_descr) {
     }
   }
 
-  std::string string_caps("video/x-raw, format=NV12, width=" + std::to_string(width) + ", height=" +
-                          std::to_string(height) + ", framerate=" + std::to_string(frame_num) +
-                          "/" + std::to_string(frame_den) + ", pixel-aspect-ratio=1/1");
+  caps_ = "video/x-raw, format=NV12, width=" + std::to_string(width) + ", height=" +
+          std::to_string(height) + ", framerate=" + std::to_string(frame_num) + "/" +
+          std::to_string(frame_den) + ", pixel-aspect-ratio=1/1";
 
   ds_.reset(nullptr);
   shmwriter_.reset(nullptr);
-  shmwriter_ =
-      std::make_unique<ShmdataWriter>(this, make_file_name("video"), 10048576, string_caps);
+
+  shmwriter_ = std::make_unique<ShmdataWriter>(
+      this,
+      make_file_name("video"),
+      width * height * 3 / 2,  // Size is known because only NV12 is supported for now.
+      caps_);
 }
 
 void NVdecPlugin::on_shmreader_server_disconnected() {

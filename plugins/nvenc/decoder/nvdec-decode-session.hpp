@@ -32,20 +32,22 @@ namespace switcher {
 class NVencDS : public SafeBoolIdiom {
  public:
   NVencDS(uint32_t device_id, cudaVideoCodec codec);
-  NVencDS() : NVencDS(0, cudaVideoCodec_H264) {}
-  ~NVencDS();
   NVencDS(const NVencDS&) = delete;
   NVencDS(NVencDS&&) = delete;
+  NVencDS() = delete;
   NVencDS& operator=(const NVencDS&) = delete;
   NVencDS& operator=(NVencDS&&) = delete;
+  ~NVencDS();
   bool safe_bool_idiom() const { return (nullptr != video_decoder_ && nullptr != video_parser_); }
   void parse_data(std::function<void(CUvideoparser)> parse_func) { parse_func(video_parser_); }
 
   void process_decoded(std::function<void(const unsigned char* data_decoded,
                                           unsigned int data_width,
                                           unsigned int data_height,
-                                          unsigned int pitch)> post_process_func) {
-    post_process_func((const unsigned char*)bitstream_, frame_width_, frame_height_, pitch_);
+                                          unsigned int pitch,
+                                          bool& scaled)> post_process_func) {
+    post_process_func(
+        (const unsigned char*)bitstream_, frame_width_, frame_height_, pitch_, scaled_);
   }
 
   static int CUDAAPI HandleVideoSequence(void* pUserData, CUVIDEOFORMAT* pFormat);
@@ -63,6 +65,7 @@ class NVencDS : public SafeBoolIdiom {
   unsigned int frame_width_{0};
   unsigned int frame_height_{0};
   unsigned int pitch_{0};
+  bool scaled_{false};
 };
 }  // namespace switcher
 #endif

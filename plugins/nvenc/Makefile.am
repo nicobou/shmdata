@@ -2,7 +2,7 @@ pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
 plugins_LTLIBRARIES = \
     libnvenc-encoder-plugin.la \
-    libnvenc-decoder-plugin.la 
+    libnvenc-decoder-plugin.la
 
 #libnvenc-plugin info
 libnvenc_encoder_plugin_la_SOURCES = \
@@ -23,13 +23,13 @@ libnvenc_encoder_plugin_la_include_HEADERS = \
 libnvenc_decoder_plugin_la_SOURCES = \
     cuda/cuda-context.cpp \
     decoder/nvdec-plugin.cpp \
-    decoder/nvdec-decode-session.cpp 
+    decoder/nvdec-decode-session.cpp
 
 libnvenc_decoder_plugin_la_include_HEADERS = \
     cuda/cu-res.hpp \
     cuda/cuda-context.hpp \
     decoder/nvdec-plugin.hpp \
-    decoder/nvdec-decode-session.hpp 
+    decoder/nvdec-decode-session.hpp
 
 libnvenc_encoder_plugin_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
@@ -37,7 +37,7 @@ libnvenc_encoder_plugin_la_includedir = \
 libnvenc_decoder_plugin_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
-COMMON_LD_FLAGS = \ 
+COMMON_LD_FLAGS = \
     $(GLIB_LIBS) \
     $(GST_LIBS) \
     $(GMODULE_LIBS) \
@@ -62,10 +62,10 @@ COMMON_CXX_FLAGS = \
 
 libnvenc_encoder_plugin_la_LDFLAGS  = \
     $(COMMON_LD_FLAGS) \
-    -lnvidia-encode 
+    -lnvidia-encode
 libnvenc_encoder_plugin_la_CXXFLAGS = \
     $(COMMON_CXX_FLAGS)
-    
+
 
 libnvenc_decoder_plugin_la_LDFLAGS = \
     $(COMMON_LD_FLAGS) \

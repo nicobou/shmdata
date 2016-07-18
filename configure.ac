@@ -462,8 +462,8 @@ AC_SUBST(NVENCODE_LIBS)
 LIBS="$save_LIBS"
 CPPFLAGS="$save_CPPFLAGS"
 
-if test "x$HAVE_NVIDIA_ENCODE_LIB" = "xyes" \ 
-     -a "x$HAVE_NVIDIA_DECODE_LIB" = "xyes"; then 
+if test "x$HAVE_NVIDIA_ENCODE_LIB" = "xyes" \
+     -a "x$HAVE_NVIDIA_DECODE_LIB" = "xyes"; then
   NVENCBUILD="enabled"
 fi
 AM_CONDITIONAL(NVENCBUILD, test "x${NVENCBUILD}" = "xenabled")

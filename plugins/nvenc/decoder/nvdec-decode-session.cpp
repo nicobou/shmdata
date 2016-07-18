@@ -34,8 +34,8 @@ NVencDS::NVencDS(uint32_t device_id, cudaVideoCodec codec) : cu_ctx_(device_id) 
 
   // Arbitrary initial values, will change when receiving data.
   video_info_.CodecType = cudaVideoCodec_H264;
-  video_info_.ulWidth = 1920;
-  video_info_.ulHeight = 1080;
+  video_info_.ulWidth = 4096;
+  video_info_.ulHeight = 4096;
   video_info_.ChromaFormat = cudaVideoChromaFormat_420;
 
   video_info_.ulNumDecodeSurfaces = kNumDecodeSurfaces;
@@ -80,15 +80,14 @@ NVencDS::NVencDS(uint32_t device_id, cudaVideoCodec codec) : cu_ctx_(device_id) 
 }
 
 NVencDS::~NVencDS() {
-  if (CUDA_SUCCESS != cuvidDestroyVideoParser(video_parser_))
+  if (video_parser_ && CUDA_SUCCESS != cuvidDestroyVideoParser(video_parser_))
     g_warning("Error while destroying NV video parser (nvdec)");
 
-  if (CUDA_SUCCESS != cuvidDestroyDecoder(video_decoder_))
+  if (video_decoder_ && CUDA_SUCCESS != cuvidDestroyDecoder(video_decoder_))
     g_warning("Error while destroying NV video decoder (nvdec)");
 
   if (bitstream_) {
     cuMemFreeHost(bitstream_);
-    bitstream_ = nullptr;
   }
 }
 
@@ -110,6 +109,7 @@ int CUDAAPI NVencDS::HandleVideoSequence(void* user_data, CUVIDEOFORMAT* format)
     ds->video_info_.ChromaFormat = format->chroma_format;
 
     // FIXME: Scaling in case it's a 16:9 format
+    // See post on NVIDIA forum at https://goo.gl/HQRkCz
     if (std::abs(static_cast<float>(ds->video_info_.ulWidth) /
                      static_cast<float>(ds->video_info_.ulHeight) -
                  16.0f / 9.0f) < 0.001f) {
@@ -126,6 +126,8 @@ int CUDAAPI NVencDS::HandleVideoSequence(void* user_data, CUVIDEOFORMAT* format)
         ds->video_info_.ulTargetWidth = 4096;
         ds->video_info_.ulTargetHeight = 2304;
       }
+
+      ds->scaled_ = true;
 
     } else {
       ds->video_info_.ulTargetWidth = ds->video_info_.ulWidth;
