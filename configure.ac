@@ -445,13 +445,25 @@ AC_CHECK_LIB(nvidia-encode,NvEncodeAPICreateInstance,[HAVE_NVIDIA_ENCODE_LIB="ye
     NVENC_LIBS='-L/usr/lib/nvidia-<driver-version-number>' ./configure
     -----------------------
 ])])
-NVENCODE_LIBS="$NVENCODE_LIBS -lnvidia-encode"
+
+HAVE_NVIDIA_DECODE_LIB="no"
+AC_ARG_VAR(NVENC_LIBS, [linker flags for nvcuvid])
+LIBS="$NVENC_LIBS $save_LIBS"
+AC_CHECK_LIB(nvcuvid,cuvidCreateDecoder,[HAVE_NVIDIA_DECODE_LIB="yes"], [
+    AC_MSG_WARN([
+    -----------------------
+    Could not find nvcuvid library (nvdec plugin), try configure with
+    NVENC_LIBS='-L/usr/lib/nvidia-<driver-version-number>' ./configure
+    -----------------------
+])])
+
+NVENCODE_LIBS="$NVENCODE_LIBS -lnvidia-encode -lnvcuvid"
 AC_SUBST(NVENCODE_LIBS)
-LIBS="$saved_LIBS"
+LIBS="$save_LIBS"
 CPPFLAGS="$save_CPPFLAGS"
 
-
-if test "x$HAVE_NVIDIA_ENCODE_LIB" = "xyes"; then
+if test "x$HAVE_NVIDIA_ENCODE_LIB" = "xyes" \
+     -a "x$HAVE_NVIDIA_DECODE_LIB" = "xyes"; then
   NVENCBUILD="enabled"
 fi
 AM_CONDITIONAL(NVENCBUILD, test "x${NVENCBUILD}" = "xenabled")
