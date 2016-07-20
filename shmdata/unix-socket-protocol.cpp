@@ -12,19 +12,17 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include <limits> 
 #include "./unix-socket-protocol.hpp"
+#include <limits>
 
-namespace shmdata{
-namespace UnixSocketProtocol{
+namespace shmdata {
+namespace UnixSocketProtocol {
 
-onConnectData::onConnectData(size_t shm_size,
-                             const std::string &user_data) :
-    shm_size_(shm_size) {
+onConnectData::onConnectData(size_t shm_size, const std::string& user_data) : shm_size_(shm_size) {
   auto size = user_data.size();
   std::copy(user_data.begin(), user_data.end(), user_data_.begin());
   user_data_[size] = '\0';
 }
-    
+
 }  // namespace UnixSocketProtocol
 }  // namespace shmdata

@@ -735,6 +735,10 @@ static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
                                         &gst_shmdata_on_info, 
                                         &gst_shmdata_on_debug, 
                                         self); 
+
+  if (self->shmwriter)
+    shmdata_delete_writer(self->shmwriter);
+
   self->shmwriter = shmdata_make_writer(self->socket_path, 
                                         self->size, 
                                         NULL == self->caps ? "unknown" : self->caps, 

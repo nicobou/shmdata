@@ -2,6 +2,18 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.2.6 (2016-07-20)
+---------------------------
+This is an official release in the 1.2 stable series.
+
+* Delete the writer before recreating it if it already exists in sink_on_caps method.
+* Fixed member order to avoid race condition in destruction.
+* Lock was done too late, provoking a race condition when resizing shmdata.
+* improved gstshmdatasink test
+* Fixed pyshmdata compilation,
+* removing hard coded python version
+* use python3-config instead of pythpon3.4-config
+
 shmdata 1.2.4 (2016-06-07)
 ---------------------------
 This is an official release in the 1.2 stable series.

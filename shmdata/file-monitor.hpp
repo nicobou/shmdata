@@ -12,18 +12,16 @@
  * GNU Lesser General Public License for more details.
  */
 
-
 #ifndef _SHMDATA_FILE_MONITOR_H_
 #define _SHMDATA_FILE_MONITOR_H_
 
 #include <string>
 #include "./abstract-logger.hpp"
 
-namespace shmdata{
-namespace fileMonitor{
+namespace shmdata {
+namespace fileMonitor {
 
-bool is_unix_socket(const std::string &path,
-                    AbstractLogger *log);
+bool is_unix_socket(const std::string& path, AbstractLogger* log);
 
 }  // namespace fileMonitor
 }  // namespace shmdata

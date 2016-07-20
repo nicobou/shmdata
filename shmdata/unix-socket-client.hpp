@@ -12,36 +12,34 @@
  * GNU Lesser General Public License for more details.
  */
 
-
 #ifndef _SHMDATA_UNIX_SOCKET_CLIENT_H_
 #define _SHMDATA_UNIX_SOCKET_CLIENT_H_
 
-#include <string>
-#include <future>
 #include <atomic>
-#include "./safe-bool-idiom.hpp"
-#include "./unix-socket.hpp"
-#include "./unix-socket-protocol.hpp"
+#include <future>
+#include <string>
 #include "./abstract-logger.hpp"
+#include "./safe-bool-idiom.hpp"
+#include "./unix-socket-protocol.hpp"
+#include "./unix-socket.hpp"
 
-namespace shmdata{
+namespace shmdata {
 
-class UnixSocketClient: public SafeBoolIdiom {
+class UnixSocketClient : public SafeBoolIdiom {
  public:
-  UnixSocketClient(const std::string &path,
-                   AbstractLogger *log);
+  UnixSocketClient(const std::string& path, AbstractLogger* log);
   ~UnixSocketClient();
   UnixSocketClient() = delete;
-  UnixSocketClient(const UnixSocketClient &) = delete;
+  UnixSocketClient(const UnixSocketClient&) = delete;
   UnixSocketClient& operator=(const UnixSocketClient&) = delete;
   UnixSocketClient& operator=(UnixSocketClient&&) = default;
 
-  bool start(UnixSocketProtocol::ClientSide *proto);
-  
+  bool start(UnixSocketProtocol::ClientSide* proto);
+
  private:
   std::string path_;
   UnixSocket socket_;
-  AbstractLogger *log_;
+  AbstractLogger* log_;
   std::future<void> done_{};
   std::atomic_short quit_{0};
   // connection
@@ -49,7 +47,7 @@ class UnixSocketClient: public SafeBoolIdiom {
   std::condition_variable cv_{};
   bool connected_{false};
   bool is_valid_{false};
-  UnixSocketProtocol::ClientSide *proto_{nullptr};
+  UnixSocketProtocol::ClientSide* proto_{nullptr};
   bool is_valid() const final;
   void server_interaction();
 };

@@ -12,17 +12,16 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
+#include "./sysv-sem.hpp"
 #include <errno.h>
 #include <string.h>
-#include "./sysv-sem.hpp"
+#include <sys/ipc.h>
+#include <sys/sem.h>
+#include <sys/types.h>
 
+namespace shmdata {
 
-namespace shmdata{
-
-bool force_semaphore_cleaning(key_t key, AbstractLogger *log){
+bool force_semaphore_cleaning(key_t key, AbstractLogger* log) {
   auto semid = semget(key, 2, 0);
   if (semid < 0) {
     int err = errno;
@@ -36,22 +35,22 @@ bool force_semaphore_cleaning(key_t key, AbstractLogger *log){
   return true;
 }
 
-namespace semops{
+namespace semops {
 // sem_num 0 is for reading, 1 is for writer
-static struct sembuf read_start [] = {{1, 0, 0}};     // wait writer
-static struct sembuf read_end [] = {{0, -1, 0}};       // decr reader
-static struct sembuf write_start [] = {{0, 0, 0},     // wait reader is 0
-                                       {1, 1, 0},    // incr writer
-                                       {0, 1, 0}};   // incr reader
-static struct sembuf write_end [] = {{0, -1, 0},     // decr reader
-                                     {1, -1, 0}};    // decr writer
+static struct sembuf read_start[] = {{1, 0, 0}};   // wait writer
+static struct sembuf read_end[] = {{0, -1, 0}};    // decr reader
+static struct sembuf write_start[] = {{0, 0, 0},   // wait reader is 0
+                                      {1, 1, 0},   // incr writer
+                                      {0, 1, 0}};  // incr reader
+static struct sembuf write_end[] = {{0, -1, 0},    // decr reader
+                                    {1, -1, 0}};   // decr writer
 }  // namespace semops
 
-sysVSem::sysVSem(key_t key, AbstractLogger *log, bool owner) :
-    key_ (key),
-    owner_(owner),
-    semid_(semget(key_, 2, owner ? IPC_CREAT | IPC_EXCL | 0666 : 0)),
-    log_(log) {
+sysVSem::sysVSem(key_t key, AbstractLogger* log, bool owner)
+    : key_(key),
+      owner_(owner),
+      semid_(semget(key_, 2, owner ? IPC_CREAT | IPC_EXCL | 0666 : 0)),
+      log_(log) {
   if (semid_ < 0) {
     int err = errno;
     log_->debug("semget: %", strerror(err));
@@ -68,65 +67,54 @@ sysVSem::~sysVSem() {
   }
 }
 
-void sysVSem::cancel_commited_reader(){
-  if (-1 == semop(semid_,
-                  semops::read_end,
-                  sizeof(semops::read_end)/sizeof(*semops::read_end))){
-      int err = errno;
-      log_->error("semop cancel: %", strerror(err));
+void sysVSem::cancel_commited_reader() {
+  if (-1 == semop(semid_, semops::read_end, sizeof(semops::read_end) / sizeof(*semops::read_end))) {
+    int err = errno;
+    log_->error("semop cancel: %", strerror(err));
   }
 }
 
-bool sysVSem::is_valid() const {
-  return 0 < semid_;
-}
+bool sysVSem::is_valid() const { return 0 < semid_; }
 
-ReadLock::ReadLock(sysVSem *sem) :
-    sem_(sem) {
+ReadLock::ReadLock(sysVSem* sem) : sem_(sem) {
   if (-1 == semop(sem_->semid_,
                   semops::read_start,
-                  sizeof(semops::read_start)/sizeof(*semops::read_start))){
+                  sizeof(semops::read_start) / sizeof(*semops::read_start))) {
     int err = errno;
     sem_->log_->debug("semop ReadLock %", strerror(err));
     valid_ = false;
   }
 }
 
-ReadLock::~ReadLock(){
+ReadLock::~ReadLock() {
   if (is_valid())
-    semop(sem_->semid_,
-          semops::read_end,
-          sizeof(semops::read_end)/sizeof(*semops::read_end));
+    semop(sem_->semid_, semops::read_end, sizeof(semops::read_end) / sizeof(*semops::read_end));
 }
 
-WriteLock::WriteLock(sysVSem *sem) :
-    sem_(sem) {
+WriteLock::WriteLock(sysVSem* sem) : sem_(sem) {
   if (-1 == semop(sem_->semid_,
                   semops::write_start,
-                  sizeof(semops::write_start)/sizeof(*semops::write_start))) {
+                  sizeof(semops::write_start) / sizeof(*semops::write_start))) {
     int err = errno;
     sem_->log_->error("semop WriteLock: %", strerror(err));
     valid_ = false;
   }
 }
 
-bool WriteLock::commit_readers(short num_reader){
-  struct sembuf read_commit_reader [] = {{0, num_reader, 0}};
+bool WriteLock::commit_readers(short num_reader) {
+  struct sembuf read_commit_reader[] = {{0, num_reader, 0}};
   if (-1 == semop(sem_->semid_,
                   read_commit_reader,
-                  sizeof(read_commit_reader)/sizeof(*read_commit_reader))) {
+                  sizeof(read_commit_reader) / sizeof(*read_commit_reader))) {
     int err = errno;
     sem_->log_->error("semop commit readers: %", strerror(err));
     return false;
   }
   return true;
 }
-WriteLock::~WriteLock(){
-  if(!is_valid())
-    return;
-  semop(sem_->semid_,
-        semops::write_end,
-        sizeof(semops::write_end)/sizeof(*semops::write_end));
+WriteLock::~WriteLock() {
+  if (!is_valid()) return;
+  semop(sem_->semid_, semops::write_end, sizeof(semops::write_end) / sizeof(*semops::write_end));
 }
 
 }  // namespace shmdata
