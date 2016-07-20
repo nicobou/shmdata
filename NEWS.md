@@ -2,6 +2,22 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.16 (2016-07-20)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* Implementation of hardware decoding with nvcuvid.
+* Port to NVIDIA Codec SDK 6 and build cleanup.
+* SIP quiddity exposes decompressed streams (default) or compressed streams,
+
+Bug fixes:
+* fix SIP status cannot go from offline to something else
+* fix issues with video converter quid (making gst-pixel-format-converter RAII)
+* fix nvenc test
+* notifying user that no more nvenc quiddity can be created,
+* increasing number of simultaneous media in SIP/SDP,
+
 switcher 0.8.14 (2016-07-06)
 ---------------------------
 This is an official release in the 0.8 stable series.

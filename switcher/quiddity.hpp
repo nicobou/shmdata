@@ -50,7 +50,6 @@ class Quiddity {
   friend class ShmdataConnector;
   friend class ShmdataWriter;
   friend class ShmdataFollower;
-  friend class GstPixelFormatConverter;
   friend class GstVideoCodec;
   friend class GstAudioCodec;
   friend class ShmdataDecoder;

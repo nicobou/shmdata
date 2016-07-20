@@ -21,30 +21,30 @@
 #define __SWITCHER_GST_PIXEL_FORMAT_CONVERTER_H__
 
 #include <memory>
-#include "./quiddity.hpp"
 #include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"
-#include "switcher/shmdata-utils.hpp"
+#include "switcher/safe-bool-idiom.hpp"
+#include "switcher/unique-gst-element.hpp"
 
 namespace switcher {
-class GstPixelFormatConverter {
+class GstPixelFormatConverter : public SafeBoolIdiom {
  public:
   using uptr = std::unique_ptr<GstPixelFormatConverter>;
-  GstPixelFormatConverter(Quiddity* quid, const char* property_name, const char* display_text);
+  GstPixelFormatConverter(const std::string& shmpath_to_convert,
+                          const std::string& shmpath_converted,
+                          const std::string& format_name);
   GstPixelFormatConverter() = delete;
   ~GstPixelFormatConverter() = default;
   GstPixelFormatConverter(const GstPixelFormatConverter&) = delete;
   GstPixelFormatConverter& operator=(const GstPixelFormatConverter&) = delete;
 
-  bool start(const std::string& shmpath_to_convert, const std::string& shmpath_converted);
-  bool stop();
+  static std::vector<std::string> get_formats();
+  static bool can_sink_caps(const std::string& caps);
+
+  // for external shm subscribers...
+  GstElement* get_shmsink() { return shm_converted_.get_raw(); }
+  GstElement* get_shmsrc() { return shmsrc_.get_raw(); }
 
  private:
-  Quiddity* quid_;
-  // shmdata path
-  std::string shmpath_to_convert_{};
-  std::string shmpath_converted_{};
-  // gst
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   UGstElem shmsrc_{"shmdatasrc"};
   UGstElem queue_codec_element_{"queue"};
@@ -52,17 +52,12 @@ class GstPixelFormatConverter {
   UGstElem capsfilter_{"capsfilter"};
   UGstElem shm_converted_{"shmdatasink"};
   static const size_t default_initial_shmsize_{67108864};
-  std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
-  std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
-  // custom properties:
-  std::string prop_name_{};  // name to give to the prop to be installed
-  Selection video_format_;
-  PContainer::prop_id_t video_format_id_;
 
-  std::vector<std::string> get_formats();
-  bool disable_property();
-  bool enable_property();
-  std::string get_caps_str() const;
+  // safe bool idiom:
+  bool is_valid_{false};
+
+  std::string get_caps_str(const std::string& format_name) const;
+  bool safe_bool_idiom() const final { return is_valid_; }
 };
 
 }  // namespace switcher

@@ -602,7 +602,8 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
                                              InfoTree::make(byte_rate));
               },
               [=]() { SIPPlugin::this_->prune_tree(".shmdata.writer." + shmpath); }));
-        }));
+        },
+        SIPPlugin::this_->decompress_streams_));
   }
   // Create SDP answer
   create_sdp_answer(dlg->pool, call, media_to_receive, &sdp);
@@ -966,8 +967,7 @@ gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
                                });
 
     if (it_out != context->outgoing_call_.end()) {
-      SIPPlugin::this_->pjsip_->run_async(
-          [&]() { context->make_hang_up((*it_out)->inv, std::string(sip_url)); });
+      SIPPlugin::this_->pjsip_->run_async([&]() { context->make_hang_up((*it_out)->inv); });
       context->call_cv_.wait(lock, [&context]() {
         if (context->call_action_done_) {
           context->call_action_done_ = false;
@@ -986,8 +986,7 @@ gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
         [&sip_url](const call_t& call) { return (std::string(sip_url) == call.peer_uri); });
 
     if (it_inc != context->incoming_call_.end()) {
-      SIPPlugin::this_->pjsip_->run_async(
-          [&]() { context->make_hang_up((*it_inc).inv, std::string(sip_url)); });
+      SIPPlugin::this_->pjsip_->run_async([&]() { context->make_hang_up((*it_inc).inv); });
       context->call_cv_.wait(lock, [&context]() {
         if (context->call_action_done_) {
           context->call_action_done_ = false;
@@ -1002,7 +1001,7 @@ gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
   return FALSE;
 }
 
-void PJCall::make_hang_up(pjsip_inv_session* inv, std::string sip_url) {
+void PJCall::make_hang_up(pjsip_inv_session* inv) {
   pjsip_tx_data* tdata;
   pj_status_t status;
 

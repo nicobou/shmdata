@@ -25,11 +25,13 @@ namespace switcher {
 
 RTPReceiver::RTPReceiver(RtpSession2* session,
                          const std::string& rtpshmpath,
-                         configure_shmsink_cb_t cb)
+                         configure_shmsink_cb_t cb,
+                         bool decompress)
     : session_(session),
       rtpshmpath_(rtpshmpath),
       shmdatasrc_(gst_element_factory_make("shmdatasrc", nullptr)),
       typefind_(gst_element_factory_make("typefind", nullptr)),
+      decompress_(decompress),
       configure_shmsink_cb_(cb),
       decodebin_(
           session_->gst_pipeline_.get(),
@@ -41,7 +43,8 @@ RTPReceiver::RTPReceiver(RtpSession2* session,
               g_warning("BUG, rtp receiver using custom path (%s)", path.c_str());
               g_object_set(G_OBJECT(el), "socket-path", path.c_str(), nullptr);
             }
-          }) {
+          },
+          decompress_) {
   if (nullptr == shmdatasrc_ || nullptr == typefind_) {
     g_warning("RTPReceiver failed to create GStreamer element");
     return;
@@ -70,7 +73,7 @@ RTPReceiver::~RTPReceiver() {
   if (shmsrc_caps_) gst_caps_unref(shmsrc_caps_);
 }
 
-void RTPReceiver::on_caps(GstElement* typefind,
+void RTPReceiver::on_caps(GstElement* /*typefind*/,
                           guint /*probability */,
                           GstCaps* caps,
                           gpointer user_data) {
@@ -93,45 +96,42 @@ void RTPReceiver::on_caps(GstElement* typefind,
     gchar** rtpsession_array = g_strsplit_set(rtp_sink_pad_name, "_", 0);
     On_scope_exit { g_strfreev(rtpsession_array); };
     rtp_id = std::string(rtpsession_array[3]);
-    context->rtp_src_pad_prefix_ = std::string("recv_rtp_src_") + rtp_id;
+    context->rtp_src_pad_prefix_ = std::string("recv_rtp_src_") + rtp_id + '_';
     // TODO send RTCP
   }
 }
 
-void RTPReceiver::on_pad_added(GstElement* object, GstPad* pad, gpointer user_data) {
+void RTPReceiver::on_pad_added(GstElement* /*object*/, GstPad* pad, gpointer user_data) {
   RTPReceiver* context = static_cast<RTPReceiver*>(user_data);
   gchar* name_cstr = gst_pad_get_name(pad);
   On_scope_exit { g_free(name_cstr); };
   auto name = std::string(name_cstr);
-  // if (0 != name.compare(0, 13,"recv_rtp_src_"))
-  //   return;
-  if (!context->rtp_src_pad_prefix_.empty() &&
-      0 ==
-          std::string(name).compare(
-              0, context->rtp_src_pad_prefix_.size(), context->rtp_src_pad_prefix_)) {
-    // g_print("%s -- %s\n", name_cstr, context->rtp_src_pad_prefix_.c_str());
-    if (!context->decodebin_.invoke_with_return<bool>([&](GstElement* el) {
-          if (!gst_bin_add(GST_BIN(context->session_->gst_pipeline_->get_pipeline()), el)) {
-            g_warning("RTPReceiver decodebin cannot be added to pipeline");
-            return false;
-          }
-          GstPad* sinkpad = gst_element_get_static_pad(el, "sink");
-          On_scope_exit { gst_object_unref(sinkpad); };
-          if (gst_pad_link(pad, sinkpad) != GST_PAD_LINK_OK) {
-            g_warning("(BUG) failed to link rtpbin to decodebin");
-            return false;
-          }
-          GstUtils::sync_state_with_parent(el);
-          return true;
-        })) {
-      g_warning("BUG when adding decodebin");
-    }
+  auto& prefix = context->rtp_src_pad_prefix_;
+  // testing if this is the right callback
+  if (prefix.empty() || 0 != std::string(name).compare(0, prefix.size(), prefix)) {
+    return;
+  }
+  if (!context->decodebin_.invoke_with_return<bool>([&](GstElement* el) {
+        if (!gst_bin_add(GST_BIN(context->session_->gst_pipeline_->get_pipeline()), el)) {
+          g_warning("RTPReceiver decodebin cannot be added to pipeline");
+          return false;
+        }
+        GstPad* sinkpad = gst_element_get_static_pad(el, "sink");
+        On_scope_exit { gst_object_unref(sinkpad); };
+        if (gst_pad_link(pad, sinkpad) != GST_PAD_LINK_OK) {
+          g_warning("(BUG) failed to link rtpbin to decodebin");
+          return false;
+        }
+        GstUtils::sync_state_with_parent(el);
+        return true;
+      })) {
+    g_warning("BUG when adding decodebin");
   }
 }
 
-GstCaps* RTPReceiver::request_pt_map(GstElement* sess,
-                                     guint session,
-                                     guint pt,
+GstCaps* RTPReceiver::request_pt_map(GstElement* /*sess*/,
+                                     guint /*session*/,
+                                     guint /*pt*/,
                                      gpointer user_data) {
   RTPReceiver* context = static_cast<RTPReceiver*>(user_data);
   auto caps = context->shmsrc_caps_;

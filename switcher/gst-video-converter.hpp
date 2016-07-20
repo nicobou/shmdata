@@ -22,6 +22,7 @@
 
 #include <memory>
 #include "switcher/gst-pixel-format-converter.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
 
@@ -35,8 +36,15 @@ class GstVideoConverter : public Quiddity {
   GstVideoConverter& operator=(const GstVideoConverter&) = delete;
 
  private:
+  std::string shmpath_to_convert_{};
+  std::string shmpath_converted_{};
+  Selection video_format_;
+  PContainer::prop_id_t video_format_id_;
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
+  std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
+  std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
+
   std::unique_ptr<GstPixelFormatConverter> converter_{nullptr};
   bool init() final;
   bool on_shmdata_disconnect();

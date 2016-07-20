@@ -18,7 +18,7 @@
  */
 
 #include "./nvenc-plugin.hpp"
-#include "./cuda-context.hpp"
+#include "cuda/cuda-context.hpp"
 #include "switcher/scope-exit.hpp"
 
 namespace switcher {
@@ -72,6 +72,10 @@ void NVencPlugin::update_device() {
   es_.reset();
   es_ = std::make_unique<ThreadedWrapper<NVencES>>(devices_nv_ids_[devices_.get()]);
   if (!es_->invoke<MPtr(&NVencES::safe_bool_idiom)>()) {
+    g_message(
+        "ERROR: nvenc failed to create encoding session "
+        "(the total number of simultaneous sessions "
+        "may be reached)");
     g_warning(
         "nvenc failed to create encoding session "
         "(the total number of simultaneous sessions "
@@ -202,31 +206,23 @@ void NVencPlugin::update_input_formats() {
   video_formats_.clear();
   video_formats_ = es_->invoke<MPtr(&NVencES::get_input_formats)>(guid_iter->second);
   for (auto& it : video_formats_) {
-    if ("NV12_PL" == it.first || "NV12_TILED16x16" == it.first || "NV12_TILED64x16" == it.first)
-      it.first = std::string(
-                     "video/x-raw, "
-                     "format = (string) ") +
-                 "NV12";
-    else if ("YV12_PL" == it.first || "YV12_TILED16x16" == it.first ||
-             "YV12_TILED64x16" == it.first)
-      it.first = std::string(
-                     "video/x-raw, "
-                     "format = (string) ") +
-                 "YV12";
-    else if ("IYUV_PL" == it.first || "IYUV_TILED16x16" == it.first ||
-             "IYUV_TILED64x16" == it.first)
-      it.first = std::string(
-                     "video/x-raw, "
-                     "format = (string) ") +
-                 "I420";
-    else if ("YUV444_PL" == it.first || "YUV444_TILED16x16" == it.first ||
-             "YUV444_TILED64x16" == it.first)
-      it.first = std::string(
-                     "video/x-raw, "
-                     "format = (string) ") +
-                 "Y444";
+    std::string format;
+    if ("NV12" == it.first)
+      format = "NV12";
+    else if ("YV12" == it.first)
+      format = "YV12";
+    else if ("IYUV" == it.first)
+      format = "I420";
+    else if ("YUV444" == it.first)
+      format = "Y444";
+    else if ("ARGB" == it.first)
+      format = "ARGB";
+    else if ("AYUV" == it.first)
+      format = "AYUV";
     else
       g_warning("format not supported by NVencPlugin (%s)\n", it.first.c_str());
+
+    if (!format.empty()) it.first = std::string("video/x-raw, format=(string)") + format;
   }
 }
 
@@ -279,7 +275,6 @@ bool NVencPlugin::can_sink_caps(const std::string& strcaps) {
                         };
                         return gst_caps_can_intersect(curcaps, caps);
                       });
-  if (nullptr != caps) gst_caps_unref(caps);
 }
 
 void NVencPlugin::on_shmreader_data(void* data, size_t size) {
@@ -323,13 +318,17 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
   auto format_str = std::string(format);
   auto buf_format = NV_ENC_BUFFER_FORMAT_UNDEFINED;
   if (format_str == "NV12")
-    buf_format = NV_ENC_BUFFER_FORMAT_NV12_PL;
+    buf_format = NV_ENC_BUFFER_FORMAT_NV12;
   else if (format_str == "YV12")
-    buf_format = NV_ENC_BUFFER_FORMAT_YV12_PL;
+    buf_format = NV_ENC_BUFFER_FORMAT_YV12;
   else if (format_str == "I420")
-    buf_format = NV_ENC_BUFFER_FORMAT_IYUV_PL;
+    buf_format = NV_ENC_BUFFER_FORMAT_IYUV;
   else if (format_str == "Y444")
-    buf_format = NV_ENC_BUFFER_FORMAT_YUV444_PL;
+    buf_format = NV_ENC_BUFFER_FORMAT_YUV444;
+  else if (format_str == "ARGB")
+    buf_format = NV_ENC_BUFFER_FORMAT_ARGB;
+  else if (format_str == "AYUV")
+    buf_format = NV_ENC_BUFFER_FORMAT_AYUV;
   else {
     g_warning("video format %s not supported by switcher nvenc plugin", format_str.c_str());
     return;

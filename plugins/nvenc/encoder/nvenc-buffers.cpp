@@ -16,7 +16,6 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-
 #include "./nvenc-buffers.hpp"
 #include <glib.h>  // log
 #include <cmath>
@@ -75,7 +74,7 @@ bool NVencBuffers::safe_bool_idiom() const {
          output_bufs_.end() == std::find(output_bufs_.begin(), output_bufs_.end(), nullptr);
 }
 
-bool NVencBuffers::copy_to_next_input_buffer(void* data, size_t size) {
+bool NVencBuffers::copy_to_next_input_buffer(void* data, size_t /*size*/) {
   if (nullptr != next_input_) return false;
   NV_ENC_LOCK_INPUT_BUFFER lockInputBufferParams;
   memset(&lockInputBufferParams, 0, sizeof(lockInputBufferParams));
@@ -84,11 +83,13 @@ bool NVencBuffers::copy_to_next_input_buffer(void* data, size_t size) {
   lockInputBufferParams.inputBuffer = input_bufs_[cur_buf_];
   if (NV_ENC_SUCCESS != NVencAPI::api.nvEncLockInputBuffer(encoder_, &lockInputBufferParams))
     return false;
-  if (format_ == NV_ENC_BUFFER_FORMAT_NV12_PL) {
-    guint8* src = (guint8*)data;
-    guint src_stride = width_;
-    guint8* dest = (guint8*)lockInputBufferParams.bufferDataPtr;
-    guint dest_stride = lockInputBufferParams.pitch;
+
+  guint8* src = (guint8*)data;
+  guint src_stride = width_;
+  guint8* dest = (guint8*)lockInputBufferParams.bufferDataPtr;
+  guint dest_stride = lockInputBufferParams.pitch;
+
+  if (format_ == NV_ENC_BUFFER_FORMAT_NV12) {
     for (guint y = 0; y < height_; ++y) {
       memcpy(dest, src, width_);
       dest += dest_stride;
@@ -99,11 +100,7 @@ bool NVencBuffers::copy_to_next_input_buffer(void* data, size_t size) {
       dest += dest_stride;
       src += src_stride;
     }
-  } else if (format_ == NV_ENC_BUFFER_FORMAT_YV12_PL || format_ == NV_ENC_BUFFER_FORMAT_IYUV_PL) {
-    guint8* src = (guint8*)data;
-    guint src_stride = width_;
-    guint8* dest = (guint8*)lockInputBufferParams.bufferDataPtr;
-    guint dest_stride = lockInputBufferParams.pitch;
+  } else if (format_ == NV_ENC_BUFFER_FORMAT_YV12 || format_ == NV_ENC_BUFFER_FORMAT_IYUV) {
     for (guint y = 0; y < height_; ++y) {
       memcpy(dest, src, width_);
       dest += dest_stride;
@@ -114,17 +111,23 @@ bool NVencBuffers::copy_to_next_input_buffer(void* data, size_t size) {
       dest += dest_stride / 2;
       src += width_ / 2;
     }
-  } else if (format_ == NV_ENC_BUFFER_FORMAT_YUV444_PL) {
-    guint8* src = (guint8*)data;
-    guint src_stride = width_;
-    guint8* dest = (guint8*)lockInputBufferParams.bufferDataPtr;
-    guint dest_stride = lockInputBufferParams.pitch;
+  } else if (format_ == NV_ENC_BUFFER_FORMAT_YUV444) {
     for (guint y = 0; y < 3 * height_; ++y) {
       memcpy(dest, src, width_);
       dest += dest_stride;
       src += src_stride;
     }
-
+  } else if (format_ == NV_ENC_BUFFER_FORMAT_ARGB || format_ == NV_ENC_BUFFER_FORMAT_AYUV) {
+    guint src_stride = width_ * 4;
+    for (guint y = 0; y < height_; ++y) {
+      for (guint pack = 0; pack < src_stride; pack += 4) {
+        // Bit packing is inverted, we put them back in the correct order here.
+        guint32 color = src[pack + 3] | src[pack + 2] << 8 | src[pack + 1] << 16 | src[pack] << 24;
+        memcpy(dest + pack, &color, 4);
+      }
+      dest += dest_stride;
+      src += src_stride;
+    }
   } else {
     g_warning("bug in nvenc-buffer line %d (switcher nvenc plugin)", __LINE__);
   }

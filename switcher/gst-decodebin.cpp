@@ -102,7 +102,8 @@ bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
       gst_pipeline_.get(),
       [this](GstElement* el, const std::string& media_type, const std::string& media_label) {
         configure_shmdatasink(el, media_type, media_label);
-      });
+      },
+      true /*decompress*/);
   // adding to pipeline
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), shmsrc_.get_raw());
   if (!decodebin->invoke_with_return<gboolean>([this](GstElement* el) {

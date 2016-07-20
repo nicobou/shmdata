@@ -2,7 +2,7 @@ dnl required version of autoconf
 AC_PREREQ([2.53])
 
 dnl package name and package version
-AC_INIT([switcher],[0.8.14])
+AC_INIT([switcher],[0.8.16])
 
 dnl required version of gstreamer and gst-plugins-base
 GST_REQUIRED=1.0.0
@@ -432,27 +432,7 @@ AM_CONDITIONAL(SYPHONBUILD, test "${SYPHONBUILD}" = "enabled")
 dnl nvenc
 NVENCBUILD=disabled
 
-PKG_CHECK_MODULES([CUDA], [cuda-7.5 cudart-7.5],, [
-      PKG_CHECK_MODULES([CUDA], [cuda-7.0 cudart-7.0],, [
-        PKG_CHECK_MODULES([CUDA], [cuda-6.5 cudart-6.5],, [
-          AC_MSG_WARN([Could not find cuda headers/libraries (nvenc plugin)])])])])
-HAVE_CUDA_H=no
-HAVE_CUDART_H=no
-save_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CUDA_CFLAGS $save_CPPFLAGS "
-AC_CHECK_HEADER([cuda.h], [HAVE_CUDA_H=yes],
-    AC_MSG_WARN([Could not find cuda.h  (nvenc plugin)]))
-AC_CHECK_HEADER([cuda_runtime_api.h], [HAVE_CUDART_H=yes],
-    AC_MSG_WARN([Could not find cuda_runtime_api.h  (nvenc plugin)]))
-CPPFLAGS=$save_CPPFLAGS
 save_LIBS="$LIBS"
-LIBS="$CUDA_LIBS $save_LIBS"
-HAVE_CUDART_LIB="no"
-AC_CHECK_LIB(cudart,cudaGetErrorString,[HAVE_CUDART_LIB="yes"], [
-    AC_MSG_WARN([Could not find cudart library  (nvenc plugin)])])
-HAVE_CUDA_LIB="no"
-AC_CHECK_LIB(cuda,cuInit,[HAVE_CUDA_LIB="yes"], [
-    AC_MSG_WARN([Could not find cuda library  (nvenc plugin)])])
 
 HAVE_NVIDIA_ENCODE_LIB="no"
 AC_ARG_VAR(NVENC_LIBS, [linker flags for nvidia-encode])
@@ -464,32 +444,25 @@ AC_CHECK_LIB(nvidia-encode,NvEncodeAPICreateInstance,[HAVE_NVIDIA_ENCODE_LIB="ye
     NVENC_LIBS='-L/usr/lib/nvidia-<driver-version-number>' ./configure
     -----------------------
 ])])
-NVENCODE_LIBS="$NVENCODE_LIBS -lnvidia-encode"
-AC_SUBST(NVENCODE_LIBS)
-LIBS="$saved_LIBS"
 
-HAVE_NVENC_SDK_PATH="no"
-save_CPPFLAGS="$CPPFLAGS"
-AC_ARG_VAR(NVENC_SDK_PATH, [path to nvenc 5.0.1 SDK])
-CPPFLAGS="-I$NVENC_SDK_PATH $CPPFLAGS"
-AC_CHECK_HEADER(Samples/common/inc/nvEncodeAPI.h,
-                [HAVE_NVENC_SDK_PATH="yes"],
-                [AC_MSG_WARN([
+HAVE_NVIDIA_DECODE_LIB="no"
+AC_ARG_VAR(NVENC_LIBS, [linker flags for nvcuvid])
+LIBS="$NVENC_LIBS $save_LIBS"
+AC_CHECK_LIB(nvcuvid,cuvidCreateDecoder,[HAVE_NVIDIA_DECODE_LIB="yes"], [
+    AC_MSG_WARN([
     -----------------------
-    Could not find header from nvenc SDK version 5.0.1, try configure with
-    NVENC_SDK_PATH='<path-to-nvenc-sdk>' NVENC_LIBS='-L/usr/lib/nvidia-<driver-version-number>' ./configure
-    -----------------------])],
-                [])
-AC_SUBST(NVENC_SDK_PATH)
+    Could not find nvcuvid library (nvdec plugin), try configure with
+    NVENC_LIBS='-L/usr/lib/nvidia-<driver-version-number>' ./configure
+    -----------------------
+])])
+
+NVENCODE_LIBS="$NVENCODE_LIBS -lnvidia-encode -lnvcuvid"
+AC_SUBST(NVENCODE_LIBS)
+LIBS="$save_LIBS"
 CPPFLAGS="$save_CPPFLAGS"
 
-
-if test "x$HAVE_CUDA_H" = "xyes" \
-    -a "x$HAVE_CUDART_H" = "xyes" \
-    -a "x$HAVE_CUDA_LIB" = "xyes" \
-    -a "x$HAVE_NVIDIA_ENCODE_LIB" = "xyes" \
-    -a "x$HAVE_NVENC_SDK_PATH" = "xyes" \
-    -a "x$HAVE_CUDART_LIB" = "xyes"; then
+if test "x$HAVE_NVIDIA_ENCODE_LIB" = "xyes" \
+     -a "x$HAVE_NVIDIA_DECODE_LIB" = "xyes"; then
   NVENCBUILD="enabled"
 fi
 AM_CONDITIONAL(NVENCBUILD, test "x${NVENCBUILD}" = "xenabled")

@@ -33,9 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Timelapse,
                                      "Nicolas Bouillot");
 
 Timelapse::Timelapse(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)),
-      timelapse_config_{std::string(), std::string()},
-      img_dir_id_(pmanage<MPtr(&PContainer::make_string)>(
+    : img_dir_id_(pmanage<MPtr(&PContainer::make_string)>(
           "imgdir",
           [this](const std::string& val) {
             img_dir_ = val;
@@ -170,7 +168,9 @@ Timelapse::Timelapse(const std::string&)
               for (auto& it : shmdatas) start_timelapse(it);
             }
           },
-          std::chrono::milliseconds(200)) {}  // end ctor
+          std::chrono::milliseconds(200)),
+      shmcntr_(static_cast<Quiddity*>(this)),
+      timelapse_config_{std::string(), std::string()} {}  // end ctor
 
 bool Timelapse::init() {
   shmcntr_.install_connect_method(

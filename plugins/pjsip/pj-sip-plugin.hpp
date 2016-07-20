@@ -49,6 +49,8 @@ class SIPPlugin : public Quiddity {
   unsigned sip_port_{5060};
   PContainer::prop_id_t port_id_;
   pjsua_transport_id transport_id_{-1};
+  bool decompress_streams_{true};
+  PContainer::prop_id_t decompress_streams_id_;
   std::unique_ptr<PJCall> sip_calls_{nullptr};
   std::unique_ptr<PJPresence> sip_presence_{nullptr};
   std::unique_ptr<PJStunTurn> stun_turn_{nullptr};

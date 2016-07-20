@@ -24,9 +24,9 @@
 #include <memory>
 #include <utility>
 #include <vector>
-#include "./cuda-context.hpp"
 #include "./nvenc-api.hpp"
 #include "./nvenc-buffers.hpp"
+#include "cuda/cuda-context.hpp"
 #include "switcher/safe-bool-idiom.hpp"
 
 namespace switcher {
