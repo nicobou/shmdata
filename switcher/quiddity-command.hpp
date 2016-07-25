@@ -34,7 +34,7 @@
 namespace switcher {
 class QuiddityCommand {
  public:
-  typedef std::shared_ptr<QuiddityCommand> ptr;
+  using ptr = std::shared_ptr<QuiddityCommand>;
   enum command {
     invalid_command = -1,
     auto_invoke = 0,
@@ -56,7 +56,6 @@ class QuiddityCommand {
     has_method,
     invoke,
     list_signal_subscribers,
-    list_signal_subscribers_json,
     list_subscribed_signals,
     list_subscribed_signals_json,
     make_signal_subscriber,

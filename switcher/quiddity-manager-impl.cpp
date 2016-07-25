@@ -26,7 +26,6 @@
 #include <string>
 
 #include "./information-tree-json.hpp"
-#include "./information-tree-json.hpp"
 #include "./quiddity-documentation.hpp"
 #include "./quiddity-manager-impl.hpp"
 #include "./quiddity.hpp"
@@ -61,8 +60,7 @@ QuiddityManager_Impl::ptr QuiddityManager_Impl::make_manager(QuiddityManager* ro
   return manager;
 }
 
-QuiddityManager_Impl::QuiddityManager_Impl(const std::string& name)
-    : name_(name), classes_doc_(std::make_shared<JSONBuilder>()) {
+QuiddityManager_Impl::QuiddityManager_Impl(const std::string& name) : name_(name) {
   remove_shmdata_sockets();
   register_classes();
   make_classes_doc();
@@ -186,23 +184,34 @@ std::vector<std::string> QuiddityManager_Impl::get_classes() {
 
 void QuiddityManager_Impl::make_classes_doc() {
   std::vector<QuiddityDocumentation*> docs = abstract_factory_.get_classes_documentation();
-  classes_doc_->reset();
-  classes_doc_->begin_object();
-  classes_doc_->set_member_name("classes");
-  classes_doc_->begin_array();
-  for (auto& it : docs) classes_doc_->add_node_value(it->get_json_root_node());
-  classes_doc_->end_array();
-  classes_doc_->end_object();
+  auto classes_str = std::string(".classes.");
+  classes_doc_ = InfoTree::make();
+  classes_doc_->graft(classes_str, InfoTree::make());
+  classes_doc_->tag_as_array(classes_str, true);
+  for (auto& doc : docs) {
+    auto class_name = doc->get_class_name();
+    classes_doc_->graft(classes_str + class_name, InfoTree::make());
+    auto subtree = classes_doc_->get_tree(classes_str + class_name);
+    subtree->graft(".class", InfoTree::make(class_name));
+    subtree->graft(".name", InfoTree::make(doc->get_long_name()));
+    subtree->graft(".category", InfoTree::make(doc->get_category()));
+    auto tags = doc->get_tags();
+    subtree->graft(".tags", InfoTree::make());
+    subtree->tag_as_array(".tags", true);
+    for (auto& tag : tags) subtree->graft(".tags." + tag, InfoTree::make(tag));
+    subtree->graft(".description", InfoTree::make(doc->get_description()));
+    subtree->graft(".license", InfoTree::make(doc->get_license()));
+    subtree->graft(".author", InfoTree::make(doc->get_author()));
+  }
 }
 
-std::string QuiddityManager_Impl::get_classes_doc() { return classes_doc_->get_string(true); }
+std::string QuiddityManager_Impl::get_classes_doc() {
+  return JSONSerializer::serialize(classes_doc_.get());
+}
 
 std::string QuiddityManager_Impl::get_class_doc(const std::string& class_name) {
-  if (abstract_factory_.key_exists(class_name))
-    return JSONBuilder::get_string(
-        abstract_factory_.get_class_documentation(class_name)->get_json_root_node(), true);
-
-  return "{ \"error\":\"class not found\" }";
+  auto tree = classes_doc_->get_tree(std::string(".classes.") + class_name);
+  return JSONSerializer::serialize(tree.get());
 }
 
 bool QuiddityManager_Impl::class_exists(const std::string& class_name) {
@@ -299,38 +308,37 @@ bool QuiddityManager_Impl::has_instance(const std::string& name) const {
 }
 
 std::string QuiddityManager_Impl::get_quiddities_description() {
-  JSONBuilder::ptr descr(new JSONBuilder());
-  descr->reset();
-  descr->begin_object();
-  descr->set_member_name("quiddities");
-  descr->begin_array();
+  auto tree = InfoTree::make();
+  tree->graft("quiddities", InfoTree::make());
+  tree->tag_as_array("quiddities", true);
+  auto subtree = tree->get_tree("quiddities");
   std::vector<std::string> quids = get_instances();
-  for (std::vector<std::string>::iterator it = quids.begin(); it != quids.end(); ++it) {
-    descr->begin_object();
-    std::shared_ptr<Quiddity> quid = get_quiddity(*it);
-    descr->add_string_member("id", quid->get_name().c_str());
-    descr->add_string_member("class", quid->get_documentation()->get_class_name().c_str());
-    descr->end_object();
+  for (auto& it : quids) {
+    std::shared_ptr<Quiddity> quid = get_quiddity(it);
+    auto name = quid->get_name();
+    subtree->graft(name + ".id", InfoTree::make(quid->get_name()));
+    subtree->graft(name + ".class", InfoTree::make(quid->get_documentation()->get_class_name()));
   }
-
-  descr->end_array();
-  descr->end_object();
-
-  return descr->get_string(true);
+  return JSONSerializer::serialize(tree.get());
 }
 
 std::string QuiddityManager_Impl::get_quiddity_description(const std::string& nick_name) {
   auto it = quiddities_.find(nick_name);
-  if (quiddities_.end() == it) return "{ \"error\":\"quiddity not found\"}";
+  if (quiddities_.end() == it) return JSONSerializer::serialize(InfoTree::make().get());
+  auto tree = InfoTree::make();
+  tree->graft(".id", InfoTree::make(nick_name));
+  tree->graft(".class", InfoTree::make(it->second->get_documentation()->get_class_name()));
+  return JSONSerializer::serialize(tree.get());
+}
 
-  JSONBuilder::ptr descr(new JSONBuilder());
-  descr->reset();
-  descr->begin_object();
-  descr->add_string_member("id", nick_name.c_str());
-  // FIXME should use json node
-  descr->add_string_member("class", it->second->get_documentation()->get_class_name().c_str());
-  descr->end_object();
-  return descr->get_string(true);
+InfoTree::ptr QuiddityManager_Impl::get_quiddity_description2(const std::string& nick_name) {
+  auto res = InfoTree::make();
+  auto found = quiddities_.find(nick_name);
+  if (quiddities_.end() == found) return res;
+  res->graft(std::string("name"), InfoTree::make(nick_name));
+  res->graft(std::string("class"),
+             InfoTree::make(found->second->get_documentation()->get_class_name()));
+  return res;
 }
 
 Quiddity::ptr QuiddityManager_Impl::get_quiddity(const std::string& quiddity_name) {
@@ -562,29 +570,17 @@ std::vector<std::pair<std::string, std::string>> QuiddityManager_Impl::list_subs
   return it->second->list_subscribed_signals();
 }
 
-std::string QuiddityManager_Impl::list_signal_subscribers_json() {
-  return "{\"error\":\"to be implemented\"}";  // FIXME
-                                               // (list_signal_subscriber_json)
-}
-
 std::string QuiddityManager_Impl::list_subscribed_signals_json(const std::string& subscriber_name) {
   auto subscribed_sigs = list_subscribed_signals(subscriber_name);
-
-  JSONBuilder* doc = new JSONBuilder();
-  doc->reset();
-  doc->begin_object();
-  doc->set_member_name("subscribed signals");
-  doc->begin_array();
+  auto tree = InfoTree::make();
+  tree->graft("subscribed signals", InfoTree::make());
+  tree->tag_as_array("subscribed signals", true);
+  auto subtree = tree->get_tree("subscribed signals");
   for (auto& it : subscribed_sigs) {
-    doc->begin_object();
-    doc->add_string_member("quiddity", it.first.c_str());
-    doc->add_string_member("signal", it.second.c_str());
-    doc->end_object();
+    subtree->graft("quiddity", InfoTree::make(it.first));
+    subtree->graft("signal", InfoTree::make(it.second));
   }
-  doc->end_array();
-  doc->end_object();
-
-  return doc->get_string(true);
+  return JSONSerializer::serialize(tree.get());
 }
 
 bool QuiddityManager_Impl::set_created_hook(quiddity_created_hook hook, void* user_data) {
@@ -659,9 +655,7 @@ bool QuiddityManager_Impl::scan_directory_for_plugins(const std::string& directo
   if (error != nullptr) g_debug("scanning dir: error not nullptr");
   g_object_unref(dir);
 
-  classes_doc_.reset(new JSONBuilder());
   make_classes_doc();
-
   return true;
 }
 

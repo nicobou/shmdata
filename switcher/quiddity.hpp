@@ -94,11 +94,6 @@ class Quiddity {
   bool subscribe_signal(const std::string& name, Signal::OnEmittedCallback cb, void* user_data);
   bool unsubscribe_signal(const std::string& name, Signal::OnEmittedCallback cb, void* user_data);
   // information
-  template <typename R>
-  R invoke_info_tree(std::function<R(InfoTree::ptrc tree)> fun) {
-    return fun(information_tree_.get());
-  }
-
   Make_consultable(Quiddity, InfoTree, information_tree_.get(), tree);
 
   // user data

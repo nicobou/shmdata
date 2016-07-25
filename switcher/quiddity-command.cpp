@@ -45,7 +45,6 @@ const std::map<int, const char*> QuiddityCommand::command_names_ = {
     {invalid_command, "invalid_command"},
     {invoke, "invoke"},
     {list_signal_subscribers, "list_signal_subscribers"},
-    {list_signal_subscribers_json, "list_signal_subscribers_json"},
     {list_subscribed_signals, "list_subscribed_signals"},
     {list_subscribed_signals_json, "list_subscribed_signals_json"},
     {make_signal_subscriber, "make_signal_subscriber"},
