@@ -47,9 +47,9 @@ GstAudioCodec::GstAudioCodec(Quiddity* quid,
             codec_long_list_ = val;
             quid_->pmanage<MPtr(&PContainer::remove)>(codec_id_);
             if (val)
-              install_codec(true);  // primary
+              codec_id_ = install_codec(true);  // primary
             else
-              install_codec(false);  // secondary
+              codec_id_ = install_codec(false);  // secondary
             reset_codec_configuration(nullptr, this);
             return true;
           },
@@ -139,15 +139,20 @@ void GstAudioCodec::make_codec_properties() {
 
 gboolean GstAudioCodec::reset_codec_configuration(gpointer /*unused */, gpointer user_data) {
   GstAudioCodec* context = static_cast<GstAudioCodec*>(user_data);
-  auto codec_prop_id = context->quid_->pmanage<MPtr(&PContainer::get_id)>("codec");
-  context->quid_->pmanage<MPtr(&PContainer::set_str)>(codec_prop_id, "opusenc");
+  if (context->codec_long_list_) {
+    context->quid_->pmanage<MPtr(&PContainer::set<Selection::index_t>)>(
+        context->codec_long_list_id_, context->secondary_codec_.get_index("Opus audio encoder"));
+  } else {
+    context->quid_->pmanage<MPtr(&PContainer::set<Selection::index_t>)>(
+        context->codec_id_, context->secondary_codec_.get_index("Opus audio encoder"));
+  }
   return TRUE;
 }
 
 bool GstAudioCodec::start() {
   hide();
   uninstall_codec_properties();
-  if (0 != secondary_codec_.get()) return true;
+  if (0 == secondary_codec_.get()) return false;
   shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
       shm_encoded_.get_raw(),
       [this](const std::string& caps) {
