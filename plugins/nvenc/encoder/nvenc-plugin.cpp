@@ -229,7 +229,6 @@ void NVencPlugin::update_input_formats() {
 bool NVencPlugin::on_shmdata_disconnect() {
   shm_.reset(nullptr);
   shmw_.reset(nullptr);
-  update_device();
 
   pmanage<MPtr(&PContainer::enable)>(devices_id_, true);
   pmanage<MPtr(&PContainer::enable)>(presets_id_, true);
