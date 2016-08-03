@@ -56,6 +56,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     net-utils.cpp \
     periodic-task.cpp \
     plugin-loader.cpp \
+    property2.cpp \
     property-container.cpp \
     property-mapper.cpp \
     quiddity-basic-test.cpp \

@@ -36,8 +36,11 @@ bool PContainer::replace(prop_id_t prop_id, std::unique_ptr<PropertyBase>&& prop
   if (strids_.end() == it) return false;  // prop not found
   // keep a reference to the old property documentation tree
   auto old_tree = props_[prop_id].get()->get_spec();
+  // copy notification cbs
+  auto notification_cbs = props_[prop_id].get()->get_notify_cbs();
   // replace with new prop
   props_[prop_id] = std::forward<std::unique_ptr<PropertyBase>>(prop_ptr);
+  props_[prop_id].get()->set_notify_cbs(notification_cbs);
   // place old tree into new property
   auto* prop = props_[prop_id].get();
   prop->set_id(prop_id);
