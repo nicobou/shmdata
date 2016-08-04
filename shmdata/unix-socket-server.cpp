@@ -164,16 +164,13 @@ void UnixSocketServer::client_interaction() {
           int err = errno;
           log_->error("accept % (%)", strerror(err), path_);
         }
-        FD_SET(clifd, &allset);
-        // if (clifd > maxfd)
-        //   maxfd = clifd;  // max fd for select()
-        // pending_clients_.insert(clifd);
         auto res = send(clifd, &cnx_msg, sizeof(cnx_msg), MSG_NOSIGNAL);
         if (-1 == res) {
           int err = errno;
           log_->debug("send: % (%)", strerror(err), path_);
         } else {
           if (clifd > maxfd) maxfd = clifd;  // max fd for select()
+          FD_SET(clifd, &allset);
           pending_clients_.insert(clifd);
         }
         continue;
