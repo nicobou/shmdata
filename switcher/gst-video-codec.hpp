@@ -73,6 +73,7 @@ class GstVideoCodec {
   std::vector<std::string> codec_properties_{};
   // codec params black list
   std::unordered_set<std::string> param_black_list_{"analyse",  // x264enc
+                                                    "arnr-type",
                                                     "timebase",
                                                     "error-resilient",
                                                     "frame-packing",  // x264enc

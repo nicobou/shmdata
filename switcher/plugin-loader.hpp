@@ -22,6 +22,7 @@
 
 #include <gmodule.h>
 #include <memory>
+#include <string>
 
 namespace switcher {
 class Quiddity;
