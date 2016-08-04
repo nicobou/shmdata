@@ -22,7 +22,6 @@
 
 #include <string>
 #include <vector>
-#include "./json-builder.hpp"
 
 namespace switcher {
 class QuiddityDocumentation {
@@ -40,7 +39,7 @@ class QuiddityDocumentation {
   std::string get_long_name() const;
   std::string get_author() const;
   std::string get_license() const;
-  JSONBuilder::Node get_json_root_node();
+  std::vector<std::string> get_tags() const;
 
  private:
   const std::string category_;
@@ -50,9 +49,6 @@ class QuiddityDocumentation {
   const std::string long_name_;
   const std::string author_;
   const std::string license_;
-
-  JSONBuilder::ptr json_description_{};
-  void make_json_description();
 };
 
 }  // namespace switcher

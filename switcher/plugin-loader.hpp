@@ -22,7 +22,7 @@
 
 #include <gmodule.h>
 #include <memory>
-#include "./json-builder.hpp"
+#include <string>
 
 namespace switcher {
 class Quiddity;
@@ -44,7 +44,6 @@ class PluginLoader {
   bool load(const char* filename);
   bool close();
   std::string get_class_name() const;
-  JSONBuilder::Node get_json_root_node();
   QuiddityDocumentation* get_doc();
 
   create_t* create_{nullptr};
@@ -53,7 +52,6 @@ class PluginLoader {
  private:
   GModule* module_{nullptr};
   get_documentation_t* get_documentation_{nullptr};
-  // JSONBuilder::Node json_doc_{};
   std::string class_name_{};
 };
 }  // namespace switcher

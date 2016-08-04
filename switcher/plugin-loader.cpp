@@ -99,10 +99,5 @@ std::string PluginLoader::get_class_name() const {
   return class_name_;
 }
 
-JSONBuilder::Node PluginLoader::get_json_root_node() {
-  if (module_ == nullptr) return nullptr;
-  return get_documentation_()->get_json_root_node();
-}
-
 QuiddityDocumentation* PluginLoader::get_doc() { return get_documentation_(); }
 }

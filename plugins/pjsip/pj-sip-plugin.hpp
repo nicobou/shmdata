@@ -46,7 +46,7 @@ class SIPPlugin : public Quiddity {
 
  private:
   std::unique_ptr<ThreadedWrapper<PJSIP>> pjsip_{};
-  unsigned sip_port_{5060};
+  unsigned int sip_port_{5060};
   PContainer::prop_id_t port_id_;
   pjsua_transport_id transport_id_{-1};
   bool decompress_streams_{true};

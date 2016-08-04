@@ -25,7 +25,7 @@
 #include <unordered_map>
 
 #include "./abstract-factory.hpp"
-#include "./json-builder.hpp"
+#include "./information-tree.hpp"
 #include "./plugin-loader.hpp"
 #include "./quiddity-signal-subscriber.hpp"
 #include "./quiddity.hpp"
@@ -59,11 +59,12 @@ class QuiddityManager_Impl {
   std::vector<std::string> get_instances() const;
   bool has_instance(const std::string& name) const;
 
-  // doc (json formatted)
-  std::string get_classes_doc();
-  std::string get_class_doc(const std::string& class_name);
-  std::string get_quiddity_description(const std::string& quiddity_name);
-  std::string get_quiddities_description();
+  // doc
+  std::string get_classes_doc();                                           // json formatted
+  std::string get_class_doc(const std::string& class_name);                // json formatted
+  std::string get_quiddity_description(const std::string& quiddity_name);  // json formatted
+  std::string get_quiddities_description();                                // json formatted
+  InfoTree::ptr get_quiddity_description2(const std::string& nick_name);
   bool class_exists(const std::string& class_name);
 
   // **** creation/remove/get
@@ -79,13 +80,6 @@ class QuiddityManager_Impl {
   void reset_create_remove_hooks();
 
   // information tree
-  template <typename R>
-  R invoke_info_tree(const std::string& nick_name, std::function<R(InfoTree::ptrc tree)> fun) {
-    auto it = quiddities_.find(nick_name);
-    if (quiddities_.end() == it) return fun(InfoTree::make().get());
-    return quiddities_[nick_name]->invoke_info_tree<R>(fun);
-  }
-
   Forward_consultable_from_associative_container(
       QuiddityManager_Impl,    // self type
       Quiddity,                // consultable type
@@ -163,7 +157,6 @@ class QuiddityManager_Impl {
   std::vector<std::string> list_signal_subscribers() const;
   std::vector<std::pair<std::string, std::string>> list_subscribed_signals(
       const std::string& subscriber_name);
-  std::string list_signal_subscribers_json();
   std::string list_subscribed_signals_json(const std::string& subscriber_name);
 
   // for use of "get description by class"
@@ -189,7 +182,7 @@ class QuiddityManager_Impl {
   std::unordered_map<std::string, std::shared_ptr<QuidditySignalSubscriber>> signal_subscribers_{};
   bool init_quiddity(std::shared_ptr<Quiddity> quiddity);
   void remove_shmdata_sockets();
-  JSONBuilder::ptr classes_doc_{};
+  InfoTree::ptr classes_doc_{};
   quiddity_created_hook creation_hook_{nullptr};
   quiddity_removed_hook removal_hook_{nullptr};
   void* creation_hook_user_data_{nullptr};

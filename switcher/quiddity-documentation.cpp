@@ -34,8 +34,7 @@ QuiddityDocumentation::QuiddityDocumentation(const std::string& long_name,
       description_(short_description),
       long_name_(long_name),
       author_(author),
-      license_(license),
-      json_description_(std::make_shared<JSONBuilder>()) {
+      license_(license) {
   // parsing tags since vector initialization like {"writer", "reader"} does
   // not pass MACRO arguments:
   std::istringstream ss(tags);  // Turn the string into a stream
@@ -55,26 +54,6 @@ std::string QuiddityDocumentation::get_author() const { return author_; }
 
 std::string QuiddityDocumentation::get_license() const { return license_; }
 
-void QuiddityDocumentation::make_json_description() {
-  json_description_ = std::make_shared<JSONBuilder>();
-  json_description_->reset();
-  json_description_->begin_object();
-  json_description_->add_string_member("class", class_name_.c_str());
-  json_description_->add_string_member("name", long_name_.c_str());
-  json_description_->add_string_member("category", category_.c_str());
-  json_description_->set_member_name("tags");
-  json_description_->begin_array();
-  for (auto& it : tags_) json_description_->add_string_value(it.c_str());
-  json_description_->end_array();
-  json_description_->add_string_member("description", description_.c_str());
-  json_description_->add_string_member("license", license_.c_str());
-  json_description_->add_string_member("author", author_.c_str());
-  json_description_->end_object();
-}
-
-JSONBuilder::Node QuiddityDocumentation::get_json_root_node() {
-  make_json_description();
-  return json_description_->get_root();
-}
+std::vector<std::string> QuiddityDocumentation::get_tags() const { return tags_; };
 
 }  // namespace switcher

@@ -25,6 +25,7 @@
 #include <functional>
 #include <map>
 #include <mutex>
+#include <string>
 
 namespace switcher {
 class RtpSession2;

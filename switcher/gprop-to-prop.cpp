@@ -231,9 +231,18 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
         std::vector<std::string> items;
         GEnumValue* values = G_ENUM_CLASS(g_type_class_ref(pspec->value_type))->values;
         guint j = 0;
+        // GEnumValue are *not* always from 0 to n, incremented by 1 between
+        // exemple: gst-inspect opusenc
+        // so here finding the index value for selecting the same default value with Selection
+        gint default_value_gst = g_value_get_enum(&value);
+        gint default_value = 0;
+        std::map<gint /*gst values*/, gint /*index*/> indexes;
         while (values[j].value_name) {
           // values[j].value_nick;
           items.push_back(values[j].value_name);
+          if (default_value_gst == values[j].value) default_value = j;
+          // saving value for the getter
+          indexes[values[j].value] = j;
           j++;
         }
         res = std::make_unique<Property2<Selection, Selection::index_t>>(
@@ -242,14 +251,14 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
               g_object_set(gobj, gprop_name.c_str(), val, nullptr);
               return true;
             } : static_cast<prop::set_t<Selection::index_t>>(nullptr),
-            [gobj, gprop_name](){
+            [gobj, gprop_name, indexes](){
               gint val;
               g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
-              return val;
+              return indexes.at(val);
             },
             gprop_name,
             std::string(description),
-            Selection(std::move(items), g_value_get_enum(&value)),
+            Selection(std::move(items), default_value),
             items.size() - 1);
       } else if (G_IS_PARAM_SPEC_FLAGS(pspec)) {
         g_warning("warning: param spec flags not handled");

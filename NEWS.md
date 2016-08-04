@@ -2,6 +2,22 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.18 (2016-08-04)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+* save file: save quiddities and property values and history is saving only invocations,
+* alphanum, space and '-' are only allowed chars in quiddity names, others are replaced by '-',
+* saving and loading user_data tree with history,
+* fix OSX compilation,
+* fix sometime wrong property (Selection) value when generated from GStreamer element enum property,
+* fix property notification stops after property replace,
+* fix 2 nvenc stress test,
+* fix audio encoder default value,
+* fix property documentation not updated with replace,
+* fix gtkwin xevent to shmdata,
+* fix a type mismatch in the sip_port property.
+
 switcher 0.8.16 (2016-07-20)
 ---------------------------
 This is an official release in the 0.8 stable series.

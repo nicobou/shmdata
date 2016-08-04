@@ -24,6 +24,7 @@
 #include <atomic>
 #include <functional>
 #include <memory>
+#include <string>
 #include "switcher/safe-bool-idiom.hpp"
 
 namespace switcher {
@@ -32,7 +33,7 @@ using jack_sample_t = jack_default_audio_sample_t;
 
 class JackClient : public SafeBoolIdiom {
   // warning, number of missed samples is estimated from the xrun duration.
-  using XRunCallback_t = std::function<void(uint number_of_missed_samples)>;
+  using XRunCallback_t = std::function<void(unsigned int number_of_missed_samples)>;
   using PortCallback_t = std::function<void(jack_port_t* port)>;
   using JackShutdown_t = std::function<void()>;
 

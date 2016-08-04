@@ -112,7 +112,7 @@ void SIPPlugin::apply_configuration() {
   // trying to set port if configuration found
   if (config<MPtr(&InfoTree::branch_has_data)>("port")) {
     auto port = config<MPtr(&InfoTree::branch_get_value)>("port");
-    if (pmanage<MPtr(&PContainer::set<unsigned int>)>(port_id_, port.copy_as<unsigned int>()))
+    if (pmanage<MPtr(&PContainer::set<std::string>)>(port_id_, port.copy_as<std::string>()))
       g_debug("sip has set port from configuration");
     else
       g_warning("sip failed setting port from configuration");

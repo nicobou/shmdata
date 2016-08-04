@@ -40,18 +40,24 @@
 namespace switcher {
 class QuiddityManager {
  public:
-  typedef std::shared_ptr<QuiddityManager> ptr;
-  typedef std::vector<QuiddityCommand::ptr> CommandHistory;
+  using ptr = std::shared_ptr<QuiddityManager>;
+  struct CommandHistory {
+    std::vector<QuiddityCommand::ptr> history_{};
+    InfoTree::ptr quiddities_user_data_{nullptr};
+    InfoTree::ptr quiddities_{nullptr};
+    InfoTree::ptr properties_{nullptr};
+    bool empty() { return history_.empty() && !quiddities_; }
+  };
   using PropCallback = std::function<void(const std::string& val)>;
-  typedef void (*SignalCallback)(const std::string& subscriber_name,
-                                 const std::string& quiddity_name,
-                                 const std::string& signal_name,
-                                 const std::vector<std::string>& params,
-                                 void* user_data);
-  typedef std::map<std::string, std::pair<PropCallback, void*>> PropCallbackMap;
-  typedef std::map<std::string, std::pair<SignalCallback, void*>> SignalCallbackMap;
+  using SignalCallback = void (*)(const std::string& subscriber_name,
+                                  const std::string& quiddity_name,
+                                  const std::string& signal_name,
+                                  const std::vector<std::string>& params,
+                                  void* user_data);
+  using PropCallbackMap = std::map<std::string, std::pair<PropCallback, void*>>;
+  using SignalCallbackMap = std::map<std::string, std::pair<SignalCallback, void*>>;
 
-  ~QuiddityManager();  // FIXME should be private?
+  ~QuiddityManager();
   static QuiddityManager::ptr make_manager(const std::string& name);
   QuiddityManager& operator=(const QuiddityManager&) = delete;
   QuiddityManager(const QuiddityManager&) = delete;
@@ -61,7 +67,7 @@ class QuiddityManager {
   // ***********************************************************
   bool save_command_history(const char* file_path) const;
   static CommandHistory get_command_history_from_file(const char* file_path);
-  std::vector<std::string> get_signal_subscribers_names(QuiddityManager::CommandHistory histo);
+  std::vector<std::string> get_signal_subscribers_names(const CommandHistory& histo);
   void play_command_history(QuiddityManager::CommandHistory histo,
                             QuiddityManager::PropCallbackMap* prop_cb_data,
                             QuiddityManager::SignalCallbackMap* sig_cb_data,
@@ -93,10 +99,6 @@ class QuiddityManager {
   bool has_quiddity(const std::string& name);
 
   // ****************** informations ******
-  template <typename R>
-  R invoke_info_tree(const std::string& nick_name, std::function<R(InfoTree::ptrc tree)> fun) {
-    return manager_impl_->invoke_info_tree<R>(nick_name, fun);
-  }
 
   Forward_consultable(
       QuiddityManager, QuiddityManager_Impl, manager_impl_.get(), use_tree, use_tree);
@@ -106,32 +108,6 @@ class QuiddityManager {
 
   // ****************** properties ********
   Forward_consultable(QuiddityManager, QuiddityManager_Impl, manager_impl_.get(), props, use_prop);
-  // FIXME no hook for set because it is templated
-  // FIXME make original set_str_str able to set from numeric
-  // id given as string
-  Selective_hook(use_prop,
-                 decltype(&PContainer::set_str),
-                 &PContainer::set_str,
-                 &QuiddityManager::set_str_wrapper);
-  Selective_hook(use_prop,
-                 decltype(&PContainer::set_str_str),
-                 &PContainer::set_str_str,
-                 &QuiddityManager::set_str_str_wrapper);
-
-  // // global property wrapper
-  // struct PropLock{
-  //   PropLock(std::mutex *seq_mutex): seq_mutex_(seq_mutex) {
-  //       seq_mutex_->lock();}
-  //   ~PropLock(){seq_mutex_->unlock();}
-  //   PropLock(PropLock &) = delete;
-  //   PropLock &operator=(const PropLock&) = delete;
-  //   PropLock(PropLock &&) = default;
-  //   PropLock &operator=(PropLock&&) = default;
-  //  private:
-  //   std::mutex *seq_mutex_;
-  // };
-  // PropLock prop_global_wrapper() const {return PropLock(&seq_mutex_);}
-  // Global_wrap(use_prop, PropLock, prop_global_wrapper);
 
   // *********************** methods
   // doc (json formatted)
@@ -185,22 +161,23 @@ class QuiddityManager {
   std::vector<std::string> list_signal_subscribers();
   std::vector<std::pair<std::string, std::string>> list_subscribed_signals(
       const std::string& subscriber_name);
-  // json // FIXME implement or remove
-  std::string list_signal_subscribers_json();
+  // json
   std::string list_subscribed_signals_json(const std::string& subscriber_name);
 
  private:
   QuiddityManager_Impl::ptr manager_impl_;  // may be shared with others for
                                             // automatic quiddity creation
   std::string name_;
-  // running commands in sequence
-  mutable QuiddityCommand::ptr command_;
+  // running commands in sequence:
+  mutable QuiddityCommand::ptr command_;  // current command
   mutable std::mutex seq_mutex_;
   GAsyncQueue* command_queue_;
+  std::vector<std::string> quiddities_at_reset_{};
+  // invocation of commands in a dedicated thread
   std::thread invocation_thread_;
-  // invokation in gmainloop
-  std::condition_variable execution_done_cond_;  // sync current thread and gmainloop
-  std::mutex execution_done_mutex_;              // sync current thread and gmainloop
+  std::condition_variable execution_done_cond_;
+  std::mutex execution_done_mutex_;
+  // gives shared pointer to this:
   std::weak_ptr<QuiddityManager> me_{};
   // history
   mutable CommandHistory command_history_;
@@ -208,24 +185,15 @@ class QuiddityManager {
 
   QuiddityManager() = delete;
   explicit QuiddityManager(const std::string& name);
-
-  // auto invoke and init
   void auto_init(const std::string& quiddity_name);
   void command_lock();
   void command_unlock();
   std::string seq_invoke(QuiddityCommand::command command, ...);
   void clear_command_sync();
   void invocation_thread();
-  static gboolean execute_command(gpointer user_data);  // gmainloop source callback
+  void execute_command();
   void invoke_in_thread();
   bool must_be_saved(QuiddityCommand::command id) const;
-
-  bool set_str_wrapper(const std::string& quid,
-                       PContainer::prop_id_t id,
-                       const std::string& val) const;
-  bool set_str_str_wrapper(const std::string& quid,
-                           const std::string& strid,
-                           const std::string& val) const;
 };
 }  // namespace switcher
 

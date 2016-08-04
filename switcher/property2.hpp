@@ -41,7 +41,7 @@ class PropertyBase {
   using prop_id_t = prop::prop_id_t;
   PropertyBase() = delete;
   virtual ~PropertyBase() = default;
-  PropertyBase(size_t type_hash) : type_hash_(type_hash) {}
+  PropertyBase(size_t type_hash);
 
   virtual InfoTree::ptr get_spec() = 0;
   virtual void update_value_in_spec() = 0;
@@ -49,21 +49,14 @@ class PropertyBase {
   virtual std::string get_str() const = 0;
   virtual std::unique_lock<std::mutex> get_lock() = 0;
 
-  prop_id_t get_id() const { return id_; }
-  register_id_t subscribe(notify_cb_t fun) const {
-    to_notify_[++counter_] = fun;
-    return counter_;
-  }
-  bool unsubscribe(register_id_t rid) const {
-    auto it = to_notify_.find(rid);
-    if (to_notify_.end() == it) return false;
-    to_notify_.erase(it);
-    return true;
-  }
-  size_t get_type_id_hash() const { return type_hash_; }
-  void notify() const {  // const ??
-    for (auto& it : to_notify_) it.second();
-  }
+  prop_id_t get_id() const;
+  register_id_t subscribe(notify_cb_t fun) const;
+  bool unsubscribe(register_id_t rid) const;
+  size_t get_type_id_hash() const;
+  void notify() const;
+  // get/set notify cbs
+  std::map<register_id_t, notify_cb_t> get_notify_cbs() const;
+  void set_notify_cbs(std::map<register_id_t, notify_cb_t> cbs);
 
  private:
   size_t type_hash_;
@@ -73,13 +66,8 @@ class PropertyBase {
   // save it along with the Property2 instance
   prop_id_t id_{0};
   // following is for use by friend PContainer:
-  void set_id(prop_id_t id) { id_ = id; }
-  std::vector<register_id_t> get_register_ids() const {
-    std::vector<register_id_t> res;
-    res.reserve(to_notify_.size());
-    for (auto& it : to_notify_) res.push_back(it.first);
-    return res;
-  }
+  void set_id(prop_id_t id);
+  std::vector<register_id_t> get_register_ids() const;
 };
 
 template <typename V,
@@ -143,8 +131,6 @@ class Property2 : public PropertyBase {
   InfoTree::ptr get_spec() final { return doc_.get_spec(); }
 
   void update_value_in_spec() final {
-    // if (nullptr != get_)
-    //   doc_.get_spec()->graft(".value.", InfoTree::make(get()));
     if (nullptr != get_) doc_.update_current_value(get());
   }
 

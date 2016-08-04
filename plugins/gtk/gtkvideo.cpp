@@ -64,8 +64,8 @@ GTKVideo::GTKVideo(const std::string& name)
       xevents_to_shmdata_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "xevents",
           [this](bool val) {
-            xevents_to_shmdata_id_ = val;
-            if (xevents_to_shmdata_id_) {
+            xevents_to_shmdata_ = val;
+            if (xevents_to_shmdata_) {
               keyb_shm_ = std::make_unique<ShmdataWriter>(
                   this, make_file_name("keyb"), sizeof(KeybEvent), "application/x-keyboard-events");
               if (!keyb_shm_.get()) {
@@ -85,10 +85,10 @@ GTKVideo::GTKVideo(const std::string& name)
             }
             return true;
           },
-          [this]() { return xevents_to_shmdata_id_; },
+          [this]() { return xevents_to_shmdata_; },
           "Keyboard/Mouse Events",
           "Capture Keyboard/Mouse Events",
-          true)),
+          xevents_to_shmdata_)),
       decorated_id_(pmanage<MPtr(&PContainer::make_bool)>("decorated",
                                                           [this](bool val) {
                                                             decorated_ = val;
