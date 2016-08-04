@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.2.8 (2016-08-04)
+---------------------------
+This is an official release in the 1.2 stable series.
+
+* fix writer taking 100% CPU usage when reader already following shmdata
+
 shmdata 1.2.6 (2016-07-20)
 ---------------------------
 This is an official release in the 1.2 stable series.
