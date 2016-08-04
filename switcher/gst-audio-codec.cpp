@@ -209,6 +209,9 @@ void GstAudioCodec::set_shm(const std::string& shmpath) {
 }
 
 PContainer::prop_id_t GstAudioCodec::install_codec(bool primary) {
+  auto opus_index = secondary_codec_.get_index("Opus audio encoder");
+  primary_codec_.select(opus_index);
+  secondary_codec_.select(opus_index);
   return quid_->pmanage<MPtr(&PContainer::make_selection)>(
       "codec",
       [this](const size_t& val) {

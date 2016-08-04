@@ -28,7 +28,11 @@ int main() {
   {
     switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_full");
     for (auto& it : manager->get_classes()) {
-      if (!switcher::QuiddityBasicTest::test_full(manager, it)) success = false;
+      std::cout << "----- testing " << it << std::endl;
+      if (!switcher::QuiddityBasicTest::test_full(manager, it)) {
+        std::cout << "---------> issue with " << it << std::endl;
+        success = false;
+      }
     }
   }
 
