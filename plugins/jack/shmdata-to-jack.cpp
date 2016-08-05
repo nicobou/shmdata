@@ -68,8 +68,6 @@ bool ShmdataToJack::init() {
       1);
   volume_id_ =
       pmanage<MPtr(&PContainer::push)>("volume", GPropToProp::to_prop(G_OBJECT(volume_), "volume"));
-  mute_id_ =
-      pmanage<MPtr(&PContainer::push)>("volume", GPropToProp::to_prop(G_OBJECT(volume_), "mute"));
   auto_connect_id_ = pmanage<MPtr(&PContainer::make_bool)>(
       "auto_connect",
       [this](const bool& val) {
@@ -283,7 +281,6 @@ bool ShmdataToJack::stop() {
   }
   pmanage<MPtr(&PContainer::replace)>(volume_id_,
                                       GPropToProp::to_prop(G_OBJECT(volume_), "volume"));
-  pmanage<MPtr(&PContainer::replace)>(mute_id_, GPropToProp::to_prop(G_OBJECT(volume_), "mute"));
   pmanage<MPtr(&PContainer::enable)>(auto_connect_id_, true);
   pmanage<MPtr(&PContainer::enable)>(connect_to_id_, true);
   pmanage<MPtr(&PContainer::enable)>(index_id_, true);
