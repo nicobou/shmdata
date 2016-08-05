@@ -62,7 +62,6 @@ class ShmdataToJack : public Quiddity {
   unsigned int index_{1};
   PContainer::prop_id_t index_id_{0};
   PContainer::prop_id_t volume_id_{0};
-  PContainer::prop_id_t mute_id_{0};
   PContainer::prop_id_t auto_connect_id_{0};
   // ports
   std::vector<std::string> ports_to_connect_{};

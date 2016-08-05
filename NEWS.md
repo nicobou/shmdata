@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.20 (2016-08-05)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+* fix jacksrc cannot connect to jacksink
+
 switcher 0.8.18 (2016-08-04)
 ---------------------------
 This is an official release in the 0.8 stable series.
