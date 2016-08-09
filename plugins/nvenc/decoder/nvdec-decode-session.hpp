@@ -57,7 +57,7 @@ class NVencDS : public SafeBoolIdiom {
  private:
   static constexpr const unsigned long kNumDecodeSurfaces = 8;
   CUvideodecoder video_decoder_{nullptr};
-  CUVIDDECODECREATEINFO video_info_{};
+  CUVIDDECODECREATEINFO video_info_;
   cudaVideoCreateFlags video_flags{};
   CUvideoparser video_parser_{nullptr};
   CudaContext cu_ctx_;
