@@ -41,15 +41,16 @@ class NVdecPlugin : public Quiddity {
  private:
   static const std::array<const char*, 5> kSupportedCodecs;
 
-  std::unique_ptr<ThreadedWrapper<NVencDS>> ds_{nullptr};
-  ShmdataConnector shmcntr_;
-  std::unique_ptr<ShmdataFollower> shmfollower_{nullptr};
   std::unique_ptr<ShmdataWriter> shmwriter_{nullptr};
+  std::unique_ptr<ShmdataFollower> shmfollower_{nullptr};
+  ShmdataConnector shmcntr_;
+  std::unique_ptr<ThreadedWrapper<NVencDS>> ds_{nullptr};
   Selection devices_{{"none"}, 0};
   PContainer::prop_id_t devices_id_{0};
   std::vector<int> devices_nv_ids_{};
   cudaVideoCodec video_codec_{cudaVideoCodec_NumCodecs};
   std::string caps_{};
+  size_t writer_size_{0};
 
   static cudaVideoCodec convert_video_type_to_cuda(const std::string& content_type,
                                                    const std::string& codec,

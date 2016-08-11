@@ -142,10 +142,13 @@ void NVdecPlugin::on_shmreader_data(void* data, size_t size) {
         size_t end_height = caps_.find_first_of(",", start_height);
         caps_.replace(start_width, end_width - start_width, std::to_string(data_width));
         caps_.replace(start_height, end_height - start_height, std::to_string(data_height));
-        scaled = false;
+        writer_size_ = data_width * data_height * 3 / 2;
+
         shmwriter_.reset(nullptr);
-        shmwriter_ = std::make_unique<ShmdataWriter>(
-            this, make_file_name("video"), data_width * data_height * 3 / 2, caps_);
+        shmwriter_ =
+            std::make_unique<ShmdataWriter>(this, make_file_name("video"), writer_size_, caps_);
+
+        scaled = false;
       }
 
       std::unique_ptr<shmdata::OneWriteAccess> shm_ptr;
@@ -219,21 +222,14 @@ void NVdecPlugin::on_shmreader_server_connected(const std::string& data_descr) {
   caps_ = "video/x-raw, format=NV12, width=" + std::to_string(width) + ", height=" +
           std::to_string(height) + ", framerate=" + std::to_string(frame_num) + "/" +
           std::to_string(frame_den) + ", pixel-aspect-ratio=1/1";
+  writer_size_ = width * height * 3 / 2;  // Size is known because only NV12 is supported for now.
 
   ds_.reset(nullptr);
   shmwriter_.reset(nullptr);
-
-  shmwriter_ = std::make_unique<ShmdataWriter>(
-      this,
-      make_file_name("video"),
-      width * height * 3 / 2,  // Size is known because only NV12 is supported for now.
-      caps_);
+  shmwriter_ = std::make_unique<ShmdataWriter>(this, make_file_name("video"), writer_size_, caps_);
 }
 
-void NVdecPlugin::on_shmreader_server_disconnected() {
-  ds_.reset(nullptr);
-  shmwriter_.reset(nullptr);
-}
+void NVdecPlugin::on_shmreader_server_disconnected() { ds_.reset(nullptr); }
 
 cudaVideoCodec NVdecPlugin::convert_video_type_to_cuda(const std::string& content_type,
                                                        const std::string& codec,
