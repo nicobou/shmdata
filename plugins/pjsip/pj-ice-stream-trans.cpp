@@ -114,6 +114,7 @@ void PJICEStreamTrans::cb_on_ice_complete(pj_ice_strans* ice_st,
     char errmsg[PJ_ERR_MSG_SIZE];
     pj_strerror(status, errmsg, sizeof(errmsg));
     g_warning("ICE %s failed: %s", opname, errmsg);
+    g_message("ERROR:ICE %s failed: %s", opname, errmsg);
     // pj_ice_strans_destroy(ice_st);
     // icest_ = NULL;
   }
