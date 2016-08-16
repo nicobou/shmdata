@@ -333,7 +333,6 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
     return;
   }
 
-  // g_print("format: %s\n", format);
   auto cur_codec = codecs_.get_current();
   auto guid_iter = std::find_if(
       codecs_guids_.begin(), codecs_guids_.end(), [&](const std::pair<std::string, GUID>& codec) {
@@ -344,24 +343,40 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
       presets_guids_.begin(),
       presets_guids_.end(),
       [&](const std::pair<std::string, GUID>& preset) { return preset.first == cur_preset; });
+
+  auto cur_profile = profiles_.get_current();
+  auto profiles_iter = std::find_if(
+      profiles_guids_.begin(),
+      profiles_guids_.end(),
+      [&](const std::pair<std::string, GUID>& profile) { return profile.first == cur_profile; });
+
   es_.get()->invoke_async<MPtr(&NVencES::initialize_encoder)>(nullptr,
                                                               guid_iter->second,
                                                               preset_iter->second,
+                                                              profiles_iter->second,
                                                               width,
                                                               height,
                                                               frameNum,
                                                               frameDen,
                                                               buf_format);
   shmw_.reset();
+
+  std::string codec;
+  if (cur_codec == "HEVC")
+    codec = "x-h265";
+  else
+    codec = "x-h264";
+
   shmw_ = std::make_unique<ShmdataWriter>(
       this,
       make_file_name("encoded-video"),
       10048576,
-      std::string("video/x-h264, stream-format=(string)byte-stream, "
-                  "alignment=(string)au, profile=(string)baseline") +
-          ", width=(int)" + std::to_string(width) + ", height=(int)" + std::to_string(height) +
-          ", pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)" + std::to_string(frameNum) +
-          "/" + std::to_string(frameDen));
+      std::string("video/" + codec + ", stream-format=(string)byte-stream, "
+                                     "alignment=(string)au, profile=(string)baseline" +
+                  ", width=(int)" + std::to_string(width) + ", height=(int)" +
+                  std::to_string(height) +
+                  ", pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)" +
+                  std::to_string(frameNum) + "/" + std::to_string(frameDen)));
 }
 
 }  // namespace switcher

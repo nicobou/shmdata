@@ -49,6 +49,7 @@ class NVencES : public SafeBoolIdiom {
   bool safe_bool_idiom() const { return nullptr != encoder_; }
   bool initialize_encoder(GUID encodeGuid,
                           GUID presetGuid,
+                          GUID profileGuid,
                           uint32_t width,
                           uint32_t height,
                           uint32_t frameRateNum,

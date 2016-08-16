@@ -178,6 +178,7 @@ bool NVencES::is_same(GUID g1, GUID g2) {
 
 bool NVencES::initialize_encoder(GUID encodeGuid,
                                  GUID presetGuid,
+                                 GUID profileGuid,
                                  uint32_t width,
                                  uint32_t height,
                                  uint32_t frameRateNum,
@@ -203,10 +204,27 @@ bool NVencES::initialize_encoder(GUID encodeGuid,
     g_warning("nvenc cannot get encode preset config");
   } else {
     preset_config.presetCfg.version = NV_ENC_CONFIG_VER;
-    preset_config.presetCfg.profileGUID = NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID;
-    preset_config.presetCfg.encodeCodecConfig.h264Config.level = NV_ENC_LEVEL_AUTOSELECT;
-    preset_config.presetCfg.encodeCodecConfig.h264Config.chromaFormatIDC = 1;
-    preset_config.presetCfg.encodeCodecConfig.h264Config.repeatSPSPPS = 1;
+    preset_config.presetCfg.profileGUID = profileGuid;
+
+    if (is_same(encodeGuid, NV_ENC_CODEC_H264_GUID)) {
+      preset_config.presetCfg.encodeCodecConfig.h264Config.level = NV_ENC_LEVEL_AUTOSELECT;
+      if (format == NV_ENC_BUFFER_FORMAT_YUV444)
+        preset_config.presetCfg.encodeCodecConfig.h264Config.chromaFormatIDC = 3;
+      else
+        preset_config.presetCfg.encodeCodecConfig.h264Config.chromaFormatIDC = 1;
+      preset_config.presetCfg.encodeCodecConfig.h264Config.repeatSPSPPS = 1;
+    } else if (is_same(encodeGuid, NV_ENC_CODEC_HEVC_GUID)) {
+      preset_config.presetCfg.encodeCodecConfig.hevcConfig.level = NV_ENC_LEVEL_AUTOSELECT;
+      if (format == NV_ENC_BUFFER_FORMAT_YUV444)
+        preset_config.presetCfg.encodeCodecConfig.hevcConfig.chromaFormatIDC = 3;
+      else
+        preset_config.presetCfg.encodeCodecConfig.hevcConfig.chromaFormatIDC = 1;
+      preset_config.presetCfg.encodeCodecConfig.hevcConfig.repeatSPSPPS = 1;
+    } else {
+      g_warning("Unknown codec for hardware encoding.");
+      return false;
+    }
+
     init_params_.encodeConfig = &preset_config.presetCfg;
   }
 
