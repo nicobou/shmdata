@@ -24,13 +24,8 @@
 #include "switcher/scope-exit.hpp"
 
 namespace switcher {
-GstAudioCodec::GstAudioCodec(Quiddity* quid,
-                             const std::string& shmpath,
-                             const std::string& shmpath_encoded)
+GstAudioCodec::GstAudioCodec(Quiddity* quid)
     : quid_(quid),
-      shmpath_to_encode_(shmpath),
-      shm_encoded_path_(shmpath_encoded),
-      custom_shmsink_path_(!shmpath_encoded.empty()),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       primary_codec_(
           GstUtils::element_factory_list_to_pair_of_vectors(
@@ -40,16 +35,13 @@ GstAudioCodec::GstAudioCodec(Quiddity* quid,
           GstUtils::element_factory_list_to_pair_of_vectors(
               GST_ELEMENT_FACTORY_TYPE_AUDIO_ENCODER, GST_RANK_SECONDARY, true, {"vorbisenc"}),
           0),
-      codec_id_(install_codec(true /*primary*/)),
+      codec_id_(install_codec(false /*primary only*/)),
       codec_long_list_id_(quid_->pmanage<MPtr(&PContainer::make_bool)>(
           "more_codecs",
           [this](const bool& val) {
             codec_long_list_ = val;
             quid_->pmanage<MPtr(&PContainer::remove)>(codec_id_);
-            if (val)
-              codec_id_ = install_codec(true);  // primary
-            else
-              codec_id_ = install_codec(false);  // secondary
+            codec_id_ = install_codec(codec_long_list_);
             reset_codec_configuration(nullptr, this);
             return true;
           },
@@ -66,7 +58,6 @@ GstAudioCodec::GstAudioCodec(Quiddity* quid,
                         G_TYPE_BOOLEAN,
                         Method::make_arg_type_description(G_TYPE_NONE, nullptr),
                         this);
-  set_shm(shmpath);
   reset_codec_configuration(nullptr, this);
 }
 
@@ -74,12 +65,14 @@ void GstAudioCodec::hide() {
   quid_->disable_method("reset");
   quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_, false);
   quid_->pmanage<MPtr(&PContainer::enable)>(codec_long_list_id_, false);
+  quid_->pmanage<MPtr(&PContainer::enable)>(group_codec_id_, false);
 }
 
 void GstAudioCodec::show() {
   quid_->enable_method("reset");
   quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_, true);
   quid_->pmanage<MPtr(&PContainer::enable)>(codec_long_list_id_, true);
+  quid_->pmanage<MPtr(&PContainer::enable)>(group_codec_id_, true);
 }
 
 void GstAudioCodec::make_bin() {
@@ -122,16 +115,26 @@ void GstAudioCodec::uninstall_codec_properties() {
   codec_properties_.clear();
 }
 
+void GstAudioCodec::toggle_codec_properties(bool enable) {
+  for (auto& it : codec_properties_)
+    quid_->pmanage<MPtr(&PContainer::enable)>(quid_->pmanage<MPtr(&PContainer::get_id)>(it),
+                                              enable);
+}
+
 void GstAudioCodec::make_codec_properties() {
   guint num_properties = 0;
   GParamSpec** props =
       g_object_class_list_properties(G_OBJECT_GET_CLASS(codec_element_.get_raw()), &num_properties);
   On_scope_exit { g_free(props); };
+  group_codec_id_ = quid_->pmanage<MPtr(&PContainer::make_group)>(
+      "codec_config", "Audio codec properties", "Configure the codec");
   for (guint i = 0; i < num_properties; i++) {
     auto param_name = g_param_spec_get_name(props[i]);
     if (param_black_list_.end() == param_black_list_.find(param_name)) {
-      quid_->pmanage<MPtr(&PContainer::push)>(
-          param_name, GPropToProp::to_prop(G_OBJECT(codec_element_.get_raw()), param_name));
+      quid_->pmanage<MPtr(&PContainer::push_parented)>(
+          param_name,
+          "codec_config",
+          GPropToProp::to_prop(G_OBJECT(codec_element_.get_raw()), param_name));
       codec_properties_.push_back(param_name);
     }
   }
@@ -139,20 +142,34 @@ void GstAudioCodec::make_codec_properties() {
 
 gboolean GstAudioCodec::reset_codec_configuration(gpointer /*unused */, gpointer user_data) {
   GstAudioCodec* context = static_cast<GstAudioCodec*>(user_data);
-  if (context->codec_long_list_) {
-    context->quid_->pmanage<MPtr(&PContainer::set<Selection::index_t>)>(
-        context->codec_long_list_id_, context->secondary_codec_.get_index("Opus audio encoder"));
-  } else {
-    context->quid_->pmanage<MPtr(&PContainer::set<Selection::index_t>)>(
-        context->codec_id_, context->secondary_codec_.get_index("Opus audio encoder"));
-  }
+
+  context->quid_->pmanage<MPtr(&PContainer::set<Selection::index_t>)>(
+      context->codec_id_, context->secondary_codec_.get_index("Opus audio encoder"));
+
   return TRUE;
 }
 
-bool GstAudioCodec::start() {
+bool GstAudioCodec::start(const std::string& shmpath, const std::string& shmpath_encoded) {
   hide();
-  uninstall_codec_properties();
+  toggle_codec_properties(false);
   if (0 == secondary_codec_.get()) return false;
+
+  shmpath_to_encode_ = shmpath;
+  if (shmpath_encoded.empty())
+    shm_encoded_path_ = shmpath_to_encode_ + "-encoded";
+  else
+    shm_encoded_path_ = shmpath_encoded;
+
+  g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_to_encode_.c_str(), nullptr);
+  g_object_set(G_OBJECT(shm_encoded_.get_raw()),
+               "socket-path",
+               shm_encoded_path_.c_str(),
+               "sync",
+               FALSE,
+               "async",
+               FALSE,
+               nullptr);
+
   shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
       shm_encoded_.get_raw(),
       [this](const std::string& caps) {
@@ -166,6 +183,11 @@ bool GstAudioCodec::start() {
   shmsrc_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
       [this](const std::string& caps) {
+        if (!this->has_enough_channels(caps)) {
+          // FIXME: To do in can_sink_caps of audioenc when destination caps are implemented.
+          g_warning("audio codec does not support the number of channels connected to it.");
+        }
+
         this->quid_->graft_tree(".shmdata.reader." + shmpath_to_encode_,
                                 ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
       },
@@ -182,6 +204,7 @@ bool GstAudioCodec::start() {
 
 bool GstAudioCodec::stop() {
   show();
+  toggle_codec_properties(true);
   if (0 != secondary_codec_.get()) {
     shmsink_sub_.reset();
     shmsrc_sub_.reset();
@@ -194,21 +217,7 @@ bool GstAudioCodec::stop() {
   return true;
 }
 
-void GstAudioCodec::set_shm(const std::string& shmpath) {
-  shmpath_to_encode_ = shmpath;
-  if (!custom_shmsink_path_) shm_encoded_path_ = shmpath_to_encode_ + "-encoded";
-  g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_to_encode_.c_str(), nullptr);
-  g_object_set(G_OBJECT(shm_encoded_.get_raw()),
-               "socket-path",
-               shm_encoded_path_.c_str(),
-               "sync",
-               FALSE,
-               "async",
-               FALSE,
-               nullptr);
-}
-
-PContainer::prop_id_t GstAudioCodec::install_codec(bool primary) {
+PContainer::prop_id_t GstAudioCodec::install_codec(bool secondary) {
   auto opus_index = secondary_codec_.get_index("Opus audio encoder");
   primary_codec_.select(opus_index);
   secondary_codec_.select(opus_index);
@@ -216,8 +225,6 @@ PContainer::prop_id_t GstAudioCodec::install_codec(bool primary) {
       "codec",
       [this](const size_t& val) {
         uninstall_codec_properties();
-        // primary_codec_ is used for documentation, secondary is the one
-        // used for actual work
         secondary_codec_.select(val);
         if (0 == val) return true;
         codec_element_.mute(secondary_codec_.get_current_nick().c_str());
@@ -228,7 +235,45 @@ PContainer::prop_id_t GstAudioCodec::install_codec(bool primary) {
       [this]() { return secondary_codec_.get(); },
       "Audio Codecs",
       "Selected audio codec for encoding",
-      primary ? primary_codec_ : secondary_codec_);
+      secondary ? secondary_codec_ : primary_codec_);
+}
+
+bool GstAudioCodec::has_enough_channels(const std::string& str_caps) {
+  GstCaps* caps = gst_caps_from_string(str_caps.c_str());
+  On_scope_exit {
+    if (nullptr != caps) gst_caps_unref(caps);
+  };
+
+  GstStructure* s = gst_caps_get_structure(caps, 0);
+  if (nullptr == s) {
+    g_warning("Cannot get structure from caps (audioenc)");
+    return false;
+  }
+
+  gint channels = 0;
+  if (!gst_structure_get_int(s, "channels", &channels)) {
+    g_warning("Cannot get channels number from shmdata description (audioenc)");
+    return false;
+  }
+
+  GstElementFactory* factory = gst_element_get_factory(codec_element_.get_raw());
+  const GList* list = gst_element_factory_get_static_pad_templates(factory);
+
+  gint max_channels = 0;
+  while (nullptr != list) {
+    GstStaticPadTemplate* templ = reinterpret_cast<GstStaticPadTemplate*>(list->data);
+    if (templ->direction == GST_PAD_SINK) {
+      GstCaps* caps = gst_static_pad_template_get_caps(templ);
+      On_scope_exit { gst_caps_unref(caps); };
+      GstStructure* structure = gst_caps_get_structure(caps, 0);
+
+      max_channels = gst_value_get_int_range_max(gst_structure_get_value(structure, "channels"));
+      break;
+    }
+    list = g_list_next(list);
+  }
+
+  return channels <= max_channels;
 }
 
 }  // namespace switcher

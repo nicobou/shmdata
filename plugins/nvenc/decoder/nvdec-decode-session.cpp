@@ -33,7 +33,7 @@ NVencDS::NVencDS(uint32_t device_id, cudaVideoCodec codec) : cu_ctx_(device_id) 
   memset(&video_info_, 0, sizeof(CUVIDDECODECREATEINFO));
 
   // Arbitrary initial values, will change when receiving data.
-  video_info_.CodecType = cudaVideoCodec_H264;
+  video_info_.CodecType = codec;
   video_info_.ulWidth = 4096;
   video_info_.ulHeight = 4096;
   video_info_.ChromaFormat = cudaVideoChromaFormat_420;

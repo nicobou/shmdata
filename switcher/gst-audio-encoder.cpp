@@ -33,8 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstAudioEncoder,
 GstAudioEncoder::GstAudioEncoder(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
 
 bool GstAudioEncoder::init() {
-  codecs_ = std::make_unique<GstAudioCodec>(
-      static_cast<Quiddity*>(this), std::string(), make_file_name("audio-encoded"));
+  codecs_ = std::make_unique<GstAudioCodec>(static_cast<Quiddity*>(this));
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
       [this](const std::string&) { return this->on_shmdata_disconnect(); },
@@ -47,13 +46,12 @@ bool GstAudioEncoder::init() {
 bool GstAudioEncoder::on_shmdata_disconnect() { return codecs_->stop(); }
 
 bool GstAudioEncoder::on_shmdata_connect(const std::string& shmpath) {
-  codecs_->set_shm(shmpath);
-  return codecs_->start();
+  return codecs_->start(shmpath, make_file_name("audio-encoded"));
 }
 
 bool GstAudioEncoder::can_sink_caps(const std::string& caps) {
   // assuming codecs_ is internally using audioconvert as first caps negotiating
-  // gst element:
+  // gst element
   return GstUtils::can_sink_caps("audioconvert", caps);
 }
 

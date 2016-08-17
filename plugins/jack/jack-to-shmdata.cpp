@@ -143,7 +143,7 @@ bool JackToShmdata::start() {
   pmanage<MPtr(&PContainer::enable)>(connect_to_id_, false);
   pmanage<MPtr(&PContainer::enable)>(index_id_, false);
   {
-    std::unique_lock<std::mutex> lock(input_ports_mutex_);
+    std::lock_guard<std::mutex> lock(input_ports_mutex_);
     for (unsigned int i = 0; i < num_channels_; ++i)
       input_ports_.emplace_back(jack_client_, i + 1, false);
     connect_ports();
@@ -153,7 +153,7 @@ bool JackToShmdata::start() {
 
 bool JackToShmdata::stop() {
   {
-    std::unique_lock<std::mutex> lock(input_ports_mutex_);
+    std::lock_guard<std::mutex> lock(input_ports_mutex_);
     input_ports_.clear();
   }
   shm_.reset(nullptr);
@@ -168,7 +168,7 @@ bool JackToShmdata::stop() {
 int JackToShmdata::jack_process(jack_nframes_t nframes, void* arg) {
   auto context = static_cast<JackToShmdata*>(arg);
   {
-    std::unique_lock<std::mutex> lock(context->port_to_connect_in_jack_process_mutex_);
+    std::lock_guard<std::mutex> lock(context->port_to_connect_in_jack_process_mutex_);
     for (auto& it : context->port_to_connect_in_jack_process_)
       jack_connect(context->jack_client_.get_raw(), it.first.c_str(), it.second.c_str());
     context->port_to_connect_in_jack_process_.clear();
@@ -180,9 +180,8 @@ int JackToShmdata::jack_process(jack_nframes_t nframes, void* arg) {
       std::size_t num_chan = context->input_ports_.size();
       if (0 == num_chan) return 0;
       std::vector<jack_sample_t*> jack_bufs;
-      for (unsigned int i = 0; i < num_chan; ++i) {
-        jack_sample_t* buf =
-            (jack_sample_t*)jack_port_get_buffer(context->input_ports_[i].get_raw(), nframes);
+      for (auto& port : context->input_ports_) {
+        jack_sample_t* buf = (jack_sample_t*)jack_port_get_buffer(port.get_raw(), nframes);
         if (!buf) return 0;
         jack_bufs.emplace_back(buf);
       }
@@ -213,12 +212,15 @@ void JackToShmdata::update_port_to_connect() {
     return;
   }
 
+  std::lock_guard<std::mutex> lock(port_to_connect_in_jack_process_mutex_);
   for (unsigned int i = index_; i < index_ + num_channels_; ++i)
     ports_to_connect_.emplace_back(connect_to_ + std::to_string(i));
 }
 
 void JackToShmdata::connect_ports() {
   if (!auto_connect_) return;
+
+  std::lock_guard<std::mutex> lock(port_to_connect_in_jack_process_mutex_);
 
   if (ports_to_connect_.size() != input_ports_.size()) {
     g_warning(
@@ -240,7 +242,8 @@ void JackToShmdata::on_port(jack_port_t* port) {
   auto it = std::find(ports_to_connect_.begin(), ports_to_connect_.end(), jack_port_name(port));
   if (ports_to_connect_.end() == it) return;
   {
-    std::unique_lock<std::mutex> lock(port_to_connect_in_jack_process_mutex_);
+    std::lock_guard<std::mutex> lock_port_connect(port_to_connect_in_jack_process_mutex_);
+    std::lock_guard<std::mutex> lock_input_port(input_ports_mutex_);
     port_to_connect_in_jack_process_.push_back(std::make_pair(
         *it,
         std::string(client_name_ + ":" + input_ports_[it - ports_to_connect_.begin()].get_name())));

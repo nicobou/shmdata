@@ -32,24 +32,20 @@ class quiddity;
 
 class GstAudioCodec {
  public:
-  GstAudioCodec(Quiddity* quid,
-                const std::string& shmpath_to_encode,
-                const std::string& shmpath_encoded = {});
+  GstAudioCodec(Quiddity* quid);
   GstAudioCodec() = delete;
   ~GstAudioCodec() = default;
   GstAudioCodec(const GstAudioCodec&) = delete;
   GstAudioCodec& operator=(const GstAudioCodec&) = delete;
 
-  void set_shm(const std::string& shmpath);
-  bool start();
+  bool start(const std::string& shmpath, const std::string& shmpath_encoded = {});
   bool stop();
 
  private:
   Quiddity* quid_;
   // shmdata path
-  std::string shmpath_to_encode_;
-  std::string shm_encoded_path_;
-  bool custom_shmsink_path_;
+  std::string shmpath_to_encode_{};
+  std::string shm_encoded_path_{};
   // gst pipeline
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   // audio encoding
@@ -72,16 +68,19 @@ class GstAudioCodec {
   // codec params black list
   std::unordered_set<std::string> param_black_list_{
       "name", "parent", "hard-resync", "mark-granule", "perfect-timestamp", "tolerance"};
+  PContainer::prop_id_t group_codec_id_{0};
   // shmdatasrc copy-buffers property:
   bool copy_buffers_{true};
 
   bool remake_codec_elements();
   void make_codec_properties();
   void uninstall_codec_properties();
+  void toggle_codec_properties(bool enable);
   void make_bin();
   void show();
   void hide();
-  PContainer::prop_id_t install_codec(bool primary);  // install secondary if false
+  bool has_enough_channels(const std::string& str_caps);
+  PContainer::prop_id_t install_codec(bool secondary);  // install secondary if true
   static gboolean sink_factory_filter(GstPluginFeature* feature, gpointer data);
   static gint sink_compare_ranks(GstPluginFeature* f1, GstPluginFeature* f2);
   static gboolean reset_codec_configuration(gpointer /*unused */, gpointer user_data);

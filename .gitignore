@@ -8,6 +8,7 @@
 *.tar.gz
 *.trs
 *~
+*.gch
 Makefile
 aclocal.m4
 autom4te.cache/output.0
@@ -35,6 +36,7 @@ install-sh
 libtool
 ltmain.sh
 missing
+nodejs/.deps/
 plugins/.deps/
 plugins/.libs/
 plugins/avcodecs/.deps/
