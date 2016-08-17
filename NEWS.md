@@ -2,6 +2,19 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.22 (2016-08-17)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* H265 encoding/decoding with NVENC/NVDEC.
+* gst-audio-codec cleanup
+
+Bug fixes:
+* Added mutexes for safety and fixed a crash in jack_on_process.
+* Fixed shmdata lifecycle in nvdec plugin to fix a race condition.
+* No initialization of CUVIDDECODECREATEINFO because it contains elements withtout default constructor.
+
 switcher 0.8.20 (2016-08-05)
 ---------------------------
 This is an official release in the 0.8 stable series.
