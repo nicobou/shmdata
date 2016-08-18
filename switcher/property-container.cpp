@@ -578,7 +578,7 @@ PContainer::prop_id_t PContainer::push_parented(const std::string& strid,
   return counter_;
 }
 
-std::unique_lock<std::mutex> PContainer::get_lock(prop_id_t id) {
+std::unique_lock<std2::shared_mutex> PContainer::get_lock(prop_id_t id) {
   return props_.find(id)->second->get_lock();
 }
 
