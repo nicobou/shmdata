@@ -55,6 +55,10 @@ class Uridecodebin : public Quiddity {
   void clean_on_error_command();
   void bus_async(GstMessage* msg);
   bool to_shmdata();
+
+  static std::string get_pad_name(GstPad* pad);
+  static bool pad_is_image(const std::string& padname);
+  static void decodebin_pad_added_cb(GstElement* object, GstPad* pad, gpointer user_data);
   static void uridecodebin_pad_added_cb(GstElement* object, GstPad* pad, gpointer user_data);
   static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);
   static gboolean event_probe_cb(GstPad* pad, GstEvent* event, gpointer data);
