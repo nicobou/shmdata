@@ -185,6 +185,7 @@ bool GstAudioCodec::start(const std::string& shmpath, const std::string& shmpath
       [this](const std::string& caps) {
         if (!this->has_enough_channels(caps)) {
           // FIXME: To do in can_sink_caps of audioenc when destination caps are implemented.
+          g_message("ERROR: audio codec does not support the number of channels connected to it.");
           g_warning("audio codec does not support the number of channels connected to it.");
         }
 
