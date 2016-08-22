@@ -82,6 +82,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     shmdata-writer.cpp \
     signal-string.cpp \
     startable-quiddity.cpp \
+    std2.cpp \
     string-utils.cpp \
     timelapse.cpp \
     type-name-registry.cpp \

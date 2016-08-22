@@ -28,7 +28,7 @@
 #include "./property-internal-types.hpp"
 #include "./property-specification.hpp"
 #include "./serialize-string.hpp"
-#include "switcher/std2.hpp"
+#include "./std2.hpp"
 
 namespace switcher {
 class PContainer;  // property container
@@ -114,7 +114,7 @@ class Property2 : public PropertyBase {
   }
 
   W get() const {
-    std2::shared_lock<std2::shared_mutex> lock(rw_mutex_);
+    std2::shared_lock lock(rw_mutex_);
     return get_();
   }
 
