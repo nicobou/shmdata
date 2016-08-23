@@ -22,6 +22,7 @@
 
 #include <atomic>
 #include <mutex>
+#include <shared_mutex>
 
 namespace std2 {
 
@@ -36,7 +37,9 @@ class shared_mutex {
   void unlock_shared();
 
  private:
+  std::shared_timed_mutex stmtx_{};
   std::atomic_int nb_readers_{0};
+  std::atomic_int nb_writers_{0};
   std::mutex global_mutex_{};
 };
 

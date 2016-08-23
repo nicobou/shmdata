@@ -25,19 +25,13 @@ shared_mutex::shared_mutex() {}
 
 shared_mutex::~shared_mutex() {}
 
-void shared_mutex::lock() { global_mutex_.lock(); }
+void shared_mutex::lock() { stmtx_.lock(); }
 
-void shared_mutex::unlock() { global_mutex_.unlock(); }
+void shared_mutex::unlock() { stmtx_.unlock(); }
 
-void shared_mutex::lock_shared() {
-  auto previous_value = nb_readers_.fetch_add(1);
-  if (previous_value == 0) global_mutex_.lock();
-}
+void shared_mutex::lock_shared() { stmtx_.lock_shared(); }
 
-void shared_mutex::unlock_shared() {
-  auto previous_value = nb_readers_.fetch_sub(1);
-  if (previous_value == 1) global_mutex_.unlock();
-}
+void shared_mutex::unlock_shared() { stmtx_.unlock_shared(); }
 
 shared_lock::shared_lock(shared_mutex& mutex) : shared_mutex_(mutex) {
   shared_mutex_.lock_shared();
