@@ -28,7 +28,6 @@
 #include "./property-internal-types.hpp"
 #include "./property-specification.hpp"
 #include "./serialize-string.hpp"
-#include "switcher/std2.hpp"
 
 namespace switcher {
 class PContainer;  // property container
@@ -48,7 +47,7 @@ class PropertyBase {
   virtual void update_value_in_spec() = 0;
   virtual bool set_str(const std::string& val, bool do_notify = true) const = 0;
   virtual std::string get_str() const = 0;
-  virtual std::unique_lock<std2::shared_mutex> get_lock() = 0;
+  virtual std::unique_lock<std::mutex> get_lock() = 0;
 
   prop_id_t get_id() const;
   register_id_t subscribe(notify_cb_t fun) const;
@@ -103,7 +102,7 @@ class Property2 : public PropertyBase {
       return false;
     }
     {
-      std::lock_guard<std2::shared_mutex> lock(rw_mutex_);
+      std::unique_lock<std::mutex> lock(ts_);
       if (!set_(val))  // implementation
         return false;
     }
@@ -114,7 +113,7 @@ class Property2 : public PropertyBase {
   }
 
   W get() const {
-    std2::shared_lock<std2::shared_mutex> lock(rw_mutex_);
+    std::unique_lock<std::mutex> lock(ts_);
     return get_();
   }
 
@@ -135,15 +134,13 @@ class Property2 : public PropertyBase {
     if (nullptr != get_) doc_.update_current_value(get());
   }
 
-  std::unique_lock<std2::shared_mutex> get_lock() {
-    return std::unique_lock<std2::shared_mutex>(rw_mutex_);
-  }
+  std::unique_lock<std::mutex> get_lock() { return std::unique_lock<std::mutex>(ts_); }
 
  private:
   PropertySpecification<V, W> doc_;
   set_cb_t set_;
   get_cb_t get_;
-  mutable std2::shared_mutex rw_mutex_{};
+  mutable std::mutex ts_{};
 };
 
 }  // namespace switcher
