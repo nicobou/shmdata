@@ -30,7 +30,6 @@ check_PROGRAMS = \
     check_quiddity_create_remove \
     check_rtp_session \
     check_scope_guard \
-    check_shared_mutex \
     check_startable \
     check_test_full \
     check_threaded_wrapper \
@@ -65,9 +64,6 @@ check_rtp_session_SOURCES = \
 
 check_scope_guard_SOURCES = \
     check_scope_guard.cpp
-
-check_shared_mutex_SOURCES = \
-    check_shared_mutex.cpp
 
 check_signal_subscriber_SOURCES = \
     check_signal_subscriber.cpp

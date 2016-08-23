@@ -1,4 +1,3 @@
-*.gch
 *.in
 *.la
 *.lo
@@ -9,6 +8,7 @@
 *.tar.gz
 *.trs
 *~
+*.gch
 Makefile
 aclocal.m4
 autom4te.cache/output.0
@@ -112,7 +112,6 @@ tests/check_property_subscriber
 tests/check_quiddity_create_remove
 tests/check_rtp_session
 tests/check_scope_guard
-tests/check_shared_mutex
 tests/check_signal_subscriber
 tests/check_startable
 tests/check_string_dictionary

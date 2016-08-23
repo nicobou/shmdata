@@ -82,7 +82,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     shmdata-writer.cpp \
     signal-string.cpp \
     startable-quiddity.cpp \
-    std2.cpp \
     string-utils.cpp \
     timelapse.cpp \
     type-name-registry.cpp \
@@ -175,7 +174,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     shmdata-utils.hpp \
     shmdata-writer.hpp \
     signal-string.hpp \
-    std2.hpp \
     startable-quiddity.hpp \
     string-utils.hpp \
     templated-sequence.hpp \
