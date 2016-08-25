@@ -177,25 +177,30 @@ void NVencPlugin::update_max_width_height() {
   max_width_ = mwh.first;
   max_height_ = mwh.second;
   auto getwidth = [this]() { return this->max_width_; };
-  if (0 != max_width_id_) pmanage<MPtr(&PContainer::remove)>(max_width_id_);
-  max_width_id_ = pmanage<MPtr(&PContainer::make_int)>("maxwidth",
-                                                       nullptr,
-                                                       getwidth,
-                                                       "Max width",
-                                                       "Max video source width",
-                                                       max_width_,
-                                                       max_width_,
-                                                       max_width_);
+  if (0 == max_width_id_)
+    max_width_id_ = pmanage<MPtr(&PContainer::make_int)>("maxwidth",
+                                                         nullptr,
+                                                         getwidth,
+                                                         "Max width",
+                                                         "Max video source width",
+                                                         max_width_,
+                                                         max_width_,
+                                                         max_width_);
+  else
+    pmanage<MPtr(&PContainer::notify)>(max_width_id_);
+
   auto getheight = [this]() { return max_height_; };
-  if (0 != max_height_id_) pmanage<MPtr(&PContainer::remove)>(max_height_id_);
-  max_height_id_ = pmanage<MPtr(&PContainer::make_int)>("maxheight",
-                                                        nullptr,
-                                                        getheight,
-                                                        "Max height",
-                                                        "Max video source height",
-                                                        max_height_,
-                                                        max_height_,
-                                                        max_height_);
+  if (0 == max_height_id_)
+    max_height_id_ = pmanage<MPtr(&PContainer::make_int)>("maxheight",
+                                                          nullptr,
+                                                          getheight,
+                                                          "Max height",
+                                                          "Max video source height",
+                                                          max_height_,
+                                                          max_height_,
+                                                          max_height_);
+  else
+    pmanage<MPtr(&PContainer::notify)>(max_height_id_);
 }
 
 void NVencPlugin::update_input_formats() {
@@ -204,6 +209,7 @@ void NVencPlugin::update_input_formats() {
       codecs_guids_.begin(), codecs_guids_.end(), [&](const std::pair<std::string, GUID>& codec) {
         return codec.first == cur_codec;
       });
+  if (codecs_guids_.end() == guid_iter) g_warning("bug in %s line %d", __FUNCTION__, __LINE__);
   video_formats_.clear();
   video_formats_ = es_->invoke<MPtr(&NVencES::get_input_formats)>(guid_iter->second);
   for (auto& it : video_formats_) {

@@ -29,7 +29,7 @@
 #include "switcher/quiddity-manager.hpp"
 
 #ifdef HAVE_CONFIG_H
-#include "../../config.h"
+#include "../../../config.h"
 #endif
 
 static bool success = false;
@@ -61,35 +61,40 @@ int main() {
   {
     QuiddityManager::ptr manager = QuiddityManager::make_manager("test_manager");
 #ifdef HAVE_CONFIG_H
-    gchar* usr_plugin_dir = g_strdup_printf("../%s", LT_OBJDIR);
+    gchar* usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
     manager->scan_directory_for_plugins(usr_plugin_dir);
     g_free(usr_plugin_dir);
 #else
     return 1;
 #endif
 
-    assert(QuiddityBasicTest::test_full(manager, "nvenc"));
-    manager->remove("nvenc");
+    // testing if two nvenc can be created simultaneously
+    std::vector<std::string> nvencs;
+    for (int i = 0; i < 2; ++i) {
+      auto nvenc_quid = manager->create("nvenc");
+      if (nvenc_quid.empty()) {
+        g_warning("nvenc creating failed (i is %d) ", i);
+        return 1;
+      }
+      nvencs.push_back(nvenc_quid);
+    }
+    for (auto& it : nvencs) manager->remove(it);
+    nvencs.clear();
 
-    // testing if nvenc can be used, if not stop the test
+    // testing if nvenc can be used
     {
       auto nvenc_quid = manager->create("nvenc");
       if (nvenc_quid.empty()) {
-        g_warning("nvenc encoding not tested");
-        return 0;
-      }
-      manager->remove(nvenc_quid);
-    }
-
-    // testing if nvenc can be created successfully several times
-    for (int i = 0; i < 16; ++i) {
-      auto nvenc_quid = manager->create("nvenc");
-      if (nvenc_quid.empty()) {
-        g_warning("nvenc creating failed after being created %d time(s)", i);
+        g_warning("nvenc encoding could not be created");
         return 1;
       }
       manager->remove(nvenc_quid);
     }
+
+    // standard test
+    assert(QuiddityBasicTest::test_full(manager, "nvenc"));
+    manager->remove("nvenc");
+
 
     // testing nvenc is encoding
     auto video_quid = manager->create("videotestsrc");
