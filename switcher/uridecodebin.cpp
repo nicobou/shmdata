@@ -34,8 +34,11 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
                                      "Nicolas Bouillot");
 
 Uridecodebin::Uridecodebin(const std::string&)
-    : gst_pipeline_(std::make_unique<GstPipeliner>(
-          [this](GstMessage* msg) { this->bus_async(msg); }, nullptr)) {}
+    : on_msg_async_cb_([this](GstMessage* msg) { this->bus_async(msg); }),
+      on_msg_sync_cb_(nullptr),
+      on_error_cb_([this](GstObject*, GError*) { this->error_ = true; }),
+      gst_pipeline_(
+          std::make_unique<GstPipeliner>(on_msg_async_cb_, on_msg_sync_cb_, on_error_cb_)) {}
 
 void Uridecodebin::bus_async(GstMessage* msg) {
   if (GST_MESSAGE_TYPE(msg) != GST_MESSAGE_EOS) return;
@@ -91,13 +94,16 @@ void Uridecodebin::init_uridecodebin() {
                    "autoplug-select",
                    (GCallback)Uridecodebin::autoplug_select_cb,
                    (gpointer)this);
+  g_signal_connect(G_OBJECT(uridecodebin_),
+                   "source-setup",
+                   (GCallback)Uridecodebin::source_setup_cb,
+                   (gpointer) this);
   g_object_set(
       G_OBJECT(uridecodebin_), "expose-all-streams", TRUE, "async-handling", TRUE, nullptr);
 }
 
 void Uridecodebin::destroy_uridecodebin() {
-  gst_pipeline_ =
-      std::make_unique<GstPipeliner>([this](GstMessage* msg) { this->bus_async(msg); }, nullptr);
+  gst_pipeline_ = std::make_unique<GstPipeliner>(on_msg_async_cb_, on_msg_sync_cb_, on_error_cb_);
   clean_on_error_command();
   prune_tree(".shmdata.writer.");
 }
@@ -107,6 +113,11 @@ void Uridecodebin::clean_on_error_command() {
     delete on_error_command_;
     on_error_command_ = nullptr;
   }
+}
+
+void Uridecodebin::source_setup_cb(GstBin* /*bin*/, GstElement* /*source*/, gpointer user_data) {
+  Uridecodebin* context = static_cast<Uridecodebin*>(user_data);
+  if (context->error_) context->gst_pipeline_->play(false);
 }
 
 void Uridecodebin::unknown_type_cb(GstElement* bin,
@@ -269,32 +280,6 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   if (!stream_is_image) GstUtils::sync_state_with_parent(shmdatasink);
 }
 
-gboolean Uridecodebin::gstrtpdepay_buffer_probe_cb(GstPad* /*pad */,
-                                                   GstMiniObject* /*mini_obj */,
-                                                   gpointer user_data) {
-  Uridecodebin* context = static_cast<Uridecodebin*>(user_data);
-  if (context->discard_next_uncomplete_buffer_ == true) {
-    g_debug("discarding uncomplete custom frame due to a network loss");
-    context->discard_next_uncomplete_buffer_ = false;
-    return FALSE;  // drop buffer
-  }
-  return TRUE;  // pass buffer
-}
-
-gboolean Uridecodebin::gstrtpdepay_event_probe_cb(GstPad* /*pad */,
-                                                  GstEvent* event,
-                                                  gpointer user_data) {
-  Uridecodebin* context = static_cast<Uridecodebin*>(user_data);
-  if (GST_EVENT_TYPE(event) == GST_EVENT_CUSTOM_DOWNSTREAM) {
-    const GstStructure* s;
-    s = gst_event_get_structure(event);
-    if (gst_structure_has_name(s, "GstRTPPacketLost"))
-      context->discard_next_uncomplete_buffer_ = true;
-    return FALSE;
-  }
-  return TRUE;
-}
-
 void Uridecodebin::uridecodebin_pad_added_cb(GstElement* object, GstPad* pad, gpointer user_data) {
   Uridecodebin* context = static_cast<Uridecodebin*>(user_data);
   GstCaps* newcaps = gst_pad_get_current_caps(pad);
@@ -330,6 +315,11 @@ bool Uridecodebin::to_shmdata() {
   }
   counter_.reset_counter_map();
   destroy_uridecodebin();
+  if (!gst_uri_is_valid(uri_.c_str())) {
+    g_warning("uri %s is invalid (uridecodebin)", uri_.c_str());
+    g_message("ERROR:The provided uri is invalid.");
+    return false;
+  }
   init_uridecodebin();
   g_debug("to_shmdata set uri %s", uri_.c_str());
   g_object_set(G_OBJECT(uridecodebin_), "uri", uri_.c_str(), nullptr);

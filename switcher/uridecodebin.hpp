@@ -37,6 +37,11 @@ class Uridecodebin : public Quiddity {
   Uridecodebin& operator=(const Uridecodebin&) = delete;
 
  private:
+  GstPipe::on_msg_async_cb_t on_msg_async_cb_{nullptr};
+  GstPipe::on_msg_sync_cb_t on_msg_sync_cb_{nullptr};
+  GstPipeliner::on_error_cb_t on_error_cb_{nullptr};
+  bool error_{false};
+
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   GstElement* uridecodebin_{nullptr};
   GstCaps* rtpgstcaps_{nullptr};
@@ -63,15 +68,11 @@ class Uridecodebin : public Quiddity {
   static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);
   static gboolean event_probe_cb(GstPad* pad, GstEvent* event, gpointer data);
   static gboolean process_eos(gpointer user_data);
+  static void source_setup_cb(GstBin* /*bin*/, GstElement* /*source*/, gpointer /*user_data*/);
   static void unknown_type_cb(GstElement* bin, GstPad* pad, GstCaps* caps, gpointer user_data);
   static int autoplug_continue_cb(GstElement* bin, GstPad* pad, GstCaps* caps, gpointer user_data);
   static int autoplug_select_cb(
       GstElement* bin, GstPad* pad, GstCaps* caps, GstElementFactory* factory, gpointer user_data);
-  // filtering uncomplete custum buffers
-  static gboolean gstrtpdepay_buffer_probe_cb(GstPad* pad,
-                                              GstMiniObject* mini_obj,
-                                              gpointer user_data);
-  static gboolean gstrtpdepay_event_probe_cb(GstPad* pad, GstEvent* event, gpointer user_data);
   static void on_handoff_cb(GstElement*, GstBuffer*, GstPad*, gpointer);
   static void release_buf(void*);
   void pad_to_shmdata_writer(GstElement* bin, GstPad* pad);
