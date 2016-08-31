@@ -236,7 +236,7 @@ if __name__ == '__main__':
 
     print 'Version number found for all libraries, now executing unit tests.'
 
-    if subprocess.call("./autogen.sh && NVENC_LIBS='-L/usr/lib/nvidia-361' ./configure && make distcheck", shell=True) != 0:
+    if subprocess.call('./autogen.sh && ./configure && make distcheck', shell=True) != 0:
         printerr('{} unit tests failed, stopping the release.'.format(lib))
 
     check_success = True

@@ -20,6 +20,7 @@
 #include "./string-utils.hpp"
 #include <gst/gst.h>
 #include <algorithm>
+#include <cctype>
 #include <sstream>
 
 namespace switcher {
@@ -58,6 +59,35 @@ std::string StringUtils::replace_string(const std::string& orig,
     }
   }
   return unescaped;
+}
+
+int StringUtils::toupper_char(int c) { return std::toupper(c); }
+int StringUtils::tolower_char(int c) { return std::tolower(c); }
+
+void StringUtils::toupper(std::string& str) {
+  std::transform(str.begin(), str.end(), str.begin(), StringUtils::toupper_char);
+}
+void StringUtils::tolower(std::string& str) {
+  std::transform(str.begin(), str.end(), str.begin(), StringUtils::tolower_char);
+}
+
+bool StringUtils::starts_with(const std::string& str, const std::string& suffix) {
+  auto lower_str = std::string(str);
+  auto lower_suffix = std::string(suffix);
+  StringUtils::tolower(lower_str);
+  StringUtils::tolower(lower_suffix);
+  return str.size() >= suffix.size() && lower_str.find(lower_suffix) == 0;
+}
+
+bool StringUtils::ends_with(const std::string& str, const std::string& suffix) {
+  auto str_len = str.size();
+  auto suffix_len = suffix.size();
+  auto lower_str = std::string(str);
+  auto lower_suffix = std::string(suffix);
+  StringUtils::tolower(lower_str);
+  StringUtils::tolower(lower_suffix);
+  return str_len >= suffix_len &&
+         lower_str.find(lower_suffix, str_len - suffix_len) != std::string::npos;
 }
 
 }  // namespace switcher

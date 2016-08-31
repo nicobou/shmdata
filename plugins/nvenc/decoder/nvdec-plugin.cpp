@@ -132,7 +132,6 @@ void NVdecPlugin::on_shmreader_data(void* data, size_t size) {
     if (!pitch) return;
     guint8* src = (guint8*)data_decoded;
     guint height = data_height * 3 / 2;  // Only NV12 support for now, 12bpp.
-    size_t size = data_width * height;
 
     {
       if (scaled) {
@@ -153,12 +152,13 @@ void NVdecPlugin::on_shmreader_data(void* data, size_t size) {
 
       std::unique_ptr<shmdata::OneWriteAccess> shm_ptr;
 
-      if (size > shmwriter_->writer<MPtr(&shmdata::Writer::alloc_size)>())
-        shm_ptr = shmwriter_->writer<MPtr(&shmdata::Writer::get_one_write_access_resize)>(size);
+      if (writer_size_ > shmwriter_->writer<MPtr(&shmdata::Writer::alloc_size)>())
+        shm_ptr =
+            shmwriter_->writer<MPtr(&shmdata::Writer::get_one_write_access_resize)>(writer_size_);
       else
         shm_ptr = shmwriter_->writer<MPtr(&shmdata::Writer::get_one_write_access)>();
 
-      shm_ptr->notify_clients(size);
+      shm_ptr->notify_clients(writer_size_);
 
       guint8* dest = (guint8*)shm_ptr->get_mem();
       for (guint y = 0; y < height; ++y) {
@@ -168,7 +168,7 @@ void NVdecPlugin::on_shmreader_data(void* data, size_t size) {
       }
     }
 
-    shmwriter_->bytes_written(size);
+    shmwriter_->bytes_written(writer_size_);
   });
 }
 
@@ -229,7 +229,10 @@ void NVdecPlugin::on_shmreader_server_connected(const std::string& data_descr) {
   shmwriter_ = std::make_unique<ShmdataWriter>(this, make_file_name("video"), writer_size_, caps_);
 }
 
-void NVdecPlugin::on_shmreader_server_disconnected() { ds_.reset(nullptr); }
+void NVdecPlugin::on_shmreader_server_disconnected() {
+  ds_.reset(nullptr);
+  shmwriter_.reset(nullptr);
+}
 
 cudaVideoCodec NVdecPlugin::convert_video_type_to_cuda(const std::string& content_type,
                                                        const std::string& codec,

@@ -32,6 +32,14 @@ std::string replace_char(const std::string& orig,
 std::string replace_string(const std::string& orig,
                            const std::string& to_replace,
                            const std::string& replacement);
+
+int tolower_char(int c);
+int toupper_char(int c);
+void toupper(std::string& str);
+void tolower(std::string& str);
+bool starts_with(const std::string& str, const std::string& suffix);
+bool ends_with(const std::string& str, const std::string& suffix);
+
 }  // namespace StringUtils
 }  // namespace switcher
 #endif
