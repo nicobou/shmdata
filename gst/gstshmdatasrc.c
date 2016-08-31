@@ -51,6 +51,7 @@ enum
   PROP_SOCKET_PATH,
   PROP_CAPS,
   PROP_BYTES_SINCE_LAST_REQUEST,
+  PROP_BUFFERS_SINCE_LAST_REQUEST,
   PROP_COPY_BUFFERS
 };
 
@@ -138,8 +139,20 @@ gst_shmdata_src_class_init (GstShmdataSrcClass * klass)
       PROP_BYTES_SINCE_LAST_REQUEST,
       g_param_spec_uint64 (
           "bytes",
-          "Bytes number since last request",
+          "Number of bytes since last request",
           "The number of bytes that passed the shmdata since last request",
+          0,
+          G_MAXUINT64,
+          0,
+          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+  
+  g_object_class_install_property (
+      gobject_class,
+      PROP_BUFFERS_SINCE_LAST_REQUEST,
+      g_param_spec_uint64 (
+          "buffers",
+          "Number of buffers since last request",
+          "The number of buffers that passed the shmdata since last request",
           0,
           G_MAXUINT64,
           0,
@@ -247,6 +260,10 @@ gst_shmdata_src_get_property (GObject * object, guint prop_id,
       g_value_set_uint64 (value, self->bytes_since_last_request);
       self->bytes_since_last_request = 0;
       break;
+    case PROP_BUFFERS_SINCE_LAST_REQUEST:
+      g_value_set_uint64 (value, self->buffers_since_last_request);
+      self->buffers_since_last_request = 0;
+      break;
     case PROP_COPY_BUFFERS:
       g_value_set_boolean (value, self->copy_buffers);
       break;
@@ -341,6 +358,7 @@ static void gst_shmdata_src_on_data(void *user_data, void *data, size_t size) {
   self->current_data = data;
   self->current_size = size;
   self->bytes_since_last_request += size;
+  ++self->buffers_since_last_request;
   self->on_data = TRUE;
   g_cond_broadcast (&self->on_data_cond);
   g_mutex_unlock (&self->on_data_mutex);

@@ -53,6 +53,7 @@ enum
   PROP_SOCKET_PATH,
   PROP_CAPS,
   PROP_BYTES_SINCE_LAST_REQUEST,
+  PROP_BUFFERS_SINCE_LAST_REQUEST,
   // PROP_PERMS,
   PROP_INITIAL_SHM_SIZE
 };
@@ -404,6 +405,18 @@ gst_shmdata_sink_class_init (GstShmdataSinkClass * klass)
           0,
           G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
+  g_object_class_install_property (
+      gobject_class,
+      PROP_BUFFERS_SINCE_LAST_REQUEST,
+      g_param_spec_uint64 (
+          "buffers",
+          "Number of buffers since last request",
+          "The number of buffers that passed the shmdata since last request",
+          0,
+          G_MAXUINT64,
+          0,
+          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+
   /* g_object_class_install_property (gobject_class, PROP_PERMS, */
   /*     g_param_spec_uint ("perms", */
   /*         "Permissions on the shm area", */
@@ -509,6 +522,10 @@ gst_shmdata_sink_get_property (GObject * object, guint prop_id,
     case PROP_BYTES_SINCE_LAST_REQUEST:
       g_value_set_uint64 (value, self->bytes_since_last_request);
       self->bytes_since_last_request = 0;
+      break;
+    case PROP_BUFFERS_SINCE_LAST_REQUEST:
+      g_value_set_uint64 (value, self->buffers_since_last_request);
+      self->buffers_since_last_request = 0;
       break;
     /* case PROP_PERMS: */
     /*   g_value_set_uint (value, self->perms); */
@@ -619,6 +636,7 @@ gst_shmdata_sink_render (GstBaseSink * bsink, GstBuffer * buf)
    */
   shmdata_notify_clients(self->access, map.size);
   self->bytes_since_last_request += map.size;
+  ++self->buffers_since_last_request;
   shmdata_release_one_write_access(self->access);
 
   // wait for client to read and take the write lock
