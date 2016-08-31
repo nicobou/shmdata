@@ -2,6 +2,20 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.24 (2016-08-31)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* URI/URL image player.
+
+Bug fixes:
+* Fixed shmdata size computation and disconnection method.
+* Clarified timeout warning for SIP registration and reduced invite timeout.
+* Catch gstreamer errors in URI player to avoid deadlocks.
+* Removing hardcorded nvidia driver version in release script.
+* Adding audio multichannel error message for issue with encoder.
+
 switcher 0.8.22 (2016-08-17)
 ---------------------------
 This is an official release in the 0.8 stable series.
