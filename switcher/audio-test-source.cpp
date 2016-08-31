@@ -122,12 +122,11 @@ bool AudioTestSource::start() {
   shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmdatasink_.get_raw(),
       [this](const std::string& caps) {
-        this->graft_tree(".shmdata.writer." + shmpath_,
-                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(
+            ".shmdata.writer." + shmpath_,
+            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate", InfoTree::make(byte_rate));
-      });
+      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_));
   update_caps();
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    audiotestsrc_.get_raw(),
@@ -136,11 +135,10 @@ bool AudioTestSource::start() {
                    nullptr);
   gst_element_link_many(
       audiotestsrc_.get_raw(), capsfilter_.get_raw(), shmdatasink_.get_raw(), nullptr);
-
+  
   pmanage<MPtr(&PContainer::enable)>(format_id_, false);
   pmanage<MPtr(&PContainer::enable)>(channels_id_, false);
   pmanage<MPtr(&PContainer::enable)>(sample_rate_id_, false);
-
   gst_pipeline_->play(true);
 
   return true;

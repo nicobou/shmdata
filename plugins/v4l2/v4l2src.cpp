@@ -562,12 +562,11 @@ bool V4L2Src::start() {
   shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsink_.get_raw(),
       [this](const std::string& caps) {
-        this->graft_tree(".shmdata.writer." + shmpath_,
-                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(
+            ".shmdata.writer." + shmpath_,
+            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate", InfoTree::make(byte_rate));
-      });
+      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_));
 
   gst_pipeline_->play(true);
   if (!is_current_pixel_format_raw_video()) codecs_->set_none();

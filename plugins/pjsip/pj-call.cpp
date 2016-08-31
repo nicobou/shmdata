@@ -600,15 +600,12 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
               [=](const std::string& caps) {
                 SIPPlugin::this_->graft_tree(
                     ".shmdata.writer." + shmpath,
-                    ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+                    ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
                 SIPPlugin::this_->graft_tree(std::string(".shmdata.writer.") + shmpath + ".uri",
                                              InfoTree::make(call->peer_uri));
 
               },
-              [shmpath](GstShmdataSubscriber::num_bytes_t byte_rate) {
-                SIPPlugin::this_->graft_tree(".shmdata.writer." + shmpath + ".byte_rate",
-                                             InfoTree::make(byte_rate));
-              },
+              ShmdataStat::make_tree_updater(SIPPlugin::this_, ".shmdata.writer." + shmpath),
               [=]() { SIPPlugin::this_->prune_tree(".shmdata.writer." + shmpath); }));
         },
         SIPPlugin::this_->decompress_streams_));

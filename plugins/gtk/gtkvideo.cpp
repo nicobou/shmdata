@@ -433,8 +433,9 @@ bool GTKVideo::on_shmdata_connect(const std::string& shmpath) {
   shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
       [this](const std::string& caps) {
-        this->graft_tree(".shmdata.reader." + shmpath_,
-                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(
+            ".shmdata.reader." + shmpath_,
+            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
         GstCaps* gstcaps = gst_caps_from_string(caps.c_str());
         On_scope_exit {
           if (gstcaps) gst_caps_unref(gstcaps);
@@ -446,9 +447,7 @@ bool GTKVideo::on_shmdata_connect(const std::string& shmpath) {
         this->vid_height_ = g_value_get_int(height_val);
         this->update_padding(this->video_window_);
       },
-      [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.reader." + shmpath_ + ".byte_rate", InfoTree::make(byte_rate));
-      });
+      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath_));
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmsrc_.get_raw(),
                    queue_.get_raw(),

@@ -237,11 +237,9 @@ bool Timelapse::start_timelapse(const std::string& shmpath) {
       timelapse_config_,
       [this, shmpath](const std::string& caps) {
         graft_tree(".shmdata.reader." + shmpath,
-                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        graft_tree(".shmdata.reader." + shmpath + ".byte_rate", InfoTree::make(byte_rate));
-      },
+      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath),
       nullptr,
       [this, shmpath](std::string&& file_name) {
         if (!notify_last_file_) return;

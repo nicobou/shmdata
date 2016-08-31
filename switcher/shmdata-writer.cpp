@@ -30,13 +30,13 @@ ShmdataWriter::ShmdataWriter(Quiddity* quid,
       shmpath_(path),
       data_type_(data_descr),
       shm_(shmpath_, memsize, data_type_, &shmlog_),
-      task_(shm_ ? std::make_unique<PeriodicTask>([this]() { this->update_quid_byte_rate(); },
+      task_(shm_ ? std::make_unique<PeriodicTask>([this]() { this->update_quid_stats(); },
                                                   std::chrono::milliseconds(1000))
                  : nullptr) {
   if (shm_ && nullptr != quid_)
     quid_->graft_tree(
         ".shmdata.writer." + shmpath_,
-        ShmdataUtils::make_tree(data_type_, ShmdataUtils::get_category(data_type_), 0));
+        ShmdataUtils::make_tree(data_type_, ShmdataUtils::get_category(data_type_), ShmdataStat()));
 }
 
 ShmdataWriter::~ShmdataWriter() {
@@ -45,17 +45,17 @@ ShmdataWriter::~ShmdataWriter() {
 
 void ShmdataWriter::bytes_written(size_t size) {
   std::unique_lock<std::mutex> lock(bytes_mutex_);
-  bytes_written_ += size;
+  shm_stats_.count_buffer(size);
 }
 
-void ShmdataWriter::update_quid_byte_rate() {
-  decltype(bytes_written_) bytes;
+void ShmdataWriter::update_quid_stats() {
+  decltype(shm_stats_) stats;
   {
     std::unique_lock<std::mutex> lock(bytes_mutex_);
-    bytes = bytes_written_;
-    bytes_written_ = 0;
+    stats = shm_stats_;
+    shm_stats_.reset();
   }
-  quid_->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate", InfoTree::make(bytes));
+  ShmdataStat::make_tree_updater(quid_, ".shmdata.writer." + shmpath_)(stats);
 }
 
 }  // namespace switcher

@@ -146,23 +146,19 @@ bool GstVideoCodec::start() {
   shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
       shm_encoded_.get_raw(),
       [this](const std::string& caps) {
-        this->quid_->graft_tree(".shmdata.writer." + shm_encoded_path_,
-                                ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->quid_->graft_tree(
+            ".shmdata.writer." + shm_encoded_path_,
+            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->quid_->graft_tree(".shmdata.writer." + shm_encoded_path_ + ".byte_rate",
-                                InfoTree::make(byte_rate));
-      });
+      ShmdataStat::make_tree_updater(quid_, ".shmdata.writer." + shm_encoded_path_));
   shmsrc_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
       [this](const std::string& caps) {
-        this->quid_->graft_tree(".shmdata.reader." + shmpath_to_encode_,
-                                ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->quid_->graft_tree(
+            ".shmdata.reader." + shmpath_to_encode_,
+            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->quid_->graft_tree(".shmdata.reader." + shmpath_to_encode_ + ".byte_rate",
-                                InfoTree::make(byte_rate));
-      });
+      ShmdataStat::make_tree_updater(quid_, ".shmdata.reader." + shmpath_to_encode_));
   make_bin();
 
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);

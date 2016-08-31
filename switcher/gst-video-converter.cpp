@@ -77,22 +77,16 @@ bool GstVideoConverter::on_shmdata_connect(const std::string& shmpath) {
       converter_->get_shmsink(),
       [this](const std::string& caps) {
         graft_tree(".shmdata.writer." + shmpath_converted_,
-                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        graft_tree(".shmdata.writer." + shmpath_converted_ + ".byte_rate",
-                   InfoTree::make(byte_rate));
-      });
+      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_converted_));
   shmsrc_sub_ = std::make_unique<GstShmdataSubscriber>(
       converter_->get_shmsrc(),
       [this](const std::string& caps) {
         graft_tree(".shmdata.reader." + shmpath_to_convert_,
-                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        graft_tree(".shmdata.reader." + shmpath_to_convert_ + ".byte_rate",
-                   InfoTree::make(byte_rate));
-      });
+      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath_to_convert_));
   pmanage<MPtr(&PContainer::enable)>(video_format_id_, false);
   return true;
 }

@@ -24,17 +24,17 @@
 #include <atomic>
 #include <future>
 #include "./periodic-task.hpp"
+#include "./shmdata-stat.hpp"
 
 namespace switcher {
 class GstShmdataSubscriber {
  public:
-  using num_bytes_t = guint64;
   using on_caps_cb_t = std::function<void(const std::string&)>;
-  using on_byte_monitor_t = std::function<void(num_bytes_t)>;
+  using on_stat_monitor_t = std::function<void(const ShmdataStat&)>;
   using on_delete_t = std::function<void()>;
   GstShmdataSubscriber(GstElement* element,
                        on_caps_cb_t on_caps_cb,
-                       on_byte_monitor_t on_byte_monitor_cb,
+                       on_stat_monitor_t on_stat_monitor_cb,
                        on_delete_t on_delete_cb = nullptr);
   GstShmdataSubscriber() = delete;
   GstShmdataSubscriber(const GstShmdataSubscriber&) = delete;
@@ -44,12 +44,12 @@ class GstShmdataSubscriber {
  private:
   GstElement* element_;
   on_caps_cb_t on_caps_cb_;
-  on_byte_monitor_t on_byte_monitor_cb_;
+  on_stat_monitor_t on_stat_monitor_cb_;
   on_delete_t on_delete_cb_;
   PeriodicTask ptask_;
   gulong signal_handler_id_{0};
   static void on_caps_cb(GObject* gobject, GParamSpec* pspec, gpointer user_data);
-  void byte_monitor();
+  void stat_monitor();
   void notify_caps();
 };
 

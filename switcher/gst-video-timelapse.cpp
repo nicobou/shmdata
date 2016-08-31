@@ -26,12 +26,12 @@
 namespace switcher {
 GstVideoTimelapse::GstVideoTimelapse(const GstVideoTimelapseConfig& config,
                                      GstShmdataSubscriber::on_caps_cb_t on_caps,
-                                     GstShmdataSubscriber::on_byte_monitor_t on_byte_monitor,
+                                     GstShmdataSubscriber::on_stat_monitor_t on_stat_monitor,
                                      GstShmdataSubscriber::on_delete_t on_delete,
                                      on_new_file_t on_new_file)
     : config_(config),
       on_caps_(on_caps),
-      on_byte_monitor_(on_byte_monitor),
+      on_stat_monitor_(on_stat_monitor),
       on_delete_(on_delete),
       on_new_file_(on_new_file),
       gst_pipeline_(std::make_unique<GstPipeliner>(
@@ -71,7 +71,7 @@ GstVideoTimelapse::GstVideoTimelapse(const GstVideoTimelapseConfig& config,
   GstElement* shmdatasrc =
       GstUtils::get_first_element_from_factory_name(GST_BIN(bin), "shmdatasrc");
   shmsrc_sub_ =
-      std::make_unique<GstShmdataSubscriber>(shmdatasrc, on_caps_, on_byte_monitor_, on_delete_);
+      std::make_unique<GstShmdataSubscriber>(shmdatasrc, on_caps_, on_stat_monitor_, on_delete_);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), bin);
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);

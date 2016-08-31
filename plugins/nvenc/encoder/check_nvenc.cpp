@@ -45,7 +45,7 @@ void on_tree_grafted(const std::string& /*subscriber_name */,
                      const std::vector<std::string>& params,
                      void* user_data) {
   auto manager = static_cast<QuiddityManager*>(user_data);
-  GstShmdataSubscriber::num_bytes_t byte_rate =
+  size_t byte_rate =
       manager->use_tree<MPtr(&InfoTree::branch_get_value)>(quid_name, params[0] + ".byte_rate");
   if (0 != byte_rate) {
     std::unique_lock<std::mutex> lock(mut);

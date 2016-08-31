@@ -45,10 +45,10 @@ void on_tree_grafted(const std::string& /*subscriber_name */,
                      void* user_data) {
   auto manager = static_cast<QuiddityManager*>(user_data);
   // interested here in byte_rate information from httpsdpdec
-  if (std::string::npos == params[0].find("byte_rate")) return;
+  if (std::string::npos == params[0].find("stat")) return;
   // check the received byte rate
-  GstShmdataSubscriber::num_bytes_t byte_rate =
-      manager->use_tree<MPtr(&InfoTree::branch_get_value)>(std::string("uri"), params[0]);
+  size_t byte_rate = manager->use_tree<MPtr(&InfoTree::branch_get_value)>(std::string("uri"),
+                                                                          params[0] + ".byte_rate");
   if (0 != byte_rate) {
     audio_success = true;
     cv.notify_one();
@@ -59,7 +59,7 @@ void on_tree_grafted(const std::string& /*subscriber_name */,
 
 void receive_audio(QuiddityManager* manager) {
   // configure an httpsdpdec
-  manager->create("httpsdpdec", "uri");
+  assert(manager->create("httpsdpdec", "uri") == "uri");
   manager->invoke_va("uri",
                      "to_shmdata",
                      nullptr,
@@ -73,17 +73,18 @@ void receive_audio(QuiddityManager* manager) {
 void on_audio_info(const std::string& /*subscriber_name */,
                    const std::string& quiddity_name,
                    const std::string& /*signal_name*/,
-                   const std::vector<std::string>& /*params*/,
+                   const std::vector<std::string>& params,
                    void* user_data) {
+  // ignoring information not related to byte_rate
+  if (std::string::npos == params[0].find("stat")) return;
   auto manager = static_cast<QuiddityManager*>(user_data);
   // checking for shmdata writer path
   auto audio_shmpath =
       manager->use_tree<MPtr(&InfoTree::get_child_keys)>(quiddity_name, "shmdata.writer");
   if (audio_shmpath.empty()) return;
   if (!audio_to_rtp_done) {
-    GstShmdataSubscriber::num_bytes_t byte_rate =
-        manager->use_tree<MPtr(&InfoTree::branch_get_value)>(
-            quiddity_name, std::string("shmdata.writer.") + audio_shmpath.front() + ".byte_rate");
+    size_t byte_rate = manager->use_tree<MPtr(&InfoTree::branch_get_value)>(
+        quiddity_name, std::string("shmdata.writer.") + audio_shmpath.front() + ".stat.byte_rate");
     if (!audio_added) {
       manager->invoke_va("rtp", "add_data_stream", nullptr, audio_shmpath.front().c_str(), nullptr);
       audio_added = true;

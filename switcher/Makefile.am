@@ -77,6 +77,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     serialize-string.cpp \
     shmdata-connector.cpp \
     shmdata-follower.cpp \
+    shmdata-stat.cpp \
     shmdata-utils.cpp \
     shmdata-writer.cpp \
     signal-string.cpp \
@@ -170,6 +171,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     shmdata-connector.hpp \
     shmdata-glib-logger.hpp \
     shmdata-follower.hpp \
+    shmdata-stat.hpp \
     shmdata-utils.hpp \
     shmdata-writer.hpp \
     signal-string.hpp \
