@@ -26,6 +26,7 @@
 #include <string>
 #include <vector>
 #include "./pj-call-utils.hpp"
+#include "./pj-sip-plugin.hpp"
 #include "switcher/gst-rtppayloader-finder.hpp"
 #include "switcher/gst-utils.hpp"
 #include "switcher/information-tree-basic-serializer.hpp"
@@ -453,6 +454,13 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
   std::string from_uri(uristr, len);
   // find related buddy id ('sip:' is not saved)
   auto peer_uri = std::string(from_uri, 4, std::string::npos);
+  if (!SIPPlugin::this_->white_list_->is_authorized(peer_uri)) {
+    g_message("ERROR:call refused from %s", peer_uri.c_str());
+    g_debug("call refused from %s", peer_uri.c_str());
+    pjsip_endpt_respond_stateless(
+        PJSIP::this_->sip_endpt_, rdata, PJSIP_SC_BUSY_HERE, nullptr, nullptr, nullptr);
+  }
+
   // release existing incoming calls from this buddy
   for (auto& it : SIPPlugin::this_->sip_calls_->incoming_call_) {
     if (it.peer_uri == peer_uri) {

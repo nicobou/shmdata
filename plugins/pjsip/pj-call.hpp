@@ -27,7 +27,6 @@
 #include "./pj-codec.hpp"
 #include "./pj-ice-stream-trans.hpp"
 #include "./pj-media-endpt.hpp"
-#include "./pj-sip-plugin.hpp"
 #include "./pj-sip.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
@@ -37,11 +36,10 @@
 #include "switcher/shmdata-writer.hpp"
 
 namespace switcher {
-class SIPPlugin;
 class PJCall {
  public:
   PJCall();
-  ~PJCall(){};
+  ~PJCall() = default;
   PJCall(const PJCall&) = delete;
   PJCall& operator=(const PJCall&) = delete;
   void finalize_calls();
@@ -73,7 +71,6 @@ class PJCall {
 
  private:
   static pjsip_module mod_siprtp_;
-  SIPPlugin* sip_plugin_;
   pj_str_t local_addr_{nullptr, 0};
   bool is_calling_{false};
   bool is_hanging_up_{false};

@@ -282,6 +282,10 @@ void PJPresence::add_buddy(const std::string& sip_user) {
   }
   g_debug("Buddy added");
   buddy_id_[sip_user] = buddy_id;
+  SIPPlugin::this_->white_list_->add(
+      sip_user, [path = ".buddies." + std::to_string(buddy_id)](bool authorized) {
+        SIPPlugin::this_->graft_tree(path + ".whitelisted", InfoTree::make(authorized));
+      });
   SIPPlugin::this_->graft_tree(".buddies." + std::to_string(buddy_id) + ".uri",
                                InfoTree::make(sip_user));
   SIPPlugin::this_->graft_tree(".buddies." + std::to_string(buddy_id) + ".send_status",
@@ -307,6 +311,7 @@ void PJPresence::del_buddy(const std::string& sip_user) {
     g_warning("cannot remove buddy");
     return;
   }
+  SIPPlugin::this_->white_list_->remove(sip_user);
   SIPPlugin::this_->prune_tree(".buddies." + std::to_string(it->second));
   buddy_id_.erase(it);
   g_debug("Buddy removed");

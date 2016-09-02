@@ -25,6 +25,7 @@
 #include "./pj-presence.hpp"
 #include "./pj-sip.hpp"
 #include "./pj-stun-turn.hpp"
+#include "./pj-whitelist.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/threaded-wrapper.hpp"
 
@@ -33,6 +34,7 @@ class SIPPlugin : public Quiddity {
   friend PJCall;
   friend PJPresence;
   friend PJStunTurn;
+  friend PJWhiteList;
 
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SIPPlugin);
@@ -54,6 +56,7 @@ class SIPPlugin : public Quiddity {
   std::unique_ptr<PJCall> sip_calls_{nullptr};
   std::unique_ptr<PJPresence> sip_presence_{nullptr};
   std::unique_ptr<PJStunTurn> stun_turn_{nullptr};
+  std::unique_ptr<PJWhiteList> white_list_{nullptr};
 
   // singleton related members:
   bool i_m_the_one_{false};
