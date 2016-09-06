@@ -143,7 +143,7 @@ void GstAudioCodec::make_codec_properties() {
 gboolean GstAudioCodec::reset_codec_configuration(gpointer /*unused */, gpointer user_data) {
   GstAudioCodec* context = static_cast<GstAudioCodec*>(user_data);
 
-  context->quid_->pmanage<MPtr(&PContainer::set<Selection::index_t>)>(
+  context->quid_->pmanage<MPtr(&PContainer::set<Selection<>::index_t>)>(
       context->codec_id_, context->secondary_codec_.get_index("Opus audio encoder"));
 
   return TRUE;
@@ -222,13 +222,13 @@ PContainer::prop_id_t GstAudioCodec::install_codec(bool secondary) {
   auto opus_index = secondary_codec_.get_index("Opus audio encoder");
   primary_codec_.select(opus_index);
   secondary_codec_.select(opus_index);
-  return quid_->pmanage<MPtr(&PContainer::make_selection)>(
+  return quid_->pmanage<MPtr(&PContainer::make_selection<>)>(
       "codec",
       [this](const size_t& val) {
         uninstall_codec_properties();
         secondary_codec_.select(val);
         if (0 == val) return true;
-        codec_element_.mute(secondary_codec_.get_current_nick().c_str());
+        codec_element_.mute(secondary_codec_.get_attached().c_str());
         remake_codec_elements();
         make_codec_properties();
         return true;

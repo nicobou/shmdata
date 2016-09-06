@@ -92,7 +92,7 @@ PJPresence::PJPresence() {
                                    Method::make_arg_type_description(G_TYPE_STRING, nullptr),
                                    this);
   // online status
-  SIPPlugin::this_->pmanage<MPtr(&PContainer::make_selection)>(
+  SIPPlugin::this_->pmanage<MPtr(&PContainer::make_selection<>)>(
       "status",
       [this](const size_t& val) {
         status_.select(val);

@@ -74,7 +74,7 @@ class PulseSink : public Quiddity {
   std::condition_variable devices_cond_{};
   bool connected_to_pulse_{false};
   //  property:
-  Selection devices_enum_{{"none"}, 0};
+  Selection<> devices_enum_{{"none"}, 0};
   PContainer::prop_id_t devices_enum_id_{0};
   PContainer::prop_id_t volume_id_{0};
   PContainer::prop_id_t mute_id_{0};

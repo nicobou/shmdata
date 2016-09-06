@@ -166,7 +166,7 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
     // registering enum for devices
     context->update_capture_device();
 
-    context->devices_id_ = context->pmanage<MPtr(&PContainer::make_selection)>(
+    context->devices_id_ = context->pmanage<MPtr(&PContainer::make_selection<>)>(
         "device",
         [context](const size_t& val) {
           context->devices_.select(val);
@@ -288,7 +288,7 @@ void PulseSrc::update_capture_device() {
     names.push_back(it.description_);
     nicks.push_back(it.name_);
   }
-  devices_ = Selection(std::make_pair(names, nicks), 0);
+  devices_ = Selection<>(std::make_pair(names, nicks), 0);
 }
 
 bool PulseSrc::start() {

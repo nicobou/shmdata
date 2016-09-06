@@ -64,7 +64,7 @@ class PulseSrc : public Quiddity, public StartableQuiddity {
   std::condition_variable devices_cond_{};
   // property:
   // device enum members
-  Selection devices_{{"none"}, 0};
+  Selection<> devices_{{"none"}, 0};
   PContainer::prop_id_t devices_id_{0};
   PContainer::prop_id_t volume_id_{0};
   PContainer::prop_id_t mute_id_{0};

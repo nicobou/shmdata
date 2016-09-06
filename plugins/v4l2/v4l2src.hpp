@@ -94,16 +94,16 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   std::unique_ptr<GstVideoCodec> codecs_{nullptr};
 
   // devices list:
-  Selection devices_enum_{{"none"}, 0};
+  Selection<> devices_enum_{{"none"}, 0};
   PContainer::prop_id_t devices_id_{0};
 
   // pixet format
-  Selection pixel_format_enum_{{"none"}, 0};
+  Selection<> pixel_format_enum_{{"none"}, 0};
   PContainer::prop_id_t pixel_format_id_{0};
 
   // resolution enum and select for the currently selected device,
   // this is updated when selecting an other device
-  Selection resolutions_enum_{{"none"}, 0};
+  Selection<> resolutions_enum_{{"none"}, 0};
   PContainer::prop_id_t resolutions_id_{0};
   // width height for the currently selected device
   gint width_{0};
@@ -113,12 +113,12 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
 
   // tv standard enum and select for the currently selected device,
   // this is updated when selecting an other device
-  Selection tv_standards_enum_{{"none"}, 0};
+  Selection<> tv_standards_enum_{{"none"}, 0};
   PContainer::prop_id_t tv_standards_id_{0};
 
   // framerate enum and select for the currently selected device,
   // this is updated when selecting an other device
-  Selection framerates_enum_{{"none"}, 0};
+  Selection<> framerates_enum_{{"none"}, 0};
   PContainer::prop_id_t framerates_enum_id_{0};
 
   // width height for the currently selected device

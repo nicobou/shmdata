@@ -34,17 +34,17 @@ class PostureScan3DGPU : public Quiddity, public StartableQuiddity {
   std::string calibration_path_{"default.kvc"};
 
   int camera_nbr_{1};
-  Selection capture_modes_enum_{{"Default mode",
-                                 "SXGA 15Hz",
-                                 "VGA 30Hz",
-                                 "VGA 25Hz",
-                                 "QVGA 25Hz",
-                                 "QVGA 30Hz",
-                                 "QVGA 60Hz",
-                                 "QQVGA 25Hz",
-                                 "QQVGA 30Hz",
-                                 "QQVGA 60Hz"},
-                                0};
+  Selection<> capture_modes_enum_{{"Default mode",
+                                   "SXGA 15Hz",
+                                   "VGA 30Hz",
+                                   "VGA 25Hz",
+                                   "QVGA 25Hz",
+                                   "QVGA 30Hz",
+                                   "QVGA 60Hz",
+                                   "QQVGA 25Hz",
+                                   "QQVGA 30Hz",
+                                   "QQVGA 60Hz"},
+                                  0};
 
   std::vector<double> grid_size_{1.0, 1.0, 1.0};
   PropertyBase::prop_id_t grid_size_x_id_, grid_size_y_id_, grid_size_z_id_;

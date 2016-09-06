@@ -68,16 +68,17 @@ bool V4L2Src::init() {
     g_message("ERROR:No video4linux device detected.");
     return false;
   }
-  devices_id_ = pmanage<MPtr(&PContainer::make_selection)>("device",
-                                                           [this](const size_t& val) {
-                                                             devices_enum_.select(val);
-                                                             update_device_specific_properties();
-                                                             return true;
-                                                           },
-                                                           [this]() { return devices_enum_.get(); },
-                                                           "Capture Device",
-                                                           "Enumeration of v4l2 capture devices",
-                                                           devices_enum_);
+  devices_id_ =
+      pmanage<MPtr(&PContainer::make_selection<>)>("device",
+                                                   [this](const size_t& val) {
+                                                     devices_enum_.select(val);
+                                                     update_device_specific_properties();
+                                                     return true;
+                                                   },
+                                                   [this]() { return devices_enum_.get(); },
+                                                   "Capture Device",
+                                                   "Enumeration of v4l2 capture devices",
+                                                   devices_enum_);
   group_id_ = pmanage<MPtr(&PContainer::make_group)>(
       "config", "Capture device configuration", "device specific parameters");
   update_device_specific_properties();
@@ -217,7 +218,7 @@ void V4L2Src::update_capture_device() {
     nicks.push_back(it.file_device_);
     i++;
   }
-  devices_enum_ = Selection(std::make_pair(names, nicks), 0);
+  devices_enum_ = Selection<>(std::make_pair(names, nicks), 0);
 }
 
 void V4L2Src::update_device_specific_properties() {
@@ -244,8 +245,8 @@ void V4L2Src::update_discrete_resolution() {
     for (auto& it : cap_descr.frame_size_discrete_)
       names.push_back(std::string(it.first) + "x" + std::string(it.second));
 
-    resolutions_enum_ = Selection(std::move(names), 0);
-    resolutions_id_ = pmanage<MPtr(&PContainer::make_parented_selection)>(
+    resolutions_enum_ = Selection<>(std::move(names), 0);
+    resolutions_id_ = pmanage<MPtr(&PContainer::make_parented_selection<>)>(
         "resolution",
         "config",
         [this](const size_t& val) {
@@ -275,8 +276,8 @@ void V4L2Src::update_discrete_framerate() {
     names.push_back(it.second + "/" + it.first);
   }
 
-  framerates_enum_ = Selection(std::move(names), 0);
-  framerates_enum_id_ = pmanage<MPtr(&PContainer::make_parented_selection)>(
+  framerates_enum_ = Selection<>(std::move(names), 0);
+  framerates_enum_id_ = pmanage<MPtr(&PContainer::make_parented_selection<>)>(
       "framerate",
       "config",
       [this](const size_t& val) {
@@ -291,7 +292,7 @@ void V4L2Src::update_discrete_framerate() {
 
 bool V4L2Src::is_current_pixel_format_raw_video() const {
   std::string video_raw("video/x-raw");
-  if (std::string(pixel_format_enum_.get_current_nick(), 0, video_raw.size()) != video_raw)
+  if (std::string(pixel_format_enum_.get_attached(), 0, video_raw.size()) != video_raw)
     return false;
   return true;
 }
@@ -307,8 +308,8 @@ void V4L2Src::update_pixel_format() {
     nicks.push_back(std::get<1>(it));
     names.push_back(std::get<2>(it));
   }
-  pixel_format_enum_ = Selection(std::make_pair(std::move(names), std::move(nicks)), 0);
-  pixel_format_id_ = pmanage<MPtr(&PContainer::make_parented_selection)>(
+  pixel_format_enum_ = Selection<>(std::make_pair(std::move(names), std::move(nicks)), 0);
+  pixel_format_id_ = pmanage<MPtr(&PContainer::make_parented_selection<>)>(
       "pixel_format",
       "config",
       [this](const size_t& val) {
@@ -405,8 +406,8 @@ void V4L2Src::update_tv_standard() {
   if (cap_descr.tv_standards_.empty()) return;
   std::vector<std::string> names;
   for (auto& it : cap_descr.tv_standards_) names.push_back(it);
-  tv_standards_enum_ = Selection(std::move(names), 0);
-  tv_standards_id_ = pmanage<MPtr(&PContainer::make_parented_selection)>(
+  tv_standards_enum_ = Selection<>(std::move(names), 0);
+  tv_standards_id_ = pmanage<MPtr(&PContainer::make_parented_selection<>)>(
       "tv_standard",
       "config",
       [this](const size_t& val) {
@@ -608,11 +609,11 @@ bool V4L2Src::configure_capture() {
     return false;
   }
   g_object_set(
-      G_OBJECT(v4l2src_.get_raw()), "device", devices_enum_.get_current_nick().c_str(), nullptr);
+      G_OBJECT(v4l2src_.get_raw()), "device", devices_enum_.get_attached().c_str(), nullptr);
   if (tv_standards_id_ != 0 && tv_standards_enum_.get() > 0)  // 0 is none
     g_object_set(
         G_OBJECT(v4l2src_.get_raw()), "norm", tv_standards_enum_.get_current().c_str(), nullptr);
-  std::string caps = pixel_format_enum_.get_current_nick();
+  std::string caps = pixel_format_enum_.get_attached();
   if (0 != width_id_)
     caps = caps + ", width=(int)" + std::to_string(width_) + ", height=(int)" +
            std::to_string(height_);

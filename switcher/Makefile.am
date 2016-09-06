@@ -74,7 +74,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     rtp-session2.cpp \
     safe-bool-idiom.cpp \
     sdp-utils.cpp \
-    selection.cpp \
     serialize-string.cpp \
     shmdata-connector.cpp \
     shmdata-follower.cpp \

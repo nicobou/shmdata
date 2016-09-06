@@ -185,7 +185,7 @@ void PulseSink::get_sink_info_callback(pa_context* pulse_context,
     pa_operation* operation = pa_context_drain(pulse_context, nullptr, nullptr);
     if (operation) pa_operation_unref(operation);
     context->update_output_device();
-    context->devices_enum_id_ = context->pmanage<MPtr(&PContainer::make_selection)>(
+    context->devices_enum_id_ = context->pmanage<MPtr(&PContainer::make_selection<>)>(
         "device",
         [context](const size_t& val) {
           context->devices_enum_.select(val);
@@ -304,7 +304,7 @@ void PulseSink::update_output_device() {
     names.push_back(it.description_);
     nicks.push_back(it.name_);
   }
-  devices_enum_ = Selection(std::make_pair(names, nicks), 0);
+  devices_enum_ = Selection<>(std::make_pair(names, nicks), 0);
 }
 
 bool PulseSink::can_sink_caps(const std::string& caps) {

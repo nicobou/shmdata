@@ -40,18 +40,18 @@ bool PortMidiSink::init() {
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
 
-  devices_id_ = pmanage<MPtr(&PContainer::make_selection)>(
+  devices_id_ = pmanage<MPtr(&PContainer::make_selection<>)>(
       "device",
       [this](const size_t& val) {
         output_devices_enum_.select(val);
-        device_ = stoi(output_devices_enum_.get_current_nick());
+        device_ = stoi(output_devices_enum_.get_attached());
         return true;
       },
       [this]() { return output_devices_enum_.get(); },
       "Capture device",
       "MIDI capture device to use",
       output_devices_enum_);
-  device_ = stoi(output_devices_enum_.get_current_nick());
+  device_ = stoi(output_devices_enum_.get_attached());
   return true;
 }
 

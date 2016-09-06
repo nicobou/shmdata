@@ -42,15 +42,15 @@ bool PortMidiSource::init() {
   }
   init_startable(this);
   devices_id_ =
-      pmanage<MPtr(&PContainer::make_selection)>("device",
-                                                 [this](const size_t& val) {
-                                                   input_devices_enum_.select(val);
-                                                   return true;
-                                                 },
-                                                 [this]() { return input_devices_enum_.get(); },
-                                                 "Capture device",
-                                                 "MIDI capture devices to use",
-                                                 input_devices_enum_);
+      pmanage<MPtr(&PContainer::make_selection<>)>("device",
+                                                   [this](const size_t& val) {
+                                                     input_devices_enum_.select(val);
+                                                     return true;
+                                                   },
+                                                   [this]() { return input_devices_enum_.get(); },
+                                                   "Capture device",
+                                                   "MIDI capture devices to use",
+                                                   input_devices_enum_);
   last_midi_value_id_ =
       pmanage<MPtr(&PContainer::make_int)>("last-midi-value",
                                            nullptr,
@@ -119,7 +119,7 @@ bool PortMidiSource::init() {
 
 bool PortMidiSource::start() {
   pmanage<MPtr(&PContainer::enable)>(devices_id_, false);
-  open_input_device(std::stoi(input_devices_enum_.get_current_nick()), on_pm_event, this);
+  open_input_device(std::stoi(input_devices_enum_.get_attached()), on_pm_event, this);
   pmanage<MPtr(&PContainer::enable)>(last_midi_value_id_, true);
   enable_method("next_midi_event_to_property");
   enable_method("remove_midi_property");
@@ -128,7 +128,7 @@ bool PortMidiSource::start() {
 }
 
 bool PortMidiSource::stop() {
-  close_input_device(std::stoi(input_devices_enum_.get_current_nick()));
+  close_input_device(std::stoi(input_devices_enum_.get_attached()));
   pmanage<MPtr(&PContainer::enable)>(last_midi_value_id_, false);
   disable_method("next_midi_event_to_property");
   disable_method("remove_midi_property");

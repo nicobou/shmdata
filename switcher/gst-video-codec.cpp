@@ -152,7 +152,7 @@ void GstVideoCodec::make_codec_properties() {
 gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */, gpointer user_data) {
   GstVideoCodec* context = static_cast<GstVideoCodec*>(user_data);
   auto& quid = context->quid_;
-  // quid->pmanage<MPtr(&PContainer::set<Selection::index_t>)>(
+  // quid->pmanage<MPtr(&PContainer::set<Selection<>::index_t>)>(
   //     context->codec_id_, context->secondary_codec_.get_index("On2 VP8
   //     Encoder"));
   auto* codec_sel =
@@ -174,7 +174,7 @@ gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */, gpointer
 
 bool GstVideoCodec::start() {
   hide();
-  if (0 == quid_->pmanage<MPtr(&PContainer::get<Selection::index_t>)>(codec_id_)) return true;
+  if (0 == quid_->pmanage<MPtr(&PContainer::get<Selection<>::index_t>)>(codec_id_)) return true;
   shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
       shm_encoded_.get_raw(),
       [this](const std::string& caps) {
@@ -205,7 +205,7 @@ bool GstVideoCodec::start() {
 
 bool GstVideoCodec::stop() {
   show();
-  if (0 != quid_->pmanage<MPtr(&PContainer::get<Selection::index_t>)>(codec_id_)) {
+  if (0 != quid_->pmanage<MPtr(&PContainer::get<Selection<>::index_t>)>(codec_id_)) {
     shmsink_sub_.reset();
     shmsrc_sub_.reset();
     quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
@@ -237,14 +237,14 @@ void GstVideoCodec::set_shm(const std::string& shmpath) {
 }
 
 PContainer::prop_id_t GstVideoCodec::install_codec() {
-  return quid_->pmanage<MPtr(&PContainer::make_selection)>(
+  return quid_->pmanage<MPtr(&PContainer::make_selection<>)>(
       "codec",
-      [this](const Selection::index_t& val) {
+      [this](const Selection<>::index_t& val) {
         uninstall_codec_properties();
         use_primary_codec_ ? primary_codec_.select(val) : secondary_codec_.select(val);
         if (0 == val) return true;
-        std::string codec_name = use_primary_codec_ ? primary_codec_.get_current_nick()
-                                                    : secondary_codec_.get_current_nick();
+        std::string codec_name =
+            use_primary_codec_ ? primary_codec_.get_attached() : secondary_codec_.get_attached();
         codec_element_.mute(codec_name.c_str());
         if (codec_name == "x264enc")
           copy_buffers_ = true;
@@ -263,7 +263,7 @@ PContainer::prop_id_t GstVideoCodec::install_codec() {
 }
 
 void GstVideoCodec::set_none() {
-  quid_->pmanage<MPtr(&PContainer::set<Selection::index_t>)>(
+  quid_->pmanage<MPtr(&PContainer::set<Selection<>::index_t>)>(
       quid_->pmanage<MPtr(&PContainer::get_id)>("codec"), 0);
 }
 

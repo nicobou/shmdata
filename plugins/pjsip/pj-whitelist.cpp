@@ -21,7 +21,7 @@
 namespace switcher {
 
 PJWhiteList::PJWhiteList()
-    : mode_id_(SIPPlugin::this_->pmanage<MPtr(&PContainer::make_selection)>(
+    : mode_id_(SIPPlugin::this_->pmanage<MPtr(&PContainer::make_selection<>)>(
           "mode",
           [this](size_t val) {
             mode_.select(val);

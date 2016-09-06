@@ -58,8 +58,8 @@ class GstAudioCodec {
   std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
   std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
   // codec props
-  Selection primary_codec_;
-  Selection secondary_codec_;
+  Selection<> primary_codec_;
+  Selection<> secondary_codec_;
   PContainer::prop_id_t codec_id_;
   // short or long codec list
   bool codec_long_list_{false};

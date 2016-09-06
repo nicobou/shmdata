@@ -45,7 +45,7 @@ class NVdecPlugin : public Quiddity {
   std::unique_ptr<ShmdataFollower> shmfollower_{nullptr};
   ShmdataConnector shmcntr_;
   std::unique_ptr<ThreadedWrapper<NVencDS>> ds_{nullptr};
-  Selection devices_{{"none"}, 0};
+  Selection<> devices_{{"none"}, 0};
   PContainer::prop_id_t devices_id_{0};
   std::vector<int> devices_nv_ids_{};
   cudaVideoCodec video_codec_{cudaVideoCodec_NumCodecs};

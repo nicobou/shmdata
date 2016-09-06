@@ -234,15 +234,15 @@ void PostureScan3DGPU::update_loop() {
 bool PostureScan3DGPU::init() {
   init_startable(this);
 
-  pmanage<MPtr(&PContainer::make_selection)>("capture_mode",
-                                             [this](const size_t& val) {
-                                               capture_modes_enum_.select(val);
-                                               return true;
-                                             },
-                                             [this]() { return capture_modes_enum_.get(); },
-                                             "Capture mode",
-                                             "Capture mode for the cameras",
-                                             capture_modes_enum_);
+  pmanage<MPtr(&PContainer::make_selection<>)>("capture_mode",
+                                               [this](const size_t& val) {
+                                                 capture_modes_enum_.select(val);
+                                                 return true;
+                                               },
+                                               [this]() { return capture_modes_enum_.get(); },
+                                               "Capture mode",
+                                               "Capture mode for the cameras",
+                                               capture_modes_enum_);
 
   pmanage<MPtr(&PContainer::make_int)>("camera_nbr",
                                        [this](const int& val) {

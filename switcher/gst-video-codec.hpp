@@ -62,8 +62,8 @@ class GstVideoCodec {
   std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
   std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
   // codec props
-  Selection primary_codec_;
-  Selection secondary_codec_;
+  Selection<> primary_codec_;
+  Selection<> secondary_codec_;
   bool use_primary_codec_{true};
   PContainer::prop_id_t codec_id_;
 

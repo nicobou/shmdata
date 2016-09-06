@@ -245,12 +245,12 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
           indexes[values[j].value] = j;
           j++;
         }
-        res = std::make_unique<Property2<Selection, Selection::index_t>>(
+        res = std::make_unique<Property2<Selection<>, Selection<>::index_t>>(
             is_writable ?
-            [gobj, gprop_name](const Selection::index_t &val){
+            [gobj, gprop_name](const Selection<>::index_t &val){
               g_object_set(gobj, gprop_name.c_str(), val, nullptr);
               return true;
-            } : static_cast<prop::set_t<Selection::index_t>>(nullptr),
+            } : static_cast<prop::set_t<Selection<>::index_t>>(nullptr),
             [gobj, gprop_name, indexes](){
               gint val;
               g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
@@ -258,7 +258,7 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
             },
             gprop_name,
             std::string(description),
-            Selection(std::move(items), default_value),
+            Selection<>(std::move(items), default_value),
             items.size() - 1);
       } else if (G_IS_PARAM_SPEC_FLAGS(pspec)) {
         g_warning("warning: param spec flags not handled");

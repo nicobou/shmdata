@@ -38,7 +38,7 @@ class GstVideoConverter : public Quiddity {
  private:
   std::string shmpath_to_convert_{};
   std::string shmpath_converted_{};
-  Selection video_format_;
+  Selection<> video_format_;
   PContainer::prop_id_t video_format_id_;
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;

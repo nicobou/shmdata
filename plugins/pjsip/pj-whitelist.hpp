@@ -37,9 +37,9 @@ class PJWhiteList {
 
  private:
   std::unordered_map<std::string, on_authorization_updated_t> on_auth_cbs_{};
-  Selection mode_{{"authorized contacts", "everybody"}, 0};
+  Selection<> mode_{{"authorized contacts", "everybody"}, 0};
   PContainer::prop_id_t mode_id_;
-  Selection::index_t everybody_;
+  Selection<>::index_t everybody_;
   const bool default_authorization_{true};
   std::unordered_map<std::string, bool> authorizations_{};
   static gboolean authorize_buddy_cb(gchar* sip_url, gboolean authorized, void* user_data);

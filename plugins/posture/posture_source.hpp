@@ -75,17 +75,17 @@ class PostureSrc : public Quiddity, public StartableQuiddity {
   int hole_filling_kernel_size_{1};
   int hole_filling_iterations_{1};
 
-  Selection capture_modes_enum_{{"Default mode",
-                                 "SXGA 15Hz",
-                                 "VGA 30Hz",
-                                 "VGA 25Hz",
-                                 "QVGA 25Hz",
-                                 "QVGA 30Hz",
-                                 "QVGA 60Hz",
-                                 "QQVGA 25Hz",
-                                 "QQVGA 30Hz",
-                                 "QQVGA 60Hz"},
-                                0};
+  Selection<> capture_modes_enum_{{"Default mode",
+                                   "SXGA 15Hz",
+                                   "VGA 30Hz",
+                                   "VGA 25Hz",
+                                   "QVGA 25Hz",
+                                   "QVGA 30Hz",
+                                   "QVGA 60Hz",
+                                   "QQVGA 25Hz",
+                                   "QQVGA 30Hz",
+                                   "QQVGA 60Hz"},
+                                  0};
 
   std::unique_ptr<posture::CalibrationReader> calibration_reader_{nullptr};
   std::unique_ptr<posture::ZCamera> zcamera_{nullptr};
