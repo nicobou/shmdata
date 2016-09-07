@@ -45,12 +45,12 @@ class NVencBuffers : public SafeBoolIdiom {
   uint32_t width_;
   uint32_t height_;
   NV_ENC_BUFFER_FORMAT format_;
-  static constexpr unsigned int num_buf_{48};
-  std::array<NV_ENC_INPUT_PTR, num_buf_> input_bufs_{{}};
+  static const unsigned int kNumBuf{48};
+  std::array<NV_ENC_INPUT_PTR, kNumBuf> input_bufs_{{}};
   unsigned int cur_buf_{0};
   NV_ENC_INPUT_PTR next_input_{nullptr};
   uint32_t timestamp_{0};
-  std::array<NV_ENC_OUTPUT_PTR, num_buf_> output_bufs_{{}};
+  std::array<NV_ENC_OUTPUT_PTR, kNumBuf> output_bufs_{{}};
   NV_ENC_INPUT_PTR next_output_{nullptr};
   bool safe_bool_idiom() const;
 };

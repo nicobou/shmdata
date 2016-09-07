@@ -54,7 +54,7 @@ void V4L2Src::set_shm_suffix() {
                "socket-path",
                shmpath_.c_str(),
                "initial-size",
-               default_initial_shmsize_,
+               kDefaultInitialShmsize,
                nullptr);
 }
 

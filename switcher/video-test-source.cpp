@@ -69,8 +69,8 @@ VideoTestSource::VideoTestSource(const std::string&)
                                                               "Width",
                                                               "Set Video Width",
                                                               width_,
-                                                              min_width_,
-                                                              max_width_)),
+                                                              kMinWidth,
+                                                              kMaxWidth)),
       height_id_(pmanage<MPtr(&PContainer::make_parented_int)>("height",
                                                                "raw_video_props",
                                                                [this](int val) {
@@ -81,8 +81,8 @@ VideoTestSource::VideoTestSource(const std::string&)
                                                                "Height",
                                                                "Set Video Height",
                                                                height_,
-                                                               min_height_,
-                                                               max_height_)),
+                                                               kMinHeight,
+                                                               kMaxHeight)),
       framerates_id_(pmanage<MPtr(&PContainer::make_parented_selection<>)>(
           "framerate",
           "raw_video_props",

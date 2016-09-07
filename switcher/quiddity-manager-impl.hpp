@@ -171,7 +171,7 @@ class QuiddityManager_Impl {
   std::string name_{};
   AbstractFactory<Quiddity, std::string, QuiddityDocumentation*, const std::string&>
       abstract_factory_{};
-  static const int max_configuration_file_size_{100000000};  // 100Mo
+  static const int kMaxConfigurationFileSize{100000000};  // 100Mo
 
   bool load_plugin(const char* filename);
   void close_plugin(const std::string& class_name);

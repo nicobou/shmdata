@@ -83,10 +83,10 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   UGstElem capsfilter_{"capsfilter"};
   UGstElem shmsink_{"shmdatasink"};
   std::string shmpath_{};
-  // default_initial_shmsize_ is used as shmdata initial size
+  // kDefaultInitialShmsize is used as shmdata initial size
   // in order to avoid automatic resize with the first frame,
   // 67108864 is enough for 4096x4096 RGBA
-  static const size_t default_initial_shmsize_{67108864};
+  static const size_t kDefaultInitialShmsize{67108864};
   const std::string raw_suffix_{"video"};
   const std::string enc_suffix_{"video-encoded"};
   std::unique_ptr<GstPipeliner> gst_pipeline_;

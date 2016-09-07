@@ -55,7 +55,7 @@ class NVencDS : public SafeBoolIdiom {
   static int CUDAAPI HandlePictureDisplay(void* pUserData, CUVIDPARSERDISPINFO* pPicParams);
 
  private:
-  static constexpr const unsigned long kNumDecodeSurfaces = 8;
+  static const unsigned long kNumDecodeSurfaces{8};
   CUvideodecoder video_decoder_{nullptr};
   CUVIDDECODECREATEINFO video_info_;
   cudaVideoCreateFlags video_flags{};

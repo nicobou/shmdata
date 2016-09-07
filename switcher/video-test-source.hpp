@@ -57,12 +57,12 @@ class VideoTestSource : public Quiddity, public StartableQuiddity {
       1};
   PContainer::prop_id_t resolutions_id_;
   int width_{1920};
-  int max_width_{4096};
-  int min_width_{1};
+  static const int kMaxWidth{4096};
+  static const int kMinWidth{1};
   PContainer::prop_id_t width_id_;
   int height_{1080};
-  int max_height_{4096};
-  int min_height_{1};
+  static const int kMaxHeight{4096};
+  static const int kMinHeight{1};
   PContainer::prop_id_t height_id_;
   // framerate
   Selection<> framerates_{{"30/1", "60/1", "1/1", "5/5", "10/1", "15/1", "20/1", "25/1"}, 0};
