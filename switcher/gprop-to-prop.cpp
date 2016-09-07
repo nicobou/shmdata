@@ -26,7 +26,7 @@ namespace GPropToProp {
 std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_name) {
   GParamSpec* pspec = g_object_class_find_property(G_OBJECT_GET_CLASS(gobj), gprop_name.c_str());
   if (nullptr == pspec) {
-    g_warning("property %s not found for the gobject calss %s",
+    g_warning("property %s not found for the gobject class %s",
               gprop_name.c_str(),
               G_OBJECT_CLASS_NAME(G_OBJECT_GET_CLASS(gobj)));
     return std::unique_ptr<PropertyBase>();

@@ -277,10 +277,10 @@ bool ShmdataToJack::stop() {
   disconnect_ports();
   {
     On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };
+    pmanage<MPtr(&PContainer::replace)>(volume_id_,
+                                        GPropToProp::to_prop(G_OBJECT(volume_), "volume"));
     if (!make_elements()) return false;
   }
-  pmanage<MPtr(&PContainer::replace)>(volume_id_,
-                                      GPropToProp::to_prop(G_OBJECT(volume_), "volume"));
   pmanage<MPtr(&PContainer::enable)>(auto_connect_id_, true);
   pmanage<MPtr(&PContainer::enable)>(connect_to_id_, true);
   pmanage<MPtr(&PContainer::enable)>(index_id_, true);

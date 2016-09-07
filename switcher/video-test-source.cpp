@@ -176,6 +176,9 @@ bool VideoTestSource::start() {
       gst_pipeline_.reset();
       return false;
     }
+    pmanage<MPtr(&PContainer::replace)>(
+        pmanage<MPtr(&PContainer::get_id)>("pattern"),
+        GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
     gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
     gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                      shmdatasink_.get_raw(),
@@ -185,9 +188,6 @@ bool VideoTestSource::start() {
     gst_element_link_many(
         videotestsrc_.get_raw(), capsfilter_.get_raw(), shmdatasink_.get_raw(), nullptr);
     codecs_->stop();
-    pmanage<MPtr(&PContainer::replace)>(
-        pmanage<MPtr(&PContainer::get_id)>("pattern"),
-        GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
     if (resolutions_.get_current() == "Custom") {
       pmanage<MPtr(&PContainer::enable)>(width_id_, true);
       pmanage<MPtr(&PContainer::enable)>(height_id_, true);

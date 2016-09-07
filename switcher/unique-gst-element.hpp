@@ -34,13 +34,13 @@ class UGstElem : public SafeBoolIdiom {
   // invoke as g_object
   template <typename Return_type>
   Return_type g_invoke_with_return(std::function<Return_type(gpointer)> command) {
-    return command(G_OBJECT(element_.get()));
+    return command(G_OBJECT(element_->get()));
   }
   void g_invoke(std::function<void(gpointer)> command);
   // invoke as GstElement
   template <typename Return_type>
   Return_type invoke_with_return(std::function<Return_type(GstElement*)> command) {
-    return command(element_.get());
+    return command(element_->get());
   }
   void invoke(std::function<void(GstElement*)> command);
   // get raw without taking ownership (do not unref)
@@ -51,9 +51,16 @@ class UGstElem : public SafeBoolIdiom {
   void mute(const gchar* class_name);
 
  private:
-  std::string class_name_{};
-  using gst_element_handle = std::unique_ptr<GstElement, decltype(&GstUtils::gst_element_deleter)>;
-  gst_element_handle element_;
+  struct gst_element_handle {
+    gst_element_handle() = delete;
+    gst_element_handle(const std::string& class_name);
+    ~gst_element_handle();
+    GstElement* get() const { return element; }
+    GstElement* element{nullptr};
+  };
+
+  std::string class_name_;
+  std::unique_ptr<gst_element_handle> element_;
   // safe bool idiom implementation
   bool safe_bool_idiom() const final;
 };
