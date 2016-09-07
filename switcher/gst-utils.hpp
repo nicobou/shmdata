@@ -72,6 +72,16 @@ gulong g_signal_connect_function(gpointer gobject,
                                  gpointer user_data);
 bool can_sink_caps(std::string factory_name, std::string caps);
 GstElement* get_first_element_from_factory_name(GstBin* bin, const std::string& factory_name);
+const GValue* get_gst_element_capability(const std::string& element_type,
+                                         const std::string& capability,
+                                         GstPadDirection direction);
+std::vector<std::string> get_gst_element_capability_as_list(const std::string& element_type,
+                                                            const std::string& capability,
+                                                            GstPadDirection direction);
+std::pair<int, int> get_gst_element_capability_as_range(const std::string& element_type,
+                                                        const std::string& capability,
+                                                        GstPadDirection direction);
+
 }  // namespace GstUtils
 }  // namespace switcher
 #endif

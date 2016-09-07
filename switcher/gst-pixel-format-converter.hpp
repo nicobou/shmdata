@@ -37,7 +37,6 @@ class GstPixelFormatConverter : public SafeBoolIdiom {
   GstPixelFormatConverter(const GstPixelFormatConverter&) = delete;
   GstPixelFormatConverter& operator=(const GstPixelFormatConverter&) = delete;
 
-  static std::vector<std::string> get_formats();
   static bool can_sink_caps(const std::string& caps);
 
   // for external shm subscribers...

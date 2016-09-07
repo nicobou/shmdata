@@ -185,7 +185,7 @@ bool GstAudioCodec::start(const std::string& shmpath, const std::string& shmpath
       [this](const std::string& caps) {
         if (!this->has_enough_channels(caps)) {
           // FIXME: To do in can_sink_caps of audioenc when destination caps are implemented.
-          g_message("ERROR: audio codec does not support the number of channels connected to it.");
+          g_message("ERROR:audio codec does not support the number of channels connected to it.");
           g_warning("audio codec does not support the number of channels connected to it.");
         }
 
@@ -257,24 +257,12 @@ bool GstAudioCodec::has_enough_channels(const std::string& str_caps) {
     return false;
   }
 
-  GstElementFactory* factory = gst_element_get_factory(codec_element_.get_raw());
-  const GList* list = gst_element_factory_get_static_pad_templates(factory);
+  std::pair<int, int> channels_range = GstUtils::get_gst_element_capability_as_range(
+      gst_plugin_feature_get_name(gst_element_get_factory(codec_element_.get_raw())),
+      "channels",
+      GST_PAD_SINK);
 
-  gint max_channels = 0;
-  while (nullptr != list) {
-    GstStaticPadTemplate* templ = reinterpret_cast<GstStaticPadTemplate*>(list->data);
-    if (templ->direction == GST_PAD_SINK) {
-      GstCaps* caps = gst_static_pad_template_get_caps(templ);
-      On_scope_exit { gst_caps_unref(caps); };
-      GstStructure* structure = gst_caps_get_structure(caps, 0);
-
-      max_channels = gst_value_get_int_range_max(gst_structure_get_value(structure, "channels"));
-      break;
-    }
-    list = g_list_next(list);
-  }
-
-  return channels <= max_channels;
+  return channels <= channels_range.second;
 }
 
 }  // namespace switcher
