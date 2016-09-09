@@ -113,11 +113,13 @@ bool SIPPlugin::init() {
 void SIPPlugin::apply_configuration() {
   // trying to set port if configuration found
   if (config<MPtr(&InfoTree::branch_has_data)>("port")) {
+    g_debug("SIP is trying to set port from configuration");
     auto port = config<MPtr(&InfoTree::branch_get_value)>("port");
-    if (pmanage<MPtr(&PContainer::set<std::string>)>(port_id_, port.copy_as<std::string>()))
+    if (pmanage<MPtr(&PContainer::set<std::string>)>(port_id_, port.copy_as<std::string>())) {
       g_debug("sip has set port from configuration");
-    else
+    } else {
       g_warning("sip failed setting port from configuration");
+    }
   }
 
   // trying to set stun/turn from configuration
@@ -126,6 +128,7 @@ void SIPPlugin::apply_configuration() {
   std::string turn_user = config<MPtr(&InfoTree::branch_get_value)>("turn_user");
   std::string turn_pass = config<MPtr(&InfoTree::branch_get_value)>("turn_pass");
   if (!stun.empty()) {
+    g_debug("SIP is trying to set STUN/TURN from configuration");
     pjsip_->run([&]() {
       if (PJStunTurn::set_stun_turn(
               stun.c_str(), turn.c_str(), turn_user.c_str(), turn_pass.c_str(), stun_turn_.get())) {
@@ -139,12 +142,14 @@ void SIPPlugin::apply_configuration() {
   // trying to register if a user is given
   std::string user = config<MPtr(&InfoTree::branch_get_value)>("user");
   if (!user.empty()) {
+    g_debug("SIP is trying to register from configuration");
     std::string pass = config<MPtr(&InfoTree::branch_get_value)>("pass");
     pjsip_->run([&]() { sip_presence_->register_account(user, pass); });
-    if (sip_presence_->registered_)
+    if (sip_presence_->registered_) {
       g_debug("sip registered using configuration file");
-    else
+    } else {
       g_warning("sip failed registration from configuration");
+    }
   }
 }
 
