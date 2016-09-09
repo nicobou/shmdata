@@ -51,6 +51,34 @@ SIPPlugin::SIPPlugin(const std::string&)
           "SIP Port",
           "SIP port used when registering",
           std::to_string(sip_port_))),
+      dns_address_(NetUtils::get_system_dns()),
+      dns_address_id_(pmanage<MPtr(&PContainer::make_string)>(
+          "dns_addr",
+          [this](const std::string& val) {
+            if (val.empty()) return false;
+            if (!NetUtils::is_valid_IP(val)) {
+              g_message(
+                  "ERROR:Not a valid IP address, expected x.y.z.a with x, y, z, a in [0:255].");
+              return false;
+            }
+
+            // Try setting the new DNS address, if it doesn't work try the old one.
+            auto old_dns_address = dns_address_;
+            dns_address_ = val;
+            if (!pjsip_->invoke<MPtr(&PJSIP::create_resolver)>(dns_address_)) {
+              dns_address_ = old_dns_address;
+              g_message("ERROR:Could not set the DNS address (PJSIP), setting the old one %s.",
+                        dns_address_.c_str());
+              pjsip_->invoke<MPtr(&PJSIP::create_resolver)>(dns_address_);
+              return false;
+            }
+
+            return true;
+          },
+          [this]() { return dns_address_; },
+          "DNS address",
+          "IP address used for DNS",
+          dns_address_)),
       decompress_streams_id_(
           pmanage<MPtr(&PContainer::make_bool)>("decompress",
                                                 [this](const bool& val) {

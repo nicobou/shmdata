@@ -33,6 +33,7 @@ namespace switcher {
 class SIPPlugin : public Quiddity {
   friend PJCall;
   friend PJPresence;
+  friend PJSIP;
   friend PJStunTurn;
   friend PJWhiteList;
 
@@ -50,6 +51,8 @@ class SIPPlugin : public Quiddity {
   std::unique_ptr<ThreadedWrapper<PJSIP>> pjsip_{};
   unsigned int sip_port_{5060};
   PContainer::prop_id_t port_id_;
+  std::string dns_address_;
+  PContainer::prop_id_t dns_address_id_{0};
   pjsua_transport_id transport_id_{-1};
   bool decompress_streams_{true};
   PContainer::prop_id_t decompress_streams_id_;

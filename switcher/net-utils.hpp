@@ -28,7 +28,10 @@ namespace NetUtils {
 
 bool is_used(std::uint16_t port);
 
+static std::string kDefaultDNS{"8.8.8.8"};
 std::map</* interface name */ std::string, /* ip */ std::string> get_ips();
+std::string get_system_dns();
+bool is_valid_IP(const std::string& ip);
 
 }  // namespace NetUtils
 }  // namespace switcher

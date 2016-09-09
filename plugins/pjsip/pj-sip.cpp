@@ -18,6 +18,8 @@
 #include "./pj-sip.hpp"
 #include <glib.h>
 #include "./pj-presence.hpp"
+#include "./pj-sip-plugin.hpp"
+#include "switcher/net-utils.hpp"
 
 namespace switcher {
 // according to pjsip documentation:
@@ -94,13 +96,7 @@ PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
   pool_ = pj_pool_create(&cp_.factory, "switcher_sip", 8000, 8000, nullptr);
   // pj_dns_resolver *resv = pjsip_endpt_get_resolver(sip_endpt_);
   // if (nullptr == resv) printf ("NULL RESOLVER -------------------------\n");
-  pj_dns_resolver* resv;
-  pjsip_endpt_create_resolver(sip_endpt_, &resv);
-  pj_str_t nameserver = pj_str("8.8.8.8");
-  ;
-  pj_uint16_t port = 53;
-  pj_dns_resolver_set_ns(resv, 1, &nameserver, &port);
-  pjsip_endpt_set_resolver(sip_endpt_, resv);
+  create_resolver(SIPPlugin::this_->dns_address_);
   if (!init_fun()) {
     g_warning("pj-sip custom initialization failed");
     return;
@@ -147,6 +143,28 @@ void PJSIP::sip_worker_thread() {
   }
   pjsua_destroy();
   pj_shutdown();
+}
+
+bool PJSIP::create_resolver(std::string dns_address) {
+  pj_dns_resolver* resv;
+  if (PJ_SUCCESS != pjsip_endpt_create_resolver(sip_endpt_, &resv)) {
+    g_warning("pjsip failed to create a resolver.");
+    return false;
+  }
+  pj_str_t nameserver = pj_str(const_cast<char*>(dns_address.c_str()));
+  pj_uint16_t port = 53;
+
+  if (PJ_SUCCESS != pj_dns_resolver_set_ns(resv, 1, &nameserver, &port)) {
+    g_warning("pjsip failed to set name resolution server.");
+    return false;
+  }
+
+  if (PJ_SUCCESS != pjsip_endpt_set_resolver(sip_endpt_, resv)) {
+    g_warning("pjsip failed to set the resolver.");
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace switcher

@@ -64,6 +64,7 @@ class PJSIP : public SafeBoolIdiom {
   int log_level_{2};
   bool safe_bool_idiom() const final { return is_valid_; }
   void sip_worker_thread();
+  bool create_resolver(std::string dns_address);
 };
 
 }  // namespace switcher
