@@ -61,16 +61,9 @@ class GstVideoCodec {
   UGstElem shm_encoded_{"shmdatasink"};
   std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
   std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
-  // codec props
-  Selection<> primary_codec_;
-  Selection<> secondary_codec_;
-  bool use_primary_codec_{true};
-  PContainer::prop_id_t codec_id_;
-
-  // short or long codec list
-  bool codec_long_list_{false};
-  PContainer::prop_id_t codec_long_list_id_;
   std::vector<std::string> codec_properties_{};
+  Selection<> codecs_;
+  PContainer::prop_id_t codec_id_;
   // codec params black list
   std::unordered_set<std::string> param_black_list_{"analyse",  // x264enc
                                                     "arnr-type",

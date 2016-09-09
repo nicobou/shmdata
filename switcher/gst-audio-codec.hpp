@@ -58,12 +58,8 @@ class GstAudioCodec {
   std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
   std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
   // codec props
-  Selection<> primary_codec_;
-  Selection<> secondary_codec_;
+  Selection<> codecs_;
   PContainer::prop_id_t codec_id_;
-  // short or long codec list
-  bool codec_long_list_{false};
-  PContainer::prop_id_t codec_long_list_id_;
   std::vector<std::string> codec_properties_{};
   // codec params black list
   std::unordered_set<std::string> param_black_list_{
@@ -80,7 +76,7 @@ class GstAudioCodec {
   void show();
   void hide();
   bool has_enough_channels(const std::string& str_caps);
-  PContainer::prop_id_t install_codec(bool secondary);  // install secondary if true
+  PContainer::prop_id_t install_codec();
   static gboolean sink_factory_filter(GstPluginFeature* feature, gpointer data);
   static gint sink_compare_ranks(GstPluginFeature* f1, GstPluginFeature* f2);
   static gboolean reset_codec_configuration(gpointer /*unused */, gpointer user_data);

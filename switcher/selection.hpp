@@ -34,7 +34,7 @@ class Selection {
   Selection() = delete;
 
   Selection(std::vector<std::string>&& list, index_t selection)
-      : list_(list), attached_(list), current_selection_(selection) {}
+      : list_(list), attached_(list_), current_selection_(selection) {}
 
   Selection(std::pair<std::vector<std::string> /*names*/, std::vector<T /*attached*/>>&& list,
             index_t selection)
