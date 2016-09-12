@@ -39,14 +39,31 @@ class AudioTestSource : public Quiddity, public StartableQuiddity {
   AudioTestSource& operator=(const AudioTestSource&) = delete;
 
  private:
+  static constexpr double kMaxFrequency = 20000.0;
+  static const int kMaxChannels = 128;
+
   std::string shmpath_{};
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  Selection<> sample_rate_{{"22050", "32000", "44100", "48000", "88200", "96000", "192000"}, 2};
+  PContainer::prop_id_t sample_rate_id_;
+  double frequency_{440.0};
+  PContainer::prop_id_t frequency_id_;
+  float volume_{0.5f};
+  PContainer::prop_id_t volume_id_;
+  int channels_{1};
+  PContainer::prop_id_t channels_id_;
+  Selection<> format_;
+  PContainer::prop_id_t format_id_;
+  PContainer::prop_id_t waveforms_id_{0};
+
   UGstElem audiotestsrc_{"audiotestsrc"};
+  UGstElem capsfilter_{"capsfilter"};
   UGstElem shmdatasink_{"shmdatasink"};
   bool start() final;
   bool stop() final;
   bool init() final;
+  void update_caps();
 };
 
 }  // namespace switcher

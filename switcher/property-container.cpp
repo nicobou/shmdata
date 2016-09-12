@@ -34,16 +34,18 @@ bool PContainer::replace(prop_id_t prop_id, std::unique_ptr<PropertyBase>&& prop
   auto it = strids_.find(prop_id);
   auto strid = it->second;
   if (strids_.end() == it) return false;  // prop not found
+  auto old_value = get_str(prop_id);
   // keep a reference to the old property documentation tree
   auto old_tree = props_[prop_id].get()->get_spec();
   // copy notification cbs
   auto notification_cbs = props_[prop_id].get()->get_notify_cbs();
   // replace with new prop
   props_[prop_id] = std::forward<std::unique_ptr<PropertyBase>>(prop_ptr);
-  props_[prop_id].get()->set_notify_cbs(notification_cbs);
-  // place old tree into new property
   auto* prop = props_[prop_id].get();
+  prop->set_notify_cbs(notification_cbs);
   prop->set_id(prop_id);
+  prop->set_str(old_value);
+  // place old tree into new property
   auto tree = prop->get_spec();
   tree->graft(".", old_tree);
   // updating tree_
@@ -411,28 +413,6 @@ PContainer::prop_id_t PContainer::make_parented_string(const std::string& strid,
                                                        std::string default_value) {
   return make_under_parent<std::string>(
       strid, parent_strid, set, get, label, description, default_value);
-}
-
-PContainer::prop_id_t PContainer::make_selection(const std::string& strid,
-                                                 Property2<Selection, size_t>::set_cb_t set,
-                                                 Property2<Selection, size_t>::get_cb_t get,
-                                                 const std::string& label,
-                                                 const std::string& description,
-                                                 const Selection& default_value) {
-  return make_under_parent<Selection, Selection::index_t>(
-      strid, "", set, get, label, description, default_value, default_value.size() - 1);
-}
-
-PContainer::prop_id_t PContainer::make_parented_selection(
-    const std::string& strid,
-    const std::string& parent_strid,
-    Property2<Selection, size_t>::set_cb_t set,
-    Property2<Selection, size_t>::get_cb_t get,
-    const std::string& label,
-    const std::string& description,
-    const Selection& default_value) {
-  return make_under_parent<Selection, Selection::index_t>(
-      strid, parent_strid, set, get, label, description, default_value, default_value.size() - 1);
 }
 
 PContainer::prop_id_t PContainer::make_group(const std::string& strid,

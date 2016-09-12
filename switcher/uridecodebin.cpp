@@ -271,12 +271,11 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   shm_subs_.emplace_back(std::make_unique<GstShmdataSubscriber>(
       shmdatasink,
       [this, shmpath](const std::string& caps) {
-        this->graft_tree(".shmdata.writer." + shmpath,
-                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(
+            ".shmdata.writer." + shmpath,
+            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.writer." + shmpath + ".byte_rate", InfoTree::make(byte_rate));
-      }));
+      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath)));
   if (!stream_is_image) GstUtils::sync_state_with_parent(shmdatasink);
 }
 

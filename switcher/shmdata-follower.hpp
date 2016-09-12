@@ -26,6 +26,7 @@
 #include <string>
 #include "switcher/periodic-task.hpp"
 #include "switcher/shmdata-glib-logger.hpp"
+#include "switcher/shmdata-stat.hpp"
 
 namespace switcher {
 class Quiddity;
@@ -44,8 +45,8 @@ class ShmdataFollower {
 
  private:
   Quiddity* quid_;
-  // monitoring byte rate:
-  size_t bytes_written_{0};
+  // shmdata stats
+  ShmdataStat shm_stat_{};
   std::mutex bytes_mutex_{};
   // shmdata follower related members:
   ShmdataGlibLogger logger_{};
@@ -61,7 +62,7 @@ class ShmdataFollower {
   void on_data(void* data, size_t data_size);
   void on_server_connected(const std::string& data_type);
   void on_server_disconnected();
-  void update_quid_byte_rate();
+  void update_quid_stats();
 };
 
 }  // namespace switcher

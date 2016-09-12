@@ -46,6 +46,7 @@ class QuiddityManager {
     InfoTree::ptr quiddities_user_data_{nullptr};
     InfoTree::ptr quiddities_{nullptr};
     InfoTree::ptr properties_{nullptr};
+    InfoTree::ptr readers_{nullptr};
     bool empty() { return history_.empty() && !quiddities_; }
   };
   using PropCallback = std::function<void(const std::string& val)>;

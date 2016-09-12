@@ -674,9 +674,9 @@ bool QuiddityManager_Impl::load_configuration_file(const std::string& file_path)
     g_warning("file %s is empty", file_path.c_str());
     return false;
   }
-  if (size > max_configuration_file_size_) {
+  if (size > kMaxConfigurationFileSize) {
     g_warning(
-        "file %s is too large, max is %d bytes", file_path.c_str(), max_configuration_file_size_);
+        "file %s is too large, max is %d bytes", file_path.c_str(), kMaxConfigurationFileSize);
     return false;
   }
   config.reserve(size);

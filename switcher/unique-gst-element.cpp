@@ -20,37 +20,47 @@
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
+UGstElem::gst_element_handle::gst_element_handle(const std::string& class_name)
+    : element(gst_element_factory_make(class_name.c_str(), nullptr)) {
+  if (element) gst_object_ref(element);
+}
+UGstElem::gst_element_handle::~gst_element_handle() {
+  if (element) {
+    gst_object_unref(element);
+    GstUtils::gst_element_deleter(element);
+  }
+};
+
 bool UGstElem::renew(UGstElem& element, const std::vector<std::string>& props) {
   g_debug("renewing gst element of class %s", element.class_name_.c_str());
-  gst_element_handle tmp(gst_element_factory_make(element.class_name_.c_str(), nullptr),
-                         &GstUtils::gst_element_deleter);
+  std::unique_ptr<gst_element_handle> tmp =
+      std::make_unique<gst_element_handle>(element.class_name_);
+  if (!tmp) return false;
   for (auto& it : props)
     GstUtils::apply_property_value(
-        G_OBJECT(element.element_.get()), G_OBJECT(tmp.get()), it.c_str());
-  if (!tmp) return false;
+        G_OBJECT(element.element_->get()), G_OBJECT(tmp->get()), it.c_str());
   std::swap(tmp, element.element_);
   return true;
 }
 
 UGstElem::UGstElem(const gchar* class_name)
-    : class_name_(class_name),
-      element_(gst_element_factory_make(class_name, nullptr), &GstUtils::gst_element_deleter) {
-  if (nullptr == element_) g_warning("GStreamer element can be made (type %s)", class_name);
+    : class_name_(class_name), element_(std::make_unique<gst_element_handle>(class_name)) {
+  if (!element_) g_warning("GStreamer element cannot be created (type %s)", class_name);
 }
 
-bool UGstElem::safe_bool_idiom() const { return static_cast<bool>(element_); }
+bool UGstElem::safe_bool_idiom() const { return element_ && element_->get(); }
 
 void UGstElem::g_invoke(std::function<void(gpointer)> command) {
-  command(G_OBJECT(element_.get()));
+  command(G_OBJECT(element_->get()));
   return;
 }
 
 void UGstElem::invoke(std::function<void(GstElement*)> command) {
-  command(element_.get());
+  command(element_->get());
   return;
 }
 
-GstElement* UGstElem::get_raw() { return element_.get(); }
+GstElement* UGstElem::get_raw() { return element_->get(); }
 
 void UGstElem::mute(const gchar* class_name) { class_name_ = std::string(class_name); }
 

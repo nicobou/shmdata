@@ -345,20 +345,28 @@ class PContainer {
                                  const std::string& description,
                                  std::string default_value);
 
+  template <typename T = std::string>
   prop_id_t make_selection(const std::string& strid,
-                           Property2<Selection, size_t>::set_cb_t set,
-                           Property2<Selection, size_t>::get_cb_t get,
+                           std::function<bool(const size_t&)> set,
+                           std::function<size_t()> get,
                            const std::string& label,
                            const std::string& description,
-                           const Selection& default_value);
+                           const Selection<T>& default_value) {
+    return make_under_parent<Selection<T>, typename Selection<T>::index_t>(
+        strid, "", set, get, label, description, default_value, default_value.size() - 1);
+  }
 
+  template <typename T = std::string>
   prop_id_t make_parented_selection(const std::string& strid,
                                     const std::string& parent_strid,
-                                    Property2<Selection, size_t>::set_cb_t set,
-                                    Property2<Selection, size_t>::get_cb_t get,
+                                    std::function<bool(const size_t&)> set,
+                                    std::function<size_t()> get,
                                     const std::string& label,
                                     const std::string& description,
-                                    const Selection& default_value);
+                                    const Selection<T>& default_value) {
+    return make_under_parent<Selection<T>, typename Selection<T>::index_t>(
+        strid, parent_strid, set, get, label, description, default_value, default_value.size() - 1);
+  }
 
   prop_id_t make_group(const std::string& strid,
                        const std::string& label,

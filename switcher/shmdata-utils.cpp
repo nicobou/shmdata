@@ -53,11 +53,11 @@ std::string ShmdataUtils::get_category(const std::string& caps) {
 
 InfoTree::ptr ShmdataUtils::make_tree(const std::string& caps,
                                       const std::string& category,
-                                      GstShmdataSubscriber::num_bytes_t num_bytes) {
+                                      const ShmdataStat& stat) {
   InfoTree::ptr tree = InfoTree::make();
   tree->graft(".caps", InfoTree::make(caps));
   tree->graft(".category", InfoTree::make(category));
-  tree->graft(".byte_rate", InfoTree::make(num_bytes));
+  stat.update_tree(tree, ".");
   return tree;
 }
 

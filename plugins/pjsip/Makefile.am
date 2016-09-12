@@ -13,7 +13,8 @@ libpjsip_plugin_la_SOURCES = \
     pj-presence.cpp \
     pj-sip-plugin.cpp \
     pj-sip.cpp \
-    pj-stun-turn.cpp
+    pj-stun-turn.cpp \
+    pj-whitelist.cpp
 
 EXTRA_DIST = \
     more_codecs.patch \
@@ -35,7 +36,8 @@ libpjsip_plugin_la_include_HEADERS = \
     pj-presence.hpp \
     pj-sip-plugin.hpp \
     pj-sip.hpp \
-    pj-stun-turn.hpp
+    pj-stun-turn.hpp \
+    pj-whitelist.hpp
 
 libpjsip_plugin_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher

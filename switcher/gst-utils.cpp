@@ -454,4 +454,55 @@ bool GstUtils::can_sink_caps(std::string factory_name, std::string caps) {
   return true;
 }
 
+const GValue* GstUtils::get_gst_element_capability(const std::string& element_type,
+                                                   const std::string& capability,
+                                                   GstPadDirection direction) {
+  GstElementFactory* factory = gst_element_factory_find(element_type.c_str());
+  On_scope_exit { gst_object_unref(factory); };
+  const GList* list = gst_element_factory_get_static_pad_templates(factory);
+  while (nullptr != list) {
+    GstStaticPadTemplate* templ = static_cast<GstStaticPadTemplate*>(list->data);
+    if (templ->direction != GST_PAD_UNKNOWN && templ->direction == direction) {
+      GstCaps* caps = gst_static_pad_template_get_caps(templ);
+      On_scope_exit { gst_caps_unref(caps); };
+      GstStructure* structure = gst_caps_get_structure(caps, 0);
+      return gst_structure_get_value(structure, capability.c_str());
+    }
+    list = g_list_next(list);
+  }
+  return nullptr;
+}
+
+std::vector<std::string> GstUtils::get_gst_element_capability_as_list(
+    const std::string& element_type, const std::string& capability, GstPadDirection direction) {
+  std::vector<std::string> values;
+  const GValue* value_list = get_gst_element_capability(element_type, capability, direction);
+  if (value_list && GST_VALUE_HOLDS_LIST(value_list)) {
+    for (guint j = 0; j < gst_value_list_get_size(value_list); ++j) {
+      values.emplace_back(g_value_get_string(gst_value_list_get_value(value_list, j)));
+    }
+  } else {
+    g_warning(
+        "Trying to get gstreamer capability by value and failing. Maybe try "
+        "GstUtils::get_gst_element_range()");
+  }
+  return values;
+}
+
+std::pair<int, int> GstUtils::get_gst_element_capability_as_range(const std::string& element_type,
+                                                                  const std::string& capability,
+                                                                  GstPadDirection direction) {
+  std::pair<int, int> range;
+  const GValue* value = get_gst_element_capability(element_type, capability, direction);
+  if (value && GST_VALUE_HOLDS_INT_RANGE(value)) {
+    range.first = gst_value_get_int_range_min(value);
+    range.second = gst_value_get_int_range_max(value);
+  } else {
+    g_warning(
+        "Trying to get gstreamer capability by range and failing. Maybe try "
+        "GstUtils::get_gst_element_values()");
+  }
+  return range;
+}
+
 }  // namespace switcher

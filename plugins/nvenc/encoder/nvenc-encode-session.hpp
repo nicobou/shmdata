@@ -40,9 +40,10 @@ class NVencES : public SafeBoolIdiom {
   NVencES& operator=(const NVencES&) = delete;
   NVencES& operator=(NVencES&&) = delete;
 
-  std::vector<std::pair<std::string, GUID>> get_supported_codecs();
-  std::vector<std::pair<std::string, GUID>> get_presets(GUID encodeGUID);
-  std::vector<std::pair<std::string, GUID>> get_profiles(GUID encodeGUID);
+  using named_guid_t = std::vector<std::pair<std::string, GUID>>;
+  named_guid_t get_supported_codecs();
+  named_guid_t get_presets(GUID encodeGUID);
+  named_guid_t get_profiles(GUID encodeGUID);
   std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> get_input_formats(GUID encodeGUID);
 
   std::pair<int, int> get_max_width_height(GUID encodeGUID);
@@ -62,12 +63,18 @@ class NVencES : public SafeBoolIdiom {
   bool process_encoded_frame(std::function<void(void*, uint32_t)> fun);
 
  private:
+  NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS params_;
+  static const size_t kArraySize{64};
+  GUID codecs_guids_[kArraySize];
+  GUID presets_guids_[kArraySize];
+  GUID profiles_guids_[kArraySize];
+  NV_ENC_BUFFER_FORMAT buf_formats_[kArraySize];
   NVencAPI api_{};
   void* encoder_{nullptr};
   NV_ENC_INITIALIZE_PARAMS init_params_;
   CudaContext cu_ctx_;
   std::unique_ptr<NVencBuffers> buffers_{nullptr};
-  static bool is_same(GUID g1, GUID g2);
+  static bool is_same(const GUID& g1, const GUID& g2);
 };
 
 }  // namespace switcher

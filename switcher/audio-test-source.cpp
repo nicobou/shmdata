@@ -23,6 +23,7 @@
 #include "./gprop-to-prop.hpp"
 #include "./information-tree-basic-serializer.hpp"
 #include "./shmdata-utils.hpp"
+#include "switcher/scope-exit.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
@@ -35,56 +36,142 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
                                      "Nicolas Bouillot");
 
 AudioTestSource::AudioTestSource(const std::string&)
-    : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
+    : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
+      sample_rate_id_(
+          pmanage<MPtr(&PContainer::make_selection<>)>("sample_rate",
+                                                       [this](const size_t& val) {
+                                                         sample_rate_.select(val);
+                                                         return true;
+                                                       },
+                                                       [this]() { return sample_rate_.get(); },
+                                                       "Sample rate",
+                                                       "List of supported sample rates",
+                                                       sample_rate_)),
+      frequency_id_(pmanage<MPtr(&PContainer::make_double)>(
+          "frequency",
+          [this](const double& val) {
+            frequency_ = val;
+            g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "freq", frequency_, nullptr);
+            return true;
+          },
+          [this]() { return frequency_; },
+          "Frequency",
+          "Set sound frequency",
+          440.0,
+          1.0,
+          kMaxFrequency)),
+      volume_id_(pmanage<MPtr(&PContainer::make_float)>(
+          "volume",
+          [this](const float& val) {
+            volume_ = val;
+            g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "volume", volume_, nullptr);
+            return true;
+          },
+          [this]() { return volume_; },
+          "Volume",
+          "Set sound volume",
+          0.5f,
+          0.0f,
+          1.0f)),
+      channels_id_(pmanage<MPtr(&PContainer::make_int)>("channels",
+                                                        [this](const int& val) {
+                                                          channels_ = val;
+                                                          return true;
+                                                        },
+                                                        [this]() { return channels_; },
+                                                        "Number of channels",
+                                                        "Set number of channels",
+                                                        1,
+                                                        1,
+                                                        kMaxChannels)),
+      format_(Selection<>(
+          GstUtils::get_gst_element_capability_as_list("audiotestsrc", "format", GST_PAD_SRC), 0)),
+      format_id_(pmanage<MPtr(&PContainer::make_selection<>)>("format",
+                                                              [this](const size_t& val) {
+                                                                format_.select(val);
+                                                                return true;
+                                                              },
+                                                              [this]() { return format_.get(); },
+                                                              "Format",
+                                                              "List of supported sound formats",
+                                                              format_)) {
   init_startable(this);
 }
 
 bool AudioTestSource::init() {
-  shmpath_ = make_file_name("audio");  // FIXME make_file name should work in ctor...
+  if (!audiotestsrc_ || !capsfilter_ || !shmdatasink_) {
+    return false;
+  }
+
+  shmpath_ = make_file_name("audio");
   g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "is-live", TRUE, nullptr);
   g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "samplesperbuffer", 512, nullptr);
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
-  // registering
-  pmanage<MPtr(&PContainer::push)>(
-      "volume", GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "volume"));
-  pmanage<MPtr(&PContainer::push)>("freq",
-                                   GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "freq"));
-  pmanage<MPtr(&PContainer::push)>("wave",
-                                   GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "wave"));
-  gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
-                   audiotestsrc_.get_raw(),
-                   shmdatasink_.get_raw(),
-                   nullptr);
-  gst_element_link(audiotestsrc_.get_raw(), shmdatasink_.get_raw());
-  if (!audiotestsrc_) {
-    g_warning("audiotestsrc creation failed");
-    return false;
-  }
-  if (!shmdatasink_) {
-    g_warning("shmdatasink creation failed");
-    return false;
-  }
+  waveforms_id_ = pmanage<MPtr(&PContainer::push)>(
+      "wave", GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "wave"));
+
   return true;
 }
 
 bool AudioTestSource::start() {
+  if (!gst_pipeline_) {
+    g_warning("BUG: gst_pipeline failed to be created, something went very wrong! (audiotestsrc)");
+    return false;
+  }
+
   shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmdatasink_.get_raw(),
       [this](const std::string& caps) {
-        this->graft_tree(".shmdata.writer." + shmpath_,
-                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(
+            ".shmdata.writer." + shmpath_,
+            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate", InfoTree::make(byte_rate));
-      });
+      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_));
+  update_caps();
+  gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
+                   audiotestsrc_.get_raw(),
+                   capsfilter_.get_raw(),
+                   shmdatasink_.get_raw(),
+                   nullptr);
+  gst_element_link_many(
+      audiotestsrc_.get_raw(), capsfilter_.get_raw(), shmdatasink_.get_raw(), nullptr);
+  
+  pmanage<MPtr(&PContainer::enable)>(format_id_, false);
+  pmanage<MPtr(&PContainer::enable)>(channels_id_, false);
+  pmanage<MPtr(&PContainer::enable)>(sample_rate_id_, false);
   gst_pipeline_->play(true);
+
   return true;
 }
 
 bool AudioTestSource::stop() {
   shm_sub_.reset();
   this->prune_tree(".shmdata.writer." + shmpath_);
-  gst_pipeline_->play(false);
+
+  pmanage<MPtr(&PContainer::enable)>(format_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(channels_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(sample_rate_id_, true);
+
+  if (!UGstElem::renew(audiotestsrc_, {"is-live", "samplesperbuffer"}) ||
+      !UGstElem::renew(capsfilter_) || !UGstElem::renew(shmdatasink_, {"socket-path"})) {
+    g_warning("error initializing gst element for audiotestsrc");
+    gst_pipeline_.reset();
+    return false;
+  }
+
+  pmanage<MPtr(&PContainer::replace)>(
+      waveforms_id_, GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "wave"));
+  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+
   return true;
+}
+
+void AudioTestSource::update_caps() {
+  std::string str_caps = "audio/x-raw,format=" + format_.get_current() + ",channels=" +
+                         std::to_string(channels_) + ",rate=" + sample_rate_.get_current();
+  g_debug("caps: %s", str_caps.c_str());
+  GstCaps* caps = gst_caps_from_string(str_caps.c_str());
+  On_scope_exit { gst_caps_unref(caps); };
+  g_object_set(G_OBJECT(capsfilter_.get_raw()), "caps", caps, nullptr);
 }
 }

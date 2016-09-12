@@ -42,7 +42,7 @@ GstPixelFormatConverter::GstPixelFormatConverter(const std::string& shmpath_to_c
                "socket-path",
                shmpath_converted.c_str(),
                "initial-size",
-               default_initial_shmsize_,
+               kDefaultInitialShmsize,
                "sync",
                false,
                nullptr);
@@ -61,31 +61,6 @@ GstPixelFormatConverter::GstPixelFormatConverter(const std::string& shmpath_to_c
                         nullptr);
   gst_pipeline_->play(true);
   is_valid_ = true;
-}
-
-std::vector<std::string> GstPixelFormatConverter::get_formats() {
-  std::vector<std::string> formats;
-  GstElementFactory* factory = gst_element_factory_find("videoconvert");
-  On_scope_exit { gst_object_unref(factory); };
-  const GList* list = gst_element_factory_get_static_pad_templates(factory);
-  guint i = 0;
-  while (nullptr != list) {
-    GstStaticPadTemplate* templ = reinterpret_cast<GstStaticPadTemplate*>(list->data);
-    if (templ->direction == GST_PAD_SRC) {
-      GstCaps* caps = gst_static_pad_template_get_caps(templ);
-      On_scope_exit { gst_caps_unref(caps); };
-      // copying for removing fields in struture
-      GstStructure* structure = gst_caps_get_structure(caps, 0);
-      const GValue* format_list = gst_structure_get_value(structure, "format");
-      if (format_list)
-        for (guint j = 0; j < gst_value_list_get_size(format_list); ++j) {
-          formats.emplace_back(g_value_get_string(gst_value_list_get_value(format_list, j)));
-          ++i;
-        }
-    }  // templ->direction == GST_PAD_SRC
-    list = g_list_next(list);
-  }
-  return formats;
 }
 
 std::string GstPixelFormatConverter::get_caps_str(const std::string& format_name) const {

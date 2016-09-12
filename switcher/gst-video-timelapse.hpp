@@ -49,7 +49,7 @@ class GstVideoTimelapse : public SafeBoolIdiom {
   using on_new_file_t = std::function<void(std::string&&)>;
   GstVideoTimelapse(const GstVideoTimelapseConfig& config,
                     GstShmdataSubscriber::on_caps_cb_t on_caps,
-                    GstShmdataSubscriber::on_byte_monitor_t on_byte_monitor,
+                    GstShmdataSubscriber::on_stat_monitor_t on_stat_monitor,
                     GstShmdataSubscriber::on_delete_t on_delete,
                     on_new_file_t on_new_file);
   GstVideoTimelapse() = delete;
@@ -60,7 +60,7 @@ class GstVideoTimelapse : public SafeBoolIdiom {
  private:
   GstVideoTimelapseConfig config_;
   GstShmdataSubscriber::on_caps_cb_t on_caps_;
-  GstShmdataSubscriber::on_byte_monitor_t on_byte_monitor_;
+  GstShmdataSubscriber::on_stat_monitor_t on_stat_monitor_;
   GstShmdataSubscriber::on_delete_t on_delete_;
   on_new_file_t on_new_file_;
   // gst pipeline

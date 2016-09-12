@@ -47,17 +47,18 @@ NVdecPlugin::NVdecPlugin(const std::string&) : shmcntr_(static_cast<Quiddity*>(t
     g_message("ERROR:Could not find any CUDA-enabled GPU.");
     return;
   }
-  devices_ = Selection(std::move(names), 0);
-  devices_id_ = pmanage<MPtr(&PContainer::make_selection)>("gpu",
-                                                           [this](size_t val) {
-                                                             if (devices_.get() == val) return true;
-                                                             devices_.select(val);
-                                                             return true;
-                                                           },
-                                                           [this]() { return devices_.get(); },
-                                                           "decoder GPU",
-                                                           "Selection of the GPU used for decoding",
-                                                           devices_);
+  devices_ = Selection<>(std::move(names), 0);
+  devices_id_ =
+      pmanage<MPtr(&PContainer::make_selection<>)>("gpu",
+                                                   [this](size_t val) {
+                                                     if (devices_.get() == val) return true;
+                                                     devices_.select(val);
+                                                     return true;
+                                                   },
+                                                   [this]() { return devices_.get(); },
+                                                   "decoder GPU",
+                                                   "Selection of the GPU used for decoding",
+                                                   devices_);
 }
 
 bool NVdecPlugin::init() {

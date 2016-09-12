@@ -93,7 +93,9 @@ bool QuiddityManager::must_be_saved(QuiddityCommand::command id) const {
 
 void QuiddityManager::command_unlock() {
   // FIXME do something avoiding this horrible hack:
-  std::vector<std::string> excluded = {"last_midi_event_to_property",
+  std::vector<std::string> excluded = {"connect",
+                                       "disconnect",
+                                       "last_midi_event_to_property",
                                        "next_midi_event_to_property",
                                        "can-sink-caps",
                                        "send",
@@ -112,9 +114,11 @@ void QuiddityManager::play_command_history(QuiddityManager::CommandHistory histo
                                            QuiddityManager::SignalCallbackMap* /*sig_cb_data*/,
                                            bool mute_existing_subscribers) {
   bool debug = false;
-  if (mute_existing_subscribers) {
-    manager_impl_->mute_signal_subscribers(true);
-  }
+  if (mute_existing_subscribers) manager_impl_->mute_signal_subscribers(true);
+  On_scope_exit {
+    if (mute_existing_subscribers) manager_impl_->mute_signal_subscribers(false);
+  };
+
   if (debug) g_print("start playing history\n");
 
   // creating quiddities
@@ -171,6 +175,7 @@ void QuiddityManager::play_command_history(QuiddityManager::CommandHistory histo
     invoke_in_thread();
     command_unlock();
   }  // end for (auto &it : histo)
+
   if (debug) g_print("finished playing history\n");
   // applying user data to quiddities
   if (histo.quiddities_user_data_) {
@@ -192,8 +197,19 @@ void QuiddityManager::play_command_history(QuiddityManager::CommandHistory histo
     }
   }
 
-  if (mute_existing_subscribers) {
-    manager_impl_->mute_signal_subscribers(false);
+  // Connect shmdata
+  if (histo.readers_) {
+    auto quids = histo.readers_->get_child_keys(".");
+    for (auto& quid : quids) {
+      auto readers = histo.readers_->get_child_keys(quid);
+      for (auto& reader : readers) {
+        manager_impl_->invoke(
+            quid,
+            "connect",
+            nullptr,
+            {Any::to_string(histo.readers_->branch_get_value(quid + "." + reader))});
+      }
+    }
   }
 }
 
@@ -241,6 +257,7 @@ QuiddityManager::CommandHistory QuiddityManager::get_command_history_from_file(
   res.quiddities_user_data_ = tree->get_tree("userdata.");
   res.quiddities_ = tree->get_tree(".quiddities");
   res.properties_ = tree->get_tree(".properties");
+  res.readers_ = tree->get_tree(".readers");
   return res;
 }
 
@@ -302,6 +319,20 @@ bool QuiddityManager::save_command_history(const char* file_path) const {
                         quid_name, std::string("property.") + prop + ".value")));
       }
     }
+
+    // Record shmdata connections.
+    // Ignore them if no connect-to methods is installed for this quiddity.
+    if (!manager_impl_->get_quiddity(quid_name)->has_method("connect")) continue;
+
+    auto readers = use_tree<MPtr(&InfoTree::get_child_keys)>(quid_name, "shmdata.reader");
+    int nb = 0;
+    for (auto& reader : readers) {
+      if (!reader.empty()) {
+        tree->graft(".readers." + quid_name + ".reader_" + std::to_string(++nb),
+                    InfoTree::make(reader));
+      }
+    }
+    tree->tag_as_array(".readers." + quid_name, true);
   }
 
   // saving the save tree to the file

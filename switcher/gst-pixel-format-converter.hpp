@@ -37,7 +37,6 @@ class GstPixelFormatConverter : public SafeBoolIdiom {
   GstPixelFormatConverter(const GstPixelFormatConverter&) = delete;
   GstPixelFormatConverter& operator=(const GstPixelFormatConverter&) = delete;
 
-  static std::vector<std::string> get_formats();
   static bool can_sink_caps(const std::string& caps);
 
   // for external shm subscribers...
@@ -51,7 +50,7 @@ class GstPixelFormatConverter : public SafeBoolIdiom {
   UGstElem color_space_codec_element_{"videoconvert"};
   UGstElem capsfilter_{"capsfilter"};
   UGstElem shm_converted_{"shmdatasink"};
-  static const size_t default_initial_shmsize_{67108864};
+  static const size_t kDefaultInitialShmsize{67108864};
 
   // safe bool idiom:
   bool is_valid_{false};

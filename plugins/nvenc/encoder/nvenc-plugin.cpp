@@ -42,19 +42,20 @@ NVencPlugin::NVencPlugin(const std::string&) : shmcntr_(static_cast<Quiddity*>(t
     g_message("ERROR:Could not find any NVENC-enabled GPU.");
     return;
   }
-  devices_ = Selection(std::move(names), 0);
+  devices_ = Selection<>(std::move(names), 0);
   update_device();
-  devices_id_ = pmanage<MPtr(&PContainer::make_selection)>("gpu",
-                                                           [this](size_t val) {
-                                                             if (devices_.get() == val) return true;
-                                                             devices_.select(val);
-                                                             update_device();
-                                                             return true;
-                                                           },
-                                                           [this]() { return devices_.get(); },
-                                                           "encoder GPU",
-                                                           "Selection of the GPU used for encoding",
-                                                           devices_);
+  devices_id_ =
+      pmanage<MPtr(&PContainer::make_selection<>)>("gpu",
+                                                   [this](size_t val) {
+                                                     if (devices_.get() == val) return true;
+                                                     devices_.select(val);
+                                                     update_device();
+                                                     return true;
+                                                   },
+                                                   [this]() { return devices_.get(); },
+                                                   "encoder GPU",
+                                                   "Selection of the GPU used for encoding",
+                                                   devices_);
 }
 
 bool NVencPlugin::init() {
@@ -90,7 +91,7 @@ void NVencPlugin::update_codec() {
   codecs_guids_ = es_->invoke<MPtr(&NVencES::get_supported_codecs)>();
   std::vector<std::string> names;
   for (auto& it : codecs_guids_) names.push_back(it.first);
-  codecs_ = Selection(std::move(names), 0);
+  codecs_ = Selection<>(std::move(names), 0);
   auto set = [this](size_t val) {
     if (codecs_.get() != val) {
       codecs_.select(val);
@@ -103,12 +104,12 @@ void NVencPlugin::update_codec() {
   };
   auto get = [this]() { return codecs_.get(); };
   if (0 == codecs_id_)
-    codecs_id_ = pmanage<MPtr(&PContainer::make_selection)>(
+    codecs_id_ = pmanage<MPtr(&PContainer::make_selection<>)>(
         "codec", set, get, "Codec", "Codec Selection", codecs_);
   else
     pmanage<MPtr(&PContainer::replace)>(
         codecs_id_,
-        std::make_unique<Property2<Selection, Selection::index_t>>(
+        std::make_unique<Property2<Selection<>, Selection<>::index_t>>(
             set, get, "Codec", "Codec Selection", codecs_, codecs_.size() - 1));
   update_preset();
   update_profile();
@@ -125,19 +126,19 @@ void NVencPlugin::update_preset() {
   presets_guids_ = es_->invoke<MPtr(&NVencES::get_presets)>(guid_iter->second);
   std::vector<std::string> names;
   for (auto& it : presets_guids_) names.push_back(it.first);
-  presets_ = Selection(std::move(names), 0);
+  presets_ = Selection<>(std::move(names), 0);
   auto set = [this](size_t val) {
     if (presets_.get() != val) presets_.select(val);
     return true;
   };
   auto get = [this]() { return presets_.get(); };
   if (0 == presets_id_)
-    presets_id_ = pmanage<MPtr(&PContainer::make_selection)>(
+    presets_id_ = pmanage<MPtr(&PContainer::make_selection<>)>(
         "preset", set, get, "Preset", "Preset Selection", presets_);
   else
     pmanage<MPtr(&PContainer::replace)>(
         presets_id_,
-        std::make_unique<Property2<Selection, Selection::index_t>>(
+        std::make_unique<Property2<Selection<>, Selection<>::index_t>>(
             set, get, "Preset", "Preset Selection", presets_, presets_.size() - 1));
 }
 
@@ -150,19 +151,19 @@ void NVencPlugin::update_profile() {
   profiles_guids_ = es_->invoke<MPtr(&NVencES::get_profiles)>(guid_iter->second);
   std::vector<std::string> names;
   for (auto& it : profiles_guids_) names.push_back(it.first);
-  profiles_ = Selection(std::move(names), 0);
+  profiles_ = Selection<>(std::move(names), 0);
   auto set = [this](size_t val) {
     if (profiles_.get() != val) profiles_.select(val);
     return true;
   };
   auto get = [this]() { return profiles_.get(); };
   if (0 == profiles_id_)
-    profiles_id_ = pmanage<MPtr(&PContainer::make_selection)>(
+    profiles_id_ = pmanage<MPtr(&PContainer::make_selection<>)>(
         "profile", set, get, "Profile", "Profile Selection", profiles_);
   else
     pmanage<MPtr(&PContainer::replace)>(
         profiles_id_,
-        std::make_unique<Property2<Selection, Selection::index_t>>(
+        std::make_unique<Property2<Selection<>, Selection<>::index_t>>(
             set, get, "Profile", "Profile Selection", profiles_, profiles_.size() - 1));
 }
 
@@ -176,25 +177,30 @@ void NVencPlugin::update_max_width_height() {
   max_width_ = mwh.first;
   max_height_ = mwh.second;
   auto getwidth = [this]() { return this->max_width_; };
-  if (0 != max_width_id_) pmanage<MPtr(&PContainer::remove)>(max_width_id_);
-  max_width_id_ = pmanage<MPtr(&PContainer::make_int)>("maxwidth",
-                                                       nullptr,
-                                                       getwidth,
-                                                       "Max width",
-                                                       "Max video source width",
-                                                       max_width_,
-                                                       max_width_,
-                                                       max_width_);
+  if (0 == max_width_id_)
+    max_width_id_ = pmanage<MPtr(&PContainer::make_int)>("maxwidth",
+                                                         nullptr,
+                                                         getwidth,
+                                                         "Max width",
+                                                         "Max video source width",
+                                                         max_width_,
+                                                         max_width_,
+                                                         max_width_);
+  else
+    pmanage<MPtr(&PContainer::notify)>(max_width_id_);
+
   auto getheight = [this]() { return max_height_; };
-  if (0 != max_height_id_) pmanage<MPtr(&PContainer::remove)>(max_height_id_);
-  max_height_id_ = pmanage<MPtr(&PContainer::make_int)>("maxheight",
-                                                        nullptr,
-                                                        getheight,
-                                                        "Max height",
-                                                        "Max video source height",
-                                                        max_height_,
-                                                        max_height_,
-                                                        max_height_);
+  if (0 == max_height_id_)
+    max_height_id_ = pmanage<MPtr(&PContainer::make_int)>("maxheight",
+                                                          nullptr,
+                                                          getheight,
+                                                          "Max height",
+                                                          "Max video source height",
+                                                          max_height_,
+                                                          max_height_,
+                                                          max_height_);
+  else
+    pmanage<MPtr(&PContainer::notify)>(max_height_id_);
 }
 
 void NVencPlugin::update_input_formats() {
@@ -203,6 +209,7 @@ void NVencPlugin::update_input_formats() {
       codecs_guids_.begin(), codecs_guids_.end(), [&](const std::pair<std::string, GUID>& codec) {
         return codec.first == cur_codec;
       });
+  if (codecs_guids_.end() == guid_iter) g_warning("bug in %s line %d", __FUNCTION__, __LINE__);
   video_formats_.clear();
   video_formats_ = es_->invoke<MPtr(&NVencES::get_input_formats)>(guid_iter->second);
   for (auto& it : video_formats_) {

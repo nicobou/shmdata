@@ -185,7 +185,7 @@ void PulseSink::get_sink_info_callback(pa_context* pulse_context,
     pa_operation* operation = pa_context_drain(pulse_context, nullptr, nullptr);
     if (operation) pa_operation_unref(operation);
     context->update_output_device();
-    context->devices_enum_id_ = context->pmanage<MPtr(&PContainer::make_selection)>(
+    context->devices_enum_id_ = context->pmanage<MPtr(&PContainer::make_selection<>)>(
         "device",
         [context](const size_t& val) {
           context->devices_enum_.select(val);
@@ -304,7 +304,7 @@ void PulseSink::update_output_device() {
     names.push_back(it.description_);
     nicks.push_back(it.name_);
   }
-  devices_enum_ = Selection(std::make_pair(names, nicks), 0);
+  devices_enum_ = Selection<>(std::make_pair(names, nicks), 0);
 }
 
 bool PulseSink::can_sink_caps(const std::string& caps) {
@@ -331,12 +331,11 @@ bool PulseSink::on_shmdata_connect(const std::string& shmpath) {
   shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
       [this](const std::string& caps) {
-        this->graft_tree(".shmdata.reader." + shmpath_,
-                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(
+            ".shmdata.reader." + shmpath_,
+            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.reader." + shmpath_ + ".byte_rate", InfoTree::make(byte_rate));
-      });
+      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath_));
 
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmsrc_.get_raw(),

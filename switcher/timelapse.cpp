@@ -233,15 +233,13 @@ bool Timelapse::start_timelapse(const std::string& shmpath) {
   timelapse_config_.height_ = height_;
   timelapse_config_.jpg_quality_ = jpg_quality_;
   timelapse_config_.max_files_ = max_files_;
-  timelapse_[shmpath] = std::make_unique<GstVideoTimelapse>(
+  auto new_timelapse = std::make_unique<GstVideoTimelapse>(
       timelapse_config_,
       [this, shmpath](const std::string& caps) {
         graft_tree(".shmdata.reader." + shmpath,
-                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        graft_tree(".shmdata.reader." + shmpath + ".byte_rate", InfoTree::make(byte_rate));
-      },
+      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath),
       nullptr,
       [this, shmpath](std::string&& file_name) {
         if (!notify_last_file_) return;
@@ -251,7 +249,8 @@ bool Timelapse::start_timelapse(const std::string& shmpath) {
         }
         pmanage<MPtr(&PContainer::notify)>(last_image_id_);
       });
-  if (!*(timelapse_[shmpath]).get()) return false;
+  if (!new_timelapse.get()) return false;
+  timelapse_[shmpath] = std::move(new_timelapse);
   return true;
 }
 

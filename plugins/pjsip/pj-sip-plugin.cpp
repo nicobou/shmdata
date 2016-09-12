@@ -51,6 +51,34 @@ SIPPlugin::SIPPlugin(const std::string&)
           "SIP Port",
           "SIP port used when registering",
           std::to_string(sip_port_))),
+      dns_address_(NetUtils::get_system_dns()),
+      dns_address_id_(pmanage<MPtr(&PContainer::make_string)>(
+          "dns_addr",
+          [this](const std::string& val) {
+            if (val.empty()) return false;
+            if (!NetUtils::is_valid_IP(val)) {
+              g_message(
+                  "ERROR:Not a valid IP address, expected x.y.z.a with x, y, z, a in [0:255].");
+              return false;
+            }
+
+            // Try setting the new DNS address, if it doesn't work try the old one.
+            auto old_dns_address = dns_address_;
+            dns_address_ = val;
+            if (!pjsip_->invoke<MPtr(&PJSIP::create_resolver)>(dns_address_)) {
+              dns_address_ = old_dns_address;
+              g_message("ERROR:Could not set the DNS address (PJSIP), setting the old one %s.",
+                        dns_address_.c_str());
+              pjsip_->invoke<MPtr(&PJSIP::create_resolver)>(dns_address_);
+              return false;
+            }
+
+            return true;
+          },
+          [this]() { return dns_address_; },
+          "DNS address",
+          "IP address used for DNS",
+          dns_address_)),
       decompress_streams_id_(
           pmanage<MPtr(&PContainer::make_bool)>("decompress",
                                                 [this](const bool& val) {
@@ -92,6 +120,7 @@ bool SIPPlugin::init() {
       [&]() {
         start_sip_transport();
         sip_calls_ = std::make_unique<PJCall>();
+        white_list_ = std::make_unique<PJWhiteList>();
         sip_presence_ = std::make_unique<PJPresence>();
         stun_turn_ = std::make_unique<PJStunTurn>();
         return true;
@@ -101,6 +130,7 @@ bool SIPPlugin::init() {
         sip_calls_.reset(nullptr);
         sip_presence_.reset(nullptr);
         stun_turn_.reset(nullptr);
+        white_list_.reset(nullptr);
       });
 
   if (!pjsip_->invoke<MPtr(&PJSIP::safe_bool_idiom)>()) return false;
@@ -111,11 +141,13 @@ bool SIPPlugin::init() {
 void SIPPlugin::apply_configuration() {
   // trying to set port if configuration found
   if (config<MPtr(&InfoTree::branch_has_data)>("port")) {
+    g_debug("SIP is trying to set port from configuration");
     auto port = config<MPtr(&InfoTree::branch_get_value)>("port");
-    if (pmanage<MPtr(&PContainer::set<std::string>)>(port_id_, port.copy_as<std::string>()))
+    if (pmanage<MPtr(&PContainer::set<std::string>)>(port_id_, port.copy_as<std::string>())) {
       g_debug("sip has set port from configuration");
-    else
+    } else {
       g_warning("sip failed setting port from configuration");
+    }
   }
 
   // trying to set stun/turn from configuration
@@ -124,25 +156,26 @@ void SIPPlugin::apply_configuration() {
   std::string turn_user = config<MPtr(&InfoTree::branch_get_value)>("turn_user");
   std::string turn_pass = config<MPtr(&InfoTree::branch_get_value)>("turn_pass");
   if (!stun.empty()) {
-    pjsip_->run([&]() {
-      if (PJStunTurn::set_stun_turn(
-              stun.c_str(), turn.c_str(), turn_user.c_str(), turn_pass.c_str(), stun_turn_.get())) {
-        g_debug("sip has set STUN/TURN from configuration");
-      } else {
-        g_warning("sip failed setting STUN/TURN from configuration");
-      }
-    });
+    g_debug("SIP is trying to set STUN/TURN from configuration");
+    if (PJStunTurn::set_stun_turn(
+            stun.c_str(), turn.c_str(), turn_user.c_str(), turn_pass.c_str(), stun_turn_.get())) {
+      g_debug("sip has set STUN/TURN from configuration");
+    } else {
+      g_warning("sip failed setting STUN/TURN from configuration");
+    }
   }
 
   // trying to register if a user is given
   std::string user = config<MPtr(&InfoTree::branch_get_value)>("user");
   if (!user.empty()) {
+    g_debug("SIP is trying to register from configuration");
     std::string pass = config<MPtr(&InfoTree::branch_get_value)>("pass");
     pjsip_->run([&]() { sip_presence_->register_account(user, pass); });
-    if (sip_presence_->registered_)
+    if (sip_presence_->registered_) {
       g_debug("sip registered using configuration file");
-    else
+    } else {
       g_warning("sip failed registration from configuration");
+    }
   }
 }
 

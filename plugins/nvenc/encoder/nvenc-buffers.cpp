@@ -135,7 +135,7 @@ bool NVencBuffers::copy_to_next_input_buffer(void* data, size_t /*size*/) {
     return false;
   next_input_ = input_bufs_[cur_buf_];
   next_output_ = output_bufs_[cur_buf_];
-  cur_buf_ = (cur_buf_ + 1) % num_buf_;
+  cur_buf_ = (cur_buf_ + 1) % kNumBuf;
   return true;
 }
 

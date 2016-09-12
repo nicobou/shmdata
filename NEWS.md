@@ -2,6 +2,27 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.26 (2016-09-12)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* Shmdata access rate is notified in the quiddity information tree, along with byte_rate.
+* Make DNS in SIP configurable and get the system one by default instead of a hardcoded value.
+* Audiotestsrc quiddity revamping : added properties (sample rate, channels number, audio format), modified gstreamer pipeline lifecycle.
+* Cleaned up UGstElem lifecycle (better refcount management) and fixed PContainer::replace so it doesn't reset the index of the selection.
+* Adding more properties to videotestsrc and templating selection.
+* Removing more codec option from gst-video-codec and gst-audio-codec.
+* Added generic methods to get gstreamer elements caps values in GstUtils.
+* Adding SIP whitelist.
+* Using nvenc 7.
+* Only record the shmdata connections state instead of each connect/disconnect command when saving a session.
+
+Bug fixes
+* Fix stun/turn from configuration file is deadlocking.
+* SIP quiddity notifies when configuration is applied at initialization.
+* Fix bug regarding multiple simultaneous nvenc sessions crashing, re-enabled nvenc test, code simplication.
+
 switcher 0.8.24 (2016-08-31)
 ---------------------------
 This is an official release in the 0.8 stable series.

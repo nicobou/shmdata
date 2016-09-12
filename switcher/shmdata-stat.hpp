@@ -17,22 +17,22 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_SHMDATA_UTILS_H__
-#define __SWITCHER_SHMDATA_UTILS_H__
+#ifndef __SWITCHER_SHMDATA_STAT_H__
+#define __SWITCHER_SHMDATA_STAT_H__
 
-#include <string>
-#include "./gst-shmdata-subscriber.hpp"
-#include "./information-tree.hpp"
-#include "./shmdata-stat.hpp"
+#include <cstddef>
+#include "./quiddity.hpp"
 
 namespace switcher {
-namespace ShmdataUtils {
+struct ShmdataStat {
+  size_t bytes_{0};
+  size_t accesses_{0};
+  void count_buffer(size_t buffer_size);
+  void reset();
+  void update_tree(const InfoTree::ptr& tree, const std::string& key) const;
+  static std::function<void(const ShmdataStat&)> make_tree_updater(Quiddity* quid,
+                                                                   const std::string& key);
+};
 
-std::string get_category(const std::string& caps);
-InfoTree::ptr make_tree(const std::string& caps,
-                        const std::string& category,
-                        const ShmdataStat& stat);
-
-}  // namespace ShmdataUtils
 }  // namespace switcher
 #endif

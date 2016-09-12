@@ -166,7 +166,7 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
     // registering enum for devices
     context->update_capture_device();
 
-    context->devices_id_ = context->pmanage<MPtr(&PContainer::make_selection)>(
+    context->devices_id_ = context->pmanage<MPtr(&PContainer::make_selection<>)>(
         "device",
         [context](const size_t& val) {
           context->devices_.select(val);
@@ -288,7 +288,7 @@ void PulseSrc::update_capture_device() {
     names.push_back(it.description_);
     nicks.push_back(it.name_);
   }
-  devices_ = Selection(std::make_pair(names, nicks), 0);
+  devices_ = Selection<>(std::make_pair(names, nicks), 0);
 }
 
 bool PulseSrc::start() {
@@ -299,12 +299,11 @@ bool PulseSrc::start() {
   shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsink_.get_raw(),
       [this](const std::string& caps) {
-        this->graft_tree(".shmdata.writer." + shmpath_,
-                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(
+            ".shmdata.writer." + shmpath_,
+            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.writer." + shmpath_ + ".byte_rate", InfoTree::make(byte_rate));
-      });
+      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_));
   gst_bin_add_many(
       GST_BIN(gst_pipeline_->get_pipeline()), pulsesrc_.get_raw(), shmsink_.get_raw(), nullptr);
   gst_element_link_many(pulsesrc_.get_raw(), shmsink_.get_raw(), nullptr);

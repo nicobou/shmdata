@@ -27,6 +27,7 @@
 #include "switcher/quiddity.hpp"
 #include "switcher/safe-bool-idiom.hpp"
 #include "switcher/shmdata-glib-logger.hpp"
+#include "switcher/shmdata-stat.hpp"
 
 namespace switcher {
 class ShmdataWriter : public SafeBoolIdiom {
@@ -55,11 +56,11 @@ class ShmdataWriter : public SafeBoolIdiom {
   ShmdataGlibLogger shmlog_{};
   shmdata::Writer shm_;
   std::unique_ptr<PeriodicTask> task_;
-  size_t bytes_written_{0};
+  ShmdataStat shm_stats_{};
   std::mutex bytes_mutex_{};
 
   bool safe_bool_idiom() const final { return static_cast<bool>(shm_); };
-  void update_quid_byte_rate();
+  void update_quid_stats();
 };
 
 }  // namespace switcher

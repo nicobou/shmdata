@@ -40,7 +40,7 @@ ShmdataFollower::ShmdataFollower(Quiddity* quid,
           [this](const std::string& data_type) { this->on_server_connected(data_type); },
           [this]() { this->on_server_disconnected(); },
           &logger_)),
-      task_(std::make_unique<PeriodicTask>([this]() { this->update_quid_byte_rate(); },
+      task_(std::make_unique<PeriodicTask>([this]() { this->update_quid_stats(); },
                                            std::chrono::milliseconds(1000))) {}
 
 ShmdataFollower::~ShmdataFollower() {
@@ -51,11 +51,9 @@ ShmdataFollower::~ShmdataFollower() {
 void ShmdataFollower::on_data(void* data, size_t size) {
   {
     std::unique_lock<std::mutex> lock(bytes_mutex_);
-    bytes_written_ += size;
+    shm_stat_.count_buffer(size);
   }
-  if (!od_) {
-    return;
-  }
+  if (!od_) return;
   od_(data, size);
 }
 
@@ -64,7 +62,7 @@ void ShmdataFollower::on_server_connected(const std::string& data_type) {
     data_type_ = data_type;
     quid_->graft_tree(
         tree_path_ + shmpath_,
-        ShmdataUtils::make_tree(data_type_, ShmdataUtils::get_category(data_type_), 0));
+        ShmdataUtils::make_tree(data_type_, ShmdataUtils::get_category(data_type_), ShmdataStat()));
   }
   if (osc_) osc_(data_type);
 }
@@ -73,10 +71,10 @@ void ShmdataFollower::on_server_disconnected() {
   if (osd_) osd_();
 }
 
-void ShmdataFollower::update_quid_byte_rate() {
+void ShmdataFollower::update_quid_stats() {
   std::unique_lock<std::mutex> lock(bytes_mutex_);
-  quid_->graft_tree(tree_path_ + shmpath_ + ".byte_rate", InfoTree::make(bytes_written_));
-  bytes_written_ = 0;
+  ShmdataStat::make_tree_updater(quid_, tree_path_ + shmpath_)(shm_stat_);
+  shm_stat_.reset();
 }
 
 }  // namespace switcher

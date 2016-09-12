@@ -75,12 +75,11 @@ void GstDecodebin::configure_shmdatasink(GstElement* element,
   shmw_sub_ = std::make_unique<GstShmdataSubscriber>(
       element,
       [this, shmpath](const std::string& caps) {
-        this->graft_tree(".shmdata.writer." + shmpath,
-                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(
+            ".shmdata.writer." + shmpath,
+            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.writer." + shmpath + ".byte_rate", InfoTree::make(byte_rate));
-      });
+      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath));
 }
 
 bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
@@ -90,12 +89,11 @@ bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
   shmr_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),
       [this, shmpath](const std::string& caps) {
-        this->graft_tree(".shmdata.reader." + shmpath,
-                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(
+            ".shmdata.reader." + shmpath,
+            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this, shmpath](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.reader." + shmpath + ".byte_rate", InfoTree::make(byte_rate));
-      });
+      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath));
 
   // creating decodebin
   std::unique_ptr<DecodebinToShmdata> decodebin = std::make_unique<DecodebinToShmdata>(

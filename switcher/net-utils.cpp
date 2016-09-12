@@ -23,6 +23,7 @@
 #include <glib.h>  // g_warning
 #include <ifaddrs.h>
 #include <netdb.h>
+#include <resolv.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -106,6 +107,22 @@ std::map</* interface name */ std::string, /* ip */ std::string> NetUtils::get_i
   }
   freeifaddrs(ifaddr);
   return res;
+}
+
+std::string NetUtils::get_system_dns() {
+  if (res_init()) {
+    g_warning("BUG: res_init() failed, this should never happen");
+    return kDefaultDNS;
+  }
+
+  char dns_addr[64];
+  inet_ntop(AF_INET, &_res.nsaddr.sin_addr.s_addr, dns_addr, 64);
+  return dns_addr;
+}
+
+bool NetUtils::is_valid_IP(const std::string& ip) {
+  struct sockaddr_in sa;
+  return inet_pton(AF_INET, ip.c_str(), &sa.sin_addr) == 1;
 }
 
 }  // namespace switcher

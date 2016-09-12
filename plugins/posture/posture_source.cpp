@@ -411,15 +411,15 @@ bool PostureSrc::init() {
       "Filter outlier points from the cloud",
       filter_outliers_);
 
-  pmanage<MPtr(&PContainer::make_selection)>("capture_mode",
-                                             [this](const size_t& val) {
-                                               capture_modes_enum_.select(val);
-                                               return true;
-                                             },
-                                             [this]() { return capture_modes_enum_.get(); },
-                                             "Capture mode",
-                                             "Capture mode of the device",
-                                             capture_modes_enum_);
+  pmanage<MPtr(&PContainer::make_selection<>)>("capture_mode",
+                                               [this](const size_t& val) {
+                                                 capture_modes_enum_.select(val);
+                                                 return true;
+                                               },
+                                               [this]() { return capture_modes_enum_.get(); },
+                                               "Capture mode",
+                                               "Capture mode of the device",
+                                               capture_modes_enum_);
 
   return true;
 }

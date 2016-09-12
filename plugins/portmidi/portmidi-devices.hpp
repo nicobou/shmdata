@@ -48,8 +48,8 @@ class PortMidi {
 
  protected:
   // info
-  Selection input_devices_enum_{{"none"}, 0};
-  Selection output_devices_enum_{{"none"}, 0};
+  Selection<> input_devices_enum_{{"none"}, 0};
+  Selection<> output_devices_enum_{{"none"}, 0};
   // input
   // static int get_default_input_device_id();
   bool open_input_device(int id, on_pm_event_method method, void* user_data);

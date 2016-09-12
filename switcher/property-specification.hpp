@@ -116,13 +116,15 @@ class PropertySpecification {
     spec_->graft("value", InfoTree::make(default_value));
   }
 
-  template <typename U = Selection, typename V = Selection::index_t>
-  PropertySpecification(bool is_writable,
-                        const std::string& label,
-                        const std::string& description,
-                        const Selection& default_value,
-                        Selection::index_t max)
-      : spec_(InfoTree::make()), is_valid_([max](const Selection::index_t& index) {
+  template <typename U, typename V = Selection<>::index_t>
+  PropertySpecification(
+      bool is_writable,
+      const std::string& label,
+      const std::string& description,
+      const U& default_value,
+      Selection<>::index_t max,
+      typename std::enable_if<is_specialization_of<Selection, U>::value>::type* = nullptr)
+      : spec_(InfoTree::make()), is_valid_([max](const Selection<>::index_t& index) {
           if (index > max) {
             g_warning("selection index out of range");
             return false;
@@ -211,13 +213,14 @@ class PropertySpecification {
 
   // updating current value
   template <typename U,
-            typename std::enable_if<!std::is_same<U, Selection>::value &&
+            typename std::enable_if<!is_specialization_of<Selection, U>::value &&
                                     !is_specialization_of<std::tuple, U>::value>::type* = nullptr>
   void update_current_value(const U& cur_val) {
     spec_->graft("value", InfoTree::make(cur_val));
   }
 
-  template <typename U, typename std::enable_if<std::is_same<U, Selection>::value>::type* = nullptr>
+  template <typename U,
+            typename std::enable_if<is_specialization_of<Selection, U>::value>::type* = nullptr>
   void update_current_value(const U& cur_val) {
     spec_->graft("value", InfoTree::make(cur_val.get()));
   }

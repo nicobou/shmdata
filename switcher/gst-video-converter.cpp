@@ -31,17 +31,18 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoConverter,
                                      "Nicolas Bouillot");
 
 GstVideoConverter::GstVideoConverter(const std::string&)
-    : video_format_(GstPixelFormatConverter::get_formats(), 0),
+    : video_format_(
+          GstUtils::get_gst_element_capability_as_list("videoconvert", "format", GST_PAD_SRC), 0),
       video_format_id_(
-          pmanage<MPtr(&PContainer::make_selection)>("Pixel format",
-                                                     [this](const size_t& val) {
-                                                       video_format_.select(val);
-                                                       return true;
-                                                     },
-                                                     [this]() { return video_format_.get(); },
-                                                     "Convert to selected pixel format",
-                                                     "Pixel format to convert into",
-                                                     video_format_)),
+          pmanage<MPtr(&PContainer::make_selection<>)>("Pixel format",
+                                                       [this](const size_t& val) {
+                                                         video_format_.select(val);
+                                                         return true;
+                                                       },
+                                                       [this]() { return video_format_.get(); },
+                                                       "Convert to selected pixel format",
+                                                       "Pixel format to convert into",
+                                                       video_format_)),
       shmcntr_(static_cast<Quiddity*>(this)) {
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
@@ -70,28 +71,22 @@ bool GstVideoConverter::on_shmdata_connect(const std::string& shmpath) {
   shmpath_to_convert_ = shmpath;
   converter_.reset(nullptr);
   converter_ = std::make_unique<GstPixelFormatConverter>(
-      shmpath_to_convert_, shmpath_converted_, video_format_.get_current_nick());
+      shmpath_to_convert_, shmpath_converted_, video_format_.get_attached());
   if (!static_cast<bool>(*converter_.get())) return false;
   shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
       converter_->get_shmsink(),
       [this](const std::string& caps) {
         graft_tree(".shmdata.writer." + shmpath_converted_,
-                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        graft_tree(".shmdata.writer." + shmpath_converted_ + ".byte_rate",
-                   InfoTree::make(byte_rate));
-      });
+      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_converted_));
   shmsrc_sub_ = std::make_unique<GstShmdataSubscriber>(
       converter_->get_shmsrc(),
       [this](const std::string& caps) {
         graft_tree(".shmdata.reader." + shmpath_to_convert_,
-                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        graft_tree(".shmdata.reader." + shmpath_to_convert_ + ".byte_rate",
-                   InfoTree::make(byte_rate));
-      });
+      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath_to_convert_));
   pmanage<MPtr(&PContainer::enable)>(video_format_id_, false);
   return true;
 }

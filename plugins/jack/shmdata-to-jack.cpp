@@ -255,13 +255,11 @@ bool ShmdataToJack::start() {
   shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmdatasrc_,
       [this](const std::string& caps) {
-        this->graft_tree(".shmdata.reader." + this->shmpath_,
-                         ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), 0));
+        this->graft_tree(
+            ".shmdata.reader." + this->shmpath_,
+            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
-      [this](GstShmdataSubscriber::num_bytes_t byte_rate) {
-        this->graft_tree(".shmdata.reader." + this->shmpath_ + ".byte_rate",
-                         InfoTree::make(byte_rate));
-      });
+      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath_));
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), audiobin_);
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
@@ -277,10 +275,10 @@ bool ShmdataToJack::stop() {
   disconnect_ports();
   {
     On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };
+    pmanage<MPtr(&PContainer::replace)>(volume_id_,
+                                        GPropToProp::to_prop(G_OBJECT(volume_), "volume"));
     if (!make_elements()) return false;
   }
-  pmanage<MPtr(&PContainer::replace)>(volume_id_,
-                                      GPropToProp::to_prop(G_OBJECT(volume_), "volume"));
   pmanage<MPtr(&PContainer::enable)>(auto_connect_id_, true);
   pmanage<MPtr(&PContainer::enable)>(connect_to_id_, true);
   pmanage<MPtr(&PContainer::enable)>(index_id_, true);
