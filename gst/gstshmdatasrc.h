@@ -60,6 +60,7 @@ struct _GstShmdataSrc
   gboolean has_new_caps;
   GstCaps *caps;
   guint64 bytes_since_last_request;
+  guint64 buffers_since_last_request;
   gboolean unlocked;
   gboolean copy_buffers;
   gboolean stop_read;
