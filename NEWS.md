@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.2.10 (2016-09-12)
+---------------------------
+This is an official release in the 1.2 stable series.
+
+* adding buffers stat in gst elements.
+
 shmdata 1.2.8 (2016-08-04)
 ---------------------------
 This is an official release in the 1.2 stable series.
