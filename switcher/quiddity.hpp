@@ -53,7 +53,7 @@ class Quiddity {
   friend class GstVideoCodec;
   friend class GstAudioCodec;
   friend class ShmdataDecoder;
-  friend class ShmdataStat;
+  friend struct ShmdataStat;
 
  public:
   typedef std::shared_ptr<Quiddity> ptr;
