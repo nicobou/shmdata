@@ -244,7 +244,7 @@ dnl AM_CONDITIONAL(PJSIPBUILD, test "${PJSIPBUILD}" = "enabled")
 
 
 # check for gtk (compatible with gstreamer sdk)
-PKG_CHECK_MODULES(GTK, gtk+-2.0, have_gtk=true, have_gtk=false)
+PKG_CHECK_MODULES(GTK, gtk+-3.0, have_gtk=true, have_gtk=false)
 if test "x${have_gtk}" = "xfalse" ; then
     GTKBUILD=disabled
     AC_MSG_WARN([Missing libgtk2.0-dev package, gtk fullscreen video will not be built])
