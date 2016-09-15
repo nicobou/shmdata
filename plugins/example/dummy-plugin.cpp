@@ -220,16 +220,17 @@ DummyPlugin::DummyPlugin(const std::string&)
                                                        "This property is an example for type enum",
                                                        selection_)),
       // FIXME write serialization-string for std::tuple
-      tuple_id_(
-          pmanage<MPtr(&PContainer::make_tuple<MyTuple>)>("tuple_",
-                                                          [this](const MyTuple& val) {
-                                                            tuple_ = val;
-                                                            return true;
-                                                          },
-                                                          [this]() { return tuple_; },
-                                                          "Tuple Example",
-                                                          "This property is an example for tuple",
-                                                          tuple_)),
+      // tuple_id_(
+      //     pmanage<MPtr(&PContainer::make_tuple<MyTuple>)>("tuple_",
+      //                                                     [this](const MyTuple& val) {
+      //                                                       tuple_ = val;
+      //                                                       return true;
+      //                                                     },
+      //                                                     [this]() { return tuple_; },
+      //                                                     "Tuple Example",
+      //                                                     "This property is an example for
+      //                                                     tuple",
+      //                                                     tuple_)),
       fraction_id_(
           pmanage<MPtr(&PContainer::make_fraction)>("fraction_",
                                                     [this](const Fraction& val) {

@@ -67,7 +67,7 @@ template <typename V,
           typename W = V,
           typename std::enable_if<std::is_same<V, char>::value>::type* = nullptr>
 std::string apply(const W& val) {
-  return std::string(&val);
+  return std::string(1, val);
 }
 
 template <

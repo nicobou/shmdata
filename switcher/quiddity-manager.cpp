@@ -133,7 +133,10 @@ void QuiddityManager::play_command_history(QuiddityManager::CommandHistory histo
     }
     // loading custom state
     for (auto& it : quids) {
-      manager_impl_->get_quiddity(it)->on_loading(histo.custom_states_->get_tree(it));
+      if (histo.custom_states_ && !histo.custom_states_->empty())
+        manager_impl_->get_quiddity(it)->on_loading(histo.custom_states_->get_tree(it));
+      else
+        manager_impl_->get_quiddity(it)->on_loading(InfoTree::make());
     }
   }
 
