@@ -47,6 +47,7 @@ class QuiddityManager {
     InfoTree::ptr quiddities_{nullptr};
     InfoTree::ptr properties_{nullptr};
     InfoTree::ptr readers_{nullptr};
+    InfoTree::ptr custom_states_{nullptr};
     bool empty() { return history_.empty() && !quiddities_; }
   };
   using PropCallback = std::function<void(const std::string& val)>;
@@ -67,6 +68,8 @@ class QuiddityManager {
   // *************** command history
   // ***********************************************************
   bool save_command_history(const char* file_path) const;
+  std::string get_serialized_command_history() const;
+  static CommandHistory get_command_history_from_serialization(const std::string& save);
   static CommandHistory get_command_history_from_file(const char* file_path);
   std::vector<std::string> get_signal_subscribers_names(const CommandHistory& histo);
   void play_command_history(QuiddityManager::CommandHistory histo,

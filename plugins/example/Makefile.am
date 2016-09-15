@@ -1,7 +1,8 @@
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
 plugins_LTLIBRARIES = \
-    libdummy-plugin.la 
+    libdummy-plugin.la \
+    libcustom-save-plugin.la 
 
 #libdummy-plugin info
 libdummy_plugin_la_SOURCES = \
@@ -33,6 +34,36 @@ libdummy_plugin_la_CXXFLAGS = \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) 
 
+#libcustom-save-plugin info
+libcustom_save_plugin_la_SOURCES = \
+    custom-save-plugin.cpp
+
+libcustom_save_plugin_la_include_HEADERS = \
+    custom-save-plugin.hpp
+
+libcustom_save_plugin_la_includedir = \
+    $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
+
+libcustom_save_plugin_la_LDFLAGS = \
+    $(GLIB_LIBS) \
+    $(GST_LIBS) \
+    $(GMODULE_LIBS) \
+    $(JSONGLIB_LIBS) \
+    $(SHMDATA_LIBS) \
+    -avoid-version \
+    -module \
+    -L$(top_builddir)/switcher/.libs \
+    -lswitcher-@LIBSWITCHER_API_VERSION@
+
+libcustom_save_plugin_la_CXXFLAGS = \
+    $(GLIB_CFLAGS) \
+    $(GMODULE_CFLAGS) \
+    $(GST_CFLAGS) \
+    $(JSONGLIB_CFLAGS) \
+    $(SHMDATA_CFLAGS) \
+    -DG_LOG_DOMAIN=\"switcher\" \
+    -I$(top_srcdir) 
+
 
 #### plugin unit test
 AM_CFLAGS = \
@@ -55,9 +86,13 @@ AM_LDFLAGS = \
     $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
 
 check_PROGRAMS = \
-    check_example_plugin
+    check_example_plugin \
+    check_custom_save_plugin
 
 check_example_plugin_SOURCES = \
     check_example_plugin.cpp
+
+check_custom_save_plugin_SOURCES = \
+    check_custom_save_plugin.cpp
 
 TESTS = $(check_PROGRAMS)

@@ -43,6 +43,7 @@ plugins/avcodecs/.deps/
 plugins/avcodecs/.libs/
 plugins/example/.deps/
 plugins/example/.libs/
+plugins/example/check_custom_save_plugin
 plugins/example/check_example_plugin
 plugins/gsoap/.deps
 plugins/gsoap/.libs

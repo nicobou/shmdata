@@ -538,4 +538,12 @@ void Quiddity::self_destruct() {
   thread.detach();
 }
 
+InfoTree::ptr Quiddity::on_saving() { return InfoTree::make(); };
+
+void Quiddity::on_saved(){};
+
+void Quiddity::on_loading(InfoTree::ptr&&){};
+
+void Quiddity::on_loaded(){};
+
 }  // namespace switcher

@@ -68,6 +68,12 @@ class Quiddity {
   // class initialisation
   virtual bool init() = 0;
 
+  // save/load quiddity state
+  virtual InfoTree::ptr on_saving();
+  virtual void on_saved();
+  virtual void on_loading(InfoTree::ptr&& tree);
+  virtual void on_loaded();
+
   // instance name
   std::string get_name() const;
   // FIXME name should be a ctor arg

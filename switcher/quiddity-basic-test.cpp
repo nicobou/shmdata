@@ -36,7 +36,7 @@ bool QuiddityBasicTest::test_create(QuiddityManager::ptr manager,
   std::string res_with_nick = manager->create(quiddity_class_name, quiddity_class_name);
   if (res_with_nick.compare(quiddity_class_name) != 0) {
     g_warning("quiddity %s cannot be created (with nickname)", quiddity_class_name.c_str());
-    return true;  // true because some quiddity may not be crated because of a
+    return true;  // true because some quiddity may not be created because of a
                   // missing resource
   } else if (!manager->remove(res_with_nick)) {
     g_warning("error while removing quiddity %s (with nickname)", quiddity_class_name.c_str());
