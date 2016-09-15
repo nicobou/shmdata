@@ -63,6 +63,7 @@ class GTKVideo : public Quiddity {
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   // gtk:
   GdkDisplay* display_{nullptr};
+  GdkDevice* device_{nullptr};
   GtkWidget* main_window_{nullptr};
   GtkWidget* video_window_{nullptr};
   // shmsubscriber (publishing to the information-tree):
@@ -146,6 +147,7 @@ class GTKVideo : public Quiddity {
   static gboolean button_event(GtkWidget* widget, GdkEventButton* event, gpointer data);
   static gboolean motion_notify_event(GtkWidget* widget, GdkEventMotion* event, gpointer data);
   static void widget_getsize(GtkWidget* widget, GtkAllocation* allocation, void* data);
+  static void widget_has_focus(GtkWidget* widget, GtkStateFlags flags, void* user_data);
   static gboolean window_update_position(void* data);
   static gboolean window_update_size(void* data);
   void update_padding(GtkWidget* widget);

@@ -370,6 +370,12 @@ gboolean GTKVideo::create_ui(void* user_data) {
                      G_CALLBACK(GTKVideo::button_event),
                      context);
   }
+
+  g_signal_connect(G_OBJECT(gtk_widget_get_toplevel(context->main_window_)),
+                   "state-flags-changed",
+                   G_CALLBACK(widget_has_focus),
+                   context);
+
   g_signal_connect(context->video_window_, "size-allocate", G_CALLBACK(widget_getsize), context);
   gtk_widget_set_events(context->video_window_,
                         GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_BUTTON_PRESS_MASK |
@@ -521,6 +527,15 @@ void GTKVideo::widget_getsize(GtkWidget* widget, GtkAllocation* /*allocation*/, 
   context->drawed_video_height_ = allocation.height;
   context->update_padding(widget);
   window_update_size(context);
+}
+
+void GTKVideo::widget_has_focus(GtkWidget* /*widget*/, GtkStateFlags flags, void* data) {
+  GTKVideo* context = static_cast<GTKVideo*>(data);
+  if (flags & GTK_STATE_FLAG_BACKDROP) {
+    context->graft_tree(".focused.", InfoTree::make("true"));
+  } else {
+    context->graft_tree(".focused", InfoTree::make("false"));
+  }
 }
 
 gboolean GTKVideo::window_update_position(void* data) {
