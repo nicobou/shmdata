@@ -47,8 +47,8 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
 
   static bool is_v4l_device(const char* file);
 
-  bool inspect_file_device(const char* file_path);
-  bool check_folder_for_v4l2_devices(const char* dir_path);
+  bool inspect_file_device(const std::string& file_path);
+  bool check_folder_for_v4l2_devices();
 
  private:
   typedef struct {
@@ -56,6 +56,7 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
     std::string card_{};
     std::string file_device_{};
     std::string bus_info_{};
+    std::string device_id_{};  // (defaulting to bus info)
     std::string driver_{};
     std::vector<std::tuple<uint32_t /*fourcc pixel format*/,
                            std::string /*name*/,
@@ -96,6 +97,9 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   // devices list:
   Selection<> devices_enum_{{"none"}, 0};
   PContainer::prop_id_t devices_id_{0};
+  Selection<> save_device_enum_{{"port", "device"}, 0};
+  PContainer::prop_id_t save_device_id_{0};
+  bool is_loading_{false};  // device selection will be disabled manually during load
 
   // pixet format
   Selection<> pixel_format_enum_{{"none"}, 0};
@@ -132,6 +136,10 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   bool start() final;
   bool stop() final;
   bool init() final;
+  InfoTree::ptr on_saving() final;
+  void on_loading(InfoTree::ptr&& tree) final;
+  void on_loaded() final;
+
   bool configure_capture();
   bool remake_elements();
 
@@ -146,10 +154,14 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   void update_discrete_framerate();
   void update_framerate_numerator_denominator();
   void update_pixel_format();
-  static std::string pixel_format_to_string(unsigned pf_id);
   bool is_current_pixel_format_raw_video() const;
   void set_shm_suffix();
   void on_gst_error(GstObject*, GError* err);
+  void set_device_id(const std::string& file_path, const std::string& id);
+
+  static std::string pixel_format_to_string(unsigned pf_id);
+  static std::vector<std::string> get_file_names_with_prefix(const std::string& dir_path,
+                                                             const std::string& prefix);
   // copy/paste from gstv4l2object.c for converting v4l2 pixel formats
   // to GstStructure (and then caps)
   static GstStructure* gst_v4l2_object_v4l2fourcc_to_structure(guint32 fourcc);
