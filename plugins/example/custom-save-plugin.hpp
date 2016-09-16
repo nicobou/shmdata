@@ -34,11 +34,6 @@ class CustomSavePlugin : public Quiddity {
   CustomSavePlugin(const CustomSavePlugin&) = delete;
   CustomSavePlugin& operator=(const CustomSavePlugin&) = delete;
 
-  InfoTree::ptr on_saving();
-  void on_saved();
-  void on_loading(InfoTree::ptr&& tree);
-  void on_loaded();
-
  private:
   int val_{1};
   bool is_something_{true};
@@ -50,6 +45,10 @@ class CustomSavePlugin : public Quiddity {
   bool on_saved_called_{false};
   PContainer::prop_id_t has_saved_custom_state_id_;
   bool init() final;
+  InfoTree::ptr on_saving() final;
+  void on_saved() final;
+  void on_loading(InfoTree::ptr&& tree) final;
+  void on_loaded() final;
 };
 
 SWITCHER_DECLARE_PLUGIN(CustomSavePlugin);
