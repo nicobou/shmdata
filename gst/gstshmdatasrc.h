@@ -63,6 +63,7 @@ struct _GstShmdataSrc
   guint64 buffers_since_last_request;
   gboolean unlocked;
   gboolean copy_buffers;
+  gboolean connected;
   gboolean stop_read;
 };
 
