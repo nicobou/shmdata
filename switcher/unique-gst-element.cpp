@@ -33,6 +33,14 @@ UGstElem::gst_element_handle::~gst_element_handle() {
 
 bool UGstElem::renew(UGstElem& element, const std::vector<std::string>& props) {
   g_debug("renewing gst element of class %s", element.class_name_.c_str());
+
+  // Unregister all property callbacks
+  std::map<std::string, prop_notification_cb_t> registered_props;
+  for (auto& notif : element.property_notifications_) {
+    element.unregister_notify_on_property_change(notif.first);
+    registered_props[notif.first] = notif.second.notification_cb;
+  }
+
   std::unique_ptr<gst_element_handle> tmp =
       std::make_unique<gst_element_handle>(element.class_name_);
   if (!tmp) return false;
@@ -40,6 +48,12 @@ bool UGstElem::renew(UGstElem& element, const std::vector<std::string>& props) {
     GstUtils::apply_property_value(
         G_OBJECT(element.element_->get()), G_OBJECT(tmp->get()), it.c_str());
   std::swap(tmp, element.element_);
+
+  // Re-register all property callbacks on the new GstElement.
+  for (auto& prop : registered_props) {
+    element.register_notify_on_property_change(prop.first, prop.second);
+  }
+
   return true;
 }
 
@@ -64,4 +78,72 @@ GstElement* UGstElem::get_raw() { return element_->get(); }
 
 void UGstElem::mute(const gchar* class_name) { class_name_ = std::string(class_name); }
 
+void UGstElem::property_notify_cb(GObject* /*gobject*/, GParamSpec* /*pspec*/, gpointer user_data) {
+  auto content = static_cast<prop_notification_user_data_t*>(user_data);
+  auto prop_notification = content->elem->property_notifications_.find(content->gprop_name);
+  if (content->elem->property_notifications_.cend() != prop_notification)
+    prop_notification->second.notification_cb();
+}
+
+bool UGstElem::register_notify_on_property_change(const std::string& gprop_name,
+                                                  prop_notification_cb_t callback) {
+  if (!element_) return false;
+
+  auto object = element_->get();
+  if (!object) {
+    g_warning("BUG: trying to register a property notification on an invalid element.");
+    return false;
+  }
+
+  if (property_notifications_.cend() != property_notifications_.find(gprop_name)) {
+    g_warning(
+        "Trying to register a notification for property %s while there is already one. Call "
+        "unregister_notify_on_property_change() first.",
+        gprop_name.c_str());
+    return false;
+  }
+
+  // Doing this to keep a valid reference to the object because this is going to the C realm.
+  auto& prop_notification = property_notifications_[gprop_name];
+  prop_notification.cb_user_data.elem = this;
+  prop_notification.cb_user_data.gprop_name = gprop_name;
+
+  unsigned long handler_id = g_signal_connect(G_OBJECT(object),
+                                              std::string("notify::" + gprop_name).c_str(),
+                                              G_CALLBACK(property_notify_cb),
+                                              &prop_notification.cb_user_data);
+  if (!handler_id) {
+    property_notifications_.erase(gprop_name);
+    g_warning("Could not register notification to property %s.", gprop_name.c_str());
+    return false;
+  }
+
+  prop_notification.handler_id = handler_id;
+  prop_notification.notification_cb = callback;
+
+  return true;
+}
+
+bool UGstElem::unregister_notify_on_property_change(const std::string& gprop_name) {
+  if (!element_) return false;
+
+  auto object = element_->get();
+  if (!object) {
+    g_warning("BUG: trying to register a property notification on an invalid element.");
+    return false;
+  }
+
+  auto notif = property_notifications_.find(gprop_name);
+  if (property_notifications_.cend() == notif) {
+    g_warning(
+        "Cannot unregister notification for property %s, no notification was registered for it.",
+        gprop_name.c_str());
+    return false;
+  }
+
+  g_signal_handler_disconnect(G_OBJECT(element_->get()), notif->second.handler_id);
+  property_notifications_.erase(notif);
+
+  return true;
+}
 }  // namespace switcher
