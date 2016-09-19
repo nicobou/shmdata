@@ -154,6 +154,7 @@ class GTKVideo : public Quiddity {
   void write_mouse_info_to_shmdata(int x, int y, const GdkModifierType& state);
   void install_gst_properties();
   void remove_gst_properties();
+  void redraw_window();
 
   struct KeybEvent {
     KeybEvent(guint32 keyval, guint32 down) : keyval_(keyval), down_(down) {}

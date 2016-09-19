@@ -430,6 +430,7 @@ bool GTKVideo::on_shmdata_disconnect() {
     gst_pipeline_ = std::make_unique<GstPipeliner>(
         nullptr, [this](GstMessage* msg) { return this->bus_sync(msg); });
   };
+
   return remake_elements();
 }
 
@@ -453,7 +454,11 @@ bool GTKVideo::on_shmdata_connect(const std::string& shmpath) {
         this->vid_height_ = g_value_get_int(height_val);
         this->update_padding(this->video_window_);
       },
-      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath_));
+      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath_),
+      [this]() { redraw_window(); },
+      [this](bool status) {
+        if (!status) redraw_window();
+      });
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmsrc_.get_raw(),
                    queue_.get_raw(),
@@ -608,6 +613,7 @@ void GTKVideo::write_mouse_info_to_shmdata(int x, int y, const GdkModifierType& 
 void GTKVideo::install_gst_properties() {
   pmanage<MPtr(&PContainer::push)>("method",
                                    GPropToProp::to_prop(G_OBJECT(videoflip_.get_raw()), "method"));
+  videoflip_.register_notify_on_property_change("method", [this]() { this->redraw_window(); });
   pmanage<MPtr(&PContainer::push)>("gamma",
                                    GPropToProp::to_prop(G_OBJECT(gamma_.get_raw()), "gamma"));
   pmanage<MPtr(&PContainer::push)>(
@@ -622,6 +628,7 @@ void GTKVideo::install_gst_properties() {
 
 void GTKVideo::remove_gst_properties() {
   pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("method"));
+  videoflip_.unregister_notify_on_property_change("method");
   pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("gamma"));
   pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("contrast"));
   pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("brightness"));
@@ -669,5 +676,7 @@ gboolean GTKVideo::set_fullscreen(void* user_data) {
   }
   return FALSE;
 }
+
+void GTKVideo::redraw_window() { gtk_widget_queue_draw(main_window_); }
 
 }  // namespace switcher
