@@ -17,7 +17,7 @@ $ sudo make install
 $ sudo ldconfig
 ```
 
-## Build Nvidia NVENC plugin
+## Build Nvidia Video Codec 7 plugin
 
 
 1. Check that you are running Nvidia drivers:
@@ -26,7 +26,7 @@ $ sudo ldconfig
     $ nvidia-settings
     ```
 
-1. Install Nvidia drivers and CUDA toolkit
+1. Install Nvidia drivers (min. version `367.35`) and CUDA toolkit
 
     > **Note**:  
     > You may need to first add the PPA `graphics-drivers/ppa`:  
