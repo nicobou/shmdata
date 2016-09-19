@@ -26,7 +26,7 @@ $ sudo ldconfig
     $ nvidia-settings
     ```
 
-1. Install Nvidia drivers (min. version `367.35`) and CUDA toolkit
+1. Install Nvidia drivers (min. version `367.35`) and CUDA toolkit:
 
     > **Note**:  
     > You may need to first add the PPA `graphics-drivers/ppa`:  
@@ -48,7 +48,7 @@ $ sudo ldconfig
     $ NVENC_LIBS='-L/usr/lib/nvidia-367' ./configure
     ```
 
-1. Compile and install as usual.
+1. Compile and install as usual:
     
     ```
     $ make -j"$(nproc)"
