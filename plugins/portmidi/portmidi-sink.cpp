@@ -64,7 +64,7 @@ void PortMidiSink::on_shmreader_data(void* data, size_t /*size */) {
 }
 
 bool PortMidiSink::start() {
-  pmanage<MPtr(&PContainer::enable)>(devices_id_, false);
+  pmanage<MPtr(&PContainer::disable)>(devices_id_, disabledWhenStartedMsg);
   open_output_device(device_);
   // FIXME the following might not be necessary
   gint stat = 165;
@@ -76,7 +76,7 @@ bool PortMidiSink::start() {
 
 bool PortMidiSink::stop() {
   close_output_device(device_);
-  pmanage<MPtr(&PContainer::enable)>(devices_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(devices_id_);
   return true;
 }
 

@@ -76,7 +76,8 @@ class PContainer {
   // ----------- add/remove/update (you should prefer makers for adding)
 
   bool remove(prop_id_t prop_id);
-  bool enable(prop_id_t prop_id, bool enable);
+  bool enable(prop_id_t prop_id);
+  bool disable(prop_id_t prop_id, const std::string& why);
   prop_id_t push(const std::string& strid, std::unique_ptr<PropertyBase>&& prop_ptr);
   prop_id_t push_parented(const std::string& strid,
                           const std::string& parent_strid,

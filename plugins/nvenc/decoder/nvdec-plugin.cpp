@@ -98,13 +98,13 @@ bool NVdecPlugin::on_shmdata_connect(const std::string& shmpath) {
       [this](const std::string& data_descr) { this->on_shmreader_server_connected(data_descr); },
       [this]() { this->on_shmreader_server_disconnected(); });
 
-  pmanage<MPtr(&PContainer::enable)>(devices_id_, false);
+  pmanage<MPtr(&PContainer::disable)>(devices_id_, ShmdataConnector::disabledWhenConnectedMsg);
   return static_cast<bool>(shmfollower_.get());
 }
 
 bool NVdecPlugin::on_shmdata_disconnect() {
   shmfollower_.reset(nullptr);
-  pmanage<MPtr(&PContainer::enable)>(devices_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(devices_id_);
   return true;
 }
 

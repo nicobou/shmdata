@@ -635,15 +635,15 @@ bool V4L2Src::start() {
   gst_pipeline_->play(true);
   if (!is_current_pixel_format_raw_video()) codecs_->set_none();
   codecs_->start();
-  pmanage<MPtr(&PContainer::enable)>(devices_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(group_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(resolutions_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(width_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(height_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(tv_standards_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(framerates_enum_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(framerate_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(pixel_format_id_, false);
+  pmanage<MPtr(&PContainer::disable)>(devices_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(group_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(resolutions_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(width_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(height_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(tv_standards_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(framerates_enum_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(framerate_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(pixel_format_id_, disabledWhenStartedMsg);
   return true;
 }
 
@@ -654,15 +654,15 @@ bool V4L2Src::stop() {
   gst_pipeline_ = std::make_unique<GstPipeliner>(
       nullptr, nullptr, [this](GstObject* gstobj, GError* err) { on_gst_error(gstobj, err); });
   codecs_->stop();
-  pmanage<MPtr(&PContainer::enable)>(devices_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(group_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(resolutions_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(width_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(height_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(tv_standards_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(framerates_enum_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(framerate_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(pixel_format_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(devices_id_);
+  pmanage<MPtr(&PContainer::enable)>(group_id_);
+  pmanage<MPtr(&PContainer::enable)>(resolutions_id_);
+  pmanage<MPtr(&PContainer::enable)>(width_id_);
+  pmanage<MPtr(&PContainer::enable)>(height_id_);
+  pmanage<MPtr(&PContainer::enable)>(tv_standards_id_);
+  pmanage<MPtr(&PContainer::enable)>(framerates_enum_id_);
+  pmanage<MPtr(&PContainer::enable)>(framerate_id_);
+  pmanage<MPtr(&PContainer::enable)>(pixel_format_id_);
   return true;
 }
 

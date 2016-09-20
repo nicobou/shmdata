@@ -135,10 +135,10 @@ bool AudioTestSource::start() {
                    nullptr);
   gst_element_link_many(
       audiotestsrc_.get_raw(), capsfilter_.get_raw(), shmdatasink_.get_raw(), nullptr);
-  
-  pmanage<MPtr(&PContainer::enable)>(format_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(channels_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(sample_rate_id_, false);
+
+  pmanage<MPtr(&PContainer::disable)>(format_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(channels_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(sample_rate_id_, disabledWhenStartedMsg);
   gst_pipeline_->play(true);
 
   return true;
@@ -148,9 +148,9 @@ bool AudioTestSource::stop() {
   shm_sub_.reset();
   this->prune_tree(".shmdata.writer." + shmpath_);
 
-  pmanage<MPtr(&PContainer::enable)>(format_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(channels_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(sample_rate_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(format_id_);
+  pmanage<MPtr(&PContainer::enable)>(channels_id_);
+  pmanage<MPtr(&PContainer::enable)>(sample_rate_id_);
 
   if (!UGstElem::renew(audiotestsrc_, {"is-live", "samplesperbuffer"}) ||
       !UGstElem::renew(capsfilter_) || !UGstElem::renew(shmdatasink_, {"socket-path"})) {

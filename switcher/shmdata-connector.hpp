@@ -22,6 +22,7 @@
 
 #include <glib.h>
 #include <functional>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -45,6 +46,7 @@ class ShmdataConnector {
                               OnDisconnectAll on_disconnect_all_cb,
                               CanSinkCaps on_can_sink_caps_cb,
                               uint max_reader);
+  static const std::string disabledWhenConnectedMsg;
 
  private:
   Quiddity* quid_{nullptr};

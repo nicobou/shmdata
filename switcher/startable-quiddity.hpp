@@ -20,6 +20,8 @@
 #ifndef __SWITCHER_STARTABLE_QUIDDITY_H__
 #define __SWITCHER_STARTABLE_QUIDDITY_H__
 
+#include <string>
+
 namespace switcher {
 class StartableQuiddity {
  public:
@@ -28,15 +30,17 @@ class StartableQuiddity {
   StartableQuiddity(const StartableQuiddity&) = delete;
   StartableQuiddity& operator=(const StartableQuiddity&) = delete;
 
+  static const std::string disabledWhenStartedMsg;
+  static const std::string disabledWhenStopedMsg;
+
  protected:
-  void init_startable(void* quiddity);
+  void init_startable(void* quiddity);  // FIXME find a way to avoid invoking init_startable (this)
+                                        // in quiddities (policies)
   bool is_started() const;
-  // find a way to avoid invoking init_startable (this) in quiddities (policies)
 
  private:
   virtual bool start() = 0;
   virtual bool stop() = 0;
-
   bool __started_{false};
 };
 }  // namespace switcher

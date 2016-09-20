@@ -22,6 +22,7 @@
 #include "switcher/gst-utils.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/scope-exit.hpp"
+#include "switcher/startable-quiddity.hpp"
 
 namespace switcher {
 GstVideoCodec::GstVideoCodec(Quiddity* quid,
@@ -56,14 +57,15 @@ GstVideoCodec::GstVideoCodec(Quiddity* quid,
 
 void GstVideoCodec::hide() {
   quid_->disable_method("reset");
-  quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_, false);
-  quid_->pmanage<MPtr(&PContainer::enable)>(param_group_id_, false);
+  quid_->pmanage<MPtr(&PContainer::disable)>(codec_id_, StartableQuiddity::disabledWhenStartedMsg);
+  quid_->pmanage<MPtr(&PContainer::disable)>(param_group_id_,
+                                             StartableQuiddity::disabledWhenStartedMsg);
 }
 
 void GstVideoCodec::show() {
   quid_->enable_method("reset");
-  quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_, true);
-  quid_->pmanage<MPtr(&PContainer::enable)>(param_group_id_, true);
+  quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_);
+  quid_->pmanage<MPtr(&PContainer::enable)>(param_group_id_);
 }
 
 void GstVideoCodec::make_bin() {

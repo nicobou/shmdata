@@ -82,8 +82,15 @@ bool JackToShmdata::init() {
       [this](const bool& val) {
         auto_connect_ = val;
         update_port_to_connect();
-        pmanage<MPtr(&PContainer::enable)>(connect_to_id_, auto_connect_);
-        pmanage<MPtr(&PContainer::enable)>(index_id_, auto_connect_);
+        if (auto_connect_) {
+          pmanage<MPtr(&PContainer::enable)>(connect_to_id_);
+          pmanage<MPtr(&PContainer::enable)>(index_id_);
+        } else {
+          static const std::string why_disabled =
+              "this property is available only when auto connect is enabled";
+          pmanage<MPtr(&PContainer::disable)>(connect_to_id_, why_disabled);
+          pmanage<MPtr(&PContainer::disable)>(index_id_, why_disabled);
+        }
         return true;
       },
       [this]() { return auto_connect_; },
@@ -137,11 +144,11 @@ bool JackToShmdata::start() {
     shm_.reset(nullptr);
     return false;
   }
-  pmanage<MPtr(&PContainer::enable)>(auto_connect_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(num_channels_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(client_name_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(connect_to_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(index_id_, false);
+  pmanage<MPtr(&PContainer::disable)>(auto_connect_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(num_channels_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(client_name_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(connect_to_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(index_id_, disabledWhenStartedMsg);
   {
     std::lock_guard<std::mutex> lock(input_ports_mutex_);
     for (unsigned int i = 0; i < num_channels_; ++i)
@@ -157,11 +164,11 @@ bool JackToShmdata::stop() {
     input_ports_.clear();
   }
   shm_.reset(nullptr);
-  pmanage<MPtr(&PContainer::enable)>(auto_connect_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(num_channels_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(client_name_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(connect_to_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(index_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(auto_connect_id_);
+  pmanage<MPtr(&PContainer::enable)>(num_channels_id_);
+  pmanage<MPtr(&PContainer::enable)>(client_name_id_);
+  pmanage<MPtr(&PContainer::enable)>(connect_to_id_);
+  pmanage<MPtr(&PContainer::enable)>(index_id_);
   return true;
 }
 

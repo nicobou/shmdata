@@ -65,11 +65,24 @@ bool PContainer::remove(prop_id_t prop_id) {
   return true;
 }
 
-bool PContainer::enable(prop_id_t prop_id, bool enable) {
+bool PContainer::enable(prop_id_t prop_id) {
   const auto& it = strids_.find(prop_id);
   if (strids_.end() == it) return false;
   auto key = std::string("property.") + it->second + ".enabled";
-  tree_->graft(key, InfoTree::make(enable));
+  tree_->graft(key, InfoTree::make(true));
+  auto why_key = std::string("property.") + it->second + ".why_disabled";
+  tree_->graft(why_key, InfoTree::make(""));
+  if (on_tree_grafted_cb_) on_tree_grafted_cb_(key);
+  return true;
+}
+
+bool PContainer::disable(prop_id_t prop_id, const std::string& why) {
+  const auto& it = strids_.find(prop_id);
+  if (strids_.end() == it) return false;
+  auto key = std::string("property.") + it->second + ".enabled";
+  tree_->graft(key, InfoTree::make(false));
+  auto why_key = std::string("property.") + it->second + ".why_disabled";
+  tree_->graft(why_key, InfoTree::make(why));
   if (on_tree_grafted_cb_) on_tree_grafted_cb_(key);
   return true;
 }

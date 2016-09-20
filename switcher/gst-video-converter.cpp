@@ -63,7 +63,7 @@ bool GstVideoConverter::on_shmdata_disconnect() {
   shmsink_sub_.reset();
   shmsrc_sub_.reset();
   converter_.reset(nullptr);
-  pmanage<MPtr(&PContainer::enable)>(video_format_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(video_format_id_);
   return true;
 }
 
@@ -87,7 +87,7 @@ bool GstVideoConverter::on_shmdata_connect(const std::string& shmpath) {
                    ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
       },
       ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath_to_convert_));
-  pmanage<MPtr(&PContainer::enable)>(video_format_id_, false);
+  pmanage<MPtr(&PContainer::disable)>(video_format_id_, ShmdataConnector::disabledWhenConnectedMsg);
   return true;
 }
 

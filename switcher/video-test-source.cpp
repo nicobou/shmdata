@@ -44,15 +44,17 @@ VideoTestSource::VideoTestSource(const std::string&)
           [this](size_t val) {
             resolutions_.select(val);
             if (resolutions_.get_current() == "Custom") {
-              pmanage<MPtr(&PContainer::enable)>(width_id_, true);
-              pmanage<MPtr(&PContainer::enable)>(height_id_, true);
+              pmanage<MPtr(&PContainer::enable)>(width_id_);
+              pmanage<MPtr(&PContainer::enable)>(height_id_);
               return true;
             }
             auto fract = resolutions_.get_attached();
             pmanage<MPtr(&PContainer::set<int>)>(width_id_, fract.numerator());
             pmanage<MPtr(&PContainer::set<int>)>(height_id_, fract.denominator());
-            pmanage<MPtr(&PContainer::enable)>(width_id_, false);
-            pmanage<MPtr(&PContainer::enable)>(height_id_, false);
+            static const std::string why_disconnected =
+                "this property is available only with custom resolution";
+            pmanage<MPtr(&PContainer::disable)>(width_id_, why_disconnected);
+            pmanage<MPtr(&PContainer::disable)>(height_id_, why_disconnected);
             return true;
           },
           [this]() { return resolutions_.get(); },
@@ -158,11 +160,11 @@ bool VideoTestSource::start() {
   pmanage<MPtr(&PContainer::replace)>(
       pmanage<MPtr(&PContainer::get_id)>("pattern"),
       GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
-  pmanage<MPtr(&PContainer::enable)>(width_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(height_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(resolutions_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(framerates_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(formats_id_, false);
+  pmanage<MPtr(&PContainer::disable)>(width_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(height_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(resolutions_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(framerates_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(formats_id_, disabledWhenStartedMsg);
   return true;
   }
 
@@ -188,12 +190,12 @@ bool VideoTestSource::start() {
         videotestsrc_.get_raw(), capsfilter_.get_raw(), shmdatasink_.get_raw(), nullptr);
     codecs_->stop();
     if (resolutions_.get_current() == "Custom") {
-      pmanage<MPtr(&PContainer::enable)>(width_id_, true);
-      pmanage<MPtr(&PContainer::enable)>(height_id_, true);
+      pmanage<MPtr(&PContainer::enable)>(width_id_);
+      pmanage<MPtr(&PContainer::enable)>(height_id_);
     }
-    pmanage<MPtr(&PContainer::enable)>(resolutions_id_, true);
-    pmanage<MPtr(&PContainer::enable)>(framerates_id_, true);
-    pmanage<MPtr(&PContainer::enable)>(formats_id_, true);
+    pmanage<MPtr(&PContainer::enable)>(resolutions_id_);
+    pmanage<MPtr(&PContainer::enable)>(framerates_id_);
+    pmanage<MPtr(&PContainer::enable)>(formats_id_);
     return true;
   }
 
