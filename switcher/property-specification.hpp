@@ -27,6 +27,7 @@
 #include <string>
 #include <typeinfo>
 
+#include "./color.hpp"
 #include "./fraction.hpp"
 #include "./group.hpp"
 #include "./information-tree.hpp"
@@ -179,6 +180,19 @@ class PropertySpecification {
     spec_->graft("minDenominator", InfoTree::make(min_denom));
     spec_->graft("maxNumerator", InfoTree::make(max_num));
     spec_->graft("maxDenominator", InfoTree::make(max_denom));
+  }
+
+  template <typename U = Color>
+  PropertySpecification(bool is_writable,
+                        const std::string& label,
+                        const std::string& description,
+                        const Color& default_value)
+      : spec_(InfoTree::make()), is_valid_([](const Color&) { return true; }) {
+    spec_->graft("label", InfoTree::make(label));
+    spec_->graft("description", InfoTree::make(description));
+    spec_->graft("type", InfoTree::make("color"));
+    spec_->graft("writable", InfoTree::make(is_writable));
+    spec_->graft("value", InfoTree::make(default_value));
   }
 
   template <typename U = T, typename V>

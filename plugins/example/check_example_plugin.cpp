@@ -21,6 +21,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "switcher/property-container.hpp"
 #include "switcher/quiddity-basic-test.hpp"
 #include "switcher/quiddity-manager.hpp"
 
@@ -30,8 +31,8 @@
 
 int main() {
   {
-    switcher::QuiddityManager::ptr manager =
-        switcher::QuiddityManager::make_manager("test_manager");
+    using namespace switcher;
+    QuiddityManager::ptr manager = QuiddityManager::make_manager("test_manager");
 #ifdef HAVE_CONFIG_H
     gchar* usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
     manager->scan_directory_for_plugins(usr_plugin_dir);
@@ -40,10 +41,15 @@ int main() {
     return 1;
 #endif
 
-    assert(switcher::QuiddityBasicTest::test_full(manager, "dummy"));
+    assert(QuiddityBasicTest::test_full(manager, "dummy"));
 
     // creating a "myplugin" quiddity
     assert(manager->create("dummy", "test") == "test");
+
+    assert(manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "0A93D8FF"));
+    assert(!manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "0A93D8"));
+    assert(!manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "GGGGGGGGGG"));
+    assert(!manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "0000000T"));
 
     // testing hello-world method
     std::string* res = nullptr;

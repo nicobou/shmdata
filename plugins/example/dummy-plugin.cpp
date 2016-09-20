@@ -58,6 +58,15 @@ DummyPlugin::DummyPlugin(const std::string&)
                                                      "Char Example",
                                                      "This property is an example for type char",
                                                      char_)),
+      color_id_(pmanage<MPtr(&PContainer::make_color)>("color_",
+                                                       [this](const Color& val) {
+                                                         color_ = val;
+                                                         return true;
+                                                       },
+                                                       [this]() { return color_; },
+                                                       "Color Example",
+                                                       "This property is an example for type color",
+                                                       color_)),
       integral_group_id_(pmanage<MPtr(&PContainer::make_group)>(
           "integrals",
           "Integral Group Example",

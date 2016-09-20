@@ -400,6 +400,21 @@ class PContainer {
                                    Fraction::ator_t max_num,
                                    Fraction::ator_t max_denom);
 
+  prop_id_t make_color(const std::string& strid,
+                       prop::set_t<Color> set,
+                       prop::get_t<Color> get,
+                       const std::string& label,
+                       const std::string& description,
+                       const Color& default_value);
+
+  prop_id_t make_parented_color(const std::string& strid,
+                                const std::string& parent_strid,
+                                prop::set_t<Color> set,
+                                prop::get_t<Color> get,
+                                const std::string& label,
+                                const std::string& description,
+                                const Color& default_value);
+
   template <typename T>
   prop_id_t make_tuple(const std::string& strid,
                        std::function<bool(const T&)> set,

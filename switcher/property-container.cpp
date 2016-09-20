@@ -572,4 +572,23 @@ void PContainer::update_value_in_tree(prop_id_t id) const {
   props_.find(id)->second->update_value_in_spec();
 }
 
+PContainer::prop_id_t PContainer::make_color(const std::string& strid,
+                                             Property2<Color>::set_cb_t set,
+                                             Property2<Color>::get_cb_t get,
+                                             const std::string& label,
+                                             const std::string& description,
+                                             const Color& default_value) {
+  return make_under_parent<Color>(strid, "", set, get, label, description, default_value);
+}
+
+PContainer::prop_id_t PContainer::make_parented_color(const std::string& strid,
+                                                      const std::string& parent_strid,
+                                                      Property2<Color>::set_cb_t set,
+                                                      Property2<Color>::get_cb_t get,
+                                                      const std::string& label,
+                                                      const std::string& description,
+                                                      const Color& default_value) {
+  return make_under_parent<Color>(strid, parent_strid, set, get, label, description, default_value);
+}
+
 }  // namespace switcher

@@ -22,6 +22,7 @@ lib_LTLIBRARIES = \
 libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     audio-test-source.cpp \
     categorizable.cpp \
+    color.cpp \
     counter-map.cpp \
     create-remove-spy.cpp \
     decodebin-to-shmdata.cpp \
@@ -107,6 +108,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     any.hpp \
     audio-test-source.hpp \
     categorizable.hpp \
+    color.hpp \
     counter-map.hpp \
     create-remove-spy.hpp \
     creator.hpp \
