@@ -576,6 +576,7 @@ std::unique_lock<std::mutex> PContainer::get_lock(prop_id_t id) {
 }
 
 void PContainer::notify(prop_id_t id) { props_.find(id)->second->notify(); }
+void PContainer::set_to_current(prop_id_t id) { props_.find(id)->second->set_to_current(); }
 
 void PContainer::update_values_in_tree() const {
   for (auto& it : props_) it.second->update_value_in_spec();

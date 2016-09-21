@@ -88,6 +88,7 @@ class PContainer {
   // instance)
   std::unique_lock<std::mutex> get_lock(prop_id_t prop_id);
   void notify(prop_id_t prop_id);
+  void set_to_current(prop_id_t id);
   void update_value_in_tree(prop_id_t prop) const;
   void update_values_in_tree() const;
 
