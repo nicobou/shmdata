@@ -53,6 +53,7 @@ GstVideoCodec::GstVideoCodec(Quiddity* quid,
                         this);
   set_shm(shmpath);
   reset_codec_configuration(nullptr, this);
+  quid_->pmanage<MPtr(&PContainer::set_to_current)>(codec_id_);
 }
 
 void GstVideoCodec::hide() {
@@ -127,18 +128,13 @@ gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */, gpointer
   GstVideoCodec* context = static_cast<GstVideoCodec*>(user_data);
   auto& quid = context->quid_;
   auto* codec_sel = &context->codecs_;
-  codec_sel->select(context->codecs_.get_index("On2 VP8 Encoder"));
+  codec_sel->select(context->codecs_.get_index("x264enc"));
   quid->pmanage<MPtr(&PContainer::notify)>(context->codec_id_);
   context->make_codec_properties();
-  quid->pmanage<MPtr(&PContainer::set_str)>(
-      quid->pmanage<MPtr(&PContainer::get_id)>("lag-in-frames"), "1");
-  quid->pmanage<MPtr(&PContainer::set_str)>(
-      quid->pmanage<MPtr(&PContainer::get_id)>("target-bitrate"),
-      "2000000");  // 2Mbps
-  quid->pmanage<MPtr(&PContainer::set_str)>(quid->pmanage<MPtr(&PContainer::get_id)>("end-usage"),
-                                            "1");  // CBR
-  quid->pmanage<MPtr(&PContainer::set_str)>(
-      quid->pmanage<MPtr(&PContainer::get_id)>("keyframe-max-dist"), "1");
+  quid->pmanage<MPtr(&PContainer::set_str)>(quid->pmanage<MPtr(&PContainer::get_id)>("bitrate"),
+                                            "4096");
+  quid->pmanage<MPtr(&PContainer::set_str)>(quid->pmanage<MPtr(&PContainer::get_id)>("pass"),
+                                            "cbr");
   return TRUE;
 }
 

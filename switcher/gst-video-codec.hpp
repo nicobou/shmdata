@@ -57,7 +57,7 @@ class GstVideoCodec {
   UGstElem shmsrc_{"shmdatasrc"};
   UGstElem queue_codec_element_{"queue"};
   UGstElem color_space_codec_element_{"videoconvert"};
-  UGstElem codec_element_{"vp8enc"};
+  UGstElem codec_element_{"x264enc"};
   UGstElem shm_encoded_{"shmdatasink"};
   std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
   std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
