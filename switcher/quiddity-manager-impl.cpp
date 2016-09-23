@@ -239,6 +239,7 @@ std::string QuiddityManager_Impl::create_without_hook(const std::string& quiddit
   if (nullptr == quiddity.get()) return "{\"error\":\"cannot make quiddity\"}";
   quiddity->set_manager_impl(me_.lock());
   quiddity->set_name(name);
+  name = quiddity->get_name();
   if (configurations_) quiddity->set_configuration(configurations_->get_tree(quiddity_class));
   if (!quiddity->init()) return "{\"error\":\"cannot init quiddity class\"}";
   quiddities_[name] = quiddity;
@@ -259,7 +260,7 @@ std::string QuiddityManager_Impl::create(const std::string& quiddity_class) {
       return std::string();
     }
   }
-  return name;
+  return quiddity->get_name();
 }
 
 std::string QuiddityManager_Impl::create(const std::string& quiddity_class,
@@ -294,7 +295,7 @@ std::string QuiddityManager_Impl::create(const std::string& quiddity_class,
             quiddity->get_name().c_str());
     return std::string();
   }
-  return nick_name;
+  return quiddity->get_name();
 }
 
 std::vector<std::string> QuiddityManager_Impl::get_instances() const {

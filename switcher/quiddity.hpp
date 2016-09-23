@@ -161,6 +161,7 @@ class Quiddity {
   JSONBuilder::ptr signals_description_;
 
   // naming
+  static const size_t nameMaxSize{20};
   std::string name_{};
 
   std::mutex self_destruct_mtx_{};
