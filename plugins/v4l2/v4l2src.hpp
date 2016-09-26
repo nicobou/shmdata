@@ -107,6 +107,17 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   Selection<> resolutions_enum_{{"none"}, 0};
   PContainer::prop_id_t resolutions_id_{0};
   // width height for the currently selected device
+  Selection<Fraction> custom_resolutions_{
+      {"3840x2160", "1920x1080", "1280x720", "800x600", "640x480", "320x240", "Custom"},
+      {Fraction(3840, 2160),
+       Fraction(1920, 1080),
+       Fraction(1280, 720),
+       Fraction(800, 600),
+       Fraction(640, 480),
+       Fraction(320, 240),
+       Fraction(-1, -1)},
+      1};
+  PContainer::prop_id_t custom_resolutions_id_{0};
   gint width_{0};
   PContainer::prop_id_t width_id_{0};
   gint height_{0};
@@ -123,8 +134,21 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   PContainer::prop_id_t framerates_enum_id_{0};
 
   // width height for the currently selected device
-  Fraction framerate_{30, 1};
-  PContainer::prop_id_t framerate_id_{0};
+  Selection<Fraction> standard_framerates_{
+      {"60", "59.94", "50", "30", "29.97", "25", "24", "23.976", "Custom"},
+      {Fraction(60, 1),
+       Fraction(2997, 50),  // 59.94
+       Fraction(50, 1),
+       Fraction(30, 1),
+       Fraction(2997, 100),
+       Fraction(25, 1),
+       Fraction(24, 1),
+       Fraction(2997, 125),  // 23.976
+       Fraction(-1, -1)},
+      3};  // default to 30 fps
+  PContainer::prop_id_t standard_framerates_id_{0};
+  Fraction custom_framerate_{30, 1};
+  PContainer::prop_id_t custom_framerate_id_{0};
 
   // grouping of capture device configuration
   PContainer::prop_id_t group_id_{0};

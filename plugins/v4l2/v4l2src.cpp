@@ -345,14 +345,38 @@ void V4L2Src::update_pixel_format() {
 
 void V4L2Src::update_width_height() {
   CaptureDescription& cap_descr = capture_devices_[devices_enum_.get()];
+  pmanage<MPtr(&PContainer::remove)>(custom_resolutions_id_);
+  custom_resolutions_id_ = 0;
   pmanage<MPtr(&PContainer::remove)>(width_id_);
   width_id_ = 0;
   pmanage<MPtr(&PContainer::remove)>(height_id_);
   height_id_ = 0;
 
   if (cap_descr.frame_size_stepwise_max_width_ < 1) return;
+  resolutions_id_ = pmanage<MPtr(&PContainer::make_parented_selection<Fraction>)>(
+      "custom_resolution",
+      "config",
+      [this](size_t val) {
+        custom_resolutions_.select(val);
+        if (custom_resolutions_.get_current() == "Custom") {
+          pmanage<MPtr(&PContainer::enable)>(width_id_);
+          pmanage<MPtr(&PContainer::enable)>(height_id_);
+          return true;
+        }
+        auto fract = custom_resolutions_.get_attached();
+        pmanage<MPtr(&PContainer::set<int>)>(width_id_, fract.numerator());
+        pmanage<MPtr(&PContainer::set<int>)>(height_id_, fract.denominator());
+        static const std::string why_disconnected =
+            "this property is available only with custom resolution";
+        pmanage<MPtr(&PContainer::disable)>(width_id_, why_disconnected);
+        pmanage<MPtr(&PContainer::disable)>(height_id_, why_disconnected);
+        return true;
+      },
+      [this]() { return custom_resolutions_.get(); },
+      "Resolutions",
+      "Select resolutions",
+      custom_resolutions_);
 
-  width_ = cap_descr.frame_size_stepwise_max_width_ / 2;
   width_id_ =
       pmanage<MPtr(&PContainer::make_parented_int)>("width",
                                                     "config",
@@ -368,7 +392,6 @@ void V4L2Src::update_width_height() {
                                                     width_,
                                                     cap_descr.frame_size_stepwise_min_width_,
                                                     cap_descr.frame_size_stepwise_max_width_);
-  height_ = cap_descr.frame_size_stepwise_max_height_ / 2;
   height_id_ =
       pmanage<MPtr(&PContainer::make_parented_int)>("height",
                                                     "config",
@@ -386,30 +409,51 @@ void V4L2Src::update_width_height() {
                                                     cap_descr.frame_size_stepwise_max_height_);
 
   fetch_available_frame_intervals();
-  pmanage<MPtr(&PContainer::set<int>)>(width_id_, width_);
-  pmanage<MPtr(&PContainer::set<int>)>(height_id_, height_);
+  pmanage<MPtr(&PContainer::set_to_current)>(resolutions_id_);
 }
 
 void V4L2Src::update_framerate_numerator_denominator() {
   CaptureDescription& cap_descr = capture_devices_[devices_enum_.get()];
-  pmanage<MPtr(&PContainer::remove)>(framerate_id_);
-  framerate_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(standard_framerates_id_);
+  pmanage<MPtr(&PContainer::remove)>(custom_framerate_id_);
+  standard_framerates_id_ = 0;
+  custom_framerate_id_ = 0;
   if (cap_descr.frame_interval_stepwise_max_numerator_ < 1) return;
-  framerate_id_ =
+  standard_framerates_id_ = pmanage<MPtr(&PContainer::make_parented_selection<Fraction>)>(
+      "standard_framerates",
+      "config",
+      [this](const size_t& val) {
+        standard_framerates_.select(val);
+        if (standard_framerates_.get_current() == "Custom") {
+          pmanage<MPtr(&PContainer::enable)>(custom_framerate_id_);
+          return true;
+        }
+        auto fract = standard_framerates_.get_attached();
+        pmanage<MPtr(&PContainer::set<Fraction>)>(custom_framerate_id_, fract);
+        static const std::string why_disconnected =
+            "this property is available only with custom frame rate";
+        pmanage<MPtr(&PContainer::disable)>(custom_framerate_id_, why_disconnected);
+        return true;
+      },
+      [this]() { return standard_framerates_.get(); },
+      "Standard Framerates",
+      "Standard and Custom Framerates",
+      standard_framerates_);
+  custom_framerate_id_ =
       pmanage<MPtr(&PContainer::make_parented_fraction)>("framerate",
                                                          "config",
                                                          [this](const Fraction& val) {
-                                                           framerate_ = val;
+                                                           custom_framerate_ = val;
                                                            return true;
                                                          },
-                                                         [this]() { return framerate_; },
+                                                         [this]() { return custom_framerate_; },
                                                          "Framerate",
                                                          "Capture framerate",
-                                                         framerate_,
+                                                         custom_framerate_,
                                                          1,
                                                          1,
-                                                         120,
-                                                         120);
+                                                         2997,
+                                                         125);
 }
 
 void V4L2Src::update_tv_standard() {
@@ -429,7 +473,7 @@ void V4L2Src::update_tv_standard() {
       },
       [this]() { return tv_standards_enum_.get(); },
       "TV standard",
-      "TV standard of selected capture devices",
+      "TV standard",
       tv_standards_enum_);
 }
 
@@ -638,7 +682,7 @@ bool V4L2Src::start() {
   pmanage<MPtr(&PContainer::disable)>(height_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(tv_standards_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(framerates_enum_id_, disabledWhenStartedMsg);
-  pmanage<MPtr(&PContainer::disable)>(framerate_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(custom_framerate_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(pixel_format_id_, disabledWhenStartedMsg);
   return true;
 }
@@ -656,7 +700,7 @@ bool V4L2Src::stop() {
   pmanage<MPtr(&PContainer::enable)>(height_id_);
   pmanage<MPtr(&PContainer::enable)>(tv_standards_id_);
   pmanage<MPtr(&PContainer::enable)>(framerates_enum_id_);
-  pmanage<MPtr(&PContainer::enable)>(framerate_id_);
+  pmanage<MPtr(&PContainer::enable)>(custom_framerate_id_);
   pmanage<MPtr(&PContainer::enable)>(pixel_format_id_);
   return true;
 }
@@ -693,9 +737,9 @@ bool V4L2Src::configure_capture() {
            capture_devices_[devices_enum_.get()]
                .frame_interval_discrete_[framerates_enum_.get()]
                .first.c_str();
-  else if (0 != framerate_id_) {
-    caps = caps + ", framerate=(fraction)" + std::to_string(framerate_.numerator()) + "/" +
-           std::to_string(framerate_.denominator());
+  else if (0 != custom_framerate_id_) {
+    caps = caps + ", framerate=(fraction)" + std::to_string(custom_framerate_.numerator()) + "/" +
+           std::to_string(custom_framerate_.denominator());
   }
   g_debug("caps for v4l2src %s", caps.c_str());
   GstCaps* usercaps = gst_caps_from_string(caps.c_str());

@@ -80,16 +80,16 @@ VideoTestSource::VideoTestSource(const std::string&)
                                                       height_,
                                                       kMinHeight,
                                                       kMaxHeight)),
-      framerates_id_(
-          pmanage<MPtr(&PContainer::make_selection<>)>("framerate",
-                                                       [this](size_t val) {
-                                                         framerates_.select(val);
-                                                         return true;
-                                                       },
-                                                       [this]() { return framerates_.get(); },
-                                                       "Video Framerate",
-                                                       "Select the video framerate",
-                                                       framerates_)),
+      framerates_id_(pmanage<MPtr(&PContainer::make_selection<Fraction>)>(
+          "framerate",
+          [this](size_t val) {
+            framerates_.select(val);
+            return true;
+          },
+          [this]() { return framerates_.get(); },
+          "Video Framerate",
+          "Select the video framerate",
+          framerates_)),
       formats_(Selection<>(
           GstUtils::get_gst_element_capability_as_list("videotestsrc", "format", GST_PAD_SRC), 0)),
       formats_id_(pmanage<MPtr(&PContainer::make_selection<>)>("format",
@@ -123,9 +123,11 @@ bool VideoTestSource::init() {
 }
 
 void VideoTestSource::update_caps() {
+  auto framerate = framerates_.get_attached();
   auto caps_str = std::string("video/x-raw, format=") + formats_.get_current() + ", width=" +
                   std::to_string(width_) + ", height=" + std::to_string(height_) + ", framerate=" +
-                  framerates_.get_current() +
+                  std::to_string(framerate.numerator()) + "/" +
+                  std::to_string(framerate.denominator()) +
                   ", pixel-aspect-ratio=1/1, interlace-mode=progressive";
   GstCaps* caps = gst_caps_from_string(caps_str.c_str());
   On_scope_exit { gst_caps_unref(caps); };

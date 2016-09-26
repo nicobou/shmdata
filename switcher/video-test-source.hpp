@@ -62,7 +62,16 @@ class VideoTestSource : public Quiddity, public StartableQuiddity {
   static const int kMinHeight{1};
   PContainer::prop_id_t height_id_;
   // framerate
-  Selection<> framerates_{{"30/1", "60/1", "1/1", "5/5", "10/1", "15/1", "20/1", "25/1"}, 0};
+  Selection<Fraction> framerates_{{"60", "59.94", "50", "30", "29.97", "25", "24", "23.976"},
+                                  {Fraction(60, 1),
+                                   Fraction(5994, 100),
+                                   Fraction(50, 1),
+                                   Fraction(30, 1),
+                                   Fraction(2997, 100),
+                                   Fraction(25, 1),
+                                   Fraction(24, 1),
+                                   Fraction(23976, 1000)},  // or 2997/125
+                                  3};                       // default to 30 fps
   PContainer::prop_id_t framerates_id_;
   // formats
   Selection<> formats_;
