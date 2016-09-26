@@ -28,6 +28,7 @@
 #include "switcher/gst-utils.hpp"
 #include "switcher/quiddity-manager-impl.hpp"
 #include "switcher/scope-exit.hpp"
+#include "switcher/shmdata-utils.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(V4L2Src,
@@ -97,8 +98,6 @@ bool V4L2Src::init() {
                                                           "Save Mode",
                                                           "Save Capture Device by",
                                                           save_device_enum_);
-  codecs_ =
-      std::make_unique<GstVideoCodec>(static_cast<Quiddity*>(this), make_file_name(raw_suffix_));
   set_shm_suffix();
   return true;
 }
@@ -330,7 +329,6 @@ void V4L2Src::update_pixel_format() {
       [this](const size_t& val) {
         pixel_format_enum_.select(val);
         set_shm_suffix();
-        if (!is_current_pixel_format_raw_video()) codecs_->set_none();
         g_debug("pix selected");
         fetch_available_resolutions();
         update_discrete_resolution();
@@ -633,8 +631,6 @@ bool V4L2Src::start() {
       ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_));
 
   gst_pipeline_->play(true);
-  if (!is_current_pixel_format_raw_video()) codecs_->set_none();
-  codecs_->start();
   pmanage<MPtr(&PContainer::disable)>(devices_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(group_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(resolutions_id_, disabledWhenStartedMsg);
@@ -653,7 +649,6 @@ bool V4L2Src::stop() {
   remake_elements();
   gst_pipeline_ = std::make_unique<GstPipeliner>(
       nullptr, nullptr, [this](GstObject* gstobj, GError* err) { on_gst_error(gstobj, err); });
-  codecs_->stop();
   pmanage<MPtr(&PContainer::enable)>(devices_id_);
   pmanage<MPtr(&PContainer::enable)>(group_id_);
   pmanage<MPtr(&PContainer::enable)>(resolutions_id_);

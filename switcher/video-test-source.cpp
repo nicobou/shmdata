@@ -36,11 +36,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
 
 VideoTestSource::VideoTestSource(const std::string&)
     : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
-      raw_video_group_id_(pmanage<MPtr(&PContainer::make_group)>(
-          "raw_video_props", "Raw Video Configuration", "Configure low level video property")),
-      resolutions_id_(pmanage<MPtr(&PContainer::make_parented_selection<Fraction>)>(
+      resolutions_id_(pmanage<MPtr(&PContainer::make_selection<Fraction>)>(
           "resolution",
-          "raw_video_props",
           [this](size_t val) {
             resolutions_.select(val);
             if (resolutions_.get_current() == "Custom") {
@@ -61,54 +58,49 @@ VideoTestSource::VideoTestSource(const std::string&)
           "Resolutions",
           "Select resolutions",
           resolutions_)),
-      width_id_(pmanage<MPtr(&PContainer::make_parented_int)>("width",
-                                                              "raw_video_props",
-                                                              [this](int val) {
-                                                                width_ = val;
-                                                                return true;
-                                                              },
-                                                              [this]() { return width_; },
-                                                              "Width",
-                                                              "Set Video Width",
-                                                              width_,
-                                                              kMinWidth,
-                                                              kMaxWidth)),
-      height_id_(pmanage<MPtr(&PContainer::make_parented_int)>("height",
-                                                               "raw_video_props",
-                                                               [this](int val) {
-                                                                 height_ = val;
-                                                                 return true;
-                                                               },
-                                                               [this]() { return height_; },
-                                                               "Height",
-                                                               "Set Video Height",
-                                                               height_,
-                                                               kMinHeight,
-                                                               kMaxHeight)),
-      framerates_id_(pmanage<MPtr(&PContainer::make_parented_selection<>)>(
-          "framerate",
-          "raw_video_props",
-          [this](size_t val) {
-            framerates_.select(val);
-            return true;
-          },
-          [this]() { return framerates_.get(); },
-          "Video Framerate",
-          "Select the video framerate",
-          framerates_)),
+      width_id_(pmanage<MPtr(&PContainer::make_int)>("width",
+                                                     [this](int val) {
+                                                       width_ = val;
+                                                       return true;
+                                                     },
+                                                     [this]() { return width_; },
+                                                     "Width",
+                                                     "Set Video Width",
+                                                     width_,
+                                                     kMinWidth,
+                                                     kMaxWidth)),
+      height_id_(pmanage<MPtr(&PContainer::make_int)>("height",
+                                                      [this](int val) {
+                                                        height_ = val;
+                                                        return true;
+                                                      },
+                                                      [this]() { return height_; },
+                                                      "Height",
+                                                      "Set Video Height",
+                                                      height_,
+                                                      kMinHeight,
+                                                      kMaxHeight)),
+      framerates_id_(
+          pmanage<MPtr(&PContainer::make_selection<>)>("framerate",
+                                                       [this](size_t val) {
+                                                         framerates_.select(val);
+                                                         return true;
+                                                       },
+                                                       [this]() { return framerates_.get(); },
+                                                       "Video Framerate",
+                                                       "Select the video framerate",
+                                                       framerates_)),
       formats_(Selection<>(
           GstUtils::get_gst_element_capability_as_list("videotestsrc", "format", GST_PAD_SRC), 0)),
-      formats_id_(
-          pmanage<MPtr(&PContainer::make_parented_selection<>)>("format",
-                                                                "raw_video_props",
-                                                                [this](size_t val) {
-                                                                  formats_.select(val);
-                                                                  return true;
-                                                                },
-                                                                [this]() { return formats_.get(); },
-                                                                "Video Pixel Format",
-                                                                "Select the pixel video format",
-                                                                formats_)) {
+      formats_id_(pmanage<MPtr(&PContainer::make_selection<>)>("format",
+                                                               [this](size_t val) {
+                                                                 formats_.select(val);
+                                                                 return true;
+                                                               },
+                                                               [this]() { return formats_.get(); },
+                                                               "Video Pixel Format",
+                                                               "Select the pixel video format",
+                                                               formats_)) {
   init_startable(this);
 }
 
@@ -125,11 +117,8 @@ bool VideoTestSource::init() {
                    nullptr);
   gst_element_link_many(
       videotestsrc_.get_raw(), capsfilter_.get_raw(), shmdatasink_.get_raw(), nullptr);
-  pmanage<MPtr(&PContainer::push_parented)>(
-      "pattern",
-      "raw_video_props",
-      GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
-  codecs_ = std::make_unique<GstVideoCodec>(static_cast<Quiddity*>(this), shmpath_);
+  pmanage<MPtr(&PContainer::push)>(
+      "pattern", GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
   return true;
 }
 
@@ -156,7 +145,6 @@ bool VideoTestSource::start() {
   update_caps();
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
-  codecs_->start();
   pmanage<MPtr(&PContainer::replace)>(
       pmanage<MPtr(&PContainer::get_id)>("pattern"),
       GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
@@ -188,7 +176,6 @@ bool VideoTestSource::start() {
                      nullptr);
     gst_element_link_many(
         videotestsrc_.get_raw(), capsfilter_.get_raw(), shmdatasink_.get_raw(), nullptr);
-    codecs_->stop();
     if (resolutions_.get_current() == "Custom") {
       pmanage<MPtr(&PContainer::enable)>(width_id_);
       pmanage<MPtr(&PContainer::enable)>(height_id_);

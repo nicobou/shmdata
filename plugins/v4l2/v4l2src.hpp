@@ -22,8 +22,6 @@
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
-#include "switcher/gst-video-codec.hpp"
-#include "switcher/gst-video-codec.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/unique-gst-element.hpp"
@@ -92,7 +90,6 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   const std::string enc_suffix_{"video-encoded"};
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
-  std::unique_ptr<GstVideoCodec> codecs_{nullptr};
 
   // devices list:
   Selection<> devices_enum_{{"none"}, 0};

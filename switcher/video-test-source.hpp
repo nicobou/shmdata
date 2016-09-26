@@ -25,7 +25,6 @@
 #include "switcher/fraction.hpp"
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
-#include "switcher/gst-video-codec.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/unique-gst-element.hpp"
@@ -42,8 +41,6 @@ class VideoTestSource : public Quiddity, public StartableQuiddity {
  private:
   std::string shmpath_{};
   std::unique_ptr<GstPipeliner> gst_pipeline_;
-  // raw video format configuration
-  PContainer::prop_id_t raw_video_group_id_;
   // width height
   Selection<Fraction> resolutions_{
       {"3840x2160", "1920x1080", "1280x720", "800x600", "640x480", "320x240", "Custom"},
@@ -75,7 +72,6 @@ class VideoTestSource : public Quiddity, public StartableQuiddity {
   UGstElem capsfilter_{"capsfilter"};
   UGstElem shmdatasink_{"shmdatasink"};
   std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
-  std::unique_ptr<GstVideoCodec> codecs_{nullptr};
   bool start() final;
   bool stop() final;
   bool init() final;
