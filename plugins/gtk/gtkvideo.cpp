@@ -420,6 +420,7 @@ bool GTKVideo::remake_elements() {
                "qos",
                FALSE,
                nullptr);
+  install_gst_properties();
   return true;
 }
 
