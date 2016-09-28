@@ -481,6 +481,7 @@ tests/Makefile
 src/Makefile
 plugins/Makefile
 plugins/example/Makefile
+plugins/glfw/Makefile
 plugins/gsoap/Makefile
 plugins/gtk/Makefile
 plugins/jack/Makefile

@@ -33,7 +33,7 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GTKVideo,
                                      "gtkwin",
-                                     "Video Display (configurable)",
+                                     "GTK Video Display (configurable)",
                                      "video",
                                      "reader/device/occasional-writer",
                                      "Video window with fullscreen",
