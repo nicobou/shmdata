@@ -26,6 +26,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     counter-map.cpp \
     create-remove-spy.cpp \
     decodebin-to-shmdata.cpp \
+    empty-quiddity.cpp \
     external-shmdata-writer.cpp \
     fraction.cpp \
     file-utils.cpp \
@@ -113,6 +114,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     create-remove-spy.hpp \
     creator.hpp \
     decodebin-to-shmdata.hpp \
+    empty-quiddity.hpp \
     external-shmdata-writer.hpp \
     file-utils.hpp \
     fraction.hpp \
