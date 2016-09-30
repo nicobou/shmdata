@@ -52,7 +52,8 @@ enum
   PROP_CAPS,
   PROP_BYTES_SINCE_LAST_REQUEST,
   PROP_BUFFERS_SINCE_LAST_REQUEST,
-  PROP_COPY_BUFFERS
+  PROP_COPY_BUFFERS,
+  PROP_CONNECTED
 };
 
 /* struct GstShmDataBuffer */
@@ -115,7 +116,7 @@ gst_shmdata_src_class_init (GstShmdataSrcClass * klass)
   gstbasesrc_class->unlock = GST_DEBUG_FUNCPTR (gst_shmdata_src_unlock);
   gstbasesrc_class->unlock_stop = GST_DEBUG_FUNCPTR (gst_shmdata_src_unlock_stop);
   gstbasesrc_class->get_caps = gst_shmdata_src_getcaps;
-  
+
   gstpush_src_class->create = gst_shmdata_src_create;
 
   g_object_class_install_property (gobject_class, PROP_SOCKET_PATH,
@@ -145,7 +146,7 @@ gst_shmdata_src_class_init (GstShmdataSrcClass * klass)
           G_MAXUINT64,
           0,
           G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
-  
+
   g_object_class_install_property (
       gobject_class,
       PROP_BUFFERS_SINCE_LAST_REQUEST,
@@ -157,7 +158,7 @@ gst_shmdata_src_class_init (GstShmdataSrcClass * klass)
           G_MAXUINT64,
           0,
           G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
-  
+
   g_object_class_install_property (
       gobject_class,
       PROP_COPY_BUFFERS,
@@ -165,7 +166,15 @@ gst_shmdata_src_class_init (GstShmdataSrcClass * klass)
                             "False if buffers from shared memory are used into the pipeline",
                             FALSE,
                             G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
-  
+
+  g_object_class_install_property (
+      gobject_class,
+      PROP_CONNECTED,
+      g_param_spec_boolean ("connected", "connection status to the server",
+                            "False if disconnected, true otherwise",
+                            FALSE,
+                            G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+
   gst_element_class_add_pad_template (gstelement_class,
                                       gst_static_pad_template_get (&srctemplate));
 
@@ -186,6 +195,7 @@ gst_shmdata_src_init (GstShmdataSrc *self)
   self->caps = NULL;
   self->on_data = FALSE;
   self->copy_buffers = FALSE;
+  self->connected = FALSE;
   self->stop_read = FALSE;
   g_mutex_init(&self->on_data_mutex);
   g_cond_init (&self->on_data_cond);
@@ -267,10 +277,16 @@ gst_shmdata_src_get_property (GObject * object, guint prop_id,
     case PROP_COPY_BUFFERS:
       g_value_set_boolean (value, self->copy_buffers);
       break;
+    case PROP_CONNECTED:
+      g_value_set_boolean (value, self->connected);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
   }
+}
+static void notify_connection(void* object) {
+  g_object_notify(G_OBJECT(object), "connected");
 }
 
 void gst_shmdata_src_on_server_connect(void *user_data, const char *type_descr) {
@@ -281,6 +297,14 @@ void gst_shmdata_src_on_server_connect(void *user_data, const char *type_descr) 
   self->caps = gst_caps_from_string(type_descr);
   if (NULL != self->caps)
     self->has_new_caps = TRUE;
+  self->connected = TRUE;
+  g_idle_add((GSourceFunc)notify_connection, self);
+}
+
+void gst_shmdata_src_on_server_disconnect(void *user_data) {
+  GstShmdataSrc *self = GST_SHMDATA_SRC (user_data);
+  self->connected = FALSE;
+  g_idle_add((GSourceFunc)notify_connection, self);
 }
 
 
@@ -299,17 +323,17 @@ gst_shmdata_src_start_reading (GstShmdataSrc * self)
   self->is_first_read = TRUE;
 
 
-  self->shmlogger = shmdata_make_logger(&gst_shmdata_on_error, 
-                                        &gst_shmdata_on_critical, 
-                                        &gst_shmdata_on_warning, 
-                                        &gst_shmdata_on_message, 
-                                        &gst_shmdata_on_info, 
-                                        &gst_shmdata_on_debug, 
-                                        self); 
+  self->shmlogger = shmdata_make_logger(&gst_shmdata_on_error,
+                                        &gst_shmdata_on_critical,
+                                        &gst_shmdata_on_warning,
+                                        &gst_shmdata_on_message,
+                                        &gst_shmdata_on_info,
+                                        &gst_shmdata_on_debug,
+                                        self);
   self->shmfollower = shmdata_make_follower(self->socket_path,
                                             &gst_shmdata_src_on_data,
                                             &gst_shmdata_src_on_server_connect,
-                                            NULL, //&on_server_disconnect,
+                                            &gst_shmdata_src_on_server_disconnect,
                                             self,
                                             self->shmlogger);
   GST_OBJECT_UNLOCK (self);
@@ -362,26 +386,26 @@ static void gst_shmdata_src_on_data(void *user_data, void *data, size_t size) {
   self->on_data = TRUE;
   g_cond_broadcast (&self->on_data_cond);
   g_mutex_unlock (&self->on_data_mutex);
-  g_mutex_lock (&self->data_rendered_mutex); 
+  g_mutex_lock (&self->data_rendered_mutex);
   while(!self->data_rendered)  // spurious wake
     g_cond_wait (&self->data_rendered_cond, &self->data_rendered_mutex);
   self->data_rendered = FALSE;
-  g_mutex_unlock (&self->data_rendered_mutex); 
+  g_mutex_unlock (&self->data_rendered_mutex);
 }
 
 static void gst_shmdata_src_on_data_rendered(gpointer user_data){
-  GstShmdataSrc *self = GST_SHMDATA_SRC (user_data); 
-  g_mutex_lock (&self->data_rendered_mutex); 
+  GstShmdataSrc *self = GST_SHMDATA_SRC (user_data);
+  g_mutex_lock (&self->data_rendered_mutex);
   self->data_rendered = TRUE;
-  g_cond_broadcast(&self->data_rendered_cond); 
-  g_mutex_unlock (&self->data_rendered_mutex); 
+  g_cond_broadcast(&self->data_rendered_cond);
+  g_mutex_unlock (&self->data_rendered_mutex);
 }
 
 static void gst_shmdata_src_make_data_rendered(GstShmdataSrc *self){
   g_mutex_lock (&self->data_rendered_mutex);
   self->data_rendered = TRUE;
-  g_cond_broadcast(&self->data_rendered_cond); 
-  g_mutex_unlock (&self->data_rendered_mutex); 
+  g_cond_broadcast(&self->data_rendered_cond);
+  g_mutex_unlock (&self->data_rendered_mutex);
 }
 
 static GstFlowReturn
@@ -423,7 +447,7 @@ gst_shmdata_src_create (GstPushSrc *psrc, GstBuffer **outbuf)
     gst_object_unref(pad);
   }
   if(!self->copy_buffers){
-    *outbuf = gst_buffer_new_wrapped_full (GST_MEMORY_FLAG_READONLY, 
+    *outbuf = gst_buffer_new_wrapped_full (GST_MEMORY_FLAG_READONLY,
                                            self->current_data,
                                            self->current_size,
                                            0,
@@ -431,9 +455,9 @@ gst_shmdata_src_create (GstPushSrc *psrc, GstBuffer **outbuf)
                                            self,
                                            gst_shmdata_src_on_data_rendered);
   } else {
-    void *data = malloc(self->current_size); 
+    void *data = malloc(self->current_size);
     memcpy(data,  self->current_data, self->current_size);
-    *outbuf = gst_buffer_new_wrapped_full (GST_MEMORY_FLAG_READONLY, 
+    *outbuf = gst_buffer_new_wrapped_full (GST_MEMORY_FLAG_READONLY,
                                            data,
                                            self->current_size,
                                            0,
@@ -507,7 +531,7 @@ gst_shmdata_src_getcaps (GstBaseSrc * src, GstCaps * filter)
 {
   GstShmdataSrc *shmdatasrc;
   GstCaps *caps, *result;
-  
+
   shmdatasrc = GST_SHMDATA_SRC (src);
 
   GST_OBJECT_LOCK (src);
