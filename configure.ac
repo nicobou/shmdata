@@ -135,9 +135,9 @@ if test "x${have_gmodule}" = "xfalse" ; then
 fi
 
 #shmdata
-PKG_CHECK_MODULES(SHMDATA, shmdata-1.2, have_shmdata=true, have_shmdata=false)
+PKG_CHECK_MODULES(SHMDATA, shmdata-1.3, have_shmdata=true, have_shmdata=false)
 if test "x${have_shmdata}" = "xfalse" ; then
-    AC_MSG_ERROR([Missing libshmdata-1.2 development files])
+    AC_MSG_ERROR([Missing libshmdata-1.3 development files])
 fi
 
 #gsoap
