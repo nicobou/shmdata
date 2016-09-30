@@ -50,13 +50,13 @@ def parse_version_number(lib, version_regex):
     return version
 
 
-def increase_version_number(version, version_increase):
+def increase_version_number(version, version_increase, force_bugfix_version=0):
     if version:
         if version_increase == 1:
             version[1] = 0
-            version[2] = 0
+            version[2] = force_bugfix_version
         if version_increase == 2:
-            version[2] = 0
+            version[2] = force_bugfix_version
         version[version_increase - 1] += 1
     else:
         printerr('Invalid version number, cannot proceed to increase it.')
@@ -255,7 +255,7 @@ if __name__ == '__main__':
     assert git_checkout(working_branch) == 0, 'Could not checkout branch {}'.format(working_branch)
     version_develop = list(version_release)
     if version_increase == 3:
-        version_develop = increase_version_number(version_develop, version_increase)
+        version_develop = increase_version_number(version_develop, version_increase, 1)
     commit_version_number(lib, version_develop, version_regex)
     git_tag('{}.{}.{}'.format(version_develop[0], version_develop[1], version_develop[2]))
     assert git_push(remote_repo, working_branch) == 0, 'Failed to push branch {} into {}/{}'.format(working_branch, remote_repo, working_branch)
