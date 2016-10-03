@@ -13,9 +13,11 @@ fi
 
 # order by number of commits
 git log --format='%aN' | \
-    sed 's/Francois/François/' | \
+    sed 's/Francois/François/' | \
+    sed 's/François/François/' | \
     sed 's/nicolas/Nicolas Bouillot/' | \
     grep -v metalab | \
+    grep -v 4d3d3d3 | \
     sort | \
     uniq -c | sort -bgr | \
     sed 's/\ *[0-9]*\ /\* /' > ${AUTHORS}
