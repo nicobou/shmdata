@@ -1,5 +1,5 @@
 AC_PREREQ([2.61])
-AC_INIT(shmdata, [1.3.0], [https://github.com/sat-metalab/libshmdata/issues], [shmdata], [https://github.com/sat-metalab/libshmdata])
+AC_INIT(shmdata, [1.3.2], [https://github.com/sat-metalab/libshmdata/issues], [shmdata], [https://github.com/sat-metalab/libshmdata])
 #AC_CONFIG_MACRO_DIR([m4])
 AC_MSG_NOTICE([Configuring libshmdata])
 AM_INIT_AUTOMAKE([subdir-objects -Wno-portability])
@@ -20,7 +20,7 @@ AC_CANONICAL_HOST # fills $host variable
 AC_SUBST([LIBSHMDATA_SO_VERSION], [6:0:0])
 
 # The version of the API. Should be major.minor and not change until not backward-compatible
-AC_SUBST([LIBSHMDATA_API_VERSION], [1.2])
+AC_SUBST([LIBSHMDATA_API_VERSION], [1.3])
 
 # -- checks for programs --
 AC_PROG_CXX

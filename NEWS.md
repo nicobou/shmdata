@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.2 (2016-10-03)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* fix minor release
+
 shmdata 1.3.0 (2016-09-30)
 ---------------------------
 This is an official release in the 1.3 stable series.
