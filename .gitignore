@@ -102,6 +102,7 @@ switcher/classes.cxx
 test-driver
 tests/.deps/
 tests/.libs/
+tests/check_bundle
 tests/check_description_by_class
 tests/check_fake_shmdata_writer
 tests/check_fakesink

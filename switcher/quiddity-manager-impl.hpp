@@ -166,6 +166,7 @@ class QuiddityManager_Impl {
   QuiddityManager* get_root_manager() { return manager_; };
 
  private:
+  std::map<std::string, std::unique_ptr<QuiddityDocumentation>> bundle_docs_{};
   InfoTree::ptr configurations_{};
   std::unordered_map<std::string, PluginLoader::ptr> plugins_{};
   std::string name_{};
