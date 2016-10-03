@@ -237,12 +237,12 @@ bool NVencPlugin::on_shmdata_disconnect() {
   shm_.reset(nullptr);
   shmw_.reset(nullptr);
 
-  pmanage<MPtr(&PContainer::enable)>(devices_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(presets_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(profiles_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(codecs_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(max_width_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(max_height_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(devices_id_);
+  pmanage<MPtr(&PContainer::enable)>(presets_id_);
+  pmanage<MPtr(&PContainer::enable)>(profiles_id_);
+  pmanage<MPtr(&PContainer::enable)>(codecs_id_);
+  pmanage<MPtr(&PContainer::enable)>(max_width_id_);
+  pmanage<MPtr(&PContainer::enable)>(max_height_id_);
 
   return true;
 }
@@ -256,12 +256,12 @@ bool NVencPlugin::on_shmdata_connect(const std::string& shmpath) {
       [this](void* data, size_t size) { this->on_shmreader_data(data, size); },
       [this](const std::string& data_descr) { this->on_shmreader_server_connected(data_descr); }));
 
-  pmanage<MPtr(&PContainer::enable)>(devices_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(presets_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(profiles_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(codecs_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(max_width_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(max_height_id_, false);
+  pmanage<MPtr(&PContainer::disable)>(devices_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&PContainer::disable)>(presets_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&PContainer::disable)>(profiles_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&PContainer::disable)>(codecs_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&PContainer::disable)>(max_width_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&PContainer::disable)>(max_height_id_, ShmdataConnector::disabledWhenConnectedMsg);
 
   return true;
 }

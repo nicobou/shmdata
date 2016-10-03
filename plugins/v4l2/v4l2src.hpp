@@ -22,8 +22,6 @@
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
-#include "switcher/gst-video-codec.hpp"
-#include "switcher/gst-video-codec.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/unique-gst-element.hpp"
@@ -47,8 +45,8 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
 
   static bool is_v4l_device(const char* file);
 
-  bool inspect_file_device(const char* file_path);
-  bool check_folder_for_v4l2_devices(const char* dir_path);
+  bool inspect_file_device(const std::string& file_path);
+  bool check_folder_for_v4l2_devices();
 
  private:
   typedef struct {
@@ -56,6 +54,7 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
     std::string card_{};
     std::string file_device_{};
     std::string bus_info_{};
+    std::string device_id_{};  // (defaulting to bus info)
     std::string driver_{};
     std::vector<std::tuple<uint32_t /*fourcc pixel format*/,
                            std::string /*name*/,
@@ -91,11 +90,13 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   const std::string enc_suffix_{"video-encoded"};
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
-  std::unique_ptr<GstVideoCodec> codecs_{nullptr};
 
   // devices list:
   Selection<> devices_enum_{{"none"}, 0};
   PContainer::prop_id_t devices_id_{0};
+  Selection<> save_device_enum_{{"port", "device"}, 0};
+  PContainer::prop_id_t save_device_id_{0};
+  bool is_loading_{false};  // device selection will be disabled manually during load
 
   // pixet format
   Selection<> pixel_format_enum_{{"none"}, 0};
@@ -106,6 +107,17 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   Selection<> resolutions_enum_{{"none"}, 0};
   PContainer::prop_id_t resolutions_id_{0};
   // width height for the currently selected device
+  Selection<Fraction> custom_resolutions_{
+      {"3840x2160", "1920x1080", "1280x720", "800x600", "640x480", "320x240", "Custom"},
+      {Fraction(3840, 2160),
+       Fraction(1920, 1080),
+       Fraction(1280, 720),
+       Fraction(800, 600),
+       Fraction(640, 480),
+       Fraction(320, 240),
+       Fraction(-1, -1)},
+      1};
+  PContainer::prop_id_t custom_resolutions_id_{0};
   gint width_{0};
   PContainer::prop_id_t width_id_{0};
   gint height_{0};
@@ -122,8 +134,21 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   PContainer::prop_id_t framerates_enum_id_{0};
 
   // width height for the currently selected device
-  Fraction framerate_{30, 1};
-  PContainer::prop_id_t framerate_id_{0};
+  Selection<Fraction> standard_framerates_{
+      {"60", "59.94", "50", "30", "29.97", "25", "24", "23.976", "Custom"},
+      {Fraction(60, 1),
+       Fraction(2997, 50),  // 59.94
+       Fraction(50, 1),
+       Fraction(30, 1),
+       Fraction(2997, 100),
+       Fraction(25, 1),
+       Fraction(24, 1),
+       Fraction(2997, 125),  // 23.976
+       Fraction(-1, -1)},
+      3};  // default to 30 fps
+  PContainer::prop_id_t standard_framerates_id_{0};
+  Fraction custom_framerate_{30, 1};
+  PContainer::prop_id_t custom_framerate_id_{0};
 
   // grouping of capture device configuration
   PContainer::prop_id_t group_id_{0};
@@ -132,6 +157,10 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   bool start() final;
   bool stop() final;
   bool init() final;
+  InfoTree::ptr on_saving() final;
+  void on_loading(InfoTree::ptr&& tree) final;
+  void on_loaded() final;
+
   bool configure_capture();
   bool remake_elements();
 
@@ -146,10 +175,14 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   void update_discrete_framerate();
   void update_framerate_numerator_denominator();
   void update_pixel_format();
-  static std::string pixel_format_to_string(unsigned pf_id);
   bool is_current_pixel_format_raw_video() const;
   void set_shm_suffix();
   void on_gst_error(GstObject*, GError* err);
+  void set_device_id(const std::string& file_path, const std::string& id);
+
+  static std::string pixel_format_to_string(unsigned pf_id);
+  static std::vector<std::string> get_file_names_with_prefix(const std::string& dir_path,
+                                                             const std::string& prefix);
   // copy/paste from gstv4l2object.c for converting v4l2 pixel formats
   // to GstStructure (and then caps)
   static GstStructure* gst_v4l2_object_v4l2fourcc_to_structure(guint32 fourcc);

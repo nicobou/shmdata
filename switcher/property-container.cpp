@@ -65,11 +65,24 @@ bool PContainer::remove(prop_id_t prop_id) {
   return true;
 }
 
-bool PContainer::enable(prop_id_t prop_id, bool enable) {
+bool PContainer::enable(prop_id_t prop_id) {
   const auto& it = strids_.find(prop_id);
   if (strids_.end() == it) return false;
   auto key = std::string("property.") + it->second + ".enabled";
-  tree_->graft(key, InfoTree::make(enable));
+  tree_->graft(key, InfoTree::make(true));
+  auto why_key = std::string("property.") + it->second + ".why_disabled";
+  tree_->graft(why_key, InfoTree::make(""));
+  if (on_tree_grafted_cb_) on_tree_grafted_cb_(key);
+  return true;
+}
+
+bool PContainer::disable(prop_id_t prop_id, const std::string& why) {
+  const auto& it = strids_.find(prop_id);
+  if (strids_.end() == it) return false;
+  auto key = std::string("property.") + it->second + ".enabled";
+  tree_->graft(key, InfoTree::make(false));
+  auto why_key = std::string("property.") + it->second + ".why_disabled";
+  tree_->graft(why_key, InfoTree::make(why));
   if (on_tree_grafted_cb_) on_tree_grafted_cb_(key);
   return true;
 }
@@ -563,6 +576,7 @@ std::unique_lock<std::mutex> PContainer::get_lock(prop_id_t id) {
 }
 
 void PContainer::notify(prop_id_t id) { props_.find(id)->second->notify(); }
+void PContainer::set_to_current(prop_id_t id) { props_.find(id)->second->set_to_current(); }
 
 void PContainer::update_values_in_tree() const {
   for (auto& it : props_) it.second->update_value_in_spec();
@@ -570,6 +584,25 @@ void PContainer::update_values_in_tree() const {
 
 void PContainer::update_value_in_tree(prop_id_t id) const {
   props_.find(id)->second->update_value_in_spec();
+}
+
+PContainer::prop_id_t PContainer::make_color(const std::string& strid,
+                                             Property2<Color>::set_cb_t set,
+                                             Property2<Color>::get_cb_t get,
+                                             const std::string& label,
+                                             const std::string& description,
+                                             const Color& default_value) {
+  return make_under_parent<Color>(strid, "", set, get, label, description, default_value);
+}
+
+PContainer::prop_id_t PContainer::make_parented_color(const std::string& strid,
+                                                      const std::string& parent_strid,
+                                                      Property2<Color>::set_cb_t set,
+                                                      Property2<Color>::get_cb_t get,
+                                                      const std::string& label,
+                                                      const std::string& description,
+                                                      const Color& default_value) {
+  return make_under_parent<Color>(strid, parent_strid, set, get, label, description, default_value);
 }
 
 }  // namespace switcher

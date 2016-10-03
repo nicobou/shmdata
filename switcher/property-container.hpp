@@ -76,7 +76,8 @@ class PContainer {
   // ----------- add/remove/update (you should prefer makers for adding)
 
   bool remove(prop_id_t prop_id);
-  bool enable(prop_id_t prop_id, bool enable);
+  bool enable(prop_id_t prop_id);
+  bool disable(prop_id_t prop_id, const std::string& why);
   prop_id_t push(const std::string& strid, std::unique_ptr<PropertyBase>&& prop_ptr);
   prop_id_t push_parented(const std::string& strid,
                           const std::string& parent_strid,
@@ -87,6 +88,7 @@ class PContainer {
   // instance)
   std::unique_lock<std::mutex> get_lock(prop_id_t prop_id);
   void notify(prop_id_t prop_id);
+  void set_to_current(prop_id_t id);
   void update_value_in_tree(prop_id_t prop) const;
   void update_values_in_tree() const;
 
@@ -399,6 +401,21 @@ class PContainer {
                                    Fraction::ator_t min_denom,
                                    Fraction::ator_t max_num,
                                    Fraction::ator_t max_denom);
+
+  prop_id_t make_color(const std::string& strid,
+                       prop::set_t<Color> set,
+                       prop::get_t<Color> get,
+                       const std::string& label,
+                       const std::string& description,
+                       const Color& default_value);
+
+  prop_id_t make_parented_color(const std::string& strid,
+                                const std::string& parent_strid,
+                                prop::set_t<Color> set,
+                                prop::get_t<Color> get,
+                                const std::string& label,
+                                const std::string& description,
+                                const Color& default_value);
 
   template <typename T>
   prop_id_t make_tuple(const std::string& strid,

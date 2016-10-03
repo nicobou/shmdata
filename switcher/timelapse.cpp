@@ -184,15 +184,15 @@ bool Timelapse::init() {
 
 bool Timelapse::on_shmdata_disconnect(const std::string& shmpath) {
   std::unique_lock<std::mutex> lock(timelapse_mtx_);
-  pmanage<MPtr(&PContainer::enable)>(img_name_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(img_name_id_);
   if (!stop_timelapse(shmpath)) return false;
-  if (timelapse_.size() == 1) pmanage<MPtr(&PContainer::enable)>(img_name_id_, true);
+  if (timelapse_.size() == 1) pmanage<MPtr(&PContainer::enable)>(img_name_id_);
   return true;
 }
 
 bool Timelapse::on_shmdata_disconnect_all() {
   std::unique_lock<std::mutex> lock(timelapse_mtx_);
-  pmanage<MPtr(&PContainer::enable)>(img_name_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(img_name_id_);
   timelapse_.clear();
   return true;
 }
@@ -200,7 +200,7 @@ bool Timelapse::on_shmdata_disconnect_all() {
 bool Timelapse::on_shmdata_connect(const std::string& shmpath) {
   std::unique_lock<std::mutex> lock(timelapse_mtx_);
   if (timelapse_.size() == 1) {
-    pmanage<MPtr(&PContainer::enable)>(img_name_id_, false);
+    pmanage<MPtr(&PContainer::disable)>(img_name_id_, ShmdataConnector::disabledWhenConnectedMsg);
     img_name_.clear();
   }
   return start_timelapse(shmpath);

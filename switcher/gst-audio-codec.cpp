@@ -22,6 +22,7 @@
 #include "switcher/gst-utils.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/scope-exit.hpp"
+#include "switcher/startable-quiddity.hpp"
 
 namespace switcher {
 GstAudioCodec::GstAudioCodec(Quiddity* quid)
@@ -45,14 +46,15 @@ GstAudioCodec::GstAudioCodec(Quiddity* quid)
 
 void GstAudioCodec::hide() {
   quid_->disable_method("reset");
-  quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_, false);
-  quid_->pmanage<MPtr(&PContainer::enable)>(group_codec_id_, false);
+  quid_->pmanage<MPtr(&PContainer::disable)>(codec_id_, StartableQuiddity::disabledWhenStartedMsg);
+  quid_->pmanage<MPtr(&PContainer::disable)>(group_codec_id_,
+                                             StartableQuiddity::disabledWhenStartedMsg);
 }
 
 void GstAudioCodec::show() {
   quid_->enable_method("reset");
-  quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_, true);
-  quid_->pmanage<MPtr(&PContainer::enable)>(group_codec_id_, true);
+  quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_);
+  quid_->pmanage<MPtr(&PContainer::enable)>(group_codec_id_);
 }
 
 void GstAudioCodec::make_bin() {
@@ -96,9 +98,13 @@ void GstAudioCodec::uninstall_codec_properties() {
 }
 
 void GstAudioCodec::toggle_codec_properties(bool enable) {
-  for (auto& it : codec_properties_)
-    quid_->pmanage<MPtr(&PContainer::enable)>(quid_->pmanage<MPtr(&PContainer::get_id)>(it),
-                                              enable);
+  for (auto& it : codec_properties_) {
+    if (enable)
+      quid_->pmanage<MPtr(&PContainer::enable)>(quid_->pmanage<MPtr(&PContainer::get_id)>(it));
+    else
+      quid_->pmanage<MPtr(&PContainer::disable)>(quid_->pmanage<MPtr(&PContainer::get_id)>(it),
+                                                 StartableQuiddity::disabledWhenStartedMsg);
+  }
 }
 
 void GstAudioCodec::make_codec_properties() {

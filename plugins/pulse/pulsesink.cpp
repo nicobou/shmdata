@@ -312,7 +312,7 @@ bool PulseSink::can_sink_caps(const std::string& caps) {
 };
 
 bool PulseSink::on_shmdata_disconnect() {
-  pmanage<MPtr(&PContainer::enable)>(devices_enum_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(devices_enum_id_);
   prune_tree(".shmdata.reader." + shmpath_);
   shm_sub_.reset();
   On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };
@@ -320,7 +320,7 @@ bool PulseSink::on_shmdata_disconnect() {
 }
 
 bool PulseSink::on_shmdata_connect(const std::string& shmpath) {
-  pmanage<MPtr(&PContainer::enable)>(devices_enum_id_, false);
+  pmanage<MPtr(&PContainer::disable)>(devices_enum_id_, ShmdataConnector::disabledWhenConnectedMsg);
   shmpath_ = shmpath;
   g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   if (!devices_.empty())

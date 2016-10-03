@@ -16,16 +16,19 @@
  */
 
 #include "./v4l2src.hpp"
+#include <errno.h>
 #include <fcntl.h>
 #include <gst/video/video.h>
 #include <linux/videodev2.h>
 #include <string.h>
 #include <sys/ioctl.h>
-#include <cstdlib>  // For srand() and rand()
-#include <ctime>    // For time()
+#include <cstdlib>   // For srand() and rand()
+#include <ctime>     // For time()
+#include "switcher/file-utils.hpp"
 #include "switcher/gst-utils.hpp"
 #include "switcher/quiddity-manager-impl.hpp"
 #include "switcher/scope-exit.hpp"
+#include "switcher/shmdata-utils.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(V4L2Src,
@@ -61,7 +64,7 @@ void V4L2Src::set_shm_suffix() {
 bool V4L2Src::init() {
   if (!v4l2src_ || !capsfilter_ || !shmsink_) return false;
   // device inspector
-  check_folder_for_v4l2_devices("/dev");
+  check_folder_for_v4l2_devices();
   update_capture_device();
 
   if (capture_devices_.empty()) {
@@ -71,6 +74,7 @@ bool V4L2Src::init() {
   devices_id_ =
       pmanage<MPtr(&PContainer::make_selection<>)>("device",
                                                    [this](const size_t& val) {
+                                                     if (is_loading_) return false;
                                                      devices_enum_.select(val);
                                                      update_device_specific_properties();
                                                      return true;
@@ -82,8 +86,18 @@ bool V4L2Src::init() {
   group_id_ = pmanage<MPtr(&PContainer::make_group)>(
       "config", "Capture device configuration", "device specific parameters");
   update_device_specific_properties();
-  codecs_ =
-      std::make_unique<GstVideoCodec>(static_cast<Quiddity*>(this), make_file_name(raw_suffix_));
+  pmanage<MPtr(&PContainer::make_group)>("advanced", "Advanced configuration", "Advanced configuration");
+  save_device_id_ =
+      pmanage<MPtr(&PContainer::make_parented_selection<>)>("save_mode",
+                                                          "advanced",
+                                                          [this](const size_t& val) {
+                                                            save_device_enum_.select(val);
+                                                            return true;
+                                                          },
+                                                          [this]() { return save_device_enum_.get(); },
+                                                          "Save Mode",
+                                                          "Save Capture Device by",
+                                                          save_device_enum_);
   set_shm_suffix();
   return true;
 }
@@ -315,7 +329,6 @@ void V4L2Src::update_pixel_format() {
       [this](const size_t& val) {
         pixel_format_enum_.select(val);
         set_shm_suffix();
-        if (!is_current_pixel_format_raw_video()) codecs_->set_none();
         g_debug("pix selected");
         fetch_available_resolutions();
         update_discrete_resolution();
@@ -332,14 +345,38 @@ void V4L2Src::update_pixel_format() {
 
 void V4L2Src::update_width_height() {
   CaptureDescription& cap_descr = capture_devices_[devices_enum_.get()];
+  pmanage<MPtr(&PContainer::remove)>(custom_resolutions_id_);
+  custom_resolutions_id_ = 0;
   pmanage<MPtr(&PContainer::remove)>(width_id_);
   width_id_ = 0;
   pmanage<MPtr(&PContainer::remove)>(height_id_);
   height_id_ = 0;
 
   if (cap_descr.frame_size_stepwise_max_width_ < 1) return;
+  resolutions_id_ = pmanage<MPtr(&PContainer::make_parented_selection<Fraction>)>(
+      "custom_resolution",
+      "config",
+      [this](size_t val) {
+        custom_resolutions_.select(val);
+        if (custom_resolutions_.get_current() == "Custom") {
+          pmanage<MPtr(&PContainer::enable)>(width_id_);
+          pmanage<MPtr(&PContainer::enable)>(height_id_);
+          return true;
+        }
+        auto fract = custom_resolutions_.get_attached();
+        pmanage<MPtr(&PContainer::set<int>)>(width_id_, fract.numerator());
+        pmanage<MPtr(&PContainer::set<int>)>(height_id_, fract.denominator());
+        static const std::string why_disconnected =
+            "this property is available only with custom resolution";
+        pmanage<MPtr(&PContainer::disable)>(width_id_, why_disconnected);
+        pmanage<MPtr(&PContainer::disable)>(height_id_, why_disconnected);
+        return true;
+      },
+      [this]() { return custom_resolutions_.get(); },
+      "Resolutions",
+      "Select resolutions",
+      custom_resolutions_);
 
-  width_ = cap_descr.frame_size_stepwise_max_width_ / 2;
   width_id_ =
       pmanage<MPtr(&PContainer::make_parented_int)>("width",
                                                     "config",
@@ -355,7 +392,6 @@ void V4L2Src::update_width_height() {
                                                     width_,
                                                     cap_descr.frame_size_stepwise_min_width_,
                                                     cap_descr.frame_size_stepwise_max_width_);
-  height_ = cap_descr.frame_size_stepwise_max_height_ / 2;
   height_id_ =
       pmanage<MPtr(&PContainer::make_parented_int)>("height",
                                                     "config",
@@ -373,30 +409,51 @@ void V4L2Src::update_width_height() {
                                                     cap_descr.frame_size_stepwise_max_height_);
 
   fetch_available_frame_intervals();
-  pmanage<MPtr(&PContainer::set<int>)>(width_id_, width_);
-  pmanage<MPtr(&PContainer::set<int>)>(height_id_, height_);
+  pmanage<MPtr(&PContainer::set_to_current)>(resolutions_id_);
 }
 
 void V4L2Src::update_framerate_numerator_denominator() {
   CaptureDescription& cap_descr = capture_devices_[devices_enum_.get()];
-  pmanage<MPtr(&PContainer::remove)>(framerate_id_);
-  framerate_id_ = 0;
+  pmanage<MPtr(&PContainer::remove)>(standard_framerates_id_);
+  pmanage<MPtr(&PContainer::remove)>(custom_framerate_id_);
+  standard_framerates_id_ = 0;
+  custom_framerate_id_ = 0;
   if (cap_descr.frame_interval_stepwise_max_numerator_ < 1) return;
-  framerate_id_ =
+  standard_framerates_id_ = pmanage<MPtr(&PContainer::make_parented_selection<Fraction>)>(
+      "standard_framerates",
+      "config",
+      [this](const size_t& val) {
+        standard_framerates_.select(val);
+        if (standard_framerates_.get_current() == "Custom") {
+          pmanage<MPtr(&PContainer::enable)>(custom_framerate_id_);
+          return true;
+        }
+        auto fract = standard_framerates_.get_attached();
+        pmanage<MPtr(&PContainer::set<Fraction>)>(custom_framerate_id_, fract);
+        static const std::string why_disconnected =
+            "this property is available only with custom frame rate";
+        pmanage<MPtr(&PContainer::disable)>(custom_framerate_id_, why_disconnected);
+        return true;
+      },
+      [this]() { return standard_framerates_.get(); },
+      "Standard Framerates",
+      "Standard and Custom Framerates",
+      standard_framerates_);
+  custom_framerate_id_ =
       pmanage<MPtr(&PContainer::make_parented_fraction)>("framerate",
                                                          "config",
                                                          [this](const Fraction& val) {
-                                                           framerate_ = val;
+                                                           custom_framerate_ = val;
                                                            return true;
                                                          },
-                                                         [this]() { return framerate_; },
+                                                         [this]() { return custom_framerate_; },
                                                          "Framerate",
                                                          "Capture framerate",
-                                                         framerate_,
+                                                         custom_framerate_,
                                                          1,
                                                          1,
-                                                         120,
-                                                         120);
+                                                         2997,
+                                                         125);
 }
 
 void V4L2Src::update_tv_standard() {
@@ -416,7 +473,7 @@ void V4L2Src::update_tv_standard() {
       },
       [this]() { return tv_standards_enum_.get(); },
       "TV standard",
-      "TV standard of selected capture devices",
+      "TV standard",
       tv_standards_enum_);
 }
 
@@ -442,22 +499,57 @@ std::string V4L2Src::pixel_format_to_string(unsigned pf_id) {
   return pixfmt;
 }
 
-bool V4L2Src::inspect_file_device(const char* file_path) {
-  int fd = open(file_path, O_RDONLY);
+void V4L2Src::set_device_id(const std::string& file_path, const std::string& id) {
+  // reading the device file for inspecting capability
+  int fd = open(file_path.c_str(), O_RDONLY);
+  if (fd < 0) {
+    int err = errno;
+    g_warning("v4l2Src: error while trying to set device id (%s)", strerror(err));
+    return;
+  }
+  On_scope_exit { close(fd); };
+
+  struct v4l2_capability vcap;
+  if (-1 == ioctl(fd, VIDIOC_QUERYCAP, &vcap)) {
+    int err = errno;
+    g_warning("error while trying to get video capture device id (%s)", strerror(err));
+    return;
+  }
+  const auto bus_info = std::string((char*)vcap.bus_info);
+  auto it = std::find_if(
+      capture_devices_.begin(), capture_devices_.end(), [&](const CaptureDescription& desc) {
+        return bus_info == desc.bus_info_;
+      });
+  if (capture_devices_.end() == it) {
+    g_warning(
+        "BUG: trying to set device id, the device at %s seems to be a video device, but not listed "
+        "internally",
+        file_path.c_str());
+    return;
+  }
+  it->device_id_ = id;
+}
+
+bool V4L2Src::inspect_file_device(const std::string& file_path) {
+  int fd = open(file_path.c_str(), O_RDONLY);
   if (fd < 0) {
     g_debug("V4L2Src: inspecting file gets negative file descriptor");
     return false;
   }
-
   On_scope_exit { close(fd); };
 
   CaptureDescription description;
   description.absolute_path_ = file_path;
   struct v4l2_capability vcap;
-  ioctl(fd, VIDIOC_QUERYCAP, &vcap);
+  if (-1 == ioctl(fd, VIDIOC_QUERYCAP, &vcap)) {
+    int err = errno;
+    g_warning("error while trying to get video capture device id (%s)", strerror(err));
+    return false;
+  }
   description.file_device_ = file_path;
   description.card_ = (char*)vcap.card;
   description.bus_info_ = (char*)vcap.bus_info;
+  description.device_id_ = description.bus_info_;
   description.driver_ = (char*)vcap.driver;
   // g_print ("-------------------------- card %s bus %s driver %s\n",
   //        (char *)vcap.card,
@@ -493,7 +585,7 @@ bool V4L2Src::inspect_file_device(const char* file_path) {
   }
 
   if (default_pixel_format == 0) {
-    g_debug("no default pixel format found for %s, returning", file_path);
+    g_debug("no default pixel format found for %s, returning", file_path.c_str());
     return false;
   }
 
@@ -512,30 +604,32 @@ bool V4L2Src::inspect_file_device(const char* file_path) {
   return true;
 }
 
-bool V4L2Src::check_folder_for_v4l2_devices(const char* dir_path) {
-  GFile* inspected_dir = g_file_new_for_commandline_arg(dir_path);
-  gboolean res;
+std::vector<std::string> V4L2Src::get_file_names_with_prefix(const std::string& dir_path,
+                                                             const std::string& prefix) {
+  std::vector<std::string> res;
+  GFile* inspected_dir = g_file_new_for_commandline_arg(dir_path.c_str());
+  On_scope_exit { g_object_unref(inspected_dir); };
   GError* error;
   GFileEnumerator* enumerator;
   GFileInfo* info;
   error = nullptr;
   enumerator = g_file_enumerate_children(
       inspected_dir, "*", G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr, &error);
-  if (!enumerator) return false;
+  if (!enumerator) return res;
   error = nullptr;
   info = g_file_enumerator_next_file(enumerator, nullptr, &error);
   while ((info) && (!error)) {
     GFile* descend = g_file_get_child(inspected_dir, g_file_info_get_name(info));
-    char* absolute_path = g_file_get_path(descend);
+    char* filename = g_file_get_basename(descend);
     On_scope_exit {
-      if (nullptr != absolute_path) g_free(absolute_path);
+      if (nullptr != filename) g_free(filename);
     };
-    if (g_str_has_prefix(absolute_path, "/dev/video")
-        /*|| g_str_has_prefix (absolute_path, "/dev/radio")
-          || g_str_has_prefix (absolute_path, "/dev/vbi")
-          || g_str_has_prefix (absolute_path, "/dev/vtx") */
-        ) {
-      inspect_file_device(absolute_path);
+    if (prefix.empty()) {
+      res.push_back(filename);
+    } else {
+      if (g_str_has_prefix(filename, prefix.c_str())) {
+        res.push_back(filename);
+      }
     }
     g_object_unref(descend);
     error = nullptr;
@@ -543,10 +637,22 @@ bool V4L2Src::check_folder_for_v4l2_devices(const char* dir_path) {
   }
   if (error != nullptr) g_debug("error not nullptr");
   error = nullptr;
-  res = g_file_enumerator_close(enumerator, nullptr, &error);
-  if (res != TRUE) g_debug("V4L2Src: file enumerator not properly closed");
+  if (g_file_enumerator_close(enumerator, nullptr, &error) != TRUE)
+    g_debug("V4L2Src: file enumerator not properly closed");
   if (error != nullptr) g_debug("V4L2Src: error not nullptr");
-  g_object_unref(inspected_dir);
+  return res;
+}
+
+bool V4L2Src::check_folder_for_v4l2_devices() {
+  auto files = get_file_names_with_prefix("/dev/", "video");
+  if (files.empty()) {
+    g_warning("not v4l2 device found");
+    return false;
+  }
+  for (auto& it : files) inspect_file_device("/dev/" + it);
+
+  auto files_by_id = get_file_names_with_prefix("/dev/v4l/by-id/", {});
+  for (auto& it : files_by_id) set_device_id("/dev/v4l/by-id/" + it, it);
   return true;
 }
 
@@ -569,17 +675,15 @@ bool V4L2Src::start() {
       ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_));
 
   gst_pipeline_->play(true);
-  if (!is_current_pixel_format_raw_video()) codecs_->set_none();
-  codecs_->start();
-  pmanage<MPtr(&PContainer::enable)>(devices_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(group_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(resolutions_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(width_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(height_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(tv_standards_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(framerates_enum_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(framerate_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(pixel_format_id_, false);
+  pmanage<MPtr(&PContainer::disable)>(devices_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(group_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(resolutions_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(width_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(height_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(tv_standards_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(framerates_enum_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(custom_framerate_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(pixel_format_id_, disabledWhenStartedMsg);
   return true;
 }
 
@@ -589,16 +693,15 @@ bool V4L2Src::stop() {
   remake_elements();
   gst_pipeline_ = std::make_unique<GstPipeliner>(
       nullptr, nullptr, [this](GstObject* gstobj, GError* err) { on_gst_error(gstobj, err); });
-  codecs_->stop();
-  pmanage<MPtr(&PContainer::enable)>(devices_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(group_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(resolutions_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(width_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(height_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(tv_standards_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(framerates_enum_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(framerate_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(pixel_format_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(devices_id_);
+  pmanage<MPtr(&PContainer::enable)>(group_id_);
+  pmanage<MPtr(&PContainer::enable)>(resolutions_id_);
+  pmanage<MPtr(&PContainer::enable)>(width_id_);
+  pmanage<MPtr(&PContainer::enable)>(height_id_);
+  pmanage<MPtr(&PContainer::enable)>(tv_standards_id_);
+  pmanage<MPtr(&PContainer::enable)>(framerates_enum_id_);
+  pmanage<MPtr(&PContainer::enable)>(custom_framerate_id_);
+  pmanage<MPtr(&PContainer::enable)>(pixel_format_id_);
   return true;
 }
 
@@ -634,9 +737,9 @@ bool V4L2Src::configure_capture() {
            capture_devices_[devices_enum_.get()]
                .frame_interval_discrete_[framerates_enum_.get()]
                .first.c_str();
-  else if (0 != framerate_id_) {
-    caps = caps + ", framerate=(fraction)" + std::to_string(framerate_.numerator()) + "/" +
-           std::to_string(framerate_.denominator());
+  else if (0 != custom_framerate_id_) {
+    caps = caps + ", framerate=(fraction)" + std::to_string(custom_framerate_.numerator()) + "/" +
+           std::to_string(custom_framerate_.denominator());
   }
   g_debug("caps for v4l2src %s", caps.c_str());
   GstCaps* usercaps = gst_caps_from_string(caps.c_str());
@@ -816,5 +919,50 @@ void V4L2Src::on_gst_error(GstObject*, GError* err) {
   g_message("ERROR:camera error %s", err->message);
   self_destruct();
 }
+
+InfoTree::ptr V4L2Src::on_saving() {
+  auto res = InfoTree::make();
+  CaptureDescription& desc = capture_devices_[devices_enum_.get()];
+  res->graft(".device_id", InfoTree::make(desc.device_id_));
+  res->graft(".bus_id", InfoTree::make(desc.bus_info_));
+  std::string save_mode = save_device_enum_.get() == 0 ? "port" : "device";
+  res->graft(".save_by", InfoTree::make(save_mode));
+  return res;
+}
+
+void V4L2Src::on_loading(InfoTree::ptr&& tree) {
+  if (!tree || tree->empty()) {
+    g_warning("loading deprecated v4l2src device save: devices may swap");
+    return;
+  }
+  std::string device_id = tree->branch_read_data<std::string>(".device_id");
+  std::string bus_id = tree->branch_read_data<std::string>(".bus_id");
+  std::string save_mode = tree->branch_read_data<std::string>(".save_by");
+  if (save_mode == "port") {
+    auto it = std::find_if(
+        capture_devices_.begin(), capture_devices_.end(), [&](const CaptureDescription& capt) {
+          return capt.bus_info_ == bus_id;
+        });
+    if (capture_devices_.end() == it)
+      g_warning("v4l2src; device not found at this port %s", bus_id.c_str());
+    else
+      pmanage<MPtr(&PContainer::set<Selection<>::index_t>)>(devices_id_,
+                                                            it - capture_devices_.begin());
+      } else {  // save by device
+    auto it = std::find_if(
+        capture_devices_.begin(), capture_devices_.end(), [&](const CaptureDescription& capt) {
+          return capt.device_id_ == device_id;
+        });
+    if (capture_devices_.end() == it)
+      g_warning("v4l2src; device not found (%s)", device_id.c_str());
+    else
+      pmanage<MPtr(&PContainer::set<Selection<>::index_t>)>(devices_id_,
+                                                            it - capture_devices_.begin());
+  }
+  // this is locking device change from property:
+  is_loading_ = true;
+}
+
+void V4L2Src::on_loaded() { is_loading_ = false; }
 
 }  // namespace switcher

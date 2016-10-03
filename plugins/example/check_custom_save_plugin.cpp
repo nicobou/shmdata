@@ -32,6 +32,7 @@
 int main() {
   {
     using namespace switcher;
+
     QuiddityManager::ptr manager = QuiddityManager::make_manager("test_manager");
 #ifdef HAVE_CONFIG_H
     gchar* usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
@@ -41,24 +42,34 @@ int main() {
     return 1;
 #endif
 
-    assert(QuiddityBasicTest::test_full(manager, "dummy"));
+    assert(QuiddityBasicTest::test_full(manager, "custom-save"));
+    manager->reset_command_history(true);
 
     // creating a "myplugin" quiddity
-    assert(manager->create("dummy", "test") == "test");
+    assert(manager->create("custom-save", "test") == "test");
+    assert(manager->create("dummy", "dummy") == "dummy");  // dummy does not use custom state save
+    auto has_loaded_id = manager->use_prop<MPtr(&PContainer::get_id)>(
+        "test", std::string("has_loaded_custom_state"));
+    auto has_saved_id =
+        manager->use_prop<MPtr(&PContainer::get_id)>("test", std::string("has_saved_custom_state"));
+    assert(!manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_loaded_id));
+    assert(!manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_saved_id));
 
-    assert(manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "0A93D8FF"));
-    assert(!manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "0A93D8"));
-    assert(!manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "GGGGGGGGGG"));
-    assert(!manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "0000000T"));
+    // saving the custom state
+    auto save = manager->get_serialized_command_history();
+    assert(!save.empty());
+    assert(!manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_loaded_id));
+    assert(manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_saved_id));
 
-    // testing hello-world method
-    std::string* res = nullptr;
-    assert(manager->invoke_va("test", "hello-world", &res, "Nico", nullptr));
-    assert(*res == "hello Nico");
-    delete res;
+    // reset manager
+    manager->reset_command_history(true);
 
-    // removing the quiddity
-    assert(manager->remove("test"));
+    // load the saved file
+    manager->play_command_history(
+        manager->get_command_history_from_serialization(save), nullptr, nullptr, true);
+    assert(manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_loaded_id));
+    assert(!manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_saved_id));
+
   }  // end of scope is releasing the manager
   return 0;
 }

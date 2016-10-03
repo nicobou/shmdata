@@ -2,7 +2,7 @@ dnl required version of autoconf
 AC_PREREQ([2.53])
 
 dnl package name and package version
-AC_INIT([switcher],[0.8.26])
+AC_INIT([switcher],[0.8.28])
 
 dnl required version of gstreamer and gst-plugins-base
 GST_REQUIRED=1.0.0
@@ -134,9 +134,9 @@ if test "x${have_gmodule}" = "xfalse" ; then
 fi
 
 #shmdata
-PKG_CHECK_MODULES(SHMDATA, shmdata-1.2, have_shmdata=true, have_shmdata=false)
+PKG_CHECK_MODULES(SHMDATA, shmdata-1.3, have_shmdata=true, have_shmdata=false)
 if test "x${have_shmdata}" = "xfalse" ; then
-    AC_MSG_ERROR([Missing libshmdata-1.2 development files])
+    AC_MSG_ERROR([Missing libshmdata-1.3 development files])
 fi
 
 #gsoap
@@ -243,10 +243,10 @@ dnl AM_CONDITIONAL(PJSIPBUILD, test "${PJSIPBUILD}" = "enabled")
 
 
 # check for gtk (compatible with gstreamer sdk)
-PKG_CHECK_MODULES(GTK, gtk+-2.0, have_gtk=true, have_gtk=false)
+PKG_CHECK_MODULES(GTK, gtk+-3.0, have_gtk=true, have_gtk=false)
 if test "x${have_gtk}" = "xfalse" ; then
     GTKBUILD=disabled
-    AC_MSG_WARN([Missing libgtk2.0-dev package, gtk fullscreen video will not be built])
+    AC_MSG_WARN([Missing libgtk3.0-dev package, gtk fullscreen video will not be built])
 else
     GTKBUILD=enabled
 fi

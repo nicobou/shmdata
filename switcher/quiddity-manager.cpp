@@ -121,13 +121,23 @@ void QuiddityManager::play_command_history(QuiddityManager::CommandHistory histo
 
   if (debug) g_print("start playing history\n");
 
-  // creating quiddities
+  // making quiddities
   if (histo.quiddities_) {
     auto quids = histo.quiddities_->get_child_keys(".");
+    // creating quiddities
     for (auto& it : quids) {
       std::string quid_class = histo.quiddities_->branch_get_value(it);
       if (it != create(quid_class, it)) {
         g_warning("error creating quiddity %s (of type %s)", it.c_str(), quid_class.c_str());
+      }
+    }
+    // loading custom state
+    for (auto& it : quids) {
+      if (!manager_impl_->has_instance(it)) continue;
+      if (histo.custom_states_ && !histo.custom_states_->empty()) {
+        manager_impl_->get_quiddity(it)->on_loading(histo.custom_states_->get_tree(it));
+      }  else {
+        manager_impl_->get_quiddity(it)->on_loading(InfoTree::make());
       }
     }
   }
@@ -211,6 +221,15 @@ void QuiddityManager::play_command_history(QuiddityManager::CommandHistory histo
       }
     }
   }
+
+  // on_loaded
+  if (histo.quiddities_) {
+    auto quids = histo.quiddities_->get_child_keys(".");
+    for (auto& it : quids) {
+      if (!manager_impl_->has_instance(it)) continue;
+      manager_impl_->get_quiddity(it)->on_loaded();
+    }
+  }
 }
 
 std::vector<std::string> QuiddityManager::get_signal_subscribers_names(
@@ -218,6 +237,30 @@ std::vector<std::string> QuiddityManager::get_signal_subscribers_names(
   std::vector<std::string> res;
   for (auto& it : histo.history_)
     if (it->id_ == QuiddityCommand::make_signal_subscriber) res.push_back(it->args_[0]);
+  return res;
+}
+
+QuiddityManager::CommandHistory QuiddityManager::get_command_history_from_serialization(
+    const std::string& save) {
+  CommandHistory res;
+  // building the tree
+  auto tree = JSONSerializer::deserialize(save);
+  if (!tree) {
+    g_warning("saved history is malformed");
+    return res;
+  }
+  // history
+  auto histo_str = std::string("history.");
+  auto commands_paths = tree->get_child_keys(histo_str);
+  for (auto& it : commands_paths) {
+    res.history_.push_back(QuiddityCommand::make_command_from_tree(tree->get_tree(histo_str + it)));
+  }
+  // trees
+  res.quiddities_user_data_ = tree->get_tree("userdata.");
+  res.quiddities_ = tree->get_tree(".quiddities");
+  res.properties_ = tree->get_tree(".properties");
+  res.readers_ = tree->get_tree(".readers");
+  res.custom_states_ = tree->get_tree(".custom_states");
   return res;
 }
 
@@ -241,43 +284,10 @@ QuiddityManager::CommandHistory QuiddityManager::get_command_history_from_file(
   file_str.reserve(size);
   file_stream.seekg(0, std::ios::beg);
   file_str.assign((std::istreambuf_iterator<char>(file_stream)), std::istreambuf_iterator<char>());
-  // building the tree
-  auto tree = JSONSerializer::deserialize(file_str);
-  if (!tree) {
-    g_warning("saved history cannot be constructed from file %s", file_path);
-    return res;
-  }
-  // history
-  auto histo_str = std::string("history.");
-  auto commands_paths = tree->get_child_keys(histo_str);
-  for (auto& it : commands_paths) {
-    res.history_.push_back(QuiddityCommand::make_command_from_tree(tree->get_tree(histo_str + it)));
-  }
-  // trees
-  res.quiddities_user_data_ = tree->get_tree("userdata.");
-  res.quiddities_ = tree->get_tree(".quiddities");
-  res.properties_ = tree->get_tree(".properties");
-  res.readers_ = tree->get_tree(".readers");
-  return res;
+  return get_command_history_from_serialization(file_str);
 }
 
-bool QuiddityManager::save_command_history(const char* file_path) const {
-  GFile* file = g_file_new_for_commandline_arg(file_path);
-  On_scope_exit { g_object_unref(file); };
-  GError* error = nullptr;
-  GFileOutputStream* file_stream = g_file_replace(file,
-                                                  nullptr,
-                                                  TRUE,  // make backup
-                                                  G_FILE_CREATE_NONE,
-                                                  nullptr,
-                                                  &error);
-  On_scope_exit { g_object_unref(file_stream); };
-  if (error != nullptr) {
-    g_warning("%s", error->message);
-    g_error_free(error);
-    return false;
-  }
-
+std::string QuiddityManager::get_serialized_command_history() const {
   auto quiddities = manager_impl_->get_instances();
   for (auto& it : quiddities_at_reset_) {
     auto tmp = std::find(quiddities.begin(), quiddities.end(), it);
@@ -285,7 +295,7 @@ bool QuiddityManager::save_command_history(const char* file_path) const {
   }
   if (quiddities.empty()) {
     g_warning("nothing to save");
-    return false;
+    return {};
   }
 
   InfoTree::ptr tree = InfoTree::make();
@@ -303,6 +313,11 @@ bool QuiddityManager::save_command_history(const char* file_path) const {
     // name and class
     auto quid_class = manager_impl_->get_quiddity(quid_name)->get_documentation()->get_class_name();
     tree->graft(quid_str + quid_name, InfoTree::make(quid_class));
+    // saving custom tree if some is provided
+    auto custom_tree = manager_impl_->get_quiddity(quid_name)->on_saving();
+    if (custom_tree && !custom_tree->empty())
+      tree->graft(".custom_states." + quid_name, std::move(custom_tree));
+
     // user data
     auto quid_user_data_tree = user_data<MPtr(&InfoTree::get_tree)>(quid_name, ".");
     if (!quid_user_data_tree->empty()) {
@@ -334,9 +349,36 @@ bool QuiddityManager::save_command_history(const char* file_path) const {
     }
     tree->tag_as_array(".readers." + quid_name, true);
   }
+  // calling on_saved callback
+  for (auto& quid_name : quiddities) {
+    manager_impl_->get_quiddity(quid_name)->on_saved();
+  }
+
+  return JSONSerializer::serialize(tree.get());
+}
+
+bool QuiddityManager::save_command_history(const char* file_path) const {
+  GFile* file = g_file_new_for_commandline_arg(file_path);
+  On_scope_exit { g_object_unref(file); };
+  GError* error = nullptr;
+  GFileOutputStream* file_stream = g_file_replace(file,
+                                                  nullptr,
+                                                  TRUE,  // make backup
+                                                  G_FILE_CREATE_NONE,
+                                                  nullptr,
+                                                  &error);
+  On_scope_exit { g_object_unref(file_stream); };
+  if (error != nullptr) {
+    g_warning("%s", error->message);
+    g_error_free(error);
+    return false;
+  }
+
+  auto histo = get_serialized_command_history();
+  if (histo.empty()) return false;
 
   // saving the save tree to the file
-  gchar* history = g_strdup(JSONSerializer::serialize(tree.get()).c_str());
+  gchar* history = g_strdup(histo.c_str());
   g_output_stream_write(
       (GOutputStream*)file_stream, history, sizeof(gchar) * strlen(history), nullptr, &error);
   g_free(history);

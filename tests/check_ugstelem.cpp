@@ -39,6 +39,17 @@ int main() {
     elem2 = std::move(elem1);
     if (elem1 || !elem2) return 1;
   }
+  {
+    UGstElem elem("tee");
+    bool success = false;
+    if (!elem.register_notify_on_property_change("name", [&success]() { success = !success; }))
+      return 1;
+    g_object_set(G_OBJECT(elem.get_raw()), "name", "test_name", nullptr);
+    assert(success);
+    if (!elem.unregister_notify_on_property_change("name")) return 1;
+    g_object_set(G_OBJECT(elem.get_raw()), "name", "test_name_changed", nullptr);
+    assert(success);
+  }
   gst_deinit();
   return 0;
 }

@@ -73,8 +73,15 @@ bool ShmdataToJack::init() {
       [this](const bool& val) {
         auto_connect_ = val;
         update_port_to_connect();
-        pmanage<MPtr(&PContainer::enable)>(connect_to_id_, auto_connect_);
-        pmanage<MPtr(&PContainer::enable)>(index_id_, auto_connect_);
+        if (auto_connect_) {
+          pmanage<MPtr(&PContainer::enable)>(connect_to_id_);
+          pmanage<MPtr(&PContainer::enable)>(index_id_);
+        } else {
+          static const std::string why_disabled =
+              "this property is available only when auto connect is enabled";
+          pmanage<MPtr(&PContainer::disable)>(connect_to_id_, why_disabled);
+          pmanage<MPtr(&PContainer::disable)>(index_id_, why_disabled);
+        }
         return true;
       },
       [this]() { return auto_connect_; },
@@ -263,9 +270,9 @@ bool ShmdataToJack::start() {
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), audiobin_);
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
-  pmanage<MPtr(&PContainer::enable)>(auto_connect_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(connect_to_id_, false);
-  pmanage<MPtr(&PContainer::enable)>(index_id_, false);
+  pmanage<MPtr(&PContainer::disable)>(auto_connect_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&PContainer::disable)>(connect_to_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&PContainer::disable)>(index_id_, ShmdataConnector::disabledWhenConnectedMsg);
   connect_ports();
   return true;
 }
@@ -279,9 +286,9 @@ bool ShmdataToJack::stop() {
                                         GPropToProp::to_prop(G_OBJECT(volume_), "volume"));
     if (!make_elements()) return false;
   }
-  pmanage<MPtr(&PContainer::enable)>(auto_connect_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(connect_to_id_, true);
-  pmanage<MPtr(&PContainer::enable)>(index_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(auto_connect_id_);
+  pmanage<MPtr(&PContainer::enable)>(connect_to_id_);
+  pmanage<MPtr(&PContainer::enable)>(index_id_);
   return true;
 }
 

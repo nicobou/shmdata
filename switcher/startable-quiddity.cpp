@@ -22,6 +22,11 @@
 
 namespace switcher {
 
+const std::string StartableQuiddity::disabledWhenStartedMsg =
+    "this property is disabled in started state";
+const std::string StartableQuiddity::disabledWhenStopedMsg =
+    "this property is disabled in stopped state";
+
 void StartableQuiddity::init_startable(void* quiddity) {
   Quiddity* quid = static_cast<Quiddity*>(quiddity);
   quid->pmanage<MPtr(&PContainer::make_bool)>("started",

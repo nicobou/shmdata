@@ -25,6 +25,9 @@
 
 namespace switcher {
 
+const std::string ShmdataConnector::disabledWhenConnectedMsg =
+    "this property is disabled when a stream is connected";
+
 ShmdataConnector::ShmdataConnector(Quiddity* quid) : quid_(quid) {}
 
 bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,

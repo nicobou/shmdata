@@ -48,6 +48,7 @@ class PropertyBase {
   virtual bool set_str(const std::string& val, bool do_notify = true) const = 0;
   virtual std::string get_str() const = 0;
   virtual std::unique_lock<std::mutex> get_lock() = 0;
+  virtual bool set_to_current() = 0;
 
   prop_id_t get_id() const;
   register_id_t subscribe(notify_cb_t fun) const;
@@ -116,6 +117,8 @@ class Property2 : public PropertyBase {
     std::unique_lock<std::mutex> lock(ts_);
     return get_();
   }
+
+  bool set_to_current() { return set(get()); }
 
   bool set_str(const std::string& val, bool do_notify = true) const {
     auto deserialized = deserialize::apply<W>(val);

@@ -22,6 +22,7 @@
 
 #include <cstdint>
 #include <map>
+#include <string>
 
 namespace switcher {
 namespace NetUtils {

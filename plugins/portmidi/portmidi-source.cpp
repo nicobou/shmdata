@@ -60,7 +60,7 @@ bool PortMidiSource::init() {
                                            0,
                                            0,
                                            127);
-  pmanage<MPtr(&PContainer::enable)>(last_midi_value_id_, false);
+  pmanage<MPtr(&PContainer::disable)>(last_midi_value_id_, disabledWhenStopedMsg);
 
   install_method("Next MIDI Event To Property",                                 // long name
                  "next_midi_event_to_property",                                 // name
@@ -118,9 +118,9 @@ bool PortMidiSource::init() {
 }
 
 bool PortMidiSource::start() {
-  pmanage<MPtr(&PContainer::enable)>(devices_id_, false);
+  pmanage<MPtr(&PContainer::disable)>(devices_id_, disabledWhenStartedMsg);
   open_input_device(std::stoi(input_devices_enum_.get_attached()), on_pm_event, this);
-  pmanage<MPtr(&PContainer::enable)>(last_midi_value_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(last_midi_value_id_);
   enable_method("next_midi_event_to_property");
   enable_method("remove_midi_property");
   enable_method("map_midi_to_property");
@@ -129,11 +129,11 @@ bool PortMidiSource::start() {
 
 bool PortMidiSource::stop() {
   close_input_device(std::stoi(input_devices_enum_.get_attached()));
-  pmanage<MPtr(&PContainer::enable)>(last_midi_value_id_, false);
+  pmanage<MPtr(&PContainer::disable)>(last_midi_value_id_, disabledWhenStopedMsg);
   disable_method("next_midi_event_to_property");
   disable_method("remove_midi_property");
   disable_method("map_midi_to_property");
-  pmanage<MPtr(&PContainer::enable)>(devices_id_, true);
+  pmanage<MPtr(&PContainer::enable)>(devices_id_);
   return true;
 }
 

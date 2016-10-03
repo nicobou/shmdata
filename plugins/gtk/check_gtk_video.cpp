@@ -24,6 +24,7 @@
 #include "switcher/quiddity-basic-test.hpp"
 #include "switcher/quiddity-manager.hpp"
 
+#include <gdk/gdk.h>
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
@@ -40,10 +41,15 @@ int main() {
     return 1;
 #endif
 
-    // creating a "myplugin" quiddity
-    if (manager->create("gtkvideosink", "win").compare("win") != 0) {
-      // cannot create gtk window, stoping the test
+    if (!gdk_display_get_default()) {
+      // probably launched from ssh, could not find a display
       return 0;
+    }
+
+    // creating a "myplugin" quiddity
+    if (manager->create("gtkwin", "win") != "win") {
+      // cannot create gtk window, stopping the test
+      return 1;
     }
 
     // creating a video source quiddity
@@ -58,7 +64,7 @@ int main() {
     if (!manager->invoke_va("win", "connect", nullptr, "/tmp/switcher_gtktest_vid_video", nullptr))
       return 1;
 
-    // usleep (10000000);
+    usleep(500000);
 
     // removing quiddities
     if (!manager->remove("win")) return 1;

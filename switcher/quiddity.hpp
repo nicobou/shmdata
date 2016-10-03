@@ -53,7 +53,7 @@ class Quiddity {
   friend class GstVideoCodec;
   friend class GstAudioCodec;
   friend class ShmdataDecoder;
-  friend class ShmdataStat;
+  friend struct ShmdataStat;
 
  public:
   typedef std::shared_ptr<Quiddity> ptr;
@@ -67,6 +67,12 @@ class Quiddity {
 
   // class initialisation
   virtual bool init() = 0;
+
+  // save/load quiddity state
+  virtual InfoTree::ptr on_saving();
+  virtual void on_saved();
+  virtual void on_loading(InfoTree::ptr&& tree);
+  virtual void on_loaded();
 
   // instance name
   std::string get_name() const;
@@ -155,6 +161,7 @@ class Quiddity {
   JSONBuilder::ptr signals_description_;
 
   // naming
+  static const size_t nameMaxSize{20};
   std::string name_{};
 
   std::mutex self_destruct_mtx_{};

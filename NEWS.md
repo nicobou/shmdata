@@ -2,6 +2,36 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.28 (2016-10-03)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* Using shmdata version 1.3,
+* Adding empty quiddity for saving independant user tree,
+* Custom framerates in v4l2src and videotestsrc,
+* Videotestsrc and v4l2src do not compress,
+* Add a mechanism to force the set callback of a property,
+* Adding a message in infotree that tells why a property has been disabled,
+* Sdd color property type,
+* V4l2src is saving devices either by port, or by device id,
+* Per quiddity custom state saving,
+* Update INSTALL.md with additional Nvidia details,
+* Added a mechanism to add a notification callback to a gstreamer property,
+* Notify the information tree when a gtk window gets the focus,
+* Porting from GTK2 to GTK3.
+
+Bug fixes:
+* Fixed version numbering when minor or major version update,
+* Fix missing spaces in INSTALL.md,
+* Fix gtk3 warning message during configure,
+* Fix default video encoder cannot handle full HD,
+* Fix quid issue with long names,
+* Fix SIP remote contact added even if call is refused,
+* Clear all artifacts when stopping or disconnecting the source from a gtk window or when rotating the image,
+* Clang doesn't accept to friend "class" something defined as a struct. Fixed OSX build,
+* Move include to fix build on OSX.
+
 switcher 0.8.26 (2016-09-12)
 ---------------------------
 This is an official release in the 0.8 stable series.

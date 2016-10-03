@@ -17,31 +17,20 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_STARTABLE_QUIDDITY_H__
-#define __SWITCHER_STARTABLE_QUIDDITY_H__
-
-#include <string>
+#include "./empty-quiddity.hpp"
 
 namespace switcher {
-class StartableQuiddity {
- public:
-  StartableQuiddity() = default;
-  virtual ~StartableQuiddity() = default;
-  StartableQuiddity(const StartableQuiddity&) = delete;
-  StartableQuiddity& operator=(const StartableQuiddity&) = delete;
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(EmptyQuiddity,
+                                     "emptyquid",
+                                     "Empty Quiddity",
+                                     "utils",
+                                     "",
+                                     "Quiddity for user data saving",
+                                     "LGPL",
+                                     "Nicolas Bouillot");
 
-  static const std::string disabledWhenStartedMsg;
-  static const std::string disabledWhenStopedMsg;
+EmptyQuiddity::EmptyQuiddity(const std::string&) {}
 
- protected:
-  void init_startable(void* quiddity);  // FIXME find a way to avoid invoking init_startable (this)
-                                        // in quiddities (policies)
-  bool is_started() const;
+bool EmptyQuiddity::init() { return true; }
 
- private:
-  virtual bool start() = 0;
-  virtual bool stop() = 0;
-  bool __started_{false};
-};
 }  // namespace switcher
-#endif

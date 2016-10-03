@@ -17,31 +17,43 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_STARTABLE_QUIDDITY_H__
-#define __SWITCHER_STARTABLE_QUIDDITY_H__
+#ifndef __SWITCHER_COLOR_H__
+#define __SWITCHER_COLOR_H__
 
+#include <iostream>
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace switcher {
-class StartableQuiddity {
+class Color {
  public:
-  StartableQuiddity() = default;
-  virtual ~StartableQuiddity() = default;
-  StartableQuiddity(const StartableQuiddity&) = delete;
-  StartableQuiddity& operator=(const StartableQuiddity&) = delete;
+  using channel_t = uint8_t;
+  struct color_t {
+    color_t(channel_t r, channel_t g, channel_t b, channel_t a);
+    channel_t r{1};
+    channel_t g{1};
+    channel_t b{1};
+    channel_t a{1};
+  };
+  Color() = delete;
+  Color(channel_t r, channel_t g, channel_t b, channel_t a);
+  color_t get() const;
+  channel_t red() const;
+  channel_t green() const;
+  channel_t blue() const;
+  channel_t alpha() const;
+  std::string to_string() const;
+  static std::pair<bool, Color> from_string(const std::string&);
 
-  static const std::string disabledWhenStartedMsg;
-  static const std::string disabledWhenStopedMsg;
-
- protected:
-  void init_startable(void* quiddity);  // FIXME find a way to avoid invoking init_startable (this)
-                                        // in quiddities (policies)
-  bool is_started() const;
+  friend std::ostream& operator<<(std::ostream& out, const Color& color) {
+    out << color.to_string();
+    return out;
+  }
 
  private:
-  virtual bool start() = 0;
-  virtual bool stop() = 0;
-  bool __started_{false};
+  color_t color_;
 };
+
 }  // namespace switcher
 #endif

@@ -179,7 +179,12 @@ std::string Quiddity::get_name() const { return name_; }
 
 bool Quiddity::set_name(const std::string& name) {
   if (!name_.empty()) return false;
-  name_ = name;
+  if (name.length() > nameMaxSize) {
+    name_ = std::string(name.begin(), name.begin() + nameMaxSize - 1);
+    g_warning("name %s truncated to max size (%lu) ", name_.c_str(), nameMaxSize);
+  } else {
+    name_ = name;
+  }
   information_tree_->graft(".type", InfoTree::make(get_documentation()->get_class_name()));
   return true;
 }
@@ -537,5 +542,13 @@ void Quiddity::self_destruct() {
   });
   thread.detach();
 }
+
+InfoTree::ptr Quiddity::on_saving() { return InfoTree::make(); };
+
+void Quiddity::on_saved(){};
+
+void Quiddity::on_loading(InfoTree::ptr&&){};
+
+void Quiddity::on_loaded(){};
 
 }  // namespace switcher

@@ -459,6 +459,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     g_debug("call refused from %s", peer_uri.c_str());
     pjsip_endpt_respond_stateless(
         PJSIP::this_->sip_endpt_, rdata, PJSIP_SC_BUSY_HERE, nullptr, nullptr, nullptr);
+    return;
   }
 
   // release existing incoming calls from this buddy
