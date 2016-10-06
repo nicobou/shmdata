@@ -73,7 +73,6 @@ class Timelapse : public Quiddity {
   // making dynamically configurable timelapse
   std::atomic_bool updated_config_{false};
   std::mutex timelapse_mtx_{};
-  std::future<void> fut_{};
 
   // tracking parameter changes and update timelapse pipeline
   PeriodicTask relaunch_task_;

@@ -25,6 +25,7 @@
 #include <streambuf>
 #include <string>
 
+#include "./bundle-description-parser.hpp"
 #include "./bundle.hpp"
 #include "./information-tree-json.hpp"
 #include "./quiddity-documentation.hpp"
@@ -721,6 +722,7 @@ bool QuiddityManager_Impl::load_configuration_file(const std::string& file_path)
   configurations_ = tree;
 
   // registering bundle(s) as creatable class
+  auto quid_types = abstract_factory_.get_keys();
   for (auto& it : configurations_->get_child_keys("bundle")) {
     std::string long_name = configurations_->branch_get_value("bundle." + it + ".doc.long_name");
     std::string category = configurations_->branch_get_value("bundle." + it + ".doc.category");
@@ -735,11 +737,19 @@ bool QuiddityManager_Impl::load_configuration_file(const std::string& file_path)
     if (description.empty()) is_missing = "description";
     if (pipeline.empty()) is_missing = "pipeline";
     if (!is_missing.empty()) {
-      g_warning("%s field is missing, cannot create new quiddity type (%s)",
-                is_missing.c_str(),
-                it.c_str());
+      g_warning("%s : %s field is missing, cannot create new quiddity type",
+                it.c_str(),
+                is_missing.c_str());
       continue;
     }
+    // check if the pipeline description is correct
+    auto spec = bundle::DescriptionParser(pipeline, quid_types);
+    if (!spec) {
+      g_warning(
+          "%s : error parsing the pipeline (%s)", it.c_str(), spec.get_parsing_error().c_str());
+      continue;
+    }
+    // ok, bundle can be added
     bundle_docs_.emplace(
         std::make_pair(it,
                        std::make_unique<QuiddityDocumentation>(
@@ -747,6 +757,8 @@ bool QuiddityManager_Impl::load_configuration_file(const std::string& file_path)
 
     abstract_factory_.register_class_with_custom_factory(
         it, bundle_docs_[it].get(), &bundle::create, &bundle::destroy);
+    // making the new bundle type available for next bundle definition:
+    quid_types.push_back(it);
   }
   make_classes_doc();
   return true;

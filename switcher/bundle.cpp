@@ -18,18 +18,25 @@
  */
 
 #include "./bundle.hpp"
+#include "./bundle-description-parser.hpp"
 
 namespace switcher {
 
-Bundle::Bundle(const std::string&) { g_print("%s \n", __FUNCTION__); }
+Bundle::Bundle(const std::string& name) : manager_(QuiddityManager::make_manager(name)) {}
 
 bool Bundle::init() {
   if (!config<MPtr(&InfoTree::branch_has_data)>("pipeline")) {
     g_warning("bundle description is missing the pipeline description");
     return false;
   }
-  g_print("pipeline to parse: %s\n",
-          config<MPtr(&InfoTree::branch_get_value)>("pipeline").copy_as<std::string>().c_str());
+  pipeline_ = config<MPtr(&InfoTree::branch_get_value)>("pipeline").copy_as<std::string>();
+  auto spec = bundle::DescriptionParser(pipeline_, std::vector<std::string>());
+  if (!spec) {
+    g_warning("%s : error parsing the pipeline (%s)",
+              doc_getter_()->get_class_name().c_str(),
+              spec.get_parsing_error().c_str());
+    return false;
+  }
   return true;
 }
 

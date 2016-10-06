@@ -20,6 +20,7 @@
 #ifndef __SWITCHER_BUNDLE_H__
 #define __SWITCHER_BUNDLE_H__
 
+#include "./quiddity-manager.hpp"
 #include "./quiddity.hpp"
 
 namespace switcher {
@@ -37,6 +38,7 @@ class Bundle : public Quiddity {
  private:
   std::string pipeline_{};
   doc_getter_t doc_getter_{};
+  QuiddityManager::ptr manager_{};
 };
 
 // wrappers for the abstract factory registration
