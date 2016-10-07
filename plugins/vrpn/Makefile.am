@@ -5,8 +5,7 @@ plugins_LTLIBRARIES = \
     libvrpnsink.la
 
 BUILT_SOURCES = \
-    vrpn-lib/build/libvrpn.a \
-    vrpn-lib/build/libvrpnserver.a
+    vrpn-lib/vrpn_Connection.h
 
 LIBVRPN_INCLUDE_DIR = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
@@ -34,7 +33,7 @@ LIBVRPN_CXX_FLAGS = \
     -I$(top_srcdir) \
     -I./vrpn-lib/
 
-vrpn-lib/build/libvrpn.a: Makefile
+vrpn-lib/vrpn_Connection.h: Makefile
 	cd vrpn-lib \
         && mkdir -p build \
         && cd build \

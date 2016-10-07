@@ -133,8 +133,8 @@ bool VRPNSink::start() {
 
   pmanage<MPtr(&PContainer::disable)>(port_id_, disabledWhenStartedMsg);
 
-  loopTask_ =
-      std::make_unique<PeriodicTask>([this]() { this->loop(); }, VRPNSink::vrpnLoopInterval);
+  loopTask_ = std::make_unique<PeriodicTask>([this]() { this->loop(); },
+                                             std::chrono::milliseconds(vrpnLoopInterval));
 
   g_debug("Started VRPN server");
 

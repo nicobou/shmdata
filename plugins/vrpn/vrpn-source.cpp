@@ -96,8 +96,8 @@ bool VRPNSource::start() {
   pmanage<MPtr(&PContainer::disable)>(host_id_, StartableQuiddity::disabledWhenStartedMsg);
 
   connection_->raw()->register_handler(vrpn_ANY_TYPE, handle_message, this, vrpn_ANY_SENDER);
-  loopTask_ =
-      std::make_unique<PeriodicTask>([this]() { this->loop(); }, VRPNSource::vrpnLoopInterval);
+  loopTask_ = std::make_unique<PeriodicTask>([this]() { this->loop(); },
+                                             std::chrono::milliseconds(vrpnLoopInterval));
 
   g_debug("Started VRPN connection");
 

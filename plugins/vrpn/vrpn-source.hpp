@@ -56,7 +56,7 @@ class VRPNSource : public Quiddity, public StartableQuiddity {
   bool stop() final;
 
   // VRPN
-  static constexpr std::chrono::milliseconds vrpnLoopInterval{16};
+  static const unsigned int vrpnLoopInterval{16};
   std::unique_ptr<VRPNClientConnection> connection_{};
   static int handle_message(void* userData, vrpn_HANDLERPARAM p);
   std::unique_ptr<PeriodicTask> loopTask_{};

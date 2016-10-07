@@ -62,7 +62,7 @@ class VRPNSink : public Quiddity, public StartableQuiddity {
   void on_shmreader_data(void* data, size_t data_size);
 
   // VRPN
-  static constexpr std::chrono::milliseconds vrpnLoopInterval{16};
+  static const unsigned int vrpnLoopInterval{16};
   std::unique_ptr<VRPNServerConnection> connection_{};
   std::unique_ptr<PeriodicTask> loopTask_{};
   void loop();
