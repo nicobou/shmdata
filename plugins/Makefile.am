@@ -1,6 +1,7 @@
 SUBDIRS= \
     example \
-    pjsip
+    pjsip \
+    vrpn
 
 if V4L2BUILD
 SUBDIRS += \

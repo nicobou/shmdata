@@ -12,8 +12,8 @@ dnl AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
 
 dnl required version of automake
-dnl 'foreign' allows for accepting README.md instead of README 
-AM_INIT_AUTOMAKE([foreign])  
+dnl 'foreign' allows for accepting README.md instead of README
+AM_INIT_AUTOMAKE([foreign])
 
 dnl enable mainainer mode by default
 dnl AM_MAINTAINER_MODE([enable])
@@ -55,7 +55,7 @@ AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
   AC_MSG_ERROR([You need to have pkg-config installed or set the PATH.])
 ])
 
-## for building syphon, but seems it must be call unconditionally 
+## for building syphon, but seems it must be call unconditionally
 AC_PROG_OBJCXX
 case "$host" in *-darwin* | *-macos10*)
   LIBTOOL="glibtool"
@@ -71,16 +71,16 @@ case "$host" in *-darwin* | *-macos10*)
     CXXFLAGS+=" -I/sw/include"
     LDFLAGS+=" -L/sw/lib"
   fi
-  
+
   have_osx=true;
   AM_CONDITIONAL([HAVE_OSX], test "true" = "true")
   AC_DEFINE(HAVE_OSX,[1],[Apple Mac OS X operating system detected])
-  
+
   # OSX does not include /usr/local/lib/pkgconfig path, so we export it here
   # (for everyone, just in case)
   PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
   export PKG_CONFIG_PATH
-  
+
   LDFLAGS+=" -fPIC -L/usr/local/lib"
   ;;
 *)
@@ -225,7 +225,7 @@ if test "x${have_jsonglib}" = "xfalse" ; then
     AC_MSG_ERROR([Missing libjson-glib-dev package])
 fi
 
-# check for v4l2 
+# check for v4l2
 AC_CHECK_HEADER(linux/videodev2.h,
                 V4L2BUILD=enabled,
                 [AC_MSG_WARN([v4l2 capture plugin will not be built (missing videodev2.h from package linux-libc-dev)])
@@ -298,7 +298,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
 ])
 
 AC_MSG_CHECKING([to see if compiler can expand variadic template in lambda])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[void do_nothing(int, double){} template<typename ...Args> void do_lambda(Args... args){ [&](){ do_nothing(args...); }(); } ]], 
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[void do_nothing(int, double){} template<typename ...Args> void do_lambda(Args... args){ [&](){ do_nothing(args...); }(); } ]],
 [[ do_lambda(1, 2.0); ]])], [
   AC_MSG_RESULT([yes])
 ], [
@@ -334,7 +334,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
   CXXFLAGS="$saved_CXXFLAGS"
   AC_MSG_RESULT([no])
 ])
-          
+
 dnl check if compiler understands -Weffc++ (if yes, add -Weffc++ to CFLAGS)
 dnl AC_MSG_CHECKING([to see if compiler understands -Weffc++])
 dnl saved_CXXFLAGS="$CXXFLAGS"
@@ -361,7 +361,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
 ])
 
 dnl clang++
-dnl check if compiler understands -Wno-error=return-type-c-linkage 
+dnl check if compiler understands -Wno-error=return-type-c-linkage
 dnl (if yes, add it to CFLAGS)
 dnl -Wno-error=return-typer-c-linkage is required for gsoap generated code compiling
 AC_MSG_CHECKING([to see if compiler understands -Wno-error=return-type-c-linkage])
@@ -376,7 +376,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
 ])
 
 dnl clang++
-dnl check if compiler understands -Wno-error=extra 
+dnl check if compiler understands -Wno-error=extra
 dnl (if yes, add it to CFLAGS)
 dnl -Wno-error=extra is required for gsoap generated code compiling
 AC_MSG_CHECKING([to see if compiler understands -Wno-error=extra])
@@ -405,7 +405,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
   CXXFLAGS="$saved_CXXFLAGS"
   AC_MSG_RESULT([no])
 ])
-                                          
+
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN";
     then AC_MSG_WARN([Doxygen not found - continuing without Doxygen support])
@@ -415,7 +415,7 @@ AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
 
 dnl testing if switcher can be built and add it to CONFIG_FILES if building
 SWITCHERBUILD=enabled
-if test "${OSCBUILD}" = "disabled"; 
+if test "${OSCBUILD}" = "disabled";
   then SWITCHERBUILD=disabled
 fi
 if test "${SOAPBUILD}" = "disabled";
@@ -494,6 +494,7 @@ plugins/syphonsrc/Makefile
 plugins/systemusage/Makefile
 plugins/v4l2/Makefile
 plugins/vnc/Makefile
+plugins/vrpn/Makefile
 ])
 AC_OUTPUT
 
@@ -508,7 +509,9 @@ AC_OUTPUT
 [echo "PortMidi                   ${PORTMIDIBUILD}"]
 [echo "Jack                       ${JACKBUILD}"]
 [echo "nvenc                      ${NVENCBUILD}"]
+[echo "SIP                        enabled"]
 [echo "syphon reader              ${SYPHONBUILD}"]
+[echo "VRPN                       enabled"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]
@@ -534,4 +537,3 @@ AC_OUTPUT
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]
-
