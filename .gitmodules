@@ -4,3 +4,4 @@
 [submodule "plugins/vrpn/vrpn-lib"]
 	path = plugins/vrpn/vrpn-lib
 	url = https://github.com/vrpn/vrpn.git
+	ignore = untracked
