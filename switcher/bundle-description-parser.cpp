@@ -18,7 +18,6 @@
  */
 
 #include "./bundle-description-parser.hpp"
-#include <iostream>
 #include <regex>
 
 namespace switcher {
@@ -26,6 +25,8 @@ namespace bundle {
 DescriptionParser::DescriptionParser(const std::string& description,
                                      const std::vector<std::string>& valid_types)
     : is_valid_(parse_description(description, valid_types)) {
+  if (!is_valid_) return;
+
   // check if placeholders in connections_ refer to existing quiddity
   for (auto& it : connections_) {
     std::string placeholder;
@@ -51,6 +52,19 @@ DescriptionParser::DescriptionParser(const std::string& description,
       is_valid_ = false;
       return;
     }
+  }
+
+  // read connections_ and feed data into quiddities_
+  for (auto& it : connections_) {
+    auto quid = std::find_if(quiddities_.begin(),
+                             quiddities_.end(),
+                             [&](const quiddity_spec_t& quid) { return it.src == quid.name; });
+    if (quid == quiddities_.end()) {
+      parsing_error_ = "BUG during analysis of connections";
+      is_valid_ = false;
+      return;
+    }
+    quid->connects_to_.push_back(it.sink);
   }
 }
 
@@ -124,6 +138,12 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
       continue;
     }
     if (*iter == shmr) {
+      if (!reader_quid_.empty()) {
+        std::string current = quid.name.empty() ? "an other unknown quiddity" : quid.name;
+        parsing_error_ = std::string("bundle description can get only one shmdata reader (") +
+                         reader_quid_ + " and " + current + " are labelled as shmreader)";
+        return false;
+      }
       quid.expose_shmr = true;
       continue;
     }
@@ -133,7 +153,22 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
     }
     if (!parse_param(*iter, quid)) return false;
   }
+
+  if (quiddities_.end() !=
+      std::find_if(quiddities_.begin(), quiddities_.end(), [&](const quiddity_spec_t& quiddity) {
+        return quiddity.name == quid.name;
+      })) {
+    parsing_error_ =
+        std::string("quiddity name ") + quid.name + " is not unique in bundle description";
+    return false;
+  }
+  if (quid.name.empty()) {
+    parsing_error_ =
+        std::string("quiddity name is missing for quiddity specified with type ") + quid.type;
+    return false;
+  }
   if (!previous_quid_.empty()) connections_.push_back(shm_connection_t(previous_quid_, quid.name));
+  if (quid.expose_shmr) reader_quid_ = quid.name;
   previous_quid_ = quid.name;
   quiddities_.push_back(quid);
   return true;
@@ -143,7 +178,8 @@ bool DescriptionParser::parse_param(const std::string& raw_param, quiddity_spec_
   std::string param = restore_space_in_quote(raw_param);
   std::regex rgx("\\w+=[^=]+");
   if (!std::regex_match(param, rgx)) {
-    parsing_error_ = std::string("wrong parameter syntax (expecting name=value, but got ") + param;
+    parsing_error_ =
+        std::string("wrong parameter syntax (expecting param_name=param_value, but got ") + param;
     return false;
   }
   auto equal_pos = param.find('=');

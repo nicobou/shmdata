@@ -28,7 +28,10 @@
 #include <vector>
 
 namespace switcher {
-template <typename T>
+
+class ThreadedWrapperVoid {};
+
+template <typename T = ThreadedWrapperVoid>
 class ThreadedWrapper {
  public:
   template <typename... Args>
@@ -168,6 +171,14 @@ class ThreadedWrapper {
     };
     do_sync_task(task);
     return res;
+  }
+
+  void wait_done() {
+    auto task = [&]() {
+      std::unique_lock<std::mutex> lock(this->task_done_m_);
+      this->task_done_cv_.notify_one();
+    };
+    do_sync_task(task);
   }
 
   template <typename R, typename std::enable_if<!std::is_same<void, R>::value>::type* = nullptr>

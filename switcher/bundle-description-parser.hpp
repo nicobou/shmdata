@@ -27,30 +27,31 @@
 
 namespace switcher {
 namespace bundle {
+struct quiddity_spec_t {
+  std::string type{};
+  std::string name{};
+  std::map<std::string, std::string> params{};
+  bool expose_shmr{false};
+  bool expose_shmw{false};
+  std::vector<std::string> connects_to_{};
+  std::vector<std::string> connected_to_{};
+};
+
+struct shm_connection_t {
+  shm_connection_t() = delete;
+  shm_connection_t(const std::string& sc, const std::string& sk) : src(sc), sink(sk){};
+  std::string src{};
+  std::string sink{};
+};
+
 class DescriptionParser : public SafeBoolIdiom {
- private:
-  struct quiddity_spec_t {
-    std::string type{};
-    std::string name{};
-    std::map<std::string, std::string> params{};
-    bool expose_shmr{false};
-    bool expose_shmw{false};
-  };
-
-  struct shm_connection_t {
-    shm_connection_t() = delete;
-    shm_connection_t(const std::string& sc, const std::string& sk) : src(sc), sink(sk){};
-    std::string src{};
-    std::string sink{};
-  };
-
  public:
   DescriptionParser() = delete;
   // if valid_types is empty, then no check is performed
   DescriptionParser(const std::string& description, const std::vector<std::string>& valid_types);
   std::string get_parsing_error() const { return parsing_error_; }
   std::vector<quiddity_spec_t> get_quiddities() const { return quiddities_; }
-  std::vector<shm_connection_t> get_connections() const { return connections_; }
+  std::string get_reader_quid() const { return reader_quid_; }
 
  private:
   std::string previous_quid_{};
@@ -58,6 +59,7 @@ class DescriptionParser : public SafeBoolIdiom {
   const std::string spaceReplacement{"__SPACE__"};
   std::vector<quiddity_spec_t> quiddities_{};
   std::vector<shm_connection_t> connections_{};
+  std::string reader_quid_{};
   bool is_valid_;
   bool parse_description(const std::string& description,
                          const std::vector<std::string>& valid_types);

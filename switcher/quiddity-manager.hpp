@@ -39,6 +39,7 @@
 
 namespace switcher {
 class QuiddityManager {
+  friend class Bundle;  // access to manager_impl_
  public:
   using ptr = std::shared_ptr<QuiddityManager>;
   struct CommandHistory {

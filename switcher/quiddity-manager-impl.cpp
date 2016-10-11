@@ -315,7 +315,10 @@ std::string QuiddityManager_Impl::create(const std::string& quiddity_class,
     });
     quiddity->set_configuration(configurations_->get_tree("bundle." + quiddity_class));
   } else {
-    if (configurations_) quiddity->set_configuration(configurations_->get_tree(quiddity_class));
+    if (configurations_) {
+      auto tree = configurations_->get_tree(quiddity_class);
+      if (tree) quiddity->set_configuration(configurations_->get_tree(quiddity_class));
+    }
   }
   quiddity->set_name(nick_name);
   if (!init_quiddity(quiddity)) {
