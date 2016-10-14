@@ -28,7 +28,7 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
                                      "audiotestsrc",
-                                     "Sine",
+                                     "Audio Test Source",
                                      "audio",
                                      "writer",
                                      "Creates audio test signals",
