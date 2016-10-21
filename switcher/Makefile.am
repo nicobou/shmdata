@@ -21,6 +21,8 @@ lib_LTLIBRARIES = \
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     audio-test-source.cpp \
+    bundle.cpp \
+    bundle-description-parser.cpp \
     categorizable.cpp \
     color.cpp \
     counter-map.cpp \
@@ -108,6 +110,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     abstract-factory_spec.hpp \
     any.hpp \
     audio-test-source.hpp \
+    bundle.hpp \
+    bundle-description-parser.hpp \
     categorizable.hpp \
     color.hpp \
     counter-map.hpp \

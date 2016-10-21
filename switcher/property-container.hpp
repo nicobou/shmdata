@@ -31,6 +31,7 @@
 
 namespace switcher {
 class PContainer {
+  friend class Bundle;  // replacing some methods like replace and delete
  public:
   using prop_id_t = PropertyBase::prop_id_t;
   using notify_cb_t = PropertyBase::notify_cb_t;
@@ -47,6 +48,8 @@ class PContainer {
   // return 0 if id is not found
   prop_id_t get_id(const std::string& id) const;
   std::string get_name(prop_id_t id) const;
+  std::map<std::string, prop_id_t> get_ids() const;
+  std::map<prop_id_t, std::string> get_names() const;
 
   register_id_t subscribe(prop_id_t id, notify_cb_t fun) const;
   bool unsubscribe(prop_id_t id, register_id_t rid) const;
@@ -58,19 +61,19 @@ class PContainer {
   template <typename T>
   bool set(prop_id_t id, const T& val) const {
     auto prop_it = props_.find(id);
-    if (prop_it->second->get_type_id_hash() != typeid(val).hash_code()) {
+    if (prop_it->second->get()->get_type_id_hash() != typeid(val).hash_code()) {
       g_warning("%s: types do not match", __FUNCTION__);
       return false;
     }
-    return static_cast<Property2<T>*>(prop_it->second.get())->set(std::forward<const T&>(val));
+    return static_cast<Property2<T>*>(prop_it->second->get())->set(std::forward<const T&>(val));
   }
   template <typename T>
   T get(prop_id_t id) const {
     const auto& prop_it = props_.find(id);
-    if (prop_it->second->get_type_id_hash() != typeid(T).hash_code()) {
+    if (prop_it->second->get()->get_type_id_hash() != typeid(T).hash_code()) {
       g_warning("%s: types do not match", __FUNCTION__);
     }
-    return static_cast<Property2<T>*>(prop_it->second.get())->get();
+    return static_cast<Property2<T>*>(prop_it->second->get())->get();
   }
 
   // ----------- add/remove/update (you should prefer makers for adding)
@@ -417,6 +420,12 @@ class PContainer {
                                 const std::string& description,
                                 const Color& default_value);
 
+  // forward_property mirrors properties from the property container in the current container
+  prop_id_t mirror_property_from(const std::string& strid,
+                                 const std::string& parent_strid,
+                                 PContainer* pc,
+                                 prop_id_t prop_id);
+
   template <typename T>
   prop_id_t make_tuple(const std::string& strid,
                        std::function<bool(const T&)> set,
@@ -451,9 +460,13 @@ class PContainer {
 
  private:
   prop_id_t counter_{0};
-  std::map<prop_id_t, std::unique_ptr<PropertyBase>> props_{};
-  std::map<std::string, id_t> ids_{};
-  std::map<id_t, std::string> strids_{};
+  // props_ and actual_props_ are maintained together: props_ is an indirection for methods using
+  // properties, and actual_props_ is used for property ownership.
+  // This allows bundle quiddities to mirror actual_props_ using their own property ids.
+  std::map<prop_id_t, std::unique_ptr<PropertyBase>*> props_{};
+  std::map<prop_id_t, std::unique_ptr<PropertyBase>> actual_props_{};
+  std::map<std::string, prop_id_t> ids_{};
+  std::map<prop_id_t, std::string> strids_{};
   InfoTree::ptr tree_;
   on_tree_grafted_cb_t on_tree_grafted_cb_;
   on_tree_pruned_cb_t on_tree_pruned_cb_;
@@ -468,6 +481,9 @@ class PContainer {
         parent_strid,
         std::make_unique<Property2<PropType, PropGetSet>>(std::forward<PropArgs>(args)...));
   }
+  void init_newly_installed_property(const std::string& strid,
+                                     const std::string& parent_strid,
+                                     size_t pos);
 };
 
 }  // namespace switcher

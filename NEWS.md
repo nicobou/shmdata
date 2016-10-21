@@ -2,6 +2,21 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.30 (2016-10-21)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* GLFW window. 
+* Bundle implementation, forwarding properties from contained quiddities check if quid names are unique in bundle force name specification for each quid in a bundle bundle connects and disconnects shmdatas among contained quiddities.
+* vrpn pluginm, source and sink.
+
+Bug fixes:
+* Fixed a crash when creating/removing sources from the system and disabled device selection when started.
+* various fixes in shmdata-to-jack,
+* videoconvert cannot connect to itself,
+* adding jackd as dependency in INSTALL.md,
+
 switcher 0.8.28 (2016-10-03)
 ---------------------------
 This is an official release in the 0.8 stable series.

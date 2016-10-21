@@ -42,6 +42,7 @@ ShmdataToJack::ShmdataToJack(const std::string& name)
                    [this](uint n) { on_xrun(n); },
                    [this](jack_port_t* port) { on_port(port); },
                    [this]() {
+                     if (!is_constructed_) return;
                      auto thread = std::thread([this]() {
                        auto manager = manager_impl_.lock();
                        if (!manager) return;
@@ -52,7 +53,10 @@ ShmdataToJack::ShmdataToJack(const std::string& name)
                      thread.detach();
                    }),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {}
+      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
+  // is_constructed_ is needed because of a cross reference among JackClient and JackPort
+  is_constructed_ = true;
+}
 
 bool ShmdataToJack::init() {
   if (!jack_client_) {
@@ -66,8 +70,6 @@ bool ShmdataToJack::init() {
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-  volume_id_ =
-      pmanage<MPtr(&PContainer::push)>("volume", GPropToProp::to_prop(G_OBJECT(volume_), "volume"));
   auto_connect_id_ = pmanage<MPtr(&PContainer::make_bool)>(
       "auto_connect",
       [this](const bool& val) {
@@ -99,27 +101,28 @@ bool ShmdataToJack::init() {
                                                            "Connect To",
                                                            "Which client to connect to",
                                                            connect_to_);
-  index_id_ =
-      pmanage<MPtr(&PContainer::make_int)>("index",
-                                           [this](const int& val) {
-                                             index_ = val;
-                                             update_port_to_connect();
-                                             return true;
-                                           },
-                                           [this]() { return index_; },
-                                           "Index",
-                                           "Start connecting to other client from this index",
-                                           index_,
-                                           0,
-                                           128);
+  index_id_ = pmanage<MPtr(&PContainer::make_int)>(
+      "index",
+      [this](const int& val) {
+        index_ = val;
+        update_port_to_connect();
+        return true;
+      },
+      [this]() { return index_; },
+      "Channel",
+      "Start connecting to other client from this channel index",
+      index_,
+      0,
+      128);
   update_port_to_connect();
   return true;
 }
 
 int ShmdataToJack::jack_process(jack_nframes_t nframes, void* arg) {
   auto context = static_cast<ShmdataToJack*>(arg);
+  if (!context->is_constructed_) return 0;
   {
-    std::unique_lock<std::mutex> lock(context->port_to_connect_in_jack_process_mutex_);
+    std::lock_guard<std::mutex> lock(context->port_to_connect_in_jack_process_mutex_);
     for (auto& it : context->port_to_connect_in_jack_process_)
       jack_connect(context->jack_client_.get_raw(), it.first.c_str(), it.second.c_str());
     context->port_to_connect_in_jack_process_.clear();
@@ -149,6 +152,7 @@ int ShmdataToJack::jack_process(jack_nframes_t nframes, void* arg) {
 }
 
 void ShmdataToJack::on_xrun(uint num_of_missed_samples) {
+  if (!is_constructed_) return;
   g_warning("jack xrun (delay of %u samples)", num_of_missed_samples);
   jack_nframes_t jack_buffer_size = jack_client_.get_buffer_size();
   for (auto& it : ring_buffers_) {
@@ -223,7 +227,7 @@ void ShmdataToJack::check_output_ports(unsigned int channels) {
 
 bool ShmdataToJack::make_elements() {
   GError* error = nullptr;
-  std::string description(std::string("shmdatasrc ! audioconvert ! audioresample ! volume ! ") +
+  std::string description(std::string("shmdatasrc ! audioconvert ! audioresample ! ") +
                           " audioconvert ! " +
                           " capsfilter caps=\"audio/x-raw, format=(string)F32LE, "
                           "layout=(string)interleaved, rate=" +
@@ -237,18 +241,12 @@ bool ShmdataToJack::make_elements() {
   }
   GstElement* shmdatasrc =
       GstUtils::get_first_element_from_factory_name(GST_BIN(jacksink), "shmdatasrc");
-  GstElement* volume = GstUtils::get_first_element_from_factory_name(GST_BIN(jacksink), "volume");
-  if (nullptr != volume_) {
-    GstUtils::apply_property_value(G_OBJECT(volume_), G_OBJECT(volume), "volume");
-    GstUtils::apply_property_value(G_OBJECT(volume_), G_OBJECT(volume), "mute");
-  }
   GstElement* fakesink =
       GstUtils::get_first_element_from_factory_name(GST_BIN(jacksink), "fakesink");
   handoff_handler_ = g_signal_connect(fakesink, "handoff", (GCallback)on_handoff_cb, this);
   if (nullptr != audiobin_) GstUtils::clean_element(audiobin_);
   shmdatasrc_ = shmdatasrc;
   audiobin_ = jacksink;
-  volume_ = volume;
   fakesink_ = fakesink;
   return true;
 }
@@ -282,8 +280,6 @@ bool ShmdataToJack::stop() {
   disconnect_ports();
   {
     On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };
-    pmanage<MPtr(&PContainer::replace)>(volume_id_,
-                                        GPropToProp::to_prop(G_OBJECT(volume_), "volume"));
     if (!make_elements()) return false;
   }
   pmanage<MPtr(&PContainer::enable)>(auto_connect_id_);
@@ -340,12 +336,13 @@ void ShmdataToJack::disconnect_ports() {
 }
 
 void ShmdataToJack::on_port(jack_port_t* port) {
+  if (!is_constructed_) return;
   int flags = jack_port_flags(port);
   if (!(flags & JackPortIsOutput)) return;
   auto it = std::find(ports_to_connect_.begin(), ports_to_connect_.end(), jack_port_name(port));
   if (ports_to_connect_.end() == it) return;
   {
-    std::unique_lock<std::mutex> lock(port_to_connect_in_jack_process_mutex_);
+    std::lock_guard<std::mutex> lock(port_to_connect_in_jack_process_mutex_);
     port_to_connect_in_jack_process_.push_back(std::make_pair(
         std::string(get_name() + ":" + output_ports_[it - ports_to_connect_.begin()].get_name()),
         *it));

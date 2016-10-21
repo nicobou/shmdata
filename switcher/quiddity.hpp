@@ -45,6 +45,7 @@ namespace switcher {
 class QuiddityManager_Impl;
 
 class Quiddity {
+  friend class Bundle;  // access to props_ in order to forward properties
   // FIXME do something for this (to many friend class in quiddity.hpp):
   friend class StartableQuiddity;
   friend class ShmdataConnector;

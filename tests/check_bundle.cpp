@@ -1,0 +1,37 @@
+/*
+ * This file is part of switcher.
+ *
+ * switcher is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * switcher is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
+#include <cassert>
+#include "switcher/quiddity-manager.hpp"
+
+using namespace switcher;
+
+int main() {
+  {
+    QuiddityManager::ptr manager = QuiddityManager::make_manager("bundle");
+    assert(manager->load_configuration_file("./check_bundle.config"));
+    assert(manager->create("source-bundle", "source-bundle") == "source-bundle");
+    assert(manager->create("sink-bundle", "sink-bundle") == "sink-bundle");
+    assert(manager->create("filter-bundle", "filter-bundle") == "filter-bundle");
+  }
+  gst_deinit();
+  return 0;
+}

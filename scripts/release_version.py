@@ -112,6 +112,18 @@ def git_add(file_list):
 def git_clone(repo_url):
     return subprocess.call('git clone {}'.format(repo_url), shell=True)
 
+
+def git_pull():
+    return subprocess.call('git pull', shell=True)
+
+
+def git_submodule(recursive=False):
+    recursive_str = ''
+    if recursive:
+        recursive_str = '--recursive'
+    return subprocess.call('git submodule update --init {}'.format(recursive_str), shell=True)
+
+
 def get_git_config(property, default_value):
     config_property = default_value
     git_config_full = subprocess.check_output('git config --list', shell=True).strip().split('\n')
@@ -224,19 +236,19 @@ if __name__ == '__main__':
 
     lib_repo = '{}/{}.git'.format(github_path, lib)
 
-    if git_clone(lib_repo) == 0:
-        print 'Successfully fetched code base for library {} at {}'.format(lib, lib_repo)
-    else:
-        printerr('Could not fetch code base for library {} at {}'.format(lib, lib_repo))
+    assert(git_clone(lib_repo) == 0, 'Could not fetch code base for library {} at {}'.format(lib, lib_repo))
 
     os.chdir(os.path.join(libs_root_path, lib))
     git_checkout(working_branch)
+
+    assert(git_submodule(True) == 0, 'Could not fetch summodules')
+
     version_release = parse_version_number(lib, version_regex)
     version_release = increase_version_number(version_release, version_increase)
 
     print 'Version number found for all libraries, now executing unit tests.'
 
-    if subprocess.call('./autogen.sh && ./configure && make distcheck', shell=True) != 0:
+    if subprocess.call('./autogen.sh && ./configure && make -j check', shell=True) != 0:
         printerr('{} unit tests failed, stopping the release.'.format(lib))
 
     check_success = True

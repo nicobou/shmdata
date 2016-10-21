@@ -19,6 +19,7 @@
 
 #include "./property-container.hpp"
 #include <sstream>
+#include "./information-tree-json.hpp"
 
 namespace switcher {
 
@@ -36,12 +37,14 @@ bool PContainer::replace(prop_id_t prop_id, std::unique_ptr<PropertyBase>&& prop
   if (strids_.end() == it) return false;  // prop not found
   auto old_value = get_str(prop_id);
   // keep a reference to the old property documentation tree
-  auto old_tree = props_[prop_id].get()->get_spec();
+  auto* prop = props_[prop_id]->get();
+  auto old_tree = prop->get_spec();
   // copy notification cbs
-  auto notification_cbs = props_[prop_id].get()->get_notify_cbs();
+  auto notification_cbs = prop->get_notify_cbs();
   // replace with new prop
-  props_[prop_id] = std::forward<std::unique_ptr<PropertyBase>>(prop_ptr);
-  auto* prop = props_[prop_id].get();
+  actual_props_[prop_id] = std::forward<std::unique_ptr<PropertyBase>>(prop_ptr);
+  props_[prop_id] = &actual_props_[prop_id];
+  prop = props_[prop_id]->get();
   prop->set_notify_cbs(notification_cbs);
   prop->set_id(prop_id);
   prop->set_str(old_value);
@@ -62,6 +65,7 @@ bool PContainer::remove(prop_id_t prop_id) {
   ids_.erase(it->second);
   strids_.erase(it);
   props_.erase(prop_id);
+  actual_props_.erase(prop_id);
   return true;
 }
 
@@ -90,13 +94,13 @@ bool PContainer::disable(prop_id_t prop_id, const std::string& why) {
 PContainer::register_id_t PContainer::subscribe(prop_id_t id, notify_cb_t fun) const {
   auto prop = props_.find(id);
   if (prop == props_.end()) return 0;
-  return prop->second->subscribe(std::forward<notify_cb_t>(fun));
+  return prop->second->get()->subscribe(std::forward<notify_cb_t>(fun));
 }
 
 bool PContainer::unsubscribe(prop_id_t id, register_id_t rid) const {
   auto prop = props_.find(id);
   if (prop == props_.end()) return false;
-  return prop->second->unsubscribe(std::forward<register_id_t>(rid));
+  return prop->second->get()->unsubscribe(std::forward<register_id_t>(rid));
 }
 
 PContainer::prop_id_t PContainer::get_id(const std::string& strid) const {
@@ -108,11 +112,15 @@ PContainer::prop_id_t PContainer::get_id(const std::string& strid) const {
   return 0;
 }
 
+std::map<std::string, PContainer::prop_id_t> PContainer::get_ids() const { return ids_; }
+
 std::string PContainer::get_name(prop_id_t id) const {
   const auto& it = strids_.find(id);
   if (strids_.end() != it) return it->second;
   return std::string();
 }
+
+std::map<PContainer::prop_id_t, std::string> PContainer::get_names() const { return strids_; }
 
 PContainer::prop_id_t PContainer::make_int(const std::string& strid,
                                            Property2<int>::set_cb_t set,
@@ -510,38 +518,38 @@ PContainer::prop_id_t PContainer::make_parented_fraction(const std::string& stri
 bool PContainer::set_str(prop_id_t id, const std::string& val) const {
   if (0 == id) return false;
   auto prop_it = props_.find(id);
-  return prop_it->second.get()->set_str(std::forward<const std::string&>(val));
+  return prop_it->second->get()->set_str(std::forward<const std::string&>(val));
 }
 
 std::string PContainer::get_str(prop_id_t id) const {
   auto prop_it = props_.find(id);
-  return prop_it->second.get()->get_str();
+  return prop_it->second->get()->get_str();
 }
 
 bool PContainer::set_str_str(const std::string& strid, const std::string& val) const {
   auto id = get_id(strid);
   if (0 != id) {
     auto prop_it = props_.find(id);
-    return prop_it->second.get()->set_str(std::forward<const std::string&>(val));
+    return prop_it->second->get()->set_str(std::forward<const std::string&>(val));
   }
   // accepting id converted to string
   auto prop_id = prop::id_from_string(strid);
   auto prop_it = props_.find(prop_id);
   if (props_.end() == prop_it) return false;
-  return prop_it->second.get()->set_str(std::forward<const std::string&>(val));
+  return prop_it->second->get()->set_str(std::forward<const std::string&>(val));
 }
 
 std::string PContainer::get_str_str(const std::string& strid) const {
   auto id = get_id(strid);
   if (0 != id) {
     auto prop_it = props_.find(id);
-    return prop_it->second.get()->get_str();
+    return prop_it->second->get()->get_str();
   }
   // accepting id converted to string
   auto prop_id = prop::id_from_string(strid);
   auto prop_it = props_.find(prop_id);
   if (props_.end() == prop_it) return std::string();
-  return prop_it->second.get()->get_str();
+  return prop_it->second->get()->get_str();
 }
 
 PContainer::prop_id_t PContainer::push(const std::string& strid,
@@ -552,38 +560,52 @@ PContainer::prop_id_t PContainer::push(const std::string& strid,
 PContainer::prop_id_t PContainer::push_parented(const std::string& strid,
                                                 const std::string& parent_strid,
                                                 std::unique_ptr<PropertyBase>&& prop_ptr) {
-  if (ids_.cend() != ids_.find(strid)) return 0;  // strid already taken
-  if (parent_strid != "" && ids_.cend() == ids_.find(parent_strid)) return 0;  // parent not found
-  props_[++counter_] = std::forward<std::unique_ptr<PropertyBase>>(prop_ptr);
+  if (ids_.cend() != ids_.find(strid)) {
+    g_warning("property name %s already used", strid.c_str());
+    return 0;
+  }
+  if (parent_strid != "" && ids_.cend() == ids_.find(parent_strid)) {
+    g_warning("property parent %s does not exist", parent_strid.c_str());
+    return 0;
+  }
+  actual_props_[++counter_] = std::forward<std::unique_ptr<PropertyBase>>(prop_ptr);
+  props_[counter_] = &actual_props_[counter_];
+  init_newly_installed_property(strid, parent_strid, 20 * (suborders_.get_count(parent_strid) + 1));
+  return counter_;
+}
+
+void PContainer::init_newly_installed_property(const std::string& strid,
+                                               const std::string& parent_strid,
+                                               size_t pos) {
   ids_[strid] = counter_;
   strids_[counter_] = strid;
-  auto* prop = props_[counter_].get();
+  auto* prop = props_[counter_]->get();
   prop->set_id(counter_);
   auto tree = prop->get_spec();
   auto key = std::string("property.") + strid;
   tree_->graft(key, tree);
   tree->graft("id", InfoTree::make(strid));
   tree->graft("prop_id", InfoTree::make(counter_));
-  tree->graft("order", InfoTree::make(20 * (suborders_.get_count(parent_strid) + 1)));
+  tree->graft("order", InfoTree::make(pos));
   tree->graft("parent", InfoTree::make(parent_strid));
   tree->graft("enabled", InfoTree::make(true));
   if (on_tree_grafted_cb_) on_tree_grafted_cb_(key);
-  return counter_;
 }
 
 std::unique_lock<std::mutex> PContainer::get_lock(prop_id_t id) {
-  return props_.find(id)->second->get_lock();
+  return props_.find(id)->second->get()->get_lock();
 }
 
-void PContainer::notify(prop_id_t id) { props_.find(id)->second->notify(); }
-void PContainer::set_to_current(prop_id_t id) { props_.find(id)->second->set_to_current(); }
+void PContainer::notify(prop_id_t id) { props_.find(id)->second->get()->notify(); }
+
+void PContainer::set_to_current(prop_id_t id) { props_.find(id)->second->get()->set_to_current(); }
 
 void PContainer::update_values_in_tree() const {
-  for (auto& it : props_) it.second->update_value_in_spec();
+  for (auto& it : props_) it.second->get()->update_value_in_spec();
 }
 
 void PContainer::update_value_in_tree(prop_id_t id) const {
-  props_.find(id)->second->update_value_in_spec();
+  props_.find(id)->second->get()->update_value_in_spec();
 }
 
 PContainer::prop_id_t PContainer::make_color(const std::string& strid,
@@ -603,6 +625,19 @@ PContainer::prop_id_t PContainer::make_parented_color(const std::string& strid,
                                                       const std::string& description,
                                                       const Color& default_value) {
   return make_under_parent<Color>(strid, parent_strid, set, get, label, description, default_value);
+}
+
+PContainer::prop_id_t PContainer::mirror_property_from(const std::string& strid,
+                                                       const std::string& parent_strid,
+                                                       PContainer* pc,
+                                                       prop_id_t prop_id) {
+  if (ids_.cend() != ids_.find(strid)) return 0;  // strid already taken
+  if (parent_strid != "" && ids_.cend() == ids_.find(parent_strid)) return 0;  // parent not found
+  props_[++counter_] = &pc->actual_props_[prop_id];
+  // maintain original order
+  size_t pos = pc->actual_props_[prop_id]->get_spec()->branch_get_value(".order").copy_as<size_t>();
+  init_newly_installed_property(strid, parent_strid, pos);
+  return counter_;
 }
 
 }  // namespace switcher

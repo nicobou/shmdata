@@ -125,10 +125,7 @@ void PulseSrc::pa_context_state_callback(pa_context* pulse_context, void* user_d
     case PA_CONTEXT_READY:
       // g_print ("PA_CONTEXT_READY\n");
       context->make_device_description(pulse_context);
-      // pa_operation_unref(pa_context_get_source_info_list(pulse_context,
-      //  get_source_info_callback,
-      //  nullptr));
-      pa_context_set_subscribe_callback(pulse_context, on_pa_event_callback, nullptr);
+      pa_context_set_subscribe_callback(pulse_context, on_pa_event_callback, context);
       pa_operation_unref(pa_context_subscribe(
           pulse_context,
           static_cast<pa_subscription_mask_t>(
@@ -308,6 +305,7 @@ bool PulseSrc::start() {
       GST_BIN(gst_pipeline_->get_pipeline()), pulsesrc_.get_raw(), shmsink_.get_raw(), nullptr);
   gst_element_link_many(pulsesrc_.get_raw(), shmsink_.get_raw(), nullptr);
   gst_pipeline_->play(true);
+  pmanage<MPtr(&PContainer::disable)>(devices_id_, StartableQuiddity::disabledWhenStartedMsg);
   return true;
 }
 
@@ -324,6 +322,7 @@ bool PulseSrc::stop() {
   mute_id_ = pmanage<MPtr(&PContainer::push)>(
       "mute", GPropToProp::to_prop(G_OBJECT(pulsesrc_.get_raw()), "mute"));
   gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+  pmanage<MPtr(&PContainer::enable)>(devices_id_);
   return true;
 }
 

@@ -20,7 +20,6 @@
 #include "./information-tree.hpp"
 #include <algorithm>
 #include <iostream>
-#include <regex>
 #include "./information-tree-json.hpp"
 #include "./string-utils.hpp"
 #include "scope-exit.hpp"

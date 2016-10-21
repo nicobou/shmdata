@@ -39,11 +39,11 @@ class ShmdataToJack : public Quiddity {
   ShmdataToJack& operator=(const ShmdataToJack&) = delete;
 
  private:
+  bool is_constructed_{false};
   // internal use:
   std::string shmpath_{};
   GstElement* shmdatasrc_{nullptr};
   GstElement* audiobin_{nullptr};
-  GstElement* volume_{nullptr};
   GstElement* fakesink_{nullptr};
   gulong handoff_handler_{0};
   unsigned short channels_{0};
@@ -53,7 +53,12 @@ class ShmdataToJack : public Quiddity {
   // jack sample is the time unit, assuming gst pipeline has the same sample
   // rate:
   DriftObserver<jack_nframes_t> drift_observer_{};
+  // jack client
   JackClient jack_client_;
+  // ports
+  std::vector<std::string> ports_to_connect_{};
+  std::mutex port_to_connect_in_jack_process_mutex_{};
+  std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
   std::vector<JackPort> output_ports_{};
   // properties
   bool auto_connect_{true};
@@ -61,12 +66,7 @@ class ShmdataToJack : public Quiddity {
   PContainer::prop_id_t connect_to_id_{0};
   unsigned int index_{1};
   PContainer::prop_id_t index_id_{0};
-  PContainer::prop_id_t volume_id_{0};
   PContainer::prop_id_t auto_connect_id_{0};
-  // ports
-  std::vector<std::string> ports_to_connect_{};
-  std::mutex port_to_connect_in_jack_process_mutex_{};
-  std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
   // gst pipeline:
