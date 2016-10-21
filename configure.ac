@@ -1,5 +1,5 @@
 AC_PREREQ([2.61])
-AC_INIT(shmdata, [1.3.3], [https://github.com/sat-metalab/libshmdata/issues], [shmdata], [https://github.com/sat-metalab/libshmdata])
+AC_INIT(shmdata, [1.3.4], [https://github.com/sat-metalab/libshmdata/issues], [shmdata], [https://github.com/sat-metalab/libshmdata])
 #AC_CONFIG_MACRO_DIR([m4])
 AC_MSG_NOTICE([Configuring libshmdata])
 AM_INIT_AUTOMAKE([subdir-objects -Wno-portability])
