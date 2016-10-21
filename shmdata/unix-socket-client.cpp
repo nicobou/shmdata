@@ -50,8 +50,11 @@ UnixSocketClient::UnixSocketClient(const std::string& path, AbstractLogger* log)
 UnixSocketClient::~UnixSocketClient() {
   if (done_.valid()) {
     if (is_valid_) {
-      auto res = send(socket_.fd_, &proto_->quit_msg_, sizeof(proto_->quit_msg_), MSG_NOSIGNAL);
-      if (-1 == res) log_->error("send (client trying to quit)");
+      std::lock_guard<std::mutex> lock(connected_mutex_);
+      if (socket_.fd_ != -1) {
+        auto res = send(socket_.fd_, &proto_->quit_msg_, sizeof(proto_->quit_msg_), MSG_NOSIGNAL);
+        if (-1 == res) log_->error("send (client trying to quit)");
+      }
     }
     quit_.store(1);
     done_.get();
@@ -74,7 +77,7 @@ bool UnixSocketClient::start(UnixSocketProtocol::ClientSide* proto) {
   done_ = std::async(
       std::launch::async, [](UnixSocketClient* self) { self->server_interaction(); }, this);
   std::unique_lock<std::mutex> lock(connected_mutex_);
-  cv_.wait_for(lock, std::chrono::milliseconds(100));
+  cv_.wait_for(lock, std::chrono::milliseconds(1000));
   is_valid_ = is_valid_ && connected_;
   return connected_;
 }
@@ -136,7 +139,7 @@ void UnixSocketClient::server_interaction() {
           proto_->on_connect_cb_();
           connected_ = true;
           log_->debug("client connected");
-          std::unique_lock<std::mutex> lock(connected_mutex_);
+          std::lock_guard<std::mutex> lock(connected_mutex_);
           cv_.notify_one();
         } else {
           if (1 == proto_->update_msg_.msg_type_)
@@ -145,6 +148,7 @@ void UnixSocketClient::server_interaction() {
             proto_->on_disconnect_cb_();
             log_->debug("client received quit");
             // disable socket
+            std::lock_guard<std::mutex> lock(connected_mutex_);
             FD_CLR(socket_.fd_, &allset);
             if (0 != close(socket_.fd_)) {
               int err = errno;
