@@ -175,11 +175,11 @@ GLFWVideo::GLFWVideo(const std::string& name)
                     "Could not get the monitor config for this window, not switching to "
                     "fullscreen.");
                 return false;
-                pmanage<MPtr(&PContainer::disable)>(width_id_, kFullscreenDisabled);
-                pmanage<MPtr(&PContainer::disable)>(height_id_, kFullscreenDisabled);
-                pmanage<MPtr(&PContainer::disable)>(position_x_id_, kFullscreenDisabled);
-                pmanage<MPtr(&PContainer::disable)>(position_y_id_, kFullscreenDisabled);
               }
+              pmanage<MPtr(&PContainer::disable)>(width_id_, kFullscreenDisabled);
+              pmanage<MPtr(&PContainer::disable)>(height_id_, kFullscreenDisabled);
+              pmanage<MPtr(&PContainer::disable)>(position_x_id_, kFullscreenDisabled);
+              pmanage<MPtr(&PContainer::disable)>(position_y_id_, kFullscreenDisabled);
               width_ = monitor_config.width;
               height_ = monitor_config.height;
               position_x_ = monitor_config.position_x;
