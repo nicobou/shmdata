@@ -101,19 +101,19 @@ bool ShmdataToJack::init() {
                                                            "Connect To",
                                                            "Which client to connect to",
                                                            connect_to_);
-  index_id_ =
-      pmanage<MPtr(&PContainer::make_int)>("index",
-                                           [this](const int& val) {
-                                             index_ = val;
-                                             update_port_to_connect();
-                                             return true;
-                                           },
-                                           [this]() { return index_; },
-                                           "Index",
-                                           "Start connecting to other client from this index",
-                                           index_,
-                                           0,
-                                           128);
+  index_id_ = pmanage<MPtr(&PContainer::make_int)>(
+      "index",
+      [this](const int& val) {
+        index_ = val;
+        update_port_to_connect();
+        return true;
+      },
+      [this]() { return index_; },
+      "Channel",
+      "Start connecting to other client from this channel index",
+      index_,
+      0,
+      128);
   update_port_to_connect();
   return true;
 }
