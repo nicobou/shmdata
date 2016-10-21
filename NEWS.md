@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.4 (2016-10-21)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* Increase timeout during reader creation (100ms could be short when loading heavy save files). Fixed synchronization issue on socket file descriptor durin destruction.
+
 shmdata 1.3.2 (2016-10-03)
 ---------------------------
 This is an official release in the 1.3 stable series.
