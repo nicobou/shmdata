@@ -7,4 +7,3 @@
 * Sebastien Paquet
 * Mike Wozniewski
 * Alexandre Quessy
-* ubald
