@@ -23,6 +23,10 @@ if (WITH_GST)
         ${GST_INCLUDE_DIRS}
     )
 
+    link_directories(
+        ${GST_LIBRARY_DIRS}
+    )
+
     link_libraries(
         ${SHMDATA_LIBRARY}
         ${GST_LIBRARIES}
