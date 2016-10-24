@@ -12,10 +12,6 @@
  * GNU Lesser General Public License for more details.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -106,13 +102,10 @@ int main() {
   GstBus *bus;
   guint bus_watch_id;
   gst_init(NULL, NULL);
-#ifdef HAVE_CONFIG_H
+
   GstRegistry *registry = gst_registry_get();
-  gst_registry_scan_path(registry, "./" LT_OBJDIR);
-#else
-  g_printerr("shmdatasink plugin not found");
-return -1;
-#endif
+  gst_registry_scan_path(registry, "./");
+
   loop = g_main_loop_new(NULL, FALSE);
   /* Create gstreamer elements */
   pipeline = gst_pipeline_new("video-player");

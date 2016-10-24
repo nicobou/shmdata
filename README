@@ -28,17 +28,22 @@ Installation
 ------------
 Here is how to build and install it on Debian GNU/Linux or Ubuntu::
 
-  $ sudo apt-get install automake bison build-essential flex libtool 
+  $ sudo apt install cmake bison build-essential flex libtool
   $ # this is only for building gstreamer plugins:
   $ sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
   $ # this is for building python wrappers 
   $ sudo apt-get install python3-dev
-  $ ./autogen.sh
-  $ ./configure
+  $ mkdir build
+  $ cd build
+  $ cmake ..
   $ make
   $ sudo make install
   $ sudo ldconfig
 
+Mac OS Notes
+------------
+* If you are using homebrew to install dependencies and encountering errors about ```-lintl```, you have to ```brew link gettext```
+* If you are using python3 from homebrew, cmake will probably not detect it
 
 Authors
 -------
