@@ -104,6 +104,7 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
   bool type_found = false;
   static const std::string shmr("_shmr");
   static const std::string shmw("_shmw");
+  static const std::string noprop("_no_prop");
   quiddity_spec_t quid;
   for (; iter != std::sregex_token_iterator(); ++iter) {
     if (static_cast<std::string>(*iter).empty()) continue;
@@ -149,6 +150,10 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
     }
     if (*iter == shmw) {
       quid.expose_shmw = true;
+      continue;
+    }
+    if (*iter == noprop) {
+      quid.expose_prop = false;
       continue;
     }
     if (!parse_param(*iter, quid)) return false;

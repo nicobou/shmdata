@@ -33,6 +33,7 @@ struct quiddity_spec_t {
   std::map<std::string, std::string> params{};
   bool expose_shmr{false};
   bool expose_shmw{false};
+  bool expose_prop{true};
   std::vector<std::string> connects_to_{};
   std::vector<std::string> connected_to_{};
 };

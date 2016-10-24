@@ -123,16 +123,18 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
     }  // quiddity is created
 
     // registering quiddity properties
-    pmanage<MPtr(&PContainer::make_group)>(name, name, std::string("Properties for ") + name);
     auto quid_ptr = manager_->manager_impl_->get_quiddity(name);
     on_tree_datas_.emplace_back(std::make_unique<on_tree_data_t>(this, name, quid_ptr.get(), quid));
     quid_ptr->subscribe_signal(
         "on-tree-grafted", &Bundle::on_tree_grafted, on_tree_datas_.back().get());
     quid_ptr->subscribe_signal(
         "on-tree-pruned", &Bundle::on_tree_pruned, on_tree_datas_.back().get());
-    for (auto& prop : quid_ptr->props_.get_ids()) {
-      pmanage<MPtr(&PContainer::mirror_property_from)>(
-          name + "/" + prop.first, name, &quid_ptr->props_, prop.second);
+    if (quid.expose_prop) {
+      pmanage<MPtr(&PContainer::make_group)>(name, name, std::string("Properties for ") + name);
+      for (auto& prop : quid_ptr->props_.get_ids()) {
+        pmanage<MPtr(&PContainer::mirror_property_from)>(
+            name + "/" + prop.first, name, &quid_ptr->props_, prop.second);
+      }
     }
   }  // finished dealing with this quid specification
   return true;
@@ -194,24 +196,26 @@ void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_
     }
   }
 
-  static std::regex prop_rgx("\\.?property\\.([^.]*).*");
-  std::smatch prop_match;
-  if (std::regex_search(params[0], prop_match, prop_rgx)) {
-    std::string prop_name = prop_match[1];
-    static std::regex prop_created_rgx("\\.?property\\.[^.]*");
-    if (std::regex_match(params[0], prop_created_rgx)) {
-      context->self_->pmanage<MPtr(&PContainer::mirror_property_from)>(
-          context->quid_name_ + "/" + prop_name,
-          context->quid_name_,
-          &context->quid_->props_,
-          context->quid_->props_.get_id(prop_name));
+  if (context->quid_spec_.expose_prop) {
+    static std::regex prop_rgx("\\.?property\\.([^.]*).*");
+    std::smatch prop_match;
+    if (std::regex_search(params[0], prop_match, prop_rgx)) {
+      std::string prop_name = prop_match[1];
+      static std::regex prop_created_rgx("\\.?property\\.[^.]*");
+      if (std::regex_match(params[0], prop_created_rgx)) {
+        context->self_->pmanage<MPtr(&PContainer::mirror_property_from)>(
+            context->quid_name_ + "/" + prop_name,
+            context->quid_name_,
+            &context->quid_->props_,
+            context->quid_->props_.get_id(prop_name));
+      }
+      static std::regex prop_rename("\\.?property.");
+      context->self_->graft_tree(
+          std::regex_replace(params[0], prop_rename, std::string("$&") + context->quid_name_ + "/"),
+          context->quid_->information_tree_->get_tree(params[0]),
+          true);
+      return;
     }
-    static std::regex prop_rename("\\.?property.");
-    context->self_->graft_tree(
-        std::regex_replace(params[0], prop_rename, std::string("$&") + context->quid_name_ + "/"),
-        context->quid_->information_tree_->get_tree(params[0]),
-        true);
-    return;
   }
 }
 
@@ -252,26 +256,28 @@ void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_d
     }
   }
 
-  static std::regex prop_rgx("\\.?property\\.([^.]*).*");
-  std::smatch prop_match;
-  if (std::regex_search(params[0], prop_match, prop_rgx)) {
-    std::string prop_name = prop_match[1];
-    static std::regex prop_deleted_rgx("\\.?property\\.[^.]*");
-    if (std::regex_match(params[0], prop_deleted_rgx)) {
-      if (!context->self_->pmanage<MPtr(&PContainer::remove)>(
-              context->self_->pmanage<MPtr(&PContainer::get_id)>(context->quid_name_ + "/" +
-                                                                 prop_name))) {
-        g_warning("BUG removing property (%s) deleted from a quiddity (%s) in a bundle (%s)",
-                  prop_name.c_str(),
-                  context->quid_name_.c_str(),
-                  context->self_->get_name().c_str());
+  if (context->quid_spec_.expose_prop) {
+    static std::regex prop_rgx("\\.?property\\.([^.]*).*");
+    std::smatch prop_match;
+    if (std::regex_search(params[0], prop_match, prop_rgx)) {
+      std::string prop_name = prop_match[1];
+      static std::regex prop_deleted_rgx("\\.?property\\.[^.]*");
+      if (std::regex_match(params[0], prop_deleted_rgx)) {
+        if (!context->self_->pmanage<MPtr(&PContainer::remove)>(
+                context->self_->pmanage<MPtr(&PContainer::get_id)>(context->quid_name_ + "/" +
+                                                                   prop_name))) {
+          g_warning("BUG removing property (%s) deleted from a quiddity (%s) in a bundle (%s)",
+                    prop_name.c_str(),
+                    context->quid_name_.c_str(),
+                    context->self_->get_name().c_str());
+        }
       }
+      static std::regex prop_rename("\\.?property\\.");
+      context->self_->prune_tree(
+          std::regex_replace(params[0], prop_rename, std::string("$&") + context->quid_name_ + "/"),
+          true);
+      return;
     }
-    static std::regex prop_rename("\\.?property\\.");
-    context->self_->prune_tree(
-        std::regex_replace(params[0], prop_rename, std::string("$&") + context->quid_name_ + "/"),
-        true);
-    return;
   }
 }
 
