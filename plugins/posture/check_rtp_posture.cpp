@@ -15,10 +15,6 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
 #include <gst/gst.h>
 #include <cassert>
 #include <string>
@@ -55,17 +51,15 @@ int main() {
   do_continue = true;
   {
     QuiddityManager::ptr manager = QuiddityManager::make_manager("rtpposturetest");
-#ifdef HAVE_CONFIG_H
-    gchar* usr_plugin_dir = g_strdup_printf("../gsoap/%s", LT_OBJDIR);
+
+    gchar* usr_plugin_dir = g_strdup_printf("../gsoap/");
     manager->scan_directory_for_plugins(usr_plugin_dir);
     g_free(usr_plugin_dir);
 
     usr_plugin_dir = g_strdup_printf("%s", LT_OBJDIR);
     manager->scan_directory_for_plugins(usr_plugin_dir);
     g_free(usr_plugin_dir);
-#else
-    return 1;
-#endif
+
     manager->create("SOAPcontrolServer", "soapserver");
     manager->invoke_va("soapserver", "set_port", nullptr, "38084", nullptr);
 

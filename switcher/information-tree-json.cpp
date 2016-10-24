@@ -26,7 +26,7 @@ namespace JSONSerializer {
 
 void write_typed_member(JsonBuilder* builder, const Any& value) {
   switch (value.get_category()) {
-    case AnyCategory::BOOL:
+    case AnyCategory::BOOLEAN:
       json_builder_add_boolean_value(builder, value.copy_as<bool>());
       break;
     case AnyCategory::INTEGRAL:
@@ -107,7 +107,7 @@ std::string serialize(InfoTree::ptrc tree) {
   if (tree->is_leaf()) {
     if (!tree->read_data().is_null()) {
       switch (tree->read_data().get_category()) {
-        case AnyCategory::BOOL:
+        case AnyCategory::BOOLEAN:
           return std::string(tree->read_data().copy_as<bool>() ? "true" : "false");
           break;
         case AnyCategory::INTEGRAL:

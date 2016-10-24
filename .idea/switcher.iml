@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="CPP_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/gsoap/generated/webservices/soapC.cpp">
+      <sourceFolder url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/gsoap/generated/webservices/soapC.cpp" isTestSource="false" />
+    </content>
+    <content url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/gsoap/generated/webservices/soapcontrolProxy.cpp">
+      <sourceFolder url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/gsoap/generated/webservices/soapcontrolProxy.cpp" isTestSource="false" />
+    </content>
+    <content url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/gsoap/generated/webservices/soapcontrolService.cpp">
+      <sourceFolder url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/gsoap/generated/webservices/soapcontrolService.cpp" isTestSource="false" />
+    </content>
+    <content url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/MinSizeRel0/plugins/gsoap/generated/webservices/soapC.cpp">
+      <sourceFolder url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/MinSizeRel0/plugins/gsoap/generated/webservices/soapC.cpp" isTestSource="false" />
+    </content>
+    <content url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/MinSizeRel0/plugins/gsoap/generated/webservices/soapcontrolProxy.cpp">
+      <sourceFolder url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/MinSizeRel0/plugins/gsoap/generated/webservices/soapcontrolProxy.cpp" isTestSource="false" />
+    </content>
+    <content url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/MinSizeRel0/plugins/gsoap/generated/webservices/soapcontrolService.cpp">
+      <sourceFolder url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/MinSizeRel0/plugins/gsoap/generated/webservices/soapcontrolService.cpp" isTestSource="false" />
+    </content>
+    <content url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/RelWithDebInfo0/plugins/gsoap/generated/webservices/soapC.cpp">
+      <sourceFolder url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/RelWithDebInfo0/plugins/gsoap/generated/webservices/soapC.cpp" isTestSource="false" />
+    </content>
+    <content url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/RelWithDebInfo0/plugins/gsoap/generated/webservices/soapcontrolProxy.cpp">
+      <sourceFolder url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/RelWithDebInfo0/plugins/gsoap/generated/webservices/soapcontrolProxy.cpp" isTestSource="false" />
+    </content>
+    <content url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/RelWithDebInfo0/plugins/gsoap/generated/webservices/soapcontrolService.cpp">
+      <sourceFolder url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/RelWithDebInfo0/plugins/gsoap/generated/webservices/soapcontrolService.cpp" isTestSource="false" />
+    </content>
+    <content url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Release0/plugins/gsoap/generated/webservices/soapC.cpp">
+      <sourceFolder url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Release0/plugins/gsoap/generated/webservices/soapC.cpp" isTestSource="false" />
+    </content>
+    <content url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Release0/plugins/gsoap/generated/webservices/soapcontrolProxy.cpp">
+      <sourceFolder url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Release0/plugins/gsoap/generated/webservices/soapcontrolProxy.cpp" isTestSource="false" />
+    </content>
+    <content url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Release0/plugins/gsoap/generated/webservices/soapcontrolService.cpp">
+      <sourceFolder url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Release0/plugins/gsoap/generated/webservices/soapcontrolService.cpp" isTestSource="false" />
+    </content>
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/switcher" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/CMakeUninstall.cmake.in" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/switcher-ctrl.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/check_test_full.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/check_bundle.config" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/check_threaded_wrapper.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/check_information_tree.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/check_quiddity_create_remove.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/check_manager.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/check_startable.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/check_bundle.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/check_rtp_session.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/check_ugstelem.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/check_gst_pipeline.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/check_description_by_class.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/check_scope_guard.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/doxyfile.in" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pulse/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pulse/pulsesrc.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pulse/pulsesink.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pulse/check_pulsesrc.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pulse/pulsesrc.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pulse/pulsesink.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/gsoap/soap-ctrl-server.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/gsoap/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/gsoap/soap-ctrl-client.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/gsoap/soap-ctrl-server.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/gsoap/check_gsoap_control.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/gsoap/soap-ctrl-client.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/vnc/vnc_client.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/vnc/vnc_client.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/vnc/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/systemusage/systemusage.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/systemusage/systemusage.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/systemusage/check_systemusage_plugin.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/systemusage/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/v4l2/v4l2src.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/v4l2/check_v4l2_plugin.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/v4l2/v4l2src.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/v4l2/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/glfw/glfwvideo.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/glfw/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/glfw/glad.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/glfw/glfwvideo.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/glfw/glfw-renderer.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/glfw/glad.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/glfw/check_glfw_video.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/glfw/glfw-renderer.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/jack/jack-client.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/jack/shmdata-to-jack.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/jack/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/jack/jack-client.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/jack/jack-to-shmdata.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/jack/check_jack.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/jack/shmdata-to-jack.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/jack/jack-to-shmdata.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/syphon/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/gtk/gtkvideo.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/gtk/gtkvideo.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/gtk/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/gtk/check_gtk_video.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/encoder/nvenc-buffers.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/encoder/nvenc-api.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/encoder/nvenc-api.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/encoder/check_nvenc.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/encoder/nvenc-buffers.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/encoder/nvenc-plugin.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/encoder/nvenc-encode-session.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/encoder/nvenc-plugin.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/encoder/nvenc-encode-session.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/decoder/nvdec-decode-session.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/decoder/nvdec-plugin.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/decoder/nvdec-decode-session.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/decoder/nvdec-plugin.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/cuda/cuda-context.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/nvenc/cuda/cuda-context.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/osc/osc-ctrl-server.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/osc/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/osc/osc-to-shmdata.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/osc/shmdata-to-osc.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/osc/osc-ctrl-server.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/osc/osc-to-shmdata.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/osc/shmdata-to-osc.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/osc/check_osc.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-whitelist.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-stun-turn.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/check_pjsip.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-presence.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-ice-stream-trans.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-whitelist.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-sip-plugin.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-presence.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-sip-plugin.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-codec.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-ice-stream-trans.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-media-endpt.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-codec-utils.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-media-endpt.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-sip.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-call.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-codec-utils.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-sip.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-call.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-stun-turn.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/pjsip/pj-codec.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/portmidi/portmidi-sink.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/portmidi/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/portmidi/portmidi-devices.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/portmidi/check_midi_plugins.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/portmidi/portmidi-source.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/portmidi/portmidi-sink.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/portmidi/portmidi-source.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/portmidi/portmidi-devices.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/example/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/example/custom-save-plugin.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/example/check_custom_save_plugin.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/example/dummy-plugin.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/example/dummy-plugin.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/example/custom-save-plugin.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/example/check_example_plugin.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/plugins/posture/CMakeLists.txt" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/.hooks" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/html" />
+    </content>
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library name="Header Search Paths">
+        <CLASSES>
+          <root url="file:///usr/include" />
+          <root url="file:///usr/lib/x86_64-linux-gnu/dbus-1.0/include" />
+          <root url="file:///usr/lib/x86_64-linux-gnu/gstreamer-1.0/include" />
+          <root url="file:///usr/lib/x86_64-linux-gnu/glib-2.0/include" />
+          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/5/include-fixed" />
+          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/5/include" />
+          <root url="file:///usr/local/include" />
+          <root url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/gsoap/generated" />
+          <root url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/__default__0/pjproject/build/pjproject/src/pjproject/install_dir/include" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file:///usr/include" />
+          <root url="file:///usr/lib/x86_64-linux-gnu/dbus-1.0/include" />
+          <root url="file:///usr/lib/x86_64-linux-gnu/gstreamer-1.0/include" />
+          <root url="file:///usr/lib/x86_64-linux-gnu/glib-2.0/include" />
+          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/5/include-fixed" />
+          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/5/include" />
+          <root url="file:///usr/local/include" />
+          <root url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/gsoap/generated" />
+          <root url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/__default__0/pjproject/build/pjproject/src/pjproject/install_dir/include" />
+        </SOURCES>
+        <excluded>
+          <root url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/gsoap/generated/webservices/soapC.cpp" />
+          <root url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/gsoap/generated/webservices/soapcontrolProxy.cpp" />
+          <root url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/gsoap/generated/webservices/soapcontrolService.cpp" />
+        </excluded>
+      </library>
+    </orderEntry>
+  </component>
+</module>

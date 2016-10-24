@@ -29,11 +29,6 @@
 #include "switcher/periodic-task.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-writer.hpp"
-
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #if defined(GDK_WINDOWING_X11)
@@ -76,12 +71,12 @@ class GTKVideo : public Quiddity {
   UGstElem videoflip_{"videoflip"};
   UGstElem gamma_{"gamma"};
   UGstElem videobalance_{"videobalance"};
-#if HAVE_OSX
+#if OSX
   UGstElem xvimagesink_{"osxvideosink"};
 #else
   UGstElem xvimagesink_{"xvimagesink"};
 #endif
-#if HAVE_OSX
+#if OSX
   NSView* window_handle_{nullptr};
 #else
   guintptr window_handle_{0};
