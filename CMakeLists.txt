@@ -102,17 +102,6 @@ add_subdirectory(gst)
 # OTHER TARGETS
 #
 
-# Pkg-config
-# TODO This should really go into the shmdata cmake file, not the top level
-if (UNIX)
-    include(FindPkgConfig QUIET)
-    if (PKG_CONFIG_FOUND)
-        configure_file("shmdata.pc.in" "shmdata-${SHMDATA_API_VERSION}.pc" @ONLY)
-        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/shmdata-${SHMDATA_API_VERSION}.pc"
-        DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
-    endif ()
-endif ()
-
 # Documentation
 find_package(Doxygen)
 if (DOXYGEN_FOUND)

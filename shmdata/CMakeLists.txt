@@ -35,6 +35,16 @@ set(HEADER_INCLUDES
 
 set_target_properties(${SHMDATA_LIBRARY} PROPERTIES VERSION ${SHMDATA_VERSION_STRING} SOVERSION ${SHMDATA_VERSION_MAJOR})
 
+# Pkg-config
+if (UNIX)
+    include(FindPkgConfig QUIET)
+    if (PKG_CONFIG_FOUND)
+        configure_file("shmdata.pc.in" "shmdata-${SHMDATA_API_VERSION}.pc" @ONLY)
+        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/shmdata-${SHMDATA_API_VERSION}.pc"
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
+    endif ()
+endif ()
+
 install(TARGETS ${SHMDATA_LIBRARY}
     LIBRARY DESTINATION lib
     COMPONENT libraries)
