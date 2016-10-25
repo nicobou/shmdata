@@ -31,6 +31,9 @@ if (PLUGIN_GSOAP)
         ${GSOAP_LIBRARIES}
     )
 
+    # WARNINGS
+    add_definitions(-Wno-error=extra)
+
     # Server
 
     add_library(soapserver SHARED

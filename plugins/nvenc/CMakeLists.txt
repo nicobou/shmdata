@@ -1,6 +1,8 @@
 # PLUGIN
 
-file(GLOB NVIDIA_SUFFIXES RELATIVE /usr/lib /usr/lib/nvidia-*)
+set(NVIDIA_PATH /usr/lib/nvidia-* CACHE STRING "Location of the nvidia libraries")
+
+file(GLOB NVIDIA_SUFFIXES RELATIVE /usr/lib ${NVIDIA_PATH})
 list(SORT NVIDIA_SUFFIXES)
 list(REVERSE NVIDIA_SUFFIXES)
 

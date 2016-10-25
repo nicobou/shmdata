@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -e
+
+# Clean before, in case of a previous failed test
+rm -f @PACKAGE_NAME@-@PACKAGE_VERSION@-Source.tar.gz
+rm -rf @PACKAGE_NAME@-@PACKAGE_VERSION@-Source
+
+# Create the source package
+make package_source
+
+# Extract and rebuild + test
+tar -zxvf @PACKAGE_NAME@-@PACKAGE_VERSION@-Source.tar.gz
+cd @PACKAGE_NAME@-@PACKAGE_VERSION@-Source
+mkdir build
+cd build
+cmake ..
+make
+make test
+
+# Cleanup after
+cd ../..
+rm -f @PACKAGE_NAME@-@PACKAGE_VERSION@-Source.tar.gz
+rm -rf @PACKAGE_NAME@-@PACKAGE_VERSION@-Source

@@ -19,8 +19,17 @@ $ sudo make install
 $ sudo ldconfig
 ```
 
-## Build Nvidia Video Codec 7 plugin
+You can verify and change the build configuration with *ccmake*. You first need to install it:
 
+    $ sudo apt-get install cmake-curses-gui
+    
+Then, after running `cmake ..`, from the build directory run:
+
+    $ ccmake ..
+    
+It will display a list of the configuration variables for the build.
+
+## Build Nvidia Video Codec 7 plugin
 
 1. Check that you are running Nvidia drivers:
 
@@ -28,7 +37,7 @@ $ sudo ldconfig
     $ nvidia-settings
     ```
 
-1. Install Nvidia drivers (min. version `367.35`) and CUDA toolkit:
+2. Install Nvidia drivers (min. version `367.35`) and CUDA toolkit:
 
     > **Note**:  
     > You may need to first add the PPA `graphics-drivers/ppa`:  
@@ -38,21 +47,41 @@ $ sudo ldconfig
     $ sudo apt-get install nvidia-<driver-ver-number> nvidia-<driver-ver-number>-dev nvidia-cuda-toolkit
     ```
 
-1. In the **switcher** directory, configure **switcher** as follows:
+3. If running `cmake ..` does not automatically detect the right driver, in the **switcher** build directory, configure **switcher** as follows:
 
     ```
-    $ NVENC_LIBS='-L/usr/lib/nvidia-<driver-ver-number>' ./configure
+    $ cmake .. -DNVIDIA_PATH=usr/lib/nvidia-<driver-ver-number>
     ```
 
     For example, replacing `<driver-ver-number>` with the installed Nvidia driver version:
 
     ```
-    $ NVENC_LIBS='-L/usr/lib/nvidia-367' ./configure
+    $ cmake .. -DNVIDIA_PATH=/usr/lib/nvidia-367
     ```
 
-1. Compile and install as usual:
+4. Compile and install as usual:
 
     ```
     $ make -j"$(nproc)"
     $ sudo make install
     ```
+
+## Other build options
+
+* To run the tests
+
+        make test
+    
+* To generate installation packages (as configured in CMakeLists.txt)
+
+        make package
+        
+* To generate a source package
+
+        make package_source
+        
+* To test the source package, this will create the source package and then try to build and test it
+
+        make package_source_test
+        
+    

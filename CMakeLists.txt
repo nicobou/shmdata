@@ -64,6 +64,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(FeatureSummary)
 include(CPack)
+include(PackageSourceTest)
 
 #
 # PROJECT
@@ -106,6 +107,18 @@ include_directories(
     ${COMMON_INCLUDE_DIRS}
 )
 
+# BUILD TYPE
+if(CMAKE_BUILD_TYPE EQUAL "Debug")
+    add_definitions(-DDEBUG)
+endif()
+
+# WARNINGS
+add_definitions(-Wall)
+add_definitions(-Wextra)
+add_definitions(-Werror)
+add_definitions(-Wno-error=unused-parameter)
+
+# OSX
 if(APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(OSX TRUE)
     add_definitions(-DOSX)
@@ -128,8 +141,8 @@ add_subdirectory(src)
 # Documentation
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
-    configure_file("doxyfile.in" "${CMAKE_SOURCE_DIR}/doxyfile")
-    add_custom_target(doc COMMAND ${DOXYGEN_EXECUTABLE} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    configure_file("doxyfile.in" "${CMAKE_CURRENT_SOURCE_DIR}/doxyfile")
+    add_custom_target(doc COMMAND ${DOXYGEN_EXECUTABLE} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif ()
 
 # Uninstall
