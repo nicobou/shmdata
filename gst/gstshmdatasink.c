@@ -474,7 +474,6 @@ gst_shmdata_sink_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
   GstShmdataSink *self = GST_SHMDATA_SINK (object);
-  int ret = 0;
 
   switch (prop_id) {
     case PROP_SOCKET_PATH:
@@ -547,7 +546,6 @@ static gboolean
 gst_shmdata_sink_start (GstBaseSink * bsink)
 {
   GstShmdataSink *self = GST_SHMDATA_SINK (bsink);
-  GError *err = NULL;
   self->stop = FALSE;
   return TRUE;
 }
@@ -576,7 +574,6 @@ static GstFlowReturn
 gst_shmdata_sink_render (GstBaseSink * bsink, GstBuffer * buf)
 {
   GstShmdataSink *self = GST_SHMDATA_SINK (bsink);
-  int rv = 0;
   GstMapInfo map;
   gboolean need_new_memory = FALSE;
   GstFlowReturn ret = GST_FLOW_OK;
@@ -658,21 +655,9 @@ flushing:
   return GST_FLOW_FLUSHING;
 }
 
-static void
-free_buffer_locked (GstBuffer * buffer, void *data)
-{
-  GSList **list = data;
-
-  g_assert (buffer != NULL);
-
-  *list = g_slist_prepend (*list, buffer);
-}
-
 static gboolean
 gst_shmdata_sink_event (GstBaseSink * bsink, GstEvent * event)
 {
-  GstShmdataSink *self = GST_SHMDATA_SINK (bsink);
-
   switch (GST_EVENT_TYPE (event)) {
     case GST_EVENT_EOS:
       break;

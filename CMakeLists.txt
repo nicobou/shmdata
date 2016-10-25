@@ -27,8 +27,8 @@ set(CMAKE_CXX_STANDARD 14)
 set(CPACK_PACKAGE_NAME ${PACKAGE_NAME})
 set(CPACK_PACKAGE_VENDOR "Métalab - Société des arts technologiques")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${PACKAGE_DESCRIPTION})
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
-set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_VERSION_MAJOR "${SHMDATA_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${SHMDATA_VERSION_MINOR}")
@@ -63,6 +63,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(FeatureSummary)
 include(CPack)
+include(PackageSourceTest)
 
 #
 # PROJECT
@@ -84,6 +85,18 @@ include_directories(
     ${SHMDATA_DIR} # Shmdata needs to include from itself using "shmdata/*"
 )
 
+# BUILD TYPE
+if(CMAKE_BUILD_TYPE EQUAL "Debug")
+    add_definitions(-DDEBUG)
+endif()
+
+# WARNINGS
+add_definitions(-Wall)
+add_definitions(-Wextra)
+add_definitions(-Werror)
+add_definitions(-Wno-error=unused-parameter)
+
+# OSX
 if(APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     add_definitions(-DOSX)
 endif ()

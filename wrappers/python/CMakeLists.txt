@@ -8,6 +8,7 @@ if (WITH_PYTHON AND PythonLibs_FOUND)
     find_package(PythonLibs 3 REQUIRED)
 
     add_compile_options(${PythonLibs_CFLAGS})
+    add_definitions(-Wno-error=missing-field-initializers)
 
     add_library(pyshmdata SHARED
         pyshmdata.cpp

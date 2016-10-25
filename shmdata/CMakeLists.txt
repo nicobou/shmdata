@@ -41,7 +41,7 @@ if (UNIX)
     if (PKG_CONFIG_FOUND)
         configure_file("shmdata.pc.in" "shmdata-${SHMDATA_API_VERSION}.pc" @ONLY)
         install(FILES "${CMAKE_CURRENT_BINARY_DIR}/shmdata-${SHMDATA_API_VERSION}.pc"
-            DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
+            DESTINATION lib/pkgconfig)
     endif ()
 endif ()
 

@@ -2,64 +2,7 @@
 <module version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/CMakeUninstall.cmake.in" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata.pc.in" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/sysv-shm.hpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/file-monitor.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/unix-socket-server.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/unix-socket-client.hpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/file-monitor.hpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/cfollower.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/sysv-sem.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/writer.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/reader.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/unix-socket-protocol.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/writer.hpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/unix-socket.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/cfollower.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/reader.hpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/unix-socket-protocol.hpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/follower.hpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/unix-socket.hpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/cwriter.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/cwriter.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/clogger.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/sysv-sem.hpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/follower.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/clogger.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/unix-socket-server.hpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/sysv-shm.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/shmdata/unix-socket-client.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/utils/sdcrash.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/utils/sdflow.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/utils/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tests/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tests/check-follower.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tests/check-c-wrapper.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tests/check-sysv-shm.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tests/check-unix-socket.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tests/check-sysv-sem.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tests/check-shmdata.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tests/check-file-monitor.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tests/check-shm-size.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tests/check-shm-resize.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tests/check-writer-follower.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tests/check-shmdata-stress.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/doxyfile.in" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/wrappers/python/pyshmdata.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/wrappers/python/pyshmdata.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/wrappers/python/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/wrappers/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/gst/gstshmdata.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/gst/gstshmdatasink.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/gst/check-shmdatasink.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/gst/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/gst/gstshmdatasrc.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/gst/gstshmdatasink.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/gst/gstshmdatasrc.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/gst/check-shmdatasrc.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/html" />
     </content>
