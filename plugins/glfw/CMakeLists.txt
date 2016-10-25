@@ -36,8 +36,16 @@ if (PLUGIN_GLFW)
             "-framework OpenGL"
         )
     else ()
+	# The following are needed because we statically link libglfw.
         link_libraries(
             GL
+	    rt
+            m
+            X11
+            Xrandr
+            Xinerama
+            Xxf86vm
+            Xcursor
         )
     endif ()
 
