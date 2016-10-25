@@ -146,7 +146,10 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
     if (quid.expose_prop) {
       pmanage<MPtr(&PContainer::make_group)>(name, name, std::string("Properties for ") + name);
       for (auto& prop : quid_ptr->props_.get_ids()) {
-        if (!(quid.expose_start && prop.first == "started")) {
+        if (!(quid.expose_start && prop.first == "started") &&
+            quid.blacklisted_params.end() == std::find(quid.blacklisted_params.begin(),
+                                                       quid.blacklisted_params.end(),
+                                                       prop.first)) {
           pmanage<MPtr(&PContainer::mirror_property_from)>(
               name + "/" + prop.first, name, &quid_ptr->props_, prop.second);
         }
@@ -219,16 +222,26 @@ void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_
     std::smatch prop_match;
     if (std::regex_search(params[0], prop_match, prop_rgx)) {
       std::string prop_name = prop_match[1];
-      if (context->quid_spec_.expose_start && prop_name == "started") {
+      if (context->quid_spec_.expose_start && prop_name == "started" ||
+          context->quid_spec_.blacklisted_params.end() !=
+              std::find(context->quid_spec_.blacklisted_params.begin(),
+                        context->quid_spec_.blacklisted_params.end(),
+                        prop_name)) {
         return;
       }
       static std::regex prop_created_rgx("\\.?property\\.[^.]*");
       if (std::regex_match(params[0], prop_created_rgx)) {
-        context->self_->pmanage<MPtr(&PContainer::mirror_property_from)>(
-            context->quid_name_ + "/" + prop_name,
-            context->quid_name_,
-            &context->quid_->props_,
-            context->quid_->props_.get_id(prop_name));
+        if (context->quid_spec_.expose_start && prop_name == "started" ||
+            context->quid_spec_.blacklisted_params.end() !=
+                std::find(context->quid_spec_.blacklisted_params.begin(),
+                          context->quid_spec_.blacklisted_params.end(),
+                          prop_name)) {
+          context->self_->pmanage<MPtr(&PContainer::mirror_property_from)>(
+              context->quid_name_ + "/" + prop_name,
+              context->quid_name_,
+              &context->quid_->props_,
+              context->quid_->props_.get_id(prop_name));
+        }
       }
       static std::regex prop_rename("\\.?property.");
       context->self_->graft_tree(
@@ -279,7 +292,11 @@ void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_d
     std::smatch prop_match;
     if (std::regex_search(params[0], prop_match, prop_rgx)) {
       std::string prop_name = prop_match[1];
-      if (context->quid_spec_.expose_start && prop_name == "started") {
+      if (context->quid_spec_.expose_start && prop_name == "started" ||
+          context->quid_spec_.blacklisted_params.end() !=
+              std::find(context->quid_spec_.blacklisted_params.begin(),
+                        context->quid_spec_.blacklisted_params.end(),
+                        prop_name)) {
         return;
       }
       static std::regex prop_deleted_rgx("\\.?property\\.[^.]*");
