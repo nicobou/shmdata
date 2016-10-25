@@ -34,6 +34,7 @@ struct quiddity_spec_t {
   bool expose_shmr{false};
   bool expose_shmw{false};
   bool expose_prop{true};
+  bool expose_start{false};
   std::vector<std::string> connects_to_{};
   std::vector<std::string> connected_to_{};
 };

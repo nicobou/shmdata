@@ -53,7 +53,8 @@ bool Bundle::init() {
     shmcntr_.install_connect_method(
         [this](const std::string& shmpath) {
           std::string* return_value = nullptr;
-          manager_->invoke(reader_quid_, "connect", &return_value, {shmpath});
+          manager_->manager_impl_->get_quiddity(reader_quid_)
+              ->invoke_method("connect", &return_value, {shmpath});
           On_scope_exit {
             if (return_value) delete return_value;
           };
@@ -61,7 +62,8 @@ bool Bundle::init() {
         },
         [this](const std::string& shmpath) {
           std::string* return_value = nullptr;
-          manager_->invoke(reader_quid_, "disconnect", &return_value, {shmpath});
+          manager_->manager_impl_->get_quiddity(reader_quid_)
+              ->invoke_method("disconnect", &return_value, {shmpath});
           On_scope_exit {
             if (return_value) delete return_value;
           };
@@ -69,7 +71,8 @@ bool Bundle::init() {
         },
         [this]() {
           std::string* return_value = nullptr;
-          manager_->invoke(reader_quid_, "disconnect-all", &return_value, {});
+          manager_->manager_impl_->get_quiddity(reader_quid_)
+              ->invoke_method("disconnect-all", &return_value, {});
           On_scope_exit {
             if (return_value) delete return_value;
           };
@@ -77,13 +80,15 @@ bool Bundle::init() {
         },
         [this](const std::string& caps) {
           std::string* return_value = nullptr;
-          manager_->invoke(reader_quid_, "can-sink-caps", &return_value, {caps});
+          manager_->manager_impl_->get_quiddity(reader_quid_)
+              ->invoke_method("can-sink-caps", &return_value, {caps});
           On_scope_exit {
             if (return_value) delete return_value;
           };
           return *return_value == "true";
         },
-        manager_->use_tree<MPtr(&InfoTree::branch_get_value)>(reader_quid_, "shmdata.max_reader")
+        manager_->manager_impl_->get_quiddity(reader_quid_)
+            ->tree<MPtr(&InfoTree::branch_get_value)>("shmdata.max_reader")
             .copy_as<unsigned int>());
   }
   return true;
@@ -97,6 +102,14 @@ QuiddityDocumentation* Bundle::get_documentation() {
 void Bundle::set_doc_getter(doc_getter_t doc_getter) { doc_getter_ = doc_getter; }
 
 bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) {
+  // first: check is start must be installed
+  for (auto& quid : quids) {
+    if (quid.expose_start) start_quids_.emplace_back(quid.name);
+  }
+  if (!start_quids_.empty()) {
+    init_startable(this);
+  }
+  // create quiddities and set properties
   for (auto& quid : quids) {
     std::string name;
     if (quid.name.empty()) {
@@ -129,11 +142,14 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
         "on-tree-grafted", &Bundle::on_tree_grafted, on_tree_datas_.back().get());
     quid_ptr->subscribe_signal(
         "on-tree-pruned", &Bundle::on_tree_pruned, on_tree_datas_.back().get());
+    // mirroring property
     if (quid.expose_prop) {
       pmanage<MPtr(&PContainer::make_group)>(name, name, std::string("Properties for ") + name);
       for (auto& prop : quid_ptr->props_.get_ids()) {
-        pmanage<MPtr(&PContainer::mirror_property_from)>(
-            name + "/" + prop.first, name, &quid_ptr->props_, prop.second);
+        if (!(quid.expose_start && prop.first == "started")) {
+          pmanage<MPtr(&PContainer::mirror_property_from)>(
+              name + "/" + prop.first, name, &quid_ptr->props_, prop.second);
+        }
       }
     }
   }  // finished dealing with this quid specification
@@ -154,7 +170,8 @@ void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_
           static_cast<std::string>(shm_match[0]) + ".caps");
       if (!caps.empty()) {
         for (auto& it : context->quid_spec_.connects_to_) {
-          if (!context->self_->manager_->invoke(it, "can-sink-caps", nullptr, {caps})) {
+          if (!context->self_->manager_->manager_impl_->get_quiddity(it)->invoke_method(
+                  "can-sink-caps", nullptr, {caps})) {
             g_message("ERROR: bundle specification error: %s cannot connect with %s (caps is %s)",
                       context->quid_spec_.name.c_str(),
                       it.c_str(),
@@ -165,7 +182,8 @@ void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_
                       caps.c_str());
             continue;
           }
-          context->self_->manager_->invoke(it, "connect", nullptr, {shm_match[1]});
+          context->self_->manager_->manager_impl_->get_quiddity(it)->invoke_method(
+              "connect", nullptr, {shm_match[1]});
           {
             std::lock_guard<std::mutex> lock(context->self_->connected_shms_mtx_);
             context->self_->connected_shms_.push_back(std::make_pair(it, shm_match[1]));
@@ -201,6 +219,9 @@ void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_
     std::smatch prop_match;
     if (std::regex_search(params[0], prop_match, prop_rgx)) {
       std::string prop_name = prop_match[1];
+      if (context->quid_spec_.expose_start && prop_name == "started") {
+        return;
+      }
       static std::regex prop_created_rgx("\\.?property\\.[^.]*");
       if (std::regex_match(params[0], prop_created_rgx)) {
         context->self_->pmanage<MPtr(&PContainer::mirror_property_from)>(
@@ -235,11 +256,8 @@ void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_d
             return false;
           });
       for (auto& it = rm; it != context->self_->connected_shms_.end(); ++it) {
-        // would be nice to have an invoke_async in manager_ :(
-        context->self_->loop_.run_async([&, quid_name = it->first, shmpath = it->second ]() {
-          context->self_->manager_->invoke(quid_name, "disconnect", nullptr, {shmpath});
-        },
-                                        nullptr);
+        context->self_->manager_->manager_impl_->get_quiddity(it->first)->invoke_method(
+            "disconnect", nullptr, {it->second});
       }
       context->self_->connected_shms_.erase(rm, context->self_->connected_shms_.end());
       context->self_->prune_tree(params[0], true);
@@ -261,6 +279,9 @@ void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_d
     std::smatch prop_match;
     if (std::regex_search(params[0], prop_match, prop_rgx)) {
       std::string prop_name = prop_match[1];
+      if (context->quid_spec_.expose_start && prop_name == "started") {
+        return;
+      }
       static std::regex prop_deleted_rgx("\\.?property\\.[^.]*");
       if (std::regex_match(params[0], prop_deleted_rgx)) {
         if (!context->self_->pmanage<MPtr(&PContainer::remove)>(
@@ -279,6 +300,28 @@ void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_d
       return;
     }
   }
+}
+
+bool Bundle::start() {
+  for (auto& it : start_quids_) {
+    if (!manager_->manager_impl_->get_quiddity(it)->prop<MPtr(&PContainer::set_str_str)>("started",
+                                                                                         "true")) {
+      g_warning("fail to set start %s", it.c_str());
+      return false;
+    }
+  }
+  return true;
+}
+
+bool Bundle::stop() {
+  for (auto& it : start_quids_) {
+    if (!manager_->manager_impl_->get_quiddity(it)->prop<MPtr(&PContainer::set_str_str)>("started",
+                                                                                         "false")) {
+      g_warning("fail to set start %s", it.c_str());
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace switcher

@@ -25,10 +25,10 @@
 #include "./quiddity-manager.hpp"
 #include "./quiddity.hpp"
 #include "./shmdata-connector.hpp"
-#include "./threaded-wrapper.hpp"
+#include "./startable-quiddity.hpp"
 
 namespace switcher {
-class Bundle : public Quiddity {
+class Bundle : public Quiddity, public StartableQuiddity {
  public:
   using doc_getter_t = std::function<QuiddityDocumentation*()>;
   Bundle(const std::string&);
@@ -53,7 +53,8 @@ class Bundle : public Quiddity {
   };
 
  private:
-  ThreadedWrapper<> loop_{};  // make manager invocation async
+  bool startable_{false};
+  std::vector<std::string> start_quids_{};
   std::string reader_quid_{};
   ShmdataConnector shmcntr_;
   std::vector<std::unique_ptr<on_tree_data_t>> on_tree_datas_{};
@@ -62,6 +63,9 @@ class Bundle : public Quiddity {
   QuiddityManager::ptr manager_;
   std::mutex connected_shms_mtx_{};
   std::vector<std::pair<std::string /*quid_name*/, std::string /*shmpath*/>> connected_shms_{};
+
+  bool start() final;
+  bool stop() final;
   bool make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids);
   static void on_tree_grafted(const std::vector<std::string>& params, void* user_data);
   static void on_tree_pruned(const std::vector<std::string>& params, void* user_data);

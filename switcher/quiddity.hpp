@@ -140,7 +140,7 @@ class Quiddity {
   // configuration tree. When manager is loaded with a config file,
   // the branch of the tree corresponding to the quiddity type
   // is given to the quiddity. There is no constrain about how quiddity
-  // sjhould use this configuration
+  // should use this configuration
   InfoTree::ptr configuration_tree_;
 
   // properties
