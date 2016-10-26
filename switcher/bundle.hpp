@@ -53,7 +53,6 @@ class Bundle : public Quiddity, public StartableQuiddity {
   };
 
  private:
-  bool startable_{false};
   std::vector<std::string> start_quids_{};
   std::string reader_quid_{};
   ShmdataConnector shmcntr_;

@@ -2,10 +2,14 @@
 
 pkg_check_modules(GTK gtk+-3.0)
 
+if(GTK_FOUND AND NOT OSX)
+    set(ENABLED TRUE)
+endif()
+
 set(PLUGIN_NAME "plugin-gtk")
 set(PLUGIN_DESCRIPTION "GTK Plugin")
 
-option(PLUGIN_GTK "${PLUGIN_DESCRIPTION}" ${GTK_FOUND})
+option(PLUGIN_GTK "${PLUGIN_DESCRIPTION}" ${ENABLED})
 add_feature_info("${PLUGIN_NAME}" PLUGIN_GTK "${PLUGIN_DESCRIPTION}")
 
 if (PLUGIN_GTK)

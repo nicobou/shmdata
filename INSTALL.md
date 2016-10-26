@@ -84,4 +84,24 @@ It will display a list of the configuration variables for the build.
 
         make package_source_test
         
-    
+
+# Mac OS Installation
+* Install homebrew
+
+        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+* Install dependencies
+
+        brew install cmake pkg-config gsoap glib json-glib gstreamer gst-libav gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly liblo portmidi python3
+
+* Build & Install
+
+        mkdir build
+        cd build
+        cmake ..
+        make
+        sudo make install
+
+
+## Mac OS Notes
+* If you are using homebrew to install dependencies and encountering errors about ```-lintl```, you have to ```brew link gettext```

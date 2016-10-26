@@ -38,6 +38,11 @@ if (PLUGIN_SYPHON)
         syphonreader.mm
         )
 
+    # WARNINGS
+    add_definitions(-Wno-error=deprecated-declarations)
+    add_definitions(-Wno-error=objc-method-access)
+    add_definitions(-Wno-error=receiver-expr)
+    
     target_compile_options(syphonsrc PUBLIC -F ${SYPHON_LIBRARIES})
     target_link_libraries(syphonsrc "-F ${SYPHON_LIBRARIES} -framework Syphon")
     add_dependencies(syphonsrc ${SWITCHER_LIBRARY})

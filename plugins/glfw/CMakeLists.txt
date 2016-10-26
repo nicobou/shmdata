@@ -34,12 +34,14 @@ if (PLUGIN_GLFW)
     if (OSX)
         link_libraries(
             "-framework OpenGL"
+            "-framework Cocoa"
+            "-framework IOKit"
+            "-framework Corevideo"
         )
     else ()
-	# The following are needed because we statically link libglfw.
         link_libraries(
             GL
-	    rt
+            rt
             m
             X11
             Xrandr
