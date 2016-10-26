@@ -12,70 +12,87 @@ import getopt
 import os
 import shutil
 import subprocess
+import multiprocessing
 import atexit
 import re
 import datetime
 
-libs_root_path  = os.path.join(os.path.expanduser("~"), 'src', 'releases')
-libraries       = ['shmdata', 'switcher']
-version_file    = 'configure.ac'
-version_pattern = 'AC_INIT\(.+(\d+\.\d+\.\d+).+\)'
-github_path     = 'git@github.com:sat-metalab'
-remote_repo     = 'origin'
-bringup_branch  = 'master'
-working_branch  = 'develop'
-release_branch  = 'release'
-changelog_file  = 'changelog'
-check_success   = False
+libs_root_path = os.path.join(os.path.expanduser("~"), 'src', 'releases')
+libraries = ['shmdata', 'switcher']
+version_file = 'CMakeLists.txt'
+
+version_pattern = 'set\({}_VERSION_(\S+)\s+(\d+)\)'
+github_path = 'git@github.com:sat-metalab'
+remote_repo = 'origin'
+bringup_branch = 'master'
+working_branch = 'develop'
+release_branch = 'release'
+changelog_file = 'changelog'
+success = True
 
 
-def parse_version_number(lib, version_regex):
-    version = ''
-
+def parse_version_number(lib):
     config_file = os.path.join(libs_root_path, lib, version_file)
     with open(config_file) as file:
+        major = minor = patch = -1
         for line in file:
-            version_line = version_regex.search(line)
-            if version_line:
-                version = version_line.group(1).split('.')
-                for i,subversion in enumerate(version):
-                    version[i] = int(subversion)
-                break
+            version_line = re.search(version_pattern.format(lib.upper()), line)
+            if version_line and len(version_line.groups()) == 2:
+                type = version_line.group(1)
+                version = version_line.group(2)
+                if type == 'MAJOR':
+                    major = int(version)
+                elif type == 'MINOR':
+                    minor = int(version)
+                elif type == 'PATCH':
+                    patch = int(version)
+                    break
 
-    if version:
-        print 'Current version found for library {} major: {}, minor: {}, hotfix: {}'.format(lib, version[0], version[1], version[2])
+    version_number = [-1, -1, -1]
+    if major != -1 and minor != -1 and patch != -1:
+        print 'Current version found for library {} major: {}, minor: {}, hotfix: {}'.format(lib, major,
+                                                                                             minor, patch)
+        version_number = [major, minor, patch]
     else:
         printerr('Current version number not found in {}'.format(config_file))
 
-    return version
+    return version_number
 
 
-def increase_version_number(version, version_increase, force_bugfix_version=0):
+def increase_version_number(version, version_increase):
     if version:
         if version_increase == 1:
             version[1] = 0
-            version[2] = force_bugfix_version
-        if version_increase == 2:
-            version[2] = force_bugfix_version
+            version[2] = 0
+        elif version_increase == 2:
+            version[2] = 0
         version[version_increase - 1] += 1
     else:
         printerr('Invalid version number, cannot proceed to increase it.')
-    return version
 
 
-def commit_version_number(lib, new_version, version_regex):
+def commit_version_number(lib, new_version):
     config_file = os.path.join(libs_root_path, lib, version_file)
     changed_file = config_file + ".tmp"
     with open(config_file) as old_file:
         with open(changed_file, 'w') as new_file:
             for line in old_file:
-                version_line = version_regex.search(line)
-                if version_line:
-                    line = re.sub(r'\d+.\d+.\d+', '{}.{}.{}'.format(new_version[0], new_version[1], new_version[2]), line)
+                version_line = re.search(version_pattern.format(lib.upper()), line)
+                if version_line and len(version_line.groups()) == 2:
+                    type = version_line.group(1)
+                    if type == 'MAJOR':
+                        line = re.sub(r'\d+', '{}'.format(new_version[0]), line)
+                    elif type == 'MINOR':
+                        line = re.sub(r'\d+', '{}'.format(new_version[1]), line)
+                    elif type == 'PATCH':
+                        line = re.sub(r'\d+', '{}'.format(new_version[2]), line)
+
                 new_file.write(line)
+
     os.rename(changed_file, config_file)
     git_add([config_file])
-    assert git_commit('Version {}.{}.{}'.format(new_version[0], new_version[1], new_version[2])) == 0, 'Failed to commit version number.'
+    assert git_commit('Version {}.{}.{}'.format(new_version[0], new_version[1],
+                                                new_version[2])) == 0, 'Failed to commit version number.'
 
 
 def git_push(remote_repo, remote_branch):
@@ -117,13 +134,6 @@ def git_pull():
     return subprocess.call('git pull', shell=True)
 
 
-def git_submodule(recursive=False):
-    recursive_str = ''
-    if recursive:
-        recursive_str = '--recursive'
-    return subprocess.call('git submodule update --init {}'.format(recursive_str), shell=True)
-
-
 def get_git_config(property, default_value):
     config_property = default_value
     git_config_full = subprocess.check_output('git config --list', shell=True).strip().split('\n')
@@ -138,7 +148,6 @@ def get_git_config(property, default_value):
 
 def update_changelog(lib, version):
     print 'Generating release notes'
-    commit_messages = []
     orig_file_name = 'NEWS.md'
     new_file_name = 'NEWS.md.new'
     authors_file_name = 'AUTHORS.md'
@@ -146,7 +155,9 @@ def update_changelog(lib, version):
     git_checkout(working_branch)
     latest_tag = subprocess.check_output('git describe --tags --abbrev=0', shell=True)
     tag_date = subprocess.check_output('git log -1 --format=%ai {}'.format(latest_tag), shell=True)
-    commits = re.split(r'commit [a-z0-9]+' , subprocess.check_output('git log --first-parent --since="{}"'.format(tag_date), shell=True).strip())
+    commits = re.split(r'commit [a-z0-9]+',
+                       subprocess.check_output('git log --first-parent --since="{}"'.format(tag_date),
+                                               shell=True).strip())
     with open(new_file_name, 'w') as new_file:
         with open(orig_file_name, 'r') as old_file:
             for i, line in enumerate(old_file.readlines()):
@@ -155,7 +166,8 @@ def update_changelog(lib, version):
                     continue
                 new_file.write('\n{} {}.{}.{} ({})\n---------------------------\n'
                                'This is an official release in the {}.{} stable series.\n\n'
-                               .format(lib, version[0], version[1], version[2], datetime.date.today(), version[0], version[1]))
+                               .format(lib, version[0], version[1], version[2], datetime.date.today(), version[0],
+                                       version[1]))
                 for commit in commits:
                     elements = commit.split('\n    ')
                     if len(elements) < 2:
@@ -171,14 +183,18 @@ def update_changelog(lib, version):
     subprocess.call([get_git_config('core.editor', 'vim'), new_file_name])
     os.rename(new_file_name, orig_file_name)
     subprocess.call(os.path.join(sys.path[0], 'make_authors_from_git.sh'), shell=True)
-    git_add([orig_file_name, authors_file_name])
+    git_add([orig_file_name])
+    if subprocess.call(os.path.join(sys.path[0], 'make_authors_from_git.sh'), shell=True) != 0:
+        git_add([authors_file_name])
     git_commit('Updated changelog for version {}.{}.{}.'.format(version[0], version[1], version[2]))
 
 
-@atexit.register
+@atexit.register  # Only clean on exit if the release was successful.
 def cleanup_folder():
-    if os.path.exists(libs_root_path) and check_success:
+    global success
+    if os.path.exists(libs_root_path) and success:
         shutil.rmtree(libs_root_path)
+    success = False
 
 
 def printerr(err):
@@ -191,8 +207,7 @@ def usage():
 
 
 if __name__ == '__main__':
-    version_regex = re.compile(version_pattern)
-    version_release = []
+    release_version = []
     version_increase = 0
     lib = ''
 
@@ -218,7 +233,7 @@ if __name__ == '__main__':
         usage()
         printerr('Target library not provided')
 
-    cleanup_folder()
+    cleanup_folder()  # Always remove the folder when launching the script.
     os.mkdir(libs_root_path)
     os.chdir(libs_root_path)
 
@@ -236,38 +251,51 @@ if __name__ == '__main__':
 
     lib_repo = '{}/{}.git'.format(github_path, lib)
 
-    assert(git_clone(lib_repo) == 0, 'Could not fetch code base for library {} at {}'.format(lib, lib_repo))
+    assert git_clone(lib_repo) == 0, 'Could not fetch code base for library {} at {}'.format(lib, lib_repo)
 
     os.chdir(os.path.join(libs_root_path, lib))
     git_checkout(working_branch)
 
-    assert(git_submodule(True) == 0, 'Could not fetch summodules')
-
-    version_release = parse_version_number(lib, version_regex)
-    version_release = increase_version_number(version_release, version_increase)
+    release_version = parse_version_number(lib)
+    assert release_version != [-1, -1, -1]
+    increase_version_number(release_version, version_increase)
 
     print 'Version number found for all libraries, now executing unit tests.'
 
-    if subprocess.call('./autogen.sh && ./configure && make -j check', shell=True) != 0:
+    build_dir = os.path.join(libs_root_path, lib, 'build')
+    os.mkdir(build_dir)
+    os.chdir(build_dir)
+
+    if subprocess.call('cmake .. && make -j {} package_source_test'
+                               .format(multiprocessing.cpu_count()), shell=True) != 0:
         printerr('{} unit tests failed, stopping the release.'.format(lib))
 
-    check_success = True
+    os.chdir(os.path.join(libs_root_path, lib))
+
     print 'All unit tests passed successfully, now creating new branches for release.'
 
-    update_changelog(lib, version_release)
-    new_branch = '{}/version-{}.{}.{}'.format(release_branch, version_release[0], version_release[1], version_release[2])
+    update_changelog(lib, release_version)
+    new_branch = '{}/version-{}.{}.{}'.format(release_branch, release_version[0], release_version[1],
+                                              release_version[2])
     print 'Creating branch {} for release of {} library.'.format(new_branch, lib)
     git_checkout(new_branch, True)
-    commit_version_number(lib, version_release, version_regex)
+    commit_version_number(lib, release_version)
     assert git_checkout(bringup_branch) == 0, 'Could not checkout branch {}'.format(bringup_branch)
-    assert git_merge(new_branch, True) == 0, 'Merge from branch {} into {} did not work.'.format(new_branch, bringup_branch)
-    git_tag('{}.{}.{}'.format(version_release[0], version_release[1], version_release[2]))
-    assert git_push(remote_repo, bringup_branch) == 0, 'Failed to push branch {} into {}/{}'.format(bringup_branch, remote_repo, bringup_branch)
+    assert git_merge(new_branch, True) == 0, 'Merge from branch {} into {} did not work.'.format(new_branch,
+                                                                                                 bringup_branch)
+    git_tag('{}.{}.{}'.format(release_version[0], release_version[1], release_version[2]))
+    assert git_push(remote_repo, bringup_branch) == 0, 'Failed to push branch {} into {}/{}'.format(bringup_branch,
+                                                                                                    remote_repo,
+                                                                                                    bringup_branch)
     # If it's a bugfix release, we keep an odd number for develop and even for master.
     assert git_checkout(working_branch) == 0, 'Could not checkout branch {}'.format(working_branch)
-    version_develop = list(version_release)
     if version_increase == 3:
-        version_develop = increase_version_number(version_develop, version_increase, 1)
-    commit_version_number(lib, version_develop, version_regex)
-    git_tag('{}.{}.{}'.format(version_develop[0], version_develop[1], version_develop[2]))
-    assert git_push(remote_repo, working_branch) == 0, 'Failed to push branch {} into {}/{}'.format(working_branch, remote_repo, working_branch)
+        release_version[2] += 1
+    else:
+        release_version[2] = 1
+    commit_version_number(lib, release_version)
+    git_tag('{}.{}.{}'.format(release_version[0], release_version[1], release_version[2]))
+    assert git_push(remote_repo, working_branch) == 0, 'Failed to push branch {} into {}/{}'.format(working_branch,
+                                                                                                    remote_repo,
+                                                                                                    working_branch)
+    # success = True
