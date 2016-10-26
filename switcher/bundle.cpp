@@ -222,7 +222,7 @@ void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_
     std::smatch prop_match;
     if (std::regex_search(params[0], prop_match, prop_rgx)) {
       std::string prop_name = prop_match[1];
-      if (context->quid_spec_.expose_start && prop_name == "started" ||
+      if ((context->quid_spec_.expose_start && prop_name == "started") ||
           context->quid_spec_.blacklisted_params.end() !=
               std::find(context->quid_spec_.blacklisted_params.begin(),
                         context->quid_spec_.blacklisted_params.end(),
@@ -231,7 +231,7 @@ void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_
       }
       static std::regex prop_created_rgx("\\.?property\\.[^.]*");
       if (std::regex_match(params[0], prop_created_rgx)) {
-        if (context->quid_spec_.expose_start && prop_name == "started" ||
+        if ((context->quid_spec_.expose_start && prop_name == "started") ||
             context->quid_spec_.blacklisted_params.end() !=
                 std::find(context->quid_spec_.blacklisted_params.begin(),
                           context->quid_spec_.blacklisted_params.end(),
@@ -292,7 +292,7 @@ void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_d
     std::smatch prop_match;
     if (std::regex_search(params[0], prop_match, prop_rgx)) {
       std::string prop_name = prop_match[1];
-      if (context->quid_spec_.expose_start && prop_name == "started" ||
+      if ((context->quid_spec_.expose_start && prop_name == "started") ||
           context->quid_spec_.blacklisted_params.end() !=
               std::find(context->quid_spec_.blacklisted_params.begin(),
                         context->quid_spec_.blacklisted_params.end(),
