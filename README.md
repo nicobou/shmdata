@@ -56,11 +56,27 @@ Here is how to build and install it on Debian GNU/Linux or Ubuntu::
 
         make package_source_test
         
-    
 
-# Mac OS Notes
+# Mac OS Installation
+* Install homebrew
+
+        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+* Install dependencies
+
+        brew install cmake pkg-config gstreamer gst-plugins-base python3
+
+* Build & Install
+
+        mkdir build
+        cd build
+        cmake ..
+        make
+        sudo make install
+
+
+## Mac OS Notes
 * If you are using homebrew to install dependencies and encountering errors about ```-lintl```, you have to ```brew link gettext```
-* If you are using python3 from homebrew, cmake will probably not detect it
 
 # Authors
 see git history

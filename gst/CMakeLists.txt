@@ -32,7 +32,8 @@ if (WITH_GST)
         ${GST_LIBRARIES}
     )
 
-    add_library(gstshmdata SHARED
+    # Using MODULE as this needs to be an *.so file on mac, not a *.dylib
+    add_library(gstshmdata MODULE
         gstshmdata.c
         gstshmdatasink.c
         gstshmdatasrc.c
