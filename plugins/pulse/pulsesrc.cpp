@@ -21,7 +21,6 @@
 
 #include "./pulsesrc.hpp"
 #include "switcher/gprop-to-prop.hpp"
-#include "switcher/gst-utils.hpp"
 #include "switcher/shmdata-utils.hpp"
 
 namespace switcher {
@@ -36,7 +35,21 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
 
 PulseSrc::PulseSrc(const std::string&)
     : mainloop_(std::make_unique<GlibMainLoop>()),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {}
+      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
+  pmanage<MPtr(&PContainer::make_group)>(
+      "advanced", "Advanced configuration", "Advanced configuration");
+  pmanage<MPtr(&PContainer::make_parented_selection<>)>(
+      "save_mode",
+      "advanced",
+      [this](const size_t& val) {
+        save_device_enum_.select(val);
+        return true;
+      },
+      [this]() { return save_device_enum_.get(); },
+      "Save Mode",
+      "Save Audio Capture Device by device or by port.",
+      save_device_enum_);
+}
 
 bool PulseSrc::init() {
   init_startable(this);
@@ -163,21 +176,33 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
     // registering enum for devices
     context->update_capture_device();
 
-    context->devices_id_ = context->pmanage<MPtr(&PContainer::make_selection<>)>(
-        "device",
-        [context](const size_t& val) {
-          context->devices_.select(val);
-          return true;
-        },
-        [context]() { return context->devices_.get(); },
-        "Device",
-        "Audio capture device to use",
-        context->devices_);
-    // signal init we are done
-    std::unique_lock<std::mutex> lock(context->devices_mutex_);
+    auto set = [context](const size_t& val) {
+      if (context->is_loading_) return false;
+      context->devices_.select(val);
+      return true;
+    };
+    auto get = [context]() { return context->devices_.get(); };
+
+    if (!context->devices_id_) {
+      context->devices_id_ = context->pmanage<MPtr(&PContainer::make_selection<>)>(
+          "device", set, get, "Device", "Audio capture device to use", context->devices_);
+    } else {
+      context->pmanage<MPtr(&PContainer::replace)>(
+          context->devices_id_,
+          std::make_unique<Property2<Selection<>, Selection<>::index_t>>(
+              set,
+              get,
+              "Device",
+              "Audio capture device to use",
+              context->devices_,
+              context->devices_.size() - 1));
+      context->pmanage<MPtr(&PContainer::notify)>(context->devices_id_);
+    }
+
     context->devices_cond_.notify_all();
     return;
   }
+
   DeviceDescription description;
   switch (i->state) {
     case PA_SOURCE_INIT:
@@ -205,12 +230,22 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
       // g_print ("state: SUSPENDED \n");
       break;
   }
+
   description.name_ = i->name;
+
   if (i->description == nullptr)
     description.description_ = "";
   else
     description.description_ = i->description;
   description.sample_format_ = pa_sample_format_to_string(i->sample_spec.format);
+
+  if (i->proplist && pa_proplist_contains(i->proplist, "device.bus_path")) {
+    const void* bus_path = nullptr;
+    size_t size;
+    pa_proplist_get(i->proplist, "device.bus_path", &bus_path, &size);
+    if (size) description.bus_path_ = static_cast<const char*>(bus_path);
+  }
+
   gchar* rate = g_strdup_printf("%u", i->sample_spec.rate);
   description.sample_rate_ = rate;
   g_free(rate);
@@ -245,12 +280,13 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
   } else
     description.active_port_ = "n/a";
   context->capture_devices_.push_back(description);
-  // if (i->formats) {
-  //   uint8_t j;
-  //   printf("\tFormats:\n");
-  //   for (j = 0; j < i->n_formats; j++)
-  // printf("\t\t%s\n", pa_format_info_snprint(f, sizeof(f), i->formats[j]));
-  // }
+  context->update_capture_device();
+  //  if (i->formats) {
+  //    uint8_t j;
+  //    printf("\tFormats:\n");
+  //    for (j = 0; j < i->n_formats; j++)
+  //      printf("\t\t%s\n", pa_format_info_snprint(f, sizeof(f), i->formats[j]));
+  //  }
 }
 
 void PulseSrc::make_device_description(pa_context* pulse_context) {
@@ -325,5 +361,60 @@ bool PulseSrc::stop() {
   pmanage<MPtr(&PContainer::enable)>(devices_id_);
   return true;
 }
+
+InfoTree::ptr PulseSrc::on_saving() {
+  auto res = InfoTree::make();
+  DeviceDescription& desc = capture_devices_[devices_.get()];
+  res->graft(".device_id", InfoTree::make(desc.name_));
+  res->graft(".bus_path", InfoTree::make(desc.bus_path_));
+  std::string save_mode = save_device_enum_.get() == 0 ? "port" : "device";
+  res->graft(".save_by", InfoTree::make(save_mode));
+  return res;
+}
+
+void PulseSrc::on_loading(InfoTree::ptr&& tree) {
+  if (!tree || tree->empty()) {
+    g_warning("loading deprecated pulsesrc device save: devices may swap when reloading");
+    return;
+  }
+
+  std::string device_id = tree->branch_read_data<std::string>(".device_id");
+  std::string bus_path = tree->branch_read_data<std::string>(".bus_path");
+  std::string save_mode = tree->branch_read_data<std::string>(".save_by");
+
+  if (save_mode == "port") {
+    auto it = std::find_if(
+        capture_devices_.begin(), capture_devices_.end(), [&](const DeviceDescription& capt) {
+          return capt.bus_path_ == bus_path;
+        });
+    if (capture_devices_.end() == it) {
+      g_warning("pulsesrc device not found at this port %s", bus_path.c_str());
+      g_message(
+          "Audio capture device not found on its saved port when loading saved scenario, "
+          "defaulting to first available device");
+    } else {
+      pmanage<MPtr(&PContainer::set<Selection<>::index_t>)>(devices_id_,
+                                                            it - capture_devices_.begin());
+    }
+  } else {  // save by device
+    auto it = std::find_if(capture_devices_.begin(),
+                           capture_devices_.end(),
+                           [&](const DeviceDescription& capt) { return capt.name_ == device_id; });
+    if (capture_devices_.end() == it) {
+      g_warning("pulsesrc device not found (%s)", device_id.c_str());
+      g_message(
+          "Saved audio capture not found when loading saved scenario, defaulting to first "
+          "available device");
+    } else {
+      pmanage<MPtr(&PContainer::set<Selection<>::index_t>)>(devices_id_,
+                                                            it - capture_devices_.begin());
+    }
+  }
+
+  // Locking the device selection while loading.
+  is_loading_ = true;
+}
+
+void PulseSrc::on_loaded() { is_loading_ = true; }
 
 }  // namespace switcher
