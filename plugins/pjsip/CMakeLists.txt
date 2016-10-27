@@ -83,6 +83,7 @@ if (PLUGIN_SIP)
         crypto
         m
         pthread
+        uuid
         )
 
     # PLUGIN
