@@ -14,14 +14,15 @@ if (PLUGIN_GSOAP)
 
     # Services
 
-    set(GSOAP_GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
-
-    add_custom_command(OUTPUT generated/webservices/soapC.cpp generated/webservices/soapcontrolProxy.cpp generated/webservices/soapcontrolService.cpp
-        COMMAND ${CMAKE_COMMAND} -E make_directory generated/webservices
-        COMMAND soapcpp2 -c++11 -i -d generated/webservices ${CMAKE_CURRENT_SOURCE_DIR}/ctrl-webservice-definition.hpp
+    # In order to clean up the mess in CLion, we kind of have to generated the sources outside of the build directory
+    # It keeps it from complaining about out of project source files
+    set(GSOAP_GEN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)
+    add_custom_command(OUTPUT ${GSOAP_GEN_DIR}/webservices/soapC.cpp ${GSOAP_GEN_DIR}/webservices/soapcontrolProxy.cpp ${GSOAP_GEN_DIR}/webservices/soapcontrolService.cpp
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${GSOAP_GEN_DIR}/webservices
+        COMMAND soapcpp2 -c++11 -i -d ${GSOAP_GEN_DIR}/webservices ${CMAKE_CURRENT_SOURCE_DIR}/ctrl-webservice-definition.hpp
         )
 
-    add_custom_target(webservices DEPENDS generated/webservices/soapC.cpp)
+    add_custom_target(webservices DEPENDS ${GSOAP_GEN_DIR}/webservices/soapC.cpp)
 
     include_directories(
         ${GSOAP_INCLUDE_DIRS}

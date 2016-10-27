@@ -148,8 +148,10 @@ add_subdirectory(src)
 # Documentation
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
-    configure_file("doxyfile.in" "${CMAKE_CURRENT_SOURCE_DIR}/doxyfile")
-    add_custom_target(doc COMMAND ${DOXYGEN_EXECUTABLE} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    configure_file("doxyfile.in" "doxyfile")
+    add_custom_target(doc
+        COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/doxyfile
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif ()
 
 # Uninstall
