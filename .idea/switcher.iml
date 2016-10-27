@@ -56,7 +56,6 @@
           <root url="file:///usr/local/include" />
           <root url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/glfw/glfw-prefix/src/glfw/include" />
           <root url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/gsoap/generated" />
-          <root url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/__default__0/pjproject/build/pjproject/src/pjproject/install_dir/include" />
         </CLASSES>
         <SOURCES>
           <root url="file:///usr/include" />
@@ -68,7 +67,6 @@
           <root url="file:///usr/local/include" />
           <root url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/glfw/glfw-prefix/src/glfw/include" />
           <root url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/gsoap/generated" />
-          <root url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/__default__0/pjproject/build/pjproject/src/pjproject/install_dir/include" />
         </SOURCES>
         <excluded>
           <root url="file://$USER_HOME$/.CLion2016.2/system/cmake/generated/switcher-129c1b7f/129c1b7f/Debug0/plugins/gsoap/generated/webservices/soapC.cpp" />
