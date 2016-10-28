@@ -23,10 +23,6 @@
 #include "switcher/quiddity-basic-test.hpp"
 #include "switcher/quiddity-manager.hpp"
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
 int main() {
   bool success = true;
 
@@ -34,13 +30,10 @@ int main() {
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("test_manager");
 
-#ifdef HAVE_CONFIG_H
-    gchar* usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
+    gchar* usr_plugin_dir = g_strdup_printf("./");
     manager->scan_directory_for_plugins(usr_plugin_dir);
     g_free(usr_plugin_dir);
-#else
-    return 1;
-#endif
+
     if (!switcher::QuiddityBasicTest::test_full(manager, "pulsesrc")) success = false;
     if (!switcher::QuiddityBasicTest::test_full(manager, "pulsesink")) success = false;
   }  // end of scope is releasing the manager

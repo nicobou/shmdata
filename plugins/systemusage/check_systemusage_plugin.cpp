@@ -25,13 +25,9 @@
 #include "switcher/quiddity-basic-test.hpp"
 #include "switcher/quiddity-manager.hpp"
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
 void quiddity_created_removed_cb(std::string /*subscriber_name */,
                                  std::string quiddity_name,
-                                 std::string signal_name,
+                                 std::string /*signal_name*/,
                                  std::vector<std::string> params,
                                  void* user_data) {
   // g_print("%s: %s\n", signal_name.c_str(), params[0].c_str());
@@ -46,13 +42,10 @@ int main() {
   {
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("test_manager");
-#ifdef HAVE_CONFIG_H
-    gchar* usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
+    gchar* usr_plugin_dir = g_strdup_printf("./");
     manager->scan_directory_for_plugins(usr_plugin_dir);
     g_free(usr_plugin_dir);
-#else
-    return 1;
-#endif
+
     if (!switcher::QuiddityBasicTest::test_full(manager, "systemusage")) success = false;
   }  // end of scope is releasing the manager
   if (success)

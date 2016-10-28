@@ -9,17 +9,27 @@ INSTALL
 Build and install **switcher** from the command line:
 
 ```
-$ sudo apt-get install automake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libgtk-3-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev
+$ sudo apt-get install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libgtk-3-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev
 $ git submodule update --init --recursive
-$ ./autogen.sh
-$ ./configure
+$ mkdir build
+$ cd build
+$ cmake ..
 $ make -j"$(nproc)"
 $ sudo make install
 $ sudo ldconfig
 ```
 
-## Build Nvidia Video Codec 7 plugin
+You can verify and change the build configuration with *ccmake*. You first need to install it:
 
+    $ sudo apt-get install cmake-curses-gui
+    
+Then, after running `cmake ..`, from the build directory run:
+
+    $ ccmake ..
+    
+It will display a list of the configuration variables for the build.
+
+## Build Nvidia Video Codec 7 plugin
 
 1. Check that you are running Nvidia drivers:
 
@@ -27,7 +37,7 @@ $ sudo ldconfig
     $ nvidia-settings
     ```
 
-1. Install Nvidia drivers (min. version `367.35`) and CUDA toolkit:
+2. Install Nvidia drivers (min. version `367.35`) and CUDA toolkit:
 
     > **Note**:  
     > You may need to first add the PPA `graphics-drivers/ppa`:  
@@ -37,21 +47,61 @@ $ sudo ldconfig
     $ sudo apt-get install nvidia-<driver-ver-number> nvidia-<driver-ver-number>-dev nvidia-cuda-toolkit
     ```
 
-1. In the **switcher** directory, configure **switcher** as follows:
+3. If running `cmake ..` does not automatically detect the right driver, in the **switcher** build directory, configure **switcher** as follows:
 
     ```
-    $ NVENC_LIBS='-L/usr/lib/nvidia-<driver-ver-number>' ./configure
+    $ cmake .. -DNVIDIA_PATH=usr/lib/nvidia-<driver-ver-number>
     ```
 
     For example, replacing `<driver-ver-number>` with the installed Nvidia driver version:
 
     ```
-    $ NVENC_LIBS='-L/usr/lib/nvidia-367' ./configure
+    $ cmake .. -DNVIDIA_PATH=/usr/lib/nvidia-367
     ```
 
-1. Compile and install as usual:
+4. Compile and install as usual:
 
     ```
     $ make -j"$(nproc)"
     $ sudo make install
     ```
+
+## Other build options
+
+* To run the tests
+
+        make test
+    
+* To generate installation packages (as configured in CMakeLists.txt)
+
+        make package
+        
+* To generate a source package
+
+        make package_source
+        
+* To test the source package, this will create the source package and then try to build and test it
+
+        make package_source_test
+        
+
+# Mac OS Installation
+* Install homebrew
+
+        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+* Install dependencies
+
+        brew install cmake pkg-config gsoap glib json-glib gstreamer gst-libav gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly liblo portmidi python3
+
+* Build & Install
+
+        mkdir build
+        cd build
+        cmake ..
+        make
+        sudo make install
+
+
+## Mac OS Notes
+* If you are using homebrew to install dependencies and encountering errors about ```-lintl```, you have to ```brew link gettext```

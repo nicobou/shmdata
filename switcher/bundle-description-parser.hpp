@@ -31,8 +31,11 @@ struct quiddity_spec_t {
   std::string type{};
   std::string name{};
   std::map<std::string, std::string> params{};
+  std::vector<std::string> blacklisted_params{};
   bool expose_shmr{false};
   bool expose_shmw{false};
+  bool expose_prop{true};
+  bool expose_start{false};
   std::vector<std::string> connects_to_{};
   std::vector<std::string> connected_to_{};
 };

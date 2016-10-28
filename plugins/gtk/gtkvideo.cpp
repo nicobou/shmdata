@@ -25,9 +25,6 @@
 #include "switcher/quiddity-manager-impl.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
 #include "./gtkvideo.hpp"
 
 namespace switcher {
@@ -490,7 +487,7 @@ bool GTKVideo::can_sink_caps(std::string caps) {
 GstBusSyncReply GTKVideo::bus_sync(GstMessage* msg) {
   if (!gst_is_video_overlay_prepare_window_handle_message(msg)) return GST_BUS_PASS;
   GstVideoOverlay* overlay = GST_VIDEO_OVERLAY(GST_MESSAGE_SRC(msg));
-  gst_video_overlay_set_window_handle(overlay, window_handle_);
+  gst_video_overlay_set_window_handle(overlay, (guintptr) window_handle_);
   gst_message_unref(msg);
   return GST_BUS_DROP;
 }

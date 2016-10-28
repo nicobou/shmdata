@@ -1,0 +1,12 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: @PACKAGE_NAME@
+Description: @PACKAGE_DESCRIPTION@
+URL: @PACKAGE_URL@
+Version: @PACKAGE_VERSION@
+Requires.private: gstreamer-1.0 >= 1.0, json-glib-1.0, glib-2.0, gmodule-2.0, shmdata-@SHMDATA_REQUIRED_VERSION@
+Libs: -L${libdir} -lswitcher-@SWITCHER_API_VERSION@
+Cflags: -std=c++14 -I${includedir}/switcher-@SWITCHER_API_VERSION@

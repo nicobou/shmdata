@@ -28,10 +28,6 @@
 #include "switcher/quiddity-basic-test.hpp"
 #include "switcher/quiddity-manager.hpp"
 
-#ifdef HAVE_CONFIG_H
-#include "../../../config.h"
-#endif
-
 static bool success = false;
 static std::atomic<bool> do_continue{true};
 static std::condition_variable cond_var{};
@@ -60,13 +56,10 @@ void on_tree_grafted(const std::string& /*subscriber_name */,
 int main() {
   {
     QuiddityManager::ptr manager = QuiddityManager::make_manager("test_manager");
-#ifdef HAVE_CONFIG_H
-    gchar* usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
+
+    gchar* usr_plugin_dir = g_strdup_printf("./");
     manager->scan_directory_for_plugins(usr_plugin_dir);
     g_free(usr_plugin_dir);
-#else
-    return 1;
-#endif
 
     // testing if two nvenc can be created simultaneously
     std::vector<std::string> nvencs;

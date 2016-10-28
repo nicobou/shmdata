@@ -15,6 +15,7 @@ fi
 git log --format='%aN' | \
     sed 's/Francois/François/' | \
     sed 's/François/François/' | \
+    sed 's/ubald/François Ubald Brien/' | \
     sed 's/nicolas/Nicolas Bouillot/' | \
     grep -v metalab | \
     grep -v 4d3d3d3 | \

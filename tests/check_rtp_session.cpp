@@ -15,10 +15,6 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include <gst/gst.h>
 #include <cassert>
 #include <chrono>
@@ -113,13 +109,11 @@ int main() {
     std::unique_lock<std::mutex> lock(cv_m);
 
     QuiddityManager::ptr manager = QuiddityManager::make_manager("rtptest");
-#ifdef HAVE_CONFIG_H
-    gchar* usr_plugin_dir = g_strdup_printf("../plugins/gsoap/%s", LT_OBJDIR);
+
+    gchar* usr_plugin_dir = g_strdup_printf("../plugins/gsoap");
     manager->scan_directory_for_plugins(usr_plugin_dir);
     g_free(usr_plugin_dir);
-#else
-    return 1;
-#endif
+
     // creating a SOAP server that will also distribute SDP file through the 'magic' url
     // magic url is
     // http://<soap_server>:<soap_port>/sdp?rtpsession=<rtp_quiddity_name>&destination=<rtp_destination_name>

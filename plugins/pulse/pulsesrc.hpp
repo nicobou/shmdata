@@ -50,6 +50,7 @@ class PulseSrc : public Quiddity, public StartableQuiddity {
     std::string channels_{};
     std::vector<std::pair<std::string /*port*/, std::string /*description*/>> ports_{};
     std::string active_port_{};
+    std::string bus_path_{};
   } DeviceDescription;
 
   std::unique_ptr<GlibMainLoop> mainloop_;
@@ -68,6 +69,9 @@ class PulseSrc : public Quiddity, public StartableQuiddity {
   PContainer::prop_id_t devices_id_{0};
   PContainer::prop_id_t volume_id_{0};
   PContainer::prop_id_t mute_id_{0};
+  Selection<> save_device_enum_{{"port", "device"}, 0};
+  bool is_loading_{false};
+
   // pulse_audio
   pa_glib_mainloop* pa_glib_mainloop_{nullptr};
   pa_mainloop_api* pa_mainloop_api_{nullptr};
@@ -81,6 +85,10 @@ class PulseSrc : public Quiddity, public StartableQuiddity {
   bool init() final;
   bool start() final;
   bool stop() final;
+  InfoTree::ptr on_saving() final;
+  void on_loading(InfoTree::ptr&& tree) final;
+  void on_loaded() final;
+
   bool remake_elements();
   static gboolean async_get_pulse_devices(void* user_data);
   void update_capture_device();

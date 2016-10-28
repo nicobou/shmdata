@@ -25,21 +25,15 @@
 #include "switcher/quiddity-basic-test.hpp"
 #include "switcher/quiddity-manager.hpp"
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
 int main() {
   {
     using namespace switcher;
     QuiddityManager::ptr manager = QuiddityManager::make_manager("test_manager");
-#ifdef HAVE_CONFIG_H
-    gchar* usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
+
+    gchar* usr_plugin_dir = g_strdup_printf("./");
     manager->scan_directory_for_plugins(usr_plugin_dir);
     g_free(usr_plugin_dir);
-#else
-    return 1;
-#endif
+
     assert(manager->create("vrpnsrc", "src") == "src");
     assert(QuiddityBasicTest::test_full(manager, "vrpnsrc"));
     assert(manager->create("vrpnsink", "sink") == "sink");

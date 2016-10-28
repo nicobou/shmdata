@@ -20,10 +20,6 @@
 #ifndef __SWITCHER_RTPSESSION_H__
 #define __SWITCHER_RTPSESSION_H__
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include <gst/gst.h>
 #include <gst/sdp/gstsdpmessage.h>
 #include <condition_variable>
@@ -151,7 +147,7 @@ class RtpSession : public Quiddity {
                                   GstCaps* caps,
                                   gpointer user_data);
   bool make_udp_sinks(const std::string& shmpath, const std::string& rtp_id);
-#if HAVE_OSX
+#if OSX
   static void set_udp_sock(GstElement* udpsink);
 #endif
 };

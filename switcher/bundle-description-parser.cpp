@@ -66,6 +66,22 @@ DescriptionParser::DescriptionParser(const std::string& description,
     }
     quid->connects_to_.push_back(it.sink);
   }
+
+  // check params, build blacklist and remove prefixed '_' if found
+  std::regex rgx("_.+");
+  for (auto& it : quiddities_) {
+    std::map<std::string, std::string> tmp_params;
+    for (auto& prop : it.params) {
+      if (std::regex_match(prop.first, rgx)) {  // remove '_'
+        auto actual_param_name = std::string(prop.first.begin() + 1, prop.first.end());
+        tmp_params[actual_param_name] = prop.second;
+        it.blacklisted_params.push_back(actual_param_name);
+      } else {  // just copy
+        tmp_params[prop.first] = prop.second;
+      }
+    }
+    std::swap(it.params, tmp_params);
+  }
 }
 
 bool DescriptionParser::parse_description(const std::string& description,
@@ -104,6 +120,8 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
   bool type_found = false;
   static const std::string shmr("_shmr");
   static const std::string shmw("_shmw");
+  static const std::string noprop("_no_prop");
+  static const std::string addtostart("_add_to_start");
   quiddity_spec_t quid;
   for (; iter != std::sregex_token_iterator(); ++iter) {
     if (static_cast<std::string>(*iter).empty()) continue;
@@ -149,6 +167,14 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
     }
     if (*iter == shmw) {
       quid.expose_shmw = true;
+      continue;
+    }
+    if (*iter == noprop) {
+      quid.expose_prop = false;
+      continue;
+    }
+    if (*iter == addtostart) {
+      quid.expose_start = true;
       continue;
     }
     if (!parse_param(*iter, quid)) return false;

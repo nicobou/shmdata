@@ -2,6 +2,18 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.32 (2016-10-28)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* Persistence when loading scenarii with pulse sources.
+* Cmake build system. 
+* Fixed Mac build.
+* Bundle: filter property per quiddit.y
+* Startable bundle: quiddities can have their started property exposed at the bundle level.
+* From bundle pipeline description, optionally hide all properties of a given quiddity.
+
 switcher 0.8.30 (2016-10-21)
 ---------------------------
 This is an official release in the 0.8 stable series.

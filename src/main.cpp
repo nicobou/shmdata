@@ -15,10 +15,6 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "../config.h"
-#endif
-
 #include <locale.h>
 #include <signal.h>
 #include <time.h>
@@ -163,11 +159,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (display_version) {
-#ifdef HAVE_CONFIG_H
     g_print("%s\n", VERSION);
-#else
-    g_print("unknown\n");
-#endif
     return 0;
   }
 
@@ -235,7 +227,6 @@ int main(int argc, char* argv[]) {
   }
 
 // loading plugins from default location // FIXME add an option
-#ifdef HAVE_CONFIG_H
   gchar* usr_plugin_dir =
       g_strdup_printf("/usr/%s-%s/plugins", PACKAGE_NAME, LIBSWITCHER_API_VERSION);
   manager->scan_directory_for_plugins(usr_plugin_dir);
@@ -245,9 +236,6 @@ int main(int argc, char* argv[]) {
       g_strdup_printf("/usr/local/%s-%s/plugins", PACKAGE_NAME, LIBSWITCHER_API_VERSION);
   manager->scan_directory_for_plugins(usr_local_plugin_dir);
   g_free(usr_local_plugin_dir);
-#else
-  g_warning("plugins from default location not loaded (config.h missing)");
-#endif
 
   if (extraplugindir != nullptr) manager->scan_directory_for_plugins(extraplugindir);
 

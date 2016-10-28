@@ -21,7 +21,7 @@
 #define __SWITCHER_GLFW_VIDEO_H__
 
 // clang-format off
-#include <./glad.h>
+#include "./glad.h"
 #include <GLFW/glfw3.h>
 // clang-format on
 #include "switcher/gst-pipeliner.hpp"

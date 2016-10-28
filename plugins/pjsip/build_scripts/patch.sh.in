@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+
+patch -tp0 < @CMAKE_CURRENT_SOURCE_DIR@/more_codecs.patch
+
+# We change the TARGET_NAME to switcher (or anything really) so that it stays the same on every system
+# Might become a problem later if we end up doing cross compilation
+sed -iold 's/TARGET_NAME := \@target\@/TARGET_NAME := switcher/' build.mak.in
+
+sed -iold 's/isblank/MACROIsBlank/' pjlib/include/pj/compat/ctype.h
+sed -iold 's/isblank/MACROIsBlank/' pjlib/include/pj/ctype.h
+sed -iold 's/pj_ioqueue_create(icedemo.pool, 16/pj_ioqueue_create(icedemo.pool, 128/' pjsip-apps/src/samples/icedemo.c
+sed -iold 's/buffer\[1000\]/buffer\[1000000\]/' pjsip-apps/src/samples/icedemo.c
+sed -iold 's/REGC_TSX_TIMEOUT\t33000/REGC_TSX_TIMEOUT  3000/' pjsip/src/pjsip-ua/sip_reg.c
