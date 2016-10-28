@@ -184,7 +184,7 @@ def update_changelog(lib, version):
     os.rename(new_file_name, orig_file_name)
     subprocess.call(os.path.join(sys.path[0], 'make_authors_from_git.sh'), shell=True)
     git_add([orig_file_name])
-    if subprocess.call(os.path.join(sys.path[0], 'make_authors_from_git.sh'), shell=True) != 0:
+    if subprocess.call(os.path.join(sys.path[0], 'make_authors_from_git.sh'), shell=True) == 0:
         git_add([authors_file_name])
     git_commit('Updated changelog for version {}.{}.{}.'.format(version[0], version[1], version[2]))
 
