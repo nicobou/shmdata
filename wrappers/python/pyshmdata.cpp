@@ -20,31 +20,31 @@
 using namespace std;
 
 /*************/
-void log_error_handler(void *user_data, const char *str)
+void log_error_handler(void */*user_data*/, const char *str)
 {
     printf("Error: %s\n", str);
 }
 
 /*************/
-void log_critical_handler(void *user_data, const char *str)
+    void log_critical_handler(void */*user_data*/, const char *str)
 {
     printf("Critical: %s\n", str);
 }
 
 /*************/
-void log_warning_handler(void *user_data, const char *str)
+void log_warning_handler(void */*user_data*/, const char *str)
 {
     printf("Warning: %s\n", str);
 }
 
 /*************/
-void log_message_handler(void *user_data, const char *str)
+void log_message_handler(void */*user_data*/, const char *str)
 {
     printf("Message: %s\n", str);
 }
 
 /*************/
-void log_info_handler(void *user_data, const char *str)
+void log_info_handler(void */*user_data*/, const char *str)
 {
     printf("Info: %s\n", str);
 }
@@ -96,7 +96,7 @@ Writer_dealloc(pyshmdata_WriterObject* self)
 
 /*************/
 PyObject*
-Writer_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
+Writer_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/)
 {
     pyshmdata_WriterObject* self;
 
@@ -233,7 +233,7 @@ Reader_dealloc(pyshmdata_ReaderObject* self)
 
 /*************/
 PyObject*
-Reader_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
+Reader_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/)
 {
     pyshmdata_ReaderObject* self;
 
@@ -398,7 +398,7 @@ Reader_on_connect_handler(void *user_data, const char *type_descr)
 
 /*************/
 void
-Reader_on_disconnect(void *user_data)
+Reader_on_disconnect(void */*user_data*/)
 {
     return;
 }

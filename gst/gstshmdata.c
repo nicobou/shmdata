@@ -23,10 +23,6 @@
 #include "gstshmdatasrc.h"
 #include "gstshmdatasink.h"
 
-#ifndef PACKAGE
-#define PACKAGE "shmdata"
-#endif
-
 static gboolean
 plugin_init (GstPlugin * plugin)
 {
@@ -44,5 +40,5 @@ GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
                    plugin_init,
                    "1.0",
                    "LGPL",
-                   PACKAGE,
-                   "https://github.com/nicobou/shmdata")
+                   PACKAGE_NAME,
+                   PACKAGE_URL)

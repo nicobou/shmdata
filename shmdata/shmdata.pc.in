@@ -1,0 +1,12 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: @PACKAGE_NAME@
+Description: @PACKAGE_DESCRIPTION@
+URL: @PACKAGE_URL@
+Version: @PACKAGE_VERSION@
+Requires.private:
+Libs: -L${libdir} -lshmdata-@SHMDATA_API_VERSION@
+Cflags: -I${includedir}/shmdata-@SHMDATA_API_VERSION@
