@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.6 (2016-10-31)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* Migration to CMake build system.
+
 shmdata 1.3.4 (2016-10-21)
 ---------------------------
 This is an official release in the 1.3 stable series.
