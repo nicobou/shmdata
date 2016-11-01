@@ -111,10 +111,10 @@ int main() {
     // float tree_data = tree->get_value (".");  // this is not possible
     // assert (1.2f == tree_data);
     tree->graft("child1.child2", InfoTree::make());
-    assert(tree->branch_set_value("child1.child2", "test"));
+    assert(tree->branch_set_value("child1.child2", nullptr));
     assert(tree->branch_set_value("child1", 1.2f));
     std::string child2_data = tree->branch_get_value("child1.child2");
-    assert(0 == child2_data.compare("test"));
+    assert("" == child2_data);
     float child1_data = tree->branch_get_value("child1");
     assert(1.2f == child1_data);
   }
