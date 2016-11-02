@@ -33,6 +33,14 @@ Bundle::Bundle(const std::string& name)
     : shmcntr_(static_cast<Quiddity*>(this)), manager_(QuiddityManager::make_manager(name)) {}
 
 bool Bundle::init() {
+  auto manager = manager_impl_.lock();
+  if (!manager) {
+    g_warning("no manager in bundle");
+  } else {
+    for (auto& it : manager->get_plugin_dirs()) {
+      manager_->scan_directory_for_plugins(it);
+    }
+  }
   if (!config<MPtr(&InfoTree::branch_has_data)>("pipeline")) {
     g_warning("bundle description is missing the pipeline description");
     return false;

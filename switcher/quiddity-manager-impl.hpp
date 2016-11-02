@@ -49,6 +49,7 @@ class QuiddityManager_Impl {
 
   // plugins
   bool scan_directory_for_plugins(const std::string& directory_path);
+  std::vector<std::string> get_plugin_dirs() const;
 
   // configuration
   bool load_configuration_file(const std::string& file_path);
@@ -166,6 +167,7 @@ class QuiddityManager_Impl {
   QuiddityManager* get_root_manager() { return manager_; };
 
  private:
+  std::vector<std::string> plugin_dirs_{};
   std::map<std::string, std::unique_ptr<QuiddityDocumentation>> bundle_docs_{};
   InfoTree::ptr configurations_{};
   std::unordered_map<std::string, PluginLoader::ptr> plugins_{};

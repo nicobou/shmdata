@@ -658,6 +658,8 @@ void QuiddityManager_Impl::close_plugin(const std::string& class_name) {
   plugins_.erase(class_name);
 }
 
+std::vector<std::string> QuiddityManager_Impl::get_plugin_dirs() const { return plugin_dirs_; }
+
 bool QuiddityManager_Impl::scan_directory_for_plugins(const std::string& directory_path) {
   GFile* dir = g_file_new_for_commandline_arg(directory_path.c_str());
   gboolean res;
@@ -689,6 +691,7 @@ bool QuiddityManager_Impl::scan_directory_for_plugins(const std::string& directo
   g_object_unref(dir);
 
   make_classes_doc();
+  plugin_dirs_.emplace_back(directory_path);
   return true;
 }
 
