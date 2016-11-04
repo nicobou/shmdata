@@ -187,7 +187,7 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
       context->devices_id_ = context->pmanage<MPtr(&PContainer::make_selection<>)>(
           "device", set, get, "Device", "Audio capture device to use", context->devices_);
     } else {
-      context->pmanage<MPtr(&PContainer::replace)>(
+      context->pmanage<MPtr(&PContainer::replace_and_notify)>(
           context->devices_id_,
           std::make_unique<Property2<Selection<>, Selection<>::index_t>>(
               set,
@@ -196,7 +196,6 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
               "Audio capture device to use",
               context->devices_,
               context->devices_.size() - 1));
-      context->pmanage<MPtr(&PContainer::notify)>(context->devices_id_);
     }
 
     context->devices_cond_.notify_all();

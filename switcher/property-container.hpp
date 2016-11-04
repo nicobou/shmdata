@@ -85,7 +85,12 @@ class PContainer {
   prop_id_t push_parented(const std::string& strid,
                           const std::string& parent_strid,
                           std::unique_ptr<PropertyBase>&& prop_ptr);
-  bool replace(prop_id_t prop_id, std::unique_ptr<PropertyBase>&& prop_ptr);  // for gprop-to-prop
+  bool replace(prop_id_t prop_id, std::unique_ptr<PropertyBase>&& prop_ptr) {
+    return replace_impl(prop_id, std::forward<std::unique_ptr<PropertyBase>>(prop_ptr), false);
+  }
+  bool replace_and_notify(prop_id_t prop_id, std::unique_ptr<PropertyBase>&& prop_ptr) {
+    return replace_impl(prop_id, std::forward<std::unique_ptr<PropertyBase>>(prop_ptr), true);
+  }
 
   // use when property is updated without "set" (method is read-only for
   // instance)
@@ -484,6 +489,8 @@ class PContainer {
   void init_newly_installed_property(const std::string& strid,
                                      const std::string& parent_strid,
                                      size_t pos);
+
+  bool replace_impl(prop_id_t prop_id, std::unique_ptr<PropertyBase>&& prop_ptr, bool force_notify);
 };
 
 }  // namespace switcher

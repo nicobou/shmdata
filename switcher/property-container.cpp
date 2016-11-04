@@ -18,8 +18,6 @@
  */
 
 #include "./property-container.hpp"
-#include <sstream>
-#include "./information-tree-json.hpp"
 
 namespace switcher {
 
@@ -31,7 +29,9 @@ PContainer::PContainer(InfoTree::ptr tree,
   tree_->tag_as_array(".property", true);
 }
 
-bool PContainer::replace(prop_id_t prop_id, std::unique_ptr<PropertyBase>&& prop_ptr) {
+bool PContainer::replace_impl(prop_id_t prop_id,
+                              std::unique_ptr<PropertyBase>&& prop_ptr,
+                              bool force_notify) {
   auto it = strids_.find(prop_id);
   auto strid = it->second;
   if (strids_.end() == it) return false;  // prop not found
@@ -49,10 +49,12 @@ bool PContainer::replace(prop_id_t prop_id, std::unique_ptr<PropertyBase>&& prop
   prop->set_id(prop_id);
   prop->set_str(old_value);
   // place old tree into new property
+  auto key = std::string("property.") + strid;
   auto tree = prop->get_spec();
   tree->graft(".", old_tree);
   // updating tree_
-  tree_->graft(std::string("property.") + strid, tree);
+  tree_->graft(key, tree);
+  if (force_notify && on_tree_grafted_cb_) on_tree_grafted_cb_(key);
   return true;
 }
 
