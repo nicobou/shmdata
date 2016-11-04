@@ -94,7 +94,10 @@ set(COMMON_LIBRARIES
     )
 
 link_directories(
+    ${SHMDATA_LIBRARY_DIRS}
     ${GST_LIBRARY_DIRS}
+    ${GLIB_LIBRARY_DIRS}
+    ${JSONGLIB_LIBRARY_DIRS}
 )
 
 link_libraries(
@@ -113,6 +116,11 @@ include_directories(
     ${SWITCHER_DIR} # Switcher needs to include from itself using "switcher/*"
     ${COMMON_INCLUDE_DIRS}
 )
+
+add_compile_options(${SHMDATA_CFLAGS})
+add_compile_options(${GST_CFLAGS})
+add_compile_options(${GLIB_CFLAGS})
+add_compile_options(${JSONGLIB_CFLAGS})
 
 # BUILD TYPE
 if(CMAKE_BUILD_TYPE EQUAL "Debug")

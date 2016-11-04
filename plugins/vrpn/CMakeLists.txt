@@ -1,63 +1,95 @@
 # PLUGIN
 
-find_package(VRPN)
-
 set(PLUGIN_NAME "plugin-vrpn")
 set(PLUGIN_DESCRIPTION "VRPN Plugin")
 
-option(PLUGIN_VRPN "${PLUGIN_DESCRIPTION}" ${VRPN_FOUND})
+option(PLUGIN_VRPN "${PLUGIN_DESCRIPTION}" ON)
 add_feature_info("${PLUGIN_NAME}" PLUGIN_VRPN "${PLUGIN_DESCRIPTION}")
 
 if (PLUGIN_VRPN)
 
     # VRPN
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/vrpn-lib/cmake")
 
-    # VRPN Mandatory dependency
-    find_package(VRPN REQUIRED)
+    include(ExternalProject)
+    ExternalProject_Add(vrpn
+        GIT_REPOSITORY https://github.com/vrpn/vrpn.git
+        UPDATE_COMMAND "" # Prevents rebuilds on every update
+        INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/vrpn-install
+        )
+
+    set(VRPN_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/vrpn-install/include)
+    set(VRPN_LIBRARIES_DIR ${CMAKE_CURRENT_BINARY_DIR}/vrpn-install/lib)
+
+    include_directories(
+        ${VRPN_INCLUDE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
+    link_directories(
+        ${VRPN_LIBRARIES_DIR}
+    )
+
+    link_libraries(
+        ${VRPN_LIBRARIES_DIR}/libquat.a
+    )
 
     # PLUGINS
 
+    set(SHARED_SRC
+        shared/device.cpp
+    )
+
     # Source
     add_library(vrpnsrc SHARED
+        ${SHARED_SRC}
         vrpn-source-plugin.cpp
         source/vrpn-source.cpp
-        source/devices/device.cpp
-        source/devices/analog-device.cpp
-        source/devices/button-device.cpp
-        source/devices/tracker-device.cpp
+        source/devices/source-device.cpp
+        source/devices/analog-source-device.cpp
+        source/devices/button-source-device.cpp
+        source/devices/tracker-source-device.cpp
         source/devices/properties/property-base.cpp
-        source/devices/properties/bool-property.cpp
-        source/devices/properties/double-property.cpp
-        )
+    )
 
-    add_dependencies(vrpnsource ${SWITCHER_LIBRARY})
-
-    target_include_directories(vrpnsrc PRIVATE
-        ${VRPN_INCLUDE_DIRS}
-        )
+    add_dependencies(vrpnsrc ${SWITCHER_LIBRARY})
+    add_dependencies(vrpnsrc vrpn)
 
     target_link_libraries(vrpnsrc
-        ${VRPN_LIBRARIES}
-        )
+        PRIVATE ${VRPN_LIBRARIES_DIR}/libvrpn.a)
 
     # Sink
     add_library(vrpnsink SHARED
+        ${SHARED_SRC}
         vrpn-sink-plugin.cpp
         sink/vrpn-sink.cpp
-        )
+        sink/devices/button/vrpn-button-server.cpp
+        sink/devices/sink-device.cpp
+        sink/devices/analog-sink-device.cpp
+        sink/devices/button-sink-device.cpp
+    )
 
     add_dependencies(vrpnsink ${SWITCHER_LIBRARY})
-
-    target_include_directories(vrpnsink PRIVATE
-        ${COMMON_INCLUDE_DIRS}
-        ${VRPN_INCLUDE_DIRS}
-        )
+    add_dependencies(vrpnsink vrpn)
 
     target_link_libraries(vrpnsink
-        ${SWITCHER_LIBRARY}
-        ${VRPN_SERVER_LIBRARIES}
-        )
+        PRIVATE ${VRPN_LIBRARIES_DIR}/libvrpnserver.a)
+
+    # UTILS
+
+    add_executable(debug-client utils/debug-client.cpp)
+    add_dependencies(debug-client vrpn)
+    target_link_libraries(debug-client PRIVATE ${VRPN_LIBRARIES_DIR}/libvrpn.a)
+
+    add_executable(debug-server utils/debug-server.cpp)
+    add_dependencies(debug-server vrpn)
+    target_link_libraries(debug-server PRIVATE ${VRPN_LIBRARIES_DIR}/libvrpnserver.a)
+
+    # TEST
+
+    add_executable(check_vrpn_plugin tests/check_vrpn_plugin.cpp)
+    add_dependencies(check_vrpn_plugin vrpn)
+    add_test(check_vrpn_plugin check_vrpn_plugin)
 
     # INSTALL
 

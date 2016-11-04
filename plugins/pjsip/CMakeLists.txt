@@ -17,10 +17,15 @@ if (PLUGIN_SIP)
         -DPJ_ICE_MAX_CAND=1024
         -DPJ_ICE_CAND_TYPE_PREF_BITS=16
         -DPJ_IOQUEUE_MAX_EVENTS_IN_SINGLE_POLL=512
-        -DPJ_IOQUEUE_MAX_HANDLES=512
         -DPJSIP_MAX_PKT_LEN=8000
         -DPJSIP_TD_TIMEOUT=5000
         )
+
+    # include/pj/compat/os_darwinos.h:107:9: error: 'PJ_IOQUEUE_MAX_HANDLES' macro redefined [-Werror,-Wmacro-redefined]
+    # Default in OSX is 1024
+    if(NOT OSX)
+        list(APPEND PJPROJECT_CFLAGS -DPJ_IOQUEUE_MAX_HANDLES=512)
+    endif()
 
     set(PJPROJECT_CONFIGURE_OPTIONS
         --prefix ${CMAKE_CURRENT_BINARY_DIR}/pjproject-install

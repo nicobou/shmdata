@@ -1,4 +1,4 @@
-/*
+/**
  * This file is part of switcher-vrpn.
  *
  * switcher-vrpn is free software; you can redistribute it and/or
@@ -17,16 +17,46 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_VRPN_CLIENT_CONNECTION_H__
-#define __SWITCHER_VRPN_CLIENT_CONNECTION_H__
+#ifndef __SWITCHER_VRPN_SOURCE_DEVICE_PROPERTY_BASE_H__
+#define __SWITCHER_VRPN_SOURCE_DEVICE_PROPERTY_BASE_H__
 
 #include <string>
-#include "vrpn-connection.hpp"
-#include "vrpn_Connection.h"
+#include "switcher/property-container.hpp"
 
-class VRPNServerConnection : public VRPNConnection {
+namespace switcher {
+namespace vrpn {
+
+class PropertyBase {
  public:
-  VRPNServerConnection(const int port) : VRPNConnection(vrpn_create_server_connection(port)){};
+  /**
+   * Deleted PropertyBase Default Constructor
+   * @return
+   */
+  PropertyBase() = default;
+
+  /**
+   * Switcher property id getter
+   */
+  PContainer::prop_id_t getPropId() const;
+
+  /**
+   * Switcher property id setter
+   */
+  void setPropId(PContainer::prop_id_t prop_id);
+
+  /**
+   * The templated Property class requires this one to have at least one virtual void
+   * method. Unfortunately we don't need one so here it is...
+   */
+  virtual void noop() = 0;
+
+ protected:
+  /**
+   * Switcher Property Id
+   */
+  PContainer::prop_id_t prop_id_{};
 };
+}  // Namespace vrpn
+}  // Namespace switcher
 
 #endif
