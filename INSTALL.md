@@ -24,7 +24,7 @@ You can verify and change the build configuration using **ccmake**. To do so, yo
 $ sudo apt install cmake-curses-gui
 ```
     
-Then, inside the build directory run:
+Then, after running `$ cmake ..`, from the build directory run:
 
 ```
 $ ccmake ..
