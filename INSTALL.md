@@ -3,13 +3,12 @@ INSTALL
 
 ## Quick build and installation (latest Ubuntu)
 
-> **Note**:  
-> Ensure **[shmdata](https://github.com/sat-metalab/shmdata)** is already installed before proceeding.
+> **Note**: Ensure **[shmdata](https://github.com/sat-metalab/shmdata)** is already installed before proceeding.
 
 Build and install **switcher** from the command line:
 
 ```
-$ sudo apt-get install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libgtk-3-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev
+$ sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libgtk-3-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev
 $ git submodule update --init --recursive
 $ mkdir build
 $ cd build
@@ -19,13 +18,17 @@ $ sudo make install
 $ sudo ldconfig
 ```
 
-You can verify and change the build configuration with *ccmake*. You first need to install it:
-
-    $ sudo apt-get install cmake-curses-gui
+You can verify and change the build configuration using **ccmake**. To do so, you must first install the needed package:
     
-Then, after running `cmake ..`, from the build directory run:
+```
+$ sudo apt install cmake-curses-gui
+```
+    
+Then, inside the build directory run:
 
-    $ ccmake ..
+```
+$ ccmake ..
+```
     
 It will display a list of the configuration variables for the build.
 
@@ -39,15 +42,14 @@ It will display a list of the configuration variables for the build.
 
 2. Install Nvidia drivers (min. version `367.35`) and CUDA toolkit:
 
-    > **Note**:  
-    > You may need to first add the PPA `graphics-drivers/ppa`:  
+    > **Note**: You may need to first add the PPA `graphics-drivers/ppa`:  
     > `$ sudo add-apt-repository --yes ppa:graphics-drivers/ppa`
 
     ```
-    $ sudo apt-get install nvidia-<driver-ver-number> nvidia-<driver-ver-number>-dev nvidia-cuda-toolkit
+    $ sudo apt install nvidia-<driver-ver-number> nvidia-<driver-ver-number>-dev nvidia-cuda-toolkit
     ```
 
-3. If running `cmake ..` does not automatically detect the right driver, in the **switcher** build directory, configure **switcher** as follows:
+3. In case running `$ cmake ..` does not automatically detect the right driver, in the **switcher** build directory, configure **switcher** as follows:
 
     ```
     $ cmake .. -DNVIDIA_PATH=/usr/lib/nvidia-<driver-ver-number>
@@ -59,7 +61,7 @@ It will display a list of the configuration variables for the build.
     $ cmake .. -DNVIDIA_PATH=/usr/lib/nvidia-367
     ```
 
-4. Compile and install as usual:
+4. Lastly, compile and install as usual:
 
     ```
     $ make -j"$(nproc)"
@@ -68,40 +70,58 @@ It will display a list of the configuration variables for the build.
 
 ## Other build options
 
-* To run the tests
+* To run the tests:
 
-        make test
-    
-* To generate installation packages (as configured in CMakeLists.txt)
+    ```
+    $ make test
+    ```
 
-        make package
-        
-* To generate a source package
+* To generate installation packages (as configured in `CMakeLists.txt`):
 
-        make package_source
-        
+    ```
+    $ make package
+    ```
+
+* To generate a source package:
+
+    ```
+    $ make package_source
+    ```
+
 * To test the source package, this will create the source package and then try to build and test it
 
-        make package_source_test
-        
+    ```
+    $ make package_source_test
+    ```
 
-# Mac OS Installation
-* Install homebrew
+# Mac OS X Installation
 
-        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+* Install **[Homebrew](https://github.com/Homebrew/brew)**:
 
-* Install dependencies
+    ```
+    $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    ```
 
-        brew install cmake pkg-config gsoap glib json-glib gstreamer gst-libav gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly liblo portmidi python3
+* Install dependencies:
 
-* Build & Install
+    ```
+    $ brew install cmake pkg-config gsoap glib json-glib gstreamer gst-libav gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly liblo portmidi python3
+    ```
 
-        mkdir build
-        cd build
-        cmake ..
-        make
-        sudo make install
+* Build and install:
 
+    ```
+    $ mkdir build
+    $ cd build
+    $ cmake ..
+    $ make
+    $ sudo make install
+    ```
 
-## Mac OS Notes
-* If you are using homebrew to install dependencies and encountering errors about ```-lintl```, you have to ```brew link gettext```
+## Notes
+
+* If you are encountering `-lintl` errors when using **Homebrew** to install dependencies, run the following command:
+
+    ```
+    $ brew link gettext
+    ```
