@@ -72,7 +72,7 @@ int main() {
     assert(1.2f == data);
     InfoTree::ptr child1 = tree->get_tree(".child1..");
     assert(!child1->is_leaf());
-    assert(!tree->get_tree("child1.foo"));  // this is not a child
+    assert(tree->get_tree("child1.foo")->empty());  // this is not a child
   }
   {  // graft a childs and prune it
     InfoTree::ptr tree = InfoTree::make();

@@ -51,7 +51,12 @@ bool PContainer::replace_impl(prop_id_t prop_id,
   // place old tree into new property
   auto key = std::string("property.") + strid;
   auto tree = prop->get_spec();
-  tree->graft(".", old_tree);
+  tree->graft("id", InfoTree::make(old_tree->branch_get_value("id")));
+  tree->graft("prop_id", InfoTree::make(old_tree->branch_get_value("prop_id")));
+  tree->graft("order", InfoTree::make(old_tree->branch_get_value("order")));
+  tree->graft("parent", InfoTree::make(old_tree->branch_get_value("parent")));
+  tree->graft("enabled", InfoTree::make(old_tree->branch_get_value("enabled")));
+
   // updating tree_
   tree_->graft(key, tree);
   if (force_notify && on_tree_grafted_cb_) on_tree_grafted_cb_(key);
