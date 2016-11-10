@@ -681,6 +681,7 @@ bool V4L2Src::start() {
   pmanage<MPtr(&PContainer::disable)>(width_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(height_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(tv_standards_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(standard_framerates_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(framerates_enum_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(custom_framerate_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(pixel_format_id_, disabledWhenStartedMsg);
@@ -699,6 +700,7 @@ bool V4L2Src::stop() {
   pmanage<MPtr(&PContainer::enable)>(width_id_);
   pmanage<MPtr(&PContainer::enable)>(height_id_);
   pmanage<MPtr(&PContainer::enable)>(tv_standards_id_);
+  pmanage<MPtr(&PContainer::enable)>(standard_framerates_id_);
   pmanage<MPtr(&PContainer::enable)>(framerates_enum_id_);
   pmanage<MPtr(&PContainer::enable)>(custom_framerate_id_);
   pmanage<MPtr(&PContainer::enable)>(pixel_format_id_);
