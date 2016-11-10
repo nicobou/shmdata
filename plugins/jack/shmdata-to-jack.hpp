@@ -49,6 +49,7 @@ class ShmdataToJack : public Quiddity {
   unsigned short channels_{0};
   unsigned int debug_buffer_usage_{1000};
   std::mutex output_ports_mutex_{};
+  std::mutex ports_to_connect_mutex_{};
   std::vector<AudioRingBuffer<jack_sample_t>> ring_buffers_{};  // one per channel
   // jack sample is the time unit, assuming gst pipeline has the same sample
   // rate:

@@ -301,6 +301,7 @@ bool ShmdataToJack::can_sink_caps(const std::string& caps) {
 }
 
 void ShmdataToJack::update_port_to_connect() {
+  std::lock_guard<std::mutex> lock(ports_to_connect_mutex_);
   ports_to_connect_.clear();
 
   if (!auto_connect_) {
@@ -317,6 +318,7 @@ void ShmdataToJack::connect_ports() {
 
   if (!auto_connect_) return;
 
+  std::lock_guard<std::mutex> lock(ports_to_connect_mutex_);
   if (ports_to_connect_.size() != output_ports_.size()) {
     g_warning(
         "Port number mismatch in shmdata to jack autoconnect, should not "
@@ -337,6 +339,7 @@ void ShmdataToJack::disconnect_ports() {
 
 void ShmdataToJack::on_port(jack_port_t* port) {
   if (!is_constructed_) return;
+  std::lock_guard<std::mutex> lock(ports_to_connect_mutex_);
   int flags = jack_port_flags(port);
   if (!(flags & JackPortIsOutput)) return;
   auto it = std::find(ports_to_connect_.begin(), ports_to_connect_.end(), jack_port_name(port));
