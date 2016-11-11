@@ -12,6 +12,8 @@
  * GNU Lesser General Public License for more details.
  */
 
+#undef NDEBUG  // get assert in release mode
+
 #include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
