@@ -14,6 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#undef NDEBUG  // get assert in release mode
+
 #include <algorithm>
 #include <cassert>
 #include <iostream>
@@ -72,7 +75,7 @@ int main() {
     assert(1.2f == data);
     InfoTree::ptr child1 = tree->get_tree(".child1..");
     assert(!child1->is_leaf());
-    assert(!tree->get_tree("child1.foo"));  // this is not a child
+    assert(tree->get_tree("child1.foo")->empty());  // this is not a child
   }
   {  // graft a childs and prune it
     InfoTree::ptr tree = InfoTree::make();
@@ -111,10 +114,10 @@ int main() {
     // float tree_data = tree->get_value (".");  // this is not possible
     // assert (1.2f == tree_data);
     tree->graft("child1.child2", InfoTree::make());
-    assert(tree->branch_set_value("child1.child2", "test"));
+    assert(tree->branch_set_value("child1.child2", nullptr));
     assert(tree->branch_set_value("child1", 1.2f));
     std::string child2_data = tree->branch_get_value("child1.child2");
-    assert(0 == child2_data.compare("test"));
+    assert("" == child2_data);
     float child1_data = tree->branch_get_value("child1");
     assert(1.2f == child1_data);
   }

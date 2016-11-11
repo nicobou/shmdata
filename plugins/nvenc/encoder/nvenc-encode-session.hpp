@@ -51,12 +51,12 @@ class NVencES : public SafeBoolIdiom {
   bool initialize_encoder(GUID encodeGuid,
                           GUID presetGuid,
                           GUID profileGuid,
+                          uint32_t bitrate,
                           uint32_t width,
                           uint32_t height,
                           uint32_t frameRateNum,
                           uint32_t framerateDen,
                           NV_ENC_BUFFER_FORMAT format);
-
   // these three following methods must be invoked in sequence:
   bool copy_to_next_input_buffer(void* data, size_t size);
   bool encode_current_input();

@@ -196,6 +196,7 @@ bool NVencES::is_same(const GUID& g1, const GUID& g2) {
 bool NVencES::initialize_encoder(GUID encodeGuid,
                                  GUID presetGuid,
                                  GUID profileGuid,
+                                 uint32_t bitrate,
                                  uint32_t width,
                                  uint32_t height,
                                  uint32_t frameRateNum,
@@ -222,6 +223,7 @@ bool NVencES::initialize_encoder(GUID encodeGuid,
   } else {
     preset_config.presetCfg.version = NV_ENC_CONFIG_VER;
     preset_config.presetCfg.profileGUID = profileGuid;
+    if (bitrate) preset_config.presetCfg.rcParams.averageBitRate = bitrate;
 
     if (is_same(encodeGuid, NV_ENC_CODEC_H264_GUID)) {
       preset_config.presetCfg.encodeCodecConfig.h264Config.level = NV_ENC_LEVEL_AUTOSELECT;

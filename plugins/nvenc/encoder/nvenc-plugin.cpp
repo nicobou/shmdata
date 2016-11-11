@@ -31,7 +31,36 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(NVencPlugin,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-NVencPlugin::NVencPlugin(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {
+NVencPlugin::NVencPlugin(const std::string&)
+    : shmcntr_(static_cast<Quiddity*>(this)),
+      default_preset_id_(pmanage<MPtr(&PContainer::make_bool)>(
+          "bitrate_from_preset",
+          [this](bool value) {
+            bitrate_from_preset_ = value;
+            if (bitrate_from_preset_) {
+              pmanage<MPtr(&PContainer::disable)>(
+                  bitrate_id_, "Cannot set bitrate if using default preset configuration.");
+            } else {
+              pmanage<MPtr(&PContainer::enable)>(bitrate_id_);
+            }
+            return true;
+          },
+          [this]() { return bitrate_from_preset_; },
+          "Default preset configuration",
+          "Use default preset configuration.",
+          bitrate_from_preset_)),
+      bitrate_id_(
+          pmanage<MPtr(&PContainer::make_unsigned_int)>("bitrate",
+                                                        [this](const uint32_t& value) {
+                                                          bitrate_ = value;
+                                                          return true;
+                                                        },
+                                                        [this]() { return bitrate_; },
+                                                        "Desired bitrate",
+                                                        "Value of the desired average bitrate.",
+                                                        bitrate_,
+                                                        1000000,
+                                                        20000000)) {
   auto devices = CudaContext::get_devices();
   std::vector<std::string> names;
   for (auto& it : devices) {
@@ -56,6 +85,7 @@ NVencPlugin::NVencPlugin(const std::string&) : shmcntr_(static_cast<Quiddity*>(t
                                                    "encoder GPU",
                                                    "Selection of the GPU used for encoding",
                                                    devices_);
+  pmanage<MPtr(&PContainer::set_to_current)>(default_preset_id_);
 }
 
 bool NVencPlugin::init() {
@@ -125,8 +155,14 @@ void NVencPlugin::update_preset() {
       });
   presets_guids_ = es_->invoke<MPtr(&NVencES::get_presets)>(guid_iter->second);
   std::vector<std::string> names;
-  for (auto& it : presets_guids_) names.push_back(it.first);
-  presets_ = Selection<>(std::move(names), 0);
+  size_t index_low_lantency_default = 0;
+  size_t current_index = 0;
+  for (auto& it : presets_guids_) {
+    names.push_back(it.first);
+    if (it.first == "Low Latency default") index_low_lantency_default = current_index;
+    ++current_index;
+  }
+  presets_ = Selection<>(std::move(names), index_low_lantency_default);
   auto set = [this](size_t val) {
     if (presets_.get() != val) presets_.select(val);
     return true;
@@ -243,6 +279,8 @@ bool NVencPlugin::on_shmdata_disconnect() {
   pmanage<MPtr(&PContainer::enable)>(codecs_id_);
   pmanage<MPtr(&PContainer::enable)>(max_width_id_);
   pmanage<MPtr(&PContainer::enable)>(max_height_id_);
+  pmanage<MPtr(&PContainer::enable)>(default_preset_id_);
+  pmanage<MPtr(&PContainer::set_to_current)>(default_preset_id_);
 
   return true;
 }
@@ -262,6 +300,9 @@ bool NVencPlugin::on_shmdata_connect(const std::string& shmpath) {
   pmanage<MPtr(&PContainer::disable)>(codecs_id_, ShmdataConnector::disabledWhenConnectedMsg);
   pmanage<MPtr(&PContainer::disable)>(max_width_id_, ShmdataConnector::disabledWhenConnectedMsg);
   pmanage<MPtr(&PContainer::disable)>(max_height_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&PContainer::disable)>(default_preset_id_,
+                                      ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&PContainer::disable)>(bitrate_id_, ShmdataConnector::disabledWhenConnectedMsg);
 
   return true;
 }
@@ -357,15 +398,16 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
       profiles_guids_.end(),
       [&](const std::pair<std::string, GUID>& profile) { return profile.first == cur_profile; });
 
-  es_.get()->invoke_async<MPtr(&NVencES::initialize_encoder)>(nullptr,
-                                                              guid_iter->second,
-                                                              preset_iter->second,
-                                                              profiles_iter->second,
-                                                              width,
-                                                              height,
-                                                              frameNum,
-                                                              frameDen,
-                                                              buf_format);
+  es_->invoke_async<MPtr(&NVencES::initialize_encoder)>(nullptr,
+                                                        guid_iter->second,
+                                                        preset_iter->second,
+                                                        profiles_iter->second,
+                                                        bitrate_from_preset_ ? 0 : bitrate_,
+                                                        width,
+                                                        height,
+                                                        frameNum,
+                                                        frameDen,
+                                                        buf_format);
   shmw_.reset();
 
   std::string codec;

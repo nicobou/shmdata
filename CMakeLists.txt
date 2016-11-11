@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.5.1)
 set(SWITCHER_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SWITCHER_VERSION_MAJOR 0)
 set(SWITCHER_VERSION_MINOR 8)
-set(SWITCHER_VERSION_PATCH 32)
+set(SWITCHER_VERSION_PATCH 34)
 set(SWITCHER_VERSION_STRING ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR}.${SWITCHER_VERSION_PATCH})
 set(SWITCHER_API_VERSION ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR})
 set(SWITCHER_LIBRARY switcher-${SWITCHER_API_VERSION})
@@ -94,7 +94,10 @@ set(COMMON_LIBRARIES
     )
 
 link_directories(
+    ${SHMDATA_LIBRARY_DIRS}
     ${GST_LIBRARY_DIRS}
+    ${GLIB_LIBRARY_DIRS}
+    ${JSONGLIB_LIBRARY_DIRS}
 )
 
 link_libraries(
@@ -113,6 +116,11 @@ include_directories(
     ${SWITCHER_DIR} # Switcher needs to include from itself using "switcher/*"
     ${COMMON_INCLUDE_DIRS}
 )
+
+add_compile_options(${SHMDATA_CFLAGS})
+add_compile_options(${GST_CFLAGS})
+add_compile_options(${GLIB_CFLAGS})
+add_compile_options(${JSONGLIB_CFLAGS})
 
 # BUILD TYPE
 if(CMAKE_BUILD_TYPE EQUAL "Debug")

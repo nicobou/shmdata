@@ -1,4 +1,4 @@
-/*
+/**
  * This file is part of switcher-vrpn.
  *
  * switcher-vrpn is free software; you can redistribute it and/or
@@ -20,9 +20,14 @@
 #ifndef __SWITCHER_VRPN_CONNECTION_H__
 #define __SWITCHER_VRPN_CONNECTION_H__
 
-#include <string>
-#include "vrpn_Connection.h"
+#include <vrpn_Connection.h>
 
+namespace switcher {
+namespace vrpn {
+
+/**
+ * Wrapper for the vrpn_Connection pointer
+ */
 class VRPNConnection {
  public:
   VRPNConnection() = delete;
@@ -32,10 +37,16 @@ class VRPNConnection {
       connection_->removeReference();
     }
   }
+  /**
+   * Raw vrpn_Connection pointer
+   * Use only when passing the connection to vrpn as a pointer is required.
+   */
   vrpn_Connection* raw() { return connection_; }
 
  private:
   vrpn_Connection* connection_;
 };
+}
+}
 
 #endif

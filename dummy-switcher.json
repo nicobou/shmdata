@@ -1,0 +1,79 @@
+{
+  "sip" : {
+    "port" : "5063",
+    "user" : "bob@sip.scenic.sat.qc.ca",
+    "pass" : "bob's_password",
+    "stun": "sip.scenic.sat.qc.ca",
+    "turn": "sip.scenic.sat.qc.ca",
+    "turn_user": "bob",
+    "turn_pass": "bob's_password"
+  },
+  "glfwin" : {
+    "icon" : "/usr/local/share/scenic/public/assets/images/scenic-icon-512.png"
+  },
+  "bundle" : {
+    "HDMI" : {
+      "pipeline" : "v4l2src name=HDMI _shmw _device=0 _add_to_start ! videoconvert name=converterHDMI _no_prop ! nvenc name=encoderHDMI _shmw & .HDMI ! glfwin name=windowHDMI",
+      "doc" : {
+        "long_name" : "HDMI capture encoded in H264.",
+        "category" : "video",
+        "tags" : "writer",
+        "description" : "Encoded video signal HDMI"
+      }
+    },
+    "SDI1" : {
+      "pipeline" : "v4l2src name=SDI1 _shmw _device=1 standard_framerates=4 _add_to_start ! videoconvert name=converterSDI1 _no_prop ! nvenc name=encoderSDI1 _shmw & .SDI1 ! glfwin name=windowSDI1 width=400 height=225 position_x=1600 position_y=226",
+      "doc" : {
+        "long_name" : "SDI1 capture encoded in H264.",
+        "category" : "video",
+        "tags" : "writer",
+        "description" : "Encoded video signal SDI1"
+      }
+    },
+    "SDI2" : {
+      "pipeline" : "v4l2src name=SDI2 _shmw _device=2 standard_framerates=4 _add_to_start ! videoconvert name=converterSDI2 _no_prop ! nvenc name=encoderSDI2 _shmw & .SDI2 ! glfwin name=windowSDI2 width=400 height=225 position_x=1600 position_y=451",
+      "doc" : {
+        "long_name" : "SDI2 capture encoded in H264.",
+        "category" : "video",
+        "tags" : "writer",
+        "description" : "Encoded video signal SDI2"
+      }
+    },
+    "SDI3" : {
+      "pipeline" : "v4l2src name=SDI3 _shmw _device=3 standard_framerates=4 _add_to_start ! videoconvert name=converterSDI3 _no_prop ! nvenc name=encoderSDI3 _shmw & .SDI3 ! glfwin name=windowSDI3 width=400 height=225 position_x=1600 position_y=676",
+      "doc" : {
+        "long_name" : "SDI3 capture encoded in H264.",
+        "category" : "video",
+        "tags" : "writer",
+        "description" : "Encoded video signal SDI3"
+      }
+    },
+    "webcam" : {
+      "pipeline" : "v4l2src name=webcam _shmw _device=4 _add_to_start ! videoconvert name=converterwebcam _no_prop ! nvenc name=encoderwebcam _shmw & .webcam ! glfwin name=windowWebcam width=400 height=225 position_x=2001 position_y=676",
+      "doc" : {
+        "long_name" : "Webcam encoded in H264.",
+        "category" : "video",
+        "tags" : "writer",
+        "description" : "Encoded video signal Webcam"
+      }
+    },
+    "pulsesrcNoVolume" : {
+      "pipeline" : "pulsesrc name=pulsesource _add_to_start _volume=1 _shmw",
+      "doc" : {
+        "long_name" : "Pulse audio stereo source",
+        "category" : "audio",
+        "tags" : "writer",
+        "description" : "Raw audio signal from pulse"
+      }
+    },
+    "pulsesinkNoVolume" : {
+      "pipeline" : "pulsesink name=pulsesink _add_to_start _volume=1 _shmr",
+      "doc" : {
+        "long_name" : "Pulse audio stereo destination",
+        "category" : "audio",
+        "tags" : "reader",
+        "description" : "Raw audio signal to pulse"
+      }
+    }
+  }
+}

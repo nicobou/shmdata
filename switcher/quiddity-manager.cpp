@@ -289,15 +289,6 @@ QuiddityManager::CommandHistory QuiddityManager::get_command_history_from_file(
 
 std::string QuiddityManager::get_serialized_command_history() const {
   auto quiddities = manager_impl_->get_instances();
-  for (auto& it : quiddities_at_reset_) {
-    auto tmp = std::find(quiddities.begin(), quiddities.end(), it);
-    if (quiddities.end() != tmp) quiddities.erase(tmp);
-  }
-  if (quiddities.empty()) {
-    g_warning("nothing to save");
-    return {};
-  }
-
   InfoTree::ptr tree = InfoTree::make();
 
   // saving history
@@ -308,11 +299,14 @@ std::string QuiddityManager::get_serialized_command_history() const {
   tree->tag_as_array("history", true);
 
   // saving per-quiddity information
-  auto quid_str = std::string(".quiddities.");
   for (auto& quid_name : quiddities) {
     // name and class
-    auto quid_class = manager_impl_->get_quiddity(quid_name)->get_documentation()->get_class_name();
-    tree->graft(quid_str + quid_name, InfoTree::make(quid_class));
+    if (quiddities_at_reset_.cend() ==
+        std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid_name)) {
+      auto quid_class =
+          manager_impl_->get_quiddity(quid_name)->get_documentation()->get_class_name();
+      tree->graft(".quiddities." + quid_name, InfoTree::make(quid_class));
+    }
     // saving custom tree if some is provided
     auto custom_tree = manager_impl_->get_quiddity(quid_name)->on_saving();
     if (custom_tree && !custom_tree->empty())

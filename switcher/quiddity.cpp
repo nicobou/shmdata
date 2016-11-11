@@ -47,48 +47,6 @@ Quiddity::Quiddity()
   configuration_tree_->graft(".", InfoTree::make());
   GType arg_type[] = {G_TYPE_STRING};
   install_signal_with_class_name("Quiddity",
-                                 "On New Property",
-                                 "on-property-added",
-                                 "A new property has been installed",
-                                 Signal::make_arg_description("Quiddity Name",
-                                                              "quiddity_name",
-                                                              "the quiddity name",
-                                                              "Property Name",
-                                                              "property_name",
-                                                              "the property name",
-                                                              nullptr),
-                                 1,
-                                 arg_type);
-
-  install_signal_with_class_name("Quiddity",
-                                 "On Property Removed",
-                                 "on-property-removed",
-                                 "A properties has been uninstalled",
-                                 Signal::make_arg_description("Quiddity Name",
-                                                              "quiddity_name",
-                                                              "the quiddity name",
-                                                              "Property Name",
-                                                              "property_name",
-                                                              "the property name",
-                                                              nullptr),
-                                 1,
-                                 arg_type);
-
-  install_signal_with_class_name("Quiddity",
-                                 "On Property reinstalled",
-                                 "on-property-reinstalled",
-                                 "A property has been reinstalled",
-                                 Signal::make_arg_description("Quiddity Name",
-                                                              "quiddity_name",
-                                                              "the quiddity name",
-                                                              "Property Name",
-                                                              "property_name",
-                                                              "the property name",
-                                                              nullptr),
-                                 1,
-                                 arg_type);
-
-  install_signal_with_class_name("Quiddity",
                                  "On New Method",
                                  "on-method-added",
                                  "A new method has been installed",

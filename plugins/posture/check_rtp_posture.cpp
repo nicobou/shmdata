@@ -15,6 +15,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#undef NDEBUG  // get assert in release mode
+
 #include <gst/gst.h>
 #include <cassert>
 #include <string>

@@ -1,4 +1,4 @@
-/*
+/**
  * This file is part of switcher-vrpn.
  *
  * switcher-vrpn is free software; you can redistribute it and/or
@@ -17,17 +17,37 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_VRPN_CLIENT_CONNECTION_H__
-#define __SWITCHER_VRPN_CLIENT_CONNECTION_H__
+#ifndef __SWITCHER_VRPN_SOURCE_TRACKER_DEVICE_H__
+#define __SWITCHER_VRPN_SOURCE_TRACKER_DEVICE_H__
 
-#include <string>
-#include "vrpn-connection.hpp"
-#include "vrpn_Connection.h"
+#include "source-device.hpp"
+#include "vrpn_Tracker.h"
 
-class VRPNClientConnection : public VRPNConnection {
- public:
-  VRPNClientConnection(const std::string& hostname)
-      : VRPNConnection(vrpn_get_connection_by_name(hostname.c_str())){};
+namespace switcher {
+namespace vrpn {
+
+struct TrackerPosision {
+  double position[3];
+  double quaternion[4];
 };
 
+class TrackerSourceDevice : public SourceDevice {
+ public:
+  TrackerSourceDevice(const std::string& name,
+                      const std::string& uri,
+                      SourceDevice::NotifyPropertyCallback notifyProperty);
+
+  void start(VRPNConnection* connection);
+  void stop();
+
+  /**
+   * Custom data save tree
+   */
+  InfoTree::ptr getTree() const;
+
+ private:
+  static void handleTrackerCallback(void* userData, const vrpn_TRACKERCB info);
+};
+}  // Namespace vrpn
+}  // Namespace switcher
 #endif

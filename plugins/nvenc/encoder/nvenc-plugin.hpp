@@ -46,6 +46,10 @@ class NVencPlugin : public Quiddity {
   std::unique_ptr<ShmdataFollower> shm_{nullptr};
   ShmdataConnector shmcntr_;
   Selection<> devices_{{"none"}, 0};
+  bool bitrate_from_preset_{false};
+  PContainer::prop_id_t default_preset_id_{0};
+  uint32_t bitrate_{5000000};
+  PContainer::prop_id_t bitrate_id_{0};
   PContainer::prop_id_t devices_id_{0};
   std::vector<int> devices_nv_ids_{};
   Selection<> codecs_{{"none"}, 0};

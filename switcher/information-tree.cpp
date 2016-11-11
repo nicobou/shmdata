@@ -172,8 +172,7 @@ InfoTree::ptr InfoTree::get_tree(const std::string& path) {
   auto found = get_node(path);
   if (nullptr != found.first) return (*found.first)[found.second].second;
   // not found
-  InfoTree::ptr res;
-  return res;
+  return make();
 }
 
 InfoTree::GetNodeReturn InfoTree::get_node(const std::string& path) const {

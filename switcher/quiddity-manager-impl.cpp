@@ -658,6 +658,8 @@ void QuiddityManager_Impl::close_plugin(const std::string& class_name) {
   plugins_.erase(class_name);
 }
 
+std::vector<std::string> QuiddityManager_Impl::get_plugin_dirs() const { return plugin_dirs_; }
+
 bool QuiddityManager_Impl::scan_directory_for_plugins(const std::string& directory_path) {
   GFile* dir = g_file_new_for_commandline_arg(directory_path.c_str());
   gboolean res;
@@ -689,6 +691,7 @@ bool QuiddityManager_Impl::scan_directory_for_plugins(const std::string& directo
   g_object_unref(dir);
 
   make_classes_doc();
+  plugin_dirs_.emplace_back(directory_path);
   return true;
 }
 
@@ -727,6 +730,10 @@ bool QuiddityManager_Impl::load_configuration_file(const std::string& file_path)
   // registering bundle(s) as creatable class
   auto quid_types = abstract_factory_.get_keys();
   for (auto& it : configurations_->get_child_keys("bundle")) {
+    if (std::string::npos != it.find('_')) {
+      g_warning("underscores are not allowed for quiddity types (bundle name %s)", it.c_str());
+      continue;
+    }
     std::string long_name = configurations_->branch_get_value("bundle." + it + ".doc.long_name");
     std::string category = configurations_->branch_get_value("bundle." + it + ".doc.category");
     std::string tags = configurations_->branch_get_value("bundle." + it + ".doc.tags");

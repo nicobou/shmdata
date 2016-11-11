@@ -188,6 +188,11 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
         std::string("quiddity name ") + quid.name + " is not unique in bundle description";
     return false;
   }
+  if (std::string::npos != quid.name.find('_')) {
+    parsing_error_ = std::string("underscores are not allowed in quiddity names ") + quid.name;
+    return false;
+  }
+
   if (quid.name.empty()) {
     parsing_error_ =
         std::string("quiddity name is missing for quiddity specified with type ") + quid.type;
@@ -202,6 +207,19 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
 
 bool DescriptionParser::parse_param(const std::string& raw_param, quiddity_spec_t& quid) {
   std::string param = restore_space_in_quote(raw_param);
+  {  // check if this parameter in only blacklisted
+    std::regex rgx("_\\w+");
+    if (std::regex_match(param, rgx)) {
+      if (param == "_name") {
+        parsing_error_ = std::string("parameter name cannot be blacklisted (got _name)") + param;
+        return false;
+      }
+      quid.params[param] = std::string();
+      return true;
+    }
+  }
+
+  // get param name and value
   std::regex rgx("\\w+=[^=]+");
   if (!std::regex_match(param, rgx)) {
     parsing_error_ =

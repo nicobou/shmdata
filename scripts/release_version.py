@@ -22,6 +22,7 @@ libraries = ['shmdata', 'switcher']
 version_file = 'CMakeLists.txt'
 
 version_pattern = 'set\({}_VERSION_(\S+)\s+(\d+)\)'
+shmdata_require_pattern = 'set\(SHMDATA_REQUIRED_VERSION (\d+\.\d+)\)'
 github_path = 'git@github.com:sat-metalab'
 remote_repo = 'origin'
 bringup_branch = 'master'
@@ -31,12 +32,13 @@ changelog_file = 'changelog'
 success = True
 
 
-def parse_version_number(lib):
+def parse_version_number(lib, regex_pattern):
     config_file = os.path.join(libs_root_path, lib, version_file)
+    version_number = [-1, -1, -1]
     with open(config_file) as file:
         major = minor = patch = -1
         for line in file:
-            version_line = re.search(version_pattern.format(lib.upper()), line)
+            version_line = re.search(regex_pattern, line)
             if version_line and len(version_line.groups()) == 2:
                 type = version_line.group(1)
                 version = version_line.group(2)
@@ -47,11 +49,15 @@ def parse_version_number(lib):
                 elif type == 'PATCH':
                     patch = int(version)
                     break
+            elif version_line and len(version_line.groups()) == 1:
+                version = version_line.group(1).split('.')
+                if len(version) == 2:
+                    major = int(version[0])
+                    minor = int(version[1])
+                    patch = 0
+                    break
 
-    version_number = [-1, -1, -1]
     if major != -1 and minor != -1 and patch != -1:
-        print 'Current version found for library {} major: {}, minor: {}, hotfix: {}'.format(lib, major,
-                                                                                             minor, patch)
         version_number = [major, minor, patch]
     else:
         printerr('Current version number not found in {}'.format(config_file))
@@ -71,13 +77,37 @@ def increase_version_number(version, version_increase):
         printerr('Invalid version number, cannot proceed to increase it.')
 
 
-def commit_version_number(lib, new_version):
+def update_switcher_shmdata_version():
+    os.chdir(os.path.join(libs_root_path, 'shmdata'))
+    assert git_checkout(bringup_branch) == 0, 'Failed to checkout {} branch of shmdata.'.format(bringup_branch)
+    shmdata_version = parse_version_number('shmdata', version_pattern.format('SHMDATA'))
+    assert shmdata_version != [-1, -1, -1]
+    print 'found shmdata version {}.{}'.format(shmdata_version[0], shmdata_version[1])
+    build_dir = os.path.join(libs_root_path, 'shmdata', 'build')
+    if not os.path.isdir(build_dir):
+        os.mkdir(build_dir)
+    os.chdir(build_dir)
+    if subprocess.call('cmake -DCMAKE_BUILD_TYPE=Release .. && make -j {} && sudo make install'
+                               .format(multiprocessing.cpu_count()), shell=True) != 0:
+        printerr('{} build failed, stopping the release.'.format(lib))
+    lib_repo = '{}/{}.git'.format(github_path, lib)
+    os.chdir(os.path.join(libs_root_path))
+    assert git_clone(lib_repo) == 0, 'Could not fetch code base for library {} at {}'.format(lib, lib_repo)
+    os.chdir(os.path.join(libs_root_path, lib))
+    switcher_shmdata_version = parse_version_number(lib, shmdata_require_pattern)
+    if switcher_shmdata_version[0] != shmdata_version[0] or switcher_shmdata_version[1] != shmdata_version[1]:
+        assert git_checkout(working_branch) == 0, 'Failed to checkout {} branch of switcher.'.format(working_branch)
+        commit_version_number(lib, shmdata_version, shmdata_require_pattern)
+
+
+def commit_version_number(lib, new_version, regex_pattern):
     config_file = os.path.join(libs_root_path, lib, version_file)
     changed_file = config_file + ".tmp"
+    shmdata_required_version = False
     with open(config_file) as old_file:
         with open(changed_file, 'w') as new_file:
             for line in old_file:
-                version_line = re.search(version_pattern.format(lib.upper()), line)
+                version_line = re.search(regex_pattern, line)
                 if version_line and len(version_line.groups()) == 2:
                     type = version_line.group(1)
                     if type == 'MAJOR':
@@ -86,13 +116,21 @@ def commit_version_number(lib, new_version):
                         line = re.sub(r'\d+', '{}'.format(new_version[1]), line)
                     elif type == 'PATCH':
                         line = re.sub(r'\d+', '{}'.format(new_version[2]), line)
-
+                elif version_line and len(version_line.groups()) == 1:
+                    version = version_line.group(1).split('.')
+                    if len(version) == 2:
+                        line = re.sub(r'\d+\.\d+', '{}.{}'.format(new_version[0], new_version[1]), line)
+                        shmdata_required_version = True
                 new_file.write(line)
 
     os.rename(changed_file, config_file)
     git_add([config_file])
-    assert git_commit('Version {}.{}.{}'.format(new_version[0], new_version[1],
-                                                new_version[2])) == 0, 'Failed to commit version number.'
+    if shmdata_required_version:
+        assert git_commit('Shmdata version change to {}.{}'.format(new_version[0], new_version[1])) == 0, \
+                          'Failed to commit shmdata version number.'
+    else:
+        assert git_commit('Version {}.{}.{}'.format(new_version[0], new_version[1],
+                                                    new_version[2])) == 0, 'Failed to commit version number.'
 
 
 def git_push(remote_repo, remote_branch):
@@ -249,24 +287,29 @@ if __name__ == '__main__':
     else:
         printerr('Wrong choice. Aborting the release.')
 
-    lib_repo = '{}/{}.git'.format(github_path, lib)
-
+    # Always clone shmdata even when releasing switcher to synchronize versions.
+    lib_repo = '{}/{}.git'.format(github_path, 'shmdata')
     assert git_clone(lib_repo) == 0, 'Could not fetch code base for library {} at {}'.format(lib, lib_repo)
+
+    if lib == 'switcher':
+        update_switcher_shmdata_version()
 
     os.chdir(os.path.join(libs_root_path, lib))
     git_checkout(working_branch)
 
-    release_version = parse_version_number(lib)
+    release_version = parse_version_number(lib, version_pattern.format(lib.upper()))
     assert release_version != [-1, -1, -1]
     increase_version_number(release_version, version_increase)
 
     print 'Version number found for all libraries, now executing unit tests.'
 
     build_dir = os.path.join(libs_root_path, lib, 'build')
-    os.mkdir(build_dir)
+
+    if not os.path.isdir(build_dir):
+        os.mkdir(build_dir)
     os.chdir(build_dir)
 
-    if subprocess.call('cmake .. && make -j {} package_source_test'
+    if subprocess.call('cmake -DCMAKE_BUILD_TYPE=Release .. && make -j {} package_source_test'
                                .format(multiprocessing.cpu_count()), shell=True) != 0:
         printerr('{} unit tests failed, stopping the release.'.format(lib))
 
@@ -279,7 +322,7 @@ if __name__ == '__main__':
                                               release_version[2])
     print 'Creating branch {} for release of {} library.'.format(new_branch, lib)
     git_checkout(new_branch, True)
-    commit_version_number(lib, release_version)
+    commit_version_number(lib, release_version, version_pattern.format(lib.upper()))
     assert git_checkout(bringup_branch) == 0, 'Could not checkout branch {}'.format(bringup_branch)
     assert git_merge(new_branch, True) == 0, 'Merge from branch {} into {} did not work.'.format(new_branch,
                                                                                                  bringup_branch)
@@ -293,9 +336,9 @@ if __name__ == '__main__':
         release_version[2] += 1
     else:
         release_version[2] = 1
-    commit_version_number(lib, release_version)
+    commit_version_number(lib, release_version, version_pattern.format(lib.upper()))
     git_tag('{}.{}.{}'.format(release_version[0], release_version[1], release_version[2]))
     assert git_push(remote_repo, working_branch) == 0, 'Failed to push branch {} into {}/{}'.format(working_branch,
                                                                                                     remote_repo,
                                                                                                     working_branch)
-    # success = True
+    success = True
