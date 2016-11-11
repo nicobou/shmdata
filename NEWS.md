@@ -2,6 +2,31 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.34 (2016-11-11)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New Features:
+* Add possibility of setting  desired target bitrate for NVENC.
+* Allows blacklisting of param in a bundle without specifying its value.
+* VRPN Properties Added support for exposing VRPN analog and button channels as properties in the source as well as creating custom analog and button properties to be exposed in the sink.
+
+Bug Fixes:
+* Synchronize shmdata version in switcher in release script.
+* When saving history, only filter the quiddity creation step for quiddities_at_reset instead of ignoring them completely.
+* Json parser was failing when parsing a null-value node. Also refactored deserializer to make it more consistent with json-glib API.
+* Bundle internal manager is scaning same plugin dirs as the bundle manager.
+* Add required dependency 'libssl-dev' to install cmd
+* Property replace correctly notifies UI.
+* Fixed race condition with ports_to_connect_ in shmdata-to-jack.
+* Fixed missing property fields in tree when replacing the property.
+* Fixed empty configuration tree issue.
+* Fixed cmake build in release mode.
+* Fixed parent property not working with bundles.
+* Fixed underscores in bundle names causes shmdata path issues.
+* Fixed v4l2 standard framerates not disabled when started.
+* Fixed bundle does not disconnect shmdata.
+
 switcher 0.8.32 (2016-10-28)
 ---------------------------
 This is an official release in the 0.8 stable series.
