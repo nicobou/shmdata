@@ -643,7 +643,10 @@ PContainer::prop_id_t PContainer::mirror_property_from(const std::string& strid,
   props_[++counter_] = &pc->actual_props_[prop_id];
   // maintain original order
   size_t pos = pc->actual_props_[prop_id]->get_spec()->branch_get_value(".order").copy_as<size_t>();
-  init_newly_installed_property(strid, parent_strid, pos);
+  auto orig_parent =
+      pc->actual_props_[prop_id]->get_spec()->branch_get_value(".parent").copy_as<std::string>();
+  init_newly_installed_property(
+      strid, orig_parent == "" ? parent_strid : parent_strid + "/" + orig_parent, pos);
   return counter_;
 }
 
