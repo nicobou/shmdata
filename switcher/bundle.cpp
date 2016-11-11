@@ -265,29 +265,6 @@ void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_
 void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_data) {
   auto context = static_cast<on_tree_data_t*>(user_data);
 
-  if (context->quid_spec_.expose_shmw) {
-    static std::regex wr_rgx("\\.?shmdata\\.writer\\.([^.]+)");
-    std::smatch shm_match;
-    std::regex_search(params[0], shm_match, wr_rgx);
-    if (!shm_match.empty()) {
-      auto rm = std::remove_if(
-          context->self_->connected_shms_.begin(),
-          context->self_->connected_shms_.end(),
-          [&](const std::pair<std::string /*quid_name*/, std::string /*shmpath*/>& connection) {
-            if (connection.second == shm_match[1]) return true;
-            return false;
-          });
-      for (auto& it = rm; it != context->self_->connected_shms_.end(); ++it) {
-        context->self_->manager_->manager_impl_->get_quiddity(it->first)->invoke_method(
-            "disconnect", nullptr, {it->second});
-      }
-      context->self_->connected_shms_.erase(rm, context->self_->connected_shms_.end());
-      context->self_->prune_tree(params[0], true);
-      std::swap(context->quid_spec_.connects_to_, context->quid_spec_.connected_to_);
-      return;
-    }
-  }
-
   if (context->quid_spec_.expose_shmr) {
     static std::regex rd_rgx("\\.?shmdata\\.reader\\..*");
     if (std::regex_match(params[0], rd_rgx)) {
@@ -325,6 +302,29 @@ void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_d
           true);
       return;
     }
+  }
+
+  static std::regex wr_rgx("\\.?shmdata\\.writer\\.([^.]+)");
+  std::smatch shm_match;
+  std::regex_search(params[0], shm_match, wr_rgx);
+  if (!shm_match.empty()) {
+    auto rm = std::remove_if(
+        context->self_->connected_shms_.begin(),
+        context->self_->connected_shms_.end(),
+        [&](const std::pair<std::string /*quid_name*/, std::string /*shmpath*/>& connection) {
+          if (connection.second == shm_match[1]) return true;
+          return false;
+        });
+    for (auto& it = rm; it != context->self_->connected_shms_.end(); ++it) {
+      context->self_->manager_->manager_impl_->get_quiddity(it->first)->invoke_method(
+          "disconnect", nullptr, {it->second});
+    }
+    context->self_->connected_shms_.erase(rm, context->self_->connected_shms_.end());
+    if (context->quid_spec_.expose_shmw) {
+      context->self_->prune_tree(params[0], true);
+    }
+    std::swap(context->quid_spec_.connects_to_, context->quid_spec_.connected_to_);
+    return;
   }
 }
 
