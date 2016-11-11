@@ -188,6 +188,11 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
         std::string("quiddity name ") + quid.name + " is not unique in bundle description";
     return false;
   }
+  if (std::string::npos != quid.name.find('_')) {
+    parsing_error_ = std::string("underscores are not allowed in quiddity names ") + quid.name;
+    return false;
+  }
+
   if (quid.name.empty()) {
     parsing_error_ =
         std::string("quiddity name is missing for quiddity specified with type ") + quid.type;
