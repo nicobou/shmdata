@@ -134,7 +134,8 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
         g_warning("ignoring started property when building bundle");
         continue;
       }
-      if (!manager_->use_prop<MPtr(&PContainer::set_str_str)>(name, param.first, param.second)) {
+      if (!param.second.empty() &&
+          !manager_->use_prop<MPtr(&PContainer::set_str_str)>(name, param.first, param.second)) {
         g_warning("fail to set property %s to %s for quiddity %s",
                   name.c_str(),
                   param.first.c_str(),
