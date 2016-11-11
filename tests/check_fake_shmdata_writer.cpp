@@ -17,7 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-//#include <gst/gst.h>
+#undef NDEBUG  // get assert in release mode
+
 #include <cassert>
 #include <string>
 #include "switcher/information-tree.hpp"

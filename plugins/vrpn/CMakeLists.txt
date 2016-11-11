@@ -34,6 +34,9 @@ if (PLUGIN_VRPN)
         ${VRPN_LIBRARIES_DIR}/libquat.a
     )
 
+    # WARNINGS
+    add_definitions(-Wno-error=unused-variable)
+
     # PLUGINS
 
     set(SHARED_SRC

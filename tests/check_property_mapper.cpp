@@ -17,6 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#undef NDEBUG  // get assert in release mode
+
 #include <gst/gst.h>
 #include <string>
 #include <vector>

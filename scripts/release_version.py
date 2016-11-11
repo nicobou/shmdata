@@ -87,7 +87,7 @@ def update_switcher_shmdata_version():
     if not os.path.isdir(build_dir):
         os.mkdir(build_dir)
     os.chdir(build_dir)
-    if subprocess.call('cmake .. && make -j {} && sudo make install'
+    if subprocess.call('cmake -DCMAKE_BUILD_TYPE=Release .. && make -j {} && sudo make install'
                                .format(multiprocessing.cpu_count()), shell=True) != 0:
         printerr('{} build failed, stopping the release.'.format(lib))
     lib_repo = '{}/{}.git'.format(github_path, lib)
@@ -309,7 +309,7 @@ if __name__ == '__main__':
         os.mkdir(build_dir)
     os.chdir(build_dir)
 
-    if subprocess.call('cmake .. && make -j {} package_source_test'
+    if subprocess.call('cmake -DCMAKE_BUILD_TYPE=Release .. && make -j {} package_source_test'
                                .format(multiprocessing.cpu_count()), shell=True) != 0:
         printerr('{} unit tests failed, stopping the release.'.format(lib))
 

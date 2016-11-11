@@ -14,6 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#undef NDEBUG  // get assert in release mode
+
 #include "switcher/scope-exit.hpp"
 
 // note: do not write multiple "On_scope_exit" call in the same line
