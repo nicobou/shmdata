@@ -12,6 +12,8 @@
  * GNU Lesser General Public License for more details.
  */
 
+#undef NDEBUG  // get assert in release mode
+
 #include <cassert>
 #include "shmdata/sysv-shm.hpp"
 #include "shmdata/console-logger.hpp"
