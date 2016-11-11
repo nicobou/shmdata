@@ -27,7 +27,7 @@
  * <refsect2>
  * <title>Example launch lines</title>
  * |[
- * gst-launch -v videotestsrc !  shmdatasink socket-path=/tmp/blah initial-size=1000000
+ * gst-launch -v videotestsrc !  shmdatasink socket-path=/tmp/blah
  * ]| Send video to shm buffers.
  * </refsect2>
  */
@@ -58,7 +58,7 @@ enum
   PROP_INITIAL_SHM_SIZE
 };
 
-#define DEFAULT_INITIAL_SIZE ( 3554432 )  // 3MB
+#define DEFAULT_INITIAL_SIZE ( 1 )
 #define DEFAULT_WAIT_FOR_CONNECTION (TRUE)
 /* Default is user read/write, group read */
 //#define DEFAULT_PERMS ( S_IRUSR | S_IWUSR | S_IRGRP )
