@@ -651,6 +651,16 @@ bool V4L2Src::check_folder_for_v4l2_devices() {
   }
   for (auto& it : files) inspect_file_device("/dev/" + it);
 
+  // push USB entries at the end of capture_devices_
+  std::sort(capture_devices_.begin(),
+            capture_devices_.end(),
+            [](const CaptureDescription&, const CaptureDescription& descr2) {
+              auto tmp = descr2.bus_info_;
+              std::transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
+              if (std::string::npos != tmp.rfind("usb")) return true;
+              return false;
+            });
+
   auto files_by_id = get_file_names_with_prefix("/dev/v4l/by-id/", {});
   for (auto& it : files_by_id) set_device_id("/dev/v4l/by-id/" + it, it);
   return true;
