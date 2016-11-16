@@ -23,6 +23,7 @@ set(PACKAGE_VERSION ${SWITCHER_VERSION_STRING})
 
 # Compilation
 set(CMAKE_CXX_STANDARD 14)
+set(DATADIR ${CMAKE_INSTALL_PREFIX}/share/switcher/)
 
 # CPack - General
 set(CPACK_PACKAGE_NAME ${PACKAGE_NAME})
@@ -132,6 +133,7 @@ add_definitions(-Wall)
 add_definitions(-Wextra)
 add_definitions(-Werror)
 add_definitions(-Wno-error=unused-parameter)
+add_definitions("-DDATADIR=\"${DATADIR}\"")
 
 # OSX
 if(APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

@@ -22,6 +22,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace switcher {
 namespace FileUtils {
@@ -34,6 +35,11 @@ std::pair<bool, std::string> prepare_writable_dir(const std::string& path);
 std::pair<bool, std::string> create_writable_dir(const std::string& path);
 
 bool is_dir(const std::string& path);
+
+std::vector<std::string> get_files_from_directory(std::string path,
+                                                  std::string prefix = "",
+                                                  std::string suffix = "",
+                                                  bool recursive = false);
 
 }  // namespace FileUtils
 }  // namespace switcher

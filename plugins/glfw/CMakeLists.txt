@@ -64,16 +64,38 @@ if (PLUGIN_GLFW)
         )
     endif ()
 
+    # IMGUI
+
+    set(IMGUI_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/imgui-prefix/src/imgui)
+    set(IMGUI_SOURCE_FILES ${IMGUI_SOURCE_DIR}/imgui.cpp ${IMGUI_SOURCE_DIR}/imgui_draw.cpp)
+
+    ExternalProject_Add(imgui
+        GIT_REPOSITORY https://github.com/ocornut/imgui.git
+        GIT_TAG v1.49
+        DOWNLOAD_DIR ${IMGUI_SOURCE_DIR}
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND ""
+        INSTALL_COMMAND ""
+        )
+
+    include_directories(
+        ${IMGUI_SOURCE_DIR}
+    )
+
     # Plugin
+
+    add_custom_command(OUTPUT ${IMGUI_SOURCE_FILES} DEPENDS imgui COMMAND "")
 
     add_library(glfwvideo SHARED
         glad.c
         glfw-renderer.cpp
         glfwvideo.cpp
+        ${IMGUI_SOURCE_FILES}
         )
 
     add_dependencies(glfwvideo ${SWITCHER_LIBRARY})
     add_dependencies(glfwvideo glfw)
+    add_dependencies(glfwvideo imgui)
 
     # TEST
 
@@ -84,5 +106,6 @@ if (PLUGIN_GLFW)
     # INSTALL
 
     install(TARGETS glfwvideo LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/plugins/glfw/fonts DESTINATION ${DATADIR})
 
 endif ()
