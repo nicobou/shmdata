@@ -35,6 +35,7 @@
 #include "switcher/scope-exit.hpp"
 #include "switcher/sdp-utils.hpp"
 #include "switcher/shmdata-utils.hpp"
+#include "switcher/string-utils.hpp"
 
 namespace switcher {
 
@@ -454,7 +455,10 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
   std::string from_uri(uristr, len);
   // find related buddy id ('sip:' is not saved)
   auto peer_uri = std::string(from_uri, 4, std::string::npos);
-  if (!SIPPlugin::this_->white_list_->is_authorized(peer_uri)) {
+  auto peer_uri_lower_case = std::string(from_uri, 4, std::string::npos);
+  StringUtils::tolower(peer_uri_lower_case);
+  if (!SIPPlugin::this_->white_list_->is_authorized(peer_uri) &&
+      !SIPPlugin::this_->white_list_->is_authorized(peer_uri_lower_case)) {
     g_message("ERROR:call refused from %s", peer_uri.c_str());
     g_debug("call refused from %s", peer_uri.c_str());
     pjsip_endpt_respond_stateless(

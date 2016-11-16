@@ -20,6 +20,7 @@
 #include <pjnath.h>
 #include "./pj-sip-plugin.hpp"
 #include "switcher/scope-exit.hpp"
+#include "switcher/string-utils.hpp"
 
 namespace switcher {
 PJStunTurn::PJStunTurn() {
@@ -66,6 +67,16 @@ PJStunTurn::PJStunTurn() {
       Method::make_arg_type_description(
           G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, nullptr),
       this);
+  SIPPlugin::this_->pmanage<MPtr(&PContainer::make_bool)>(
+      "lower-case-turn-account",
+      [this](const bool& val) {
+        lower_case_turn_account_ = val;
+        return true;
+      },
+      [this]() { return lower_case_turn_account_; },
+      "Lower Case TURN Account",
+      "Lower Case TURN Account",
+      lower_case_turn_account_);
 }
 
 PJStunTurn::~PJStunTurn() {
@@ -194,6 +205,7 @@ gboolean PJStunTurn::set_stun_turn(const gchar* stun,
     context->ice_cfg_.turn.auth_cred.type = PJ_STUN_AUTH_CRED_STATIC;
     if (nullptr != turn_user) {
       context->turn_user_ = std::string(turn_user);
+      if (context->lower_case_turn_account_) StringUtils::tolower(context->turn_user_);
       context->ice_cfg_.turn.auth_cred.data.static_cred.username.ptr =
           (char*)context->turn_user_.c_str();
       context->ice_cfg_.turn.auth_cred.data.static_cred.username.slen = context->turn_user_.size();
@@ -206,12 +218,12 @@ gboolean PJStunTurn::set_stun_turn(const gchar* stun,
       context->ice_cfg_.turn.auth_cred.data.static_cred.data.slen = context->turn_pass_.size();
     }
 
-    // /* Connection type to TURN server */
+    // Connection type to TURN server
     context->ice_cfg_.turn.conn_type = PJ_TURN_TP_UDP;
 
-    /* configure longer keep-alive time
-     * so that it does't clutter the screen output.
-     */
+    // configure longer keep-alive time
+    // so that it does't clutter the screen output.
+
     context->ice_cfg_.turn.alloc_param.ka_interval = 300;
   }
 

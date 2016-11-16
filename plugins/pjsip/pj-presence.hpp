@@ -46,6 +46,7 @@ class PJPresence {
   enum { AVAILABLE, BUSY, AWAY, OFFLINE, OPT_MAX };
 
  private:
+  bool lower_case_accounts_{true};
   pjsua_acc_id account_id_{-1};
   pjsua_acc_config cfg_;
   std::mutex registration_mutex_{};

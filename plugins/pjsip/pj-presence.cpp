@@ -21,6 +21,7 @@
 #include "./pj-sip-plugin.hpp"
 #include "switcher/information-tree-basic-serializer.hpp"
 #include "switcher/scope-exit.hpp"
+#include "switcher/string-utils.hpp"
 
 namespace switcher {
 PJPresence::PJPresence() {
@@ -126,6 +127,16 @@ PJPresence::PJPresence() {
                                                           "Self SIP registration status",
                                                           registered_);
   SIPPlugin::this_->graft_tree(".self.", InfoTree::make(nullptr));
+
+  SIPPlugin::this_->pmanage<MPtr(&PContainer::make_bool)>("lower-case-accounts",
+                                                          [this](const bool& val) {
+                                                            lower_case_accounts_ = val;
+                                                            return true;
+                                                          },
+                                                          [this]() { return lower_case_accounts_; },
+                                                          "Lower Case Accounts",
+                                                          "Lower Case Accounts",
+                                                          lower_case_accounts_);
 }
 
 PJPresence::~PJPresence() {
@@ -146,8 +157,9 @@ gboolean PJPresence::register_account_wrapped(gchar* user, gchar* password, void
     g_message("ERROR:cannot register, SIP port is not available (%u)", SIPPlugin::this_->sip_port_);
     return FALSE;
   }
-  SIPPlugin::this_->pjsip_->run(
-      [&]() { context->register_account(std::string(user), std::string(password)); });
+  std::string tmp = user;
+  if (context->lower_case_accounts_) StringUtils::tolower(tmp);
+  SIPPlugin::this_->pjsip_->run([&]() { context->register_account(tmp, std::string(password)); });
   SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
       SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
   if (context->registered_) return TRUE;
@@ -247,7 +259,7 @@ void PJPresence::unregister_account(bool notify_tree) {
   return;
 }
 
-void PJPresence::add_buddy(const std::string& sip_user) {
+void PJPresence::add_buddy(const std::string& user) {
   pjsua_buddy_config buddy_cfg;
   pjsua_buddy_id buddy_id;
   pj_status_t status = PJ_SUCCESS;
@@ -256,7 +268,8 @@ void PJPresence::add_buddy(const std::string& sip_user) {
     g_message("ERROR:cannot add buddy with invalid account");
     return;
   }
-
+  std::string sip_user = user;
+  if (lower_case_accounts_) StringUtils::tolower(sip_user);
   std::string buddy_full_uri("sip:" + sip_user  // + ";transport=tcp"
                              );
   if (pjsua_verify_url(buddy_full_uri.c_str()) != PJ_SUCCESS) {
@@ -294,12 +307,14 @@ void PJPresence::add_buddy(const std::string& sip_user) {
   return;
 }
 
-void PJPresence::del_buddy(const std::string& sip_user) {
+void PJPresence::del_buddy(const std::string& user) {
   pj_status_t status = PJ_SUCCESS;
-  if (pjsua_verify_url(std::string("sip:" + sip_user).c_str()) != PJ_SUCCESS) {
-    g_message("ERROR:Invalid buddy URI (%s) for deletion", sip_user.c_str());
+  if (pjsua_verify_url(std::string("sip:" + user).c_str()) != PJ_SUCCESS) {
+    g_message("ERROR:Invalid buddy URI (%s) for deletion", user.c_str());
     return;
   }
+  std::string sip_user = user;
+  if (lower_case_accounts_) StringUtils::tolower(sip_user);
   auto it = buddy_id_.find(sip_user);
   if (buddy_id_.end() == it) {
     g_message("ERROR:%s is not in buddy list, cannot delete", sip_user.c_str());
@@ -339,6 +354,7 @@ void PJPresence::name_buddy(std::string name, std::string sip_user) {
     g_warning("Invalid buddy URI (%s) when giving a nick name", sip_user.c_str());
     return;
   }
+
   auto it = buddy_id_.find(sip_user);
   if (buddy_id_.end() == it) {
     g_message("ERROR:%s is not in buddy list", sip_user.c_str());
@@ -351,8 +367,9 @@ void PJPresence::name_buddy(std::string name, std::string sip_user) {
 
 gboolean PJPresence::name_buddy_wrapped(gchar* name, gchar* buddy_uri, void* user_data) {
   PJPresence* context = static_cast<PJPresence*>(user_data);
-  SIPPlugin::this_->pjsip_->run(
-      [&]() { context->name_buddy(std::string(name), std::string(buddy_uri)); });
+  std::string bud(buddy_uri);
+  if (context->lower_case_accounts_) StringUtils::tolower(bud);
+  SIPPlugin::this_->pjsip_->run([&]() { context->name_buddy(std::string(name), bud); });
   return TRUE;
 }
 
