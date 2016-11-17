@@ -37,6 +37,7 @@
 // the quiddities to manage (line sorted)
 #include "./audio-test-source.hpp"
 #include "./create-remove-spy.hpp"
+#include "./dummy-sink.hpp"
 #include "./empty-quiddity.hpp"
 #include "./external-shmdata-writer.hpp"
 #include "./gst-audio-encoder.hpp"
@@ -146,6 +147,8 @@ void QuiddityManager_Impl::register_classes() {
                                                     &AudioTestSource::switcher_doc_);
   abstract_factory_.register_class<CreateRemoveSpy>(CreateRemoveSpy::switcher_doc_.get_class_name(),
                                                     &CreateRemoveSpy::switcher_doc_);
+  abstract_factory_.register_class<DummySink>(DummySink::switcher_doc_.get_class_name(),
+                                              &DummySink::switcher_doc_);
   abstract_factory_.register_class<EmptyQuiddity>(EmptyQuiddity::switcher_doc_.get_class_name(),
                                                   &EmptyQuiddity::switcher_doc_);
   abstract_factory_.register_class<ExternalShmdataWriter>(

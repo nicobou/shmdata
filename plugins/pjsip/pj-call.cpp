@@ -579,6 +579,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     auto rtp_shmpath = shm_prefix + "rtp-" + media_label;
     auto rtp_caps = PJCallUtils::get_rtp_caps(it);
     if (rtp_caps.empty()) rtp_caps = "unknown_data_type";
+
     call->rtp_writers_.emplace_back(std::make_unique<ShmdataWriter>(SIPPlugin::this_,
                                                                     rtp_shmpath,
                                                                     9000,  // Ethernet jumbo frame
@@ -588,10 +589,11 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     //     std::string(".shmdata.writer.") + rtp_shmpath + ".uri",
     //     InfoTree::make(call->peer_uri));
     auto* writer = call->rtp_writers_.back().get();
-    call->ice_trans_->set_data_cb(call->rtp_writers_.size(), [writer](void* data, size_t size) {
-      writer->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, size);
-      writer->bytes_written(size);
-    });
+    call->ice_trans_->set_data_cb(call->rtp_writers_.size(),
+                                  [writer, rtp_shmpath](void* data, size_t size) {
+                                    writer->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, size);
+                                    writer->bytes_written(size);
+                                  });
     // setting a decoder for this shmdata
     auto peer_uri = call->peer_uri;
     call->rtp_receivers_.emplace_back(std::make_unique<RTPReceiver>(

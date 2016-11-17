@@ -159,7 +159,8 @@ void NVencPlugin::update_preset() {
   size_t current_index = 0;
   for (auto& it : presets_guids_) {
     names.push_back(it.first);
-    if (it.first == "Low Latency default") index_low_lantency_default = current_index;
+    // FIXME (the following does not work with SIP and sometimes with decoder)
+    // if (it.first == "Low Latency default") index_low_lantency_default = current_index;
     ++current_index;
   }
   presets_ = Selection<>(std::move(names), index_low_lantency_default);
