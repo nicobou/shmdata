@@ -99,7 +99,13 @@ void QuiddityManager::command_unlock() {
                                        "next_midi_event_to_property",
                                        "can-sink-caps",
                                        "send",
-                                       "hand-up"};
+                                       "hang-up",
+                                       "register",
+                                       "unregister",
+                                       "add_buddy",
+                                       "name_buddy",
+                                       "del_buddy",
+                                       "set_stun_turn"};
 
   // save the command if required
   if (must_be_saved(command_->id_) &&
