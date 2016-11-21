@@ -68,7 +68,10 @@ RTPReceiver::RTPReceiver(RtpSession2* session,
 }
 
 RTPReceiver::~RTPReceiver() {
-  if (shmdatasrc_) GstUtils::clean_element(shmdatasrc_);
+  gst_element_unlink(shmdatasrc_, typefind_);
+  GstUtils::clean_element(typefind_);
+  gst_element_set_state(shmdatasrc_, GST_STATE_NULL);
+  gst_bin_remove(GST_BIN(session_->gst_pipeline_->get_pipeline()), shmdatasrc_);
   if (rtp_sink_pad_) gst_element_release_request_pad(session_->rtpsession_, rtp_sink_pad_);
   if (shmsrc_caps_) gst_caps_unref(shmsrc_caps_);
 }
