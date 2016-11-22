@@ -18,6 +18,9 @@ if (PLUGIN_GTK)
 
     add_compile_options(${GTK_CFLAGS})
 
+    # GCC 6.4 does not like deprecation
+    add_definitions(-Wno-error=deprecated-declarations)
+
     include_directories(
         ${GTK_INCLUDE_DIRS}
     )
