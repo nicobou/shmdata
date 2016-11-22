@@ -1,3 +1,5 @@
+include(CheckCXXCompilerFlag)
+
 set(PLUGIN_NAME "plugin-glfw")
 set(PLUGIN_DESCRIPTION "GLFW Plugin")
 
@@ -21,6 +23,17 @@ if (PLUGIN_GLFW)
 
     set(GLFW_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/glfw-prefix/src/glfw/include)
     set(GLFW_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/glfw-prefix/src/glfw-build/src/${CMAKE_STATIC_LIBRARY_PREFIX}glfw3${CMAKE_STATIC_LIBRARY_SUFFIX})
+
+    # sbt_image requires the following:
+    check_cxx_compiler_flag(-Wno-error=misleading-indentation CAN_IGNORE_MISLEADING_INDENTATION)
+    if(CAN_IGNORE_MISLEADING_INDENTATION)
+        add_definitions(-Wno-error=misleading-indentation)
+    endif()
+
+    check_cxx_compiler_flag(-Wno-error=shift-negative-value CAN_IGNORE_SHIFT_NEGATIVE_VALUE)
+    if(CAN_IGNORE_SHIFT_NEGATIVE_VALUE)
+        add_definitions(-Wno-error=shift-negative-value)
+    endif()
 
     include_directories(
         ${GLFW_INCLUDE_DIRS}

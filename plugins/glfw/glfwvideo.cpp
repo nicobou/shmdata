@@ -25,7 +25,7 @@
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
 #define STB_IMAGE_IMPLEMENTATION
-#include "switcher/stb_image.h"
+#include "./stb_image.h"
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
