@@ -107,6 +107,7 @@ bool PostureSolidify::connect(std::string shmdata_socket_path) {
 
         worker_.set_task([=]() {
           // Get the result mesh, and send it through shmdata
+          // FIXME this is not required since shmdata is resizing
           auto mesh = vector<unsigned char>();
           solidify_->getMesh(mesh);
           if (mesh_writer_ == nullptr ||

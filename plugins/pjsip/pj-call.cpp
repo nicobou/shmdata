@@ -580,10 +580,8 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     auto rtp_caps = PJCallUtils::get_rtp_caps(it);
     if (rtp_caps.empty()) rtp_caps = "unknown_data_type";
 
-    call->rtp_writers_.emplace_back(std::make_unique<ShmdataWriter>(SIPPlugin::this_,
-                                                                    rtp_shmpath,
-                                                                    9000,  // Ethernet jumbo frame
-                                                                    rtp_caps));
+    call->rtp_writers_.emplace_back(
+        std::make_unique<ShmdataWriter>(SIPPlugin::this_, rtp_shmpath, 1, rtp_caps));
     // uncomment the following in order to get rtp shmdata shown in scenic:
     // SIPPlugin::this_->graft_tree(
     //     std::string(".shmdata.writer.") + rtp_shmpath + ".uri",

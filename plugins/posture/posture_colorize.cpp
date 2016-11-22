@@ -164,6 +164,7 @@ bool PostureColorize::connect(std::string shmdata_socket_path) {
             // Write the mesh
             if (!mesh_writer_ ||
                 texturedMesh.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+              // FIXME manual resize is not required since already done in shmdata
               auto data_type = string(POLYGONMESH_TYPE_BASE);
               mesh_writer_.reset();
               mesh_writer_ =

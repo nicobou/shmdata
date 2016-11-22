@@ -41,8 +41,6 @@ GstPixelFormatConverter::GstPixelFormatConverter(const std::string& shmpath_to_c
   g_object_set(G_OBJECT(shm_converted_.get_raw()),
                "socket-path",
                shmpath_converted.c_str(),
-               "initial-size",
-               kDefaultInitialShmsize,
                "sync",
                false,
                nullptr);

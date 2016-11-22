@@ -56,8 +56,6 @@ void V4L2Src::set_shm_suffix() {
   g_object_set(G_OBJECT(shmsink_.get_raw()),
                "socket-path",
                shmpath_.c_str(),
-               "initial-size",
-               kDefaultInitialShmsize,
                nullptr);
 }
 
@@ -483,7 +481,7 @@ bool V4L2Src::remake_elements() {
     return false;
   }
   if (!UGstElem::renew(v4l2src_, {"device", "norm"}) || !UGstElem::renew(capsfilter_, {"caps"}) ||
-      !UGstElem::renew(shmsink_, {"socket-path", "initial-size"})) {
+      !UGstElem::renew(shmsink_, {"socket-path"})) {
     g_warning("V4L2Src: issue when with elements for video capture");
     return false;
   }

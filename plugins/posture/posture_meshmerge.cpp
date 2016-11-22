@@ -146,6 +146,7 @@ bool PostureMeshMerge::connect(std::string shmdata_socket_path) {
           if (mesh.size() != 0) {
             if (mesh_writer_ == nullptr ||
                 mesh.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+              // FIXME manual resize is not required since already done in shmdata
               auto data_type = string(POLYGONMESH_TYPE_BASE);
               mesh_writer_.reset();
               mesh_writer_ = std::make_unique<ShmdataWriter>(
