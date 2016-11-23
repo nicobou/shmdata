@@ -291,7 +291,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
             pmanage<MPtr(&PContainer::notify)>(width_id_);
             pmanage<MPtr(&PContainer::notify)>(height_id_);
             std::lock_guard<std::mutex> lock(configuration_mutex_);
-            ImGui::SetCurrentContext(gui_configuration_->context_);
+            ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
             ImGuiIO& io = ImGui::GetIO();
             io.DisplaySize.x = static_cast<float>(width_);
             io.DisplaySize.y = static_cast<float>(height_);
@@ -362,40 +362,40 @@ GLFWVideo::GLFWVideo(const std::string& name)
     return;
   }
 
-  width_id_ =
-      pmanage<MPtr(&PContainer::make_int)>("width",
-                                           [this](const int& val) {
-                                             width_ = val;
-                                             set_size();
-                                             std::lock_guard<std::mutex> lock(configuration_mutex_);
-                                             ImGui::SetCurrentContext(gui_configuration_->context_);
-                                             ImGuiIO& io = ImGui::GetIO();
-                                             io.DisplaySize.x = static_cast<float>(width_);
-                                             return true;
-                                           },
-                                           [this]() { return width_; },
-                                           "Window Width",
-                                           "Set Window Width",
-                                           800,
-                                           1,
-                                           max_width_);
-  height_id_ =
-      pmanage<MPtr(&PContainer::make_int)>("height",
-                                           [this](const int& val) {
-                                             height_ = val;
-                                             set_size();
-                                             std::lock_guard<std::mutex> lock(configuration_mutex_);
-                                             ImGui::SetCurrentContext(gui_configuration_->context_);
-                                             ImGuiIO& io = ImGui::GetIO();
-                                             io.DisplaySize.y = static_cast<float>(height_);
-                                             return true;
-                                           },
-                                           [this]() { return height_; },
-                                           "Window Height",
-                                           "Set Window Height",
-                                           600,
-                                           1,
-                                           max_height_);
+  width_id_ = pmanage<MPtr(&PContainer::make_int)>(
+      "width",
+      [this](const int& val) {
+        width_ = val;
+        set_size();
+        std::lock_guard<std::mutex> lock(configuration_mutex_);
+        ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize.x = static_cast<float>(width_);
+        return true;
+      },
+      [this]() { return width_; },
+      "Window Width",
+      "Set Window Width",
+      800,
+      1,
+      max_width_);
+  height_id_ = pmanage<MPtr(&PContainer::make_int)>(
+      "height",
+      [this](const int& val) {
+        height_ = val;
+        set_size();
+        std::lock_guard<std::mutex> lock(configuration_mutex_);
+        ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize.y = static_cast<float>(height_);
+        return true;
+      },
+      [this]() { return height_; },
+      "Window Height",
+      "Set Window Height",
+      600,
+      1,
+      max_height_);
   position_x_id_ = pmanage<MPtr(&PContainer::make_int)>("position_x",
                                                         [this](const int& val) {
                                                           position_x_ = val;
@@ -1103,17 +1103,17 @@ bool GLFWVideo::can_sink_caps(std::string caps) {
 };
 
 GLFWVideo::GUIConfiguration::GUIConfiguration(GLFWVideo* window)
-    : parent_window_(window),
-      color_(255, 255, 255, 255),
-      context_(ImGui::CreateContext()),
-      font_atlas_(std::make_unique<ImFontAtlas>()) {
-  ImGui::SetCurrentContext(context_);
+    : parent_window_(window), color_(255, 255, 255, 255), context_(std::make_unique<GUIContext>()) {
+  ImGui::SetCurrentContext(context_->ctx);
   ImGuiIO& io = ImGui::GetIO();
-  io.Fonts = font_atlas_.get();
+  io.Fonts = &font_atlas_;
   init_imgui();
 }
 
-GLFWVideo::GUIConfiguration::~GUIConfiguration() { destroy_imgui(); }
+GLFWVideo::GUIConfiguration::~GUIConfiguration() {
+  ImGui::SetCurrentContext(context_->ctx);
+  destroy_imgui();
+}
 
 void GLFWVideo::GUIConfiguration::init_imgui() {
   const char* vertex_source{R"(
@@ -1230,7 +1230,7 @@ void GLFWVideo::GUIConfiguration::init_imgui() {
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-  ImGui::SetCurrentContext(context_);
+  ImGui::SetCurrentContext(context_->ctx);
 
   // Initialize ImGui
   ImGuiIO& io = ImGui::GetIO();
@@ -1417,7 +1417,7 @@ bool GLFWVideo::GUIConfiguration::generate_font_texture(std::string font) {
     return false;
   }
 
-  ImGui::SetCurrentContext(context_);
+  ImGui::SetCurrentContext(context_->ctx);
   ImGuiIO& io = ImGui::GetIO();
   io.Fonts->Clear();
   io.Fonts->AddFontFromFileTTF(font.c_str(), font_size_);

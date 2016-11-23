@@ -93,6 +93,13 @@ class GLFWVideo : public Quiddity {
   struct GUIConfiguration {
     GUIConfiguration(GLFWVideo* window);
     ~GUIConfiguration();
+
+    struct GUIContext {
+      GUIContext() { ctx = ImGui::CreateContext(); };
+      ~GUIContext() { ImGui::DestroyContext(ctx); };
+      ImGuiContext* ctx{nullptr};
+    };
+
     void init_imgui();
     void destroy_imgui();
     void init_properties();
@@ -157,8 +164,8 @@ class GLFWVideo : public Quiddity {
     PContainer::prop_id_t color_id_{0};
     unsigned int font_size_{18};
     PContainer::prop_id_t font_size_id_{0};
-    ImGuiContext* context_{nullptr};
-    std::unique_ptr<ImFontAtlas> font_atlas_{nullptr};
+    std::unique_ptr<GUIContext> context_{nullptr};
+    ImFontAtlas font_atlas_{};
   };
 
   /**

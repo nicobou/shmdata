@@ -85,7 +85,7 @@ void GLFWRenderer::render_loop() {
         std::lock_guard<std::mutex> lock(current->configuration_mutex_);
         if (current->gui_configuration_ && current->gui_configuration_->initialized_) {
           current_window_ = current;
-          ImGui::SetCurrentContext(current->gui_configuration_->context_);
+          ImGui::SetCurrentContext(current->gui_configuration_->context_->ctx);
           ImGui::NewFrame();
           current->gui_configuration_->show();
           ImGui::Render();

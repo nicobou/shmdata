@@ -18,6 +18,7 @@ if (PLUGIN_GLFW)
         CMAKE_ARGS -DGLFW_BUILD_TESTS=FALSE
         CMAKE_ARGS -DGLFW_BUILD_DOCS=FALSE
         CMAKE_ARGS -DGLFW_INSTALL=FALSE
+        CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         INSTALL_COMMAND ""
         )
 
@@ -34,6 +35,8 @@ if (PLUGIN_GLFW)
     if(CAN_IGNORE_SHIFT_NEGATIVE_VALUE)
         add_definitions(-Wno-error=shift-negative-value)
     endif()
+
+    add_definitions(-Wno-error=maybe-uninitialized)
 
     include_directories(
         ${GLFW_INCLUDE_DIRS}
