@@ -1,0 +1,13 @@
+{
+  "bundle" : {
+    "audiotestladspa" : {
+      "pipeline" : "audiotestsrc name=source <add_to_start ! ladspa name=ladspaplugin ! dummysink name=dummy",
+      "doc" : {
+        "long_name" : "LADSPA plugin",
+        "category" : "audio",
+        "tags" : "writer",
+        "description" : "LADSPA plugin"
+      }
+    }
+  }
+}

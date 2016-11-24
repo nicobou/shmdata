@@ -8,7 +8,7 @@ INSTALL
 Build and install **switcher** from the command line:
 
 ```
-$ sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libgtk-3-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev
+$ sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libgtk-3-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins
 $ git submodule update --init --recursive
 $ mkdir build
 $ cd build
@@ -105,7 +105,7 @@ It will display a list of the configuration variables for the build.
 * Install dependencies:
 
     ```
-    $ brew install cmake pkg-config gsoap glib json-glib gstreamer gst-libav gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly liblo portmidi python3
+    $ brew install cmake pkg-config gsoap glib json-glib gstreamer gst-libav gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly liblo portmidi python3 swh-plugins
     ```
 
 * Build and install:
