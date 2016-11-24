@@ -32,8 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(NVencPlugin,
                                      "Nicolas Bouillot");
 
 NVencPlugin::NVencPlugin(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)),
-      default_preset_id_(pmanage<MPtr(&PContainer::make_bool)>(
+    : default_preset_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "bitrate_from_preset",
           [this](bool value) {
             bitrate_from_preset_ = value;
@@ -60,7 +59,8 @@ NVencPlugin::NVencPlugin(const std::string&)
                                                         "Value of the desired average bitrate.",
                                                         bitrate_,
                                                         1000000,
-                                                        20000000)) {
+                                                        20000000)),
+      shmcntr_(static_cast<Quiddity*>(this)) {
   auto devices = CudaContext::get_devices();
   std::vector<std::string> names;
   for (auto& it : devices) {

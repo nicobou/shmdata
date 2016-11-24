@@ -26,7 +26,7 @@ namespace switcher {
 NVencES::NVencES(uint32_t device_id
                  //, uint32_t width, uint32_t height,  NV_ENC_BUFFER_FORMAT format
                  )
-    : cu_ctx_(device_id) {
+    : device_id_(device_id), cu_ctx_(device_id) {
   On_scope_exit {
     if (!safe_bool_idiom()) g_warning("NV encoder session initialization failed");
   };
@@ -45,6 +45,7 @@ NVencES::NVencES(uint32_t device_id
 }
 
 NVencES::~NVencES() {
+  buffers_.reset();
   if (safe_bool_idiom() && !(NV_ENC_SUCCESS == NVencAPI::api.nvEncDestroyEncoder(encoder_)))
     g_warning("BUG! (destroying NV encoder session)");
 }
@@ -52,13 +53,12 @@ NVencES::~NVencES() {
 NVencES::named_guid_t NVencES::get_supported_codecs() {
   named_guid_t res;
   // supported codecs
-  uint32_t num = 0;
   if (NV_ENC_SUCCESS !=
-      NVencAPI::api.nvEncGetEncodeGUIDs(encoder_, codecs_guids_, kArraySize, &num)) {
+      NVencAPI::api.nvEncGetEncodeGUIDs(encoder_, codecs_guids_, kArraySize, &codecs_num_)) {
     g_warning("issue with nvEncGetEncodeGUIDs");
     return res;
   }
-  for (uint32_t i = 0; i < num; ++i) {
+  for (uint32_t i = 0; i < codecs_num_; ++i) {
     if (is_same(codecs_guids_[i], NV_ENC_CODEC_H264_GUID)) {
       res.push_back(std::make_pair(std::string("H264"), NV_ENC_CODEC_H264_GUID));
     } else if (is_same(codecs_guids_[i], NV_ENC_CODEC_HEVC_GUID)) {
@@ -71,15 +71,15 @@ NVencES::named_guid_t NVencES::get_supported_codecs() {
 
 NVencES::named_guid_t NVencES::get_presets(GUID encodeGUID) {
   named_guid_t res;
+  preset_GUID_ = encodeGUID;
   // supported codecs
-  uint32_t num = 0;
   if (NV_ENC_SUCCESS !=
       NVencAPI::api.nvEncGetEncodePresetGUIDs(
-          encoder_, encodeGUID, presets_guids_, kArraySize, &num)) {
+          encoder_, preset_GUID_, presets_guids_, kArraySize, &presets_num_)) {
     g_warning("issue with nvEncGetEncodePresetGUIDs");
     return res;
   }
-  for (uint32_t i = 0; i < num; ++i) {
+  for (uint32_t i = 0; i < presets_num_; ++i) {
     if (is_same(presets_guids_[i], NV_ENC_PRESET_DEFAULT_GUID)) {
       res.push_back(std::make_pair(std::string("Default"), NV_ENC_PRESET_DEFAULT_GUID));
     } else if (is_same(presets_guids_[i], NV_ENC_PRESET_HP_GUID)) {
@@ -110,10 +110,11 @@ NVencES::named_guid_t NVencES::get_presets(GUID encodeGUID) {
 
 NVencES::named_guid_t NVencES::get_profiles(GUID encodeGUID) {
   named_guid_t res;
+  profile_GUID_ = encodeGUID;
   // supported codecs
-  uint32_t num = 0;
-  NVencAPI::api.nvEncGetEncodeProfileGUIDs(encoder_, encodeGUID, profiles_guids_, kArraySize, &num);
-  for (uint32_t i = 0; i < num; ++i) {
+  NVencAPI::api.nvEncGetEncodeProfileGUIDs(
+      encoder_, profile_GUID_, profiles_guids_, kArraySize, &profiles_num_);
+  for (uint32_t i = 0; i < profiles_num_; ++i) {
     if (is_same(profiles_guids_[i], NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID)) {
       res.push_back(
           std::make_pair(std::string("Autoselect"), NV_ENC_CODEC_PROFILE_AUTOSELECT_GUID));
@@ -144,10 +145,11 @@ NVencES::named_guid_t NVencES::get_profiles(GUID encodeGUID) {
 std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> NVencES::get_input_formats(
     GUID encodeGUID) {
   std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> res;
+  input_formats_GUID_ = encodeGUID;
   // supported codecs
-  uint32_t num = 0;
-  NVencAPI::api.nvEncGetInputFormats(encoder_, encodeGUID, buf_formats_, kArraySize, &num);
-  for (uint32_t i = 0; i < num; ++i) {
+  NVencAPI::api.nvEncGetInputFormats(
+      encoder_, input_formats_GUID_, buf_formats_, kArraySize, &input_formats_num_);
+  for (uint32_t i = 0; i < input_formats_num_; ++i) {
     switch (buf_formats_[i]) {
       case NV_ENC_BUFFER_FORMAT_UNDEFINED:
         g_warning("nvEncGetInputFormats gives NV_ENC_BUFFER_FORMAT_UNDEFINED (?)");
@@ -178,12 +180,11 @@ std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> NVencES::get_input_for
 }
 
 std::pair<int, int> NVencES::get_max_width_height(GUID encodeGUID) {
-  NV_ENC_CAPS_PARAM params = {NV_ENC_CAPS_PARAM_VER, NV_ENC_CAPS_WIDTH_MAX, {}};
-  int width = 0, height = 0;
-  NVencAPI::api.nvEncGetEncodeCaps(encoder_, encodeGUID, &params, &width);
-  params.capsToQuery = NV_ENC_CAPS_HEIGHT_MAX;
-  NVencAPI::api.nvEncGetEncodeCaps(encoder_, encodeGUID, &params, &height);
-  return std::make_pair(width, height);
+  max_width_height_GUID_ = encodeGUID;
+  NVencAPI::api.nvEncGetEncodeCaps(encoder_, max_width_height_GUID_, &caps_params_, &max_width_);
+  caps_params_.capsToQuery = NV_ENC_CAPS_HEIGHT_MAX;
+  NVencAPI::api.nvEncGetEncodeCaps(encoder_, max_width_height_GUID_, &caps_params_, &max_height_);
+  return std::make_pair(max_width_, max_height_);
 }
 
 bool NVencES::is_same(const GUID& g1, const GUID& g2) {
@@ -213,38 +214,40 @@ bool NVencES::initialize_encoder(GUID encodeGuid,
   init_params_.enablePTD = 1;  // enable the Picture Type Decision is be
                                // taken by the NvEncodeAPI interface.
 
-  NV_ENC_PRESET_CONFIG preset_config;
-  memset(&preset_config, 0, sizeof(preset_config));
-  preset_config.version = NV_ENC_PRESET_CONFIG_VER;
-  preset_config.presetCfg.version = NV_ENC_CONFIG_VER;
+  memset(&preset_config_, 0, sizeof(preset_config_));
+  preset_config_.version = NV_ENC_PRESET_CONFIG_VER;
+  preset_config_.presetCfg.version = NV_ENC_CONFIG_VER;
+  encode_GUID_ = encodeGuid;
+  preset_GUID_ = presetGuid;
   if (NV_ENC_SUCCESS !=
-      NVencAPI::api.nvEncGetEncodePresetConfig(encoder_, encodeGuid, presetGuid, &preset_config)) {
+      NVencAPI::api.nvEncGetEncodePresetConfig(
+          encoder_, encode_GUID_, preset_GUID_, &preset_config_)) {
     g_warning("nvenc cannot get encode preset config");
   } else {
-    preset_config.presetCfg.version = NV_ENC_CONFIG_VER;
-    preset_config.presetCfg.profileGUID = profileGuid;
-    if (bitrate) preset_config.presetCfg.rcParams.averageBitRate = bitrate;
+    preset_config_.presetCfg.version = NV_ENC_CONFIG_VER;
+    preset_config_.presetCfg.profileGUID = profileGuid;
+    if (bitrate) preset_config_.presetCfg.rcParams.averageBitRate = bitrate;
 
     if (is_same(encodeGuid, NV_ENC_CODEC_H264_GUID)) {
-      preset_config.presetCfg.encodeCodecConfig.h264Config.level = NV_ENC_LEVEL_AUTOSELECT;
+      preset_config_.presetCfg.encodeCodecConfig.h264Config.level = NV_ENC_LEVEL_AUTOSELECT;
       if (format == NV_ENC_BUFFER_FORMAT_YUV444)
-        preset_config.presetCfg.encodeCodecConfig.h264Config.chromaFormatIDC = 3;
+        preset_config_.presetCfg.encodeCodecConfig.h264Config.chromaFormatIDC = 3;
       else
-        preset_config.presetCfg.encodeCodecConfig.h264Config.chromaFormatIDC = 1;
-      preset_config.presetCfg.encodeCodecConfig.h264Config.repeatSPSPPS = 1;
+        preset_config_.presetCfg.encodeCodecConfig.h264Config.chromaFormatIDC = 1;
+      preset_config_.presetCfg.encodeCodecConfig.h264Config.repeatSPSPPS = 1;
     } else if (is_same(encodeGuid, NV_ENC_CODEC_HEVC_GUID)) {
-      preset_config.presetCfg.encodeCodecConfig.hevcConfig.level = NV_ENC_LEVEL_AUTOSELECT;
+      preset_config_.presetCfg.encodeCodecConfig.hevcConfig.level = NV_ENC_LEVEL_AUTOSELECT;
       if (format == NV_ENC_BUFFER_FORMAT_YUV444)
-        preset_config.presetCfg.encodeCodecConfig.hevcConfig.chromaFormatIDC = 3;
+        preset_config_.presetCfg.encodeCodecConfig.hevcConfig.chromaFormatIDC = 3;
       else
-        preset_config.presetCfg.encodeCodecConfig.hevcConfig.chromaFormatIDC = 1;
-      preset_config.presetCfg.encodeCodecConfig.hevcConfig.repeatSPSPPS = 1;
+        preset_config_.presetCfg.encodeCodecConfig.hevcConfig.chromaFormatIDC = 1;
+      preset_config_.presetCfg.encodeCodecConfig.hevcConfig.repeatSPSPPS = 1;
     } else {
       g_warning("Unknown codec for hardware encoding.");
       return false;
     }
 
-    init_params_.encodeConfig = &preset_config.presetCfg;
+    init_params_.encodeConfig = &preset_config_.presetCfg;
   }
 
   NVENCSTATUS status = NVencAPI::api.nvEncInitializeEncoder(encoder_, &init_params_);

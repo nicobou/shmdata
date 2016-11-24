@@ -41,11 +41,11 @@ class NVencES : public SafeBoolIdiom {
   NVencES& operator=(NVencES&&) = delete;
 
   using named_guid_t = std::vector<std::pair<std::string, GUID>>;
+  using input_format_t = std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>>;
   named_guid_t get_supported_codecs();
   named_guid_t get_presets(GUID encodeGUID);
   named_guid_t get_profiles(GUID encodeGUID);
-  std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> get_input_formats(GUID encodeGUID);
-
+  input_format_t get_input_formats(GUID encodeGUID);
   std::pair<int, int> get_max_width_height(GUID encodeGUID);
   bool safe_bool_idiom() const { return nullptr != encoder_; }
   bool initialize_encoder(GUID encodeGuid,
@@ -63,12 +63,26 @@ class NVencES : public SafeBoolIdiom {
   bool process_encoded_frame(std::function<void(void*, uint32_t)> fun);
 
  private:
+  uint32_t device_id_;
+  NV_ENC_PRESET_CONFIG preset_config_;
   NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS params_;
+  NV_ENC_CAPS_PARAM caps_params_{NV_ENC_CAPS_PARAM_VER, NV_ENC_CAPS_WIDTH_MAX, {}};
   static const size_t kArraySize{64};
+  GUID encode_GUID_;
+  uint32_t codecs_num_{0};
   GUID codecs_guids_[kArraySize];
+  uint32_t presets_num_{0};
+  GUID preset_GUID_;
   GUID presets_guids_[kArraySize];
+  GUID profile_GUID_;
+  uint32_t profiles_num_{0};
   GUID profiles_guids_[kArraySize];
+  GUID input_formats_GUID_;
+  uint32_t input_formats_num_{0};
   NV_ENC_BUFFER_FORMAT buf_formats_[kArraySize];
+  GUID max_width_height_GUID_;
+  int max_width_{0};
+  int max_height_{0};
   NVencAPI api_{};
   void* encoder_{nullptr};
   NV_ENC_INITIALIZE_PARAMS init_params_;

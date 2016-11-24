@@ -283,27 +283,6 @@ GLFWVideo::GLFWVideo(const std::string& name)
           "Vertical synchronization type",
           "Select the vertical synchronization mode (Hard/Soft/None).",
           vsync_)),
-      geometry_task_(std::make_unique<PeriodicTask>(
-          [this]() {
-            if (!window_moved_) return;
-            pmanage<MPtr(&PContainer::notify)>(position_x_id_);
-            pmanage<MPtr(&PContainer::notify)>(position_y_id_);
-            pmanage<MPtr(&PContainer::notify)>(width_id_);
-            pmanage<MPtr(&PContainer::notify)>(height_id_);
-            std::lock_guard<std::mutex> lock(configuration_mutex_);
-            ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
-            ImGuiIO& io = ImGui::GetIO();
-            io.DisplaySize.x = static_cast<float>(width_);
-            io.DisplaySize.y = static_cast<float>(height_);
-
-            add_rendering_task([this]() {
-              set_viewport();
-              return true;
-            });
-
-            window_moved_ = false;
-          },
-          std::chrono::milliseconds(500))),
       overlay_id_(pmanage<MPtr(&PContainer::make_group)>(
           "overlay_config", "Overlay configuration", "Toggle and configure the text overlay.")),
       show_overlay_id_(pmanage<MPtr(&PContainer::make_parented_bool)>(
@@ -342,7 +321,28 @@ GLFWVideo::GLFWVideo(const std::string& name)
           [this]() { return show_overlay_; },
           "Show overlay",
           "Show the overlay label on top of the video",
-          show_overlay_)) {
+          show_overlay_)),
+      geometry_task_(std::make_unique<PeriodicTask>(
+          [this]() {
+            std::lock_guard<std::mutex> lock(configuration_mutex_);
+            if (!window_moved_ || !gui_configuration_) return;
+            pmanage<MPtr(&PContainer::notify)>(position_x_id_);
+            pmanage<MPtr(&PContainer::notify)>(position_y_id_);
+            pmanage<MPtr(&PContainer::notify)>(width_id_);
+            pmanage<MPtr(&PContainer::notify)>(height_id_);
+            ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
+            ImGuiIO& io = ImGui::GetIO();
+            io.DisplaySize.x = static_cast<float>(width_);
+            io.DisplaySize.y = static_cast<float>(height_);
+
+            add_rendering_task([this]() {
+              set_viewport();
+              return true;
+            });
+
+            window_moved_ = false;
+          },
+          std::chrono::milliseconds(500))) {
   if (getenv("DISPLAY") == nullptr) {
     if (-1 == setenv("DISPLAY", ":0", false)) {
       g_warning("BUG: Failed to set a display!");

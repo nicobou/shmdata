@@ -328,7 +328,6 @@ class GLFWVideo : public Quiddity {
   PContainer::prop_id_t flip_id_{0};
   Selection<int> vsync_{{"Hard", "Soft", "None"}, {1, -1, 0}, 0};
   PContainer::prop_id_t vsync_id_{0};
-  std::unique_ptr<PeriodicTask> geometry_task_;
   int max_width_{0};
   int max_height_{0};
   int minimized_width_{800};
@@ -340,10 +339,12 @@ class GLFWVideo : public Quiddity {
    * \brief Overlay properties
    */
   std::mutex configuration_mutex_{};
-  PContainer::prop_id_t overlay_id_{0};
+  PContainer::prop_id_t overlay_id_;
   bool show_overlay_{false};
-  PContainer::prop_id_t show_overlay_id_{0};
+  PContainer::prop_id_t show_overlay_id_;
   std::unique_ptr<GUIConfiguration> gui_configuration_{nullptr};
+
+  std::unique_ptr<PeriodicTask> geometry_task_;
 };
 
 }  // namespace switcher
