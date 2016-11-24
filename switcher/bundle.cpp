@@ -153,14 +153,22 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
         "on-tree-pruned", &Bundle::on_tree_pruned, on_tree_datas_.back().get());
     // mirroring property
     if (quid.expose_prop) {
-      pmanage<MPtr(&PContainer::make_group)>(name, name, std::string("Properties for ") + name);
+      if (!quid.top_level)
+        pmanage<MPtr(&PContainer::make_group)>(name, name, std::string("Properties for ") + name);
       for (auto& prop : quid_ptr->props_.get_ids()) {
         if (!(quid.expose_start && prop.first == "started") &&
             quid.blacklisted_params.end() == std::find(quid.blacklisted_params.begin(),
                                                        quid.blacklisted_params.end(),
                                                        prop.first)) {
+          std::string parent_strid;
+          if (quid_ptr->tree<MPtr(&InfoTree::branch_get_value)>("property." + prop.first + ".type")
+                      .copy_as<std::string>() != "group" ||
+              !quid.top_level) {
+            parent_strid = name;
+          }
+
           pmanage<MPtr(&PContainer::mirror_property_from)>(
-              name + "/" + prop.first, name, &quid_ptr->props_, prop.second);
+              name + "/" + prop.first, parent_strid, &quid_ptr->props_, prop.second);
         }
       }
     }
@@ -245,9 +253,18 @@ void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_
                 std::find(context->quid_spec_.blacklisted_params.begin(),
                           context->quid_spec_.blacklisted_params.end(),
                           prop_name)) {
+          std::string parent_strid;
+          if (context->quid_
+                      ->tree<MPtr(&InfoTree::branch_get_value)>("property." + context->quid_name_ +
+                                                                ".type")
+                      .copy_as<std::string>() != "group" ||
+              !context->quid_spec_.top_level) {
+            parent_strid = context->quid_name_;
+          }
+
           context->self_->pmanage<MPtr(&PContainer::mirror_property_from)>(
               context->quid_name_ + "/" + prop_name,
-              context->quid_name_,
+              parent_strid,
               &context->quid_->props_,
               context->quid_->props_.get_id(prop_name));
         }

@@ -639,14 +639,16 @@ PContainer::prop_id_t PContainer::mirror_property_from(const std::string& strid,
                                                        PContainer* pc,
                                                        prop_id_t prop_id) {
   if (ids_.cend() != ids_.find(strid)) return 0;  // strid already taken
-  if (parent_strid != "" && ids_.cend() == ids_.find(parent_strid)) return 0;  // parent not found
+  auto orig_parent =
+      pc->actual_props_[prop_id]->get_spec()->branch_get_value(".parent").copy_as<std::string>();
+  std::string new_parent_strid =
+      orig_parent.empty() ? parent_strid : parent_strid + "/" + orig_parent;
+  if (new_parent_strid != "" && ids_.cend() == ids_.find(new_parent_strid))
+    return 0;  // parent not found
   props_[++counter_] = &pc->actual_props_[prop_id];
   // maintain original order
   size_t pos = pc->actual_props_[prop_id]->get_spec()->branch_get_value(".order").copy_as<size_t>();
-  auto orig_parent =
-      pc->actual_props_[prop_id]->get_spec()->branch_get_value(".parent").copy_as<std::string>();
-  init_newly_installed_property(
-      strid, orig_parent == "" ? parent_strid : parent_strid + "/" + orig_parent, pos);
+  init_newly_installed_property(strid, new_parent_strid, pos);
   return counter_;
 }
 
