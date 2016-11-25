@@ -52,7 +52,7 @@ OscToShmdata::~OscToShmdata() { stop(); }
 bool OscToShmdata::start() {
   // creating a shmdata
   shm_ = std::make_unique<ShmdataWriter>(
-      this, make_file_name("osc"), 4096, "application/x-libloserialized-osc");
+      this, make_file_name("osc"), 1, "application/x-libloserialized-osc");
   if (!shm_.get()) {
     g_warning("OscToShmdata failed to start");
     shm_.reset(nullptr);
@@ -91,7 +91,7 @@ int OscToShmdata::osc_handler(const char* path,
     // FIXME handle internal timetag
     // note: this is not implemented in osc-send
   }
-  size_t size;
+  size_t size = 0;
   void* buftmp = lo_message_serialise(m, path, nullptr, &size);
   if (context->shm_->writer<MPtr(&shmdata::Writer::alloc_size)>() < size) {
     context->shm_.reset(nullptr);

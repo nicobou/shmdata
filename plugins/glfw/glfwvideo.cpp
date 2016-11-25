@@ -18,17 +18,14 @@
  */
 
 #include "./glfwvideo.hpp"
-#include <gst/gst.h>
-#include <cstdlib>
+#include <sys/stat.h>
 #include "./glfw-renderer.hpp"
+#include "switcher/file-utils.hpp"
 #include "switcher/gprop-to-prop.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
 #define STB_IMAGE_IMPLEMENTATION
-#include "switcher/stb_image.h"
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
+#include "./stb_image.h"
 
 namespace switcher {
 SWITCHER_DECLARE_PLUGIN(GLFWVideo);
@@ -41,70 +38,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GLFWVideo,
                                      "LGPL",
                                      "Jérémie Soria");
 
-const char* GLFWVideo::kVertexSource = R"(
-  #version 330
-
-  smooth out vec2 UV;
-
-  uniform int geometry = 0;
-  uniform int rotation;
-  uniform int flip;
-
-  const vec2 vertices[4] = vec2[]
-  (
-    vec2(-1.0, 1.0),
-    vec2(1.0, 1.0),
-    vec2(-1.0, -1.0),
-    vec2(1.0, -1.0)
-  );
-
-  const vec2 uvs[4] = vec2[]
-  (
-    vec2(0.0, 0.0),
-    vec2(1.0, 0.0),
-    vec2(0.0, 1.0),
-    vec2(1.0, 1.0)
-  );
-
-  void main()
-  {
-    UV = uvs[gl_VertexID];
-
-    if (geometry == 1) {
-      if (flip == 1)
-        UV = vec2(1.f - UV.s, UV.t);
-      else if (flip == 2)
-        UV = vec2(UV.s, 1.f - UV.t);
-      else if (flip == 3)
-        UV = vec2(1.f - UV.s, 1.f - UV.t);
-
-      if (rotation == 1)
-        UV = vec2(UV.t, 1.f - UV.s);
-      else if (rotation == 2)
-        UV = vec2(1.f - UV.t, UV.s);
-      else if (rotation == 3)
-        UV = vec2(1.f - UV.s, 1.f - UV.t);
-    }
-
-    gl_Position = vec4(vertices[gl_VertexID], 0.f, 1.f);
-  }
- )";
-
-const char* GLFWVideo::kFragmentSource = R"(
-  #version 330
-
-  in vec2 UV;
-
-  out vec4 out_color;
-
-  uniform sampler2D tex;
-
-  void main()
-  {
-    out_color = texture(tex, UV);
-  }
- )";
-
 const std::string GLFWVideo::kBackgroundColorDisabled =
     "Cannot modify color when background image mode is selected.";
 const std::string GLFWVideo::kBackgroundImageDisabled =
@@ -113,6 +46,8 @@ const std::string GLFWVideo::kFullscreenDisabled =
     "This property is disabled while in fullscreen mode.";
 const std::string GLFWVideo::kBackgroundTypeImage = "Image";
 const std::string GLFWVideo::kBackgroundTypeColor = "Color";
+const std::string GLFWVideo::kOverlayDisabledMessage =
+    "This property cannot be modified because the text overlay is disabled.";
 
 std::atomic<int> GLFWVideo::instance_counter_(0);
 
@@ -243,10 +178,6 @@ GLFWVideo::GLFWVideo(const std::string& name)
               pmanage<MPtr(&PContainer::disable)>(color_id_, kBackgroundColorDisabled);
               pmanage<MPtr(&PContainer::enable)>(background_image_id_);
               draw_image_ = true;
-              add_rendering_task([this]() {
-                draw_data_ = image_data_;
-                return true;
-              });
             } else {
               pmanage<MPtr(&PContainer::disable)>(background_image_id_, kBackgroundImageDisabled);
               pmanage<MPtr(&PContainer::enable)>(color_id_);
@@ -352,13 +283,58 @@ GLFWVideo::GLFWVideo(const std::string& name)
           "Vertical synchronization type",
           "Select the vertical synchronization mode (Hard/Soft/None).",
           vsync_)),
+      overlay_id_(pmanage<MPtr(&PContainer::make_group)>(
+          "overlay_config", "Overlay configuration", "Toggle and configure the text overlay.")),
+      show_overlay_id_(pmanage<MPtr(&PContainer::make_parented_bool)>(
+          "show_overlay",
+          "overlay_config",
+          [this](bool val) {
+            show_overlay_ = val;
+            if (show_overlay_) {
+              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->text_id_);
+              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->alignment_id_);
+              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->font_id_);
+              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->use_custom_font_id_);
+              if (gui_configuration_->use_custom_font_)
+                pmanage<MPtr(&PContainer::enable)>(gui_configuration_->custom_font_id_);
+              else
+                pmanage<MPtr(&PContainer::enable)>(gui_configuration_->font_size_id_);
+              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->color_id_);
+            } else {
+              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->text_id_,
+                                                  kOverlayDisabledMessage);
+              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->alignment_id_,
+                                                  kOverlayDisabledMessage);
+              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->font_id_,
+                                                  kOverlayDisabledMessage);
+              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->use_custom_font_id_,
+                                                  kOverlayDisabledMessage);
+              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->custom_font_id_,
+                                                  kOverlayDisabledMessage);
+              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->font_size_id_,
+                                                  kOverlayDisabledMessage);
+              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->color_id_,
+                                                  kOverlayDisabledMessage);
+            }
+            return true;
+          },
+          [this]() { return show_overlay_; },
+          "Show overlay",
+          "Show the overlay label on top of the video",
+          show_overlay_)),
       geometry_task_(std::make_unique<PeriodicTask>(
           [this]() {
-            if (!window_moved_) return;
+            std::lock_guard<std::mutex> lock(configuration_mutex_);
+            if (!window_moved_ || !gui_configuration_) return;
             pmanage<MPtr(&PContainer::notify)>(position_x_id_);
             pmanage<MPtr(&PContainer::notify)>(position_y_id_);
             pmanage<MPtr(&PContainer::notify)>(width_id_);
             pmanage<MPtr(&PContainer::notify)>(height_id_);
+            ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
+            ImGuiIO& io = ImGui::GetIO();
+            io.DisplaySize.x = static_cast<float>(width_);
+            io.DisplaySize.y = static_cast<float>(height_);
+
             add_rendering_task([this]() {
               set_viewport();
               return true;
@@ -386,30 +362,40 @@ GLFWVideo::GLFWVideo(const std::string& name)
     return;
   }
 
-  width_id_ = pmanage<MPtr(&PContainer::make_int)>("width",
-                                                   [this](const int& val) {
-                                                     width_ = val;
-                                                     set_size();
-                                                     return true;
-                                                   },
-                                                   [this]() { return width_; },
-                                                   "Window Width",
-                                                   "Set Window Width",
-                                                   800,
-                                                   1,
-                                                   max_width_);
-  height_id_ = pmanage<MPtr(&PContainer::make_int)>("height",
-                                                    [this](const int& val) {
-                                                      height_ = val;
-                                                      set_size();
-                                                      return true;
-                                                    },
-                                                    [this]() { return height_; },
-                                                    "Window Height",
-                                                    "Set Window Height",
-                                                    600,
-                                                    1,
-                                                    max_height_);
+  width_id_ = pmanage<MPtr(&PContainer::make_int)>(
+      "width",
+      [this](const int& val) {
+        width_ = val;
+        set_size();
+        std::lock_guard<std::mutex> lock(configuration_mutex_);
+        ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize.x = static_cast<float>(width_);
+        return true;
+      },
+      [this]() { return width_; },
+      "Window Width",
+      "Set Window Width",
+      800,
+      1,
+      max_width_);
+  height_id_ = pmanage<MPtr(&PContainer::make_int)>(
+      "height",
+      [this](const int& val) {
+        height_ = val;
+        set_size();
+        std::lock_guard<std::mutex> lock(configuration_mutex_);
+        ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize.y = static_cast<float>(height_);
+        return true;
+      },
+      [this]() { return height_; },
+      "Window Height",
+      "Set Window Height",
+      600,
+      1,
+      max_height_);
   position_x_id_ = pmanage<MPtr(&PContainer::make_int)>("position_x",
                                                         [this](const int& val) {
                                                           position_x_ = val;
@@ -458,7 +444,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
   glfwWindowHint(GLFW_RESIZABLE, true);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-#if HAVE_OSX
+#if OSX
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -478,10 +464,16 @@ GLFWVideo::GLFWVideo(const std::string& name)
   glGenTextures(1, &drawing_texture_);
   setup_vertex_array();
 
-  glfwMakeContextCurrent(nullptr);
-
   pmanage<MPtr(&PContainer::set_to_current)>(color_id_);
   pmanage<MPtr(&PContainer::set_to_current)>(background_type_id_);
+
+  std::unique_lock<std::mutex> lock(configuration_mutex_);
+  gui_configuration_ = std::make_unique<GUIConfiguration>(this);
+  if (!gui_configuration_->initialized_) return;
+  gui_configuration_->init_properties();
+  lock.unlock();
+
+  glfwMakeContextCurrent(nullptr);
 
   RendererSingleton::get()->subscribe_to_render_loop(this);
   ++instance_counter_;
@@ -506,6 +498,9 @@ GLFWVideo::~GLFWVideo() {
 
   destroy_gl_elements();
   if (window_) glfwDestroyWindow(window_);
+
+  // Needs to be called because glfwTerminate releases OpenGL function pointers.
+  gui_configuration_.reset();
 
   --instance_counter_;
   if (!instance_counter_) {
@@ -561,6 +556,8 @@ void GLFWVideo::swap_window() {
 
   glfwMakeContextCurrent(window_);
   setup_vertex_array();
+  gui_configuration_->destroy_imgui();
+  gui_configuration_->init_imgui();
   glUseProgram(shader_program_);
 
   // Needed after the re-creation of the context.
@@ -572,28 +569,96 @@ inline void GLFWVideo::add_rendering_task(std::function<bool()> task) {
 }
 
 bool GLFWVideo::setup_shaders() {
+  const char* vertex_source = R"(
+  #version 330
+
+  smooth out vec2 UV;
+
+  uniform int geometry = 0;
+  uniform int rotation;
+  uniform int flip;
+
+  const vec2 vertices[4] = vec2[]
+  (
+    vec2(-1.0, 1.0),
+    vec2(1.0, 1.0),
+    vec2(-1.0, -1.0),
+    vec2(1.0, -1.0)
+  );
+
+  const vec2 uvs[4] = vec2[]
+  (
+    vec2(0.0, 0.0),
+    vec2(1.0, 0.0),
+    vec2(0.0, 1.0),
+    vec2(1.0, 1.0)
+  );
+
+  void main()
+  {
+    UV = uvs[gl_VertexID];
+
+    if (geometry == 1) {
+      if (flip == 1)
+        UV = vec2(1.f - UV.s, UV.t);
+      else if (flip == 2)
+        UV = vec2(UV.s, 1.f - UV.t);
+      else if (flip == 3)
+        UV = vec2(1.f - UV.s, 1.f - UV.t);
+
+      if (rotation == 1)
+        UV = vec2(UV.t, 1.f - UV.s);
+      else if (rotation == 2)
+        UV = vec2(1.f - UV.t, UV.s);
+      else if (rotation == 3)
+        UV = vec2(1.f - UV.s, 1.f - UV.t);
+    }
+
+    gl_Position = vec4(vertices[gl_VertexID], 0.f, 1.f);
+  }
+ )";
+
+  const char* fragment_source = R"(
+  #version 330
+
+  in vec2 UV;
+
+  out vec4 out_color;
+
+  uniform sampler2D tex;
+
+  void main()
+  {
+    out_color = texture(tex, UV);
+  }
+ )";
+
   GLint status;
   shader_program_ = glCreateProgram();
 
   vertex_shader_ = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertex_shader_, 1, &kVertexSource, NULL);
+  glShaderSource(vertex_shader_, 1, &vertex_source, nullptr);
   glCompileShader(vertex_shader_);
   glGetShaderiv(vertex_shader_, GL_COMPILE_STATUS, &status);
   if (status != GL_TRUE) {
-    char buffer[512];
-    glGetShaderInfoLog(vertex_shader_, 512, NULL, buffer);
-    g_warning("Failed to compile vertex shader (glfwin): %s.", buffer);
+    GLint length;
+    glGetProgramiv(vertex_shader_, GL_INFO_LOG_LENGTH, &length);
+    std::string buffer;
+    glGetShaderInfoLog(vertex_shader_, length, nullptr, const_cast<char*>(buffer.data()));
+    g_warning("Failed to compile vertex shader (glfwin): %s.", buffer.c_str());
     return false;
   }
 
   fragment_shader_ = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragment_shader_, 1, &kFragmentSource, NULL);
+  glShaderSource(fragment_shader_, 1, &fragment_source, nullptr);
   glCompileShader(fragment_shader_);
   glGetShaderiv(fragment_shader_, GL_COMPILE_STATUS, &status);
   if (status != GL_TRUE) {
-    char buffer[512];
-    glGetShaderInfoLog(fragment_shader_, 512, NULL, buffer);
-    g_warning("Failed to compile fragment shader (glfwin): %s.", buffer);
+    GLint length;
+    glGetProgramiv(fragment_shader_, GL_INFO_LOG_LENGTH, &length);
+    std::string buffer;
+    glGetShaderInfoLog(fragment_shader_, length, nullptr, const_cast<char*>(buffer.data()));
+    g_warning("Failed to compile fragment shader (glfwin): %s.", buffer.c_str());
     return false;
   }
 
@@ -770,8 +835,10 @@ void GLFWVideo::enter_cb(GLFWwindow* window, int entered) {
   quiddity->cursor_inside_ = entered;
 }
 
-void GLFWVideo::set_viewport() {
-  On_scope_exit { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); };
+void GLFWVideo::set_viewport(bool clear) {
+  On_scope_exit {
+    if (clear) glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  };
 
   // Resets the viewport if no video is playing.
   if (!draw_video_) {
@@ -1034,5 +1101,458 @@ inline void GLFWVideo::on_handoff_cb(GstElement* /*object*/,
 bool GLFWVideo::can_sink_caps(std::string caps) {
   return GstUtils::can_sink_caps("videoconvert", caps);
 };
+
+GLFWVideo::GUIConfiguration::GUIConfiguration(GLFWVideo* window)
+    : parent_window_(window), color_(255, 255, 255, 255), context_(std::make_unique<GUIContext>()) {
+  ImGui::SetCurrentContext(context_->ctx);
+  ImGuiIO& io = ImGui::GetIO();
+  io.Fonts = &font_atlas_;
+  init_imgui();
+}
+
+GLFWVideo::GUIConfiguration::~GUIConfiguration() {
+  ImGui::SetCurrentContext(context_->ctx);
+  destroy_imgui();
+}
+
+void GLFWVideo::GUIConfiguration::init_imgui() {
+  const char* vertex_source{R"(
+          #version 330 core
+
+          uniform mat4 ProjMtx;
+          in vec2 Position;
+          in vec2 UV;
+          in vec4 Color;
+          out vec2 Frag_UV;
+          out vec4 Frag_Color;
+
+          void main()
+          {
+              Frag_UV = UV;
+              Frag_Color = Color;
+              gl_Position = ProjMtx * vec4(Position.xy, 0.0, 1.0);
+          }
+      )"};
+
+  const char* fragment_source{R"(
+          #version 330 core
+
+          uniform sampler2D Texture;
+          in vec2 Frag_UV;
+          in vec4 Frag_Color;
+          out vec4 Out_Color;
+
+          void main()
+          {
+              Out_Color = Frag_Color * texture(Texture, Frag_UV.st);
+          }
+      )"};
+
+  gui_shader_program_ = glCreateProgram();
+  gui_vertex_shader_ = glCreateShader(GL_VERTEX_SHADER);
+  gui_fragment_shader_ = glCreateShader(GL_FRAGMENT_SHADER);
+
+  glShaderSource(gui_vertex_shader_, 1, &vertex_source, 0);
+  glShaderSource(gui_fragment_shader_, 1, &fragment_source, 0);
+  glCompileShader(gui_vertex_shader_);
+  glCompileShader(gui_fragment_shader_);
+  glAttachShader(gui_shader_program_, gui_vertex_shader_);
+  glAttachShader(gui_shader_program_, gui_fragment_shader_);
+  glLinkProgram(gui_shader_program_);
+
+  GLint status;
+  glGetShaderiv(gui_vertex_shader_, GL_COMPILE_STATUS, &status);
+  if (status != GL_TRUE) {
+    GLint length;
+    glGetProgramiv(gui_vertex_shader_, GL_INFO_LOG_LENGTH, &length);
+    std::string buffer;
+    glGetShaderInfoLog(gui_vertex_shader_, length, nullptr, const_cast<char*>(buffer.data()));
+    g_warning("Failed to compile GUI vertex shader (glfwin): %s.", buffer.c_str());
+    return;
+  }
+
+  glGetShaderiv(gui_fragment_shader_, GL_COMPILE_STATUS, &status);
+  if (status != GL_TRUE) {
+    GLint length;
+    glGetProgramiv(gui_fragment_shader_, GL_INFO_LOG_LENGTH, &length);
+    std::string buffer;
+    glGetShaderInfoLog(gui_fragment_shader_, length, nullptr, const_cast<char*>(buffer.data()));
+    g_warning("Failed to compile GUI fragment shader (glfwin): %s.", buffer.c_str());
+    return;
+  }
+
+  glGetProgramiv(gui_shader_program_, GL_LINK_STATUS, &status);
+  if (status == GL_FALSE) {
+    GLint length;
+    glGetProgramiv(gui_shader_program_, GL_INFO_LOG_LENGTH, &length);
+    std::string buffer;
+    glGetProgramInfoLog(gui_shader_program_, length, nullptr, const_cast<char*>(buffer.data()));
+    g_warning("Failed to link GUI shader program (glfwin): %s.", buffer.c_str());
+    return;
+  }
+
+  gui_texture_location_ = glGetUniformLocation(gui_shader_program_, "Texture");
+  gui_proj_matrix_location_ = glGetUniformLocation(gui_shader_program_, "ProjMtx");
+  gui_position_location_ = glGetAttribLocation(gui_shader_program_, "Position");
+  gui_uv_location_ = glGetAttribLocation(gui_shader_program_, "UV");
+  gui_color_location_ = glGetAttribLocation(gui_shader_program_, "Color");
+
+  glGenBuffers(1, &gui_vbo_);
+  glGenBuffers(1, &gui_elements_);
+  glBindBuffer(GL_ARRAY_BUFFER, gui_vbo_);
+  glBufferData(GL_ARRAY_BUFFER, gui_vbo_max_size_, nullptr, GL_DYNAMIC_DRAW);
+
+  glGenVertexArrays(1, &gui_vao_);
+  glBindVertexArray(gui_vao_);
+  glBindBuffer(GL_ARRAY_BUFFER, gui_vbo_);
+  glEnableVertexAttribArray(gui_position_location_);
+  glEnableVertexAttribArray(gui_uv_location_);
+  glEnableVertexAttribArray(gui_color_location_);
+
+  glVertexAttribPointer(gui_position_location_,
+                        2,
+                        GL_FLOAT,
+                        GL_FALSE,
+                        sizeof(ImDrawVert),
+                        (GLvoid*)(size_t) & (((ImDrawVert*)0)->pos));
+  glVertexAttribPointer(gui_uv_location_,
+                        2,
+                        GL_FLOAT,
+                        GL_FALSE,
+                        sizeof(ImDrawVert),
+                        (GLvoid*)(size_t) & (((ImDrawVert*)0)->uv));
+  glVertexAttribPointer(gui_color_location_,
+                        4,
+                        GL_UNSIGNED_BYTE,
+                        GL_TRUE,
+                        sizeof(ImDrawVert),
+                        (GLvoid*)(size_t) & (((ImDrawVert*)0)->col));
+  glBindVertexArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  ImGui::SetCurrentContext(context_->ctx);
+
+  // Initialize ImGui
+  ImGuiIO& io = ImGui::GetIO();
+  io.IniFilename = nullptr;
+  io.DisplaySize.x = static_cast<float>(parent_window_->width_);
+  io.DisplaySize.y = static_cast<float>(parent_window_->height_);
+  io.DeltaTime = 1.f / 30.f;
+
+  io.RenderDrawListsFn = render_overlay;
+
+  fonts_list_ = get_fonts();
+  if (fonts_list_.empty()) {
+    g_warning("Could not find fonts installed for overlay (glfw).");
+    return;
+  }
+
+  // We only generate for one font at a time, by default the first one.
+  if (use_custom_font_) {
+    if (!generate_font_texture(custom_font_)) return;
+  } else {
+    if (!generate_font_texture(std::string(DATADIR) + "fonts/" + fonts_list_.at(fonts_.get())))
+      return;
+  }
+
+  // Remove inner padding to easily calculate text size for alignment.
+  ImGuiStyle& style = ImGui::GetStyle();
+  style.WindowPadding = ImVec2(0.f, 0.f);
+
+  initialized_ = true;
+}
+
+void GLFWVideo::GUIConfiguration::destroy_imgui() {
+  glDeleteTextures(1, &gui_font_texture_id_);
+  glDeleteProgram(gui_shader_program_);
+  glDeleteBuffers(1, &gui_vbo_);
+  glDeleteBuffers(1, &gui_elements_);
+  glDeleteVertexArrays(1, &gui_vao_);
+}
+
+void GLFWVideo::GUIConfiguration::init_properties() {
+  auto set_font = [this](size_t val) {
+    std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
+    fonts_.select(val);
+    parent_window_->add_rendering_task([this, val]() {
+      generate_font_texture(std::string(DATADIR) + "fonts/" + fonts_list_.at(val));
+      return true;
+    });
+    return true;
+  };
+  auto get_font = [this]() { return fonts_.get(); };
+
+  text_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_string)>(
+      "overlay_text",
+      "overlay_config",
+      [this](const std::string& val) {
+        std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
+        text_ = val;
+        return true;
+      },
+      [this]() { return text_; },
+      "Overlay text",
+      "Overlay text content",
+      text_);
+  alignment_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_selection<unsigned int>)>(
+      "overlay_alignment",
+      "overlay_config",
+      [this](size_t val) {
+        std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
+        alignment_.select(val);
+        return true;
+      },
+      [this]() { return alignment_.get(); },
+      "Text alignment",
+      "Alignment of the overlay text",
+      alignment_);
+  use_custom_font_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_bool)>(
+      "overlay_use_config",
+      "overlay_config",
+      [this](bool val) {
+        use_custom_font_ = val;
+        if (val) {
+          parent_window_->pmanage<MPtr(&PContainer::disable)>(
+              font_id_,
+              "This property is unavailable because "
+              "the custom font is currently selected.");
+          parent_window_->pmanage<MPtr(&PContainer::enable)>(custom_font_id_);
+          if (StringUtils::starts_with(custom_font_, "/") &&
+              StringUtils::ends_with(custom_font_, ".ttf")) {
+            parent_window_->pmanage<MPtr(&PContainer::set_to_current)>(custom_font_id_);
+          }
+        } else {
+          parent_window_->pmanage<MPtr(&PContainer::disable)>(
+              custom_font_id_,
+              "This property is disabled because the"
+              " custom font option is turned off.");
+          parent_window_->pmanage<MPtr(&PContainer::enable)>(font_id_);
+          parent_window_->pmanage<MPtr(&PContainer::set_to_current)>(font_id_);
+        }
+        return true;
+      },
+      [this]() { return use_custom_font_; },
+      "Toggle use of custom font",
+      "Toggle use of custom font",
+      false);
+  custom_font_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_string)>(
+      "overlay_additional_font",
+      "overlay_config",
+      [this](const std::string& val) {
+        std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
+        if (!StringUtils::ends_with(val, ".ttf")) {
+          g_message(
+              "Cannot set %s as custom font, only truetype fonts are supported (.ttf extension).",
+              val.c_str());
+          return false;
+        } else if (!StringUtils::starts_with(val, "/")) {
+          g_message("Only absolute paths are supported for the custom font.");
+          return false;
+        }
+        custom_font_ = val;
+        parent_window_->add_rendering_task([this, val]() {
+          generate_font_texture(custom_font_);
+          return true;
+        });
+        return true;
+      },
+      [this]() { return custom_font_; },
+      "Custom text font",
+      "Custom text font full path",
+      custom_font_);
+  fonts_ = Selection<>(std::move(fonts_list_), 0);
+  font_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_selection<>)>(
+      "overlay_fonts",
+      "overlay_config",
+      set_font,
+      get_font,
+      "Text font",
+      "Font of the overlay text",
+      fonts_);
+  color_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_color)>(
+      "overlay_color",
+      "overlay_config",
+      [this](const Color& val) {
+        std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
+        color_ = val;
+        return true;
+      },
+      [this]() { return color_; },
+      "Overlay color",
+      "Overlay text color",
+      color_);
+  font_size_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_unsigned_int)>(
+      "overlay_font_size",
+      "overlay_config",
+      [this](const unsigned int& val) {
+        font_size_ = val;
+        if (use_custom_font_)
+          parent_window_->pmanage<MPtr(&PContainer::set_to_current)>(custom_font_id_);
+        else
+          parent_window_->pmanage<MPtr(&PContainer::set_to_current)>(font_id_);
+        return true;
+      },
+      [this]() { return font_size_; },
+      "Overlay font size",
+      "Overlay text font size",
+      font_size_,
+      12,
+      64);
+}
+
+std::vector<std::string> GLFWVideo::GUIConfiguration::get_fonts() {
+  auto fonts =
+      FileUtils::get_files_from_directory(std::string(DATADIR) + "fonts", "", ".ttf", true);
+  for (auto& font : fonts) {
+    font = StringUtils::replace_string(font, std::string(DATADIR) + "fonts/", "");
+  }
+  return fonts;
+}
+
+bool GLFWVideo::GUIConfiguration::generate_font_texture(std::string font) {
+  struct stat filestat;
+  if (stat(font.c_str(), &filestat) < 0) {
+    g_message("Could not find font file %s (glfwin)", font.c_str());
+    g_warning("Could not find font file %s (glfwin)", font.c_str());
+    return false;
+  }
+
+  ImGui::SetCurrentContext(context_->ctx);
+  ImGuiIO& io = ImGui::GetIO();
+  io.Fonts->Clear();
+  io.Fonts->AddFontFromFileTTF(font.c_str(), font_size_);
+  io.Fonts->Build();
+
+  unsigned char* pixels;
+  int w, h;
+  io.Fonts->GetTexDataAsRGBA32(&pixels, &w, &h);
+
+  glDeleteTextures(1, &gui_font_texture_id_);
+  glGenTextures(1, &gui_font_texture_id_);
+  glBindTexture(GL_TEXTURE_2D, gui_font_texture_id_);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  io.Fonts->TexID = (void*)(intptr_t)gui_font_texture_id_;
+
+  return true;
+}
+
+void GLFWVideo::GUIConfiguration::show() {
+  ImVec2 text_position;
+  auto alignment = alignment_.get_attached();
+  if (alignment & Alignment::RIGHT_ALIGNED) text_position.x = parent_window_->width_ - text_size_.x;
+  if (alignment & Alignment::BOTTOM_ALIGNED)
+    text_position.y = parent_window_->height_ - text_size_.y;
+  if (alignment & Alignment::HORIZONTAL_CENTER)
+    text_position.x = (parent_window_->width_ - text_size_.x) / 2.f;
+  if (alignment & Alignment::VERTICAL_CENTER)
+    text_position.y = (parent_window_->height_ - text_size_.y) / 2.f;
+
+  ImGui::SetNextWindowPos(text_position);
+  ImGui::Begin(parent_window_->get_name().c_str(),
+               nullptr,
+               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                   ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
+
+  ImGui::TextColored(ImVec4(color_.red() / 255.f,
+                            color_.green() / 255.f,
+                            color_.blue() / 255.f,
+                            color_.alpha() / 255.f),
+                     text_.c_str(),
+                     "");
+  text_size_ = ImGui::GetItemRectSize();
+  ImGui::End();
+}
+
+void GLFWVideo::GUIConfiguration::render_overlay(ImDrawData* draw_data) {
+  if (!draw_data->CmdListsCount) return;
+
+  auto current = RendererSingleton::get()->get_current_window();
+  if (!current) return;
+  glEnable(GL_BLEND);
+  glBlendEquation(GL_FUNC_ADD);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  glEnable(GL_SCISSOR_TEST);
+  glActiveTexture(GL_TEXTURE0);
+
+  const float width = ImGui::GetIO().DisplaySize.x;
+  const float height = ImGui::GetIO().DisplaySize.y;
+  const float orthoProjection[4][4] = {
+      {2.0f / width, 0.0f, 0.0f, 0.0f},
+      {0.0f, 2.0f / -height, 0.0f, 0.0f},
+      {0.0f, 0.0f, -1.0f, 0.0f},
+      {-1.0f, 1.0f, 0.0f, 1.0f},
+  };
+
+  GLint program;
+  glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  glViewport(0, 0, current->width_, current->height_);
+  glUseProgram(current->gui_configuration_->gui_shader_program_);
+  glUniform1i(current->gui_configuration_->gui_texture_location_, 0);
+  glUniformMatrix4fv(current->gui_configuration_->gui_proj_matrix_location_,
+                     1,
+                     GL_FALSE,
+                     (GLfloat*)orthoProjection);
+  glBindVertexArray(current->gui_configuration_->gui_vao_);
+  for (int n = 0; n < draw_data->CmdListsCount; ++n) {
+    const ImDrawList* cmd_list = draw_data->CmdLists[n];
+    const ImDrawIdx* idx_buffer_offset = 0;
+    unsigned int needed_vtx_size = cmd_list->VtxBuffer.size() * sizeof(ImDrawVert);
+    glBindBuffer(GL_ARRAY_BUFFER, current->gui_configuration_->gui_vbo_);
+
+    if (current->gui_configuration_->gui_vbo_max_size_ <= needed_vtx_size) {
+      current->gui_configuration_->gui_vbo_max_size_ = needed_vtx_size + 2000 * sizeof(ImDrawVert);
+      glBufferData(GL_ARRAY_BUFFER,
+                   (GLsizeiptr)current->gui_configuration_->gui_vbo_max_size_,
+                   nullptr,
+                   GL_STREAM_DRAW);
+    }
+    unsigned char* vtx_data = (unsigned char*)glMapBufferRange(
+        GL_ARRAY_BUFFER, 0, needed_vtx_size, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+
+    if (!vtx_data) continue;
+    memcpy(vtx_data, &cmd_list->VtxBuffer[0], cmd_list->VtxBuffer.size() * sizeof(ImDrawVert));
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, current->gui_configuration_->gui_elements_);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 (GLsizeiptr)cmd_list->IdxBuffer.size() * sizeof(ImDrawIdx),
+                 (GLvoid*)&cmd_list->IdxBuffer.front(),
+                 GL_STREAM_DRAW);
+    for (const ImDrawCmd* pcmd = cmd_list->CmdBuffer.begin(); pcmd != cmd_list->CmdBuffer.end();
+         ++pcmd) {
+      if (pcmd->UserCallback) {
+        pcmd->UserCallback(cmd_list, pcmd);
+      } else {
+        glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->TextureId);
+        glScissor((int)pcmd->ClipRect.x,
+                  (int)(height - pcmd->ClipRect.w),
+                  (int)(pcmd->ClipRect.z - pcmd->ClipRect.x),
+                  (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+        glDrawElements(GL_TRIANGLES,
+                       (GLsizei)pcmd->ElemCount,
+                       sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT,
+                       idx_buffer_offset);
+      }
+      idx_buffer_offset += pcmd->ElemCount;
+    }
+  }
+
+  glBindVertexArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+  glUseProgram(program);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glDisable(GL_SCISSOR_TEST);
+  glEnable(GL_DEPTH_TEST);
+  glDisable(GL_BLEND);
+}
 
 }  // namespace switcher

@@ -24,9 +24,6 @@ add_test(check_manager check_manager)
 #add_executable(check_property_mapper check_property_mapper.cpp)
 #add_test(check_property_mapper check_property_mapper)
 
-#add_executable(check_property_subscriber check_property_subscriber.cpp)
-#add_test(check_property_subscriber check_property_subscriber)
-
 add_executable(check_quiddity_create_remove check_quiddity_create_remove.cpp)
 add_test(check_quiddity_create_remove check_quiddity_create_remove)
 

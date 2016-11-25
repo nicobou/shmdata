@@ -17,30 +17,36 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_FILE_UTILS_H__
-#define __SWITCHER_FILE_UTILS_H__
+#ifndef __SWITCHER_DUMMY_SINK_H__
+#define __SWITCHER_DUMMY_SINK_H__
 
-#include <string>
-#include <utility>
-#include <vector>
+#include "switcher/quiddity.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-follower.hpp"
 
 namespace switcher {
-namespace FileUtils {
+class DummySink : public Quiddity {
+ public:
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(DummySink);
+  DummySink(const std::string&);
+  ~DummySink() = default;
+  DummySink(const DummySink&) = delete;
+  DummySink& operator=(const DummySink&) = delete;
 
-// A message is given in case of error
-std::pair<bool, std::string> prepare_writable_dir(const std::string& path);
+  bool init();
 
-// A message is given in case of error
-// all subdirs must exist
-std::pair<bool, std::string> create_writable_dir(const std::string& path);
+ private:
+  bool frame_received_{false};
+  PContainer::prop_id_t frame_received_id_;
 
-bool is_dir(const std::string& path);
+  // registering connect/disconnect/can_sink_caps:
+  ShmdataConnector shmcntr_;
+  // shmdata follower
+  std::unique_ptr<ShmdataFollower> shm_{nullptr};
+  bool connect(const std::string& shmdata_path);
+  bool disconnect();
+  bool can_sink_caps(const std::string& caps);
+};
 
-std::vector<std::string> get_files_from_directory(std::string path,
-                                                  std::string prefix = "",
-                                                  std::string suffix = "",
-                                                  bool recursive = false);
-
-}  // namespace FileUtils
 }  // namespace switcher
 #endif

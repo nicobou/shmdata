@@ -122,6 +122,7 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
   static const std::string shmw("_shmw");
   static const std::string noprop("_no_prop");
   static const std::string addtostart("_add_to_start");
+  static const std::string top_level("_top_level");
   quiddity_spec_t quid;
   for (; iter != std::sregex_token_iterator(); ++iter) {
     if (static_cast<std::string>(*iter).empty()) continue;
@@ -175,6 +176,10 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
     }
     if (*iter == addtostart) {
       quid.expose_start = true;
+      continue;
+    }
+    if (*iter == top_level) {
+      quid.top_level = true;
       continue;
     }
     if (!parse_param(*iter, quid)) return false;

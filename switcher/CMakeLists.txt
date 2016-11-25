@@ -8,6 +8,7 @@ add_library(${SWITCHER_LIBRARY} SHARED
     counter-map.cpp
     create-remove-spy.cpp
     decodebin-to-shmdata.cpp
+    dummy-sink.cpp
     empty-quiddity.cpp
     external-shmdata-writer.cpp
     file-utils.cpp
@@ -88,6 +89,7 @@ set(HEADER_INCLUDES
     create-remove-spy.hpp
     creator.hpp
     decodebin-to-shmdata.hpp
+    dummy-sink.hpp
     empty-quiddity.hpp
     external-shmdata-writer.hpp
     file-utils.hpp

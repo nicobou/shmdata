@@ -41,15 +41,12 @@ class NVencPlugin : public Quiddity {
   bool init() final;
 
  private:
-  std::unique_ptr<ShmdataWriter> shmw_{nullptr};
   std::unique_ptr<ThreadedWrapper<NVencES>> es_{};
-  std::unique_ptr<ShmdataFollower> shm_{nullptr};
-  ShmdataConnector shmcntr_;
   Selection<> devices_{{"none"}, 0};
   bool bitrate_from_preset_{false};
-  PContainer::prop_id_t default_preset_id_{0};
+  PContainer::prop_id_t default_preset_id_;
   uint32_t bitrate_{5000000};
-  PContainer::prop_id_t bitrate_id_{0};
+  PContainer::prop_id_t bitrate_id_;
   PContainer::prop_id_t devices_id_{0};
   std::vector<int> devices_nv_ids_{};
   Selection<> codecs_{{"none"}, 0};
@@ -66,6 +63,9 @@ class NVencPlugin : public Quiddity {
   int max_height_{0};
   PContainer::prop_id_t max_height_id_{0};
   std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> video_formats_{};
+  std::unique_ptr<ShmdataWriter> shmw_{nullptr};
+  std::unique_ptr<ShmdataFollower> shm_{nullptr};
+  ShmdataConnector shmcntr_;
   void update_device();
   void update_codec();
   void update_preset();

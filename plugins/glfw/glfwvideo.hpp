@@ -23,6 +23,7 @@
 // clang-format off
 #include "./glad.h"
 #include <GLFW/glfw3.h>
+#include <imgui.h>
 // clang-format on
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
@@ -89,17 +90,93 @@ class GLFWVideo : public Quiddity {
     GLFWmonitor* monitor{nullptr};
   };
 
+  struct GUIConfiguration {
+    GUIConfiguration(GLFWVideo* window);
+    ~GUIConfiguration();
+
+    struct GUIContext {
+      GUIContext() { ctx = ImGui::CreateContext(); };
+      ~GUIContext() { ImGui::DestroyContext(ctx); };
+      ImGuiContext* ctx{nullptr};
+    };
+
+    void init_imgui();
+    void destroy_imgui();
+    void init_properties();
+    std::vector<std::string> get_fonts();
+    bool generate_font_texture(std::string font);
+    void show();
+    static void render_overlay(ImDrawData* draw_data);
+
+    enum Alignment : unsigned int {
+      TOP_ALIGNED = 1,
+      BOTTOM_ALIGNED = 1 << 1,
+      VERTICAL_CENTER = 1 << 2,
+      LEFT_ALIGNED = 1 << 3,
+      RIGHT_ALIGNED = 1 << 4,
+      HORIZONTAL_CENTER = 1 << 5
+    };
+
+    GLuint gui_vao_{0};
+    GLuint gui_vbo_{0};
+    size_t gui_vbo_max_size_{20000};
+    GLuint gui_elements_{0};
+    GLuint gui_shader_program_{0};
+    GLuint gui_vertex_shader_{0};
+    GLuint gui_fragment_shader_{0};
+    GLuint gui_font_texture_id_{0};
+    GLint gui_texture_location_{0};
+    GLint gui_proj_matrix_location_{0};
+    GLint gui_position_location_{0};
+    GLint gui_uv_location_{0};
+    GLint gui_color_location_{0};
+    bool initialized_{false};
+
+    GLFWVideo* parent_window_{nullptr};
+
+    ImVec2 text_size_{};
+    std::string text_{};
+    PContainer::prop_id_t text_id_{0};
+    Selection<unsigned int> alignment_{{"Top left corner",
+                                        "Bottom left corner",
+                                        "Top right corner",
+                                        "Bottom right corner",
+                                        "Center",
+                                        "Top center",
+                                        "Bottom center"},
+                                       {Alignment::TOP_ALIGNED | Alignment::LEFT_ALIGNED,
+                                        Alignment::BOTTOM_ALIGNED | Alignment::LEFT_ALIGNED,
+                                        Alignment::TOP_ALIGNED | Alignment::RIGHT_ALIGNED,
+                                        Alignment::BOTTOM_ALIGNED | Alignment::RIGHT_ALIGNED,
+                                        Alignment::VERTICAL_CENTER | Alignment::HORIZONTAL_CENTER,
+                                        Alignment::TOP_ALIGNED | Alignment::HORIZONTAL_CENTER,
+                                        Alignment::BOTTOM_ALIGNED | Alignment::HORIZONTAL_CENTER},
+                                       0};
+    PContainer::prop_id_t alignment_id_{0};
+    bool use_custom_font_{};
+    PContainer::prop_id_t use_custom_font_id_{0};
+    std::string custom_font_{};
+    PContainer::prop_id_t custom_font_id_{0};
+    std::vector<std::string> fonts_list_;
+    Selection<> fonts_{{"none"}, 0};
+    PContainer::prop_id_t font_id_{0};
+    Color color_;
+    PContainer::prop_id_t color_id_{0};
+    unsigned int font_size_{18};
+    PContainer::prop_id_t font_size_id_{0};
+    std::unique_ptr<GUIContext> context_{nullptr};
+    ImFontAtlas font_atlas_{};
+  };
+
   /**
    * \brief Class constants
    */
-  static const char* kVertexSource;
-
-  static const char* kFragmentSource;
   static const std::string kFullscreenDisabled;
   static const std::string kBackgroundColorDisabled;
   static const std::string kBackgroundImageDisabled;
   static const std::string kBackgroundTypeImage;
   static const std::string kBackgroundTypeColor;
+  static const std::string kOverlayDisabledMessage;
 
   /**
    * \brief Quiddity lifecycle methods
@@ -135,7 +212,7 @@ class GLFWVideo : public Quiddity {
   /**
    * \brief Geometry methods, to be launched in appropriate OpenGL context
    */
-  void set_viewport();
+  void set_viewport(bool clear = true);
   void set_color();
   void set_rotation_shader();
   void set_flip_shader();
@@ -168,7 +245,6 @@ class GLFWVideo : public Quiddity {
   std::atomic<bool> ongoing_destruction_{false};
   static std::atomic<int> instance_counter_;
   MultipleBuffer<3, uint8_t> video_frames_{};
-  std::vector<uint8_t> draw_data_{};
   std::vector<uint8_t> image_data_{};
   GLuint drawing_texture_{0};
   GLuint shader_program_{0};
@@ -177,7 +253,6 @@ class GLFWVideo : public Quiddity {
   GLuint vao_{0};
   std::atomic<bool> draw_video_{false};
   std::atomic<bool> draw_image_{false};
-  std::atomic<bool> stop_rendering_{false};
 
   /**
    * \brief Shmdata connection
@@ -253,13 +328,23 @@ class GLFWVideo : public Quiddity {
   PContainer::prop_id_t flip_id_{0};
   Selection<int> vsync_{{"Hard", "Soft", "None"}, {1, -1, 0}, 0};
   PContainer::prop_id_t vsync_id_{0};
-  std::unique_ptr<PeriodicTask> geometry_task_;
   int max_width_{0};
   int max_height_{0};
   int minimized_width_{800};
   int minimized_height_{600};
   int minimized_position_x_{0};
   int minimized_position_y_{0};
+
+  /**
+   * \brief Overlay properties
+   */
+  std::mutex configuration_mutex_{};
+  PContainer::prop_id_t overlay_id_;
+  bool show_overlay_{false};
+  PContainer::prop_id_t show_overlay_id_;
+  std::unique_ptr<GUIConfiguration> gui_configuration_{nullptr};
+
+  std::unique_ptr<PeriodicTask> geometry_task_;
 };
 
 }  // namespace switcher

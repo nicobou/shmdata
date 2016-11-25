@@ -41,6 +41,11 @@ class NVencBuffers : public SafeBoolIdiom {
   bool process_encoded_frame(std::function<void(void*, uint32_t)> fun);
 
  private:
+  NV_ENC_CREATE_INPUT_BUFFER input_buf_param_;
+  NV_ENC_CREATE_BITSTREAM_BUFFER output_buf_param_;
+  NV_ENC_LOCK_INPUT_BUFFER lock_input_buffer_params_;
+  NV_ENC_PIC_PARAMS enc_pic_params_;
+  NV_ENC_LOCK_BITSTREAM lock_bitstream_data_;
   void* encoder_;  // must remain valid during NVencBuffers lifetime
   uint32_t width_;
   uint32_t height_;

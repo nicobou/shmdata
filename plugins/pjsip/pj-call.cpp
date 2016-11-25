@@ -35,6 +35,7 @@
 #include "switcher/scope-exit.hpp"
 #include "switcher/sdp-utils.hpp"
 #include "switcher/shmdata-utils.hpp"
+#include "switcher/string-utils.hpp"
 
 namespace switcher {
 
@@ -454,7 +455,10 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
   std::string from_uri(uristr, len);
   // find related buddy id ('sip:' is not saved)
   auto peer_uri = std::string(from_uri, 4, std::string::npos);
-  if (!SIPPlugin::this_->white_list_->is_authorized(peer_uri)) {
+  auto peer_uri_lower_case = std::string(from_uri, 4, std::string::npos);
+  StringUtils::tolower(peer_uri_lower_case);
+  if (!SIPPlugin::this_->white_list_->is_authorized(peer_uri) &&
+      !SIPPlugin::this_->white_list_->is_authorized(peer_uri_lower_case)) {
     g_message("ERROR:call refused from %s", peer_uri.c_str());
     g_debug("call refused from %s", peer_uri.c_str());
     pjsip_endpt_respond_stateless(
@@ -575,19 +579,19 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     auto rtp_shmpath = shm_prefix + "rtp-" + media_label;
     auto rtp_caps = PJCallUtils::get_rtp_caps(it);
     if (rtp_caps.empty()) rtp_caps = "unknown_data_type";
-    call->rtp_writers_.emplace_back(std::make_unique<ShmdataWriter>(SIPPlugin::this_,
-                                                                    rtp_shmpath,
-                                                                    9000,  // Ethernet jumbo frame
-                                                                    rtp_caps));
+
+    call->rtp_writers_.emplace_back(
+        std::make_unique<ShmdataWriter>(SIPPlugin::this_, rtp_shmpath, 1, rtp_caps));
     // uncomment the following in order to get rtp shmdata shown in scenic:
     // SIPPlugin::this_->graft_tree(
     //     std::string(".shmdata.writer.") + rtp_shmpath + ".uri",
     //     InfoTree::make(call->peer_uri));
     auto* writer = call->rtp_writers_.back().get();
-    call->ice_trans_->set_data_cb(call->rtp_writers_.size(), [writer](void* data, size_t size) {
-      writer->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, size);
-      writer->bytes_written(size);
-    });
+    call->ice_trans_->set_data_cb(call->rtp_writers_.size(),
+                                  [writer, rtp_shmpath](void* data, size_t size) {
+                                    writer->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, size);
+                                    writer->bytes_written(size);
+                                  });
     // setting a decoder for this shmdata
     auto peer_uri = call->peer_uri;
     call->rtp_receivers_.emplace_back(std::make_unique<RTPReceiver>(

@@ -32,8 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(NVencPlugin,
                                      "Nicolas Bouillot");
 
 NVencPlugin::NVencPlugin(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)),
-      default_preset_id_(pmanage<MPtr(&PContainer::make_bool)>(
+    : default_preset_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "bitrate_from_preset",
           [this](bool value) {
             bitrate_from_preset_ = value;
@@ -60,7 +59,8 @@ NVencPlugin::NVencPlugin(const std::string&)
                                                         "Value of the desired average bitrate.",
                                                         bitrate_,
                                                         1000000,
-                                                        20000000)) {
+                                                        20000000)),
+      shmcntr_(static_cast<Quiddity*>(this)) {
   auto devices = CudaContext::get_devices();
   std::vector<std::string> names;
   for (auto& it : devices) {
@@ -159,7 +159,8 @@ void NVencPlugin::update_preset() {
   size_t current_index = 0;
   for (auto& it : presets_guids_) {
     names.push_back(it.first);
-    if (it.first == "Low Latency default") index_low_lantency_default = current_index;
+    // FIXME (the following does not work with SIP and sometimes with decoder)
+    // if (it.first == "Low Latency default") index_low_lantency_default = current_index;
     ++current_index;
   }
   presets_ = Selection<>(std::move(names), index_low_lantency_default);
@@ -419,7 +420,7 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
   shmw_ = std::make_unique<ShmdataWriter>(
       this,
       make_file_name("encoded-video"),
-      10048576,
+      1,
       std::string("video/" + codec + ", stream-format=(string)byte-stream, "
                                      "alignment=(string)au, profile=(string)baseline" +
                   ", width=(int)" + std::to_string(width) + ", height=(int)" +

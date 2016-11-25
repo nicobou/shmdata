@@ -78,6 +78,20 @@ void GLFWRenderer::render_loop() {
         glBindTexture(GL_TEXTURE_2D, 0);
       }
 
+      // Draw the overlay
+      if (current->show_overlay_) {
+        // We MUST lock before checking the status of the ImGui configuration, otherwise undefined
+        // behaviour is to be expected.
+        std::lock_guard<std::mutex> lock(current->configuration_mutex_);
+        if (current->gui_configuration_ && current->gui_configuration_->initialized_) {
+          current_window_ = current;
+          ImGui::SetCurrentContext(current->gui_configuration_->context_->ctx);
+          ImGui::NewFrame();
+          current->gui_configuration_->show();
+          ImGui::Render();
+        }
+      }
+
       // Only swap the buffers of the first window, just for vertical synchronization.
       if (current_window == 1 || GLFWVideo::instance_counter_ == 1)
         glfwSwapBuffers(current->window_);

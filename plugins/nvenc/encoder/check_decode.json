@@ -1,0 +1,13 @@
+{
+    "bundle" : {
+	"nvencdecoder" : {
+	    "pipeline" : "videotestsrc name=source _add_to_start ! nvenc name=enc ! decoder name=dec ! dummysink name=dummy",
+            "doc" : {
+		"long_name" : "NVenc Decoder",
+		"category" : "video",
+		"tags" : "utils",
+		"description" : "NVenc Decoder"
+	    }
+	}
+    }
+}

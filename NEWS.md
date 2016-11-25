@@ -2,6 +2,26 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.36 (2016-11-25)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* New bundle option to have a quiddity's properties at top level of the inspector. review: nbouillot
+* Dummy sink and nvenc decode test with a bundle,
+
+Bug fixes:
+* Various fixes in nvenc, glfw and shmdata-to-jack.
+* Bundle properties were not mirrored when creating dynamically after the creation of the bundle quiddity.
+* Fixed build type for glfw and a memory leak in ImGui context creation.
+* Graphical overlay in glfwin.
+* gcc 6.4 on ubuntun 16.10 fixes.
+* Removing hardcoded shmdata initial sizes.
+* Fix segfault for receiver when cleaning a call.
+* Fix issues with SIP when loading file (blacklisting several SIP methods).
+* Optionally lower case accounts and TURN user.
+* v4l2src USB devices are pushed at the end of the device list.
+
 switcher 0.8.34 (2016-11-11)
 ---------------------------
 This is an official release in the 0.8 stable series.

@@ -40,6 +40,7 @@ class PJStunTurn {
   std::unique_ptr<PJICEStreamTrans> get_ice_transport(unsigned comp_cnt, pj_ice_sess_role role);
 
  private:
+  bool lower_case_turn_account_{true};
   std::mutex connection_mutex_{};
   std::condition_variable connection_cond_{};
   bool connected_{false};

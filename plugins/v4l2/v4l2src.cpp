@@ -56,8 +56,6 @@ void V4L2Src::set_shm_suffix() {
   g_object_set(G_OBJECT(shmsink_.get_raw()),
                "socket-path",
                shmpath_.c_str(),
-               "initial-size",
-               kDefaultInitialShmsize,
                nullptr);
 }
 
@@ -483,7 +481,7 @@ bool V4L2Src::remake_elements() {
     return false;
   }
   if (!UGstElem::renew(v4l2src_, {"device", "norm"}) || !UGstElem::renew(capsfilter_, {"caps"}) ||
-      !UGstElem::renew(shmsink_, {"socket-path", "initial-size"})) {
+      !UGstElem::renew(shmsink_, {"socket-path"})) {
     g_warning("V4L2Src: issue when with elements for video capture");
     return false;
   }
@@ -650,6 +648,16 @@ bool V4L2Src::check_folder_for_v4l2_devices() {
     return false;
   }
   for (auto& it : files) inspect_file_device("/dev/" + it);
+
+  // push USB entries at the end of capture_devices_
+  std::sort(capture_devices_.begin(),
+            capture_devices_.end(),
+            [](const CaptureDescription&, const CaptureDescription& descr2) {
+              auto tmp = descr2.bus_info_;
+              std::transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
+              if (std::string::npos != tmp.rfind("usb")) return true;
+              return false;
+            });
 
   auto files_by_id = get_file_names_with_prefix("/dev/v4l/by-id/", {});
   for (auto& it : files_by_id) set_device_id("/dev/v4l/by-id/" + it, it);

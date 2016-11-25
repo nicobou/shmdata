@@ -61,14 +61,11 @@ std::string StringUtils::replace_string(const std::string& orig,
   return unescaped;
 }
 
-int StringUtils::toupper_char(int c) { return std::toupper(c); }
-int StringUtils::tolower_char(int c) { return std::tolower(c); }
-
 void StringUtils::toupper(std::string& str) {
-  std::transform(str.begin(), str.end(), str.begin(), StringUtils::toupper_char);
+  std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 }
 void StringUtils::tolower(std::string& str) {
-  std::transform(str.begin(), str.end(), str.begin(), StringUtils::tolower_char);
+  std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 }
 
 bool StringUtils::starts_with(const std::string& str, const std::string& suffix) {

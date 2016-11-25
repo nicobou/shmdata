@@ -35,6 +35,7 @@ class GLFWRenderer {
   void subscribe_to_render_loop(GLFWVideo* window);
   void unsubscribe_from_render_loop(GLFWVideo* window);
   void add_rendering_task(GLFWVideo* window, std::function<bool()> task);
+  GLFWVideo* get_current_window() const { return current_window_; }
 
  private:
   void render_loop();
@@ -48,6 +49,7 @@ class GLFWRenderer {
   std::condition_variable cond_subscription_{};
   std::atomic<bool> running_{true};
   std::future<void> gl_loop_;
+  GLFWVideo* current_window_{nullptr};
 };
 
 class RendererSingleton {

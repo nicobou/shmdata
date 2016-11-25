@@ -70,6 +70,7 @@ if (PLUGIN_NVENC)
     # TEST
 
     add_executable(check_nvenc encoder/check_nvenc.cpp)
+    configure_file(encoder/check_decode.json check_decode.json COPYONLY)
     add_test(check_nvenc check_nvenc)
 
     # INSTALL

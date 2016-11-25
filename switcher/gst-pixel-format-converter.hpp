@@ -50,7 +50,6 @@ class GstPixelFormatConverter : public SafeBoolIdiom {
   UGstElem color_space_codec_element_{"videoconvert"};
   UGstElem capsfilter_{"capsfilter"};
   UGstElem shm_converted_{"shmdatasink"};
-  static const size_t kDefaultInitialShmsize{67108864};
 
   // safe bool idiom:
   bool is_valid_{false};

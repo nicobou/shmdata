@@ -107,6 +107,7 @@ bool PostureDetect::connect(std::string shmdata_socket_path) {
             data_type = string(POLYGONMESH_TYPE_BASE);
             if (!mesh_writer_ ||
                 poly.size() > mesh_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>()) {
+              // FIXME manual resize is not required since already done in shmdata
               mesh_writer_.reset();
               mesh_writer_ = std::make_unique<ShmdataWriter>(
                   this, make_file_name("mesh"), std::max(poly.size() * 2, (size_t)1024), data_type);

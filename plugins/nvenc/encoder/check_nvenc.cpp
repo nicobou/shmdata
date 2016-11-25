@@ -37,6 +37,27 @@ static std::mutex mut{};
 
 using namespace switcher;
 
+void wait_until_success() {
+  // wait 3 seconds
+  uint count = 3;
+  while (do_continue.load()) {
+    std::unique_lock<std::mutex> lock(mut);
+    if (count == 0) {
+      do_continue.store(false);
+    } else {
+      --count;
+      cond_var.wait_for(lock, std::chrono::seconds(1), []() { return !do_continue.load(); });
+    }
+  }
+}
+
+void notify_success() {
+  std::unique_lock<std::mutex> lock(mut);
+  success = true;
+  do_continue.store(false);
+  cond_var.notify_one();
+}
+
 void on_tree_grafted(const std::string& /*subscriber_name */,
                      const std::string& quid_name,
                      const std::string& signal_name,
@@ -46,10 +67,7 @@ void on_tree_grafted(const std::string& /*subscriber_name */,
   size_t byte_rate =
       manager->use_tree<MPtr(&InfoTree::branch_get_value)>(quid_name, params[0] + ".byte_rate");
   if (0 != byte_rate) {
-    std::unique_lock<std::mutex> lock(mut);
-    success = true;
-    do_continue.store(false);
-    cond_var.notify_one();
+    notify_success();
   }
   std::printf(
       "%s: %s %s\n", signal_name.c_str(), params[0].c_str(), std::to_string(byte_rate).c_str());
@@ -111,18 +129,40 @@ int main() {
     assert(manager->make_signal_subscriber("signal_subscriber", on_tree_grafted, manager.get()));
     assert(manager->subscribe_signal("signal_subscriber", nvenc_quid.c_str(), "on-tree-grafted"));
 
-    // wait 3 seconds
-    uint count = 3;
-    while (do_continue.load()) {
-      std::unique_lock<std::mutex> lock(mut);
-      if (count == 0) {
-        do_continue.store(false);
-      } else {
-        --count;
-        cond_var.wait_for(lock, std::chrono::seconds(1), []() { return !do_continue.load(); });
-      }
-    }
+    wait_until_success();
   }  // end of scope is releasing the manager
+
+  if (!success) {
+    std::cerr << " error line " << __LINE__ << std::endl;
+    return 1;
+  }
+
+  {
+    // re-init test
+    do_continue.store(true);
+    success = false;
+    // starting a new test: nvenc data can be decoded
+    QuiddityManager::ptr manager = QuiddityManager::make_manager("test_manager");
+    manager->scan_directory_for_plugins("./");
+    manager->load_configuration_file("./check_decode.json");
+
+    auto nvencdec = manager->create("nvencdecoder", "nvencdecoder");
+    std::cout << nvencdec << std::endl;
+    assert(nvencdec == "nvencdecoder");
+    manager->use_prop<MPtr(&PContainer::set_str_str)>(nvencdec, "started", "true");
+    manager->use_prop<MPtr(&PContainer::subscribe)>(
+        nvencdec,
+        manager->use_prop<MPtr(&PContainer::get_id)>(nvencdec, "dummy/frame-received"),
+        [&]() {
+          success = manager->use_prop<MPtr(&PContainer::get<bool>)>(
+              nvencdec,
+              manager->use_prop<MPtr(&PContainer::get_id)>(nvencdec, "dummy/frame-received"));
+          notify_success();
+        });
+
+    wait_until_success();
+  }
+
   gst_deinit();
   if (success)
     return 0;
