@@ -29,12 +29,12 @@ Reader::Reader(const std::string& path,
       proto_([this]() { on_server_connected(); },
              [this]() { on_server_disconnected(); },
              [this](size_t size) {
-               if (0 == cur_size_) cur_size_ = size;
-               if (size > cur_size_)  // a resize has been done
+               if (size != cur_size_)  // a resize has been done
                  shm_.reset(new sysVShm(ftok(path_.c_str(), 'n'),
                                         0,
                                         log_,
                                         /* owner = */ false));
+               cur_size_ = size;
                on_buffer(this->sem_.get(), size);
              }),  // read when update is received
       cli_(new UnixSocketClient(path, log_)) {
