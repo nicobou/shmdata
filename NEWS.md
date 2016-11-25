@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.8 (2016-11-25)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* fix from shmdata address if first buffer triggers a resize,
+
 shmdata 1.3.6 (2016-11-11)
 ---------------------------
 This is an official release in the 1.3 stable series.
