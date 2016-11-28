@@ -161,9 +161,9 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
                                                        quid.blacklisted_params.end(),
                                                        prop.first)) {
           std::string parent_strid;
-          if (quid_ptr->tree<MPtr(&InfoTree::branch_get_value)>("property." + prop.first + ".type")
-                      .copy_as<std::string>() != "group" ||
-              !quid.top_level) {
+          auto parent = quid_ptr->tree<MPtr(&InfoTree::branch_get_value)>("property." + prop.first +
+                                                                          ".parent");
+          if (!quid.top_level || (parent.not_null() && !parent.copy_as<std::string>().empty())) {
             parent_strid = name;
           }
 
@@ -254,11 +254,10 @@ void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_
                           context->quid_spec_.blacklisted_params.end(),
                           prop_name)) {
           std::string parent_strid;
-          if (context->quid_
-                      ->tree<MPtr(&InfoTree::branch_get_value)>("property." + context->quid_name_ +
-                                                                ".type")
-                      .copy_as<std::string>() != "group" ||
-              !context->quid_spec_.top_level) {
+          auto parent = context->quid_->tree<MPtr(&InfoTree::branch_get_value)>(
+              "property." + prop_name + ".parent");
+          if (!context->quid_spec_.top_level ||
+              (parent.not_null() && !parent.copy_as<std::string>().empty())) {
             parent_strid = context->quid_name_;
           }
 
