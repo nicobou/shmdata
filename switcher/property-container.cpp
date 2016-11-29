@@ -119,7 +119,13 @@ PContainer::prop_id_t PContainer::get_id(const std::string& strid) const {
   return 0;
 }
 
-std::map<std::string, PContainer::prop_id_t> PContainer::get_ids() const { return ids_; }
+std::vector<std::pair<std::string, PContainer::prop_id_t>> PContainer::get_ids() const {
+  std::vector<std::pair<std::string, PContainer::prop_id_t>> ids;
+  for (auto& prop : ids_) {
+    ids.push_back(std::make_pair(prop.first, prop.second));
+  }
+  return ids;
+}
 
 std::string PContainer::get_name(prop_id_t id) const {
   const auto& it = strids_.find(id);

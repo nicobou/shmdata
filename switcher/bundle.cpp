@@ -155,7 +155,16 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
     if (quid.expose_prop) {
       if (!quid.top_level)
         pmanage<MPtr(&PContainer::make_group)>(name, name, std::string("Properties for ") + name);
-      for (auto& prop : quid_ptr->props_.get_ids()) {
+      // We need to sort the list so that groups are created first or we could lose some properties.
+      auto props = quid_ptr->props_.get_ids();
+      std::partition(props.begin(),
+                     props.end(),
+                     [&quid_ptr](const std::pair<std::string, PContainer::prop_id_t>& prop) {
+                       auto type = quid_ptr->tree<MPtr(&InfoTree::branch_get_value)>(
+                           "property." + prop.first + ".type");
+                       return type.is_null() || type.copy_as<std::string>() == "group";
+                     });
+      for (auto& prop : props) {
         if (!(quid.expose_start && prop.first == "started") &&
             quid.blacklisted_params.end() == std::find(quid.blacklisted_params.begin(),
                                                        quid.blacklisted_params.end(),
