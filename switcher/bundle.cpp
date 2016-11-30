@@ -152,33 +152,28 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
     quid_ptr->subscribe_signal(
         "on-tree-pruned", &Bundle::on_tree_pruned, on_tree_datas_.back().get());
     // mirroring property
-    if (quid.expose_prop) {
-      if (!quid.top_level)
-        pmanage<MPtr(&PContainer::make_group)>(name, name, std::string("Properties for ") + name);
-      // We need to sort the list so that groups are created first or we could lose some properties.
-      auto props = quid_ptr->props_.get_ids();
-      std::partition(props.begin(),
-                     props.end(),
-                     [&quid_ptr](const std::pair<std::string, PContainer::prop_id_t>& prop) {
-                       auto type = quid_ptr->tree<MPtr(&InfoTree::branch_get_value)>(
-                           "property." + prop.first + ".type");
-                       return type.is_null() || type.copy_as<std::string>() == "group";
-                     });
-      for (auto& prop : props) {
-        if (!(quid.expose_start && prop.first == "started") &&
-            quid.blacklisted_params.end() == std::find(quid.blacklisted_params.begin(),
-                                                       quid.blacklisted_params.end(),
-                                                       prop.first)) {
-          std::string parent_strid;
-          auto parent = quid_ptr->tree<MPtr(&InfoTree::branch_get_value)>("property." + prop.first +
-                                                                          ".parent");
-          if (!quid.top_level || (parent.not_null() && !parent.copy_as<std::string>().empty())) {
-            parent_strid = name;
-          }
-
-          pmanage<MPtr(&PContainer::mirror_property_from)>(
-              name + "/" + prop.first, parent_strid, &quid_ptr->props_, prop.second);
+    if (!quid.top_level && (quid.expose_prop || !quid.whitelisted_params.empty()))
+      pmanage<MPtr(&PContainer::make_group)>(name, name, std::string("Properties for ") + name);
+    // We need to sort the list so that groups are created first or we could lose some properties.
+    auto props = quid_ptr->props_.get_ids();
+    std::partition(props.begin(),
+                   props.end(),
+                   [&quid_ptr](const std::pair<std::string, PContainer::prop_id_t>& prop) {
+                     auto type = quid_ptr->tree<MPtr(&InfoTree::branch_get_value)>(
+                         "property." + prop.first + ".type");
+                     return type.is_null() || type.copy_as<std::string>() == "group";
+                   });
+    for (auto& prop : props) {
+      if (property_is_displayed(quid, prop.first)) {
+        std::string parent_strid;
+        auto parent =
+            quid_ptr->tree<MPtr(&InfoTree::branch_get_value)>("property." + prop.first + ".parent");
+        if (!quid.top_level || (parent.not_null() && !parent.copy_as<std::string>().empty())) {
+          parent_strid = name;
         }
+
+        pmanage<MPtr(&PContainer::mirror_property_from)>(
+            name + "/" + prop.first, parent_strid, &quid_ptr->props_, prop.second);
       }
     }
   }  // finished dealing with this quid specification
@@ -243,47 +238,37 @@ void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_
     }
   }
 
-  if (context->quid_spec_.expose_prop) {
-    static std::regex prop_rgx("\\.?property\\.([^.]*).*");
-    std::smatch prop_match;
-    if (std::regex_search(params[0], prop_match, prop_rgx)) {
-      std::string prop_name = prop_match[1];
-      if ((context->quid_spec_.expose_start && prop_name == "started") ||
-          context->quid_spec_.blacklisted_params.end() !=
-              std::find(context->quid_spec_.blacklisted_params.begin(),
-                        context->quid_spec_.blacklisted_params.end(),
-                        prop_name)) {
-        return;
-      }
-      static std::regex prop_created_rgx("\\.?property\\.[^.]*");
-      if (std::regex_match(params[0], prop_created_rgx)) {
-        if ((context->quid_spec_.expose_start && prop_name == "started") ||
-            context->quid_spec_.blacklisted_params.end() ==
-                std::find(context->quid_spec_.blacklisted_params.begin(),
-                          context->quid_spec_.blacklisted_params.end(),
-                          prop_name)) {
-          std::string parent_strid;
-          auto parent = context->quid_->tree<MPtr(&InfoTree::branch_get_value)>(
-              "property." + prop_name + ".parent");
-          if (!context->quid_spec_.top_level ||
-              (parent.not_null() && !parent.copy_as<std::string>().empty())) {
-            parent_strid = context->quid_name_;
-          }
-
-          context->self_->pmanage<MPtr(&PContainer::mirror_property_from)>(
-              context->quid_name_ + "/" + prop_name,
-              parent_strid,
-              &context->quid_->props_,
-              context->quid_->props_.get_id(prop_name));
-        }
-      }
-      static std::regex prop_rename("\\.?property.");
-      context->self_->graft_tree(
-          std::regex_replace(params[0], prop_rename, std::string("$&") + context->quid_name_ + "/"),
-          context->quid_->information_tree_->get_tree(params[0]),
-          true);
+  static std::regex prop_rgx("\\.?property\\.([^.]*).*");
+  std::smatch prop_match;
+  if (std::regex_search(params[0], prop_match, prop_rgx)) {
+    std::string prop_name = prop_match[1];
+    if (!property_is_displayed(context->quid_spec_, prop_name)) {
       return;
     }
+    static std::regex prop_created_rgx("\\.?property\\.[^.]*");
+    if (std::regex_match(params[0], prop_created_rgx)) {
+      if (property_is_displayed(context->quid_spec_, prop_name)) {
+        std::string parent_strid;
+        auto parent = context->quid_->tree<MPtr(&InfoTree::branch_get_value)>(
+            "property." + prop_name + ".parent");
+        if (!context->quid_spec_.top_level ||
+            (parent.not_null() && !parent.copy_as<std::string>().empty())) {
+          parent_strid = context->quid_name_;
+        }
+
+        context->self_->pmanage<MPtr(&PContainer::mirror_property_from)>(
+            context->quid_name_ + "/" + prop_name,
+            parent_strid,
+            &context->quid_->props_,
+            context->quid_->props_.get_id(prop_name));
+      }
+    }
+    static std::regex prop_rename("\\.?property.");
+    context->self_->graft_tree(
+        std::regex_replace(params[0], prop_rename, std::string("$&") + context->quid_name_ + "/"),
+        context->quid_->information_tree_->get_tree(params[0]),
+        true);
+    return;
   }
 }
 
@@ -298,35 +283,29 @@ void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_d
     }
   }
 
-  if (context->quid_spec_.expose_prop) {
-    static std::regex prop_rgx("\\.?property\\.([^.]*).*");
-    std::smatch prop_match;
-    if (std::regex_search(params[0], prop_match, prop_rgx)) {
-      std::string prop_name = prop_match[1];
-      if ((context->quid_spec_.expose_start && prop_name == "started") ||
-          context->quid_spec_.blacklisted_params.end() !=
-              std::find(context->quid_spec_.blacklisted_params.begin(),
-                        context->quid_spec_.blacklisted_params.end(),
-                        prop_name)) {
-        return;
-      }
-      static std::regex prop_deleted_rgx("\\.?property\\.[^.]*");
-      if (std::regex_match(params[0], prop_deleted_rgx)) {
-        if (!context->self_->pmanage<MPtr(&PContainer::remove)>(
-                context->self_->pmanage<MPtr(&PContainer::get_id)>(context->quid_name_ + "/" +
-                                                                   prop_name))) {
-          g_warning("BUG removing property (%s) deleted from a quiddity (%s) in a bundle (%s)",
-                    prop_name.c_str(),
-                    context->quid_name_.c_str(),
-                    context->self_->get_name().c_str());
-        }
-      }
-      static std::regex prop_rename("\\.?property\\.");
-      context->self_->prune_tree(
-          std::regex_replace(params[0], prop_rename, std::string("$&") + context->quid_name_ + "/"),
-          true);
+  static std::regex prop_rgx("\\.?property\\.([^.]*).*");
+  std::smatch prop_match;
+  if (std::regex_search(params[0], prop_match, prop_rgx)) {
+    std::string prop_name = prop_match[1];
+    if (!property_is_displayed(context->quid_spec_, prop_name)) {
       return;
     }
+    static std::regex prop_deleted_rgx("\\.?property\\.[^.]*");
+    if (std::regex_match(params[0], prop_deleted_rgx)) {
+      if (!context->self_->pmanage<MPtr(&PContainer::remove)>(
+              context->self_->pmanage<MPtr(&PContainer::get_id)>(context->quid_name_ + "/" +
+                                                                 prop_name))) {
+        g_warning("BUG removing property (%s) deleted from a quiddity (%s) in a bundle (%s)",
+                  prop_name.c_str(),
+                  context->quid_name_.c_str(),
+                  context->self_->get_name().c_str());
+      }
+    }
+    static std::regex prop_rename("\\.?property\\.");
+    context->self_->prune_tree(
+        std::regex_replace(params[0], prop_rename, std::string("$&") + context->quid_name_ + "/"),
+        true);
+    return;
   }
 
   static std::regex wr_rgx("\\.?shmdata\\.writer\\.([^.]+)");
@@ -373,6 +352,18 @@ bool Bundle::stop() {
     }
   }
   return true;
+}
+
+bool Bundle::property_is_displayed(bundle::quiddity_spec_t quid_spec, std::string property_name) {
+  return (!(quid_spec.expose_start && property_name == "started") &&
+          ((quid_spec.expose_prop &&
+            quid_spec.blacklisted_params.end() == std::find(quid_spec.blacklisted_params.begin(),
+                                                            quid_spec.blacklisted_params.end(),
+                                                            property_name)) ||
+           (!quid_spec.expose_prop &&
+            quid_spec.whitelisted_params.end() != std::find(quid_spec.whitelisted_params.begin(),
+                                                            quid_spec.whitelisted_params.end(),
+                                                            property_name))));
 }
 
 }  // namespace switcher

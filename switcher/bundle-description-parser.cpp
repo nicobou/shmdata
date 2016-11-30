@@ -72,13 +72,17 @@ DescriptionParser::DescriptionParser(const std::string& description,
   for (auto& it : quiddities_) {
     std::vector<std::pair<std::string, std::string>> tmp_params;
     for (auto& prop : it.params) {
-      if (std::regex_match(prop.first, rgx)) {  // remove '_'
-        auto actual_param_name = std::string(prop.first.begin() + 1, prop.first.end());
-        tmp_params.push_back(std::make_pair(actual_param_name, prop.second));
-        it.blacklisted_params.push_back(actual_param_name);
-      } else {  // just copy
-        tmp_params.push_back(std::make_pair(prop.first, prop.second));
+      std::string actual_param_name;
+      if (std::regex_match(prop.first, rgx)) {  // blacklist '_' if properties are exposed
+        actual_param_name = std::string(prop.first.begin() + 1, prop.first.end());
+        if (it.expose_prop)
+          it.blacklisted_params.push_back(actual_param_name);
+        else
+          it.whitelisted_params.push_back(actual_param_name);
+      } else {
+        actual_param_name = std::string(prop.first.begin(), prop.first.end());
       }
+      tmp_params.push_back(std::make_pair(actual_param_name, prop.second));
     }
     std::swap(it.params, tmp_params);
   }
@@ -225,7 +229,7 @@ bool DescriptionParser::parse_param(const std::string& raw_param, quiddity_spec_
   }
 
   // get param name and value
-  std::regex rgx("\\w+=[^=]+");
+  std::regex rgx("[\\w-]+=[^=]+");
   if (!std::regex_match(param, rgx)) {
     parsing_error_ =
         std::string("wrong parameter syntax (expecting param_name=param_value, but got ") + param;

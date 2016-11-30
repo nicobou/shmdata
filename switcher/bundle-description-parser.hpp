@@ -32,6 +32,7 @@ struct quiddity_spec_t {
   std::string name{};
   std::vector<std::pair<std::string, std::string>> params{};
   std::vector<std::string> blacklisted_params{};
+  std::vector<std::string> whitelisted_params{};
   bool expose_shmr{false};
   bool expose_shmw{false};
   bool expose_prop{true};
