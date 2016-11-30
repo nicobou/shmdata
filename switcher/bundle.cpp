@@ -137,9 +137,9 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
       if (!param.second.empty() &&
           !manager_->use_prop<MPtr(&PContainer::set_str_str)>(name, param.first, param.second)) {
         g_warning("fail to set property %s to %s for quiddity %s",
-                  name.c_str(),
                   param.first.c_str(),
-                  param.second.c_str());
+                  param.second.c_str(),
+                  name.c_str());
         return false;
       }
     }  // quiddity is created

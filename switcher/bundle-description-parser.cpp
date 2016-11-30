@@ -70,14 +70,14 @@ DescriptionParser::DescriptionParser(const std::string& description,
   // check params, build blacklist and remove prefixed '_' if found
   std::regex rgx("_.+");
   for (auto& it : quiddities_) {
-    std::map<std::string, std::string> tmp_params;
+    std::vector<std::pair<std::string, std::string>> tmp_params;
     for (auto& prop : it.params) {
       if (std::regex_match(prop.first, rgx)) {  // remove '_'
         auto actual_param_name = std::string(prop.first.begin() + 1, prop.first.end());
-        tmp_params[actual_param_name] = prop.second;
+        tmp_params.push_back(std::make_pair(actual_param_name, prop.second));
         it.blacklisted_params.push_back(actual_param_name);
       } else {  // just copy
-        tmp_params[prop.first] = prop.second;
+        tmp_params.push_back(std::make_pair(prop.first, prop.second));
       }
     }
     std::swap(it.params, tmp_params);
@@ -219,7 +219,7 @@ bool DescriptionParser::parse_param(const std::string& raw_param, quiddity_spec_
         parsing_error_ = std::string("parameter name cannot be blacklisted (got _name)") + param;
         return false;
       }
-      quid.params[param] = std::string();
+      quid.params.push_back(std::make_pair(param, std::string()));
       return true;
     }
   }
@@ -236,7 +236,8 @@ bool DescriptionParser::parse_param(const std::string& raw_param, quiddity_spec_
   if (key == "name")
     quid.name = std::string(param, equal_pos + 1, std::string::npos);
   else
-    quid.params[key] = std::string(param, equal_pos + 1, std::string::npos);
+    quid.params.push_back(
+        std::make_pair(key, std::string(param, equal_pos + 1, std::string::npos)));
   return true;
 }
 
