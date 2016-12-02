@@ -1,0 +1,22 @@
+image: ubuntu:16.04
+
+before_script:
+  - apt-get update -qq && apt-get install -y -qq cmake bison build-essential flex libtool libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev
+  - mkdir build
+  - cd build
+  - cmake ..
+
+stages:
+  - test
+  - test-package
+
+test:
+  stage: test
+  script:
+    - make -j"$(nproc)"
+    - make test
+
+test-package:
+  stage: test-package
+  script:
+    - make package_source_test
