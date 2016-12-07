@@ -122,11 +122,11 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
   std::regex rgx("\\s");
   std::sregex_token_iterator iter(item.begin(), item.end(), rgx, -1);
   bool type_found = false;
-  static const std::string shmr("_shmr");
-  static const std::string shmw("_shmw");
-  static const std::string noprop("_no_prop");
-  static const std::string addtostart("_add_to_start");
-  static const std::string top_level("_top_level");
+  static const std::string shmr("<shmr");
+  static const std::string shmw("<shmw");
+  static const std::string noprop("<no_prop");
+  static const std::string addtostart("<add_to_start");
+  static const std::string top_level("<top_level");
   quiddity_spec_t quid;
   for (; iter != std::sregex_token_iterator(); ++iter) {
     if (static_cast<std::string>(*iter).empty()) continue;
@@ -219,8 +219,9 @@ bool DescriptionParser::parse_param(const std::string& raw_param, quiddity_spec_
   {  // check if this parameter in only blacklisted
     std::regex rgx("_\\w+");
     if (std::regex_match(param, rgx)) {
-      if (param == "_name") {
-        parsing_error_ = std::string("parameter name cannot be blacklisted (got _name)") + param;
+      if (param == "_name" || param == "_group") {
+        parsing_error_ =
+            std::string("parameter ") + param + " cannot be blacklisted (got " + param + ")";
         return false;
       }
       quid.params.push_back(std::make_pair(param, std::string()));
@@ -239,6 +240,8 @@ bool DescriptionParser::parse_param(const std::string& raw_param, quiddity_spec_
   auto key = std::string(param, 0, equal_pos);
   if (key == "name")
     quid.name = std::string(param, equal_pos + 1, std::string::npos);
+  else if (key == "group")
+    quid.group_name = std::string(param, equal_pos + 1, std::string::npos);
   else
     quid.params.push_back(
         std::make_pair(key, std::string(param, equal_pos + 1, std::string::npos)));

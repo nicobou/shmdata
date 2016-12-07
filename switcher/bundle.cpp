@@ -152,8 +152,12 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
     quid_ptr->subscribe_signal(
         "on-tree-pruned", &Bundle::on_tree_pruned, on_tree_datas_.back().get());
     // mirroring property
-    if (!quid.top_level && (quid.expose_prop || !quid.whitelisted_params.empty()))
-      pmanage<MPtr(&PContainer::make_group)>(name, name, std::string("Properties for ") + name);
+    if (!quid.top_level && (quid.expose_prop || !quid.whitelisted_params.empty())) {
+      auto group_name = name;
+      if (!quid.group_name.empty()) group_name = quid.group_name;
+      pmanage<MPtr(&PContainer::make_group)>(
+          group_name, group_name, std::string("Properties for ") + name);
+    }
     // We need to sort the list so that groups are created first or we could lose some properties.
     auto props = quid_ptr->props_.get_ids();
     std::partition(props.begin(),
@@ -169,7 +173,7 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
         auto parent =
             quid_ptr->tree<MPtr(&InfoTree::branch_get_value)>("property." + prop.first + ".parent");
         if (!quid.top_level || (parent.not_null() && !parent.copy_as<std::string>().empty())) {
-          parent_strid = name;
+          parent_strid = quid.group_name.empty() ? name : quid.group_name;
         }
 
         pmanage<MPtr(&PContainer::mirror_property_from)>(
