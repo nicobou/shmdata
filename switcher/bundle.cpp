@@ -187,10 +187,10 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
 void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_data) {
   auto context = static_cast<on_tree_data_t*>(user_data);
 
+  static std::regex connections_wr_rgx("\\.?shmdata.writer\\.([^.]+)");
   if (!context->quid_spec_.connects_to_.empty()) {
-    static std::regex wr_rgx("\\.?shmdata.writer\\.([^.]+)");
     std::smatch shm_match;
-    std::regex_search(params[0], shm_match, wr_rgx);
+    std::regex_search(params[0], shm_match, connections_wr_rgx);
     if (!shm_match.empty()) {
       // shm_match[0] contains the matched sequence,
       // shm_match[1] contains the sub sequence localized between brackets
@@ -224,18 +224,18 @@ void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_
     }
   }
 
+  static std::regex exposed_wr_rgx("\\.?shmdata\\.writer\\..*");
   if (context->quid_spec_.expose_shmw) {
-    static std::regex wr_rgx("\\.?shmdata\\.writer\\..*");
-    if (std::regex_match(params[0], wr_rgx)) {
+    if (std::regex_match(params[0], exposed_wr_rgx)) {
       context->self_->graft_tree(
           params[0], context->quid_->information_tree_->get_tree(params[0]), true);
       return;
     }
   }
 
+  static std::regex exposed_rd_rgx("\\.?shmdata\\.reader\\..*");
   if (context->quid_spec_.expose_shmr) {
-    static std::regex rd_rgx("\\.?shmdata\\.reader\\..*");
-    if (std::regex_match(params[0], rd_rgx)) {
+    if (std::regex_match(params[0], exposed_rd_rgx)) {
       context->self_->graft_tree(
           params[0], context->quid_->information_tree_->get_tree(params[0]), true);
       return;
@@ -274,14 +274,24 @@ void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_
         true);
     return;
   }
+
+  // We catch the events we don't want to forward.
+  if (!context->quid_spec_.expose_shmr && std::regex_match(params[0], exposed_rd_rgx)) return;
+  if (!context->quid_spec_.expose_shmw && std::regex_match(params[0], exposed_wr_rgx)) return;
+  if (context->quid_spec_.connects_to_.empty() && std::regex_match(params[0], connections_wr_rgx))
+    return;
+
+  // And then if there is a custom branch in the tree we forward the graft event.
+  context->self_->graft_tree(
+      params[0], context->quid_->information_tree_->get_tree(params[0]), true);
 }
 
 void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_data) {
   auto context = static_cast<on_tree_data_t*>(user_data);
 
+  static std::regex exposed_rd_rgx("\\.?shmdata\\.reader\\..*");
   if (context->quid_spec_.expose_shmr) {
-    static std::regex rd_rgx("\\.?shmdata\\.reader\\..*");
-    if (std::regex_match(params[0], rd_rgx)) {
+    if (std::regex_match(params[0], exposed_rd_rgx)) {
       context->self_->prune_tree(params[0], true);
       return;
     }
@@ -334,6 +344,12 @@ void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_d
     std::swap(context->quid_spec_.connects_to_, context->quid_spec_.connected_to_);
     return;
   }
+
+  // We catch the events we don't want to forward.
+  if (!context->quid_spec_.expose_shmr && std::regex_match(params[0], exposed_rd_rgx)) return;
+
+  // And then if there is a custom branch in the tree we forward the prune event.
+  context->self_->prune_tree(params[0], true);
 }
 
 bool Bundle::start() {
