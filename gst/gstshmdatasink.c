@@ -235,9 +235,10 @@ gst_shmdata_sink_allocator_init (GstShmdataSinkAllocator * self)
 
 
 static GstMemory *
-gst_shmdata_sink_allocator_alloc_locked (GstShmdataSinkAllocator * self, gsize size,
+gst_shmdata_sink_allocator_alloc (GstAllocator * allocator, gsize size,
     GstAllocationParams * params)
 {
+  GstShmdataSinkAllocator *self = GST_SHMDATA_SINK_ALLOCATOR (allocator);
   GstMemory *memory = NULL;
   gsize maxsize = size + params->prefix + params->padding;
   gsize align = params->align;
@@ -246,7 +247,6 @@ gst_shmdata_sink_allocator_alloc_locked (GstShmdataSinkAllocator * self, gsize s
   align |= gst_memory_alignment;
   /* allocate more to compensate for alignment */
   maxsize += align;
-
   if (self->sink->size < size){
     if (0 == shmdata_shm_resize(self->sink->access, size))
       GST_ELEMENT_ERROR (self, RESOURCE, NO_SPACE_LEFT, 
@@ -287,20 +287,6 @@ gst_shmdata_sink_allocator_alloc_locked (GstShmdataSinkAllocator * self, gsize s
     gst_memory_init (memory, params->flags, g_object_ref (self), NULL,
         maxsize, align, params->prefix, size);
   }
-
-  return memory;
-}
-
-static GstMemory *
-gst_shmdata_sink_allocator_alloc (GstAllocator * allocator, gsize size,
-    GstAllocationParams * params)
-{
-  GstShmdataSinkAllocator *self = GST_SHMDATA_SINK_ALLOCATOR (allocator);
-  GstMemory *memory = NULL;
-
-  GST_OBJECT_LOCK (self->sink);
-  memory = gst_shmdata_sink_allocator_alloc_locked (self, size, params);
-  GST_OBJECT_UNLOCK (self->sink);
 
   if (!memory) {
     memory = gst_allocator_alloc (NULL, size, params);
@@ -606,10 +592,10 @@ gst_shmdata_sink_render (GstBaseSink * bsink, GstBuffer * buf)
                           gst_buffer_get_size (buf))); 
       return GST_FLOW_ERROR;
     }
-    
-    while ((memory =
-            gst_shmdata_sink_allocator_alloc_locked (self->allocator,
-                gst_buffer_get_size (buf), &self->params)) == NULL) {
+
+    while ((memory = gst_shmdata_sink_allocator_alloc(GST_ALLOCATOR(self->allocator),
+                                                      gst_buffer_get_size(buf),
+                                                      &self->params)) == NULL) {
       g_cond_wait (&self->cond, GST_OBJECT_GET_LOCK (self));
       if (self->unlock)
         goto flushing;
