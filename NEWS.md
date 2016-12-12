@@ -2,6 +2,13 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.10 (2016-12-12)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* removing unnecessary lock in gstshmdatasink.c
+* Added gitlab CI
+
 shmdata 1.3.8 (2016-11-25)
 ---------------------------
 This is an official release in the 1.3 stable series.

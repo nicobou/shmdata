@@ -3,6 +3,7 @@
        (_-</ _ \/  ' \/ _  / _ `/ __/ _ `/
       /___/_//_/_/_/_/\_,_/\_,_/\__/\_,_/ 
 
+[![build status](https://gitlab.com/sat-metalab/shmdata/badges/master/build.svg)](https://gitlab.com/sat-metalab/shmdata/commits/master)
 
 # shmdata
 Library to share flows of data frames between processes via shared memory. 
