@@ -36,7 +36,7 @@ int main() {
     g_free(usr_plugin_dir);
 
     assert(switcher::QuiddityBasicTest::test_full(manager, "OSCctl"));
-    assert(switcher::QuiddityBasicTest::test_full(manager, "shmOSCsink"));
+    assert(switcher::QuiddityBasicTest::test_full(manager, "OSCsink"));
   }  // end of scope is releasing the manager
   return 0;
 }

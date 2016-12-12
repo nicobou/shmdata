@@ -22,7 +22,7 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     ShmdataToOsc,
-    "shmOSCsink",
+    "OSCsink",
     "OSC sender",
     "network",
     "reader",
