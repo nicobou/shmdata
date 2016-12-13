@@ -58,6 +58,9 @@ class GstPipeliner {
   GstPipe::on_msg_async_cb_t on_msg_async_cb_;
   GstPipe::on_msg_sync_cb_t on_msg_sync_cb_;
   on_error_cb_t on_error_cb_;
+  bool watch_added_{false};
+  std::mutex watch_mutex_{};
+  std::condition_variable cond_watch_{};
   std::unique_ptr<GlibMainLoop> main_loop_;
   std::unique_ptr<GstPipe> gst_pipeline_;
   GstBusSyncReply on_gst_error(GstMessage* msg);
