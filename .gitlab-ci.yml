@@ -1,12 +1,7 @@
-image: ubuntu:16.04
+image: registry.gitlab.com/sat-metalab/switcher:latest
 
 before_script:
-  - echo SWITCHER DEPENDENCIES
-  - apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libgtk-3-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev libgl1-mesa-dev swh-plugins
-  - git submodule update --init --recursive
-
   - echo SHMDATA BUILD
-  - apt-get install -y -qq libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev
   - git clone https://github.com/sat-metalab/shmdata.git libshmdata
   - cd libshmdata
   - mkdir build
@@ -35,3 +30,6 @@ test-package:
   stage: test-package
   script:
     - make package_source_test
+  only:
+    - develop
+    - master
