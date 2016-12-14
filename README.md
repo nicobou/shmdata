@@ -1,6 +1,8 @@
 switcher
 ========
 
+[![build status](https://gitlab.com/sat-metalab/switcher/badges/master/build.svg)](https://gitlab.com/sat-metalab/switcher/commits/master)
+
 [switcher](https://github.com/sat-metalab/switcher) provides audio, video and data signals routing, switching, processing and mixing. It was created at the Society for Arts and Technology (SAT) to give to artists a powerful tool for telepresence in contexts of live arts and new media installations.
 
 See instructions for [installing](INSTALL.md).

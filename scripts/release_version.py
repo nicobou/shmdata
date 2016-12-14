@@ -23,7 +23,7 @@ version_file = 'CMakeLists.txt'
 
 version_pattern = 'set\({}_VERSION_(\S+)\s+(\d+)\)'
 shmdata_require_pattern = 'set\(SHMDATA_REQUIRED_VERSION (\d+\.\d+)\)'
-github_path = 'git@github.com:sat-metalab'
+git_path = 'git@gitlab.com:sat-metalab'
 remote_repo = 'origin'
 bringup_branch = 'master'
 working_branch = 'develop'
@@ -90,7 +90,7 @@ def update_switcher_shmdata_version():
     if subprocess.call('cmake -DCMAKE_BUILD_TYPE=Release .. && make -j {} && sudo make install'
                                .format(multiprocessing.cpu_count()), shell=True) != 0:
         printerr('{} build failed, stopping the release.'.format(lib))
-    lib_repo = '{}/{}.git'.format(github_path, lib)
+    lib_repo = '{}/{}.git'.format(git_path, lib)
     os.chdir(os.path.join(libs_root_path))
     assert git_clone(lib_repo) == 0, 'Could not fetch code base for library {} at {}'.format(lib, lib_repo)
     os.chdir(os.path.join(libs_root_path, lib))
@@ -288,7 +288,7 @@ if __name__ == '__main__':
         printerr('Wrong choice. Aborting the release.')
 
     # Always clone shmdata even when releasing switcher to synchronize versions.
-    lib_repo = '{}/{}.git'.format(github_path, 'shmdata')
+    lib_repo = '{}/{}.git'.format(git_path, 'shmdata')
     assert git_clone(lib_repo) == 0, 'Could not fetch code base for library {} at {}'.format(lib, lib_repo)
 
     if lib == 'switcher':

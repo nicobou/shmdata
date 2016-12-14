@@ -69,14 +69,21 @@ GstPipeliner::GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
       main_loop_->get_main_context(), G_PRIORITY_DEFAULT_IDLE, push_thread_context, this, nullptr);
 }
 
-GstPipeliner::~GstPipeliner() {}
+GstPipeliner::~GstPipeliner() {
+  std::unique_lock<std::mutex> lock(watch_mutex_);
+  while (!watch_added_) cond_watch_.wait_for(lock, std::chrono::milliseconds(200));
+}
 
 gboolean GstPipeliner::push_thread_context(gpointer user_data) {
   auto context = static_cast<GstPipeliner*>(user_data);
   g_main_context_push_thread_default(context->main_loop_->get_main_context());
 
+  std::unique_lock<std::mutex> lock(context->watch_mutex_);
   gst_bus_add_watch(
       gst_pipeline_get_bus(GST_PIPELINE(context->get_pipeline())), bus_watch, user_data);
+  context->watch_added_ = true;
+  context->cond_watch_.notify_one();
+
   return FALSE;
 }
 

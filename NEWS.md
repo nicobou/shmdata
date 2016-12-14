@@ -2,6 +2,28 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.38 (2016-12-14)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* New quiddity implementing LADSPA plugins.
+* New whitelist mechanism when using no_prop option in bundle definition. reviewers: nouillot, edurand
+* Added "group" keyword in bundle description to customize the name of the group of properties of each quiddity.
+
+Bug fixes:
+* Fixed nvenc test after bundle pipeline syntax change.
+* Use docker image for CI to speed it up.
+* Fixed a potential race condition between GstPipeliner main loop and its destructor.
+* MIDI unit test does not fail if /dev/snd cannot be found.
+* Fixed deadlock when deleting a badly created glfwin. Also, overlay is not mandatory now, if something wrong happens during overlay initialization, it will only be hidden.
+* Unify OSC quiddity naming.
+* Change git path to gitlab for release script.
+* Forward graft/prune events in bundles for custom branches (e.g: focused event in glfwin).
+* Keep bundle parameters ordered so that dependent properties are declared in the right order. reviewers: nbouillot, edurand
+* Fixed properties ordering in bundle for grouping to avoid losing properties in the inspector.
+* Added a safety in bundle property mirroring.
+
 switcher 0.8.36 (2016-11-25)
 ---------------------------
 This is an official release in the 0.8 stable series.

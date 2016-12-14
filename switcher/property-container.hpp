@@ -48,7 +48,7 @@ class PContainer {
   // return 0 if id is not found
   prop_id_t get_id(const std::string& id) const;
   std::string get_name(prop_id_t id) const;
-  std::map<std::string, prop_id_t> get_ids() const;
+  std::vector<std::pair<std::string, PContainer::prop_id_t>> get_ids() const;
   std::map<prop_id_t, std::string> get_names() const;
 
   register_id_t subscribe(prop_id_t id, notify_cb_t fun) const;

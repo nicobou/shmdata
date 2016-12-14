@@ -19,15 +19,13 @@
 
 #undef NDEBUG  // get assert in release mode
 
+#include <sys/stat.h>
+#include <cstring>
 #include <iostream>
-#include <string>
-#include <vector>
 #include "switcher/quiddity-basic-test.hpp"
-#include "switcher/quiddity-manager.hpp"
 
 int main() {
   bool success = true;
-
   {
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("test_manager");
@@ -35,6 +33,12 @@ int main() {
     gchar* usr_plugin_dir = g_strdup_printf("./");
     manager->scan_directory_for_plugins(usr_plugin_dir);
     g_free(usr_plugin_dir);
+
+    struct stat st;
+    if (stat("/dev/snd", &st) == -1) {
+      g_warning("Could not open /dev/snd in MIDI test: %s", strerror(errno));
+      return 0;
+    }
 
     if (manager->create("midisrc", "src").compare("src") == 0)
       manager->remove("src");

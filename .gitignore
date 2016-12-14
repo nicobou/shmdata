@@ -3,4 +3,4 @@ doxyfile
 .idea/workspace.xml
 build/
 html/
-cmake-build-debug/
+cmake-build-*/

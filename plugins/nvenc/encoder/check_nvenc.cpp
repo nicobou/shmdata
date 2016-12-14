@@ -147,7 +147,6 @@ int main() {
     manager->load_configuration_file("./check_decode.json");
 
     auto nvencdec = manager->create("nvencdecoder", "nvencdecoder");
-    std::cout << nvencdec << std::endl;
     assert(nvencdec == "nvencdecoder");
     manager->use_prop<MPtr(&PContainer::set_str_str)>(nvencdec, "started", "true");
     manager->use_prop<MPtr(&PContainer::subscribe)>(

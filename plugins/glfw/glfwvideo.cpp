@@ -469,8 +469,10 @@ GLFWVideo::GLFWVideo(const std::string& name)
 
   std::unique_lock<std::mutex> lock(configuration_mutex_);
   gui_configuration_ = std::make_unique<GUIConfiguration>(this);
-  if (!gui_configuration_->initialized_) return;
-  gui_configuration_->init_properties();
+  if (gui_configuration_->initialized_)
+    gui_configuration_->init_properties();
+  else
+    g_warning("Overlay is not useable because something wrong happened during gui configuration");
   lock.unlock();
 
   glfwMakeContextCurrent(nullptr);
@@ -494,7 +496,7 @@ bool GLFWVideo::init() {
 GLFWVideo::~GLFWVideo() {
   // Blocking call until the window is unsubscribed from the render loop.
   ongoing_destruction_ = true;
-  RendererSingleton::get()->unsubscribe_from_render_loop(this);
+  if (is_valid_) RendererSingleton::get()->unsubscribe_from_render_loop(this);
 
   destroy_gl_elements();
   if (window_) glfwDestroyWindow(window_);

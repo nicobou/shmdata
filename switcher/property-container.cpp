@@ -119,7 +119,13 @@ PContainer::prop_id_t PContainer::get_id(const std::string& strid) const {
   return 0;
 }
 
-std::map<std::string, PContainer::prop_id_t> PContainer::get_ids() const { return ids_; }
+std::vector<std::pair<std::string, PContainer::prop_id_t>> PContainer::get_ids() const {
+  std::vector<std::pair<std::string, PContainer::prop_id_t>> ids;
+  for (auto& prop : ids_) {
+    ids.push_back(std::make_pair(prop.first, prop.second));
+  }
+  return ids;
+}
 
 std::string PContainer::get_name(prop_id_t id) const {
   const auto& it = strids_.find(id);
@@ -642,7 +648,8 @@ PContainer::prop_id_t PContainer::mirror_property_from(const std::string& strid,
   auto orig_parent =
       pc->actual_props_[prop_id]->get_spec()->branch_get_value(".parent").copy_as<std::string>();
   std::string new_parent_strid =
-      orig_parent.empty() ? parent_strid : parent_strid + "/" + orig_parent;
+      orig_parent.empty() ? parent_strid
+                          : (parent_strid.empty() ? orig_parent : parent_strid + "/" + orig_parent);
   if (new_parent_strid != "" && ids_.cend() == ids_.find(new_parent_strid))
     return 0;  // parent not found
   props_[++counter_] = &pc->actual_props_[prop_id];

@@ -1,0 +1,35 @@
+image: registry.gitlab.com/sat-metalab/switcher:latest
+
+before_script:
+  - echo SHMDATA BUILD
+  - git clone https://github.com/sat-metalab/shmdata.git libshmdata
+  - cd libshmdata
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make -j"$(nproc)"
+  - make install
+  - ldconfig
+
+  - cd ../..
+  - mkdir build
+  - cd build
+  - cmake ..
+
+stages:
+  - test
+  - test-package
+
+test:
+  stage: test
+  script:
+    - make -j"$(nproc)"
+    - make test
+
+test-package:
+  stage: test-package
+  script:
+    - make package_source_test
+  only:
+    - develop
+    - master

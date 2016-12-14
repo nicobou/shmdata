@@ -30,8 +30,10 @@ namespace bundle {
 struct quiddity_spec_t {
   std::string type{};
   std::string name{};
-  std::map<std::string, std::string> params{};
+  std::string group_name{};
+  std::vector<std::pair<std::string, std::string>> params{};
   std::vector<std::string> blacklisted_params{};
+  std::vector<std::string> whitelisted_params{};
   bool expose_shmr{false};
   bool expose_shmw{false};
   bool expose_prop{true};
