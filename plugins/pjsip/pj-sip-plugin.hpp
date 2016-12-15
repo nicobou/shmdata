@@ -26,6 +26,7 @@
 #include "./pj-sip.hpp"
 #include "./pj-stun-turn.hpp"
 #include "./pj-whitelist.hpp"
+#include "switcher/quiddity-manager-impl.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/threaded-wrapper.hpp"
 
@@ -66,8 +67,20 @@ class SIPPlugin : public Quiddity {
   static std::atomic<unsigned short> sip_plugin_used_;
   static SIPPlugin* this_;
 
+  // Expose incoming streams as quiddities feature
+  bool incoming_stream_to_quiddity_{false};
+  std::vector<std::string> exposed_quiddities_;
+  std::mutex exposed_quiddities_mutex_{};
+
   bool start_sip_transport();
   void apply_configuration();
+  void expose_stream_to_quiddity(const std::string& quid_name, const std::string& shmpath);
+  void remove_exposed_quiddity(const std::string& quid_name);
+  static void on_exposed_quiddity_signal(const std::string& subscriber_name,
+                                         const std::string& quiddity_name,
+                                         const std::string& signal_name,
+                                         const std::vector<std::string>& params,
+                                         void* user_data);
 };
 
 }  // namespace switcher

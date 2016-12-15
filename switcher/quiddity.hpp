@@ -77,6 +77,7 @@ class Quiddity {
 
   // instance name
   std::string get_name() const;
+  static std::string string_to_quiddity_name(const std::string& name);
   // FIXME name should be a ctor arg
   bool set_name(const std::string& name);  // can be called once
 

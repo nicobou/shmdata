@@ -290,7 +290,8 @@ std::string QuiddityManager_Impl::create(const std::string& quiddity_class) {
 std::string QuiddityManager_Impl::create(const std::string& quiddity_class,
                                          const std::string& raw_nick_name) {
   // only alphanum char, space and '-' are allowed
-  std::string nick_name = std::regex_replace(raw_nick_name, std::regex("[^[:alnum:]| ]"), "-");
+  std::string nick_name = Quiddity::string_to_quiddity_name(raw_nick_name);
+
   if (!class_exists(quiddity_class)) {
     g_warning("cannot create quiddity: class %s is unknown", quiddity_class.c_str());
     return std::string();
