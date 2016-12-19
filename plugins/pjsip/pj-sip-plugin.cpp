@@ -93,6 +93,11 @@ SIPPlugin::SIPPlugin(const std::string&)
 SIPPlugin::~SIPPlugin() {
   if (!i_m_the_one_) return;
 
+  if (incoming_stream_to_quiddity_) {
+    auto manager = manager_impl_.lock();
+    if (manager) manager->unregister_removal_cb(quiddity_removal_cb_id_);
+  }
+
   sip_calls_->finalize_calls();
   sip_calls_.reset(nullptr);
 
@@ -105,7 +110,6 @@ SIPPlugin::~SIPPlugin() {
   this_ = nullptr;
   i_m_the_one_ = false;
   sip_plugin_used_ = 0;
-
 }
 
 bool SIPPlugin::init() {
@@ -166,12 +170,20 @@ void SIPPlugin::apply_configuration() {
     }
   }
 
-  incoming_stream_to_quiddity_ = config<MPtr(&InfoTree::branch_get_value)>("incoming_stream_to_quiddity");
+  incoming_stream_to_quiddity_ =
+      config<MPtr(&InfoTree::branch_get_value)>("incoming_stream_to_quiddity");
   if (incoming_stream_to_quiddity_) {
     auto manager = manager_impl_.lock();
-    // FIXME: Kind of hacky way to track quiddity lifecycle but no current alternative
-    manager->make_signal_subscriber("spy_quiddity_subscriber", on_exposed_quiddity_signal, this);
-    manager->subscribe_signal("spy_quiddity_subscriber", "createRemoveSpy", "on-quiddity-removed");
+    if (!manager) return;
+    quiddity_removal_cb_id_ =
+        manager->register_removal_cb([this](const std::string& quiddity_name) {
+          std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
+          auto it =
+              std::find(exposed_quiddities_.begin(), exposed_quiddities_.end(), quiddity_name);
+          if (it != exposed_quiddities_.end()) {
+            exposed_quiddities_.erase(it);
+          }
+        });
   }
 
   // trying to register if a user is given
@@ -248,22 +260,6 @@ void SIPPlugin::remove_exposed_quiddity(const std::string& quid_name) {
   if (it == exposed_quiddities_.end()) return;
   manager->remove(quid);
   exposed_quiddities_.erase(it);
-}
-
-void SIPPlugin::on_exposed_quiddity_signal(const std::string& /*subscriber_name*/,
-                                           const std::string& quiddity_name,
-                                           const std::string& signal_name,
-                                           const std::vector<std::string>& params,
-                                           void* user_data) {
-  if (signal_name != "on-quiddity-removed" || params.empty()) return;
-
-  auto context = static_cast<SIPPlugin*>(user_data);
-  std::lock_guard<std::mutex> lock(context->exposed_quiddities_mutex_);
-  auto it = std::find(
-      context->exposed_quiddities_.begin(), context->exposed_quiddities_.end(), params[0]);
-  if (it != context->exposed_quiddities_.end()) {
-    context->exposed_quiddities_.erase(it);
-  }
 }
 
 }  // namespace switcher

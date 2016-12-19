@@ -71,16 +71,12 @@ class SIPPlugin : public Quiddity {
   bool incoming_stream_to_quiddity_{false};
   std::vector<std::string> exposed_quiddities_;
   std::mutex exposed_quiddities_mutex_{};
+  unsigned int quiddity_removal_cb_id_{0};
 
   bool start_sip_transport();
   void apply_configuration();
   void expose_stream_to_quiddity(const std::string& quid_name, const std::string& shmpath);
   void remove_exposed_quiddity(const std::string& quid_name);
-  static void on_exposed_quiddity_signal(const std::string& subscriber_name,
-                                         const std::string& quiddity_name,
-                                         const std::string& signal_name,
-                                         const std::vector<std::string>& params,
-                                         void* user_data);
 };
 
 }  // namespace switcher

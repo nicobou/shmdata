@@ -37,6 +37,7 @@ class QuiddityManager;
 class QuiddityManager_Impl {
  public:
   typedef std::shared_ptr<QuiddityManager_Impl> ptr;
+  using OnCreateRemoveCb = std::function<void(const std::string& nick_name)>;
   typedef void (*quiddity_created_hook)(const std::string& nick_name, void* user_data);
   typedef void (*quiddity_removed_hook)(const std::string& nick_name, void* user_data);
 
@@ -68,7 +69,7 @@ class QuiddityManager_Impl {
   InfoTree::ptr get_quiddity_description2(const std::string& nick_name);
   bool class_exists(const std::string& class_name);
 
-  // **** creation/remove/get
+  // **** creation/remove/get and notification
   std::string create(const std::string& quiddity_class);
   std::string create(const std::string& quiddity_class, const std::string& nick_name);
   bool remove(const std::string& quiddity_name);
@@ -76,6 +77,11 @@ class QuiddityManager_Impl {
   // only one hook is allowed now,
   // it is used by the quiddity manager-spy-create-remove
   // for converting creating removal into signals
+  unsigned int register_creation_cb(OnCreateRemoveCb cb);
+  unsigned int register_removal_cb(OnCreateRemoveCb cb);
+  void unregister_creation_cb(unsigned int id);
+  void unregister_removal_cb(unsigned int id);
+  void reset_create_remove_cb();
   bool set_created_hook(quiddity_created_hook hook, void* user_data);
   bool set_removed_hook(quiddity_removed_hook hook, void* user_data);
   void reset_create_remove_hooks();
@@ -181,6 +187,8 @@ class QuiddityManager_Impl {
   explicit QuiddityManager_Impl(const std::string&);
   void make_classes_doc();
   void register_classes();
+  std::map<unsigned int, OnCreateRemoveCb> on_created_cbs_{};
+  std::map<unsigned int, OnCreateRemoveCb> on_removed_cbs_{};
   std::unordered_map<std::string, std::shared_ptr<Quiddity>> quiddities_{};
   std::unordered_map<std::string, std::shared_ptr<QuidditySignalSubscriber>> signal_subscribers_{};
   bool init_quiddity(std::shared_ptr<Quiddity> quiddity);

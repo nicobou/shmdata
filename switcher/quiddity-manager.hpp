@@ -101,6 +101,16 @@ class QuiddityManager {
   // &?= chars are not allowed in nicknames
   std::string create(const std::string& class_name, const std::string& nick_name);
   bool remove(const std::string& quiddity_name);
+  unsigned int register_creation_cb(QuiddityManager_Impl::OnCreateRemoveCb cb) {
+    return manager_impl_->register_creation_cb(cb);
+  };
+  unsigned int register_removal_cb(QuiddityManager_Impl::OnCreateRemoveCb cb) {
+    return manager_impl_->register_removal_cb(cb);
+  };
+  void unregister_creation_cb(unsigned int id) { manager_impl_->unregister_creation_cb(id); };
+  void unregister_removal_cb(unsigned int id) { manager_impl_->unregister_removal_cb(id); };
+  void reset_create_remove_cb() { manager_impl_->reset_create_remove_cb(); };
+
   bool has_quiddity(const std::string& name);
 
   // ****************** informations ******

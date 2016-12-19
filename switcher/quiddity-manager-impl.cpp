@@ -233,6 +233,7 @@ bool QuiddityManager_Impl::init_quiddity(Quiddity::ptr quiddity) {
   quiddities_[quiddity->get_name()] = quiddity;
 
   if (creation_hook_ != nullptr) (*creation_hook_)(quiddity->get_name(), creation_hook_user_data_);
+  for (auto& cb : on_created_cbs_) cb.second(quiddity->get_name());
 
   return true;
 }
@@ -410,6 +411,7 @@ bool QuiddityManager_Impl::remove(const std::string& quiddity_name) {
   for (auto& it : signal_subscribers_) it.second->unsubscribe(q_it->second);
   quiddities_.erase(quiddity_name);
   if (removal_hook_ != nullptr) (*removal_hook_)(quiddity_name.c_str(), removal_hook_user_data_);
+  for (auto& cb : on_removed_cbs_) cb.second(quiddity_name);
   return true;
 }
 
@@ -618,6 +620,35 @@ std::string QuiddityManager_Impl::list_subscribed_signals_json(const std::string
     subtree->graft("signal", InfoTree::make(it.second));
   }
   return JSONSerializer::serialize(tree.get());
+}
+
+unsigned int QuiddityManager_Impl::register_creation_cb(OnCreateRemoveCb cb) {
+  static unsigned int id = 0;
+  id %= std::numeric_limits<unsigned int>::max();
+  on_created_cbs_[++id] = cb;
+  return id;
+}
+
+unsigned int QuiddityManager_Impl::register_removal_cb(OnCreateRemoveCb cb) {
+  static unsigned int id = 0;
+  id %= std::numeric_limits<unsigned int>::max();
+  on_removed_cbs_[++id] = cb;
+  return id;
+}
+
+void QuiddityManager_Impl::unregister_creation_cb(unsigned int id) {
+  auto it = on_created_cbs_.find(id);
+  if (it != on_created_cbs_.end()) on_created_cbs_.erase(it);
+}
+
+void QuiddityManager_Impl::unregister_removal_cb(unsigned int id) {
+  auto it = on_removed_cbs_.find(id);
+  if (it != on_removed_cbs_.end()) on_removed_cbs_.erase(it);
+}
+
+void QuiddityManager_Impl::reset_create_remove_cb() {
+  on_created_cbs_.clear();
+  on_removed_cbs_.clear();
 }
 
 bool QuiddityManager_Impl::set_created_hook(quiddity_created_hook hook, void* user_data) {
