@@ -62,6 +62,7 @@ class Bundle : public Quiddity, public StartableQuiddity {
   QuiddityManager::ptr manager_;
   std::mutex connected_shms_mtx_{};
   std::vector<std::pair<std::string /*quid_name*/, std::string /*shmpath*/>> connected_shms_{};
+  std::vector<unsigned int> quiddity_removal_cb_ids_{};
 
   bool start() final;
   bool stop() final;

@@ -120,11 +120,8 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
   // create quiddities and set properties
   for (auto& quid : quids) {
     std::string name;
-    if (quid.name.empty()) {
-      name = manager_->create(quid.type);
-    } else {
-      name = manager_->create(quid.type, quid.name);
-    }
+    name = manager_->create(quid.type, quid.name);
+
     if (name.empty()) {
       g_warning("internal manager failed to instantiate a quiddity of type %s", quid.type.c_str());
       return false;
@@ -180,6 +177,16 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
             name + "/" + prop.first, parent_strid, &quid_ptr->props_, prop.second);
       }
     }
+
+    quiddity_removal_cb_ids_.push_back(
+        manager_->register_removal_cb([this](const std::string& quid_name) {
+          g_debug("The bundle %s was destroyed because one of its quiddities (%s) was destroyed",
+                  name_.c_str(),
+                  quid_name.c_str());
+          // We only self destruct it once so we unregister all the removal callbacks.
+          manager_->reset_create_remove_cb();
+          self_destruct();
+        }));
   }  // finished dealing with this quid specification
   return true;
 }

@@ -74,6 +74,7 @@ class QuiddityManager_Impl {
                      bool call_creation_cb = true);
   bool remove(const std::string& quiddity_name, bool call_removal_cb = true);
   std::shared_ptr<Quiddity> get_quiddity(const std::string& quiddity_nick_name);
+
   unsigned int register_creation_cb(OnCreateRemoveCb cb);
   unsigned int register_removal_cb(OnCreateRemoveCb cb);
   void unregister_creation_cb(unsigned int id);
