@@ -6,7 +6,6 @@ add_library(${SWITCHER_LIBRARY} SHARED
     categorizable.cpp
     color.cpp
     counter-map.cpp
-    create-remove-spy.cpp
     decodebin-to-shmdata.cpp
     dummy-sink.cpp
     empty-quiddity.cpp
@@ -86,7 +85,6 @@ set(HEADER_INCLUDES
     categorizable.hpp
     color.hpp
     counter-map.hpp
-    create-remove-spy.hpp
     creator.hpp
     decodebin-to-shmdata.hpp
     dummy-sink.hpp

@@ -36,10 +36,8 @@ class QuiddityManager;
 
 class QuiddityManager_Impl {
  public:
-  typedef std::shared_ptr<QuiddityManager_Impl> ptr;
+  using ptr = std::shared_ptr<QuiddityManager_Impl>;
   using OnCreateRemoveCb = std::function<void(const std::string& nick_name)>;
-  typedef void (*quiddity_created_hook)(const std::string& nick_name, void* user_data);
-  typedef void (*quiddity_removed_hook)(const std::string& nick_name, void* user_data);
 
   static QuiddityManager_Impl::ptr make_manager(QuiddityManager* root_manager,
                                                 const std::string& name = "default");
@@ -70,21 +68,17 @@ class QuiddityManager_Impl {
   bool class_exists(const std::string& class_name);
 
   // **** creation/remove/get and notification
-  std::string create(const std::string& quiddity_class);
-  std::string create(const std::string& quiddity_class, const std::string& nick_name);
-  bool remove(const std::string& quiddity_name);
+  std::string create(const std::string& quiddity_class, bool call_creation_cb = true);
+  std::string create(const std::string& quiddity_class,
+                     const std::string& nick_name,
+                     bool call_creation_cb = true);
+  bool remove(const std::string& quiddity_name, bool call_removal_cb = true);
   std::shared_ptr<Quiddity> get_quiddity(const std::string& quiddity_nick_name);
-  // only one hook is allowed now,
-  // it is used by the quiddity manager-spy-create-remove
-  // for converting creating removal into signals
   unsigned int register_creation_cb(OnCreateRemoveCb cb);
   unsigned int register_removal_cb(OnCreateRemoveCb cb);
   void unregister_creation_cb(unsigned int id);
   void unregister_removal_cb(unsigned int id);
   void reset_create_remove_cb();
-  bool set_created_hook(quiddity_created_hook hook, void* user_data);
-  bool set_removed_hook(quiddity_removed_hook hook, void* user_data);
-  void reset_create_remove_hooks();
 
   // information tree
   Forward_consultable_from_associative_container(
@@ -166,10 +160,6 @@ class QuiddityManager_Impl {
       const std::string& subscriber_name);
   std::string list_subscribed_signals_json(const std::string& subscriber_name);
 
-  // for use of "get description by class"
-  // and from quiddity that creates other quiddity in the same manager
-  std::string create_without_hook(const std::string& quiddity_class);
-  bool remove_without_hook(const std::string& quiddity_name);
   QuiddityManager* get_root_manager() { return manager_; };
 
  private:
@@ -194,10 +184,6 @@ class QuiddityManager_Impl {
   bool init_quiddity(std::shared_ptr<Quiddity> quiddity);
   void remove_shmdata_sockets();
   InfoTree::ptr classes_doc_{};
-  quiddity_created_hook creation_hook_{nullptr};
-  quiddity_removed_hook removal_hook_{nullptr};
-  void* creation_hook_user_data_{nullptr};
-  void* removal_hook_user_data_{nullptr};
   CounterMap counters_{};
   std::weak_ptr<QuiddityManager_Impl> me_{};
   QuiddityManager* manager_{nullptr};

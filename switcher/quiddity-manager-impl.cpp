@@ -22,21 +22,14 @@
 
 #include <fstream>
 #include <regex>
-#include <streambuf>
-#include <string>
 
 #include "./bundle-description-parser.hpp"
 #include "./bundle.hpp"
 #include "./information-tree-json.hpp"
-#include "./quiddity-documentation.hpp"
-#include "./quiddity-manager-impl.hpp"
-#include "./quiddity.hpp"
 #include "./scope-exit.hpp"
-#include "./string-utils.hpp"
 
 // the quiddities to manage (line sorted)
 #include "./audio-test-source.hpp"
-#include "./create-remove-spy.hpp"
 #include "./dummy-sink.hpp"
 #include "./empty-quiddity.hpp"
 #include "./external-shmdata-writer.hpp"
@@ -44,13 +37,10 @@
 #include "./gst-decodebin.hpp"
 #include "./gst-video-converter.hpp"
 #include "./gst-video-encoder.hpp"
-//#include "./gst-parse-to-bin-src.hpp"
 #include "./http-sdp-dec.hpp"
 #include "./logger.hpp"
 #include "./property-mapper.hpp"
 #include "./rtp-session.hpp"
-//#include "./shmdata-to-file.hpp"
-//#include "./shmdata-from-gdp-file.hpp"
 #include "./timelapse.hpp"
 #include "./uridecodebin.hpp"
 #include "./video-test-source.hpp"
@@ -145,8 +135,6 @@ void QuiddityManager_Impl::register_classes() {
   // registering quiddities
   abstract_factory_.register_class<AudioTestSource>(AudioTestSource::switcher_doc_.get_class_name(),
                                                     &AudioTestSource::switcher_doc_);
-  abstract_factory_.register_class<CreateRemoveSpy>(CreateRemoveSpy::switcher_doc_.get_class_name(),
-                                                    &CreateRemoveSpy::switcher_doc_);
   abstract_factory_.register_class<DummySink>(DummySink::switcher_doc_.get_class_name(),
                                               &DummySink::switcher_doc_);
   abstract_factory_.register_class<EmptyQuiddity>(EmptyQuiddity::switcher_doc_.get_class_name(),
@@ -232,87 +220,45 @@ bool QuiddityManager_Impl::init_quiddity(Quiddity::ptr quiddity) {
 
   quiddities_[quiddity->get_name()] = quiddity;
 
-  if (creation_hook_ != nullptr) (*creation_hook_)(quiddity->get_name(), creation_hook_user_data_);
   for (auto& cb : on_created_cbs_) cb.second(quiddity->get_name());
 
   return true;
 }
 
-// for use of the "get description by class" methods
-std::string QuiddityManager_Impl::create_without_hook(const std::string& quiddity_class) {
-  if (!class_exists(quiddity_class)) return std::string();
-  std::string name = quiddity_class + std::to_string(counters_.get_count(quiddity_class));
-  while (quiddities_.end() != quiddities_.find(name))
-    name = quiddity_class + std::to_string(counters_.get_count(quiddity_class));
-  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class, name);
-  if (nullptr == quiddity.get()) return "{\"error\":\"cannot make quiddity\"}";
-  quiddity->set_manager_impl(me_.lock());
-  auto bundle_doc_it = bundle_docs_.find(quiddity_class);
-  if (bundle_doc_it != bundle_docs_.end()) {
-    static_cast<Bundle*>(quiddity.get())->set_doc_getter([this, quiddity_class]() {
-      return bundle_docs_.find(quiddity_class)->second.get();
-    });
-    quiddity->set_configuration(configurations_->get_tree("bundle." + quiddity_class));
-  } else {
-    if (configurations_) quiddity->set_configuration(configurations_->get_tree(quiddity_class));
-  }
-  quiddity->set_name(name);
-  name = quiddity->get_name();
-  if (!quiddity->init()) return "{\"error\":\"cannot init quiddity class\"}";
-  quiddities_[name] = quiddity;
-  return name;
-}
-
-std::string QuiddityManager_Impl::create(const std::string& quiddity_class) {
-  if (!class_exists(quiddity_class)) return std::string();
-  std::string name = quiddity_class + std::to_string(counters_.get_count(quiddity_class));
-  while (quiddities_.end() != quiddities_.find(name))
-    name = quiddity_class + std::to_string(counters_.get_count(quiddity_class));
-  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class, name);
-  if (quiddity.get() != nullptr) {
-    auto bundle_doc_it = bundle_docs_.find(quiddity_class);
-    if (bundle_doc_it != bundle_docs_.end()) {
-      static_cast<Bundle*>(quiddity.get())->set_doc_getter([this, quiddity_class]() {
-        return bundle_docs_.find(quiddity_class)->second.get();
-      });
-      quiddity->set_configuration(configurations_->get_tree("bundle." + quiddity_class));
-    } else {
-      if (configurations_) quiddity->set_configuration(configurations_->get_tree(quiddity_class));
-    }
-    quiddity->set_name(name);
-    if (!init_quiddity(quiddity)) {
-      g_debug("initialization of %s failed", quiddity_class.c_str());
-      return std::string();
-    }
-  }
-  return quiddity->get_name();
+std::string QuiddityManager_Impl::create(const std::string& quiddity_class, bool call_creation_cb) {
+  return create(quiddity_class, std::string(), call_creation_cb);
 }
 
 std::string QuiddityManager_Impl::create(const std::string& quiddity_class,
-                                         const std::string& raw_nick_name) {
-  // only alphanum char, space and '-' are allowed
-  std::string nick_name = Quiddity::string_to_quiddity_name(raw_nick_name);
-
+                                         const std::string& raw_nick_name,
+                                         bool call_creation_cb) {
   if (!class_exists(quiddity_class)) {
     g_warning("cannot create quiddity: class %s is unknown", quiddity_class.c_str());
     return std::string();
   }
-  if (nick_name.empty()) {
-    g_warning("cannot create quiddity: nick name is empty");
-    return std::string();
+
+  std::string name;
+  if (raw_nick_name.empty()) {
+    name = quiddity_class + std::to_string(counters_.get_count(quiddity_class));
+    while (quiddities_.end() != quiddities_.find(name))
+      name = quiddity_class + std::to_string(counters_.get_count(quiddity_class));
+  } else {
+    name = Quiddity::string_to_quiddity_name(raw_nick_name);
   }
-  auto it = quiddities_.find(nick_name);
+
+  auto it = quiddities_.find(name);
   if (quiddities_.end() != it) {
-    g_warning("cannot create a quiddity named %s, name is already taken", nick_name.c_str());
+    g_warning("cannot create a quiddity named %s, name is already taken", name.c_str());
     return std::string();
   }
-  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class, nick_name);
+
+  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class, name);
   if (!quiddity) {
-    g_warning("abstract factory failed to create %s (class %s)",
-              nick_name.c_str(),
-              quiddity_class.c_str());
+    g_warning(
+        "abstract factory failed to create %s (class %s)", name.c_str(), quiddity_class.c_str());
     return std::string();
   }
+
   auto bundle_doc_it = bundle_docs_.find(quiddity_class);
   if (bundle_doc_it != bundle_docs_.end()) {
     static_cast<Bundle*>(quiddity.get())->set_doc_getter([this, quiddity_class]() {
@@ -325,14 +271,22 @@ std::string QuiddityManager_Impl::create(const std::string& quiddity_class,
       if (tree) quiddity->set_configuration(configurations_->get_tree(quiddity_class));
     }
   }
-  quiddity->set_name(nick_name);
-  if (!init_quiddity(quiddity)) {
-    g_debug("initialization of %s with name %s failed",
-            quiddity_class.c_str(),
-            quiddity->get_name().c_str());
-    return std::string();
+
+  quiddity->set_name(name);
+  name = quiddity->get_name();
+  if (!call_creation_cb) {
+    if (!quiddity->init()) return "{\"error\":\"cannot init quiddity class\"}";
+    quiddities_[name] = quiddity;
+  } else {
+    if (!init_quiddity(quiddity)) {
+      g_debug("initialization of %s with name %s failed",
+              quiddity_class.c_str(),
+              quiddity->get_name().c_str());
+      return std::string();
+    }
   }
-  return quiddity->get_name();
+
+  return name;
 }
 
 std::vector<std::string> QuiddityManager_Impl::get_instances() const {
@@ -389,20 +343,7 @@ Quiddity::ptr QuiddityManager_Impl::get_quiddity(const std::string& quiddity_nam
   return it->second;
 }
 
-// for use of "get description by class" methods only
-// FIXME this should be the same method as remove
-bool QuiddityManager_Impl::remove_without_hook(const std::string& quiddity_name) {
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    g_debug("(%s) quiddity %s not found for removing", name_.c_str(), quiddity_name.c_str());
-    return false;
-  }
-  for (auto& it : signal_subscribers_) it.second->unsubscribe(q_it->second);
-  quiddities_.erase(quiddity_name);
-  return true;
-}
-
-bool QuiddityManager_Impl::remove(const std::string& quiddity_name) {
+bool QuiddityManager_Impl::remove(const std::string& quiddity_name, bool call_removal_cb) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_warning("(%s) quiddity %s not found for removing", name_.c_str(), quiddity_name.c_str());
@@ -410,8 +351,9 @@ bool QuiddityManager_Impl::remove(const std::string& quiddity_name) {
   }
   for (auto& it : signal_subscribers_) it.second->unsubscribe(q_it->second);
   quiddities_.erase(quiddity_name);
-  if (removal_hook_ != nullptr) (*removal_hook_)(quiddity_name.c_str(), removal_hook_user_data_);
-  for (auto& cb : on_removed_cbs_) cb.second(quiddity_name);
+  if (call_removal_cb) {
+    for (auto& cb : on_removed_cbs_) cb.second(quiddity_name);
+  }
   return true;
 }
 
@@ -465,18 +407,18 @@ std::string QuiddityManager_Impl::get_method_description(const std::string& quid
 
 std::string QuiddityManager_Impl::get_methods_description_by_class(const std::string& class_name) {
   if (!class_exists(class_name)) return "{\"error\":\"class not found\"}";
-  const std::string& quid_name = create_without_hook(class_name);
+  const std::string& quid_name = create(class_name, false);
   const std::string& descr = get_methods_description(quid_name);
-  remove_without_hook(quid_name);
+  remove(quid_name, false);
   return descr;
 }
 
 std::string QuiddityManager_Impl::get_method_description_by_class(const std::string& class_name,
                                                                   const std::string& method_name) {
   if (!class_exists(class_name)) return "{\"error\":\"class not found\"}";
-  const std::string& quid_name = create_without_hook(class_name);
+  const std::string& quid_name = create(class_name, false);
   const std::string& descr = get_method_description(quid_name, method_name);
-  remove_without_hook(quid_name);
+  remove(quid_name, false);
   return descr;
 }
 
@@ -502,24 +444,24 @@ std::string QuiddityManager_Impl::get_signal_description(const std::string& quid
 
 std::string QuiddityManager_Impl::get_signals_description_by_class(const std::string& class_name) {
   if (!class_exists(class_name)) return "{\"error\":\"class not found\"}";
-  std::string quid_name = create_without_hook(class_name);
+  std::string quid_name = create(class_name, false);
   if (quid_name.empty())
     return "{\"error\":\"cannot get signal description because the class "
            "cannot be instanciated\"}";
   std::string descr = get_signals_description(quid_name);
-  remove_without_hook(quid_name);
+  remove(quid_name, false);
   return descr;
 }
 
 std::string QuiddityManager_Impl::get_signal_description_by_class(const std::string& class_name,
                                                                   const std::string& signal_name) {
   if (!class_exists(class_name)) return "{\"error\":\"class not found\"}";
-  std::string quid_name = create_without_hook(class_name);
+  std::string quid_name = create(class_name, false);
   if (quid_name.empty())
     return "{\"error\":\"cannot get signal because the class cannot be "
            "instanciated\"}";
   std::string descr = get_signal_description(quid_name, signal_name);
-  remove_without_hook(quid_name);
+  remove(quid_name, false);
   return descr;
 }
 
@@ -649,27 +591,6 @@ void QuiddityManager_Impl::unregister_removal_cb(unsigned int id) {
 void QuiddityManager_Impl::reset_create_remove_cb() {
   on_created_cbs_.clear();
   on_removed_cbs_.clear();
-}
-
-bool QuiddityManager_Impl::set_created_hook(quiddity_created_hook hook, void* user_data) {
-  if (creation_hook_ != nullptr) return false;
-  creation_hook_ = hook;
-  creation_hook_user_data_ = user_data;
-  return true;
-}
-
-bool QuiddityManager_Impl::set_removed_hook(quiddity_removed_hook hook, void* user_data) {
-  if (removal_hook_ != nullptr) return false;
-  removal_hook_ = hook;
-  removal_hook_user_data_ = user_data;
-  return true;
-}
-
-void QuiddityManager_Impl::reset_create_remove_hooks() {
-  creation_hook_ = nullptr;
-  removal_hook_ = nullptr;
-  creation_hook_user_data_ = nullptr;
-  removal_hook_user_data_ = nullptr;
 }
 
 bool QuiddityManager_Impl::load_plugin(const char* filename) {

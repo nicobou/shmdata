@@ -8,12 +8,19 @@ add_feature_info("${PLUGIN_NAME}" PLUGIN_EXAMPLE "${PLUGIN_DESCRIPTION}")
 
 if (PLUGIN_EXAMPLE)
 
-    # Dummy
+    # Property quid
 
-    add_library(dummy SHARED
-        dummy-plugin.cpp
+    add_library(prop_quid SHARED
+            property-quid.cpp
         )
-    add_dependencies(dummy ${SWITCHER_LIBRARY})
+    add_dependencies(prop_quid ${SWITCHER_LIBRARY})
+
+    # Signal quid
+
+    add_library(signal_quid SHARED
+            signal-quid.cpp
+            )
+    add_dependencies(signal_quid ${SWITCHER_LIBRARY})
 
     # Custom Save
 
@@ -29,8 +36,11 @@ if (PLUGIN_EXAMPLE)
     add_executable(check_custom_save check_custom_save_plugin.cpp)
     add_test(check_custom_save check_custom_save)
 
+    add_executable(check_signals check_signals.cpp)
+    add_test(check_signals check_signals)
+
     # INSTALL
 
-    install(TARGETS dummy custom_save LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(TARGETS prop_quid custom_save signal_quid LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
 
 endif ()

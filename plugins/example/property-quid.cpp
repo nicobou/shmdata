@@ -17,10 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./dummy-plugin.hpp"
+#include "property-quid.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(DummyPlugin,
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyQuid,
                                      "dummy",
                                      "Dummy Plugin",
                                      "test",
@@ -29,7 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(DummyPlugin,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-DummyPlugin::DummyPlugin(const std::string&)
+PropertyQuid::PropertyQuid(const std::string&)
     : bool_id_(pmanage<MPtr(&PContainer::make_bool)>("bool_",
                                                      [this](bool val) {
                                                        bool_ = val;
@@ -268,7 +268,7 @@ DummyPlugin::DummyPlugin(const std::string&)
   //           << std::get<2>(tuple_) << "\n";    // a22
 }
 
-bool DummyPlugin::init() {
+bool PropertyQuid::init() {
   // g_debug("uint property installation id is %lu", uint_id);
   // props_.install("int_", &int_prop_);
   install_method("Hello World",                                  // long name
@@ -296,22 +296,12 @@ bool DummyPlugin::init() {
   return true;
 }
 
-gchar* DummyPlugin::my_hello_world_method(gchar* first_arg, void* user_data) {
-  DummyPlugin* context = static_cast<DummyPlugin*>(user_data);
+gchar* PropertyQuid::my_hello_world_method(gchar* first_arg, void* user_data) {
+  PropertyQuid* context = static_cast<PropertyQuid*>(user_data);
   g_debug("hello world from myplugin");
   context->hello_ = std::string("hello ") + first_arg;
   // the g_free will be invoked by the method system:
   return g_strdup(context->hello_.c_str());
 }
-
-// bool DummyPlugin::start() {
-//   g_debug("start from my plugin");
-//   return true;
-// }
-
-// bool DummyPlugin::stop() {
-//   g_debug("stop from my plugin");
-//   return true;
-// }
 
 }  // namespace switcher

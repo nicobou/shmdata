@@ -33,9 +33,6 @@ add_test(check_rtp_session check_rtp_session)
 add_executable(check_scope_guard check_scope_guard.cpp)
 add_test(check_scope_guard check_scope_guard)
 
-#add_executable(check_signal_subscriber check_signal_subscriber.cpp)
-#add_test(check_signal_subscriber check_signal_subscriber)
-
 add_executable(check_startable check_startable.cpp)
 add_test(check_startable check_startable)
 
