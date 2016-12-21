@@ -32,6 +32,7 @@ void destroy(Quiddity* quiddity) { delete quiddity; }
 Bundle::Bundle(const std::string& name)
     : shmcntr_(static_cast<Quiddity*>(this)), manager_(QuiddityManager::make_manager(name)) {}
 
+Bundle::~Bundle() { quitting_ = true; }
 bool Bundle::init() {
   auto manager = manager_impl_.lock();
   if (!manager) {
@@ -333,22 +334,34 @@ void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_d
   std::smatch shm_match;
   std::regex_search(params[0], shm_match, wr_rgx);
   if (!shm_match.empty()) {
-    auto rm = std::remove_if(
-        context->self_->connected_shms_.begin(),
-        context->self_->connected_shms_.end(),
-        [&](const std::pair<std::string /*quid_name*/, std::string /*shmpath*/>& connection) {
-          if (connection.second == shm_match[1]) return true;
-          return false;
-        });
-    for (auto& it = rm; it != context->self_->connected_shms_.end(); ++it) {
-      context->self_->manager_->manager_impl_->get_quiddity(it->first)->invoke_method(
-          "disconnect", nullptr, {it->second});
-    }
-    context->self_->connected_shms_.erase(rm, context->self_->connected_shms_.end());
+    std::vector<std::pair<std::string, std::string>> to_disconnect;
+    {
+      std::lock_guard<std::mutex> lock(context->self_->connected_shms_mtx_);
+      auto rm = std::remove_if(
+          context->self_->connected_shms_.begin(),
+          context->self_->connected_shms_.end(),
+          [&](const std::pair<std::string /*quid_name*/, std::string /*shmpath*/>& connection) {
+            if (connection.second == shm_match[1]) {
+              to_disconnect.push_back(std::make_pair(connection.first, connection.second));
+              return true;
+            }
+            return false;
+          });
+      if (rm != context->self_->connected_shms_.end()) {
+        context->self_->connected_shms_.erase(rm, context->self_->connected_shms_.end());
+      }
+    }  // release connected_shms_mtx_
     if (context->quid_spec_.expose_shmw) {
       context->self_->prune_tree(params[0], true);
     }
     std::swap(context->quid_spec_.connects_to_, context->quid_spec_.connected_to_);
+    if (!context->self_->quitting_.load()) {
+      for (auto& it : to_disconnect) {
+        auto quid = context->self_->manager_->manager_impl_->get_quiddity(it.first);
+        if (!quid) continue;
+        quid->invoke_method("disconnect", nullptr, {it.second});
+      }
+    }
     return;
   }
 
