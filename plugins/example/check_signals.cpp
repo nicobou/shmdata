@@ -55,16 +55,16 @@ int main() {
       [&create_remove_counter](const std::string& /*quid_name*/) { ++create_remove_counter; });
   manager->register_removal_cb(
       [&create_remove_counter](const std::string& /*quid_name*/) { ++create_remove_counter; });
-  assert(manager->create("signal", "test_signal") == "test_signal");
+  assert(manager->create("signal", "signal-quiddity") == "signal-quiddity");
 
-  assert(manager->subscribe_signal("signal_subscriber", "test_signal", "test-signal"));
+  assert(manager->subscribe_signal("signal_subscriber", "signal-quiddity", "test-signal"));
 
-  manager->invoke("test_signal", "emit-signal", nullptr, std::vector<std::string>());
-  manager->invoke("test_signal", "emit-signal", nullptr, std::vector<std::string>());
-  manager->invoke("test_signal", "emit-signal", nullptr, std::vector<std::string>());
+  manager->invoke("signal-quiddity", "emit-signal", nullptr, std::vector<std::string>());
+  manager->invoke("signal-quiddity", "emit-signal", nullptr, std::vector<std::string>());
+  manager->invoke("signal-quiddity", "emit-signal", nullptr, std::vector<std::string>());
 
   assert(manager->list_subscribed_signals("signal_subscriber").size() == 1);
-  assert(manager->remove("test_signal"));
+  assert(manager->remove("signal-quiddity"));
   assert(manager->list_subscribed_signals("signal_subscriber").size() == 0);
   assert(manager->remove_signal_subscriber("signal_subscriber"));
 

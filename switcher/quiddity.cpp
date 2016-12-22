@@ -137,8 +137,7 @@ Quiddity::~Quiddity() { std::lock_guard<std::mutex> lock(self_destruct_mtx_); }
 std::string Quiddity::get_name() const { return name_; }
 
 std::string Quiddity::string_to_quiddity_name(const std::string& name) {
-  std::regex_replace(name, std::regex("[^[:alnum:]| ]"), "-");
-  return name;
+  return std::regex_replace(name, std::regex("[^[:alnum:]| ]"), "-");
 }
 
 bool Quiddity::set_name(const std::string& name) {
