@@ -21,14 +21,15 @@
  * The Quiddity class
  */
 
+#include "./quiddity.hpp"
+#include <sys/un.h>
 #include <algorithm>
 #include <list>
-
+#include <regex>
 #include "./gst-utils.hpp"
 #include "./information-tree-json.hpp"
 #include "./quiddity-manager-impl.hpp"
 #include "./quiddity-manager.hpp"
-#include "./quiddity.hpp"
 
 namespace switcher {
 std::map<std::pair<std::string, std::string>, guint> Quiddity::signals_ids_{};
@@ -135,15 +136,16 @@ Quiddity::~Quiddity() { std::lock_guard<std::mutex> lock(self_destruct_mtx_); }
 
 std::string Quiddity::get_name() const { return name_; }
 
+std::string Quiddity::string_to_quiddity_name(const std::string& name) {
+  return std::regex_replace(name, std::regex("[^[:alnum:]| ]"), "-");
+}
+
 bool Quiddity::set_name(const std::string& name) {
   if (!name_.empty()) return false;
-  if (name.length() > nameMaxSize) {
-    name_ = std::string(name.begin(), name.begin() + nameMaxSize - 1);
-    g_warning("name %s truncated to max size (%lu) ", name_.c_str(), nameMaxSize);
-  } else {
-    name_ = name;
-  }
+
+  name_ = string_to_quiddity_name(name);
   information_tree_->graft(".type", InfoTree::make(get_documentation()->get_class_name()));
+
   return true;
 }
 
@@ -374,7 +376,34 @@ std::string Quiddity::get_signal_description(const std::string& signal_name) {
 
 std::string Quiddity::make_file_name(const std::string& suffix) const {
   if (manager_name_.empty()) return std::string();
-  return std::string(get_file_name_prefix() + manager_name_ + "_" + name_ + "_" + suffix);
+  auto name = std::string(get_file_name_prefix() + manager_name_ + "_" + name_ + "_" + suffix);
+
+  // Done this way for OSX portability, there is a maximum socket path length in UNIX systems and
+  // shmdata use sockets.
+  struct sockaddr_un s;
+  static auto max_path_size = sizeof(s.sun_path);
+  // We need it signed.
+  int overflow = static_cast<int>(name.length() - max_path_size);
+
+  // We truncate the quiddity name if it is enough, which should be the case.
+  if (overflow > 0) {
+    int quiddity_overflow = static_cast<int>(name_.length() - overflow);
+    if (quiddity_overflow < 10) {
+      name = std::string(get_file_name_prefix() + manager_name_ + "_name_error");
+      g_warning(
+          "BUG: shmdata name cannot be created properly because it is too long, there is less than "
+          "10 characters remaining for the quiddity name, investigate and fix this!");
+    } else {
+      size_t chunks_size = quiddity_overflow / 2;
+      // We split the remaining number of characters in 2 and we take this number at the beginning
+      // and the end of the quiddity name.
+      auto new_name = std::string(name_.begin(), name_.begin() + chunks_size) +
+                      std::string(name_.end() - chunks_size, name_.end());
+      name = std::string(get_file_name_prefix() + manager_name_ + "_" + new_name + "_" + suffix);
+    }
+  }
+
+  return name;
 }
 
 std::string Quiddity::get_file_name_prefix() const { return "/tmp/switcher_"; }

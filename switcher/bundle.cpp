@@ -32,6 +32,7 @@ void destroy(Quiddity* quiddity) { delete quiddity; }
 Bundle::Bundle(const std::string& name)
     : shmcntr_(static_cast<Quiddity*>(this)), manager_(QuiddityManager::make_manager(name)) {}
 
+Bundle::~Bundle() { quitting_ = true; }
 bool Bundle::init() {
   auto manager = manager_impl_.lock();
   if (!manager) {
@@ -120,11 +121,8 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
   // create quiddities and set properties
   for (auto& quid : quids) {
     std::string name;
-    if (quid.name.empty()) {
-      name = manager_->create(quid.type);
-    } else {
-      name = manager_->create(quid.type, quid.name);
-    }
+    name = manager_->create(quid.type, quid.name);
+
     if (name.empty()) {
       g_warning("internal manager failed to instantiate a quiddity of type %s", quid.type.c_str());
       return false;
@@ -180,6 +178,16 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
             name + "/" + prop.first, parent_strid, &quid_ptr->props_, prop.second);
       }
     }
+
+    quiddity_removal_cb_ids_.push_back(
+        manager_->register_removal_cb([this](const std::string& quid_name) {
+          g_debug("The bundle %s was destroyed because one of its quiddities (%s) was destroyed",
+                  name_.c_str(),
+                  quid_name.c_str());
+          // We only self destruct it once so we unregister all the removal callbacks.
+          manager_->reset_create_remove_cb();
+          self_destruct();
+        }));
   }  // finished dealing with this quid specification
   return true;
 }
@@ -326,22 +334,34 @@ void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_d
   std::smatch shm_match;
   std::regex_search(params[0], shm_match, wr_rgx);
   if (!shm_match.empty()) {
-    auto rm = std::remove_if(
-        context->self_->connected_shms_.begin(),
-        context->self_->connected_shms_.end(),
-        [&](const std::pair<std::string /*quid_name*/, std::string /*shmpath*/>& connection) {
-          if (connection.second == shm_match[1]) return true;
-          return false;
-        });
-    for (auto& it = rm; it != context->self_->connected_shms_.end(); ++it) {
-      context->self_->manager_->manager_impl_->get_quiddity(it->first)->invoke_method(
-          "disconnect", nullptr, {it->second});
-    }
-    context->self_->connected_shms_.erase(rm, context->self_->connected_shms_.end());
+    std::vector<std::pair<std::string, std::string>> to_disconnect;
+    {
+      std::lock_guard<std::mutex> lock(context->self_->connected_shms_mtx_);
+      auto rm = std::remove_if(
+          context->self_->connected_shms_.begin(),
+          context->self_->connected_shms_.end(),
+          [&](const std::pair<std::string /*quid_name*/, std::string /*shmpath*/>& connection) {
+            if (connection.second == shm_match[1]) {
+              to_disconnect.push_back(std::make_pair(connection.first, connection.second));
+              return true;
+            }
+            return false;
+          });
+      if (rm != context->self_->connected_shms_.end()) {
+        context->self_->connected_shms_.erase(rm, context->self_->connected_shms_.end());
+      }
+    }  // release connected_shms_mtx_
     if (context->quid_spec_.expose_shmw) {
       context->self_->prune_tree(params[0], true);
     }
     std::swap(context->quid_spec_.connects_to_, context->quid_spec_.connected_to_);
+    if (!context->self_->quitting_.load()) {
+      for (auto& it : to_disconnect) {
+        auto quid = context->self_->manager_->manager_impl_->get_quiddity(it.first);
+        if (!quid) continue;
+        quid->invoke_method("disconnect", nullptr, {it.second});
+      }
+    }
     return;
   }
 

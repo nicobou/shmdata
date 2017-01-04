@@ -26,13 +26,13 @@
 #include "switcher/quiddity.hpp"
 
 namespace switcher {
-class DummyPlugin : public Quiddity {
+class PropertyQuid : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(DummyPlugin);
-  DummyPlugin(const std::string&);
-  ~DummyPlugin() = default;
-  DummyPlugin(const DummyPlugin&) = delete;
-  DummyPlugin& operator=(const DummyPlugin&) = delete;
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PropertyQuid);
+  PropertyQuid(const std::string&);
+  ~PropertyQuid() = default;
+  PropertyQuid(const PropertyQuid&) = delete;
+  PropertyQuid& operator=(const PropertyQuid&) = delete;
 
  private:
   // --- Properties
@@ -97,7 +97,7 @@ class DummyPlugin : public Quiddity {
   bool init() final;
 };
 
-SWITCHER_DECLARE_PLUGIN(DummyPlugin);
+SWITCHER_DECLARE_PLUGIN(PropertyQuid);
 
 }  // namespace switcher
 #endif

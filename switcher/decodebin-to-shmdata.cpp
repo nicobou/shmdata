@@ -20,6 +20,7 @@
 #include "./decodebin-to-shmdata.hpp"
 #include <glib/gprintf.h>
 #include "./scope-exit.hpp"
+#include "./string-utils.hpp"
 
 namespace switcher {
 DecodebinToShmdata::DecodebinToShmdata(GstPipeliner* gpipe,
@@ -108,8 +109,9 @@ int /*GstAutoplugSelectResult*/ DecodebinToShmdata::on_autoplug_select(GstElemen
   if (!context->decompress_) {
     gchar* caps_str = gst_caps_to_string(caps);
     On_scope_exit { g_free(caps_str); };
-    if (g_str_has_prefix(caps_str, "audio/") || g_str_has_prefix(caps_str, "video/") ||
-        g_str_has_prefix(caps_str, "image/"))
+    if (StringUtils::starts_with(caps_str, "audio/") ||
+        StringUtils::starts_with(caps_str, "video/") ||
+        StringUtils::starts_with(caps_str, "image/"))
       return EXPOSE;
   }
 
@@ -124,13 +126,13 @@ int /*GstAutoplugSelectResult*/ DecodebinToShmdata::on_autoplug_select(GstElemen
     On_scope_exit { g_free(string_caps); };
     gchar* string_caps_char = g_strdup_printf("%s", string_caps);
     On_scope_exit { g_free(string_caps_char); };
-    if (g_str_has_prefix(string_caps_char, "audio/") ||
-        g_str_has_prefix(string_caps_char, "video/") ||
-        g_str_has_prefix(string_caps_char, "image/"))
+    if (StringUtils::starts_with(string_caps_char, "audio/midi")) return EXPOSE;
+    if (StringUtils::starts_with(string_caps_char, "audio/") ||
+        StringUtils::starts_with(string_caps_char, "video/") ||
+        StringUtils::starts_with(string_caps_char, "image/"))
       return_val = TRY;
     return return_val;
   }
-
   return TRY;
 }
 

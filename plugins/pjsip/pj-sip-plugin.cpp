@@ -93,6 +93,11 @@ SIPPlugin::SIPPlugin(const std::string&)
 SIPPlugin::~SIPPlugin() {
   if (!i_m_the_one_) return;
 
+  if (incoming_stream_to_quiddity_) {
+    auto manager = manager_impl_.lock();
+    if (manager) manager->unregister_removal_cb(quiddity_removal_cb_id_);
+  }
+
   sip_calls_->finalize_calls();
   sip_calls_.reset(nullptr);
 
@@ -165,6 +170,22 @@ void SIPPlugin::apply_configuration() {
     }
   }
 
+  incoming_stream_to_quiddity_ =
+      config<MPtr(&InfoTree::branch_get_value)>("incoming_stream_to_quiddity");
+  if (incoming_stream_to_quiddity_) {
+    auto manager = manager_impl_.lock();
+    if (!manager) return;
+    quiddity_removal_cb_id_ =
+        manager->register_removal_cb([this](const std::string& quiddity_name) {
+          std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
+          auto it =
+              std::find(exposed_quiddities_.begin(), exposed_quiddities_.end(), quiddity_name);
+          if (it != exposed_quiddities_.end()) {
+            exposed_quiddities_.erase(it);
+          }
+        });
+  }
+
   // trying to register if a user is given
   std::string user = config<MPtr(&InfoTree::branch_get_value)>("user");
   if (!user.empty()) {
@@ -205,6 +226,40 @@ bool SIPPlugin::start_sip_transport() {
     return false;
   }
   return true;
+}
+
+void SIPPlugin::expose_stream_to_quiddity(const std::string& quid_name,
+                                          const std::string& shmpath) {
+  if (!incoming_stream_to_quiddity_) return;
+
+  auto manager = manager_impl_.lock();
+  auto quid = Quiddity::string_to_quiddity_name(quid_name);
+
+  std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
+  if (std::find(exposed_quiddities_.begin(), exposed_quiddities_.end(), quid) !=
+      exposed_quiddities_.end())
+    return;
+
+  exposed_quiddities_.push_back(quid);
+  quid = manager->create("extshmsrc", quid);
+
+  if (quid.empty()) {
+    g_warning("Failed to create external shmdata quiddity for pjsip incoming stream.");
+    return;
+  }
+
+  manager->props<MPtr(&PContainer::set_str_str)>(quid, "shmdata-path", shmpath);
+}
+
+void SIPPlugin::remove_exposed_quiddity(const std::string& quid_name) {
+  auto manager = manager_impl_.lock();
+  auto quid = string_to_quiddity_name(quid_name);
+
+  std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
+  auto it = std::find(exposed_quiddities_.begin(), exposed_quiddities_.end(), quid);
+  if (it == exposed_quiddities_.end()) return;
+  manager->remove(quid);
+  exposed_quiddities_.erase(it);
 }
 
 }  // namespace switcher

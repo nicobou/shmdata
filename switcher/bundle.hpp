@@ -20,6 +20,7 @@
 #ifndef __SWITCHER_BUNDLE_H__
 #define __SWITCHER_BUNDLE_H__
 
+#include <atomic>
 #include <vector>
 #include "./bundle-description-parser.hpp"
 #include "./quiddity-manager.hpp"
@@ -32,7 +33,7 @@ class Bundle : public Quiddity, public StartableQuiddity {
  public:
   using doc_getter_t = std::function<QuiddityDocumentation*()>;
   Bundle(const std::string&);
-  ~Bundle() = default;
+  ~Bundle();
   Bundle(const Bundle&) = delete;
   Bundle& operator=(const Bundle&) = delete;
   bool init() final;
@@ -53,6 +54,9 @@ class Bundle : public Quiddity, public StartableQuiddity {
   };
 
  private:
+  std::atomic_bool quitting_{false};
+  std::vector<std::pair<std::string /*quid_name*/, std::string /*shmpath*/>> connected_shms_{};
+  std::mutex connected_shms_mtx_{};
   std::vector<std::string> start_quids_{};
   std::string reader_quid_{};
   ShmdataConnector shmcntr_;
@@ -60,8 +64,7 @@ class Bundle : public Quiddity, public StartableQuiddity {
   std::string pipeline_{};
   doc_getter_t doc_getter_{};
   QuiddityManager::ptr manager_;
-  std::mutex connected_shms_mtx_{};
-  std::vector<std::pair<std::string /*quid_name*/, std::string /*shmpath*/>> connected_shms_{};
+  std::vector<unsigned int> quiddity_removal_cb_ids_{};
 
   bool start() final;
   bool stop() final;
