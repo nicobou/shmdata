@@ -2,6 +2,22 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.40 (2017-01-04)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* New option in SIP configuration to automatically create a raw shmdata quiddity for incoming streams.
+* New notification system in QuiddityManager to track removal/creation of quiddities. SIP Plugin uses it instead of old legacy CreateRemoveSpy quiddity.
+* Remove CreateRemoveSpy quiddity and all its hooks in QuiddityManager_Impl.
+* Port to nvidia SDK 7.1. Needs driver version 375.20 or newer.
+
+Bug fixes:
+* Fixed quiddity renaming helper, wrong string was returned.
+* Fix midi not shown when receiving from sip.
+* Fix member order issue at destruction in bundle class.
+* Self destruct the bundle if one of its quiddity is destroyed.
+
 switcher 0.8.38 (2016-12-14)
 ---------------------------
 This is an official release in the 0.8 stable series.
