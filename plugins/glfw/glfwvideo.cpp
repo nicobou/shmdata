@@ -511,12 +511,14 @@ GLFWVideo::~GLFWVideo() {
 }
 
 void GLFWVideo::destroy_gl_elements() {
+  if (!window_) return;
+
   glfwMakeContextCurrent(window_);
-  glDeleteTextures(1, &drawing_texture_);
-  glDeleteProgram(shader_program_);
-  glDeleteShader(fragment_shader_);
-  glDeleteShader(vertex_shader_);
-  glDeleteVertexArrays(1, &vao_);
+  if (drawing_texture_) glDeleteTextures(1, &drawing_texture_);
+  if (shader_program_) glDeleteProgram(shader_program_);
+  if (fragment_shader_) glDeleteShader(fragment_shader_);
+  if (vertex_shader_) glDeleteShader(vertex_shader_);
+  if (vao_) glDeleteVertexArrays(1, &vao_);
   glfwMakeContextCurrent(nullptr);
 }
 
