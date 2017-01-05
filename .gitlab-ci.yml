@@ -1,35 +1,31 @@
-image: registry.gitlab.com/sat-metalab/switcher:latest
-
-before_script:
-  - echo SHMDATA BUILD
-  - git clone https://github.com/sat-metalab/shmdata.git libshmdata
-  - cd libshmdata
-  - mkdir build
-  - cd build
-  - cmake ..
-  - make -j"$(nproc)"
-  - make install
-  - ldconfig
-
-  - cd ../..
-  - mkdir build
-  - cd build
-  - cmake ..
+image: ubuntu:xenial
 
 stages:
+  - prepare_docker
   - test
   - test-package
 
+prepare_docker:
+  stage: prepare_docker
+  image: docker:git
+  script:
+    - git clone https://github.com/sat-metalab/shmdata.git libshmdata && cd libshmdata && git checkout develop && cd $CI_PROJECT_DIR/ci
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker build --pull -t $CI_REGISTRY_IMAGE:ci --build-arg shmdata_version=$(git --git-dir=libshmdata/.git rev-parse HEAD) --build-arg current_branch=$CI_BUILD_REF_NAME -f $CI_PROJECT_DIR/ci/Dockerfile .
+    - docker push $CI_REGISTRY_IMAGE:ci
+
 test:
   stage: test
+  image: $CI_REGISTRY_IMAGE:ci
   script:
-    - make -j"$(nproc)"
+    - mkdir build && cd build && cmake .. && make -j"$(nproc)"
     - make test
 
 test-package:
   stage: test-package
+  image: $CI_REGISTRY_IMAGE:ci
   script:
-    - make package_source_test
+    - mkdir build && cd build && cmake .. && make package_source_test
   only:
     - develop
     - master
