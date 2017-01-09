@@ -9,9 +9,10 @@ prepare_docker:
   stage: prepare_docker
   image: docker:git
   script:
-    - git clone https://github.com/sat-metalab/shmdata.git libshmdata && cd libshmdata && git checkout develop && cd $CI_PROJECT_DIR/ci
+    - git clone https://github.com/sat-metalab/shmdata.git libshmdata && cd libshmdata && git checkout develop && cd ../
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-    - docker build --pull -t $CI_REGISTRY_IMAGE:ci --build-arg shmdata_version=$(git --git-dir=libshmdata/.git rev-parse HEAD) --build-arg current_branch=$CI_BUILD_REF_NAME -f $CI_PROJECT_DIR/ci/Dockerfile .
+    - (if [[ "$CI_BUILD_REF_NAME" = "master" ]]; then docker build --pull -t $CI_REGISTRY_IMAGE:ci --build-arg shmdata_version=$(git --git-dir=libshmdata/.git rev-parse HEAD) --build-arg current_branch=master -f $CI_PROJECT_DIR/ci/Dockerfile .; fi);
+    - (if [[ "$CI_BUILD_REF_NAME" != "master" ]]; then docker build --pull -t $CI_REGISTRY_IMAGE:ci --build-arg shmdata_version=$(git --git-dir=libshmdata/.git rev-parse HEAD) --build-arg current_branch=develop -f $CI_PROJECT_DIR/ci/Dockerfile .; fi);
     - docker push $CI_REGISTRY_IMAGE:ci
 
 test:
