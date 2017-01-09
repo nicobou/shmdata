@@ -93,10 +93,8 @@ SIPPlugin::SIPPlugin(const std::string&)
 SIPPlugin::~SIPPlugin() {
   if (!i_m_the_one_) return;
 
-  if (incoming_stream_to_quiddity_) {
-    auto manager = manager_impl_.lock();
-    if (manager) manager->unregister_removal_cb(quiddity_removal_cb_id_);
-  }
+  auto manager = manager_impl_.lock();
+  if (manager) manager->unregister_removal_cb(quiddity_removal_cb_id_);
 
   sip_calls_->finalize_calls();
   sip_calls_.reset(nullptr);
@@ -170,21 +168,15 @@ void SIPPlugin::apply_configuration() {
     }
   }
 
-  incoming_stream_to_quiddity_ =
-      config<MPtr(&InfoTree::branch_get_value)>("incoming_stream_to_quiddity");
-  if (incoming_stream_to_quiddity_) {
-    auto manager = manager_impl_.lock();
-    if (!manager) return;
-    quiddity_removal_cb_id_ =
-        manager->register_removal_cb([this](const std::string& quiddity_name) {
-          std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
-          auto it =
-              std::find(exposed_quiddities_.begin(), exposed_quiddities_.end(), quiddity_name);
-          if (it != exposed_quiddities_.end()) {
-            exposed_quiddities_.erase(it);
-          }
-        });
-  }
+  auto manager = manager_impl_.lock();
+  if (!manager) return;
+  quiddity_removal_cb_id_ = manager->register_removal_cb([this](const std::string& quiddity_name) {
+    std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
+    auto it = std::find(exposed_quiddities_.begin(), exposed_quiddities_.end(), quiddity_name);
+    if (it != exposed_quiddities_.end()) {
+      exposed_quiddities_.erase(it);
+    }
+  });
 
   // trying to register if a user is given
   std::string user = config<MPtr(&InfoTree::branch_get_value)>("user");
@@ -230,8 +222,6 @@ bool SIPPlugin::start_sip_transport() {
 
 void SIPPlugin::expose_stream_to_quiddity(const std::string& quid_name,
                                           const std::string& shmpath) {
-  if (!incoming_stream_to_quiddity_) return;
-
   auto manager = manager_impl_.lock();
   auto quid = Quiddity::string_to_quiddity_name(quid_name);
 

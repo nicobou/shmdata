@@ -68,7 +68,6 @@ class SIPPlugin : public Quiddity {
   static SIPPlugin* this_;
 
   // Expose incoming streams as quiddities feature
-  bool incoming_stream_to_quiddity_{false};
   std::vector<std::string> exposed_quiddities_;
   std::mutex exposed_quiddities_mutex_{};
   unsigned int quiddity_removal_cb_id_{0};
