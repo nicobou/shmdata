@@ -16,26 +16,12 @@
 */
 
 #include "./pj-call.hpp"
-#include <string.h>
-#include <algorithm>
-#include <cctype>
-#include <cstdio>
-#include <forward_list>
-#include <list>
-#include <numeric>
-#include <string>
-#include <vector>
 #include "./pj-call-utils.hpp"
 #include "./pj-sip-plugin.hpp"
-#include "switcher/gst-rtppayloader-finder.hpp"
-#include "switcher/gst-utils.hpp"
-#include "switcher/information-tree-basic-serializer.hpp"
-#include "switcher/information-tree.hpp"
 #include "switcher/net-utils.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/sdp-utils.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "switcher/string-utils.hpp"
 
 namespace switcher {
 
