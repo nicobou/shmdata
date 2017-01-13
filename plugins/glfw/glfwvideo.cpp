@@ -97,6 +97,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
       fullscreen_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "fullscreen",
           [this](bool val) {
+            if (val == fullscreen_) return true;
             fullscreen_ = val;
             if (val) {
               minimized_width_ = width_;
@@ -140,6 +141,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
       decorated_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "decorated",
           [this](bool val) {
+            if (val == decorated_) return true;
             decorated_ = val;
             add_rendering_task([this]() {
               swap_window();
@@ -154,6 +156,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
       always_on_top_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "always_on_top",
           [this](bool val) {
+            if (val == always_on_top_) return true;
             always_on_top_ = val;
             add_rendering_task([this]() {
               swap_window();
@@ -365,8 +368,12 @@ GLFWVideo::GLFWVideo(const std::string& name)
   width_id_ = pmanage<MPtr(&PContainer::make_int)>(
       "width",
       [this](const int& val) {
+        if (val == width_) return true;
         width_ = val;
-        set_size();
+        add_rendering_task([this, val]() {
+          set_size();
+          return true;
+        });
         std::lock_guard<std::mutex> lock(configuration_mutex_);
         ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
         ImGuiIO& io = ImGui::GetIO();
@@ -382,8 +389,12 @@ GLFWVideo::GLFWVideo(const std::string& name)
   height_id_ = pmanage<MPtr(&PContainer::make_int)>(
       "height",
       [this](const int& val) {
+        if (val == height_) return true;
         height_ = val;
-        set_size();
+        add_rendering_task([this, val]() {
+          set_size();
+          return true;
+        });
         std::lock_guard<std::mutex> lock(configuration_mutex_);
         ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
         ImGuiIO& io = ImGui::GetIO();
@@ -398,8 +409,12 @@ GLFWVideo::GLFWVideo(const std::string& name)
       max_height_);
   position_x_id_ = pmanage<MPtr(&PContainer::make_int)>("position_x",
                                                         [this](const int& val) {
+                                                          if (val == position_x_) return true;
                                                           position_x_ = val;
-                                                          set_position();
+                                                          add_rendering_task([this, val]() {
+                                                            set_position();
+                                                            return true;
+                                                          });
                                                           return true;
                                                         },
                                                         [this]() { return position_x_; },
@@ -410,8 +425,12 @@ GLFWVideo::GLFWVideo(const std::string& name)
                                                         max_width_);
   position_y_id_ = pmanage<MPtr(&PContainer::make_int)>("position_y",
                                                         [this](const int& val) {
+                                                          if (val == position_y_) return true;
                                                           position_y_ = val;
-                                                          set_position();
+                                                          add_rendering_task([this, val]() {
+                                                            set_position();
+                                                            return true;
+                                                          });
                                                           return true;
                                                         },
                                                         [this]() { return position_y_; },
@@ -1344,7 +1363,9 @@ void GLFWVideo::GUIConfiguration::init_properties() {
       "overlay_config",
       [this](const std::string& val) {
         std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
-        if (!StringUtils::ends_with(val, ".ttf")) {
+        if (val.empty()) {
+          return false;
+        } else if (!StringUtils::ends_with(val, ".ttf")) {
           g_message(
               "Cannot set %s as custom font, only truetype fonts are supported (.ttf extension).",
               val.c_str());
