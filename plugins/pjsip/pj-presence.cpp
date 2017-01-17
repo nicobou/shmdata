@@ -571,7 +571,7 @@ void PJPresence::on_buddy_evsub_state(pjsua_buddy_id /*buddy_id*/,
 pjsua_buddy_id PJPresence::get_id_from_buddy_name(const std::string& name) {
   auto bud =
       std::find_if(buddy_id_.begin(), buddy_id_.end(), [&name](decltype(*buddy_id_.begin())& it) {
-        return 0 == std::string(it.first, 0, name.size()).compare(name);
+        return StringUtils::starts_with(it.first, name + "@");
       });
   if (buddy_id_.end() != bud) return bud->second;
   return PJSUA_INVALID_ID;
