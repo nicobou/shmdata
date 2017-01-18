@@ -209,7 +209,7 @@ void PJPresence::register_account(const std::string& sip_user, const std::string
     return;
   }
   pjsua_acc_set_user_data(account_id_, this);
-  registration_cond_.wait(lock);
+  registration_cond_.wait_for(lock, std::chrono::seconds(5));
   if (registered_) {
     change_online_status(PJPresence::AVAILABLE);
     // notifying sip registration status
