@@ -338,12 +338,10 @@ GLFWVideo::GLFWVideo(const std::string& name)
               pmanage<MPtr(&PContainer::notify)>(position_y_id_);
               pmanage<MPtr(&PContainer::notify)>(width_id_);
               pmanage<MPtr(&PContainer::notify)>(height_id_);
-              std::unique_lock<std::mutex> lock(configuration_mutex_);
               ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
               ImGuiIO& io = ImGui::GetIO();
               io.DisplaySize.x = static_cast<float>(width_);
               io.DisplaySize.y = static_cast<float>(height_);
-              lock.unlock();
 
               set_viewport();
               window_moved_ = false;
