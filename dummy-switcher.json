@@ -7,7 +7,6 @@
     "turn": "sip.scenic.sat.qc.ca",
     "turn_user": "bob",
     "turn_pass": "bob's_password",
-    "incoming_stream_to_quiddity": true
   },
   "glfwin" : {
     "icon" : "/usr/local/share/scenic/public/assets/images/scenic-icon-512.png"

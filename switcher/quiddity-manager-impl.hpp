@@ -33,8 +33,11 @@
 namespace switcher {
 class QuidditySignalSubscriber;
 class QuiddityManager;
+class Bundle;
 
 class QuiddityManager_Impl {
+  friend class Bundle;
+
  public:
   using ptr = std::shared_ptr<QuiddityManager_Impl>;
   using OnCreateRemoveCb = std::function<void(const std::string& nick_name)>;
@@ -184,6 +187,7 @@ class QuiddityManager_Impl {
   std::unordered_map<std::string, std::shared_ptr<QuidditySignalSubscriber>> signal_subscribers_{};
   bool init_quiddity(std::shared_ptr<Quiddity> quiddity);
   void remove_shmdata_sockets();
+
   InfoTree::ptr classes_doc_{};
   CounterMap counters_{};
   std::weak_ptr<QuiddityManager_Impl> me_{};

@@ -1,6 +1,6 @@
 * Nicolas Bouillot
-* Emmanuel Durand
 * Jérémie Soria
+* Emmanuel Durand
 * François Ubald Brien
 * Ludovic Schreiber
 * Michal Seta

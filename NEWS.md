@@ -2,6 +2,24 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.42 (2017-01-20)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* Creating a quiddity for each incoming SIP stream is now the default behaviour.
+
+Bug fixes:
+* fix issue with unsubscribe signals of a quiddity
+* Remove useless lock that could cause a deadlock.
+* Put all geometry modifications in render task to avoid race conditions.
+* Added a timeout to SIP account registration to avoid potential deadlock.
+* Fixed wrong buddy id lookup in SIP plugin.
+* Forward manager configuration to the bundle manager.
+* Process position and size of glfwin in render loop and optimize property setters in case we set them without changing their value.
+* Fixed deadlock during removal of exposed SIP quiddity.
+* Checks validity of OpenGL buffers before deleting them. Doing otherwise could crash at destruction in some early error cases (e.g no display then the OpenGL API is not loaded and calling glDelete* would crash.)
+
 switcher 0.8.40 (2017-01-04)
 ---------------------------
 This is an official release in the 0.8 stable series.

@@ -42,6 +42,9 @@ bool Bundle::init() {
       manager_->scan_directory_for_plugins(it);
     }
   }
+
+  manager_->manager_impl_->configurations_ = manager->configurations_;
+
   if (!config<MPtr(&InfoTree::branch_has_data)>("pipeline")) {
     g_warning("bundle description is missing the pipeline description");
     return false;

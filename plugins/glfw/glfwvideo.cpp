@@ -97,40 +97,45 @@ GLFWVideo::GLFWVideo(const std::string& name)
       fullscreen_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "fullscreen",
           [this](bool val) {
-            fullscreen_ = val;
-            if (val) {
-              minimized_width_ = width_;
-              minimized_height_ = height_;
-              minimized_position_x_ = position_x_;
-              minimized_position_y_ = position_y_;
-              discover_monitor_properties();
-              auto monitor_config = get_monitor_config();
-              if (!monitor_config.monitor) {
-                g_warning(
-                    "Could not get the monitor config for this window, not switching to "
-                    "fullscreen.");
-                return false;
+            if (val == fullscreen_) return true;
+            add_rendering_task([this, val]() {
+              fullscreen_ = val;
+              std::lock_guard<std::mutex> lock(configuration_mutex_);
+              if (val) {
+                minimized_width_ = width_;
+                minimized_height_ = height_;
+                minimized_position_x_ = position_x_;
+                minimized_position_y_ = position_y_;
+                discover_monitor_properties();
+                auto monitor_config = get_monitor_config();
+                if (!monitor_config.monitor) {
+                  g_warning(
+                      "Could not get the monitor config for this window, not switching to "
+                      "fullscreen.");
+                  return false;
+                }
+                pmanage<MPtr(&PContainer::disable)>(width_id_, kFullscreenDisabled);
+                pmanage<MPtr(&PContainer::disable)>(height_id_, kFullscreenDisabled);
+                pmanage<MPtr(&PContainer::disable)>(position_x_id_, kFullscreenDisabled);
+                pmanage<MPtr(&PContainer::disable)>(position_y_id_, kFullscreenDisabled);
+                width_ = monitor_config.width;
+                height_ = monitor_config.height;
+                position_x_ = monitor_config.position_x;
+                position_y_ = monitor_config.position_y;
+              } else {
+                width_ = minimized_width_;
+                height_ = minimized_height_;
+                position_x_ = minimized_position_x_;
+                position_y_ = minimized_position_y_;
+                pmanage<MPtr(&PContainer::enable)>(width_id_);
+                pmanage<MPtr(&PContainer::enable)>(height_id_);
+                pmanage<MPtr(&PContainer::enable)>(position_x_id_);
+                pmanage<MPtr(&PContainer::enable)>(position_y_id_);
               }
-              pmanage<MPtr(&PContainer::disable)>(width_id_, kFullscreenDisabled);
-              pmanage<MPtr(&PContainer::disable)>(height_id_, kFullscreenDisabled);
-              pmanage<MPtr(&PContainer::disable)>(position_x_id_, kFullscreenDisabled);
-              pmanage<MPtr(&PContainer::disable)>(position_y_id_, kFullscreenDisabled);
-              width_ = monitor_config.width;
-              height_ = monitor_config.height;
-              position_x_ = monitor_config.position_x;
-              position_y_ = monitor_config.position_y;
-            } else {
-              width_ = minimized_width_;
-              height_ = minimized_height_;
-              position_x_ = minimized_position_x_;
-              position_y_ = minimized_position_y_;
-              pmanage<MPtr(&PContainer::enable)>(width_id_);
-              pmanage<MPtr(&PContainer::enable)>(height_id_);
-              pmanage<MPtr(&PContainer::enable)>(position_x_id_);
-              pmanage<MPtr(&PContainer::enable)>(position_y_id_);
-            }
-            set_size();
-            set_position();
+              set_size();
+              set_position();
+              return true;
+            });
             return true;
           },
           [this]() { return fullscreen_; },
@@ -140,6 +145,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
       decorated_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "decorated",
           [this](bool val) {
+            if (val == decorated_) return true;
             decorated_ = val;
             add_rendering_task([this]() {
               swap_window();
@@ -154,6 +160,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
       always_on_top_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "always_on_top",
           [this](bool val) {
+            if (val == always_on_top_) return true;
             always_on_top_ = val;
             add_rendering_task([this]() {
               swap_window();
@@ -245,7 +252,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
           pmanage<MPtr(&PContainer::make_selection<>)>("rotation",
                                                        [this](size_t val) {
                                                          rotation_.select(val);
-                                                         add_rendering_task([this, val]() {
+                                                         add_rendering_task([this]() {
                                                            set_viewport();
                                                            set_rotation_shader();
                                                            return true;
@@ -259,7 +266,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
       flip_id_(pmanage<MPtr(&PContainer::make_selection<>)>("flip",
                                                             [this](size_t val) {
                                                               flip_.select(val);
-                                                              add_rendering_task([this, val]() {
+                                                              add_rendering_task([this]() {
                                                                 set_flip_shader();
                                                                 return true;
                                                               });
@@ -326,21 +333,20 @@ GLFWVideo::GLFWVideo(const std::string& name)
           [this]() {
             std::lock_guard<std::mutex> lock(configuration_mutex_);
             if (!window_moved_ || !gui_configuration_) return;
-            pmanage<MPtr(&PContainer::notify)>(position_x_id_);
-            pmanage<MPtr(&PContainer::notify)>(position_y_id_);
-            pmanage<MPtr(&PContainer::notify)>(width_id_);
-            pmanage<MPtr(&PContainer::notify)>(height_id_);
-            ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
-            ImGuiIO& io = ImGui::GetIO();
-            io.DisplaySize.x = static_cast<float>(width_);
-            io.DisplaySize.y = static_cast<float>(height_);
-
             add_rendering_task([this]() {
+              pmanage<MPtr(&PContainer::notify)>(position_x_id_);
+              pmanage<MPtr(&PContainer::notify)>(position_y_id_);
+              pmanage<MPtr(&PContainer::notify)>(width_id_);
+              pmanage<MPtr(&PContainer::notify)>(height_id_);
+              ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
+              ImGuiIO& io = ImGui::GetIO();
+              io.DisplaySize.x = static_cast<float>(width_);
+              io.DisplaySize.y = static_cast<float>(height_);
+
               set_viewport();
+              window_moved_ = false;
               return true;
             });
-
-            window_moved_ = false;
           },
           std::chrono::milliseconds(500))) {
   if (getenv("DISPLAY") == nullptr) {
@@ -365,12 +371,16 @@ GLFWVideo::GLFWVideo(const std::string& name)
   width_id_ = pmanage<MPtr(&PContainer::make_int)>(
       "width",
       [this](const int& val) {
-        width_ = val;
-        set_size();
-        std::lock_guard<std::mutex> lock(configuration_mutex_);
-        ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
-        ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize.x = static_cast<float>(width_);
+        if (val == width_) return true;
+        add_rendering_task([this, val]() {
+          width_ = val;
+          set_size();
+          std::lock_guard<std::mutex> lock(configuration_mutex_);
+          ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
+          ImGuiIO& io = ImGui::GetIO();
+          io.DisplaySize.x = static_cast<float>(width_);
+          return true;
+        });
         return true;
       },
       [this]() { return width_; },
@@ -382,12 +392,16 @@ GLFWVideo::GLFWVideo(const std::string& name)
   height_id_ = pmanage<MPtr(&PContainer::make_int)>(
       "height",
       [this](const int& val) {
-        height_ = val;
-        set_size();
-        std::lock_guard<std::mutex> lock(configuration_mutex_);
-        ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
-        ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize.y = static_cast<float>(height_);
+        if (val == height_) return true;
+        add_rendering_task([this, val]() {
+          height_ = val;
+          set_size();
+          std::lock_guard<std::mutex> lock(configuration_mutex_);
+          ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
+          ImGuiIO& io = ImGui::GetIO();
+          io.DisplaySize.y = static_cast<float>(height_);
+          return true;
+        });
         return true;
       },
       [this]() { return height_; },
@@ -398,8 +412,12 @@ GLFWVideo::GLFWVideo(const std::string& name)
       max_height_);
   position_x_id_ = pmanage<MPtr(&PContainer::make_int)>("position_x",
                                                         [this](const int& val) {
-                                                          position_x_ = val;
-                                                          set_position();
+                                                          if (val == position_x_) return true;
+                                                          add_rendering_task([this, val]() {
+                                                            position_x_ = val;
+                                                            set_position();
+                                                            return true;
+                                                          });
                                                           return true;
                                                         },
                                                         [this]() { return position_x_; },
@@ -410,8 +428,12 @@ GLFWVideo::GLFWVideo(const std::string& name)
                                                         max_width_);
   position_y_id_ = pmanage<MPtr(&PContainer::make_int)>("position_y",
                                                         [this](const int& val) {
-                                                          position_y_ = val;
-                                                          set_position();
+                                                          if (val == position_y_) return true;
+                                                          add_rendering_task([this, val]() {
+                                                            position_y_ = val;
+                                                            set_position();
+                                                            return true;
+                                                          });
                                                           return true;
                                                         },
                                                         [this]() { return position_y_; },
@@ -511,12 +533,14 @@ GLFWVideo::~GLFWVideo() {
 }
 
 void GLFWVideo::destroy_gl_elements() {
+  if (!window_) return;
+
   glfwMakeContextCurrent(window_);
-  glDeleteTextures(1, &drawing_texture_);
-  glDeleteProgram(shader_program_);
-  glDeleteShader(fragment_shader_);
-  glDeleteShader(vertex_shader_);
-  glDeleteVertexArrays(1, &vao_);
+  if (drawing_texture_) glDeleteTextures(1, &drawing_texture_);
+  if (shader_program_) glDeleteProgram(shader_program_);
+  if (fragment_shader_) glDeleteShader(fragment_shader_);
+  if (vertex_shader_) glDeleteShader(vertex_shader_);
+  if (vao_) glDeleteVertexArrays(1, &vao_);
   glfwMakeContextCurrent(nullptr);
 }
 
@@ -764,16 +788,22 @@ void GLFWVideo::close_cb(GLFWwindow* window) {
 
 void GLFWVideo::move_cb(GLFWwindow* window, int pos_x, int pos_y) {
   auto quiddity = static_cast<GLFWVideo*>(glfwGetWindowUserPointer(window));
-  quiddity->position_x_ = pos_x;
-  quiddity->position_y_ = pos_y;
-  quiddity->window_moved_ = true;
+  quiddity->add_rendering_task([quiddity, pos_x, pos_y]() {
+    quiddity->position_x_ = pos_x;
+    quiddity->position_y_ = pos_y;
+    quiddity->window_moved_ = true;
+    return true;
+  });
 }
 
 void GLFWVideo::resize_cb(GLFWwindow* window, int width, int height) {
   auto quiddity = static_cast<GLFWVideo*>(glfwGetWindowUserPointer(window));
-  quiddity->width_ = width;
-  quiddity->height_ = height;
-  quiddity->window_moved_ = true;
+  quiddity->add_rendering_task([quiddity, width, height]() {
+    quiddity->width_ = width;
+    quiddity->height_ = height;
+    quiddity->window_moved_ = true;
+    return true;
+  });
 }
 
 void GLFWVideo::focus_cb(GLFWwindow* window, int focused) {
@@ -1342,7 +1372,9 @@ void GLFWVideo::GUIConfiguration::init_properties() {
       "overlay_config",
       [this](const std::string& val) {
         std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
-        if (!StringUtils::ends_with(val, ".ttf")) {
+        if (val.empty()) {
+          return false;
+        } else if (!StringUtils::ends_with(val, ".ttf")) {
           g_message(
               "Cannot set %s as custom font, only truetype fonts are supported (.ttf extension).",
               val.c_str());
@@ -1352,7 +1384,7 @@ void GLFWVideo::GUIConfiguration::init_properties() {
           return false;
         }
         custom_font_ = val;
-        parent_window_->add_rendering_task([this, val]() {
+        parent_window_->add_rendering_task([this]() {
           generate_font_texture(custom_font_);
           return true;
         });
