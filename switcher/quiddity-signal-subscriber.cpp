@@ -116,12 +116,10 @@ bool QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid, const std::string
 
 bool QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid) {
   std::string quid_name = quid->get_name();
-  for (auto& it : signal_datas_) {
-    if (it.first.first == quid_name) {
-      unsubscribe(quid, it.second->signal_name);
-    }
-  }
-
+  std::vector<std::string> sigs_to_unregister;
+  for (auto& it : signal_datas_)
+    if (it.first.first == quid_name) sigs_to_unregister.push_back(it.first.second);
+  for (auto& it : sigs_to_unregister) unsubscribe(quid, it);
   return true;
 }
 
