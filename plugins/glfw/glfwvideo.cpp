@@ -98,8 +98,8 @@ GLFWVideo::GLFWVideo(const std::string& name)
           "fullscreen",
           [this](bool val) {
             if (val == fullscreen_) return true;
+            fullscreen_ = val;
             add_rendering_task([this, val]() {
-              fullscreen_ = val;
               std::lock_guard<std::mutex> lock(configuration_mutex_);
               if (val) {
                 minimized_width_ = width_;
