@@ -48,7 +48,9 @@ JackToShmdata::JackToShmdata(const std::string& name)
                                    get_name().c_str());
                      });
                      thread.detach();
-                   }) {}
+                   }) {
+  if (jack_client_) client_name_ = jack_client_.get_name();
+}
 
 bool JackToShmdata::init() {
   if (!jack_client_) {

@@ -328,7 +328,7 @@ void ShmdataToJack::connect_ports() {
 
   for (unsigned int i = 0; i < output_ports_.size(); ++i) {
     jack_connect(jack_client_.get_raw(),
-                 std::string(get_name() + ":" + output_ports_[i].get_name()).c_str(),
+                 std::string(jack_client_.get_name() + ":" + output_ports_[i].get_name()).c_str(),
                  ports_to_connect_[i].c_str());
   }
 }
@@ -346,9 +346,10 @@ void ShmdataToJack::on_port(jack_port_t* port) {
   if (ports_to_connect_.end() == it) return;
   {
     std::lock_guard<std::mutex> lock(port_to_connect_in_jack_process_mutex_);
-    port_to_connect_in_jack_process_.push_back(std::make_pair(
-        std::string(get_name() + ":" + output_ports_[it - ports_to_connect_.begin()].get_name()),
-        *it));
+    port_to_connect_in_jack_process_.push_back(
+        std::make_pair(std::string(jack_client_.get_name() + ":" +
+                                   output_ports_[it - ports_to_connect_.begin()].get_name()),
+                       *it));
   }
 }
 
