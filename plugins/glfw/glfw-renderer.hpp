@@ -38,26 +38,29 @@ class GLFWRenderer {
   GLFWVideo* get_current_window() const { return current_window_; }
 
  private:
-  void render_loop();
-  void check_unsubscribe_from_render_loop();
-  bool do_rendering_tasks(GLFWVideo* window);
+  using rendering_tasks_t = std::map<GLFWVideo*, std::vector<std::function<bool()>>>;
 
-  std::map<GLFWVideo*, std::vector<std::function<bool()>>> rendering_tasks_;
+  void render_loop();
+  rendering_tasks_t pop_rendering_tasks();
+
+  rendering_tasks_t rendering_tasks_;
   std::vector<GLFWVideo*> unsubscribers_;
   std::mutex subscription_mutex_{};
   std::mutex rendering_task_mutex_{};
   std::condition_variable cond_subscription_{};
   std::atomic<bool> running_{true};
-  std::future<void> gl_loop_;
   GLFWVideo* current_window_{nullptr};
+  std::future<void> gl_loop_;
 };
 
 class RendererSingleton {
- public:
-  static GLFWRenderer* get();
-  GLFWRenderer& operator=(const GLFWRenderer&) = delete;
+  friend class GLFWRenderer;
+  friend class GLFWVideo;
 
  private:
+  static GLFWRenderer* get();
+  GLFWRenderer& operator=(const GLFWRenderer&) = delete;
+  static std::mutex creation_window_mutex_;
   static std::unique_ptr<GLFWRenderer> s_instance_;
   static std::mutex creation_mutex_;
 };
