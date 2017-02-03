@@ -52,6 +52,7 @@ class JackClient : public SafeBoolIdiom {
   jack_nframes_t get_sample_rate() const { return sample_rate_; };
   jack_nframes_t get_buffer_size() const { return buffer_size_; };
   jack_client_t* get_raw();
+  std::string get_name();
 
  private:
   using jack_client_handle = std::unique_ptr<jack_client_t, decltype(&jack_client_close)>;

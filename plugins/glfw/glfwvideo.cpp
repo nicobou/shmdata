@@ -98,8 +98,8 @@ GLFWVideo::GLFWVideo(const std::string& name)
           "fullscreen",
           [this](bool val) {
             if (val == fullscreen_) return true;
+            fullscreen_ = val;
             add_rendering_task([this, val]() {
-              fullscreen_ = val;
               std::lock_guard<std::mutex> lock(configuration_mutex_);
               if (val) {
                 minimized_width_ = width_;
@@ -462,6 +462,8 @@ GLFWVideo::GLFWVideo(const std::string& name)
 
   if (!remake_elements()) return;
 
+  std::lock_guard<std::mutex> lock(RendererSingleton::creation_window_mutex_);
+
   glfwWindowHint(GLFW_VISIBLE, false);
   glfwWindowHint(GLFW_RESIZABLE, true);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -489,18 +491,19 @@ GLFWVideo::GLFWVideo(const std::string& name)
   pmanage<MPtr(&PContainer::set_to_current)>(color_id_);
   pmanage<MPtr(&PContainer::set_to_current)>(background_type_id_);
 
-  std::unique_lock<std::mutex> lock(configuration_mutex_);
-  gui_configuration_ = std::make_unique<GUIConfiguration>(this);
-  if (gui_configuration_->initialized_)
-    gui_configuration_->init_properties();
-  else
-    g_warning("Overlay is not useable because something wrong happened during gui configuration");
-  lock.unlock();
+  {
+    std::lock_guard<std::mutex> lock(configuration_mutex_);
+    gui_configuration_ = std::make_unique<GUIConfiguration>(this);
+    if (gui_configuration_->initialized_)
+      gui_configuration_->init_properties();
+    else
+      g_warning("Overlay is not useable because something wrong happened during gui configuration");
+  }
 
   glfwMakeContextCurrent(nullptr);
 
-  RendererSingleton::get()->subscribe_to_render_loop(this);
   ++instance_counter_;
+  RendererSingleton::get()->subscribe_to_render_loop(this);
 
   is_valid_ = true;
 }

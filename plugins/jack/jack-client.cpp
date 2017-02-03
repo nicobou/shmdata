@@ -135,6 +135,8 @@ int JackClient::on_xrun(void* arg) {
   return 0;
 }
 
+std::string JackClient::get_name() { return std::string(jack_get_client_name(client_.get())); }
+
 JackPort::JackPort(JackClient& client, unsigned int number, bool is_output)
     : port_name_(std::string("output_" + std::to_string(number))),
       port_(jack_port_register(client.get_raw(),

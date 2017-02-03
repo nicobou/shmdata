@@ -169,7 +169,10 @@ void SIPPlugin::apply_configuration() {
   }
 
   auto manager = manager_impl_.lock();
-  if (!manager) return;
+  if (!manager) {
+    g_warning("bug in SIPPLugin, line %d", __LINE__);
+    return;
+  }
   quiddity_removal_cb_id_ = manager->register_removal_cb([this](const std::string& quiddity_name) {
     std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
     auto it = std::find(exposed_quiddities_.begin(), exposed_quiddities_.end(), quiddity_name);
@@ -223,6 +226,10 @@ bool SIPPlugin::start_sip_transport() {
 void SIPPlugin::expose_stream_to_quiddity(const std::string& quid_name,
                                           const std::string& shmpath) {
   auto manager = manager_impl_.lock();
+  if (!manager) {
+    g_warning("bug in SIPPLugin, line %d", __LINE__);
+    return;
+  }
   auto quid = Quiddity::string_to_quiddity_name(quid_name);
   std::unique_lock<std::mutex> lock(exposed_quiddities_mutex_);
   if (std::find(exposed_quiddities_.begin(), exposed_quiddities_.end(), quid) !=
@@ -240,6 +247,10 @@ void SIPPlugin::expose_stream_to_quiddity(const std::string& quid_name,
 
 void SIPPlugin::remove_exposed_quiddity(const std::string& quid_name) {
   auto manager = manager_impl_.lock();
+  if (!manager) {
+    g_warning("bug in SIPPLugin, line %d", __LINE__);
+    return;
+  }
   auto quid = string_to_quiddity_name(quid_name);
 
   std::unique_lock<std::mutex> lock(exposed_quiddities_mutex_);

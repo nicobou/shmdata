@@ -2,6 +2,19 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.44 (2017-02-03)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* Added support for multichannel in ladspa plugin.
+
+Bug fixes:
+* Check weak ptr to shared ptr validity in pjsip.
+* Various fixes in imgui and glfw.
+* Setting of fullscreen property was desynchronized due to its processing in render loop.
+* Fix jack trying to connect ports with quiddity name instead of jack client name.
+
 switcher 0.8.42 (2017-01-20)
 ---------------------------
 This is an official release in the 0.8 stable series.
