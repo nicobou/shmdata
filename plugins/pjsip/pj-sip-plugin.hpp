@@ -68,14 +68,16 @@ class SIPPlugin : public Quiddity {
   static SIPPlugin* this_;
 
   // Expose incoming streams as quiddities feature
-  std::vector<std::string> exposed_quiddities_;
+  std::map<std::string /*peer_uri*/, std::vector<std::string> /*quid_names_*/> exposed_quiddities_;
   std::mutex exposed_quiddities_mutex_{};
   unsigned int quiddity_removal_cb_id_{0};
 
   bool start_sip_transport();
   void apply_configuration();
+  void create_quiddity_stream(const std::string& peer_uri, const std::string& quid_name);
   void expose_stream_to_quiddity(const std::string& quid_name, const std::string& shmpath);
-  void remove_exposed_quiddity(const std::string& quid_name);
+  void remove_exposed_quiddity(const std::string& peer_uri, const std::string& quid_name);
+  void remove_exposed_quiddities(const std::string& peer_uri);
 };
 
 }  // namespace switcher
