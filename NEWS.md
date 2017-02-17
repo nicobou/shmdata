@@ -2,6 +2,14 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.46 (2017-02-17)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+Bug fixes:
+* update coding.md
+* fix leaking extshmsrc
+
 switcher 0.8.44 (2017-02-03)
 ---------------------------
 This is an official release in the 0.8 stable series.
