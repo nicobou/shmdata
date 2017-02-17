@@ -199,6 +199,8 @@ bool PJCall::release_incoming_call(call_t* call, pjsua_buddy_id id) {
     SIPPlugin::this_->sip_calls_->call_action_done_ = true;
     SIPPlugin::this_->sip_calls_->call_cv_.notify_all();
   }
+  // cleaning possible related extshmsrcs
+  SIPPlugin::this_->remove_exposed_quiddities(it->peer_uri);
 
   // removing call
   calls.erase(it);
@@ -579,14 +581,16 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
                                     writer->bytes_written(size);
                                   });
     // setting a decoder for this shmdata
-    auto peer_uri = call->peer_uri;
+    // Create a shmdata quiddity for this stream.
+    std::string quid_name = media_label + "-" + call->peer_uri;
+    SIPPlugin::this_->create_quiddity_stream(call->peer_uri, quid_name);
+    // Create a RTPReceiver
     call->rtp_receivers_.emplace_back(std::make_unique<RTPReceiver>(
         call->recv_rtp_session_.get(),
         rtp_shmpath,
         [=](GstElement* el, const std::string& media_type, const std::string&) {
           auto shmpath = shm_prefix + media_label + "-" + media_type;
           g_object_set(G_OBJECT(el), "socket-path", shmpath.c_str(), nullptr);
-          std::string quid_name = call->peer_uri + "-" + media_label;
           call->shm_subs_.emplace_back(std::make_unique<GstShmdataSubscriber>(
               el,
               [=](const std::string& caps) {
@@ -595,13 +599,13 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
                     ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
                 SIPPlugin::this_->graft_tree(std::string(".shmdata.writer.") + shmpath + ".uri",
                                              InfoTree::make(call->peer_uri));
-                // Create a shmdata quiddity and connect the stream to it if the option is enabled.
+                // Connect the stream to the created shmdata quiddity.
                 SIPPlugin::this_->expose_stream_to_quiddity(quid_name, shmpath);
               },
               ShmdataStat::make_tree_updater(SIPPlugin::this_, ".shmdata.writer." + shmpath),
               [=]() {
                 SIPPlugin::this_->prune_tree(".shmdata.writer." + shmpath);
-                SIPPlugin::this_->remove_exposed_quiddity(quid_name);
+                SIPPlugin::this_->remove_exposed_quiddity(call->peer_uri, quid_name);
               }));
         },
         SIPPlugin::this_->decompress_streams_));

@@ -27,18 +27,16 @@ Please send your pull request at the [sat-metalab' github account](https://githu
 Branching strategy with git
 ---------------------------
 
-The [master](https://github.com/sat-metalab/switcher/tree/master) branch contains switcher releases. Validated new developments are into the [develop](https://github.com/sat-metalab/switcher/tree/master) branch.
+The [master](https://gitlab.com/sat-metalab/switcher/tree/master) branch contains switcher releases. Validated new developments are into the [develop](https://github.com/sat-metalab/switcher/tree/develop) branch.
 
-When merging your branch into develop:
-* please specify who reviewed your code in your message (use none if nobody reviewed your code). 
-* if your branch contains more than one commit, do not use fast-forward when merging and write a higher level message including the reviewer, for instance (from the develop branch):
+Modifications are made into a dedicated branch that need to be merged into the develop branch through a gitlab merge request. When you modification is ready, you need to prepare your merge request as follow:
+* Update your develop branch. 
 ~~~~~~~~~~~~~~~~~~~~
-git merge --no-ff feature/serialization -m'adding data structure serialization, reviewer: jsoria'
+git fetch
+git checkout develop
+git pull origin develop
 ~~~~~~~~~~~~~~~~~~~~
-* if your branch has only one commit, merge it with fast-forward and rename your commit with the reviewer name, for instance (from the develop branch):
+* Go back to your branch and rebase onto develop. Note that it would be appreciated that you only merge request from a single commit (i.e interactive rebase with squash and/or fixup before pushing).
 ~~~~~~~~~~~~~~~~~~~~
-# merge with fast forward
-git merge feature/serialization
-# add reviewer into your commit
-git commit --amend
+git rebase -i develop
 ~~~~~~~~~~~~~~~~~~~~
