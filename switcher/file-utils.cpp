@@ -20,10 +20,13 @@
 #include "./file-utils.hpp"
 #include <dirent.h>
 #include <fcntl.h>
+#include <glib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fstream>
 #include <iostream>
+#include <utility>
 #include "./scope-exit.hpp"
 #include "./string-utils.hpp"
 
@@ -103,6 +106,31 @@ std::vector<std::string> FileUtils::get_files_from_directory(std::string path,
   }
 
   return files;
+}
+
+std::pair<std::string, std::string> FileUtils::get_file_content(const std::string& file_path,
+                                                                int max_file_size) {
+  // opening file
+  std::ifstream file_stream(file_path);
+  if (!file_stream) {
+    return std::make_pair(std::string(), std::string("cannot open ") + file_path);
+  }
+  // get file content into a string
+  std::string res;
+  file_stream.seekg(0, std::ios::end);
+  auto size = file_stream.tellg();
+  if (0 == size) {
+    return std::make_pair(std::string(), std::string("file ") + file_path + " is empty");
+  }
+  if (size > max_file_size) {
+    return std::make_pair(std::string(),
+                          std::string("file ") + file_path + " is too large, max is " +
+                              std::to_string(max_file_size) + " bytes");
+  }
+  res.reserve(size);
+  file_stream.seekg(0, std::ios::beg);
+  res.assign((std::istreambuf_iterator<char>(file_stream)), std::istreambuf_iterator<char>());
+  return std::make_pair(res, std::string());
 }
 
 }  // namespace switcher

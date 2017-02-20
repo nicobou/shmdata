@@ -41,6 +41,10 @@ std::vector<std::string> get_files_from_directory(std::string path,
                                                   std::string suffix = "",
                                                   bool recursive = false);
 
+// default is 100Mo
+std::pair<std::string, std::string> get_file_content(const std::string& file_path,
+                                                     int max_file_size = 100000000);
+
 }  // namespace FileUtils
 }  // namespace switcher
 #endif

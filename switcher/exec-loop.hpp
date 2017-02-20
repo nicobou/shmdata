@@ -17,32 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_PERIODIC_TASK_H__
-#define __SWITCHER_PERIODIC_TASK_H__
+#ifndef __SWITCHER_EXEC_LOOP_H__
+#define __SWITCHER_EXEC_LOOP_H__
 
-#include <atomic>
-#include <chrono>
-#include <future>
+#include "./threaded-wrapper.hpp"
+
+/* This class provides RAII exec loop service designed for being instanciated as a member of an
+ * other class. See Threaded wrapper for more  */
 
 namespace switcher {
 
-class PeriodicTask {
- public:
-  using task_t = std::function<void()>;
-
-  PeriodicTask() = delete;
-  PeriodicTask(task_t task, std::chrono::milliseconds period);
-  ~PeriodicTask();
-
- private:
-  task_t task_;
-  std::chrono::milliseconds period_;
-  std::condition_variable cv_{};
-  std::mutex cv_m_{};
-  std::atomic<bool> canceled_{false};
-  std::future<void> fut_{};
-  void do_work();
-};
+using ExecLoop = ThreadedWrapper<>;
 
 }  // namespace switcher
 #endif

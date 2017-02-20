@@ -1,5 +1,5 @@
 /*
- * This file is part of libswitcher.
+ * This file is part of switcher-curl.
  *
  * libswitcher is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,32 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_PERIODIC_TASK_H__
-#define __SWITCHER_PERIODIC_TASK_H__
+#undef NDEBUG  // get assert in release mode
 
-#include <atomic>
-#include <chrono>
-#include <future>
+#include <cassert>
+#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity-manager.hpp"
 
-namespace switcher {
-
-class PeriodicTask {
- public:
-  using task_t = std::function<void()>;
-
-  PeriodicTask() = delete;
-  PeriodicTask(task_t task, std::chrono::milliseconds period);
-  ~PeriodicTask();
-
- private:
-  task_t task_;
-  std::chrono::milliseconds period_;
-  std::condition_variable cv_{};
-  std::mutex cv_m_{};
-  std::atomic<bool> canceled_{false};
-  std::future<void> fut_{};
-  void do_work();
-};
-
-}  // namespace switcher
-#endif
+int main() {
+  {
+    switcher::QuiddityManager::ptr manager =
+        switcher::QuiddityManager::make_manager("test_manager");
+    manager->scan_directory_for_plugins("./");
+    assert(switcher::QuiddityBasicTest::test_full(manager, "http-get-service"));
+  }  // end of scope is releasing the manager
+  return 0;
+}
