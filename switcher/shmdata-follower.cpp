@@ -18,15 +18,19 @@
  */
 
 #include "./shmdata-follower.hpp"
-#include "./quiddity.hpp"
 #include "./shmdata-utils.hpp"
 
 namespace switcher {
+
+const std::chrono::milliseconds ShmdataFollower::kDefaultUpdateInterval =
+    std::chrono::milliseconds(3000);
+
 ShmdataFollower::ShmdataFollower(Quiddity* quid,
                                  const std::string& path,
                                  shmdata::Reader::onData od,
                                  shmdata::Reader::onServerConnected osc,
                                  shmdata::Reader::onServerDisconnected osd,
+                                 std::chrono::milliseconds update_interval,
                                  const std::string& tree_path)
     : quid_(quid),
       shmpath_(path),
@@ -41,7 +45,7 @@ ShmdataFollower::ShmdataFollower(Quiddity* quid,
           [this]() { this->on_server_disconnected(); },
           &logger_)),
       task_(std::make_unique<PeriodicTask>([this]() { this->update_quid_stats(); },
-                                           std::chrono::milliseconds(1000))) {}
+                                           update_interval)) {}
 
 ShmdataFollower::~ShmdataFollower() {
   follower_.reset(nullptr);
