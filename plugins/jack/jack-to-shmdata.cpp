@@ -153,6 +153,7 @@ bool JackToShmdata::start() {
   pmanage<MPtr(&PContainer::disable)>(index_id_, disabledWhenStartedMsg);
   {
     std::lock_guard<std::mutex> lock(input_ports_mutex_);
+    input_ports_.clear();
     for (unsigned int i = 0; i < num_channels_; ++i)
       input_ports_.emplace_back(jack_client_, i + 1, false);
     connect_ports();
@@ -230,14 +231,12 @@ void JackToShmdata::connect_ports() {
   if (!auto_connect_) return;
 
   std::lock_guard<std::mutex> lock(port_to_connect_in_jack_process_mutex_);
-
   if (ports_to_connect_.size() != input_ports_.size()) {
     g_warning(
         "Port number mismatch in jack to shmdata autoconnect, should not "
         "happen.");
     return;
   }
-
   for (unsigned int i = 0; i < num_channels_; ++i) {
     jack_connect(jack_client_.get_raw(),
                  ports_to_connect_[i].c_str(),
