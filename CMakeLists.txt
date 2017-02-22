@@ -158,9 +158,11 @@ add_subdirectory(src)
 # Documentation
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
-    configure_file("doxyfile.in" "doxyfile")
+    set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/doxygen/doxyfile.in)
+    set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/doxyfile)
+    configure_file(${doxyfile_in} ${doxyfile} @ONLY)
     add_custom_target(doc
-        COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/doxyfile
+        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif ()
 
