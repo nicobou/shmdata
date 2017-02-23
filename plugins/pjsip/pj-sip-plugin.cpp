@@ -105,6 +105,7 @@ SIPPlugin::~SIPPlugin() {
   });
 
   pjsip_.reset(nullptr);
+
   this_ = nullptr;
   i_m_the_one_ = false;
   sip_plugin_used_ = 0;
@@ -134,6 +135,7 @@ bool SIPPlugin::init() {
         sip_presence_.reset(nullptr);
         stun_turn_.reset(nullptr);
         white_list_.reset(nullptr);
+        if (transport_id_ != -1) pjsua_transport_close(transport_id_, PJ_FALSE);
       });
 
   if (!pjsip_->invoke<MPtr(&PJSIP::safe_bool_idiom)>()) return false;
