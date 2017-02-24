@@ -21,14 +21,22 @@
 
 #include <cassert>
 #include "switcher/quiddity-basic-test.hpp"
-#include "switcher/quiddity-manager.hpp"
 
 int main() {
   {
-    switcher::QuiddityManager::ptr manager =
-        switcher::QuiddityManager::make_manager("test_manager");
+    using namespace switcher;
+
+    QuiddityManager::ptr manager = QuiddityManager::make_manager("test_manager");
     manager->scan_directory_for_plugins("./");
-    assert(switcher::QuiddityBasicTest::test_full(manager, "http-get-service"));
-  }  // end of scope is releasing the manager
+
+    assert(switcher::QuiddityBasicTest::test_full(manager, "protocol-mapper"));
+    auto quid = manager->create("protocol-mapper");
+    assert(manager->use_prop<MPtr(&PContainer::set_str_str)>(
+        quid, "config_file", "protocol-curl.json"));
+    assert(manager->use_prop<MPtr(&PContainer::set_str_str)>(quid, "continuous_message", "true"));
+    assert(manager->use_prop<MPtr(&PContainer::set_str_str)>(quid, "bang", "true"));
+    assert(manager->use_prop<MPtr(&PContainer::set_str_str)>(quid, "wrong_url", "true"));
+    assert(manager->use_prop<MPtr(&PContainer::set_str_str)>(quid, "test_timeout", "true"));
+  }
   return 0;
 }

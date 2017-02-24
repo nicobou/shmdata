@@ -1,0 +1,27 @@
+{
+  "protocol" : "curl",
+  "continuous": "true",
+  "commands": {
+    "continuous_message" : {
+      "url" : "http://www.google.com",
+      "continuous": "true",
+      "name": "continuous",
+      "descr": "generates a continuous message"
+    },
+    "bang" : {
+      "url" : "http://www.google.com",
+      "name": "bang",
+      "descr": "generates a bang"
+    },
+    "wrong_url" : {
+      "url" : "http://www.google.comcomcom",
+      "name": "wrong url",
+      "descr": "site does not exist, should just fail"
+    },
+    "test_timeout" : {
+      "url" : "http://10.42.0.66",
+      "name": "timeout",
+      "descr": "should timeout"
+    }
+  }
+}
