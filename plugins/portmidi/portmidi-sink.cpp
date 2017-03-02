@@ -87,7 +87,7 @@ bool PortMidiSink::connect(std::string path) {
       [this](void* data, size_t size) { this->on_shmreader_data(data, size); },
       nullptr,
       nullptr,
-      std::chrono::milliseconds(1000));
+      ShmdataStat::kDefaultUpdateInterval);
   return true;
 }
 

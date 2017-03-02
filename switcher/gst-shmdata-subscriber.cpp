@@ -21,9 +21,6 @@
 
 namespace switcher {
 
-const std::chrono::milliseconds GstShmdataSubscriber::kDefaultUpdateInterval =
-    std::chrono::milliseconds(3000);
-
 GstShmdataSubscriber::GstShmdataSubscriber(GstElement* element,
                                            on_caps_cb_t on_caps_cb,
                                            on_stat_monitor_t on_stat_monitor_cb,

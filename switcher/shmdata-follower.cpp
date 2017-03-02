@@ -22,9 +22,6 @@
 
 namespace switcher {
 
-const std::chrono::milliseconds ShmdataFollower::kDefaultUpdateInterval =
-    std::chrono::milliseconds(3000);
-
 ShmdataFollower::ShmdataFollower(Quiddity* quid,
                                  const std::string& path,
                                  shmdata::Reader::onData od,

@@ -34,14 +34,13 @@ class GstShmdataSubscriber {
   using on_delete_t = std::function<void()>;
   using on_connection_status_t = std::function<void(bool status)>;
 
-  static const std::chrono::milliseconds kDefaultUpdateInterval;
-
-  GstShmdataSubscriber(GstElement* element,
-                       on_caps_cb_t on_caps_cb,
-                       on_stat_monitor_t on_stat_monitor_cb,
-                       on_delete_t on_delete_cb = nullptr,
-                       on_connection_status_t on_connection_status_cb = nullptr,
-                       std::chrono::milliseconds update_interval = kDefaultUpdateInterval);
+  GstShmdataSubscriber(
+      GstElement* element,
+      on_caps_cb_t on_caps_cb,
+      on_stat_monitor_t on_stat_monitor_cb,
+      on_delete_t on_delete_cb = nullptr,
+      on_connection_status_t on_connection_status_cb = nullptr,
+      std::chrono::milliseconds update_interval = ShmdataStat::kDefaultUpdateInterval);
 
   GstShmdataSubscriber() = delete;
   GstShmdataSubscriber(const GstShmdataSubscriber&) = delete;

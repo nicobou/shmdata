@@ -41,7 +41,7 @@ bool ExternalShmdataWriter::init() {
                                                 nullptr,
                                                 nullptr,
                                                 nullptr,
-                                                ShmdataFollower::kDefaultUpdateInterval,
+                                                ShmdataStat::kDefaultUpdateInterval,
                                                 ".shmdata.writer.");
                                             return true;
                                           },

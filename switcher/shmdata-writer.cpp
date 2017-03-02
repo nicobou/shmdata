@@ -31,7 +31,7 @@ ShmdataWriter::ShmdataWriter(Quiddity* quid,
       data_type_(data_descr),
       shm_(shmpath_, memsize, data_type_, &shmlog_),
       task_(shm_ ? std::make_unique<PeriodicTask>([this]() { this->update_quid_stats(); },
-                                                  std::chrono::milliseconds(1000))
+                                                  ShmdataStat::kDefaultUpdateInterval)
                  : nullptr) {
   if (shm_ && nullptr != quid_)
     quid_->graft_tree(
