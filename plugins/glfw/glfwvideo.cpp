@@ -1477,6 +1477,11 @@ bool GLFWVideo::GUIConfiguration::generate_font_texture(std::string font) {
 
 void GLFWVideo::GUIConfiguration::show() {
   ImVec2 text_position;
+  ImGuiStyle& style = ImGui::GetStyle();
+
+  style.WindowRounding = 0.0;
+  style.ItemSpacing = ImVec2(0.0, text_size_.y / 2);
+
   auto alignment = alignment_.get_attached();
   if (alignment & Alignment::RIGHT_ALIGNED) text_position.x = parent_window_->width_ - text_size_.x;
   if (alignment & Alignment::BOTTOM_ALIGNED)

@@ -1,0 +1,52 @@
+{
+  "protocol" : "osc",
+  "url" : "osc.udp://localhost:3819",
+  "commands": {
+    "int32" : {
+      "type" : "i",
+      "value" : 45,
+      "name": "int32",
+      "path" : "/what/a/pretty/path",
+      "descr": "sends an int32"
+    },
+    "double" : {
+      "type" : "d",
+      "value" : 1254567890.123456789,
+      "name": "double",
+      "descr": "sends a double"
+    },
+    "int64" : {
+      "type" : "h",
+      "value" : 1234567890123456,
+      "name": "int64",
+      "descr": "sends an int64"
+    },
+    "float" : {
+      "type" : "f",
+      "value" : 1.25,
+      "name": "float",
+      "descr": "sends a float"
+    },
+    "string" : {
+      "type" : "s",
+      "value" : "coucou value",
+      "name": "string",
+      "descr": "sends string"
+    },
+    "notype" : {
+      "value" : "useless value",
+      "descr": "no type, should not crash or create a property"
+    },
+    "wrongtype" : {
+      "type" : "wrongtype",
+      "value" : "useless value",
+      "name" : "Unsupported type",
+      "descr": "wrong type, should not send anything"
+    },
+    "ardour_goto_start" : {
+      "path" : "/ardour/goto_start",
+      "name" : "ardour restart",
+      "descr": "sends restart signal to listening ardour instances"
+    }
+  }
+}

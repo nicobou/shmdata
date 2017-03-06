@@ -135,7 +135,7 @@ int main() {
     assert(manager->subscribe_signal("audio_subscriber", audio_quid.c_str(), "on-tree-grafted"));
 
     // stop waiting result after 5 seconds
-    cv.wait_for(lock, std::chrono::seconds(5));
+    cv.wait_for(lock, std::chrono::seconds(8));
   }
 
   gst_deinit();

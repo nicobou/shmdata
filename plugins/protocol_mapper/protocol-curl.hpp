@@ -1,7 +1,7 @@
 /*
- * This file is part of libswitcher.
+ * This file is part of switcher-protocol-mapper.
  *
- * libswitcher is free software; you can redistribute it and/or
+ * switcher-curl is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2 of the License, or (at your option) any later version.
@@ -16,33 +16,29 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+#ifndef SWITCHER_PROTOCOL_CURL_HPP
+#define SWITCHER_PROTOCOL_CURL_HPP
 
-#ifndef __SWITCHER_PERIODIC_TASK_H__
-#define __SWITCHER_PERIODIC_TASK_H__
-
-#include <atomic>
-#include <chrono>
-#include <future>
+#include <curl/curl.h>
+#include "protocol-reader.hpp"
+#include "switcher/quiddity.hpp"
 
 namespace switcher {
 
-class PeriodicTask {
+class ProtocolCurl : public ProtocolReader {
  public:
-  using task_t = std::function<void()>;
-
-  PeriodicTask() = delete;
-  PeriodicTask(task_t task, std::chrono::milliseconds period);
-  ~PeriodicTask();
+  ProtocolCurl(Quiddity* quid, const InfoTree* tree);
+  ~ProtocolCurl();
+  bool make_properties(Quiddity* quid, const InfoTree* tree) final;
 
  private:
-  task_t task_;
-  std::chrono::milliseconds period_;
-  std::condition_variable cv_{};
-  std::mutex cv_m_{};
-  std::atomic<bool> canceled_{false};
-  std::future<void> fut_{};
-  void do_work();
-};
+  static constexpr const int kTimeout{3000};
+  static std::atomic<int> instance_count_;
+  CURL* curl_{nullptr};
 
-}  // namespace switcher
+  bool safe_bool_idiom() const final { return curl_ != nullptr; };
+  bool curl_request(const std::string& url);
+};
+}
+
 #endif

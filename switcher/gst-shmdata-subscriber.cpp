@@ -18,8 +18,6 @@
  */
 
 #include "./gst-shmdata-subscriber.hpp"
-#include <gst/gst.h>
-#include <string>
 
 namespace switcher {
 
@@ -27,13 +25,14 @@ GstShmdataSubscriber::GstShmdataSubscriber(GstElement* element,
                                            on_caps_cb_t on_caps_cb,
                                            on_stat_monitor_t on_stat_monitor_cb,
                                            on_delete_t on_delete_cb,
-                                           on_connection_status_t on_connection_status_cb)
+                                           on_connection_status_t on_connection_status_cb,
+                                           std::chrono::milliseconds update_interval)
     : element_(element),
       on_caps_cb_(on_caps_cb),
       on_stat_monitor_cb_(on_stat_monitor_cb),
       on_delete_cb_(on_delete_cb),
       on_connection_status_cb_(on_connection_status_cb),
-      ptask_([this]() { this->stat_monitor(); }, std::chrono::milliseconds(1000)) {
+      ptask_([this]() { this->stat_monitor(); }, update_interval) {
   if (!GST_IS_ELEMENT(element_)) {
     g_warning("cannot monitor gstshmdata metadata, not a GstElement");
     return;

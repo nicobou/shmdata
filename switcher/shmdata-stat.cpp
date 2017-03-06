@@ -18,9 +18,15 @@
  */
 
 #include "./shmdata-stat.hpp"
-#include "./information-tree.hpp"
 
 namespace switcher {
+
+// We use two for simplicity here, tasks need to be created with milliseconds and it is better for
+// precision to have seconds for the display of the byte and frame rate.
+const std::chrono::seconds ShmdataStat::kDefaultUpdateIntervalInSeconds = std::chrono::seconds(3);
+const std::chrono::milliseconds ShmdataStat::kDefaultUpdateInterval =
+    std::chrono::duration_cast<std::chrono::milliseconds>(
+        ShmdataStat::kDefaultUpdateIntervalInSeconds);
 
 void ShmdataStat::count_buffer(size_t buffer_size) {
   bytes_ += buffer_size;
@@ -36,15 +42,20 @@ std::function<void(const ShmdataStat&)> ShmdataStat::make_tree_updater(Quiddity*
                                                                        const std::string& key) {
   return [quid, key](const ShmdataStat& stat) {
     auto tree = InfoTree::make();
-    tree->graft(".byte_rate", InfoTree::make(stat.bytes_));
-    tree->graft(".rate", InfoTree::make(stat.accesses_));
+    tree->graft(".byte_rate",
+                InfoTree::make(stat.bytes_ / ShmdataStat::kDefaultUpdateIntervalInSeconds.count()));
+    tree->graft(
+        ".rate",
+        InfoTree::make(stat.accesses_ / ShmdataStat::kDefaultUpdateIntervalInSeconds.count()));
     quid->graft_tree(key + ".stat", tree);
   };
 }
 
 void ShmdataStat::update_tree(const InfoTree::ptr& tree, const std::string& key) const {
-  tree->graft(key + ".stat.byte_rate", InfoTree::make(bytes_));
-  tree->graft(key + ".stat.rate", InfoTree::make(accesses_));
+  tree->graft(key + ".stat.byte_rate",
+              InfoTree::make(bytes_ / ShmdataStat::kDefaultUpdateIntervalInSeconds.count()));
+  tree->graft(key + ".stat.rate",
+              InfoTree::make(accesses_ / ShmdataStat::kDefaultUpdateIntervalInSeconds.count()));
 }
 
 }  // namespace

@@ -89,8 +89,13 @@ bool ShmdataToOsc::stop() {
 }
 
 bool ShmdataToOsc::connect(const std::string& path) {
-  shm_.reset(new ShmdataFollower(
-      this, path, [this](void* data, size_t size) { this->on_shmreader_data(data, size); }));
+  shm_ = std::make_unique<ShmdataFollower>(
+      this,
+      path,
+      [this](void* data, size_t size) { this->on_shmreader_data(data, size); },
+      nullptr,
+      nullptr,
+      ShmdataStat::kDefaultUpdateInterval);
   return true;
 }
 

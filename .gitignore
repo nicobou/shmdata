@@ -1,5 +1,4 @@
 *.swp
-doxyfile
 .idea/workspace.xml
 build/
 html/

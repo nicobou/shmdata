@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.5.1)
 set(SWITCHER_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SWITCHER_VERSION_MAJOR 0)
 set(SWITCHER_VERSION_MINOR 8)
-set(SWITCHER_VERSION_PATCH 46)
+set(SWITCHER_VERSION_PATCH 48)
 set(SWITCHER_VERSION_STRING ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR}.${SWITCHER_VERSION_PATCH})
 set(SWITCHER_API_VERSION ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR})
 set(SWITCHER_LIBRARY switcher-${SWITCHER_API_VERSION})
@@ -158,9 +158,11 @@ add_subdirectory(src)
 # Documentation
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
-    configure_file("doxyfile.in" "doxyfile")
+    set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/doc/doxygen/doxyfile.in)
+    set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/doxyfile)
+    configure_file(${doxyfile_in} ${doxyfile} @ONLY)
     add_custom_target(doc
-        COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/doxyfile
+        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif ()
 

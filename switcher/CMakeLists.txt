@@ -89,6 +89,7 @@ set(HEADER_INCLUDES
     decodebin-to-shmdata.hpp
     dummy-sink.hpp
     empty-quiddity.hpp
+    exec-loop.hpp
     external-shmdata-writer.hpp
     file-utils.hpp
     fraction.hpp

@@ -38,6 +38,7 @@ class ShmdataFollower {
                   shmdata::Reader::onData cb,
                   shmdata::Reader::onServerConnected osc = nullptr,
                   shmdata::Reader::onServerDisconnected osd = nullptr,
+                  std::chrono::milliseconds update_interval = ShmdataStat::kDefaultUpdateInterval,
                   const std::string& tree_path_ = ".shmdata.reader.");
   ~ShmdataFollower();
   ShmdataFollower(const ShmdataFollower&) = delete;
