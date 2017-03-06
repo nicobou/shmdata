@@ -2,6 +2,23 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.48 (2017-03-06)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* Generic property to protocol mapper. Two first protocols: OSC/Curl. Removed redundant http-get-service quiddity.
+* Increase default time interval for the shmdata update process. Keep it shorter (1s) for discrete quiddities like osc/midi.
+* LTC to jack transport quiddity.
+
+Bug fixes:
+* Only define default update interval for shmdata stats in one place and fix the displayed byte rate and rate.
+* Fix GL dependencies in the install instructions
+* Fixed appearance of glfw overlay.
+* Close SIP transport when destroying pjsip threaded wrapper. Avoids having the sip port attached after closing switcher.
+* Fixed and reorganized doxygen build.
+* reinitialize jack_input when starting jack-to-shmdata
+
 switcher 0.8.46 (2017-02-17)
 ---------------------------
 This is an official release in the 0.8 stable series.
