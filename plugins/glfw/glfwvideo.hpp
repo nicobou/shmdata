@@ -151,7 +151,7 @@ class GLFWVideo : public Quiddity {
                                         Alignment::VERTICAL_CENTER | Alignment::HORIZONTAL_CENTER,
                                         Alignment::TOP_ALIGNED | Alignment::HORIZONTAL_CENTER,
                                         Alignment::BOTTOM_ALIGNED | Alignment::HORIZONTAL_CENTER},
-                                       0};
+                                       6};
     PContainer::prop_id_t alignment_id_{0};
     bool use_custom_font_{};
     PContainer::prop_id_t use_custom_font_id_{0};
@@ -162,7 +162,7 @@ class GLFWVideo : public Quiddity {
     PContainer::prop_id_t font_id_{0};
     Color color_;
     PContainer::prop_id_t color_id_{0};
-    unsigned int font_size_{18};
+    unsigned int font_size_{20};
     PContainer::prop_id_t font_size_id_{0};
     std::unique_ptr<GUIContext> context_{nullptr};
     ImFontAtlas font_atlas_{};
