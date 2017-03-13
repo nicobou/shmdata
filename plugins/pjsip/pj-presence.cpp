@@ -228,6 +228,7 @@ gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */, void* user
 
 void PJPresence::unregister_account(bool notify_tree) {
   std::unique_lock<std::mutex> lock(registration_mutex_);
+
   if (-1 == account_id_) {
     g_warning("no account to unregister");
     return;
@@ -237,6 +238,8 @@ void PJPresence::unregister_account(bool notify_tree) {
     g_warning("error when unregistering account");
     return;
   }
+  registration_cond_.wait_for(lock, std::chrono::seconds(3));
+
   pj_status_t status = PJ_SUCCESS;
   while (buddy_id_.begin() != buddy_id_.end()) {
     auto it = buddy_id_.begin();
@@ -256,6 +259,7 @@ void PJPresence::unregister_account(bool notify_tree) {
     SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
         SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
   }
+
   return;
 }
 

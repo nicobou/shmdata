@@ -97,14 +97,11 @@ SIPPlugin::~SIPPlugin() {
   if (manager) manager->unregister_removal_cb(quiddity_removal_cb_id_);
 
   sip_calls_->finalize_calls();
-  sip_calls_.reset(nullptr);
 
   pjsip_->run([this]() {
     stun_turn_.reset(nullptr);
     sip_presence_.reset(nullptr);
   });
-
-  pjsip_.reset(nullptr);
 
   this_ = nullptr;
   i_m_the_one_ = false;
