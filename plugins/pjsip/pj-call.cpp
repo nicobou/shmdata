@@ -166,9 +166,6 @@ pj_bool_t PJCall::on_rx_request(pjsip_rx_data* rdata) {
 }
 
 void PJCall::on_inv_state_disconnected(call_t* call, pjsip_inv_session* inv, pjsua_buddy_id id) {
-  g_message("ERROR:Call disconnected. (%.*s)",
-            static_cast<int>(inv->cause_text.slen),
-            inv->cause_text.ptr);
   g_debug("Call disconnected. Reason=%d (%.*s)",
           inv->cause,
           static_cast<int>(inv->cause_text.slen),
