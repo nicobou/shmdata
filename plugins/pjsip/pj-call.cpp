@@ -136,7 +136,7 @@ void PJCall::finalize_calls() {
   uris.clear();
 
   // Hangup incoming calls
-  for (auto& it : incoming_call_) uris.push_back(it.peer_uri);
+  for (auto& it : incoming_call_) uris.push_back(it->peer_uri);
   for (auto& it : uris) hang_up(it.c_str(), this);
 
   can_create_calls_ = false;
@@ -173,7 +173,6 @@ void PJCall::on_inv_state_disconnected(call_t* call, pjsip_inv_session* inv, pjs
           inv->cause,
           static_cast<int>(inv->cause_text.slen),
           inv->cause_text.ptr);
-  inv->mod_data[mod_siprtp_.id] = nullptr;
   if (!release_outgoing_call(call, id)) release_incoming_call(call, id);
 }
 
@@ -181,8 +180,9 @@ bool PJCall::release_incoming_call(call_t* call, pjsua_buddy_id id) {
   std::lock_guard<std::mutex> lock(SIPPlugin::this_->sip_calls_->call_m_);
 
   auto& calls = SIPPlugin::this_->sip_calls_->incoming_call_;
-  auto it = std::find_if(
-      calls.begin(), calls.end(), [&call](const call_t& c) { return c.inv == call->inv; });
+  auto it = std::find_if(calls.begin(), calls.end(), [&call](const std::unique_ptr<call_t>& c) {
+    return c->inv == call->inv;
+  });
   if (calls.end() == it) return false;
   // updating recv status in the tree
   InfoTree::ptr tree =
@@ -200,9 +200,10 @@ bool PJCall::release_incoming_call(call_t* call, pjsua_buddy_id id) {
     SIPPlugin::this_->sip_calls_->call_cv_.notify_all();
   }
   // cleaning possible related extshmsrcs
-  SIPPlugin::this_->remove_exposed_quiddities(it->peer_uri);
+  SIPPlugin::this_->remove_exposed_quiddities((*it)->peer_uri);
 
   // removing call
+  (*it)->inv->mod_data[mod_siprtp_.id] = nullptr;
   calls.erase(it);
 
   return true;
@@ -236,6 +237,7 @@ bool PJCall::release_outgoing_call(call_t* call, pjsua_buddy_id id) {
     SIPPlugin::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
   }
   // removing call
+  (*it)->inv->mod_data[mod_siprtp_.id] = nullptr;
   calls.erase(it);
   if (SIPPlugin::this_->sip_calls_->is_hanging_up_ || SIPPlugin::this_->sip_calls_->is_calling_) {
     SIPPlugin::this_->sip_calls_->call_action_done_ = true;
@@ -456,10 +458,10 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
 
   // release existing incoming calls from this buddy
   for (auto& it : SIPPlugin::this_->sip_calls_->incoming_call_) {
-    if (it.peer_uri == peer_uri) {
+    if (it->peer_uri == peer_uri) {
       auto buddy_id = SIPPlugin::this_->sip_presence_->buddy_id_.find(peer_uri);
       if (SIPPlugin::this_->sip_presence_->buddy_id_.end() != buddy_id)
-        release_incoming_call(&it, buddy_id->second);
+        release_incoming_call(it.get(), buddy_id->second);
     }
   }
   // len =
@@ -513,8 +515,8 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
   pjsip_auth_clt_set_credentials(
       &dlg->auth_sess, 1, &SIPPlugin::this_->sip_presence_->cfg_.cred_info[0]);
   // incoming call is valid, starting processing it
-  SIPPlugin::this_->sip_calls_->incoming_call_.emplace_back();
-  call_t* call = &SIPPlugin::this_->sip_calls_->incoming_call_.back();
+  SIPPlugin::this_->sip_calls_->incoming_call_.emplace_back(std::make_unique<call_t>());
+  call_t* call = SIPPlugin::this_->sip_calls_->incoming_call_.back().get();
   call->peer_uri = peer_uri;
   auto& buddy_list = SIPPlugin::this_->sip_presence_->buddy_id_;
   if (buddy_list.end() == buddy_list.find(call->peer_uri)) {
@@ -985,13 +987,14 @@ gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
       return TRUE;
     }
 
-    auto it_inc = std::find_if(
-        context->incoming_call_.begin(),
-        context->incoming_call_.end(),
-        [&sip_url](const call_t& call) { return (std::string(sip_url) == call.peer_uri); });
+    auto it_inc = std::find_if(context->incoming_call_.begin(),
+                               context->incoming_call_.end(),
+                               [&sip_url](const std::unique_ptr<call_t>& call) {
+                                 return (std::string(sip_url) == call->peer_uri);
+                               });
 
     if (it_inc != context->incoming_call_.end()) {
-      SIPPlugin::this_->pjsip_->run_async([&]() { context->make_hang_up((*it_inc).inv); });
+      SIPPlugin::this_->pjsip_->run_async([&]() { context->make_hang_up((*it_inc)->inv); });
       context->call_cv_.wait(lock, [&context]() {
         if (context->call_action_done_) {
           context->call_action_done_ = false;

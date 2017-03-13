@@ -312,9 +312,11 @@ std::string QuiddityManager_Impl::get_quiddities_description() {
   std::vector<std::string> quids = get_instances();
   for (auto& it : quids) {
     std::shared_ptr<Quiddity> quid = get_quiddity(it);
-    auto name = quid->get_name();
-    subtree->graft(name + ".id", InfoTree::make(quid->get_name()));
-    subtree->graft(name + ".class", InfoTree::make(quid->get_documentation()->get_class_name()));
+    if (quid) {
+      auto name = quid->get_name();
+      subtree->graft(name + ".id", InfoTree::make(quid->get_name()));
+      subtree->graft(name + ".class", InfoTree::make(quid->get_documentation()->get_class_name()));
+    }
   }
   return JSONSerializer::serialize(tree.get());
 }
