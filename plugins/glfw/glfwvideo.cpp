@@ -650,7 +650,7 @@ bool GLFWVideo::setup_shaders() {
   const char* fragment_source = R"(
   #version 330
 
-  in vec2 UV;
+  smooth in vec2 UV;
 
   out vec4 out_color;
 
