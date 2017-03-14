@@ -564,6 +564,25 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
                       "-" + std::string(call->peer_uri, 0, call->peer_uri.find('@')) + "_";
     auto media_label = PJCallUtils::get_media_label(it);
     auto rtp_shmpath = shm_prefix + "rtp-" + media_label;
+    // ensure rtp_shmpath is unique (can happen in case of label collision) and add suffix to
+    // media_label if necessary
+    uint i = 1;
+    std::string rtp_shmpath_suffix;
+    while (call->rtp_writers_.end() !=
+           std::find_if(call->rtp_writers_.cbegin(),
+                        call->rtp_writers_.cend(),
+                        [testpath = rtp_shmpath + rtp_shmpath_suffix](
+                            const std::unique_ptr<ShmdataWriter>& writer) {
+                          return writer->get_path() == testpath;
+                        })) {
+      ++i;
+      rtp_shmpath_suffix = std::to_string(i);
+    }
+    if (!rtp_shmpath_suffix.empty()) {
+      rtp_shmpath = rtp_shmpath + rtp_shmpath_suffix;
+      media_label = media_label + rtp_shmpath_suffix;
+    }
+    // get caps
     auto rtp_caps = PJCallUtils::get_rtp_caps(it);
     if (rtp_caps.empty()) rtp_caps = "unknown_data_type";
 
