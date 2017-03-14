@@ -63,6 +63,8 @@ bool SignalQuid::init() {
 gboolean SignalQuid::my_signal_method(void*, void* user_data) {
   SignalQuid* context = static_cast<SignalQuid*>(user_data);
   context->signal_emit("test-signal");
+  context->graft_tree(".zetremendouskey", InfoTree::make("zegreatvalue"), true);
+  context->prune_tree(".zetremendouskey", true);
   return true;
 }
 }
