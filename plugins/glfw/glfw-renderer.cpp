@@ -39,7 +39,6 @@ void GLFWRenderer::render_loop() {
       continue;
     }
 
-
     int current_window = 0;
 
     {
@@ -55,6 +54,8 @@ void GLFWRenderer::render_loop() {
           if (task && !task()) ret = false;
         }
         if (!ret) continue;
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (current->draw_video_ || current->draw_image_) {
           glBindTexture(GL_TEXTURE_2D, current->drawing_texture_);
