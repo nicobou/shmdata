@@ -60,6 +60,7 @@ class PJCall {
     std::vector<std::unique_ptr<ShmdataWriter>> rtp_writers_{};
     std::unique_ptr<PJICEStreamTrans> ice_trans_{};
     std::unique_ptr<RtpSession2> recv_rtp_session_{};
+    std::mutex shm_subs_mtx_{};
     std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
     std::vector<std::unique_ptr<RTPReceiver>> rtp_receivers_{};
     // as sender

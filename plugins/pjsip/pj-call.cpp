@@ -609,6 +609,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
         [=](GstElement* el, const std::string& media_type, const std::string&) {
           auto shmpath = shm_prefix + media_label + "-" + media_type;
           g_object_set(G_OBJECT(el), "socket-path", shmpath.c_str(), nullptr);
+          std::lock_guard<std::mutex> lock(call->shm_subs_mtx_);
           call->shm_subs_.emplace_back(std::make_unique<GstShmdataSubscriber>(
               el,
               [=](const std::string& caps) {
@@ -621,9 +622,9 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
                 SIPPlugin::this_->expose_stream_to_quiddity(quid_name, shmpath);
               },
               ShmdataStat::make_tree_updater(SIPPlugin::this_, ".shmdata.writer." + shmpath),
-              [=]() {
+              [ =, uri_to_remove = call->peer_uri ]() {
                 SIPPlugin::this_->prune_tree(".shmdata.writer." + shmpath);
-                SIPPlugin::this_->remove_exposed_quiddity(call->peer_uri, quid_name);
+                SIPPlugin::this_->remove_exposed_quiddity(uri_to_remove, quid_name);
               }));
         },
         SIPPlugin::this_->decompress_streams_));
