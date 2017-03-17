@@ -60,6 +60,7 @@ class PJCall {
     std::vector<std::unique_ptr<ShmdataWriter>> rtp_writers_{};
     std::unique_ptr<PJICEStreamTrans> ice_trans_{};
     std::unique_ptr<RtpSession2> recv_rtp_session_{};
+    std::mutex shm_subs_mtx_{};
     std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
     std::vector<std::unique_ptr<RTPReceiver>> rtp_receivers_{};
     // as sender
@@ -87,7 +88,7 @@ class PJCall {
   // internal rtp
   RtpSession2 rtp_session_{};
   std::map<std::string, unsigned> reader_ref_count_{};
-  std::vector<call_t> incoming_call_{};
+  std::vector<std::unique_ptr<call_t>> incoming_call_{};
   std::vector<std::unique_ptr<call_t>> outgoing_call_{};
   std::map<std::string, std::unique_ptr<RTPSender>> readers_{};
 

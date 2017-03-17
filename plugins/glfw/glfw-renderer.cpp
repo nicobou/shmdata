@@ -39,7 +39,6 @@ void GLFWRenderer::render_loop() {
       continue;
     }
 
-
     int current_window = 0;
 
     {

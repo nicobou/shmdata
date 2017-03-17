@@ -2,6 +2,24 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.50 (2017-03-17)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* RTMP quiddity compatible with multiple streaming applications (Youtube/Twitch tested).
+* Defaults glfw window overlay to bottom center and 20 pt font size.
+* Adding tree grafted and pruned to signal quid example.
+* Remove visual disconnection message because it is very often misleading (until we have the reinvite feature).
+* Synchronize SIP account de-registration.
+
+Bug fixes:
+* Fix race condition with shmdata subscribers in pjsip.
+* Put the glClear back awaiting cleanup of the rendering loop because it caused issues with capture cards visualizations.
+* Fixed fragmnent shader (caused intel/amd issues). Removed useless glClear causing flickering on slow computers.
+* Fix sip label collision.
+* Fix some incoming_call_ related crash when caller hangs up.
+
 switcher 0.8.48 (2017-03-06)
 ---------------------------
 This is an official release in the 0.8 stable series.

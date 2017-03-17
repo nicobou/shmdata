@@ -49,13 +49,13 @@ class SIPPlugin : public Quiddity {
   bool stop();
 
  private:
-  std::unique_ptr<ThreadedWrapper<PJSIP>> pjsip_{};
+  pjsua_transport_id transport_id_{-1};
   unsigned int sip_port_{5060};
   PContainer::prop_id_t port_id_;
   std::string dns_address_;
   PContainer::prop_id_t dns_address_id_{0};
-  pjsua_transport_id transport_id_{-1};
   bool decompress_streams_{true};
+  std::unique_ptr<ThreadedWrapper<PJSIP>> pjsip_{};
   PContainer::prop_id_t decompress_streams_id_;
   std::unique_ptr<PJCall> sip_calls_{nullptr};
   std::unique_ptr<PJPresence> sip_presence_{nullptr};

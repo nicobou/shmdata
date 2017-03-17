@@ -48,6 +48,7 @@ class ShmdataWriter : public SafeBoolIdiom {
   // i.e. you need to update this at each write with the size writen,
   // regardless of the shmdata::Writer method you are using
   void bytes_written(size_t size);
+  std::string get_path() const { return shmpath_; }
 
  private:
   Quiddity* quid_;

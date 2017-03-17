@@ -226,6 +226,7 @@ bool NVencES::initialize_encoder(GUID encodeGuid,
   } else {
     preset_config_.presetCfg.version = NV_ENC_CONFIG_VER;
     preset_config_.presetCfg.profileGUID = profileGuid;
+    preset_config_.presetCfg.gopLength = 10;  // 3 I frames per second @ 30FPS
     if (bitrate) preset_config_.presetCfg.rcParams.averageBitRate = bitrate;
 
     if (is_same(encodeGuid, NV_ENC_CODEC_H264_GUID)) {

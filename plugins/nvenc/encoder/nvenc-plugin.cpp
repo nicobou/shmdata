@@ -419,7 +419,7 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
 
   shmw_ = std::make_unique<ShmdataWriter>(
       this,
-      make_file_name("encoded-video"),
+      make_file_name("video-encoded"),
       1,
       std::string("video/" + codec + ", stream-format=(string)byte-stream, "
                                      "alignment=(string)au, profile=(string)baseline" +
