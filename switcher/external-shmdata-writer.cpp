@@ -18,6 +18,7 @@
  */
 
 #include "./external-shmdata-writer.hpp"
+#include "./shmdata-utils.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalShmdataWriter,
@@ -32,23 +33,28 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalShmdataWriter,
 ExternalShmdataWriter::ExternalShmdataWriter(const std::string&) {}
 
 bool ExternalShmdataWriter::init() {
-  pmanage<MPtr(&PContainer::make_string)>("shmdata-path",
-                                          [this](const std::string& val) {
-                                            shmdata_path_ = val;
-                                            shm_ = std::make_unique<ShmdataFollower>(
-                                                this,
-                                                shmdata_path_,
-                                                nullptr,
-                                                nullptr,
-                                                nullptr,
-                                                ShmdataStat::kDefaultUpdateInterval,
-                                                ".shmdata.writer.");
-                                            return true;
-                                          },
-                                          [this]() { return shmdata_path_; },
-                                          "Shmdata Path",
-                                          "Path Of The Shmdata The Include",
-                                          "");
+  pmanage<MPtr(&PContainer::make_string)>(
+      "shmdata-path",
+      [this](const std::string& val) {
+        shmdata_path_ = val;
+        std::string data_type = "unknown_type";
+        std::string path_prefix = ".shmdata.writer.";
+        graft_tree(path_prefix + shmdata_path_,
+                   ShmdataUtils::make_tree(
+                       data_type, ShmdataUtils::get_category(data_type), ShmdataStat()));
+        shm_ = std::make_unique<ShmdataFollower>(this,
+                                                 shmdata_path_,
+                                                 nullptr,
+                                                 nullptr,
+                                                 nullptr,
+                                                 ShmdataStat::kDefaultUpdateInterval,
+                                                 path_prefix);
+        return true;
+      },
+      [this]() { return shmdata_path_; },
+      "Shmdata Path",
+      "Path Of The Shmdata The Include",
+      "");
   return true;
 }
 
