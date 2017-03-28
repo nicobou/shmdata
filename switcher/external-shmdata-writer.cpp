@@ -18,6 +18,7 @@
  */
 
 #include "./external-shmdata-writer.hpp"
+#include "./information-tree-json.hpp"
 #include "./shmdata-utils.hpp"
 
 namespace switcher {
@@ -37,18 +38,13 @@ bool ExternalShmdataWriter::init() {
       "shmdata-path",
       [this](const std::string& val) {
         shmdata_path_ = val;
-        std::string data_type = "unknown_type";
-        std::string path_prefix = ".shmdata.writer.";
-        graft_tree(path_prefix + shmdata_path_,
-                   ShmdataUtils::make_tree(
-                       data_type, ShmdataUtils::get_category(data_type), ShmdataStat()));
         shm_ = std::make_unique<ShmdataFollower>(this,
                                                  shmdata_path_,
                                                  nullptr,
                                                  nullptr,
                                                  nullptr,
                                                  ShmdataStat::kDefaultUpdateInterval,
-                                                 path_prefix);
+                                                 ".shmdata.writer.");
         return true;
       },
       [this]() { return shmdata_path_; },
@@ -56,6 +52,15 @@ bool ExternalShmdataWriter::init() {
       "Path Of The Shmdata The Include",
       "");
   return true;
+}
+
+InfoTree::ptr ExternalShmdataWriter::on_saving() {
+  return JSONSerializer::deserialize(tree<MPtr(&InfoTree::serialize_json)>(".shmdata.writer."));
+}
+
+void ExternalShmdataWriter::on_loading(InfoTree::ptr&& tree) {
+  if (tree->empty()) return;
+  graft_tree(".shmdata.writer.", tree);
 }
 
 }  // namespace switcher

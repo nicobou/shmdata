@@ -37,6 +37,8 @@ class ExternalShmdataWriter : public Quiddity {
   std::string shmdata_path_{};
   std::unique_ptr<ShmdataFollower> shm_{nullptr};
   bool init() final;
+  InfoTree::ptr on_saving() final;
+  void on_loading(InfoTree::ptr&& tree) final;
 };
 
 }  // namespace switcher
