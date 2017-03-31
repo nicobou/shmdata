@@ -105,7 +105,7 @@ It will display a list of the configuration variables for the build.
 * Install dependencies:
 
 ```
-    $ brew install cmake pkg-config gsoap glib json-glib gstreamer gst-libav gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly liblo portmidi python3 swh-plugins
+    $ brew install cmake pkg-config gsoap glib json-glib gstreamer gst-libav gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly liblo portmidi python3 libltc curl ossp-uuid
 ```
 
 * Build and install:

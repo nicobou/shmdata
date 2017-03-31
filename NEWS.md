@@ -2,6 +2,17 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.52 (2017-03-31)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+Bug fixes:
+* fix rtmp does not seem to connect to shmdata
+* fix can-sink-cap brocken in scenic wyth extshm
+* init tree with shmpath in extshmwriter
+* update dependencies for OSX
+* fix logs not displayed with switcher
+
 switcher 0.8.50 (2017-03-17)
 ---------------------------
 This is an official release in the 0.8 stable series.

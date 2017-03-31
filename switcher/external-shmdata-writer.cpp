@@ -18,6 +18,8 @@
  */
 
 #include "./external-shmdata-writer.hpp"
+#include "./information-tree-json.hpp"
+#include "./shmdata-utils.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalShmdataWriter,
@@ -32,24 +34,33 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalShmdataWriter,
 ExternalShmdataWriter::ExternalShmdataWriter(const std::string&) {}
 
 bool ExternalShmdataWriter::init() {
-  pmanage<MPtr(&PContainer::make_string)>("shmdata-path",
-                                          [this](const std::string& val) {
-                                            shmdata_path_ = val;
-                                            shm_ = std::make_unique<ShmdataFollower>(
-                                                this,
-                                                shmdata_path_,
-                                                nullptr,
-                                                nullptr,
-                                                nullptr,
-                                                ShmdataStat::kDefaultUpdateInterval,
-                                                ".shmdata.writer.");
-                                            return true;
-                                          },
-                                          [this]() { return shmdata_path_; },
-                                          "Shmdata Path",
-                                          "Path Of The Shmdata The Include",
-                                          "");
+  pmanage<MPtr(&PContainer::make_string)>(
+      "shmdata-path",
+      [this](const std::string& val) {
+        shmdata_path_ = val;
+        shm_ = std::make_unique<ShmdataFollower>(this,
+                                                 shmdata_path_,
+                                                 nullptr,
+                                                 nullptr,
+                                                 nullptr,
+                                                 ShmdataStat::kDefaultUpdateInterval,
+                                                 ".shmdata.writer.");
+        return true;
+      },
+      [this]() { return shmdata_path_; },
+      "Shmdata Path",
+      "Path Of The Shmdata The Include",
+      "");
   return true;
+}
+
+InfoTree::ptr ExternalShmdataWriter::on_saving() {
+  return JSONSerializer::deserialize(tree<MPtr(&InfoTree::serialize_json)>(".shmdata.writer."));
+}
+
+void ExternalShmdataWriter::on_loading(InfoTree::ptr&& tree) {
+  if (tree->empty()) return;
+  graft_tree(".shmdata.writer.", tree);
 }
 
 }  // namespace switcher

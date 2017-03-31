@@ -86,31 +86,26 @@ bool RTMP::create_gst_pipeline() {
   shmvideo_sub_.reset();
   gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
 
-  if (audio_shmpath_.empty() && video_shmpath_.empty()) {
-    g_warning("Could not start stream because no video or audio is connected (rtmp).");
-    return false;
+  std::string dest = "rtmpsink";
+  if (audio_shmpath_.empty() || video_shmpath_.empty()) {
+    g_warning("Could not send stream because no video or audio is connected (rtmp).");
+    dest = "fakesink";
   }
 
   if (stream_app_url_.empty() || stream_key_.empty()) {
-    g_warning("Could not start stream because stream application URL or key is empty (rtmp).");
-    return false;
+    g_warning("Could not send stream because stream application URL or key is empty (rtmp).");
+    dest = "fakesink";
   }
 
   std::string description =
-      "flvmux streamable=true name=mux ! queue ! rtmpsink name=rtmpsink sync=false ";
+      "flvmux streamable=true name=mux ! queue ! " + dest + " name=rtmpsink sync=false ";
 
-  if (!video_shmpath_.empty()) {
-    description += "shmdatasrc name=shmvideo copy-buffers=true do-timestamp=true ! ";
-  } else {
-    description += "videotestsrc pattern=2 ! x264enc ! ";  // Black screen if we lose video
-  }
+  description +=
+      "shmdatasrc socket-path=/tmp/fake name=shmvideo copy-buffers=true do-timestamp=true ! ";
   description += "h264parse ! queue ! mux. ";
 
-  if (!audio_shmpath_.empty()) {
-    description += "shmdatasrc name=shmaudio copy-buffers=true do-timestamp=true ! ";
-  } else {
-    description += "audiotestsrc wave=4 ! ";  // Silence if we lose audio
-  }
+  description +=
+      "shmdatasrc socket-path=/tmp/fake name=shmaudio copy-buffers=true do-timestamp=true ! ";
   description += "audioconvert ! audioresample ! queue ! voaacenc bitrate=256000 ! queue ! mux.";
 
   GError* error = nullptr;
@@ -126,10 +121,6 @@ bool RTMP::create_gst_pipeline() {
 
   if (!video_shmpath_.empty()) {
     auto shmdatavideo = gst_bin_get_by_name(GST_BIN(bin), "shmvideo");
-    if (!shmdatavideo) {
-      g_warning("Could not find element shmvideo in GstBin (rtmp)");
-      return false;
-    }
     g_object_set(G_OBJECT(shmdatavideo), "socket-path", video_shmpath_.c_str(), nullptr);
 
     shmvideo_sub_ = std::make_unique<GstShmdataSubscriber>(
@@ -145,12 +136,7 @@ bool RTMP::create_gst_pipeline() {
 
   if (!audio_shmpath_.empty()) {
     auto shmdataaudio = gst_bin_get_by_name(GST_BIN(bin), "shmaudio");
-    if (!shmdataaudio) {
-      g_warning("Could not find element shmaudio in GstBin (rtmp)");
-      return false;
-    }
     g_object_set(G_OBJECT(shmdataaudio), "socket-path", audio_shmpath_.c_str(), nullptr);
-
     shmaudio_sub_ = std::make_unique<GstShmdataSubscriber>(
         shmdataaudio,
         [this](const std::string& str_caps) {
@@ -162,16 +148,14 @@ bool RTMP::create_gst_pipeline() {
         [this]() { prune_tree(".shmdata.reader." + video_shmpath_); });
   }
 
-  auto rtmpsink = gst_bin_get_by_name(GST_BIN(bin), "rtmpsink");
-  if (!rtmpsink) {
-    g_warning("Could not find element rtmpsink in GstBin (rtmp)");
-    return false;
+  if (!audio_shmpath_.empty() && !video_shmpath_.empty() && !stream_app_url_.empty() &&
+      !stream_key_.empty()) {
+    auto rtmpsink = gst_bin_get_by_name(GST_BIN(bin), "rtmpsink");
+    g_object_set(
+        G_OBJECT(rtmpsink), "location", (stream_app_url_ + "/" + stream_key_).c_str(), nullptr);
   }
-  g_object_set(
-      G_OBJECT(rtmpsink), "location", (stream_app_url_ + "/" + stream_key_).c_str(), nullptr);
 
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), bin);
-
   gst_pipeline_->play(true);
 
   return true;
@@ -190,7 +174,8 @@ bool RTMP::on_shmdata_connect(const std::string& shmpath, ShmType type) {
   }
 
   // We create it but if video and audio were both disconnected the pipeline will just be reset.
-  return create_gst_pipeline();
+  create_gst_pipeline();
+  return true;
 }
 
 bool RTMP::on_shmdata_disconnect(ShmType type) {
@@ -203,7 +188,8 @@ bool RTMP::on_shmdata_disconnect(ShmType type) {
       break;
   }
 
-  return create_gst_pipeline();
+  create_gst_pipeline();
+  return true;
 }
 
 bool RTMP::can_sink_caps(std::string str_caps) {

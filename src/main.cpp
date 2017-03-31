@@ -170,59 +170,57 @@ int main(int argc, char* argv[]) {
   manager = QuiddityManager::make_manager(server_name);
 
   // create logger managing switcher log domain
-  manager->create("logger", "internal_logger");
+  auto internal_logger = manager->create("logger", "internal-logger");
   // manage logs from shmdata
-  manager->invoke_va("internal_logger", "install_log_handler", nullptr, "shmdata", nullptr);
+  manager->invoke_va(internal_logger, "install_log_handler", nullptr, "shmdata", nullptr);
   // manage logs from GStreamer
-  manager->invoke_va("internal_logger", "install_log_handler", nullptr, "GStreamer", nullptr);
+  manager->invoke_va(internal_logger, "install_log_handler", nullptr, "GStreamer", nullptr);
   // manage logs from Glib
-  manager->invoke_va("internal_logger", "install_log_handler", nullptr, "GLib", nullptr);
+  manager->invoke_va(internal_logger, "install_log_handler", nullptr, "GLib", nullptr);
   // manage logs from Glib-GObject
-  manager->invoke_va("internal_logger", "install_log_handler", nullptr, "GLib-GObject", nullptr);
+  manager->invoke_va(internal_logger, "install_log_handler", nullptr, "GLib-GObject", nullptr);
 
   if (quiet)
     manager->use_prop<MPtr(&PContainer::set_str)>(
-        "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger", "mute"),
+        internal_logger,
+        manager->use_prop<MPtr(&PContainer::get_id)>(internal_logger, "mute"),
         "true");
   else
     manager->use_prop<MPtr(&PContainer::set_str)>(
-        "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger", "mute"),
+        internal_logger,
+        manager->use_prop<MPtr(&PContainer::get_id)>(internal_logger, "mute"),
         "false");
 
   if (debug)
     manager->use_prop<MPtr(&PContainer::set_str)>(
-        "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger", "debug"),
+        internal_logger,
+        manager->use_prop<MPtr(&PContainer::get_id)>(internal_logger, "debug"),
         "true");
   else
     manager->use_prop<MPtr(&PContainer::set_str)>(
-        "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger", "debug"),
+        internal_logger,
+        manager->use_prop<MPtr(&PContainer::get_id)>(internal_logger, "debug"),
         "false");
 
   if (verbose)
     manager->use_prop<MPtr(&PContainer::set_str)>(
-        "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger", "verbose"),
+        internal_logger,
+        manager->use_prop<MPtr(&PContainer::get_id)>(internal_logger, "verbose"),
         "true");
   else
     manager->use_prop<MPtr(&PContainer::set_str)>(
-        "internal_logger",
-        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger", "verbose"),
+        internal_logger,
+        manager->use_prop<MPtr(&PContainer::get_id)>(internal_logger, "verbose"),
         "false");
 
   // subscribe to logs:
   {
-    auto last_line_id =
-        manager->use_prop<MPtr(&PContainer::get_id)>("internal_logger", "last-line");
-    auto manager_ptr = manager.get();
+    auto last_line_id = manager->use_prop<MPtr(&PContainer::get_id)>(internal_logger, "last-line");
     manager->use_prop<MPtr(&PContainer::subscribe)>(
-        "internal_logger", last_line_id, [last_line_id, manager_ptr]() {
-          g_print("%s\n",
-                  manager->use_prop<MPtr(&PContainer::get_str)>("internal_logger", last_line_id)
-                      .c_str());
+        internal_logger, last_line_id, [last_line_id, internal_logger]() {
+          g_print(
+              "%s\n",
+              manager->use_prop<MPtr(&PContainer::get_str)>(internal_logger, last_line_id).c_str());
         });
   }
 
@@ -294,48 +292,6 @@ int main(int argc, char* argv[]) {
 
     manager->play_command_history(histo, nullptr, nullptr, true);
   }
-
-// manager->create ("videotestsrc", "vid");
-// manager->create("videosink","win");
-// manager->invoke_va ("win",
-//    "connect",
-//                     nullptr,
-//    "/tmp/switcher_default_vid_video",
-//    nullptr);
-
-// //  g_print ("---- histo testing ------ \n");
-// manager->save_command_history ("trup.switcher");
-
-// manager->reset_command_history(true);
-
-// // manager->reboot ();
-
-// g_print ("---- reset done ----\n");
-// g_print ("--- %s\n",manager->get_quiddities_description ().c_str ());
-
-// QuiddityManager::CommandHistory histo =
-//   manager->get_command_history_from_file ("trup.switcher");
-
-// // std::vector <std::string> prop_subscriber_names =
-// //   manager->get_property_subscribers_names (histo);
-
-// //    // for (auto &it: prop_subscriber_names)
-// //    //   g_print ("prop sub %s\n", it.c_str ());
-
-// //    // std::vector <std::string> signal_subscriber_names =
-// //    //   manager->get_signal_subscribers_names (histo);
-
-// //    // for (auto &it: signal_subscriber_names)
-// //    //   g_print ("signal sub %s\n", it.c_str ());
-
-//      QuiddityManager::PropCallbackMap prop_cb_data;
-//      prop_cb_data ["log_sub"] = std::make_pair (logger_cb, (void *)nullptr);
-//      QuiddityManager::SignalCallbackMap sig_cb_data;
-//      sig_cb_data["create_remove_subscriber"] = std::make_pair
-//      (quiddity_created_removed_cb, (void *)nullptr);
-//      manager->play_command_history (histo, &prop_cb_data, &sig_cb_data);
-//      g_print ("--fin-- %s\n",manager->get_quiddities_description ().c_str
-//      ());
 
 #if HAVE_GTK
   if (!gtk_init_check(nullptr, nullptr))
