@@ -19,14 +19,14 @@ test:
   stage: test
   image: $CI_REGISTRY_IMAGE:ci
   script:
-    - mkdir build && cd build && cmake .. && make -j"$(nproc)"
+    - mkdir build && cd build && cmake .. -DENABLE_GPL=ON && make -j"$(nproc)"
     - make test
 
 test-package:
   stage: test-package
   image: $CI_REGISTRY_IMAGE:ci
   script:
-    - mkdir build && cd build && cmake .. && make package_source_test
+    - mkdir build && cd build && cmake .. -DENABLE_GPL=ON && make package_source_test
   only:
     - develop
     - master

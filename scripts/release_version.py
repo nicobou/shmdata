@@ -87,7 +87,7 @@ def update_switcher_shmdata_version():
     if not os.path.isdir(build_dir):
         os.mkdir(build_dir)
     os.chdir(build_dir)
-    if subprocess.call('cmake -DCMAKE_BUILD_TYPE=Release .. && make -j {} && sudo make install'
+    if subprocess.call('cmake -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE=Release .. && make -j {} && sudo make install'
                                .format(multiprocessing.cpu_count()), shell=True) != 0:
         printerr('{} build failed, stopping the release.'.format(lib))
     lib_repo = '{}/{}.git'.format(git_path, lib)

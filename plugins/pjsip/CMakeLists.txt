@@ -1,7 +1,9 @@
 set(PLUGIN_NAME "plugin-sip")
 set(PLUGIN_DESCRIPTION "SIP Plugin")
 
-option(PLUGIN_SIP "${PLUGIN_DESCRIPTION}" ON)
+cmake_dependent_option(PLUGIN_SIP "${PLUGIN_DESCRIPTION}" ON
+                       "ENABLE_GPL" OFF)
+
 add_feature_info("${PLUGIN_NAME}" PLUGIN_SIP "${PLUGIN_DESCRIPTION}")
 
 if (PLUGIN_SIP)

@@ -66,6 +66,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(FeatureSummary)
 include(CPack)
 include(PackageSourceTest)
+include(CMakeDependentOption)
 
 #
 # PROJECT
@@ -73,6 +74,7 @@ include(PackageSourceTest)
 
 project(Switcher)
 enable_testing()
+option(ENABLE_GPL "Compile plugins using GPL libraries" OFF)
 
 # Prerequisites
 find_package(PkgConfig REQUIRED)

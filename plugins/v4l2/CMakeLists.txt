@@ -8,7 +8,8 @@ endif()
 set(PLUGIN_NAME "plugin-v4l2")
 set(PLUGIN_DESCRIPTION "Video for Linux 2 Plugin")
 
-option(PLUGIN_V4L2 "${PLUGIN_DESCRIPTION}" ${ENABLED})
+cmake_dependent_option(PLUGIN_V4L2 "${PLUGIN_DESCRIPTION}" ${ENABLED}
+                       "ENABLE_GPL" OFF)
 add_feature_info("${PLUGIN_NAME}" PLUGIN_V4L2 "${PLUGIN_DESCRIPTION}")
 
 if (PLUGIN_V4L2)
