@@ -32,6 +32,11 @@ $ ccmake ..
     
 It will display a list of the configuration variables for the build.
 
+When running non-interactive cmake you have to set the ENABLE\_GPL option if you want SIP and video features, otherwise they will be disabled by default:
+```
+$ cmake .. -DENABLE_GPL=ON
+```
+
 ## Build Nvidia Video Codec 7 plugin
 
 1. Check that you are running Nvidia drivers:
