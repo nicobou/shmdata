@@ -33,7 +33,6 @@ Specifically, the GPL parts of libswitcher are:
 switcher-pjsip
 switcher-v4l2
 switcher-gsoap
-switcher-ctrl
  
 Sponsors
 --------
