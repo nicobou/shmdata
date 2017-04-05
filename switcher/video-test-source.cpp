@@ -18,9 +18,7 @@
  */
 
 #include "./video-test-source.hpp"
-#include <gst/gst.h>
 #include "switcher/gprop-to-prop.hpp"
-#include "switcher/gst-utils.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
 
@@ -49,7 +47,7 @@ VideoTestSource::VideoTestSource(const std::string&)
             pmanage<MPtr(&PContainer::set<int>)>(width_id_, fract.numerator());
             pmanage<MPtr(&PContainer::set<int>)>(height_id_, fract.denominator());
             static const std::string why_disconnected =
-                "this property is available only with custom resolution";
+                "This property is available only with custom resolution";
             pmanage<MPtr(&PContainer::disable)>(width_id_, why_disconnected);
             pmanage<MPtr(&PContainer::disable)>(height_id_, why_disconnected);
             return true;
@@ -101,6 +99,9 @@ VideoTestSource::VideoTestSource(const std::string&)
                                                                "Video Pixel Format",
                                                                "Select the pixel video format",
                                                                formats_)) {
+  // We do this so that width and height properties states are correct.
+  pmanage<MPtr(&PContainer::set_to_current)>(resolutions_id_);
+
   init_startable(this);
 }
 
@@ -178,11 +179,9 @@ bool VideoTestSource::start() {
                      nullptr);
     gst_element_link_many(
         videotestsrc_.get_raw(), capsfilter_.get_raw(), shmdatasink_.get_raw(), nullptr);
-    if (resolutions_.get_current() == "Custom") {
-      pmanage<MPtr(&PContainer::enable)>(width_id_);
-      pmanage<MPtr(&PContainer::enable)>(height_id_);
-    }
     pmanage<MPtr(&PContainer::enable)>(resolutions_id_);
+    // This way it will let the setter manage the state of width/height property.
+    pmanage<MPtr(&PContainer::set_to_current)>(resolutions_id_);
     pmanage<MPtr(&PContainer::enable)>(framerates_id_);
     pmanage<MPtr(&PContainer::enable)>(formats_id_);
     return true;
