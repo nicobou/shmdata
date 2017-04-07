@@ -5,6 +5,9 @@ stages:
   - test
   - test-package
 
+services:
+  - docker:dind
+
 prepare_docker:
   stage: prepare_docker
   image: docker:git
