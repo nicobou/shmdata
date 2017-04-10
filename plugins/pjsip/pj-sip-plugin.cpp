@@ -51,11 +51,14 @@ SIPPlugin::SIPPlugin(const std::string&)
           "SIP Port",
           "SIP port used when registering",
           std::to_string(sip_port_))),
-      dns_address_(NetUtils::get_system_dns()),
+      default_dns_address_(NetUtils::get_system_dns()),
+      dns_address_(default_dns_address_),
       dns_address_id_(pmanage<MPtr(&PContainer::make_string)>(
           "dns_addr",
-          [this](const std::string& val) {
+          [this](const std::string& requested_val) {
+            auto val = requested_val;
             if (val.empty()) return false;
+            if ("default" == requested_val) val = default_dns_address_;
             if (!NetUtils::is_valid_IP(val)) {
               g_message(
                   "ERROR:Not a valid IP address, expected x.y.z.a with x, y, z, a in [0:255].");
@@ -289,6 +292,15 @@ void SIPPlugin::remove_exposed_quiddities(const std::string& peer_uri) {
   for (auto& it : quids_to_remove) {
     manager->remove(it);
   }
+}
+
+InfoTree::ptr SIPPlugin::on_saving() {
+  if (dns_address_ == default_dns_address_) dns_address_ = "default";
+  return InfoTree::make();
+}
+
+void SIPPlugin::on_saved() {
+  if (dns_address_ == "default") dns_address_ = default_dns_address_;
 }
 
 }  // namespace switcher

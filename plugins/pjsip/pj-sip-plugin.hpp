@@ -52,6 +52,7 @@ class SIPPlugin : public Quiddity {
   pjsua_transport_id transport_id_{-1};
   unsigned int sip_port_{5060};
   PContainer::prop_id_t port_id_;
+  std::string default_dns_address_;
   std::string dns_address_;
   PContainer::prop_id_t dns_address_id_{0};
   bool decompress_streams_{true};
@@ -78,6 +79,10 @@ class SIPPlugin : public Quiddity {
   void expose_stream_to_quiddity(const std::string& quid_name, const std::string& shmpath);
   void remove_exposed_quiddity(const std::string& peer_uri, const std::string& quid_name);
   void remove_exposed_quiddities(const std::string& peer_uri);
+
+  // on_saving and on_saved methods set DNS server to "default" when system (default) DNS is used.
+  InfoTree::ptr on_saving() final;
+  void on_saved() final;
 };
 
 }  // namespace switcher
