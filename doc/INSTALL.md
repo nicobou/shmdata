@@ -12,7 +12,7 @@ $ sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgs
 $ git submodule update --init --recursive
 $ mkdir build
 $ cd build
-$ cmake ..
+$ cmake -DENABLE_GPL=ON ..
 $ make -j"$(nproc)"
 $ sudo make install
 $ sudo ldconfig
@@ -31,6 +31,11 @@ $ ccmake ..
 ```
     
 It will display a list of the configuration variables for the build.
+
+When running non-interactive cmake you have to set the ENABLE\_GPL option if you want SIP and video features, otherwise they will be disabled by default:
+```
+$ cmake .. -DENABLE_GPL=ON
+```
 
 ## Build Nvidia Video Codec 7 plugin
 
@@ -96,6 +101,13 @@ It will display a list of the configuration variables for the build.
 
 # Mac OS X Installation
 
+* Install xcode
+
+Then install command line tools. From the terminal:
+```
+xcode-select --install
+```
+
 * Install **[Homebrew](https://github.com/Homebrew/brew)**:
 
 ```
@@ -105,7 +117,7 @@ It will display a list of the configuration variables for the build.
 * Install dependencies:
 
 ```
-    $ brew install cmake pkg-config gsoap glib json-glib gstreamer gst-libav gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly liblo portmidi python3 libltc curl ossp-uuid
+    $ brew install cmake pkg-config gsoap glib json-glib gstreamer gst-libav gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly liblo portmidi python3 libltc curl ossp-uuid jack qjackctl
 ```
 
 * Build and install:

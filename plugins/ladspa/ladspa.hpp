@@ -92,7 +92,6 @@ class LADSPA : public Quiddity {
   bool reset_saved_properties_{false};  //!< Used to keep saved properties in some cases
 
   int channels_number_{1};
-  PContainer::prop_id_t global_group_id_{0};      //!< Group containing global properties
   PContainer::prop_id_t perchannel_group_id_{0};  //!< Group containing per-channel properties
   PluginList plugins_list_;           //!< List of all LADSPA plugins available on the system
   Selection<> plugins_;               //!< Plugin list property data

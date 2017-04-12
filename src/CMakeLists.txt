@@ -4,7 +4,9 @@ link_libraries(
 
 # Switcher
 
-option(WITH_SWITCHER "Switcher Command Line" ON)
+cmake_dependent_option(WITH_SWITCHER "Switcher Command Line" ON
+                       "PLUGIN_GSOAP" OFF)
+
 add_feature_info("switcher" WITH_SWITCHER "Switcher Command Line")
 if (WITH_SWITCHER)
 
@@ -43,7 +45,9 @@ endif ()
 
 # Switcher Control
 
-option(WITH_SWITCHER_CTRL "Switcher Control" ON)
+
+cmake_dependent_option(WITH_SWITCHER_CTRL "Switcher Control" ON
+                       "PLUGIN_GSOAP" OFF)
 add_feature_info("switcher-ctrl" WITH_SWITCHER_CTRL "Switcher Control")
 if (WITH_SWITCHER_CTRL)
 

@@ -5,7 +5,9 @@ pkg_check_modules(GSOAP gsoap++)
 set(PLUGIN_NAME "plugin-gsoap")
 set(PLUGIN_DESCRIPTION "GSoap Plugin")
 
-option(PLUGIN_GSOAP "${PLUGIN_DESCRIPTION}" ${GSOAP_FOUND})
+cmake_dependent_option(PLUGIN_GSOAP "${PLUGIN_DESCRIPTION}" ${GSOAP_FOUND}
+                       "ENABLE_GPL" OFF)
+
 add_feature_info("${PLUGIN_NAME}" PLUGIN_GSOAP "${PLUGIN_DESCRIPTION}")
 
 if (PLUGIN_GSOAP)

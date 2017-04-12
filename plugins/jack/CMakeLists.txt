@@ -19,7 +19,7 @@ if (PLUGIN_JACK)
     )
 
     link_libraries(
-        ${JACK_LIBRARIES}
+	${JACK_LIBRARIES}
     )
 
     # Shm-to-jack

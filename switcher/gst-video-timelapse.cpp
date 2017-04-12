@@ -55,14 +55,22 @@ GstVideoTimelapse::GstVideoTimelapse(const GstVideoTimelapseConfig& config,
   else if (0 == config_.width_ && 0 != config_.height_)
     width_height = std::string(" ! videoscale ! video/x-raw, ") + " height=" +
                    std::to_string(config_.height_) + ", pixel-aspect-ratio=1/1";
+
+  // FIXME: pixel-aspect-ratio is fixed here because videorate absolutely needs it and it is not
+  // possible to know the caps at the moment we create this pipeline. Also a shmdata connected to
+  // this quiddity must
+  // provide a framerate. Ideally we would detect that we have these informations and put default
+  // ones if we don't.
   std::string description(
       std::string("shmdatasrc socket-path=") + config_.orig_shmpath_ +
-      " copy-buffers=true do-timestamp=true ! queue " + " ! videorate ! video/x-raw, framerate=" +
+      " copy-buffers=true do-timestamp=true ! queue ! video/x-raw, " +
+      "pixel-aspect-ratio=1/1 ! videorate ! video/x-raw, framerate=" +
       std::to_string(config_.framerate_num_) + "/" + std::to_string(config_.framerate_denom_) +
       width_height + " ! videoconvert " + " ! jpegenc quality=" +
       std::to_string(config_.jpg_quality_) + " ! multifilesink post-messages=true " +
       +" max-files=" + std::to_string(config_.max_files_) + " location=\"" + config_.image_path_ +
       "\"");
+
   GstElement* bin = gst_parse_bin_from_description(description.c_str(), TRUE, &error);
   if (error != nullptr) {
     g_warning("%s", error->message);

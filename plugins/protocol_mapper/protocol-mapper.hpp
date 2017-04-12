@@ -32,8 +32,6 @@ class ProtocolMapper : public Quiddity {
  private:
   bool init() final { return true; }
 
-  bool is_valid_{true};
-
   // Protocol configuration
   std::string config_file_{};
   PContainer::prop_id_t config_file_id_;

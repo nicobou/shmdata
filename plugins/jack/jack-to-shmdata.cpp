@@ -136,7 +136,34 @@ bool JackToShmdata::start() {
       std::to_string(jack_client_.get_sample_rate()) +
       ", "
       "channels=" +
-      std::to_string(num_channels_) + ", channel-mask=(bitmask)0x0");
+      std::to_string(num_channels_) + ", channel-mask=(bitmask)");
+  // This channel mask is used by most encoders.
+  // Here is the reference for the values according to the number of channels: https://goo.gl/M4b7Di
+  std::string channel_mask;
+  switch (num_channels_) {
+    case 1:
+      channel_mask = "0x1";
+      break;
+    case 2:
+      channel_mask = "0x3";
+      break;
+    case 3:
+      channel_mask = "0x7";
+      break;
+    case 4:
+      channel_mask = "0x107";
+      break;
+    case 5:
+      channel_mask = "0x37";
+      break;
+    case 6:
+      channel_mask = "0x3f";
+      break;
+    default:
+      channel_mask = "0x0";
+      break;
+  }
+  data_type += channel_mask;
 
   std::string shmpath = make_file_name("audio");
   shm_ = std::make_unique<ShmdataWriter>(

@@ -145,7 +145,7 @@ bool RTMP::create_gst_pipeline() {
                          str_caps, ShmdataUtils::get_category(str_caps), ShmdataStat()));
         },
         ShmdataStat::make_tree_updater(this, ".shmdata.reader." + audio_shmpath_),
-        [this]() { prune_tree(".shmdata.reader." + video_shmpath_); });
+        [this]() { prune_tree(".shmdata.reader." + audio_shmpath_); });
   }
 
   if (!audio_shmpath_.empty() && !video_shmpath_.empty() && !stream_app_url_.empty() &&

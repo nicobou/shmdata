@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.5.1)
 set(SWITCHER_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SWITCHER_VERSION_MAJOR 0)
 set(SWITCHER_VERSION_MINOR 8)
-set(SWITCHER_VERSION_PATCH 52)
+set(SWITCHER_VERSION_PATCH 54)
 set(SWITCHER_VERSION_STRING ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR}.${SWITCHER_VERSION_PATCH})
 set(SWITCHER_API_VERSION ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR})
 set(SWITCHER_LIBRARY switcher-${SWITCHER_API_VERSION})
@@ -66,6 +66,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(FeatureSummary)
 include(CPack)
 include(PackageSourceTest)
+include(CMakeDependentOption)
 
 #
 # PROJECT
@@ -73,6 +74,7 @@ include(PackageSourceTest)
 
 project(Switcher)
 enable_testing()
+option(ENABLE_GPL "Compile plugins using GPL libraries" OFF)
 
 # Prerequisites
 find_package(PkgConfig REQUIRED)
