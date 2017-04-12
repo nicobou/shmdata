@@ -2,6 +2,21 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.54 (2017-04-12)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* ENABLE_GPL is now available as a compilation option, see README for more details.
+
+Bug fixes:
+* OSX compilation.
+* Save default instead of IP address when SIP DNS server is default.
+* Fixes enabled/disabled state and message for width and height of videotestsrc.
+* Force pixel-aspect-ratio in timelapse to fix deadlock when not providing one.
+* Copy/paste error in audio shmdata subscriber pruning callback in RTMP quiddity.
+* Fixes hardcoded channel mask for jacksrc shmdata.
+
 switcher 0.8.52 (2017-03-31)
 ---------------------------
 This is an official release in the 0.8 stable series.
