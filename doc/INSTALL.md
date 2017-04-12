@@ -12,7 +12,7 @@ $ sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgs
 $ git submodule update --init --recursive
 $ mkdir build
 $ cd build
-$ cmake ..
+$ cmake -DENABLE_GPL=ON ..
 $ make -j"$(nproc)"
 $ sudo make install
 $ sudo ldconfig
@@ -101,6 +101,13 @@ $ cmake .. -DENABLE_GPL=ON
 
 # Mac OS X Installation
 
+* Install xcode
+
+Then install command line tools. From the terminal:
+```
+xcode-select --install
+```
+
 * Install **[Homebrew](https://github.com/Homebrew/brew)**:
 
 ```
@@ -110,7 +117,7 @@ $ cmake .. -DENABLE_GPL=ON
 * Install dependencies:
 
 ```
-    $ brew install cmake pkg-config gsoap glib json-glib gstreamer gst-libav gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly liblo portmidi python3 libltc curl ossp-uuid
+    $ brew install cmake pkg-config gsoap glib json-glib gstreamer gst-libav gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly liblo portmidi python3 libltc curl ossp-uuid jack qjackctl
 ```
 
 * Build and install:

@@ -36,7 +36,12 @@ if (PLUGIN_GLFW)
         add_definitions(-Wno-error=shift-negative-value)
     endif()
 
-    add_definitions(-Wno-error=maybe-uninitialized)
+    if (OSX)
+        add_definitions(-Wno-error=uninitialized)
+        add_definitions(-Wno-error=unknown-pragmas)
+    else ()
+        add_definitions(-Wno-error=maybe-uninitialized)
+    endif ()
 
     include_directories(
         ${GLFW_INCLUDE_DIRS}

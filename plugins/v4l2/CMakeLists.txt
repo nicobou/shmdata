@@ -1,6 +1,7 @@
 # PLUGIN
 
 find_path(VIDEODEV2 linux/videodev2.h)
+set(ENABLED FALSE)
 if (VIDEODEV2)
     set(ENABLED TRUE)
 endif()
