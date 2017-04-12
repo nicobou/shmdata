@@ -27,8 +27,8 @@ add_test(check_manager check_manager)
 add_executable(check_quiddity_create_remove check_quiddity_create_remove.cpp)
 add_test(check_quiddity_create_remove check_quiddity_create_remove)
 
-add_executable(check_rtp_session check_rtp_session.cpp)
-add_test(check_rtp_session check_rtp_session)
+# add_executable(check_rtp_session check_rtp_session.cpp)
+# add_test(check_rtp_session check_rtp_session)
 
 add_executable(check_scope_guard check_scope_guard.cpp)
 add_test(check_scope_guard check_scope_guard)
