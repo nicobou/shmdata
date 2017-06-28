@@ -147,6 +147,8 @@ Writer_init(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds)
                                      &path, &datatype, &framesize, &showDebug))
         return -1;
 
+    PyEval_InitThreads();
+
     if (path) {
         tmp = self->path;
         Py_INCREF(path);
@@ -278,6 +280,8 @@ Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOOO", kwlist, &path, &pyFunc, &pyUserData, &pyDropFrames, &showDebug))
         return -1;
 
+    PyEval_InitThreads();
+
     if (path) {
         tmp = self->path;
         Py_INCREF(path);
@@ -317,6 +321,8 @@ Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
                        Reader_on_disconnect,
                        self,
                        self->logger);
+
+    if (!self->reader) return -1;
 
     return 0;
 }
