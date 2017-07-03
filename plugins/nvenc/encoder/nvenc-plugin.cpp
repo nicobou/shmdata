@@ -139,7 +139,7 @@ void NVencPlugin::update_codec() {
   else
     pmanage<MPtr(&PContainer::replace)>(
         codecs_id_,
-        std::make_unique<Property2<Selection<>, Selection<>::index_t>>(
+        std::make_unique<Property<Selection<>, Selection<>::index_t>>(
             set, get, "Codec", "Codec Selection", codecs_, codecs_.size() - 1));
   update_preset();
   update_profile();
@@ -175,7 +175,7 @@ void NVencPlugin::update_preset() {
   else
     pmanage<MPtr(&PContainer::replace)>(
         presets_id_,
-        std::make_unique<Property2<Selection<>, Selection<>::index_t>>(
+        std::make_unique<Property<Selection<>, Selection<>::index_t>>(
             set, get, "Preset", "Preset Selection", presets_, presets_.size() - 1));
 }
 
@@ -200,7 +200,7 @@ void NVencPlugin::update_profile() {
   else
     pmanage<MPtr(&PContainer::replace)>(
         profiles_id_,
-        std::make_unique<Property2<Selection<>, Selection<>::index_t>>(
+        std::make_unique<Property<Selection<>, Selection<>::index_t>>(
             set, get, "Profile", "Profile Selection", profiles_, profiles_.size() - 1));
 }
 

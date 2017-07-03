@@ -23,7 +23,7 @@
 #include <glib.h>
 #include <gst/gst.h>
 #include <memory>
-#include "./property2.hpp"
+#include "./property.hpp"
 
 namespace switcher {
 namespace GPropToProp {

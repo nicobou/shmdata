@@ -189,7 +189,7 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
     } else {
       context->pmanage<MPtr(&PContainer::replace_and_notify)>(
           context->devices_id_,
-          std::make_unique<Property2<Selection<>, Selection<>::index_t>>(
+          std::make_unique<Property<Selection<>, Selection<>::index_t>>(
               set,
               get,
               "Device",
