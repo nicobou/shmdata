@@ -41,7 +41,8 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
 
   auto res = std::unique_ptr<PropertyBase>();
   switch (G_VALUE_TYPE(&value)) {
-    case G_TYPE_STRING:
+    case G_TYPE_STRING: {
+      auto content = g_value_get_string(&value);
       res = std::make_unique<Property<std::string>>(
           is_writable ?
           [gobj, gprop_name](const std::string &val){
@@ -49,13 +50,17 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
             return true;
           } : static_cast<prop::set_t<std::string>>(nullptr),  // FIXME
           [gobj, gprop_name](){
-            gchar *strval; On_scope_exit{g_free(strval);};
+            gchar* strval = nullptr;
+            On_scope_exit {
+              if (strval) g_free(strval);
+            };
             g_object_get(gobj, gprop_name.c_str(), &strval, nullptr);
-            return std::string(strval);},
+            return std::string(strval ? strval : "");},
           gprop_name,
           std::string(description),
-          std::string(g_value_get_string(&value)));
+          std::string(content ? content : ""));
       break;
+    }
     case G_TYPE_BOOLEAN:
       res = std::make_unique<Property<bool>>(
           is_writable ?

@@ -77,6 +77,7 @@ class Quiddity {
   virtual void on_saved();
   virtual void on_loading(InfoTree::ptr&& tree);
   virtual void on_loaded();
+  bool prop_is_saved(const std::string& prop);
 
   // instance name
   std::string get_name() const;
@@ -130,6 +131,7 @@ class Quiddity {
   std::string make_file_name(const std::string& suffix) const;
   std::string get_manager_name();
   std::string get_quiddity_name_from_file_name(const std::string& shmdata_path) const;
+  std::string get_shmdata_name_from_file_name(const std::string& path) const;
   std::string get_file_name_prefix() const;
 
  private:
@@ -149,6 +151,7 @@ class Quiddity {
 
   // properties
   PContainer props_;
+  std::vector<std::string> properties_blacklist_{};
 
   // methods
   std::unordered_map<std::string, Method::ptr> methods_{};
@@ -251,6 +254,8 @@ class Quiddity {
                                      // changed
 
   void self_destruct();
+
+  bool toggle_property_saving(const std::string&);
 
   // used in order to dynamically create other quiddity, weak_ptr is used in
   // order to

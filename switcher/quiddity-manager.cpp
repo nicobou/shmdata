@@ -142,7 +142,7 @@ void QuiddityManager::play_command_history(QuiddityManager::CommandHistory histo
       if (!manager_impl_->has_instance(it)) continue;
       if (histo.custom_states_ && !histo.custom_states_->empty()) {
         manager_impl_->get_quiddity(it)->on_loading(histo.custom_states_->get_tree(it));
-      }  else {
+      } else {
         manager_impl_->get_quiddity(it)->on_loading(InfoTree::make());
       }
     }
@@ -306,6 +306,11 @@ std::string QuiddityManager::get_serialized_command_history() const {
 
   // saving per-quiddity information
   for (auto& quid_name : quiddities) {
+    // saving custom tree if some is provided
+    auto custom_tree = manager_impl_->get_quiddity(quid_name)->on_saving();
+    if (custom_tree && !custom_tree->empty())
+      tree->graft(".custom_states." + quid_name, std::move(custom_tree));
+
     // name and class
     if (quiddities_at_reset_.cend() ==
         std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid_name)) {
@@ -313,10 +318,6 @@ std::string QuiddityManager::get_serialized_command_history() const {
           manager_impl_->get_quiddity(quid_name)->get_documentation()->get_class_name();
       tree->graft(".quiddities." + quid_name, InfoTree::make(quid_class));
     }
-    // saving custom tree if some is provided
-    auto custom_tree = manager_impl_->get_quiddity(quid_name)->on_saving();
-    if (custom_tree && !custom_tree->empty())
-      tree->graft(".custom_states." + quid_name, std::move(custom_tree));
 
     // user data
     auto quid_user_data_tree = user_data<MPtr(&InfoTree::get_tree)>(quid_name, ".");
@@ -327,12 +328,15 @@ std::string QuiddityManager::get_serialized_command_history() const {
     use_prop<MPtr(&PContainer::update_values_in_tree)>(quid_name);
     auto props = use_tree<MPtr(&InfoTree::get_child_keys)>(quid_name, "property");
     for (auto& prop : props) {
-      if (use_tree<MPtr(&InfoTree::branch_get_value)>(
-              quid_name, std::string("property.") + prop + ".writable")) {
-        tree->graft(".properties." + quid_name + "." + prop,
-                    InfoTree::make(use_tree<MPtr(&InfoTree::branch_get_value)>(
-                        quid_name, std::string("property.") + prop + ".value")));
-      }
+      // Don't save unwritable properties.
+      if (!use_tree<MPtr(&InfoTree::branch_get_value)>(
+              quid_name, std::string("property.") + prop + ".writable"))
+        continue;
+      // Don't save properties with saving disabled.
+      if (!manager_impl_->get_quiddity(quid_name)->prop_is_saved(prop)) continue;
+      tree->graft(".properties." + quid_name + "." + prop,
+                  InfoTree::make(use_tree<MPtr(&InfoTree::branch_get_value)>(
+                      quid_name, std::string("property.") + prop + ".value")));
     }
 
     // Record shmdata connections.

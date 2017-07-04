@@ -580,6 +580,10 @@ PContainer::prop_id_t PContainer::push_parented(const std::string& strid,
     g_warning("property parent %s does not exist", parent_strid.c_str());
     return 0;
   }
+  if (!prop_ptr) {
+    g_warning("ERROR: Property container received a null property pointer.");
+    return 0;
+  }
   actual_props_[++counter_] = std::forward<std::unique_ptr<PropertyBase>>(prop_ptr);
   props_[counter_] = &actual_props_[counter_];
   init_newly_installed_property(strid, parent_strid, 20 * (suborders_.get_count(parent_strid) + 1));

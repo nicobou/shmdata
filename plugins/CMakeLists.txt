@@ -22,6 +22,7 @@ add_subdirectory(systemusage)
 
 # Optional plugins
 if (WITH_OPTIONAL_PLUGINS)
+    add_subdirectory(avrecplay)
     add_subdirectory(example)
     add_subdirectory(glfw)
     add_subdirectory(gtk)

@@ -438,6 +438,23 @@ std::string Quiddity::get_quiddity_name_from_file_name(const std::string& path) 
   return std::string(filename, underscores[1] + 1, underscores[2] - (underscores[1] + 1));
 }
 
+std::string Quiddity::get_shmdata_name_from_file_name(const std::string& path) const {
+  size_t pos = 0;
+  // Check if external shmdata or regular shmdata.
+  if (path.find(get_file_name_prefix()) != std::string::npos) {  // Regular shmdata
+    int i = 0;
+    while (i < 2) {  // Looking for second '_'
+      if (pos != 0) pos += 1;
+      pos = path.find('_', pos);
+      ++i;
+    }
+  } else {                  // External shmdata
+    pos = path.rfind('/');  // Check last '/' to find the file name only.
+  }
+
+  return pos != std::string::npos ? std::string(path, pos + 1) : path;
+}
+
 std::string Quiddity::get_manager_name() { return manager_name_; }
 
 std::string Quiddity::get_socket_name_prefix() { return "switcher_"; }
@@ -537,5 +554,21 @@ void Quiddity::on_saved(){};
 void Quiddity::on_loading(InfoTree::ptr&&){};
 
 void Quiddity::on_loaded(){};
+
+bool Quiddity::prop_is_saved(const std::string& prop) {
+  return std::find(properties_blacklist_.begin(), properties_blacklist_.end(), prop) ==
+         properties_blacklist_.end();
+}
+
+bool Quiddity::toggle_property_saving(const std::string& prop) {
+  auto prop_bl = std::find(properties_blacklist_.begin(), properties_blacklist_.end(), prop);
+  if (prop_bl == properties_blacklist_.end()) {
+    properties_blacklist_.push_back(prop);
+    return false;
+  } else {
+    properties_blacklist_.erase(prop_bl);
+    return true;
+  }
+}
 
 }  // namespace switcher
