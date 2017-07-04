@@ -41,7 +41,7 @@ PulseSrc::PulseSrc(const std::string&)
   pmanage<MPtr(&PContainer::make_parented_selection<>)>(
       "save_mode",
       "advanced",
-      [this](const size_t& val) {
+      [this](const IndexOrName& val) {
         save_device_enum_.select(val);
         return true;
       },
@@ -176,12 +176,12 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
     // registering enum for devices
     context->update_capture_device();
 
-    auto set = [context](const size_t& val) {
+    auto set = [context](const IndexOrName& val) {
       if (context->is_loading_) return false;
       context->devices_.select(val);
       return true;
     };
-    auto get = [context]() { return context->devices_.get(); };
+    auto get = [context]() { return context->devices_.get_current_index(); };
 
     if (!context->devices_id_) {
       context->devices_id_ = context->pmanage<MPtr(&PContainer::make_selection<>)>(
@@ -326,7 +326,7 @@ void PulseSrc::update_capture_device() {
 bool PulseSrc::start() {
   g_object_set(G_OBJECT(pulsesrc_.get_raw()),
                "device",
-               capture_devices_.at(devices_.get()).name_.c_str(),
+               capture_devices_.at(devices_.get_current_index()).name_.c_str(),
                nullptr);
   shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsink_.get_raw(),
@@ -363,10 +363,10 @@ bool PulseSrc::stop() {
 
 InfoTree::ptr PulseSrc::on_saving() {
   auto res = InfoTree::make();
-  DeviceDescription& desc = capture_devices_[devices_.get()];
+  DeviceDescription& desc = capture_devices_[devices_.get_current_index()];
   res->graft(".device_id", InfoTree::make(desc.name_));
   res->graft(".bus_path", InfoTree::make(desc.bus_path_));
-  std::string save_mode = save_device_enum_.get() == 0 ? "port" : "device";
+  std::string save_mode = save_device_enum_.get_current_index() == 0 ? "port" : "device";
   res->graft(".save_by", InfoTree::make(save_mode));
   return res;
 }

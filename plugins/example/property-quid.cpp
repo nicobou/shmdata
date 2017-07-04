@@ -220,7 +220,7 @@ PropertyQuid::PropertyQuid(const std::string&)
           10.f)),
       selection_id_(
           pmanage<MPtr(&PContainer::make_selection<>)>("enum_",
-                                                       [this](size_t val) {
+                                                       [this](const IndexOrName& val) {
                                                          selection_.select(val);
                                                          return true;
                                                        },

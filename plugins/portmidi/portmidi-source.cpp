@@ -43,7 +43,7 @@ bool PortMidiSource::init() {
   init_startable(this);
   devices_id_ =
       pmanage<MPtr(&PContainer::make_selection<>)>("device",
-                                                   [this](const size_t& val) {
+                                                   [this](const IndexOrName& val) {
                                                      input_devices_enum_.select(val);
                                                      return true;
                                                    },

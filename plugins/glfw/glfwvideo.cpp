@@ -179,7 +179,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
       background_type_id_(pmanage<MPtr(&PContainer::make_parented_selection<>)>(
           "background_type",
           "background_config",
-          [this](size_t val) {
+          [this](const IndexOrName& val) {
             background_type_.select(val);
             if (background_type_.get_current() == kBackgroundTypeImage) {
               pmanage<MPtr(&PContainer::disable)>(color_id_, kBackgroundColorDisabled);
@@ -250,7 +250,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
           std::string())),
       rotation_id_(
           pmanage<MPtr(&PContainer::make_selection<>)>("rotation",
-                                                       [this](size_t val) {
+                                                       [this](const IndexOrName& val) {
                                                          rotation_.select(val);
                                                          add_rendering_task([this]() {
                                                            set_viewport();
@@ -264,7 +264,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
                                                        "Possible rotation modes of the video.",
                                                        rotation_)),
       flip_id_(pmanage<MPtr(&PContainer::make_selection<>)>("flip",
-                                                            [this](size_t val) {
+                                                            [this](const IndexOrName& val) {
                                                               flip_.select(val);
                                                               add_rendering_task([this]() {
                                                                 set_flip_shader();
@@ -278,7 +278,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
                                                             flip_)),
       vsync_id_(pmanage<MPtr(&PContainer::make_selection<int>)>(
           "vsync",
-          [this](size_t val) {
+          [this](const IndexOrName& val) {
             vsync_.select(val);
             add_rendering_task([this]() {
               glfwSwapInterval(vsync_.get_attached());
@@ -885,7 +885,8 @@ void GLFWVideo::set_viewport(bool clear) {
   float image_ratio = static_cast<float>(vid_width_) / static_cast<float>(vid_height_);
 
   // Inverts the ratio if rotated 90-degrees.
-  if (rotation_.get() == 1 || rotation_.get() == 2) image_ratio = 1.f / image_ratio;
+  if (rotation_.get_current_index() == 1 || rotation_.get_current_index() == 2)
+    image_ratio = 1.f / image_ratio;
 
   float padding_x = 0.f;
   float padding_y = 0.f;
@@ -908,11 +909,11 @@ inline void GLFWVideo::set_color() {
 }
 
 inline void GLFWVideo::set_rotation_shader() {
-  glUniform1i(glGetUniformLocation(shader_program_, "rotation"), rotation_.get());
+  glUniform1i(glGetUniformLocation(shader_program_, "rotation"), rotation_.get_current_index());
 }
 
 inline void GLFWVideo::set_flip_shader() {
-  glUniform1i(glGetUniformLocation(shader_program_, "flip"), flip_.get());
+  glUniform1i(glGetUniformLocation(shader_program_, "flip"), flip_.get_current_index());
 }
 
 inline void GLFWVideo::enable_geometry() {
@@ -1286,7 +1287,8 @@ void GLFWVideo::GUIConfiguration::init_imgui() {
   if (use_custom_font_) {
     if (!generate_font_texture(custom_font_)) return;
   } else {
-    if (!generate_font_texture(std::string(DATADIR) + "fonts/" + fonts_list_.at(fonts_.get())))
+    if (!generate_font_texture(std::string(DATADIR) + "fonts/" +
+                               fonts_list_.at(fonts_.get_current_index())))
       return;
   }
 
@@ -1306,11 +1308,11 @@ void GLFWVideo::GUIConfiguration::destroy_imgui() {
 }
 
 void GLFWVideo::GUIConfiguration::init_properties() {
-  auto set_font = [this](size_t val) {
+  auto set_font = [this](const IndexOrName& val) {
     std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
     fonts_.select(val);
     parent_window_->add_rendering_task([this, val]() {
-      generate_font_texture(std::string(DATADIR) + "fonts/" + fonts_list_.at(val));
+      generate_font_texture(std::string(DATADIR) + "fonts/" + fonts_list_.at(val.index_));
       return true;
     });
     return true;
@@ -1332,7 +1334,7 @@ void GLFWVideo::GUIConfiguration::init_properties() {
   alignment_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_selection<unsigned int>)>(
       "overlay_alignment",
       "overlay_config",
-      [this](size_t val) {
+      [this](const IndexOrName& val) {
         std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
         alignment_.select(val);
         return true;

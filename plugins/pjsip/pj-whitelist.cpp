@@ -23,7 +23,7 @@ namespace switcher {
 PJWhiteList::PJWhiteList()
     : mode_id_(SIPPlugin::this_->pmanage<MPtr(&PContainer::make_selection<>)>(
           "mode",
-          [this](size_t val) {
+          [this](const IndexOrName& val) {
             mode_.select(val);
             return true;
           },
@@ -93,7 +93,7 @@ bool PJWhiteList::remove(const std::string& sip_url) {
 }
 
 bool PJWhiteList::is_authorized(const std::string& sip_url) const {
-  if (mode_.get() == everybody_) return true;
+  if (mode_.get_current_index() == everybody_) return true;
   const auto& found = authorizations_.find(sip_url);
   if (authorizations_.cend() == found) return false;
   return found->second;

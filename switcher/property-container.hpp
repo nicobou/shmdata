@@ -357,24 +357,24 @@ class PContainer {
 
   template <typename T = std::string>
   prop_id_t make_selection(const std::string& strid,
-                           std::function<bool(const size_t&)> set,
-                           std::function<size_t()> get,
+                           std::function<bool(const IndexOrName&)> set,
+                           std::function<IndexOrName()> get,
                            const std::string& label,
                            const std::string& description,
                            const Selection<T>& default_value) {
-    return make_under_parent<Selection<T>, typename Selection<T>::index_t>(
+    return make_under_parent<Selection<T>, IndexOrName>(
         strid, "", set, get, label, description, default_value, default_value.size() - 1);
   }
 
   template <typename T = std::string>
   prop_id_t make_parented_selection(const std::string& strid,
                                     const std::string& parent_strid,
-                                    std::function<bool(const size_t&)> set,
-                                    std::function<size_t()> get,
+                                    std::function<bool(const IndexOrName&)> set,
+                                    std::function<IndexOrName()> get,
                                     const std::string& label,
                                     const std::string& description,
                                     const Selection<T>& default_value) {
-    return make_under_parent<Selection<T>, typename Selection<T>::index_t>(
+    return make_under_parent<Selection<T>, IndexOrName>(
         strid, parent_strid, set, get, label, description, default_value, default_value.size() - 1);
   }
 

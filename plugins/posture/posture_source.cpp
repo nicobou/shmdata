@@ -412,7 +412,7 @@ bool PostureSrc::init() {
       filter_outliers_);
 
   pmanage<MPtr(&PContainer::make_selection<>)>("capture_mode",
-                                               [this](const size_t& val) {
+                                               [this](const IndexOrName& val) {
                                                  capture_modes_enum_.select(val);
                                                  return true;
                                                },

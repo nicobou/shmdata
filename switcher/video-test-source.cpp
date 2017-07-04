@@ -36,7 +36,7 @@ VideoTestSource::VideoTestSource(const std::string&)
     : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       resolutions_id_(pmanage<MPtr(&PContainer::make_selection<Fraction>)>(
           "resolution",
-          [this](size_t val) {
+          [this](const IndexOrName& val) {
             resolutions_.select(val);
             if (resolutions_.get_current() == "Custom") {
               pmanage<MPtr(&PContainer::enable)>(width_id_);
@@ -80,7 +80,7 @@ VideoTestSource::VideoTestSource(const std::string&)
                                                       kMaxHeight)),
       framerates_id_(pmanage<MPtr(&PContainer::make_selection<Fraction>)>(
           "framerate",
-          [this](size_t val) {
+          [this](const IndexOrName& val) {
             framerates_.select(val);
             return true;
           },
@@ -91,7 +91,7 @@ VideoTestSource::VideoTestSource(const std::string&)
       formats_(Selection<>(
           GstUtils::get_gst_element_capability_as_list("videotestsrc", "format", GST_PAD_SRC), 0)),
       formats_id_(pmanage<MPtr(&PContainer::make_selection<>)>("format",
-                                                               [this](size_t val) {
+                                                               [this](const IndexOrName& val) {
                                                                  formats_.select(val);
                                                                  return true;
                                                                },

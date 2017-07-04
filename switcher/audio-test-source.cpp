@@ -39,7 +39,7 @@ AudioTestSource::AudioTestSource(const std::string&)
     : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       sample_rate_id_(
           pmanage<MPtr(&PContainer::make_selection<>)>("sample_rate",
-                                                       [this](const size_t& val) {
+                                                       [this](const IndexOrName& val) {
                                                          sample_rate_.select(val);
                                                          return true;
                                                        },
@@ -87,7 +87,7 @@ AudioTestSource::AudioTestSource(const std::string&)
       format_(Selection<>(
           GstUtils::get_gst_element_capability_as_list("audiotestsrc", "format", GST_PAD_SRC), 0)),
       format_id_(pmanage<MPtr(&PContainer::make_selection<>)>("format",
-                                                              [this](const size_t& val) {
+                                                              [this](const IndexOrName& val) {
                                                                 format_.select(val);
                                                                 return true;
                                                               },

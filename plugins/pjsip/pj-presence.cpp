@@ -95,13 +95,14 @@ PJPresence::PJPresence() {
   // online status
   SIPPlugin::this_->pmanage<MPtr(&PContainer::make_selection<>)>(
       "status",
-      [this](const size_t& val) {
+      [this](const IndexOrName& val) {
         status_.select(val);
         if (-1 == account_id_) {
           g_warning("cannot send online status when not registered");
           return true;
         }
-        SIPPlugin::this_->pjsip_->run([this]() { change_online_status(status_.get()); });
+        SIPPlugin::this_->pjsip_->run(
+            [this]() { change_online_status(status_.get_current_index()); });
         return true;
       },
       [this]() { return status_.get(); },
@@ -112,7 +113,8 @@ PJPresence::PJPresence() {
       "status-note",
       [this](const std::string& val) {
         custom_status_ = val;
-        SIPPlugin::this_->pjsip_->run([this]() { change_online_status(status_.get()); });
+        SIPPlugin::this_->pjsip_->run(
+            [this]() { change_online_status(status_.get_current_index()); });
         return true;
       },
       [this]() { return custom_status_; },

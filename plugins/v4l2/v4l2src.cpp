@@ -71,7 +71,7 @@ bool V4L2Src::init() {
   }
   devices_id_ =
       pmanage<MPtr(&PContainer::make_selection<>)>("device",
-                                                   [this](const size_t& val) {
+                                                   [this](const IndexOrName& val) {
                                                      if (is_loading_) return false;
                                                      devices_enum_.select(val);
                                                      update_device_specific_properties();
@@ -85,23 +85,23 @@ bool V4L2Src::init() {
       "config", "Capture device configuration", "device specific parameters");
   update_device_specific_properties();
   pmanage<MPtr(&PContainer::make_group)>("advanced", "Advanced configuration", "Advanced configuration");
-  save_device_id_ =
-      pmanage<MPtr(&PContainer::make_parented_selection<>)>("save_mode",
-                                                          "advanced",
-                                                          [this](const size_t& val) {
-                                                            save_device_enum_.select(val);
-                                                            return true;
-                                                          },
-                                                          [this]() { return save_device_enum_.get(); },
-                                                          "Save Mode",
-                                                          "Save Capture Device by",
-                                                          save_device_enum_);
+  save_device_id_ = pmanage<MPtr(&PContainer::make_parented_selection<>)>(
+      "save_mode",
+      "advanced",
+      [this](const IndexOrName& val) {
+        save_device_enum_.select(val);
+        return true;
+      },
+      [this]() { return save_device_enum_.get(); },
+      "Save Mode",
+      "Save Capture Device by",
+      save_device_enum_);
   set_shm_suffix();
   return true;
 }
 
 bool V4L2Src::fetch_available_resolutions() {
-  CaptureDescription& description = capture_devices_[devices_enum_.get()];
+  CaptureDescription& description = capture_devices_[devices_enum_.get_current_index()];
   const char* file_path = description.absolute_path_.c_str();
   int fd = open(file_path, O_RDONLY);
   if (fd < 0) {
@@ -111,7 +111,8 @@ bool V4L2Src::fetch_available_resolutions() {
 
   v4l2_frmsizeenum frmsize;
   memset(&frmsize, 0, sizeof(frmsize));
-  frmsize.pixel_format = std::get<0>(description.pixel_formats_[pixel_format_enum_.get()]);
+  frmsize.pixel_format =
+      std::get<0>(description.pixel_formats_[pixel_format_enum_.get_current_index()]);
   frmsize.index = 0;
   unsigned default_width = 0;
   unsigned default_height = 0;
@@ -155,7 +156,7 @@ bool V4L2Src::fetch_available_resolutions() {
 }
 
 bool V4L2Src::fetch_available_frame_intervals() {
-  CaptureDescription& description = capture_devices_[devices_enum_.get()];
+  CaptureDescription& description = capture_devices_[devices_enum_.get_current_index()];
   const char* file_path = description.absolute_path_.c_str();
   int fd = open(file_path, O_RDONLY);
   if (fd < 0) {
@@ -165,18 +166,21 @@ bool V4L2Src::fetch_available_frame_intervals() {
 
   v4l2_frmivalenum frmival;
   memset(&frmival, 0, sizeof(frmival));
-  frmival.pixel_format = std::get<0>(description.pixel_formats_[pixel_format_enum_.get()]);
+  frmival.pixel_format =
+      std::get<0>(description.pixel_formats_[pixel_format_enum_.get_current_index()]);
 
   // Only true with continuous resolution devices.
   if (width_ != -1) {
     frmival.width = width_;
   } else {
-    frmival.width = atoi(description.frame_size_discrete_[resolutions_enum_.get()].first.c_str());
+    frmival.width =
+        atoi(description.frame_size_discrete_[resolutions_enum_.get_current_index()].first.c_str());
   }
   if (height_ != -1) {
     frmival.height = width_;
   } else {
-    frmival.height = atoi(description.frame_size_discrete_[resolutions_enum_.get()].second.c_str());
+    frmival.height = atoi(
+        description.frame_size_discrete_[resolutions_enum_.get_current_index()].second.c_str());
   }
 
   frmival.index = 0;
@@ -245,7 +249,7 @@ void V4L2Src::update_device_specific_properties() {
 }
 
 void V4L2Src::update_discrete_resolution() {
-  CaptureDescription& cap_descr = capture_devices_[devices_enum_.get()];
+  CaptureDescription& cap_descr = capture_devices_[devices_enum_.get_current_index()];
   pmanage<MPtr(&PContainer::remove)>(resolutions_id_);
   resolutions_id_ = 0;
 
@@ -261,7 +265,7 @@ void V4L2Src::update_discrete_resolution() {
     resolutions_id_ = pmanage<MPtr(&PContainer::make_parented_selection<>)>(
         "resolution",
         "config",
-        [this](const size_t& val) {
+        [this](const IndexOrName& val) {
           resolutions_enum_.select(val);
           fetch_available_frame_intervals();
           update_discrete_framerate();
@@ -272,12 +276,12 @@ void V4L2Src::update_discrete_resolution() {
         "Resolution of selected capture devices",
         resolutions_enum_);
 
-    pmanage<MPtr(&PContainer::set<size_t>)>(resolutions_id_, 0);
+    pmanage<MPtr(&PContainer::set<IndexOrName>)>(resolutions_id_, IndexOrName(0));
   }
 }
 
 void V4L2Src::update_discrete_framerate() {
-  CaptureDescription& cap_descr = capture_devices_[devices_enum_.get()];
+  CaptureDescription& cap_descr = capture_devices_[devices_enum_.get_current_index()];
   pmanage<MPtr(&PContainer::remove)>(framerates_enum_id_);
   framerates_enum_id_ = 0;
   if (cap_descr.frame_interval_discrete_.empty()) return;
@@ -292,7 +296,7 @@ void V4L2Src::update_discrete_framerate() {
   framerates_enum_id_ = pmanage<MPtr(&PContainer::make_parented_selection<>)>(
       "framerate",
       "config",
-      [this](const size_t& val) {
+      [this](const IndexOrName& val) {
         framerates_enum_.select(val);
         return true;
       },
@@ -310,7 +314,7 @@ bool V4L2Src::is_current_pixel_format_raw_video() const {
 }
 
 void V4L2Src::update_pixel_format() {
-  CaptureDescription& cap_descr = capture_devices_[devices_enum_.get()];
+  CaptureDescription& cap_descr = capture_devices_[devices_enum_.get_current_index()];
   pmanage<MPtr(&PContainer::remove)>(pixel_format_id_);
   pixel_format_id_ = 0;
   if (cap_descr.pixel_formats_.empty()) return;
@@ -324,7 +328,7 @@ void V4L2Src::update_pixel_format() {
   pixel_format_id_ = pmanage<MPtr(&PContainer::make_parented_selection<>)>(
       "pixel_format",
       "config",
-      [this](const size_t& val) {
+      [this](const IndexOrName& val) {
         pixel_format_enum_.select(val);
         set_shm_suffix();
         g_debug("pix selected");
@@ -338,11 +342,11 @@ void V4L2Src::update_pixel_format() {
       "Pixel format of selected capture devices",
       pixel_format_enum_);
 
-  pmanage<MPtr(&PContainer::set<size_t>)>(pixel_format_id_, 0);
+  pmanage<MPtr(&PContainer::set<IndexOrName>)>(pixel_format_id_, IndexOrName(0));
 }
 
 void V4L2Src::update_width_height() {
-  CaptureDescription& cap_descr = capture_devices_[devices_enum_.get()];
+  CaptureDescription& cap_descr = capture_devices_[devices_enum_.get_current_index()];
   pmanage<MPtr(&PContainer::remove)>(custom_resolutions_id_);
   custom_resolutions_id_ = 0;
   pmanage<MPtr(&PContainer::remove)>(width_id_);
@@ -354,7 +358,7 @@ void V4L2Src::update_width_height() {
   resolutions_id_ = pmanage<MPtr(&PContainer::make_parented_selection<Fraction>)>(
       "custom_resolution",
       "config",
-      [this](size_t val) {
+      [this](const IndexOrName& val) {
         custom_resolutions_.select(val);
         if (custom_resolutions_.get_current() == "Custom") {
           pmanage<MPtr(&PContainer::enable)>(width_id_);
@@ -411,7 +415,7 @@ void V4L2Src::update_width_height() {
 }
 
 void V4L2Src::update_framerate_numerator_denominator() {
-  CaptureDescription& cap_descr = capture_devices_[devices_enum_.get()];
+  CaptureDescription& cap_descr = capture_devices_[devices_enum_.get_current_index()];
   pmanage<MPtr(&PContainer::remove)>(standard_framerates_id_);
   pmanage<MPtr(&PContainer::remove)>(custom_framerate_id_);
   standard_framerates_id_ = 0;
@@ -420,7 +424,7 @@ void V4L2Src::update_framerate_numerator_denominator() {
   standard_framerates_id_ = pmanage<MPtr(&PContainer::make_parented_selection<Fraction>)>(
       "standard_framerates",
       "config",
-      [this](const size_t& val) {
+      [this](const IndexOrName& val) {
         standard_framerates_.select(val);
         if (standard_framerates_.get_current() == "Custom") {
           pmanage<MPtr(&PContainer::enable)>(custom_framerate_id_);
@@ -455,7 +459,7 @@ void V4L2Src::update_framerate_numerator_denominator() {
 }
 
 void V4L2Src::update_tv_standard() {
-  CaptureDescription& cap_descr = capture_devices_[devices_enum_.get()];
+  CaptureDescription& cap_descr = capture_devices_[devices_enum_.get_current_index()];
   pmanage<MPtr(&PContainer::remove)>(tv_standards_id_);
   tv_standards_id_ = 0;
   if (cap_descr.tv_standards_.empty()) return;
@@ -465,7 +469,7 @@ void V4L2Src::update_tv_standard() {
   tv_standards_id_ = pmanage<MPtr(&PContainer::make_parented_selection<>)>(
       "tv_standard",
       "config",
-      [this](const size_t& val) {
+      [this](const IndexOrName& val) {
         tv_standards_enum_.select(val);
         return true;
       },
@@ -722,7 +726,7 @@ bool V4L2Src::configure_capture() {
   }
   g_object_set(
       G_OBJECT(v4l2src_.get_raw()), "device", devices_enum_.get_attached().c_str(), nullptr);
-  if (tv_standards_id_ != 0 && tv_standards_enum_.get() > 0)  // 0 is none
+  if (tv_standards_id_ != 0 && tv_standards_enum_.get_current_index() > 0)  // 0 is none
     g_object_set(
         G_OBJECT(v4l2src_.get_raw()), "norm", tv_standards_enum_.get_current().c_str(), nullptr);
   std::string caps = pixel_format_enum_.get_attached();
@@ -731,21 +735,21 @@ bool V4L2Src::configure_capture() {
            std::to_string(height_);
   else if (0 != resolutions_id_)
     caps = caps + ", width=(int)" +
-           capture_devices_[devices_enum_.get()]
-               .frame_size_discrete_[resolutions_enum_.get()]
+           capture_devices_[devices_enum_.get_current_index()]
+               .frame_size_discrete_[resolutions_enum_.get_current_index()]
                .first.c_str() +
            ", height=(int)" +
-           capture_devices_[devices_enum_.get()]
-               .frame_size_discrete_[resolutions_enum_.get()]
+           capture_devices_[devices_enum_.get_current_index()]
+               .frame_size_discrete_[resolutions_enum_.get_current_index()]
                .second.c_str();
   if (0 != framerates_enum_id_)
     caps = caps + ", framerate=(fraction)" +
-           capture_devices_[devices_enum_.get()]
-               .frame_interval_discrete_[framerates_enum_.get()]
+           capture_devices_[devices_enum_.get_current_index()]
+               .frame_interval_discrete_[framerates_enum_.get_current_index()]
                .second.c_str() +
            "/" +
-           capture_devices_[devices_enum_.get()]
-               .frame_interval_discrete_[framerates_enum_.get()]
+           capture_devices_[devices_enum_.get_current_index()]
+               .frame_interval_discrete_[framerates_enum_.get_current_index()]
                .first.c_str();
   else if (0 != custom_framerate_id_) {
     caps = caps + ", framerate=(fraction)" + std::to_string(custom_framerate_.numerator()) + "/" +
@@ -932,10 +936,10 @@ void V4L2Src::on_gst_error(GstObject*, GError* err) {
 
 InfoTree::ptr V4L2Src::on_saving() {
   auto res = InfoTree::make();
-  CaptureDescription& desc = capture_devices_[devices_enum_.get()];
+  CaptureDescription& desc = capture_devices_[devices_enum_.get_current_index()];
   res->graft(".device_id", InfoTree::make(desc.device_id_));
   res->graft(".bus_id", InfoTree::make(desc.bus_info_));
-  std::string save_mode = save_device_enum_.get() == 0 ? "port" : "device";
+  std::string save_mode = save_device_enum_.get_current_index() == 0 ? "port" : "device";
   res->graft(".save_by", InfoTree::make(save_mode));
   return res;
 }

@@ -70,7 +70,7 @@ void GstVideoCodec::show() {
 }
 
 void GstVideoCodec::make_bin() {
-  if (0 != codecs_.get()) {
+  if (0 != codecs_.get_current_index()) {
     gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                      shmsrc_.get_raw(),
                      queue_codec_element_.get_raw(),
@@ -88,7 +88,7 @@ void GstVideoCodec::make_bin() {
 }
 
 bool GstVideoCodec::remake_codec_elements() {
-  if (0 != codecs_.get()) {
+  if (0 != codecs_.get_current_index()) {
     if (!UGstElem::renew(shmsrc_, {"socket-path"}) ||
         !UGstElem::renew(shm_encoded_, {"socket-path", "sync", "async"}) ||
         !UGstElem::renew(color_space_codec_element_) || !UGstElem::renew(queue_codec_element_) ||
@@ -201,10 +201,10 @@ void GstVideoCodec::set_shm(const std::string& shmpath) {
 PContainer::prop_id_t GstVideoCodec::install_codec() {
   return quid_->pmanage<MPtr(&PContainer::make_selection<>)>(
       "codec",
-      [this](const Selection<>::index_t& val) {
+      [this](const IndexOrName& val) {
         uninstall_codec_properties();
         codecs_.select(val);
-        if (0 == val) return true;
+        if (0 == val.index_) return true;
         std::string codec_name = codecs_.get_attached();
         codec_element_.mute(codec_name.c_str());
         if (codec_name == "x264enc")

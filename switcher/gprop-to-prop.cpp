@@ -245,16 +245,22 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
           indexes[values[j].value] = j;
           j++;
         }
-        res = std::make_unique<Property<Selection<>, Selection<>::index_t>>(
+        res = std::make_unique<Property<Selection<>, IndexOrName>>(
             is_writable ?
-            [gobj, gprop_name](const Selection<>::index_t &val){
-              g_object_set(gobj, gprop_name.c_str(), val, nullptr);
+            [gobj, gprop_name](const IndexOrName &val){
+              if(val.is_index_) {
+                g_object_set(gobj, gprop_name.c_str(), val.index_, nullptr);
+              } else {
+                std::cout << "not is_index_ " << val.name_ << '\n';
+               gst_util_set_object_arg(gobj, gprop_name.c_str(), val.name_.c_str());
+                //g_object_set(gobj, gprop_name.c_str(), val.name_.c_str(), nullptr);
+              }
               return true;
-            } : static_cast<prop::set_t<Selection<>::index_t>>(nullptr),
+            } : static_cast<prop::set_t<IndexOrName>>(nullptr),
             [gobj, gprop_name, indexes](){
               gint val;
               g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
-              return indexes.at(val);
+              return IndexOrName(indexes.at(val));
             },
             gprop_name,
             std::string(description),
