@@ -58,18 +58,6 @@ bool JackToShmdata::init() {
     return false;
   }
   init_startable(this);
-  num_channels_id_ = pmanage<MPtr(&PContainer::make_int)>("channels",
-                                                          [this](const int& val) {
-                                                            num_channels_ = val;
-                                                            update_port_to_connect();
-                                                            return true;
-                                                          },
-                                                          [this]() { return num_channels_; },
-                                                          "Channels",
-                                                          "number of channels",
-                                                          num_channels_,
-                                                          1,
-                                                          128);
   client_name_id_ = pmanage<MPtr(&PContainer::make_string)>("jack-client-name",
                                                             [this](const std::string& val) {
                                                               client_name_ = val;
@@ -117,11 +105,23 @@ bool JackToShmdata::init() {
                                              return true;
                                            },
                                            [this]() { return index_; },
-                                           "Index",
+                                           "Channel",
                                            "Start connecting to other client from this index",
                                            num_channels_,
                                            1,
                                            128);
+  num_channels_id_ = pmanage<MPtr(&PContainer::make_int)>("channels",
+                                                          [this](const int& val) {
+                                                            num_channels_ = val;
+                                                            update_port_to_connect();
+                                                            return true;
+                                                          },
+                                                          [this]() { return num_channels_; },
+                                                          "Number of channels",
+                                                          "Number of channels",
+                                                          num_channels_,
+                                                          1,
+                                                          128);
   update_port_to_connect();
   return true;
 }
