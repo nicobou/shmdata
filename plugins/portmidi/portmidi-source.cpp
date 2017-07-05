@@ -107,6 +107,10 @@ bool PortMidiSource::init() {
                  Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT, nullptr),
                  this);
   disable_method("map_midi_to_property");
+  return true;
+}
+
+bool PortMidiSource::start() {
   shm_ =
       std::make_unique<ShmdataWriter>(this, make_file_name("midi"), sizeof(PmEvent), "audio/midi");
   if (!shm_.get()) {
@@ -114,10 +118,6 @@ bool PortMidiSource::init() {
     shm_.reset(nullptr);
     return false;
   }
-  return true;
-}
-
-bool PortMidiSource::start() {
   pmanage<MPtr(&PContainer::disable)>(devices_id_, disabledWhenStartedMsg);
   open_input_device(std::stoi(input_devices_enum_.get_attached()), on_pm_event, this);
   pmanage<MPtr(&PContainer::enable)>(last_midi_value_id_);
@@ -134,6 +134,7 @@ bool PortMidiSource::stop() {
   disable_method("remove_midi_property");
   disable_method("map_midi_to_property");
   pmanage<MPtr(&PContainer::enable)>(devices_id_);
+  shm_.reset(nullptr);
   return true;
 }
 
