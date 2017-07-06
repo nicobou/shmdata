@@ -367,13 +367,25 @@ GLFWVideo::GLFWVideo(const std::string& name)
     g_warning("BUG: Failed to discover monitors.");
     return;
   }
+  win_aspect_ratio_toggle_id_ =
+      pmanage<MPtr(&PContainer::make_bool)>("win_aspect_ratio_toggle",
+                                            [this](const bool& val) {
+                                              win_aspect_ratio_toggle_ = val;
+                                              return true;
+                                            },
+                                            [this]() { return win_aspect_ratio_toggle_; },
+                                            "Locked window aspect ratio",
+                                            "Enable/Disable",
+                                            win_aspect_ratio_toggle_);
 
   width_id_ = pmanage<MPtr(&PContainer::make_int)>(
       "width",
       [this](const int& val) {
         if (val == width_) return true;
+        if (!win_aspect_ratio_toggle_) win_aspect_ratio_ = width_ / height_;
         add_rendering_task([this, val]() {
           width_ = val;
+          if (win_aspect_ratio_toggle_) height_ = val / win_aspect_ratio_;
           set_size();
           std::lock_guard<std::mutex> lock(configuration_mutex_);
           ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
@@ -393,8 +405,10 @@ GLFWVideo::GLFWVideo(const std::string& name)
       "height",
       [this](const int& val) {
         if (val == height_) return true;
+        if (!win_aspect_ratio_toggle_) win_aspect_ratio_ = width_ / height_;
         add_rendering_task([this, val]() {
           height_ = val;
+          if (win_aspect_ratio_toggle_) width_ = val * win_aspect_ratio_;
           set_size();
           std::lock_guard<std::mutex> lock(configuration_mutex_);
           ImGui::SetCurrentContext(gui_configuration_->context_->ctx);

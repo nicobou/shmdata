@@ -296,9 +296,9 @@ class GLFWVideo : public Quiddity {
    * \brief Overlay properties
    */
   std::mutex configuration_mutex_{};
-  PContainer::prop_id_t overlay_id_;
+  PContainer::prop_id_t overlay_id_{0};
   bool show_overlay_{false};
-  PContainer::prop_id_t show_overlay_id_;
+  PContainer::prop_id_t show_overlay_id_{0};
   std::unique_ptr<GUIConfiguration> gui_configuration_{nullptr};
   std::unique_ptr<PeriodicTask> geometry_task_;
   /**
@@ -328,6 +328,9 @@ class GLFWVideo : public Quiddity {
   PContainer::prop_id_t decorated_id_{0};
   bool always_on_top_{false};
   PContainer::prop_id_t always_on_top_id_{0};
+  bool win_aspect_ratio_toggle_{false};
+  float win_aspect_ratio_{1};
+  PContainer::prop_id_t win_aspect_ratio_toggle_id_{0};
   int width_{800};
   PContainer::prop_id_t width_id_{0};
   int height_{600};
