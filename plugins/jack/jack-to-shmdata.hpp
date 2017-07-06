@@ -37,6 +37,7 @@ class JackToShmdata : public Quiddity, public StartableQuiddity {
   JackToShmdata& operator=(const JackToShmdata&) = delete;
 
  private:
+  unsigned int kMaxNumberOfChannels{128};
   unsigned int num_channels_{1};
   PContainer::prop_id_t num_channels_id_{0};
   std::string client_name_{};
