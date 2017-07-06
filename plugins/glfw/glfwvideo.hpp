@@ -282,6 +282,28 @@ class GLFWVideo : public Quiddity {
   bool cursor_inside_{false};
   std::vector<uint8_t> icon_data_;
   GLFWimage icon_;
+  /**
+   * \brief Background properties
+   */
+  PContainer::prop_id_t background_config_id_{0};
+  Selection<> background_type_{{kBackgroundTypeColor, kBackgroundTypeImage}, 0};
+  PContainer::prop_id_t background_type_id_{0};
+  Color color_;
+  PContainer::prop_id_t color_id_{0};
+  std::string background_image_{};
+  PContainer::prop_id_t background_image_id_{0};
+  /**
+   * \brief Overlay properties
+   */
+  std::mutex configuration_mutex_{};
+  PContainer::prop_id_t overlay_id_;
+  bool show_overlay_{false};
+  PContainer::prop_id_t show_overlay_id_;
+  std::unique_ptr<GUIConfiguration> gui_configuration_{nullptr};
+  std::unique_ptr<PeriodicTask> geometry_task_;
+  /**
+   * \brief top level properties
+   */
   std::string title_;
   PContainer::prop_id_t title_id_{0};
   gboolean keyb_interaction_{TRUE};
@@ -306,13 +328,6 @@ class GLFWVideo : public Quiddity {
   PContainer::prop_id_t decorated_id_{0};
   bool always_on_top_{false};
   PContainer::prop_id_t always_on_top_id_{0};
-  PContainer::prop_id_t background_config_id_{0};
-  Selection<> background_type_{{kBackgroundTypeColor, kBackgroundTypeImage}, 0};
-  PContainer::prop_id_t background_type_id_{0};
-  Color color_;
-  PContainer::prop_id_t color_id_{0};
-  std::string background_image_{};
-  PContainer::prop_id_t background_image_id_{0};
   int width_{800};
   PContainer::prop_id_t width_id_{0};
   int height_{600};
@@ -334,17 +349,6 @@ class GLFWVideo : public Quiddity {
   int minimized_height_{600};
   int minimized_position_x_{0};
   int minimized_position_y_{0};
-
-  /**
-   * \brief Overlay properties
-   */
-  std::mutex configuration_mutex_{};
-  PContainer::prop_id_t overlay_id_;
-  bool show_overlay_{false};
-  PContainer::prop_id_t show_overlay_id_;
-  std::unique_ptr<GUIConfiguration> gui_configuration_{nullptr};
-
-  std::unique_ptr<PeriodicTask> geometry_task_;
 };
 
 }  // namespace switcher
