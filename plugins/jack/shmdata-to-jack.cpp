@@ -101,6 +101,10 @@ bool ShmdataToJack::init() {
                                                            "Connect To",
                                                            "Which client to connect to",
                                                            connect_to_);
+  unsigned int max_number_of_channels = kMaxNumberOfChannels;
+  if (config<MPtr(&InfoTree::branch_has_data)>("max_number_of_channels"))
+    max_number_of_channels =
+        config<MPtr(&InfoTree::branch_get_value)>("max_number_of_channels").copy_as<unsigned int>();
   index_id_ = pmanage<MPtr(&PContainer::make_int)>(
       "index",
       [this](const int& val) {
@@ -113,7 +117,7 @@ bool ShmdataToJack::init() {
       "Start connecting to other client from this channel index",
       index_,
       0,
-      128);
+      max_number_of_channels);
   update_port_to_connect();
   return true;
 }
