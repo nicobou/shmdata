@@ -79,6 +79,7 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   } CaptureDescription;
 
   UGstElem v4l2src_{"v4l2src"};
+  UGstElem videorate_{"videorate"};
   UGstElem capsfilter_{"capsfilter"};
   UGstElem shmsink_{"shmdatasink"};
   std::string shmpath_{};
@@ -92,6 +93,8 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
   PContainer::prop_id_t devices_id_{0};
   Selection<> save_device_enum_{{"port", "device"}, 0};
   PContainer::prop_id_t save_device_id_{0};
+  bool force_framerate_{false};
+  PContainer::prop_id_t force_framerate_id_{0};
   bool is_loading_{false};  // device selection will be disabled manually during load
 
   // pixet format

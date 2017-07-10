@@ -73,9 +73,12 @@ AVRecorder::AVRecorder(const std::string&)
 
         struct stat st;
         if (stat(val.c_str(), &st) != 0 || !S_ISDIR(st.st_mode)) {
-          g_warning("The specified folder does not exist (avrec).");
-          g_message("ERROR: The specified folder does not exist (avrec).");
-          return false;
+          if (-1 == mkdir(val.c_str(), S_IRWXU | S_IRUSR | S_IWUSR)) {
+            g_warning("The specified folder does not exist and could not be created (avrec).");
+            g_message(
+                "ERROR: The specified folder does not exist and could not be created (avrec).");
+            return false;
+          }
         }
 
         recpath_ = val;
@@ -91,9 +94,9 @@ AVRecorder::AVRecorder(const std::string&)
       [this](const IndexOrName& val) {
         record_mode_.select(val);
         for (auto& shmdata : connected_shmdata_) {
-          if (record_mode_.get_current() == AVRecorder::kRecordModeLabel)
+          if (record_mode_.get_current() == AVRecorder::kRecordModeLabel) {
             shmdata->create_label_property();
-          else
+          } else
             pmanage<MPtr(&PContainer::remove)>(shmdata->label_id_);
         }
         return true;
@@ -163,15 +166,18 @@ std::string AVRecorder::generate_pipeline_description() {
       description += parser + " ! ";
     }
 
-    description += shmdata->muxer_selection_.get_current() + " ! filesink location=" + recpath_ +
-                   "/" + shmdata->recfile_ + suffix + extension + " ";
+    description += "queue ! " + shmdata->muxer_selection_.get_current() + " name=mux_" +
+                   shmdata->shmdata_name_ + " ! queue ! filesink name=sink_" +
+                   shmdata->shmdata_name_ + " location=" + recpath_ + "/" + shmdata->recfile_ +
+                   suffix + extension + " ";
   }
   return description;
 }
 
 bool AVRecorder::start() {
   if (recpath_.empty()) return false;
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<GstPipeliner>(
+      nullptr, [this](GstMessage* msg) { return this->bus_sync(msg); });
 
   GError* error = nullptr;
   avrec_bin_ =
@@ -187,14 +193,36 @@ bool AVRecorder::start() {
     return false;
   }
 
+  // Look for an audio shmdata to enable timestamping on it. Otherwise we use any video shmdata.
+  bool timestamping_done = false;
+  auto audio_shmdata = std::find_if(connected_shmdata_.begin(),
+                                    connected_shmdata_.end(),
+                                    [](const std::unique_ptr<ConnectedShmdata>& shmdata) {
+                                      return shmdata->caps_.find("audio/x-raw") == 0;
+                                    });
+  if (audio_shmdata != connected_shmdata_.end()) {
+    auto shmdatasrc = gst_bin_get_by_name(
+        GST_BIN(avrec_bin_), std::string("shmsrc_" + audio_shmdata->get()->shmdata_name_).c_str());
+    if (shmdatasrc) {
+      g_object_set(G_OBJECT(shmdatasrc), "do-timestamp", TRUE, nullptr);
+      timestamping_done = true;
+    }
+  }
+
   for (auto& shmdata : connected_shmdata_) {
     auto shmdatasrc = gst_bin_get_by_name(GST_BIN(avrec_bin_),
                                           std::string("shmsrc_" + shmdata->shmdata_name_).c_str());
-    if (!shmdatasrc) continue;
-    shmdata->apply_gst_properties(shmdatasrc);
+    auto mux = gst_bin_get_by_name(GST_BIN(avrec_bin_),
+                                   std::string("mux_" + shmdata->shmdata_name_).c_str());
+    if (!shmdatasrc || !mux) continue;
+
+    shmdata->apply_gst_properties(mux);
     g_object_set(G_OBJECT(shmdatasrc), "socket-path", shmdata->shmpath_.c_str(), nullptr);
     g_object_set(G_OBJECT(shmdatasrc), "copy-buffers", TRUE, nullptr);
-    g_object_set(G_OBJECT(shmdatasrc), "do-timestamp", TRUE, nullptr);
+    if (!timestamping_done) {
+      g_object_set(G_OBJECT(shmdatasrc), "do-timestamp", TRUE, nullptr);
+      timestamping_done = true;
+    }
   }
 
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
@@ -219,7 +247,13 @@ bool AVRecorder::start() {
 }
 
 bool AVRecorder::stop() {
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+  if (gst_element_send_event(gst_pipeline_->get_pipeline(), gst_event_new_eos())) {
+    std::unique_lock<std::mutex> lock(eos_m_);
+    cv_eos_.wait_for(lock, std::chrono::seconds(5));
+  }
+
+  gst_pipeline_.reset();
+
   // Enable all properties when stopping.
   for (auto& shmdata : connected_shmdata_) {
     pmanage<MPtr(&PContainer::enable)>(shmdata->recfile_id_);
@@ -329,6 +363,14 @@ bool AVRecorder::on_shmdata_disconnect(const std::string& shmpath) {
   return true;
 }
 
+GstBusSyncReply AVRecorder::bus_sync(GstMessage* msg) {
+  if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_EOS) {
+    std::unique_lock<std::mutex> lock(eos_m_);
+    cv_eos_.notify_all();
+  }
+  return GST_BUS_PASS;
+}
+
 bool AVRecorder::can_sink_caps(const std::string& str_caps) {
   GstCaps* caps = gst_caps_from_string(str_caps.c_str());
   On_scope_exit {
@@ -355,6 +397,9 @@ InfoTree::ptr AVRecorder::on_saving() {
 
   // We don't want to load a started recording scenario.
   pmanage<MPtr(&PContainer::set_str_str)>("started", "false");
+
+  // Put the value of all dynamically created properties in a structure for possible later saving.
+  save_properties();
 
   // Keep the properties structure in the custom saving tree.
   for (auto& shmdata : saved_properties_) {
@@ -394,7 +439,6 @@ void AVRecorder::save_properties() {
     saved_properties_[shmdata->shmdata_name_]["muxer"] = shmdata->muxer_selection_.get_current();
     saved_properties_[shmdata->shmdata_name_]["recfile"] = shmdata->recfile_;
     saved_properties_[shmdata->shmdata_name_]["label"] = shmdata->label_;
-
     for (auto& prop : shmdata->muxer_properties_id_) {
       auto value = pmanage<MPtr(&PContainer::get_str)>(prop);
       auto prop_name = pmanage<MPtr(&PContainer::get_name)>(prop);
@@ -467,7 +511,7 @@ bool AVRecorder::ConnectedShmdata::update_gst_properties() {
 
   // Create the properties of the selected muxer.
   for (auto& prop : selected_muxer->second.properties) {
-    auto prop_name = prop + "_" + muxer_name + "_" + shmdata_name_;
+    auto prop_name = prop + "_avrec_" + muxer_name + "_" + shmdata_name_;
 
     auto prop_id =
         static_cast<PContainer::prop_id_t>(parent_->pmanage<MPtr(&PContainer::push_parented)>(
@@ -500,7 +544,12 @@ void AVRecorder::ConnectedShmdata::apply_gst_properties(GstElement* element) {
   for (auto& prop : muxer_properties_id_) {
     auto value = parent_->pmanage<MPtr(&PContainer::get_str)>(prop);
     auto prop_name = parent_->pmanage<MPtr(&PContainer::get_name)>(prop);
-    g_object_set(G_OBJECT(element), prop_name.c_str(), value.c_str(), nullptr);
+    auto gst_prop_name_pos = prop_name.find("_avrec_");
+    if (gst_prop_name_pos == std::string::npos) return;
+
+    // Find the gst property name to apply it to the element.
+    gst_util_set_object_arg(
+        G_OBJECT(element), std::string(prop_name, 0, gst_prop_name_pos).c_str(), value.c_str());
   }
 }
 };

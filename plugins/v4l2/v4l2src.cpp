@@ -45,6 +45,18 @@ V4L2Src::V4L2Src(const std::string&)
           std::make_unique<GstPipeliner>(nullptr, nullptr, [this](GstObject* gstobj, GError * err) {
             on_gst_error(gstobj, err);
           })) {
+  force_framerate_id_ = pmanage<MPtr(&PContainer::make_bool)>(
+      "force_framerate",
+      [this](bool val) {
+        force_framerate_ = val;
+        return true;
+      },
+      [this]() { return force_framerate_; },
+      "Force framerate",
+      "Force the output framerate to be the one announced by the v4l device, "
+      "dropping/adding frame if necessary.",
+      force_framerate_);
+
   init_startable(this);
 }
 
@@ -57,7 +69,7 @@ void V4L2Src::set_shm_suffix() {
 }
 
 bool V4L2Src::init() {
-  if (!v4l2src_ || !capsfilter_ || !shmsink_) return false;
+  if (!v4l2src_ || !capsfilter_ || !videorate_ || !shmsink_) return false;
   // device inspector
   check_folder_for_v4l2_devices();
   update_capture_device();
@@ -482,8 +494,8 @@ bool V4L2Src::remake_elements() {
     g_debug("V4L2Src: no capture device available for starting capture");
     return false;
   }
-  if (!UGstElem::renew(v4l2src_, {"device", "norm"}) || !UGstElem::renew(capsfilter_, {"caps"}) ||
-      !UGstElem::renew(shmsink_, {"socket-path"})) {
+  if (!UGstElem::renew(v4l2src_, {"device", "norm"}) || !UGstElem::renew(videorate_) ||
+      !UGstElem::renew(capsfilter_, {"caps"}) || !UGstElem::renew(shmsink_, {"socket-path"})) {
     g_warning("V4L2Src: issue when with elements for video capture");
     return false;
   }
@@ -669,12 +681,28 @@ bool V4L2Src::check_folder_for_v4l2_devices() {
 bool V4L2Src::start() {
   configure_capture();
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
-  gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
-                   v4l2src_.get_raw(),
-                   capsfilter_.get_raw(),
-                   shmsink_.get_raw(),
-                   nullptr);
-  gst_element_link_many(v4l2src_.get_raw(), capsfilter_.get_raw(), shmsink_.get_raw(), nullptr);
+
+  if (!force_framerate_) {
+    gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
+                     v4l2src_.get_raw(),
+                     capsfilter_.get_raw(),
+                     shmsink_.get_raw(),
+                     nullptr);
+    gst_element_link_many(v4l2src_.get_raw(), capsfilter_.get_raw(), shmsink_.get_raw(), nullptr);
+  } else {
+    gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
+                     v4l2src_.get_raw(),
+                     videorate_.get_raw(),
+                     capsfilter_.get_raw(),
+                     shmsink_.get_raw(),
+                     nullptr);
+    gst_element_link_many(v4l2src_.get_raw(),
+                          videorate_.get_raw(),
+                          capsfilter_.get_raw(),
+                          shmsink_.get_raw(),
+                          nullptr);
+  }
+
   shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsink_.get_raw(),
       [this](const std::string& caps) {
@@ -686,6 +714,7 @@ bool V4L2Src::start() {
 
   gst_pipeline_->play(true);
   pmanage<MPtr(&PContainer::disable)>(devices_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&PContainer::disable)>(force_framerate_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(group_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(resolutions_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(width_id_, disabledWhenStartedMsg);
@@ -705,6 +734,7 @@ bool V4L2Src::stop() {
   gst_pipeline_ = std::make_unique<GstPipeliner>(
       nullptr, nullptr, [this](GstObject* gstobj, GError* err) { on_gst_error(gstobj, err); });
   pmanage<MPtr(&PContainer::enable)>(devices_id_);
+  pmanage<MPtr(&PContainer::enable)>(force_framerate_id_);
   pmanage<MPtr(&PContainer::enable)>(group_id_);
   pmanage<MPtr(&PContainer::enable)>(resolutions_id_);
   pmanage<MPtr(&PContainer::enable)>(width_id_);
@@ -973,7 +1003,7 @@ void V4L2Src::on_loading(InfoTree::ptr&& tree) {
                                                    IndexOrName(it - capture_devices_.begin()));
   }
   // this is locking device change from property:
-  //  is_loading_ = true;
+  is_loading_ = true;
 }
 
 void V4L2Src::on_loaded() { is_loading_ = false; }
