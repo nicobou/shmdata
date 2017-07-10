@@ -82,6 +82,9 @@ class Quiddity {
   // instance name
   std::string get_name() const;
   static std::string string_to_quiddity_name(const std::string& name);
+  bool set_nickname(const std::string& nickname);
+  std::string get_nickname() const;
+
   // FIXME name should be a ctor arg
   bool set_name(const std::string& name);  // can be called once
 
@@ -135,6 +138,7 @@ class Quiddity {
   std::string get_file_name_prefix() const;
 
  private:
+  std::string nickname_{};
   // tree used by quiddity to communicate info to user,
   // read-only by user, read/write by quiddity
   InfoTree::ptr information_tree_;

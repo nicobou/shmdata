@@ -112,7 +112,8 @@ class QuiddityManager {
   void reset_create_remove_cb() { manager_impl_->reset_create_remove_cb(); };
 
   bool has_quiddity(const std::string& name);
-
+  std::string get_nickname(const std::string& name) const;
+  bool set_nickname(const std::string& name, const std::string& nickname);
   // ****************** informations ******
 
   Forward_consultable(

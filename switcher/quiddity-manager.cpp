@@ -851,4 +851,22 @@ void QuiddityManager::execute_command() {
   }
 }
 
+std::string QuiddityManager::get_nickname(const std::string& name) const {
+  auto quid = manager_impl_->get_quiddity(name);
+  if (!quid) {
+    g_debug("quiddity %s not found", name.c_str());
+    return std::string();
+  }
+  return quid->get_nickname();
+}
+
+bool QuiddityManager::set_nickname(const std::string& name, const std::string& nickname) {
+  auto quid = manager_impl_->get_quiddity(name);
+  if (!quid) {
+    g_debug("quiddity %s not found", name.c_str());
+    return false;
+  }
+  return quid->set_nickname(nickname);
+}
+
 }  // namespace switcher

@@ -145,7 +145,7 @@ bool Quiddity::set_name(const std::string& name) {
 
   name_ = string_to_quiddity_name(name);
   information_tree_->graft(".type", InfoTree::make(get_documentation()->get_class_name()));
-
+  nickname_ = name_;
   return true;
 }
 
@@ -570,5 +570,12 @@ bool Quiddity::toggle_property_saving(const std::string& prop) {
     return true;
   }
 }
+
+bool Quiddity::set_nickname(const std::string& nickname) {
+  nickname_ = nickname;
+  return true;
+}
+
+std::string Quiddity::get_nickname() const { return nickname_; }
 
 }  // namespace switcher
