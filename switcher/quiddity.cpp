@@ -435,6 +435,10 @@ std::string Quiddity::get_quiddity_name_from_file_name(const std::string& path) 
     g_warning("%s: wrong shmdata path format", __FUNCTION__);
     return std::string();
   }
+  // handling bundle: they use there own internal manager named with their actual quiddity name
+  auto manager_name =
+      std::string(filename, underscores[0] + 1, underscores[1] - (underscores[0] + 1));
+  if (manager_name_ != manager_name) return manager_name;
   return std::string(filename, underscores[1] + 1, underscores[2] - (underscores[1] + 1));
 }
 
