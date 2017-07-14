@@ -22,8 +22,8 @@
 #include <linux/videodev2.h>
 #include <string.h>
 #include <sys/ioctl.h>
-#include <cstdlib>   // For srand() and rand()
-#include <ctime>     // For time()
+#include <cstdlib>  // For srand() and rand()
+#include <ctime>    // For time()
 #include "switcher/file-utils.hpp"
 #include "switcher/gst-utils.hpp"
 #include "switcher/quiddity-manager-impl.hpp"
@@ -53,10 +53,7 @@ void V4L2Src::set_shm_suffix() {
     shmpath_ = make_file_name(raw_suffix_);
   else
     shmpath_ = make_file_name(enc_suffix_);
-  g_object_set(G_OBJECT(shmsink_.get_raw()),
-               "socket-path",
-               shmpath_.c_str(),
-               nullptr);
+  g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
 }
 
 bool V4L2Src::init() {
@@ -84,7 +81,8 @@ bool V4L2Src::init() {
   group_id_ = pmanage<MPtr(&PContainer::make_group)>(
       "config", "Capture device configuration", "device specific parameters");
   update_device_specific_properties();
-  pmanage<MPtr(&PContainer::make_group)>("advanced", "Advanced configuration", "Advanced configuration");
+  pmanage<MPtr(&PContainer::make_group)>(
+      "advanced", "Advanced configuration", "Advanced configuration");
   save_device_id_ = pmanage<MPtr(&PContainer::make_parented_selection<>)>(
       "save_mode",
       "advanced",
@@ -952,6 +950,7 @@ void V4L2Src::on_loading(InfoTree::ptr&& tree) {
   std::string device_id = tree->branch_read_data<std::string>(".device_id");
   std::string bus_id = tree->branch_read_data<std::string>(".bus_id");
   std::string save_mode = tree->branch_read_data<std::string>(".save_by");
+
   if (save_mode == "port") {
     auto it = std::find_if(
         capture_devices_.begin(), capture_devices_.end(), [&](const CaptureDescription& capt) {
@@ -960,9 +959,9 @@ void V4L2Src::on_loading(InfoTree::ptr&& tree) {
     if (capture_devices_.end() == it)
       g_warning("v4l2src; device not found at this port %s", bus_id.c_str());
     else
-      pmanage<MPtr(&PContainer::set<Selection<>::index_t>)>(devices_id_,
-                                                            it - capture_devices_.begin());
-      } else {  // save by device
+      pmanage<MPtr(&PContainer::set<IndexOrName>)>(devices_id_,
+                                                   IndexOrName(it - capture_devices_.begin()));
+  } else {  // save by device
     auto it = std::find_if(
         capture_devices_.begin(), capture_devices_.end(), [&](const CaptureDescription& capt) {
           return capt.device_id_ == device_id;
@@ -970,11 +969,11 @@ void V4L2Src::on_loading(InfoTree::ptr&& tree) {
     if (capture_devices_.end() == it)
       g_warning("v4l2src; device not found (%s)", device_id.c_str());
     else
-      pmanage<MPtr(&PContainer::set<Selection<>::index_t>)>(devices_id_,
-                                                            it - capture_devices_.begin());
+      pmanage<MPtr(&PContainer::set<IndexOrName>)>(devices_id_,
+                                                   IndexOrName(it - capture_devices_.begin()));
   }
   // this is locking device change from property:
-  is_loading_ = true;
+  //  is_loading_ = true;
 }
 
 void V4L2Src::on_loaded() { is_loading_ = false; }

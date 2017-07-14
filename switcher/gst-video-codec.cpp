@@ -140,7 +140,7 @@ gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */, gpointer
 
 bool GstVideoCodec::start() {
   hide();
-  if (0 == quid_->pmanage<MPtr(&PContainer::get<Selection<>::index_t>)>(codec_id_)) return true;
+  if (0 == quid_->pmanage<MPtr(&PContainer::get<IndexOrName>)>(codec_id_).index_) return true;
   shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
       shm_encoded_.get_raw(),
       [this](const std::string& caps) {
@@ -167,7 +167,7 @@ bool GstVideoCodec::start() {
 
 bool GstVideoCodec::stop() {
   show();
-  if (0 != quid_->pmanage<MPtr(&PContainer::get<Selection<>::index_t>)>(codec_id_)) {
+  if (0 != quid_->pmanage<MPtr(&PContainer::get<IndexOrName>)>(codec_id_).index_) {
     shmsink_sub_.reset();
     shmsrc_sub_.reset();
     quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
@@ -224,7 +224,7 @@ PContainer::prop_id_t GstVideoCodec::install_codec() {
 }
 
 void GstVideoCodec::set_none() {
-  quid_->pmanage<MPtr(&PContainer::set<Selection<>::index_t>)>(
+  quid_->pmanage<MPtr(&PContainer::set<IndexOrName>)>(
       quid_->pmanage<MPtr(&PContainer::get_id)>("codec"), 0);
 }
 
