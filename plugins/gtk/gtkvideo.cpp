@@ -417,6 +417,8 @@ bool GTKVideo::remake_elements() {
                "qos",
                FALSE,
                nullptr);
+  g_object_set(G_OBJECT(queue_.get_raw()), "max-size-buffers", 3, nullptr);
+  g_object_set(G_OBJECT(shmsrc_.get_raw()), "copy-buffers", TRUE, nullptr);
   install_gst_properties();
   return true;
 }
