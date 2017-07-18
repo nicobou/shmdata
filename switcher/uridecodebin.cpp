@@ -19,7 +19,7 @@
 
 #include "./uridecodebin.hpp"
 #include "./gst-utils.hpp"
-#include "./quiddity-command.hpp"
+#include "./invocation-spec.hpp"
 #include "./scope-exit.hpp"
 #include "./shmdata-utils.hpp"
 

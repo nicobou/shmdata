@@ -21,8 +21,9 @@
 #if HAVE_GTK
 #include <gtk/gtk.h>
 #endif
-#include <iostream>  // FIXME ??
 #include <vector>
+#include "switcher/file-utils.hpp"
+#include "switcher/information-tree-json.hpp"
 #include "switcher/quiddity-manager.hpp"
 
 using namespace switcher;
@@ -281,16 +282,11 @@ int main(int argc, char* argv[]) {
       manager->invoke_va(osc_name.c_str(), "set_port", nullptr, osc_port_number, nullptr);
   }
 
-  manager->reset_command_history(false);
+  manager->reset_state(false);
 
-  if (load_file != nullptr) {
-    QuiddityManager::CommandHistory histo = manager->get_command_history_from_file(load_file);
-
-    std::vector<std::string> signal_subscriber_names = manager->get_signal_subscribers_names(histo);
-    if (!signal_subscriber_names.empty())
-      g_warning("creation of signal subscriber not handled when loading file %s", load_file);
-
-    manager->play_command_history(histo, nullptr, nullptr, true);
+  if (load_file &&
+      !manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(load_file)), true)) {
+    g_warning("could not load file %s", load_file);
   }
 
 #if HAVE_GTK

@@ -44,7 +44,7 @@ add_library(${SWITCHER_LIBRARY} SHARED
     property-mapper.cpp
     property.cpp
     quiddity-basic-test.cpp
-    quiddity-command.cpp
+    invocation-spec.cpp
     quiddity-documentation.cpp
     quiddity-manager-impl.cpp
     quiddity-manager-wrapper.cpp
@@ -130,7 +130,7 @@ set(HEADER_INCLUDES
     property-specification.hpp
     property.hpp
     quiddity-basic-test.hpp
-    quiddity-command.hpp
+    invocation-spec.hpp
     quiddity-documentation.hpp
     quiddity-manager-impl.hpp
     quiddity-manager-wrapper.hpp

@@ -33,7 +33,7 @@
 
 namespace switcher {
 class Quiddity;
-class QuiddityCommand;
+class InvocationSpec;
 class CustomPropertyHelper;
 
 class GstPipeliner {

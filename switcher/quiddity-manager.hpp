@@ -32,25 +32,17 @@
 #include <thread>
 #include <vector>
 #include "./information-tree.hpp"
+#include "./invocation-spec.hpp"
 #include "./make-consultable.hpp"
-#include "./quiddity-command.hpp"
 #include "./quiddity-manager-impl.hpp"
 #include "./quiddity-manager-wrapper.hpp"
+#include "./threaded-wrapper.hpp"
 
 namespace switcher {
 class QuiddityManager {
   friend class Bundle;  // access to manager_impl_
  public:
   using ptr = std::shared_ptr<QuiddityManager>;
-  struct CommandHistory {
-    std::vector<QuiddityCommand::ptr> history_{};
-    InfoTree::ptr quiddities_user_data_{nullptr};
-    InfoTree::ptr quiddities_{nullptr};
-    InfoTree::ptr properties_{nullptr};
-    InfoTree::ptr readers_{nullptr};
-    InfoTree::ptr custom_states_{nullptr};
-    bool empty() { return history_.empty() && !quiddities_; }
-  };
   using PropCallback = std::function<void(const std::string& val)>;
   using SignalCallback = void (*)(const std::string& subscriber_name,
                                   const std::string& quiddity_name,
@@ -60,35 +52,26 @@ class QuiddityManager {
   using PropCallbackMap = std::map<std::string, std::pair<PropCallback, void*>>;
   using SignalCallbackMap = std::map<std::string, std::pair<SignalCallback, void*>>;
 
-  ~QuiddityManager();
+  ~QuiddityManager() = default;
   static QuiddityManager::ptr make_manager(const std::string& name);
   QuiddityManager& operator=(const QuiddityManager&) = delete;
   QuiddityManager(const QuiddityManager&) = delete;
   std::string get_name() const;
 
-  // *************** command history
-  // ***********************************************************
-  bool save_command_history(const char* file_path) const;
-  std::string get_serialized_command_history() const;
-  static CommandHistory get_command_history_from_serialization(const std::string& save);
-  static CommandHistory get_command_history_from_file(const char* file_path);
-  std::vector<std::string> get_signal_subscribers_names(const CommandHistory& histo);
-  void play_command_history(QuiddityManager::CommandHistory histo,
-                            QuiddityManager::PropCallbackMap* prop_cb_data,
-                            QuiddityManager::SignalCallbackMap* sig_cb_data,
-                            bool mute_signal_subscribers);
-  void reset_command_history(bool remove_created_quiddities);
+  // switcher state
+  // you should use InfoTree json serialization and Fileutils for
+  // saving to file
+  InfoTree::ptr get_state() const;
+  bool load_state(InfoTree::ptr state, bool mute_signal_subscribers);
+  void reset_state(bool remove_created_quiddities);
 
-  // ************** plugins
-  // *******************************************************************
+  // plugins
   bool scan_directory_for_plugins(const std::string& directory);
 
-  // ************** configuration
-  // *******************************************************************
+  // configuration
   bool load_configuration_file(const std::string& file_path);
 
-  // ***************** inspect
-  // ****************************************************************
+  // inspect
   std::vector<std::string> get_classes();           // know which quiddities can be created
   std::vector<std::string> get_quiddities() const;  // know instances
   // doc (json formatted)
@@ -114,18 +97,17 @@ class QuiddityManager {
   bool has_quiddity(const std::string& name);
   std::string get_nickname(const std::string& name) const;
   bool set_nickname(const std::string& name, const std::string& nickname);
-  // ****************** informations ******
 
+  // informations
   Forward_consultable(
       QuiddityManager, QuiddityManager_Impl, manager_impl_.get(), use_tree, use_tree);
-
   Forward_delegate(
       QuiddityManager, QuiddityManager_Impl, manager_impl_.get(), user_data, user_data);
 
-  // ****************** properties ********
+  // properties
   Forward_consultable(QuiddityManager, QuiddityManager_Impl, manager_impl_.get(), props, use_prop);
 
-  // *********************** methods
+  // methods
   // doc (json formatted)
   std::string get_methods_description(const std::string& quiddity_name);
   std::string get_method_description(const std::string& quiddity_name,
@@ -146,7 +128,7 @@ class QuiddityManager {
 
   bool has_method(const std::string& quiddity_name, const std::string& method_name);
 
-  // ************************ signals
+  // signals
   // doc (json formatted)
   std::string get_signals_description(const std::string& quiddity_name);
   std::string get_signal_description(const std::string& quiddity_name,
@@ -181,34 +163,21 @@ class QuiddityManager {
   std::string list_subscribed_signals_json(const std::string& subscriber_name);
 
  private:
+  // invocation of quiddity_manager_impl_ methods in a dedicated thread
+  ThreadedWrapper<> invocation_loop_{};
   QuiddityManager_Impl::ptr manager_impl_;  // may be shared with others for
                                             // automatic quiddity creation
   std::string name_;
-  // running commands in sequence:
-  mutable QuiddityCommand::ptr command_;  // current command
-  mutable std::mutex seq_mutex_;
-  GAsyncQueue* command_queue_;
   std::vector<std::string> quiddities_at_reset_{};
-  // invocation of commands in a dedicated thread
-  std::thread invocation_thread_;
-  std::condition_variable execution_done_cond_;
-  std::mutex execution_done_mutex_;
   // gives shared pointer to this:
   std::weak_ptr<QuiddityManager> me_{};
-  // history
-  mutable CommandHistory command_history_;
+  // invocation
+  std::vector<InvocationSpec> invocations_{};
 
   QuiddityManager() = delete;
   explicit QuiddityManager(const std::string& name);
   void auto_init(const std::string& quiddity_name);
-  void command_lock();
-  void command_unlock();
-  std::string seq_invoke(QuiddityCommand::command command, ...);
-  void clear_command_sync();
-  void invocation_thread();
-  void execute_command();
-  void invoke_in_thread();
-  bool must_be_saved(QuiddityCommand::command id) const;
+  void try_save_current_invocation(const InvocationSpec& invocation_spec);
 };
 }  // namespace switcher
 

@@ -37,7 +37,7 @@ int main() {
     g_free(usr_plugin_dir);
 
     assert(QuiddityBasicTest::test_full(manager, "custom-save"));
-    manager->reset_command_history(true);
+    manager->reset_state(true);
 
     // creating a "myplugin" quiddity
     assert(manager->create("custom-save", "test") == "test");
@@ -50,17 +50,16 @@ int main() {
     assert(!manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_saved_id));
 
     // saving the custom state
-    auto save = manager->get_serialized_command_history();
-    assert(!save.empty());
+    auto save = manager->get_state();
+    assert(save);
     assert(!manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_loaded_id));
     assert(manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_saved_id));
 
     // reset manager
-    manager->reset_command_history(true);
+    manager->reset_state(true);
 
     // load the saved file
-    manager->play_command_history(
-        manager->get_command_history_from_serialization(save), nullptr, nullptr, true);
+    manager->load_state(save, true);
     assert(manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_loaded_id));
     assert(!manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_saved_id));
 

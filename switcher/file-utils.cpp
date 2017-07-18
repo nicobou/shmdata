@@ -20,6 +20,7 @@
 #include "./file-utils.hpp"
 #include <dirent.h>
 #include <fcntl.h>
+#include <gio/gio.h>  // GFile
 #include <glib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -131,6 +132,66 @@ std::pair<std::string, std::string> FileUtils::get_file_content(const std::strin
   file_stream.seekg(0, std::ios::beg);
   res.assign((std::istreambuf_iterator<char>(file_stream)), std::istreambuf_iterator<char>());
   return std::make_pair(res, std::string());
+}
+
+bool FileUtils::save(const std::string& content, const std::string& file_path) {
+  if (content.empty()) {
+    g_warning("cannot save empty content to file");
+    return false;
+  }
+  GFile* file = g_file_new_for_commandline_arg(file_path.c_str());
+  On_scope_exit { g_object_unref(file); };
+  GError* error = nullptr;
+  GFileOutputStream* file_stream = g_file_replace(file,
+                                                  nullptr,
+                                                  TRUE,  // make backup
+                                                  G_FILE_CREATE_NONE,
+                                                  nullptr,
+                                                  &error);
+  On_scope_exit { g_object_unref(file_stream); };
+  if (error != nullptr) {
+    g_warning("%s", error->message);
+    g_error_free(error);
+    return false;
+  }
+  // saving the save tree to the file
+  gchar* history = g_strdup(content.c_str());
+  g_output_stream_write(
+      (GOutputStream*)file_stream, history, sizeof(gchar) * strlen(history), nullptr, &error);
+  g_free(history);
+  if (error != nullptr) {
+    g_warning("%s", error->message);
+    g_error_free(error);
+    return false;
+  }
+  g_output_stream_close((GOutputStream*)file_stream, nullptr, &error);
+  if (error != nullptr) {
+    g_warning("%s", error->message);
+    g_error_free(error);
+    return false;
+  }
+  return true;
+}
+
+std::string FileUtils::get_content(const std::string& file_path) {
+  // opening file
+  std::ifstream file_stream(file_path);
+  if (!file_stream) {
+    g_warning("cannot open %s for loading history", file_path.c_str());
+    return std::string();
+  }
+  // get file content into a string
+  file_stream.seekg(0, std::ios::end);
+  auto size = file_stream.tellg();
+  if (0 == size) {
+    g_warning("file %s is empty", file_path.c_str());
+    return std::string();
+  }
+  std::string file_str;
+  file_str.reserve(size);
+  file_stream.seekg(0, std::ios::beg);
+  file_str.assign((std::istreambuf_iterator<char>(file_stream)), std::istreambuf_iterator<char>());
+  return file_str;
 }
 
 }  // namespace switcher
