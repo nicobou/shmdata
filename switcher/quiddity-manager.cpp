@@ -50,8 +50,7 @@ QuiddityManager::QuiddityManager(const std::string& name)
       invocation_thread_(std::thread(&QuiddityManager::invocation_thread, this)),
       execution_done_cond_(),
       execution_done_mutex_(),
-      command_history_(),
-      history_begin_time_(0) {
+      command_history_() {
   reset_command_history(false);
 }
 
@@ -73,7 +72,6 @@ void QuiddityManager::reset_command_history(bool remove_created_quiddities) {
     }
     manager_impl_->mute_signal_subscribers(false);
   }
-  history_begin_time_ = g_get_monotonic_time();
   command_history_.history_.clear();
   command_history_.quiddities_user_data_ = InfoTree::make();
   quiddities_at_reset_ = manager_impl_->get_instances();
@@ -82,8 +80,6 @@ void QuiddityManager::reset_command_history(bool remove_created_quiddities) {
 void QuiddityManager::command_lock() {
   seq_mutex_.lock();
   command_.reset(new QuiddityCommand());
-  gint64 cur_time = g_get_monotonic_time();
-  command_->time_ = cur_time - history_begin_time_;
 }
 
 bool QuiddityManager::must_be_saved(QuiddityCommand::command id) const {

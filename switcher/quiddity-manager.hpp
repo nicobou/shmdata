@@ -197,7 +197,6 @@ class QuiddityManager {
   std::weak_ptr<QuiddityManager> me_{};
   // history
   mutable CommandHistory command_history_;
-  gint64 history_begin_time_;  // monotonic time, in microseconds
 
   QuiddityManager() = delete;
   explicit QuiddityManager(const std::string& name);

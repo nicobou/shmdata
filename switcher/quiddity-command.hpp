@@ -74,7 +74,6 @@ class QuiddityCommand {
   std::vector<std::string> vector_arg_{};
   std::vector<std::string> result_{};
   std::vector<std::string> expected_result_{};
-  gint64 time_{-1};  // monotonic time, in microseconds
   bool success_{false};
   void clear();
   void set_id(command id);

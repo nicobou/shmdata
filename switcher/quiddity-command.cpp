@@ -77,7 +77,6 @@ void QuiddityCommand::set_vector_arg(std::vector<std::string> vector_arg) {
 InfoTree::ptr QuiddityCommand::get_info_tree() const {
   auto tree = InfoTree::make();
   tree->graft("command", InfoTree::make(command_names_.at(id_)));
-  tree->graft("calling time", InfoTree::make((gint)time_));
   for (unsigned int i = 0; i < args_.size(); i++) {
     tree->graft(std::string("arguments.") + std::to_string(i), InfoTree::make(args_[i]));
   }
@@ -119,7 +118,6 @@ QuiddityCommand::ptr QuiddityCommand::make_command_from_tree(InfoTree::ptr tree)
   QuiddityCommand::ptr command = std::make_shared<QuiddityCommand>();
   std::string command_str = tree->branch_get_value("command");
   command->set_id(QuiddityCommand::get_id_from_string(command_str.c_str()));
-  command->time_ = tree->branch_get_value("calling time");
   {
     std::string args_str("arguments.");
     auto arguments = tree->get_child_keys(args_str);
