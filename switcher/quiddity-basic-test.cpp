@@ -82,7 +82,6 @@ bool QuiddityBasicTest::test_description_by_class(QuiddityManager::ptr manager,
                                                   const std::string& quiddity_class_name) {
   // by class
   manager->get_methods_description_by_class(quiddity_class_name);
-  manager->get_signals_description_by_class(quiddity_class_name);
   return true;
 }
 

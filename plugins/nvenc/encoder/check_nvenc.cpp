@@ -55,21 +55,6 @@ void notify_success() {
   cond_var.notify_one();
 }
 
-void on_tree_grafted(const std::string& /*subscriber_name */,
-                     const std::string& quid_name,
-                     const std::string& signal_name,
-                     const std::vector<std::string>& params,
-                     void* user_data) {
-  auto manager = static_cast<QuiddityManager*>(user_data);
-  size_t byte_rate =
-      manager->use_tree<MPtr(&InfoTree::branch_get_value)>(quid_name, params[0] + ".byte_rate");
-  if (0 != byte_rate) {
-    notify_success();
-  }
-  std::printf(
-      "%s: %s %s\n", signal_name.c_str(), params[0].c_str(), std::to_string(byte_rate).c_str());
-}
-
 int main() {
   {
     QuiddityManager::ptr manager = QuiddityManager::make_manager("test_manager");
@@ -121,10 +106,19 @@ int main() {
     manager->invoke_va(nvenc_quid.c_str(), "connect", nullptr, vid_shmpath.c_str(), nullptr);
 
     // tracking nvenc shmdata writer byterate for evaluating success
-    assert(manager->make_signal_subscriber("signal_subscriber", on_tree_grafted, manager.get()));
-    assert(manager->subscribe_signal("signal_subscriber", nvenc_quid.c_str(), "on-tree-grafted"));
+    auto registration_id = manager->use_sig<MPtr(&switcher::SContainer::subscribe_by_name)>(
+        nvenc_quid, "on-tree-grafted", [&](const switcher::InfoTree::ptr& tree) {
+          size_t byte_rate = manager->use_tree<MPtr(&InfoTree::branch_get_value)>(
+              nvenc_quid, tree->get_value().as<std::string>() + ".byte_rate");
+          if (0 != byte_rate) {
+            notify_success();
+          }
+        });
+    assert(0 != registration_id);
 
     wait_until_success();
+    assert(manager->use_sig<MPtr(&switcher::SContainer::unsubscribe_by_name)>(
+        nvenc_quid, "on-tree-grafted", registration_id));
   }  // end of scope is releasing the manager
 
   if (!success) {

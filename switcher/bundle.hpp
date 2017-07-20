@@ -65,8 +65,8 @@ class Bundle : public Quiddity, public StartableQuiddity {
   bool start() final;
   bool stop() final;
   bool make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids);
-  static void on_tree_grafted(const std::vector<std::string>& params, void* user_data);
-  static void on_tree_pruned(const std::vector<std::string>& params, void* user_data);
+  static void on_tree_grafted(const std::string& key, void* user_data);
+  static void on_tree_pruned(const std::string& key, void* user_data);
   static bool property_is_displayed(bundle::quiddity_spec_t quid_spec, std::string property_name);
 };
 

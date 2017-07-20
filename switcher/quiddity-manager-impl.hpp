@@ -28,7 +28,6 @@
 #include "./documentation-registry.hpp"
 #include "./information-tree.hpp"
 #include "./plugin-loader.hpp"
-#include "./quiddity-signal-subscriber.hpp"
 #include "./quiddity.hpp"
 
 namespace switcher {
@@ -135,34 +134,15 @@ class QuiddityManager_Impl {
   bool has_method(const std::string& quiddity_name, const std::string& method_name);
 
   // **** signals
-  // doc (json formatted)
-  std::string get_signals_description(const std::string& quiddity_name);
-  std::string get_signal_description(const std::string& quiddity_name,
-                                     const std::string& signal_name);
-  // following "by_class" methods provide properties available after creation
-  // only,
-  // avoiding possible properties created dynamically
-  std::string get_signals_description_by_class(const std::string& class_name);
-  std::string get_signal_description_by_class(const std::string& class_name,
-                                              const std::string& signal_name);
-  // high level signal subscriber
-  bool make_signal_subscriber(const std::string& subscriber_name,
-                              QuidditySignalSubscriber::OnEmittedCallback cb,
-                              void* user_data);
-  bool remove_signal_subscriber(const std::string& subscriber_name);
-  bool subscribe_signal(const std::string& subscriber_name,
-                        const std::string& quiddity_name,
-                        const std::string& signal_name);
-  bool unsubscribe_signal(const std::string& subscriber_name,
-                          const std::string& quiddity_name,
-                          const std::string& signal_name);
-
-  void mute_signal_subscribers(bool muted);
-
-  std::vector<std::string> list_signal_subscribers() const;
-  std::vector<std::pair<std::string, std::string>> list_subscribed_signals(
-      const std::string& subscriber_name);
-  std::string list_subscribed_signals_json(const std::string& subscriber_name);
+  Forward_consultable_from_associative_container(
+      QuiddityManager_Impl,    // self type
+      Quiddity,                // consultable type
+      find_quiddity,           // accessor
+      std::string,             // accessor key type
+      construct_error_return,  // what is suposed to be returned when key has
+                               // not been found
+      sig,                     // method used by quiddities to access the consultable
+      sigs);                   // public forwarding method
 
   QuiddityManager* get_root_manager() { return manager_; };
 

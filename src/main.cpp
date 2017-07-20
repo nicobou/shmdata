@@ -40,7 +40,6 @@ static gboolean listclasses;
 static gboolean classesdoc;
 static gchar* classdoc = nullptr;
 static gchar* listmethodsbyclass = nullptr;
-static gchar* listsignalsbyclass = nullptr;
 static gchar* extraplugindir = nullptr;
 static QuiddityManager::ptr manager;
 static GOptionEntry entries[15] = {
@@ -88,13 +87,6 @@ static GOptionEntry entries[15] = {
      G_OPTION_ARG_STRING,
      &listmethodsbyclass,
      "list methods of a class",
-     nullptr},
-    {"list-signals-by-class",
-     'S',
-     0,
-     G_OPTION_ARG_STRING,
-     &listsignalsbyclass,
-     "list signals of a class",
      nullptr},
     {"classes-doc",
      'K',
@@ -260,11 +252,6 @@ int main(int argc, char* argv[]) {
     g_print("%s\n", manager->get_methods_description_by_class(listmethodsbyclass).c_str());
     return 0;
   }
-  if (listsignalsbyclass != nullptr) {
-    g_log_set_default_handler(quiet_log_handler, nullptr);
-    g_print("%s\n", manager->get_signals_description_by_class(listsignalsbyclass).c_str());
-    return 0;
-  }
 
   std::string soap_name = manager->create("SOAPcontrolServer", "soapserver");
   std::vector<std::string> port_arg;
@@ -285,7 +272,7 @@ int main(int argc, char* argv[]) {
   manager->reset_state(false);
 
   if (load_file &&
-      !manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(load_file)), true)) {
+      !manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(load_file)))) {
     g_warning("could not load file %s", load_file);
   }
 

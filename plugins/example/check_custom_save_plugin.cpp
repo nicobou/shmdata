@@ -56,7 +56,7 @@ int main() {
     manager->reset_state(true);
 
     // load the saved file
-    manager->load_state(save, true);
+    manager->load_state(save);
     assert(manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_loaded_id));
     assert(!manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_saved_id));
 

@@ -141,10 +141,16 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
     // registering quiddity properties
     auto quid_ptr = manager_->manager_impl_->get_quiddity(name);
     on_tree_datas_.emplace_back(std::make_unique<on_tree_data_t>(this, name, quid_ptr.get(), quid));
-    quid_ptr->subscribe_signal(
-        "on-tree-grafted", &Bundle::on_tree_grafted, on_tree_datas_.back().get());
-    quid_ptr->subscribe_signal(
-        "on-tree-pruned", &Bundle::on_tree_pruned, on_tree_datas_.back().get());
+    quid_ptr->sig<MPtr(&SContainer::subscribe_by_name)>(
+        std::string("on-tree-grafted"),
+        [&, tree_data = on_tree_datas_.back().get() ](InfoTree::ptr tree) {
+          Bundle::on_tree_grafted(tree->get_value().as<std::string>(), tree_data);
+        });
+    quid_ptr->sig<MPtr(&SContainer::subscribe_by_name)>(
+        std::string("on-tree-pruned"),
+        [&, tree_data = on_tree_datas_.back().get() ](InfoTree::ptr tree) {
+          Bundle::on_tree_pruned(tree->get_value().as<std::string>(), tree_data);
+        });
     // mirroring property
     if (!quid.top_level && (quid.expose_prop || !quid.whitelisted_params.empty())) {
       auto group_name = name;
@@ -188,13 +194,12 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
   return true;
 }
 
-void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_data) {
+void Bundle::on_tree_grafted(const std::string& key, void* user_data) {
   auto context = static_cast<on_tree_data_t*>(user_data);
-
   static std::regex connections_wr_rgx("\\.?shmdata.writer\\.([^.]+)");
   if (!context->quid_spec_.connects_to_.empty()) {
     std::smatch shm_match;
-    std::regex_search(params[0], shm_match, connections_wr_rgx);
+    std::regex_search(key, shm_match, connections_wr_rgx);
     if (!shm_match.empty()) {
       // shm_match[0] contains the matched sequence,
       // shm_match[1] contains the sub sequence localized between brackets
@@ -230,31 +235,29 @@ void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_
 
   static std::regex exposed_wr_rgx("\\.?shmdata\\.writer\\..*");
   if (context->quid_spec_.expose_shmw) {
-    if (std::regex_match(params[0], exposed_wr_rgx)) {
-      context->self_->graft_tree(
-          params[0], context->quid_->information_tree_->get_tree(params[0]), true);
+    if (std::regex_match(key, exposed_wr_rgx)) {
+      context->self_->graft_tree(key, context->quid_->information_tree_->get_tree(key), true);
       return;
     }
   }
 
   static std::regex exposed_rd_rgx("\\.?shmdata\\.reader\\..*");
   if (context->quid_spec_.expose_shmr) {
-    if (std::regex_match(params[0], exposed_rd_rgx)) {
-      context->self_->graft_tree(
-          params[0], context->quid_->information_tree_->get_tree(params[0]), true);
+    if (std::regex_match(key, exposed_rd_rgx)) {
+      context->self_->graft_tree(key, context->quid_->information_tree_->get_tree(key), true);
       return;
     }
   }
 
   static std::regex prop_rgx("\\.?property\\.([^.]*).*");
   std::smatch prop_match;
-  if (std::regex_search(params[0], prop_match, prop_rgx)) {
+  if (std::regex_search(key, prop_match, prop_rgx)) {
     std::string prop_name = prop_match[1];
     if (!property_is_displayed(context->quid_spec_, prop_name)) {
       return;
     }
     static std::regex prop_created_rgx("\\.?property\\.[^.]*");
-    if (std::regex_match(params[0], prop_created_rgx)) {
+    if (std::regex_match(key, prop_created_rgx)) {
       if (property_is_displayed(context->quid_spec_, prop_name)) {
         std::string parent_strid;
         auto parent = context->quid_->tree<MPtr(&InfoTree::branch_get_value)>(
@@ -273,43 +276,41 @@ void Bundle::on_tree_grafted(const std::vector<std::string>& params, void* user_
     }
     static std::regex prop_rename("\\.?property.");
     context->self_->graft_tree(
-        std::regex_replace(params[0], prop_rename, std::string("$&") + context->quid_name_ + "/"),
-        context->quid_->information_tree_->get_tree(params[0]),
+        std::regex_replace(key, prop_rename, std::string("$&") + context->quid_name_ + "/"),
+        context->quid_->information_tree_->get_tree(key),
         true);
     return;
   }
 
   // We catch the events we don't want to forward.
-  if (!context->quid_spec_.expose_shmr && std::regex_match(params[0], exposed_rd_rgx)) return;
-  if (!context->quid_spec_.expose_shmw && std::regex_match(params[0], exposed_wr_rgx)) return;
-  if (context->quid_spec_.connects_to_.empty() && std::regex_match(params[0], connections_wr_rgx))
-    return;
+  if (!context->quid_spec_.expose_shmr && std::regex_match(key, exposed_rd_rgx)) return;
+  if (!context->quid_spec_.expose_shmw && std::regex_match(key, exposed_wr_rgx)) return;
+  if (context->quid_spec_.connects_to_.empty() && std::regex_match(key, connections_wr_rgx)) return;
 
   // And then if there is a custom branch in the tree we forward the graft event.
-  context->self_->graft_tree(
-      params[0], context->quid_->information_tree_->get_tree(params[0]), true);
+  context->self_->graft_tree(key, context->quid_->information_tree_->get_tree(key), true);
 }
 
-void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_data) {
+void Bundle::on_tree_pruned(const std::string& key, void* user_data) {
   auto context = static_cast<on_tree_data_t*>(user_data);
 
   static std::regex exposed_rd_rgx("\\.?shmdata\\.reader\\..*");
   if (context->quid_spec_.expose_shmr) {
-    if (std::regex_match(params[0], exposed_rd_rgx)) {
-      context->self_->prune_tree(params[0], true);
+    if (std::regex_match(key, exposed_rd_rgx)) {
+      context->self_->prune_tree(key, true);
       return;
     }
   }
 
   static std::regex prop_rgx("\\.?property\\.([^.]*).*");
   std::smatch prop_match;
-  if (std::regex_search(params[0], prop_match, prop_rgx)) {
+  if (std::regex_search(key, prop_match, prop_rgx)) {
     std::string prop_name = prop_match[1];
     if (!property_is_displayed(context->quid_spec_, prop_name)) {
       return;
     }
     static std::regex prop_deleted_rgx("\\.?property\\.[^.]*");
-    if (std::regex_match(params[0], prop_deleted_rgx)) {
+    if (std::regex_match(key, prop_deleted_rgx)) {
       if (!context->self_->pmanage<MPtr(&PContainer::remove)>(
               context->self_->pmanage<MPtr(&PContainer::get_id)>(context->quid_name_ + "/" +
                                                                  prop_name))) {
@@ -321,14 +322,13 @@ void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_d
     }
     static std::regex prop_rename("\\.?property\\.");
     context->self_->prune_tree(
-        std::regex_replace(params[0], prop_rename, std::string("$&") + context->quid_name_ + "/"),
-        true);
+        std::regex_replace(key, prop_rename, std::string("$&") + context->quid_name_ + "/"), true);
     return;
   }
 
   static std::regex wr_rgx("\\.?shmdata\\.writer\\.([^.]+)");
   std::smatch shm_match;
-  std::regex_search(params[0], shm_match, wr_rgx);
+  std::regex_search(key, shm_match, wr_rgx);
   if (!shm_match.empty()) {
     std::vector<std::pair<std::string, std::string>> to_disconnect;
     {
@@ -348,7 +348,7 @@ void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_d
       }
     }  // release connected_shms_mtx_
     if (context->quid_spec_.expose_shmw) {
-      context->self_->prune_tree(params[0], true);
+      context->self_->prune_tree(key, true);
     }
     std::swap(context->quid_spec_.connects_to_, context->quid_spec_.connected_to_);
     if (!context->self_->quitting_.load()) {
@@ -362,10 +362,10 @@ void Bundle::on_tree_pruned(const std::vector<std::string>& params, void* user_d
   }
 
   // We catch the events we don't want to forward.
-  if (!context->quid_spec_.expose_shmr && std::regex_match(params[0], exposed_rd_rgx)) return;
+  if (!context->quid_spec_.expose_shmr && std::regex_match(key, exposed_rd_rgx)) return;
 
   // And then if there is a custom branch in the tree we forward the prune event.
-  context->self_->prune_tree(params[0], true);
+  context->self_->prune_tree(key, true);
 }
 
 bool Bundle::start() {

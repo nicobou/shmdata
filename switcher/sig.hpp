@@ -17,40 +17,28 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_GOBJECT_WRAPPER_H__
-#define __SWITCHER_GOBJECT_WRAPPER_H__
+#ifndef __SWITCHER_SIG_H__
+#define __SWITCHER_SIG_H__
 
-#include <glib-object.h>
 #include <map>
-#include <memory>
-#include <string>
-// #include "./gobject-custom-property.hpp"
-// #include "./gobject-custom-signal.hpp"
+#include "./information-tree.hpp"
 
 namespace switcher {
-struct _MyObject;
-struct _MyObjectClass;
 
-class GObjectWrapper {
+class Sig {
  public:
-  typedef std::shared_ptr<GObjectWrapper> ptr;
-  GObjectWrapper();
-  ~GObjectWrapper();
-  GObjectWrapper(const GObjectWrapper&) = delete;
-  GObjectWrapper& operator=(const GObjectWrapper&) = delete;
+  using register_id_t = size_t;
+  using notify_cb_t = std::function<void(const InfoTree::ptr&)>;
+  using sig_id_t = size_t;
+  Sig() = default;
 
-  GObject* get_gobject();
-
-  // signal
-  static guint make_signal(GType return_type, guint n_params, GType* param_types);
+  register_id_t subscribe(notify_cb_t fun) const;
+  bool unsubscribe(register_id_t rid) const;
+  void notify(InfoTree::ptr tree) const;
 
  private:
-  struct _MyObject* my_object_;
-
-  // ---------- signals
-  // static std::map<guint, GObjectCustomSignal::ptr> custom_signals_;
-  static guint next_signal_num_;  // this is only for generation of unique signal names
-  std::map<std::string, void*> signal_user_datas_;
+  mutable register_id_t counter_{0};
+  mutable std::map<register_id_t, notify_cb_t> to_notify_{};
 };
 
 }  // namespace switcher

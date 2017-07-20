@@ -52,21 +52,6 @@ void notify_success() {
   cond_var.notify_one();
 }
 
-void on_tree_grafted(const std::string& /*subscriber_name */,
-                     const std::string& quid_name,
-                     const std::string& signal_name,
-                     const std::vector<std::string>& params,
-                     void* user_data) {
-  auto manager = static_cast<QuiddityManager*>(user_data);
-  size_t byte_rate =
-      manager->use_tree<MPtr(&InfoTree::branch_get_value)>(quid_name, params[0] + ".byte_rate");
-  if (byte_rate) {
-    notify_success();
-  }
-  std::printf(
-      "%s: %s %s\n", signal_name.c_str(), params[0].c_str(), std::to_string(byte_rate).c_str());
-}
-
 int main() {
   {
     QuiddityManager::ptr manager = QuiddityManager::make_manager("ladspatest");

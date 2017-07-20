@@ -16,7 +16,6 @@ add_library(${SWITCHER_LIBRARY} SHARED
     fraction.cpp
     g-source-wrapper.cpp
     glibmainloop.cpp
-    gobject-wrapper.cpp
     gprop-to-prop.cpp
     gst-audio-codec.cpp
     gst-audio-encoder.cpp
@@ -51,7 +50,6 @@ add_library(${SWITCHER_LIBRARY} SHARED
     quiddity-manager-impl.cpp
     quiddity-manager-wrapper.cpp
     quiddity-manager.cpp
-    quiddity-signal-subscriber.cpp
     quiddity.cpp
     rtp-destination.cpp
     rtp-receiver.cpp
@@ -66,7 +64,8 @@ add_library(${SWITCHER_LIBRARY} SHARED
     shmdata-stat.cpp
     shmdata-utils.cpp
     shmdata-writer.cpp
-    signal-string.cpp
+    sig.cpp
+    signal-container.cpp
     startable-quiddity.cpp
     string-utils.cpp
     timelapse.cpp
@@ -97,7 +96,6 @@ set(HEADER_INCLUDES
     fraction.hpp
     g-source-wrapper.hpp
     glibmainloop.hpp
-    gobject-wrapper.hpp
     gprop-to-prop.hpp
     group.hpp
     gst-audio-codec.hpp
@@ -137,7 +135,6 @@ set(HEADER_INCLUDES
     quiddity-manager-impl.hpp
     quiddity-manager-wrapper.hpp
     quiddity-manager.hpp
-    quiddity-signal-subscriber.hpp
     quiddity.hpp
     rtp-destination.hpp
     rtp-receiver.hpp
@@ -155,7 +152,8 @@ set(HEADER_INCLUDES
     shmdata-stat.hpp
     shmdata-utils.hpp
     shmdata-writer.hpp
-    signal-string.hpp
+    sig.hpp
+    signal-container.hpp
     startable-quiddity.hpp
     string-utils.hpp
     templated-sequence.hpp

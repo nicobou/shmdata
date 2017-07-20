@@ -45,14 +45,12 @@ std::string QuiddityManager::get_name() const { return name_; }
 
 void QuiddityManager::reset_state(bool remove_created_quiddities) {
   if (remove_created_quiddities) {
-    manager_impl_->mute_signal_subscribers(true);
     for (auto& quid : manager_impl_->get_instances()) {
       if (quiddities_at_reset_.cend() ==
           std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid)) {
         manager_impl_->remove(quid);
       }
     }
-    manager_impl_->mute_signal_subscribers(false);
   }
   invocations_.clear();
   quiddities_at_reset_ = manager_impl_->get_instances();
@@ -79,7 +77,7 @@ void QuiddityManager::try_save_current_invocation(const InvocationSpec& invocati
     invocations_.push_back(invocation_spec);
 }
 
-bool QuiddityManager::load_state(InfoTree::ptr state, bool mute_existing_subscribers) {
+bool QuiddityManager::load_state(InfoTree::ptr state) {
   if (!state) return false;
   auto histo_str = std::string("history.");
   auto invocations_paths = state->get_child_keys(histo_str);
@@ -96,10 +94,6 @@ bool QuiddityManager::load_state(InfoTree::ptr state, bool mute_existing_subscri
   auto custom_states = state->get_tree(".custom_states");
 
   bool debug = false;
-  if (mute_existing_subscribers) manager_impl_->mute_signal_subscribers(true);
-  On_scope_exit {
-    if (mute_existing_subscribers) manager_impl_->mute_signal_subscribers(false);
-  };
 
   if (debug) g_print("start playing history\n");
 
@@ -394,102 +388,6 @@ bool QuiddityManager::has_method(const std::string& quiddity_name, const std::st
   return res;
 }
 
-bool QuiddityManager::make_signal_subscriber(const std::string& subscriber_name,
-                                             QuiddityManager::SignalCallback callback,
-                                             void* user_data) {
-  bool res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->make_signal_subscriber(subscriber_name, callback, user_data);
-  });  // invocation_loop_.run
-
-  return res;
-}
-
-bool QuiddityManager::remove_signal_subscriber(const std::string& subscriber_name) {
-  bool res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->remove_signal_subscriber(subscriber_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-bool QuiddityManager::subscribe_signal(const std::string& subscriber_name,
-                                       const std::string& quiddity_name,
-                                       const std::string& signal_name) {
-  bool res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->subscribe_signal(subscriber_name, quiddity_name, signal_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-bool QuiddityManager::unsubscribe_signal(const std::string& subscriber_name,
-                                         const std::string& quiddity_name,
-                                         const std::string& signal_name) {
-  bool res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->unsubscribe_signal(subscriber_name, quiddity_name, signal_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::vector<std::string> QuiddityManager::list_signal_subscribers() {
-  std::vector<std::string> res;
-  invocation_loop_.run(
-      [&]() { res = manager_impl_->list_signal_subscribers(); });  // invocation_loop_.run
-  return res;
-}
-
-std::vector<std::pair<std::string, std::string>> QuiddityManager::list_subscribed_signals(
-    const std::string& subscriber_name) {
-  std::vector<std::pair<std::string, std::string>> res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->list_subscribed_signals(subscriber_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::string QuiddityManager::list_subscribed_signals_json(const std::string& subscriber_name) {
-  std::string res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->list_subscribed_signals_json(subscriber_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::string QuiddityManager::get_signals_description(const std::string& quiddity_name) {
-  std::string res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->get_signals_description(quiddity_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::string QuiddityManager::get_signal_description(const std::string& quiddity_name,
-                                                    const std::string& signal_name) {
-  std::string res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->get_signal_description(quiddity_name, signal_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::string QuiddityManager::get_signals_description_by_class(const std::string& class_name) {
-  std::string res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->get_signals_description_by_class(class_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::string QuiddityManager::get_signal_description_by_class(const std::string& class_name,
-                                                             const std::string& signal_name) {
-  std::string res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->get_signal_description_by_class(class_name, signal_name);
-  });  // invocation_loop_.run
-  return res;
-}
 
 void QuiddityManager::auto_init(const std::string& quiddity_name) {
   Quiddity::ptr quidd = manager_impl_->get_quiddity(quiddity_name);
@@ -500,8 +398,10 @@ void QuiddityManager::auto_init(const std::string& quiddity_name) {
 
 std::string QuiddityManager::create(const std::string& quiddity_class) {
   std::string res;
-  invocation_loop_.run(
-      [&]() { res = manager_impl_->create(quiddity_class); });  // invocation_loop_.run
+  invocation_loop_.run([&]() {
+    res = manager_impl_->create(quiddity_class);
+    auto_init(res);
+  });  // invocation_loop_.run
   return res;
 }
 
@@ -516,8 +416,10 @@ bool QuiddityManager::load_configuration_file(const std::string& file_path) {
 std::string QuiddityManager::create(const std::string& quiddity_class,
                                     const std::string& nickname) {
   std::string res;
-  invocation_loop_.run(
-      [&]() { res = manager_impl_->create(quiddity_class, nickname); });  // invocation_loop_.run
+  invocation_loop_.run([&]() {
+    res = manager_impl_->create(quiddity_class, nickname);
+    auto_init(res);
+  });  // invocation_loop_.run
   return res;
 }
 
@@ -568,8 +470,7 @@ std::string QuiddityManager::get_quiddity_description(const std::string& quiddit
 
 std::vector<std::string> QuiddityManager::get_quiddities() const {
   std::vector<std::string> res;
-  // FIXME this is not thread safe
-  res = manager_impl_->get_instances();
+  invocation_loop_.run([&]() { res = manager_impl_->get_instances(); });  // invocation_loop_.run
   return res;
 }
 

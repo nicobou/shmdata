@@ -33,6 +33,9 @@ class SignalQuid : public Quiddity {
 
   bool init() final;
   static gboolean my_signal_method(void*, void* user_data);
+
+ private:
+  SContainer::sig_id_t signal_id_;
 };
 
 SWITCHER_DECLARE_PLUGIN(SignalQuid);

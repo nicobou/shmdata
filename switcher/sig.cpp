@@ -1,5 +1,5 @@
 /*
- * This file is part of switcher-gsoap.
+ * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,26 +17,24 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#undef NDEBUG  // get assert in release mode
+#include "./sig.hpp"
 
-#include <unistd.h>
-#include "switcher/information-tree-json.hpp"
-#include "switcher/quiddity-basic-test.hpp"
+namespace switcher {
 
-int main() {
-  bool success = false;
-  {
-    switcher::QuiddityManager::ptr manager =
-        switcher::QuiddityManager::make_manager("test_manager");
-
-    manager->scan_directory_for_plugins("./");
-
-    if (switcher::QuiddityBasicTest::test_full(manager, "SOAPcontrolServer")) success = true;
-
-  }  // end of scope is releasing the manager
-
-  if (success)
-    return 0;
-  else
-    return 1;
+Sig::register_id_t Sig::subscribe(notify_cb_t fun) const {
+  to_notify_[++counter_] = fun;
+  return counter_;
 }
+
+bool Sig::unsubscribe(register_id_t rid) const {
+  auto it = to_notify_.find(rid);
+  if (to_notify_.end() == it) return false;
+  to_notify_.erase(it);
+  return true;
+}
+
+void Sig::notify(InfoTree::ptr tree) const {
+  for (auto& it : to_notify_) it.second(tree);
+}
+
+}  // namespace switcher

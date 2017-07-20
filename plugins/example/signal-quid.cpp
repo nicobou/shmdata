@@ -29,9 +29,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SignalQuid,
                                      "LGPL",
                                      "Jérémie Soria");
 
-SignalQuid::SignalQuid(const std::string&) {}
-
-bool SignalQuid::init() {
+SignalQuid::SignalQuid(const std::string&)
+    : signal_id_(smanage<MPtr(&SContainer::make)>("test-signal", "A test signal")) {
   install_method("Emit Signal",                  // long name
                  "emit-signal",                  // name
                  "send \"test-signal\" signal",  // description
@@ -41,28 +40,16 @@ bool SignalQuid::init() {
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_NONE, nullptr),
                  this);
-
-  GType arg_type[] = {G_TYPE_STRING};
-  install_signal_with_class_name("Quiddity",
-                                 "On test signal",
-                                 "test-signal",
-                                 "A signal has been emitted",
-                                 Signal::make_arg_description("Test signal quiddity",
-                                                              "quiddity_name",
-                                                              "the quiddity name",
-                                                              "Method Name",
-                                                              "method_name",
-                                                              "the method name",
-                                                              nullptr),
-                                 1,
-                                 arg_type);
-
-  return true;
 }
+
+bool SignalQuid::init() { return true; }
 
 gboolean SignalQuid::my_signal_method(void*, void* user_data) {
   SignalQuid* context = static_cast<SignalQuid*>(user_data);
-  context->signal_emit("test-signal");
+  auto tree = InfoTree::make();
+  tree->graft(".zetremendouskey", InfoTree::make("zegreatvalue"));
+  context->smanage<MPtr(&SContainer::notify)>(context->signal_id_, std::move(tree));
+  // also grafting the tree
   context->graft_tree(".zetremendouskey", InfoTree::make("zegreatvalue"), true);
   context->prune_tree(".zetremendouskey", true);
   return true;

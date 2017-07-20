@@ -26,44 +26,32 @@
 
 unsigned int signal_counter = 0;
 
-void cb_signal(const std::string& /*subscriber_name*/,
-               const std::string& /*quiddity_name*/,
-               const std::string& /*signal_name*/,
-               const std::vector<std::string>& /*params*/,
-               void* /*user_data*/) {
-  ++signal_counter;
-}
-
 int main() {
   switcher::QuiddityManager::ptr manager =
       switcher::QuiddityManager::make_manager("testing_signals");
-
   manager->scan_directory_for_plugins("./");
-
-  assert(manager->make_signal_subscriber("signal_subscriber", cb_signal, nullptr));
-
-  auto subscribers = manager->list_signal_subscribers();
-  assert(subscribers.size() == 1);
-  assert(subscribers[0] == "signal_subscriber");
 
   // Test create/remove notification system
   unsigned int create_remove_counter = 0;
-  manager->register_creation_cb(
-      [&create_remove_counter](const std::string& /*quid_name*/) { ++create_remove_counter; });
-  manager->register_removal_cb(
-      [&create_remove_counter](const std::string& /*quid_name*/) { ++create_remove_counter; });
+  manager->register_creation_cb([&](const std::string& /*quid_name*/) { ++create_remove_counter; });
+  manager->register_removal_cb([&](const std::string& /*quid_name*/) { ++create_remove_counter; });
   assert(manager->create("signal", "signal-quiddity") == "signal-quiddity");
 
-  assert(manager->subscribe_signal("signal_subscriber", "signal-quiddity", "test-signal"));
+  auto registration_id = manager->use_sig<MPtr(&switcher::SContainer::subscribe_by_name)>(
+      "signal-quiddity", "test-signal", [&](const switcher::InfoTree::ptr&) { ++signal_counter; });
+
+  assert(0 != registration_id);
 
   manager->invoke("signal-quiddity", "emit-signal", nullptr, std::vector<std::string>());
   manager->invoke("signal-quiddity", "emit-signal", nullptr, std::vector<std::string>());
   manager->invoke("signal-quiddity", "emit-signal", nullptr, std::vector<std::string>());
 
-  assert(manager->list_subscribed_signals("signal_subscriber").size() == 1);
+  assert(manager->use_sig<MPtr(&switcher::SContainer::unsubscribe_by_name)>(
+      "signal-quiddity", "test-signal", registration_id));
+  // the following should not imply incrementation of signal_counter
+  manager->invoke("signal-quiddity", "emit-signal", nullptr, std::vector<std::string>());
+
   assert(manager->remove("signal-quiddity"));
-  assert(manager->list_subscribed_signals("signal_subscriber").size() == 0);
-  assert(manager->remove_signal_subscriber("signal_subscriber"));
 
   gst_deinit();
 

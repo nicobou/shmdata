@@ -62,7 +62,7 @@ class QuiddityManager {
   // you should use InfoTree json serialization and Fileutils for
   // saving to file
   InfoTree::ptr get_state() const;
-  bool load_state(InfoTree::ptr state, bool mute_signal_subscribers);
+  bool load_state(InfoTree::ptr state);
   void reset_state(bool remove_created_quiddities);
 
   // plugins
@@ -107,6 +107,9 @@ class QuiddityManager {
   // properties
   Forward_consultable(QuiddityManager, QuiddityManager_Impl, manager_impl_.get(), props, use_prop);
 
+  // signals
+  Forward_consultable(QuiddityManager, QuiddityManager_Impl, manager_impl_.get(), sigs, use_sig);
+
   // methods
   // doc (json formatted)
   std::string get_methods_description(const std::string& quiddity_name);
@@ -128,43 +131,10 @@ class QuiddityManager {
 
   bool has_method(const std::string& quiddity_name, const std::string& method_name);
 
-  // signals
-  // doc (json formatted)
-  std::string get_signals_description(const std::string& quiddity_name);
-  std::string get_signal_description(const std::string& quiddity_name,
-                                     const std::string& signal_name);
-  // following "by_class" methods provide properties available after creation
-  // only,
-  // avoiding possible properties created dynamically
-  std::string get_signals_description_by_class(const std::string& class_name);
-  std::string get_signal_description_by_class(const std::string& class_name,
-                                              const std::string& signal_name);
-
-  bool make_signal_subscriber(const std::string& subscriber_name,
-                              /* void (*callback)(std::string subscriber_name, */
-                              /*     std::string quiddity_name, */
-                              /*     std::string signal_name, */
-                              /*     std::vector<std::string> params, */
-                              /*     void *user_data) */
-                              QuiddityManager::SignalCallback callback,
-                              void* user_data);
-  bool remove_signal_subscriber(const std::string& subscriber_name);
-  bool subscribe_signal(const std::string& subscriber_name,
-                        const std::string& quiddity_name,
-                        const std::string& signal_name);
-  bool unsubscribe_signal(const std::string& subscriber_name,
-                          const std::string& quiddity_name,
-                          const std::string& signal_name);
-
-  std::vector<std::string> list_signal_subscribers();
-  std::vector<std::pair<std::string, std::string>> list_subscribed_signals(
-      const std::string& subscriber_name);
-  // json
-  std::string list_subscribed_signals_json(const std::string& subscriber_name);
 
  private:
   // invocation of quiddity_manager_impl_ methods in a dedicated thread
-  ThreadedWrapper<> invocation_loop_{};
+  mutable ThreadedWrapper<> invocation_loop_{};
   QuiddityManager_Impl::ptr manager_impl_;  // may be shared with others for
                                             // automatic quiddity creation
   std::string name_;
