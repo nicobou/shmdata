@@ -1,7 +1,7 @@
 /*
- * This file is part of libswitcher.
+ * This file is part of switcher-recplay.
  *
- * libswitcher is free software; you can redistribute it and/or
+ * switcher-recplay is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2 of the License, or (at your option) any later version.
@@ -17,19 +17,29 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_GPROP_TO_PROP_H__
-#define __SWITCHER_GPROP_TO_PROP_H__
+#ifndef SWITCHER_AVPLAYER_HPP
+#define SWITCHER_AVPLAYER_HPP
 
-#include <glib.h>
 #include <gst/gst.h>
-#include <memory>
-#include "./property.hpp"
+#include <string.h>
+#include <switcher/startable-quiddity.hpp>
+#include "switcher/gst-pipeliner.hpp"
+#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-follower.hpp"
+#include "switcher/shmdata-writer.hpp"
 
 namespace switcher {
-namespace GPropToProp {
+class AVPlayer : public Quiddity, public StartableQuiddity {
+ public:
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AVPlayer);
+  AVPlayer(const std::string& name);
+  bool init() { return true; };
+  bool start() { return true; }
+  bool stop() { return true; }
+};
 
-std::unique_ptr<PropertyBase> to_prop(GObject* object, const std::string& gprop_name);
-
-}  // namespace GPropToProp
+SWITCHER_DECLARE_PLUGIN(AVPlayer);
 }  // namespace switcher
+
 #endif

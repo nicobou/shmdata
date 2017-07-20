@@ -64,7 +64,7 @@ class PropertyBase {
   mutable register_id_t counter_{0};
   mutable std::map<register_id_t, notify_cb_t> to_notify_{};
   // id is given by other class but saved here in order to avoid
-  // save it along with the Property2 instance
+  // save it along with the Property instance
   prop_id_t id_{0};
   // following is for use by friend PContainer:
   void set_id(prop_id_t id);
@@ -73,20 +73,20 @@ class PropertyBase {
 
 template <typename V,
           typename W = V>  // readonly when set_ initialized with nullptr
-class Property2 : public PropertyBase {
+class Property : public PropertyBase {
  public:
   using get_cb_t = typename prop::get_t<W>;
   using set_cb_t = typename prop::set_t<W>;
 
   template <typename... SpecArgs>
-  Property2(set_cb_t set, get_cb_t get, SpecArgs... args)
+  Property(set_cb_t set, get_cb_t get, SpecArgs... args)
       : PropertyBase(typeid(W).hash_code()),
         doc_({static_cast<bool>(set), std::forward<SpecArgs>(args)...}),
         set_(set),
         get_(get) {}
 
   template <typename U = V, typename std::enable_if<std::is_same<U, Group>::value>::type* = nullptr>
-  Property2(const std::string& label, const std::string& description)
+  Property(const std::string& label, const std::string& description)
       : PropertyBase(typeid(Group).hash_code()),
         doc_(std::forward<const std::string&>(label),
              std::forward<const std::string&>(description)),

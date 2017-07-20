@@ -17,15 +17,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "./gtkvideo.hpp"
 #include <gst/gst.h>
 #include <gst/video/videooverlay.h>
 #include "switcher/gprop-to-prop.hpp"
 #include "switcher/gst-utils.hpp"
-#include "switcher/quiddity-command.hpp"
+#include "switcher/invocation-spec.hpp"
 #include "switcher/quiddity-manager-impl.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
-#include "./gtkvideo.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GTKVideo,
@@ -417,6 +417,8 @@ bool GTKVideo::remake_elements() {
                "qos",
                FALSE,
                nullptr);
+  g_object_set(G_OBJECT(queue_.get_raw()), "max-size-buffers", 3, nullptr);
+  g_object_set(G_OBJECT(shmsrc_.get_raw()), "copy-buffers", TRUE, nullptr);
   install_gst_properties();
   return true;
 }

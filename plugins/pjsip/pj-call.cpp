@@ -852,6 +852,8 @@ bool PJCall::make_call(std::string dst_uri) {
 }
 
 bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_session** res) {
+  auto quid_manager = SIPPlugin::this_->manager_impl_.lock();
+  if (!quid_manager) g_warning("%s: quid manager cannot be locked for use", __FUNCTION__);
   pj_str_t contact;
   std::string tmpstr("sip:" + call->peer_uri);
   pj_cstr(&contact, tmpstr.c_str());
@@ -890,6 +892,8 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
       break;
     }
     std::string rawlabel = SIPPlugin::this_->get_quiddity_name_from_file_name(it);
+    auto quid = quid_manager->get_quiddity(rawlabel);
+    if (quid) rawlabel = quid->get_nickname();
     std::istringstream ss(rawlabel);  // Turn the string into a stream
     std::string tok;
     std::getline(ss, tok, ' ');

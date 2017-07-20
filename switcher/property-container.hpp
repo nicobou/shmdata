@@ -27,7 +27,7 @@
 #include "./counter-map.hpp"
 #include "./is-specialization-of.hpp"
 #include "./property-internal-types.hpp"
-#include "./property2.hpp"
+#include "./property.hpp"
 
 namespace switcher {
 class PContainer {
@@ -65,7 +65,7 @@ class PContainer {
       g_warning("%s: types do not match", __FUNCTION__);
       return false;
     }
-    return static_cast<Property2<T>*>(prop_it->second->get())->set(std::forward<const T&>(val));
+    return static_cast<Property<T>*>(prop_it->second->get())->set(std::forward<const T&>(val));
   }
   template <typename T>
   T get(prop_id_t id) const {
@@ -73,7 +73,7 @@ class PContainer {
     if (prop_it->second->get()->get_type_id_hash() != typeid(T).hash_code()) {
       g_warning("%s: types do not match", __FUNCTION__);
     }
-    return static_cast<Property2<T>*>(prop_it->second->get())->get();
+    return static_cast<Property<T>*>(prop_it->second->get())->get();
   }
 
   // ----------- add/remove/update (you should prefer makers for adding)
@@ -159,8 +159,8 @@ class PContainer {
                                long max);
 
   prop_id_t make_long_long(const std::string& strid,
-                           Property2<long long>::set_cb_t set,
-                           Property2<long long>::get_cb_t get,
+                           Property<long long>::set_cb_t set,
+                           Property<long long>::get_cb_t get,
                            const std::string& label,
                            const std::string& description,
                            long long default_value,
@@ -169,8 +169,8 @@ class PContainer {
 
   prop_id_t make_parented_long_long(const std::string& strid,
                                     const std::string& parent_strid,
-                                    Property2<long long>::set_cb_t set,
-                                    Property2<long long>::get_cb_t get,
+                                    Property<long long>::set_cb_t set,
+                                    Property<long long>::get_cb_t get,
                                     const std::string& label,
                                     const std::string& description,
                                     long long default_value,
@@ -178,8 +178,8 @@ class PContainer {
                                     long long max);
 
   prop_id_t make_unsigned_int(const std::string& strid,
-                              Property2<unsigned int>::set_cb_t set,
-                              Property2<unsigned int>::get_cb_t get,
+                              Property<unsigned int>::set_cb_t set,
+                              Property<unsigned int>::get_cb_t get,
                               const std::string& label,
                               const std::string& description,
                               unsigned int default_value,
@@ -188,8 +188,8 @@ class PContainer {
 
   prop_id_t make_parented_unsigned_int(const std::string& strid,
                                        const std::string& parent_strid,
-                                       Property2<unsigned int>::set_cb_t set,
-                                       Property2<unsigned int>::get_cb_t get,
+                                       Property<unsigned int>::set_cb_t set,
+                                       Property<unsigned int>::get_cb_t get,
                                        const std::string& label,
                                        const std::string& description,
                                        unsigned int default_value,
@@ -197,8 +197,8 @@ class PContainer {
                                        unsigned int max);
 
   prop_id_t make_unsigned_short(const std::string& strid,
-                                Property2<unsigned short>::set_cb_t set,
-                                Property2<unsigned short>::get_cb_t get,
+                                Property<unsigned short>::set_cb_t set,
+                                Property<unsigned short>::get_cb_t get,
                                 const std::string& label,
                                 const std::string& description,
                                 unsigned short default_value,
@@ -207,8 +207,8 @@ class PContainer {
 
   prop_id_t make_parented_unsigned_short(const std::string& strid,
                                          const std::string& parent_strid,
-                                         Property2<unsigned short>::set_cb_t set,
-                                         Property2<unsigned short>::get_cb_t get,
+                                         Property<unsigned short>::set_cb_t set,
+                                         Property<unsigned short>::get_cb_t get,
                                          const std::string& label,
                                          const std::string& description,
                                          unsigned short default_value,
@@ -216,8 +216,8 @@ class PContainer {
                                          unsigned short max);
 
   prop_id_t make_unsigned_long(const std::string& strid,
-                               Property2<unsigned long>::set_cb_t set,
-                               Property2<unsigned long>::get_cb_t get,
+                               Property<unsigned long>::set_cb_t set,
+                               Property<unsigned long>::get_cb_t get,
                                const std::string& label,
                                const std::string& description,
                                unsigned long default_value,
@@ -226,8 +226,8 @@ class PContainer {
 
   prop_id_t make_parented_unsigned_long(const std::string& strid,
                                         const std::string& parent_strid,
-                                        Property2<unsigned long>::set_cb_t set,
-                                        Property2<unsigned long>::get_cb_t get,
+                                        Property<unsigned long>::set_cb_t set,
+                                        Property<unsigned long>::get_cb_t get,
                                         const std::string& label,
                                         const std::string& description,
                                         unsigned long default_value,
@@ -235,8 +235,8 @@ class PContainer {
                                         unsigned long max);
 
   prop_id_t make_unsigned_long_long(const std::string& strid,
-                                    Property2<unsigned long long>::set_cb_t set,
-                                    Property2<unsigned long long>::get_cb_t get,
+                                    Property<unsigned long long>::set_cb_t set,
+                                    Property<unsigned long long>::get_cb_t get,
                                     const std::string& label,
                                     const std::string& description,
                                     unsigned long long default_value,
@@ -245,8 +245,8 @@ class PContainer {
 
   prop_id_t make_parented_unsigned_long_long(const std::string& strid,
                                              const std::string& parent_strid,
-                                             Property2<unsigned long long>::set_cb_t set,
-                                             Property2<unsigned long long>::get_cb_t get,
+                                             Property<unsigned long long>::set_cb_t set,
+                                             Property<unsigned long long>::get_cb_t get,
                                              const std::string& label,
                                              const std::string& description,
                                              unsigned long long default_value,
@@ -307,8 +307,8 @@ class PContainer {
                                  double max);
 
   prop_id_t make_long_double(const std::string& strid,
-                             Property2<long double>::set_cb_t set,
-                             Property2<long double>::get_cb_t get,
+                             Property<long double>::set_cb_t set,
+                             Property<long double>::get_cb_t get,
                              const std::string& label,
                              const std::string& description,
                              long double default_value,
@@ -317,8 +317,8 @@ class PContainer {
 
   prop_id_t make_parented_long_double(const std::string& strid,
                                       const std::string& parent_strid,
-                                      Property2<long double>::set_cb_t set,
-                                      Property2<long double>::get_cb_t get,
+                                      Property<long double>::set_cb_t set,
+                                      Property<long double>::get_cb_t get,
                                       const std::string& label,
                                       const std::string& description,
                                       long double default_value,
@@ -341,40 +341,40 @@ class PContainer {
                                char default_value);
 
   prop_id_t make_string(const std::string& strid,
-                        Property2<std::string>::set_cb_t set,
-                        Property2<std::string>::get_cb_t get,
+                        Property<std::string>::set_cb_t set,
+                        Property<std::string>::get_cb_t get,
                         const std::string& label,
                         const std::string& description,
                         std::string default_value);
 
   prop_id_t make_parented_string(const std::string& strid,
                                  const std::string& parent_strid,
-                                 Property2<std::string>::set_cb_t set,
-                                 Property2<std::string>::get_cb_t get,
+                                 Property<std::string>::set_cb_t set,
+                                 Property<std::string>::get_cb_t get,
                                  const std::string& label,
                                  const std::string& description,
                                  std::string default_value);
 
   template <typename T = std::string>
   prop_id_t make_selection(const std::string& strid,
-                           std::function<bool(const size_t&)> set,
-                           std::function<size_t()> get,
+                           std::function<bool(const IndexOrName&)> set,
+                           std::function<IndexOrName()> get,
                            const std::string& label,
                            const std::string& description,
                            const Selection<T>& default_value) {
-    return make_under_parent<Selection<T>, typename Selection<T>::index_t>(
+    return make_under_parent<Selection<T>, IndexOrName>(
         strid, "", set, get, label, description, default_value, default_value.size() - 1);
   }
 
   template <typename T = std::string>
   prop_id_t make_parented_selection(const std::string& strid,
                                     const std::string& parent_strid,
-                                    std::function<bool(const size_t&)> set,
-                                    std::function<size_t()> get,
+                                    std::function<bool(const IndexOrName&)> set,
+                                    std::function<IndexOrName()> get,
                                     const std::string& label,
                                     const std::string& description,
                                     const Selection<T>& default_value) {
-    return make_under_parent<Selection<T>, typename Selection<T>::index_t>(
+    return make_under_parent<Selection<T>, IndexOrName>(
         strid, parent_strid, set, get, label, description, default_value, default_value.size() - 1);
   }
 
@@ -484,7 +484,7 @@ class PContainer {
     return push_parented(
         strid,
         parent_strid,
-        std::make_unique<Property2<PropType, PropGetSet>>(std::forward<PropArgs>(args)...));
+        std::make_unique<Property<PropType, PropGetSet>>(std::forward<PropArgs>(args)...));
   }
   void init_newly_installed_property(const std::string& strid,
                                      const std::string& parent_strid,

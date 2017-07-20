@@ -45,6 +45,9 @@ std::vector<std::string> get_files_from_directory(std::string path,
 std::pair<std::string, std::string> get_file_content(const std::string& file_path,
                                                      int max_file_size = 100000000);
 
+bool save(const std::string& content, const std::string& file_path);
+std::string get_content(const std::string& file_path);
+
 }  // namespace FileUtils
 }  // namespace switcher
 #endif

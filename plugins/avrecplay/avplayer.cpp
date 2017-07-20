@@ -1,7 +1,7 @@
 /*
- * This file is part of libswitcher.
+ * This file is part of switcher-avrecplay.
  *
- * libswitcher is free software; you can redistribute it and/or
+ * switcher-avrecplay is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2 of the License, or (at your option) any later version.
@@ -17,19 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_GPROP_TO_PROP_H__
-#define __SWITCHER_GPROP_TO_PROP_H__
-
-#include <glib.h>
-#include <gst/gst.h>
-#include <memory>
-#include "./property.hpp"
+#include "avplayer.hpp"
 
 namespace switcher {
-namespace GPropToProp {
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AVPlayer,
+                                     "avplayer",
+                                     "Shmdata audio video player",
+                                     "audio/video",
+                                     "writer",
+                                     "Replays and controls a recorded shmdata audio/video file",
+                                     "LGPL",
+                                     "Jérémie Soria");
 
-std::unique_ptr<PropertyBase> to_prop(GObject* object, const std::string& gprop_name);
-
-}  // namespace GPropToProp
-}  // namespace switcher
-#endif
+AVPlayer::AVPlayer(const std::string& name) {}
+};

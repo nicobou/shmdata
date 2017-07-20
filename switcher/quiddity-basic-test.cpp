@@ -27,6 +27,7 @@ bool QuiddityBasicTest::test_full(QuiddityManager::ptr manager,
   if (!test_description_by_class(manager, quiddity_class_name)) return false;
   if (!test_startable(manager, quiddity_class_name)) return false;
   if (!test_properties(manager, quiddity_class_name)) return false;
+  if (!test_nickname(manager, quiddity_class_name)) return false;
   return true;
 }
 
@@ -117,6 +118,34 @@ bool QuiddityBasicTest::test_properties(QuiddityManager::ptr manager,
         }
       }
     }
+  }
+  return true;
+}
+
+bool QuiddityBasicTest::test_nickname(QuiddityManager::ptr manager,
+                                      const std::string& quiddity_class_name) {
+  std::string name = manager->create(quiddity_class_name);
+  if (name.empty()) return true;
+  if (name != manager->get_nickname(name)) {
+    g_warning("nickname not initialised with name");
+    return false;
+  }
+  std::string nickname = name + " nickname";
+  if (!manager->set_nickname(name, nickname)) {
+    g_warning("cannot set nickname");
+    return false;
+  }
+  if (nickname != manager->get_nickname(name)) {
+    g_warning("issue getting the nickname");
+    return false;
+  }
+  if (manager->set_nickname("wrong name", nickname)) {
+    g_warning("set_nickname with a wrong quiddity name must return false");
+    return false;
+  }
+  if (!manager->get_nickname("wrong name").empty()) {
+    g_warning("get_nickname with a wrong quiddity name must return false");
+    return false;
   }
   return true;
 }

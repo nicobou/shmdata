@@ -32,6 +32,10 @@ RtpSession2::RtpSession2()
                //"ntp-sync", TRUE,
                "async-handling",
                TRUE,
+               "latency",
+               70,
+               "drop-on-latency",
+               TRUE,
                //"do-lost", TRUE,
                nullptr);
   g_signal_connect(G_OBJECT(rtpsession_), "on-bye-ssrc", (GCallback)on_bye_ssrc, (gpointer) this);

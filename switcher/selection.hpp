@@ -22,10 +22,34 @@
 
 #include <glib.h>
 #include <algorithm>
+#include <cctype>
+#include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace switcher {
+// The following struct allows the select method to be invoked by index or by name
+struct IndexOrName {
+  IndexOrName() = delete;
+  IndexOrName(size_t idx) : index_(idx), is_index_(true) {}
+  IndexOrName(std::string str) : name_(str), is_index_(false) {}
+  IndexOrName(size_t idx, std::string str) : index_(idx), name_(str), is_index_(true) {}
+  std::string to_string() const { return std::to_string(index_); }
+  static std::pair<bool, IndexOrName> from_string(const std::string& str) {
+    if (!isdigit(*str.begin()) && !('-' == *str.begin() && !isdigit(*str.begin())))
+      return std::make_pair(true, switcher::IndexOrName(str));
+    std::istringstream iss(str);
+    size_t res;
+    iss >> res;
+    return std::make_pair(true, switcher::IndexOrName(res));
+  }
+
+  const size_t index_{0};
+  const std::string name_{};
+  const bool is_index_;
+};
+
 template <typename T = std::string>
 class Selection {
  public:
@@ -43,15 +67,32 @@ class Selection {
   Selection(std::vector<std::string>&& names, std::vector<T>&& attached, index_t selection)
       : list_(names), attached_(attached), current_selection_(selection) {}
 
-  void select(index_t new_selection) { current_selection_ = new_selection; }
+  void select(IndexOrName new_selection) {
+    if (new_selection.is_index_) {
+      current_selection_ = new_selection.index_;
+    } else {
+      current_selection_ = get_name_index(new_selection.name_);
+    }
+  }
 
-  index_t get() const { return current_selection_; }
+  IndexOrName get() const { return IndexOrName(current_selection_, get_current()); }
+
+  size_t get_current_index() const { return current_selection_; }
 
   std::string get_current() const { return list_[current_selection_]; }
 
   T get_attached() const { return attached_[current_selection_]; }
 
   std::vector<std::string> get_list() const { return list_; }
+
+  index_t get_name_index(const std::string& name) {
+    {
+      const auto& it = std::find(list_.cbegin(), list_.cend(), name);
+      if (it != list_.end()) return it - list_.begin();
+    }
+    g_warning("index not found for selection named %s, returning current value", name.c_str());
+    return current_selection_;
+  }
 
   index_t get_index(const std::string& name_or_attached) {
     {
@@ -62,8 +103,9 @@ class Selection {
       const auto& it = std::find(attached_.cbegin(), attached_.cend(), name_or_attached);
       if (it != attached_.end()) return it - attached_.begin();
     }
-    g_warning("index not found for selection named %s", name_or_attached.c_str());
-    return 0;
+    g_warning("index not found for selection %s, returning current value",
+              name_or_attached.c_str());
+    return current_selection_;
   }
 
   index_t size() const { return list_.size(); }

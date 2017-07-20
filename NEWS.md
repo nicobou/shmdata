@@ -2,6 +2,30 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.56 (2017-07-20)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+New features:
+* nickname for quid
+* using quid nickname in sip calls
+* Multichannel audio/video shmdata recorder.
+* adding jacksink max_number_of_channels config
+* adding window aspect ratio locking in glfwvideo
+* reorder glfw groups
+* adding max_number_of_channels config for jacksrc
+* select selections by name is now available
+
+Bug fixes:
+* consistent property naming among jacksrc and jacksink
+* refactoring quiddity manager: no more commands and simpler save and load
+* prefer droping frame than accumulating in GLFWIN
+* set drop-on-latency at true for rtpbin in rtp-session2
+* fix audiotestsrc sometime crashing during check_startable
+* fix midisrc always expose shmwriter
+* Fixed protocol mapper CMakeList.
+* fix SIP plugin with OSX
+
 switcher 0.8.54 (2017-04-12)
 ---------------------------
 This is an official release in the 0.8 stable series.

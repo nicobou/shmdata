@@ -42,7 +42,7 @@ bool PortMidiSink::init() {
 
   devices_id_ = pmanage<MPtr(&PContainer::make_selection<>)>(
       "device",
-      [this](const size_t& val) {
+      [this](const IndexOrName& val) {
         output_devices_enum_.select(val);
         device_ = stoi(output_devices_enum_.get_attached());
         return true;

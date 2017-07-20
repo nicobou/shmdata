@@ -16,6 +16,8 @@
  */
 
 #include "soap-ctrl-server.hpp"
+#include "switcher/file-utils.hpp"
+#include "switcher/information-tree-json.hpp"
 #include "switcher/scope-exit.hpp"
 #include "webservices/control.nsmap"
 
@@ -556,7 +558,7 @@ int controlService::save(std::string file_name, std::string* result) {
   QuiddityManager::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
-  if (manager->save_command_history(file_name.c_str()))
+  if (FileUtils::save(JSONSerializer::serialize(manager->get_state().get()), file_name))
     *result = "true";
   else
     *result = "false";
@@ -570,15 +572,12 @@ int controlService::load(std::string file_name, std::string* result) {
   QuiddityManager::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
-  manager->reset_command_history(true);
+  manager->reset_state(true);
 
-  switcher::QuiddityManager::CommandHistory histo =
-      manager->get_command_history_from_file(file_name.c_str());
-  if (histo.empty()) {
+  if (!manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(file_name)), true)) {
     *result = "false";
     return SOAP_OK;
   }
-  manager->play_command_history(histo, nullptr, nullptr, true);
   *result = "true";
   return SOAP_OK;
 }
@@ -590,13 +589,10 @@ int controlService::run(std::string file_name, std::string* result) {
   QuiddityManager::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
-  switcher::QuiddityManager::CommandHistory histo =
-      manager->get_command_history_from_file(file_name.c_str());
-  if (histo.empty()) {
+  if (!manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(file_name)), true)) {
     *result = "false";
     return SOAP_OK;
   }
-  manager->play_command_history(histo, nullptr, nullptr, true);
   *result = "true";
   return SOAP_OK;
 }

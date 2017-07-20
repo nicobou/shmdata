@@ -17,19 +17,32 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_GPROP_TO_PROP_H__
-#define __SWITCHER_GPROP_TO_PROP_H__
+/**
+ * The invocation spec for invocations being saved into the manager history
+ */
 
-#include <glib.h>
-#include <gst/gst.h>
+#ifndef __SWITCHER_INVOCATION_SPEC_H__
+#define __SWITCHER_INVOCATION_SPEC_H__
+
+#include <map>
 #include <memory>
-#include "./property.hpp"
+#include <string>
+#include <vector>
+#include "./information-tree.hpp"
 
 namespace switcher {
-namespace GPropToProp {
+class InvocationSpec {
+ public:
+  std::vector<std::string> args_{};
+  std::vector<std::string> vector_arg_{};
+  std::vector<std::string> result_{};
+  std::vector<std::string> expected_result_{};
+  bool success_{false};
+  void add_arg(std::string arg);
+  void set_vector_arg(std::vector<std::string> vector_arg);
+  static InvocationSpec get_invocation_spec_from_tree(InfoTree::ptr tree);
+  InfoTree::ptr get_info_tree() const;
+};
 
-std::unique_ptr<PropertyBase> to_prop(GObject* object, const std::string& gprop_name);
-
-}  // namespace GPropToProp
 }  // namespace switcher
 #endif

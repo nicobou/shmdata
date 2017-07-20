@@ -1,5 +1,5 @@
 /*
- * This file is part of libswitcher.
+ * This file is part of switcher-myplugin.
  *
  * libswitcher is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,19 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_GPROP_TO_PROP_H__
-#define __SWITCHER_GPROP_TO_PROP_H__
+#undef NDEBUG  // get assert in release mode
 
-#include <glib.h>
-#include <gst/gst.h>
-#include <memory>
-#include "./property.hpp"
+#include <cassert>
+#include <iostream>
+#include <string>
+#include <vector>
+#include "switcher/property-container.hpp"
+#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity-manager.hpp"
 
-namespace switcher {
-namespace GPropToProp {
-
-std::unique_ptr<PropertyBase> to_prop(GObject* object, const std::string& gprop_name);
-
-}  // namespace GPropToProp
-}  // namespace switcher
-#endif
+int main() { return 0; }

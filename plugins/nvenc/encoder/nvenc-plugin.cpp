@@ -75,8 +75,9 @@ NVencPlugin::NVencPlugin(const std::string&)
   update_device();
   devices_id_ =
       pmanage<MPtr(&PContainer::make_selection<>)>("gpu",
-                                                   [this](size_t val) {
-                                                     if (devices_.get() == val) return true;
+                                                   [this](const IndexOrName& val) {
+                                                     if (devices_.get_current_index() == val.index_)
+                                                       return true;
                                                      devices_.select(val);
                                                      update_device();
                                                      return true;
@@ -101,7 +102,7 @@ bool NVencPlugin::init() {
 
 void NVencPlugin::update_device() {
   es_.reset();
-  es_ = std::make_unique<ThreadedWrapper<NVencES>>(devices_nv_ids_[devices_.get()]);
+  es_ = std::make_unique<ThreadedWrapper<NVencES>>(devices_nv_ids_[devices_.get_current_index()]);
   if (!es_->invoke<MPtr(&NVencES::safe_bool_idiom)>()) {
     g_message(
         "ERROR: nvenc failed to create encoding session "
@@ -122,8 +123,8 @@ void NVencPlugin::update_codec() {
   std::vector<std::string> names;
   for (auto& it : codecs_guids_) names.push_back(it.first);
   codecs_ = Selection<>(std::move(names), 0);
-  auto set = [this](size_t val) {
-    if (codecs_.get() != val) {
+  auto set = [this](const IndexOrName& val) {
+    if (codecs_.get_current_index() != val.index_) {
       codecs_.select(val);
       update_preset();
       update_profile();
@@ -132,14 +133,14 @@ void NVencPlugin::update_codec() {
     }
     return true;
   };
-  auto get = [this]() { return codecs_.get(); };
+  auto get = [this]() { return codecs_.get_current_index(); };
   if (0 == codecs_id_)
     codecs_id_ = pmanage<MPtr(&PContainer::make_selection<>)>(
         "codec", set, get, "Codec", "Codec Selection", codecs_);
   else
     pmanage<MPtr(&PContainer::replace)>(
         codecs_id_,
-        std::make_unique<Property2<Selection<>, Selection<>::index_t>>(
+        std::make_unique<Property<Selection<>, Selection<>::index_t>>(
             set, get, "Codec", "Codec Selection", codecs_, codecs_.size() - 1));
   update_preset();
   update_profile();
@@ -164,8 +165,8 @@ void NVencPlugin::update_preset() {
     ++current_index;
   }
   presets_ = Selection<>(std::move(names), index_low_lantency_default);
-  auto set = [this](size_t val) {
-    if (presets_.get() != val) presets_.select(val);
+  auto set = [this](const IndexOrName& val) {
+    if (presets_.get_current_index() != val.index_) presets_.select(val);
     return true;
   };
   auto get = [this]() { return presets_.get(); };
@@ -175,7 +176,7 @@ void NVencPlugin::update_preset() {
   else
     pmanage<MPtr(&PContainer::replace)>(
         presets_id_,
-        std::make_unique<Property2<Selection<>, Selection<>::index_t>>(
+        std::make_unique<Property<Selection<>, IndexOrName>>(
             set, get, "Preset", "Preset Selection", presets_, presets_.size() - 1));
 }
 
@@ -189,8 +190,8 @@ void NVencPlugin::update_profile() {
   std::vector<std::string> names;
   for (auto& it : profiles_guids_) names.push_back(it.first);
   profiles_ = Selection<>(std::move(names), 0);
-  auto set = [this](size_t val) {
-    if (profiles_.get() != val) profiles_.select(val);
+  auto set = [this](const IndexOrName& val) {
+    if (profiles_.get_current_index() != val.index_) profiles_.select(val);
     return true;
   };
   auto get = [this]() { return profiles_.get(); };
@@ -200,7 +201,7 @@ void NVencPlugin::update_profile() {
   else
     pmanage<MPtr(&PContainer::replace)>(
         profiles_id_,
-        std::make_unique<Property2<Selection<>, Selection<>::index_t>>(
+        std::make_unique<Property<Selection<>, IndexOrName>>(
             set, get, "Profile", "Profile Selection", profiles_, profiles_.size() - 1));
 }
 

@@ -125,8 +125,8 @@ class PropertySpecification {
       const U& default_value,
       Selection<>::index_t max,
       typename std::enable_if<is_specialization_of<Selection, U>::value>::type* = nullptr)
-      : spec_(InfoTree::make()), is_valid_([max](const Selection<>::index_t& index) {
-          if (index > max) {
+      : spec_(InfoTree::make()), is_valid_([max](const IndexOrName& ion) {
+          if (ion.is_index_ && ion.index_ > max) {
             g_warning("selection index out of range");
             return false;
           }

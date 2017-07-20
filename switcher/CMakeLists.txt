@@ -42,9 +42,9 @@ add_library(${SWITCHER_LIBRARY} SHARED
     plugin-loader.cpp
     property-container.cpp
     property-mapper.cpp
-    property2.cpp
+    property.cpp
     quiddity-basic-test.cpp
-    quiddity-command.cpp
+    invocation-spec.cpp
     quiddity-documentation.cpp
     quiddity-manager-impl.cpp
     quiddity-manager-wrapper.cpp
@@ -128,9 +128,9 @@ set(HEADER_INCLUDES
     property-internal-types.hpp
     property-mapper.hpp
     property-specification.hpp
-    property2.hpp
+    property.hpp
     quiddity-basic-test.hpp
-    quiddity-command.hpp
+    invocation-spec.hpp
     quiddity-documentation.hpp
     quiddity-manager-impl.hpp
     quiddity-manager-wrapper.hpp

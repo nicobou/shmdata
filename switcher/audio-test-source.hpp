@@ -43,8 +43,8 @@ class AudioTestSource : public Quiddity, public StartableQuiddity {
   static const int kMaxChannels = 128;
 
   std::string shmpath_{};
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
   std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
   Selection<> sample_rate_{{"22050", "32000", "44100", "48000", "88200", "96000", "192000"}, 2};
   PContainer::prop_id_t sample_rate_id_;
   double frequency_{440.0};

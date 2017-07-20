@@ -46,7 +46,7 @@ class Uridecodebin : public Quiddity {
   GstElement* uridecodebin_{nullptr};
   GstCaps* rtpgstcaps_{nullptr};
   bool discard_next_uncomplete_buffer_{false};
-  QuiddityCommand* on_error_command_{nullptr};  // for the pipeline error handler
+  InvocationSpec* on_error_command_{nullptr};  // for the pipeline error handler
   // custom properties
   bool loop_{false};
   bool playing_{true};

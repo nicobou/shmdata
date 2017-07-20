@@ -129,7 +129,7 @@ bool PulseSink::remake_elements() {
   if (!devices_.empty())
     g_object_set(G_OBJECT(pulsesink_.get_raw()),
                  "device",
-                 devices_.at(devices_enum_.get()).name_.c_str(),
+                 devices_.at(devices_enum_.get_current_index()).name_.c_str(),
                  nullptr);
   return true;
 }
@@ -187,7 +187,7 @@ void PulseSink::get_sink_info_callback(pa_context* pulse_context,
     context->update_output_device();
     context->devices_enum_id_ = context->pmanage<MPtr(&PContainer::make_selection<>)>(
         "device",
-        [context](const size_t& val) {
+        [context](const IndexOrName& val) {
           context->devices_enum_.select(val);
           return true;
         },
@@ -326,7 +326,7 @@ bool PulseSink::on_shmdata_connect(const std::string& shmpath) {
   if (!devices_.empty())
     g_object_set(G_OBJECT(pulsesink_.get_raw()),
                  "device",
-                 devices_.at(devices_enum_.get()).name_.c_str(),
+                 devices_.at(devices_enum_.get_current_index()).name_.c_str(),
                  nullptr);
   shm_sub_ = std::make_unique<GstShmdataSubscriber>(
       shmsrc_.get_raw(),

@@ -145,7 +145,7 @@ bool Quiddity::set_name(const std::string& name) {
 
   name_ = string_to_quiddity_name(name);
   information_tree_->graft(".type", InfoTree::make(get_documentation()->get_class_name()));
-
+  nickname_ = name_;
   return true;
 }
 
@@ -435,7 +435,28 @@ std::string Quiddity::get_quiddity_name_from_file_name(const std::string& path) 
     g_warning("%s: wrong shmdata path format", __FUNCTION__);
     return std::string();
   }
+  // handling bundle: they use there own internal manager named with their actual quiddity name
+  auto manager_name =
+      std::string(filename, underscores[0] + 1, underscores[1] - (underscores[0] + 1));
+  if (manager_name_ != manager_name) return manager_name;
   return std::string(filename, underscores[1] + 1, underscores[2] - (underscores[1] + 1));
+}
+
+std::string Quiddity::get_shmdata_name_from_file_name(const std::string& path) const {
+  size_t pos = 0;
+  // Check if external shmdata or regular shmdata.
+  if (path.find(get_file_name_prefix()) != std::string::npos) {  // Regular shmdata
+    int i = 0;
+    while (i < 2) {  // Looking for second '_'
+      if (pos != 0) pos += 1;
+      pos = path.find('_', pos);
+      ++i;
+    }
+  } else {                  // External shmdata
+    pos = path.rfind('/');  // Check last '/' to find the file name only.
+  }
+
+  return pos != std::string::npos ? std::string(path, pos + 1) : path;
 }
 
 std::string Quiddity::get_manager_name() { return manager_name_; }
@@ -537,5 +558,28 @@ void Quiddity::on_saved(){};
 void Quiddity::on_loading(InfoTree::ptr&&){};
 
 void Quiddity::on_loaded(){};
+
+bool Quiddity::prop_is_saved(const std::string& prop) {
+  return std::find(properties_blacklist_.begin(), properties_blacklist_.end(), prop) ==
+         properties_blacklist_.end();
+}
+
+bool Quiddity::toggle_property_saving(const std::string& prop) {
+  auto prop_bl = std::find(properties_blacklist_.begin(), properties_blacklist_.end(), prop);
+  if (prop_bl == properties_blacklist_.end()) {
+    properties_blacklist_.push_back(prop);
+    return false;
+  } else {
+    properties_blacklist_.erase(prop_bl);
+    return true;
+  }
+}
+
+bool Quiddity::set_nickname(const std::string& nickname) {
+  nickname_ = nickname;
+  return true;
+}
+
+std::string Quiddity::get_nickname() const { return nickname_; }
 
 }  // namespace switcher

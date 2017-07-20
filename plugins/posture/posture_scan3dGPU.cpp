@@ -235,7 +235,7 @@ bool PostureScan3DGPU::init() {
   init_startable(this);
 
   pmanage<MPtr(&PContainer::make_selection<>)>("capture_mode",
-                                               [this](const size_t& val) {
+                                               [this](const IndexOrName& val) {
                                                  capture_modes_enum_.select(val);
                                                  return true;
                                                },

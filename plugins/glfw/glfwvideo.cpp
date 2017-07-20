@@ -54,6 +54,141 @@ std::atomic<int> GLFWVideo::instance_counter_(0);
 GLFWVideo::GLFWVideo(const std::string& name)
     : shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
+      background_config_id_(pmanage<MPtr(&PContainer::make_group)>(
+          "background_config",
+          "Background configuration",
+          "Select if you want a color or an image background when no video is playing.")),
+      background_type_id_(pmanage<MPtr(&PContainer::make_parented_selection<>)>(
+          "background_type",
+          "background_config",
+          [this](const IndexOrName& val) {
+            background_type_.select(val);
+            if (background_type_.get_current() == kBackgroundTypeImage) {
+              pmanage<MPtr(&PContainer::disable)>(color_id_, kBackgroundColorDisabled);
+              pmanage<MPtr(&PContainer::enable)>(background_image_id_);
+              draw_image_ = true;
+            } else {
+              pmanage<MPtr(&PContainer::disable)>(background_image_id_, kBackgroundImageDisabled);
+              pmanage<MPtr(&PContainer::enable)>(color_id_);
+              draw_image_ = false;
+            }
+            return true;
+          },
+          [this]() { return background_type_.get(); },
+          "Background type",
+          "Use a color or image background. Default: color.",
+          background_type_)),
+      color_(0, 0, 0, 0xFF),
+      color_id_(pmanage<MPtr(&PContainer::make_parented_color)>(
+          "color",
+          "background_config",
+          [this](const Color& val) {
+            color_ = val;
+            add_rendering_task([this]() {
+              set_color();
+              return true;
+            });
+            return true;
+          },
+          [this]() { return color_; },
+          "Background color",
+          "Color of the background when no video is displayed.",
+          color_)),
+      background_image_id_(pmanage<MPtr(&PContainer::make_parented_string)>(
+          "background_image",
+          "background_config",
+          [this](const std::string& val) {
+            background_image_ = val;
+            if (background_image_.empty()) return true;
+            add_rendering_task([this]() {
+              int w = 0, h = 0, n = 0;
+              auto data = stbi_load(background_image_.c_str(), &w, &h, &n, 4);
+              On_scope_exit { stbi_image_free(data); };
+
+              if (!data) {
+                g_warning("Failed to load image at path %s.", background_image_.c_str());
+                return true;
+              }
+
+              if (n < 3) {
+                g_warning("Source background image is neither RGB nor RGBA (glfw).");
+                return true;
+              }
+
+              size_t data_size = w * h * n;
+              image_width_ = w;
+              image_height_ = h;
+              image_components_ = n;
+              image_data_.resize(data_size);
+              std::copy(data, data + data_size, image_data_.data());
+              if (!draw_video_) setup_background_texture();
+              return true;
+            });
+            return true;
+          },
+          [this]() { return background_image_; },
+          "Background image file",
+          "Path to the image to use as background when no video is played.",
+          std::string())),
+      overlay_id_(pmanage<MPtr(&PContainer::make_group)>(
+          "overlay_config", "Overlay configuration", "Toggle and configure the text overlay.")),
+      show_overlay_id_(pmanage<MPtr(&PContainer::make_parented_bool)>(
+          "show_overlay",
+          "overlay_config",
+          [this](bool val) {
+            show_overlay_ = val;
+            if (show_overlay_) {
+              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->text_id_);
+              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->alignment_id_);
+              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->font_id_);
+              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->use_custom_font_id_);
+              if (gui_configuration_->use_custom_font_)
+                pmanage<MPtr(&PContainer::enable)>(gui_configuration_->custom_font_id_);
+              else
+                pmanage<MPtr(&PContainer::enable)>(gui_configuration_->font_size_id_);
+              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->color_id_);
+            } else {
+              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->text_id_,
+                                                  kOverlayDisabledMessage);
+              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->alignment_id_,
+                                                  kOverlayDisabledMessage);
+              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->font_id_,
+                                                  kOverlayDisabledMessage);
+              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->use_custom_font_id_,
+                                                  kOverlayDisabledMessage);
+              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->custom_font_id_,
+                                                  kOverlayDisabledMessage);
+              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->font_size_id_,
+                                                  kOverlayDisabledMessage);
+              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->color_id_,
+                                                  kOverlayDisabledMessage);
+            }
+            return true;
+          },
+          [this]() { return show_overlay_; },
+          "Show overlay",
+          "Show the overlay label on top of the video",
+          show_overlay_)),
+      geometry_task_(std::make_unique<PeriodicTask>(
+          [this]() {
+            std::lock_guard<std::mutex> lock(configuration_mutex_);
+            if (!window_moved_ || !gui_configuration_) return;
+            add_rendering_task([this]() {
+              pmanage<MPtr(&PContainer::notify)>(position_x_id_);
+              pmanage<MPtr(&PContainer::notify)>(position_y_id_);
+              pmanage<MPtr(&PContainer::notify)>(width_id_);
+              pmanage<MPtr(&PContainer::notify)>(height_id_);
+              ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
+              ImGuiIO& io = ImGui::GetIO();
+              io.DisplaySize.x = static_cast<float>(width_);
+              io.DisplaySize.y = static_cast<float>(height_);
+
+              set_viewport();
+              window_moved_ = false;
+              return true;
+            });
+          },
+          std::chrono::milliseconds(500))),
       title_(name),
       title_id_(pmanage<MPtr(&PContainer::make_string)>("title",
                                                         [this](const std::string& val) {
@@ -172,85 +307,9 @@ GLFWVideo::GLFWVideo(const std::string& name)
           "Always On Top",
           "Toggle Window Always On Top",
           true)),
-      background_config_id_(pmanage<MPtr(&PContainer::make_group)>(
-          "background_config",
-          "Background configuration",
-          "Select if you want a color or an image background when no video is playing.")),
-      background_type_id_(pmanage<MPtr(&PContainer::make_parented_selection<>)>(
-          "background_type",
-          "background_config",
-          [this](size_t val) {
-            background_type_.select(val);
-            if (background_type_.get_current() == kBackgroundTypeImage) {
-              pmanage<MPtr(&PContainer::disable)>(color_id_, kBackgroundColorDisabled);
-              pmanage<MPtr(&PContainer::enable)>(background_image_id_);
-              draw_image_ = true;
-            } else {
-              pmanage<MPtr(&PContainer::disable)>(background_image_id_, kBackgroundImageDisabled);
-              pmanage<MPtr(&PContainer::enable)>(color_id_);
-              draw_image_ = false;
-            }
-            return true;
-          },
-          [this]() { return background_type_.get(); },
-          "Background type",
-          "Use a color or image background. Default: color.",
-          background_type_)),
-      color_(0, 0, 0, 0xFF),
-      color_id_(pmanage<MPtr(&PContainer::make_parented_color)>(
-          "color",
-          "background_config",
-          [this](const Color& val) {
-            color_ = val;
-            add_rendering_task([this]() {
-              set_color();
-              return true;
-            });
-            return true;
-          },
-          [this]() { return color_; },
-          "Background color",
-          "Color of the background when no video is displayed.",
-          color_)),
-      background_image_id_(pmanage<MPtr(&PContainer::make_parented_string)>(
-          "background_image",
-          "background_config",
-          [this](const std::string& val) {
-            background_image_ = val;
-            if (background_image_.empty()) return true;
-            add_rendering_task([this]() {
-              int w = 0, h = 0, n = 0;
-              auto data = stbi_load(background_image_.c_str(), &w, &h, &n, 4);
-              On_scope_exit { stbi_image_free(data); };
-
-              if (!data) {
-                g_warning("Failed to load image at path %s.", background_image_.c_str());
-                return true;
-              }
-
-              if (n < 3) {
-                g_warning("Source background image is neither RGB nor RGBA (glfw).");
-                return true;
-              }
-
-              size_t data_size = w * h * n;
-              image_width_ = w;
-              image_height_ = h;
-              image_components_ = n;
-              image_data_.resize(data_size);
-              std::copy(data, data + data_size, image_data_.data());
-              if (!draw_video_) setup_background_texture();
-              return true;
-            });
-            return true;
-          },
-          [this]() { return background_image_; },
-          "Background image file",
-          "Path to the image to use as background when no video is played.",
-          std::string())),
       rotation_id_(
           pmanage<MPtr(&PContainer::make_selection<>)>("rotation",
-                                                       [this](size_t val) {
+                                                       [this](const IndexOrName& val) {
                                                          rotation_.select(val);
                                                          add_rendering_task([this]() {
                                                            set_viewport();
@@ -264,7 +323,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
                                                        "Possible rotation modes of the video.",
                                                        rotation_)),
       flip_id_(pmanage<MPtr(&PContainer::make_selection<>)>("flip",
-                                                            [this](size_t val) {
+                                                            [this](const IndexOrName& val) {
                                                               flip_.select(val);
                                                               add_rendering_task([this]() {
                                                                 set_flip_shader();
@@ -278,7 +337,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
                                                             flip_)),
       vsync_id_(pmanage<MPtr(&PContainer::make_selection<int>)>(
           "vsync",
-          [this](size_t val) {
+          [this](const IndexOrName& val) {
             vsync_.select(val);
             add_rendering_task([this]() {
               glfwSwapInterval(vsync_.get_attached());
@@ -289,66 +348,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
           [this]() { return vsync_.get(); },
           "Vertical synchronization type",
           "Select the vertical synchronization mode (Hard/Soft/None).",
-          vsync_)),
-      overlay_id_(pmanage<MPtr(&PContainer::make_group)>(
-          "overlay_config", "Overlay configuration", "Toggle and configure the text overlay.")),
-      show_overlay_id_(pmanage<MPtr(&PContainer::make_parented_bool)>(
-          "show_overlay",
-          "overlay_config",
-          [this](bool val) {
-            show_overlay_ = val;
-            if (show_overlay_) {
-              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->text_id_);
-              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->alignment_id_);
-              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->font_id_);
-              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->use_custom_font_id_);
-              if (gui_configuration_->use_custom_font_)
-                pmanage<MPtr(&PContainer::enable)>(gui_configuration_->custom_font_id_);
-              else
-                pmanage<MPtr(&PContainer::enable)>(gui_configuration_->font_size_id_);
-              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->color_id_);
-            } else {
-              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->text_id_,
-                                                  kOverlayDisabledMessage);
-              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->alignment_id_,
-                                                  kOverlayDisabledMessage);
-              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->font_id_,
-                                                  kOverlayDisabledMessage);
-              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->use_custom_font_id_,
-                                                  kOverlayDisabledMessage);
-              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->custom_font_id_,
-                                                  kOverlayDisabledMessage);
-              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->font_size_id_,
-                                                  kOverlayDisabledMessage);
-              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->color_id_,
-                                                  kOverlayDisabledMessage);
-            }
-            return true;
-          },
-          [this]() { return show_overlay_; },
-          "Show overlay",
-          "Show the overlay label on top of the video",
-          show_overlay_)),
-      geometry_task_(std::make_unique<PeriodicTask>(
-          [this]() {
-            std::lock_guard<std::mutex> lock(configuration_mutex_);
-            if (!window_moved_ || !gui_configuration_) return;
-            add_rendering_task([this]() {
-              pmanage<MPtr(&PContainer::notify)>(position_x_id_);
-              pmanage<MPtr(&PContainer::notify)>(position_y_id_);
-              pmanage<MPtr(&PContainer::notify)>(width_id_);
-              pmanage<MPtr(&PContainer::notify)>(height_id_);
-              ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
-              ImGuiIO& io = ImGui::GetIO();
-              io.DisplaySize.x = static_cast<float>(width_);
-              io.DisplaySize.y = static_cast<float>(height_);
-
-              set_viewport();
-              window_moved_ = false;
-              return true;
-            });
-          },
-          std::chrono::milliseconds(500))) {
+          vsync_)) {
   if (getenv("DISPLAY") == nullptr) {
     if (-1 == setenv("DISPLAY", ":0", false)) {
       g_warning("BUG: Failed to set a display!");
@@ -367,13 +367,25 @@ GLFWVideo::GLFWVideo(const std::string& name)
     g_warning("BUG: Failed to discover monitors.");
     return;
   }
+  win_aspect_ratio_toggle_id_ =
+      pmanage<MPtr(&PContainer::make_bool)>("win_aspect_ratio_toggle",
+                                            [this](const bool& val) {
+                                              win_aspect_ratio_toggle_ = val;
+                                              return true;
+                                            },
+                                            [this]() { return win_aspect_ratio_toggle_; },
+                                            "Locked window aspect ratio",
+                                            "Enable/Disable",
+                                            win_aspect_ratio_toggle_);
 
   width_id_ = pmanage<MPtr(&PContainer::make_int)>(
       "width",
       [this](const int& val) {
         if (val == width_) return true;
+        if (!win_aspect_ratio_toggle_) win_aspect_ratio_ = width_ / height_;
         add_rendering_task([this, val]() {
           width_ = val;
+          if (win_aspect_ratio_toggle_) height_ = val / win_aspect_ratio_;
           set_size();
           std::lock_guard<std::mutex> lock(configuration_mutex_);
           ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
@@ -393,8 +405,10 @@ GLFWVideo::GLFWVideo(const std::string& name)
       "height",
       [this](const int& val) {
         if (val == height_) return true;
+        if (!win_aspect_ratio_toggle_) win_aspect_ratio_ = width_ / height_;
         add_rendering_task([this, val]() {
           height_ = val;
+          if (win_aspect_ratio_toggle_) width_ = val * win_aspect_ratio_;
           set_size();
           std::lock_guard<std::mutex> lock(configuration_mutex_);
           ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
@@ -885,7 +899,8 @@ void GLFWVideo::set_viewport(bool clear) {
   float image_ratio = static_cast<float>(vid_width_) / static_cast<float>(vid_height_);
 
   // Inverts the ratio if rotated 90-degrees.
-  if (rotation_.get() == 1 || rotation_.get() == 2) image_ratio = 1.f / image_ratio;
+  if (rotation_.get_current_index() == 1 || rotation_.get_current_index() == 2)
+    image_ratio = 1.f / image_ratio;
 
   float padding_x = 0.f;
   float padding_y = 0.f;
@@ -908,11 +923,11 @@ inline void GLFWVideo::set_color() {
 }
 
 inline void GLFWVideo::set_rotation_shader() {
-  glUniform1i(glGetUniformLocation(shader_program_, "rotation"), rotation_.get());
+  glUniform1i(glGetUniformLocation(shader_program_, "rotation"), rotation_.get_current_index());
 }
 
 inline void GLFWVideo::set_flip_shader() {
-  glUniform1i(glGetUniformLocation(shader_program_, "flip"), flip_.get());
+  glUniform1i(glGetUniformLocation(shader_program_, "flip"), flip_.get_current_index());
 }
 
 inline void GLFWVideo::enable_geometry() {
@@ -1286,7 +1301,8 @@ void GLFWVideo::GUIConfiguration::init_imgui() {
   if (use_custom_font_) {
     if (!generate_font_texture(custom_font_)) return;
   } else {
-    if (!generate_font_texture(std::string(DATADIR) + "fonts/" + fonts_list_.at(fonts_.get())))
+    if (!generate_font_texture(std::string(DATADIR) + "fonts/" +
+                               fonts_list_.at(fonts_.get_current_index())))
       return;
   }
 
@@ -1306,11 +1322,11 @@ void GLFWVideo::GUIConfiguration::destroy_imgui() {
 }
 
 void GLFWVideo::GUIConfiguration::init_properties() {
-  auto set_font = [this](size_t val) {
+  auto set_font = [this](const IndexOrName& val) {
     std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
     fonts_.select(val);
     parent_window_->add_rendering_task([this, val]() {
-      generate_font_texture(std::string(DATADIR) + "fonts/" + fonts_list_.at(val));
+      generate_font_texture(std::string(DATADIR) + "fonts/" + fonts_list_.at(val.index_));
       return true;
     });
     return true;
@@ -1332,7 +1348,7 @@ void GLFWVideo::GUIConfiguration::init_properties() {
   alignment_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_selection<unsigned int>)>(
       "overlay_alignment",
       "overlay_config",
-      [this](size_t val) {
+      [this](const IndexOrName& val) {
         std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
         alignment_.select(val);
         return true;

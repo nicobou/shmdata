@@ -3,15 +3,16 @@
 pkg_check_modules(LIBCURL libcurl)
 pkg_check_modules(LIBLO liblo)
 
-set(PLUGIN_NAME "plugin-protocol-mapper")
-set(PLUGIN_DESCRIPTION "Protocol Mapper Plugin")
-
+set(ENABLED FALSE)
 if (LIBCURL_FOUND AND LIBLO_FOUND)
     set(ENABLED TRUE)
 endif ()
 
+set(PLUGIN_NAME "plugin-protocol-mapper")
+set(PLUGIN_DESCRIPTION "Protocol Mapper Plugin")
+
 option(PLUGIN_PROTOCOL_MAPPER "${PLUGIN_DESCRIPTION}" ${ENABLED})
-add_feature_info("${PLUGIN_NAME}" PLUGIN_PULSE "${PLUGIN_PROTOCOL_MAPPER}")
+add_feature_info("${PLUGIN_NAME}" PLUGIN_PULSE "${PLUGIN_DESCRIPTION}")
 
 if (PLUGIN_PROTOCOL_MAPPER)
 

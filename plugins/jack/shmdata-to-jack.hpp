@@ -39,6 +39,7 @@ class ShmdataToJack : public Quiddity {
   ShmdataToJack& operator=(const ShmdataToJack&) = delete;
 
  private:
+  unsigned int kMaxNumberOfChannels{128};
   bool is_constructed_{false};
   // internal use:
   std::string shmpath_{};

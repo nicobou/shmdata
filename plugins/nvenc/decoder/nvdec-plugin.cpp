@@ -50,8 +50,9 @@ NVdecPlugin::NVdecPlugin(const std::string&) : shmcntr_(static_cast<Quiddity*>(t
   devices_ = Selection<>(std::move(names), 0);
   devices_id_ =
       pmanage<MPtr(&PContainer::make_selection<>)>("gpu",
-                                                   [this](size_t val) {
-                                                     if (devices_.get() == val) return true;
+                                                   [this](const IndexOrName& val) {
+                                                     if (devices_.get_current_index() == val.index_)
+                                                       return true;
                                                      devices_.select(val);
                                                      return true;
                                                    },
@@ -110,7 +111,8 @@ bool NVdecPlugin::on_shmdata_disconnect() {
 
 void NVdecPlugin::on_shmreader_data(void* data, size_t size) {
   if (!ds_)
-    ds_ = std::make_unique<ThreadedWrapper<NVencDS>>(devices_nv_ids_[devices_.get()], video_codec_);
+    ds_ = std::make_unique<ThreadedWrapper<NVencDS>>(devices_nv_ids_[devices_.get_current_index()],
+                                                     video_codec_);
 
   if (!ds_->invoke<MPtr(&NVencDS::safe_bool_idiom)>()) {
     g_warning("nvcuvid failed to create a decoding session (nvdec).");

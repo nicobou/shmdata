@@ -60,7 +60,7 @@ LADSPA::LADSPA(const std::string&)
 
   plugins_id_ = pmanage<MPtr(&PContainer::make_selection<>)>(
       "plugins",
-      [this](size_t val) {
+      [this](const IndexOrName& val) {
         plugins_.select(val);
 
         // We don't want to reset the properties if they were loaded from a save file

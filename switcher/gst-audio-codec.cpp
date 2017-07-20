@@ -58,7 +58,7 @@ void GstAudioCodec::show() {
 }
 
 void GstAudioCodec::make_bin() {
-  if (0 != codecs_.get()) {
+  if (0 != codecs_.get_current_index()) {
     gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                      shmsrc_.get_raw(),
                      queue_codec_element_.get_raw(),
@@ -78,7 +78,7 @@ void GstAudioCodec::make_bin() {
 }
 
 bool GstAudioCodec::remake_codec_elements() {
-  if (0 != codecs_.get()) {
+  if (0 != codecs_.get_current_index()) {
     if (!UGstElem::renew(shmsrc_, {"socket-path"}) ||
         !UGstElem::renew(shm_encoded_, {"socket-path", "sync", "async"}) ||
         !UGstElem::renew(audio_convert_) || !UGstElem::renew(audio_resample_) ||
@@ -138,7 +138,7 @@ gboolean GstAudioCodec::reset_codec_configuration(gpointer /*unused */, gpointer
 bool GstAudioCodec::start(const std::string& shmpath, const std::string& shmpath_encoded) {
   hide();
   toggle_codec_properties(false);
-  if (0 == codecs_.get()) return false;
+  if (0 == codecs_.get_current_index()) return false;
 
   shmpath_to_encode_ = shmpath;
   if (shmpath_encoded.empty())
@@ -187,7 +187,7 @@ bool GstAudioCodec::start(const std::string& shmpath, const std::string& shmpath
 bool GstAudioCodec::stop() {
   show();
   toggle_codec_properties(true);
-  if (0 != codecs_.get()) {
+  if (0 != codecs_.get_current_index()) {
     shmsink_sub_.reset();
     shmsrc_sub_.reset();
     quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
@@ -200,14 +200,13 @@ bool GstAudioCodec::stop() {
 }
 
 PContainer::prop_id_t GstAudioCodec::install_codec() {
-  auto opus_index = codecs_.get_index("Opus audio encoder");
-  codecs_.select(opus_index);
+  codecs_.select(IndexOrName("Opus audio encoder"));
   return quid_->pmanage<MPtr(&PContainer::make_selection<>)>(
       "codec",
-      [this](const size_t& val) {
+      [this](const IndexOrName& val) {
         uninstall_codec_properties();
         codecs_.select(val);
-        if (0 == val) return true;
+        if (0 == val.index_) return true;
         codec_element_.mute(codecs_.get_attached().c_str());
         remake_codec_elements();
         make_codec_properties();

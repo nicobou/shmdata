@@ -31,6 +31,7 @@ bool test_description_by_class(QuiddityManager::ptr manager,
                                const std::string& quiddity_class_name);
 bool test_startable(QuiddityManager::ptr manager, const std::string& quiddity_class_name);
 bool test_properties(QuiddityManager::ptr manager, const std::string& quiddity_class_name);
+bool test_nickname(QuiddityManager::ptr manager, const std::string& quiddity_class_name);
 }  // namespace QuiddityBasicTest
 }  // namespace switcher
 #endif
