@@ -144,7 +144,7 @@ bool Quiddity::set_name(const std::string& name) {
   if (!name_.empty()) return false;
 
   name_ = string_to_quiddity_name(name);
-  information_tree_->graft(".type", InfoTree::make(get_documentation()->get_class_name()));
+  information_tree_->graft(".type", InfoTree::make(get_documentation().get_class_name()));
   nickname_ = name_;
   return true;
 }
@@ -155,7 +155,7 @@ bool Quiddity::install_signal(const std::string& long_name,
                               const Signal::args_doc& arg_description,
                               guint number_of_params,
                               GType* param_types) {
-  if (!make_custom_signal_with_class_name(get_documentation()->get_class_name(),
+  if (!make_custom_signal_with_class_name(get_documentation().get_class_name(),
                                           signal_name,
                                           G_TYPE_NONE,
                                           number_of_params,

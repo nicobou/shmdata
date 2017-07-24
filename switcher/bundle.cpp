@@ -53,7 +53,7 @@ bool Bundle::init() {
   auto spec = bundle::DescriptionParser(pipeline_, std::vector<std::string>());
   if (!spec) {
     g_warning("%s : error parsing the pipeline (%s)",
-              doc_getter_()->get_class_name().c_str(),
+              doc_getter_().get_class_name().c_str(),
               spec.get_parsing_error().c_str());
     return false;
   }
@@ -106,10 +106,7 @@ bool Bundle::init() {
   return true;
 }
 
-QuiddityDocumentation* Bundle::get_documentation() {
-  if (doc_getter_) return doc_getter_();
-  return nullptr;
-}
+QuiddityDocumentation Bundle::get_documentation() { return doc_getter_(); }
 
 void Bundle::set_doc_getter(doc_getter_t doc_getter) { doc_getter_ = doc_getter; }
 

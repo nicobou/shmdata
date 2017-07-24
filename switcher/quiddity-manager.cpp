@@ -232,7 +232,7 @@ InfoTree::ptr QuiddityManager::get_state() const {
     if (quiddities_at_reset_.cend() ==
         std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid_name)) {
       auto quid_class =
-          manager_impl_->get_quiddity(quid_name)->get_documentation()->get_class_name();
+          manager_impl_->get_quiddity(quid_name)->get_documentation().get_class_name();
       tree->graft(".quiddities." + quid_name, InfoTree::make(quid_class));
     }
 

@@ -77,8 +77,8 @@ bool PluginLoader::load(const char* filename) {
     return false;
   }
 
-  QuiddityDocumentation* doc = get_documentation_();
-  class_name_ = doc->get_class_name();
+  QuiddityDocumentation doc = get_documentation_();
+  class_name_ = doc.get_class_name();
   // json_doc_ = doc.get_json_root_node();
   return true;
 }
@@ -99,5 +99,5 @@ std::string PluginLoader::get_class_name() const {
   return class_name_;
 }
 
-QuiddityDocumentation* PluginLoader::get_doc() { return get_documentation_(); }
+QuiddityDocumentation PluginLoader::get_doc() { return get_documentation_(); }
 }

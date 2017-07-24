@@ -168,11 +168,11 @@ class QuiddityManager_Impl {
 
  private:
   std::vector<std::string> plugin_dirs_{};
-  std::map<std::string, std::unique_ptr<QuiddityDocumentation>> bundle_docs_{};
+  std::map<std::string, QuiddityDocumentation> bundle_docs_{};
   InfoTree::ptr configurations_{};
   std::unordered_map<std::string, PluginLoader::ptr> plugins_{};
   std::string name_{};
-  AbstractFactory<Quiddity, std::string, QuiddityDocumentation*, const std::string&>
+  AbstractFactory<Quiddity, std::string, QuiddityDocumentation, const std::string&>
       abstract_factory_{};
   static const int kMaxConfigurationFileSize{100000000};  // 100Mo
 

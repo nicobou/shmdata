@@ -27,10 +27,9 @@
 namespace switcher {
 template <typename T, typename Key, typename Doc, typename... ATs>
 template <class U>
-void AbstractFactory<T, Key, Doc, ATs...>::register_class(Key Id, Doc doc) {
-  Creator<T, ATs...>* Fn = (Creator<T, ATs...>*)new DerivedCreator<U, ATs...>();
-  constructor_map_[Id] = Fn;
-  classes_documentation_[Id] = std::move(doc);
+void AbstractFactory<T, Key, Doc, ATs...>::register_class(Key Id, const Doc& doc) {
+  constructor_map_[Id] = (Creator<T, ATs...>*)new DerivedCreator<U, ATs...>();
+  classes_documentation_[Id] = doc;
 }
 
 template <typename T, typename Key, typename Doc, typename... ATs>
@@ -38,8 +37,7 @@ void AbstractFactory<T, Key, Doc, ATs...>::register_class_with_custom_factory(
     Key Id, Doc doc, T* (*custom_create)(ATs...), void (*custom_destroy)(T*)) {
   CustomDerivedCreator<T, ATs...>* creator = new CustomDerivedCreator<T, ATs...>();
   creator->custom_create_ = custom_create;
-  Creator<T, ATs...>* Fn = (Creator<T, ATs...>*)creator;
-  constructor_map_[Id] = Fn;
+  constructor_map_[Id] = (Creator<T, ATs...>*)creator;
   destructor_map_[Id] = custom_destroy;
   classes_documentation_[Id] = std::move(doc);
 }
@@ -54,18 +52,8 @@ std::vector<Key> AbstractFactory<T, Key, Doc, ATs...>::get_keys() {
 template <typename T, typename Key, typename Doc, typename... ATs>
 std::vector<Doc> AbstractFactory<T, Key, Doc, ATs...>::get_classes_documentation() {
   std::vector<Doc> tmp;
-  typename std::map<Key, Doc>::iterator i = classes_documentation_.begin();
-  while (i != classes_documentation_.end()) {
-    tmp.push_back((*i).second);
-    ++i;
-  }
+  for (const auto& doc : classes_documentation_) tmp.push_back(doc.second);
   return tmp;
-}
-
-template <typename T, typename Key, typename Doc, typename... ATs>
-Doc AbstractFactory<T, Key, Doc, ATs...>::get_class_documentation(Key id) {
-  typename std::map<Key, Doc>::iterator iter = classes_documentation_.find(id);
-  return iter->second;
 }
 
 template <typename T, typename Key, typename Doc, typename... ATs>
@@ -75,11 +63,12 @@ bool AbstractFactory<T, Key, Doc, ATs...>::key_exists(Key Id) {
 
 template <typename T, typename Key, typename Doc, typename... ATs>
 bool AbstractFactory<T, Key, Doc, ATs...>::unregister_class(Key Id) {
-  if (constructor_map_.find(Id) == constructor_map_.end())
+  auto constructor_it = constructor_map_.find(Id);
+  if (constructor_it == constructor_map_.end())
     return false;
   else
-    delete (constructor_map_.find(Id))->second;
-  constructor_map_.erase(Id);
+    delete constructor_it->second;
+  constructor_map_.erase(constructor_it);
   destructor_map_.erase(Id);
   classes_documentation_.erase(Id);
   return true;
@@ -88,11 +77,14 @@ bool AbstractFactory<T, Key, Doc, ATs...>::unregister_class(Key Id) {
 template <typename T, typename Key, typename Doc, typename... ATs>
 std::shared_ptr<T> AbstractFactory<T, Key, Doc, ATs...>::create(Key Id, ATs... args) {
   std::shared_ptr<T> pointer;
-  if (constructor_map_.find(Id) != constructor_map_.end()) {
-    if (destructor_map_.find(Id) != destructor_map_.end())
-      pointer.reset(constructor_map_[Id]->Create(std::forward<ATs>(args)...), destructor_map_[Id]);
+  auto constructor_it = constructor_map_.find(Id);
+  auto destructor_it = destructor_map_.find(Id);
+  if (constructor_it != constructor_map_.end()) {
+    if (destructor_it != destructor_map_.end())
+      pointer.reset(constructor_it->second->Create(std::forward<ATs>(args)...),
+                    destructor_it->second);
     else
-      pointer.reset(constructor_map_[Id]->Create(std::forward<ATs>(args)...));
+      pointer.reset(constructor_it->second->Create(std::forward<ATs>(args)...));
   }
   return pointer;
 }
@@ -100,12 +92,6 @@ std::shared_ptr<T> AbstractFactory<T, Key, Doc, ATs...>::create(Key Id, ATs... a
 template <typename T, typename Key, typename Doc, typename... ATs>
 AbstractFactory<T, Key, Doc, ATs...>::~AbstractFactory() {
   for (auto& it : constructor_map_) delete it.second;
-  // typename std::map<Key, Creator <T, ATs...> *>::iterator i =
-  //     constructor_map_.begin();
-  // while (i != constructor_map_.end()) {
-  //   delete(*i).second;
-  //   ++i;
-  // }
 }
 
 template <typename T, typename Key, typename Doc, typename... ATs>

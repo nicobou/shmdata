@@ -31,13 +31,13 @@
 namespace switcher {
 class Bundle : public Quiddity, public StartableQuiddity {
  public:
-  using doc_getter_t = std::function<QuiddityDocumentation*()>;
+  using doc_getter_t = std::function<QuiddityDocumentation()>;
   Bundle(const std::string&);
   ~Bundle();
   Bundle(const Bundle&) = delete;
   Bundle& operator=(const Bundle&) = delete;
   bool init() final;
-  QuiddityDocumentation* get_documentation() final;
+  QuiddityDocumentation get_documentation() final;
   void set_doc_getter(doc_getter_t doc_getter);
 
  private:

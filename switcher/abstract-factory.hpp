@@ -32,11 +32,11 @@ namespace switcher {
 template <class T, class Key, class Doc, typename... ATs>
 class AbstractFactory {
  public:
-  template <class U>
-  void register_class(Key Id, Doc doc);
   AbstractFactory();
   ~AbstractFactory();
 
+  template <class U>
+  void register_class(Key Id, const Doc& doc);
   void register_class_with_custom_factory(Key Id,
                                           Doc doc,
                                           T* (*custom_create)(ATs...),
@@ -44,7 +44,6 @@ class AbstractFactory {
   bool unregister_class(Key Id);
   std::vector<Key> get_keys();
   std::vector<Doc> get_classes_documentation();
-  Doc get_class_documentation(Key Id);
   std::shared_ptr<T> create(Key Id, ATs... args);
   bool key_exists(Key Id);
 
