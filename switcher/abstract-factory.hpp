@@ -29,28 +29,25 @@
 #include "./creator.hpp"
 
 namespace switcher {
-template <class T, class Key, class Doc, typename... ATs>
+template <class T, class Key, typename... ATs>
 class AbstractFactory {
  public:
   AbstractFactory();
   ~AbstractFactory();
 
   template <class U>
-  void register_class(Key Id, const Doc& doc);
+  void register_class(Key Id);
   void register_class_with_custom_factory(Key Id,
-                                          Doc doc,
                                           T* (*custom_create)(ATs...),
                                           void (*custom_destroy)(T*));
   bool unregister_class(Key Id);
   std::vector<Key> get_keys();
-  std::vector<Doc> get_classes_documentation();
   std::shared_ptr<T> create(Key Id, ATs... args);
   bool key_exists(Key Id);
 
  private:
   std::map<Key, Creator<T, ATs...>*> constructor_map_;
   std::map<Key, void (*)(T*)> destructor_map_;
-  std::map<Key, Doc> classes_documentation_;
 };
 
 }  // namespace switcher

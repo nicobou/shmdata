@@ -1,12 +1,14 @@
 pkg_check_modules(GMODULE REQUIRED gmodule-2.0)
 
 add_library(${SWITCHER_LIBRARY} SHARED
+    audio-test-source.cpp
     bundle-description-parser.cpp
     bundle.cpp
     categorizable.cpp
     color.cpp
     counter-map.cpp
     decodebin-to-shmdata.cpp
+    documentation-registry.cpp
     dummy-sink.cpp
     empty-quiddity.cpp
     external-shmdata-writer.cpp
@@ -34,6 +36,7 @@ add_library(${SWITCHER_LIBRARY} SHARED
     information-tree-basic-serializer.cpp
     information-tree-json.cpp
     information-tree.cpp
+    invocation-spec.cpp
     json-builder.cpp
     logger.cpp
     method.cpp
@@ -44,7 +47,6 @@ add_library(${SWITCHER_LIBRARY} SHARED
     property-mapper.cpp
     property.cpp
     quiddity-basic-test.cpp
-    invocation-spec.cpp
     quiddity-documentation.cpp
     quiddity-manager-impl.cpp
     quiddity-manager-wrapper.cpp
@@ -72,7 +74,6 @@ add_library(${SWITCHER_LIBRARY} SHARED
     unique-gst-element.cpp
     uridecodebin.cpp
     video-test-source.cpp
-    audio-test-source.cpp
     )
 
 set(HEADER_INCLUDES
@@ -87,6 +88,7 @@ set(HEADER_INCLUDES
     counter-map.hpp
     creator.hpp
     decodebin-to-shmdata.hpp
+    documentation-registry.hpp
     dummy-sink.hpp
     empty-quiddity.hpp
     exec-loop.hpp

@@ -112,9 +112,7 @@ int main() {
 
     QuiddityManager::ptr manager = QuiddityManager::make_manager("rtptest");
 
-    gchar* usr_plugin_dir = g_strdup_printf("../plugins/gsoap");
-    manager->scan_directory_for_plugins(usr_plugin_dir);
-    g_free(usr_plugin_dir);
+    manager->scan_directory_for_plugins("./");
 
     // creating a SOAP server that will also distribute SDP file through the 'magic' url
     // magic url is

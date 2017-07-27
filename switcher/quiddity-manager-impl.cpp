@@ -22,9 +22,9 @@
 
 #include <fstream>
 #include <regex>
-
 #include "./bundle-description-parser.hpp"
 #include "./bundle.hpp"
+
 #include "./information-tree-json.hpp"
 #include "./scope-exit.hpp"
 
@@ -46,6 +46,7 @@
 #include "./video-test-source.hpp"
 
 namespace switcher {
+
 QuiddityManager_Impl::ptr QuiddityManager_Impl::make_manager(QuiddityManager* root_manager,
                                                              const std::string& name) {
   QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl(name));
@@ -65,7 +66,8 @@ QuiddityManager_Impl::~QuiddityManager_Impl() {
   std::find_if(quiddities_.begin(),
                quiddities_.end(),
                [&logger](const std::pair<std::string, std::shared_ptr<Quiddity>> quid) {
-                 if (quid.second->get_documentation().get_class_name() == "logger") {
+                 if (DocumentationRegistry::get()->get_quiddity_type_from_quiddity(
+                         quid.second->get_name()) == "logger") {
                    // We increment the logger ref count so it's not destroyed by clear().
                    logger = quid.second;
                    return true;
@@ -133,45 +135,42 @@ std::string QuiddityManager_Impl::get_name() const { return name_; }
 
 void QuiddityManager_Impl::register_classes() {
   // registering quiddities
-  abstract_factory_.register_class<AudioTestSource>(AudioTestSource::switcher_doc_.get_class_name(),
-                                                    AudioTestSource::switcher_doc_);
-  abstract_factory_.register_class<DummySink>(DummySink::switcher_doc_.get_class_name(),
-                                              DummySink::switcher_doc_);
-  abstract_factory_.register_class<EmptyQuiddity>(EmptyQuiddity::switcher_doc_.get_class_name(),
-                                                  EmptyQuiddity::switcher_doc_);
+  abstract_factory_.register_class<AudioTestSource>(
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("AudioTestSource"));
+  abstract_factory_.register_class<DummySink>(
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("DummySink"));
+  abstract_factory_.register_class<EmptyQuiddity>(
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("EmptyQuiddity"));
   abstract_factory_.register_class<ExternalShmdataWriter>(
-      ExternalShmdataWriter::switcher_doc_.get_class_name(), ExternalShmdataWriter::switcher_doc_);
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("ExternalShmdataWriter"));
   abstract_factory_.register_class<GstVideoConverter>(
-      GstVideoConverter::switcher_doc_.get_class_name(), GstVideoConverter::switcher_doc_);
-  abstract_factory_.register_class<GstVideoEncoder>(GstVideoEncoder::switcher_doc_.get_class_name(),
-                                                    GstVideoEncoder::switcher_doc_);
-  abstract_factory_.register_class<GstAudioEncoder>(GstAudioEncoder::switcher_doc_.get_class_name(),
-                                                    GstAudioEncoder::switcher_doc_);
-  abstract_factory_.register_class<GstDecodebin>(GstDecodebin::switcher_doc_.get_class_name(),
-                                                 GstDecodebin::switcher_doc_);
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("GstVideoConverter"));
+  abstract_factory_.register_class<GstVideoEncoder>(
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("GstVideoEncoder"));
+  abstract_factory_.register_class<GstAudioEncoder>(
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("GstAudioEncoder"));
+  abstract_factory_.register_class<GstDecodebin>(
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("GstDecodebin"));
   // abstract_factory_.register_class<GstParseToBinSrc>
-  //     (GstParseToBinSrc::switcher_doc_.get_class_name(),
-  //      GstParseToBinSrc::switcher_doc_);
-  abstract_factory_.register_class<HTTPSDPDec>(HTTPSDPDec::switcher_doc_.get_class_name(),
-                                               HTTPSDPDec::switcher_doc_);
-  abstract_factory_.register_class<Logger>(Logger::switcher_doc_.get_class_name(),
-                                           Logger::switcher_doc_);
-  abstract_factory_.register_class<PropertyMapper>(PropertyMapper::switcher_doc_.get_class_name(),
-                                                   PropertyMapper::switcher_doc_);
-  abstract_factory_.register_class<RtpSession>(RtpSession::switcher_doc_.get_class_name(),
-                                               RtpSession::switcher_doc_);
+  //     (DocumentationRegistry::get()->get_quiddity_type_from_class_name("GstParseToBinSrc"));
+  abstract_factory_.register_class<HTTPSDPDec>(
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("HTTPSDPDec"));
+  abstract_factory_.register_class<Logger>(
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("Logger"));
+  abstract_factory_.register_class<PropertyMapper>(
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("PropertyMapper"));
+  abstract_factory_.register_class<RtpSession>(
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("RtpSession"));
   // abstract_factory_.register_class<ShmdataFromGDPFile>
-  //     (ShmdataFromGDPFile::switcher_doc_.get_class_name(),
-  //      ShmdataFromGDPFile::switcher_doc_);
+  //     (DocumentationRegistry::get()->get_quiddity_type_from_class_name("ShmdataFromGDPFile"));
   // abstract_factory_.register_class<ShmdataToFile>
-  //     (ShmdataToFile::switcher_doc_.get_class_name(),
-  //      ShmdataToFile::switcher_doc_);
-  abstract_factory_.register_class<Timelapse>(Timelapse::switcher_doc_.get_class_name(),
-                                              Timelapse::switcher_doc_);
-  abstract_factory_.register_class<Uridecodebin>(Uridecodebin::switcher_doc_.get_class_name(),
-                                                 Uridecodebin::switcher_doc_);
-  abstract_factory_.register_class<VideoTestSource>(VideoTestSource::switcher_doc_.get_class_name(),
-                                                    VideoTestSource::switcher_doc_);
+  //     (DocumentationRegistry::get()->get_quiddity_type_from_class_name("ShmdataToFile"));
+  abstract_factory_.register_class<Timelapse>(
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("Timelapse"));
+  abstract_factory_.register_class<Uridecodebin>(
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("Uridecodebin"));
+  abstract_factory_.register_class<VideoTestSource>(
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("VideoTestSource"));
 }
 
 std::vector<std::string> QuiddityManager_Impl::get_classes() {
@@ -179,25 +178,25 @@ std::vector<std::string> QuiddityManager_Impl::get_classes() {
 }
 
 void QuiddityManager_Impl::make_classes_doc() {
-  std::vector<QuiddityDocumentation> docs = abstract_factory_.get_classes_documentation();
   auto classes_str = std::string(".classes.");
   classes_doc_ = InfoTree::make();
   classes_doc_->graft(classes_str, InfoTree::make());
   classes_doc_->tag_as_array(classes_str, true);
-  for (auto& doc : docs) {
-    auto class_name = doc.get_class_name();
+  for (auto& doc : DocumentationRegistry::get()->get_docs()) {
+    auto class_name = doc.first;
+    auto class_doc = doc.second;
     classes_doc_->graft(classes_str + class_name, InfoTree::make());
     auto subtree = classes_doc_->get_tree(classes_str + class_name);
     subtree->graft(".class", InfoTree::make(class_name));
-    subtree->graft(".name", InfoTree::make(doc.get_long_name()));
-    subtree->graft(".category", InfoTree::make(doc.get_category()));
-    auto tags = doc.get_tags();
+    subtree->graft(".name", InfoTree::make(class_doc.get_long_name()));
+    subtree->graft(".category", InfoTree::make(class_doc.get_category()));
+    auto tags = class_doc.get_tags();
     subtree->graft(".tags", InfoTree::make());
     subtree->tag_as_array(".tags", true);
     for (auto& tag : tags) subtree->graft(".tags." + tag, InfoTree::make(tag));
-    subtree->graft(".description", InfoTree::make(doc.get_description()));
-    subtree->graft(".license", InfoTree::make(doc.get_license()));
-    subtree->graft(".author", InfoTree::make(doc.get_author()));
+    subtree->graft(".description", InfoTree::make(class_doc.get_description()));
+    subtree->graft(".license", InfoTree::make(class_doc.get_license()));
+    subtree->graft(".author", InfoTree::make(class_doc.get_author()));
   }
 }
 
@@ -264,17 +263,10 @@ std::string QuiddityManager_Impl::create(const std::string& quiddity_class,
     return std::string();
   }
 
-  auto bundle_doc_it = bundle_docs_.find(quiddity_class);
-  if (bundle_doc_it != bundle_docs_.end()) {
-    static_cast<Bundle*>(quiddity.get())->set_doc_getter([this, quiddity_class]() {
-      return bundle_docs_.find(quiddity_class)->second;
-    });
-    quiddity->set_configuration(configurations_->get_tree("bundle." + quiddity_class));
-  } else {
-    if (configurations_) {
-      auto tree = configurations_->get_tree(quiddity_class);
-      if (tree) quiddity->set_configuration(configurations_->get_tree(quiddity_class));
-    }
+  if (configurations_) {
+    auto tree = configurations_->get_tree(quiddity_class);
+    if (!tree->branch_has_data("")) tree = configurations_->get_tree("bundle." + quiddity_class);
+    if (tree) quiddity->set_configuration(tree);
   }
 
   quiddity->set_name(name);
@@ -290,6 +282,8 @@ std::string QuiddityManager_Impl::create(const std::string& quiddity_class,
       return std::string();
     }
   }
+
+  DocumentationRegistry::get()->register_quiddity_type_from_quiddity(name, quiddity_class);
 
   return name;
 }
@@ -314,8 +308,10 @@ std::string QuiddityManager_Impl::get_quiddities_description() {
     std::shared_ptr<Quiddity> quid = get_quiddity(it);
     if (quid) {
       auto name = quid->get_name();
-      subtree->graft(name + ".id", InfoTree::make(quid->get_name()));
-      subtree->graft(name + ".class", InfoTree::make(quid->get_documentation().get_class_name()));
+      subtree->graft(name + ".id", InfoTree::make(name));
+      subtree->graft(
+          name + ".class",
+          InfoTree::make(DocumentationRegistry::get()->get_quiddity_type_from_quiddity(name)));
     }
   }
   return JSONSerializer::serialize(tree.get());
@@ -326,18 +322,10 @@ std::string QuiddityManager_Impl::get_quiddity_description(const std::string& ni
   if (quiddities_.end() == it) return JSONSerializer::serialize(InfoTree::make().get());
   auto tree = InfoTree::make();
   tree->graft(".id", InfoTree::make(nick_name));
-  tree->graft(".class", InfoTree::make(it->second->get_documentation().get_class_name()));
+  tree->graft(".class",
+              InfoTree::make(DocumentationRegistry::get()->get_quiddity_type_from_quiddity(
+                  it->second->get_name())));
   return JSONSerializer::serialize(tree.get());
-}
-
-InfoTree::ptr QuiddityManager_Impl::get_quiddity_description2(const std::string& nick_name) {
-  auto res = InfoTree::make();
-  auto found = quiddities_.find(nick_name);
-  if (quiddities_.end() == found) return res;
-  res->graft(std::string("name"), InfoTree::make(nick_name));
-  res->graft(std::string("class"),
-             InfoTree::make(found->second->get_documentation().get_class_name()));
-  return res;
 }
 
 Quiddity::ptr QuiddityManager_Impl::get_quiddity(const std::string& quiddity_name) {
@@ -621,7 +609,7 @@ bool QuiddityManager_Impl::load_plugin(const char* filename) {
     close_plugin(class_name);
   }
   abstract_factory_.register_class_with_custom_factory(
-      class_name, plugin->get_doc(), plugin->create_, plugin->destroy_);
+      class_name, plugin->create_, plugin->destroy_);
   plugins_[class_name] = plugin;
   return true;
 }
@@ -733,14 +721,10 @@ bool QuiddityManager_Impl::load_configuration_file(const std::string& file_path)
       continue;
     }
     // ok, bundle can be added
-    bundle_docs_.emplace(std::make_pair(
-        it, QuiddityDocumentation(long_name, it, category, tags, description, "n/a", "n/a")));
+    DocumentationRegistry::get()->register_doc(
+        it, QuiddityDocumentation(long_name, it, category, tags, description, "n/a", "n/a"));
 
-    auto doc = bundle_docs_.find(it);
-    if (doc != bundle_docs_.end()) {
-      abstract_factory_.register_class_with_custom_factory(
-          it, doc->second, &bundle::create, &bundle::destroy);
-    }
+    abstract_factory_.register_class_with_custom_factory(it, &bundle::create, &bundle::destroy);
     // making the new bundle type available for next bundle definition:
     quid_types.push_back(it);
   }

@@ -21,7 +21,6 @@
 
 #include <assert.h>
 #include <atomic>
-#include <iostream>
 #include <switcher/information-tree-json.hpp>
 #include "switcher/quiddity-basic-test.hpp"
 
@@ -72,9 +71,8 @@ int main() {
   {
     QuiddityManager::ptr manager = QuiddityManager::make_manager("ladspatest");
 
-    gchar* usr_plugin_dir = g_strdup_printf("./");
-    manager->scan_directory_for_plugins(usr_plugin_dir);
-    g_free(usr_plugin_dir);
+    manager->scan_directory_for_plugins("./");
+
     manager->load_configuration_file("./check_ladspa.json");
 
     // creating a ladspa audiotest bundle

@@ -23,12 +23,9 @@
 #include <cassert>
 #include <chrono>
 #include <future>
-#include <string>
 #include <vector>
 #include "switcher/gst-shmdata-subscriber.hpp"
-#include "switcher/property-container.hpp"
 #include "switcher/quiddity-basic-test.hpp"
-#include "switcher/quiddity-manager.hpp"
 
 static bool success = false;
 static std::atomic<bool> do_continue{true};
@@ -77,9 +74,7 @@ int main() {
   {
     QuiddityManager::ptr manager = QuiddityManager::make_manager("test_manager");
 
-    gchar* usr_plugin_dir = g_strdup_printf("./");
-    manager->scan_directory_for_plugins(usr_plugin_dir);
-    g_free(usr_plugin_dir);
+    manager->scan_directory_for_plugins("./");
 
     // testing if two nvenc can be created simultaneously
     std::vector<std::string> nvencs;

@@ -25,6 +25,7 @@
 #include <unordered_map>
 
 #include "./abstract-factory.hpp"
+#include "./documentation-registry.hpp"
 #include "./information-tree.hpp"
 #include "./plugin-loader.hpp"
 #include "./quiddity-signal-subscriber.hpp"
@@ -67,7 +68,6 @@ class QuiddityManager_Impl {
   std::string get_class_doc(const std::string& class_name);                // json formatted
   std::string get_quiddity_description(const std::string& quiddity_name);  // json formatted
   std::string get_quiddities_description();                                // json formatted
-  InfoTree::ptr get_quiddity_description2(const std::string& nick_name);
   bool class_exists(const std::string& class_name);
 
   // **** creation/remove/get and notification
@@ -168,12 +168,10 @@ class QuiddityManager_Impl {
 
  private:
   std::vector<std::string> plugin_dirs_{};
-  std::map<std::string, QuiddityDocumentation> bundle_docs_{};
   InfoTree::ptr configurations_{};
   std::unordered_map<std::string, PluginLoader::ptr> plugins_{};
   std::string name_{};
-  AbstractFactory<Quiddity, std::string, QuiddityDocumentation, const std::string&>
-      abstract_factory_{};
+  AbstractFactory<Quiddity, std::string, const std::string&> abstract_factory_{};
   static const int kMaxConfigurationFileSize{100000000};  // 100Mo
 
   bool load_plugin(const char* filename);

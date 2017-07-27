@@ -25,13 +25,14 @@
 #define __SWITCHER_QUIDDITY_H__
 
 #include <gst/gst.h>
-
+#include <string.h>
 #include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "./documentation-registry.hpp"
 #include "./gobject-wrapper.hpp"
 #include "./information-tree.hpp"
 #include "./json-builder.hpp"
@@ -66,9 +67,6 @@ class Quiddity {
   Quiddity& operator=(const Quiddity&) = delete;
   virtual ~Quiddity();
 
-  // class documentation
-  virtual QuiddityDocumentation get_documentation() = 0;
-
   // class initialisation
   virtual bool init() = 0;
 
@@ -100,8 +98,6 @@ class Quiddity {
   bool invoke_method(const std::string& function_name,
                      std::string** return_value,
                      const std::vector<std::string>& args);
-  int method_get_num_pointer_args(
-      const std::string& function_name);  // returns -1 if method not found
   bool has_method(const std::string& method_name);
 
   // signals
@@ -173,7 +169,6 @@ class Quiddity {
   JSONBuilder::ptr signals_description_;
 
   // naming
-  static const size_t nameMaxSize{20};
   std::string name_{};
 
   std::mutex self_destruct_mtx_{};
@@ -181,9 +176,6 @@ class Quiddity {
   // user data hooks
   bool user_data_graft_hook(const std::string& path, InfoTree::ptr tree);
   InfoTree::ptr user_data_prune_hook(const std::string& path);
-
-  // position weight
-  bool compare_properties(const std::string& first, const std::string& second);
 
   // method
   bool method_is_registered(const std::string& method_name);
@@ -253,10 +245,6 @@ class Quiddity {
                                       GType* param_types);
   void signal_emit(std::string signal_name, ...);
 
-  // custom signals
-  void emit_on_interface_changed();  // in order to tell properties/methods has
-                                     // changed
-
   void self_destruct();
 
   bool toggle_property_saving(const std::string&);
@@ -271,23 +259,28 @@ class Quiddity {
   GObjectWrapper::ptr gobject_;
 };
 
-#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(                                             \
-    cpp_quiddity_class, class_name, name, category, tags, description, license, author)   \
-  QuiddityDocumentation cpp_quiddity_class::switcher_doc_(                                \
-      name, class_name, category, tags, description, license, author);                    \
-  QuiddityDocumentation cpp_quiddity_class::get_documentation() { return switcher_doc_; } \
-  QuiddityDocumentation cpp_quiddity_class::get_doc() { return switcher_doc_; }
+#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(                                                 \
+    cpp_quiddity_class, class_name, name, category, tags, description, license, author)       \
+  bool cpp_quiddity_class##_doc_registered = DocumentationRegistry::get()->register_doc(      \
+      class_name,                                                                             \
+      QuiddityDocumentation(class_name, name, category, tags, description, license, author)); \
+  bool cpp_quiddity_class##_class_registered =                                                \
+      DocumentationRegistry::get()->register_quiddity_type_from_class_name(                   \
+          std::string(#cpp_quiddity_class), class_name);
 
 #define SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(cpp_quiddity_class) \
-  typedef std::shared_ptr<cpp_quiddity_class> ptr;                   \
-  QuiddityDocumentation get_documentation();                         \
-  static QuiddityDocumentation get_doc();                            \
-  static QuiddityDocumentation switcher_doc_;
+  typedef std::shared_ptr<cpp_quiddity_class> ptr;
 
 #define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                                             \
   extern "C" Quiddity* create(const std::string& name) { return new cpp_quiddity_class(name); } \
   extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }                              \
-  extern "C" QuiddityDocumentation get_documentation() { return cpp_quiddity_class::switcher_doc_; }
-
+  extern "C" const char* get_quiddity_type() {                                                  \
+    static char type[64];                                                                       \
+    strcpy(type,                                                                                \
+           DocumentationRegistry::get()                                                         \
+               ->get_quiddity_type_from_class_name(std::string(#cpp_quiddity_class))            \
+               .c_str());                                                                       \
+    return static_cast<const char*>(type);                                                      \
+  }
 }  // namespace switcher
 #endif

@@ -29,9 +29,7 @@ int main() {
   {
     switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("glfwtest");
 
-    gchar* usr_plugin_dir = g_strdup_printf("./");
-    manager->scan_directory_for_plugins(usr_plugin_dir);
-    g_free(usr_plugin_dir);
+    manager->scan_directory_for_plugins("./");
 
     if (!glfwInit()) {
       // probably launched from ssh, could not find a display

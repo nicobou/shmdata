@@ -18,7 +18,6 @@
  */
 
 #include "./bundle.hpp"
-#include <future>
 #include <regex>
 #include "./scope-exit.hpp"
 
@@ -33,6 +32,7 @@ Bundle::Bundle(const std::string& name)
     : shmcntr_(static_cast<Quiddity*>(this)), manager_(QuiddityManager::make_manager(name)) {}
 
 Bundle::~Bundle() { quitting_ = true; }
+
 bool Bundle::init() {
   auto manager = manager_impl_.lock();
   if (!manager) {
@@ -53,7 +53,7 @@ bool Bundle::init() {
   auto spec = bundle::DescriptionParser(pipeline_, std::vector<std::string>());
   if (!spec) {
     g_warning("%s : error parsing the pipeline (%s)",
-              doc_getter_().get_class_name().c_str(),
+              DocumentationRegistry::get()->get_quiddity_type_from_quiddity(get_name()).c_str(),
               spec.get_parsing_error().c_str());
     return false;
   }
@@ -105,10 +105,6 @@ bool Bundle::init() {
   }
   return true;
 }
-
-QuiddityDocumentation Bundle::get_documentation() { return doc_getter_(); }
-
-void Bundle::set_doc_getter(doc_getter_t doc_getter) { doc_getter_ = doc_getter; }
 
 bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) {
   // first: check is start must be installed

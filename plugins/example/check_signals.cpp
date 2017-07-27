@@ -21,7 +21,6 @@
 
 #include <gst/gst.h>
 #include <cassert>
-#include <iostream>
 #include <vector>
 #include "switcher/quiddity-manager.hpp"
 
@@ -39,9 +38,7 @@ int main() {
   switcher::QuiddityManager::ptr manager =
       switcher::QuiddityManager::make_manager("testing_signals");
 
-  gchar* usr_plugin_dir = g_strdup_printf("./");
-  manager->scan_directory_for_plugins(usr_plugin_dir);
-  g_free(usr_plugin_dir);
+  manager->scan_directory_for_plugins("./");
 
   assert(manager->make_signal_subscriber("signal_subscriber", cb_signal, nullptr));
 

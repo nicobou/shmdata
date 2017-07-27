@@ -19,13 +19,10 @@
 
 #include <string.h>
 #include <fstream>
-#include <streambuf>
-#include <string>
 
 #include "./gst-utils.hpp"
 #include "./information-tree-json.hpp"
 #include "./quiddity-manager.hpp"
-#include "./quiddity.hpp"
 #include "./scope-exit.hpp"
 
 namespace switcher {
@@ -231,8 +228,7 @@ InfoTree::ptr QuiddityManager::get_state() const {
     // name and class
     if (quiddities_at_reset_.cend() ==
         std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid_name)) {
-      auto quid_class =
-          manager_impl_->get_quiddity(quid_name)->get_documentation().get_class_name();
+      auto quid_class = DocumentationRegistry::get()->get_quiddity_type_from_quiddity(quid_name);
       tree->graft(".quiddities." + quid_name, InfoTree::make(quid_class));
     }
 

@@ -20,20 +20,14 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <cassert>
-#include <iostream>
-#include <string>
-#include <vector>
 #include "switcher/quiddity-basic-test.hpp"
-#include "switcher/quiddity-manager.hpp"
 
 int main() {
   {
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("test_manager");
 
-    gchar* usr_plugin_dir = g_strdup_printf("./");
-    manager->scan_directory_for_plugins(usr_plugin_dir);
-    g_free(usr_plugin_dir);
+    manager->scan_directory_for_plugins("./");
 
     assert(switcher::QuiddityBasicTest::test_full(manager, "OSCctl"));
     assert(switcher::QuiddityBasicTest::test_full(manager, "OSCsink"));

@@ -28,10 +28,10 @@ namespace switcher {
 class Quiddity;
 class QuiddityDocumentation;
 
-// the types of the class factories for quiddity pluggins
+// the types of the class factories for quiddity plugins
 typedef Quiddity* create_t(const std::string&);
 typedef void destroy_t(switcher::Quiddity*);
-typedef QuiddityDocumentation get_documentation_t();
+typedef const char* get_type_t();
 
 class PluginLoader {
  public:
@@ -44,14 +44,13 @@ class PluginLoader {
   bool load(const char* filename);
   bool close();
   std::string get_class_name() const;
-  QuiddityDocumentation get_doc();
 
   create_t* create_{nullptr};
   destroy_t* destroy_{nullptr};
+  get_type_t* get_type_{nullptr};
 
  private:
   GModule* module_{nullptr};
-  get_documentation_t* get_documentation_{nullptr};
   std::string class_name_{};
 };
 }  // namespace switcher

@@ -31,14 +31,11 @@
 namespace switcher {
 class Bundle : public Quiddity, public StartableQuiddity {
  public:
-  using doc_getter_t = std::function<QuiddityDocumentation()>;
   Bundle(const std::string&);
   ~Bundle();
   Bundle(const Bundle&) = delete;
   Bundle& operator=(const Bundle&) = delete;
   bool init() final;
-  QuiddityDocumentation get_documentation() final;
-  void set_doc_getter(doc_getter_t doc_getter);
 
  private:
   struct on_tree_data_t {
@@ -62,7 +59,6 @@ class Bundle : public Quiddity, public StartableQuiddity {
   ShmdataConnector shmcntr_;
   std::vector<std::unique_ptr<on_tree_data_t>> on_tree_datas_{};
   std::string pipeline_{};
-  doc_getter_t doc_getter_{};
   QuiddityManager::ptr manager_;
   std::vector<unsigned int> quiddity_removal_cb_ids_{};
 

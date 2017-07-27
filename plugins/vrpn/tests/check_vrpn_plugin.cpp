@@ -18,21 +18,16 @@
  */
 
 #include <cassert>
-#include <iostream>
-#include <string>
 #include <vector>
 #include "switcher/property-container.hpp"
 #include "switcher/quiddity-basic-test.hpp"
-#include "switcher/quiddity-manager.hpp"
 
 int main() {
   {
     using namespace switcher;
     QuiddityManager::ptr manager = QuiddityManager::make_manager("test_manager");
 
-    gchar* usr_plugin_dir = g_strdup_printf("./");
-    manager->scan_directory_for_plugins(usr_plugin_dir);
-    g_free(usr_plugin_dir);
+    manager->scan_directory_for_plugins("./");
 
     assert(manager->create("vrpnsrc", "src") == "src");
     assert(QuiddityBasicTest::test_full(manager, "vrpnsrc"));

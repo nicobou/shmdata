@@ -21,7 +21,6 @@
 
 #include <unistd.h>
 #include "switcher/quiddity-basic-test.hpp"
-#include "switcher/quiddity-manager.hpp"
 
 static bool success = false;
 
@@ -38,9 +37,7 @@ int main() {
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("test_manager");
 
-    gchar* usr_plugin_dir = g_strdup_printf("./");
-    manager->scan_directory_for_plugins(usr_plugin_dir);
-    g_free(usr_plugin_dir);
+    manager->scan_directory_for_plugins("./");
 
     if (!switcher::QuiddityBasicTest::test_full(manager, "SOAPcontrolClient")) success = false;
 
