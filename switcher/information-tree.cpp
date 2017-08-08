@@ -298,7 +298,9 @@ std::string InfoTree::serialize_json(const std::string& path) const {
   if (path_is_root(path)) return JSONSerializer::serialize(me_.lock().get());
   auto found = get_node(path);
   if (nullptr == found.first) return "null";
-  return JSONSerializer::serialize((*found.first)[found.second].second.get());
+  auto tree = (*found.first)[found.second].second;
+  if (!tree) return "null";
+  return JSONSerializer::serialize(tree.get());
 }
 
 bool InfoTree::path_is_root(const std::string& path) { return (path == ".") || (path == ".."); }
