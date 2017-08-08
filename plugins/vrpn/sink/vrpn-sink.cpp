@@ -558,8 +558,8 @@ bool VRPNSink::start() {
     }
   }
 
-  loopTask_ = std::make_unique<PeriodicTask>([this]() { this->loop(); },
-                                             std::chrono::milliseconds(vrpnLoopInterval));
+  loopTask_ = std::make_unique<PeriodicTask<>>([this]() { this->loop(); },
+                                               std::chrono::milliseconds(vrpnLoopInterval));
 
   g_debug("Started VRPN sink server");
 

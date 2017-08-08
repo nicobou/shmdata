@@ -184,8 +184,8 @@ bool VRPNSource::start() {
 
   // Register a callback handler for *all* messages going through the connection
   connection_->raw()->register_handler(vrpn_ANY_TYPE, handleMessage, this, vrpn_ANY_SENDER);
-  loopTask_ = std::make_unique<PeriodicTask>([this]() { this->loop(); },
-                                             std::chrono::milliseconds(vrpnLoopInterval));
+  loopTask_ = std::make_unique<PeriodicTask<>>([this]() { this->loop(); },
+                                               std::chrono::milliseconds(vrpnLoopInterval));
 
   g_debug("Started VRPN source connection");
 

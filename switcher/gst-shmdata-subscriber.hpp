@@ -53,7 +53,7 @@ class GstShmdataSubscriber {
   on_stat_monitor_t on_stat_monitor_cb_;
   on_delete_t on_delete_cb_;
   on_connection_status_t on_connection_status_cb_;
-  PeriodicTask ptask_;
+  PeriodicTask<> ptask_;
   gulong signal_handler_id_{0};
   gulong signal_connection_id_{0};
   static void on_caps_cb(GObject* gobject, GParamSpec* pspec, gpointer user_data);

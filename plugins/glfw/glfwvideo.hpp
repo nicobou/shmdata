@@ -299,7 +299,7 @@ class GLFWVideo : public Quiddity {
   bool show_overlay_{false};
   PContainer::prop_id_t show_overlay_id_{0};
   std::unique_ptr<GUIConfiguration> gui_configuration_{nullptr};
-  std::unique_ptr<PeriodicTask> geometry_task_;
+  std::unique_ptr<PeriodicTask<>> geometry_task_;
   /**
    * \brief top level properties
    */

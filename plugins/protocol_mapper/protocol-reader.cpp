@@ -66,8 +66,8 @@ std::unique_ptr<ProtocolReader> ProtocolReader::create_protocol_reader(Quiddity*
 }
 
 void ProtocolReader::set_emission_period(const unsigned int& period) {
-  ptask_ = std::make_unique<PeriodicTask>([this]() { continuous_emission_task(); },
-                                          std::chrono::milliseconds(period));
+  ptask_ = std::make_unique<PeriodicTask<>>([this]() { continuous_emission_task(); },
+                                            std::chrono::milliseconds(period));
 }
 
 void ProtocolReader::continuous_emission_task() {

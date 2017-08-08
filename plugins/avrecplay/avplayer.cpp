@@ -195,7 +195,7 @@ GstBusSyncReply AVPlayer::bus_async(GstMessage* msg) {
                                                    0,
                                                    0,
                                                    track_duration_ / GST_SECOND);
-          position_task_ = std::make_unique<PeriodicTask>(
+          position_task_ = std::make_unique<PeriodicTask<>>(
               [this]() {
                 gint64 position;
                 gst_element_query_position(

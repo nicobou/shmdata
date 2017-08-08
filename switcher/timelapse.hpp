@@ -74,7 +74,7 @@ class Timelapse : public Quiddity {
   std::mutex timelapse_mtx_{};
 
   // tracking parameter changes and update timelapse pipeline
-  PeriodicTask relaunch_task_;
+  PeriodicTask<> relaunch_task_;
 
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;

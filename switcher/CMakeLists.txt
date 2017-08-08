@@ -40,7 +40,6 @@ add_library(${SWITCHER_LIBRARY} SHARED
     logger.cpp
     method.cpp
     net-utils.cpp
-    periodic-task.cpp
     plugin-loader.cpp
     property-container.cpp
     property-mapper.cpp

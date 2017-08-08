@@ -64,7 +64,7 @@ class SystemUsage : public Quiddity {
   float period_;
   std::map<std::string, Cpu> _cpus{};
   std::map<std::string, Net> _net{};
-  std::unique_ptr<PeriodicTask> pollStateTask_;
+  std::unique_ptr<PeriodicTask<>> pollStateTask_;
 
   bool init() final;
   bool init_tree();

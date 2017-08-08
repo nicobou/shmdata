@@ -61,7 +61,7 @@ class AVPlayer : public Quiddity, public StartableQuiddity {
   std::string playpath_{};
   int position_{0};
   PContainer::prop_id_t position_id_{0};
-  std::unique_ptr<PeriodicTask> position_task_{};
+  std::unique_ptr<PeriodicTask<>> position_task_{};
   bool pause_{false};
   bool seek_called_{false};
   std::mutex seek_mutex_{};

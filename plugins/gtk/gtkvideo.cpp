@@ -212,7 +212,7 @@ GTKVideo::GTKVideo(const std::string& name)
                                            0,
                                            max_height);
 
-  position_task_ = std::make_unique<PeriodicTask>(
+  position_task_ = std::make_unique<PeriodicTask<>>(
       [this]() { g_idle_add((GSourceFunc)window_update_position, this); },
       std::chrono::milliseconds(500));
 

@@ -44,7 +44,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SystemUsage,
 SystemUsage::SystemUsage(const std::string&)
     : tree_{InfoTree::make()},
       period_(1.0),
-      pollStateTask_(std::make_unique<PeriodicTask>(
+      pollStateTask_(std::make_unique<PeriodicTask<>>(
           [this]() { this->pollState(); },
           std::chrono::milliseconds(static_cast<int>(1000 * period_)))) {}
 
@@ -54,7 +54,7 @@ bool SystemUsage::init() {
       [this](const float& val) {
         period_ = val;
         pollStateTask_.reset();
-        pollStateTask_ = std::make_unique<PeriodicTask>(
+        pollStateTask_ = std::make_unique<PeriodicTask<>>(
             [this]() { this->pollState(); },
             std::chrono::milliseconds(static_cast<int>(1000 * period_)));
         return true;

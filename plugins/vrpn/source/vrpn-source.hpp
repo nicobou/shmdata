@@ -91,7 +91,7 @@ class VRPNSource : public Quiddity, public StartableQuiddity {
   std::mutex vrpnMutex_{};
   std::unique_ptr<ThreadedWrapper<>> vrpnPropertyNotify_{std::make_unique<ThreadedWrapper<>>()};
   static const unsigned int vrpnLoopInterval;
-  std::unique_ptr<PeriodicTask> loopTask_{};
+  std::unique_ptr<PeriodicTask<>> loopTask_{};
   std::map<std::string, std::unique_ptr<SourceDevice>> devices_{};
   static int handleMessage(void* userData, vrpn_HANDLERPARAM p);
   void watchDevice(const std::string& senderName, const std::string& typeName);

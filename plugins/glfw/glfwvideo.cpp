@@ -169,7 +169,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
           "Show overlay",
           "Show the overlay label on top of the video",
           show_overlay_)),
-      geometry_task_(std::make_unique<PeriodicTask>(
+      geometry_task_(std::make_unique<PeriodicTask<>>(
           [this]() {
             std::lock_guard<std::mutex> lock(configuration_mutex_);
             if (!window_moved_ || !gui_configuration_) return;

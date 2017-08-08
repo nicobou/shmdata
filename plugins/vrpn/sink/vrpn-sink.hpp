@@ -82,7 +82,7 @@ class VRPNSink : public Quiddity, public StartableQuiddity {
   // VRPN
   std::mutex vrpnMutex_{};
   static const unsigned int vrpnLoopInterval;
-  std::unique_ptr<PeriodicTask> loopTask_{};
+  std::unique_ptr<PeriodicTask<>> loopTask_{};
   std::map<std::string, std::unique_ptr<SinkDevice>> devices_{};
   void loop();
 
