@@ -42,6 +42,7 @@ GstAudioCodec::GstAudioCodec(Quiddity* quid)
                         Method::make_arg_type_description(G_TYPE_NONE, nullptr),
                         this);
   reset_codec_configuration(nullptr, this);
+  stop();
 }
 
 void GstAudioCodec::hide() {
