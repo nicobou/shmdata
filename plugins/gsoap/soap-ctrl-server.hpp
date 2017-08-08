@@ -27,7 +27,6 @@
 namespace switcher {
 class SoapCtrlServer : public QuiddityManagerWrapper {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SoapCtrlServer);
   SoapCtrlServer(const std::string&);
   ~SoapCtrlServer();
   SoapCtrlServer(const SoapCtrlServer&) = delete;

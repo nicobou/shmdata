@@ -33,7 +33,6 @@
 namespace switcher {
 class ShmdataFromGDPFile : public GstPipeliner, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataFromGDPFile);
   ShmdataFromGDPFile(const std::string&);
   ~ShmdataFromGDPFile();
   ShmdataFromGDPFile(const ShmdataFromGDPFile&) = delete;

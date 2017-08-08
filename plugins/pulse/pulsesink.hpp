@@ -35,7 +35,6 @@
 namespace switcher {
 class PulseSink : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSink);
   PulseSink(const std::string&);
   ~PulseSink();
   PulseSink(const PulseSink&) = delete;

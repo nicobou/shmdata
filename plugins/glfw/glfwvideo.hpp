@@ -40,7 +40,6 @@ class GLFWVideo : public Quiddity {
   friend class GLFWRenderer;
 
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GLFWVideo);
 
   /**
    * \brief Constructor

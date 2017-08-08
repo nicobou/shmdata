@@ -32,7 +32,6 @@
 namespace switcher {
 class ShmdataToJack : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToJack);
   ShmdataToJack(const std::string&);
   ~ShmdataToJack() = default;
   ShmdataToJack(const ShmdataToJack&) = delete;

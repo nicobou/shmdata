@@ -28,7 +28,6 @@
 namespace switcher {
 class PropertyQuid : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PropertyQuid);
   PropertyQuid(const std::string&);
   ~PropertyQuid() = default;
   PropertyQuid(const PropertyQuid&) = delete;

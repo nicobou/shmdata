@@ -34,7 +34,6 @@
 namespace switcher {
 class PulseSrc : public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSrc);
   PulseSrc(const std::string&);
   ~PulseSrc();
   PulseSrc(const PulseSrc&) = delete;

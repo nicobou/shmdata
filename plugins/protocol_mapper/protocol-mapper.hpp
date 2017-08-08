@@ -25,7 +25,6 @@
 namespace switcher {
 class ProtocolMapper : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ProtocolMapper);
   ProtocolMapper(const std::string&);
   ~ProtocolMapper() = default;
 

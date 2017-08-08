@@ -39,7 +39,6 @@ namespace vrpn {
 
 class VRPNSource : public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VRPNSource);
   VRPNSource(const std::string&);
   ~VRPNSource();
   VRPNSource(const VRPNSource&) = delete;

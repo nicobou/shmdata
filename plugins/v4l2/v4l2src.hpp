@@ -29,7 +29,6 @@
 namespace switcher {
 class V4L2Src : public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(V4L2Src);
   V4L2Src(const std::string&);
   ~V4L2Src() = default;
   V4L2Src(const V4L2Src&) = delete;

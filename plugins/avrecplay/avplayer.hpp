@@ -31,7 +31,6 @@
 namespace switcher {
 class AVPlayer : public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AVPlayer);
   AVPlayer(const std::string& name);
   bool init() final;
   bool start() final;

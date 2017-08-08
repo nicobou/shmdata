@@ -34,7 +34,6 @@
 namespace switcher {
 class Timelapse : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Timelapse);
   Timelapse(const std::string&);
   ~Timelapse() = default;
   Timelapse(const Timelapse&) = delete;

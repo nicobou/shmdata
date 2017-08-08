@@ -28,7 +28,6 @@
 namespace switcher {
 class PortMidiSource : public Quiddity, public StartableQuiddity, public PortMidi {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSource);
   PortMidiSource(const std::string&);
   ~PortMidiSource() = default;
   PortMidiSource(const PortMidiSource&) = delete;

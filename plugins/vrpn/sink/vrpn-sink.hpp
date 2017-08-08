@@ -38,7 +38,6 @@ namespace vrpn {
 
 class VRPNSink : public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VRPNSink);
   VRPNSink(const std::string&);
   ~VRPNSink() = default;
   VRPNSink(const VRPNSink&) = delete;

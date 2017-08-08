@@ -39,7 +39,6 @@ class SIPPlugin : public Quiddity {
   friend PJWhiteList;
 
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SIPPlugin);
   SIPPlugin(const std::string&);
   ~SIPPlugin();
   SIPPlugin(const SIPPlugin&) = delete;

@@ -42,7 +42,6 @@
 namespace switcher {
 class GTKVideo : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GTKVideo);
   GTKVideo(const std::string&);
   ~GTKVideo();
   GTKVideo(const GTKVideo&) = delete;

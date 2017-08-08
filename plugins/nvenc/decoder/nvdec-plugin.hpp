@@ -30,7 +30,6 @@
 namespace switcher {
 class NVdecPlugin : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(NVdecPlugin);
   NVdecPlugin(const std::string&);
   ~NVdecPlugin() = default;
   NVdecPlugin(const NVdecPlugin&) = delete;

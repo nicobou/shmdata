@@ -238,9 +238,6 @@ class Quiddity {
       DocumentationRegistry::get()->register_quiddity_type_from_class_name(                   \
           std::string(#cpp_quiddity_class), class_name);
 
-#define SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(cpp_quiddity_class) \
-  typedef std::shared_ptr<cpp_quiddity_class> ptr;
-
 #define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                                             \
   extern "C" Quiddity* create(const std::string& name) { return new cpp_quiddity_class(name); } \
   extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }                              \

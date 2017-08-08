@@ -29,7 +29,6 @@ namespace switcher {
  */
 class RTMP : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(RTMP);
 
   //! Constructor
   RTMP(const std::string&);

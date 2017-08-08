@@ -27,7 +27,6 @@
 namespace switcher {
 class ExternalShmdataWriter : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ExternalShmdataWriter);
   ExternalShmdataWriter(const std::string&);
   ~ExternalShmdataWriter() = default;
   ExternalShmdataWriter(const ExternalShmdataWriter&) = delete;

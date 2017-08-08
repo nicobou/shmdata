@@ -32,7 +32,6 @@
 namespace switcher {
 class GstDecodebin : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstDecodebin);
   GstDecodebin(const std::string&);
   ~GstDecodebin() = default;
   GstDecodebin(const GstDecodebin&) = delete;

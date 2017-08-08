@@ -20,7 +20,6 @@
 namespace switcher {
 class PostureScan3DGPU : public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureScan3DGPU);
   PostureScan3DGPU(const std::string&);
   PostureScan3DGPU(const PostureScan3DGPU&) = delete;
   ~PostureScan3DGPU();

@@ -28,7 +28,6 @@
 namespace switcher {
 class CustomSavePlugin : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(CustomSavePlugin);
   CustomSavePlugin(const std::string&);
   ~CustomSavePlugin() = default;
   CustomSavePlugin(const CustomSavePlugin&) = delete;

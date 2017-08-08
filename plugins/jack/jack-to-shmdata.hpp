@@ -30,7 +30,6 @@
 namespace switcher {
 class JackToShmdata : public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackToShmdata);
   JackToShmdata(const std::string&);
   ~JackToShmdata() = default;
   JackToShmdata(const JackToShmdata&) = delete;

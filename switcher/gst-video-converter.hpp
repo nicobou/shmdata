@@ -29,7 +29,6 @@
 namespace switcher {
 class GstVideoConverter : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstVideoConverter);
   GstVideoConverter(const std::string&);
   ~GstVideoConverter() = default;
   GstVideoConverter(const GstVideoConverter&) = delete;

@@ -29,7 +29,6 @@ namespace switcher {
 
 class AVRecorder : public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AVRecorder);
   AVRecorder(const std::string& name);
   bool init() final;
   bool start() final;
