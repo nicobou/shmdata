@@ -961,7 +961,7 @@ gboolean PJCall::send_to(gchar* sip_url, void* user_data) {
     auto res = SIPPlugin::this_->pjsip_->run<bool>(
         [&]() { return context->make_call(std::string(sip_url)); });
     if (res) {
-      context->call_cv_.wait(lock, [&context]() {
+      context->call_cv_.wait_for(lock, std::chrono::seconds(5), [&context]() {
         if (context->call_action_done_) {
           context->call_action_done_ = false;
           return true;
@@ -996,7 +996,7 @@ gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
 
     if (it_out != context->outgoing_call_.end()) {
       SIPPlugin::this_->pjsip_->run_async([&]() { context->make_hang_up((*it_out)->inv); });
-      context->call_cv_.wait(lock, [&context]() {
+      context->call_cv_.wait_for(lock, std::chrono::seconds(5), [&context]() {
         if (context->call_action_done_) {
           context->call_action_done_ = false;
           return true;
@@ -1016,7 +1016,7 @@ gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
 
     if (it_inc != context->incoming_call_.end()) {
       SIPPlugin::this_->pjsip_->run_async([&]() { context->make_hang_up((*it_inc)->inv); });
-      context->call_cv_.wait(lock, [&context]() {
+      context->call_cv_.wait_for(lock, std::chrono::seconds(5), [&context]() {
         if (context->call_action_done_) {
           context->call_action_done_ = false;
           return true;
