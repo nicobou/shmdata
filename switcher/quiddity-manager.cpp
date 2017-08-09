@@ -92,6 +92,7 @@ bool QuiddityManager::load_state(InfoTree::ptr state) {
   auto properties = state->get_tree(".properties");
   auto readers = state->get_tree(".readers");
   auto custom_states = state->get_tree(".custom_states");
+  auto nicknames = state->get_tree(".nicknames");
 
   bool debug = false;
 
@@ -107,6 +108,7 @@ bool QuiddityManager::load_state(InfoTree::ptr state) {
         g_warning("error creating quiddity %s (of type %s)", it.c_str(), quid_class.c_str());
       }
     }
+
     // loading custom state
     for (auto& it : quids) {
       if (!manager_impl_->has_instance(it)) continue;
@@ -115,6 +117,15 @@ bool QuiddityManager::load_state(InfoTree::ptr state) {
       } else {
         manager_impl_->get_quiddity(it)->on_loading(InfoTree::make());
       }
+    }
+  }
+
+  // nicknames
+  if (nicknames) {
+    for (auto& it : nicknames->get_child_keys(".")) {
+      std::string nickname = nicknames->branch_get_value(it);
+      if (!set_nickname(it, nickname))
+        g_warning("error applying nickname %s for %s", nickname.c_str(), it.c_str());
     }
   }
 
@@ -224,6 +235,12 @@ InfoTree::ptr QuiddityManager::get_state() const {
         std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid_name)) {
       auto quid_class = DocumentationRegistry::get()->get_quiddity_type_from_quiddity(quid_name);
       tree->graft(".quiddities." + quid_name, InfoTree::make(quid_class));
+    }
+
+    // nicknames
+    if (quiddities_at_reset_.cend() ==
+        std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid_name)) {
+      tree->graft(".nicknames." + quid_name, InfoTree::make(get_nickname(quid_name)));
     }
 
     // user data
