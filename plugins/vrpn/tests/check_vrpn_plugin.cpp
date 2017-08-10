@@ -25,7 +25,7 @@
 int main() {
   {
     using namespace switcher;
-    QuiddityManager::ptr manager = QuiddityManager::make_manager("test_manager");
+    Switcher::ptr manager = Switcher::make_manager("test_manager");
 
     manager->scan_directory_for_plugins("./");
 

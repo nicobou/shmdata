@@ -19,9 +19,9 @@
 
 #include "./portmidi-source.hpp"
 #include <time.h>
-#include <switcher/quiddity-manager-impl.hpp>
-#include <switcher/quiddity-manager.hpp>
+#include <switcher/quiddity-container.hpp>
 #include <switcher/scope-exit.hpp>
+#include <switcher/switcher.hpp>
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSource,
@@ -176,7 +176,7 @@ void PortMidiSource::on_pm_event(PmEvent* event, void* user_data) {
 
   // making property if needed
   if (context->make_property_for_next_midi_event_) {
-    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
+    QuiddityContainer::ptr manager = context->manager_impl_.lock();
     if (manager) {
       manager->get_root_manager()->invoke(context->get_name(),
                                           "map_midi_to_property",

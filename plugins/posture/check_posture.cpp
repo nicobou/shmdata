@@ -24,10 +24,10 @@
 #include <string>
 #include <vector>
 #include "switcher/quiddity-basic-test.hpp"
-#include "switcher/quiddity-manager.hpp"
+#include "switcher/switcher.hpp"
 
 int main() {
-  switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");
+  switcher::Switcher::ptr manager = switcher::Switcher::make_manager("test_manager");
 
   gchar* usr_plugin_dir = g_strdup_printf("./");
   manager->scan_directory_for_plugins(usr_plugin_dir);

@@ -20,8 +20,7 @@
 #include "./quiddity-basic-test.hpp"
 
 namespace switcher {
-bool QuiddityBasicTest::test_full(QuiddityManager::ptr manager,
-                                  const std::string& quiddity_class_name) {
+bool QuiddityBasicTest::test_full(Switcher::ptr manager, const std::string& quiddity_class_name) {
   if (!test_tree(manager, quiddity_class_name)) return false;
   if (!test_create(manager, quiddity_class_name)) return false;
   if (!test_description_by_class(manager, quiddity_class_name)) return false;
@@ -31,8 +30,7 @@ bool QuiddityBasicTest::test_full(QuiddityManager::ptr manager,
   return true;
 }
 
-bool QuiddityBasicTest::test_create(QuiddityManager::ptr manager,
-                                    const std::string& quiddity_class_name) {
+bool QuiddityBasicTest::test_create(Switcher::ptr manager, const std::string& quiddity_class_name) {
   // testing with a nick name
   std::string res_with_nick = manager->create(quiddity_class_name, quiddity_class_name);
   if (res_with_nick.compare(quiddity_class_name) != 0) {
@@ -56,7 +54,7 @@ bool QuiddityBasicTest::test_create(QuiddityManager::ptr manager,
   return true;
 }
 
-bool QuiddityBasicTest::test_startable(QuiddityManager::ptr manager,
+bool QuiddityBasicTest::test_startable(Switcher::ptr manager,
                                        const std::string& quiddity_class_name) {
   std::string name = manager->create(quiddity_class_name, quiddity_class_name);
   if (name.compare(quiddity_class_name) != 0) {
@@ -78,22 +76,21 @@ bool QuiddityBasicTest::test_startable(QuiddityManager::ptr manager,
   return true;
 }
 
-bool QuiddityBasicTest::test_description_by_class(QuiddityManager::ptr manager,
+bool QuiddityBasicTest::test_description_by_class(Switcher::ptr manager,
                                                   const std::string& quiddity_class_name) {
   // by class
   manager->get_methods_description_by_class(quiddity_class_name);
   return true;
 }
 
-bool QuiddityBasicTest::test_tree(QuiddityManager::ptr manager,
-                                  const std::string& quiddity_class_name) {
+bool QuiddityBasicTest::test_tree(Switcher::ptr manager, const std::string& quiddity_class_name) {
   std::string name = manager->create(quiddity_class_name);
   manager->use_tree<MPtr(&InfoTree::serialize_json)>(name, ".");
   manager->remove(name);
   return true;
 }
 
-bool QuiddityBasicTest::test_properties(QuiddityManager::ptr manager,
+bool QuiddityBasicTest::test_properties(Switcher::ptr manager,
                                         const std::string& quiddity_class_name) {
   std::string name = manager->create(quiddity_class_name);
   auto properties = manager->use_tree<MPtr(&InfoTree::get_child_keys)>(name, ".property.");
@@ -121,7 +118,7 @@ bool QuiddityBasicTest::test_properties(QuiddityManager::ptr manager,
   return true;
 }
 
-bool QuiddityBasicTest::test_nickname(QuiddityManager::ptr manager,
+bool QuiddityBasicTest::test_nickname(Switcher::ptr manager,
                                       const std::string& quiddity_class_name) {
   std::string name = manager->create(quiddity_class_name);
   if (name.empty()) return true;

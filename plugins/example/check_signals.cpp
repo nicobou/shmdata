@@ -22,13 +22,12 @@
 #include <gst/gst.h>
 #include <cassert>
 #include <vector>
-#include "switcher/quiddity-manager.hpp"
+#include "switcher/switcher.hpp"
 
 unsigned int signal_counter = 0;
 
 int main() {
-  switcher::QuiddityManager::ptr manager =
-      switcher::QuiddityManager::make_manager("testing_signals");
+  switcher::Switcher::ptr manager = switcher::Switcher::make_manager("testing_signals");
   manager->scan_directory_for_plugins("./");
 
   // Test create/remove notification system

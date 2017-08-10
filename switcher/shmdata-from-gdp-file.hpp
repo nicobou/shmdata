@@ -27,8 +27,8 @@
 #include <vector>
 #include "./custom-property-helper.hpp"
 #include "./gst-pipeliner.hpp"
-#include "./quiddity-manager.hpp"
 #include "./startable-quiddity.hpp"
+#include "./switcher.hpp"
 
 namespace switcher {
 class ShmdataFromGDPFile : public GstPipeliner, public StartableQuiddity {

@@ -54,7 +54,7 @@ void notify_success() {
 
 int main() {
   {
-    QuiddityManager::ptr manager = QuiddityManager::make_manager("ladspatest");
+    Switcher::ptr manager = Switcher::make_manager("ladspatest");
 
     manager->scan_directory_for_plugins("./");
 

@@ -27,7 +27,7 @@
 
 int main() {
   {
-    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("glfwtest");
+    switcher::Switcher::ptr manager = switcher::Switcher::make_manager("glfwtest");
 
     manager->scan_directory_for_plugins("./");
 

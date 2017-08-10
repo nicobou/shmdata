@@ -23,10 +23,10 @@
 #include <atomic>
 #include <vector>
 #include "./bundle-description-parser.hpp"
-#include "./quiddity-manager.hpp"
 #include "./quiddity.hpp"
 #include "./shmdata-connector.hpp"
 #include "./startable-quiddity.hpp"
+#include "./switcher.hpp"
 
 namespace switcher {
 class Bundle : public Quiddity, public StartableQuiddity {
@@ -59,7 +59,7 @@ class Bundle : public Quiddity, public StartableQuiddity {
   ShmdataConnector shmcntr_;
   std::vector<std::unique_ptr<on_tree_data_t>> on_tree_datas_{};
   std::string pipeline_{};
-  QuiddityManager::ptr manager_;
+  Switcher::ptr manager_;
   std::vector<unsigned int> quiddity_removal_cb_ids_{};
 
   bool start() final;

@@ -42,7 +42,7 @@
 #include "./signal-container.hpp"
 
 namespace switcher {
-class QuiddityManager_Impl;
+class QuiddityContainer;
 
 class Quiddity {
   friend class Bundle;  // access to props_ in order to forward properties
@@ -121,7 +121,7 @@ class Quiddity {
   static std::string get_socket_dir();
 
   // manager_impl initialization
-  void set_manager_impl(std::shared_ptr<QuiddityManager_Impl> manager_impl);
+  void set_manager_impl(std::shared_ptr<QuiddityContainer> manager_impl);
 
   // use a consistent naming for shmdatas
   std::string make_file_name(const std::string& suffix) const;
@@ -226,7 +226,7 @@ class Quiddity {
   // used in order to dynamically create other quiddity, weak_ptr is used in
   // order to
   // avoid circular references to the manager_impl
-  std::weak_ptr<QuiddityManager_Impl> manager_impl_{};
+  std::weak_ptr<QuiddityContainer> manager_impl_{};
   std::string manager_name_{};  // FIXME ??
 };
 

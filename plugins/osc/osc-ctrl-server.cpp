@@ -76,7 +76,7 @@ void OscCtrlServer::prop_cb(const std::string& internal_subscriber_name,
   lo_address_free(t);
 }
 
-std::shared_ptr<QuiddityManager> OscCtrlServer::get_quiddity_manager() { return manager_.lock(); }
+std::shared_ptr<Switcher> OscCtrlServer::get_quiddity_manager() { return manager_.lock(); }
 
 gchar* OscCtrlServer::make_internal_subscriber_name(const gchar* name) {
   return g_strdup_printf("%s%s", get_name().c_str(), name);
@@ -131,7 +131,7 @@ int OscCtrlServer::osc_handler(const char* path,
                                void* /*data */,
                                void* user_data) {
   OscCtrlServer* context = static_cast<OscCtrlServer*>(user_data);
-  std::shared_ptr<QuiddityManager> manager = context->get_quiddity_manager();
+  std::shared_ptr<Switcher> manager = context->get_quiddity_manager();
   if (!(bool)manager) {
     g_warning("OscCtrlServer: cannot get quiddity manager");
     return 0;

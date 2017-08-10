@@ -29,8 +29,8 @@
 #include <string>
 #include "./gst-pipeliner.hpp"
 #include "./gst-shmdata-subscriber.hpp"
-#include "./quiddity-manager.hpp"
 #include "./rtp-destination.hpp"
+#include "./switcher.hpp"
 
 namespace switcher {
 class RtpSession : public Quiddity {

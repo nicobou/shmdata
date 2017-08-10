@@ -24,7 +24,7 @@
 #include <vector>
 #include "switcher/file-utils.hpp"
 #include "switcher/information-tree-json.hpp"
-#include "switcher/quiddity-manager.hpp"
+#include "switcher/switcher.hpp"
 
 using namespace switcher;
 
@@ -41,7 +41,7 @@ static gboolean classesdoc;
 static gchar* classdoc = nullptr;
 static gchar* listmethodsbyclass = nullptr;
 static gchar* extraplugindir = nullptr;
-static QuiddityManager::ptr manager;
+static Switcher::ptr manager;
 static GOptionEntry entries[15] = {
     {"version",
      'V',
@@ -120,7 +120,7 @@ static GOptionEntry entries[15] = {
 void leave(int sig) {
   // removing reference to manager in order to delete it
   {
-    QuiddityManager::ptr empty;
+    Switcher::ptr empty;
     manager.swap(empty);
   }
 #if HAVE_GTK
@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
   if (server_name == nullptr) server_name = "default";
   if (port_number == nullptr) port_number = "27182";
 
-  manager = QuiddityManager::make_manager(server_name);
+  manager = Switcher::make_manager(server_name);
 
   // create logger managing switcher log domain
   auto internal_logger = manager->create("logger", "internal-logger");

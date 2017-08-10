@@ -29,7 +29,7 @@ void destroy(Quiddity* quiddity) { delete quiddity; }
 }  // namespace bundle
 
 Bundle::Bundle(const std::string& name)
-    : shmcntr_(static_cast<Quiddity*>(this)), manager_(QuiddityManager::make_manager(name)) {}
+    : shmcntr_(static_cast<Quiddity*>(this)), manager_(Switcher::make_manager(name)) {}
 
 Bundle::~Bundle() { quitting_ = true; }
 

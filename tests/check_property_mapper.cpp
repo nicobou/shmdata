@@ -22,7 +22,7 @@
 #include <gst/gst.h>
 #include <string>
 #include <vector>
-#include "switcher/quiddity-manager.hpp"
+#include "switcher/switcher.hpp"
 
 void property_cb(const std::string& /*subscriber_name */,
                  const std::string& /*quiddity_name */,
@@ -36,7 +36,7 @@ void property_cb(const std::string& /*subscriber_name */,
 int main() {
   uint count = 0;
   {
-    switcher::QuiddityManager::ptr mgr = switcher::QuiddityManager::make_manager("property_mapper");
+    switcher::Switcher::ptr mgr = switcher::Switcher::make_manager("property_mapper");
     mgr->make_property_subscriber("sub", property_cb, &count);
 
     // map freq  property from audio1 to audio 2

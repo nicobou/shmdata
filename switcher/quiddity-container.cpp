@@ -47,21 +47,21 @@
 
 namespace switcher {
 
-QuiddityManager_Impl::ptr QuiddityManager_Impl::make_manager(QuiddityManager* root_manager,
-                                                             const std::string& name) {
-  QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl(name));
+QuiddityContainer::ptr QuiddityContainer::make_manager(Switcher* root_manager,
+                                                       const std::string& name) {
+  QuiddityContainer::ptr manager(new QuiddityContainer(name));
   manager->me_ = manager;
   manager->manager_ = root_manager;
   return manager;
 }
 
-QuiddityManager_Impl::QuiddityManager_Impl(const std::string& name) : name_(name) {
+QuiddityContainer::QuiddityContainer(const std::string& name) : name_(name) {
   remove_shmdata_sockets();
   register_classes();
   make_classes_doc();
 }
 
-QuiddityManager_Impl::~QuiddityManager_Impl() {
+QuiddityContainer::~QuiddityContainer() {
   Quiddity::ptr logger;
   std::find_if(quiddities_.begin(),
                quiddities_.end(),
@@ -77,14 +77,14 @@ QuiddityManager_Impl::~QuiddityManager_Impl() {
   quiddities_.clear();
 }
 
-void QuiddityManager_Impl::release_g_error(GError* error) {
+void QuiddityContainer::release_g_error(GError* error) {
   if (nullptr != error) {
     g_debug("GError message: %s\n", error->message);
     g_error_free(error);
   }
 }
 
-void QuiddityManager_Impl::remove_shmdata_sockets() {
+void QuiddityContainer::remove_shmdata_sockets() {
   std::string dir = Quiddity::get_socket_dir();
   GFile* shmdata_dir = g_file_new_for_commandline_arg(dir.c_str());
   On_scope_exit { g_object_unref(shmdata_dir); };
@@ -131,9 +131,9 @@ void QuiddityManager_Impl::remove_shmdata_sockets() {
   }
 }
 
-std::string QuiddityManager_Impl::get_name() const { return name_; }
+std::string QuiddityContainer::get_name() const { return name_; }
 
-void QuiddityManager_Impl::register_classes() {
+void QuiddityContainer::register_classes() {
   // registering quiddities
   abstract_factory_.register_class<AudioTestSource>(
       DocumentationRegistry::get()->get_quiddity_type_from_class_name("AudioTestSource"));
@@ -173,11 +173,9 @@ void QuiddityManager_Impl::register_classes() {
       DocumentationRegistry::get()->get_quiddity_type_from_class_name("VideoTestSource"));
 }
 
-std::vector<std::string> QuiddityManager_Impl::get_classes() {
-  return abstract_factory_.get_keys();
-}
+std::vector<std::string> QuiddityContainer::get_classes() { return abstract_factory_.get_keys(); }
 
-void QuiddityManager_Impl::make_classes_doc() {
+void QuiddityContainer::make_classes_doc() {
   auto classes_str = std::string(".classes.");
   classes_doc_ = InfoTree::make();
   classes_doc_->graft(classes_str, InfoTree::make());
@@ -200,20 +198,20 @@ void QuiddityManager_Impl::make_classes_doc() {
   }
 }
 
-std::string QuiddityManager_Impl::get_classes_doc() {
+std::string QuiddityContainer::get_classes_doc() {
   return JSONSerializer::serialize(classes_doc_.get());
 }
 
-std::string QuiddityManager_Impl::get_class_doc(const std::string& class_name) {
+std::string QuiddityContainer::get_class_doc(const std::string& class_name) {
   auto tree = classes_doc_->get_tree(std::string(".classes.") + class_name);
   return JSONSerializer::serialize(tree.get());
 }
 
-bool QuiddityManager_Impl::class_exists(const std::string& class_name) {
+bool QuiddityContainer::class_exists(const std::string& class_name) {
   return abstract_factory_.key_exists(class_name);
 }
 
-bool QuiddityManager_Impl::init_quiddity(Quiddity::ptr quiddity) {
+bool QuiddityContainer::init_quiddity(Quiddity::ptr quiddity) {
   quiddity->set_manager_impl(me_.lock());
   if (!quiddity->init()) return false;
 
@@ -229,13 +227,13 @@ bool QuiddityManager_Impl::init_quiddity(Quiddity::ptr quiddity) {
   return true;
 }
 
-std::string QuiddityManager_Impl::create(const std::string& quiddity_class, bool call_creation_cb) {
+std::string QuiddityContainer::create(const std::string& quiddity_class, bool call_creation_cb) {
   return create(quiddity_class, std::string(), call_creation_cb);
 }
 
-std::string QuiddityManager_Impl::create(const std::string& quiddity_class,
-                                         const std::string& raw_nick_name,
-                                         bool call_creation_cb) {
+std::string QuiddityContainer::create(const std::string& quiddity_class,
+                                      const std::string& raw_nick_name,
+                                      bool call_creation_cb) {
   if (!class_exists(quiddity_class)) {
     g_warning("cannot create quiddity: class %s is unknown", quiddity_class.c_str());
     return std::string();
@@ -288,17 +286,17 @@ std::string QuiddityManager_Impl::create(const std::string& quiddity_class,
   return name;
 }
 
-std::vector<std::string> QuiddityManager_Impl::get_instances() const {
+std::vector<std::string> QuiddityContainer::get_instances() const {
   std::vector<std::string> res;
   for (auto& it : quiddities_) res.push_back(it.first);
   return res;
 }
 
-bool QuiddityManager_Impl::has_instance(const std::string& name) const {
+bool QuiddityContainer::has_instance(const std::string& name) const {
   return quiddities_.end() != quiddities_.find(name);
 }
 
-std::string QuiddityManager_Impl::get_quiddities_description() {
+std::string QuiddityContainer::get_quiddities_description() {
   auto tree = InfoTree::make();
   tree->graft("quiddities", InfoTree::make());
   tree->tag_as_array("quiddities", true);
@@ -317,7 +315,7 @@ std::string QuiddityManager_Impl::get_quiddities_description() {
   return JSONSerializer::serialize(tree.get());
 }
 
-std::string QuiddityManager_Impl::get_quiddity_description(const std::string& nick_name) {
+std::string QuiddityContainer::get_quiddity_description(const std::string& nick_name) {
   auto it = quiddities_.find(nick_name);
   if (quiddities_.end() == it) return JSONSerializer::serialize(InfoTree::make().get());
   auto tree = InfoTree::make();
@@ -328,7 +326,7 @@ std::string QuiddityManager_Impl::get_quiddity_description(const std::string& ni
   return JSONSerializer::serialize(tree.get());
 }
 
-Quiddity::ptr QuiddityManager_Impl::get_quiddity(const std::string& quiddity_name) {
+Quiddity::ptr QuiddityContainer::get_quiddity(const std::string& quiddity_name) {
   auto it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == it) {
     g_debug("quiddity %s not found, cannot provide ptr", quiddity_name.c_str());
@@ -338,7 +336,7 @@ Quiddity::ptr QuiddityManager_Impl::get_quiddity(const std::string& quiddity_nam
   return it->second;
 }
 
-bool QuiddityManager_Impl::remove(const std::string& quiddity_name, bool call_removal_cb) {
+bool QuiddityContainer::remove(const std::string& quiddity_name, bool call_removal_cb) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_warning("(%s) quiddity %s not found for removing", name_.c_str(), quiddity_name.c_str());
@@ -356,8 +354,8 @@ bool QuiddityManager_Impl::remove(const std::string& quiddity_name, bool call_re
   return true;
 }
 
-bool QuiddityManager_Impl::has_method(const std::string& quiddity_name,
-                                      const std::string& method_name) {
+bool QuiddityContainer::has_method(const std::string& quiddity_name,
+                                   const std::string& method_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_debug("quiddity %s not found", quiddity_name.c_str());
@@ -366,10 +364,10 @@ bool QuiddityManager_Impl::has_method(const std::string& quiddity_name,
   return q_it->second->has_method(method_name);
 }
 
-bool QuiddityManager_Impl::invoke(const std::string& quiddity_name,
-                                  const std::string& method_name,
-                                  std::string** return_value,
-                                  const std::vector<std::string>& args) {
+bool QuiddityContainer::invoke(const std::string& quiddity_name,
+                               const std::string& method_name,
+                               std::string** return_value,
+                               const std::vector<std::string>& args) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_debug("quiddity %s not found, cannot invoke", quiddity_name.c_str());
@@ -384,7 +382,7 @@ bool QuiddityManager_Impl::invoke(const std::string& quiddity_name,
   return q_it->second->invoke_method(method_name, return_value, args);
 }
 
-std::string QuiddityManager_Impl::get_methods_description(const std::string& quiddity_name) {
+std::string QuiddityContainer::get_methods_description(const std::string& quiddity_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_warning("quiddity %s not found, cannot get description of methods", quiddity_name.c_str());
@@ -393,8 +391,8 @@ std::string QuiddityManager_Impl::get_methods_description(const std::string& qui
   return q_it->second->get_methods_description();
 }
 
-std::string QuiddityManager_Impl::get_method_description(const std::string& quiddity_name,
-                                                         const std::string& method_name) {
+std::string QuiddityContainer::get_method_description(const std::string& quiddity_name,
+                                                      const std::string& method_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
     g_warning("quiddity %s not found, cannot get description of methods", quiddity_name.c_str());
@@ -404,7 +402,7 @@ std::string QuiddityManager_Impl::get_method_description(const std::string& quid
   return q_it->second->get_method_description(method_name);
 }
 
-std::string QuiddityManager_Impl::get_methods_description_by_class(const std::string& class_name) {
+std::string QuiddityContainer::get_methods_description_by_class(const std::string& class_name) {
   if (!class_exists(class_name)) return "{\"error\":\"class not found\"}";
   const std::string& quid_name = create(class_name, false);
   const std::string& descr = get_methods_description(quid_name);
@@ -412,8 +410,8 @@ std::string QuiddityManager_Impl::get_methods_description_by_class(const std::st
   return descr;
 }
 
-std::string QuiddityManager_Impl::get_method_description_by_class(const std::string& class_name,
-                                                                  const std::string& method_name) {
+std::string QuiddityContainer::get_method_description_by_class(const std::string& class_name,
+                                                               const std::string& method_name) {
   if (!class_exists(class_name)) return "{\"error\":\"class not found\"}";
   const std::string& quid_name = create(class_name, false);
   const std::string& descr = get_method_description(quid_name, method_name);
@@ -421,7 +419,7 @@ std::string QuiddityManager_Impl::get_method_description_by_class(const std::str
   return descr;
 }
 
-unsigned int QuiddityManager_Impl::register_creation_cb(OnCreateRemoveCb cb) {
+unsigned int QuiddityContainer::register_creation_cb(OnCreateRemoveCb cb) {
   static unsigned int id = 0;
   id %= std::numeric_limits<unsigned int>::max();
   me_.lock();
@@ -429,7 +427,7 @@ unsigned int QuiddityManager_Impl::register_creation_cb(OnCreateRemoveCb cb) {
   return id;
 }
 
-unsigned int QuiddityManager_Impl::register_removal_cb(OnCreateRemoveCb cb) {
+unsigned int QuiddityContainer::register_removal_cb(OnCreateRemoveCb cb) {
   static unsigned int id = 0;
   id %= std::numeric_limits<unsigned int>::max();
   me_.lock();
@@ -437,25 +435,25 @@ unsigned int QuiddityManager_Impl::register_removal_cb(OnCreateRemoveCb cb) {
   return id;
 }
 
-void QuiddityManager_Impl::unregister_creation_cb(unsigned int id) {
+void QuiddityContainer::unregister_creation_cb(unsigned int id) {
   me_.lock();
   auto it = on_created_cbs_.find(id);
   if (it != on_created_cbs_.end()) on_created_cbs_.erase(it);
 }
 
-void QuiddityManager_Impl::unregister_removal_cb(unsigned int id) {
+void QuiddityContainer::unregister_removal_cb(unsigned int id) {
   me_.lock();
   auto it = on_removed_cbs_.find(id);
   if (it != on_removed_cbs_.end()) on_removed_cbs_.erase(it);
 }
 
-void QuiddityManager_Impl::reset_create_remove_cb() {
+void QuiddityContainer::reset_create_remove_cb() {
   me_.lock();
   on_created_cbs_.clear();
   on_removed_cbs_.clear();
 }
 
-bool QuiddityManager_Impl::load_plugin(const char* filename) {
+bool QuiddityContainer::load_plugin(const char* filename) {
   PluginLoader::ptr plugin = std::make_shared<PluginLoader>();
   if (!plugin->load(filename)) return false;
   std::string class_name = plugin->get_class_name();
@@ -471,14 +469,14 @@ bool QuiddityManager_Impl::load_plugin(const char* filename) {
   return true;
 }
 
-void QuiddityManager_Impl::close_plugin(const std::string& class_name) {
+void QuiddityContainer::close_plugin(const std::string& class_name) {
   abstract_factory_.unregister_class(class_name);
   plugins_.erase(class_name);
 }
 
-std::vector<std::string> QuiddityManager_Impl::get_plugin_dirs() const { return plugin_dirs_; }
+std::vector<std::string> QuiddityContainer::get_plugin_dirs() const { return plugin_dirs_; }
 
-bool QuiddityManager_Impl::scan_directory_for_plugins(const std::string& directory_path) {
+bool QuiddityContainer::scan_directory_for_plugins(const std::string& directory_path) {
   GFile* dir = g_file_new_for_commandline_arg(directory_path.c_str());
   gboolean res;
   GError* error;
@@ -513,7 +511,7 @@ bool QuiddityManager_Impl::scan_directory_for_plugins(const std::string& directo
   return true;
 }
 
-bool QuiddityManager_Impl::load_configuration_file(const std::string& file_path) {
+bool QuiddityContainer::load_configuration_file(const std::string& file_path) {
   // opening file
   std::ifstream file_stream(file_path);
   if (!file_stream) {

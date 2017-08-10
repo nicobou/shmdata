@@ -24,11 +24,11 @@
 #include <string>
 #include <vector>
 #include "switcher/quiddity-basic-test.hpp"
-#include "switcher/quiddity-manager.hpp"
+#include "switcher/switcher.hpp"
 
 int main() {
   bool success = true;
-  switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");
+  switcher::Switcher::ptr manager = switcher::Switcher::make_manager("test_manager");
   std::vector<std::string> classes = manager->get_classes();
 
   for (auto& it : classes) {

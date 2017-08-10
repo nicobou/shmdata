@@ -20,15 +20,14 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <gst/gst.h>
-#include "switcher/quiddity-manager.hpp"
+#include "switcher/switcher.hpp"
 //#include "switcher/quiddity-basic-test.hpp"
 
 int main() {
   {
     int c = 10;
     while (--c > 0)
-      switcher::QuiddityManager::ptr manager =
-          switcher::QuiddityManager::make_manager("test-manager");
+      switcher::Switcher::ptr manager = switcher::Switcher::make_manager("test-manager");
   }
   gst_deinit();
   return 0;

@@ -26,7 +26,7 @@
 
 int main() {
   {
-    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("gtktest");
+    switcher::Switcher::ptr manager = switcher::Switcher::make_manager("gtktest");
 
     manager->scan_directory_for_plugins("./");
 

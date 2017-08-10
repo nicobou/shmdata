@@ -18,13 +18,13 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <cassert>
-#include "switcher/quiddity-manager.hpp"
+#include "switcher/switcher.hpp"
 
 using namespace switcher;
 
 int main() {
   {
-    QuiddityManager::ptr manager = QuiddityManager::make_manager("bundle");
+    Switcher::ptr manager = Switcher::make_manager("bundle");
     assert(manager->load_configuration_file("./check_bundle.config"));
     assert(manager->create("source-bundle", "source-bundle") == "source-bundle");
     assert(manager->create("sink-bundle", "sink-bundle") == "sink-bundle");

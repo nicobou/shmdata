@@ -46,9 +46,9 @@ add_library(${SWITCHER_LIBRARY} SHARED
     property.cpp
     quiddity-basic-test.cpp
     quiddity-documentation.cpp
-    quiddity-manager-impl.cpp
-    quiddity-manager-wrapper.cpp
-    quiddity-manager.cpp
+    quiddity-container.cpp
+    switcher-wrapper.cpp
+    switcher.cpp
     quiddity.cpp
     rtp-destination.cpp
     rtp-receiver.cpp
@@ -131,9 +131,9 @@ set(HEADER_INCLUDES
     quiddity-basic-test.hpp
     invocation-spec.hpp
     quiddity-documentation.hpp
-    quiddity-manager-impl.hpp
-    quiddity-manager-wrapper.hpp
-    quiddity-manager.hpp
+    quiddity-container.hpp
+    switcher-wrapper.hpp
+    switcher.hpp
     quiddity.hpp
     rtp-destination.hpp
     rtp-receiver.hpp

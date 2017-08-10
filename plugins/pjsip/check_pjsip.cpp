@@ -25,7 +25,7 @@
 
 int main() {
   {
-    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("siptest");
+    switcher::Switcher::ptr manager = switcher::Switcher::make_manager("siptest");
 
     manager->scan_directory_for_plugins("./");
 

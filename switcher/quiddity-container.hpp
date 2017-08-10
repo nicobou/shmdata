@@ -32,22 +32,22 @@
 
 namespace switcher {
 class QuidditySignalSubscriber;
-class QuiddityManager;
+class Switcher;
 class Bundle;
 
-class QuiddityManager_Impl {
+class QuiddityContainer {
   friend class Bundle;
 
  public:
-  using ptr = std::shared_ptr<QuiddityManager_Impl>;
+  using ptr = std::shared_ptr<QuiddityContainer>;
   using OnCreateRemoveCb = std::function<void(const std::string& nick_name)>;
 
-  static QuiddityManager_Impl::ptr make_manager(QuiddityManager* root_manager,
-                                                const std::string& name = "default");
-  QuiddityManager_Impl() = delete;
-  virtual ~QuiddityManager_Impl();
-  QuiddityManager_Impl(const QuiddityManager_Impl&) = delete;
-  QuiddityManager_Impl& operator=(const QuiddityManager_Impl&) = delete;
+  static QuiddityContainer::ptr make_manager(Switcher* root_manager,
+                                             const std::string& name = "default");
+  QuiddityContainer() = delete;
+  virtual ~QuiddityContainer();
+  QuiddityContainer(const QuiddityContainer&) = delete;
+  QuiddityContainer& operator=(const QuiddityContainer&) = delete;
 
   // plugins
   bool scan_directory_for_plugins(const std::string& directory_path);
@@ -85,7 +85,7 @@ class QuiddityManager_Impl {
 
   // information tree
   Forward_consultable_from_associative_container(
-      QuiddityManager_Impl,    // self type
+      QuiddityContainer,       // self type
       Quiddity,                // consultable type
       find_quiddity,           // accessor
       std::string,             // key type for accessor
@@ -95,7 +95,7 @@ class QuiddityManager_Impl {
       use_tree);               // public forwarding method
 
   Forward_delegate_from_associative_container(
-      QuiddityManager_Impl,    // self type
+      QuiddityContainer,       // self type
       Quiddity,                // consultable type
       find_quiddity,           // accessor
       std::string,             // key type for accessor
@@ -106,7 +106,7 @@ class QuiddityManager_Impl {
 
   // **** properties
   Forward_consultable_from_associative_container(
-      QuiddityManager_Impl,    // self type
+      QuiddityContainer,       // self type
       Quiddity,                // consultable type
       find_quiddity,           // accessor
       std::string,             // accessor key type
@@ -135,7 +135,7 @@ class QuiddityManager_Impl {
 
   // **** signals
   Forward_consultable_from_associative_container(
-      QuiddityManager_Impl,    // self type
+      QuiddityContainer,       // self type
       Quiddity,                // consultable type
       find_quiddity,           // accessor
       std::string,             // accessor key type
@@ -144,7 +144,7 @@ class QuiddityManager_Impl {
       sig,                     // method used by quiddities to access the consultable
       sigs);                   // public forwarding method
 
-  QuiddityManager* get_root_manager() { return manager_; };
+  Switcher* get_root_manager() { return manager_; };
 
  private:
   std::vector<std::string> plugin_dirs_{};
@@ -156,7 +156,7 @@ class QuiddityManager_Impl {
 
   bool load_plugin(const char* filename);
   void close_plugin(const std::string& class_name);
-  explicit QuiddityManager_Impl(const std::string&);
+  explicit QuiddityContainer(const std::string&);
   void make_classes_doc();
   void register_classes();
   std::map<unsigned int, OnCreateRemoveCb> on_created_cbs_{};
@@ -168,8 +168,8 @@ class QuiddityManager_Impl {
 
   InfoTree::ptr classes_doc_{};
   CounterMap counters_{};
-  std::weak_ptr<QuiddityManager_Impl> me_{};
-  QuiddityManager* manager_{nullptr};
+  std::weak_ptr<QuiddityContainer> me_{};
+  Switcher* manager_{nullptr};
   static void release_g_error(GError* error);
 
   // forwarding accessor and return constructor on error

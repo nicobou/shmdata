@@ -28,8 +28,8 @@
 #include <regex>
 #include "./gst-utils.hpp"
 #include "./information-tree-json.hpp"
-#include "./quiddity-manager-impl.hpp"
-#include "./quiddity-manager.hpp"
+#include "./quiddity-container.hpp"
+#include "./switcher.hpp"
 
 namespace switcher {
 
@@ -268,7 +268,7 @@ std::string Quiddity::get_socket_name_prefix() { return "switcher_"; }
 
 std::string Quiddity::get_socket_dir() { return "/tmp"; }
 
-void Quiddity::set_manager_impl(QuiddityManager_Impl::ptr manager_impl) {
+void Quiddity::set_manager_impl(QuiddityContainer::ptr manager_impl) {
   manager_impl_ = manager_impl;
   manager_name_ = manager_impl->get_name();
 }

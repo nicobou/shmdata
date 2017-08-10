@@ -21,7 +21,7 @@
 #include "./audio-resampler.hpp"
 #include "switcher/gprop-to-prop.hpp"
 #include "switcher/gst-utils.hpp"
-#include "switcher/quiddity-manager-impl.hpp"
+#include "switcher/quiddity-container.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
 

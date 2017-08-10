@@ -132,8 +132,8 @@ This is an official release in the 0.8 stable series.
 
 New features:
 * New option in SIP configuration to automatically create a raw shmdata quiddity for incoming streams.
-* New notification system in QuiddityManager to track removal/creation of quiddities. SIP Plugin uses it instead of old legacy CreateRemoveSpy quiddity.
-* Remove CreateRemoveSpy quiddity and all its hooks in QuiddityManager_Impl.
+* New notification system in QuiddityContainer to track removal/creation of quiddities. SIP Plugin uses it instead of old legacy CreateRemoveSpy quiddity.
+* Remove CreateRemoveSpy quiddity and all its hooks in QuiddityContainer_Impl.
 * Port to nvidia SDK 7.1. Needs driver version 375.20 or newer.
 
 Bug fixes:

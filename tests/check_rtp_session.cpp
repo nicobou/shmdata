@@ -24,7 +24,7 @@
 #include <thread>
 #include <vector>
 #include "switcher/gst-shmdata-subscriber.hpp"
-#include "switcher/quiddity-manager.hpp"
+#include "switcher/switcher.hpp"
 
 static bool audio_success = false;
 static bool audio_added = false;
@@ -41,7 +41,7 @@ void on_tree_grafted(const std::string& /*subscriber_name */,
                      const std::string& signal_name,
                      const std::vector<std::string>& params,
                      void* user_data) {
-  auto manager = static_cast<QuiddityManager*>(user_data);
+  auto manager = static_cast<Switcher*>(user_data);
   // interested here in byte_rate information from httpsdpdec
   if (std::string::npos == params[0].find("stat")) return;
   // check the received byte rate
@@ -55,7 +55,7 @@ void on_tree_grafted(const std::string& /*subscriber_name */,
   }
 }
 
-void receive_audio(QuiddityManager* manager) {
+void receive_audio(Switcher* manager) {
   // configure an httpsdpdec
   assert(manager->create("httpsdpdec", "uri") == "uri");
   manager->invoke_va("uri",
@@ -75,7 +75,7 @@ void on_audio_info(const std::string& /*subscriber_name */,
                    void* user_data) {
   // ignoring information not related to byte_rate
   if (std::string::npos == params[0].find("stat")) return;
-  auto manager = static_cast<QuiddityManager*>(user_data);
+  auto manager = static_cast<Switcher*>(user_data);
   // checking for shmdata writer path
   auto audio_shmpath =
       manager->use_tree<MPtr(&InfoTree::get_child_keys)>(quiddity_name, "shmdata.writer");
@@ -110,7 +110,7 @@ int main() {
     // this lock is used with a condition variable that notifies success
     std::unique_lock<std::mutex> lock(cv_m);
 
-    QuiddityManager::ptr manager = QuiddityManager::make_manager("rtptest");
+    Switcher::ptr manager = Switcher::make_manager("rtptest");
 
     manager->scan_directory_for_plugins("./");
 

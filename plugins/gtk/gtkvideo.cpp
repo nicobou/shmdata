@@ -23,7 +23,7 @@
 #include "switcher/gprop-to-prop.hpp"
 #include "switcher/gst-utils.hpp"
 #include "switcher/invocation-spec.hpp"
-#include "switcher/quiddity-manager-impl.hpp"
+#include "switcher/quiddity-container.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
 
@@ -330,7 +330,7 @@ void GTKVideo::delete_event_cb(GtkWidget* /*widget */, GdkEvent* /*event */, voi
   context->gst_pipeline_.reset();
   gtk_widget_destroy(context->main_window_);
   context->main_window_ = nullptr;
-  QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
+  QuiddityContainer::ptr manager = context->manager_impl_.lock();
   if ((bool)manager)
     manager->remove(context->get_name());
   else

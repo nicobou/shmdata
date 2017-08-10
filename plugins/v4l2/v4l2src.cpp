@@ -26,7 +26,7 @@
 #include <ctime>    // For time()
 #include "switcher/file-utils.hpp"
 #include "switcher/gst-utils.hpp"
-#include "switcher/quiddity-manager-impl.hpp"
+#include "switcher/quiddity-container.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
 
