@@ -32,7 +32,7 @@
 namespace switcher {
 class VideoTestSource : public Quiddity, public StartableQuiddity {
  public:
-  VideoTestSource(const std::string&);
+  VideoTestSource(QuiddityConfiguration&&);
   ~VideoTestSource() = default;
   VideoTestSource(const VideoTestSource&) = delete;
   VideoTestSource& operator=(const VideoTestSource&) = delete;
@@ -82,7 +82,6 @@ class VideoTestSource : public Quiddity, public StartableQuiddity {
   std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
   bool start() final;
   bool stop() final;
-  bool init() final;
   void update_caps();
 };
 

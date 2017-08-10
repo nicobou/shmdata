@@ -573,15 +573,12 @@ PContainer::prop_id_t PContainer::push_parented(const std::string& strid,
                                                 const std::string& parent_strid,
                                                 std::unique_ptr<PropertyBase>&& prop_ptr) {
   if (ids_.cend() != ids_.find(strid)) {
-    g_warning("property name %s already used", strid.c_str());
     return 0;
   }
   if (parent_strid != "" && ids_.cend() == ids_.find(parent_strid)) {
-    g_warning("property parent %s does not exist", parent_strid.c_str());
     return 0;
   }
   if (!prop_ptr) {
-    g_warning("ERROR: Property container received a null property pointer.");
     return 0;
   }
   actual_props_[++counter_] = std::forward<std::unique_ptr<PropertyBase>>(prop_ptr);

@@ -30,8 +30,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoConverter,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-GstVideoConverter::GstVideoConverter(const std::string&)
-    : video_format_(
+GstVideoConverter::GstVideoConverter(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      video_format_(
           GstUtils::get_gst_element_capability_as_list("videoconvert", "format", GST_PAD_SRC), 0),
       video_format_id_(
           pmanage<MPtr(&PContainer::make_selection<>)>("Pixel format",
@@ -50,11 +51,7 @@ GstVideoConverter::GstVideoConverter(const std::string&)
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-}
-
-bool GstVideoConverter::init() {
   shmpath_converted_ = make_file_name("video");
-  return true;
 }
 
 bool GstVideoConverter::on_shmdata_disconnect() {
@@ -69,7 +66,7 @@ bool GstVideoConverter::on_shmdata_disconnect() {
 
 bool GstVideoConverter::on_shmdata_connect(const std::string& shmpath) {
   if (shmpath == shmpath_converted_) {
-    g_message("ERROR:videoconverter cannot connect to itself");
+    message("ERROR:videoconverter cannot connect to itself");
     return false;
   }
   shmpath_to_convert_ = shmpath;

@@ -58,6 +58,10 @@ class PropertyBase {
   // get/set notify cbs
   std::map<register_id_t, notify_cb_t> get_notify_cbs() const;
   void set_notify_cbs(std::map<register_id_t, notify_cb_t> cbs);
+  std::string get_warning() const { return warning_; }
+
+ protected:
+  mutable std::string warning_{};
 
  private:
   size_t type_hash_;
@@ -96,7 +100,7 @@ class Property : public PropertyBase {
 
   bool set(const W& val, bool do_notify = true) const {
     if (nullptr == set_) {  // read only
-      g_warning("set is unavailable for read-only properties");
+      warning_ = "set is unavailable for read-only properties";
       return false;
     }
     if (!doc_.is_valid(val)) {  // out of range
@@ -123,7 +127,7 @@ class Property : public PropertyBase {
   bool set_str(const std::string& val, bool do_notify = true) const {
     auto deserialized = deserialize::apply<W>(val);
     if (!deserialized.first) {
-      g_debug("set_str failed to deserialize following string: %s", val.c_str());
+      warning_ = std::string("set_str failed to deserialize following string: ") + val;
       return false;
     }
     return set(std::move(deserialized.second), do_notify);

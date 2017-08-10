@@ -34,10 +34,12 @@ namespace switcher {
 class DecodebinToShmdata {
   using on_configure_t = std::function<void(
       GstElement*, const std::string& /*media_type*/, const std::string& /*media_label*/)>;
+  using on_buffer_discarded_t = std::function<void()>;
 
  public:
   explicit DecodebinToShmdata(GstPipeliner* gpipe,
                               on_configure_t on_gstshm_configure,
+                              on_buffer_discarded_t on_buffer_discarded,
                               bool decompress);
   ~DecodebinToShmdata() = default;
   DecodebinToShmdata() = delete;
@@ -61,6 +63,7 @@ class DecodebinToShmdata {
   GstPipeliner* gpipe_;
   bool decompress_;
   on_configure_t on_gstshm_configure_;
+  on_buffer_discarded_t on_buffer_discarded_;
   std::list<std::string> shmdata_path_{};  // for unregistering in the segment
   std::vector<gulong> cb_ids_{};
   std::mutex thread_safe_{};

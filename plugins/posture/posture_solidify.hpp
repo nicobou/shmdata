@@ -36,7 +36,7 @@
 namespace switcher {
 class PostureSolidify : public Quiddity, public StartableQuiddity {
  public:
-  PostureSolidify(const std::string&);
+  PostureSolidify(QuiddityConfiguration&&);
   ~PostureSolidify();
   PostureSolidify(const PostureSolidify&) = delete;
   PostureSolidify& operator=(const PostureSolidify&) = delete;
@@ -57,7 +57,6 @@ class PostureSolidify : public Quiddity, public StartableQuiddity {
   std::string pcl_reader_caps_{};
   std::unique_ptr<ShmdataWriter> mesh_writer_{nullptr};
 
-  bool init() final;
 
   bool connect(std::string shmdata_socket_path);
   bool disconnect(std::string /*unused*/);

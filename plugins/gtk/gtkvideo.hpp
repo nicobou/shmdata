@@ -42,7 +42,7 @@
 namespace switcher {
 class GTKVideo : public Quiddity {
  public:
-  GTKVideo(const std::string&);
+  GTKVideo(QuiddityConfiguration&&);
   ~GTKVideo();
   GTKVideo(const GTKVideo&) = delete;
   GTKVideo& operator=(const GTKVideo&) = delete;
@@ -50,7 +50,6 @@ class GTKVideo : public Quiddity {
  private:
   static guint instances_counter_;
   static std::thread gtk_main_thread_;
-  std::atomic<bool> is_valid_{false};
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
   // gst pipeline:
@@ -118,7 +117,6 @@ class GTKVideo : public Quiddity {
 
   std::unique_ptr<PeriodicTask<>> position_task_;
 
-  bool init() final;
   bool remake_elements();
   bool on_shmdata_connect(const std::string& shmpath);
   bool on_shmdata_disconnect();

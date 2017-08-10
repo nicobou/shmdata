@@ -41,11 +41,10 @@ namespace switcher {
  */
 class LTCSource : public Quiddity, public StartableQuiddity {
  public:
-  LTCSource(const std::string&);
+  LTCSource(QuiddityConfiguration&&);
   ~LTCSource();
 
  private:
-  bool init() final;
   bool start() final;
   bool stop() final;
 
@@ -57,7 +56,6 @@ class LTCSource : public Quiddity, public StartableQuiddity {
   void write_samples_to_shmdata(const unsigned int& nb_samples);
   void generate_ltc_frames(int nb_frames);
 
-  bool is_valid_{false};
   std::deque<ltcsnd_sample_t> samples_{};       //!< Pool of samples to send to shmdata
   std::atomic<bool> generating_frames_{false};  //!< Flag to prevent infinite generation of samples.
   std::unique_ptr<ShmdataWriter> shmw_{};       //!< Shmdata writer.

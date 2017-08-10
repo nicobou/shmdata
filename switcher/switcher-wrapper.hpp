@@ -29,6 +29,10 @@ class Switcher;
 
 class SwitcherWrapper : public Quiddity {
  public:
+  SwitcherWrapper() = delete;
+  SwitcherWrapper(QuiddityConfiguration&& conf)
+      : Quiddity(std::forward<QuiddityConfiguration>(conf)) {}
+
   typedef std::shared_ptr<SwitcherWrapper> ptr;
   void set_quiddity_manager(std::shared_ptr<Switcher> manager);
 

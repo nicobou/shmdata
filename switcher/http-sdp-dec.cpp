@@ -37,8 +37,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Nicolas Bouillot");
 
-HTTPSDPDec::HTTPSDPDec(const std::string&)
-    : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
+HTTPSDPDec::HTTPSDPDec(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       souphttpsrc_("souphttpsrc"),
       sdpdemux_("sdpdemux"),
       decompress_streams_id_(
@@ -50,10 +51,11 @@ HTTPSDPDec::HTTPSDPDec(const std::string&)
                                                 [this]() { return decompress_streams_; },
                                                 "Decompress",
                                                 "Decompress received streams",
-                                                decompress_streams_)) {}
-
-bool HTTPSDPDec::init() {
-  if (!souphttpsrc_ || !sdpdemux_) return false;
+                                                decompress_streams_)) {
+  if (!souphttpsrc_ || !sdpdemux_) {
+    is_valid_ = false;
+    return;
+  }
   install_method(
       "To Shmdata",
       "to_shmdata",
@@ -66,12 +68,11 @@ bool HTTPSDPDec::init() {
       G_TYPE_BOOLEAN,
       Method::make_arg_type_description(G_TYPE_STRING, nullptr),
       this);
-  return true;
 }
 
 void HTTPSDPDec::init_httpsdpdec() {
-  if (!UGstElem::renew(souphttpsrc_)) g_warning("error renewing souphttpsrc_");
-  if (!UGstElem::renew(sdpdemux_)) g_warning("error renewing sdpdemux_");
+  if (!UGstElem::renew(souphttpsrc_)) warning("error renewing souphttpsrc_");
+  if (!UGstElem::renew(sdpdemux_)) warning("error renewing sdpdemux_");
   g_signal_connect(GST_BIN(sdpdemux_.get_raw()),
                    "element-added",
                    (GCallback)HTTPSDPDec::on_new_element_in_sdpdemux,
@@ -134,11 +135,12 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement* /*object */, GstPad* pad, g
       [context](GstElement* el, const std::string& media_type, const std::string& media_label) {
         context->configure_shmdatasink(el, media_type, media_label);
       },
+      [context]() { context->warning("discarding uncomplete custom frame due to a network loss"); },
       context->decompress_streams_);
   if (!decodebin->invoke_with_return<gboolean>([context](GstElement* el) {
         return gst_bin_add(GST_BIN(context->gst_pipeline_->get_pipeline()), el);
       })) {
-    g_warning("decodebin cannot be added to pipeline");
+    context->warning("decodebin cannot be added to pipeline");
   }
   GstPad* sinkpad = decodebin->invoke_with_return<GstPad*>(
       [](GstElement* el) { return gst_element_get_static_pad(el, "sink"); });
@@ -180,7 +182,7 @@ void HTTPSDPDec::uri_to_shmdata() {
   init_httpsdpdec();
   g_object_set_data(
       G_OBJECT(sdpdemux_.get_raw()), "on-error-gsource", (gpointer)on_error_.back().get());
-  g_debug("httpsdpdec: to_shmdata set uri %s", uri_.c_str());
+  debug("httpsdpdec: to_shmdata set uri %", uri_);
   if (!is_dataurisrc_)  // for souphttpsrc
     g_object_set(G_OBJECT(souphttpsrc_.get_raw()), "location", uri_.c_str(), nullptr);
   else  // for dataurisrc

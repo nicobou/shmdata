@@ -24,7 +24,6 @@
 #ifndef __SWITCHER_QUIDDITY_H__
 #define __SWITCHER_QUIDDITY_H__
 
-#include <gst/gst.h>
 #include <string.h>
 #include <map>
 #include <memory>
@@ -35,16 +34,19 @@
 #include "./documentation-registry.hpp"
 #include "./information-tree.hpp"
 #include "./json-builder.hpp"
+#include "./logged.hpp"
 #include "./make-consultable.hpp"
 #include "./method.hpp"
 #include "./property-container.hpp"
+#include "./quiddity-configuration.hpp"
 #include "./quiddity-documentation.hpp"
+#include "./safe-bool-idiom.hpp"
 #include "./signal-container.hpp"
 
 namespace switcher {
 class QuiddityContainer;
 
-class Quiddity {
+class Quiddity : public Logged, public SafeBoolIdiom {
   friend class Bundle;  // access to props_ in order to forward properties
   // FIXME do something for this (to many friend class in quiddity.hpp):
   friend class ProtocolCurl;
@@ -61,13 +63,11 @@ class Quiddity {
 
  public:
   typedef std::shared_ptr<Quiddity> ptr;
-  Quiddity();
+  explicit Quiddity(QuiddityConfiguration&&);
+  Quiddity() = delete;
   Quiddity(const Quiddity&) = delete;
   Quiddity& operator=(const Quiddity&) = delete;
   virtual ~Quiddity();
-
-  // class initialisation
-  virtual bool init() = 0;
 
   // save/load quiddity state
   virtual InfoTree::ptr on_saving();
@@ -78,15 +78,10 @@ class Quiddity {
 
   // instance name
   std::string get_name() const;
+  std::string get_type() const;
   static std::string string_to_quiddity_name(const std::string& name);
   bool set_nickname(const std::string& nickname);
   std::string get_nickname() const;
-
-  // FIXME name should be a ctor arg
-  bool set_name(const std::string& name);  // can be called once
-
-  // FIXME configuration should be a ctor arg
-  void set_configuration(InfoTree::ptr config);
 
   // properties
   Make_consultable(Quiddity, PContainer, &props_, prop);
@@ -120,9 +115,6 @@ class Quiddity {
   static std::string get_socket_name_prefix();
   static std::string get_socket_dir();
 
-  // manager_impl initialization
-  void set_manager_impl(std::shared_ptr<QuiddityContainer> manager_impl);
-
   // use a consistent naming for shmdatas
   std::string make_file_name(const std::string& suffix) const;
   std::string get_manager_name();
@@ -131,7 +123,25 @@ class Quiddity {
   std::string get_file_name_prefix() const;
 
  private:
-  std::string nickname_{};
+  // safe bool idiom implementation
+  bool safe_bool_idiom() const { return is_valid_; }
+  // user data hooks
+  bool user_data_graft_hook(const std::string& path, InfoTree::ptr tree);
+  InfoTree::ptr user_data_prune_hook(const std::string& path);
+
+  // method
+  bool method_is_registered(const std::string& method_name);
+  bool register_method(const std::string& method_name,
+                       Method::method_ptr method,
+                       Method::return_type return_type,
+                       Method::args_types arg_types,
+                       gpointer user_data);
+  bool set_method_description(const std::string& long_name,
+                              const std::string& method_name,
+                              const std::string& short_description,
+                              const std::string& return_description,
+                              const Method::args_doc& arg_description);
+
   // tree used by quiddity to communicate info to user,
   // read-only by user, read/write by quiddity
   InfoTree::ptr information_tree_;
@@ -169,27 +179,13 @@ class Quiddity {
   gint position_weight_counter_{0};
 
   // naming
-  std::string name_{};
+  std::string name_;
+  std::string nickname_;
+  std::string type_;
 
   // life management
   std::mutex self_destruct_mtx_{};
 
-  // user data hooks
-  bool user_data_graft_hook(const std::string& path, InfoTree::ptr tree);
-  InfoTree::ptr user_data_prune_hook(const std::string& path);
-
-  // method
-  bool method_is_registered(const std::string& method_name);
-  bool register_method(const std::string& method_name,
-                       Method::method_ptr method,
-                       Method::return_type return_type,
-                       Method::args_types arg_types,
-                       gpointer user_data);
-  bool set_method_description(const std::string& long_name,
-                              const std::string& method_name,
-                              const std::string& short_description,
-                              const std::string& return_description,
-                              const Method::args_doc& arg_description);
 
  protected:
   // information
@@ -224,11 +220,13 @@ class Quiddity {
 
   bool toggle_property_saving(const std::string&);
 
-  // used in order to dynamically create other quiddity, weak_ptr is used in
-  // order to
-  // avoid circular references to the manager_impl
-  std::weak_ptr<QuiddityContainer> manager_impl_{};
-  std::string manager_name_{};  // FIXME ??
+  // safe bool idiom implementation, default to valid
+  // if you are writing a quiddity, you need to set this to false in order to invalidate the
+  // creation of the Quiddity instance
+  bool is_valid_{true};
+
+  // access to the quiddity Container
+  QuiddityContainer* qcontainer_;
 };
 
 #define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(                                                 \
@@ -237,19 +235,21 @@ class Quiddity {
       class_name,                                                                             \
       QuiddityDocumentation(class_name, name, category, tags, description, license, author)); \
   bool cpp_quiddity_class##_class_registered =                                                \
-      DocumentationRegistry::get()->register_quiddity_type_from_class_name(                   \
+      DocumentationRegistry::get()->register_type_from_class_name(                            \
           std::string(#cpp_quiddity_class), class_name);
 
-#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                                             \
-  extern "C" Quiddity* create(const std::string& name) { return new cpp_quiddity_class(name); } \
-  extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }                              \
-  extern "C" const char* get_quiddity_type() {                                                  \
-    static char type[64];                                                                       \
-    strcpy(type,                                                                                \
-           DocumentationRegistry::get()                                                         \
-               ->get_quiddity_type_from_class_name(std::string(#cpp_quiddity_class))            \
-               .c_str());                                                                       \
-    return static_cast<const char*>(type);                                                      \
+#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                           \
+  extern "C" Quiddity* create(QuiddityConfiguration&& conf) {                 \
+    return new cpp_quiddity_class(std::forward<QuiddityConfiguration>(conf)); \
+  }                                                                           \
+  extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }            \
+  extern "C" const char* get_quiddity_type() {                                \
+    static char type[64];                                                     \
+    strcpy(type,                                                              \
+           DocumentationRegistry::get()                                       \
+               ->get_type_from_class_name(std::string(#cpp_quiddity_class))   \
+               .c_str());                                                     \
+    return static_cast<const char*>(type);                                    \
   }
 }  // namespace switcher
 #endif

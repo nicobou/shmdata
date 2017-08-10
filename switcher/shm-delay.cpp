@@ -30,7 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmDelay,
                                      "LGPL",
                                      "Jérémie Soria");
 
-ShmDelay::ShmDelay(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {
+ShmDelay::ShmDelay(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   time_delay_id_ =
       pmanage<MPtr(&PContainer::make_double)>("time_delay",
                                               [this](const double& val) {
@@ -64,11 +65,7 @@ ShmDelay::ShmDelay(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) 
       nullptr,
       [this](const std::string&) { return true; },
       2);
-
-  is_valid_ = true;
 }
-
-bool ShmDelay::init() { return is_valid_; }
 
 bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
   // Get the value of the delay from a shmdata
@@ -194,6 +191,7 @@ ShmDelay::ShmContent ShmDelay::ShmBuffer::find_closest(double target_timestamp) 
   bool getting_closer = false;
 
   std::lock_guard<std::mutex> lock(buffer_m_);
+  if (buffer_.empty()) return ShmContent();
   auto closest = buffer_.front();
   for (auto& item : buffer_) {
     // We take the absolute value of the difference with the

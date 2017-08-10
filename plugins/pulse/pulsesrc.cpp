@@ -33,8 +33,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PulseSrc::PulseSrc(const std::string&)
-    : mainloop_(std::make_unique<GlibMainLoop>()),
+PulseSrc::PulseSrc(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      mainloop_(std::make_unique<GlibMainLoop>()),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   pmanage<MPtr(&PContainer::make_group)>(
       "advanced", "Advanced configuration", "Advanced configuration");
@@ -49,11 +50,11 @@ PulseSrc::PulseSrc(const std::string&)
       "Save Mode",
       "Save Audio Capture Device by device or by port.",
       save_device_enum_);
-}
-
-bool PulseSrc::init() {
   init_startable(this);
-  if (!pulsesrc_ || !shmsink_) return false;
+  if (!pulsesrc_ || !shmsink_) {
+    is_valid_ = false;
+    return;
+  }
   shmpath_ = make_file_name("audio");
   g_object_set(G_OBJECT(pulsesrc_.get_raw()), "client-name", get_name().c_str(), nullptr);
   g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
@@ -66,14 +67,14 @@ bool PulseSrc::init() {
   // waiting for devices to be updated
   devices_cond_.wait(lock);
   if (!connected_to_pulse_) {
-    g_message("ERROR:Not connected to pulse, cannot initialize.");
-    return false;
+    message("ERROR:Not connected to pulse, cannot initialize.");
+    is_valid_ = false;
+    return;
   }
   volume_id_ = pmanage<MPtr(&PContainer::push)>(
       "volume", GPropToProp::to_prop(G_OBJECT(pulsesrc_.get_raw()), "volume"));
   mute_id_ = pmanage<MPtr(&PContainer::push)>(
       "mute", GPropToProp::to_prop(G_OBJECT(pulsesrc_.get_raw()), "mute"));
-  return true;
 }
 
 gboolean PulseSrc::async_get_pulse_devices(void* user_data) {
@@ -82,13 +83,14 @@ gboolean PulseSrc::async_get_pulse_devices(void* user_data) {
   context->pa_mainloop_api_ = pa_glib_mainloop_get_api(context->pa_glib_mainloop_);
   context->pa_context_ = pa_context_new(context->pa_mainloop_api_, nullptr);
   if (nullptr == context->pa_context_) {
-    g_debug("PulseSrc:: pa_context_new() failed.");
+    context->debug("PulseSrc:: pa_context_new() failed.");
     return FALSE;
   }
   pa_context_set_state_callback(context->pa_context_, pa_context_state_callback, context);
   if (pa_context_connect(context->pa_context_, context->server_, (pa_context_flags_t)0, nullptr) <
       0) {
-    g_debug("pa_context_connect() failed: %s", pa_strerror(pa_context_errno(context->pa_context_)));
+    context->debug("pa_context_connect() failed: %",
+                   std::string(pa_strerror(pa_context_errno(context->pa_context_))));
     return FALSE;
   }
   context->connected_to_pulse_ = true;
@@ -151,13 +153,14 @@ void PulseSrc::pa_context_state_callback(pa_context* pulse_context, void* user_d
           nullptr));  // void *userdata);
       break;
     case PA_CONTEXT_TERMINATED: {
-      g_debug("PulseSrc: PA_CONTEXT_TERMINATED");
+      context->debug("PulseSrc: PA_CONTEXT_TERMINATED");
     } break;
     case PA_CONTEXT_FAILED:
-      g_debug("PA_CONTEXT_FAILED");
+      context->debug("PA_CONTEXT_FAILED");
       break;
     default:
-      g_debug("PulseSrc Context error: %s", pa_strerror(pa_context_errno(pulse_context)));
+      context->debug("PulseSrc Context error: %",
+                     std::string(pa_strerror(pa_context_errno(pulse_context))));
   }
 }
 
@@ -167,7 +170,8 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
                                         void* user_data) {
   PulseSrc* context = static_cast<PulseSrc*>(user_data);
   if (is_last < 0) {
-    g_debug("Failed to get source information: %s", pa_strerror(pa_context_errno(pulse_context)));
+    context->debug("Failed to get source information: %",
+                   std::string(pa_strerror(pa_context_errno(pulse_context))));
     return;
   }
   if (is_last) {
@@ -251,41 +255,18 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
   gchar* channels = g_strdup_printf("%u", i->sample_spec.channels);
   description.channels_ = channels;
   g_free(channels);
-  // g_print ("Name: %s\n"
-  //      "Description: %s\n"
-  //      " format: %s\n"
-  //      " rate: %u\n"
-  //      " channels: %u\n",
-  //      //"Channel Map: %s\n",
-  //      i->name,
-  //      i->description,// warning this can be nullptr
-  //      pa_sample_format_to_string (i->sample_spec.format),
-  //      i->sample_spec.rate,
-  //      i->sample_spec.channels//,
-  //      // pa_channel_map_snprint(cm, sizeof(cm), &i->channel_map)
-  //      );
   if (i->ports) {
     pa_source_port_info** p;
-    // printf("\tPorts:\n");
     for (p = i->ports; *p; p++) {
-      // printf("\t\t%s: %s (priority. %u)\n", (*p)->name, (*p)->description,
-      // (*p)->priority);
       description.ports_.push_back(std::make_pair((*p)->name, (*p)->description));
     }
   }
   if (i->active_port) {
-    // printf("\tActive Port: %s\n", i->active_port->name);
     description.active_port_ = i->active_port->description;
   } else
     description.active_port_ = "n/a";
   context->capture_devices_.push_back(description);
   context->update_capture_device();
-  //  if (i->formats) {
-  //    uint8_t j;
-  //    printf("\tFormats:\n");
-  //    for (j = 0; j < i->n_formats; j++)
-  //      printf("\t\t%s\n", pa_format_info_snprint(f, sizeof(f), i->formats[j]));
-  //  }
 }
 
 void PulseSrc::make_device_description(pa_context* pulse_context) {
@@ -373,7 +354,7 @@ InfoTree::ptr PulseSrc::on_saving() {
 
 void PulseSrc::on_loading(InfoTree::ptr&& tree) {
   if (!tree || tree->empty()) {
-    g_warning("loading deprecated pulsesrc device save: devices may swap when reloading");
+    warning("loading deprecated pulsesrc device save: devices may swap when reloading");
     return;
   }
 
@@ -387,8 +368,8 @@ void PulseSrc::on_loading(InfoTree::ptr&& tree) {
           return capt.bus_path_ == bus_path;
         });
     if (capture_devices_.end() == it) {
-      g_warning("pulsesrc device not found at this port %s", bus_path.c_str());
-      g_message(
+      warning("pulsesrc device not found at this port %", bus_path);
+      message(
           "Audio capture device not found on its saved port when loading saved scenario, "
           "defaulting to first available device");
     } else {
@@ -400,8 +381,8 @@ void PulseSrc::on_loading(InfoTree::ptr&& tree) {
                            capture_devices_.end(),
                            [&](const DeviceDescription& capt) { return capt.name_ == device_id; });
     if (capture_devices_.end() == it) {
-      g_warning("pulsesrc device not found (%s)", device_id.c_str());
-      g_message(
+      warning("pulsesrc device not found (%)", device_id);
+      message(
           "Saved audio capture not found when loading saved scenario, defaulting to first "
           "available device");
     } else {

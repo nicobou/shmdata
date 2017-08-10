@@ -33,9 +33,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VRPNSink,
 // Have to define it here, otherwise symbol not found...
 const unsigned int VRPNSink::vrpnLoopInterval{16};
 
-VRPNSink::VRPNSink(const std::string&) : shmdataConnector_(static_cast<Quiddity*>(this)) {}
-
-bool VRPNSink::init() {
+VRPNSink::VRPNSink(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      shmdataConnector_(static_cast<Quiddity*>(this)) {
   init_startable(this);
 
   shmdataConnector_.install_connect_method(
@@ -92,8 +92,6 @@ bool VRPNSink::init() {
       G_TYPE_BOOLEAN,
       Method::make_arg_type_description(G_TYPE_STRING, nullptr),
       this);
-
-  return true;
 }
 
 /**
@@ -170,7 +168,7 @@ bool VRPNSink::createAnalogDeviceMethod(gchar* deviceName, void* user_data) {
  */
 bool VRPNSink::createAnalogDevice(const std::string& deviceName) {
   if (deviceName.empty()) {
-    g_message("ERROR: Device name is required.");
+    message("ERROR: Device name is required.");
     return false;
   }
 
@@ -180,7 +178,7 @@ bool VRPNSink::createAnalogDevice(const std::string& deviceName) {
   // Check if we already have a device of the same name + type
   std::string deviceId = deviceName + "-analog";
   if (getAnalogDevice(deviceId) != nullptr) {
-    g_message("ERROR: A device of the same type exists with that name.");
+    message("ERROR: A device of the same type exists with that name.");
     return false;
   }
 
@@ -328,7 +326,7 @@ bool VRPNSink::createButtonDeviceMethod(gchar* deviceName, void* user_data) {
  */
 bool VRPNSink::createButtonDevice(const std::string& deviceName) {
   if (deviceName.empty()) {
-    g_message("ERROR: Device name is required.");
+    message("ERROR: Device name is required.");
     return false;
   }
 
@@ -338,7 +336,7 @@ bool VRPNSink::createButtonDevice(const std::string& deviceName) {
   // Check if we already have a device of the same name + type
   std::string deviceId = deviceName + "-button";
   if (getButtonDevice(deviceId) != nullptr) {
-    g_message("ERROR: A device of the same type exists with that name.");
+    message("ERROR: A device of the same type exists with that name.");
     return false;
   }
 
@@ -477,19 +475,13 @@ void VRPNSink::onShmReaderData(void* data, size_t size) {
   }
 
   if (debug_) {
-    /*g_debug("VRPNSink   <<< Sender: %s Type: %s Length: %lu Payload: %u",
-            senderName.c_str(),
-            typeName.c_str(),
-            size,
-            payload_len);*/
-
     unsigned char* d = static_cast<unsigned char*>(data);
     std::stringstream ss;
     ss << "VRPNSink   <<< ";
     for (int i = 0; i < (int)size; ++i) {
       ss << std::hex << std::setfill('0') << std::setw(2) << (int)d[i] << " ";
     }
-    g_debug("%s", ss.str().c_str());
+    debug("%", ss.str());
   }
 
   // BUFFER
@@ -540,7 +532,7 @@ bool VRPNSink::start() {
 
   connection_ = std::make_unique<VRPNServerConnection>(port_);
   if (!connection_->raw()->doing_okay()) {
-    g_message("ERROR: VRPN sink connection is not doing okay.");
+    message("ERROR: VRPN sink connection is not doing okay.");
     return false;
   }
 
@@ -561,7 +553,7 @@ bool VRPNSink::start() {
   loopTask_ = std::make_unique<PeriodicTask<>>([this]() { this->loop(); },
                                                std::chrono::milliseconds(vrpnLoopInterval));
 
-  g_debug("Started VRPN sink server");
+  debug("Started VRPN sink server");
 
   return true;
 }
@@ -570,7 +562,7 @@ bool VRPNSink::start() {
  * @thread switcher
  */
 bool VRPNSink::stop() {
-  g_debug("Stopping VRPN sink server");
+  debug("Stopping VRPN sink server");
 
   loopTask_.reset(nullptr);
 
@@ -619,7 +611,7 @@ void VRPNSink::loop() {
   std::lock_guard<std::mutex> _(vrpnMutex_);
 
   if (!connection_->raw()->doing_okay()) {
-    g_warning("VRPN sink connection is not doing okay.");
+    warning("VRPN sink connection is not doing okay.");
   }
   connection_->raw()->mainloop();
   for (auto& device : devices_) {

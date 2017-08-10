@@ -27,11 +27,9 @@ GstPixelFormatConverter::GstPixelFormatConverter(const std::string& shmpath_to_c
                                                  const std::string& format_name)
     : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   if (shmpath_converted.empty() || shmpath_to_convert.empty()) {
-    g_warning("GstPixelFormatConverter needs non empty paths");
     return;
   }
   if (shmpath_to_convert == shmpath_converted) {
-    g_warning("GstPixelFormatConverter cannot convert itself");
     return;
   }
   GstCaps* caps = gst_caps_from_string(get_caps_str(format_name).c_str());

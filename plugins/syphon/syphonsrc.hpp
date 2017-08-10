@@ -30,7 +30,7 @@
 namespace switcher {
 class SyphonSrc : public Quiddity, public StartableQuiddity {
  public:
-  SyphonSrc(const std::string&);
+  SyphonSrc(QuiddityConfiguration&&);
   ~SyphonSrc() = default;
   SyphonSrc(const SyphonSrc&) = delete;
   SyphonSrc& operator=(const SyphonSrc&) = delete;
@@ -42,7 +42,6 @@ class SyphonSrc : public Quiddity, public StartableQuiddity {
   std::string syphon_appname_{""};
   int width_{0}, height_{0};
 
-  bool init() final;
   bool start() final;
   bool stop() final;
   static void frameCallback(void*, const char*, int&, int&);

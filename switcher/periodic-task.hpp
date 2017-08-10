@@ -44,7 +44,6 @@ class PeriodicTask {
       std::unique_lock<std::mutex> lock(cv_m_);
       cv_.notify_one();
     }
-    if (fut_.valid()) fut_.get();
   }
 
  private:

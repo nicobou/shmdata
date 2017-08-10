@@ -30,6 +30,7 @@ ShmdataFollower::ShmdataFollower(Quiddity* quid,
                                  std::chrono::milliseconds update_interval,
                                  const std::string& tree_path)
     : quid_(quid),
+      logger_(quid_->get_log_ptr()),
       shmpath_(path),
       od_(od),
       osc_(osc),

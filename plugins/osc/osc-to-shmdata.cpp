@@ -29,9 +29,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-OscToShmdata::OscToShmdata(const std::string&) : port_(1056) {}
-
-bool OscToShmdata::init() {
+OscToShmdata::OscToShmdata(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)), port_(1056) {
   init_startable(this);
   pmanage<MPtr(&PContainer::make_int)>("port",
                                        [this](const int& val) {
@@ -44,7 +43,6 @@ bool OscToShmdata::init() {
                                        port_,
                                        1,
                                        65536);
-  return true;
 }
 
 OscToShmdata::~OscToShmdata() { stop(); }
@@ -54,7 +52,7 @@ bool OscToShmdata::start() {
   shm_ = std::make_unique<ShmdataWriter>(
       this, make_file_name("osc"), 1, "application/x-libloserialized-osc");
   if (!shm_.get()) {
-    g_warning("OscToShmdata failed to start");
+    warning("OscToShmdata failed to start");
     shm_.reset(nullptr);
     return false;
   }
@@ -86,7 +84,6 @@ int OscToShmdata::osc_handler(const char* path,
                               void* user_data) {
   OscToShmdata* context = static_cast<OscToShmdata*>(user_data);
   lo_timetag timetag = lo_message_get_timestamp(m);
-  // g_print ("timestamp %u %u", path, timetag.sec, timetag.frac);
   if (0 != timetag.sec) {
     // FIXME handle internal timetag
     // note: this is not implemented in osc-send
@@ -104,7 +101,6 @@ int OscToShmdata::osc_handler(const char* path,
   return 0;
 }
 
-void OscToShmdata::osc_error(int num, const char* msg, const char* path) {
-  g_debug("liblo server error %d in path %s: %s", num, path, msg);
-}
+void OscToShmdata::osc_error(int /*num*/, const char* /*msg*/, const char* /*path*/) {}
+
 }  // end of OscToShmdata class

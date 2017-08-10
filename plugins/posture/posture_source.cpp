@@ -34,7 +34,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureSrc,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-PostureSrc::PostureSrc(const std::string&) {
+PostureSrc::PostureSrc(QuiddityConfiguration&&) {
   calibration_reader_ = std::make_unique<CalibrationReader>("default.kvc");
   zcamera_ = std::make_unique<ZCamera>();
 
@@ -43,87 +43,6 @@ PostureSrc::PostureSrc(const std::string&) {
   zcamera_->setCallbackDepth(cb_frame_depth, this);
   zcamera_->setCallbackRgb(cb_frame_rgb, this);
   zcamera_->setCallbackIR(cb_frame_ir, this);
-}
-
-PostureSrc::~PostureSrc() { stop(); }
-
-bool PostureSrc::start() {
-  if (random_data_) {
-    random_data_thread_ = thread([this]() { generateRandomData(); });
-    return true;
-  } else {
-    calibration_reader_->loadCalibration(calibration_path_);
-    if (!(*calibration_reader_) ||
-        calibration_reader_->getCalibrationParams().size() < device_index_)
-      return false;
-
-    zcamera_->setCalibration(calibration_reader_->getCalibrationParams()[device_index_]);
-    zcamera_->setDeviceIndex(device_index_);
-    zcamera_->setCaptureIR(capture_ir_);
-    zcamera_->setBuildMesh(build_mesh_);
-    zcamera_->setCompression(compress_cloud_);
-    zcamera_->setCaptureMode((posture::ZCamera::CaptureMode)capture_modes_enum_.get());
-    zcamera_->setOutlierFilterParameters(filter_outliers_, filter_mean_k_, filter_stddev_mul_);
-
-    zcamera_->start();
-
-    rgb_focal_ = zcamera_->getRGBFocal();
-    depth_focal_ = zcamera_->getDepthFocal();
-
-    rgb_focal_id_ = pmanage<MPtr(&PContainer::make_double)>("rgb_focal",
-                                                            nullptr,
-                                                            [this]() { return rgb_focal_; },
-                                                            "RGB focal length",
-                                                            "RGB focal length",
-                                                            rgb_focal_,
-                                                            0.0,
-                                                            10000.0);
-
-    depth_focal_id_ =
-        pmanage<MPtr(&PContainer::make_double)>("depth_focal",
-                                                [this](const double& val) {
-                                                  zcamera_->setDepthFocal(val);
-                                                  depth_focal_ = zcamera_->getDepthFocal();
-                                                  return true;
-                                                },
-                                                [this]() {
-                                                  depth_focal_ = zcamera_->getDepthFocal();
-                                                  return depth_focal_;
-                                                },
-                                                "Depth focal length",
-                                                "Depth focal length",
-                                                depth_focal_,
-                                                0.0,
-                                                10000.0);
-
-    return true;
-  }
-}
-
-bool PostureSrc::stop() {
-  if (random_data_) {
-    do_random_data_ = false;
-    if (random_data_thread_.joinable()) random_data_thread_.join();
-
-    cloud_writer_.reset();
-    mesh_writer_.reset();
-  } else {
-    if (zcamera_) zcamera_->stop();
-
-    cloud_writer_.reset();
-    mesh_writer_.reset();
-    depth_writer_.reset();
-    rgb_writer_.reset();
-    ir_writer_.reset();
-
-    pmanage<MPtr(&PContainer::remove)>(depth_focal_id_);
-    pmanage<MPtr(&PContainer::remove)>(rgb_focal_id_);
-  }
-
-  return true;
-}
-
-bool PostureSrc::init() {
   init_startable(this);
 
   pmanage<MPtr(&PContainer::make_string)>("calibration_path",
@@ -420,6 +339,82 @@ bool PostureSrc::init() {
                                                "Capture mode",
                                                "Capture mode of the device",
                                                capture_modes_enum_);
+}
+
+PostureSrc::~PostureSrc() { stop(); }
+
+bool PostureSrc::start() {
+  if (random_data_) {
+    random_data_thread_ = thread([this]() { generateRandomData(); });
+    return true;
+  } else {
+    calibration_reader_->loadCalibration(calibration_path_);
+    if (!(*calibration_reader_) ||
+        calibration_reader_->getCalibrationParams().size() < device_index_)
+      return false;
+
+    zcamera_->setCalibration(calibration_reader_->getCalibrationParams()[device_index_]);
+    zcamera_->setDeviceIndex(device_index_);
+    zcamera_->setCaptureIR(capture_ir_);
+    zcamera_->setBuildMesh(build_mesh_);
+    zcamera_->setCompression(compress_cloud_);
+    zcamera_->setCaptureMode((posture::ZCamera::CaptureMode)capture_modes_enum_.get());
+    zcamera_->setOutlierFilterParameters(filter_outliers_, filter_mean_k_, filter_stddev_mul_);
+
+    zcamera_->start();
+
+    rgb_focal_ = zcamera_->getRGBFocal();
+    depth_focal_ = zcamera_->getDepthFocal();
+
+    rgb_focal_id_ = pmanage<MPtr(&PContainer::make_double)>("rgb_focal",
+                                                            nullptr,
+                                                            [this]() { return rgb_focal_; },
+                                                            "RGB focal length",
+                                                            "RGB focal length",
+                                                            rgb_focal_,
+                                                            0.0,
+                                                            10000.0);
+
+    depth_focal_id_ =
+        pmanage<MPtr(&PContainer::make_double)>("depth_focal",
+                                                [this](const double& val) {
+                                                  zcamera_->setDepthFocal(val);
+                                                  depth_focal_ = zcamera_->getDepthFocal();
+                                                  return true;
+                                                },
+                                                [this]() {
+                                                  depth_focal_ = zcamera_->getDepthFocal();
+                                                  return depth_focal_;
+                                                },
+                                                "Depth focal length",
+                                                "Depth focal length",
+                                                depth_focal_,
+                                                0.0,
+                                                10000.0);
+
+    return true;
+  }
+}
+
+bool PostureSrc::stop() {
+  if (random_data_) {
+    do_random_data_ = false;
+    if (random_data_thread_.joinable()) random_data_thread_.join();
+
+    cloud_writer_.reset();
+    mesh_writer_.reset();
+  } else {
+    if (zcamera_) zcamera_->stop();
+
+    cloud_writer_.reset();
+    mesh_writer_.reset();
+    depth_writer_.reset();
+    rgb_writer_.reset();
+    ir_writer_.reset();
+
+    pmanage<MPtr(&PContainer::remove)>(depth_focal_id_);
+    pmanage<MPtr(&PContainer::remove)>(rgb_focal_id_);
+  }
 
   return true;
 }
@@ -436,7 +431,7 @@ void PostureSrc::cb_frame_cloud(void* context, const vector<char>&& data) {
         ctx, ctx->make_file_name("cloud"), data.size() * 2, data_type);
 
     if (!ctx->cloud_writer_) {
-      g_warning("Unable to create mesh callback");
+      warning("Unable to create mesh callback");
       return;
     }
   }
@@ -465,7 +460,7 @@ void PostureSrc::cb_frame_mesh(void* context, vector<unsigned char>&& data) {
         ctx, ctx->make_file_name("mesh"), data.size() * 2, string(POLYGONMESH_TYPE_BASE));
 
     if (!ctx->mesh_writer_) {
-      g_warning("Unable to create mesh callback");
+      warning("Unable to create mesh callback");
       return;
     }
   }
@@ -497,7 +492,7 @@ void PostureSrc::cb_frame_depth(void* context,
         ctx, ctx->make_file_name("depth"), data.size(), string(buffer));
 
     if (!ctx->depth_writer_) {
-      g_warning("Unable to create mesh callback");
+      ctx->warning("Unable to create mesh callback");
       return;
     }
   }
@@ -548,7 +543,7 @@ void PostureSrc::cb_frame_rgb(void* context,
         ctx, ctx->make_file_name("rgb"), data.size(), string(buffer));
 
     if (!ctx->rgb_writer_) {
-      g_warning("Unable to create mesh callback");
+      ctx->warning("Unable to create mesh callback");
       return;
     }
   }
@@ -580,7 +575,7 @@ void PostureSrc::cb_frame_ir(void* context,
         ctx, ctx->make_file_name("ir"), data.size(), string(buffer));
 
     if (!ctx->ir_writer_) {
-      g_warning("Unable to create mesh callback");
+      ctx->warning("Unable to create mesh callback");
       return;
     }
   }
@@ -602,7 +597,7 @@ void PostureSrc::generateRandomData() {
       cloud_writer_ = std::make_unique<ShmdataWriter>(
           this, make_file_name("cloud"), cloud.size() * 2, string(POINTCLOUD_TYPE_BASE));
       if (!cloud_writer_) {
-        g_warning("Unable to create mesh shmdata writer");
+        ctx->warning("Unable to create mesh shmdata writer");
         return;
       }
     }
@@ -619,7 +614,7 @@ void PostureSrc::generateRandomData() {
       mesh_writer_ = std::make_unique<ShmdataWriter>(
           this, make_file_name("mesh"), mesh.size() * 2, string(POLYGONMESH_TYPE_BASE));
       if (!mesh_writer_) {
-        g_warning("Unable to create mesh shmdata writer");
+        ctx->warning("Unable to create mesh shmdata writer");
         return;
       }
     }

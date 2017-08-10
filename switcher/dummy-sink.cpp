@@ -29,24 +29,22 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(DummySink,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-DummySink::DummySink(const std::string&)
-    : frame_received_id_(
+DummySink::DummySink(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      frame_received_id_(
           pmanage<MPtr(&PContainer::make_bool)>("frame-received",
                                                 nullptr,
                                                 [this]() { return frame_received_; },
                                                 "Frame Received",
                                                 "A Frame has been receivedon the shmdata",
                                                 frame_received_)),
-      shmcntr_(static_cast<Quiddity*>(this)) {}
-
-bool DummySink::init() {
+      shmcntr_(static_cast<Quiddity*>(this)) {
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->connect(shmpath); },
       [this](const std::string&) { return this->disconnect(); },
       [this]() { return this->disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-  return true;
 }
 
 bool DummySink::connect(const std::string& path) {

@@ -34,12 +34,13 @@ namespace switcher {
  */
 class ShmDelay : public Quiddity {
  public:
-  ShmDelay(const std::string&);
+  ShmDelay(QuiddityConfiguration&& conf);
   ~ShmDelay() = default;
 
  private:
   struct ShmContent {
     ShmContent(double timestamp, void* content, size_t data_size);
+    ShmContent() = default;
     ~ShmContent() = default;
     /** Get physical size of the shmdata
     * content (overhead not accounted for because not relevant in size compared to the data)
@@ -69,12 +70,10 @@ class ShmDelay : public Quiddity {
     size_t max_size_{0};    //!< Maximum size in bytes of the buffer.
   };
 
-  bool init() final;
 
   bool on_shmdata_connect(const std::string& shmpath);
   bool on_shmdata_disconnect(const std::string& shmpath);
 
-  bool is_valid_{false};
   ShmBuffer delay_content_{1 << 10};   //!< Size limit for the buffer (~1GB)
   ShmdataConnector shmcntr_{nullptr};  //!< Shmdata connector for ltc and shmdata inputs
   std::unique_ptr<ShmdataFollower> shm_follower_{nullptr};   //!< Shmdata to be delayed

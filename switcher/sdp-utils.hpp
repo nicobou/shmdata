@@ -24,6 +24,7 @@
 #include <gst/sdp/gstsdpmessage.h>
 #include <string>
 #include <vector>
+#include "./bool-log.hpp"
 
 namespace switcher {
 class SDPDescription;
@@ -36,7 +37,7 @@ class SDPMedia {
   ~SDPMedia();
   SDPMedia& operator=(const SDPMedia&) = delete;
   SDPMedia(const SDPMedia&) = delete;
-  bool set_media_info_from_caps(const GstCaps* media_caps);  // caps from a gst RTP payloader
+  BoolLog set_media_info_from_caps(const GstCaps* media_caps);  // caps from a gst RTP payloader
   bool set_port(uint port);
   bool add_ice_candidate(const std::string& candidate_value);
 
@@ -45,9 +46,9 @@ class SDPMedia {
   GstStructure* caps_structure_{nullptr};
   uint port_{0};  // "0" means disabled media
   std::vector<std::string> ice_candidate_values_{};
-  bool add_to_sdp_description(GstSDPMessage* sdp_description,
-                              uint index,
-                              const std::string& ip_addr) const;
+  BoolLog add_to_sdp_description(GstSDPMessage* sdp_description,
+                                 uint index,
+                                 const std::string& ip_addr) const;
 };
 
 class SDPDescription {

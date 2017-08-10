@@ -33,20 +33,22 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-Uridecodebin::Uridecodebin(const std::string&)
-    : on_msg_async_cb_([this](GstMessage* msg) { this->bus_async(msg); }),
-      on_msg_sync_cb_(nullptr),
-      on_error_cb_([this](GstObject*, GError*) { this->error_ = true; }),
-      gst_pipeline_(
-          std::make_unique<GstPipeliner>(on_msg_async_cb_, on_msg_sync_cb_, on_error_cb_)) {}
-
 void Uridecodebin::bus_async(GstMessage* msg) {
   if (GST_MESSAGE_TYPE(msg) != GST_MESSAGE_EOS) return;
   if (loop_) gst_pipeline_->seek(0);
 }
 
-bool Uridecodebin::init() {
-  if (!GstUtils::make_element("uridecodebin", &uridecodebin_)) return false;
+Uridecodebin::Uridecodebin(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      on_msg_async_cb_([this](GstMessage* msg) { this->bus_async(msg); }),
+      on_msg_sync_cb_(nullptr),
+      on_error_cb_([this](GstObject*, GError*) { this->error_ = true; }),
+      gst_pipeline_(
+          std::make_unique<GstPipeliner>(on_msg_async_cb_, on_msg_sync_cb_, on_error_cb_)) {
+  if (!GstUtils::make_element("uridecodebin", &uridecodebin_)) {
+    is_valid_ = false;
+    return;
+  }
 
   pmanage<MPtr(&PContainer::make_string)>("uri",
                                           [this](const std::string& val) {
@@ -67,12 +69,11 @@ bool Uridecodebin::init() {
                                         "Looping",
                                         "Loop media",
                                         loop_);
-  return true;
 }
 
 void Uridecodebin::init_uridecodebin() {
   if (!GstUtils::make_element("uridecodebin", &uridecodebin_)) {
-    g_warning("cannot create uridecodebin");
+    warning("cannot create uridecodebin");
     return;
   }
 
@@ -125,8 +126,9 @@ void Uridecodebin::unknown_type_cb(GstElement* bin,
                                    GstCaps* caps,
                                    gpointer user_data) {
   Uridecodebin* context = static_cast<Uridecodebin*>(user_data);
-  g_warning(
-      "Uridecodebin unknown type: %s (%s)\n", gst_caps_to_string(caps), gst_element_get_name(bin));
+  context->warning("Uridecodebin unknown type: % (%)",
+                   std::string(gst_caps_to_string(caps)),
+                   std::string(gst_element_get_name(bin)));
   context->pad_to_shmdata_writer(context->gst_pipeline_->get_pipeline(), pad);
 }
 
@@ -168,10 +170,11 @@ int Uridecodebin::autoplug_select_cb(GstElement* /*bin */,
                                      GstPad* /*pad */,
                                      GstCaps* caps,
                                      GstElementFactory* factory,
-                                     gpointer /*user_data */) {
-  g_debug("uridecodebin autoplug select %s, (factory %s)",
-          gst_caps_to_string(caps),
-          GST_OBJECT_NAME(factory));
+                                     gpointer user_data) {
+  auto context = static_cast<Uridecodebin*>(user_data);
+  context->debug("uridecodebin autoplug select %, (factory %)",
+                 std::string(gst_caps_to_string(caps)),
+                 std::string(GST_OBJECT_NAME(factory)));
   if (g_strcmp0(GST_OBJECT_NAME(factory), "rtpgstdepay") == 0) return 1;  // expose
   return 0;                                                               // try
 }
@@ -203,14 +206,8 @@ bool Uridecodebin::pad_is_image(const std::string& padname) {
 
 void Uridecodebin::decodebin_pad_added_cb(GstElement* object, GstPad* pad, gpointer /*user_data*/) {
   GstBin* bin = static_cast<GstBin*>(g_object_get_data(G_OBJECT(object), "bin"));
-  GstElement* decodebin =
-      static_cast<GstElement*>(g_object_get_data(G_OBJECT(object), "decodebin"));
   GstElement* shmdatasink =
       static_cast<GstElement*>(g_object_get_data(G_OBJECT(object), "shmdatasink"));
-
-  if (!bin || !decodebin || !shmdatasink)
-    g_warning(
-        "Probable bug in gstreamer, this should never happen: %s line %d", __FILE__, __LINE__);
 
   GstElement* imagefreeze = nullptr;
   GstUtils::make_element("imagefreeze", &imagefreeze);
@@ -218,8 +215,7 @@ void Uridecodebin::decodebin_pad_added_cb(GstElement* object, GstPad* pad, gpoin
 
   GstPad* sinkpad = gst_element_get_static_pad(imagefreeze, "sink");
   On_scope_exit { gst_object_unref(sinkpad); };
-  if (GST_PAD_LINK_OK != gst_pad_link(pad, sinkpad))
-    g_warning("pad link failed from decodebin to imagefreeze (uridecodebin)");
+  gst_pad_link(pad, sinkpad);
   gst_element_link(imagefreeze, shmdatasink);
   GstUtils::sync_state_with_parent(imagefreeze);
   GstUtils::sync_state_with_parent(shmdatasink);
@@ -233,7 +229,7 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   On_scope_exit { g_strfreev(padname_split); };
   stream_is_image = pad_is_image(padname);
 
-  g_debug("uridecodebin new pad name is %s", padname.c_str());
+  debug("uridecodebin new pad name is %", padname);
   GstElement* shmdatasink = nullptr;
   GstUtils::make_element("shmdatasink", &shmdatasink);
 
@@ -252,19 +248,19 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
     GstPad* sinkpad = gst_element_get_static_pad(decodebin, "sink");
     On_scope_exit { gst_object_unref(sinkpad); };
     if (GST_PAD_LINK_OK != gst_pad_link(pad, sinkpad))
-      g_warning("pad link failed from uridecodebin to decodebin (fixed image in uridecodebin)");
+      warning("pad link failed from uridecodebin to decodebin (fixed image in uridecodebin)");
   } else {
     gst_bin_add(GST_BIN(bin), shmdatasink);
     GstPad* sinkpad = gst_element_get_static_pad(shmdatasink, "sink");
     On_scope_exit { gst_object_unref(sinkpad); };
     if (GST_PAD_LINK_OK != gst_pad_link(pad, sinkpad))
-      g_warning("pad link failed from uridecodebin to shmdatasink (uridecodebin)");
+      warning("pad link failed from uridecodebin to shmdatasink (uridecodebin)");
   }
 
   // counting
   auto count = counter_.get_count(padname_split[0]);
   std::string media_name = std::string(padname_split[0]) + "-" + std::to_string(count);
-  g_debug("uridecodebin: new media %s\n", media_name.c_str());
+  debug("uridecodebin: new media %", media_name);
   std::string shmpath = make_file_name(media_name);
   g_object_set(G_OBJECT(shmdatasink), "socket-path", shmpath.c_str(), nullptr);
 
@@ -286,7 +282,7 @@ void Uridecodebin::uridecodebin_pad_added_cb(GstElement* object, GstPad* pad, gp
   if (gst_caps_can_intersect(context->rtpgstcaps_, newcaps)) {
     // asking rtpbin to send an event when a packet is lost (do-lost property)
     GstUtils::set_element_property_in_bin(object, "gstrtpbin", "do-lost", TRUE);
-    g_debug("custom rtp stream found");
+    context->debug("custom rtp stream found");
     GstElement* rtpgstdepay = nullptr;
     GstUtils::make_element("rtpgstdepay", &rtpgstdepay);
 
@@ -309,18 +305,18 @@ void Uridecodebin::uridecodebin_pad_added_cb(GstElement* object, GstPad* pad, gp
 
 bool Uridecodebin::to_shmdata() {
   if (uri_.empty()) {
-    g_warning("no uri to decode");
+    warning("no uri to decode");
     return false;
   }
   counter_.reset_counter_map();
   destroy_uridecodebin();
   if (!gst_uri_is_valid(uri_.c_str())) {
-    g_warning("uri %s is invalid (uridecodebin)", uri_.c_str());
-    g_message("ERROR:The provided uri is invalid.");
+    warning("uri % is invalid (uridecodebin)", uri_);
+    message("ERROR:The provided uri is invalid.");
     return false;
   }
   init_uridecodebin();
-  g_debug("to_shmdata set uri %s", uri_.c_str());
+  debug("to_shmdata set uri %", uri_);
   g_object_set(G_OBJECT(uridecodebin_), "uri", uri_.c_str(), nullptr);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), uridecodebin_);
   gst_pipeline_->play(true);

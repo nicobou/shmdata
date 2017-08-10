@@ -21,11 +21,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureScan3DGPU,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-PostureScan3DGPU::PostureScan3DGPU(const std::string&) {
-  calibration_reader_ = std::make_unique<CalibrationReader>("default.kvc");
-  register_ = std::make_unique<Register>();
-}
-
 PostureScan3DGPU::~PostureScan3DGPU() {}
 
 bool PostureScan3DGPU::start() {
@@ -199,7 +194,7 @@ void PostureScan3DGPU::update_loop() {
             this, make_file_name("mesh"), mesh_serialized.size() * 2, data_type);
 
         if (!mesh_writer_) {
-          g_warning("Unable to create mesh writer");
+          warning("Unable to create mesh writer");
           return;
         }
       }
@@ -219,7 +214,7 @@ void PostureScan3DGPU::update_loop() {
                 to_string(height) + ",framerate=30/1");
 
         if (!texture_writer_) {
-          g_warning("Unable to create texture writer");
+          warning("Unable to create texture writer");
           return;
         }
       }
@@ -231,7 +226,10 @@ void PostureScan3DGPU::update_loop() {
   }  // while(update_loop_started_)
 }  // update_loop()
 
-bool PostureScan3DGPU::init() {
+PostureScan3DGPU::PostureScan3DGPU(QuiddityConfiguration&&) {
+  calibration_reader_ = std::make_unique<CalibrationReader>("default.kvc");
+  register_ = std::make_unique<Register>();
+
   init_startable(this);
 
   pmanage<MPtr(&PContainer::make_selection<>)>("capture_mode",
@@ -518,8 +516,6 @@ bool PostureScan3DGPU::init() {
       refine_mesh_point_separation_,
       0.0,
       1.0);
-
-  return true;
 }
 
 void PostureScan3DGPU::reset_solidify() {

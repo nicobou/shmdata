@@ -36,7 +36,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(NVdecPlugin,
 const std::array<const char*, 5> NVdecPlugin::kSupportedCodecs{
     {"video/x-h264", "video/x-h265", "video/mpeg", "video/x-jpeg", "image/jpeg"}};
 
-NVdecPlugin::NVdecPlugin(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {
+NVdecPlugin::NVdecPlugin(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   auto devices = CudaContext::get_devices();
   std::vector<std::string> names;
   for (auto& it : devices) {
@@ -44,7 +45,8 @@ NVdecPlugin::NVdecPlugin(const std::string&) : shmcntr_(static_cast<Quiddity*>(t
     names.push_back(std::string("GPU #") + std::to_string(it.first) + " " + it.second);
   }
   if (names.empty()) {
-    g_message("ERROR:Could not find any CUDA-enabled GPU.");
+    message("ERROR:Could not find any CUDA-enabled GPU.");
+    is_valid_ = false;
     return;
   }
   devices_ = Selection<>(std::move(names), 0);
@@ -60,17 +62,16 @@ NVdecPlugin::NVdecPlugin(const std::string&) : shmcntr_(static_cast<Quiddity*>(t
                                                    "decoder GPU",
                                                    "Selection of the GPU used for decoding",
                                                    devices_);
-}
-
-bool NVdecPlugin::init() {
-  if (devices_.empty()) return false;
+  if (devices_.empty()) {
+    is_valid_ = false;
+    return;
+  }
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
       [this](const std::string&) { return this->on_shmdata_disconnect(); },
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-  return true;
 }
 
 bool NVdecPlugin::can_sink_caps(const std::string& strcaps) {
@@ -111,11 +112,11 @@ bool NVdecPlugin::on_shmdata_disconnect() {
 
 void NVdecPlugin::on_shmreader_data(void* data, size_t size) {
   if (!ds_)
-    ds_ = std::make_unique<ThreadedWrapper<NVencDS>>(devices_nv_ids_[devices_.get_current_index()],
-                                                     video_codec_);
+    ds_ = std::make_unique<ThreadedWrapper<NVencDS>>(
+        devices_nv_ids_[devices_.get_current_index()], video_codec_, get_log_ptr());
 
   if (!ds_->invoke<MPtr(&NVencDS::safe_bool_idiom)>()) {
-    g_warning("nvcuvid failed to create a decoding session (nvdec).");
+    warning("nvcuvid failed to create a decoding session (nvdec).");
     ds_.reset(nullptr);
     return;
   }
@@ -183,31 +184,31 @@ void NVdecPlugin::on_shmreader_server_connected(const std::string& data_descr) {
 
   GstStructure* s = gst_caps_get_structure(caps, 0);
   if (nullptr == s) {
-    g_warning("Cannot get structure from caps (nvdec)");
+    warning("Cannot get structure from caps (nvdec)");
     return;
   }
 
   gint width = 0, height = 0;
   if (!gst_structure_get_int(s, "width", &width) || !gst_structure_get_int(s, "height", &height)) {
-    g_warning("Cannot get width/height from shmdata description (nvdec)");
+    warning("Cannot get width/height from shmdata description (nvdec)");
     return;
   }
 
   gint frame_num = 0, frame_den = 0;
   if (!gst_structure_get_fraction(s, "framerate", &frame_num, &frame_den)) {
-    g_warning("Cannot get framerate from shmdata description (nvdec)");
+    warning("Cannot get framerate from shmdata description (nvdec)");
     return;
   }
 
   const std::string type = gst_structure_get_name(s);
   if (type.empty()) {
-    g_warning("Cannot get codec from shmdata description (nvdec)");
+    warning("Cannot get codec from shmdata description (nvdec)");
     return;
   }
 
   std::string content_type = type.substr(0, 5);
   if (content_type != "video" && content_type != "image") {
-    g_warning("Shmdata description is neither a video nor an image (nvdec).");
+    warning("Shmdata description is neither a video nor an image (nvdec).");
     return;
   } else {
     std::string codec = type.substr(6);
@@ -217,7 +218,7 @@ void NVdecPlugin::on_shmreader_server_connected(const std::string& data_descr) {
     video_codec_ = convert_video_type_to_cuda(content_type, codec, mpeg_version);
 
     if (video_codec_ == cudaVideoCodec_NumCodecs) {
-      g_warning("Could not find valid codec in shmdata description (nvdec)");
+      warning("Could not find valid codec in shmdata description (nvdec)");
       return;
     }
   }
@@ -261,11 +262,15 @@ cudaVideoCodec NVdecPlugin::convert_video_type_to_cuda(const std::string& conten
           video_codec = cudaVideoCodec_MPEG4;
           break;
         default:
-          g_warning("Unsupported mpeg version %u (nvdec)", mpeg_version);
+#ifdef DEBUG
+          std::cerr << "(nvdec) Unsupported mpeg version: " << std::to_string(mpeg_version) << '\n';
+#endif
           break;
       }
     } else {
-      g_warning("Unsupported video codec %s (nvdec)", codec.c_str());
+#ifdef DEBUG
+      std::cerr << "(nvdec) Unsupported video version " << std::to_string(mpeg_version) << '\n';
+#endif
     }
   } else if (content_type == "image" && codec == "jpeg") {
     video_codec = cudaVideoCodec_JPEG;

@@ -27,6 +27,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include "./bool-log.hpp"
 #include "./categorizable.hpp"
 #include "./json-builder.hpp"
 
@@ -43,7 +44,7 @@ class Method : public Categorizable {
   ~Method();
   Method(const Method& source);
   Method& operator=(const Method& source);
-  bool set_method(method_ptr method, return_type rtype, args_types atypes, gpointer user_data);
+  BoolLog set_method(method_ptr method, return_type rtype, args_types atypes, gpointer user_data);
   bool invoke(std::vector<std::string> args, GValue* return_value);
   void set_description(std::string long_name,
                        std::string method_name,

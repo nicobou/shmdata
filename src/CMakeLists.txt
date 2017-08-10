@@ -63,7 +63,7 @@ if (WITH_SWITCHER_CTRL)
         soapclient-static
         )
 
-    add_dependencies(switcher-ctrl soapclient)
+    add_dependencies(switcher-ctrl soapclient-static)
 
     # WARNINGS
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)

@@ -134,10 +134,9 @@ std::pair<std::string, std::string> FileUtils::get_file_content(const std::strin
   return std::make_pair(res, std::string());
 }
 
-bool FileUtils::save(const std::string& content, const std::string& file_path) {
+BoolLog FileUtils::save(const std::string& content, const std::string& file_path) {
   if (content.empty()) {
-    g_warning("cannot save empty content to file");
-    return false;
+    return BoolLog(false, "cannot save empty content to file");
   }
   GFile* file = g_file_new_for_commandline_arg(file_path.c_str());
   On_scope_exit { g_object_unref(file); };
@@ -150,9 +149,8 @@ bool FileUtils::save(const std::string& content, const std::string& file_path) {
                                                   &error);
   On_scope_exit { g_object_unref(file_stream); };
   if (error != nullptr) {
-    g_warning("%s", error->message);
-    g_error_free(error);
-    return false;
+    On_scope_exit { g_error_free(error); };
+    return BoolLog(false, error->message);
   }
   // saving the save tree to the file
   gchar* history = g_strdup(content.c_str());
@@ -160,15 +158,13 @@ bool FileUtils::save(const std::string& content, const std::string& file_path) {
       (GOutputStream*)file_stream, history, sizeof(gchar) * strlen(history), nullptr, &error);
   g_free(history);
   if (error != nullptr) {
-    g_warning("%s", error->message);
-    g_error_free(error);
-    return false;
+    On_scope_exit { g_error_free(error); };
+    return BoolLog(false, error->message);
   }
   g_output_stream_close((GOutputStream*)file_stream, nullptr, &error);
   if (error != nullptr) {
-    g_warning("%s", error->message);
-    g_error_free(error);
-    return false;
+    On_scope_exit { g_error_free(error); };
+    return BoolLog(false, error->message);
   }
   return true;
 }
@@ -177,14 +173,12 @@ std::string FileUtils::get_content(const std::string& file_path) {
   // opening file
   std::ifstream file_stream(file_path);
   if (!file_stream) {
-    g_warning("cannot open %s for loading history", file_path.c_str());
     return std::string();
   }
   // get file content into a string
   file_stream.seekg(0, std::ios::end);
   auto size = file_stream.tellg();
   if (0 == size) {
-    g_warning("file %s is empty", file_path.c_str());
     return std::string();
   }
   std::string file_str;

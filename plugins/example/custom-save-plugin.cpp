@@ -29,8 +29,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(CustomSavePlugin,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-CustomSavePlugin::CustomSavePlugin(const std::string&)
-    : has_loaded_custom_state_id_(pmanage<MPtr(&PContainer::make_bool)>(
+CustomSavePlugin::CustomSavePlugin(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      has_loaded_custom_state_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "has_loaded_custom_state",
           nullptr,
           [this]() { return has_loaded_custom_state_ && on_loaded_called_; },
@@ -45,7 +46,6 @@ CustomSavePlugin::CustomSavePlugin(const std::string&)
           "A custom state has been saved with success",
           has_loaded_custom_state_)) {}
 
-bool CustomSavePlugin::init() { return true; }
 
 InfoTree::ptr CustomSavePlugin::on_saving() {
   InfoTree::ptr precious_information = InfoTree::make();

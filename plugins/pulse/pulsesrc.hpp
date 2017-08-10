@@ -34,7 +34,7 @@
 namespace switcher {
 class PulseSrc : public Quiddity, public StartableQuiddity {
  public:
-  PulseSrc(const std::string&);
+  PulseSrc(QuiddityConfiguration&&);
   ~PulseSrc();
   PulseSrc(const PulseSrc&) = delete;
   PulseSrc& operator=(const PulseSrc&) = delete;
@@ -81,7 +81,6 @@ class PulseSrc : public Quiddity, public StartableQuiddity {
   std::mutex quit_mutex_{};
   std::condition_variable quit_cond_{};
 
-  bool init() final;
   bool start() final;
   bool stop() final;
   InfoTree::ptr on_saving() final;

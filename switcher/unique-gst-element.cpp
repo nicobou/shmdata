@@ -31,9 +31,7 @@ UGstElem::gst_element_handle::~gst_element_handle() {
   }
 };
 
-bool UGstElem::renew(UGstElem& element, const std::vector<std::string>& props) {
-  g_debug("renewing gst element of class %s", element.class_name_.c_str());
-
+BoolLog UGstElem::renew(UGstElem& element, const std::vector<std::string>& props) {
   // Unregister all property callbacks
   std::map<std::string, prop_notification_cb_t> registered_props;
   for (auto& notif : element.property_notifications_) {
@@ -43,7 +41,7 @@ bool UGstElem::renew(UGstElem& element, const std::vector<std::string>& props) {
 
   std::unique_ptr<gst_element_handle> tmp =
       std::make_unique<gst_element_handle>(element.class_name_);
-  if (!tmp) return false;
+  if (!tmp) return BoolLog(false, "issue making tmp element");
   for (auto& it : props)
     GstUtils::apply_property_value(
         G_OBJECT(element.element_->get()), G_OBJECT(tmp->get()), it.c_str());
@@ -54,12 +52,11 @@ bool UGstElem::renew(UGstElem& element, const std::vector<std::string>& props) {
     element.register_notify_on_property_change(prop.first, prop.second);
   }
 
-  return true;
+  return BoolLog(true);
 }
 
 UGstElem::UGstElem(const gchar* class_name)
     : class_name_(class_name), element_(std::make_unique<gst_element_handle>(class_name)) {
-  if (!element_) g_warning("GStreamer element cannot be created (type %s)", class_name);
 }
 
 bool UGstElem::safe_bool_idiom() const { return element_ && element_->get(); }
@@ -85,22 +82,15 @@ void UGstElem::property_notify_cb(GObject* /*gobject*/, GParamSpec* /*pspec*/, g
     prop_notification->second.notification_cb();
 }
 
-bool UGstElem::register_notify_on_property_change(const std::string& gprop_name,
-                                                  prop_notification_cb_t callback) {
-  if (!element_) return false;
-
+BoolLog UGstElem::register_notify_on_property_change(const std::string& gprop_name,
+                                                     prop_notification_cb_t callback) {
   auto object = element_->get();
-  if (!object) {
-    g_warning("BUG: trying to register a property notification on an invalid element.");
-    return false;
-  }
 
   if (property_notifications_.cend() != property_notifications_.find(gprop_name)) {
-    g_warning(
-        "Trying to register a notification for property %s while there is already one. Call "
-        "unregister_notify_on_property_change() first.",
-        gprop_name.c_str());
-    return false;
+    return BoolLog(
+        false,
+        std::string("Trying to register a notification for property ") + gprop_name +
+            " while there is already one. Call unregister_notify_on_property_change() first.");
   }
 
   // Doing this to keep a valid reference to the object because this is going to the C realm.
@@ -114,36 +104,25 @@ bool UGstElem::register_notify_on_property_change(const std::string& gprop_name,
                                               &prop_notification.cb_user_data);
   if (!handler_id) {
     property_notifications_.erase(gprop_name);
-    g_warning("Could not register notification to property %s.", gprop_name.c_str());
-    return false;
+    return BoolLog(false, std::string("Could not register notification to property ") + gprop_name);
   }
 
   prop_notification.handler_id = handler_id;
   prop_notification.notification_cb = callback;
 
-  return true;
+  return BoolLog(true);
 }
 
-bool UGstElem::unregister_notify_on_property_change(const std::string& gprop_name) {
-  if (!element_) return false;
-
-  auto object = element_->get();
-  if (!object) {
-    g_warning("BUG: trying to register a property notification on an invalid element.");
-    return false;
-  }
-
+BoolLog UGstElem::unregister_notify_on_property_change(const std::string& gprop_name) {
   auto notif = property_notifications_.find(gprop_name);
-  if (property_notifications_.cend() == notif) {
-    g_warning(
-        "Cannot unregister notification for property %s, no notification was registered for it.",
-        gprop_name.c_str());
-    return false;
-  }
+  if (property_notifications_.cend() == notif)
+    return BoolLog(false,
+                   std::string("Cannot unregister notification for property ") + gprop_name +
+                       ", no notification was registered for it.");
 
   g_signal_handler_disconnect(G_OBJECT(element_->get()), notif->second.handler_id);
   property_notifications_.erase(notif);
 
-  return true;
+  return BoolLog(true);
 }
 }  // namespace switcher

@@ -34,7 +34,7 @@
 namespace switcher {
 class PostureSc3 : public Quiddity, public StartableQuiddity {
  public:
-  PostureSc3(const std::string&);
+  PostureSc3(QuiddityConfiguration&&);
   PostureSc3(const PostureSc3&) = delete;
   ~PostureSc3();
 
@@ -42,7 +42,6 @@ class PostureSc3 : public Quiddity, public StartableQuiddity {
   bool stop();
 
  private:
-  bool init() final;
 
   static int get_output_mesh(std::vector<unsigned char>);
   void cb_frame_cloud(int index, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud);

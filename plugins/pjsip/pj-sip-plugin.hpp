@@ -37,13 +37,13 @@ class SIPPlugin : public Quiddity {
   friend PJSIP;
   friend PJStunTurn;
   friend PJWhiteList;
+  friend PJICEStreamTrans;
 
  public:
-  SIPPlugin(const std::string&);
+  SIPPlugin(QuiddityConfiguration&&);
   ~SIPPlugin();
   SIPPlugin(const SIPPlugin&) = delete;
   SIPPlugin& operator=(const SIPPlugin&) = delete;
-  bool init();
   bool start();
   bool stop();
 

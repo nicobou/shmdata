@@ -37,18 +37,20 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RtpSession,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-RtpSession::RtpSession(const std::string&)
-    : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
+RtpSession::RtpSession(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       destinations_json_id_(
           pmanage<MPtr(&PContainer::make_string)>("destinations-json",
                                                   nullptr,
                                                   [this]() { return get_destinations_json(); },
                                                   "Destinations",
                                                   "json formated description of destinations",
-                                                  "")) {}
-
-bool RtpSession::init() {
-  if (!GstUtils::make_element("rtpbin", &rtpsession_)) return false;
+                                                  "")) {
+  if (!GstUtils::make_element("rtpbin", &rtpsession_)) {
+    is_valid_ = false;
+    return;
+  }
   g_object_set(G_OBJECT(rtpsession_), "ntp-sync", TRUE, "async-handling", TRUE, nullptr);
   // g_object_set(G_OBJECT(get_bin()), "async-handling", TRUE, nullptr);
   g_signal_connect(G_OBJECT(rtpsession_), "on-bye-ssrc", (GCallback)on_bye_ssrc, (gpointer) this);
@@ -176,7 +178,6 @@ bool RtpSession::init() {
                                        1400,
                                        1,
                                        15000);
-  return true;
 }
 
 gboolean RtpSession::write_sdp_file_wrapped(gpointer nick_name, gpointer user_data) {
@@ -190,7 +191,7 @@ gboolean RtpSession::write_sdp_file_wrapped(gpointer nick_name, gpointer user_da
 bool RtpSession::write_sdp_file(std::string dest_name) {
   auto it = destinations_.find(dest_name);
   if (destinations_.end() == it) {
-    g_warning("%s does not exists, cannot write sdp file", dest_name.c_str());
+    warning("% does not exists, cannot write sdp file", dest_name);
     return false;
   }
   std::string sdp_file = make_file_name(dest_name);
@@ -209,7 +210,7 @@ std::string RtpSession::make_rtp_payloader(GstElement* shmdatasrc, const std::st
     pay = gst_element_factory_create(factory, nullptr);
   else
     GstUtils::make_element("rtpgstpay", &pay);
-  g_debug("using %s payloader for %s", GST_ELEMENT_NAME(pay), caps_str.c_str());
+  debug("using % payloader for %", std::string(GST_ELEMENT_NAME(pay)), caps_str);
   g_object_set(G_OBJECT(pay), "mtu", (guint)mtu_at_add_data_stream_, nullptr);
   // add capture and payloading to the pipeline and link
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), pay);
@@ -222,7 +223,7 @@ std::string RtpSession::make_rtp_payloader(GstElement* shmdatasrc, const std::st
   GstPad* srcpad = gst_element_get_static_pad(pay, "src");
   On_scope_exit { gst_object_unref(srcpad); };
   if (gst_pad_link(srcpad, sinkpad) != GST_PAD_LINK_OK)
-    g_warning("failed to link payloader to rtpbin");
+    warning("failed to link payloader to rtpbin");
   // get name for the newly created pad
   gchar* rtp_sink_pad_name = gst_pad_get_name(sinkpad);
   On_scope_exit { g_free(rtp_sink_pad_name); };
@@ -247,7 +248,7 @@ gboolean RtpSession::add_destination_wrapped(gpointer nick_name,
 
 bool RtpSession::add_destination(std::string nick_name, std::string host_name) {
   if (destinations_.end() != destinations_.find(nick_name)) {
-    g_debug("RtpSession: a destination named %s already exists, cannot add", nick_name.c_str());
+    debug("RtpSession: a destination named % already exists, cannot add", nick_name);
     return false;
   }
   RtpDestination::ptr dest = std::make_shared<RtpDestination>(this);
@@ -269,7 +270,7 @@ gboolean RtpSession::remove_destination_wrapped(gpointer nick_name, gpointer use
 bool RtpSession::remove_destination(std::string nick_name) {
   auto it = destinations_.find(nick_name);
   if (destinations_.end() == it) {
-    g_warning("RtpSession: destination named %s does not exists, cannot remove", nick_name.c_str());
+    warning("RtpSession: destination named % does not exists, cannot remove", nick_name);
     return false;
   }
   if (!it->second) return false;
@@ -296,17 +297,17 @@ bool RtpSession::add_udp_stream_to_dest(std::string shmpath,
                                         std::string port) {
   auto ds_it = data_streams_.find(shmpath);
   if (data_streams_.end() == ds_it) {
-    g_warning("RtpSession is not connected to %s", shmpath.c_str());
+    warning("RtpSession is not connected to %", std::string(shmpath));
     return false;
   }
   auto destination_it = destinations_.find(nick_name);
   if (destinations_.end() == destination_it) {
-    g_warning("RtpSession does not contain a destination named %s", nick_name.c_str());
+    warning("RtpSession does not contain a destination named %", std::string(nick_name));
     return false;
   }
   gint rtp_port = atoi(port.c_str());
   if (rtp_port % 2 != 0) {
-    g_warning("rtp destination port %s must be even, not odd", port.c_str());
+    warning("rtp destination port % must be even, not odd", port);
     return false;
   }
   // rtp stream (sending)
@@ -332,13 +333,13 @@ gboolean RtpSession::remove_udp_stream_to_dest_wrapped(gpointer shmpath,
 bool RtpSession::remove_udp_stream_to_dest(std::string shmpath, std::string dest_name) {
   auto ds_it = data_streams_.find(shmpath);
   if (data_streams_.end() == ds_it) {
-    g_warning("RtpSession is not connected to %s", shmpath.c_str());
+    warning("RtpSession is not connected to %", shmpath);
     return false;
   }
 
   RtpDestination::ptr dest = destinations_[dest_name];
   if (!(bool)dest) {
-    g_warning("RTP: destination %s does not exist", dest_name.c_str());
+    warning("RTP: destination % does not exist", dest_name);
     return false;
   }
   std::string port = dest->get_port(shmpath);
@@ -346,7 +347,7 @@ bool RtpSession::remove_udp_stream_to_dest(std::string shmpath, std::string dest
 
   gint rtp_port = atoi(port.c_str());
   if (rtp_port % 2 != 0) {
-    g_warning("rtp destination port %s must be even, not odd", port.c_str());
+    warning("rtp destination port % must be even, not odd", port);
     return false;
   }
 
@@ -423,13 +424,13 @@ bool RtpSession::remove_data_stream(const std::string& shmpath) {
   }
   auto ds_it = data_streams_.find(shmpath);
   if (data_streams_.end() == ds_it) {
-    g_debug("RTP remove_data_stream: %s not present", shmpath.c_str());
+    debug("RTP remove_data_stream: % not present", shmpath);
     return false;
   }
   prune_tree("rtp_caps." + shmpath);
   prune_tree("shmdata.reader." + shmpath);
   data_streams_.erase(ds_it);
-  g_debug("data_stream %s removed", shmpath.c_str());
+  debug("data_stream % removed", shmpath);
   return true;
 }
 
@@ -438,7 +439,7 @@ void RtpSession::on_bye_ssrc(GstElement* /*rtpbin */,
                              guint /*ssrc */,
                              gpointer /*user_data */) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  // g_debug("on_bye_ssrc");
+  // debug("on_bye_ssrc");
 }
 
 void RtpSession::on_bye_timeout(GstElement* /*rtpbin */,
@@ -446,7 +447,7 @@ void RtpSession::on_bye_timeout(GstElement* /*rtpbin */,
                                 guint /*ssrc */,
                                 gpointer /*user_data */) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  // g_debug("on_bye_timeout");
+  // debug("on_bye_timeout");
 }
 
 void RtpSession::on_new_ssrc(GstElement* /*rtpbin */,
@@ -454,7 +455,7 @@ void RtpSession::on_new_ssrc(GstElement* /*rtpbin */,
                              guint /*ssrc */,
                              gpointer /*user_data */) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_debug("on_new_ssrc");
+  // debug("on_new_ssrc");
 }
 
 void RtpSession::on_npt_stop(GstElement* /*rtpbin */,
@@ -462,7 +463,7 @@ void RtpSession::on_npt_stop(GstElement* /*rtpbin */,
                              guint /*ssrc */,
                              gpointer /*user_data */) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  // g_debug("on_npt_stop");
+  // debug("on_npt_stop");
 }
 
 void RtpSession::on_sender_timeout(GstElement* /*rtpbin */,
@@ -470,7 +471,7 @@ void RtpSession::on_sender_timeout(GstElement* /*rtpbin */,
                                    guint /*ssrc */,
                                    gpointer /*user_data */) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  // g_debug("on_sender_timeout");
+  // debug("on_sender_timeout");
 }
 
 void RtpSession::on_ssrc_active(GstElement* /*rtpbin */,
@@ -478,7 +479,7 @@ void RtpSession::on_ssrc_active(GstElement* /*rtpbin */,
                                 guint /*ssrc */,
                                 gpointer /*user_data */) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  // g_debug("on_ssrc_active");
+  // debug("on_ssrc_active");
 }
 
 void RtpSession::on_ssrc_collision(GstElement* /*rtpbin */,
@@ -486,7 +487,7 @@ void RtpSession::on_ssrc_collision(GstElement* /*rtpbin */,
                                    guint /*ssrc */,
                                    gpointer /*user_data */) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_debug("on_ssrc_active");
+  // debug("on_ssrc_active");
 }
 
 void RtpSession::on_ssrc_sdes(GstElement* /*rtpbin */,
@@ -494,7 +495,7 @@ void RtpSession::on_ssrc_sdes(GstElement* /*rtpbin */,
                               guint /*ssrc */,
                               gpointer /*user_data */) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  // g_debug("on_ssrc_sdes");
+  // debug("on_ssrc_sdes");
 }
 
 void RtpSession::on_ssrc_validated(GstElement* /*rtpbin */,
@@ -502,7 +503,7 @@ void RtpSession::on_ssrc_validated(GstElement* /*rtpbin */,
                                    guint /*ssrc */,
                                    gpointer /*user_data */) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  // g_debug("on_ssrc_validated");
+  // debug("on_ssrc_validated");
 }
 
 void RtpSession::on_timeout(GstElement* /*rtpbin */,
@@ -510,28 +511,24 @@ void RtpSession::on_timeout(GstElement* /*rtpbin */,
                             guint /*ssrc */,
                             gpointer /*user_data */) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  // g_debug("on_timeout");
+  // debug("on_timeout");
 }
 
-void RtpSession::on_pad_added(GstElement* /*gstelement */,
-                              GstPad* new_pad,
-                              gpointer /*user_data*/) {
-  // RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_debug("on_pad_added, name: %s, direction: %d",
-          gst_pad_get_name(new_pad),
-          gst_pad_get_direction(new_pad));
+void RtpSession::on_pad_added(GstElement* /*gstelement */, GstPad* new_pad, gpointer user_data) {
+  RtpSession* context = static_cast<RtpSession*>(user_data);
+  context->debug("on_pad_added, name: %", std::string(gst_pad_get_name(new_pad)));
 }
 
 void RtpSession::on_pad_removed(GstElement* /*gstelement */,
                                 GstPad* /*new_pad*/,
                                 gpointer /*user_data */) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  // g_debug("on_pad_removed");
+  // debug("on_pad_removed");
 }
 
 void RtpSession::on_no_more_pad(GstElement* /*gstelement */, gpointer /*user_data */) {
   // RtpSession *context = static_cast<RtpSession *>(user_data);
-  // g_debug("on_no_more_pad");
+  // debug("on_no_more_pad");
 }
 
 std::string RtpSession::get_destinations_json() {
@@ -581,7 +578,7 @@ void RtpSession::on_rtppayloder_caps(GstElement* typefind,
 bool RtpSession::make_udp_sinks(const std::string& shmpath, const std::string& rtp_id) {
   auto it = data_streams_.find(shmpath);
   if (data_streams_.end() == it) {
-    g_warning("cannot make udp sink");
+    warning("cannot make udp sink");
     return false;
   }
   {  // RTP
@@ -614,7 +611,7 @@ bool RtpSession::make_udp_sinks(const std::string& shmpath, const std::string& r
     gst_element_add_pad(udpsink_bin, ghost_sinkpad);
     gst_object_unref(sink_pad);
     if (GST_PAD_LINK_OK != gst_pad_link(src_pad, ghost_sinkpad))
-      g_warning("linking with multiudpsink bin failed");
+      warning("linking with multiudpsink bin failed");
     GstUtils::sync_state_with_parent(udpsink_bin);
     GstUtils::wait_state_changed(udpsink_bin);
   }
@@ -632,7 +629,7 @@ bool RtpSession::make_udp_sinks(const std::string& shmpath, const std::string& r
     GstPad* sink_pad = gst_element_get_static_pad(udpsink, "sink");
     On_scope_exit { gst_object_unref(sink_pad); };
     if (GST_PAD_LINK_OK != gst_pad_link(rtcp_src_pad, sink_pad))
-      g_warning("linking with multiudpsink bin failed");
+      warning("linking with multiudpsink bin failed");
   }
   return true;
 }

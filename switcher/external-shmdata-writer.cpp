@@ -31,9 +31,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalShmdataWriter,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-ExternalShmdataWriter::ExternalShmdataWriter(const std::string&) {}
-
-bool ExternalShmdataWriter::init() {
+ExternalShmdataWriter::ExternalShmdataWriter(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)) {
   pmanage<MPtr(&PContainer::make_string)>(
       "shmdata-path",
       [this](const std::string& val) {
@@ -51,7 +50,6 @@ bool ExternalShmdataWriter::init() {
       "Shmdata Path",
       "Path Of The Shmdata The Include",
       "");
-  return true;
 }
 
 InfoTree::ptr ExternalShmdataWriter::on_saving() {

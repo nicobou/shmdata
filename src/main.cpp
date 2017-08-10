@@ -22,8 +22,10 @@
 #include <gtk/gtk.h>
 #endif
 #include <vector>
+#include "switcher/console-logger.hpp"
 #include "switcher/file-utils.hpp"
 #include "switcher/information-tree-json.hpp"
+#include "switcher/silent-logger.hpp"
 #include "switcher/switcher.hpp"
 
 using namespace switcher;
@@ -129,11 +131,6 @@ void leave(int sig) {
   exit(sig);
 }
 
-static void quiet_log_handler(const gchar* /*log_domain */,
-                              GLogLevelFlags /*log_level */,
-                              const gchar* /*message */,
-                              gpointer /*user_data */) {}
-
 int main(int argc, char* argv[]) {
   setlocale(LC_ALL, "");
   (void)signal(SIGINT, leave);
@@ -160,61 +157,10 @@ int main(int argc, char* argv[]) {
   if (server_name == nullptr) server_name = "default";
   if (port_number == nullptr) port_number = "27182";
 
-  manager = Switcher::make_manager(server_name);
-
-  // create logger managing switcher log domain
-  auto internal_logger = manager->create("logger", "internal-logger");
-  // manage logs from shmdata
-  manager->invoke_va(internal_logger, "install_log_handler", nullptr, "shmdata", nullptr);
-  // manage logs from GStreamer
-  manager->invoke_va(internal_logger, "install_log_handler", nullptr, "GStreamer", nullptr);
-  // manage logs from Glib
-  manager->invoke_va(internal_logger, "install_log_handler", nullptr, "GLib", nullptr);
-  // manage logs from Glib-GObject
-  manager->invoke_va(internal_logger, "install_log_handler", nullptr, "GLib-GObject", nullptr);
-
-  if (quiet)
-    manager->use_prop<MPtr(&PContainer::set_str)>(
-        internal_logger,
-        manager->use_prop<MPtr(&PContainer::get_id)>(internal_logger, "mute"),
-        "true");
-  else
-    manager->use_prop<MPtr(&PContainer::set_str)>(
-        internal_logger,
-        manager->use_prop<MPtr(&PContainer::get_id)>(internal_logger, "mute"),
-        "false");
-
-  if (debug)
-    manager->use_prop<MPtr(&PContainer::set_str)>(
-        internal_logger,
-        manager->use_prop<MPtr(&PContainer::get_id)>(internal_logger, "debug"),
-        "true");
-  else
-    manager->use_prop<MPtr(&PContainer::set_str)>(
-        internal_logger,
-        manager->use_prop<MPtr(&PContainer::get_id)>(internal_logger, "debug"),
-        "false");
-
-  if (verbose)
-    manager->use_prop<MPtr(&PContainer::set_str)>(
-        internal_logger,
-        manager->use_prop<MPtr(&PContainer::get_id)>(internal_logger, "verbose"),
-        "true");
-  else
-    manager->use_prop<MPtr(&PContainer::set_str)>(
-        internal_logger,
-        manager->use_prop<MPtr(&PContainer::get_id)>(internal_logger, "verbose"),
-        "false");
-
-  // subscribe to logs:
-  {
-    auto last_line_id = manager->use_prop<MPtr(&PContainer::get_id)>(internal_logger, "last-line");
-    manager->use_prop<MPtr(&PContainer::subscribe)>(
-        internal_logger, last_line_id, [last_line_id, internal_logger]() {
-          g_print(
-              "%s\n",
-              manager->use_prop<MPtr(&PContainer::get_str)>(internal_logger, last_line_id).c_str());
-        });
+  if (debug) {
+    manager = Switcher::make_switcher<ConsoleLogger>(server_name);
+  } else {
+    manager = Switcher::make_switcher<SilentLogger>(server_name);
   }
 
 // loading plugins from default location // FIXME add an option
@@ -232,23 +178,19 @@ int main(int argc, char* argv[]) {
 
   // checking if this is printing info only
   if (listclasses) {
-    g_log_set_default_handler(quiet_log_handler, nullptr);
     std::vector<std::string> resultlist = manager->get_classes();
     for (uint i = 0; i < resultlist.size(); i++) g_print("%s\n", resultlist[i].c_str());
     return 0;
   }
   if (classesdoc) {
-    g_log_set_default_handler(quiet_log_handler, nullptr);
     g_print("%s\n", manager->get_classes_doc().c_str());
     return 0;
   }
   if (classdoc != nullptr) {
-    g_log_set_default_handler(quiet_log_handler, nullptr);
     g_print("%s\n", manager->get_class_doc(classdoc).c_str());
     return 0;
   }
   if (listmethodsbyclass != nullptr) {
-    g_log_set_default_handler(quiet_log_handler, nullptr);
     g_print("%s\n", manager->get_methods_description_by_class(listmethodsbyclass).c_str());
     return 0;
   }
@@ -264,7 +206,7 @@ int main(int argc, char* argv[]) {
   if (osc_port_number != nullptr) {
     std::string osc_name = manager->create("OSCctl");
     if (osc_name.compare("") == 0)
-      g_warning("osc plugin not found");
+      std::cerr << "osc plugin not found" << '\n';
     else
       manager->invoke_va(osc_name.c_str(), "set_port", nullptr, osc_port_number, nullptr);
   }
@@ -273,7 +215,7 @@ int main(int argc, char* argv[]) {
 
   if (load_file &&
       !manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(load_file)))) {
-    g_warning("could not load file %s", load_file);
+    std::cerr << "could not load file " << load_file << '\n';
   }
 
 #if HAVE_GTK

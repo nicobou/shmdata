@@ -32,7 +32,7 @@
 namespace switcher {
 class AudioTestSource : public Quiddity, public StartableQuiddity {
  public:
-  AudioTestSource(const std::string&);
+  AudioTestSource(QuiddityConfiguration&&);
   ~AudioTestSource() = default;
   AudioTestSource(const AudioTestSource&) = delete;
   AudioTestSource& operator=(const AudioTestSource&) = delete;
@@ -61,7 +61,6 @@ class AudioTestSource : public Quiddity, public StartableQuiddity {
   UGstElem shmdatasink_{"shmdatasink"};
   bool start() final;
   bool stop() final;
-  bool init() final;
   void update_caps();
 };
 

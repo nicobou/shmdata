@@ -31,19 +31,22 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Jérémie Soria");
 
-LTCSource::LTCSource(const std::string& name) : shmcntr_(static_cast<Quiddity*>(this)) {
-  jack_client_ =
-      jack_client_open(std::string(std::string("genLTC_") + name).c_str(), JackNullOption, nullptr);
+LTCSource::LTCSource(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+  jack_client_ = jack_client_open(
+      std::string(std::string("genLTC_") + get_name()).c_str(), JackNullOption, nullptr);
 
   if (!jack_client_) {
-    g_warning("Could not create jack client (ltcsource).");
+    warning("Could not create jack client (ltcsource).");
+    is_valid_ = false;
     return;
   }
 
   sample_rate_ = jack_get_sample_rate(jack_client_);
   if (!sample_rate_) {
-    g_warning("Could not get sample rate from jack server (ltcsource).");
-    g_message("ERROR: Could not get sample rate from jack server (ltcsource).");
+    warning("Could not get sample rate from jack server (ltcsource).");
+    message("ERROR: Could not get sample rate from jack server (ltcsource).");
+    is_valid_ = false;
     return;
   }
 
@@ -89,13 +92,7 @@ LTCSource::LTCSource(const std::string& name) : shmcntr_(static_cast<Quiddity*>(
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-
-  is_valid_ = true;
-}
-
-bool LTCSource::init() {
   init_startable(this);
-  return is_valid_;
 }
 
 LTCSource::~LTCSource() {
@@ -167,8 +164,8 @@ bool LTCSource::start() {
                                 LTC_USE_DATE);
 
   if (!encoder_) {
-    g_warning("Failed to create LTC encoder (ltcsource).");
-    g_message("ERROR: Failed to create LTC encoder (ltcsource).");
+    warning("Failed to create LTC encoder (ltcsource).");
+    message("ERROR: Failed to create LTC encoder (ltcsource).");
     return false;
   }
 
@@ -181,7 +178,7 @@ bool LTCSource::start() {
 
   // Now we start generating or reading on the cadence provided by the jack client
   if (!external_sync_source_ && jack_activate(jack_client_) != 0) {
-    g_warning("Could not activate jack client (ltcsource).");
+    warning("Could not activate jack client (ltcsource).");
     return false;
   }
 
@@ -208,9 +205,8 @@ bool LTCSource::stop() {
 bool LTCSource::on_shmdata_connect(const std::string& shmpath) {
   // We cannot connect a source while already generating LTC.
   if (is_started()) {
-    g_message(
-        "ERROR: Cannot connect sound source for cadencing during LTC generation (ltcsource).");
-    g_warning("Cannot connect sound source for cadencing during LTC generation (ltcsource).");
+    message("ERROR: Cannot connect sound source for cadencing during LTC generation (ltcsource).");
+    warning("Cannot connect sound source for cadencing during LTC generation (ltcsource).");
     return false;
   }
 
@@ -232,19 +228,19 @@ bool LTCSource::on_shmdata_connect(const std::string& shmpath) {
 
         GstStructure* s = gst_caps_get_structure(caps, 0);
         if (nullptr == s) {
-          g_warning("Cannot get structure from caps (ltcsource)");
+          warning("Cannot get structure from caps (ltcsource)");
           return;
         }
 
         auto format = gst_structure_get_string(s, "format");
         if (!format) {
-          g_warning("Cannot get format from shmdata description (ltcsource)");
+          warning("Cannot get format from shmdata description (ltcsource)");
           return;
         }
 
         int sample_rate = 0;
         if (!gst_structure_get_int(s, "rate", &sample_rate)) {
-          g_warning("Cannot get rate from shmdata description (ltcsource)");
+          warning("Cannot get rate from shmdata description (ltcsource)");
           return;
         }
         sample_rate_ = static_cast<unsigned int>(sample_rate);
@@ -261,10 +257,10 @@ bool LTCSource::on_shmdata_connect(const std::string& shmpath) {
           format_size_ = 8;
         else {
           format_size_ = 0;
-          g_message(
+          message(
               "ERROR: Only supports 8/16/32/64 bits audio formats for external sync "
               "source (ltcsource).");
-          g_warning(
+          warning(
               "Only supports 8/16/32/64 bits audio formats for external sync source (ltcsource).");
         }
       },
@@ -282,9 +278,8 @@ bool LTCSource::on_shmdata_disconnect() {
   // from the shmdata.
   if (is_started()) {
     pmanage<MPtr(&PContainer::set_str_str)>("started", "false");
-    g_message(
-        "ERROR: LTC generation stopped because the tick source was disconnected (ltcsource).");
-    g_warning("LTC generation stopped because the tick source was disconnected (ltcsource).");
+    message("ERROR: LTC generation stopped because the tick source was disconnected (ltcsource).");
+    warning("LTC generation stopped because the tick source was disconnected (ltcsource).");
   }
 
   external_sync_source_ = false;

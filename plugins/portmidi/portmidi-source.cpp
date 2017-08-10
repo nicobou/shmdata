@@ -33,12 +33,12 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSource,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PortMidiSource::PortMidiSource(const std::string&) {}
-
-bool PortMidiSource::init() {
+PortMidiSource::PortMidiSource(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)) {
   if (input_devices_enum_.empty()) {
-    g_message("ERROR:No MIDI capture device detected.");
-    return false;
+    message("ERROR:No MIDI capture device detected.");
+    is_valid_ = false;
+    return;
   }
   init_startable(this);
   devices_id_ =
@@ -107,14 +107,13 @@ bool PortMidiSource::init() {
                  Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT, nullptr),
                  this);
   disable_method("map_midi_to_property");
-  return true;
 }
 
 bool PortMidiSource::start() {
   shm_ =
       std::make_unique<ShmdataWriter>(this, make_file_name("midi"), sizeof(PmEvent), "audio/midi");
   if (!shm_.get()) {
-    g_message("ERROR:Midi failed to start");
+    message("ERROR:Midi failed to start");
     shm_.reset(nullptr);
     return false;
   }
@@ -160,12 +159,6 @@ void PortMidiSource::on_pm_event(PmEvent* event, void* user_data) {
     context->last_data2_ = (gint)data2;
   }
   context->pmanage<MPtr(&PContainer::notify)>(context->last_midi_value_id_);
-  // g_print ("to shm:  %u %u %u event ts %d tmp_event_ts %d\n",
-  //        status,
-  //        data1,
-  //        data2,
-  //      event->timestamp);
-
   // updating property if needed
   if (context->midi_channels_.find(std::make_pair(status, data1)) !=
       context->midi_channels_.end()) {
@@ -176,17 +169,12 @@ void PortMidiSource::on_pm_event(PmEvent* event, void* user_data) {
 
   // making property if needed
   if (context->make_property_for_next_midi_event_) {
-    QuiddityContainer::ptr manager = context->manager_impl_.lock();
-    if (manager) {
-      manager->get_root_manager()->invoke(context->get_name(),
-                                          "map_midi_to_property",
-                                          nullptr,
-                                          {context->next_property_name_,
-                                           std::to_string(context->last_status_),
-                                           std::to_string(context->last_data1_)});
-    } else {
-      g_warning("no manager in portmidi-source");
-    }
+    context->qcontainer_->get_switcher()->invoke(context->get_name(),
+                                                 "map_midi_to_property",
+                                                 nullptr,
+                                                 {context->next_property_name_,
+                                                  std::to_string(context->last_status_),
+                                                  std::to_string(context->last_data1_)});
     context->make_property_for_next_midi_event_ = FALSE;
   }
 }
@@ -202,7 +190,7 @@ gboolean PortMidiSource::remove_property_method(gchar* long_name, void* user_dat
   PortMidiSource* context = static_cast<PortMidiSource*>(user_data);
 
   if (context->midi_property_contexts_.find(long_name) == context->midi_property_contexts_.end()) {
-    g_debug("property %s not found for removing", long_name);
+    context->debug("property % not found for removing", std::string(long_name));
     return FALSE;
   }
 
@@ -237,12 +225,12 @@ bool PortMidiSource::make_property(std::string property_long_name,
                                    gint last_status,
                                    gint last_data1) {
   if (midi_channels_.find(std::make_pair(last_status, last_data1)) != midi_channels_.end()) {
-    g_message(
-        "ERROR:Midi Channels %u %u is already a property (is currently named "
-        "%s)",
-        last_status,
-        last_data1,
-        midi_channels_.find(std::make_pair(last_status, last_data1))->second.c_str());
+    message(
+        "ERROR:Midi Channels % % is already a property (is currently named "
+        "%)",
+        std::to_string(last_status),
+        std::to_string(last_data1),
+        midi_channels_.find(std::make_pair(last_status, last_data1))->second);
     return false;
   }
   midi_channels_[std::make_pair(last_status, last_data1)] = property_long_name;

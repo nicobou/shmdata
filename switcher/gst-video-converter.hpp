@@ -29,7 +29,7 @@
 namespace switcher {
 class GstVideoConverter : public Quiddity {
  public:
-  GstVideoConverter(const std::string&);
+  GstVideoConverter(QuiddityConfiguration&&);
   ~GstVideoConverter() = default;
   GstVideoConverter(const GstVideoConverter&) = delete;
   GstVideoConverter& operator=(const GstVideoConverter&) = delete;
@@ -45,7 +45,6 @@ class GstVideoConverter : public Quiddity {
   std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
 
   std::unique_ptr<GstPixelFormatConverter> converter_{nullptr};
-  bool init() final;
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string& shmdata_sochet_path);
   bool can_sink_caps(const std::string& caps);

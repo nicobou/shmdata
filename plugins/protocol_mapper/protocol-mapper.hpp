@@ -25,11 +25,10 @@
 namespace switcher {
 class ProtocolMapper : public Quiddity {
  public:
-  ProtocolMapper(const std::string&);
+  ProtocolMapper(QuiddityConfiguration&&);
   ~ProtocolMapper() = default;
 
  private:
-  bool init() final { return true; }
 
   // Protocol configuration
   std::string config_file_{};

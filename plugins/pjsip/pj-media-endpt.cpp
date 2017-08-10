@@ -25,7 +25,11 @@ pjmedia_endpt* PJMediaEndpt::med_endpt_ = nullptr;
 PJMediaEndpt::PJMediaEndpt() {
   if (med_endpt_ != nullptr) g_error("BUG pjmedia_endpt is suposed to be a singleton");
   pj_status_t status = pjmedia_endpt_create(&PJSIP::this_->cp_.factory, nullptr, 1, &med_endpt_);
-  if (status != PJ_SUCCESS) g_warning("Init media failed");
+  if (status != PJ_SUCCESS) {
+#ifdef DEBUG
+    std::cerr << "Init media failed" << '\n';
+#endif
+  }
 }
 
 PJMediaEndpt::~PJMediaEndpt() {

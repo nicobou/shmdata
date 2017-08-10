@@ -27,13 +27,15 @@
 #include "./nvenc-api.hpp"
 #include "./nvenc-buffers.hpp"
 #include "cuda/cuda-context.hpp"
+#include "switcher/logged.hpp"
 #include "switcher/safe-bool-idiom.hpp"
 
 namespace switcher {
-class NVencES : public SafeBoolIdiom {
+class NVencES : public Logged, public SafeBoolIdiom {
  public:
-  NVencES(uint32_t device_id);
-  NVencES() : NVencES(0) {}
+  NVencES(uint32_t device_id, BaseLogger* log);
+  NVencES(BaseLogger* log) : NVencES(0, log) {}
+  NVencES() = delete;
   ~NVencES();
   NVencES(const NVencES&) = delete;
   NVencES(NVencES&&) = delete;

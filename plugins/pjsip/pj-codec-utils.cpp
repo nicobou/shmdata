@@ -28,11 +28,6 @@ PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codecs() {
       gst_element_factory_list_get_elements(GST_ELEMENT_FACTORY_TYPE_DEPAYLOADER, GST_RANK_NONE);
   GList* iter = element_list;
   while (iter != nullptr) {
-    // g_print ("+++++\n");
-    // g_print ("%s -- ",
-    // gst_element_factory_get_longname ((GstElementFactory *)iter->data));
-    // g_print ("%s\n",
-    // gst_plugin_feature_get_name ((GstPluginFeature *)iter->data));
     PJCodecUtils::codecs from_factory = inspect_rtp_codec_from_gst_element_factory(
         reinterpret_cast<GstElementFactory*>(iter->data));
     res.insert(res.end(),
@@ -41,7 +36,6 @@ PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codecs() {
     iter = g_list_next(iter);
   }
   gst_plugin_feature_list_free(element_list);
-  // g_print ("------ %s, res size %lu\n",__FUNCTION__, res.size ());
   return res;
 }
 
@@ -56,8 +50,6 @@ PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codec_from_gst_element_factory(
     // the following is EMPTY
     // gchar *caps_str = gst_caps_to_string (&pad->static_caps.caps);
     // g_free (caps_str);
-    /* g_print ("string: %s\n",  */
-    /*     pad->static_caps.string);  */
     if (nullptr == pad) continue;
     GstCaps* caps =
         gst_static_pad_template_get_caps(pad);  // gst_caps_from_string(pad->static_caps.string);
@@ -75,8 +67,6 @@ PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codec_from_gst_element_factory(
         std::string encoding = (*not_null_encoding)->encoding_name_;
         for (auto& it : from_caps)
           if (0 == it->encoding_name_.compare("null")) it->encoding_name_ = encoding;
-        // g_print ("found encoding name %s\n",
-        // (*not_null_encoding)->encoding_name_.c_str ());
       }
     }
     // move result to res
@@ -94,16 +84,13 @@ std::vector<std::string> PJCodecUtils::get_string_values_from_gst_struct(GstStru
   std::vector<std::string> res;
   const GValue* val = gst_structure_get_value(caps_struct, key.c_str());
   if (nullptr != val) {
-    // g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));
     if (GST_VALUE_HOLDS_LIST(val)) {
       for (guint i = 0; i < gst_value_list_get_size(val); i++) {
         const GValue* item_val = gst_value_list_get_value(val, i);
-        // g_print ("encoding-name list %s\n", g_value_get_string (item_val));
         res.emplace_back(g_value_get_string(item_val));
       }
     }
     if (G_VALUE_HOLDS_STRING(val)) {
-      // g_print ("%s string %s\n", key.c_str (), g_value_get_string (val));
       res.emplace_back(g_value_get_string(val));
     }
   } else {
@@ -117,21 +104,16 @@ std::vector<gint> PJCodecUtils::get_int_values_from_gst_struct(GstStructure* cap
   std::vector<gint> res;
   const GValue* val = gst_structure_get_value(caps_struct, key.c_str());
   if (nullptr != val) {
-    // g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));
     if (GST_VALUE_HOLDS_INT_RANGE(val)) {
-      // g_print ("%s min %d\n",
-      // key.c_str (), gst_value_get_int_range_max (val));
       res.push_back(gst_value_get_int_range_max(val));
     }
     if (GST_VALUE_HOLDS_LIST(val)) {
       for (guint i = 0; i < gst_value_list_get_size(val); i++) {
         const GValue* item_val = gst_value_list_get_value(val, i);
-        // g_print ("%s list %d\n", key.c_str (), g_value_get_int (item_val));
         res.push_back(g_value_get_int(item_val));
       }
     }
     if (G_VALUE_HOLDS_INT(val)) {
-      // g_print ("%s int %d\n", key.c_str (), g_value_get_int (val));
       res.push_back(g_value_get_int(val));
     }
   }
@@ -145,8 +127,6 @@ PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codec_from_gst_caps(GstCaps* caps
     for (guint i = caps_size; i > 0; i--) {
       GstStructure* caps_struct = gst_caps_get_structure(caps, i - 1);
       if (gst_structure_has_name(caps_struct, "application/x-rtp")) {
-        // // g_print ("string: %s\n",
-        //        gst_structure_to_string (caps_struct));
         PJCodecUtils::codecs tmp = inspect_rtp_codec_from_gst_struct(caps_struct);
         res.insert(res.begin(),
                    std::move_iterator<codec_it>(tmp.begin()),
@@ -154,7 +134,6 @@ PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codec_from_gst_caps(GstCaps* caps
       }
     }
   }
-  // g_print ("------ %s, res size %lu\n",__FUNCTION__, res.size ());
   return res;
 }
 
@@ -186,7 +165,6 @@ PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructur
     });
     std::swap(res, with_payloads);
   }
-  // g_print ("------ payload, res size %lu\n", res.size ());
 
   {  //-- media
     std::vector<std::string> media = get_string_values_from_gst_struct(caps_struct, "media");
@@ -203,7 +181,6 @@ PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructur
     });
     std::swap(res, with_media);
   }
-  // g_print ("------ media, res size %lu\n", res.size ());
   {  // clock rate
     std::vector<gint> clock_rates = get_int_values_from_gst_struct(caps_struct, "clock-rate");
     PJCodecUtils::codecs with_clock_rates;
@@ -220,15 +197,6 @@ PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructur
         });
     std::swap(res, with_clock_rates);
   }
-  // for (auto &it : res)
-  //  {
-  //   std::cout << " encoding " << it->encoding_name_
-  //        << " payload " << it->payload_
-  //        << " media " << it->media_
-  //        << " clock rate " << it->clock_rate_
-  //        << std::endl;
-  // }
-  // g_print ("------ %s, res size %lu\n",__FUNCTION__, res.size ());
   return res;
 }
 }  // namespace switcher

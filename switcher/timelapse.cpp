@@ -32,17 +32,16 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Timelapse,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-Timelapse::Timelapse(const std::string&)
-    : img_dir_id_(pmanage<MPtr(&PContainer::make_string)>(
+Timelapse::Timelapse(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      img_dir_id_(pmanage<MPtr(&PContainer::make_string)>(
           "imgdir",
           [this](const std::string& val) {
             img_dir_ = val;
             if (!img_dir_.empty() && img_dir_.back() != '/') img_dir_ += '/';
             auto file_prepared = FileUtils::prepare_writable_dir(val);
             if (!file_prepared.first) {
-              g_warning("error preparing %s directory for writing: %s",
-                        val.c_str(),
-                        file_prepared.second.c_str());
+              warning("error preparing % directory for writing: %", val, file_prepared.second);
               return false;
             }
             updated_config_.store(true);
@@ -170,16 +169,13 @@ Timelapse::Timelapse(const std::string&)
           },
           std::chrono::milliseconds(200)),
       shmcntr_(static_cast<Quiddity*>(this)),
-      timelapse_config_{std::string(), std::string()} {}  // end ctor
-
-bool Timelapse::init() {
+      timelapse_config_{std::string(), std::string()} {
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
       [this](const std::string& shmpath) { return this->on_shmdata_disconnect(shmpath); },
       [this]() { return this->on_shmdata_disconnect_all(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       std::numeric_limits<unsigned int>::max());
-  return true;
 }
 
 bool Timelapse::on_shmdata_disconnect(const std::string& shmpath) {

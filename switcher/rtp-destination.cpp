@@ -64,7 +64,7 @@ bool RtpDestination::has_shmdata(const std::string& shmdata_path) {
 bool RtpDestination::remove_stream(const std::string& shmdata_stream_path) {
   auto it = source_streams_.find(shmdata_stream_path);
   if (source_streams_.end() == it) {
-    g_warning("RtpDestination: stream not found, cannot remove %s", shmdata_stream_path.c_str());
+    session_->warning("RtpDestination: stream not found, cannot remove %", shmdata_stream_path);
     return false;
   }
   source_streams_.erase(it);
@@ -82,10 +82,10 @@ std::string RtpDestination::get_sdp() {
     On_scope_exit { gst_caps_unref(caps); };
     gint port = atoi(it.second.c_str());
     SDPMedia media;
-    if (!media.set_media_info_from_caps(caps)) g_warning("issue with sdp media info");
+    if (!media.set_media_info_from_caps(caps)) session_->warning("issue with sdp media info");
     media.set_port(port);
     if (!desc.add_media(media)) {
-      g_warning(
+      session_->warning(
           "a media has not been added to the SDP description,"
           "returning empty description");
       return std::string();
@@ -121,7 +121,7 @@ bool RtpDestination::write_to_file(std::string file_name) {
                            sdp.c_str(),
                            -1,  // no size, res is a null terminated string
                            &error)) {
-    g_warning("%s", error->message);
+    session_->warning("%", std::string(error->message));
     g_error_free(error);
     return false;
   }

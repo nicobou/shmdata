@@ -33,18 +33,13 @@ class DocumentationRegistry {
     return instance_;
   }
   bool register_doc(const std::string& quiddity_type, const QuiddityDocumentation& doc);
-  bool register_quiddity_type_from_quiddity(const std::string& quid_name,
-                                            const std::string& quid_type);
-  std::string get_quiddity_type_from_quiddity(const std::string& quid_name);
-  bool register_quiddity_type_from_class_name(const std::string& class_name,
-                                              const std::string& quid_type);
-  std::string get_quiddity_type_from_class_name(const std::string& class_name);
+  bool register_type_from_class_name(const std::string& class_name, const std::string& quid_type);
+  std::string get_type_from_class_name(const std::string& class_name);
   const std::map<std::string, QuiddityDocumentation>& get_docs();
 
  private:
   static std::unique_ptr<DocumentationRegistry> instance_;
   std::map<std::string, QuiddityDocumentation> doc_registry_{};
-  std::map<std::string, std::string> type_from_quiddity_registry_{};
   std::map<std::string, std::string> type_from_class_registry_{};
 };
 }

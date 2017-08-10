@@ -31,8 +31,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RTMP,
                                      "LGPL",
                                      "Jérémie Soria");
 
-RTMP::RTMP(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)),
+RTMP::RTMP(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   stream_app_url_id_ = pmanage<MPtr(&PContainer::make_string)>(
       "stream_app_url",
@@ -76,10 +77,7 @@ RTMP::RTMP(const std::string&)
       [this](const std::string& caps) { return can_sink_caps(caps); },
       std::numeric_limits<unsigned int>::max());
 
-  is_valid_ = true;
 }
-
-bool RTMP::init() { return is_valid_; }
 
 bool RTMP::create_gst_pipeline() {
   shmaudio_sub_.reset();
@@ -88,12 +86,12 @@ bool RTMP::create_gst_pipeline() {
 
   std::string dest = "rtmpsink";
   if (audio_shmpath_.empty() || video_shmpath_.empty()) {
-    g_warning("Could not send stream because no video or audio is connected (rtmp).");
+    warning("Could not send stream because no video or audio is connected (rtmp).");
     dest = "fakesink";
   }
 
   if (stream_app_url_.empty() || stream_key_.empty()) {
-    g_warning("Could not send stream because stream application URL or key is empty (rtmp).");
+    warning("Could not send stream because stream application URL or key is empty (rtmp).");
     dest = "fakesink";
   }
 
@@ -112,7 +110,8 @@ bool RTMP::create_gst_pipeline() {
   auto bin = gst_parse_bin_from_description(description.c_str(), FALSE, &error);
 
   if (error) {
-    g_warning("Failed to create GstBin from pipeline description (rtmp): %s", error->message);
+    warning("Failed to create GstBin from pipeline description (rtmp): %",
+            std::string(error->message));
     return false;
   }
 

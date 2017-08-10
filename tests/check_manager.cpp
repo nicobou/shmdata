@@ -27,7 +27,7 @@ int main() {
   {
     int c = 10;
     while (--c > 0)
-      switcher::Switcher::ptr manager = switcher::Switcher::make_manager("test-manager");
+      switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test-manager");
   }
   gst_deinit();
   return 0;

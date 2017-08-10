@@ -34,7 +34,7 @@ std::atomic<unsigned short> PJSIP::sip_endpt_used_(0);
 PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
     : cp_(), destruct_fun_(destruct_fun) {
   if (1 == sip_endpt_used_.fetch_or(1)) {
-    g_warning("an other sip quiddity is instancied, cannot init");
+    SIPPlugin::this_->warning("an other sip quiddity is instancied, cannot init");
     return;
   }
   i_m_the_one_ = true;
@@ -42,7 +42,7 @@ PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
 
   pj_status_t status = pj_init();
   if (status != PJ_SUCCESS) {
-    g_warning("cannot init pjsip library");
+    SIPPlugin::this_->warning("cannot init pjsip library");
     return;
   }
   pj_log_set_level(log_level_);
@@ -50,7 +50,7 @@ PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
   pj_thread_register("switcher-pjsip-singleton", thread_handler_desc_, &pj_thread_ref_);
   status = pjsua_create();
   if (status != PJ_SUCCESS) {
-    g_warning("Error in pjsua_create()");
+    SIPPlugin::this_->warning("Error in pjsua_create()");
     return;
   }
   /* Init pjsua */
@@ -85,7 +85,7 @@ PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
     log_cfg.console_level = log_level_;
     status = pjsua_init(&cfg, &log_cfg, nullptr);
     if (status != PJ_SUCCESS) {
-      g_warning("Error in pjsua_init()");
+      SIPPlugin::this_->warning("Error in pjsua_init()");
       return;
     }
     sip_endpt_ = pjsua_get_pjsip_endpt();
@@ -98,7 +98,7 @@ PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
   // if (nullptr == resv) printf ("NULL RESOLVER -------------------------\n");
   create_resolver(SIPPlugin::this_->dns_address_);
   if (!init_fun()) {
-    g_warning("pj-sip custom initialization failed");
+    SIPPlugin::this_->warning("pj-sip custom initialization failed");
     return;
   }
   sip_work_ = true;
@@ -106,7 +106,7 @@ PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
   /* Initialization is done, now start pjsua */
   status = pjsua_start();
   if (status != PJ_SUCCESS) {
-    g_warning("Error starting pjsua");
+    SIPPlugin::this_->warning("Error starting pjsua");
     return;
   }
   // done
@@ -148,19 +148,19 @@ void PJSIP::sip_worker_thread() {
 bool PJSIP::create_resolver(std::string dns_address) {
   pj_dns_resolver* resv;
   if (PJ_SUCCESS != pjsip_endpt_create_resolver(sip_endpt_, &resv)) {
-    g_warning("pjsip failed to create a resolver.");
+    SIPPlugin::this_->warning("pjsip failed to create a resolver.");
     return false;
   }
   pj_str_t nameserver = pj_str(const_cast<char*>(dns_address.c_str()));
   pj_uint16_t port = 53;
 
   if (PJ_SUCCESS != pj_dns_resolver_set_ns(resv, 1, &nameserver, &port)) {
-    g_warning("pjsip failed to set name resolution server.");
+    SIPPlugin::this_->warning("pjsip failed to set name resolution server.");
     return false;
   }
 
   if (PJ_SUCCESS != pjsip_endpt_set_resolver(sip_endpt_, resv)) {
-    g_warning("pjsip failed to set the resolver.");
+    SIPPlugin::this_->warning("pjsip failed to set the resolver.");
     return false;
   }
 

@@ -31,10 +31,6 @@ RTPSender::RTPSender(RtpSession2* session, const std::string& shmpath, unsigned 
       shmdatasrc_(gst_element_factory_make("shmdatasrc", nullptr)),
       typefind_(gst_element_factory_make("typefind", nullptr)),
       fakesink_(gst_element_factory_make("fakesink", nullptr)) {
-  if (nullptr == shmdatasrc_ || nullptr == typefind_ || nullptr == fakesink_) {
-    g_warning("RTPSender failed to create GStreamer element");
-    return;
-  }
   std::unique_lock<std::mutex> lock(start_m_);
   // configuring shmdatasrc and typefind
   g_signal_connect(typefind_, "have-type", G_CALLBACK(on_caps), this);
@@ -87,8 +83,7 @@ void RTPSender::on_caps(GstElement* typefind,
     On_scope_exit { gst_object_unref(context->rtp_sink_pad_); };
     GstPad* srcpad = gst_element_get_static_pad(context->rtp_payloader_, "src");
     On_scope_exit { gst_object_unref(srcpad); };
-    if (gst_pad_link(srcpad, context->rtp_sink_pad_) != GST_PAD_LINK_OK)
-      g_warning("failed to link payloader to rtpbin");
+    gst_pad_link(srcpad, context->rtp_sink_pad_);
     gchar* rtp_sink_pad_name = gst_pad_get_name(context->rtp_sink_pad_);
     On_scope_exit { g_free(rtp_sink_pad_name); };
     gchar** rtpsession_array = g_strsplit_set(rtp_sink_pad_name, "_", 0);
@@ -103,8 +98,8 @@ void RTPSender::on_caps(GstElement* typefind,
     On_scope_exit { gst_object_unref(src_pad); };
     GstPad* sink_pad = gst_element_get_static_pad(context->fakesink_, "sink");
     On_scope_exit { gst_object_unref(sink_pad); };
-    if (gst_pad_link(src_pad, sink_pad) != GST_PAD_LINK_OK)
-      g_warning("failed to link rtpbin to fakesink");  // TODO send RTCP
+    gst_pad_link(src_pad, sink_pad);
+    // TODO send RTCP
   }
 
   // syncing gst elements with pipeline
@@ -122,7 +117,6 @@ void RTPSender::on_handoff_cb(GstElement* /*object*/,
   // getting buffer information:
   GstMapInfo map;
   if (!gst_buffer_map(buf, &map, GST_MAP_READ)) {
-    g_warning("gst_buffer_map failed: canceling audio buffer access");
     return;
   }
   On_scope_exit { gst_buffer_unmap(buf, &map); };
@@ -133,9 +127,6 @@ void RTPSender::on_handoff_cb(GstElement* /*object*/,
 std::string RTPSender::get_caps() const {
   if (!fakesink_caps_.empty()) return fakesink_caps_;
   if (nullptr == fakesink_) {
-    g_warning(
-        "RTPSender::get_caps, source data type not known"
-        ", returning empty string");
     return std::string();
   }
   GstPad* pad = gst_element_get_static_pad(fakesink_, "sink");
@@ -149,8 +140,6 @@ std::string RTPSender::get_caps() const {
   if (nullptr == str) return fakesink_caps_;
   On_scope_exit { g_free(str); };
   fakesink_caps_ = std::string(str);
-  if (fakesink_caps_.empty())
-    g_warning("RTPSender::get_caps, caps not available returning empty string");
   return fakesink_caps_;
 }
 

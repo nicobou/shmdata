@@ -28,7 +28,7 @@
 namespace switcher {
 class CustomSavePlugin : public Quiddity {
  public:
-  CustomSavePlugin(const std::string&);
+  CustomSavePlugin(QuiddityConfiguration&&);
   ~CustomSavePlugin() = default;
   CustomSavePlugin(const CustomSavePlugin&) = delete;
   CustomSavePlugin& operator=(const CustomSavePlugin&) = delete;
@@ -43,7 +43,6 @@ class CustomSavePlugin : public Quiddity {
   bool on_saving_called_{false};
   bool on_saved_called_{false};
   PContainer::prop_id_t has_saved_custom_state_id_;
-  bool init() final;
   InfoTree::ptr on_saving() final;
   void on_saved() final;
   void on_loading(InfoTree::ptr&& tree) final;

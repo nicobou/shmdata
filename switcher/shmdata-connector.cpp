@@ -36,7 +36,7 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
                                               CanSinkCaps on_can_sink_caps_cb,
                                               uint max_reader) {
   if (quid_ == nullptr) {
-    g_warning("ShmdataConnector is created without quiddity");
+    quid_->warning("ShmdataConnector is created without quiddity");
     return false;
   }
   InfoTree::ptr tree = InfoTree::make();
@@ -91,7 +91,7 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
 gboolean ShmdataConnector::connect_wrapped(gpointer path, gpointer user_data) {
   ShmdataConnector* context = static_cast<ShmdataConnector*>(user_data);
   if (nullptr == context->on_connect_cb_) {
-    g_warning("on connect callback not installed\n");
+    context->quid_->warning("on connect callback not installed\n");
     return FALSE;
   }
   if (context->on_connect_cb_((char*)path))
@@ -106,7 +106,7 @@ gboolean ShmdataConnector::disconnect_wrapped(gpointer path, gpointer user_data)
     context->quid_->prune_tree(std::string(".shmdata.reader.") + static_cast<char*>(path));
   };
   if (nullptr == context->on_disconnect_cb_) {
-    g_warning("on disconnect callback not installed\n");
+    context->quid_->warning("on disconnect callback not installed");
     return FALSE;
   }
   if (context->on_disconnect_cb_((char*)path)) {
@@ -127,7 +127,7 @@ gboolean ShmdataConnector::disconnect_all_wrapped(gpointer /*unused */, gpointer
       }
   };
   if (nullptr == context->on_disconnect_all_cb_) {
-    g_warning("on disconnect all callback not installed\n");
+    context->quid_->warning("on disconnect all callback not installed");
     return FALSE;
   }
   if (context->on_disconnect_all_cb_())
@@ -139,13 +139,12 @@ gboolean ShmdataConnector::disconnect_all_wrapped(gpointer /*unused */, gpointer
 gboolean ShmdataConnector::can_sink_caps_wrapped(gpointer caps, gpointer user_data) {
   ShmdataConnector* context = static_cast<ShmdataConnector*>(user_data);
   if (nullptr == context->on_can_sink_caps_cb_) {
-    g_warning("on disconnect callback not installed\n");
+    context->quid_->warning("on disconnect callback not installed");
     return FALSE;
   }
   if (context->on_can_sink_caps_cb_((char*)caps))
     return TRUE;
-  else
-    return FALSE;
+  return FALSE;
 }
 
 }  // namespace switcher

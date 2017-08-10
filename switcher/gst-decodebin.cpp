@@ -31,21 +31,21 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstDecodebin,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-GstDecodebin::GstDecodebin(const std::string&)
-    : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
+GstDecodebin::GstDecodebin(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       shmsrc_("shmdatasrc"),
-      shmcntr_(static_cast<Quiddity*>(this)) {}
-
-bool GstDecodebin::init() {
-  if (!shmsrc_) return false;
-
+      shmcntr_(static_cast<Quiddity*>(this)) {
+  if (!shmsrc_) {
+    is_valid_ = false;
+    return;
+  }
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
       [this](const std::string&) { return this->on_shmdata_disconnect(); },
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-  return true;
 }
 
 bool GstDecodebin::on_shmdata_disconnect() {
@@ -101,13 +101,13 @@ bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
       [this](GstElement* el, const std::string& media_type, const std::string& media_label) {
         configure_shmdatasink(el, media_type, media_label);
       },
+      [this]() { warning("discarding uncomplete custom frame due to a network loss"); },
       true /*decompress*/);
   // adding to pipeline
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), shmsrc_.get_raw());
   if (!decodebin->invoke_with_return<gboolean>([this](GstElement* el) {
         return gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), el);
       })) {
-    g_warning("decodebin cannot be added to pipeline");
   }
   // get pads and link
   GstPad* pad = gst_element_get_static_pad(shmsrc_.get_raw(), "src");

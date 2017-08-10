@@ -34,7 +34,7 @@
 namespace switcher {
 class Timelapse : public Quiddity {
  public:
-  Timelapse(const std::string&);
+  Timelapse(QuiddityConfiguration&&);
   ~Timelapse() = default;
   Timelapse(const Timelapse&) = delete;
   Timelapse& operator=(const Timelapse&) = delete;
@@ -81,7 +81,6 @@ class Timelapse : public Quiddity {
   GstVideoTimelapseConfig timelapse_config_;
   std::map<std::string, std::unique_ptr<GstVideoTimelapse>> timelapse_{};
 
-  bool init() final;
   bool on_shmdata_disconnect(const std::string& shmdata_sochet_path);
   bool on_shmdata_connect(const std::string& shmdata_sochet_path);
   bool on_shmdata_disconnect_all();

@@ -37,9 +37,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SyphonSrc,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-SyphonSrc::SyphonSrc(const std::string&) {}
-
-bool SyphonSrc::init() {
+SyphonSrc::SyphonSrc(QuiddityConfiguration&&) {
   init_startable(this);
 
   reader_.reset(new SyphonReader(frameCallback, (void*)this));
@@ -63,7 +61,6 @@ bool SyphonSrc::init() {
                                           "App name",
                                           "The name of the Syphon application",
                                           syphon_appname_);
-  return true;
 }
 
 bool SyphonSrc::start() {
@@ -107,7 +104,7 @@ void SyphonSrc::frameCallback(void* context, const char* data, int& width, int& 
     ctx->width_ = width;
     ctx->height_ = height;
     if (!ctx->writer_.get()) {
-      g_warning("syphon to shmdata failed to start");
+      warning("syphon to shmdata failed to start");
       ctx->writer_.reset(nullptr);
     } else
       set = true;

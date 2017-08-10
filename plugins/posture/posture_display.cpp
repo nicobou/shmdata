@@ -33,18 +33,14 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureDisplay,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-PostureDisplay::PostureDisplay(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
-
 PostureDisplay::~PostureDisplay() { disconnect_all(); }
 
-bool PostureDisplay::init() {
+PostureDisplay::PostureDisplay(QuiddityConfiguration&&) : shmcntr_(static_cast<Quiddity*>(this)) {
   shmcntr_.install_connect_method([this](const string path) { return connect(path); },
                                   [this](const string path) { return disconnect(path); },
                                   [this]() { return disconnect_all(); },
                                   [this](const string caps) { return can_sink_caps(caps); },
                                   1);
-
-  return true;
 }
 
 bool PostureDisplay::connect(std::string shmdata_socket_path) {

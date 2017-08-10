@@ -34,8 +34,9 @@ SIPPlugin* SIPPlugin::this_ = nullptr;
 
 std::atomic<unsigned short> SIPPlugin::sip_plugin_used_(0);
 
-SIPPlugin::SIPPlugin(const std::string&)
-    : port_id_(pmanage<MPtr(&PContainer::make_string)>(
+SIPPlugin::SIPPlugin(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      port_id_(pmanage<MPtr(&PContainer::make_string)>(
           "port",
           [this](const std::string& valstr) {
             if (valstr.empty()) return false;
@@ -60,8 +61,7 @@ SIPPlugin::SIPPlugin(const std::string&)
             if (val.empty()) return false;
             if ("default" == requested_val) val = default_dns_address_;
             if (!NetUtils::is_valid_IP(val)) {
-              g_message(
-                  "ERROR:Not a valid IP address, expected x.y.z.a with x, y, z, a in [0:255].");
+              message("ERROR:Not a valid IP address, expected x.y.z.a with x, y, z, a in [0:255].");
               return false;
             }
 
@@ -70,8 +70,8 @@ SIPPlugin::SIPPlugin(const std::string&)
             dns_address_ = val;
             if (!pjsip_->invoke<MPtr(&PJSIP::create_resolver)>(dns_address_)) {
               dns_address_ = old_dns_address;
-              g_message("ERROR:Could not set the DNS address (PJSIP), setting the old one %s.",
-                        dns_address_.c_str());
+              message("ERROR:Could not set the DNS address (PJSIP), setting the old one %.",
+                      dns_address_);
               pjsip_->invoke<MPtr(&PJSIP::create_resolver)>(dns_address_);
               return false;
             }
@@ -91,30 +91,11 @@ SIPPlugin::SIPPlugin(const std::string&)
                                                 [this]() { return decompress_streams_; },
                                                 "Decompress",
                                                 "Decompress received streams",
-                                                decompress_streams_)) {}
-
-SIPPlugin::~SIPPlugin() {
-  if (!i_m_the_one_) return;
-
-  auto manager = manager_impl_.lock();
-  if (manager) manager->unregister_removal_cb(quiddity_removal_cb_id_);
-
-  sip_calls_->finalize_calls();
-
-  pjsip_->run([this]() {
-    stun_turn_.reset(nullptr);
-    sip_presence_.reset(nullptr);
-  });
-
-  this_ = nullptr;
-  i_m_the_one_ = false;
-  sip_plugin_used_ = 0;
-}
-
-bool SIPPlugin::init() {
+                                                decompress_streams_)) {
   if (1 == sip_plugin_used_.fetch_or(1)) {
-    g_warning("an other sip quiddity is instancied, cannot init");
-    return false;
+    warning("an other sip quiddity is instancied, cannot init");
+    is_valid_ = false;
+    return;
   }
   i_m_the_one_ = true;
   this_ = this;
@@ -138,35 +119,51 @@ bool SIPPlugin::init() {
         if (transport_id_ != -1) pjsua_transport_close(transport_id_, PJ_FALSE);
       });
 
-  if (!pjsip_->invoke<MPtr(&PJSIP::safe_bool_idiom)>()) return false;
-  apply_configuration();
-  auto manager = manager_impl_.lock();
-  if (!manager) {
-    g_warning("bug in SIPPLugin, line %d", __LINE__);
-    return false;
+  if (!pjsip_->invoke<MPtr(&PJSIP::safe_bool_idiom)>()) {
+    is_valid_ = false;
+    return;
   }
-  quiddity_removal_cb_id_ = manager->register_removal_cb([this](const std::string& quiddity_name) {
-    std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
-    for (auto& peer : exposed_quiddities_) {
-      auto& exposed_quids = peer.second;
-      auto it = std::find(exposed_quids.begin(), exposed_quids.end(), quiddity_name);
-      if (it != exposed_quids.end()) {
-        exposed_quids.erase(it);
-      }
-    }
+  apply_configuration();
+
+  quiddity_removal_cb_id_ =
+      qcontainer_->register_removal_cb([this](const std::string& quiddity_name) {
+        std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
+        for (auto& peer : exposed_quiddities_) {
+          auto& exposed_quids = peer.second;
+          auto it = std::find(exposed_quids.begin(), exposed_quids.end(), quiddity_name);
+          if (it != exposed_quids.end()) {
+            exposed_quids.erase(it);
+          }
+        }
+      });
+}
+
+SIPPlugin::~SIPPlugin() {
+  if (!i_m_the_one_) return;
+
+  qcontainer_->unregister_removal_cb(quiddity_removal_cb_id_);
+
+  sip_calls_->finalize_calls();
+
+  pjsip_->run([this]() {
+    stun_turn_.reset(nullptr);
+    sip_presence_.reset(nullptr);
   });
-  return true;
+
+  this_ = nullptr;
+  i_m_the_one_ = false;
+  sip_plugin_used_ = 0;
 }
 
 void SIPPlugin::apply_configuration() {
   // trying to set port if configuration found
   if (config<MPtr(&InfoTree::branch_has_data)>("port")) {
-    g_debug("SIP is trying to set port from configuration");
+    debug("SIP is trying to set port from configuration");
     auto port = config<MPtr(&InfoTree::branch_get_value)>("port");
     if (pmanage<MPtr(&PContainer::set<std::string>)>(port_id_, port.copy_as<std::string>())) {
-      g_debug("sip has set port from configuration");
+      debug("sip has set port from configuration");
     } else {
-      g_warning("sip failed setting port from configuration");
+      warning("sip failed setting port from configuration");
     }
   }
 
@@ -176,25 +173,25 @@ void SIPPlugin::apply_configuration() {
   std::string turn_user = config<MPtr(&InfoTree::branch_get_value)>("turn_user");
   std::string turn_pass = config<MPtr(&InfoTree::branch_get_value)>("turn_pass");
   if (!stun.empty()) {
-    g_debug("SIP is trying to set STUN/TURN from configuration");
+    debug("SIP is trying to set STUN/TURN from configuration");
     if (PJStunTurn::set_stun_turn(
             stun.c_str(), turn.c_str(), turn_user.c_str(), turn_pass.c_str(), stun_turn_.get())) {
-      g_debug("sip has set STUN/TURN from configuration");
+      debug("sip has set STUN/TURN from configuration");
     } else {
-      g_warning("sip failed setting STUN/TURN from configuration");
+      warning("sip failed setting STUN/TURN from configuration");
     }
   }
 
   // trying to register if a user is given
   std::string user = config<MPtr(&InfoTree::branch_get_value)>("user");
   if (!user.empty()) {
-    g_debug("SIP is trying to register from configuration");
+    debug("SIP is trying to register from configuration");
     std::string pass = config<MPtr(&InfoTree::branch_get_value)>("pass");
     pjsip_->run([&]() { sip_presence_->register_account(user, pass); });
     if (sip_presence_->registered_) {
-      g_debug("sip registered using configuration file");
+      debug("sip registered using configuration file");
     } else {
-      g_warning("sip failed registration from configuration");
+      warning("sip failed registration from configuration");
     }
   }
 }
@@ -203,15 +200,15 @@ bool SIPPlugin::start_sip_transport() {
   if (-1 != transport_id_) {
     On_scope_exit { transport_id_ = -1; };
     if (pjsua_transport_close(transport_id_, PJ_FALSE) != PJ_SUCCESS) {
-      g_warning("cannot close current transport");
-      g_message("ERROR: (bug) cannot close current transport");
+      warning("cannot close current transport");
+      message("ERROR: (bug) cannot close current transport");
       return false;
     }
   }
 
   if (NetUtils::is_used(sip_port_)) {
-    g_warning("SIP port cannot be bound (%u)", sip_port_);
-    g_message("ERROR: SIP port is not available (%u)", sip_port_);
+    warning("SIP port cannot be bound (%)", std::to_string(sip_port_));
+    message("ERROR: SIP port is not available (%)", std::to_string(sip_port_));
     return false;
   }
   pjsua_transport_config cfg;
@@ -219,8 +216,8 @@ bool SIPPlugin::start_sip_transport() {
   cfg.port = sip_port_;
   pj_status_t status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, &transport_id_);
   if (status != PJ_SUCCESS) {
-    g_warning("Error creating transport");
-    g_message("ERROR: SIP port is not available (%u)", sip_port_);
+    warning("Error creating transport");
+    message("ERROR: SIP port is not available (%)", std::to_string(sip_port_));
     transport_id_ = -1;
     return false;
   }
@@ -228,11 +225,6 @@ bool SIPPlugin::start_sip_transport() {
 }
 
 void SIPPlugin::create_quiddity_stream(const std::string& peer_uri, const std::string& quid_name) {
-  auto manager = manager_impl_.lock();
-  if (!manager) {
-    g_warning("bug in SIPPLugin, line %d", __LINE__);
-    return;
-  }
   auto quid = Quiddity::string_to_quiddity_name(quid_name);
   {
     std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
@@ -240,32 +232,21 @@ void SIPPlugin::create_quiddity_stream(const std::string& peer_uri, const std::s
     if (std::find(exposed_quids.begin(), exposed_quids.end(), quid) != exposed_quids.end()) return;
     exposed_quids.push_back(quid);
   }
-  quid = manager->create("extshmsrc", quid);
+  quid = qcontainer_->create("extshmsrc", quid);
   if (quid.empty()) {
-    g_warning("Failed to create external shmdata quiddity for pjsip incoming stream.");
+    warning("Failed to create external shmdata quiddity for pjsip incoming stream.");
     return;
   }
 }
 
 void SIPPlugin::expose_stream_to_quiddity(const std::string& quid_name,
                                           const std::string& shmpath) {
-  auto manager = manager_impl_.lock();
-  if (!manager) {
-    g_warning("bug in SIPPLugin, line %d", __LINE__);
-    return;
-  }
-  manager->props<MPtr(&PContainer::set_str_str)>(
+  qcontainer_->props<MPtr(&PContainer::set_str_str)>(
       Quiddity::string_to_quiddity_name(quid_name), "shmdata-path", shmpath);
 }
 
 void SIPPlugin::remove_exposed_quiddity(const std::string& peer_uri, const std::string& quid_name) {
-  auto manager = manager_impl_.lock();
-  if (!manager) {
-    g_warning("bug in SIPPLugin, line %d", __LINE__);
-    return;
-  }
   auto quid = string_to_quiddity_name(quid_name);
-
   {
     std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
     auto& exposed_quids = exposed_quiddities_[peer_uri];
@@ -274,15 +255,9 @@ void SIPPlugin::remove_exposed_quiddity(const std::string& peer_uri, const std::
     exposed_quids.erase(it);
   }
 
-  manager->remove(quid);
+  qcontainer_->remove(quid);
 }
 void SIPPlugin::remove_exposed_quiddities(const std::string& peer_uri) {
-  auto manager = manager_impl_.lock();
-  if (!manager) {
-    g_warning("bug in SIPPLugin, line %d", __LINE__);
-    return;
-  }
-
   std::vector<std::string> quids_to_remove;
   {
     std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
@@ -290,7 +265,7 @@ void SIPPlugin::remove_exposed_quiddities(const std::string& peer_uri) {
     exposed_quiddities_.erase(peer_uri);
   }
   for (auto& it : quids_to_remove) {
-    manager->remove(it);
+    qcontainer_->remove(it);
   }
 }
 

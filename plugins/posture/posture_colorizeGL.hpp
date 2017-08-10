@@ -37,7 +37,7 @@
 namespace switcher {
 class PostureColorizeGL : public Quiddity, public StartableQuiddity {
  public:
-  PostureColorizeGL(const std::string&);
+  PostureColorizeGL(QuiddityConfiguration&&);
   ~PostureColorizeGL();
   PostureColorizeGL(const PostureColorizeGL&) = delete;
   PostureColorizeGL& operator=(const PostureColorizeGL&) = delete;
@@ -77,7 +77,6 @@ class PostureColorizeGL : public Quiddity, public StartableQuiddity {
   // Used to check the texture size did not change:
   unsigned int prev_width_{0}, prev_height_{0};
 
-  bool init() final;
   bool connect(std::string shmdata_socket_path);
   bool disconnect(std::string /*unused*/);
   bool disconnect_all();

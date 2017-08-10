@@ -48,6 +48,12 @@ class GstShmdataSubscriber {
   ~GstShmdataSubscriber();
 
  private:
+  static void on_caps_cb(GObject* gobject, GParamSpec* pspec, gpointer user_data);
+  static void on_connection_status_cb(GObject* gobject, GParamSpec* pspec, gpointer user_data);
+  void notify_caps();
+  void notify_connection();
+  void stat_monitor();
+
   GstElement* element_;
   on_caps_cb_t on_caps_cb_;
   on_stat_monitor_t on_stat_monitor_cb_;
@@ -56,11 +62,6 @@ class GstShmdataSubscriber {
   PeriodicTask<> ptask_;
   gulong signal_handler_id_{0};
   gulong signal_connection_id_{0};
-  static void on_caps_cb(GObject* gobject, GParamSpec* pspec, gpointer user_data);
-  void notify_caps();
-  static void on_connection_status_cb(GObject* gobject, GParamSpec* pspec, gpointer user_data);
-  void notify_connection();
-  void stat_monitor();
 };
 
 }  // namespace switcher

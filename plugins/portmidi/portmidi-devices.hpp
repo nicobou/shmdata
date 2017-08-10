@@ -27,14 +27,13 @@
 #define MIDI_EOX 0xf7
 #endif
 
-#include <glib-object.h>
-#include <glib.h>
 #include <portmidi.h>
 #include <porttime.h>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <queue>
+#include "switcher/bool-log.hpp"
 #include "switcher/selection.hpp"
 
 namespace switcher {
@@ -52,13 +51,13 @@ class PortMidi {
   Selection<> output_devices_enum_{{"none"}, 0};
   // input
   // static int get_default_input_device_id();
-  bool open_input_device(int id, on_pm_event_method method, void* user_data);
+  BoolLog open_input_device(int id, on_pm_event_method method, void* user_data);
   bool close_input_device(int id);
   // bool is_queue_empty(int id);
   std::vector<unsigned char> poll(int id);
   // ouput
   // static int get_default_output_device_id();
-  bool open_output_device(int id);
+  BoolLog open_output_device(int id);
   bool close_output_device(int id);
   bool push_midi_message(int id, unsigned char status, unsigned char data1, unsigned char data2);
 

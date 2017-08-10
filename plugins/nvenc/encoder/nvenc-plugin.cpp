@@ -31,8 +31,10 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(NVencPlugin,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-NVencPlugin::NVencPlugin(const std::string&)
-    : default_preset_id_(pmanage<MPtr(&PContainer::make_bool)>(
+NVencPlugin::NVencPlugin(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      es_(std::make_unique<ThreadedWrapper<NVencES>>(get_log_ptr())),
+      default_preset_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "bitrate_from_preset",
           [this](bool value) {
             bitrate_from_preset_ = value;
@@ -68,7 +70,7 @@ NVencPlugin::NVencPlugin(const std::string&)
     names.push_back(std::string("GPU #") + std::to_string(it.first) + " " + it.second);
   }
   if (names.empty()) {
-    g_message("ERROR:Could not find any NVENC-enabled GPU.");
+    message("ERROR:Could not find any NVENC-enabled GPU.");
     return;
   }
   devices_ = Selection<>(std::move(names), 0);
@@ -87,28 +89,30 @@ NVencPlugin::NVencPlugin(const std::string&)
                                                    "Selection of the GPU used for encoding",
                                                    devices_);
   pmanage<MPtr(&PContainer::set_to_current)>(default_preset_id_);
-}
 
-bool NVencPlugin::init() {
-  if (!es_) return false;
+  if (!es_) {
+    is_valid_ = false;
+    return;
+  }
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
       [this](const std::string&) { return this->on_shmdata_disconnect(); },
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-  return es_.get()->invoke<MPtr(&NVencES::safe_bool_idiom)>();
+  is_valid_ = es_.get()->invoke<MPtr(&NVencES::safe_bool_idiom)>();
 }
 
 void NVencPlugin::update_device() {
   es_.reset();
-  es_ = std::make_unique<ThreadedWrapper<NVencES>>(devices_nv_ids_[devices_.get_current_index()]);
+  es_ = std::make_unique<ThreadedWrapper<NVencES>>(devices_nv_ids_[devices_.get_current_index()],
+                                                   get_log_ptr());
   if (!es_->invoke<MPtr(&NVencES::safe_bool_idiom)>()) {
-    g_message(
+    message(
         "ERROR: nvenc failed to create encoding session "
         "(the total number of simultaneous sessions "
         "may be reached)");
-    g_warning(
+    warning(
         "nvenc failed to create encoding session "
         "(the total number of simultaneous sessions "
         "may be reached)");
@@ -247,7 +251,6 @@ void NVencPlugin::update_input_formats() {
       codecs_guids_.begin(), codecs_guids_.end(), [&](const std::pair<std::string, GUID>& codec) {
         return codec.first == cur_codec;
       });
-  if (codecs_guids_.end() == guid_iter) g_warning("bug in %s line %d", __FUNCTION__, __LINE__);
   video_formats_.clear();
   video_formats_ = es_->invoke<MPtr(&NVencES::get_input_formats)>(guid_iter->second);
   for (auto& it : video_formats_) {
@@ -265,7 +268,7 @@ void NVencPlugin::update_input_formats() {
     else if ("AYUV" == it.first)
       format = "AYUV";
     else
-      g_warning("format not supported by NVencPlugin (%s)\n", it.first.c_str());
+      warning("format not supported by NVencPlugin :%", it.first);
 
     if (!format.empty()) it.first = std::string("video/x-raw, format=(string)") + format;
   }
@@ -328,7 +331,7 @@ bool NVencPlugin::can_sink_caps(const std::string& strcaps) {
 
 void NVencPlugin::on_shmreader_data(void* data, size_t size) {
   if (!es_.get()->invoke<MPtr(&NVencES::copy_to_next_input_buffer)>(data, size)) {
-    g_warning("error copying data to nvenc");
+    warning("error copying data to nvenc");
     return;
   }
   es_.get()->invoke_async<MPtr(&NVencES::encode_current_input)>(nullptr);
@@ -346,22 +349,22 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
   };
   GstStructure* s = gst_caps_get_structure(caps, 0);
   if (nullptr == s) {
-    g_warning("cannot get structure from caps (nvenc)");
+    warning("cannot get structure from caps (nvenc)");
     return;
   }
   gint width = 0, height = 0;
   if (!gst_structure_get_int(s, "width", &width) || !gst_structure_get_int(s, "height", &height)) {
-    g_warning("cannot get width/height from shmdata description (nvenc)");
+    warning("cannot get width/height from shmdata description (nvenc)");
     return;
   }
   gint frameNum = 0, frameDen = 0;
   if (!gst_structure_get_fraction(s, "framerate", &frameNum, &frameDen)) {
-    g_warning("cannot get framerate from shmdata description (nvenc)");
+    warning("cannot get framerate from shmdata description (nvenc)");
     return;
   }
   const char* format = gst_structure_get_string(s, "format");
   if (nullptr == format) {
-    g_warning("cannot get video format from shmdata description (nvenc)");
+    warning("cannot get video format from shmdata description (nvenc)");
     return;
   }
   auto format_str = std::string(format);
@@ -379,7 +382,7 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
   else if (format_str == "AYUV")
     buf_format = NV_ENC_BUFFER_FORMAT_AYUV;
   else {
-    g_warning("video format %s not supported by switcher nvenc plugin", format_str.c_str());
+    warning("video format % not supported by switcher nvenc plugin", format_str);
     return;
   }
 

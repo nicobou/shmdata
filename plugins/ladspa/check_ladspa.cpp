@@ -54,7 +54,7 @@ void notify_success() {
 
 int main() {
   {
-    Switcher::ptr manager = Switcher::make_manager("ladspatest");
+    Switcher::ptr manager = Switcher::make_switcher("ladspatest");
 
     manager->scan_directory_for_plugins("./");
 

@@ -20,6 +20,7 @@
 #ifndef __SWITCHER_PROPERTY_CONTAINER_H__
 #define __SWITCHER_PROPERTY_CONTAINER_H__
 
+#include <assert.h>
 #include <glib.h>  // logs
 #include <map>
 #include <memory>
@@ -61,18 +62,17 @@ class PContainer {
   template <typename T>
   bool set(prop_id_t id, const T& val) const {
     auto prop_it = props_.find(id);
-    if (prop_it->second->get()->get_type_id_hash() != typeid(val).hash_code()) {
-      g_warning("%s: types do not match", __FUNCTION__);
-      return false;
-    }
+#ifdef DEBUG
+    assert(prop_it->second->get()->get_type_id_hash() == typeid(val).hash_code());
+#endif
     return static_cast<Property<T>*>(prop_it->second->get())->set(std::forward<const T&>(val));
   }
   template <typename T>
   T get(prop_id_t id) const {
     const auto& prop_it = props_.find(id);
-    if (prop_it->second->get()->get_type_id_hash() != typeid(T).hash_code()) {
-      g_warning("%s: types do not match", __FUNCTION__);
-    }
+#ifdef DEBUG
+    assert(prop_it->second->get()->get_type_id_hash() != typeid(T).hash_code());
+#endif
     return static_cast<Property<T>*>(prop_it->second->get())->get();
   }
 

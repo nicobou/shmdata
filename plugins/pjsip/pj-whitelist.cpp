@@ -59,7 +59,6 @@ gboolean PJWhiteList::authorize_buddy_cb(gchar* sip_url, gboolean authorized, vo
 bool PJWhiteList::authorize_buddy(const std::string& sip_url, bool authorize) {
   auto found = authorizations_.find(sip_url);
   if (authorizations_.end() == found) {
-    g_warning("buddy not found, cannot set authorization");
     return false;
   }
   found->second = authorize;
@@ -70,7 +69,6 @@ bool PJWhiteList::authorize_buddy(const std::string& sip_url, bool authorize) {
 bool PJWhiteList::add(const std::string& sip_url, on_authorization_updated_t cb) {
   if (!cb) return false;
   if (authorizations_.end() != authorizations_.find(sip_url)) {
-    g_warning("cannot add already added sip_url in whitelist");
     return false;
   }
   authorizations_[sip_url] = default_authorization_;

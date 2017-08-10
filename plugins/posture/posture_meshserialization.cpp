@@ -33,15 +33,12 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureMeshSerialization,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-PostureMeshSerialization::PostureMeshSerialization(const std::string&)
+PostureMeshSerialization::PostureMeshSerialization(QuiddityConfiguration&&)
     : shmcntr_(static_cast<Quiddity*>(this)) {
   serializer_ = make_shared<MeshSerializer>();
   // Default serializer parameters
   serializer_->setCompressionMethod(
       compression_method_, compression_level_, compression_precision_);
-}
-
-bool PostureMeshSerialization::init() {
   shmcntr_.install_connect_method([this](const std::string path) { return connect(path); },
                                   [this](const std::string path) { return disconnect(path); },
                                   [this]() { return disconnect_all(); },
@@ -85,8 +82,6 @@ bool PostureMeshSerialization::init() {
                                        compression_level_,
                                        0,
                                        9);
-
-  return true;
 }
 
 bool PostureMeshSerialization::connect(std::string shmdata_socket_path) {

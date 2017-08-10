@@ -45,21 +45,6 @@ class RtpSession2 : public SafeBoolIdiom {
 
   // safe bool idiom
   bool safe_bool_idiom() const final { return nullptr != rtpsession_ && gst_pipeline_; }
-
-  // internal rtpbin signals
-  static void on_bye_ssrc(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
-  static void on_bye_timeout(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
-  static void on_new_ssrc(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
-  static void on_npt_stop(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
-  static void on_sender_timeout(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
-  static void on_ssrc_active(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
-  static void on_ssrc_collision(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
-  static void on_ssrc_sdes(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
-  static void on_ssrc_validated(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
-  static void on_timeout(GstElement* rtpbin, guint session, guint ssrc, gpointer user_data);
-  static void on_pad_added(GstElement* gstelement, GstPad* new_pad, gpointer user_data);
-  static void on_pad_removed(GstElement* gstelement, GstPad* new_pad, gpointer user_data);
-  static void on_no_more_pad(GstElement* gstelement, gpointer user_data);
 };
 
 }  // namespace switcher

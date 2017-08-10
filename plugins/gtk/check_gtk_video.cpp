@@ -26,7 +26,7 @@
 
 int main() {
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_manager("gtktest");
+    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("gtktest");
 
     manager->scan_directory_for_plugins("./");
 

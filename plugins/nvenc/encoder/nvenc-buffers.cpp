@@ -36,7 +36,9 @@ NVencBuffers::NVencBuffers(void* encoder,
     input_buf_param_.memoryHeap = NV_ENC_MEMORY_HEAP_SYSMEM_CACHED;
     input_buf_param_.bufferFmt = format;
     if (NV_ENC_SUCCESS != NVencAPI::api.nvEncCreateInputBuffer(encoder_, &input_buf_param_)) {
-      g_warning("nvenc cannot create input buffer");
+#ifdef DEBUG
+      std::cerr << "nvenc cannot create input buffer" << '\n';
+#endif
       return;
     }
     it = input_buf_param_.inputBuffer;
@@ -49,7 +51,9 @@ NVencBuffers::NVencBuffers(void* encoder,
     output_buf_param_.size = 20 * 1024 * 1024;
     output_buf_param_.memoryHeap = NV_ENC_MEMORY_HEAP_SYSMEM_CACHED;
     if (NV_ENC_SUCCESS != NVencAPI::api.nvEncCreateBitstreamBuffer(encoder_, &output_buf_param_)) {
-      g_warning("nvenc cannot create output buffer");
+#ifdef DEBUG
+      std::cerr << "nvenc cannot create output buffer" << '\n';
+#endif
       return;
     }
     it = output_buf_param_.bitstreamBuffer;
@@ -59,12 +63,10 @@ NVencBuffers::NVencBuffers(void* encoder,
 NVencBuffers::~NVencBuffers() {
   // input buffers
   for (auto& it : input_bufs_)
-    if (nullptr != it && NV_ENC_SUCCESS != NVencAPI::api.nvEncDestroyInputBuffer(encoder_, it))
-      g_warning("nvenc cannot destroy input buffer");
+    if (nullptr != it) NVencAPI::api.nvEncDestroyInputBuffer(encoder_, it);
   // output buffers
   for (auto& it : output_bufs_)
-    if (nullptr != it && NV_ENC_SUCCESS != NVencAPI::api.nvEncDestroyBitstreamBuffer(encoder_, it))
-      g_warning("nvenc cannot destroy output buffer");
+    if (nullptr != it) NVencAPI::api.nvEncDestroyBitstreamBuffer(encoder_, it);
 }
 
 bool NVencBuffers::safe_bool_idiom() const {
@@ -126,7 +128,9 @@ bool NVencBuffers::copy_to_next_input_buffer(void* data, size_t /*size*/) {
       src += src_stride;
     }
   } else {
-    g_warning("bug in nvenc-buffer line %d (switcher nvenc plugin)", __LINE__);
+#ifdef DEBUG
+    std::cerr << "bug in nvenc-buffer line (switcher nvenc plugin)" << '\n';
+#endif
   }
   if (NV_ENC_SUCCESS != NVencAPI::api.nvEncUnlockInputBuffer(encoder_, input_bufs_[cur_buf_]))
     return false;

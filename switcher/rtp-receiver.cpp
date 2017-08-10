@@ -40,15 +40,12 @@ RTPReceiver::RTPReceiver(RtpSession2* session,
               configure_shmsink_cb_(el, media_type, media_label);
             } else {
               std::string path = std::string("/tmp/") + media_type + "-" + media_label;
-              g_warning("BUG, rtp receiver using custom path (%s)", path.c_str());
               g_object_set(G_OBJECT(el), "socket-path", path.c_str(), nullptr);
             }
           },
+          [this]() {  // FIXME warning("discarding uncomplete custom frame due to a network loss");
+          },
           decompress_) {
-  if (nullptr == shmdatasrc_ || nullptr == typefind_) {
-    g_warning("RTPReceiver failed to create GStreamer element");
-    return;
-  }
   // monitoring rtp-session new pads for received rtp packet
   g_signal_connect(session_->rtpsession_, "pad-added", G_CALLBACK(on_pad_added), this);
   // FIXME have this in rtpsession2: g_signal_connect(session_->rtpsession_,
@@ -59,10 +56,7 @@ RTPReceiver::RTPReceiver(RtpSession2* session,
       G_OBJECT(shmdatasrc_), "socket-path", rtpshmpath_.c_str(), "copy-buffers", TRUE, nullptr);
   gst_bin_add_many(
       GST_BIN(session_->gst_pipeline_->get_pipeline()), shmdatasrc_, typefind_, nullptr);
-  if (!gst_element_link(shmdatasrc_, typefind_)) {
-    g_warning("RTPReceiver: shmdatasrc not linked with typefind");
-    return;
-  }
+  gst_element_link(shmdatasrc_, typefind_);
   GstUtils::sync_state_with_parent(shmdatasrc_);
   GstUtils::sync_state_with_parent(typefind_);
 }
@@ -82,8 +76,6 @@ void RTPReceiver::on_caps(GstElement* /*typefind*/,
                           gpointer user_data) {
   RTPReceiver* context = static_cast<RTPReceiver*>(user_data);
   std::string rtp_id;
-  if (nullptr != context->shmsrc_caps_)
-    g_warning("BUG in RTPReceiver %s %d", __FUNCTION__, __LINE__);
   context->shmsrc_caps_ = gst_caps_copy(caps);
   // link the payloader with the rtpbin
   {
@@ -92,8 +84,7 @@ void RTPReceiver::on_caps(GstElement* /*typefind*/,
     On_scope_exit { gst_object_unref(context->rtp_sink_pad_); };
     GstPad* srcpad = gst_element_get_static_pad(context->typefind_, "src");
     On_scope_exit { gst_object_unref(srcpad); };
-    if (gst_pad_link(srcpad, context->rtp_sink_pad_) != GST_PAD_LINK_OK)
-      g_warning("(BUG) failed to link typefind to rtpbin");
+    gst_pad_link(srcpad, context->rtp_sink_pad_);
     gchar* rtp_sink_pad_name = gst_pad_get_name(context->rtp_sink_pad_);
     On_scope_exit { g_free(rtp_sink_pad_name); };
     gchar** rtpsession_array = g_strsplit_set(rtp_sink_pad_name, "_", 0);
@@ -115,20 +106,13 @@ void RTPReceiver::on_pad_added(GstElement* /*object*/, GstPad* pad, gpointer use
     return;
   }
   if (!context->decodebin_.invoke_with_return<bool>([&](GstElement* el) {
-        if (!gst_bin_add(GST_BIN(context->session_->gst_pipeline_->get_pipeline()), el)) {
-          g_warning("RTPReceiver decodebin cannot be added to pipeline");
-          return false;
-        }
+        gst_bin_add(GST_BIN(context->session_->gst_pipeline_->get_pipeline()), el);
         GstPad* sinkpad = gst_element_get_static_pad(el, "sink");
         On_scope_exit { gst_object_unref(sinkpad); };
-        if (gst_pad_link(pad, sinkpad) != GST_PAD_LINK_OK) {
-          g_warning("(BUG) failed to link rtpbin to decodebin");
-          return false;
-        }
+        gst_pad_link(pad, sinkpad);
         GstUtils::sync_state_with_parent(el);
         return true;
       })) {
-    g_warning("BUG when adding decodebin");
   }
 }
 

@@ -32,7 +32,7 @@
 namespace switcher {
 class PostureSrc : public Quiddity, public StartableQuiddity {
  public:
-  PostureSrc(const std::string&);
+  PostureSrc(QuiddityConfiguration&&);
   ~PostureSrc();
   PostureSrc(const PostureSrc&) = delete;
   PostureSrc& operator=(const PostureSrc&) = delete;
@@ -102,7 +102,6 @@ class PostureSrc : public Quiddity, public StartableQuiddity {
   int ir_width_{0}, ir_height_{0};
   posture::ZCamera::CaptureFormat rgb_format_{posture::ZCamera::CaptureFormat::RGB};
 
-  bool init() final;
 
   static void cb_frame_cloud(void* context, const std::vector<char>&& data);
   static void cb_frame_mesh(void* context, std::vector<unsigned char>&& data);

@@ -30,7 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCDiff,
                                      "LGPL",
                                      "Jérémie Soria");
 
-LTCDiff::LTCDiff(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {
+LTCDiff::LTCDiff(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   display_timecode1_id_ =
       pmanage<MPtr(&PContainer::make_string)>("first_timecode",
                                               nullptr,
@@ -62,11 +63,7 @@ LTCDiff::LTCDiff(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {
       nullptr,
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       2);
-
-  is_valid_ = true;
 }
-
-bool LTCDiff::init() { return is_valid_; }
 
 bool LTCDiff::on_shmdata_connect(const std::string& shmpath) {
   ltc_readers_[shmpath] = std::make_unique<LTCReader>(this, shmpath, next_index_);

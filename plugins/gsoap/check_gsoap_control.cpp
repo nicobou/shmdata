@@ -26,7 +26,7 @@
 int main() {
   bool success = false;
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_manager("test_manager");
+    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
 
     manager->scan_directory_for_plugins("./");
 

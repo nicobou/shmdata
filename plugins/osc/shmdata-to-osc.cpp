@@ -30,9 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Nicolas Bouillot");
 
-ShmdataToOsc::ShmdataToOsc(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
-
-bool ShmdataToOsc::init() {
+ShmdataToOsc::ShmdataToOsc(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   init_startable(this);
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->connect(shmpath); },
@@ -64,7 +63,6 @@ bool ShmdataToOsc::init() {
                                           "Destination host",
                                           "Destination host",
                                           host_);
-  return true;
 }
 
 ShmdataToOsc::~ShmdataToOsc() { stop(); }

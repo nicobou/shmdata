@@ -35,8 +35,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-AudioTestSource::AudioTestSource(const std::string&)
-    : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
+AudioTestSource::AudioTestSource(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       sample_rate_id_(
           pmanage<MPtr(&PContainer::make_selection<>)>("sample_rate",
                                                        [this](const IndexOrName& val) {
@@ -96,11 +97,10 @@ AudioTestSource::AudioTestSource(const std::string&)
                                                               "List of supported sound formats",
                                                               format_)) {
   init_startable(this);
-}
 
-bool AudioTestSource::init() {
   if (!audiotestsrc_ || !capsfilter_ || !shmdatasink_) {
-    return false;
+    is_valid_ = false;
+    return;
   }
 
   shmpath_ = make_file_name("audio");
@@ -109,13 +109,11 @@ bool AudioTestSource::init() {
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   waveforms_id_ = pmanage<MPtr(&PContainer::push)>(
       "wave", GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "wave"));
-
-  return true;
 }
 
 bool AudioTestSource::start() {
   if (!gst_pipeline_) {
-    g_warning("BUG: gst_pipeline failed to be created, something went very wrong! (audiotestsrc)");
+    warning("BUG: gst_pipeline failed to be created, something went very wrong! (audiotestsrc)");
     return false;
   }
 
@@ -154,7 +152,7 @@ bool AudioTestSource::stop() {
 
   if (!UGstElem::renew(audiotestsrc_, {"is-live", "samplesperbuffer"}) ||
       !UGstElem::renew(capsfilter_) || !UGstElem::renew(shmdatasink_, {"socket-path"})) {
-    g_warning("error initializing gst element for audiotestsrc");
+    warning("error initializing gst element for audiotestsrc");
     gst_pipeline_.reset();
     return false;
   }
@@ -169,7 +167,7 @@ bool AudioTestSource::stop() {
 void AudioTestSource::update_caps() {
   std::string str_caps = "audio/x-raw,format=" + format_.get_current() + ",channels=" +
                          std::to_string(channels_) + ",rate=" + sample_rate_.get_current();
-  g_debug("caps: %s", str_caps.c_str());
+  debug("caps: %", str_caps);
   GstCaps* caps = gst_caps_from_string(str_caps.c_str());
   On_scope_exit { gst_caps_unref(caps); };
   g_object_set(G_OBJECT(capsfilter_.get_raw()), "caps", caps, nullptr);

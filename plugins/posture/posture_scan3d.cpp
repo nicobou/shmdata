@@ -38,42 +38,13 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureSc3,
                                      "LGPL",
                                      "Ludovic Schreiber");
 
-PostureSc3::PostureSc3(const std::string&) {
+PostureSc3::PostureSc3(QuiddityConfiguration&&) {
   merger_ = std::unique_ptr<PointCloudMerger>(new PointCloudMerger());
   sol_ = std::unique_ptr<Solidify>(new Solidify());
   sol_->setGridResolution(50);
   colorize_ = std::unique_ptr<Colorize>(new Colorize());
   intermediate_mesh_ = boost::make_shared<pcl::PolygonMesh>();
-}
 
-PostureSc3::~PostureSc3() { stop(); }
-
-bool PostureSc3::start() {
-  std::lock_guard<std::mutex> lock(mutex_);
-  for (index_ = 0; index_ < nbr_; index_++) {
-    cameras_[index_]->start();
-  }
-  merger_->start();
-
-  is_started_ = true;
-  return true;
-}
-
-bool PostureSc3::stop() {
-  std::lock_guard<std::mutex> lock(mutex_);
-  for (index_ = 0; index_ < nbr_; index_++) {
-    cameras_[index_]->stop();
-  }
-  merger_->stop();
-
-  mesh_writer_.reset();
-  rgb_writer_.reset();
-
-  is_started_ = false;
-  return true;
-}
-
-bool PostureSc3::init() {
   init_startable(this);
 
   auto cam_id = pmanage<MPtr(&PContainer::make_int)>(
@@ -161,6 +132,32 @@ bool PostureSc3::init() {
       "Colorize",
       "Check for a colorize mesh",
       colorize_or_not_);
+}
+
+PostureSc3::~PostureSc3() { stop(); }
+
+bool PostureSc3::start() {
+  std::lock_guard<std::mutex> lock(mutex_);
+  for (index_ = 0; index_ < nbr_; index_++) {
+    cameras_[index_]->start();
+  }
+  merger_->start();
+
+  is_started_ = true;
+  return true;
+}
+
+bool PostureSc3::stop() {
+  std::lock_guard<std::mutex> lock(mutex_);
+  for (index_ = 0; index_ < nbr_; index_++) {
+    cameras_[index_]->stop();
+  }
+  merger_->stop();
+
+  mesh_writer_.reset();
+  rgb_writer_.reset();
+
+  is_started_ = false;
   return true;
 }
 
@@ -199,7 +196,7 @@ void PostureSc3::cb_frame_cloud(int index, pcl::PointCloud<pcl::PointXYZRGBNorma
     }
 
     if (!mesh_writer_) {
-      g_warning("Unable to create mesh callback");
+      warning("Unable to create mesh callback");
       return;
     }
   }
@@ -240,7 +237,7 @@ void PostureSc3::cb_frame_rgb(std::vector<unsigned char>& image, int width, int 
     }
 
     if (!mesh_writer_) {
-      g_warning("Unable to create rgb callback");
+      warning("Unable to create rgb callback");
       return;
     }
   }
@@ -260,7 +257,7 @@ void PostureSc3::cb_frame_rgb(std::vector<unsigned char>& image, int width, int 
     }
 
     if (!rgb_writer_) {
-      g_warning("Unable to create rgb callback");
+      warning("Unable to create rgb callback");
       return;
     }
   }

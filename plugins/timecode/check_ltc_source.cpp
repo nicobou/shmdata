@@ -23,22 +23,22 @@
 
 int main() {
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_manager("test_manager");
+    switcher::Switcher::ptr switcher = switcher::Switcher::make_switcher("test_switcher");
 
-    manager->scan_directory_for_plugins("./");
+    switcher->scan_directory_for_plugins("./");
 
     // Fringe case like CI cannot run this test successfully but we don't want it to fail.
-    if (manager->create("ltcsource", "ltctestsourcedummy") != "ltctestsourcedummy") return 0;
+    if (switcher->create("ltcsource", "ltctestsourcedummy") != "ltctestsourcedummy") return 0;
 
-    if (manager->create("ltcsource", "ltctestsource") != "ltctestsource") return 1;
+    if (switcher->create("ltcsource", "ltctestsource") != "ltctestsource") return 1;
 
-    if (!manager->use_prop<MPtr(&switcher::PContainer::set_str_str)>(
+    if (!switcher->use_prop<MPtr(&switcher::PContainer::set_str_str)>(
             "ltctestsource", "started", "true"))
       return 1;
-    if (!manager->remove("ltctestsource")) return 1;
+    if (!switcher->remove("ltctestsource")) return 1;
 
-    if (!switcher::QuiddityBasicTest::test_full(manager, "ltcsource")) return 1;
+    if (!switcher::QuiddityBasicTest::test_full(switcher, "ltcsource")) return 1;
 
-  }  // end of scope is releasing the manager
+  }  // end of scope is releasing the switcher
   return 0;
 }

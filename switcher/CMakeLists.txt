@@ -37,7 +37,6 @@ add_library(${SWITCHER_LIBRARY} SHARED
     information-tree.cpp
     invocation-spec.cpp
     json-builder.cpp
-    logger.cpp
     method.cpp
     net-utils.cpp
     plugin-loader.cpp
@@ -76,6 +75,8 @@ add_library(${SWITCHER_LIBRARY} SHARED
     )
 
 set(HEADER_INCLUDES
+    base-logger.hpp
+    bool-log.hpp
     abstract-factory.hpp
     abstract-factory_spec.hpp
     any.hpp
@@ -84,6 +85,7 @@ set(HEADER_INCLUDES
     bundle-description-parser.hpp
     categorizable.hpp
     color.hpp
+    console-logger.hpp
     counter-map.hpp
     creator.hpp
     decodebin-to-shmdata.hpp
@@ -118,7 +120,7 @@ set(HEADER_INCLUDES
     information-tree.hpp
     is-specialization-of.hpp
     json-builder.hpp
-    logger.hpp
+    logged.hpp
     make-consultable.hpp
     method.hpp
     net-utils.hpp
@@ -130,6 +132,7 @@ set(HEADER_INCLUDES
     property-specification.hpp
     property.hpp
     quiddity-basic-test.hpp
+    quiddity-configuration.hpp
     invocation-spec.hpp
     quiddity-documentation.hpp
     quiddity-container.hpp
@@ -148,13 +151,14 @@ set(HEADER_INCLUDES
     serialize-string.hpp
     shm-delay.hpp
     shmdata-connector.hpp
-    shmdata-glib-logger.hpp
     shmdata-follower.hpp
     shmdata-stat.hpp
+    shmdata-switcher-logger.hpp
     shmdata-utils.hpp
     shmdata-writer.hpp
     sig.hpp
     signal-container.hpp
+    silent-logger.hpp
     startable-quiddity.hpp
     string-utils.hpp
     templated-sequence.hpp

@@ -51,8 +51,9 @@ const std::string GLFWVideo::kOverlayDisabledMessage =
 
 std::atomic<int> GLFWVideo::instance_counter_(0);
 
-GLFWVideo::GLFWVideo(const std::string& name)
-    : shmcntr_(static_cast<Quiddity*>(this)),
+GLFWVideo::GLFWVideo(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       background_config_id_(pmanage<MPtr(&PContainer::make_group)>(
           "background_config",
@@ -106,12 +107,12 @@ GLFWVideo::GLFWVideo(const std::string& name)
               On_scope_exit { stbi_image_free(data); };
 
               if (!data) {
-                g_warning("Failed to load image at path %s.", background_image_.c_str());
+                warning("Failed to load image at path %.", background_image_);
                 return true;
               }
 
               if (n < 3) {
-                g_warning("Source background image is neither RGB nor RGBA (glfw).");
+                warning("Source background image is neither RGB nor RGBA (glfw).");
                 return true;
               }
 
@@ -189,7 +190,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
             });
           },
           std::chrono::milliseconds(500))),
-      title_(name),
+      title_(get_name()),
       title_id_(pmanage<MPtr(&PContainer::make_string)>("title",
                                                         [this](const std::string& val) {
                                                           title_ = val;
@@ -209,14 +210,14 @@ GLFWVideo::GLFWVideo(const std::string& name)
               keyb_shm_ = std::make_unique<ShmdataWriter>(
                   this, make_file_name("keyb"), sizeof(KeybEvent), "application/x-keyboard-events");
               if (!keyb_shm_.get()) {
-                g_warning("GLFW keyboard event shmdata writer failed");
+                warning("GLFW keyboard event shmdata writer failed");
                 keyb_shm_.reset(nullptr);
               }
 
               mouse_shm_ = std::make_unique<ShmdataWriter>(
                   this, make_file_name("mouse"), sizeof(MouseEvent), "application/x-mouse-events");
               if (!mouse_shm_.get()) {
-                g_warning("GLFW mouse event shmdata writer failed");
+                warning("GLFW mouse event shmdata writer failed");
                 mouse_shm_.reset(nullptr);
               }
             } else {
@@ -247,7 +248,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
                 discover_monitor_properties();
                 auto monitor_config = get_monitor_config();
                 if (!monitor_config.monitor) {
-                  g_warning(
+                  warning(
                       "Could not get the monitor config for this window, not switching to "
                       "fullscreen.");
                   return false;
@@ -356,20 +357,20 @@ GLFWVideo::GLFWVideo(const std::string& name)
           vsync_)) {
   if (getenv("DISPLAY") == nullptr) {
     if (-1 == setenv("DISPLAY", ":0", false)) {
-      g_warning("BUG: Failed to set a display!");
+      warning("BUG: Failed to set a display!");
       return;
     }
   }
 
   if (!instance_counter_ && !glfwInit()) {
-    g_warning("BUG: Failed to initialize glfw library!");
+    warning("BUG: Failed to initialize glfw library!");
     return;
   }
 
   discover_monitor_properties();
 
   if (!monitors_config_.size()) {
-    g_warning("BUG: Failed to discover monitors.");
+    warning("BUG: Failed to discover monitors.");
     return;
   }
   win_aspect_ratio_toggle_id_ =
@@ -491,7 +492,10 @@ GLFWVideo::GLFWVideo(const std::string& name)
                                         "Enable/Disable keybord shortcuts",
                                         keyb_interaction_);
 
-  if (!remake_elements()) return;
+  if (!remake_elements()) {
+    is_valid_ = false;
+    return;
+  }
 
   std::lock_guard<std::mutex> lock(RendererSingleton::creation_window_mutex_);
 
@@ -505,17 +509,26 @@ GLFWVideo::GLFWVideo(const std::string& name)
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
   window_ = create_window();
-  if (!window_) return;
-
-  glfwMakeContextCurrent(window_);
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-    g_warning("BUG: glad could not load openGL functionalities.");
+  if (!window_) {
+    is_valid_ = false;
     return;
   }
 
-  g_debug("OpenGL Version %d.%d loaded", GLVersion.major, GLVersion.minor);
+  glfwMakeContextCurrent(window_);
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    warning("BUG: glad could not load openGL functionalities.");
+    is_valid_ = false;
+    return;
+  }
 
-  if (!setup_shaders()) return;
+  debug("OpenGL Version %.% loaded",
+        std::to_string(GLVersion.major),
+        std::to_string(GLVersion.minor));
+
+  if (!setup_shaders()) {
+    is_valid_ = false;
+    return;
+  }
   glGenTextures(1, &drawing_texture_);
   setup_vertex_array();
 
@@ -528,7 +541,7 @@ GLFWVideo::GLFWVideo(const std::string& name)
     if (gui_configuration_->initialized_)
       gui_configuration_->init_properties();
     else
-      g_warning("Overlay is not useable because something wrong happened during gui configuration");
+      warning("Overlay is not useable because something wrong happened during gui configuration");
   }
 
   glfwMakeContextCurrent(nullptr);
@@ -536,17 +549,11 @@ GLFWVideo::GLFWVideo(const std::string& name)
   ++instance_counter_;
   RendererSingleton::get()->subscribe_to_render_loop(this);
 
-  is_valid_ = true;
-}
-
-bool GLFWVideo::init() {
   // We need the quiddity config to be loaded so we cannot do it in the constructor.
   if (is_valid_) {
     load_icon();
     setup_icon();
   }
-
-  return is_valid_;
 }
 
 GLFWVideo::~GLFWVideo() {
@@ -584,7 +591,7 @@ GLFWwindow* GLFWVideo::create_window(GLFWwindow* old) {
 
   auto window = glfwCreateWindow(width_, height_, title_.c_str(), nullptr, old);
   if (!window) {
-    g_warning("Could not create glfw window, probably an OpenGL version mismatch.");
+    warning("Could not create glfw window, probably an OpenGL version mismatch.");
     return nullptr;
   }
 
@@ -705,7 +712,7 @@ bool GLFWVideo::setup_shaders() {
     glGetProgramiv(vertex_shader_, GL_INFO_LOG_LENGTH, &length);
     std::string buffer;
     glGetShaderInfoLog(vertex_shader_, length, nullptr, const_cast<char*>(buffer.data()));
-    g_warning("Failed to compile vertex shader (glfwin): %s.", buffer.c_str());
+    warning("Failed to compile vertex shader (glfwin): %.", buffer);
     return false;
   }
 
@@ -718,7 +725,7 @@ bool GLFWVideo::setup_shaders() {
     glGetProgramiv(fragment_shader_, GL_INFO_LOG_LENGTH, &length);
     std::string buffer;
     glGetShaderInfoLog(fragment_shader_, length, nullptr, const_cast<char*>(buffer.data()));
-    g_warning("Failed to compile fragment shader (glfwin): %s.", buffer.c_str());
+    warning("Failed to compile fragment shader (glfwin): %.", buffer);
     return false;
   }
 
@@ -780,7 +787,7 @@ void GLFWVideo::setup_background_texture() {
 void GLFWVideo::load_icon() {
   icon_.pixels = nullptr;
   if (!config<MPtr(&InfoTree::branch_has_data)>("icon")) {
-    g_warning("Icons configuration is missing (glfw).");
+    warning("Icons configuration is missing (glfw).");
     return;
   }
   auto icon_config = config<MPtr(&InfoTree::branch_get_value)>("icon").copy_as<std::string>();
@@ -1120,7 +1127,7 @@ bool GLFWVideo::remake_elements() {
       !UGstElem::renew(capsfilter_) || !UGstElem::renew(gamma_, {"gamma"}) ||
       !UGstElem::renew(videobalance_, {"contrast", "brightness", "hue", "saturation"}) ||
       !UGstElem::renew(fakesink_)) {
-    g_error("glfwin could not renew GStreamer elements");
+    error("glfwin could not renew GStreamer elements");
     return false;
   }
   install_gst_properties();
@@ -1157,7 +1164,7 @@ inline void GLFWVideo::on_handoff_cb(GstElement* /*object*/,
   GstMapInfo map;
 
   if (!gst_buffer_map(buf, &map, GST_MAP_READ)) {
-    g_warning("gst_buffer_map failed: canceling video buffer access");
+    context->warning("gst_buffer_map failed: canceling video buffer access");
     return;
   }
   On_scope_exit { gst_buffer_unmap(buf, &map); };
@@ -1234,7 +1241,7 @@ void GLFWVideo::GUIConfiguration::init_imgui() {
     glGetProgramiv(gui_vertex_shader_, GL_INFO_LOG_LENGTH, &length);
     std::string buffer;
     glGetShaderInfoLog(gui_vertex_shader_, length, nullptr, const_cast<char*>(buffer.data()));
-    g_warning("Failed to compile GUI vertex shader (glfwin): %s.", buffer.c_str());
+    parent_window_->warning("Failed to compile GUI vertex shader (glfwin): %.", buffer);
     return;
   }
 
@@ -1244,7 +1251,7 @@ void GLFWVideo::GUIConfiguration::init_imgui() {
     glGetProgramiv(gui_fragment_shader_, GL_INFO_LOG_LENGTH, &length);
     std::string buffer;
     glGetShaderInfoLog(gui_fragment_shader_, length, nullptr, const_cast<char*>(buffer.data()));
-    g_warning("Failed to compile GUI fragment shader (glfwin): %s.", buffer.c_str());
+    parent_window_->warning("Failed to compile GUI fragment shader (glfwin): %.", buffer);
     return;
   }
 
@@ -1254,7 +1261,7 @@ void GLFWVideo::GUIConfiguration::init_imgui() {
     glGetProgramiv(gui_shader_program_, GL_INFO_LOG_LENGTH, &length);
     std::string buffer;
     glGetProgramInfoLog(gui_shader_program_, length, nullptr, const_cast<char*>(buffer.data()));
-    g_warning("Failed to link GUI shader program (glfwin): %s.", buffer.c_str());
+    parent_window_->warning("Failed to link GUI shader program (glfwin): %.", buffer);
     return;
   }
 
@@ -1310,7 +1317,7 @@ void GLFWVideo::GUIConfiguration::init_imgui() {
 
   fonts_list_ = get_fonts();
   if (fonts_list_.empty()) {
-    g_warning("Could not find fonts installed for overlay (glfw).");
+    parent_window_->warning("Could not find fonts installed for overlay (glfw).");
     return;
   }
 
@@ -1411,12 +1418,12 @@ void GLFWVideo::GUIConfiguration::init_properties() {
         if (val.empty()) {
           return false;
         } else if (!StringUtils::ends_with(val, ".ttf")) {
-          g_message(
-              "Cannot set %s as custom font, only truetype fonts are supported (.ttf extension).",
-              val.c_str());
+          parent_window_->message(
+              "Cannot set % as custom font, only truetype fonts are supported (.ttf extension).",
+              val);
           return false;
         } else if (!StringUtils::starts_with(val, "/")) {
-          g_message("Only absolute paths are supported for the custom font.");
+          parent_window_->message("Only absolute paths are supported for the custom font.");
           return false;
         }
         custom_font_ = val;
@@ -1482,8 +1489,8 @@ std::vector<std::string> GLFWVideo::GUIConfiguration::get_fonts() {
 bool GLFWVideo::GUIConfiguration::generate_font_texture(std::string font) {
   struct stat filestat;
   if (stat(font.c_str(), &filestat) < 0) {
-    g_message("Could not find font file %s (glfwin)", font.c_str());
-    g_warning("Could not find font file %s (glfwin)", font.c_str());
+    parent_window_->message("Could not find font file % (glfwin)", font);
+    parent_window_->warning("Could not find font file % (glfwin)", font);
     return false;
   }
 

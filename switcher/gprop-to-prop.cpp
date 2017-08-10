@@ -26,9 +26,6 @@ namespace GPropToProp {
 std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_name) {
   GParamSpec* pspec = g_object_class_find_property(G_OBJECT_GET_CLASS(gobj), gprop_name.c_str());
   if (nullptr == pspec) {
-    g_warning("property %s not found for the gobject class %s",
-              gprop_name.c_str(),
-              G_OBJECT_CLASS_NAME(G_OBJECT_GET_CLASS(gobj)));
     return std::unique_ptr<PropertyBase>();
   }
 
@@ -231,7 +228,9 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
     } break;
     default:
       if (pspec->value_type == GST_TYPE_CAPS) {
-        g_warning("GST_TYPE_CAPS is not a supporteed property type");
+#ifdef DEBUG
+        std::cerr << "GST_TYPE_CAPS is not a supporteed property type" << '\n';
+#endif
       } else if (G_IS_PARAM_SPEC_ENUM(pspec)) {
         std::vector<std::string> items;
         GEnumValue* values = G_ENUM_CLASS(g_type_class_ref(pspec->value_type))->values;
@@ -272,13 +271,21 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
             Selection<>(std::move(items), default_value),
             items.size() - 1);
       } else if (G_IS_PARAM_SPEC_FLAGS(pspec)) {
-        g_warning("warning: param spec flags not handled");
+#ifdef DEBUG
+        std::cerr << "warning: param spec flags not handled" << '\n';
+#endif
       } else if (G_IS_PARAM_SPEC_OBJECT(pspec)) {
-        g_warning("warning: param spec object not handled");
+#ifdef DEBUG
+        std::cerr << "warning: param spec object not handled" << '\n';
+#endif
       } else if (G_IS_PARAM_SPEC_BOXED(pspec)) {
-        g_warning("warning: param spec boxed not handled");
+#ifdef DEBUG
+        std::cerr << "warning: param spec boxed not handled" << '\n';
+#endif
       } else if (G_IS_PARAM_SPEC_POINTER(pspec)) {
-        g_warning("warning: param spec pointer not handled");
+#ifdef DEBUG
+        std::cerr << "warning: param spec pointer not handled" << '\n';
+#endif
       } else if (GST_IS_PARAM_SPEC_FRACTION(pspec)) {
         GstParamSpecFraction* pfraction = GST_PARAM_SPEC_FRACTION(pspec);
         res = std::make_unique<Property<Fraction>>(
@@ -307,7 +314,9 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
             pfraction->max_num,
             pfraction->max_den);
       } else {
-        g_warning("warning: gobject unknown type not handled");
+#ifdef DEBUG
+        std::cerr << "warning: gobject unknown type not handled" << '\n';
+#endif
       }
       break;
   }

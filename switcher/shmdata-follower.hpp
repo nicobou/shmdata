@@ -25,8 +25,8 @@
 #include <shmdata/follower.hpp>
 #include <string>
 #include "switcher/periodic-task.hpp"
-#include "switcher/shmdata-glib-logger.hpp"
 #include "switcher/shmdata-stat.hpp"
+#include "switcher/shmdata-switcher-logger.hpp"
 
 namespace switcher {
 class Quiddity;
@@ -50,7 +50,7 @@ class ShmdataFollower {
   ShmdataStat shm_stat_{};
   std::mutex bytes_mutex_{};
   // shmdata follower related members:
-  ShmdataGlibLogger logger_{};
+  ShmdataSwitcherLogger logger_;
   std::string shmpath_;
   std::string data_type_{};
   shmdata::Reader::onData od_;

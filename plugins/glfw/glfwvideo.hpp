@@ -45,7 +45,7 @@ class GLFWVideo : public Quiddity {
    * \brief Constructor
    * \param Title of the window
    */
-  GLFWVideo(const std::string&);
+  GLFWVideo(QuiddityConfiguration&&);
   /**
    * \brief Destructor
    */
@@ -180,7 +180,6 @@ class GLFWVideo : public Quiddity {
   /**
    * \brief Quiddity lifecycle methods
    */
-  bool init() final;
   void destroy_gl_elements();
   GLFWwindow* create_window(GLFWwindow* old = nullptr);
   void swap_window();
@@ -276,7 +275,6 @@ class GLFWVideo : public Quiddity {
   /**
    * \brief Window content properties
    */
-  std::atomic<bool> is_valid_{false};
   GLFWwindow* window_{nullptr};
   bool cursor_inside_{false};
   std::vector<uint8_t> icon_data_;

@@ -90,7 +90,6 @@ class Selection {
       const auto& it = std::find(list_.cbegin(), list_.cend(), name);
       if (it != list_.end()) return it - list_.begin();
     }
-    g_warning("index not found for selection named %s, returning current value", name.c_str());
     return current_selection_;
   }
 
@@ -103,8 +102,6 @@ class Selection {
       const auto& it = std::find(attached_.cbegin(), attached_.cend(), name_or_attached);
       if (it != attached_.end()) return it - attached_.begin();
     }
-    g_warning("index not found for selection %s, returning current value",
-              name_or_attached.c_str());
     return current_selection_;
   }
 

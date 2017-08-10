@@ -70,10 +70,11 @@ std::string get_media_label(const pjmedia_sdp_media* media) {
 
 std::string get_rtp_caps(const pjmedia_sdp_media* media) {
   if (std::string(media->desc.transport.ptr, 0, media->desc.transport.slen) != "RTP/AVP") {
-    g_warning("sdp media is not using RTP transport");
     return std::string();
   }
-  if (media->desc.fmt_count > 1) g_warning("sdp media with several format (unhandled)");
+#ifdef DEBUG
+  if (media->desc.fmt_count > 1) std::cerr << "sdp media with several format (unhandled)" << '\n';
+#endif
   std::string res = std::string("application/x-rtp");
   // g_print("media --------------  %.*s\n",
   //         (int)media->desc.media.slen,

@@ -32,9 +32,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyMapper,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PropertyMapper::PropertyMapper(const std::string&) {}
-
-bool PropertyMapper::init() {
+PropertyMapper::PropertyMapper(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)) {
   install_method("Set Source Property",                                // long name
                  "set-source-property",                                // name
                  "set the master property",                            // description
@@ -66,31 +65,6 @@ bool PropertyMapper::init() {
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, nullptr),
                  this);
-
-#ifdef HAVE_PYTHON
-// Py_Initialize();
-// // PyRun_SimpleString("from time import time,ctime\n"
-// //        "print 'Today is',ctime(time())\n");
-// PyObject *numpy_name = PyString_FromString("numpy");
-// PyObject *numpy = PyImport_Import(numpy_name);
-// Py_DECREF(numpy_name);
-// if (numpy != nullptr)
-//   g_print ("got numpy !\n");
-// else
-//   g_print ("no numpy\n");
-
-// PyObject *numpey_name = PyString_FromString("numpey");
-// PyObject *numpey = PyImport_Import(numpey_name);
-// Py_DECREF(numpey_name);
-// if (numpey != nullptr)
-//   g_print ("got numpey !\n");
-// else
-//   g_print ("no numpey..\n");
-
-//   Py_Finalize();
-#endif
-
-  return true;
 }
 
 PropertyMapper::~PropertyMapper() { unsubscribe_source_property(); }
@@ -106,24 +80,19 @@ gboolean PropertyMapper::set_source_property_method(gchar* quiddity_name,
                                                     gchar* property_name,
                                                     void* user_data) {
   PropertyMapper* context = static_cast<PropertyMapper*>(user_data);
-  QuiddityContainer::ptr manager = context->manager_impl_.lock();
-  if (!(bool)manager) {
-    g_debug("manager not found");
-    return FALSE;
-  }
-  Quiddity::ptr quid = manager->get_quiddity(quiddity_name);
+  Quiddity::ptr quid = context->qcontainer_->get_quiddity(quiddity_name);
   if (!(bool)quid) {
-    g_debug("quiddity %s not found", quiddity_name);
+    context->debug("quiddity % not found", std::string(quiddity_name));
     return FALSE;
   }
   context->source_prop_id_ = quid->prop<MPtr(&PContainer::get_id)>(property_name);
   if (0 == context->source_prop_id_) {
-    g_debug("property %s not found", property_name);
+    context->debug("property % not found", std::string(property_name));
     return FALSE;
   }
   if (!quid->tree<MPtr(&InfoTree::branch_has_data)>(std::string("property.") + property_name +
                                                     ".min")) {
-    g_debug("property %s has no min/max defined", property_name);
+    context->debug("property % has no min/max defined", std::string(property_name));
     return FALSE;
   }
   // unsubscribing previously registered property
@@ -229,24 +198,19 @@ gboolean PropertyMapper::set_sink_property_method(gchar* quiddity_name,
                                                   gchar* property_name,
                                                   void* user_data) {
   PropertyMapper* context = static_cast<PropertyMapper*>(user_data);
-  QuiddityContainer::ptr manager = context->manager_impl_.lock();
-  if (!(bool)manager) {
-    g_debug("manager not found");
-    return FALSE;
-  }
-  Quiddity::ptr quid = manager->get_quiddity(quiddity_name);
+  Quiddity::ptr quid = context->qcontainer_->get_quiddity(quiddity_name);
   if (!(bool)quid) {
-    g_debug("quiddity %s not found", quiddity_name);
+    context->debug("quiddity % not found", std::string(quiddity_name));
     return FALSE;
   }
   context->sink_prop_id_ = quid->prop<MPtr(&PContainer::get_id)>(property_name);
   if (0 == context->sink_prop_id_) {
-    g_debug("property %s not found", property_name);
+    context->debug("property % not found", std::string(property_name));
     return FALSE;
   }
   if (!quid->tree<MPtr(&InfoTree::branch_has_data)>(std::string("property.") + property_name +
                                                     ".min")) {
-    g_debug("property %s has no min/max defined", property_name);
+    context->debug("property % has no min/max defined", std::string(property_name));
     return FALSE;
   }
   context->sink_min_ = quid->tree<MPtr(&InfoTree::branch_read_data<double>)>(

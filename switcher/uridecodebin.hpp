@@ -30,7 +30,7 @@
 namespace switcher {
 class Uridecodebin : public Quiddity {
  public:
-  Uridecodebin(const std::string&);
+  Uridecodebin(QuiddityConfiguration&&);
   ~Uridecodebin() = default;
   Uridecodebin(const Uridecodebin&) = delete;
   Uridecodebin& operator=(const Uridecodebin&) = delete;
@@ -53,7 +53,6 @@ class Uridecodebin : public Quiddity {
   CounterMap counter_{};
   std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
 
-  bool init() final;
   void init_uridecodebin();
   void destroy_uridecodebin();
   void clean_on_error_command();

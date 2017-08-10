@@ -19,6 +19,7 @@
 
 #undef NDEBUG  // get assert in release mode
 
+#include <shmdata/console-logger.hpp>
 #include "switcher/quiddity-basic-test.hpp"
 #include "switcher/shmdata-follower.hpp"
 
@@ -52,7 +53,7 @@ void notify_success() {
 
 int main() {
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_manager("ltcdifftest");
+    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("ltcdifftest");
 
     manager->scan_directory_for_plugins("./");
 
@@ -91,7 +92,7 @@ int main() {
                             nullptr))
       return 1;
 
-    ShmdataGlibLogger logger{};
+    shmdata::ConsoleLogger logger;
     auto reader =
         std::make_unique<shmdata::Reader>("/tmp/switcher_ltcdifftest_ltcdifftest_ltc-diff",
                                           [](void* data, size_t data_size) {

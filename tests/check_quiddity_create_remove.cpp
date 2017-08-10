@@ -28,7 +28,7 @@
 
 int main() {
   bool success = true;
-  switcher::Switcher::ptr manager = switcher::Switcher::make_manager("test_manager");
+  switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
   std::vector<std::string> classes = manager->get_classes();
 
   for (auto& it : classes) {

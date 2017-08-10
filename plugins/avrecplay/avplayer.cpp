@@ -36,22 +36,23 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AVPlayer,
 
 const std::string AVPlayer::kShmDestPath = "/tmp/avplayer/";
 
-AVPlayer::AVPlayer(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)),
+AVPlayer::AVPlayer(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   pmanage<MPtr(&PContainer::make_string)>(
       "playpath",
       [this](const std::string& val) {
         if (val.empty()) {
-          g_warning("Empty folder provided for shmdata recorder.");
-          g_message("ERROR: Empty folder provided for shmdata recorder.");
+          warning("Empty folder provided for shmdata recorder.");
+          message("ERROR: Empty folder provided for shmdata recorder.");
           return false;
         }
 
         struct stat st;
         if (stat(val.c_str(), &st) != 0 || !S_ISDIR(st.st_mode)) {
-          g_warning("The specified folder does not exist (avplayer).");
-          g_message("ERROR: The specified folder does not exist (avplayer).");
+          warning("The specified folder does not exist (avplayer).");
+          message("ERROR: The specified folder does not exist (avplayer).");
           return false;
         }
 
@@ -77,21 +78,16 @@ AVPlayer::AVPlayer(const std::string&)
   struct stat st;
   if (stat(AVPlayer::kShmDestPath.c_str(), &st) != 0 || !S_ISDIR(st.st_mode)) {
     if (-1 == mkdir(AVPlayer::kShmDestPath.c_str(), S_IRWXU | S_IRUSR | S_IWUSR)) {
-      g_warning(
-          "The shmdata destination folder does not exist and could not be created (avplayer).");
-      g_message(
+      warning("The shmdata destination folder does not exist and could not be created (avplayer).");
+      message(
           "ERROR: The shmdata destination folder does not exist and could not be created "
           "(avplayer).");
+      is_valid_ = false;
       return;
     }
   }
 
-  is_valid_ = true;
-}
-
-bool AVPlayer::init() {
   init_startable(this);
-  return is_valid_;
 }
 
 bool AVPlayer::start() {
@@ -131,7 +127,7 @@ bool AVPlayer::start() {
   };
 
   if (error) {
-    g_warning("Could not create shmdata player: %s", error->message);
+    warning("Could not create shmdata player: %", std::string(error->message));
     g_error_free(error);
     return false;
   }

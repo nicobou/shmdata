@@ -16,7 +16,6 @@
  */
 
 #include "./pj-codec.hpp"
-#include <glib.h>  // g_warning
 #include <algorithm>
 #include "./pj-codec-utils.hpp"
 #include "./pj-media-endpt.hpp"
@@ -78,11 +77,6 @@ pj_status_t PJCodec::alt_codec_enum_codecs(pjmedia_codec_factory* /*factory*/,
 
   unsigned i = 0;
   for (auto& it : available_codecs) {
-    // g_print(" encoding %s, payload %d, media %s, clock rate %d\n",
-    //         it->encoding_name_.c_str(),
-    //         it->payload_,
-    //         it->media_.c_str(),
-    //         it->clock_rate_);
     if (i >= *count)  // default pjsip is 32, need a patch to get more, like 128
       break;
     pj_bzero(&codecs[i], sizeof(pjmedia_codec_info));
@@ -120,7 +114,6 @@ pj_status_t PJCodec::alt_codec_dealloc_codec(pjmedia_codec_factory* /*factory*/,
 
 pj_status_t PJCodec::alt_codec_deinit(void) {
   if (nullptr == PJMediaEndpt::med_endpt_) {
-    g_warning("media endpoint is nullptr, cannot deinit");
     return PJ_TRUE;  // failure
   }
   pjmedia_codec_mgr* codec_mgr;
@@ -130,7 +123,6 @@ pj_status_t PJCodec::alt_codec_deinit(void) {
 
 pj_status_t PJCodec::install_codecs() {
   if (nullptr == PJMediaEndpt::med_endpt_) {
-    g_warning("cannot install codec (nullptr media endpoint)");
     return PJ_TRUE;  // failure
   }
 
