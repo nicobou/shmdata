@@ -237,8 +237,11 @@ GLFWVideo::GLFWVideo(const std::string& name)
             add_rendering_task([this, val]() {
               std::lock_guard<std::mutex> lock(configuration_mutex_);
               if (val) {
-                minimized_width_ = width_;
-                minimized_height_ = height_;
+                glfwSetWindowAspectRatio(window_, GLFW_DONT_CARE, GLFW_DONT_CARE);
+                if (!win_aspect_ratio_toggle_) {
+                  minimized_width_ = width_;
+                  minimized_height_ = height_;
+                }
                 minimized_position_x_ = position_x_;
                 minimized_position_y_ = position_y_;
                 discover_monitor_properties();
@@ -260,6 +263,8 @@ GLFWVideo::GLFWVideo(const std::string& name)
               } else {
                 width_ = minimized_width_;
                 height_ = minimized_height_;
+                if (win_aspect_ratio_toggle_)
+                  glfwSetWindowAspectRatio(window_, minimized_width_, minimized_height_);
                 position_x_ = minimized_position_x_;
                 position_y_ = minimized_position_y_;
                 pmanage<MPtr(&PContainer::enable)>(width_id_);
@@ -371,6 +376,22 @@ GLFWVideo::GLFWVideo(const std::string& name)
       pmanage<MPtr(&PContainer::make_bool)>("win_aspect_ratio_toggle",
                                             [this](const bool& val) {
                                               win_aspect_ratio_toggle_ = val;
+                                              minimized_width_ = width_;
+                                              minimized_height_ = height_;
+                                              if (val)
+                                                add_rendering_task(
+                                                    [ this, width = width_, height = height_ ]() {
+                                                      glfwSetWindowAspectRatio(
+                                                          window_, width, height);
+                                                      return true;
+                                                    });
+                                              else
+                                                add_rendering_task([this]() {
+                                                  glfwSetWindowAspectRatio(
+                                                      window_, GLFW_DONT_CARE, GLFW_DONT_CARE);
+                                                  return true;
+                                                });
+
                                               return true;
                                             },
                                             [this]() { return win_aspect_ratio_toggle_; },
@@ -382,10 +403,8 @@ GLFWVideo::GLFWVideo(const std::string& name)
       "width",
       [this](const int& val) {
         if (val == width_) return true;
-        if (!win_aspect_ratio_toggle_) win_aspect_ratio_ = width_ / height_;
         add_rendering_task([this, val]() {
           width_ = val;
-          if (win_aspect_ratio_toggle_) height_ = val / win_aspect_ratio_;
           set_size();
           std::lock_guard<std::mutex> lock(configuration_mutex_);
           ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
@@ -405,10 +424,8 @@ GLFWVideo::GLFWVideo(const std::string& name)
       "height",
       [this](const int& val) {
         if (val == height_) return true;
-        if (!win_aspect_ratio_toggle_) win_aspect_ratio_ = width_ / height_;
         add_rendering_task([this, val]() {
           height_ = val;
-          if (win_aspect_ratio_toggle_) width_ = val * win_aspect_ratio_;
           set_size();
           std::lock_guard<std::mutex> lock(configuration_mutex_);
           ImGui::SetCurrentContext(gui_configuration_->context_->ctx);

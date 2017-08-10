@@ -328,7 +328,6 @@ class GLFWVideo : public Quiddity {
   bool always_on_top_{false};
   PContainer::prop_id_t always_on_top_id_{0};
   bool win_aspect_ratio_toggle_{false};
-  float win_aspect_ratio_{1};
   PContainer::prop_id_t win_aspect_ratio_toggle_id_{0};
   int width_{800};
   PContainer::prop_id_t width_id_{0};
