@@ -62,6 +62,8 @@ Quiddity::Quiddity()
           "on-user-data-grafted", "A tree has been grafted to the quiddity's user data tree")),
       on_user_data_pruned_id_(smanage<MPtr(&SContainer::make)>(
           "on-user-data-pruned", "A branch has been pruned from the quiddity's user data tree")),
+      on_nicknamed_id_(smanage<MPtr(&SContainer::make)>(
+          "on-nicknamed", "A nickname has been given to the quiddity")),
       methods_description_(std::make_shared<JSONBuilder>()) {
   configuration_tree_->graft(".", InfoTree::make());
 }
@@ -384,6 +386,7 @@ bool Quiddity::toggle_property_saving(const std::string& prop) {
 
 bool Quiddity::set_nickname(const std::string& nickname) {
   nickname_ = nickname;
+  smanage<MPtr(&SContainer::notify)>(on_nicknamed_id_, InfoTree::make(nickname));
   return true;
 }
 

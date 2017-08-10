@@ -158,6 +158,7 @@ class Quiddity {
   SContainer::sig_id_t on_tree_pruned_id_;
   SContainer::sig_id_t on_user_data_grafted_id_;
   SContainer::sig_id_t on_user_data_pruned_id_;
+  SContainer::sig_id_t on_nicknamed_id_;
 
   // methods
   std::unordered_map<std::string, Method::ptr> methods_{};

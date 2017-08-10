@@ -125,15 +125,27 @@ bool QuiddityBasicTest::test_nickname(QuiddityManager::ptr manager,
                                       const std::string& quiddity_class_name) {
   std::string name = manager->create(quiddity_class_name);
   if (name.empty()) return true;
+  std::string nickname = name + " nickname";
+  bool signal_received = false;
+
   if (name != manager->get_nickname(name)) {
     g_warning("nickname not initialised with name");
     return false;
   }
-  std::string nickname = name + " nickname";
+  auto registration_id = manager->use_sig<MPtr(&switcher::SContainer::subscribe_by_name)>(
+      name, "on-nicknamed", [&](const switcher::InfoTree::ptr& tree) {
+        if (nickname == tree->get_value().as<std::string>()) signal_received = true;
+      });
+  if (0 == registration_id) return false;
+
   if (!manager->set_nickname(name, nickname)) {
     g_warning("cannot set nickname");
     return false;
   }
+  if (!manager->use_sig<MPtr(&switcher::SContainer::unsubscribe_by_name)>(
+          name, "on-nicknamed", registration_id))
+    return false;
+  if (!signal_received) return false;
   if (nickname != manager->get_nickname(name)) {
     g_warning("issue getting the nickname");
     return false;
