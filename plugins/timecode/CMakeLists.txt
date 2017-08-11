@@ -25,8 +25,8 @@ if (PLUGIN_TIMECODE)
 
     # LTC-to-JackTransport
     add_library(ltctojack SHARED
-            ltc-to-jack.cpp
-        )
+                ltc-to-jack.cpp
+    )
 
     add_dependencies(ltctojack ${SWITCHER_LIBRARY})
 
@@ -34,7 +34,19 @@ if (PLUGIN_TIMECODE)
     add_executable(check_ltc_to_jack check_ltc_to_jack.cpp)
     add_test(check_ltc_to_jack check_ltc_to_jack)
 
+    # LTC-to-JackTransport
+    add_library(ltcsource SHARED
+                ltc-source.cpp
+    )
+
+    add_dependencies(ltcsource ${SWITCHER_LIBRARY})
+
+    # Test
+    add_executable(check_ltc_source check_ltc_source.cpp)
+    add_test(check_ltc_source check_ltc_source)
+
+
     # Install
-    install(TARGETS ltctojack LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(TARGETS ltctojack ltcsource LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
 
 endif ()
