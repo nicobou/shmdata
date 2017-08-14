@@ -19,49 +19,44 @@
 
 #include <string.h>
 #include <fstream>
-#include <streambuf>
-#include <string>
 
 #include "./gst-utils.hpp"
 #include "./information-tree-json.hpp"
-#include "./quiddity-manager.hpp"
-#include "./quiddity.hpp"
 #include "./scope-exit.hpp"
+#include "./switcher.hpp"
 
 namespace switcher {
-QuiddityManager::ptr QuiddityManager::make_manager(const std::string& name) {
+Switcher::ptr Switcher::make_manager(const std::string& name) {
   if (!gst_is_initialized()) gst_init(nullptr, nullptr);
   GstRegistry* registry = gst_registry_get();
   // TODO add option for scanning a path
   gst_registry_scan_path(registry, "/usr/local/lib/gstreamer-1.0/");
   gst_registry_scan_path(registry, "/usr/lib/gstreamer-1.0/");
 
-  QuiddityManager::ptr manager(new QuiddityManager(name));
+  Switcher::ptr manager(new Switcher(name));
   manager->me_ = manager;
   return manager;
 }
 
-QuiddityManager::QuiddityManager(const std::string& name)
-    : manager_impl_(QuiddityManager_Impl::make_manager(this, name)), name_(name) {}
+Switcher::Switcher(const std::string& name)
+    : manager_impl_(QuiddityContainer::make_manager(this, name)), name_(name) {}
 
-std::string QuiddityManager::get_name() const { return name_; }
+std::string Switcher::get_name() const { return name_; }
 
-void QuiddityManager::reset_state(bool remove_created_quiddities) {
+void Switcher::reset_state(bool remove_created_quiddities) {
   if (remove_created_quiddities) {
-    manager_impl_->mute_signal_subscribers(true);
     for (auto& quid : manager_impl_->get_instances()) {
       if (quiddities_at_reset_.cend() ==
           std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid)) {
         manager_impl_->remove(quid);
       }
     }
-    manager_impl_->mute_signal_subscribers(false);
   }
   invocations_.clear();
   quiddities_at_reset_ = manager_impl_->get_instances();
 }
 
-void QuiddityManager::try_save_current_invocation(const InvocationSpec& invocation_spec) {
+void Switcher::try_save_current_invocation(const InvocationSpec& invocation_spec) {
   // FIXME do something avoiding this horrible hack:
   std::vector<std::string> excluded = {"connect",
                                        "disconnect",
@@ -82,7 +77,7 @@ void QuiddityManager::try_save_current_invocation(const InvocationSpec& invocati
     invocations_.push_back(invocation_spec);
 }
 
-bool QuiddityManager::load_state(InfoTree::ptr state, bool mute_existing_subscribers) {
+bool Switcher::load_state(InfoTree::ptr state) {
   if (!state) return false;
   auto histo_str = std::string("history.");
   auto invocations_paths = state->get_child_keys(histo_str);
@@ -97,12 +92,9 @@ bool QuiddityManager::load_state(InfoTree::ptr state, bool mute_existing_subscri
   auto properties = state->get_tree(".properties");
   auto readers = state->get_tree(".readers");
   auto custom_states = state->get_tree(".custom_states");
+  auto nicknames = state->get_tree(".nicknames");
 
   bool debug = false;
-  if (mute_existing_subscribers) manager_impl_->mute_signal_subscribers(true);
-  On_scope_exit {
-    if (mute_existing_subscribers) manager_impl_->mute_signal_subscribers(false);
-  };
 
   if (debug) g_print("start playing history\n");
 
@@ -116,6 +108,7 @@ bool QuiddityManager::load_state(InfoTree::ptr state, bool mute_existing_subscri
         g_warning("error creating quiddity %s (of type %s)", it.c_str(), quid_class.c_str());
       }
     }
+
     // loading custom state
     for (auto& it : quids) {
       if (!manager_impl_->has_instance(it)) continue;
@@ -124,6 +117,15 @@ bool QuiddityManager::load_state(InfoTree::ptr state, bool mute_existing_subscri
       } else {
         manager_impl_->get_quiddity(it)->on_loading(InfoTree::make());
       }
+    }
+  }
+
+  // nicknames
+  if (nicknames) {
+    for (auto& it : nicknames->get_child_keys(".")) {
+      std::string nickname = nicknames->branch_get_value(it);
+      if (!set_nickname(it, nickname))
+        g_warning("error applying nickname %s for %s", nickname.c_str(), it.c_str());
     }
   }
 
@@ -211,7 +213,7 @@ bool QuiddityManager::load_state(InfoTree::ptr state, bool mute_existing_subscri
   return true;
 }
 
-InfoTree::ptr QuiddityManager::get_state() const {
+InfoTree::ptr Switcher::get_state() const {
   auto quiddities = manager_impl_->get_instances();
   InfoTree::ptr tree = InfoTree::make();
 
@@ -231,9 +233,14 @@ InfoTree::ptr QuiddityManager::get_state() const {
     // name and class
     if (quiddities_at_reset_.cend() ==
         std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid_name)) {
-      auto quid_class =
-          manager_impl_->get_quiddity(quid_name)->get_documentation()->get_class_name();
+      auto quid_class = DocumentationRegistry::get()->get_quiddity_type_from_quiddity(quid_name);
       tree->graft(".quiddities." + quid_name, InfoTree::make(quid_class));
+    }
+
+    // nicknames
+    if (quiddities_at_reset_.cend() ==
+        std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid_name)) {
+      tree->graft(".nicknames." + quid_name, InfoTree::make(get_nickname(quid_name)));
     }
 
     // user data
@@ -278,10 +285,10 @@ InfoTree::ptr QuiddityManager::get_state() const {
   return tree;
 }
 
-bool QuiddityManager::invoke_va(const std::string& quiddity_name,
-                                const std::string& method_name,
-                                std::string** return_value,
-                                ...) {
+bool Switcher::invoke_va(const std::string& quiddity_name,
+                         const std::string& method_name,
+                         std::string** return_value,
+                         ...) {
   std::vector<std::string> method_args;
   va_list vl;
   va_start(vl, return_value);
@@ -322,10 +329,10 @@ bool QuiddityManager::invoke_va(const std::string& quiddity_name,
   return res;
 }
 
-bool QuiddityManager::invoke(const std::string& quiddity_name,
-                             const std::string& method_name,
-                             std::string** return_value,
-                             const std::vector<std::string>& args) {
+bool Switcher::invoke(const std::string& quiddity_name,
+                      const std::string& method_name,
+                      std::string** return_value,
+                      const std::vector<std::string>& args) {
   bool res = false;
   InvocationSpec current_invocation;
   invocation_loop_.run([&]() {
@@ -356,7 +363,7 @@ bool QuiddityManager::invoke(const std::string& quiddity_name,
   return res;
 }
 
-std::string QuiddityManager::get_methods_description(const std::string& quiddity_name) {
+std::string Switcher::get_methods_description(const std::string& quiddity_name) {
   std::string res;
   invocation_loop_.run([&]() {
     res = manager_impl_->get_methods_description(quiddity_name);
@@ -364,8 +371,8 @@ std::string QuiddityManager::get_methods_description(const std::string& quiddity
   return res;
 }
 
-std::string QuiddityManager::get_method_description(const std::string& quiddity_name,
-                                                    const std::string& method_name) {
+std::string Switcher::get_method_description(const std::string& quiddity_name,
+                                             const std::string& method_name) {
   std::string res;
   invocation_loop_.run([&]() {
     res = manager_impl_->get_method_description(quiddity_name, method_name);
@@ -373,7 +380,7 @@ std::string QuiddityManager::get_method_description(const std::string& quiddity_
   return res;
 }
 
-std::string QuiddityManager::get_methods_description_by_class(const std::string& class_name) {
+std::string Switcher::get_methods_description_by_class(const std::string& class_name) {
   std::string res;
   invocation_loop_.run([&]() {
     res = manager_impl_->get_methods_description_by_class(class_name);
@@ -381,8 +388,8 @@ std::string QuiddityManager::get_methods_description_by_class(const std::string&
   return res;
 }
 
-std::string QuiddityManager::get_method_description_by_class(const std::string& class_name,
-                                                             const std::string& method_name) {
+std::string Switcher::get_method_description_by_class(const std::string& class_name,
+                                                      const std::string& method_name) {
   std::string res;
   invocation_loop_.run([&]() {
     res = manager_impl_->get_method_description_by_class(class_name, method_name);
@@ -390,7 +397,7 @@ std::string QuiddityManager::get_method_description_by_class(const std::string& 
   return res;
 }
 
-bool QuiddityManager::has_method(const std::string& quiddity_name, const std::string& method_name) {
+bool Switcher::has_method(const std::string& quiddity_name, const std::string& method_name) {
   bool res;
   invocation_loop_.run([&]() {
     res = manager_impl_->has_method(quiddity_name, method_name);
@@ -398,171 +405,75 @@ bool QuiddityManager::has_method(const std::string& quiddity_name, const std::st
   return res;
 }
 
-bool QuiddityManager::make_signal_subscriber(const std::string& subscriber_name,
-                                             QuiddityManager::SignalCallback callback,
-                                             void* user_data) {
-  bool res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->make_signal_subscriber(subscriber_name, callback, user_data);
-  });  // invocation_loop_.run
-
-  return res;
-}
-
-bool QuiddityManager::remove_signal_subscriber(const std::string& subscriber_name) {
-  bool res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->remove_signal_subscriber(subscriber_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-bool QuiddityManager::subscribe_signal(const std::string& subscriber_name,
-                                       const std::string& quiddity_name,
-                                       const std::string& signal_name) {
-  bool res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->subscribe_signal(subscriber_name, quiddity_name, signal_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-bool QuiddityManager::unsubscribe_signal(const std::string& subscriber_name,
-                                         const std::string& quiddity_name,
-                                         const std::string& signal_name) {
-  bool res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->unsubscribe_signal(subscriber_name, quiddity_name, signal_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::vector<std::string> QuiddityManager::list_signal_subscribers() {
-  std::vector<std::string> res;
-  invocation_loop_.run(
-      [&]() { res = manager_impl_->list_signal_subscribers(); });  // invocation_loop_.run
-  return res;
-}
-
-std::vector<std::pair<std::string, std::string>> QuiddityManager::list_subscribed_signals(
-    const std::string& subscriber_name) {
-  std::vector<std::pair<std::string, std::string>> res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->list_subscribed_signals(subscriber_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::string QuiddityManager::list_subscribed_signals_json(const std::string& subscriber_name) {
-  std::string res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->list_subscribed_signals_json(subscriber_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::string QuiddityManager::get_signals_description(const std::string& quiddity_name) {
-  std::string res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->get_signals_description(quiddity_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::string QuiddityManager::get_signal_description(const std::string& quiddity_name,
-                                                    const std::string& signal_name) {
-  std::string res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->get_signal_description(quiddity_name, signal_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::string QuiddityManager::get_signals_description_by_class(const std::string& class_name) {
-  std::string res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->get_signals_description_by_class(class_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::string QuiddityManager::get_signal_description_by_class(const std::string& class_name,
-                                                             const std::string& signal_name) {
-  std::string res;
-  invocation_loop_.run([&]() {
-    res = manager_impl_->get_signal_description_by_class(class_name, signal_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-void QuiddityManager::auto_init(const std::string& quiddity_name) {
+void Switcher::auto_init(const std::string& quiddity_name) {
   Quiddity::ptr quidd = manager_impl_->get_quiddity(quiddity_name);
   if (!quidd) return;
-  QuiddityManagerWrapper::ptr wrapper = std::dynamic_pointer_cast<QuiddityManagerWrapper>(quidd);
+  SwitcherWrapper::ptr wrapper = std::dynamic_pointer_cast<SwitcherWrapper>(quidd);
   if (wrapper) wrapper->set_quiddity_manager(me_.lock());
 }
 
-std::string QuiddityManager::create(const std::string& quiddity_class) {
+std::string Switcher::create(const std::string& quiddity_class) {
   std::string res;
-  invocation_loop_.run(
-      [&]() { res = manager_impl_->create(quiddity_class); });  // invocation_loop_.run
+  invocation_loop_.run([&]() {
+    res = manager_impl_->create(quiddity_class);
+    auto_init(res);
+  });  // invocation_loop_.run
   return res;
 }
 
-bool QuiddityManager::scan_directory_for_plugins(const std::string& directory) {
+bool Switcher::scan_directory_for_plugins(const std::string& directory) {
   return manager_impl_->scan_directory_for_plugins(directory);
 }
 
-bool QuiddityManager::load_configuration_file(const std::string& file_path) {
+bool Switcher::load_configuration_file(const std::string& file_path) {
   return manager_impl_->load_configuration_file(file_path);
 }
 
-std::string QuiddityManager::create(const std::string& quiddity_class,
-                                    const std::string& nickname) {
+std::string Switcher::create(const std::string& quiddity_class, const std::string& nickname) {
   std::string res;
-  invocation_loop_.run(
-      [&]() { res = manager_impl_->create(quiddity_class, nickname); });  // invocation_loop_.run
+  invocation_loop_.run([&]() {
+    res = manager_impl_->create(quiddity_class, nickname);
+    auto_init(res);
+  });  // invocation_loop_.run
   return res;
 }
 
-bool QuiddityManager::remove(const std::string& quiddity_name) {
+bool Switcher::remove(const std::string& quiddity_name) {
   bool res;
   invocation_loop_.run(
       [&]() { res = manager_impl_->remove(quiddity_name); });  // invocation_loop_.run
   return res;
 }
 
-bool QuiddityManager::has_quiddity(const std::string& name) {
-  return manager_impl_->has_instance(name);
-}
+bool Switcher::has_quiddity(const std::string& name) { return manager_impl_->has_instance(name); }
 
-std::vector<std::string> QuiddityManager::get_classes() {
+std::vector<std::string> Switcher::get_classes() {
   std::vector<std::string> res;
   invocation_loop_.run([&]() { res = manager_impl_->get_classes(); });  // invocation_loop_.run
   return res;
 }
 
-std::string QuiddityManager::get_classes_doc() {
+std::string Switcher::get_classes_doc() {
   std::string res;
   invocation_loop_.run([&]() { res = manager_impl_->get_classes_doc(); });  // invocation_loop_.run
   return res;
 }
 
-std::string QuiddityManager::get_class_doc(const std::string& class_name) {
+std::string Switcher::get_class_doc(const std::string& class_name) {
   std::string res;
   invocation_loop_.run(
       [&]() { res = manager_impl_->get_class_doc(class_name); });  // invocation_loop_.run
   return res;
 }
 
-std::string QuiddityManager::get_quiddities_description() {
+std::string Switcher::get_quiddities_description() {
   std::string res;
   invocation_loop_.run(
       [&]() { res = manager_impl_->get_quiddities_description(); });  // invocation_loop_.run
   return res;
 }
 
-std::string QuiddityManager::get_quiddity_description(const std::string& quiddity_name) {
+std::string Switcher::get_quiddity_description(const std::string& quiddity_name) {
   std::string res;
   invocation_loop_.run([&]() {
     res = manager_impl_->get_quiddity_description(quiddity_name);
@@ -570,14 +481,13 @@ std::string QuiddityManager::get_quiddity_description(const std::string& quiddit
   return res;
 }
 
-std::vector<std::string> QuiddityManager::get_quiddities() const {
+std::vector<std::string> Switcher::get_quiddities() const {
   std::vector<std::string> res;
-  // FIXME this is not thread safe
-  res = manager_impl_->get_instances();
+  invocation_loop_.run([&]() { res = manager_impl_->get_instances(); });  // invocation_loop_.run
   return res;
 }
 
-std::string QuiddityManager::get_nickname(const std::string& name) const {
+std::string Switcher::get_nickname(const std::string& name) const {
   auto quid = manager_impl_->get_quiddity(name);
   if (!quid) {
     g_debug("quiddity %s not found", name.c_str());
@@ -586,7 +496,7 @@ std::string QuiddityManager::get_nickname(const std::string& name) const {
   return quid->get_nickname();
 }
 
-bool QuiddityManager::set_nickname(const std::string& name, const std::string& nickname) {
+bool Switcher::set_nickname(const std::string& name, const std::string& nickname) {
   auto quid = manager_impl_->get_quiddity(name);
   if (!quid) {
     g_debug("quiddity %s not found", name.c_str());

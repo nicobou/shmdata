@@ -29,7 +29,6 @@ namespace switcher {
 
 class AVRecorder : public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AVRecorder);
   AVRecorder(const std::string& name);
   bool init() final;
   bool start() final;
@@ -41,6 +40,8 @@ class AVRecorder : public Quiddity, public StartableQuiddity {
   static const std::string kRecordModeDate;
   static const std::string kRecordModeLabel;
   static const std::string kRecordModeOverwrite;
+
+  GstBusSyncReply bus_sync(GstMessage* msg);
 
   //! Shmdata methods
   bool on_shmdata_connect(const std::string& shmpath);
@@ -90,6 +91,9 @@ class AVRecorder : public Quiddity, public StartableQuiddity {
   ShmdataConnector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
   std::unique_ptr<GstPipeliner> gst_pipeline_{nullptr};  //!< Gstreamer pipeline
   GstElement* avrec_bin_{nullptr};                       //!< Full recording pipeline
+
+  std::mutex eos_m_{};
+  std::condition_variable cv_eos_{};
 
   std::vector<std::unique_ptr<ConnectedShmdata>> connected_shmdata_{};
 

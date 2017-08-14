@@ -24,13 +24,12 @@
 #include <string>
 #include <vector>
 #include "switcher/quiddity-basic-test.hpp"
-#include "switcher/quiddity-manager.hpp"
+#include "switcher/switcher.hpp"
 
 int main() {
   bool success = true;
   {
-    switcher::QuiddityManager::ptr manager =
-        switcher::QuiddityManager::make_manager("description-by-class");
+    switcher::Switcher::ptr manager = switcher::Switcher::make_manager("description-by-class");
     for (auto& it : manager->get_classes())
       if (!switcher::QuiddityBasicTest::test_description_by_class(manager, it)) success = false;
   }

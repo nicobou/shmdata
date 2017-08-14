@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 #include "switcher/gst-shmdata-subscriber.hpp"
-#include "switcher/quiddity-manager.hpp"
+#include "switcher/switcher.hpp"
 
 static bool mesh_success;
 static bool do_continue;
@@ -34,7 +34,7 @@ void on_tree_grafted(const std::string& /*subscriber_name */,
                      const std::string& signal_name,
                      const std::vector<std::string>& params,
                      void* user_data) {
-  auto manager = static_cast<QuiddityManager*>(user_data);
+  auto manager = static_cast<Switcher*>(user_data);
   // std::printf("%s: %s \n", signal_name.c_str(), params[0].c_str());
   size_t byte_rate =
       // std::string byte_rate =
@@ -52,7 +52,7 @@ int main() {
   mesh_success = false;
   do_continue = true;
   {
-    QuiddityManager::ptr manager = QuiddityManager::make_manager("rtpposturetest");
+    Switcher::ptr manager = Switcher::make_manager("rtpposturetest");
 
     gchar* usr_plugin_dir = g_strdup_printf("../gsoap/");
     manager->scan_directory_for_plugins(usr_plugin_dir);

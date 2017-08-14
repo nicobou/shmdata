@@ -76,7 +76,7 @@ SoapCtrlServer::~SoapCtrlServer() {
   soap_done(&soap_);
 }
 
-std::shared_ptr<QuiddityManager> SoapCtrlServer::get_quiddity_manager() { return manager_.lock(); }
+std::shared_ptr<Switcher> SoapCtrlServer::get_quiddity_manager() { return manager_.lock(); }
 
 int SoapCtrlServer::http_get(struct soap* soap) {
   std::string rtpsession_name;
@@ -102,7 +102,7 @@ int SoapCtrlServer::http_get(struct soap* soap) {
     g_strfreev(query_vars);
     g_strfreev(query);
     SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(soap->user);
-    QuiddityManager::ptr manager;
+    Switcher::ptr manager;
     if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
     if (!(bool)manager) return 404;
     std::vector<std::string> arg;
@@ -238,7 +238,7 @@ void SoapCtrlServer::server_thread() {
 int controlService::get_classes(std::vector<std::string>* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   if (ctrl_server == nullptr || !(bool)manager) {
@@ -258,7 +258,7 @@ int controlService::get_classes(std::vector<std::string>* result) {
 int controlService::get_classes_doc(std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   if (ctrl_server == nullptr || !(bool)manager) {
@@ -278,7 +278,7 @@ int controlService::get_classes_doc(std::string* result) {
 int controlService::get_quiddity_description(std::string quiddity_name, std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   if (ctrl_server == nullptr || !(bool)manager) {
@@ -298,7 +298,7 @@ int controlService::get_quiddity_description(std::string quiddity_name, std::str
 int controlService::get_quiddities_description(std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   if (ctrl_server == nullptr || !(bool)manager) {
@@ -320,7 +320,7 @@ int controlService::get_quiddities_description(std::string* result) {
 int controlService::get_class_doc(std::string class_name, std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   if (ctrl_server == nullptr || !(bool)manager) {
@@ -340,7 +340,7 @@ int controlService::get_class_doc(std::string class_name, std::string* result) {
 int controlService::get_quiddity_names(std::vector<std::string>* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   *result = manager->get_quiddities();
@@ -353,7 +353,7 @@ int controlService::set_property(std::string quiddity_name,
                                  std::string property_value) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   auto id = manager->use_prop<MPtr(&PContainer::get_id)>(quiddity_name, property_name);
@@ -372,7 +372,7 @@ int controlService::get_property(std::string quiddity_name,
                                  std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   auto id = manager->use_prop<MPtr(&PContainer::get_id)>(quiddity_name, property_name);
@@ -386,7 +386,7 @@ int controlService::get_property(std::string quiddity_name,
 int controlService::create_quiddity(std::string quiddity_class, std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   std::string name = manager->create(quiddity_class);
@@ -406,7 +406,7 @@ int controlService::create_named_quiddity(std::string quiddity_class,
   using namespace switcher;
 
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   std::string name = manager->create(quiddity_class, nick_name);
@@ -423,7 +423,7 @@ int controlService::create_named_quiddity(std::string quiddity_class,
 int controlService::delete_quiddity(std::string quiddity_name) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   if (manager->remove(quiddity_name))
@@ -442,7 +442,7 @@ int controlService::invoke_method(std::string quiddity_name,
   using namespace switcher;
 
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
   std::string* invocation_result;
   if (manager->invoke(quiddity_name, method_name, &invocation_result, args)) {
@@ -459,7 +459,7 @@ int controlService::get_methods_description(std::string quiddity_name, std::stri
   using namespace switcher;
 
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   *result = manager->get_methods_description(quiddity_name);
@@ -472,7 +472,7 @@ int controlService::get_method_description(std::string quiddity_name,
   using namespace switcher;
 
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   *result = manager->get_method_description(quiddity_name, method_name);
@@ -483,7 +483,7 @@ int controlService::get_methods_description_by_class(std::string class_name, std
   using namespace switcher;
 
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   *result = manager->get_methods_description_by_class(class_name);
@@ -496,58 +496,10 @@ int controlService::get_method_description_by_class(std::string class_name,
   using namespace switcher;
 
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   *result = manager->get_method_description_by_class(class_name, method_name);
-  return SOAP_OK;
-}
-
-int controlService::get_signals_description(std::string quiddity_name, std::string* result) {
-  using namespace switcher;
-
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
-  if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
-
-  *result = manager->get_signals_description(quiddity_name);
-  return SOAP_OK;
-}
-
-int controlService::get_signal_description(std::string quiddity_name,
-                                           std::string signal_name,
-                                           std::string* result) {
-  using namespace switcher;
-
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
-  if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
-
-  *result = manager->get_signal_description(quiddity_name, signal_name);
-  return SOAP_OK;
-}
-
-int controlService::get_signals_description_by_class(std::string class_name, std::string* result) {
-  using namespace switcher;
-
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
-  if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
-
-  *result = manager->get_signals_description_by_class(class_name);
-  return SOAP_OK;
-}
-
-int controlService::get_signal_description_by_class(std::string class_name,
-                                                    std::string signal_name,
-                                                    std::string* result) {
-  using namespace switcher;
-
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
-  if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
-
-  *result = manager->get_signal_description_by_class(class_name, signal_name);
   return SOAP_OK;
 }
 
@@ -555,7 +507,7 @@ int controlService::save(std::string file_name, std::string* result) {
   using namespace switcher;
 
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   if (FileUtils::save(JSONSerializer::serialize(manager->get_state().get()), file_name))
@@ -569,12 +521,12 @@ int controlService::load(std::string file_name, std::string* result) {
   using namespace switcher;
 
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   manager->reset_state(true);
 
-  if (!manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(file_name)), true)) {
+  if (!manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(file_name)))) {
     *result = "false";
     return SOAP_OK;
   }
@@ -586,10 +538,10 @@ int controlService::run(std::string file_name, std::string* result) {
   using namespace switcher;
 
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
-  if (!manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(file_name)), true)) {
+  if (!manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(file_name)))) {
     *result = "false";
     return SOAP_OK;
   }
@@ -602,7 +554,7 @@ int controlService::get_information_tree(std::string quiddity_name,
                                          std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   *result = manager->use_tree<MPtr(&InfoTree::serialize_json)>(quiddity_name, path);
@@ -615,7 +567,7 @@ int controlService::get_user_data(std::string quiddity_name,
                                   std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   *result = manager->user_data<MPtr(&InfoTree::serialize_json)>(quiddity_name, path);
@@ -628,7 +580,7 @@ int controlService::prune_user_data(std::string quiddity_name,
                                     std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   *result = static_cast<bool>(manager->user_data<MPtr(&InfoTree::prune)>(quiddity_name, path))
@@ -645,7 +597,7 @@ int controlService::graft_user_data(std::string quiddity_name,
                                     std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   auto res = false;
@@ -690,7 +642,7 @@ int controlService::tag_as_array_user_data(std::string quiddity_name,
                                            std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  QuiddityManager::ptr manager;
+  Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
   *result = static_cast<bool>(

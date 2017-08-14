@@ -18,7 +18,7 @@
  */
 
 #include "./plugin-loader.hpp"
-#include "./quiddity-documentation.hpp"
+#include "./documentation-registry.hpp"
 
 namespace switcher {
 PluginLoader::PluginLoader() {}
@@ -65,21 +65,20 @@ bool PluginLoader::load(const char* filename) {
     return false;
   }
 
-  if (!g_module_symbol(module_, "get_documentation", (gpointer*)&get_documentation_)) {
+  if (!g_module_symbol(module_, "get_quiddity_type", (gpointer*)&get_type_)) {
     g_debug("%s: %s", filename, g_module_error());
     close();
     return false;
   }
 
-  if (get_documentation_ == nullptr) {
+  if (get_type_ == nullptr) {
     g_debug("%s: %s", filename, g_module_error());
     close();
     return false;
   }
 
-  QuiddityDocumentation* doc = get_documentation_();
-  class_name_ = doc->get_class_name();
-  // json_doc_ = doc.get_json_root_node();
+  class_name_ = get_type_();
+
   return true;
 }
 
@@ -98,6 +97,4 @@ std::string PluginLoader::get_class_name() const {
   if (module_ == nullptr) return std::string();
   return class_name_;
 }
-
-QuiddityDocumentation* PluginLoader::get_doc() { return get_documentation_(); }
 }

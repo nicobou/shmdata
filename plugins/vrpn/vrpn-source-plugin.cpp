@@ -22,7 +22,10 @@
 
 #include "./source/vrpn-source.hpp"
 
-using namespace switcher;
-SWITCHER_DECLARE_PLUGIN(switcher::vrpn::VRPNSource);
+namespace switcher {
+namespace vrpn {
+SWITCHER_DECLARE_PLUGIN(VRPNSource);
+}
+}
 
 #endif

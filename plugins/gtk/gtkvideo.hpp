@@ -42,7 +42,6 @@
 namespace switcher {
 class GTKVideo : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GTKVideo);
   GTKVideo(const std::string&);
   ~GTKVideo();
   GTKVideo(const GTKVideo&) = delete;
@@ -117,7 +116,7 @@ class GTKVideo : public Quiddity {
   int position_y_{0};
   PContainer::prop_id_t position_y_id_{0};
 
-  std::unique_ptr<PeriodicTask> position_task_;
+  std::unique_ptr<PeriodicTask<>> position_task_;
 
   bool init() final;
   bool remake_elements();

@@ -56,7 +56,7 @@ class ShmdataWriter : public SafeBoolIdiom {
   std::string data_type_;
   ShmdataGlibLogger shmlog_{};
   shmdata::Writer shm_;
-  std::unique_ptr<PeriodicTask> task_;
+  std::unique_ptr<PeriodicTask<>> task_;
   ShmdataStat shm_stats_{};
   std::mutex bytes_mutex_{};
 

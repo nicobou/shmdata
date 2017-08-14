@@ -331,12 +331,12 @@ void NVencPlugin::on_shmreader_data(void* data, size_t size) {
     g_warning("error copying data to nvenc");
     return;
   }
-  // FIXME make following async:
-  es_.get()->invoke<MPtr(&NVencES::encode_current_input)>();
-  es_.get()->invoke<MPtr(&NVencES::process_encoded_frame)>([&](void* data, uint32_t enc_size) {
-    shmw_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, enc_size);
-    shmw_->bytes_written(enc_size);
-  });
+  es_.get()->invoke_async<MPtr(&NVencES::encode_current_input)>(nullptr);
+  es_.get()->invoke_async<MPtr(&NVencES::process_encoded_frame)>(
+      nullptr, [&](void* data, uint32_t enc_size) {
+        shmw_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, enc_size);
+        shmw_->bytes_written(enc_size);
+      });
 }
 
 void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {

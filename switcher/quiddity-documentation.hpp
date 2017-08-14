@@ -26,6 +26,7 @@
 namespace switcher {
 class QuiddityDocumentation {
  public:
+  QuiddityDocumentation() = default;
   QuiddityDocumentation(const std::string& long_name,
                         const std::string& class_name,
                         const std::string& category,
@@ -42,13 +43,13 @@ class QuiddityDocumentation {
   std::vector<std::string> get_tags() const;
 
  private:
-  const std::string category_;
+  std::string category_{};
   std::vector<std::string> tags_{};
-  const std::string class_name_;
-  const std::string description_;
-  const std::string long_name_;
-  const std::string author_;
-  const std::string license_;
+  std::string class_name_{};
+  std::string description_{};
+  std::string long_name_{};
+  std::string author_{};
+  std::string license_{};
 };
 
 }  // namespace switcher

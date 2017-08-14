@@ -27,13 +27,12 @@
 #include <vector>
 #include "./custom-property-helper.hpp"
 #include "./gst-pipeliner.hpp"
-#include "./quiddity-manager.hpp"
 #include "./startable-quiddity.hpp"
+#include "./switcher.hpp"
 
 namespace switcher {
 class ShmdataFromGDPFile : public GstPipeliner, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataFromGDPFile);
   ShmdataFromGDPFile(const std::string&);
   ~ShmdataFromGDPFile();
   ShmdataFromGDPFile(const ShmdataFromGDPFile&) = delete;

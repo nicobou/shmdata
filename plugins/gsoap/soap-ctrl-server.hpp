@@ -21,13 +21,12 @@
 #include <memory>
 #include <mutex>
 #include <thread>
-#include "switcher/quiddity-manager-wrapper.hpp"
+#include "switcher/switcher-wrapper.hpp"
 #include "webservices/soapcontrolService.h"
 
 namespace switcher {
-class SoapCtrlServer : public QuiddityManagerWrapper {
+class SoapCtrlServer : public SwitcherWrapper {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SoapCtrlServer);
   SoapCtrlServer(const std::string&);
   ~SoapCtrlServer();
   SoapCtrlServer(const SoapCtrlServer&) = delete;
@@ -37,7 +36,7 @@ class SoapCtrlServer : public QuiddityManagerWrapper {
   bool set_port(int port);
   bool start();
   // for invocation into soap handlers:
-  std::shared_ptr<QuiddityManager> get_quiddity_manager();
+  std::shared_ptr<Switcher> get_quiddity_manager();
   // wrappers
   static gboolean set_port_wrapped(gint port, gpointer user_data);
 

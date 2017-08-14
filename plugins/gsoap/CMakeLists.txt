@@ -56,7 +56,6 @@ if (PLUGIN_GSOAP)
 
     # Client
     set(CLIENT_SOURCES
-        soap-ctrl-client.cpp
         generated/webservices/soapC.cpp
         generated/webservices/soapcontrolProxy.cpp
         )

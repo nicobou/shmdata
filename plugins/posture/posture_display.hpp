@@ -32,7 +32,6 @@
 namespace switcher {
 class PostureDisplay : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureDisplay);
   PostureDisplay(const std::string&);
   ~PostureDisplay();
   PostureDisplay(const PostureDisplay&) = delete;

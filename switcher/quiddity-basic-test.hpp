@@ -20,18 +20,17 @@
 #ifndef __SWITCHER_QUIDDITY_BASIC_TEST_H__
 #define __SWITCHER_QUIDDITY_BASIC_TEST_H__
 
-#include "./quiddity-manager.hpp"
+#include "./switcher.hpp"
 
 namespace switcher {
 namespace QuiddityBasicTest {
-bool test_full(QuiddityManager::ptr manager, const std::string& quiddity_class_name);
-bool test_tree(QuiddityManager::ptr manager, const std::string& quiddity_class_name);
-bool test_create(QuiddityManager::ptr manager, const std::string& quiddity_class_name);
-bool test_description_by_class(QuiddityManager::ptr manager,
-                               const std::string& quiddity_class_name);
-bool test_startable(QuiddityManager::ptr manager, const std::string& quiddity_class_name);
-bool test_properties(QuiddityManager::ptr manager, const std::string& quiddity_class_name);
-bool test_nickname(QuiddityManager::ptr manager, const std::string& quiddity_class_name);
+bool test_full(Switcher::ptr manager, const std::string& quiddity_class_name);
+bool test_tree(Switcher::ptr manager, const std::string& quiddity_class_name);
+bool test_create(Switcher::ptr manager, const std::string& quiddity_class_name);
+bool test_description_by_class(Switcher::ptr manager, const std::string& quiddity_class_name);
+bool test_startable(Switcher::ptr manager, const std::string& quiddity_class_name);
+bool test_properties(Switcher::ptr manager, const std::string& quiddity_class_name);
+bool test_nickname(Switcher::ptr manager, const std::string& quiddity_class_name);
 }  // namespace QuiddityBasicTest
 }  // namespace switcher
 #endif

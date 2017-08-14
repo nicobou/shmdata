@@ -20,12 +20,9 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <chrono>
-#include <iostream>
-#include <string>
 #include <thread>
 #include <vector>
 #include "switcher/quiddity-basic-test.hpp"
-#include "switcher/quiddity-manager.hpp"
 
 void quiddity_created_removed_cb(std::string /*subscriber_name */,
                                  std::string quiddity_name,
@@ -33,7 +30,7 @@ void quiddity_created_removed_cb(std::string /*subscriber_name */,
                                  std::vector<std::string> params,
                                  void* user_data) {
   // g_print("%s: %s\n", signal_name.c_str(), params[0].c_str());
-  switcher::QuiddityManager* ctx = static_cast<switcher::QuiddityManager*>(user_data);
+  switcher::Switcher* ctx = static_cast<switcher::Switcher*>(user_data);
   std::cout << ctx->use_tree<MPtr(&switcher::InfoTree::serialize_json)>(quiddity_name, params[0])
             << std::endl;
 }
@@ -42,11 +39,8 @@ int main() {
   bool success = true;
 
   {
-    switcher::QuiddityManager::ptr manager =
-        switcher::QuiddityManager::make_manager("test_manager");
-    gchar* usr_plugin_dir = g_strdup_printf("./");
-    manager->scan_directory_for_plugins(usr_plugin_dir);
-    g_free(usr_plugin_dir);
+    switcher::Switcher::ptr manager = switcher::Switcher::make_manager("test_manager");
+    manager->scan_directory_for_plugins("./");
 
     if (!switcher::QuiddityBasicTest::test_full(manager, "systemusage")) success = false;
   }  // end of scope is releasing the manager

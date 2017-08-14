@@ -36,8 +36,6 @@ static gboolean quidditydescr = FALSE;
 static gboolean quidditiesdescr = FALSE;
 static gboolean listmethods = FALSE;
 static gboolean listmethodsbyclass = FALSE;
-static gboolean listsignals = FALSE;
-static gboolean listsignalsbyclass = FALSE;
 static gboolean setprop = FALSE;
 static gboolean getprop = FALSE;
 static gboolean print_tree = FALSE;
@@ -101,20 +99,6 @@ static GOptionEntry entries[25] = {
      G_OPTION_ARG_NONE,
      &listmethodsbyclass,
      "list methods of a class",
-     nullptr},
-    {"list-signals",
-     'l',
-     0,
-     G_OPTION_ARG_NONE,
-     &listsignals,
-     "list signals of a quiddity",
-     nullptr},
-    {"list-signals-by-class",
-     'L',
-     0,
-     G_OPTION_ARG_NONE,
-     &listsignalsbyclass,
-     "list signals of a class",
      nullptr},
     {"set-prop",
      's',
@@ -226,8 +210,8 @@ int main(int argc, char* argv[]) {
 
   if (!(save ^ load ^ run ^ listclasses ^ classesdoc ^ classdoc ^ listquiddities ^ quidditydescr ^
         quidditiesdescr ^ setprop ^ getprop ^ createquiddity ^ deletequiddity ^ listmethods ^
-        listmethodsbyclass ^ listsignals ^ listsignalsbyclass ^ invokemethod ^ print_tree ^
-        print_user_data ^ prune_user_data ^ graft_user_data ^ tag_as_array_user_data)) {
+        listmethodsbyclass ^ invokemethod ^ print_tree ^ print_user_data ^ prune_user_data ^
+        graft_user_data ^ tag_as_array_user_data)) {
     g_printerr(
         "I am very sorry for the inconvenience, "
         "but I am able to process only exactly one command at a time. \n");
@@ -411,30 +395,6 @@ int main(int argc, char* argv[]) {
       return false;
     }
     switcher_control.delete_quiddity(remaining_args[0]);
-  } else if (listsignals) {
-    if (remaining_args == nullptr) {
-      g_printerr("missing quiddity name for list signals\n");
-      return false;
-    }
-    std::string resultlist;
-    if (remaining_args[1] == nullptr)
-      switcher_control.get_signals_description(remaining_args[0], &resultlist);
-    else
-      switcher_control.get_signal_description(remaining_args[0], remaining_args[1], &resultlist);
-    std::cout << resultlist << std::endl;
-  } else if (listsignalsbyclass) {
-    if (remaining_args == nullptr) {
-      g_printerr("missing quiddity name for list signals\n");
-      return false;
-    }
-
-    std::string resultlist;
-    if (remaining_args[1] == nullptr)
-      switcher_control.get_signals_description_by_class(remaining_args[0], &resultlist);
-    else
-      switcher_control.get_signal_description_by_class(
-          remaining_args[0], remaining_args[1], &resultlist);
-    std::cout << resultlist << std::endl;
   } else if (listmethods) {
     if (remaining_args == nullptr) {
       g_printerr("missing quiddity name for list methods\n");

@@ -1,12 +1,14 @@
 pkg_check_modules(GMODULE REQUIRED gmodule-2.0)
 
 add_library(${SWITCHER_LIBRARY} SHARED
+    audio-test-source.cpp
     bundle-description-parser.cpp
     bundle.cpp
     categorizable.cpp
     color.cpp
     counter-map.cpp
     decodebin-to-shmdata.cpp
+    documentation-registry.cpp
     dummy-sink.cpp
     empty-quiddity.cpp
     external-shmdata-writer.cpp
@@ -14,7 +16,6 @@ add_library(${SWITCHER_LIBRARY} SHARED
     fraction.cpp
     g-source-wrapper.cpp
     glibmainloop.cpp
-    gobject-wrapper.cpp
     gprop-to-prop.cpp
     gst-audio-codec.cpp
     gst-audio-encoder.cpp
@@ -34,22 +35,20 @@ add_library(${SWITCHER_LIBRARY} SHARED
     information-tree-basic-serializer.cpp
     information-tree-json.cpp
     information-tree.cpp
+    invocation-spec.cpp
     json-builder.cpp
     logger.cpp
     method.cpp
     net-utils.cpp
-    periodic-task.cpp
     plugin-loader.cpp
     property-container.cpp
     property-mapper.cpp
     property.cpp
     quiddity-basic-test.cpp
-    invocation-spec.cpp
     quiddity-documentation.cpp
-    quiddity-manager-impl.cpp
-    quiddity-manager-wrapper.cpp
-    quiddity-manager.cpp
-    quiddity-signal-subscriber.cpp
+    quiddity-container.cpp
+    switcher-wrapper.cpp
+    switcher.cpp
     quiddity.cpp
     rtp-destination.cpp
     rtp-receiver.cpp
@@ -64,7 +63,8 @@ add_library(${SWITCHER_LIBRARY} SHARED
     shmdata-stat.cpp
     shmdata-utils.cpp
     shmdata-writer.cpp
-    signal-string.cpp
+    sig.cpp
+    signal-container.cpp
     startable-quiddity.cpp
     string-utils.cpp
     timelapse.cpp
@@ -72,7 +72,6 @@ add_library(${SWITCHER_LIBRARY} SHARED
     unique-gst-element.cpp
     uridecodebin.cpp
     video-test-source.cpp
-    audio-test-source.cpp
     )
 
 set(HEADER_INCLUDES
@@ -87,6 +86,7 @@ set(HEADER_INCLUDES
     counter-map.hpp
     creator.hpp
     decodebin-to-shmdata.hpp
+    documentation-registry.hpp
     dummy-sink.hpp
     empty-quiddity.hpp
     exec-loop.hpp
@@ -95,7 +95,6 @@ set(HEADER_INCLUDES
     fraction.hpp
     g-source-wrapper.hpp
     glibmainloop.hpp
-    gobject-wrapper.hpp
     gprop-to-prop.hpp
     group.hpp
     gst-audio-codec.hpp
@@ -132,10 +131,9 @@ set(HEADER_INCLUDES
     quiddity-basic-test.hpp
     invocation-spec.hpp
     quiddity-documentation.hpp
-    quiddity-manager-impl.hpp
-    quiddity-manager-wrapper.hpp
-    quiddity-manager.hpp
-    quiddity-signal-subscriber.hpp
+    quiddity-container.hpp
+    switcher-wrapper.hpp
+    switcher.hpp
     quiddity.hpp
     rtp-destination.hpp
     rtp-receiver.hpp
@@ -153,7 +151,8 @@ set(HEADER_INCLUDES
     shmdata-stat.hpp
     shmdata-utils.hpp
     shmdata-writer.hpp
-    signal-string.hpp
+    sig.hpp
+    signal-container.hpp
     startable-quiddity.hpp
     string-utils.hpp
     templated-sequence.hpp

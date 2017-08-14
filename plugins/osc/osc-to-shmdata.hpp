@@ -28,7 +28,6 @@
 namespace switcher {
 class OscToShmdata : public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(OscToShmdata);
   OscToShmdata(const std::string&);
   ~OscToShmdata();
   OscToShmdata(const OscToShmdata&) = delete;

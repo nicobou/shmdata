@@ -25,24 +25,24 @@
 #define __SWITCHER_QUIDDITY_H__
 
 #include <gst/gst.h>
-
+#include <string.h>
 #include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include "./gobject-wrapper.hpp"
+#include "./documentation-registry.hpp"
 #include "./information-tree.hpp"
 #include "./json-builder.hpp"
 #include "./make-consultable.hpp"
 #include "./method.hpp"
 #include "./property-container.hpp"
 #include "./quiddity-documentation.hpp"
-#include "./signal-string.hpp"
+#include "./signal-container.hpp"
 
 namespace switcher {
-class QuiddityManager_Impl;
+class QuiddityContainer;
 
 class Quiddity {
   friend class Bundle;  // access to props_ in order to forward properties
@@ -65,9 +65,6 @@ class Quiddity {
   Quiddity(const Quiddity&) = delete;
   Quiddity& operator=(const Quiddity&) = delete;
   virtual ~Quiddity();
-
-  // class documentation
-  virtual QuiddityDocumentation* get_documentation() = 0;
 
   // class initialisation
   virtual bool init() = 0;
@@ -100,15 +97,11 @@ class Quiddity {
   bool invoke_method(const std::string& function_name,
                      std::string** return_value,
                      const std::vector<std::string>& args);
-  int method_get_num_pointer_args(
-      const std::string& function_name);  // returns -1 if method not found
   bool has_method(const std::string& method_name);
 
   // signals
-  std::string get_signals_description();
-  std::string get_signal_description(const std::string& signal_name);
-  bool subscribe_signal(const std::string& name, Signal::OnEmittedCallback cb, void* user_data);
-  bool unsubscribe_signal(const std::string& name, Signal::OnEmittedCallback cb, void* user_data);
+  Make_consultable(Quiddity, SContainer, &sigs_, sig);
+
   // information
   Make_consultable(Quiddity, InfoTree, information_tree_.get(), tree);
 
@@ -128,7 +121,7 @@ class Quiddity {
   static std::string get_socket_dir();
 
   // manager_impl initialization
-  void set_manager_impl(std::shared_ptr<QuiddityManager_Impl> manager_impl);
+  void set_manager_impl(std::shared_ptr<QuiddityContainer> manager_impl);
 
   // use a consistent naming for shmdatas
   std::string make_file_name(const std::string& suffix) const;
@@ -157,33 +150,33 @@ class Quiddity {
   PContainer props_;
   std::vector<std::string> properties_blacklist_{};
 
+  // signals
+  SContainer sigs_;
+  SContainer::sig_id_t on_method_added_id_;
+  SContainer::sig_id_t on_method_removed_id_;
+  SContainer::sig_id_t on_tree_grafted_id_;
+  SContainer::sig_id_t on_tree_pruned_id_;
+  SContainer::sig_id_t on_user_data_grafted_id_;
+  SContainer::sig_id_t on_user_data_pruned_id_;
+  SContainer::sig_id_t on_nicknamed_id_;
+
   // methods
   std::unordered_map<std::string, Method::ptr> methods_{};
   std::unordered_map<std::string, Method::ptr> disabled_methods_{};
   JSONBuilder::ptr methods_description_;
 
-  // position weight
+  // position weight FIXME should be outside this file ?
   gint position_weight_counter_{0};
 
-  // pair is <class_name, signal_name>
-  // this map is static in order to avoid re-creation of the same signal
-  // for each quiddity instance
-  static std::map<std::pair<std::string, std::string>, guint> signals_ids_;
-  std::unordered_map<std::string, Signal::ptr> signals_{};
-  JSONBuilder::ptr signals_description_;
-
   // naming
-  static const size_t nameMaxSize{20};
   std::string name_{};
 
+  // life management
   std::mutex self_destruct_mtx_{};
 
   // user data hooks
   bool user_data_graft_hook(const std::string& path, InfoTree::ptr tree);
   InfoTree::ptr user_data_prune_hook(const std::string& path);
-
-  // position weight
-  bool compare_properties(const std::string& first, const std::string& second);
 
   // method
   bool method_is_registered(const std::string& method_name);
@@ -198,20 +191,6 @@ class Quiddity {
                               const std::string& return_description,
                               const Method::args_doc& arg_description);
 
-  // allows for creation of signals in a parent class (like segment)
-  bool make_custom_signal_with_class_name(
-      const std::string& class_name,   // quiddity class name that is making the signal
-      const std::string& signal_name,  // the name to give
-      GType return_type,
-      guint n_params,  // number of params
-      GType* param_types);
-
-  bool set_signal_description(const std::string& long_name,
-                              const std::string& signal_name,
-                              const std::string& short_description,
-                              const std::string& return_description,
-                              const Signal::args_doc& arg_description);
-
  protected:
   // information
   bool graft_tree(const std::string& path, InfoTree::ptr tree_to_graft, bool do_signal = true);
@@ -222,6 +201,9 @@ class Quiddity {
 
   // configuration
   Make_consultable(Quiddity, InfoTree, configuration_tree_.get(), config);
+
+  // signal
+  Make_delegate(Quiddity, SContainer, &sigs_, smanage);
 
   // methods
   bool install_method(const std::string& long_name,
@@ -236,27 +218,7 @@ class Quiddity {
   bool disable_method(const std::string& name);
   bool enable_method(const std::string& name);
 
-  // signals
-  bool install_signal(const std::string& long_name,
-                      const std::string& signal_name,
-                      const std::string& short_description,
-                      const Signal::args_doc& arg_description,
-                      guint number_of_params,
-                      GType* param_types);
-
-  bool install_signal_with_class_name(const std::string& class_name,
-                                      const std::string& long_name,
-                                      const std::string& signal_name,
-                                      const std::string& short_description,
-                                      const Signal::args_doc& arg_description,
-                                      guint number_of_params,
-                                      GType* param_types);
-  void signal_emit(std::string signal_name, ...);
-
-  // custom signals
-  void emit_on_interface_changed();  // in order to tell properties/methods has
-                                     // changed
-
+  // life management
   void self_destruct();
 
   bool toggle_property_saving(const std::string&);
@@ -264,30 +226,29 @@ class Quiddity {
   // used in order to dynamically create other quiddity, weak_ptr is used in
   // order to
   // avoid circular references to the manager_impl
-  std::weak_ptr<QuiddityManager_Impl> manager_impl_{};
-  std::string manager_name_{};
-
-  // gobject wrapper for custom signals
-  GObjectWrapper::ptr gobject_;
+  std::weak_ptr<QuiddityContainer> manager_impl_{};
+  std::string manager_name_{};  // FIXME ??
 };
 
-#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(                                           \
-    cpp_quiddity_class, class_name, name, category, tags, description, license, author) \
-  QuiddityDocumentation cpp_quiddity_class::switcher_doc_(                              \
-      name, class_name, category, tags, description, license, author);                  \
-  QuiddityDocumentation* cpp_quiddity_class::get_documentation() { return &switcher_doc_; }
-
-#define SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(cpp_quiddity_class) \
-  typedef std::shared_ptr<cpp_quiddity_class> ptr;                   \
-  QuiddityDocumentation* get_documentation();                        \
-  static QuiddityDocumentation switcher_doc_;
+#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(                                                 \
+    cpp_quiddity_class, class_name, name, category, tags, description, license, author)       \
+  bool cpp_quiddity_class##_doc_registered = DocumentationRegistry::get()->register_doc(      \
+      class_name,                                                                             \
+      QuiddityDocumentation(class_name, name, category, tags, description, license, author)); \
+  bool cpp_quiddity_class##_class_registered =                                                \
+      DocumentationRegistry::get()->register_quiddity_type_from_class_name(                   \
+          std::string(#cpp_quiddity_class), class_name);
 
 #define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                                             \
   extern "C" Quiddity* create(const std::string& name) { return new cpp_quiddity_class(name); } \
   extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }                              \
-  extern "C" QuiddityDocumentation* get_documentation() {                                       \
-    return &cpp_quiddity_class::switcher_doc_;                                                  \
+  extern "C" const char* get_quiddity_type() {                                                  \
+    static char type[64];                                                                       \
+    strcpy(type,                                                                                \
+           DocumentationRegistry::get()                                                         \
+               ->get_quiddity_type_from_class_name(std::string(#cpp_quiddity_class))            \
+               .c_str());                                                                       \
+    return static_cast<const char*>(type);                                                      \
   }
-
 }  // namespace switcher
 #endif

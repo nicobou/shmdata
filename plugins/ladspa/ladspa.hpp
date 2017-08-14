@@ -32,7 +32,6 @@ namespace switcher {
  */
 class LADSPA : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(LADSPA);
 
   //! Constructor
   LADSPA(const std::string&);

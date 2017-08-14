@@ -27,7 +27,6 @@
 namespace switcher {
 class DummySink : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(DummySink);
   DummySink(const std::string&);
   ~DummySink() = default;
   DummySink(const DummySink&) = delete;

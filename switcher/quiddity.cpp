@@ -28,108 +28,44 @@
 #include <regex>
 #include "./gst-utils.hpp"
 #include "./information-tree-json.hpp"
-#include "./quiddity-manager-impl.hpp"
-#include "./quiddity-manager.hpp"
+#include "./quiddity-container.hpp"
+#include "./switcher.hpp"
 
 namespace switcher {
-std::map<std::pair<std::string, std::string>, guint> Quiddity::signals_ids_{};
 
 Quiddity::Quiddity()
     : information_tree_(InfoTree::make()),
       structured_user_data_(InfoTree::make()),
       configuration_tree_(InfoTree::make()),
-      props_(
-          information_tree_,
-          [this](const std::string& key) { signal_emit("on-tree-grafted", key.c_str(), nullptr); },
-          [this](const std::string& key) { signal_emit("on-tree-pruned", key.c_str(), nullptr); }),
-      methods_description_(std::make_shared<JSONBuilder>()),
-      signals_description_(std::make_shared<JSONBuilder>()),
-      gobject_(std::make_shared<GObjectWrapper>()) {
+      props_(information_tree_,
+             [this](const std::string& key) {
+               smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(key));
+             },
+             [this](const std::string& key) {
+               smanage<MPtr(&SContainer::notify)>(on_tree_pruned_id_, InfoTree::make(key));
+             }),
+      sigs_(information_tree_,
+            [this](const std::string& key) {
+              smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(key));
+            },
+            [this](const std::string& key) {
+              smanage<MPtr(&SContainer::notify)>(on_tree_pruned_id_, InfoTree::make(key));
+            }),
+      on_method_added_id_(
+          smanage<MPtr(&SContainer::make)>("on-method-added", "A method has been installed")),
+      on_method_removed_id_(
+          smanage<MPtr(&SContainer::make)>("on-method-removed", "A method has been uninstalled")),
+      on_tree_grafted_id_(smanage<MPtr(&SContainer::make)>("on-tree-grafted", "On Tree Grafted")),
+      on_tree_pruned_id_(smanage<MPtr(&SContainer::make)>(
+          "on-tree-pruned", "A tree has been pruned from the quiddity tree")),
+      on_user_data_grafted_id_(smanage<MPtr(&SContainer::make)>(
+          "on-user-data-grafted", "A tree has been grafted to the quiddity's user data tree")),
+      on_user_data_pruned_id_(smanage<MPtr(&SContainer::make)>(
+          "on-user-data-pruned", "A branch has been pruned from the quiddity's user data tree")),
+      on_nicknamed_id_(smanage<MPtr(&SContainer::make)>(
+          "on-nicknamed", "A nickname has been given to the quiddity")),
+      methods_description_(std::make_shared<JSONBuilder>()) {
   configuration_tree_->graft(".", InfoTree::make());
-  GType arg_type[] = {G_TYPE_STRING};
-  install_signal_with_class_name("Quiddity",
-                                 "On New Method",
-                                 "on-method-added",
-                                 "A new method has been installed",
-                                 Signal::make_arg_description("Quiddity Name",
-                                                              "quiddity_name",
-                                                              "the quiddity name",
-                                                              "Method Name",
-                                                              "method_name",
-                                                              "the method name",
-                                                              nullptr),
-                                 1,
-                                 arg_type);
-
-  install_signal_with_class_name("Quiddity",
-                                 "On Method Removed",
-                                 "on-method-removed",
-                                 "A method has been uninstalled",
-                                 Signal::make_arg_description("Quiddity Name",
-                                                              "quiddity_name",
-                                                              "the quiddity name",
-                                                              "Method Name",
-                                                              "method_name",
-                                                              "the method name",
-                                                              nullptr),
-                                 1,
-                                 arg_type);
-
-  install_signal_with_class_name("Quiddity",
-                                 "On Tree Grafted",
-                                 "on-tree-grafted",
-                                 "A tree has been grafted to the quiddity tree",
-                                 Signal::make_arg_description("Quiddity Name",
-                                                              "quiddity_name",
-                                                              "the quiddity name",
-                                                              "Branch Name",
-                                                              "branch_name",
-                                                              "the branch name",
-                                                              nullptr),
-                                 1,
-                                 arg_type);
-
-  install_signal_with_class_name("Quiddity",
-                                 "On Tree Pruned",
-                                 "on-tree-pruned",
-                                 "A tree has been pruned from the quiddity tree",
-                                 Signal::make_arg_description("Quiddity Name",
-                                                              "quiddity_name",
-                                                              "the quiddity name",
-                                                              "Branch Name",
-                                                              "branch_name",
-                                                              "the branch name",
-                                                              nullptr),
-                                 1,
-                                 arg_type);
-
-  install_signal_with_class_name("Quiddity",
-                                 "On User Data Pruned",
-                                 "on-user-data-pruned",
-                                 "A branch has been pruned from the quiddity's user data tree",
-                                 Signal::make_arg_description("Quiddity Name",
-                                                              "quiddity_name",
-                                                              "the quiddity name",
-                                                              "Branch Name",
-                                                              "branch_name",
-                                                              "the branch name",
-                                                              nullptr),
-                                 1,
-                                 arg_type);
-
-  install_signal_with_class_name("Quiddity",
-                                 "On User Data Grafted",
-                                 "on-user-data-grafted",
-                                 "A tree has been grafted to the quiddity's user data tree",
-                                 Signal::make_arg_description("Quiddity Name",
-                                                              "quiddity_name",
-                                                              "the quiddity name",
-                                                              "Branch Name",
-                                                              "branch_name",
-                                                              "the branch name",
-                                                              nullptr),
-                                 1,
-                                 arg_type);
 }
 
 Quiddity::~Quiddity() { std::lock_guard<std::mutex> lock(self_destruct_mtx_); }
@@ -144,89 +80,12 @@ bool Quiddity::set_name(const std::string& name) {
   if (!name_.empty()) return false;
 
   name_ = string_to_quiddity_name(name);
-  information_tree_->graft(".type", InfoTree::make(get_documentation()->get_class_name()));
+  information_tree_->graft(
+      ".type", InfoTree::make(DocumentationRegistry::get()->get_quiddity_type_from_quiddity(name)));
   nickname_ = name_;
   return true;
 }
 
-bool Quiddity::install_signal(const std::string& long_name,
-                              const std::string& signal_name,
-                              const std::string& short_description,
-                              const Signal::args_doc& arg_description,
-                              guint number_of_params,
-                              GType* param_types) {
-  if (!make_custom_signal_with_class_name(get_documentation()->get_class_name(),
-                                          signal_name,
-                                          G_TYPE_NONE,
-                                          number_of_params,
-                                          param_types))
-    return false;
-
-  if (!set_signal_description(long_name, signal_name, short_description, "n/a", arg_description))
-    return false;
-  return true;
-}
-
-bool Quiddity::install_signal_with_class_name(const std::string& class_name,
-                                              const std::string& long_name,
-                                              const std::string& signal_name,
-                                              const std::string& short_description,
-                                              const Signal::args_doc& arg_description,
-                                              guint number_of_params,
-                                              GType* param_types) {
-  if (!make_custom_signal_with_class_name(
-          class_name, signal_name, G_TYPE_NONE, number_of_params, param_types))
-    return false;
-
-  if (!set_signal_description(long_name, signal_name, short_description, "n/a", arg_description))
-    return false;
-
-  return true;
-}
-
-bool Quiddity::make_custom_signal_with_class_name(const std::string& class_name,
-                                                  const std::string& signal_name,
-                                                  GType return_type,
-                                                  guint n_params,
-                                                  GType* param_types) {
-  if (signals_.find(signal_name) != signals_.end()) {
-    return false;
-  }
-
-  std::pair<std::string, std::string> sig_pair = std::make_pair(class_name, signal_name);
-  if (signals_ids_.find(sig_pair) == signals_ids_.end()) {
-    guint id = GObjectWrapper::make_signal(return_type, n_params, param_types);
-    if (id == 0) {
-      g_warning("custom signal %s not created because of a type issue", signal_name.c_str());
-      return false;
-    }
-    signals_ids_[sig_pair] = id;
-  }
-
-  Signal::ptr signal(new Signal());
-  if (!signal->set_gobject_sigid(gobject_->get_gobject(), signals_ids_[sig_pair])) return false;
-  signals_[signal_name] = signal;
-  return true;
-}
-
-bool Quiddity::set_signal_description(const std::string& long_name,
-                                      const std::string& signal_name,
-                                      const std::string& short_description,
-                                      const std::string& return_description,
-                                      const Signal::args_doc& arg_description) {
-  if (signals_.find(signal_name) == signals_.end()) {
-    g_warning("cannot set description of a not existing signal");
-    return false;
-  }
-  signals_[signal_name]->set_description(
-      long_name, signal_name, short_description, return_description, arg_description);
-
-  // signal_emit ("on-new-signal-registered",
-  //  signal_name.c_str (),
-  //  (JSONBuilder::get_string (signals_[signal_name]->get_json_root_node (),
-  //  true)).c_str ());
-  return true;
-}
 bool Quiddity::has_method(const std::string& method_name) {
   return (methods_.end() != methods_.find(method_name));
 }
@@ -316,62 +175,6 @@ std::string Quiddity::get_method_description(const std::string& method_name) {
   auto it = methods_.find(method_name);
   if (methods_.end() == it) return "{ \"error\" : \" method not found\"}";
   return it->second->get_description();
-}
-
-bool Quiddity::subscribe_signal(const std::string& signal_name,
-                                Signal::OnEmittedCallback cb,
-                                void* user_data) {
-  if (signals_.find(signal_name) == signals_.end()) {
-    g_warning("Quiddity::subscribe_signal, signal %s not found", signal_name.c_str());
-    return false;
-  }
-  Signal::ptr sig = signals_[signal_name];
-  return sig->subscribe(cb, user_data);
-}
-
-bool Quiddity::unsubscribe_signal(const std::string& signal_name,
-                                  Signal::OnEmittedCallback cb,
-                                  void* user_data) {
-  if (signals_.find(signal_name) == signals_.end()) return false;
-
-  Signal::ptr signal = signals_[signal_name];
-  return signal->unsubscribe(cb, user_data);
-}
-
-void Quiddity::signal_emit(std::string signal_name, ...) {
-  if (signals_.find(signal_name) == signals_.end()) return;
-  Signal::ptr signal = signals_[signal_name];
-  va_list var_args;
-  va_start(var_args, signal_name);
-  signal->signal_emit(signal_name.c_str(), var_args);
-  va_end(var_args);
-}
-
-std::string Quiddity::get_signals_description() {
-  signals_description_->reset();
-  signals_description_->begin_object();
-  signals_description_->set_member_name("signals");
-  signals_description_->begin_array();
-  for (auto& it : signals_) {
-    signals_description_->begin_object();
-    signals_description_->add_string_member("name", it.first.c_str());
-    JSONBuilder::Node root_node = it.second->get_json_root_node();
-    if (root_node)
-      signals_description_->add_JsonNode_member("description", std::move(root_node));
-    else
-      signals_description_->add_string_member("description", "missing description");
-    signals_description_->end_object();
-  }
-  signals_description_->end_array();
-  signals_description_->end_object();
-  return signals_description_->get_string(true);
-}
-
-std::string Quiddity::get_signal_description(const std::string& signal_name) {
-  if (signals_.find(signal_name) == signals_.end()) return std::string();
-
-  Signal::ptr sig = signals_[signal_name];
-  return sig->get_description();
 }
 
 std::string Quiddity::make_file_name(const std::string& suffix) const {
@@ -465,7 +268,7 @@ std::string Quiddity::get_socket_name_prefix() { return "switcher_"; }
 
 std::string Quiddity::get_socket_dir() { return "/tmp"; }
 
-void Quiddity::set_manager_impl(QuiddityManager_Impl::ptr manager_impl) {
+void Quiddity::set_manager_impl(QuiddityContainer::ptr manager_impl) {
   manager_impl_ = manager_impl;
   manager_name_ = manager_impl->get_name();
 }
@@ -486,7 +289,7 @@ bool Quiddity::install_method(const std::string& long_name,
           long_name, method_name, short_description, return_description, arg_description))
     return false;
 
-  signal_emit("on-method-added", method_name.c_str(), nullptr);
+  smanage<MPtr(&SContainer::notify)>(on_method_added_id_, InfoTree::make(method_name));
   return true;
 }
 
@@ -495,7 +298,7 @@ bool Quiddity::enable_method(const std::string& method_name) {
   if (disabled_methods_.end() == it) return false;
   methods_[method_name] = it->second;
   disabled_methods_.erase(it);
-  signal_emit("on-method-added", method_name.c_str(), nullptr);
+  smanage<MPtr(&SContainer::notify)>(on_method_added_id_, InfoTree::make(method_name));
   return true;
 }
 
@@ -504,20 +307,24 @@ bool Quiddity::disable_method(const std::string& method_name) {
   if (methods_.end() == it) return false;
   disabled_methods_[method_name] = it->second;
   methods_.erase(it);
-  signal_emit("on-method-removed", method_name.c_str(), nullptr);
+  smanage<MPtr(&SContainer::notify)>(on_method_removed_id_, InfoTree::make(method_name));
   return true;
 }
 
 bool Quiddity::graft_tree(const std::string& path, InfoTree::ptr tree, bool do_signal) {
   if (!information_tree_->graft(path, tree)) return false;
-  if (do_signal) signal_emit("on-tree-grafted", path.c_str(), nullptr);
+  if (do_signal) {
+    smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(path));
+  }
   return true;
 }
 
 InfoTree::ptr Quiddity::prune_tree(const std::string& path, bool do_signal) {
   InfoTree::ptr result = information_tree_->prune(path);
   if (result) {
-    if (do_signal) signal_emit("on-tree-pruned", path.c_str(), nullptr);
+    if (do_signal) {
+      smanage<MPtr(&SContainer::notify)>(on_tree_pruned_id_, InfoTree::make(path));
+    }
   } else {
     g_debug("cannot prune %s", path.c_str());
   }
@@ -526,13 +333,15 @@ InfoTree::ptr Quiddity::prune_tree(const std::string& path, bool do_signal) {
 
 bool Quiddity::user_data_graft_hook(const std::string& path, InfoTree::ptr tree) {
   if (!structured_user_data_->graft(path, std::forward<InfoTree::ptr>(tree))) return false;
-  signal_emit("on-user-data-grafted", path.c_str(), nullptr);
+  smanage<MPtr(&SContainer::notify)>(on_user_data_grafted_id_, InfoTree::make(path));
   return true;
 }
 
 InfoTree::ptr Quiddity::user_data_prune_hook(const std::string& path) {
   auto res = structured_user_data_->prune(path);
-  if (res) signal_emit("on-user-data-pruned", path.c_str(), nullptr);
+  if (res) {
+    smanage<MPtr(&SContainer::notify)>(on_user_data_pruned_id_, InfoTree::make(path));
+  }
   return res;
 }
 
@@ -577,6 +386,7 @@ bool Quiddity::toggle_property_saving(const std::string& prop) {
 
 bool Quiddity::set_nickname(const std::string& nickname) {
   nickname_ = nickname;
+  smanage<MPtr(&SContainer::notify)>(on_nicknamed_id_, InfoTree::make(nickname));
   return true;
 }
 

@@ -18,6 +18,7 @@
  */
 
 #include "./bundle-description-parser.hpp"
+#include <iostream>
 #include <regex>
 
 namespace switcher {

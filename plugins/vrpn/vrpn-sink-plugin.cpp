@@ -22,7 +22,10 @@
 
 #include "./sink/vrpn-sink.hpp"
 
-using namespace switcher;
-SWITCHER_DECLARE_PLUGIN(switcher::vrpn::VRPNSink);
+namespace switcher {
+namespace vrpn {
+SWITCHER_DECLARE_PLUGIN(VRPNSink);
+}
+}
 
 #endif

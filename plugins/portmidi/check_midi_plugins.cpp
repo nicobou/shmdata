@@ -21,18 +21,14 @@
 
 #include <sys/stat.h>
 #include <cstring>
-#include <iostream>
 #include "switcher/quiddity-basic-test.hpp"
 
 int main() {
   bool success = true;
   {
-    switcher::QuiddityManager::ptr manager =
-        switcher::QuiddityManager::make_manager("test_manager");
+    switcher::Switcher::ptr manager = switcher::Switcher::make_manager("test_manager");
 
-    gchar* usr_plugin_dir = g_strdup_printf("./");
-    manager->scan_directory_for_plugins(usr_plugin_dir);
-    g_free(usr_plugin_dir);
+    manager->scan_directory_for_plugins("./");
 
     struct stat st;
     if (stat("/dev/snd", &st) == -1) {

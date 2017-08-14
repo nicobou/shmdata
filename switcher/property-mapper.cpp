@@ -20,7 +20,7 @@
 #include "./property-mapper.hpp"
 #include <math.h>
 #include "./gst-utils.hpp"
-#include "./quiddity-manager-impl.hpp"
+#include "./quiddity-container.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyMapper,
@@ -106,7 +106,7 @@ gboolean PropertyMapper::set_source_property_method(gchar* quiddity_name,
                                                     gchar* property_name,
                                                     void* user_data) {
   PropertyMapper* context = static_cast<PropertyMapper*>(user_data);
-  QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
+  QuiddityContainer::ptr manager = context->manager_impl_.lock();
   if (!(bool)manager) {
     g_debug("manager not found");
     return FALSE;
@@ -229,7 +229,7 @@ gboolean PropertyMapper::set_sink_property_method(gchar* quiddity_name,
                                                   gchar* property_name,
                                                   void* user_data) {
   PropertyMapper* context = static_cast<PropertyMapper*>(user_data);
-  QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
+  QuiddityContainer::ptr manager = context->manager_impl_.lock();
   if (!(bool)manager) {
     g_debug("manager not found");
     return FALSE;

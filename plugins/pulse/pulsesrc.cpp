@@ -392,8 +392,8 @@ void PulseSrc::on_loading(InfoTree::ptr&& tree) {
           "Audio capture device not found on its saved port when loading saved scenario, "
           "defaulting to first available device");
     } else {
-      pmanage<MPtr(&PContainer::set<Selection<>::index_t>)>(devices_id_,
-                                                            it - capture_devices_.begin());
+      pmanage<MPtr(&PContainer::set<IndexOrName>)>(devices_id_,
+                                                   IndexOrName(it - capture_devices_.begin()));
     }
   } else {  // save by device
     auto it = std::find_if(capture_devices_.begin(),
@@ -405,8 +405,8 @@ void PulseSrc::on_loading(InfoTree::ptr&& tree) {
           "Saved audio capture not found when loading saved scenario, defaulting to first "
           "available device");
     } else {
-      pmanage<MPtr(&PContainer::set<Selection<>::index_t>)>(devices_id_,
-                                                            it - capture_devices_.begin());
+      pmanage<MPtr(&PContainer::set<IndexOrName>)>(devices_id_,
+                                                   IndexOrName(it - capture_devices_.begin()));
     }
   }
 

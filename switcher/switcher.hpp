@@ -18,11 +18,11 @@
  */
 
 /**
- * The QuiddityManager class
+ * The Switcher class
  */
 
-#ifndef __SWITCHER_QUIDDITY_MANAGER_H__
-#define __SWITCHER_QUIDDITY_MANAGER_H__
+#ifndef __SWITCHER_SWITCHER_H__
+#define __SWITCHER_SWITCHER_H__
 
 #include <stdarg.h>
 #include <condition_variable>
@@ -34,15 +34,15 @@
 #include "./information-tree.hpp"
 #include "./invocation-spec.hpp"
 #include "./make-consultable.hpp"
-#include "./quiddity-manager-impl.hpp"
-#include "./quiddity-manager-wrapper.hpp"
+#include "./quiddity-container.hpp"
+#include "./switcher-wrapper.hpp"
 #include "./threaded-wrapper.hpp"
 
 namespace switcher {
-class QuiddityManager {
+class Switcher {
   friend class Bundle;  // access to manager_impl_
  public:
-  using ptr = std::shared_ptr<QuiddityManager>;
+  using ptr = std::shared_ptr<Switcher>;
   using PropCallback = std::function<void(const std::string& val)>;
   using SignalCallback = void (*)(const std::string& subscriber_name,
                                   const std::string& quiddity_name,
@@ -52,17 +52,17 @@ class QuiddityManager {
   using PropCallbackMap = std::map<std::string, std::pair<PropCallback, void*>>;
   using SignalCallbackMap = std::map<std::string, std::pair<SignalCallback, void*>>;
 
-  ~QuiddityManager() = default;
-  static QuiddityManager::ptr make_manager(const std::string& name);
-  QuiddityManager& operator=(const QuiddityManager&) = delete;
-  QuiddityManager(const QuiddityManager&) = delete;
+  ~Switcher() = default;
+  static Switcher::ptr make_manager(const std::string& name);
+  Switcher& operator=(const Switcher&) = delete;
+  Switcher(const Switcher&) = delete;
   std::string get_name() const;
 
   // switcher state
   // you should use InfoTree json serialization and Fileutils for
   // saving to file
   InfoTree::ptr get_state() const;
-  bool load_state(InfoTree::ptr state, bool mute_signal_subscribers);
+  bool load_state(InfoTree::ptr state);
   void reset_state(bool remove_created_quiddities);
 
   // plugins
@@ -84,10 +84,10 @@ class QuiddityManager {
   // &?= chars are not allowed in nicknames
   std::string create(const std::string& class_name, const std::string& nick_name);
   bool remove(const std::string& quiddity_name);
-  unsigned int register_creation_cb(QuiddityManager_Impl::OnCreateRemoveCb cb) {
+  unsigned int register_creation_cb(QuiddityContainer::OnCreateRemoveCb cb) {
     return manager_impl_->register_creation_cb(cb);
   };
-  unsigned int register_removal_cb(QuiddityManager_Impl::OnCreateRemoveCb cb) {
+  unsigned int register_removal_cb(QuiddityContainer::OnCreateRemoveCb cb) {
     return manager_impl_->register_removal_cb(cb);
   };
   void unregister_creation_cb(unsigned int id) { manager_impl_->unregister_creation_cb(id); };
@@ -99,13 +99,14 @@ class QuiddityManager {
   bool set_nickname(const std::string& name, const std::string& nickname);
 
   // informations
-  Forward_consultable(
-      QuiddityManager, QuiddityManager_Impl, manager_impl_.get(), use_tree, use_tree);
-  Forward_delegate(
-      QuiddityManager, QuiddityManager_Impl, manager_impl_.get(), user_data, user_data);
+  Forward_consultable(Switcher, QuiddityContainer, manager_impl_.get(), use_tree, use_tree);
+  Forward_delegate(Switcher, QuiddityContainer, manager_impl_.get(), user_data, user_data);
 
   // properties
-  Forward_consultable(QuiddityManager, QuiddityManager_Impl, manager_impl_.get(), props, use_prop);
+  Forward_consultable(Switcher, QuiddityContainer, manager_impl_.get(), props, use_prop);
+
+  // signals
+  Forward_consultable(Switcher, QuiddityContainer, manager_impl_.get(), sigs, use_sig);
 
   // methods
   // doc (json formatted)
@@ -128,54 +129,20 @@ class QuiddityManager {
 
   bool has_method(const std::string& quiddity_name, const std::string& method_name);
 
-  // signals
-  // doc (json formatted)
-  std::string get_signals_description(const std::string& quiddity_name);
-  std::string get_signal_description(const std::string& quiddity_name,
-                                     const std::string& signal_name);
-  // following "by_class" methods provide properties available after creation
-  // only,
-  // avoiding possible properties created dynamically
-  std::string get_signals_description_by_class(const std::string& class_name);
-  std::string get_signal_description_by_class(const std::string& class_name,
-                                              const std::string& signal_name);
-
-  bool make_signal_subscriber(const std::string& subscriber_name,
-                              /* void (*callback)(std::string subscriber_name, */
-                              /*     std::string quiddity_name, */
-                              /*     std::string signal_name, */
-                              /*     std::vector<std::string> params, */
-                              /*     void *user_data) */
-                              QuiddityManager::SignalCallback callback,
-                              void* user_data);
-  bool remove_signal_subscriber(const std::string& subscriber_name);
-  bool subscribe_signal(const std::string& subscriber_name,
-                        const std::string& quiddity_name,
-                        const std::string& signal_name);
-  bool unsubscribe_signal(const std::string& subscriber_name,
-                          const std::string& quiddity_name,
-                          const std::string& signal_name);
-
-  std::vector<std::string> list_signal_subscribers();
-  std::vector<std::pair<std::string, std::string>> list_subscribed_signals(
-      const std::string& subscriber_name);
-  // json
-  std::string list_subscribed_signals_json(const std::string& subscriber_name);
-
  private:
   // invocation of quiddity_manager_impl_ methods in a dedicated thread
-  ThreadedWrapper<> invocation_loop_{};
-  QuiddityManager_Impl::ptr manager_impl_;  // may be shared with others for
-                                            // automatic quiddity creation
+  mutable ThreadedWrapper<> invocation_loop_{};
+  QuiddityContainer::ptr manager_impl_;  // may be shared with others for
+                                         // automatic quiddity creation
   std::string name_;
   std::vector<std::string> quiddities_at_reset_{};
   // gives shared pointer to this:
-  std::weak_ptr<QuiddityManager> me_{};
+  std::weak_ptr<Switcher> me_{};
   // invocation
   std::vector<InvocationSpec> invocations_{};
 
-  QuiddityManager() = delete;
-  explicit QuiddityManager(const std::string& name);
+  Switcher() = delete;
+  explicit Switcher(const std::string& name);
   void auto_init(const std::string& quiddity_name);
   void try_save_current_invocation(const InvocationSpec& invocation_spec);
 };

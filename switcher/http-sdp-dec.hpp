@@ -35,7 +35,6 @@ class GstShmdataSubscriber;
 
 class HTTPSDPDec : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);
   HTTPSDPDec(const std::string&);
 
  private:

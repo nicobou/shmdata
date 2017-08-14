@@ -24,19 +24,18 @@
 #include <memory>
 #include <string>
 #include "lo/lo.h"
-#include "switcher/quiddity-manager-wrapper.hpp"
+#include "switcher/switcher-wrapper.hpp"
 
 namespace switcher {
-class OscCtrlServer : public QuiddityManagerWrapper {
+class OscCtrlServer : public SwitcherWrapper {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(OscCtrlServer);
   OscCtrlServer(const std::string&);
   ~OscCtrlServer();
   OscCtrlServer(const OscCtrlServer&) = delete;
   OscCtrlServer& operator=(const OscCtrlServer&) = delete;
   void set_port(const std::string& port);
   // for invocation into osc handlers:
-  std::shared_ptr<QuiddityManager> get_quiddity_manager();
+  std::shared_ptr<Switcher> get_quiddity_manager();
   // wrappers
   static gboolean set_port_wrapped(gpointer port, gpointer user_data);
 

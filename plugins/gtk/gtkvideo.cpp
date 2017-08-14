@@ -23,7 +23,7 @@
 #include "switcher/gprop-to-prop.hpp"
 #include "switcher/gst-utils.hpp"
 #include "switcher/invocation-spec.hpp"
-#include "switcher/quiddity-manager-impl.hpp"
+#include "switcher/quiddity-container.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/shmdata-utils.hpp"
 
@@ -212,7 +212,7 @@ GTKVideo::GTKVideo(const std::string& name)
                                            0,
                                            max_height);
 
-  position_task_ = std::make_unique<PeriodicTask>(
+  position_task_ = std::make_unique<PeriodicTask<>>(
       [this]() { g_idle_add((GSourceFunc)window_update_position, this); },
       std::chrono::milliseconds(500));
 
@@ -330,7 +330,7 @@ void GTKVideo::delete_event_cb(GtkWidget* /*widget */, GdkEvent* /*event */, voi
   context->gst_pipeline_.reset();
   gtk_widget_destroy(context->main_window_);
   context->main_window_ = nullptr;
-  QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
+  QuiddityContainer::ptr manager = context->manager_impl_.lock();
   if ((bool)manager)
     manager->remove(context->get_name());
   else

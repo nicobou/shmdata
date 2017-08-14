@@ -34,7 +34,6 @@
 namespace switcher {
 class Timelapse : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Timelapse);
   Timelapse(const std::string&);
   ~Timelapse() = default;
   Timelapse(const Timelapse&) = delete;
@@ -75,7 +74,7 @@ class Timelapse : public Quiddity {
   std::mutex timelapse_mtx_{};
 
   // tracking parameter changes and update timelapse pipeline
-  PeriodicTask relaunch_task_;
+  PeriodicTask<> relaunch_task_;
 
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;

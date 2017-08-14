@@ -30,7 +30,6 @@
 namespace switcher {
 class SyphonSrc : public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SyphonSrc);
   SyphonSrc(const std::string&);
   ~SyphonSrc() = default;
   SyphonSrc(const SyphonSrc&) = delete;

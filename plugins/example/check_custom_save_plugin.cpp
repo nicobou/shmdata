@@ -21,20 +21,17 @@
 
 #include <cassert>
 #include <iostream>
-#include <string>
 #include <vector>
 #include "switcher/property-container.hpp"
 #include "switcher/quiddity-basic-test.hpp"
-#include "switcher/quiddity-manager.hpp"
 
 int main() {
   {
     using namespace switcher;
 
-    QuiddityManager::ptr manager = QuiddityManager::make_manager("test_manager");
-    gchar* usr_plugin_dir = g_strdup_printf("./");
-    manager->scan_directory_for_plugins(usr_plugin_dir);
-    g_free(usr_plugin_dir);
+    Switcher::ptr manager = Switcher::make_manager("test_manager");
+
+    manager->scan_directory_for_plugins("./");
 
     assert(QuiddityBasicTest::test_full(manager, "custom-save"));
     manager->reset_state(true);
@@ -59,7 +56,7 @@ int main() {
     manager->reset_state(true);
 
     // load the saved file
-    manager->load_state(save, true);
+    manager->load_state(save);
     assert(manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_loaded_id));
     assert(!manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_saved_id));
 

@@ -27,7 +27,6 @@
 namespace switcher {
 class Logger : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Logger);
   Logger(const std::string&);
   ~Logger();
   Logger(const Logger&) = delete;

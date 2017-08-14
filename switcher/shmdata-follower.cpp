@@ -41,8 +41,8 @@ ShmdataFollower::ShmdataFollower(Quiddity* quid,
           [this](const std::string& data_type) { this->on_server_connected(data_type); },
           [this]() { this->on_server_disconnected(); },
           &logger_)),
-      task_(std::make_unique<PeriodicTask>([this]() { this->update_quid_stats(); },
-                                           update_interval)) {}
+      task_(std::make_unique<PeriodicTask<>>([this]() { this->update_quid_stats(); },
+                                             update_interval)) {}
 
 ShmdataFollower::~ShmdataFollower() {
   follower_.reset(nullptr);

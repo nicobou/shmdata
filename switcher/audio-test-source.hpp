@@ -32,7 +32,6 @@
 namespace switcher {
 class AudioTestSource : public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AudioTestSource);
   AudioTestSource(const std::string&);
   ~AudioTestSource() = default;
   AudioTestSource(const AudioTestSource&) = delete;

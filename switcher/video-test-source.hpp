@@ -32,7 +32,6 @@
 namespace switcher {
 class VideoTestSource : public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VideoTestSource);
   VideoTestSource(const std::string&);
   ~VideoTestSource() = default;
   VideoTestSource(const VideoTestSource&) = delete;

@@ -22,7 +22,7 @@
 #include <cassert>
 #include <string>
 #include "switcher/information-tree.hpp"
-#include "switcher/quiddity-manager.hpp"
+#include "switcher/switcher.hpp"
 
 static bool success = false;
 void property_cb(std::string /*subscriber_name*/,
@@ -38,8 +38,7 @@ int main() {
     // creating an audiotestsrc, getting the shmdata path and
     // giving it to fakeshmdatasrc
 
-    switcher::QuiddityManager::ptr manager =
-        switcher::QuiddityManager::make_manager("check-fakesink");
+    switcher::Switcher::ptr manager = switcher::Switcher::make_manager("check-fakesink");
     // preparing fakeshmsrc and an audio
     assert("fakeshmsrc" == manager->create("fakeshmsrc", "fakeshmsrc"));
     assert("audio" == manager->create("audiotestsrc", "audio"));

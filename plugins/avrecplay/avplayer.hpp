@@ -20,26 +20,53 @@
 #ifndef SWITCHER_AVPLAYER_HPP
 #define SWITCHER_AVPLAYER_HPP
 
-#include <gst/gst.h>
-#include <string.h>
 #include <switcher/startable-quiddity.hpp>
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
 #include "switcher/shmdata-writer.hpp"
+#include "switcher/threaded-wrapper.hpp"
 
 namespace switcher {
 class AVPlayer : public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AVPlayer);
   AVPlayer(const std::string& name);
-  bool init() { return true; };
-  bool start() { return true; }
-  bool stop() { return true; }
-};
+  bool init() final;
+  bool start() final;
+  bool stop() final;
 
-SWITCHER_DECLARE_PLUGIN(AVPlayer);
+ private:
+  static const std::string kShmDestPath;
+
+  struct ShmFile {
+    ShmFile(const std::string& shmpath, const std::string& filepath, const std::string& sink_name)
+        : shmpath_(shmpath), filepath_(filepath), sink_name_(sink_name){};
+    std::string shmpath_{};
+    std::string filepath_{};
+    std::string sink_name_{};
+    GstElement* sink_element_{nullptr};
+    std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
+  };
+
+  //! Shmdata methods
+  GstBusSyncReply bus_async(GstMessage* msg);
+
+  bool is_valid_{false};
+  ShmdataConnector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
+  std::vector<std::unique_ptr<ShmFile>> files_list_{};
+  GstElement* avplay_bin_{nullptr};  //!< Full recording pipeline
+  std::unique_ptr<GstPipeliner> gst_pipeline_{nullptr};
+  int64_t track_duration_{0};
+  std::string playpath_{};
+  int position_{0};
+  PContainer::prop_id_t position_id_{0};
+  std::unique_ptr<PeriodicTask<>> position_task_{};
+  bool pause_{false};
+  bool seek_called_{false};
+  std::mutex seek_mutex_{};
+  std::unique_ptr<ThreadedWrapper<>> th_{std::make_unique<ThreadedWrapper<>>()};
+};
 }  // namespace switcher
 
 #endif

@@ -34,7 +34,6 @@ namespace switcher {
  */
 class LTCToJack : public Quiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(LTCToJack);
 
   LTCToJack(const std::string&);
   ~LTCToJack();

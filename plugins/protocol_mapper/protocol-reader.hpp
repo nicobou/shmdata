@@ -39,8 +39,8 @@ class ProtocolReader : public SafeBoolIdiom {
 
  protected:
   struct Command {
-    Command(PeriodicTask::task_t task, bool cont) : command(task), continuous(cont) {}
-    PeriodicTask::task_t command{};
+    Command(PeriodicTask<>::task_t task, bool cont) : command(task), continuous(cont) {}
+    PeriodicTask<>::task_t command{};
     bool continuous{false};
   };
   bool continuous_{false};
@@ -48,7 +48,7 @@ class ProtocolReader : public SafeBoolIdiom {
   // Value of the properties (might change in the future with new property type).
   std::map<std::string, bool> vals_{};
 
-  std::unique_ptr<PeriodicTask> ptask_{nullptr};
+  std::unique_ptr<PeriodicTask<>> ptask_{nullptr};
   std::mutex ptask_mutex_{};
   unsigned int emission_period_{1000};
   std::map<std::string, ProtocolReader::Command> tasks_{};

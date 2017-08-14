@@ -31,9 +31,9 @@
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/gst-shmdata-to-cb.hpp"
-#include "switcher/quiddity-manager.hpp"
 #include "switcher/rtp-session2.hpp"
 #include "switcher/shmdata-writer.hpp"
+#include "switcher/switcher.hpp"
 
 namespace switcher {
 class PJCall {

@@ -25,6 +25,6 @@
 #include <vector>
 #include "switcher/property-container.hpp"
 #include "switcher/quiddity-basic-test.hpp"
-#include "switcher/quiddity-manager.hpp"
+#include "switcher/switcher.hpp"
 
 int main() { return 0; }

@@ -21,7 +21,6 @@
 
 #include <assert.h>
 #include <atomic>
-#include <iostream>
 #include <switcher/information-tree-json.hpp>
 #include "switcher/quiddity-basic-test.hpp"
 
@@ -53,28 +52,12 @@ void notify_success() {
   cond_var.notify_one();
 }
 
-void on_tree_grafted(const std::string& /*subscriber_name */,
-                     const std::string& quid_name,
-                     const std::string& signal_name,
-                     const std::vector<std::string>& params,
-                     void* user_data) {
-  auto manager = static_cast<QuiddityManager*>(user_data);
-  size_t byte_rate =
-      manager->use_tree<MPtr(&InfoTree::branch_get_value)>(quid_name, params[0] + ".byte_rate");
-  if (byte_rate) {
-    notify_success();
-  }
-  std::printf(
-      "%s: %s %s\n", signal_name.c_str(), params[0].c_str(), std::to_string(byte_rate).c_str());
-}
-
 int main() {
   {
-    QuiddityManager::ptr manager = QuiddityManager::make_manager("ladspatest");
+    Switcher::ptr manager = Switcher::make_manager("ladspatest");
 
-    gchar* usr_plugin_dir = g_strdup_printf("./");
-    manager->scan_directory_for_plugins(usr_plugin_dir);
-    g_free(usr_plugin_dir);
+    manager->scan_directory_for_plugins("./");
+
     manager->load_configuration_file("./check_ladspa.json");
 
     // creating a ladspa audiotest bundle

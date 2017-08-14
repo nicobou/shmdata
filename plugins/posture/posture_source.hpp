@@ -32,7 +32,6 @@
 namespace switcher {
 class PostureSrc : public Quiddity, public StartableQuiddity {
  public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureSrc);
   PostureSrc(const std::string&);
   ~PostureSrc();
   PostureSrc(const PostureSrc&) = delete;

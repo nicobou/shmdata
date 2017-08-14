@@ -1,5 +1,5 @@
 /*
- * This file is part of switcher-myplugin.
+ * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,22 +17,24 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#undef NDEBUG  // get assert in release mode
+#include "./sig.hpp"
 
-#include <cassert>
-#include <iostream>
-#include <string>
-#include <vector>
-#include "switcher/quiddity-basic-test.hpp"
-#include "switcher/switcher.hpp"
+namespace switcher {
 
-int main() {
-  switcher::Switcher::ptr manager = switcher::Switcher::make_manager("test_manager");
-
-  gchar* usr_plugin_dir = g_strdup_printf("./");
-  manager->scan_directory_for_plugins(usr_plugin_dir);
-  g_free(usr_plugin_dir);
-
-  assert(switcher::QuiddityBasicTest::test_full(manager, "posture_scan3dGPU"));
-  return 0;
+Sig::register_id_t Sig::subscribe(notify_cb_t fun) const {
+  to_notify_[++counter_] = fun;
+  return counter_;
 }
+
+bool Sig::unsubscribe(register_id_t rid) const {
+  auto it = to_notify_.find(rid);
+  if (to_notify_.end() == it) return false;
+  to_notify_.erase(it);
+  return true;
+}
+
+void Sig::notify(InfoTree::ptr tree) const {
+  for (auto& it : to_notify_) it.second(tree);
+}
+
+}  // namespace switcher

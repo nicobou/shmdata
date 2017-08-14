@@ -2,6 +2,24 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.58 (2017-08-14)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+Bug fixes:
+* glfw win aspect ratio
+* fix nicknames not saved
+* fix audio property group not initialized into gst-audio-codec
+* fixed selection properties not being able to be set correctly after selection refactor
+
+New Features:
+* shmdata AVPlayer (still seek/sync issues)
+* signaling on-nicknamed
+* rename quiddity-manager into switcher and quiddity manager impl into quiddity container
+* make it so the periodic task starts at regular intervals instead of waiting a fixed period of time
+* refactoring signals using native c++ instead of gobject
+* centralize quiddities doc management outside of quiddity class
+
 switcher 0.8.56 (2017-07-20)
 ---------------------------
 This is an official release in the 0.8 stable series.
@@ -132,8 +150,8 @@ This is an official release in the 0.8 stable series.
 
 New features:
 * New option in SIP configuration to automatically create a raw shmdata quiddity for incoming streams.
-* New notification system in QuiddityManager to track removal/creation of quiddities. SIP Plugin uses it instead of old legacy CreateRemoveSpy quiddity.
-* Remove CreateRemoveSpy quiddity and all its hooks in QuiddityManager_Impl.
+* New notification system in QuiddityContainer to track removal/creation of quiddities. SIP Plugin uses it instead of old legacy CreateRemoveSpy quiddity.
+* Remove CreateRemoveSpy quiddity and all its hooks in QuiddityContainer_Impl.
 * Port to nvidia SDK 7.1. Needs driver version 375.20 or newer.
 
 Bug fixes:
