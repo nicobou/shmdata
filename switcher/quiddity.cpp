@@ -319,6 +319,10 @@ bool Quiddity::graft_tree(const std::string& path, InfoTree::ptr tree, bool do_s
   return true;
 }
 
+InfoTree::ptr Quiddity::get_tree(const std::string& path) {
+  return information_tree_->get_tree(path);
+}
+
 InfoTree::ptr Quiddity::prune_tree(const std::string& path, bool do_signal) {
   InfoTree::ptr result = information_tree_->prune(path);
   if (result) {
@@ -326,7 +330,7 @@ InfoTree::ptr Quiddity::prune_tree(const std::string& path, bool do_signal) {
       smanage<MPtr(&SContainer::notify)>(on_tree_pruned_id_, InfoTree::make(path));
     }
   } else {
-    g_debug("cannot prune %s", path.c_str());
+    g_warning("cannot prune %s", path.c_str());
   }
   return result;
 }

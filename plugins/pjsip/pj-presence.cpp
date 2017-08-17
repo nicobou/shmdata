@@ -467,8 +467,7 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   if (PJRPID_ACTIVITY_BUSY == info.rpid.activity) status = "busy";
 
   InfoTree::ptr tree =
-      SIPPlugin::this_->prune_tree(std::string(".buddies." + std::to_string(buddy_id)),
-                                   false);  // do not signal since the tree will be updated
+      SIPPlugin::this_->get_tree(std::string(".buddies." + std::to_string(buddy_id)));
   if (!tree) tree = InfoTree::make();
   // writing status and state
   if (std::string(info.status_text.ptr, (size_t)info.status_text.slen) == "Offline")

@@ -195,6 +195,7 @@ class Quiddity {
   // information
   bool graft_tree(const std::string& path, InfoTree::ptr tree_to_graft, bool do_signal = true);
   InfoTree::ptr prune_tree(const std::string& path, bool do_signal = true);
+  InfoTree::ptr get_tree(const std::string& path);
 
   // property
   Make_delegate(Quiddity, PContainer, &props_, pmanage);
