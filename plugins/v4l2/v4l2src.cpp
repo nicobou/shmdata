@@ -494,7 +494,7 @@ bool V4L2Src::remake_elements() {
     g_debug("V4L2Src: no capture device available for starting capture");
     return false;
   }
-  if (!UGstElem::renew(v4l2src_, {"device", "norm"}) || !UGstElem::renew(videorate_) ||
+  if (!UGstElem::renew(v4l2src_, {"device", "norm", "io-mode"}) || !UGstElem::renew(videorate_) ||
       !UGstElem::renew(capsfilter_, {"caps"}) || !UGstElem::renew(shmsink_, {"socket-path"})) {
     g_warning("V4L2Src: issue when with elements for video capture");
     return false;
@@ -692,13 +692,13 @@ bool V4L2Src::start() {
   } else {
     gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                      v4l2src_.get_raw(),
-                     videorate_.get_raw(),
                      capsfilter_.get_raw(),
+                     videorate_.get_raw(),
                      shmsink_.get_raw(),
                      nullptr);
     gst_element_link_many(v4l2src_.get_raw(),
-                          videorate_.get_raw(),
                           capsfilter_.get_raw(),
+                          videorate_.get_raw(),
                           shmsink_.get_raw(),
                           nullptr);
   }
@@ -757,6 +757,11 @@ bool V4L2Src::configure_capture() {
   if (tv_standards_id_ != 0 && tv_standards_enum_.get_current_index() > 0)  // 0 is none
     g_object_set(
         G_OBJECT(v4l2src_.get_raw()), "norm", tv_standards_enum_.get_current().c_str(), nullptr);
+
+  // When using a videorate element we need to copy the buffers between elements otherwise we get
+  // stuck.
+  if (force_framerate_) g_object_set(G_OBJECT(v4l2src_.get_raw()), "io_mode", 1, nullptr);
+
   std::string caps = pixel_format_enum_.get_attached();
   if (0 != width_id_)
     caps = caps + ", width=(int)" + std::to_string(width_) + ", height=(int)" +
