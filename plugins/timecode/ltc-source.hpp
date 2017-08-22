@@ -26,7 +26,6 @@
 #include <fstream>
 #include <switcher/startable-quiddity.hpp>
 #include "switcher/gst-shmdata-subscriber.hpp"
-#include "switcher/periodic-task.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
@@ -55,7 +54,7 @@ class LTCSource : public Quiddity, public StartableQuiddity {
   bool can_sink_caps(const std::string& caps);
 
   void tick_callback(jack_nframes_t nframes);
-  void write_samples_to_shmdata(int nb_samples);
+  void write_samples_to_shmdata(const unsigned int& nb_samples);
   void generate_ltc_frames(int nb_frames);
 
   bool is_valid_{false};

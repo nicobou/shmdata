@@ -46,7 +46,19 @@ if (PLUGIN_TIMECODE)
     add_test(check_ltc_source check_ltc_source)
 
 
+    # LTC-Diff
+    add_library(ltcdiff SHARED
+                ltc-diff.cpp
+    )
+
+    add_dependencies(ltcdiff ${SWITCHER_LIBRARY})
+
+    # Test
+    add_executable(check_ltc_diff check_ltc_diff.cpp)
+    add_test(check_ltc_diff check_ltc_diff)
+
+
     # Install
-    install(TARGETS ltctojack ltcsource LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(TARGETS ltctojack ltcsource ltcdiff LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
 
 endif ()

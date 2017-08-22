@@ -58,6 +58,7 @@ add_library(${SWITCHER_LIBRARY} SHARED
     safe-bool-idiom.cpp
     sdp-utils.cpp
     serialize-string.cpp
+    shm-delay.cpp
     shmdata-connector.cpp
     shmdata-follower.cpp
     shmdata-stat.cpp
@@ -145,6 +146,7 @@ set(HEADER_INCLUDES
     sdp-utils.hpp
     selection.hpp
     serialize-string.hpp
+    shm-delay.hpp
     shmdata-connector.hpp
     shmdata-glib-logger.hpp
     shmdata-follower.hpp

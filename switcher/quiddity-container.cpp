@@ -41,6 +41,7 @@
 #include "./logger.hpp"
 #include "./property-mapper.hpp"
 #include "./rtp-session.hpp"
+#include "./shm-delay.hpp"
 #include "./timelapse.hpp"
 #include "./uridecodebin.hpp"
 #include "./video-test-source.hpp"
@@ -165,6 +166,8 @@ void QuiddityContainer::register_classes() {
   //     (DocumentationRegistry::get()->get_quiddity_type_from_class_name("ShmdataFromGDPFile"));
   // abstract_factory_.register_class<ShmdataToFile>
   //     (DocumentationRegistry::get()->get_quiddity_type_from_class_name("ShmdataToFile"));
+  abstract_factory_.register_class<ShmDelay>(
+      DocumentationRegistry::get()->get_quiddity_type_from_class_name("ShmDelay"));
   abstract_factory_.register_class<Timelapse>(
       DocumentationRegistry::get()->get_quiddity_type_from_class_name("Timelapse"));
   abstract_factory_.register_class<Uridecodebin>(

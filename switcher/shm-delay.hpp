@@ -20,14 +20,13 @@
 #ifndef SWITCHER_SHMDELAY_HPP
 #define SWITCHER_SHMDELAY_HPP
 
-#include <ltc.h>
 #include <deque>
-#include "switcher/gst-utils.hpp"
-#include "switcher/periodic-task.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/shmdata-writer.hpp"
+#include "./gst-utils.hpp"
+#include "./periodic-task.hpp"
+#include "./quiddity.hpp"
+#include "./shmdata-connector.hpp"
+#include "./shmdata-follower.hpp"
+#include "./shmdata-writer.hpp"
 
 namespace switcher {
 /**
@@ -36,18 +35,19 @@ namespace switcher {
 class ShmDelay : public Quiddity {
  public:
   ShmDelay(const std::string&);
-  ~ShmDelay();
+  ~ShmDelay() = default;
 
  private:
   struct ShmContent {
     ShmContent(double timestamp, void* content, size_t data_size);
+    ~ShmContent() = default;
     /** Get physical size of the shmdata
     * content (overhead not accounted for because not relevant in size compared to the data)
     */
-    size_t get_size() const { return content_.size() * sizeof(unsigned char); }
-    std::vector<unsigned char> content_{};
-    size_t data_size_{0};  //!< Size of the shmdata.
-    double timestamp_{0};  //!< Timestamp at the time of shmdata reception.
+    size_t get_size() const { return content_.size(); }
+    std::vector<u_int8_t> content_{};  //!< Vector containing received shm data frames
+    size_t data_size_{0};              //!< Size of the shmdata.
+    double timestamp_{0};              //!< Timestamp at the time of shmdata reception.
   };
 
   /**
@@ -55,35 +55,40 @@ class ShmDelay : public Quiddity {
    * Can be searched for closest timestamped object.
    */
   struct ShmBuffer {
-    ShmBuffer(size_t buffer_size) : max_size(buffer_size) {}
-    void push(const ShmContent& content);     //!< Push a ShmContent object in the buffer
-    ShmContent find(double timestamp) const;  //!< Find the closest shmdata to the provided
-                                              //! timestamp (has ! to be closer than !< 10ms)
+    ShmBuffer(size_t buffer_size) : max_size_(buffer_size * (1 << 20)) {}
+    ~ShmBuffer() = default;
+    void push(const ShmContent& content);  //!< Push a ShmContent object in the buffer
+    void set_buffer_size(const size_t& size);
+    ShmContent find_closest(
+        double timestamp) const;  //!< Find the closest shmdata to the provided timestamp
 
-    std::deque<ShmContent> buffer_{};  //!< Buffer of shmdata frames.
+   private:
     mutable std::mutex buffer_m_{};    //!< Mutex here to protect the buffer accesses.
-    size_t total_size{0};  //!< Current total size of the buffer (not accounting for overhead)
-    size_t max_size{0};    //!< Maximum size in bytes of the buffer.
+    std::deque<ShmContent> buffer_{};  //!< Buffer of shmdata frames.
+    size_t total_size_{0};  //!< Current total size of the buffer (not accounting for overhead)
+    size_t max_size_{0};    //!< Maximum size in bytes of the buffer.
   };
 
   bool init() final;
 
   bool on_shmdata_connect(const std::string& shmpath);
-  bool on_shmdata_disconnect();
-  bool can_sink_caps(const std::string& caps);
+  bool on_shmdata_disconnect(const std::string& shmpath);
 
   bool is_valid_{false};
-  std::unique_ptr<ShmdataWriter> shmw_{};  //!< Shmdata writer.
-  ShmdataConnector shmcntr_{nullptr};      //!< Shmdata connector for ltc and shmdata inputs
-  std::unique_ptr<ShmdataFollower> shm_follower_{nullptr};  //!< Shmdata to be delayed
+  ShmBuffer delay_content_{1 << 10};   //!< Size limit for the buffer (~1GB)
+  ShmdataConnector shmcntr_{nullptr};  //!< Shmdata connector for ltc and shmdata inputs
+  std::unique_ptr<ShmdataFollower> shm_follower_{nullptr};   //!< Shmdata to be delayed
+  std::unique_ptr<ShmdataFollower> diff_follower_{nullptr};  //!< Timecode delay
+  std::unique_ptr<ShmdataWriter> shmw_{};                    //!< Shmdata writer.
   std::unique_ptr<PeriodicTask<std::chrono::microseconds>> writing_task_{
       nullptr};  //!< Shmdata writing task (high frequency to be accurate on timestamp checking)
-  ShmBuffer delay_content_{1000000000};  //!< Size limit for the buffer (~1GB)
-  double last_timestamp_{0};
+  double last_timestamp_{0};  //!< Timestamp of the last written shmdata.
 
   // Properties
-  unsigned int time_delay_{0};  //!< Delay in milliseconds.
+  PContainer::prop_id_t time_delay_id_{0};
+  double time_delay_{0};  //!< Delay in milliseconds.
+  unsigned int buffer_size_{1 << 10};
 };
-SWITCHER_DECLARE_PLUGIN(ShmDelay)
+
 }  // namespace switcher
 #endif

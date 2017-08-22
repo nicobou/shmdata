@@ -108,12 +108,18 @@ void LTCSource::tick_callback(jack_nframes_t nframes) {
   if (!generating_frames_ && samples_.size() < nframes * 5)
     generation_th_->run_async(
         [this, nframes]() { generate_ltc_frames(static_cast<int>(sample_rate_ / nframes) * 5); });
-  write_samples_to_shmdata(static_cast<int>(nframes));
+  write_samples_to_shmdata(static_cast<unsigned int>(nframes));
 }
 
 bool LTCSource::start() {
-  shmw_ =
-      std::make_unique<ShmdataWriter>(this, make_file_name("audio"), 1, std::string("audio/x-raw"));
+  shmw_ = std::make_unique<ShmdataWriter>(
+      this,
+      make_file_name("audio"),
+      1,
+      std::string(
+          "audio/"
+          "x-raw,layout=(string)interleaved,channels=(int)1,format=(string)S16LE,rate=(int)") +
+          std::to_string(sample_rate_));
 
   if (!external_sync_source_) {
     jack_set_process_callback(jack_client_,
@@ -152,13 +158,13 @@ bool LTCSource::start() {
     st_.secs = static_cast<unsigned char>(time_info->tm_sec);
   }
 
-  encoder_ = ltc_encoder_create(
-      sample_rate_,
-      fps_.get_attached(),
-      fps_.get_attached() == 25 ? LTC_TV_625_50
-                                : LTC_TV_525_60,  // The other standards are equivalent, only
-      // 25 fps is an exception
-      time_reference_.get().index_ == 0 ? LTC_USE_DATE | LTC_TC_CLOCK : LTC_USE_DATE);
+  encoder_ = ltc_encoder_create(sample_rate_,
+                                fps_.get_attached(),
+                                fps_.get_attached() == 25
+                                    ? LTC_TV_625_50
+                                    : LTC_TV_525_60,  // The other standards are equivalent, only
+                                // 25 fps is an exception
+                                LTC_USE_DATE);
 
   if (!encoder_) {
     g_warning("Failed to create LTC encoder (ltcsource).");
@@ -190,6 +196,7 @@ bool LTCSource::stop() {
   ltc_encoder_free(encoder_);
   if (!external_sync_source_) jack_deactivate(jack_client_);
   shmw_.reset(nullptr);
+  samples_.clear();
 
   pmanage<MPtr(&PContainer::enable)>(time_reference_id_);
   pmanage<MPtr(&PContainer::enable)>(fps_id_);
@@ -234,6 +241,13 @@ bool LTCSource::on_shmdata_connect(const std::string& shmpath) {
           g_warning("Cannot get format from shmdata description (ltcsource)");
           return;
         }
+
+        int sample_rate = 0;
+        if (!gst_structure_get_int(s, "rate", &sample_rate)) {
+          g_warning("Cannot get rate from shmdata description (ltcsource)");
+          return;
+        }
+        sample_rate_ = static_cast<unsigned int>(sample_rate);
 
         std::string str_format(format);
         str_format = str_format.substr(1, str_format.size());
@@ -282,14 +296,16 @@ bool LTCSource::can_sink_caps(const std::string& str_caps) {
   return GstUtils::can_sink_caps("audioconvert", str_caps);
 }
 
-void LTCSource::write_samples_to_shmdata(int nb_samples) {
+void LTCSource::write_samples_to_shmdata(const unsigned int& nb_samples) {
+  if (!nb_samples || samples_.size() < nb_samples) return;
+
   auto samples_size = sizeof(ltcsnd_sample_t) * nb_samples;
   std::vector<ltcsnd_sample_t> array;
   array.reserve(samples_size);
-  std::copy(samples_.begin(), samples_.begin() + nb_samples - 1, array.begin());
+  std::copy(samples_.begin(), samples_.begin() + nb_samples, array.begin());
   shmw_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(array.data(), samples_size);
   shmw_->bytes_written(samples_size);
-  for (int i = 0; i < nb_samples; ++i) {
+  for (unsigned int i = 0; i < nb_samples; ++i) {
     samples_.pop_front();
   }
 }
@@ -305,7 +321,7 @@ void LTCSource::generate_ltc_frames(int nb_frames) {
     int len;
     ltc_encoder_encode_frame(encoder_);
     buf = ltc_encoder_get_bufptr(encoder_, &len, 1);
-    for (int sample = 0; sample < len; ++sample) samples_.emplace_back(*buf);
+    for (int sample = 0; sample < len; ++sample) samples_.emplace_back(buf[sample]);
     ltc_encoder_inc_timecode(encoder_);
   }
 
