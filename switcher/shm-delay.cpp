@@ -197,7 +197,8 @@ ShmDelay::ShmContent ShmDelay::ShmBuffer::find_closest(double target_timestamp) 
   auto closest = buffer_.front();
   for (auto& item : buffer_) {
     // We take the absolute value of the difference with the
-    auto new_diff = std::abs(item.timestamp_ - target_timestamp);
+    auto new_diff = item.timestamp_ - target_timestamp;
+    if (new_diff < 0) new_diff = -new_diff;
     // We are getting closer to the target timestamp
     if (new_diff < diff) {
       diff = new_diff;

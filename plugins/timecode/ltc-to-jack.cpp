@@ -159,7 +159,8 @@ void LTCToJack::on_data(void* data, size_t data_size) {
       diff_clocks_ = jack_time_ref_ - current_ltc_time;
     }
 
-    double time_delta = std::abs(current_jack_time - current_ltc_time - diff_clocks_);
+    double time_delta = current_jack_time - current_ltc_time - diff_clocks_;
+    if (time_delta < 0) time_delta = -time_delta;
 
     {
       std::lock_guard<std::mutex> lock(threshold_mutex_);

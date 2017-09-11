@@ -36,7 +36,10 @@ if (PLUGIN_GSOAP)
 
     # WARNINGS
     add_definitions(-Wno-error=extra)
-
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
+      add_definitions(-Wno-error=misleading-indentation)
+    endif()
+    
     # Server
 
     add_library(soapserver SHARED

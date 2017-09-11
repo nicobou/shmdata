@@ -65,6 +65,11 @@ if (WITH_SWITCHER_CTRL)
 
     add_dependencies(switcher-ctrl soapclient)
 
+    # WARNINGS
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
+      add_definitions(-Wno-error=misleading-indentation)
+    endif()
+    
     # INSTALL
 
     install(TARGETS switcher-ctrl
