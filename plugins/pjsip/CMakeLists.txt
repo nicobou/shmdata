@@ -21,6 +21,7 @@ if (PLUGIN_SIP)
         -DPJ_IOQUEUE_MAX_EVENTS_IN_SINGLE_POLL=512
         -DPJSIP_MAX_PKT_LEN=8000
         -DPJSIP_TD_TIMEOUT=5000
+	-DPJ_AUTOCONF=1
         )
 
     # include/pj/compat/os_darwinos.h:107:9: error: 'PJ_IOQUEUE_MAX_HANDLES' macro redefined [-Werror,-Wmacro-redefined]
