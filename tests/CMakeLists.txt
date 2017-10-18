@@ -47,3 +47,6 @@ add_test(check_threaded_wrapper check_threaded_wrapper)
 
 add_executable(check_ugstelem check_ugstelem.cpp)
 add_test(check_ugstelem check_ugstelem)
+
+add_executable(check_string_utils check_string_utils.cpp)
+add_test(check_string_utils check_string_utils)

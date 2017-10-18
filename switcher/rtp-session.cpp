@@ -554,7 +554,8 @@ void RtpSession::on_rtp_caps(const std::string& shmdata_path, std::string caps) 
   std::getline(ss, tok, ' ');
   std::string label = tok;
   while (std::getline(ss, tok, ' ')) label += "\\ " + tok;
-  caps += ", media-label=(string)\"" + label + "\"";
+  caps += ", media-label=(string)\"" +
+          StringUtils::replace_char(StringUtils::base64_encode(label), '=', "") + "\"";
   graft_tree("rtp_caps." + std::move(shmdata_path), InfoTree::make(std::move(caps)));
   {  // stream ready, unlocking add_data_stream
     std::unique_lock<std::mutex> lock(this->stream_mutex_);

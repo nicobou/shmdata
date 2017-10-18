@@ -62,7 +62,7 @@ std::string get_media_label(const pjmedia_sdp_media* media) {
     auto pos = value.find(name);
     if (std::string::npos != pos) {
       auto index = pos + name.size();
-      return std::string(value, index, value.find(';', index));
+      return StringUtils::base64_decode(std::string(value, index, value.find(';', index)));
     }
   }
   return res;

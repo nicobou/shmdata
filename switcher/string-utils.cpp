@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <cctype>
 #include <sstream>
+#include "./scope-exit.hpp"
 
 namespace switcher {
 
@@ -85,6 +86,24 @@ bool StringUtils::ends_with(const std::string& str, const std::string& suffix) {
   StringUtils::tolower(lower_suffix);
   return str_len >= suffix_len &&
          lower_str.find(lower_suffix, str_len - suffix_len) != std::string::npos;
+}
+
+std::string StringUtils::base64_encode(const std::string& str) {
+  return std::string(g_base64_encode(reinterpret_cast<const guchar*>(str.c_str()), str.size()));
+}
+
+std::string StringUtils::base64_decode(const std::string& str) {
+  gsize str_size = 2048;
+  guchar* decoded_guchar = g_base64_decode(str.c_str(), &str_size);
+  On_scope_exit {
+    if (decoded_guchar) g_free(decoded_guchar);
+  };
+  gchar* decoded_char = g_strdup_printf("%s", decoded_guchar);
+  On_scope_exit {
+    if (decoded_char) g_free(decoded_char);
+  };
+  if (!decoded_char) return std::string();
+  return std::string(decoded_char);
 }
 
 }  // namespace switcher

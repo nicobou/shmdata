@@ -899,7 +899,8 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
     std::getline(ss, tok, ' ');
     std::string label = tok;
     while (std::getline(ss, tok, ' ')) label += tok;
-    rtpcaps += ", media-label=(string)" + label;
+    rtpcaps += ", media-label=(string)\"" +
+               StringUtils::replace_char(StringUtils::base64_encode(label), '=', "") + "\"";
     GstCaps* caps = gst_caps_from_string(rtpcaps.c_str());
     On_scope_exit { gst_caps_unref(caps); };
     SDPMedia media;

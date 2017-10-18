@@ -122,8 +122,7 @@ bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
     On_scope_exit { gst_caps_unref(caps); };
     auto structure = gst_caps_get_structure(caps, 0);
     auto media_label = gst_structure_get_string(structure, "media-label");
-    if (nullptr != media_label)
-      decodebin->set_media_label(gst_structure_get_string(structure, "media-label"));
+    if (media_label) decodebin->set_media_label(StringUtils::base64_decode(media_label));
   }
   // save the decodebin
   decoder_ = std::move(decodebin);

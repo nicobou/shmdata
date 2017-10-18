@@ -121,15 +121,11 @@ int /*GstAutoplugSelectResult*/ DecodebinToShmdata::on_autoplug_select(GstElemen
     GstCaps* caps = gst_pad_get_current_caps(pad);
     On_scope_exit { gst_caps_unref(caps); };
     const GValue* val = gst_structure_get_value(gst_caps_get_structure(caps, 0), "caps");
-    gsize taille = 2048;
-    guchar* string_caps = g_base64_decode(g_value_get_string(val), &taille);
-    On_scope_exit { g_free(string_caps); };
-    gchar* string_caps_char = g_strdup_printf("%s", string_caps);
-    On_scope_exit { g_free(string_caps_char); };
-    if (StringUtils::starts_with(string_caps_char, "audio/midi")) return EXPOSE;
-    if (StringUtils::starts_with(string_caps_char, "audio/") ||
-        StringUtils::starts_with(string_caps_char, "video/") ||
-        StringUtils::starts_with(string_caps_char, "image/"))
+    auto caps_str = StringUtils::base64_decode(g_value_get_string(val));
+    if (StringUtils::starts_with(caps_str, "audio/midi")) return EXPOSE;
+    if (StringUtils::starts_with(caps_str, "audio/") ||
+        StringUtils::starts_with(caps_str, "video/") ||
+        StringUtils::starts_with(caps_str, "image/"))
       return_val = TRY;
     return return_val;
   }
