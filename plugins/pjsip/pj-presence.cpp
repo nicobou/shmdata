@@ -224,14 +224,14 @@ void PJPresence::register_account(const std::string& sip_user, const std::string
 gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */, void* user_data) {
   PJPresence* context = static_cast<PJPresence*>(user_data);
   SIPPlugin::this_->pjsip_->run([&]() { context->unregister_account(); });
-  if (-1 != context->account_id_) return FALSE;
+  if (-1 != context->account_id_ || !pjsua_acc_is_valid(context->account_id_)) return FALSE;
   return TRUE;
 }
 
 void PJPresence::unregister_account(bool notify_tree) {
   std::unique_lock<std::mutex> lock(registration_mutex_);
 
-  if (-1 == account_id_) {
+  if (-1 == account_id_ || !pjsua_acc_is_valid(account_id_)) {
     g_warning("no account to unregister");
     return;
   }
@@ -381,7 +381,7 @@ gboolean PJPresence::name_buddy_wrapped(gchar* name, gchar* buddy_uri, void* use
 
 void PJPresence::on_registration_state(pjsua_acc_id acc_id, pjsua_reg_info* info) {
   PJPresence* context = static_cast<PJPresence*>(pjsua_acc_get_user_data(acc_id));
-  if (nullptr == context) {
+  if (nullptr == context || !pjsua_acc_is_valid(acc_id)) {
     g_warning("SIP registration failed");
     SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
         SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
