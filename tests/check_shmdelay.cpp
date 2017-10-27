@@ -82,7 +82,7 @@ int main() {
                           .count();
 
     ::shmdata::ConsoleLogger logger;
-    auto reader = std::make_unique<shmdata::Reader>(
+    auto reader = std::make_unique<shmdata::Follower>(
         "/tmp/switcher_shmdelaytest_shmdelaytest_delayed-shm",
         [&start_time](void*, size_t data_size) {
           if (!data_size) return;
