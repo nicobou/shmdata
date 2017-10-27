@@ -13,7 +13,7 @@ import getopt
 import re
 
 
-error_pattern = 'g_message\(\s*"ERROR:(.*)".*\);'
+error_pattern = 'message\(\s*"ERROR:(.*)".*\);'
 error_regex = re.compile(error_pattern)
 
 

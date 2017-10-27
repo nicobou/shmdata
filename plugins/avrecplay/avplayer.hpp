@@ -31,8 +31,7 @@
 namespace switcher {
 class AVPlayer : public Quiddity, public StartableQuiddity {
  public:
-  AVPlayer(const std::string& name);
-  bool init() final;
+  AVPlayer(QuiddityConfiguration&&);
   bool start() final;
   bool stop() final;
 
@@ -52,7 +51,6 @@ class AVPlayer : public Quiddity, public StartableQuiddity {
   //! Shmdata methods
   GstBusSyncReply bus_async(GstMessage* msg);
 
-  bool is_valid_{false};
   ShmdataConnector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
   std::vector<std::unique_ptr<ShmFile>> files_list_{};
   GstElement* avplay_bin_{nullptr};  //!< Full recording pipeline

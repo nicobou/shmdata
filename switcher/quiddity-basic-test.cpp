@@ -18,6 +18,7 @@
  */
 
 #include "./quiddity-basic-test.hpp"
+#include <iostream>
 
 namespace switcher {
 bool QuiddityBasicTest::test_full(Switcher::ptr manager, const std::string& quiddity_class_name) {
@@ -34,21 +35,23 @@ bool QuiddityBasicTest::test_create(Switcher::ptr manager, const std::string& qu
   // testing with a nick name
   std::string res_with_nick = manager->create(quiddity_class_name, quiddity_class_name);
   if (res_with_nick.compare(quiddity_class_name) != 0) {
-    g_warning("quiddity %s cannot be created (with nickname)", quiddity_class_name.c_str());
+    std::cerr << quiddity_class_name << " cannot be created (with nickname)" << '\n';
     return true;  // true because some quiddity may not be created because of a
                   // missing resource
   } else if (!manager->remove(res_with_nick)) {
-    g_warning("error while removing quiddity %s (with nickname)", quiddity_class_name.c_str());
+    std::cerr << "error while removing quiddity " << quiddity_class_name << " (with nickname)"
+              << '\n';
     return false;
   }
   // testing without nick name
   std::string res_without_nick = manager->create(quiddity_class_name);
   if (res_without_nick.empty()) {
-    g_warning("quiddity %s cannot be created (without nickname)", quiddity_class_name.c_str());
+    std::cerr << quiddity_class_name << " cannot be created (without nickname)" << '\n';
     return false;
   }
   if (!manager->remove(res_without_nick)) {
-    g_warning("error while removing quiddity %s (without nickname)", quiddity_class_name.c_str());
+    std::cerr << "error while removing quiddity " << quiddity_class_name << " (without nickname)"
+              << '\n';
     return false;
   }
   return true;
@@ -58,8 +61,7 @@ bool QuiddityBasicTest::test_startable(Switcher::ptr manager,
                                        const std::string& quiddity_class_name) {
   std::string name = manager->create(quiddity_class_name, quiddity_class_name);
   if (name.compare(quiddity_class_name) != 0) {
-    g_warning("quiddity %s cannot be created (startable not actualy tested)",
-              quiddity_class_name.c_str());
+    std::cerr << quiddity_class_name << " cannot be created (startable not actualy tested)" << '\n';
     return true;  // true because some quiddity may not be created because of a
                   // missing resource
   }
@@ -70,7 +72,7 @@ bool QuiddityBasicTest::test_startable(Switcher::ptr manager,
     manager->use_prop<MPtr(&PContainer::set_str)>(name, started_id, "true");
   }
   if (!manager->remove(name)) {
-    g_warning("error while removing quiddity %s (startable test)", quiddity_class_name.c_str());
+    std::cerr << "error while removing quiddity " << quiddity_class_name << " (startable test)";
     return false;
   }
   return true;
@@ -104,12 +106,9 @@ bool QuiddityBasicTest::test_properties(Switcher::ptr manager,
               name, std::string(".property.") + it + ".writable.")) {
         bool res = manager->use_prop<MPtr(&PContainer::set_str_str)>(name, it, default_value);
         if (!res) {
-          g_warning(
-              "property %s for quiddity named %s (class %s)"
-              " cannot be set with its default value",
-              it.c_str(),
-              name.c_str(),
-              quiddity_class_name.c_str());
+          std::cerr << "property " << it << " for quiddity named " << name
+                    << " class: " << quiddity_class_name << " cannot be set with its default value"
+                    << '\n';
           return false;
         }
       }
@@ -126,7 +125,7 @@ bool QuiddityBasicTest::test_nickname(Switcher::ptr manager,
   bool signal_received = false;
 
   if (name != manager->get_nickname(name)) {
-    g_warning("nickname not initialised with name");
+    std::cerr << "nickname not initialised with name" << '\n';
     return false;
   }
   auto registration_id = manager->use_sig<MPtr(&switcher::SContainer::subscribe_by_name)>(
@@ -136,7 +135,7 @@ bool QuiddityBasicTest::test_nickname(Switcher::ptr manager,
   if (0 == registration_id) return false;
 
   if (!manager->set_nickname(name, nickname)) {
-    g_warning("cannot set nickname");
+    std::cerr << "cannot set nickname" << '\n';
     return false;
   }
   if (!manager->use_sig<MPtr(&switcher::SContainer::unsubscribe_by_name)>(
@@ -144,15 +143,15 @@ bool QuiddityBasicTest::test_nickname(Switcher::ptr manager,
     return false;
   if (!signal_received) return false;
   if (nickname != manager->get_nickname(name)) {
-    g_warning("issue getting the nickname");
+    std::cerr << "issue getting the nickname" << '\n';
     return false;
   }
   if (manager->set_nickname("wrong name", nickname)) {
-    g_warning("set_nickname with a wrong quiddity name must return false");
+    std::cerr << "set_nickname with a wrong quiddity name must return false" << '\n';
     return false;
   }
   if (!manager->get_nickname("wrong name").empty()) {
-    g_warning("get_nickname with a wrong quiddity name must return false");
+    std::cerr << "get_nickname with a wrong quiddity name must return false" << '\n';
     return false;
   }
   return true;

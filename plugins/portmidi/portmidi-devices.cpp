@@ -45,30 +45,30 @@ PortMidi::~PortMidi() {
   }
 }
 
-bool PortMidi::open_input_device(int id, on_pm_event_method method, void* user_data) {
+BoolLog PortMidi::open_input_device(int id, on_pm_event_method method, void* user_data) {
   if (input_streams_.find(id) != input_streams_.end()) {
-    g_debug("input device (id %d), already opened, cannot open", id);
-    return false;
+    return BoolLog(
+        false,
+        std::string("input device (id %), already opened, cannot open") + std::to_string(id));
   }
 
   PmStream* stream = scheduler_->add_input_stream(id, method, user_data);
-  if (stream == nullptr) return false;
+  if (stream == nullptr) return BoolLog(false, "add_input_stream failled");
   input_streams_[id] = stream;
-  g_debug("Midi input device opened (id %d)", id);
-  return true;
+  return BoolLog(true);
 }
 
-bool PortMidi::open_output_device(int id) {
+BoolLog PortMidi::open_output_device(int id) {
   if (output_streams_.find(id) != output_streams_.end()) {
-    g_debug("output device (id %d), already openned, cannot open", id);
-    return false;
+    return BoolLog(
+        false,
+        std::string("output device already openned, cannot open. id: ") + std::to_string(id));
   }
 
   PmStream* stream = scheduler_->add_output_stream(id);
   if (stream == nullptr) return false;
   output_streams_[id] = stream;
-  g_debug("Midi output device opened (id %d)", id);
-  return true;
+  return BoolLog(true);
 }
 
 bool PortMidi::push_midi_message(int id,
@@ -85,7 +85,6 @@ bool PortMidi::close_input_device(int id) {
   if (it == input_streams_.end()) return false;
   scheduler_->remove_input_stream(it->second);
   input_streams_.erase(id);
-  g_debug("Midi input device closed (id %d)", id);
   return true;
 }
 
@@ -95,7 +94,6 @@ bool PortMidi::close_output_device(int id) {
 
   scheduler_->remove_output_stream(it->second);
   output_streams_.erase(id);
-  g_debug("Midi input device closed (id %d)", id);
   return true;
 }
 
@@ -226,11 +224,6 @@ void PortMidi::PortMidiScheduler::process_midi(PtTimestamp /*timestamp */, void*
             continue; /* ignore this data */
           }
 
-          // g_print ("midi input msg from %u %u %u \n",
-          //  Pm_MessageStatus(buffer.message),
-          //  Pm_MessageData1(buffer.message),
-          //  Pm_MessageData2(buffer.message));
-
           // invoking the callback
           itr.second.first(&buffer, itr.second.second);
 
@@ -267,11 +260,6 @@ void PortMidi::PortMidiScheduler::process_midi(PtTimestamp /*timestamp */, void*
         /* maybe sysex has timed out (output becomes unblocked) */
         context->thru_sysex_in_progress_ = false;
       }
-
-      // g_print ("midi output msg: %u %u %u\n",
-      //      Pm_MessageStatus(next->message),
-      //      Pm_MessageData1(next->message),
-      //      Pm_MessageData2(next->message));
 
       Pm_Write(itr.first, next, 1);
 

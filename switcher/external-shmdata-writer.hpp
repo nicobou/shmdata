@@ -27,7 +27,7 @@
 namespace switcher {
 class ExternalShmdataWriter : public Quiddity {
  public:
-  ExternalShmdataWriter(const std::string&);
+  ExternalShmdataWriter(QuiddityConfiguration&&);
   ~ExternalShmdataWriter() = default;
   ExternalShmdataWriter(const ExternalShmdataWriter&) = delete;
   ExternalShmdataWriter& operator=(const ExternalShmdataWriter&) = delete;
@@ -35,7 +35,6 @@ class ExternalShmdataWriter : public Quiddity {
  private:
   std::string shmdata_path_{};
   std::unique_ptr<ShmdataFollower> shm_{nullptr};
-  bool init() final;
   InfoTree::ptr on_saving() final;
   void on_loading(InfoTree::ptr&& tree) final;
 };

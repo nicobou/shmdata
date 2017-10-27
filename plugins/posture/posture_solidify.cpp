@@ -33,26 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureSolidify,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-PostureSolidify::PostureSolidify(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
-
-PostureSolidify::~PostureSolidify() { stop(); }
-
-bool PostureSolidify::start() {
-  solidify_ = make_shared<Solidify>();
-  solidify_->setGridResolution(marching_cubes_resolution_);
-  solidify_->setSaveMesh(save_mesh_);
-
-  return true;
-}
-
-bool PostureSolidify::stop() {
-  lock_guard<mutex> lock(mutex_);
-  solidify_.reset();
-
-  return true;
-}
-
-bool PostureSolidify::init() {
+PostureSolidify::PostureSolidify(QuiddityConfiguration&&) : shmcntr_(static_cast<Quiddity*>(this)) {
   init_startable(this);
 
   shmcntr_.install_connect_method([this](const std::string path) { return connect(path); },
@@ -85,6 +66,22 @@ bool PostureSolidify::init() {
                                        marching_cubes_resolution_,
                                        8,
                                        256);
+}
+
+PostureSolidify::~PostureSolidify() { stop(); }
+
+bool PostureSolidify::start() {
+  solidify_ = make_shared<Solidify>();
+  solidify_->setGridResolution(marching_cubes_resolution_);
+  solidify_->setSaveMesh(save_mesh_);
+
+  return true;
+}
+
+bool PostureSolidify::stop() {
+  lock_guard<mutex> lock(mutex_);
+  solidify_.reset();
+
   return true;
 }
 

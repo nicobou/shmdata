@@ -31,13 +31,12 @@ class RTMP : public Quiddity {
  public:
 
   //! Constructor
-  RTMP(const std::string&);
+  RTMP(QuiddityConfiguration&&);
 
   //! Destructor
   ~RTMP() = default;
 
   //! Mandatory quiddity base class method
-  bool init() final;
 
  private:
   enum class ShmType { AUDIO = 0, VIDEO = 1 };
@@ -50,7 +49,6 @@ class RTMP : public Quiddity {
   // Gstreamer pipeline creation
   bool create_gst_pipeline();
 
-  bool is_valid_{false};         //!< Used to validate that the construction of the quiddity worked
   std::string audio_shmpath_{};  //!< Path of the audio input shmdata
   std::string video_shmpath_{};  //!< Path of the video input shmdata
   ShmdataConnector shmcntr_;  //!< Shmdata connector of uncompressed audio/video into the quiddity.

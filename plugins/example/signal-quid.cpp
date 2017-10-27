@@ -29,8 +29,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SignalQuid,
                                      "LGPL",
                                      "Jérémie Soria");
 
-SignalQuid::SignalQuid(const std::string&)
-    : signal_id_(smanage<MPtr(&SContainer::make)>("test-signal", "A test signal")) {
+SignalQuid::SignalQuid(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      signal_id_(smanage<MPtr(&SContainer::make)>("test-signal", "A test signal")) {
   install_method("Emit Signal",                  // long name
                  "emit-signal",                  // name
                  "send \"test-signal\" signal",  // description
@@ -41,8 +42,6 @@ SignalQuid::SignalQuid(const std::string&)
                  Method::make_arg_type_description(G_TYPE_NONE, nullptr),
                  this);
 }
-
-bool SignalQuid::init() { return true; }
 
 gboolean SignalQuid::my_signal_method(void*, void* user_data) {
   SignalQuid* context = static_cast<SignalQuid*>(user_data);

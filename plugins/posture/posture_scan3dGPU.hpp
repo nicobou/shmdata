@@ -20,7 +20,7 @@
 namespace switcher {
 class PostureScan3DGPU : public Quiddity, public StartableQuiddity {
  public:
-  PostureScan3DGPU(const std::string&);
+  PostureScan3DGPU(QuiddityConfiguration&&);
   PostureScan3DGPU(const PostureScan3DGPU&) = delete;
   ~PostureScan3DGPU();
 
@@ -85,7 +85,6 @@ class PostureScan3DGPU : public Quiddity, public StartableQuiddity {
   std::unique_ptr<ShmdataWriter> mesh_writer_{nullptr};
   std::unique_ptr<ShmdataWriter> texture_writer_{nullptr};
 
-  bool init() final;
   void update_loop();
   void reset_solidify();
 

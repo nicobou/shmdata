@@ -27,7 +27,7 @@
 unsigned int signal_counter = 0;
 
 int main() {
-  switcher::Switcher::ptr manager = switcher::Switcher::make_manager("testing_signals");
+  switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("testing_signals");
   manager->scan_directory_for_plugins("./");
 
   // Test create/remove notification system

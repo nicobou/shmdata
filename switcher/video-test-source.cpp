@@ -32,8 +32,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-VideoTestSource::VideoTestSource(const std::string&)
-    : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
+VideoTestSource::VideoTestSource(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       resolutions_id_(pmanage<MPtr(&PContainer::make_selection<Fraction>)>(
           "resolution",
           [this](const IndexOrName& val) {
@@ -103,10 +104,11 @@ VideoTestSource::VideoTestSource(const std::string&)
   pmanage<MPtr(&PContainer::set_to_current)>(resolutions_id_);
 
   init_startable(this);
-}
 
-bool VideoTestSource::init() {
-  if (!videotestsrc_ || !capsfilter_ || !shmdatasink_) return false;
+  if (!videotestsrc_ || !capsfilter_ || !shmdatasink_) {
+    is_valid_ = false;
+    return;
+  }
   shmpath_ = make_file_name("video");
   g_object_set(G_OBJECT(videotestsrc_.get_raw()), "is-live", TRUE, nullptr);
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
@@ -120,7 +122,6 @@ bool VideoTestSource::init() {
       videotestsrc_.get_raw(), capsfilter_.get_raw(), shmdatasink_.get_raw(), nullptr);
   pmanage<MPtr(&PContainer::push)>(
       "pattern", GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
-  return true;
 }
 
 void VideoTestSource::update_caps() {
@@ -164,7 +165,7 @@ bool VideoTestSource::start() {
     prune_tree(".shmdata.writer." + shmpath_);
     if (!UGstElem::renew(videotestsrc_, {"is-live", "pattern"}) ||
         !UGstElem::renew(shmdatasink_, {"socket-path"}) || !UGstElem::renew(capsfilter_)) {
-      g_warning("error initializing gst element for videotestsrc");
+      warning("error initializing gst element for videotestsrc");
       gst_pipeline_.reset();
       return false;
     }

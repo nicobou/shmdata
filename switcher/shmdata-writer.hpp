@@ -26,8 +26,8 @@
 #include "switcher/periodic-task.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/safe-bool-idiom.hpp"
-#include "switcher/shmdata-glib-logger.hpp"
 #include "switcher/shmdata-stat.hpp"
+#include "switcher/shmdata-switcher-logger.hpp"
 
 namespace switcher {
 class ShmdataWriter : public SafeBoolIdiom {
@@ -54,7 +54,7 @@ class ShmdataWriter : public SafeBoolIdiom {
   Quiddity* quid_;
   std::string shmpath_;
   std::string data_type_;
-  ShmdataGlibLogger shmlog_{};
+  ShmdataSwitcherLogger shmlog_;
   shmdata::Writer shm_;
   std::unique_ptr<PeriodicTask<>> task_;
   ShmdataStat shm_stats_{};

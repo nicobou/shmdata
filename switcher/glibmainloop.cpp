@@ -36,7 +36,6 @@ GMainContext* GlibMainLoop::get_main_context() { return main_context_; }
 
 GlibMainLoop::~GlibMainLoop() {
   while (!g_main_loop_is_running(mainloop_)) {
-    g_debug("waiting for mainloop to be running");
     std::this_thread::sleep_for(std::chrono::milliseconds(2));
   }
   g_main_loop_quit(mainloop_);

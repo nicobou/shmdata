@@ -27,26 +27,23 @@ SDPMedia::~SDPMedia() {
   if (nullptr != caps_structure_) gst_structure_free(caps_structure_);
 }
 
-bool SDPMedia::set_media_info_from_caps(const GstCaps* media_caps) {
+BoolLog SDPMedia::set_media_info_from_caps(const GstCaps* media_caps) {
   if (nullptr == media_caps) {
-    g_warning("media description is missing when generating SDP media");
-    return false;
+    return BoolLog(false, "media description is missing when generating SDP media");
   }
   GstStructure* s = gst_caps_get_structure(media_caps, 0);
   if (nullptr == s) {
-    g_warning("cannot get structure from caps when generating SDP media");
-    return false;
+    return BoolLog(false, "cannot get structure from caps when generating SDP media");
   }
   gint value;
   if (nullptr == gst_structure_get_string(s, "media") ||
       nullptr == gst_structure_get_string(s, "encoding-name") ||
       !gst_structure_get_int(s, "payload", &value) ||
       !gst_structure_get_int(s, "clock-rate", &value)) {
-    g_warning("invalide media caps for SDP media");
-    return false;
+    return BoolLog(false, "invalide media caps for SDP media");
   }
   caps_structure_ = gst_structure_copy(s);
-  return true;
+  return BoolLog(true);
 }
 
 bool SDPMedia::set_port(uint port) {
@@ -54,12 +51,11 @@ bool SDPMedia::set_port(uint port) {
   return true;
 }
 
-bool SDPMedia::add_to_sdp_description(GstSDPMessage* sdp_description,
-                                      uint index,
-                                      const std::string& ip_addr) const {
+BoolLog SDPMedia::add_to_sdp_description(GstSDPMessage* sdp_description,
+                                         uint index,
+                                         const std::string& ip_addr) const {
   if (0 == port_ || nullptr == caps_structure_) {
-    g_warning("missing information for adding media to sdp description");
-    return false;
+    return BoolLog(false, "missing information for adding media to sdp description");
   }
 
   /* get media type and payload for the m= line */
@@ -115,25 +111,15 @@ bool SDPMedia::add_to_sdp_description(GstSDPMessage* sdp_description,
     if (0 == fname.compare("sprop-parameter-sets")) {
       auto equal_pos = val.find('=');
       if (std::string::npos != equal_pos) {
-        g_warning("removing buggy trailing = at the end of sprop-parameter-sets");
+        // removing buggy trailing = at the end of sprop-parameter-sets
         val = std::string(val, 0, equal_pos);
       }
       auto comma_pos = val.find(',');
       if (std::string::npos != comma_pos) {
-        g_warning(
-            "removing buggy trailing comma and the rest from "
-            "sprop-parameter-sets");
+        // removing buggy trailing comma and the rest from sprop-parameter-sets
         val = std::string(val, 0, comma_pos);
       }
     }
-    // if (0 == fname.compare("caps")){
-    //     auto equal_pos = val.find('=');
-    //     if (fname.size() - 2 != equal_pos) {
-    //       g_warning("(sdp) removing buggy trailing = at the end of caps
-    //       parameter");
-    //       val = std::string(val, 0, equal_pos + 1) ;
-    //     }
-    // }
     std::string fname_value(fname + "=" + val);
     if (gst_structure_get_string(caps_structure_, fname.c_str())) {
       if (!first)
@@ -148,7 +134,7 @@ bool SDPMedia::add_to_sdp_description(GstSDPMessage* sdp_description,
     gst_sdp_media_add_attribute(media_, "candidate", it.c_str());
   }
   gst_sdp_message_add_media(sdp_description, media_);
-  return true;
+  return BoolLog(true);
 }
 
 bool SDPMedia::add_ice_candidate(const std::string& candidate_value) {

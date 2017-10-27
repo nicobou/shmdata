@@ -24,12 +24,15 @@
 #include <memory>
 #include <string>
 
+#include "./bool-log.hpp"
+#include "./quiddity-configuration.hpp"
+
 namespace switcher {
 class Quiddity;
 class QuiddityDocumentation;
 
 // the types of the class factories for quiddity plugins
-typedef Quiddity* create_t(const std::string&);
+typedef Quiddity* create_t(QuiddityConfiguration&&);
 typedef void destroy_t(switcher::Quiddity*);
 typedef const char* get_type_t();
 
@@ -41,8 +44,8 @@ class PluginLoader {
   PluginLoader(const PluginLoader&) = delete;
   PluginLoader& operator=(const PluginLoader&) = delete;
 
-  bool load(const char* filename);
-  bool close();
+  BoolLog load(const char* filename);
+  BoolLog close();
   std::string get_class_name() const;
 
   create_t* create_{nullptr};

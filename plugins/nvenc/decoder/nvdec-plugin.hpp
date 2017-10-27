@@ -30,12 +30,11 @@
 namespace switcher {
 class NVdecPlugin : public Quiddity {
  public:
-  NVdecPlugin(const std::string&);
+  NVdecPlugin(QuiddityConfiguration&&);
   ~NVdecPlugin() = default;
   NVdecPlugin(const NVdecPlugin&) = delete;
   NVdecPlugin& operator=(const NVdecPlugin&) = delete;
 
-  bool init() final;
 
  private:
   static const std::array<const char*, 5> kSupportedCodecs;

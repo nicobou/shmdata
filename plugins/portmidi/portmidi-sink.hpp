@@ -30,7 +30,7 @@
 namespace switcher {
 class PortMidiSink : public Quiddity, public StartableQuiddity, public PortMidi {
  public:
-  PortMidiSink(const std::string&);
+  PortMidiSink(QuiddityConfiguration&&);
   ~PortMidiSink() = default;
   PortMidiSink(const PortMidiSink&) = delete;
   PortMidiSink& operator=(const PortMidiSink&) = delete;
@@ -42,7 +42,6 @@ class PortMidiSink : public Quiddity, public StartableQuiddity, public PortMidi 
   std::unique_ptr<ShmdataFollower> shm_{nullptr};
   PContainer::prop_id_t devices_id_{0};
   int device_{0};
-  bool init() final;
   bool start() final;
   bool stop() final;
   // segment callback

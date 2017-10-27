@@ -25,10 +25,12 @@
 namespace switcher {
 DecodebinToShmdata::DecodebinToShmdata(GstPipeliner* gpipe,
                                        on_configure_t on_gstshm_configure,
+                                       on_buffer_discarded_t on_buffer_discarded,
                                        bool decompress)
     : gpipe_(gpipe),
       decompress_(decompress),
       on_gstshm_configure_(on_gstshm_configure),
+      on_buffer_discarded_(on_buffer_discarded),
       decodebin_("decodebin") {
   // set async property
   auto set_prop = std::bind(g_object_set,
@@ -65,7 +67,6 @@ void DecodebinToShmdata::on_pad_added(GstElement* object, GstPad* pad, gpointer 
   if (gst_caps_can_intersect(rtpcaps, padcaps)) {
     // asking rtpbin to send an event when a packet is lost (do-lost property)
     GstUtils::set_element_property_in_bin(object, "gstrtpbin", "do-lost", TRUE);
-    g_debug("custom rtp stream found");
     GstElement* rtpgstdepay;
     GstUtils::make_element("rtpgstdepay", &rtpgstdepay);
     // adding a probe for discarding uncomplete packets
@@ -121,15 +122,11 @@ int /*GstAutoplugSelectResult*/ DecodebinToShmdata::on_autoplug_select(GstElemen
     GstCaps* caps = gst_pad_get_current_caps(pad);
     On_scope_exit { gst_caps_unref(caps); };
     const GValue* val = gst_structure_get_value(gst_caps_get_structure(caps, 0), "caps");
-    gsize taille = 2048;
-    guchar* string_caps = g_base64_decode(g_value_get_string(val), &taille);
-    On_scope_exit { g_free(string_caps); };
-    gchar* string_caps_char = g_strdup_printf("%s", string_caps);
-    On_scope_exit { g_free(string_caps_char); };
-    if (StringUtils::starts_with(string_caps_char, "audio/midi")) return EXPOSE;
-    if (StringUtils::starts_with(string_caps_char, "audio/") ||
-        StringUtils::starts_with(string_caps_char, "video/") ||
-        StringUtils::starts_with(string_caps_char, "image/"))
+    auto caps_str = StringUtils::base64_decode(g_value_get_string(val));
+    if (StringUtils::starts_with(caps_str, "audio/midi")) return EXPOSE;
+    if (StringUtils::starts_with(caps_str, "audio/") ||
+        StringUtils::starts_with(caps_str, "video/") ||
+        StringUtils::starts_with(caps_str, "image/"))
       return_val = TRY;
     return return_val;
   }
@@ -143,7 +140,7 @@ GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_buffer_probe_cb(GstPad* /*pad 
   DecodebinToShmdata* context = static_cast<DecodebinToShmdata*>(user_data);
   std::unique_lock<std::mutex> lock(context->thread_safe_);
   if (true == context->discard_next_uncomplete_buffer_) {
-    g_debug("discarding uncomplete custom frame due to a network loss");
+    context->on_buffer_discarded_();
     context->discard_next_uncomplete_buffer_ = false;
     return GST_PAD_PROBE_DROP;  // drop buffer
   }
@@ -151,15 +148,14 @@ GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_buffer_probe_cb(GstPad* /*pad 
 }
 
 GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_event_probe_cb(GstPad* /*pad */,
-                                                                 GstPadProbeInfo* info,
-                                                                 gpointer user_data) {
-  DecodebinToShmdata* context = static_cast<DecodebinToShmdata*>(user_data);
-  std::unique_lock<std::mutex> lock(context->thread_safe_);
+                                                                 GstPadProbeInfo* /*info*/,
+                                                                 gpointer /*user_data*/) {
+  // DecodebinToShmdata* context = static_cast<DecodebinToShmdata*>(user_data);
+  // std::unique_lock<std::mutex> lock(context->thread_safe_);
   // if (GST_EVENT_TYPE(GST_PAD_PROBE_INFO_EVENT(info)) ==
   // GST_EVENT_CUSTOM_DOWNSTREAM) {
-  const GstStructure* s;
-  s = gst_event_get_structure(GST_PAD_PROBE_INFO_EVENT(info));
-  g_debug("event probed (%s)", gst_structure_get_name(s));
+  // const GstStructure* s;
+  // s = gst_event_get_structure(GST_PAD_PROBE_INFO_EVENT(info));
   //   if (gst_structure_has_name(s, "GstRTPPacketLost"))
   //     context->discard_next_uncomplete_buffer_ = true;
   //   return GST_PAD_PROBE_DROP;
@@ -184,7 +180,6 @@ void DecodebinToShmdata::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
         padname = gst_structure_get_name(gst_caps_get_structure(padcaps, 0));
     }
   }
-  g_debug("decodebin-to-shmdata new pad name is %s", padname.c_str());
   GstElement* shmdatasink;
   GstUtils::make_element("shmdatasink", &shmdatasink);
   gst_bin_add(GST_BIN(bin), shmdatasink);
@@ -194,8 +189,7 @@ void DecodebinToShmdata::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   if (nullptr == main_pad_) main_pad_ = sinkpad;  // saving first pad for looping
   // FIXME
   // gst_pad_add_event_probe(srcpad, (GCallback) eos_probe_cb, this);
-  if (GST_PAD_LINK_OK != gst_pad_link(pad, sinkpad))
-    g_warning("pad link failed in decodebin-to-shmdata");
+  gst_pad_link(pad, sinkpad);
   std::string media_name(media_label_);
   // std::string media_name("custom");
   {  // giving a name to the stream
@@ -205,12 +199,8 @@ void DecodebinToShmdata::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
       media_name = "unknown";
     else
       media_name = padname_splitted[0];
-    g_debug("decodebin-to-shmdata: new media of type %s", media_name.c_str());
   }
-  if (!on_gstshm_configure_)
-    g_warning("decodebin-to-shmdata has no configuration function for shmdatasink");
-  else
-    on_gstshm_configure_(shmdatasink, media_name, media_label_);
+  if (on_gstshm_configure_) on_gstshm_configure_(shmdatasink, media_name, media_label_);
   GstUtils::sync_state_with_parent(shmdatasink);
 }
 
@@ -255,29 +245,23 @@ gboolean DecodebinToShmdata::rewind(gpointer user_data) {
     //        rate,
     //        GST_TIME_ARGS (start_value),
     //        GST_TIME_ARGS (stop_value));
-  } else {
-    g_debug("duration query failed...");
   }
   gst_query_unref(query);
-  gboolean ret;
-  ret = gst_element_seek(GST_ELEMENT(gst_pad_get_parent(context->main_pad_)),
-                         rate,
-                         GST_FORMAT_TIME,
-                         (GstSeekFlags)(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE),
-                         // | GST_SEEK_FLAG_SKIP
-                         // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking
-                         // synchronization
-                         GST_SEEK_TYPE_SET,
-                         0.0 * GST_SECOND,
-                         GST_SEEK_TYPE_NONE,
-                         GST_CLOCK_TIME_NONE);
-  if (!ret) g_debug("looping error");
-  g_debug("finish looping");
+  gst_element_seek(GST_ELEMENT(gst_pad_get_parent(context->main_pad_)),
+                   rate,
+                   GST_FORMAT_TIME,
+                   (GstSeekFlags)(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE),
+                   // | GST_SEEK_FLAG_SKIP
+                   // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking
+                   // synchronization
+                   GST_SEEK_TYPE_SET,
+                   0.0 * GST_SECOND,
+                   GST_SEEK_TYPE_NONE,
+                   GST_CLOCK_TIME_NONE);
   return FALSE;
 }
 
 void DecodebinToShmdata::set_media_label(std::string label) {
-  g_debug("new media label %s", label.c_str());
   media_label_ = std::move(label);
 }
 

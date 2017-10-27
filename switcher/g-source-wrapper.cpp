@@ -40,7 +40,6 @@ GSourceWrapper::GSourceWrapper(callback&& cb, guint delay_ms, bool async_invocat
 
 bool GSourceWrapper::attach(GMainContext* gcontext) {
   if (attached_) {
-    g_warning("GSourceWrapper already attached");
     return false;
   }
   if (0 != g_source_attach(gsource_, gcontext)) attached_ = true;

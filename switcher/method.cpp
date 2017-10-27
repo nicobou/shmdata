@@ -53,17 +53,15 @@ void Method::copy_method(const Method& source) {
   json_description_ = source.json_description_;
 }
 
-bool Method::set_method(method_ptr method,
-                        return_type return_type,
-                        args_types arg_types,
-                        gpointer user_data) {
+BoolLog Method::set_method(method_ptr method,
+                           return_type return_type,
+                           args_types arg_types,
+                           gpointer user_data) {
   if (arg_types.size() < 1) {
-    g_debug("Method::set_method is called with empty arg_types");
-    return false;
+    return BoolLog(false, "Method::set_method is called with empty arg_types");
   }
   if (method == nullptr) {
-    g_debug("Method::set_method is called with a nullptr function");
-    return false;
+    return BoolLog(false, "Method::set_method is called with a nullptr function");
   }
   closure_ = g_cclosure_new(G_CALLBACK(method), user_data, Method::destroy_data);
   g_closure_set_marshal(closure_, g_cclosure_marshal_generic);
@@ -71,16 +69,13 @@ bool Method::set_method(method_ptr method,
   arg_types_ = arg_types;
   num_of_value_args_ = arg_types_.size();
 
-  return true;
+  return BoolLog(true);
 }
 
 bool Method::invoke(std::vector<std::string> args, GValue* result_value) {
   // GValue result_value = G_VALUE_INIT;
 
   if (args.size() != num_of_value_args_ && arg_types_[0] != G_TYPE_NONE) {
-    g_warning(
-        "Method::invoke number of arguments does not correspond to the size of "
-        "argument types");
     return false;
   }
 
@@ -92,10 +87,6 @@ bool Method::invoke(std::vector<std::string> args, GValue* result_value) {
       params[i] = G_VALUE_INIT;
       g_value_init(&params[i], arg_types_[i]);
       if (!gst_value_deserialize(&params[i], args[i].c_str())) {
-        g_warning(
-            "Method::invoke string not transformable into gvalue (argument: "
-            "%s) ",
-            args[i].c_str());
         return false;
       }
     }
@@ -112,9 +103,7 @@ bool Method::invoke(std::vector<std::string> args, GValue* result_value) {
   return true;
 }
 
-void Method::destroy_data(gpointer /*data */, GClosure* /*closure */) {
-  // g_debug ("Method::destroy data");
-}
+void Method::destroy_data(gpointer /*data */, GClosure* /*closure */) {}
 
 void Method::set_description(std::string long_name,
                              std::string method_name,

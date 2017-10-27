@@ -20,7 +20,6 @@
 #include "./net-utils.hpp"
 #include <arpa/inet.h>
 #include <errno.h>
-#include <glib.h>  // g_warning
 #include <ifaddrs.h>
 #include <netdb.h>
 #include <resolv.h>
@@ -71,8 +70,10 @@ std::map</* interface name */ std::string, /* ip */ std::string> NetUtils::get_i
   int family, s;
   char host[NI_MAXHOST];
   if (getifaddrs(&ifaddr) == -1) {
+#ifdef DEBUG
     int err = errno;
-    g_warning("getifaddrs %s", strerror(err));
+    std::cerr << "getifaddrs errors: " << strerror(err)) << '\n';
+#endif
     return res;
   }
   /* Walk through linked list, maintaining head pointer so we
@@ -98,7 +99,9 @@ std::map</* interface name */ std::string, /* ip */ std::string> NetUtils::get_i
           0,
           NI_NUMERICHOST);
       if (s != 0) {
-        g_warning("getnameinfo() failed: %s\n", gai_strerror(s));
+#ifdef DEBUG
+        std::cerr << "getnameinfo() failed: " << gai_strerror(s) << '\n';
+#endif
         return res;
       }
       res[ifa->ifa_name] = std::string(host);
@@ -110,7 +113,6 @@ std::map</* interface name */ std::string, /* ip */ std::string> NetUtils::get_i
 
 std::string NetUtils::get_system_dns() {
   if (res_init()) {
-    g_warning("BUG: res_init() failed, this should never happen");
     return kDefaultDNS;
   }
 

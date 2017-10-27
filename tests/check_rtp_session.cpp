@@ -110,7 +110,7 @@ int main() {
     // this lock is used with a condition variable that notifies success
     std::unique_lock<std::mutex> lock(cv_m);
 
-    Switcher::ptr manager = Switcher::make_manager("rtptest");
+    Switcher::ptr manager = Switcher::make_switcher("rtptest");
 
     manager->scan_directory_for_plugins("./");
 

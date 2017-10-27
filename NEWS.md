@@ -2,6 +2,26 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.60 (2017-10-27)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+Bug fixes:
+* Fix member ordering issue with pjsip
+* pjsip built in release mode with extra checks (assert does not quit anymore)
+* Fix sdp issue with opus audio
+* Extra check for pjsip ids
+* Fix media-label containing some char results in stream not sent
+* Change iv4l2 io-mode when using force framerate option to avoid being stuck.
+
+New Features:
+* Refactoring log system Renaming manager_impl_ into qcontainer_ QuiddityConfiguration for creation of quiddities Remove registry by quiddity name Init method removed from quiddities
+* Ubuntu 17.04
+* Timecode "package" and shmdelay documentation.
+* Adding support for timecode input to compute delay automatically.
+* Shmdata generic delay with manual delay.
+* Timecode generation or reading timecode from source file.
+
 switcher 0.8.58 (2017-08-14)
 ---------------------------
 This is an official release in the 0.8 stable series.

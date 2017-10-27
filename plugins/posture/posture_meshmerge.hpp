@@ -36,7 +36,7 @@
 namespace switcher {
 class PostureMeshMerge : public Quiddity, public StartableQuiddity {
  public:
-  PostureMeshMerge(const std::string&);
+  PostureMeshMerge(QuiddityConfiguration&&);
   ~PostureMeshMerge();
   PostureMeshMerge(const PostureMeshMerge&) = delete;
   PostureMeshMerge& operator=(const PostureMeshMerge&) = delete;
@@ -64,7 +64,6 @@ class PostureMeshMerge : public Quiddity, public StartableQuiddity {
   std::map<int, std::string> mesh_readers_caps_{};
   std::unique_ptr<ShmdataWriter> mesh_writer_{};
 
-  bool init() final;
 
   bool connect(std::string shmdata_socket_path);
   bool disconnect(std::string shmName);

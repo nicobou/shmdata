@@ -25,12 +25,11 @@
 namespace switcher {
 class SignalQuid : public Quiddity {
  public:
-  SignalQuid(const std::string&);
+  SignalQuid(QuiddityConfiguration&&);
   ~SignalQuid() = default;
   SignalQuid(const SignalQuid&) = delete;
   SignalQuid& operator=(const SignalQuid&) = delete;
 
-  bool init() final;
   static gboolean my_signal_method(void*, void* user_data);
 
  private:

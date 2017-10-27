@@ -29,7 +29,7 @@
 int main() {
   bool success = true;
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_manager("description-by-class");
+    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("description-by-class");
     for (auto& it : manager->get_classes())
       if (!switcher::QuiddityBasicTest::test_description_by_class(manager, it)) success = false;
   }

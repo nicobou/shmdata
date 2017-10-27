@@ -57,7 +57,7 @@ void notify_success() {
 
 int main() {
   {
-    Switcher::ptr manager = Switcher::make_manager("test_manager");
+    Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
     manager->scan_directory_for_plugins("./");
 
@@ -66,7 +66,7 @@ int main() {
     for (int i = 0; i < 2; ++i) {
       auto nvenc_quid = manager->create("nvenc");
       if (nvenc_quid.empty()) {
-        g_warning("nvenc creating failed (i is %d) ", i);
+        std::cerr << "nvenc creating failed, i: " << i << '\n';
         return 1;
       }
       nvencs.push_back(nvenc_quid);
@@ -78,7 +78,7 @@ int main() {
     {
       auto nvenc_quid = manager->create("nvenc");
       if (nvenc_quid.empty()) {
-        g_warning("nvenc encoding could not be created");
+        std::cerr << "nvenc encoding could not be created" << '\n';
         return 1;
       }
       manager->remove(nvenc_quid);
@@ -131,7 +131,7 @@ int main() {
     do_continue.store(true);
     success = false;
     // starting a new test: nvenc data can be decoded
-    Switcher::ptr manager = Switcher::make_manager("test_manager");
+    Switcher::ptr manager = Switcher::make_switcher("test_manager");
     manager->scan_directory_for_plugins("./");
     manager->load_configuration_file("./check_decode.json");
 

@@ -85,7 +85,6 @@ bool GstAudioCodec::remake_codec_elements() {
         !UGstElem::renew(audio_convert_) || !UGstElem::renew(audio_resample_) ||
         !UGstElem::renew(queue_codec_element_) ||
         !UGstElem::renew(codec_element_, codec_properties_)) {
-      g_warning("error renewing a codec related gst element");
       return false;
     }
   }  // end no codec
@@ -129,10 +128,11 @@ void GstAudioCodec::make_codec_properties() {
 
 gboolean GstAudioCodec::reset_codec_configuration(gpointer /*unused */, gpointer user_data) {
   GstAudioCodec* context = static_cast<GstAudioCodec*>(user_data);
-
-  context->quid_->pmanage<MPtr(&PContainer::set<Selection<>::index_t>)>(
-      context->codec_id_, context->codecs_.get_index("Opus audio encoder"));
-
+  {
+    auto lock = context->quid_->pmanage<MPtr(&PContainer::get_lock)>(context->codec_id_);
+    context->codecs_.select(IndexOrName("Opus audio encoder"));
+    context->quid_->pmanage<MPtr(&PContainer::notify)>(context->codec_id_);
+  }
   return TRUE;
 }
 
@@ -170,8 +170,9 @@ bool GstAudioCodec::start(const std::string& shmpath, const std::string& shmpath
       [this](const std::string& caps) {
         if (!this->has_enough_channels(caps)) {
           // FIXME: To do in can_sink_caps of audioenc when destination caps are implemented.
-          g_message("ERROR:audio codec does not support the number of channels connected to it.");
-          g_warning("audio codec does not support the number of channels connected to it.");
+          quid_->message(
+              "ERROR:audio codec does not support the number of channels connected to it.");
+          quid_->warning("audio codec does not support the number of channels connected to it.");
         }
         this->quid_->graft_tree(
             ".shmdata.reader." + shmpath_to_encode_,
@@ -227,13 +228,13 @@ bool GstAudioCodec::has_enough_channels(const std::string& str_caps) {
 
   GstStructure* s = gst_caps_get_structure(caps, 0);
   if (nullptr == s) {
-    g_warning("Cannot get structure from caps (audioenc)");
+    quid_->warning("Cannot get structure from caps (audioenc)");
     return false;
   }
 
   gint channels = 0;
   if (!gst_structure_get_int(s, "channels", &channels)) {
-    g_warning("Cannot get channels number from shmdata description (audioenc)");
+    quid_->warning("Cannot get channels number from shmdata description (audioenc)");
     return false;
   }
 

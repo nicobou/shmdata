@@ -35,7 +35,6 @@ void on_tree_grafted(const std::string& /*subscriber_name */,
                      const std::vector<std::string>& params,
                      void* user_data) {
   auto manager = static_cast<Switcher*>(user_data);
-  // std::printf("%s: %s \n", signal_name.c_str(), params[0].c_str());
   size_t byte_rate =
       // std::string byte_rate =
       manager->use_tree<MPtr(&InfoTree::branch_get_value)>(std::string("uri"),
@@ -52,7 +51,7 @@ int main() {
   mesh_success = false;
   do_continue = true;
   {
-    Switcher::ptr manager = Switcher::make_manager("rtpposturetest");
+    Switcher::ptr manager = Switcher::make_switcher("rtpposturetest");
 
     gchar* usr_plugin_dir = g_strdup_printf("../gsoap/");
     manager->scan_directory_for_plugins(usr_plugin_dir);

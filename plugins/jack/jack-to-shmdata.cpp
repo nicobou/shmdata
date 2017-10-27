@@ -32,30 +32,27 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackToShmdata,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-JackToShmdata::JackToShmdata(const std::string& name)
-    : client_name_(name),
-      jack_client_(name.c_str(),
+JackToShmdata::JackToShmdata(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      client_name_(get_name()),
+      jack_client_(get_name().c_str(),
                    &JackToShmdata::jack_process,
                    this,
                    [this](uint n) { on_xrun(n); },
                    [this](jack_port_t* port) { on_port(port); },
                    [this]() {
                      auto thread = std::thread([this]() {
-                       auto manager = manager_impl_.lock();
-                       if (!manager) return;
-                       if (!manager->remove(get_name()))
-                         g_warning("%s did not self destruct after jack shutdown",
-                                   get_name().c_str());
+                       if (!qcontainer_->remove(get_name()))
+                         warning("% did not self destruct after jack shutdown", get_name());
                      });
                      thread.detach();
                    }) {
   if (jack_client_) client_name_ = jack_client_.get_name();
-}
 
-bool JackToShmdata::init() {
   if (!jack_client_) {
-    g_message("ERROR:JackClient cannot be instanciated (is jack server running?)");
-    return false;
+    message("ERROR:JackClient cannot be instanciated (is jack server running?)");
+    is_valid_ = false;
+    return;
   }
   init_startable(this);
   unsigned int max_number_of_channels = kMaxNumberOfChannels;
@@ -127,7 +124,6 @@ bool JackToShmdata::init() {
                                                           1,
                                                           max_number_of_channels);
   update_port_to_connect();
-  return true;
 }
 
 bool JackToShmdata::start() {
@@ -173,7 +169,7 @@ bool JackToShmdata::start() {
   shm_ = std::make_unique<ShmdataWriter>(
       this, shmpath, buf_.size() * sizeof(jack_sample_t), data_type);
   if (!shm_.get()) {
-    g_warning("JackToShmdata failed to start");
+    warning("JackToShmdata failed to start");
     shm_.reset(nullptr);
     return false;
   }
@@ -242,14 +238,14 @@ int JackToShmdata::jack_process(jack_nframes_t nframes, void* arg) {
 }
 
 void JackToShmdata::on_xrun(uint num_of_missed_samples) {
-  g_warning("jack xrun (delay of %u samples)", num_of_missed_samples);
+  warning("jack xrun (delay of % samples)", std::to_string(num_of_missed_samples));
 }
 
 void JackToShmdata::update_port_to_connect() {
   ports_to_connect_.clear();
 
   if (!auto_connect_) {
-    g_warning("Auto-connect for jack is disabled.");
+    warning("Auto-connect for jack is disabled.");
     return;
   }
 
@@ -263,7 +259,7 @@ void JackToShmdata::connect_ports() {
 
   std::lock_guard<std::mutex> lock(port_to_connect_in_jack_process_mutex_);
   if (ports_to_connect_.size() != input_ports_.size()) {
-    g_warning(
+    warning(
         "Port number mismatch in jack to shmdata autoconnect, should not "
         "happen.");
     return;

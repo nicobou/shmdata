@@ -28,7 +28,7 @@
 namespace switcher {
 class OscToShmdata : public Quiddity, public StartableQuiddity {
  public:
-  OscToShmdata(const std::string&);
+  OscToShmdata(QuiddityConfiguration&&);
   ~OscToShmdata();
   OscToShmdata(const OscToShmdata&) = delete;
   OscToShmdata& operator=(const OscToShmdata&) = delete;
@@ -38,7 +38,6 @@ class OscToShmdata : public Quiddity, public StartableQuiddity {
   lo_server_thread osc_thread_{nullptr};
   std::unique_ptr<ShmdataWriter> shm_{nullptr};
 
-  bool init() final;
   bool start() final;
   bool stop() final;
   static int osc_handler(

@@ -38,6 +38,9 @@ void tolower(std::string& str);
 bool starts_with(const std::string& str, const std::string& suffix);
 bool ends_with(const std::string& str, const std::string& suffix);
 
+std::string base64_encode(const std::string& str);
+std::string base64_decode(const std::string& str);
+
 }  // namespace StringUtils
 }  // namespace switcher
 #endif

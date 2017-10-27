@@ -40,8 +40,9 @@ const std::string AVRecorder::kRecordModeDate = "Date suffix";
 const std::string AVRecorder::kRecordModeLabel = "Label suffix";
 const std::string AVRecorder::kRecordModeOverwrite = "Overwrite";
 
-AVRecorder::AVRecorder(const std::string&)
-    : shmcntr_(static_cast<Quiddity*>(this)),
+AVRecorder::AVRecorder(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   // Create a list of all available gstreamer muxers if not already done.
   auto mux_factories =
@@ -50,8 +51,9 @@ AVRecorder::AVRecorder(const std::string&)
     if (nullptr != mux_factories) gst_plugin_feature_list_free(mux_factories);
   };
   if (!mux_factories || g_list_length(mux_factories) == 0) {
-    g_warning("ERROR: Could not find any gstreamer muxer (avrec)");
-    g_message("ERROR: Could not find any gstreamer muxer (avrec)");
+    warning("ERROR: Could not find any gstreamer muxer (avrec)");
+    message("ERROR: Could not find any gstreamer muxer (avrec)");
+    is_valid_ = false;
     return;
   }
 
@@ -66,17 +68,16 @@ AVRecorder::AVRecorder(const std::string&)
       "recpath",
       [this](const std::string& val) {
         if (val.empty()) {
-          g_warning("Empty folder provided for shmdata recorder.");
-          g_message("ERROR: Empty folder provided for shmdata recorder.");
+          warning("Empty folder provided for shmdata recorder.");
+          message("ERROR: Empty folder provided for shmdata recorder.");
           return false;
         }
 
         struct stat st;
         if (stat(val.c_str(), &st) != 0 || !S_ISDIR(st.st_mode)) {
           if (-1 == mkdir(val.c_str(), S_IRWXU | S_IRUSR | S_IWUSR)) {
-            g_warning("The specified folder does not exist and could not be created (avrec).");
-            g_message(
-                "ERROR: The specified folder does not exist and could not be created (avrec).");
+            warning("The specified folder does not exist and could not be created (avrec).");
+            message("ERROR: The specified folder does not exist and could not be created (avrec).");
             return false;
           }
         }
@@ -115,13 +116,7 @@ AVRecorder::AVRecorder(const std::string&)
       nullptr,
       [this](const std::string& caps) { return can_sink_caps(caps); },
       std::numeric_limits<unsigned int>::max());
-
-  is_valid_ = true;
-}
-
-bool AVRecorder::init() {
   init_startable(this);
-  return is_valid_;
 }
 
 std::string AVRecorder::generate_pipeline_description() {
@@ -188,7 +183,7 @@ bool AVRecorder::start() {
   };
 
   if (error) {
-    g_warning("Could not create shmdata recorder: %s", error->message);
+    warning("Could not create shmdata recorder: %", std::string(error->message));
     g_error_free(error);
     return false;
   }
@@ -271,8 +266,8 @@ bool AVRecorder::stop() {
 bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
   auto shmdata_name = get_shmdata_name_from_file_name(shmpath);
   if (shmdata_name.empty()) {
-    g_warning("Invalid shmdata path %s (avrec)", shmpath.c_str());
-    g_message("ERROR: Invalid shmdata path %s (avrec)", shmpath.c_str());
+    warning("Invalid shmdata path % (avrec)", shmpath);
+    message("ERROR: Invalid shmdata path % (avrec)", shmpath);
     return false;
   }
 

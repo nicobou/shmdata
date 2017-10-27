@@ -36,7 +36,7 @@ void property_cb(const std::string& /*subscriber_name */,
 int main() {
   uint count = 0;
   {
-    switcher::Switcher::ptr mgr = switcher::Switcher::make_manager("property_mapper");
+    switcher::Switcher::ptr mgr = switcher::Switcher::make_switcher("property_mapper");
     mgr->make_property_subscriber("sub", property_cb, &count);
 
     // map freq  property from audio1 to audio 2

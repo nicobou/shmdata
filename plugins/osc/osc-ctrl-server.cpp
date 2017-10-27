@@ -34,10 +34,11 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscCtrlServer,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-OscCtrlServer::OscCtrlServer(const std::string&)
-    : port_(), osc_subscribers_(), osc_thread_(nullptr) {}
-
-bool OscCtrlServer::init() {
+OscCtrlServer::OscCtrlServer(QuiddityConfiguration&& conf)
+    : SwitcherWrapper(std::forward<QuiddityConfiguration>(conf)),
+      port_(),
+      osc_subscribers_(),
+      osc_thread_(nullptr) {
   osc_thread_ = nullptr;
   install_method("Set Port",
                  "set_port",
@@ -48,7 +49,6 @@ bool OscCtrlServer::init() {
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING, nullptr),
                  this);
-  return true;
 }
 
 OscCtrlServer::~OscCtrlServer() { stop(); }
@@ -133,7 +133,7 @@ int OscCtrlServer::osc_handler(const char* path,
   OscCtrlServer* context = static_cast<OscCtrlServer*>(user_data);
   std::shared_ptr<Switcher> manager = context->get_quiddity_manager();
   if (!(bool)manager) {
-    g_warning("OscCtrlServer: cannot get quiddity manager");
+    context->warning("OscCtrlServer: cannot get quiddity manager");
     return 0;
   }
 
@@ -150,7 +150,7 @@ int OscCtrlServer::osc_handler(const char* path,
       g_free(class_name);
       g_free(quid_name);
     } else
-      g_warning("OSCctl: wrong arg number for create");
+      context->warning("OSCctl: wrong arg number for create");
     return 0;
   }
 
@@ -161,7 +161,7 @@ int OscCtrlServer::osc_handler(const char* path,
       manager->remove(quid_name);
       g_free(quid_name);
     } else
-      g_warning("OSCctl: wrong arg number for remove");
+      context->warning("OSCctl: wrong arg number for remove");
     return 0;
   }
 
@@ -177,7 +177,7 @@ int OscCtrlServer::osc_handler(const char* path,
       g_free(prop_name);
       g_free(value);
     } else
-      g_warning("OSCctl: wrong arg number for set_property");
+      context->warning("OSCctl: wrong arg number for set_property");
     return 0;
   }
 
@@ -197,71 +197,19 @@ int OscCtrlServer::osc_handler(const char* path,
       g_free(quid_name);
       g_free(method_name);
     } else
-      g_warning("OSCctl: wrong arg number for invoke");
+      context->warning("OSCctl: wrong arg number for invoke");
     return 0;
   }
 
   // add an osc subscriber
   if (g_str_has_prefix(path, "/a") || g_str_has_prefix(path, "/A")) {
-    g_warning("osc sibscriber has been disabled in code");
-    // if (argc == 3) {
-    //   gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
-    //   gchar *host = string_from_osc_arg(types[1], argv[1]);
-    //   gchar *port = string_from_osc_arg(types[2], argv[2]);
-    //   gchar *port_int = string_float_to_string_int(port);
-    //   gchar *internal_subscriber_name =
-    //       context->make_internal_subscriber_name(subscriber_name);
-    //   if (context->osc_subscribers_.end() ==
-    //       context->osc_subscribers_.find(internal_subscriber_name)) {
-    //     g_warning
-    //         ("OscCtrlServer: a subscriber named %s is already registered",
-    //          subscriber_name);
-    //     return 0;
-    //   }
-    //   if (host == nullptr || port_int == nullptr) {
-    //     g_warning("OscCtrlServer: issue with host name or port");
-    //     return 0;
-    //   }
-    //   context->osc_subscribers_[internal_subscriber_name] =
-    //       std::make_pair(host, port_int);
-    //   if (!manager->make_property_subscriber(internal_subscriber_name,
-    //                                          OscCtrlServer::prop_cb,
-    //                                          context))
-    //     return 0;
-
-    //   g_debug("subscriber %s, %s, %s", subscriber_name, host, port_int);
-
-    //   g_free(internal_subscriber_name);
-    //   g_free(subscriber_name);
-    //   g_free(host);
-    //   g_free(port);
-    //   g_free(port_int);
-    // }
-    // else
-    //   g_warning("OSCctl: add subscriber needs 3 args (name, host, port)");
+    context->warning("osc subscriber has been disabled in code");
     return 0;
   }
 
   // delete an osc subscriber
   if (g_str_has_prefix(path, "/d") || g_str_has_prefix(path, "/D")) {
-    // if (argc == 1) {
-    //   gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
-    //   gchar *internal_subscriber_name =
-    //       context->make_internal_subscriber_name(subscriber_name);
-    //   auto it = context->osc_subscribers_.find(internal_subscriber_name);
-    //   if (context->osc_subscribers_.end() == it) {
-    //     g_warning
-    //         ("OscCtrlServer: cannot delete non existing subscriber named %s",
-    //          subscriber_name);
-    //     return 0;
-    //   }
-    //   manager->remove_property_subscriber(internal_subscriber_name);
-    //   context->osc_subscribers_.erase(it);
-    //   g_free(internal_subscriber_name);
-    //   g_free(subscriber_name);
-    // }
-    // else
-    //   g_warning("OSCctl: delete subscriber needs 1 args (name)");
+    context->warning("osc subscriber has been disabled in code");
     return 0;
   }
 
@@ -273,9 +221,8 @@ int OscCtrlServer::osc_handler(const char* path,
       gchar* response_url = string_from_osc_arg(types[2], argv[2]);
 
       if (quiddity_name == nullptr || property_name == nullptr || response_url == nullptr) {
-        g_warning(
-            "OscCtrlServer: issue with quiddity name or property name or "
-            "response url");
+        context->warning(
+            "OscCtrlServer: issue with quiddity name or property name or response url");
         return 0;
       }
 
@@ -290,95 +237,29 @@ int OscCtrlServer::osc_handler(const char* path,
         lo_address_free(response_lo_address);
         g_free(message);
       } else
-        g_debug("url osc error in get");
+        context->debug("url osc error in get");
 
       g_free(quiddity_name);
       g_free(property_name);
       g_free(response_url);
     } else
-      g_warning("OSCctl: subscribe property needs 3 args (name, quiddity, property)");
+      context->warning("OSCctl: subscribe property needs 3 args (name, quiddity, property)");
     return 0;
   }
 
   // subscribe to a property
   if (g_str_has_prefix(path, "/get_property_") || g_str_has_prefix(path, "/G")) {
-    g_warning("osc subscribe property is disabled in code");
-    // if (argc == 3) {
-    //   gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
-    //   gchar *quiddity_name = string_from_osc_arg(types[1], argv[1]);
-    //   gchar *property_name = string_from_osc_arg(types[2], argv[2]);
-    //   gchar *internal_subscriber_name =
-    //       context->make_internal_subscriber_name(subscriber_name);
-    //   if (context->osc_subscribers_.end() ==
-    //       context->osc_subscribers_.find(internal_subscriber_name)) {
-    //     g_warning
-    //         ("OscCtrlServer: a subscriber named %s does not exist",
-    //          subscriber_name);
-    //     return 0;
-    //   }
-    //   if (quiddity_name == nullptr || property_name == nullptr) {
-    //     g_warning
-    //         ("OscCtrlServer: issue with quiddity name or property name");
-    //     return 0;
-    //   }
-
-    //   if (!manager->subscribe_property(internal_subscriber_name,
-    //                                    quiddity_name, property_name))
-    //     g_warning("OscCtrlServer: pb subscribing to %s, %s",
-    //               quiddity_name, property_name);
-
-    //   g_free(internal_subscriber_name);
-    //   g_free(subscriber_name);
-    //   g_free(quiddity_name);
-    //   g_free(property_name);
-    // }
-    // else
-    //   g_warning
-    //       ("OSCctl: subscribe property needs 3 args (name, quiddity,
-    //       property)");
+    context->warning("osc subscribe property is disabled in code");
     return 0;
   }
 
   // unsubscribe to a property
   if (g_str_has_prefix(path, "/u") || g_str_has_prefix(path, "/U")) {
-    g_warning("OSC unsubscribe to prop is disabled in code");
-    // if (argc == 3) {
-    //   gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
-    //   gchar *quiddity_name = string_from_osc_arg(types[1], argv[1]);
-    //   gchar *property_name = string_from_osc_arg(types[2], argv[2]);
-    //   gchar *internal_subscriber_name =
-    //       context->make_internal_subscriber_name(subscriber_name);
-    //   if (context->osc_subscribers_.end() ==
-    //       context->osc_subscribers_.find(internal_subscriber_name)) {
-    //     g_warning
-    //         ("OscCtrlServer: a subscriber named %s does not exist",
-    //          subscriber_name);
-    //     return 0;
-    //   }
-    //   if (quiddity_name == nullptr || property_name == nullptr) {
-    //     g_warning
-    //         ("OscCtrlServer: issue with quiddity name or property name");
-    //     return 0;
-    //   }
-
-    //   if (!manager->unsubscribe_property(internal_subscriber_name,
-    //                                      quiddity_name, property_name))
-    //     g_warning("OscCtrlServer: pb unsubscribing to %s, %s",
-    //               quiddity_name, property_name);
-
-    //   g_free(internal_subscriber_name);
-    //   g_free(subscriber_name);
-    //   g_free(quiddity_name);
-    //   g_free(property_name);
-    // }
-    // else
-    //   g_warning
-    //       ("OSCctl: unsubscribe property needs 3 args (name, quiddity,
-    //       property)");
+    context->warning("OSC unsubscribe to prop is disabled in code");
     return 0;
   }
 
-  g_debug("unknown osc path %s", path);
+  context->debug("unknown osc path %", std::string(path));
   return 0;
 }
 
@@ -407,7 +288,6 @@ gchar* OscCtrlServer::string_from_osc_arg(char type, lo_arg* data) {
       break;
 
     case LO_BLOB:
-      g_debug("LO_BLOB not handled");
       break;
 
     case LO_INT64:
@@ -415,7 +295,6 @@ gchar* OscCtrlServer::string_from_osc_arg(char type, lo_arg* data) {
       break;
 
     case LO_TIMETAG:
-      g_debug("LO_BLOB not handled");
       break;
 
     case LO_DOUBLE:
@@ -437,13 +316,6 @@ gchar* OscCtrlServer::string_from_osc_arg(char type, lo_arg* data) {
       break;
 
     case LO_MIDI:
-      // res = g_strdup_printf ("MIDI [");
-      // for (i=0; i<4; i++) {
-      //     res = g_strdup_printf ("0x%02x", *((uint8_t *)(data) + i));
-      //     if (i+1 < 4) res = g_strdup_printf (" ");
-      // }
-      // res = g_strdup_printf ("]");
-      g_debug("LO_BLOB not handled");
       break;
     case LO_TRUE:
       res = g_strdup_printf("true");
@@ -462,13 +334,15 @@ gchar* OscCtrlServer::string_from_osc_arg(char type, lo_arg* data) {
       break;
 
     default:
-      g_warning("unhandled liblo type: %c\n", type);
       break;
   }
   return res;
 }
 
-void OscCtrlServer::osc_error(int num, const char* msg, const char* path) {
-  g_debug("liblo server error %d in path %s: %s", num, path, msg);
+void OscCtrlServer::osc_error(int /*num*/, const char* /*msg*/, const char* /*path*/) {
+  // FIXME debug("liblo server error % in path %: %",
+  //       std::to_string(num),
+  //       std::string(path),
+  //       std::string(msg));
 }
 }  // end of OscCtrlServer class

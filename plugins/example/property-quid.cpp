@@ -29,8 +29,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyQuid,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PropertyQuid::PropertyQuid(const std::string&)
-    : bool_id_(pmanage<MPtr(&PContainer::make_bool)>("bool_",
+PropertyQuid::PropertyQuid(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+      bool_id_(pmanage<MPtr(&PContainer::make_bool)>("bool_",
                                                      [this](bool val) {
                                                        bool_ = val;
                                                        return true;
@@ -266,10 +267,7 @@ PropertyQuid::PropertyQuid(const std::string&)
   // std::cout << std::get<0>(tuple_) << " "      // 2
   //           << std::get<1>(tuple_) << " "      // 2.2
   //           << std::get<2>(tuple_) << "\n";    // a22
-}
 
-bool PropertyQuid::init() {
-  // g_debug("uint property installation id is %lu", uint_id);
   // props_.install("int_", &int_prop_);
   install_method("Hello World",                                  // long name
                  "hello-world",                                  // name
@@ -292,13 +290,12 @@ bool PropertyQuid::init() {
   tree->graft(".child1.child2.bla2", InfoTree::make("hub"));
   // attaching it to the quiddity (at the root)
   graft_tree(".custom.information.", tree);
-  g_debug("hello from plugin");
-  return true;
+  debug("hello from plugin");
 }
 
 gchar* PropertyQuid::my_hello_world_method(gchar* first_arg, void* user_data) {
   PropertyQuid* context = static_cast<PropertyQuid*>(user_data);
-  g_debug("hello world from myplugin");
+  context->debug("hello world from myplugin");
   context->hello_ = std::string("hello ") + first_arg;
   // the g_free will be invoked by the method system:
   return g_strdup(context->hello_.c_str());

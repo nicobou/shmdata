@@ -38,7 +38,7 @@ int main() {
     // creating an audiotestsrc, getting the shmdata path and
     // giving it to fakeshmdatasrc
 
-    switcher::Switcher::ptr manager = switcher::Switcher::make_manager("check-fakesink");
+    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("check-fakesink");
     // preparing fakeshmsrc and an audio
     assert("fakeshmsrc" == manager->create("fakeshmsrc", "fakeshmsrc"));
     assert("audio" == manager->create("audiotestsrc", "audio"));

@@ -35,11 +35,10 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 // Have to define it here, otherwise symbol not found...
 const unsigned int VRPNSource::vrpnLoopInterval{16};
 
-VRPNSource::VRPNSource(const std::string&) {}
-
 VRPNSource::~VRPNSource() { destroyed_ = true; }
 
-bool VRPNSource::init() {
+VRPNSource::VRPNSource(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)) {
   // Initialize startable quiddity
   init_startable(this);
 
@@ -83,7 +82,6 @@ bool VRPNSource::init() {
                                                  "Debug values to console",
                                                  debug_);
 
-  return true;
 }
 
 /**
@@ -151,7 +149,7 @@ void VRPNSource::on_loading(InfoTree::ptr&& tree) {
  */
 bool VRPNSource::start() {
   if (host_.empty()) {
-    g_message("ERROR: Host is required.");
+    message("ERROR: Host is required.");
     return false;
   }
 
@@ -162,7 +160,7 @@ bool VRPNSource::start() {
   shmDataWriter_ =
       std::make_unique<ShmdataWriter>(this, make_file_name("vrpn"), 1, "application/vrpn");
   if (!shmDataWriter_.get()) {
-    g_message("ERROR: VRPN source failed to initialize its shmdata");
+    message("ERROR: VRPN source failed to initialize its shmdata");
     shmDataWriter_.reset(nullptr);
     return false;
   }
@@ -170,7 +168,7 @@ bool VRPNSource::start() {
   // Create the connection and check its "okay-ness"
   connection_ = std::make_unique<VRPNClientConnection>(host_ + ":" + std::to_string(port_));
   if (!connection_->raw()->doing_okay()) {
-    g_message("ERROR: VRPN source connection is not doing okay (whatever that means).");
+    message("ERROR: VRPN source connection is not doing okay (whatever that means).");
     return false;
   }
 
@@ -187,7 +185,7 @@ bool VRPNSource::start() {
   loopTask_ = std::make_unique<PeriodicTask<>>([this]() { this->loop(); },
                                                std::chrono::milliseconds(vrpnLoopInterval));
 
-  g_debug("Started VRPN source connection");
+  debug("Started VRPN source connection");
 
   return true;
 }
@@ -196,7 +194,7 @@ bool VRPNSource::start() {
  * @thread switcher
  */
 bool VRPNSource::stop() {
-  g_debug("Stopping VRPN source connection");
+  debug("Stopping VRPN source connection");
 
   loopTask_.reset(nullptr);
 
@@ -228,11 +226,11 @@ void VRPNSource::loop() {
 #ifdef DEBUG
   // Whatever that means
   if (!connection_->raw()->doing_okay()) {
-    g_debug("VRPN source connection is not doing okay.");
+    debug("VRPN source connection is not doing okay.");
   }
 
   if (!connection_->raw()->connected()) {
-    g_debug("VRPN source disconnected.");
+    debug("VRPN source disconnected.");
   }
 #endif
 
@@ -454,18 +452,18 @@ int VRPNSource::handleMessage(void* userData, vrpn_HANDLERPARAM p) {
 
   // DEBUG
   if (context->debug_) {
-    g_debug("VRPNSource >>> Sender: %s Type: %s Length: %lu Payload: %d",
-            senderName.c_str(),
-            typeName.c_str(),
-            buffer.size(),
-            p.payload_len);
+    context->debug("VRPNSource >>> Sender: % Type: % Length: % Payload: %",
+                   senderName,
+                   typeName,
+                   std::to_string(buffer.size()),
+                   std::to_string(p.payload_len));
 
     std::stringstream ss;
     ss << "VRPNSource >>> ";
     for (auto const& value : buffer) {
       ss << std::hex << std::setfill('0') << std::setw(2) << (int)value << " ";
     }
-    g_debug("%s", ss.str().c_str());
+    context->debug("%", ss.str());
   }
 
   // WRITE TO SHMDATA

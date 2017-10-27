@@ -38,48 +38,34 @@
 #include "./gst-video-converter.hpp"
 #include "./gst-video-encoder.hpp"
 #include "./http-sdp-dec.hpp"
-#include "./logger.hpp"
 #include "./property-mapper.hpp"
 #include "./rtp-session.hpp"
+#include "./shm-delay.hpp"
 #include "./timelapse.hpp"
 #include "./uridecodebin.hpp"
 #include "./video-test-source.hpp"
 
 namespace switcher {
 
-QuiddityContainer::ptr QuiddityContainer::make_manager(Switcher* root_manager,
-                                                       const std::string& name) {
-  QuiddityContainer::ptr manager(new QuiddityContainer(name));
-  manager->me_ = manager;
-  manager->manager_ = root_manager;
-  return manager;
+QuiddityContainer::ptr QuiddityContainer::make_container(Switcher* switcher,
+                                                         BaseLogger* log,
+                                                         const std::string& name) {
+  QuiddityContainer::ptr container(new QuiddityContainer(name, log));
+  container->me_ = container;
+  container->switcher_ = switcher;
+  return container;
 }
 
-QuiddityContainer::QuiddityContainer(const std::string& name) : name_(name) {
+QuiddityContainer::QuiddityContainer(const std::string& name, BaseLogger* log)
+    : Logged(log), name_(name) {
   remove_shmdata_sockets();
   register_classes();
   make_classes_doc();
 }
 
-QuiddityContainer::~QuiddityContainer() {
-  Quiddity::ptr logger;
-  std::find_if(quiddities_.begin(),
-               quiddities_.end(),
-               [&logger](const std::pair<std::string, std::shared_ptr<Quiddity>> quid) {
-                 if (DocumentationRegistry::get()->get_quiddity_type_from_quiddity(
-                         quid.second->get_name()) == "logger") {
-                   // We increment the logger ref count so it's not destroyed by clear().
-                   logger = quid.second;
-                   return true;
-                 }
-                 return false;
-               });
-  quiddities_.clear();
-}
-
 void QuiddityContainer::release_g_error(GError* error) {
   if (nullptr != error) {
-    g_debug("GError message: %s\n", error->message);
+    debug("GError message: %", std::string(error->message));
     g_error_free(error);
   }
 }
@@ -99,9 +85,6 @@ void QuiddityContainer::remove_shmdata_sockets() {
   release_g_error(error);
   if (nullptr == enumerator) return;
   On_scope_exit {
-    // GError *error = nullptr;
-    // g_file_enumerator_close(enumerator, nullptr, &error);
-    // release_g_error(error);
     g_object_unref(enumerator);
   };
   {
@@ -115,11 +98,11 @@ void QuiddityContainer::remove_shmdata_sockets() {
       On_scope_exit { g_free(relative_path); };
       if (g_str_has_prefix(relative_path, shmdata_prefix)) {
         gchar* tmp = g_file_get_path(descend);
-        g_debug("deleting file %s", tmp);
+        debug("deleting file %", tmp);
         if (nullptr != tmp) g_free(tmp);
         if (!g_file_delete(descend, nullptr, &error)) {
           gchar* tmp = g_file_get_path(descend);
-          g_warning("file %s cannot be deleted", tmp);
+          warning("file % cannot be deleted", tmp);
           g_free(tmp);
         }
         On_scope_exit { release_g_error(error); };
@@ -136,41 +119,35 @@ std::string QuiddityContainer::get_name() const { return name_; }
 void QuiddityContainer::register_classes() {
   // registering quiddities
   abstract_factory_.register_class<AudioTestSource>(
-      DocumentationRegistry::get()->get_quiddity_type_from_class_name("AudioTestSource"));
+      DocumentationRegistry::get()->get_type_from_class_name("AudioTestSource"));
   abstract_factory_.register_class<DummySink>(
-      DocumentationRegistry::get()->get_quiddity_type_from_class_name("DummySink"));
+      DocumentationRegistry::get()->get_type_from_class_name("DummySink"));
   abstract_factory_.register_class<EmptyQuiddity>(
-      DocumentationRegistry::get()->get_quiddity_type_from_class_name("EmptyQuiddity"));
+      DocumentationRegistry::get()->get_type_from_class_name("EmptyQuiddity"));
   abstract_factory_.register_class<ExternalShmdataWriter>(
-      DocumentationRegistry::get()->get_quiddity_type_from_class_name("ExternalShmdataWriter"));
+      DocumentationRegistry::get()->get_type_from_class_name("ExternalShmdataWriter"));
   abstract_factory_.register_class<GstVideoConverter>(
-      DocumentationRegistry::get()->get_quiddity_type_from_class_name("GstVideoConverter"));
+      DocumentationRegistry::get()->get_type_from_class_name("GstVideoConverter"));
   abstract_factory_.register_class<GstVideoEncoder>(
-      DocumentationRegistry::get()->get_quiddity_type_from_class_name("GstVideoEncoder"));
+      DocumentationRegistry::get()->get_type_from_class_name("GstVideoEncoder"));
   abstract_factory_.register_class<GstAudioEncoder>(
-      DocumentationRegistry::get()->get_quiddity_type_from_class_name("GstAudioEncoder"));
+      DocumentationRegistry::get()->get_type_from_class_name("GstAudioEncoder"));
   abstract_factory_.register_class<GstDecodebin>(
-      DocumentationRegistry::get()->get_quiddity_type_from_class_name("GstDecodebin"));
-  // abstract_factory_.register_class<GstParseToBinSrc>
-  //     (DocumentationRegistry::get()->get_quiddity_type_from_class_name("GstParseToBinSrc"));
+      DocumentationRegistry::get()->get_type_from_class_name("GstDecodebin"));
   abstract_factory_.register_class<HTTPSDPDec>(
-      DocumentationRegistry::get()->get_quiddity_type_from_class_name("HTTPSDPDec"));
-  abstract_factory_.register_class<Logger>(
-      DocumentationRegistry::get()->get_quiddity_type_from_class_name("Logger"));
+      DocumentationRegistry::get()->get_type_from_class_name("HTTPSDPDec"));
   abstract_factory_.register_class<PropertyMapper>(
-      DocumentationRegistry::get()->get_quiddity_type_from_class_name("PropertyMapper"));
+      DocumentationRegistry::get()->get_type_from_class_name("PropertyMapper"));
   abstract_factory_.register_class<RtpSession>(
-      DocumentationRegistry::get()->get_quiddity_type_from_class_name("RtpSession"));
-  // abstract_factory_.register_class<ShmdataFromGDPFile>
-  //     (DocumentationRegistry::get()->get_quiddity_type_from_class_name("ShmdataFromGDPFile"));
-  // abstract_factory_.register_class<ShmdataToFile>
-  //     (DocumentationRegistry::get()->get_quiddity_type_from_class_name("ShmdataToFile"));
+      DocumentationRegistry::get()->get_type_from_class_name("RtpSession"));
+  abstract_factory_.register_class<ShmDelay>(
+      DocumentationRegistry::get()->get_type_from_class_name("ShmDelay"));
   abstract_factory_.register_class<Timelapse>(
-      DocumentationRegistry::get()->get_quiddity_type_from_class_name("Timelapse"));
+      DocumentationRegistry::get()->get_type_from_class_name("Timelapse"));
   abstract_factory_.register_class<Uridecodebin>(
-      DocumentationRegistry::get()->get_quiddity_type_from_class_name("Uridecodebin"));
+      DocumentationRegistry::get()->get_type_from_class_name("Uridecodebin"));
   abstract_factory_.register_class<VideoTestSource>(
-      DocumentationRegistry::get()->get_quiddity_type_from_class_name("VideoTestSource"));
+      DocumentationRegistry::get()->get_type_from_class_name("VideoTestSource"));
 }
 
 std::vector<std::string> QuiddityContainer::get_classes() { return abstract_factory_.get_keys(); }
@@ -211,22 +188,6 @@ bool QuiddityContainer::class_exists(const std::string& class_name) {
   return abstract_factory_.key_exists(class_name);
 }
 
-bool QuiddityContainer::init_quiddity(Quiddity::ptr quiddity) {
-  quiddity->set_manager_impl(me_.lock());
-  if (!quiddity->init()) return false;
-
-  quiddities_[quiddity->get_name()] = quiddity;
-
-  // We work on a copy in case a callback modifies the map of registered callbacks
-  auto tmp_created_cbs = on_created_cbs_;
-  for (auto& cb : tmp_created_cbs) {
-    cb.second(quiddity->get_name());
-    if (on_created_cbs_.empty()) break;  // In case the map gets reset in the callback, e.g bundle
-  }
-
-  return true;
-}
-
 std::string QuiddityContainer::create(const std::string& quiddity_class, bool call_creation_cb) {
   return create(quiddity_class, std::string(), call_creation_cb);
 }
@@ -234,11 +195,11 @@ std::string QuiddityContainer::create(const std::string& quiddity_class, bool ca
 std::string QuiddityContainer::create(const std::string& quiddity_class,
                                       const std::string& raw_nick_name,
                                       bool call_creation_cb) {
+  // checks before creation
   if (!class_exists(quiddity_class)) {
-    g_warning("cannot create quiddity: class %s is unknown", quiddity_class.c_str());
+    warning("cannot create quiddity: class % is unknown", quiddity_class);
     return std::string();
   }
-
   std::string name;
   if (raw_nick_name.empty()) {
     name = quiddity_class + std::to_string(counters_.get_count(quiddity_class));
@@ -247,42 +208,43 @@ std::string QuiddityContainer::create(const std::string& quiddity_class,
   } else {
     name = Quiddity::string_to_quiddity_name(raw_nick_name);
   }
-
   auto it = quiddities_.find(name);
   if (quiddities_.end() != it) {
-    g_warning("cannot create a quiddity named %s, name is already taken", name.c_str());
+    warning("cannot create a quiddity named %, name is already taken", name);
     return std::string();
   }
 
-  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class, name);
-  if (!quiddity) {
-    g_warning(
-        "abstract factory failed to create %s (class %s)", name.c_str(), quiddity_class.c_str());
-    return std::string();
-  }
-
+  // building configuration for quiddity creation
+  InfoTree::ptr tree;
   if (configurations_) {
-    auto tree = configurations_->get_tree(quiddity_class);
+    tree = configurations_->get_tree(quiddity_class);
     if (!tree->branch_has_data("")) tree = configurations_->get_tree("bundle." + quiddity_class);
-    if (tree) quiddity->set_configuration(tree);
   }
 
-  quiddity->set_name(name);
+  // creation
+  Quiddity::ptr quiddity = abstract_factory_.create(
+      quiddity_class, QuiddityConfiguration(name, quiddity_class, tree, this, get_log_ptr()));
+  if (!quiddity) {
+    warning("abstract factory failed to create % (class %)", name, quiddity_class);
+    return std::string();
+  }
+
   name = quiddity->get_name();
-  if (!call_creation_cb) {
-    if (!quiddity->init()) return "{\"error\":\"cannot init quiddity class\"}";
-    quiddities_[name] = quiddity;
-  } else {
-    if (!init_quiddity(quiddity)) {
-      g_debug("initialization of %s with name %s failed",
-              quiddity_class.c_str(),
-              quiddity->get_name().c_str());
-      return std::string();
+
+  if (!(*quiddity.get())) {
+    debug("creation of % with name % failed", quiddity_class, quiddity->get_name());
+    return std::string();
+  }
+  quiddities_[name] = quiddity;
+
+  if (call_creation_cb) {
+    // We work on a copy in case a callback modifies the map of registered callbacks
+    auto tmp_created_cbs = on_created_cbs_;
+    for (auto& cb : tmp_created_cbs) {
+      cb.second(quiddity->get_name());
+      if (on_created_cbs_.empty()) break;  // In case the map gets reset in the callback, e.g bundle
     }
   }
-
-  DocumentationRegistry::get()->register_quiddity_type_from_quiddity(name, quiddity_class);
-
   return name;
 }
 
@@ -305,31 +267,27 @@ std::string QuiddityContainer::get_quiddities_description() {
   for (auto& it : quids) {
     std::shared_ptr<Quiddity> quid = get_quiddity(it);
     if (quid) {
-      auto name = quid->get_name();
+      std::string name = quid->get_name();
       subtree->graft(name + ".id", InfoTree::make(name));
-      subtree->graft(
-          name + ".class",
-          InfoTree::make(DocumentationRegistry::get()->get_quiddity_type_from_quiddity(name)));
+      subtree->graft(name + ".class", InfoTree::make(quid->get_type()));
     }
   }
   return JSONSerializer::serialize(tree.get());
 }
 
-std::string QuiddityContainer::get_quiddity_description(const std::string& nick_name) {
-  auto it = quiddities_.find(nick_name);
+std::string QuiddityContainer::get_quiddity_description(const std::string& name) {
+  auto it = quiddities_.find(name);
   if (quiddities_.end() == it) return JSONSerializer::serialize(InfoTree::make().get());
   auto tree = InfoTree::make();
-  tree->graft(".id", InfoTree::make(nick_name));
-  tree->graft(".class",
-              InfoTree::make(DocumentationRegistry::get()->get_quiddity_type_from_quiddity(
-                  it->second->get_name())));
+  tree->graft(".id", InfoTree::make(name));
+  tree->graft(".class", InfoTree::make(it->second->get_type()));
   return JSONSerializer::serialize(tree.get());
 }
 
 Quiddity::ptr QuiddityContainer::get_quiddity(const std::string& quiddity_name) {
   auto it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == it) {
-    g_debug("quiddity %s not found, cannot provide ptr", quiddity_name.c_str());
+    debug("quiddity % not found, cannot provide ptr", quiddity_name);
     Quiddity::ptr empty_quiddity_ptr;
     return empty_quiddity_ptr;
   }
@@ -339,7 +297,7 @@ Quiddity::ptr QuiddityContainer::get_quiddity(const std::string& quiddity_name) 
 bool QuiddityContainer::remove(const std::string& quiddity_name, bool call_removal_cb) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
-    g_warning("(%s) quiddity %s not found for removing", name_.c_str(), quiddity_name.c_str());
+    warning("(%) quiddity % not found for removing", name_, quiddity_name);
     return false;
   }
   quiddities_.erase(quiddity_name);
@@ -358,7 +316,7 @@ bool QuiddityContainer::has_method(const std::string& quiddity_name,
                                    const std::string& method_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
-    g_debug("quiddity %s not found", quiddity_name.c_str());
+    debug("quiddity % not found", quiddity_name);
     return false;
   }
   return q_it->second->has_method(method_name);
@@ -370,12 +328,12 @@ bool QuiddityContainer::invoke(const std::string& quiddity_name,
                                const std::vector<std::string>& args) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
-    g_debug("quiddity %s not found, cannot invoke", quiddity_name.c_str());
+    debug("quiddity % not found, cannot invoke", quiddity_name);
     if (return_value != nullptr) *return_value = new std::string();
     return false;
   }
   if (!q_it->second->has_method(method_name)) {
-    g_debug("method %s not found, cannot invoke", method_name.c_str());
+    debug("method % not found, cannot invoke", method_name);
     if (return_value != nullptr) *return_value = new std::string();
     return false;
   }
@@ -385,7 +343,7 @@ bool QuiddityContainer::invoke(const std::string& quiddity_name,
 std::string QuiddityContainer::get_methods_description(const std::string& quiddity_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
-    g_warning("quiddity %s not found, cannot get description of methods", quiddity_name.c_str());
+    warning("quiddity % not found, cannot get description of methods", quiddity_name);
     return "{\"error\":\"quiddity not found\"}";
   }
   return q_it->second->get_methods_description();
@@ -395,7 +353,7 @@ std::string QuiddityContainer::get_method_description(const std::string& quiddit
                                                       const std::string& method_name) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
-    g_warning("quiddity %s not found, cannot get description of methods", quiddity_name.c_str());
+    warning("quiddity % not found, cannot get description of methods", quiddity_name);
     return "{\"error\":\"quiddity not found\"}";
   }
 
@@ -455,12 +413,16 @@ void QuiddityContainer::reset_create_remove_cb() {
 
 bool QuiddityContainer::load_plugin(const char* filename) {
   PluginLoader::ptr plugin = std::make_shared<PluginLoader>();
-  if (!plugin->load(filename)) return false;
+  auto loaded = plugin->load(filename);
+  if (!loaded) {
+    warning("%", loaded.msg());
+    return false;
+  }
   std::string class_name = plugin->get_class_name();
   // close the old one if exists
   auto it = plugins_.find(class_name);
   if (plugins_.end() != it) {
-    g_debug("closing old plugin for reloading (class: %s)", class_name.c_str());
+    debug("closing old plugin for reloading (class: %)", class_name);
     close_plugin(class_name);
   }
   abstract_factory_.register_class_with_custom_factory(
@@ -493,7 +455,7 @@ bool QuiddityContainer::scan_directory_for_plugins(const std::string& directory_
     char* absolute_path = g_file_get_path(descend);  // g_file_get_relative_path (dir, descend);
     // trying to load the module
     if (g_str_has_suffix(absolute_path, ".so") || g_str_has_suffix(absolute_path, ".dylib")) {
-      g_debug("loading module %s", absolute_path);
+      debug("loading module %", absolute_path);
       load_plugin(absolute_path);
     }
     g_free(absolute_path);
@@ -502,8 +464,8 @@ bool QuiddityContainer::scan_directory_for_plugins(const std::string& directory_
   }
   error = nullptr;
   res = g_file_enumerator_close(enumerator, nullptr, &error);
-  if (res != TRUE) g_debug("scanning dir: file enumerator not properly closed");
-  if (error != nullptr) g_debug("scanning dir: error not nullptr");
+  if (res != TRUE) debug("scanning dir: file enumerator not properly closed");
+  if (error != nullptr) debug("scanning dir: error not nullptr");
   g_object_unref(dir);
 
   make_classes_doc();
@@ -515,7 +477,7 @@ bool QuiddityContainer::load_configuration_file(const std::string& file_path) {
   // opening file
   std::ifstream file_stream(file_path);
   if (!file_stream) {
-    g_warning("cannot open %s for loading configuration", file_path.c_str());
+    warning("cannot open % for loading configuration", file_path);
     return false;
   }
   // get file content into a string
@@ -523,12 +485,13 @@ bool QuiddityContainer::load_configuration_file(const std::string& file_path) {
   file_stream.seekg(0, std::ios::end);
   auto size = file_stream.tellg();
   if (0 == size) {
-    g_warning("file %s is empty", file_path.c_str());
+    warning("file % is empty", file_path);
     return false;
   }
   if (size > kMaxConfigurationFileSize) {
-    g_warning(
-        "file %s is too large, max is %d bytes", file_path.c_str(), kMaxConfigurationFileSize);
+    warning("file % is too large, max is % bytes",
+            file_path,
+            std::to_string(kMaxConfigurationFileSize));
     return false;
   }
   config.reserve(size);
@@ -537,7 +500,7 @@ bool QuiddityContainer::load_configuration_file(const std::string& file_path) {
   // building the tree
   auto tree = JSONSerializer::deserialize(config);
   if (!tree) {
-    g_warning("configuration tree cannot be constructed from file %s", file_path.c_str());
+    warning("configuration tree cannot be constructed from file %", file_path);
     return false;
   }
   // writing new configuration
@@ -547,7 +510,7 @@ bool QuiddityContainer::load_configuration_file(const std::string& file_path) {
   auto quid_types = abstract_factory_.get_keys();
   for (auto& it : configurations_->get_child_keys("bundle")) {
     if (std::string::npos != it.find('_')) {
-      g_warning("underscores are not allowed for quiddity types (bundle name %s)", it.c_str());
+      warning("underscores are not allowed for quiddity types (bundle name %)", it);
       continue;
     }
     std::string long_name = configurations_->branch_get_value("bundle." + it + ".doc.long_name");
@@ -563,16 +526,13 @@ bool QuiddityContainer::load_configuration_file(const std::string& file_path) {
     if (description.empty()) is_missing = "description";
     if (pipeline.empty()) is_missing = "pipeline";
     if (!is_missing.empty()) {
-      g_warning("%s : %s field is missing, cannot create new quiddity type",
-                it.c_str(),
-                is_missing.c_str());
+      warning("% : % field is missing, cannot create new quiddity type", it, is_missing);
       continue;
     }
     // check if the pipeline description is correct
     auto spec = bundle::DescriptionParser(pipeline, quid_types);
     if (!spec) {
-      g_warning(
-          "%s : error parsing the pipeline (%s)", it.c_str(), spec.get_parsing_error().c_str());
+      warning("% : error parsing the pipeline (%)", it, spec.get_parsing_error());
       continue;
     }
     // ok, bundle can be added

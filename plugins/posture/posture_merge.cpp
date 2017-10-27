@@ -33,8 +33,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureMerge,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-PostureMerge::PostureMerge(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
-
 PostureMerge::~PostureMerge() { stop(); }
 
 bool PostureMerge::start() {
@@ -63,7 +61,7 @@ bool PostureMerge::stop() {
   return true;
 }
 
-bool PostureMerge::init() {
+PostureMerge::PostureMerge(QuiddityConfiguration&&) : shmcntr_(static_cast<Quiddity*>(this)) {
   init_startable(this);
 
   shmcntr_.install_connect_method([this](const std::string path) { return connect(path); },
@@ -147,7 +145,6 @@ bool PostureMerge::init() {
       "Downsample",
       "Activate the cloud downsampling",
       downsample_);
-  return true;
 }
 
 bool PostureMerge::connect(std::string shmdata_socket_path) {
@@ -233,10 +230,7 @@ bool PostureMerge::disconnect(std::string shmName) {
   try {
     cloud_readers_.erase(shmName);
   } catch (...) {
-    g_warning(
-        "An exception has been caught while trying to disconnect from shmdata "
-        "%s",
-        shmName.c_str());
+    warning("An exception has been caught while trying to disconnect from shmdata %", shmName);
   }
   return true;
 }

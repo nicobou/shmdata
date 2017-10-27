@@ -27,70 +27,61 @@ PluginLoader::~PluginLoader() {
   if (module_ != nullptr) g_module_close(module_);
 }
 
-bool PluginLoader::load(const char* filename) {
+BoolLog PluginLoader::load(const char* filename) {
   if (!g_module_supported()) {
-    g_debug("g_module not supported !, cannot load %s", filename);
-    return false;
+    return BoolLog(false, std::string("g_module not supported !, cannot load ") + filename);
   }
   close();
 
   module_ = g_module_open(filename, G_MODULE_BIND_LAZY);
 
   if (!module_) {
-    g_debug("loading %s: %s", filename, g_module_error());
-    return false;
+    return BoolLog(false, std::string("loading ") + filename + ": " + g_module_error());
   }
 
   if (!g_module_symbol(module_, "create", (gpointer*)&create_)) {
-    g_debug("loading %s: %s", filename, g_module_error());
     close();
-    return false;
+    return BoolLog(false, std::string("loading ") + filename + ": " + g_module_error());
   }
 
   if (create_ == nullptr) {
-    g_debug("%s: %s", filename, g_module_error());
     close();
-    return false;
+    return BoolLog(false, std::string("create is null for ") + filename + ": " + g_module_error());
   }
 
   if (!g_module_symbol(module_, "destroy", (gpointer*)&destroy_)) {
-    g_debug("%s: %s", filename, g_module_error());
     close();
-    return false;
+    return BoolLog(false, std::string("loading ") + filename + ": " + g_module_error());
   }
 
   if (destroy_ == nullptr) {
-    g_debug("%s: %s", filename, g_module_error());
     close();
-    return false;
+    return BoolLog(false, std::string("destroy is null for ") + filename + ": " + g_module_error());
   }
 
   if (!g_module_symbol(module_, "get_quiddity_type", (gpointer*)&get_type_)) {
-    g_debug("%s: %s", filename, g_module_error());
     close();
-    return false;
+    return BoolLog(false, std::string("loading ") + filename + ": " + g_module_error());
   }
 
   if (get_type_ == nullptr) {
-    g_debug("%s: %s", filename, g_module_error());
     close();
-    return false;
+    return BoolLog(false,
+                   std::string("get_type is null for ") + filename + ": " + g_module_error());
   }
 
   class_name_ = get_type_();
-
-  return true;
+  return BoolLog(true);
 }
 
-bool PluginLoader::close() {
-  if (module_ == nullptr) return false;
+BoolLog PluginLoader::close() {
+  if (module_ == nullptr) return BoolLog(false, "trying to close a a null module");
 
   if (!g_module_close(module_)) {
-    g_debug("closing module: %s", g_module_error());
-    return false;
+    return BoolLog(false, std::string("error when closing module: ") + g_module_error());
   }
   module_ = nullptr;
-  return true;
+  return BoolLog(true);
 }
 
 std::string PluginLoader::get_class_name() const {

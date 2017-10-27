@@ -34,10 +34,6 @@ GstShmdataToCb::GstShmdataToCb(const std::string& shmpath, on_caps_cb_t fun)
       if (nullptr != typefind) gst_object_unref(typefind);
     }
   };
-  if (nullptr == shmdatasrc || nullptr == typefind) {
-    g_warning("GstShmdataToCb failed to create GStreamer element");
-    return;
-  }
   g_signal_connect(typefind, "have-type", G_CALLBACK(on_caps), this);
   g_object_set(G_OBJECT(shmdatasrc), "socket-path", shmpath.c_str(), nullptr);
   gst_bin_add_many(GST_BIN(pipe_.get_pipeline()), shmdatasrc, typefind, nullptr);
@@ -54,7 +50,6 @@ void GstShmdataToCb::on_handoff_cb(GstElement* /*object*/,
   // getting buffer information:
   GstMapInfo map;
   if (!gst_buffer_map(buf, &map, GST_MAP_READ)) {
-    g_warning("gst_buffer_map failed: canceling audio buffer access");
     return;
   }
   On_scope_exit { gst_buffer_unmap(buf, &map); };
@@ -86,15 +81,12 @@ void GstShmdataToCb::on_caps(GstElement* typefind,
   }
   if (nullptr != filter) {
     gst_bin_add(GST_BIN(context->pipe_.get_pipeline()), filter);
-    if (!gst_element_link_many(typefind, filter, context->fakesink_, nullptr))
-      g_warning("issue linking typefind with fakesink in GstShmdataToCb::on_caps");
+    gst_element_link_many(typefind, filter, context->fakesink_, nullptr);
     GstUtils::sync_state_with_parent(filter);
     GstUtils::sync_state_with_parent(context->fakesink_);
   } else {
-    if (!gst_element_link(typefind, context->fakesink_))
-      g_warning("issue linking typefind with fakesink in GstShmdataToCb::on_caps");
-    else
-      GstUtils::sync_state_with_parent(context->fakesink_);
+    gst_element_link(typefind, context->fakesink_);
+    GstUtils::sync_state_with_parent(context->fakesink_);
   }
 }
 
@@ -117,9 +109,6 @@ bool GstShmdataToCb::remove_cb(id_t cb_id) {
 std::string GstShmdataToCb::get_caps() const {
   if (!fakesink_caps_.empty()) return fakesink_caps_;
   if (nullptr == fakesink_) {
-    g_warning(
-        "GstShmdataToCb::get_caps, source data type not known"
-        ", returning empty string");
     return std::string();
   }
   GstPad* pad = gst_element_get_static_pad(fakesink_, "sink");
@@ -132,10 +121,6 @@ std::string GstShmdataToCb::get_caps() const {
   if (nullptr == str) return fakesink_caps_;
   On_scope_exit { g_free(str); };
   fakesink_caps_ = std::string(str);
-  if (fakesink_caps_.empty())
-    g_warning("GstShmdataToCb::get_caps, caps not available returning empty string");
-  // fakesink_caps_ = StringUtils::replace_string(fakesink_caps_, "=, ", ", ");
-  g_print("-------------------- %s\n", fakesink_caps_.c_str());
   return fakesink_caps_;
 }
 

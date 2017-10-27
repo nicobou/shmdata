@@ -167,7 +167,6 @@ void add_json_node(InfoTree::rptr tree, JsonReader* reader) {
       auto index = std::to_string(i);
       json_reader_read_element(reader, i);
       if (!tree->graft(index, InfoTree::make())) {
-        g_warning("issue grafting tree with array index during json deserialization");
         return;
       }
       add_json_node(tree->get_tree(index).get(), reader);
@@ -181,7 +180,6 @@ void add_json_node(InfoTree::rptr tree, JsonReader* reader) {
       auto current_member = members[member_index];
       json_reader_read_member(reader, current_member);
       if (!tree->graft(current_member, InfoTree::make())) {  // FIXME do escape
-        g_warning("issue grafting tree during json deserialization");
         break;
       }
       add_json_node(tree->get_tree(current_member).get(), reader);
@@ -199,11 +197,7 @@ void add_json_node(InfoTree::rptr tree, JsonReader* reader) {
       tree->set_value(json_node_get_double(val));
     } else if (G_TYPE_STRING == json_node_get_value_type(val)) {
       tree->set_value(json_node_get_string(val));
-    } else {
-      g_warning("issue setting value during json deserialization");
     }
-  } else {
-    g_warning("%s: reader current cursor is invalid", __FUNCTION__);
   }
 }
 
@@ -215,18 +209,15 @@ InfoTree::ptr deserialize(const std::string& serialized) {
   GError* error = nullptr;
   json_parser_load_from_data(parser, serialized.c_str(), serialized.size(), &error);
   if (error != nullptr) {
-    g_warning("%s", error->message);
     g_error_free(error);
     return InfoTree::ptr();
   }
   JsonNode* root_node = json_parser_get_root(parser);
   if (!root_node) {
-    g_warning("deserialization failed (root_node)");
     return res;
   }
   JsonReader* reader = json_reader_new(root_node);
   if (!reader) {
-    g_warning("deserialization failed (reader)");
     return res;
   }
   On_scope_exit { g_object_unref(reader); };

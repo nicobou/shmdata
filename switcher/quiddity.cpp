@@ -33,10 +33,11 @@
 
 namespace switcher {
 
-Quiddity::Quiddity()
-    : information_tree_(InfoTree::make()),
+Quiddity::Quiddity(QuiddityConfiguration&& conf)
+    : Logged(conf.log_),
+      information_tree_(InfoTree::make()),
       structured_user_data_(InfoTree::make()),
-      configuration_tree_(InfoTree::make()),
+      configuration_tree_(conf.tree_config_ ? conf.tree_config_ : InfoTree::make()),
       props_(information_tree_,
              [this](const std::string& key) {
                smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(key));
@@ -64,26 +65,25 @@ Quiddity::Quiddity()
           "on-user-data-pruned", "A branch has been pruned from the quiddity's user data tree")),
       on_nicknamed_id_(smanage<MPtr(&SContainer::make)>(
           "on-nicknamed", "A nickname has been given to the quiddity")),
-      methods_description_(std::make_shared<JSONBuilder>()) {
+      methods_description_(std::make_shared<JSONBuilder>()),
+      name_(string_to_quiddity_name(conf.name_)),
+      nickname_(name_),
+      type_(conf.type_),
+      qcontainer_(conf.qc_) {
   configuration_tree_->graft(".", InfoTree::make());
+  information_tree_->graft(".type", InfoTree::make(conf.type_));
 }
 
-Quiddity::~Quiddity() { std::lock_guard<std::mutex> lock(self_destruct_mtx_); }
+Quiddity::~Quiddity() {
+  std::lock_guard<std::mutex> lock(self_destruct_mtx_);
+}
 
 std::string Quiddity::get_name() const { return name_; }
 
+std::string Quiddity::get_type() const { return type_; }
+
 std::string Quiddity::string_to_quiddity_name(const std::string& name) {
   return std::regex_replace(name, std::regex("[^[:alnum:]| ]"), "-");
-}
-
-bool Quiddity::set_name(const std::string& name) {
-  if (!name_.empty()) return false;
-
-  name_ = string_to_quiddity_name(name);
-  information_tree_->graft(
-      ".type", InfoTree::make(DocumentationRegistry::get()->get_quiddity_type_from_quiddity(name)));
-  nickname_ = name_;
-  return true;
 }
 
 bool Quiddity::has_method(const std::string& method_name) {
@@ -95,13 +95,13 @@ bool Quiddity::invoke_method(const std::string& method_name,
                              const std::vector<std::string>& args) {
   auto it = methods_.find(method_name);
   if (methods_.end() == it) {
-    g_debug("Quiddity::invoke_method error: method %s not found", method_name.c_str());
+    debug("Quiddity::invoke_method error: method % not found", method_name);
     return false;
   }
 
   GValue res = G_VALUE_INIT;
   if (false == it->second->invoke(args, &res)) {
-    g_debug("invokation of %s failed (missing argments ?)", method_name.c_str());
+    debug("invokation of % failed (missing argments ?)", method_name);
     return false;
   }
 
@@ -125,12 +125,12 @@ bool Quiddity::register_method(const std::string& method_name,
                                Method::args_types arg_types,
                                gpointer user_data) {
   if (method == nullptr) {
-    g_debug("fail registering %s (method is nullptr)", method_name.c_str());
+    debug("fail registering % (method is nullptr)", method_name);
     return false;
   }
 
   if (method_is_registered(method_name)) {
-    g_debug("registering name %s already exists", method_name.c_str());
+    debug("registering name % already exists", method_name);
     return false;
   }
 
@@ -178,8 +178,9 @@ std::string Quiddity::get_method_description(const std::string& method_name) {
 }
 
 std::string Quiddity::make_file_name(const std::string& suffix) const {
-  if (manager_name_.empty()) return std::string();
-  auto name = std::string(get_file_name_prefix() + manager_name_ + "_" + name_ + "_" + suffix);
+  if (qcontainer_->get_name().empty()) return std::string();
+  auto name =
+      std::string(get_file_name_prefix() + qcontainer_->get_name() + "_" + name_ + "_" + suffix);
 
   // Done this way for OSX portability, there is a maximum socket path length in UNIX systems and
   // shmdata use sockets.
@@ -192,8 +193,8 @@ std::string Quiddity::make_file_name(const std::string& suffix) const {
   if (overflow > 0) {
     int quiddity_overflow = static_cast<int>(name_.length() - overflow);
     if (quiddity_overflow < 10) {
-      name = std::string(get_file_name_prefix() + manager_name_ + "_name_error");
-      g_warning(
+      name = std::string(get_file_name_prefix() + qcontainer_->get_name() + "_name_error");
+      warning(
           "BUG: shmdata name cannot be created properly because it is too long, there is less than "
           "10 characters remaining for the quiddity name, investigate and fix this!");
     } else {
@@ -202,7 +203,8 @@ std::string Quiddity::make_file_name(const std::string& suffix) const {
       // and the end of the quiddity name.
       auto new_name = std::string(name_.begin(), name_.begin() + chunks_size) +
                       std::string(name_.end() - chunks_size, name_.end());
-      name = std::string(get_file_name_prefix() + manager_name_ + "_" + new_name + "_" + suffix);
+      name = std::string(get_file_name_prefix() + qcontainer_->get_name() + "_" + new_name + "_" +
+                         suffix);
     }
   }
 
@@ -214,7 +216,7 @@ std::string Quiddity::get_file_name_prefix() const { return "/tmp/switcher_"; }
 std::string Quiddity::get_quiddity_name_from_file_name(const std::string& path) const {
   auto file_begin = path.find("switcher_");
   if (std::string::npos == file_begin) {
-    g_warning("%s: not a switcher generated path", __FUNCTION__);
+    warning("%: not a switcher generated path", std::string(__FUNCTION__));
     return std::string();
   }
   std::string filename(path, file_begin);
@@ -235,13 +237,13 @@ std::string Quiddity::get_quiddity_name_from_file_name(const std::string& path) 
     }
   }
   if (3 != underscores.size()) {
-    g_warning("%s: wrong shmdata path format", __FUNCTION__);
+    warning("%: wrong shmdata path format", std::string(__FUNCTION__));
     return std::string();
   }
   // handling bundle: they use there own internal manager named with their actual quiddity name
   auto manager_name =
       std::string(filename, underscores[0] + 1, underscores[1] - (underscores[0] + 1));
-  if (manager_name_ != manager_name) return manager_name;
+  if (qcontainer_->get_name() != manager_name) return manager_name;
   return std::string(filename, underscores[1] + 1, underscores[2] - (underscores[1] + 1));
 }
 
@@ -262,16 +264,11 @@ std::string Quiddity::get_shmdata_name_from_file_name(const std::string& path) c
   return pos != std::string::npos ? std::string(path, pos + 1) : path;
 }
 
-std::string Quiddity::get_manager_name() { return manager_name_; }
+std::string Quiddity::get_manager_name() { return qcontainer_->get_name(); }
 
 std::string Quiddity::get_socket_name_prefix() { return "switcher_"; }
 
 std::string Quiddity::get_socket_dir() { return "/tmp"; }
-
-void Quiddity::set_manager_impl(QuiddityContainer::ptr manager_impl) {
-  manager_impl_ = manager_impl;
-  manager_name_ = manager_impl->get_name();
-}
 
 // methods
 bool Quiddity::install_method(const std::string& long_name,
@@ -319,6 +316,10 @@ bool Quiddity::graft_tree(const std::string& path, InfoTree::ptr tree, bool do_s
   return true;
 }
 
+InfoTree::ptr Quiddity::get_tree(const std::string& path) {
+  return information_tree_->get_tree(path);
+}
+
 InfoTree::ptr Quiddity::prune_tree(const std::string& path, bool do_signal) {
   InfoTree::ptr result = information_tree_->prune(path);
   if (result) {
@@ -326,7 +327,7 @@ InfoTree::ptr Quiddity::prune_tree(const std::string& path, bool do_signal) {
       smanage<MPtr(&SContainer::notify)>(on_tree_pruned_id_, InfoTree::make(path));
     }
   } else {
-    g_debug("cannot prune %s", path.c_str());
+    warning("cannot prune %", path);
   }
   return result;
 }
@@ -345,17 +346,13 @@ InfoTree::ptr Quiddity::user_data_prune_hook(const std::string& path) {
   return res;
 }
 
-void Quiddity::set_configuration(InfoTree::ptr config) { configuration_tree_ = config; }
-
 void Quiddity::self_destruct() {
   std::unique_lock<std::mutex> lock(self_destruct_mtx_);
   auto thread = std::thread([ this, th_lock = std::move(lock) ]() mutable {
-    auto manager = manager_impl_.lock();
     auto self_name = get_name();
     th_lock.unlock();
-    if (!manager) return;
-    if (!manager->get_root_manager()->remove(self_name))
-      g_warning("%s did not self destruct", get_name().c_str());
+    if (!qcontainer_->get_switcher()->remove(self_name))
+      warning("% did not self destruct", get_name());
   });
   thread.detach();
 }

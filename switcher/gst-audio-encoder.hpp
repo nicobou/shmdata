@@ -28,7 +28,7 @@
 namespace switcher {
 class GstAudioEncoder : public Quiddity {
  public:
-  GstAudioEncoder(const std::string&);
+  GstAudioEncoder(QuiddityConfiguration&&);
   ~GstAudioEncoder() = default;
   GstAudioEncoder(const GstAudioEncoder&) = delete;
   GstAudioEncoder& operator=(const GstAudioEncoder&) = delete;
@@ -36,8 +36,7 @@ class GstAudioEncoder : public Quiddity {
  private:
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
-  std::unique_ptr<GstAudioCodec> codecs_{nullptr};
-  bool init() final;
+  std::unique_ptr<GstAudioCodec> codecs_;
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string& shmdata_sochet_path);
   bool can_sink_caps(const std::string& caps);

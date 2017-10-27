@@ -29,7 +29,6 @@ void quiddity_created_removed_cb(std::string /*subscriber_name */,
                                  std::string /*signal_name*/,
                                  std::vector<std::string> params,
                                  void* user_data) {
-  // g_print("%s: %s\n", signal_name.c_str(), params[0].c_str());
   switcher::Switcher* ctx = static_cast<switcher::Switcher*>(user_data);
   std::cout << ctx->use_tree<MPtr(&switcher::InfoTree::serialize_json)>(quiddity_name, params[0])
             << std::endl;
@@ -39,7 +38,7 @@ int main() {
   bool success = true;
 
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_manager("test_manager");
+    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
     manager->scan_directory_for_plugins("./");
 
     if (!switcher::QuiddityBasicTest::test_full(manager, "systemusage")) success = false;

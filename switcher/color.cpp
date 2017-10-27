@@ -35,7 +35,9 @@ std::pair<bool, Color> Color::from_string(const std::string& str) {
   if (str.size() != 8 || !isxdigit(str[0]) || !isxdigit(str[1]) || !isxdigit(str[2]) ||
       !isxdigit(str[3]) || !isxdigit(str[4]) || !isxdigit(str[5]) || !isxdigit(str[6]) ||
       !isxdigit(str[7])) {
-    g_warning("%s cannot be parsed as a color", str.c_str());
+#ifdef DEBUG
+    std::cerr << str << " cannot be parsed as a color" << '\n';
+#endif
     return std::make_pair(false, Color(0, 0, 0, 0));
   }
   auto val = strtoul(str.c_str(), NULL, 16);

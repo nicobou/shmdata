@@ -93,7 +93,6 @@ bool GstVideoCodec::remake_codec_elements() {
         !UGstElem::renew(shm_encoded_, {"socket-path", "sync", "async"}) ||
         !UGstElem::renew(color_space_codec_element_) || !UGstElem::renew(queue_codec_element_) ||
         !UGstElem::renew(codec_element_, codec_properties_)) {
-      g_warning("error renewing a codec related gst element");
       return false;
     }
   }  // end no codec

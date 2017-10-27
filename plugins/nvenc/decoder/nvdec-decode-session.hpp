@@ -26,12 +26,13 @@
 #include <utility>
 #include <vector>
 #include "cuda/cuda-context.hpp"
+#include "switcher/logged.hpp"
 #include "switcher/safe-bool-idiom.hpp"
 
 namespace switcher {
-class NVencDS : public SafeBoolIdiom {
+class NVencDS : public Logged, public SafeBoolIdiom {
  public:
-  NVencDS(uint32_t device_id, cudaVideoCodec codec);
+  NVencDS(uint32_t device_id, cudaVideoCodec codec, BaseLogger* log);
   NVencDS(const NVencDS&) = delete;
   NVencDS(NVencDS&&) = delete;
   NVencDS() = delete;

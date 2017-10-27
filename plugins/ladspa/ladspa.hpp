@@ -34,13 +34,12 @@ class LADSPA : public Quiddity {
  public:
 
   //! Constructor
-  LADSPA(const std::string&);
+  LADSPA(QuiddityConfiguration&&);
 
   //! Destructor
   ~LADSPA() = default;
 
   //! Mandatory quiddity base class method
-  bool init() final;
 
  private:
   /**
@@ -70,7 +69,6 @@ class LADSPA : public Quiddity {
   void on_loading(InfoTree::ptr&& tree) final;
   void save_properties();
 
-  bool is_valid_{false};   //!< Used to validate that the construction of the quiddity worked
   std::string shmpath_{};  //!< Path of the input shmdata
   std::string shmpath_transformed_{};  //!< Path of the output shmdata
   ShmdataConnector shmcntr_;           //!< Shmdata connector to connect into the quiddity.

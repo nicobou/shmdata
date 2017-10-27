@@ -33,6 +33,9 @@ add_test(check_quiddity_create_remove check_quiddity_create_remove)
 add_executable(check_scope_guard check_scope_guard.cpp)
 add_test(check_scope_guard check_scope_guard)
 
+add_executable(check_shmdelay check_shmdelay.cpp)
+add_test(check_shmdelay check_shmdelay)
+
 add_executable(check_startable check_startable.cpp)
 add_test(check_startable check_startable)
 
@@ -44,3 +47,6 @@ add_test(check_threaded_wrapper check_threaded_wrapper)
 
 add_executable(check_ugstelem check_ugstelem.cpp)
 add_test(check_ugstelem check_ugstelem)
+
+add_executable(check_string_utils check_string_utils.cpp)
+add_test(check_string_utils check_string_utils)

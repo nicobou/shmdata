@@ -18,6 +18,7 @@
  */
 
 #include "./gst-video-timelapse.hpp"
+#include <iostream>
 #include "switcher/gprop-to-prop.hpp"
 #include "switcher/gst-utils.hpp"
 #include "switcher/quiddity.hpp"
@@ -73,7 +74,9 @@ GstVideoTimelapse::GstVideoTimelapse(const GstVideoTimelapseConfig& config,
 
   GstElement* bin = gst_parse_bin_from_description(description.c_str(), TRUE, &error);
   if (error != nullptr) {
-    g_warning("%s", error->message);
+#ifdef DEBUG
+    std::cerr << error->message << '\n';
+#endif
     g_error_free(error);
   }
   GstElement* shmdatasrc =

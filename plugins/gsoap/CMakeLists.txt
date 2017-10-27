@@ -36,7 +36,10 @@ if (PLUGIN_GSOAP)
 
     # WARNINGS
     add_definitions(-Wno-error=extra)
-
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
+      add_definitions(-Wno-error=misleading-indentation)
+    endif()
+    
     # Server
 
     add_library(soapserver SHARED
@@ -60,18 +63,6 @@ if (PLUGIN_GSOAP)
         generated/webservices/soapcontrolProxy.cpp
         )
 
-    add_library(soapclient SHARED
-        ${CLIENT_SOURCES}
-        )
-
-    add_dependencies(soapclient ${SWITCHER_LIBRARY})
-
-    target_include_directories(soapclient
-        PUBLIC ${GSOAP_GEN_DIR}
-        )
-
-    add_dependencies(soapclient webservices)
-
     # Client Static (for switcher-ctrl)
 
     add_library(soapclient-static STATIC
@@ -93,6 +84,6 @@ if (PLUGIN_GSOAP)
 
     # INSTALL
 
-    install(TARGETS soapserver soapclient LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(TARGETS soapserver LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
 
 endif ()

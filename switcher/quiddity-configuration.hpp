@@ -17,22 +17,30 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_SHMDATA_GLIB_LOGGER_H__
-#define __SWITCHER_SHMDATA_GLIB_LOGGER_H__
+#ifndef __SWITCHER_QUIDDITY_CONFIGURATION_H__
+#define __SWITCHER_QUIDDITY_CONFIGURATION_H__
 
-#include <glib.h>
-#include "shmdata/abstract-logger.hpp"
+#include <string>
+
+#include "./base-logger.hpp"
+#include "./information-tree.hpp"
 
 namespace switcher {
+class QuiddityContainer;
 
-class ShmdataGlibLogger : public shmdata::AbstractLogger {
- private:
-  void on_error(std::string&& str) final { g_warning("ERROR: %s", str.c_str()); }
-  void on_critical(std::string&& str) final { g_critical("%s", str.c_str()); }
-  void on_warning(std::string&& str) final { g_warning("%s", str.c_str()); }
-  void on_message(std::string&& str) final { g_message("%s", str.c_str()); }
-  void on_info(std::string&& str) final { g_info("%s", str.c_str()); }
-  void on_debug(std::string&& str) final { g_debug("%s", str.c_str()); }
+struct QuiddityConfiguration {
+  QuiddityConfiguration() = delete;
+  QuiddityConfiguration(const std::string& name,
+                        const std::string& type,
+                        const InfoTree::ptr& tree_config,
+                        QuiddityContainer* qc,
+                        BaseLogger* log)
+      : name_(name), type_(type), tree_config_(tree_config), qc_(qc), log_(log) {}
+  std::string name_;
+  std::string type_;
+  InfoTree::ptr tree_config_;
+  QuiddityContainer* qc_;
+  BaseLogger* log_;
 };
 
 }  // namespace switcher

@@ -38,7 +38,9 @@ template <typename SampleT>
 SampleT AudioResampler<SampleT>::zero_pole_get_next_sample() {
   if (cur_pos_ >= resampled_size_) {
     cur_pos_ = resampled_size_ - 1;  // cliping
-    g_warning("%s is asked for more sample than supposed", __FUNCTION__);
+#ifdef DEBUG
+    std::cerr << __FUNCTION__ << " is asked for more sample than supposed";
+#endif
   }
   std::size_t new_pos = (std::size_t)(ratio_ * (double)cur_pos_);
   if (cur_pos_ < resampled_size_ - 1) ++cur_pos_;
@@ -51,16 +53,14 @@ SampleT AudioResampler<SampleT>::linear_get_next_sample() {
   double decimals = pos - std::floor(pos);
   if (cur_pos_ >= resampled_size_) {
     cur_pos_ = resampled_size_ - 1;  // cliping
-    g_warning("%s is asked for more sample than supposed", __FUNCTION__);
+#ifdef DEBUG
+    std::cerr << __FUNCTION__ << " is asked for more sample than supposed";
+#endif
   }
   SampleT sample =
       (1. - decimals) *
           samplebuf_[(std::size_t)std::floor(pos) * number_of_channels_ + channel_number_] +
       decimals * samplebuf_[(std::size_t)std::ceil(pos) * number_of_channels_ + channel_number_];
-  // if (original_size_ != resampled_size_ && 1 == channel_number_) {
-  //   g_print("pos %f, decimals %f, curpos %lu, sample %f\n",
-  //           pos, decimals, cur_pos_, sample);
-  // }
   if (cur_pos_ < resampled_size_ - 1) ++cur_pos_;
   return sample;
 }

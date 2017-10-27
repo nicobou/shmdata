@@ -25,7 +25,7 @@ std::atomic<int> ProtocolCurl::instance_count_{0};
 ProtocolCurl::ProtocolCurl(Quiddity* quid, const InfoTree* tree) : ProtocolReader(quid, tree) {
   if (instance_count_ == 0) {
     if (0 != curl_global_init(CURL_GLOBAL_DEFAULT)) {
-      g_warning("curl_global_init failed");
+      quid->warning("curl_global_init failed");
       return;
     }
   }
@@ -47,7 +47,9 @@ bool ProtocolCurl::curl_request(const std::string& url) {
   res = curl_easy_perform(curl_);
   /* Check for errors */
   if (res != CURLE_OK) {
-    g_message("ERROR: curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+#ifdef DEBUG
+    std::cerr << " curl_easy_perform() failed: " << curl_easy_strerror(res) << '\n';
+#endif
     return false;
   }
   return true;
@@ -59,7 +61,7 @@ bool ProtocolCurl::make_properties(Quiddity* quid, const InfoTree* tree) {
     auto url = tree->branch_read_data<std::string>(it + ".url");
 
     if (url.empty()) {
-      g_warning("Could not get url from description (protocol-mapper curl)");
+      quid->warning("Could not get url from description (protocol-mapper curl)");
       return false;
     }
 

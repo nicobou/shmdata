@@ -24,18 +24,19 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "./bool-log.hpp"
 
 namespace switcher {
 namespace GstUtils {
 GstElement* make_element(const gchar* class_name, GstElement** target_element);
 bool link_static_to_request(GstElement* src, GstElement* sink);
 bool link_static_to_request(GstPad* srcpad, GstElement* sink);
-bool check_pad_link_return(GstPadLinkReturn res);
+BoolLog check_pad_link_return(GstPadLinkReturn res);
 void release_request_pad(GstPad* pad, gpointer user_data);
 void unlink_pad(GstPad* pad);
 void clean_element(GstElement* element);
 void wait_state_changed(GstElement* bin);
-void sync_state_with_parent(GstElement* element);
+BoolLog sync_state_with_parent(GstElement* element);
 void set_element_property_in_bin(GstElement* bin,
                                  const gchar* factory_name,
                                  const gchar* property_name,
@@ -50,9 +51,9 @@ GSource* g_timeout_add_to_context(guint interval,
                                   GSourceFunc function,
                                   gpointer data,
                                   GMainContext* context);
-bool apply_property_value(GObject* g_object_master,
-                          GObject* g_object_slave,
-                          const char* property_name);
+BoolLog apply_property_value(GObject* g_object_master,
+                             GObject* g_object_slave,
+                             const char* property_name);
 void free_g_enum_values(GEnumValue* target_enum);
 void element_factory_list_to_g_enum(GEnumValue* target_enum,
                                     GstElementFactoryListType type,

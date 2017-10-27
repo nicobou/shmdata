@@ -25,11 +25,10 @@
 namespace switcher {
 class PropertyMapper : public Quiddity {
  public:
-  PropertyMapper(const std::string&);
+  PropertyMapper(QuiddityConfiguration&&);
   ~PropertyMapper();
   PropertyMapper(const PropertyMapper&);
   PropertyMapper& operator=(const PropertyMapper&);
-  bool init();
 
  private:
   std::weak_ptr<Quiddity> source_quiddity_{};

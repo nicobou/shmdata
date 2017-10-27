@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_QUIDDITY_MANAGER_IMPL_H__
-#define __SWITCHER_QUIDDITY_MANAGER_IMPL_H__
+#ifndef __SWITCHER_QUIDDITY_CONTAINER_H__
+#define __SWITCHER_QUIDDITY_CONTAINER_H__
 
 #include <memory>
 #include <thread>
@@ -27,7 +27,9 @@
 #include "./abstract-factory.hpp"
 #include "./documentation-registry.hpp"
 #include "./information-tree.hpp"
+#include "./logged.hpp"
 #include "./plugin-loader.hpp"
+#include "./quiddity-configuration.hpp"
 #include "./quiddity.hpp"
 
 namespace switcher {
@@ -35,17 +37,18 @@ class QuidditySignalSubscriber;
 class Switcher;
 class Bundle;
 
-class QuiddityContainer {
+class QuiddityContainer : public Logged {
   friend class Bundle;
 
  public:
   using ptr = std::shared_ptr<QuiddityContainer>;
   using OnCreateRemoveCb = std::function<void(const std::string& nick_name)>;
 
-  static QuiddityContainer::ptr make_manager(Switcher* root_manager,
-                                             const std::string& name = "default");
+  static QuiddityContainer::ptr make_container(Switcher* switcher,
+                                               BaseLogger* log,
+                                               const std::string& name = "default");
   QuiddityContainer() = delete;
-  virtual ~QuiddityContainer();
+  virtual ~QuiddityContainer() = default;
   QuiddityContainer(const QuiddityContainer&) = delete;
   QuiddityContainer& operator=(const QuiddityContainer&) = delete;
 
@@ -56,7 +59,7 @@ class QuiddityContainer {
   // configuration
   bool load_configuration_file(const std::string& file_path);
 
-  // **** info about manager
+  // **** info
   std::string get_name() const;
   std::vector<std::string> get_classes();
   std::vector<std::string> get_instances() const;
@@ -65,17 +68,17 @@ class QuiddityContainer {
   // doc
   std::string get_classes_doc();                                           // json formatted
   std::string get_class_doc(const std::string& class_name);                // json formatted
-  std::string get_quiddity_description(const std::string& quiddity_name);  // json formatted
+  std::string get_quiddity_description(const std::string& name);           // json formatted
   std::string get_quiddities_description();                                // json formatted
   bool class_exists(const std::string& class_name);
 
   // **** creation/remove/get and notification
   std::string create(const std::string& quiddity_class, bool call_creation_cb = true);
   std::string create(const std::string& quiddity_class,
-                     const std::string& nick_name,
+                     const std::string& name,
                      bool call_creation_cb = true);
-  bool remove(const std::string& quiddity_name, bool call_removal_cb = true);
-  std::shared_ptr<Quiddity> get_quiddity(const std::string& quiddity_nick_name);
+  bool remove(const std::string& name, bool call_removal_cb = true);
+  std::shared_ptr<Quiddity> get_quiddity(const std::string& name);
 
   unsigned int register_creation_cb(OnCreateRemoveCb cb);
   unsigned int register_removal_cb(OnCreateRemoveCb cb);
@@ -144,33 +147,16 @@ class QuiddityContainer {
       sig,                     // method used by quiddities to access the consultable
       sigs);                   // public forwarding method
 
-  Switcher* get_root_manager() { return manager_; };
+  Switcher* get_switcher() { return switcher_; };
 
  private:
-  std::vector<std::string> plugin_dirs_{};
-  InfoTree::ptr configurations_{};
-  std::unordered_map<std::string, PluginLoader::ptr> plugins_{};
-  std::string name_{};
-  AbstractFactory<Quiddity, std::string, const std::string&> abstract_factory_{};
-  static const int kMaxConfigurationFileSize{100000000};  // 100Mo
-
   bool load_plugin(const char* filename);
   void close_plugin(const std::string& class_name);
-  explicit QuiddityContainer(const std::string&);
+  QuiddityContainer(const std::string&, BaseLogger* log);
   void make_classes_doc();
   void register_classes();
-  std::map<unsigned int, OnCreateRemoveCb> on_created_cbs_{};
-  std::map<unsigned int, OnCreateRemoveCb> on_removed_cbs_{};
-  std::unordered_map<std::string, std::shared_ptr<Quiddity>> quiddities_{};
-  std::unordered_map<std::string, std::shared_ptr<QuidditySignalSubscriber>> signal_subscribers_{};
-  bool init_quiddity(std::shared_ptr<Quiddity> quiddity);
   void remove_shmdata_sockets();
-
-  InfoTree::ptr classes_doc_{};
-  CounterMap counters_{};
-  std::weak_ptr<QuiddityContainer> me_{};
-  Switcher* manager_{nullptr};
-  static void release_g_error(GError* error);
+  void release_g_error(GError* error);
 
   // forwarding accessor and return constructor on error
   std::pair<bool, Quiddity*> find_quiddity(const std::string& name) const {
@@ -183,9 +169,25 @@ class QuiddityContainer {
   // construct result to pass when element has not been found:
   template <typename ReturnType>
   ReturnType construct_error_return(const std::string& name) const {
-    g_warning("quiddity %s not found", name.c_str());
+    warning("quiddity % not found", name);
     return ReturnType();
   }
+
+  std::vector<std::string> plugin_dirs_{};
+  InfoTree::ptr configurations_{};
+  std::unordered_map<std::string, PluginLoader::ptr> plugins_{};
+  std::string name_{};
+  AbstractFactory<Quiddity, std::string, QuiddityConfiguration&&> abstract_factory_{};
+  static const int kMaxConfigurationFileSize{100000000};  // 100Mo
+
+  std::map<unsigned int, OnCreateRemoveCb> on_created_cbs_{};
+  std::map<unsigned int, OnCreateRemoveCb> on_removed_cbs_{};
+  std::unordered_map<std::string, std::shared_ptr<QuidditySignalSubscriber>> signal_subscribers_{};
+  InfoTree::ptr classes_doc_{};
+  CounterMap counters_{};
+  std::weak_ptr<QuiddityContainer> me_{};
+  Switcher* switcher_{nullptr};
+  std::unordered_map<std::string, std::shared_ptr<Quiddity>> quiddities_{};
 };
 
 }  // namespace switcher

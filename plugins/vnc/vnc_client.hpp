@@ -41,7 +41,7 @@
 namespace switcher {
 class VncClientSrc : public Quiddity, public StartableQuiddity {
  public:
-  VncClientSrc(const std::string&);
+  VncClientSrc(QuiddityConfiguration&&);
   ~VncClientSrc();
   VncClientSrc(const VncClientSrc&) = delete;
   VncClientSrc& operator=(const VncClientSrc&) = delete;
@@ -70,7 +70,6 @@ class VncClientSrc : public Quiddity, public StartableQuiddity {
   std::map<int, std::string> shmdata_readers_caps_{};
   std::map<std::string, std::unique_ptr<ShmdataFollower>> events_readers_{};
 
-  bool init() final;
   bool connect(std::string shmdata_socket_path);
   bool disconnect(std::string shmName);
   bool disconnect_all();

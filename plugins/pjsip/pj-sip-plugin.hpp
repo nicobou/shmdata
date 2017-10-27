@@ -37,13 +37,13 @@ class SIPPlugin : public Quiddity {
   friend PJSIP;
   friend PJStunTurn;
   friend PJWhiteList;
+  friend PJICEStreamTrans;
 
  public:
-  SIPPlugin(const std::string&);
+  SIPPlugin(QuiddityConfiguration&&);
   ~SIPPlugin();
   SIPPlugin(const SIPPlugin&) = delete;
   SIPPlugin& operator=(const SIPPlugin&) = delete;
-  bool init();
   bool start();
   bool stop();
 
@@ -55,12 +55,12 @@ class SIPPlugin : public Quiddity {
   std::string dns_address_;
   PContainer::prop_id_t dns_address_id_{0};
   bool decompress_streams_{true};
-  std::unique_ptr<ThreadedWrapper<PJSIP>> pjsip_{};
   PContainer::prop_id_t decompress_streams_id_;
   std::unique_ptr<PJCall> sip_calls_{nullptr};
   std::unique_ptr<PJPresence> sip_presence_{nullptr};
   std::unique_ptr<PJStunTurn> stun_turn_{nullptr};
   std::unique_ptr<PJWhiteList> white_list_{nullptr};
+  std::unique_ptr<ThreadedWrapper<PJSIP>> pjsip_{};
 
   // singleton related members:
   bool i_m_the_one_{false};

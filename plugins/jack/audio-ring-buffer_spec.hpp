@@ -31,7 +31,6 @@ std::size_t AudioRingBuffer<SampleType>::put_samples(std::size_t num,
   std::size_t available = available_size_.load();
   std::size_t res = num;
   if (available < num) res = available;
-  // g_print("%s available %lu\n", __FUNCTION__, available);
   if (0 == res) return res;
   for (std::size_t i = 0; i < res; ++i) {
     buffer_[write_] = sample_getter();

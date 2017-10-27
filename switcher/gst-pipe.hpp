@@ -27,6 +27,7 @@
 #include <gst/gst.h>
 #include <condition_variable>
 #include <mutex>
+#include "./bool-log.hpp"
 
 namespace switcher {
 
@@ -42,8 +43,8 @@ class GstPipe {
   GstPipe(const GstPipe&) = delete;
   GstPipe& operator=(const GstPipe&) = delete;
   bool play(bool play);
-  bool seek(gdouble position);
-  bool speed(gdouble speed);
+  BoolLog seek(gdouble position);
+  BoolLog speed(gdouble speed);
   GstElement* get_pipeline();
 
  private:

@@ -24,7 +24,7 @@ using namespace switcher;
 
 int main() {
   {
-    Switcher::ptr manager = Switcher::make_manager("bundle");
+    Switcher::ptr manager = Switcher::make_switcher("bundle");
     assert(manager->load_configuration_file("./check_bundle.config"));
     assert(manager->create("source-bundle", "source-bundle") == "source-bundle");
     assert(manager->create("sink-bundle", "sink-bundle") == "sink-bundle");

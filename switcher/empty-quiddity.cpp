@@ -29,8 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(EmptyQuiddity,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-EmptyQuiddity::EmptyQuiddity(const std::string&) {}
-
-bool EmptyQuiddity::init() { return true; }
+EmptyQuiddity::EmptyQuiddity(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)) {}
 
 }  // namespace switcher

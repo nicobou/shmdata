@@ -34,37 +34,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureColorizeGL,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-PostureColorizeGL::PostureColorizeGL(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
-
-PostureColorizeGL::~PostureColorizeGL() { stop(); }
-
-bool PostureColorizeGL::start() {
-  if (is_started()) return false;
-
-  calibration_reader_ = unique_ptr<CalibrationReader>(new CalibrationReader(calibration_path_));
-  colorize_ = make_shared<ColorizeGL>();
-
-  colorize_->setCalibration(calibration_reader_->getCalibrationParams());
-  colorize_->setCompressMesh(compress_mesh_);
-
-  return true;
-}
-
-bool PostureColorizeGL::stop() {
-  lock_guard<mutex> lock(mutex_);
-
-  if (colorize_ != nullptr) colorize_.reset();
-
-  mesh_writer_.reset();
-  tex_writer_.reset();
-
-  has_input_mesh_ = false;
-  mesh_index_ = -1;
-
-  return true;
-}
-
-bool PostureColorizeGL::init() {
+PostureColorizeGL::PostureColorizeGL(QuiddityConfiguration&&)
+    : shmcntr_(static_cast<Quiddity*>(this)) {
   init_startable(this);
 
   shmcntr_.install_connect_method([this](const std::string path) { return connect(path); },
@@ -97,6 +68,32 @@ bool PostureColorizeGL::init() {
                                         "Compress the output mesh",
                                         "Compress the output mesh",
                                         compress_mesh_);
+}
+
+PostureColorizeGL::~PostureColorizeGL() { stop(); }
+
+bool PostureColorizeGL::start() {
+  if (is_started()) return false;
+
+  calibration_reader_ = unique_ptr<CalibrationReader>(new CalibrationReader(calibration_path_));
+  colorize_ = make_shared<ColorizeGL>();
+
+  colorize_->setCalibration(calibration_reader_->getCalibrationParams());
+  colorize_->setCompressMesh(compress_mesh_);
+
+  return true;
+}
+
+bool PostureColorizeGL::stop() {
+  lock_guard<mutex> lock(mutex_);
+
+  if (colorize_ != nullptr) colorize_.reset();
+
+  mesh_writer_.reset();
+  tex_writer_.reset();
+
+  has_input_mesh_ = false;
+  mesh_index_ = -1;
 
   return true;
 }

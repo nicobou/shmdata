@@ -39,7 +39,7 @@ namespace vrpn {
 
 class VRPNSource : public Quiddity, public StartableQuiddity {
  public:
-  VRPNSource(const std::string&);
+  VRPNSource(QuiddityConfiguration&&);
   ~VRPNSource();
   VRPNSource(const VRPNSource&) = delete;
   VRPNSource& operator=(const VRPNSource&) = delete;
@@ -76,7 +76,6 @@ class VRPNSource : public Quiddity, public StartableQuiddity {
   bool debug_{false};
 
   // SWITCHER
-  bool init() final;
   bool start() final;
   bool stop() final;
 

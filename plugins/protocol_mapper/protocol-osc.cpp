@@ -58,10 +58,10 @@ bool ProtocolOsc::make_properties(Quiddity* quid, const InfoTree* tree) {
 
     quid->pmanage<MPtr(&PContainer::make_bool)>(
         it,
-        [this, it, type, path, value, continuous](bool val) {
+        [ this, quidptr = quid, it, type, path, value, continuous ](bool val) {
           if (url_.empty()) {
-            g_warning("No remote url set, cannot send OSC messages (protocol-mapper).");
-            g_message("No remote url set, cannot send OSC messages.");
+            quidptr->warning("No remote url set, cannot send OSC messages (protocol-mapper).");
+            quidptr->message("No remote url set, cannot send OSC messages.");
             return false;
           }
 
@@ -76,13 +76,18 @@ bool ProtocolOsc::make_properties(Quiddity* quid, const InfoTree* tree) {
                   ProtocolReader::Command(
                       [this, type, path, value]() {
                         if (send_osc_code(type, path, value) == -1) {
-                          g_warning("Failed to send OSC message, probably wrong type or value");
+#ifdef DEBUG
+                          std::cerr << "Failed to send OSC message, probably wrong type or value"
+                                    << '\n';
+#endif
                         }
                       },
                       continuous)));
             } else {
               if (send_osc_code(type, path, value) == -1) {
-                g_warning("Failed to send OSC message, probably wrong type or invalid value");
+#ifdef DEBUG
+                std::cerr << "Failed to send OSC message, probably wrong type or value" << '\n';
+#endif
               }
             }
           } else {
@@ -124,7 +129,9 @@ int ProtocolOsc::send_osc_code(const std::string& type, const std::string& path,
       lo_message_free(msg);
     }
   } else {
-    g_warning("Ignoring unknown OSC message type %s (protocol-mapper osc)", type.c_str());
+#ifdef DEBUG
+    std::cerr << "Ignoring unknown OSC message type " << type << " (protocol-mapper osc)" << '\n';
+#endif
   }
 
   return status;

@@ -30,9 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoEncoder,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-GstVideoEncoder::GstVideoEncoder(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
-
-bool GstVideoEncoder::init() {
+GstVideoEncoder::GstVideoEncoder(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   codecs_ = std::make_unique<GstVideoCodec>(
       static_cast<Quiddity*>(this), std::string(), make_file_name("video-encoded"));
   shmcntr_.install_connect_method(
@@ -41,7 +40,6 @@ bool GstVideoEncoder::init() {
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-  return true;
 }
 
 bool GstVideoEncoder::on_shmdata_disconnect() { return codecs_->stop(); }

@@ -29,7 +29,7 @@ int main() {
   {
     using namespace switcher;
 
-    Switcher::ptr manager = Switcher::make_manager("test_manager");
+    Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
     manager->scan_directory_for_plugins("./");
 

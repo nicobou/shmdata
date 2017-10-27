@@ -21,18 +21,19 @@
 
 #include <sys/stat.h>
 #include <cstring>
+#include <iostream>
 #include "switcher/quiddity-basic-test.hpp"
 
 int main() {
   bool success = true;
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_manager("test_manager");
+    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
 
     manager->scan_directory_for_plugins("./");
 
     struct stat st;
     if (stat("/dev/snd", &st) == -1) {
-      g_warning("Could not open /dev/snd in MIDI test: %s", strerror(errno));
+      std::cerr << "Could not open /dev/snd in MIDI test: " << strerror(errno) << '\n';
       return 0;
     }
 

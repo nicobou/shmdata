@@ -37,7 +37,7 @@
 namespace switcher {
 class PostureMerge : public Quiddity, public StartableQuiddity {
  public:
-  PostureMerge(const std::string&);
+  PostureMerge(QuiddityConfiguration&&);
   ~PostureMerge();
   PostureMerge(const PostureMerge&) = delete;
   PostureMerge& operator=(const PostureMerge&) = delete;
@@ -70,7 +70,6 @@ class PostureMerge : public Quiddity, public StartableQuiddity {
   std::map<int, std::vector<char>> stock_{};
   std::mutex stock_mutex_{};
 
-  bool init() final;
   bool connect(std::string shmdata_socket_path);
   bool disconnect(std::string shmName);
   bool disconnect_all();

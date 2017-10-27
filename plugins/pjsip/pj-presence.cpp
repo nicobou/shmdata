@@ -98,7 +98,7 @@ PJPresence::PJPresence() {
       [this](const IndexOrName& val) {
         status_.select(val);
         if (-1 == account_id_) {
-          g_warning("cannot send online status when not registered");
+          SIPPlugin::this_->warning("cannot send online status when not registered");
           return true;
         }
         SIPPlugin::this_->pjsip_->run(
@@ -152,11 +152,12 @@ PJPresence::~PJPresence() {
 gboolean PJPresence::register_account_wrapped(gchar* user, gchar* password, void* user_data) {
   PJPresence* context = static_cast<PJPresence*>(user_data);
   if (nullptr == user || nullptr == password) {
-    g_message("ERROR:register sip account missing user or domain or password");
+    SIPPlugin::this_->message("ERROR:register sip account missing user or domain or password");
     return FALSE;
   }
   if (-1 == SIPPlugin::this_->transport_id_) {
-    g_message("ERROR:cannot register, SIP port is not available (%u)", SIPPlugin::this_->sip_port_);
+    SIPPlugin::this_->message("ERROR:cannot register, SIP port is not available (%)",
+                              std::to_string(SIPPlugin::this_->sip_port_));
     return FALSE;
   }
   std::string tmp = user;
@@ -176,7 +177,7 @@ void PJPresence::register_account(const std::string& sip_user, const std::string
   // extracting domain information from sip uri
   auto at = std::find(sip_user.begin(), sip_user.end(), '@');
   if (sip_user.end() == at || sip_user.end() == (at + 1)) {
-    g_warning("%s: invalid sip uri", __FUNCTION__);
+    SIPPlugin::this_->warning("%: invalid sip uri", std::string(__FUNCTION__));
     return;
   }
   if (nullptr != acc_info_pool_) {
@@ -224,20 +225,20 @@ void PJPresence::register_account(const std::string& sip_user, const std::string
 gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */, void* user_data) {
   PJPresence* context = static_cast<PJPresence*>(user_data);
   SIPPlugin::this_->pjsip_->run([&]() { context->unregister_account(); });
-  if (-1 != context->account_id_) return FALSE;
+  if (-1 != context->account_id_ || !pjsua_acc_is_valid(context->account_id_)) return FALSE;
   return TRUE;
 }
 
 void PJPresence::unregister_account(bool notify_tree) {
   std::unique_lock<std::mutex> lock(registration_mutex_);
 
-  if (-1 == account_id_) {
-    g_warning("no account to unregister");
+  if (-1 == account_id_ || !pjsua_acc_is_valid(account_id_)) {
+    SIPPlugin::this_->warning("no account to unregister");
     return;
   }
   change_online_status(PJPresence::OFFLINE);
   if (PJ_SUCCESS != pjsua_acc_del(account_id_)) {
-    g_warning("error when unregistering account");
+    SIPPlugin::this_->warning("error when unregistering account");
     return;
   }
   registration_cond_.wait_for(lock, std::chrono::seconds(3));
@@ -247,7 +248,7 @@ void PJPresence::unregister_account(bool notify_tree) {
     auto it = buddy_id_.begin();
     status = pjsua_buddy_del(it->second);
     if (status != PJ_SUCCESS) {
-      g_warning("cannot remove buddy");
+      SIPPlugin::this_->warning("cannot remove buddy");
       return;
     }
     if (notify_tree) SIPPlugin::this_->prune_tree(".buddies." + std::to_string(it->second));
@@ -271,7 +272,7 @@ void PJPresence::add_buddy(const std::string& user) {
   pj_status_t status = PJ_SUCCESS;
 
   if (-1 == account_id_) {
-    g_message("ERROR:cannot add buddy with invalid account");
+    SIPPlugin::this_->message("ERROR:cannot add buddy with invalid account");
     return;
   }
   std::string sip_user = user;
@@ -279,13 +280,13 @@ void PJPresence::add_buddy(const std::string& user) {
   std::string buddy_full_uri("sip:" + sip_user  // + ";transport=tcp"
                              );
   if (pjsua_verify_url(buddy_full_uri.c_str()) != PJ_SUCCESS) {
-    g_message("ERROR:Invalid buddy URI (sip:%s)", sip_user.c_str());
+    SIPPlugin::this_->message("ERROR:Invalid buddy URI (sip:%)", sip_user);
     return;
   }
 
   if (buddy_id_.end() != buddy_id_.find(sip_user)) {
-    g_message("ERROR:buddy %s already added", sip_user.c_str());
-    g_warning("buddy %s already added", sip_user.c_str());
+    SIPPlugin::this_->message("ERROR:buddy % already added", sip_user);
+    SIPPlugin::this_->warning("buddy % already added", sip_user);
     return;
   }
 
@@ -295,10 +296,10 @@ void PJPresence::add_buddy(const std::string& user) {
   buddy_cfg.user_data = this;
   status = pjsua_buddy_add(&buddy_cfg, &buddy_id);
   if (status != PJ_SUCCESS) {
-    g_warning("buddy not found");
+    SIPPlugin::this_->warning("buddy not found");
     return;
   }
-  g_debug("Buddy added");
+  SIPPlugin::this_->debug("Buddy added");
   buddy_id_[sip_user] = buddy_id;
   SIPPlugin::this_->white_list_->add(
       sip_user, [path = ".buddies." + std::to_string(buddy_id)](bool authorized) {
@@ -316,32 +317,32 @@ void PJPresence::add_buddy(const std::string& user) {
 void PJPresence::del_buddy(const std::string& user) {
   pj_status_t status = PJ_SUCCESS;
   if (pjsua_verify_url(std::string("sip:" + user).c_str()) != PJ_SUCCESS) {
-    g_message("ERROR:Invalid buddy URI (%s) for deletion", user.c_str());
+    SIPPlugin::this_->message("ERROR:Invalid buddy URI (%) for deletion", user);
     return;
   }
   std::string sip_user = user;
   if (lower_case_accounts_) StringUtils::tolower(sip_user);
   auto it = buddy_id_.find(sip_user);
   if (buddy_id_.end() == it) {
-    g_message("ERROR:%s is not in buddy list, cannot delete", sip_user.c_str());
+    SIPPlugin::this_->message("ERROR:% is not in buddy list, cannot delete", sip_user);
     return;
   }
   status = pjsua_buddy_del(it->second);
   if (status != PJ_SUCCESS) {
-    g_warning("cannot remove buddy");
+    SIPPlugin::this_->warning("cannot remove buddy");
     return;
   }
   SIPPlugin::this_->white_list_->remove(sip_user);
   SIPPlugin::this_->prune_tree(".buddies." + std::to_string(it->second));
   buddy_id_.erase(it);
-  g_debug("Buddy removed");
+  SIPPlugin::this_->debug("Buddy removed");
   return;
 }
 
 gboolean PJPresence::add_buddy_wrapped(gchar* buddy_uri, void* user_data) {
   PJPresence* context = static_cast<PJPresence*>(user_data);
   if (-1 == SIPPlugin::this_->transport_id_) {
-    g_message("ERROR:cannot add buddy without connection to server");
+    SIPPlugin::this_->message("ERROR:cannot add buddy without connection to server");
     return FALSE;
   }
 
@@ -357,13 +358,13 @@ gboolean PJPresence::del_buddy_wrapped(gchar* buddy_uri, void* user_data) {
 
 void PJPresence::name_buddy(std::string name, std::string sip_user) {
   if (pjsua_verify_url(std::string("sip:" + sip_user).c_str()) != PJ_SUCCESS) {
-    g_warning("Invalid buddy URI (%s) when giving a nick name", sip_user.c_str());
+    SIPPlugin::this_->warning("Invalid buddy URI (%) when giving a nick name", sip_user);
     return;
   }
 
   auto it = buddy_id_.find(sip_user);
   if (buddy_id_.end() == it) {
-    g_message("ERROR:%s is not in buddy list", sip_user.c_str());
+    SIPPlugin::this_->message("ERROR:% is not in buddy list", sip_user);
     return;
   }
   SIPPlugin::this_->graft_tree(".buddies." + std::to_string(it->second) + ".name",
@@ -381,8 +382,8 @@ gboolean PJPresence::name_buddy_wrapped(gchar* name, gchar* buddy_uri, void* use
 
 void PJPresence::on_registration_state(pjsua_acc_id acc_id, pjsua_reg_info* info) {
   PJPresence* context = static_cast<PJPresence*>(pjsua_acc_get_user_data(acc_id));
-  if (nullptr == context) {
-    g_warning("SIP registration failed");
+  if (nullptr == context || !pjsua_acc_is_valid(acc_id)) {
+    SIPPlugin::this_->warning("SIP registration failed");
     SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
         SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
     return;
@@ -391,24 +392,21 @@ void PJPresence::on_registration_state(pjsua_acc_id acc_id, pjsua_reg_info* info
   // SIP code higher to 299 are error code
   if (PJ_SUCCESS != info->cbparam->status || info->cbparam->code > 299) {
     if (info->cbparam->code == 408) {
-      g_message(
-          "ERROR: registration failed (timeout), SIP server did not answer"
-          "(%.*s)",
-          static_cast<int>(info->cbparam->reason.slen),
-          info->cbparam->reason.ptr);
+      SIPPlugin::this_->message(
+          "ERROR: registration failed (timeout), SIP server did not answer (%)",
+          std::string(info->cbparam->reason.ptr, static_cast<int>(info->cbparam->reason.slen)));
     } else {
-      g_message(
-          "ERROR: registration failed "
-          "(%.*s)",
-          static_cast<int>(info->cbparam->reason.slen),
-          info->cbparam->reason.ptr);
+      SIPPlugin::this_->message(
+          "ERROR: registration failed (%)",
+          std::string(info->cbparam->reason.ptr, static_cast<int>(info->cbparam->reason.slen)));
     }
-    g_warning("registration failed (%.*s)",
-              static_cast<int>(info->cbparam->reason.slen),
-              info->cbparam->reason.ptr);
+    SIPPlugin::this_->warning(
+        "registration failed (%)",
+        std::string(info->cbparam->reason.ptr, static_cast<int>(info->cbparam->reason.slen)));
     if (-1 != context->account_id_) {
       pj_status_t status = pjsua_acc_del(context->account_id_);
-      if (PJ_SUCCESS != status) g_warning("Error deleting account after registration failed");
+      if (PJ_SUCCESS != status)
+        SIPPlugin::this_->warning("Error deleting account after registration failed");
       context->account_id_ = -1;
     }
     context->registered_ = false;
@@ -418,7 +416,7 @@ void PJPresence::on_registration_state(pjsua_acc_id acc_id, pjsua_reg_info* info
     else
       context->registered_ = false;
   }
-  g_debug("registration SIP status code %d", info->cbparam->code);
+  SIPPlugin::this_->debug("registration SIP status code %", std::to_string(info->cbparam->code));
   context->registration_cond_.notify_one();
 }
 
@@ -434,20 +432,6 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   //   activity = "away";
   // if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
   //   activity = "busy";
-  // g_debug("%.*s status is %.*s, subscription state is %s "
-  //         "(last termination reason code=%d %.*s)\n"
-  //         "rpid  activity %s, note %.*s\n",
-  //         static_cast<int>(info.uri.slen),
-  //         info.uri.ptr,
-  //         static_cast<int>(info.status_text.slen),
-  //         info.status_text.ptr,
-  //         info.sub_state_name,
-  //         info.sub_term_code,
-  //         static_cast<int>(info.sub_term_reason.slen),
-  //         info.sub_term_reason.ptr,
-  //         activity.c_str(),
-  //         static_cast<int>(info.rpid.note.slen),
-  //         info.rpid.note.ptr);
   // std::string buddy_url(info.uri.ptr, (size_t) info.uri.slen);
   // tree->graft(".sip_url", InfoTree::make(buddy_url));
   std::string status("unknown");
@@ -467,8 +451,7 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   if (PJRPID_ACTIVITY_BUSY == info.rpid.activity) status = "busy";
 
   InfoTree::ptr tree =
-      SIPPlugin::this_->prune_tree(std::string(".buddies." + std::to_string(buddy_id)),
-                                   false);  // do not signal since the tree will be updated
+      SIPPlugin::this_->get_tree(std::string(".buddies." + std::to_string(buddy_id)));
   if (!tree) tree = InfoTree::make();
   // writing status and state
   if (std::string(info.status_text.ptr, (size_t)info.status_text.slen) == "Offline")
@@ -569,9 +552,6 @@ void PJPresence::on_buddy_evsub_state(pjsua_buddy_id /*buddy_id*/,
     pjsip_rx_data* rdata = event->body.tsx_state.src.rdata;
     snprintf(event_info, sizeof(event_info), " (RX %s)", pjsip_rx_data_get_info(rdata));
   }
-  // g_debug("Buddy %d: subscription state: %s (event: %s%s)",
-  //        buddy_id, pjsip_evsub_get_state_name(sub),
-  //        pjsip_event_str(event->type), event_info);
 }
 
 pjsua_buddy_id PJPresence::get_id_from_buddy_name(const std::string& name) {

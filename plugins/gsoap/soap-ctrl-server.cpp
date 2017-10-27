@@ -38,9 +38,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SoapCtrlServer,
                                      "GPL",
                                      "Nicolas Bouillot");
 
-SoapCtrlServer::SoapCtrlServer(const std::string&) {}
-
-bool SoapCtrlServer::init() {
+SoapCtrlServer::SoapCtrlServer(QuiddityConfiguration&& conf)
+    : SwitcherWrapper(std::forward<QuiddityConfiguration>(conf)) {
   soap_init(&soap_);
   // release port
   soap_.connect_flags = SO_LINGER;
@@ -57,8 +56,6 @@ bool SoapCtrlServer::init() {
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_INT, nullptr),
                  this);
-
-  return true;
 }
 
 SoapCtrlServer::~SoapCtrlServer() {
@@ -126,9 +123,9 @@ int SoapCtrlServer::http_get(struct soap* soap) {
       soap_send_raw(soap, sdp_contents, file_length);
       return soap_end_send(soap);
     } else
-      g_warning("cannot get sdp description for rtpsession %s, destination %s\n",
-                rtpsession_name.c_str(),
-                destination_name.c_str());
+      ctrl_server->warning("cannot get sdp description for rtpsession %, destination %",
+                           rtpsession_name,
+                           destination_name);
   }
   return 404;
 }
@@ -143,7 +140,7 @@ gboolean SoapCtrlServer::set_port_wrapped(gint port, gpointer user_data) {
 
 bool SoapCtrlServer::set_port(int port) {
   if (0 != port_) {
-    g_warning("soap port can be set only once");
+    warning("soap port can be set only once");
     return false;
   }
   port_ = port;
@@ -192,7 +189,6 @@ bool SoapCtrlServer::start() {
 //   soap_done(&soap_);
 //   if (nullptr != service_)
 //     delete service_;
-//   g_print("end of %s\n", __FUNCTION__);
 //   return true;
 // }
 
@@ -209,17 +205,7 @@ void SoapCtrlServer::server_thread() {
     if (!soap_valid_socket(s)) {
       if (service_->errnum)
         service_->soap_print_fault(stderr);
-      else {
-        // g_debug ("SOAP server timed out");
-      }
     } else {
-      // g_debug ("client request %d accepted on socket %d, client IP is
-      // %d.%d.%d.%d",
-      // 	    i, s,
-      // 	    (int)(service_->ip>>24)&0xFF,
-      // 	    (int)(service_->ip>>16)&0xFF,
-      // 	    (int)(service_->ip>>8)&0xFF,
-      // 	    (int)service_->ip&0xFF);
       std::unique_lock<std::mutex> lock(mutex_);
       controlService* tcontrol = service_->copy();
       if (service_->errnum) service_->soap_print_fault(stderr);
@@ -243,9 +229,6 @@ int controlService::get_classes(std::vector<std::string>* result) {
 
   if (ctrl_server == nullptr || !(bool)manager) {
     char* s = (char*)soap_malloc(this, 1024);
-    g_debug(
-        "controlService::get_classes: "
-        "cannot get manager from SoapCtrlServer (nullptr)");
     sprintf(s, "controlService::get_classes: cannot get manager (nullptr)");
     return soap_senderfault("error in get_classes", s);
   }
@@ -263,9 +246,6 @@ int controlService::get_classes_doc(std::string* result) {
 
   if (ctrl_server == nullptr || !(bool)manager) {
     char* s = (char*)soap_malloc(this, 1024);
-    g_debug(
-        "controlService::get_classes_doc: cannot get manager from "
-        "SoapCtrlServer (nullptr)");
     sprintf(s, "controlService::get_classes: cannot get manager (nullptr)");
     return soap_senderfault("error in get_classes_doc", s);
   }
@@ -283,9 +263,6 @@ int controlService::get_quiddity_description(std::string quiddity_name, std::str
 
   if (ctrl_server == nullptr || !(bool)manager) {
     char* s = (char*)soap_malloc(this, 1024);
-    g_debug(
-        "controlService::get_class_doc: cannot get manager from SoapCtrlServer "
-        "(nullptr)");
     sprintf(s, "controlService::get_classes: cannot get manager (nullptr)");
     return soap_senderfault("error in get_class_doc", s);
   }
@@ -303,9 +280,6 @@ int controlService::get_quiddities_description(std::string* result) {
 
   if (ctrl_server == nullptr || !(bool)manager) {
     char* s = (char*)soap_malloc(this, 1024);
-    g_debug(
-        "controlService::get_quiddities_description: cannot get manager from "
-        "SoapCtrlServer (nullptr)");
     sprintf(s,
             "controlService::get_quiddities_description: cannot get manager "
             "(nullptr)");
@@ -325,9 +299,6 @@ int controlService::get_class_doc(std::string class_name, std::string* result) {
 
   if (ctrl_server == nullptr || !(bool)manager) {
     char* s = (char*)soap_malloc(this, 1024);
-    g_debug(
-        "controlService::get_class_doc: cannot get manager from SoapCtrlServer "
-        "(nullptr)");
     sprintf(s, "controlService::get_classes: cannot get manager (nullptr)");
     return soap_senderfault("error in get_class_doc", s);
   }

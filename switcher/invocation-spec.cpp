@@ -59,7 +59,9 @@ InfoTree::ptr InvocationSpec::get_info_tree() const {
 InvocationSpec InvocationSpec::get_invocation_spec_from_tree(InfoTree::ptr tree) {
   InvocationSpec invocation;
   std::string invocation_str = tree->branch_get_value("command");
-  if (invocation_str != "invoke") g_warning("ERROR with get_invocation_spec_from_tree");
+#ifdef DEBUG
+  assert(invocation_str == "invoke");
+#endif
   {
     std::string args_str("arguments.");
     auto arguments = tree->get_child_keys(args_str);

@@ -25,7 +25,7 @@
 namespace switcher {
 PJStunTurn::PJStunTurn() {
   if (PJ_SUCCESS != pjnath_init()) {
-    g_warning("cannot init pjnath");
+    SIPPlugin::this_->warning("cannot init pjnath");
     return;
   }
   pj_ice_strans_cfg_default(&ice_cfg_);
@@ -34,7 +34,7 @@ PJStunTurn::PJStunTurn() {
   ice_cfg_.stun_cfg.pf = PJSIP::this_->pool_->factory;
   if (PJ_SUCCESS !=
       pj_thread_create(PJSIP::this_->pool_, "switcherSIP", &worker_thread, this, 0, 0, &thread_)) {
-    g_warning("STUN TURN thread creating failed");
+    SIPPlugin::this_->warning("STUN TURN thread creating failed");
     return;
   }
   ice_cfg_.af = pj_AF_INET();

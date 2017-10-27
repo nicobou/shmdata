@@ -29,9 +29,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSink,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PortMidiSink::PortMidiSink(const std::string&) : shmcntr_(static_cast<Quiddity*>(this)) {}
-
-bool PortMidiSink::init() {
+PortMidiSink::PortMidiSink(QuiddityConfiguration&& conf)
+    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   init_startable(this);
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->connect(shmpath); },
@@ -52,7 +51,6 @@ bool PortMidiSink::init() {
       "MIDI capture device to use",
       output_devices_enum_);
   device_ = stoi(output_devices_enum_.get_attached());
-  return true;
 }
 
 void PortMidiSink::on_shmreader_data(void* data, size_t /*size */) {

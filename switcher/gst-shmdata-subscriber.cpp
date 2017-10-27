@@ -33,10 +33,6 @@ GstShmdataSubscriber::GstShmdataSubscriber(GstElement* element,
       on_delete_cb_(on_delete_cb),
       on_connection_status_cb_(on_connection_status_cb),
       ptask_([this]() { this->stat_monitor(); }, update_interval) {
-  if (!GST_IS_ELEMENT(element_)) {
-    g_warning("cannot monitor gstshmdata metadata, not a GstElement");
-    return;
-  }
   gst_object_ref(static_cast<gpointer>(element));
   signal_handler_id_ = g_signal_connect(
       G_OBJECT(element_), "notify::caps", G_CALLBACK(GstShmdataSubscriber::on_caps_cb), this);
@@ -63,7 +59,6 @@ void GstShmdataSubscriber::on_caps_cb(GObject* /*gobject*/,
                                       gpointer user_data) {
   GstShmdataSubscriber* context = static_cast<GstShmdataSubscriber*>(user_data);
   if (!context->on_caps_cb_) {
-    g_debug("got caps, but no caps callback in GstShmdataSubscriber");
     return;
   }
   context->notify_caps();
@@ -82,9 +77,7 @@ void GstShmdataSubscriber::on_connection_status_cb(GObject* /*gobject*/,
                                                    GParamSpec* /*pspec*/,
                                                    gpointer user_data) {
   GstShmdataSubscriber* context = static_cast<GstShmdataSubscriber*>(user_data);
-  if (!context->on_connection_status_cb_) {
-    return;
-  }
+  if (!context->on_connection_status_cb_) return;
   context->notify_connection();
 }
 
@@ -97,10 +90,7 @@ void GstShmdataSubscriber::notify_connection() {
 }
 
 void GstShmdataSubscriber::stat_monitor() {
-  if (!on_stat_monitor_cb_) {
-    g_debug("no stat monitor callback, not monitoring");
-    return;
-  }
+  if (!on_stat_monitor_cb_) return;
   ShmdataStat stat;
   {
     GValue val = G_VALUE_INIT;

@@ -25,9 +25,10 @@
 #include <iostream>
 namespace switcher {
 
-NVencDS::NVencDS(uint32_t device_id, cudaVideoCodec codec) : cu_ctx_(device_id) {
+NVencDS::NVencDS(uint32_t device_id, cudaVideoCodec codec, BaseLogger* log)
+    : Logged(log), cu_ctx_(device_id, log) {
   On_scope_exit {
-    if (!safe_bool_idiom()) g_warning("NV decoder session initialization failed");
+    if (!safe_bool_idiom()) warning("NV decoder session initialization failed");
   };
 
   memset(&video_info_, 0, sizeof(CUVIDDECODECREATEINFO));
@@ -81,10 +82,10 @@ NVencDS::NVencDS(uint32_t device_id, cudaVideoCodec codec) : cu_ctx_(device_id) 
 
 NVencDS::~NVencDS() {
   if (video_parser_ && CUDA_SUCCESS != cuvidDestroyVideoParser(video_parser_))
-    g_warning("Error while destroying NV video parser (nvdec)");
+    warning("Error while destroying NV video parser (nvdec)");
 
   if (video_decoder_ && CUDA_SUCCESS != cuvidDestroyDecoder(video_decoder_))
-    g_warning("Error while destroying NV video decoder (nvdec)");
+    warning("Error while destroying NV video decoder (nvdec)");
 
   if (bitstream_) {
     cuMemFreeHost(bitstream_);

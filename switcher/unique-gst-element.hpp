@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "./bool-log.hpp"
 #include "./gst-utils.hpp"
 #include "./safe-bool-idiom.hpp"
 
@@ -49,14 +50,14 @@ class UGstElem : public SafeBoolIdiom {
   // get raw without taking ownership (do not unref)
   GstElement* get_raw();
   // renew
-  static bool renew(UGstElem& element, const std::vector<std::string>& props_to_apply = {});
+  static BoolLog renew(UGstElem& element, const std::vector<std::string>& props_to_apply = {});
   // mute (will be instanciated with a new class at renew)
   void mute(const gchar* class_name);
 
   static void property_notify_cb(GObject* /*gobject*/, GParamSpec* /*pspec*/, gpointer user_data);
-  bool register_notify_on_property_change(const std::string& gprop_name,
-                                          prop_notification_cb_t callback);
-  bool unregister_notify_on_property_change(const std::string& gprop_name);
+  BoolLog register_notify_on_property_change(const std::string& gprop_name,
+                                             prop_notification_cb_t callback);
+  BoolLog unregister_notify_on_property_change(const std::string& gprop_name);
 
  private:
   struct gst_element_handle {
