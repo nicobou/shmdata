@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.64 (2017-11-29)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+* actually deactivated buggy lock win aspect ratio in glfw
+
 switcher 0.8.62 (2017-11-27)
 ---------------------------
 This is an official release in the 0.8 stable series.

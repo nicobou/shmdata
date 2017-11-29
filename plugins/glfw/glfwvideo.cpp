@@ -373,32 +373,33 @@ GLFWVideo::GLFWVideo(QuiddityConfiguration&& conf)
     warning("BUG: Failed to discover monitors.");
     return;
   }
-  win_aspect_ratio_toggle_id_ =
-      pmanage<MPtr(&PContainer::make_bool)>("win_aspect_ratio_toggle",
-                                            [this](const bool& val) {
-                                              win_aspect_ratio_toggle_ = val;
-                                              minimized_width_ = width_;
-                                              minimized_height_ = height_;
-                                              if (val)
-                                                add_rendering_task(
-                                                    [ this, width = width_, height = height_ ]() {
-                                                      glfwSetWindowAspectRatio(
-                                                          window_, width, height);
-                                                      return true;
-                                                    });
-                                              else
-                                                add_rendering_task([this]() {
-                                                  glfwSetWindowAspectRatio(
-                                                      window_, GLFW_DONT_CARE, GLFW_DONT_CARE);
-                                                  return true;
-                                                });
+  // win_aspect_ratio_toggle_id_ =
+  //     pmanage<MPtr(&PContainer::make_bool)>("win_aspect_ratio_toggle",
+  //                                           [this](const bool& val) {
+  //                                             win_aspect_ratio_toggle_ = val;
+  //                                             minimized_width_ = width_;
+  //                                             minimized_height_ = height_;
+  //                                             if (val)
+  //                                               add_rendering_task(
+  //                                                   [ this, width = width_, height = height_ ]()
+  //                                                   {
+  //                                                     glfwSetWindowAspectRatio(
+  //                                                         window_, width, height);
+  //                                                     return true;
+  //                                                   });
+  //                                             else
+  //                                               add_rendering_task([this]() {
+  //                                                 glfwSetWindowAspectRatio(
+  //                                                     window_, GLFW_DONT_CARE, GLFW_DONT_CARE);
+  //                                                 return true;
+  //                                               });
 
-                                              return true;
-                                            },
-                                            [this]() { return win_aspect_ratio_toggle_; },
-                                            "Locked window aspect ratio",
-                                            "Enable/Disable",
-                                            win_aspect_ratio_toggle_);
+  //                                             return true;
+  //                                           },
+  //                                           [this]() { return win_aspect_ratio_toggle_; },
+  //                                           "Locked window aspect ratio",
+  //                                           "Enable/Disable",
+  //                                           win_aspect_ratio_toggle_);
 
   width_id_ = pmanage<MPtr(&PContainer::make_int)>(
       "width",
