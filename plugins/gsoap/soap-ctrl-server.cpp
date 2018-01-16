@@ -255,7 +255,8 @@ int controlService::get_classes_doc(std::string* result) {
   return SOAP_OK;
 }
 
-int controlService::get_quiddity_description(std::string quiddity_name, std::string* result) {
+int controlService::get_quiddity_description(const std::string& quiddity_name,
+                                             std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
   Switcher::ptr manager;
@@ -291,7 +292,7 @@ int controlService::get_quiddities_description(std::string* result) {
   return SOAP_OK;
 }
 
-int controlService::get_class_doc(std::string class_name, std::string* result) {
+int controlService::get_class_doc(const std::string& class_name, std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
   Switcher::ptr manager;
@@ -319,9 +320,9 @@ int controlService::get_quiddity_names(std::vector<std::string>* result) {
   return SOAP_OK;
 }
 
-int controlService::set_property(std::string quiddity_name,
-                                 std::string property_name,
-                                 std::string property_value) {
+int controlService::set_property(const std::string& quiddity_name,
+                                 const std::string& property_name,
+                                 const std::string& property_value) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
   Switcher::ptr manager;
@@ -338,8 +339,8 @@ int controlService::set_property(std::string quiddity_name,
   return send_set_property_empty_response(SOAP_OK);
 }
 
-int controlService::get_property(std::string quiddity_name,
-                                 std::string property_name,
+int controlService::get_property(const std::string& quiddity_name,
+                                 const std::string& property_name,
                                  std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
@@ -354,7 +355,7 @@ int controlService::get_property(std::string quiddity_name,
   return SOAP_OK;
 }
 
-int controlService::create_quiddity(std::string quiddity_class, std::string* result) {
+int controlService::create_quiddity(const std::string& quiddity_class, std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
   Switcher::ptr manager;
@@ -371,8 +372,8 @@ int controlService::create_quiddity(std::string quiddity_class, std::string* res
   return SOAP_OK;
 }
 
-int controlService::create_named_quiddity(std::string quiddity_class,
-                                          std::string nick_name,
+int controlService::create_named_quiddity(const std::string& quiddity_class,
+                                          const std::string& nick_name,
                                           std::string* result) {
   using namespace switcher;
 
@@ -391,7 +392,7 @@ int controlService::create_named_quiddity(std::string quiddity_class,
   return SOAP_OK;
 }
 
-int controlService::delete_quiddity(std::string quiddity_name) {
+int controlService::delete_quiddity(const std::string& quiddity_name) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
   Switcher::ptr manager;
@@ -406,8 +407,8 @@ int controlService::delete_quiddity(std::string quiddity_name) {
   }
 }
 
-int controlService::invoke_method(std::string quiddity_name,
-                                  std::string method_name,
+int controlService::invoke_method(const std::string& quiddity_name,
+                                  const std::string& method_name,
                                   std::vector<std::string> args,
                                   std::string* result) {
   using namespace switcher;
@@ -426,7 +427,7 @@ int controlService::invoke_method(std::string quiddity_name,
   }
 }
 
-int controlService::get_methods_description(std::string quiddity_name, std::string* result) {
+int controlService::get_methods_description(const std::string& quiddity_name, std::string* result) {
   using namespace switcher;
 
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
@@ -437,8 +438,8 @@ int controlService::get_methods_description(std::string quiddity_name, std::stri
   return SOAP_OK;
 }
 
-int controlService::get_method_description(std::string quiddity_name,
-                                           std::string method_name,
+int controlService::get_method_description(const std::string& quiddity_name,
+                                           const std::string& method_name,
                                            std::string* result) {
   using namespace switcher;
 
@@ -450,7 +451,8 @@ int controlService::get_method_description(std::string quiddity_name,
   return SOAP_OK;
 }
 
-int controlService::get_methods_description_by_class(std::string class_name, std::string* result) {
+int controlService::get_methods_description_by_class(const std::string& class_name,
+                                                     std::string* result) {
   using namespace switcher;
 
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
@@ -461,8 +463,8 @@ int controlService::get_methods_description_by_class(std::string class_name, std
   return SOAP_OK;
 }
 
-int controlService::get_method_description_by_class(std::string class_name,
-                                                    std::string method_name,
+int controlService::get_method_description_by_class(const std::string& class_name,
+                                                    const std::string& method_name,
                                                     std::string* result) {
   using namespace switcher;
 
@@ -474,7 +476,7 @@ int controlService::get_method_description_by_class(std::string class_name,
   return SOAP_OK;
 }
 
-int controlService::save(std::string file_name, std::string* result) {
+int controlService::save(const std::string& file_name, std::string* result) {
   using namespace switcher;
 
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
@@ -488,7 +490,7 @@ int controlService::save(std::string file_name, std::string* result) {
   return SOAP_OK;
 }
 
-int controlService::load(std::string file_name, std::string* result) {
+int controlService::load(const std::string& file_name, std::string* result) {
   using namespace switcher;
 
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
@@ -505,7 +507,7 @@ int controlService::load(std::string file_name, std::string* result) {
   return SOAP_OK;
 }
 
-int controlService::run(std::string file_name, std::string* result) {
+int controlService::run(const std::string& file_name, std::string* result) {
   using namespace switcher;
 
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
@@ -520,8 +522,8 @@ int controlService::run(std::string file_name, std::string* result) {
   return SOAP_OK;
 }
 
-int controlService::get_information_tree(std::string quiddity_name,
-                                         std::string path,
+int controlService::get_information_tree(const std::string& quiddity_name,
+                                         const std::string& path,
                                          std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
@@ -533,8 +535,8 @@ int controlService::get_information_tree(std::string quiddity_name,
   return SOAP_OK;
 }
 
-int controlService::get_user_data(std::string quiddity_name,
-                                  std::string path,
+int controlService::get_user_data(const std::string& quiddity_name,
+                                  const std::string& path,
                                   std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
@@ -546,8 +548,8 @@ int controlService::get_user_data(std::string quiddity_name,
   return SOAP_OK;
 }
 
-int controlService::prune_user_data(std::string quiddity_name,
-                                    std::string path,
+int controlService::prune_user_data(const std::string& quiddity_name,
+                                    const std::string& path,
                                     std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
@@ -561,10 +563,10 @@ int controlService::prune_user_data(std::string quiddity_name,
   return SOAP_OK;
 }
 
-int controlService::graft_user_data(std::string quiddity_name,
-                                    std::string path,
-                                    std::string type,
-                                    std::string value,
+int controlService::graft_user_data(const std::string& quiddity_name,
+                                    const std::string& path,
+                                    const std::string& type,
+                                    const std::string& value,
                                     std::string* result) {
   using namespace switcher;
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
@@ -607,8 +609,8 @@ int controlService::graft_user_data(std::string quiddity_name,
   return SOAP_OK;
 }
 
-int controlService::tag_as_array_user_data(std::string quiddity_name,
-                                           std::string path,
+int controlService::tag_as_array_user_data(const std::string& quiddity_name,
+                                           const std::string& path,
                                            bool is_array,
                                            std::string* result) {
   using namespace switcher;

@@ -37,6 +37,7 @@
 #define __SWITCHER_INFORMATION_TREE_H__
 
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include <list>
 #include <memory>

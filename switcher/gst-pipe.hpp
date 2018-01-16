@@ -26,6 +26,7 @@
 
 #include <gst/gst.h>
 #include <condition_variable>
+#include <functional>
 #include <mutex>
 #include "./bool-log.hpp"
 

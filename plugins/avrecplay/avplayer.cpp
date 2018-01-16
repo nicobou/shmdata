@@ -168,6 +168,7 @@ GstBusSyncReply AVPlayer::bus_async(GstMessage* msg) {
   switch (GST_MESSAGE_TYPE(msg)) {
     case GST_MESSAGE_EOS: {
       th_->run_async([this]() { pmanage<MPtr(&PContainer::set_str_str)>("started", "false"); });
+      break;
     }
 
     case GST_MESSAGE_STATE_CHANGED: {

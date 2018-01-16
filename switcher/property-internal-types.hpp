@@ -20,6 +20,8 @@
 #ifndef __SWITCHER_PROPERTY_INTERNAL_TYPES_H__
 #define __SWITCHER_PROPERTY_INTERNAL_TYPES_H__
 
+#include <functional>
+
 namespace switcher {
 namespace prop {
 
