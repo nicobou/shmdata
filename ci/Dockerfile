@@ -1,4 +1,4 @@
-    FROM ubuntu:xenial
+    FROM ubuntu:artful
     MAINTAINER Metalab <metalab-dev@sat.qc.ca>
     # Docker Repository
     ARG shmdata_version
