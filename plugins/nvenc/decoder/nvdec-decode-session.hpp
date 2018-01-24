@@ -22,6 +22,7 @@
 
 #include <nvcuvid.h>
 #include <cstdint>  // uint32_t
+#include <functional>
 #include <memory>
 #include <utility>
 #include <vector>
