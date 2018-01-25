@@ -73,7 +73,7 @@ BoolLog SDPMedia::add_to_sdp_description(GstSDPMessage* sdp_description,
   gst_sdp_media_add_connection(media_, "IN", "IP4", ip_addr.c_str(), 16, 0);
 
   // sendonly
-  gst_sdp_media_add_attribute(media_, "sendonly", nullptr);
+  gst_sdp_media_add_attribute(media_, "sendonly", "");
 
   /* get clock-rate, media type and params for the rtpmap attribute */
   gint caps_rate = 0;
