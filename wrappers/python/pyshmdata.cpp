@@ -59,28 +59,6 @@ void log_debug_handler(void *user_data, const char *str)
 
 /*************/
 // Any-data-writer
-PyMODINIT_FUNC
-PyInit_pyshmdata(void)
-{
-    PyObject* m;
-
-    if (PyType_Ready(&pyshmdata_WriterType) < 0)
-        return NULL;
-    if (PyType_Ready(&pyshmdata_ReaderType) < 0)
-        return NULL;
-
-    m = PyModule_Create(&pyshmdatamodule);
-    if (m == NULL)
-        return NULL;
-
-    Py_INCREF(&pyshmdata_WriterType);
-    Py_INCREF(&pyshmdata_ReaderType);
-    PyModule_AddObject(m, "Writer", (PyObject*)&pyshmdata_WriterType);
-    PyModule_AddObject(m, "Reader", (PyObject*)&pyshmdata_ReaderType);
-
-    return m;
-}
-
 /*************/
 void
 Writer_dealloc(pyshmdata_WriterObject* self)
@@ -133,6 +111,19 @@ Writer_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/)
 }
 
 /*************/
+PyDoc_STRVAR(Writer_doc__,
+    "PyShmdata Writer object\n"
+    "\n"
+    "Args:\n"
+    "   path (str): Path to the shmdata\n"
+    "   datatype (str): Caps of the data to send\n"
+    "   framesize (int): Estimated frame size in bytes (can vary through time)\n"
+    "   debug (bool): If true, activates debug mode\n"
+    "\n"
+    "Example use:\n"
+    "   writer = pyshmdata.Writer(path=\"/path/to/shm\", datatype=\"video/x-raw, format=(string)RGBA, width=(int)512, height=(int)512\")\n"
+    "   writer.push(some_buffer)");
+
 int
 Writer_init(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds)
 {
@@ -143,18 +134,16 @@ Writer_init(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds)
     PyObject *tmp = NULL;
 
     static char *kwlist[] = {(char*)"path", (char*)"datatype", (char*)"framesize", (char*)"debug", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO", kwlist,
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist,
                                      &path, &datatype, &framesize, &showDebug))
         return -1;
 
     PyEval_InitThreads();
 
-    if (path) {
-        tmp = self->path;
-        Py_INCREF(path);
-        self->path = path;
-        Py_XDECREF(tmp);
-    }
+    tmp = self->path;
+    Py_INCREF(path);
+    self->path = path;
+    Py_XDECREF(tmp);
 
     if (datatype) {
         tmp = self->datatype;
@@ -191,22 +180,36 @@ Writer_init(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds)
 }
 
 /*************/
+PyDoc_STRVAR(Writer_push_doc__,
+    "Push data through shmdata\n"
+    "\n"
+    "Args:\n"
+    "   buffer (buffer): Buffer object to push\n"
+    "   timestamp (unsigned long long): Timestamp\n"
+    "\n"
+    "Returns:\n"
+    "   True if all went well, false otherwise\n");
+
 PyObject*
-Writer_push(pyshmdata_WriterObject* self, PyObject* args)
+Writer_push(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds)
 {
     PyObject* buffer = NULL;
     unsigned long long timestamp = 0;
 
-    if (!PyArg_ParseTuple(args, "O|K", &buffer, &timestamp)) {
-        return NULL;
+    static char *kwlist[] = {(char*)"buffer", (char*)"timestamp", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|K", kwlist, &buffer, &timestamp)) {
+        Py_INCREF(Py_False);
+        return Py_False;
     }
 
     if (!PyObject_TypeCheck(buffer, &PyByteArray_Type)) {
-        return NULL;
+        Py_INCREF(Py_False);
+        return Py_False;
     }
 
     if (!self->writer) {
-        return NULL;
+        Py_INCREF(Py_False);
+        return Py_False;
     }
 
     if (self->writer) {
@@ -215,8 +218,64 @@ Writer_push(pyshmdata_WriterObject* self, PyObject* args)
         Py_XDECREF(buffer);
     }
 
-    return Py_BuildValue("i", 1);
+    Py_INCREF(Py_True);
+    return Py_True;
 }
+
+/*************/
+PyMemberDef Writer_members[] = {
+    {(char*)"path", T_OBJECT_EX, offsetof(pyshmdata_WriterObject, path), 0, (char*)"Path to the shmdata output"},
+    {(char*)"datatype", T_OBJECT_EX, offsetof(pyshmdata_WriterObject, datatype), 0, (char*)"Type of the data sent"},
+    {(char*)"framesize", T_OBJECT_EX, offsetof(pyshmdata_WriterObject, framesize), 0, (char*)"Size of the shared memory"},
+    {NULL}
+};
+
+PyMethodDef Writer_methods[] = {
+    {(char*)"push", (PyCFunction)Writer_push, METH_VARARGS | METH_KEYWORDS, Writer_push_doc__},
+    {NULL}
+};
+
+PyTypeObject pyshmdata_WriterType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    (char*)"pyshmdata.Writer",          /* tp_name */
+    sizeof(pyshmdata_WriterObject),     /* tp_basicsize */
+    0,                                  /* tp_itemsize */
+    (destructor)Writer_dealloc,         /* tp_dealloc */
+    0,                                  /* tp_print */
+    0,                                  /* tp_getattr */
+    0,                                  /* tp_setattr */
+    0,                                  /* tp_reserved */
+    0,                                  /* tp_repr */
+    0,                                  /* tp_as_number */
+    0,                                  /* tp_as_sequence */
+    0,                                  /* tp_as_mapping */
+    0,                                  /* tp_hash  */
+    0,                                  /* tp_call */
+    0,                                  /* tp_str */
+    0,                                  /* tp_getattro */
+    0,                                  /* tp_setattro */
+    0,                                  /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT
+        | Py_TPFLAGS_BASETYPE,          /* tp_flags */
+    Writer_doc__,                       /* tp_doc */
+    0,                                  /* tp_traverse */
+    0,                                  /* tp_clear */
+    0,                                  /* tp_richcompare */
+    0,                                  /* tp_weaklistoffset */
+    0,                                  /* tp_iter */
+    0,                                  /* tp_iternext */
+    Writer_methods,                     /* tp_methods */
+    Writer_members,                     /* tp_members */
+    0,                                  /* tp_getset */
+    0,                                  /* tp_base */
+    0,                                  /* tp_dict */
+    0,                                  /* tp_descr_get */
+    0,                                  /* tp_descr_set */
+    0,                                  /* tp_dictoffset */
+    (initproc)Writer_init,              /* tp_init */
+    0,                                  /* tp_alloc */
+    Writer_new                          /* tp_new */
+};
 
 /*************/
 // Any-data-reader
@@ -266,6 +325,23 @@ Reader_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/)
 }
 
 /*************/
+PyDoc_STRVAR(Reader_doc__,
+    "PyShmdata Reader object\n"
+    "\n"
+    "Args:\n"
+    "   path (str): Path to the shmdata\n"
+    "   callback (function): Function to be called when a new buffer is received\n"
+    "   user_data (object): Object to set as a parameter for the callback\n"
+    "   drop_frames (bool): If true, frames are drop if processing is too slow\n"
+    "   debug (bool): If true, activates debug mode\n"
+    "\n"
+    "Callback signature:\n:"
+    "   def callback(user_data, buffer, datatype)\n"
+    "\n"
+    "Example use:\n"
+    "   reader = pyshmdata.Reader(path=\"/path/to/shm\")"
+    "   buf = reader.pull()");
+
 int
 Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
 {
@@ -328,6 +404,13 @@ Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
 }
 
 /*************/
+PyDoc_STRVAR(Reader_pull_doc__,
+    "Pull last data from shmdata\n"
+    "\n"
+    "reader.pull()\n"
+    "\n"
+    "Returns:\n"
+    "   Return a buffer holding the data, or an empty buffer if no data has been received");
 PyObject*
 Reader_pull(pyshmdata_ReaderObject* self)
 {
@@ -408,3 +491,81 @@ Reader_on_disconnect(void */*user_data*/)
 {
     return;
 }
+
+/*************/
+PyMemberDef Reader_members[] = {
+    {(char*)"path", T_OBJECT_EX, offsetof(pyshmdata_ReaderObject, path), 0, (char*)"Path to the shmdata input"},
+    {(char*)"datatype", T_OBJECT_EX, offsetof(pyshmdata_ReaderObject, datatype), 0, (char*)"Type of the data received"},
+    {NULL}
+};
+
+PyMethodDef Reader_methods[] = {
+    {(char*)"pull", (PyCFunction)Reader_pull, METH_VARARGS, Reader_pull_doc__},
+    {NULL}
+};
+
+PyTypeObject pyshmdata_ReaderType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    (char*)"pyshmdata.Reader",          /* tp_name */
+    sizeof(pyshmdata_ReaderObject),     /* tp_basicsize */
+    0,                                  /* tp_itemsize */
+    (destructor)Reader_dealloc,         /* tp_dealloc */
+    0,                                  /* tp_print */
+    0,                                  /* tp_getattr */
+    0,                                  /* tp_setattr */
+    0,                                  /* tp_reserved */
+    0,                                  /* tp_repr */
+    0,                                  /* tp_as_number */
+    0,                                  /* tp_as_sequence */
+    0,                                  /* tp_as_mapping */
+    0,                                  /* tp_hash  */
+    0,                                  /* tp_call */
+    0,                                  /* tp_str */
+    0,                                  /* tp_getattro */
+    0,                                  /* tp_setattro */
+    0,                                  /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT
+        | Py_TPFLAGS_BASETYPE,          /* tp_flags */
+    Reader_doc__,                       /* tp_doc */
+    0,                                  /* tp_traverse */
+    0,                                  /* tp_clear */
+    0,                                  /* tp_richcompare */
+    0,                                  /* tp_weaklistoffset */
+    0,                                  /* tp_iter */
+    0,                                  /* tp_iternext */
+    Reader_methods,                     /* tp_methods */
+    Reader_members,                     /* tp_members */
+    0,                                  /* tp_getset */
+    0,                                  /* tp_base */
+    0,                                  /* tp_dict */
+    0,                                  /* tp_descr_get */
+    0,                                  /* tp_descr_set */
+    0,                                  /* tp_dictoffset */
+    (initproc)Reader_init,              /* tp_init */
+    0,                                  /* tp_alloc */
+    Reader_new                          /* tp_new */
+};
+
+/*************/
+PyMODINIT_FUNC
+PyInit_pyshmdata(void)
+{
+    PyObject* m;
+
+    if (PyType_Ready(&pyshmdata_WriterType) < 0)
+        return NULL;
+    if (PyType_Ready(&pyshmdata_ReaderType) < 0)
+        return NULL;
+
+    m = PyModule_Create(&pyshmdatamodule);
+    if (m == NULL)
+        return NULL;
+
+    Py_INCREF(&pyshmdata_WriterType);
+    Py_INCREF(&pyshmdata_ReaderType);
+    PyModule_AddObject(m, "Writer", (PyObject*)&pyshmdata_WriterType);
+    PyModule_AddObject(m, "Reader", (PyObject*)&pyshmdata_ReaderType);
+
+    return m;
+}
+
