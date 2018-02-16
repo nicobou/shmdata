@@ -184,7 +184,7 @@ PyDoc_STRVAR(Writer_push_doc__,
     "Push data through shmdata\n"
     "\n"
     "Args:\n"
-    "   buffer (buffer): Buffer object to push\n"
+    "   buffer (bytearray): Buffer object to push\n"
     "   timestamp (unsigned long long): Timestamp\n"
     "\n"
     "Returns:\n"
@@ -339,7 +339,7 @@ PyDoc_STRVAR(Reader_doc__,
     "   def callback(user_data, buffer, datatype)\n"
     "\n"
     "Example use:\n"
-    "   reader = pyshmdata.Reader(path=\"/path/to/shm\")"
+    "   reader = pyshmdata.Reader(path=\"/path/to/shm\"\n)"
     "   buf = reader.pull()");
 
 int
