@@ -33,7 +33,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(NVencPlugin,
 
 NVencPlugin::NVencPlugin(QuiddityConfiguration&& conf)
     : Quiddity(std::forward<QuiddityConfiguration>(conf)),
-      es_(std::make_unique<ThreadedWrapper<NVencES>>(get_log_ptr())),
       default_preset_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "bitrate_from_preset",
           [this](bool value) {
@@ -62,6 +61,7 @@ NVencPlugin::NVencPlugin(QuiddityConfiguration&& conf)
                                                         bitrate_,
                                                         1000000,
                                                         20000000)),
+      es_(std::make_unique<ThreadedWrapper<NVencES>>(get_log_ptr())),
       shmcntr_(static_cast<Quiddity*>(this)) {
   auto devices = CudaContext::get_devices();
   std::vector<std::string> names;
@@ -276,6 +276,9 @@ void NVencPlugin::update_input_formats() {
 
 bool NVencPlugin::on_shmdata_disconnect() {
   shm_.reset(nullptr);
+  es_.reset();
+  es_ = std::make_unique<ThreadedWrapper<NVencES>>(devices_nv_ids_[devices_.get_current_index()],
+                                                   get_log_ptr());
   shmw_.reset(nullptr);
 
   pmanage<MPtr(&PContainer::enable)>(devices_id_);

@@ -31,6 +31,7 @@ NVencES::NVencES(uint32_t device_id,
     if (!safe_bool_idiom()) warning("NV encoder session initialization failed");
   };
   if (!cu_ctx_) return;
+  memset(&params_, 0, sizeof(params_));
   params_.version = NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS_VER;
   params_.apiVersion = NVENCAPI_VERSION;
   params_.device = cu_ctx_.cuda_ctx_;
