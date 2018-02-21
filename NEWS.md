@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.66 (2018-02-21)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+* fix the nvenc bug causing crash when adding/removing nvenc quiddities
+
 switcher 0.8.64 (2017-11-29)
 ---------------------------
 This is an official release in the 0.8 stable series.
