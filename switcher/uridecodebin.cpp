@@ -188,6 +188,7 @@ std::string Uridecodebin::get_pad_name(GstPad* pad) {
   std::string padname;
   {
     GstCaps* padcaps = gst_pad_get_current_caps(pad);
+    if (nullptr == padcaps) return padname;
     On_scope_exit { gst_caps_unref(padcaps); };
     gchar* padcapsstr = gst_caps_to_string(padcaps);
     On_scope_exit { g_free(padcapsstr); };
