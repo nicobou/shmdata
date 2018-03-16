@@ -81,9 +81,9 @@ class PropertyQuid : public Quiddity {
   PContainer::prop_id_t selection_id_;
 
   // tuple
-  // using MyTuple = std::tuple<long long, float, std::string>;
-  // MyTuple tuple_{1, 3.14, "hello"};
-  // PContainer::prop_id_t tuple_id_;
+  using MyTuple = std::tuple<long long, float, std::string>;
+  MyTuple tuple_{1, 3.14, "hello"};
+  PContainer::prop_id_t tuple_id_;
 
   // Fraction
   Fraction fraction_{1, 3};

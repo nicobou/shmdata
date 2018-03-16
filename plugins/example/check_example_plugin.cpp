@@ -23,6 +23,7 @@
 #include <vector>
 #include "switcher/property-container.hpp"
 #include "switcher/quiddity-basic-test.hpp"
+#include "switcher/serialize-string.hpp"
 
 int main() {
   {
@@ -40,6 +41,29 @@ int main() {
     assert(!manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "0A93D8"));
     assert(!manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "GGGGGGGGGG"));
     assert(!manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "0000000T"));
+
+    // tuple testing (get)
+    using MyTuple = std::tuple<long long, float, std::string>;
+    auto tid = manager->use_prop<MPtr(&PContainer::get_id)>("test", "tuple_");
+    std::cout << manager->use_prop<MPtr(&PContainer::get_str)>("test", tid) << '\n';
+
+    MyTuple my_tuple = manager->use_prop<MPtr(&PContainer::get<MyTuple>)>("test", tid);
+    std::cout << "get is working !!!"
+              << " " << std::get<0>(my_tuple) << " "  // 2
+              << std::get<1>(my_tuple) << " "         // 2.2
+              << std::get<2>(my_tuple) << "\n";       // a22
+
+    // tuple testing (set)
+    manager->use_prop<MPtr(&PContainer::set_str)>(
+        "test", tid, std::string("4,4.4,") + serialize::esc_for_tuple("b,44"));
+
+    std::cout << manager->use_prop<MPtr(&PContainer::get_str)>("test", tid) << '\n';
+
+    my_tuple = manager->use_prop<MPtr(&PContainer::get<MyTuple>)>("test", tid);
+    std::cout << "get after set"
+              << " " << std::get<0>(my_tuple) << " "  // 4
+              << std::get<1>(my_tuple) << " "         // 4.4
+              << std::get<2>(my_tuple) << "\n";       // b,44
 
     // testing hello-world method
     std::string* res = nullptr;
