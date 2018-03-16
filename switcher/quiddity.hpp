@@ -36,7 +36,9 @@
 #include "./json-builder.hpp"
 #include "./logged.hpp"
 #include "./make-consultable.hpp"
+#include "./method-container.hpp"
 #include "./method.hpp"
+#include "./method2.hpp"
 #include "./property-container.hpp"
 #include "./quiddity-configuration.hpp"
 #include "./quiddity-documentation.hpp"
@@ -87,6 +89,8 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   Make_consultable(Quiddity, PContainer, &props_, prop);
 
   // methods
+  Make_consultable(Quiddity, MContainer, &meths_, meth);
+
   std::string get_method_description(const std::string& method_name);
   std::string get_methods_description();
   bool invoke_method(const std::string& function_name,
@@ -171,6 +175,8 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   SContainer::sig_id_t on_nicknamed_id_;
 
   // methods
+  MContainer meths_;
+
   std::unordered_map<std::string, Method::ptr> methods_{};
   std::unordered_map<std::string, Method::ptr> disabled_methods_{};
   JSONBuilder::ptr methods_description_;
@@ -203,6 +209,8 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   Make_delegate(Quiddity, SContainer, &sigs_, smanage);
 
   // methods
+  Make_delegate(Quiddity, MContainer, &meths_, mmanage);
+
   bool install_method(const std::string& long_name,
                       const std::string& method_name,
                       const std::string& short_description,

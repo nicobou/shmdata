@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_CUSTOM_SAVE_PLUGIN_H__
-#define __SWITCHER_CUSTOM_SAVE_PLUGIN_H__
+#ifndef __SWITCHER_METHOD_PLUGIN_H__
+#define __SWITCHER_METHOD_PLUGIN_H__
 
 #include <memory>
 #include <string>
@@ -26,30 +26,26 @@
 #include "switcher/quiddity.hpp"
 
 namespace switcher {
-class CustomSavePlugin : public Quiddity {
+class MethodQuid : public Quiddity {
  public:
-  CustomSavePlugin(QuiddityConfiguration&&);
-  ~CustomSavePlugin() = default;
-  CustomSavePlugin(const CustomSavePlugin&) = delete;
-  CustomSavePlugin& operator=(const CustomSavePlugin&) = delete;
+  MethodQuid(QuiddityConfiguration&&);
+  ~MethodQuid() = default;
+  MethodQuid(const MethodQuid&) = delete;
+  MethodQuid& operator=(const MethodQuid&) = delete;
 
  private:
-  int val_{1};
-  bool is_something_{true};
-  // property used in order to implement the test
-  bool has_loaded_custom_state_{false};
-  bool on_loaded_called_{false};
-  PContainer::prop_id_t has_loaded_custom_state_id_;
-  bool on_saving_called_{false};
-  bool on_saved_called_{false};
-  PContainer::prop_id_t has_saved_custom_state_id_;
-  InfoTree::ptr on_saving() final;
-  void on_saved() final;
-  void on_loading(InfoTree::ptr&& tree) final;
-  void on_loaded() final;
+  MContainer::meth_id_t hello_id_;
+  MContainer::meth_id_t count_id_;
+  MContainer::meth_id_t many_args_id_;
+  using my_method_t = std::function<std::string(std::string)>;
+  using many_args_t = std::function<bool(int, float, const std::string&, bool)>;
+  std::string hello_{};
+  size_t count_{0};
+  // --- Methods
+  static gchar* my_hello_world_method(gchar* first_arg, void* user_data);
 };
 
-SWITCHER_DECLARE_PLUGIN(CustomSavePlugin);
+SWITCHER_DECLARE_PLUGIN(MethodQuid);
 
 }  // namespace switcher
 #endif

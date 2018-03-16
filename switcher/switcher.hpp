@@ -111,6 +111,8 @@ class Switcher {
   Forward_consultable(Switcher, QuiddityContainer, qcontainer_.get(), sigs, use_sig);
 
   // methods
+  Forward_consultable(Switcher, QuiddityContainer, qcontainer_.get(), meths, use_method);
+
   // doc (json formatted)
   std::string get_methods_description(const std::string& quiddity_name);
   std::string get_method_description(const std::string& quiddity_name,

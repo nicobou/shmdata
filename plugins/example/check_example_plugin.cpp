@@ -1,5 +1,5 @@
 /*
- * This file is part of switcher-myplugin.
+ * This file is part of switcher-plugin-example.
  *
  * libswitcher is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -64,12 +64,6 @@ int main() {
               << " " << std::get<0>(my_tuple) << " "  // 4
               << std::get<1>(my_tuple) << " "         // 4.4
               << std::get<2>(my_tuple) << "\n";       // b,44
-
-    // testing hello-world method
-    std::string* res = nullptr;
-    assert(manager->invoke_va("test", "hello-world", &res, "Nico", nullptr));
-    assert(*res == "hello Nico");
-    delete res;
 
     // removing the quiddity
     assert(manager->remove("test"));

@@ -65,6 +65,13 @@ Quiddity::Quiddity(QuiddityConfiguration&& conf)
           "on-user-data-pruned", "A branch has been pruned from the quiddity's user data tree")),
       on_nicknamed_id_(smanage<MPtr(&SContainer::make)>(
           "on-nicknamed", "A nickname has been given to the quiddity")),
+      meths_(information_tree_,
+             [this](const std::string& key) {
+               smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(key));
+             },
+             [this](const std::string& key) {
+               smanage<MPtr(&SContainer::notify)>(on_tree_pruned_id_, InfoTree::make(key));
+             }),
       methods_description_(std::make_shared<JSONBuilder>()),
       name_(string_to_quiddity_name(conf.name_)),
       nickname_(name_),

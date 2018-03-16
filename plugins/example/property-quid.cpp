@@ -1,5 +1,5 @@
 /*
- * This file is part of switcher-myplugin.
+ * This file is part of switcher-plugin-example.
  *
  * switcher-myplugin is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -265,20 +265,6 @@ PropertyQuid::PropertyQuid(QuiddityConfiguration&& conf)
             << std::get<1>(tuple_) << " "    // 2.2
             << std::get<2>(tuple_) << "\n";  // a22
 
-  // props_.install("int_", &int_prop_);
-  install_method("Hello World",                                  // long name
-                 "hello-world",                                  // name
-                 "say hello and repeat first argument",          // description
-                 "the hello answer",                             // return description
-                 Method::make_arg_description("Text To Repeat",  // first arg long name
-                                              "text",            // fisrt arg name
-                                              "string",          // first arg description
-                                              nullptr),
-                 (Method::method_ptr)&my_hello_world_method,
-                 G_TYPE_STRING,
-                 Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-                 this);
-
   // creating some custom infos
   InfoTree::ptr tree = InfoTree::make();
   tree->graft(".child1.child2", InfoTree::make("switch"));
@@ -288,14 +274,6 @@ PropertyQuid::PropertyQuid(QuiddityConfiguration&& conf)
   // attaching it to the quiddity (at the root)
   graft_tree(".custom.information.", tree);
   debug("hello from plugin");
-}
-
-gchar* PropertyQuid::my_hello_world_method(gchar* first_arg, void* user_data) {
-  PropertyQuid* context = static_cast<PropertyQuid*>(user_data);
-  context->debug("hello world from myplugin");
-  context->hello_ = std::string("hello ") + first_arg;
-  // the g_free will be invoked by the method system:
-  return g_strdup(context->hello_.c_str());
 }
 
 }  // namespace switcher

@@ -38,6 +38,7 @@ add_library(${SWITCHER_LIBRARY} SHARED
     invocation-spec.cpp
     json-builder.cpp
     method.cpp
+    method-container.cpp
     net-utils.cpp
     plugin-loader.cpp
     property-container.cpp
@@ -123,6 +124,8 @@ set(HEADER_INCLUDES
     logged.hpp
     make-consultable.hpp
     method.hpp
+    method2.hpp
+    method-container.hpp
     net-utils.hpp
     periodic-task.hpp
     plugin-loader.hpp

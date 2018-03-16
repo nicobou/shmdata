@@ -119,6 +119,16 @@ class QuiddityContainer : public Logged {
       props);                  // public forwarding method
 
   // **** methods
+  Forward_consultable_from_associative_container(
+      QuiddityContainer,       // self type
+      Quiddity,                // consultable type
+      find_quiddity,           // accessor
+      std::string,             // accessor key type
+      construct_error_return,  // what is suposed to be returned when key has
+                               // not been found
+      meth,                    // method used by quiddities to access the consultable
+      meths);                  // public forwarding method
+
   // doc (json formatted)
   std::string get_methods_description(const std::string& quiddity_name);
   std::string get_method_description(const std::string& quiddity_name,
