@@ -93,7 +93,7 @@ NVencDS::~NVencDS() {
 }
 
 int CUDAAPI NVencDS::HandleVideoSequence(void* user_data, CUVIDEOFORMAT* format) {
-  NVencDS* ds = static_cast<NVencDS*>(user_data);
+  auto ds = static_cast<NVencDS*>(user_data);
 
   if ((format->codec != ds->video_info_.CodecType) ||
       (format->coded_width != ds->video_info_.ulWidth) ||
@@ -109,34 +109,12 @@ int CUDAAPI NVencDS::HandleVideoSequence(void* user_data, CUVIDEOFORMAT* format)
     ds->video_info_.CodecType = format->codec;
     ds->video_info_.ChromaFormat = format->chroma_format;
 
-    // FIXME: Scaling in case it's a 16:9 format
-    // See post on NVIDIA forum at https://goo.gl/HQRkCz
-    if (std::abs(static_cast<float>(ds->video_info_.ulWidth) /
-                     static_cast<float>(ds->video_info_.ulHeight) -
-                 16.0f / 9.0f) < 0.001f) {
-      if (ds->video_info_.ulWidth <= 1280) {
-        ds->video_info_.ulTargetWidth = 1280;
-        ds->video_info_.ulTargetHeight = 720;
-      } else if (ds->video_info_.ulWidth <= 2048) {
-        ds->video_info_.ulTargetWidth = 2048;
-        ds->video_info_.ulTargetHeight = 1152;
-      } else if (ds->video_info_.ulWidth <= 3072) {
-        ds->video_info_.ulTargetWidth = 3072;
-        ds->video_info_.ulTargetHeight = 1728;
-      } else if (ds->video_info_.ulWidth <= 4096) {
-        ds->video_info_.ulTargetWidth = 4096;
-        ds->video_info_.ulTargetHeight = 2304;
-      }
+    ds->video_info_.ulTargetWidth = ds->video_info_.ulWidth;
+    ds->video_info_.ulTargetWidth = ds->video_info_.ulWidth;
+    ds->video_info_.ulTargetHeight = ds->video_info_.ulHeight;
 
-      ds->scaled_ = true;
-
-    } else {
-      ds->video_info_.ulTargetWidth = ds->video_info_.ulWidth;
-      ds->video_info_.ulTargetHeight = ds->video_info_.ulHeight;
-    }
-
-    ds->frame_width_ = ds->video_info_.ulTargetWidth;
-    ds->frame_height_ = ds->video_info_.ulTargetHeight;
+    ds->frame_width_ = static_cast<unsigned int>(ds->video_info_.ulTargetWidth);
+    ds->frame_height_ = static_cast<unsigned int>(ds->video_info_.ulTargetHeight);
 
     // If the format changed, we re-create the buffer to be safe.
     if (ds->bitstream_) {
@@ -155,25 +133,25 @@ int CUDAAPI NVencDS::HandleVideoSequence(void* user_data, CUVIDEOFORMAT* format)
 }
 
 int CUDAAPI NVencDS::HandlePictureDecode(void* user_data, CUVIDPICPARAMS* picture_params) {
-  NVencDS* ds = static_cast<NVencDS*>(user_data);
+  auto ds = static_cast<NVencDS*>(user_data);
   cuvidDecodePicture(ds->video_decoder_, picture_params);
   return 1;
 }
 
 int CUDAAPI NVencDS::HandlePictureDisplay(void* user_data, CUVIDPARSERDISPINFO* picture_params) {
-  NVencDS* ds = static_cast<NVencDS*>(user_data);
+  auto ds = static_cast<NVencDS*>(user_data);
   CUdeviceptr device_pointer;
   CUVIDPROCPARAMS vpp;
   memset(&vpp, 0, sizeof(vpp));
   vpp.progressive_frame = picture_params->progressive_frame;
   vpp.top_field_first = picture_params->top_field_first;
 
-  // Called to gain access to the device memory pointer and get frame informations
+  // Called to gain access to the device memory pointer and get frame information
   cuvidMapVideoFrame(
       ds->video_decoder_, picture_params->picture_index, &device_pointer, &ds->pitch_, &vpp);
 
-  unsigned int decoded_size =
-      ds->pitch_ * ds->video_info_.ulTargetHeight * 3 / 2;  // Only NV12 for now, 12bpp.
+  auto decoded_size = static_cast<unsigned int>(ds->pitch_ * ds->video_info_.ulTargetHeight * 3 /
+                                                2);  // Only NV12 for now, 12bpp.
   if (ds->bitstream_ == nullptr) {
     cuMemAllocHost(&ds->bitstream_, decoded_size);
   }

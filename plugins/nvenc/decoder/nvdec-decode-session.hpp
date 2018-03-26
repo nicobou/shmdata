@@ -40,16 +40,19 @@ class NVencDS : public Logged, public SafeBoolIdiom {
   NVencDS& operator=(const NVencDS&) = delete;
   NVencDS& operator=(NVencDS&&) = delete;
   ~NVencDS();
-  bool safe_bool_idiom() const { return (nullptr != video_decoder_ && nullptr != video_parser_); }
-  void parse_data(std::function<void(CUvideoparser)> parse_func) { parse_func(video_parser_); }
+  bool safe_bool_idiom() const override {
+    return (nullptr != video_decoder_ && nullptr != video_parser_);
+  }
+  void parse_data(const std::function<void(CUvideoparser)>& parse_func) {
+    parse_func(video_parser_);
+  }
 
-  void process_decoded(std::function<void(const unsigned char* data_decoded,
-                                          unsigned int data_width,
-                                          unsigned int data_height,
-                                          unsigned int pitch,
-                                          bool& scaled)> post_process_func) {
+  void process_decoded(const std::function<void(const unsigned char* data_decoded,
+                                                const unsigned int& data_width,
+                                                const unsigned int& data_height,
+                                                const unsigned int& pitch)>& post_process_func) {
     post_process_func(
-        (const unsigned char*)bitstream_, frame_width_, frame_height_, pitch_, scaled_);
+        reinterpret_cast<const unsigned char*>(bitstream_), frame_width_, frame_height_, pitch_);
   }
 
   static int CUDAAPI HandleVideoSequence(void* pUserData, CUVIDEOFORMAT* pFormat);
@@ -60,14 +63,12 @@ class NVencDS : public Logged, public SafeBoolIdiom {
   static const unsigned long kNumDecodeSurfaces{8};
   CUvideodecoder video_decoder_{nullptr};
   CUVIDDECODECREATEINFO video_info_;
-  cudaVideoCreateFlags video_flags{};
   CUvideoparser video_parser_{nullptr};
   CudaContext cu_ctx_;
   void* bitstream_{nullptr};
   unsigned int frame_width_{0};
   unsigned int frame_height_{0};
   unsigned int pitch_{0};
-  bool scaled_{false};
 };
 }  // namespace switcher
 #endif
