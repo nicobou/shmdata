@@ -6,12 +6,6 @@ add_executable(check_bundle check_bundle.cpp)
 configure_file(check_bundle.config check_bundle.config COPYONLY)
 add_test(check_bundle check_bundle)
 
-add_executable(check_description_by_class check_description_by_class.cpp)
-add_test(check_description_by_class check_description_by_class)
-
-#add_executable(check_fake_shmdata_writer check_fake_shmdata_writer.cpp)
-#add_test(check_fake_shmdata_writer check_fake_shmdata_writer)
-
 add_executable(check_gst_pipeline check_gst_pipeline.cpp)
 add_test(check_gst_pipeline check_gst_pipeline)
 
@@ -21,14 +15,8 @@ add_test(check_information_tree check_information_tree)
 add_executable(check_manager check_manager.cpp)
 add_test(check_manager check_manager)
 
-#add_executable(check_property_mapper check_property_mapper.cpp)
-#add_test(check_property_mapper check_property_mapper)
-
 add_executable(check_quiddity_create_remove check_quiddity_create_remove.cpp)
 add_test(check_quiddity_create_remove check_quiddity_create_remove)
-
-# add_executable(check_rtp_session check_rtp_session.cpp)
-# add_test(check_rtp_session check_rtp_session)
 
 add_executable(check_scope_guard check_scope_guard.cpp)
 add_test(check_scope_guard check_scope_guard)

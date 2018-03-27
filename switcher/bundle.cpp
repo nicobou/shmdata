@@ -64,40 +64,24 @@ Bundle::Bundle(QuiddityConfiguration&& conf)
   if (!reader_quid_.empty()) {
     shmcntr_.install_connect_method(
         [this](const std::string& shmpath) {
-          std::string* return_value = nullptr;
-          manager_->qcontainer_->get_quiddity(reader_quid_)
-              ->invoke_method("connect", &return_value, {shmpath});
-          On_scope_exit {
-            if (return_value) delete return_value;
-          };
-          return *return_value == "true";
+          auto quid = manager_->qcontainer_->get_quiddity(reader_quid_);
+          return quid->meth<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+              quid->meth<MPtr(&MContainer::get_id)>("connect"), std::make_tuple(shmpath));
         },
         [this](const std::string& shmpath) {
-          std::string* return_value = nullptr;
-          manager_->qcontainer_->get_quiddity(reader_quid_)
-              ->invoke_method("disconnect", &return_value, {shmpath});
-          On_scope_exit {
-            if (return_value) delete return_value;
-          };
-          return *return_value == "true";
+          auto quid = manager_->qcontainer_->get_quiddity(reader_quid_);
+          return quid->meth<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+              quid->meth<MPtr(&MContainer::get_id)>("disconnect"), std::make_tuple(shmpath));
         },
         [this]() {
-          std::string* return_value = nullptr;
-          manager_->qcontainer_->get_quiddity(reader_quid_)
-              ->invoke_method("disconnect-all", &return_value, {});
-          On_scope_exit {
-            if (return_value) delete return_value;
-          };
-          return *return_value == "true";
+          auto quid = manager_->qcontainer_->get_quiddity(reader_quid_);
+          return quid->meth<MPtr(&MContainer::invoke<std::function<bool()>>)>(
+              quid->meth<MPtr(&MContainer::get_id)>("disconnect-all"), std::make_tuple());
         },
         [this](const std::string& caps) {
-          std::string* return_value = nullptr;
-          manager_->qcontainer_->get_quiddity(reader_quid_)
-              ->invoke_method("can-sink-caps", &return_value, {caps});
-          On_scope_exit {
-            if (return_value) delete return_value;
-          };
-          return *return_value == "true";
+          auto quid = manager_->qcontainer_->get_quiddity(reader_quid_);
+          return quid->meth<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+              quid->meth<MPtr(&MContainer::get_id)>("can-sink-caps"), std::make_tuple(caps));
         },
         manager_->qcontainer_->get_quiddity(reader_quid_)
             ->tree<MPtr(&InfoTree::branch_get_value)>("shmdata.max_reader")
@@ -204,8 +188,9 @@ void Bundle::on_tree_grafted(const std::string& key, void* user_data) {
           static_cast<std::string>(shm_match[0]) + ".caps");
       if (!caps.empty()) {
         for (auto& it : context->quid_spec_.connects_to_) {
-          if (!context->self_->manager_->qcontainer_->get_quiddity(it)->invoke_method(
-                  "can-sink-caps", nullptr, {caps})) {
+          auto quid = context->self_->manager_->qcontainer_->get_quiddity(it);
+          if (!quid->meth<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+                  quid->meth<MPtr(&MContainer::get_id)>("can-sink-caps"), std::make_tuple(caps))) {
             context->self_->message(
                 "ERROR: bundle specification error: % cannot connect with % (caps is %)",
                 context->quid_spec_.name,
@@ -218,8 +203,9 @@ void Bundle::on_tree_grafted(const std::string& key, void* user_data) {
                 caps);
             continue;
           }
-          context->self_->manager_->qcontainer_->get_quiddity(it)->invoke_method(
-              "connect", nullptr, {shm_match[1]});
+
+          quid->meth<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+              quid->meth<MPtr(&MContainer::get_id)>("connect"), std::make_tuple(shm_match[1]));
           {
             std::lock_guard<std::mutex> lock(context->self_->connected_shms_mtx_);
             context->self_->connected_shms_.push_back(std::make_pair(it, shm_match[1]));
@@ -355,7 +341,8 @@ void Bundle::on_tree_pruned(const std::string& key, void* user_data) {
       for (auto& it : to_disconnect) {
         auto quid = context->self_->manager_->qcontainer_->get_quiddity(it.first);
         if (!quid) continue;
-        quid->invoke_method("disconnect", nullptr, {it.second});
+        quid->meth<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+            quid->meth<MPtr(&MContainer::get_id)>("disconnect"), std::make_tuple(it.second));
       }
     }
     return;

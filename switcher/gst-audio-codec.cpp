@@ -20,6 +20,7 @@
 #include "./gst-audio-codec.hpp"
 #include "switcher/gprop-to-prop.hpp"
 #include "switcher/gst-utils.hpp"
+#include "switcher/information-tree-json.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/startable-quiddity.hpp"
@@ -27,33 +28,35 @@
 namespace switcher {
 GstAudioCodec::GstAudioCodec(Quiddity* quid)
     : quid_(quid),
+      reset_id_(quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool()>>)>(
+          "reset",
+          JSONSerializer::deserialize(
+              R"(
+                  {
+                   "name" : "Reset codec configuration",
+                   "description" : "Reset codec configuration to default",
+                   "arguments" : []
+                  }
+              )"),
+          [this]() { return reset_codec_configuration(); })),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       codecs_(GstUtils::element_factory_list_to_pair_of_vectors(
                   GST_ELEMENT_FACTORY_TYPE_AUDIO_ENCODER, GST_RANK_SECONDARY, true, {"vorbisenc"}),
               0),
       codec_id_(install_codec()) {
-  quid_->install_method("Reset codec configuration",
-                        "reset",
-                        "Reset codec configuration to default",
-                        "success or fail",
-                        Method::make_arg_description("none", nullptr),
-                        (Method::method_ptr)&reset_codec_configuration,
-                        G_TYPE_BOOLEAN,
-                        Method::make_arg_type_description(G_TYPE_NONE, nullptr),
-                        this);
-  reset_codec_configuration(nullptr, this);
+  reset_codec_configuration();
   stop();
 }
 
 void GstAudioCodec::hide() {
-  quid_->disable_method("reset");
+  quid_->mmanage<MPtr(&MContainer::disable)>(reset_id_, StartableQuiddity::disabledWhenStartedMsg);
   quid_->pmanage<MPtr(&PContainer::disable)>(codec_id_, StartableQuiddity::disabledWhenStartedMsg);
   quid_->pmanage<MPtr(&PContainer::disable)>(group_codec_id_,
                                              StartableQuiddity::disabledWhenStartedMsg);
 }
 
 void GstAudioCodec::show() {
-  quid_->enable_method("reset");
+  quid_->mmanage<MPtr(&MContainer::enable)>(reset_id_);
   quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_);
   quid_->pmanage<MPtr(&PContainer::enable)>(group_codec_id_);
 }
@@ -126,14 +129,13 @@ void GstAudioCodec::make_codec_properties() {
   }
 }
 
-gboolean GstAudioCodec::reset_codec_configuration(gpointer /*unused */, gpointer user_data) {
-  GstAudioCodec* context = static_cast<GstAudioCodec*>(user_data);
+bool GstAudioCodec::reset_codec_configuration() {
   {
-    auto lock = context->quid_->pmanage<MPtr(&PContainer::get_lock)>(context->codec_id_);
-    context->codecs_.select(IndexOrName("Opus audio encoder"));
-    context->quid_->pmanage<MPtr(&PContainer::notify)>(context->codec_id_);
+    auto lock = quid_->pmanage<MPtr(&PContainer::get_lock)>(codec_id_);
+    codecs_.select(IndexOrName("Opus audio encoder"));
+    quid_->pmanage<MPtr(&PContainer::notify)>(codec_id_);
   }
-  return TRUE;
+  return true;
 }
 
 bool GstAudioCodec::start(const std::string& shmpath, const std::string& shmpath_encoded) {

@@ -108,13 +108,12 @@ class PJCall {
   bool make_call(std::string contact_uri);
   bool create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_session** res);
   Quiddity::ptr retrieve_rtp_manager();
-  static gboolean send_to(gchar* sip_url, void* user_data);
+  bool send_to(const std::string& sip_url);
   void make_hang_up(pjsip_inv_session* inv);
-  static gboolean hang_up(const gchar* sip_url, void* user_data);
-  static gboolean attach_shmdata_to_contact(const gchar* shmpath,
-                                            const gchar* contact_uri,
-                                            gboolean attach,
-                                            void* user_data);
+  bool hang_up(const std::string& sip_url);
+  bool attach_shmdata_to_contact(const std::string& shmpath,
+                                 const std::string& contact_uri,
+                                 bool attach);
   void make_attach_shmdata_to_contact(const std::string& shmpath,
                                       const std::string& contact_uri,
                                       bool attach);

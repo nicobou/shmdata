@@ -69,24 +69,6 @@ int switcher__create_named_quiddity(std::string quiddity_class,
 int switcher__delete_quiddity(std::string quiddity_name,
                               void);
 
-//gsoap switcher service method-documentation: get a json formated description of methods
-int switcher__get_methods_description(std::string quiddity_name,
-                                      std::string *result);
-
-//gsoap switcher service method-documentation: get a json formated description of the method
-int switcher__get_method_description(std::string quiddity_name,
-                                     std::string method_name,
-                                     std::string *result);
-
-//gsoap switcher service method-documentation: get a json formated description of methods
-int switcher__get_methods_description_by_class(std::string class_name,
-                                               std::string *result);
-
-//gsoap switcher service method-documentation: get a json formated description of the method
-int switcher__get_method_description_by_class(std::string class_name,
-                                              std::string method_name,
-                                              std::string *result);
-
 //gsoap switcher service method-documentation: invoke a method of an quiddity
 int switcher__invoke_method(std::string quiddity_name,
                             std::string method_name,

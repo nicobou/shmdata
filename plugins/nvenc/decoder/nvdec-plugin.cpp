@@ -18,6 +18,7 @@
  */
 
 #include "./nvdec-plugin.hpp"
+#include <gst/gst.h>
 #include <nvcuvid.h>
 #include <cstring>
 #include "cuda/cuda-context.hpp"

@@ -103,7 +103,10 @@ int main() {
 
     auto nvenc_quid = manager->create("nvenc");
     assert(!nvenc_quid.empty());
-    manager->invoke_va(nvenc_quid.c_str(), "connect", nullptr, vid_shmpath.c_str(), nullptr);
+    manager->use_method<MPtr(&MContainer::invoke_str)>(
+        nvenc_quid,
+        manager->use_method<MPtr(&switcher::MContainer::get_id)>(nvenc_quid, "connect"),
+        serialize::esc_for_tuple(vid_shmpath));
 
     // tracking nvenc shmdata writer byterate for evaluating success
     auto registration_id = manager->use_sig<MPtr(&switcher::SContainer::subscribe_by_name)>(

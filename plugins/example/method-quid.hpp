@@ -41,8 +41,6 @@ class MethodQuid : public Quiddity {
   using many_args_t = std::function<bool(int, float, const std::string&, bool)>;
   std::string hello_{};
   size_t count_{0};
-  // --- Methods
-  static gchar* my_hello_world_method(gchar* first_arg, void* user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(MethodQuid);

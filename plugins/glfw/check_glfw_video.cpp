@@ -23,7 +23,7 @@
 #include <unistd.h>  // sleep
 #include <iostream>
 #include "switcher/quiddity-basic-test.hpp"
-
+#include "switcher/serialize-string.hpp"
 
 int main() {
   {
@@ -49,15 +49,23 @@ int main() {
     }
 
     // connecting
-    if (!manager->invoke_va("win", "connect", nullptr, "/tmp/switcher_glfwtest_vid_video", nullptr))
+    if (!manager->use_method<MPtr(&switcher::MContainer::invoke_str)>(
+            "win",
+            manager->use_method<MPtr(&switcher::MContainer::get_id)>("win", "connect"),
+            switcher::serialize::esc_for_tuple("/tmp/switcher_glfwtest_vid_video")))
       return 1;
     usleep(100000);
-    if (!manager->invoke_va(
-            "win", "disconnect", nullptr, "/tmp/switcher_glfwtest_vid_video", nullptr))
+    if (!manager->use_method<MPtr(&switcher::MContainer::invoke_str)>(
+            "win",
+            manager->use_method<MPtr(&switcher::MContainer::get_id)>("win", "disconnect"),
+            switcher::serialize::esc_for_tuple("/tmp/switcher_glfwtest_vid_video")))
       return 1;
 
     // We destroy it while connected to catch pipeline crashes.
-    if (!manager->invoke_va("win", "connect", nullptr, "/tmp/switcher_glfwtest_vid_video", nullptr))
+    if (!manager->use_method<MPtr(&switcher::MContainer::invoke_str)>(
+            "win",
+            manager->use_method<MPtr(&switcher::MContainer::get_id)>("win", "connect"),
+            switcher::serialize::esc_for_tuple("/tmp/switcher_glfwtest_vid_video")))
       return 1;
 
     usleep(1000000);

@@ -38,7 +38,6 @@
 #include "./make-consultable.hpp"
 #include "./method-container.hpp"
 #include "./method.hpp"
-#include "./method2.hpp"
 #include "./property-container.hpp"
 #include "./quiddity-configuration.hpp"
 #include "./quiddity-documentation.hpp"
@@ -91,13 +90,6 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   // methods
   Make_consultable(Quiddity, MContainer, &meths_, meth);
 
-  std::string get_method_description(const std::string& method_name);
-  std::string get_methods_description();
-  bool invoke_method(const std::string& function_name,
-                     std::string** return_value,
-                     const std::vector<std::string>& args);
-  bool has_method(const std::string& method_name);
-
   // signals
   Make_consultable(Quiddity, SContainer, &sigs_, sig);
 
@@ -133,19 +125,6 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   bool user_data_graft_hook(const std::string& path, InfoTree::ptr tree);
   InfoTree::ptr user_data_prune_hook(const std::string& path);
 
-  // method
-  bool method_is_registered(const std::string& method_name);
-  bool register_method(const std::string& method_name,
-                       Method::method_ptr method,
-                       Method::return_type return_type,
-                       Method::args_types arg_types,
-                       gpointer user_data);
-  bool set_method_description(const std::string& long_name,
-                              const std::string& method_name,
-                              const std::string& short_description,
-                              const std::string& return_description,
-                              const Method::args_doc& arg_description);
-
   // tree used by quiddity to communicate info to user,
   // read-only by user, read/write by quiddity
   InfoTree::ptr information_tree_;
@@ -177,10 +156,6 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   // methods
   MContainer meths_;
 
-  std::unordered_map<std::string, Method::ptr> methods_{};
-  std::unordered_map<std::string, Method::ptr> disabled_methods_{};
-  JSONBuilder::ptr methods_description_;
-
   // position weight FIXME should be outside this file ?
   gint position_weight_counter_{0};
 
@@ -210,18 +185,6 @@ class Quiddity : public Logged, public SafeBoolIdiom {
 
   // methods
   Make_delegate(Quiddity, MContainer, &meths_, mmanage);
-
-  bool install_method(const std::string& long_name,
-                      const std::string& method_name,
-                      const std::string& short_description,
-                      const std::string& return_description,
-                      const Method::args_doc& arg_description,
-                      Method::method_ptr method,
-                      Method::return_type return_type,
-                      Method::args_types arg_types,
-                      gpointer user_data);
-  bool disable_method(const std::string& name);
-  bool enable_method(const std::string& name);
 
   // life management
   void self_destruct();

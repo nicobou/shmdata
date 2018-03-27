@@ -19,7 +19,6 @@
 
 #include "./uridecodebin.hpp"
 #include "./gst-utils.hpp"
-#include "./invocation-spec.hpp"
 #include "./scope-exit.hpp"
 #include "./shmdata-utils.hpp"
 
@@ -105,15 +104,7 @@ void Uridecodebin::init_uridecodebin() {
 
 void Uridecodebin::destroy_uridecodebin() {
   gst_pipeline_ = std::make_unique<GstPipeliner>(on_msg_async_cb_, on_msg_sync_cb_, on_error_cb_);
-  clean_on_error_command();
   prune_tree(".shmdata.writer.");
-}
-
-void Uridecodebin::clean_on_error_command() {
-  if (on_error_command_ != nullptr) {
-    delete on_error_command_;
-    on_error_command_ = nullptr;
-  }
 }
 
 void Uridecodebin::source_setup_cb(GstBin* /*bin*/, GstElement* /*source*/, gpointer user_data) {

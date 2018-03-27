@@ -84,7 +84,7 @@ MethodQuid::MethodQuid(QuiddityConfiguration&& conf)
                      {
                         "long name" : "a bool arg",
                         "description" : "fourth arg"
-                     },
+                     }
                    ]
                   }
               )"),
@@ -95,28 +95,7 @@ MethodQuid::MethodQuid(QuiddityConfiguration&& conf)
             debug("bool %", b ? std::string("true") : std::string("false"));
             return 1 == i && 3.14f == f && std::string("is, but not ") == str && b == false;
           })) {
-  install_method("Hello World",                                  // long name
-                 "hello-world",                                  // name
-                 "say hello and repeat first argument",          // description
-                 "the hello answer",                             // return description
-                 Method::make_arg_description("Text To Repeat",  // first arg long name
-                                              "text",            // fisrt arg name
-                                              "string",          // first arg description
-                                              nullptr),
-                 (Method::method_ptr)&my_hello_world_method,
-                 G_TYPE_STRING,
-                 Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-                 this);
-
   debug("hello_id_ %", std::to_string(hello_id_));
-}
-
-gchar* MethodQuid::my_hello_world_method(gchar* first_arg, void* user_data) {
-  MethodQuid* context = static_cast<MethodQuid*>(user_data);
-  context->debug("hello world from myplugin");
-  context->hello_ = std::string("hello ") + first_arg;
-  // the g_free will be invoked by the method system:
-  return g_strdup(context->hello_.c_str());
 }
 
 }  // namespace switcher

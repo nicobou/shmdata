@@ -174,8 +174,7 @@ void SIPPlugin::apply_configuration() {
   std::string turn_pass = config<MPtr(&InfoTree::branch_get_value)>("turn_pass");
   if (!stun.empty()) {
     debug("SIP is trying to set STUN/TURN from configuration");
-    if (PJStunTurn::set_stun_turn(
-            stun.c_str(), turn.c_str(), turn_user.c_str(), turn_pass.c_str(), stun_turn_.get())) {
+    if (stun_turn_.get()->set_stun_turn(stun, turn, turn_user, turn_pass)) {
       debug("sip has set STUN/TURN from configuration");
     } else {
       warning("sip failed setting STUN/TURN from configuration");

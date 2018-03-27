@@ -18,6 +18,7 @@
  */
 
 #include "signal-quid.hpp"
+#include "switcher/information-tree-json.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SignalQuid,
@@ -32,25 +33,25 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SignalQuid,
 SignalQuid::SignalQuid(QuiddityConfiguration&& conf)
     : Quiddity(std::forward<QuiddityConfiguration>(conf)),
       signal_id_(smanage<MPtr(&SContainer::make)>("test-signal", "A test signal")) {
-  install_method("Emit Signal",                  // long name
-                 "emit-signal",                  // name
-                 "send \"test-signal\" signal",  // description
-                 "No return",                    // return description
-                 Method::make_arg_description("none", nullptr),
-                 (Method::method_ptr)&my_signal_method,
-                 G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_NONE, nullptr),
-                 this);
+  mmanage<MPtr(&MContainer::make_method<std::function<bool()>>)>(
+      "emit-signal",
+      JSONSerializer::deserialize(
+          R"(
+                  {
+                   "name" : "Emit Signal",
+                   "description" : "send \"test-signal\" signal",
+                   "arguments" : []
+                  }
+              )"),
+      [&]() {
+        auto tree = InfoTree::make();
+        tree->graft(".zetremendouskey", InfoTree::make("zegreatvalue"));
+        smanage<MPtr(&SContainer::notify)>(signal_id_, std::move(tree));
+        // also grafting the tree
+        graft_tree(".zetremendouskey", InfoTree::make("zegreatvalue"), true);
+        prune_tree(".zetremendouskey", true);
+        return true;
+      });
 }
 
-gboolean SignalQuid::my_signal_method(void*, void* user_data) {
-  SignalQuid* context = static_cast<SignalQuid*>(user_data);
-  auto tree = InfoTree::make();
-  tree->graft(".zetremendouskey", InfoTree::make("zegreatvalue"));
-  context->smanage<MPtr(&SContainer::notify)>(context->signal_id_, std::move(tree));
-  // also grafting the tree
-  context->graft_tree(".zetremendouskey", InfoTree::make("zegreatvalue"), true);
-  context->prune_tree(".zetremendouskey", true);
-  return true;
-}
 }

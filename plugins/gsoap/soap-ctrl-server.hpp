@@ -36,8 +36,6 @@ class SoapCtrlServer : public SwitcherWrapper {
   bool start();
   // for invocation into soap handlers:
   std::shared_ptr<Switcher> get_quiddity_manager();
-  // wrappers
-  static gboolean set_port_wrapped(gint port, gpointer user_data);
 
  private:
   struct soap soap_ {};
@@ -47,8 +45,8 @@ class SoapCtrlServer : public SwitcherWrapper {
   SOAP_SOCKET socket_{-1};
   std::thread thread_{};
   std::mutex mutex_{};
+  MContainer::meth_id_t set_port_id_;
   void server_thread();
-  static int http_get(struct soap* soap);
 };
 
 SWITCHER_DECLARE_PLUGIN(SoapCtrlServer);

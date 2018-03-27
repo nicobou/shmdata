@@ -28,7 +28,7 @@
 #include "./information-tree.hpp"
 #include "./is-specialization-of.hpp"
 #include "./method-trait.hpp"
-#include "./method2.hpp"
+#include "./method.hpp"
 #include "./type-name-registry.hpp"
 
 namespace switcher {
@@ -38,11 +38,19 @@ class MContainer {
   using meth_id_t = MethodBase::meth_id_t;
   using on_tree_grafted_cb_t = std::function<void(const std::string& key)>;
   using on_tree_pruned_cb_t = std::function<void(const std::string& key)>;
+  using on_method_created_cb_t = std::function<void(const std::string&)>;
+  using on_method_removed_cb_t = std::function<void(const std::string&)>;
+  using on_method_enabled_cb_t = std::function<void(const std::string&)>;
+  using on_method_disabled_cb_t = std::function<void(const std::string&)>;
   MContainer() = delete;
   // ctor will own tree and write into .method.
   MContainer(InfoTree::ptr tree,
              on_tree_grafted_cb_t on_tree_grafted_cb,
-             on_tree_pruned_cb_t on_tree_pruned_cb);
+             on_tree_pruned_cb_t on_tree_pruned_cb,
+             on_method_created_cb_t on_method_created,
+             on_method_removed_cb_t on_method_removed,
+             on_method_enabled_cb_t on_method_enabled,
+             on_method_disabled_cb_t on_method_disabled);
 
   // ------------- use
   // return 0 if id is not found
@@ -52,24 +60,26 @@ class MContainer {
   std::map<meth_id_t, std::string> get_names() const;
 
   // ----------- add/remove/update (you should prefer makers for adding)
-
   bool remove(meth_id_t meth_id);
   bool enable(meth_id_t meth_id);
   bool disable(meth_id_t meth_id, const std::string& why);
 
   // invoke
-
   template <typename M>
   decltype(auto) invoke(meth_id_t id, typename method_trait<M>::args_t&& t) const {
     const auto& meth_it = meths_.find(id);
-    return static_cast<Method2<M>*>(meth_it->second.get())->invoke_from_tuple(t);
+    return static_cast<Method<M>*>(meth_it->second.get())->invoke_from_tuple(t);
+  }
+
+  BoolLog invoke_str(meth_id_t id, const std::string& serialized_tuple) const {
+    return meths_.find(id)->second.get()->invoke(serialized_tuple);
   }
 
   // make
 
   template <typename M>
   meth_id_t make_method(const std::string& strid, InfoTree::ptr tree, M&& meth) {
-    meths_.emplace(std::make_pair(++counter_, std::make_unique<Method2<M>>(std::forward<M>(meth))));
+    meths_.emplace(std::make_pair(++counter_, std::make_unique<Method<M>>(std::forward<M>(meth))));
     ids_.emplace(strid, counter_);
     auto key = std::string("method.") + strid;
     tree_->graft(key, tree);
@@ -93,6 +103,7 @@ class MContainer {
     }
 
     if (on_tree_grafted_cb_) on_tree_grafted_cb_(key);
+    on_method_created_(strid);
     return counter_;
   }
 
@@ -104,6 +115,10 @@ class MContainer {
   InfoTree::ptr tree_;
   on_tree_grafted_cb_t on_tree_grafted_cb_;
   on_tree_pruned_cb_t on_tree_pruned_cb_;
+  on_method_created_cb_t on_method_created_;
+  on_method_removed_cb_t on_method_removed_;
+  on_method_enabled_cb_t on_method_enabled_;
+  on_method_disabled_cb_t on_method_disabled_;
   CounterMap suborders_{};
 };
 

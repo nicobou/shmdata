@@ -19,79 +19,107 @@
 #include <list>
 #include <string>
 #include "./pj-sip-plugin.hpp"
-#include "switcher/information-tree-basic-serializer.hpp"
+#include "switcher/information-tree-json.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/string-utils.hpp"
 
 namespace switcher {
 PJPresence::PJPresence() {
   // registering account
-  SIPPlugin::this_->install_method(
-      "Register SIP Account",                       // long name
-      "register",                                   // name
-      "register a SIP account",                     // description
-      "the registration has been asked",            // return description
-      Method::make_arg_description("SIP address",   // long name
-                                   "user address",  // name
-                                   "string",        // description
-                                   "SIP password",
-                                   "password",
-                                   "string",
-                                   nullptr),
-      (Method::method_ptr)&register_account_wrapped,
-      G_TYPE_BOOLEAN,
-      Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, nullptr),
-      this);
-  SIPPlugin::this_->install_method("Unregister SIP Account",  // long name
-                                   "unregister",              // name
-                                   "unregister SIP account",  // description
-                                   "success",                 // return description
-                                   Method::make_arg_description("none", nullptr),
-                                   (Method::method_ptr)&unregister_account_wrapped,
-                                   G_TYPE_BOOLEAN,
-                                   Method::make_arg_type_description(G_TYPE_NONE, nullptr),
-                                   this);
+  using register_t = std::function<bool(std::string, std::string)>;
+  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<register_t>)>(
+      "register",
+      JSONSerializer::deserialize(
+          R"(
+                  {
+                   "name" : "Register SIP Account",
+                   "description" : "register a SIP account", 
+                   "arguments" : [
+                     {
+                        "long name" : "SIP address",
+                        "description" : "string"
+                     }, {
+                        "long name" : "SIP password"
+                        "description" : "string"
+                     }
+                   ]
+                  }
+              )"),
+      [this](const std::string& login, const std::string& pass) {
+        return register_account_wrapped(login, pass);
+      });
+
+  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool()>>)>(
+      "unregister",
+      JSONSerializer::deserialize(
+          R"(
+                  {
+                   "name" : "Unregister SIP Account",
+                   "description" : "unregister SIP account",
+                   "arguments" : []
+                  }
+              )"),
+      [this]() { return unregister_account_wrapped(); });
+
   // buddies
-  SIPPlugin::this_->install_method("Add Buddy",    // long name
-                                   "add_buddy",    // name
-                                   "add a buddy",  // description
-                                   "success",      // return description
-                                   Method::make_arg_description("SIP User Name",  // long name
-                                                                "user",           // name
-                                                                "string",         // description
-                                                                nullptr),
-                                   (Method::method_ptr)&add_buddy_wrapped,
-                                   G_TYPE_BOOLEAN,
-                                   Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-                                   this);
-  SIPPlugin::this_->install_method(
-      "Set Buddy Name",                        // long name
-      "name_buddy",                            // name
-      "give a name to a buddy",                // description
-      "success",                               // return description
-      Method::make_arg_description("Name",     // long name
-                                   "name",     // name
-                                   "string",   // description
-                                   "SIP URI",  // long name
-                                   "uri",      // name
-                                   "string",   // description
-                                   nullptr),
-      (Method::method_ptr)&name_buddy_wrapped,
-      G_TYPE_BOOLEAN,
-      Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, nullptr),
-      this);
-  SIPPlugin::this_->install_method("Del Buddy",       // long name
-                                   "del_buddy",       // name
-                                   "Delete a buddy",  // description
-                                   "success",         // return description
-                                   Method::make_arg_description("SIP User Name",  // long name
-                                                                "user",           // name
-                                                                "string",         // description
-                                                                nullptr),
-                                   (Method::method_ptr)&del_buddy_wrapped,
-                                   G_TYPE_BOOLEAN,
-                                   Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-                                   this);
+  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+      "add_buddy",
+      JSONSerializer::deserialize(
+          R"(
+                  {
+                   "name" : "Add Buddy",
+                   "description" : "add a buddy",
+                   "arguments" : [
+                     {
+                        "long name" : "SIP User Name",
+                        "description" : "string"
+                     }
+                   ]
+                  }
+              )"),
+      [this](const std::string& buddy) { return add_buddy_wrapped(buddy); });
+
+  using set_name_t = std::function<bool(std::string, std::string)>;
+  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<set_name_t>)>(
+      "name_buddy",
+      JSONSerializer::deserialize(
+          R"(
+                  {
+                   "name" : "Set Buddy Name", 
+                   "description" :  "give a name to a buddy",
+                   "arguments" : [
+                     {
+                        "long name" : "Name",
+                        "description" : "string"
+                     },
+                     {
+                        "long name" : "SIP URI",
+                        "description" : "string"
+                     }
+                   ]
+                  }
+              )"),
+      [this](const std::string& name, const std::string& buddy) {
+        return name_buddy_wrapped(name, buddy);
+      });
+
+  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+      "del_buddy",
+      JSONSerializer::deserialize(
+          R"(
+                  {
+                   "name" : "Del Buddy",
+                   "description" :  "Delete a buddy",
+                   "arguments" : [
+                     {
+                        "long name" : "SIP User Name",
+                        "description" : "string"
+                     }
+                   ]
+                  }
+              )"),
+      [this](const std::string& name) { return del_buddy_wrapped(name); });
+
   // online status
   SIPPlugin::this_->pmanage<MPtr(&PContainer::make_selection<>)>(
       "status",
@@ -149,24 +177,23 @@ PJPresence::~PJPresence() {
   }
 }
 
-gboolean PJPresence::register_account_wrapped(gchar* user, gchar* password, void* user_data) {
-  PJPresence* context = static_cast<PJPresence*>(user_data);
-  if (nullptr == user || nullptr == password) {
+bool PJPresence::register_account_wrapped(const std::string& user, const std::string& password) {
+  if (user.empty() || password.empty()) {
     SIPPlugin::this_->message("ERROR:register sip account missing user or domain or password");
     return FALSE;
   }
   if (-1 == SIPPlugin::this_->transport_id_) {
     SIPPlugin::this_->message("ERROR:cannot register, SIP port is not available (%)",
                               std::to_string(SIPPlugin::this_->sip_port_));
-    return FALSE;
+    return false;
   }
   std::string tmp = user;
-  if (context->lower_case_accounts_) StringUtils::tolower(tmp);
-  SIPPlugin::this_->pjsip_->run([&]() { context->register_account(tmp, std::string(password)); });
+  if (lower_case_accounts_) StringUtils::tolower(tmp);
+  SIPPlugin::this_->pjsip_->run([&]() { register_account(tmp, std::string(password)); });
   SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
       SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
-  if (context->registered_) return TRUE;
-  return FALSE;
+  if (registered_) return true;
+  return false;
 }
 
 void PJPresence::register_account(const std::string& sip_user, const std::string& sip_password) {
@@ -222,11 +249,10 @@ void PJPresence::register_account(const std::string& sip_user, const std::string
   }
 }
 
-gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */, void* user_data) {
-  PJPresence* context = static_cast<PJPresence*>(user_data);
-  SIPPlugin::this_->pjsip_->run([&]() { context->unregister_account(); });
-  if (-1 != context->account_id_ || !pjsua_acc_is_valid(context->account_id_)) return FALSE;
-  return TRUE;
+bool PJPresence::unregister_account_wrapped() {
+  SIPPlugin::this_->pjsip_->run([&]() { unregister_account(); });
+  if (-1 != account_id_ || !pjsua_acc_is_valid(account_id_)) return false;
+  return true;
 }
 
 void PJPresence::unregister_account(bool notify_tree) {
@@ -339,21 +365,19 @@ void PJPresence::del_buddy(const std::string& user) {
   return;
 }
 
-gboolean PJPresence::add_buddy_wrapped(gchar* buddy_uri, void* user_data) {
-  PJPresence* context = static_cast<PJPresence*>(user_data);
+bool PJPresence::add_buddy_wrapped(const std::string& buddy_uri) {
   if (-1 == SIPPlugin::this_->transport_id_) {
     SIPPlugin::this_->message("ERROR:cannot add buddy without connection to server");
-    return FALSE;
+    return false;
   }
 
-  SIPPlugin::this_->pjsip_->run([&]() { context->add_buddy(buddy_uri); });
-  return TRUE;
+  SIPPlugin::this_->pjsip_->run([&]() { add_buddy(buddy_uri); });
+  return true;
 }
 
-gboolean PJPresence::del_buddy_wrapped(gchar* buddy_uri, void* user_data) {
-  PJPresence* context = static_cast<PJPresence*>(user_data);
-  SIPPlugin::this_->pjsip_->run([&]() { context->del_buddy(buddy_uri); });
-  return TRUE;
+bool PJPresence::del_buddy_wrapped(const std::string& buddy_uri) {
+  SIPPlugin::this_->pjsip_->run([&]() { del_buddy(buddy_uri); });
+  return true;
 }
 
 void PJPresence::name_buddy(std::string name, std::string sip_user) {
@@ -372,12 +396,11 @@ void PJPresence::name_buddy(std::string name, std::string sip_user) {
   return;
 }
 
-gboolean PJPresence::name_buddy_wrapped(gchar* name, gchar* buddy_uri, void* user_data) {
-  PJPresence* context = static_cast<PJPresence*>(user_data);
+bool PJPresence::name_buddy_wrapped(const std::string& name, const std::string& buddy_uri) {
   std::string bud(buddy_uri);
-  if (context->lower_case_accounts_) StringUtils::tolower(bud);
-  SIPPlugin::this_->pjsip_->run([&]() { context->name_buddy(std::string(name), bud); });
-  return TRUE;
+  if (lower_case_accounts_) StringUtils::tolower(bud);
+  SIPPlugin::this_->pjsip_->run([&]() { name_buddy(std::string(name), bud); });
+  return true;
 }
 
 void PJPresence::on_registration_state(pjsua_acc_id acc_id, pjsua_reg_info* info) {

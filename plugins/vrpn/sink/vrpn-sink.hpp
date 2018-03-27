@@ -55,6 +55,12 @@ class VRPNSink : public Quiddity, public StartableQuiddity {
   PContainer::prop_id_t port_id_;
 
   /**
+   * Methods id
+   */
+  MContainer::meth_id_t create_analog_device_id_{0};
+  MContainer::meth_id_t create_button_device_id_{0};
+
+  /**
    * Debug property value
    */
   bool debug_{false};
@@ -92,13 +98,13 @@ class VRPNSink : public Quiddity, public StartableQuiddity {
   std::map<std::string, std::unique_ptr<std::vector<PContainer::prop_id_t>>> devicesProperties_{};
 
   // ANALOG DEVICE
-  static bool createAnalogDeviceMethod(gchar* deviceName, void* user_data);
+  bool createAnalogDeviceMethod(const std::string& deviceName);
   AnalogSinkDevice* getAnalogDevice(const std::string& deviceId);
   bool createAnalogDevice(const std::string& deviceName);
   void updateAnalogProperties(const std::string& deviceName, int numChannels);
 
   // BUTTON DEVICE
-  static bool createButtonDeviceMethod(gchar* method_name, void* user_data);
+  bool createButtonDeviceMethod(const std::string& method_name);
   ButtonSinkDevice* getButtonDevice(const std::string& deviceId);
   bool createButtonDevice(const std::string& deviceName);
   void updateButtonProperties(const std::string& deviceName, int numButtons);

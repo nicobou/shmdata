@@ -18,9 +18,6 @@
 #include <locale.h>
 #include <signal.h>
 #include <time.h>
-#if HAVE_GTK
-#include <gtk/gtk.h>
-#endif
 #include <vector>
 #include "switcher/console-logger.hpp"
 #include "switcher/file-utils.hpp"
@@ -33,7 +30,6 @@ using namespace switcher;
 static const gchar* server_name = nullptr;
 static const gchar* port_number = nullptr;
 static const gchar* load_file = nullptr;
-static gchar* osc_port_number = nullptr;
 static gboolean display_version;
 static gboolean quiet;
 static gboolean debug;
@@ -41,7 +37,6 @@ static gboolean verbose;
 static gboolean listclasses;
 static gboolean classesdoc;
 static gchar* classdoc = nullptr;
-static gchar* listmethodsbyclass = nullptr;
 static gchar* extraplugindir = nullptr;
 static Switcher::ptr manager;
 static GOptionEntry entries[15] = {
@@ -83,13 +78,6 @@ static GOptionEntry entries[15] = {
      nullptr},
     {"debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "display all messages, including debug", nullptr},
     {"list-classes", 'C', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", nullptr},
-    {"list-methods-by-class",
-     'M',
-     0,
-     G_OPTION_ARG_STRING,
-     &listmethodsbyclass,
-     "list methods of a class",
-     nullptr},
     {"classes-doc",
      'K',
      0,
@@ -103,13 +91,6 @@ static GOptionEntry entries[15] = {
      G_OPTION_ARG_STRING,
      &classdoc,
      "print class documentation, JSON-formated (--class-doc class_name)",
-     nullptr},
-    {"osc-port",
-     'o',
-     0,
-     G_OPTION_ARG_STRING,
-     &osc_port_number,
-     "osc port number (osc enabled only if set)",
      nullptr},
     {"extra-plugin-dir",
      'E',
@@ -125,9 +106,6 @@ void leave(int sig) {
     Switcher::ptr empty;
     manager.swap(empty);
   }
-#if HAVE_GTK
-  gtk_main_quit();
-#endif
   exit(sig);
 }
 
@@ -190,25 +168,14 @@ int main(int argc, char* argv[]) {
     g_print("%s\n", manager->get_class_doc(classdoc).c_str());
     return 0;
   }
-  if (listmethodsbyclass != nullptr) {
-    g_print("%s\n", manager->get_methods_description_by_class(listmethodsbyclass).c_str());
-    return 0;
-  }
 
   std::string soap_name = manager->create("SOAPcontrolServer", "soapserver");
-  std::vector<std::string> port_arg;
-  port_arg.push_back(port_number);
-  std::string* result;
-  manager->invoke(soap_name, "set_port", &result, port_arg);
-  if (g_strcmp0("false", result->c_str()) == 0 && osc_port_number == nullptr) return 0;
-
-  // start osc if port number has been set
-  if (osc_port_number != nullptr) {
-    std::string osc_name = manager->create("OSCctl");
-    if (osc_name.compare("") == 0)
-      std::cerr << "osc plugin not found" << '\n';
-    else
-      manager->invoke_va(osc_name.c_str(), "set_port", nullptr, osc_port_number, nullptr);
+  if (!manager->use_method<MPtr(&MContainer::invoke_str)>(
+          soap_name,
+          manager->use_method<MPtr(&MContainer::get_id)>(soap_name, "set_port"),
+          serialize::esc_for_tuple(port_number))) {
+    std::cerr << "could not set soap port " << '\n';
+    return 0;
   }
 
   manager->reset_state(false);
@@ -217,13 +184,6 @@ int main(int argc, char* argv[]) {
       !manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(load_file)))) {
     std::cerr << "could not load file " << load_file << '\n';
   }
-
-#if HAVE_GTK
-  if (!gtk_init_check(nullptr, nullptr))
-    std::cerr << "cannot init gtk in main" << std::endl;
-  else
-    gtk_main();
-#endif
 
   // waiting for end of life
   timespec delay;

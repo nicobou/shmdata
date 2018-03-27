@@ -17,6 +17,7 @@
 
 #undef NDEBUG  // get assert in release mode
 
+#include <gst/gst.h>
 #include <cassert>
 #include "switcher/switcher.hpp"
 

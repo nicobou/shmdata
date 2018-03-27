@@ -34,7 +34,6 @@
 #include "./base-logger.hpp"
 #include "./console-logger.hpp"
 #include "./information-tree.hpp"
-#include "./invocation-spec.hpp"
 #include "./make-consultable.hpp"
 #include "./quiddity-container.hpp"
 #include "./switcher-wrapper.hpp"
@@ -111,27 +110,12 @@ class Switcher {
   Forward_consultable(Switcher, QuiddityContainer, qcontainer_.get(), sigs, use_sig);
 
   // methods
-  Forward_consultable(Switcher, QuiddityContainer, qcontainer_.get(), meths, use_method);
-
-  // doc (json formatted)
-  std::string get_methods_description(const std::string& quiddity_name);
-  std::string get_method_description(const std::string& quiddity_name,
-                                     const std::string& method_name);
-  // following "by_class" methods provide methods available after creation only
-  std::string get_methods_description_by_class(const std::string& class_name);
-  std::string get_method_description_by_class(const std::string& class_name,
-                                              const std::string& method_name);
-  // invoke
-  bool invoke(const std::string& quiddity_name,
-              const std::string& method_name,
-              std::string** return_value,
-              const std::vector<std::string>& args);
-  bool invoke_va(const std::string& quiddity_name,
-                 const std::string& method_name,
-                 std::string** return_value,
-                 ...);
-
-  bool has_method(const std::string& quiddity_name, const std::string& method_name);
+  Forward_consultable(Switcher,
+                      QuiddityContainer,
+                      qcontainer_.get(),
+                      meths,
+                      use_method);  // FIXME evaluate if a global wrap with mutex is required,
+                                    // possibly use invocation_loop_ for invoke
 
  private:
   // logs
@@ -144,8 +128,6 @@ class Switcher {
   std::vector<std::string> quiddities_at_reset_{};
   // gives shared pointer to this:
   std::weak_ptr<Switcher> me_{};
-  // invocation
-  std::vector<InvocationSpec> invocations_{};
 
   Switcher() = delete;
   template <typename L>  // unique_ptr<LOG_TYPE>
@@ -154,7 +136,6 @@ class Switcher {
         qcontainer_(QuiddityContainer::make_container(this, log_.get(), name)),
         name_(name) {}
   void auto_init(const std::string& quiddity_name);
-  void try_save_current_invocation(const InvocationSpec& invocation_spec);
   static void init_gst();
 };
 }  // namespace switcher

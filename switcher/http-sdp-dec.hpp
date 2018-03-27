@@ -53,6 +53,7 @@ class HTTPSDPDec : public Quiddity {
   std::string src_element_class_{"souphttpsrc"};
   CounterMap counter_{};
   std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
+  MContainer::meth_id_t to_shm_id_;
   bool to_shmdata(std::string uri);
   void init_httpsdpdec();
   void destroy_httpsdpdec();
@@ -62,7 +63,6 @@ class HTTPSDPDec : public Quiddity {
                              const std::string& media_type,
                              const std::string& media_label);
   static void httpsdpdec_pad_added_cb(GstElement* object, GstPad* pad, gpointer user_data);
-  static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);
   static void on_new_element_in_sdpdemux(GstBin* bin, GstElement* element, gpointer user_data);
 };
 

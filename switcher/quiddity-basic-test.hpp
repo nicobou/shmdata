@@ -27,7 +27,6 @@ namespace QuiddityBasicTest {
 bool test_full(Switcher::ptr manager, const std::string& quiddity_class_name);
 bool test_tree(Switcher::ptr manager, const std::string& quiddity_class_name);
 bool test_create(Switcher::ptr manager, const std::string& quiddity_class_name);
-bool test_description_by_class(Switcher::ptr manager, const std::string& quiddity_class_name);
 bool test_startable(Switcher::ptr manager, const std::string& quiddity_class_name);
 bool test_properties(Switcher::ptr manager, const std::string& quiddity_class_name);
 bool test_nickname(Switcher::ptr manager, const std::string& quiddity_class_name);

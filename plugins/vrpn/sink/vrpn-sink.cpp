@@ -18,6 +18,7 @@
  */
 
 #include "./vrpn-sink.hpp"
+#include "switcher/information-tree-json.hpp"
 
 namespace switcher {
 namespace vrpn {
@@ -71,27 +72,41 @@ VRPNSink::VRPNSink(QuiddityConfiguration&& conf)
                                                  "Debug values to console",
                                                  debug_);
 
-  install_method(
-      "Create Analog Device",
-      "create_analog_device",
-      "Create a custom analog device that will be sent to connected VRPN clients.",
-      "Success or Failure",
-      Method::make_arg_description("Device Name", "device_name", "Name of the device", nullptr),
-      (Method::method_ptr)&createAnalogDeviceMethod,
-      G_TYPE_BOOLEAN,
-      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-      this);
+  create_analog_device_id_ =
+      mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+          "create_analog_device",
+          JSONSerializer::deserialize(
+              R"(
+                  {
+                   "name" : "Create Analog Device",
+                   "description" : "Create a custom analog device that will be sent to connected VRPN clients.",
+                   "arguments" : [
+                     {
+                        "long name" : "Device Name",
+                        "description" : "Name of the device"
+                     }
+                   ]
+                  }
+              )"),
+          [this](const std::string& dev) { return createAnalogDeviceMethod(dev); });
 
-  install_method(
-      "Create Button Device",
-      "create_button_device",
-      "Create a custom button device that will be sent to connected VRPN clients.",
-      "Success or Failure",
-      Method::make_arg_description("Device Name", "device_name", "Name of the device", nullptr),
-      (Method::method_ptr)&createButtonDeviceMethod,
-      G_TYPE_BOOLEAN,
-      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-      this);
+  create_button_device_id_ =
+      mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+          "create_button_device",
+          JSONSerializer::deserialize(
+              R"(
+                  {
+                   "name" : "Create Button Device",
+                   "description" : "Create a custom button device that will be sent to connected VRPN clients.",
+                   "arguments" : [
+                     {
+                        "long name" : "Device Name",
+                        "description" : "Name of the device"
+                     }
+                   ]
+                  }
+              )"),
+          [this](const std::string& dev) { return createButtonDeviceMethod(dev); });
 }
 
 /**
@@ -154,13 +169,11 @@ void VRPNSink::on_loaded() { loading_ = false; }
 /**
  * @thread switcher
  */
-bool VRPNSink::createAnalogDeviceMethod(gchar* deviceName, void* user_data) {
-  VRPNSink* context = static_cast<VRPNSink*>(user_data);
-  if (context->loading_) {
+bool VRPNSink::createAnalogDeviceMethod(const std::string& deviceName) {
+  if (loading_) {
     return false;
   }
-
-  return context->createAnalogDevice(std::string(deviceName));
+  return createAnalogDevice(std::string(deviceName));
 }
 
 /**
@@ -312,13 +325,12 @@ void VRPNSink::updateAnalogProperties(const std::string& deviceName, int numChan
 /**
  * @thread switcher
  */
-bool VRPNSink::createButtonDeviceMethod(gchar* deviceName, void* user_data) {
-  VRPNSink* context = static_cast<VRPNSink*>(user_data);
-  if (context->loading_) {
+bool VRPNSink::createButtonDeviceMethod(const std::string& deviceName) {
+  if (loading_) {
     return false;
   }
 
-  return context->createButtonDevice(std::string(deviceName));
+  return createButtonDevice(std::string(deviceName));
 }
 
 /**
@@ -537,8 +549,8 @@ bool VRPNSink::start() {
   }
 
   pmanage<MPtr(&PContainer::disable)>(port_id_, disabledWhenStartedMsg);
-  enable_method("create_analog_device");
-  enable_method("create_button_device");
+  mmanage<MPtr(&MContainer::enable)>(create_analog_device_id_);
+  mmanage<MPtr(&MContainer::enable)>(create_button_device_id_);
 
   for (auto& device : devices_) {
     device.second->start(connection_.get());

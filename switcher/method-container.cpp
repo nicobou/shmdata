@@ -23,8 +23,18 @@ namespace switcher {
 
 MContainer::MContainer(InfoTree::ptr tree,
                        on_tree_grafted_cb_t on_tree_grafted_cb,
-                       on_tree_pruned_cb_t on_tree_pruned_cb)
-    : tree_(tree), on_tree_grafted_cb_(on_tree_grafted_cb), on_tree_pruned_cb_(on_tree_pruned_cb) {
+                       on_tree_pruned_cb_t on_tree_pruned_cb,
+                       on_method_created_cb_t on_method_created,
+                       on_method_removed_cb_t on_method_removed,
+                       on_method_enabled_cb_t on_method_enabled,
+                       on_method_disabled_cb_t on_method_disabled)
+    : tree_(tree),
+      on_tree_grafted_cb_(on_tree_grafted_cb),
+      on_tree_pruned_cb_(on_tree_pruned_cb),
+      on_method_created_(on_method_created),
+      on_method_removed_(on_method_removed),
+      on_method_enabled_(on_method_enabled),
+      on_method_disabled_(on_method_disabled) {
   tree_->graft(".method", InfoTree::make());
   tree_->tag_as_array(".method", true);
 }
@@ -38,6 +48,7 @@ bool MContainer::remove(meth_id_t meth_id) {
   ids_.erase(it->second);
   strids_.erase(it);
   meths_.erase(meth_id);
+  on_method_removed_(it->second);
   return true;
 }
 
@@ -49,6 +60,7 @@ bool MContainer::enable(meth_id_t meth_id) {
   auto why_key = std::string("method.") + it->second + ".why_disabled";
   tree_->graft(why_key, InfoTree::make(""));
   if (on_tree_grafted_cb_) on_tree_grafted_cb_(key);
+  on_method_enabled_(it->second);
   return true;
 }
 
@@ -60,6 +72,7 @@ bool MContainer::disable(meth_id_t meth_id, const std::string& why) {
   auto why_key = std::string("method.") + it->second + ".why_disabled";
   tree_->graft(why_key, InfoTree::make(why));
   if (on_tree_grafted_cb_) on_tree_grafted_cb_(key);
+  on_method_disabled_(it->second);
   return true;
 }
 

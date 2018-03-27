@@ -38,8 +38,6 @@
 #include "./gst-video-converter.hpp"
 #include "./gst-video-encoder.hpp"
 #include "./http-sdp-dec.hpp"
-#include "./property-mapper.hpp"
-#include "./rtp-session.hpp"
 #include "./shm-delay.hpp"
 #include "./timelapse.hpp"
 #include "./uridecodebin.hpp"
@@ -136,10 +134,6 @@ void QuiddityContainer::register_classes() {
       DocumentationRegistry::get()->get_type_from_class_name("GstDecodebin"));
   abstract_factory_.register_class<HTTPSDPDec>(
       DocumentationRegistry::get()->get_type_from_class_name("HTTPSDPDec"));
-  abstract_factory_.register_class<PropertyMapper>(
-      DocumentationRegistry::get()->get_type_from_class_name("PropertyMapper"));
-  abstract_factory_.register_class<RtpSession>(
-      DocumentationRegistry::get()->get_type_from_class_name("RtpSession"));
   abstract_factory_.register_class<ShmDelay>(
       DocumentationRegistry::get()->get_type_from_class_name("ShmDelay"));
   abstract_factory_.register_class<Timelapse>(
@@ -310,71 +304,6 @@ bool QuiddityContainer::remove(const std::string& quiddity_name, bool call_remov
     }
   }
   return true;
-}
-
-bool QuiddityContainer::has_method(const std::string& quiddity_name,
-                                   const std::string& method_name) {
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    debug("quiddity % not found", quiddity_name);
-    return false;
-  }
-  return q_it->second->has_method(method_name);
-}
-
-bool QuiddityContainer::invoke(const std::string& quiddity_name,
-                               const std::string& method_name,
-                               std::string** return_value,
-                               const std::vector<std::string>& args) {
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    debug("quiddity % not found, cannot invoke", quiddity_name);
-    if (return_value != nullptr) *return_value = new std::string();
-    return false;
-  }
-  if (!q_it->second->has_method(method_name)) {
-    debug("method % not found, cannot invoke", method_name);
-    if (return_value != nullptr) *return_value = new std::string();
-    return false;
-  }
-  return q_it->second->invoke_method(method_name, return_value, args);
-}
-
-std::string QuiddityContainer::get_methods_description(const std::string& quiddity_name) {
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    warning("quiddity % not found, cannot get description of methods", quiddity_name);
-    return "{\"error\":\"quiddity not found\"}";
-  }
-  return q_it->second->get_methods_description();
-}
-
-std::string QuiddityContainer::get_method_description(const std::string& quiddity_name,
-                                                      const std::string& method_name) {
-  auto q_it = quiddities_.find(quiddity_name);
-  if (quiddities_.end() == q_it) {
-    warning("quiddity % not found, cannot get description of methods", quiddity_name);
-    return "{\"error\":\"quiddity not found\"}";
-  }
-
-  return q_it->second->get_method_description(method_name);
-}
-
-std::string QuiddityContainer::get_methods_description_by_class(const std::string& class_name) {
-  if (!class_exists(class_name)) return "{\"error\":\"class not found\"}";
-  const std::string& quid_name = create(class_name, false);
-  const std::string& descr = get_methods_description(quid_name);
-  remove(quid_name, false);
-  return descr;
-}
-
-std::string QuiddityContainer::get_method_description_by_class(const std::string& class_name,
-                                                               const std::string& method_name) {
-  if (!class_exists(class_name)) return "{\"error\":\"class not found\"}";
-  const std::string& quid_name = create(class_name, false);
-  const std::string& descr = get_method_description(quid_name, method_name);
-  remove(quid_name, false);
-  return descr;
 }
 
 unsigned int QuiddityContainer::register_creation_cb(OnCreateRemoveCb cb) {

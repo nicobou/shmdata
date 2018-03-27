@@ -24,7 +24,6 @@ namespace switcher {
 bool QuiddityBasicTest::test_full(Switcher::ptr manager, const std::string& quiddity_class_name) {
   if (!test_tree(manager, quiddity_class_name)) return false;
   if (!test_create(manager, quiddity_class_name)) return false;
-  if (!test_description_by_class(manager, quiddity_class_name)) return false;
   if (!test_startable(manager, quiddity_class_name)) return false;
   if (!test_properties(manager, quiddity_class_name)) return false;
   if (!test_nickname(manager, quiddity_class_name)) return false;
@@ -75,13 +74,6 @@ bool QuiddityBasicTest::test_startable(Switcher::ptr manager,
     std::cerr << "error while removing quiddity " << quiddity_class_name << " (startable test)";
     return false;
   }
-  return true;
-}
-
-bool QuiddityBasicTest::test_description_by_class(Switcher::ptr manager,
-                                                  const std::string& quiddity_class_name) {
-  // by class
-  manager->get_methods_description_by_class(quiddity_class_name);
   return true;
 }
 

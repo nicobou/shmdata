@@ -129,23 +129,6 @@ class QuiddityContainer : public Logged {
       meth,                    // method used by quiddities to access the consultable
       meths);                  // public forwarding method
 
-  // doc (json formatted)
-  std::string get_methods_description(const std::string& quiddity_name);
-  std::string get_method_description(const std::string& quiddity_name,
-                                     const std::string& method_name);
-  // following "by_class" methods provide properties available after creation
-  // only
-  std::string get_methods_description_by_class(const std::string& class_name);
-  std::string get_method_description_by_class(const std::string& class_name,
-                                              const std::string& method_name);
-  // invoke
-  bool invoke(const std::string& quiddity_name,
-              const std::string& method_name,
-              std::string** return_value,
-              const std::vector<std::string>& args);
-
-  bool has_method(const std::string& quiddity_name, const std::string& method_name);
-
   // **** signals
   Forward_consultable_from_associative_container(
       QuiddityContainer,       // self type

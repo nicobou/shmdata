@@ -18,6 +18,7 @@
  */
 
 #include "./nvenc-plugin.hpp"
+#include <gst/gst.h>
 #include "cuda/cuda-context.hpp"
 #include "switcher/scope-exit.hpp"
 

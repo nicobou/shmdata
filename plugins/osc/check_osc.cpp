@@ -28,7 +28,6 @@ int main() {
 
     manager->scan_directory_for_plugins("./");
 
-    assert(switcher::QuiddityBasicTest::test_full(manager, "OSCctl"));
     assert(switcher::QuiddityBasicTest::test_full(manager, "OSCsink"));
   }  // end of scope is releasing the manager
   return 0;

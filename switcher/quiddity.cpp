@@ -65,14 +65,26 @@ Quiddity::Quiddity(QuiddityConfiguration&& conf)
           "on-user-data-pruned", "A branch has been pruned from the quiddity's user data tree")),
       on_nicknamed_id_(smanage<MPtr(&SContainer::make)>(
           "on-nicknamed", "A nickname has been given to the quiddity")),
-      meths_(information_tree_,
-             [this](const std::string& key) {
-               smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(key));
-             },
-             [this](const std::string& key) {
-               smanage<MPtr(&SContainer::notify)>(on_tree_pruned_id_, InfoTree::make(key));
-             }),
-      methods_description_(std::make_shared<JSONBuilder>()),
+      meths_(
+          information_tree_,
+          [this](const std::string& key) {  // on_tree_grafted_cb
+            smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(key));
+          },
+          [this](const std::string& key) {  // on_tree_pruned_cb
+            smanage<MPtr(&SContainer::notify)>(on_tree_pruned_id_, InfoTree::make(key));
+          },
+          [this](const std::string& method_name) {  // on_method_created
+            smanage<MPtr(&SContainer::notify)>(on_method_added_id_, InfoTree::make(method_name));
+          },
+          [this](const std::string& method_name) {  // on_method_removed
+            smanage<MPtr(&SContainer::notify)>(on_method_removed_id_, InfoTree::make(method_name));
+          },
+          [this](const std::string& method_name) {  // on_method_enabled
+            smanage<MPtr(&SContainer::notify)>(on_method_added_id_, InfoTree::make(method_name));
+          },
+          [this](const std::string& method_name) {  // on_method_disabled
+            smanage<MPtr(&SContainer::notify)>(on_method_removed_id_, InfoTree::make(method_name));
+          }),
       name_(string_to_quiddity_name(conf.name_)),
       nickname_(name_),
       type_(conf.type_),
@@ -91,97 +103,6 @@ std::string Quiddity::get_type() const { return type_; }
 
 std::string Quiddity::string_to_quiddity_name(const std::string& name) {
   return std::regex_replace(name, std::regex("[^[:alnum:]| ]"), "-");
-}
-
-bool Quiddity::has_method(const std::string& method_name) {
-  return (methods_.end() != methods_.find(method_name));
-}
-
-bool Quiddity::invoke_method(const std::string& method_name,
-                             std::string** return_value,
-                             const std::vector<std::string>& args) {
-  auto it = methods_.find(method_name);
-  if (methods_.end() == it) {
-    debug("Quiddity::invoke_method error: method % not found", method_name);
-    return false;
-  }
-
-  GValue res = G_VALUE_INIT;
-  if (false == it->second->invoke(args, &res)) {
-    debug("invokation of % failed (missing argments ?)", method_name);
-    return false;
-  }
-
-  if (return_value != nullptr) {
-    gchar* res_val = GstUtils::gvalue_serialize(&res);
-    *return_value = new std::string(res_val);
-    g_free(res_val);
-  }
-  g_value_unset(&res);
-  return true;
-}
-
-bool Quiddity::method_is_registered(const std::string& method_name) {
-  return (methods_.end() != methods_.find(method_name) ||
-          disabled_methods_.end() != disabled_methods_.find(method_name));
-}
-
-bool Quiddity::register_method(const std::string& method_name,
-                               Method::method_ptr method,
-                               Method::return_type return_type,
-                               Method::args_types arg_types,
-                               gpointer user_data) {
-  if (method == nullptr) {
-    debug("fail registering % (method is nullptr)", method_name);
-    return false;
-  }
-
-  if (method_is_registered(method_name)) {
-    debug("registering name % already exists", method_name);
-    return false;
-  }
-
-  Method::ptr meth(new Method());
-  meth->set_method(method, return_type, arg_types, user_data);
-
-  meth->set_position_weight(position_weight_counter_);
-  position_weight_counter_ += 20;
-
-  methods_[method_name] = meth;
-  return true;
-}
-
-bool Quiddity::set_method_description(const std::string& long_name,
-                                      const std::string& method_name,
-                                      const std::string& short_description,
-                                      const std::string& return_description,
-                                      const Method::args_doc& arg_description) {
-  auto it = methods_.find(method_name);
-  if (methods_.end() == it) it = disabled_methods_.find(method_name);
-
-  it->second->set_description(
-      long_name, method_name, short_description, return_description, arg_description);
-  return true;
-}
-
-std::string Quiddity::get_methods_description() {
-  methods_description_->reset();
-  methods_description_->begin_object();
-  methods_description_->set_member_name("methods");
-  methods_description_->begin_array();
-  std::vector<Method::ptr> methods;
-  for (auto& it : methods_) methods.push_back(it.second);
-  std::sort(methods.begin(), methods.end(), Categorizable::compare_ptr);
-  for (auto& it : methods) methods_description_->add_node_value(it->get_json_root_node());
-  methods_description_->end_array();
-  methods_description_->end_object();
-  return methods_description_->get_string(true);
-}
-
-std::string Quiddity::get_method_description(const std::string& method_name) {
-  auto it = methods_.find(method_name);
-  if (methods_.end() == it) return "{ \"error\" : \" method not found\"}";
-  return it->second->get_description();
 }
 
 std::string Quiddity::make_file_name(const std::string& suffix) const {
@@ -276,44 +197,6 @@ std::string Quiddity::get_manager_name() { return qcontainer_->get_name(); }
 std::string Quiddity::get_socket_name_prefix() { return "switcher_"; }
 
 std::string Quiddity::get_socket_dir() { return "/tmp"; }
-
-// methods
-bool Quiddity::install_method(const std::string& long_name,
-                              const std::string& method_name,
-                              const std::string& short_description,
-                              const std::string& return_description,
-                              const Method::args_doc& arg_description,
-                              Method::method_ptr method,
-                              Method::return_type return_type,
-                              Method::args_types arg_types,
-                              gpointer user_data) {
-  if (!register_method(method_name, method, return_type, arg_types, user_data)) return false;
-
-  if (!set_method_description(
-          long_name, method_name, short_description, return_description, arg_description))
-    return false;
-
-  smanage<MPtr(&SContainer::notify)>(on_method_added_id_, InfoTree::make(method_name));
-  return true;
-}
-
-bool Quiddity::enable_method(const std::string& method_name) {
-  auto it = disabled_methods_.find(method_name);
-  if (disabled_methods_.end() == it) return false;
-  methods_[method_name] = it->second;
-  disabled_methods_.erase(it);
-  smanage<MPtr(&SContainer::notify)>(on_method_added_id_, InfoTree::make(method_name));
-  return true;
-}
-
-bool Quiddity::disable_method(const std::string& method_name) {
-  auto it = methods_.find(method_name);
-  if (methods_.end() == it) return false;
-  disabled_methods_[method_name] = it->second;
-  methods_.erase(it);
-  smanage<MPtr(&SContainer::notify)>(on_method_removed_id_, InfoTree::make(method_name));
-  return true;
-}
 
 bool Quiddity::graft_tree(const std::string& path, InfoTree::ptr tree, bool do_signal) {
   if (!information_tree_->graft(path, tree)) return false;

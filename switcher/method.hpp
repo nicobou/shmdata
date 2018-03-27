@@ -20,58 +20,70 @@
 #ifndef __SWITCHER_METHOD_H__
 #define __SWITCHER_METHOD_H__
 
-#include <gst/gst.h>
-#include <stdarg.h>
-#include <map>
-#include <memory>
-#include <string>
-#include <tuple>
-#include <vector>
+#include <functional>
 #include "./bool-log.hpp"
-#include "./categorizable.hpp"
-#include "./json-builder.hpp"
 
 namespace switcher {
-class Method : public Categorizable {
- public:
-  typedef std::shared_ptr<Method> ptr;
-  typedef GType return_type;
-  typedef std::vector<GType> args_types;
-  typedef std::vector<std::tuple<std::string, std::string, std::string>> args_doc;
-  typedef void* method_ptr;
 
-  Method();
-  ~Method();
-  Method(const Method& source);
-  Method& operator=(const Method& source);
-  BoolLog set_method(method_ptr method, return_type rtype, args_types atypes, gpointer user_data);
-  bool invoke(std::vector<std::string> args, GValue* return_value);
-  void set_description(std::string long_name,
-                       std::string method_name,
-                       std::string short_description,
-                       std::string return_description,
-                       args_doc arg_description);
-  std::string get_description();  // json formated description
-  // helper methods, use nullptr sentinel
-  static args_types make_arg_type_description(GType arg_type, ...);  // use G_TYPE_NONE if no arg
-  static args_doc make_arg_description(const char* first_arg_long_name, ...);
-  // Building complex json descriptions incuding this
-  JSONBuilder::Node get_json_root_node();
+class MethodBase {
+ public:
+  using meth_id_t = size_t;
+  MethodBase() = delete;
+  MethodBase(size_t type_hash) : type_hash_(type_hash) {}
+  virtual ~MethodBase() = default;
+  static inline meth_id_t id_from_string(const std::string& str) {
+    if (!isdigit(*str.begin())) return 0;
+    return stoul(str, nullptr, 0);
+  }
+  virtual BoolLog invoke(const std::string& args) const = 0;
 
  private:
-  static void destroy_data(gpointer data, GClosure* closure);
-  void make_description();
-  void copy_method(const Method& source);
-  std::string long_name_;
-  std::string method_name_;
-  std::string short_description_;
-  std::string return_description_;
-  args_doc arg_description_;
-  GClosure* closure_;
-  GType return_type_;
-  args_types arg_types_;
-  uint num_of_value_args_;
-  JSONBuilder::ptr json_description_;
+  size_t type_hash_;
+};
+
+template <typename M>
+class Method : public MethodBase {
+ public:
+  using lambda_type = M;
+  Method(M&& method) : MethodBase(typeid(M).hash_code()), method_(std::forward<M>(method)) {}
+
+  template <typename Tuple, size_t... S>
+  decltype(auto) invoke_tuple_impl(Tuple&& t, std::index_sequence<S...>) const {
+    return method_(std::get<S>(std::forward<Tuple>(t))...);
+  }
+  template <typename Tuple>
+  decltype(auto) invoke_from_tuple(Tuple&& t) const {
+    std::size_t constexpr tSize =
+        std::tuple_size<typename std::remove_reference<Tuple>::type>::value;
+    return invoke_tuple_impl(std::forward<Tuple>(t), std::make_index_sequence<tSize>());
+  }
+
+  template <typename T,
+            typename Tup,
+            typename std::enable_if<!std::is_same<T, void>::value>::type* = nullptr>
+  BoolLog make_valid_boollog(Tup& tup) const {
+    return BoolLog(true, serialize::apply<T>(invoke_from_tuple(std::move(tup))));
+  }
+
+  template <typename T,
+            typename Tup,
+            typename std::enable_if<std::is_same<T, void>::value>::type* = nullptr>
+  BoolLog make_valid_boollog(Tup&) const {
+    return BoolLog(true, std::string());
+  }
+
+  BoolLog invoke(const std::string& serialized_tuple) const {
+    auto deserialized =
+        deserialize::apply<typename method_trait<decltype(method_)>::args_t>(serialized_tuple);
+    if (!deserialized.first)
+      return BoolLog(
+          false,
+          std::string("invoke failed to deserialize following arguments: ") + serialized_tuple);
+    return make_valid_boollog<typename method_trait<M>::return_t>(deserialized.second);
+  }
+
+ private:
+  M method_;
 };
 
 }  // namespace switcher

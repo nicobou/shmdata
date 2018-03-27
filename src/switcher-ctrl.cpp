@@ -34,8 +34,6 @@ static gboolean classdoc = FALSE;
 static gboolean listquiddities = FALSE;
 static gboolean quidditydescr = FALSE;
 static gboolean quidditiesdescr = FALSE;
-static gboolean listmethods = FALSE;
-static gboolean listmethodsbyclass = FALSE;
 static gboolean setprop = FALSE;
 static gboolean getprop = FALSE;
 static gboolean print_tree = FALSE;
@@ -85,20 +83,6 @@ static GOptionEntry entries[25] = {
      G_OPTION_ARG_NONE,
      &listquiddities,
      "list quiddity instances",
-     nullptr},
-    {"list-methods",
-     'm',
-     0,
-     G_OPTION_ARG_NONE,
-     &listmethods,
-     "list methods of a quiddity",
-     nullptr},
-    {"list-methods-by-class",
-     'M',
-     0,
-     G_OPTION_ARG_NONE,
-     &listmethodsbyclass,
-     "list methods of a class",
      nullptr},
     {"set-prop",
      's',
@@ -209,9 +193,9 @@ int main(int argc, char* argv[]) {
   if (server == nullptr) server = g_strdup("http://localhost:27182");
 
   if (!(save ^ load ^ run ^ listclasses ^ classesdoc ^ classdoc ^ listquiddities ^ quidditydescr ^
-        quidditiesdescr ^ setprop ^ getprop ^ createquiddity ^ deletequiddity ^ listmethods ^
-        listmethodsbyclass ^ invokemethod ^ print_tree ^ print_user_data ^ prune_user_data ^
-        graft_user_data ^ tag_as_array_user_data)) {
+        quidditiesdescr ^ setprop ^ getprop ^ createquiddity ^ deletequiddity ^ invokemethod ^
+        print_tree ^ print_user_data ^ prune_user_data ^ graft_user_data ^
+        tag_as_array_user_data)) {
     g_printerr(
         "I am very sorry for the inconvenience, "
         "but I am able to process only exactly one command at a time. \n");
@@ -395,31 +379,6 @@ int main(int argc, char* argv[]) {
       return false;
     }
     switcher_control.delete_quiddity(remaining_args[0]);
-  } else if (listmethods) {
-    if (remaining_args == nullptr) {
-      g_printerr("missing quiddity name for list methods\n");
-      return false;
-    }
-
-    std::string resultlist;
-    if (remaining_args[1] == nullptr)
-      switcher_control.get_methods_description(remaining_args[0], &resultlist);
-    else
-      switcher_control.get_method_description(remaining_args[0], remaining_args[1], &resultlist);
-    std::cout << resultlist << std::endl;
-  } else if (listmethodsbyclass) {
-    if (remaining_args == nullptr) {
-      g_printerr("missing quiddity name for list methods\n");
-      return false;
-    }
-
-    std::string resultlist;
-    if (remaining_args[1] == nullptr)
-      switcher_control.get_methods_description_by_class(remaining_args[0], &resultlist);
-    else
-      switcher_control.get_method_description_by_class(
-          remaining_args[0], remaining_args[1], &resultlist);
-    std::cout << resultlist << std::endl;
   } else if (invokemethod) {
     if (remaining_args == nullptr || remaining_args[1] == nullptr) {
       g_printerr("not enough argument for invoking a function\n");

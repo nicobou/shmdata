@@ -22,14 +22,6 @@ if (PLUGIN_OSC)
         ${LIBLO_LIBRARIES}
     )
 
-    # OSC-CTRL
-
-    add_library(osc_ctrl_server SHARED
-        osc-ctrl-server.cpp
-        )
-
-    add_dependencies(osc_ctrl_server ${SWITCHER_LIBRARY})
-
     # OSC-to-SHM
 
     add_library(osc_to_shmdata SHARED
@@ -53,6 +45,6 @@ if (PLUGIN_OSC)
 
     # INSTALL
 
-    install(TARGETS osc_ctrl_server osc_to_shmdata shmdata_to_osc LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(TARGETS osc_to_shmdata shmdata_to_osc LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
 
 endif ()

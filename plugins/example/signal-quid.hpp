@@ -30,8 +30,6 @@ class SignalQuid : public Quiddity {
   SignalQuid(const SignalQuid&) = delete;
   SignalQuid& operator=(const SignalQuid&) = delete;
 
-  static gboolean my_signal_method(void*, void* user_data);
-
  private:
   SContainer::sig_id_t signal_id_;
 };

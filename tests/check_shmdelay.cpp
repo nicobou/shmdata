@@ -70,11 +70,10 @@ int main() {
             "videotest", "started", "true"))
       return 1;
 
-    if (!manager->invoke_va("shmdelaytest",
-                            "connect",
-                            nullptr,
-                            "/tmp/switcher_shmdelaytest_videotest_video",
-                            nullptr))
+    if (!manager->use_method<MPtr(&switcher::MContainer::invoke<std::function<bool(std::string)>>)>(
+            "shmdelaytest",
+            manager->use_method<MPtr(&switcher::MContainer::get_id)>("shmdelaytest", "connect"),
+            std::make_tuple("/tmp/switcher_shmdelaytest_videotest_video")))
       return 1;
 
     auto start_time = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -99,11 +98,10 @@ int main() {
 
     wait_until_success();
 
-    if (!manager->invoke_va("shmdelaytest",
-                            "disconnect",
-                            nullptr,
-                            "/tmp/switcher_shmdelaytest_videotest_video",
-                            nullptr))
+    if (!manager->use_method<MPtr(&switcher::MContainer::invoke<std::function<bool(std::string)>>)>(
+            "shmdelaytest",
+            manager->use_method<MPtr(&switcher::MContainer::get_id)>("shmdelaytest", "disconnect"),
+            std::make_tuple("/tmp/switcher_shmdelaytest_videotest_video")))
       return 1;
 
     manager->use_prop<MPtr(&switcher::PContainer::set_str_str)>("videotest", "started", "false");

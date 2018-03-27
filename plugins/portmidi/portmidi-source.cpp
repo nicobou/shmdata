@@ -22,6 +22,7 @@
 #include <switcher/quiddity-container.hpp>
 #include <switcher/scope-exit.hpp>
 #include <switcher/switcher.hpp>
+#include "switcher/information-tree-json.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSource,
@@ -62,51 +63,77 @@ PortMidiSource::PortMidiSource(QuiddityConfiguration&& conf)
                                            127);
   pmanage<MPtr(&PContainer::disable)>(last_midi_value_id_, disabledWhenStopedMsg);
 
-  install_method("Next MIDI Event To Property",                                 // long name
-                 "next_midi_event_to_property",                                 // name
-                 "Wait for a MIDI event and make a property for this channel",  // description
-                 "success or fail",                                  // return description
-                 Method::make_arg_description("Property Long Name",  // first arg long name
-                                              "property_long_name",  // fisrt arg name
-                                              "string",              // first arg description
-                                              nullptr),
-                 (Method::method_ptr)&next_midi_event_to_property_method,
-                 G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-                 this);
-  disable_method("next_midi_event_to_property");
-  install_method("Remove Midi Property",                             // long name
-                 "remove_midi_property",                             // name
-                 "remove a property made with Make Property",        // description
-                 "success or fail",                                  // return description
-                 Method::make_arg_description("Property Long Name",  // first arg long name
-                                              "property_long_name",  // fisrt arg name
-                                              "string",              // first arg description
-                                              nullptr),
-                 (Method::method_ptr)&remove_property_method,
-                 G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-                 this);
-  disable_method("remove_midi_property");
-  install_method("Map midi channel to property",
-                 "map_midi_to_property",
-                 "creates a property from a midi channel",
-                 "success or fail",
-                 Method::make_arg_description("Property Long Name",  // first arg long name
-                                              "property_long_name",  // fisrt arg name
-                                              "string",              // first arg description
-                                              "Midi Status",
-                                              "midi_status",
-                                              "int",
-                                              "Midi data1",
-                                              "midi_data1",
-                                              "int",
-                                              nullptr),
-                 (Method::method_ptr)&make_property_wrapped,
-                 G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT, nullptr),
-                 this);
-  disable_method("map_midi_to_property");
+  auto next_midi_event_to_property_id_ =
+      mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+          "next_midi_event_to_property",
+          JSONSerializer::deserialize(
+              R"(
+                  {
+                   "name" : "Next MIDI Event To Property",
+                   "description" : "Wait for a MIDI event and make a property for this channel",
+                   "arguments" : [
+                     {
+                        "long name" : "Property Long Name",
+                        "description" : "string"
+                     }
+                   ]
+                  }
+              )"),
+          [this](const std::string& prop_name) {
+            return next_midi_event_to_property_method(prop_name);
+          });
+  mmanage<MPtr(&MContainer::disable)>(next_midi_event_to_property_id_,
+                                      StartableQuiddity::disabledWhenStopedMsg);
+
+  auto remove_midi_property_id_ =
+      mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+          "remove_midi_property",
+          JSONSerializer::deserialize(
+              R"(
+                  {
+                   "name" : "Remove Midi Property",
+                   "description" : "remove a property made with Make Property",
+                   "arguments" : [
+                     {
+                        "long name" : "Property Long Name",
+                        "description" : "string"
+                     }
+                   ]
+                  }
+              )"),
+          [this](const std::string& prop_name) { return remove_property_method(prop_name); });
+  mmanage<MPtr(&MContainer::disable)>(remove_midi_property_id_,
+                                      StartableQuiddity::disabledWhenStopedMsg);
+
+  using remove_midi_prop_t = std::function<bool(std::string, int, int)>;
+  auto map_midi_to_property_id_ = mmanage<MPtr(&MContainer::make_method<remove_midi_prop_t>)>(
+      "remove_midi_property",
+      JSONSerializer::deserialize(
+          R"(
+                  {
+                   "name" : "Map midi channel to property",
+                   "description" :  "creates a property from a midi channel",
+                   "arguments" : [
+                     {
+                        "long name" : "Property Long Name",
+                        "description" : "string"
+                     }
+                     {
+                        "long name" : "Midi Status",
+                        "description" : "int"
+                     }
+                     {
+                        "long name" : "Midi data1",
+                        "description" : "int"
+                     }
+                   ]
+                  }
+              )"),
+      [this](const std::string& prop_name, int status, int data) {
+        return make_property_wrapped(prop_name, status, data);
+      });
+  mmanage<MPtr(&MContainer::disable)>(map_midi_to_property_id_,
+                                      StartableQuiddity::disabledWhenStopedMsg);
 }
 
 bool PortMidiSource::start() {
@@ -120,18 +147,21 @@ bool PortMidiSource::start() {
   pmanage<MPtr(&PContainer::disable)>(devices_id_, disabledWhenStartedMsg);
   open_input_device(std::stoi(input_devices_enum_.get_attached()), on_pm_event, this);
   pmanage<MPtr(&PContainer::enable)>(last_midi_value_id_);
-  enable_method("next_midi_event_to_property");
-  enable_method("remove_midi_property");
-  enable_method("map_midi_to_property");
+  mmanage<MPtr(&MContainer::enable)>(next_midi_event_to_property_id_);
+  mmanage<MPtr(&MContainer::enable)>(remove_midi_property_id_);
+  mmanage<MPtr(&MContainer::enable)>(map_midi_to_property_id_);
   return true;
 }
 
 bool PortMidiSource::stop() {
   close_input_device(std::stoi(input_devices_enum_.get_attached()));
   pmanage<MPtr(&PContainer::disable)>(last_midi_value_id_, disabledWhenStopedMsg);
-  disable_method("next_midi_event_to_property");
-  disable_method("remove_midi_property");
-  disable_method("map_midi_to_property");
+  mmanage<MPtr(&MContainer::disable)>(next_midi_event_to_property_id_,
+                                      StartableQuiddity::disabledWhenStopedMsg);
+  mmanage<MPtr(&MContainer::disable)>(remove_midi_property_id_,
+                                      StartableQuiddity::disabledWhenStopedMsg);
+  mmanage<MPtr(&MContainer::disable)>(map_midi_to_property_id_,
+                                      StartableQuiddity::disabledWhenStopedMsg);
   pmanage<MPtr(&PContainer::enable)>(devices_id_);
   shm_.reset(nullptr);
   return true;
@@ -169,56 +199,52 @@ void PortMidiSource::on_pm_event(PmEvent* event, void* user_data) {
 
   // making property if needed
   if (context->make_property_for_next_midi_event_) {
-    context->qcontainer_->get_switcher()->invoke(context->get_name(),
-                                                 "map_midi_to_property",
-                                                 nullptr,
-                                                 {context->next_property_name_,
-                                                  std::to_string(context->last_status_),
-                                                  std::to_string(context->last_data1_)});
+    context->qcontainer_->get_switcher()->use_method<MPtr(&MContainer::invoke_str)>(
+        context->get_name(),
+        context->qcontainer_->get_switcher()->use_method<MPtr(&MContainer::get_id)>(
+            context->get_name(), "map_midi_to_property"),
+        serialize::esc_for_tuple(context->next_property_name_) + ',' +
+            serialize::esc_for_tuple(std::to_string(context->last_status_)) + "," +
+            serialize::esc_for_tuple(std::to_string(context->last_data1_)));
     context->make_property_for_next_midi_event_ = FALSE;
   }
 }
 
-gboolean PortMidiSource::next_midi_event_to_property_method(gchar* long_name, void* user_data) {
-  PortMidiSource* context = static_cast<PortMidiSource*>(user_data);
-  context->make_property_for_next_midi_event_ = TRUE;
-  context->next_property_name_ = long_name;
-  return TRUE;
+bool PortMidiSource::next_midi_event_to_property_method(const std::string& long_name) {
+  make_property_for_next_midi_event_ = TRUE;
+  next_property_name_ = long_name;
+  return true;
 }
 
-gboolean PortMidiSource::remove_property_method(gchar* long_name, void* user_data) {
-  PortMidiSource* context = static_cast<PortMidiSource*>(user_data);
-
-  if (context->midi_property_contexts_.find(long_name) == context->midi_property_contexts_.end()) {
-    context->debug("property % not found for removing", std::string(long_name));
-    return FALSE;
+bool PortMidiSource::remove_property_method(const std::string& long_name) {
+  if (midi_property_contexts_.find(long_name) == midi_property_contexts_.end()) {
+    debug("property % not found for removing", std::string(long_name));
+    return false;
   }
 
   std::pair<guint, guint> midi_channel;
-  for (auto& it : context->midi_channels_) {
-    if (g_strcmp0(it.second.c_str(), long_name) == 0) {
+  for (auto& it : midi_channels_) {
+    if (it.second == long_name) {
       midi_channel = it.first;
       break;
     }
   }
 
   gchar* prop_name = g_strdup_printf("%u-%u", midi_channel.first, midi_channel.second);
-  context->pmanage<MPtr(&PContainer::remove)>(context->prop_ids_[long_name]);
-  context->unused_props_specs_[prop_name] = context->prop_ids_[long_name];
-  context->prop_ids_.erase(long_name);
-  context->midi_channels_.erase(midi_channel);
-  context->midi_values_.erase(long_name);
+  pmanage<MPtr(&PContainer::remove)>(prop_ids_[long_name]);
+  unused_props_specs_[prop_name] = prop_ids_[long_name];
+  prop_ids_.erase(long_name);
+  midi_channels_.erase(midi_channel);
+  midi_values_.erase(long_name);
   g_free(prop_name);
-  return TRUE;
+  return true;
 }
 
-gboolean PortMidiSource::make_property_wrapped(const gchar* property_long_name,
-                                               gint last_status,
-                                               gint last_data1,
-                                               void* user_data) {
-  PortMidiSource* context = static_cast<PortMidiSource*>(user_data);
-  if (context->make_property(property_long_name, last_status, last_data1)) return TRUE;
-  return FALSE;
+bool PortMidiSource::make_property_wrapped(const std::string& property_long_name,
+                                           gint last_status,
+                                           gint last_data1) {
+  if (make_property(property_long_name, last_status, last_data1)) return true;
+  return false;
 }
 
 bool PortMidiSource::make_property(std::string property_long_name,

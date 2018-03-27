@@ -41,14 +41,20 @@ int main() {
 
   assert(0 != registration_id);
 
-  manager->invoke("signal-quiddity", "emit-signal", nullptr, std::vector<std::string>());
-  manager->invoke("signal-quiddity", "emit-signal", nullptr, std::vector<std::string>());
-  manager->invoke("signal-quiddity", "emit-signal", nullptr, std::vector<std::string>());
+  auto emit_signal_id =
+      manager->use_method<MPtr(&switcher::MContainer::get_id)>("signal-quiddity", "emit-signal");
+  manager->use_method<MPtr(&switcher::MContainer::invoke_str)>(
+      "signal-quiddity", emit_signal_id, std::string());
+  manager->use_method<MPtr(&switcher::MContainer::invoke_str)>(
+      "signal-quiddity", emit_signal_id, std::string());
+  manager->use_method<MPtr(&switcher::MContainer::invoke_str)>(
+      "signal-quiddity", emit_signal_id, std::string());
 
   assert(manager->use_sig<MPtr(&switcher::SContainer::unsubscribe_by_name)>(
       "signal-quiddity", "test-signal", registration_id));
   // the following should not imply incrementation of signal_counter
-  manager->invoke("signal-quiddity", "emit-signal", nullptr, std::vector<std::string>());
+  manager->use_method<MPtr(&switcher::MContainer::invoke_str)>(
+      "signal-quiddity", emit_signal_id, std::string());
 
   assert(manager->remove("signal-quiddity"));
 

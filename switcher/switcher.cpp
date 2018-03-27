@@ -38,7 +38,6 @@ void Switcher::reset_state(bool remove_created_quiddities) {
       }
     }
   }
-  invocations_.clear();
   quiddities_at_reset_ = qcontainer_->get_instances();
 }
 
@@ -50,36 +49,8 @@ void Switcher::init_gst() {
   gst_registry_scan_path(registry, "/usr/lib/gstreamer-1.0/");
 }
 
-void Switcher::try_save_current_invocation(const InvocationSpec& invocation_spec) {
-  // FIXME do something avoiding this horrible hack:
-  std::vector<std::string> excluded = {"connect",
-                                       "disconnect",
-                                       "last_midi_event_to_property",
-                                       "next_midi_event_to_property",
-                                       "can-sink-caps",
-                                       "send",
-                                       "hang-up",
-                                       "register",
-                                       "unregister",
-                                       "add_buddy",
-                                       "name_buddy",
-                                       "del_buddy",
-                                       "set_stun_turn"};
-
-  // save the invocation if required
-  if (excluded.end() == std::find(excluded.begin(), excluded.end(), invocation_spec.args_[1]))
-    invocations_.push_back(invocation_spec);
-}
-
 bool Switcher::load_state(InfoTree::ptr state) {
   if (!state) return false;
-  auto histo_str = std::string("history.");
-  auto invocations_paths = state->get_child_keys(histo_str);
-  std::vector<InvocationSpec> history;
-  for (auto& it : invocations_paths) {
-    history.push_back(
-        InvocationSpec::get_invocation_spec_from_tree(state->get_tree(histo_str + it)));
-  }
   // trees
   auto quiddities_user_data = state->get_tree("userdata.");
   auto quiddities = state->get_tree(".quiddities");
@@ -140,13 +111,6 @@ bool Switcher::load_state(InfoTree::ptr state) {
     }
   }
 
-  invocation_loop_.run([&]() {
-    // playing history
-    for (auto& it : history) {
-      qcontainer_->invoke(it.args_[0], it.args_[1], nullptr, it.vector_arg_);
-    }
-  });  // invocation_loop_.run
-
   // applying user data to quiddities
   if (quiddities_user_data) {
     auto quids = quiddities_user_data->get_child_keys(".");
@@ -173,10 +137,10 @@ bool Switcher::load_state(InfoTree::ptr state) {
     for (auto& quid : quids) {
       auto tmpreaders = readers->get_child_keys(quid);
       for (auto& reader : tmpreaders) {
-        qcontainer_->invoke(quid,
-                            "connect",
-                            nullptr,
-                            {Any::to_string(readers->branch_get_value(quid + "." + reader))});
+        qcontainer_->meths<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+            quid,
+            qcontainer_->meths<MPtr(&MContainer::get_id)>(quid, "connect"),
+            std::make_tuple(Any::to_string(readers->branch_get_value(quid + "." + reader))));
       }
     }
   }
@@ -195,12 +159,6 @@ bool Switcher::load_state(InfoTree::ptr state) {
 InfoTree::ptr Switcher::get_state() const {
   auto quiddities = qcontainer_->get_instances();
   InfoTree::ptr tree = InfoTree::make();
-
-  // saving history
-  for (unsigned int i = 0; i < invocations_.size(); i++) {
-    tree->graft(std::string("history.") + std::to_string(i), invocations_[i].get_info_tree());
-  }
-  tree->tag_as_array("history", true);
 
   // saving per-quiddity information
   for (auto& quid_name : quiddities) {
@@ -244,7 +202,8 @@ InfoTree::ptr Switcher::get_state() const {
 
     // Record shmdata connections.
     // Ignore them if no connect-to methods is installed for this quiddity.
-    if (!qcontainer_->get_quiddity(quid_name)->has_method("connect")) continue;
+    if (0 == qcontainer_->get_quiddity(quid_name)->meth<MPtr(&MContainer::get_id)>("connect"))
+      continue;
 
     auto readers = use_tree<MPtr(&InfoTree::get_child_keys)>(quid_name, "shmdata.reader");
     int nb = 0;
@@ -262,126 +221,6 @@ InfoTree::ptr Switcher::get_state() const {
   }
 
   return tree;
-}
-
-bool Switcher::invoke_va(const std::string& quiddity_name,
-                         const std::string& method_name,
-                         std::string** return_value,
-                         ...) {
-  std::vector<std::string> method_args;
-  va_list vl;
-  va_start(vl, return_value);
-  char* method_arg = va_arg(vl, char*);
-  while (method_arg != nullptr) {
-    method_args.push_back(method_arg);
-    method_arg = va_arg(vl, char*);
-  }
-  va_end(vl);
-
-  bool res = false;
-  InvocationSpec current_invocation;
-  invocation_loop_.run([&]() {
-    current_invocation.add_arg(quiddity_name);
-    current_invocation.add_arg(method_name);
-    current_invocation.set_vector_arg(method_args);
-
-    std::string* result = nullptr;
-    if (qcontainer_->invoke(current_invocation.args_[0],
-                            current_invocation.args_[1],
-                            &result,
-                            current_invocation.vector_arg_)) {
-      current_invocation.success_ = true;
-      if (nullptr == result)
-        current_invocation.result_.push_back("error");
-      else
-        current_invocation.result_.push_back(*result);
-    } else
-      current_invocation.success_ = false;
-
-    if (nullptr != result) delete result;
-
-    if (return_value != nullptr && !current_invocation.result_.empty())
-      *return_value = new std::string(current_invocation.result_[0]);
-    res = current_invocation.success_;
-    try_save_current_invocation(current_invocation);
-  });  // invocation_loop_.run
-  return res;
-}
-
-bool Switcher::invoke(const std::string& quiddity_name,
-                      const std::string& method_name,
-                      std::string** return_value,
-                      const std::vector<std::string>& args) {
-  bool res = false;
-  InvocationSpec current_invocation;
-  invocation_loop_.run([&]() {
-    current_invocation.add_arg(quiddity_name);
-    current_invocation.add_arg(method_name);
-    current_invocation.set_vector_arg(args);
-
-    std::string* result = nullptr;
-    if (qcontainer_->invoke(current_invocation.args_[0],
-                            current_invocation.args_[1],
-                            &result,
-                            current_invocation.vector_arg_)) {
-      current_invocation.success_ = true;
-      if (nullptr == result)
-        current_invocation.result_.push_back("error");
-      else
-        current_invocation.result_.push_back(*result);
-    } else
-      current_invocation.success_ = false;
-
-    if (nullptr != result) delete result;
-
-    if (return_value != nullptr && !current_invocation.result_.empty())
-      *return_value = new std::string(current_invocation.result_[0]);
-    res = current_invocation.success_;
-    try_save_current_invocation(current_invocation);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::string Switcher::get_methods_description(const std::string& quiddity_name) {
-  std::string res;
-  invocation_loop_.run([&]() {
-    res = qcontainer_->get_methods_description(quiddity_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::string Switcher::get_method_description(const std::string& quiddity_name,
-                                             const std::string& method_name) {
-  std::string res;
-  invocation_loop_.run([&]() {
-    res = qcontainer_->get_method_description(quiddity_name, method_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::string Switcher::get_methods_description_by_class(const std::string& class_name) {
-  std::string res;
-  invocation_loop_.run([&]() {
-    res = qcontainer_->get_methods_description_by_class(class_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::string Switcher::get_method_description_by_class(const std::string& class_name,
-                                                      const std::string& method_name) {
-  std::string res;
-  invocation_loop_.run([&]() {
-    res = qcontainer_->get_method_description_by_class(class_name, method_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-bool Switcher::has_method(const std::string& quiddity_name, const std::string& method_name) {
-  bool res;
-  invocation_loop_.run([&]() {
-    res = qcontainer_->has_method(quiddity_name, method_name);
-  });  // invocation_loop_.run
-  return res;
 }
 
 void Switcher::auto_init(const std::string& quiddity_name) {

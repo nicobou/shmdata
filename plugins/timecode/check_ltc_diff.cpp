@@ -21,6 +21,7 @@
 
 #include <shmdata/console-logger.hpp>
 #include "switcher/quiddity-basic-test.hpp"
+#include "switcher/serialize-string.hpp"
 #include "switcher/shmdata-follower.hpp"
 
 bool success = false;
@@ -79,17 +80,17 @@ int main() {
             "ltctestsource2", "started", "true"))
       return 1;
 
-    if (!manager->invoke_va("ltcdifftest",
-                            "connect",
-                            nullptr,
-                            "/tmp/switcher_ltcdifftest_ltctestsource1_audio",
-                            nullptr))
+    auto connect_id =
+        manager->use_method<MPtr(&switcher::MContainer::get_id)>("ltcdifftest", "connect");
+    if (!manager->use_method<MPtr(&switcher::MContainer::invoke_str)>(
+            "ltcdifftest",
+            connect_id,
+            serialize::esc_for_tuple("/tmp/switcher_ltcdifftest_ltctestsource1_audio")))
       return 1;
-    if (!manager->invoke_va("ltcdifftest",
-                            "connect",
-                            nullptr,
-                            "/tmp/switcher_ltcdifftest_ltctestsource2_audio",
-                            nullptr))
+    if (!manager->use_method<MPtr(&switcher::MContainer::invoke_str)>(
+            "ltcdifftest",
+            connect_id,
+            serialize::esc_for_tuple("/tmp/switcher_ltcdifftest_ltctestsource2_audio")))
       return 1;
 
     shmdata::ConsoleLogger logger;
