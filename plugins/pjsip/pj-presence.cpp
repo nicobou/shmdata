@@ -180,7 +180,7 @@ PJPresence::~PJPresence() {
 bool PJPresence::register_account_wrapped(const std::string& user, const std::string& password) {
   if (user.empty() || password.empty()) {
     SIPPlugin::this_->message("ERROR:register sip account missing user or domain or password");
-    return FALSE;
+    return false;
   }
   if (-1 == SIPPlugin::this_->transport_id_) {
     SIPPlugin::this_->message("ERROR:cannot register, SIP port is not available (%)",
