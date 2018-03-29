@@ -118,6 +118,7 @@ set(HEADER_INCLUDES
     make-consultable.hpp
     method.hpp
     method-container.hpp
+    method-trait.hpp
     net-utils.hpp
     periodic-task.hpp
     plugin-loader.hpp
