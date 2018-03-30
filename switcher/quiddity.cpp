@@ -66,6 +66,7 @@ Quiddity::Quiddity(QuiddityConfiguration&& conf)
       on_nicknamed_id_(smanage<MPtr(&SContainer::make)>(
           "on-nicknamed", "A nickname has been given to the quiddity")),
       meths_(
+          conf.log_,
           information_tree_,
           [this](const std::string& key) {  // on_tree_grafted_cb
             smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(key));

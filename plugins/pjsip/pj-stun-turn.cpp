@@ -59,7 +59,6 @@ PJStunTurn::PJStunTurn() {
                      }, {
                         "long name" : "TURN server address",
                         "description" : "string"
-                     }
                      }, {
                         "long name" : "TURN user name",
                         "description" : "string"

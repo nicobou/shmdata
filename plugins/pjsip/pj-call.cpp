@@ -112,7 +112,7 @@ PJCall::PJCall() {
                    ]
                   }
               )"),
-      [this](const std::string& url) { return send_to(url); });
+      [this](const std::string& url) { return hang_up(url); });
 
   using attach_t = std::function<bool(std::string, std::string, bool)>;
   SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<attach_t>)>(

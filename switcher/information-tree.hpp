@@ -90,6 +90,7 @@ class InfoTree {
   bool is_array() const;
   bool has_data() const;
   const Any& read_data() const;
+  bool branch_is_array(const std::string& path) const;
   bool branch_is_leaf(const std::string& path) const;
   bool branch_has_data(const std::string& path) const;
   template <typename T>

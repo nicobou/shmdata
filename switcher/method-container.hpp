@@ -20,31 +20,32 @@
 #ifndef __SWITCHER_METHOD_CONTAINER_H__
 #define __SWITCHER_METHOD_CONTAINER_H__
 
-#include <assert.h>
 #include <map>
 #include <memory>
 #include <string>
 #include "./counter-map.hpp"
 #include "./information-tree.hpp"
 #include "./is-specialization-of.hpp"
+#include "./logged.hpp"
 #include "./method-trait.hpp"
 #include "./method.hpp"
 #include "./type-name-registry.hpp"
 
 namespace switcher {
-class MContainer {
+class MContainer : public Logged {
   friend class Bundle;  // replacing some methods like replace and delete
  public:
   using meth_id_t = MethodBase::meth_id_t;
   using on_tree_grafted_cb_t = std::function<void(const std::string& key)>;
   using on_tree_pruned_cb_t = std::function<void(const std::string& key)>;
-  using on_method_created_cb_t = std::function<void(const std::string&)>;
-  using on_method_removed_cb_t = std::function<void(const std::string&)>;
-  using on_method_enabled_cb_t = std::function<void(const std::string&)>;
-  using on_method_disabled_cb_t = std::function<void(const std::string&)>;
+  using on_method_created_cb_t = std::function<void(const std::string& name)>;
+  using on_method_removed_cb_t = std::function<void(const std::string& name)>;
+  using on_method_enabled_cb_t = std::function<void(const std::string& name)>;
+  using on_method_disabled_cb_t = std::function<void(const std::string& name)>;
   MContainer() = delete;
   // ctor will own tree and write into .method.
-  MContainer(InfoTree::ptr tree,
+  MContainer(BaseLogger* log,
+             InfoTree::ptr tree,
              on_tree_grafted_cb_t on_tree_grafted_cb,
              on_tree_pruned_cb_t on_tree_pruned_cb,
              on_method_created_cb_t on_method_created,
@@ -76,9 +77,30 @@ class MContainer {
   }
 
   // make
+  template <typename M>
+  BoolLog validate_method_documentation(InfoTree* tree) {
+    if (!tree) return BoolLog(false, "null information tree");
+    if (tree->empty()) return BoolLog(false, "information tree is empty");
+    if (!tree->branch_has_data("name")) return BoolLog(false, "name is missing");
+    if (!tree->branch_has_data("description")) return BoolLog(false, "description is missing");
+    if (method_trait<M>::arity > 0 && !tree->branch_is_array("arguments"))
+      return BoolLog(false, "arguments is not an array");
+    for (int i = 0; i < method_trait<M>::arity; ++i) {
+      if (!tree->branch_has_data("arguments." + std::to_string(i) + ".long name."))
+        return BoolLog(false, "long name is missing for argument " + std::to_string(i));
+      if (!tree->branch_has_data("arguments." + std::to_string(i) + ".description"))
+        return BoolLog(false, "description is missing for argument " + std::to_string(i));
+    }
+    return BoolLog(true);
+  }
 
   template <typename M>
   meth_id_t make_method(const std::string& strid, InfoTree::ptr tree, M&& meth) {
+    auto valid = validate_method_documentation<M>(tree.get());
+    if (!valid) {
+      error("method % could not be installed: %", strid, valid.msg());
+      return 0;
+    }
     meths_.emplace(std::make_pair(++counter_, std::make_unique<Method<M>>(std::forward<M>(meth))));
     ids_.emplace(strid, counter_);
     auto key = std::string("method.") + strid;

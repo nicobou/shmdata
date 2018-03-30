@@ -39,7 +39,7 @@ PJPresence::PJPresence() {
                         "long name" : "SIP address",
                         "description" : "string"
                      }, {
-                        "long name" : "SIP password"
+                        "long name" : "SIP password",
                         "description" : "string"
                      }
                    ]
