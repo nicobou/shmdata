@@ -7,7 +7,9 @@ switcher
 
 See instructions for [installing](doc/INSTALL.md).
 
-See instructions for [scripting switcher and scenic](doc/scripting-switcher.md).
+See instructions for [bash scripting switcher and scenic](doc/scripting-switcher.md).
+
+See instructions for [bash scripting a sip call](doc/sip-call.md).
 
 See instructions for [coding](doc/CODING.md).
 
