@@ -169,7 +169,8 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
-  std::string soap_name = manager->create("SOAPcontrolServer", "soapserver");
+  auto created = manager->create("SOAPcontrolServer", "soapserver");
+  std::string soap_name = created.msg();
   if (!manager->use_method<MPtr(&MContainer::invoke_str)>(
           soap_name,
           manager->use_method<MPtr(&MContainer::get_id)>(soap_name, "set_port"),

@@ -38,13 +38,6 @@ Quiddity::Quiddity(QuiddityConfiguration&& conf)
       information_tree_(InfoTree::make()),
       structured_user_data_(InfoTree::make()),
       configuration_tree_(conf.tree_config_ ? conf.tree_config_ : InfoTree::make()),
-      props_(information_tree_,
-             [this](const std::string& key) {
-               smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(key));
-             },
-             [this](const std::string& key) {
-               smanage<MPtr(&SContainer::notify)>(on_tree_pruned_id_, InfoTree::make(key));
-             }),
       sigs_(information_tree_,
             [this](const std::string& key) {
               smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(key));
@@ -65,6 +58,13 @@ Quiddity::Quiddity(QuiddityConfiguration&& conf)
           "on-user-data-pruned", "A branch has been pruned from the quiddity's user data tree")),
       on_nicknamed_id_(smanage<MPtr(&SContainer::make)>(
           "on-nicknamed", "A nickname has been given to the quiddity")),
+      props_(information_tree_,
+             [this](const std::string& key) {
+               smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(key));
+             },
+             [this](const std::string& key) {
+               smanage<MPtr(&SContainer::notify)>(on_tree_pruned_id_, InfoTree::make(key));
+             }),
       meths_(
           conf.log_,
           information_tree_,

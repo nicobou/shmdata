@@ -29,7 +29,9 @@ int main() {
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
     manager->scan_directory_for_plugins("./");
     assert(switcher::QuiddityBasicTest::test_full(manager, "protocol-mapper"));
-    auto quid = manager->create("protocol-mapper");
+    auto created = manager->create("protocol-mapper", std::string());
+    assert(created);
+    auto quid = created.msg();
     assert(manager->use_prop<MPtr(&PContainer::set_str_str)>(
         quid, "config_file", "protocol-osc.json"));
     assert(manager->use_prop<MPtr(&PContainer::set_str_str)>(quid, "int32", "true"));

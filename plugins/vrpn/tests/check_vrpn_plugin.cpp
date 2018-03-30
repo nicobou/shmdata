@@ -29,9 +29,9 @@ int main() {
 
     manager->scan_directory_for_plugins("./");
 
-    assert(manager->create("vrpnsrc", "src") == "src");
+    assert(manager->create("vrpnsrc", "src"));
     assert(QuiddityBasicTest::test_full(manager, "vrpnsrc"));
-    assert(manager->create("vrpnsink", "sink") == "sink");
+    assert(manager->create("vrpnsink", "sink"));
     assert(QuiddityBasicTest::test_full(manager, "vrpnsink"));
 
   }  // end of scope is releasing the manager

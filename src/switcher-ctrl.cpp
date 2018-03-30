@@ -369,7 +369,7 @@ int main(int argc, char* argv[]) {
     }
     std::string name;
     if (remaining_args[1] == nullptr)
-      switcher_control.create_quiddity(remaining_args[0], &name);
+      switcher_control.create_named_quiddity(remaining_args[0], std::string(), &name);
     else
       switcher_control.create_named_quiddity(remaining_args[0], remaining_args[1], &name);
     std::cout << name << std::endl;

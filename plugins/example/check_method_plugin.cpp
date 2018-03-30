@@ -32,7 +32,7 @@ int main() {
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
     manager->scan_directory_for_plugins("./");
     assert(QuiddityBasicTest::test_full(manager, "method"));
-    assert(manager->create("method", "test") == "test");
+    assert(manager->create("method", "test"));
 
     // testing "hello" method. Signature is string(string)
     using hello_meth_t = std::function<std::string(std::string)>;

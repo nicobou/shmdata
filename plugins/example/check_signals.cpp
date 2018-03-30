@@ -34,7 +34,7 @@ int main() {
   unsigned int create_remove_counter = 0;
   manager->register_creation_cb([&](const std::string& /*quid_name*/) { ++create_remove_counter; });
   manager->register_removal_cb([&](const std::string& /*quid_name*/) { ++create_remove_counter; });
-  assert(manager->create("signal", "signal-quiddity") == "signal-quiddity");
+  assert(manager->create("signal", "signal-quiddity"));
 
   auto registration_id = manager->use_sig<MPtr(&switcher::SContainer::subscribe_by_name)>(
       "signal-quiddity", "test-signal", [&](const switcher::InfoTree::ptr&) { ++signal_counter; });

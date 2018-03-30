@@ -31,34 +31,46 @@ bool QuiddityBasicTest::test_full(Switcher::ptr manager, const std::string& quid
 }
 
 bool QuiddityBasicTest::test_create(Switcher::ptr manager, const std::string& quiddity_class_name) {
-  // testing with a nick name
-  std::string res_with_nick = manager->create(quiddity_class_name, quiddity_class_name);
-  if (res_with_nick.compare(quiddity_class_name) != 0) {
-    std::cerr << quiddity_class_name << " cannot be created (with nickname)" << '\n';
-    return true;  // true because some quiddity may not be created because of a
-                  // missing resource
-  } else if (!manager->remove(res_with_nick)) {
-    std::cerr << "error while removing quiddity " << quiddity_class_name << " (with nickname)"
-              << '\n';
-    return false;
+  {  // testing with a nick name
+    BoolLog res = manager->create(quiddity_class_name, quiddity_class_name);
+    if (!res) {
+      std::cerr << quiddity_class_name << " cannot be created: " << res.msg() << '\n';
+      return true;  // true because some quiddity may not be created because of a
+      // missing resource
+    }
+    if (res.msg() != quiddity_class_name) {
+      std::cerr << quiddity_class_name << " was created with the wrong name" << '\n';
+      return false;
+    }
+    res = manager->remove(quiddity_class_name);
+    if (!res) {
+      std::cerr << "error while removing quiddity: " << res.msg() << '\n';
+      return false;
+    }
   }
-  // testing without nick name
-  std::string res_without_nick = manager->create(quiddity_class_name);
-  if (res_without_nick.empty()) {
-    std::cerr << quiddity_class_name << " cannot be created (without nickname)" << '\n';
-    return false;
-  }
-  if (!manager->remove(res_without_nick)) {
-    std::cerr << "error while removing quiddity " << quiddity_class_name << " (without nickname)"
-              << '\n';
-    return false;
+  {  // testing with generated name
+    BoolLog res = manager->create(quiddity_class_name, std::string());
+    if (!res) {
+      std::cerr << quiddity_class_name << " cannot be created: " << res.msg() << '\n';
+      return true;  // true because some quiddity may not be created because of a
+                    // missing resource
+    }
+    if (res.msg().empty()) {
+      std::cerr << "creation did not generate a name for class" << quiddity_class_name << '\n';
+      return false;
+    }
+    res = manager->remove(res.msg());
+    if (!res) {
+      std::cerr << "error while removing quiddity: " << res.msg() << '\n';
+      return false;
+    }
   }
   return true;
 }
 
 bool QuiddityBasicTest::test_startable(Switcher::ptr manager,
                                        const std::string& quiddity_class_name) {
-  std::string name = manager->create(quiddity_class_name, quiddity_class_name);
+  std::string name = manager->create(quiddity_class_name, quiddity_class_name).msg();
   if (name.compare(quiddity_class_name) != 0) {
     std::cerr << quiddity_class_name << " cannot be created (startable not actualy tested)" << '\n';
     return true;  // true because some quiddity may not be created because of a
@@ -78,7 +90,7 @@ bool QuiddityBasicTest::test_startable(Switcher::ptr manager,
 }
 
 bool QuiddityBasicTest::test_tree(Switcher::ptr manager, const std::string& quiddity_class_name) {
-  std::string name = manager->create(quiddity_class_name);
+  std::string name = manager->create(quiddity_class_name, std::string()).msg();
   manager->use_tree<MPtr(&InfoTree::serialize_json)>(name, ".");
   manager->remove(name);
   return true;
@@ -86,7 +98,7 @@ bool QuiddityBasicTest::test_tree(Switcher::ptr manager, const std::string& quid
 
 bool QuiddityBasicTest::test_properties(Switcher::ptr manager,
                                         const std::string& quiddity_class_name) {
-  std::string name = manager->create(quiddity_class_name);
+  std::string name = manager->create(quiddity_class_name, std::string()).msg();
   auto properties = manager->use_tree<MPtr(&InfoTree::get_child_keys)>(name, ".property.");
   for (auto& it : properties) {
     // do not test if the property has been disabled
@@ -111,13 +123,14 @@ bool QuiddityBasicTest::test_properties(Switcher::ptr manager,
 
 bool QuiddityBasicTest::test_nickname(Switcher::ptr manager,
                                       const std::string& quiddity_class_name) {
-  std::string name = manager->create(quiddity_class_name);
-  if (name.empty()) return true;
+  auto res = manager->create(quiddity_class_name, std::string());
+  if (!res) return true;
+  std::string name = res.msg();
   std::string nickname = name + " nickname";
   bool signal_received = false;
 
   if (name != manager->get_nickname(name)) {
-    std::cerr << "nickname not initialised with name" << '\n';
+    std::cerr << "nickname not initialized with name" << '\n';
     return false;
   }
   auto registration_id = manager->use_sig<MPtr(&switcher::SContainer::subscribe_by_name)>(

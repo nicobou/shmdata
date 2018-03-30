@@ -37,8 +37,8 @@ int main() {
     manager->reset_state(true);
 
     // creating a "myplugin" quiddity
-    assert(manager->create("custom-save", "test") == "test");
-    assert(manager->create("dummy", "dummy") == "dummy");  // dummy does not use custom state save
+    assert(manager->create("custom-save", "test"));
+    assert(manager->create("dummy", "dummy"));  // dummy does not use custom state save
     auto has_loaded_id = manager->use_prop<MPtr(&PContainer::get_id)>(
         "test", std::string("has_loaded_custom_state"));
     auto has_saved_id =

@@ -59,13 +59,13 @@ int main() {
     manager->scan_directory_for_plugins("./");
 
     // Fringe case like CI cannot run this test successfully but we don't want it to fail.
-    if (manager->create("ltcsource", "ltctestsourcedummy") != "ltctestsourcedummy") return 0;
+    if (!manager->create("ltcsource", "ltctestsourcedummy")) return 0;
 
     if (!switcher::QuiddityBasicTest::test_full(manager, "ltcdiff")) return 1;
 
-    if (manager->create("ltcsource", "ltctestsource1") != "ltctestsource1") return 1;
-    if (manager->create("ltcsource", "ltctestsource2") != "ltctestsource2") return 1;
-    if (manager->create("ltcdiff", "ltcdifftest") != "ltcdifftest") return 1;
+    if (!manager->create("ltcsource", "ltctestsource1")) return 1;
+    if (!manager->create("ltcsource", "ltctestsource2")) return 1;
+    if (!manager->create("ltcdiff", "ltcdifftest")) return 1;
 
     // We set 30 frames of delay for this source.
     if (!manager->use_prop<MPtr(&switcher::PContainer::set_str_str)>(

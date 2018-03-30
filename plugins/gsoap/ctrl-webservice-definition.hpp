@@ -57,10 +57,6 @@ int switcher__get_property(std::string quiddity_name,
 			   std::string *result);
 
 //gsoap switcher service method-documentation: create an quiddity instance and return its name
-int switcher__create_quiddity(std::string quiddity_class,
-                              std::string *result);
-
-//gsoap switcher service method-documentation: create an quiddity instance and return its name
 int switcher__create_named_quiddity(std::string quiddity_class,
                                     std::string nick_name,
                                     std::string *result);

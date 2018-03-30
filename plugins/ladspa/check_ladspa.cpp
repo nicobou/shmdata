@@ -61,11 +61,10 @@ int main() {
     manager->load_configuration_file("./check_ladspa.json");
 
     // creating a ladspa audiotest bundle
-    auto bundle = manager->create("audiotestladspa");
-    assert(!bundle.empty());
-
-    if (!manager->use_prop<MPtr(&PContainer::set_str_str)>(bundle.c_str(), "started", "true"))
-      return 1;
+    auto created = manager->create("audiotestladspa", std::string());
+    assert(created);
+    auto bundle = created.msg();
+    if (!manager->use_prop<MPtr(&PContainer::set_str_str)>(bundle, "started", "true")) return 1;
 
     manager->use_prop<MPtr(&PContainer::subscribe)>(
         bundle,

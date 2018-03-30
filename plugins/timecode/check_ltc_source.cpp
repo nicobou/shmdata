@@ -28,9 +28,9 @@ int main() {
     switcher->scan_directory_for_plugins("./");
 
     // Fringe case like CI cannot run this test successfully but we don't want it to fail.
-    if (switcher->create("ltcsource", "ltctestsourcedummy") != "ltctestsourcedummy") return 0;
+    if (!switcher->create("ltcsource", "ltctestsourcedummy")) return 0;
 
-    if (switcher->create("ltcsource", "ltctestsource") != "ltctestsource") return 1;
+    if (!switcher->create("ltcsource", "ltctestsource")) return 1;
 
     if (!switcher->use_prop<MPtr(&switcher::PContainer::set_str_str)>(
             "ltctestsource", "started", "true"))

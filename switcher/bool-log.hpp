@@ -35,6 +35,7 @@ class BoolLog {
   bool is_valid_;
   std::string msg_;
 };
+
 }  // namespace switcher
 
 #endif

@@ -139,10 +139,6 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   // should use this configuration
   InfoTree::ptr configuration_tree_;
 
-  // properties
-  PContainer props_;
-  std::vector<std::string> properties_blacklist_{};
-
   // signals
   SContainer sigs_;
   SContainer::sig_id_t on_method_added_id_;
@@ -152,6 +148,10 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   SContainer::sig_id_t on_user_data_grafted_id_;
   SContainer::sig_id_t on_user_data_pruned_id_;
   SContainer::sig_id_t on_nicknamed_id_;
+
+  // properties
+  PContainer props_;
+  std::vector<std::string> properties_blacklist_{};
 
   // methods
   MContainer meths_;

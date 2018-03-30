@@ -65,8 +65,9 @@ bool Switcher::load_state(InfoTree::ptr state) {
     // creating quiddities
     for (auto& it : quids) {
       std::string quid_class = quiddities->branch_get_value(it);
-      if (it != create(quid_class, it)) {
-        log_->warning("error creating quiddity % (of type %)", it, quid_class);
+      auto created = create(quid_class, it);
+      if (!created) {
+        log_->warning("error creating quiddity % (of type %): ", it, quid_class, created.msg());
       }
     }
 
@@ -230,15 +231,6 @@ void Switcher::auto_init(const std::string& quiddity_name) {
   if (wrapper) wrapper->set_quiddity_manager(me_.lock());
 }
 
-std::string Switcher::create(const std::string& quiddity_class) {
-  std::string res;
-  invocation_loop_.run([&]() {
-    res = qcontainer_->create(quiddity_class);
-    auto_init(res);
-  });  // invocation_loop_.run
-  return res;
-}
-
 bool Switcher::scan_directory_for_plugins(const std::string& directory) {
   return qcontainer_->scan_directory_for_plugins(directory);
 }
@@ -247,17 +239,17 @@ bool Switcher::load_configuration_file(const std::string& file_path) {
   return qcontainer_->load_configuration_file(file_path);
 }
 
-std::string Switcher::create(const std::string& quiddity_class, const std::string& nickname) {
-  std::string res;
+BoolLog Switcher::create(const std::string& quiddity_class, const std::string& nickname) {
+  BoolLog res;
   invocation_loop_.run([&]() {
     res = qcontainer_->create(quiddity_class, nickname);
-    auto_init(res);
+    if (res) auto_init(res.msg());
   });  // invocation_loop_.run
   return res;
 }
 
-bool Switcher::remove(const std::string& quiddity_name) {
-  bool res;
+BoolLog Switcher::remove(const std::string& quiddity_name) {
+  BoolLog res;
   invocation_loop_.run(
       [&]() { res = qcontainer_->remove(quiddity_name); });  // invocation_loop_.run
   return res;

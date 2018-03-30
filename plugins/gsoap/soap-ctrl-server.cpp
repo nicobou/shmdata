@@ -298,23 +298,6 @@ int controlService::get_property(const std::string& quiddity_name,
   return SOAP_OK;
 }
 
-int controlService::create_quiddity(const std::string& quiddity_class, std::string* result) {
-  using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  Switcher::ptr manager;
-  if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
-
-  std::string name = manager->create(quiddity_class);
-  if (!name.empty()) {
-    *result = name;
-  } else {
-    char* s = reinterpret_cast<char*>(soap_malloc(this, 1024));
-    sprintf(s, "%s cannot be created, see switcher logs", quiddity_class.c_str());
-    return soap_senderfault("Quiddity creation error", s);
-  }
-  return SOAP_OK;
-}
-
 int controlService::create_named_quiddity(const std::string& quiddity_class,
                                           const std::string& nick_name,
                                           std::string* result) {
@@ -324,12 +307,12 @@ int controlService::create_named_quiddity(const std::string& quiddity_class,
   Switcher::ptr manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
 
-  std::string name = manager->create(quiddity_class, nick_name);
-  if (!name.empty()) {
-    *result = name;
+  auto created = manager->create(quiddity_class, nick_name);
+  if (created) {
+    *result = created.msg();
   } else {
     char* s = reinterpret_cast<char*>(soap_malloc(this, 1024));
-    sprintf(s, "%s cannot be created, see switcher logs", quiddity_class.c_str());
+    sprintf(s, "%s cannot be created: %s", quiddity_class.c_str(), created.msg().c_str());
     return soap_senderfault("Quiddity creation error", s);
   }
   return SOAP_OK;

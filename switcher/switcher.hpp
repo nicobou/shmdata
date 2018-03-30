@@ -81,10 +81,9 @@ class Switcher {
   std::string get_quiddity_description(const std::string& quiddity_name);
   std::string get_quiddities_description();
   // create/remove
-  std::string create(const std::string& class_name);
   // &?= chars are not allowed in nicknames
-  std::string create(const std::string& class_name, const std::string& nick_name);
-  bool remove(const std::string& quiddity_name);
+  BoolLog create(const std::string& class_name, const std::string& nick_name);
+  BoolLog remove(const std::string& quiddity_name);
   unsigned int register_creation_cb(QuiddityContainer::OnCreateRemoveCb cb) {
     return qcontainer_->register_creation_cb(cb);
   };

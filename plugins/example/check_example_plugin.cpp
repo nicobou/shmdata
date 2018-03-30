@@ -35,7 +35,7 @@ int main() {
     assert(QuiddityBasicTest::test_full(manager, "dummy"));
 
     // creating a "myplugin" quiddity
-    assert(manager->create("dummy", "test") == "test");
+    assert(manager->create("dummy", "test"));
 
     assert(manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "0A93D8FF"));
     assert(!manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "0A93D8"));

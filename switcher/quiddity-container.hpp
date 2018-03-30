@@ -73,13 +73,11 @@ class QuiddityContainer : public Logged {
   bool class_exists(const std::string& class_name);
 
   // **** creation/remove/get and notification
-  std::string create(const std::string& quiddity_class, bool call_creation_cb = true);
-  std::string create(const std::string& quiddity_class,
-                     const std::string& name,
-                     bool call_creation_cb = true);
-  bool remove(const std::string& name, bool call_removal_cb = true);
+  BoolLog create(const std::string& quiddity_class,
+                 const std::string& name,  // will generate one if name is empty
+                 bool call_creation_cb = true);
+  BoolLog remove(const std::string& name, bool call_removal_cb = true);
   std::shared_ptr<Quiddity> get_quiddity(const std::string& name);
-
   unsigned int register_creation_cb(OnCreateRemoveCb cb);
   unsigned int register_removal_cb(OnCreateRemoveCb cb);
   void unregister_creation_cb(unsigned int id);

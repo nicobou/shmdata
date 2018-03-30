@@ -64,24 +64,24 @@ int main() {
     // testing if two nvenc can be created simultaneously
     std::vector<std::string> nvencs;
     for (int i = 0; i < 2; ++i) {
-      auto nvenc_quid = manager->create("nvenc");
-      if (nvenc_quid.empty()) {
+      auto created = manager->create("nvenc", std::string());
+      if (!created) {
         std::cerr << "nvenc creating failed, i: " << i << '\n';
         return 1;
       }
-      nvencs.push_back(nvenc_quid);
+      nvencs.push_back(created.msg());
     }
     for (auto& it : nvencs) manager->remove(it);
     nvencs.clear();
 
     // testing if nvenc can be used
     {
-      auto nvenc_quid = manager->create("nvenc");
-      if (nvenc_quid.empty()) {
+      auto created = manager->create("nvenc", std::string());
+      if (!created) {
         std::cerr << "nvenc encoding could not be created" << '\n';
         return 1;
       }
-      manager->remove(nvenc_quid);
+      manager->remove(created.msg());
     }
 
     // standard test
@@ -90,19 +90,21 @@ int main() {
 
 
     // testing nvenc is encoding
-    auto video_quid = manager->create("videotestsrc");
-    assert(!video_quid.empty());
-    manager->use_prop<MPtr(&PContainer::set_str_str)>(video_quid.c_str(), "codec", "0");
-    manager->use_prop<MPtr(&PContainer::set_str_str)>(video_quid.c_str(), "started", "true");
+    auto created = manager->create("videotestsrc", std::string());
+    assert(created);
+    auto video_quid = created.msg();
+    manager->use_prop<MPtr(&PContainer::set_str_str)>(video_quid, "codec", "0");
+    manager->use_prop<MPtr(&PContainer::set_str_str)>(video_quid, "started", "true");
     // wait for video to be started
     usleep(100000);
     auto vid_shmdata_list =
-        manager->use_tree<MPtr(&InfoTree::get_child_keys)>(video_quid.c_str(), "shmdata.writer");
+        manager->use_tree<MPtr(&InfoTree::get_child_keys)>(video_quid, "shmdata.writer");
     auto vid_shmpath = vid_shmdata_list.front();
     assert(!vid_shmpath.empty());
 
-    auto nvenc_quid = manager->create("nvenc");
-    assert(!nvenc_quid.empty());
+    auto nvenc_quid_created = manager->create("nvenc", std::string());
+    assert(nvenc_quid_created);
+    auto nvenc_quid = nvenc_quid_created.msg();
     manager->use_method<MPtr(&MContainer::invoke_str)>(
         nvenc_quid,
         manager->use_method<MPtr(&switcher::MContainer::get_id)>(nvenc_quid, "connect"),
@@ -138,8 +140,9 @@ int main() {
     manager->scan_directory_for_plugins("./");
     manager->load_configuration_file("./check_decode.json");
 
-    auto nvencdec = manager->create("nvencdecoder", "nvencdecoder");
-    assert(nvencdec == "nvencdecoder");
+    auto nvencdec_created = manager->create("nvencdecoder", "nvencdecoder");
+    assert(nvencdec_created);
+    auto nvencdec = nvencdec_created.msg();
     manager->use_prop<MPtr(&PContainer::set_str_str)>(nvencdec, "started", "true");
     manager->use_prop<MPtr(&PContainer::subscribe)>(
         nvencdec,

@@ -58,9 +58,9 @@ int main() {
 
     if (!switcher::QuiddityBasicTest::test_full(manager, "shmdelay")) return 1;
 
-    if (manager->create("shmdelay", "shmdelaytest") != "shmdelaytest") return 1;
+    if (!manager->create("shmdelay", "shmdelaytest")) return 1;
 
-    if (manager->create("videotestsrc", "videotest") != "videotest") return 1;
+    if (!manager->create("videotestsrc", "videotest")) return 1;
     // We set 1 second of delay.
     if (!manager->use_prop<MPtr(&switcher::PContainer::set_str_str)>(
             "shmdelaytest", "time_delay", "1000"))

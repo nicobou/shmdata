@@ -101,7 +101,7 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
   for (auto& quid : quids) {
     std::string name;
 
-    name = manager_->create(quid.type, quid.name);
+    name = manager_->create(quid.type, quid.name).msg();
 
     if (name.empty()) {
       warning("internal manager failed to instantiate a quiddity of type %", quid.type);

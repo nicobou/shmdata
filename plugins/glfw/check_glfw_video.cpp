@@ -37,13 +37,13 @@ int main() {
     }
 
     // creating a video source quiddity
-    if (manager->create("videotestsrc", "vid").compare("vid") != 0) return 1;
+    if (!manager->create("videotestsrc", "vid")) return 1;
 
     if (!manager->use_prop<MPtr(&switcher::PContainer::set_str_str)>("vid", "started", "true"))
       return 1;
 
     // creating a "glfwin" quiddity
-    if (manager->create("glfwin", "win") != "win") {
+    if (!manager->create("glfwin", "win")) {
       // cannot create glfw window, stopping the test
       return 1;
     }

@@ -37,12 +37,12 @@ int main() {
       return 0;
     }
 
-    if (manager->create("midisrc", "src").compare("src") == 0)
+    if (manager->create("midisrc", "src"))
       manager->remove("src");
     else
       success = false;
 
-    if (manager->create("midisrc", "sink").compare("sink") == 0)
+    if (manager->create("midisrc", "sink"))
       manager->remove("sink");
     else
       success = false;

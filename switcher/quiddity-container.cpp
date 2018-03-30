@@ -182,17 +182,12 @@ bool QuiddityContainer::class_exists(const std::string& class_name) {
   return abstract_factory_.key_exists(class_name);
 }
 
-std::string QuiddityContainer::create(const std::string& quiddity_class, bool call_creation_cb) {
-  return create(quiddity_class, std::string(), call_creation_cb);
-}
-
-std::string QuiddityContainer::create(const std::string& quiddity_class,
-                                      const std::string& raw_nick_name,
-                                      bool call_creation_cb) {
+BoolLog QuiddityContainer::create(const std::string& quiddity_class,
+                                  const std::string& raw_nick_name,
+                                  bool call_creation_cb) {
   // checks before creation
   if (!class_exists(quiddity_class)) {
-    warning("cannot create quiddity: class % is unknown", quiddity_class);
-    return std::string();
+    return BoolLog(false, "unknown class");
   }
   std::string name;
   if (raw_nick_name.empty()) {
@@ -204,8 +199,7 @@ std::string QuiddityContainer::create(const std::string& quiddity_class,
   }
   auto it = quiddities_.find(name);
   if (quiddities_.end() != it) {
-    warning("cannot create a quiddity named %, name is already taken", name);
-    return std::string();
+    return BoolLog(false, "name unavailable");
   }
 
   // building configuration for quiddity creation
@@ -219,15 +213,13 @@ std::string QuiddityContainer::create(const std::string& quiddity_class,
   Quiddity::ptr quiddity = abstract_factory_.create(
       quiddity_class, QuiddityConfiguration(name, quiddity_class, tree, this, get_log_ptr()));
   if (!quiddity) {
-    warning("abstract factory failed to create % (class %)", name, quiddity_class);
-    return std::string();
+    return BoolLog(false, "abstract factory error");
   }
 
   name = quiddity->get_name();
-
   if (!(*quiddity.get())) {
     debug("creation of % with name % failed", quiddity_class, quiddity->get_name());
-    return std::string();
+    return BoolLog(false, "quiddity initialization failed");
   }
   quiddities_[name] = quiddity;
 
@@ -239,7 +231,7 @@ std::string QuiddityContainer::create(const std::string& quiddity_class,
       if (on_created_cbs_.empty()) break;  // In case the map gets reset in the callback, e.g bundle
     }
   }
-  return name;
+  return BoolLog(true, name);
 }
 
 std::vector<std::string> QuiddityContainer::get_instances() const {
@@ -288,11 +280,10 @@ Quiddity::ptr QuiddityContainer::get_quiddity(const std::string& quiddity_name) 
   return it->second;
 }
 
-bool QuiddityContainer::remove(const std::string& quiddity_name, bool call_removal_cb) {
+BoolLog QuiddityContainer::remove(const std::string& quiddity_name, bool call_removal_cb) {
   auto q_it = quiddities_.find(quiddity_name);
   if (quiddities_.end() == q_it) {
-    warning("(%) quiddity % not found for removing", name_, quiddity_name);
-    return false;
+    return BoolLog(false, "quiddity not found");
   }
   quiddities_.erase(quiddity_name);
   if (call_removal_cb) {
@@ -303,7 +294,7 @@ bool QuiddityContainer::remove(const std::string& quiddity_name, bool call_remov
       if (on_removed_cbs_.empty()) break;  // In case the map gets reset in the callback, e.g bundle
     }
   }
-  return true;
+  return BoolLog(true);
 }
 
 unsigned int QuiddityContainer::register_creation_cb(OnCreateRemoveCb cb) {

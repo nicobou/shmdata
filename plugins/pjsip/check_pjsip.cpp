@@ -35,7 +35,7 @@ int main() {
       manager->remove(it);
     }
     manager->load_configuration_file("./config.json");
-    assert(manager->create("sip", "test") == "test");
+    assert(manager->create("sip", "test"));
   }  // end of scope is releasing the manager
   return 0;
 }
