@@ -20,7 +20,6 @@
 #ifndef __SWITCHER_SELECTION_H__
 #define __SWITCHER_SELECTION_H__
 
-#include <glib.h>
 #include <algorithm>
 #include <cctype>
 #include <sstream>

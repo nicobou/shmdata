@@ -23,7 +23,7 @@
 namespace switcher {
 
 PortMidi::PortMidiScheduler* PortMidi::scheduler_ = nullptr;
-guint PortMidi::instance_counter_ = 0;
+unsigned int PortMidi::instance_counter_ = 0;
 
 PortMidi::PortMidi() {
   if (scheduler_ == nullptr) scheduler_ = new PortMidiScheduler();
@@ -81,7 +81,7 @@ bool PortMidi::push_midi_message(int id,
 }
 
 bool PortMidi::close_input_device(int id) {
-  std::map<guint, PmStream*>::iterator it = input_streams_.find(id);
+  std::map<unsigned int, PmStream*>::iterator it = input_streams_.find(id);
   if (it == input_streams_.end()) return false;
   scheduler_->remove_input_stream(it->second);
   input_streams_.erase(id);
@@ -89,7 +89,7 @@ bool PortMidi::close_input_device(int id) {
 }
 
 bool PortMidi::close_output_device(int id) {
-  std::map<guint, PmStream*>::iterator it = output_streams_.find(id);
+  std::map<unsigned int, PmStream*>::iterator it = output_streams_.find(id);
   if (it == output_streams_.end()) return false;
 
   scheduler_->remove_output_stream(it->second);
@@ -101,7 +101,7 @@ bool PortMidi::close_output_device(int id) {
 PortMidi::PortMidiScheduler::PortMidiScheduler()
     : streams_mutex_(),
       finalize_mutex_(),
-      finalizing_(FALSE),
+      finalizing_(false),
       input_callbacks_(),
       output_queues_(),
       portmidi_initialized_(false),
@@ -116,7 +116,7 @@ PortMidi::PortMidiScheduler::PortMidiScheduler()
 
 PortMidi::PortMidiScheduler::~PortMidiScheduler() {
   portmidi_initialized_ = false;
-  finalizing_ = TRUE;
+  finalizing_ = true;
   std::unique_lock<std::mutex> lock(finalize_mutex_);
   Pt_Stop(); /* stop the timer */
   Pm_Terminate();

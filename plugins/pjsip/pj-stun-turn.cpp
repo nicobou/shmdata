@@ -16,7 +16,6 @@
  */
 
 #include "./pj-stun-turn.hpp"
-#include <glib.h>
 #include <pjnath.h>
 #include "./pj-sip-plugin.hpp"
 #include "switcher/information-tree-json.hpp"

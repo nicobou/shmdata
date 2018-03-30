@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 #include "./nvenc-buffers.hpp"
-#include <glib.h>  // log
 #include <cmath>
+#include <cstdint>
 #include <cstring>  // memset
 
 namespace switcher {
@@ -83,45 +83,45 @@ bool NVencBuffers::copy_to_next_input_buffer(void* data, size_t /*size*/) {
   if (NV_ENC_SUCCESS != NVencAPI::api.nvEncLockInputBuffer(encoder_, &lock_input_buffer_params_))
     return false;
 
-  guint8* src = (guint8*)data;
-  guint src_stride = width_;
-  guint8* dest = (guint8*)lock_input_buffer_params_.bufferDataPtr;
-  guint dest_stride = lock_input_buffer_params_.pitch;
+  uint8_t* src = (uint8_t*)data;
+  unsigned int src_stride = width_;
+  uint8_t* dest = (uint8_t*)lock_input_buffer_params_.bufferDataPtr;
+  unsigned int dest_stride = lock_input_buffer_params_.pitch;
 
   if (format_ == NV_ENC_BUFFER_FORMAT_NV12) {
-    for (guint y = 0; y < height_; ++y) {
+    for (unsigned int y = 0; y < height_; ++y) {
       memcpy(dest, src, width_);
       dest += dest_stride;
       src += src_stride;
     }
-    for (guint y = 0; y < height_ / 2; ++y) {
+    for (unsigned int y = 0; y < height_ / 2; ++y) {
       memcpy(dest, src, width_);
       dest += dest_stride;
       src += src_stride;
     }
   } else if (format_ == NV_ENC_BUFFER_FORMAT_YV12 || format_ == NV_ENC_BUFFER_FORMAT_IYUV) {
-    for (guint y = 0; y < height_; ++y) {
+    for (unsigned int y = 0; y < height_; ++y) {
       memcpy(dest, src, width_);
       dest += dest_stride;
       src += src_stride;
     }
-    for (guint y = 0; y < height_; ++y) {
+    for (unsigned int y = 0; y < height_; ++y) {
       memcpy(dest, src, width_ / 2);
       dest += dest_stride / 2;
       src += width_ / 2;
     }
   } else if (format_ == NV_ENC_BUFFER_FORMAT_YUV444) {
-    for (guint y = 0; y < 3 * height_; ++y) {
+    for (unsigned int y = 0; y < 3 * height_; ++y) {
       memcpy(dest, src, width_);
       dest += dest_stride;
       src += src_stride;
     }
   } else if (format_ == NV_ENC_BUFFER_FORMAT_ARGB || format_ == NV_ENC_BUFFER_FORMAT_AYUV) {
-    guint src_stride = width_ * 4;
-    for (guint y = 0; y < height_; ++y) {
-      for (guint pack = 0; pack < src_stride; pack += 4) {
+    unsigned int src_stride = width_ * 4;
+    for (unsigned int y = 0; y < height_; ++y) {
+      for (unsigned int pack = 0; pack < src_stride; pack += 4) {
         // Bit packing is inverted, we put them back in the correct order here.
-        guint32 color = src[pack + 3] | src[pack + 2] << 8 | src[pack + 1] << 16 | src[pack] << 24;
+        uint32_t color = src[pack + 3] | src[pack + 2] << 8 | src[pack + 1] << 16 | src[pack] << 24;
         memcpy(dest + pack, &color, 4);
       }
       dest += dest_stride;

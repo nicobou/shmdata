@@ -18,7 +18,6 @@
 #ifndef __SWITCHER_PJ_STUN_TURN_H__
 #define __SWITCHER_PJ_STUN_TURN_H__
 
-#include <glib.h>
 #include <condition_variable>
 #include <mutex>
 #include "./pj-ice-stream-trans.hpp"

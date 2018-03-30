@@ -488,7 +488,7 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   SIPPlugin::this_->graft_tree(std::string(".buddies." + std::to_string(buddy_id)), tree);
 }
 
-void PJPresence::change_online_status(gint status) {
+void PJPresence::change_online_status(int status) {
   if (custom_status_ == "Offline") custom_status_.clear();
   if (-1 == account_id_) return;
   pjrpid_element elem;

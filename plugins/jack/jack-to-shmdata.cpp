@@ -18,7 +18,6 @@
  */
 
 #include "./jack-to-shmdata.hpp"
-#include <gst/gst.h>
 #include <string.h>
 #include "switcher/quiddity-container.hpp"
 

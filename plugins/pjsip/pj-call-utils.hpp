@@ -18,7 +18,6 @@
 #ifndef PLUGINS_PJSIP_PJ_CALL_UTILS_H_
 #define PLUGINS_PJSIP_PJ_CALL_UTILS_H_
 
-#include <glib.h>
 #include <pjsua-lib/pjsua.h>
 #include <regex>
 #include "switcher/string-utils.hpp"

@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 #include "./nvdec-decode-session.hpp"
-#include <glib.h>  // log
 #include <cmath>
 #include <cstring>  // memset
 #include "switcher/scope-exit.hpp"

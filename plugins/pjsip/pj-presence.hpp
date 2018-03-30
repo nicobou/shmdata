@@ -18,7 +18,6 @@
 #ifndef __SWITCHER_PJ_PRESENCE_H__
 #define __SWITCHER_PJ_PRESENCE_H__
 
-#include <glib.h>  // gboolean
 #include <pjsua-lib/pjsua.h>
 
 #include <condition_variable>
@@ -74,7 +73,7 @@ class PJPresence {
   bool del_buddy_wrapped(const std::string& buddy_uri);
   static void on_buddy_state(pjsua_buddy_id buddy_id);
   // online status
-  void change_online_status(gint status);
+  void change_online_status(int status);
   // name buddy method
   bool name_buddy_wrapped(const std::string& name, const std::string& uri);
   void name_buddy(std::string name, std::string sip_user);

@@ -18,7 +18,6 @@
  */
 
 #include "./nvenc-encode-session.hpp"
-#include <glib.h>   // log
 #include <cstring>  // memset
 #include "switcher/scope-exit.hpp"
 

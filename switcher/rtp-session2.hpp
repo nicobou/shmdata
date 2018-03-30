@@ -20,7 +20,6 @@
 #ifndef __SWITCHER_RTPSESSION2_H__
 #define __SWITCHER_RTPSESSION2_H__
 
-#include <gst/gst.h>
 #include <memory>
 #include "./gst-pipeliner.hpp"
 #include "./rtp-receiver.hpp"
