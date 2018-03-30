@@ -48,7 +48,7 @@ add_library(${SWITCHER_LIBRARY} SHARED
     quiddity.cpp
     rtp-receiver.cpp
     rtp-sender.cpp
-    rtp-session2.cpp
+    rtp-session.cpp
     safe-bool-idiom.cpp
     sdp-utils.cpp
     serialize-string.cpp
@@ -135,7 +135,7 @@ set(HEADER_INCLUDES
     quiddity.hpp
     rtp-receiver.hpp
     rtp-sender.hpp
-    rtp-session2.hpp
+    rtp-session.hpp
     safe-bool-idiom.hpp
     scope-exit.hpp
     sdp-utils.hpp

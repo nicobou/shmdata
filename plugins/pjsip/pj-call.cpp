@@ -571,7 +571,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
                                                                      PJ_ICE_SESS_ROLE_CONTROLLED);
   if (!call->ice_trans_) SIPPlugin::this_->warning("ICE transport initialization failed");
   // initializing shmdata writers and linking with ICE transport
-  call->recv_rtp_session_ = std::make_unique<RtpSession2>();
+  call->recv_rtp_session_ = std::make_unique<RtpSession>();
   for (auto& it : media_to_receive) {
     auto shm_prefix = SIPPlugin::this_->get_file_name_prefix() +
                       SIPPlugin::this_->get_manager_name() + "_" + SIPPlugin::this_->get_name() +

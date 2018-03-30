@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_RTPSESSION2_H__
-#define __SWITCHER_RTPSESSION2_H__
+#ifndef __SWITCHER_RTPSESSION_H__
+#define __SWITCHER_RTPSESSION_H__
 
 #include <memory>
 #include "./gst-pipeliner.hpp"
@@ -27,16 +27,16 @@
 #include "./safe-bool-idiom.hpp"
 
 namespace switcher {
-class RtpSession2 : public SafeBoolIdiom {
+class RtpSession : public SafeBoolIdiom {
   friend RTPSender;
   friend RTPReceiver;
 
  public:
-  RtpSession2();
-  ~RtpSession2() = default;
-  RtpSession2(const RtpSession2&) = delete;
-  RtpSession2(RtpSession2&&) = delete;
-  RtpSession2& operator=(const RtpSession2&) = delete;
+  RtpSession();
+  ~RtpSession() = default;
+  RtpSession(const RtpSession&) = delete;
+  RtpSession(RtpSession&&) = delete;
+  RtpSession& operator=(const RtpSession&) = delete;
 
  private:
   std::unique_ptr<GstPipeliner> gst_pipeline_;

@@ -31,7 +31,7 @@
 #include "switcher/gst-pipeliner.hpp"
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/gst-shmdata-to-cb.hpp"
-#include "switcher/rtp-session2.hpp"
+#include "switcher/rtp-session.hpp"
 #include "switcher/shmdata-writer.hpp"
 #include "switcher/switcher.hpp"
 
@@ -59,7 +59,7 @@ class PJCall {
     // as receiver
     std::vector<std::unique_ptr<ShmdataWriter>> rtp_writers_{};
     std::unique_ptr<PJICEStreamTrans> ice_trans_{};
-    std::unique_ptr<RtpSession2> recv_rtp_session_{};
+    std::unique_ptr<RtpSession> recv_rtp_session_{};
     std::mutex shm_subs_mtx_{};
     std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
     std::vector<std::unique_ptr<RTPReceiver>> rtp_receivers_{};
@@ -86,7 +86,7 @@ class PJCall {
   std::condition_variable call_cv_{};
   bool call_action_done_{false};
   // internal rtp
-  RtpSession2 rtp_session_{};
+  RtpSession rtp_session_{};
   std::map<std::string, unsigned> reader_ref_count_{};
   std::vector<std::unique_ptr<call_t>> incoming_call_{};
   std::vector<std::unique_ptr<call_t>> outgoing_call_{};

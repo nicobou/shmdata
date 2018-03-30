@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./rtp-session2.hpp"
+#include "./rtp-session.hpp"
 
 namespace switcher {
 
-RtpSession2::RtpSession2()
+RtpSession::RtpSession()
     : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       rtpsession_(GstUtils::make_element("rtpbin", nullptr)) {
   if (!gst_pipeline_ || !rtpsession_) {
