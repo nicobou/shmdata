@@ -161,11 +161,15 @@ int main(int argc, char* argv[]) {
     return 0;
   }
   if (classesdoc) {
-    g_print("%s\n", manager->get_classes_doc().c_str());
+    g_print("%s\n", JSONSerializer::serialize(manager->get_classes_doc().get()).c_str());
     return 0;
   }
   if (classdoc != nullptr) {
-    g_print("%s\n", manager->get_class_doc(classdoc).c_str());
+    auto classes_doc = manager->get_classes_doc();
+    g_print("%s\n",
+            JSONSerializer::serialize(
+                manager->get_classes_doc()->get_tree(std::string(".classes.") + classdoc).get())
+                .c_str());
     return 0;
   }
 

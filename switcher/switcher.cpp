@@ -263,28 +263,21 @@ std::vector<std::string> Switcher::get_classes() {
   return res;
 }
 
-std::string Switcher::get_classes_doc() {
-  std::string res;
+InfoTree::ptr Switcher::get_classes_doc() {
+  InfoTree::ptr res;
   invocation_loop_.run([&]() { res = qcontainer_->get_classes_doc(); });  // invocation_loop_.run
   return res;
 }
 
-std::string Switcher::get_class_doc(const std::string& class_name) {
-  std::string res;
-  invocation_loop_.run(
-      [&]() { res = qcontainer_->get_class_doc(class_name); });  // invocation_loop_.run
-  return res;
-}
-
-std::string Switcher::get_quiddities_description() {
-  std::string res;
+InfoTree::ptr Switcher::get_quiddities_description() {
+  InfoTree::ptr res;
   invocation_loop_.run(
       [&]() { res = qcontainer_->get_quiddities_description(); });  // invocation_loop_.run
   return res;
 }
 
-std::string Switcher::get_quiddity_description(const std::string& quiddity_name) {
-  std::string res;
+InfoTree::ptr Switcher::get_quiddity_description(const std::string& quiddity_name) {
+  InfoTree::ptr res;
   invocation_loop_.run([&]() {
     res = qcontainer_->get_quiddity_description(quiddity_name);
   });  // invocation_loop_.run

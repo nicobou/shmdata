@@ -34,8 +34,8 @@ class DocumentationRegistry {
   }
   bool register_doc(const std::string& quiddity_type, const QuiddityDocumentation& doc);
   bool register_type_from_class_name(const std::string& class_name, const std::string& quid_type);
-  std::string get_type_from_class_name(const std::string& class_name);
-  const std::map<std::string, QuiddityDocumentation>& get_docs();
+  std::string get_type_from_class_name(const std::string& class_name) const;
+  const std::map<std::string, QuiddityDocumentation>& get_docs() const;
 
  private:
   static std::unique_ptr<DocumentationRegistry> instance_;

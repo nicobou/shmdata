@@ -26,6 +26,7 @@
 
 #include "./abstract-factory.hpp"
 #include "./documentation-registry.hpp"
+#include "./information-tree-json.hpp"
 #include "./information-tree.hpp"
 #include "./logged.hpp"
 #include "./plugin-loader.hpp"
@@ -33,7 +34,6 @@
 #include "./quiddity.hpp"
 
 namespace switcher {
-class QuidditySignalSubscriber;
 class Switcher;
 class Bundle;
 
@@ -66,10 +66,9 @@ class QuiddityContainer : public Logged {
   bool has_instance(const std::string& name) const;
 
   // doc
-  std::string get_classes_doc();                                           // json formatted
-  std::string get_class_doc(const std::string& class_name);                // json formatted
-  std::string get_quiddity_description(const std::string& name);           // json formatted
-  std::string get_quiddities_description();                                // json formatted
+  InfoTree::ptr get_classes_doc();
+  InfoTree::ptr get_quiddity_description(const std::string& name);
+  InfoTree::ptr get_quiddities_description();
   bool class_exists(const std::string& class_name);
 
   // **** creation/remove/get and notification
@@ -144,7 +143,6 @@ class QuiddityContainer : public Logged {
   bool load_plugin(const char* filename);
   void close_plugin(const std::string& class_name);
   QuiddityContainer(const std::string&, BaseLogger* log);
-  void make_classes_doc();
   void register_classes();
   void remove_shmdata_sockets();
   void release_g_error(GError* error);
@@ -173,8 +171,6 @@ class QuiddityContainer : public Logged {
 
   std::map<unsigned int, OnCreateRemoveCb> on_created_cbs_{};
   std::map<unsigned int, OnCreateRemoveCb> on_removed_cbs_{};
-  std::unordered_map<std::string, std::shared_ptr<QuidditySignalSubscriber>> signal_subscribers_{};
-  InfoTree::ptr classes_doc_{};
   CounterMap counters_{};
   std::weak_ptr<QuiddityContainer> me_{};
   Switcher* switcher_{nullptr};

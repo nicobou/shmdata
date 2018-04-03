@@ -193,7 +193,7 @@ int controlService::get_classes_doc(std::string* result) {
     return soap_senderfault("error in get_classes_doc", s);
   }
 
-  *result = manager->get_classes_doc();
+  *result = JSONSerializer::serialize(manager->get_classes_doc().get());
 
   return SOAP_OK;
 }
@@ -208,10 +208,10 @@ int controlService::get_quiddity_description(const std::string& quiddity_name,
   if (ctrl_server == nullptr || !(bool)manager) {
     char* s = reinterpret_cast<char*>(soap_malloc(this, 1024));
     sprintf(s, "controlService::get_classes: cannot get manager (nullptr)");
-    return soap_senderfault("error in get_class_doc", s);
+    return soap_senderfault("error in get_quiddity_description", s);
   }
 
-  *result = manager->get_quiddity_description(quiddity_name);
+  *result = JSONSerializer::serialize(manager->get_quiddity_description(quiddity_name).get());
 
   return SOAP_OK;
 }
@@ -230,24 +230,7 @@ int controlService::get_quiddities_description(std::string* result) {
     return soap_senderfault("error in get_classes_doc", s);
   }
 
-  *result = manager->get_quiddities_description();
-
-  return SOAP_OK;
-}
-
-int controlService::get_class_doc(const std::string& class_name, std::string* result) {
-  using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
-  Switcher::ptr manager;
-  if (ctrl_server != nullptr) manager = ctrl_server->get_quiddity_manager();
-
-  if (ctrl_server == nullptr || !(bool)manager) {
-    char* s = reinterpret_cast<char*>(soap_malloc(this, 1024));
-    sprintf(s, "controlService::get_classes: cannot get manager (nullptr)");
-    return soap_senderfault("error in get_class_doc", s);
-  }
-
-  *result = manager->get_class_doc(class_name);
+  *result = JSONSerializer::serialize(manager->get_quiddities_description().get());
 
   return SOAP_OK;
 }

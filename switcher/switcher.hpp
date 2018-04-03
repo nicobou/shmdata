@@ -75,11 +75,10 @@ class Switcher {
   // inspect
   std::vector<std::string> get_classes();           // know which quiddities can be created
   std::vector<std::string> get_quiddities() const;  // know instances
-  // doc (json formatted)
-  std::string get_classes_doc();
-  std::string get_class_doc(const std::string& class_name);
-  std::string get_quiddity_description(const std::string& quiddity_name);
-  std::string get_quiddities_description();
+  // doc
+  InfoTree::ptr get_classes_doc();
+  InfoTree::ptr get_quiddity_description(const std::string& quiddity_name);
+  InfoTree::ptr get_quiddities_description();
   // create/remove
   // &?= chars are not allowed in nicknames
   BoolLog create(const std::string& class_name, const std::string& nick_name);

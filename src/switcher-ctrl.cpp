@@ -18,6 +18,7 @@
 #include <glib.h>
 #include <locale.h>
 #include <string>
+#include "switcher/information-tree-json.hpp"
 #include "webservices/control.nsmap"
 #include "webservices/soapcontrolProxy.h"
 
@@ -243,8 +244,12 @@ int main(int argc, char* argv[]) {
       g_printerr("class name missing\n");
       return false;
     }
-    switcher_control.get_class_doc(remaining_args[0], &resultlist);
-    std::cout << resultlist << std::endl;
+    switcher_control.get_classes_doc(&resultlist);
+    std::cout << switcher::JSONSerializer::serialize(
+                     switcher::JSONSerializer::deserialize(resultlist)
+                         ->get_tree(std::string(".classes.") + remaining_args[0])
+                         .get())
+              << '\n';
   } else if (quidditydescr) {
     std::string resultlist;
     if (remaining_args == nullptr) {

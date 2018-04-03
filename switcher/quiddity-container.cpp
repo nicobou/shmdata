@@ -58,7 +58,6 @@ QuiddityContainer::QuiddityContainer(const std::string& name, BaseLogger* log)
     : Logged(log), name_(name) {
   remove_shmdata_sockets();
   register_classes();
-  make_classes_doc();
 }
 
 void QuiddityContainer::release_g_error(GError* error) {
@@ -146,16 +145,16 @@ void QuiddityContainer::register_classes() {
 
 std::vector<std::string> QuiddityContainer::get_classes() { return abstract_factory_.get_keys(); }
 
-void QuiddityContainer::make_classes_doc() {
+InfoTree::ptr QuiddityContainer::get_classes_doc() {
   auto classes_str = std::string(".classes.");
-  classes_doc_ = InfoTree::make();
-  classes_doc_->graft(classes_str, InfoTree::make());
-  classes_doc_->tag_as_array(classes_str, true);
+  auto res = InfoTree::make();
+  res->graft(classes_str, InfoTree::make());
+  res->tag_as_array(classes_str, true);
   for (auto& doc : DocumentationRegistry::get()->get_docs()) {
     auto class_name = doc.first;
     auto class_doc = doc.second;
-    classes_doc_->graft(classes_str + class_name, InfoTree::make());
-    auto subtree = classes_doc_->get_tree(classes_str + class_name);
+    res->graft(classes_str + class_name, InfoTree::make());
+    auto subtree = res->get_tree(classes_str + class_name);
     subtree->graft(".class", InfoTree::make(class_name));
     subtree->graft(".name", InfoTree::make(class_doc.get_long_name()));
     subtree->graft(".category", InfoTree::make(class_doc.get_category()));
@@ -167,15 +166,7 @@ void QuiddityContainer::make_classes_doc() {
     subtree->graft(".license", InfoTree::make(class_doc.get_license()));
     subtree->graft(".author", InfoTree::make(class_doc.get_author()));
   }
-}
-
-std::string QuiddityContainer::get_classes_doc() {
-  return JSONSerializer::serialize(classes_doc_.get());
-}
-
-std::string QuiddityContainer::get_class_doc(const std::string& class_name) {
-  auto tree = classes_doc_->get_tree(std::string(".classes.") + class_name);
-  return JSONSerializer::serialize(tree.get());
+  return res;
 }
 
 bool QuiddityContainer::class_exists(const std::string& class_name) {
@@ -244,7 +235,7 @@ bool QuiddityContainer::has_instance(const std::string& name) const {
   return quiddities_.end() != quiddities_.find(name);
 }
 
-std::string QuiddityContainer::get_quiddities_description() {
+InfoTree::ptr QuiddityContainer::get_quiddities_description() {
   auto tree = InfoTree::make();
   tree->graft("quiddities", InfoTree::make());
   tree->tag_as_array("quiddities", true);
@@ -258,16 +249,16 @@ std::string QuiddityContainer::get_quiddities_description() {
       subtree->graft(name + ".class", InfoTree::make(quid->get_type()));
     }
   }
-  return JSONSerializer::serialize(tree.get());
+  return tree;
 }
 
-std::string QuiddityContainer::get_quiddity_description(const std::string& name) {
+InfoTree::ptr QuiddityContainer::get_quiddity_description(const std::string& name) {
   auto it = quiddities_.find(name);
-  if (quiddities_.end() == it) return JSONSerializer::serialize(InfoTree::make().get());
+  if (quiddities_.end() == it) return InfoTree::make();
   auto tree = InfoTree::make();
   tree->graft(".id", InfoTree::make(name));
   tree->graft(".class", InfoTree::make(it->second->get_type()));
-  return JSONSerializer::serialize(tree.get());
+  return tree;
 }
 
 Quiddity::ptr QuiddityContainer::get_quiddity(const std::string& quiddity_name) {
@@ -388,7 +379,6 @@ bool QuiddityContainer::scan_directory_for_plugins(const std::string& directory_
   if (error != nullptr) debug("scanning dir: error not nullptr");
   g_object_unref(dir);
 
-  make_classes_doc();
   plugin_dirs_.emplace_back(directory_path);
   return true;
 }
@@ -463,7 +453,6 @@ bool QuiddityContainer::load_configuration_file(const std::string& file_path) {
     // making the new bundle type available for next bundle definition:
     quid_types.push_back(it);
   }
-  make_classes_doc();
   return true;
 }
 

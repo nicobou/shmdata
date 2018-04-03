@@ -39,9 +39,6 @@ int switcher__get_quiddity_description(std::string quiddity_name, std::string *r
 //gsoap switcher service method-documentation: get json formatted quiddities list with info
 int switcher__get_quiddities_description(std::string *result);
 
-//gsoap switcher service method-documentation: get available json doc *without* props and methods
-int switcher__get_class_doc(std::string class_name, std::string *result);
-
 //gsoap switcher service method-documentation: get names of instances
 int switcher__get_quiddity_names(std::vector<std::string> *result);
 

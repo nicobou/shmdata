@@ -35,14 +35,13 @@ bool DocumentationRegistry::register_type_from_class_name(const std::string& cla
   return true;
 }
 
-std::string DocumentationRegistry::get_type_from_class_name(const std::string& class_name) {
+std::string DocumentationRegistry::get_type_from_class_name(const std::string& class_name) const {
   auto quiddity_type = type_from_class_registry_.find(class_name);
-
   if (quiddity_type != type_from_class_registry_.end()) return quiddity_type->second;
   return std::string();
 }
 
-const std::map<std::string, QuiddityDocumentation>& DocumentationRegistry::get_docs() {
+const std::map<std::string, QuiddityDocumentation>& DocumentationRegistry::get_docs() const {
   return doc_registry_;
 }
 }
