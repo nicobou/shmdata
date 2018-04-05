@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_NVENC_DECODE_SESSION_H__
 #define __SWITCHER_NVENC_DECODE_SESSION_H__
 
-#include <nvcuvid.h>
+#include <dynlink_nvcuvid.h>
 #include <cstdint>  // uint32_t
 #include <functional>
 #include <memory>

@@ -18,8 +18,8 @@
  */
 
 #include "./nvdec-plugin.hpp"
+#include <dynlink_nvcuvid.h>
 #include <gst/gst.h>
-#include <nvcuvid.h>
 #include <cstring>
 #include "cuda/cuda-context.hpp"
 #include "switcher/scope-exit.hpp"
