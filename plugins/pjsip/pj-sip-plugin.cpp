@@ -34,8 +34,8 @@ SIPPlugin* SIPPlugin::this_ = nullptr;
 
 std::atomic<unsigned short> SIPPlugin::sip_plugin_used_(0);
 
-SIPPlugin::SIPPlugin(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+SIPPlugin::SIPPlugin(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       port_id_(pmanage<MPtr(&PContainer::make_string)>(
           "port",
           [this](const std::string& valstr) {
@@ -125,17 +125,17 @@ SIPPlugin::SIPPlugin(QuiddityConfiguration&& conf)
   }
   apply_configuration();
 
-  quiddity_removal_cb_id_ =
-      qcontainer_->register_removal_cb([this](const std::string& quiddity_name) {
-        std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
-        for (auto& peer : exposed_quiddities_) {
-          auto& exposed_quids = peer.second;
-          auto it = std::find(exposed_quids.begin(), exposed_quids.end(), quiddity_name);
-          if (it != exposed_quids.end()) {
-            exposed_quids.erase(it);
-          }
-        }
-      });
+  quiddity_removal_cb_id_ = qcontainer_->register_removal_cb([this](auto quid_id) {
+    std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
+    auto quiddity_name = qcontainer_->get_name(quid_id);
+    for (auto& peer : exposed_quiddities_) {
+      auto& exposed_quids = peer.second;
+      auto it = std::find(exposed_quids.begin(), exposed_quids.end(), quiddity_name);
+      if (it != exposed_quids.end()) {
+        exposed_quids.erase(it);
+      }
+    }
+  });
 }
 
 SIPPlugin::~SIPPlugin() {
@@ -241,7 +241,7 @@ void SIPPlugin::create_quiddity_stream(const std::string& peer_uri, const std::s
 void SIPPlugin::expose_stream_to_quiddity(const std::string& quid_name,
                                           const std::string& shmpath) {
   qcontainer_->props<MPtr(&PContainer::set_str_str)>(
-      Quiddity::string_to_quiddity_name(quid_name), "shmdata-path", shmpath);
+      qcontainer_->get_id(Quiddity::string_to_quiddity_name(quid_name)), "shmdata-path", shmpath);
 }
 
 void SIPPlugin::remove_exposed_quiddity(const std::string& peer_uri, const std::string& quid_name) {
@@ -254,7 +254,7 @@ void SIPPlugin::remove_exposed_quiddity(const std::string& peer_uri, const std::
     exposed_quids.erase(it);
   }
 
-  qcontainer_->remove(quid);
+  qcontainer_->remove(qcontainer_->get_id(quid));
 }
 void SIPPlugin::remove_exposed_quiddities(const std::string& peer_uri) {
   std::vector<std::string> quids_to_remove;
@@ -264,7 +264,8 @@ void SIPPlugin::remove_exposed_quiddities(const std::string& peer_uri) {
     exposed_quiddities_.erase(peer_uri);
   }
   for (auto& it : quids_to_remove) {
-    qcontainer_->remove(it);
+    auto id = qcontainer_->get_id(it);
+    if (0 != id) qcontainer_->remove(id);
   }
 }
 

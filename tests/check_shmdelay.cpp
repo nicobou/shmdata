@@ -56,24 +56,27 @@ int main() {
   {
     switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("shmdelaytest");
 
-    if (!switcher::QuiddityBasicTest::test_full(manager, "shmdelay")) return 1;
+    if (!switcher::test::full(manager, "shmdelay")) return 1;
 
-    if (!manager->create("shmdelay", "shmdelaytest")) return 1;
+    auto shmdelaytest_qrox =
+        manager->quids<MPtr(&switcher::quid::Container::create)>("shmdelay", "shmdelaytest");
+    if (!shmdelaytest_qrox) return 1;
+    auto shmdelaytest = shmdelaytest_qrox.get();
 
-    if (!manager->create("videotestsrc", "videotest")) return 1;
+    auto videotest_qrox =
+        manager->quids<MPtr(&switcher::quid::Container::create)>("videotestsrc", "videotest");
+    if (!videotest_qrox) return 1;
+    auto videotest = videotest_qrox.get();
+
     // We set 1 second of delay.
-    if (!manager->use_prop<MPtr(&switcher::PContainer::set_str_str)>(
-            "shmdelaytest", "time_delay", "1000"))
+    if (!shmdelaytest->prop<MPtr(&switcher::PContainer::set_str_str)>("time_delay", "1000"))
       return 1;
 
-    if (!manager->use_prop<MPtr(&switcher::PContainer::set_str_str)>(
-            "videotest", "started", "true"))
-      return 1;
+    if (!videotest->prop<MPtr(&switcher::PContainer::set_str_str)>("started", "true")) return 1;
 
-    if (!manager->use_method<MPtr(&switcher::MContainer::invoke<std::function<bool(std::string)>>)>(
-            "shmdelaytest",
-            manager->use_method<MPtr(&switcher::MContainer::get_id)>("shmdelaytest", "connect"),
-            std::make_tuple("/tmp/switcher_shmdelaytest_videotest_video")))
+    if (!shmdelaytest->meth<MPtr(&switcher::MContainer::invoke<std::function<bool(std::string)>>)>(
+            shmdelaytest->meth<MPtr(&switcher::MContainer::get_id)>("connect"),
+            std::make_tuple(videotest->make_shmpath("video"))))
       return 1;
 
     auto start_time = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -82,7 +85,7 @@ int main() {
 
     ::shmdata::ConsoleLogger logger;
     auto reader = std::make_unique<shmdata::Follower>(
-        "/tmp/switcher_shmdelaytest_shmdelaytest_delayed-shm",
+        shmdelaytest->make_shmpath("delayed-shm"),
         [&start_time](void*, size_t data_size) {
           if (!data_size) return;
           auto reception_time = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -98,15 +101,14 @@ int main() {
 
     wait_until_success();
 
-    if (!manager->use_method<MPtr(&switcher::MContainer::invoke<std::function<bool(std::string)>>)>(
-            "shmdelaytest",
-            manager->use_method<MPtr(&switcher::MContainer::get_id)>("shmdelaytest", "disconnect"),
-            std::make_tuple("/tmp/switcher_shmdelaytest_videotest_video")))
+    if (!shmdelaytest->meth<MPtr(&switcher::MContainer::invoke<std::function<bool(std::string)>>)>(
+            shmdelaytest->meth<MPtr(&switcher::MContainer::get_id)>("disconnect"),
+            std::make_tuple(videotest->make_shmpath("video"))))
       return 1;
 
-    manager->use_prop<MPtr(&switcher::PContainer::set_str_str)>("videotest", "started", "false");
-    manager->remove("videotest");
-    manager->remove("shmdelaytest");
+    videotest->prop<MPtr(&switcher::PContainer::set_str_str)>("started", "false");
+    manager->quids<MPtr(&switcher::quid::Container::remove)>(videotest_qrox.get_id());
+    manager->quids<MPtr(&switcher::quid::Container::remove)>(shmdelaytest_qrox.get_id());
   }  // end of scope is releasing the manager
   return success ? 0 : 1;
 }

@@ -31,7 +31,7 @@
 namespace switcher {
 class Bundle : public Quiddity, public StartableQuiddity {
  public:
-  Bundle(QuiddityConfiguration&&);
+  Bundle(quid::Config&&);
   ~Bundle();
   Bundle(const Bundle&) = delete;
   Bundle& operator=(const Bundle&) = delete;
@@ -50,7 +50,7 @@ class Bundle : public Quiddity, public StartableQuiddity {
   };
 
  private:
-  QuiddityConfiguration conf_;
+  quid::Config conf_;
   std::atomic_bool quitting_{false};
   std::vector<std::pair<std::string /*quid_name*/, std::string /*shmpath*/>> connected_shms_{};
   std::mutex connected_shms_mtx_{};
@@ -72,7 +72,7 @@ class Bundle : public Quiddity, public StartableQuiddity {
 
 // wrappers for the abstract factory registration
 namespace bundle {
-Quiddity* create(QuiddityConfiguration&& conf);
+Quiddity* create(quid::Config&& conf);
 void destroy(Quiddity* quiddity);
 }  // namespace bundle
 

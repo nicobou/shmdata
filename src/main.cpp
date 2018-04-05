@@ -144,41 +144,46 @@ int main(int argc, char* argv[]) {
 // loading plugins from default location // FIXME add an option
   gchar* usr_plugin_dir =
       g_strdup_printf("/usr/%s-%s/plugins", PACKAGE_NAME, LIBSWITCHER_API_VERSION);
-  manager->scan_directory_for_plugins(usr_plugin_dir);
+  manager->factory<MPtr(&quid::Factory::scan_dir)>(usr_plugin_dir);
   g_free(usr_plugin_dir);
 
   gchar* usr_local_plugin_dir =
       g_strdup_printf("/usr/local/%s-%s/plugins", PACKAGE_NAME, LIBSWITCHER_API_VERSION);
-  manager->scan_directory_for_plugins(usr_local_plugin_dir);
+  manager->factory<MPtr(&quid::Factory::scan_dir)>(usr_local_plugin_dir);
   g_free(usr_local_plugin_dir);
 
-  if (extraplugindir != nullptr) manager->scan_directory_for_plugins(extraplugindir);
+  if (extraplugindir != nullptr) manager->factory<MPtr(&quid::Factory::scan_dir)>(extraplugindir);
 
   // checking if this is printing info only
   if (listclasses) {
-    std::vector<std::string> resultlist = manager->get_classes();
+    std::vector<std::string> resultlist = manager->factory<MPtr(&quid::Factory::get_class_list)>();
     for (uint i = 0; i < resultlist.size(); i++) g_print("%s\n", resultlist[i].c_str());
     return 0;
   }
   if (classesdoc) {
-    g_print("%s\n", JSONSerializer::serialize(manager->get_classes_doc().get()).c_str());
+    g_print(
+        "%s\n",
+        JSONSerializer::serialize(manager->factory<MPtr(&quid::Factory::get_classes_doc)>().get())
+            .c_str());
     return 0;
   }
   if (classdoc != nullptr) {
-    auto classes_doc = manager->get_classes_doc();
     g_print("%s\n",
-            JSONSerializer::serialize(
-                manager->get_classes_doc()->get_tree(std::string(".classes.") + classdoc).get())
+            JSONSerializer::serialize(manager->factory<MPtr(&quid::Factory::get_classes_doc)>()
+                                          ->get_tree(std::string(".classes.") + classdoc)
+                                          .get())
                 .c_str());
     return 0;
   }
 
-  auto created = manager->create("SOAPcontrolServer", "soapserver");
-  std::string soap_name = created.msg();
-  if (!manager->use_method<MPtr(&MContainer::invoke_str)>(
-          soap_name,
-          manager->use_method<MPtr(&MContainer::get_id)>(soap_name, "set_port"),
-          serialize::esc_for_tuple(port_number))) {
+  auto created = manager->quids<MPtr(&quid::Container::create)>("SOAPcontrolServer", "soapserver");
+  if (!created) {
+    std::cerr << "could not create SOAP server" << '\n';
+    return 0;
+  }
+  auto soap = created.get();
+  if (!soap->meth<MPtr(&MContainer::invoke_str)>(soap->meth<MPtr(&MContainer::get_id)>("set_port"),
+                                                 serialize::esc_for_tuple(port_number))) {
     std::cerr << "could not set soap port " << '\n';
     return 0;
   }

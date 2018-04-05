@@ -41,7 +41,7 @@ namespace switcher {
  */
 class LTCSource : public Quiddity, public StartableQuiddity {
  public:
-  LTCSource(QuiddityConfiguration&&);
+  LTCSource(quid::Config&&);
   ~LTCSource();
 
  private:

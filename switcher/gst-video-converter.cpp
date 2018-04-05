@@ -30,8 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoConverter,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-GstVideoConverter::GstVideoConverter(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+GstVideoConverter::GstVideoConverter(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       video_format_(
           GstUtils::get_gst_element_capability_as_list("videoconvert", "format", GST_PAD_SRC), 0),
       video_format_id_(
@@ -51,7 +51,7 @@ GstVideoConverter::GstVideoConverter(QuiddityConfiguration&& conf)
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-  shmpath_converted_ = make_file_name("video");
+  shmpath_converted_ = make_shmpath("video");
 }
 
 bool GstVideoConverter::on_shmdata_disconnect() {

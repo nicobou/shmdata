@@ -28,7 +28,7 @@
 namespace switcher {
 class PortMidiSource : public Quiddity, public StartableQuiddity, public PortMidi {
  public:
-  PortMidiSource(QuiddityConfiguration&&);
+  PortMidiSource(quid::Config&&);
   ~PortMidiSource() = default;
   PortMidiSource(const PortMidiSource&) = delete;
   PortMidiSource& operator=(const PortMidiSource&) = delete;
@@ -65,16 +65,13 @@ class PortMidiSource : public Quiddity, public StartableQuiddity, public PortMid
   bool start() final;
   bool stop() final;
 
-  bool make_property(std::string property_long_name, gint last_status, gint last_data);
+  bool make_property(const std::string& property_long_name, gint last_status, gint last_data);
   static gint get_midi_value(void* user_data);
   // midi properties
   bool next_midi_event_to_property_method(const std::string& long_name);
   bool remove_property_method(const std::string& long_name);
   static gint get_midi_property_value(void* user_data);
   static void on_pm_event(PmEvent* event, void* user_data);
-  bool make_property_wrapped(const std::string& property_long_name,
-                             gint last_status,
-                             gint last_data1);
 };
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSource);

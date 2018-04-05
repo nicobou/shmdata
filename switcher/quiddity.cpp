@@ -28,12 +28,13 @@
 #include <regex>
 #include "./gst-utils.hpp"
 #include "./information-tree-json.hpp"
+#include "./quid-id-t.hpp"
 #include "./quiddity-container.hpp"
 #include "./switcher.hpp"
 
 namespace switcher {
 
-Quiddity::Quiddity(QuiddityConfiguration&& conf)
+Quiddity::Quiddity(quid::Config&& conf)
     : Logged(conf.log_),
       information_tree_(InfoTree::make()),
       structured_user_data_(InfoTree::make()),
@@ -106,41 +107,25 @@ std::string Quiddity::string_to_quiddity_name(const std::string& name) {
   return std::regex_replace(name, std::regex("[^[:alnum:]| ]"), "-");
 }
 
-std::string Quiddity::make_file_name(const std::string& suffix) const {
-  if (qcontainer_->get_name().empty()) return std::string();
-  auto name =
-      std::string(get_file_name_prefix() + qcontainer_->get_name() + "_" + name_ + "_" + suffix);
+std::string Quiddity::make_shmpath(const std::string& suffix) const {
+  auto server_name = qcontainer_->get_switcher()->get_name();
+  auto name = std::string(get_shmpath_prefix() + server_name + "_" +
+                          std::to_string(qcontainer_->get_id(name_)) + "_" + suffix);
 
   // Done this way for OSX portability, there is a maximum socket path length in UNIX systems and
   // shmdata use sockets.
-  struct sockaddr_un s;
+  static struct sockaddr_un s;
   static auto max_path_size = sizeof(s.sun_path);
-  // We need it signed.
-  int overflow = static_cast<int>(name.length() - max_path_size);
 
-  // We truncate the quiddity name if it is enough, which should be the case.
-  if (overflow > 0) {
-    int quiddity_overflow = static_cast<int>(name_.length() - overflow);
-    if (quiddity_overflow < 10) {
-      name = std::string(get_file_name_prefix() + qcontainer_->get_name() + "_name_error");
-      warning(
-          "BUG: shmdata name cannot be created properly because it is too long, there is less than "
-          "10 characters remaining for the quiddity name, investigate and fix this!");
-    } else {
-      size_t chunks_size = quiddity_overflow / 2;
-      // We split the remaining number of characters in 2 and we take this number at the beginning
-      // and the end of the quiddity name.
-      auto new_name = std::string(name_.begin(), name_.begin() + chunks_size) +
-                      std::string(name_.end() - chunks_size, name_.end());
-      name = std::string(get_file_name_prefix() + qcontainer_->get_name() + "_" + new_name + "_" +
-                         suffix);
-    }
+  // We truncate
+  if (static_cast<int>(name.length() - max_path_size) > 0) {
+    return std::string(name.begin(), name.begin() + max_path_size - 1);
   }
 
   return name;
 }
 
-std::string Quiddity::get_file_name_prefix() const { return "/tmp/switcher_"; }
+std::string Quiddity::get_shmpath_prefix() const { return "/tmp/switcher_"; }
 
 std::string Quiddity::get_quiddity_name_from_file_name(const std::string& path) const {
   auto file_begin = path.find("switcher_");
@@ -172,14 +157,17 @@ std::string Quiddity::get_quiddity_name_from_file_name(const std::string& path) 
   // handling bundle: they use there own internal manager named with their actual quiddity name
   auto manager_name =
       std::string(filename, underscores[0] + 1, underscores[1] - (underscores[0] + 1));
-  if (qcontainer_->get_name() != manager_name) return manager_name;
-  return std::string(filename, underscores[1] + 1, underscores[2] - (underscores[1] + 1));
+  if (qcontainer_->get_switcher()->get_name() != manager_name) return manager_name;
+  auto qid = deserialize::apply<quid::qid_t>(
+      std::string(filename, underscores[1] + 1, underscores[2] - (underscores[1] + 1)));
+  if (qid.first) return qcontainer_->get_name(qid.second);
+  return std::string();
 }
 
 std::string Quiddity::get_shmdata_name_from_file_name(const std::string& path) const {
   size_t pos = 0;
   // Check if external shmdata or regular shmdata.
-  if (path.find(get_file_name_prefix()) != std::string::npos) {  // Regular shmdata
+  if (path.find(get_shmpath_prefix()) != std::string::npos) {  // Regular shmdata
     int i = 0;
     while (i < 2) {  // Looking for second '_'
       if (pos != 0) pos += 1;
@@ -190,10 +178,16 @@ std::string Quiddity::get_shmdata_name_from_file_name(const std::string& path) c
     pos = path.rfind('/');  // Check last '/' to find the file name only.
   }
 
-  return pos != std::string::npos ? std::string(path, pos + 1) : path;
+  auto qid =
+      deserialize::apply<quid::qid_t>(pos != std::string::npos ? std::string(path, pos + 1) : path);
+  if (!qid.first) {
+    warning("could not find quiddity name from file name (%)", path);
+    return std::string();
+  }
+  return qcontainer_->get_switcher()->quids<MPtr(&quid::Container::get_name)>(qid.second);
 }
 
-std::string Quiddity::get_manager_name() { return qcontainer_->get_name(); }
+std::string Quiddity::get_manager_name() { return qcontainer_->get_switcher()->get_name(); }
 
 std::string Quiddity::get_socket_name_prefix() { return "switcher_"; }
 
@@ -240,10 +234,10 @@ InfoTree::ptr Quiddity::user_data_prune_hook(const std::string& path) {
 void Quiddity::self_destruct() {
   std::unique_lock<std::mutex> lock(self_destruct_mtx_);
   auto thread = std::thread([ this, th_lock = std::move(lock) ]() mutable {
-    auto self_name = get_name();
     th_lock.unlock();
-    if (!qcontainer_->get_switcher()->remove(self_name))
-      warning("% did not self destruct", get_name());
+    auto res = qcontainer_->get_switcher()->quids<MPtr(&quid::Container::remove)>(
+        qcontainer_->get_switcher()->quids<MPtr(&quid::Container::get_id)>(get_name()));
+    if (!res) warning("% did not self destruct (%)", get_name(), res.msg());
   });
   thread.detach();
 }

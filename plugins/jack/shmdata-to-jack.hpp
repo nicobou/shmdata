@@ -32,7 +32,7 @@
 namespace switcher {
 class ShmdataToJack : public Quiddity {
  public:
-  ShmdataToJack(QuiddityConfiguration&&);
+  ShmdataToJack(quid::Config&&);
   ~ShmdataToJack() = default;
   ShmdataToJack(const ShmdataToJack&) = delete;
   ShmdataToJack& operator=(const ShmdataToJack&) = delete;

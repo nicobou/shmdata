@@ -573,7 +573,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
   // initializing shmdata writers and linking with ICE transport
   call->recv_rtp_session_ = std::make_unique<RtpSession>();
   for (auto& it : media_to_receive) {
-    auto shm_prefix = SIPPlugin::this_->get_file_name_prefix() +
+    auto shm_prefix = SIPPlugin::this_->get_shmpath_prefix() +
                       SIPPlugin::this_->get_manager_name() + "_" + SIPPlugin::this_->get_name() +
                       "-" + std::string(call->peer_uri, 0, call->peer_uri.find('@')) + "_";
     auto media_label = PJCallUtils::get_media_label(it);
@@ -904,7 +904,8 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
       break;
     }
     std::string rawlabel = SIPPlugin::this_->get_quiddity_name_from_file_name(it);
-    auto quid = SIPPlugin::this_->qcontainer_->get_quiddity(rawlabel);
+    auto quid_id = SIPPlugin::this_->qcontainer_->get_id(rawlabel);
+    auto quid = SIPPlugin::this_->qcontainer_->get_quiddity(quid_id);
     if (quid) rawlabel = quid->get_nickname();
     std::istringstream ss(rawlabel);  // Turn the string into a stream
     std::string tok;

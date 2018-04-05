@@ -28,7 +28,7 @@
 namespace switcher {
 class OscToShmdata : public Quiddity, public StartableQuiddity {
  public:
-  OscToShmdata(QuiddityConfiguration&&);
+  OscToShmdata(quid::Config&&);
   ~OscToShmdata();
   OscToShmdata(const OscToShmdata&) = delete;
   OscToShmdata& operator=(const OscToShmdata&) = delete;

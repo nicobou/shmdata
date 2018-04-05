@@ -31,7 +31,7 @@ class RTMP : public Quiddity {
  public:
 
   //! Constructor
-  RTMP(QuiddityConfiguration&&);
+  RTMP(quid::Config&&);
 
   //! Destructor
   ~RTMP() = default;

@@ -32,8 +32,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Timelapse,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-Timelapse::Timelapse(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+Timelapse::Timelapse(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       img_dir_id_(pmanage<MPtr(&PContainer::make_string)>(
           "imgdir",
           [this](const std::string& val) {

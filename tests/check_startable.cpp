@@ -30,14 +30,12 @@ int main() {
   bool success = true;
   {
     switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("startable");
-    for (auto& it : manager->get_classes()) {
-      if (!switcher::QuiddityBasicTest::test_startable(manager, it)) success = false;
+    for (auto& it : manager->factory<MPtr(&switcher::quid::Factory::get_class_list)>()) {
+      if (!switcher::test::startable(manager, it)) success = false;
     }
   }
-
   gst_deinit();
   if (success)
     return 0;
-  else
-    return 1;
+  return 1;
 }

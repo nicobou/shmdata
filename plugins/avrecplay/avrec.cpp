@@ -40,8 +40,8 @@ const std::string AVRecorder::kRecordModeDate = "Date suffix";
 const std::string AVRecorder::kRecordModeLabel = "Label suffix";
 const std::string AVRecorder::kRecordModeOverwrite = "Overwrite";
 
-AVRecorder::AVRecorder(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+AVRecorder::AVRecorder(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   // Create a list of all available gstreamer muxers if not already done.

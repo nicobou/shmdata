@@ -51,8 +51,8 @@ const std::string GLFWVideo::kOverlayDisabledMessage =
 
 std::atomic<int> GLFWVideo::instance_counter_(0);
 
-GLFWVideo::GLFWVideo(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+GLFWVideo::GLFWVideo(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       background_config_id_(pmanage<MPtr(&PContainer::make_group)>(
@@ -208,14 +208,14 @@ GLFWVideo::GLFWVideo(QuiddityConfiguration&& conf)
             xevents_to_shmdata_ = val;
             if (xevents_to_shmdata_) {
               keyb_shm_ = std::make_unique<ShmdataWriter>(
-                  this, make_file_name("keyb"), sizeof(KeybEvent), "application/x-keyboard-events");
+                  this, make_shmpath("keyb"), sizeof(KeybEvent), "application/x-keyboard-events");
               if (!keyb_shm_.get()) {
                 warning("GLFW keyboard event shmdata writer failed");
                 keyb_shm_.reset(nullptr);
               }
 
               mouse_shm_ = std::make_unique<ShmdataWriter>(
-                  this, make_file_name("mouse"), sizeof(MouseEvent), "application/x-mouse-events");
+                  this, make_shmpath("mouse"), sizeof(MouseEvent), "application/x-mouse-events");
               if (!mouse_shm_.get()) {
                 warning("GLFW mouse event shmdata writer failed");
                 mouse_shm_.reset(nullptr);

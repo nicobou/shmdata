@@ -32,8 +32,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-VideoTestSource::VideoTestSource(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+VideoTestSource::VideoTestSource(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       resolutions_id_(pmanage<MPtr(&PContainer::make_selection<Fraction>)>(
           "resolution",
@@ -109,7 +109,7 @@ VideoTestSource::VideoTestSource(QuiddityConfiguration&& conf)
     is_valid_ = false;
     return;
   }
-  shmpath_ = make_file_name("video");
+  shmpath_ = make_shmpath("video");
   g_object_set(G_OBJECT(videotestsrc_.get_raw()), "is-live", TRUE, nullptr);
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   update_caps();

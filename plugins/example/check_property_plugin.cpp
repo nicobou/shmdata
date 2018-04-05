@@ -30,43 +30,47 @@ int main() {
     using namespace switcher;
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->scan_directory_for_plugins("./");
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
-    assert(QuiddityBasicTest::test_full(manager, "dummy"));
+    assert(test::full(manager, "dummy"));
 
     // creating a "myplugin" quiddity
-    assert(manager->create("dummy", "test"));
+    auto qrox = manager->quids<MPtr(&quid::Container::create)>("dummy", "test");
+    auto pquid = qrox.get();
+    assert(pquid);
 
-    assert(manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "0A93D8FF"));
-    assert(!manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "0A93D8"));
-    assert(!manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "GGGGGGGGGG"));
-    assert(!manager->use_prop<MPtr(&PContainer::set_str_str)>("test", "color_", "0000000T"));
+    assert(pquid->prop<MPtr(&PContainer::set_str_str)>("color_", "0A93D8FF"));
+    assert(!pquid->prop<MPtr(&PContainer::set_str_str)>("color_", "0A93D8"));
+    assert(!pquid->prop<MPtr(&PContainer::set_str_str)>("color_", "GGGGGGGGGG"));
+    assert(!pquid->prop<MPtr(&PContainer::set_str_str)>("color_", "0000000T"));
 
     // tuple testing (get)
     using MyTuple = std::tuple<long long, float, std::string>;
-    auto tid = manager->use_prop<MPtr(&PContainer::get_id)>("test", "tuple_");
-    std::cout << manager->use_prop<MPtr(&PContainer::get_str)>("test", tid) << '\n';
+    auto tid = pquid->prop<MPtr(&PContainer::get_id)>("tuple_");
+    std::cout << pquid->prop<MPtr(&PContainer::get_str)>(tid) << '\n';
 
-    MyTuple my_tuple = manager->use_prop<MPtr(&PContainer::get<MyTuple>)>("test", tid);
+    MyTuple my_tuple = pquid->prop<MPtr(&PContainer::get<MyTuple>)>(tid);
     std::cout << "get is working !!!"
               << " " << std::get<0>(my_tuple) << " "  // 2
               << std::get<1>(my_tuple) << " "         // 2.2
               << std::get<2>(my_tuple) << "\n";       // a22
 
     // tuple testing (set)
-    manager->use_prop<MPtr(&PContainer::set_str)>(
-        "test", tid, std::string("4,4.4,") + serialize::esc_for_tuple("b,44"));
+    pquid->prop<MPtr(&PContainer::set_str)>(
+        tid,
+        std::string("4,4.4,") + serialize::esc_for_tuple("b,44"));
 
-    std::cout << manager->use_prop<MPtr(&PContainer::get_str)>("test", tid) << '\n';
+    std::cout << pquid->prop<MPtr(&PContainer::get_str)>(tid)
+              << '\n';
 
-    my_tuple = manager->use_prop<MPtr(&PContainer::get<MyTuple>)>("test", tid);
+    my_tuple = pquid->prop<MPtr(&PContainer::get<MyTuple>)>(tid);
     std::cout << "get after set"
               << " " << std::get<0>(my_tuple) << " "  // 4
               << std::get<1>(my_tuple) << " "         // 4.4
               << std::get<2>(my_tuple) << "\n";       // b,44
 
     // removing the quiddity
-    assert(manager->remove("test"));
+    assert(manager->quids<MPtr(&quid::Container::remove)>(qrox.get_id()));
   }  // end of scope is releasing the manager
   return 0;
 }

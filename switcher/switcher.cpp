@@ -17,12 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "./switcher.hpp"
 #include <string.h>
 #include <fstream>
+#include "./bundle-description-parser.hpp"
+#include "./bundle.hpp"
 #include "./gst-utils.hpp"
 #include "./information-tree-json.hpp"
 #include "./scope-exit.hpp"
-#include "./switcher.hpp"
 
 namespace switcher {
 
@@ -31,22 +33,14 @@ std::string Switcher::get_name() const { return name_; }
 
 void Switcher::reset_state(bool remove_created_quiddities) {
   if (remove_created_quiddities) {
-    for (auto& quid : qcontainer_->get_instances()) {
+    for (auto& quid : qcontainer_->get_names()) {
       if (quiddities_at_reset_.cend() ==
           std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid)) {
-        qcontainer_->remove(quid);
+        qcontainer_->remove(qcontainer_->get_id(quid));
       }
     }
   }
-  quiddities_at_reset_ = qcontainer_->get_instances();
-}
-
-void Switcher::init_gst() {
-  if (!gst_is_initialized()) gst_init(nullptr, nullptr);
-  GstRegistry* registry = gst_registry_get();
-  // TODO add option for scanning a path
-  gst_registry_scan_path(registry, "/usr/local/lib/gstreamer-1.0/");
-  gst_registry_scan_path(registry, "/usr/lib/gstreamer-1.0/");
+  quiddities_at_reset_ = qcontainer_->get_names();
 }
 
 bool Switcher::load_state(InfoTree::ptr state) {
@@ -65,7 +59,7 @@ bool Switcher::load_state(InfoTree::ptr state) {
     // creating quiddities
     for (auto& it : quids) {
       std::string quid_class = quiddities->branch_get_value(it);
-      auto created = create(quid_class, it);
+      auto created = qcontainer_->create(quid_class, it);
       if (!created) {
         log_->warning("error creating quiddity % (of type %): ", it, quid_class, created.msg());
       }
@@ -73,11 +67,11 @@ bool Switcher::load_state(InfoTree::ptr state) {
 
     // loading custom state
     for (auto& it : quids) {
-      if (!qcontainer_->has_instance(it)) continue;
+      if (0 == qcontainer_->get_id(it)) continue;
       if (custom_states && !custom_states->empty()) {
-        qcontainer_->get_quiddity(it)->on_loading(custom_states->get_tree(it));
+        qcontainer_->get_quiddity(qcontainer_->get_id(it))->on_loading(custom_states->get_tree(it));
       } else {
-        qcontainer_->get_quiddity(it)->on_loading(InfoTree::make());
+        qcontainer_->get_quiddity(qcontainer_->get_id(it))->on_loading(InfoTree::make());
       }
     }
   }
@@ -86,7 +80,7 @@ bool Switcher::load_state(InfoTree::ptr state) {
   if (nicknames) {
     for (auto& it : nicknames->get_child_keys(".")) {
       std::string nickname = nicknames->branch_get_value(it);
-      if (!set_nickname(it, nickname))
+      if (!qcontainer_->get_quiddity(qcontainer_->get_id(it))->set_nickname(nickname))
         log_->warning("error applying nickname % for %", nickname, it);
     }
   }
@@ -95,18 +89,19 @@ bool Switcher::load_state(InfoTree::ptr state) {
   std::vector<std::string> quid_to_start;
   if (properties) {
     auto quids = properties->get_child_keys(".");
-    for (auto& quid : quids) {
-      auto props = properties->get_child_keys(quid);
+    for (auto& name : quids) {
+      auto props = properties->get_child_keys(name);
       for (auto& prop : props) {
-        if (prop == "started" && properties->branch_get_value(quid + ".started")) {
-          quid_to_start.push_back(quid);
+        if (prop == "started" && properties->branch_get_value(name + ".started")) {
+          quid_to_start.push_back(name);
         } else {
-          if (!use_prop<MPtr(&PContainer::set_str_str)>(
-                  quid, prop, Any::to_string(properties->branch_get_value(quid + "." + prop))))
+          auto quid = qcontainer_->get_quiddity(qcontainer_->get_id(name));
+          if (!quid->prop<MPtr(&PContainer::set_str_str)>(
+                  prop, Any::to_string(properties->branch_get_value(name + "." + prop))))
             log_->warning("failed to apply value, quiddity is %, property is %, value is %",
-                          quid,
+                          name,
                           prop,
-                          Any::to_string(properties->branch_get_value(quid + "." + prop)));
+                          Any::to_string(properties->branch_get_value(name + "." + prop)));
         }
       }
     }
@@ -116,19 +111,25 @@ bool Switcher::load_state(InfoTree::ptr state) {
   if (quiddities_user_data) {
     auto quids = quiddities_user_data->get_child_keys(".");
     for (auto& it : quids) {
-      if (qcontainer_->has_instance(it)) {
+      auto quid_id = qcontainer_->get_id(it);
+      if (0 != quid_id) {
         auto child_keys = quiddities_user_data->get_child_keys(it);
         for (auto& kit : child_keys) {
           qcontainer_->user_data<MPtr(&InfoTree::graft)>(
-              it, kit, quiddities_user_data->get_tree(it + "." + kit));
+              quid_id, kit, quiddities_user_data->get_tree(it + "." + kit));
         }
       }
     }
   }
   // starting quiddities
-  for (auto& quid : quid_to_start) {
-    if (!use_prop<MPtr(&PContainer::set_str_str)>(quid, "started", "true")) {
-      log_->warning("failed to start quiddity %", quid);
+  for (auto& name : quid_to_start) {
+    auto quid = qcontainer_->get_quiddity(qcontainer_->get_id(name));
+    if (!quid) {
+      log_->warning("failed to get quiddity %", name);
+      continue;
+    }
+    if (!quid->prop<MPtr(&PContainer::set_str_str)>("started", "true")) {
+      log_->warning("failed to start quiddity %", name);
     }
   }
 
@@ -139,8 +140,8 @@ bool Switcher::load_state(InfoTree::ptr state) {
       auto tmpreaders = readers->get_child_keys(quid);
       for (auto& reader : tmpreaders) {
         qcontainer_->meths<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
-            quid,
-            qcontainer_->meths<MPtr(&MContainer::get_id)>(quid, "connect"),
+            qcontainer_->get_id(quid),
+            qcontainer_->meths<MPtr(&MContainer::get_id)>(qcontainer_->get_id(quid), "connect"),
             std::make_tuple(Any::to_string(readers->branch_get_value(quid + "." + reader))));
       }
     }
@@ -150,63 +151,68 @@ bool Switcher::load_state(InfoTree::ptr state) {
   if (quiddities) {
     auto quids = quiddities->get_child_keys(".");
     for (auto& it : quids) {
-      if (!qcontainer_->has_instance(it)) continue;
-      qcontainer_->get_quiddity(it)->on_loaded();
+      auto quid_id = qcontainer_->get_id(it);
+      if (0 == quid_id) continue;
+      qcontainer_->get_quiddity(quid_id)->on_loaded();
     }
   }
   return true;
 }
 
 InfoTree::ptr Switcher::get_state() const {
-  auto quiddities = qcontainer_->get_instances();
+  auto quiddities = qcontainer_->get_names();
   InfoTree::ptr tree = InfoTree::make();
 
   // saving per-quiddity information
   for (auto& quid_name : quiddities) {
     // saving custom tree if some is provided
-    auto custom_tree = qcontainer_->get_quiddity(quid_name)->on_saving();
+    auto custom_tree = qcontainer_->get_quiddity(qcontainer_->get_id(quid_name))->on_saving();
     if (custom_tree && !custom_tree->empty())
       tree->graft(".custom_states." + quid_name, std::move(custom_tree));
 
     // name and class
     if (quiddities_at_reset_.cend() ==
         std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid_name)) {
-      tree->graft(".quiddities." + quid_name,
-                  InfoTree::make(qcontainer_->get_quiddity(quid_name)->get_type()));
+      tree->graft(
+          ".quiddities." + quid_name,
+          InfoTree::make(qcontainer_->get_quiddity(qcontainer_->get_id(quid_name))->get_type()));
     }
 
     // nicknames
     if (quiddities_at_reset_.cend() ==
         std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid_name)) {
-      tree->graft(".nicknames." + quid_name, InfoTree::make(get_nickname(quid_name)));
+      tree->graft(".nicknames." + quid_name,
+                  InfoTree::make(
+                      qcontainer_->get_quiddity(qcontainer_->get_id(quid_name))->get_nickname()));
     }
 
     // user data
-    auto quid_user_data_tree = user_data<MPtr(&InfoTree::get_tree)>(quid_name, ".");
+    auto quid = qcontainer_->get_quiddity(qcontainer_->get_id(quid_name));
+    auto quid_user_data_tree = quid->user_data<MPtr(&InfoTree::get_tree)>(".");
     if (!quid_user_data_tree->empty()) {
-      tree->graft(".userdata." + quid_name, user_data<MPtr(&InfoTree::get_tree)>(quid_name, "."));
+      tree->graft(".userdata." + quid_name, quid_user_data_tree);
     }
+
     // writable property values
-    use_prop<MPtr(&PContainer::update_values_in_tree)>(quid_name);
-    auto props = use_tree<MPtr(&InfoTree::get_child_keys)>(quid_name, "property");
+    quid->prop<MPtr(&PContainer::update_values_in_tree)>();
+    auto props = quid->tree<MPtr(&InfoTree::get_child_keys)>("property");
     for (auto& prop : props) {
       // Don't save unwritable properties.
-      if (!use_tree<MPtr(&InfoTree::branch_get_value)>(
-              quid_name, std::string("property.") + prop + ".writable"))
+      if (!quid->tree<MPtr(&InfoTree::branch_get_value)>(std::string("property.") + prop +
+                                                         ".writable"))
         continue;
       // Don't save properties with saving disabled.
-      if (!qcontainer_->get_quiddity(quid_name)->prop_is_saved(prop)) continue;
+      if (!quid->prop_is_saved(prop)) continue;
       tree->graft(".properties." + quid_name + "." + prop,
-                  InfoTree::make(use_tree<MPtr(&InfoTree::branch_get_value)>(
-                      quid_name, std::string("property.") + prop + ".value")));
+                  InfoTree::make(quid->tree<MPtr(&InfoTree::branch_get_value)>(
+                      std::string("property.") + prop + ".value")));
     }
 
     // Record shmdata connections.
     // Ignore them if no connect-to methods is installed for this quiddity.
-    if (0 == qcontainer_->get_quiddity(quid_name)->meth<MPtr(&MContainer::get_id)>("connect"))
-      continue;
+    if (0 == quid->meth<MPtr(&MContainer::get_id)>("connect")) continue;
 
-    auto readers = use_tree<MPtr(&InfoTree::get_child_keys)>(quid_name, "shmdata.reader");
+    auto readers = quid->tree<MPtr(&InfoTree::get_child_keys)>("shmdata.reader");
     int nb = 0;
     for (auto& reader : readers) {
       if (!reader.empty()) {
@@ -218,94 +224,50 @@ InfoTree::ptr Switcher::get_state() const {
   }
   // calling on_saved callback
   for (auto& quid_name : quiddities) {
-    qcontainer_->get_quiddity(quid_name)->on_saved();
+    qcontainer_->get_quiddity(qcontainer_->get_id(quid_name))->on_saved();
   }
 
   return tree;
 }
 
-void Switcher::auto_init(const std::string& quiddity_name) {
-  Quiddity::ptr quidd = qcontainer_->get_quiddity(quiddity_name);
-  if (!quidd) return;
-  SwitcherWrapper::ptr wrapper = std::dynamic_pointer_cast<SwitcherWrapper>(quidd);
-  if (wrapper) wrapper->set_quiddity_manager(me_.lock());
-}
+void Switcher::register_bundle_from_configuration() {
+  // registering bundle(s) as creatable class
+  auto quid_types = qfactory_.get_class_list();
+  auto configuration = conf_.get();
+  for (auto& it : configuration->get_child_keys("bundle")) {
+    if (std::string::npos != it.find('_')) {
+      log_->warning("underscores are not allowed for quiddity types (bundle name %)", it);
+      continue;
+    }
+    std::string long_name = configuration->branch_get_value("bundle." + it + ".doc.long_name");
+    std::string category = configuration->branch_get_value("bundle." + it + ".doc.category");
+    std::string tags = configuration->branch_get_value("bundle." + it + ".doc.tags");
+    std::string description = configuration->branch_get_value("bundle." + it + ".doc.description");
+    std::string pipeline = configuration->branch_get_value("bundle." + it + ".pipeline");
+    std::string is_missing;
+    if (long_name.empty()) is_missing = "long_name";
+    if (category.empty()) is_missing = "category";
+    if (tags.empty()) is_missing = "tags";
+    if (description.empty()) is_missing = "description";
+    if (pipeline.empty()) is_missing = "pipeline";
+    if (!is_missing.empty()) {
+      log_->warning("% : % field is missing, cannot create new quiddity type", it, is_missing);
+      continue;
+    }
+    // check if the pipeline description is correct
+    auto spec = bundle::DescriptionParser(pipeline, quid_types);
+    if (!spec) {
+      log_->warning("% : error parsing the pipeline (%)", it, spec.get_parsing_error());
+      continue;
+    }
+    // ok, bundle can be added
+    DocumentationRegistry::get()->register_doc(
+        it, quid::Doc(long_name, it, category, tags, description, "n/a", "n/a"));
 
-bool Switcher::scan_directory_for_plugins(const std::string& directory) {
-  return qcontainer_->scan_directory_for_plugins(directory);
-}
-
-bool Switcher::load_configuration_file(const std::string& file_path) {
-  return qcontainer_->load_configuration_file(file_path);
-}
-
-BoolLog Switcher::create(const std::string& quiddity_class, const std::string& nickname) {
-  BoolLog res;
-  invocation_loop_.run([&]() {
-    res = qcontainer_->create(quiddity_class, nickname);
-    if (res) auto_init(res.msg());
-  });  // invocation_loop_.run
-  return res;
-}
-
-BoolLog Switcher::remove(const std::string& quiddity_name) {
-  BoolLog res;
-  invocation_loop_.run(
-      [&]() { res = qcontainer_->remove(quiddity_name); });  // invocation_loop_.run
-  return res;
-}
-
-bool Switcher::has_quiddity(const std::string& name) { return qcontainer_->has_instance(name); }
-
-std::vector<std::string> Switcher::get_classes() {
-  std::vector<std::string> res;
-  invocation_loop_.run([&]() { res = qcontainer_->get_classes(); });  // invocation_loop_.run
-  return res;
-}
-
-InfoTree::ptr Switcher::get_classes_doc() {
-  InfoTree::ptr res;
-  invocation_loop_.run([&]() { res = qcontainer_->get_classes_doc(); });  // invocation_loop_.run
-  return res;
-}
-
-InfoTree::ptr Switcher::get_quiddities_description() {
-  InfoTree::ptr res;
-  invocation_loop_.run(
-      [&]() { res = qcontainer_->get_quiddities_description(); });  // invocation_loop_.run
-  return res;
-}
-
-InfoTree::ptr Switcher::get_quiddity_description(const std::string& quiddity_name) {
-  InfoTree::ptr res;
-  invocation_loop_.run([&]() {
-    res = qcontainer_->get_quiddity_description(quiddity_name);
-  });  // invocation_loop_.run
-  return res;
-}
-
-std::vector<std::string> Switcher::get_quiddities() const {
-  std::vector<std::string> res;
-  invocation_loop_.run([&]() { res = qcontainer_->get_instances(); });  // invocation_loop_.run
-  return res;
-}
-
-std::string Switcher::get_nickname(const std::string& name) const {
-  auto quid = qcontainer_->get_quiddity(name);
-  if (!quid) {
-    log_->debug("quiddity % not found", name);
-    return std::string();
+    qfactory_.register_class_with_custom_factory(it, &bundle::create, &bundle::destroy);
+    // making the new bundle type available for next bundle definition:
+    quid_types.push_back(it);
   }
-  return quid->get_nickname();
-}
-
-bool Switcher::set_nickname(const std::string& name, const std::string& nickname) {
-  auto quid = qcontainer_->get_quiddity(name);
-  if (!quid) {
-    log_->debug("quiddity % not found", name);
-    return false;
-  }
-  return quid->set_nickname(nickname);
 }
 
 }  // namespace switcher

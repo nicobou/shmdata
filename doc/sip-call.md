@@ -31,7 +31,7 @@ switcher-ctrl -i sip set_stun_turn stun.mondomaine.com turn.mondomaine.com shmda
 
 switcher-ctrl -s sip mode "authorized contacts"
 switcher-ctrl -i sip add_buddy switcher@mondomaine.com
-switcher-ctrl -s sip authorize switcher@mondomaine.com
+switcher-ctrl -i sip authorize switcher@mondomaine.com true
 switcher-ctrl -t sip buddies.0
 ```
 
@@ -52,17 +52,17 @@ switcher-ctrl --server http://localhost:15432 -t sip buddies.0
 Prepare two audio streams to send
 ```
 switcher-ctrl --server http://localhost:15432 -C audiotestsrc aud1
-switcher-ctrl --server http://localhost:15432 -s aud1 pattern 0
+switcher-ctrl --server http://localhost:15432 -s aud1 wave 0
 switcher-ctrl --server http://localhost:15432 -s aud1 started true
 switcher-ctrl --server http://localhost:15432 -C audiotestsrc aud2
-switcher-ctrl --server http://localhost:15432 -s aud2 pattern 1
+switcher-ctrl --server http://localhost:15432 -s aud2 wave 1
 switcher-ctrl --server http://localhost:15432 -s aud2 started true
 ```
 
 Prepare the call, i.e. attach several audio shmdata to the callee 
 ```
-switcher-ctrl --server http://localhost:15432 -i sip attach_shmdata_to_contact /tmp/switcher_caller_aud1_audio shmdata@mondomaine.com true
-switcher-ctrl --server http://localhost:15432 -i sip attach_shmdata_to_contact /tmp/switcher_caller_aud2_audio shmdata@mondomaine.com true
+switcher-ctrl --server http://localhost:15432 -i sip attach_shmdata_to_contact $(switcher-ctrl --server http://localhost:15432 -p aud1 audio) shmdata@mondomaine.com true
+switcher-ctrl --server http://localhost:15432 -i sip attach_shmdata_to_contact $(switcher-ctrl --server http://localhost:15432 -p aud2 audio) shmdata@mondomaine.com true
 switcher-ctrl --server http://localhost:15432 -t sip buddies.0
 ```
 
@@ -70,19 +70,19 @@ Then make switcher call shmdata:
 ```
 switcher-ctrl --server http://localhost:15432 -i sip send shmdata@mondomaine.com
 ```
-
+If you see from logs the call has been refused, you need to authorize your buddy to send you streams (authorize method of the sip quiddity). 
 
 ## Check the call is receiving
 Ask the callee switcher
 ```
-switcher-ctrl -t sip buddies.0.recv_status # should display "receiving"
+switcher-ctrl -t sip buddies # "recv_status" should be "receiving"
 switcher-ctrl -e
 ```
 The receiver has created one quiddity per received stream. Here aud2-switcher-sip-scenic-sat-qc-ca and aud-switcher-sip-scenic-sat-qc-ca.
 
 Check data are received with sdflow
 ```
-sdflow /tmp/switcher_default_sip-switcher_rtp-aud2
+sdflow switcher_default_sip-nico2_rtp-aud2
 
 ```
 

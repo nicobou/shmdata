@@ -35,8 +35,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-ShmdataToJack::ShmdataToJack(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+ShmdataToJack::ShmdataToJack(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       jack_client_(get_name().c_str(),
                    &ShmdataToJack::jack_process,
                    this,
@@ -45,7 +45,7 @@ ShmdataToJack::ShmdataToJack(QuiddityConfiguration&& conf)
                    [this]() {
                      if (!is_constructed_) return;
                      auto thread = std::thread([this]() {
-                       if (!qcontainer_->remove(get_name()))
+                       if (!qcontainer_->remove(qcontainer_->get_id(get_name())))
                          warning("% did not self destruct after jack shutdown", get_name());
                      });
                      thread.detach();

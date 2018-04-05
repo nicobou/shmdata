@@ -25,11 +25,11 @@
 namespace switcher {
 class BoolLog {
  public:
-  BoolLog() : is_valid_(false), msg_(){};
-  BoolLog(bool is_valid) : is_valid_(is_valid), msg_() {}
-  BoolLog(bool is_valid, const std::string& msg) : is_valid_(is_valid), msg_(msg) {}
-  operator bool() const { return is_valid_; };
-  std::string msg() const { return msg_; }
+  BoolLog();
+  BoolLog(bool is_valid);
+  BoolLog(bool is_valid, const std::string& msg);
+  operator bool() const;
+  std::string msg() const;
 
  private:
   bool is_valid_;

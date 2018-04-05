@@ -27,17 +27,16 @@ int main() {
     using namespace switcher;
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
-    manager->scan_directory_for_plugins("./");
-    assert(switcher::QuiddityBasicTest::test_full(manager, "protocol-mapper"));
-    auto created = manager->create("protocol-mapper", std::string());
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    assert(switcher::test::full(manager, "protocol-mapper"));
+    auto created = manager->quids<MPtr(&quid::Container::create)>("protocol-mapper", std::string());
     assert(created);
-    auto quid = created.msg();
-    assert(manager->use_prop<MPtr(&PContainer::set_str_str)>(
-        quid, "config_file", "protocol-osc.json"));
-    assert(manager->use_prop<MPtr(&PContainer::set_str_str)>(quid, "int32", "true"));
-    assert(manager->use_prop<MPtr(&PContainer::set_str_str)>(quid, "wrongtype", "true"));
-    assert(manager->use_prop<MPtr(&PContainer::set_str_str)>(quid, "notype", "true"));
-    assert(manager->use_prop<MPtr(&PContainer::set_str_str)>(quid, "ardour_goto_start", "true"));
+    auto quid = created.get();
+    assert(quid->prop<MPtr(&PContainer::set_str_str)>("config_file", "protocol-osc.json"));
+    assert(quid->prop<MPtr(&PContainer::set_str_str)>("int32", "true"));
+    assert(quid->prop<MPtr(&PContainer::set_str_str)>("wrongtype", "true"));
+    assert(quid->prop<MPtr(&PContainer::set_str_str)>("notype", "true"));
+    assert(quid->prop<MPtr(&PContainer::set_str_str)>("ardour_goto_start", "true"));
   }
   return 0;
 }

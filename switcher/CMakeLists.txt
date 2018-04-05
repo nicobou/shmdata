@@ -2,9 +2,11 @@ pkg_check_modules(GMODULE REQUIRED gmodule-2.0)
 
 add_library(${SWITCHER_LIBRARY} SHARED
     audio-test-source.cpp
+    bool-log.cpp
     bundle-description-parser.cpp
     bundle.cpp
     color.cpp
+    configuration.cpp
     counter-map.cpp
     decodebin-to-shmdata.cpp
     documentation-registry.cpp
@@ -19,6 +21,7 @@ add_library(${SWITCHER_LIBRARY} SHARED
     gst-audio-codec.cpp
     gst-audio-encoder.cpp
     gst-decodebin.cpp
+    gst-initialized.cpp
     gst-pipe.cpp
     gst-pipeliner.cpp
     gst-pixel-format-converter.cpp
@@ -43,7 +46,8 @@ add_library(${SWITCHER_LIBRARY} SHARED
     quiddity-basic-test.cpp
     quiddity-documentation.cpp
     quiddity-container.cpp
-    switcher-wrapper.cpp
+    quiddity-factory.cpp
+    quiddity-qrox.cpp
     switcher.cpp
     quiddity.cpp
     rtp-receiver.cpp
@@ -79,6 +83,7 @@ set(HEADER_INCLUDES
     bundle.hpp
     bundle-description-parser.hpp
     color.hpp
+    configuration.hpp
     console-logger.hpp
     counter-map.hpp
     creator.hpp
@@ -97,6 +102,7 @@ set(HEADER_INCLUDES
     gst-audio-codec.hpp
     gst-audio-encoder.hpp
     gst-decodebin.hpp
+    gst-initialized.hpp
     gst-pipe.hpp
     gst-pipeliner.hpp
     gst-pixel-format-converter.hpp
@@ -130,7 +136,9 @@ set(HEADER_INCLUDES
     quiddity-configuration.hpp
     quiddity-documentation.hpp
     quiddity-container.hpp
-    switcher-wrapper.hpp
+    quiddity-factory.hpp
+    quiddity-qrox.hpp
+    quid-id-t.hpp
     switcher.hpp
     quiddity.hpp
     rtp-receiver.hpp

@@ -31,8 +31,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Jérémie Soria");
 
-LTCSource::LTCSource(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+LTCSource::LTCSource(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   jack_client_ = jack_client_open(
       std::string(std::string("genLTC_") + get_name()).c_str(), JackNullOption, nullptr);
 
@@ -111,7 +111,7 @@ void LTCSource::tick_callback(jack_nframes_t nframes) {
 bool LTCSource::start() {
   shmw_ = std::make_unique<ShmdataWriter>(
       this,
-      make_file_name("audio"),
+      make_shmpath("audio"),
       1,
       std::string(
           "audio/"

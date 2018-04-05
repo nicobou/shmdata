@@ -35,7 +35,7 @@ class GstShmdataSubscriber;
 
 class HTTPSDPDec : public Quiddity {
  public:
-  HTTPSDPDec(QuiddityConfiguration&&);
+  HTTPSDPDec(quid::Config&&);
 
  private:
   std::unique_ptr<GstPipeliner> gst_pipeline_;

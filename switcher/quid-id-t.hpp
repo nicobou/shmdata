@@ -17,10 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./switcher-wrapper.hpp"
+#ifndef __SWITCHER_QUID_ID_T_H__
+#define __SWITCHER_QUID_ID_T_H__
 
 namespace switcher {
-void SwitcherWrapper::set_quiddity_manager(std::shared_ptr<Switcher> manager) {
-  manager_ = manager;
-}
-}  // end of class
+namespace quid {
+using qid_t = size_t;
+}  // namespace quid
+}  // namespace switcher
+#endif

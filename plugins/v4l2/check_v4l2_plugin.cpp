@@ -25,13 +25,16 @@
 
 int main() {
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
+    using namespace switcher;
+    Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->scan_directory_for_plugins("./");
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
-    assert(switcher::QuiddityBasicTest::test_full(manager, "v4l2src"));
-    if (!manager->create("v4l2src", "test")) return 0;  // no camera in this computer
-    assert(manager->remove("test"));
+    assert(test::full(manager, "v4l2src"));
+    if (!manager->quids<MPtr(&quid::Container::create)>("v4l2src", "test"))
+      return 0;  // no camera in this computer
+    assert(manager->quids<MPtr(&quid::Container::remove)>(
+        manager->quids<MPtr(&quid::Container::get_id)>("test")));
   }  // end of scope is releasing the manager
   return 0;
 }

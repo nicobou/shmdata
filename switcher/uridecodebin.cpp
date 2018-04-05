@@ -37,8 +37,8 @@ void Uridecodebin::bus_async(GstMessage* msg) {
   if (loop_) gst_pipeline_->seek(0);
 }
 
-Uridecodebin::Uridecodebin(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+Uridecodebin::Uridecodebin(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       on_msg_async_cb_([this](GstMessage* msg) { this->bus_async(msg); }),
       on_msg_sync_cb_(nullptr),
       on_error_cb_([this](GstObject*, GError*) { this->error_ = true; }),
@@ -253,7 +253,7 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   auto count = counter_.get_count(padname_split[0]);
   std::string media_name = std::string(padname_split[0]) + "-" + std::to_string(count);
   debug("uridecodebin: new media %", media_name);
-  std::string shmpath = make_file_name(media_name);
+  std::string shmpath = make_shmpath(media_name);
   g_object_set(G_OBJECT(shmdatasink), "socket-path", shmpath.c_str(), nullptr);
 
   shm_subs_.emplace_back(std::make_unique<GstShmdataSubscriber>(

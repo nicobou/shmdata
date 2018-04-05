@@ -21,6 +21,7 @@
 #include "./gst-utils.hpp"
 #include "./information-tree-json.hpp"
 #include "./information-tree.hpp"
+#include "./quiddity-container.hpp"
 #include "./quiddity.hpp"
 #include "./scope-exit.hpp"
 
@@ -68,6 +69,38 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
           return false;
         }
         return on_connect_cb_(path);
+      });
+
+  using connect_quid_t = std::function<bool(std::string, std::string)>;
+  quid_->mmanage<MPtr(&MContainer::make_method<connect_quid_t>)>(
+      "connect-quid",
+      JSONSerializer::deserialize(
+          R"(
+                  {
+                   "name" : "Connect Quiddity",
+                   "description" : "connect to a Quiddity shmpath",
+                   "arguments" : [
+                     {
+                        "long name" : "Quiddity name",
+                        "description" : "Name of the Quiddity producing the shmdata"
+                     }, {
+                        "long name" : "shmdata suffix",
+                        "description" : "Suffix of the shmdata, for instance audio or video2"
+                     }
+                   ]
+                  }
+              )"),
+      [this](const std::string& quid_name, const std::string& suffix) {
+        if (nullptr == on_connect_cb_) {
+          quid_->warning("on connect callback not installed");
+          return false;
+        }
+        auto qrox = quid_->qcontainer_->get_qrox_from_name(quid_name);
+        if (!qrox) {
+          quid_->warning("quiddity % not found: %", quid_name, qrox.msg());
+          return false;
+        }
+        return on_connect_cb_(qrox.get()->make_shmpath(suffix));
       });
 
   quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(

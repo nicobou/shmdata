@@ -34,8 +34,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSource,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PortMidiSource::PortMidiSource(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)) {
+PortMidiSource::PortMidiSource(quid::Config&& conf) : Quiddity(std::forward<quid::Config>(conf)) {
   if (input_devices_enum_.empty()) {
     message("ERROR:No MIDI capture device detected.");
     is_valid_ = false;
@@ -130,15 +129,14 @@ PortMidiSource::PortMidiSource(QuiddityConfiguration&& conf)
                   }
               )"),
       [this](const std::string& prop_name, int status, int data) {
-        return make_property_wrapped(prop_name, status, data);
+        return make_property(prop_name, status, data);
       });
   mmanage<MPtr(&MContainer::disable)>(map_midi_to_property_id_,
                                       StartableQuiddity::disabledWhenStopedMsg);
 }
 
 bool PortMidiSource::start() {
-  shm_ =
-      std::make_unique<ShmdataWriter>(this, make_file_name("midi"), sizeof(PmEvent), "audio/midi");
+  shm_ = std::make_unique<ShmdataWriter>(this, make_shmpath("midi"), sizeof(PmEvent), "audio/midi");
   if (!shm_.get()) {
     message("ERROR:Midi failed to start");
     shm_.reset(nullptr);
@@ -199,13 +197,8 @@ void PortMidiSource::on_pm_event(PmEvent* event, void* user_data) {
 
   // making property if needed
   if (context->make_property_for_next_midi_event_) {
-    context->qcontainer_->get_switcher()->use_method<MPtr(&MContainer::invoke_str)>(
-        context->get_name(),
-        context->qcontainer_->get_switcher()->use_method<MPtr(&MContainer::get_id)>(
-            context->get_name(), "map_midi_to_property"),
-        serialize::esc_for_tuple(context->next_property_name_) + ',' +
-            serialize::esc_for_tuple(std::to_string(context->last_status_)) + "," +
-            serialize::esc_for_tuple(std::to_string(context->last_data1_)));
+    context->make_property(
+        context->next_property_name_, context->last_status_, context->last_data1_);
     context->make_property_for_next_midi_event_ = FALSE;
   }
 }
@@ -240,14 +233,7 @@ bool PortMidiSource::remove_property_method(const std::string& long_name) {
   return true;
 }
 
-bool PortMidiSource::make_property_wrapped(const std::string& property_long_name,
-                                           gint last_status,
-                                           gint last_data1) {
-  if (make_property(property_long_name, last_status, last_data1)) return true;
-  return false;
-}
-
-bool PortMidiSource::make_property(std::string property_long_name,
+bool PortMidiSource::make_property(const std::string& property_long_name,
                                    gint last_status,
                                    gint last_data1) {
   if (midi_channels_.find(std::make_pair(last_status, last_data1)) != midi_channels_.end()) {

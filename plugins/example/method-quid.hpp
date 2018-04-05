@@ -28,7 +28,7 @@
 namespace switcher {
 class MethodQuid : public Quiddity {
  public:
-  MethodQuid(QuiddityConfiguration&&);
+  MethodQuid(quid::Config&&);
   ~MethodQuid() = default;
   MethodQuid(const MethodQuid&) = delete;
   MethodQuid& operator=(const MethodQuid&) = delete;

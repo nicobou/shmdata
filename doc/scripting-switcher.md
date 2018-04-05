@@ -15,7 +15,7 @@ switcher-ctrl -C glfwin win
 # start the video with the "started" property set to true (will activate the video shmdata)
 switcher-ctrl -s vid started true
 # "connect" is a method, it needs to be invoked
-switcher-ctrl -i win connect /tmp/switcher_default_vid_video
+switcher-ctrl -i win connect-quid vid video
 
 # change the video pattern :
 switcher-ctrl -s vid pattern 2

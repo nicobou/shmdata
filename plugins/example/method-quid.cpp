@@ -30,8 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(MethodQuid,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-MethodQuid::MethodQuid(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+MethodQuid::MethodQuid(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       hello_id_(mmanage<MPtr(&MContainer::make_method<my_method_t>)>(
           "hello_",
           JSONSerializer::deserialize(

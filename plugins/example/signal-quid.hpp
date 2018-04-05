@@ -25,7 +25,7 @@
 namespace switcher {
 class SignalQuid : public Quiddity {
  public:
-  SignalQuid(QuiddityConfiguration&&);
+  SignalQuid(quid::Config&&);
   ~SignalQuid() = default;
   SignalQuid(const SignalQuid&) = delete;
   SignalQuid& operator=(const SignalQuid&) = delete;

@@ -31,7 +31,7 @@
 namespace switcher {
 class AVPlayer : public Quiddity, public StartableQuiddity {
  public:
-  AVPlayer(QuiddityConfiguration&&);
+  AVPlayer(quid::Config&&);
   bool start() final;
   bool stop() final;
 

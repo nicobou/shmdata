@@ -37,8 +37,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(NVdecPlugin,
 const std::array<const char*, 5> NVdecPlugin::kSupportedCodecs{
     {"video/x-h264", "video/x-h265", "video/mpeg", "video/x-jpeg", "image/jpeg"}};
 
-NVdecPlugin::NVdecPlugin(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+NVdecPlugin::NVdecPlugin(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   auto devices = CudaContext::get_devices();
   std::vector<std::string> names;
   for (auto& it : devices) {
@@ -147,7 +147,7 @@ void NVdecPlugin::on_shmreader_data(void* data, size_t size) {
         writer_size_ = data_width * data_height * 3 / 2;
 
         shmwriter_ =
-            std::make_unique<ShmdataWriter>(this, make_file_name("video"), writer_size_, caps_);
+            std::make_unique<ShmdataWriter>(this, make_shmpath("video"), writer_size_, caps_);
       }
 
       std::unique_ptr<shmdata::OneWriteAccess> shm_ptr;

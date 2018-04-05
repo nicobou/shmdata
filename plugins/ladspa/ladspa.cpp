@@ -35,8 +35,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LADSPA,
 
 const std::vector<std::string> LADSPA::KPropertiesBlackList = {"name", "parent"};
 
-LADSPA::LADSPA(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+LADSPA::LADSPA(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       plugins_list_(get_ladspa_plugins()),
@@ -296,7 +296,7 @@ void LADSPA::get_gst_properties() {
 
 bool LADSPA::on_shmdata_connect(const std::string& shmpath) {
   shmpath_ = shmpath;
-  shmpath_transformed_ = make_file_name("audio");
+  shmpath_transformed_ = make_shmpath("audio");
 
   // We get the values before resetting the pipeline before the first connection.
   // After that this will be done during the disconnection event.

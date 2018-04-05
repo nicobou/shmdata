@@ -30,7 +30,7 @@
 namespace switcher {
 class PropertyQuid : public Quiddity {
  public:
-  PropertyQuid(QuiddityConfiguration&&);
+  PropertyQuid(quid::Config&&);
   ~PropertyQuid() = default;
   PropertyQuid(const PropertyQuid&) = delete;
   PropertyQuid& operator=(const PropertyQuid&) = delete;

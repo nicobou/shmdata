@@ -29,8 +29,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyQuid,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PropertyQuid::PropertyQuid(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+PropertyQuid::PropertyQuid(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       bool_id_(pmanage<MPtr(&PContainer::make_bool)>("bool_",
                                                      [this](bool val) {
                                                        bool_ = val;
@@ -253,7 +253,7 @@ PropertyQuid::PropertyQuid(QuiddityConfiguration&& conf)
                                                     1,  // min num/denom
                                                     10,
                                                     10)  // max num/denom
-          ) {
+      ) {
   // std::cout << pmanage<MPtr(&PContainer::get<int>)>( int_id_) << std::endl;
   // std::cout << pmanage<MPtr(&PContainer::get<unsigned int>)>( uint_id_) <<
   // std::endl;

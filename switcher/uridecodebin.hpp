@@ -30,7 +30,7 @@
 namespace switcher {
 class Uridecodebin : public Quiddity {
  public:
-  Uridecodebin(QuiddityConfiguration&&);
+  Uridecodebin(quid::Config&&);
   ~Uridecodebin() = default;
   Uridecodebin(const Uridecodebin&) = delete;
   Uridecodebin& operator=(const Uridecodebin&) = delete;

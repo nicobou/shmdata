@@ -51,7 +51,7 @@ $ cmake .. -DENABLE_GPL=ON
     > `$ sudo add-apt-repository --yes ppa:graphics-drivers/ppa`
 
 ```
-    $ sudo apt install nvidia-<driver-ver-number> nvidia-<driver-ver-number>-dev nvidia-cuda-toolkit
+    $ sudo apt install nvidia-<driver-ver-number> nvidia-<driver-ver-number>-dev nvidia-cuda-toolkit nvidia-cuda-dev
 ```
 
 3. In case running `$ cmake ..` does not automatically detect the right driver, in the **switcher** build directory, configure **switcher** as follows:

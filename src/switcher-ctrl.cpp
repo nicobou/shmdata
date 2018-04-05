@@ -37,6 +37,7 @@ static gboolean quidditydescr = FALSE;
 static gboolean quidditiesdescr = FALSE;
 static gboolean setprop = FALSE;
 static gboolean getprop = FALSE;
+static gboolean shmpath = FALSE;
 static gboolean print_tree = FALSE;
 static gboolean print_user_data = FALSE;
 static gboolean prune_user_data = FALSE;
@@ -98,6 +99,13 @@ static GOptionEntry entries[25] = {
      G_OPTION_ARG_NONE,
      &getprop,
      "get property value (-g quiddity_name prop_name)",
+     nullptr},
+    {"shmpath",
+     'p',
+     0,
+     G_OPTION_ARG_NONE,
+     &shmpath,
+     "get shmpath of a quiddity, according to the given suffix",
      nullptr},
     {"print-tree",
      't',
@@ -194,8 +202,8 @@ int main(int argc, char* argv[]) {
   if (server == nullptr) server = g_strdup("http://localhost:27182");
 
   if (!(save ^ load ^ run ^ listclasses ^ classesdoc ^ classdoc ^ listquiddities ^ quidditydescr ^
-        quidditiesdescr ^ setprop ^ getprop ^ createquiddity ^ deletequiddity ^ invokemethod ^
-        print_tree ^ print_user_data ^ prune_user_data ^ graft_user_data ^
+        quidditiesdescr ^ setprop ^ getprop ^ shmpath ^ createquiddity ^ deletequiddity ^
+        invokemethod ^ print_tree ^ print_user_data ^ prune_user_data ^ graft_user_data ^
         tag_as_array_user_data)) {
     g_printerr(
         "I am very sorry for the inconvenience, "
@@ -366,6 +374,14 @@ int main(int argc, char* argv[]) {
     }
     std::string val;
     switcher_control.get_property(remaining_args[0], remaining_args[1], &val);
+    std::cout << val << std::endl;
+  } else if (shmpath) {
+    if (remaining_args == nullptr || remaining_args[1] == nullptr) {
+      g_printerr("missing argument for shmpath\n");
+      return false;
+    }
+    std::string val;
+    switcher_control.make_shmpath(remaining_args[0], remaining_args[1], &val);
     std::cout << val << std::endl;
   } else if (createquiddity) {
     if (remaining_args == nullptr) {

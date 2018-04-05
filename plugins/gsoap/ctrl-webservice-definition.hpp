@@ -42,6 +42,11 @@ int switcher__get_quiddities_description(std::string *result);
 //gsoap switcher service method-documentation: get names of instances
 int switcher__get_quiddity_names(std::vector<std::string> *result);
 
+//gsoap switcher service method-documentation: get shmpath of a quiddity, given the suffix
+int switcher__make_shmpath(std::string quiddity_name,
+			   std::string suffix,
+			   std::string *result);
+
 //gsoap switcher service method-documentation: set a value of a property from an quiddity instance
 int switcher__set_property(std::string quiddity_name,
 			   std::string property_name,

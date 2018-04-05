@@ -29,8 +29,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCToJack,
                                      "LGPL",
                                      "Jérémie Soria");
 
-LTCToJack::LTCToJack(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+LTCToJack::LTCToJack(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   jack_client_ = jack_client_open(
       std::string(std::string("clockLTC_") + get_name()).c_str(), JackNullOption, nullptr);
 

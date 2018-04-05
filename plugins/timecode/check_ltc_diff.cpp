@@ -54,59 +54,55 @@ void notify_success() {
 
 int main() {
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("ltcdifftest");
+    using namespace switcher;
+    Switcher::ptr manager = Switcher::make_switcher("ltcdifftest");
 
-    manager->scan_directory_for_plugins("./");
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
     // Fringe case like CI cannot run this test successfully but we don't want it to fail.
-    if (!manager->create("ltcsource", "ltctestsourcedummy")) return 0;
+    if (!manager->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsourcedummy"))
+      return 0;
 
-    if (!switcher::QuiddityBasicTest::test_full(manager, "ltcdiff")) return 1;
+    if (!test::full(manager, "ltcdiff")) return 1;
 
-    if (!manager->create("ltcsource", "ltctestsource1")) return 1;
-    if (!manager->create("ltcsource", "ltctestsource2")) return 1;
-    if (!manager->create("ltcdiff", "ltcdifftest")) return 1;
+    auto ltctestsource1 =
+        manager->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsource1").get();
+    if (!ltctestsource1) return 1;
+    auto ltctestsource2 =
+        manager->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsource2").get();
+    if (!ltctestsource2) return 1;
+    auto ltcdiff = manager->quids<MPtr(&quid::Container::create)>("ltcdiff", "ltcdifftest").get();
+    if (!ltcdiff) return 1;
 
     // We set 30 frames of delay for this source.
-    if (!manager->use_prop<MPtr(&switcher::PContainer::set_str_str)>(
-            "ltctestsource1", "timeshift_forward", "30"))
-      return 1;
+    if (!ltctestsource1->prop<MPtr(&PContainer::set_str_str)>("timeshift_forward", "30")) return 1;
 
-    if (!manager->use_prop<MPtr(&switcher::PContainer::set_str_str)>(
-            "ltctestsource1", "started", "true"))
-      return 1;
+    if (!ltctestsource1->prop<MPtr(&PContainer::set_str_str)>("started", "true")) return 1;
 
-    if (!manager->use_prop<MPtr(&switcher::PContainer::set_str_str)>(
-            "ltctestsource2", "started", "true"))
-      return 1;
+    if (!ltctestsource2->prop<MPtr(&PContainer::set_str_str)>("started", "true")) return 1;
 
-    auto connect_id =
-        manager->use_method<MPtr(&switcher::MContainer::get_id)>("ltcdifftest", "connect");
-    if (!manager->use_method<MPtr(&switcher::MContainer::invoke_str)>(
-            "ltcdifftest",
-            connect_id,
-            serialize::esc_for_tuple("/tmp/switcher_ltcdifftest_ltctestsource1_audio")))
+    auto connect_id = ltcdiff->meth<MPtr(&MContainer::get_id)>("connect");
+    if (!ltcdiff->meth<MPtr(&MContainer::invoke_str)>(
+            connect_id, serialize::esc_for_tuple(ltctestsource1->make_shmpath("audio"))))
       return 1;
-    if (!manager->use_method<MPtr(&switcher::MContainer::invoke_str)>(
-            "ltcdifftest",
-            connect_id,
-            serialize::esc_for_tuple("/tmp/switcher_ltcdifftest_ltctestsource2_audio")))
+    if (!ltcdiff->meth<MPtr(&MContainer::invoke_str)>(
+            connect_id, serialize::esc_for_tuple(ltctestsource2->make_shmpath("audio"))))
       return 1;
 
     shmdata::ConsoleLogger logger;
-    auto reader =
-        std::make_unique<shmdata::Reader>("/tmp/switcher_ltcdifftest_ltcdifftest_ltc-diff",
-                                          [](void* data, size_t data_size) {
-                                            if (data_size) {
-                                              auto diff = *static_cast<double*>(data);
-                                              // 1000ms in 30 frames, 50ms is between one and two
-                                              // frames at 30 fps, we accept 1 frame of error.
-                                              if (diff - 1000 < 50) notify_success();
-                                            }
-                                          },
-                                          nullptr,
-                                          nullptr,
-                                          &logger);
+    auto reader = std::make_unique<shmdata::Reader>(ltcdiff->make_shmpath("ltc-diff"),
+                                                    [](void* data, size_t data_size) {
+                                                      if (data_size) {
+                                                        auto diff = *static_cast<double*>(data);
+                                                        // 1000ms in 30 frames, 50ms is between one
+                                                        // and two frames at 30 fps, we accept 1
+                                                        // frame of error.
+                                                        if (diff - 1000 < 50) notify_success();
+                                                      }
+                                                    },
+                                                    nullptr,
+                                                    nullptr,
+                                                    &logger);
 
     wait_until_success();
 

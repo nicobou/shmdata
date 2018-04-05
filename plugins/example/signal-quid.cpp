@@ -30,8 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SignalQuid,
                                      "LGPL",
                                      "Jérémie Soria");
 
-SignalQuid::SignalQuid(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+SignalQuid::SignalQuid(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       signal_id_(smanage<MPtr(&SContainer::make)>("test-signal", "A test signal")) {
   mmanage<MPtr(&MContainer::make_method<std::function<bool()>>)>(
       "emit-signal",

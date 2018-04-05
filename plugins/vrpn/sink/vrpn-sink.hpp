@@ -38,7 +38,7 @@ namespace vrpn {
 
 class VRPNSink : public Quiddity, public StartableQuiddity {
  public:
-  VRPNSink(QuiddityConfiguration&&);
+  VRPNSink(quid::Config&&);
   ~VRPNSink() = default;
   VRPNSink(const VRPNSink&) = delete;
   VRPNSink& operator=(const VRPNSink&) = delete;

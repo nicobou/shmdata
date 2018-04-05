@@ -45,7 +45,7 @@
 #include "./signal-container.hpp"
 
 namespace switcher {
-class QuiddityContainer;
+class Container;
 
 class Quiddity : public Logged, public SafeBoolIdiom {
   friend class Bundle;  // access to props_ in order to forward properties
@@ -63,8 +63,9 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   friend struct ShmdataStat;
 
  public:
-  typedef std::shared_ptr<Quiddity> ptr;
-  explicit Quiddity(QuiddityConfiguration&&);
+  using ptr = std::shared_ptr<Quiddity>;
+  using wptr = std::weak_ptr<Quiddity>;
+  explicit Quiddity(quid::Config&&);
   Quiddity() = delete;
   Quiddity(const Quiddity&) = delete;
   Quiddity& operator=(const Quiddity&) = delete;
@@ -112,11 +113,11 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   static std::string get_socket_dir();
 
   // use a consistent naming for shmdatas
-  std::string make_file_name(const std::string& suffix) const;
+  std::string make_shmpath(const std::string& suffix) const;
   std::string get_manager_name();
   std::string get_quiddity_name_from_file_name(const std::string& shmdata_path) const;
   std::string get_shmdata_name_from_file_name(const std::string& path) const;
-  std::string get_file_name_prefix() const;
+  std::string get_shmpath_prefix() const;
 
  private:
   // safe bool idiom implementation
@@ -197,30 +198,29 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   bool is_valid_{true};
 
   // access to the quiddity Container
-  QuiddityContainer* qcontainer_;
+  quid::Container* qcontainer_;
 };
 
 #define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(                                                 \
     cpp_quiddity_class, class_name, name, category, tags, description, license, author)       \
   bool cpp_quiddity_class##_doc_registered = DocumentationRegistry::get()->register_doc(      \
-      class_name,                                                                             \
-      QuiddityDocumentation(class_name, name, category, tags, description, license, author)); \
+      class_name, quid::Doc(class_name, name, category, tags, description, license, author)); \
   bool cpp_quiddity_class##_class_registered =                                                \
       DocumentationRegistry::get()->register_type_from_class_name(                            \
           std::string(#cpp_quiddity_class), class_name);
 
-#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                           \
-  extern "C" Quiddity* create(QuiddityConfiguration&& conf) {                 \
-    return new cpp_quiddity_class(std::forward<QuiddityConfiguration>(conf)); \
-  }                                                                           \
-  extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }            \
-  extern "C" const char* get_quiddity_type() {                                \
-    static char type[64];                                                     \
-    strcpy(type,                                                              \
-           DocumentationRegistry::get()                                       \
-               ->get_type_from_class_name(std::string(#cpp_quiddity_class))   \
-               .c_str());                                                     \
-    return static_cast<const char*>(type);                                    \
+#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                         \
+  extern "C" Quiddity* create(quid::Config&& conf) {                        \
+    return new cpp_quiddity_class(std::forward<quid::Config>(conf));        \
+  }                                                                         \
+  extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }          \
+  extern "C" const char* get_quiddity_type() {                              \
+    static char type[64];                                                   \
+    strcpy(type,                                                            \
+           DocumentationRegistry::get()                                     \
+               ->get_type_from_class_name(std::string(#cpp_quiddity_class)) \
+               .c_str());                                                   \
+    return static_cast<const char*>(type);                                  \
   }
 }  // namespace switcher
 #endif

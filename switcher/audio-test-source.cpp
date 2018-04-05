@@ -35,8 +35,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-AudioTestSource::AudioTestSource(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+AudioTestSource::AudioTestSource(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       sample_rate_id_(
           pmanage<MPtr(&PContainer::make_selection<>)>("sample_rate",
@@ -103,7 +103,7 @@ AudioTestSource::AudioTestSource(QuiddityConfiguration&& conf)
     return;
   }
 
-  shmpath_ = make_file_name("audio");
+  shmpath_ = make_shmpath("audio");
   g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "is-live", TRUE, nullptr);
   g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "samplesperbuffer", 512, nullptr);
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);

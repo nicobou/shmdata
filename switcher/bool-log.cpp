@@ -17,28 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_QUIDDITY_MANAGER_H__
-#define __SWITCHER_QUIDDITY_MANAGER_H__
-
-#include <memory>
-#include "./quiddity.hpp"
-#include "./switcher.hpp"
+#include "./bool-log.hpp"
 
 namespace switcher {
-class Switcher;
+BoolLog::BoolLog() : is_valid_(false), msg_(){};
 
-class SwitcherWrapper : public Quiddity {
- public:
-  SwitcherWrapper() = delete;
-  SwitcherWrapper(QuiddityConfiguration&& conf)
-      : Quiddity(std::forward<QuiddityConfiguration>(conf)) {}
+BoolLog::BoolLog(bool is_valid) : is_valid_(is_valid), msg_() {}
 
-  typedef std::shared_ptr<SwitcherWrapper> ptr;
-  void set_quiddity_manager(std::shared_ptr<Switcher> manager);
+BoolLog::BoolLog(bool is_valid, const std::string& msg) : is_valid_(is_valid), msg_(msg) {}
 
- protected:
-  std::weak_ptr<Switcher> manager_{};
-};
+BoolLog::operator bool() const { return is_valid_; };
+
+std::string BoolLog::msg() const { return msg_; }
 
 }  // namespace switcher
-#endif

@@ -23,8 +23,7 @@ namespace switcher {
 
 std::unique_ptr<DocumentationRegistry> DocumentationRegistry::instance_{nullptr};
 
-bool DocumentationRegistry::register_doc(const std::string& quiddity_type,
-                                         const QuiddityDocumentation& doc) {
+bool DocumentationRegistry::register_doc(const std::string& quiddity_type, const quid::Doc& doc) {
   doc_registry_.emplace(std::make_pair<>(quiddity_type, doc));
   return true;
 }
@@ -41,7 +40,7 @@ std::string DocumentationRegistry::get_type_from_class_name(const std::string& c
   return std::string();
 }
 
-const std::map<std::string, QuiddityDocumentation>& DocumentationRegistry::get_docs() const {
+const std::map<std::string, quid::Doc>& DocumentationRegistry::get_docs() const {
   return doc_registry_;
 }
 }

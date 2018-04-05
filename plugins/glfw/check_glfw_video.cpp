@@ -21,15 +21,17 @@
 
 #include <GLFW/glfw3.h>
 #include <unistd.h>  // sleep
+#include <cassert>
 #include <iostream>
 #include "switcher/quiddity-basic-test.hpp"
 #include "switcher/serialize-string.hpp"
 
 int main() {
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("glfwtest");
+    using namespace switcher;
+    Switcher::ptr manager = Switcher::make_switcher("glfwtest");
 
-    manager->scan_directory_for_plugins("./");
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
     if (!glfwInit()) {
       // probably launched from ssh, could not find a display
@@ -37,44 +39,37 @@ int main() {
     }
 
     // creating a video source quiddity
-    if (!manager->create("videotestsrc", "vid")) return 1;
+    auto vqrox = manager->quids<MPtr(&quid::Container::create)>("videotestsrc", "vid");
+    auto vid = vqrox.get();
+    assert(vid);
 
-    if (!manager->use_prop<MPtr(&switcher::PContainer::set_str_str)>("vid", "started", "true"))
-      return 1;
+    assert(vid->prop<MPtr(&PContainer::set_str_str)>("started", "true"));
 
     // creating a "glfwin" quiddity
-    if (!manager->create("glfwin", "win")) {
-      // cannot create glfw window, stopping the test
-      return 1;
-    }
+    auto wqrox = manager->quids<MPtr(&quid::Container::create)>("glfwin", "win");
+    auto win = wqrox.get();
+    assert(win);
 
     // connecting
-    if (!manager->use_method<MPtr(&switcher::MContainer::invoke_str)>(
-            "win",
-            manager->use_method<MPtr(&switcher::MContainer::get_id)>("win", "connect"),
-            switcher::serialize::esc_for_tuple("/tmp/switcher_glfwtest_vid_video")))
-      return 1;
+    auto connect_id = win->meth<MPtr(&MContainer::get_id)>("connect");
+    assert(0 != connect_id);
+    auto disconnect_id = win->meth<MPtr(&MContainer::get_id)>("disconnect");
+    assert(0 != disconnect_id);
+    assert(win->meth<MPtr(&MContainer::invoke_str)>(
+        connect_id, serialize::esc_for_tuple(vid->make_shmpath("video"))));
     usleep(100000);
-    if (!manager->use_method<MPtr(&switcher::MContainer::invoke_str)>(
-            "win",
-            manager->use_method<MPtr(&switcher::MContainer::get_id)>("win", "disconnect"),
-            switcher::serialize::esc_for_tuple("/tmp/switcher_glfwtest_vid_video")))
-      return 1;
+    assert(win->meth<MPtr(&MContainer::invoke_str)>(
+        disconnect_id, serialize::esc_for_tuple(vid->make_shmpath("video"))));
 
     // We destroy it while connected to catch pipeline crashes.
-    if (!manager->use_method<MPtr(&switcher::MContainer::invoke_str)>(
-            "win",
-            manager->use_method<MPtr(&switcher::MContainer::get_id)>("win", "connect"),
-            switcher::serialize::esc_for_tuple("/tmp/switcher_glfwtest_vid_video")))
-      return 1;
+    assert(win->meth<MPtr(&MContainer::invoke_str)>(
+        connect_id, serialize::esc_for_tuple(vid->make_shmpath("video"))));
 
     usleep(1000000);
 
-    if (!manager->remove("win")) return 1;
-
-    if (!manager->remove("vid")) return 1;
-
-    if (!switcher::QuiddityBasicTest::test_full(manager, "glfwin")) return 1;
+    assert(manager->quids<MPtr(&quid::Container::remove)>(wqrox.get_id()));
+    assert(manager->quids<MPtr(&quid::Container::remove)>(vqrox.get_id()));
+    assert(test::full(manager, "glfwin"));
   }  // end of scope is releasing the manager
 
   return 0;  // success

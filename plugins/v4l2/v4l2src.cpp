@@ -42,16 +42,16 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(V4L2Src,
 
 void V4L2Src::set_shm_suffix() {
   if (is_current_pixel_format_raw_video())
-    shmpath_ = make_file_name(raw_suffix_);
+    shmpath_ = make_shmpath(raw_suffix_);
   else
-    shmpath_ = make_file_name(enc_suffix_);
+    shmpath_ = make_shmpath(enc_suffix_);
   g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
 }
 
-V4L2Src::V4L2Src(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+V4L2Src::V4L2Src(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       gst_pipeline_(
-          std::make_unique<GstPipeliner>(nullptr, nullptr, [this](GstObject* gstobj, GError * err) {
+          std::make_unique<GstPipeliner>(nullptr, nullptr, [this](GstObject* gstobj, GError* err) {
             on_gst_error(gstobj, err);
           })) {
   force_framerate_id_ = pmanage<MPtr(&PContainer::make_bool)>(

@@ -29,8 +29,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-OscToShmdata::OscToShmdata(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)), port_(1056) {
+OscToShmdata::OscToShmdata(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)), port_(1056) {
   init_startable(this);
   pmanage<MPtr(&PContainer::make_int)>("port",
                                        [this](const int& val) {
@@ -50,7 +50,7 @@ OscToShmdata::~OscToShmdata() { stop(); }
 bool OscToShmdata::start() {
   // creating a shmdata
   shm_ = std::make_unique<ShmdataWriter>(
-      this, make_file_name("osc"), 1, "application/x-libloserialized-osc");
+      this, make_shmpath("osc"), 1, "application/x-libloserialized-osc");
   if (!shm_.get()) {
     warning("OscToShmdata failed to start");
     shm_.reset(nullptr);
@@ -93,7 +93,7 @@ int OscToShmdata::osc_handler(const char* path,
   if (context->shm_->writer<MPtr(&shmdata::Writer::alloc_size)>() < size) {
     context->shm_.reset(nullptr);
     context->shm_.reset(new ShmdataWriter(
-        context, context->make_file_name("osc"), size, "application/x-libloserialized-osc"));
+        context, context->make_shmpath("osc"), size, "application/x-libloserialized-osc"));
   }
   context->shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(buftmp, size);
   context->shm_->bytes_written(size);

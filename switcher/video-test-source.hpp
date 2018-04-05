@@ -32,7 +32,7 @@
 namespace switcher {
 class VideoTestSource : public Quiddity, public StartableQuiddity {
  public:
-  VideoTestSource(QuiddityConfiguration&&);
+  VideoTestSource(quid::Config&&);
   ~VideoTestSource() = default;
   VideoTestSource(const VideoTestSource&) = delete;
   VideoTestSource& operator=(const VideoTestSource&) = delete;

@@ -34,7 +34,7 @@ namespace switcher {
  */
 class ShmDelay : public Quiddity {
  public:
-  ShmDelay(QuiddityConfiguration&& conf);
+  ShmDelay(quid::Config&& conf);
   ~ShmDelay() = default;
 
  private:
