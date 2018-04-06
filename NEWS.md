@@ -2,6 +2,14 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 0.8.68 (2018-04-06)
+---------------------------
+This is an official release in the 0.8 stable series.
+
+* Adding sip-call.md
+* Add using-osc-quiddities.md
+* Disable libwebrtc for pjsip because we don't use it and it prevents switcher from being built on ARM (no SSE2 support, duh!)
+
 switcher 0.8.66 (2018-02-21)
 ---------------------------
 This is an official release in the 0.8 stable series.
