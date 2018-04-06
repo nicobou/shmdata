@@ -284,7 +284,7 @@ gst_shmdata_sink_allocator_alloc (GstAllocator * allocator, gsize size,
     if (padding && (params->flags & GST_MEMORY_FLAG_ZERO_PADDED))
       memset (mymem->data + params->prefix + size, 0, padding);
 
-    gst_memory_init (memory, params->flags, g_object_ref (self), NULL,
+    gst_memory_init (memory, params->flags, g_object_ref ((GstAllocator*)self), NULL,
         maxsize, align, params->prefix, size);
   }
 
@@ -710,7 +710,7 @@ static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
   } 
 
   GST_DEBUG_OBJECT (self, "Creating new socket at %s" 
-      " with shared memory of %lu bytes", self->socket_path, self->size); 
+      " with shared memory of %zu bytes", self->socket_path, self->size); 
   g_free(self->caps);
   self->caps = gst_caps_to_string (caps);
   g_object_notify(G_OBJECT(sink), "caps");

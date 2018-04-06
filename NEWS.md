@@ -2,6 +2,17 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.12 (2018-04-06)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* Changes plugin name from "shm" to "shmdata" to match the lib name because this is needed in gstreamer 1.14.
+* cast self to GstAllocator in g_object_ref
+* Use POSIX format for size_t printing.
+* Added a short pyshmdata example
+* Updated Python wrapper documentation
+* Added call the PyEvalInitThreads to fix GIL segfault. Returns an error if trying to init a reader on something not a socket.
+
 shmdata 1.3.10 (2016-12-12)
 ---------------------------
 This is an official release in the 1.3 stable series.
