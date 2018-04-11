@@ -1,5 +1,5 @@
 /*
- * This file is part of switcher-myplugin.
+ * This file is part of switcher-plugin-example.
  *
  * libswitcher is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,34 +31,42 @@ int main() {
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->scan_directory_for_plugins("./");
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
-    assert(QuiddityBasicTest::test_full(manager, "custom-save"));
+    assert(test::full(manager, "custom-save"));
     manager->reset_state(true);
 
-    // creating a "myplugin" quiddity
-    assert(manager->create("custom-save", "test") == "test");
-    assert(manager->create("dummy", "dummy") == "dummy");  // dummy does not use custom state save
-    auto has_loaded_id = manager->use_prop<MPtr(&PContainer::get_id)>(
-        "test", std::string("has_loaded_custom_state"));
-    auto has_saved_id =
-        manager->use_prop<MPtr(&PContainer::get_id)>("test", std::string("has_saved_custom_state"));
-    assert(!manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_loaded_id));
-    assert(!manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_saved_id));
+    InfoTree::ptr save;
 
-    // saving the custom state
-    auto save = manager->get_state();
-    assert(save);
-    assert(!manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_loaded_id));
-    assert(manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_saved_id));
+    {  // check saving a cutom state
+      auto test = manager->quids<MPtr(&quid::Container::create)>("custom-save", "test").get();
+      assert(test);
+      auto has_loaded_id =
+          test->prop<MPtr(&PContainer::get_id)>(std::string("has_loaded_custom_state"));
+      auto has_saved_id =
+          test->prop<MPtr(&PContainer::get_id)>(std::string("has_saved_custom_state"));
+      assert(!test->prop<MPtr(&PContainer::get<bool>)>(has_loaded_id));
+      assert(!test->prop<MPtr(&PContainer::get<bool>)>(has_saved_id));
+
+      // saving the custom state
+      save = manager->get_state();
+      assert(save);
+      assert(!test->prop<MPtr(&PContainer::get<bool>)>(has_loaded_id));
+      assert(test->prop<MPtr(&PContainer::get<bool>)>(has_saved_id));
+    }
 
     // reset manager
     manager->reset_state(true);
 
-    // load the saved file
-    manager->load_state(save);
-    assert(manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_loaded_id));
-    assert(!manager->use_prop<MPtr(&PContainer::get<bool>)>("test", has_saved_id));
+    {  // check loading
+      manager->load_state(save);
+      auto loaded = manager->quids<MPtr(&quid::Container::get_qrox_from_name)>("test").get();
+      assert(loaded);
+      assert(loaded->prop<MPtr(&PContainer::get<bool>)>(
+          loaded->prop<MPtr(&PContainer::get_id)>(std::string("has_loaded_custom_state"))));
+      assert(!loaded->prop<MPtr(&PContainer::get<bool>)>(
+          loaded->prop<MPtr(&PContainer::get_id)>(std::string("has_saved_custom_state"))));
+    }
 
   }  // end of scope is releasing the manager
   return 0;

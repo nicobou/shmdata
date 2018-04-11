@@ -20,29 +20,30 @@
 #include "./bundle.hpp"
 #include <regex>
 #include "./logger-forwarder.hpp"
+#include "./quid-id-t.hpp"
+#include "./quiddity-container.hpp"
 #include "./scope-exit.hpp"
 
 namespace switcher {
 
 namespace bundle {
-Quiddity* create(QuiddityConfiguration&& conf) {
-  return new Bundle(std::forward<QuiddityConfiguration>(conf));
-}
+Quiddity* create(quid::Config&& conf) { return new Bundle(std::forward<quid::Config>(conf)); }
 void destroy(Quiddity* quiddity) { delete quiddity; }
 }  // namespace bundle
 
 Bundle::~Bundle() { quitting_ = true; }
 
-Bundle::Bundle(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+Bundle::Bundle(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       conf_(conf),
       shmcntr_(static_cast<Quiddity*>(this)),
       manager_(Switcher::make_switcher<LoggerForwarder>(conf_.name_, conf_.log_)) {
-  for (auto& it : qcontainer_->get_plugin_dirs()) {
-    manager_->scan_directory_for_plugins(it);
+  for (auto& it : qcontainer_->get_switcher()->qfactory_.get_plugin_dirs()) {
+    manager_->qfactory_.scan_dir(it);
   }
 
-  manager_->qcontainer_->configurations_ = qcontainer_->configurations_;
+  manager_->conf<MPtr(&Configuration::set)>(
+      qcontainer_->get_switcher()->conf<MPtr(&Configuration::get)>());
 
   if (!config<MPtr(&InfoTree::branch_has_data)>("pipeline")) {
     warning("bundle description is missing the pipeline description");
@@ -52,7 +53,7 @@ Bundle::Bundle(QuiddityConfiguration&& conf)
   pipeline_ = config<MPtr(&InfoTree::branch_get_value)>("pipeline").copy_as<std::string>();
   auto spec = bundle::DescriptionParser(pipeline_, std::vector<std::string>());
   if (!spec) {
-    warning("% : error parsing the pipeline (s)", get_name(), spec.get_parsing_error());
+    warning("% : error parsing the pipeline (%)", get_name(), spec.get_parsing_error());
     is_valid_ = false;
     return;
   }
@@ -64,42 +65,30 @@ Bundle::Bundle(QuiddityConfiguration&& conf)
   if (!reader_quid_.empty()) {
     shmcntr_.install_connect_method(
         [this](const std::string& shmpath) {
-          std::string* return_value = nullptr;
-          manager_->qcontainer_->get_quiddity(reader_quid_)
-              ->invoke_method("connect", &return_value, {shmpath});
-          On_scope_exit {
-            if (return_value) delete return_value;
-          };
-          return *return_value == "true";
+          auto quid =
+              manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(reader_quid_));
+          return quid->meth<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+              quid->meth<MPtr(&MContainer::get_id)>("connect"), std::make_tuple(shmpath));
         },
         [this](const std::string& shmpath) {
-          std::string* return_value = nullptr;
-          manager_->qcontainer_->get_quiddity(reader_quid_)
-              ->invoke_method("disconnect", &return_value, {shmpath});
-          On_scope_exit {
-            if (return_value) delete return_value;
-          };
-          return *return_value == "true";
+          auto quid =
+              manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(reader_quid_));
+          return quid->meth<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+              quid->meth<MPtr(&MContainer::get_id)>("disconnect"), std::make_tuple(shmpath));
         },
         [this]() {
-          std::string* return_value = nullptr;
-          manager_->qcontainer_->get_quiddity(reader_quid_)
-              ->invoke_method("disconnect-all", &return_value, {});
-          On_scope_exit {
-            if (return_value) delete return_value;
-          };
-          return *return_value == "true";
+          auto quid =
+              manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(reader_quid_));
+          return quid->meth<MPtr(&MContainer::invoke<std::function<bool()>>)>(
+              quid->meth<MPtr(&MContainer::get_id)>("disconnect-all"), std::make_tuple());
         },
         [this](const std::string& caps) {
-          std::string* return_value = nullptr;
-          manager_->qcontainer_->get_quiddity(reader_quid_)
-              ->invoke_method("can-sink-caps", &return_value, {caps});
-          On_scope_exit {
-            if (return_value) delete return_value;
-          };
-          return *return_value == "true";
+          auto quid =
+              manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(reader_quid_));
+          return quid->meth<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+              quid->meth<MPtr(&MContainer::get_id)>("can-sink-caps"), std::make_tuple(caps));
         },
-        manager_->qcontainer_->get_quiddity(reader_quid_)
+        manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(reader_quid_))
             ->tree<MPtr(&InfoTree::branch_get_value)>("shmdata.max_reader")
             .copy_as<unsigned int>());
   }
@@ -115,28 +104,27 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
   }
   // create quiddities and set properties
   for (auto& quid : quids) {
-    std::string name;
-
-    name = manager_->create(quid.type, quid.name);
-
-    if (name.empty()) {
+    auto res = manager_->qcontainer_->create(quid.type, quid.name);
+    if (!res) {
       warning("internal manager failed to instantiate a quiddity of type %", quid.type);
       return false;
     }
+    std::string name = res.msg();
+
     for (auto& param : quid.params) {
       if (param.first == "started") {
         warning("ignoring started property when building bundle");
         continue;
       }
       if (!param.second.empty() &&
-          !manager_->use_prop<MPtr(&PContainer::set_str_str)>(name, param.first, param.second)) {
+          !res.get()->prop<MPtr(&PContainer::set_str_str)>(param.first, param.second)) {
         warning("fail to set property % to % for quiddity %", param.first, param.second, name);
         return false;
       }
     }  // quiddity is created
 
     // registering quiddity properties
-    auto quid_ptr = manager_->qcontainer_->get_quiddity(name);
+    auto quid_ptr = manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(name));
     on_tree_datas_.emplace_back(std::make_unique<on_tree_data_t>(this, name, quid_ptr.get(), quid));
     quid_ptr->sig<MPtr(&SContainer::subscribe_by_name)>(
         std::string("on-tree-grafted"),
@@ -179,12 +167,12 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
     }
 
     quiddity_removal_cb_ids_.push_back(
-        manager_->register_removal_cb([this](const std::string& quid_name) {
+        manager_->qcontainer_->register_removal_cb([this](quid::qid_t id) {
           debug("The bundle % was destroyed because one of its quiddities (%) was destroyed",
                 name_,
-                quid_name);
+                manager_->qcontainer_->get_name(id));
           // We only self destruct it once so we unregister all the removal callbacks.
-          manager_->reset_create_remove_cb();
+          manager_->qcontainer_->reset_create_remove_cb();
           self_destruct();
         }));
   }  // finished dealing with this quid specification
@@ -203,9 +191,11 @@ void Bundle::on_tree_grafted(const std::string& key, void* user_data) {
       std::string caps = context->quid_->information_tree_->branch_get_value(
           static_cast<std::string>(shm_match[0]) + ".caps");
       if (!caps.empty()) {
+        auto& qcontainer = context->self_->manager_->qcontainer_;
         for (auto& it : context->quid_spec_.connects_to_) {
-          if (!context->self_->manager_->qcontainer_->get_quiddity(it)->invoke_method(
-                  "can-sink-caps", nullptr, {caps})) {
+          auto quid = qcontainer->get_quiddity(qcontainer->get_id(it));
+          if (!quid->meth<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+                  quid->meth<MPtr(&MContainer::get_id)>("can-sink-caps"), std::make_tuple(caps))) {
             context->self_->message(
                 "ERROR: bundle specification error: % cannot connect with % (caps is %)",
                 context->quid_spec_.name,
@@ -218,8 +208,9 @@ void Bundle::on_tree_grafted(const std::string& key, void* user_data) {
                 caps);
             continue;
           }
-          context->self_->manager_->qcontainer_->get_quiddity(it)->invoke_method(
-              "connect", nullptr, {shm_match[1]});
+
+          quid->meth<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+              quid->meth<MPtr(&MContainer::get_id)>("connect"), std::make_tuple(shm_match[1]));
           {
             std::lock_guard<std::mutex> lock(context->self_->connected_shms_mtx_);
             context->self_->connected_shms_.push_back(std::make_pair(it, shm_match[1]));
@@ -352,10 +343,12 @@ void Bundle::on_tree_pruned(const std::string& key, void* user_data) {
     }
     std::swap(context->quid_spec_.connects_to_, context->quid_spec_.connected_to_);
     if (!context->self_->quitting_.load()) {
+      auto qcontainer = context->self_->manager_->qcontainer_;
       for (auto& it : to_disconnect) {
-        auto quid = context->self_->manager_->qcontainer_->get_quiddity(it.first);
+        auto quid = qcontainer->get_quiddity(qcontainer->get_id(it.first));
         if (!quid) continue;
-        quid->invoke_method("disconnect", nullptr, {it.second});
+        quid->meth<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+            quid->meth<MPtr(&MContainer::get_id)>("disconnect"), std::make_tuple(it.second));
       }
     }
     return;
@@ -370,8 +363,8 @@ void Bundle::on_tree_pruned(const std::string& key, void* user_data) {
 
 bool Bundle::start() {
   for (auto& it : start_quids_) {
-    if (!manager_->qcontainer_->get_quiddity(it)->prop<MPtr(&PContainer::set_str_str)>("started",
-                                                                                       "true")) {
+    if (!manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(it))
+             ->prop<MPtr(&PContainer::set_str_str)>("started", "true")) {
       warning("fail to set start %", it);
       return false;
     }
@@ -381,8 +374,8 @@ bool Bundle::start() {
 
 bool Bundle::stop() {
   for (auto& it : start_quids_) {
-    if (!manager_->qcontainer_->get_quiddity(it)->prop<MPtr(&PContainer::set_str_str)>("started",
-                                                                                       "false")) {
+    if (!manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(it))
+             ->prop<MPtr(&PContainer::set_str_str)>("started", "false")) {
       warning("fail to set start %", it);
       return false;
     }

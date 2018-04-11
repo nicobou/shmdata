@@ -26,9 +26,9 @@ int main() {
   {
     switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
 
-    manager->scan_directory_for_plugins("./");
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
-    if (!switcher::QuiddityBasicTest::test_full(manager, "syphon")) return 1;
+    if (!switcher::test::full(manager, "syphon")) return 1;
   }  // end of scope is releasing the manager
 
   return 0;

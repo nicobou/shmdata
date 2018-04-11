@@ -28,9 +28,9 @@ int main() {
   {
     switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
 
-    manager->scan_directory_for_plugins("./");
+    manager->factory<MPtr(&switcher::quid::Factory::scan_dir)>("./");
 
-    if (switcher::QuiddityBasicTest::test_full(manager, "SOAPcontrolServer")) success = true;
+    if (switcher::test::full(manager, "SOAPcontrolServer")) success = true;
 
   }  // end of scope is releasing the manager
 

@@ -24,7 +24,6 @@
 #ifndef __SWITCHER_JSON_BUILDER_H__
 #define __SWITCHER_JSON_BUILDER_H__
 
-#include <glib.h>
 #include <json-glib/json-glib.h>
 #include <forward_list>
 #include <memory>

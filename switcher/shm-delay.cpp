@@ -30,8 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmDelay,
                                      "LGPL",
                                      "Jérémie Soria");
 
-ShmDelay::ShmDelay(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+ShmDelay::ShmDelay(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   time_delay_id_ =
       pmanage<MPtr(&PContainer::make_double)>("time_delay",
                                               [this](const double& val) {
@@ -107,7 +107,7 @@ bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
         };
 
         // We are only delaying so the caps will be identical to the received shmdata
-        shmw_ = std::make_unique<ShmdataWriter>(this, make_file_name("delayed-shm"), 1, str_caps);
+        shmw_ = std::make_unique<ShmdataWriter>(this, make_shmpath("delayed-shm"), 1, str_caps);
 
         // Task checking if a previously recorded shmdata is a candidate to be written.
         writing_task_ = std::make_unique<PeriodicTask<std::chrono::microseconds>>(

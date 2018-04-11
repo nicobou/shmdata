@@ -25,17 +25,19 @@
 
 int main() {
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("siptest");
+    using namespace switcher;
+    switcher::Switcher::ptr manager = Switcher::make_switcher("siptest");
 
-    manager->scan_directory_for_plugins("./");
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
-    assert(switcher::QuiddityBasicTest::test_full(manager, "sip"));
+    assert(test::full(manager, "sip"));
 
-    for (auto& it : manager->get_quiddities()) {
-      manager->remove(it);
+    for (auto& it : manager->quids<MPtr(&quid::Container::get_names)>()) {
+      manager->quids<MPtr(&quid::Container::remove)>(
+          manager->quids<MPtr(&quid::Container::get_id)>(it));
     }
-    manager->load_configuration_file("./config.json");
-    assert(manager->create("sip", "test") == "test");
+    manager->conf<MPtr(&Configuration::from_file)>("./config.json");
+    assert(manager->quids<MPtr(&quid::Container::create)>("sip", "test"));
   }  // end of scope is releasing the manager
   return 0;
 }

@@ -30,7 +30,7 @@
 namespace switcher {
 class JackToShmdata : public Quiddity, public StartableQuiddity {
  public:
-  JackToShmdata(QuiddityConfiguration&&);
+  JackToShmdata(quid::Config&&);
   ~JackToShmdata() = default;
   JackToShmdata(const JackToShmdata&) = delete;
   JackToShmdata& operator=(const JackToShmdata&) = delete;

@@ -18,6 +18,7 @@
 #include "./pj-call.hpp"
 #include "./pj-call-utils.hpp"
 #include "./pj-sip-plugin.hpp"
+#include "switcher/information-tree-json.hpp"
 #include "switcher/net-utils.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/sdp-utils.hpp"
@@ -79,49 +80,65 @@ PJCall::PJCall() {
   status = PJCodec::install_codecs();
   if (status != PJ_SUCCESS) SIPPlugin::this_->warning("Install codecs failed");
   // properties and methods for user
-  SIPPlugin::this_->install_method("Send to a contact",                         // long name
-                                   "send",                                      // name
-                                   "invite a contact to receive data",          // description
-                                   "the invitation has been initiated or not",  // return desc
-                                   Method::make_arg_description("SIP url",      // long name
-                                                                "url",          // name
-                                                                "string",       // description
-                                                                nullptr),
-                                   (Method::method_ptr)&send_to,
-                                   G_TYPE_BOOLEAN,
-                                   Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-                                   this);
-  SIPPlugin::this_->install_method("Hang Up",                               // long name
-                                   "hang-up",                               // name
-                                   "Hang up a call",                        // description
-                                   "success of not",                        // return description
-                                   Method::make_arg_description("SIP url",  // long name
-                                                                "url",      // name
-                                                                "string",   // description
-                                                                nullptr),
-                                   (Method::method_ptr)&hang_up,
-                                   G_TYPE_BOOLEAN,
-                                   Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-                                   this);
-  SIPPlugin::this_->install_method(
-      "Attach Shmdata To Contact",                  // long name
-      "attach_shmdata_to_contact",                  // name
-      "Register a shmdata for this contact",        // description
-      "success or not",                             // return desc
-      Method::make_arg_description("Shmdata Path",  // long name
-                                   "shmpath",       // name
-                                   "string",        // description
-                                   "Contact URI",
-                                   "contact_uri",
-                                   "string",
-                                   "Attaching",
-                                   "attach",
-                                   "gboolean",
-                                   nullptr),
-      (Method::method_ptr)&attach_shmdata_to_contact,
-      G_TYPE_BOOLEAN,
-      Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, G_TYPE_BOOLEAN, nullptr),
-      this);
+  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+      "send",
+      JSONSerializer::deserialize(
+          R"(
+                  {
+                   "name" : "Send to a contact",
+                   "description" : "invite a contact to receive data",
+                   "arguments" : [
+                     {
+                        "long name" : "SIP url", 
+                        "description" : "url"
+                     }
+                   ]
+                  }
+              )"),
+      [this](const std::string& url) { return send_to(url); });
+
+  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+      "hang-up",
+      JSONSerializer::deserialize(
+          R"(
+                  {
+                   "name" : "Hang Up",
+                   "description" : "Hang up a call",
+                   "arguments" : [
+                     {
+                        "long name" : "SIP url", 
+                        "description" : "url"
+                     }
+                   ]
+                  }
+              )"),
+      [this](const std::string& url) { return hang_up(url); });
+
+  using attach_t = std::function<bool(std::string, std::string, bool)>;
+  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<attach_t>)>(
+      "attach_shmdata_to_contact",
+      JSONSerializer::deserialize(
+          R"(
+                  {
+                   "name" : "Attach Shmdata To Contact",
+                   "description" : "Register a shmdata for this contact",
+                   "arguments" : [
+                     {
+                        "long name" : "Shmdata Path", 
+                        "description" : "string"
+                     }, {
+                        "long name" : "Contact URI",
+                        "description" : "string"
+                     }, {
+                        "long name" : "Contact URI",
+                        "description" : "true or false"
+                     }
+                   ]
+                  }
+              )"),
+      [this](const std::string& shmpath, const std::string& contact, bool attach) {
+        return attach_shmdata_to_contact(shmpath, contact, attach);
+      });
 }
 
 void PJCall::finalize_calls() {
@@ -132,13 +149,13 @@ void PJCall::finalize_calls() {
 
   // Hangup outgoing calls
   for (auto& it : outgoing_call_) uris.push_back(it->peer_uri);
-  for (auto& it : uris) hang_up(it.c_str(), this);
+  for (auto& it : uris) hang_up(it);
 
   uris.clear();
 
   // Hangup incoming calls
   for (auto& it : incoming_call_) uris.push_back(it->peer_uri);
-  for (auto& it : uris) hang_up(it.c_str(), this);
+  for (auto& it : uris) hang_up(it);
 
   can_create_calls_ = false;
 }
@@ -554,9 +571,9 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
                                                                      PJ_ICE_SESS_ROLE_CONTROLLED);
   if (!call->ice_trans_) SIPPlugin::this_->warning("ICE transport initialization failed");
   // initializing shmdata writers and linking with ICE transport
-  call->recv_rtp_session_ = std::make_unique<RtpSession2>();
+  call->recv_rtp_session_ = std::make_unique<RtpSession>();
   for (auto& it : media_to_receive) {
-    auto shm_prefix = SIPPlugin::this_->get_file_name_prefix() +
+    auto shm_prefix = SIPPlugin::this_->get_shmpath_prefix() +
                       SIPPlugin::this_->get_manager_name() + "_" + SIPPlugin::this_->get_name() +
                       "-" + std::string(call->peer_uri, 0, call->peer_uri.find('@')) + "_";
     auto media_label = PJCallUtils::get_media_label(it);
@@ -887,7 +904,8 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
       break;
     }
     std::string rawlabel = SIPPlugin::this_->get_quiddity_name_from_file_name(it);
-    auto quid = SIPPlugin::this_->qcontainer_->get_quiddity(rawlabel);
+    auto quid_id = SIPPlugin::this_->qcontainer_->get_id(rawlabel);
+    auto quid = SIPPlugin::this_->qcontainer_->get_quiddity(quid_id);
     if (quid) rawlabel = quid->get_nickname();
     std::istringstream ss(rawlabel);  // Turn the string into a stream
     std::string tok;
@@ -933,97 +951,94 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
   return true;
 }
 
-gboolean PJCall::send_to(gchar* sip_url, void* user_data) {
-  PJCall* context = static_cast<PJCall*>(user_data);
+bool PJCall::send_to(const std::string& sip_url) {
+  std::lock_guard<std::mutex> lock(finalize_outgoing_calls_m_);
 
-  std::lock_guard<std::mutex> lock(context->finalize_outgoing_calls_m_);
-
-  if (!context->can_create_calls_) {
+  if (!can_create_calls_) {
     SIPPlugin::this_->warning("Trying to initiate a call after all calls have been hung out.");
-    return FALSE;
+    return false;
   }
-  if (nullptr == sip_url || nullptr == user_data) {
+  if (sip_url.empty()) {
     SIPPlugin::this_->warning("calling sip account received nullptr url");
-    return FALSE;
+    return false;
   }
   {
-    std::unique_lock<std::mutex> lock(context->call_m_, std::defer_lock);
+    std::unique_lock<std::mutex> lock(call_m_, std::defer_lock);
     if (!lock.try_lock()) {
       SIPPlugin::this_->debug("cancel SIP send_to because an operation is already pending");
-      return FALSE;
+      return false;
     }
-    context->is_calling_ = true;
-    On_scope_exit { context->is_calling_ = false; };
-    auto res = SIPPlugin::this_->pjsip_->run<bool>(
-        [&]() { return context->make_call(std::string(sip_url)); });
+    is_calling_ = true;
+    On_scope_exit { is_calling_ = false; };
+    auto res =
+        SIPPlugin::this_->pjsip_->run<bool>([&]() { return make_call(std::string(sip_url)); });
     if (res) {
-      context->call_cv_.wait_for(lock, std::chrono::seconds(5), [&context]() {
-        if (context->call_action_done_) {
-          context->call_action_done_ = false;
+      call_cv_.wait_for(lock, std::chrono::seconds(5), [this]() {
+        if (call_action_done_) {
+          call_action_done_ = false;
           return true;
         }
         return false;
       });
     }
   }
-  return TRUE;
+  return true;
 }
 
-gboolean PJCall::hang_up(const gchar* sip_url, void* user_data) {
-  if (nullptr == sip_url || nullptr == user_data) {
+bool PJCall::hang_up(const std::string& sip_url) {
+  if (sip_url.empty()) {
     SIPPlugin::this_->warning("hang up received nullptr url");
-    return FALSE;
+    return false;
   }
   {
-    PJCall* context = static_cast<PJCall*>(user_data);
-    std::unique_lock<std::mutex> lock(context->call_m_, std::defer_lock);
+    std::unique_lock<std::mutex> lock(call_m_, std::defer_lock);
     if (!lock.try_lock()) {
       SIPPlugin::this_->debug("cancel SIP hang_up because an operation is already pending");
-      return FALSE;
+      return false;
     }
-    context->is_hanging_up_ = true;
-    On_scope_exit { context->is_hanging_up_ = false; };
+    is_hanging_up_ = true;
+    On_scope_exit { is_hanging_up_ = false; };
 
-    auto it_out = std::find_if(context->outgoing_call_.begin(),
-                               context->outgoing_call_.end(),
+    auto it_out = std::find_if(outgoing_call_.begin(),
+                               outgoing_call_.end(),
                                [&sip_url](const std::unique_ptr<call_t>& call) {
                                  return (std::string(sip_url) == call->peer_uri);
                                });
 
-    if (it_out != context->outgoing_call_.end()) {
-      SIPPlugin::this_->pjsip_->run_async([&]() { context->make_hang_up((*it_out)->inv); });
-      context->call_cv_.wait_for(lock, std::chrono::seconds(5), [&context]() {
-        if (context->call_action_done_) {
-          context->call_action_done_ = false;
+    if (it_out != outgoing_call_.end()) {
+      SIPPlugin::this_->pjsip_->run_async([&]() { make_hang_up((*it_out)->inv); });
+      call_cv_.wait_for(lock, std::chrono::seconds(5), [this]() {
+        if (call_action_done_) {
+          call_action_done_ = false;
           return true;
         }
         return false;
       });
 
       // stop here, do not hangup incoming call.
-      return TRUE;
+      return true;
     }
 
-    auto it_inc = std::find_if(context->incoming_call_.begin(),
-                               context->incoming_call_.end(),
+    auto it_inc = std::find_if(incoming_call_.begin(),
+                               incoming_call_.end(),
                                [&sip_url](const std::unique_ptr<call_t>& call) {
                                  return (std::string(sip_url) == call->peer_uri);
                                });
 
-    if (it_inc != context->incoming_call_.end()) {
-      SIPPlugin::this_->pjsip_->run_async([&]() { context->make_hang_up((*it_inc)->inv); });
-      context->call_cv_.wait_for(lock, std::chrono::seconds(5), [&context]() {
-        if (context->call_action_done_) {
-          context->call_action_done_ = false;
+    if (it_inc != incoming_call_.end()) {
+      SIPPlugin::this_->pjsip_->run_async([&]() { make_hang_up((*it_inc)->inv); });
+      call_cv_.wait_for(lock, std::chrono::seconds(5), [this]() {
+        if (call_action_done_) {
+          call_action_done_ = false;
           return true;
         }
         return false;
       });
 
-      return TRUE;
+      return true;
     }
   }
-  return FALSE;
+  return false;
 }
 
 void PJCall::make_hang_up(pjsip_inv_session* inv) {
@@ -1038,19 +1053,17 @@ void PJCall::make_hang_up(pjsip_inv_session* inv) {
     SIPPlugin::this_->warning("BYE has not been sent");
 }
 
-gboolean PJCall::attach_shmdata_to_contact(const gchar* shmpath,
-                                           const gchar* contact_uri,
-                                           gboolean attach,
-                                           void* user_data) {
-  if (nullptr == shmpath || nullptr == contact_uri || nullptr == user_data) {
+bool PJCall::attach_shmdata_to_contact(const std::string& shmpath,
+                                       const std::string& contact_uri,
+                                       bool attach) {
+  if (shmpath.empty() || contact_uri.empty()) {
     SIPPlugin::this_->warning("cannot add shmpath for user (received nullptr)");
-    return FALSE;
+    return false;
   }
-  PJCall* context = static_cast<PJCall*>(user_data);
   SIPPlugin::this_->pjsip_->run([&]() {
-    context->make_attach_shmdata_to_contact(std::string(shmpath), std::string(contact_uri), attach);
+    make_attach_shmdata_to_contact(std::string(shmpath), std::string(contact_uri), attach);
   });
-  return TRUE;
+  return true;
 }
 
 void PJCall::make_attach_shmdata_to_contact(const std::string& shmpath,

@@ -29,7 +29,7 @@ namespace switcher {
 
 class AVRecorder : public Quiddity, public StartableQuiddity {
  public:
-  AVRecorder(QuiddityConfiguration&&);
+  AVRecorder(quid::Config&&);
   bool start() final;
   bool stop() final;
 

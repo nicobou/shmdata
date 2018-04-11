@@ -25,7 +25,7 @@
 namespace switcher {
 class EmptyQuiddity : public Quiddity {
  public:
-  EmptyQuiddity(QuiddityConfiguration&&);
+  EmptyQuiddity(quid::Config&&);
 };
 
 }  // namespace switcher

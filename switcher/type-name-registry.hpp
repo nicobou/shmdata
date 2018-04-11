@@ -23,6 +23,7 @@
 #include <map>
 #include <string>
 #include <typeinfo>
+#include <vector>
 
 namespace switcher {
 
@@ -34,10 +35,38 @@ class TypeNameRegistry {
     return type_name_registry_[typeid(T).hash_code()];
   }
 
+  template <typename T>
+  static void unfold_tuple(std::vector<std::string>& vec) {
+    vec.emplace_back(get_name<T>());
+  }
+
+  template <typename T, typename T2, typename... U>
+  static void unfold_tuple(std::vector<std::string>& vec) {
+    vec.emplace_back(get_name<T>());
+    unfold_tuple<T2, U...>(vec);
+  }
+
+  template <typename Tup, size_t... S>
+  static void prepare_unfold_tuple(std::vector<std::string>& vec, std::index_sequence<S...>) {
+    unfold_tuple<typename std::tuple_element<S, Tup>::type...>(vec);
+  }
+
+  template <typename Tup>
+  static std::vector<std::string> get_names() {
+    std::vector<std::string> res;
+    std::size_t constexpr tuple_size =
+        std::tuple_size<typename std::remove_reference<Tup>::type>::value;
+    prepare_unfold_tuple<Tup>(res, std::make_index_sequence<tuple_size>());
+    return res;
+  }
+
  private:
   using registry_t = std::map<size_t, std::string>;
   static registry_t type_name_registry_;
 };
+
+template <>
+std::vector<std::string> TypeNameRegistry::get_names<std::tuple<>>();
 
 }  // namespace switcher
 #endif

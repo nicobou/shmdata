@@ -27,13 +27,13 @@ PluginLoader::~PluginLoader() {
   if (module_ != nullptr) g_module_close(module_);
 }
 
-BoolLog PluginLoader::load(const char* filename) {
+BoolLog PluginLoader::load(const std::string& filename) {
   if (!g_module_supported()) {
     return BoolLog(false, std::string("g_module not supported !, cannot load ") + filename);
   }
   close();
 
-  module_ = g_module_open(filename, G_MODULE_BIND_LAZY);
+  module_ = g_module_open(filename.c_str(), G_MODULE_BIND_LAZY);
 
   if (!module_) {
     return BoolLog(false, std::string("loading ") + filename + ": " + g_module_error());

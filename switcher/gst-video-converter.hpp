@@ -29,7 +29,7 @@
 namespace switcher {
 class GstVideoConverter : public Quiddity {
  public:
-  GstVideoConverter(QuiddityConfiguration&&);
+  GstVideoConverter(quid::Config&&);
   ~GstVideoConverter() = default;
   GstVideoConverter(const GstVideoConverter&) = delete;
   GstVideoConverter& operator=(const GstVideoConverter&) = delete;

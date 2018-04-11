@@ -23,6 +23,7 @@
 #include "./g-source-wrapper.hpp"
 #include "./gst-shmdata-subscriber.hpp"
 #include "./gst-utils.hpp"
+#include "./information-tree-json.hpp"
 #include "./scope-exit.hpp"
 #include "./shmdata-utils.hpp"
 
@@ -37,8 +38,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Nicolas Bouillot");
 
-HTTPSDPDec::HTTPSDPDec(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+HTTPSDPDec::HTTPSDPDec(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       souphttpsrc_("souphttpsrc"),
       sdpdemux_("sdpdemux"),
@@ -51,23 +52,27 @@ HTTPSDPDec::HTTPSDPDec(QuiddityConfiguration&& conf)
                                                 [this]() { return decompress_streams_; },
                                                 "Decompress",
                                                 "Decompress received streams",
-                                                decompress_streams_)) {
+                                                decompress_streams_)),
+      to_shm_id_(mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+          "to_shmdata",
+          JSONSerializer::deserialize(
+              R"(
+                  {
+                   "name" : "To Shmdata",
+                   "description" : "get streams from sdp description over http, accept also base64 encoded SDP string",
+                   "arguments" : [
+                     {
+                        "long name" : "URL",
+                        "description" : "URL to the sdp file, or a base64 encoded SDP description",
+                     }
+                   ]
+                  }
+              )"),
+          [this](const std::string& uri) { return to_shmdata(uri); })) {
   if (!souphttpsrc_ || !sdpdemux_) {
     is_valid_ = false;
     return;
   }
-  install_method(
-      "To Shmdata",
-      "to_shmdata",
-      "get streams from sdp description over http, "
-      "accept also base64 encoded SDP string",
-      "success or fail",
-      Method::make_arg_description(
-          "URL", "url", "URL to the sdp file, or a base64 encoded SDP description", nullptr),
-      (Method::method_ptr)to_shmdata_wrapped,
-      G_TYPE_BOOLEAN,
-      Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-      this);
 }
 
 void HTTPSDPDec::init_httpsdpdec() {
@@ -113,9 +118,9 @@ void HTTPSDPDec::configure_shmdatasink(GstElement* element,
   if (count != 0) media_name.append("-" + std::to_string(count));
   std::string shmpath;
   if (media_label.empty())
-    shmpath = make_file_name(media_name);
+    shmpath = make_shmpath(media_name);
   else
-    shmpath = make_file_name(media_label + "-" + media_name);
+    shmpath = make_shmpath(media_label + "-" + media_name);
 
   g_object_set(G_OBJECT(element), "socket-path", shmpath.c_str(), nullptr);
   shm_subs_.emplace_back(std::make_unique<GstShmdataSubscriber>(
@@ -153,12 +158,6 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement* /*object */, GstPad* pad, g
   if (media_label) decodebin->set_media_label(StringUtils::base64_decode(media_label));
   decodebin->invoke([](GstElement* el) { GstUtils::sync_state_with_parent(el); });
   context->decodebins_.push_back(std::move(decodebin));
-}
-
-gboolean HTTPSDPDec::to_shmdata_wrapped(gpointer uri, gpointer user_data) {
-  HTTPSDPDec* context = static_cast<HTTPSDPDec*>(user_data);
-  if (!context->to_shmdata((char*)uri)) return FALSE;
-  return TRUE;
 }
 
 bool HTTPSDPDec::to_shmdata(std::string uri) {

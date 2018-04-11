@@ -19,6 +19,7 @@
 
 #undef NDEBUG  // get assert in release mode
 
+#include <gst/gst.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -29,10 +30,8 @@ int main() {
   bool success = true;
   {
     switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_full");
-    for (auto& it : manager->get_classes()) {
-      std::cout << "----- testing " << it << std::endl;
-      if (!switcher::QuiddityBasicTest::test_full(manager, it)) {
-        std::cout << "---------> issue with " << it << std::endl;
+    for (auto& it : manager->factory<MPtr(&switcher::quid::Factory::get_class_list)>()) {
+      if (!switcher::test::full(manager, it)) {
         success = false;
       }
     }

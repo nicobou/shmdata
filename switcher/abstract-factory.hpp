@@ -25,6 +25,7 @@
 #define __SWITCHER_ABSTRACT_FACTORY_H__
 
 #include <map>
+#include <memory>
 #include <vector>
 #include "./creator.hpp"
 
@@ -41,9 +42,9 @@ class AbstractFactory {
                                           T* (*custom_create)(ATs...),
                                           void (*custom_destroy)(T*));
   bool unregister_class(Key Id);
-  std::vector<Key> get_keys();
+  std::vector<Key> get_keys() const;
   std::shared_ptr<T> create(Key Id, ATs... args);
-  bool key_exists(Key Id);
+  bool key_exists(Key Id) const;
 
  private:
   std::map<Key, Creator<T, ATs...>*> constructor_map_;

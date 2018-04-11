@@ -17,6 +17,7 @@
 
 #undef NDEBUG  // get assert in release mode
 
+#include <gst/gst.h>
 #include <cassert>
 #include "switcher/switcher.hpp"
 
@@ -25,10 +26,12 @@ using namespace switcher;
 int main() {
   {
     Switcher::ptr manager = Switcher::make_switcher("bundle");
-    assert(manager->load_configuration_file("./check_bundle.config"));
-    assert(manager->create("source-bundle", "source-bundle") == "source-bundle");
-    assert(manager->create("sink-bundle", "sink-bundle") == "sink-bundle");
-    assert(manager->create("filter-bundle", "filter-bundle") == "filter-bundle");
+    assert(manager->conf<MPtr(&switcher::Configuration::from_file)>("./check_bundle.config"));
+    assert(
+        manager->quids<MPtr(&switcher::quid::Container::create)>("source-bundle", "source-bundle"));
+    assert(manager->quids<MPtr(&switcher::quid::Container::create)>("sink-bundle", "sink-bundle"));
+    assert(
+        manager->quids<MPtr(&switcher::quid::Container::create)>("filter-bundle", "filter-bundle"));
   }
   gst_deinit();
   return 0;

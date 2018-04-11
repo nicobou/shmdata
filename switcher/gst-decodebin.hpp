@@ -32,7 +32,7 @@
 namespace switcher {
 class GstDecodebin : public Quiddity {
  public:
-  GstDecodebin(QuiddityConfiguration&&);
+  GstDecodebin(quid::Config&&);
   ~GstDecodebin() = default;
   GstDecodebin(const GstDecodebin&) = delete;
   GstDecodebin& operator=(const GstDecodebin&) = delete;

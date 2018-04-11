@@ -30,8 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstAudioEncoder,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-GstAudioEncoder::GstAudioEncoder(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+GstAudioEncoder::GstAudioEncoder(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
       codecs_(std::make_unique<GstAudioCodec>(static_cast<Quiddity*>(this))) {
   shmcntr_.install_connect_method(
@@ -45,7 +45,7 @@ GstAudioEncoder::GstAudioEncoder(QuiddityConfiguration&& conf)
 bool GstAudioEncoder::on_shmdata_disconnect() { return codecs_->stop(); }
 
 bool GstAudioEncoder::on_shmdata_connect(const std::string& shmpath) {
-  return codecs_->start(shmpath, make_file_name("audio-encoded"));
+  return codecs_->start(shmpath, make_shmpath("audio-encoded"));
 }
 
 bool GstAudioEncoder::can_sink_caps(const std::string& caps) {

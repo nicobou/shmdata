@@ -24,27 +24,17 @@
 #include <vector>
 #include "switcher/quiddity-basic-test.hpp"
 
-void quiddity_created_removed_cb(std::string /*subscriber_name */,
-                                 std::string quiddity_name,
-                                 std::string /*signal_name*/,
-                                 std::vector<std::string> params,
-                                 void* user_data) {
-  switcher::Switcher* ctx = static_cast<switcher::Switcher*>(user_data);
-  std::cout << ctx->use_tree<MPtr(&switcher::InfoTree::serialize_json)>(quiddity_name, params[0])
-            << std::endl;
-}
-
 int main() {
+  using namespace switcher;
   bool success = true;
 
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
-    manager->scan_directory_for_plugins("./");
+    Switcher::ptr manager = Switcher::make_switcher("test_manager");
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
-    if (!switcher::QuiddityBasicTest::test_full(manager, "systemusage")) success = false;
+    if (!test::full(manager, "systemusage")) success = false;
   }  // end of scope is releasing the manager
   if (success)
     return 0;
-  else
-    return 1;
+  return 1;
 }

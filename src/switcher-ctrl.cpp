@@ -18,6 +18,7 @@
 #include <glib.h>
 #include <locale.h>
 #include <string>
+#include "switcher/information-tree-json.hpp"
 #include "webservices/control.nsmap"
 #include "webservices/soapcontrolProxy.h"
 
@@ -34,10 +35,9 @@ static gboolean classdoc = FALSE;
 static gboolean listquiddities = FALSE;
 static gboolean quidditydescr = FALSE;
 static gboolean quidditiesdescr = FALSE;
-static gboolean listmethods = FALSE;
-static gboolean listmethodsbyclass = FALSE;
 static gboolean setprop = FALSE;
 static gboolean getprop = FALSE;
+static gboolean shmpath = FALSE;
 static gboolean print_tree = FALSE;
 static gboolean print_user_data = FALSE;
 static gboolean prune_user_data = FALSE;
@@ -86,20 +86,6 @@ static GOptionEntry entries[25] = {
      &listquiddities,
      "list quiddity instances",
      nullptr},
-    {"list-methods",
-     'm',
-     0,
-     G_OPTION_ARG_NONE,
-     &listmethods,
-     "list methods of a quiddity",
-     nullptr},
-    {"list-methods-by-class",
-     'M',
-     0,
-     G_OPTION_ARG_NONE,
-     &listmethodsbyclass,
-     "list methods of a class",
-     nullptr},
     {"set-prop",
      's',
      0,
@@ -113,6 +99,13 @@ static GOptionEntry entries[25] = {
      G_OPTION_ARG_NONE,
      &getprop,
      "get property value (-g quiddity_name prop_name)",
+     nullptr},
+    {"shmpath",
+     'p',
+     0,
+     G_OPTION_ARG_NONE,
+     &shmpath,
+     "get shmpath of a quiddity, according to the given suffix",
      nullptr},
     {"print-tree",
      't',
@@ -209,9 +202,9 @@ int main(int argc, char* argv[]) {
   if (server == nullptr) server = g_strdup("http://localhost:27182");
 
   if (!(save ^ load ^ run ^ listclasses ^ classesdoc ^ classdoc ^ listquiddities ^ quidditydescr ^
-        quidditiesdescr ^ setprop ^ getprop ^ createquiddity ^ deletequiddity ^ listmethods ^
-        listmethodsbyclass ^ invokemethod ^ print_tree ^ print_user_data ^ prune_user_data ^
-        graft_user_data ^ tag_as_array_user_data)) {
+        quidditiesdescr ^ setprop ^ getprop ^ shmpath ^ createquiddity ^ deletequiddity ^
+        invokemethod ^ print_tree ^ print_user_data ^ prune_user_data ^ graft_user_data ^
+        tag_as_array_user_data)) {
     g_printerr(
         "I am very sorry for the inconvenience, "
         "but I am able to process only exactly one command at a time. \n");
@@ -259,8 +252,12 @@ int main(int argc, char* argv[]) {
       g_printerr("class name missing\n");
       return false;
     }
-    switcher_control.get_class_doc(remaining_args[0], &resultlist);
-    std::cout << resultlist << std::endl;
+    switcher_control.get_classes_doc(&resultlist);
+    std::cout << switcher::JSONSerializer::serialize(
+                     switcher::JSONSerializer::deserialize(resultlist)
+                         ->get_tree(std::string(".classes.") + remaining_args[0])
+                         .get())
+              << '\n';
   } else if (quidditydescr) {
     std::string resultlist;
     if (remaining_args == nullptr) {
@@ -378,6 +375,14 @@ int main(int argc, char* argv[]) {
     std::string val;
     switcher_control.get_property(remaining_args[0], remaining_args[1], &val);
     std::cout << val << std::endl;
+  } else if (shmpath) {
+    if (remaining_args == nullptr || remaining_args[1] == nullptr) {
+      g_printerr("missing argument for shmpath\n");
+      return false;
+    }
+    std::string val;
+    switcher_control.make_shmpath(remaining_args[0], remaining_args[1], &val);
+    std::cout << val << std::endl;
   } else if (createquiddity) {
     if (remaining_args == nullptr) {
       g_printerr("missing class name for creating quiddity\n");
@@ -385,7 +390,7 @@ int main(int argc, char* argv[]) {
     }
     std::string name;
     if (remaining_args[1] == nullptr)
-      switcher_control.create_quiddity(remaining_args[0], &name);
+      switcher_control.create_named_quiddity(remaining_args[0], std::string(), &name);
     else
       switcher_control.create_named_quiddity(remaining_args[0], remaining_args[1], &name);
     std::cout << name << std::endl;
@@ -395,31 +400,6 @@ int main(int argc, char* argv[]) {
       return false;
     }
     switcher_control.delete_quiddity(remaining_args[0]);
-  } else if (listmethods) {
-    if (remaining_args == nullptr) {
-      g_printerr("missing quiddity name for list methods\n");
-      return false;
-    }
-
-    std::string resultlist;
-    if (remaining_args[1] == nullptr)
-      switcher_control.get_methods_description(remaining_args[0], &resultlist);
-    else
-      switcher_control.get_method_description(remaining_args[0], remaining_args[1], &resultlist);
-    std::cout << resultlist << std::endl;
-  } else if (listmethodsbyclass) {
-    if (remaining_args == nullptr) {
-      g_printerr("missing quiddity name for list methods\n");
-      return false;
-    }
-
-    std::string resultlist;
-    if (remaining_args[1] == nullptr)
-      switcher_control.get_methods_description_by_class(remaining_args[0], &resultlist);
-    else
-      switcher_control.get_method_description_by_class(
-          remaining_args[0], remaining_args[1], &resultlist);
-    std::cout << resultlist << std::endl;
   } else if (invokemethod) {
     if (remaining_args == nullptr || remaining_args[1] == nullptr) {
       g_printerr("not enough argument for invoking a function\n");

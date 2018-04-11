@@ -26,7 +26,6 @@
 #include <algorithm>
 #include "./g-source-wrapper.hpp"
 #include "./gst-utils.hpp"
-#include "./invocation-spec.hpp"
 #include "./quiddity-container.hpp"
 #include "./quiddity.hpp"
 #include "./scope-exit.hpp"

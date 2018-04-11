@@ -33,8 +33,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PulseSrc::PulseSrc(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+PulseSrc::PulseSrc(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       mainloop_(std::make_unique<GlibMainLoop>()),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   pmanage<MPtr(&PContainer::make_group)>(
@@ -55,7 +55,7 @@ PulseSrc::PulseSrc(QuiddityConfiguration&& conf)
     is_valid_ = false;
     return;
   }
-  shmpath_ = make_file_name("audio");
+  shmpath_ = make_shmpath("audio");
   g_object_set(G_OBJECT(pulsesrc_.get_raw()), "client-name", get_name().c_str(), nullptr);
   g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   std::unique_lock<std::mutex> lock(devices_mutex_);

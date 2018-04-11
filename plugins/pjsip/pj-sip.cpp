@@ -16,7 +16,6 @@
  */
 
 #include "./pj-sip.hpp"
-#include <glib.h>
 #include "./pj-presence.hpp"
 #include "./pj-sip-plugin.hpp"
 #include "switcher/net-utils.hpp"

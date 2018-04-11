@@ -1,5 +1,5 @@
 /*
- * This file is part of switcher-myplugin.
+ * This file is part of switcher-plugin-example.
  *
  * switcher-myplugin is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,8 +29,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyQuid,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PropertyQuid::PropertyQuid(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+PropertyQuid::PropertyQuid(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       bool_id_(pmanage<MPtr(&PContainer::make_bool)>("bool_",
                                                      [this](bool val) {
                                                        bool_ = val;
@@ -229,18 +229,16 @@ PropertyQuid::PropertyQuid(QuiddityConfiguration&& conf)
                                                        "Selection Example",
                                                        "This property is an example for type enum",
                                                        selection_)),
-      // FIXME write serialization-string for std::tuple
-      // tuple_id_(
-      //     pmanage<MPtr(&PContainer::make_tuple<MyTuple>)>("tuple_",
-      //                                                     [this](const MyTuple& val) {
-      //                                                       tuple_ = val;
-      //                                                       return true;
-      //                                                     },
-      //                                                     [this]() { return tuple_; },
-      //                                                     "Tuple Example",
-      //                                                     "This property is an example for
-      //                                                     tuple",
-      //                                                     tuple_)),
+      tuple_id_(
+          pmanage<MPtr(&PContainer::make_tuple<MyTuple>)>("tuple_",
+                                                          [this](const MyTuple& val) {
+                                                            tuple_ = val;
+                                                            return true;
+                                                          },
+                                                          [this]() { return tuple_; },
+                                                          "Tuple Example",
+                                                          "This property is an example for tuple",
+                                                          tuple_)),
       fraction_id_(
           pmanage<MPtr(&PContainer::make_fraction)>("fraction_",
                                                     [this](const Fraction& val) {
@@ -255,32 +253,17 @@ PropertyQuid::PropertyQuid(QuiddityConfiguration&& conf)
                                                     1,  // min num/denom
                                                     10,
                                                     10)  // max num/denom
-          ) {
+      ) {
   // std::cout << pmanage<MPtr(&PContainer::get<int>)>( int_id_) << std::endl;
   // std::cout << pmanage<MPtr(&PContainer::get<unsigned int>)>( uint_id_) <<
   // std::endl;
 
-  // pmanage<MPtr(&PContainer::set<std::tuple<long long)>( float, std::string>>,
-  //         tuple_id_,
-  //         std::make_tuple<long long, float, std::string>(2,2.2,"a22"));
+  pmanage<MPtr(&PContainer::set<MyTuple>)>(
+      tuple_id_, std::make_tuple<long long, float, std::string>(2, 2.2, "a22"));
 
-  // std::cout << std::get<0>(tuple_) << " "      // 2
-  //           << std::get<1>(tuple_) << " "      // 2.2
-  //           << std::get<2>(tuple_) << "\n";    // a22
-
-  // props_.install("int_", &int_prop_);
-  install_method("Hello World",                                  // long name
-                 "hello-world",                                  // name
-                 "say hello and repeat first argument",          // description
-                 "the hello answer",                             // return description
-                 Method::make_arg_description("Text To Repeat",  // first arg long name
-                                              "text",            // fisrt arg name
-                                              "string",          // first arg description
-                                              nullptr),
-                 (Method::method_ptr)&my_hello_world_method,
-                 G_TYPE_STRING,
-                 Method::make_arg_type_description(G_TYPE_STRING, nullptr),
-                 this);
+  std::cout << std::get<0>(tuple_) << " "    // 2
+            << std::get<1>(tuple_) << " "    // 2.2
+            << std::get<2>(tuple_) << "\n";  // a22
 
   // creating some custom infos
   InfoTree::ptr tree = InfoTree::make();
@@ -291,14 +274,6 @@ PropertyQuid::PropertyQuid(QuiddityConfiguration&& conf)
   // attaching it to the quiddity (at the root)
   graft_tree(".custom.information.", tree);
   debug("hello from plugin");
-}
-
-gchar* PropertyQuid::my_hello_world_method(gchar* first_arg, void* user_data) {
-  PropertyQuid* context = static_cast<PropertyQuid*>(user_data);
-  context->debug("hello world from myplugin");
-  context->hello_ = std::string("hello ") + first_arg;
-  // the g_free will be invoked by the method system:
-  return g_strdup(context->hello_.c_str());
 }
 
 }  // namespace switcher

@@ -32,7 +32,7 @@
 namespace switcher {
 class AudioTestSource : public Quiddity, public StartableQuiddity {
  public:
-  AudioTestSource(QuiddityConfiguration&&);
+  AudioTestSource(quid::Config&&);
   ~AudioTestSource() = default;
   AudioTestSource(const AudioTestSource&) = delete;
   AudioTestSource& operator=(const AudioTestSource&) = delete;

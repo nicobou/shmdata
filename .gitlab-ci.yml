@@ -1,4 +1,4 @@
-image: ubuntu:xenial
+image: ubuntu:bionic
 
 stages:
   - prepare_docker
@@ -14,7 +14,7 @@ prepare_docker:
   script:
     - git clone https://github.com/sat-metalab/shmdata.git libshmdata && cd libshmdata && git checkout develop && cd ../
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-    - (if [[ "$CI_BUILD_REF_NAME" = "master" ]]; then docker build --pull -t $CI_REGISTRY_IMAGE:ci --build-arg shmdata_version=$(git --git-dir=libshmdata/.git rev-parse HEAD) --build-arg current_branch=master -f $CI_PROJECT_DIR/ci/Dockerfile .; fi);
+    - (if [[ "$CI_BUILD_REF_NAME" == "master" ]]; then docker build --pull -t $CI_REGISTRY_IMAGE:ci --build-arg shmdata_version=$(git --git-dir=libshmdata/.git rev-parse HEAD) --build-arg current_branch=master -f $CI_PROJECT_DIR/ci/Dockerfile .; fi);
     - (if [[ "$CI_BUILD_REF_NAME" != "master" ]]; then docker build --pull -t $CI_REGISTRY_IMAGE:ci --build-arg shmdata_version=$(git --git-dir=libshmdata/.git rev-parse HEAD) --build-arg current_branch=develop -f $CI_PROJECT_DIR/ci/Dockerfile .; fi);
     - docker push $CI_REGISTRY_IMAGE:ci
 

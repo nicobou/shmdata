@@ -2,10 +2,11 @@ pkg_check_modules(GMODULE REQUIRED gmodule-2.0)
 
 add_library(${SWITCHER_LIBRARY} SHARED
     audio-test-source.cpp
+    bool-log.cpp
     bundle-description-parser.cpp
     bundle.cpp
-    categorizable.cpp
     color.cpp
+    configuration.cpp
     counter-map.cpp
     decodebin-to-shmdata.cpp
     documentation-registry.cpp
@@ -20,6 +21,7 @@ add_library(${SWITCHER_LIBRARY} SHARED
     gst-audio-codec.cpp
     gst-audio-encoder.cpp
     gst-decodebin.cpp
+    gst-initialized.cpp
     gst-pipe.cpp
     gst-pipeliner.cpp
     gst-pixel-format-converter.cpp
@@ -35,25 +37,22 @@ add_library(${SWITCHER_LIBRARY} SHARED
     information-tree-basic-serializer.cpp
     information-tree-json.cpp
     information-tree.cpp
-    invocation-spec.cpp
     json-builder.cpp
-    method.cpp
+    method-container.cpp
     net-utils.cpp
     plugin-loader.cpp
     property-container.cpp
-    property-mapper.cpp
     property.cpp
     quiddity-basic-test.cpp
     quiddity-documentation.cpp
     quiddity-container.cpp
-    switcher-wrapper.cpp
+    quiddity-factory.cpp
+    quiddity-qrox.cpp
     switcher.cpp
     quiddity.cpp
-    rtp-destination.cpp
     rtp-receiver.cpp
     rtp-sender.cpp
     rtp-session.cpp
-    rtp-session2.cpp
     safe-bool-idiom.cpp
     sdp-utils.cpp
     serialize-string.cpp
@@ -83,8 +82,8 @@ set(HEADER_INCLUDES
     audio-test-source.hpp
     bundle.hpp
     bundle-description-parser.hpp
-    categorizable.hpp
     color.hpp
+    configuration.hpp
     console-logger.hpp
     counter-map.hpp
     creator.hpp
@@ -103,6 +102,7 @@ set(HEADER_INCLUDES
     gst-audio-codec.hpp
     gst-audio-encoder.hpp
     gst-decodebin.hpp
+    gst-initialized.hpp
     gst-pipe.hpp
     gst-pipeliner.hpp
     gst-pixel-format-converter.hpp
@@ -123,27 +123,27 @@ set(HEADER_INCLUDES
     logged.hpp
     make-consultable.hpp
     method.hpp
+    method-container.hpp
+    method-trait.hpp
     net-utils.hpp
     periodic-task.hpp
     plugin-loader.hpp
     property-container.hpp
     property-internal-types.hpp
-    property-mapper.hpp
     property-specification.hpp
     property.hpp
     quiddity-basic-test.hpp
     quiddity-configuration.hpp
-    invocation-spec.hpp
     quiddity-documentation.hpp
     quiddity-container.hpp
-    switcher-wrapper.hpp
+    quiddity-factory.hpp
+    quiddity-qrox.hpp
+    quid-id-t.hpp
     switcher.hpp
     quiddity.hpp
-    rtp-destination.hpp
     rtp-receiver.hpp
     rtp-sender.hpp
     rtp-session.hpp
-    rtp-session2.hpp
     safe-bool-idiom.hpp
     scope-exit.hpp
     sdp-utils.hpp

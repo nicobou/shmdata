@@ -21,6 +21,7 @@
 #include <pjsua-lib/pjsua.h>
 #include <atomic>
 #include <condition_variable>
+#include <functional>
 #include <mutex>
 #include <thread>
 #include "switcher/safe-bool-idiom.hpp"

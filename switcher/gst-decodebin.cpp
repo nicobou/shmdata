@@ -31,8 +31,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstDecodebin,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-GstDecodebin::GstDecodebin(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+GstDecodebin::GstDecodebin(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       shmsrc_("shmdatasrc"),
       shmcntr_(static_cast<Quiddity*>(this)) {
@@ -67,9 +67,9 @@ void GstDecodebin::configure_shmdatasink(GstElement* element,
   if (count != 0) media_name.append("-" + std::to_string(count));
   std::string shmpath;
   if (media_label.empty())
-    shmpath = make_file_name(media_name);
+    shmpath = make_shmpath(media_name);
   else
-    shmpath = make_file_name(media_label + "-" + media_name);
+    shmpath = make_shmpath(media_label + "-" + media_name);
 
   g_object_set(G_OBJECT(element), "socket-path", shmpath.c_str(), nullptr);
   shmw_sub_ = std::make_unique<GstShmdataSubscriber>(

@@ -18,7 +18,6 @@
  */
 
 #include "./nvenc-api.hpp"
-#include <glib.h>  // log
 
 namespace switcher {
 

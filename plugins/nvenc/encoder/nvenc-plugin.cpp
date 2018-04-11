@@ -18,6 +18,7 @@
  */
 
 #include "./nvenc-plugin.hpp"
+#include <gst/gst.h>
 #include "cuda/cuda-context.hpp"
 #include "switcher/scope-exit.hpp"
 
@@ -31,8 +32,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(NVencPlugin,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-NVencPlugin::NVencPlugin(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+NVencPlugin::NVencPlugin(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       default_preset_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "bitrate_from_preset",
           [this](bool value) {
@@ -426,7 +427,7 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
 
   shmw_ = std::make_unique<ShmdataWriter>(
       this,
-      make_file_name("video-encoded"),
+      make_shmpath("video-encoded"),
       1,
       std::string("video/" + codec + ", stream-format=(string)byte-stream, "
                                      "alignment=(string)au, profile=(string)baseline" +

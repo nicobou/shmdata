@@ -37,8 +37,7 @@ const unsigned int VRPNSource::vrpnLoopInterval{16};
 
 VRPNSource::~VRPNSource() { destroyed_ = true; }
 
-VRPNSource::VRPNSource(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)) {
+VRPNSource::VRPNSource(quid::Config&& conf) : Quiddity(std::forward<quid::Config>(conf)) {
   // Initialize startable quiddity
   init_startable(this);
 
@@ -158,7 +157,7 @@ bool VRPNSource::start() {
 
   // Initialize the shmdata writer
   shmDataWriter_ =
-      std::make_unique<ShmdataWriter>(this, make_file_name("vrpn"), 1, "application/vrpn");
+      std::make_unique<ShmdataWriter>(this, make_shmpath("vrpn"), 1, "application/vrpn");
   if (!shmDataWriter_.get()) {
     message("ERROR: VRPN source failed to initialize its shmdata");
     shmDataWriter_.reset(nullptr);

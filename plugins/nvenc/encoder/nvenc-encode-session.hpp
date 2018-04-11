@@ -21,6 +21,7 @@
 #define __SWITCHER_NVENC_ENCODE_SESSION_H__
 
 #include <cstdint>  // uint32_t
+#include <functional>
 #include <memory>
 #include <utility>
 #include <vector>

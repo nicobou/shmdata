@@ -20,8 +20,6 @@
 #include <gst/gst.h>
 #include <cassert>
 #include "switcher/unique-gst-element.hpp"
-// #include "switcher/glibmainloop.hpp"
-// #include "switcher/gst-pipe.hpp"
 
 int main() {
   using namespace switcher;

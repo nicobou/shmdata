@@ -1,5 +1,5 @@
 /*
- * This file is part of switcher-myplugin.
+ * This file is part of switcher-plugin-example.
  *
  * switcher-myplugin is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,16 +25,17 @@
 
 #include "switcher/quiddity.hpp"
 
+// This quiddity implements an example of every possible property types for a quiddity
+
 namespace switcher {
 class PropertyQuid : public Quiddity {
  public:
-  PropertyQuid(QuiddityConfiguration&&);
+  PropertyQuid(quid::Config&&);
   ~PropertyQuid() = default;
   PropertyQuid(const PropertyQuid&) = delete;
   PropertyQuid& operator=(const PropertyQuid&) = delete;
 
  private:
-  // --- Properties
   // the Property<T> object is providing access to the int_ member, accordingly
   // declare and initialise the member (e.g. bool_) before the property (e.g.
   // bool_id_)
@@ -81,17 +82,13 @@ class PropertyQuid : public Quiddity {
   PContainer::prop_id_t selection_id_;
 
   // tuple
-  // using MyTuple = std::tuple<long long, float, std::string>;
-  // MyTuple tuple_{1, 3.14, "hello"};
-  // PContainer::prop_id_t tuple_id_;
+  using MyTuple = std::tuple<long long, float, std::string>;
+  MyTuple tuple_{1, 3.14, "hello"};
+  PContainer::prop_id_t tuple_id_;
 
   // Fraction
   Fraction fraction_{1, 3};
   PContainer::prop_id_t fraction_id_;
-
-  // --- Methods
-  std::string hello_{};
-  static gchar* my_hello_world_method(gchar* first_arg, void* user_data);
 
 };
 

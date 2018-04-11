@@ -20,7 +20,6 @@
 #ifndef __SWITCHER_PROPERTY_SPECIFICATION_H__
 #define __SWITCHER_PROPERTY_SPECIFICATION_H__
 
-#include <glib.h>  //log
 
 #include <functional>
 #include <sstream>

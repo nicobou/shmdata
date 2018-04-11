@@ -30,8 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCDiff,
                                      "LGPL",
                                      "Jérémie Soria");
 
-LTCDiff::LTCDiff(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+LTCDiff::LTCDiff(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   display_timecode1_id_ =
       pmanage<MPtr(&PContainer::make_string)>("first_timecode",
                                               nullptr,
@@ -70,7 +70,7 @@ bool LTCDiff::on_shmdata_connect(const std::string& shmpath) {
   next_index_ = next_index_ ? 0 : 1;
 
   if (!shm_follower_) {
-    shmw_ = std::make_unique<ShmdataWriter>(this, make_file_name("ltc-diff"), 1, "audio/ltc-diff");
+    shmw_ = std::make_unique<ShmdataWriter>(this, make_shmpath("ltc-diff"), 1, "audio/ltc-diff");
     shm_follower_ = std::make_unique<ShmdataFollower>(
         this,
         shmpath,

@@ -18,7 +18,6 @@
  */
 
 #include "./glibmainloop.hpp"
-#include <gst/gst.h>
 #include <chrono>
 
 namespace switcher {

@@ -23,21 +23,22 @@
 
 int main() {
   {
-    switcher::Switcher::ptr switcher = switcher::Switcher::make_switcher("test_switcher");
+    using namespace switcher;
+    Switcher::ptr switcher = Switcher::make_switcher("test_switcher");
 
-    switcher->scan_directory_for_plugins("./");
+    switcher->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
     // Fringe case like CI cannot run this test successfully but we don't want it to fail.
-    if (switcher->create("ltcsource", "ltctestsourcedummy") != "ltctestsourcedummy") return 0;
+    if (!switcher->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsourcedummy"))
+      return 0;
 
-    if (switcher->create("ltcsource", "ltctestsource") != "ltctestsource") return 1;
+    auto created = switcher->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsource");
+    if (!created) return 1;
 
-    if (!switcher->use_prop<MPtr(&switcher::PContainer::set_str_str)>(
-            "ltctestsource", "started", "true"))
-      return 1;
-    if (!switcher->remove("ltctestsource")) return 1;
+    if (!created.get()->prop<MPtr(&PContainer::set_str_str)>("started", "true")) return 1;
+    if (!switcher->quids<MPtr(&quid::Container::remove)>(created.get_id())) return 1;
 
-    if (!switcher::QuiddityBasicTest::test_full(switcher, "ltcsource")) return 1;
+    if (!test::full(switcher, "ltcsource")) return 1;
 
   }  // end of scope is releasing the switcher
   return 0;

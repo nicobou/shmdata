@@ -110,6 +110,14 @@ bool InfoTree::branch_is_leaf(const std::string& path) const {
   return false;
 }
 
+bool InfoTree::branch_is_array(const std::string& path) const {
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (path_is_root(path)) return children_.empty();
+  auto found = get_node(path);
+  if (nullptr != found.first) return (*found.first)[found.second].second->is_array_;
+  return false;
+}
+
 bool InfoTree::branch_has_data(const std::string& path) const {
   std::lock_guard<std::mutex> lock(mutex_);
   if (path_is_root(path)) return data_.not_null();

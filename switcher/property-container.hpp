@@ -21,7 +21,6 @@
 #define __SWITCHER_PROPERTY_CONTAINER_H__
 
 #include <assert.h>
-#include <glib.h>  // logs
 #include <map>
 #include <memory>
 #include <string>
@@ -45,7 +44,7 @@ class PContainer {
              on_tree_grafted_cb_t on_tree_grafted_cb,
              on_tree_pruned_cb_t on_tree_pruned_cb);
 
-  // ------------- use (const methods)
+  // ------------- use
   // return 0 if id is not found
   prop_id_t get_id(const std::string& id) const;
   std::string get_name(prop_id_t id) const;
@@ -76,7 +75,7 @@ class PContainer {
     return static_cast<Property<T>*>(prop_it->second->get())->get();
   }
 
-  // ----------- add/remove/update (you should prefer makers for adding)
+  // ----------- add/remove/update (you should prefer makers for adding a property to your quiddity)
 
   bool remove(prop_id_t prop_id);
   bool enable(prop_id_t prop_id);

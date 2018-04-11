@@ -40,7 +40,7 @@ class SIPPlugin : public Quiddity {
   friend PJICEStreamTrans;
 
  public:
-  SIPPlugin(QuiddityConfiguration&&);
+  SIPPlugin(quid::Config&&);
   ~SIPPlugin();
   SIPPlugin(const SIPPlugin&) = delete;
   SIPPlugin& operator=(const SIPPlugin&) = delete;

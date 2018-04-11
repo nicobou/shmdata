@@ -10,8 +10,6 @@ cmake_dependent_option(WITH_SWITCHER "Switcher Command Line" ON
 add_feature_info("switcher" WITH_SWITCHER "Switcher Command Line")
 if (WITH_SWITCHER)
 
-    pkg_check_modules(GTK gtk+-3.0)
-
     # Replaces config.h in some cases
     add_definitions(
         -DLIBSWITCHER_API_VERSION="${SWITCHER_API_VERSION}"
@@ -22,16 +20,6 @@ if (WITH_SWITCHER)
     add_executable(switcher
         main.cpp
         )
-
-    if (GTK_FOUND)
-        add_definitions(-DHAVE_GTK)
-        target_include_directories(switcher PRIVATE
-            ${GTK_INCLUDE_DIRS}
-            )
-        target_link_libraries(switcher PRIVATE
-            ${GTK_LIBRARIES}
-            )
-    endif ()
 
     # INSTALL
 

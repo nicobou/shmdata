@@ -18,7 +18,6 @@
 #ifndef __SWITCHER_PJ_STUN_TURN_H__
 #define __SWITCHER_PJ_STUN_TURN_H__
 
-#include <glib.h>
 #include <condition_variable>
 #include <mutex>
 #include "./pj-ice-stream-trans.hpp"
@@ -55,11 +54,10 @@ class PJStunTurn {
 
   static int worker_thread(void* data);
   pj_status_t handle_events(unsigned max_msec, unsigned* p_count);
-  static gboolean set_stun_turn(const gchar* stun,
-                                const gchar* turn,
-                                const gchar* turn_user,
-                                const gchar* turn_pass,
-                                void* user_data);
+  bool set_stun_turn(const std::string& stun,
+                     const std::string& turn,
+                     const std::string& turn_user,
+                     const std::string& turn_pass);
 };
 
 }  // namespace switcher

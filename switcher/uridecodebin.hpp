@@ -30,7 +30,7 @@
 namespace switcher {
 class Uridecodebin : public Quiddity {
  public:
-  Uridecodebin(QuiddityConfiguration&&);
+  Uridecodebin(quid::Config&&);
   ~Uridecodebin() = default;
   Uridecodebin(const Uridecodebin&) = delete;
   Uridecodebin& operator=(const Uridecodebin&) = delete;
@@ -45,7 +45,6 @@ class Uridecodebin : public Quiddity {
   GstElement* uridecodebin_{nullptr};
   GstCaps* rtpgstcaps_{nullptr};
   bool discard_next_uncomplete_buffer_{false};
-  InvocationSpec* on_error_command_{nullptr};  // for the pipeline error handler
   // custom properties
   bool loop_{false};
   bool playing_{true};
@@ -55,7 +54,6 @@ class Uridecodebin : public Quiddity {
 
   void init_uridecodebin();
   void destroy_uridecodebin();
-  void clean_on_error_command();
   void bus_async(GstMessage* msg);
   bool to_shmdata();
 

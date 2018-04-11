@@ -25,7 +25,7 @@
 namespace switcher {
 class ProtocolMapper : public Quiddity {
  public:
-  ProtocolMapper(QuiddityConfiguration&&);
+  ProtocolMapper(quid::Config&&);
   ~ProtocolMapper() = default;
 
  private:

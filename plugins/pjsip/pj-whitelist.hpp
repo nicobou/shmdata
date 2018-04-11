@@ -42,7 +42,7 @@ class PJWhiteList {
   Selection<>::index_t everybody_;
   const bool default_authorization_{true};
   std::unordered_map<std::string, bool> authorizations_{};
-  static gboolean authorize_buddy_cb(gchar* sip_url, gboolean authorized, void* user_data);
+  bool authorize_buddy_cb(const std::string& sip_url, bool authorized);
 };
 
 }  // namespace switcher

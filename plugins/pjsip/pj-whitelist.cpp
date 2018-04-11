@@ -17,6 +17,7 @@
 
 #include "./pj-whitelist.hpp"
 #include "./pj-sip-plugin.hpp"
+#include "switcher/information-tree-json.hpp"
 
 namespace switcher {
 
@@ -32,28 +33,32 @@ PJWhiteList::PJWhiteList()
           "Control which incoming calls are accepted",
           mode_)),
       everybody_(mode_.get_index("everybody")) {
-  SIPPlugin::this_->install_method(
-      "Authorized Incoming Call From",            // long name
-      "authorize",                                // name
-      "authorize incoming call from an buddy",    // description
-      "success",                                  // return desc
-      Method::make_arg_description("SIP url",     // long name
-                                   "url",         // name
-                                   "string",      // description
-                                   "Authorized",  // long name
-                                   "authorized",  // name
-                                   "boolean",     // description
-                                   nullptr),
-      (Method::method_ptr)&authorize_buddy_cb,
-      G_TYPE_BOOLEAN,
-      Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_BOOLEAN, nullptr),
-      this);
+  using authorize_t = std::function<bool(std::string, bool)>;
+  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<authorize_t>)>(
+      "authorize",
+      JSONSerializer::deserialize(
+          R"(
+                  {
+                   "name" : "Authorized Incoming Call From",
+                   "description" : "authorize incoming call from an buddy",
+                   "arguments" : [
+                     {
+                        "long name" : "SIP url",
+                        "description" : "string"
+                     },
+                     {
+                        "long name" : "Authorized",
+                        "description" : "true or false"
+                     }
+                   ]
+                  }
+              )"),
+      [&](const std::string& url, bool auth) { return authorize_buddy_cb(url, auth); });
 }
 
-gboolean PJWhiteList::authorize_buddy_cb(gchar* sip_url, gboolean authorized, void* user_data) {
-  PJWhiteList* context = static_cast<PJWhiteList*>(user_data);
-  if (context->authorize_buddy(sip_url, authorized)) return TRUE;
-  return FALSE;
+bool PJWhiteList::authorize_buddy_cb(const std::string& sip_url, bool authorized) {
+  if (authorize_buddy(sip_url, authorized)) return true;
+  return false;
 }
 
 bool PJWhiteList::authorize_buddy(const std::string& sip_url, bool authorize) {

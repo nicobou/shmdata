@@ -27,9 +27,10 @@
 int main() {
   bool success = true;
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
+    using namespace switcher;
+    Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->scan_directory_for_plugins("./");
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
     struct stat st;
     if (stat("/dev/snd", &st) == -1) {
@@ -37,23 +38,24 @@ int main() {
       return 0;
     }
 
-    if (manager->create("midisrc", "src").compare("src") == 0)
-      manager->remove("src");
+    if (manager->quids<MPtr(&quid::Container::create)>("midisrc", "src"))
+      manager->quids<MPtr(&quid::Container::remove)>(
+          manager->quids<MPtr(&quid::Container::get_id)>("src"));
     else
       success = false;
 
-    if (manager->create("midisrc", "sink").compare("sink") == 0)
-      manager->remove("sink");
+    if (manager->quids<MPtr(&quid::Container::create)>("midisrc", "sink"))
+      manager->quids<MPtr(&quid::Container::remove)>(
+          manager->quids<MPtr(&quid::Container::get_id)>("sink"));
     else
       success = false;
 
-    if (!switcher::QuiddityBasicTest::test_full(manager, "midisrc")) success = false;
+    if (!test::full(manager, "midisrc")) success = false;
 
-    if (!switcher::QuiddityBasicTest::test_full(manager, "midisink")) success = false;
+    if (!test::full(manager, "midisink")) success = false;
   }  // end of scope is releasing the manager
 
   if (success)
     return 0;
-  else
-    return 1;
+  return 1;
 }

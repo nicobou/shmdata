@@ -49,4 +49,9 @@ TypeNameRegistry::registry_t TypeNameRegistry::type_name_registry_ = {
     REGISTER_TYPE2(const char*, string),
 };
 
+template <>
+std::vector<std::string> TypeNameRegistry::get_names<std::tuple<>>() {
+  return std::vector<std::string>();
+}
+
 }  // namespace switcher

@@ -29,15 +29,11 @@
 int main() {
   bool success = true;
   switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
-  std::vector<std::string> classes = manager->get_classes();
-
-  for (auto& it : classes) {
-    if (!switcher::QuiddityBasicTest::test_create(manager, it)) success = false;
+  for (auto& it : manager->factory<MPtr(&switcher::quid::Factory::get_class_list)>()) {
+    if (!switcher::test::create(manager, it)) success = false;
   }
-
   gst_deinit();
   if (success)
     return 0;
-  else
-    return 1;
+  return 1;
 }

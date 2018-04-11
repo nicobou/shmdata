@@ -18,7 +18,7 @@
  */
 
 #include "./string-utils.hpp"
-#include <gst/gst.h>
+#include <glib.h>
 #include <algorithm>
 #include <cctype>
 #include <sstream>
