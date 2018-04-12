@@ -1,0 +1,13 @@
+{
+  "bundle" : {
+      "resamplebundle" : {
+	  "pipeline" : "audiotestsrc name=source <add_to_start ! resample name=resampleplugin samplerate=12345  ! dummysink name=dummy",
+	  "doc" : {
+              "long_name" : "resample test plugin",
+              "category" : "audio",
+              "tags" : "test",
+              "description" : "We expect dummysink will receive a frame"
+      }
+    }
+  }
+}

@@ -61,6 +61,8 @@ bool Switcher::load_state(InfoTree::ptr state) {
       std::string quid_class = quiddities->branch_get_value(it);
       auto created = qcontainer_->create(quid_class, it);
       if (!created) {
+        log_->message(
+            "ERROR:error creating quiddity % (of type %): ", it, quid_class, created.msg());
         log_->warning("error creating quiddity % (of type %): ", it, quid_class, created.msg());
       }
     }
@@ -80,8 +82,11 @@ bool Switcher::load_state(InfoTree::ptr state) {
   if (nicknames) {
     for (auto& it : nicknames->get_child_keys(".")) {
       std::string nickname = nicknames->branch_get_value(it);
-      if (!qcontainer_->get_quiddity(qcontainer_->get_id(it))->set_nickname(nickname))
+      auto nicknamed_quid = qcontainer_->get_quiddity(qcontainer_->get_id(it));
+      if (!nicknamed_quid || !nicknamed_quid->set_nickname(nickname)) {
+        log_->message("ERROR:error applying nickname % for %", nickname, it);
         log_->warning("error applying nickname % for %", nickname, it);
+      }
     }
   }
 
@@ -96,12 +101,16 @@ bool Switcher::load_state(InfoTree::ptr state) {
           quid_to_start.push_back(name);
         } else {
           auto quid = qcontainer_->get_quiddity(qcontainer_->get_id(name));
-          if (!quid->prop<MPtr(&PContainer::set_str_str)>(
-                  prop, Any::to_string(properties->branch_get_value(name + "." + prop))))
-            log_->warning("failed to apply value, quiddity is %, property is %, value is %",
+          if (!quid || !quid->prop<MPtr(&PContainer::set_str_str)>(
+                           prop, Any::to_string(properties->branch_get_value(name + "." + prop))))
+            log_->message("ERROR:failed to apply value, quiddity is %, property is %, value is %",
                           name,
                           prop,
                           Any::to_string(properties->branch_get_value(name + "." + prop)));
+          log_->warning("failed to apply value, quiddity is %, property is %, value is %",
+                        name,
+                        prop,
+                        Any::to_string(properties->branch_get_value(name + "." + prop)));
         }
       }
     }
@@ -125,10 +134,12 @@ bool Switcher::load_state(InfoTree::ptr state) {
   for (auto& name : quid_to_start) {
     auto quid = qcontainer_->get_quiddity(qcontainer_->get_id(name));
     if (!quid) {
+      log_->message("ERROR:failed to get quiddity %", name);
       log_->warning("failed to get quiddity %", name);
       continue;
     }
-    if (!quid->prop<MPtr(&PContainer::set_str_str)>("started", "true")) {
+    if (!quid || !quid->prop<MPtr(&PContainer::set_str_str)>("started", "true")) {
+      log_->message("ERROR:failed to start quiddity %", name);
       log_->warning("failed to start quiddity %", name);
     }
   }
