@@ -12,16 +12,7 @@ VideoJack project. shmdata, however, does not provide a host server and require 
 Note that shmdata followers and writers can hot connect/disconnect/reconnect/... 
 and that a shared memory supports a single writer with multiple readers.
 
-shmdata is currently used in several metalab projects:
-
-* switcher (http://code.sat.qc.ca/redmine/projects/switcher/wiki)
-* splash (http://code.sat.qc.ca/redmine/projects/splash)
-* posturevision (http://code.sat.qc.ca/redmine/projects/kinectvision/wiki/)
-* scenic (http://code.sat.qc.ca/redmine/projects/scenic/wiki)
-
 License: LGPL
-
-Project URL: http://code.sat.qc.ca/redmine/projects/libshmdata
 
 # Installation
 Here is how to build and install it on Debian GNU/Linux or Ubuntu::
