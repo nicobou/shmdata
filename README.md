@@ -6,13 +6,26 @@
 [![build status](https://gitlab.com/sat-metalab/shmdata/badges/master/build.svg)](https://gitlab.com/sat-metalab/shmdata/commits/master)
 
 # shmdata
-Library to share flows of data frames between processes via shared memory. 
-shmdata can be compared to the JACK audio connection kit project or to the
-VideoJack project. shmdata, however, does not provide a host server and require applications to link data streams using socket path (e.g. "/tmp/my_shmdata_stream"). 
-Note that shmdata followers and writers can hot connect/disconnect/reconnect/... 
-and that a shared memory supports a single writer with multiple readers.
+Library to share streams of framed data between processes via shared memory. shmdata is server less: it requires applications to link data streams using socket path (e.g. "/tmp/my_shmdata_stream"). Shmdata is very fast and allows process to access data streams without the need of extra copy.
 
-License: LGPL
+The communication paradigm is 1 to many, i.e. one writer is making available data frames to several followers. Followers and writers are able to hot connect & disconnect. A shmdata can be resized during transmission and shmdata are typed using a string description published by writer at each reconnections. The description format is a user defined string.
+
+Some examples :
+
+* [C++](tests/check-writer-follower.cpp)
+* [C](test/check-c-wrapper.cpp)
+* [Python3](wrappers/python/example.py)
+* [GStreamer writer](gst/check-shmdatasink.c)
+* [GStreamer follower](gst/check-shmdatasrc.c)
+
+# Use compiled GStreamer plugins with GStreamer tools:
+
+By default, gstreamer plugins are installed in ```/usr/local/lib/gstreamer-1.0/```.
+
+```
+gst-inspect-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ shmdatasrc
+gst-inspect-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ shmdatasink
+```
 
 # Installation
 Here is how to build and install it on Debian GNU/Linux or Ubuntu::
@@ -69,7 +82,3 @@ Here is how to build and install it on Debian GNU/Linux or Ubuntu::
 
 ## Mac OS Notes
 * If you are using homebrew to install dependencies and encountering errors about ```-lintl```, you have to ```brew link gettext```
-
-# Authors
-see git history
-

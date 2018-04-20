@@ -1,8 +1,4 @@
-/* GStreamer
- * Copyright (C) <2009> Collabora Ltd
- *  @author: Olivier Crete <olivier.crete@collabora.co.uk
- * Copyright (C) <2009> Nokia Inc
- *
+/*
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
  * License as published by the Free Software Foundation; either
