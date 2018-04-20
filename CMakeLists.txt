@@ -152,6 +152,7 @@ add_subdirectory(switcher)
 add_subdirectory(tests)
 add_subdirectory(plugins)
 add_subdirectory(src)
+add_subdirectory(wrappers)
 
 #
 # OTHER TARGETS

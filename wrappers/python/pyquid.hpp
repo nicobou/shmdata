@@ -1,5 +1,5 @@
 /*
- * This file is part of libswitcher.
+ * This file is part of switcher python wrapper.
  *
  * libswitcher is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,31 +17,31 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_QUIDDITY_PROXID_H__
-#define __SWITCHER_QUIDDITY_PROXID_H__
+#ifndef __SWITCHER_PYQUID_H__
+#define __SWITCHER_PYQUID_H__
 
-#include <string>
-#include "./bool-log.hpp"
-#include "./quid-id-t.hpp"
-#include "./quiddity.hpp"
+#include <Python.h>  // according to python doc, this *must* be the first include
 
-namespace switcher {
-namespace quid {
-class Qrox : public BoolLog {
- public:
-  Qrox();
-  Qrox(const Qrox& cpyqrox) = default;
-  Qrox(bool is_valid);
-  Qrox(bool is_valid, const std::string& msg);
-  Qrox(bool is_valid, const std::string& msg, qid_t id, Quiddity* wptr);
-  qid_t get_id() const;
-  Quiddity* get();
+#ifdef __cplusplus
+extern "C" {
+#endif
 
- private:
-  qid_t id_{0};
-  Quiddity* quid_{nullptr};
+static PyMethodDef QuidMethods[] = {
+    {nullptr, nullptr, 0, nullptr} /* Sentinel */
 };
 
-}  // namespace quid
-}  // namespace switcher
+static struct PyModuleDef quidmodule = {
+    PyModuleDef_HEAD_INIT,
+    "quid",  /* name of module */
+    nullptr, /* module documentation, may be nullptr */
+    -1,      /* size of per-interpreter state of the module,
+                or -1 if the module keeps state in global variables. */
+    QuidMethods};
+
+PyMODINIT_FUNC PyInit_pyquid(void);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif
