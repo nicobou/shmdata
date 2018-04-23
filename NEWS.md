@@ -2,6 +2,15 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.14 (2018-04-23)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* ubuntu 18.04 gitlab ci
+* more informations in README.md
+* LICENSE file filled
+* AUTHORS.md file created
+
 shmdata 1.3.12 (2018-04-06)
 ---------------------------
 This is an official release in the 1.3 stable series.

@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2015 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2.1
@@ -18,7 +16,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <exception>
 #include "shmdata/clogger.h"
 #include "shmdata/cfollower.h"
 #include "shmdata/cwriter.h"
