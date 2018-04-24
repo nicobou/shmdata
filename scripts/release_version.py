@@ -317,6 +317,8 @@ if __name__ == '__main__':
 
     print 'All unit tests passed successfully, now creating new branches for release.'
 
+    subprocess.call(os.path.join(sys.path[0], '../build/src/switcher -K > ../doc/quiddity_types.txt'), shell=True)
+    
     update_changelog(lib, release_version)
     new_branch = '{}/version-{}.{}.{}'.format(release_branch, release_version[0], release_version[1],
                                               release_version[2])

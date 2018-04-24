@@ -25,7 +25,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
                                      "OSC Receiver",
                                      "network",
                                      "writer",
-                                     "receives OSC messages and write to shmdata",
+                                     "Receive OSC messages and write to shmdata",
                                      "LGPL",
                                      "Nicolas Bouillot");
 

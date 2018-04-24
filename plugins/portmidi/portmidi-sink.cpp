@@ -25,7 +25,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSink,
                                      "Midi (Port Midi)",
                                      "midi",
                                      "reader/device",
-                                     "shmdata to midi",
+                                     "Shmdata to midi",
                                      "LGPL",
                                      "Nicolas Bouillot");
 

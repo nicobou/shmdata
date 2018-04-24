@@ -1,4 +1,7 @@
-Switcher can transmit OSC messages along with other streams. This is done through OSC to shmdata and shmdata to OSC conversion. Here we give an example of use, with the liblo tools
+Script with OSC quiddities
+=======
+
+Switcher can transmit OSC messages along with other streams. This is done through OSC to shmdata and shmdata to OSC conversion. Here we give an example of use with the liblo tools
 
 ## Install liblo-tools
 

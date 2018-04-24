@@ -45,8 +45,9 @@ add_library(${SWITCHER_LIBRARY} SHARED
     property-container.cpp
     property.cpp
     quiddity-basic-test.cpp
-    quiddity-documentation.cpp
+    quiddity-class-printer.cpp
     quiddity-container.cpp
+    quiddity-documentation.cpp
     quiddity-factory.cpp
     quiddity-qrox.cpp
     switcher.cpp
@@ -135,6 +136,7 @@ set(HEADER_INCLUDES
     property-specification.hpp
     property.hpp
     quiddity-basic-test.hpp
+    quiddity-class-printer.hpp
     quiddity-configuration.hpp
     quiddity-documentation.hpp
     quiddity-container.hpp

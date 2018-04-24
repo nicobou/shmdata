@@ -35,7 +35,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SoapCtrlServer,
                                      "Switcher Web Controler (SOAP)",
                                      "control",
                                      "",
-                                     "getting switcher controled through SOAP webservices",
+                                     "Control switcher through SOAP webservices",
                                      "GPL",
                                      "Nicolas Bouillot");
 

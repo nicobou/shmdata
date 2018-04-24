@@ -30,7 +30,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSource,
                                      "Midi (PortMidi)",
                                      "midi",
                                      "writer/hid/device",
-                                     "midi to shmdata and properties",
+                                     "Midi to shmdata and properties",
                                      "LGPL",
                                      "Nicolas Bouillot");
 

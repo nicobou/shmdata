@@ -25,7 +25,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(DummySink,
                                      "Dummy Sink Quiddity",
                                      "utils",
                                      "",
-                                     "Quiddity for testing the reading of shmdatas",
+                                     "Quiddity for testing the reading of shmdata",
                                      "LGPL",
                                      "Nicolas Bouillot");
 

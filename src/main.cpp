@@ -22,6 +22,7 @@
 #include "switcher/console-logger.hpp"
 #include "switcher/file-utils.hpp"
 #include "switcher/information-tree-json.hpp"
+#include "switcher/quiddity-class-printer.hpp"
 #include "switcher/silent-logger.hpp"
 #include "switcher/switcher.hpp"
 
@@ -156,7 +157,7 @@ int main(int argc, char* argv[]) {
   if (classesdoc) {
     g_print(
         "%s\n",
-        JSONSerializer::serialize(manager->factory<MPtr(&quid::Factory::get_classes_doc)>().get())
+        QuiddityClassPrinter::print(manager->factory<MPtr(&quid::Factory::get_classes_doc)>().get())
             .c_str());
     return 0;
   }

@@ -1,3 +1,6 @@
+Shell scripting
+=======
+
 switcher and scenic can be scripted using the soap quiddity. Features include creation/deletion of quiddities, set/get of quiddity properties.
 
 ## Example with switcher
