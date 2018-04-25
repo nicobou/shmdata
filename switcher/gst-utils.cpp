@@ -18,6 +18,7 @@
  */
 
 #include "./gst-utils.hpp"
+#include <unistd.h>
 #include <algorithm>
 #include <string>
 #include "./scope-exit.hpp"
@@ -434,6 +435,12 @@ std::pair<int, int> GstUtils::get_gst_element_capability_as_range(const std::str
     range.second = gst_value_get_int_range_max(value);
   }
   return range;
+}
+
+int GstUtils::get_nthreads_property_value() {
+  return GST_CHECK_VERSION(1, 12, 0)
+             ? std::min<int>(4, static_cast<int>(sysconf(_SC_NPROCESSORS_CONF)) - 1)
+             : 0;
 }
 
 }  // namespace switcher

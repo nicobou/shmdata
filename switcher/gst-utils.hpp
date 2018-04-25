@@ -82,7 +82,8 @@ std::vector<std::string> get_gst_element_capability_as_list(const std::string& e
 std::pair<int, int> get_gst_element_capability_as_range(const std::string& element_type,
                                                         const std::string& capability,
                                                         GstPadDirection direction);
-
+// Used for videoscale and videoconvert elements only (for now).
+int get_nthreads_property_value();
 }  // namespace GstUtils
 }  // namespace switcher
 #endif

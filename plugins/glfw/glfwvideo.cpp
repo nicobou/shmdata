@@ -1086,6 +1086,12 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
   // Capsfilter setup
   GstCaps* usercaps = gst_caps_from_string("video/x-raw,format=RGBA");
   g_object_set(G_OBJECT(capsfilter_.get_raw()), "caps", usercaps, nullptr);
+
+  auto nthreads_videoconvert = GstUtils::get_nthreads_property_value();
+  if (nthreads_videoconvert > 0) {
+    g_object_set(G_OBJECT(videoconvert_.get_raw()), "n-threads", nthreads_videoconvert, nullptr);
+  }
+
   gst_caps_unref(usercaps);
 
   // Pipeline assembly

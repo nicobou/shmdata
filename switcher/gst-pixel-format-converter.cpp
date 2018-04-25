@@ -36,6 +36,15 @@ GstPixelFormatConverter::GstPixelFormatConverter(const std::string& shmpath_to_c
   g_object_set(G_OBJECT(capsfilter_.get_raw()), "caps", caps, nullptr);
   gst_caps_unref(caps);
   g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_to_convert.c_str(), nullptr);
+
+  auto nthreads_videoconvert = GstUtils::get_nthreads_property_value();
+  if (nthreads_videoconvert > 0) {
+    g_object_set(G_OBJECT(color_space_codec_element_.get_raw()),
+                 "n-threads",
+                 nthreads_videoconvert,
+                 nullptr);
+  }
+
   g_object_set(G_OBJECT(shm_converted_.get_raw()),
                "socket-path",
                shmpath_converted.c_str(),
