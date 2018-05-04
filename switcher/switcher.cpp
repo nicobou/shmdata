@@ -31,6 +31,8 @@ namespace switcher {
 
 std::string Switcher::get_name() const { return name_; }
 
+std::string Switcher::get_switcher_version() const { return SWITCHER_VERSION_STRING; }
+
 void Switcher::reset_state(bool remove_created_quiddities) {
   if (remove_created_quiddities) {
     for (auto& quid : qcontainer_->get_names()) {

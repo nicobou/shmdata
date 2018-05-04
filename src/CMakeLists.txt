@@ -10,13 +10,6 @@ cmake_dependent_option(WITH_SWITCHER "Switcher Command Line" ON
 add_feature_info("switcher" WITH_SWITCHER "Switcher Command Line")
 if (WITH_SWITCHER)
 
-    # Replaces config.h in some cases
-    add_definitions(
-        -DLIBSWITCHER_API_VERSION="${SWITCHER_API_VERSION}"
-        -DPACKAGE_NAME="${PACKAGE_NAME}"
-        -DVERSION="${SWITCHER_VERSION_STRING}"
-    )
-
     add_executable(switcher
         main.cpp
         )

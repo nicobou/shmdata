@@ -100,6 +100,8 @@ bool quid::Factory::scan_dir(const std::string& directory_path) {
   return true;
 }
 
+std::string quid::Factory::get_default_plugin_dir() const { return SWITCHER_DEFAULT_PLUGIN_DIR; }
+
 std::vector<std::string> quid::Factory::get_plugin_dirs() const { return plugin_dirs_; }
 
 InfoTree::ptr quid::Factory::get_classes_doc() const {

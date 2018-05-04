@@ -49,6 +49,7 @@ class Switcher : public GstInitialized {
   Switcher& operator=(const Switcher&) = delete;
   Switcher(const Switcher&) = delete;
   std::string get_name() const;
+  std::string get_switcher_version() const;
 
   // State
   InfoTree::ptr get_state() const;

@@ -126,11 +126,6 @@ int main(int argc, char* argv[]) {
     exit(1);
   }
 
-  if (display_version) {
-    g_print("%s\n", VERSION);
-    return 0;
-  }
-
   // running a switcher server
   if (server_name == nullptr) server_name = "default";
   if (port_number == nullptr) port_number = "27182";
@@ -141,16 +136,14 @@ int main(int argc, char* argv[]) {
     manager = Switcher::make_switcher<SilentLogger>(server_name);
   }
 
-// loading plugins from default location // FIXME add an option
-  gchar* usr_plugin_dir =
-      g_strdup_printf("/usr/%s-%s/plugins", PACKAGE_NAME, LIBSWITCHER_API_VERSION);
-  manager->factory<MPtr(&quid::Factory::scan_dir)>(usr_plugin_dir);
-  g_free(usr_plugin_dir);
+  if (display_version) {
+    std::cout << manager->get_switcher_version() << '\n';
+    return 0;
+  }
 
-  gchar* usr_local_plugin_dir =
-      g_strdup_printf("/usr/local/%s-%s/plugins", PACKAGE_NAME, LIBSWITCHER_API_VERSION);
-  manager->factory<MPtr(&quid::Factory::scan_dir)>(usr_local_plugin_dir);
-  g_free(usr_local_plugin_dir);
+  // loading plugins from default location // FIXME add an option
+  manager->factory<MPtr(&quid::Factory::scan_dir)>(
+      manager->factory<MPtr(&quid::Factory::get_default_plugin_dir)>());
 
   if (extraplugindir != nullptr) manager->factory<MPtr(&quid::Factory::scan_dir)>(extraplugindir);
 
