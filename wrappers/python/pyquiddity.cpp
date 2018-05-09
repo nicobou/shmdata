@@ -20,83 +20,10 @@
 #include "./pyquiddity.hpp"
 #include "switcher/scope-exit.hpp"
 
-PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
-    {"set_str_str",
-     (PyCFunction)pyQuiddity::set_str_str,
-     METH_VARARGS | METH_KEYWORDS,
-     "Set the property of a quiddity with a string value."},
-    {"get_str_str",
-     (PyCFunction)pyQuiddity::get_str_str,
-     METH_VARARGS | METH_KEYWORDS,
-     "Get the property of a quiddity."},
-    {"invoke_str",
-     (PyCFunction)pyQuiddity::invoke_str,
-     METH_VARARGS | METH_KEYWORDS,
-     "Get the property of a quiddity."},
-    {"make_shmpath",
-     (PyCFunction)pyQuiddity::make_shmpath,
-     METH_VARARGS | METH_KEYWORDS,
-     "Get shmpath of a quiddity, according to the given suffix."},
-    {nullptr}};
-
-PyObject* pyQuiddity::Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/) {
-  pyQuiddityObject* self;
-  self = (pyQuiddityObject*)type->tp_alloc(type, 0);
-  return (PyObject*)self;
-}
-
-int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
-  PyObject* pyqrox;
-  static char* kwlist[] = {(char*)"quid_c_ptr", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyqrox)) return -1;
-  auto* quid = static_cast<Quiddity*>(PyCapsule_GetPointer(pyqrox, nullptr));
-  self->quid = quid;
-  return 0;
-}
-
-void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
-  Py_TYPE(self)->tp_free((PyObject*)self);
-}
-
-PyTypeObject pyQuiddity::pyType = {
-    PyVarObject_HEAD_INIT(nullptr, 0)(char*) "pyquid.Quiddity", /* tp_name */
-    sizeof(pyQuiddityObject),                                   /* tp_basicsize */
-    0,                                                          /* tp_itemsize */
-    (destructor)Quiddity_dealloc,                               /* tp_dealloc */
-    0,                                                          /* tp_print */
-    0,                                                          /* tp_getattr */
-    0,                                                          /* tp_setattr */
-    0,                                                          /* tp_reserved */
-    0,                                                          /* tp_repr */
-    0,                                                          /* tp_as_number */
-    0,                                                          /* tp_as_sequence */
-    0,                                                          /* tp_as_mapping */
-    0,                                                          /* tp_hash  */
-    0,                                                          /* tp_call */
-    0,                                                          /* tp_str */
-    0,                                                          /* tp_getattro */
-    0,                                                          /* tp_setattro */
-    0,                                                          /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,                   /* tp_flags */
-    "pyQuiddity objects",                                       /* tp_doc */
-    0,                                                          /* tp_traverse */
-    0,                                                          /* tp_clear */
-    0,                                                          /* tp_richcompare */
-    0,                                                          /* tp_weaklistoffset */
-    0,                                                          /* tp_iter */
-    0,                                                          /* tp_iternext */
-    pyQuiddity_methods,                                         /* tp_methods */
-    0,                                                          /* tp_members */
-    0,                                                          /* tp_getset */
-    0,                                                          /* tp_base */
-    0,                                                          /* tp_dict */
-    0,                                                          /* tp_descr_get */
-    0,                                                          /* tp_descr_set */
-    0,                                                          /* tp_dictoffset */
-    (initproc)Quiddity_init,                                    /* tp_init */
-    0,                                                          /* tp_alloc */
-    Quiddity_new                                                /* tp_new */
-};
+PyDoc_STRVAR(pyquiddity_set_str_str_doc,
+             "Set the value of a property with its name and a string value.\n"
+             "Arguments: (name, value)\n"
+             "Returns: true of false\n");
 
 PyObject* pyQuiddity::set_str_str(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
   const char* property = nullptr;
@@ -111,15 +38,25 @@ PyObject* pyQuiddity::set_str_str(pyQuiddityObject* self, PyObject* args, PyObje
   return Py_True;
 }
 
+PyDoc_STRVAR(pyquiddity_get_str_str_doc,
+             "Get the value of a property from its name.\n"
+             "Arguments: (name)\n"
+             "Returns: the value (string)\n");
+
 PyObject* pyQuiddity::get_str_str(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
   const char* property = nullptr;
-  static char* kwlist[] = {(char*)"property", nullptr};
+  static char* kwlist[] = {(char*)"name", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &property)) {
     Py_INCREF(Py_False);
     return Py_False;
   }
   return PyUnicode_FromString(self->quid->prop<MPtr(&PContainer::get_str_str)>(property).c_str());
 }
+
+PyDoc_STRVAR(pyquiddity_invoke_str_doc,
+             "Invoke a method with its names and arguments.\n"
+             "Arguments: (method, args=[])\n"
+             "Returns: the return value (string)\n");
 
 PyObject* pyQuiddity::invoke_str(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
   const char* method = nullptr;
@@ -163,6 +100,11 @@ PyObject* pyQuiddity::invoke_str(pyQuiddityObject* self, PyObject* args, PyObjec
   return PyUnicode_FromString(res.msg().c_str());
 }
 
+PyDoc_STRVAR(pyquiddity_make_shmpath_doc,
+             "Get the shmdata path the quiddity will generate internally for the given suffix.\n"
+             "Arguments: (suffix)\n"
+             "Returns: the shmdata path (string)\n");
+
 PyObject* pyQuiddity::make_shmpath(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
   const char* suffix = nullptr;
   static char* kwlist[] = {(char*)"suffix", nullptr};
@@ -172,3 +114,89 @@ PyObject* pyQuiddity::make_shmpath(pyQuiddityObject* self, PyObject* args, PyObj
   }
   return PyUnicode_FromString(self->quid->make_shmpath(suffix).c_str());
 }
+
+PyObject* pyQuiddity::Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/) {
+  pyQuiddityObject* self;
+  self = (pyQuiddityObject*)type->tp_alloc(type, 0);
+  return (PyObject*)self;
+}
+
+int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+  PyObject* pyqrox;
+  static char* kwlist[] = {(char*)"quid_c_ptr", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyqrox)) return -1;
+  auto* quid = static_cast<Quiddity*>(PyCapsule_GetPointer(pyqrox, nullptr));
+  self->quid = quid;
+  return 0;
+}
+
+void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
+  Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
+PyMethodDef pyQuiddity::pyQuiddity_methods[] = {{"set_str_str",
+                                                 (PyCFunction)pyQuiddity::set_str_str,
+                                                 METH_VARARGS | METH_KEYWORDS,
+                                                 pyquiddity_set_str_str_doc},
+                                                {"get_str_str",
+                                                 (PyCFunction)pyQuiddity::get_str_str,
+                                                 METH_VARARGS | METH_KEYWORDS,
+                                                 pyquiddity_get_str_str_doc},
+                                                {"invoke_str",
+                                                 (PyCFunction)pyQuiddity::invoke_str,
+                                                 METH_VARARGS | METH_KEYWORDS,
+                                                 pyquiddity_invoke_str_doc},
+                                                {"make_shmpath",
+                                                 (PyCFunction)pyQuiddity::make_shmpath,
+                                                 METH_VARARGS | METH_KEYWORDS,
+                                                 pyquiddity_make_shmpath_doc},
+                                                {nullptr}};
+
+PyDoc_STRVAR(pyquid_quiddity_doc,
+             "Quiddity objects.\n"
+             "Quiddities are services that can be instanciated by a switcher. "
+             "Communication with a Quiddity is achieved through:\n"
+             "   - property set, get and subscribe\n"
+             "   - method invokation\n"
+             "   - InfoTree request\n"
+             "   - specific configuration");
+
+PyTypeObject pyQuiddity::pyType = {
+    PyVarObject_HEAD_INIT(nullptr, 0)(char*) "pyquid.Quiddity", /* tp_name */
+    sizeof(pyQuiddityObject),                                   /* tp_basicsize */
+    0,                                                          /* tp_itemsize */
+    (destructor)Quiddity_dealloc,                               /* tp_dealloc */
+    0,                                                          /* tp_print */
+    0,                                                          /* tp_getattr */
+    0,                                                          /* tp_setattr */
+    0,                                                          /* tp_reserved */
+    0,                                                          /* tp_repr */
+    0,                                                          /* tp_as_number */
+    0,                                                          /* tp_as_sequence */
+    0,                                                          /* tp_as_mapping */
+    0,                                                          /* tp_hash  */
+    0,                                                          /* tp_call */
+    0,                                                          /* tp_str */
+    0,                                                          /* tp_getattro */
+    0,                                                          /* tp_setattro */
+    0,                                                          /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,                   /* tp_flags */
+    pyquid_quiddity_doc,                                        /* tp_doc */
+    0,                                                          /* tp_traverse */
+    0,                                                          /* tp_clear */
+    0,                                                          /* tp_richcompare */
+    0,                                                          /* tp_weaklistoffset */
+    0,                                                          /* tp_iter */
+    0,                                                          /* tp_iternext */
+    pyQuiddity_methods,                                         /* tp_methods */
+    0,                                                          /* tp_members */
+    0,                                                          /* tp_getset */
+    0,                                                          /* tp_base */
+    0,                                                          /* tp_dict */
+    0,                                                          /* tp_descr_get */
+    0,                                                          /* tp_descr_set */
+    0,                                                          /* tp_dictoffset */
+    (initproc)Quiddity_init,                                    /* tp_init */
+    0,                                                          /* tp_alloc */
+    Quiddity_new                                                /* tp_new */
+};

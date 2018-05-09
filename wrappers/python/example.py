@@ -17,6 +17,7 @@ import pyquid
 sw = pyquid.Switcher(name="pyquid")
 
 print(sw.name())
+print(sw.version())
 
 #creating two quiddity
 qrox = sw.create(type="glfwin", name="win")
@@ -36,5 +37,5 @@ quid.invoke_str("disconnect-all", [])
 
 quid.invoke_str("connect", [vid.make_shmpath("video")])
 
-
+sw.remove(qrox.id())
 

@@ -39,7 +39,11 @@ class pySwitch {
   static void Switcher_dealloc(pySwitchObject* self);
   static PyObject* Switcher_new(PyTypeObject* type, PyObject* args, PyObject* kwds);
   static int Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* get_name(pySwitchObject* self);
+  static PyObject* name(pySwitchObject* self);
+  static PyObject* version(pySwitchObject* self);
   static PyObject* create(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* remove(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get_qrox(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get_qrox_from_name(pySwitchObject* self, PyObject* args, PyObject* kwds);
 };
 #endif

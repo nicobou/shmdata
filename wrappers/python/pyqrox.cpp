@@ -20,17 +20,39 @@
 #include "./pyqrox.hpp"
 #include "./pyquiddity.hpp"
 
-PyMethodDef pyQrox::pyQrox_methods[] = {
-    {"id", (PyCFunction)get_id, METH_NOARGS, "Provide identifiant for the quiddity."},
-    {"name", (PyCFunction)get_name, METH_NOARGS, "Provide quiddity name."},
-    {"quid", (PyCFunction)get_quid, METH_NOARGS, "Provide quiddity."},
-    {nullptr}};
+PyDoc_STRVAR(pyquid_pyqrox_id_doc,
+             "Get id of Quiddity associated with the current qrox.\n"
+             "Arguments: None\n"
+             "Returns: the id (strictly positive long int).\n");
+
+PyObject* pyQrox::id(pyQroxObject* self) { return PyLong_FromSize_t(self->qrox->get_id()); }
+
+PyDoc_STRVAR(pyquid_pyqrox_name_doc,
+             "Get the name of the Quiddity associated with the current qrox.\n"
+             "Arguments: None\n"
+             "Returns: the name (string).\n");
+
+PyObject* pyQrox::name(pyQroxObject* self) {
+  return PyUnicode_FromString(self->qrox->msg().c_str());
+}
+
+PyDoc_STRVAR(pyquid_pyqrox_quid_doc,
+             "Get the Quiddity Object associated with the current qrox.\n"
+             "Arguments: None\n"
+             "Returns: the name (string).\n");
+
+PyObject* pyQrox::quid(pyQroxObject* self) {
+  auto qrox_capsule = PyCapsule_New(static_cast<void*>(self->qrox->get()), nullptr, nullptr);
+  PyObject* argList = Py_BuildValue("(O)", qrox_capsule);
+  PyObject* obj = PyObject_CallObject((PyObject*)&pyQuiddity::pyType, argList);
+  Py_XDECREF(argList);
+  Py_XDECREF(qrox_capsule);
+  return obj;
+}
 
 PyObject* pyQrox::Qrox_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/) {
   pyQroxObject* self;
-
   self = (pyQroxObject*)type->tp_alloc(type, 0);
-
   return (PyObject*)self;
 }
 
@@ -38,15 +60,23 @@ int pyQrox::Qrox_init(pyQroxObject* self, PyObject* args, PyObject* kwds) {
   PyObject* pyqrox;
   static char* kwlist[] = {(char*)"qrox_c_ptr", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyqrox)) return -1;
-
   auto* qrox = static_cast<quid::Qrox*>(PyCapsule_GetPointer(pyqrox, nullptr));
-
   self->qrox = std::make_unique<quid::Qrox>(*qrox);
-
   return 0;
 }
 
 void pyQrox::Qrox_dealloc(pyQroxObject* self) { Py_TYPE(self)->tp_free((PyObject*)self); }
+
+PyMethodDef pyQrox::pyQrox_methods[] = {
+    {"id", (PyCFunction)id, METH_NOARGS, pyquid_pyqrox_id_doc},
+    {"name", (PyCFunction)name, METH_NOARGS, pyquid_pyqrox_name_doc},
+    {"quid", (PyCFunction)quid, METH_NOARGS, pyquid_pyqrox_quid_doc},
+    {nullptr}};
+
+PyDoc_STRVAR(
+    pyquid_pyqrox_doc,
+    "Qrox objects.\n"
+    "A Qrox is a handle to a Quiddity. It allows for getting its id, name and Quiddity itself.\n");
 
 PyTypeObject pyQrox::pyType = {
     PyVarObject_HEAD_INIT(nullptr, 0)(char*) "pyquid.Qrox", /* tp_name */
@@ -68,7 +98,7 @@ PyTypeObject pyQrox::pyType = {
     0,                                                      /* tp_setattro */
     0,                                                      /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,               /* tp_flags */
-    "pyQrox objects",                                       /* tp_doc */
+    pyquid_pyqrox_doc,                                      /* tp_doc */
     0,                                                      /* tp_traverse */
     0,                                                      /* tp_clear */
     0,                                                      /* tp_richcompare */
@@ -87,18 +117,3 @@ PyTypeObject pyQrox::pyType = {
     0,                                                      /* tp_alloc */
     Qrox_new                                                /* tp_new */
 };
-
-PyObject* pyQrox::get_id(pyQroxObject* self) { return PyLong_FromSize_t(self->qrox->get_id()); }
-
-PyObject* pyQrox::get_name(pyQroxObject* self) {
-  return PyUnicode_FromString(self->qrox->msg().c_str());
-}
-
-PyObject* pyQrox::get_quid(pyQroxObject* self) {
-  auto qrox_capsule = PyCapsule_New(static_cast<void*>(self->qrox->get()), nullptr, nullptr);
-  PyObject* argList = Py_BuildValue("(O)", qrox_capsule);
-  PyObject* obj = PyObject_CallObject((PyObject*)&pyQuiddity::pyType, argList);
-  Py_XDECREF(argList);
-  Py_XDECREF(qrox_capsule);
-  return obj;
-}

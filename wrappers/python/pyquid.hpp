@@ -26,17 +26,33 @@
 extern "C" {
 #endif
 
-static PyMethodDef QuidMethods[] = {
+static PyMethodDef pyquid_QuidMethods[] = {
     {nullptr, nullptr, 0, nullptr} /* Sentinel */
 };
 
-static struct PyModuleDef quidmodule = {
+PyDoc_STRVAR(pyquid_quiddity_doc,
+             "PyQuid is a python module for libswitcher.\n"
+             "A Switcher is a manager of several instances of Quiddities. "
+             "Each Quiddity can be created and removed dynamically from a Switcher instance."
+             "Quiddities can be controlled through property get/set and method invocations.\n"
+             "Most Quiddities are exposing and/or consuming live stream of data frames using the "
+             "shmdata library.\n"
+             "\n"
+             "For instance, the camera (v4l2src) Quiddity provides the video stream from a camera, "
+             "that can be connected simultaneously to several other Quidditipes, including a local "
+             "display (glfwin) a file recorder (avrec), a streamer (rtmp) or an other shmdata "
+             "enabled software. "
+             "\n"
+             "(Note that shmdata makes data streams shareable with all other Quiddities, "
+             "but also with other processes.\n");
+
+static struct PyModuleDef pyquid_quidmodule = {
     PyModuleDef_HEAD_INIT,
-    "quid",  /* name of module */
-    nullptr, /* module documentation, may be nullptr */
-    -1,      /* size of per-interpreter state of the module,
-                or -1 if the module keeps state in global variables. */
-    QuidMethods};
+    "quid",              /* name of module */
+    pyquid_quiddity_doc, /* module documentation, may be nullptr */
+    -1,                  /* size of per-interpreter state of the module,
+                            or -1 if the module keeps state in global variables. */
+    pyquid_QuidMethods};
 
 PyMODINIT_FUNC PyInit_pyquid(void);
 

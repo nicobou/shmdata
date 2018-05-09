@@ -37,8 +37,8 @@ class pyQrox {
   static PyObject* Qrox_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/);
   static int Qrox_init(pyQroxObject* self, PyObject* /*args*/, PyObject* /*kwds*/);
   static void Qrox_dealloc(pyQroxObject* self);
-  static PyObject* get_id(pyQroxObject* self);
-  static PyObject* get_name(pyQroxObject* self);
-  static PyObject* get_quid(pyQroxObject* self);
+  static PyObject* id(pyQroxObject* self);
+  static PyObject* name(pyQroxObject* self);
+  static PyObject* quid(pyQroxObject* self);
 };
 #endif

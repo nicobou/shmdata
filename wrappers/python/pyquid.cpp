@@ -29,7 +29,7 @@ PyMODINIT_FUNC PyInit_pyquid(void) {
   if (PyType_Ready(&pyQrox::pyType) < 0) return nullptr;
   if (PyType_Ready(&pyQuiddity::pyType) < 0) return nullptr;
 
-  m = PyModule_Create(&quidmodule);
+  m = PyModule_Create(&pyquid_quidmodule);
   if (m == nullptr) return nullptr;
 
   Py_INCREF(&pySwitch::pyType);
