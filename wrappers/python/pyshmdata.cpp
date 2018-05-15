@@ -334,7 +334,7 @@ PyDoc_STRVAR(Reader_doc__,
     "   debug (bool): If true, activates debug mode\n"
     "\n"
     "Callback signature:\n:"
-    "   def callback(user_data, buffer, datatype)\n"
+    "   def callback(user_data, buffer, datatype, parsed_datatype)\n"
     "\n"
     "Example use:\n"
     "   reader = pyshmdata.Reader(path=\"/path/to/shm\"\n)"
@@ -517,8 +517,10 @@ Reader_parse_datatype(const char* type_descr)
 
         if (substr.find('=') == string::npos)
         {
+	        PyObject* dictkey = PyUnicode_FromString("type");
             PyObject* value = PyUnicode_FromString(substr.c_str());
-            PyDict_SetItemString(dict, "type", value);
+            PyDict_SetItem(dict, dictkey, value);
+            Py_DECREF(dictkey);
             Py_DECREF(value);
         }
         else
@@ -557,7 +559,9 @@ Reader_parse_datatype(const char* type_descr)
                 value = PyUnicode_FromString(val.c_str());
             }
 
-            PyDict_SetItemString(dict, key.c_str(), value);
+	        PyObject* dictkey = PyUnicode_FromString(key.c_str());
+            PyDict_SetItem(dict, dictkey, value);
+            Py_DECREF(dictkey);
             Py_DECREF(value);
         }
     }
