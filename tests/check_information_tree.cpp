@@ -207,6 +207,10 @@ int main() {
     auto deserialized_string = JSONSerializer::serialize(deserialized_tree.get());
     // std::cout << deserialized_string << '\n';
     assert(serialized == deserialized_string);
+
+    // test copy
+    auto tree_cpy = InfoTree::copy(tree.get());
+    assert(serialized == JSONSerializer::serialize(tree_cpy.get()));
   }
 
   {  // get childs keys inserting in an existing container
