@@ -18,6 +18,7 @@
  */
 
 #include "./pyquid.hpp"
+#include "./pyinfotree.hpp"
 #include "./pyqrox.hpp"
 #include "./pyquiddity.hpp"
 #include "./pyswitch.hpp"
@@ -28,6 +29,7 @@ PyMODINIT_FUNC PyInit_pyquid(void) {
   if (PyType_Ready(&pySwitch::pyType) < 0) return nullptr;
   if (PyType_Ready(&pyQrox::pyType) < 0) return nullptr;
   if (PyType_Ready(&pyQuiddity::pyType) < 0) return nullptr;
+  if (PyType_Ready(&pyInfoTree::pyType) < 0) return nullptr;
 
   m = PyModule_Create(&pyquid_quidmodule);
   if (m == nullptr) return nullptr;
@@ -38,6 +40,8 @@ PyMODINIT_FUNC PyInit_pyquid(void) {
   PyModule_AddObject(m, "Qrox", reinterpret_cast<PyObject*>(&pyQrox::pyType));
   Py_INCREF(&pyQuiddity::pyType);
   PyModule_AddObject(m, "Quiddity", reinterpret_cast<PyObject*>(&pyQuiddity::pyType));
+  Py_INCREF(&pyInfoTree::pyType);
+  PyModule_AddObject(m, "InfoTree", reinterpret_cast<PyObject*>(&pyInfoTree::pyType));
 
   return m;
 }

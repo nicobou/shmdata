@@ -13,6 +13,7 @@ if (WITH_PYTHON)
     add_definitions(-Wno-error=missing-field-initializers)
 
     add_library(pyquid SHARED
+        pyinfotree.cpp
         pyquid.cpp
 	pyquiddity.cpp
 	pyqrox.cpp

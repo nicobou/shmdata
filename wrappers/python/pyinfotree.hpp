@@ -17,30 +17,33 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_PYQUIDDITY_H__
-#define __SWITCHER_PYQUIDDITY_H__
+#ifndef __SWITCHER_PYINFOTREE_H__
+#define __SWITCHER_PYINFOTREE_H__
 
 #include <Python.h>  // according to python doc, this *must* be the first include
-#include "switcher/quiddity.hpp"
+#include "switcher/quiddity-qrox.hpp"
 
 using namespace switcher;
 
-class pyQuiddity {
+class pyInfoTree {
  public:
-  using pyQuiddityObject = struct { PyObject_HEAD Quiddity* quid{nullptr}; };
+  using pyInfoTreeObject = struct {
+    PyObject_HEAD InfoTree* tree{};
+    InfoTree::ptr keepAlive{};
+  };
 
   static PyTypeObject pyType;
-  static PyMethodDef pyQuiddity_methods[];
+  static PyMethodDef pyInfoTree_methods[];
 
  private:
   // Boilerplate
-  static PyObject* Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/);
-  static int Quiddity_init(pyQuiddityObject* self, PyObject* /*args*/, PyObject* /*kwds*/);
-  static void Quiddity_dealloc(pyQuiddityObject* self);
-  static PyObject* set_str_str(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* get_str_str(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* invoke_str(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* make_shmpath(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* get_user_tree(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* InfoTree_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/);
+  static int InfoTree_init(pyInfoTreeObject* self, PyObject* /*args*/, PyObject* /*kwds*/);
+  static void InfoTree_dealloc(pyInfoTreeObject* self);
+  static PyObject* prune(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* copy(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* graft(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* json(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
 };
 #endif

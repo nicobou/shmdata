@@ -18,6 +18,7 @@
  */
 
 #include "./pyquiddity.hpp"
+#include "./pyinfotree.hpp"
 #include "switcher/scope-exit.hpp"
 
 PyDoc_STRVAR(pyquiddity_set_str_str_doc,
@@ -115,6 +116,22 @@ PyObject* pyQuiddity::make_shmpath(pyQuiddityObject* self, PyObject* args, PyObj
   return PyUnicode_FromString(self->quid->make_shmpath(suffix).c_str());
 }
 
+PyDoc_STRVAR(pyquiddity_get_user_tree_doc,
+             "Get the user data tree attached to the Quiddity. Note this tree is saved with the "
+             "Quiddity state and can be retrieved when a switcher save file is loaded.\n"
+             "Arguments: none\n"
+             "Returns: the user data (InfoTree)\n");
+
+PyObject* pyQuiddity::get_user_tree(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+  auto* tree = self->quid->user_data<MPtr(&InfoTree::get_tree)>(".").get();
+  auto tree_capsule = PyCapsule_New(static_cast<void*>(tree), nullptr, nullptr);
+  PyObject* argList = Py_BuildValue("(O)", tree_capsule);
+  PyObject* obj = PyObject_CallObject((PyObject*)&pyInfoTree::pyType, argList);
+  Py_XDECREF(argList);
+  Py_XDECREF(tree_capsule);
+  return obj;
+}
+
 PyObject* pyQuiddity::Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/) {
   pyQuiddityObject* self;
   self = (pyQuiddityObject*)type->tp_alloc(type, 0);
@@ -150,6 +167,10 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {{"set_str_str",
                                                  (PyCFunction)pyQuiddity::make_shmpath,
                                                  METH_VARARGS | METH_KEYWORDS,
                                                  pyquiddity_make_shmpath_doc},
+                                                {"get_user_tree",
+                                                 (PyCFunction)pyQuiddity::get_user_tree,
+                                                 METH_VARARGS | METH_KEYWORDS,
+                                                 pyquiddity_get_user_tree_doc},
                                                 {nullptr}};
 
 PyDoc_STRVAR(pyquid_quiddity_doc,

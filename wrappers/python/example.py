@@ -19,7 +19,7 @@ sw = pyquid.Switcher(name="pyquid")
 print(sw.name())
 print(sw.version())
 
-#creating two quiddity
+# creating two quiddity
 qrox = sw.create(type="glfwin", name="win")
 quid = qrox.quid()
 
@@ -37,5 +37,28 @@ quid.invoke_str("disconnect-all", [])
 
 quid.invoke_str("connect", [vid.make_shmpath("video")])
 
-sw.remove(qrox.id())
+utree = quid.get_user_tree()
+utree.graft(".my.long", 5)
+utree.graft(".my.float", 1.2345)
+utree.graft(".my.bool", True)
+utree.graft(".my.string", "My eye is ziped")
 
+print(utree.json(".my."))
+
+utree_cpy = utree.copy(".")
+
+utree.prune("my")
+
+print("utree: " + utree.json())
+
+print("utree_cpy: " + utree_cpy.json())
+
+print("long: " + str(utree_cpy.get("my.long")))
+print("float: " + str(utree_cpy.get("my.float")))
+if (utree_cpy.get("my.bool")):
+    print("bool: true")
+else:
+    print("bool: false")
+print("string: " + utree_cpy.get("my.string"))
+
+# sw.remove(qrox.id())
