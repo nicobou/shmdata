@@ -125,7 +125,9 @@ std::string Quiddity::make_shmpath(const std::string& suffix) const {
   return name;
 }
 
-std::string Quiddity::get_shmpath_prefix() const { return "/tmp/switcher_"; }
+std::string Quiddity::get_shmpath_prefix() {
+  return Switcher::get_shm_dir() + "/" + Switcher::get_shm_prefix();
+}
 
 std::string Quiddity::get_quiddity_name_from_file_name(const std::string& path) const {
   auto file_begin = path.find("switcher_");

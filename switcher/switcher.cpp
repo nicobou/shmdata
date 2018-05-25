@@ -22,6 +22,7 @@
 #include <fstream>
 #include "./bundle-description-parser.hpp"
 #include "./bundle.hpp"
+#include "./file-utils.hpp"
 #include "./gst-utils.hpp"
 #include "./information-tree-json.hpp"
 #include "./scope-exit.hpp"
@@ -280,6 +281,14 @@ void Switcher::register_bundle_from_configuration() {
     qfactory_.register_class_with_custom_factory(it, &bundle::create, &bundle::destroy);
     // making the new bundle type available for next bundle definition:
     quid_types.push_back(it);
+  }
+}
+
+void Switcher::remove_shm_zombies() const {
+  auto files = FileUtils::get_shmfiles_from_directory(get_shm_dir(), get_shm_prefix());
+  for (auto& it : files) {
+    auto res = FileUtils::remove(it);
+    if (!res) log_->warning("fail removing shmdata % (%)", it, res.msg());
   }
 }
 

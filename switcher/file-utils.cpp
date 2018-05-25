@@ -108,6 +108,28 @@ std::vector<std::string> FileUtils::get_files_from_directory(std::string path,
   return files;
 }
 
+std::vector<std::string> FileUtils::get_shmfiles_from_directory(std::string dir_path,
+                                                                std::string file_prefix) {
+  DIR* directory;
+  struct dirent* entry;
+  std::vector<std::string> files;
+
+  directory = opendir(dir_path.c_str());
+  if (!directory) return files;
+  On_scope_exit { closedir(directory); };
+
+  while ((entry = readdir(directory))) {
+    if (std::string(entry->d_name) == "." || std::string(entry->d_name) == "..") continue;
+
+    if (entry->d_type == DT_SOCK &&
+        (file_prefix.empty() || StringUtils::starts_with(entry->d_name, file_prefix))) {
+      files.push_back(dir_path + "/" + entry->d_name);
+    }
+  }
+
+  return files;
+}
+
 std::pair<std::string, std::string> FileUtils::get_file_content(const std::string& file_path,
                                                                 int max_file_size) {
   // opening file
@@ -185,6 +207,14 @@ std::string FileUtils::get_content(const std::string& file_path) {
   file_stream.seekg(0, std::ios::beg);
   file_str.assign((std::istreambuf_iterator<char>(file_stream)), std::istreambuf_iterator<char>());
   return file_str;
+}
+
+BoolLog FileUtils::remove(const std::string& abs_path) {
+  if (-1 == ::remove(abs_path.c_str())) {
+    int err = errno;
+    return BoolLog(false, strerror(err));
+  }
+  return BoolLog(true);
 }
 
 }  // namespace switcher

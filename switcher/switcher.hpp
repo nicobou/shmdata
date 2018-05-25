@@ -65,6 +65,9 @@ class Switcher : public GstInitialized {
   // Quiddity container
   Make_delegate(Switcher, quid::Container, qcontainer_.get(), quids);
 
+  static std::string get_shm_dir() { return "/tmp"; }
+  static std::string get_shm_prefix() { return "switcher_"; }
+
  private:
   Switcher() = delete;
   template <typename L>  // unique_ptr<LOG_TYPE>
@@ -73,8 +76,11 @@ class Switcher : public GstInitialized {
         qfactory_(log_.get()),
         conf_(log_.get(), [this]() { register_bundle_from_configuration(); }),
         qcontainer_(quid::Container::make_container(this, &qfactory_, log_.get())),
-        name_(name) {}
+        name_(name) {
+    remove_shm_zombies();
+  }
   void register_bundle_from_configuration();
+  void remove_shm_zombies() const;
   static void init_gst();
 
   mutable std::unique_ptr<BaseLogger> log_;
