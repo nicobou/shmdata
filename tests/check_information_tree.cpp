@@ -211,6 +211,8 @@ int main() {
     // test copy
     auto tree_cpy = InfoTree::copy(tree.get());
     assert(serialized == JSONSerializer::serialize(tree_cpy.get()));
+    auto tree_cpy2 = tree->branch_get_copy(".");
+    assert(serialized == JSONSerializer::serialize(tree_cpy2.get()));
   }
 
   {  // get childs keys inserting in an existing container

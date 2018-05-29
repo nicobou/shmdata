@@ -132,6 +132,39 @@ PyObject* pyQuiddity::get_user_tree(pyQuiddityObject* self, PyObject* args, PyOb
   return obj;
 }
 
+PyDoc_STRVAR(pyquiddity_get_info_doc,
+             "Get a value in the InfoTree.\n"
+             "Arguments: (path)\n"
+             "Returns: the value\n");
+
+PyObject* pyQuiddity::get_info(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+  const char* path = nullptr;
+  static char* kwlist[] = {(char*)"path", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &path)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+
+  return pyInfoTree::any_to_pyobject(self->quid->tree<MPtr(&InfoTree::branch_get_value)>(path));
+}
+
+PyDoc_STRVAR(pyquiddity_get_info_as_json_doc,
+             "Get json serialization of InfoTree the subtree.\n"
+             "Arguments: (path)\n"
+             "Returns: the json string\n");
+
+PyObject* pyQuiddity::get_info_as_json(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+  const char* path = nullptr;
+  static char* kwlist[] = {(char*)"path", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &path)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  if (nullptr == path) path = ".";
+
+  return PyUnicode_FromString(self->quid->tree<MPtr(&InfoTree::serialize_json)>(path).c_str());
+}
+
 PyObject* pyQuiddity::Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/) {
   pyQuiddityObject* self;
   self = (pyQuiddityObject*)type->tp_alloc(type, 0);
@@ -171,6 +204,14 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {{"set_str_str",
                                                  (PyCFunction)pyQuiddity::get_user_tree,
                                                  METH_VARARGS | METH_KEYWORDS,
                                                  pyquiddity_get_user_tree_doc},
+                                                {"get_info",
+                                                 (PyCFunction)pyQuiddity::get_info,
+                                                 METH_VARARGS | METH_KEYWORDS,
+                                                 pyquiddity_get_info_doc},
+                                                {"get_info_as_json",
+                                                 (PyCFunction)pyQuiddity::get_info_as_json,
+                                                 METH_VARARGS | METH_KEYWORDS,
+                                                 pyquiddity_get_info_as_json_doc},
                                                 {nullptr}};
 
 PyDoc_STRVAR(pyquid_quiddity_doc,

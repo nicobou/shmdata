@@ -147,6 +147,29 @@ PyObject* pyInfoTree::json(pyInfoTreeObject* self, PyObject* args, PyObject* kwd
   if (nullptr == path) path = ".";
   return PyUnicode_FromString(JSONSerializer::serialize(self->tree->get_tree(path).get()).c_str());
 }
+PyObject* pyInfoTree::any_to_pyobject(const Any& any) {
+  auto category = any.get_category();
+  if (AnyCategory::NONE == category) {  // any is empty
+    Py_INCREF(Py_None);
+    return Py_None;
+  } else if (AnyCategory::BOOLEAN == category) {
+    if (!any.as<bool>()) {
+      Py_INCREF(Py_False);
+      return Py_False;
+    }
+    Py_INCREF(Py_True);
+    return Py_True;
+  } else if (AnyCategory::INTEGRAL == category) {
+    return PyLong_FromLong(any.as<long>());
+  } else if (AnyCategory::FLOATING_POINT == category) {
+    return PyFloat_FromDouble(any.as<double>());
+  } else if (AnyCategory::OTHER == category) {
+    return PyUnicode_FromString(Any::to_string(any).c_str());
+  }
+  // should not happen since all possible values of AnyCategory are checked
+  Py_INCREF(Py_None);
+  return Py_None;
+}
 
 PyDoc_STRVAR(pyinfotree_get_doc,
              "Get value at path.\n"
@@ -160,29 +183,7 @@ PyObject* pyInfoTree::get(pyInfoTreeObject* self, PyObject* args, PyObject* kwds
     Py_INCREF(Py_None);
     return Py_None;
   }
-
-  auto res = self->tree->branch_get_value(path);
-  auto category = res.get_category();
-  if (AnyCategory::NONE == category) {  // res is empty
-    Py_INCREF(Py_None);
-    return Py_None;
-  } else if (AnyCategory::BOOLEAN == category) {
-    if (!res.as<bool>()) {
-      Py_INCREF(Py_False);
-      return Py_False;
-    }
-    Py_INCREF(Py_True);
-    return Py_True;
-  } else if (AnyCategory::INTEGRAL == category) {
-    return PyLong_FromLong(res.as<long>());
-  } else if (AnyCategory::FLOATING_POINT == category) {
-    return PyFloat_FromDouble(res.as<double>());
-  } else if (AnyCategory::OTHER == category) {
-    return PyUnicode_FromString(Any::to_string(res).c_str());
-  }
-  // should not happen since all possible values of AnyCategory are checked
-  Py_INCREF(Py_None);
-  return Py_None;
+  return any_to_pyobject(self->tree->branch_get_value(path));
 }
 
 PyMethodDef pyInfoTree::pyInfoTree_methods[] = {

@@ -34,6 +34,7 @@ class pyInfoTree {
 
   static PyTypeObject pyType;
   static PyMethodDef pyInfoTree_methods[];
+  static PyObject* any_to_pyobject(const Any& any);
 
  private:
   // Boilerplate

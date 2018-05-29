@@ -41,6 +41,10 @@ class pyQuiddity {
   static PyObject* get_str_str(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* invoke_str(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* make_shmpath(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  // access to user tree
   static PyObject* get_user_tree(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  // access to quiddity InfoTree
+  static PyObject* get_info(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get_info_as_json(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
 };
 #endif

@@ -158,6 +158,13 @@ Any InfoTree::branch_get_value(const std::string& path) const {
   return res;
 }
 
+InfoTree::ptr InfoTree::branch_get_copy(const std::string& path) {
+  if (path_is_root(path)) return copy(this);
+  auto found = get_node(path);
+  if (nullptr == found.first) return nullptr;
+  return copy((*found.first)[found.second].second.get());
+}
+
 bool InfoTree::branch_set_value(const std::string& path, const Any& data) {
   std::lock_guard<std::mutex> lock(mutex_);
   if (path_is_root(path)) return data_ = data;

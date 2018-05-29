@@ -135,6 +135,10 @@ class InfoTree {
   bool branch_set_value(const std::string& path, const Any& data);
   bool branch_set_value(const std::string& path, const char* data);
   bool branch_set_value(const std::string& path, std::nullptr_t ptr);
+
+  // copy subtree
+  InfoTree::ptr branch_get_copy(const std::string& path);
+
   // graft will create the path and graft the tree,
   // or remove old one and replace will the new tree
   bool graft(const std::string& path, InfoTree::ptr);

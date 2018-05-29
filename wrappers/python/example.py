@@ -61,4 +61,8 @@ else:
     print("bool: false")
 print("string: " + utree_cpy.get("my.string"))
 
+print("json information tree: " + quid.get_info_as_json())
+
+print("json information tree: " + quid.get_info_as_json(".property"))
+
 # sw.remove(qrox.id())
