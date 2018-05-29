@@ -67,7 +67,7 @@ Qrox Container::quiet_create(const std::string& quiddity_class, const std::strin
   auto conf = switcher_->conf<MPtr(&Configuration::get)>();
   if (conf) {
     tree = conf->get_tree(quiddity_class);
-    if (!tree) tree = conf->get_tree("bundle." + quiddity_class);
+    if (tree->empty()) tree = conf->get_tree("bundle." + quiddity_class);
   }
 
   // creation
