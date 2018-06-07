@@ -65,4 +65,9 @@ print("json information tree: " + quid.get_info_as_json())
 
 print("json information tree: " + quid.get_info_as_json(".property"))
 
+print(".property.overlay_font_size.value: " + str(quid.get_info(".property.overlay_font_size.value")))
+
+print(".property.brightness.value: " + str(quid.get_info(".property.brightness.value")))
+
+print(".property.keyb_interaction.value: " + str(quid.get_info(".property.keyb_interaction.value")))
 # sw.remove(qrox.id())

@@ -160,9 +160,9 @@ PyObject* pyInfoTree::any_to_pyobject(const Any& any) {
     Py_INCREF(Py_True);
     return Py_True;
   } else if (AnyCategory::INTEGRAL == category) {
-    return PyLong_FromLong(any.as<long>());
+    return PyLong_FromLong(any.copy_as<long>());
   } else if (AnyCategory::FLOATING_POINT == category) {
-    return PyFloat_FromDouble(any.as<double>());
+    return PyFloat_FromDouble(any.copy_as<double>());
   } else if (AnyCategory::OTHER == category) {
     return PyUnicode_FromString(Any::to_string(any).c_str());
   }
