@@ -33,7 +33,7 @@ vid.set_str_str("started", "true")
 
 # connecting win to vid
 quid.invoke_str("connect", ["/tmp/switcher_pyquid_2_video"])
-quid.invoke_str("disconnect-all", [])
+quid.invoke_str("disconnect-all")
 
 quid.invoke_str("connect", [vid.make_shmpath("video")])
 

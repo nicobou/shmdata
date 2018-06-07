@@ -64,13 +64,18 @@ PyObject* pyQuiddity::invoke_str(pyQuiddityObject* self, PyObject* args, PyObjec
   PyObject* inv_args = nullptr;
   static char* kwlist[] = {(char*)"method", (char*)"args", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|O", kwlist, &method, &inv_args)) {
-    Py_INCREF(Py_False);
-    return Py_False;
+    Py_INCREF(Py_None);
+    return Py_None;
   }
-
-  if (!PyList_Check(inv_args)) return nullptr;
+  Py_ssize_t list_size = 0;
+  if (nullptr != inv_args && PyList_Check(inv_args)) {  // a list argument is given
+    list_size = PyList_Size(inv_args);
+  } else {  // something else is given as argument
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
   auto tuple_args = std::string();
-  for (auto i = 0; i < PyList_Size(inv_args); ++i) {
+  for (auto i = 0; i < list_size; ++i) {
     PyObject* item = nullptr;
     PyObject* item_str = nullptr;
     PyObject* repr = nullptr;
@@ -96,7 +101,8 @@ PyObject* pyQuiddity::invoke_str(pyQuiddityObject* self, PyObject* args, PyObjec
   auto res = self->quid->meth<MPtr(&MContainer::invoke_str)>(
       self->quid->meth<MPtr(&MContainer::get_id)>(method), tuple_args);
   if (!res) {
-    return nullptr;
+    Py_INCREF(Py_None);
+    return Py_None;
   }
   return PyUnicode_FromString(res.msg().c_str());
 }
