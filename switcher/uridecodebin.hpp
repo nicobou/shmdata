@@ -41,7 +41,6 @@ class Uridecodebin : public Quiddity {
   GstPipeliner::on_error_cb_t on_error_cb_{nullptr};
   bool error_{false};
 
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
   GstElement* uridecodebin_{nullptr};
   GstCaps* rtpgstcaps_{nullptr};
   bool discard_next_uncomplete_buffer_{false};
@@ -51,6 +50,7 @@ class Uridecodebin : public Quiddity {
   std::string uri_{};
   CounterMap counter_{};
   std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
 
   void init_uridecodebin();
   void destroy_uridecodebin();
