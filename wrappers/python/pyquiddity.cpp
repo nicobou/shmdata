@@ -154,6 +154,87 @@ PyObject* pyQuiddity::get_info(pyQuiddityObject* self, PyObject* args, PyObject*
   return pyInfoTree::any_to_pyobject(self->quid->tree<MPtr(&InfoTree::branch_get_value)>(path));
 }
 
+PyDoc_STRVAR(pyquiddity_subscribe_doc,
+             "Subscribe to a signal. The callback has one argument: the json representation of the "
+             "signal value.\n"
+             "Arguments: (signal, callback)\n"
+             "Returns: True or False\n");
+
+PyObject* pyQuiddity::subscribe(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+  const char* signal_name = nullptr;
+  PyObject* cb = nullptr;
+  static char* kwlist[] = {(char*)"signal", (char*)"cb", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO", kwlist, &signal_name, &cb)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  if (!PyCallable_Check(cb)) {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+
+  auto sig_id = self->quid->sig<MPtr(&SContainer::get_id)>(signal_name);
+  if (0 == sig_id) {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+  auto reg_id =
+      self->quid->sig<MPtr(&SContainer::subscribe)>(sig_id, [cb, self](const InfoTree::ptr& tree) {
+        PyObject* arglist;
+        arglist = Py_BuildValue("(s)", (char*)tree->serialize_json(".").c_str());
+        PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
+        PyObject* pyerr = PyErr_Occurred();
+        if (pyerr != NULL) PyErr_Print();
+        Py_DECREF(arglist);
+        Py_XDECREF(pyobjresult);
+      });
+  if (0 == reg_id) {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+  Py_INCREF(cb);
+  self->registered_callbacks->emplace(sig_id, cb);
+  self->registered_signals->emplace(sig_id, reg_id);
+  Py_INCREF(Py_True);
+  return Py_True;
+}
+
+PyDoc_STRVAR(pyquiddity_unsubscribe_doc,
+             "Unsubscribe to a signal.\n"
+             "Arguments: (signal)\n"
+             "Returns: True or False\n");
+
+PyObject* pyQuiddity::unsubscribe(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+  const char* signal_name = nullptr;
+  static char* kwlist[] = {(char*)"signal", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &signal_name)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+
+  auto sig_id = self->quid->sig<MPtr(&SContainer::get_id)>(signal_name);
+  if (0 == sig_id) {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+  auto found = self->registered_signals->find(sig_id);
+  if (self->registered_signals->end() == found) {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+  auto unsubscribed = self->quid->sig<MPtr(&SContainer::unsubscribe)>(sig_id, found->second);
+  if (!unsubscribed) {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+  auto cb = self->registered_callbacks->find(sig_id);
+  Py_XDECREF(cb->second);
+  self->registered_callbacks->erase(cb);
+  self->registered_signals->erase(sig_id);
+  Py_INCREF(Py_True);
+  return Py_True;
+}
+
 PyDoc_STRVAR(pyquiddity_get_info_as_json_doc,
              "Get json serialization of InfoTree the subtree.\n"
              "Arguments: (path)\n"
@@ -182,11 +263,18 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
   static char* kwlist[] = {(char*)"quid_c_ptr", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyqrox)) return -1;
   auto* quid = static_cast<Quiddity*>(PyCapsule_GetPointer(pyqrox, nullptr));
+  self->registered_callbacks = std::make_unique<registered_callbacks_t>();
+  self->registered_signals = std::make_unique<registered_signals_t>();
   self->quid = quid;
   return 0;
 }
 
 void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
+  for (const auto& it : *self->registered_callbacks.get()) {
+    auto found = self->registered_signals->find(it.first);
+    self->quid->sig<MPtr(&SContainer::unsubscribe)>(found->first, found->second);
+    Py_XDECREF(it.second);
+  }
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -218,6 +306,14 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {{"set_str_str",
                                                  (PyCFunction)pyQuiddity::get_info_as_json,
                                                  METH_VARARGS | METH_KEYWORDS,
                                                  pyquiddity_get_info_as_json_doc},
+                                                {"subscribe",
+                                                 (PyCFunction)pyQuiddity::subscribe,
+                                                 METH_VARARGS | METH_KEYWORDS,
+                                                 pyquiddity_subscribe_doc},
+                                                {"unsubscribe",
+                                                 (PyCFunction)pyQuiddity::unsubscribe,
+                                                 METH_VARARGS | METH_KEYWORDS,
+                                                 pyquiddity_unsubscribe_doc},
                                                 {nullptr}};
 
 PyDoc_STRVAR(pyquid_quiddity_doc,

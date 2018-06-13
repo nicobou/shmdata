@@ -13,6 +13,12 @@
 import sys
 sys.path.insert(0, '/usr/local/lib/python3/dist-packages')
 import pyquid
+import time
+
+
+def on_tree_grafted(key):
+    print("Tree grafted at : " + key)
+
 
 sw = pyquid.Switcher(name="pyquid")
 
@@ -29,11 +35,23 @@ vid = qroxvid.quid()
 # set get property
 quid.get_str_str("height")
 quid.set_str_str("height", "1024")
+
+if not vid.subscribe("on-tree-grafted", on_tree_grafted):
+    print("issue with subscribe")
+
 vid.set_str_str("started", "true")
 
 # connecting win to vid
-quid.invoke_str("connect", ["/tmp/switcher_pyquid_2_video"])
+quid.invoke_str("connect", [vid.make_shmpath("video")])
+
+time.sleep(2)
+
 quid.invoke_str("disconnect-all")
+
+if not vid.unsubscribe("on-tree-grafted"):
+    print("issue with unsubscribe")
+else:
+    print("unsubscribed")
 
 quid.invoke_str("connect", [vid.make_shmpath("video")])
 
@@ -70,4 +88,5 @@ print(".property.overlay_font_size.value: " + str(quid.get_info(".property.overl
 print(".property.brightness.value: " + str(quid.get_info(".property.brightness.value")))
 
 print(".property.keyb_interaction.value: " + str(quid.get_info(".property.keyb_interaction.value")))
-# sw.remove(qrox.id())
+
+sw.remove(qrox.id())

@@ -21,13 +21,20 @@
 #define __SWITCHER_PYQUIDDITY_H__
 
 #include <Python.h>  // according to python doc, this *must* be the first include
+#include <map>
 #include "switcher/quiddity.hpp"
 
 using namespace switcher;
 
 class pyQuiddity {
  public:
-  using pyQuiddityObject = struct { PyObject_HEAD Quiddity* quid{nullptr}; };
+  using registered_signals_t = std::map<SContainer::sig_id_t, SContainer::register_id_t>;
+  using registered_callbacks_t = std::map<SContainer::sig_id_t, PyObject*>;
+  using pyQuiddityObject = struct {
+    PyObject_HEAD Quiddity* quid{nullptr};
+    std::unique_ptr<registered_signals_t> registered_signals{};
+    std::unique_ptr<registered_callbacks_t> registered_callbacks{};
+  };
 
   static PyTypeObject pyType;
   static PyMethodDef pyQuiddity_methods[];
@@ -46,5 +53,8 @@ class pyQuiddity {
   // access to quiddity InfoTree
   static PyObject* get_info(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_info_as_json(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  // signals
+  static PyObject* subscribe(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* unsubscribe(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
 };
 #endif

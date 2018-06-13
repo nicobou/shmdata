@@ -40,4 +40,3 @@ git pull origin develop
 ```
 git rebase -i develop
 ```
-

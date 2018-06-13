@@ -18,7 +18,7 @@ set(SHMDATA_REQUIRED_VERSION 1.3)
 # Package (pkg-config) Information
 set(PACKAGE_NAME switcher)
 set(PACKAGE_DESCRIPTION "Switcher for audio, video, data and network streams")
-set(PACKAGE_URL "https://github.com/sat-metalab/switcher")
+set(PACKAGE_URL "https://gitlab.com/sat-metalab/switcher")
 set(PACKAGE_VERSION ${SWITCHER_VERSION_STRING})
 
 # Compilation
@@ -27,7 +27,7 @@ set(DATADIR ${CMAKE_INSTALL_PREFIX}/share/switcher/)
 
 # CPack - General
 set(CPACK_PACKAGE_NAME ${PACKAGE_NAME})
-set(CPACK_PACKAGE_VENDOR "Métalab - Société des arts technologiques")
+set(CPACK_PACKAGE_VENDOR "Metalab - Société des arts technologiques")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PACKAGE_DESCRIPTION}")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 SET(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
