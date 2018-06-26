@@ -22,6 +22,7 @@ See instructions for:
 - [shell scripting a sip call](doc/sip-call.md)
 - [shell scripting OSC quiddities](doc/using-osc-quiddities.md)
 - [configuration from file](doc/configuration.md)
+- [Map OSC or HTTP messages to quiddity properties](doc/protocol-mapper.md)
 - [contributing code](doc/CODING.md)
 
 Command line

@@ -62,8 +62,8 @@ ProtocolMapper::ProtocolMapper(quid::Config&& conf) : Quiddity(std::forward<quid
         return true;
       },
       [this]() { return config_file_; },
-      "Protocol mapping description description file",
-      "This property allows for loading the command description",
+      "Path to command description file",
+      "Load the command description",
       config_file_);
 }
 }
