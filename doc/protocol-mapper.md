@@ -28,7 +28,7 @@ Here is a description of each key:
 * continuous (optional): set to "true" if you want to periodically send some messages (the period will then be configurable in the quiddity).
 * commands (mandatory): contains all the custom commands, needed to create the properties and create the messages.
 
-The command fields are as follow:
+The command fields are as follows:
 * type (optional): if no type is provided, an empty message will be sent, can be useful and even mandatory for some clients (some Ardour commands for instance). If a type is provided, it must be valid or the message won't be sent. Possible options are: `h` (int64_t), `i` (int32_t), `f` (float), `d` (double) and `s` (string)
 * value (optional): value of the message, must fit the provided type. Will be ignored if the type is empty.
 * name (optional but recommended): name of the property in the scenic inspector
