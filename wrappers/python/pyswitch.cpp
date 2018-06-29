@@ -18,9 +18,10 @@
  */
 
 #include "./pyswitch.hpp"
+#include <switcher/console-logger.hpp>
+#include <switcher/silent-logger.hpp>
+#include "./pyinfotree.hpp"
 #include "./pyqrox.hpp"
-#include "switcher/console-logger.hpp"
-#include "switcher/silent-logger.hpp"
 
 PyObject* pySwitch::Switcher_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/) {
   pySwitchObject* self;
@@ -33,7 +34,6 @@ PyObject* pySwitch::Switcher_new(PyTypeObject* type, PyObject* /*args*/, PyObjec
       return nullptr;
     }
   }
-
   return (PyObject*)self;
 }
 
@@ -189,6 +189,66 @@ PyObject* pySwitch::get_qrox(pySwitchObject* self, PyObject* args, PyObject* kwd
   return obj;
 }
 
+PyDoc_STRVAR(pyswitch_get_state_doc,
+             "Get the current state of the quiddities.\n"
+             "Arguments: None\n"
+             "Returns: an InfoTree object containing state description.\n");
+
+PyObject* pySwitch::get_state(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  auto tree = self->switcher->get_state();
+  auto tree_capsule = PyCapsule_New(static_cast<void*>(tree.get()), nullptr, nullptr);
+  PyObject* argList = Py_BuildValue("Oi", tree_capsule, true);
+  PyObject* obj = PyObject_CallObject((PyObject*)&pyInfoTree::pyType, argList);
+  Py_XDECREF(argList);
+  Py_XDECREF(tree_capsule);
+  return obj;
+}
+
+PyDoc_STRVAR(pyswitch_reset_state_doc,
+             "Reset initial state for saving. When loading a new state, quiddities "
+             "created after a call to reset_state will be cleared.\n The clear "
+             "argument removes all created quiddities since the last call to reset_state "
+             "(clear is true by default).\n"
+             "Arguments: clear (bool)\n"
+             "Returns: None.\n");
+
+PyObject* pySwitch::reset_state(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  int clear = 1;
+  static char* kwlist[] = {(char*)"clear", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|p", kwlist, &clear)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  self->switcher->reset_state(clear ? true : false);
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+PyDoc_STRVAR(pyswitch_load_state_doc,
+             "Load a switcher state. \n"
+             "Arguments: state (InfoTree)\n"
+             "Returns: True or False.\n");
+
+PyObject* pySwitch::load_state(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  PyObject* pyinfotree;
+  static char* kwlist[] = {(char*)"state", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyinfotree)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  if (!PyObject_IsInstance(pyinfotree, reinterpret_cast<PyObject*>(&pyInfoTree::pyType))) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  if (!self->switcher->load_state(
+          reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree)) {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+  Py_INCREF(Py_True);
+  return Py_True;
+}
+
 PyMethodDef pySwitch::pySwitch_methods[] = {
     {"name", (PyCFunction)pySwitch::name, METH_NOARGS, pyswitch_name_doc},
     {"version", (PyCFunction)pySwitch::version, METH_NOARGS, pyswitch_version_doc},
@@ -202,6 +262,15 @@ PyMethodDef pySwitch::pySwitch_methods[] = {
      (PyCFunction)pySwitch::get_qrox_from_name,
      METH_VARARGS | METH_KEYWORDS,
      pyswitch_get_qrox_from_name_doc},
+    {"get_state", (PyCFunction)pySwitch::get_state, METH_NOARGS, pyswitch_get_state_doc},
+    {"load_state",
+     (PyCFunction)pySwitch::load_state,
+     METH_VARARGS | METH_KEYWORDS,
+     pyswitch_load_state_doc},
+    {"reset_state",
+     (PyCFunction)pySwitch::reset_state,
+     METH_VARARGS | METH_KEYWORDS,
+     pyswitch_reset_state_doc},
     {nullptr}};
 
 PyDoc_STRVAR(pyquid_switcher_doc,

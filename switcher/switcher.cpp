@@ -46,7 +46,7 @@ void Switcher::reset_state(bool remove_created_quiddities) {
   quiddities_at_reset_ = qcontainer_->get_names();
 }
 
-bool Switcher::load_state(InfoTree::ptr state) {
+bool Switcher::load_state(InfoTree* state) {
   if (!state) return false;
   // trees
   auto quiddities_user_data = state->get_tree("userdata.");

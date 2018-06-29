@@ -41,9 +41,14 @@ class pySwitch {
   static int Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* name(pySwitchObject* self);
   static PyObject* version(pySwitchObject* self);
+  // quiddity life
   static PyObject* create(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* remove(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_qrox(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_qrox_from_name(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  // state saving
+  static PyObject* get_state(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* load_state(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* reset_state(pySwitchObject* self, PyObject* args, PyObject* kwds);
 };
 #endif

@@ -27,10 +27,17 @@ PyObject* pyInfoTree::InfoTree_new(PyTypeObject* type, PyObject* /*args*/, PyObj
 }
 
 int pyInfoTree::InfoTree_init(pyInfoTreeObject* self, PyObject* args, PyObject* kwds) {
-  PyObject* pyinfotree;
-  int copy;
-  static char* kwlist[] = {(char*)"infotree_c_ptr", (char*)"copy", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|p", kwlist, &pyinfotree, &copy)) return -1;
+  PyObject* pyinfotree = nullptr;
+  int copy = 0;
+  const char* json_descr = nullptr;
+  static char* kwlist[] = {(char*)"infotree_c_ptr", (char*)"copy", (char*)"json", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Ops", kwlist, &pyinfotree, &copy, &json_descr))
+    return -1;
+  if (nullptr != json_descr) {  // build a tree from the json description
+    self->keepAlive = JSONSerializer::deserialize(json_descr);
+    self->tree = self->keepAlive.get();
+    return 0;
+  }
   if (copy) {
     self->keepAlive =
         InfoTree::copy(static_cast<InfoTree*>(PyCapsule_GetPointer(pyinfotree, nullptr)));
@@ -147,6 +154,7 @@ PyObject* pyInfoTree::json(pyInfoTreeObject* self, PyObject* args, PyObject* kwd
   if (nullptr == path) path = ".";
   return PyUnicode_FromString(JSONSerializer::serialize(self->tree->get_tree(path).get()).c_str());
 }
+
 PyObject* pyInfoTree::any_to_pyobject(const Any& any) {
   auto category = any.get_category();
   if (AnyCategory::NONE == category) {  // any is empty
@@ -198,7 +206,9 @@ PyDoc_STRVAR(pyquid_pyinfotree_doc,
              "InfoTree objects.\n"
              "A InfoTree is a key value structure where keys are string based, hierarchical and "
              "separated by dots, e.g. \"root.child.subchild\". Values are typed and the tree can "
-             "be serialized & deserialized.\n");
+             "be serialized & deserialized.\n"
+             "An InfoTree object can be serialized using the json() method, and deserialized using "
+             "the InfoTree constructor with the json description given as argument\n");
 
 PyTypeObject pyInfoTree::pyType = {
     PyVarObject_HEAD_INIT(nullptr, 0)(char*) "pyquid.InfoTree", /* tp_name */

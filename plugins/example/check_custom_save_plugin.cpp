@@ -59,7 +59,7 @@ int main() {
     manager->reset_state(true);
 
     {  // check loading
-      manager->load_state(save);
+      manager->load_state(save.get());
       auto loaded = manager->quids<MPtr(&quid::Container::get_qrox_from_name)>("test").get();
       assert(loaded);
       assert(loaded->prop<MPtr(&PContainer::get<bool>)>(

@@ -185,7 +185,7 @@ int main(int argc, char* argv[]) {
   manager->reset_state(false);
 
   if (load_file &&
-      !manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(load_file)))) {
+      !manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(load_file)).get())) {
     std::cerr << "could not load file " << load_file << '\n';
   }
 

@@ -22,12 +22,12 @@ rm -rf hooks && ln -s ../.hooks hooks
 Contributing
 ------------
 
-Please send your pull request at the [sat-metalab' github account](https://github.com/sat-metalab/switcher). If you do not know how to make a pull request, github provides some [help about collaborating on projects using issues and pull requests](https://help.github.com/categories/collaborating-on-projects-using-issues-and-pull-requests/).
+Please send your merge request at the [sat-metalab' gitlab account](https://gitlab.com/sat-metalab/switcher). If you do not know how to make a merge request, gitlab provides some [help about creating a merge request](https://docs.gitlab.com/ee/gitlab-basics/add-merge-request.html).
 
 Branching strategy with git
 ---------------------------
 
-The [master](https://gitlab.com/sat-metalab/switcher/tree/master) branch contains switcher releases. Validated new developments are into the [develop](https://github.com/sat-metalab/switcher/tree/develop) branch.
+The [master](https://gitlab.com/sat-metalab/switcher/tree/master) branch contains switcher releases. Validated new developments are into the [develop](https://gitlab.com/sat-metalab/switcher/tree/develop) branch.
 
 Modifications are made into a dedicated branch that need to be merged into the develop branch through a gitlab merge request. When you modification is ready, you need to prepare your merge request as follow:
 * Update your develop branch. 

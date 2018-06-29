@@ -53,7 +53,7 @@ class Switcher : public GstInitialized {
 
   // State
   InfoTree::ptr get_state() const;
-  bool load_state(InfoTree::ptr state);
+  bool load_state(InfoTree* state);
   void reset_state(bool remove_created_quiddities);
 
   // Configuration

@@ -397,7 +397,7 @@ int controlService::load(const std::string& file_name, std::string* result) {
 
   manager->reset_state(true);
 
-  if (!manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(file_name)))) {
+  if (!manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(file_name)).get())) {
     *result = "false";
     return SOAP_OK;
   }
@@ -412,7 +412,7 @@ int controlService::run(const std::string& file_name, std::string* result) {
   Switcher* manager;
   if (ctrl_server != nullptr) manager = ctrl_server->get_switcher();
 
-  if (!manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(file_name)))) {
+  if (!manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(file_name)).get())) {
     *result = "false";
     return SOAP_OK;
   }

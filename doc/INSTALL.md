@@ -3,7 +3,7 @@ INSTALL
 
 ## Quick build and installation (latest Ubuntu)
 
-> **Note**: Ensure **[shmdata](https://github.com/sat-metalab/shmdata)** is already installed before proceeding.
+> **Note**: Ensure **[shmdata](https://gitlab.com/sat-metalab/shmdata)** is already installed before proceeding.
 
 Build and install **switcher** from the command line:
 

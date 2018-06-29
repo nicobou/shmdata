@@ -1,4 +1,5 @@
 *.swp
+*.switcher
 .idea/workspace.xml
 build/
 html/
