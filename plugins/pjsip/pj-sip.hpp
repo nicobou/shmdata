@@ -41,7 +41,10 @@ class PJSIP : public SafeBoolIdiom {
   friend PJMediaEndpt;
 
  public:
-  PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun);
+  PJSIP(
+    std::function<bool()> init_fun,
+    std::function<void()> destruct_fun
+  );
   ~PJSIP();
   PJSIP(const PJSIP&) = delete;
   PJSIP& operator=(const PJSIP&) = delete;

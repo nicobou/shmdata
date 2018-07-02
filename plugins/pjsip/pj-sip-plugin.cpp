@@ -100,6 +100,8 @@ SIPPlugin::SIPPlugin(quid::Config&& conf)
   i_m_the_one_ = true;
   this_ = this;
 
+  apply_log_level_configuration();
+
   pjsip_ = std::make_unique<ThreadedWrapper<PJSIP>>(
       // init
       [&]() {
@@ -155,6 +157,30 @@ SIPPlugin::~SIPPlugin() {
   sip_plugin_used_ = 0;
 }
 
+void SIPPlugin::apply_log_level_configuration() {
+  if (config<MPtr(&InfoTree::branch_has_data)>("log_level")) {
+    int log_level = config<MPtr(&InfoTree::branch_get_value)>("log_level").copy_as<int>();
+    if (log_level > -1) {
+        log_level_ = log_level;
+        debug("sip has set log level from configuration");
+    }
+  }
+
+  if (config<MPtr(&InfoTree::branch_has_data)>("console_log_level")) {
+    int console_log_level = config<MPtr(&InfoTree::branch_get_value)>("console_log_level").copy_as<int>();
+    if (console_log_level > -1) {
+        console_log_level_ = console_log_level;
+        debug("sip has set console log level from configuration");
+    }
+  }
+
+  if (config<MPtr(&InfoTree::branch_has_data)>("log_filename")) {
+    auto log_filename = config<MPtr(&InfoTree::branch_get_value)>("log_filename");
+    log_filename_.assign(log_filename.copy_as<std::string>());
+    debug("sip has set log filename from configuration");
+  }
+}
+
 void SIPPlugin::apply_configuration() {
   // trying to set port if configuration found
   if (config<MPtr(&InfoTree::branch_has_data)>("port")) {
@@ -166,7 +192,6 @@ void SIPPlugin::apply_configuration() {
       warning("sip failed setting port from configuration");
     }
   }
-
   // trying to set stun/turn from configuration
   std::string stun = config<MPtr(&InfoTree::branch_get_value)>("stun");
   std::string turn = config<MPtr(&InfoTree::branch_get_value)>("turn");
@@ -180,7 +205,6 @@ void SIPPlugin::apply_configuration() {
       warning("sip failed setting STUN/TURN from configuration");
     }
   }
-
   // trying to register if a user is given
   std::string user = config<MPtr(&InfoTree::branch_get_value)>("user");
   if (!user.empty()) {
@@ -256,6 +280,7 @@ void SIPPlugin::remove_exposed_quiddity(const std::string& peer_uri, const std::
 
   qcontainer_->remove(qcontainer_->get_id(quid));
 }
+
 void SIPPlugin::remove_exposed_quiddities(const std::string& peer_uri) {
   std::vector<std::string> quids_to_remove;
   {

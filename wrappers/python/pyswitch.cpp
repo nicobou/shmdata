@@ -40,17 +40,13 @@ PyObject* pySwitch::Switcher_new(PyTypeObject* type, PyObject* /*args*/, PyObjec
 int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   PyObject* name = nullptr;
   PyObject* showDebug = nullptr;
-  PyObject* tmp = nullptr;
+  PyObject* configFile = nullptr;
 
-  static char* kwlist[] = {(char*)"name", (char*)"debug", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &name, &showDebug)) return -1;
+  static char* kwlist[] = {(char*)"name", (char*)"debug", (char*)"config", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist, &name, &showDebug, &configFile)) return -1;
 
-  tmp = self->name;
-  Py_INCREF(name);
   self->name = name;
-  Py_XDECREF(tmp);
-
-  if (showDebug && PyBool_Check(showDebug)) {
+  if (showDebug && PyBool_Check(showDebug) && showDebug==Py_True) {
     self->switcher = Switcher::make_switcher<ConsoleLogger>(PyUnicode_AsUTF8(self->name));
   } else {
     self->switcher = Switcher::make_switcher<SilentLogger>(PyUnicode_AsUTF8(self->name));
@@ -62,6 +58,11 @@ int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds
 
   self->switcher->factory<MPtr(&quid::Factory::scan_dir)>(
       self->switcher->factory<MPtr(&quid::Factory::get_default_plugin_dir)>());
+
+  if (configFile) {
+    if (!self->switcher->conf<MPtr(&Configuration::from_file)>(PyUnicode_AsUTF8(configFile)))
+      return -1;
+  }
 
   return 0;
 }

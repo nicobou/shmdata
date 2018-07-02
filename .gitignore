@@ -5,3 +5,4 @@ __pycache__
 build/
 cmake-build-*/
 html/
+plugins/pjsip/config.json
