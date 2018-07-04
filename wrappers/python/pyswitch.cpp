@@ -249,6 +249,51 @@ PyObject* pySwitch::load_state(pySwitchObject* self, PyObject* args, PyObject* k
   return Py_True;
 }
 
+PyDoc_STRVAR(pyswitch_list_classes_doc,
+             "Get the list of available type of quiddity.\n"
+             "Arguments: (None)\n"
+             "Returns: A list a of class name.\n");
+
+PyObject* pySwitch::list_classes(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  auto class_list = self->switcher->factory<MPtr(&quid::Factory::get_class_list)>();
+  PyObject* result = PyList_New(class_list.size());
+  for (unsigned int i = 0; i < class_list.size(); ++i) {
+    PyList_SetItem(result, i, Py_BuildValue("s", class_list[i].c_str()));
+  }
+  return result;
+}
+
+PyDoc_STRVAR(pyswitch_classes_doc_doc,
+             "Get a JSON documentation of all classes.\n"
+             "Arguments: (None)\n"
+             "Returns: JSON formated documentation of all classes available.\n");
+
+PyObject* pySwitch::classes_doc(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  return PyUnicode_FromString(
+      JSONSerializer::serialize(
+          self->switcher->factory<MPtr(&quid::Factory::get_classes_doc)>().get())
+          .c_str());
+}
+
+PyDoc_STRVAR(pyswitch_class_doc_doc,
+             "Get a JSON documentation of a given classes.\n"
+             "Arguments: (class)\n"
+             "Returns: JSON formated documentation of the class.\n");
+
+PyObject* pySwitch::class_doc(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  const char* class_name = nullptr;
+  static char* kwlist[] = {(char*)"class", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &class_name)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  return PyUnicode_FromString(
+      JSONSerializer::serialize(self->switcher->factory<MPtr(&quid::Factory::get_classes_doc)>()
+                                    ->get_tree(std::string(".classes.") + class_name)
+                                    .get())
+          .c_str());
+}
+
 PyMethodDef pySwitch::pySwitch_methods[] = {
     {"name", (PyCFunction)pySwitch::name, METH_NOARGS, pyswitch_name_doc},
     {"version", (PyCFunction)pySwitch::version, METH_NOARGS, pyswitch_version_doc},
@@ -271,6 +316,18 @@ PyMethodDef pySwitch::pySwitch_methods[] = {
      (PyCFunction)pySwitch::reset_state,
      METH_VARARGS | METH_KEYWORDS,
      pyswitch_reset_state_doc},
+    {"list_classes",
+     (PyCFunction)pySwitch::list_classes,
+     METH_VARARGS | METH_KEYWORDS,
+     pyswitch_list_classes_doc},
+    {"classes_doc",
+     (PyCFunction)pySwitch::classes_doc,
+     METH_VARARGS | METH_KEYWORDS,
+     pyswitch_classes_doc_doc},
+    {"class_doc",
+     (PyCFunction)pySwitch::class_doc,
+     METH_VARARGS | METH_KEYWORDS,
+     pyswitch_class_doc_doc},
     {nullptr}};
 
 PyDoc_STRVAR(pyquid_switcher_doc,

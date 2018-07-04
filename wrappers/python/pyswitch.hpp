@@ -50,5 +50,9 @@ class pySwitch {
   static PyObject* get_state(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* load_state(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* reset_state(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  // introspection
+  static PyObject* list_classes(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* classes_doc(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* class_doc(pySwitchObject* self, PyObject* args, PyObject* kwds);
 };
 #endif
