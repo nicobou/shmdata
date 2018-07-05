@@ -54,5 +54,8 @@ class pySwitch {
   static PyObject* list_classes(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* classes_doc(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* class_doc(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* list_quids(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* quids_descr(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* quid_descr(pySwitchObject* self, PyObject* args, PyObject* kwds);
 };
 #endif

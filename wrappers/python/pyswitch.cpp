@@ -266,7 +266,7 @@ PyObject* pySwitch::list_classes(pySwitchObject* self, PyObject* args, PyObject*
 PyDoc_STRVAR(pyswitch_classes_doc_doc,
              "Get a JSON documentation of all classes.\n"
              "Arguments: (None)\n"
-             "Returns: JSON formated documentation of all classes available.\n");
+             "Returns: JSON-formated documentation of all classes available.\n");
 
 PyObject* pySwitch::classes_doc(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   return PyUnicode_FromString(
@@ -278,7 +278,7 @@ PyObject* pySwitch::classes_doc(pySwitchObject* self, PyObject* args, PyObject* 
 PyDoc_STRVAR(pyswitch_class_doc_doc,
              "Get a JSON documentation of a given classes.\n"
              "Arguments: (class)\n"
-             "Returns: JSON formated documentation of the class.\n");
+             "Returns: JSON-formated documentation of the class.\n");
 
 PyObject* pySwitch::class_doc(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   const char* class_name = nullptr;
@@ -291,6 +291,50 @@ PyObject* pySwitch::class_doc(pySwitchObject* self, PyObject* args, PyObject* kw
       JSONSerializer::serialize(self->switcher->factory<MPtr(&quid::Factory::get_classes_doc)>()
                                     ->get_tree(std::string(".classes.") + class_name)
                                     .get())
+          .c_str());
+}
+
+PyDoc_STRVAR(pyswitch_list_quids_doc,
+             "Get the list of instanciated quiddities.\n"
+             "Arguments: (None)\n"
+             "Returns: A list a of quiddities.\n");
+
+PyObject* pySwitch::list_quids(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  auto quids = self->switcher->quids<MPtr(&quid::Container::get_names)>();
+  PyObject* result = PyList_New(quids.size());
+  for (unsigned int i = 0; i < quids.size(); ++i) {
+    PyList_SetItem(result, i, Py_BuildValue("s", quids[i].c_str()));
+  }
+  return result;
+}
+
+PyDoc_STRVAR(pyswitch_quids_descr_doc,
+             "Get a JSON description of all the instanciated quiddities.\n"
+             "Arguments: (None)\n"
+             "Returns: the JSON-formated description.\n");
+
+PyObject* pySwitch::quids_descr(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  return PyUnicode_FromString(
+      JSONSerializer::serialize(
+          self->switcher->quids<MPtr(&quid::Container::get_quiddities_description)>().get())
+          .c_str());
+}
+
+PyDoc_STRVAR(pyswitch_quid_descr_doc,
+             "Get a JSON description of a given quiddity.\n"
+             "Arguments: (id)\n"
+             "Returns: JSON-formated description of the quiddity.\n");
+
+PyObject* pySwitch::quid_descr(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  int id = 0;
+  static char* kwlist[] = {(char*)"id", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "i", kwlist, &id) && 0 != id) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  return PyUnicode_FromString(
+      JSONSerializer::serialize(
+          self->switcher->quids<MPtr(&quid::Container::get_quiddity_description)>(id).get())
           .c_str());
 }
 
@@ -328,6 +372,18 @@ PyMethodDef pySwitch::pySwitch_methods[] = {
      (PyCFunction)pySwitch::class_doc,
      METH_VARARGS | METH_KEYWORDS,
      pyswitch_class_doc_doc},
+    {"list_quids",
+     (PyCFunction)pySwitch::list_quids,
+     METH_VARARGS | METH_KEYWORDS,
+     pyswitch_list_quids_doc},
+    {"quids_descr",
+     (PyCFunction)pySwitch::quids_descr,
+     METH_VARARGS | METH_KEYWORDS,
+     pyswitch_quids_descr_doc},
+    {"quid_descr",
+     (PyCFunction)pySwitch::quid_descr,
+     METH_VARARGS | METH_KEYWORDS,
+     pyswitch_quid_descr_doc},
     {nullptr}};
 
 PyDoc_STRVAR(pyquid_switcher_doc,
