@@ -24,6 +24,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include "./any.hpp"
 #include "./counter-map.hpp"
 #include "./is-specialization-of.hpp"
 #include "./property-internal-types.hpp"
@@ -58,6 +59,7 @@ class PContainer {
   std::string get_str(prop_id_t id) const;
   bool set_str_str(const std::string& strid, const std::string& val) const;
   std::string get_str_str(const std::string& strid) const;
+  Any get_any(prop_id_t id) const;
   template <typename T>
   bool set(prop_id_t id, const T& val) const {
     auto prop_it = props_.find(id);

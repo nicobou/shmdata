@@ -3,6 +3,7 @@ pkg_check_modules(GMODULE REQUIRED gmodule-2.0)
 add_library(${SWITCHER_LIBRARY} SHARED
     audio-caps.cpp
     audio-test-source.cpp
+    bool-any.cpp
     bool-log.cpp
     bundle-description-parser.cpp
     bundle.cpp
@@ -78,6 +79,7 @@ add_library(${SWITCHER_LIBRARY} SHARED
 set(HEADER_INCLUDES
     audio-caps.hpp
     base-logger.hpp
+    bool-any.hpp
     bool-log.hpp
     abstract-factory.hpp
     abstract-factory_spec.hpp

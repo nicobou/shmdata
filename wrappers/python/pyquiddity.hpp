@@ -44,17 +44,18 @@ class pyQuiddity {
   static PyObject* Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/);
   static int Quiddity_init(pyQuiddityObject* self, PyObject* /*args*/, PyObject* /*kwds*/);
   static void Quiddity_dealloc(pyQuiddityObject* self);
-  static PyObject* set_str_str(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* get_str_str(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* invoke_str(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* set(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* invoke(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* make_shmpath(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   // access to user tree
   static PyObject* get_user_tree(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   // access to quiddity InfoTree
   static PyObject* get_info(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* get_info_as_json(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get_info_tree_as_json(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   // signals
   static PyObject* subscribe(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* unsubscribe(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get_signal_id(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
 };
 #endif

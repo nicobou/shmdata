@@ -57,7 +57,7 @@ class InfoTree {
   using child_type = std::pair<std::string, InfoTree::ptr>;
   using children_t = std::vector<child_type>;
   using OnNodeFunction =
-      std::function<void(const std::string& name, InfoTree::ptrc tree, bool is_array_element)>;
+      std::function<bool(const std::string& name, InfoTree::ptrc tree, bool is_array_element)>;
   using GetNodeReturn = std::pair<InfoTree::children_t*, InfoTree::children_t::size_type>;
 
   // factory
@@ -73,6 +73,13 @@ class InfoTree {
   // InfoTree will store a std::string
   static InfoTree::ptr make(const char* data);
   static InfoTree::ptr make_null();
+
+  // collecting values (serialized)
+  using collect_predicate_t = std::function<bool(const std::string& key, InfoTree::ptrc node)>;
+  // the predicate can return false in order to stop searching in subtrees
+  static std::list<Any> collect_values(InfoTree::ptrc tree,
+                                       collect_predicate_t predicate,
+                                       bool continue_search_in_siblings);
 
   // escaping dots from a keys ("." internally replaced by "__DOT__")
   static std::string escape_dots(const std::string& str);

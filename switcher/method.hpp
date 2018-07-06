@@ -21,6 +21,7 @@
 #define __SWITCHER_METHOD_H__
 
 #include <functional>
+#include "./bool-any.hpp"
 #include "./bool-log.hpp"
 
 namespace switcher {
@@ -35,7 +36,8 @@ class MethodBase {
     if (!isdigit(*str.begin())) return 0;
     return stoul(str, nullptr, 0);
   }
-  virtual BoolLog invoke(const std::string& args) const = 0;
+  virtual BoolLog invoke(const std::string& args) const = 0;  // return a string into BoolLog's msg
+  virtual BoolAny invoke_any(const std::string& args) const = 0;  // return an any
 
  private:
   size_t type_hash_;
@@ -80,6 +82,31 @@ class Method : public MethodBase {
           false,
           std::string("invoke failed to deserialize following arguments: ") + serialized_tuple);
     return make_valid_boollog<typename method_trait<M>::return_t>(deserialized.second);
+  }
+
+  template <typename T,
+            typename Tup,
+            typename std::enable_if<!std::is_same<T, void>::value>::type* = nullptr>
+  BoolAny make_valid_boolany(Tup& tup) const {
+    return BoolAny(Any(invoke_from_tuple(std::move(tup))));
+  }
+
+  template <typename T,
+            typename Tup,
+            typename std::enable_if<std::is_same<T, void>::value>::type* = nullptr>
+  BoolAny make_valid_boolany(Tup&) const {
+    return BoolAny(Any());
+  }
+
+  BoolAny invoke_any(const std::string& serialized_tuple) const {
+    auto deserialized =
+        deserialize::apply<typename method_trait<decltype(method_)>::args_t>(serialized_tuple);
+    if (!deserialized.first)
+      return BoolAny(
+          Any(),
+          false,
+          std::string("invoke failed to deserialize following arguments: ") + serialized_tuple);
+    return make_valid_boolany<typename method_trait<M>::return_t>(deserialized.second);
   }
 
  private:

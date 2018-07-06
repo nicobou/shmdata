@@ -50,8 +50,28 @@ InfoTree::ptr InfoTree::copy(InfoTree::ptrc tree) {
                          res->graft(key, make(value));
                        else
                          res->graft(key, make());
+                       return true;
                      },
-                     [&](const std::string&, InfoTree::ptrc, bool) { path.pop_back(); });
+                     [&](const std::string&, InfoTree::ptrc, bool) {
+                       path.pop_back();
+                       return true;
+                     });
+  return res;
+}
+
+std::list<Any> InfoTree::collect_values(InfoTree::ptrc tree,
+                                        collect_predicate_t predicate,
+                                        bool continue_search_in_siblings) {
+  std::list<Any> res;
+  preorder_tree_walk(tree,
+                     [&](const std::string& name, InfoTree::ptrc node, bool) {
+                       if (predicate(name, node)) {
+                         res.push_back(Any(node->read_data()));
+                         return continue_search_in_siblings;
+                       }
+                       return true;
+                     },
+                     [&](const std::string&, InfoTree::ptrc, bool) { return true; });
   return res;
 }
 
@@ -68,9 +88,8 @@ void InfoTree::preorder_tree_walk(InfoTree::ptrc tree,
   std::unique_lock<std::mutex> lock(tree->mutex_);
   if (!tree->children_.empty()) {
     for (auto& it : tree->children_) {
-      on_visiting_node(it.first, it.second.get(), tree->is_array_);
-      if (it.second.get())  // FIXME: figure out why children might be null
-        preorder_tree_walk(it.second.get(), on_visiting_node, on_node_visited);
+      if (!on_visiting_node(it.first, it.second.get(), tree->is_array_) && it.second.get()) break;
+      preorder_tree_walk(it.second.get(), on_visiting_node, on_node_visited);
       on_node_visited(it.first, it.second.get(), tree->is_array_);
     }
   }
@@ -320,8 +339,9 @@ std::list<std::string> InfoTree::copy_leaf_values(const std::string& path) const
   preorder_tree_walk(tree.get(),
                      [&res](std::string /*key*/, InfoTree::ptrc node, bool /*is_array_element*/) {
                        if (node->is_leaf()) res.push_back(Any::to_string(node->read_data()));
+                       return true;
                      },
-                     [](std::string, InfoTree::ptrc, bool) {});
+                     [](std::string, InfoTree::ptrc, bool) { return true; });
   return res;
 }
 

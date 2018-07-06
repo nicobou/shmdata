@@ -13,29 +13,32 @@
 import sys
 sys.path.insert(0, '/usr/local/lib/python3/dist-packages')
 import pyquid
-
-sw = pyquid.Switcher(name="pyquid")
-
-print("list classes names:")
-for classname in sw.list_classes():
-    print(classname)
+import time
+import assert_exit_1
 
 
-print("classes doc:")
-print(sw.classes_doc())
+def on_tree_grafted(key):
+    # success
+    exit(0)
 
-print("class doc for videotestsrc:")
-print(sw.class_doc("videotestsrc"))
 
-print("quiddity introspection")
-sw.create("videotestsrc")
-atest = sw.create("audiotestsrc", "atest")
+sw = pyquid.Switcher("signals")
 
-print("list quiddities")
-print(sw.list_quids())
+# create a quiddity
+qroxvid = sw.create("videotestsrc", "vid")
+assert None != qroxvid
+vid = qroxvid.quid()
 
-print("description of quiddities")
-print(sw.quids_descr())
+# check if on-tree-grafted is available with this quiddity
+assert "on-tree-grafted" in pyquid.InfoTree(
+    vid.get_info_tree_as_json(".signal")).get_key_values('id', False)
 
-print("description of atest")
-print(sw.quid_descr(atest.id()))
+# subscribe to a signal
+assert vid.subscribe("on-tree-grafted", on_tree_grafted)
+
+vid.set("started", True)
+
+# wait for the signal to arrive,
+time.sleep(1)
+# the test will fail if the signal is not triggered before
+exit(1)

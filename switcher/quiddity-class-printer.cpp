@@ -25,7 +25,7 @@ typedef struct {
   std::string result_{};
 } Data;
 
-void on_visiting_node(std::string key, const InfoTree::ptrc node, bool, Data* data) {
+bool on_visiting_node(std::string key, const InfoTree::ptrc node, bool, Data* data) {
   auto value = node->read_data();
   if (value.not_null()) {
     if (key == "class")
@@ -34,9 +34,10 @@ void on_visiting_node(std::string key, const InfoTree::ptrc node, bool, Data* da
              key == "author")
       data->result_.append(std::string("   ") + key + ": " + Any::to_string(value) + "\n");
   }
+  return true;
 }
 
-void on_node_visited(std::string, const InfoTree::ptrc, bool, Data*) {}
+bool on_node_visited(std::string, const InfoTree::ptrc, bool, Data*) { return true; }
 
 std::string print(InfoTree::ptrc tree) {
   Data data;

@@ -21,45 +21,64 @@
 #include "./pyinfotree.hpp"
 #include "switcher/scope-exit.hpp"
 
-PyDoc_STRVAR(pyquiddity_set_str_str_doc,
+PyDoc_STRVAR(pyquiddity_set_doc,
              "Set the value of a property with its name and a string value.\n"
              "Arguments: (name, value)\n"
              "Returns: true of false\n");
 
-PyObject* pyQuiddity::set_str_str(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+PyObject* pyQuiddity::set(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
   const char* property = nullptr;
-  const char* value = nullptr;
+  PyObject* value = nullptr;
   static char* kwlist[] = {(char*)"property", (char*)"value", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss", kwlist, &property, &value)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO", kwlist, &property, &value)) {
     Py_INCREF(Py_False);
     return Py_False;
   }
-  if (!self->quid->prop<MPtr(&PContainer::set_str_str)>(property, value)) return Py_False;
+  PyObject* val_str = nullptr;
+  PyObject* repr = nullptr;
+  On_scope_exit {
+    if (val_str) Py_XDECREF(val_str);
+    if (repr) Py_XDECREF(repr);
+  };
+  if (!PyObject_TypeCheck(value, &PyUnicode_Type)) {
+    repr = PyObject_Repr(value);
+    val_str = PyUnicode_AsEncodedString(repr, "utf-8", "Error ");
+    Py_XDECREF(repr);
+  } else {
+    val_str = PyUnicode_AsEncodedString(value, "utf-8", "Error ");
+  }
+  if (!self->quid->prop<MPtr(&PContainer::set_str_str)>(property, PyBytes_AS_STRING(val_str)))
+    return Py_False;
   Py_INCREF(Py_True);
   return Py_True;
 }
 
-PyDoc_STRVAR(pyquiddity_get_str_str_doc,
+PyDoc_STRVAR(pyquiddity_get_doc,
              "Get the value of a property from its name.\n"
              "Arguments: (name)\n"
              "Returns: the value (string)\n");
 
-PyObject* pyQuiddity::get_str_str(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+PyObject* pyQuiddity::get(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
   const char* property = nullptr;
   static char* kwlist[] = {(char*)"name", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &property)) {
     Py_INCREF(Py_False);
     return Py_False;
   }
-  return PyUnicode_FromString(self->quid->prop<MPtr(&PContainer::get_str_str)>(property).c_str());
+  auto prop_id = self->quid->prop<MPtr(&PContainer::get_id)>(property);
+  if (0 == prop_id) {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+  return pyInfoTree::any_to_pyobject(self->quid->prop<MPtr(&PContainer::get_any)>(prop_id));
 }
 
-PyDoc_STRVAR(pyquiddity_invoke_str_doc,
+PyDoc_STRVAR(pyquiddity_invoke_doc,
              "Invoke a method with its names and arguments.\n"
              "Arguments: (method, args=[])\n"
              "Returns: the return value (string)\n");
 
-PyObject* pyQuiddity::invoke_str(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+PyObject* pyQuiddity::invoke(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
   const char* method = nullptr;
   PyObject* inv_args = nullptr;
   static char* kwlist[] = {(char*)"method", (char*)"args", nullptr};
@@ -79,18 +98,17 @@ PyObject* pyQuiddity::invoke_str(pyQuiddityObject* self, PyObject* args, PyObjec
     PyObject* item = nullptr;
     PyObject* item_str = nullptr;
     PyObject* repr = nullptr;
-    item = PyList_GetItem(inv_args, i);
-    if (!PyObject_TypeCheck(item, &PyUnicode_Type)) {
-      repr = PyObject_Repr(item);
-      item_str = PyUnicode_AsEncodedString(repr, "utf-8", "Error ");
-      Py_XDECREF(repr);
-    } else {
-      item_str = PyUnicode_AsEncodedString(item, "utf-8", "Error ");
-    }
     On_scope_exit {
       if (item_str) Py_XDECREF(item_str);
       if (repr) Py_XDECREF(repr);
     };
+    item = PyList_GetItem(inv_args, i);
+    if (!PyObject_TypeCheck(item, &PyUnicode_Type)) {
+      repr = PyObject_Repr(item);
+      item_str = PyUnicode_AsEncodedString(repr, "utf-8", "Error ");
+    } else {
+      item_str = PyUnicode_AsEncodedString(item, "utf-8", "Error ");
+    }
 
     if (tuple_args.empty())
       tuple_args = serialize::esc_for_tuple(PyBytes_AS_STRING(item_str));
@@ -98,13 +116,13 @@ PyObject* pyQuiddity::invoke_str(pyQuiddityObject* self, PyObject* args, PyObjec
       tuple_args = tuple_args + "," + serialize::esc_for_tuple(PyBytes_AS_STRING(item_str));
   }
 
-  auto res = self->quid->meth<MPtr(&MContainer::invoke_str)>(
+  auto res = self->quid->meth<MPtr(&MContainer::invoke_any)>(
       self->quid->meth<MPtr(&MContainer::get_id)>(method), tuple_args);
   if (!res) {
     Py_INCREF(Py_None);
     return Py_None;
   }
-  return PyUnicode_FromString(res.msg().c_str());
+  return pyInfoTree::any_to_pyobject(res.any());
 }
 
 PyDoc_STRVAR(pyquiddity_make_shmpath_doc,
@@ -130,12 +148,7 @@ PyDoc_STRVAR(pyquiddity_get_user_tree_doc,
 
 PyObject* pyQuiddity::get_user_tree(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
   auto* tree = self->quid->user_data<MPtr(&InfoTree::get_tree)>(".").get();
-  auto tree_capsule = PyCapsule_New(static_cast<void*>(tree), nullptr, nullptr);
-  PyObject* argList = Py_BuildValue("(O)", tree_capsule);
-  PyObject* obj = PyObject_CallObject((PyObject*)&pyInfoTree::pyType, argList);
-  Py_XDECREF(argList);
-  Py_XDECREF(tree_capsule);
-  return obj;
+  return pyInfoTree::make_pyobject_from_c_ptr(tree, false);
 }
 
 PyDoc_STRVAR(pyquiddity_get_info_doc,
@@ -235,12 +248,14 @@ PyObject* pyQuiddity::unsubscribe(pyQuiddityObject* self, PyObject* args, PyObje
   return Py_True;
 }
 
-PyDoc_STRVAR(pyquiddity_get_info_as_json_doc,
+PyDoc_STRVAR(pyquiddity_get_info_tree_as_json_doc,
              "Get json serialization of InfoTree the subtree.\n"
              "Arguments: (path)\n"
              "Returns: the json string\n");
 
-PyObject* pyQuiddity::get_info_as_json(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+PyObject* pyQuiddity::get_info_tree_as_json(pyQuiddityObject* self,
+                                            PyObject* args,
+                                            PyObject* kwds) {
   const char* path = nullptr;
   static char* kwlist[] = {(char*)"path", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &path)) {
@@ -250,6 +265,21 @@ PyObject* pyQuiddity::get_info_as_json(pyQuiddityObject* self, PyObject* args, P
   if (nullptr == path) path = ".";
 
   return PyUnicode_FromString(self->quid->tree<MPtr(&InfoTree::serialize_json)>(path).c_str());
+}
+
+PyDoc_STRVAR(pyquiddity_get_signal_id_doc,
+             "Get the id of a given signal.\n"
+             "Arguments: (name)\n"
+             "Returns: the id \n");
+
+PyObject* pyQuiddity::get_signal_id(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+  const char* signal = nullptr;
+  static char* kwlist[] = {(char*)"name", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &signal)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  return PyLong_FromLong(self->quid->sig<MPtr(&SContainer::get_id)>(signal));
 }
 
 PyObject* pyQuiddity::Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/) {
@@ -278,43 +308,42 @@ void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-PyMethodDef pyQuiddity::pyQuiddity_methods[] = {{"set_str_str",
-                                                 (PyCFunction)pyQuiddity::set_str_str,
-                                                 METH_VARARGS | METH_KEYWORDS,
-                                                 pyquiddity_set_str_str_doc},
-                                                {"get_str_str",
-                                                 (PyCFunction)pyQuiddity::get_str_str,
-                                                 METH_VARARGS | METH_KEYWORDS,
-                                                 pyquiddity_get_str_str_doc},
-                                                {"invoke_str",
-                                                 (PyCFunction)pyQuiddity::invoke_str,
-                                                 METH_VARARGS | METH_KEYWORDS,
-                                                 pyquiddity_invoke_str_doc},
-                                                {"make_shmpath",
-                                                 (PyCFunction)pyQuiddity::make_shmpath,
-                                                 METH_VARARGS | METH_KEYWORDS,
-                                                 pyquiddity_make_shmpath_doc},
-                                                {"get_user_tree",
-                                                 (PyCFunction)pyQuiddity::get_user_tree,
-                                                 METH_VARARGS | METH_KEYWORDS,
-                                                 pyquiddity_get_user_tree_doc},
-                                                {"get_info",
-                                                 (PyCFunction)pyQuiddity::get_info,
-                                                 METH_VARARGS | METH_KEYWORDS,
-                                                 pyquiddity_get_info_doc},
-                                                {"get_info_as_json",
-                                                 (PyCFunction)pyQuiddity::get_info_as_json,
-                                                 METH_VARARGS | METH_KEYWORDS,
-                                                 pyquiddity_get_info_as_json_doc},
-                                                {"subscribe",
-                                                 (PyCFunction)pyQuiddity::subscribe,
-                                                 METH_VARARGS | METH_KEYWORDS,
-                                                 pyquiddity_subscribe_doc},
-                                                {"unsubscribe",
-                                                 (PyCFunction)pyQuiddity::unsubscribe,
-                                                 METH_VARARGS | METH_KEYWORDS,
-                                                 pyquiddity_unsubscribe_doc},
-                                                {nullptr}};
+PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
+    {"set", (PyCFunction)pyQuiddity::set, METH_VARARGS | METH_KEYWORDS, pyquiddity_set_doc},
+    {"get", (PyCFunction)pyQuiddity::get, METH_VARARGS | METH_KEYWORDS, pyquiddity_get_doc},
+    {"invoke",
+     (PyCFunction)pyQuiddity::invoke,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_invoke_doc},
+    {"make_shmpath",
+     (PyCFunction)pyQuiddity::make_shmpath,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_make_shmpath_doc},
+    {"get_user_tree",
+     (PyCFunction)pyQuiddity::get_user_tree,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_get_user_tree_doc},
+    {"get_info",
+     (PyCFunction)pyQuiddity::get_info,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_get_info_doc},
+    {"get_info_tree_as_json",
+     (PyCFunction)pyQuiddity::get_info_tree_as_json,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_get_info_tree_as_json_doc},
+    {"subscribe",
+     (PyCFunction)pyQuiddity::subscribe,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_subscribe_doc},
+    {"unsubscribe",
+     (PyCFunction)pyQuiddity::unsubscribe,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_unsubscribe_doc},
+    {"get_signal_id",
+     (PyCFunction)pyQuiddity::get_signal_id,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_get_signal_id_doc},
+    {nullptr}};
 
 PyDoc_STRVAR(pyquid_quiddity_doc,
              "Quiddity objects.\n"

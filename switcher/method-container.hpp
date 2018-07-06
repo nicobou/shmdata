@@ -23,6 +23,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include "./bool-any.hpp"
 #include "./counter-map.hpp"
 #include "./information-tree.hpp"
 #include "./is-specialization-of.hpp"
@@ -74,6 +75,10 @@ class MContainer : public Logged {
 
   BoolLog invoke_str(meth_id_t id, const std::string& serialized_tuple) const {
     return meths_.find(id)->second.get()->invoke(serialized_tuple);
+  }
+
+  BoolAny invoke_any(meth_id_t id, const std::string& serialized_tuple) const {
+    return meths_.find(id)->second.get()->invoke_any(serialized_tuple);
   }
 
   // make

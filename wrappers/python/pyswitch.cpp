@@ -196,12 +196,7 @@ PyDoc_STRVAR(pyswitch_get_state_doc,
 
 PyObject* pySwitch::get_state(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   auto tree = self->switcher->get_state();
-  auto tree_capsule = PyCapsule_New(static_cast<void*>(tree.get()), nullptr, nullptr);
-  PyObject* argList = Py_BuildValue("Oi", tree_capsule, true);
-  PyObject* obj = PyObject_CallObject((PyObject*)&pyInfoTree::pyType, argList);
-  Py_XDECREF(argList);
-  Py_XDECREF(tree_capsule);
-  return obj;
+  return pyInfoTree::make_pyobject_from_c_ptr(tree.get(), true);
 }
 
 PyDoc_STRVAR(pyswitch_reset_state_doc,

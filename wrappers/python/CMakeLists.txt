@@ -42,4 +42,11 @@ if (WITH_PYTHON)
 
     install(TARGETS pyquid LIBRARY DESTINATION ${PYTHON_DIST_PACKAGES})
 
+    # TEST
+    add_test(pyquid_basic ${CMAKE_CURRENT_SOURCE_DIR}/examples/01-basic.py)
+    add_test(pyquid_introspection ${CMAKE_CURRENT_SOURCE_DIR}/examples/02-introspection.py)
+    add_test(pyquid_infotree ${CMAKE_CURRENT_SOURCE_DIR}/examples/03-infotree.py)
+    add_test(pyquid_signal ${CMAKE_CURRENT_SOURCE_DIR}/examples/04-signal.py)
+    add_test(pyquid_save ${CMAKE_CURRENT_SOURCE_DIR}/examples/05-save.py)
+
 endif ()
