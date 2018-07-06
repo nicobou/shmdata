@@ -61,13 +61,19 @@ utree.graft(".my.float", 1.2345)
 utree.graft(".my.bool", True)
 utree.graft(".my.string", "My eye is ziped")
 
-print("utree: " + utree.json(".my."))
+utree.graft("my.array.1", 1)
+utree.graft("my.array.2", 1)
+utree.graft("my.array.3", 0)
+utree.graft("my.array.4", 6)
+utree.tag_as_array("my.array")
+
+print("utree: " + quid.get_user_tree().json(".my."))
 
 utree_cpy = utree.copy(".")
 
 utree.prune("my")
 
-print("utree: " + utree.json())
+print("utree pruned: " + utree.json())
 
 print("utree_cpy: " + utree_cpy.json())
 

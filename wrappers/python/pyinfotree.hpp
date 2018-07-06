@@ -46,5 +46,6 @@ class pyInfoTree {
   static PyObject* graft(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
   static PyObject* json(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* tag_as_array(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
 };
 #endif

@@ -194,12 +194,38 @@ PyObject* pyInfoTree::get(pyInfoTreeObject* self, PyObject* args, PyObject* kwds
   return any_to_pyobject(self->tree->branch_get_value(path));
 }
 
+PyDoc_STRVAR(pyinfotree_tag_as_array_doc,
+             "Tag a branch as an array, according to the value of the is_array argument (True by "
+             "default). \n"
+             "Arguments: (path, is_array)\n"
+             "Returns: True or False\n");
+
+PyObject* pyInfoTree::tag_as_array(pyInfoTreeObject* self, PyObject* args, PyObject* kwds) {
+  const char* path = nullptr;
+  int is_array = 1;
+  static char* kwlist[] = {(char*)"path", (char*)"is_array", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|p", kwlist, &path, &is_array)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  if (!self->tree->tag_as_array(path, is_array ? true : false)) {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+  Py_INCREF(Py_True);
+  return Py_True;
+}
+
 PyMethodDef pyInfoTree::pyInfoTree_methods[] = {
     {"prune", (PyCFunction)prune, METH_VARARGS | METH_KEYWORDS, pyinfotree_prune_doc},
     {"copy", (PyCFunction)copy, METH_VARARGS | METH_KEYWORDS, pyinfotree_copy_doc},
     {"graft", (PyCFunction)graft, METH_VARARGS | METH_KEYWORDS, pyinfotree_graft_doc},
     {"json", (PyCFunction)json, METH_VARARGS | METH_KEYWORDS, pyinfotree_json_doc},
     {"get", (PyCFunction)get, METH_VARARGS | METH_KEYWORDS, pyinfotree_get_doc},
+    {"tag_as_array",
+     (PyCFunction)tag_as_array,
+     METH_VARARGS | METH_KEYWORDS,
+     pyinfotree_tag_as_array_doc},
     {nullptr}};
 
 PyDoc_STRVAR(pyquid_pyinfotree_doc,
