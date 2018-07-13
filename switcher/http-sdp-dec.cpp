@@ -63,7 +63,7 @@ HTTPSDPDec::HTTPSDPDec(quid::Config&& conf)
                    "arguments" : [
                      {
                         "long name" : "URL",
-                        "description" : "URL to the sdp file, or a base64 encoded SDP description",
+                        "description" : "URL to the sdp file, or a base64 encoded SDP description"
                      }
                    ]
                   }
