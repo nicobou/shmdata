@@ -12,7 +12,7 @@ $ sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgs
 $ git submodule update --init --recursive
 $ mkdir build
 $ cd build
-$ cmake -DENABLE_GPL=ON ..
+$ cmake -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE=Release .. # replace "Release" with "Debug" when coding
 $ make -j"$(nproc)"
 $ sudo make install
 $ sudo ldconfig
