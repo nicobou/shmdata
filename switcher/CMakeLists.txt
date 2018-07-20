@@ -210,6 +210,6 @@ install(TARGETS ${SWITCHER_LIBRARY}
     COMPONENT libraries)
 
 install(FILES ${HEADER_INCLUDES}
-    DESTINATION include/switcher
+    DESTINATION include/switcher-${SWITCHER_API_VERSION}/switcher
     COMPONENT headers
     )
