@@ -53,22 +53,16 @@ HTTPSDPDec::HTTPSDPDec(quid::Config&& conf)
                                                 "Decompress",
                                                 "Decompress received streams",
                                                 decompress_streams_)),
-      to_shm_id_(mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+      to_shm_id_(pmanage<MPtr(&PContainer::make_string)>(
           "to_shmdata",
-          JSONSerializer::deserialize(
-              R"(
-                  {
-                   "name" : "To Shmdata",
-                   "description" : "get streams from sdp description over http, accept also base64 encoded SDP string",
-                   "arguments" : [
-                     {
-                        "long name" : "URL",
-                        "description" : "URL to the sdp file, or a base64 encoded SDP description"
-                     }
-                   ]
-                  }
-              )"),
-          [this](const std::string& uri) { return to_shmdata(uri); })) {
+          [this](const std::string& uri) {
+            if ("" == uri) return true;
+            return to_shmdata(uri);
+          },
+          [this]() { return uri_; },
+          "To Shmdata",
+          "get streams from sdp description over http, accept also base64 encoded SDP string",
+          uri_)) {
   if (!souphttpsrc_ || !sdpdemux_) {
     is_valid_ = false;
     return;

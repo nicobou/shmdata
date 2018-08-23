@@ -53,7 +53,7 @@ class HTTPSDPDec : public Quiddity {
   std::string src_element_class_{"souphttpsrc"};
   CounterMap counter_{};
   std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
-  MContainer::meth_id_t to_shm_id_;
+  PContainer::prop_id_t to_shm_id_;
   bool to_shmdata(std::string uri);
   void init_httpsdpdec();
   void destroy_httpsdpdec();
