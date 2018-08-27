@@ -285,7 +285,7 @@ void Switcher::register_bundle_from_configuration() {
 }
 
 void Switcher::remove_shm_zombies() const {
-  auto files = FileUtils::get_shmfiles_from_directory(get_shm_dir(), get_shm_prefix());
+  auto files = FileUtils::get_shmfiles_from_directory(get_shm_dir(), get_shm_prefix() + get_name());
   for (auto& it : files) {
     auto res = FileUtils::remove(it);
     if (!res) log_->warning("fail removing shmdata % (%)", it, res.msg());
