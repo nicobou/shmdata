@@ -41,6 +41,7 @@ PortMidiSource::PortMidiSource(quid::Config&& conf) : Quiddity(std::forward<quid
     return;
   }
   init_startable(this);
+  register_writer_suffix("midi");
   devices_id_ =
       pmanage<MPtr(&PContainer::make_selection<>)>("device",
                                                    [this](const IndexOrName& val) {

@@ -52,6 +52,7 @@ GstVideoConverter::GstVideoConverter(quid::Config&& conf)
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
   shmpath_converted_ = make_shmpath("video");
+  register_writer_suffix("video");
 }
 
 bool GstVideoConverter::on_shmdata_disconnect() {

@@ -49,6 +49,8 @@ Uridecodebin::Uridecodebin(quid::Config&& conf)
     return;
   }
 
+  register_writer_suffix(".*");
+
   pmanage<MPtr(&PContainer::make_string)>("uri",
                                           [this](const std::string& val) {
                                             uri_ = val;

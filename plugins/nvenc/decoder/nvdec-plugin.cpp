@@ -39,6 +39,7 @@ const std::array<const char*, 5> NVdecPlugin::kSupportedCodecs{
 
 NVdecPlugin::NVdecPlugin(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+  register_writer_suffix("video");
   auto devices = CudaContext::get_devices();
   std::vector<std::string> names;
   for (auto& it : devices) {

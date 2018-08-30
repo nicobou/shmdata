@@ -33,6 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 
 LTCSource::LTCSource(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+  register_writer_suffix("audio");
   jack_client_ = jack_client_open(
       std::string(std::string("genLTC_") + get_name()).c_str(), JackNullOption, nullptr);
 

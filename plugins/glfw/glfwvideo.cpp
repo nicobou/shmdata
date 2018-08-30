@@ -550,6 +550,7 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
   ++instance_counter_;
   RendererSingleton::get()->subscribe_to_render_loop(this);
 
+  register_writer_suffix("keyb|mouse");
   // We need the quiddity config to be loaded so we cannot do it in the constructor.
   if (is_valid_) {
     load_icon();

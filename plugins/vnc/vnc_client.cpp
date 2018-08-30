@@ -38,7 +38,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VncClientSrc,
 VncClientSrc::VncClientSrc(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   init_startable(this);
-
+  register_writer_suffix("vnc");
   shmcntr_.install_connect_method([this](const std::string path) { return connect(path); },
                                   [this](const std::string path) { return disconnect(path); },
                                   [this]() { return disconnect_all(); },

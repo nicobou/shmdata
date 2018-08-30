@@ -34,6 +34,7 @@ GstAudioEncoder::GstAudioEncoder(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
       codecs_(std::make_unique<GstAudioCodec>(static_cast<Quiddity*>(this))) {
+  register_writer_suffix("audio-encoded");
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
       [this](const std::string&) { return this->on_shmdata_disconnect(); },

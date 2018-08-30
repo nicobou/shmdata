@@ -36,6 +36,8 @@ class Bundle : public Quiddity, public StartableQuiddity {
   Bundle(const Bundle&) = delete;
   Bundle& operator=(const Bundle&) = delete;
 
+  std::string make_shmpath(const std::string& suffix) const final;
+
  private:
   struct on_tree_data_t {
     on_tree_data_t(Bundle* self,
@@ -55,6 +57,7 @@ class Bundle : public Quiddity, public StartableQuiddity {
   std::vector<std::pair<std::string /*quid_name*/, std::string /*shmpath*/>> connected_shms_{};
   std::mutex connected_shms_mtx_{};
   std::vector<std::string> start_quids_{};
+  std::vector<std::string> exposed_writer_quids_{};
   std::string reader_quid_{};
   ShmdataConnector shmcntr_;
   std::vector<std::unique_ptr<on_tree_data_t>> on_tree_datas_{};

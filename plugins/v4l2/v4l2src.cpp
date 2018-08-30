@@ -41,10 +41,13 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(V4L2Src,
                                      "Nicolas Bouillot");
 
 void V4L2Src::set_shm_suffix() {
-  if (is_current_pixel_format_raw_video())
+  if (is_current_pixel_format_raw_video()) {
     shmpath_ = make_shmpath(raw_suffix_);
-  else
+    register_writer_suffix(raw_suffix_);
+  } else {
     shmpath_ = make_shmpath(enc_suffix_);
+    register_writer_suffix(enc_suffix_);
+  }
   g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
 }
 

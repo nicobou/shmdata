@@ -37,6 +37,7 @@ PulseSrc::PulseSrc(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       mainloop_(std::make_unique<GlibMainLoop>()),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
+  register_writer_suffix("audio");
   pmanage<MPtr(&PContainer::make_group)>(
       "advanced", "Advanced configuration", "Advanced configuration");
   pmanage<MPtr(&PContainer::make_parented_selection<>)>(

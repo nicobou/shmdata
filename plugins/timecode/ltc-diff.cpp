@@ -32,6 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCDiff,
 
 LTCDiff::LTCDiff(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+  register_writer_suffix("ltc-diff");
   display_timecode1_id_ =
       pmanage<MPtr(&PContainer::make_string)>("first_timecode",
                                               nullptr,

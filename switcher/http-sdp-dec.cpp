@@ -67,6 +67,7 @@ HTTPSDPDec::HTTPSDPDec(quid::Config&& conf)
     is_valid_ = false;
     return;
   }
+  register_writer_suffix(".*");
 }
 
 void HTTPSDPDec::init_httpsdpdec() {

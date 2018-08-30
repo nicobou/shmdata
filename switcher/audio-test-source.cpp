@@ -109,6 +109,7 @@ AudioTestSource::AudioTestSource(quid::Config&& conf)
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   waveforms_id_ = pmanage<MPtr(&PContainer::push)>(
       "wave", GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "wave"));
+  register_writer_suffix("audio");
 }
 
 bool AudioTestSource::start() {

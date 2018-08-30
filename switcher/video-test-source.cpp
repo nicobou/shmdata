@@ -109,6 +109,9 @@ VideoTestSource::VideoTestSource(quid::Config&& conf)
     is_valid_ = false;
     return;
   }
+  // register writer suffix
+  register_writer_suffix("video");
+  // compute shmpath
   shmpath_ = make_shmpath("video");
   g_object_set(G_OBJECT(videotestsrc_.get_raw()), "is-live", TRUE, nullptr);
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);

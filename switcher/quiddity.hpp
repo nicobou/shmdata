@@ -113,7 +113,7 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   static std::string get_socket_dir();
 
   // use a consistent naming for shmdatas
-  std::string make_shmpath(const std::string& suffix) const;
+  virtual std::string make_shmpath(const std::string& suffix) const;
   std::string get_manager_name();
   std::string get_quiddity_name_from_file_name(const std::string& shmdata_path) const;
   std::string get_shmdata_name_from_file_name(const std::string& path) const;
@@ -174,6 +174,9 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   bool graft_tree(const std::string& path, InfoTree::ptr tree_to_graft, bool do_signal = true);
   InfoTree::ptr prune_tree(const std::string& path, bool do_signal = true);
   InfoTree::ptr get_tree(const std::string& path);
+  // register suffix exposed by this quiddity in the information tree, under the
+  // shmdata.writer.suffix. 'suffix' value can be expressed as a regular expression
+  void register_writer_suffix(const std::string& suffix);
 
   // property
   Make_delegate(Quiddity, PContainer, &props_, pmanage);

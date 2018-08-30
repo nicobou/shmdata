@@ -39,11 +39,12 @@ PyObject* pySwitch::Switcher_new(PyTypeObject* type, PyObject* /*args*/, PyObjec
 
 int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   PyObject* name = nullptr;
-  PyObject* showDebug = nullptr;
   PyObject* configFile = nullptr;
+  PyObject* showDebug = nullptr;
 
-  static char* kwlist[] = {(char*)"name", (char*)"debug", (char*)"config", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist, &name, &showDebug, &configFile)) return -1;
+  static char* kwlist[] = {(char*)"name", (char*)"config", (char*)"debug", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist, &name, &configFile, &showDebug))
+    return -1;
 
   self->name = name;
   if (showDebug && PyBool_Check(showDebug) && showDebug==Py_True) {

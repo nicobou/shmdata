@@ -32,6 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmDelay,
 
 ShmDelay::ShmDelay(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+  register_writer_suffix("delayed-shm");
   time_delay_id_ =
       pmanage<MPtr(&PContainer::make_double)>("time_delay",
                                               [this](const double& val) {

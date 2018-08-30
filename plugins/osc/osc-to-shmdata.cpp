@@ -43,6 +43,7 @@ OscToShmdata::OscToShmdata(quid::Config&& conf)
                                        port_,
                                        1,
                                        65536);
+  register_writer_suffix("osc");
 }
 
 OscToShmdata::~OscToShmdata() { stop(); }

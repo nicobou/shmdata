@@ -64,6 +64,7 @@ NVencPlugin::NVencPlugin(quid::Config&& conf)
                                                         20000000)),
       es_(std::make_unique<ThreadedWrapper<NVencES>>(get_log_ptr())),
       shmcntr_(static_cast<Quiddity*>(this)) {
+  register_writer_suffix("video-encoded");
   auto devices = CudaContext::get_devices();
   std::vector<std::string> names;
   for (auto& it : devices) {

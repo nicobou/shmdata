@@ -52,6 +52,7 @@ Resample::Resample(quid::Config&& conf)
                                                                "Resampling algorithm",
                                                                "Balance fidelity vs. speed",
                                                                algo_)) {
+  register_writer_suffix("audio");
   cntr_.install_connect_method([this](const std::string& shmpath) { return connect(shmpath); },
                                [this](const std::string&) { return disconnect(); },
                                [this]() { return disconnect(); },

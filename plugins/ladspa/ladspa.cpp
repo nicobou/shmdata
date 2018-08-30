@@ -43,6 +43,8 @@ LADSPA::LADSPA(quid::Config&& conf)
       plugins_(Selection<>(std::move(plugins_list_.first), std::move(plugins_list_.second), 0)) {
   if (plugins_list_.first.empty()) return;
 
+  register_writer_suffix("audio");
+
   perchannel_group_id_ = pmanage<MPtr(&PContainer::make_group)>(
       "perchannel_group",
       "Per-channel settings",

@@ -62,8 +62,8 @@ time.sleep(1)
 assert win.invoke('disconnect', [vidshmpath])
 
 time.sleep(1)
-# and can reconnect
-assert win.invoke('connect', [vidshmpath])
+# and can reconnect, using the alternative connect-quid method
+assert win.invoke('connect-quid', ['vid', 'video'])
 time.sleep(1)
 
 sw.remove(vidqrox.id())

@@ -123,6 +123,7 @@ JackToShmdata::JackToShmdata(quid::Config&& conf)
                                                           1,
                                                           max_number_of_channels);
   update_port_to_connect();
+  register_writer_suffix("audio");
 }
 
 bool JackToShmdata::start() {

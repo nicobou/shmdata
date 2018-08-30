@@ -85,9 +85,9 @@ int main() {
                       }
                     }));
 
-    assert(dummy->meth<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
-        dummy->meth<MPtr(&MContainer::get_id)>("connect"),
-        std::make_tuple(std::string("/tmp/switcher_src_1_video"))));
+    assert(dummy->meth<MPtr(&MContainer::invoke<std::function<bool(std::string, std::string)>>)>(
+        dummy->meth<MPtr(&MContainer::get_id)>("connect-quid"),
+        std::make_tuple("src", "video-encoded")));
 
     wait_until_success();
 

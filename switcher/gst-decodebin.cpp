@@ -36,6 +36,7 @@ GstDecodebin::GstDecodebin(quid::Config&& conf)
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       shmsrc_("shmdatasrc"),
       shmcntr_(static_cast<Quiddity*>(this)) {
+  register_writer_suffix(".*");
   if (!shmsrc_) {
     is_valid_ = false;
     return;

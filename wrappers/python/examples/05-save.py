@@ -22,28 +22,28 @@ sw = pyquid.Switcher('save_example')
 win = sw.create('glfwin', 'win').quid()
 vid = sw.create('videotestsrc', 'vid').quid()
 vid.set('started', True)
-assert win.invoke('connect', [vid.make_shmpath('video')])
+assert win.invoke('connect-quid', ['vid', 'video']
 
 time.sleep(1)
 
 # save the switcher state
-state = sw.get_state()
+state=sw.get_state()
 assert not state.empty()
 with open('save.switcher', 'w') as save_file:
     assert 0 < save_file.write(state.json())
 
 # make another switcher
-sw2 = pyquid.Switcher('pyQuidSave2')
+sw2=pyquid.Switcher('pyQuidSave2')
 
 # creating a quiddity that will not be affected by reloading
-usage = sw2.create('systemusage')
+usage=sw2.create('systemusage')
 
 # consider current state as initial state
 sw2.reset_state(False)
 
 # load the save file
 with open('save.switcher', 'r') as save_file:
-    content = save_file.read()
+    content=save_file.read()
 sw2.load_state(pyquid.InfoTree(content))
 
 # check win and vid exist
@@ -52,6 +52,6 @@ assert None != sw.get_qrox_from_name('vid')
 
 time.sleep(1)
 
-total_mem = usage.quid().get_info('top.mem.total')
+total_mem=usage.quid().get_info('top.mem.total')
 # system usage is still here
 assert total_mem.isalnum()

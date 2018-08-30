@@ -276,4 +276,8 @@ bool Quiddity::set_nickname(const std::string& nickname) {
 
 std::string Quiddity::get_nickname() const { return nickname_; }
 
+void Quiddity::register_writer_suffix(const std::string& suffix) {
+  information_tree_->graft("shmdata.writer.suffix", InfoTree::make(suffix));
+}
+
 }  // namespace switcher

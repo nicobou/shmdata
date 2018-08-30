@@ -98,6 +98,7 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
   // first: check is start must be installed
   for (auto& quid : quids) {
     if (quid.expose_start) start_quids_.emplace_back(quid.name);
+    if (quid.expose_shmw) exposed_writer_quids_.emplace_back(quid.name);
   }
   if (!start_quids_.empty()) {
     init_startable(this);
@@ -395,4 +396,21 @@ bool Bundle::property_is_displayed(bundle::quiddity_spec_t quid_spec, std::strin
                                                             property_name))));
 }
 
+std::string Bundle::make_shmpath(const std::string& suffix) const {
+  if (exposed_writer_quids_.empty()) {
+    warning("bundle cannot provide shmpath since no shmdata writer is exposed (suffix % bundle %)",
+            suffix,
+            get_name());
+    return "";
+  }
+  for (const auto& it : exposed_writer_quids_) {
+    auto quid = manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(it));
+    auto writer_regex =
+        quid->tree<MPtr(&InfoTree::branch_get_value)>("shmdata.writer.suffix").as<std::string>();
+    if (writer_regex.empty()) continue;
+    if (std::regex_match(suffix, std::regex(writer_regex))) return quid->make_shmpath(suffix);
+  }
+  warning("no shmpath found for suffix % (bundle %)", suffix, get_name());
+  return "";
+}
 }  // namespace switcher
