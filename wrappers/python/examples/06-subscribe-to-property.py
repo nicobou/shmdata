@@ -18,31 +18,35 @@ import assert_exit_1
 
 # "my_user_data" will be passed to the subscribe method
 my_user_data = ["my", "user", "data"]
+my_width = 123
 
 
-def on_tree_grafted(key, user_data):
+def on_property_changed(value, user_data):
+    assert value == my_width
     assert user_data == my_user_data
     # success
     exit(0)
 
 
-sw = pyquid.Switcher("signals")
+sw = pyquid.Switcher("prop-sub")
 
 # create a quiddity
 qroxvid = sw.create("videotestsrc", "vid")
 assert None != qroxvid
 vid = qroxvid.quid()
 
-# check if on-tree-grafted is available with this quiddity
-assert "on-tree-grafted" in pyquid.InfoTree(
-    vid.get_info_tree_as_json(".signal")).get_key_values('id', False)
+# check if the "width" property is available with this quiddity
+assert "width" in pyquid.InfoTree(
+    vid.get_info_tree_as_json(".property")).get_key_values('id', False)
 
-# subscribe to a signal
-assert vid.subscribe("on-tree-grafted", on_tree_grafted, my_user_data)
+# subscribe to the property named "width"
+assert vid.subscribe("width", on_property_changed, my_user_data)
 
-vid.set("started", True)
+vid.set("width", my_width)
 
-# wait for the signal to arrive,
+
+# wait for the "on_property_changed" callback to be triggered
 time.sleep(1)
-# the test will fail if the signal is not triggered before
+
+# the test will fail if the callback has not been invoked before
 exit(1)

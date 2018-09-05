@@ -167,17 +167,86 @@ PyObject* pyQuiddity::get_info(pyQuiddityObject* self, PyObject* args, PyObject*
   return pyInfoTree::any_to_pyobject(self->quid->tree<MPtr(&InfoTree::branch_get_value)>(path));
 }
 
+bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
+                                     const char* signal_name,
+                                     PyObject* cb,
+                                     PyObject* user_data) {
+  auto sig_id = self->quid->sig<MPtr(&SContainer::get_id)>(signal_name);
+  if (0 == sig_id) return false;
+  auto reg_id = self->quid->sig<MPtr(&SContainer::subscribe)>(
+      sig_id, [cb, self, user_data](const InfoTree::ptr& tree) {
+        PyObject* arglist;
+        if (user_data)
+          arglist = Py_BuildValue("(sO)", (char*)tree->serialize_json(".").c_str(), user_data);
+        else
+          arglist = Py_BuildValue("(s)", (char*)tree->serialize_json(".").c_str());
+        PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
+        PyObject* pyerr = PyErr_Occurred();
+        if (pyerr != NULL) PyErr_Print();
+        Py_DECREF(arglist);
+        Py_XDECREF(pyobjresult);
+      });
+  if (0 == reg_id) return false;
+  Py_INCREF(cb);
+  self->sig_reg->callbacks.emplace(sig_id, cb);
+  self->sig_reg->signals.emplace(sig_id, reg_id);
+  if (user_data) {
+    Py_INCREF(user_data);
+    self->sig_reg->user_data.emplace(sig_id, user_data);
+  }
+  return true;
+}
+
+bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
+                                       const char* prop_name,
+                                       PyObject* cb,
+                                       PyObject* user_data) {
+  auto prop_id = self->quid->prop<MPtr(&PContainer::get_id)>(prop_name);
+  if (0 == prop_id) return false;
+  auto reg_id =
+      self->quid->prop<MPtr(&PContainer::subscribe)>(prop_id, [prop_id, cb, self, user_data]() {
+        PyObject* arglist;
+        if (user_data)
+          arglist = Py_BuildValue(
+              "(OO)",
+              pyInfoTree::any_to_pyobject(self->quid->prop<MPtr(&PContainer::get_any)>(prop_id)),
+              user_data);
+        else
+          arglist = Py_BuildValue(
+              "(O)",
+              pyInfoTree::any_to_pyobject(self->quid->prop<MPtr(&PContainer::get_any)>(prop_id)));
+        PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
+        PyObject* pyerr = PyErr_Occurred();
+        if (pyerr != NULL) PyErr_Print();
+        Py_DECREF(arglist);
+        Py_XDECREF(pyobjresult);
+      });
+  if (0 == reg_id) return false;
+  Py_INCREF(cb);
+  self->prop_reg->callbacks.emplace(prop_id, cb);
+  self->prop_reg->props.emplace(prop_id, reg_id);
+  if (user_data) {
+    Py_INCREF(user_data);
+    self->prop_reg->user_data.emplace(prop_id, user_data);
+  }
+  return true;
+}
+
 PyDoc_STRVAR(pyquiddity_subscribe_doc,
-             "Subscribe to a signal. The callback has one argument: the json representation of the "
-             "signal value.\n"
-             "Arguments: (signal, callback)\n"
+             "Subscribe to a signal or to a property. The callback has two argument(s): value (of "
+             "the property or the json representation of the value for signals), and the user_data "
+             "if subscribe has been invoked with a user_data.\n"
+             "Arguments: (name, callback, user_data) where name is a signal name or a property "
+             "name. Note that user_data is optional\n"
              "Returns: True or False\n");
 
 PyObject* pyQuiddity::subscribe(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
-  const char* signal_name = nullptr;
+  const char* name = nullptr;
   PyObject* cb = nullptr;
-  static char* kwlist[] = {(char*)"signal", (char*)"cb", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO", kwlist, &signal_name, &cb)) {
+  PyObject* user_data = nullptr;
+
+  static char* kwlist[] = {(char*)"name", (char*)"cb", (char*)"user_data", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|O", kwlist, &name, &cb, &user_data)) {
     Py_INCREF(Py_None);
     return Py_None;
   }
@@ -186,66 +255,85 @@ PyObject* pyQuiddity::subscribe(pyQuiddityObject* self, PyObject* args, PyObject
     return Py_False;
   }
 
+  if (subscribe_to_property(self, name, cb, user_data)) {
+    Py_INCREF(Py_True);
+    return Py_True;
+  }
+
+  if (subscribe_to_signal(self, name, cb, user_data)) {
+    Py_INCREF(Py_True);
+    return Py_True;
+  }
+
+  // no subscription worked
+  Py_INCREF(Py_False);
+  return Py_False;
+}
+
+bool pyQuiddity::unsubscribe_from_property(pyQuiddityObject* self, const char* prop_name) {
+  auto prop_id = self->quid->prop<MPtr(&PContainer::get_id)>(prop_name);
+  if (0 == prop_id) return false;
+  auto found = self->prop_reg->props.find(prop_id);
+  if (self->prop_reg->props.end() == found) return false;
+  auto unsubscribed = self->quid->prop<MPtr(&PContainer::unsubscribe)>(prop_id, found->second);
+  if (!unsubscribed) return false;
+  auto cb = self->prop_reg->callbacks.find(prop_id);
+  Py_XDECREF(cb->second);
+  self->prop_reg->callbacks.erase(cb);
+  auto user_data = self->prop_reg->user_data.find(prop_id);
+  if (self->prop_reg->user_data.end() != user_data) {
+    Py_XDECREF(user_data->second);
+    self->prop_reg->user_data.erase(user_data);
+  }
+  self->prop_reg->props.erase(prop_id);
+  return true;
+}
+
+bool pyQuiddity::unsubscribe_from_signal(pyQuiddityObject* self, const char* signal_name) {
   auto sig_id = self->quid->sig<MPtr(&SContainer::get_id)>(signal_name);
-  if (0 == sig_id) {
-    Py_INCREF(Py_False);
-    return Py_False;
+  if (0 == sig_id) return false;
+  auto found = self->sig_reg->signals.find(sig_id);
+  if (self->sig_reg->signals.end() == found) return false;
+  auto unsubscribed = self->quid->sig<MPtr(&SContainer::unsubscribe)>(sig_id, found->second);
+  if (!unsubscribed) return false;
+  auto cb = self->sig_reg->callbacks.find(sig_id);
+  Py_XDECREF(cb->second);
+  self->sig_reg->callbacks.erase(cb);
+  auto user_data = self->sig_reg->user_data.find(sig_id);
+  if (self->sig_reg->user_data.end() != user_data) {
+    Py_XDECREF(user_data->second);
+    self->sig_reg->user_data.erase(user_data);
   }
-  auto reg_id =
-      self->quid->sig<MPtr(&SContainer::subscribe)>(sig_id, [cb, self](const InfoTree::ptr& tree) {
-        PyObject* arglist;
-        arglist = Py_BuildValue("(s)", (char*)tree->serialize_json(".").c_str());
-        PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
-        PyObject* pyerr = PyErr_Occurred();
-        if (pyerr != NULL) PyErr_Print();
-        Py_DECREF(arglist);
-        Py_XDECREF(pyobjresult);
-      });
-  if (0 == reg_id) {
-    Py_INCREF(Py_False);
-    return Py_False;
-  }
-  Py_INCREF(cb);
-  self->registered_callbacks->emplace(sig_id, cb);
-  self->registered_signals->emplace(sig_id, reg_id);
-  Py_INCREF(Py_True);
-  return Py_True;
+  self->sig_reg->signals.erase(sig_id);
+  return true;
 }
 
 PyDoc_STRVAR(pyquiddity_unsubscribe_doc,
-             "Unsubscribe to a signal.\n"
-             "Arguments: (signal)\n"
+             "Unsubscribe from a signal or a property.\n"
+             "Arguments: (name)\n"
              "Returns: True or False\n");
 
 PyObject* pyQuiddity::unsubscribe(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
-  const char* signal_name = nullptr;
-  static char* kwlist[] = {(char*)"signal", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &signal_name)) {
+  const char* name = nullptr;
+  static char* kwlist[] = {(char*)"name", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &name)) {
     Py_INCREF(Py_None);
     return Py_None;
   }
 
-  auto sig_id = self->quid->sig<MPtr(&SContainer::get_id)>(signal_name);
-  if (0 == sig_id) {
-    Py_INCREF(Py_False);
-    return Py_False;
+  if (unsubscribe_from_signal(self, name)) {
+    Py_INCREF(Py_True);
+    return Py_True;
   }
-  auto found = self->registered_signals->find(sig_id);
-  if (self->registered_signals->end() == found) {
-    Py_INCREF(Py_False);
-    return Py_False;
+
+  if (unsubscribe_from_signal(self, name)) {
+    Py_INCREF(Py_True);
+    return Py_True;
   }
-  auto unsubscribed = self->quid->sig<MPtr(&SContainer::unsubscribe)>(sig_id, found->second);
-  if (!unsubscribed) {
-    Py_INCREF(Py_False);
-    return Py_False;
-  }
-  auto cb = self->registered_callbacks->find(sig_id);
-  Py_XDECREF(cb->second);
-  self->registered_callbacks->erase(cb);
-  self->registered_signals->erase(sig_id);
-  Py_INCREF(Py_True);
-  return Py_True;
+
+  // no unsubscribe worked
+  Py_INCREF(Py_False);
+  return Py_False;
 }
 
 PyDoc_STRVAR(pyquiddity_get_info_tree_as_json_doc,
@@ -293,18 +381,36 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
   static char* kwlist[] = {(char*)"quid_c_ptr", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyqrox)) return -1;
   auto* quid = static_cast<Quiddity*>(PyCapsule_GetPointer(pyqrox, nullptr));
-  self->registered_callbacks = std::make_unique<registered_callbacks_t>();
-  self->registered_signals = std::make_unique<registered_signals_t>();
+  self->sig_reg = std::make_unique<sig_registering_t>();
+  self->prop_reg = std::make_unique<prop_registering_t>();
   self->quid = quid;
   return 0;
 }
 
 void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
-  for (const auto& it : *self->registered_callbacks.get()) {
-    auto found = self->registered_signals->find(it.first);
+  // cleaning signal subscription
+  for (const auto& it : self->sig_reg->callbacks) {
+    auto found = self->sig_reg->signals.find(it.first);
     self->quid->sig<MPtr(&SContainer::unsubscribe)>(found->first, found->second);
     Py_XDECREF(it.second);
   }
+  for (auto& it : self->sig_reg->user_data) {
+    Py_XDECREF(it.second);
+  }
+  self->sig_reg.reset();
+
+  // cleaning prop subscription
+  for (const auto& it : self->prop_reg->callbacks) {
+    auto found = self->prop_reg->props.find(it.first);
+    self->quid->prop<MPtr(&PContainer::unsubscribe)>(found->first, found->second);
+    Py_XDECREF(it.second);
+  }
+  for (auto& it : self->prop_reg->user_data) {
+    Py_XDECREF(it.second);
+  }
+  self->prop_reg.reset();
+
+  // cleaning self
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
