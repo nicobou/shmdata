@@ -286,7 +286,8 @@ Reader_dealloc(pyshmdata_ReaderObject* self)
 
     Py_XDECREF(self->path);
     Py_XDECREF(self->datatype);
-
+    if (nullptr != self->callback_user_data)
+      Py_XDECREF(self->callback_user_data);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
