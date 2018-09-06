@@ -147,12 +147,25 @@ bool Switcher::load_state(InfoTree* state) {
     }
   }
 
-  // Connect shmdata
+  // Connect to raw shmdata
   if (readers) {
     auto quids = readers->get_child_keys(".");
     for (auto& quid : quids) {
-      auto tmpreaders = readers->get_child_keys(quid);
-      for (auto& reader : tmpreaders) {
+      auto quid_id = qcontainer_->get_id(quid);
+      auto quidreaders = readers->get_child_keys(quid + ".shm_from_quid");
+      auto connect_quid_id = qcontainer_->meths<MPtr(&MContainer::get_id)>(quid_id, "connect-quid");
+      for (auto& reader : quidreaders) {
+        qcontainer_
+            ->meths<MPtr(&MContainer::invoke<std::function<bool(std::string, std::string)>>)>(
+                quid_id,
+                connect_quid_id,
+                std::make_tuple(Any::to_string(readers->branch_get_value(quid + ".shm_from_quid." +
+                                                                         reader + ".name")),
+                                Any::to_string(readers->branch_get_value(quid + ".shm_from_quid." +
+                                                                         reader + ".suffix"))));
+      }
+      auto rawreaders = readers->get_child_keys(quid + ".raw_shm");
+      for (auto& reader : rawreaders) {
         qcontainer_->meths<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
             qcontainer_->get_id(quid),
             qcontainer_->meths<MPtr(&MContainer::get_id)>(qcontainer_->get_id(quid), "connect"),
@@ -224,17 +237,23 @@ InfoTree::ptr Switcher::get_state() const {
 
     // Record shmdata connections.
     // Ignore them if no connect-to methods is installed for this quiddity.
-    if (0 == quid->meth<MPtr(&MContainer::get_id)>("connect")) continue;
+    if (0 == quid->meth<MPtr(&MContainer::get_id)>("connect-quid")) continue;
 
     auto readers = quid->tree<MPtr(&InfoTree::get_child_keys)>("shmdata.reader");
     int nb = 0;
     for (auto& reader : readers) {
-      if (!reader.empty()) {
-        tree->graft(".readers." + quid_name + ".reader_" + std::to_string(++nb),
+      auto writer_info =
+          quid->tree<MPtr(&InfoTree::branch_get_copy)>("shmdata.reader." + reader + ".writer");
+      if (writer_info) {
+        tree->graft(".readers." + quid_name + ".shm_from_quid.reader_" + std::to_string(++nb),
+                    writer_info);
+      } else {
+        tree->graft(".readers." + quid_name + ".raw_shm.reader_" + std::to_string(++nb),
                     InfoTree::make(reader));
       }
     }
-    tree->tag_as_array(".readers." + quid_name, true);
+    tree->tag_as_array(".readers." + quid_name + ".shm_from_quid", true);
+    tree->tag_as_array(".readers." + quid_name + ".raw_shm", true);
   }
   // calling on_saved callback
   for (auto& quid_name : quiddities) {

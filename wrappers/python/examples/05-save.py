@@ -21,8 +21,11 @@ sw = pyquid.Switcher('save_example')
 # instantiate and use some quiddities
 win = sw.create('glfwin', 'win').quid()
 vid = sw.create('videotestsrc', 'vid').quid()
-vid.set('started', True)
 assert win.invoke('connect-quid', ['vid', 'video'])
+assert win.invoke('disconnect-all')
+
+assert win.invoke('connect', [vid.make_shmpath('video')])
+assert vid.set('started', True)
 
 time.sleep(1)
 

@@ -43,7 +43,14 @@ ShmdataFollower::ShmdataFollower(Quiddity* quid,
           &logger_)),
       task_(std::make_unique<PeriodicTask<>>([this]() { this->update_quid_stats(); },
                                              update_interval)) {
-  quid_->graft_tree(tree_path_, quid_->get_shm_information_template(), false);
+  auto tree = quid_->prune_tree(tree_path_, false);
+  // adding default informations for this shmdata
+  quid_->graft_tree(tree_path_, Quiddity::get_shm_information_template(), false);
+  if (tree) {
+    for (auto& it : tree->get_child_keys(".")) {
+      quid_->graft_tree(tree_path_ + "." + it, tree->prune(it), false);
+    }
+  }
 }
 
 ShmdataFollower::~ShmdataFollower() {

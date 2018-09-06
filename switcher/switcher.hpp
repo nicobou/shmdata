@@ -20,6 +20,7 @@
 #ifndef __SWITCHER_SWITCHER_H__
 #define __SWITCHER_SWITCHER_H__
 
+#include <regex>
 #include <string>
 #include <vector>
 #include "./base-logger.hpp"
@@ -76,7 +77,7 @@ class Switcher : public GstInitialized {
         qfactory_(log_.get()),
         conf_(log_.get(), [this]() { register_bundle_from_configuration(); }),
         qcontainer_(quid::Container::make_container(this, &qfactory_, log_.get())),
-        name_(name) {
+        name_(std::regex_replace(name, std::regex("[^[:alnum:]| ]"), "-")) {
     remove_shm_zombies();
   }
   void register_bundle_from_configuration();

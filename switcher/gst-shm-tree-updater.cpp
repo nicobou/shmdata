@@ -44,8 +44,17 @@ GstShmTreeUpdater::GstShmTreeUpdater(Quiddity* quid,
                  if (on_caps_cb) on_caps_cb(caps);
                },
                ShmdataStat::make_tree_updater(quid_, key_ + shmpath_)) {
-  quid_->graft_tree(key_ + shmpath_, quid_->get_shm_information_template(), false);
+  auto path = key_ + shmpath_;
+  auto tree = quid_->prune_tree(path, false);
+  // adding default informations for this shmdata
+  quid_->graft_tree(path, Quiddity::get_shm_information_template(), false);
+  if (tree) {
+    for (auto& it : tree->get_child_keys(".")) {
+      quid_->graft_tree(path + "." + it, tree->prune(it), false);
+    }
+  }
 }
+
 GstShmTreeUpdater::~GstShmTreeUpdater() {
   if (on_del_) on_del_();
   quid_->prune_tree(key_ + shmpath_);

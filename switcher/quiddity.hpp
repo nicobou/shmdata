@@ -176,7 +176,7 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   void notify_tree_updated(const std::string& path);
   InfoTree::ptr prune_tree(const std::string& path, bool do_signal = true);
   InfoTree::ptr get_tree(const std::string& path);
-  InfoTree::ptr get_shm_information_template() const;
+  static InfoTree::ptr get_shm_information_template();
   // register suffix exposed by this quiddity in the information tree, under the
   // shmdata.writer.suffix. 'suffix' value can be expressed as a regular expression
   void register_writer_suffix(const std::string& suffix);

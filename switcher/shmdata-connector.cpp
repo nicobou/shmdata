@@ -42,9 +42,7 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
     quid_->warning("ShmdataConnector is created without quiddity");
     return false;
   }
-  InfoTree::ptr tree = InfoTree::make();
-  tree->graft(".max_reader", InfoTree::make(max_reader));
-  quid_->graft_tree(".shmdata", tree);
+  quid_->graft_tree(".shmdata.max_reader", InfoTree::make(max_reader));
   on_connect_cb_ = on_connect_cb;
   on_disconnect_cb_ = on_disconnect_cb;
   on_disconnect_all_cb_ = on_disconnect_all_cb;
@@ -68,6 +66,14 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
         if (nullptr == on_connect_cb_) {
           quid_->warning("on connect callback not installed\n");
           return false;
+        }
+        auto quid_name = quid_->get_quiddity_name_from_file_name(path);
+        auto suffix = quid_->get_shmdata_name_from_file_name(path);
+        if (!quid_name.empty() && !suffix.empty()) {
+          auto tree = InfoTree::make();
+          tree->graft("name", InfoTree::make(quid_name));
+          tree->graft("suffix", InfoTree::make(suffix));
+          quid_->information_tree_->graft(std::string(".shmdata.reader.") + path + ".writer", tree);
         }
         return on_connect_cb_(path);
       });
@@ -101,7 +107,12 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
           quid_->warning("quiddity % not found: %", quid_name, qrox.msg());
           return false;
         }
-        return on_connect_cb_(qrox.get()->make_shmpath(suffix));
+        auto tree = InfoTree::make();
+        tree->graft("name", InfoTree::make(quid_name));
+        tree->graft("suffix", InfoTree::make(suffix));
+        auto path = qrox.get()->make_shmpath(suffix);
+        quid_->information_tree_->graft(std::string(".shmdata.reader.") + path + ".writer", tree);
+        return on_connect_cb_(path);
       });
 
   quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
@@ -120,7 +131,6 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
                   }
               )"),
       [this](const std::string& path) {
-        On_scope_exit { quid_->prune_tree(std::string(".shmdata.reader.") + path); };
         if (nullptr == on_disconnect_cb_) {
           quid_->warning("on disconnect callback not installed");
           return false;
@@ -139,13 +149,6 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
                   }
               )"),
       [this]() {
-        On_scope_exit {
-          auto keys = quid_->tree<MPtr(&InfoTree::get_child_keys)>(std::string(".shmdata.reader"));
-          if (!keys.empty())
-            for (auto& it : keys) {
-              quid_->prune_tree(std::string(".shmdata.reader." + it));
-            }
-        };
         if (nullptr == on_disconnect_all_cb_) {
           quid_->warning("on disconnect all callback not installed");
           return false;

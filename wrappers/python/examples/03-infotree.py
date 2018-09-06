@@ -46,7 +46,7 @@ assert utree.graft("my.array.2", 1)
 assert utree.graft("my.array.3", 0)
 assert utree.graft("my.array.4", 6)
 assert utree.tag_as_array("my.array")
-assert[1, 1, 0, 6] == json.loads(utree.json('my.array'))
+assert [1, 1, 0, 6] == json.loads(utree.json('my.array'))
 
 # get value of nodes, using the path of a node from the root
 assert 5 == utree.get('.my.long')

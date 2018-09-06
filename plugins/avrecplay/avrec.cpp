@@ -264,7 +264,8 @@ bool AVRecorder::stop() {
 }
 
 bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
-  auto shmdata_name = get_shmdata_name_from_file_name(shmpath);
+  auto shmdata_name =
+      get_quiddity_name_from_file_name(shmpath) + "_" + get_shmdata_name_from_file_name(shmpath);
   if (shmdata_name.empty()) {
     warning("Invalid shmdata path % (avrec)", shmpath);
     message("ERROR: Invalid shmdata path % (avrec)", shmpath);

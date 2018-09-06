@@ -87,11 +87,13 @@ PyObject* pyQuiddity::invoke(pyQuiddityObject* self, PyObject* args, PyObject* k
     return Py_None;
   }
   Py_ssize_t list_size = 0;
-  if (nullptr != inv_args && PyList_Check(inv_args)) {  // a list argument is given
-    list_size = PyList_Size(inv_args);
-  } else {  // something else is given as argument
-    Py_INCREF(Py_None);
-    return Py_None;
+  if (nullptr != inv_args) {
+    if (PyList_Check(inv_args)) {  // a list argument is given
+      list_size = PyList_Size(inv_args);
+    } else {  // something else is given as argument
+      Py_INCREF(Py_None);
+      return Py_None;
+    }
   }
   auto tuple_args = std::string();
   for (auto i = 0; i < list_size; ++i) {

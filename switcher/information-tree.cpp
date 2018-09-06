@@ -177,7 +177,7 @@ Any InfoTree::branch_get_value(const std::string& path) const {
   return res;
 }
 
-InfoTree::ptr InfoTree::branch_get_copy(const std::string& path) {
+InfoTree::ptr InfoTree::branch_get_copy(const std::string& path) const {
   if (path_is_root(path)) return copy(this);
   auto found = get_node(path);
   if (nullptr == found.first) return nullptr;

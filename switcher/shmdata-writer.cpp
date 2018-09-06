@@ -36,7 +36,13 @@ ShmdataWriter::ShmdataWriter(Quiddity* quid,
                  : nullptr) {
   if (shm_ && nullptr != quid_) {
     auto parent_path = ".shmdata.writer." + shmpath_;
+    auto tree = quid_->prune_tree(parent_path, false);
     quid_->graft_tree(parent_path, quid_->get_shm_information_template(), false);
+    if (tree) {
+      for (auto& it : tree->get_child_keys(".")) {
+        quid_->graft_tree(parent_path + "." + it, tree->prune(it), false);
+      }
+    }
     quid_->graft_tree(parent_path + ".caps", InfoTree::make(data_type_), false);
     quid_->graft_tree(
         parent_path + ".category", InfoTree::make(ShmdataUtils::get_category(data_type_)), false);

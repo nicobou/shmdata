@@ -172,7 +172,7 @@ std::string Quiddity::get_shmdata_name_from_file_name(const std::string& path) c
   // Check if external shmdata or regular shmdata.
   if (path.find(get_shmpath_prefix()) != std::string::npos) {  // Regular shmdata
     int i = 0;
-    while (i < 2) {  // Looking for second '_'
+    while (i < 3) {  // Looking for third '_'
       if (pos != 0) pos += 1;
       pos = path.find('_', pos);
       ++i;
@@ -181,13 +181,7 @@ std::string Quiddity::get_shmdata_name_from_file_name(const std::string& path) c
     pos = path.rfind('/');  // Check last '/' to find the file name only.
   }
 
-  auto qid =
-      deserialize::apply<quid::qid_t>(pos != std::string::npos ? std::string(path, pos + 1) : path);
-  if (!qid.first) {
-    warning("could not find quiddity name from file name (%)", path);
-    return std::string();
-  }
-  return qcontainer_->get_switcher()->quids<MPtr(&quid::Container::get_name)>(qid.second);
+  return pos != std::string::npos ? std::string(path, pos + 1) : path;
 }
 
 std::string Quiddity::get_manager_name() { return qcontainer_->get_switcher()->get_name(); }
@@ -285,7 +279,7 @@ void Quiddity::register_writer_suffix(const std::string& suffix) {
   information_tree_->graft("shmdata.writer.suffix", InfoTree::make(suffix));
 }
 
-InfoTree::ptr Quiddity::get_shm_information_template() const {
+InfoTree::ptr Quiddity::get_shm_information_template() {
   InfoTree::ptr tree = InfoTree::make();
   tree->graft(".caps", InfoTree::make());
   tree->graft(".category", InfoTree::make());
