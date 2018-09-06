@@ -51,14 +51,4 @@ std::string ShmdataUtils::get_category(const std::string& caps) {
   return category;
 }
 
-InfoTree::ptr ShmdataUtils::make_tree(const std::string& caps,
-                                      const std::string& category,
-                                      const ShmdataStat& stat) {
-  InfoTree::ptr tree = InfoTree::make();
-  tree->graft(".caps", InfoTree::make(caps));
-  tree->graft(".category", InfoTree::make(category));
-  stat.update_tree(tree, ".");
-  return tree;
-}
-
 }  // namespace switcher

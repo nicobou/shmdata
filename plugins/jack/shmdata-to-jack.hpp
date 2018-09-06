@@ -26,7 +26,7 @@
 #include "./drift-observer.hpp"
 #include "./jack-client.hpp"
 #include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/gst-shm-tree-updater.hpp"
 #include "switcher/shmdata-connector.hpp"
 
 namespace switcher {
@@ -73,7 +73,7 @@ class ShmdataToJack : public Quiddity {
   // gst pipeline:
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   // shmsubscriber (publishing to the information-tree):
-  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
 
   bool start();
   bool stop();

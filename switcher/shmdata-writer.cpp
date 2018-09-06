@@ -34,10 +34,14 @@ ShmdataWriter::ShmdataWriter(Quiddity* quid,
       task_(shm_ ? std::make_unique<PeriodicTask<>>([this]() { this->update_quid_stats(); },
                                                     ShmdataStat::kDefaultUpdateInterval)
                  : nullptr) {
-  if (shm_ && nullptr != quid_)
+  if (shm_ && nullptr != quid_) {
+    auto parent_path = ".shmdata.writer." + shmpath_;
+    quid_->graft_tree(parent_path, quid_->get_shm_information_template(), false);
+    quid_->graft_tree(parent_path + ".caps", InfoTree::make(data_type_), false);
     quid_->graft_tree(
-        ".shmdata.writer." + shmpath_,
-        ShmdataUtils::make_tree(data_type_, ShmdataUtils::get_category(data_type_), ShmdataStat()));
+        parent_path + ".category", InfoTree::make(ShmdataUtils::get_category(data_type_)), false);
+    quid_->notify_tree_updated(parent_path);
+  }
 }
 
 ShmdataWriter::~ShmdataWriter() {

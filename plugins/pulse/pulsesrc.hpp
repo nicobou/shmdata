@@ -26,7 +26,7 @@
 #include <mutex>
 #include "switcher/glibmainloop.hpp"
 #include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/gst-shm-tree-updater.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/unique-gst-element.hpp"
@@ -57,7 +57,7 @@ class PulseSrc : public Quiddity, public StartableQuiddity {
   UGstElem pulsesrc_{"pulsesrc"};
   UGstElem shmsink_{"shmdatasink"};
   std::unique_ptr<GstPipeliner> gst_pipeline_;
-  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
   // pulse devices
   bool connected_to_pulse_{false};
   std::mutex devices_mutex_{};

@@ -310,14 +310,8 @@ bool PulseSrc::start() {
                "device",
                capture_devices_.at(devices_.get_current_index()).name_.c_str(),
                nullptr);
-  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shmsink_.get_raw(),
-      [this](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.writer." + shmpath_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_));
+  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, shmsink_.get_raw(), shmpath_, GstShmTreeUpdater::Direction::writer);
   gst_bin_add_many(
       GST_BIN(gst_pipeline_->get_pipeline()), pulsesrc_.get_raw(), shmsink_.get_raw(), nullptr);
   gst_element_link_many(pulsesrc_.get_raw(), shmsink_.get_raw(), nullptr);
@@ -328,7 +322,6 @@ bool PulseSrc::start() {
 
 bool PulseSrc::stop() {
   shm_sub_.reset(nullptr);
-  prune_tree(".shmdata.writer." + shmpath_);
   pmanage<MPtr(&PContainer::remove)>(volume_id_);
   volume_id_ = 0;
   pmanage<MPtr(&PContainer::remove)>(mute_id_);

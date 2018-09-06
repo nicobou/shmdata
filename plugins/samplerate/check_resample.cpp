@@ -26,7 +26,7 @@
 int main() {
   using namespace switcher;
   // generic switcher testing
-  Switcher::ptr sw = Switcher::make_switcher("test_manager");
+  Switcher::ptr sw = Switcher::make_switcher("test-manager");
   sw->factory<MPtr(&quid::Factory::scan_dir)>("./");
   assert(test::full(sw, "resample"));
 
@@ -41,9 +41,9 @@ int main() {
   assert(0 != frame_received_id);
 
   // check an audio frame has been resampled
-  qrox.get()->prop<MPtr(&PContainer::subscribe)>(frame_received_id, [&]() {
+  assert(0 != qrox.get()->prop<MPtr(&PContainer::subscribe)>(frame_received_id, [&]() {
     if (qrox.get()->prop<MPtr(&PContainer::get<bool>)>(frame_received_id)) exit(0);  // success
-  });
+  }));
 
   using namespace std::chrono_literals;
   std::this_thread::sleep_for(3s);

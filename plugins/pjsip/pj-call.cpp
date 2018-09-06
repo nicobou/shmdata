@@ -624,20 +624,18 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
           auto shmpath = shm_prefix + media_label + "-" + media_type;
           g_object_set(G_OBJECT(el), "socket-path", shmpath.c_str(), nullptr);
           std::lock_guard<std::mutex> lock(call->shm_subs_mtx_);
-          call->shm_subs_.emplace_back(std::make_unique<GstShmdataSubscriber>(
+          call->shm_subs_.emplace_back(std::make_unique<GstShmTreeUpdater>(
+              SIPPlugin::this_,
               el,
-              [=](const std::string& caps) {
-                SIPPlugin::this_->graft_tree(
-                    ".shmdata.writer." + shmpath,
-                    ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
+              shmpath,
+              GstShmTreeUpdater::Direction::writer,
+              [=](const std::string& /*caps*/) {
                 SIPPlugin::this_->graft_tree(std::string(".shmdata.writer.") + shmpath + ".uri",
                                              InfoTree::make(call->peer_uri));
                 // Connect the stream to the created shmdata quiddity.
                 SIPPlugin::this_->expose_stream_to_quiddity(quid_name, shmpath);
               },
-              ShmdataStat::make_tree_updater(SIPPlugin::this_, ".shmdata.writer." + shmpath),
-              [ =, uri_to_remove = call->peer_uri ]() {
-                SIPPlugin::this_->prune_tree(".shmdata.writer." + shmpath);
+              [=, uri_to_remove = call->peer_uri]() {
                 SIPPlugin::this_->remove_exposed_quiddity(uri_to_remove, quid_name);
               }));
         },

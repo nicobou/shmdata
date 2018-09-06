@@ -142,22 +142,10 @@ bool GstVideoCodec::reset_codec_configuration() {
 bool GstVideoCodec::start() {
   hide();
   if (0 == quid_->pmanage<MPtr(&PContainer::get<IndexOrName>)>(codec_id_).index_) return true;
-  shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shm_encoded_.get_raw(),
-      [this](const std::string& caps) {
-        this->quid_->graft_tree(
-            ".shmdata.writer." + shm_encoded_path_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(quid_, ".shmdata.writer." + shm_encoded_path_));
-  shmsrc_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shmsrc_.get_raw(),
-      [this](const std::string& caps) {
-        this->quid_->graft_tree(
-            ".shmdata.reader." + shmpath_to_encode_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(quid_, ".shmdata.reader." + shmpath_to_encode_));
+  shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
+      quid_, shm_encoded_.get_raw(), shm_encoded_path_, GstShmTreeUpdater::Direction::writer);
+  shmsrc_sub_ = std::make_unique<GstShmTreeUpdater>(
+      quid_, shmsrc_.get_raw(), shmpath_to_encode_, GstShmTreeUpdater::Direction::reader);
   make_bin();
 
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
@@ -171,8 +159,6 @@ bool GstVideoCodec::stop() {
   if (0 != quid_->pmanage<MPtr(&PContainer::get<IndexOrName>)>(codec_id_).index_) {
     shmsink_sub_.reset();
     shmsrc_sub_.reset();
-    quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
-    quid_->prune_tree(".shmdata.reader." + shmpath_to_encode_);
     remake_codec_elements();
     make_codec_properties();
     gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);

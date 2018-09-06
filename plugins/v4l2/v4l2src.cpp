@@ -688,14 +688,8 @@ bool V4L2Src::start() {
                           nullptr);
   }
 
-  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shmsink_.get_raw(),
-      [this](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.writer." + shmpath_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_));
+  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, shmsink_.get_raw(), shmpath_, GstShmTreeUpdater::Direction::writer);
 
   gst_pipeline_->play(true);
   pmanage<MPtr(&PContainer::disable)>(devices_id_, disabledWhenStartedMsg);
@@ -713,8 +707,7 @@ bool V4L2Src::start() {
 }
 
 bool V4L2Src::stop() {
-  shm_sub_.reset(nullptr);
-  prune_tree(".shmdata.writer." + shmpath_);
+  shm_sub_.reset();
   remake_elements();
   gst_pipeline_ = std::make_unique<GstPipeliner>(
       nullptr, nullptr, [this](GstObject* gstobj, GError* err) { on_gst_error(gstobj, err); });

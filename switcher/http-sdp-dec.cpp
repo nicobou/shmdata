@@ -85,7 +85,6 @@ void HTTPSDPDec::init_httpsdpdec() {
 
 void HTTPSDPDec::destroy_httpsdpdec() {
   shm_subs_.clear();
-  prune_tree(".shmdata.writer");
   make_new_error_handler();
   gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
   counter_.reset_counter_map();
@@ -118,14 +117,8 @@ void HTTPSDPDec::configure_shmdatasink(GstElement* element,
     shmpath = make_shmpath(media_label + "-" + media_name);
 
   g_object_set(G_OBJECT(element), "socket-path", shmpath.c_str(), nullptr);
-  shm_subs_.emplace_back(std::make_unique<GstShmdataSubscriber>(
-      element,
-      [this, shmpath](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.writer." + shmpath,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath)));
+  shm_subs_.emplace_back(std::make_unique<GstShmTreeUpdater>(
+      this, element, shmpath, GstShmTreeUpdater::Direction::writer));
 }
 
 void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement* /*object */, GstPad* pad, gpointer user_data) {
@@ -172,7 +165,6 @@ bool HTTPSDPDec::to_shmdata(std::string uri) {
 
 void HTTPSDPDec::uri_to_shmdata() {
   destroy_httpsdpdec();
-  prune_tree(".shmdata.writer");
   init_httpsdpdec();
   g_object_set_data(
       G_OBJECT(sdpdemux_.get_raw()), "on-error-gsource", (gpointer)on_error_.back().get());

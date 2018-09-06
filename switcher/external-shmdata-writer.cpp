@@ -43,7 +43,7 @@ ExternalShmdataWriter::ExternalShmdataWriter(quid::Config&& conf)
                                                  nullptr,
                                                  nullptr,
                                                  ShmdataStat::kDefaultUpdateInterval,
-                                                 ".shmdata.writer.");
+                                                 ShmdataFollower::Direction::writer);
         return true;
       },
       [this]() { return shmdata_path_; },

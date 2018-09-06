@@ -56,8 +56,6 @@ GstVideoConverter::GstVideoConverter(quid::Config&& conf)
 }
 
 bool GstVideoConverter::on_shmdata_disconnect() {
-  prune_tree(".shmdata.writer." + shmpath_converted_);
-  prune_tree(".shmdata.reader." + shmpath_to_convert_);
   shmsink_sub_.reset();
   shmsrc_sub_.reset();
   converter_.reset(nullptr);
@@ -75,20 +73,10 @@ bool GstVideoConverter::on_shmdata_connect(const std::string& shmpath) {
   converter_ = std::make_unique<GstPixelFormatConverter>(
       shmpath_to_convert_, shmpath_converted_, video_format_.get_attached());
   if (!static_cast<bool>(*converter_.get())) return false;
-  shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
-      converter_->get_shmsink(),
-      [this](const std::string& caps) {
-        graft_tree(".shmdata.writer." + shmpath_converted_,
-                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_converted_));
-  shmsrc_sub_ = std::make_unique<GstShmdataSubscriber>(
-      converter_->get_shmsrc(),
-      [this](const std::string& caps) {
-        graft_tree(".shmdata.reader." + shmpath_to_convert_,
-                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath_to_convert_));
+  shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, converter_->get_shmsink(), shmpath_converted_, GstShmTreeUpdater::Direction::writer);
+  shmsrc_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, converter_->get_shmsrc(), shmpath_to_convert_, GstShmTreeUpdater::Direction::reader);
   pmanage<MPtr(&PContainer::disable)>(video_format_id_, ShmdataConnector::disabledWhenConnectedMsg);
   return true;
 }

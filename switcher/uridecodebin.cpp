@@ -106,7 +106,7 @@ void Uridecodebin::init_uridecodebin() {
 
 void Uridecodebin::destroy_uridecodebin() {
   gst_pipeline_ = std::make_unique<GstPipeliner>(on_msg_async_cb_, on_msg_sync_cb_, on_error_cb_);
-  prune_tree(".shmdata.writer.");
+  shm_subs_.clear();
 }
 
 void Uridecodebin::source_setup_cb(GstBin* /*bin*/, GstElement* /*source*/, gpointer user_data) {
@@ -258,14 +258,8 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   std::string shmpath = make_shmpath(media_name);
   g_object_set(G_OBJECT(shmdatasink), "socket-path", shmpath.c_str(), nullptr);
 
-  shm_subs_.emplace_back(std::make_unique<GstShmdataSubscriber>(
-      shmdatasink,
-      [this, shmpath](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.writer." + shmpath,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath)));
+  shm_subs_.emplace_back(std::make_unique<GstShmTreeUpdater>(
+      this, shmdatasink, shmpath, GstShmTreeUpdater::Direction::writer));
   if (!stream_is_image) GstUtils::sync_state_with_parent(shmdatasink);
 }
 

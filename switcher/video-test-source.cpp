@@ -141,14 +141,8 @@ void VideoTestSource::update_caps() {
 
 bool VideoTestSource::start() {
   if (!gst_pipeline_) return false;
-  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shmdatasink_.get_raw(),
-      [this](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.writer." + shmpath_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_));
+  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, shmdatasink_.get_raw(), shmpath_, GstShmTreeUpdater::Direction::writer);
   update_caps();
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
@@ -165,7 +159,6 @@ bool VideoTestSource::start() {
 
   bool VideoTestSource::stop() {
     shm_sub_.reset(nullptr);
-    prune_tree(".shmdata.writer." + shmpath_);
     if (!UGstElem::renew(videotestsrc_, {"is-live", "pattern"}) ||
         !UGstElem::renew(shmdatasink_, {"socket-path"}) || !UGstElem::renew(capsfilter_)) {
       warning("error initializing gst element for videotestsrc");

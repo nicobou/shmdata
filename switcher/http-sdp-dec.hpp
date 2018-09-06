@@ -27,12 +27,10 @@
 #include "./decodebin-to-shmdata.hpp"
 #include "./g-source-wrapper.hpp"
 #include "./gst-pipeliner.hpp"
-#include "./gst-shmdata-subscriber.hpp"
+#include "./gst-shm-tree-updater.hpp"
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
-class GstShmdataSubscriber;
-
 class HTTPSDPDec : public Quiddity {
  public:
   HTTPSDPDec(quid::Config&&);
@@ -52,7 +50,7 @@ class HTTPSDPDec : public Quiddity {
   std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_{};
   std::string src_element_class_{"souphttpsrc"};
   CounterMap counter_{};
-  std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
+  std::vector<std::unique_ptr<GstShmTreeUpdater>> shm_subs_{};
   PContainer::prop_id_t to_shm_id_;
   bool to_shmdata(std::string uri);
   void init_httpsdpdec();

@@ -118,14 +118,8 @@ bool AudioTestSource::start() {
     return false;
   }
 
-  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shmdatasink_.get_raw(),
-      [this](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.writer." + shmpath_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_));
+  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, shmdatasink_.get_raw(), shmpath_, GstShmTreeUpdater::Direction::writer);
   update_caps();
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    audiotestsrc_.get_raw(),
@@ -145,7 +139,6 @@ bool AudioTestSource::start() {
 
 bool AudioTestSource::stop() {
   shm_sub_.reset();
-  this->prune_tree(".shmdata.writer." + shmpath_);
 
   pmanage<MPtr(&PContainer::enable)>(format_id_);
   pmanage<MPtr(&PContainer::enable)>(channels_id_);

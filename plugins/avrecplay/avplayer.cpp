@@ -136,15 +136,8 @@ bool AVPlayer::start() {
     file->sink_element_ = gst_bin_get_by_name(GST_BIN(avplay_bin_), file->sink_name_.c_str());
     if (!file->sink_element_) continue;
 
-    file->shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
-        file->sink_element_,
-        [ this, shmpath = file->shmpath_ ](const std::string& caps) {
-          graft_tree(
-              ".shmdata.writer." + shmpath,
-              ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-        },
-        ShmdataStat::make_tree_updater(this, ".shmdata.writer." + file->shmpath_),
-        [ this, shmpath = file->shmpath_ ]() { prune_tree(".shmdata.writer." + shmpath); });
+    file->shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
+        this, file->sink_element_, file->shmpath_, GstShmTreeUpdater::Direction::writer);
   }
 
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);

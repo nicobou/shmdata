@@ -27,7 +27,7 @@
 #include <vector>
 #include "switcher/glibmainloop.hpp"
 #include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/gst-shm-tree-updater.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/unique-gst-element.hpp"
@@ -58,7 +58,7 @@ class PulseSink : public Quiddity {
   // gst pipeline:
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   // shmsubscriber (publishing to the information-tree):
-  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
   // internal use:
   std::string shmpath_{};
   UGstElem shmsrc_{"shmdatasrc"};

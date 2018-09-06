@@ -260,14 +260,8 @@ bool ShmdataToJack::start() {
     return false;
   }
   g_object_set(G_OBJECT(shmdatasrc_), "socket-path", shmpath_.c_str(), nullptr);
-  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shmdatasrc_,
-      [this](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.reader." + this->shmpath_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath_));
+  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, shmdatasrc_, shmpath_, GstShmTreeUpdater::Direction::reader);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), audiobin_);
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
@@ -279,7 +273,7 @@ bool ShmdataToJack::start() {
 }
 
 bool ShmdataToJack::stop() {
-  shm_sub_.reset(nullptr);
+  shm_sub_.reset();
   disconnect_ports();
   {
     On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };

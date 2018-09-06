@@ -59,6 +59,7 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   friend class ShmdataFollower;
   friend class GstVideoCodec;
   friend class GstAudioCodec;
+  friend class GstShmTreeUpdater;
   friend class ShmdataDecoder;
   friend struct ShmdataStat;
 
@@ -172,8 +173,10 @@ class Quiddity : public Logged, public SafeBoolIdiom {
  protected:
   // information
   bool graft_tree(const std::string& path, InfoTree::ptr tree_to_graft, bool do_signal = true);
+  void notify_tree_updated(const std::string& path);
   InfoTree::ptr prune_tree(const std::string& path, bool do_signal = true);
   InfoTree::ptr get_tree(const std::string& path);
+  InfoTree::ptr get_shm_information_template() const;
   // register suffix exposed by this quiddity in the information tree, under the
   // shmdata.writer.suffix. 'suffix' value can be expressed as a regular expression
   void register_writer_suffix(const std::string& suffix);

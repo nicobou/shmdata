@@ -26,7 +26,7 @@
 #include <imgui.h>
 // clang-format on
 #include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/gst-shm-tree-updater.hpp"
 #include "switcher/multiple-buffer.hpp"
 #include "switcher/periodic-task.hpp"
 #include "switcher/shmdata-connector.hpp"
@@ -258,7 +258,7 @@ class GLFWVideo : public Quiddity {
   ShmdataConnector shmcntr_;
   std::string shmpath_{};
   std::unique_ptr<ShmdataFollower> shm_follower_{nullptr};
-  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
 
   /**
    * \brief Gstreamer elements and tools

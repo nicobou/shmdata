@@ -23,7 +23,7 @@
 #include <unordered_set>
 #include <vector>
 #include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/gst-shm-tree-updater.hpp"
 #include "switcher/shmdata-utils.hpp"
 
 namespace switcher {
@@ -48,9 +48,7 @@ class GstVideoTimelapse : public SafeBoolIdiom {
  public:
   using on_new_file_t = std::function<void(std::string&&)>;
   GstVideoTimelapse(const GstVideoTimelapseConfig& config,
-                    GstShmdataSubscriber::on_caps_cb_t on_caps,
-                    GstShmdataSubscriber::on_stat_monitor_t on_stat_monitor,
-                    GstShmdataSubscriber::on_delete_t on_delete,
+                    Quiddity* quid,
                     on_new_file_t on_new_file);
   GstVideoTimelapse() = delete;
   ~GstVideoTimelapse() = default;
@@ -59,13 +57,10 @@ class GstVideoTimelapse : public SafeBoolIdiom {
 
  private:
   GstVideoTimelapseConfig config_;
-  GstShmdataSubscriber::on_caps_cb_t on_caps_;
-  GstShmdataSubscriber::on_stat_monitor_t on_stat_monitor_;
-  GstShmdataSubscriber::on_delete_t on_delete_;
   on_new_file_t on_new_file_;
   // gst pipeline
   std::unique_ptr<GstPipeliner> gst_pipeline_;
-  std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
+  std::unique_ptr<GstShmTreeUpdater> shmsrc_sub_{nullptr};
 
   // safe bool idiom
   bool is_valid_{false};

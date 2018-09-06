@@ -24,6 +24,7 @@
 #include "./quiddity-container.hpp"
 #include "./quiddity.hpp"
 #include "./scope-exit.hpp"
+#include "./shmdata-stat.hpp"
 
 namespace switcher {
 

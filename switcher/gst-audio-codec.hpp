@@ -23,7 +23,7 @@
 #include <unordered_set>
 #include <vector>
 #include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/gst-shm-tree-updater.hpp"
 #include "switcher/shmdata-utils.hpp"
 #include "switcher/unique-gst-element.hpp"
 
@@ -56,8 +56,8 @@ class GstAudioCodec {
   UGstElem audio_resample_{"audioresample"};
   UGstElem codec_element_{"opusenc"};
   UGstElem shm_encoded_{"shmdatasink"};
-  std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
-  std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
+  std::unique_ptr<GstShmTreeUpdater> shmsrc_sub_{nullptr};
+  std::unique_ptr<GstShmTreeUpdater> shmsink_sub_{nullptr};
   // codec props
   Selection<> codecs_;
   PContainer::prop_id_t codec_id_;

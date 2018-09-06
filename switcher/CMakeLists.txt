@@ -28,6 +28,7 @@ add_library(${SWITCHER_LIBRARY} SHARED
     gst-pipeliner.cpp
     gst-pixel-format-converter.cpp
     gst-rtppayloader-finder.cpp
+    gst-shm-tree-updater.cpp
     gst-shmdata-subscriber.cpp
     gst-shmdata-to-cb.cpp
     gst-utils.cpp
@@ -112,6 +113,7 @@ set(HEADER_INCLUDES
     gst-pipeliner.hpp
     gst-pixel-format-converter.hpp
     gst-rtppayloader-finder.hpp
+    gst-shm-tree-updater.hpp
     gst-shmdata-subscriber.hpp
     gst-shmdata-to-cb.hpp
     gst-utils.hpp

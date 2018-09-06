@@ -30,6 +30,7 @@
 #include "./information-tree-json.hpp"
 #include "./quid-id-t.hpp"
 #include "./quiddity-container.hpp"
+#include "./shmdata-stat.hpp"
 #include "./switcher.hpp"
 
 namespace switcher {
@@ -203,6 +204,10 @@ bool Quiddity::graft_tree(const std::string& path, InfoTree::ptr tree, bool do_s
   return true;
 }
 
+void Quiddity::notify_tree_updated(const std::string& path) {
+  smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(path));
+}
+
 InfoTree::ptr Quiddity::get_tree(const std::string& path) {
   return information_tree_->get_tree(path);
 }
@@ -278,6 +283,14 @@ std::string Quiddity::get_nickname() const { return nickname_; }
 
 void Quiddity::register_writer_suffix(const std::string& suffix) {
   information_tree_->graft("shmdata.writer.suffix", InfoTree::make(suffix));
+}
+
+InfoTree::ptr Quiddity::get_shm_information_template() const {
+  InfoTree::ptr tree = InfoTree::make();
+  tree->graft(".caps", InfoTree::make());
+  tree->graft(".category", InfoTree::make());
+  ShmdataStat().update_tree(tree, ".");
+  return tree;
 }
 
 }  // namespace switcher

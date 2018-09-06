@@ -159,16 +159,13 @@ bool GstAudioCodec::start(const std::string& shmpath, const std::string& shmpath
                FALSE,
                nullptr);
 
-  shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shm_encoded_.get_raw(),
-      [this](const std::string& caps) {
-        this->quid_->graft_tree(
-            ".shmdata.writer." + shm_encoded_path_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(quid_, ".shmdata.writer." + shm_encoded_path_));
-  shmsrc_sub_ = std::make_unique<GstShmdataSubscriber>(
+  shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this->quid_, shm_encoded_.get_raw(), shm_encoded_path_, GstShmTreeUpdater::Direction::writer);
+  shmsrc_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this->quid_,
       shmsrc_.get_raw(),
+      shmpath_to_encode_,
+      GstShmTreeUpdater::Direction::reader,
       [this](const std::string& caps) {
         if (!this->has_enough_channels(caps)) {
           // FIXME: To do in can_sink_caps of audioenc when destination caps are implemented.
@@ -176,11 +173,7 @@ bool GstAudioCodec::start(const std::string& shmpath, const std::string& shmpath
               "ERROR:audio codec does not support the number of channels connected to it.");
           quid_->warning("audio codec does not support the number of channels connected to it.");
         }
-        this->quid_->graft_tree(
-            ".shmdata.reader." + shmpath_to_encode_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(quid_, ".shmdata.reader." + shmpath_to_encode_));
+      });
   make_bin();
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   if (copy_buffers_) g_object_set(G_OBJECT(shmsrc_.get_raw()), "copy-buffers", TRUE, nullptr);
@@ -194,8 +187,6 @@ bool GstAudioCodec::stop() {
   if (0 != codecs_.get_current_index()) {
     shmsink_sub_.reset();
     shmsrc_sub_.reset();
-    quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
-    quid_->prune_tree(".shmdata.reader." + shmpath_to_encode_);
     remake_codec_elements();
     make_codec_properties();
     gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);

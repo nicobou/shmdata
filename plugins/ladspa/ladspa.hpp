@@ -18,7 +18,7 @@
  */
 
 #include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/gst-shm-tree-updater.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
 #include "switcher/shmdata-writer.hpp"
@@ -73,8 +73,8 @@ class LADSPA : public Quiddity {
   std::string shmpath_transformed_{};  //!< Path of the output shmdata
   ShmdataConnector shmcntr_;           //!< Shmdata connector to connect into the quiddity.
   std::unique_ptr<GstPipeliner> gst_pipeline_{nullptr};         //!< Gstreamer pipeline
-  std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};   //!< Subscriber to input shmdata
-  std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};  //!< Subscriber to output shmdata
+  std::unique_ptr<GstShmTreeUpdater> shmsrc_sub_{nullptr};      //!< Subscriber to input shmdata
+  std::unique_ptr<GstShmTreeUpdater> shmsink_sub_{nullptr};     //!< Subscriber to output shmdata
   bool first_connect_{false};  //!< First connection to a LADSPA plugin?
 
   GstElement* shmdatasrc_{nullptr};             //!< Gstreamer shmdatasrc element

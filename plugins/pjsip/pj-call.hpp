@@ -29,7 +29,7 @@
 #include "./pj-media-endpt.hpp"
 #include "./pj-sip.hpp"
 #include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/gst-shm-tree-updater.hpp"
 #include "switcher/gst-shmdata-to-cb.hpp"
 #include "switcher/rtp-session.hpp"
 #include "switcher/shmdata-writer.hpp"
@@ -61,7 +61,7 @@ class PJCall {
     std::unique_ptr<PJICEStreamTrans> ice_trans_{};
     std::unique_ptr<RtpSession> recv_rtp_session_{};
     std::mutex shm_subs_mtx_{};
-    std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
+    std::vector<std::unique_ptr<GstShmTreeUpdater>> shm_subs_{};
     std::vector<std::unique_ptr<RTPReceiver>> rtp_receivers_{};
     // as sender
     std::unique_ptr<PJICEStreamTrans> ice_trans_send_{};

@@ -1015,11 +1015,12 @@ const GLFWVideo::MonitorConfig GLFWVideo::get_monitor_config() const {
 bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
   shmpath_ = shmpath;
   g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
-  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
+  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this,
       shmsrc_.get_raw(),
+      shmpath_,
+      GstShmTreeUpdater::Direction::reader,
       [this](const std::string& caps) {
-        graft_tree(".shmdata.reader." + shmpath_,
-                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
         GstCaps* gstcaps = gst_caps_from_string(caps.c_str());
         On_scope_exit {
           if (gstcaps) gst_caps_unref(gstcaps);
@@ -1040,7 +1041,6 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
           return true;
         });
       },
-      [this](const ShmdataStat&) {},
       [this]() {
         add_rendering_task([this]() {
           draw_video_ = false;
@@ -1121,7 +1121,6 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
 }
 
 bool GLFWVideo::on_shmdata_disconnect() {
-  prune_tree(".shmdata.reader." + shmpath_);
   shm_sub_.reset();
   shm_follower_.reset();
   On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };

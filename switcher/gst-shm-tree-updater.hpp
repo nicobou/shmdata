@@ -17,19 +17,34 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_SHMDATA_UTILS_H__
-#define __SWITCHER_SHMDATA_UTILS_H__
+#ifndef __SWITCHER_GST_SHM_TREE_UPDATER_H__
+#define __SWITCHER_GST_SHM_TREE_UPDATER_H__
 
-#include <string>
 #include "./gst-shmdata-subscriber.hpp"
-#include "./information-tree.hpp"
-#include "./shmdata-stat.hpp"
 
 namespace switcher {
-namespace ShmdataUtils {
+class GstShmTreeUpdater {
+ public:
+  using on_caps_cb_t = std::function<void(const std::string&)>;
+  using on_delete_t = std::function<void()>;
+  enum class Direction { writer, reader };
+  GstShmTreeUpdater(Quiddity* quid,
+                    GstElement* element,
+                    const std::string& shmpath,
+                    Direction d,
+                    on_caps_cb_t on_caps_cb = nullptr,
+                    on_delete_t on_delete_cb = nullptr);
+  ~GstShmTreeUpdater();
+  GstShmTreeUpdater() = delete;
 
-std::string get_category(const std::string& caps);
+ private:
+  Quiddity* quid_;
+  std::string shmpath_;
+  Direction dir_;
+  std::string key_;
+  on_delete_t on_del_;
+  GstShmdataSubscriber shm_sub_;
+};
 
-}  // namespace ShmdataUtils
 }  // namespace switcher
 #endif
