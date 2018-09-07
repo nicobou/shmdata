@@ -175,6 +175,7 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
   if (0 == sig_id) return false;
   auto reg_id = self->quid->sig<MPtr(&SContainer::subscribe)>(
       sig_id, [cb, self, user_data](const InfoTree::ptr& tree) {
+        PyGILState_STATE gil = PyGILState_Ensure();
         PyObject* arglist;
         if (user_data)
           arglist = Py_BuildValue("(sO)", (char*)tree->serialize_json(".").c_str(), user_data);
@@ -185,6 +186,7 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
         if (pyerr != NULL) PyErr_Print();
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
+        PyGILState_Release(gil);
       });
   if (0 == reg_id) return false;
   Py_INCREF(cb);
@@ -205,6 +207,7 @@ bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
   if (0 == prop_id) return false;
   auto reg_id =
       self->quid->prop<MPtr(&PContainer::subscribe)>(prop_id, [prop_id, cb, self, user_data]() {
+        PyGILState_STATE gil = PyGILState_Ensure();
         PyObject* arglist;
         if (user_data)
           arglist = Py_BuildValue(
@@ -220,6 +223,7 @@ bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
         if (pyerr != NULL) PyErr_Print();
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
+        PyGILState_Release(gil);
       });
   if (0 == reg_id) return false;
   Py_INCREF(cb);
