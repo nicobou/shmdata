@@ -8,11 +8,13 @@ We use Google C++ Style Guide, as decribed [here](https://google.github.io/style
 * a function call’s arguments will either be all on the same line or will have one line each. 
 * a function declaration’s or function definition’s parameters will either all be on the same line or will have one line each.
 
+For python code, we use PEP8 style guide with maximum line length set to 120.
+
 In switcher, you may find not compliant code, but newly introduced code must follow this guide. Note that you may find configuration file for your editor [here](https://github.com/google/styleguide).
 
-It is possible to let git ensure that you are conforming to the standards by using pre-commit hooks and clang-format:
+It is possible to let git ensure that you are conforming to the standards by using pre-commit hooks and clang-format and autopep8:
 ```
-sudo apt-get install clang-format
+sudo apt-get install clang-format python-autopep8
 
 #Then in switcher's .git folder:
 rm -rf hooks && ln -s ../.hooks hooks
