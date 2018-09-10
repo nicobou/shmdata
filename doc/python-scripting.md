@@ -18,4 +18,4 @@ help(pyquid)
 
 ## Example
 
-See the example file [here](../wrappers/python/example.py).
+See the example files [here](../wrappers/python/examples/).
