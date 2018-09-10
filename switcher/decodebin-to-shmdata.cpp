@@ -183,15 +183,11 @@ void DecodebinToShmdata::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   GstElement* shmdatasink;
   GstUtils::make_element("shmdatasink", &shmdatasink);
   gst_bin_add(GST_BIN(bin), shmdatasink);
-  // probing eos
   GstPad* sinkpad = gst_element_get_static_pad(shmdatasink, "sink");
   On_scope_exit { gst_object_unref(sinkpad); };
   if (nullptr == main_pad_) main_pad_ = sinkpad;  // saving first pad for looping
-  // FIXME
-  // gst_pad_add_event_probe(srcpad, (GCallback) eos_probe_cb, this);
   gst_pad_link(pad, sinkpad);
   std::string media_name(media_label_);
-  // std::string media_name("custom");
   {  // giving a name to the stream
     gchar** padname_splitted = g_strsplit_set(padname.c_str(), "/", -1);
     On_scope_exit { g_strfreev(padname_splitted); };

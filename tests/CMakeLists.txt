@@ -6,6 +6,10 @@ add_executable(check_bundle check_bundle.cpp)
 configure_file(check_bundle.config check_bundle.config COPYONLY)
 add_test(check_bundle check_bundle)
 
+add_executable(check_file_decoder check_file_decoder.cpp)
+configure_file(oie.mp3 oie.mp3 COPYONLY)
+add_test(check_file_decoder check_file_decoder)
+
 add_executable(check_gst_pipeline check_gst_pipeline.cpp)
 add_test(check_gst_pipeline check_gst_pipeline)
 

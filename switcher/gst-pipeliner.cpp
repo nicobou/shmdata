@@ -120,7 +120,14 @@ GstBusSyncReply GstPipeliner::on_gst_error(GstMessage* msg) {
 
 gboolean GstPipeliner::bus_watch(GstBus* /*bus*/, GstMessage* message, gpointer user_data) {
   auto context = static_cast<GstPipeliner*>(user_data);
-  if (context && context->on_msg_async_cb_) context->on_msg_async_cb_(message);
+  if (context) {
+    if (GST_MESSAGE_TYPE(message) == GST_MESSAGE_EOS) {
+      if (context->loop_) context->seek(0);
+    }
+  }
+  if (context && context->on_msg_async_cb_) {
+    context->on_msg_async_cb_(message);
+  }
   return TRUE;
 }
 
@@ -149,4 +156,5 @@ GstBusSyncReply GstPipeliner::bus_sync_handler(GstBus* /*bus*/,
   return res;
 }
 
+void GstPipeliner::loop(bool looping) { loop_ = looping; }
 }  // namespace switcher

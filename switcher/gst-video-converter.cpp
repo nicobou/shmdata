@@ -58,7 +58,7 @@ GstVideoConverter::GstVideoConverter(quid::Config&& conf)
 bool GstVideoConverter::on_shmdata_disconnect() {
   shmsink_sub_.reset();
   shmsrc_sub_.reset();
-  converter_.reset(nullptr);
+  converter_.reset();
   pmanage<MPtr(&PContainer::enable)>(video_format_id_);
   return true;
 }
@@ -69,7 +69,7 @@ bool GstVideoConverter::on_shmdata_connect(const std::string& shmpath) {
     return false;
   }
   shmpath_to_convert_ = shmpath;
-  converter_.reset(nullptr);
+  converter_.reset();
   converter_ = std::make_unique<GstPixelFormatConverter>(
       shmpath_to_convert_, shmpath_converted_, video_format_.get_attached());
   if (!static_cast<bool>(*converter_.get())) return false;

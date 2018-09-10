@@ -212,8 +212,6 @@ InfoTree::ptr Quiddity::prune_tree(const std::string& path, bool do_signal) {
     if (do_signal) {
       smanage<MPtr(&SContainer::notify)>(on_tree_pruned_id_, InfoTree::make(path));
     }
-  } else {
-    warning("cannot prune %", path);
   }
   return result;
 }

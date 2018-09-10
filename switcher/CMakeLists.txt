@@ -15,6 +15,7 @@ add_library(${SWITCHER_LIBRARY} SHARED
     dummy-sink.cpp
     empty-quiddity.cpp
     external-shmdata-writer.cpp
+    file-decoder.cpp
     file-utils.cpp
     fraction.cpp
     g-source-wrapper.cpp
@@ -99,6 +100,7 @@ set(HEADER_INCLUDES
     empty-quiddity.hpp
     exec-loop.hpp
     external-shmdata-writer.hpp
+    file-decoder.hpp
     file-utils.hpp
     fraction.hpp
     g-source-wrapper.hpp

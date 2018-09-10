@@ -85,6 +85,19 @@ PyObject* pySwitch::name(pySwitchObject* self) {
   return PyUnicode_FromString(self->switcher.get()->get_name().c_str());
 }
 
+PyDoc_STRVAR(pyswitch_release_doc,
+             "Release switcher internal resources, including existing quiddities.\n"
+             "After a call to this method, any other invocation of the related switcher will "
+             "result in an undefined behavior.\n"
+             "Arguments: None\n"
+             "Returns: None\n");
+
+PyObject* pySwitch::release(pySwitchObject* self) {
+  self->switcher.reset();
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
 PyDoc_STRVAR(pyswitch_version_doc,
              "Get switcher version.\n"
              "Arguments: None\n"
@@ -337,6 +350,7 @@ PyObject* pySwitch::quid_descr(pySwitchObject* self, PyObject* args, PyObject* k
 
 PyMethodDef pySwitch::pySwitch_methods[] = {
     {"name", (PyCFunction)pySwitch::name, METH_NOARGS, pyswitch_name_doc},
+    {"release", (PyCFunction)pySwitch::release, METH_NOARGS, pyswitch_release_doc},
     {"version", (PyCFunction)pySwitch::version, METH_NOARGS, pyswitch_version_doc},
     {"create", (PyCFunction)pySwitch::create, METH_VARARGS | METH_KEYWORDS, pyswitch_create_doc},
     {"remove", (PyCFunction)pySwitch::remove, METH_VARARGS | METH_KEYWORDS, pyswitch_remove_doc},

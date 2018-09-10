@@ -25,6 +25,7 @@
 #include "./dummy-sink.hpp"
 #include "./empty-quiddity.hpp"
 #include "./external-shmdata-writer.hpp"
+#include "./file-decoder.hpp"
 #include "./gst-audio-encoder.hpp"
 #include "./gst-decodebin.hpp"
 #include "./gst-video-converter.hpp"
@@ -46,6 +47,8 @@ quid::Factory::Factory(BaseLogger* log) : Logged(log) {
       DocumentationRegistry::get()->get_type_from_class_name("EmptyQuiddity"));
   abstract_factory_.register_class<ExternalShmdataWriter>(
       DocumentationRegistry::get()->get_type_from_class_name("ExternalShmdataWriter"));
+  abstract_factory_.register_class<FileDecoder>(
+      DocumentationRegistry::get()->get_type_from_class_name("FileDecoder"));
   abstract_factory_.register_class<GstVideoConverter>(
       DocumentationRegistry::get()->get_type_from_class_name("GstVideoConverter"));
   abstract_factory_.register_class<GstVideoEncoder>(

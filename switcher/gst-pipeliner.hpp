@@ -51,9 +51,16 @@ class GstPipeliner {
   GstElement* get_pipeline();
   void play(gboolean play);
   bool seek(gdouble position_in_ms);
-  void looping(gboolean looping);
+  void loop(bool looping);
 
  private:
+  GstBusSyncReply on_gst_error(GstMessage* msg);
+  static gboolean push_thread_context(gpointer user_data);
+  static gboolean bus_watch(GstBus* bus, GstMessage* message, gpointer user_data);
+  static gboolean bus_async(gpointer user_data);
+  static GstBusSyncReply bus_sync_handler(GstBus* bus, GstMessage* msg, gpointer user_data);
+
+  bool loop_{false};
   GstPipe::on_msg_async_cb_t on_msg_async_cb_;
   GstPipe::on_msg_sync_cb_t on_msg_sync_cb_;
   on_error_cb_t on_error_cb_;
@@ -62,11 +69,6 @@ class GstPipeliner {
   std::condition_variable cond_watch_{};
   std::unique_ptr<GlibMainLoop> main_loop_;
   std::unique_ptr<GstPipe> gst_pipeline_;
-  GstBusSyncReply on_gst_error(GstMessage* msg);
-  static gboolean push_thread_context(gpointer user_data);
-  static gboolean bus_watch(GstBus* bus, GstMessage* message, gpointer user_data);
-  static gboolean bus_async(gpointer user_data);
-  static GstBusSyncReply bus_sync_handler(GstBus* bus, GstMessage* msg, gpointer user_data);
 };
 
 }  // namespace switcher
