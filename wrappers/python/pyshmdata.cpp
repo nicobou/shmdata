@@ -472,12 +472,13 @@ void
 Reader_on_connect_handler(void *user_data, const char *type_descr)
 {
     pyshmdata_ReaderObject* self = static_cast<pyshmdata_ReaderObject*>(user_data);
-
+    PyGILState_STATE gil = PyGILState_Ensure();
     PyObject *datatype = PyUnicode_FromString(type_descr);
     PyObject *tmp = self->datatype;
     self->datatype = datatype;
     self->parsed_datatype = Reader_parse_datatype(type_descr);
     Py_XDECREF(tmp);
+    PyGILState_Release(gil);
 }
 
 /*************/
