@@ -353,7 +353,7 @@ void ShmdataToJack::connect_ports() {
     return;
   }
 
-  for (unsigned int i = 0; i < connect_only_first_ ? 1 : output_ports_.size(); ++i) {
+  for (unsigned int i = 0; i < (connect_only_first_ ? 1 : output_ports_.size()); ++i) {
     unsigned int dest_port_index = connect_all_to_first_ ? 0 : i;
     jack_connect(jack_client_.get_raw(),
                  std::string(jack_client_.get_name() + ":" + output_ports_[i].get_name()).c_str(),
