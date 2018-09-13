@@ -39,8 +39,6 @@ class FileDecoder : public Quiddity {
                              const std::string& media_type,
                              const std::string& media_label);
   // internals
-  std::unique_ptr<GstPipeliner> gst_pipeline_{nullptr};
-  std::unique_ptr<DecodebinToShmdata> decodebin_{nullptr};
   CounterMap counter_{};
   std::vector<std::unique_ptr<GstShmTreeUpdater>> shm_subs_{};
   GstElement* filesrc_{nullptr};
@@ -53,6 +51,8 @@ class FileDecoder : public Quiddity {
   PContainer::prop_id_t loop_id_;
   bool decompress_streams_{true};
   PContainer::prop_id_t decompress_streams_id_;
+  std::unique_ptr<DecodebinToShmdata> decodebin_{nullptr};
+  std::unique_ptr<GstPipeliner> gst_pipeline_{nullptr};
 };
 
 }  // namespace switcher
