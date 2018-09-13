@@ -27,28 +27,23 @@ def on_tree_grafted(key, user_data):
 
 
 sw = pyquid.Switcher("signals", debug=True)
-print('1')
+
 # create a quiddity
 qroxvid = sw.create("videotestsrc", "vid")
 assert None != qroxvid
 vid = qroxvid.quid()
 
-print('2')
 # check if on-tree-grafted is available with this quiddity
 assert "on-tree-grafted" in pyquid.InfoTree(
     vid.get_info_tree_as_json(".signal")).get_key_values('id', False)
-print('3')
 
 # subscribe to a signal
 assert vid.subscribe("on-tree-grafted", on_tree_grafted, my_user_data)
-print('4')
 
 vid.set("started", True)
-print('5')
 
 # wait for the signal to arrive,
 time.sleep(1)
-print('6')
 
 # the test will fail if the signal is not triggered before
 exit(1)

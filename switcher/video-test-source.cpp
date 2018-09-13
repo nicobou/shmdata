@@ -145,10 +145,10 @@ bool VideoTestSource::start() {
       this, shmdatasink_.get_raw(), shmpath_, GstShmTreeUpdater::Direction::writer);
   update_caps();
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
-  gst_pipeline_->play(true);
   pmanage<MPtr(&PContainer::replace)>(
       pmanage<MPtr(&PContainer::get_id)>("pattern"),
       GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
+  gst_pipeline_->play(true);
   pmanage<MPtr(&PContainer::disable)>(width_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(height_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(resolutions_id_, disabledWhenStartedMsg);
