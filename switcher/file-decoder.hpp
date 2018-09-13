@@ -26,6 +26,7 @@
 #include "./decodebin-to-shmdata.hpp"
 #include "./gst-pipeliner.hpp"
 #include "./gst-shm-tree-updater.hpp"
+#include "./periodic-task.hpp"
 #include "./quiddity.hpp"
 
 namespace switcher {
@@ -47,12 +48,13 @@ class FileDecoder : public Quiddity {
   PContainer::prop_id_t location_id_;
   bool play_{false};
   PContainer::prop_id_t play_id_;
+  double cur_pos_{0};
+  PContainer::prop_id_t cur_pos_id_;
   bool loop_{false};
   PContainer::prop_id_t loop_id_;
-  bool decompress_streams_{true};
-  PContainer::prop_id_t decompress_streams_id_;
   std::unique_ptr<DecodebinToShmdata> decodebin_{nullptr};
   std::unique_ptr<GstPipeliner> gst_pipeline_{nullptr};
+  std::unique_ptr<PeriodicTask<>> position_task_{};
 };
 
 }  // namespace switcher

@@ -46,14 +46,16 @@ FileDecoder::FileDecoder(quid::Config&& conf)
       play_id_(pmanage<MPtr(&PContainer::make_bool)>("play",
                                                      [this](const bool& val) {
                                                        play_ = val;
-                                                       if (gst_pipeline_)
+                                                       if (gst_pipeline_) {
                                                          gst_pipeline_->play(play_);
+                                                       }
                                                        return true;
                                                      },
                                                      [this]() { return play_; },
                                                      "Play",
                                                      "Play/pause the player",
                                                      play_)),
+      cur_pos_id_(0),
       loop_id_(pmanage<MPtr(&PContainer::make_bool)>("loop",
                                                      [this](const bool& val) {
                                                        loop_ = val;
@@ -64,17 +66,7 @@ FileDecoder::FileDecoder(quid::Config&& conf)
                                                      [this]() { return loop_; },
                                                      "Looping",
                                                      "Loop media",
-                                                     loop_)),
-      decompress_streams_id_(
-          pmanage<MPtr(&PContainer::make_bool)>("decompress",
-                                                [this](const bool& val) {
-                                                  decompress_streams_ = val;
-                                                  return true;
-                                                },
-                                                [this]() { return decompress_streams_; },
-                                                "Decompress",
-                                                "Decompress received streams",
-                                                decompress_streams_)) {
+                                                     loop_)) {
   register_writer_suffix(".*");
 }
 
@@ -82,7 +74,39 @@ bool FileDecoder::load_file(const std::string& path) {
   // cleaning previous
   shm_subs_.clear();
   counter_.reset_counter_map();
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+  if (0 != cur_pos_id_) pmanage<MPtr(&PContainer::remove)>(cur_pos_id_);
+  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, [this, path](GstMessage* message) {
+    if (GST_MESSAGE_TYPE(message) == GST_MESSAGE_DURATION) {
+      gint64 duration = GST_CLOCK_TIME_NONE;
+      if (gst_element_query_duration(
+              GST_ELEMENT(GST_MESSAGE_SRC(message)), GST_FORMAT_TIME, &duration)) {
+        cur_pos_id_ = pmanage<MPtr(&PContainer::make_unsigned_int)>(
+            "pos",
+            [this](const double& val) {
+              cur_pos_ = val;
+              if (gst_pipeline_) return gst_pipeline_->seek(cur_pos_);
+              return true;
+            },
+            [this]() {
+              if (gst_pipeline_) {
+                gint64 position = GST_CLOCK_TIME_NONE;
+                if (gst_element_query_position(
+                        gst_pipeline_->get_pipeline(), GST_FORMAT_TIME, &position)) {
+                  cur_pos_ = GST_TIME_AS_MSECONDS(position);
+                }
+              }
+              return cur_pos_;
+            },
+            "Current position (ms)",
+            "Current position in the file",
+            0,
+            0,
+            GST_TIME_AS_MSECONDS(duration));
+      } else
+        warning("issue querying file duration %", path);
+    }
+    return GST_BUS_PASS;
+  });
   gst_pipeline_->loop(loop_);
   decodebin_.reset();
 
@@ -96,7 +120,7 @@ bool FileDecoder::load_file(const std::string& path) {
         configure_shmdatasink(el, media_type, media_label);
       },
       [this]() { warning("discarding uncomplete custom frame due to a network loss"); },
-      decompress_streams_);
+      true);
   if (!decodebin_->invoke_with_return<gboolean>([this](GstElement* el) {
         return gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), el);
       })) {
@@ -108,7 +132,20 @@ bool FileDecoder::load_file(const std::string& path) {
       [](GstElement* el) { return gst_element_get_static_pad(el, "sink"); });
   On_scope_exit { gst_object_unref(GST_OBJECT(sinkpad)); };
   GstUtils::check_pad_link_return(gst_pad_link(srcpad, sinkpad));
+  gst_element_set_state(gst_pipeline_->get_pipeline(), GST_STATE_PAUSED);
+  GstUtils::wait_state_changed(gst_pipeline_->get_pipeline());
   if (play_) gst_pipeline_->play(true);
+
+  position_task_ = std::make_unique<PeriodicTask<>>(
+      [this]() {
+        gint64 position = GST_CLOCK_TIME_NONE;
+        if (gst_element_query_position(gst_pipeline_->get_pipeline(), GST_FORMAT_TIME, &position)) {
+          if (cur_pos_ != GST_TIME_AS_MSECONDS(position)) {
+            pmanage<MPtr(&PContainer::notify)>(cur_pos_id_);
+          }
+        }
+      },
+      std::chrono::milliseconds(500));
   return true;
 }
 
