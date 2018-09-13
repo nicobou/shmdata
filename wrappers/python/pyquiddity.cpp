@@ -40,6 +40,15 @@ PyObject* pyQuiddity::set(pyQuiddityObject* self, PyObject* args, PyObject* kwds
     if (val_str) Py_XDECREF(val_str);
     if (repr) Py_XDECREF(repr);
   };
+  if (PyBool_Check(value)) {
+    if (!self->quid->prop<MPtr(&PContainer::set_str_str)>(property,
+                                                          (value == Py_True) ? "true" : "false")) {
+      Py_INCREF(Py_False);
+      return Py_False;
+    }
+    Py_INCREF(Py_True);
+    return Py_True;
+  }
   if (!PyObject_TypeCheck(value, &PyUnicode_Type)) {
     repr = PyObject_Repr(value);
     val_str = PyUnicode_AsEncodedString(repr, "utf-8", "Error ");
@@ -47,8 +56,10 @@ PyObject* pyQuiddity::set(pyQuiddityObject* self, PyObject* args, PyObject* kwds
   } else {
     val_str = PyUnicode_AsEncodedString(value, "utf-8", "Error ");
   }
-  if (!self->quid->prop<MPtr(&PContainer::set_str_str)>(property, PyBytes_AS_STRING(val_str)))
+  if (!self->quid->prop<MPtr(&PContainer::set_str_str)>(property, PyBytes_AS_STRING(val_str))) {
+    Py_INCREF(Py_False);
     return Py_False;
+  }
   Py_INCREF(Py_True);
   return Py_True;
 }
