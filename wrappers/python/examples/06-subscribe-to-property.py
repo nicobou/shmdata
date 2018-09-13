@@ -28,7 +28,7 @@ def on_property_changed(value, user_data):
     exit(0)
 
 
-sw = pyquid.Switcher("prop-sub")
+sw = pyquid.Switcher("prop-sub", debug=True)
 
 # create a quiddity
 qroxvid = sw.create("videotestsrc", "vid")

@@ -17,7 +17,7 @@ import time
 import assert_exit_1
 
 # create a switcher.
-sw = pyquid.Switcher('pyquid')
+sw = pyquid.Switcher('pyquid', debug=True)
 # the switcher instance has a name
 assert 'pyquid' == sw.name()
 # it has a version

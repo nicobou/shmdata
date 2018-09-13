@@ -15,7 +15,7 @@ sys.path.insert(0, '/usr/local/lib/python3/dist-packages')
 import pyquid
 import assert_exit_1
 
-sw = pyquid.Switcher("introspection")
+sw = pyquid.Switcher("introspection", debug=True)
 
 # list of classes names
 class_list = sw.list_classes()

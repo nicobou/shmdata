@@ -16,7 +16,7 @@ import pyquid
 import time
 import assert_exit_1
 
-sw = pyquid.Switcher('save_example')
+sw = pyquid.Switcher('save_example', debug=True)
 
 # instantiate and use some quiddities
 win = sw.create('glfwin', 'win').quid()
