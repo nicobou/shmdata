@@ -97,6 +97,10 @@ bool GstPipeliner::speed(double speed) { return gst_pipeline_->speed(speed); }
 
 bool GstPipeliner::seek(gdouble position_in_ms) { return gst_pipeline_->seek(position_in_ms); }
 
+bool GstPipeliner::seek_key_frame(gdouble position_in_ms) {
+  return gst_pipeline_->seek_key_frame(position_in_ms);
+};
+
 GstElement* GstPipeliner::get_pipeline() { return gst_pipeline_->get_pipeline(); }
 
 GstBusSyncReply GstPipeliner::on_gst_error(GstMessage* msg) {

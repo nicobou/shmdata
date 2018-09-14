@@ -114,7 +114,13 @@ bool FileDecoder::load_file(const std::string& path) {
             "pos",
             [this](const unsigned int& val) {
               cur_pos_ = val;
-              if (gst_pipeline_) return gst_pipeline_->seek(cur_pos_);
+              if (gst_pipeline_) {
+                if (play_) return gst_pipeline_->seek(cur_pos_);
+                if (!gst_pipeline_->seek_key_frame(cur_pos_)) return false;
+                gst_pipeline_->play(true);
+                GstUtils::wait_state_changed(gst_pipeline_->get_pipeline());
+                gst_pipeline_->play(false);
+              }
               return true;
             },
             [this]() {

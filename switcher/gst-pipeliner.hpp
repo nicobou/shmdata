@@ -51,6 +51,7 @@ class GstPipeliner {
   GstElement* get_pipeline();
   void play(gboolean play);
   bool seek(gdouble position_in_ms);
+  bool seek_key_frame(gdouble position_in_ms);
   bool speed(double speed);
   void loop(bool looping);
 

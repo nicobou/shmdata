@@ -45,6 +45,7 @@ class GstPipe {
   GstPipe& operator=(const GstPipe&) = delete;
   bool play(bool play);
   BoolLog seek(gdouble position);
+  BoolLog seek_key_frame(gdouble position);
   BoolLog speed(gdouble speed);
   GstElement* get_pipeline();
 
