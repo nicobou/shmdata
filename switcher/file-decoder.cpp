@@ -66,7 +66,37 @@ FileDecoder::FileDecoder(quid::Config&& conf)
                                                      [this]() { return loop_; },
                                                      "Looping",
                                                      "Loop media",
-                                                     loop_)) {
+                                                     loop_)),
+      speed_id_(pmanage<MPtr(&PContainer::make_double)>(
+          "rate",
+          [this](const double& val) {
+            // just pause if rate is set to 0
+            if (0 == val) {
+              if (gst_pipeline_) {
+                {
+                  auto lock = pmanage<MPtr(&PContainer::get_lock)>(play_id_);
+                  play_ = false;
+                  gst_pipeline_->play(false);
+                }
+                pmanage<MPtr(&PContainer::notify)>(play_id_);
+              }
+              return true;
+            }
+            // applying rate
+            if (gst_pipeline_) {
+              if (!gst_pipeline_->speed(val)) return false;
+              speed_ = val;
+              return true;
+            }
+            return true;
+          },
+          [this]() { return speed_; },
+          "Palyback rate",
+          "A rate of 1.0 means normal playback rate, 2.0 means double speed. "
+          "Negatives values means backwards playback.",
+          speed_,
+          0,
+          10.0)) {
   register_writer_suffix(".*");
 }
 
@@ -82,7 +112,7 @@ bool FileDecoder::load_file(const std::string& path) {
               GST_ELEMENT(GST_MESSAGE_SRC(message)), GST_FORMAT_TIME, &duration)) {
         cur_pos_id_ = pmanage<MPtr(&PContainer::make_unsigned_int)>(
             "pos",
-            [this](const double& val) {
+            [this](const unsigned int& val) {
               cur_pos_ = val;
               if (gst_pipeline_) return gst_pipeline_->seek(cur_pos_);
               return true;

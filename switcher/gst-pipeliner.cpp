@@ -93,6 +93,8 @@ void GstPipeliner::play(gboolean play) {
   }
 }
 
+bool GstPipeliner::speed(double speed) { return gst_pipeline_->speed(speed); }
+
 bool GstPipeliner::seek(gdouble position_in_ms) { return gst_pipeline_->seek(position_in_ms); }
 
 GstElement* GstPipeliner::get_pipeline() { return gst_pipeline_->get_pipeline(); }

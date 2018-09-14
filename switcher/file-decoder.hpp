@@ -52,6 +52,8 @@ class FileDecoder : public Quiddity {
   PContainer::prop_id_t cur_pos_id_;
   bool loop_{false};
   PContainer::prop_id_t loop_id_;
+  double speed_{1.0};
+  PContainer::prop_id_t speed_id_;
   std::unique_ptr<DecodebinToShmdata> decodebin_{nullptr};
   std::unique_ptr<GstPipeliner> gst_pipeline_{nullptr};
   std::unique_ptr<PeriodicTask<>> position_task_{};
