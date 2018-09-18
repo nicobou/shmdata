@@ -174,6 +174,7 @@ bool FileDecoder::load_file(const std::string& path) {
 
   position_task_ = std::make_unique<PeriodicTask<>>(
       [this]() {
+        if (0 == cur_pos_id_) return;
         gint64 position = GST_CLOCK_TIME_NONE;
         if (gst_element_query_position(gst_pipeline_->get_pipeline(), GST_FORMAT_TIME, &position)) {
           if (cur_pos_ != GST_TIME_AS_MSECONDS(position)) {
