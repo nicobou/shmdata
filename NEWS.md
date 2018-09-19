@@ -2,6 +2,15 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.16 (2018-09-19)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* fix pyshmdata sometimes crash during on_connect
+* fix pyshmdata leaking user data when deallocating
+* fix pyshmdata issue with PyDict_SetItemString
+* Added a parsed_datatype member to pyshmdata Reader, a dict of the parsed datatype
+
 shmdata 1.3.14 (2018-04-23)
 ---------------------------
 This is an official release in the 1.3 stable series.
