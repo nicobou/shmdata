@@ -20,7 +20,6 @@
 #ifndef __SWITCHER_SHMDATA_CONNECTOR_H__
 #define __SWITCHER_SHMDATA_CONNECTOR_H__
 
-#include <glib.h>
 #include <functional>
 #include <string>
 #include <unordered_map>
@@ -55,10 +54,6 @@ class ShmdataConnector {
   OnDisconnect on_disconnect_cb_{nullptr};
   OnDisconnectAll on_disconnect_all_cb_{nullptr};
   CanSinkCaps on_can_sink_caps_cb_{nullptr};
-  static gboolean connect_wrapped(gpointer path, gpointer user_data);
-  static gboolean disconnect_wrapped(gpointer path, gpointer user_data);
-  static gboolean disconnect_all_wrapped(gpointer /*unused */, gpointer user_data);
-  static gboolean can_sink_caps_wrapped(gpointer caps, gpointer user_data);
 };
 
 }  // namespace switcher

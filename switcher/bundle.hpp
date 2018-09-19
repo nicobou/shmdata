@@ -31,10 +31,12 @@
 namespace switcher {
 class Bundle : public Quiddity, public StartableQuiddity {
  public:
-  Bundle(QuiddityConfiguration&&);
+  Bundle(quid::Config&&);
   ~Bundle();
   Bundle(const Bundle&) = delete;
   Bundle& operator=(const Bundle&) = delete;
+
+  std::string make_shmpath(const std::string& suffix) const final;
 
  private:
   struct on_tree_data_t {
@@ -50,11 +52,12 @@ class Bundle : public Quiddity, public StartableQuiddity {
   };
 
  private:
-  QuiddityConfiguration conf_;
+  quid::Config conf_;
   std::atomic_bool quitting_{false};
   std::vector<std::pair<std::string /*quid_name*/, std::string /*shmpath*/>> connected_shms_{};
   std::mutex connected_shms_mtx_{};
   std::vector<std::string> start_quids_{};
+  std::vector<std::string> exposed_writer_quids_{};
   std::string reader_quid_{};
   ShmdataConnector shmcntr_;
   std::vector<std::unique_ptr<on_tree_data_t>> on_tree_datas_{};
@@ -72,7 +75,7 @@ class Bundle : public Quiddity, public StartableQuiddity {
 
 // wrappers for the abstract factory registration
 namespace bundle {
-Quiddity* create(QuiddityConfiguration&& conf);
+Quiddity* create(quid::Config&& conf);
 void destroy(Quiddity* quiddity);
 }  // namespace bundle
 

@@ -26,11 +26,12 @@ int main() {
   bool success = true;
 
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
+    using namespace switcher;
+    Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->scan_directory_for_plugins("./");
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
-    if (!switcher::QuiddityBasicTest::test_full(manager, "ltctojack")) success = false;
+    if (!test::full(manager, "ltctojack")) success = false;
   }  // end of scope is releasing the manager
 
   if (success)

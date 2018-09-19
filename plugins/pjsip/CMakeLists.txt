@@ -45,6 +45,7 @@ if (PLUGIN_SIP)
         --disable-speex-aec
         --disable-speex-codec
         --disable-libwebrtc
+	--disable-ssl
         )
 
     # Convert CMake lists into space delimited strings for the command line

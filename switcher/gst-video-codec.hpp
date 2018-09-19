@@ -23,7 +23,7 @@
 #include <unordered_set>
 #include <vector>
 #include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/gst-shm-tree-updater.hpp"
 #include "switcher/shmdata-utils.hpp"
 #include "switcher/unique-gst-element.hpp"
 
@@ -47,6 +47,7 @@ class GstVideoCodec {
 
  private:
   Quiddity* quid_;
+  MContainer::meth_id_t reset_id_;
   // shmdata path
   std::string shmpath_to_encode_;
   std::string shm_encoded_path_;
@@ -59,8 +60,8 @@ class GstVideoCodec {
   UGstElem color_space_codec_element_{"videoconvert"};
   UGstElem codec_element_{"x264enc"};
   UGstElem shm_encoded_{"shmdatasink"};
-  std::unique_ptr<GstShmdataSubscriber> shmsrc_sub_{nullptr};
-  std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
+  std::unique_ptr<GstShmTreeUpdater> shmsrc_sub_{nullptr};
+  std::unique_ptr<GstShmTreeUpdater> shmsink_sub_{nullptr};
   std::vector<std::string> codec_properties_{};
   Selection<> codecs_;
   PContainer::prop_id_t codec_id_;
@@ -95,13 +96,13 @@ class GstVideoCodec {
   void show();
   void hide();
   PContainer::prop_id_t install_codec();
+  bool reset_codec_configuration();
   static void set_codec(const gint value, void* user_data);
   static gint get_codec(void* user_data);
   // static gboolean get_codec_long_list(void *user_data);
   // static void set_codec_long_list(gboolean mute, void *user_data);
   static gboolean sink_factory_filter(GstPluginFeature* feature, gpointer data);
   static gint sink_compare_ranks(GstPluginFeature* f1, GstPluginFeature* f2);
-  static gboolean reset_codec_configuration(gpointer /*unused */, gpointer user_data);
 };
 
 }  // namespace switcher

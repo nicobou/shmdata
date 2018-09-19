@@ -16,7 +16,6 @@
  */
 
 #include "./pj-sip.hpp"
-#include <glib.h>
 #include "./pj-presence.hpp"
 #include "./pj-sip-plugin.hpp"
 #include "switcher/net-utils.hpp"
@@ -39,7 +38,6 @@ PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
   }
   i_m_the_one_ = true;
   this_ = this;
-
   pj_status_t status = pj_init();
   if (status != PJ_SUCCESS) {
     SIPPlugin::this_->warning("cannot init pjsip library");
@@ -53,11 +51,10 @@ PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
     SIPPlugin::this_->warning("Error in pjsua_create()");
     return;
   }
-  /* Init pjsua */
   {
     pjsua_config cfg;
-    pjsua_logging_config log_cfg;
     pjsua_config_default(&cfg);
+
     cfg.cb.on_buddy_state = &PJPresence::on_buddy_state;
     cfg.cb.on_reg_state2 = &PJPresence::on_registration_state;
     // cfg.cb.on_create_media_transport = &on_create_media_transport;---
@@ -81,8 +78,19 @@ PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
     // cfg.cb.on_ice_transport_error = &on_ice_transport_error;
     // cfg.cb.on_snd_dev_operation = &on_snd_dev_operation;
     // cfg.cb.on_call_media_event = &on_call_media_event;
+
+    // set log level from config via plugin
+    pj_log_set_level(SIPPlugin::this_->log_level_);
+
+    pjsua_logging_config log_cfg;
     pjsua_logging_config_default(&log_cfg);
-    log_cfg.console_level = log_level_;
+    // set console log level from config via plugin
+    log_cfg.console_level = SIPPlugin::this_->console_log_level_;
+    // set log file from config via plugin
+    if (! SIPPlugin::this_->log_filename_.empty()) {
+      log_cfg.log_filename = pj_str(const_cast<char*>(SIPPlugin::this_->log_filename_.data()));
+    }
+
     status = pjsua_init(&cfg, &log_cfg, nullptr);
     if (status != PJ_SUCCESS) {
       SIPPlugin::this_->warning("Error in pjsua_init()");

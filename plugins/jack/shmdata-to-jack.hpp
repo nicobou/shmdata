@@ -26,13 +26,13 @@
 #include "./drift-observer.hpp"
 #include "./jack-client.hpp"
 #include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/gst-shm-tree-updater.hpp"
 #include "switcher/shmdata-connector.hpp"
 
 namespace switcher {
 class ShmdataToJack : public Quiddity {
  public:
-  ShmdataToJack(QuiddityConfiguration&&);
+  ShmdataToJack(quid::Config&&);
   ~ShmdataToJack() = default;
   ShmdataToJack(const ShmdataToJack&) = delete;
   ShmdataToJack& operator=(const ShmdataToJack&) = delete;
@@ -64,16 +64,20 @@ class ShmdataToJack : public Quiddity {
   // properties
   bool auto_connect_{true};
   std::string connect_to_{"system:playback_"};
-  PContainer::prop_id_t connect_to_id_{0};
+  PContainer::prop_id_t connect_to_id_;
   unsigned int index_{1};
   PContainer::prop_id_t index_id_{0};
-  PContainer::prop_id_t auto_connect_id_{0};
+  PContainer::prop_id_t auto_connect_id_;
+  bool connect_all_to_first_{false};
+  PContainer::prop_id_t connect_all_to_first_id_;
+  bool connect_only_first_{false};
+  PContainer::prop_id_t connect_only_first_id_;
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
   // gst pipeline:
   std::unique_ptr<GstPipeliner> gst_pipeline_;
   // shmsubscriber (publishing to the information-tree):
-  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
 
   bool start();
   bool stop();

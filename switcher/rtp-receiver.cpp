@@ -18,12 +18,12 @@
  */
 
 #include "./rtp-receiver.hpp"
-#include "./rtp-session2.hpp"
+#include "./rtp-session.hpp"
 #include "./scope-exit.hpp"
 
 namespace switcher {
 
-RTPReceiver::RTPReceiver(RtpSession2* session,
+RTPReceiver::RTPReceiver(RtpSession* session,
                          const std::string& rtpshmpath,
                          configure_shmsink_cb_t cb,
                          bool decompress)
@@ -48,7 +48,7 @@ RTPReceiver::RTPReceiver(RtpSession2* session,
           decompress_) {
   // monitoring rtp-session new pads for received rtp packet
   g_signal_connect(session_->rtpsession_, "pad-added", G_CALLBACK(on_pad_added), this);
-  // FIXME have this in rtpsession2: g_signal_connect(session_->rtpsession_,
+  // FIXME have this in rtpsession: g_signal_connect(session_->rtpsession_,
   // "request-pt-map", (GCallback)request_pt_map, this);
   // configuring shmdatasrc and typefind
   g_signal_connect(typefind_, "have-type", G_CALLBACK(on_caps), this);

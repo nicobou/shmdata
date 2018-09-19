@@ -24,13 +24,13 @@
 #include <unordered_map>
 #include "./counter-map.hpp"
 #include "./gst-pipeliner.hpp"
-#include "./gst-shmdata-subscriber.hpp"
+#include "./gst-shm-tree-updater.hpp"
 #include "./quiddity.hpp"
 
 namespace switcher {
 class Uridecodebin : public Quiddity {
  public:
-  Uridecodebin(QuiddityConfiguration&&);
+  Uridecodebin(quid::Config&&);
   ~Uridecodebin() = default;
   Uridecodebin(const Uridecodebin&) = delete;
   Uridecodebin& operator=(const Uridecodebin&) = delete;
@@ -41,21 +41,19 @@ class Uridecodebin : public Quiddity {
   GstPipeliner::on_error_cb_t on_error_cb_{nullptr};
   bool error_{false};
 
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
   GstElement* uridecodebin_{nullptr};
   GstCaps* rtpgstcaps_{nullptr};
   bool discard_next_uncomplete_buffer_{false};
-  InvocationSpec* on_error_command_{nullptr};  // for the pipeline error handler
   // custom properties
   bool loop_{false};
   bool playing_{true};
   std::string uri_{};
   CounterMap counter_{};
-  std::vector<std::unique_ptr<GstShmdataSubscriber>> shm_subs_{};
+  std::vector<std::unique_ptr<GstShmTreeUpdater>> shm_subs_{};
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
 
   void init_uridecodebin();
   void destroy_uridecodebin();
-  void clean_on_error_command();
   void bus_async(GstMessage* msg);
   bool to_shmdata();
 

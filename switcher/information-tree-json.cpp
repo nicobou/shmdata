@@ -138,9 +138,11 @@ std::string serialize(InfoTree::ptrc tree) {
       tree,
       [&json_builder](std::string key, InfoTree::ptrc node, bool is_array_element) {
         JSONSerializer::on_visiting_node(key, node, is_array_element, json_builder);
+        return true;
       },
       [&json_builder](std::string key, InfoTree::ptrc node, bool is_array_element) {
         JSONSerializer::on_node_visited(key, node, is_array_element, json_builder);
+        return true;
       });
 
   if (!is_array)

@@ -18,13 +18,13 @@
  */
 
 #include "./rtp-sender.hpp"
-#include "./rtp-session2.hpp"
+#include "./rtp-session.hpp"
 #include "./scope-exit.hpp"
 #include "switcher/gst-rtppayloader-finder.hpp"
 
 namespace switcher {
 
-RTPSender::RTPSender(RtpSession2* session, const std::string& shmpath, unsigned int mtu)
+RTPSender::RTPSender(RtpSession* session, const std::string& shmpath, unsigned int mtu)
     : session_(session),
       shmpath_(shmpath),
       mtu_(mtu),

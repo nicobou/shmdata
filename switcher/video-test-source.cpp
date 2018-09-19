@@ -32,8 +32,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-VideoTestSource::VideoTestSource(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+VideoTestSource::VideoTestSource(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       resolutions_id_(pmanage<MPtr(&PContainer::make_selection<Fraction>)>(
           "resolution",
@@ -109,7 +109,10 @@ VideoTestSource::VideoTestSource(QuiddityConfiguration&& conf)
     is_valid_ = false;
     return;
   }
-  shmpath_ = make_file_name("video");
+  // register writer suffix
+  register_writer_suffix("video");
+  // compute shmpath
+  shmpath_ = make_shmpath("video");
   g_object_set(G_OBJECT(videotestsrc_.get_raw()), "is-live", TRUE, nullptr);
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   update_caps();
@@ -138,20 +141,14 @@ void VideoTestSource::update_caps() {
 
 bool VideoTestSource::start() {
   if (!gst_pipeline_) return false;
-  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shmdatasink_.get_raw(),
-      [this](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.writer." + shmpath_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_));
+  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, shmdatasink_.get_raw(), shmpath_, GstShmTreeUpdater::Direction::writer);
   update_caps();
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
-  gst_pipeline_->play(true);
   pmanage<MPtr(&PContainer::replace)>(
       pmanage<MPtr(&PContainer::get_id)>("pattern"),
       GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
+  gst_pipeline_->play(true);
   pmanage<MPtr(&PContainer::disable)>(width_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(height_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&PContainer::disable)>(resolutions_id_, disabledWhenStartedMsg);
@@ -162,7 +159,6 @@ bool VideoTestSource::start() {
 
   bool VideoTestSource::stop() {
     shm_sub_.reset(nullptr);
-    prune_tree(".shmdata.writer." + shmpath_);
     if (!UGstElem::renew(videotestsrc_, {"is-live", "pattern"}) ||
         !UGstElem::renew(shmdatasink_, {"socket-path"}) || !UGstElem::renew(capsfilter_)) {
       warning("error initializing gst element for videotestsrc");

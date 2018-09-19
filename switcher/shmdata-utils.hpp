@@ -29,9 +29,6 @@ namespace switcher {
 namespace ShmdataUtils {
 
 std::string get_category(const std::string& caps);
-InfoTree::ptr make_tree(const std::string& caps,
-                        const std::string& category,
-                        const ShmdataStat& stat);
 
 }  // namespace ShmdataUtils
 }  // namespace switcher

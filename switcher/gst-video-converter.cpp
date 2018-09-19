@@ -30,8 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoConverter,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-GstVideoConverter::GstVideoConverter(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+GstVideoConverter::GstVideoConverter(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       video_format_(
           GstUtils::get_gst_element_capability_as_list("videoconvert", "format", GST_PAD_SRC), 0),
       video_format_id_(
@@ -51,15 +51,14 @@ GstVideoConverter::GstVideoConverter(QuiddityConfiguration&& conf)
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-  shmpath_converted_ = make_file_name("video");
+  shmpath_converted_ = make_shmpath("video");
+  register_writer_suffix("video");
 }
 
 bool GstVideoConverter::on_shmdata_disconnect() {
-  prune_tree(".shmdata.writer." + shmpath_converted_);
-  prune_tree(".shmdata.reader." + shmpath_to_convert_);
   shmsink_sub_.reset();
   shmsrc_sub_.reset();
-  converter_.reset(nullptr);
+  converter_.reset();
   pmanage<MPtr(&PContainer::enable)>(video_format_id_);
   return true;
 }
@@ -70,24 +69,14 @@ bool GstVideoConverter::on_shmdata_connect(const std::string& shmpath) {
     return false;
   }
   shmpath_to_convert_ = shmpath;
-  converter_.reset(nullptr);
+  converter_.reset();
   converter_ = std::make_unique<GstPixelFormatConverter>(
       shmpath_to_convert_, shmpath_converted_, video_format_.get_attached());
   if (!static_cast<bool>(*converter_.get())) return false;
-  shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
-      converter_->get_shmsink(),
-      [this](const std::string& caps) {
-        graft_tree(".shmdata.writer." + shmpath_converted_,
-                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_converted_));
-  shmsrc_sub_ = std::make_unique<GstShmdataSubscriber>(
-      converter_->get_shmsrc(),
-      [this](const std::string& caps) {
-        graft_tree(".shmdata.reader." + shmpath_to_convert_,
-                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath_to_convert_));
+  shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, converter_->get_shmsink(), shmpath_converted_, GstShmTreeUpdater::Direction::writer);
+  shmsrc_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, converter_->get_shmsrc(), shmpath_to_convert_, GstShmTreeUpdater::Direction::reader);
   pmanage<MPtr(&PContainer::disable)>(video_format_id_, ShmdataConnector::disabledWhenConnectedMsg);
   return true;
 }

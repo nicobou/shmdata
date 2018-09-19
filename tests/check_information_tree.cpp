@@ -207,6 +207,12 @@ int main() {
     auto deserialized_string = JSONSerializer::serialize(deserialized_tree.get());
     // std::cout << deserialized_string << '\n';
     assert(serialized == deserialized_string);
+
+    // test copy
+    auto tree_cpy = InfoTree::copy(tree.get());
+    assert(serialized == JSONSerializer::serialize(tree_cpy.get()));
+    auto tree_cpy2 = tree->branch_get_copy(".");
+    assert(serialized == JSONSerializer::serialize(tree_cpy2.get()));
   }
 
   {  // get childs keys inserting in an existing container
@@ -254,6 +260,26 @@ int main() {
         std::equal(original_values.begin(), original_values.end(), values.begin(), string_compare));
     // for (auto &it : values)
     //   std::cout << it << '\n';
+  }
+
+  {  // collecting data
+    InfoTree::ptr tree = InfoTree::make();
+    tree->graft("root.1.id", InfoTree::make(0));
+    tree->graft("root.2.1.id", InfoTree::make(2));
+    tree->graft("root.3.21.id", InfoTree::make(4));
+    tree->graft("root.4.id", InfoTree::make(8));
+    tree->graft("root.5.id", InfoTree::make(16));
+    tree->graft("root.5.id.id", InfoTree::make(1));  // subtree of root.5.id
+    tree->graft("root.1.2.id", InfoTree::make(3));   // sibling of root.1.id
+    auto collected =
+        InfoTree::collect_values(tree.get(),
+                                 [](const std::string& key, InfoTree::ptrc) { return key == "id"; },
+                                 false);  // do not continue search on siblings and subtree
+    assert(5 == collected.size());
+    std::vector<int> values{0, 2, 4, 8, 16};
+    for (auto& it : collected) {
+      assert(values.end() != std::find(values.cbegin(), values.cend(), it.copy_as<int>()));
+    }
   }
 
   return 0;

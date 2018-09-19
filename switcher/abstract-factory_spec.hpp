@@ -41,14 +41,14 @@ void AbstractFactory<T, Key, ATs...>::register_class_with_custom_factory(
 }
 
 template <typename T, typename Key, typename... ATs>
-std::vector<Key> AbstractFactory<T, Key, ATs...>::get_keys() {
+std::vector<Key> AbstractFactory<T, Key, ATs...>::get_keys() const {
   std::vector<Key> constructor_names;
   for (auto& it : constructor_map_) constructor_names.push_back(it.first);
   return constructor_names;
 }
 
 template <typename T, typename Key, typename... ATs>
-bool AbstractFactory<T, Key, ATs...>::key_exists(Key Id) {
+bool AbstractFactory<T, Key, ATs...>::key_exists(Key Id) const {
   return (constructor_map_.find(Id) != constructor_map_.end());
 }
 

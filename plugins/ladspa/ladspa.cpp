@@ -35,13 +35,15 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LADSPA,
 
 const std::vector<std::string> LADSPA::KPropertiesBlackList = {"name", "parent"};
 
-LADSPA::LADSPA(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+LADSPA::LADSPA(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       plugins_list_(get_ladspa_plugins()),
       plugins_(Selection<>(std::move(plugins_list_.first), std::move(plugins_list_.second), 0)) {
   if (plugins_list_.first.empty()) return;
+
+  register_writer_suffix("audio");
 
   perchannel_group_id_ = pmanage<MPtr(&PContainer::make_group)>(
       "perchannel_group",
@@ -296,7 +298,7 @@ void LADSPA::get_gst_properties() {
 
 bool LADSPA::on_shmdata_connect(const std::string& shmpath) {
   shmpath_ = shmpath;
-  shmpath_transformed_ = make_file_name("audio");
+  shmpath_transformed_ = make_shmpath("audio");
 
   // We get the values before resetting the pipeline before the first connection.
   // After that this will be done during the disconnection event.
@@ -322,8 +324,11 @@ void LADSPA::create_and_play_gst_pipeline() {
 
   if (!create_gst_pipeline()) return;
 
-  shmsrc_sub_ = std::make_unique<GstShmdataSubscriber>(
+  shmsrc_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this,
       shmdatasrc_,
+      shmpath_,
+      GstShmTreeUpdater::Direction::reader,
       [this](const std::string& str_caps) {
         GstCaps* caps = gst_caps_from_string(str_caps.c_str());
         On_scope_exit {
@@ -350,21 +355,10 @@ void LADSPA::create_and_play_gst_pipeline() {
             create_and_play_gst_pipeline();
           });
         }
+      });
 
-        graft_tree(
-            ".shmdata.reader." + shmpath_,
-            ShmdataUtils::make_tree(str_caps, ShmdataUtils::get_category(str_caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath_));
-
-  shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shmdatasink_,
-      [this](const std::string& caps) {
-        graft_tree(".shmdata.writer." + shmpath_transformed_,
-                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_transformed_),
-      [this]() { prune_tree(".shmdata.writer." + shmpath_transformed_); });
+  shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, shmdatasink_, shmpath_transformed_, GstShmTreeUpdater::Direction::writer);
 
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   g_object_set(G_OBJECT(ladspa_bin_), "async-handling", TRUE, nullptr);

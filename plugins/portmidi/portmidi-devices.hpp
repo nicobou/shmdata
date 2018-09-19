@@ -62,8 +62,8 @@ class PortMidi {
   bool push_midi_message(int id, unsigned char status, unsigned char data1, unsigned char data2);
 
  private:
-  std::map<guint, PmStream*> input_streams_{};
-  std::map<guint, PmStream*> output_streams_{};
+  std::map<unsigned int, PmStream*> input_streams_{};
+  std::map<unsigned int, PmStream*> output_streams_{};
   /** Prints the list of MIDI source devices. */
   void update_device_enum();
 
@@ -86,7 +86,7 @@ class PortMidi {
    private:
     std::mutex streams_mutex_;
     std::mutex finalize_mutex_;
-    gboolean finalizing_;
+    bool finalizing_;
     std::map<PmStream*, std::pair<on_pm_event_method, void*>> input_callbacks_;
     std::map<PmStream*, std::queue<PmEvent>*> output_queues_;
     bool portmidi_initialized_;
@@ -95,7 +95,7 @@ class PortMidi {
     static void process_midi(PtTimestamp timestamp, void* userData);
   };  // end of PortMidiScheduler
   static PortMidiScheduler* scheduler_;
-  static guint instance_counter_;
+  static unsigned int instance_counter_;
 };
 
 }  // namespace switcher

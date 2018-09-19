@@ -16,9 +16,9 @@
  */
 
 #include "./pj-stun-turn.hpp"
-#include <glib.h>
 #include <pjnath.h>
 #include "./pj-sip-plugin.hpp"
+#include "switcher/information-tree-json.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/string-utils.hpp"
 
@@ -44,29 +44,36 @@ PJStunTurn::PJStunTurn() {
   ice_cfg_.stun_cfg.rto_msec = 500;
 
   // set stun/turn config
-  SIPPlugin::this_->install_method(
-      "Set STUN/TURN parameters",                          // long name
-      "set_stun_turn",                                     // name
-      "Set STUN/TURN configuration",                       // description
-      "the server(s) are reachable",                       // return description
-      Method::make_arg_description("STUN server address",  // long name
-                                   "stun",                 // name
-                                   "string",               // description
-                                   "TURN server address",
-                                   "turn",
-                                   "string",
-                                   "TURN user name",
-                                   "turn_user",
-                                   "string",
-                                   "TURN user password",
-                                   "turn_pass",
-                                   "string",
-                                   nullptr),
-      (Method::method_ptr)&set_stun_turn,
-      G_TYPE_BOOLEAN,
-      Method::make_arg_type_description(
-          G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, nullptr),
-      this);
+  using set_stun_turn_t = std::function<bool(std::string, std::string, std::string, std::string)>;
+  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<set_stun_turn_t>)>(
+      "set_stun_turn",
+      JSONSerializer::deserialize(
+          R"(
+                  {
+                   "name" : "Set STUN/TURN parameters",
+                   "description" : "Set STUN/TURN configuration",
+                   "arguments" : [
+                     {
+                        "long name" : "STUN server address",
+                        "description" : "string"
+                     }, {
+                        "long name" : "TURN server address",
+                        "description" : "string"
+                     }, {
+                        "long name" : "TURN user name",
+                        "description" : "string"
+                     }, {
+                        "long name" : "TURN user password",
+                        "description" : "string"
+                     }
+                   ]
+                  }
+              )"),
+      [this](const std::string& stun,
+             const std::string& turn,
+             const std::string& login,
+             const std::string& pass) { return set_stun_turn(stun, turn, login, pass); });
+
   SIPPlugin::this_->pmanage<MPtr(&PContainer::make_bool)>(
       "lower-case-turn-account",
       [this](const bool& val) {
@@ -148,94 +155,88 @@ pj_status_t PJStunTurn::handle_events(unsigned max_msec, unsigned* p_count) {
   return PJ_SUCCESS;
 }
 
-gboolean PJStunTurn::set_stun_turn(const gchar* stun,
-                                   const gchar* turn,
-                                   const gchar* turn_user,
-                                   const gchar* turn_pass,
-                                   void* user_data) {
-  PJStunTurn* context = static_cast<PJStunTurn*>(user_data);
-
+bool PJStunTurn::set_stun_turn(const std::string& stun,
+                               const std::string& turn,
+                               const std::string& turn_user,
+                               const std::string& turn_pass) {
   // saving old config for reverting if error with the new one to be tested:
   bool success = false;
-  pj_ice_strans_cfg old_ice_cfg = context->ice_cfg_;
+  pj_ice_strans_cfg old_ice_cfg = ice_cfg_;
   On_scope_exit {
-    if (!success) context->ice_cfg_ = old_ice_cfg;
+    if (!success) ice_cfg_ = old_ice_cfg;
   };
 
   /* Configure STUN/srflx candidate resolution */
-  if (nullptr != stun) {
+  if (!stun.empty()) {
     std::string tmp_stun = std::string(stun);
     auto pos = tmp_stun.find(':');
     /* Command line option may contain port number */
     if (std::string::npos != pos) {
-      context->stun_srv_ = std::string(stun, 0, pos);
-      context->ice_cfg_.stun.server.ptr = (char*)context->stun_srv_.c_str();
-      context->ice_cfg_.stun.server.slen = context->stun_srv_.size();
-      context->ice_cfg_.stun.port = (pj_uint16_t)atoi(tmp_stun.c_str() + pos + 1);
+      stun_srv_ = std::string(stun, 0, pos);
+      ice_cfg_.stun.server.ptr = (char*)stun_srv_.c_str();
+      ice_cfg_.stun.server.slen = stun_srv_.size();
+      ice_cfg_.stun.port = (pj_uint16_t)atoi(tmp_stun.c_str() + pos + 1);
     } else {
-      context->stun_srv_ = tmp_stun;
-      context->ice_cfg_.stun.server.ptr = (char*)context->stun_srv_.c_str();
-      context->ice_cfg_.stun.server.slen = context->stun_srv_.size();
-      context->ice_cfg_.stun.port = PJ_STUN_PORT;
+      stun_srv_ = tmp_stun;
+      ice_cfg_.stun.server.ptr = (char*)stun_srv_.c_str();
+      ice_cfg_.stun.server.slen = stun_srv_.size();
+      ice_cfg_.stun.port = PJ_STUN_PORT;
     }
     /* For this demo app, configure longer STUN keep-alive time
        * so that it does't clutter the screen output.
        */
-    context->ice_cfg_.stun.cfg.ka_interval = 300;  // seconds
+    ice_cfg_.stun.cfg.ka_interval = 300;  // seconds
   }
 
   /* Configure TURN candidate */
-  if (nullptr != turn) {
+  if (!turn.empty()) {
     std::string tmp_turn = std::string(turn);
     auto pos = tmp_turn.find(':');
     /* Command line option may contain port number */
     if (std::string::npos != pos) {
-      context->turn_srv_ = std::string(turn, 0, pos);
-      context->ice_cfg_.turn.server.ptr = (char*)context->turn_srv_.c_str();
-      context->ice_cfg_.turn.server.slen = context->turn_srv_.size();
-      context->ice_cfg_.turn.port = (pj_uint16_t)atoi(tmp_turn.c_str() + pos + 1);
+      turn_srv_ = std::string(turn, 0, pos);
+      ice_cfg_.turn.server.ptr = (char*)turn_srv_.c_str();
+      ice_cfg_.turn.server.slen = turn_srv_.size();
+      ice_cfg_.turn.port = (pj_uint16_t)atoi(tmp_turn.c_str() + pos + 1);
     } else {
-      context->turn_srv_ = tmp_turn;
-      context->ice_cfg_.turn.server.ptr = (char*)context->turn_srv_.c_str();
-      context->ice_cfg_.turn.server.slen = context->turn_srv_.size();
-      context->ice_cfg_.turn.port = PJ_STUN_PORT;
+      turn_srv_ = tmp_turn;
+      ice_cfg_.turn.server.ptr = (char*)turn_srv_.c_str();
+      ice_cfg_.turn.server.slen = turn_srv_.size();
+      ice_cfg_.turn.port = PJ_STUN_PORT;
     }
 
     /* TURN credential */
-    context->ice_cfg_.turn.auth_cred.type = PJ_STUN_AUTH_CRED_STATIC;
-    if (nullptr != turn_user) {
-      context->turn_user_ = std::string(turn_user);
-      if (context->lower_case_turn_account_) StringUtils::tolower(context->turn_user_);
-      context->ice_cfg_.turn.auth_cred.data.static_cred.username.ptr =
-          (char*)context->turn_user_.c_str();
-      context->ice_cfg_.turn.auth_cred.data.static_cred.username.slen = context->turn_user_.size();
+    ice_cfg_.turn.auth_cred.type = PJ_STUN_AUTH_CRED_STATIC;
+    if (!turn_user.empty()) {
+      turn_user_ = std::string(turn_user);
+      if (lower_case_turn_account_) StringUtils::tolower(turn_user_);
+      ice_cfg_.turn.auth_cred.data.static_cred.username.ptr = (char*)turn_user_.c_str();
+      ice_cfg_.turn.auth_cred.data.static_cred.username.slen = turn_user_.size();
     }
-    context->ice_cfg_.turn.auth_cred.data.static_cred.data_type = PJ_STUN_PASSWD_PLAIN;
-    if (nullptr != turn_pass) {
-      context->turn_pass_ = std::string(turn_pass);
-      context->ice_cfg_.turn.auth_cred.data.static_cred.data.ptr =
-          (char*)context->turn_pass_.c_str();
-      context->ice_cfg_.turn.auth_cred.data.static_cred.data.slen = context->turn_pass_.size();
+    ice_cfg_.turn.auth_cred.data.static_cred.data_type = PJ_STUN_PASSWD_PLAIN;
+    if (!turn_pass.empty()) {
+      turn_pass_ = std::string(turn_pass);
+      ice_cfg_.turn.auth_cred.data.static_cred.data.ptr = (char*)turn_pass_.c_str();
+      ice_cfg_.turn.auth_cred.data.static_cred.data.slen = turn_pass_.size();
     }
 
     // Connection type to TURN server
-    context->ice_cfg_.turn.conn_type = PJ_TURN_TP_UDP;
+    ice_cfg_.turn.conn_type = PJ_TURN_TP_UDP;
 
     // configure longer keep-alive time
     // so that it does't clutter the screen output.
 
-    context->ice_cfg_.turn.alloc_param.ka_interval = 300;
+    ice_cfg_.turn.alloc_param.ka_interval = 300;
   }
 
   if (SIPPlugin::this_->pjsip_->run<bool>([&]() -> bool {
-        return static_cast<bool>(
-            PJICEStreamTrans(context->ice_cfg_, 1, PJ_ICE_SESS_ROLE_CONTROLLING));
+        return static_cast<bool>(PJICEStreamTrans(ice_cfg_, 1, PJ_ICE_SESS_ROLE_CONTROLLING));
       })) {
     success = true;  // validate current config
-    context->stun_turn_valid_ = true;
-    return TRUE;
+    stun_turn_valid_ = true;
+    return true;
   } else {
-    return FALSE;
+    return false;
   }
 }
 

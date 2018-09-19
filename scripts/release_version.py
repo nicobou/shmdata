@@ -79,7 +79,8 @@ def increase_version_number(version, version_increase):
 
 def update_switcher_shmdata_version():
     os.chdir(os.path.join(libs_root_path, 'shmdata'))
-    assert git_checkout(bringup_branch) == 0, 'Failed to checkout {} branch of shmdata.'.format(bringup_branch)
+    assert git_checkout(
+        bringup_branch) == 0, 'Failed to checkout {} branch of shmdata.'.format(bringup_branch)
     shmdata_version = parse_version_number('shmdata', version_pattern.format('SHMDATA'))
     assert shmdata_version != [-1, -1, -1]
     print 'found shmdata version {}.{}'.format(shmdata_version[0], shmdata_version[1])
@@ -88,15 +89,17 @@ def update_switcher_shmdata_version():
         os.mkdir(build_dir)
     os.chdir(build_dir)
     if subprocess.call('cmake -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE=Release .. && make -j {} && sudo make install'
-                               .format(multiprocessing.cpu_count()), shell=True) != 0:
+                       .format(multiprocessing.cpu_count()), shell=True) != 0:
         printerr('{} build failed, stopping the release.'.format(lib))
     lib_repo = '{}/{}.git'.format(git_path, lib)
     os.chdir(os.path.join(libs_root_path))
-    assert git_clone(lib_repo) == 0, 'Could not fetch code base for library {} at {}'.format(lib, lib_repo)
+    assert git_clone(lib_repo) == 0, 'Could not fetch codebase for library {} at {}'.format(
+        lib, lib_repo)
     os.chdir(os.path.join(libs_root_path, lib))
     switcher_shmdata_version = parse_version_number(lib, shmdata_require_pattern)
     if switcher_shmdata_version[0] != shmdata_version[0] or switcher_shmdata_version[1] != shmdata_version[1]:
-        assert git_checkout(working_branch) == 0, 'Failed to checkout {} branch of switcher.'.format(working_branch)
+        assert git_checkout(
+            working_branch) == 0, 'Failed to checkout {} branch of switcher.'.format(working_branch)
         commit_version_number(lib, shmdata_version, shmdata_require_pattern)
 
 
@@ -119,7 +122,8 @@ def commit_version_number(lib, new_version, regex_pattern):
                 elif version_line and len(version_line.groups()) == 1:
                     version = version_line.group(1).split('.')
                     if len(version) == 2:
-                        line = re.sub(r'\d+\.\d+', '{}.{}'.format(new_version[0], new_version[1]), line)
+                        line = re.sub(
+                            r'\d+\.\d+', '{}.{}'.format(new_version[0], new_version[1]), line)
                         shmdata_required_version = True
                 new_file.write(line)
 
@@ -127,7 +131,7 @@ def commit_version_number(lib, new_version, regex_pattern):
     git_add([config_file])
     if shmdata_required_version:
         assert git_commit('Shmdata version change to {}.{}'.format(new_version[0], new_version[1])) == 0, \
-                          'Failed to commit shmdata version number.'
+            'Failed to commit shmdata version number.'
     else:
         assert git_commit('Version {}.{}.{}'.format(new_version[0], new_version[1],
                                                     new_version[2])) == 0, 'Failed to commit version number.'
@@ -178,7 +182,7 @@ def get_git_config(property, default_value):
     for config in git_config_full:
         prop = config.split('=')
         if len(prop) < 2:
-            break;
+            break
         if prop[0] == property:
             config_property = prop[1]
     return config_property
@@ -214,7 +218,8 @@ def update_changelog(lib, version):
                     for message in elements[1:]:
                         commit_message += message + ' '
                     if commit_message:
-                        commit_message = re.sub(r'reviewer\s*:\s*[a-z]+', r'', commit_message, flags=re.IGNORECASE)
+                        commit_message = re.sub(
+                            r'reviewer\s*:\s*[a-z]+', r'', commit_message, flags=re.IGNORECASE)
                         new_file.write('* {}\n'.format(commit_message.strip()))
 
                 new_file.write('\n')
@@ -289,7 +294,8 @@ if __name__ == '__main__':
 
     # Always clone shmdata even when releasing switcher to synchronize versions.
     lib_repo = '{}/{}.git'.format(git_path, 'shmdata')
-    assert git_clone(lib_repo) == 0, 'Could not fetch code base for library {} at {}'.format(lib, lib_repo)
+    assert git_clone(lib_repo) == 0, 'Could not fetch codebase for library {} at {}'.format(
+        lib, lib_repo)
 
     if lib == 'switcher':
         update_switcher_shmdata_version()
@@ -310,12 +316,16 @@ if __name__ == '__main__':
     os.chdir(build_dir)
 
     if subprocess.call('cmake -DCMAKE_BUILD_TYPE=Release .. && make -j {} package_source_test'
-                               .format(multiprocessing.cpu_count()), shell=True) != 0:
+                       .format(multiprocessing.cpu_count()), shell=True) != 0:
         printerr('{} unit tests failed, stopping the release.'.format(lib))
 
     os.chdir(os.path.join(libs_root_path, lib))
 
     print 'All unit tests passed successfully, now creating new branches for release.'
+
+    quidfile = "../doc/quiddity_types.txt"
+    subprocess.call(os.path.join(
+        sys.path[0], 'echo \`\`\` > {} && switcher -K >> {} && echo \`\`\` >> {}'.format(quidfile, quidfile, quidfile)), shell=True)
 
     update_changelog(lib, release_version)
     new_branch = '{}/version-{}.{}.{}'.format(release_branch, release_version[0], release_version[1],

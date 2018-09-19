@@ -3,16 +3,16 @@ INSTALL
 
 ## Quick build and installation (latest Ubuntu)
 
-> **Note**: Ensure **[shmdata](https://github.com/sat-metalab/shmdata)** is already installed before proceeding.
+> **Note**: Ensure **[shmdata](https://gitlab.com/sat-metalab/shmdata)** is already installed before proceeding.
 
 Build and install **switcher** from the command line:
 
 ```
-$ sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libgtk-3-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins  libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libltc-dev libcurl4-gnutls-dev
+$ sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins  libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libltc-dev libcurl4-gnutls-dev gsoap wah-plugins libxrandr-dev libxinerama-dev libxcursor-dev libsamplerate0-dev
 $ git submodule update --init --recursive
 $ mkdir build
 $ cd build
-$ cmake -DENABLE_GPL=ON ..
+$ cmake -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE=Release .. # replace "Release" with "Debug" when coding
 $ make -j"$(nproc)"
 $ sudo make install
 $ sudo ldconfig
@@ -51,7 +51,7 @@ $ cmake .. -DENABLE_GPL=ON
     > `$ sudo add-apt-repository --yes ppa:graphics-drivers/ppa`
 
 ```
-    $ sudo apt install nvidia-<driver-ver-number> nvidia-<driver-ver-number>-dev nvidia-cuda-toolkit
+    $ sudo apt install nvidia-<driver-ver-number> nvidia-<driver-ver-number>-dev nvidia-cuda-toolkit nvidia-cuda-dev
 ```
 
 3. In case running `$ cmake ..` does not automatically detect the right driver, in the **switcher** build directory, configure **switcher** as follows:

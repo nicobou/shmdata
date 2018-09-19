@@ -2,6 +2,34 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 1.0.0 (2018-09-19)
+---------------------------
+This is an official release in the 1.0 stable series.
+
+Bug fixes:
+* fix jacksink infinite loop
+* saving shm connection is now based on reader saving name and suffix of writer quiddity if available. raw_shmdata path are still possibly saved if no information about the writer are available
+* adding a test for shmdata transfert between bundles
+* get header installed in a switcher version specific folder
+* c++ version generated in pkgconfig
+* fix Urisrc will sometimes crash on delete
+* fix config not loaded excepted for bundles
+* fix compilation for ubuntu 18.04
+
+New Features:
+* switcher python wrapper
+* improved documentation
+* new filesrc quiddity with play/pause/loop with basic test.
+* adding two properties for jacksink: i) connect all to first channel and ii) connect only first channel
+* httpsdpdec uses now a prop instead of a method for uri
+* add log options to sip plugin, config option to python wrapper, and example python script
+* adding initial doc for protocol mapper
+* InfoTree copy
+* get version and default plugin path from methods in switcher
+* Makes it so videoconvert uses multi-threading if available (GStreamer version >= 1.12).
+* add a resampling quiddity based on libsamplerate
+* provide plugin path with pkgconfig
+
 switcher 0.8.68 (2018-04-06)
 ---------------------------
 This is an official release in the 0.8 stable series.

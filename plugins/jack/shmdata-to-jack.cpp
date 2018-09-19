@@ -35,8 +35,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-ShmdataToJack::ShmdataToJack(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+ShmdataToJack::ShmdataToJack(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       jack_client_(get_name().c_str(),
                    &ShmdataToJack::jack_process,
                    this,
@@ -45,11 +45,65 @@ ShmdataToJack::ShmdataToJack(QuiddityConfiguration&& conf)
                    [this]() {
                      if (!is_constructed_) return;
                      auto thread = std::thread([this]() {
-                       if (!qcontainer_->remove(get_name()))
+                       if (!qcontainer_->remove(qcontainer_->get_id(get_name())))
                          warning("% did not self destruct after jack shutdown", get_name());
                      });
                      thread.detach();
                    }),
+      connect_to_id_(pmanage<MPtr(&PContainer::make_string)>("connect-to",
+                                                             [this](const std::string& val) {
+                                                               connect_to_ = val;
+                                                               update_port_to_connect();
+                                                               return true;
+                                                             },
+                                                             [this]() { return connect_to_; },
+                                                             "Connect To",
+                                                             "Which client to connect to",
+                                                             connect_to_)),
+      auto_connect_id_(pmanage<MPtr(&PContainer::make_bool)>(
+          "auto_connect",
+          [this](const bool& val) {
+            auto_connect_ = val;
+            update_port_to_connect();
+            if (auto_connect_) {
+              pmanage<MPtr(&PContainer::enable)>(connect_to_id_);
+              pmanage<MPtr(&PContainer::enable)>(index_id_);
+              pmanage<MPtr(&PContainer::enable)>(connect_all_to_first_id_);
+              pmanage<MPtr(&PContainer::enable)>(connect_only_first_id_);
+            } else {
+              static const std::string why_disabled =
+                  "this property is available only when auto connect is enabled";
+              pmanage<MPtr(&PContainer::disable)>(connect_to_id_, why_disabled);
+              pmanage<MPtr(&PContainer::disable)>(index_id_, why_disabled);
+              pmanage<MPtr(&PContainer::disable)>(connect_all_to_first_id_, why_disabled);
+              pmanage<MPtr(&PContainer::disable)>(connect_only_first_id_, why_disabled);
+            }
+            return true;
+          },
+          [this]() { return auto_connect_; },
+          "Auto Connect",
+          "Auto Connect to another client",
+          auto_connect_)),
+      connect_all_to_first_(
+          pmanage<MPtr(&PContainer::make_bool)>("connect_all_to_first",
+                                                [this](const bool& val) {
+                                                  connect_all_to_first_ = val;
+                                                  return true;
+                                                },
+                                                [this]() { return connect_all_to_first_; },
+                                                "Many Channels To One",
+                                                "Connect all channels to the first",
+                                                connect_all_to_first_)),
+      connect_only_first_id_(
+          pmanage<MPtr(&PContainer::make_bool)>("connect_only_first",
+                                                [this](const bool& val) {
+                                                  connect_only_first_ = val;
+                                                  return true;
+                                                },
+                                                [this]() { return connect_only_first_; },
+                                                "Connect only first channel",
+                                                "Connect only first channel",
+                                                connect_only_first_)),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   // is_constructed_ is needed because of a cross reference among JackClient and JackPort
@@ -69,37 +123,6 @@ ShmdataToJack::ShmdataToJack(QuiddityConfiguration&& conf)
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-  auto_connect_id_ = pmanage<MPtr(&PContainer::make_bool)>(
-      "auto_connect",
-      [this](const bool& val) {
-        auto_connect_ = val;
-        update_port_to_connect();
-        if (auto_connect_) {
-          pmanage<MPtr(&PContainer::enable)>(connect_to_id_);
-          pmanage<MPtr(&PContainer::enable)>(index_id_);
-        } else {
-          static const std::string why_disabled =
-              "this property is available only when auto connect is enabled";
-          pmanage<MPtr(&PContainer::disable)>(connect_to_id_, why_disabled);
-          pmanage<MPtr(&PContainer::disable)>(index_id_, why_disabled);
-        }
-        return true;
-      },
-      [this]() { return auto_connect_; },
-      "Auto Connect",
-      "Auto Connect to another client",
-      auto_connect_);
-
-  connect_to_id_ = pmanage<MPtr(&PContainer::make_string)>("connect-to",
-                                                           [this](const std::string& val) {
-                                                             connect_to_ = val;
-                                                             update_port_to_connect();
-                                                             return true;
-                                                           },
-                                                           [this]() { return connect_to_; },
-                                                           "Connect To",
-                                                           "Which client to connect to",
-                                                           connect_to_);
   unsigned int max_number_of_channels = kMaxNumberOfChannels;
   if (config<MPtr(&InfoTree::branch_has_data)>("max_number_of_channels"))
     max_number_of_channels =
@@ -260,26 +283,24 @@ bool ShmdataToJack::start() {
     return false;
   }
   g_object_set(G_OBJECT(shmdatasrc_), "socket-path", shmpath_.c_str(), nullptr);
-  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shmdatasrc_,
-      [this](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.reader." + this->shmpath_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath_));
+  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, shmdatasrc_, shmpath_, GstShmTreeUpdater::Direction::reader);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), audiobin_);
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
   pmanage<MPtr(&PContainer::disable)>(auto_connect_id_, ShmdataConnector::disabledWhenConnectedMsg);
   pmanage<MPtr(&PContainer::disable)>(connect_to_id_, ShmdataConnector::disabledWhenConnectedMsg);
   pmanage<MPtr(&PContainer::disable)>(index_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&PContainer::disable)>(connect_all_to_first_id_,
+                                      ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&PContainer::disable)>(connect_only_first_id_,
+                                      ShmdataConnector::disabledWhenConnectedMsg);
   connect_ports();
   return true;
 }
 
 bool ShmdataToJack::stop() {
-  shm_sub_.reset(nullptr);
+  shm_sub_.reset();
   disconnect_ports();
   {
     On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };
@@ -288,6 +309,8 @@ bool ShmdataToJack::stop() {
   pmanage<MPtr(&PContainer::enable)>(auto_connect_id_);
   pmanage<MPtr(&PContainer::enable)>(connect_to_id_);
   pmanage<MPtr(&PContainer::enable)>(index_id_);
+  pmanage<MPtr(&PContainer::enable)>(connect_all_to_first_id_);
+  pmanage<MPtr(&PContainer::enable)>(connect_only_first_id_);
   return true;
 }
 
@@ -319,6 +342,7 @@ void ShmdataToJack::update_port_to_connect() {
 void ShmdataToJack::connect_ports() {
   update_port_to_connect();
 
+  if (0 == output_ports_.size()) return;
   if (!auto_connect_) return;
 
   std::lock_guard<std::mutex> lock(ports_to_connect_mutex_);
@@ -329,10 +353,11 @@ void ShmdataToJack::connect_ports() {
     return;
   }
 
-  for (unsigned int i = 0; i < output_ports_.size(); ++i) {
+  for (unsigned int i = 0; i < (connect_only_first_ ? 1 : output_ports_.size()); ++i) {
+    unsigned int dest_port_index = connect_all_to_first_ ? 0 : i;
     jack_connect(jack_client_.get_raw(),
                  std::string(jack_client_.get_name() + ":" + output_ports_[i].get_name()).c_str(),
-                 ports_to_connect_[i].c_str());
+                 ports_to_connect_[dest_port_index].c_str());
   }
 }
 

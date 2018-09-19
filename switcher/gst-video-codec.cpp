@@ -20,6 +20,7 @@
 #include "./gst-video-codec.hpp"
 #include "switcher/gprop-to-prop.hpp"
 #include "switcher/gst-utils.hpp"
+#include "switcher/information-tree-json.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/scope-exit.hpp"
 #include "switcher/startable-quiddity.hpp"
@@ -29,6 +30,17 @@ GstVideoCodec::GstVideoCodec(Quiddity* quid,
                              const std::string& shmpath,
                              const std::string& shmpath_encoded)
     : quid_(quid),
+      reset_id_(quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool()>>)>(
+          "reset",
+          JSONSerializer::deserialize(
+              R"(
+                  {
+                   "name" : "Reset codec configuration",
+                   "description" : "Reset codec configuration to default",
+                   "arguments" : []
+                  }
+              )"),
+          [this]() { return reset_codec_configuration(); })),
       shmpath_to_encode_(shmpath),
       shm_encoded_path_(shmpath_encoded),
       custom_shmsink_path_(!shmpath_encoded.empty()),
@@ -42,29 +54,20 @@ GstVideoCodec::GstVideoCodec(Quiddity* quid,
       codec_id_(install_codec()),
       param_group_id_(quid_->pmanage<MPtr(&PContainer::make_group)>(
           "codec_params", "Codec configuration", "Codec specific parameters")) {
-  quid_->install_method("Reset codec configuration",
-                        "reset",
-                        "Reset codec configuration to default",
-                        "success or fail",
-                        Method::make_arg_description("none", nullptr),
-                        (Method::method_ptr)&reset_codec_configuration,
-                        G_TYPE_BOOLEAN,
-                        Method::make_arg_type_description(G_TYPE_NONE, nullptr),
-                        this);
   set_shm(shmpath);
-  reset_codec_configuration(nullptr, this);
+  reset_codec_configuration();
   quid_->pmanage<MPtr(&PContainer::set_to_current)>(codec_id_);
 }
 
 void GstVideoCodec::hide() {
-  quid_->disable_method("reset");
+  quid_->mmanage<MPtr(&MContainer::disable)>(reset_id_, StartableQuiddity::disabledWhenStartedMsg);
   quid_->pmanage<MPtr(&PContainer::disable)>(codec_id_, StartableQuiddity::disabledWhenStartedMsg);
   quid_->pmanage<MPtr(&PContainer::disable)>(param_group_id_,
                                              StartableQuiddity::disabledWhenStartedMsg);
 }
 
 void GstVideoCodec::show() {
-  quid_->enable_method("reset");
+  quid_->mmanage<MPtr(&MContainer::enable)>(reset_id_);
   quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_);
   quid_->pmanage<MPtr(&PContainer::enable)>(param_group_id_);
 }
@@ -123,39 +126,26 @@ void GstVideoCodec::make_codec_properties() {
   }
 }
 
-gboolean GstVideoCodec::reset_codec_configuration(gpointer /*unused */, gpointer user_data) {
-  GstVideoCodec* context = static_cast<GstVideoCodec*>(user_data);
-  auto& quid = context->quid_;
-  auto* codec_sel = &context->codecs_;
-  codec_sel->select(context->codecs_.get_index("x264enc"));
-  quid->pmanage<MPtr(&PContainer::notify)>(context->codec_id_);
-  context->make_codec_properties();
+bool GstVideoCodec::reset_codec_configuration() {
+  auto& quid = quid_;
+  auto* codec_sel = &codecs_;
+  codec_sel->select(codecs_.get_index("x264enc"));
+  quid->pmanage<MPtr(&PContainer::notify)>(codec_id_);
+  make_codec_properties();
   quid->pmanage<MPtr(&PContainer::set_str)>(quid->pmanage<MPtr(&PContainer::get_id)>("bitrate"),
                                             "4096");
   quid->pmanage<MPtr(&PContainer::set_str)>(quid->pmanage<MPtr(&PContainer::get_id)>("pass"),
                                             "cbr");
-  return TRUE;
+  return true;
 }
 
 bool GstVideoCodec::start() {
   hide();
   if (0 == quid_->pmanage<MPtr(&PContainer::get<IndexOrName>)>(codec_id_).index_) return true;
-  shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shm_encoded_.get_raw(),
-      [this](const std::string& caps) {
-        this->quid_->graft_tree(
-            ".shmdata.writer." + shm_encoded_path_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(quid_, ".shmdata.writer." + shm_encoded_path_));
-  shmsrc_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shmsrc_.get_raw(),
-      [this](const std::string& caps) {
-        this->quid_->graft_tree(
-            ".shmdata.reader." + shmpath_to_encode_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(quid_, ".shmdata.reader." + shmpath_to_encode_));
+  shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
+      quid_, shm_encoded_.get_raw(), shm_encoded_path_, GstShmTreeUpdater::Direction::writer);
+  shmsrc_sub_ = std::make_unique<GstShmTreeUpdater>(
+      quid_, shmsrc_.get_raw(), shmpath_to_encode_, GstShmTreeUpdater::Direction::reader);
   make_bin();
 
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
@@ -169,8 +159,6 @@ bool GstVideoCodec::stop() {
   if (0 != quid_->pmanage<MPtr(&PContainer::get<IndexOrName>)>(codec_id_).index_) {
     shmsink_sub_.reset();
     shmsrc_sub_.reset();
-    quid_->prune_tree(".shmdata.writer." + shm_encoded_path_);
-    quid_->prune_tree(".shmdata.reader." + shmpath_to_encode_);
     remake_codec_elements();
     make_codec_properties();
     gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);

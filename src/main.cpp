@@ -18,13 +18,11 @@
 #include <locale.h>
 #include <signal.h>
 #include <time.h>
-#if HAVE_GTK
-#include <gtk/gtk.h>
-#endif
 #include <vector>
 #include "switcher/console-logger.hpp"
 #include "switcher/file-utils.hpp"
 #include "switcher/information-tree-json.hpp"
+#include "switcher/quiddity-class-printer.hpp"
 #include "switcher/silent-logger.hpp"
 #include "switcher/switcher.hpp"
 
@@ -33,7 +31,6 @@ using namespace switcher;
 static const gchar* server_name = nullptr;
 static const gchar* port_number = nullptr;
 static const gchar* load_file = nullptr;
-static gchar* osc_port_number = nullptr;
 static gboolean display_version;
 static gboolean quiet;
 static gboolean debug;
@@ -41,7 +38,6 @@ static gboolean verbose;
 static gboolean listclasses;
 static gboolean classesdoc;
 static gchar* classdoc = nullptr;
-static gchar* listmethodsbyclass = nullptr;
 static gchar* extraplugindir = nullptr;
 static Switcher::ptr manager;
 static GOptionEntry entries[15] = {
@@ -83,13 +79,6 @@ static GOptionEntry entries[15] = {
      nullptr},
     {"debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "display all messages, including debug", nullptr},
     {"list-classes", 'C', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", nullptr},
-    {"list-methods-by-class",
-     'M',
-     0,
-     G_OPTION_ARG_STRING,
-     &listmethodsbyclass,
-     "list methods of a class",
-     nullptr},
     {"classes-doc",
      'K',
      0,
@@ -103,13 +92,6 @@ static GOptionEntry entries[15] = {
      G_OPTION_ARG_STRING,
      &classdoc,
      "print class documentation, JSON-formated (--class-doc class_name)",
-     nullptr},
-    {"osc-port",
-     'o',
-     0,
-     G_OPTION_ARG_STRING,
-     &osc_port_number,
-     "osc port number (osc enabled only if set)",
      nullptr},
     {"extra-plugin-dir",
      'E',
@@ -125,9 +107,6 @@ void leave(int sig) {
     Switcher::ptr empty;
     manager.swap(empty);
   }
-#if HAVE_GTK
-  gtk_main_quit();
-#endif
   exit(sig);
 }
 
@@ -148,11 +127,6 @@ int main(int argc, char* argv[]) {
     exit(1);
   }
 
-  if (display_version) {
-    g_print("%s\n", VERSION);
-    return 0;
-  }
-
   // running a switcher server
   if (server_name == nullptr) server_name = "default";
   if (port_number == nullptr) port_number = "27182";
@@ -163,67 +137,57 @@ int main(int argc, char* argv[]) {
     manager = Switcher::make_switcher<SilentLogger>(server_name);
   }
 
-// loading plugins from default location // FIXME add an option
-  gchar* usr_plugin_dir =
-      g_strdup_printf("/usr/%s-%s/plugins", PACKAGE_NAME, LIBSWITCHER_API_VERSION);
-  manager->scan_directory_for_plugins(usr_plugin_dir);
-  g_free(usr_plugin_dir);
+  if (display_version) {
+    std::cout << manager->get_switcher_version() << '\n';
+    return 0;
+  }
 
-  gchar* usr_local_plugin_dir =
-      g_strdup_printf("/usr/local/%s-%s/plugins", PACKAGE_NAME, LIBSWITCHER_API_VERSION);
-  manager->scan_directory_for_plugins(usr_local_plugin_dir);
-  g_free(usr_local_plugin_dir);
+  // loading plugins from default location // FIXME add an option
+  manager->factory<MPtr(&quid::Factory::scan_dir)>(
+      manager->factory<MPtr(&quid::Factory::get_default_plugin_dir)>());
 
-  if (extraplugindir != nullptr) manager->scan_directory_for_plugins(extraplugindir);
+  if (extraplugindir != nullptr) manager->factory<MPtr(&quid::Factory::scan_dir)>(extraplugindir);
 
   // checking if this is printing info only
   if (listclasses) {
-    std::vector<std::string> resultlist = manager->get_classes();
+    std::vector<std::string> resultlist = manager->factory<MPtr(&quid::Factory::get_class_list)>();
     for (uint i = 0; i < resultlist.size(); i++) g_print("%s\n", resultlist[i].c_str());
     return 0;
   }
   if (classesdoc) {
-    g_print("%s\n", manager->get_classes_doc().c_str());
+    g_print(
+        "%s\n",
+        QuiddityClassPrinter::print(manager->factory<MPtr(&quid::Factory::get_classes_doc)>().get())
+            .c_str());
     return 0;
   }
   if (classdoc != nullptr) {
-    g_print("%s\n", manager->get_class_doc(classdoc).c_str());
-    return 0;
-  }
-  if (listmethodsbyclass != nullptr) {
-    g_print("%s\n", manager->get_methods_description_by_class(listmethodsbyclass).c_str());
+    g_print("%s\n",
+            JSONSerializer::serialize(manager->factory<MPtr(&quid::Factory::get_classes_doc)>()
+                                          ->get_tree(std::string(".classes.") + classdoc)
+                                          .get())
+                .c_str());
     return 0;
   }
 
-  std::string soap_name = manager->create("SOAPcontrolServer", "soapserver");
-  std::vector<std::string> port_arg;
-  port_arg.push_back(port_number);
-  std::string* result;
-  manager->invoke(soap_name, "set_port", &result, port_arg);
-  if (g_strcmp0("false", result->c_str()) == 0 && osc_port_number == nullptr) return 0;
-
-  // start osc if port number has been set
-  if (osc_port_number != nullptr) {
-    std::string osc_name = manager->create("OSCctl");
-    if (osc_name.compare("") == 0)
-      std::cerr << "osc plugin not found" << '\n';
-    else
-      manager->invoke_va(osc_name.c_str(), "set_port", nullptr, osc_port_number, nullptr);
+  auto created = manager->quids<MPtr(&quid::Container::create)>("SOAPcontrolServer", "soapserver");
+  if (!created) {
+    std::cerr << "could not create SOAP server" << '\n';
+    return 0;
+  }
+  auto soap = created.get();
+  if (!soap->meth<MPtr(&MContainer::invoke_str)>(soap->meth<MPtr(&MContainer::get_id)>("set_port"),
+                                                 serialize::esc_for_tuple(port_number))) {
+    std::cerr << "could not set soap port " << '\n';
+    return 0;
   }
 
   manager->reset_state(false);
 
   if (load_file &&
-      !manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(load_file)))) {
+      !manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(load_file)).get())) {
     std::cerr << "could not load file " << load_file << '\n';
   }
-
-#if HAVE_GTK
-  if (!gtk_init_check(nullptr, nullptr))
-    std::cerr << "cannot init gtk in main" << std::endl;
-  else
-    gtk_main();
-#endif
 
   // waiting for end of life
   timespec delay;

@@ -18,7 +18,6 @@
 #ifndef __SWITCHER_PJ_PRESENCE_H__
 #define __SWITCHER_PJ_PRESENCE_H__
 
-#include <glib.h>  // gboolean
 #include <pjsua-lib/pjsua.h>
 
 #include <condition_variable>
@@ -63,20 +62,20 @@ class PJPresence {
   // registration
   static void on_registration_state(pjsua_acc_id acc_id, pjsua_reg_info* info);
   void register_account(const std::string& sip_user, const std::string& sip_password);
-  static gboolean register_account_wrapped(gchar* user, gchar* password, void* user_data);
+  bool register_account_wrapped(const std::string& user, const std::string& password);
   void unregister_account(bool notify_tree = true);
-  static gboolean unregister_account_wrapped(gpointer /*unused */, void* user_data);
+  bool unregister_account_wrapped();
 
   // buddies
   void add_buddy(const std::string& sip_user);
   void del_buddy(const std::string& sip_user);
-  static gboolean add_buddy_wrapped(gchar* buddy_uri, void* user_data);
-  static gboolean del_buddy_wrapped(gchar* buddy_uri, void* user_data);
+  bool add_buddy_wrapped(const std::string& buddy_uri);
+  bool del_buddy_wrapped(const std::string& buddy_uri);
   static void on_buddy_state(pjsua_buddy_id buddy_id);
   // online status
-  void change_online_status(gint status);
+  void change_online_status(int status);
   // name buddy method
-  static gboolean name_buddy_wrapped(gchar* name, gchar* uri, void* user_data);
+  bool name_buddy_wrapped(const std::string& name, const std::string& uri);
   void name_buddy(std::string name, std::string sip_user);
   pjsua_buddy_id get_id_from_buddy_name(const std::string& name);
   // pjsip functions

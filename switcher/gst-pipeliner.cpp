@@ -26,7 +26,6 @@
 #include <algorithm>
 #include "./g-source-wrapper.hpp"
 #include "./gst-utils.hpp"
-#include "./invocation-spec.hpp"
 #include "./quiddity-container.hpp"
 #include "./quiddity.hpp"
 #include "./scope-exit.hpp"
@@ -94,7 +93,13 @@ void GstPipeliner::play(gboolean play) {
   }
 }
 
+bool GstPipeliner::speed(double speed) { return gst_pipeline_->speed(speed); }
+
 bool GstPipeliner::seek(gdouble position_in_ms) { return gst_pipeline_->seek(position_in_ms); }
+
+bool GstPipeliner::seek_key_frame(gdouble position_in_ms) {
+  return gst_pipeline_->seek_key_frame(position_in_ms);
+};
 
 GstElement* GstPipeliner::get_pipeline() { return gst_pipeline_->get_pipeline(); }
 
@@ -121,7 +126,14 @@ GstBusSyncReply GstPipeliner::on_gst_error(GstMessage* msg) {
 
 gboolean GstPipeliner::bus_watch(GstBus* /*bus*/, GstMessage* message, gpointer user_data) {
   auto context = static_cast<GstPipeliner*>(user_data);
-  if (context && context->on_msg_async_cb_) context->on_msg_async_cb_(message);
+  if (context) {
+    if (GST_MESSAGE_TYPE(message) == GST_MESSAGE_EOS) {
+      if (context->loop_) context->seek(0);
+    }
+  }
+  if (context && context->on_msg_async_cb_) {
+    context->on_msg_async_cb_(message);
+  }
   return TRUE;
 }
 
@@ -150,4 +162,5 @@ GstBusSyncReply GstPipeliner::bus_sync_handler(GstBus* /*bus*/,
   return res;
 }
 
+void GstPipeliner::loop(bool looping) { loop_ = looping; }
 }  // namespace switcher

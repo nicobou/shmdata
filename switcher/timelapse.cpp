@@ -32,8 +32,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Timelapse,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-Timelapse::Timelapse(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+Timelapse::Timelapse(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       img_dir_id_(pmanage<MPtr(&PContainer::make_string)>(
           "imgdir",
           [this](const std::string& val) {
@@ -230,14 +230,7 @@ bool Timelapse::start_timelapse(const std::string& shmpath) {
   timelapse_config_.jpg_quality_ = jpg_quality_;
   timelapse_config_.max_files_ = max_files_;
   auto new_timelapse = std::make_unique<GstVideoTimelapse>(
-      timelapse_config_,
-      [this, shmpath](const std::string& caps) {
-        graft_tree(".shmdata.reader." + shmpath,
-                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath),
-      nullptr,
-      [this, shmpath](std::string&& file_name) {
+      timelapse_config_, this, [this, shmpath](std::string&& file_name) {
         if (!notify_last_file_) return;
         {
           auto lock = pmanage<MPtr(&PContainer::get_lock)>(last_image_id_);

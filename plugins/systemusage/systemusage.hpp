@@ -54,7 +54,7 @@ struct Net {
 
 class SystemUsage : public Quiddity {
  public:
-  SystemUsage(QuiddityConfiguration&&);
+  SystemUsage(quid::Config&&);
   ~SystemUsage() = default;
   SystemUsage(const SystemUsage&) = delete;
   SystemUsage& operator=(const SystemUsage&) = delete;

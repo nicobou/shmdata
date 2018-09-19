@@ -47,6 +47,7 @@ class PropertyBase {
   virtual void update_value_in_spec() = 0;
   virtual bool set_str(const std::string& val, bool do_notify = true) const = 0;
   virtual std::string get_str() const = 0;
+  virtual Any get_any() const = 0;
   virtual std::unique_lock<std::mutex> get_lock() = 0;
   virtual bool set_to_current() = 0;
 
@@ -132,6 +133,8 @@ class Property : public PropertyBase {
     }
     return set(std::move(deserialized.second), do_notify);
   }
+
+  Any get_any() const { return get_ ? Any(get_()) : Any(); }
 
   std::string get_str() const { return get_ ? serialize::apply<W>(get_()) : std::string(); }
 

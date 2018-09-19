@@ -37,6 +37,7 @@
 #define __SWITCHER_INFORMATION_TREE_H__
 
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include <list>
 #include <memory>
@@ -56,11 +57,12 @@ class InfoTree {
   using child_type = std::pair<std::string, InfoTree::ptr>;
   using children_t = std::vector<child_type>;
   using OnNodeFunction =
-      std::function<void(const std::string& name, InfoTree::ptrc tree, bool is_array_element)>;
+      std::function<bool(const std::string& name, InfoTree::ptrc tree, bool is_array_element)>;
   using GetNodeReturn = std::pair<InfoTree::children_t*, InfoTree::children_t::size_type>;
 
   // factory
   static InfoTree::ptr make();
+  static InfoTree::ptr copy(InfoTree::ptrc);
   template <typename ValueType>
   static InfoTree::ptr make(ValueType data) {
     std::shared_ptr<InfoTree> tree;  // can't use make_shared because ctor is private
@@ -71,6 +73,13 @@ class InfoTree {
   // InfoTree will store a std::string
   static InfoTree::ptr make(const char* data);
   static InfoTree::ptr make_null();
+
+  // collecting values (serialized)
+  using collect_predicate_t = std::function<bool(const std::string& key, InfoTree::ptrc node)>;
+  // the predicate can return false in order to stop searching in subtrees
+  static std::list<Any> collect_values(InfoTree::ptrc tree,
+                                       collect_predicate_t predicate,
+                                       bool continue_search_in_siblings);
 
   // escaping dots from a keys ("." internally replaced by "__DOT__")
   static std::string escape_dots(const std::string& str);
@@ -89,6 +98,7 @@ class InfoTree {
   bool is_array() const;
   bool has_data() const;
   const Any& read_data() const;
+  bool branch_is_array(const std::string& path) const;
   bool branch_is_leaf(const std::string& path) const;
   bool branch_has_data(const std::string& path) const;
   template <typename T>
@@ -132,6 +142,10 @@ class InfoTree {
   bool branch_set_value(const std::string& path, const Any& data);
   bool branch_set_value(const std::string& path, const char* data);
   bool branch_set_value(const std::string& path, std::nullptr_t ptr);
+
+  // copy subtree
+  InfoTree::ptr branch_get_copy(const std::string& path) const;
+
   // graft will create the path and graft the tree,
   // or remove old one and replace will the new tree
   bool graft(const std::string& path, InfoTree::ptr);

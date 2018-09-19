@@ -28,23 +28,18 @@
 #include <regex>
 #include "./gst-utils.hpp"
 #include "./information-tree-json.hpp"
+#include "./quid-id-t.hpp"
 #include "./quiddity-container.hpp"
+#include "./shmdata-stat.hpp"
 #include "./switcher.hpp"
 
 namespace switcher {
 
-Quiddity::Quiddity(QuiddityConfiguration&& conf)
+Quiddity::Quiddity(quid::Config&& conf)
     : Logged(conf.log_),
       information_tree_(InfoTree::make()),
       structured_user_data_(InfoTree::make()),
       configuration_tree_(conf.tree_config_ ? conf.tree_config_ : InfoTree::make()),
-      props_(information_tree_,
-             [this](const std::string& key) {
-               smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(key));
-             },
-             [this](const std::string& key) {
-               smanage<MPtr(&SContainer::notify)>(on_tree_pruned_id_, InfoTree::make(key));
-             }),
       sigs_(information_tree_,
             [this](const std::string& key) {
               smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(key));
@@ -65,7 +60,34 @@ Quiddity::Quiddity(QuiddityConfiguration&& conf)
           "on-user-data-pruned", "A branch has been pruned from the quiddity's user data tree")),
       on_nicknamed_id_(smanage<MPtr(&SContainer::make)>(
           "on-nicknamed", "A nickname has been given to the quiddity")),
-      methods_description_(std::make_shared<JSONBuilder>()),
+      props_(information_tree_,
+             [this](const std::string& key) {
+               smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(key));
+             },
+             [this](const std::string& key) {
+               smanage<MPtr(&SContainer::notify)>(on_tree_pruned_id_, InfoTree::make(key));
+             }),
+      meths_(
+          conf.log_,
+          information_tree_,
+          [this](const std::string& key) {  // on_tree_grafted_cb
+            smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(key));
+          },
+          [this](const std::string& key) {  // on_tree_pruned_cb
+            smanage<MPtr(&SContainer::notify)>(on_tree_pruned_id_, InfoTree::make(key));
+          },
+          [this](const std::string& method_name) {  // on_method_created
+            smanage<MPtr(&SContainer::notify)>(on_method_added_id_, InfoTree::make(method_name));
+          },
+          [this](const std::string& method_name) {  // on_method_removed
+            smanage<MPtr(&SContainer::notify)>(on_method_removed_id_, InfoTree::make(method_name));
+          },
+          [this](const std::string& method_name) {  // on_method_enabled
+            smanage<MPtr(&SContainer::notify)>(on_method_added_id_, InfoTree::make(method_name));
+          },
+          [this](const std::string& method_name) {  // on_method_disabled
+            smanage<MPtr(&SContainer::notify)>(on_method_removed_id_, InfoTree::make(method_name));
+          }),
       name_(string_to_quiddity_name(conf.name_)),
       nickname_(name_),
       type_(conf.type_),
@@ -86,132 +108,27 @@ std::string Quiddity::string_to_quiddity_name(const std::string& name) {
   return std::regex_replace(name, std::regex("[^[:alnum:]| ]"), "-");
 }
 
-bool Quiddity::has_method(const std::string& method_name) {
-  return (methods_.end() != methods_.find(method_name));
-}
-
-bool Quiddity::invoke_method(const std::string& method_name,
-                             std::string** return_value,
-                             const std::vector<std::string>& args) {
-  auto it = methods_.find(method_name);
-  if (methods_.end() == it) {
-    debug("Quiddity::invoke_method error: method % not found", method_name);
-    return false;
-  }
-
-  GValue res = G_VALUE_INIT;
-  if (false == it->second->invoke(args, &res)) {
-    debug("invokation of % failed (missing argments ?)", method_name);
-    return false;
-  }
-
-  if (return_value != nullptr) {
-    gchar* res_val = GstUtils::gvalue_serialize(&res);
-    *return_value = new std::string(res_val);
-    g_free(res_val);
-  }
-  g_value_unset(&res);
-  return true;
-}
-
-bool Quiddity::method_is_registered(const std::string& method_name) {
-  return (methods_.end() != methods_.find(method_name) ||
-          disabled_methods_.end() != disabled_methods_.find(method_name));
-}
-
-bool Quiddity::register_method(const std::string& method_name,
-                               Method::method_ptr method,
-                               Method::return_type return_type,
-                               Method::args_types arg_types,
-                               gpointer user_data) {
-  if (method == nullptr) {
-    debug("fail registering % (method is nullptr)", method_name);
-    return false;
-  }
-
-  if (method_is_registered(method_name)) {
-    debug("registering name % already exists", method_name);
-    return false;
-  }
-
-  Method::ptr meth(new Method());
-  meth->set_method(method, return_type, arg_types, user_data);
-
-  meth->set_position_weight(position_weight_counter_);
-  position_weight_counter_ += 20;
-
-  methods_[method_name] = meth;
-  return true;
-}
-
-bool Quiddity::set_method_description(const std::string& long_name,
-                                      const std::string& method_name,
-                                      const std::string& short_description,
-                                      const std::string& return_description,
-                                      const Method::args_doc& arg_description) {
-  auto it = methods_.find(method_name);
-  if (methods_.end() == it) it = disabled_methods_.find(method_name);
-
-  it->second->set_description(
-      long_name, method_name, short_description, return_description, arg_description);
-  return true;
-}
-
-std::string Quiddity::get_methods_description() {
-  methods_description_->reset();
-  methods_description_->begin_object();
-  methods_description_->set_member_name("methods");
-  methods_description_->begin_array();
-  std::vector<Method::ptr> methods;
-  for (auto& it : methods_) methods.push_back(it.second);
-  std::sort(methods.begin(), methods.end(), Categorizable::compare_ptr);
-  for (auto& it : methods) methods_description_->add_node_value(it->get_json_root_node());
-  methods_description_->end_array();
-  methods_description_->end_object();
-  return methods_description_->get_string(true);
-}
-
-std::string Quiddity::get_method_description(const std::string& method_name) {
-  auto it = methods_.find(method_name);
-  if (methods_.end() == it) return "{ \"error\" : \" method not found\"}";
-  return it->second->get_description();
-}
-
-std::string Quiddity::make_file_name(const std::string& suffix) const {
-  if (qcontainer_->get_name().empty()) return std::string();
-  auto name =
-      std::string(get_file_name_prefix() + qcontainer_->get_name() + "_" + name_ + "_" + suffix);
+std::string Quiddity::make_shmpath(const std::string& suffix) const {
+  auto server_name = qcontainer_->get_switcher()->get_name();
+  auto name = std::string(get_shmpath_prefix() + server_name + "_" +
+                          std::to_string(qcontainer_->get_id(name_)) + "_" + suffix);
 
   // Done this way for OSX portability, there is a maximum socket path length in UNIX systems and
   // shmdata use sockets.
-  struct sockaddr_un s;
+  static struct sockaddr_un s;
   static auto max_path_size = sizeof(s.sun_path);
-  // We need it signed.
-  int overflow = static_cast<int>(name.length() - max_path_size);
 
-  // We truncate the quiddity name if it is enough, which should be the case.
-  if (overflow > 0) {
-    int quiddity_overflow = static_cast<int>(name_.length() - overflow);
-    if (quiddity_overflow < 10) {
-      name = std::string(get_file_name_prefix() + qcontainer_->get_name() + "_name_error");
-      warning(
-          "BUG: shmdata name cannot be created properly because it is too long, there is less than "
-          "10 characters remaining for the quiddity name, investigate and fix this!");
-    } else {
-      size_t chunks_size = quiddity_overflow / 2;
-      // We split the remaining number of characters in 2 and we take this number at the beginning
-      // and the end of the quiddity name.
-      auto new_name = std::string(name_.begin(), name_.begin() + chunks_size) +
-                      std::string(name_.end() - chunks_size, name_.end());
-      name = std::string(get_file_name_prefix() + qcontainer_->get_name() + "_" + new_name + "_" +
-                         suffix);
-    }
+  // We truncate
+  if (static_cast<int>(name.length() - max_path_size) > 0) {
+    return std::string(name.begin(), name.begin() + max_path_size - 1);
   }
 
   return name;
 }
 
-std::string Quiddity::get_file_name_prefix() const { return "/tmp/switcher_"; }
+std::string Quiddity::get_shmpath_prefix() {
+  return Switcher::get_shm_dir() + "/" + Switcher::get_shm_prefix();
+}
 
 std::string Quiddity::get_quiddity_name_from_file_name(const std::string& path) const {
   auto file_begin = path.find("switcher_");
@@ -243,16 +160,19 @@ std::string Quiddity::get_quiddity_name_from_file_name(const std::string& path) 
   // handling bundle: they use there own internal manager named with their actual quiddity name
   auto manager_name =
       std::string(filename, underscores[0] + 1, underscores[1] - (underscores[0] + 1));
-  if (qcontainer_->get_name() != manager_name) return manager_name;
-  return std::string(filename, underscores[1] + 1, underscores[2] - (underscores[1] + 1));
+  if (qcontainer_->get_switcher()->get_name() != manager_name) return manager_name;
+  auto qid = deserialize::apply<quid::qid_t>(
+      std::string(filename, underscores[1] + 1, underscores[2] - (underscores[1] + 1)));
+  if (qid.first) return qcontainer_->get_name(qid.second);
+  return std::string();
 }
 
 std::string Quiddity::get_shmdata_name_from_file_name(const std::string& path) const {
   size_t pos = 0;
   // Check if external shmdata or regular shmdata.
-  if (path.find(get_file_name_prefix()) != std::string::npos) {  // Regular shmdata
+  if (path.find(get_shmpath_prefix()) != std::string::npos) {  // Regular shmdata
     int i = 0;
-    while (i < 2) {  // Looking for second '_'
+    while (i < 3) {  // Looking for third '_'
       if (pos != 0) pos += 1;
       pos = path.find('_', pos);
       ++i;
@@ -264,49 +184,11 @@ std::string Quiddity::get_shmdata_name_from_file_name(const std::string& path) c
   return pos != std::string::npos ? std::string(path, pos + 1) : path;
 }
 
-std::string Quiddity::get_manager_name() { return qcontainer_->get_name(); }
+std::string Quiddity::get_manager_name() { return qcontainer_->get_switcher()->get_name(); }
 
 std::string Quiddity::get_socket_name_prefix() { return "switcher_"; }
 
 std::string Quiddity::get_socket_dir() { return "/tmp"; }
-
-// methods
-bool Quiddity::install_method(const std::string& long_name,
-                              const std::string& method_name,
-                              const std::string& short_description,
-                              const std::string& return_description,
-                              const Method::args_doc& arg_description,
-                              Method::method_ptr method,
-                              Method::return_type return_type,
-                              Method::args_types arg_types,
-                              gpointer user_data) {
-  if (!register_method(method_name, method, return_type, arg_types, user_data)) return false;
-
-  if (!set_method_description(
-          long_name, method_name, short_description, return_description, arg_description))
-    return false;
-
-  smanage<MPtr(&SContainer::notify)>(on_method_added_id_, InfoTree::make(method_name));
-  return true;
-}
-
-bool Quiddity::enable_method(const std::string& method_name) {
-  auto it = disabled_methods_.find(method_name);
-  if (disabled_methods_.end() == it) return false;
-  methods_[method_name] = it->second;
-  disabled_methods_.erase(it);
-  smanage<MPtr(&SContainer::notify)>(on_method_added_id_, InfoTree::make(method_name));
-  return true;
-}
-
-bool Quiddity::disable_method(const std::string& method_name) {
-  auto it = methods_.find(method_name);
-  if (methods_.end() == it) return false;
-  disabled_methods_[method_name] = it->second;
-  methods_.erase(it);
-  smanage<MPtr(&SContainer::notify)>(on_method_removed_id_, InfoTree::make(method_name));
-  return true;
-}
 
 bool Quiddity::graft_tree(const std::string& path, InfoTree::ptr tree, bool do_signal) {
   if (!information_tree_->graft(path, tree)) return false;
@@ -314,6 +196,10 @@ bool Quiddity::graft_tree(const std::string& path, InfoTree::ptr tree, bool do_s
     smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(path));
   }
   return true;
+}
+
+void Quiddity::notify_tree_updated(const std::string& path) {
+  smanage<MPtr(&SContainer::notify)>(on_tree_grafted_id_, InfoTree::make(path));
 }
 
 InfoTree::ptr Quiddity::get_tree(const std::string& path) {
@@ -326,8 +212,6 @@ InfoTree::ptr Quiddity::prune_tree(const std::string& path, bool do_signal) {
     if (do_signal) {
       smanage<MPtr(&SContainer::notify)>(on_tree_pruned_id_, InfoTree::make(path));
     }
-  } else {
-    warning("cannot prune %", path);
   }
   return result;
 }
@@ -349,10 +233,10 @@ InfoTree::ptr Quiddity::user_data_prune_hook(const std::string& path) {
 void Quiddity::self_destruct() {
   std::unique_lock<std::mutex> lock(self_destruct_mtx_);
   auto thread = std::thread([ this, th_lock = std::move(lock) ]() mutable {
-    auto self_name = get_name();
     th_lock.unlock();
-    if (!qcontainer_->get_switcher()->remove(self_name))
-      warning("% did not self destruct", get_name());
+    auto res = qcontainer_->get_switcher()->quids<MPtr(&quid::Container::remove)>(
+        qcontainer_->get_switcher()->quids<MPtr(&quid::Container::get_id)>(get_name()));
+    if (!res) warning("% did not self destruct (%)", get_name(), res.msg());
   });
   thread.detach();
 }
@@ -388,5 +272,17 @@ bool Quiddity::set_nickname(const std::string& nickname) {
 }
 
 std::string Quiddity::get_nickname() const { return nickname_; }
+
+void Quiddity::register_writer_suffix(const std::string& suffix) {
+  information_tree_->graft("shmdata.writer.suffix", InfoTree::make(suffix));
+}
+
+InfoTree::ptr Quiddity::get_shm_information_template() {
+  InfoTree::ptr tree = InfoTree::make();
+  tree->graft(".caps", InfoTree::make());
+  tree->graft(".category", InfoTree::make());
+  ShmdataStat().update_tree(tree, ".");
+  return tree;
+}
 
 }  // namespace switcher

@@ -22,7 +22,7 @@
 
 #include <switcher/startable-quiddity.hpp>
 #include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/gst-shm-tree-updater.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
 #include "switcher/shmdata-writer.hpp"
@@ -31,7 +31,7 @@
 namespace switcher {
 class AVPlayer : public Quiddity, public StartableQuiddity {
  public:
-  AVPlayer(QuiddityConfiguration&&);
+  AVPlayer(quid::Config&&);
   bool start() final;
   bool stop() final;
 
@@ -45,7 +45,7 @@ class AVPlayer : public Quiddity, public StartableQuiddity {
     std::string filepath_{};
     std::string sink_name_{};
     GstElement* sink_element_{nullptr};
-    std::unique_ptr<GstShmdataSubscriber> shmsink_sub_{nullptr};
+    std::unique_ptr<GstShmTreeUpdater> shmsink_sub_{nullptr};
   };
 
   //! Shmdata methods

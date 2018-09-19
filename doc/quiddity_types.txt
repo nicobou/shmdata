@@ -1,0 +1,354 @@
+``` 
+
+OSCsink
+   name: OSCsink
+   category: network
+   description: Receives OSC messages and updates associated property
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+OSCsrc
+   name: OSCsrc
+   category: network
+   description: Receive OSC messages and write to shmdata
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+SOAPcontrolServer
+   name: SOAPcontrolServer
+   category: control
+   description: Control switcher through SOAP webservices
+   license: GPL
+   author: Nicolas Bouillot
+
+ 
+audioenc
+   name: audioenc
+   category: audio
+   description: Encode raw audio stream
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+audiotestsrc
+   name: audiotestsrc
+   category: audio
+   description: Creates audio test signals
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+avplayer
+   name: avplayer
+   category: audio/video
+   description: Replays and controls a recorded shmdata audio/video file
+   license: LGPL
+   author: Jérémie Soria
+
+ 
+avrec
+   name: avrec
+   category: audio/video
+   description: Records connected audio/video shmdata
+   license: LGPL
+   author: Jérémie Soria
+
+ 
+custom-save
+   name: custom-save
+   category: test
+   description: Custom Save plugin for testing/example purpose
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+decoder
+   name: decoder
+   category: other
+   description: Generic shmdata decoder
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+dummy
+   name: dummy
+   category: test
+   description: Dummy plugin for testing/example purpose
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+dummysink
+   name: dummysink
+   category: utils
+   description: Quiddity for testing the reading of shmdata
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+emptyquid
+   name: emptyquid
+   category: utils
+   description: Quiddity for user data saving
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+extshmsrc
+   name: extshmsrc
+   category: other
+   description: Import an external shmdata writer
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+glfwin
+   name: glfwin
+   category: video
+   description: Video window with fullscreen
+   license: LGPL
+   author: Jérémie Soria
+
+ 
+httpsdpdec
+   name: httpsdpdec
+   category: network
+   description: Decode an SDP-described stream delivered through http and make shmdata
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+jacksink
+   name: jacksink
+   category: audio
+   description: Audio display
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+jacksrc
+   name: jacksrc
+   category: audio
+   description: Get audio from jack
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+ladspa
+   name: ladspa
+   category: audio
+   description: Choice of LADSPA plugins
+   license: LGPL
+   author: Jérémie Soria
+
+ 
+ltcdiff
+   name: ltcdiff
+   category: time
+   description: Computes the absolute time between two timecode shmdata
+   license: LGPL
+   author: Jérémie Soria
+
+ 
+ltcsource
+   name: ltcsource
+   category: audio
+   description: Generate an LTC timecode audio track (can be cadenced by external sound shmdata)
+   license: LGPL
+   author: Jérémie Soria
+
+ 
+ltctojack
+   name: ltctojack
+   category: audio
+   description: Control Jack Transport from an incoming LTC stream
+   license: LGPL
+   author: Jérémie Soria
+
+ 
+method
+   name: method
+   category: test
+   description: Dummy plugin for testing/example purpose
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+midisink
+   name: midisink
+   category: midi
+   description: Shmdata to midi
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+midisrc
+   name: midisrc
+   category: midi
+   description: Midi to shmdata and properties
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+nvdec
+   name: nvdec
+   category: video
+   description: CUDA-based video decoder
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+nvenc
+   name: nvenc
+   category: video
+   description: CUDA-based video encoder
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+protocol-mapper
+   name: protocol-mapper
+   category: controller
+   description: Maps properties to a protocol
+   license: LGPL
+   author: Nicolas Bouillot/Jérémie Soria
+
+ 
+pulsesink
+   name: pulsesink
+   category: audio
+   description: Inspecting Devices And Playing Audio To Outputs
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+pulsesrc
+   name: pulsesrc
+   category: audio
+   description: Audio From Pulse audio driver
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+resample
+   name: resample
+   category: audio
+   description: Audio resampling with libsamplerate
+   license: GPL
+   author: Nicolas Bouillot
+
+ 
+rtmp
+   name: rtmp
+   category: audio/video
+   description: RTMP plugin for streaming audio/video to Youtube/Twitch/...
+   license: LGPL
+   author: Jérémie Soria
+
+ 
+shmdelay
+   name: shmdelay
+   category: other
+   description: Takes an input shmdata and delays it by a fixed amount
+   license: LGPL
+   author: Jérémie Soria
+
+ 
+signal
+   name: signal
+   category: test
+   description: Dummy quiddity for testing of signals
+   license: LGPL
+   author: Jérémie Soria
+
+ 
+sip
+   name: sip
+   category: network
+   description: Manages user sessions
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+systemusage
+   name: systemusage
+   category: monitoring
+   description: Gives system load information
+   license: LGPL
+   author: Emmanuel Durand
+
+ 
+timelapse
+   name: timelapse
+   category: video
+   description: Make an image timelapse from raw video stream
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+urisrc
+   name: urisrc
+   category: network
+   description: URI decoding to one or more shmdata
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+v4l2src
+   name: v4l2src
+   category: video
+   description: Discover and use v4l2 supported capture cards and cameras
+   license: GPL
+   author: Nicolas Bouillot
+
+ 
+videnc
+   name: videnc
+   category: video
+   description: Encode raw video stream
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+videoconvert
+   name: videoconvert
+   category: video
+   description: Convert pixel format of raw video stream
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+videotestsrc
+   name: videotestsrc
+   category: video
+   description: Creates a test video stream
+   license: LGPL
+   author: Nicolas Bouillot
+
+ 
+vncclientsrc
+   name: vncclientsrc
+   category: video
+   description: Connects to a VNC server and outputs the video to a shmdata
+   license: LGPL
+   author: Emmanuel Durand
+
+ 
+vrpnsink
+   name: vrpnsink
+   category: vrpn
+   description: Plugin to create a local VRPN server from shmdata sources.
+   license: LGPL
+   author: François Ubald Brien
+
+ 
+vrpnsrc
+   name: vrpnsrc
+   category: vrpn
+   description: Plugin to connect to a VRPN server and share its controls through shmdata and/or properties.
+   license: LGPL
+   author: François Ubald Brien
+
+```

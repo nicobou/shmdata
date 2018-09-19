@@ -33,13 +33,14 @@ class Quiddity;
 
 class ShmdataFollower {
  public:
+  enum class Direction { writer, reader };
   ShmdataFollower(Quiddity* quid,
                   const std::string& path,
                   shmdata::Reader::onData cb,
                   shmdata::Reader::onServerConnected osc = nullptr,
                   shmdata::Reader::onServerDisconnected osd = nullptr,
                   std::chrono::milliseconds update_interval = ShmdataStat::kDefaultUpdateInterval,
-                  const std::string& tree_path_ = ".shmdata.reader.");
+                  Direction dir = Direction::reader);
   ~ShmdataFollower();
   ShmdataFollower(const ShmdataFollower&) = delete;
   ShmdataFollower& operator=(const ShmdataFollower&) = delete;
@@ -51,7 +52,6 @@ class ShmdataFollower {
   std::mutex bytes_mutex_{};
   // shmdata follower related members:
   ShmdataSwitcherLogger logger_;
-  std::string shmpath_;
   std::string data_type_{};
   shmdata::Reader::onData od_;
   shmdata::Reader::onServerConnected osc_;

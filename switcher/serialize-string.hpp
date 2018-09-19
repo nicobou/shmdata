@@ -81,13 +81,18 @@ std::string apply(const W&) {
 }
 
 // tuple
+static const std::string tuple_comma_esc_string = "__comma__";
+
+std::string esc_for_tuple(const std::string& str);
+
 void append_targs(std::string*, size_t);
 template <typename F, typename... U>
 void append_targs(std::string* res, size_t pos, F first, U... args) {
   if (0 == pos)
-    res->append(StringUtils::replace_char(apply<F>(first), ',', "__coma__"));
+    res->append(StringUtils::replace_char(apply<F>(first), ',', tuple_comma_esc_string));
   else
-    res->append(std::string(",") + StringUtils::replace_char(apply<F>(first), ',', "__coma__"));
+    res->append(std::string(",") +
+                StringUtils::replace_char(apply<F>(first), ',', tuple_comma_esc_string));
   append_targs(res, pos + 1, args...);
 }
 template <typename... U, int... S>
@@ -218,7 +223,8 @@ bool append_targs(const std::string&, std::tuple<TUP...>*) {
 template <int POS, typename... TUP, typename F, typename... U>
 bool append_targs(const std::string& res, std::tuple<TUP...>* tup, F /*first*/, U... args) {
   auto coma_pos = res.find(',');
-  auto deserialized = apply<F>(std::string(res, 0, coma_pos));  // FIXME de-escape __coma__
+  auto deserialized = apply<F>(StringUtils::replace_string(
+      std::string(res, 0, coma_pos), serialize::tuple_comma_esc_string, ","));
   if (!deserialized.first) return false;
   std::get<POS>(*tup) = deserialized.second;
   // first = deserialized.second;

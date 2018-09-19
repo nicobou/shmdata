@@ -1,5 +1,5 @@
 /*
- * This file is part of switcher-myplugin.
+ * This file is part of switcher-plugin-example.
  *
  * switcher-myplugin is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,12 +25,10 @@
 namespace switcher {
 class SignalQuid : public Quiddity {
  public:
-  SignalQuid(QuiddityConfiguration&&);
+  SignalQuid(quid::Config&&);
   ~SignalQuid() = default;
   SignalQuid(const SignalQuid&) = delete;
   SignalQuid& operator=(const SignalQuid&) = delete;
-
-  static gboolean my_signal_method(void*, void* user_data);
 
  private:
   SContainer::sig_id_t signal_id_;

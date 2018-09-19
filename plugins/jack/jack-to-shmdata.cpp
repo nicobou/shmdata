@@ -18,7 +18,6 @@
  */
 
 #include "./jack-to-shmdata.hpp"
-#include <gst/gst.h>
 #include <string.h>
 #include "switcher/quiddity-container.hpp"
 
@@ -28,12 +27,12 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackToShmdata,
                                      "Jack Audio Device",
                                      "audio",
                                      "writer/device",
-                                     "get audio from jack",
+                                     "Get audio from jack",
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-JackToShmdata::JackToShmdata(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+JackToShmdata::JackToShmdata(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       client_name_(get_name()),
       jack_client_(get_name().c_str(),
                    &JackToShmdata::jack_process,
@@ -42,7 +41,7 @@ JackToShmdata::JackToShmdata(QuiddityConfiguration&& conf)
                    [this](jack_port_t* port) { on_port(port); },
                    [this]() {
                      auto thread = std::thread([this]() {
-                       if (!qcontainer_->remove(get_name()))
+                       if (!qcontainer_->remove(qcontainer_->get_id(get_name())))
                          warning("% did not self destruct after jack shutdown", get_name());
                      });
                      thread.detach();
@@ -124,6 +123,7 @@ JackToShmdata::JackToShmdata(QuiddityConfiguration&& conf)
                                                           1,
                                                           max_number_of_channels);
   update_port_to_connect();
+  register_writer_suffix("audio");
 }
 
 bool JackToShmdata::start() {
@@ -165,7 +165,7 @@ bool JackToShmdata::start() {
   }
   data_type += channel_mask;
 
-  std::string shmpath = make_file_name("audio");
+  std::string shmpath = make_shmpath("audio");
   shm_ = std::make_unique<ShmdataWriter>(
       this, shmpath, buf_.size() * sizeof(jack_sample_t), data_type);
   if (!shm_.get()) {

@@ -34,16 +34,18 @@ std::string path_to_string(std::list<std::string> path) {
   return result.str();
 }
 
-void on_visiting_node(std::string key, const InfoTree::ptrc node, bool, BasicSerializerData* data) {
+bool on_visiting_node(std::string key, const InfoTree::ptrc node, bool, BasicSerializerData* data) {
   data->path_.push_back(key);
   auto value = node->read_data();
   if (value.not_null())
     data->result_.append("." + BasicSerializer::path_to_string(data->path_) + " " +
                          Any::to_string(value) + "\n");
+  return true;  // always true since we want preorder_tree_walk continue to visit sibling(s)
 }
 
-void on_node_visited(std::string, const InfoTree::ptrc, bool, BasicSerializerData* data) {
+bool on_node_visited(std::string, const InfoTree::ptrc, bool, BasicSerializerData* data) {
   data->path_.pop_back();
+  return true;  // always true since we want preorder_tree_walk continue to visit sibling(s)
 }
 
 std::string serialize(InfoTree::ptrc tree) {

@@ -25,12 +25,12 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(DummySink,
                                      "Dummy Sink Quiddity",
                                      "utils",
                                      "",
-                                     "Quiddity for testing the reading of shmdatas",
+                                     "Quiddity for testing the reading of shmdata",
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-DummySink::DummySink(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+DummySink::DummySink(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       frame_received_id_(
           pmanage<MPtr(&PContainer::make_bool)>("frame-received",
                                                 nullptr,

@@ -24,7 +24,7 @@
 #include <vector>
 #include "switcher/fraction.hpp"
 #include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shmdata-subscriber.hpp"
+#include "switcher/gst-shm-tree-updater.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/unique-gst-element.hpp"
@@ -32,7 +32,7 @@
 namespace switcher {
 class VideoTestSource : public Quiddity, public StartableQuiddity {
  public:
-  VideoTestSource(QuiddityConfiguration&&);
+  VideoTestSource(quid::Config&&);
   ~VideoTestSource() = default;
   VideoTestSource(const VideoTestSource&) = delete;
   VideoTestSource& operator=(const VideoTestSource&) = delete;
@@ -79,7 +79,7 @@ class VideoTestSource : public Quiddity, public StartableQuiddity {
   UGstElem videotestsrc_{"videotestsrc"};
   UGstElem capsfilter_{"capsfilter"};
   UGstElem shmdatasink_{"shmdatasink"};
-  std::unique_ptr<GstShmdataSubscriber> shm_sub_{nullptr};
+  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
   bool start() final;
   bool stop() final;
   void update_caps();

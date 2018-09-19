@@ -36,6 +36,7 @@
 #include "./json-builder.hpp"
 #include "./logged.hpp"
 #include "./make-consultable.hpp"
+#include "./method-container.hpp"
 #include "./method.hpp"
 #include "./property-container.hpp"
 #include "./quiddity-configuration.hpp"
@@ -44,7 +45,7 @@
 #include "./signal-container.hpp"
 
 namespace switcher {
-class QuiddityContainer;
+class Container;
 
 class Quiddity : public Logged, public SafeBoolIdiom {
   friend class Bundle;  // access to props_ in order to forward properties
@@ -58,12 +59,14 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   friend class ShmdataFollower;
   friend class GstVideoCodec;
   friend class GstAudioCodec;
+  friend class GstShmTreeUpdater;
   friend class ShmdataDecoder;
   friend struct ShmdataStat;
 
  public:
-  typedef std::shared_ptr<Quiddity> ptr;
-  explicit Quiddity(QuiddityConfiguration&&);
+  using ptr = std::shared_ptr<Quiddity>;
+  using wptr = std::weak_ptr<Quiddity>;
+  explicit Quiddity(quid::Config&&);
   Quiddity() = delete;
   Quiddity(const Quiddity&) = delete;
   Quiddity& operator=(const Quiddity&) = delete;
@@ -87,12 +90,7 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   Make_consultable(Quiddity, PContainer, &props_, prop);
 
   // methods
-  std::string get_method_description(const std::string& method_name);
-  std::string get_methods_description();
-  bool invoke_method(const std::string& function_name,
-                     std::string** return_value,
-                     const std::vector<std::string>& args);
-  bool has_method(const std::string& method_name);
+  Make_consultable(Quiddity, MContainer, &meths_, meth);
 
   // signals
   Make_consultable(Quiddity, SContainer, &sigs_, sig);
@@ -116,11 +114,11 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   static std::string get_socket_dir();
 
   // use a consistent naming for shmdatas
-  std::string make_file_name(const std::string& suffix) const;
+  virtual std::string make_shmpath(const std::string& suffix) const;
   std::string get_manager_name();
   std::string get_quiddity_name_from_file_name(const std::string& shmdata_path) const;
   std::string get_shmdata_name_from_file_name(const std::string& path) const;
-  std::string get_file_name_prefix() const;
+  static std::string get_shmpath_prefix();
 
  private:
   // safe bool idiom implementation
@@ -128,19 +126,6 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   // user data hooks
   bool user_data_graft_hook(const std::string& path, InfoTree::ptr tree);
   InfoTree::ptr user_data_prune_hook(const std::string& path);
-
-  // method
-  bool method_is_registered(const std::string& method_name);
-  bool register_method(const std::string& method_name,
-                       Method::method_ptr method,
-                       Method::return_type return_type,
-                       Method::args_types arg_types,
-                       gpointer user_data);
-  bool set_method_description(const std::string& long_name,
-                              const std::string& method_name,
-                              const std::string& short_description,
-                              const std::string& return_description,
-                              const Method::args_doc& arg_description);
 
   // tree used by quiddity to communicate info to user,
   // read-only by user, read/write by quiddity
@@ -156,10 +141,6 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   // should use this configuration
   InfoTree::ptr configuration_tree_;
 
-  // properties
-  PContainer props_;
-  std::vector<std::string> properties_blacklist_{};
-
   // signals
   SContainer sigs_;
   SContainer::sig_id_t on_method_added_id_;
@@ -170,10 +151,12 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   SContainer::sig_id_t on_user_data_pruned_id_;
   SContainer::sig_id_t on_nicknamed_id_;
 
+  // properties
+  PContainer props_;
+  std::vector<std::string> properties_blacklist_{};
+
   // methods
-  std::unordered_map<std::string, Method::ptr> methods_{};
-  std::unordered_map<std::string, Method::ptr> disabled_methods_{};
-  JSONBuilder::ptr methods_description_;
+  MContainer meths_;
 
   // position weight FIXME should be outside this file ?
   gint position_weight_counter_{0};
@@ -190,8 +173,13 @@ class Quiddity : public Logged, public SafeBoolIdiom {
  protected:
   // information
   bool graft_tree(const std::string& path, InfoTree::ptr tree_to_graft, bool do_signal = true);
+  void notify_tree_updated(const std::string& path);
   InfoTree::ptr prune_tree(const std::string& path, bool do_signal = true);
   InfoTree::ptr get_tree(const std::string& path);
+  static InfoTree::ptr get_shm_information_template();
+  // register suffix exposed by this quiddity in the information tree, under the
+  // shmdata.writer.suffix. 'suffix' value can be expressed as a regular expression
+  void register_writer_suffix(const std::string& suffix);
 
   // property
   Make_delegate(Quiddity, PContainer, &props_, pmanage);
@@ -203,17 +191,7 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   Make_delegate(Quiddity, SContainer, &sigs_, smanage);
 
   // methods
-  bool install_method(const std::string& long_name,
-                      const std::string& method_name,
-                      const std::string& short_description,
-                      const std::string& return_description,
-                      const Method::args_doc& arg_description,
-                      Method::method_ptr method,
-                      Method::return_type return_type,
-                      Method::args_types arg_types,
-                      gpointer user_data);
-  bool disable_method(const std::string& name);
-  bool enable_method(const std::string& name);
+  Make_delegate(Quiddity, MContainer, &meths_, mmanage);
 
   // life management
   void self_destruct();
@@ -226,30 +204,29 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   bool is_valid_{true};
 
   // access to the quiddity Container
-  QuiddityContainer* qcontainer_;
+  quid::Container* qcontainer_;
 };
 
 #define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(                                                 \
     cpp_quiddity_class, class_name, name, category, tags, description, license, author)       \
   bool cpp_quiddity_class##_doc_registered = DocumentationRegistry::get()->register_doc(      \
-      class_name,                                                                             \
-      QuiddityDocumentation(class_name, name, category, tags, description, license, author)); \
+      class_name, quid::Doc(class_name, name, category, tags, description, license, author)); \
   bool cpp_quiddity_class##_class_registered =                                                \
       DocumentationRegistry::get()->register_type_from_class_name(                            \
           std::string(#cpp_quiddity_class), class_name);
 
-#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                           \
-  extern "C" Quiddity* create(QuiddityConfiguration&& conf) {                 \
-    return new cpp_quiddity_class(std::forward<QuiddityConfiguration>(conf)); \
-  }                                                                           \
-  extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }            \
-  extern "C" const char* get_quiddity_type() {                                \
-    static char type[64];                                                     \
-    strcpy(type,                                                              \
-           DocumentationRegistry::get()                                       \
-               ->get_type_from_class_name(std::string(#cpp_quiddity_class))   \
-               .c_str());                                                     \
-    return static_cast<const char*>(type);                                    \
+#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                         \
+  extern "C" Quiddity* create(quid::Config&& conf) {                        \
+    return new cpp_quiddity_class(std::forward<quid::Config>(conf));        \
+  }                                                                         \
+  extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }          \
+  extern "C" const char* get_quiddity_type() {                              \
+    static char type[64];                                                   \
+    strcpy(type,                                                            \
+           DocumentationRegistry::get()                                     \
+               ->get_type_from_class_name(std::string(#cpp_quiddity_class)) \
+               .c_str());                                                   \
+    return static_cast<const char*>(type);                                  \
   }
 }  // namespace switcher
 #endif

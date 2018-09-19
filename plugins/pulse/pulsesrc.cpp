@@ -33,10 +33,11 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PulseSrc::PulseSrc(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+PulseSrc::PulseSrc(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       mainloop_(std::make_unique<GlibMainLoop>()),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
+  register_writer_suffix("audio");
   pmanage<MPtr(&PContainer::make_group)>(
       "advanced", "Advanced configuration", "Advanced configuration");
   pmanage<MPtr(&PContainer::make_parented_selection<>)>(
@@ -55,7 +56,7 @@ PulseSrc::PulseSrc(QuiddityConfiguration&& conf)
     is_valid_ = false;
     return;
   }
-  shmpath_ = make_file_name("audio");
+  shmpath_ = make_shmpath("audio");
   g_object_set(G_OBJECT(pulsesrc_.get_raw()), "client-name", get_name().c_str(), nullptr);
   g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   std::unique_lock<std::mutex> lock(devices_mutex_);
@@ -309,14 +310,8 @@ bool PulseSrc::start() {
                "device",
                capture_devices_.at(devices_.get_current_index()).name_.c_str(),
                nullptr);
-  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shmsink_.get_raw(),
-      [this](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.writer." + shmpath_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath_));
+  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, shmsink_.get_raw(), shmpath_, GstShmTreeUpdater::Direction::writer);
   gst_bin_add_many(
       GST_BIN(gst_pipeline_->get_pipeline()), pulsesrc_.get_raw(), shmsink_.get_raw(), nullptr);
   gst_element_link_many(pulsesrc_.get_raw(), shmsink_.get_raw(), nullptr);
@@ -327,7 +322,6 @@ bool PulseSrc::start() {
 
 bool PulseSrc::stop() {
   shm_sub_.reset(nullptr);
-  prune_tree(".shmdata.writer." + shmpath_);
   pmanage<MPtr(&PContainer::remove)>(volume_id_);
   volume_id_ = 0;
   pmanage<MPtr(&PContainer::remove)>(mute_id_);

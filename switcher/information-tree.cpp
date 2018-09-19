@@ -32,6 +32,49 @@ InfoTree::ptr InfoTree::make() {
   return tree;
 }
 
+InfoTree::ptr InfoTree::copy(InfoTree::ptrc tree) {
+  auto res = InfoTree::make();
+  std::list<std::string> path;
+
+  preorder_tree_walk(tree,
+                     [&](const std::string& name, InfoTree::ptrc tree, bool is_array_element) {
+                       std::string key;
+                       for (auto& it : path) {
+                         key += "." + it;
+                       }
+                       if (is_array_element) res->tag_as_array(key, true);
+                       path.push_back(name);
+                       key += "." + name;
+                       auto value = tree->read_data();
+                       if (value.not_null())
+                         res->graft(key, make(value));
+                       else
+                         res->graft(key, make());
+                       return true;
+                     },
+                     [&](const std::string&, InfoTree::ptrc, bool) {
+                       path.pop_back();
+                       return true;
+                     });
+  return res;
+}
+
+std::list<Any> InfoTree::collect_values(InfoTree::ptrc tree,
+                                        collect_predicate_t predicate,
+                                        bool continue_search_in_siblings) {
+  std::list<Any> res;
+  preorder_tree_walk(tree,
+                     [&](const std::string& name, InfoTree::ptrc node, bool) {
+                       if (predicate(name, node)) {
+                         res.push_back(Any(node->read_data()));
+                         return continue_search_in_siblings;
+                       }
+                       return true;
+                     },
+                     [&](const std::string&, InfoTree::ptrc, bool) { return true; });
+  return res;
+}
+
 InfoTree::ptr InfoTree::make(const char* data) { return make(std::string(data)); }
 
 InfoTree::ptr InfoTree::make_null() {
@@ -45,9 +88,8 @@ void InfoTree::preorder_tree_walk(InfoTree::ptrc tree,
   std::unique_lock<std::mutex> lock(tree->mutex_);
   if (!tree->children_.empty()) {
     for (auto& it : tree->children_) {
-      on_visiting_node(it.first, it.second.get(), tree->is_array_);
-      if (it.second.get())  // FIXME: figure out why children might be null
-        preorder_tree_walk(it.second.get(), on_visiting_node, on_node_visited);
+      if (!on_visiting_node(it.first, it.second.get(), tree->is_array_) && it.second.get()) break;
+      preorder_tree_walk(it.second.get(), on_visiting_node, on_node_visited);
       on_node_visited(it.first, it.second.get(), tree->is_array_);
     }
   }
@@ -110,6 +152,14 @@ bool InfoTree::branch_is_leaf(const std::string& path) const {
   return false;
 }
 
+bool InfoTree::branch_is_array(const std::string& path) const {
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (path_is_root(path)) return children_.empty();
+  auto found = get_node(path);
+  if (nullptr != found.first) return (*found.first)[found.second].second->is_array_;
+  return false;
+}
+
 bool InfoTree::branch_has_data(const std::string& path) const {
   std::lock_guard<std::mutex> lock(mutex_);
   if (path_is_root(path)) return data_.not_null();
@@ -125,6 +175,13 @@ Any InfoTree::branch_get_value(const std::string& path) const {
   if (nullptr != found.first) return (*found.first)[found.second].second->data_;
   Any res;
   return res;
+}
+
+InfoTree::ptr InfoTree::branch_get_copy(const std::string& path) const {
+  if (path_is_root(path)) return copy(this);
+  auto found = get_node(path);
+  if (nullptr == found.first) return nullptr;
+  return copy((*found.first)[found.second].second.get());
 }
 
 bool InfoTree::branch_set_value(const std::string& path, const Any& data) {
@@ -282,8 +339,9 @@ std::list<std::string> InfoTree::copy_leaf_values(const std::string& path) const
   preorder_tree_walk(tree.get(),
                      [&res](std::string /*key*/, InfoTree::ptrc node, bool /*is_array_element*/) {
                        if (node->is_leaf()) res.push_back(Any::to_string(node->read_data()));
+                       return true;
                      },
-                     [](std::string, InfoTree::ptrc, bool) {});
+                     [](std::string, InfoTree::ptrc, bool) { return true; });
   return res;
 }
 

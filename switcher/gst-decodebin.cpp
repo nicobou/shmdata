@@ -31,11 +31,12 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstDecodebin,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-GstDecodebin::GstDecodebin(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+GstDecodebin::GstDecodebin(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       shmsrc_("shmdatasrc"),
       shmcntr_(static_cast<Quiddity*>(this)) {
+  register_writer_suffix(".*");
   if (!shmsrc_) {
     is_valid_ = false;
     return;
@@ -51,7 +52,6 @@ GstDecodebin::GstDecodebin(QuiddityConfiguration&& conf)
 bool GstDecodebin::on_shmdata_disconnect() {
   shmw_sub_.reset(nullptr);
   shmr_sub_.reset(nullptr);
-  prune_tree(".shmdata.writer");
   if (!UGstElem::renew(shmsrc_)) return false;
   gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
   counter_.reset_counter_map();
@@ -67,33 +67,21 @@ void GstDecodebin::configure_shmdatasink(GstElement* element,
   if (count != 0) media_name.append("-" + std::to_string(count));
   std::string shmpath;
   if (media_label.empty())
-    shmpath = make_file_name(media_name);
+    shmpath = make_shmpath(media_name);
   else
-    shmpath = make_file_name(media_label + "-" + media_name);
+    shmpath = make_shmpath(media_label + "-" + media_name);
 
   g_object_set(G_OBJECT(element), "socket-path", shmpath.c_str(), nullptr);
-  shmw_sub_ = std::make_unique<GstShmdataSubscriber>(
-      element,
-      [this, shmpath](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.writer." + shmpath,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath));
+  shmw_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, element, shmpath, GstShmTreeUpdater::Direction::writer);
 }
 
 bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
   // creating shmdata reader
   g_object_set(
       G_OBJECT(shmsrc_.get_raw()), "copy-buffers", TRUE, "socket-path", shmpath.c_str(), nullptr);
-  shmr_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shmsrc_.get_raw(),
-      [this, shmpath](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.reader." + shmpath,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath));
+  shmr_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, shmsrc_.get_raw(), shmpath, GstShmTreeUpdater::Direction::reader);
 
   // creating decodebin
   std::unique_ptr<DecodebinToShmdata> decodebin = std::make_unique<DecodebinToShmdata>(

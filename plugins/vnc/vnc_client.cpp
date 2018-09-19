@@ -35,10 +35,10 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VncClientSrc,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-VncClientSrc::VncClientSrc(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+VncClientSrc::VncClientSrc(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   init_startable(this);
-
+  register_writer_suffix("vnc");
   shmcntr_.install_connect_method([this](const std::string path) { return connect(path); },
                                   [this](const std::string path) { return disconnect(path); },
                                   [this]() { return disconnect_all(); },
@@ -241,7 +241,7 @@ void VncClientSrc::update_vnc(rfbClient* client, int, int, int, int) {
 
     that->vnc_writer_.reset();
     that->vnc_writer_ = std::make_unique<ShmdataWriter>(
-        that, that->make_file_name("vnc"), that->framebuffer_size_, data_type);
+        that, that->make_shmpath("vnc"), that->framebuffer_size_, data_type);
     if (!that->vnc_writer_) {
       return;
     }

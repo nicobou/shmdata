@@ -20,7 +20,6 @@
 #ifndef __SWITCHER_GPROP_TO_PROP_H__
 #define __SWITCHER_GPROP_TO_PROP_H__
 
-#include <glib.h>
 #include <gst/gst.h>
 #include <memory>
 #include "./property.hpp"

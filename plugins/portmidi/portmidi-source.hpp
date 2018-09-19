@@ -28,7 +28,7 @@
 namespace switcher {
 class PortMidiSource : public Quiddity, public StartableQuiddity, public PortMidi {
  public:
-  PortMidiSource(QuiddityConfiguration&&);
+  PortMidiSource(quid::Config&&);
   ~PortMidiSource() = default;
   PortMidiSource(const PortMidiSource&) = delete;
   PortMidiSource& operator=(const PortMidiSource&) = delete;
@@ -47,6 +47,11 @@ class PortMidiSource : public Quiddity, public StartableQuiddity, public PortMid
   PContainer::prop_id_t devices_id_{0};
   // last midi value property
   PContainer::prop_id_t last_midi_value_id_{0};
+  // method ids
+  MContainer::meth_id_t next_midi_event_to_property_id_{0};
+  MContainer::meth_id_t remove_midi_property_id_{0};
+  MContainer::meth_id_t map_midi_to_property_id_{0};
+  // other members
   gboolean make_property_for_next_midi_event_{false};
   std::string next_property_name_{};
   std::map<std::string, PContainer::prop_id_t> prop_ids_{};
@@ -60,17 +65,13 @@ class PortMidiSource : public Quiddity, public StartableQuiddity, public PortMid
   bool start() final;
   bool stop() final;
 
-  bool make_property(std::string property_long_name, gint last_status, gint last_data);
+  bool make_property(const std::string& property_long_name, gint last_status, gint last_data);
   static gint get_midi_value(void* user_data);
   // midi properties
-  static gboolean next_midi_event_to_property_method(gchar* long_name, void* user_data);
-  static gboolean remove_property_method(gchar* long_name, void* user_data);
+  bool next_midi_event_to_property_method(const std::string& long_name);
+  bool remove_property_method(const std::string& long_name);
   static gint get_midi_property_value(void* user_data);
   static void on_pm_event(PmEvent* event, void* user_data);
-  static gboolean make_property_wrapped(const gchar* property_long_name,
-                                        gint last_status,
-                                        gint last_data1,
-                                        void* user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSource);

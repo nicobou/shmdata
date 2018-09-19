@@ -27,12 +27,12 @@ int main() {
     using namespace switcher;
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->scan_directory_for_plugins("./");
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
-    assert(manager->create("vrpnsrc", "src") == "src");
-    assert(QuiddityBasicTest::test_full(manager, "vrpnsrc"));
-    assert(manager->create("vrpnsink", "sink") == "sink");
-    assert(QuiddityBasicTest::test_full(manager, "vrpnsink"));
+    assert(manager->quids<MPtr(&quid::Container::create)>("vrpnsrc", "src"));
+    assert(test::full(manager, "vrpnsrc"));
+    assert(manager->quids<MPtr(&quid::Container::create)>("vrpnsink", "sink"));
+    assert(test::full(manager, "vrpnsink"));
 
   }  // end of scope is releasing the manager
   return 0;

@@ -40,8 +40,8 @@ const std::string AVRecorder::kRecordModeDate = "Date suffix";
 const std::string AVRecorder::kRecordModeLabel = "Label suffix";
 const std::string AVRecorder::kRecordModeOverwrite = "Overwrite";
 
-AVRecorder::AVRecorder(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+AVRecorder::AVRecorder(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   // Create a list of all available gstreamer muxers if not already done.
@@ -264,7 +264,8 @@ bool AVRecorder::stop() {
 }
 
 bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
-  auto shmdata_name = get_shmdata_name_from_file_name(shmpath);
+  auto shmdata_name =
+      get_quiddity_name_from_file_name(shmpath) + "_" + get_shmdata_name_from_file_name(shmpath);
   if (shmdata_name.empty()) {
     warning("Invalid shmdata path % (avrec)", shmpath);
     message("ERROR: Invalid shmdata path % (avrec)", shmpath);

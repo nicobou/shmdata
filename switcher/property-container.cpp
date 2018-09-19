@@ -564,6 +564,8 @@ std::string PContainer::get_str_str(const std::string& strid) const {
   return prop_it->second->get()->get_str();
 }
 
+Any PContainer::get_any(prop_id_t id) const { return props_.find(id)->second->get()->get_any(); }
+
 PContainer::prop_id_t PContainer::push(const std::string& strid,
                                        std::unique_ptr<PropertyBase>&& prop_ptr) {
   return push_parented(strid, "", std::forward<std::unique_ptr<PropertyBase>>(prop_ptr));

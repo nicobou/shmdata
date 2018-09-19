@@ -18,7 +18,8 @@
  */
 
 #include "./nvdec-plugin.hpp"
-#include <nvcuvid.h>
+#include <dynlink_nvcuvid.h>
+#include <gst/gst.h>
 #include <cstring>
 #include "cuda/cuda-context.hpp"
 #include "switcher/scope-exit.hpp"
@@ -36,8 +37,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(NVdecPlugin,
 const std::array<const char*, 5> NVdecPlugin::kSupportedCodecs{
     {"video/x-h264", "video/x-h265", "video/mpeg", "video/x-jpeg", "image/jpeg"}};
 
-NVdecPlugin::NVdecPlugin(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+NVdecPlugin::NVdecPlugin(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+  register_writer_suffix("video");
   auto devices = CudaContext::get_devices();
   std::vector<std::string> names;
   for (auto& it : devices) {
@@ -129,29 +131,24 @@ void NVdecPlugin::on_shmreader_data(void* data, size_t size) {
   });
 
   ds_.get()->invoke<MPtr(&NVencDS::process_decoded)>([&](const unsigned char* data_decoded,
-                                                         unsigned int data_width,
-                                                         unsigned int data_height,
-                                                         unsigned int pitch,
-                                                         bool& scaled) {
+                                                         const unsigned int& data_width,
+                                                         const unsigned int& data_height,
+                                                         const unsigned int& pitch) {
     if (!pitch) return;
-    guint8* src = (guint8*)data_decoded;
     guint height = data_height * 3 / 2;  // Only NV12 support for now, 12bpp.
 
     {
-      if (scaled) {
+      if (!shmwriter_) {
         size_t start_width = caps_.find("width=") + 6;
-        size_t end_width = caps_.find_first_of(",", start_width);
+        size_t end_width = caps_.find_first_of(',', start_width);
         size_t start_height = caps_.find("height=") + 7;
-        size_t end_height = caps_.find_first_of(",", start_height);
+        size_t end_height = caps_.find_first_of(',', start_height);
         caps_.replace(start_width, end_width - start_width, std::to_string(data_width));
         caps_.replace(start_height, end_height - start_height, std::to_string(data_height));
         writer_size_ = data_width * data_height * 3 / 2;
 
-        shmwriter_.reset(nullptr);
         shmwriter_ =
-            std::make_unique<ShmdataWriter>(this, make_file_name("video"), writer_size_, caps_);
-
-        scaled = false;
+            std::make_unique<ShmdataWriter>(this, make_shmpath("video"), writer_size_, caps_);
       }
 
       std::unique_ptr<shmdata::OneWriteAccess> shm_ptr;
@@ -164,11 +161,13 @@ void NVdecPlugin::on_shmreader_data(void* data, size_t size) {
 
       shm_ptr->notify_clients(writer_size_);
 
-      guint8* dest = (guint8*)shm_ptr->get_mem();
+      std::cout << "data_width: " << data_width << "data_height: " << data_height
+                << "height: " << height << std::endl;
+      auto dest = reinterpret_cast<guint8*>(shm_ptr->get_mem());
       for (guint y = 0; y < height; ++y) {
-        memcpy(dest, src, data_width);
+        memcpy(dest, data_decoded, data_width);
         dest += data_width;
-        src += pitch;
+        data_decoded += pitch;
       }
     }
 
@@ -215,7 +214,8 @@ void NVdecPlugin::on_shmreader_server_connected(const std::string& data_descr) {
     gint mpeg_version = 0;
     gst_structure_get_int(s, "mpegversion", &mpeg_version);
 
-    video_codec_ = convert_video_type_to_cuda(content_type, codec, mpeg_version);
+    video_codec_ =
+        convert_video_type_to_cuda(content_type, codec, static_cast<guint>(mpeg_version));
 
     if (video_codec_ == cudaVideoCodec_NumCodecs) {
       warning("Could not find valid codec in shmdata description (nvdec)");
@@ -223,14 +223,14 @@ void NVdecPlugin::on_shmreader_server_connected(const std::string& data_descr) {
     }
   }
 
-  caps_ = "video/x-raw, format=NV12, width=" + std::to_string(width) + ", height=" +
-          std::to_string(height) + ", framerate=" + std::to_string(frame_num) + "/" +
+  caps_ = "video/x-raw, format=NV12, width=" + std::to_string(width) +
+          ", height=" + std::to_string(height) + ", framerate=" + std::to_string(frame_num) + "/" +
           std::to_string(frame_den) + ", pixel-aspect-ratio=1/1";
-  writer_size_ = width * height * 3 / 2;  // Size is known because only NV12 is supported for now.
+  writer_size_ = static_cast<size_t>(width * height * 3 /
+                                     2);  // Size is known because only NV12 is supported for now.
 
   ds_.reset(nullptr);
   shmwriter_.reset(nullptr);
-  shmwriter_ = std::make_unique<ShmdataWriter>(this, make_file_name("video"), writer_size_, caps_);
 }
 
 void NVdecPlugin::on_shmreader_server_disconnected() {

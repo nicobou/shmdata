@@ -36,8 +36,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSink,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PulseSink::PulseSink(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+PulseSink::PulseSink(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       mainloop_(std::make_unique<GlibMainLoop>()),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
@@ -295,7 +295,6 @@ bool PulseSink::can_sink_caps(const std::string& caps) {
 
 bool PulseSink::on_shmdata_disconnect() {
   pmanage<MPtr(&PContainer::enable)>(devices_enum_id_);
-  prune_tree(".shmdata.reader." + shmpath_);
   shm_sub_.reset();
   On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };
   return remake_elements();
@@ -310,14 +309,8 @@ bool PulseSink::on_shmdata_connect(const std::string& shmpath) {
                  "device",
                  devices_.at(devices_enum_.get_current_index()).name_.c_str(),
                  nullptr);
-  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
-      shmsrc_.get_raw(),
-      [this](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.reader." + shmpath_,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.reader." + shmpath_));
+  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this, shmsrc_.get_raw(), shmpath_, GstShmTreeUpdater::Direction::reader);
 
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmsrc_.get_raw(),

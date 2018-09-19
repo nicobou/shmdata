@@ -27,12 +27,12 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalShmdataWriter,
                                      "Raw Shmdata",
                                      "other",
                                      "writer",
-                                     "import an external shmdata writer",
+                                     "Import an external shmdata writer",
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-ExternalShmdataWriter::ExternalShmdataWriter(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)) {
+ExternalShmdataWriter::ExternalShmdataWriter(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)) {
   pmanage<MPtr(&PContainer::make_string)>(
       "shmdata-path",
       [this](const std::string& val) {
@@ -43,7 +43,7 @@ ExternalShmdataWriter::ExternalShmdataWriter(QuiddityConfiguration&& conf)
                                                  nullptr,
                                                  nullptr,
                                                  ShmdataStat::kDefaultUpdateInterval,
-                                                 ".shmdata.writer.");
+                                                 ShmdataFollower::Direction::writer);
         return true;
       },
       [this]() { return shmdata_path_; },

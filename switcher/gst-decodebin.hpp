@@ -23,16 +23,15 @@
 #include <memory>
 #include "./decodebin-to-shmdata.hpp"
 #include "./gst-pipeliner.hpp"
-#include "./gst-shmdata-subscriber.hpp"
+#include "./gst-shm-tree-updater.hpp"
 #include "./quiddity.hpp"
 #include "./shmdata-connector.hpp"
-#include "./unique-gst-element.hpp"
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
 class GstDecodebin : public Quiddity {
  public:
-  GstDecodebin(QuiddityConfiguration&&);
+  GstDecodebin(quid::Config&&);
   ~GstDecodebin() = default;
   GstDecodebin(const GstDecodebin&) = delete;
   GstDecodebin& operator=(const GstDecodebin&) = delete;
@@ -44,8 +43,8 @@ class GstDecodebin : public Quiddity {
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
   std::unique_ptr<DecodebinToShmdata> decoder_{nullptr};
-  std::unique_ptr<GstShmdataSubscriber> shmw_sub_{};
-  std::unique_ptr<GstShmdataSubscriber> shmr_sub_{};
+  std::unique_ptr<GstShmTreeUpdater> shmw_sub_{};
+  std::unique_ptr<GstShmTreeUpdater> shmr_sub_{};
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string& shmdata_sochet_path);
   bool can_sink_caps(const std::string& caps);

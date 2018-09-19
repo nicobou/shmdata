@@ -42,6 +42,10 @@ std::vector<std::string> get_files_from_directory(std::string path,
                                                   std::string suffix = "",
                                                   bool recursive = false);
 
+std::vector<std::string> get_shmfiles_from_directory(std::string dir_path, std::string file_prefix);
+
+BoolLog remove(const std::string& abs_path);
+
 // default is 100Mo
 std::pair<std::string, std::string> get_file_content(const std::string& file_path,
                                                      int max_file_size = 100000000);

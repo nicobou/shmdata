@@ -25,12 +25,12 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSink,
                                      "Midi (Port Midi)",
                                      "midi",
                                      "reader/device",
-                                     "shmdata to midi",
+                                     "Shmdata to midi",
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PortMidiSink::PortMidiSink(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+PortMidiSink::PortMidiSink(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   init_startable(this);
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->connect(shmpath); },

@@ -21,10 +21,10 @@
 #define __SWITCHER_PROPERTY_CONTAINER_H__
 
 #include <assert.h>
-#include <glib.h>  // logs
 #include <map>
 #include <memory>
 #include <string>
+#include "./any.hpp"
 #include "./counter-map.hpp"
 #include "./is-specialization-of.hpp"
 #include "./property-internal-types.hpp"
@@ -45,7 +45,7 @@ class PContainer {
              on_tree_grafted_cb_t on_tree_grafted_cb,
              on_tree_pruned_cb_t on_tree_pruned_cb);
 
-  // ------------- use (const methods)
+  // ------------- use
   // return 0 if id is not found
   prop_id_t get_id(const std::string& id) const;
   std::string get_name(prop_id_t id) const;
@@ -59,6 +59,7 @@ class PContainer {
   std::string get_str(prop_id_t id) const;
   bool set_str_str(const std::string& strid, const std::string& val) const;
   std::string get_str_str(const std::string& strid) const;
+  Any get_any(prop_id_t id) const;
   template <typename T>
   bool set(prop_id_t id, const T& val) const {
     auto prop_it = props_.find(id);
@@ -76,7 +77,7 @@ class PContainer {
     return static_cast<Property<T>*>(prop_it->second->get())->get();
   }
 
-  // ----------- add/remove/update (you should prefer makers for adding)
+  // ----------- add/remove/update (you should prefer makers for adding a property to your quiddity)
 
   bool remove(prop_id_t prop_id);
   bool enable(prop_id_t prop_id);

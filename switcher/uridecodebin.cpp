@@ -19,7 +19,6 @@
 
 #include "./uridecodebin.hpp"
 #include "./gst-utils.hpp"
-#include "./invocation-spec.hpp"
 #include "./scope-exit.hpp"
 #include "./shmdata-utils.hpp"
 
@@ -38,8 +37,8 @@ void Uridecodebin::bus_async(GstMessage* msg) {
   if (loop_) gst_pipeline_->seek(0);
 }
 
-Uridecodebin::Uridecodebin(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+Uridecodebin::Uridecodebin(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       on_msg_async_cb_([this](GstMessage* msg) { this->bus_async(msg); }),
       on_msg_sync_cb_(nullptr),
       on_error_cb_([this](GstObject*, GError*) { this->error_ = true; }),
@@ -49,6 +48,8 @@ Uridecodebin::Uridecodebin(QuiddityConfiguration&& conf)
     is_valid_ = false;
     return;
   }
+
+  register_writer_suffix(".*");
 
   pmanage<MPtr(&PContainer::make_string)>("uri",
                                           [this](const std::string& val) {
@@ -105,15 +106,7 @@ void Uridecodebin::init_uridecodebin() {
 
 void Uridecodebin::destroy_uridecodebin() {
   gst_pipeline_ = std::make_unique<GstPipeliner>(on_msg_async_cb_, on_msg_sync_cb_, on_error_cb_);
-  clean_on_error_command();
-  prune_tree(".shmdata.writer.");
-}
-
-void Uridecodebin::clean_on_error_command() {
-  if (on_error_command_ != nullptr) {
-    delete on_error_command_;
-    on_error_command_ = nullptr;
-  }
+  shm_subs_.clear();
 }
 
 void Uridecodebin::source_setup_cb(GstBin* /*bin*/, GstElement* /*source*/, gpointer user_data) {
@@ -188,6 +181,7 @@ std::string Uridecodebin::get_pad_name(GstPad* pad) {
   std::string padname;
   {
     GstCaps* padcaps = gst_pad_get_current_caps(pad);
+    if (nullptr == padcaps) return padname;
     On_scope_exit { gst_caps_unref(padcaps); };
     gchar* padcapsstr = gst_caps_to_string(padcaps);
     On_scope_exit { g_free(padcapsstr); };
@@ -261,17 +255,11 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   auto count = counter_.get_count(padname_split[0]);
   std::string media_name = std::string(padname_split[0]) + "-" + std::to_string(count);
   debug("uridecodebin: new media %", media_name);
-  std::string shmpath = make_file_name(media_name);
+  std::string shmpath = make_shmpath(media_name);
   g_object_set(G_OBJECT(shmdatasink), "socket-path", shmpath.c_str(), nullptr);
 
-  shm_subs_.emplace_back(std::make_unique<GstShmdataSubscriber>(
-      shmdatasink,
-      [this, shmpath](const std::string& caps) {
-        this->graft_tree(
-            ".shmdata.writer." + shmpath,
-            ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-      },
-      ShmdataStat::make_tree_updater(this, ".shmdata.writer." + shmpath)));
+  shm_subs_.emplace_back(std::make_unique<GstShmTreeUpdater>(
+      this, shmdatasink, shmpath, GstShmTreeUpdater::Direction::writer));
   if (!stream_is_image) GstUtils::sync_state_with_parent(shmdatasink);
 }
 

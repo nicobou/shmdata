@@ -36,8 +36,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AVPlayer,
 
 const std::string AVPlayer::kShmDestPath = "/tmp/avplayer/";
 
-AVPlayer::AVPlayer(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+AVPlayer::AVPlayer(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   pmanage<MPtr(&PContainer::make_string)>(
@@ -136,15 +136,8 @@ bool AVPlayer::start() {
     file->sink_element_ = gst_bin_get_by_name(GST_BIN(avplay_bin_), file->sink_name_.c_str());
     if (!file->sink_element_) continue;
 
-    file->shmsink_sub_ = std::make_unique<GstShmdataSubscriber>(
-        file->sink_element_,
-        [ this, shmpath = file->shmpath_ ](const std::string& caps) {
-          graft_tree(
-              ".shmdata.writer." + shmpath,
-              ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-        },
-        ShmdataStat::make_tree_updater(this, ".shmdata.writer." + file->shmpath_),
-        [ this, shmpath = file->shmpath_ ]() { prune_tree(".shmdata.writer." + shmpath); });
+    file->shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
+        this, file->sink_element_, file->shmpath_, GstShmTreeUpdater::Direction::writer);
   }
 
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
@@ -168,6 +161,7 @@ GstBusSyncReply AVPlayer::bus_async(GstMessage* msg) {
   switch (GST_MESSAGE_TYPE(msg)) {
     case GST_MESSAGE_EOS: {
       th_->run_async([this]() { pmanage<MPtr(&PContainer::set_str_str)>("started", "false"); });
+      break;
     }
 
     case GST_MESSAGE_STATE_CHANGED: {

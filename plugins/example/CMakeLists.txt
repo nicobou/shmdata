@@ -15,6 +15,13 @@ if (PLUGIN_EXAMPLE)
         )
     add_dependencies(prop_quid ${SWITCHER_LIBRARY})
 
+    # Method quid
+
+    add_library(meth_quid SHARED
+            method-quid.cpp
+        )
+    add_dependencies(meth_quid ${SWITCHER_LIBRARY})
+
     # Signal quid
 
     add_library(signal_quid SHARED
@@ -30,17 +37,20 @@ if (PLUGIN_EXAMPLE)
 
     # TEST
 
-    add_executable(check_example_plugin check_example_plugin.cpp)
-    add_test(check_example_plugin check_example_plugin)
+    add_executable(check_property_plugin check_property_plugin.cpp)
+    add_test(check_property_plugin check_property_plugin)
+
+    add_executable(check_method_plugin check_method_plugin.cpp)
+    add_test(check_method_plugin check_method_plugin)
 
     add_executable(check_custom_save check_custom_save_plugin.cpp)
     add_test(check_custom_save check_custom_save)
 
-    add_executable(check_signals check_signals.cpp)
-    add_test(check_signals check_signals)
+    add_executable(check_signals_plugin check_signals_plugin.cpp)
+    add_test(check_signals_plugin check_signals_plugin)
 
     # INSTALL
 
-    install(TARGETS prop_quid custom_save signal_quid LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(TARGETS prop_quid meth_quid custom_save signal_quid LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
 
 endif ()

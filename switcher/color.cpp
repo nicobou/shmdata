@@ -18,7 +18,6 @@
  */
 
 #include "./color.hpp"
-#include <glib.h>
 #include <cctype>
 #include <utility>
 

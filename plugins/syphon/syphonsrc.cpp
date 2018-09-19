@@ -37,7 +37,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SyphonSrc,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-SyphonSrc::SyphonSrc(QuiddityConfiguration&&) {
+SyphonSrc::SyphonSrc(quid::Config&&) {
   init_startable(this);
 
   reader_.reset(new SyphonReader(frameCallback, (void*)this));
@@ -88,19 +88,12 @@ void SyphonSrc::frameCallback(void* context, const char* data, int& width, int& 
   SyphonSrc* ctx = static_cast<SyphonSrc*>(context);
   static bool set = false;
   if (set == false || ctx->width_ != width || ctx->height_ != height) {
-    std::string writer_path;
-    if (ctx->syphon_servername_ != "" && ctx->syphon_appname_ != "")
-      writer_path = ctx->make_file_name(ctx->syphon_servername_ + "-" + ctx->syphon_appname_);
-    else if (ctx->syphon_servername_ != "")
-      writer_path = ctx->make_file_name(ctx->syphon_servername_);
-    else
-      writer_path = ctx->make_file_name(ctx->syphon_appname_);
-    ctx->writer_ =
-        std::make_unique<ShmdataWriter>(ctx,
-                                        writer_path,
-                                        width * height * 4,
-                                        string("video/x-raw, format=RGBA, ") + "width=" +
-                                            to_string(width) + "height=" + to_string(height));
+    ctx->writer_ = std::make_unique<ShmdataWriter>(ctx,
+                                                   ctx->make_shmpath("video"),
+                                                   width * height * 4,
+                                                   string("video/x-raw, format=RGBA, ") +
+                                                       "width=" + to_string(width) +
+                                                       "height=" + to_string(height));
     ctx->width_ = width;
     ctx->height_ = height;
     if (!ctx->writer_.get()) {

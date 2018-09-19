@@ -7,4 +7,6 @@
 * Sebastien Paquet
 * Mike Wozniewski
 * Alexandre Quessy
+* Jerome Berthelin
 * Patrick Keroulas
+* Marc Lavallée

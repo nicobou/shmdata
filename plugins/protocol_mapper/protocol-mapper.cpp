@@ -30,8 +30,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ProtocolMapper,
                                      "LGPL",
                                      "Nicolas Bouillot/Jérémie Soria");
 
-ProtocolMapper::ProtocolMapper(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)) {
+ProtocolMapper::ProtocolMapper(quid::Config&& conf) : Quiddity(std::forward<quid::Config>(conf)) {
   config_file_id_ = pmanage<MPtr(&PContainer::make_string)>(
       "config_file",
       [this](const std::string& val) {
@@ -63,8 +62,8 @@ ProtocolMapper::ProtocolMapper(QuiddityConfiguration&& conf)
         return true;
       },
       [this]() { return config_file_; },
-      "Protocol mapping description description file",
-      "This property allows for loading the command description",
+      "Path to command description file",
+      "Load the command description",
       config_file_);
 }
 }

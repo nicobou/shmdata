@@ -51,8 +51,8 @@ const std::string GLFWVideo::kOverlayDisabledMessage =
 
 std::atomic<int> GLFWVideo::instance_counter_(0);
 
-GLFWVideo::GLFWVideo(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+GLFWVideo::GLFWVideo(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       background_config_id_(pmanage<MPtr(&PContainer::make_group)>(
@@ -208,14 +208,14 @@ GLFWVideo::GLFWVideo(QuiddityConfiguration&& conf)
             xevents_to_shmdata_ = val;
             if (xevents_to_shmdata_) {
               keyb_shm_ = std::make_unique<ShmdataWriter>(
-                  this, make_file_name("keyb"), sizeof(KeybEvent), "application/x-keyboard-events");
+                  this, make_shmpath("keyb"), sizeof(KeybEvent), "application/x-keyboard-events");
               if (!keyb_shm_.get()) {
                 warning("GLFW keyboard event shmdata writer failed");
                 keyb_shm_.reset(nullptr);
               }
 
               mouse_shm_ = std::make_unique<ShmdataWriter>(
-                  this, make_file_name("mouse"), sizeof(MouseEvent), "application/x-mouse-events");
+                  this, make_shmpath("mouse"), sizeof(MouseEvent), "application/x-mouse-events");
               if (!mouse_shm_.get()) {
                 warning("GLFW mouse event shmdata writer failed");
                 mouse_shm_.reset(nullptr);
@@ -550,6 +550,7 @@ GLFWVideo::GLFWVideo(QuiddityConfiguration&& conf)
   ++instance_counter_;
   RendererSingleton::get()->subscribe_to_render_loop(this);
 
+  register_writer_suffix("keyb|mouse");
   // We need the quiddity config to be loaded so we cannot do it in the constructor.
   if (is_valid_) {
     load_icon();
@@ -1014,11 +1015,12 @@ const GLFWVideo::MonitorConfig GLFWVideo::get_monitor_config() const {
 bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
   shmpath_ = shmpath;
   g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
-  shm_sub_ = std::make_unique<GstShmdataSubscriber>(
+  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
+      this,
       shmsrc_.get_raw(),
+      shmpath_,
+      GstShmTreeUpdater::Direction::reader,
       [this](const std::string& caps) {
-        graft_tree(".shmdata.reader." + shmpath_,
-                   ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
         GstCaps* gstcaps = gst_caps_from_string(caps.c_str());
         On_scope_exit {
           if (gstcaps) gst_caps_unref(gstcaps);
@@ -1039,7 +1041,6 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
           return true;
         });
       },
-      [this](const ShmdataStat&) {},
       [this]() {
         add_rendering_task([this]() {
           draw_video_ = false;
@@ -1086,6 +1087,12 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
   // Capsfilter setup
   GstCaps* usercaps = gst_caps_from_string("video/x-raw,format=RGBA");
   g_object_set(G_OBJECT(capsfilter_.get_raw()), "caps", usercaps, nullptr);
+
+  auto nthreads_videoconvert = GstUtils::get_nthreads_property_value();
+  if (nthreads_videoconvert > 0) {
+    g_object_set(G_OBJECT(videoconvert_.get_raw()), "n-threads", nthreads_videoconvert, nullptr);
+  }
+
   gst_caps_unref(usercaps);
 
   // Pipeline assembly
@@ -1114,7 +1121,6 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
 }
 
 bool GLFWVideo::on_shmdata_disconnect() {
-  prune_tree(".shmdata.reader." + shmpath_);
   shm_sub_.reset();
   shm_follower_.reset();
   On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };

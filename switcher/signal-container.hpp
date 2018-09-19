@@ -43,7 +43,7 @@ class SContainer {
 
   // ------------- use (const methods)
   // return 0 if id is not found
-  sig_id_t get_id(const std::string& id) const;
+  sig_id_t get_id(const std::string& name) const;
   std::string get_name(sig_id_t id) const;
   std::vector<std::pair<std::string, SContainer::sig_id_t>> get_ids() const;
   std::map<sig_id_t, std::string> get_names() const;

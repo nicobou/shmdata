@@ -20,18 +20,17 @@
 #include "./shmdata-to-osc.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
-    ShmdataToOsc,
-    "OSCsink",
-    "OSC sender",
-    "network",
-    "reader",
-    "shmOSCsink reveives OSC messages and updates associated property",
-    "LGPL",
-    "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToOsc,
+                                     "OSCsink",
+                                     "OSC sender",
+                                     "network",
+                                     "reader",
+                                     "Receives OSC messages and updates associated property",
+                                     "LGPL",
+                                     "Nicolas Bouillot");
 
-ShmdataToOsc::ShmdataToOsc(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+ShmdataToOsc::ShmdataToOsc(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   init_startable(this);
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->connect(shmpath); },

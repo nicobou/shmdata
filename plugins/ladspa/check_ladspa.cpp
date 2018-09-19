@@ -21,6 +21,7 @@
 
 #include <assert.h>
 #include <atomic>
+#include <condition_variable>
 #include <switcher/information-tree-json.hpp>
 #include "switcher/quiddity-basic-test.hpp"
 
@@ -56,24 +57,20 @@ int main() {
   {
     Switcher::ptr manager = Switcher::make_switcher("ladspatest");
 
-    manager->scan_directory_for_plugins("./");
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
-    manager->load_configuration_file("./check_ladspa.json");
+    manager->conf<MPtr(&Configuration::from_file)>("./check_ladspa.json");
 
     // creating a ladspa audiotest bundle
-    auto bundle = manager->create("audiotestladspa");
-    assert(!bundle.empty());
+    auto created = manager->quids<MPtr(&quid::Container::create)>("audiotestladspa", std::string());
+    auto ladspa = created.get();
+    assert(created && ladspa);
+    if (!ladspa->prop<MPtr(&PContainer::set_str_str)>("started", "true")) return 1;
 
-    if (!manager->use_prop<MPtr(&PContainer::set_str_str)>(bundle.c_str(), "started", "true"))
-      return 1;
-
-    manager->use_prop<MPtr(&PContainer::subscribe)>(
-        bundle,
-        manager->use_prop<MPtr(&PContainer::get_id)>(bundle, "dummy/frame-received"),
-        [&]() {
-          if (manager->use_prop<MPtr(&PContainer::get<bool>)>(
-                  bundle,
-                  manager->use_prop<MPtr(&PContainer::get_id)>(bundle, "dummy/frame-received"))) {
+    ladspa->prop<MPtr(&PContainer::subscribe)>(
+        ladspa->prop<MPtr(&PContainer::get_id)>("dummy/frame-received"), [&]() {
+          if (ladspa->prop<MPtr(&PContainer::get<bool>)>(
+                  ladspa->prop<MPtr(&PContainer::get_id)>("dummy/frame-received"))) {
             notify_success();
           }
         });
@@ -85,9 +82,9 @@ int main() {
       return 1;
     }
 
-    if (!manager->remove(bundle)) return 1;
+    if (!manager->quids<MPtr(&quid::Container::remove)>(created.get_id())) return 1;
 
-    if (!QuiddityBasicTest::test_full(manager, "ladspa")) return 1;
+    if (!test::full(manager, "ladspa")) return 1;
   }  // end of scope is releasing the manager
 
   return 0;  // success

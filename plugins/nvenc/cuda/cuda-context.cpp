@@ -18,7 +18,6 @@
  */
 
 #include "./cuda-context.hpp"
-#include <glib.h>  // log
 #include "./cu-res.hpp"
 #include "switcher/scope-exit.hpp"
 

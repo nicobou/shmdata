@@ -31,8 +31,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RTMP,
                                      "LGPL",
                                      "Jérémie Soria");
 
-RTMP::RTMP(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+RTMP::RTMP(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   stream_app_url_id_ = pmanage<MPtr(&PContainer::make_string)>(
@@ -122,29 +122,15 @@ bool RTMP::create_gst_pipeline() {
     auto shmdatavideo = gst_bin_get_by_name(GST_BIN(bin), "shmvideo");
     g_object_set(G_OBJECT(shmdatavideo), "socket-path", video_shmpath_.c_str(), nullptr);
 
-    shmvideo_sub_ = std::make_unique<GstShmdataSubscriber>(
-        shmdatavideo,
-        [this](const std::string& caps) {
-          graft_tree(
-              ".shmdata.reader." + video_shmpath_,
-              ShmdataUtils::make_tree(caps, ShmdataUtils::get_category(caps), ShmdataStat()));
-        },
-        ShmdataStat::make_tree_updater(this, ".shmdata.reader." + video_shmpath_),
-        [this]() { prune_tree(".shmdata.reader." + video_shmpath_); });
+    shmvideo_sub_ = std::make_unique<GstShmTreeUpdater>(
+        this, shmdatavideo, video_shmpath_, GstShmTreeUpdater::Direction::reader);
   }
 
   if (!audio_shmpath_.empty()) {
     auto shmdataaudio = gst_bin_get_by_name(GST_BIN(bin), "shmaudio");
     g_object_set(G_OBJECT(shmdataaudio), "socket-path", audio_shmpath_.c_str(), nullptr);
-    shmaudio_sub_ = std::make_unique<GstShmdataSubscriber>(
-        shmdataaudio,
-        [this](const std::string& str_caps) {
-          graft_tree(".shmdata.reader." + audio_shmpath_,
-                     ShmdataUtils::make_tree(
-                         str_caps, ShmdataUtils::get_category(str_caps), ShmdataStat()));
-        },
-        ShmdataStat::make_tree_updater(this, ".shmdata.reader." + audio_shmpath_),
-        [this]() { prune_tree(".shmdata.reader." + audio_shmpath_); });
+    shmaudio_sub_ = std::make_unique<GstShmTreeUpdater>(
+        this, shmdataaudio, audio_shmpath_, GstShmTreeUpdater::Direction::reader);
   }
 
   if (!audio_shmpath_.empty() && !video_shmpath_.empty() && !stream_app_url_.empty() &&

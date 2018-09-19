@@ -1,5 +1,8 @@
+*.switcher
 *.swp
 .idea/workspace.xml
+__pycache__
 build/
-html/
 cmake-build-*/
+html/
+plugins/pjsip/config.json

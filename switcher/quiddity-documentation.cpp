@@ -22,13 +22,13 @@
 #include <sstream>
 
 namespace switcher {
-QuiddityDocumentation::QuiddityDocumentation(const std::string& long_name,
-                                             const std::string& class_name,
-                                             const std::string& category,
-                                             const std::string& tags,
-                                             const std::string& short_description,
-                                             const std::string& license,
-                                             const std::string& author)
+quid::Doc::Doc(const std::string& long_name,
+               const std::string& class_name,
+               const std::string& category,
+               const std::string& tags,
+               const std::string& short_description,
+               const std::string& license,
+               const std::string& author)
     : category_(category),
       class_name_(class_name),
       description_(short_description),
@@ -42,18 +42,18 @@ QuiddityDocumentation::QuiddityDocumentation(const std::string& long_name,
   while (std::getline(ss, tok, '/')) tags_.push_back(tok);
 }
 
-std::string QuiddityDocumentation::get_category() const { return category_; }
+std::string quid::Doc::get_category() const { return category_; }
 
-std::string QuiddityDocumentation::get_class_name() const { return class_name_; }
+std::string quid::Doc::get_class_name() const { return class_name_; }
 
-std::string QuiddityDocumentation::get_description() const { return description_; }
+std::string quid::Doc::get_description() const { return description_; }
 
-std::string QuiddityDocumentation::get_long_name() const { return long_name_; }
+std::string quid::Doc::get_long_name() const { return long_name_; }
 
-std::string QuiddityDocumentation::get_author() const { return author_; }
+std::string quid::Doc::get_author() const { return author_; }
 
-std::string QuiddityDocumentation::get_license() const { return license_; }
+std::string quid::Doc::get_license() const { return license_; }
 
-std::vector<std::string> QuiddityDocumentation::get_tags() const { return tags_; };
+std::vector<std::string> quid::Doc::get_tags() const { return tags_; };
 
 }  // namespace switcher

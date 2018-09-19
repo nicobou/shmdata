@@ -34,8 +34,8 @@ class StartableQuiddity {
   static const std::string disabledWhenStopedMsg;
 
  protected:
-  void init_startable(void* quiddity);  // FIXME find a way to avoid invoking init_startable (this)
-                                        // in quiddities (policies)
+  // FIXME find a way to avoid invoking init_startable (this) in quiddities (policies)
+  void init_startable(void* quiddity);
   bool is_started() const;
 
  private:

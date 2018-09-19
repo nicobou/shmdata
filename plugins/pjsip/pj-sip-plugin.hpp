@@ -40,7 +40,7 @@ class SIPPlugin : public Quiddity {
   friend PJICEStreamTrans;
 
  public:
-  SIPPlugin(QuiddityConfiguration&&);
+  SIPPlugin(quid::Config&&);
   ~SIPPlugin();
   SIPPlugin(const SIPPlugin&) = delete;
   SIPPlugin& operator=(const SIPPlugin&) = delete;
@@ -53,6 +53,12 @@ class SIPPlugin : public Quiddity {
   PContainer::prop_id_t port_id_;
   std::string default_dns_address_;
   std::string dns_address_;
+
+  // log related variables
+  int log_level_{2};
+  int console_log_level_{2};
+  std::string log_filename_;
+
   PContainer::prop_id_t dns_address_id_{0};
   bool decompress_streams_{true};
   PContainer::prop_id_t decompress_streams_id_;
@@ -73,6 +79,7 @@ class SIPPlugin : public Quiddity {
   unsigned int quiddity_removal_cb_id_{0};
 
   bool start_sip_transport();
+  void apply_log_level_configuration();
   void apply_configuration();
   void create_quiddity_stream(const std::string& peer_uri, const std::string& quid_name);
   void expose_stream_to_quiddity(const std::string& quid_name, const std::string& shmpath);

@@ -21,6 +21,7 @@
 #include <pjsua-lib/pjsua.h>
 #include <atomic>
 #include <condition_variable>
+#include <functional>
 #include <mutex>
 #include <thread>
 #include "switcher/safe-bool-idiom.hpp"
@@ -40,7 +41,10 @@ class PJSIP : public SafeBoolIdiom {
   friend PJMediaEndpt;
 
  public:
-  PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun);
+  PJSIP(
+    std::function<bool()> init_fun,
+    std::function<void()> destruct_fun
+  );
   ~PJSIP();
   PJSIP(const PJSIP&) = delete;
   PJSIP& operator=(const PJSIP&) = delete;

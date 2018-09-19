@@ -1,5 +1,5 @@
 /*
- * This file is part of switcher-myplugin.
+ * This file is part of switcher-plugin-example.
  *
  * switcher-myplugin is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,7 +28,7 @@
 namespace switcher {
 class CustomSavePlugin : public Quiddity {
  public:
-  CustomSavePlugin(QuiddityConfiguration&&);
+  CustomSavePlugin(quid::Config&&);
   ~CustomSavePlugin() = default;
   CustomSavePlugin(const CustomSavePlugin&) = delete;
   CustomSavePlugin& operator=(const CustomSavePlugin&) = delete;

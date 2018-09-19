@@ -21,6 +21,7 @@
 #define __SWITCHER_AUDIO_RING_BUFFER_H__
 
 #include <atomic>
+#include <functional>
 #include <vector>
 
 namespace switcher {

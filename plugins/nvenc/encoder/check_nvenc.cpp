@@ -59,57 +59,61 @@ int main() {
   {
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->scan_directory_for_plugins("./");
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
     // testing if two nvenc can be created simultaneously
     std::vector<std::string> nvencs;
     for (int i = 0; i < 2; ++i) {
-      auto nvenc_quid = manager->create("nvenc");
-      if (nvenc_quid.empty()) {
+      auto created = manager->quids<MPtr(&quid::Container::create)>("nvenc", std::string());
+      if (!created) {
         std::cerr << "nvenc creating failed, i: " << i << '\n';
         return 1;
       }
-      nvencs.push_back(nvenc_quid);
+      nvencs.push_back(created.msg());
     }
-    for (auto& it : nvencs) manager->remove(it);
+    for (auto& it : nvencs)
+      manager->quids<MPtr(&quid::Container::remove)>(
+          manager->quids<MPtr(&quid::Container::get_id)>(it));
     nvencs.clear();
 
     // testing if nvenc can be used
     {
-      auto nvenc_quid = manager->create("nvenc");
-      if (nvenc_quid.empty()) {
+      auto created = manager->quids<MPtr(&quid::Container::create)>("nvenc", std::string());
+      if (!created) {
         std::cerr << "nvenc encoding could not be created" << '\n';
         return 1;
       }
-      manager->remove(nvenc_quid);
+      manager->quids<MPtr(&quid::Container::remove)>(
+          manager->quids<MPtr(&quid::Container::get_id)>(created.msg()));
     }
 
     // standard test
-    assert(QuiddityBasicTest::test_full(manager, "nvenc"));
-    manager->remove("nvenc");
-
+    assert(test::full(manager, "nvenc"));
+    manager->quids<MPtr(&quid::Container::remove)>(
+        manager->quids<MPtr(&quid::Container::get_id)>("nvenc"));
 
     // testing nvenc is encoding
-    auto video_quid = manager->create("videotestsrc");
-    assert(!video_quid.empty());
-    manager->use_prop<MPtr(&PContainer::set_str_str)>(video_quid.c_str(), "codec", "0");
-    manager->use_prop<MPtr(&PContainer::set_str_str)>(video_quid.c_str(), "started", "true");
-    // wait for video to be started
-    usleep(100000);
-    auto vid_shmdata_list =
-        manager->use_tree<MPtr(&InfoTree::get_child_keys)>(video_quid.c_str(), "shmdata.writer");
-    auto vid_shmpath = vid_shmdata_list.front();
+    auto created = manager->quids<MPtr(&quid::Container::create)>("videotestsrc", std::string());
+    assert(created);
+    auto vid = created.get();
+    vid->prop<MPtr(&PContainer::set_str_str)>("codec", "0");
+    vid->prop<MPtr(&PContainer::set_str_str)>("started", "true");
+    auto vid_shmpath = vid->make_shmpath("video");
     assert(!vid_shmpath.empty());
 
-    auto nvenc_quid = manager->create("nvenc");
-    assert(!nvenc_quid.empty());
-    manager->invoke_va(nvenc_quid.c_str(), "connect", nullptr, vid_shmpath.c_str(), nullptr);
+    auto nvenc_created = manager->quids<MPtr(&quid::Container::create)>("nvenc", std::string());
+    assert(nvenc_created);
+    auto nvenc = nvenc_created.get();
+    assert(nvenc);
+    nvenc->meth<MPtr(&MContainer::invoke_str)>(
+        nvenc->meth<MPtr(&switcher::MContainer::get_id)>("connect"),
+        serialize::esc_for_tuple(vid_shmpath));
 
     // tracking nvenc shmdata writer byterate for evaluating success
-    auto registration_id = manager->use_sig<MPtr(&switcher::SContainer::subscribe_by_name)>(
-        nvenc_quid, "on-tree-grafted", [&](const switcher::InfoTree::ptr& tree) {
-          size_t byte_rate = manager->use_tree<MPtr(&InfoTree::branch_get_value)>(
-              nvenc_quid, tree->get_value().as<std::string>() + ".byte_rate");
+    auto registration_id = nvenc->sig<MPtr(&switcher::SContainer::subscribe_by_name)>(
+        "on-tree-grafted", [&](const switcher::InfoTree::ptr& tree) {
+          size_t byte_rate = nvenc->tree<MPtr(&InfoTree::branch_get_value)>(
+              tree->get_value().as<std::string>() + ".byte_rate");
           if (0 != byte_rate) {
             notify_success();
           }
@@ -117,8 +121,8 @@ int main() {
     assert(0 != registration_id);
 
     wait_until_success();
-    assert(manager->use_sig<MPtr(&switcher::SContainer::unsubscribe_by_name)>(
-        nvenc_quid, "on-tree-grafted", registration_id));
+    assert(nvenc->sig<MPtr(&switcher::SContainer::unsubscribe_by_name)>("on-tree-grafted",
+                                                                        registration_id));
   }  // end of scope is releasing the manager
 
   if (!success) {
@@ -132,19 +136,19 @@ int main() {
     success = false;
     // starting a new test: nvenc data can be decoded
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
-    manager->scan_directory_for_plugins("./");
-    manager->load_configuration_file("./check_decode.json");
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->conf<MPtr(&Configuration::from_file)>("./check_decode.json");
 
-    auto nvencdec = manager->create("nvencdecoder", "nvencdecoder");
-    assert(nvencdec == "nvencdecoder");
-    manager->use_prop<MPtr(&PContainer::set_str_str)>(nvencdec, "started", "true");
-    manager->use_prop<MPtr(&PContainer::subscribe)>(
-        nvencdec,
-        manager->use_prop<MPtr(&PContainer::get_id)>(nvencdec, "dummy/frame-received"),
-        [&]() {
-          success = manager->use_prop<MPtr(&PContainer::get<bool>)>(
-              nvencdec,
-              manager->use_prop<MPtr(&PContainer::get_id)>(nvencdec, "dummy/frame-received"));
+    auto nvdec_created =
+        manager->quids<MPtr(&quid::Container::create)>("nvencdecoder", "nvencdecoder");
+    assert(nvdec_created);
+    auto nvdec = nvdec_created.get();
+    assert(nvdec);
+    nvdec->prop<MPtr(&PContainer::set_str_str)>("started", "true");
+    nvdec->prop<MPtr(&PContainer::subscribe)>(
+        nvdec->prop<MPtr(&PContainer::get_id)>("dummy/frame-received"), [&]() {
+          success = nvdec->prop<MPtr(&PContainer::get<bool>)>(
+              nvdec->prop<MPtr(&PContainer::get_id)>("dummy/frame-received"));
           notify_success();
         });
 
@@ -154,6 +158,5 @@ int main() {
   gst_deinit();
   if (success)
     return 0;
-  else
-    return 1;
+  return 1;
 }

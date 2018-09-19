@@ -28,13 +28,13 @@
 #include <string>
 
 namespace switcher {
-class RtpSession2;
+class RtpSession;
 
 class RTPSender {
  public:
   using id_t = size_t;
   using frame_cb_t = std::function<void(void*, size_t)>;
-  RTPSender(RtpSession2* session,
+  RTPSender(RtpSession* session,
             const std::string& shmpath,
             unsigned int mtu  // = 1400
             );
@@ -50,7 +50,7 @@ class RTPSender {
   std::string get_caps() const;
 
  private:
-  RtpSession2* session_;
+  RtpSession* session_;
   std::string shmpath_;
   unsigned int mtu_;
   GstElement* shmdatasrc_;

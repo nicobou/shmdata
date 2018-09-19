@@ -1,5 +1,5 @@
 /*
- * This file is part of switcher-myplugin.
+ * This file is part of switcher-plugin-example.
  *
  * switcher-myplugin is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,8 +29,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(CustomSavePlugin,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-CustomSavePlugin::CustomSavePlugin(QuiddityConfiguration&& conf)
-    : Quiddity(std::forward<QuiddityConfiguration>(conf)),
+CustomSavePlugin::CustomSavePlugin(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)),
       has_loaded_custom_state_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "has_loaded_custom_state",
           nullptr,
@@ -45,7 +45,6 @@ CustomSavePlugin::CustomSavePlugin(QuiddityConfiguration&& conf)
           "Has Saved",
           "A custom state has been saved with success",
           has_loaded_custom_state_)) {}
-
 
 InfoTree::ptr CustomSavePlugin::on_saving() {
   InfoTree::ptr precious_information = InfoTree::make();
