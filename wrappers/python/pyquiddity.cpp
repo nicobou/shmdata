@@ -52,7 +52,6 @@ PyObject* pyQuiddity::set(pyQuiddityObject* self, PyObject* args, PyObject* kwds
   if (!PyObject_TypeCheck(value, &PyUnicode_Type)) {
     repr = PyObject_Repr(value);
     val_str = PyUnicode_AsEncodedString(repr, "utf-8", "Error ");
-    Py_XDECREF(repr);
   } else {
     val_str = PyUnicode_AsEncodedString(value, "utf-8", "Error ");
   }
