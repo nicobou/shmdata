@@ -41,10 +41,10 @@ typedef struct {
     bool show_debug_messages {false};
 } pyshmdata_WriterObject;
 
-static void Writer_dealloc(pyshmdata_WriterObject* self);
-static PyObject* Writer_new(PyTypeObject* type, PyObject* args, PyObject* kwds);
-static int Writer_init(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds);
-static PyObject* Writer_push(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds);
+void Writer_dealloc(pyshmdata_WriterObject* self);
+PyObject* Writer_new(PyTypeObject* type, PyObject* args, PyObject* kwds);
+int Writer_init(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds);
+PyObject* Writer_push(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds);
 //static void Writer_freeObject(void* user_data);
 
 /*************/
@@ -53,6 +53,7 @@ typedef struct {
     PyObject_HEAD
     PyObject* path {NULL};
     PyObject* datatype {NULL};
+    PyObject* parsed_datatype {NULL};
     PyObject* lastBuffer {NULL};
     PyObject* callback {NULL};
     PyObject* callback_user_data {NULL};
@@ -65,13 +66,14 @@ typedef struct {
     bool show_debug_messages {false};
 } pyshmdata_ReaderObject;
 
-static void Reader_dealloc(pyshmdata_ReaderObject* self);
-static PyObject* Reader_new(PyTypeObject* type, PyObject* args, PyObject* kwds);
-static int Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds);
-static PyObject* Reader_pull(pyshmdata_ReaderObject* self);
-static void Reader_on_data_handler(void *user_data, void *data, size_t data_size);
-static void Reader_on_connect_handler(void *user_data, const char *type_descr);
-static void Reader_on_disconnect(void *user_data);
+void Reader_dealloc(pyshmdata_ReaderObject* self);
+PyObject* Reader_new(PyTypeObject* type, PyObject* args, PyObject* kwds);
+int Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds);
+PyObject* Reader_pull(pyshmdata_ReaderObject* self);
+void Reader_on_data_handler(void *user_data, void *data, size_t data_size);
+void Reader_on_connect_handler(void *user_data, const char *type_descr);
+void Reader_on_disconnect(void *user_data);
+PyObject* Reader_parse_datatype(const char* type_descr);
 
 /*************/
 // Module

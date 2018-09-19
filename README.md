@@ -37,7 +37,7 @@ Here is how to build and install it on Debian GNU/Linux or Ubuntu::
     $ sudo apt-get install python3-dev
     $ mkdir build
     $ cd build
-    $ cmake ..
+    $ cmake -DCMAKE_BUILD_TYPE=Release .. # replace "Release" with "Debug" when coding
     $ make
     $ sudo make install
     $ sudo ldconfig

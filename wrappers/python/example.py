@@ -16,13 +16,13 @@ import time
 sys.path.insert(0, '/usr/local/lib/python3/dist-packages')
 import pyshmdata
 
-def cb(user_data, buffer, datatype):
+def cb(user_data, buffer, datatype, parsed_datatype):
     data = buffer.decode(encoding="utf-8")
-    print(user_data, data)
+    print(user_data, data, parsed_datatype)
 
 data = ['all', 'your', 'base']
 
-writer = pyshmdata.Writer(path="/tmp/some_shmdata", datatype="application/x-raw")
+writer = pyshmdata.Writer(path="/tmp/some_shmdata", datatype="application/x-raw,fun=yes")
 reader = pyshmdata.Reader(path="/tmp/some_shmdata", callback=cb, user_data=data)
 
 start_time = time.clock_gettime(time.CLOCK_REALTIME)

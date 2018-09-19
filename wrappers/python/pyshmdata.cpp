@@ -286,7 +286,8 @@ Reader_dealloc(pyshmdata_ReaderObject* self)
 
     Py_XDECREF(self->path);
     Py_XDECREF(self->datatype);
-
+    if (nullptr != self->callback_user_data)
+      Py_XDECREF(self->callback_user_data);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -334,7 +335,7 @@ PyDoc_STRVAR(Reader_doc__,
     "   debug (bool): If true, activates debug mode\n"
     "\n"
     "Callback signature:\n:"
-    "   def callback(user_data, buffer, datatype)\n"
+    "   def callback(user_data, buffer, datatype, parsed_datatype)\n"
     "\n"
     "Example use:\n"
     "   reader = pyshmdata.Reader(path=\"/path/to/shm\"\n)"
@@ -436,9 +437,7 @@ Reader_on_data_handler(void *user_data, void* data, size_t data_size)
     unique_lock<mutex> lock(self->reader_mutex);
 
     // Get the current buffer
-    PyObject *buffer = NULL;
-
-    buffer = PyByteArray_FromStringAndSize((char*)data, data_size);
+    PyObject *buffer = PyByteArray_FromStringAndSize((char*)data, data_size);
     PyObject *tmp = NULL;
     if (self->lastBuffer != NULL)
         tmp = self->lastBuffer;
@@ -451,9 +450,9 @@ Reader_on_data_handler(void *user_data, void* data, size_t data_size)
     {
         PyObject *arglist;
         if (self->callback_user_data == NULL)
-            arglist = Py_BuildValue("(OOO)", Py_None, self->lastBuffer, self->datatype);
+            arglist = Py_BuildValue("(OOOO)", Py_None, self->lastBuffer, self->datatype, self->parsed_datatype);
         else
-            arglist = Py_BuildValue("(OOO)", self->callback_user_data, self->lastBuffer, self->datatype);
+            arglist = Py_BuildValue("(OOOO)", self->callback_user_data, self->lastBuffer, self->datatype, self->parsed_datatype);
         PyObject *pyobjresult = PyEval_CallObject(self->callback, arglist);
         PyObject *pyerr = PyErr_Occurred();
         if (pyerr != NULL)
@@ -473,14 +472,13 @@ void
 Reader_on_connect_handler(void *user_data, const char *type_descr)
 {
     pyshmdata_ReaderObject* self = static_cast<pyshmdata_ReaderObject*>(user_data);
-
-    PyObject *datatype = NULL;
-    PyObject *tmp = NULL;
-    
-    datatype = PyUnicode_FromString(type_descr);
-    tmp = self->datatype;
+    PyGILState_STATE gil = PyGILState_Ensure();
+    PyObject *datatype = PyUnicode_FromString(type_descr);
+    PyObject *tmp = self->datatype;
     self->datatype = datatype;
+    self->parsed_datatype = Reader_parse_datatype(type_descr);
     Py_XDECREF(tmp);
+    PyGILState_Release(gil);
 }
 
 /*************/
@@ -491,9 +489,93 @@ Reader_on_disconnect(void */*user_data*/)
 }
 
 /*************/
+PyObject*
+Reader_parse_datatype(const char* type_descr)
+{
+    auto datatype = string(type_descr);
+    PyObject* dict =  PyDict_New();
+
+    auto space_pos = datatype.find(' ');
+    while (space_pos != string::npos)
+    {
+        datatype.replace(space_pos, 1, "");
+        space_pos = datatype.find(' ');
+    }
+
+    while (!datatype.empty())
+    {
+        auto substr = string();
+        auto comma_pos = datatype.find(',');
+        if (comma_pos == string::npos)
+        {
+            substr = datatype;
+            datatype = "";
+        }
+        else
+        {
+            substr = datatype.substr(0, comma_pos);
+            datatype = datatype.substr(comma_pos + 1);
+        }
+
+        if (substr.find('=') == string::npos)
+        {
+	        PyObject* dictkey = PyUnicode_FromString("type");
+            PyObject* value = PyUnicode_FromString(substr.c_str());
+            PyDict_SetItem(dict, dictkey, value);
+            Py_DECREF(dictkey);
+            Py_DECREF(value);
+        }
+        else
+        {
+            PyObject* value = nullptr;
+
+            auto equal_pos = substr.find('=');
+            auto val = substr.substr(equal_pos + 1);
+            auto key = substr[0] == ' ' ? substr.substr(1, equal_pos) : substr.substr(0, equal_pos);
+
+            auto open_parenthesis = val.find('(');
+            auto close_parenthesis = val.find(')');
+            if (open_parenthesis != string::npos && close_parenthesis != string::npos)
+            {
+                if (val.substr(open_parenthesis + 1, close_parenthesis - 1) == "int")
+                {
+                    val.replace(open_parenthesis, close_parenthesis - open_parenthesis + 1, "");
+                    value = Py_BuildValue("I", stoi(val));
+                }
+                else if (val.substr(open_parenthesis + 1, close_parenthesis - 1) == "fraction")
+                {
+                    val.replace(open_parenthesis, close_parenthesis - open_parenthesis + 1, "");
+                    auto denominator = stof(val.substr(0, val.find('/')));
+                    auto numerator = stof(val.substr(val.find('/') + 1));
+                    auto float_value = denominator / numerator;
+                    value = Py_BuildValue("f", float_value);
+                }
+                else
+                {
+                    val.replace(open_parenthesis, close_parenthesis - open_parenthesis + 1, "");
+                    value = PyUnicode_FromString(val.c_str());
+                }
+            }
+            else
+            {
+                value = PyUnicode_FromString(val.c_str());
+            }
+
+	        PyObject* dictkey = PyUnicode_FromString(key.c_str());
+            PyDict_SetItem(dict, dictkey, value);
+            Py_DECREF(dictkey);
+            Py_DECREF(value);
+        }
+    }
+
+    return dict;
+}
+
+/*************/
 PyMemberDef Reader_members[] = {
     {(char*)"path", T_OBJECT_EX, offsetof(pyshmdata_ReaderObject, path), 0, (char*)"Path to the shmdata input"},
     {(char*)"datatype", T_OBJECT_EX, offsetof(pyshmdata_ReaderObject, datatype), 0, (char*)"Type of the data received"},
+    {(char*)"parsed_datatype", T_OBJECT_EX, offsetof(pyshmdata_ReaderObject, parsed_datatype), 0, (char*)"Parsed data type"},
     {NULL}
 };
 
