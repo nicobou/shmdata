@@ -98,10 +98,7 @@ int main() {
     auto vid = created.get();
     vid->prop<MPtr(&PContainer::set_str_str)>("codec", "0");
     vid->prop<MPtr(&PContainer::set_str_str)>("started", "true");
-    // wait for video to be started
-    usleep(100000);
-    auto vid_shmdata_list = vid->tree<MPtr(&InfoTree::get_child_keys)>("shmdata.writer");
-    auto vid_shmpath = vid_shmdata_list.front();
+    auto vid_shmpath = vid->make_shmpath("video");
     assert(!vid_shmpath.empty());
 
     auto nvenc_created = manager->quids<MPtr(&quid::Container::create)>("nvenc", std::string());
