@@ -18,6 +18,12 @@ if (PLUGIN_TIMECODE)
 
     add_compile_options(${JACK_CFLAGS} ${LTC_CFLAGS})
 
+    # jack/types.h requires the following:
+    check_cxx_compiler_flag(-Wno-error=deprecated-register CAN_IGNORE_DEPRECATED_REGISTER)
+    if(CAN_IGNORE_DEPRECATED_REGISTER)
+        add_definitions(-Wno-error=deprecated-register)
+    endif()
+
     link_libraries(
         ${JACK_LIBRARIES}
         ${LTC_LIBRARIES}
