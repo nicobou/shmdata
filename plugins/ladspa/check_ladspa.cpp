@@ -34,7 +34,7 @@ static std::mutex mut{};
 
 void wait_until_success() {
   // wait 3 seconds
-  uint count = 3;
+  unsigned int count = 3;
   while (do_continue) {
     std::unique_lock<std::mutex> lock(mut);
     if (count == 0) {

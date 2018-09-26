@@ -33,7 +33,7 @@ using namespace switcher;
 
 void wait_until_success() {
   // wait 3 seconds
-  uint count = 3;
+  unsigned int count = 3;
   while (do_continue.load()) {
     std::unique_lock<std::mutex> lock(mut);
     if (count == 0) {

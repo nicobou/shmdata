@@ -44,10 +44,10 @@ class SDPMedia {
  private:
   GstSDPMedia* media_{nullptr};
   GstStructure* caps_structure_{nullptr};
-  uint port_{0};  // "0" means disabled media
+  unsigned int port_{0};  // "0" means disabled media
   std::vector<std::string> ice_candidate_values_{};
   BoolLog add_to_sdp_description(GstSDPMessage* sdp_description,
-                                 uint index,
+                                 unsigned int index,
                                  const std::string& ip_addr) const;
 };
 
@@ -66,7 +66,7 @@ class SDPDescription {
  private:
   GstSDPMessage* sdp_description_{nullptr};
   std::string ip_addr_;
-  uint index_{0};
+  unsigned int index_{0};
 };
 
 }  // namespace switcher

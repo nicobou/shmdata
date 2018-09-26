@@ -52,7 +52,7 @@ bool SDPMedia::set_port(uint port) {
 }
 
 BoolLog SDPMedia::add_to_sdp_description(GstSDPMessage* sdp_description,
-                                         uint index,
+                                         unsigned int index,
                                          const std::string& ip_addr) const {
   if (0 == port_ || nullptr == caps_structure_) {
     return BoolLog(false, "missing information for adding media to sdp description");
