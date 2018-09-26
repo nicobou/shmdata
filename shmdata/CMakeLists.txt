@@ -50,6 +50,6 @@ install(TARGETS ${SHMDATA_LIBRARY}
     COMPONENT libraries)
 
 install(FILES ${HEADER_INCLUDES}
-    DESTINATION include/shmdata
+    DESTINATION include/shmdata-${SHMDATA_API_VERSION}/shmdata
     COMPONENT headers
     )
