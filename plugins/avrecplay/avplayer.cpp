@@ -70,7 +70,7 @@ AVPlayer::AVPlayer(quid::Config&& conf)
                                           gst_pipeline_->play(pause_);
                                           return true;
                                         },
-                                        [this]() { return false; },
+                                        []() { return false; },
                                         "Paused",
                                         "Toggle paused status of the stream",
                                         pause_);

@@ -120,7 +120,7 @@ void GLFWRenderer::render_loop() {
 }
 
 void GLFWRenderer::subscribe_to_render_loop(GLFWVideo* window) {
-  add_rendering_task(window, [window]() {
+  add_rendering_task(window, []() {
     glDrawBuffer(GL_FRONT_AND_BACK);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawBuffer(GL_BACK);

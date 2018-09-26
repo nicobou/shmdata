@@ -296,11 +296,11 @@ bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
         connected_shmdata->recfile_id_ = pmanage<MPtr(&PContainer::make_parented_string)>(
             recfile_prop_name,
             shmdata_name + "_group",
-            [this, connected_shmdata](const std::string& val) {
+            [connected_shmdata](const std::string& val) {
               connected_shmdata->recfile_ = val;
               return true;
             },
-            [this, connected_shmdata]() { return connected_shmdata->recfile_; },
+            [connected_shmdata]() { return connected_shmdata->recfile_; },
             "Recording file.",
             "Name of the file inside which to record this shmdata.",
             connected_shmdata->shmdata_name_);
@@ -312,11 +312,11 @@ bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
             pmanage<MPtr(&PContainer::make_parented_selection<>)>(
                 muxer_selection_prop_name,
                 shmdata_name + "_group",
-                [this, connected_shmdata](const IndexOrName& val) {
+                [connected_shmdata](const IndexOrName& val) {
                   connected_shmdata->muxer_selection_.select(val);
                   return connected_shmdata->update_gst_properties();
                 },
-                [this, connected_shmdata]() { return connected_shmdata->muxer_selection_.get(); },
+                [connected_shmdata]() { return connected_shmdata->muxer_selection_.get(); },
                 "Muxer choice",
                 "Select a muxer to record shmdata " + connected_shmdata->shmdata_name_,
                 connected_shmdata->muxer_selection_);

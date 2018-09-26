@@ -66,7 +66,6 @@ class NVencES : public Logged, public SafeBoolIdiom {
   bool process_encoded_frame(std::function<void(void*, uint32_t)> fun);
 
  private:
-  uint32_t device_id_;
   NV_ENC_PRESET_CONFIG preset_config_;
   NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS params_;
   NV_ENC_CAPS_PARAM caps_params_{NV_ENC_CAPS_PARAM_VER, NV_ENC_CAPS_WIDTH_MAX, {}};

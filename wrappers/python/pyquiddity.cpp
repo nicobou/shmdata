@@ -186,7 +186,7 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
   auto sig_id = self->quid->sig<MPtr(&SContainer::get_id)>(signal_name);
   if (0 == sig_id) return false;
   auto reg_id = self->quid->sig<MPtr(&SContainer::subscribe)>(
-      sig_id, [cb, self, user_data](const InfoTree::ptr& tree) {
+      sig_id, [cb, user_data](const InfoTree::ptr& tree) {
         PyGILState_STATE gil = PyGILState_Ensure();
         PyObject* arglist;
         if (user_data)

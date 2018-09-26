@@ -29,8 +29,6 @@ namespace switcher {
 class MethodBase {
  public:
   using meth_id_t = size_t;
-  MethodBase() = delete;
-  MethodBase(size_t type_hash) : type_hash_(type_hash) {}
   virtual ~MethodBase() = default;
   static inline meth_id_t id_from_string(const std::string& str) {
     if (!isdigit(*str.begin())) return 0;
@@ -38,16 +36,13 @@ class MethodBase {
   }
   virtual BoolLog invoke(const std::string& args) const = 0;  // return a string into BoolLog's msg
   virtual BoolAny invoke_any(const std::string& args) const = 0;  // return an any
-
- private:
-  size_t type_hash_;
 };
 
 template <typename M>
 class Method : public MethodBase {
  public:
   using lambda_type = M;
-  Method(M&& method) : MethodBase(typeid(M).hash_code()), method_(std::forward<M>(method)) {}
+  Method(M&& method) : method_(std::forward<M>(method)) {}
 
   template <typename Tuple, size_t... S>
   decltype(auto) invoke_tuple_impl(Tuple&& t, std::index_sequence<S...>) const {

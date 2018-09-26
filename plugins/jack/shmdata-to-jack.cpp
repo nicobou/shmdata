@@ -84,7 +84,7 @@ ShmdataToJack::ShmdataToJack(quid::Config&& conf)
           "Auto Connect",
           "Auto Connect to another client",
           auto_connect_)),
-      connect_all_to_first_(
+      connect_all_to_first_id_(
           pmanage<MPtr(&PContainer::make_bool)>("connect_all_to_first",
                                                 [this](const bool& val) {
                                                   connect_all_to_first_ = val;

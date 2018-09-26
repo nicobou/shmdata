@@ -40,11 +40,20 @@ if (PLUGIN_GLFW)
         add_definitions(-Wno-error=shift-negative-value)
     endif()
 
-    if (OSX)
-        add_definitions(-Wno-error=uninitialized)
-        add_definitions(-Wno-error=unknown-pragmas)
-    else ()
-        add_definitions(-Wno-error=maybe-uninitialized)
+    # -Wno-error=uninitialized
+    check_cxx_compiler_flag(-Wno-error=uninitialized SUPPORTS_UNINITIALIZED_FLAG)
+    if (SUPPORTS_UNINITIALIZED_FLAG)
+      add_definitions(-Wno-error=uninitialized)
+    endif()
+    # -Wno-error=unknown-pragmas
+    check_cxx_compiler_flag(-Wno-error=unknown-pragmas SUPPORTS_UNKNOWN_PRAGMA_FLAG)
+    if (SUPPORTS_UNKNOWN_PRAGMA_FLAG)
+      add_definitions(-Wno-error=unknown-pragmas)
+    endif ()
+    # -Wno-error=maybe-uninitialized
+    check_cxx_compiler_flag(-Wno-error=maybe-uninitialized SUPPORTS_MAY_UNINITIALIZED_FLAG)
+    if (SUPPORTS_MAY_UNINITIALIZED_FLAG)
+      add_definitions(-Wno-error=maybe-uninitialized)
     endif ()
 
     include_directories(
