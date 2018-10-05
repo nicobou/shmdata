@@ -21,7 +21,10 @@
 #define __SWITCHER_PYQUIDDITY_H__
 
 #include <Python.h>  // according to python doc, this *must* be the first include
+#include <future>
+#include <list>
 #include <map>
+#include <memory>
 #include "switcher/quiddity.hpp"
 
 using namespace switcher;
@@ -42,6 +45,8 @@ class pyQuiddity {
     PyObject_HEAD Quiddity* quid{nullptr};
     std::unique_ptr<sig_registering_t> sig_reg{};
     std::unique_ptr<prop_registering_t> prop_reg{};
+    // async invocations
+    std::unique_ptr<std::list<std::future<void>>> async_invocations{};
   };
 
   static PyTypeObject pyType;
@@ -55,6 +60,7 @@ class pyQuiddity {
   static PyObject* set(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* invoke(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* invoke_async(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* make_shmpath(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   // access to user tree
   static PyObject* get_user_tree(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
