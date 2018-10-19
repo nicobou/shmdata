@@ -2,6 +2,13 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.18 (2018-10-19)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* add a type parser with its test
+* fix install folder not the a same as mentionned in pkg-config
+
 shmdata 1.3.16 (2018-09-19)
 ---------------------------
 This is an official release in the 1.3 stable series.

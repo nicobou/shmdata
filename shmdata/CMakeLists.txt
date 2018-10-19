@@ -7,6 +7,7 @@ add_library(${SHMDATA_LIBRARY} SHARED
     reader.cpp
     sysv-sem.cpp
     sysv-shm.cpp
+    type.cpp
     unix-socket.cpp
     unix-socket-client.cpp
     unix-socket-protocol.cpp
@@ -26,6 +27,7 @@ set(HEADER_INCLUDES
     safe-bool-idiom.hpp
     sysv-sem.hpp
     sysv-shm.hpp
+    type.hpp
     unix-socket.hpp
     unix-socket-client.hpp
     unix-socket-protocol.hpp
@@ -50,6 +52,6 @@ install(TARGETS ${SHMDATA_LIBRARY}
     COMPONENT libraries)
 
 install(FILES ${HEADER_INCLUDES}
-    DESTINATION include/shmdata
+    DESTINATION include/shmdata-${SHMDATA_API_VERSION}/shmdata
     COMPONENT headers
     )
