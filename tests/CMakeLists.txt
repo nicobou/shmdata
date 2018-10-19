@@ -29,6 +29,9 @@ add_test(check-sysv-sem check-sysv-sem)
 add_executable(check-sysv-shm check-sysv-shm.cpp)
 add_test(check-sysv-shm check-sysv-shm)
 
+add_executable(check-type-parser check-type-parser.cpp)
+add_test(check-type-parser check-type-parser)
+
 add_executable(check-unix-socket check-unix-socket.cpp)
 add_test(check-unix-socket check-unix-socket)
 

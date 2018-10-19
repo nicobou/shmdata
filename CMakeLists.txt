@@ -21,7 +21,7 @@ set(PACKAGE_URL "https://github.com/sat-metalab/shmdata")
 set(PACKAGE_VERSION ${SHMDATA_VERSION_STRING})
 
 # Compilation
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # CPack - General
 set(CPACK_PACKAGE_NAME ${PACKAGE_NAME})
