@@ -1,4 +1,4 @@
-# PLUGIN
+include(CheckCXXCompilerFlag)
 
 pkg_check_modules(GSOAP gsoap++)
 
@@ -36,8 +36,9 @@ if (PLUGIN_GSOAP)
 
     # WARNINGS
     add_definitions(-Wno-error=extra)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
-      add_definitions(-Wno-error=misleading-indentation)
+    check_cxx_compiler_flag(-Wno-error=misleading-indentation CAN_IGNORE_MISLEADING_INDENTATION)
+    if(CAN_IGNORE_MISLEADING_INDENTATION)
+        add_definitions(-Wno-error=misleading-indentation)
     endif()
     
     # Server

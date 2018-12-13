@@ -29,10 +29,12 @@ int main() {
     switcher->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
     // Fringe case like CI cannot run this test successfully but we don't want it to fail.
-    if (!switcher->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsourcedummy"))
+    if (!switcher->quids<MPtr(&quid::Container::create)>(
+            "ltcsource", "ltctestsourcedummy", nullptr))
       return 0;
 
-    auto created = switcher->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsource");
+    auto created =
+        switcher->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsource", nullptr);
     if (!created) return 1;
 
     if (!created.get()->prop<MPtr(&PContainer::set_str_str)>("started", "true")) return 1;

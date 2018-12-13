@@ -33,6 +33,8 @@ class SinkDevice : public Device {
   SinkDevice() = delete;
   SinkDevice(const std::string& name);
 
+  virtual ~SinkDevice() = default;
+
   /**
    * Custom data save tree
    */

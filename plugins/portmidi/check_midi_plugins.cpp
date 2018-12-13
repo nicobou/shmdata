@@ -38,13 +38,13 @@ int main() {
       return 0;
     }
 
-    if (manager->quids<MPtr(&quid::Container::create)>("midisrc", "src"))
+    if (manager->quids<MPtr(&quid::Container::create)>("midisrc", "src", nullptr))
       manager->quids<MPtr(&quid::Container::remove)>(
           manager->quids<MPtr(&quid::Container::get_id)>("src"));
     else
       success = false;
 
-    if (manager->quids<MPtr(&quid::Container::create)>("midisrc", "sink"))
+    if (manager->quids<MPtr(&quid::Container::create)>("midisrc", "sink", nullptr))
       manager->quids<MPtr(&quid::Container::remove)>(
           manager->quids<MPtr(&quid::Container::get_id)>("sink"));
     else

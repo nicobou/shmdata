@@ -60,7 +60,6 @@ class LTCDiff : public Quiddity {
   bool on_shmdata_disconnect(const std::string& shmpath);
   bool can_sink_caps(const std::string& caps);
 
-  bool is_valid_{false};
   bool do_compute_{false};
   ShmdataConnector shmcntr_{nullptr};
   std::unique_ptr<ShmdataFollower> shm_follower_{

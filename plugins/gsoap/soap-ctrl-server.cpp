@@ -303,7 +303,7 @@ int controlService::create_named_quiddity(const std::string& quiddity_class,
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
-  auto created = manager->quids<MPtr(&quid::Container::create)>(quiddity_class, nick_name);
+  auto created = manager->quids<MPtr(&quid::Container::create)>(quiddity_class, nick_name, nullptr);
   if (created) {
     *result = created.msg();
   } else {

@@ -43,7 +43,7 @@ RTPReceiver::RTPReceiver(RtpSession* session,
               g_object_set(G_OBJECT(el), "socket-path", path.c_str(), nullptr);
             }
           },
-          [this]() {  // FIXME warning("discarding uncomplete custom frame due to a network loss");
+          []() {  // FIXME warning("discarding uncomplete custom frame due to a network loss");
           },
           decompress_) {
   // monitoring rtp-session new pads for received rtp packet

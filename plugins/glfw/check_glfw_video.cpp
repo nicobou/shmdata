@@ -39,14 +39,14 @@ int main() {
     }
 
     // creating a video source quiddity
-    auto vqrox = manager->quids<MPtr(&quid::Container::create)>("videotestsrc", "vid");
+    auto vqrox = manager->quids<MPtr(&quid::Container::create)>("videotestsrc", "vid", nullptr);
     auto vid = vqrox.get();
     assert(vid);
 
     assert(vid->prop<MPtr(&PContainer::set_str_str)>("started", "true"));
 
     // creating a "glfwin" quiddity
-    auto wqrox = manager->quids<MPtr(&quid::Container::create)>("glfwin", "win");
+    auto wqrox = manager->quids<MPtr(&quid::Container::create)>("glfwin", "win", nullptr);
     auto win = wqrox.get();
     assert(win);
 

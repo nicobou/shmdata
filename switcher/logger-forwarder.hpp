@@ -18,7 +18,7 @@
  */
 
 #ifndef _LOGGER_FORWARDER_H_
-#define _CONSOLE_FORWARDER_H_
+#define _LOGGER_FORWARDER_H_
 
 #include "./base-logger.hpp"
 
@@ -27,10 +27,7 @@ namespace switcher {
 class LoggerForwarder : public BaseLogger {
  public:
   LoggerForwarder() = delete;
-  LoggerForwarder(BaseLogger* log) : log_(log) {}
-
- private:
-  BaseLogger* log_;
+  LoggerForwarder(BaseLogger*) {}
 };
 
 }  // namespace shmdata

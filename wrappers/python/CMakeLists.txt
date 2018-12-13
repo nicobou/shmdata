@@ -49,5 +49,6 @@ if (WITH_PYTHON)
     add_test(pyquid_signal ${CMAKE_CURRENT_SOURCE_DIR}/examples/04-signal.py)
     add_test(pyquid_save ${CMAKE_CURRENT_SOURCE_DIR}/examples/05-save.py)
     add_test(pyquid_property_sub ${CMAKE_CURRENT_SOURCE_DIR}/examples/06-subscribe-to-property.py)
+    add_test(pyquid_invoke_async ${CMAKE_CURRENT_SOURCE_DIR}/examples/07-invoke-async.py)
 
 endif ()

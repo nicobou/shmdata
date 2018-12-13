@@ -2,6 +2,23 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 1.1.0 (2018-12-13)
+---------------------------
+This is an official release in the 1.1 stable series.
+
+New features:
+* adding switcher logo
+* dynamic configuration at quiddity creation that override switcher static configuration
+* jack quiddities takes a dynamic configuration for selection of jack server name (see python example #8)
+* adding invoke_async to pyquiddity
+
+Bug fixes:
+* check for availability of misleading indentation flag with c++ compiler
+* check for availability of deprecated register for a jack header
+* ltc plugin checks for availability of deprecated register for a jack header
+* uint replaced by unsigned int
+* fix clang compilation (but need to disable SOAP plugin)
+
 switcher 1.0.0 (2018-09-19)
 ---------------------------
 This is an official release in the 1.0 stable series.

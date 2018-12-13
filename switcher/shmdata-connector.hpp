@@ -44,7 +44,7 @@ class ShmdataConnector {
                               OnDisconnect on_disconnect_cb,
                               OnDisconnectAll on_disconnect_all_cb,
                               CanSinkCaps on_can_sink_caps_cb,
-                              uint max_reader);
+                              unsigned int max_reader);
   static const std::string disabledWhenConnectedMsg;
 
  private:

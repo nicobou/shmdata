@@ -1,6 +1,9 @@
 switcher
 ========
 
+![Switcher logo](doc/Switcher_horizontal_shadow_C.png)
+
+
 [![build status](https://gitlab.com/sat-metalab/switcher/badges/master/build.svg)](https://gitlab.com/sat-metalab/switcher/commits/master)
 
 [switcher](https://gitlab.com/sat-metalab/switcher) is an integration environment, able to interoperate with other software and protocols. Switcher is mostly used for low latency streaming of multichannel audio, video and data through IP networks.

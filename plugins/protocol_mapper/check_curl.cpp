@@ -30,7 +30,8 @@ int main() {
     manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
     assert(switcher::test::full(manager, "protocol-mapper"));
-    auto created = manager->quids<MPtr(&quid::Container::create)>("protocol-mapper", std::string());
+    auto created =
+        manager->quids<MPtr(&quid::Container::create)>("protocol-mapper", std::string(), nullptr);
     assert(created);
     auto quid = created.get();
     assert(quid->prop<MPtr(&PContainer::set_str_str)>("config_file", "protocol-curl.json"));

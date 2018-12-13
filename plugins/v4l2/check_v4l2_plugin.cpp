@@ -31,7 +31,7 @@ int main() {
     manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
     assert(test::full(manager, "v4l2src"));
-    if (!manager->quids<MPtr(&quid::Container::create)>("v4l2src", "test"))
+    if (!manager->quids<MPtr(&quid::Container::create)>("v4l2src", "test", nullptr))
       return 0;  // no camera in this computer
     assert(manager->quids<MPtr(&quid::Container::remove)>(
         manager->quids<MPtr(&quid::Container::get_id)>("test")));

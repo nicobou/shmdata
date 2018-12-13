@@ -33,7 +33,7 @@ using namespace switcher;
 
 void wait_until_success() {
   // wait 3 seconds
-  uint count = 3;
+  unsigned int count = 3;
   while (do_continue.load()) {
     std::unique_lock<std::mutex> lock(mut);
     if (count == 0) {
@@ -58,7 +58,8 @@ int main() {
 
     if (!switcher::test::full(manager, "filesrc")) return 1;
 
-    auto filesrc = manager->quids<MPtr(&switcher::quid::Container::create)>("filesrc", "src").get();
+    auto filesrc =
+        manager->quids<MPtr(&switcher::quid::Container::create)>("filesrc", "src", nullptr).get();
 
     ::shmdata::ConsoleLogger logger;
     auto reader = std::make_unique<shmdata::Follower>(filesrc->make_shmpath("audio"),

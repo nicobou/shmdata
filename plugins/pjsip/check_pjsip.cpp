@@ -37,7 +37,7 @@ int main() {
           manager->quids<MPtr(&quid::Container::get_id)>(it));
     }
     manager->conf<MPtr(&Configuration::from_file)>("./config.json");
-    assert(manager->quids<MPtr(&quid::Container::create)>("sip", "test"));
+    assert(manager->quids<MPtr(&quid::Container::create)>("sip", "test", nullptr));
   }  // end of scope is releasing the manager
   return 0;
 }

@@ -37,7 +37,7 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
                                               OnDisconnect on_disconnect_cb,
                                               OnDisconnectAll on_disconnect_all_cb,
                                               CanSinkCaps on_can_sink_caps_cb,
-                                              uint max_reader) {
+                                              unsigned int max_reader) {
   if (quid_ == nullptr) {
     quid_->warning("ShmdataConnector is created without quiddity");
     return false;

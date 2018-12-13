@@ -34,7 +34,10 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackToShmdata,
 JackToShmdata::JackToShmdata(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       client_name_(get_name()),
-      jack_client_(get_name().c_str(),
+      jack_client_(client_name_,
+                   conf.tree_config_->branch_has_data("server_name")
+                       ? conf.tree_config_->branch_get_value("server_name").copy_as<std::string>()
+                       : std::string(),
                    &JackToShmdata::jack_process,
                    this,
                    [this](uint n) { on_xrun(n); },

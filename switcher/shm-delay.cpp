@@ -64,7 +64,7 @@ ShmDelay::ShmDelay(quid::Config&& conf)
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
       [this](const std::string& shmpath) { return this->on_shmdata_disconnect(shmpath); },
       nullptr,
-      [this](const std::string&) { return true; },
+      [](const std::string&) { return true; },
       2);
 }
 

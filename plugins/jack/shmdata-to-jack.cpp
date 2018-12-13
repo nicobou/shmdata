@@ -37,7 +37,10 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
 
 ShmdataToJack::ShmdataToJack(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
-      jack_client_(get_name().c_str(),
+      jack_client_(get_name(),
+                   conf.tree_config_->branch_has_data("server_name")
+                       ? conf.tree_config_->branch_get_value("server_name").copy_as<std::string>()
+                       : std::string(),
                    &ShmdataToJack::jack_process,
                    this,
                    [this](uint n) { on_xrun(n); },
@@ -84,7 +87,7 @@ ShmdataToJack::ShmdataToJack(quid::Config&& conf)
           "Auto Connect",
           "Auto Connect to another client",
           auto_connect_)),
-      connect_all_to_first_(
+      connect_all_to_first_id_(
           pmanage<MPtr(&PContainer::make_bool)>("connect_all_to_first",
                                                 [this](const bool& val) {
                                                   connect_all_to_first_ = val;

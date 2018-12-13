@@ -62,8 +62,12 @@ class Container : public Logged {
   // **** creation/remove/get and notification
   // &?= chars are not allowed in nicknames
   // (a name will be generated if arg is an empty string)
-  Qrox create(const std::string& quiddity_class, const std::string& name);
-  Qrox quiet_create(const std::string& quiddity_class, const std::string& name);
+  Qrox create(const std::string& quiddity_class,
+              const std::string& name,
+              InfoTree::ptrc override_config);
+  Qrox quiet_create(const std::string& quiddity_class,
+                    const std::string& name,
+                    InfoTree::ptrc tree);
   BoolLog remove(qid_t id);
   BoolLog quiet_remove(qid_t id);
   std::shared_ptr<Quiddity> get_quiddity(qid_t id);

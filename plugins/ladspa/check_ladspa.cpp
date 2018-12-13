@@ -34,7 +34,7 @@ static std::mutex mut{};
 
 void wait_until_success() {
   // wait 3 seconds
-  uint count = 3;
+  unsigned int count = 3;
   while (do_continue) {
     std::unique_lock<std::mutex> lock(mut);
     if (count == 0) {
@@ -62,7 +62,8 @@ int main() {
     manager->conf<MPtr(&Configuration::from_file)>("./check_ladspa.json");
 
     // creating a ladspa audiotest bundle
-    auto created = manager->quids<MPtr(&quid::Container::create)>("audiotestladspa", std::string());
+    auto created =
+        manager->quids<MPtr(&quid::Container::create)>("audiotestladspa", std::string(), nullptr);
     auto ladspa = created.get();
     assert(created && ladspa);
     if (!ladspa->prop<MPtr(&PContainer::set_str_str)>("started", "true")) return 1;

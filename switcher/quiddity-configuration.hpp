@@ -33,13 +33,13 @@ struct Config {
   Config() = delete;
   Config(const std::string& name,
          const std::string& type,
-         const InfoTree::ptr& tree_config,
+         const InfoTree::ptrc tree_config,
          Container* qc,
          BaseLogger* log)
       : name_(name), type_(type), tree_config_(tree_config), qc_(qc), log_(log) {}
   std::string name_;
   std::string type_;
-  InfoTree::ptr tree_config_;
+  InfoTree::ptrc tree_config_;
   Container* qc_;
   BaseLogger* log_;
 };

@@ -18,6 +18,7 @@
  */
 
 #include "./pyquiddity.hpp"
+#include <chrono>
 #include "./pyinfotree.hpp"
 #include "switcher/scope-exit.hpp"
 
@@ -86,7 +87,7 @@ PyObject* pyQuiddity::get(pyQuiddityObject* self, PyObject* args, PyObject* kwds
 PyDoc_STRVAR(pyquiddity_invoke_doc,
              "Invoke a method with its names and arguments.\n"
              "Arguments: (method, args=[])\n"
-             "Returns: the return value (string)\n");
+             "Returns: the value returned by the method\n");
 
 PyObject* pyQuiddity::invoke(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
   const char* method = nullptr;
@@ -135,6 +136,95 @@ PyObject* pyQuiddity::invoke(pyQuiddityObject* self, PyObject* args, PyObject* k
     return Py_None;
   }
   return pyInfoTree::any_to_pyobject(res.any());
+}
+
+PyDoc_STRVAR(pyquiddity_invoke_async_doc,
+             "Asynchronous invocation of a method with its names and arguments. "
+             "Returned value can be obtained with a call back.\n"
+             "Arguments: (method, args=[], on_done_cb=None, user_data=None)\n"
+             "Returns: None\n");
+
+PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+  const char* method = nullptr;
+  PyObject* inv_args = nullptr;
+  PyObject* cb = nullptr;
+  PyObject* user_data = nullptr;
+  static char* kwlist[] = {
+      (char*)"method", (char*)"args", (char*)"cb", (char*)"user_data", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(
+          args, kwds, "s|OOO", kwlist, &method, &inv_args, &cb, &user_data)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  Py_ssize_t list_size = 0;
+  if (nullptr != inv_args) {
+    if (PyList_Check(inv_args)) {  // a list argument is given
+      list_size = PyList_Size(inv_args);
+    } else {  // something else is given as argument
+      Py_INCREF(Py_None);
+      return Py_None;
+    }
+  }
+  auto tuple_args = std::string();
+  for (auto i = 0; i < list_size; ++i) {
+    PyObject* item = nullptr;
+    PyObject* item_str = nullptr;
+    PyObject* repr = nullptr;
+    On_scope_exit {
+      if (item_str) Py_XDECREF(item_str);
+      if (repr) Py_XDECREF(repr);
+    };
+    item = PyList_GetItem(inv_args, i);
+    if (!PyObject_TypeCheck(item, &PyUnicode_Type)) {
+      repr = PyObject_Repr(item);
+      item_str = PyUnicode_AsEncodedString(repr, "utf-8", "Error ");
+    } else {
+      item_str = PyUnicode_AsEncodedString(item, "utf-8", "Error ");
+    }
+
+    if (tuple_args.empty())
+      tuple_args = serialize::esc_for_tuple(PyBytes_AS_STRING(item_str));
+    else
+      tuple_args = tuple_args + "," + serialize::esc_for_tuple(PyBytes_AS_STRING(item_str));
+  }
+
+  if (cb != nullptr && !PyCallable_Check(cb)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+
+  Py_INCREF(cb);
+  Py_INCREF(user_data);
+  self->async_invocations->emplace_back(std::async(
+      std::launch::async, [self, cb, user_data, meth = std::string(method), tuple_args]() {
+        auto res = self->quid->meth<MPtr(&MContainer::invoke_any)>(
+            self->quid->meth<MPtr(&MContainer::get_id)>(meth), tuple_args);
+        PyGILState_STATE gil = PyGILState_Ensure();
+        PyObject* res_object = pyInfoTree::any_to_pyobject(res.any());
+        PyObject* arglist;
+        if (user_data)
+          arglist = Py_BuildValue("(OO)", res_object, user_data);
+        else
+          arglist = Py_BuildValue("(O)", res_object);
+        PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
+        PyObject* pyerr = PyErr_Occurred();
+        if (pyerr != nullptr) PyErr_Print();
+        Py_DECREF(cb);
+        Py_DECREF(user_data);
+        Py_DECREF(res_object);
+        Py_DECREF(arglist);
+        Py_XDECREF(pyobjresult);
+        PyGILState_Release(gil);
+      }));
+
+  // cleaning old invocations
+  while (!self->async_invocations->empty() &&
+         self->async_invocations->front().wait_for(std::chrono::seconds(0)) ==
+             std::future_status::ready)
+    self->async_invocations->pop_front();
+
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 PyDoc_STRVAR(pyquiddity_make_shmpath_doc,
@@ -186,7 +276,7 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
   auto sig_id = self->quid->sig<MPtr(&SContainer::get_id)>(signal_name);
   if (0 == sig_id) return false;
   auto reg_id = self->quid->sig<MPtr(&SContainer::subscribe)>(
-      sig_id, [cb, self, user_data](const InfoTree::ptr& tree) {
+      sig_id, [cb, user_data](const InfoTree::ptr& tree) {
         PyGILState_STATE gil = PyGILState_Ensure();
         PyObject* arglist;
         if (user_data)
@@ -195,7 +285,7 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
           arglist = Py_BuildValue("(s)", (char*)tree->serialize_json(".").c_str());
         PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
         PyObject* pyerr = PyErr_Occurred();
-        if (pyerr != NULL) PyErr_Print();
+        if (pyerr != nullptr) PyErr_Print();
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
         PyGILState_Release(gil);
@@ -232,7 +322,7 @@ bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
               pyInfoTree::any_to_pyobject(self->quid->prop<MPtr(&PContainer::get_any)>(prop_id)));
         PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
         PyObject* pyerr = PyErr_Occurred();
-        if (pyerr != NULL) PyErr_Print();
+        if (pyerr != nullptr) PyErr_Print();
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
         PyGILState_Release(gil);
@@ -399,6 +489,7 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
   auto* quid = static_cast<Quiddity*>(PyCapsule_GetPointer(pyqrox, nullptr));
   self->sig_reg = std::make_unique<sig_registering_t>();
   self->prop_reg = std::make_unique<prop_registering_t>();
+  self->async_invocations = std::make_unique<std::list<std::future<void>>>();
   self->quid = quid;
   return 0;
 }
@@ -425,6 +516,7 @@ void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
     Py_XDECREF(it.second);
   }
   self->prop_reg.reset();
+  self->async_invocations.reset();
 
   // cleaning self
   Py_TYPE(self)->tp_free((PyObject*)self);
@@ -437,6 +529,10 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
      (PyCFunction)pyQuiddity::invoke,
      METH_VARARGS | METH_KEYWORDS,
      pyquiddity_invoke_doc},
+    {"invoke_async",
+     (PyCFunction)pyQuiddity::invoke_async,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_invoke_async_doc},
     {"make_shmpath",
      (PyCFunction)pyQuiddity::make_shmpath,
      METH_VARARGS | METH_KEYWORDS,
@@ -469,10 +565,10 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
 
 PyDoc_STRVAR(pyquid_quiddity_doc,
              "Quiddity objects.\n"
-             "Quiddities are services that can be instanciated by a switcher. "
+             "Quiddities are services that can be instantiated by a switcher. "
              "Communication with a Quiddity is achieved through:\n"
              "   - property set, get and subscribe\n"
-             "   - method invokation\n"
+             "   - method invocation\n"
              "   - InfoTree request\n"
              "   - specific configuration");
 

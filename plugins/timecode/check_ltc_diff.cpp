@@ -33,7 +33,7 @@ using namespace switcher;
 
 void wait_until_success() {
   // wait 3 seconds
-  uint count = 3;
+  unsigned int count = 3;
   while (do_continue.load()) {
     std::unique_lock<std::mutex> lock(mut);
     if (count == 0) {
@@ -60,18 +60,21 @@ int main() {
     manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
     // Fringe case like CI cannot run this test successfully but we don't want it to fail.
-    if (!manager->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsourcedummy"))
+    if (!manager->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsourcedummy", nullptr))
       return 0;
 
     if (!test::full(manager, "ltcdiff")) return 1;
 
     auto ltctestsource1 =
-        manager->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsource1").get();
+        manager->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsource1", nullptr)
+            .get();
     if (!ltctestsource1) return 1;
     auto ltctestsource2 =
-        manager->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsource2").get();
+        manager->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsource2", nullptr)
+            .get();
     if (!ltctestsource2) return 1;
-    auto ltcdiff = manager->quids<MPtr(&quid::Container::create)>("ltcdiff", "ltcdifftest").get();
+    auto ltcdiff =
+        manager->quids<MPtr(&quid::Container::create)>("ltcdiff", "ltcdifftest", nullptr).get();
     if (!ltcdiff) return 1;
 
     // We set 30 frames of delay for this source.

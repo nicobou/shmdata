@@ -63,6 +63,9 @@ class InfoTree {
   // factory
   static InfoTree::ptr make();
   static InfoTree::ptr copy(InfoTree::ptrc);
+  // merge copy values from "second" tree into "first" tree
+  static InfoTree::ptr merge(InfoTree::ptrc first, InfoTree::ptrc second);
+
   template <typename ValueType>
   static InfoTree::ptr make(ValueType data) {
     std::shared_ptr<InfoTree> tree;  // can't use make_shared because ctor is private

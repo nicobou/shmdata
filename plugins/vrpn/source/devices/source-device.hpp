@@ -51,6 +51,8 @@ class SourceDevice : public Device {
                const std::string& uri,
                NotifyPropertyCallback notifyProperty);
 
+  virtual ~SourceDevice() = default;
+
   void loop();
 
   /**

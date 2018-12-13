@@ -117,7 +117,7 @@ xcode-select --install
 * Install dependencies:
 
 ```
-    $ brew install cmake pkg-config gsoap glib json-glib gstreamer gst-libav gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly liblo portmidi python3 libltc curl ossp-uuid jack qjackctl
+    $ brew install cmake pkg-config gsoap glib json-glib gstreamer gst-libav gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly liblo portmidi python3 libltc curl ossp-uuid jack qjackctl libltc curl 
 ```
 
 * Build and install:

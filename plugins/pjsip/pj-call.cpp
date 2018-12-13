@@ -580,7 +580,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     auto rtp_shmpath = shm_prefix + "rtp-" + media_label;
     // ensure rtp_shmpath is unique (can happen in case of label collision) and add suffix to
     // media_label if necessary
-    uint i = 1;
+    unsigned int i = 1;
     std::string rtp_shmpath_suffix;
     while (call->rtp_writers_.end() !=
            std::find_if(call->rtp_writers_.cbegin(),

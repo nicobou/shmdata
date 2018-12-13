@@ -33,7 +33,7 @@ using namespace switcher;
 
 void wait_until_success() {
   // wait 3 seconds
-  uint count = 3;
+  unsigned int count = 3;
   while (do_continue.load()) {
     std::unique_lock<std::mutex> lock(mut);
     if (count == 0) {
@@ -58,13 +58,13 @@ int main() {
 
     if (!switcher::test::full(manager, "shmdelay")) return 1;
 
-    auto shmdelaytest_qrox =
-        manager->quids<MPtr(&switcher::quid::Container::create)>("shmdelay", "shmdelaytest");
+    auto shmdelaytest_qrox = manager->quids<MPtr(&switcher::quid::Container::create)>(
+        "shmdelay", "shmdelaytest", nullptr);
     if (!shmdelaytest_qrox) return 1;
     auto shmdelaytest = shmdelaytest_qrox.get();
 
-    auto videotest_qrox =
-        manager->quids<MPtr(&switcher::quid::Container::create)>("videotestsrc", "videotest");
+    auto videotest_qrox = manager->quids<MPtr(&switcher::quid::Container::create)>(
+        "videotestsrc", "videotest", nullptr);
     if (!videotest_qrox) return 1;
     auto videotest = videotest_qrox.get();
 

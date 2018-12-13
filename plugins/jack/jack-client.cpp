@@ -23,13 +23,17 @@
 #include <string>
 
 namespace switcher {
-JackClient::JackClient(const char* name,
+JackClient::JackClient(const std::string& name,
+                       const std::string& server_name,
                        JackProcessCallback process_cb,
                        void* process_user_data,
                        XRunCallback_t xrun_cb,
                        PortCallback_t port_cb,
                        JackShutdown_t shutdown_cb)
-    : client_(jack_client_open(name, JackNullOption, &status_, nullptr /* server name */),
+    : client_(jack_client_open(name.c_str(),
+                               server_name.empty() ? JackNullOption : JackServerName,
+                               &status_,
+                               server_name.empty() ? nullptr : server_name.c_str()),
               &jack_client_close),
       user_cb_(process_cb),
       user_cb_arg_(process_user_data),

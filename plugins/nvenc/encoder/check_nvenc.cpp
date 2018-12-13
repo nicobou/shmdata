@@ -36,7 +36,7 @@ using namespace switcher;
 
 void wait_until_success() {
   // wait 3 seconds
-  uint count = 3;
+  unsigned int count = 3;
   while (do_continue.load()) {
     std::unique_lock<std::mutex> lock(mut);
     if (count == 0) {
@@ -64,7 +64,8 @@ int main() {
     // testing if two nvenc can be created simultaneously
     std::vector<std::string> nvencs;
     for (int i = 0; i < 2; ++i) {
-      auto created = manager->quids<MPtr(&quid::Container::create)>("nvenc", std::string());
+      auto created =
+          manager->quids<MPtr(&quid::Container::create)>("nvenc", std::string(), nullptr);
       if (!created) {
         std::cerr << "nvenc creating failed, i: " << i << '\n';
         return 1;
@@ -78,7 +79,8 @@ int main() {
 
     // testing if nvenc can be used
     {
-      auto created = manager->quids<MPtr(&quid::Container::create)>("nvenc", std::string());
+      auto created =
+          manager->quids<MPtr(&quid::Container::create)>("nvenc", std::string(), nullptr);
       if (!created) {
         std::cerr << "nvenc encoding could not be created" << '\n';
         return 1;
@@ -93,7 +95,8 @@ int main() {
         manager->quids<MPtr(&quid::Container::get_id)>("nvenc"));
 
     // testing nvenc is encoding
-    auto created = manager->quids<MPtr(&quid::Container::create)>("videotestsrc", std::string());
+    auto created =
+        manager->quids<MPtr(&quid::Container::create)>("videotestsrc", std::string(), nullptr);
     assert(created);
     auto vid = created.get();
     vid->prop<MPtr(&PContainer::set_str_str)>("codec", "0");
@@ -101,7 +104,8 @@ int main() {
     auto vid_shmpath = vid->make_shmpath("video");
     assert(!vid_shmpath.empty());
 
-    auto nvenc_created = manager->quids<MPtr(&quid::Container::create)>("nvenc", std::string());
+    auto nvenc_created =
+        manager->quids<MPtr(&quid::Container::create)>("nvenc", std::string(), nullptr);
     assert(nvenc_created);
     auto nvenc = nvenc_created.get();
     assert(nvenc);
@@ -140,7 +144,7 @@ int main() {
     manager->conf<MPtr(&Configuration::from_file)>("./check_decode.json");
 
     auto nvdec_created =
-        manager->quids<MPtr(&quid::Container::create)>("nvencdecoder", "nvencdecoder");
+        manager->quids<MPtr(&quid::Container::create)>("nvencdecoder", "nvencdecoder", nullptr);
     assert(nvdec_created);
     auto nvdec = nvdec_created.get();
     assert(nvdec);

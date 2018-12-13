@@ -34,6 +34,7 @@ class PropertyBase {
    */
   PropertyBase() = default;
 
+  virtual ~PropertyBase() = default;
   /**
    * Switcher property id getter
    */
