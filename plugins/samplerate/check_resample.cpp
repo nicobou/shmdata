@@ -33,7 +33,7 @@ int main() {
   // now testing a audio resampling pipeline
   // load the resamplebundle quiddity
   sw->conf<MPtr(&Configuration::from_file)>("./check_resample.json");
-  auto qrox = sw->quids<MPtr(&quid::Container::create)>("resamplebundle", std::string());
+  auto qrox = sw->quids<MPtr(&quid::Container::create)>("resamplebundle", std::string(), nullptr);
   assert(qrox);
   assert(qrox.get()->prop<MPtr(&PContainer::set_str_str)>("started", "true"));
 

@@ -58,13 +58,13 @@ int main() {
 
     if (!switcher::test::full(manager, "shmdelay")) return 1;
 
-    auto shmdelaytest_qrox =
-        manager->quids<MPtr(&switcher::quid::Container::create)>("shmdelay", "shmdelaytest");
+    auto shmdelaytest_qrox = manager->quids<MPtr(&switcher::quid::Container::create)>(
+        "shmdelay", "shmdelaytest", nullptr);
     if (!shmdelaytest_qrox) return 1;
     auto shmdelaytest = shmdelaytest_qrox.get();
 
-    auto videotest_qrox =
-        manager->quids<MPtr(&switcher::quid::Container::create)>("videotestsrc", "videotest");
+    auto videotest_qrox = manager->quids<MPtr(&switcher::quid::Container::create)>(
+        "videotestsrc", "videotest", nullptr);
     if (!videotest_qrox) return 1;
     auto videotest = videotest_qrox.get();
 

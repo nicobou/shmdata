@@ -19,6 +19,7 @@
 
 #include "./pyswitch.hpp"
 #include <switcher/console-logger.hpp>
+#include <switcher/information-tree.hpp>
 #include <switcher/silent-logger.hpp>
 #include "./pyinfotree.hpp"
 #include "./pyqrox.hpp"
@@ -108,20 +109,30 @@ PyObject* pySwitch::version(pySwitchObject* self) {
 }
 
 PyDoc_STRVAR(pyswitch_create_doc,
-             "Create a quiddity.\n"
-             "Arguments: (type, name)\n"
+             "Create a quiddity. The name and the config are optional."
+             "The config (an InfoTree) overrides the switcher configuration file  \n"
+             "Arguments: (type, name, config)\n"
              "Returns: a handle to the created quiddity (pyquid.Qrox), or None\n");
 
 PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   const char* type = nullptr;
   const char* name = nullptr;
-  static char* kwlist[] = {(char*)"type", (char*)"name", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|s", kwlist, &type, &name)) {
+  PyObject* pyinfotree = nullptr;
+  static char* kwlist[] = {(char*)"type", (char*)"name", (char*)"config", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|sO", kwlist, &type, &name, &pyinfotree)) {
     Py_INCREF(Py_None);
     return Py_None;
   }
-  auto qrox =
-      self->switcher->quids<MPtr(&quid::Container::create)>(type, name ? name : std::string());
+  if (pyinfotree &&
+      !PyObject_IsInstance(pyinfotree, reinterpret_cast<PyObject*>(&pyInfoTree::pyType))) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+
+  auto qrox = self->switcher->quids<MPtr(&quid::Container::create)>(
+      type,
+      name ? name : std::string(),
+      pyinfotree ? reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree : nullptr);
   if (!qrox) {
     Py_INCREF(Py_None);
     return Py_None;

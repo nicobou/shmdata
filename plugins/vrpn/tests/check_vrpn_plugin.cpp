@@ -29,9 +29,7 @@ int main() {
 
     manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
-    assert(manager->quids<MPtr(&quid::Container::create)>("vrpnsrc", "src"));
     assert(test::full(manager, "vrpnsrc"));
-    assert(manager->quids<MPtr(&quid::Container::create)>("vrpnsink", "sink"));
     assert(test::full(manager, "vrpnsink"));
 
   }  // end of scope is releasing the manager

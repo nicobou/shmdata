@@ -40,7 +40,8 @@ class JackClient : public SafeBoolIdiom {
  public:
   // note the xrun callback is called in jack_process
   // before calling the actual process function
-  explicit JackClient(const char* name,
+  explicit JackClient(const std::string& name,
+                      const std::string& server_name,
                       JackProcessCallback process_cb,
                       void* process_user_data,
                       XRunCallback_t xrun_cb,

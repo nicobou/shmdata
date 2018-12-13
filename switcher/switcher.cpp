@@ -62,7 +62,7 @@ bool Switcher::load_state(InfoTree* state) {
     // creating quiddities
     for (auto& it : quids) {
       std::string quid_class = quiddities->branch_get_value(it);
-      auto created = qcontainer_->create(quid_class, it);
+      auto created = qcontainer_->create(quid_class, it, nullptr);
       if (!created) {
         log_->message(
             "ERROR:error creating quiddity % (of type %): ", it, quid_class, created.msg());

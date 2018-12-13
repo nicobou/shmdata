@@ -35,7 +35,7 @@ int main() {
     assert(test::full(manager, "dummy"));
 
     // creating a "myplugin" quiddity
-    auto qrox = manager->quids<MPtr(&quid::Container::create)>("dummy", "test");
+    auto qrox = manager->quids<MPtr(&quid::Container::create)>("dummy", "test", nullptr);
     auto pquid = qrox.get();
     assert(pquid);
 

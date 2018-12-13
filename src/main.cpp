@@ -67,7 +67,7 @@ static GOptionEntry entries[15] = {
      0,
      G_OPTION_ARG_STRING,
      &load_file,
-     "load state from history file (-l filename)",
+     "load state from file (-l filename)",
      nullptr},
     {"quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet, "do not display any message", nullptr},
     {"verbose",
@@ -170,7 +170,8 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
-  auto created = manager->quids<MPtr(&quid::Container::create)>("SOAPcontrolServer", "soapserver");
+  auto created =
+      manager->quids<MPtr(&quid::Container::create)>("SOAPcontrolServer", "soapserver", nullptr);
   if (!created) {
     std::cerr << "could not create SOAP server" << '\n';
     return 0;

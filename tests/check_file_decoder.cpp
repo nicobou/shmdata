@@ -58,7 +58,8 @@ int main() {
 
     if (!switcher::test::full(manager, "filesrc")) return 1;
 
-    auto filesrc = manager->quids<MPtr(&switcher::quid::Container::create)>("filesrc", "src").get();
+    auto filesrc =
+        manager->quids<MPtr(&switcher::quid::Container::create)>("filesrc", "src", nullptr).get();
 
     ::shmdata::ConsoleLogger logger;
     auto reader = std::make_unique<shmdata::Follower>(filesrc->make_shmpath("audio"),

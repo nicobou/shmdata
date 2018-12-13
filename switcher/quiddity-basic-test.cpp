@@ -31,8 +31,8 @@ bool test::full(Switcher::ptr manager, const std::string& quiddity_class_name) {
 
 bool test::create(Switcher::ptr manager, const std::string& quiddity_class_name) {
   {
-    auto res = manager->quids<MPtr(&switcher::quid::Container::create)>(quiddity_class_name,
-                                                                        quiddity_class_name);
+    auto res = manager->quids<MPtr(&switcher::quid::Container::create)>(
+        quiddity_class_name, quiddity_class_name, nullptr);
     if (!res) {
       std::cerr << quiddity_class_name << " cannot be created: " << res.msg() << '\n';
       return true;  // true because some quiddity may not be created because of a
@@ -50,8 +50,8 @@ bool test::create(Switcher::ptr manager, const std::string& quiddity_class_name)
     }
   }
   {  // testing with generated name
-    auto res = manager->quids<MPtr(&switcher::quid::Container::create)>(quiddity_class_name,
-                                                                        std::string());
+    auto res = manager->quids<MPtr(&switcher::quid::Container::create)>(
+        quiddity_class_name, std::string(), nullptr);
     if (!res) {
       std::cerr << quiddity_class_name << " cannot be created: " << res.msg() << '\n';
       return true;  // true because some quiddity may not be created because of a
@@ -72,8 +72,8 @@ bool test::create(Switcher::ptr manager, const std::string& quiddity_class_name)
 }
 
 bool test::startable(Switcher::ptr manager, const std::string& quiddity_class_name) {
-  auto qrox = manager->quids<MPtr(&switcher::quid::Container::create)>(quiddity_class_name,
-                                                                       quiddity_class_name);
+  auto qrox = manager->quids<MPtr(&switcher::quid::Container::create)>(
+      quiddity_class_name, quiddity_class_name, nullptr);
   if (!qrox) {
     std::cerr << quiddity_class_name << " cannot be created (startable not actualy tested)" << '\n';
     // return true because some quiddity may not be created because of a
@@ -94,8 +94,8 @@ bool test::startable(Switcher::ptr manager, const std::string& quiddity_class_na
 }
 
 bool test::tree(Switcher::ptr manager, const std::string& quiddity_class_name) {
-  auto qrox =
-      manager->quids<MPtr(&switcher::quid::Container::create)>(quiddity_class_name, std::string());
+  auto qrox = manager->quids<MPtr(&switcher::quid::Container::create)>(
+      quiddity_class_name, std::string(), nullptr);
   if (!qrox) {
     std::cerr << quiddity_class_name << " cannot be created (tree not actualy tested)" << '\n';
     return true;
@@ -106,8 +106,8 @@ bool test::tree(Switcher::ptr manager, const std::string& quiddity_class_name) {
 }
 
 bool test::properties(Switcher::ptr manager, const std::string& quiddity_class_name) {
-  auto qrox =
-      manager->quids<MPtr(&switcher::quid::Container::create)>(quiddity_class_name, std::string());
+  auto qrox = manager->quids<MPtr(&switcher::quid::Container::create)>(
+      quiddity_class_name, std::string(), nullptr);
   if (!qrox) {
     std::cerr << quiddity_class_name << " cannot be created (properties not actualy tested)"
               << '\n';

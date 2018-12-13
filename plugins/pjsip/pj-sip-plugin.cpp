@@ -255,7 +255,7 @@ void SIPPlugin::create_quiddity_stream(const std::string& peer_uri, const std::s
     if (std::find(exposed_quids.begin(), exposed_quids.end(), quid) != exposed_quids.end()) return;
     exposed_quids.push_back(quid);
   }
-  quid = qcontainer_->create("extshmsrc", quid);
+  quid = qcontainer_->create("extshmsrc", quid, nullptr);
   if (quid.empty()) {
     warning("Failed to create external shmdata quiddity for pjsip incoming stream.");
     return;

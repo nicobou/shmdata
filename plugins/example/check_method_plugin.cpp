@@ -32,7 +32,7 @@ int main() {
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
     manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
     assert(test::full(manager, "method"));
-    auto qrox = manager->quids<MPtr(&quid::Container::create)>("method", "test");
+    auto qrox = manager->quids<MPtr(&quid::Container::create)>("method", "test", nullptr);
     auto mquid = qrox.get();
     assert(mquid);
 

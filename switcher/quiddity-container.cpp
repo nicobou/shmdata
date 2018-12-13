@@ -33,8 +33,10 @@ Container::ptr Container::make_container(Switcher* switcher, Factory* factory, B
 Container::Container(Switcher* switcher, Factory* factory, BaseLogger* log)
     : Logged(log), factory_(factory), switcher_(switcher) {}
 
-Qrox Container::create(const std::string& quiddity_class, const std::string& name) {
-  auto res = quiet_create(quiddity_class, name);
+Qrox Container::create(const std::string& quiddity_class,
+                       const std::string& name,
+                       InfoTree::ptrc override_config) {
+  auto res = quiet_create(quiddity_class, name, override_config);
   if (!res) return res;
   // We work on a copy in case a callback modifies the map of registered callbacks
   auto tmp_created_cbs = on_created_cbs_;
@@ -45,7 +47,9 @@ Qrox Container::create(const std::string& quiddity_class, const std::string& nam
   return res;
 }
 
-Qrox Container::quiet_create(const std::string& quiddity_class, const std::string& raw_nick_name) {
+Qrox Container::quiet_create(const std::string& quiddity_class,
+                             const std::string& raw_nick_name,
+                             InfoTree::ptrc override_config) {
   // checks before creation
   if (!switcher_->factory<MPtr(&Factory::exists)>(quiddity_class)) {
     return Qrox(false, "unknown class");
@@ -78,8 +82,14 @@ Qrox Container::quiet_create(const std::string& quiddity_class, const std::strin
   else
     ++cur_id_;
   names_[name] = cur_id_;
+
   Quiddity::ptr quiddity =
-      factory_->create(quiddity_class, Config(name, quiddity_class, tree, this, get_log_ptr()));
+      factory_->create(quiddity_class,
+                       Config(name,
+                              quiddity_class,
+                              InfoTree::merge(tree.get(), override_config).get(),
+                              this,
+                              get_log_ptr()));
   if (!quiddity) {
     names_.erase(name);
     return Qrox(false, "abstract factory error");

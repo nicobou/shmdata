@@ -62,7 +62,8 @@ int main() {
     manager->conf<MPtr(&Configuration::from_file)>("./check_ladspa.json");
 
     // creating a ladspa audiotest bundle
-    auto created = manager->quids<MPtr(&quid::Container::create)>("audiotestladspa", std::string());
+    auto created =
+        manager->quids<MPtr(&quid::Container::create)>("audiotestladspa", std::string(), nullptr);
     auto ladspa = created.get();
     assert(created && ladspa);
     if (!ladspa->prop<MPtr(&PContainer::set_str_str)>("started", "true")) return 1;

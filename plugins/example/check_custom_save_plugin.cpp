@@ -39,7 +39,8 @@ int main() {
     InfoTree::ptr save;
 
     {  // check saving a cutom state
-      auto test = manager->quids<MPtr(&quid::Container::create)>("custom-save", "test").get();
+      auto test =
+          manager->quids<MPtr(&quid::Container::create)>("custom-save", "test", nullptr).get();
       assert(test);
       auto has_loaded_id =
           test->prop<MPtr(&PContainer::get_id)>(std::string("has_loaded_custom_state"));

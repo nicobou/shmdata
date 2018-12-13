@@ -32,30 +32,56 @@ InfoTree::ptr InfoTree::make() {
   return tree;
 }
 
+InfoTree::ptr InfoTree::merge(InfoTree::ptrc first, InfoTree::ptrc second) {
+  auto res = InfoTree::copy(first);
+  std::list<std::string> path;
+
+  if (second)
+    preorder_tree_walk(second,
+                       [&](const std::string& name, InfoTree::ptrc tree, bool is_array_element) {
+                         std::string key;
+                         for (auto& it : path) {
+                           key += "." + it;
+                         }
+                         if (is_array_element) res->tag_as_array(key, true);
+                         path.push_back(name);
+                         key += "." + name;
+                         auto value = tree->read_data();
+                         if (value.not_null()) res->graft(key, make(value));
+                         return true;
+                       },
+                       [&](const std::string&, InfoTree::ptrc, bool) {
+                         path.pop_back();
+                         return true;
+                       });
+  return res;
+}
+
 InfoTree::ptr InfoTree::copy(InfoTree::ptrc tree) {
   auto res = InfoTree::make();
   std::list<std::string> path;
 
-  preorder_tree_walk(tree,
-                     [&](const std::string& name, InfoTree::ptrc tree, bool is_array_element) {
-                       std::string key;
-                       for (auto& it : path) {
-                         key += "." + it;
-                       }
-                       if (is_array_element) res->tag_as_array(key, true);
-                       path.push_back(name);
-                       key += "." + name;
-                       auto value = tree->read_data();
-                       if (value.not_null())
-                         res->graft(key, make(value));
-                       else
-                         res->graft(key, make());
-                       return true;
-                     },
-                     [&](const std::string&, InfoTree::ptrc, bool) {
-                       path.pop_back();
-                       return true;
-                     });
+  if (tree)
+    preorder_tree_walk(tree,
+                       [&](const std::string& name, InfoTree::ptrc tree, bool is_array_element) {
+                         std::string key;
+                         for (auto& it : path) {
+                           key += "." + it;
+                         }
+                         if (is_array_element) res->tag_as_array(key, true);
+                         path.push_back(name);
+                         key += "." + name;
+                         auto value = tree->read_data();
+                         if (value.not_null())
+                           res->graft(key, make(value));
+                         else
+                           res->graft(key, make());
+                         return true;
+                       },
+                       [&](const std::string&, InfoTree::ptrc, bool) {
+                         path.pop_back();
+                         return true;
+                       });
   return res;
 }
 

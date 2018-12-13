@@ -62,17 +62,17 @@ int main() {
     // creating and removing some complex bundles
     auto bundles = {"source-bundle", "sink-bundle", "filter-bundle"};
     for (const auto& bundle : bundles) {
-      auto qrox = manager->quids<MPtr(&switcher::quid::Container::create)>(bundle, bundle);
+      auto qrox = manager->quids<MPtr(&switcher::quid::Container::create)>(bundle, bundle, nullptr);
       assert(qrox);
       assert(manager->quids<MPtr(&switcher::quid::Container::remove)>(qrox.get_id()));
     }
 
     // testing shmdata communication from a bundle to an other
-    auto srcqrox =
-        manager->quids<MPtr(&switcher::quid::Container::create)>("vid-source-bundle", "src");
+    auto srcqrox = manager->quids<MPtr(&switcher::quid::Container::create)>(
+        "vid-source-bundle", "src", nullptr);
     assert(srcqrox);
-    auto dummyqrox =
-        manager->quids<MPtr(&switcher::quid::Container::create)>("dummy-sink-bundle", "dummy");
+    auto dummyqrox = manager->quids<MPtr(&switcher::quid::Container::create)>(
+        "dummy-sink-bundle", "dummy", nullptr);
     assert(dummyqrox);
     auto dummy = dummyqrox.get();
 
