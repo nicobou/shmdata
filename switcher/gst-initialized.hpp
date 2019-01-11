@@ -20,10 +20,17 @@
 #ifndef __SWITCHER_GST_INITIALIZED_H__
 #define __SWITCHER_GST_INITIALIZED_H__
 
+#include <string>
+#include <gst/gst.h>
+
 namespace switcher {
 class GstInitialized {
  public:
   GstInitialized();
+  bool set_plugin_as_primary(const std::string& plugin, int priority);
+
+ private:
+  GstRegistry* registry_;
 };
 }  // namespace switcher
 

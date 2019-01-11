@@ -18,14 +18,24 @@
  */
 
 #include "./gst-initialized.hpp"
-#include <gst/gst.h>
 
 namespace switcher {
 GstInitialized::GstInitialized() {
   if (!gst_is_initialized()) gst_init(nullptr, nullptr);
-  GstRegistry* registry = gst_registry_get();
+  registry_ = gst_registry_get();
   // TODO add option for scanning a path
-  gst_registry_scan_path(registry, "/usr/local/lib/gstreamer-1.0/");
-  gst_registry_scan_path(registry, "/usr/lib/gstreamer-1.0/");
+  gst_registry_scan_path(registry_, "/usr/local/lib/gstreamer-1.0/");
+  gst_registry_scan_path(registry_, "/usr/lib/gstreamer-1.0/");
+}
+
+bool GstInitialized::set_plugin_as_primary(const std::string& plugin_name, int priority) {
+  GstPluginFeature* plugin = gst_registry_lookup_feature(registry_, plugin_name.c_str());
+  if(plugin != nullptr) {
+    gst_plugin_feature_set_rank(plugin, GST_RANK_PRIMARY + priority);
+    gst_object_unref(plugin);
+    return true;
+  }
+  gst_object_unref(plugin); 
+  return false;
 }
 }  // namespace switcher
