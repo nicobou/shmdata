@@ -266,12 +266,8 @@ InfoTree::ptr Switcher::get_state() const {
 void Switcher::apply_gst_configuration() {
   auto configuration = conf_.get();
   for (const auto& plugin : configuration->get_child_keys("gstreamer.primary_priority")) {
-    std::string priority = configuration->branch_get_value("gstreamer.primary_priority." + plugin);
-    if (priority.empty()) {
-      log_->warning("Priority for Gstreamer plugin '%' is missing, cannot modify plugin priority.",
-                    plugin);
-    }
-    if (!GstInitialized::set_plugin_as_primary(plugin, std::stoi(priority))) {
+    int priority = configuration->branch_get_value("gstreamer.primary_priority." + plugin);
+    if (!GstInitialized::set_plugin_as_primary(plugin, priority)) {
       log_->warning("Unable to find Gstreamer plugin '%'. Check if plugin is installed.", plugin);
     }
   }

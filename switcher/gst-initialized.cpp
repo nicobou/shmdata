@@ -35,7 +35,6 @@ bool GstInitialized::set_plugin_as_primary(const std::string& plugin_name, int p
     gst_object_unref(plugin);
     return true;
   }
-  gst_object_unref(plugin); 
   return false;
 }
 }  // namespace switcher
