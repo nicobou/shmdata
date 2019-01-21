@@ -55,6 +55,13 @@ DecodebinToShmdata::DecodebinToShmdata(GstPipeliner* gpipe,
                             (GCallback)DecodebinToShmdata::on_autoplug_select,
                             (gpointer) this);
   cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>(std::move(autoplug)));
+  // element added callback
+  auto element_added = std::bind(GstUtils::g_signal_connect_function,
+                                 std::placeholders::_1,
+                                 "element-added",
+                                 (GCallback)DecodebinToShmdata::on_element_added,
+                                 (gpointer)this);
+  cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>(std::move(element_added)));
 }
 
 void DecodebinToShmdata::on_pad_added(GstElement* object, GstPad* pad, gpointer user_data) {
@@ -131,6 +138,14 @@ int /*GstAutoplugSelectResult*/ DecodebinToShmdata::on_autoplug_select(GstElemen
     return return_val;
   }
   return TRY;
+}
+
+void DecodebinToShmdata::on_element_added(GstBin* bin, GstElement* element, gpointer user_data) {
+  // The output-corrupt property, when set to false, prevents the avdec_h264 plugin
+  // from outputting corrupted frames.
+  if (g_object_class_find_property(G_OBJECT_GET_CLASS(element), "output-corrupt")) {
+    g_object_set(G_OBJECT(element), "output-corrupt", false, nullptr);
+  }
 }
 
 GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_buffer_probe_cb(GstPad* /*pad */,

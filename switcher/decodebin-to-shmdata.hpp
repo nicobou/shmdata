@@ -72,6 +72,7 @@ class DecodebinToShmdata {
   static void on_pad_added(GstElement* object, GstPad* pad, gpointer user_data);
   static int /*GstAutoplugSelectResult*/ on_autoplug_select(
       GstElement* bin, GstPad* pad, GstCaps* caps, GstElementFactory* factory, gpointer user_data);
+  static void on_element_added(GstBin* bin, GstElement* element, gpointer user_data);
   static GstPadProbeReturn gstrtpdepay_buffer_probe_cb(GstPad* /*pad */,
                                                        GstPadProbeInfo* /*info*/,
                                                        gpointer user_data);
