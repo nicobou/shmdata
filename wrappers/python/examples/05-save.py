@@ -19,7 +19,11 @@ import assert_exit_1
 sw = pyquid.Switcher('save_example', debug=True)
 
 # instantiate and use some quiddities
-win = sw.create('glfwin', 'win').quid()
+winqrox = sw.create(type='glfwin', name='win')
+# The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
+if None == winqrox:
+    winqrox = sw.create(type='dummysink', name='win')
+win = winqrox.quid()
 vid = sw.create('videotestsrc', 'vid').quid()
 assert win.invoke('connect-quid', ['vid', 'video'])
 assert win.invoke('disconnect-all')

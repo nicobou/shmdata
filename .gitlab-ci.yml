@@ -22,7 +22,7 @@ test:
   stage: test
   image: $CI_REGISTRY_IMAGE:ci
   script:
-    - mkdir build && cd build && cmake .. -DENABLE_GPL=ON && make -j"$(nproc)"
+    - mkdir build && cd build && cmake .. -DENABLE_GPL=ON && make -j"$(nproc)" && make install && ldconfig
     - make test
 
 test-package:

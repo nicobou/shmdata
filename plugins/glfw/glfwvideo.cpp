@@ -358,12 +358,14 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
   if (getenv("DISPLAY") == nullptr) {
     if (-1 == setenv("DISPLAY", ":0", false)) {
       warning("BUG: Failed to set a display!");
+      is_valid_ = false;
       return;
     }
   }
 
   if (!instance_counter_ && !glfwInit()) {
     warning("BUG: Failed to initialize glfw library!");
+    is_valid_ = false;
     return;
   }
 
@@ -371,6 +373,7 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
 
   if (!monitors_config_.size()) {
     warning("BUG: Failed to discover monitors.");
+    is_valid_ = false;
     return;
   }
   // win_aspect_ratio_toggle_id_ =

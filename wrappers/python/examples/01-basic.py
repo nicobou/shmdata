@@ -28,7 +28,15 @@ assert '' != sw.version()
 winqrox = sw.create(type='glfwin', name='win')
 # a qrox is a handler to the internal quiddity, it provides access to
 # the quiddity itself, its id and its name
+
+# The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
+if None == winqrox:
+    winqrox = sw.create(type='dummysink', name='win')
+
+# we need our winqrox in order to comsume the video stream
 assert None != winqrox
+
+# get access to the quiddity object
 win = winqrox.quid()
 # creating a video source that will eventually be connected to the video window
 vidqrox = sw.create('videotestsrc', 'vid')
