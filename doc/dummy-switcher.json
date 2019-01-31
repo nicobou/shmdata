@@ -78,7 +78,7 @@
   },
   "gstreamer" : {
     "primary_priority" : {
-      "nvdec": 10
+      "plugin_name": 0
     }
   }
 }
