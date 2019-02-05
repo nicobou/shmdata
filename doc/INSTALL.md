@@ -37,7 +37,7 @@ When running non-interactive cmake you have to set the ENABLE\_GPL option if you
 $ cmake .. -DENABLE_GPL=ON
 ```
 
-## Build Nvidia Video Codec 7 plugin
+## Build Nvidia Video Encoding plugin
 
 1. Check that you are running Nvidia drivers:
 
@@ -51,7 +51,9 @@ $ cmake .. -DENABLE_GPL=ON
     > `$ sudo add-apt-repository --yes ppa:graphics-drivers/ppa`
 
 ```
-    $ sudo apt install nvidia-<driver-ver-number> nvidia-<driver-ver-number>-dev nvidia-cuda-toolkit nvidia-cuda-dev
+    $ sudo apt install nvidia-<driver-ver-number> nvidia-<driver-ver-number>-dev  # Version 390 and lower
+    $ sudo apt install nvidia-driver-<driver-ver-number>  # Version 396 and higher
+    $ sudo apt install nvidia-cuda-toolkit nvidia-cuda-dev  # CUDA
 ```
 
 3. In case running `$ cmake ..` does not automatically detect the right driver, in the **switcher** build directory, configure **switcher** as follows:
@@ -72,6 +74,8 @@ $ cmake .. -DENABLE_GPL=ON
     $ make -j"$(nproc)"
     $ sudo make install
 ```
+
+If you wish to use GPU-accelerated video decoding, you will also need to build the Gstreamer nvdec plugin. Instructions for doing so are [here](doc/using-nvdec-gstreamer-plugins.md).
 
 ## Other build options
 

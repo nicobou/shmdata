@@ -1,24 +1,22 @@
-# Installing Gstreamer's NVENC & NVDEC plugins
+# Using the nvdec Gstreamer plugin
 
 _Install and build instructions for Ubuntu 18.04._
 
-Nvidia's NVENC and NVDEC plugins enable GPU-accelerated H264 video encoding and decoding in Switcher. Currently, GPU encoding is already included in Switcher, but decoding is not. To enable GPU decoding, you will need to build the NVDEC plugin.
-
-__WARNING: Altough NVDEC is supported inside of Switcher, its usage still remains experimental and the plugin may crash or freeze. Use at your own risks.__
+Nvidia's nvenc and nvdec plugins enable GPU-accelerated H264 video encoding and decoding with GStreamer pipelines. Currently, GPU encoding is already included in Switcher, but decoding is not. To enable GPU decoding with the GStreamer nvdec plugin, you will need to i) build the nvdec plugin from source and ii) raise its prioritization as primary among the h264 decoders.
 
 ## Requirements
 ### Graphics card
 A compatible Nvidia GPU must be installed on your system. A list of compatible devices is available here: https://developer.nvidia.com/video-encode-decode-gpu-support-matrix
 
 ### Drivers
-The latest Nvidia drivers (currenlty version 415) must be installed:
+The latest Nvidia drivers (currently version 415) must be installed:
 
 ```bash
 sudo apt install nvidia-driver-415
 ```
 
 ### CUDA
-NVDEC requires CUDA to be installed. Currenlty, with Gstreamer 1.14, only version 9 is compatible with NVDEC.
+Nvdec requires CUDA to be installed. Currenlty, with Gstreamer 1.14, only version 9 is compatible with nvdec.
 
 ```bash
 sudo apt install nvidia-cuda-toolkit
@@ -41,7 +39,7 @@ sudo cp Samples/NvCodec/NvDecoder/nvcuvid.h /usr/local/include/
 ```
 
 ## Building and installing the Gstreamer plugins
-Starting with Gstreamer 1.14, NVDEC and NVENC are part of the `gst-plugins-bad` collection. These are installed by default with Ubuntu 18.04, except for NVDEC and NVENC. They must be built manually
+Starting with Gstreamer 1.14, nvdec and nvenc are part of the `gst-plugins-bad` collection. These are installed by default with Ubuntu 18.04, except for nvdec and nvenc. They must be built manually
 
 Start by cloning the `gst-plugins-bad` Git repository on your machine. This will clone the latest version of the plugins; however, it order to build them, `gst-plugins-bad` must be the exact same version as the installed Gstreamer version, which is 1.14.1 on a default Ubuntu 18.04 install. We must checkout the 1.14.1 version of the `gst-plugins-bad` repo.
 
@@ -62,20 +60,20 @@ sudo ldconfig
 
 _If the `--disable-gtk-doc` flag is ommitted, you will need to install the `gtk-doc-tools` package before building the plugins._
 
-The NVDEC and NVENC plugins will be installed in `/usr/local/lib/gstreamer-1.0` as `libgstnvenc.so` and `libgstnvdec.so`.
+The nvdec and nvenc plugins will be installed in `/usr/local/lib/gstreamer-1.0` as `libgstnvenc.so` and `libgstnvdec.so`.
 
-Finally, in order for Gstreamer to detect the 2 plugins, they must be copied to `/usr/lib/x86_64-linux-gnu/gstreamer-1.0`.
+Finally, in order for Gstreamer to detect the 2 plugins, we must update the `GST_PLUGIN_PATH` environment variable:
 
 ```bash
-sudo cp /usr/local/lib/gstreamer-1.0/libgst{nvdec.so,nvenc.so} /usr/lib/x86_64-linux-gnu/gstreamer-1.0/
+GST_PLUGIN_PATH=$GST_PLUGIN_PATH:/usr/local/lib/gstreamer-1.0
 ```
 
 If everything went smoothly, you should see both plugins (__nvdec__ and __nvh264enc__) in the list of detected plugins when running `gst-inspect-1.0`.
 
-## Enabling NVDEC in the `decodebin` plugin
+## Using nvdec as the default H264 decoder in Switcher
 Switcher uses a Gstreamer [__decodebin__](https://gstreamer.freedesktop.org/documentation/application-development/highlevel/playback-components.html) element in order to decode video streams. Decodebins are handy because they automatically identify, create and connect all the necessary plugins for decoding the supplied stream. 
 
-However, by default, a decodebin will always use a CPU decoder when decoding H264 streams. In order to use the NVDEC plugin instead, we must assign it a higher priority (or rank) than the CPU decoder. Decodebins always uses the decoder with the highest rank.
+However, by default, a decodebin will always use a CPU decoder when decoding H264 streams. In order to use the nvdec plugin instead, we must assign it a higher priority (or rank) than the CPU decoder. Decodebins always uses the decoder with the highest rank.
 
 This can be easily done in the `switcher.json` file, by adding the following entry at the root of the configuration:
 
@@ -83,7 +81,6 @@ This can be easily done in the `switcher.json` file, by adding the following ent
 "gstreamer" : {
     "primary_priority" : {
       "nvdec": 10
-   // "gstreamer_plugin_name": "rank" (higher number = higher priority) 
     }
  }
 ```
