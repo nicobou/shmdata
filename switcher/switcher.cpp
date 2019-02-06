@@ -105,15 +105,16 @@ bool Switcher::load_state(InfoTree* state) {
         } else {
           auto quid = qcontainer_->get_quiddity(qcontainer_->get_id(name));
           if (!quid || !quid->prop<MPtr(&PContainer::set_str_str)>(
-                           prop, Any::to_string(properties->branch_get_value(name + "." + prop))))
+                           prop, Any::to_string(properties->branch_get_value(name + "." + prop)))) {
             log_->message("ERROR:failed to apply value, quiddity is %, property is %, value is %",
                           name,
                           prop,
                           Any::to_string(properties->branch_get_value(name + "." + prop)));
-          log_->warning("failed to apply value, quiddity is %, property is %, value is %",
-                        name,
-                        prop,
-                        Any::to_string(properties->branch_get_value(name + "." + prop)));
+            log_->warning("failed to apply value, quiddity is %, property is %, value is %",
+                          name,
+                          prop,
+                          Any::to_string(properties->branch_get_value(name + "." + prop)));
+          }
         }
       }
     }

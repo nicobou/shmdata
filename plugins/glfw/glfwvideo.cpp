@@ -1426,7 +1426,8 @@ void GLFWVideo::GUIConfiguration::init_properties() {
       [this](const std::string& val) {
         std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
         if (val.empty()) {
-          return false;
+          parent_window_->message("No value was defined for overlay_additional_font or overlay_config properties.");
+          return true;
         } else if (!StringUtils::ends_with(val, ".ttf")) {
           parent_window_->message(
               "Cannot set % as custom font, only truetype fonts are supported (.ttf extension).",
