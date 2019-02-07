@@ -1,4 +1,4 @@
-# Using the nvdec Gstreamer plugin
+# Using the nvdec GStreamer plugin
 
 _Install and build instructions for Ubuntu 18.04._
 
@@ -16,7 +16,7 @@ sudo apt install nvidia-driver-415
 ```
 
 ### CUDA
-Nvdec requires CUDA to be installed. Currenlty, with Gstreamer 1.14, only version 9 is compatible with nvdec.
+Nvdec requires CUDA to be installed. Currently, with GStreamer 1.14, only version 9 is compatible with nvdec.
 
 ```bash
 sudo apt install nvidia-cuda-toolkit
@@ -38,10 +38,10 @@ sudo cp Samples/NvCodec/NvDecoder/cuviddec.h /usr/local/include/
 sudo cp Samples/NvCodec/NvDecoder/nvcuvid.h /usr/local/include/
 ```
 
-## Building and installing the Gstreamer plugins
-Starting with Gstreamer 1.14, nvdec and nvenc are part of the `gst-plugins-bad` collection. These are installed by default with Ubuntu 18.04, except for nvdec and nvenc. They must be built manually
+## Building and installing the GStreamer plugins
+Starting with GStreamer 1.14, nvdec and nvenc are part of the `gst-plugins-bad` collection. These are installed by default with Ubuntu 18.04, except for nvdec and nvenc. They must be built manually
 
-Start by cloning the `gst-plugins-bad` Git repository on your machine. This will clone the latest version of the plugins; however, it order to build them, `gst-plugins-bad` must be the exact same version as the installed Gstreamer version, which is 1.14.1 on a default Ubuntu 18.04 install. We must checkout the 1.14.1 version of the `gst-plugins-bad` repo.
+Start by cloning the `gst-plugins-bad` Git repository on your machine. This will clone the latest version of the plugins; however, it order to build them, `gst-plugins-bad` must be the exact same version as the installed GStreamer version, which is 1.14.1 on a default Ubuntu 18.04 install. We must checkout the 1.14.1 version of the `gst-plugins-bad` repo.
 
 ```bash
 git clone https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad.git
@@ -62,7 +62,7 @@ _If the `--disable-gtk-doc` flag is ommitted, you will need to install the `gtk-
 
 The nvdec and nvenc plugins will be installed in `/usr/local/lib/gstreamer-1.0` as `libgstnvenc.so` and `libgstnvdec.so`.
 
-Finally, in order for Gstreamer to detect the 2 plugins, we must update the `GST_PLUGIN_PATH` environment variable:
+Finally, in order for GStreamer to detect the 2 plugins, we must update the `GST_PLUGIN_PATH` environment variable:
 
 ```bash
 GST_PLUGIN_PATH=$GST_PLUGIN_PATH:/usr/local/lib/gstreamer-1.0
@@ -71,7 +71,7 @@ GST_PLUGIN_PATH=$GST_PLUGIN_PATH:/usr/local/lib/gstreamer-1.0
 If everything went smoothly, you should see both plugins (__nvdec__ and __nvh264enc__) in the list of detected plugins when running `gst-inspect-1.0`.
 
 ## Using nvdec as the default H264 decoder in Switcher
-Switcher uses a Gstreamer [__decodebin__](https://gstreamer.freedesktop.org/documentation/application-development/highlevel/playback-components.html) element in order to decode video streams. Decodebins are handy because they automatically identify, create and connect all the necessary plugins for decoding the supplied stream. 
+Switcher uses a GStreamer [__decodebin__](https://gstreamer.freedesktop.org/documentation/application-development/highlevel/playback-components.html) element in order to decode video streams. Decodebins are handy because they automatically identify, create and connect all the necessary plugins for decoding the supplied stream. 
 
 However, by default, a decodebin will always use a CPU decoder when decoding H264 streams. In order to use the nvdec plugin instead, we must assign it a higher priority (or rank) than the CPU decoder. Decodebins always uses the decoder with the highest rank.
 
@@ -85,6 +85,6 @@ This can be easily done in the `switcher.json` file, by adding the following ent
  }
 ```
 
-Inside `primary_priority`, simply specify a Gstreamer plugin (in our case, __nvdec__), and assign it a priority (integer only). On Switcher's startup, any specified pugin will be assigned the `PRIMARY` rank + the specified number in `switcher.json`. In our case, nvdec will have a rank of `PRIMARY`+10, which is higher than the other decoders (they often have a rank of `PRIMARY` only).
+Inside `primary_priority`, simply specify a GStreamer plugin (in our case, __nvdec__), and assign it a priority (integer only). On Switcher's startup, any specified pugin will be assigned the `PRIMARY` rank + the specified number in `switcher.json`. In our case, nvdec will have a rank of `PRIMARY`+10, which is higher than the other decoders (they often have a rank of `PRIMARY` only).
 
 More info on the inner workings of this logic is available [here](https://gstreamer.freedesktop.org/documentation/tutorials/playback/hardware-accelerated-video-decoding.html).

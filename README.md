@@ -26,7 +26,7 @@ See instructions for:
 - [shell scripting OSC quiddities](doc/using-osc-quiddities.md)
 - [configuration from file](doc/configuration.md)
 - [Map OSC or HTTP messages to quiddity properties](doc/protocol-mapper.md)
-- [Using the NVDEC Gstreamer plugin](doc/using-nvdec-gstreamer-plugins.md)
+- [Using the GStreamer plugin for NVidia H264 GPU decoder (nvdec)](doc/using-nvdec-gstreamer-plugins.md)
 - [contributing code](doc/CODING.md)
 
 Command line

@@ -45,14 +45,13 @@ $ cmake .. -DENABLE_GPL=ON
     $ nvidia-settings
 ```
 
-2. Install Nvidia drivers (min. version `367.35`) and CUDA toolkit:
+2. Install Nvidia drivers (min. version `396`) and CUDA toolkit:
 
     > **Note**: You may need to first add the PPA `graphics-drivers/ppa`:  
     > `$ sudo add-apt-repository --yes ppa:graphics-drivers/ppa`
 
 ```
-    $ sudo apt install nvidia-<driver-ver-number> nvidia-<driver-ver-number>-dev  # Version 390 and lower
-    $ sudo apt install nvidia-driver-<driver-ver-number>  # Version 396 and higher
+    $ sudo apt install nvidia-driver-<driver-ver-number> nvidia-dkms-<driver-ver-number> nvidia-kernel-common-<driver-ver-number> nvidia-kernel-source-<driver-ver-number>
     $ sudo apt install nvidia-cuda-toolkit nvidia-cuda-dev  # CUDA
 ```
 
@@ -65,7 +64,7 @@ $ cmake .. -DENABLE_GPL=ON
     For example, replacing `<driver-ver-number>` with the installed Nvidia driver version:
 
 ```
-    $ cmake .. -DNVIDIA_PATH=/usr/lib/nvidia-367
+    $ cmake .. -DNVIDIA_PATH=/usr/lib/nvidia-396
 ```
 
 4. Lastly, compile and install as usual:
