@@ -57,16 +57,6 @@ if (PLUGIN_NVENC)
 
     add_dependencies(nvenc_encoder_plugin ${SWITCHER_LIBRARY})
 
-    # Decoder
-
-    add_library(nvenc_decoder_plugin SHARED
-        cuda/cuda-context.cpp
-        decoder/nvdec-plugin.cpp
-        decoder/nvdec-decode-session.cpp
-        )
-
-    add_dependencies(nvenc_decoder_plugin ${SWITCHER_LIBRARY})
-
     # TEST
 
     add_executable(check_nvenc encoder/check_nvenc.cpp)
@@ -75,6 +65,6 @@ if (PLUGIN_NVENC)
 
     # INSTALL
 
-    install(TARGETS nvenc_encoder_plugin nvenc_decoder_plugin LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(TARGETS nvenc_encoder_plugin LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
 
 endif ()
