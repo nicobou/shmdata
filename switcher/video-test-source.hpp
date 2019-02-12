@@ -38,7 +38,6 @@ class VideoTestSource : public Quiddity, public StartableQuiddity {
   VideoTestSource& operator=(const VideoTestSource&) = delete;
 
  private:
-  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
   std::string shmpath_{};
   // width height
   Selection<Fraction> resolutions_{
@@ -75,6 +74,8 @@ class VideoTestSource : public Quiddity, public StartableQuiddity {
   // formats
   Selection<> formats_;
   PContainer::prop_id_t formats_id_;
+  // Shmdata tree updater
+  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
   // gst elements
   UGstElem videotestsrc_{"videotestsrc"};
   UGstElem capsfilter_{"capsfilter"};

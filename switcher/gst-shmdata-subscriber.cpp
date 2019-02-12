@@ -33,7 +33,6 @@ GstShmdataSubscriber::GstShmdataSubscriber(GstElement* element,
       on_delete_cb_(on_delete_cb),
       on_connection_status_cb_(on_connection_status_cb),
       ptask_([this]() { this->stat_monitor(); }, update_interval) {
-  gst_object_ref(static_cast<gpointer>(element));
   signal_handler_id_ = g_signal_connect(
       G_OBJECT(element_), "notify::caps", G_CALLBACK(GstShmdataSubscriber::on_caps_cb), this);
   signal_connection_id_ =
@@ -46,11 +45,11 @@ GstShmdataSubscriber::GstShmdataSubscriber(GstElement* element,
 }
 
 GstShmdataSubscriber::~GstShmdataSubscriber() {
+  std::lock_guard<std::mutex> lock(dtor_mutex_);
   if (nullptr != on_delete_cb_) on_delete_cb_();
   if (GST_IS_ELEMENT(element_)) {
     if (0 != signal_handler_id_) g_signal_handler_disconnect(element_, signal_handler_id_);
     if (0 != signal_connection_id_) g_signal_handler_disconnect(element_, signal_connection_id_);
-    gst_object_unref(static_cast<gpointer>(element_));
   }
 }
 
@@ -58,6 +57,7 @@ void GstShmdataSubscriber::on_caps_cb(GObject* /*gobject*/,
                                       GParamSpec* /*pspec*/,
                                       gpointer user_data) {
   GstShmdataSubscriber* context = static_cast<GstShmdataSubscriber*>(user_data);
+  std::lock_guard<std::mutex> lock(context->dtor_mutex_);
   if (!context->on_caps_cb_) {
     return;
   }
@@ -77,6 +77,7 @@ void GstShmdataSubscriber::on_connection_status_cb(GObject* /*gobject*/,
                                                    GParamSpec* /*pspec*/,
                                                    gpointer user_data) {
   GstShmdataSubscriber* context = static_cast<GstShmdataSubscriber*>(user_data);
+  std::lock_guard<std::mutex> lock(context->dtor_mutex_);
   if (!context->on_connection_status_cb_) return;
   context->notify_connection();
 }

@@ -23,6 +23,7 @@
 #include <gst/gst.h>
 #include <atomic>
 #include <future>
+#include <mutex>
 #include "./periodic-task.hpp"
 #include "./shmdata-stat.hpp"
 
@@ -54,6 +55,7 @@ class GstShmdataSubscriber {
   void notify_connection();
   void stat_monitor();
 
+  std::mutex dtor_mutex_{};
   GstElement* element_;
   on_caps_cb_t on_caps_cb_;
   on_stat_monitor_t on_stat_monitor_cb_;
