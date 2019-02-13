@@ -45,5 +45,9 @@ vid.set("started", True)
 # wait for the signal to arrive,
 time.sleep(1)
 
+assert vid.unsubscribe("on-tree-grafted")
+
+vid.set("started", False)
+
 # the test will fail if the signal is not triggered before
 exit(1)
