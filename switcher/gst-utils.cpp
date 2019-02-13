@@ -355,19 +355,6 @@ GstUtils::element_factory_list_to_pair_of_vectors(GstElementFactoryListType type
   return std::make_pair(names, nicks);
 }
 
-void GstUtils::gst_element_deleter(GstElement* element) {
-  if (nullptr == element) {
-    return;
-  }
-  if (!G_IS_OBJECT(element)) {
-    return;
-  }
-  // unref if ownership has not been taken by a parent
-  if (nullptr == GST_OBJECT_PARENT(element)) {
-    if (((GObject*)element)->ref_count > 0) gst_object_unref(element);
-  }
-}
-
 // g_signal_connect is actually a macro, so wrapping it for use with std::bind
 gulong GstUtils::g_signal_connect_function(gpointer gobject,
                                            const gchar* signal,

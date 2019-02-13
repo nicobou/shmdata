@@ -61,9 +61,11 @@ class GstPipe {
   GSourceFuncs source_funcs_;
   gdouble speed_{1.0};
   GSource* source_{nullptr};
-  //  GSource *bus_watch_source_ {nullptr};
   gint64 length_{0};
+  std::mutex end_{};
+  std::condition_variable end_cond_{};
   void query_position_and_length();
+  static gboolean gst_pipeline_delete(gpointer user_data);
   static gboolean source_prepare(GSource* source, gint* timeout);
   static gboolean source_check(GSource* source);
   static gboolean source_dispatch(GSource* source, GSourceFunc callback, gpointer user_data);

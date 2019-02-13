@@ -27,7 +27,6 @@ UGstElem::gst_element_handle::gst_element_handle(const std::string& class_name)
 UGstElem::gst_element_handle::~gst_element_handle() {
   if (element) {
     gst_object_unref(element);
-    GstUtils::gst_element_deleter(element);
   }
 };
 

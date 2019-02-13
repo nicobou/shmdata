@@ -42,8 +42,6 @@ class GlibMainLoop {
   GMainContext* main_context_{nullptr};
   GMainLoop* mainloop_{nullptr};
   std::mutex begin_{};
-  std::mutex end_{};
-  std::condition_variable end_cond_{};
   std::thread thread_;  // this runs the main loop
   void main_loop_thread();
 };

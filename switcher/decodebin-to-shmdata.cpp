@@ -172,7 +172,9 @@ int /*GstAutoplugSelectResult*/ DecodebinToShmdata::on_autoplug_select(GstElemen
   return TRY;
 }
 
-void DecodebinToShmdata::on_element_added(GstBin* bin, GstElement* element, gpointer user_data) {
+void DecodebinToShmdata::on_element_added(GstBin* /*bin*/,
+                                          GstElement* element,
+                                          gpointer /*user_data*/) {
   // The output-corrupt property, when set to false, prevents the avdec_h264 plugin
   // from outputting corrupted frames.
   if (g_object_class_find_property(G_OBJECT_GET_CLASS(element), "output-corrupt")) {

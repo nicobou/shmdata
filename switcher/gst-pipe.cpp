@@ -26,6 +26,8 @@
 #include "./gst-utils.hpp"
 #include "./scope-exit.hpp"
 
+#include <thread>
+
 namespace switcher {
 GstPipe::GstPipe(GMainContext* context,
                  GstBusSyncReply (*bus_sync_cb)(GstBus* /*bus*/,
@@ -48,10 +50,20 @@ GstPipe::GstPipe(GMainContext* context,
   reinterpret_cast<GstBusSource*>(source_)->inited = FALSE;
 }
 
+gboolean GstPipe::gst_pipeline_delete(gpointer user_data) {
+  auto context = static_cast<GstPipe*>(user_data);
+  gst_element_set_state(context->pipeline_, GST_STATE_NULL);
+  gst_object_unref(GST_OBJECT(context->pipeline_));
+  context->end_cond_.notify_all();
+  return FALSE;
+}
+
 GstPipe::~GstPipe() {
-  GstUtils::wait_state_changed(pipeline_);
-  gst_element_set_state(pipeline_, GST_STATE_NULL);
-  gst_object_unref(GST_OBJECT(pipeline_));
+  std::unique_lock<std::mutex> lock(end_);
+  auto gsrc = g_idle_source_new();
+  g_source_set_callback(gsrc, gst_pipeline_delete, this, nullptr);
+  g_source_attach(gsrc, gmaincontext_);
+  end_cond_.wait(lock);
   g_source_destroy(source_);
   g_source_unref(source_);
 }
@@ -100,7 +112,6 @@ bool GstPipe::play(bool play) {
   } else {
     gst_element_set_state(pipeline_, GST_STATE_PAUSED);
   }
-  // GstUtils::wait_state_changed(pipeline_);
   return play;
 }
 

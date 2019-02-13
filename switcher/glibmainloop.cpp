@@ -48,7 +48,6 @@ void GlibMainLoop::main_loop_thread() {
     std::unique_lock<std::mutex> lock_begin(begin_);
     g_main_loop_run(mainloop_);
   }
-  // std::unique_lock<std::mutex> lock_end (end_);
 }
 
 }  // namespace switcher

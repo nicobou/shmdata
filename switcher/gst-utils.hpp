@@ -66,7 +66,6 @@ element_factory_list_to_pair_of_vectors(GstElementFactoryListType type,
                                         bool insert_none_first = true,
                                         const std::vector<std::string>& black_list = {});
 
-void gst_element_deleter(GstElement* element);
 gulong g_signal_connect_function(gpointer gobject,
                                  const gchar* signal,
                                  GCallback cb,
