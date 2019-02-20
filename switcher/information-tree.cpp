@@ -112,13 +112,11 @@ void InfoTree::preorder_tree_walk(InfoTree::ptrc tree,
                                   InfoTree::OnNodeFunction on_visiting_node,
                                   InfoTree::OnNodeFunction on_node_visited) {
   std::unique_lock<std::recursive_mutex> lock(tree->mutex_);
-  if (!tree->children_.empty()) {
-    for (auto& it : tree->children_) {
-      if (!on_visiting_node(it.first, it.second.get(), tree->is_array_) && it.second.get()) break;
-      preorder_tree_walk(it.second.get(), on_visiting_node, on_node_visited);
-      on_node_visited(it.first, it.second.get(), tree->is_array_);
+  for (auto& it : tree->children_) {
+    if (!on_visiting_node(it.first, it.second.get(), tree->is_array_) && it.second.get()) break;
+    preorder_tree_walk(it.second.get(), on_visiting_node, on_node_visited);
+    on_node_visited(it.first, it.second.get(), tree->is_array_);
     }
-  }
 }
 
 InfoTree::InfoTree(const Any& data) : data_(data) {}
