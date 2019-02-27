@@ -44,7 +44,6 @@ class GstPixelFormatConverter : public SafeBoolIdiom {
   GstElement* get_shmsrc() { return shmsrc_.get_raw(); }
 
  private:
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
   UGstElem shmsrc_{"shmdatasrc"};
   UGstElem queue_codec_element_{"queue"};
   UGstElem color_space_codec_element_{"videoconvert"};
@@ -53,6 +52,7 @@ class GstPixelFormatConverter : public SafeBoolIdiom {
 
   // safe bool idiom:
   bool is_valid_{false};
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
 
   std::string get_caps_str(const std::string& format_name) const;
   bool safe_bool_idiom() const final { return is_valid_; }
