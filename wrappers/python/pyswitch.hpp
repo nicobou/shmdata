@@ -41,7 +41,6 @@ class pySwitch {
   static int Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* name(pySwitchObject* self);
   static PyObject* version(pySwitchObject* self);
-  static PyObject* release(pySwitchObject* self);
   // quiddity life
   static PyObject* create(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* remove(pySwitchObject* self, PyObject* args, PyObject* kwds);

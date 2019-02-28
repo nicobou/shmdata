@@ -16,8 +16,11 @@ import pyquid
 import time
 import assert_exit_1
 
+success = False
+
 
 def on_tree_grafted(data, user_data):
+    global success
     assert user_data == my_user_data
     assert 'null' != data
     # switcher signals provide a json serialized InfoTree,
@@ -25,7 +28,7 @@ def on_tree_grafted(data, user_data):
     # without double quotes at the end and at the begining
     assert 'null' != my_user_data.get_info_tree_as_json(data.strip('\"'))
     # success
-    exit(0)
+    success = True
 
 
 sw = pyquid.Switcher("signals", debug=True)
@@ -47,11 +50,12 @@ assert vid.subscribe("on-tree-grafted", on_tree_grafted, my_user_data)
 vid.set("started", True)
 
 # wait for the signal to arrive,
-time.sleep(1)
+time.sleep(0.5)
 
 assert vid.unsubscribe("on-tree-grafted")
 
 vid.set("started", False)
 
-# the test will fail if the signal is not triggered before
-exit(1)
+if (not success):
+    exit(1)
+exit(0)
