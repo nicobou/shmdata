@@ -57,7 +57,6 @@ typedef struct {
   // shmdata_any_reader_t* reader;
   ShmdataLogger logger{NULL};
   ShmdataFollower reader{NULL};
-  std::mutex reader_mutex;
   std::mutex frame_mutex;
   bool drop_frames{false};
   bool show_debug_messages{false};

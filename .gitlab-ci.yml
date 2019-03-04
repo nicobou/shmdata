@@ -14,6 +14,8 @@ test:
   stage: test
   script:
     - make -j"$(nproc)"
+    - make install
+    - ldconfig
     - make test
 
 test-package:

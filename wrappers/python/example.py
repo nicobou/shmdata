@@ -10,24 +10,35 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 
-import math
 import sys
-import time
 sys.path.insert(0, '/usr/local/lib/python3/dist-packages')
+import time
 import pyshmdata
+import assert_exit_1
+
+success = False
+
 
 def cb(user_data, buffer, datatype, parsed_datatype):
+    global success
     data = buffer.decode(encoding="utf-8")
     print(user_data, data, parsed_datatype)
+    # we have been notified, success !
+    success = True
+
 
 data = ['all', 'your', 'base']
 
-writer = pyshmdata.Writer(path="/tmp/some_shmdata", datatype="application/x-raw,fun=yes")
 reader = pyshmdata.Reader(path="/tmp/some_shmdata", callback=cb, user_data=data)
+writer = pyshmdata.Writer(path="/tmp/some_shmdata", datatype="application/x-raw,fun=yes")
 
-start_time = time.clock_gettime(time.CLOCK_REALTIME)
-
-while True:
-    timestamp = time.clock_gettime(time.CLOCK_REALTIME) - start_time
-    writer.push(buffer=bytearray("are belong to us", encoding="utf-8"), timestamp=math.floor(timestamp * 1e9))
+start_time = time.monotonic()
+while (not success and time.monotonic() < start_time + 4):
+    writer.push(buffer=bytearray("are belong to us", encoding="utf-8"))
     time.sleep(0.5)
+
+reader = None
+writer = None
+if not success:
+    exit(1)
+exit(0)

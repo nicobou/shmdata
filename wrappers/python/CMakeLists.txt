@@ -34,8 +34,10 @@ if (WITH_PYTHON)
     # The result of the preceding command end with a line return, we have to get rid of it
     string(REGEX REPLACE "(.*)[\n\r]" "\\1" PYTHON_DIST_PACKAGES ${PYTHON_DIST_PACKAGES} )
 
-    # INSTALL
+    # Install
 
     install(TARGETS pyshmdata LIBRARY DESTINATION ${PYTHON_DIST_PACKAGES})
 
+    # Test
+    add_test(pyshmdata_basic ${CMAKE_CURRENT_SOURCE_DIR}/example.py)
 endif ()
