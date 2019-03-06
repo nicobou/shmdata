@@ -1056,7 +1056,24 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
   shm_follower_ = std::make_unique<ShmdataFollower>(this,
                                                     shmpath_,
                                                     nullptr,
-                                                    [this](const std::string& /*shmtype*/) {
+                                                    [this](const std::string& shmtype) {
+                                                      if (!cur_caps_.empty() &&
+                                                          cur_caps_ != shmtype) {
+                                                        cur_caps_ = shmtype;
+                                                        // abort current gst pipeline
+                                                        gst_pipeline_.reset();
+                                                        debug(
+                                                            "glfwin restarting shmdata connection "
+                                                            "because of an updated caps (%)",
+                                                            cur_caps_);
+                                                        async_this_.run_async([this]() {
+                                                          on_shmdata_disconnect();
+                                                          on_shmdata_connect(shmpath_);
+                                                        });
+
+                                                        return;
+                                                      }
+                                                      cur_caps_ = shmtype;
                                                       add_rendering_task([this]() {
                                                         draw_video_ = true;
                                                         setup_video_texture();

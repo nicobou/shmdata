@@ -51,5 +51,6 @@ if (WITH_PYTHON)
     add_test(pyquid_property_sub ${CMAKE_CURRENT_SOURCE_DIR}/examples/06-subscribe-to-property.py)
     add_test(pyquid_invoke_async ${CMAKE_CURRENT_SOURCE_DIR}/examples/07-invoke-async.py)
     add_test(pyquid_quid_infotree_stress ${CMAKE_CURRENT_SOURCE_DIR}/examples/08-quid-infotree-stress.py)
+    add_test(pyquid_uri_in_video_window ${CMAKE_CURRENT_SOURCE_DIR}/examples/09-uri-in-video-window.py)
 
 endif ()

@@ -32,6 +32,7 @@
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
 #include "switcher/shmdata-writer.hpp"
+#include "switcher/threaded-wrapper.hpp"
 
 namespace switcher {
 
@@ -259,6 +260,7 @@ class GLFWVideo : public Quiddity {
   std::string shmpath_{};
   std::unique_ptr<ShmdataFollower> shm_follower_{nullptr};
   std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
+  std::string cur_caps_{};
 
   /**
    * \brief Gstreamer elements and tools
@@ -348,6 +350,11 @@ class GLFWVideo : public Quiddity {
   int minimized_height_{600};
   int minimized_position_x_{0};
   int minimized_position_y_{0};
+
+  /**
+   * \brief Handling dynamic change of shmdata type
+   */
+  ThreadedWrapper<> async_this_{};
 };
 
 }  // namespace switcher
