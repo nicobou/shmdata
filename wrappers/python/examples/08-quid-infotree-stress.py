@@ -10,7 +10,6 @@
 # GNU Lesser General Public License for more details.
 
 import sys
-sys.path.insert(0, '/usr/local/lib/python3/dist-packages')
 import pyquid
 import time
 import assert_exit_1

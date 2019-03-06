@@ -19,7 +19,6 @@
 # This file illustrates the use of v).
 
 import sys
-sys.path.insert(0, '/usr/local/lib/python3/dist-packages')
 import pyquid
 import json
 import assert_exit_1

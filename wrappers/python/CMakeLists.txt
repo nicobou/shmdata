@@ -30,13 +30,7 @@ if (WITH_PYTHON)
         PRIVATE ${SWITCHER_LIBRARY}
         PRIVATE ${PYTHON_LIBRARIES}
     )
-
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; from distutils import sysconfig; print((sysconfig.get_python_lib(1,0)).split(sys.prefix+'/')[1])"
-        OUTPUT_VARIABLE PYTHON_DIST_PACKAGES
-        )
-
-    # The result of the preceding command end with a line return, we have to get rid of it
-    string(REGEX REPLACE "(.*)[\n\r]" "\\1" PYTHON_DIST_PACKAGES ${PYTHON_DIST_PACKAGES} )
+    execute_process ( COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())" OUTPUT_VARIABLE PYTHON_DIST_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     # INSTALL
 

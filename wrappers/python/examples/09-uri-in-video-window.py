@@ -11,7 +11,6 @@
 # GNU Lesser General Public License for more details.
 
 import sys
-sys.path.insert(0, '/usr/local/lib/python3/dist-packages')
 import pyquid
 import time
 import assert_exit_1
@@ -22,12 +21,12 @@ sw = pyquid.Switcher('urivid', debug=True)
 # creating the window
 winqrox = sw.create(type='glfwin', name='win')
 winqrox2 = sw.create(type='glfwin', name='win2')
-if None == winqrox:
+if not winqrox:
     winqrox = sw.create(type='dummysink', name='win')
-if None == winqrox2:
+if not winqrox2:
     winqrox2 = sw.create(type='dummysink', name='win2')
 
-assert None != winqrox
+assert winqrox
 
 
 # creating the uri decoder
