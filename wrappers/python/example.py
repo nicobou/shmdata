@@ -35,7 +35,6 @@ writer = pyshmdata.Writer(path="/tmp/some_shmdata", datatype="application/x-raw,
 start_time = time.monotonic()
 while (not success and time.monotonic() < start_time + 4):
     writer.push(buffer=bytearray("are belong to us", encoding="utf-8"))
-    time.sleep(0.5)
 
 reader = None
 writer = None

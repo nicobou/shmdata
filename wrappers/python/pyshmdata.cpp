@@ -11,8 +11,6 @@
  */
 
 #include "pyshmdata.h"
-
-#include <iostream>
 #include <string>
 
 using namespace std;
@@ -45,7 +43,10 @@ void Writer_dealloc(pyshmdata_WriterObject* self) {
   Py_XDECREF(self->path);
   Py_XDECREF(self->datatype);
   Py_XDECREF(self->framesize);
+  
+  auto* state = PyEval_SaveThread();
   if (self->writer != nullptr) shmdata_delete_writer(self->writer);
+  PyEval_RestoreThread(state);
 
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
@@ -81,6 +82,7 @@ PyObject* Writer_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/)
                                        &log_info_handler,
                                        &log_debug_handler,
                                        &self->show_debug_messages);
+   
   }
 
   return (PyObject*)self;
@@ -146,8 +148,10 @@ int Writer_init(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds) {
   string strDatatype(PyUnicode_AsUTF8(self->datatype));
   size_t size = PyLong_AsSize_t(self->framesize);
 
+  auto* state = PyEval_SaveThread();
   self->writer = shmdata_make_writer(
       strPath.c_str(), size, strDatatype.c_str(), nullptr, nullptr, nullptr, self->logger);
+  PyEval_RestoreThread(state);
   if (!self->writer) {
     return -1;
   }
@@ -186,8 +190,11 @@ PyObject* Writer_push(pyshmdata_WriterObject* self, PyObject* args, PyObject* kw
 
   if (self->writer) {
     Py_INCREF(buffer);
-    shmdata_copy_to_shm(
-        self->writer, (void*)PyByteArray_AsString(buffer), PyByteArray_Size(buffer));
+    void* buf = PyByteArray_AsString(buffer);
+    size_t bufsize = PyByteArray_Size(buffer);
+    auto* state = PyEval_SaveThread();
+    shmdata_copy_to_shm(self->writer, buf, bufsize);
+    PyEval_RestoreThread(state);
     Py_XDECREF(buffer);
   }
 
@@ -260,8 +267,10 @@ PyTypeObject pyshmdata_WriterType = {
 /*************/
 // Any-data-reader
 void Reader_dealloc(pyshmdata_ReaderObject* self) {
+  auto* state = PyEval_SaveThread();
   if (self->reader) shmdata_delete_follower(self->reader);
-
+  PyEval_RestoreThread(state);
+  
   Py_XDECREF(self->path);
   Py_XDECREF(self->datatype);
   if (nullptr != self->callback_user_data) Py_XDECREF(self->callback_user_data);
@@ -368,13 +377,15 @@ int Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds) {
       self->show_debug_messages = false;
   }
 
+  PyEval_InitThreads();
+  auto* state = PyEval_SaveThread();
   self->reader = shmdata_make_follower(PyUnicode_AsUTF8(self->path),
                                        Reader_on_data_handler,
                                        Reader_on_connect_handler,
                                        Reader_on_disconnect,
                                        self,
                                        self->logger);
-
+  PyEval_RestoreThread(state);
   if (!self->reader) return -1;
 
   return 0;
@@ -400,7 +411,6 @@ PyObject* Reader_pull(pyshmdata_ReaderObject* self) {
 /*************/
 void Reader_on_data_handler(void* user_data, void* data, size_t data_size) {
   pyshmdata_ReaderObject* self = static_cast<pyshmdata_ReaderObject*>(user_data);
-
   if (user_data == nullptr || (self->drop_frames && !self->frame_mutex.try_lock())) return;
 
   bool has_gil = (1 == PyGILState_Check()) ? true : false;
@@ -408,7 +418,6 @@ void Reader_on_data_handler(void* user_data, void* data, size_t data_size) {
   if (!has_gil) {
     gil = PyGILState_Ensure();
   }
-  
 
   // Get the current buffer
   PyObject* buffer = PyByteArray_FromStringAndSize((char*)data, data_size);
@@ -446,6 +455,7 @@ void Reader_on_data_handler(void* user_data, void* data, size_t data_size) {
 /*************/
 void Reader_on_connect_handler(void* user_data, const char* type_descr) {
   pyshmdata_ReaderObject* self = static_cast<pyshmdata_ReaderObject*>(user_data);
+      
   bool has_gil = (1 == PyGILState_Check()) ? true : false;
   PyGILState_STATE gil;
   if (!has_gil) {
@@ -456,6 +466,7 @@ void Reader_on_connect_handler(void* user_data, const char* type_descr) {
   self->datatype = datatype;
   self->parsed_datatype = Reader_parse_datatype(type_descr);
   Py_XDECREF(tmp);
+
   if (!has_gil) {
     PyGILState_Release(gil);
   }
