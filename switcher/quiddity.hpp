@@ -64,7 +64,6 @@ class Quiddity : public Logged, public SafeBoolIdiom {
 
  public:
   using ptr = std::shared_ptr<Quiddity>;
-  using wptr = std::weak_ptr<Quiddity>;
   explicit Quiddity(quid::Config&&);
   Quiddity() = delete;
   Quiddity(const Quiddity&) = delete;
