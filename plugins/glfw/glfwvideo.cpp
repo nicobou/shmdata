@@ -1061,7 +1061,9 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
                                                           cur_caps_ != shmtype) {
                                                         cur_caps_ = shmtype;
                                                         // abort current gst pipeline
-                                                        gst_pipeline_.reset();
+                                                        gst_pipeline_ =
+                                                            std::make_unique<GstPipeliner>(nullptr,
+                                                                                           nullptr);
                                                         debug(
                                                             "glfwin restarting shmdata connection "
                                                             "because of an updated caps (%)",
