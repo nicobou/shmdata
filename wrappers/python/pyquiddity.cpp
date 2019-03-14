@@ -20,6 +20,7 @@
 #include "./pyquiddity.hpp"
 #include <chrono>
 #include "./pyinfotree.hpp"
+#include "./ungiled.hpp"
 #include "switcher/scope-exit.hpp"
 
 PyDoc_STRVAR(pyquiddity_set_doc,
@@ -42,8 +43,10 @@ PyObject* pyQuiddity::set(pyQuiddityObject* self, PyObject* args, PyObject* kwds
     if (repr) Py_XDECREF(repr);
   };
   if (PyBool_Check(value)) {
-    if (!self->quid->prop<MPtr(&PContainer::set_str_str)>(property,
-                                                          (value == Py_True) ? "true" : "false")) {
+    if (!pyquid::ungiled(std::function([&]() {
+          return self->quid->prop<MPtr(&PContainer::set_str_str)>(
+              property, (value == Py_True) ? "true" : "false");
+        }))) {
       Py_INCREF(Py_False);
       return Py_False;
     }
@@ -56,7 +59,10 @@ PyObject* pyQuiddity::set(pyQuiddityObject* self, PyObject* args, PyObject* kwds
   } else {
     val_str = PyUnicode_AsEncodedString(value, "utf-8", "Error ");
   }
-  if (!self->quid->prop<MPtr(&PContainer::set_str_str)>(property, PyBytes_AS_STRING(val_str))) {
+  if (!pyquid::ungiled(std::function([&]() {
+        return self->quid->prop<MPtr(&PContainer::set_str_str)>(property,
+                                                                PyBytes_AS_STRING(val_str));
+      }))) {
     Py_INCREF(Py_False);
     return Py_False;
   }
@@ -81,7 +87,8 @@ PyObject* pyQuiddity::get(pyQuiddityObject* self, PyObject* args, PyObject* kwds
     Py_INCREF(Py_False);
     return Py_False;
   }
-  return pyInfoTree::any_to_pyobject(self->quid->prop<MPtr(&PContainer::get_any)>(prop_id));
+  return pyInfoTree::any_to_pyobject(pyquid::ungiled(
+      std::function([&]() { return self->quid->prop<MPtr(&PContainer::get_any)>(prop_id); })));
 }
 
 PyDoc_STRVAR(pyquiddity_invoke_doc,
@@ -129,8 +136,11 @@ PyObject* pyQuiddity::invoke(pyQuiddityObject* self, PyObject* args, PyObject* k
       tuple_args = tuple_args + "," + serialize::esc_for_tuple(PyBytes_AS_STRING(item_str));
   }
 
-  auto res = self->quid->meth<MPtr(&MContainer::invoke_any)>(
-      self->quid->meth<MPtr(&MContainer::get_id)>(method), tuple_args);
+  BoolAny res = pyquid::ungiled(std::function([&]() {
+    return self->quid->meth<MPtr(&MContainer::invoke_any)>(
+        self->quid->meth<MPtr(&MContainer::get_id)>(method), tuple_args);
+  }));
+
   if (!res) {
     Py_INCREF(Py_None);
     return Py_None;
@@ -485,7 +495,10 @@ PyObject* pyQuiddity::get_info_tree_as_json(pyQuiddityObject* self,
   }
   if (nullptr == path) path = ".";
 
-  return PyUnicode_FromString(self->quid->tree<MPtr(&InfoTree::serialize_json)>(path).c_str());
+  std::string res = pyquid::ungiled(
+      std::function([&]() { return self->quid->tree<MPtr(&InfoTree::serialize_json)>(path); }));
+
+  return PyUnicode_FromString(res.c_str());
 }
 
 PyDoc_STRVAR(pyquiddity_get_signal_id_doc,

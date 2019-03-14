@@ -22,7 +22,7 @@ set(PACKAGE_URL "https://gitlab.com/sat-metalab/switcher")
 set(PACKAGE_VERSION ${SWITCHER_VERSION_STRING})
 
 # Compilation
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(DATADIR ${CMAKE_INSTALL_PREFIX}/share/switcher/)
 
 # CPack - General
