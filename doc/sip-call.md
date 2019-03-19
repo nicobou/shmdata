@@ -27,7 +27,7 @@ In another terminal, prepare you sip communication:
 switcher-ctrl -C sip sip
 switcher-ctrl -s sip port 5060
 switcher-ctrl -i sip register shmdata@mondomaine.com ilovedogs
-switcher-ctrl -i sip set_stun_turn stun.mondomaine.com turn.mondomaine.com shmdata ilovedogs
+switcher-ctrl -i sip set_stun_turn stun.mondomaine.com:3478 turn.mondomaine.com:3478 shmdata ilovedogs
 
 switcher-ctrl -s sip mode "authorized contacts"
 switcher-ctrl -i sip add_buddy switcher@mondomaine.com
