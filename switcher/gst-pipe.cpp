@@ -54,6 +54,7 @@ GstPipe::GstPipe(GMainContext* context,
 
 gboolean GstPipe::gst_pipeline_delete(gpointer user_data) {
   auto context = static_cast<GstPipe*>(user_data);
+  gst_element_set_state(context->pipeline_, GST_STATE_NULL);
   gst_object_unref(GST_OBJECT(context->pipeline_));
   context->end_cond_.notify_all();
   return FALSE;
@@ -61,18 +62,11 @@ gboolean GstPipe::gst_pipeline_delete(gpointer user_data) {
 
 GstPipe::~GstPipe() {
   std::unique_lock<std::mutex> lock(end_);
-  gst_element_set_state(pipeline_, GST_STATE_NULL);
   auto gsrc = g_idle_source_new();
   g_source_set_callback(gsrc, gst_pipeline_delete, this, nullptr);
   if (g_source_attach(gsrc, gmaincontext_) != 0) end_cond_.wait_for(lock, 500ms);
   g_source_destroy(source_);
   g_source_unref(source_);
-}
-
-void GstPipe::play_pipe(GstPipe* pipe) {
-  gst_element_set_state(pipe->pipeline_, GST_STATE_READY);
-  GstUtils::wait_state_changed(pipe->pipeline_);
-  gst_element_set_state(pipe->pipeline_, GST_STATE_PLAYING);
 }
 
 gboolean GstPipe::source_prepare(GSource* source, gint* timeout) {
@@ -107,13 +101,23 @@ void GstPipe::source_finalize(GSource* source) {
   bsrc->bus = nullptr;
 }
 
-bool GstPipe::play(bool play) {
-  if (play) {
-    gst_element_set_state(pipeline_, GST_STATE_PLAYING);
+gboolean GstPipe::gst_play(gpointer user_data) {
+  auto context = static_cast<GstPipe*>(user_data);
+  if (context->playing_asked_) {
+    gst_element_set_state(context->pipeline_, GST_STATE_PLAYING);
   } else {
-    gst_element_set_state(pipeline_, GST_STATE_PAUSED);
+    gst_element_set_state(context->pipeline_, GST_STATE_PAUSED);
   }
-  return play;
+  return FALSE;
+}
+
+bool GstPipe::play(bool play) {
+  playing_asked_ = play;
+  std::unique_lock<std::mutex> lock(play_mtx_);
+  auto gsrc = g_idle_source_new();
+  g_source_set_callback(gsrc, gst_play, this, nullptr);
+  g_source_attach(gsrc, gmaincontext_);
+  return playing_asked_;
 }
 
 BoolLog GstPipe::seek(gdouble position) {
