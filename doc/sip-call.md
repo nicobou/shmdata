@@ -25,8 +25,8 @@ switcher -d
 In another terminal, prepare you sip communication:
 ```
 switcher-ctrl -C sip sip
-switcher-ctrl -s sip port 5060
-switcher-ctrl -i sip register shmdata@mondomaine.com ilovedogs
+switcher-ctrl -s sip port 15060 # set local port to bind for sip communications
+switcher-ctrl -i sip register shmdata@mondomaine.com:5060 ilovedogs
 switcher-ctrl -i sip set_stun_turn stun.mondomaine.com:3478 turn.mondomaine.com:3478 shmdata ilovedogs
 
 switcher-ctrl -s sip mode "authorized contacts"
