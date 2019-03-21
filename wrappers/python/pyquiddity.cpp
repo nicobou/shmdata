@@ -210,7 +210,7 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
         auto res = self->quid->meth<MPtr(&MContainer::invoke_any)>(
             self->quid->meth<MPtr(&MContainer::get_id)>(meth), tuple_args);
         bool has_gil = (1 == PyGILState_Check()) ? true : false;
-        PyThreadState* m_state;
+        PyThreadState* m_state = nullptr;
         if (!has_gil) {
           m_state = PyThreadState_New(self->interpreter_state);
           PyEval_RestoreThread(m_state);
