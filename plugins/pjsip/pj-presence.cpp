@@ -203,6 +203,7 @@ void PJPresence::register_account(const std::string& sip_user, const std::string
   pj_status_t status;
   // extracting domain information from sip uri
   auto at = std::find(sip_user.begin(), sip_user.end(), '@');
+  auto colon = std::find(sip_user.begin(), sip_user.end(), ':');
   if (sip_user.end() == at || sip_user.end() == (at + 1)) {
     SIPPlugin::this_->warning("%: invalid sip uri", std::string(__FUNCTION__));
     return;
@@ -216,7 +217,7 @@ void PJPresence::register_account(const std::string& sip_user, const std::string
   // setting pjsip account data structure
   pjsua_acc_config_default(&cfg_);
   cfg_.id = pj_strdup3(acc_info_pool_,
-                       std::string("sip:" + sip_user  // + ";transport=tcp"
+                       std::string("sip:" + std::string(sip_user.begin(), colon)  // + ";transport=tcp"
                                    )
                            .c_str());
   cfg_.reg_uri = pj_strdup3(acc_info_pool_,
@@ -224,7 +225,7 @@ void PJPresence::register_account(const std::string& sip_user, const std::string
                                         )
                                 .c_str());
   cfg_.cred_count = 1;
-  cfg_.cred_info[0].realm = pj_strdup3(acc_info_pool_, std::string(at + 1, sip_user.end()).c_str());
+  cfg_.cred_info[0].realm = pj_strdup3(acc_info_pool_, std::string(at + 1, colon).c_str());
   cfg_.cred_info[0].scheme = pj_strdup3(acc_info_pool_, "digest");
   cfg_.cred_info[0].username =
       pj_strdup3(acc_info_pool_, std::string(sip_user.begin(), at).c_str());
