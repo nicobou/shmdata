@@ -24,15 +24,27 @@ aquids: List[pyquid.Quiddity] = []
 async def worker(queue: asyncio.Queue) -> None:
     while True:
         key, quid = await queue.get()
-        print(key + '-- ' + quid.get_info_tree_as_json(key.strip('\"')))
+        assert 'null' != quid.get_info_tree_as_json(key.strip('\"'))
         # Notify the queue that the "work item" has been processed.
         queue.task_done()
 
 
-async def make_switcher_scenario() -> None:
+async def make_switcher_scenario(sw: pyquid.Switcher) -> None:
+    now = time.monotonic()
+    while (time.monotonic() < now + 4):
+        await asyncio.sleep(0.001)
+        for name in sw.list_quids():
+            sw.get_qrox_from_name(name).quid().get_info_tree_as_json()
+
+
+def on_tree(key: str, quid: pyquid.Quiddity) -> None:
+    queue.put_nowait((key, quid))
+
+
+async def main():
     sw = pyquid.Switcher('quid-info-tree-stress', debug=True)
 
-    for i in range(1, 10):
+    for i in range(1, 20):
         vquids.append(sw.create('videotestsrc', 'vid' + str(i)).quid())
         vquids[-1].subscribe('on-tree-grafted', on_tree, vquids[-1])
         vquids[-1].set('started', True)
@@ -45,31 +57,17 @@ async def make_switcher_scenario() -> None:
         aquids[-1].invoke('connect-quid', ['vid' + str(i), 'video'])
 
     for q in aquids:
-        q.subscribe('on-tree-grafted', on_tree, vquids[-1])
-
-    now = time.monotonic()
-    while (time.monotonic() < now + 4):
-        await asyncio.sleep(0.1)
-        for name in sw.list_quids():
-            sw.get_qrox_from_name(name).quid().get_info_tree_as_json()
-
-
-def on_tree(key: str, quid: pyquid.Quiddity) -> None:
-    queue.put_nowait((key, quid))
-
-
-async def main():
+        q.subscribe('on-tree-grafted', on_tree, q)
 
     task = asyncio.ensure_future(worker(queue))
 
-    init_task = asyncio.ensure_future(make_switcher_scenario())
+    init_task = asyncio.ensure_future(make_switcher_scenario(sw))
 
     # waiting for end of work
     await asyncio.gather(init_task, return_exceptions=True)
     await queue.join()
     task.cancel()
     await asyncio.gather(task, return_exceptions=True)
-
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main())

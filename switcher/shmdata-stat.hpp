@@ -25,7 +25,6 @@
 
 namespace switcher {
 struct ShmdataStat {
-  static const std::chrono::seconds kDefaultUpdateIntervalInSeconds;
   static const std::chrono::milliseconds kDefaultUpdateInterval;
 
   size_t bytes_{0};
