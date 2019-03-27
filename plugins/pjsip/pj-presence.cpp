@@ -244,9 +244,9 @@ void PJPresence::register_account(const std::string& sip_user, const std::string
   if (registered_) {
     change_online_status(PJPresence::AVAILABLE);
     // notifying sip registration status
-    SIPPlugin::this_->graft_tree(".self.", InfoTree::make(sip_user));
-    sip_local_user_ =
-        std::string("sip:") + sip_user + ":" + std::to_string(SIPPlugin::this_->sip_port_);
+    SIPPlugin::this_->graft_tree(".self.", InfoTree::make(std::string(sip_user.begin(), colon)));
+    sip_local_user_ = std::string("sip:") + std::string(sip_user.begin(), colon) + ":" +
+                      std::to_string(SIPPlugin::this_->sip_port_);
   }
 }
 
