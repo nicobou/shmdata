@@ -311,6 +311,7 @@ void PJPresence::add_buddy(const std::string& user) {
     return;
   }
 
+  sip_user = std::string(sip_user.begin(), std::find(sip_user.begin(), sip_user.end(), ':'));
   if (buddy_id_.end() != buddy_id_.find(sip_user)) {
     SIPPlugin::this_->message("ERROR:buddy % already added", sip_user);
     SIPPlugin::this_->warning("buddy % already added", sip_user);
@@ -326,6 +327,7 @@ void PJPresence::add_buddy(const std::string& user) {
     SIPPlugin::this_->warning("buddy not found");
     return;
   }
+
   SIPPlugin::this_->debug("Buddy added");
   buddy_id_[sip_user] = buddy_id;
   SIPPlugin::this_->white_list_->add(
