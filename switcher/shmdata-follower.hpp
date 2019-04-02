@@ -57,6 +57,7 @@ class ShmdataFollower {
   shmdata::Reader::onServerConnected osc_;
   shmdata::Reader::onServerDisconnected osd_;
   std::string tree_path_;
+  Direction dir_;
   std::unique_ptr<shmdata::Follower> follower_;
   std::unique_ptr<PeriodicTask<>> task_;
 

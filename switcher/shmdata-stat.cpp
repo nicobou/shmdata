@@ -37,8 +37,9 @@ void ShmdataStat::reset() {
 }
 
 std::function<void(const ShmdataStat&)> ShmdataStat::make_tree_updater(Quiddity* quid,
-                                                                       const std::string& key) {
-  return [quid, key](const ShmdataStat& stat) {
+                                                                       const std::string& key,
+                                                                       bool do_signal) {
+  return [quid, key, do_signal](const ShmdataStat& stat) {
     auto tree = InfoTree::make();
     tree->graft(
         ".byte_rate",
@@ -48,7 +49,7 @@ std::function<void(const ShmdataStat&)> ShmdataStat::make_tree_updater(Quiddity*
         ".rate",
         InfoTree::make(stat.accesses_ /
                        std::chrono::duration<float>(ShmdataStat::kDefaultUpdateInterval).count()));
-    quid->graft_tree(key + ".stat", tree);
+    quid->graft_tree(key + ".stat", tree, do_signal);
   };
 }
 

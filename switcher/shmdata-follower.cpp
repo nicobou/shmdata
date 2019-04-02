@@ -35,6 +35,7 @@ ShmdataFollower::ShmdataFollower(Quiddity* quid,
       osc_(osc),
       osd_(osd),
       tree_path_(dir == Direction::reader ? ".shmdata.reader." + path : ".shmdata.writer." + path),
+      dir_(dir),
       follower_(std::make_unique<shmdata::Follower>(
           path,
           [this](void* data, size_t size) { this->on_data(data, size); },
@@ -84,7 +85,8 @@ void ShmdataFollower::on_server_disconnected() {
 
 void ShmdataFollower::update_quid_stats() {
   std::unique_lock<std::mutex> lock(bytes_mutex_);
-  ShmdataStat::make_tree_updater(quid_, tree_path_)(shm_stat_);
+  ShmdataStat::make_tree_updater(
+      quid_, tree_path_, (dir_ == Direction::writer ? true : false))(shm_stat_);
   shm_stat_.reset();
 }
 
