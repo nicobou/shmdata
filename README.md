@@ -6,27 +6,29 @@ switcher
 
 [![build status](https://gitlab.com/sat-metalab/switcher/badges/master/build.svg)](https://gitlab.com/sat-metalab/switcher/commits/master)
 
-[switcher](https://gitlab.com/sat-metalab/switcher) is an integration environment, able to interoperate with other software and protocols. Switcher is mostly used for low latency streaming of multichannel audio, video and data through IP networks.
+[switcher](https://gitlab.com/sat-metalab/switcher) is an integration environment, able to interoperate with other software and protocols. Switcher provides low latency streaming of multichannel audio, video and data through IP networks.
 
-Switcher is actually more generic and provides managing of several instances of services (called Quiddities). Each Quiddity can be created and removed dynamically and can be controlled through property get/set, method invocations and information tree monitoring. Switcher provides introspection mechanisms that help the writing of higher level software written in C++, python3, node.js or shell. Switcher can save and load the state of quiddities. 
+Switcher is more generic and provides managing of several instances of services (called Quiddities). A Quiddity can be created and removed dynamically and can be controlled through property get/set as well as method invocations and information tree monitoring. Switcher provides introspection mechanisms to help write higher level software written in C++, python3, node.js or shell. Switcher can save and load the state of quiddities. 
 
 Most Quiddities expose and/or consume live streams of data frames using the [shmdata](https://gitlab.com/sat-metalab/shmdata), a library for sharing data streams among processes with zero copy through POSIX shared memory. Note shmdata has [GStreamer](https://gstreamer.freedesktop.org/) elements.
 
-For instance, the camera (v4l2src) Quiddity provides the video stream from a camera, that can be connected simultaneously to several other Quiddities, including a local display (glfwin), a file recorder (avrec), a low latency streamer (SIP) or more, including another shmdata enabled software. Note that the SIP quiddity supports NAT traversal through STUN/TURN and a companion repository is available for deployment of a SIP server compatible with switcher: [scenic-server](https://gitlab.com/sat-metalab/scenic-server). 
+For instance, the camera (v4l2src) Quiddity provides the video stream from a camera that can be connected simultaneously to several other Quiddities, including a local display (glfwin), a file recorder (avrec), a low-latency streamer (SIP) or more, including another shmdata enabled software. Note that the SIP quiddity supports NAT traversal through STUN/TURN and a companion repository is available for deployment of a SIP server compatible with switcher: [scenic-server](https://gitlab.com/sat-metalab/scenic-server). 
 
-[Scenic](https://gitlab.com/sat-metalab/scenic) provides a web interface for switcher. It emphasizes routing of audio, video and data signals and multichannel transmission over the network. 
+[Scenic](https://gitlab.com/sat-metalab/scenic) provides a web interface for switcher. It emphasizes routing of audio, video and data signals and multichannel transmission over the network.
 
-For more details about existing Quiddities, see [here](doc/quiddity_types.txt).
+[NDI2shmdata](https://gitlab.com/sat-metalab/ndi2shmdata) converts [shmdata](https://gitlab.com/sat-metalab/shmdata) to [NewTek's NDI](http://ndi.newtek.com), and _vice versa_. Note that you can include shmdata from external applications using the _extshmsrc_ quiddity. 
+
+For more details about the various Quiddities, see [here](doc/quiddity_types.txt).
 
 See instructions for:
 - [installing](doc/INSTALL.md)
 - [python3 scripting](doc/python-scripting.md)
-- [shell scripting switcher and scenic](doc/shell-scripting.md)
-- [shell scripting a sip call](doc/sip-call.md)
-- [shell scripting OSC quiddities](doc/using-osc-quiddities.md)
 - [configuration from file](doc/configuration.md)
 - [Map OSC or HTTP messages to quiddity properties](doc/protocol-mapper.md)
 - [Using the GStreamer plugin for NVidia H264 GPU decoder (nvdec)](doc/using-nvdec-gstreamer-plugins.md)
+- [shell scripting switcher and scenic](doc/shell-scripting.md)
+- [shell scripting a SIP call](doc/sip-call.md)
+- [shell scripting OSC quiddities](doc/using-osc-quiddities.md)
 - [contributing code](doc/CODING.md)
 
 Command line
