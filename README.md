@@ -6,9 +6,11 @@
 [![build status](https://gitlab.com/sat-metalab/shmdata/badges/master/build.svg)](https://gitlab.com/sat-metalab/shmdata/commits/master)
 
 # shmdata
-Library to share streams of framed data between processes via shared memory. shmdata is server less: it requires applications to link data streams using socket path (e.g. "/tmp/my_shmdata_stream"). Shmdata is very fast and allows process to access data streams without the need of extra copy.
+Library to share streams of framed data between processes via shared memory. shmdata is server less: it requires applications to link data streams using socket path (e.g. "/tmp/my_shmdata_stream"). Shmdata is very fast and allows processes to access data streams without the need of extra copy.
 
-The communication paradigm is 1 to many, i.e. one writer is making available data frames to several followers. Followers and writers are able to hot connect & disconnect. A shmdata can be resized during transmission and shmdata are typed using a string description published by writer at each reconnections. The description format is a user defined string.
+The communication paradigm is 1 to many, i.e., one writer is making available data frames to several followers. Followers and writers can hot connect & disconnect. Shmdata transmission supports buffer resizing. Each shmdata has a type specified with a string description, itself published by the shmdata writer at each reconnection. The type is specified as a user-defined string. Although left to the user, we encourage type specification to follow GStreamer 1.0 caps specification format, for instance "audio/x-raw,format=S16LE,channels=2,layout=interleaved". 
+
+Note the existence of [NDI2shmdata](https://gitlab.com/sat-metalab/ndi2shmdata) that converts shmdata to [NewTek's NDI](http://ndi.newtek.com), and _vice versa_.
 
 Some examples :
 
@@ -20,7 +22,7 @@ Some examples :
 
 # Use compiled GStreamer plugins with GStreamer tools:
 
-By default, gstreamer plugins are installed in ```/usr/local/lib/gstreamer-1.0/```.
+By default, GStreamer plugins are installed in ```/usr/local/lib/gstreamer-1.0/```.
 
 ```
 gst-inspect-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ shmdatasrc
@@ -57,7 +59,7 @@ Here is how to build and install it on Debian GNU/Linux or Ubuntu::
 
         make package_source
         
-* To test the source package, this will create the source package and then try to build and test it
+* To test the source package, this will create the source package, then try to build and test it
 
         make package_source_test
         
