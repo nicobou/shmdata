@@ -53,7 +53,7 @@ ShmdataToJack::ShmdataToJack(quid::Config&& conf)
                      });
                      thread.detach();
                    }),
-      connect_to_id_(pmanage<MPtr(&PContainer::make_string)>("connect-to",
+      connect_to_id_(pmanage<MPtr(&PContainer::make_string)>("connect_to",
                                                              [this](const std::string& val) {
                                                                connect_to_ = val;
                                                                update_port_to_connect();
@@ -338,8 +338,11 @@ void ShmdataToJack::update_port_to_connect() {
     return;
   }
 
-  for (unsigned int i = index_; i < index_ + output_ports_.size(); ++i)
-    ports_to_connect_.emplace_back(connect_to_ + std::to_string(i));
+  for (unsigned int i = index_; i < index_ + output_ports_.size(); ++i) {
+    char buff[128];
+    std::snprintf(buff, sizeof(buff), connect_to_.c_str(), i);
+    ports_to_connect_.emplace_back(buff);
+  }
 }
 
 void ShmdataToJack::connect_ports() {

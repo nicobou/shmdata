@@ -63,7 +63,7 @@ class ShmdataToJack : public Quiddity {
   std::vector<JackPort> output_ports_{};
   // properties
   bool auto_connect_{true};
-  std::string connect_to_{"system:playback_"};
+  std::string connect_to_{"system:playback_%d"};
   PContainer::prop_id_t connect_to_id_;
   unsigned int index_{1};
   PContainer::prop_id_t index_id_{0};

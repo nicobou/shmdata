@@ -153,6 +153,7 @@ add_subdirectory(tests)
 add_subdirectory(plugins)
 add_subdirectory(src)
 add_subdirectory(wrappers)
+add_subdirectory(tools)
 
 #
 # OTHER TARGETS
