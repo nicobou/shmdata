@@ -16,12 +16,10 @@ import signal
 import sys
 import time
 from pyquid import Switcher, Quiddity, InfoTree
-
-sw: Switcher
-jackquid: Quiddity
+from typing import Any
 
 
-def parse_args() -> None:
+def parse_args() -> argparse.Namespace:
     argp = argparse.ArgumentParser()
     argp.add_argument("shmpath", help="the audio shmdata to be sent to jack", type=str)
     argp.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
@@ -81,11 +79,11 @@ def main() -> None:
         time.sleep(0.2)
 
 
-def sigint_handler():
+def sigint_handler(signum: Any, frame: Any) -> None:
+    print('')  # avoid having the prompt back over the byte rate line
     sys.exit(0)
 
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, sigint_handler)
-    try:
-        main()
+    main()
