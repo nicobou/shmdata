@@ -33,7 +33,7 @@ def parse_args() -> argparse.Namespace:
                       help="connect only first channel", action="store_true")
     argp.add_argument(
         "--connect-to", help="name of the jack client to connect to (default is system:playback_%%d). " +
-        "Note that %%d will be replaced by the index of the stream.", type=str)
+        "Note that %%d will be replaced by the channel index.", type=str)
     argp.add_argument("--connection-index",
                       help="start connecting to other client from this channel index (default is 1)", default=1, type=int)
 
