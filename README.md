@@ -37,6 +37,8 @@ Here is how to build and install it on Debian GNU/Linux or Ubuntu::
     $ sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
     $ # this is for building python wrappers 
     $ sudo apt-get install python3-dev
+    $ git clone git@gitlab.com:sat-metalab/shmdata.git
+    $ cd shmdata
     $ mkdir build
     $ cd build
     $ cmake -DCMAKE_BUILD_TYPE=Release .. # replace "Release" with "Debug" when coding
