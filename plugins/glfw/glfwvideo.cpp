@@ -1016,6 +1016,7 @@ const GLFWVideo::MonitorConfig GLFWVideo::get_monitor_config() const {
 }
 
 bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
+  on_shmdata_disconnect();
   shmpath_ = shmpath;
   g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   shm_sub_ = std::make_unique<GstShmTreeUpdater>(
@@ -1060,16 +1061,11 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
                                                       if (!cur_caps_.empty() &&
                                                           cur_caps_ != shmtype) {
                                                         cur_caps_ = shmtype;
-                                                        // abort current gst pipeline
-                                                        gst_pipeline_ =
-                                                            std::make_unique<GstPipeliner>(nullptr,
-                                                                                           nullptr);
                                                         debug(
                                                             "glfwin restarting shmdata connection "
                                                             "because of an updated caps (%)",
                                                             cur_caps_);
                                                         async_this_.run_async([this]() {
-                                                          on_shmdata_disconnect();
                                                           on_shmdata_connect(shmpath_);
                                                         });
 
@@ -1143,6 +1139,7 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
 }
 
 bool GLFWVideo::on_shmdata_disconnect() {
+  cur_caps_.clear();
   shm_sub_.reset();
   shm_follower_.reset();
   On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };
