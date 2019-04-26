@@ -60,14 +60,14 @@ class LTCDiff : public Quiddity {
   bool on_shmdata_disconnect(const std::string& shmpath);
   bool can_sink_caps(const std::string& caps);
 
+  std::map<std::string, std::unique_ptr<LTCReader>>
+      ltc_readers_{};  //!< Incoming sound stream optionally used for cadencing.
+
   bool do_compute_{false};
   ShmdataConnector shmcntr_{nullptr};
   std::unique_ptr<ShmdataFollower> shm_follower_{
       nullptr};  //!< Unique, used to cadence the time difference computation
   std::unique_ptr<ShmdataWriter> shmw_{nullptr};
-
-  std::map<std::string, std::unique_ptr<LTCReader>>
-      ltc_readers_{};  //!< Incoming sound stream optionally used for cadencing.
 
   std::mutex timecode_m_{};
 
