@@ -32,12 +32,12 @@ gst-inspect-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ shmdatasink
 # Installation
 Here is how to build and install it on Debian GNU/Linux or Ubuntu::
 
-    $ sudo apt install cmake bison build-essential flex libtool
+    $ sudo apt install cmake bison build-essential flex libtool git
     $ # this is only for building gstreamer plugins:
-    $ sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+    $ sudo apt install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
     $ # this is for building python wrappers 
-    $ sudo apt-get install python3-dev
-    $ git clone git@gitlab.com:sat-metalab/shmdata.git
+    $ sudo apt install python3-dev
+    $ git clone https://gitlab.com/sat-metalab/shmdata.git
     $ cd shmdata
     $ mkdir build
     $ cd build
