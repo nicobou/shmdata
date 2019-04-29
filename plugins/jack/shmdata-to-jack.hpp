@@ -40,6 +40,7 @@ class ShmdataToJack : public Quiddity {
  private:
   unsigned int kMaxNumberOfChannels{128};
   bool is_constructed_{false};
+
   // internal use:
   std::string shmpath_{};
   GstElement* shmdatasrc_{nullptr};
@@ -51,16 +52,18 @@ class ShmdataToJack : public Quiddity {
   std::mutex output_ports_mutex_{};
   std::mutex ports_to_connect_mutex_{};
   std::vector<AudioRingBuffer<jack_sample_t>> ring_buffers_{};  // one per channel
+
   // jack sample is the time unit, assuming gst pipeline has the same sample
   // rate:
   DriftObserver<jack_nframes_t> drift_observer_{};
+
   // jack client
   JackClient jack_client_;
-  // ports
   std::vector<std::string> ports_to_connect_{};
   std::mutex port_to_connect_in_jack_process_mutex_{};
   std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
   std::vector<JackPort> output_ports_{};
+
   // properties
   bool auto_connect_{true};
   std::string connect_to_{"system:playback_%d"};
@@ -72,10 +75,17 @@ class ShmdataToJack : public Quiddity {
   PContainer::prop_id_t connect_all_to_first_id_;
   bool connect_only_first_{false};
   PContainer::prop_id_t connect_only_first_id_;
+  bool do_format_conversion_{true};
+  PContainer::prop_id_t do_format_conversion_id_;
+  bool do_rate_conversion_{true};
+  PContainer::prop_id_t do_rate_conversion_id_;
+
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
+
   // gst pipeline:
   std::unique_ptr<GstPipeliner> gst_pipeline_;
+
   // shmsubscriber (publishing to the information-tree):
   std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
 

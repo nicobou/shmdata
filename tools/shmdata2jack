@@ -31,6 +31,12 @@ def parse_args() -> argparse.Namespace:
                       help="connect all channels to the first", action="store_true")
     argp.add_argument("--connect-only-first",
                       help="connect only first channel", action="store_true")
+    argp.add_argument("--do-not-convert-format",
+                      help="do not try to convert sample format (required if shmdata has more than 63 channels)",
+                      action="store_true")
+    argp.add_argument("--do-not-convert-rate",
+                      help="do not try to convert sample rate (required if shmdata has more than 63 channels)",
+                      action="store_true")
     argp.add_argument(
         "--connect-to", help="name of the jack client to connect to (default is system:playback_%%d). " +
         "Note that %%d will be replaced by the channel index.", type=str)
@@ -62,6 +68,10 @@ def main() -> None:
         jackquid.set('connect_all_to_first', True)
     if args.connect_only_first:
         jackquid.set('connect_only_first', True)
+    if args.do_not_convert_format:
+        jackquid.set('do_format_conversion', False)
+    if args.do_not_convert_rate:
+        jackquid.set('do_rate_conversion', False)
     jackquid.set('index', args.connection_index)
     jackquid.invoke("connect", [args.shmpath])
 
