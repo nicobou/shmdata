@@ -1,3 +1,5 @@
+include(CheckCXXCompilerFlag)
+
 pkg_check_modules(PYTHON python3)
 
 option(WITH_PYTHON "Python Wrapper" ${PYTHON_FOUND})
@@ -11,6 +13,10 @@ if (WITH_PYTHON)
     link_directories(${PYTHON_LIBRARY_DIRS})
     add_compile_options(${PYTHON_CFLAGS})
     add_definitions(-Wno-error=missing-field-initializers)
+    check_cxx_compiler_flag(-Wno-error=cast-function-type CAN_CAST_FUNCTION_TYPE)
+    if(CAN_CAST_FUNCTION_TYPE)
+        add_definitions(-Wno-error=cast-function-type)
+    endif()
 
     add_library(pyshmdata SHARED
         pyshmdata.cpp

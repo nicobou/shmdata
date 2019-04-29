@@ -1,3 +1,4 @@
+include(CheckCXXCompilerFlag)
 # PLUGIN
 
 pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-base-1.0 gstreamer-controller-1.0)
@@ -10,6 +11,10 @@ if (WITH_GST)
     pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-base-1.0 gstreamer-controller-1.0)
 
     add_compile_options(${GST_CFLAGS})
+    check_cxx_compiler_flag(-Wno-error=cast-function-type CAN_CAST_FUNCTION_TYPE)
+    if(CAN_CAST_FUNCTION_TYPE)
+        add_definitions(-Wno-error=cast-function-type)
+    endif()
 
     # Replaces config.h
     add_definitions(
