@@ -28,6 +28,7 @@
 
 #include <chrono>
 #include <thread>
+
 using namespace std::chrono_literals;
 
 namespace switcher {
@@ -54,6 +55,7 @@ GstPipe::GstPipe(GMainContext* context,
 
 gboolean GstPipe::gst_pipeline_delete(gpointer user_data) {
   auto context = static_cast<GstPipe*>(user_data);
+  std::unique_lock<std::mutex> lock(context->end_);
   gst_element_set_state(context->pipeline_, GST_STATE_NULL);
   gst_object_unref(GST_OBJECT(context->pipeline_));
   context->end_cond_.notify_all();
@@ -64,7 +66,7 @@ GstPipe::~GstPipe() {
   std::unique_lock<std::mutex> lock(end_);
   auto gsrc = g_idle_source_new();
   g_source_set_callback(gsrc, gst_pipeline_delete, this, nullptr);
-  if (g_source_attach(gsrc, gmaincontext_) != 0) end_cond_.wait_for(lock, 500ms);
+  if (g_source_attach(gsrc, gmaincontext_) != 0) end_cond_.wait_for(lock, 2000ms);
   g_source_destroy(source_);
   g_source_unref(source_);
 }
