@@ -1,3 +1,4 @@
+include(CheckCXXCompilerFlag)
 # PLUGIN
 
 set(NVIDIA_PATH /usr/lib/nvidia-* CACHE STRING "Location of the nvidia libraries")
@@ -34,6 +35,11 @@ if (PLUGIN_NVENC)
     if (NOT NVCUVID)
         message(FATAL_ERROR "nvcuvid not found")
     endif ()
+
+    check_cxx_compiler_flag(-Wno-error=deprecated-declarations CAN_DEPRECATED_DECLARATIONS)
+    if(CAN_DEPRECATED_DECLARATIONS)
+        add_definitions(-Wno-error=deprecated-declarations)
+    endif()
 
     include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR} # For "nvidia/*" and "cuda/*"
