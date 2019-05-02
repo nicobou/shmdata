@@ -20,17 +20,18 @@ For instance, the camera (v4l2src) Quiddity provides the video stream from a cam
 
 For more details about the various Quiddities, see [here](doc/quiddity_types.txt).
 
-See instructions for:
-- [installing](doc/INSTALL.md)
-- [python3 scripting](doc/python-scripting.md)
-- [configuration from file](doc/configuration.md)
-- [Map OSC or HTTP messages to quiddity properties](doc/protocol-mapper.md)
+See instructions about:
+- [Switcher installation](doc/INSTALL.md)
+- [Switcher and scenic in docker](doc/run-switcher-in-docker.md)
+- [Python3 scripting](doc/python-scripting.md)
+- [Switcher configuration file](doc/configuration.md)
+- [Mapping OSC or HTTP messages to quiddity properties](doc/protocol-mapper.md)
 - [Using the GStreamer plugin for NVidia H264 GPU decoder (nvdec)](doc/using-nvdec-gstreamer-plugins.md)
-- [shell scripting switcher and scenic](doc/shell-scripting.md)
-- [shell scripting a SIP call](doc/sip-call.md)
-- [shell scripting OSC quiddities](doc/using-osc-quiddities.md)
-- [contributing code](doc/CODING.md)
-- [writing your quiddity](doc/writing-quiddity.md)
+- [Shell scripting switcher and scenic](doc/shell-scripting.md)
+- [Shell scripting a SIP call](doc/sip-call.md)
+- [Shell scripting OSC quiddities](doc/using-osc-quiddities.md)
+- [Contributing code](doc/CODING.md)
+- [Writing your quiddity](doc/writing-quiddity.md)
 
 Command line
 -------
