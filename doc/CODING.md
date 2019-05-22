@@ -4,9 +4,9 @@ CONTRIBUTING
 Coding style
 ------------
 
-We use Google C++ Style Guide, as decribed [here](https://google.github.io/styleguide/cppguide.html), with two excpetions:
-* a function call’s arguments will either be all on the same line or will have one line each. 
-* a function declaration’s or function definition’s parameters will either all be on the same line or will have one line each.
+We use Google C++ Style Guide, as described [here](https://google.github.io/styleguide/cppguide.html), with two exceptions:
+* A function call’s arguments will either be all on the same line or will have one line each. 
+* A function declaration’s or function definition’s parameters will either all be on the same line or will have one line each.
 
 For python code, we use PEP8 style guide with maximum line length set to 120.
 
@@ -26,12 +26,12 @@ Contributing
 
 Please send your merge request at the [sat-metalab' gitlab account](https://gitlab.com/sat-metalab/switcher). If you do not know how to make a merge request, gitlab provides some [help about creating a merge request](https://docs.gitlab.com/ee/gitlab-basics/add-merge-request.html).
 
-Branching strategy with git
+Branching Strategy With Git
 ---------------------------
 
 The [master](https://gitlab.com/sat-metalab/switcher/tree/master) branch contains switcher releases. Validated new developments are into the [develop](https://gitlab.com/sat-metalab/switcher/tree/develop) branch.
 
-Modifications are made into a dedicated branch that need to be merged into the develop branch through a gitlab merge request. When you modification is ready, you need to prepare your merge request as follow:
+Modifications are made in a dedicated branch that needs to be merged into the develop branch through a gitlab merge request. When your modification is ready, you need to prepare your merge request as follows:
 * Update your develop branch. 
 ```
 git fetch

@@ -25,9 +25,9 @@ sudo apt install nvidia-cuda-toolkit
 You can validate the installation by running `nvcc --version`.
 
 ### Nvidia Video Codec SDK
-Building the plugins require the user to install the Nvidia Video SDK. (version 8.2) The SDK is available here: https://developer.nvidia.com/nvidia-video-codec-sdk. It is free of charge, altough it does require you to create a Nvidia account.
+Building the plugins requires the user to install the Nvidia Video SDK. (version 8.2) The SDK is available here: https://developer.nvidia.com/nvidia-video-codec-sdk. It is free of charge, although it does require you to create a Nvidia account.
 
-Unzip the downloaded archive and copy the necessary header files to `/usr/local/include`. The SDK is made of only 3 files; the rest are example CUDA aplications.
+Unzip the downloaded archive and copy the necessary header files to `/usr/local/include`. The SDK is made of only 3 files; the rest are examples of CUDA applications.
 
 ```bash
 cd Video_Codec_SDK_8.2.16/
@@ -58,7 +58,7 @@ sudo make install
 sudo ldconfig
 ```
 
-_If the `--disable-gtk-doc` flag is ommitted, you will need to install the `gtk-doc-tools` package before building the plugins._
+_If the `--disable-gtk-doc` flag is omitted, you will need to install the `gtk-doc-tools` package before building the plugins._
 
 The nvdec and nvenc plugins will be installed in `/usr/local/lib/gstreamer-1.0` as `libgstnvenc.so` and `libgstnvdec.so`.
 
@@ -85,6 +85,6 @@ This can be easily done in the `switcher.json` file, by adding the following ent
  }
 ```
 
-Inside `primary_priority`, simply specify a GStreamer plugin (in our case, __nvdec__), and assign it a priority (integer only). On Switcher's startup, any specified pugin will be assigned the `PRIMARY` rank + the specified number in `switcher.json`. In our case, nvdec will have a rank of `PRIMARY`+10, which is higher than the other decoders (they often have a rank of `PRIMARY` only).
+Inside `primary _priority`, simply specify a GStreamer plugin (in our case, __nvdec__), and assign it a priority (integer only). On Switcher's startup, any specified plugin will be assigned the `PRIMARY` rank + the specified number in `switcher.json`. In our case, nvdec will have a rank of `PRIMARY`+10, which is higher than the other decoders (they often have a rank of `PRIMARY` only).
 
 More info on the inner workings of this logic is available [here](https://gstreamer.freedesktop.org/documentation/tutorials/playback/hardware-accelerated-video-decoding.html).

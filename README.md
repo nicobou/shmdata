@@ -30,6 +30,7 @@ See instructions for:
 - [shell scripting a SIP call](doc/sip-call.md)
 - [shell scripting OSC quiddities](doc/using-osc-quiddities.md)
 - [contributing code](doc/CODING.md)
+- [writing your quiddity](doc/writing-quiddity.md)
 
 Command line
 -------

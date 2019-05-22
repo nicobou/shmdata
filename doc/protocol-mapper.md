@@ -1,12 +1,12 @@
 Protocol Mapper
 =======
 
-The protocol-mapper quiddity provides the mapping of properties on a OSC and/or HTTP messages. This is done through definition of a set of commands in a json file.
+The protocol-mapper quiddity provides the mapping of properties on OSC and/or HTTP messages. This is done through definition of a set of commands in a JSON file.
 
-The OSC protocol is already implemented and an example json protocol-osc.json is available in plugins/protocol-mapper/ in switcher. Here is an excerpt of the file that helps us comment it:
+The OSC protocol is already implemented and an example JSON protocol-osc.json is available in plugins/protocol-mapper/ in switcher. Here is an excerpt of the file that helps us comment it:
 ```
 {
-  "protocol" : "osc",
+  "Protocol" : "osc",
   "url" : "osc.udp://localhost:3819",
   "continuous" : true,
   "commands": {
@@ -23,22 +23,22 @@ The OSC protocol is already implemented and an example json protocol-osc.json is
 
 Here is a description of each key:
 
-* protocol (mandatory): can currently be osc or curl, indicates which protocol implementation will be used.
-* url (optional, only for OSC protocol): default url to which generated OSC messages will be sent. Can be modified in the quiddity afterwards.
-* continuous (optional): set to "true" if you want to periodically send some messages (the period will then be configurable in the quiddity).
-* commands (mandatory): contains all the custom commands, needed to create the properties and create the messages.
+* Protocol (mandatory): can currently be osc or curl, indicates which protocol implementation will be used.
+* URL (optional, only for OSC protocol): default URL to which generated OSC messages will be sent. Can be modified in the quiddity afterwards.
+* Continuous (optional): set to "true" if you want to periodically send some messages (the period will then be configurable in the quiddity).
+* Commands (mandatory): contains all the custom commands, needed to create the properties and create the messages.
 
 The command fields are as follows:
-* type (optional): if no type is provided, an empty message will be sent, can be useful and even mandatory for some clients (some Ardour commands for instance). If a type is provided, it must be valid or the message won't be sent. Possible options are: `h` (int64_t), `i` (int32_t), `f` (float), `d` (double) and `s` (string)
+* type (optional): if no type is provided, an empty message will be sent, can be useful and even mandatory for some clients (some Ardour commands for instance). If a type is provided, it must be valid or the message won't be sent. Possible options are `h` (int64_t), `i` (int32_t), `f` (float), `d` (double) and `s` (string)
 * value (optional): value of the message, must fit the provided type. Will be ignored if the type is empty.
-* name (optional but recommended): name of the property in the scenic inspector
+* name (Optional but recommended): name of the property in the scenic inspector
 * descr (optional): description of the property in the inspector
-* path (optional): path to use to send the OSC message, will be empty if no path is provided, which can be correct.
-* continuous (optional): if set to "true" and the top-level option also set to "true", will periodically send the message, the period will be a property ranging from 50 to 10000 ms.
+* path (optional): path to use to send the OSC message will be empty if no path is provided, which can be correct.
+* continuous (optional): if set to "true" and the top-level option also set to "true" will periodically send the message, the period will be a property ranging from 50 to 10000 ms.
 
-Here is a screenshot of the example json for the OSC protocol.
+Here is a screenshot of the example JSON for the OSC protocol.
 
-![Property to OSC mapper in scenic (example json)](mapper_prop_osc.png?raw=true "Protocol mapper in scenic")
+![Property to OSC mapper in scenic (example JSON)](mapper_prop_osc.png?raw=true "Protocol mapper in scenic")
 
 Example with Ardour OSC protocol
 --------------------------------

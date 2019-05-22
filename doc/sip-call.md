@@ -59,14 +59,14 @@ switcher-ctrl --server http://localhost:15432 -s aud2 wave 1
 switcher-ctrl --server http://localhost:15432 -s aud2 started true
 ```
 
-Prepare the call, i.e. attach several audio shmdata to the callee 
+Prepare the call, i.e., attach several audio Shmdata to the callee 
 ```
 switcher-ctrl --server http://localhost:15432 -i sip attach_shmdata_to_contact $(switcher-ctrl --server http://localhost:15432 -p aud1 audio) shmdata@mondomaine.com true
 switcher-ctrl --server http://localhost:15432 -i sip attach_shmdata_to_contact $(switcher-ctrl --server http://localhost:15432 -p aud2 audio) shmdata@mondomaine.com true
 switcher-ctrl --server http://localhost:15432 -t sip buddies.0
 ```
 
-Then make switcher call shmdata:
+Then make switcher call Shmdata:
 ```
 switcher-ctrl --server http://localhost:15432 -i sip send shmdata@mondomaine.com
 ```
