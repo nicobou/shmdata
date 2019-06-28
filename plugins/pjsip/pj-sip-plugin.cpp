@@ -220,14 +220,16 @@ void SIPPlugin::apply_configuration() {
 }
 
 bool SIPPlugin::start_sip_transport() {
-  if (-1 != transport_id_) {
-    On_scope_exit { transport_id_ = -1; };
-    if (pjsua_transport_close(transport_id_, PJ_FALSE) != PJ_SUCCESS) {
-      warning("cannot close current transport");
-      message("ERROR: (bug) cannot close current transport");
-      return false;
-    }
-  }
+  // Since pjsip 2.9 we do not call any more pjsua_transport_close when
+  // transport_id_ != since it subsequent call to
+  // pjsua_transport_create fails with the following error:
+  // 09:38:52.161            pjsua_acc.c  ..Unable to generate suitable
+  // Contact header for registration: Unsupported transport (PJSIP_EUNSUPTRANSPORT) [status=171060]
+  // 09:38:52.161            pjsua_acc.c  ..Unable to create registration:
+  // Unsupported transport (PJSIP_EUNSUPTRANSPORT) [status=171060]
+  //
+  // Note also pjsua_transport_close is not called between subsequent pjsua_transport_create
+  // in pjsip-apps/src/pjsua/pjsua_app.c
 
   if (NetUtils::is_used(sip_port_)) {
     warning("SIP port cannot be bound (%)", std::to_string(sip_port_));
