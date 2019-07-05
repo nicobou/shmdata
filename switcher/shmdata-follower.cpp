@@ -28,7 +28,8 @@ ShmdataFollower::ShmdataFollower(Quiddity* quid,
                                  shmdata::Reader::onServerConnected osc,
                                  shmdata::Reader::onServerDisconnected osd,
                                  std::chrono::milliseconds update_interval,
-                                 Direction dir)
+                                 Direction dir,
+                                 bool get_shmdata_on_connect)
     : quid_(quid),
       logger_(quid_->get_log_ptr()),
       od_(od),
@@ -36,6 +37,7 @@ ShmdataFollower::ShmdataFollower(Quiddity* quid,
       osd_(osd),
       tree_path_(dir == Direction::reader ? ".shmdata.reader." + path : ".shmdata.writer." + path),
       dir_(dir),
+      get_shmdata_on_connect_(get_shmdata_on_connect),
       follower_(std::make_unique<shmdata::Follower>(
           path,
           [this](void* data, size_t size) { this->on_data(data, size); },
@@ -44,13 +46,9 @@ ShmdataFollower::ShmdataFollower(Quiddity* quid,
           &logger_)),
       task_(std::make_unique<PeriodicTask<>>([this]() { this->update_quid_stats(); },
                                              update_interval)) {
-  auto tree = quid_->prune_tree(tree_path_, false);
   // adding default informations for this shmdata
-  quid_->graft_tree(tree_path_, Quiddity::get_shm_information_template(), false);
-  if (tree) {
-    for (auto& it : tree->get_child_keys(".")) {
-      quid_->graft_tree(tree_path_ + "." + it, tree->prune(it), false);
-    }
+  if (!get_shmdata_on_connect_) {
+    initialize_tree(tree_path_);
   }
 }
 
@@ -69,6 +67,10 @@ void ShmdataFollower::on_data(void* data, size_t size) {
 }
 
 void ShmdataFollower::on_server_connected(const std::string& data_type) {
+  if (get_shmdata_on_connect_) {
+    initialize_tree(tree_path_);
+  }
+
   if (data_type != data_type_) {
     data_type_ = data_type;
     quid_->graft_tree(tree_path_ + ".caps", InfoTree::make(data_type), false);
@@ -90,4 +92,13 @@ void ShmdataFollower::update_quid_stats() {
   shm_stat_.reset();
 }
 
+void ShmdataFollower::initialize_tree(const std::string& tree_path) {
+  auto tree = quid_->prune_tree(tree_path, false);
+  quid_->graft_tree(tree_path, Quiddity::get_shm_information_template(), false);
+  if (tree) {
+    for (auto& it : tree->get_child_keys(".")) {
+      quid_->graft_tree(tree_path_ + "." + it, tree->prune(it), false);
+    }
+  }
+}
 }  // namespace switcher

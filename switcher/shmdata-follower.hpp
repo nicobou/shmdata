@@ -40,7 +40,8 @@ class ShmdataFollower {
                   shmdata::Reader::onServerConnected osc = nullptr,
                   shmdata::Reader::onServerDisconnected osd = nullptr,
                   std::chrono::milliseconds update_interval = ShmdataStat::kDefaultUpdateInterval,
-                  Direction dir = Direction::reader);
+                  Direction dir = Direction::reader,
+                  bool get_shmdata_on_connect = false);
   ~ShmdataFollower();
   ShmdataFollower(const ShmdataFollower&) = delete;
   ShmdataFollower& operator=(const ShmdataFollower&) = delete;
@@ -58,6 +59,7 @@ class ShmdataFollower {
   shmdata::Reader::onServerDisconnected osd_;
   std::string tree_path_;
   Direction dir_;
+  bool get_shmdata_on_connect_{false};
   std::unique_ptr<shmdata::Follower> follower_;
   std::unique_ptr<PeriodicTask<>> task_;
 
@@ -65,6 +67,7 @@ class ShmdataFollower {
   void on_server_connected(const std::string& data_type);
   void on_server_disconnected();
   void update_quid_stats();
+  void initialize_tree(const std::string& tree_path);
 };
 
 }  // namespace switcher
