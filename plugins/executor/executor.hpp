@@ -47,7 +47,8 @@ class Executor : public Quiddity, public StartableQuiddity {
   bool start() final;
   bool stop() final;
   bool on_shmdata_connect(const std::string& shmpath);
-  bool on_shmdata_disconnect();
+  bool on_shmdata_disconnect(const std::string& shmpath);
+  bool on_shmdata_disconnect_all();
   bool can_sink_caps(std::string str_caps);
 
   ShmdataConnector shmcntr_;
@@ -55,10 +56,12 @@ class Executor : public Quiddity, public StartableQuiddity {
   struct sigaction sigchld_action_;
   posix_spawnattr_t attr_;
   std::string shmpath_{};
+  std::string shmpath_audio_{};
+  std::string shmpath_video_{};
 
   std::string command_line_{};
   PContainer::prop_id_t command_line_id_;
-  bool autostart_{true};
+  bool autostart_{false};
   PContainer::prop_id_t autostart_id_;
 };
 SWITCHER_DECLARE_PLUGIN(Executor);

@@ -54,8 +54,8 @@ Executor::Executor(quid::Config&& conf)
   init_startable(this);
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
-      [this](const std::string& /*shmpath*/) { return on_shmdata_disconnect(); },
-      [this]() { return on_shmdata_disconnect(); },
+      [this](const std::string& shmpath) { return on_shmdata_disconnect(shmpath); },
+      [this]() { return on_shmdata_disconnect_all(); },
       [this](const std::string& caps) { return can_sink_caps(caps); },
       1);
   memset(&sigchld_action_, 0, sizeof(sigchld_action_));
@@ -80,7 +80,13 @@ bool Executor::start() {
 
   std::string program = command_line_.substr(0, command_line_.find(' '));
   std::string args = command_line_;
-  // Replace "_shmpath_" substring with connected shmpath, if there is one.
+  // Replace "_shmpath_*_" substrings with connected shmpaths, if they exist.
+  if (!shmpath_audio_.empty()) {
+    args = std::regex_replace(args, std::regex("_shmpath_audio_"), shmpath_audio_);
+  }
+  if (!shmpath_video_.empty()) {
+    args = std::regex_replace(args, std::regex("_shmpath_video_"), shmpath_video_);
+  }
   if (!shmpath_.empty()) {
     args = std::regex_replace(args, std::regex("_shmpath_"), shmpath_);
   }
@@ -116,12 +122,30 @@ bool Executor::stop() {
 }
 
 bool Executor::on_shmdata_connect(const std::string& shmpath) {
-  shmpath_ = shmpath;
+  if (StringUtils::ends_with(shmpath, "video"))
+    shmpath_video_ = shmpath;
+  else if (StringUtils::ends_with(shmpath, "audio"))
+    shmpath_audio_ = shmpath;
+  else
+    shmpath_ = shmpath;
   if (autostart_) return start();
   return true;
 }
 
-bool Executor::on_shmdata_disconnect() {
+bool Executor::on_shmdata_disconnect(const std::string& shmpath) {
+  if (StringUtils::ends_with(shmpath, "video"))
+    shmpath_video_.clear();
+  else if (StringUtils::ends_with(shmpath, "audio"))
+    shmpath_audio_.clear();
+  else
+    shmpath_.clear();
+  if (autostart_) return stop();
+  return true;
+}
+
+bool Executor::on_shmdata_disconnect_all() {
+  shmpath_video_.clear();
+  shmpath_audio_.clear();
   shmpath_.clear();
   if (autostart_) return stop();
   return true;
