@@ -65,8 +65,34 @@ Here is how to build and install it on Debian GNU/Linux or Ubuntu::
 
         make package_source_test
         
+# Docker installation
 
-# Mac OS Installation
+A docker image of `shmdata` is built into its [registry](https://gitlab.com/sat-metalab/shmdata/container_registry). You can start building your own library on top of this image by pulling it. Two versions of this image are provided : one based on the `develop` branch (unstable) and another based on the `master` branch (stable).
+
+1. Install Docker ([instructions for Ubuntu 18.04](https://docs.docker.com/install/linux/docker-ce/ubuntu/))
+
+2. Pull the Docker image
+
+```bash
+docker pull registry.gitlab.com/sat-metalab/shmdata:develop # or use "master" tag
+```
+
+3. Configure Nvidia runtime (from [instructions](https://gitlab.com/sat-metalab/switcher/blob/develop/doc/run-switcher-in-docker.md#install-the-nvidia-docker-runtime-in-ubuntu-1804))
+
+4. Develop your own tools from `shmdata`
+    
+    * You can take inspiration from [the Switcher and Scenic build instructions](https://gitlab.com/sat-metalab/switcher/blob/develop/doc/run-switcher-in-docker.md#run-scenic-from-remote-image-with-nvidia-support)
+    
+    * You can create your own Dockerfile
+
+    ```bash
+    FROM registry.gitlab.com/sat-metalab/shmdata
+    # your Dockerfile
+    ```
+
+
+
+# Mac OS installation
 * Install homebrew
 
         /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"

@@ -1,0 +1,7 @@
+**/build
+**/scripts
+**/.idea
+
+*.gitignore
+*.dockerignore
+*.gitlab-ci.yml
