@@ -48,7 +48,20 @@ Type::Type(const std::string& str){
     // check if value contains a literal type description
     std::regex literal_type_regex("\\([\\w]+\\)");
     std::smatch sm;
-    std::any any_value = std::make_any<std::string>(unescape(value)); 
+    auto unescaped = unescape(value);
+    // check if unescaped value is an integer and fill the any value with the appropriate type
+    std::any any_value;
+    bool is_negative = false;
+    if (*unescaped.begin() == '-') is_negative = true;
+    if (!unescaped.empty() && unescaped != "-" &&
+        std::find_if(unescaped.begin() + (is_negative ? 1 : 0), unescaped.end(), [](char c) {
+          return !std::isdigit(c);
+        }) == unescaped.end()) {
+      any_value = std::stoi(unescaped);
+    } else {
+      any_value = std::make_any<std::string>(unescaped);
+    }
+    // search if the value is prefixed with a type name
     if (regex_search(value, sm, literal_type_regex)) {
       if (sm.str() == "(int)") {
         std::istringstream iss(std::string(value, sm.str().size(), std::string::npos));
@@ -61,7 +74,7 @@ Type::Type(const std::string& str){
         str_types_.emplace(key, std::string(sm.str(), 1, sm.str().size() - 2));
       }
     } 
-    // saving key and value
+    // saving resulting key and value
     properties_.emplace(key, any_value);
   }
 }
