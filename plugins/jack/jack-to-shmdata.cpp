@@ -135,10 +135,10 @@ bool JackToShmdata::start() {
       "audio/x-raw, "
       "format=(string)F32LE, "
       "layout=(string)interleaved, "
-      "rate=" +
+      "rate=(int)" +
       std::to_string(jack_client_.get_sample_rate()) +
       ", "
-      "channels=" +
+      "channels=(int)" +
       std::to_string(num_channels_) + ", channel-mask=(bitmask)");
   // This channel mask is used by most encoders.
   // Here is the reference for the values according to the number of channels: https://goo.gl/M4b7Di
