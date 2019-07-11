@@ -5,23 +5,23 @@ LABEL MAINTAINER="Metalab <metalab-dev@sat.qc.ca>"
 
 # Install common dependencies
 RUN apt update -y \
-   && DEBIAN_FRONTEND=noninteractive apt install -y -qq \
-      cmake \
-      bison \
-      build-essential \
-      flex \
-      libtool \
-      libgstreamer1.0 \
-      libgstreamer1.0-dev \
-      libgstreamer-plugins-base1.0 \
-      libgstreamer-plugins-base1.0-dev \
-      python3 \
-      python3-dev \
-   # clean apt cache
-   && apt-get clean \
-   && apt-get autoclean \
-   && apt-get autoremove -y \
-   && rm -rf /var/lib/{apt,dpkg,cache,log}/
+    && DEBIAN_FRONTEND=noninteractive apt install -y -qq \
+        cmake \
+        bison \
+        build-essential \
+        flex \
+        libtool \
+        libgstreamer1.0 \
+        libgstreamer1.0-dev \
+        libgstreamer-plugins-base1.0 \
+        libgstreamer-plugins-base1.0-dev \
+        python3 \
+        python3-dev \
+    # clean apt cache
+    && apt-get clean \
+    && apt-get autoclean \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/{apt,dpkg,cache,log}/
 
 FROM dependencies AS build
 LABEL MAINTAINER="Metalab <metalab-dev@sat.qc.ca>"

@@ -65,9 +65,23 @@ Here is how to build and install it on Debian GNU/Linux or Ubuntu::
 
         make package_source_test
         
-# Docker installation
+# Docker images
 
-A docker image of `shmdata` is built into its [registry](https://gitlab.com/sat-metalab/shmdata/container_registry). You can start building your own library on top of this image by pulling it. Two versions of this image are provided : one based on the `develop` branch (unstable) and another based on the `master` branch (stable).
+A docker image of `shmdata` is built into its [registry](https://gitlab.com/sat-metalab/shmdata/container_registry). You can start building your own library on top of this image by pulling it.
+
+Three tags of this image are provided :
+
+| tag                | purpose     | description                                                            |
+|--------------------|-------------|------------------------------------------------------------------------|
+| [master][master]   | production  | Clean image based on the `master` branch and build with `Release` flag |
+| [develop][develop] | development | Clean image based on the `develop` branch and build with `Debug` flag  |
+| [ci][ci]           | testing     | Image used for CI and used for unit tests                              |
+
+[master]: registry.gitlab.com/sat-metalab/shmdata:master
+[develop]: registry.gitlab.com/sat-metalab/shmdata:develop
+[ci]: registry.gitlab.com/sat-metalab/shmdata:ci
+
+## Install with Docker
 
 1. Install Docker ([instructions for Ubuntu 18.04](https://docs.docker.com/install/linux/docker-ce/ubuntu/))
 
@@ -90,25 +104,51 @@ docker pull registry.gitlab.com/sat-metalab/shmdata:develop # or use "master" ta
     # your Dockerfile
     ```
 
+## Contribute with Docker
 
+The `shmdata` image uses [mutli-stage builds][docker-multi-stage] with three stages : `dependencies`, `build` and `clean`. Theses stages use some build arguments :
+
+| variables  | stages              | description                      | default        |
+|------------|---------------------|----------------------------------|----------------|
+| BUILD_DIR  | `build` and `clean` | Where `shmdata` source is copied | `/opt/shmdata` |
+| BUILD_TYPE | `build`             | The build type of `shmdata`      | `Release`      |
+
+All images can be built and tested from source :
+
+```bash
+# build shmdata with the "build" stage, all unused dependencies are not removed
+docker build -t shmdata:test -f dockerfiles/Dockerfile --target build .
+
+# execute bash into the BUILD_DIR folder
+docker run -ti shmdata:test bash
+```
+
+[docker-multi-stage]: https://docs.docker.com/develop/develop-images/multistage-build/
 
 # Mac OS installation
-* Install homebrew
 
-        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+**Note**: we had success building this image on OSX with Homebrew, but it is not supported by the shmdata contributors, and it is not included in our continuous integration pipeline: it might be broken when you read this.
 
-* Install dependencies
+1. Install homebrew
 
-        brew install cmake pkg-config gstreamer gst-plugins-base python3
+```bash
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+```
 
-* Build & Install
+2. Install dependencies
 
-        mkdir build
-        cd build
-        cmake ..
-        make
-        sudo make install
+```bash
+brew install cmake pkg-config gstreamer gst-plugins-base python3
+```
 
+3. Build & Install
+```bash
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
 
 ## Mac OS Notes
 * If you are using homebrew to install dependencies and encountering errors about ```-lintl```, you have to ```brew link gettext```

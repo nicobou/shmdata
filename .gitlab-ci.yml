@@ -27,14 +27,14 @@ Test:
   stage: test
   image: $CI_REGISTRY/sat-metalab/shmdata:ci
   script:
-    - cd build
+    - cd $BUILD_DIR/build
     - make test
 
 Test package:
   stage: test-package
   image: $CI_REGISTRY/sat-metalab/shmdata:ci
   script:
-    - cd build
+    - cd $BUILD_DIR/build
     - make package_source_test
 
 Build and Deploy clean image:
