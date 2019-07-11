@@ -29,6 +29,7 @@
 #include <string>
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
+#include "switcher/shmdata-follower.hpp"
 #include "switcher/startable-quiddity.hpp"
 
 namespace switcher {
@@ -52,6 +53,9 @@ class Executor : public Quiddity, public StartableQuiddity {
   bool can_sink_caps(std::string str_caps);
 
   ShmdataConnector shmcntr_;
+  std::unique_ptr<ShmdataFollower> follower_video_{nullptr};
+  std::unique_ptr<ShmdataFollower> follower_audio_{nullptr};
+  std::unique_ptr<ShmdataFollower> follower_{nullptr};
   pid_t child_pid_;
   struct sigaction sigchld_action_;
   posix_spawnattr_t attr_;

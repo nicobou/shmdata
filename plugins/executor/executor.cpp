@@ -57,7 +57,7 @@ Executor::Executor(quid::Config&& conf)
       [this](const std::string& shmpath) { return on_shmdata_disconnect(shmpath); },
       [this]() { return on_shmdata_disconnect_all(); },
       [this](const std::string& caps) { return can_sink_caps(caps); },
-      1);
+      std::numeric_limits<unsigned int>::max());
   memset(&sigchld_action_, 0, sizeof(sigchld_action_));
   sigchld_action_.sa_handler = &Executor::clean_up_child_process;
   sigaction(SIGCHLD, &sigchld_action_, nullptr);
@@ -122,28 +122,63 @@ bool Executor::stop() {
 }
 
 bool Executor::on_shmdata_connect(const std::string& shmpath) {
-  if (StringUtils::ends_with(shmpath, "video"))
+  if (StringUtils::ends_with(shmpath, "video")) {
+    if (!shmpath_video_.empty()) follower_video_.reset();
     shmpath_video_ = shmpath;
-  else if (StringUtils::ends_with(shmpath, "audio"))
+    follower_video_ = std::make_unique<ShmdataFollower>(this,
+                                                        shmpath_video_,
+                                                        nullptr,
+                                                        nullptr,
+                                                        nullptr,
+                                                        ShmdataStat::kDefaultUpdateInterval,
+                                                        ShmdataFollower::Direction::reader,
+                                                        true);
+  } else if (StringUtils::ends_with(shmpath, "audio")) {
+    if (!shmpath_audio_.empty()) follower_audio_.reset();
     shmpath_audio_ = shmpath;
-  else
+    follower_audio_ = std::make_unique<ShmdataFollower>(this,
+                                                        shmpath_audio_,
+                                                        nullptr,
+                                                        nullptr,
+                                                        nullptr,
+                                                        ShmdataStat::kDefaultUpdateInterval,
+                                                        ShmdataFollower::Direction::reader,
+                                                        true);
+  } else {
+    if (!shmpath_.empty()) follower_.reset();
     shmpath_ = shmpath;
+    follower_ = std::make_unique<ShmdataFollower>(this,
+                                                  shmpath_,
+                                                  nullptr,
+                                                  nullptr,
+                                                  nullptr,
+                                                  ShmdataStat::kDefaultUpdateInterval,
+                                                  ShmdataFollower::Direction::reader,
+                                                  true);
+  }
   if (autostart_) return start();
   return true;
 }
 
 bool Executor::on_shmdata_disconnect(const std::string& shmpath) {
-  if (StringUtils::ends_with(shmpath, "video"))
+  if (StringUtils::ends_with(shmpath, "video")) {
+    follower_video_.reset();
     shmpath_video_.clear();
-  else if (StringUtils::ends_with(shmpath, "audio"))
+  } else if (StringUtils::ends_with(shmpath, "audio")) {
+    follower_audio_.reset();
     shmpath_audio_.clear();
-  else
+  } else {
+    follower_.reset();
     shmpath_.clear();
+  }
   if (autostart_) return stop();
   return true;
 }
 
 bool Executor::on_shmdata_disconnect_all() {
+  follower_video_.reset();
+  follower_audio_.reset();
+  follower_.reset();
   shmpath_video_.clear();
   shmpath_audio_.clear();
   shmpath_.clear();
