@@ -103,7 +103,7 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
             if (background_image_.empty()) return true;
             add_rendering_task([this]() {
               int w = 0, h = 0, n = 0;
-              auto data = stbi_load(background_image_.c_str(), &w, &h, &n, 4);
+              auto data = stbi_load(background_image_.c_str(), &w, &h, &n, 0);
               On_scope_exit { stbi_image_free(data); };
 
               if (!data) {
