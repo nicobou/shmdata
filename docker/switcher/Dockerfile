@@ -74,6 +74,8 @@ RUN apt-get update -y \
        uuid \
        uuid-dev \
        wah-plugins \
+       gcc-8 \
+       g++-8 \
     && git clone --depth=1 --branch=${BRANCH} https://gitlab.com/sat-metalab/switcher.git \
     && cd switcher \
     && mkdir build \

@@ -8,13 +8,13 @@ INSTALL
 Build and install **switcher** from the command line:
 
 ```
-$ sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins  libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libltc-dev libcurl4-gnutls-dev gsoap wah-plugins libxrandr-dev libxinerama-dev libxcursor-dev libsamplerate0-dev python3-dev
+$ sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins  libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libltc-dev libcurl4-gnutls-dev gsoap wah-plugins libxrandr-dev libxinerama-dev libxcursor-dev libsamplerate0-dev python3-dev gcc-8 g++-8
 $ git clone https://gitlab.com/sat-metalab/switcher.git
 $ cd switcher
 $ git submodule update --init --recursive
 $ mkdir build
 $ cd build
-$ cmake -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE=Release .. # replace "Release" with "Debug" when coding
+$ CC=gcc-8 CXX=g++-8 cmake -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE=Release .. # replace "Release" with "Debug" when coding
 $ make -j"$(nproc)"
 $ sudo make install
 $ sudo ldconfig

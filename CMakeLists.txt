@@ -106,6 +106,7 @@ link_directories(
 link_libraries(
     ${COMMON_LIBRARIES}
     pthread
+    stdc++fs
 )
 
 set(COMMON_INCLUDE_DIRS
@@ -135,6 +136,7 @@ add_definitions(-Wall)
 add_definitions(-Wextra)
 add_definitions(-Werror)
 add_definitions(-Wno-error=unused-parameter)
+add_definitions(-Wno-error=cast-function-type)
 add_definitions("-DDATADIR=\"${DATADIR}\"")
 
 # OSX

@@ -2,6 +2,7 @@ image: ubuntu:bionic
 
 stages:
   - prepare_docker
+  - build
   - test
   - test-package
 
@@ -18,18 +19,24 @@ prepare_docker:
     - (if [[ "$CI_BUILD_REF_NAME" != "master" ]]; then docker build --pull -t $CI_REGISTRY_IMAGE:ci --build-arg shmdata_version=$(git --git-dir=libshmdata/.git rev-parse HEAD) --build-arg current_branch=develop -f $CI_PROJECT_DIR/ci/Dockerfile .; fi);
     - docker push $CI_REGISTRY_IMAGE:ci
 
+build:
+  stage: build
+  image: $CI_REGISTRY_IMAGE:ci
+  script:
+    - mkdir build && cd build && CC=gcc-8 CXX=g++-8 cmake .. -DENABLE_GPL=ON && make -j"$(nproc)" && make install && ldconfig
+
 test:
   stage: test
   image: $CI_REGISTRY_IMAGE:ci
   script:
-    - mkdir build && cd build && cmake .. -DENABLE_GPL=ON && make -j"$(nproc)" && make install && ldconfig
+    - mkdir build && cd build && CC=gcc-8 CXX=g++-8 cmake .. -DENABLE_GPL=ON && make -j"$(nproc)" && make install && ldconfig
     - make test
 
 test-package:
   stage: test-package
   image: $CI_REGISTRY_IMAGE:ci
   script:
-    - mkdir build && cd build && cmake .. -DENABLE_GPL=ON && make install && ldconfig && make package_source_test
+    - mkdir build && cd build && CC=gcc-8 CXX=g++-8 cmake .. -DENABLE_GPL=ON && make install && ldconfig && make package_source_test
   only:
     - develop
     - master
