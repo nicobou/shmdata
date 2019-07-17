@@ -13,7 +13,7 @@ tar -zxvf @PACKAGE_NAME@-@PACKAGE_VERSION@-Source.tar.gz
 cd @PACKAGE_NAME@-@PACKAGE_VERSION@-Source
 mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_C_COMPILER="gcc-8" -DCMAKE_CXX_COMPILER="g++-8" ..
 make
 make test
 

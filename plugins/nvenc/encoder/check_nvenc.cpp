@@ -27,6 +27,8 @@
 #include "switcher/gst-shmdata-subscriber.hpp"
 #include "switcher/quiddity-basic-test.hpp"
 
+#include "cuda/cuda-context.hpp"
+
 static bool success = false;
 static std::atomic<bool> do_continue{true};
 static std::condition_variable cond_var{};
@@ -57,6 +59,11 @@ void notify_success() {
 
 int main() {
   {
+    auto devices = CudaContext::get_devices();
+    if (devices.empty()) {
+      return 0; // no NVENC-enabled GPU as been detected
+    }
+
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
     manager->factory<MPtr(&quid::Factory::scan_dir)>("./");

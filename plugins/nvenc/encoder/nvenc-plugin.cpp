@@ -73,6 +73,7 @@ NVencPlugin::NVencPlugin(quid::Config&& conf)
   }
   if (names.empty()) {
     message("ERROR:Could not find any NVENC-enabled GPU.");
+    is_valid_ = false;
     return;
   }
   devices_ = Selection<>(std::move(names), 0);

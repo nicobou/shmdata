@@ -7,25 +7,38 @@ INSTALL
 
 Build and install **switcher** from the command line:
 
+```bash
+# Install all dependencies
+sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins  libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libltc-dev libcurl4-gnutls-dev gsoap wah-plugins libxrandr-dev libxinerama-dev libxcursor-dev libsamplerate0-dev python3-dev gcc-8 g++-8
+
+# Clone all code from master branch
+git clone https://gitlab.com/sat-metalab/switcher.git
+
+# Configure build folder
+cd switcher
+git submodule update --init --recursive
+mkdir build && cd build
+
+# Generate make recipes
+cmake .. \
+  -DCMAKE_C_COMPILER=gcc-8 \
+  -DCMAKE_CXX_COMPILER=g++-8 \
+  -DENABLE_GPL=ON \
+  -DCMAKE_BUILD_TYPE=Release # replace "Release" with "Debug" when coding
+
+# Build and install switcher on your system
+make -j"$(nproc)"
+sudo make install && sudo ldconfig
 ```
-$ sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins  libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libltc-dev libcurl4-gnutls-dev gsoap wah-plugins libxrandr-dev libxinerama-dev libxcursor-dev libsamplerate0-dev python3-dev gcc-8 g++-8
-$ git clone https://gitlab.com/sat-metalab/switcher.git
-$ cd switcher
-$ git submodule update --init --recursive
-$ mkdir build
-$ cd build
-$ CC=gcc-8 CXX=g++-8 cmake -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE=Release .. # replace "Release" with "Debug" when coding
-$ make -j"$(nproc)"
-$ sudo make install
-$ sudo ldconfig
-```
+
+> The options `CMAKE_C_COMPILER` and `CMAKE_CXX_COMPILER` set compiler's option without polluted your system environment, if you don't care you can directly set the environment variables `CC` and `CXX` with the same values. All following instructions assume you are using **gcc-8** and **g++-8** as C/C++ compilers.
 
 You can verify and change the build configuration using **ccmake**. To do so, you must first install the needed package:
     
 ```
 $ sudo apt install cmake-curses-gui
 ```
-    
+
 Then, after running `$ cmake ..`, from the build directory run:
 
 ```

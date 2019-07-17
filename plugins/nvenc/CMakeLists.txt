@@ -52,20 +52,22 @@ if (PLUGIN_NVENC)
     )
 
     # Encoder
-
     add_library(nvenc_encoder_plugin SHARED
         cuda/cuda-context.cpp
         encoder/nvenc-api.cpp
         encoder/nvenc-buffers.cpp
         encoder/nvenc-encode-session.cpp
         encoder/nvenc-plugin.cpp
-        )
-
+    )
+    
     add_dependencies(nvenc_encoder_plugin ${SWITCHER_LIBRARY})
-
+    
     # TEST
+    add_executable(check_nvenc
+        cuda/cuda-context.cpp
+        encoder/check_nvenc.cpp
+    )
 
-    add_executable(check_nvenc encoder/check_nvenc.cpp)
     configure_file(encoder/check_decode.json check_decode.json COPYONLY)
     add_test(check_nvenc check_nvenc)
 

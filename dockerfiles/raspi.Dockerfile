@@ -1,9 +1,10 @@
-ARG  SHMDATA_BRANCH
-FROM shmdata:${SHMDATA_BRANCH}
-MAINTAINER Metalab <metalab-dev@sat.qc.ca>
+ARG SHMDATA_IMAGE="registry.gitlab.com/sat-metalab/shmdata"
+ARG SHMDATA_TAG="develop"
 
-# Docker Repository
-ARG BRANCH
+FROM ${SHMDATA_IMAGE}:${SHMDATA_TAG} AS dependencies
+LABEL MAINTAINER="Metalab <metalab-dev@sat.qc.ca>"
+
+# Install common dependencies
 RUN apt-get update -y \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends -qq \
        build-essential \
@@ -66,44 +67,60 @@ RUN apt-get update -y \
        uuid \
        uuid-dev \
        wah-plugins \
-       xorg \
-    && git clone --depth=1 --branch=${BRANCH} https://gitlab.com/sat-metalab/switcher.git \
-    && cd switcher \
-    && mkdir build \
+       xorg
+
+FROM dependencies AS build
+LABEL MAINTAINER="Metalab <metalab-dev@sat.qc.ca>"
+
+ARG BUILD_DIR="/opt/switcher"
+
+# Set switcher paths
+WORKDIR ${BUILD_DIR}
+COPY . ${BUILD_DIR}
+
+RUN mkdir build \
     && cd build \
     && cmake -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE=Release .. \
     && make -j1 \
     && make install \
-    && ldconfig \
-    && cd .. \
-    && rm -rf switcher \
+    && ldconfig
+
+FROM build AS clean
+LABEL MAINTAINER="Metalab <metalab-dev@sat.qc.ca>"
+
+ARG BUILD_DIR="/opt/switcher"
+
+# Remove build folder and clean apt cache
+RUN rm -rf ${BUILD_DIR} \
     && apt remove -y -qq \
-       build-essential \
-       cmake \
-       bison \
-       flex \
-       git \
-       libcgsi-gsoap-dev \
-       libcurl4-gnutls-dev \
-       libgl1-mesa-dev \
-       libglib2.0-dev \
-       libgstreamer-plugins-base1.0-dev \
-       libgstreamer1.0-dev \
-       libjack-jackd2-dev \
-       libjson-glib-dev \
-       liblo-dev \
-       libltc-dev  \
-       libportmidi-dev \
-       libpulse-dev \
-       libsamplerate0-dev \
-       libssl-dev \
-       libtool \
-       libvncserver-dev \
-       libxcursor-dev \
-       libxinerama-dev \
-       libxrandr-dev \
-       linux-libc-dev \
-       python3-dev \
-       uuid-dev \
-    && apt autoclean && apt autoremove -y && rm -rf /var/lib/{apt,dpkg,cache,log}/ 
+        build-essential \
+        cmake \
+        bison \
+        flex \
+        git \
+        libcgsi-gsoap-dev \
+        libcurl4-gnutls-dev \
+        libgl1-mesa-dev \
+        libglib2.0-dev \
+        libgstreamer-plugins-base1.0-dev \
+        libgstreamer1.0-dev \
+        libjack-jackd2-dev \
+        libjson-glib-dev \
+        liblo-dev \
+        libltc-dev  \
+        libportmidi-dev \
+        libpulse-dev \
+        libsamplerate0-dev \
+        libssl-dev \
+        libtool \
+        libvncserver-dev \
+        libxcursor-dev \
+        libxinerama-dev \
+        libxrandr-dev \
+        linux-libc-dev \
+        python3-dev \
+        uuid-dev \
+    && apt autoclean \
+    && apt autoremove -y \
+    && rm -rf /var/lib/{apt,dpkg,cache,log}/ 
 
