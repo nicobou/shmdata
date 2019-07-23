@@ -111,10 +111,21 @@ bool Executor::start() {
     return false;
   }
 
+  // Pipes creation and setup
+  if (pipe(cout_pipe_) || pipe(cerr_pipe_)) {
+    error("error while setting up interprocess communication. Error: %", strerror(errno));
+  }
+  posix_spawn_file_actions_init(&act_);
+  posix_spawn_file_actions_addclose(&act_, cout_pipe_[0]);
+  posix_spawn_file_actions_addclose(&act_, cerr_pipe_[0]);
+  posix_spawn_file_actions_adddup2(&act_, cout_pipe_[1], 1);
+  posix_spawn_file_actions_adddup2(&act_, cerr_pipe_[1], 2);
+  posix_spawn_file_actions_addclose(&act_, cout_pipe_[1]);
+  posix_spawn_file_actions_addclose(&act_, cerr_pipe_[1]);
+
   // Process launching
   user_stopped_ = false;
-  int status2 =
-      posix_spawnp(&child_pid_, program.c_str(), nullptr, &attr_, words.we_wordv, environ);
+  int status2 = posix_spawnp(&child_pid_, program.c_str(), &act_, &attr_, words.we_wordv, environ);
   if (status2 != 0) {
     warning("process could not be executed. Error: %", strerror(status2));
     wordfree(&words);
@@ -122,6 +133,9 @@ bool Executor::start() {
   }
   info("'%' was succesfully executed.", args);
   wordfree(&words);
+  close(cout_pipe_[1]);
+  close(cerr_pipe_[1]);
+
   return true;
 }
 
@@ -200,9 +214,37 @@ bool Executor::on_shmdata_disconnect_all() {
 
 bool Executor::can_sink_caps(std::string /*str_caps*/) { return true; }
 
+void Executor::read_outputs() {
+  std::string cout_buffer(1024, ' ');
+  std::string cerr_buffer(1024, ' ');
+  int cout_bytes_read = 0;
+  int cerr_bytes_read = 0;
+  pollfd plist[2] = {{cout_pipe_[0], POLLIN}, {cerr_pipe_[0], POLLIN}};
+  if (poll(plist, 2, 1000) > 0) {
+    if (plist[0].revents & POLLIN) {
+      cout_bytes_read = read(cout_pipe_[0], cout_buffer.data(), cout_buffer.length());
+    } else if (plist[1].revents & POLLIN) {
+      cerr_bytes_read = read(cerr_pipe_[0], cerr_buffer.data(), cerr_buffer.length());
+    }
+  }
+
+  info("Grafting % in stdout", cout_buffer.substr(0, static_cast<size_t>(cout_bytes_read)));
+  graft_tree(".output.stdout.",
+             InfoTree::make(cout_buffer.substr(0, static_cast<size_t>(cout_bytes_read))));
+  info("Grafting % in stderr", cerr_buffer.substr(0, static_cast<size_t>(cerr_bytes_read)));
+  graft_tree(".output.stderr.",
+             InfoTree::make(cerr_buffer.substr(0, static_cast<size_t>(cerr_bytes_read))));
+}
+
 void Executor::clean_up_child_process(int /*signal_number*/) {
-  wait(nullptr);
+  read_outputs();
+  int rcode;
+  wait(&rcode);
+  graft_tree(".output.return_code.", InfoTree::make(rcode));
   child_pid_ = 0;
+  close(cout_pipe_[0]);
+  close(cerr_pipe_[0]);
+  posix_spawn_file_actions_destroy(&act_);
   info("Process over.");
   if (periodic_ && !user_stopped_)
     start();

@@ -20,6 +20,7 @@
 #ifndef __SWITCHER_EXECUTOR_H__
 #define __SWITCHER_EXECUTOR_H__
 
+#include <poll.h>
 #include <signal.h>
 #include <spawn.h>
 #include <sys/wait.h>
@@ -54,11 +55,15 @@ class Executor : public Quiddity, public StartableQuiddity {
   bool can_sink_caps(std::string str_caps);
   pid_t spawn_child(char* program, char** arg_list);
   void clean_up_child_process(int signal_number);
+  void read_outputs();
 
   struct sigaction sigchld_action_;
+  int cout_pipe_[2];
+  int cerr_pipe_[2];
   bool user_stopped_{false};
   pid_t child_pid_;
   posix_spawnattr_t attr_;
+  posix_spawn_file_actions_t act_;
   ShmdataConnector shmcntr_;
   std::string shmpath_{};
   std::string shmpath_audio_{};

@@ -8,6 +8,8 @@ add_feature_info("${PLUGIN_NAME}" PLUGIN_EXECUTOR "${PLUGIN_DESCRIPTION}")
 
 if (PLUGIN_EXECUTOR)
 
+    add_definitions(-Wno-error=missing-field-initializers)
+    
     add_library(executor SHARED
         executor.cpp
         )
