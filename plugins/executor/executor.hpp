@@ -33,6 +33,9 @@
 #include "switcher/startable-quiddity.hpp"
 
 namespace switcher {
+
+std::function<void(int)> cb_wrapper;
+
 class Executor : public Quiddity, public StartableQuiddity {
  public:
   Executor(quid::Config&&);
@@ -41,32 +44,35 @@ class Executor : public Quiddity, public StartableQuiddity {
   Executor& operator=(const Executor&) = delete;
 
  private:
-  pid_t spawn_child(char* program, char** arg_list);
-  static void clean_up_child_process(int signal_number);
+  static void clean_up_child_process_static(int signal_number);
 
-  // Shmdata methods
   bool start() final;
   bool stop() final;
   bool on_shmdata_connect(const std::string& shmpath);
   bool on_shmdata_disconnect(const std::string& shmpath);
   bool on_shmdata_disconnect_all();
   bool can_sink_caps(std::string str_caps);
+  pid_t spawn_child(char* program, char** arg_list);
+  void clean_up_child_process(int signal_number);
 
-  ShmdataConnector shmcntr_;
-  std::unique_ptr<ShmdataFollower> follower_video_{nullptr};
-  std::unique_ptr<ShmdataFollower> follower_audio_{nullptr};
-  std::unique_ptr<ShmdataFollower> follower_{nullptr};
-  pid_t child_pid_;
   struct sigaction sigchld_action_;
+  bool user_stopped_{false};
+  pid_t child_pid_;
   posix_spawnattr_t attr_;
+  ShmdataConnector shmcntr_;
   std::string shmpath_{};
   std::string shmpath_audio_{};
   std::string shmpath_video_{};
+  std::unique_ptr<ShmdataFollower> follower_video_{nullptr};
+  std::unique_ptr<ShmdataFollower> follower_audio_{nullptr};
+  std::unique_ptr<ShmdataFollower> follower_{nullptr};
 
   std::string command_line_{};
   PContainer::prop_id_t command_line_id_;
   bool autostart_{false};
   PContainer::prop_id_t autostart_id_;
+  bool periodic_{false};
+  PContainer::prop_id_t periodic_id_;
 };
 SWITCHER_DECLARE_PLUGIN(Executor);
 }  // namespace switcher

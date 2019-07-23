@@ -32,25 +32,35 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Executor,
 Executor::Executor(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
-      command_line_id_(
-          pmanage<MPtr(&PContainer::make_string)>("command_line",
-                                                  [this](const std::string& val) {
-                                                    command_line_ = val;
-                                                    return true;
-                                                  },
-                                                  [this]() { return command_line_; },
-                                                  "Command Line",
-                                                  "Command line to execute",
-                                                  command_line_)),
-      autostart_id_(pmanage<MPtr(&PContainer::make_bool)>("autostart",
-                                                          [this](bool val) {
-                                                            autostart_ = val;
-                                                            return true;
-                                                          },
-                                                          [this]() { return autostart_; },
-                                                          "Autostart",
-                                                          "Execute command line on shmdata connect or not",
-                                                          autostart_)) {
+      command_line_id_(pmanage<MPtr(&PContainer::make_string)>("command_line",
+                                                               [this](const std::string& val) {
+                                                                 command_line_ = val;
+                                                                 return true;
+                                                               },
+                                                               [this]() { return command_line_; },
+                                                               "Command Line",
+                                                               "Command line to execute",
+                                                               command_line_)),
+      autostart_id_(
+          pmanage<MPtr(&PContainer::make_bool)>("autostart",
+                                                [this](bool val) {
+                                                  autostart_ = val;
+                                                  return true;
+                                                },
+                                                [this]() { return autostart_; },
+                                                "Autostart",
+                                                "Execute command line on shmdata connect or not",
+                                                autostart_)),
+      periodic_id_(pmanage<MPtr(&PContainer::make_bool)>(
+          "periodic",
+          [this](bool val) {
+            periodic_ = val;
+            return true;
+          },
+          [this]() { return periodic_; },
+          "Make periodic",
+          "Execute the command line again when the process finishes or not",
+          periodic_)) {
   init_startable(this);
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
@@ -58,8 +68,9 @@ Executor::Executor(quid::Config&& conf)
       [this]() { return on_shmdata_disconnect_all(); },
       [this](const std::string& caps) { return can_sink_caps(caps); },
       std::numeric_limits<unsigned int>::max());
+  cb_wrapper = [this](int signal) { Executor::clean_up_child_process(signal); };
   memset(&sigchld_action_, 0, sizeof(sigchld_action_));
-  sigchld_action_.sa_handler = &Executor::clean_up_child_process;
+  sigchld_action_.sa_handler = &Executor::clean_up_child_process_static;
   sigaction(SIGCHLD, &sigchld_action_, nullptr);
   posix_spawnattr_init(&attr_);
   posix_spawnattr_setpgroup(&attr_, 0);
@@ -101,7 +112,9 @@ bool Executor::start() {
   }
 
   // Process launching
-  int status2 = posix_spawn(&child_pid_, program.c_str(), nullptr, &attr_, words.we_wordv, environ);
+  user_stopped_ = false;
+  int status2 =
+      posix_spawnp(&child_pid_, program.c_str(), nullptr, &attr_, words.we_wordv, environ);
   if (status2 != 0) {
     warning("process could not be executed. Error: %", strerror(status2));
     wordfree(&words);
@@ -114,11 +127,10 @@ bool Executor::start() {
 
 bool Executor::stop() {
   if (child_pid_ != 0) {
+    user_stopped_ = true;
     killpg(child_pid_, SIGTERM);
-    child_pid_ = 0;
-    return true;
   }
-  return false;
+  return true;
 }
 
 bool Executor::on_shmdata_connect(const std::string& shmpath) {
@@ -190,5 +202,13 @@ bool Executor::can_sink_caps(std::string /*str_caps*/) { return true; }
 
 void Executor::clean_up_child_process(int /*signal_number*/) {
   wait(nullptr);
+  child_pid_ = 0;
+  info("Process over.");
+  if (periodic_ && !user_stopped_)
+    start();
+  else
+    pmanage<MPtr(&PContainer::set_str_str)>("started", "false");
 }
+
+void Executor::clean_up_child_process_static(int signal_number) { cb_wrapper(signal_number); }
 }  // namespace switcher
