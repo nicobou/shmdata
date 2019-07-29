@@ -238,43 +238,50 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
             add_rendering_task([this, val]() {
               std::lock_guard<std::mutex> lock(configuration_mutex_);
               if (val) {
-                glfwSetWindowAspectRatio(window_, GLFW_DONT_CARE, GLFW_DONT_CARE);
-                if (!win_aspect_ratio_toggle_) {
-                  minimized_width_ = width_;
-                  minimized_height_ = height_;
-                }
+                minimized_width_ = width_;
+                minimized_height_ = height_;
                 minimized_position_x_ = position_x_;
                 minimized_position_y_ = position_y_;
-                discover_monitor_properties();
-                auto monitor_config = get_monitor_config();
-                if (!monitor_config.monitor) {
-                  warning(
-                      "Could not get the monitor config for this window, not switching to "
-                      "fullscreen.");
-                  return false;
-                }
                 pmanage<MPtr(&PContainer::disable)>(width_id_, kFullscreenDisabled);
                 pmanage<MPtr(&PContainer::disable)>(height_id_, kFullscreenDisabled);
                 pmanage<MPtr(&PContainer::disable)>(position_x_id_, kFullscreenDisabled);
                 pmanage<MPtr(&PContainer::disable)>(position_y_id_, kFullscreenDisabled);
-                width_ = monitor_config.width;
-                height_ = monitor_config.height;
-                position_x_ = monitor_config.position_x;
-                position_y_ = monitor_config.position_y;
+                pmanage<MPtr(&PContainer::disable)>(decorated_id_, kFullscreenDisabled);
+                int total_width = 0;
+                int index = 0;
+                for (const auto& monitor : monitors_config_) {
+                  total_width += monitor.width;
+                  if (position_x_ < total_width) break;
+                  ++index;
+                }
+                // Positioning is handled by glfwSetWindowMonitor; variables are set just so that
+                // they are in sync with the actual screen position.
+                // Width/height variables are automatically updated by glfwSetWindowMonitor.
+                position_x_ = monitors_config_[index].position_x;
+                position_y_ = monitors_config_[index].position_y;
+                glfwSetWindowMonitor(window_,
+                                     monitors_config_[index].monitor,
+                                     GLFW_DONT_CARE,
+                                     GLFW_DONT_CARE,
+                                     monitors_config_[index].width,
+                                     monitors_config_[index].height,
+                                     GLFW_DONT_CARE);
               } else {
-                width_ = minimized_width_;
-                height_ = minimized_height_;
-                if (win_aspect_ratio_toggle_)
-                  glfwSetWindowAspectRatio(window_, minimized_width_, minimized_height_);
-                position_x_ = minimized_position_x_;
-                position_y_ = minimized_position_y_;
                 pmanage<MPtr(&PContainer::enable)>(width_id_);
                 pmanage<MPtr(&PContainer::enable)>(height_id_);
                 pmanage<MPtr(&PContainer::enable)>(position_x_id_);
                 pmanage<MPtr(&PContainer::enable)>(position_y_id_);
+                pmanage<MPtr(&PContainer::enable)>(decorated_id_);
+                position_x_ = minimized_position_x_;
+                position_y_ = minimized_position_y_;
+                glfwSetWindowMonitor(window_,
+                                     nullptr,
+                                     minimized_position_x_,
+                                     minimized_position_y_,
+                                     minimized_width_,
+                                     minimized_height_,
+                                     GLFW_DONT_CARE);
               }
-              set_size();
-              set_position();
               return true;
             });
             return true;
