@@ -122,7 +122,16 @@ void Watcher::watch_events() {
 }
 
 void Watcher::create_follower(const std::string& shmpath) {
-  followers_.push_back(std::make_tuple(shmpath, std::make_unique<ShmdataFollower>(this, shmpath, nullptr, nullptr, nullptr, ShmdataStat::kDefaultUpdateInterval, ShmdataFollower::Direction::writer)));
+  followers_.push_back(
+      std::make_tuple(shmpath,
+                      std::make_unique<ShmdataFollower>(this,
+                                                        shmpath,
+                                                        nullptr,
+                                                        nullptr,
+                                                        nullptr,
+                                                        ShmdataStat::kDefaultUpdateInterval,
+                                                        ShmdataFollower::Direction::writer,
+                                                        true)));
 }
 
 Watcher::DirectoryStatus Watcher::dir_exists(const std::string path) const {
