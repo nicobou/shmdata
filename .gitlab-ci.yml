@@ -1,7 +1,7 @@
 image: docker:18
 
 services:
-  - docker:dind
+  - docker:18.09-dind
 
 variables:
   BUILD_DIR: /opt/switcher
