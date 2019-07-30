@@ -836,6 +836,8 @@ void GLFWVideo::set_events_cb(GLFWwindow* window) {
 
 void GLFWVideo::close_cb(GLFWwindow* window) {
   auto quiddity = static_cast<GLFWVideo*>(glfwGetWindowUserPointer(window));
+  quiddity->meth<MPtr(&MContainer::invoke_str)>(
+      quiddity->meth<MPtr(&MContainer::get_id)>("disconnect-all"), "");
   quiddity->self_destruct();
 }
 
