@@ -32,6 +32,7 @@
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
 #include "switcher/startable-quiddity.hpp"
+#include "switcher/string-utils.hpp"
 
 namespace switcher {
 

@@ -228,12 +228,15 @@ void Executor::read_outputs() {
     }
   }
 
-  info("Grafting % in stdout", cout_buffer.substr(0, static_cast<size_t>(cout_bytes_read)));
-  graft_tree(".output.stdout.",
-             InfoTree::make(cout_buffer.substr(0, static_cast<size_t>(cout_bytes_read))));
-  info("Grafting % in stderr", cerr_buffer.substr(0, static_cast<size_t>(cerr_bytes_read)));
-  graft_tree(".output.stderr.",
-             InfoTree::make(cerr_buffer.substr(0, static_cast<size_t>(cerr_bytes_read))));
+  std::string escaped_stdout = switcher::StringUtils::escape_json(
+      cout_buffer.substr(0, static_cast<size_t>(cout_bytes_read)));
+  std::string escaped_stderr = switcher::StringUtils::escape_json(
+      cerr_buffer.substr(0, static_cast<size_t>(cerr_bytes_read)));
+
+  info("Grafting % in stdout", escaped_stdout);
+  graft_tree(".output.stdout.", InfoTree::make(escaped_stdout));
+  info("Grafting % in stderr", escaped_stderr);
+  graft_tree(".output.stderr.", InfoTree::make(escaped_stderr));
 }
 
 void Executor::clean_up_child_process(int /*signal_number*/) {
