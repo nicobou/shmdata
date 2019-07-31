@@ -27,6 +27,7 @@ See instructions about:
 - [Switcher configuration file](doc/configuration.md)
 - [Mapping OSC or HTTP messages to quiddity properties](doc/protocol-mapper.md)
 - [Using the GStreamer plugin for NVidia H264 GPU decoder (nvdec)](doc/using-nvdec-gstreamer-plugins.md)
+- [Using the Executor quiddity](plugins/executor/README.md)
 - [Shell scripting switcher and scenic](doc/shell-scripting.md)
 - [Shell scripting a SIP call](doc/sip-call.md)
 - [Shell scripting OSC quiddities](doc/using-osc-quiddities.md)

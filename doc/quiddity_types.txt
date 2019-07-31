@@ -95,6 +95,12 @@ emptyquid
    license: LGPL
    author: Nicolas Bouillot
 
+executor
+   name: executor
+   category: utils
+   description: Plugin for launching command lines
+   license: LGPL
+   author: Francis Lecavalier
  
 extshmsrc
    name: extshmsrc
@@ -350,5 +356,12 @@ vrpnsrc
    description: Plugin to connect to a VRPN server and share its controls through shmdata and/or properties.
    license: LGPL
    author: François Ubald Brien
+
+watcher
+   name: watcher
+   category: utils
+   description: Watch a directory for shmdatas
+   license: LGPL
+   author: Francis Lecavalier
 
 ```
