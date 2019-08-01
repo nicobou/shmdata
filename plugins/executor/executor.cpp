@@ -131,7 +131,10 @@ bool Executor::start() {
     wordfree(&words);
     return false;
   }
-  info("'%' was succesfully executed.", args);
+
+  // stop log flooding
+  // debug("'%' was succesfully executed.", args);
+  
   wordfree(&words);
   close(cout_pipe_[1]);
   close(cerr_pipe_[1]);
@@ -214,12 +217,14 @@ bool Executor::on_shmdata_disconnect_all() {
 
 bool Executor::can_sink_caps(std::string /*str_caps*/) { return true; }
 
-void Executor::read_outputs() {
+bool Executor::read_outputs() {
   std::string cout_buffer(1024, ' ');
   std::string cerr_buffer(1024, ' ');
   int cout_bytes_read = 0;
   int cerr_bytes_read = 0;
+
   pollfd plist[2] = {{cout_pipe_[0], POLLIN}, {cerr_pipe_[0], POLLIN}};
+  
   if (poll(plist, 2, 1000) > 0) {
     if (plist[0].revents & POLLIN) {
       cout_bytes_read = read(cout_pipe_[0], cout_buffer.data(), cout_buffer.length());
@@ -228,27 +233,56 @@ void Executor::read_outputs() {
     }
   }
 
+  // update stdout value
   std::string escaped_stdout = switcher::StringUtils::escape_json(
-      cout_buffer.substr(0, static_cast<size_t>(cout_bytes_read)));
-  std::string escaped_stderr = switcher::StringUtils::escape_json(
-      cerr_buffer.substr(0, static_cast<size_t>(cerr_bytes_read)));
+    cout_buffer.substr(0, static_cast<size_t>(cout_bytes_read))
+  );
 
-  info("Grafting % in stdout", escaped_stdout);
-  graft_tree(".output.stdout.", InfoTree::make(escaped_stdout));
-  info("Grafting % in stderr", escaped_stderr);
-  graft_tree(".output.stderr.", InfoTree::make(escaped_stderr));
+  bool is_updated = graft_output("stdout", escaped_stdout);
+
+  // update stderr value
+  std::string escaped_stderr = switcher::StringUtils::escape_json(
+    cerr_buffer.substr(0, static_cast<size_t>(cerr_bytes_read))
+  );
+  
+  return graft_output("stderr", escaped_stderr) || is_updated;
+}
+
+bool Executor::graft_output(const std::string& type, const std::string& escaped_value) {
+  bool has_changed = true;
+  std::string path = ".output." + type + ".";
+  auto branch = get_tree(path);
+
+  if (branch->has_data()) {
+    std::string old = branch->read_data();
+    has_changed = old != escaped_value;
+  }
+
+  if (has_changed) {
+    info("Grafting % in %", escaped_value, type);
+    graft_tree(path, InfoTree::make(escaped_value));
+  }
+
+  return has_changed;
 }
 
 void Executor::clean_up_child_process(int /*signal_number*/) {
-  read_outputs();
+  bool is_updated = read_outputs();
   int rcode;
   wait(&rcode);
-  graft_tree(".output.return_code.", InfoTree::make(rcode));
+
+  // update return_code value
+  is_updated = graft_output("return_code", std::to_string(rcode)) || is_updated;
+
   child_pid_ = 0;
   close(cout_pipe_[0]);
   close(cerr_pipe_[0]);
   posix_spawn_file_actions_destroy(&act_);
-  info("Process over.");
+
+  if (is_updated) {
+    info("'%' execution has been updated.", command_line_);
+  }
+  
   if (periodic_ && !user_stopped_)
     start();
   else

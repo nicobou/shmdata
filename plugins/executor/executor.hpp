@@ -56,7 +56,8 @@ class Executor : public Quiddity, public StartableQuiddity {
   bool can_sink_caps(std::string str_caps);
   pid_t spawn_child(char* program, char** arg_list);
   void clean_up_child_process(int signal_number);
-  void read_outputs();
+  bool read_outputs();
+  bool graft_output(const std::string& type, const std::string& escaped_value);
 
   struct sigaction sigchld_action_;
   int cout_pipe_[2];
