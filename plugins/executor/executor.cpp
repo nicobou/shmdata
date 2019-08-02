@@ -68,13 +68,23 @@ Executor::Executor(quid::Config&& conf)
       [this]() { return on_shmdata_disconnect_all(); },
       [this](const std::string& caps) { return can_sink_caps(caps); },
       std::numeric_limits<unsigned int>::max());
-  cb_wrapper = [this](int signal) { Executor::clean_up_child_process(signal); };
-  memset(&sigchld_action_, 0, sizeof(sigchld_action_));
-  sigchld_action_.sa_handler = &Executor::clean_up_child_process_static;
-  sigaction(SIGCHLD, &sigchld_action_, nullptr);
+
+  sigset_t sigset;
+  sigemptyset(&sigset);
+  sigaddset(&sigset, SIGCHLD);
+  signal_fd_ = signalfd(-1, &sigset, 0);
+  sfd[0].fd = signal_fd_;
+  sfd[0].events = POLLIN;
+  sigemptyset(&sigset);
   posix_spawnattr_init(&attr_);
   posix_spawnattr_setpgroup(&attr_, 0);
+  posix_spawnattr_setsigmask(&attr_, &sigset);
   posix_spawnattr_setflags(&attr_, POSIX_SPAWN_SETPGROUP);
+  posix_spawnattr_setflags(&attr_, POSIX_SPAWN_SETSIGMASK);
+
+  // Launch periodic checking
+  monitoring_task_ = std::make_unique<PeriodicTask<>>([this]() { monitor_process(); },
+                                                      std::chrono::milliseconds(1000));
 }
 
 Executor::~Executor() {
@@ -84,6 +94,7 @@ Executor::~Executor() {
 
 bool Executor::start() {
   stop();
+
   if (command_line_.empty()) {
     error("command_line must not be empty");
     return false;
@@ -127,14 +138,11 @@ bool Executor::start() {
   user_stopped_ = false;
   int status2 = posix_spawnp(&child_pid_, program.c_str(), &act_, &attr_, words.we_wordv, environ);
   if (status2 != 0) {
-    warning("process could not be executed. Error: %", strerror(status2));
+    error("process could not be executed. Error: %", strerror(status2));
     wordfree(&words);
     return false;
   }
 
-  // stop log flooding
-  // debug("'%' was succesfully executed.", args);
-  
   wordfree(&words);
   close(cout_pipe_[1]);
   close(cerr_pipe_[1]);
@@ -217,6 +225,18 @@ bool Executor::on_shmdata_disconnect_all() {
 
 bool Executor::can_sink_caps(std::string /*str_caps*/) { return true; }
 
+void Executor::monitor_process() {
+  if (child_pid_ > 0) {
+    if (poll(sfd, 1, 0) > 0) {
+      if (sfd[0].revents & POLLIN) {
+        struct signalfd_siginfo info;
+        read(signal_fd_, &info, sizeof(info));
+        clean_up_child_process();
+      }
+    }
+  }
+}
+
 bool Executor::read_outputs() {
   std::string cout_buffer(1024, ' ');
   std::string cerr_buffer(1024, ' ');
@@ -224,8 +244,8 @@ bool Executor::read_outputs() {
   int cerr_bytes_read = 0;
 
   pollfd plist[2] = {{cout_pipe_[0], POLLIN}, {cerr_pipe_[0], POLLIN}};
-  
-  if (poll(plist, 2, 1000) > 0) {
+
+  if (poll(plist, 2, 10) > 0) {
     if (plist[0].revents & POLLIN) {
       cout_bytes_read = read(cout_pipe_[0], cout_buffer.data(), cout_buffer.length());
     } else if (plist[1].revents & POLLIN) {
@@ -266,7 +286,7 @@ bool Executor::graft_output(const std::string& type, const std::string& escaped_
   return has_changed;
 }
 
-void Executor::clean_up_child_process(int /*signal_number*/) {
+void Executor::clean_up_child_process(/*int signal_number*/) {
   bool is_updated = read_outputs();
   int rcode;
   wait(&rcode);
@@ -280,14 +300,13 @@ void Executor::clean_up_child_process(int /*signal_number*/) {
   posix_spawn_file_actions_destroy(&act_);
 
   if (is_updated) {
-    info("'%' execution has been updated.", command_line_);
+    info("'%' output has been updated.", command_line_);
   }
-  
-  if (periodic_ && !user_stopped_)
-    start();
-  else
-    pmanage<MPtr(&PContainer::set_str_str)>("started", "false");
-}
 
-void Executor::clean_up_child_process_static(int signal_number) { cb_wrapper(signal_number); }
+  if (periodic_ && !user_stopped_) {
+    start();
+  } else {
+    pmanage<MPtr(&PContainer::set_str_str)>("started", "false");
+  }
+}
 }  // namespace switcher

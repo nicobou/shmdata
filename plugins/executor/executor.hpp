@@ -23,11 +23,13 @@
 #include <poll.h>
 #include <signal.h>
 #include <spawn.h>
+#include <sys/signalfd.h>
 #include <sys/wait.h>
 #include <wordexp.h>
 #include <memory>
 #include <regex>
 #include <string>
+#include "switcher/periodic-task.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
 #include "switcher/shmdata-follower.hpp"
@@ -46,8 +48,6 @@ class Executor : public Quiddity, public StartableQuiddity {
   Executor& operator=(const Executor&) = delete;
 
  private:
-  static void clean_up_child_process_static(int signal_number);
-
   bool start() final;
   bool stop() final;
   bool on_shmdata_connect(const std::string& shmpath);
@@ -55,13 +55,16 @@ class Executor : public Quiddity, public StartableQuiddity {
   bool on_shmdata_disconnect_all();
   bool can_sink_caps(std::string str_caps);
   pid_t spawn_child(char* program, char** arg_list);
-  void clean_up_child_process(int signal_number);
+  void clean_up_child_process();
+  void monitor_process();
   bool read_outputs();
   bool graft_output(const std::string& type, const std::string& escaped_value);
 
+  struct pollfd sfd[1];
   struct sigaction sigchld_action_;
   int cout_pipe_[2];
   int cerr_pipe_[2];
+  int signal_fd_;
   bool user_stopped_{false};
   pid_t child_pid_;
   posix_spawnattr_t attr_;
@@ -70,6 +73,7 @@ class Executor : public Quiddity, public StartableQuiddity {
   std::string shmpath_{};
   std::string shmpath_audio_{};
   std::string shmpath_video_{};
+  std::unique_ptr<PeriodicTask<>> monitoring_task_{nullptr};
   std::unique_ptr<ShmdataFollower> follower_video_{nullptr};
   std::unique_ptr<ShmdataFollower> follower_audio_{nullptr};
   std::unique_ptr<ShmdataFollower> follower_{nullptr};
