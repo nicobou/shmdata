@@ -600,6 +600,7 @@ void GLFWVideo::destroy_gl_elements() {
 GLFWwindow* GLFWVideo::create_window(GLFWwindow* old) {
   glfwWindowHint(GLFW_DECORATED, decorated_);
   glfwWindowHint(GLFW_FLOATING, always_on_top_);
+  glfwWindowHint(GLFW_AUTO_ICONIFY, GL_FALSE);
 
   auto window = glfwCreateWindow(width_, height_, title_.c_str(), nullptr, old);
   if (!window) {
