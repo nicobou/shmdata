@@ -247,24 +247,19 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
                 pmanage<MPtr(&PContainer::disable)>(position_x_id_, kFullscreenDisabled);
                 pmanage<MPtr(&PContainer::disable)>(position_y_id_, kFullscreenDisabled);
                 pmanage<MPtr(&PContainer::disable)>(decorated_id_, kFullscreenDisabled);
-                int total_width = 0;
-                int index = 0;
-                for (const auto& monitor : monitors_config_) {
-                  total_width += monitor.width;
-                  if (position_x_ < total_width) break;
-                  ++index;
-                }
+                
+                MonitorConfig monitor = get_monitor_config();
                 // Positioning is handled by glfwSetWindowMonitor; variables are set just so that
                 // they are in sync with the actual screen position.
                 // Width/height variables are automatically updated by glfwSetWindowMonitor.
-                position_x_ = monitors_config_[index].position_x;
-                position_y_ = monitors_config_[index].position_y;
+                position_x_ = monitor.position_x;
+                position_y_ = monitor.position_y;
                 glfwSetWindowMonitor(window_,
-                                     monitors_config_[index].monitor,
+                                     monitor.monitor,
                                      GLFW_DONT_CARE,
                                      GLFW_DONT_CARE,
-                                     monitors_config_[index].width,
-                                     monitors_config_[index].height,
+                                     monitor.width,
+                                     monitor.height,
                                      GLFW_DONT_CARE);
               } else {
                 pmanage<MPtr(&PContainer::enable)>(width_id_);
