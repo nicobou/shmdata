@@ -112,11 +112,6 @@ void leave(int sig) {
 
 int main(int argc, char* argv[]) {
   setlocale(LC_ALL, "");
-  sigset_t set;
-  sigemptyset(&set);
-  sigaddset(&set, SIGCHLD);
-  int s = pthread_sigmask(SIG_BLOCK, &set, nullptr);
-  if (s != 0) std::cerr << "could not block SIGCHLD signals: " << strerror(errno) << "\n";
   (void)signal(SIGINT, leave);
   (void)signal(SIGABRT, leave);
   (void)signal(SIGQUIT, leave);

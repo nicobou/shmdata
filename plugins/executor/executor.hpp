@@ -23,7 +23,6 @@
 #include <poll.h>
 #include <signal.h>
 #include <spawn.h>
-#include <sys/signalfd.h>
 #include <sys/wait.h>
 #include <wordexp.h>
 #include <memory>
@@ -37,8 +36,6 @@
 #include "switcher/string-utils.hpp"
 
 namespace switcher {
-
-std::function<void(int)> cb_wrapper;
 
 class Executor : public Quiddity, public StartableQuiddity {
  public:
@@ -60,13 +57,12 @@ class Executor : public Quiddity, public StartableQuiddity {
   bool read_outputs();
   bool graft_output(const std::string& type, const std::string& escaped_value);
 
-  struct pollfd sfd[1];
   struct sigaction sigchld_action_;
+  int child_return_code_{0};
   int cout_pipe_[2];
   int cerr_pipe_[2];
-  int signal_fd_;
   bool user_stopped_{false};
-  pid_t child_pid_;
+  pid_t child_pid_{0};
   posix_spawnattr_t attr_;
   posix_spawn_file_actions_t act_;
   ShmdataConnector shmcntr_;

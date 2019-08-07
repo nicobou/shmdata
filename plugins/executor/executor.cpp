@@ -20,6 +20,10 @@
 #include "executor.hpp"
 
 namespace switcher {
+
+static volatile sig_atomic_t child_dead = 0;
+extern "C" void signal_cb(int signal_number) { child_dead = 1; }
+
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Executor,
                                      "executor",
                                      "Command line launcher",
@@ -68,23 +72,16 @@ Executor::Executor(quid::Config&& conf)
       [this]() { return on_shmdata_disconnect_all(); },
       [this](const std::string& caps) { return can_sink_caps(caps); },
       std::numeric_limits<unsigned int>::max());
-
-  sigset_t sigset;
-  sigemptyset(&sigset);
-  sigaddset(&sigset, SIGCHLD);
-  signal_fd_ = signalfd(-1, &sigset, 0);
-  sfd[0].fd = signal_fd_;
-  sfd[0].events = POLLIN;
-  sigemptyset(&sigset);
+  memset(&sigchld_action_, 0, sizeof(sigchld_action_));
+  sigchld_action_.sa_handler = signal_cb;
+  sigaction(SIGCHLD, &sigchld_action_, nullptr);
   posix_spawnattr_init(&attr_);
   posix_spawnattr_setpgroup(&attr_, 0);
-  posix_spawnattr_setsigmask(&attr_, &sigset);
   posix_spawnattr_setflags(&attr_, POSIX_SPAWN_SETPGROUP);
-  posix_spawnattr_setflags(&attr_, POSIX_SPAWN_SETSIGMASK);
 
   // Launch periodic checking
   monitoring_task_ = std::make_unique<PeriodicTask<>>([this]() { monitor_process(); },
-                                                      std::chrono::milliseconds(1000));
+                                                      std::chrono::milliseconds(500));
 }
 
 Executor::~Executor() {
@@ -227,10 +224,11 @@ bool Executor::can_sink_caps(std::string /*str_caps*/) { return true; }
 
 void Executor::monitor_process() {
   if (child_pid_ > 0) {
-    if (poll(sfd, 1, 0) > 0) {
-      if (sfd[0].revents & POLLIN) {
-        struct signalfd_siginfo info;
-        read(signal_fd_, &info, sizeof(info));
+    if (child_dead == 1) {
+      pid_t pid = waitpid(child_pid_, &child_return_code_, WNOHANG);
+      if (pid > 0 && pid == child_pid_) {
+        child_dead = 0;
+        child_pid_ = 0;
         clean_up_child_process();
       }
     }
@@ -286,15 +284,11 @@ bool Executor::graft_output(const std::string& type, const std::string& escaped_
   return has_changed;
 }
 
-void Executor::clean_up_child_process(/*int signal_number*/) {
+void Executor::clean_up_child_process() {
+  // Check child's outputs
   bool is_updated = read_outputs();
-  int rcode;
-  wait(&rcode);
+  is_updated = graft_output("return_code", std::to_string(child_return_code_)) || is_updated;
 
-  // update return_code value
-  is_updated = graft_output("return_code", std::to_string(rcode)) || is_updated;
-
-  child_pid_ = 0;
   close(cout_pipe_[0]);
   close(cerr_pipe_[0]);
   posix_spawn_file_actions_destroy(&act_);
