@@ -73,7 +73,8 @@ class DescriptionParser : public SafeBoolIdiom {
   bool parse_item(const std::string& item, const std::vector<std::string>& valid_types);
   bool parse_param(const std::string& raw_param, quiddity_spec_t& quid);
   std::string protect_space_in_quote(const std::string& item) const;
-  std::string restore_space_in_quote(const std::string& param) const;
+  std::string protect_escaped_spaces(const std::string& item) const;
+  std::string restore_spaces(const std::string& param) const;
   std::string prepare_item(const std::string& item) const;
   bool safe_bool_idiom() const final { return is_valid_; };
 };
