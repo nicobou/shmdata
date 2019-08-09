@@ -33,6 +33,7 @@ See instructions about:
 - [Shell scripting OSC quiddities](doc/using-osc-quiddities.md)
 - [Contributing code](doc/CODING.md)
 - [Writing your quiddity](doc/writing-quiddity.md)
+- [Writing custom quiddity bundles](doc/writing-bundles.md)
 
 Command line
 -------
