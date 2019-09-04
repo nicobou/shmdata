@@ -7,11 +7,11 @@ In this page you will find instruction about:
 * How to run scenic and switcher in a Raspi with docker
 * How to build your own scenic, switcher and shmdata images
 
-## Install the [nvidia docker runtime](https://developer.nvidia.com/nvidia-container-runtime) in ubuntu 18.04 
+## Install the [nvidia docker runtime](https://developer.nvidia.com/nvidia-container-runtime) in ubuntu 18.04
 
 The minimum nvidia drivers version on the host is **418**.
 
-1. Ensure you have [a correct docker version](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+### 1. Ensure you have [a correct docker version](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 
 ```bash
 sudo -S apt-get remove docker docker-engine docker.io
@@ -37,13 +37,13 @@ sudo apt-get install docker-ce
 sudo usermod -a -G docker $USER
 ```
 
-2. List informations about your nvidia device, as seen from nvidia runtime:
+### 2. List informations about your nvidia device, as seen from nvidia runtime
 
 ```bash
 sudo nvidia-container-cli --load-kmods info
 ```
 
-3. Install [the nvidia runtime for Ubuntu 18.04](https://github.com/NVIDIA/nvidia-docker#ubuntu-140416041804-debian-jessiestretch)
+### 3. Install [the nvidia runtime for Ubuntu 18.04](https://github.com/NVIDIA/nvidia-docker#ubuntu-140416041804-debian-jessiestretch)
 
 ```bash
 # If you have nvidia-docker 1.0 installed: we need to remove it and all existing GPU containers

@@ -20,9 +20,7 @@ git submodule update --init --recursive
 mkdir build && cd build
 
 # Generate make recipes
-cmake .. \
-  -DCMAKE_C_COMPILER=gcc-8 \
-  -DCMAKE_CXX_COMPILER=g++-8 \
+CC="gcc-8" CXX="g++-8" cmake .. \
   -DENABLE_GPL=ON \
   -DCMAKE_BUILD_TYPE=Release # replace "Release" with "Debug" when coding
 
@@ -31,7 +29,7 @@ make -j"$(nproc)"
 sudo make install && sudo ldconfig
 ```
 
-> The options `CMAKE_C_COMPILER` and `CMAKE_CXX_COMPILER` set compiler's option without polluted your system environment, if you don't care you can directly set the environment variables `CC` and `CXX` with the same values. All following instructions assume you are using **gcc-8** and **g++-8** as C/C++ compilers.
+> The inline environment variables `CC` and `CXX` are set in order to force the usage of **gcc-8** and **g++-8** without polluting your system environment. All following instructions assume you are using **gcc-8** and **g++-8** as C/C++ compilers.
 
 You can verify and change the build configuration using **ccmake**. To do so, you must first install the needed package:
     

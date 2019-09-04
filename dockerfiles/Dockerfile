@@ -6,81 +6,82 @@ LABEL MAINTAINER="Metalab <metalab-dev@sat.qc.ca>"
 
 # Install common dependencies
 RUN apt update -y \
-   && DEBIAN_FRONTEND=noninteractive apt install -y -qq \
-      build-essential \
-      cmake \
-      bison \
-      flex \
-      gcc-8 \
-      g++-8 \
-      git \
-      gsoap \
-      gstreamer1.0-libav \
-      gstreamer1.0-plugins-bad \
-      gstreamer1.0-plugins-base \
-      gstreamer1.0-plugins-good \
-      gstreamer1.0-plugins-ugly \
-      jackd \
-      libcgsi-gsoap1\
-      libcgsi-gsoap-dev \
-      libcurl3-gnutls \
-      libcurl4-gnutls-dev \
-      libxxf86vm1 \
-      libgl1-mesa-dev \
-      libglib2.0 \
-      libglib2.0-dev \
-      libgstreamer-plugins-base1.0 \
-      libgstreamer-plugins-base1.0-dev \
-      libgstreamer1.0 \
-      libgstreamer1.0-dev \
-      libjack-jackd2-dev \
-      libjson-glib-1.0-0 \
-      libjson-glib-dev \
-      liblo7 \
-      liblo-dev \
-      libltc11 \
-      libltc-dev  \
-      libportmidi0 \
-      libportmidi-dev \
-      libpulse0 \
-      libpulse-mainloop-glib0 \
-      libpulse-dev \
-      libsamplerate0 \
-      libsamplerate0-dev \
-      libssl1.1 \
-      libssl-dev \
-      libtool \
-      libvncclient1 \
-      libvncserver1 \
-      libvncserver-dev \
-      libxcursor1 \
-      libxcursor-dev \
-      libxinerama1 \
-      libxinerama-dev \
-      libxrandr2 \
-      libxrandr-dev \
-      linux-libc-dev \
-      python3 \
-      libpython3.7-stdlib \
-      libpython3.7 \
-      python3-dev \
-      libc6-dev \
-      nvidia-driver-390 \
-      nvidia-dkms-390 \
-      nvidia-kernel-common-390 \
-      nvidia-kernel-source-390 \
-      libnvidia-encode-390 \
-      nvidia-cuda-toolkit \
-      nvidia-cuda-dev \
-      uuid \
-      swh-plugins \
-      uuid-dev \
-      wah-plugins \
-   # Clean apt cache
-   && apt-get clean \
-   && apt-get autoclean \
-   && apt-get autoremove -y \
-   && rm -rf /var/lib/{apt,dpkg,cache,log}/
+    && DEBIAN_FRONTEND=noninteractive \
+        apt install -y -qq \
+            build-essential \
+            cmake \
+            bison \
+            flex \
+            gcc-8 \
+            g++-8 \
+            git \
+            gsoap \
+            gstreamer1.0-libav \
+            gstreamer1.0-plugins-bad \
+            gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good \
+            gstreamer1.0-plugins-ugly \
+            jackd \
+            libcgsi-gsoap1\
+            libcgsi-gsoap-dev \
+            libcurl3-gnutls \
+            libcurl4-gnutls-dev \
+            libxxf86vm1 \
+            libgl1-mesa-dev \
+            libglib2.0 \
+            libglib2.0-dev \
+            libgstreamer-plugins-base1.0 \
+            libgstreamer-plugins-base1.0-dev \
+            libgstreamer1.0 \
+            libgstreamer1.0-dev \
+            libjack-jackd2-dev \
+            libjson-glib-1.0-0 \
+            libjson-glib-dev \
+            liblo7 \
+            liblo-dev \
+            libltc11 \
+            libltc-dev  \
+            libportmidi0 \
+            libportmidi-dev \
+            libpulse0 \
+            libpulse-mainloop-glib0 \
+            libpulse-dev \
+            libsamplerate0 \
+            libsamplerate0-dev \
+            libssl1.1 \
+            libssl-dev \
+            libtool \
+            libvncclient1 \
+            libvncserver1 \
+            libvncserver-dev \
+            libxcursor1 \
+            libxcursor-dev \
+            libxinerama1 \
+            libxinerama-dev \
+            libxrandr2 \
+            libxrandr-dev \
+            linux-libc-dev \
+            python3 \
+            libpython3.7-stdlib \
+            libpython3.7 \
+            python3-dev \
+            libc6-dev \
+            nvidia-driver-390 \
+            nvidia-dkms-390 \
+            nvidia-kernel-common-390 \
+            nvidia-kernel-source-390 \
+            libnvidia-encode-390 \
+            nvidia-cuda-toolkit \
+            nvidia-cuda-dev \
+            uuid \
+            swh-plugins \
+            uuid-dev \
+            wah-plugins \
+    # Clean apt cache
+    && apt-get clean \
+    && apt-get autoclean \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/{apt,dpkg,cache,log}/
 
 FROM dependencies AS build
 LABEL MAINTAINER="Metalab <metalab-dev@sat.qc.ca>"
@@ -102,56 +103,52 @@ COPY . ${BUILD_DIR}
 
 # Build and install switcher
 RUN mkdir -p build \
-   && cd build \
-   && cmake \
-      -DCMAKE_C_COMPILER="${C_COMPILER}" \
-      -DCMAKE_CXX_COMPILER="${CXX_COMPILER}" \
-      -DENABLE_GPL="${ENABLE_GPL}" \
-      -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" .. \
-   && make -j"$(nproc)" \
-   && make install \
-   && ldconfig
+    && cd build \
+    && CC="${C_COMPILER}" \
+        CXX="${CXX_COMPILER}" \
+        cmake \
+            -DENABLE_GPL="${ENABLE_GPL}" \
+            -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" .. \
+    && make -j"$(nproc)" \
+    && make install \
+    && ldconfig
 
 FROM build AS clean
 LABEL MAINTAINER="Metalab <metalab-dev@sat.qc.ca>"
 
 ARG BUILD_DIR="/opt/switcher"
 
-# Reset compiler's environment variables
-ENV CC="" CXX="" \
-   CTEST_OUTPUT_ON_FAILURE=""
-
 # Remove build folder and clean apt cache
 RUN rm -rf ${BUILD_DIR} \
-   && apt remove -y -qq \
-      build-essential \
-      cmake \
-      nvidia-cuda-dev \
-      bison \
-      flex \
-      git \
-      libcgsi-gsoap-dev \
-      libcurl4-gnutls-dev \
-      libgl1-mesa-dev \
-      libglib2.0-dev \
-      libgstreamer-plugins-base1.0-dev \
-      libgstreamer1.0-dev \
-      libjack-jackd2-dev \
-      libjson-glib-dev \
-      liblo-dev \
-      libltc-dev  \
-      libportmidi-dev \
-      libpulse-dev \
-      libsamplerate0-dev \
-      libssl-dev \
-      libtool \
-      libvncserver-dev \
-      libxcursor-dev \
-      libxinerama-dev \
-      libxrandr-dev \
-      linux-libc-dev \
-      python3-dev \
-      uuid-dev \
-   && apt autoclean \
-   && apt autoremove -y \
-   && rm -rf /var/lib/{apt,dpkg,cache,log}/
+    && apt remove -y -qq \
+        build-essential \
+        cmake \
+        nvidia-cuda-dev \
+        bison \
+        flex \
+        git \
+        libcgsi-gsoap-dev \
+        libcurl4-gnutls-dev \
+        libgl1-mesa-dev \
+        libglib2.0-dev \
+        libgstreamer-plugins-base1.0-dev \
+        libgstreamer1.0-dev \
+        libjack-jackd2-dev \
+        libjson-glib-dev \
+        liblo-dev \
+        libltc-dev  \
+        libportmidi-dev \
+        libpulse-dev \
+        libsamplerate0-dev \
+        libssl-dev \
+        libtool \
+        libvncserver-dev \
+        libxcursor-dev \
+        libxinerama-dev \
+        libxrandr-dev \
+        linux-libc-dev \
+        python3-dev \
+        uuid-dev \
+    && apt autoclean \
+    && apt autoremove -y \
+    && rm -rf /var/lib/{apt,dpkg,cache,log}/
