@@ -86,6 +86,7 @@ Executor::Executor(quid::Config&& conf)
 
 Executor::~Executor() {
   stop();
+  monitor_process();
   posix_spawnattr_destroy(&attr_);
 }
 
