@@ -18,6 +18,7 @@
  */
 
 #include "executor.hpp"
+#include "switcher/scope-exit.hpp"
 
 namespace switcher {
 
@@ -64,7 +65,19 @@ Executor::Executor(quid::Config&& conf)
           [this]() { return periodic_; },
           "Make periodic",
           "Execute the command line again when the process finishes or not",
-          periodic_)) {
+          periodic_)),
+
+      // Whitelist caps in order to control connections with an Executor as a writer
+      whitelist_caps_id_(pmanage<MPtr(&PContainer::make_string)>(
+          "whitelist_caps",
+          [this](const std::string& val) {
+            whitelist_caps_ = val;
+            return true;
+          },
+          [this]() { return whitelist_caps_; },
+          "Whitelist compatible capabilities",
+          "Apply capabilities to executed command line",
+          whitelist_caps_)) {
   init_startable(this);
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
@@ -221,7 +234,21 @@ bool Executor::on_shmdata_disconnect_all() {
   return true;
 }
 
-bool Executor::can_sink_caps(std::string /*str_caps*/) { return true; }
+bool Executor::can_sink_caps(const std::string& str_caps) {
+  // by default, it accepts all caps if `whitelist_caps_` is empty
+  if (whitelist_caps_.empty()) return true;
+
+  GstCaps* caps = gst_caps_from_string(str_caps.c_str());
+
+  On_scope_exit {
+    if (nullptr != caps) gst_caps_unref(caps);
+  };
+
+  GstStructure* caps_struct = gst_caps_get_structure(caps, 0);
+  std::string caps_name(gst_structure_get_name(caps_struct));
+
+  return (int) whitelist_caps_.find(caps_name, 0) >= 0;
+}
 
 void Executor::monitor_process() {
   if (child_pid_ > 0) {

@@ -12,6 +12,8 @@ If desired, the user can also set the `autostart` property to `true`; this will 
 
 Once the executed process finishes (either normally or because of an error), the quiddity will automatically become 'stopped'. (ie. the `started` property will become `false`). To execute the specified program again, simply put the quiddity back on. The only exception is when the `periodic` property is set to `true`: the program will start anew automatically and the quiddity's `started` property will stay `true`.
 
+The `whitelist_caps` property needs to be set explicitly in order to allow connections with the Executor as a writer quiddity. It should enumerate all compatible caps in order to connect the Executor and shmdatas. By default, the `can_sink_caps` method will **accept** all connections if the `whitelist_caps` property is empty.
+
 ## Special strings
 
 A maximum of three shmdatas can be connected to Executor at any time: 1 audio shmdata, 1 video shmdata and 1 'other' shmdata (MIDI, OSC, etc.).

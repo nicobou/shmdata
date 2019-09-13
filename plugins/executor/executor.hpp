@@ -28,6 +28,8 @@
 #include <memory>
 #include <regex>
 #include <string>
+#include <gst/gst.h>
+
 #include "switcher/periodic-task.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/shmdata-connector.hpp"
@@ -50,7 +52,7 @@ class Executor : public Quiddity, public StartableQuiddity {
   bool on_shmdata_connect(const std::string& shmpath);
   bool on_shmdata_disconnect(const std::string& shmpath);
   bool on_shmdata_disconnect_all();
-  bool can_sink_caps(std::string str_caps);
+  bool can_sink_caps(const std::string& str_caps);
   pid_t spawn_child(char* program, char** arg_list);
   void clean_up_child_process();
   void monitor_process();
@@ -76,10 +78,14 @@ class Executor : public Quiddity, public StartableQuiddity {
 
   std::string command_line_{};
   PContainer::prop_id_t command_line_id_;
+
   bool autostart_{false};
   PContainer::prop_id_t autostart_id_;
   bool periodic_{false};
   PContainer::prop_id_t periodic_id_;
+
+  std::string whitelist_caps_{};
+  PContainer::prop_id_t whitelist_caps_id_;
 };
 SWITCHER_DECLARE_PLUGIN(Executor);
 }  // namespace switcher
