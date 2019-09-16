@@ -1,22 +1,50 @@
-image: ubuntu:18.04
+image: docker:18
 
-before_script:
-  - apt-get update -qq && apt-get install -y -qq cmake bison build-essential flex libtool libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev
-  - mkdir build
-  - cd build
-  - cmake ..
+services:
+  - docker:dind
+
+variables:
+  BUILD_DIR: /opt/shmdata
+  DOCKERFILE_PATH: dockerfiles/Dockerfile
 
 stages:
+  - configure
   - test
   - test-package
+  - deploy
 
-test:
-  stage: test
+Build and Deploy CI image:
+  stage: configure
+  variables:
+    CONTAINER_TAG: $CI_REGISTRY/sat-metalab/shmdata:ci
+    BUILD_TYPE: Debug
   script:
-    - make -j"$(nproc)"
+    - docker build -t $CONTAINER_TAG --build-arg BUILD_TYPE=$BUILD_TYPE -f $DOCKERFILE_PATH --target build .
+    - echo $CI_DEPLOY_PASSWORD | docker login -u $CI_DEPLOY_USER --password-stdin $CI_REGISTRY
+    - docker push $CONTAINER_TAG
+
+Test:
+  stage: test
+  image: $CI_REGISTRY/sat-metalab/shmdata:ci
+  script:
+    - cd $BUILD_DIR/build
     - make test
 
-test-package:
+Test package:
   stage: test-package
+  image: $CI_REGISTRY/sat-metalab/shmdata:ci
   script:
+    - cd $BUILD_DIR/build
     - make package_source_test
+
+Build and Deploy clean image:
+  stage: deploy
+  variables:
+    CONTAINER_TAG: $CI_REGISTRY/sat-metalab/shmdata:$CI_COMMIT_REF_NAME
+  script:
+    - docker build -t $CONTAINER_TAG -f $DOCKERFILE_PATH .
+    - echo $CI_DEPLOY_PASSWORD | docker login -u $CI_DEPLOY_USER --password-stdin $CI_REGISTRY
+    - docker push $CONTAINER_TAG
+  only:
+    - develop
+    - master

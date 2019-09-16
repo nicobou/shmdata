@@ -1,3 +1,5 @@
+include(CheckCXXCompilerFlag)
+
 pkg_check_modules(PYTHON python3)
 
 option(WITH_PYTHON "Python Wrapper" ${PYTHON_FOUND})
@@ -11,6 +13,10 @@ if (WITH_PYTHON)
     link_directories(${PYTHON_LIBRARY_DIRS})
     add_compile_options(${PYTHON_CFLAGS})
     add_definitions(-Wno-error=missing-field-initializers)
+    check_cxx_compiler_flag(-Wno-error=cast-function-type CAN_CAST_FUNCTION_TYPE)
+    if(CAN_CAST_FUNCTION_TYPE)
+        add_definitions(-Wno-error=cast-function-type)
+    endif()
 
     add_library(pyshmdata SHARED
         pyshmdata.cpp
@@ -27,15 +33,12 @@ if (WITH_PYTHON)
         PRIVATE ${PYTHON_LIBRARIES}
     )
 
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; from distutils import sysconfig; print((sysconfig.get_python_lib(1,0)).split(sys.prefix+'/')[1])"
-        OUTPUT_VARIABLE PYTHON_DIST_PACKAGES
-        )
+    execute_process ( COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())" OUTPUT_VARIABLE PYTHON_DIST_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    # The result of the preceding command end with a line return, we have to get rid of it
-    string(REGEX REPLACE "(.*)[\n\r]" "\\1" PYTHON_DIST_PACKAGES ${PYTHON_DIST_PACKAGES} )
-
-    # INSTALL
+    # Install
 
     install(TARGETS pyshmdata LIBRARY DESTINATION ${PYTHON_DIST_PACKAGES})
 
+    # Test
+    add_test(pyshmdata_basic ${CMAKE_CURRENT_SOURCE_DIR}/example.py)
 endif ()

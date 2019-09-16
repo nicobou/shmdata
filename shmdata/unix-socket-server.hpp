@@ -19,7 +19,7 @@
 #include <future>
 #include <mutex>
 #include <string>
-#include <unordered_set>
+#include <set>
 #include <vector>
 #include "./abstract-logger.hpp"
 #include "./safe-bool-idiom.hpp"
@@ -58,8 +58,8 @@ class UnixSocketServer : public SafeBoolIdiom {
   std::atomic_short quit_{0};
   std::vector<int> clients_{};
   std::mutex clients_mutex_{};
-  std::unordered_set<int> clients_notified_{};
-  std::unordered_set<int> pending_clients_{};
+  std::set<int> clients_notified_{};
+  std::set<int> pending_clients_{};
   UnixSocketProtocol::ServerSide* proto_;
   std::function<void(int)> on_client_error_;
   bool is_valid() const final;

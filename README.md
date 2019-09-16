@@ -6,9 +6,11 @@
 [![build status](https://gitlab.com/sat-metalab/shmdata/badges/master/build.svg)](https://gitlab.com/sat-metalab/shmdata/commits/master)
 
 # shmdata
-Library to share streams of framed data between processes via shared memory. shmdata is server less: it requires applications to link data streams using socket path (e.g. "/tmp/my_shmdata_stream"). Shmdata is very fast and allows process to access data streams without the need of extra copy.
+Library to share streams of framed data between processes via shared memory. shmdata is server less: it requires applications to link data streams using socket path (e.g. "/tmp/my_shmdata_stream"). Shmdata is very fast and allows processes to access data streams without the need of extra copy.
 
-The communication paradigm is 1 to many, i.e. one writer is making available data frames to several followers. Followers and writers are able to hot connect & disconnect. A shmdata can be resized during transmission and shmdata are typed using a string description published by writer at each reconnections. The description format is a user defined string.
+The communication paradigm is 1 to many, i.e., one writer is making available data frames to several followers. Followers and writers can hot connect & disconnect. Shmdata transmission supports buffer resizing. Each shmdata has a type specified with a string description, itself published by the shmdata writer at each reconnection. The type is specified as a user-defined string. Although left to the user, we encourage type specification to follow GStreamer 1.0 caps specification format, for instance "audio/x-raw,format=S16LE,channels=2,layout=interleaved". 
+
+Note the existence of [NDI2shmdata](https://gitlab.com/sat-metalab/ndi2shmdata) that converts shmdata to [NewTek's NDI](http://ndi.newtek.com), and _vice versa_.
 
 Some examples :
 
@@ -20,7 +22,7 @@ Some examples :
 
 # Use compiled GStreamer plugins with GStreamer tools:
 
-By default, gstreamer plugins are installed in ```/usr/local/lib/gstreamer-1.0/```.
+By default, GStreamer plugins are installed in ```/usr/local/lib/gstreamer-1.0/```.
 
 ```
 gst-inspect-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ shmdatasrc
@@ -30,11 +32,13 @@ gst-inspect-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ shmdatasink
 # Installation
 Here is how to build and install it on Debian GNU/Linux or Ubuntu::
 
-    $ sudo apt install cmake bison build-essential flex libtool
+    $ sudo apt install cmake bison build-essential flex libtool git
     $ # this is only for building gstreamer plugins:
-    $ sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+    $ sudo apt install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
     $ # this is for building python wrappers 
-    $ sudo apt-get install python3-dev
+    $ sudo apt install python3-dev
+    $ git clone https://gitlab.com/sat-metalab/shmdata.git
+    $ cd shmdata
     $ mkdir build
     $ cd build
     $ cmake -DCMAKE_BUILD_TYPE=Release .. # replace "Release" with "Debug" when coding
@@ -57,28 +61,94 @@ Here is how to build and install it on Debian GNU/Linux or Ubuntu::
 
         make package_source
         
-* To test the source package, this will create the source package and then try to build and test it
+* To test the source package, this will create the source package, then try to build and test it
 
         make package_source_test
         
+# Docker images
 
-# Mac OS Installation
-* Install homebrew
+A docker image of `shmdata` is built into its [registry](https://gitlab.com/sat-metalab/shmdata/container_registry). You can start building your own library on top of this image by pulling it.
 
-        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+Three tags of this image are provided :
 
-* Install dependencies
+| tag                | purpose     | description                                                            |
+|--------------------|-------------|------------------------------------------------------------------------|
+| [master][master]   | production  | Clean image based on the `master` branch and build with `Release` flag |
+| [develop][develop] | development | Clean image based on the `develop` branch and build with `Debug` flag  |
+| [ci][ci]           | testing     | Image used for CI and used for unit tests                              |
 
-        brew install cmake pkg-config gstreamer gst-plugins-base python3
+[master]: registry.gitlab.com/sat-metalab/shmdata:master
+[develop]: registry.gitlab.com/sat-metalab/shmdata:develop
+[ci]: registry.gitlab.com/sat-metalab/shmdata:ci
 
-* Build & Install
+## Install with Docker
 
-        mkdir build
-        cd build
-        cmake ..
-        make
-        sudo make install
+1. Install Docker ([instructions for Ubuntu 18.04](https://docs.docker.com/install/linux/docker-ce/ubuntu/))
 
+2. Pull the Docker image
+
+```bash
+docker pull registry.gitlab.com/sat-metalab/shmdata:develop # or use "master" tag
+```
+
+3. Configure Nvidia runtime (from [instructions](https://gitlab.com/sat-metalab/switcher/blob/develop/doc/run-switcher-in-docker.md#install-the-nvidia-docker-runtime-in-ubuntu-1804))
+
+4. Develop your own tools from `shmdata`
+    
+    * You can take inspiration from [the Switcher and Scenic build instructions](https://gitlab.com/sat-metalab/switcher/blob/develop/doc/run-switcher-in-docker.md#run-scenic-from-remote-image-with-nvidia-support)
+    
+    * You can create your own Dockerfile
+
+    ```bash
+    FROM registry.gitlab.com/sat-metalab/shmdata
+    # your Dockerfile
+    ```
+
+## Contribute with Docker
+
+The `shmdata` image uses [mutli-stage builds][docker-multi-stage] with three stages : `dependencies`, `build` and `clean`. Theses stages use some build arguments :
+
+| variables  | stages              | description                      | default        |
+|------------|---------------------|----------------------------------|----------------|
+| BUILD_DIR  | `build` and `clean` | Where `shmdata` source is copied | `/opt/shmdata` |
+| BUILD_TYPE | `build`             | The build type of `shmdata`      | `Release`      |
+
+All images can be built and tested from source :
+
+```bash
+# build shmdata with the "build" stage, all unused dependencies are not removed
+docker build -t shmdata:test -f dockerfiles/Dockerfile --target build .
+
+# execute bash into the BUILD_DIR folder
+docker run -ti shmdata:test bash
+```
+
+[docker-multi-stage]: https://docs.docker.com/develop/develop-images/multistage-build/
+
+# Mac OS installation
+
+**Note**: we had success building this image on OSX with Homebrew, but it is not supported by the shmdata contributors, and it is not included in our continuous integration pipeline: it might be broken when you read this.
+
+1. Install homebrew
+
+```bash
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+```
+
+2. Install dependencies
+
+```bash
+brew install cmake pkg-config gstreamer gst-plugins-base python3
+```
+
+3. Build & Install
+```bash
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
 
 ## Mac OS Notes
 * If you are using homebrew to install dependencies and encountering errors about ```-lintl```, you have to ```brew link gettext```

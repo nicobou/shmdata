@@ -48,7 +48,20 @@ Type::Type(const std::string& str){
     // check if value contains a literal type description
     std::regex literal_type_regex("\\([\\w]+\\)");
     std::smatch sm;
-    std::any any_value = std::make_any<std::string>(unescape(value)); 
+    auto unescaped = unescape(value);
+    // check if unescaped value is an integer and fill the any value with the appropriate type
+    std::any any_value;
+    bool is_negative = false;
+    if (*unescaped.begin() == '-') is_negative = true;
+    if (!unescaped.empty() && unescaped != "-" &&
+        std::find_if(unescaped.begin() + (is_negative ? 1 : 0), unescaped.end(), [](char c) {
+          return !std::isdigit(c);
+        }) == unescaped.end()) {
+      any_value = std::stoi(unescaped);
+    } else {
+      any_value = std::make_any<std::string>(unescaped);
+    }
+    // search if the value is prefixed with a type name
     if (regex_search(value, sm, literal_type_regex)) {
       if (sm.str() == "(int)") {
         std::istringstream iss(std::string(value, sm.str().size(), std::string::npos));
@@ -57,9 +70,11 @@ Type::Type(const std::string& str){
         any_value = tmp_int;
       } else {
         any_value = unescape(std::string(value, sm.str().size(), std::string::npos));
+        // saving non literal types only
+        str_types_.emplace(key, std::string(sm.str(), 1, sm.str().size() - 2));
       }
     } 
-    // saving key and value
+    // saving resulting key and value
     properties_.emplace(key, any_value);
   }
 }
@@ -76,49 +91,99 @@ std::any Type::get(const std::string& key) const {
   return found->second;
 }
 
+void Type::set_prop(const std::string& key, const char* value) {
+  properties_.emplace(key, std::string(value));
+}
+
+void Type::set_prop(const std::string& key,
+                    const std::string& custom_type,
+                    const std::string& value) {
+  properties_.emplace(key,value);
+  str_types_.emplace(key,custom_type);
+}
+
 std::string Type::escape(const std::string& str) {
-  std::regex space_rgx("\\\\,");
-  return std::regex_replace(str, space_rgx, "__COMA__");
+  std::regex coma_rgx("\\\\,");
+  std::regex equal_rgx("\\\\=");
+  return std::regex_replace(std::regex_replace(str, coma_rgx, "__COMA__"), equal_rgx, "__EQUAL__");
 }
 
 std::string Type::unescape(const std::string& str) {
-  std::regex space_rgx("__COMA__");
+  std::regex coma_rgx("__COMA__");
+  std::regex equal_rgx("__EQUAL__");
   std::regex quot_rgx("\\\"");
-  return std::regex_replace(std::regex_replace(str, space_rgx, ","), quot_rgx, "");
+  std::regex lparent_rgx("\\\\\\(");
+  std::regex rparent_rgx("\\\\\\)");
+  return std::regex_replace(
+      std::regex_replace(
+          std::regex_replace(
+              std::regex_replace(std::regex_replace(str, coma_rgx, ","), quot_rgx, ""),
+              equal_rgx,
+              "="),
+          lparent_rgx,
+          "("),
+      rparent_rgx,
+      ")");
 }
 
 std::map<std::string,std::any> Type::get_properties() const {
   return properties_;
 }
 
+std::string Type::get_serialized_string_value(const std::any& value) {
+  std::regex coma_rgx(",");
+  std::regex equal_rgx("=");
+  std::regex lparent_rgx("\\(");
+  std::regex rparent_rgx("\\)");
+  auto res = std::regex_replace(
+      std::regex_replace(
+          std::regex_replace(std::regex_replace(std::any_cast<std::string>(value), coma_rgx, "\\,"),
+                             equal_rgx,
+                             "\\="),
+          lparent_rgx,
+          "\\("),
+      rparent_rgx,
+      "\\)");
+  // add quote if space, coma of equal is present in the string
+  if (res.find(' ') != std::string::npos || res.find(',') != std::string::npos ||
+      res.find('=') != std::string::npos)
+    res = "\"" + res + "\"";
+  return res;
+}
+
 std::string Type::str() const {
   auto res = name_;
   for (auto& it : properties_) {
     auto value = it.second;
-    auto thc = value.type().hash_code();
-    if (typeid(std::string).hash_code() == thc) {
-      res += ", " + it.first + "=(string)" + std::any_cast<std::string>(value);
-    } else if (typeid(int).hash_code() == thc) {
-      res += ", " + it.first + "=(int)" + std::to_string(std::any_cast<int>(value));
-    } else if (typeid(long).hash_code() == thc) {
-      res += ", " + it.first + "=(long)" + std::to_string(std::any_cast<long>(value));
-    } else if (typeid(long long).hash_code() == thc) {
-      res += ", " + it.first + "=(long long)" + std::to_string(std::any_cast<long long>(value));
-    } else if (typeid(unsigned).hash_code() == thc) {
-      res += ", " + it.first + "=(unsigned)" + std::to_string(std::any_cast<unsigned>(value));
-    } else if (typeid(unsigned long).hash_code() == thc) {
-      res += ", " + it.first + "=(unsigned long)" + std::to_string(std::any_cast<unsigned long>(value));
-    } else if (typeid(unsigned long long).hash_code() == thc) {
-      res += ", " + it.first + "=(unsigned long long)" + std::to_string(std::any_cast<unsigned long long>(value));
-    } else if (typeid(float).hash_code() == thc) {
-      res += ", " + it.first + "=(float)" + std::to_string(std::any_cast<float>(value));
-    } else if (typeid(double).hash_code() == thc) {
-      res += ", " + it.first + "=(double)" + std::to_string(std::any_cast<double>(value));
-    } else if (typeid(long double).hash_code() == thc) {
-      res += ", " + it.first + "=(long double)" + std::to_string(std::any_cast<long double>(value));
+    auto found = str_types_.find(it.first);
+    if (found != str_types_.end()) {
+      res += ", " + it.first + "=(" + found->second + ")" + get_serialized_string_value(value);
     } else {
-      serialization_errors_ += std::string("unknown type for key ") + it.first +
-                               " cpp type name is " + value.type().name();
+      auto thc = value.type().hash_code();
+      if (typeid(std::string).hash_code() == thc) {
+        res += ", " + it.first + "=(string)" + get_serialized_string_value(value);
+      } else if (typeid(int).hash_code() == thc) {
+        res += ", " + it.first + "=(int)" + std::to_string(std::any_cast<int>(value));
+      } else if (typeid(long).hash_code() == thc) {
+        res += ", " + it.first + "=(long)" + std::to_string(std::any_cast<long>(value));
+      } else if (typeid(long long).hash_code() == thc) {
+        res += ", " + it.first + "=(long long)" + std::to_string(std::any_cast<long long>(value));
+      } else if (typeid(unsigned).hash_code() == thc) {
+        res += ", " + it.first + "=(unsigned)" + std::to_string(std::any_cast<unsigned>(value));
+      } else if (typeid(unsigned long).hash_code() == thc) {
+        res += ", " + it.first + "=(unsigned long)" + std::to_string(std::any_cast<unsigned long>(value));
+      } else if (typeid(unsigned long long).hash_code() == thc) {
+        res += ", " + it.first + "=(unsigned long long)" + std::to_string(std::any_cast<unsigned long long>(value));
+      } else if (typeid(float).hash_code() == thc) {
+        res += ", " + it.first + "=(float)" + std::to_string(std::any_cast<float>(value));
+      } else if (typeid(double).hash_code() == thc) {
+        res += ", " + it.first + "=(double)" + std::to_string(std::any_cast<double>(value));
+      } else if (typeid(long double).hash_code() == thc) {
+        res += ", " + it.first + "=(long double)" + std::to_string(std::any_cast<long double>(value));
+      } else {
+        serialization_errors_ += std::string("unknown type for key ") + it.first +
+            " cpp type name is " + value.type().name();
+      }
     }
   }
   return res;
