@@ -2,6 +2,21 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.20 (2019-09-16)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* fix make package_source_test
+* Unify shmdata docker dockerfiles and push images from CI
+* improved int type parsing in caps
+* fix compilation issue with ubuntu 19.04
+* mention of NDi2shmdata in README.md
+* pyshmdata installs in python module path instead of cmake prefix
+* fix a sometime deadlock in pyshmdata
+* pyshmdata example as test
+* reformating code of python wrapper
+* adding custom type names in type parser
+
 shmdata 1.3.18 (2018-10-19)
 ---------------------------
 This is an official release in the 1.3 stable series.
