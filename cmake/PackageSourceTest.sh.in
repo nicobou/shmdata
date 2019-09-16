@@ -15,8 +15,7 @@ mkdir build
 cd build
 cmake ..
 make
-make install
-ldconfig
+make DESTDIR=/tmp install
 make test
 
 # Cleanup after
