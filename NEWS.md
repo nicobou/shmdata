@@ -2,6 +2,80 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 1.1.2 (2019-09-17)
+---------------------------
+This is an official release in the 1.1 stable series.
+
+New features:
+* CI now pushes image into registry for develop and master branches + updated docker documentation
+* Add quiddity (Watcher) for watching directories
+* Add Executor quiddity
+* addition of shmdata2jack, a simple command line tool.
+* mention NDI2shmdata in README.md
+* Add documentation on writing bundles
+* Add run-switcher-in-docker in documentation
+* Add missing caps specifier in JackToShmdata
+* pjsip upgraded to 2.9
+* Add argument to init ShmdataFollower tree on server connect
+* Add do not convert rate and format in jacksink in order to get more than 63 channels
+* Add stun turn port configuration in doc about bash scripting a sip call
+* pyquid is installed in python lib path instead of cmake prefix
+* removed nvdec quiddity
+* Make nvdec (GStreamer element) compatible with decodebin and shmdata
+
+Bug fixes:
+* Fix: Resolve build problems from Scenic images
+* Handle escaped whitespaces in bundle parser
+* Fix signal handling problems in Executor
+* Fix fullscreen windows not displaying in right monitor
+* Fix GLFW fullscreen windows from minimizing automatically
+* Escape special characters for JSON grafting
+* Fix segfault when decorated glfwin is destroyed
+* Fix fullscreen glfwin bug
+* Fix dysfunctional image loading in glfwvideo
+* adding Docker (desktop host and Raspi) file and documentation for shmdata, switcher & scenic in docker with support nvidia GPU encoding.
+* less spelling mistakes
+* adding informations about writing quiddities
+* fix nvenc build on ubuntu 19.04
+* fix race condition during GST Pipe destruction
+* fix compilation issues with Ubuntu 19.04
+* fix ltfdiff test sometimes crashing
+* fix gsp-pipeliner leaking bus watch
+* fixes in shmdata to jack
+* do not notify reader stats
+* fix set sip related server port from uris
+* fix set sip server port from registration uri
+* register to the appropriate quiddity in infotree stress python test
+* fix inconsistent control of gst pipeline play/pause states
+* document how to set remote sip server port from command line
+* fix append of remote port in sip registration url
+* fix compilation issue with pyquiddity.cpp
+* use asyncio in pyquid infotree stress test
+* fix possible deadlocks in pyquiddity
+* typo in qrox header
+* fix glfwin sometimes segfault
+* glfwin handle dynamic change in caps without disconnecting shmdata
+* avoid passing nullptr as a string in uridecodebin
+* infotree signal stress test and pyquid multi-threading improvement
+* pyquid: use save and restore thread instead of not thread safe PyGIL
+* more asserts in pyquid signal file
+* pixel converter destruct gst pipeline before elements
+* gstpipe set gst pipeline to null from the destructor and unref from gmainloop
+* gstpipe kills gst pipeline from the main loop  fix sometimes filesrc crash at deletion (members order in quiddity-container)
+* reverse gst-element ref removal from previous commit
+* adding unsubscribe to signal in python exemple
+* avoid segfaut due to simultameous g_signal_handler_disconnect and signal notification in gst-shmdata-subscriber
+* information tree serialization is mutexed now
+* Add documentation for building NVDEC
+* Make nvdec compatible with decodebin and shmdata
+* Fix log messages in PJCall
+* Removed the validation on overlay_additional_font and overlay_config properties
+* fix member orders in videotestsrc
+* adding python3 in CI and switcher dependencies
+* Handle gstreamer.primary_priority configuration as an int
+* Drop corrupted frames when decoding H264 streams
+* Allow a Gstreamer plugin's rank to be set using the switcher.json file
+
 switcher 1.1.0 (2018-12-13)
 ---------------------------
 This is an official release in the 1.1 stable series.
