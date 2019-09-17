@@ -35,7 +35,7 @@ GstVideoConverter::GstVideoConverter(quid::Config&& conf)
       video_format_(
           GstUtils::get_gst_element_capability_as_list("videoconvert", "format", GST_PAD_SRC), 0),
       video_format_id_(
-          pmanage<MPtr(&PContainer::make_selection<>)>("Pixel format",
+          pmanage<MPtr(&PContainer::make_selection<>)>("pixel_format",
                                                        [this](const IndexOrName& val) {
                                                          video_format_.select(val);
                                                          return true;
