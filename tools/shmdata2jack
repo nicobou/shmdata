@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation; either version 2.1
+# of the License, or (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+
+import argparse
+import os
+import signal
+import sys
+import time
+from pyquid import Switcher, Quiddity, InfoTree
+from typing import Any
+
+
+def parse_args() -> argparse.Namespace:
+    argp = argparse.ArgumentParser()
+    argp.add_argument("shmpath", help="the audio shmdata to be sent to jack", type=str)
+    argp.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
+    argp.add_argument("-d", "--debug", help="print switcher log messages", action="store_true")
+    argp.add_argument("-n", "--name", help="jack client name", type=str)
+    argp.add_argument("--no-auto-connect",
+                      help="do not connect to another jack client", action="store_true")
+    argp.add_argument("--connect-all-to-first",
+                      help="connect all channels to the first", action="store_true")
+    argp.add_argument("--connect-only-first",
+                      help="connect only first channel", action="store_true")
+    argp.add_argument("--do-not-convert-format",
+                      help="do not try to convert sample format (required if shmdata has more than 63 channels)",
+                      action="store_true")
+    argp.add_argument("--do-not-convert-rate",
+                      help="do not try to convert sample rate (required if shmdata has more than 63 channels)",
+                      action="store_true")
+    argp.add_argument(
+        "--connect-to", help="name of the jack client to connect to (default is system:playback_%%d). " +
+        "Note that %%d will be replaced by the channel index.", type=str)
+    argp.add_argument("--connection-index",
+                      help="start connecting to other client from this channel index (default is 1)", default=1, type=int)
+
+    return argp.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+
+    # create a switcher.
+    sw = Switcher('shmdata2jack' + str(os.getpid()), debug=args.debug)
+    if not args.name:
+        jack_name = sw.name()
+    else:
+        jack_name = args.name
+    if args.verbose:
+        print('Jack name is ' + jack_name)
+    jackquid = sw.create('jacksink', jack_name).quid()
+    if args.connect_to:
+        jackquid.set('connect_to', args.connect_to)
+    if args.no_auto_connect:
+        jackquid.set('auto_connect', False)
+    else:
+        jackquid.set('auto_connect', True)
+    if args.connect_all_to_first:
+        jackquid.set('connect_all_to_first', True)
+    if args.connect_only_first:
+        jackquid.set('connect_only_first', True)
+    if args.do_not_convert_format:
+        jackquid.set('do_format_conversion', False)
+    if args.do_not_convert_rate:
+        jackquid.set('do_rate_conversion', False)
+    jackquid.set('index', args.connection_index)
+    jackquid.invoke("connect", [args.shmpath])
+
+    if args.verbose:
+        print('reading ' + args.shmpath)
+
+    caps_displayed = False
+    while(True):
+        tree = InfoTree(jackquid.get_info_tree_as_json('shmdata.reader.' + args.shmpath))
+        if (args.verbose and not caps_displayed and tree.get('caps')):
+            print('shmdata caps is ' + tree.get('caps'))
+            caps_displayed = True
+        if(args.verbose and caps_displayed):
+            print('byte rate: %.2fMbps' % (8 * tree.get('stat.byte_rate') / 1000000.0), end='\r', flush=True)
+        time.sleep(0.2)
+
+
+def sigint_handler(signum: Any, frame: Any) -> None:
+    print('')  # avoid having the prompt back over the byte rate line
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    signal.signal(signal.SIGINT, sigint_handler)
+    main()

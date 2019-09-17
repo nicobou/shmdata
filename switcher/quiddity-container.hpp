@@ -160,8 +160,8 @@ class Container : public Logged {
   unsigned int cur_id_{0};
   std::weak_ptr<Container> me_{};
   Switcher* switcher_;
-  std::unordered_map<qid_t, std::shared_ptr<Quiddity>> quiddities_{};
   std::unordered_map<std::string, qid_t> names_{};
+  std::unordered_map<qid_t, std::shared_ptr<Quiddity>> quiddities_{};
 };
 
 }  // namespace quid

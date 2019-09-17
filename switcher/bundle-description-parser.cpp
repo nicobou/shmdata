@@ -120,6 +120,7 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
   std::string item = prepare_item(raw_item);
   item = protect_space_in_quote(item);
   // split by space' ', but can be escaped with '\\ '
+  item = protect_escaped_spaces(item);
   std::regex rgx("\\s");
   std::sregex_token_iterator iter(item.begin(), item.end(), rgx, -1);
   bool type_found = false;
@@ -216,7 +217,7 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
 }
 
 bool DescriptionParser::parse_param(const std::string& raw_param, quiddity_spec_t& quid) {
-  std::string param = restore_space_in_quote(raw_param);
+  std::string param = restore_spaces(raw_param);
   {  // check if this parameter in only blacklisted
     std::regex rgx("_\\w+");
     if (std::regex_match(param, rgx)) {
@@ -257,7 +258,15 @@ std::string DescriptionParser::protect_space_in_quote(const std::string& item) c
   return res;
 }
 
-std::string DescriptionParser::restore_space_in_quote(const std::string& param) const {
+std::string DescriptionParser::protect_escaped_spaces(const std::string& item) const {
+  std::string res = item;
+  std::regex rgx("\\\\\\s");
+  while (std::regex_search(res, rgx))
+    res = std::regex_replace(res, rgx, std::string("$1") + spaceReplacement + "$2");
+  return res;
+}
+
+std::string DescriptionParser::restore_spaces(const std::string& param) const {
   std::regex rgx(spaceReplacement);
   return std::regex_replace(param, rgx, " ");
 }

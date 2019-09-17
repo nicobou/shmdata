@@ -43,7 +43,12 @@ GstShmTreeUpdater::GstShmTreeUpdater(Quiddity* quid,
                  quid_->notify_tree_updated(parent_path);
                  if (on_caps_cb) on_caps_cb(caps);
                },
-               ShmdataStat::make_tree_updater(quid_, key_ + shmpath_)) {
+               ShmdataStat::make_tree_updater(
+                   quid_,
+                   key_ + shmpath_,
+                   (/* do not signal tree update for readers */ dir_ == Direction::writer
+                        ? true
+                        : false))) {
   auto path = key_ + shmpath_;
   auto tree = quid_->prune_tree(path, false);
   // adding default informations for this shmdata

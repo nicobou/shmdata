@@ -6,3 +6,4 @@ build/
 cmake-build-*/
 html/
 plugins/pjsip/config.json
+.vscode/*

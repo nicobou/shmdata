@@ -1,7 +1,7 @@
-Script with OSC quiddities
+Script with OSC Quiddities
 =======
 
-Switcher can transmit OSC messages along with other streams. This is done through OSC to shmdata and shmdata to OSC conversion. Here we give an example of use with the liblo tools
+Switcher can transmit OSC messages along with other streams. This is done through OSC to Shmdata and Shmdata to OSC conversion. Here we give an example with the liblo tools
 
 ## Install liblo-tools
 
@@ -9,21 +9,21 @@ Switcher can transmit OSC messages along with other streams. This is done throug
 sudo apt install liblo-tools
 ```
 
-## OSC to shmdata
+## OSC to Shmdata
 
 In a terminal, run switcher:
 ```
 switcher -d
 ```
 
-In an other terminal, send command for creating OSC to shmdata quiddity (named OSCreceiver):
+In another terminal, send command for creating OSC to Shmdata quiddity (named OSCreceiver):
 ```
 switcher-ctrl -C OSCsrc OSCreceiver
 switcher-ctrl -s OSCreceiver port 23456
 switcher-ctrl -s OSCreceiver started true
 ```
 
-In an other terminal, check if frames are coming into the OSCreceiver shmdata.
+In another terminal, check if frames are coming into the OSCreceiver Shmdata.
 ```
 sdflow $(switcher-ctrl -p OSCreceiver osc)
 ```
@@ -38,9 +38,9 @@ oscsend localhost 23456 /sample/ f 3.14
 ```
 Then you should have seen the frame displayed by the sdflow command.
 
-## shmdata to OSC
+## Shmdata to OSC
 
-(This assumes OSC to shmdata is still running.)
+(This assumes OSC to Shmdata is still running.)
 
 ```
 switcher-ctrl -C OSCsink OSCsender
@@ -65,4 +65,4 @@ de5529cb.3b610279 /sample/ f 3.140000
 
 ```
 
-The message was received and written to a shmdata by OSCreceiver. OSCsend did read the shmdata and sent the message to localhost, port 2397.
+The message was received and written to a Shmdata by OSCreceiver. OSCsend did read the Shmdata and sent the message to localhost, port 2397.

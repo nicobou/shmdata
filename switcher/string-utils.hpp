@@ -20,6 +20,8 @@
 #ifndef __SWITCHER_STRING_UTILS_H__
 #define __SWITCHER_STRING_UTILS_H__
 
+#include <iomanip>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -40,6 +42,8 @@ bool ends_with(const std::string& str, const std::string& suffix);
 
 std::string base64_encode(const std::string& str);
 std::string base64_decode(const std::string& str);
+
+std::string escape_json(const std::string& str);
 
 }  // namespace StringUtils
 }  // namespace switcher

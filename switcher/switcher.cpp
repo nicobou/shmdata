@@ -105,15 +105,16 @@ bool Switcher::load_state(InfoTree* state) {
         } else {
           auto quid = qcontainer_->get_quiddity(qcontainer_->get_id(name));
           if (!quid || !quid->prop<MPtr(&PContainer::set_str_str)>(
-                           prop, Any::to_string(properties->branch_get_value(name + "." + prop))))
+                           prop, Any::to_string(properties->branch_get_value(name + "." + prop)))) {
             log_->message("ERROR:failed to apply value, quiddity is %, property is %, value is %",
                           name,
                           prop,
                           Any::to_string(properties->branch_get_value(name + "." + prop)));
-          log_->warning("failed to apply value, quiddity is %, property is %, value is %",
-                        name,
-                        prop,
-                        Any::to_string(properties->branch_get_value(name + "." + prop)));
+            log_->warning("failed to apply value, quiddity is %, property is %, value is %",
+                          name,
+                          prop,
+                          Any::to_string(properties->branch_get_value(name + "." + prop)));
+          }
         }
       }
     }
@@ -261,6 +262,16 @@ InfoTree::ptr Switcher::get_state() const {
   }
 
   return tree;
+}
+
+void Switcher::apply_gst_configuration() {
+  auto configuration = conf_.get();
+  for (const auto& plugin : configuration->get_child_keys("gstreamer.primary_priority")) {
+    int priority = configuration->branch_get_value("gstreamer.primary_priority." + plugin);
+    if (!GstInitialized::set_plugin_as_primary(plugin, priority)) {
+      log_->warning("Unable to find Gstreamer plugin '%'. Check if plugin is installed.", plugin);
+    }
+  }
 }
 
 void Switcher::register_bundle_from_configuration() {

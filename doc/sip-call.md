@@ -25,9 +25,9 @@ switcher -d
 In another terminal, prepare you sip communication:
 ```
 switcher-ctrl -C sip sip
-switcher-ctrl -s sip port 5060
-switcher-ctrl -i sip register shmdata@mondomaine.com ilovedogs
-switcher-ctrl -i sip set_stun_turn stun.mondomaine.com turn.mondomaine.com shmdata ilovedogs
+switcher-ctrl -s sip port 15060 # set local port to bind for sip communications
+switcher-ctrl -i sip register shmdata@mondomaine.com:5060 ilovedogs
+switcher-ctrl -i sip set_stun_turn stun.mondomaine.com:3478 turn.mondomaine.com:3478 shmdata ilovedogs
 
 switcher-ctrl -s sip mode "authorized contacts"
 switcher-ctrl -i sip add_buddy switcher@mondomaine.com
@@ -59,14 +59,14 @@ switcher-ctrl --server http://localhost:15432 -s aud2 wave 1
 switcher-ctrl --server http://localhost:15432 -s aud2 started true
 ```
 
-Prepare the call, i.e. attach several audio shmdata to the callee 
+Prepare the call, i.e., attach several audio Shmdata to the callee 
 ```
 switcher-ctrl --server http://localhost:15432 -i sip attach_shmdata_to_contact $(switcher-ctrl --server http://localhost:15432 -p aud1 audio) shmdata@mondomaine.com true
 switcher-ctrl --server http://localhost:15432 -i sip attach_shmdata_to_contact $(switcher-ctrl --server http://localhost:15432 -p aud2 audio) shmdata@mondomaine.com true
 switcher-ctrl --server http://localhost:15432 -t sip buddies.0
 ```
 
-Then make switcher call shmdata:
+Then make switcher call Shmdata:
 ```
 switcher-ctrl --server http://localhost:15432 -i sip send shmdata@mondomaine.com
 ```

@@ -252,7 +252,8 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   }
 
   // counting
-  auto count = counter_.get_count(padname_split[0]);
+  auto name_splited = padname_split[0] ? std::string(padname_split[0]) : std::string();
+  auto count = counter_.get_count(name_splited);
   std::string media_name = std::string(padname_split[0]) + "-" + std::to_string(count);
   debug("uridecodebin: new media %", media_name);
   std::string shmpath = make_shmpath(media_name);

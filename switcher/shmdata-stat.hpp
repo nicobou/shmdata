@@ -25,7 +25,6 @@
 
 namespace switcher {
 struct ShmdataStat {
-  static const std::chrono::seconds kDefaultUpdateIntervalInSeconds;
   static const std::chrono::milliseconds kDefaultUpdateInterval;
 
   size_t bytes_{0};
@@ -34,7 +33,8 @@ struct ShmdataStat {
   void reset();
   void update_tree(const InfoTree::ptr& tree, const std::string& key) const;
   static std::function<void(const ShmdataStat&)> make_tree_updater(Quiddity* quid,
-                                                                   const std::string& key);
+                                                                   const std::string& key,
+                                                                   bool do_signal = true);
 };
 
 }  // namespace switcher

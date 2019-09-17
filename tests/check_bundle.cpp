@@ -21,6 +21,7 @@
 #include <atomic>
 #include <cassert>
 #include <condition_variable>
+#include "switcher/quiddity-basic-test.hpp"
 #include "switcher/switcher.hpp"
 
 using namespace switcher;
@@ -60,11 +61,9 @@ int main() {
     assert(manager->conf<MPtr(&switcher::Configuration::from_file)>("./check_bundle.config"));
 
     // creating and removing some complex bundles
-    auto bundles = {"source-bundle", "sink-bundle", "filter-bundle"};
+    auto bundles = {"source-bundle", "sink-bundle", "filter-bundle", "whitespaces-bundle"};
     for (const auto& bundle : bundles) {
-      auto qrox = manager->quids<MPtr(&switcher::quid::Container::create)>(bundle, bundle, nullptr);
-      assert(qrox);
-      assert(manager->quids<MPtr(&switcher::quid::Container::remove)>(qrox.get_id()));
+      assert(switcher::test::create(manager, bundle));
     }
 
     // testing shmdata communication from a bundle to an other

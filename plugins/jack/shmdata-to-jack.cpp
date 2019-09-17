@@ -53,7 +53,7 @@ ShmdataToJack::ShmdataToJack(quid::Config&& conf)
                      });
                      thread.detach();
                    }),
-      connect_to_id_(pmanage<MPtr(&PContainer::make_string)>("connect-to",
+      connect_to_id_(pmanage<MPtr(&PContainer::make_string)>("connect_to",
                                                              [this](const std::string& val) {
                                                                connect_to_ = val;
                                                                update_port_to_connect();
@@ -107,6 +107,26 @@ ShmdataToJack::ShmdataToJack(quid::Config&& conf)
                                                 "Connect only first channel",
                                                 "Connect only first channel",
                                                 connect_only_first_)),
+      do_format_conversion_id_(
+          pmanage<MPtr(&PContainer::make_bool)>("do_format_conversion",
+                                                [this](const bool& val) {
+                                                  do_format_conversion_ = val;
+                                                  return true;
+                                                },
+                                                [this]() { return do_format_conversion_; },
+                                                "Do sample conversion to float (F32LE)",
+                                                "Do sample conversion to float (F32LE)",
+                                                do_format_conversion_)),
+      do_rate_conversion_id_(
+          pmanage<MPtr(&PContainer::make_bool)>("do_rate_conversion",
+                                                [this](const bool& val) {
+                                                  do_rate_conversion_ = val;
+                                                  return true;
+                                                },
+                                                [this]() { return do_format_conversion_; },
+                                                "Convert to Jack rate",
+                                                "Convert to Jack rate",
+                                                do_rate_conversion_)),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   // is_constructed_ is needed because of a cross reference among JackClient and JackPort
@@ -256,15 +276,18 @@ void ShmdataToJack::check_output_ports(unsigned int channels) {
 
 bool ShmdataToJack::make_elements() {
   GError* error = nullptr;
-  std::string description(std::string("shmdatasrc ! audioconvert ! audioresample ! ") +
-                          " audioconvert ! " +
-                          " capsfilter caps=\"audio/x-raw, format=(string)F32LE, "
+  auto src = std::string("shmdatasrc ");
+  if (do_format_conversion_) src += " ! audioconvert ";
+  if (do_rate_conversion_) src += " ! audioresample ";
+  if (do_format_conversion_ && do_rate_conversion_) src += " ! audioconvert ";
+  std::string description(src +
+                          " ! capsfilter caps=\"audio/x-raw, format=(string)F32LE, "
                           "layout=(string)interleaved, rate=" +
                           std::to_string(jack_client_.get_sample_rate()) + "\" !" +
                           " fakesink silent=true signal-handoffs=true sync=false");
   GstElement* jacksink = gst_parse_bin_from_description(description.c_str(), TRUE, &error);
   if (error != nullptr) {
-    warning("%", std::string(error->message));
+    warning("error making gst elements in jacksink: %", std::string(error->message));
     g_error_free(error);
     return false;
   }
@@ -338,8 +361,11 @@ void ShmdataToJack::update_port_to_connect() {
     return;
   }
 
-  for (unsigned int i = index_; i < index_ + output_ports_.size(); ++i)
-    ports_to_connect_.emplace_back(connect_to_ + std::to_string(i));
+  for (unsigned int i = index_; i < index_ + output_ports_.size(); ++i) {
+    char buff[128];
+    std::snprintf(buff, sizeof(buff), connect_to_.c_str(), i);
+    ports_to_connect_.emplace_back(buff);
+  }
 }
 
 void ShmdataToJack::connect_ports() {

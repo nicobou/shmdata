@@ -75,11 +75,16 @@ class Switcher : public GstInitialized {
   Switcher(const std::string& name, L&& log)
       : log_(std::move(log)),
         qfactory_(log_.get()),
-        conf_(log_.get(), [this]() { register_bundle_from_configuration(); }),
+        conf_(log_.get(),
+              [this]() {
+                apply_gst_configuration();
+                register_bundle_from_configuration();
+              }),
         qcontainer_(quid::Container::make_container(this, &qfactory_, log_.get())),
         name_(std::regex_replace(name, std::regex("[^[:alnum:]| ]"), "-")) {
     remove_shm_zombies();
   }
+  void apply_gst_configuration();
   void register_bundle_from_configuration();
   void remove_shm_zombies() const;
   static void init_gst();

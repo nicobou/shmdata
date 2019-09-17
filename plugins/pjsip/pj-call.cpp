@@ -50,7 +50,7 @@ PJCall::PJCall() {
   pj_status_t status;
   local_ips_ = NetUtils::get_ips();
   for (auto& it : local_ips_)
-    SIPPlugin::this_->debug("local ip found % for interface %", it.first, it.second);
+    SIPPlugin::this_->debug("Local IP found for interface %: %", it.first, it.second);
   for (auto& it : local_ips_) {
     if (0 != std::string(it.second, 0, 4).compare("127.")) pj_cstr(&local_addr_, it.second.c_str());
   }

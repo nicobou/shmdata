@@ -62,12 +62,13 @@ bool PJWhiteList::authorize_buddy_cb(const std::string& sip_url, bool authorized
 }
 
 bool PJWhiteList::authorize_buddy(const std::string& sip_url, bool authorize) {
-  auto found = authorizations_.find(sip_url);
+  auto contact = std::string(sip_url.begin(), std::find(sip_url.begin(), sip_url.end(), ':'));
+  auto found = authorizations_.find(contact);
   if (authorizations_.end() == found) {
     return false;
   }
   found->second = authorize;
-  on_auth_cbs_[sip_url](authorize);
+  on_auth_cbs_[contact](authorize);
   return true;
 }
 

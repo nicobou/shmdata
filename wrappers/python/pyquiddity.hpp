@@ -47,6 +47,10 @@ class pyQuiddity {
     std::unique_ptr<prop_registering_t> prop_reg{};
     // async invocations
     std::unique_ptr<std::list<std::future<void>>> async_invocations{};
+    // the default thread state used in order to generate unique thread
+    // states when c++ callbacks race against the GIL. Thanks ! to Sam:
+    // https://www.codevate.com/blog/7-concurrency-with-embedded-python-in-a-multi-threaded-c-application
+    PyInterpreterState* interpreter_state{nullptr};
   };
 
   static PyTypeObject pyType;

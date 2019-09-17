@@ -22,6 +22,7 @@ if (PLUGIN_GSOAP)
     add_custom_command(OUTPUT ${GSOAP_GEN_DIR}/webservices/soapC.cpp ${GSOAP_GEN_DIR}/webservices/soapcontrolProxy.cpp ${GSOAP_GEN_DIR}/webservices/soapcontrolService.cpp
         COMMAND ${CMAKE_COMMAND} -E make_directory ${GSOAP_GEN_DIR}/webservices
         COMMAND soapcpp2 -c++11 -i -d ${GSOAP_GEN_DIR}/webservices ${CMAKE_CURRENT_SOURCE_DIR}/ctrl-webservice-definition.hpp
+	COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && ${CMAKE_CURRENT_SOURCE_DIR}/fix_generated_files.sh
         )
 
     add_custom_target(webservices DEPENDS ${GSOAP_GEN_DIR}/webservices/soapC.cpp)

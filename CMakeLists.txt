@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.5.1)
 set(SWITCHER_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SWITCHER_VERSION_MAJOR 1)
 set(SWITCHER_VERSION_MINOR 1)
-set(SWITCHER_VERSION_PATCH 0)
+set(SWITCHER_VERSION_PATCH 2)
 set(SWITCHER_VERSION_STRING ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR}.${SWITCHER_VERSION_PATCH})
 set(SWITCHER_API_VERSION ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR})
 set(SWITCHER_LIBRARY switcher-${SWITCHER_API_VERSION})
@@ -22,7 +22,7 @@ set(PACKAGE_URL "https://gitlab.com/sat-metalab/switcher")
 set(PACKAGE_VERSION ${SWITCHER_VERSION_STRING})
 
 # Compilation
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(DATADIR ${CMAKE_INSTALL_PREFIX}/share/switcher/)
 
 # CPack - General
@@ -106,6 +106,7 @@ link_directories(
 link_libraries(
     ${COMMON_LIBRARIES}
     pthread
+    stdc++fs
 )
 
 set(COMMON_INCLUDE_DIRS
@@ -135,6 +136,7 @@ add_definitions(-Wall)
 add_definitions(-Wextra)
 add_definitions(-Werror)
 add_definitions(-Wno-error=unused-parameter)
+add_definitions(-Wno-error=cast-function-type)
 add_definitions("-DDATADIR=\"${DATADIR}\"")
 
 # OSX
@@ -153,6 +155,7 @@ add_subdirectory(tests)
 add_subdirectory(plugins)
 add_subdirectory(src)
 add_subdirectory(wrappers)
+add_subdirectory(tools)
 
 #
 # OTHER TARGETS

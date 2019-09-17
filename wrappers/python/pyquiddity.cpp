@@ -20,6 +20,7 @@
 #include "./pyquiddity.hpp"
 #include <chrono>
 #include "./pyinfotree.hpp"
+#include "./ungiled.hpp"
 #include "switcher/scope-exit.hpp"
 
 PyDoc_STRVAR(pyquiddity_set_doc,
@@ -42,8 +43,10 @@ PyObject* pyQuiddity::set(pyQuiddityObject* self, PyObject* args, PyObject* kwds
     if (repr) Py_XDECREF(repr);
   };
   if (PyBool_Check(value)) {
-    if (!self->quid->prop<MPtr(&PContainer::set_str_str)>(property,
-                                                          (value == Py_True) ? "true" : "false")) {
+    if (!pyquid::ungiled(std::function([&]() {
+          return self->quid->prop<MPtr(&PContainer::set_str_str)>(
+              property, (value == Py_True) ? "true" : "false");
+        }))) {
       Py_INCREF(Py_False);
       return Py_False;
     }
@@ -56,7 +59,10 @@ PyObject* pyQuiddity::set(pyQuiddityObject* self, PyObject* args, PyObject* kwds
   } else {
     val_str = PyUnicode_AsEncodedString(value, "utf-8", "Error ");
   }
-  if (!self->quid->prop<MPtr(&PContainer::set_str_str)>(property, PyBytes_AS_STRING(val_str))) {
+  if (!pyquid::ungiled(std::function([&]() {
+        return self->quid->prop<MPtr(&PContainer::set_str_str)>(property,
+                                                                PyBytes_AS_STRING(val_str));
+      }))) {
     Py_INCREF(Py_False);
     return Py_False;
   }
@@ -81,7 +87,8 @@ PyObject* pyQuiddity::get(pyQuiddityObject* self, PyObject* args, PyObject* kwds
     Py_INCREF(Py_False);
     return Py_False;
   }
-  return pyInfoTree::any_to_pyobject(self->quid->prop<MPtr(&PContainer::get_any)>(prop_id));
+  return pyInfoTree::any_to_pyobject(pyquid::ungiled(
+      std::function([&]() { return self->quid->prop<MPtr(&PContainer::get_any)>(prop_id); })));
 }
 
 PyDoc_STRVAR(pyquiddity_invoke_doc,
@@ -129,8 +136,11 @@ PyObject* pyQuiddity::invoke(pyQuiddityObject* self, PyObject* args, PyObject* k
       tuple_args = tuple_args + "," + serialize::esc_for_tuple(PyBytes_AS_STRING(item_str));
   }
 
-  auto res = self->quid->meth<MPtr(&MContainer::invoke_any)>(
-      self->quid->meth<MPtr(&MContainer::get_id)>(method), tuple_args);
+  BoolAny res = pyquid::ungiled(std::function([&]() {
+    return self->quid->meth<MPtr(&MContainer::invoke_any)>(
+        self->quid->meth<MPtr(&MContainer::get_id)>(method), tuple_args);
+  }));
+
   if (!res) {
     Py_INCREF(Py_None);
     return Py_None;
@@ -199,7 +209,12 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
       std::launch::async, [self, cb, user_data, meth = std::string(method), tuple_args]() {
         auto res = self->quid->meth<MPtr(&MContainer::invoke_any)>(
             self->quid->meth<MPtr(&MContainer::get_id)>(meth), tuple_args);
-        PyGILState_STATE gil = PyGILState_Ensure();
+        bool has_gil = (1 == PyGILState_Check()) ? true : false;
+        PyThreadState* m_state = nullptr;
+        if (!has_gil) {
+          m_state = PyThreadState_New(self->interpreter_state);
+          PyEval_RestoreThread(m_state);
+        }
         PyObject* res_object = pyInfoTree::any_to_pyobject(res.any());
         PyObject* arglist;
         if (user_data)
@@ -214,7 +229,11 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
         Py_DECREF(res_object);
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
-        PyGILState_Release(gil);
+        if (!has_gil) {
+          PyEval_SaveThread();
+          PyThreadState_Clear(m_state);
+          PyThreadState_Delete(m_state);
+        }
       }));
 
   // cleaning old invocations
@@ -276,8 +295,13 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
   auto sig_id = self->quid->sig<MPtr(&SContainer::get_id)>(signal_name);
   if (0 == sig_id) return false;
   auto reg_id = self->quid->sig<MPtr(&SContainer::subscribe)>(
-      sig_id, [cb, user_data](const InfoTree::ptr& tree) {
-        PyGILState_STATE gil = PyGILState_Ensure();
+      sig_id, [cb, user_data, self](const InfoTree::ptr& tree) {
+        bool has_gil = (1 == PyGILState_Check()) ? true : false;
+        PyThreadState* m_state;
+        if (!has_gil) {
+          m_state = PyThreadState_New(self->interpreter_state);
+          PyEval_RestoreThread(m_state);
+        }
         PyObject* arglist;
         if (user_data)
           arglist = Py_BuildValue("(sO)", (char*)tree->serialize_json(".").c_str(), user_data);
@@ -288,7 +312,11 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
         if (pyerr != nullptr) PyErr_Print();
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
-        PyGILState_Release(gil);
+        if (!has_gil) {
+          PyEval_SaveThread();
+          PyThreadState_Clear(m_state);
+          PyThreadState_Delete(m_state);
+        }
       });
   if (0 == reg_id) return false;
   Py_INCREF(cb);
@@ -309,7 +337,12 @@ bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
   if (0 == prop_id) return false;
   auto reg_id =
       self->quid->prop<MPtr(&PContainer::subscribe)>(prop_id, [prop_id, cb, self, user_data]() {
-        PyGILState_STATE gil = PyGILState_Ensure();
+        bool has_gil = (1 == PyGILState_Check()) ? true : false;
+        PyThreadState* m_state;
+        if (!has_gil) {
+          m_state = PyThreadState_New(self->interpreter_state);
+          PyEval_RestoreThread(m_state);
+        }
         PyObject* arglist;
         if (user_data)
           arglist = Py_BuildValue(
@@ -325,7 +358,11 @@ bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
         if (pyerr != nullptr) PyErr_Print();
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
-        PyGILState_Release(gil);
+        if (!has_gil) {
+          PyEval_SaveThread();
+          PyThreadState_Clear(m_state);
+          PyThreadState_Delete(m_state);
+        }
       });
   if (0 == reg_id) return false;
   Py_INCREF(cb);
@@ -458,7 +495,10 @@ PyObject* pyQuiddity::get_info_tree_as_json(pyQuiddityObject* self,
   }
   if (nullptr == path) path = ".";
 
-  return PyUnicode_FromString(self->quid->tree<MPtr(&InfoTree::serialize_json)>(path).c_str());
+  std::string res = pyquid::ungiled(
+      std::function([&]() { return self->quid->tree<MPtr(&InfoTree::serialize_json)>(path); }));
+
+  return PyUnicode_FromString(res.c_str());
 }
 
 PyDoc_STRVAR(pyquiddity_get_signal_id_doc,
@@ -487,10 +527,12 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
   static char* kwlist[] = {(char*)"quid_c_ptr", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyqrox)) return -1;
   auto* quid = static_cast<Quiddity*>(PyCapsule_GetPointer(pyqrox, nullptr));
+  self->quid = quid;
   self->sig_reg = std::make_unique<sig_registering_t>();
   self->prop_reg = std::make_unique<prop_registering_t>();
   self->async_invocations = std::make_unique<std::list<std::future<void>>>();
-  self->quid = quid;
+  self->interpreter_state = PyThreadState_Get()->interp;
+  PyEval_InitThreads();
   return 0;
 }
 

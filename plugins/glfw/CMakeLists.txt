@@ -34,10 +34,13 @@ if (PLUGIN_GLFW)
     if(CAN_IMPLICIT_FALLTHROUGH)
         add_definitions(-Wno-error=implicit-fallthrough)
     endif()
-
     check_cxx_compiler_flag(-Wno-error=shift-negative-value CAN_IGNORE_SHIFT_NEGATIVE_VALUE)
     if(CAN_IGNORE_SHIFT_NEGATIVE_VALUE)
         add_definitions(-Wno-error=shift-negative-value)
+    endif()
+    check_cxx_compiler_flag(-Wno-error=class-memaccess CAN_CLASS_MEMACCESS)
+    if(CAN_CLASS_MEMACCESS)
+        add_definitions(-Wno-error=class-memaccess)
     endif()
 
     # -Wno-error=uninitialized

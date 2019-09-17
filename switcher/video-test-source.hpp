@@ -39,7 +39,6 @@ class VideoTestSource : public Quiddity, public StartableQuiddity {
 
  private:
   std::string shmpath_{};
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
   // width height
   Selection<Fraction> resolutions_{
       {"3840x2160", "1920x1080", "1280x720", "800x600", "640x480", "320x240", "Custom"},
@@ -75,11 +74,13 @@ class VideoTestSource : public Quiddity, public StartableQuiddity {
   // formats
   Selection<> formats_;
   PContainer::prop_id_t formats_id_;
+  // Shmdata tree updater
+  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
   // gst elements
   UGstElem videotestsrc_{"videotestsrc"};
   UGstElem capsfilter_{"capsfilter"};
   UGstElem shmdatasink_{"shmdatasink"};
-  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
+  std::unique_ptr<GstPipeliner> gst_pipeline_;
   bool start() final;
   bool stop() final;
   void update_caps();

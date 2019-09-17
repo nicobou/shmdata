@@ -57,10 +57,10 @@ JackToShmdata::JackToShmdata(quid::Config&& conf)
     return;
   }
   init_startable(this);
-  unsigned int max_number_of_channels = kMaxNumberOfChannels;
+  size_t max_number_of_channels = kMaxNumberOfChannels;
   if (config<MPtr(&InfoTree::branch_has_data)>("max_number_of_channels"))
     max_number_of_channels =
-        config<MPtr(&InfoTree::branch_get_value)>("max_number_of_channels").copy_as<unsigned int>();
+        config<MPtr(&InfoTree::branch_get_value)>("max_number_of_channels").copy_as<size_t>();
   client_name_id_ = pmanage<MPtr(&PContainer::make_string)>("jack-client-name",
                                                             [this](const std::string& val) {
                                                               client_name_ = val;
@@ -90,7 +90,7 @@ JackToShmdata::JackToShmdata(quid::Config&& conf)
       "Auto Connect",
       "Auto Connect to another client",
       auto_connect_);
-  connect_to_id_ = pmanage<MPtr(&PContainer::make_string)>("connect-to",
+  connect_to_id_ = pmanage<MPtr(&PContainer::make_string)>("connect_to",
                                                            [this](const std::string& val) {
                                                              connect_to_ = val;
                                                              update_port_to_connect();
@@ -135,10 +135,10 @@ bool JackToShmdata::start() {
       "audio/x-raw, "
       "format=(string)F32LE, "
       "layout=(string)interleaved, "
-      "rate=" +
+      "rate=(int)" +
       std::to_string(jack_client_.get_sample_rate()) +
       ", "
-      "channels=" +
+      "channels=(int)" +
       std::to_string(num_channels_) + ", channel-mask=(bitmask)");
   // This channel mask is used by most encoders.
   // Here is the reference for the values according to the number of channels: https://goo.gl/M4b7Di
@@ -184,7 +184,7 @@ bool JackToShmdata::start() {
   {
     std::lock_guard<std::mutex> lock(input_ports_mutex_);
     input_ports_.clear();
-    for (unsigned int i = 0; i < num_channels_; ++i)
+    for (size_t i = 0; i < num_channels_; ++i)
       input_ports_.emplace_back(jack_client_, i + 1, false);
     connect_ports();
   }
@@ -226,8 +226,8 @@ int JackToShmdata::jack_process(jack_nframes_t nframes, void* arg) {
         jack_bufs.emplace_back(buf);
       }
       std::size_t index = 0;
-      for (unsigned int j = 0; j < nframes; ++j) {
-        for (unsigned int i = 0; i < num_chan; ++i) {
+      for (size_t j = 0; j < nframes; ++j) {
+        for (size_t i = 0; i < num_chan; ++i) {
           context->buf_[index] = jack_bufs[i][j];
           ++index;
         }
@@ -253,8 +253,11 @@ void JackToShmdata::update_port_to_connect() {
   }
 
   std::lock_guard<std::mutex> lock(port_to_connect_in_jack_process_mutex_);
-  for (unsigned int i = index_; i < index_ + num_channels_; ++i)
-    ports_to_connect_.emplace_back(connect_to_ + std::to_string(i));
+  for (size_t i = index_; i < index_ + num_channels_; ++i) {
+    char buff[128];
+    std::snprintf(buff, sizeof(buff), connect_to_.c_str(), i);
+    ports_to_connect_.emplace_back(buff);
+  }
 }
 
 void JackToShmdata::connect_ports() {
@@ -267,7 +270,7 @@ void JackToShmdata::connect_ports() {
         "happen.");
     return;
   }
-  for (unsigned int i = 0; i < num_channels_; ++i) {
+  for (size_t i = 0; i < num_channels_; ++i) {
     jack_connect(jack_client_.get_raw(),
                  ports_to_connect_[i].c_str(),
                  std::string(client_name_ + ":" + input_ports_[i].get_name()).c_str());

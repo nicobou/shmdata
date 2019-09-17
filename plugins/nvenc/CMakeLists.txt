@@ -1,3 +1,4 @@
+include(CheckCXXCompilerFlag)
 # PLUGIN
 
 set(NVIDIA_PATH /usr/lib/nvidia-* CACHE STRING "Location of the nvidia libraries")
@@ -35,6 +36,11 @@ if (PLUGIN_NVENC)
         message(FATAL_ERROR "nvcuvid not found")
     endif ()
 
+    check_cxx_compiler_flag(-Wno-error=deprecated-declarations CAN_DEPRECATED_DECLARATIONS)
+    if(CAN_DEPRECATED_DECLARATIONS)
+        add_definitions(-Wno-error=deprecated-declarations)
+    endif()
+
     include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR} # For "nvidia/*" and "cuda/*"
     )
@@ -46,35 +52,27 @@ if (PLUGIN_NVENC)
     )
 
     # Encoder
-
     add_library(nvenc_encoder_plugin SHARED
         cuda/cuda-context.cpp
         encoder/nvenc-api.cpp
         encoder/nvenc-buffers.cpp
         encoder/nvenc-encode-session.cpp
         encoder/nvenc-plugin.cpp
-        )
-
+    )
+    
     add_dependencies(nvenc_encoder_plugin ${SWITCHER_LIBRARY})
-
-    # Decoder
-
-    add_library(nvenc_decoder_plugin SHARED
-        cuda/cuda-context.cpp
-        decoder/nvdec-plugin.cpp
-        decoder/nvdec-decode-session.cpp
-        )
-
-    add_dependencies(nvenc_decoder_plugin ${SWITCHER_LIBRARY})
-
+    
     # TEST
+    add_executable(check_nvenc
+        cuda/cuda-context.cpp
+        encoder/check_nvenc.cpp
+    )
 
-    add_executable(check_nvenc encoder/check_nvenc.cpp)
     configure_file(encoder/check_decode.json check_decode.json COPYONLY)
     add_test(check_nvenc check_nvenc)
 
     # INSTALL
 
-    install(TARGETS nvenc_encoder_plugin nvenc_decoder_plugin LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(TARGETS nvenc_encoder_plugin LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
 
 endif ()

@@ -106,7 +106,7 @@ class InfoTree {
   bool branch_has_data(const std::string& path) const;
   template <typename T>
   T branch_read_data(const std::string& path) const {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
     auto found = get_node(path);
     if (nullptr != found.first) return (*found.first)[found.second].second->data_.copy_as<T>();
     return T();
@@ -121,7 +121,7 @@ class InfoTree {
   // get child key in place, use with std::insert_iterator
   template <typename Iter>
   bool copy_and_insert_child_keys(std::string path, Iter pos) const {
-    std::unique_lock<std::mutex> lock(mutex_);
+    std::unique_lock<std::recursive_mutex> lock(mutex_);
     auto found = get_node(path);
     if (nullptr != found.first) {
       std::transform((*found.first)[found.second].second->children_.begin(),
@@ -166,7 +166,7 @@ class InfoTree {
   Any data_{};
   bool is_array_{false};
   mutable children_t children_{};
-  mutable std::mutex mutex_{};
+  mutable std::recursive_mutex mutex_{};
   std::weak_ptr<InfoTree> me_{};
 
   InfoTree() {}

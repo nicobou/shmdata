@@ -1,21 +1,21 @@
-Shell scripting
+Shell Scripting
 =======
 
-switcher and scenic can be scripted using the soap quiddity. Features include creation/deletion of quiddities, set/get of quiddity properties.
+Switcher and scenic can be scripted using the soap quiddity. Features include creation/deletion of quiddities, set/get properties.
 
 ## Example with switcher
 
-Run the switcher server as follow:
+Run the switcher server as follows:
 ```
 switcher -d
 ```
 
-Then you can send commands to the server using the command line tool switcher-ctrl. The following commands will create a videotestsrc and connect its shmdata into a video window:
+Then you can send commands to the server using the command line tool switcher-ctrl. The following commands will create a videotestsrc and connect its Shmdata into a video window:
 ```
 # create the quiddities
 switcher-ctrl -C videotestsrc vid
 switcher-ctrl -C glfwin win
-# start the video with the "started" property set to true (will activate the video shmdata)
+# start the video with the "started" property set to true (will activate the video Shmdata)
 switcher-ctrl -s vid started true
 # "connect" is a method, it needs to be invoked
 switcher-ctrl -i win connect-quid vid video
@@ -65,6 +65,6 @@ killall switcher
 # load the previously saved session when running a new switcher server :
 switcher -l /tmp/montest.switcher -d
  
-# read the user tree previously constituted :
+# read the user tree previously constituted
 switcher-ctrl -u dum
 ```

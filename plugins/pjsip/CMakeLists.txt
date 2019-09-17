@@ -10,7 +10,7 @@ if (PLUGIN_SIP)
 
     include(ExternalProject)
 
-    set(PJPROJECT_VERSION 2.7)
+    set(PJPROJECT_VERSION 2.9)
 
     set(PJPROJECT_CFLAGS
         -DPJ_ICE_ST_MAX_CAND=512
@@ -60,7 +60,7 @@ if (PLUGIN_SIP)
     # Configure the extarnal project
     ExternalProject_Add(pjproject
         URL http://www.pjsip.org/release/${PJPROJECT_VERSION}/pjproject-${PJPROJECT_VERSION}.tar.bz2
-        URL_HASH MD5=c0d322261e526cafecc176facbb0bab7
+        URL_HASH MD5=66757078e7bd7cf316acb0425c2fdd6f
         PATCH_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/patch.sh
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/configure.sh

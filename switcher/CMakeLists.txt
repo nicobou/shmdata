@@ -1,3 +1,10 @@
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag(-Wno-error=cast-function-type CAN_CAST_FUNCTION_TYPE)
+if(CAN_CAST_FUNCTION_TYPE)
+  add_definitions(-Wno-error=cast-function-type)
+endif()
+
+
 pkg_check_modules(GMODULE REQUIRED gmodule-2.0)
 
 add_library(${SWITCHER_LIBRARY} SHARED

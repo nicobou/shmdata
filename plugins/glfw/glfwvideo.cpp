@@ -103,7 +103,7 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
             if (background_image_.empty()) return true;
             add_rendering_task([this]() {
               int w = 0, h = 0, n = 0;
-              auto data = stbi_load(background_image_.c_str(), &w, &h, &n, 4);
+              auto data = stbi_load(background_image_.c_str(), &w, &h, &n, 0);
               On_scope_exit { stbi_image_free(data); };
 
               if (!data) {
@@ -238,43 +238,45 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
             add_rendering_task([this, val]() {
               std::lock_guard<std::mutex> lock(configuration_mutex_);
               if (val) {
-                glfwSetWindowAspectRatio(window_, GLFW_DONT_CARE, GLFW_DONT_CARE);
-                if (!win_aspect_ratio_toggle_) {
-                  minimized_width_ = width_;
-                  minimized_height_ = height_;
-                }
+                minimized_width_ = width_;
+                minimized_height_ = height_;
                 minimized_position_x_ = position_x_;
                 minimized_position_y_ = position_y_;
-                discover_monitor_properties();
-                auto monitor_config = get_monitor_config();
-                if (!monitor_config.monitor) {
-                  warning(
-                      "Could not get the monitor config for this window, not switching to "
-                      "fullscreen.");
-                  return false;
-                }
                 pmanage<MPtr(&PContainer::disable)>(width_id_, kFullscreenDisabled);
                 pmanage<MPtr(&PContainer::disable)>(height_id_, kFullscreenDisabled);
                 pmanage<MPtr(&PContainer::disable)>(position_x_id_, kFullscreenDisabled);
                 pmanage<MPtr(&PContainer::disable)>(position_y_id_, kFullscreenDisabled);
-                width_ = monitor_config.width;
-                height_ = monitor_config.height;
-                position_x_ = monitor_config.position_x;
-                position_y_ = monitor_config.position_y;
+                pmanage<MPtr(&PContainer::disable)>(decorated_id_, kFullscreenDisabled);
+                
+                MonitorConfig monitor = get_monitor_config();
+                // Positioning is handled by glfwSetWindowMonitor; variables are set just so that
+                // they are in sync with the actual screen position.
+                // Width/height variables are automatically updated by glfwSetWindowMonitor.
+                position_x_ = monitor.position_x;
+                position_y_ = monitor.position_y;
+                glfwSetWindowMonitor(window_,
+                                     monitor.monitor,
+                                     GLFW_DONT_CARE,
+                                     GLFW_DONT_CARE,
+                                     monitor.width,
+                                     monitor.height,
+                                     GLFW_DONT_CARE);
               } else {
-                width_ = minimized_width_;
-                height_ = minimized_height_;
-                if (win_aspect_ratio_toggle_)
-                  glfwSetWindowAspectRatio(window_, minimized_width_, minimized_height_);
-                position_x_ = minimized_position_x_;
-                position_y_ = minimized_position_y_;
                 pmanage<MPtr(&PContainer::enable)>(width_id_);
                 pmanage<MPtr(&PContainer::enable)>(height_id_);
                 pmanage<MPtr(&PContainer::enable)>(position_x_id_);
                 pmanage<MPtr(&PContainer::enable)>(position_y_id_);
+                pmanage<MPtr(&PContainer::enable)>(decorated_id_);
+                position_x_ = minimized_position_x_;
+                position_y_ = minimized_position_y_;
+                glfwSetWindowMonitor(window_,
+                                     nullptr,
+                                     minimized_position_x_,
+                                     minimized_position_y_,
+                                     minimized_width_,
+                                     minimized_height_,
+                                     GLFW_DONT_CARE);
               }
-              set_size();
-              set_position();
               return true;
             });
             return true;
@@ -358,12 +360,14 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
   if (getenv("DISPLAY") == nullptr) {
     if (-1 == setenv("DISPLAY", ":0", false)) {
       warning("BUG: Failed to set a display!");
+      is_valid_ = false;
       return;
     }
   }
 
   if (!instance_counter_ && !glfwInit()) {
     warning("BUG: Failed to initialize glfw library!");
+    is_valid_ = false;
     return;
   }
 
@@ -371,6 +375,7 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
 
   if (!monitors_config_.size()) {
     warning("BUG: Failed to discover monitors.");
+    is_valid_ = false;
     return;
   }
   // win_aspect_ratio_toggle_id_ =
@@ -590,6 +595,7 @@ void GLFWVideo::destroy_gl_elements() {
 GLFWwindow* GLFWVideo::create_window(GLFWwindow* old) {
   glfwWindowHint(GLFW_DECORATED, decorated_);
   glfwWindowHint(GLFW_FLOATING, always_on_top_);
+  glfwWindowHint(GLFW_AUTO_ICONIFY, GL_FALSE);
 
   auto window = glfwCreateWindow(width_, height_, title_.c_str(), nullptr, old);
   if (!window) {
@@ -826,6 +832,8 @@ void GLFWVideo::set_events_cb(GLFWwindow* window) {
 
 void GLFWVideo::close_cb(GLFWwindow* window) {
   auto quiddity = static_cast<GLFWVideo*>(glfwGetWindowUserPointer(window));
+  quiddity->meth<MPtr(&MContainer::invoke_str)>(
+      quiddity->meth<MPtr(&MContainer::get_id)>("disconnect-all"), "");
   quiddity->self_destruct();
 }
 
@@ -1013,6 +1021,7 @@ const GLFWVideo::MonitorConfig GLFWVideo::get_monitor_config() const {
 }
 
 bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
+  on_shmdata_disconnect();
   shmpath_ = shmpath;
   g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   shm_sub_ = std::make_unique<GstShmTreeUpdater>(
@@ -1053,7 +1062,21 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
   shm_follower_ = std::make_unique<ShmdataFollower>(this,
                                                     shmpath_,
                                                     nullptr,
-                                                    [this](const std::string& /*shmtype*/) {
+                                                    [this](const std::string& shmtype) {
+                                                      if (!cur_caps_.empty() &&
+                                                          cur_caps_ != shmtype) {
+                                                        cur_caps_ = shmtype;
+                                                        debug(
+                                                            "glfwin restarting shmdata connection "
+                                                            "because of an updated caps (%)",
+                                                            cur_caps_);
+                                                        async_this_.run_async([this]() {
+                                                          on_shmdata_connect(shmpath_);
+                                                        });
+
+                                                        return;
+                                                      }
+                                                      cur_caps_ = shmtype;
                                                       add_rendering_task([this]() {
                                                         draw_video_ = true;
                                                         setup_video_texture();
@@ -1121,6 +1144,7 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
 }
 
 bool GLFWVideo::on_shmdata_disconnect() {
+  cur_caps_.clear();
   shm_sub_.reset();
   shm_follower_.reset();
   On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };
@@ -1423,7 +1447,8 @@ void GLFWVideo::GUIConfiguration::init_properties() {
       [this](const std::string& val) {
         std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
         if (val.empty()) {
-          return false;
+          parent_window_->message("No value was defined for overlay_additional_font or overlay_config properties.");
+          return true;
         } else if (!StringUtils::ends_with(val, ".ttf")) {
           parent_window_->message(
               "Cannot set % as custom font, only truetype fonts are supported (.ttf extension).",

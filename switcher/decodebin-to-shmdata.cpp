@@ -55,6 +55,13 @@ DecodebinToShmdata::DecodebinToShmdata(GstPipeliner* gpipe,
                             (GCallback)DecodebinToShmdata::on_autoplug_select,
                             (gpointer) this);
   cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>(std::move(autoplug)));
+  // element added callback
+  auto element_added = std::bind(GstUtils::g_signal_connect_function,
+                                 std::placeholders::_1,
+                                 "element-added",
+                                 (GCallback)DecodebinToShmdata::on_element_added,
+                                 (gpointer)this);
+  cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>(std::move(element_added)));
 }
 
 void DecodebinToShmdata::on_pad_added(GstElement* object, GstPad* pad, gpointer user_data) {
@@ -62,6 +69,8 @@ void DecodebinToShmdata::on_pad_added(GstElement* object, GstPad* pad, gpointer 
   std::unique_lock<std::mutex> lock(context->thread_safe_);
   GstCaps* rtpcaps = gst_caps_from_string("application/x-rtp, media=(string)application");
   On_scope_exit { gst_caps_unref(rtpcaps); };
+  GstCaps* glmemorycaps = gst_caps_from_string("video/x-raw(memory:GLMemory)");
+  On_scope_exit { gst_caps_unref(glmemorycaps); };
   GstCaps* padcaps = gst_pad_get_current_caps(pad);
   On_scope_exit { gst_caps_unref(padcaps); };
   if (gst_caps_can_intersect(rtpcaps, padcaps)) {
@@ -94,6 +103,36 @@ void DecodebinToShmdata::on_pad_added(GstElement* object, GstPad* pad, gpointer 
     gst_element_get_state(rtpgstdepay, nullptr, nullptr, GST_CLOCK_TIME_NONE);
     context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), srcpad);
     gst_object_unref(srcpad);
+    return;
+  } else if (gst_caps_can_intersect(glmemorycaps, padcaps)) {
+    // Create gldownload element to download the GPU-decoded frames on the CPU
+    GstElement* gldownload;
+    GstUtils::make_element("gldownload", &gldownload);
+    gst_bin_add(GST_BIN(GST_ELEMENT_PARENT(object)), gldownload);
+    GstPad* glsinkpad = gst_element_get_static_pad(gldownload, "sink");
+    GstUtils::check_pad_link_return(gst_pad_link(pad, glsinkpad));
+    gst_object_unref(glsinkpad);
+    GstPad* glsrcpad = gst_element_get_static_pad(gldownload, "src");
+    GstUtils::sync_state_with_parent(gldownload);
+    gst_element_get_state(gldownload, nullptr, nullptr, GST_CLOCK_TIME_NONE);
+
+    // Create capsfilter element to force output caps to be 'video/x-raw'
+    GstElement* capsfilter;
+    GstUtils::make_element("capsfilter", &capsfilter);
+    GstCaps* videocaps = gst_caps_from_string("video/x-raw");
+    g_object_set(G_OBJECT(capsfilter), "caps", videocaps, nullptr);
+    gst_object_unref(videocaps);
+    gst_bin_add(GST_BIN(GST_ELEMENT_PARENT(object)), capsfilter);
+    GstPad* filtersinkpad = gst_element_get_static_pad(capsfilter, "sink");
+    GstUtils::check_pad_link_return(gst_pad_link(glsrcpad, filtersinkpad));
+    gst_object_unref(glsrcpad);
+    gst_object_unref(filtersinkpad);
+    GstPad* filtersrcpad = gst_element_get_static_pad(capsfilter, "src");
+    GstUtils::sync_state_with_parent(capsfilter);
+    gst_element_get_state(capsfilter, nullptr, nullptr, GST_CLOCK_TIME_NONE);
+
+    context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), filtersrcpad);
+    gst_object_unref(filtersrcpad);
     return;
   }
   context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), pad);
@@ -131,6 +170,16 @@ int /*GstAutoplugSelectResult*/ DecodebinToShmdata::on_autoplug_select(GstElemen
     return return_val;
   }
   return TRY;
+}
+
+void DecodebinToShmdata::on_element_added(GstBin* /*bin*/,
+                                          GstElement* element,
+                                          gpointer /*user_data*/) {
+  // The output-corrupt property, when set to false, prevents the avdec_h264 plugin
+  // from outputting corrupted frames.
+  if (g_object_class_find_property(G_OBJECT_GET_CLASS(element), "output-corrupt")) {
+    g_object_set(G_OBJECT(element), "output-corrupt", false, nullptr);
+  }
 }
 
 GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_buffer_probe_cb(GstPad* /*pad */,

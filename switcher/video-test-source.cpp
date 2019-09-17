@@ -34,7 +34,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
 
 VideoTestSource::VideoTestSource(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       resolutions_id_(pmanage<MPtr(&PContainer::make_selection<Fraction>)>(
           "resolution",
           [this](const IndexOrName& val) {
@@ -99,7 +98,8 @@ VideoTestSource::VideoTestSource(quid::Config&& conf)
                                                                [this]() { return formats_.get(); },
                                                                "Video Pixel Format",
                                                                "Select the pixel video format",
-                                                               formats_)) {
+                                                               formats_)),
+      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   // We do this so that width and height properties states are correct.
   pmanage<MPtr(&PContainer::set_to_current)>(resolutions_id_);
 

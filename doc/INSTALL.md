@@ -3,27 +3,40 @@ INSTALL
 
 ## Quick build and installation (latest Ubuntu)
 
-> **Note**: Ensure **[shmdata](https://gitlab.com/sat-metalab/shmdata)** is already installed before proceeding.
+> **Note**: Ensure **[Shmdata](https://gitlab.com/sat-metalab/shmdata)** is already installed before proceeding.
 
 Build and install **switcher** from the command line:
 
+```bash
+# Install all dependencies
+sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins  libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libltc-dev libcurl4-gnutls-dev gsoap wah-plugins libxrandr-dev libxinerama-dev libxcursor-dev libsamplerate0-dev python3-dev gcc-8 g++-8
+
+# Clone all code from master branch
+git clone https://gitlab.com/sat-metalab/switcher.git
+
+# Configure build folder
+cd switcher
+git submodule update --init --recursive
+mkdir build && cd build
+
+# Generate make recipes
+CC="gcc-8" CXX="g++-8" cmake .. \
+  -DENABLE_GPL=ON \
+  -DCMAKE_BUILD_TYPE=Release # replace "Release" with "Debug" when coding
+
+# Build and install switcher on your system
+make -j"$(nproc)"
+sudo make install && sudo ldconfig
 ```
-$ sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins  libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libltc-dev libcurl4-gnutls-dev gsoap wah-plugins libxrandr-dev libxinerama-dev libxcursor-dev libsamplerate0-dev
-$ git submodule update --init --recursive
-$ mkdir build
-$ cd build
-$ cmake -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE=Release .. # replace "Release" with "Debug" when coding
-$ make -j"$(nproc)"
-$ sudo make install
-$ sudo ldconfig
-```
+
+> The inline environment variables `CC` and `CXX` are set in order to force the usage of **gcc-8** and **g++-8** without polluting your system environment. All following instructions assume you are using **gcc-8** and **g++-8** as C/C++ compilers.
 
 You can verify and change the build configuration using **ccmake**. To do so, you must first install the needed package:
     
 ```
 $ sudo apt install cmake-curses-gui
 ```
-    
+
 Then, after running `$ cmake ..`, from the build directory run:
 
 ```
@@ -37,7 +50,7 @@ When running non-interactive cmake you have to set the ENABLE\_GPL option if you
 $ cmake .. -DENABLE_GPL=ON
 ```
 
-## Build Nvidia Video Codec 7 plugin
+## Build Nvidia Video Encoding plugin
 
 1. Check that you are running Nvidia drivers:
 
@@ -45,13 +58,14 @@ $ cmake .. -DENABLE_GPL=ON
     $ nvidia-settings
 ```
 
-2. Install Nvidia drivers (min. version `367.35`) and CUDA toolkit:
+2. Install Nvidia drivers (min. version `396`) and CUDA toolkit:
 
     > **Note**: You may need to first add the PPA `graphics-drivers/ppa`:  
     > `$ sudo add-apt-repository --yes ppa:graphics-drivers/ppa`
 
 ```
-    $ sudo apt install nvidia-<driver-ver-number> nvidia-<driver-ver-number>-dev nvidia-cuda-toolkit nvidia-cuda-dev
+    $ sudo apt install nvidia-driver-<driver-ver-number> nvidia-dkms-<driver-ver-number> nvidia-kernel-common-<driver-ver-number> nvidia-kernel-source-<driver-ver-number>
+    $ sudo apt install nvidia-cuda-toolkit nvidia-cuda-dev  # CUDA
 ```
 
 3. In case running `$ cmake ..` does not automatically detect the right driver, in the **switcher** build directory, configure **switcher** as follows:
@@ -63,7 +77,7 @@ $ cmake .. -DENABLE_GPL=ON
     For example, replacing `<driver-ver-number>` with the installed Nvidia driver version:
 
 ```
-    $ cmake .. -DNVIDIA_PATH=/usr/lib/nvidia-367
+    $ cmake .. -DNVIDIA_PATH=/usr/lib/nvidia-396
 ```
 
 4. Lastly, compile and install as usual:
@@ -72,6 +86,8 @@ $ cmake .. -DENABLE_GPL=ON
     $ make -j"$(nproc)"
     $ sudo make install
 ```
+
+If you wish to use GPU-accelerated video decoding, you will also need to build the Gstreamer nvdec plugin. Instructions for doing so are [here](doc/using-nvdec-gstreamer-plugins.md).
 
 ## Other build options
 

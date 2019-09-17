@@ -11,19 +11,23 @@
 # GNU Lesser General Public License for more details.
 
 import sys
-sys.path.insert(0, '/usr/local/lib/python3/dist-packages')
 import pyquid
 import time
 import assert_exit_1
 
-# "my_user_data" will be passed to the subscribe method
-my_user_data = ["my", "user", "data"]
+success = False
 
 
-def on_tree_grafted(key, user_data):
+def on_tree_grafted(data, user_data):
+    global success
     assert user_data == my_user_data
+    assert 'null' != data
+    # switcher signals provide a json serialized InfoTree,
+    # so we need to strip 'data' in order to get the tree key
+    # without double quotes at the end and at the begining
+    assert 'null' != my_user_data.get_info_tree_as_json(data.strip('\"'))
     # success
-    exit(0)
+    success = True
 
 
 sw = pyquid.Switcher("signals", debug=True)
@@ -32,6 +36,8 @@ sw = pyquid.Switcher("signals", debug=True)
 qroxvid = sw.create("videotestsrc", "vid")
 assert None != qroxvid
 vid = qroxvid.quid()
+
+my_user_data = vid
 
 # check if on-tree-grafted is available with this quiddity
 assert "on-tree-grafted" in pyquid.InfoTree(
@@ -43,7 +49,12 @@ assert vid.subscribe("on-tree-grafted", on_tree_grafted, my_user_data)
 vid.set("started", True)
 
 # wait for the signal to arrive,
-time.sleep(1)
+time.sleep(0.5)
 
-# the test will fail if the signal is not triggered before
-exit(1)
+assert vid.unsubscribe("on-tree-grafted")
+
+vid.set("started", False)
+
+if (not success):
+    exit(1)
+exit(0)

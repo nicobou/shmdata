@@ -33,7 +33,7 @@ class Qrox : public BoolLog {
   Qrox(const Qrox& cpyqrox) = default;
   Qrox(bool is_valid);
   Qrox(bool is_valid, const std::string& msg);
-  Qrox(bool is_valid, const std::string& msg, qid_t id, Quiddity* wptr);
+  Qrox(bool is_valid, const std::string& msg, qid_t id, Quiddity* ptr);
   qid_t get_id() const;
   Quiddity* get();
 

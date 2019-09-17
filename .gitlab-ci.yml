@@ -1,35 +1,59 @@
-image: ubuntu:bionic
-
-stages:
-  - prepare_docker
-  - test
-  - test-package
+image: docker:18
 
 services:
-  - docker:dind
+  - docker:18.09-dind
 
-prepare_docker:
-  stage: prepare_docker
-  image: docker:git
+variables:
+  BUILD_DIR: /opt/switcher
+  DOCKERFILE_PATH: dockerfiles/Dockerfile
+
+stages:
+  - configure
+  - test
+  - test-package
+  - deploy
+
+Build and Deploy CI image:
+  stage: configure
+  image: docker:18
+  variables:
+    CONTAINER_TAG: $CI_REGISTRY/sat-metalab/switcher:ci
+    BUILD_TYPE: Debug
   script:
-    - git clone https://gitlab.com/sat-metalab/shmdata.git libshmdata && cd libshmdata && git checkout develop && cd ../
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-    - (if [[ "$CI_BUILD_REF_NAME" == "master" ]]; then docker build --pull -t $CI_REGISTRY_IMAGE:ci --build-arg shmdata_version=$(git --git-dir=libshmdata/.git rev-parse HEAD) --build-arg current_branch=master -f $CI_PROJECT_DIR/ci/Dockerfile .; fi);
-    - (if [[ "$CI_BUILD_REF_NAME" != "master" ]]; then docker build --pull -t $CI_REGISTRY_IMAGE:ci --build-arg shmdata_version=$(git --git-dir=libshmdata/.git rev-parse HEAD) --build-arg current_branch=develop -f $CI_PROJECT_DIR/ci/Dockerfile .; fi);
-    - docker push $CI_REGISTRY_IMAGE:ci
+    - docker build -t $CONTAINER_TAG --build-arg BUILD_TYPE=$BUILD_TYPE -f $DOCKERFILE_PATH --target build .
+    - echo $CI_DEPLOY_PASSWORD | docker login -u $CI_DEPLOY_USER --password-stdin $CI_REGISTRY
+    - docker push $CONTAINER_TAG
 
-test:
+Test:
   stage: test
-  image: $CI_REGISTRY_IMAGE:ci
+  image: $CI_REGISTRY/sat-metalab/switcher:ci
+  variables:
+    CTEST_OUTPUT_ON_FAILURE: 1
   script:
-    - mkdir build && cd build && cmake .. -DENABLE_GPL=ON && make -j"$(nproc)"
+    - cd $BUILD_DIR/build
     - make test
 
-test-package:
+Test package:
   stage: test-package
-  image: $CI_REGISTRY_IMAGE:ci
+  image: $CI_REGISTRY/sat-metalab/switcher:ci
+  variables:
+    CTEST_OUTPUT_ON_FAILURE: 1
   script:
-    - mkdir build && cd build && cmake .. -DENABLE_GPL=ON && make package_source_test
+    - cd $BUILD_DIR/build
+    - make package_source_test
+  only:
+    - develop
+    - master
+
+Build and Deploy clean image:
+  stage: deploy
+  variables:
+    SHMDATA_TAG: $CI_COMMIT_REF_NAME
+    CONTAINER_TAG: $CI_REGISTRY/sat-metalab/switcher:$CI_COMMIT_REF_NAME
+  script:
+    - docker build -t $CONTAINER_TAG -f $DOCKERFILE_PATH .
+    - echo $CI_DEPLOY_PASSWORD | docker login -u $CI_DEPLOY_USER --password-stdin $CI_REGISTRY
+    - docker push $CONTAINER_TAG
   only:
     - develop
     - master

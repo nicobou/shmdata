@@ -75,5 +75,10 @@
         "description" : "Raw audio signal to pulse"
       }
     }
+  },
+  "gstreamer" : {
+    "primary_priority" : {
+      "plugin_name": 0
+    }
   }
 }
