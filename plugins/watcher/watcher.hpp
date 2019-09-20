@@ -35,7 +35,7 @@ class Watcher : public Quiddity, public StartableQuiddity {
  public:
   enum class DirectoryStatus { ERROR, ABSENT, PRESENT, IS_FILE };
   Watcher(quid::Config&&);
-  ~Watcher() = default;
+  ~Watcher();
   Watcher(const Watcher&) = delete;
   Watcher& operator=(const Watcher&) = delete;
 

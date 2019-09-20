@@ -55,6 +55,8 @@ Watcher::Watcher(quid::Config&& conf)
   init_startable(this);
 }
 
+Watcher::~Watcher() { stop(); }
+
 bool Watcher::start() {
   stop();
   // Arguments validation
