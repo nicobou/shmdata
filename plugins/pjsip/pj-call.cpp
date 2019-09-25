@@ -1004,7 +1004,8 @@ bool PJCall::hang_up(const std::string& sip_url) {
                                });
 
     if (it_out != outgoing_call_.end()) {
-      SIPPlugin::this_->pjsip_->run_async([&]() { make_hang_up((*it_out)->inv); });
+      auto invite_out = (*it_out)->inv;
+      SIPPlugin::this_->pjsip_->run_async([this, &invite_out]() { make_hang_up(invite_out); });
       call_cv_.wait_for(lock, std::chrono::seconds(5), [this]() {
         if (call_action_done_) {
           call_action_done_ = false;
@@ -1024,7 +1025,8 @@ bool PJCall::hang_up(const std::string& sip_url) {
                                });
 
     if (it_inc != incoming_call_.end()) {
-      SIPPlugin::this_->pjsip_->run_async([&]() { make_hang_up((*it_inc)->inv); });
+      auto invite_inc = (*it_inc)->inv;
+      SIPPlugin::this_->pjsip_->run_async([this, &invite_inc]() { make_hang_up(invite_inc); });
       call_cv_.wait_for(lock, std::chrono::seconds(5), [this]() {
         if (call_action_done_) {
           call_action_done_ = false;
