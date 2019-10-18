@@ -105,6 +105,7 @@ void GstPipe::source_finalize(GSource* source) {
 
 gboolean GstPipe::gst_play(gpointer user_data) {
   auto context = static_cast<GstPipe*>(user_data);
+  std::unique_lock<std::mutex> lock(context->play_mtx_);
   if (context->playing_asked_) {
     gst_element_set_state(context->pipeline_, GST_STATE_PLAYING);
   } else {
@@ -114,8 +115,9 @@ gboolean GstPipe::gst_play(gpointer user_data) {
 }
 
 bool GstPipe::play(bool play) {
-  playing_asked_ = play;
   std::unique_lock<std::mutex> lock(play_mtx_);
+  if (playing_asked_ == play) return playing_asked_;
+  playing_asked_ = play;
   auto gsrc = g_idle_source_new();
   g_source_set_callback(gsrc, gst_play, this, nullptr);
   g_source_attach(gsrc, gmaincontext_);
