@@ -36,7 +36,8 @@ RtpSession::RtpSession()
                70,
                "drop-on-latency",
                TRUE,
-               //"do-lost", TRUE,
+               "do-lost",
+               TRUE,
                nullptr);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), rtpsession_);
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
