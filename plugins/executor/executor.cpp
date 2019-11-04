@@ -56,6 +56,16 @@ Executor::Executor(quid::Config&& conf)
                                                 "Autostart",
                                                 "Execute command line on shmdata connect or not",
                                                 autostart_)),
+      restart_on_change_id_(pmanage<MPtr(&PContainer::make_bool)>(
+          "restart_on_change",
+          [this](bool val) {
+            restart_on_change_ = val;
+            return true;
+          },
+          [this]() { return restart_on_change_; },
+          "Restart on change",
+          "Restart process execution when shmdata connections change or not",
+          restart_on_change_)),
       periodic_id_(pmanage<MPtr(&PContainer::make_bool)>(
           "periodic",
           [this](bool val) {
@@ -68,16 +78,16 @@ Executor::Executor(quid::Config&& conf)
           periodic_)),
 
       // Whitelist caps in order to control connections with an Executor as a writer
-      whitelist_caps_id_(pmanage<MPtr(&PContainer::make_string)>(
-          "whitelist_caps",
-          [this](const std::string& val) {
-            whitelist_caps_ = val;
-            return true;
-          },
-          [this]() { return whitelist_caps_; },
-          "Whitelist compatible capabilities",
-          "Apply capabilities to executed command line",
-          whitelist_caps_)) {
+      whitelist_caps_id_(
+          pmanage<MPtr(&PContainer::make_string)>("whitelist_caps",
+                                                  [this](const std::string& val) {
+                                                    whitelist_caps_ = val;
+                                                    return true;
+                                                  },
+                                                  [this]() { return whitelist_caps_; },
+                                                  "Whitelist compatible capabilities",
+                                                  "Apply capabilities to executed command line",
+                                                  whitelist_caps_)) {
   init_startable(this);
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
@@ -104,8 +114,10 @@ Executor::~Executor() {
 }
 
 bool Executor::start() {
-  stop();
-
+  if (child_pid_ != 0) {
+    error("executor already started");
+    return false;
+  }
   if (command_line_.empty()) {
     error("command_line must not be empty");
     return false;
@@ -204,7 +216,18 @@ bool Executor::on_shmdata_connect(const std::string& shmpath) {
                                                   ShmdataFollower::Direction::reader,
                                                   true);
   }
-  if (autostart_) return start();
+  if (child_pid_ != 0) {
+    if (restart_on_change_) {
+      if (!restart_) {
+        stop();
+        restart_ = true;
+      }
+    }
+  } else {
+    if (autostart_) {
+      return start();
+    }
+  }
   return true;
 }
 
@@ -219,7 +242,17 @@ bool Executor::on_shmdata_disconnect(const std::string& shmpath) {
     follower_.reset();
     shmpath_.clear();
   }
-  if (autostart_) return stop();
+  if (child_pid_ != 0) {
+    if (shmpath_video_.empty() && shmpath_audio_.empty() && shmpath_.empty()) {
+      return stop();
+    }
+    if (restart_on_change_) {
+      if (!restart_) {
+        stop();
+        restart_ = true;
+      }
+    }
+  }
   return true;
 }
 
@@ -230,8 +263,7 @@ bool Executor::on_shmdata_disconnect_all() {
   shmpath_video_.clear();
   shmpath_audio_.clear();
   shmpath_.clear();
-  if (autostart_) return stop();
-  return true;
+  return stop();
 }
 
 bool Executor::can_sink_caps(const std::string& str_caps) {
@@ -258,6 +290,12 @@ void Executor::monitor_process() {
         child_dead = 0;
         child_pid_ = 0;
         clean_up_child_process();
+        if ((periodic_ && !user_stopped_) || restart_) {
+          start();
+          restart_ = false;
+        } else {
+          pmanage<MPtr(&PContainer::set_str_str)>("started", "false");
+        }
       }
     }
   }
@@ -323,12 +361,6 @@ void Executor::clean_up_child_process() {
 
   if (is_updated) {
     info("'%' output has been updated.", command_line_);
-  }
-
-  if (periodic_ && !user_stopped_) {
-    start();
-  } else {
-    pmanage<MPtr(&PContainer::set_str_str)>("started", "false");
   }
 }
 }  // namespace switcher

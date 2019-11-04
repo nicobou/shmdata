@@ -8,7 +8,11 @@ Using the `command_line` argument, the user can specify an executable program (a
 
 The `periodic` property can be used to make the process periodic: when set to `true`, the process will be launched again as soon as the first child process finishes, until the user manually stops the quiddity.
 
-If desired, the user can also set the `autostart` property to `true`; this will cause the specified command line to automatically execute when a shmdata is connected to the Executor quiddity. Likewise, the program will automatically stop on disconnection.
+If desired, the user can also set the `autostart` property to `true`; this will cause the specified command line to automatically execute when a shmdata is connected to the Executor quiddity.
+
+The `restart_on_change` property, if set to `true`, will stop the child process and start it again when a change occurs in Executor's shmdata connections (i.e. a shmdata is connected or disconnected from the quiddity). This property has no effect if connections change while Executor is not running.
+
+In all cases, the execution will stop automatically if all connected shmdatas are disconnected from the quiddity.
 
 Once the executed process finishes (either normally or because of an error), the quiddity will automatically become 'stopped'. (ie. the `started` property will become `false`). To execute the specified program again, simply put the quiddity back on. The only exception is when the `periodic` property is set to `true`: the program will start anew automatically and the quiddity's `started` property will stay `true`.
 

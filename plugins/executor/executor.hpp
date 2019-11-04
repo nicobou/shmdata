@@ -64,6 +64,7 @@ class Executor : public Quiddity, public StartableQuiddity {
   int cout_pipe_[2];
   int cerr_pipe_[2];
   bool user_stopped_{false};
+  bool restart_{false};
   pid_t child_pid_{0};
   posix_spawnattr_t attr_;
   posix_spawn_file_actions_t act_;
@@ -81,6 +82,8 @@ class Executor : public Quiddity, public StartableQuiddity {
 
   bool autostart_{false};
   PContainer::prop_id_t autostart_id_;
+  bool restart_on_change_{false};
+  PContainer::prop_id_t restart_on_change_id_;
   bool periodic_{false};
   PContainer::prop_id_t periodic_id_;
 
