@@ -85,6 +85,7 @@ class SIPPlugin : public Quiddity {
   void expose_stream_to_quiddity(const std::string& quid_name, const std::string& shmpath);
   void remove_exposed_quiddity(const std::string& peer_uri, const std::string& quid_name);
   void remove_exposed_quiddities(const std::string& peer_uri);
+  std::string get_exposed_quiddity_name_from_shmpath(const std::string& shmpath);
 
   // on_saving and on_saved methods set DNS server to "default" when system (default) DNS is used.
   InfoTree::ptr on_saving() final;

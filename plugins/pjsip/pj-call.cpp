@@ -614,7 +614,8 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
                                   });
     // setting a decoder for this shmdata
     // Create a shmdata quiddity for this stream.
-    std::string quid_name = media_label + "-" + call->peer_uri;
+    std::string quid_name =
+        media_label + "-" + std::string(call->peer_uri, 0, call->peer_uri.find('@'));
     SIPPlugin::this_->create_quiddity_stream(call->peer_uri, quid_name);
     // Create a RTPReceiver
     call->rtp_receivers_.emplace_back(std::make_unique<RTPReceiver>(
@@ -901,7 +902,15 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
     } else {
       break;
     }
-    std::string rawlabel = SIPPlugin::this_->get_quiddity_name_from_file_name(it);
+
+    // Shmdata received from SIP have a very different nomenclature than those created locally.
+    // When sending those shmdatas received from SIP to someone else (i.e. creating a relay),
+    // we mustn't use the get_quiddity_name_from_file_name() function; rather, we must interrogate
+    // the SIP quiddity (which manages the shmpaths received from SIP contacts).
+    std::string rawlabel = SIPPlugin::this_->get_exposed_quiddity_name_from_shmpath(it);
+    if (rawlabel.empty()) {
+      rawlabel = SIPPlugin::this_->get_quiddity_name_from_file_name(it);
+    }
     auto quid_id = SIPPlugin::this_->qcontainer_->get_id(rawlabel);
     auto quid = SIPPlugin::this_->qcontainer_->get_quiddity(quid_id);
     if (quid) rawlabel = quid->get_nickname();

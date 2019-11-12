@@ -249,6 +249,21 @@ bool SIPPlugin::start_sip_transport() {
   return true;
 }
 
+std::string SIPPlugin::get_exposed_quiddity_name_from_shmpath(const std::string& shmpath) {
+  {
+    std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
+    for (auto const& [peer_uri, names] : exposed_quiddities_) {
+      for (auto const& name : names) {
+        if (shmpath == qcontainer_->get_quiddity(qcontainer_->get_id(name))
+                           ->prop<MPtr(&PContainer::get_str_str)>("shmdata-path")) {
+          return name;
+        }
+      }
+    }
+    return "";
+  }
+}
+
 void SIPPlugin::create_quiddity_stream(const std::string& peer_uri, const std::string& quid_name) {
   auto quid = Quiddity::string_to_quiddity_name(quid_name);
   {
