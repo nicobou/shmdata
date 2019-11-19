@@ -34,7 +34,8 @@ class OscToShmdata : public Quiddity, public StartableQuiddity {
   OscToShmdata& operator=(const OscToShmdata&) = delete;
 
  private:
-  gint port_;
+  int port_{1056};
+  PContainer::prop_id_t port_id_;
   lo_server_thread osc_thread_{nullptr};
   std::unique_ptr<ShmdataWriter> shm_{nullptr};
 
