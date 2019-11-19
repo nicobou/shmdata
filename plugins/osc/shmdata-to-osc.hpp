@@ -37,22 +37,24 @@ class ShmdataToOsc : public Quiddity, public StartableQuiddity {
   ShmdataToOsc& operator=(const ShmdataToOsc&) = delete;
 
  private:
-  // registering connect/disconnect/can_sink_caps:
-  ShmdataConnector shmcntr_;
-  // shmdata follower
-  std::unique_ptr<ShmdataFollower> shm_{nullptr};
-  // props
-  gint port_{1056};
-  std::string host_{"localhost"};
-  lo_address address_{nullptr};
-  std::mutex address_mutex_{};
-
   bool start() final;
   bool stop() final;
-  bool connect(const std::string& shmdata_path);
-  bool disconnect();
+  bool on_shmdata_connect(const std::string& shmdata_path);
+  bool on_shmdata_disconnect();
   bool can_sink_caps(const std::string& caps);
   void on_shmreader_data(void* data, size_t data_size);
+
+  lo_address address_{nullptr};
+  std::mutex address_mutex_{};
+  ShmdataConnector shmcntr_;
+  std::unique_ptr<ShmdataFollower> shm_{nullptr};
+
+  int port_{1056};
+  PContainer::prop_id_t port_id_;
+  std::string host_{"localhost"};
+  PContainer::prop_id_t host_id_;
+  bool autostart_{false};
+  PContainer::prop_id_t autostart_id_;
 };
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToOsc);
