@@ -267,7 +267,7 @@ PyDoc_STRVAR(pyquiddity_get_user_tree_doc,
              "Arguments: none\n"
              "Returns: the user data (InfoTree)\n");
 
-PyObject* pyQuiddity::get_user_tree(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+PyObject* pyQuiddity::get_user_tree(pyQuiddityObject* self, PyObject*, PyObject*) {
   auto* tree = self->quid->user_data<MPtr(&InfoTree::get_tree)>(".").get();
   return pyInfoTree::make_pyobject_from_c_ptr(tree, false);
 }
@@ -286,6 +286,54 @@ PyObject* pyQuiddity::get_info(pyQuiddityObject* self, PyObject* args, PyObject*
   }
 
   return pyInfoTree::any_to_pyobject(self->quid->tree<MPtr(&InfoTree::branch_get_value)>(path));
+}
+
+PyDoc_STRVAR(pyquiddity_get_name_doc,
+             "Get the quiddity name.\n"
+             "Arguments: none\n"
+             "Returns: the value\n");
+
+PyObject* pyQuiddity::get_name(pyQuiddityObject* self, PyObject*, PyObject*) {
+  return PyUnicode_FromString(self->quid->get_name().c_str());
+}
+
+PyDoc_STRVAR(pyquiddity_get_type_doc,
+             "Get the quiddity type as string.\n"
+             "Arguments: none\n"
+             "Returns: the value\n");
+
+PyObject* pyQuiddity::get_type(pyQuiddityObject* self, PyObject*, PyObject*) {
+  return PyUnicode_FromString(self->quid->get_type().c_str());
+}
+
+PyDoc_STRVAR(pyquiddity_set_nickname_doc,
+             "Set the quiddity nickname.\n"
+             "Arguments: none\n"
+             "Returns: True or False\n");
+
+PyObject* pyQuiddity::set_nickname(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+  const char* nickname = nullptr;
+  static char* kwlist[] = {(char*)"nickname", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &nickname)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+
+  if (!self->quid->set_nickname(nickname)) {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+  Py_INCREF(Py_True);
+  return Py_True;
+}
+
+PyDoc_STRVAR(pyquiddity_get_nickname_doc,
+             "Get the quiddity nickname.\n"
+             "Arguments: none\n"
+             "Returns: the value\n");
+
+PyObject* pyQuiddity::get_nickname(pyQuiddityObject* self, PyObject*, PyObject*) {
+  return PyUnicode_FromString(self->quid->get_nickname().c_str());
 }
 
 bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
@@ -587,6 +635,22 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
      (PyCFunction)pyQuiddity::get_info,
      METH_VARARGS | METH_KEYWORDS,
      pyquiddity_get_info_doc},
+    {"get_name",
+     (PyCFunction)pyQuiddity::get_name,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_get_name_doc},
+    {"get_type",
+     (PyCFunction)pyQuiddity::get_type,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_get_type_doc},
+    {"set_nickname",
+     (PyCFunction)pyQuiddity::set_nickname,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_set_nickname_doc},
+    {"get_nickname",
+     (PyCFunction)pyQuiddity::get_nickname,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_get_nickname_doc},
     {"get_info_tree_as_json",
      (PyCFunction)pyQuiddity::get_info_tree_as_json,
      METH_VARARGS | METH_KEYWORDS,
