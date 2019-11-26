@@ -142,6 +142,10 @@ class InfoTree {
   void set_value(const char* data);
   void set_value(std::nullptr_t ptr);
   Any branch_get_value(const std::string& path) const;
+  template <typename T>
+  bool branch_set_value(const std::string& path, T data) {
+    return branch_set_value(path, Any(data));
+  }
   bool branch_set_value(const std::string& path, const Any& data);
   bool branch_set_value(const std::string& path, const char* data);
   bool branch_set_value(const std::string& path, std::nullptr_t ptr);

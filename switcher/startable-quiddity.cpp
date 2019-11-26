@@ -27,6 +27,8 @@ const std::string StartableQuiddity::disabledWhenStartedMsg =
 const std::string StartableQuiddity::disabledWhenStopedMsg =
     "this property is disabled in stopped state";
 
+StartableQuiddity::StartableQuiddity(void* quiddity) { init_startable(quiddity); }
+
 void StartableQuiddity::init_startable(void* quiddity) {
   Quiddity* quid = static_cast<Quiddity*>(quiddity);
   quid->pmanage<MPtr(&PContainer::make_bool)>("started",

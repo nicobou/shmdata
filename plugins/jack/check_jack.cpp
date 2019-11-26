@@ -20,16 +20,34 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <cassert>
+#include "switcher/information-tree-json.hpp"
 #include "switcher/quiddity-basic-test.hpp"
 
 int main() {
   {
     using namespace switcher;
-    Switcher::ptr manager = Switcher::make_switcher("test_manager");
+    auto test_name = std::string("check_jack");
+    Switcher::ptr manager = Switcher::make_switcher(test_name);
 
     manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
-    assert(switcher::test::full(manager, "jacksink"));
+    // creating a jack server
+    InfoTree::ptr server_config = InfoTree::make();
+    server_config->vgraft("name", test_name);
+    server_config->vgraft("driver", "dummy");
+    server_config->vgraft("realtime", false);
+
+    auto jserv = manager->quids<MPtr(&switcher::quid::Container::create)>(
+        "jackserver", "test_server", server_config.get());
+    assert(jserv);
+    assert(jserv.get()->prop<MPtr(&PContainer::set_str_str)>("started", "true"));
+
+    // run tests using this server
+    InfoTree::ptr client_config = InfoTree::make();
+    client_config->vgraft("server_name", test_name);
+    assert(switcher::test::full(manager, "jacksink", client_config));
+    assert(switcher::test::full(manager, "jacksrc", client_config));
+    assert(switcher::test::full(manager, "jackserver", server_config));
 
   }  // end of scope is releasing the manager
   return 0;

@@ -101,13 +101,13 @@ struct Any {
 
     // bool ctor
     template <typename U = bool>
-    Any(bool&& value) : ptr_(new AnyValueDerived<StorageType<U>>(std::forward<U>(value))) {
+    Any(bool value) : ptr_(new AnyValueDerived<StorageType<U>>(std::forward<U>(value))) {
       ptr_->category_ = AnyCategory::BOOLEAN;
     }
 
     // char ctor
     template <typename U = char>
-    Any(char&& value) : ptr_(new AnyValueDerived<StorageType<U>>(std::forward<U>(value))) {
+    Any(char value) : ptr_(new AnyValueDerived<StorageType<U>>(std::forward<U>(value))) {
       ptr_->category_ = AnyCategory::OTHER;
     }
 

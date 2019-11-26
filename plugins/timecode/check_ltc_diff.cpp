@@ -59,6 +59,18 @@ int main() {
 
     manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
 
+    manager->factory<MPtr(&quid::Factory::scan_dir)>("../jack");
+
+    // creating a jack server
+    InfoTree::ptr server_config = InfoTree::make();
+    server_config->vgraft("driver", "dummy");
+    server_config->vgraft("realtime", false);
+    auto jserv = manager->quids<MPtr(&switcher::quid::Container::create)>(
+        "jackserver", "test_server", server_config.get());
+    assert(jserv);
+    assert(jserv.get()->prop<MPtr(&PContainer::set_str_str)>("driver", "dummy"));
+    assert(jserv.get()->prop<MPtr(&PContainer::set_str_str)>("started", "true"));
+
     // Fringe case like CI cannot run this test successfully but we don't want it to fail.
     if (!manager->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsourcedummy", nullptr))
       return 0;

@@ -26,6 +26,7 @@ namespace switcher {
 class StartableQuiddity {
  public:
   StartableQuiddity() = default;
+  StartableQuiddity(void* quiddity);
   virtual ~StartableQuiddity() = default;
   StartableQuiddity(const StartableQuiddity&) = delete;
   StartableQuiddity& operator=(const StartableQuiddity&) = delete;
