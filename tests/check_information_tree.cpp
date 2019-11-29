@@ -282,5 +282,19 @@ int main() {
     }
   }
 
+  {  // graft by value
+    InfoTree::ptr tree = InfoTree::make();
+    tree->vgraft(".string", "a string value");
+    tree->vgraft(".int", 9);
+    tree->vgraft(".bool", true);
+
+    auto tree2 = JSONSerializer::deserialize(
+        R"({"string" : "a string value",
+            "int" : 9,
+            "bool" : true
+           })");
+    assert(JSONSerializer::serialize(tree.get()) == JSONSerializer::serialize(tree2.get()));
+  }
+
   return 0;
 }

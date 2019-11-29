@@ -152,6 +152,11 @@ class InfoTree {
   // graft will create the path and graft the tree,
   // or remove old one and replace will the new tree
   bool graft(const std::string& path, InfoTree::ptr);
+  // graft by value
+  template <typename T>
+  bool vgraft(const std::string& path, T val) {
+    return graft(path, InfoTree::make(val));
+  }
   // return empty tree if nothing can be pruned
   InfoTree::ptr prune(const std::string& path);
   // get but not remove
