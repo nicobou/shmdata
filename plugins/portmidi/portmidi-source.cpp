@@ -105,9 +105,9 @@ PortMidiSource::PortMidiSource(quid::Config&& conf) : Quiddity(std::forward<quid
   mmanage<MPtr(&MContainer::disable)>(remove_midi_property_id_,
                                       StartableQuiddity::disabledWhenStopedMsg);
 
-  using remove_midi_prop_t = std::function<bool(std::string, int, int)>;
-  auto map_midi_to_property_id_ = mmanage<MPtr(&MContainer::make_method<remove_midi_prop_t>)>(
-      "remove_midi_property",
+  using map_midi_to_prop_t = std::function<bool(std::string, int, int)>;
+  auto map_midi_to_property_id_ = mmanage<MPtr(&MContainer::make_method<map_midi_to_prop_t>)>(
+      "map_midi_to_property",
       JSONSerializer::deserialize(
           R"(
                   {
@@ -117,11 +117,11 @@ PortMidiSource::PortMidiSource(quid::Config&& conf) : Quiddity(std::forward<quid
                      {
                         "long name" : "Property Long Name",
                         "description" : "string"
-                     }
+                     },
                      {
                         "long name" : "Midi Status",
                         "description" : "int"
-                     }
+                     },
                      {
                         "long name" : "Midi data1",
                         "description" : "int"
