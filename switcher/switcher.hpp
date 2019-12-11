@@ -66,6 +66,10 @@ class Switcher : public GstInitialized {
   // Quiddity container
   Make_delegate(Switcher, quid::Container, qcontainer_.get(), quids);
 
+  // get log
+  BaseLogger* get_logger() { return log_.get(); }
+
+  // shmpaths
   static std::string get_shm_dir() { return "/tmp"; }
   static std::string get_shm_prefix() { return "switcher_"; }
 

@@ -24,11 +24,15 @@
 
 namespace switcher {
 namespace test {
-bool full(Switcher::ptr manager, const std::string& class_name);
-bool tree(Switcher::ptr manager, const std::string& class_name);
-bool create(Switcher::ptr manager, const std::string& class_name);
-bool startable(Switcher::ptr manager, const std::string& class_name);
-bool properties(Switcher::ptr manager, const std::string& class_name);
+bool full(Switcher::ptr manager, const std::string& class_name, InfoTree::ptr config = nullptr);
+bool tree(Switcher::ptr manager, const std::string& class_name, InfoTree::ptr config = nullptr);
+bool create(Switcher::ptr manager, const std::string& class_name, InfoTree::ptr config = nullptr);
+bool startable(Switcher::ptr manager,
+               const std::string& class_name,
+               InfoTree::ptr config = nullptr);
+bool properties(Switcher::ptr manager,
+                const std::string& class_name,
+                InfoTree::ptr config = nullptr);
 }  // namespace test
 }  // namespace switcher
 #endif
