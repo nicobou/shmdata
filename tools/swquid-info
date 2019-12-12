@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation; either version 2.1
+# of the License, or (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+
+import argparse
+import json
+import os
+import sys
+from pyquid import Switcher, Quiddity, InfoTree
+from typing import Any
+
+
+def make_parser() -> argparse.ArgumentParser:
+    argp = argparse.ArgumentParser(
+        description="""Get information about available quiddities: properties, methods, signals and description.
+The result is json formatted, except for list-all (-a) and short-list (-l) options that provide only a list. 
+      
+Note the "short-line" option (-l) is only valid when combined with one of p, m or s options.
+
+Examples:
+========
+For the list of all quiddities installed on your system:
+swquid-info -a
+
+To list all properties available at startup for the videotestsrc quiddity:
+swquid-info -lp videotestsrc
+
+Display full documentation of the "width" property of a videotestsrc quiddity:
+swquid-info -p videotestsrc.width
+
+Display description of the "width" property of a videotestsrc quiddity:
+swquid-info -p videotestsrc.width.description
+
+Arguments:
+=========
+""", formatter_class=argparse.RawTextHelpFormatter)
+    argp.add_argument("-a", "--list-all",
+                      help="list all quiddity classes", action="store_true")
+    argp.add_argument("-p", "--properties",
+                      help="list class properties after initialization", action="store_true")
+    argp.add_argument("-m", "--methods",
+                      help="list class methods after initialization", action="store_true")
+    argp.add_argument("-s", "--signals",
+                      help="list class signals after initialization", action="store_true")
+    argp.add_argument("-l", "--short-list", help="print only the list of properties, methods or signals.",
+                      action="store_true")
+    argp.add_argument("-c", "--class-doc", help="print class documentation", action="store_true")
+    argp.add_argument("-d", "--debug", help="print debug log", action="store_true")
+    argp.add_argument(
+        'quiddity_class', help="You can add method or property or signal id for a shorter output", nargs='?')
+    return argp
+
+
+def main() -> None:
+    argp = make_parser()
+    args = argp.parse_args()
+
+    # create a switcher.
+    sw = Switcher('swquid-info' + str(os.getpid()), debug=args.debug)
+
+    if args.list_all:
+        classes = sw.list_classes()
+        for it in classes:
+            print(it)
+        return
+
+    if not args.quiddity_class:
+        argp.print_help(sys.stderr)
+        return
+
+    user_request = args.quiddity_class.split('.', 1)
+    doc = InfoTree()
+    qrox = sw.create(user_request[0])
+    if (not qrox):
+        print('quiddity class "' + user_request[0] + '" not found')
+        exit(1)
+
+    if (args.short_list and (args.properties or args.methods or args.signals)):
+        res = []
+        tree = InfoTree(qrox.quid().get_info_tree_as_json())
+        if (args.properties):
+            for it in tree.get_child_keys('.property.'):
+                res.append(tree.get('.property.' + it + '.id'))
+        elif (args.methods):
+            for it in tree.get_child_keys('.method'):
+                res.append(tree.get('.method.' + it + '.id'))
+        elif (args.signals):
+            for it in tree.get_child_keys('.signal'):
+                res.append(tree.get('.signal.' + it + '.id'))
+        for it in res:
+            print(it)
+        return
+
+    # generate json
+    if len(user_request) == 2:
+        path = user_request[1]
+    else:
+        path = ''
+    if (args.class_doc):
+        if (path):
+            doc = InfoTree(sw.class_doc(user_request[0] + '.' + user_request[1]))
+        else:
+            doc = InfoTree(sw.class_doc(user_request[0]))
+    elif (args.properties):
+        print(path)
+        doc = InfoTree(qrox.quid().get_info_tree_as_json('.property.' + path))
+    elif (args.methods):
+        doc = InfoTree(qrox.quid().get_info_tree_as_json('.method.' + path))
+    elif (args.signals):
+        doc = InfoTree(qrox.quid().get_info_tree_as_json('.signal.' + path))
+
+    # print the doc
+    parsed = json.loads(doc.json())
+    print(json.dumps(parsed, indent=4, sort_keys=False))
+    return
+
+
+if __name__ == "__main__":
+    main()
+    exit(0)
