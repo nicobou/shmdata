@@ -129,6 +129,7 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement* /*object */, GstPad* pad, g
         context->configure_shmdatasink(el, media_type, media_label);
       },
       [context]() { context->warning("discarding uncomplete custom frame due to a network loss"); },
+      nullptr,
       context->decompress_streams_);
   if (!decodebin->invoke_with_return<gboolean>([context](GstElement* el) {
         return gst_bin_add(GST_BIN(context->gst_pipeline_->get_pipeline()), el);

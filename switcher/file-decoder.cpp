@@ -103,6 +103,7 @@ FileDecoder::FileDecoder(quid::Config&& conf)
 bool FileDecoder::load_file(const std::string& path) {
   // cleaning previous
   shm_subs_.clear();
+  media_loaded_ = false;
   counter_.reset_counter_map();
   if (0 != cur_pos_id_) pmanage<MPtr(&PContainer::remove)>(cur_pos_id_);
   gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, [this, path](GstMessage* message) {
@@ -156,20 +157,33 @@ bool FileDecoder::load_file(const std::string& path) {
         configure_shmdatasink(el, media_type, media_label);
       },
       [this]() { warning("discarding uncomplete custom frame due to a network loss"); },
+      [this]() {
+        debug("file-src: finished loading media from file");
+        std::unique_lock<std::mutex> lock(media_loaded_mutex_);
+        media_loaded_ = true;
+        media_loaded_cond_.notify_one();
+      },
       true);
   if (!decodebin_->invoke_with_return<gboolean>([this](GstElement* el) {
         return gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), el);
       })) {
     warning("decodebin cannot be added to pipeline");
   }
-  GstPad* srcpad = gst_element_get_static_pad(filesrc_, "src");
-  On_scope_exit { gst_object_unref(GST_OBJECT(srcpad)); };
-  GstPad* sinkpad = decodebin_->invoke_with_return<GstPad*>(
-      [](GstElement* el) { return gst_element_get_static_pad(el, "sink"); });
-  On_scope_exit { gst_object_unref(GST_OBJECT(sinkpad)); };
-  GstUtils::check_pad_link_return(gst_pad_link(srcpad, sinkpad));
-  gst_element_set_state(gst_pipeline_->get_pipeline(), GST_STATE_PAUSED);
-  GstUtils::wait_state_changed(gst_pipeline_->get_pipeline());
+
+  if (!decodebin_->invoke_with_return<bool>(
+          [&](GstElement* el) { return gst_element_link(filesrc_, el) ? true : false; })) {
+    warning("file-decoder: cannot link filesrc with decodebin");
+  }
+
+  {
+    std::unique_lock<std::mutex> lock(media_loaded_mutex_);
+    gst_element_set_state(gst_pipeline_->get_pipeline(), GST_STATE_PAUSED);
+    GstUtils::wait_state_changed(gst_pipeline_->get_pipeline());
+    if (!media_loaded_cond_.wait_for(
+            lock, std::chrono::milliseconds(2000), [this] { return media_loaded_; })) {
+      warning("file-src: media loading timed out");
+    }
+  }
   if (play_) gst_pipeline_->play(true);
 
   position_task_ = std::make_unique<PeriodicTask<>>(

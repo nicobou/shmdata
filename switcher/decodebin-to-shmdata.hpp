@@ -35,11 +35,13 @@ class DecodebinToShmdata {
   using on_configure_t = std::function<void(
       GstElement*, const std::string& /*media_type*/, const std::string& /*media_label*/)>;
   using on_buffer_discarded_t = std::function<void()>;
+  using on_no_more_media_to_decode_t = std::function<void()>;
 
  public:
   explicit DecodebinToShmdata(GstPipeliner* gpipe,
                               on_configure_t on_gstshm_configure,
                               on_buffer_discarded_t on_buffer_discarded,
+                              on_no_more_media_to_decode_t on_no_more_pads,
                               bool decompress);
   ~DecodebinToShmdata() = default;
   DecodebinToShmdata() = delete;
@@ -64,6 +66,7 @@ class DecodebinToShmdata {
   bool decompress_;
   on_configure_t on_gstshm_configure_;
   on_buffer_discarded_t on_buffer_discarded_;
+  on_no_more_media_to_decode_t on_no_more_pads_;
   std::list<std::string> shmdata_path_{};  // for unregistering in the segment
   std::vector<gulong> cb_ids_{};
   std::mutex thread_safe_{};
@@ -73,6 +76,8 @@ class DecodebinToShmdata {
   static int /*GstAutoplugSelectResult*/ on_autoplug_select(
       GstElement* bin, GstPad* pad, GstCaps* caps, GstElementFactory* factory, gpointer user_data);
   static void on_element_added(GstBin* bin, GstElement* element, gpointer user_data);
+  static void on_no_more_pads(GstElement* object, gpointer user_data);
+
   static GstPadProbeReturn gstrtpdepay_buffer_probe_cb(GstPad* /*pad */,
                                                        GstPadProbeInfo* /*info*/,
                                                        gpointer user_data);

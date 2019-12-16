@@ -45,6 +45,7 @@ RTPReceiver::RTPReceiver(RtpSession* session,
           },
           []() {  // FIXME warning("discarding uncomplete custom frame due to a network loss");
           },
+          nullptr,
           decompress_) {
   // monitoring rtp-session new pads for received rtp packet
   g_signal_connect(session_->rtpsession_, "pad-added", G_CALLBACK(on_pad_added), this);

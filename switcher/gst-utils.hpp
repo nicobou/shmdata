@@ -65,11 +65,6 @@ element_factory_list_to_pair_of_vectors(GstElementFactoryListType type,
                                         GstRank minrank,
                                         bool insert_none_first = true,
                                         const std::vector<std::string>& black_list = {});
-
-gulong g_signal_connect_function(gpointer gobject,
-                                 const gchar* signal,
-                                 GCallback cb,
-                                 gpointer user_data);
 bool can_sink_caps(std::string factory_name, std::string caps);
 GstElement* get_first_element_from_factory_name(GstBin* bin, const std::string& factory_name);
 const GValue* get_gst_element_capability(const std::string& element_type,

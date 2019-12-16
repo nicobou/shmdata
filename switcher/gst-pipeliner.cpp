@@ -85,7 +85,6 @@ gboolean GstPipeliner::push_thread_context(gpointer user_data) {
   gst_bus_add_watch(bus, bus_watch, user_data);
   context->watch_added_ = true;
   context->cond_watch_.notify_one();
-
   return FALSE;
 }
 

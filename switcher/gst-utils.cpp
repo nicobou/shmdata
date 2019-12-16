@@ -355,14 +355,6 @@ GstUtils::element_factory_list_to_pair_of_vectors(GstElementFactoryListType type
   return std::make_pair(names, nicks);
 }
 
-// g_signal_connect is actually a macro, so wrapping it for use with std::bind
-gulong GstUtils::g_signal_connect_function(gpointer gobject,
-                                           const gchar* signal,
-                                           GCallback cb,
-                                           gpointer user_data) {
-  return g_signal_connect(gobject, signal, cb, user_data);
-}
-
 bool GstUtils::can_sink_caps(std::string factory_name, std::string caps) {
   if (caps.empty()) {
     return false;

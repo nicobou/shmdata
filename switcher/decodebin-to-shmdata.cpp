@@ -26,42 +26,37 @@ namespace switcher {
 DecodebinToShmdata::DecodebinToShmdata(GstPipeliner* gpipe,
                                        on_configure_t on_gstshm_configure,
                                        on_buffer_discarded_t on_buffer_discarded,
+                                       on_no_more_media_to_decode_t on_no_more_pads,
                                        bool decompress)
     : gpipe_(gpipe),
       decompress_(decompress),
       on_gstshm_configure_(on_gstshm_configure),
       on_buffer_discarded_(on_buffer_discarded),
+      on_no_more_pads_(on_no_more_pads),
       decodebin_("decodebin") {
-  // set async property
-  auto set_prop = std::bind(g_object_set,
-                            std::placeholders::_1,
-                            "async-handling",
-                            TRUE,
-                            "expose-all-streams",
-                            TRUE,
-                            nullptr);
-  decodebin_.g_invoke(std::move(set_prop));
-  // pad added callback
-  auto pad_added = std::bind(GstUtils::g_signal_connect_function,
-                             std::placeholders::_1,
-                             "pad-added",
-                             (GCallback)DecodebinToShmdata::on_pad_added,
-                             (gpointer) this);
-  cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>(std::move(pad_added)));
-  // autoplug callback
-  auto autoplug = std::bind(GstUtils::g_signal_connect_function,
-                            std::placeholders::_1,
-                            "autoplug-select",
-                            (GCallback)DecodebinToShmdata::on_autoplug_select,
-                            (gpointer) this);
-  cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>(std::move(autoplug)));
-  // element added callback
-  auto element_added = std::bind(GstUtils::g_signal_connect_function,
-                                 std::placeholders::_1,
-                                 "element-added",
-                                 (GCallback)DecodebinToShmdata::on_element_added,
-                                 (gpointer)this);
-  cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>(std::move(element_added)));
+  g_object_set(decodebin_.get_raw(), "async-handling", TRUE, "expose-all-streams", TRUE, nullptr);
+
+  // pad-added callback
+  cb_ids_.push_back(g_signal_connect(decodebin_.get_raw(),
+                                     "pad-added",
+                                     (GCallback)DecodebinToShmdata::on_pad_added,
+                                     (gpointer)this));
+  // autoplug-select callback
+  cb_ids_.push_back(g_signal_connect(decodebin_.get_raw(),
+                                     "autoplug-select",
+                                     (GCallback)DecodebinToShmdata::on_autoplug_select,
+                                     (gpointer)this));
+
+  // element-added callback
+  cb_ids_.push_back(g_signal_connect(decodebin_.get_raw(),
+                                     "element-added",
+                                     (GCallback)DecodebinToShmdata::on_element_added,
+                                     (gpointer)this));
+  // no-more-pads callback
+  cb_ids_.push_back(g_signal_connect(decodebin_.get_raw(),
+                                     "no-more-pads",
+                                     (GCallback)DecodebinToShmdata::on_no_more_pads,
+                                     (gpointer)this));
 }
 
 void DecodebinToShmdata::on_pad_added(GstElement* object, GstPad* pad, gpointer user_data) {
@@ -308,6 +303,11 @@ gboolean DecodebinToShmdata::rewind(gpointer user_data) {
 
 void DecodebinToShmdata::set_media_label(std::string label) {
   media_label_ = std::move(label);
+}
+
+void DecodebinToShmdata::on_no_more_pads(GstElement* object, gpointer user_data) {
+  DecodebinToShmdata* context = static_cast<DecodebinToShmdata*>(user_data);
+  if (context->on_no_more_pads_) context->on_no_more_pads_();
 }
 
 }  // namespace switcher

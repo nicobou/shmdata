@@ -40,6 +40,9 @@ class FileDecoder : public Quiddity {
                              const std::string& media_type,
                              const std::string& media_label);
   // internals
+  std::condition_variable media_loaded_cond_{};
+  std::mutex media_loaded_mutex_{};
+  bool media_loaded_{false};
   CounterMap counter_{};
   std::vector<std::unique_ptr<GstShmTreeUpdater>> shm_subs_{};
   GstElement* filesrc_{nullptr};

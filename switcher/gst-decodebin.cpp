@@ -148,6 +148,7 @@ bool GstDecodebin::create_pipeline() {
         configure_shmdatasink(el, media_type, media_label);
       },
       [this]() { warning("discarding uncomplete custom frame due to a network loss"); },
+      nullptr,
       true /*decompress*/);
 
   // adding to pipeline
