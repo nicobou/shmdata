@@ -32,7 +32,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "Jérémie Soria");
 
 LTCSource::LTCSource(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+    : Quiddity(std::forward<quid::Config>(conf)),
+      StartableQuiddity(this),
+      shmcntr_(static_cast<Quiddity*>(this)) {
   register_writer_suffix("audio");
   jack_client_ = jack_client_open(
       std::string(std::string("genLTC_") + get_name()).c_str(), JackNullOption, nullptr);
@@ -93,7 +95,6 @@ LTCSource::LTCSource(quid::Config&& conf)
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-  init_startable(this);
 }
 
 LTCSource::~LTCSource() {

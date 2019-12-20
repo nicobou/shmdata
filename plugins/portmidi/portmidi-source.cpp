@@ -34,13 +34,13 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSource,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PortMidiSource::PortMidiSource(quid::Config&& conf) : Quiddity(std::forward<quid::Config>(conf)) {
+PortMidiSource::PortMidiSource(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)), StartableQuiddity(this) {
   if (input_devices_enum_.empty()) {
     message("ERROR:No MIDI capture device detected.");
     is_valid_ = false;
     return;
   }
-  init_startable(this);
   register_writer_suffix("midi");
   devices_id_ =
       pmanage<MPtr(&PContainer::make_selection<>)>("device",

@@ -35,6 +35,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
 
 PulseSrc::PulseSrc(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
+      StartableQuiddity(this),
       mainloop_(std::make_unique<GlibMainLoop>()),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   register_writer_suffix("audio");
@@ -51,7 +52,6 @@ PulseSrc::PulseSrc(quid::Config&& conf)
       "Save Mode",
       "Save Audio Capture Device by device or by port.",
       save_device_enum_);
-  init_startable(this);
   if (!pulsesrc_ || !shmsink_) {
     is_valid_ = false;
     return;

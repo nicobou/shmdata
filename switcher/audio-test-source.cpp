@@ -37,6 +37,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
 
 AudioTestSource::AudioTestSource(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
+      StartableQuiddity(this),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
       sample_rate_id_(
           pmanage<MPtr(&PContainer::make_selection<>)>("sample_rate",
@@ -96,8 +97,6 @@ AudioTestSource::AudioTestSource(quid::Config&& conf)
                                                               "Format",
                                                               "List of supported sound formats",
                                                               format_)) {
-  init_startable(this);
-
   if (!audiotestsrc_ || !capsfilter_ || !shmdatasink_) {
     is_valid_ = false;
     return;

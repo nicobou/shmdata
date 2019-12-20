@@ -42,6 +42,7 @@ const std::string AVRecorder::kRecordModeOverwrite = "Overwrite";
 
 AVRecorder::AVRecorder(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
+      StartableQuiddity(this),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   // Create a list of all available gstreamer muxers if not already done.
@@ -116,7 +117,6 @@ AVRecorder::AVRecorder(quid::Config&& conf)
       nullptr,
       [this](const std::string& caps) { return can_sink_caps(caps); },
       std::numeric_limits<unsigned int>::max());
-  init_startable(this);
 }
 
 std::string AVRecorder::generate_pipeline_description() {

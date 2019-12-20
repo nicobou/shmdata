@@ -31,6 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToOsc,
 
 ShmdataToOsc::ShmdataToOsc(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
+      StartableQuiddity(this),
       shmcntr_(static_cast<Quiddity*>(this)),
       port_id_(pmanage<MPtr(&PContainer::make_int)>("port",
                                                     [this](const int& val) {
@@ -70,7 +71,6 @@ ShmdataToOsc::ShmdataToOsc(quid::Config&& conf)
                                                 "Autostart",
                                                 "Start processing on shmdata connect or not",
                                                 autostart_)) {
-  init_startable(this);
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
       [this](const std::string&) { return on_shmdata_disconnect(); },

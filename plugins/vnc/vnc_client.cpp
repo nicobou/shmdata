@@ -36,8 +36,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VncClientSrc,
                                      "Emmanuel Durand");
 
 VncClientSrc::VncClientSrc(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
-  init_startable(this);
+    : Quiddity(std::forward<quid::Config>(conf)),
+      StartableQuiddity(this),
+      shmcntr_(static_cast<Quiddity*>(this)) {
   register_writer_suffix("vnc");
   shmcntr_.install_connect_method([this](const std::string path) { return connect(path); },
                                   [this](const std::string path) { return disconnect(path); },

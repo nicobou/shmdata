@@ -33,6 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackToShmdata,
 
 JackToShmdata::JackToShmdata(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
+      StartableQuiddity(this),
       client_name_(get_name()),
       jack_client_(client_name_,
                    conf.tree_config_->branch_has_data("server_name")
@@ -56,7 +57,6 @@ JackToShmdata::JackToShmdata(quid::Config&& conf)
     is_valid_ = false;
     return;
   }
-  init_startable(this);
   size_t max_number_of_channels = kMaxNumberOfChannels;
   if (config<MPtr(&InfoTree::branch_has_data)>("max_number_of_channels"))
     max_number_of_channels =

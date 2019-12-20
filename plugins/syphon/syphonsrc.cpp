@@ -37,9 +37,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SyphonSrc,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-SyphonSrc::SyphonSrc(quid::Config&&) {
-  init_startable(this);
-
+SyphonSrc::SyphonSrc(quid::Config&&) : StartableQuiddity(this) {
   reader_.reset(new SyphonReader(frameCallback, (void*)this));
 
   pmanage<MPtr(&PContainer::make_string)>("servername",

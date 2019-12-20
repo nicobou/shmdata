@@ -31,6 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSink,
 
 PortMidiSink::PortMidiSink(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
+      StartableQuiddity(this),
       shmcntr_(static_cast<Quiddity*>(this)),
       devices_id_(pmanage<MPtr(&PContainer::make_selection<>)>(
           "device",
@@ -60,7 +61,6 @@ PortMidiSink::PortMidiSink(quid::Config&& conf)
                                                 "Autostart",
                                                 "Start processing on shmdata connect or not",
                                                 autostart_)) {
-  init_startable(this);
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
       [this](const std::string&) { return this->on_shmdata_disconnect(); },

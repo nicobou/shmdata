@@ -33,6 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Watcher,
 
 Watcher::Watcher(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
+      StartableQuiddity(this),
       directory_id_(pmanage<MPtr(&PContainer::make_string)>("directory",
                                                             [this](const std::string& val) {
                                                               directory_ = val;
@@ -51,9 +52,7 @@ Watcher::Watcher(quid::Config&& conf)
                                                 [this]() { return create_dir_; },
                                                 "Create directory",
                                                 "Create the watched directory if it doesn't exist",
-                                                create_dir_)) {
-  init_startable(this);
-}
+                                                create_dir_)) {}
 
 Watcher::~Watcher() { stop(); }
 

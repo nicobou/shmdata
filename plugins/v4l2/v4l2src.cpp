@@ -53,6 +53,7 @@ void V4L2Src::set_shm_suffix() {
 
 V4L2Src::V4L2Src(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
+      StartableQuiddity(this),
       gst_pipeline_(
           std::make_unique<GstPipeliner>(nullptr, nullptr, [this](GstObject* gstobj, GError* err) {
             on_gst_error(gstobj, err);
@@ -69,7 +70,6 @@ V4L2Src::V4L2Src(quid::Config&& conf)
       "dropping/adding frame if necessary.",
       force_framerate_);
 
-  init_startable(this);
   if (!v4l2src_ || !capsfilter_ || !videorate_ || !shmsink_) {
     is_valid_ = false;
     return;

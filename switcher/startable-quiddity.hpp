@@ -23,9 +23,12 @@
 #include <string>
 
 namespace switcher {
+class Bundle;
+
 class StartableQuiddity {
+  friend Bundle;
+
  public:
-  StartableQuiddity() = default;
   StartableQuiddity(void* quiddity);
   virtual ~StartableQuiddity() = default;
   StartableQuiddity(const StartableQuiddity&) = delete;
@@ -35,14 +38,17 @@ class StartableQuiddity {
   static const std::string disabledWhenStopedMsg;
 
  protected:
-  // FIXME find a way to avoid invoking init_startable (this) in quiddities (policies)
-  void init_startable(void* quiddity);
   bool is_started() const;
 
  private:
+  // default ctor is private in order to let the bundle class chose optionnaly if it is itself
+  // startable or not
+  StartableQuiddity() = default;
+  bool __started_{false};
+
+  void init_startable(void* quiddity);
   virtual bool start() = 0;
   virtual bool stop() = 0;
-  bool __started_{false};
 };
 }  // namespace switcher
 #endif

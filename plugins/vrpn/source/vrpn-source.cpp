@@ -37,12 +37,9 @@ const unsigned int VRPNSource::vrpnLoopInterval{16};
 
 VRPNSource::~VRPNSource() { destroyed_ = true; }
 
-VRPNSource::VRPNSource(quid::Config&& conf) : Quiddity(std::forward<quid::Config>(conf)) {
-  // Initialize startable quiddity
-  init_startable(this);
-
+VRPNSource::VRPNSource(quid::Config&& conf)
+    : Quiddity(std::forward<quid::Config>(conf)), StartableQuiddity(this) {
   register_writer_suffix("vrpn");
-
   // Create the hostname property
   host_id_ = pmanage<MPtr(&PContainer::make_string)>("host",
                                                      [this](const std::string& val) {

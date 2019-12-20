@@ -35,9 +35,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VRPNSink,
 const unsigned int VRPNSink::vrpnLoopInterval{16};
 
 VRPNSink::VRPNSink(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)), shmdataConnector_(static_cast<Quiddity*>(this)) {
-  init_startable(this);
-
+    : Quiddity(std::forward<quid::Config>(conf)),
+      StartableQuiddity(this),
+      shmdataConnector_(static_cast<Quiddity*>(this)) {
   shmdataConnector_.install_connect_method(
       [this](const std::string& shmPath) { return this->connect(shmPath); },
       [this](const std::string&) { return this->disconnect(); },

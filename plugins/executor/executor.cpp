@@ -36,6 +36,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Executor,
 
 Executor::Executor(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
+      StartableQuiddity(this),
       shmcntr_(static_cast<Quiddity*>(this)),
       command_line_id_(pmanage<MPtr(&PContainer::make_string)>("command_line",
                                                                [this](const std::string& val) {
@@ -88,7 +89,6 @@ Executor::Executor(quid::Config&& conf)
                                                   "Whitelist compatible capabilities",
                                                   "Apply capabilities to executed command line",
                                                   whitelist_caps_)) {
-  init_startable(this);
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
       [this](const std::string& shmpath) { return on_shmdata_disconnect(shmpath); },

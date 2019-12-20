@@ -38,6 +38,7 @@ const std::string AVPlayer::kShmDestPath = "/tmp/avplayer/";
 
 AVPlayer::AVPlayer(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
+      StartableQuiddity(this),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
   pmanage<MPtr(&PContainer::make_string)>(
@@ -86,8 +87,6 @@ AVPlayer::AVPlayer(quid::Config&& conf)
       return;
     }
   }
-
-  init_startable(this);
 }
 
 bool AVPlayer::start() {

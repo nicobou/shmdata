@@ -31,6 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
 
 OscToShmdata::OscToShmdata(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
+      StartableQuiddity(this),
       port_id_(pmanage<MPtr(&PContainer::make_int)>("port",
                                                     [this](const int& val) {
                                                       port_ = val;
@@ -42,7 +43,6 @@ OscToShmdata::OscToShmdata(quid::Config&& conf)
                                                     port_,
                                                     1,
                                                     65536)) {
-  init_startable(this);
   register_writer_suffix("osc");
 }
 
