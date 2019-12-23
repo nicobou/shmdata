@@ -19,10 +19,10 @@
 
 #include "./portmidi-source.hpp"
 #include <time.h>
-#include <switcher/quiddity-container.hpp>
-#include <switcher/scope-exit.hpp>
+#include <switcher/quiddity/quiddity-container.hpp>
 #include <switcher/switcher.hpp>
-#include "switcher/information-tree-json.hpp"
+#include <switcher/utils/scope-exit.hpp>
+#include "switcher/infotree/information-tree-json.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSource,
@@ -176,16 +176,16 @@ void PortMidiSource::on_pm_event(PmEvent* event, void* user_data) {
   context->shm_->bytes_written(sizeof(PmEvent));
   g_free(tmp_event);
 
-  guint status = Pm_MessageStatus(event->message);
-  guint data1 = Pm_MessageData1(event->message);
-  guint data2 = Pm_MessageData2(event->message);
+  unsigned int status = Pm_MessageStatus(event->message);
+  unsigned int data1 = Pm_MessageData1(event->message);
+  unsigned int data2 = Pm_MessageData2(event->message);
 
-  context->last_status_ = (gint)status;
-  context->last_data1_ = (gint)data1;
+  context->last_status_ = static_cast<int>(status);
+  context->last_data1_ = static_cast<int>(data1);
 
   {
     auto lock = context->pmanage<MPtr(&PContainer::get_lock)>(context->last_midi_value_id_);
-    context->last_data2_ = (gint)data2;
+    context->last_data2_ = (int)data2;
   }
   context->pmanage<MPtr(&PContainer::notify)>(context->last_midi_value_id_);
   // updating property if needed
@@ -216,7 +216,7 @@ bool PortMidiSource::remove_property_method(const std::string& long_name) {
     return false;
   }
 
-  std::pair<guint, guint> midi_channel;
+  std::pair<unsigned int, unsigned int> midi_channel;
   for (auto& it : midi_channels_) {
     if (it.second == long_name) {
       midi_channel = it.first;
@@ -235,8 +235,8 @@ bool PortMidiSource::remove_property_method(const std::string& long_name) {
 }
 
 bool PortMidiSource::make_property(const std::string& property_long_name,
-                                   gint last_status,
-                                   gint last_data1) {
+                                   int last_status,
+                                   int last_data1) {
   if (midi_channels_.find(std::make_pair(last_status, last_data1)) != midi_channels_.end()) {
     message(
         "ERROR:Midi Channels % % is already a property (is currently named "

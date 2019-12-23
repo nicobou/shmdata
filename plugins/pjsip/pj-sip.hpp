@@ -24,7 +24,7 @@
 #include <functional>
 #include <mutex>
 #include <thread>
-#include "switcher/safe-bool-idiom.hpp"
+#include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
 class SIPPlugin;

@@ -18,7 +18,7 @@
  */
 
 #include "./method-quid.hpp"
-#include "switcher/information-tree-json.hpp"
+#include "switcher/infotree/information-tree-json.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(MethodQuid,

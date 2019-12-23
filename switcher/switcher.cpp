@@ -20,12 +20,12 @@
 #include "./switcher.hpp"
 #include <string.h>
 #include <fstream>
-#include "./bundle-description-parser.hpp"
-#include "./bundle.hpp"
-#include "./file-utils.hpp"
-#include "./gst-utils.hpp"
-#include "./information-tree-json.hpp"
-#include "./scope-exit.hpp"
+#include "./gst/gst-utils.hpp"
+#include "./infotree/information-tree-json.hpp"
+#include "./quiddity/bundle/bundle-description-parser.hpp"
+#include "./quiddity/bundle/bundle.hpp"
+#include "./utils/file-utils.hpp"
+#include "./utils/scope-exit.hpp"
 
 namespace switcher {
 

@@ -18,9 +18,9 @@
  */
 
 #include "./pyswitch.hpp"
-#include <switcher/console-logger.hpp>
-#include <switcher/information-tree.hpp>
-#include <switcher/silent-logger.hpp>
+#include <switcher/infotree/information-tree.hpp>
+#include <switcher/logger/console-logger.hpp>
+#include <switcher/logger/silent-logger.hpp>
 #include "./pyinfotree.hpp"
 #include "./pyqrox.hpp"
 

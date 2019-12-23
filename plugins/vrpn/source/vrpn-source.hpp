@@ -22,12 +22,12 @@
 
 #include <iomanip>
 #include <memory>
-#include <switcher/periodic-task.hpp>
-#include <switcher/property-container.hpp>
-#include <switcher/quiddity.hpp>
-#include <switcher/shmdata-writer.hpp>
-#include <switcher/startable-quiddity.hpp>
-#include <switcher/threaded-wrapper.hpp>
+#include <switcher/quiddity/property/property-container.hpp>
+#include <switcher/quiddity/quiddity.hpp>
+#include <switcher/quiddity/startable-quiddity.hpp>
+#include <switcher/shmdata/shmdata-writer.hpp>
+#include <switcher/utils/periodic-task.hpp>
+#include <switcher/utils/threaded-wrapper.hpp>
 #include "./devices/analog-source-device.hpp"
 #include "./devices/button-source-device.hpp"
 #include "./devices/source-device.hpp"

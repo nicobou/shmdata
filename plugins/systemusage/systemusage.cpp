@@ -23,7 +23,7 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include "switcher/information-tree-basic-serializer.hpp"
+#include "switcher/infotree/information-tree-basic-serializer.hpp"
 
 #define PROCSTATFILE "/proc/stat"
 #define PROCMEMINFOFILE "/proc/meminfo"

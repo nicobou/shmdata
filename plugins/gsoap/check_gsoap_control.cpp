@@ -20,8 +20,8 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <unistd.h>
-#include "switcher/information-tree-json.hpp"
-#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/infotree/information-tree-json.hpp"
+#include "switcher/quiddity/quiddity-basic-test.hpp"
 
 int main() {
   bool success = false;

@@ -28,8 +28,8 @@
 #include "./nvenc-api.hpp"
 #include "./nvenc-buffers.hpp"
 #include "cuda/cuda-context.hpp"
-#include "switcher/logged.hpp"
-#include "switcher/safe-bool-idiom.hpp"
+#include "switcher/logger/logged.hpp"
+#include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
 class NVencES : public Logged, public SafeBoolIdiom {

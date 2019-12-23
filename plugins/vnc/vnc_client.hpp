@@ -27,11 +27,11 @@
 #include <thread>
 #include <vector>
 
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/shmdata-writer.hpp"
-#include "switcher/startable-quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/shmdata/shmdata-connector.hpp"
+#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/shmdata-writer.hpp"
 
 #include <rfb/rfbclient.h>
 

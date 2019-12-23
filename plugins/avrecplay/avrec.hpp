@@ -20,10 +20,10 @@
 #ifndef SWITCHER_AVREC_HPP
 #define SWITCHER_AVREC_HPP
 
-#include <switcher/startable-quiddity.hpp>
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
+#include <switcher/quiddity/startable-quiddity.hpp>
+#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/shmdata/shmdata-connector.hpp"
+#include "switcher/shmdata/shmdata-follower.hpp"
 
 namespace switcher {
 

@@ -18,7 +18,7 @@
 #include "./pj-sip.hpp"
 #include "./pj-presence.hpp"
 #include "./pj-sip-plugin.hpp"
-#include "switcher/net-utils.hpp"
+#include "switcher/utils/net-utils.hpp"
 
 namespace switcher {
 // according to pjsip documentation:

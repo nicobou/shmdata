@@ -25,7 +25,7 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include "switcher/safe-bool-idiom.hpp"
+#include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
 

@@ -20,7 +20,7 @@
 #include <cassert>
 #include <chrono>
 #include <thread>
-#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity/quiddity-basic-test.hpp"
 #include "switcher/switcher.hpp"
 
 int main() {

@@ -16,8 +16,8 @@
  */
 
 #include "./pj-sip-plugin.hpp"
-#include "switcher/net-utils.hpp"
-#include "switcher/scope-exit.hpp"
+#include "switcher/utils/net-utils.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
 SWITCHER_DECLARE_PLUGIN(SIPPlugin);

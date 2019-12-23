@@ -25,8 +25,8 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "switcher/logged.hpp"
-#include "switcher/safe-bool-idiom.hpp"
+#include "switcher/logger/logged.hpp"
+#include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
 

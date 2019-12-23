@@ -18,7 +18,7 @@
  */
 
 #include "ltc-source.hpp"
-#include "switcher/scope-exit.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(

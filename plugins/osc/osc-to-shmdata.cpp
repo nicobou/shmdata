@@ -98,7 +98,7 @@ int OscToShmdata::osc_handler(const char* path,
   }
   context->shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(buftmp, size);
   context->shm_->bytes_written(size);
-  g_free(buftmp);
+  free(buftmp);
   return 0;
 }
 

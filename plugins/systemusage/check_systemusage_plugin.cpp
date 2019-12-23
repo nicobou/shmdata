@@ -22,7 +22,7 @@
 #include <chrono>
 #include <thread>
 #include <vector>
-#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity/quiddity-basic-test.hpp"
 
 int main() {
   using namespace switcher;

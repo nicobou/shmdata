@@ -19,7 +19,7 @@
 
 #include "./nvenc-encode-session.hpp"
 #include <cstring>  // memset
-#include "switcher/scope-exit.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
 NVencES::NVencES(uint32_t device_id,

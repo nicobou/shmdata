@@ -20,7 +20,7 @@
 #include "./nvenc-plugin.hpp"
 #include <gst/gst.h>
 #include "cuda/cuda-context.hpp"
-#include "switcher/scope-exit.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(NVencPlugin,

@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 #include "protocol-mapper.hpp"
-#include "switcher/file-utils.hpp"
-#include "switcher/information-tree-json.hpp"
+#include "switcher/infotree/information-tree-json.hpp"
+#include "switcher/utils/file-utils.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ProtocolMapper,

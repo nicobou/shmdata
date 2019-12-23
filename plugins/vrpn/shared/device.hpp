@@ -22,7 +22,7 @@
 
 #include <string>
 #include "./connection/vrpn-connection.hpp"
-#include "switcher/information-tree.hpp"
+#include "switcher/infotree/information-tree.hpp"
 
 namespace switcher {
 namespace vrpn {

@@ -20,13 +20,13 @@
 #ifndef SWITCHER_AVPLAYER_HPP
 #define SWITCHER_AVPLAYER_HPP
 
-#include <switcher/startable-quiddity.hpp>
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shm-tree-updater.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/shmdata-writer.hpp"
-#include "switcher/threaded-wrapper.hpp"
+#include <switcher/quiddity/startable-quiddity.hpp>
+#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/shmdata/gst-shm-tree-updater.hpp"
+#include "switcher/shmdata/shmdata-connector.hpp"
+#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
 class AVPlayer : public Quiddity, public StartableQuiddity {

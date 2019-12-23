@@ -18,17 +18,18 @@
 #include "./v4l2src.hpp"
 #include <errno.h>
 #include <fcntl.h>
+#include <gio/gio.h>
 #include <gst/video/video.h>
 #include <linux/videodev2.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 #include <cstdlib>  // For srand() and rand()
 #include <ctime>    // For time()
-#include "switcher/file-utils.hpp"
-#include "switcher/gst-utils.hpp"
-#include "switcher/quiddity-container.hpp"
-#include "switcher/scope-exit.hpp"
-#include "switcher/shmdata-utils.hpp"
+#include "switcher/gst/gst-utils.hpp"
+#include "switcher/quiddity/quiddity-container.hpp"
+#include "switcher/utils/file-utils.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(V4L2Src,

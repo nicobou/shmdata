@@ -22,7 +22,7 @@
 #include <sys/stat.h>
 #include <cstring>
 #include <iostream>
-#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity/quiddity-basic-test.hpp"
 
 int main() {
   bool success = true;

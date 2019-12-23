@@ -22,9 +22,9 @@
 
 #include <jack/jack.h>
 #include <ltc.h>
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/shmdata/shmdata-connector.hpp"
+#include "switcher/shmdata/shmdata-follower.hpp"
 
 namespace switcher {
 /**

@@ -19,7 +19,7 @@
 
 #include "./cuda-context.hpp"
 #include "./cu-res.hpp"
-#include "switcher/scope-exit.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
 

@@ -28,11 +28,11 @@
 #include "./pj-ice-stream-trans.hpp"
 #include "./pj-media-endpt.hpp"
 #include "./pj-sip.hpp"
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shm-tree-updater.hpp"
-#include "switcher/gst-shmdata-to-cb.hpp"
-#include "switcher/rtp-session.hpp"
-#include "switcher/shmdata-writer.hpp"
+#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/gst/gst-shmdata-to-cb.hpp"
+#include "switcher/gst/rtp-session.hpp"
+#include "switcher/shmdata/gst-shm-tree-updater.hpp"
+#include "switcher/shmdata/shmdata-writer.hpp"
 #include "switcher/switcher.hpp"
 
 namespace switcher {

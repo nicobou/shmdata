@@ -18,7 +18,7 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <cassert>
-#include "switcher/string-utils.hpp"
+#include "switcher/utils/string-utils.hpp"
 
 int main() {
   std::string str =

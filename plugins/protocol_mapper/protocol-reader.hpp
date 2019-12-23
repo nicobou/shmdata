@@ -20,12 +20,11 @@
 #define SWITCHER_PROTOCOL_READER_HPP
 
 #include <map>
-#include <switcher/safe-bool-idiom.hpp>
-#include "switcher/exec-loop.hpp"
-#include "switcher/information-tree.hpp"
-#include "switcher/periodic-task.hpp"
-#include "switcher/property-container.hpp"
-#include "switcher/quiddity.hpp"
+#include <switcher/utils/safe-bool-idiom.hpp>
+#include "switcher/infotree/information-tree.hpp"
+#include "switcher/quiddity/property/property-container.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
 

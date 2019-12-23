@@ -18,8 +18,8 @@
  */
 
 #include "./pyinfotree.hpp"
-#include <switcher/information-tree-json.hpp>
-#include <switcher/scope-exit.hpp>
+#include <switcher/infotree/information-tree-json.hpp>
+#include <switcher/utils/scope-exit.hpp>
 
 PyObject* pyInfoTree::InfoTree_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/) {
   pyInfoTreeObject* self;

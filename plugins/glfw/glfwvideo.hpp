@@ -22,17 +22,17 @@
 
 // clang-format off
 #include "./glad.h"
+#include "./multiple-buffer.hpp"
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 // clang-format on
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shm-tree-updater.hpp"
-#include "switcher/multiple-buffer.hpp"
-#include "switcher/periodic-task.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/shmdata-writer.hpp"
-#include "switcher/threaded-wrapper.hpp"
+#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/shmdata/gst-shm-tree-updater.hpp"
+#include "switcher/utils/periodic-task.hpp"
+#include "switcher/shmdata/shmdata-connector.hpp"
+#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
 

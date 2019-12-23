@@ -25,9 +25,9 @@
 #include <string>
 #include <vector>
 
-#include "switcher/information-tree-basic-serializer.hpp"
-#include "switcher/information-tree-json.hpp"
-#include "switcher/information-tree.hpp"
+#include "switcher/infotree/information-tree-basic-serializer.hpp"
+#include "switcher/infotree/information-tree-json.hpp"
+#include "switcher/infotree/information-tree.hpp"
 
 //----------------- a custom struct without operator <<
 struct Widget : public DefaultSerializable<Widget> {};

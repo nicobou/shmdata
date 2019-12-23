@@ -19,12 +19,12 @@
 #include <signal.h>
 #include <time.h>
 #include <vector>
-#include "switcher/console-logger.hpp"
-#include "switcher/file-utils.hpp"
-#include "switcher/information-tree-json.hpp"
-#include "switcher/quiddity-class-printer.hpp"
-#include "switcher/silent-logger.hpp"
+#include "switcher/infotree/information-tree-json.hpp"
+#include "switcher/infotree/quiddity-class-printer.hpp"
+#include "switcher/logger/console-logger.hpp"
+#include "switcher/logger/silent-logger.hpp"
 #include "switcher/switcher.hpp"
+#include "switcher/utils/file-utils.hpp"
 
 using namespace switcher;
 

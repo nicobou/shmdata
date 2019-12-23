@@ -24,11 +24,11 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "switcher/periodic-task.hpp"
-#include "switcher/quiddity-container.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/startable-quiddity.hpp"
+#include "switcher/quiddity/quiddity-container.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
 class Watcher : public Quiddity, public StartableQuiddity {

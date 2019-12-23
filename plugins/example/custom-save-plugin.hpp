@@ -23,7 +23,7 @@
 #include <memory>
 #include <string>
 
-#include "switcher/quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
 
 namespace switcher {
 class CustomSavePlugin : public Quiddity {

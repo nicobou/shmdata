@@ -16,10 +16,10 @@
  */
 
 #include "soap-ctrl-server.hpp"
-#include "switcher/file-utils.hpp"
-#include "switcher/information-tree-json.hpp"
-#include "switcher/scope-exit.hpp"
-#include "switcher/serialize-string.hpp"
+#include "switcher/infotree/information-tree-json.hpp"
+#include "switcher/utils/file-utils.hpp"
+#include "switcher/utils/scope-exit.hpp"
+#include "switcher/utils/serialize-string.hpp"
 #include "webservices/control.nsmap"
 
 // hacking gsoap bug for ubuntu 13.10

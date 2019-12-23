@@ -23,11 +23,11 @@
 #include <chrono>
 #include <iomanip>
 #include <memory>
-#include <switcher/periodic-task.hpp>
-#include <switcher/quiddity.hpp>
-#include <switcher/shmdata-connector.hpp>
-#include <switcher/shmdata-follower.hpp>
-#include <switcher/startable-quiddity.hpp>
+#include <switcher/quiddity/quiddity.hpp>
+#include <switcher/quiddity/startable-quiddity.hpp>
+#include <switcher/shmdata/shmdata-connector.hpp>
+#include <switcher/shmdata/shmdata-follower.hpp>
+#include <switcher/utils/periodic-task.hpp>
 #include "./devices/analog-sink-device.hpp"
 #include "./devices/button-sink-device.hpp"
 #include "./devices/sink-device.hpp"

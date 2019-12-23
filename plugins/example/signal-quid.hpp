@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_SIGNAL_QUID_H__
 #define __SWITCHER_SIGNAL_QUID_H__
 
-#include "switcher/quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
 
 namespace switcher {
 class SignalQuid : public Quiddity {

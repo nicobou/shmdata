@@ -17,8 +17,8 @@
 
 #undef NDEBUG  // get assert in release mode
 
-#include "switcher/glibmainloop.hpp"
-#include "switcher/gst-pipe.hpp"
+#include "switcher/gst/glibmainloop.hpp"
+#include "switcher/gst/gst-pipe.hpp"
 
 int main() {
   using namespace switcher;

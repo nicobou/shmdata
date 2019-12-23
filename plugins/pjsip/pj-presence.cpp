@@ -19,9 +19,9 @@
 #include <list>
 #include <string>
 #include "./pj-sip-plugin.hpp"
-#include "switcher/information-tree-json.hpp"
-#include "switcher/scope-exit.hpp"
-#include "switcher/string-utils.hpp"
+#include "switcher/infotree/information-tree-json.hpp"
+#include "switcher/utils/scope-exit.hpp"
+#include "switcher/utils/string-utils.hpp"
 
 namespace switcher {
 PJPresence::PJPresence() {

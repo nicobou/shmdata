@@ -33,8 +33,8 @@
 #include <memory>
 #include <mutex>
 #include <queue>
-#include "switcher/bool-log.hpp"
-#include "switcher/selection.hpp"
+#include "switcher/quiddity/property/selection.hpp"
+#include "switcher/utils/bool-log.hpp"
 
 namespace switcher {
 class PortMidi {

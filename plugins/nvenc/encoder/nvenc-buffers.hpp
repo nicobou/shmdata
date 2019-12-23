@@ -24,7 +24,7 @@
 #include <array>
 #include <functional>
 #include "./nvenc-api.hpp"
-#include "switcher/safe-bool-idiom.hpp"
+#include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
 class NVencBuffers : public SafeBoolIdiom {

@@ -21,7 +21,7 @@
 #include <memory>
 #include <mutex>
 #include <thread>
-#include "switcher/quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
 #include "switcher/switcher.hpp"
 #include "webservices/soapcontrolService.h"
 

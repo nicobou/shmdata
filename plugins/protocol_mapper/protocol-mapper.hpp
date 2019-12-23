@@ -20,7 +20,7 @@
 #define SWITCHER_PROTOCOL_MAPPER_HPP
 
 #include "protocol-reader.hpp"
-#include "switcher/quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
 
 namespace switcher {
 class ProtocolMapper : public Quiddity {

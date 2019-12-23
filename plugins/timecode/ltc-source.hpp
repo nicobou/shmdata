@@ -24,14 +24,14 @@
 #include <ltc.h>
 #include <deque>
 #include <fstream>
-#include <switcher/startable-quiddity.hpp>
-#include "switcher/gst-shmdata-subscriber.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/shmdata-writer.hpp"
-#include "switcher/threaded-wrapper.hpp"
-#include "switcher/unique-gst-element.hpp"
+#include <switcher/quiddity/startable-quiddity.hpp>
+#include "switcher/gst/unique-gst-element.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/shmdata/gst-shmdata-subscriber.hpp"
+#include "switcher/shmdata/shmdata-connector.hpp"
+#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
 /**

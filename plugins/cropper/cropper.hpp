@@ -22,13 +22,13 @@
 
 #include <string>
 
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-utils.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/threaded-wrapper.hpp"
-#include "switcher/unique-gst-element.hpp"
+#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/gst/gst-utils.hpp"
+#include "switcher/gst/unique-gst-element.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/shmdata/shmdata-connector.hpp"
+#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
 

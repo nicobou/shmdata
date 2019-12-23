@@ -20,8 +20,8 @@
 #include "avrec.hpp"
 #include <sys/stat.h>
 
-#include "switcher/gprop-to-prop.hpp"
-#include "switcher/scope-exit.hpp"
+#include "switcher/quiddity/property/gprop-to-prop.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
 SWITCHER_DECLARE_PLUGIN(AVRecorder);

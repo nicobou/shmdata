@@ -22,8 +22,8 @@
 #include <cassert>
 #include <iostream>
 #include <vector>
-#include "switcher/property-container.hpp"
-#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity/property/property-container.hpp"
+#include "switcher/quiddity/quiddity-basic-test.hpp"
 
 int main() {
   {

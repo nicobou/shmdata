@@ -24,7 +24,7 @@
 #include <map>
 #include <mutex>
 #include <string>
-#include "switcher/selection.hpp"
+#include "switcher/quiddity/property/selection.hpp"
 
 namespace switcher {
 class SIPPlugin;

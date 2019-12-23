@@ -18,7 +18,7 @@
  */
 
 #include "./vrpn-sink.hpp"
-#include "switcher/information-tree-json.hpp"
+#include "switcher/infotree/information-tree-json.hpp"
 
 namespace switcher {
 namespace vrpn {

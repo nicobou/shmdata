@@ -19,7 +19,7 @@
 
 #include "./jack-to-shmdata.hpp"
 #include <string.h>
-#include "switcher/quiddity-container.hpp"
+#include "switcher/quiddity/quiddity-container.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackToShmdata,

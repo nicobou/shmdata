@@ -20,8 +20,7 @@
 #include "avplayer.hpp"
 
 #include <sys/stat.h>
-#include "switcher/scope-exit.hpp"
-#include "switcher/shmdata-utils.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
 SWITCHER_DECLARE_PLUGIN(AVPlayer);

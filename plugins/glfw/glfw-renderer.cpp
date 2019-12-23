@@ -18,7 +18,7 @@
  */
 
 #include "./glfw-renderer.hpp"
-#include "switcher/scope-exit.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
 

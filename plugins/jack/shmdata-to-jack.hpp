@@ -25,9 +25,9 @@
 #include "./audio-ring-buffer.hpp"
 #include "./drift-observer.hpp"
 #include "./jack-client.hpp"
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shm-tree-updater.hpp"
-#include "switcher/shmdata-connector.hpp"
+#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/shmdata/gst-shm-tree-updater.hpp"
+#include "switcher/shmdata/shmdata-connector.hpp"
 
 namespace switcher {
 class ShmdataToJack : public Quiddity {

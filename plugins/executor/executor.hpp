@@ -30,12 +30,12 @@
 #include <string>
 #include <gst/gst.h>
 
-#include "switcher/periodic-task.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/startable-quiddity.hpp"
-#include "switcher/string-utils.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/shmdata/shmdata-connector.hpp"
+#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/utils/periodic-task.hpp"
+#include "switcher/utils/string-utils.hpp"
 
 namespace switcher {
 

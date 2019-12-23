@@ -18,11 +18,10 @@
 #include "./pj-call.hpp"
 #include "./pj-call-utils.hpp"
 #include "./pj-sip-plugin.hpp"
-#include "switcher/information-tree-json.hpp"
-#include "switcher/net-utils.hpp"
-#include "switcher/scope-exit.hpp"
-#include "switcher/sdp-utils.hpp"
-#include "switcher/shmdata-utils.hpp"
+#include "switcher/gst/sdp-utils.hpp"
+#include "switcher/infotree/information-tree-json.hpp"
+#include "switcher/utils/net-utils.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
 

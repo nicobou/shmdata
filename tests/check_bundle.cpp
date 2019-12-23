@@ -21,7 +21,7 @@
 #include <atomic>
 #include <cassert>
 #include <condition_variable>
-#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity/quiddity-basic-test.hpp"
 #include "switcher/switcher.hpp"
 
 using namespace switcher;

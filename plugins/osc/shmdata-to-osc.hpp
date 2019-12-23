@@ -23,10 +23,10 @@
 #include <lo/lo.h>
 #include <chrono>
 #include <mutex>
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/startable-quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/shmdata/shmdata-connector.hpp"
+#include "switcher/shmdata/shmdata-follower.hpp"
 
 namespace switcher {
 class ShmdataToOsc : public Quiddity, public StartableQuiddity {

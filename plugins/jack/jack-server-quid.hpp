@@ -22,8 +22,8 @@
 
 #include <memory>
 #include "./jack-server.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/startable-quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable-quiddity.hpp"
 
 namespace switcher {
 class JackServerQuid : public Quiddity, public StartableQuiddity {

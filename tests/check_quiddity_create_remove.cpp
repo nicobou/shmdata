@@ -23,7 +23,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity/quiddity-basic-test.hpp"
 #include "switcher/switcher.hpp"
 
 int main() {

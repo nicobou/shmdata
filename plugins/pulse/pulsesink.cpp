@@ -20,10 +20,9 @@
  */
 
 #include "./pulsesink.hpp"
-#include "switcher/gprop-to-prop.hpp"
-#include "switcher/gst-utils.hpp"
-#include "switcher/scope-exit.hpp"
-#include "switcher/shmdata-utils.hpp"
+#include "switcher/gst/gst-utils.hpp"
+#include "switcher/quiddity/property/gprop-to-prop.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
 

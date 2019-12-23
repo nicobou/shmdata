@@ -20,9 +20,9 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <shmdata/console-logger.hpp>
-#include "switcher/quiddity-basic-test.hpp"
-#include "switcher/serialize-string.hpp"
-#include "switcher/shmdata-follower.hpp"
+#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/utils/serialize-string.hpp"
 
 bool success = false;
 std::atomic<bool> do_continue{true};

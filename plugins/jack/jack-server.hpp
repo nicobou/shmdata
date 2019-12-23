@@ -24,9 +24,9 @@
 #include <jack/jack.h>
 
 #include <string>
-#include "switcher/base-logger.hpp"
-#include "switcher/information-tree.hpp"
-#include "switcher/safe-bool-idiom.hpp"
+#include "switcher/infotree/information-tree.hpp"
+#include "switcher/logger/base-logger.hpp"
+#include "switcher/utils/safe-bool-idiom.hpp"
 
 /* The JackServer class implements the control of a jackserver. Default configuration is obtained
  * in the constructor through introspection provided by the jackd API. This configuration is saved

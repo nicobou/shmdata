@@ -23,8 +23,8 @@
 #include <unistd.h>  // sleep
 #include <cassert>
 #include <iostream>
-#include "switcher/quiddity-basic-test.hpp"
-#include "switcher/serialize-string.hpp"
+#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/utils/serialize-string.hpp"
 
 int main() {
   {

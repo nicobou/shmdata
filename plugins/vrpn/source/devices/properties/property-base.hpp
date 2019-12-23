@@ -21,7 +21,7 @@
 #define __SWITCHER_VRPN_SOURCE_DEVICE_PROPERTY_BASE_H__
 
 #include <string>
-#include "switcher/property-container.hpp"
+#include "switcher/quiddity/property/property-container.hpp"
 
 namespace switcher {
 namespace vrpn {

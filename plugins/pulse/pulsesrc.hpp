@@ -24,12 +24,12 @@
 #include <pulse/pulseaudio.h>
 #include <condition_variable>
 #include <mutex>
-#include "switcher/glibmainloop.hpp"
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shm-tree-updater.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/startable-quiddity.hpp"
-#include "switcher/unique-gst-element.hpp"
+#include "switcher/gst/glibmainloop.hpp"
+#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/gst/unique-gst-element.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/shmdata/gst-shm-tree-updater.hpp"
 
 namespace switcher {
 class PulseSrc : public Quiddity, public StartableQuiddity {

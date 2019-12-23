@@ -18,7 +18,7 @@
  */
 
 #include "ltc-diff.hpp"
-#include "switcher/gst-utils.hpp"
+#include "switcher/gst/gst-utils.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCDiff,

@@ -25,7 +25,7 @@
 #include <list>
 #include <map>
 #include <memory>
-#include "switcher/quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
 
 using namespace switcher;
 

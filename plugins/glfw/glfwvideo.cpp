@@ -20,10 +20,9 @@
 #include "./glfwvideo.hpp"
 #include <sys/stat.h>
 #include "./glfw-renderer.hpp"
-#include "switcher/file-utils.hpp"
-#include "switcher/gprop-to-prop.hpp"
-#include "switcher/scope-exit.hpp"
-#include "switcher/shmdata-utils.hpp"
+#include "switcher/quiddity/property/gprop-to-prop.hpp"
+#include "switcher/utils/file-utils.hpp"
+#include "switcher/utils/scope-exit.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "./stb_image.h"
 

@@ -17,12 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shm-tree-updater.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/shmdata-writer.hpp"
-#include "switcher/threaded-wrapper.hpp"
+#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/shmdata/gst-shm-tree-updater.hpp"
+#include "switcher/shmdata/shmdata-connector.hpp"
+#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
 /**

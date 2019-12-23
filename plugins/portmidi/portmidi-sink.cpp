@@ -90,10 +90,9 @@ bool PortMidiSink::start() {
     return false;
   }
 
-  // FIXME the following might not be necessary
-  gint stat = 165;
-  gint data1 = 1;
-  gint data2 = 67;
+  int stat = 165;
+  int data1 = 1;
+  int data2 = 67;
   push_midi_message(device_, (unsigned char)stat, (unsigned char)data1, (unsigned char)data2);
   started_ = true;
 

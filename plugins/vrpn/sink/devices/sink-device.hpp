@@ -22,7 +22,7 @@
 
 #include <memory>
 #include <string>
-#include <switcher/information-tree.hpp>
+#include <switcher/infotree/information-tree.hpp>
 #include "shared/device.hpp"
 
 namespace switcher {

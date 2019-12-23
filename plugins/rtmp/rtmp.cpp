@@ -18,7 +18,6 @@
  */
 
 #include "./rtmp.hpp"
-#include "switcher/shmdata-utils.hpp"
 
 namespace switcher {
 SWITCHER_DECLARE_PLUGIN(RTMP);

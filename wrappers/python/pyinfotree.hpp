@@ -21,7 +21,7 @@
 #define __SWITCHER_PYINFOTREE_H__
 
 #include <Python.h>  // according to python doc, this *must* be the first include
-#include "switcher/quiddity-qrox.hpp"
+#include "switcher/quiddity/quiddity-qrox.hpp"
 
 using namespace switcher;
 

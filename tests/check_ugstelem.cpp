@@ -19,7 +19,7 @@
 
 #include <gst/gst.h>
 #include <cassert>
-#include "switcher/unique-gst-element.hpp"
+#include "switcher/gst/unique-gst-element.hpp"
 
 int main() {
   using namespace switcher;

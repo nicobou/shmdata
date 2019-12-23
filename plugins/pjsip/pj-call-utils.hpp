@@ -20,7 +20,7 @@
 
 #include <pjsua-lib/pjsua.h>
 #include <regex>
-#include "switcher/string-utils.hpp"
+#include "switcher/utils/string-utils.hpp"
 
 namespace switcher {
 namespace PJCallUtils {

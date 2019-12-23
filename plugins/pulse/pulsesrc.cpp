@@ -20,8 +20,7 @@
  */
 
 #include "./pulsesrc.hpp"
-#include "switcher/gprop-to-prop.hpp"
-#include "switcher/shmdata-utils.hpp"
+#include "switcher/quiddity/property/gprop-to-prop.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,

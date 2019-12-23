@@ -23,14 +23,14 @@
 #include <regex>
 #include <string>
 #include <vector>
-#include "./base-logger.hpp"
-#include "./configuration.hpp"
-#include "./console-logger.hpp"
-#include "./gst-initialized.hpp"
-#include "./information-tree.hpp"
-#include "./make-consultable.hpp"
-#include "./quiddity-container.hpp"
-#include "./quiddity-factory.hpp"
+#include "./configuration/configuration.hpp"
+#include "./gst/gst-initialized.hpp"
+#include "./infotree/information-tree.hpp"
+#include "./logger/base-logger.hpp"
+#include "./logger/console-logger.hpp"
+#include "./quiddity/quiddity-container.hpp"
+#include "./quiddity/quiddity-factory.hpp"
+#include "./utils/make-consultable.hpp"
 
 namespace switcher {
 class Switcher : public GstInitialized {

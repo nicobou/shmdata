@@ -21,9 +21,9 @@
 #define __SWITCHER_OSC_CTRL_SERVER_H__
 
 #include "lo/lo.h"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-writer.hpp"
-#include "switcher/startable-quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/shmdata/shmdata-writer.hpp"
 
 namespace switcher {
 class OscToShmdata : public Quiddity, public StartableQuiddity {

@@ -21,11 +21,11 @@
 #define SWITCHER_LTC_DIFF_HPP
 
 #include <ltc.h>
-#include "switcher/periodic-task.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/shmdata-writer.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/shmdata/shmdata-connector.hpp"
+#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
 /**

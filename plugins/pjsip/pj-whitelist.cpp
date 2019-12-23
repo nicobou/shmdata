@@ -17,7 +17,7 @@
 
 #include "./pj-whitelist.hpp"
 #include "./pj-sip-plugin.hpp"
-#include "switcher/information-tree-json.hpp"
+#include "switcher/infotree/information-tree-json.hpp"
 
 namespace switcher {
 

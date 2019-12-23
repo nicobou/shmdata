@@ -23,9 +23,9 @@
 #include <memory>
 #include <mutex>
 #include "./jack-client.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-writer.hpp"
-#include "switcher/startable-quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/shmdata/shmdata-writer.hpp"
 
 namespace switcher {
 class JackToShmdata : public Quiddity, public StartableQuiddity {

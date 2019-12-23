@@ -22,8 +22,8 @@
 #include <cassert>
 #include <iostream>
 #include <string>
-#include "switcher/make-consultable.hpp"  // for MPtr
-#include "switcher/threaded-wrapper.hpp"
+#include "switcher/utils/make-consultable.hpp"  // for MPtr
+#include "switcher/utils/threaded-wrapper.hpp"
 
 using namespace std;
 using namespace switcher;

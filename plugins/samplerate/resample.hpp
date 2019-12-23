@@ -19,11 +19,11 @@
 #define __SWITCHER_RESAMPLE_H__
 
 #include <samplerate.h>
-#include "switcher/audio-caps.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/shmdata-writer.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/shmdata/caps/audio-caps.hpp"
+#include "switcher/shmdata/shmdata-connector.hpp"
+#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/shmdata-writer.hpp"
 
 namespace switcher {
 class Resample : public Quiddity {

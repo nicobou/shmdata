@@ -26,9 +26,9 @@
 #include "./pj-sip.hpp"
 #include "./pj-stun-turn.hpp"
 #include "./pj-whitelist.hpp"
-#include "switcher/quiddity-container.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/threaded-wrapper.hpp"
+#include "switcher/quiddity/quiddity-container.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
 class SIPPlugin : public Quiddity {

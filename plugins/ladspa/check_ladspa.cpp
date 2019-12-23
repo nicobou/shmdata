@@ -22,8 +22,8 @@
 #include <assert.h>
 #include <atomic>
 #include <condition_variable>
-#include <switcher/information-tree-json.hpp>
-#include "switcher/quiddity-basic-test.hpp"
+#include <switcher/infotree/information-tree-json.hpp>
+#include "switcher/quiddity/quiddity-basic-test.hpp"
 
 using namespace switcher;
 

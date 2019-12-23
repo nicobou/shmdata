@@ -21,7 +21,7 @@
 
 #include <curl/curl.h>
 #include "protocol-reader.hpp"
-#include "switcher/quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
 
 namespace switcher {
 

@@ -21,7 +21,7 @@
 #include <chrono>
 #include "./pyinfotree.hpp"
 #include "./ungiled.hpp"
-#include "switcher/scope-exit.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 PyDoc_STRVAR(pyquiddity_set_doc,
              "Set the value of a property with its name and a string value.\n"

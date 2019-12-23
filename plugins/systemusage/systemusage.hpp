@@ -21,9 +21,9 @@
 #define __SWITCHER_SYSTEM_USAGE_H__
 
 #include <memory>
-#include "switcher/periodic-task.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/startable-quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
 struct Cpu {

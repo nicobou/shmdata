@@ -23,7 +23,7 @@
 #include <memory>
 #include <string>
 
-#include "switcher/quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
 
 // This quiddity implements an example of every possible property types for a quiddity
 

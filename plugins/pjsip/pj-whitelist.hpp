@@ -19,7 +19,7 @@
 #define PLUGINS_PJSIP_PJ_WHITELIST_H_
 
 #include <unordered_map>
-#include "switcher/property-container.hpp"
+#include "switcher/quiddity/property/property-container.hpp"
 
 namespace switcher {
 class PJWhiteList {
