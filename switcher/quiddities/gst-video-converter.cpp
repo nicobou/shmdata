@@ -32,7 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoConverter,
 GstVideoConverter::GstVideoConverter(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       video_format_(
-          GstUtils::get_gst_element_capability_as_list("videoconvert", "format", GST_PAD_SRC), 0),
+          gst::utils::get_gst_element_capability_as_list("videoconvert", "format", GST_PAD_SRC), 0),
       video_format_id_(
           pmanage<MPtr(&PContainer::make_selection<>)>("pixel_format",
                                                        [this](const IndexOrName& val) {
@@ -69,7 +69,7 @@ bool GstVideoConverter::on_shmdata_connect(const std::string& shmpath) {
   }
   shmpath_to_convert_ = shmpath;
   converter_.reset();
-  converter_ = std::make_unique<GstPixelFormatConverter>(
+  converter_ = std::make_unique<gst::PixelFormatConverter>(
       shmpath_to_convert_, shmpath_converted_, video_format_.get_attached());
   if (!static_cast<bool>(*converter_.get())) return false;
   shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
@@ -81,7 +81,7 @@ bool GstVideoConverter::on_shmdata_connect(const std::string& shmpath) {
 }
 
 bool GstVideoConverter::can_sink_caps(const std::string& caps) {
-  return GstPixelFormatConverter::can_sink_caps(caps);
+  return gst::PixelFormatConverter::can_sink_caps(caps);
 }
 
 }  // namespace switcher

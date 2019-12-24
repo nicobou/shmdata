@@ -22,7 +22,7 @@
 
 #include <memory>
 #include "../gst/decodebin-to-shmdata.hpp"
-#include "../gst/gst-pipeliner.hpp"
+#include "../gst/pipeliner.hpp"
 #include "../gst/unique-gst-element.hpp"
 #include "../quiddity/quiddity.hpp"
 #include "../shmdata/shmdata-connector.hpp"
@@ -40,14 +40,14 @@ class GstDecodebin : public Quiddity {
 
  private:
   CounterMap counter_{};
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
-  UGstElem shmsrc_;
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
+  gst::UGstElem shmsrc_;
   // registering connect/disconnect/can_sink_caps:
   std::string shmpath_to_decode_{};
   std::string shmpath_decoded_{};
   std::string cur_caps_{};
   ShmdataConnector shmcntr_;
-  std::unique_ptr<DecodebinToShmdata> decoder_{nullptr};
+  std::unique_ptr<gst::DecodebinToShmdata> decoder_{nullptr};
   std::unique_ptr<ShmdataFollower> shmw_sub_{};
   std::unique_ptr<ShmdataFollower> shmr_sub_{};
   ThreadedWrapper<> async_this_{};

@@ -18,7 +18,7 @@
  */
 
 #include "ltc-diff.hpp"
-#include "switcher/gst/gst-utils.hpp"
+#include "switcher/gst/utils.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCDiff,
@@ -123,7 +123,7 @@ bool LTCDiff::on_shmdata_disconnect(const std::string& shmpath) {
 }
 
 bool LTCDiff::can_sink_caps(const std::string& str_caps) {
-  return GstUtils::can_sink_caps("audioconvert", str_caps);
+  return gst::utils::can_sink_caps("audioconvert", str_caps);
 }
 
 LTCDiff::LTCReader::LTCReader(LTCDiff* quid, const std::string& shmpath, size_t index)

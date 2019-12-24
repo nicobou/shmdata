@@ -31,18 +31,19 @@
 #include "../utils/bool-log.hpp"
 
 namespace switcher {
+namespace gst {
 
-class GstPipe {
+class Pipe {
  public:
   using on_msg_async_cb_t = std::function<void(GstMessage*)>;
   using on_msg_sync_cb_t = std::function<GstBusSyncReply(GstMessage*)>;
-  GstPipe(GMainContext* context,
+  Pipe(GMainContext* context,
           GstBusSyncReply (*bus_sync_cb)(GstBus* /*bus*/, GstMessage* msg, gpointer user_data),
           gpointer user_data);
-  ~GstPipe();
-  GstPipe() = delete;
-  GstPipe(const GstPipe&) = delete;
-  GstPipe& operator=(const GstPipe&) = delete;
+  ~Pipe();
+  Pipe() = delete;
+  Pipe(const Pipe&) = delete;
+  Pipe& operator=(const Pipe&) = delete;
   bool play(bool play);
   BoolLog seek(gdouble position);
   BoolLog seek_key_frame(gdouble position);
@@ -76,5 +77,6 @@ class GstPipe {
   static gboolean gst_play(gpointer user_data);
 };
 
+}  // namespace gst
 }  // namespace switcher
 #endif

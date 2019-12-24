@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/gst/pipeliner.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/shmdata/gst-shm-tree-updater.hpp"
 #include "switcher/shmdata/shmdata-connector.hpp"
@@ -55,7 +55,7 @@ class RTMP : public Quiddity {
   std::unique_ptr<GstShmTreeUpdater> shmaudio_sub_{nullptr};  //!< Subscriber to audio shmdata
   std::unique_ptr<GstShmTreeUpdater> shmvideo_sub_{nullptr};  //!< Subscriber to video shmdata
 
-  std::unique_ptr<GstPipeliner> gst_pipeline_{nullptr};  //!< Gstreamer pipeline
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};  //!< Gstreamer pipeline
 
   PContainer::prop_id_t stream_app_url_id_{0};  //!< Stream URL property id
   std::string stream_app_url_{};                //!< RTMP url of the streaming application

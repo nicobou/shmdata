@@ -25,7 +25,7 @@
 #include "./audio-ring-buffer.hpp"
 #include "./drift-observer.hpp"
 #include "./jack-client.hpp"
-#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/gst/pipeliner.hpp"
 #include "switcher/shmdata/gst-shm-tree-updater.hpp"
 #include "switcher/shmdata/shmdata-connector.hpp"
 
@@ -84,7 +84,7 @@ class ShmdataToJack : public Quiddity {
   ShmdataConnector shmcntr_;
 
   // gst pipeline:
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
 
   // shmsubscriber (publishing to the information-tree):
   std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};

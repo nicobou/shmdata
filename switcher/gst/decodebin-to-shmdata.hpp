@@ -25,10 +25,11 @@
 #include <memory>
 #include <mutex>
 #include <string>
-#include "./gst-pipeliner.hpp"
+#include "./pipeliner.hpp"
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
+namespace gst {
 // this class has been designed for being possessed by a gpipe
 
 class DecodebinToShmdata {
@@ -38,7 +39,7 @@ class DecodebinToShmdata {
   using on_no_more_media_to_decode_t = std::function<void()>;
 
  public:
-  explicit DecodebinToShmdata(GstPipeliner* gpipe,
+  explicit DecodebinToShmdata(Pipeliner* gpipe,
                               on_configure_t on_gstshm_configure,
                               on_buffer_discarded_t on_buffer_discarded,
                               on_no_more_media_to_decode_t on_no_more_pads,
@@ -62,7 +63,7 @@ class DecodebinToShmdata {
   GstPad* main_pad_{nullptr};
   std::map<std::string, uint> media_counters_{};
   std::mutex media_counter_mutex_{};
-  GstPipeliner* gpipe_;
+  Pipeliner* gpipe_;
   bool decompress_;
   on_configure_t on_gstshm_configure_;
   on_buffer_discarded_t on_buffer_discarded_;
@@ -89,5 +90,6 @@ class DecodebinToShmdata {
   static gboolean rewind(gpointer user_data);
 };
 
+}  // namespace gst
 }  // namespace switcher
 #endif

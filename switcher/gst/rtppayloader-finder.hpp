@@ -24,11 +24,13 @@
 #include <string>
 
 namespace switcher {
-namespace GstRTPPayloaderFinder {
+namespace gst {
+namespace rtppayloaderfinder {
 
 GstElementFactory* get_factory(const std::string& caps_str);
 GstElementFactory* get_factory_by_caps(GstCaps* caps);
 
-}  // namespace GstRTPPayloaderFinder
+}  // namespace rtppayloaderfinder
+}  // namespace gst
 }  // namespace switcher
 #endif

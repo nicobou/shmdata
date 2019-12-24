@@ -20,6 +20,7 @@
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
+namespace gst {
 UGstElem::gst_element_handle::gst_element_handle(const std::string& class_name)
     : element(gst_element_factory_make(class_name.c_str(), nullptr)) {
   if (element) gst_object_ref(element);
@@ -42,7 +43,7 @@ BoolLog UGstElem::renew(UGstElem& element, const std::vector<std::string>& props
       std::make_unique<gst_element_handle>(element.class_name_);
   if (!tmp) return BoolLog(false, "issue making tmp element");
   for (auto& it : props)
-    GstUtils::apply_property_value(
+    gst::utils::apply_property_value(
         G_OBJECT(element.element_->get()), G_OBJECT(tmp->get()), it.c_str());
   std::swap(tmp, element.element_);
 
@@ -124,4 +125,5 @@ BoolLog UGstElem::unregister_notify_on_property_change(const std::string& gprop_
 
   return BoolLog(true);
 }
+}  // namespace gst
 }  // namespace switcher

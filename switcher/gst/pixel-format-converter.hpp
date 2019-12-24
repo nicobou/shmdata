@@ -22,20 +22,21 @@
 
 #include <memory>
 #include "../utils/safe-bool-idiom.hpp"
-#include "./gst-pipeliner.hpp"
+#include "./pipeliner.hpp"
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
-class GstPixelFormatConverter : public SafeBoolIdiom {
+namespace gst {
+class PixelFormatConverter : public SafeBoolIdiom {
  public:
-  using uptr = std::unique_ptr<GstPixelFormatConverter>;
-  GstPixelFormatConverter(const std::string& shmpath_to_convert,
+  using uptr = std::unique_ptr<PixelFormatConverter>;
+  PixelFormatConverter(const std::string& shmpath_to_convert,
                           const std::string& shmpath_converted,
                           const std::string& format_name);
-  GstPixelFormatConverter() = delete;
-  ~GstPixelFormatConverter() = default;
-  GstPixelFormatConverter(const GstPixelFormatConverter&) = delete;
-  GstPixelFormatConverter& operator=(const GstPixelFormatConverter&) = delete;
+  PixelFormatConverter() = delete;
+  ~PixelFormatConverter() = default;
+  PixelFormatConverter(const PixelFormatConverter&) = delete;
+  PixelFormatConverter& operator=(const PixelFormatConverter&) = delete;
 
   static bool can_sink_caps(const std::string& caps);
 
@@ -52,11 +53,12 @@ class GstPixelFormatConverter : public SafeBoolIdiom {
 
   // safe bool idiom:
   bool is_valid_{false};
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<Pipeliner> gst_pipeline_;
 
   std::string get_caps_str(const std::string& format_name) const;
   bool safe_bool_idiom() const final { return is_valid_; }
 };
 
+}  // namespace gst
 }  // namespace switcher
 #endif

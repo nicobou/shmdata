@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gst-utils.hpp"
+#include "./utils.hpp"
 #include <unistd.h>
 #include <algorithm>
 #include <string>
@@ -25,7 +25,10 @@
 #include "../utils/scope-exit.hpp"
 
 namespace switcher {
-GstElement* GstUtils::make_element(const gchar* class_name, GstElement** target_element) {
+namespace gst {
+namespace utils {
+
+GstElement* make_element(const gchar* class_name, GstElement** target_element) {
   GstElement* res = gst_element_factory_make(class_name, nullptr);
   if (res == nullptr) {
     return nullptr;
@@ -34,7 +37,7 @@ GstElement* GstUtils::make_element(const gchar* class_name, GstElement** target_
   return res;
 }
 
-bool GstUtils::link_static_to_request(GstElement* src, GstElement* sink) {
+bool link_static_to_request(GstElement* src, GstElement* sink) {
   GstPad* srcpad = gst_element_get_static_pad(src, "src");
   GstPad* sinkpad =
       gst_element_get_compatible_pad(sink,
@@ -44,10 +47,10 @@ bool GstUtils::link_static_to_request(GstElement* src, GstElement* sink) {
     if (GST_IS_PAD(src)) gst_object_unref(srcpad);
     if (GST_IS_PAD(sinkpad)) gst_object_unref(sinkpad);
   };
-  return GstUtils::check_pad_link_return(gst_pad_link(srcpad, sinkpad));
+  return check_pad_link_return(gst_pad_link(srcpad, sinkpad));
 }
 
-bool GstUtils::link_static_to_request(GstPad* srcpad, GstElement* sink) {
+bool link_static_to_request(GstPad* srcpad, GstElement* sink) {
   GstPad* sinkpad =
       gst_element_get_compatible_pad(sink,
                                      srcpad,
@@ -56,38 +59,38 @@ bool GstUtils::link_static_to_request(GstPad* srcpad, GstElement* sink) {
     if (GST_IS_PAD(sinkpad)) gst_object_unref(sinkpad);
   };
 
-  return GstUtils::check_pad_link_return(gst_pad_link(srcpad, sinkpad));
+  return check_pad_link_return(gst_pad_link(srcpad, sinkpad));
 }
 
-BoolLog GstUtils::check_pad_link_return(GstPadLinkReturn res) {
+BoolLog check_pad_link_return(GstPadLinkReturn res) {
   if (res == GST_PAD_LINK_OK) return BoolLog(true);
   std::string log;
   switch (res) {
     case GST_PAD_LINK_WRONG_HIERARCHY:
-      log = "GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_HIERARCHY";
+      log = "check_pad_link_return - GST_PAD_LINK_WRONG_HIERARCHY";
       break;
     case GST_PAD_LINK_WAS_LINKED:
-      log = "GstUtils::check_pad_link_return - GST_PAD_LINK_WAS_LINKED";
+      log = "check_pad_link_return - GST_PAD_LINK_WAS_LINKED";
       break;
     case GST_PAD_LINK_WRONG_DIRECTION:
-      log = "GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_DIRECTION";
+      log = "check_pad_link_return - GST_PAD_LINK_WRONG_DIRECTION";
       break;
     case GST_PAD_LINK_NOFORMAT:
-      log = "GstUtils::check_pad_link_return - GST_PAD_LINK_NOFORMAT";
+      log = "check_pad_link_return - GST_PAD_LINK_NOFORMAT";
       break;
     case GST_PAD_LINK_NOSCHED:
-      log = "GstUtils::check_pad_link_return - GST_PAD_LINK_NOSCHED";
+      log = "check_pad_link_return - GST_PAD_LINK_NOSCHED";
       break;
     case GST_PAD_LINK_REFUSED:
-      log = "GstUtils::check_pad_link_return - GST_PAD_LINK_REFUSED";
+      log = "check_pad_link_return - GST_PAD_LINK_REFUSED";
       break;
     default:
-      log = "GstUtils::check_pad_link_return - UNKNOWN ERROR";
+      log = "check_pad_link_return - UNKNOWN ERROR";
   }
   return BoolLog(false, log);
 }
 
-void GstUtils::unlink_pad(GstPad* pad) {
+void unlink_pad(GstPad* pad) {
   GstPad* peer;
   if ((peer = gst_pad_get_peer(pad))) {
     if (gst_pad_get_direction(pad) == GST_PAD_SRC)
@@ -99,7 +102,7 @@ void GstUtils::unlink_pad(GstPad* pad) {
   gst_object_unref(pad);  // for iterator
 }
 
-void GstUtils::release_request_pad(GstPad* pad, gpointer user_data) {
+void release_request_pad(GstPad* pad, gpointer user_data) {
   // checking if the pad has been requested and releasing it needed
   GstPadTemplate* pad_templ = gst_pad_get_pad_template(pad);
   if (nullptr != pad_templ && GST_PAD_TEMPLATE_PRESENCE(pad_templ) == GST_PAD_REQUEST) {
@@ -110,7 +113,7 @@ void GstUtils::release_request_pad(GstPad* pad, gpointer user_data) {
   gst_object_unref(pad);  // for iterator
 }
 
-void GstUtils::clean_element(GstElement* element) {
+void clean_element(GstElement* element) {
   if (nullptr == element) return;
   if (!GST_IS_ELEMENT(element)) {
     return;
@@ -130,7 +133,7 @@ void GstUtils::clean_element(GstElement* element) {
   }
 }
 
-void GstUtils::wait_state_changed(GstElement* bin) {
+void wait_state_changed(GstElement* bin) {
   if (!GST_IS_BIN(bin)) {
     return;
   }
@@ -148,9 +151,9 @@ void GstUtils::wait_state_changed(GstElement* bin) {
   return;
 }
 
-BoolLog GstUtils::sync_state_with_parent(GstElement* element) {
+BoolLog sync_state_with_parent(GstElement* element) {
   if (!GST_IS_ELEMENT(element)) {
-    return BoolLog(false, "GstUtils::sync_state_with_parent, arg is not an element");
+    return BoolLog(false, "sync_state_with_parent, arg is not an element");
   }
 
   GstElement* parent = GST_ELEMENT(GST_ELEMENT_PARENT(element));
@@ -160,11 +163,11 @@ BoolLog GstUtils::sync_state_with_parent(GstElement* element) {
     else
       gst_element_sync_state_with_parent(element);
   } else
-    return BoolLog(false, "GstUtils::sync_state_with_parent, cannot sync an orphan element");
+    return BoolLog(false, "sync_state_with_parent, cannot sync an orphan element");
   return BoolLog(true);
 }
 
-void GstUtils::set_element_property_in_bin(GstElement* bin,
+void set_element_property_in_bin(GstElement* bin,
                                            const gchar* factory_name,
                                            const gchar* property_name,
                                            gboolean property_value) {
@@ -180,14 +183,14 @@ void GstUtils::set_element_property_in_bin(GstElement* bin,
       }
 
       if (GST_IS_BIN(current_element)) {  // recursive
-        GstUtils::set_element_property_in_bin(
+        set_element_property_in_bin(
             current_element, factory_name, property_name, property_value);
       }
     }
   }
 }
 
-GstElement* GstUtils::get_first_element_from_factory_name(GstBin* bin,
+GstElement* get_first_element_from_factory_name(GstBin* bin,
                                                           const std::string& factory_name) {
   if (!GST_IS_BIN(bin)) {
     return nullptr;
@@ -208,7 +211,7 @@ GstElement* GstUtils::get_first_element_from_factory_name(GstBin* bin,
   return nullptr;
 }
 
-gchar* GstUtils::gvalue_serialize(const GValue* val) {
+gchar* gvalue_serialize(const GValue* val) {
   if (!G_IS_VALUE(val)) return nullptr;
   gchar* val_str;
   if (G_VALUE_TYPE(val) == G_TYPE_STRING)
@@ -218,7 +221,7 @@ gchar* GstUtils::gvalue_serialize(const GValue* val) {
   return val_str;
 }
 
-GSource* GstUtils::g_idle_add_full_with_context(GMainContext* context,
+GSource* g_idle_add_full_with_context(GMainContext* context,
                                                 gint priority,
                                                 GSourceFunc function,
                                                 gpointer data,
@@ -233,7 +236,7 @@ GSource* GstUtils::g_idle_add_full_with_context(GMainContext* context,
   return source;
 }
 
-GSource* GstUtils::g_timeout_add_to_context(guint interval,
+GSource* g_timeout_add_to_context(guint interval,
                                             GSourceFunc function,
                                             gpointer data,
                                             GMainContext* context) {
@@ -246,7 +249,7 @@ GSource* GstUtils::g_timeout_add_to_context(guint interval,
   return source;
 }
 
-BoolLog GstUtils::apply_property_value(GObject* g_object_master,
+BoolLog apply_property_value(GObject* g_object_master,
                                        GObject* g_object_slave,
                                        const char* property_name) {
   if (g_object_master == nullptr || g_object_slave == nullptr)
@@ -281,7 +284,7 @@ BoolLog GstUtils::apply_property_value(GObject* g_object_master,
   return BoolLog(true);
 }
 
-void GstUtils::free_g_enum_values(GEnumValue* target_enum) {
+void free_g_enum_values(GEnumValue* target_enum) {
   if (nullptr == target_enum) return;
   gint i = 0;
   while (nullptr != target_enum[i].value_name) {
@@ -291,7 +294,7 @@ void GstUtils::free_g_enum_values(GEnumValue* target_enum) {
   }
 }
 
-void GstUtils::element_factory_list_to_g_enum(GEnumValue* target_enum,
+void element_factory_list_to_g_enum(GEnumValue* target_enum,
                                               GstElementFactoryListType type,
                                               GstRank minrank,
                                               bool insert_none_first,
@@ -326,7 +329,7 @@ void GstUtils::element_factory_list_to_g_enum(GEnumValue* target_enum,
 }
 
 std::pair<std::vector<std::string> /*names*/, std::vector<std::string> /*nicks*/>
-GstUtils::element_factory_list_to_pair_of_vectors(GstElementFactoryListType type,
+element_factory_list_to_pair_of_vectors(GstElementFactoryListType type,
                                                   GstRank minrank,
                                                   bool insert_none_first,
                                                   const std::vector<std::string>& black_list) {
@@ -355,7 +358,7 @@ GstUtils::element_factory_list_to_pair_of_vectors(GstElementFactoryListType type
   return std::make_pair(names, nicks);
 }
 
-bool GstUtils::can_sink_caps(std::string factory_name, std::string caps) {
+bool can_sink_caps(std::string factory_name, std::string caps) {
   if (caps.empty()) {
     return false;
   }
@@ -373,7 +376,7 @@ bool GstUtils::can_sink_caps(std::string factory_name, std::string caps) {
   return true;
 }
 
-const GValue* GstUtils::get_gst_element_capability(const std::string& element_type,
+const GValue* get_gst_element_capability(const std::string& element_type,
                                                    const std::string& capability,
                                                    GstPadDirection direction) {
   GstElementFactory* factory = gst_element_factory_find(element_type.c_str());
@@ -392,7 +395,7 @@ const GValue* GstUtils::get_gst_element_capability(const std::string& element_ty
   return nullptr;
 }
 
-std::vector<std::string> GstUtils::get_gst_element_capability_as_list(
+std::vector<std::string> get_gst_element_capability_as_list(
     const std::string& element_type, const std::string& capability, GstPadDirection direction) {
   std::vector<std::string> values;
   const GValue* value_list = get_gst_element_capability(element_type, capability, direction);
@@ -404,7 +407,7 @@ std::vector<std::string> GstUtils::get_gst_element_capability_as_list(
   return values;
 }
 
-std::pair<int, int> GstUtils::get_gst_element_capability_as_range(const std::string& element_type,
+std::pair<int, int> get_gst_element_capability_as_range(const std::string& element_type,
                                                                   const std::string& capability,
                                                                   GstPadDirection direction) {
   std::pair<int, int> range;
@@ -416,10 +419,12 @@ std::pair<int, int> GstUtils::get_gst_element_capability_as_range(const std::str
   return range;
 }
 
-int GstUtils::get_nthreads_property_value() {
+int get_nthreads_property_value() {
   return GST_CHECK_VERSION(1, 12, 0)
              ? std::min<int>(4, static_cast<int>(sysconf(_SC_NPROCESSORS_CONF)) - 1)
              : 0;
 }
 
+}  // namespace utils
+}  // namespace gst
 }  // namespace switcher

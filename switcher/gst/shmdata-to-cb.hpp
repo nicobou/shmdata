@@ -24,11 +24,12 @@
 #include <map>
 #include <mutex>
 #include "../utils/safe-bool-idiom.hpp"
-#include "./gst-pipeliner.hpp"
+#include "./pipeliner.hpp"
 
 namespace switcher {
+namespace gst {
 
-class GstShmdataToCb : public SafeBoolIdiom {
+class ShmdataToCb : public SafeBoolIdiom {
  public:
   using id_t = size_t;
   using data_cb_t = std::function<void(void*, size_t)>;
@@ -36,14 +37,14 @@ class GstShmdataToCb : public SafeBoolIdiom {
   // on_caps can be used for making a filter that will be inserted between the
   // shmdata reader
   // and the callback
-  // After fun has been invoked, filter is owned by the created GstShmdataToCb
+  // After fun has been invoked, filter is owned by the created ShmdataToCb
   // object
-  GstShmdataToCb(const std::string& shmpath, on_caps_cb_t fun);
-  ~GstShmdataToCb() = default;
-  GstShmdataToCb() = delete;
-  GstShmdataToCb(const GstShmdataToCb&) = delete;
-  GstShmdataToCb(GstShmdataToCb&&) = delete;
-  GstShmdataToCb& operator=(const GstShmdataToCb&) = delete;
+  ShmdataToCb(const std::string& shmpath, on_caps_cb_t fun);
+  ~ShmdataToCb() = default;
+  ShmdataToCb() = delete;
+  ShmdataToCb(const ShmdataToCb&) = delete;
+  ShmdataToCb(ShmdataToCb&&) = delete;
+  ShmdataToCb& operator=(const ShmdataToCb&) = delete;
 
   id_t add_cb(data_cb_t fun);
   bool remove_cb(id_t cb_id);
@@ -54,7 +55,7 @@ class GstShmdataToCb : public SafeBoolIdiom {
   id_t counter_{0};
   bool is_valid_{false};
   bool safe_bool_idiom() const { return is_valid_; }
-  GstPipeliner pipe_;
+  Pipeliner pipe_;
   on_caps_cb_t filter_cb_;
   std::map<id_t, data_cb_t> data_cbs_{};
   std::mutex mtx_{};
@@ -71,5 +72,6 @@ class GstShmdataToCb : public SafeBoolIdiom {
                       gpointer /*user_data*/);
 };
 
+}  // namespace gst
 }  // namespace switcher
 #endif

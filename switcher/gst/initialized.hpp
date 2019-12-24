@@ -17,24 +17,23 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gst-initialized.hpp"
+#ifndef __SWITCHER_GST_INITIALIZED_H__
+#define __SWITCHER_GST_INITIALIZED_H__
+
+#include <string>
+#include <gst/gst.h>
 
 namespace switcher {
-GstInitialized::GstInitialized() {
-  if (!gst_is_initialized()) gst_init(nullptr, nullptr);
-  registry_ = gst_registry_get();
-  // TODO add option for scanning a path
-  gst_registry_scan_path(registry_, "/usr/local/lib/gstreamer-1.0/");
-  gst_registry_scan_path(registry_, "/usr/lib/gstreamer-1.0/");
-}
+namespace gst {
+class Initialized {
+ public:
+  Initialized();
+  bool set_plugin_as_primary(const std::string& plugin, int priority);
 
-bool GstInitialized::set_plugin_as_primary(const std::string& plugin_name, int priority) {
-  GstPluginFeature* plugin = gst_registry_lookup_feature(registry_, plugin_name.c_str());
-  if(plugin != nullptr) {
-    gst_plugin_feature_set_rank(plugin, GST_RANK_PRIMARY + priority);
-    gst_object_unref(plugin);
-    return true;
-  }
-  return false;
-}
+ private:
+  GstRegistry* registry_;
+};
+}  // namespace gst
 }  // namespace switcher
+
+#endif

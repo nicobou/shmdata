@@ -32,7 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Cropper,
 Cropper::Cropper(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
       left_id_(pmanage<MPtr(&PContainer::make_int)>("left",
                                                     [this](const int val) {
                                                       left_ = val;
@@ -164,9 +164,9 @@ bool Cropper::on_shmdata_disconnect() {
 }
 
 bool Cropper::remake_elements() {
-  if (!UGstElem::renew(shmsrc_) || !UGstElem::renew(queue_element_) ||
-      !UGstElem::renew(cropper_element_) || !UGstElem::renew(scaler_element_) ||
-      !UGstElem::renew(shmsink_)) {
+  if (!gst::UGstElem::renew(shmsrc_) || !gst::UGstElem::renew(queue_element_) ||
+      !gst::UGstElem::renew(cropper_element_) || !gst::UGstElem::renew(scaler_element_) ||
+      !gst::UGstElem::renew(shmsink_)) {
     error("cropper could not renew GStreamer elements");
     return false;
   }
@@ -177,7 +177,7 @@ bool Cropper::create_pipeline() {
   if (gst_pipeline_ != nullptr) {
     gst_pipeline_->play(false);
   }
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
   if (!remake_elements()) {
     return false;
   };
@@ -219,7 +219,7 @@ bool Cropper::create_pipeline() {
 }
 
 bool Cropper::can_sink_caps(const std::string& caps) {
-  return GstUtils::can_sink_caps("videocrop", caps);
+  return gst::utils::can_sink_caps("videocrop", caps);
 }
 
 }  // namespace switcher

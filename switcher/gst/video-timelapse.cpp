@@ -17,20 +17,21 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gst-video-timelapse.hpp"
+#include "./video-timelapse.hpp"
 #include <iostream>
 #include "../quiddity/property/gprop-to-prop.hpp"
 #include "../quiddity/quiddity.hpp"
 #include "../utils/scope-exit.hpp"
-#include "./gst-utils.hpp"
+#include "./utils.hpp"
 
 namespace switcher {
-GstVideoTimelapse::GstVideoTimelapse(const GstVideoTimelapseConfig& config,
+namespace gst {
+VideoTimelapse::VideoTimelapse(const VideoTimelapseConfig& config,
                                      Quiddity* quid,
                                      on_new_file_t on_new_file)
     : config_(config),
       on_new_file_(on_new_file),
-      gst_pipeline_(std::make_unique<GstPipeliner>(
+      gst_pipeline_(std::make_unique<Pipeliner>(
           [this](GstMessage* msg) {
             if (msg->type != GST_MESSAGE_ELEMENT) return;
             const GstStructure* s = gst_message_get_structure(msg);
@@ -41,7 +42,7 @@ GstVideoTimelapse::GstVideoTimelapse(const GstVideoTimelapseConfig& config,
           nullptr)) {
   GError* error = nullptr;
 
-  auto nb_threads_gst_element = GstUtils::get_nthreads_property_value();
+  auto nb_threads_gst_element = gst::utils::get_nthreads_property_value();
   std::string nthreads_property{};
   if (nb_threads_gst_element > 0) {
     nthreads_property += "n-threads=" + std::to_string(nb_threads_gst_element);
@@ -83,7 +84,7 @@ GstVideoTimelapse::GstVideoTimelapse(const GstVideoTimelapseConfig& config,
     g_error_free(error);
   }
   GstElement* shmdatasrc =
-      GstUtils::get_first_element_from_factory_name(GST_BIN(bin), "shmdatasrc");
+      gst::utils::get_first_element_from_factory_name(GST_BIN(bin), "shmdatasrc");
   shmsrc_sub_ = std::make_unique<GstShmTreeUpdater>(
       quid, shmdatasrc, config_.orig_shmpath_, GstShmTreeUpdater::Direction::reader);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), bin);
@@ -92,4 +93,5 @@ GstVideoTimelapse::GstVideoTimelapse(const GstVideoTimelapseConfig& config,
   is_valid_ = true;
 }
 
+}  // namespace gst
 }  // namespace switcher

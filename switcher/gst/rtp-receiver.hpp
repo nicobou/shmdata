@@ -25,14 +25,15 @@
 #include "./decodebin-to-shmdata.hpp"
 
 namespace switcher {
-class RtpSession;
+namespace gst {
+class RTPSession;
 
 class RTPReceiver {
  public:
   using id_t = size_t;
   using configure_shmsink_cb_t = std::function<void(
       GstElement* el, const std::string& media_type, const std::string& media_label)>;
-  RTPReceiver(RtpSession* session,
+  RTPReceiver(RTPSession* session,
               const std::string& rtpshmpath,
               configure_shmsink_cb_t cb,
               bool decompress);
@@ -43,7 +44,7 @@ class RTPReceiver {
   RTPReceiver& operator=(const RTPReceiver&) = delete;
 
  private:
-  RtpSession* session_;
+  RTPSession* session_;
   std::string rtpshmpath_;
   GstElement* shmdatasrc_;
   GstElement* typefind_;
@@ -59,5 +60,6 @@ class RTPReceiver {
   static GstCaps* request_pt_map(GstElement* sess, guint session, guint pt, gpointer user_data);
 };
 
+}  // namespace gst
 }  // namespace switcher
 #endif

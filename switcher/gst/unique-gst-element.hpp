@@ -27,9 +27,10 @@
 #include <vector>
 #include "../utils/bool-log.hpp"
 #include "../utils/safe-bool-idiom.hpp"
-#include "./gst-utils.hpp"
+#include "./utils.hpp"
 
 namespace switcher {
+namespace gst {
 class UGstElem : public SafeBoolIdiom {
  public:
   explicit UGstElem(const gchar* class_name);
@@ -86,5 +87,6 @@ class UGstElem : public SafeBoolIdiom {
   bool safe_bool_idiom() const final;
 };
 
+}  // namespace gst
 }  // namespace switcher
 #endif

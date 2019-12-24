@@ -23,7 +23,8 @@
 #include "../utils/string-utils.hpp"
 
 namespace switcher {
-DecodebinToShmdata::DecodebinToShmdata(GstPipeliner* gpipe,
+namespace gst {
+DecodebinToShmdata::DecodebinToShmdata(Pipeliner* gpipe,
                                        on_configure_t on_gstshm_configure,
                                        on_buffer_discarded_t on_buffer_discarded,
                                        on_no_more_media_to_decode_t on_no_more_pads,
@@ -70,9 +71,9 @@ void DecodebinToShmdata::on_pad_added(GstElement* object, GstPad* pad, gpointer 
   On_scope_exit { gst_caps_unref(padcaps); };
   if (gst_caps_can_intersect(rtpcaps, padcaps)) {
     // asking rtpbin to send an event when a packet is lost (do-lost property)
-    GstUtils::set_element_property_in_bin(object, "gstrtpbin", "do-lost", TRUE);
+    gst::utils::set_element_property_in_bin(object, "gstrtpbin", "do-lost", TRUE);
     GstElement* rtpgstdepay;
-    GstUtils::make_element("rtpgstdepay", &rtpgstdepay);
+    gst::utils::make_element("rtpgstdepay", &rtpgstdepay);
     // adding a probe for discarding uncomplete packets
     // FIXME (test if drop buffer is necessary)
     GstPad* depaysrcpad = gst_element_get_static_pad(rtpgstdepay, "src");
@@ -91,10 +92,10 @@ void DecodebinToShmdata::on_pad_added(GstElement* object, GstPad* pad, gpointer 
                       DecodebinToShmdata::gstrtpdepay_event_probe_cb,
                       context,
                       nullptr);
-    GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad));
+    gst::utils::check_pad_link_return(gst_pad_link(pad, sinkpad));
     gst_object_unref(sinkpad);
     GstPad* srcpad = gst_element_get_static_pad(rtpgstdepay, "src");
-    GstUtils::sync_state_with_parent(rtpgstdepay);
+    gst::utils::sync_state_with_parent(rtpgstdepay);
     gst_element_get_state(rtpgstdepay, nullptr, nullptr, GST_CLOCK_TIME_NONE);
     context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), srcpad);
     gst_object_unref(srcpad);
@@ -102,28 +103,28 @@ void DecodebinToShmdata::on_pad_added(GstElement* object, GstPad* pad, gpointer 
   } else if (gst_caps_can_intersect(glmemorycaps, padcaps)) {
     // Create gldownload element to download the GPU-decoded frames on the CPU
     GstElement* gldownload;
-    GstUtils::make_element("gldownload", &gldownload);
+    gst::utils::make_element("gldownload", &gldownload);
     gst_bin_add(GST_BIN(GST_ELEMENT_PARENT(object)), gldownload);
     GstPad* glsinkpad = gst_element_get_static_pad(gldownload, "sink");
-    GstUtils::check_pad_link_return(gst_pad_link(pad, glsinkpad));
+    gst::utils::check_pad_link_return(gst_pad_link(pad, glsinkpad));
     gst_object_unref(glsinkpad);
     GstPad* glsrcpad = gst_element_get_static_pad(gldownload, "src");
-    GstUtils::sync_state_with_parent(gldownload);
+    gst::utils::sync_state_with_parent(gldownload);
     gst_element_get_state(gldownload, nullptr, nullptr, GST_CLOCK_TIME_NONE);
 
     // Create capsfilter element to force output caps to be 'video/x-raw'
     GstElement* capsfilter;
-    GstUtils::make_element("capsfilter", &capsfilter);
+    gst::utils::make_element("capsfilter", &capsfilter);
     GstCaps* videocaps = gst_caps_from_string("video/x-raw");
     g_object_set(G_OBJECT(capsfilter), "caps", videocaps, nullptr);
     gst_object_unref(videocaps);
     gst_bin_add(GST_BIN(GST_ELEMENT_PARENT(object)), capsfilter);
     GstPad* filtersinkpad = gst_element_get_static_pad(capsfilter, "sink");
-    GstUtils::check_pad_link_return(gst_pad_link(glsrcpad, filtersinkpad));
+    gst::utils::check_pad_link_return(gst_pad_link(glsrcpad, filtersinkpad));
     gst_object_unref(glsrcpad);
     gst_object_unref(filtersinkpad);
     GstPad* filtersrcpad = gst_element_get_static_pad(capsfilter, "src");
-    GstUtils::sync_state_with_parent(capsfilter);
+    gst::utils::sync_state_with_parent(capsfilter);
     gst_element_get_state(capsfilter, nullptr, nullptr, GST_CLOCK_TIME_NONE);
 
     context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), filtersrcpad);
@@ -225,7 +226,7 @@ void DecodebinToShmdata::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
     }
   }
   GstElement* shmdatasink;
-  GstUtils::make_element("shmdatasink", &shmdatasink);
+  gst::utils::make_element("shmdatasink", &shmdatasink);
   gst_bin_add(GST_BIN(bin), shmdatasink);
   GstPad* sinkpad = gst_element_get_static_pad(shmdatasink, "sink");
   On_scope_exit { gst_object_unref(sinkpad); };
@@ -241,7 +242,7 @@ void DecodebinToShmdata::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
       media_name = padname_splitted[0];
   }
   if (on_gstshm_configure_) on_gstshm_configure_(shmdatasink, media_name, media_label_);
-  GstUtils::sync_state_with_parent(shmdatasink);
+  gst::utils::sync_state_with_parent(shmdatasink);
 }
 
 gboolean DecodebinToShmdata::eos_probe_cb(GstPad* pad, GstEvent* event, gpointer user_data) {
@@ -250,7 +251,7 @@ gboolean DecodebinToShmdata::eos_probe_cb(GstPad* pad, GstEvent* event, gpointer
   if (GST_EVENT_TYPE(event) == GST_EVENT_EOS) {
     if (context->main_pad_ == pad)
       // FIXME
-      // GstUtils::g_idle_add_full_with_context(context->
+      // gst::utils::g_idle_add_full_with_context(context->
       //                                        gpipe_->get_g_main_context(),
       //                                        G_PRIORITY_DEFAULT_IDLE,
       //                                        (GSourceFunc)
@@ -310,4 +311,5 @@ void DecodebinToShmdata::on_no_more_pads(GstElement* object, gpointer user_data)
   if (context->on_no_more_pads_) context->on_no_more_pads_();
 }
 
+}  // namespace gst
 }  // namespace switcher

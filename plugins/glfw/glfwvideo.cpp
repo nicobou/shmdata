@@ -53,7 +53,7 @@ std::atomic<int> GLFWVideo::instance_counter_(0);
 GLFWVideo::GLFWVideo(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
       background_config_id_(pmanage<MPtr(&PContainer::make_group)>(
           "background_config",
           "Background configuration",
@@ -1110,7 +1110,7 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
   GstCaps* usercaps = gst_caps_from_string("video/x-raw,format=RGBA");
   g_object_set(G_OBJECT(capsfilter_.get_raw()), "caps", usercaps, nullptr);
 
-  auto nthreads_videoconvert = GstUtils::get_nthreads_property_value();
+  auto nthreads_videoconvert = gst::utils::get_nthreads_property_value();
   if (nthreads_videoconvert > 0) {
     g_object_set(G_OBJECT(videoconvert_.get_raw()), "n-threads", nthreads_videoconvert, nullptr);
   }
@@ -1146,17 +1146,18 @@ bool GLFWVideo::on_shmdata_disconnect() {
   cur_caps_.clear();
   shm_sub_.reset();
   shm_follower_.reset();
-  On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };
+  On_scope_exit { gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr); };
 
   return remake_elements();
 }
 
 bool GLFWVideo::remake_elements() {
   remove_gst_properties();
-  if (!UGstElem::renew(shmsrc_) || !UGstElem::renew(queue_) || !UGstElem::renew(videoconvert_) ||
-      !UGstElem::renew(capsfilter_) || !UGstElem::renew(gamma_, {"gamma"}) ||
-      !UGstElem::renew(videobalance_, {"contrast", "brightness", "hue", "saturation"}) ||
-      !UGstElem::renew(fakesink_)) {
+  if (!gst::UGstElem::renew(shmsrc_) || !gst::UGstElem::renew(queue_) ||
+      !gst::UGstElem::renew(videoconvert_) || !gst::UGstElem::renew(capsfilter_) ||
+      !gst::UGstElem::renew(gamma_, {"gamma"}) ||
+      !gst::UGstElem::renew(videobalance_, {"contrast", "brightness", "hue", "saturation"}) ||
+      !gst::UGstElem::renew(fakesink_)) {
     error("glfwin could not renew GStreamer elements");
     return false;
   }
@@ -1203,7 +1204,7 @@ inline void GLFWVideo::on_handoff_cb(GstElement* /*object*/,
 }
 
 bool GLFWVideo::can_sink_caps(std::string caps) {
-  return GstUtils::can_sink_caps("videoconvert", caps);
+  return gst::utils::can_sink_caps("videoconvert", caps);
 };
 
 GLFWVideo::GUIConfiguration::GUIConfiguration(GLFWVideo* window)

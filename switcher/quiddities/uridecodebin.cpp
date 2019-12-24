@@ -18,7 +18,7 @@
  */
 
 #include "./uridecodebin.hpp"
-#include "../gst/gst-utils.hpp"
+#include "../gst/utils.hpp"
 #include "../utils/scope-exit.hpp"
 
 namespace switcher {
@@ -42,8 +42,8 @@ Uridecodebin::Uridecodebin(quid::Config&& conf)
       on_msg_sync_cb_(nullptr),
       on_error_cb_([this](GstObject*, GError*) { this->error_ = true; }),
       gst_pipeline_(
-          std::make_unique<GstPipeliner>(on_msg_async_cb_, on_msg_sync_cb_, on_error_cb_)) {
-  if (!GstUtils::make_element("uridecodebin", &uridecodebin_)) {
+          std::make_unique<gst::Pipeliner>(on_msg_async_cb_, on_msg_sync_cb_, on_error_cb_)) {
+  if (!gst::utils::make_element("uridecodebin", &uridecodebin_)) {
     is_valid_ = false;
     return;
   }
@@ -72,7 +72,7 @@ Uridecodebin::Uridecodebin(quid::Config&& conf)
 }
 
 void Uridecodebin::init_uridecodebin() {
-  if (!GstUtils::make_element("uridecodebin", &uridecodebin_)) {
+  if (!gst::utils::make_element("uridecodebin", &uridecodebin_)) {
     warning("cannot create uridecodebin");
     return;
   }
@@ -104,7 +104,7 @@ void Uridecodebin::init_uridecodebin() {
 }
 
 void Uridecodebin::destroy_uridecodebin() {
-  gst_pipeline_ = std::make_unique<GstPipeliner>(on_msg_async_cb_, on_msg_sync_cb_, on_error_cb_);
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(on_msg_async_cb_, on_msg_sync_cb_, on_error_cb_);
   shm_subs_.clear();
 }
 
@@ -203,15 +203,15 @@ void Uridecodebin::decodebin_pad_added_cb(GstElement* object, GstPad* pad, gpoin
       static_cast<GstElement*>(g_object_get_data(G_OBJECT(object), "shmdatasink"));
 
   GstElement* imagefreeze = nullptr;
-  GstUtils::make_element("imagefreeze", &imagefreeze);
+  gst::utils::make_element("imagefreeze", &imagefreeze);
   gst_bin_add_many(GST_BIN(bin), imagefreeze, shmdatasink, nullptr);
 
   GstPad* sinkpad = gst_element_get_static_pad(imagefreeze, "sink");
   On_scope_exit { gst_object_unref(sinkpad); };
   gst_pad_link(pad, sinkpad);
   gst_element_link(imagefreeze, shmdatasink);
-  GstUtils::sync_state_with_parent(imagefreeze);
-  GstUtils::sync_state_with_parent(shmdatasink);
+  gst::utils::sync_state_with_parent(imagefreeze);
+  gst::utils::sync_state_with_parent(shmdatasink);
 }
 
 void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
@@ -224,11 +224,11 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
 
   debug("uridecodebin new pad name is %", padname);
   GstElement* shmdatasink = nullptr;
-  GstUtils::make_element("shmdatasink", &shmdatasink);
+  gst::utils::make_element("shmdatasink", &shmdatasink);
 
   if (stream_is_image) {
     GstElement* decodebin = nullptr;
-    GstUtils::make_element("decodebin", &decodebin);
+    gst::utils::make_element("decodebin", &decodebin);
     g_signal_connect(G_OBJECT(decodebin),
                      "pad-added",
                      (GCallback)Uridecodebin::decodebin_pad_added_cb,
@@ -237,7 +237,7 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
     g_object_set_data(G_OBJECT(decodebin), "shmdatasink", shmdatasink);
     g_object_set_data(G_OBJECT(decodebin), "bin", bin);
     gst_bin_add(GST_BIN(bin), decodebin);
-    GstUtils::sync_state_with_parent(decodebin);
+    gst::utils::sync_state_with_parent(decodebin);
     GstPad* sinkpad = gst_element_get_static_pad(decodebin, "sink");
     On_scope_exit { gst_object_unref(sinkpad); };
     if (GST_PAD_LINK_OK != gst_pad_link(pad, sinkpad))
@@ -260,7 +260,7 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
 
   shm_subs_.emplace_back(std::make_unique<GstShmTreeUpdater>(
       this, shmdatasink, shmpath, GstShmTreeUpdater::Direction::writer));
-  if (!stream_is_image) GstUtils::sync_state_with_parent(shmdatasink);
+  if (!stream_is_image) gst::utils::sync_state_with_parent(shmdatasink);
 }
 
 void Uridecodebin::uridecodebin_pad_added_cb(GstElement* object, GstPad* pad, gpointer user_data) {
@@ -269,10 +269,10 @@ void Uridecodebin::uridecodebin_pad_added_cb(GstElement* object, GstPad* pad, gp
   On_scope_exit { gst_caps_unref(newcaps); };
   if (gst_caps_can_intersect(context->rtpgstcaps_, newcaps)) {
     // asking rtpbin to send an event when a packet is lost (do-lost property)
-    GstUtils::set_element_property_in_bin(object, "gstrtpbin", "do-lost", TRUE);
+    gst::utils::set_element_property_in_bin(object, "gstrtpbin", "do-lost", TRUE);
     context->debug("custom rtp stream found");
     GstElement* rtpgstdepay = nullptr;
-    GstUtils::make_element("rtpgstdepay", &rtpgstdepay);
+    gst::utils::make_element("rtpgstdepay", &rtpgstdepay);
 
     // adding a probe for discarding uncomplete packets
     GstPad* depaysrcpad = gst_element_get_static_pad(rtpgstdepay, "src");
@@ -280,9 +280,9 @@ void Uridecodebin::uridecodebin_pad_added_cb(GstElement* object, GstPad* pad, gp
     gst_bin_add(GST_BIN(context->gst_pipeline_->get_pipeline()), rtpgstdepay);
     GstPad* sinkpad = gst_element_get_static_pad(rtpgstdepay, "sink");
     On_scope_exit { gst_object_unref(sinkpad); };
-    GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad));
+    gst::utils::check_pad_link_return(gst_pad_link(pad, sinkpad));
     GstPad* srcpad = gst_element_get_static_pad(rtpgstdepay, "src");
-    GstUtils::sync_state_with_parent(rtpgstdepay);
+    gst::utils::sync_state_with_parent(rtpgstdepay);
     On_scope_exit { gst_object_unref(srcpad); };
     gst_element_get_state(rtpgstdepay, nullptr, nullptr, GST_CLOCK_TIME_NONE);
     context->pad_to_shmdata_writer(context->gst_pipeline_->get_pipeline(), srcpad);

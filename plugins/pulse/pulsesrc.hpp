@@ -25,7 +25,7 @@
 #include <condition_variable>
 #include <mutex>
 #include "switcher/gst/glibmainloop.hpp"
-#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/gst/pipeliner.hpp"
 #include "switcher/gst/unique-gst-element.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable-quiddity.hpp"
@@ -52,11 +52,11 @@ class PulseSrc : public Quiddity, public StartableQuiddity {
     std::string bus_path_{};
   } DeviceDescription;
 
-  std::unique_ptr<GlibMainLoop> mainloop_;
+  std::unique_ptr<gst::GlibMainLoop> mainloop_;
   std::string shmpath_{};
-  UGstElem pulsesrc_{"pulsesrc"};
-  UGstElem shmsink_{"shmdatasink"};
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  gst::UGstElem pulsesrc_{"pulsesrc"};
+  gst::UGstElem shmsink_{"shmdatasink"};
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
   std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
   // pulse devices
   bool connected_to_pulse_{false};

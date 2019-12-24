@@ -26,7 +26,7 @@
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 // clang-format on
-#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/gst/pipeliner.hpp"
 #include "switcher/shmdata/gst-shm-tree-updater.hpp"
 #include "switcher/utils/periodic-task.hpp"
 #include "switcher/shmdata/shmdata-connector.hpp"
@@ -265,14 +265,14 @@ class GLFWVideo : public Quiddity {
   /**
    * \brief Gstreamer elements and tools
    */
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
-  UGstElem shmsrc_{"shmdatasrc"};
-  UGstElem queue_{"queue"};
-  UGstElem videoconvert_{"videoconvert"};
-  UGstElem capsfilter_{"capsfilter"};
-  UGstElem gamma_{"gamma"};
-  UGstElem videobalance_{"videobalance"};
-  UGstElem fakesink_{"fakesink"};
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
+  gst::UGstElem shmsrc_{"shmdatasrc"};
+  gst::UGstElem queue_{"queue"};
+  gst::UGstElem videoconvert_{"videoconvert"};
+  gst::UGstElem capsfilter_{"capsfilter"};
+  gst::UGstElem gamma_{"gamma"};
+  gst::UGstElem videobalance_{"videobalance"};
+  gst::UGstElem fakesink_{"fakesink"};
 
   /**
    * \brief Window content properties

@@ -35,7 +35,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
 AudioTestSource::AudioTestSource(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       StartableQuiddity(this),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
       sample_rate_id_(
           pmanage<MPtr(&PContainer::make_selection<>)>("sample_rate",
                                                        [this](const IndexOrName& val) {
@@ -84,7 +84,8 @@ AudioTestSource::AudioTestSource(quid::Config&& conf)
                                                         1,
                                                         kMaxChannels)),
       format_(Selection<>(
-          GstUtils::get_gst_element_capability_as_list("audiotestsrc", "format", GST_PAD_SRC), 0)),
+          gst::utils::get_gst_element_capability_as_list("audiotestsrc", "format", GST_PAD_SRC),
+          0)),
       format_id_(pmanage<MPtr(&PContainer::make_selection<>)>("format",
                                                               [this](const IndexOrName& val) {
                                                                 format_.select(val);
@@ -140,8 +141,8 @@ bool AudioTestSource::stop() {
   pmanage<MPtr(&PContainer::enable)>(channels_id_);
   pmanage<MPtr(&PContainer::enable)>(sample_rate_id_);
 
-  if (!UGstElem::renew(audiotestsrc_, {"is-live", "samplesperbuffer"}) ||
-      !UGstElem::renew(capsfilter_) || !UGstElem::renew(shmdatasink_, {"socket-path"})) {
+  if (!gst::UGstElem::renew(audiotestsrc_, {"is-live", "samplesperbuffer"}) ||
+      !gst::UGstElem::renew(capsfilter_) || !gst::UGstElem::renew(shmdatasink_, {"socket-path"})) {
     warning("error initializing gst element for audiotestsrc");
     gst_pipeline_.reset();
     return false;
@@ -149,7 +150,7 @@ bool AudioTestSource::stop() {
 
   pmanage<MPtr(&PContainer::replace)>(
       waveforms_id_, GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "wave"));
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
 
   return true;
 }

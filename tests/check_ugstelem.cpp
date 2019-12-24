@@ -26,21 +26,21 @@ int main() {
 
   gst_init(nullptr, nullptr);
   {
-    UGstElem elem("tee");
+    gst::UGstElem elem("tee");
     if (!elem) return 1;
   }
   {
-    UGstElem elem("non-existing-element");
+    gst::UGstElem elem("non-existing-element");
     if (elem) return 1;
   }
   {
-    UGstElem elem1("tee");
-    UGstElem elem2("tee");
+    gst::UGstElem elem1("tee");
+    gst::UGstElem elem2("tee");
     elem2 = std::move(elem1);
     if (elem1 || !elem2) return 1;
   }
   {
-    UGstElem elem("tee");
+    gst::UGstElem elem("tee");
     bool success = false;
     if (!elem.register_notify_on_property_change("name", [&success]() { success = !success; }))
       return 1;

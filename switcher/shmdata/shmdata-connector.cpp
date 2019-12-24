@@ -18,7 +18,7 @@
  */
 
 #include "./shmdata-connector.hpp"
-#include "../gst/gst-utils.hpp"
+#include "../gst/utils.hpp"
 #include "../infotree/information-tree-json.hpp"
 #include "../infotree/information-tree.hpp"
 #include "../quiddity/quiddity-container.hpp"

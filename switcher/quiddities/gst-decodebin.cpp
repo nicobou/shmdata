@@ -31,7 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstDecodebin,
 
 GstDecodebin::GstDecodebin(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
       shmsrc_("shmdatasrc"),
       shmcntr_(static_cast<Quiddity*>(this)) {
   register_writer_suffix(".*");
@@ -130,8 +130,8 @@ bool GstDecodebin::create_pipeline() {
   if (gst_pipeline_ != nullptr) {
     gst_pipeline_->play(false);
   }
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
-  if (!UGstElem::renew(shmsrc_)) return false;
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
+  if (!gst::UGstElem::renew(shmsrc_)) return false;
 
   // creating shmdata reader
   g_object_set(G_OBJECT(shmsrc_.get_raw()),
@@ -142,7 +142,7 @@ bool GstDecodebin::create_pipeline() {
                nullptr);
 
   // creating decodebin
-  std::unique_ptr<DecodebinToShmdata> decodebin = std::make_unique<DecodebinToShmdata>(
+  auto decodebin = std::make_unique<gst::DecodebinToShmdata>(
       gst_pipeline_.get(),
       [this](GstElement* el, const std::string& media_type, const std::string& media_label) {
         configure_shmdatasink(el, media_type, media_label);
@@ -164,7 +164,7 @@ bool GstDecodebin::create_pipeline() {
   GstPad* sinkpad = decodebin->invoke_with_return<GstPad*>(
       [](GstElement* el) { return gst_element_get_static_pad(el, "sink"); });
   On_scope_exit { gst_object_unref(GST_OBJECT(sinkpad)); };
-  if (!GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad))) return false;
+  if (!gst::utils::check_pad_link_return(gst_pad_link(pad, sinkpad))) return false;
 
   // set media label if relevant
   auto caps = gst_pad_get_allowed_caps(pad);
@@ -186,7 +186,7 @@ bool GstDecodebin::create_pipeline() {
 }
 
 bool GstDecodebin::can_sink_caps(const std::string& caps) {
-  return GstUtils::can_sink_caps("decodebin", caps);
+  return gst::utils::can_sink_caps("decodebin", caps);
 }
 
 }  // namespace switcher

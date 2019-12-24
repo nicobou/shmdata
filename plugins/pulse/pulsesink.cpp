@@ -20,7 +20,7 @@
  */
 
 #include "./pulsesink.hpp"
-#include "switcher/gst/gst-utils.hpp"
+#include "switcher/gst/utils.hpp"
 #include "switcher/quiddity/property/gprop-to-prop.hpp"
 #include "switcher/utils/scope-exit.hpp"
 
@@ -37,9 +37,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSink,
 
 PulseSink::PulseSink(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
-      mainloop_(std::make_unique<GlibMainLoop>()),
+      mainloop_(std::make_unique<gst::GlibMainLoop>()),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
   if (!shmsrc_ || !audioconvert_ || !pulsesink_) {
     is_valid_ = false;
     return;
@@ -58,11 +58,11 @@ PulseSink::PulseSink(quid::Config&& conf)
       1);
 
   std::unique_lock<std::mutex> lock(devices_mutex_);
-  GstUtils::g_idle_add_full_with_context(mainloop_->get_main_context(),
-                                         G_PRIORITY_DEFAULT_IDLE,
-                                         async_get_pulse_devices,
-                                         this,
-                                         nullptr);
+  gst::utils::g_idle_add_full_with_context(mainloop_->get_main_context(),
+                                           G_PRIORITY_DEFAULT_IDLE,
+                                           async_get_pulse_devices,
+                                           this,
+                                           nullptr);
   devices_cond_.wait(lock);
   if (!connected_to_pulse_) {
     message("ERROR:Not connected to pulse, cannot initialize.");
@@ -79,7 +79,7 @@ PulseSink::~PulseSink() {
   GMainContext* main_context = mainloop_->get_main_context();
   if (nullptr != main_context && connected_to_pulse_) {
     std::unique_lock<std::mutex> lock(quit_mutex_);
-    GstUtils::g_idle_add_full_with_context(
+    gst::utils::g_idle_add_full_with_context(
         main_context, G_PRIORITY_DEFAULT_IDLE, quit_pulse, this, nullptr);
     quit_cond_.wait(lock);
   }
@@ -121,8 +121,9 @@ bool PulseSink::remake_elements() {
   volume_id_ = 0;
   pmanage<MPtr(&PContainer::remove)>(mute_id_);
   mute_id_ = 0;
-  if (!UGstElem::renew(pulsesink_, {"volume", "mute", "slave-method", "client-name", "device"}) ||
-      !UGstElem::renew(shmsrc_) || !UGstElem::renew(audioconvert_))
+  if (!gst::UGstElem::renew(pulsesink_,
+                            {"volume", "mute", "slave-method", "client-name", "device"}) ||
+      !gst::UGstElem::renew(shmsrc_) || !gst::UGstElem::renew(audioconvert_))
     return false;
   volume_id_ = pmanage<MPtr(&PContainer::push)>(
       "volume", GPropToProp::to_prop(G_OBJECT(pulsesink_.get_raw()), "volume"));
@@ -289,13 +290,13 @@ void PulseSink::update_output_device() {
 }
 
 bool PulseSink::can_sink_caps(const std::string& caps) {
-  return GstUtils::can_sink_caps("audioconvert", caps);
+  return gst::utils::can_sink_caps("audioconvert", caps);
 };
 
 bool PulseSink::on_shmdata_disconnect() {
   pmanage<MPtr(&PContainer::enable)>(devices_enum_id_);
   shm_sub_.reset();
-  On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };
+  On_scope_exit { gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr); };
   return remake_elements();
 }
 

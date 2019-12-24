@@ -18,15 +18,15 @@
 #undef NDEBUG  // get assert in release mode
 
 #include "switcher/gst/glibmainloop.hpp"
-#include "switcher/gst/gst-pipe.hpp"
+#include "switcher/gst/pipe.hpp"
 
 int main() {
   using namespace switcher;
 
   gst_init(nullptr, nullptr);
   {
-    auto ml = std::make_unique<GlibMainLoop>();
-    auto gp = std::make_unique<GstPipe>(ml->get_main_context(), nullptr, nullptr);
+    auto ml = std::make_unique<gst::GlibMainLoop>();
+    auto gp = std::make_unique<gst::Pipe>(ml->get_main_context(), nullptr, nullptr);
   }
   gst_deinit();
 

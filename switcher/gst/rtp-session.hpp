@@ -22,29 +22,31 @@
 
 #include <memory>
 #include "../utils/safe-bool-idiom.hpp"
-#include "./gst-pipeliner.hpp"
+#include "./pipeliner.hpp"
 #include "./rtp-receiver.hpp"
 #include "./rtp-sender.hpp"
 
 namespace switcher {
-class RtpSession : public SafeBoolIdiom {
+namespace gst {
+class RTPSession : public SafeBoolIdiom {
   friend RTPSender;
   friend RTPReceiver;
 
  public:
-  RtpSession();
-  ~RtpSession() = default;
-  RtpSession(const RtpSession&) = delete;
-  RtpSession(RtpSession&&) = delete;
-  RtpSession& operator=(const RtpSession&) = delete;
+  RTPSession();
+  ~RTPSession() = default;
+  RTPSession(const RTPSession&) = delete;
+  RTPSession(RTPSession&&) = delete;
+  RTPSession& operator=(const RTPSession&) = delete;
 
  private:
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<Pipeliner> gst_pipeline_;
   GstElement* rtpsession_;
 
   // safe bool idiom
   bool safe_bool_idiom() const final { return nullptr != rtpsession_ && gst_pipeline_; }
 };
 
+}  // namespace gst
 }  // namespace switcher
 #endif

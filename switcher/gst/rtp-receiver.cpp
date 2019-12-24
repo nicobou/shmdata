@@ -22,8 +22,9 @@
 #include "./rtp-session.hpp"
 
 namespace switcher {
+namespace gst {
 
-RTPReceiver::RTPReceiver(RtpSession* session,
+RTPReceiver::RTPReceiver(RTPSession* session,
                          const std::string& rtpshmpath,
                          configure_shmsink_cb_t cb,
                          bool decompress)
@@ -58,13 +59,13 @@ RTPReceiver::RTPReceiver(RtpSession* session,
   gst_bin_add_many(
       GST_BIN(session_->gst_pipeline_->get_pipeline()), shmdatasrc_, typefind_, nullptr);
   gst_element_link(shmdatasrc_, typefind_);
-  GstUtils::sync_state_with_parent(shmdatasrc_);
-  GstUtils::sync_state_with_parent(typefind_);
+  gst::utils::sync_state_with_parent(shmdatasrc_);
+  gst::utils::sync_state_with_parent(typefind_);
 }
 
 RTPReceiver::~RTPReceiver() {
   gst_element_unlink(shmdatasrc_, typefind_);
-  GstUtils::clean_element(typefind_);
+  gst::utils::clean_element(typefind_);
   gst_element_set_state(shmdatasrc_, GST_STATE_NULL);
   gst_bin_remove(GST_BIN(session_->gst_pipeline_->get_pipeline()), shmdatasrc_);
   if (rtp_sink_pad_) gst_element_release_request_pad(session_->rtpsession_, rtp_sink_pad_);
@@ -111,7 +112,7 @@ void RTPReceiver::on_pad_added(GstElement* /*object*/, GstPad* pad, gpointer use
         GstPad* sinkpad = gst_element_get_static_pad(el, "sink");
         On_scope_exit { gst_object_unref(sinkpad); };
         gst_pad_link(pad, sinkpad);
-        GstUtils::sync_state_with_parent(el);
+        gst::utils::sync_state_with_parent(el);
         return true;
       })) {
   }
@@ -127,4 +128,5 @@ GstCaps* RTPReceiver::request_pt_map(GstElement* /*sess*/,
   return caps;
 }
 
+}  // namespace gst
 }  // namespace switcher

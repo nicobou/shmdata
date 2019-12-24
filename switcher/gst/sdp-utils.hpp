@@ -27,6 +27,7 @@
 #include "../utils/bool-log.hpp"
 
 namespace switcher {
+namespace gst {
 class SDPDescription;
 
 class SDPMedia {
@@ -69,5 +70,6 @@ class SDPDescription {
   unsigned int index_{0};
 };
 
+}  // namespace gst
 }  // namespace switcher
 #endif

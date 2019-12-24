@@ -19,7 +19,7 @@
 
 #include "./shmdata-to-jack.hpp"
 #include "./audio-resampler.hpp"
-#include "switcher/gst/gst-utils.hpp"
+#include "switcher/gst/utils.hpp"
 #include "switcher/quiddity/property/gprop-to-prop.hpp"
 #include "switcher/quiddity/quiddity-container.hpp"
 #include "switcher/utils/scope-exit.hpp"
@@ -127,7 +127,7 @@ ShmdataToJack::ShmdataToJack(quid::Config&& conf)
                                                 "Convert to Jack rate",
                                                 do_rate_conversion_)),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
   // is_constructed_ is needed because of a cross reference among JackClient and JackPort
   is_constructed_ = true;
   if (!jack_client_) {
@@ -291,11 +291,11 @@ bool ShmdataToJack::make_elements() {
     return false;
   }
   GstElement* shmdatasrc =
-      GstUtils::get_first_element_from_factory_name(GST_BIN(jacksink), "shmdatasrc");
+      gst::utils::get_first_element_from_factory_name(GST_BIN(jacksink), "shmdatasrc");
   GstElement* fakesink =
-      GstUtils::get_first_element_from_factory_name(GST_BIN(jacksink), "fakesink");
+      gst::utils::get_first_element_from_factory_name(GST_BIN(jacksink), "fakesink");
   handoff_handler_ = g_signal_connect(fakesink, "handoff", (GCallback)on_handoff_cb, this);
-  if (nullptr != audiobin_) GstUtils::clean_element(audiobin_);
+  if (nullptr != audiobin_) gst::utils::clean_element(audiobin_);
   shmdatasrc_ = shmdatasrc;
   audiobin_ = jacksink;
   fakesink_ = fakesink;
@@ -328,7 +328,7 @@ bool ShmdataToJack::stop() {
   shm_sub_.reset();
   disconnect_ports();
   {
-    On_scope_exit { gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr); };
+    On_scope_exit { gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr); };
     if (!make_elements()) return false;
   }
   pmanage<MPtr(&PContainer::enable)>(auto_connect_id_);
@@ -348,7 +348,7 @@ bool ShmdataToJack::on_shmdata_connect(const std::string& shmpath) {
 }
 
 bool ShmdataToJack::can_sink_caps(const std::string& caps) {
-  return GstUtils::can_sink_caps("audioconvert", caps);
+  return gst::utils::can_sink_caps("audioconvert", caps);
 }
 
 void ShmdataToJack::update_port_to_connect() {

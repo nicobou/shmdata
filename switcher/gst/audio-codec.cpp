@@ -17,16 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gst-audio-codec.hpp"
+#include "./audio-codec.hpp"
 #include "../infotree/information-tree-json.hpp"
 #include "../quiddity/property/gprop-to-prop.hpp"
 #include "../quiddity/quiddity.hpp"
 #include "../quiddity/startable-quiddity.hpp"
 #include "../utils/scope-exit.hpp"
-#include "./gst-utils.hpp"
+#include "./utils.hpp"
 
 namespace switcher {
-GstAudioCodec::GstAudioCodec(Quiddity* quid)
+namespace gst {
+AudioCodec::AudioCodec(Quiddity* quid)
     : quid_(quid),
       reset_id_(quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool()>>)>(
           "reset",
@@ -39,8 +40,8 @@ GstAudioCodec::GstAudioCodec(Quiddity* quid)
                   }
               )"),
           [this]() { return reset_codec_configuration(); })),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
-      codecs_(GstUtils::element_factory_list_to_pair_of_vectors(
+      gst_pipeline_(std::make_unique<Pipeliner>(nullptr, nullptr)),
+      codecs_(gst::utils::element_factory_list_to_pair_of_vectors(
                   GST_ELEMENT_FACTORY_TYPE_AUDIO_ENCODER, GST_RANK_SECONDARY, true, {"vorbisenc"}),
               0),
       codec_id_(install_codec()) {
@@ -48,20 +49,20 @@ GstAudioCodec::GstAudioCodec(Quiddity* quid)
   stop();
 }
 
-void GstAudioCodec::hide() {
+void AudioCodec::hide() {
   quid_->mmanage<MPtr(&MContainer::disable)>(reset_id_, StartableQuiddity::disabledWhenStartedMsg);
   quid_->pmanage<MPtr(&PContainer::disable)>(codec_id_, StartableQuiddity::disabledWhenStartedMsg);
   quid_->pmanage<MPtr(&PContainer::disable)>(group_codec_id_,
                                              StartableQuiddity::disabledWhenStartedMsg);
 }
 
-void GstAudioCodec::show() {
+void AudioCodec::show() {
   quid_->mmanage<MPtr(&MContainer::enable)>(reset_id_);
   quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_);
   quid_->pmanage<MPtr(&PContainer::enable)>(group_codec_id_);
 }
 
-void GstAudioCodec::make_bin() {
+void AudioCodec::make_bin() {
   if (0 != codecs_.get_current_index()) {
     gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                      shmsrc_.get_raw(),
@@ -81,7 +82,7 @@ void GstAudioCodec::make_bin() {
   }
 }
 
-bool GstAudioCodec::remake_codec_elements() {
+bool AudioCodec::remake_codec_elements() {
   if (0 != codecs_.get_current_index()) {
     if (!UGstElem::renew(shmsrc_, {"socket-path"}) ||
         !UGstElem::renew(shm_encoded_, {"socket-path", "sync", "async"}) ||
@@ -94,13 +95,13 @@ bool GstAudioCodec::remake_codec_elements() {
   return true;
 }
 
-void GstAudioCodec::uninstall_codec_properties() {
+void AudioCodec::uninstall_codec_properties() {
   for (auto& it : codec_properties_)
     quid_->pmanage<MPtr(&PContainer::remove)>(quid_->pmanage<MPtr(&PContainer::get_id)>(it));
   codec_properties_.clear();
 }
 
-void GstAudioCodec::toggle_codec_properties(bool enable) {
+void AudioCodec::toggle_codec_properties(bool enable) {
   for (auto& it : codec_properties_) {
     if (enable)
       quid_->pmanage<MPtr(&PContainer::enable)>(quid_->pmanage<MPtr(&PContainer::get_id)>(it));
@@ -110,7 +111,7 @@ void GstAudioCodec::toggle_codec_properties(bool enable) {
   }
 }
 
-void GstAudioCodec::make_codec_properties() {
+void AudioCodec::make_codec_properties() {
   guint num_properties = 0;
   GParamSpec** props =
       g_object_class_list_properties(G_OBJECT_GET_CLASS(codec_element_.get_raw()), &num_properties);
@@ -129,7 +130,7 @@ void GstAudioCodec::make_codec_properties() {
   }
 }
 
-bool GstAudioCodec::reset_codec_configuration() {
+bool AudioCodec::reset_codec_configuration() {
   {
     auto lock = quid_->pmanage<MPtr(&PContainer::get_lock)>(codec_id_);
     codecs_.select(IndexOrName("Opus audio encoder"));
@@ -138,7 +139,7 @@ bool GstAudioCodec::reset_codec_configuration() {
   return true;
 }
 
-bool GstAudioCodec::start(const std::string& shmpath, const std::string& shmpath_encoded) {
+bool AudioCodec::start(const std::string& shmpath, const std::string& shmpath_encoded) {
   hide();
   toggle_codec_properties(false);
   if (0 == codecs_.get_current_index()) return false;
@@ -181,7 +182,7 @@ bool GstAudioCodec::start(const std::string& shmpath, const std::string& shmpath
   return true;
 }
 
-bool GstAudioCodec::stop() {
+bool AudioCodec::stop() {
   show();
   toggle_codec_properties(true);
   if (0 != codecs_.get_current_index()) {
@@ -189,12 +190,12 @@ bool GstAudioCodec::stop() {
     shmsrc_sub_.reset();
     remake_codec_elements();
     make_codec_properties();
-    gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+    gst_pipeline_ = std::make_unique<Pipeliner>(nullptr, nullptr);
   }
   return true;
 }
 
-PContainer::prop_id_t GstAudioCodec::install_codec() {
+PContainer::prop_id_t AudioCodec::install_codec() {
   codecs_.select(IndexOrName("Opus audio encoder"));
   return quid_->pmanage<MPtr(&PContainer::make_selection<>)>(
       "codec",
@@ -213,7 +214,7 @@ PContainer::prop_id_t GstAudioCodec::install_codec() {
       codecs_);
 }
 
-bool GstAudioCodec::has_enough_channels(const std::string& str_caps) {
+bool AudioCodec::has_enough_channels(const std::string& str_caps) {
   GstCaps* caps = gst_caps_from_string(str_caps.c_str());
   On_scope_exit {
     if (nullptr != caps) gst_caps_unref(caps);
@@ -231,7 +232,7 @@ bool GstAudioCodec::has_enough_channels(const std::string& str_caps) {
     return false;
   }
 
-  std::pair<int, int> channels_range = GstUtils::get_gst_element_capability_as_range(
+  std::pair<int, int> channels_range = gst::utils::get_gst_element_capability_as_range(
       gst_plugin_feature_get_name(gst_element_get_factory(codec_element_.get_raw())),
       "channels",
       GST_PAD_SINK);
@@ -239,4 +240,5 @@ bool GstAudioCodec::has_enough_channels(const std::string& str_caps) {
   return channels <= channels_range.second;
 }
 
+}  // namespace gst
 }  // namespace switcher

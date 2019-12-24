@@ -28,16 +28,17 @@
 #include <string>
 
 namespace switcher {
-class RtpSession;
+namespace gst {
+class RTPSession;
 
 class RTPSender {
  public:
   using id_t = size_t;
   using frame_cb_t = std::function<void(void*, size_t)>;
-  RTPSender(RtpSession* session,
+  RTPSender(RTPSession* session,
             const std::string& shmpath,
             unsigned int mtu  // = 1400
-            );
+  );
   RTPSender() = delete;
   ~RTPSender();
   RTPSender(const RTPSender&) = delete;
@@ -50,7 +51,7 @@ class RTPSender {
   std::string get_caps() const;
 
  private:
-  RtpSession* session_;
+  RTPSession* session_;
   std::string shmpath_;
   unsigned int mtu_;
   GstElement* shmdatasrc_;
@@ -76,5 +77,6 @@ class RTPSender {
                       gpointer /*user_data*/);
 };
 
+}  // namespace gst
 }  // namespace switcher
 #endif

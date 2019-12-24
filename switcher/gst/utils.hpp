@@ -27,7 +27,8 @@
 #include "../utils/bool-log.hpp"
 
 namespace switcher {
-namespace GstUtils {
+namespace gst {
+namespace utils {
 GstElement* make_element(const gchar* class_name, GstElement** target_element);
 bool link_static_to_request(GstElement* src, GstElement* sink);
 bool link_static_to_request(GstPad* srcpad, GstElement* sink);
@@ -78,6 +79,8 @@ std::pair<int, int> get_gst_element_capability_as_range(const std::string& eleme
                                                         GstPadDirection direction);
 // Used for videoscale and videoconvert elements only (for now).
 int get_nthreads_property_value();
-}  // namespace GstUtils
+
+}  // namespace utils
+}  // namespace gst
 }  // namespace switcher
 #endif

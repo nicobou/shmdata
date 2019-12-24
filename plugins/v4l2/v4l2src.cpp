@@ -26,7 +26,7 @@
 #include <unistd.h>
 #include <cstdlib>  // For srand() and rand()
 #include <ctime>    // For time()
-#include "switcher/gst/gst-utils.hpp"
+#include "switcher/gst/utils.hpp"
 #include "switcher/quiddity/quiddity-container.hpp"
 #include "switcher/utils/file-utils.hpp"
 #include "switcher/utils/scope-exit.hpp"
@@ -55,8 +55,8 @@ void V4L2Src::set_shm_suffix() {
 V4L2Src::V4L2Src(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       StartableQuiddity(this),
-      gst_pipeline_(
-          std::make_unique<GstPipeliner>(nullptr, nullptr, [this](GstObject* gstobj, GError* err) {
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(
+          nullptr, nullptr, [this](GstObject* gstobj, GError* err) {
             on_gst_error(gstobj, err);
           })) {
   force_framerate_id_ = pmanage<MPtr(&PContainer::make_bool)>(
@@ -491,8 +491,9 @@ bool V4L2Src::remake_elements() {
     debug("V4L2Src: no capture device available for starting capture");
     return false;
   }
-  if (!UGstElem::renew(v4l2src_, {"device", "norm", "io-mode"}) || !UGstElem::renew(videorate_) ||
-      !UGstElem::renew(capsfilter_, {"caps"}) || !UGstElem::renew(shmsink_, {"socket-path"})) {
+  if (!gst::UGstElem::renew(v4l2src_, {"device", "norm", "io-mode"}) ||
+      !gst::UGstElem::renew(videorate_) || !gst::UGstElem::renew(capsfilter_, {"caps"}) ||
+      !gst::UGstElem::renew(shmsink_, {"socket-path"})) {
     warning("V4L2Src: issue when with elements for video capture");
     return false;
   }
@@ -710,7 +711,7 @@ bool V4L2Src::start() {
 bool V4L2Src::stop() {
   shm_sub_.reset();
   remake_elements();
-  gst_pipeline_ = std::make_unique<GstPipeliner>(
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(
       nullptr, nullptr, [this](GstObject* gstobj, GError* err) { on_gst_error(gstobj, err); });
   pmanage<MPtr(&PContainer::enable)>(devices_id_);
   pmanage<MPtr(&PContainer::enable)>(force_framerate_id_);

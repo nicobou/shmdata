@@ -19,9 +19,10 @@
 
 #include "./g-source-wrapper.hpp"
 #include <future>
-#include "./gst-utils.hpp"
+#include "./utils.hpp"
 
 namespace switcher {
+namespace gst {
 GSourceWrapper::GSourceWrapper(callback&& cb, bool async_invocation)
     : cb_(std::move(cb)), async_invocation_(async_invocation), gsource_(g_idle_source_new()) {
   g_source_set_priority(gsource_, G_PRIORITY_DEFAULT_IDLE);
@@ -60,4 +61,5 @@ gboolean GSourceWrapper::source_func(gpointer user_data) {
     context->fut_ = std::async(std::launch::async, context->cb_);
   return FALSE;  // do not repeat in the glib mainloop
 }
+}  // namespace gst
 }  // namespace switcher

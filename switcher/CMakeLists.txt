@@ -12,16 +12,16 @@ add_library(${SWITCHER_LIBRARY} SHARED
   gst/decodebin-to-shmdata.cpp
   gst/g-source-wrapper.cpp
   gst/glibmainloop.cpp
-  gst/gst-audio-codec.cpp
-  gst/gst-initialized.cpp
-  gst/gst-pipe.cpp
-  gst/gst-pipeliner.cpp
-  gst/gst-pixel-format-converter.cpp
-  gst/gst-rtppayloader-finder.cpp
-  gst/gst-shmdata-to-cb.cpp
-  gst/gst-utils.cpp
-  gst/gst-video-codec.cpp
-  gst/gst-video-timelapse.cpp
+  gst/audio-codec.cpp
+  gst/initialized.cpp
+  gst/pipe.cpp
+  gst/pipeliner.cpp
+  gst/pixel-format-converter.cpp
+  gst/rtppayloader-finder.cpp
+  gst/shmdata-to-cb.cpp
+  gst/utils.cpp
+  gst/video-codec.cpp
+  gst/video-timelapse.cpp
   gst/rtp-receiver.cpp
   gst/rtp-sender.cpp
   gst/rtp-session.cpp

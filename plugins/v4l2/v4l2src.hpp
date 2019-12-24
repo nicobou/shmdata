@@ -19,7 +19,7 @@
 #define __SWITCHER_V4L2SRC_H__
 
 #include <memory>
-#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/gst/pipeliner.hpp"
 #include "switcher/gst/unique-gst-element.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable-quiddity.hpp"
@@ -76,14 +76,14 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
     gint frame_interval_stepwise_step_denominator_{0};
   } CaptureDescription;
 
-  UGstElem v4l2src_{"v4l2src"};
-  UGstElem videorate_{"videorate"};
-  UGstElem capsfilter_{"capsfilter"};
-  UGstElem shmsink_{"shmdatasink"};
+  gst::UGstElem v4l2src_{"v4l2src"};
+  gst::UGstElem videorate_{"videorate"};
+  gst::UGstElem capsfilter_{"capsfilter"};
+  gst::UGstElem shmsink_{"shmdatasink"};
   std::string shmpath_{};
   const std::string raw_suffix_{"video"};
   const std::string enc_suffix_{"video-encoded"};
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
   std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
 
   // devices list:

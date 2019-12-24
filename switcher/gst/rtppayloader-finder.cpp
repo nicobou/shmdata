@@ -17,11 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gst-rtppayloader-finder.hpp"
+#include "./rtppayloader-finder.hpp"
 #include "../utils/scope-exit.hpp"
 
 namespace switcher {
-namespace GstRTPPayloaderFinder {
+namespace gst {
+namespace rtppayloaderfinder {
 
 // function used as a filter for selecting the appropriate rtp payloader
 gboolean sink_factory_filter(GstPluginFeature* feature, gpointer data) {
@@ -75,5 +76,6 @@ GstElementFactory* get_factory_by_caps(GstCaps* caps) {
   return nullptr;
 }
 
-}  // namespace GstRTPPayloaderFinder
+}  // namespace rtppayloaderfinder
+}  // namespace gst
 }  // namespace switcher

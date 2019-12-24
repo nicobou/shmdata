@@ -43,6 +43,10 @@
 
 namespace switcher {
 class Container;
+namespace gst {
+class VideoCodec;
+class AudioCodec;
+}  // namespace gst
 
 class Quiddity : public Logged, public SafeBoolIdiom {
   friend class Bundle;  // access to props_ in order to forward properties
@@ -54,8 +58,8 @@ class Quiddity : public Logged, public SafeBoolIdiom {
   friend class ShmdataConnector;
   friend class ShmdataWriter;
   friend class ShmdataFollower;
-  friend class GstVideoCodec;
-  friend class GstAudioCodec;
+  friend class gst::VideoCodec;
+  friend class gst::AudioCodec;
   friend class GstShmTreeUpdater;
   friend class ShmdataDecoder;
   friend struct ShmdataStat;

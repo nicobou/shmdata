@@ -21,7 +21,7 @@
 #define __SWITCHER_GST_VIDEO_CONVERTER_H__
 
 #include <memory>
-#include "../gst/gst-pixel-format-converter.hpp"
+#include "../gst/pixel-format-converter.hpp"
 #include "../quiddity/quiddity.hpp"
 #include "../shmdata/gst-shm-tree-updater.hpp"
 #include "../shmdata/shmdata-connector.hpp"
@@ -44,7 +44,7 @@ class GstVideoConverter : public Quiddity {
   std::unique_ptr<GstShmTreeUpdater> shmsrc_sub_{nullptr};
   std::unique_ptr<GstShmTreeUpdater> shmsink_sub_{nullptr};
 
-  std::unique_ptr<GstPixelFormatConverter> converter_{nullptr};
+  std::unique_ptr<gst::PixelFormatConverter> converter_{nullptr};
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string& shmdata_sochet_path);
   bool can_sink_caps(const std::string& caps);

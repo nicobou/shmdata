@@ -28,25 +28,26 @@
 #include <vector>
 #include "../quiddity/quiddity.hpp"
 #include "./glibmainloop.hpp"
-#include "./gst-pipe.hpp"
+#include "./pipe.hpp"
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
 class Quiddity;
 class CustomPropertyHelper;
 
-class GstPipeliner {
+namespace gst {
+
+class Pipeliner {
  public:
   using on_error_cb_t = std::function<void(GstObject*, GError*)>;
-  GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
-               GstPipe::on_msg_sync_cb_t on_msg_sync_cb);
-  GstPipeliner(GstPipe::on_msg_async_cb_t on_msg_async_cb,
-               GstPipe::on_msg_sync_cb_t on_msg_sync_cb,
-               on_error_cb_t on_error_cb);
-  GstPipeliner() = delete;
-  virtual ~GstPipeliner();
-  GstPipeliner(const GstPipeliner&) = delete;
-  GstPipeliner& operator=(const GstPipeliner&) = delete;
+  Pipeliner(Pipe::on_msg_async_cb_t on_msg_async_cb, Pipe::on_msg_sync_cb_t on_msg_sync_cb);
+  Pipeliner(Pipe::on_msg_async_cb_t on_msg_async_cb,
+            Pipe::on_msg_sync_cb_t on_msg_sync_cb,
+            on_error_cb_t on_error_cb);
+  Pipeliner() = delete;
+  virtual ~Pipeliner();
+  Pipeliner(const Pipeliner&) = delete;
+  Pipeliner& operator=(const Pipeliner&) = delete;
 
   GstElement* get_pipeline();
   void play(gboolean play);
@@ -63,15 +64,16 @@ class GstPipeliner {
   static GstBusSyncReply bus_sync_handler(GstBus* bus, GstMessage* msg, gpointer user_data);
 
   bool loop_{false};
-  GstPipe::on_msg_async_cb_t on_msg_async_cb_;
-  GstPipe::on_msg_sync_cb_t on_msg_sync_cb_;
+  Pipe::on_msg_async_cb_t on_msg_async_cb_;
+  Pipe::on_msg_sync_cb_t on_msg_sync_cb_;
   on_error_cb_t on_error_cb_;
   bool watch_added_{false};
   std::mutex watch_mutex_{};
   std::condition_variable cond_watch_{};
   std::unique_ptr<GlibMainLoop> main_loop_;
-  std::unique_ptr<GstPipe> gst_pipeline_;
+  std::unique_ptr<Pipe> gst_pipeline_;
 };
 
+}  // namespace gst
 }  // namespace switcher
 #endif

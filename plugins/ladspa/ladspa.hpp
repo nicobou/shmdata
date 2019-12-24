@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/gst/pipeliner.hpp"
 #include "switcher/shmdata/gst-shm-tree-updater.hpp"
 #include "switcher/shmdata/shmdata-connector.hpp"
 #include "switcher/shmdata/shmdata-follower.hpp"
@@ -72,7 +72,7 @@ class LADSPA : public Quiddity {
   std::string shmpath_{};  //!< Path of the input shmdata
   std::string shmpath_transformed_{};  //!< Path of the output shmdata
   ShmdataConnector shmcntr_;           //!< Shmdata connector to connect into the quiddity.
-  std::unique_ptr<GstPipeliner> gst_pipeline_{nullptr};         //!< Gstreamer pipeline
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};       //!< Gstreamer pipeline
   std::unique_ptr<GstShmTreeUpdater> shmsrc_sub_{nullptr};      //!< Subscriber to input shmdata
   std::unique_ptr<GstShmTreeUpdater> shmsink_sub_{nullptr};     //!< Subscriber to output shmdata
   bool first_connect_{false};  //!< First connection to a LADSPA plugin?

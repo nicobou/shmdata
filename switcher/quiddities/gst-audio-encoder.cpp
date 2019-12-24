@@ -32,7 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstAudioEncoder,
 GstAudioEncoder::GstAudioEncoder(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
-      codecs_(std::make_unique<GstAudioCodec>(static_cast<Quiddity*>(this))) {
+      codecs_(std::make_unique<gst::AudioCodec>(static_cast<Quiddity*>(this))) {
   register_writer_suffix("audio-encoded");
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
@@ -51,7 +51,7 @@ bool GstAudioEncoder::on_shmdata_connect(const std::string& shmpath) {
 bool GstAudioEncoder::can_sink_caps(const std::string& caps) {
   // assuming codecs_ is internally using audioconvert as first caps negotiating
   // gst element
-  return GstUtils::can_sink_caps("audioconvert", caps);
+  return gst::utils::can_sink_caps("audioconvert", caps);
 }
 
 }  // namespace switcher

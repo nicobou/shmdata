@@ -23,11 +23,12 @@
 #include <unordered_set>
 #include <vector>
 #include "../shmdata/gst-shm-tree-updater.hpp"
-#include "./gst-pipeliner.hpp"
+#include "./pipeliner.hpp"
 
 namespace switcher {
-struct GstVideoTimelapseConfig {
-  GstVideoTimelapseConfig(const std::string& orig_shmpath,
+namespace gst {
+struct VideoTimelapseConfig {
+  VideoTimelapseConfig(const std::string& orig_shmpath,
                           const std::string& image_path)
       :  // "for instance /tmp/img_%05d.jpg"
         orig_shmpath_(orig_shmpath),
@@ -43,22 +44,22 @@ struct GstVideoTimelapseConfig {
   unsigned int max_files_{0};
 };
 
-class GstVideoTimelapse : public SafeBoolIdiom {
+class VideoTimelapse : public SafeBoolIdiom {
  public:
   using on_new_file_t = std::function<void(std::string&&)>;
-  GstVideoTimelapse(const GstVideoTimelapseConfig& config,
+  VideoTimelapse(const VideoTimelapseConfig& config,
                     Quiddity* quid,
                     on_new_file_t on_new_file);
-  GstVideoTimelapse() = delete;
-  ~GstVideoTimelapse() = default;
-  GstVideoTimelapse(const GstVideoTimelapse&) = delete;
-  GstVideoTimelapse& operator=(const GstVideoTimelapse&) = delete;
+  VideoTimelapse() = delete;
+  ~VideoTimelapse() = default;
+  VideoTimelapse(const VideoTimelapse&) = delete;
+  VideoTimelapse& operator=(const VideoTimelapse&) = delete;
 
  private:
-  GstVideoTimelapseConfig config_;
+  VideoTimelapseConfig config_;
   on_new_file_t on_new_file_;
   // gst pipeline
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<Pipeliner> gst_pipeline_;
   std::unique_ptr<GstShmTreeUpdater> shmsrc_sub_{nullptr};
 
   // safe bool idiom
@@ -66,5 +67,6 @@ class GstVideoTimelapse : public SafeBoolIdiom {
   bool safe_bool_idiom() const final { return is_valid_; };
 };
 
+}  // namespace gst
 }  // namespace switcher
 #endif

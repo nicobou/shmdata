@@ -26,7 +26,7 @@
 #include <mutex>
 #include <vector>
 #include "switcher/gst/glibmainloop.hpp"
-#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/gst/pipeliner.hpp"
 #include "switcher/gst/unique-gst-element.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/shmdata/gst-shm-tree-updater.hpp"
@@ -52,18 +52,18 @@ class PulseSink : public Quiddity {
     std::string active_port_{};
   } DeviceDescription;
 
-  std::unique_ptr<GlibMainLoop> mainloop_;
+  std::unique_ptr<gst::GlibMainLoop> mainloop_;
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
   // gst pipeline:
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
   // shmsubscriber (publishing to the information-tree):
   std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
   // internal use:
   std::string shmpath_{};
-  UGstElem shmsrc_{"shmdatasrc"};
-  UGstElem audioconvert_{"audioconvert"};
-  UGstElem pulsesink_{"pulsesink"};
+  gst::UGstElem shmsrc_{"shmdatasrc"};
+  gst::UGstElem audioconvert_{"audioconvert"};
+  gst::UGstElem pulsesink_{"pulsesink"};
   pa_glib_mainloop* pa_glib_mainloop_{nullptr};
   pa_mainloop_api* pa_mainloop_api_{nullptr};
   pa_context* pa_context_{nullptr};

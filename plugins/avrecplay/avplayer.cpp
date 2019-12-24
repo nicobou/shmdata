@@ -39,7 +39,7 @@ AVPlayer::AVPlayer(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       StartableQuiddity(this),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
   pmanage<MPtr(&PContainer::make_string)>(
       "playpath",
       [this](const std::string& val) {
@@ -89,7 +89,7 @@ AVPlayer::AVPlayer(quid::Config&& conf)
 }
 
 bool AVPlayer::start() {
-  gst_pipeline_ = std::make_unique<GstPipeliner>(
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(
       [this](GstMessage* msg) { return this->bus_async(msg); },
       /*[this](GstMessage* msg) { return this->bus_sync(msg); }*/ nullptr);
   std::vector<std::string> playlist;
@@ -146,7 +146,7 @@ bool AVPlayer::start() {
 }
 bool AVPlayer::stop() {
   position_task_.reset();
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
   pmanage<MPtr(&PContainer::remove)>(position_id_);
   position_id_ = 0;
   track_duration_ = 0;

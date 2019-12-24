@@ -27,6 +27,7 @@
 #include <thread>
 
 namespace switcher {
+namespace gst {
 
 class GlibMainLoop {
  public:
@@ -45,6 +46,7 @@ class GlibMainLoop {
   std::thread thread_;  // this runs the main loop
   void main_loop_thread();
 };
+}  // namespace gst
 }  // namespace switcher
 
 #endif

@@ -21,6 +21,7 @@
 #include <chrono>
 
 namespace switcher {
+namespace gst {
 
 GlibMainLoop::GlibMainLoop()
     : main_context_(g_main_context_new()),
@@ -50,4 +51,5 @@ void GlibMainLoop::main_loop_thread() {
   }
 }
 
+}  // namespace gst
 }  // namespace switcher

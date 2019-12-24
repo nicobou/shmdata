@@ -23,31 +23,31 @@
 #include <unordered_set>
 #include <vector>
 #include "../shmdata/gst-shm-tree-updater.hpp"
-#include "./gst-pipeliner.hpp"
+#include "./pipeliner.hpp"
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
 class quiddity;
-
-class GstAudioCodec {
+namespace gst {
+class AudioCodec {
  public:
-  GstAudioCodec(Quiddity* quid);
-  GstAudioCodec() = delete;
-  ~GstAudioCodec() = default;
-  GstAudioCodec(const GstAudioCodec&) = delete;
-  GstAudioCodec& operator=(const GstAudioCodec&) = delete;
+  AudioCodec(Quiddity* quid);
+  AudioCodec() = delete;
+  ~AudioCodec() = default;
+  AudioCodec(const AudioCodec&) = delete;
+  AudioCodec& operator=(const AudioCodec&) = delete;
 
   bool start(const std::string& shmpath, const std::string& shmpath_encoded = {});
   bool stop();
 
  private:
-  Quiddity* quid_;
-  MContainer::meth_id_t reset_id_;
+  switcher::Quiddity* quid_;
+  switcher::MContainer::meth_id_t reset_id_;
   // shmdata path
   std::string shmpath_to_encode_{};
   std::string shm_encoded_path_{};
   // gst pipeline
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<Pipeliner> gst_pipeline_;
   // audio encoding
   UGstElem shmsrc_{"shmdatasrc"};
   UGstElem queue_codec_element_{"queue"};
@@ -59,12 +59,12 @@ class GstAudioCodec {
   std::unique_ptr<GstShmTreeUpdater> shmsink_sub_{nullptr};
   // codec props
   Selection<> codecs_;
-  PContainer::prop_id_t codec_id_;
+  switcher::PContainer::prop_id_t codec_id_;
   std::vector<std::string> codec_properties_{};
   // codec params black list
   std::unordered_set<std::string> param_black_list_{
       "name", "parent", "hard-resync", "mark-granule", "perfect-timestamp", "tolerance"};
-  PContainer::prop_id_t group_codec_id_{0};
+  switcher::PContainer::prop_id_t group_codec_id_{0};
   // shmdatasrc copy-buffers property:
   bool copy_buffers_{true};
 
@@ -76,11 +76,12 @@ class GstAudioCodec {
   void show();
   void hide();
   bool has_enough_channels(const std::string& str_caps);
-  PContainer::prop_id_t install_codec();
+  switcher::PContainer::prop_id_t install_codec();
   bool reset_codec_configuration();
   static gboolean sink_factory_filter(GstPluginFeature* feature, gpointer data);
   static gint sink_compare_ranks(GstPluginFeature* f1, GstPluginFeature* f2);
 };
 
+}  // namespace gst
 }  // namespace switcher
 #endif

@@ -21,7 +21,7 @@
 #define SWITCHER_SHMDELAY_HPP
 
 #include <deque>
-#include "../gst/gst-utils.hpp"
+#include "../gst/utils.hpp"
 #include "../quiddity/quiddity.hpp"
 #include "../shmdata/shmdata-connector.hpp"
 #include "../shmdata/shmdata-follower.hpp"

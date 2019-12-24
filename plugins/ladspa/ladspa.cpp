@@ -37,7 +37,7 @@ const std::vector<std::string> LADSPA::KPropertiesBlackList = {"name", "parent"}
 LADSPA::LADSPA(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
       plugins_list_(get_ladspa_plugins()),
       plugins_(Selection<>(std::move(plugins_list_.first), std::move(plugins_list_.second), 0)) {
   if (plugins_list_.first.empty()) return;
@@ -73,7 +73,7 @@ LADSPA::LADSPA(quid::Config&& conf)
 
         if (!create_gst_pipeline()) return false;
         // Here we just create the pipeline to get the properties, since we don't put the bin in a
-        // GstPipeline it
+        // gst::Pipeline it
         // will leak if we don't unref.
         gst_object_unref(ladspa_bin_);
         first_connect_ = true;
@@ -98,7 +98,7 @@ LADSPA::LADSPA(quid::Config&& conf)
 
 LADSPA::PluginList LADSPA::get_ladspa_plugins() {
   PluginList plugins_list;
-  auto plugins = GstUtils::element_factory_list_to_pair_of_vectors(
+  auto plugins = gst::utils::element_factory_list_to_pair_of_vectors(
       GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, GST_RANK_NONE, false);
   size_t index = 0;
   for (auto& plugin : plugins.second) {
@@ -150,10 +150,10 @@ void LADSPA::mirror_gst_properties() {
 bool LADSPA::create_gst_pipeline() {
   GError* error = nullptr;
   std::string target_format = g_value_get_string(
-      GstUtils::get_gst_element_capability(plugins_.get_attached(), "format", GST_PAD_SINK));
+      gst::utils::get_gst_element_capability(plugins_.get_attached(), "format", GST_PAD_SINK));
 
   auto target_channels = g_value_get_int(
-      GstUtils::get_gst_element_capability(plugins_.get_attached(), "channels", GST_PAD_SINK));
+      gst::utils::get_gst_element_capability(plugins_.get_attached(), "channels", GST_PAD_SINK));
 
   std::string description =
       std::string("shmdatasrc name=shmsrc ! audioconvert ! audio/x-raw,format=") + target_format;
@@ -319,7 +319,7 @@ bool LADSPA::on_shmdata_connect(const std::string& shmpath) {
 void LADSPA::create_and_play_gst_pipeline() {
   shmsrc_sub_.reset();
   shmsink_sub_.reset();
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
 
   if (!create_gst_pipeline()) return;
 
@@ -376,7 +376,7 @@ bool LADSPA::on_shmdata_disconnect() {
   // Save the properties values if we reconnect the same plugin.
   save_properties();
 
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
   return true;
 }
 
@@ -400,8 +400,8 @@ bool LADSPA::can_sink_caps(std::string str_caps) {
     return false;
   }
 
-  auto target_rate =
-      GstUtils::get_gst_element_capability_as_range(plugins_.get_attached(), "rate", GST_PAD_SINK);
+  auto target_rate = gst::utils::get_gst_element_capability_as_range(
+      plugins_.get_attached(), "rate", GST_PAD_SINK);
 
   return ((target_rate.first <= rate && rate <= target_rate.second));
 }

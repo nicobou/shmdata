@@ -32,7 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoEncoder,
 GstVideoEncoder::GstVideoEncoder(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   auto suffix = std::string("video-encoded");
-  codecs_ = std::make_unique<GstVideoCodec>(
+  codecs_ = std::make_unique<gst::VideoCodec>(
       static_cast<Quiddity*>(this), std::string(), make_shmpath(suffix));
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
@@ -53,7 +53,7 @@ bool GstVideoEncoder::on_shmdata_connect(const std::string& shmpath) {
 bool GstVideoEncoder::can_sink_caps(const std::string& caps) {
   // assuming codecs_ is internally using videoconvert as first caps negotiating
   // gst element:
-  return GstUtils::can_sink_caps("videoconvert", caps);
+  return gst::utils::can_sink_caps("videoconvert", caps);
 }
 
 }  // namespace switcher

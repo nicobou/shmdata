@@ -17,14 +17,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gst-shmdata-to-cb.hpp"
+#include "./shmdata-to-cb.hpp"
 #include <gst/gst.h>
 #include "../utils/scope-exit.hpp"
 #include "../utils/string-utils.hpp"
 
 namespace switcher {
+namespace gst {
 
-GstShmdataToCb::GstShmdataToCb(const std::string& shmpath, on_caps_cb_t fun)
+ShmdataToCb::ShmdataToCb(const std::string& shmpath, on_caps_cb_t fun)
     : pipe_(nullptr, nullptr), filter_cb_(fun) {
   GstElement* shmdatasrc = gst_element_factory_make("shmdatasrc", nullptr);
   GstElement* typefind = gst_element_factory_make("typefind", nullptr);
@@ -42,11 +43,11 @@ GstShmdataToCb::GstShmdataToCb(const std::string& shmpath, on_caps_cb_t fun)
   is_valid_ = true;
 }
 
-void GstShmdataToCb::on_handoff_cb(GstElement* /*object*/,
+void ShmdataToCb::on_handoff_cb(GstElement* /*object*/,
                                    GstBuffer* buf,
                                    GstPad* /*pad*/,
                                    gpointer user_data) {
-  GstShmdataToCb* context = static_cast<GstShmdataToCb*>(user_data);
+  ShmdataToCb* context = static_cast<ShmdataToCb*>(user_data);
   // getting buffer information:
   GstMapInfo map;
   if (!gst_buffer_map(buf, &map, GST_MAP_READ)) {
@@ -57,11 +58,11 @@ void GstShmdataToCb::on_handoff_cb(GstElement* /*object*/,
   for (auto& it : context->data_cbs_) it.second(map.data, map.size);
 }
 
-void GstShmdataToCb::on_caps(GstElement* typefind,
+void ShmdataToCb::on_caps(GstElement* typefind,
                              guint /*probability */,
                              GstCaps* caps,
                              gpointer user_data) {
-  GstShmdataToCb* context = static_cast<GstShmdataToCb*>(user_data);
+  ShmdataToCb* context = static_cast<ShmdataToCb*>(user_data);
   context->fakesink_ = gst_element_factory_make("fakesink", nullptr);
   g_object_set(G_OBJECT(context->fakesink_),
                "silent",
@@ -82,15 +83,15 @@ void GstShmdataToCb::on_caps(GstElement* typefind,
   if (nullptr != filter) {
     gst_bin_add(GST_BIN(context->pipe_.get_pipeline()), filter);
     gst_element_link_many(typefind, filter, context->fakesink_, nullptr);
-    GstUtils::sync_state_with_parent(filter);
-    GstUtils::sync_state_with_parent(context->fakesink_);
+    gst::utils::sync_state_with_parent(filter);
+    gst::utils::sync_state_with_parent(context->fakesink_);
   } else {
     gst_element_link(typefind, context->fakesink_);
-    GstUtils::sync_state_with_parent(context->fakesink_);
+    gst::utils::sync_state_with_parent(context->fakesink_);
   }
 }
 
-GstShmdataToCb::id_t GstShmdataToCb::add_cb(data_cb_t fun) {
+ShmdataToCb::id_t ShmdataToCb::add_cb(data_cb_t fun) {
   if (!fun) return 0;
   std::unique_lock<std::mutex> lock(mtx_);
   auto res = ++counter_;
@@ -98,7 +99,7 @@ GstShmdataToCb::id_t GstShmdataToCb::add_cb(data_cb_t fun) {
   return res;
 }
 
-bool GstShmdataToCb::remove_cb(id_t cb_id) {
+bool ShmdataToCb::remove_cb(id_t cb_id) {
   std::unique_lock<std::mutex> lock(mtx_);
   auto it = data_cbs_.find(cb_id);
   if (it == data_cbs_.end()) return false;
@@ -106,7 +107,7 @@ bool GstShmdataToCb::remove_cb(id_t cb_id) {
   return true;
 }
 
-std::string GstShmdataToCb::get_caps() const {
+std::string ShmdataToCb::get_caps() const {
   if (!fakesink_caps_.empty()) return fakesink_caps_;
   if (nullptr == fakesink_) {
     return std::string();
@@ -124,4 +125,5 @@ std::string GstShmdataToCb::get_caps() const {
   return fakesink_caps_;
 }
 
+}  // namespace gst
 }  // namespace switcher

@@ -35,8 +35,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
 PulseSrc::PulseSrc(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       StartableQuiddity(this),
-      mainloop_(std::make_unique<GlibMainLoop>()),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
+      mainloop_(std::make_unique<gst::GlibMainLoop>()),
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
   register_writer_suffix("audio");
   pmanage<MPtr(&PContainer::make_group)>(
       "advanced", "Advanced configuration", "Advanced configuration");
@@ -59,11 +59,11 @@ PulseSrc::PulseSrc(quid::Config&& conf)
   g_object_set(G_OBJECT(pulsesrc_.get_raw()), "client-name", get_name().c_str(), nullptr);
   g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   std::unique_lock<std::mutex> lock(devices_mutex_);
-  GstUtils::g_idle_add_full_with_context(mainloop_->get_main_context(),
-                                         G_PRIORITY_DEFAULT_IDLE,
-                                         async_get_pulse_devices,
-                                         this,
-                                         nullptr);
+  gst::utils::g_idle_add_full_with_context(mainloop_->get_main_context(),
+                                           G_PRIORITY_DEFAULT_IDLE,
+                                           async_get_pulse_devices,
+                                           this,
+                                           nullptr);
   // waiting for devices to be updated
   devices_cond_.wait(lock);
   if (!connected_to_pulse_) {
@@ -101,7 +101,7 @@ PulseSrc::~PulseSrc() {
   GMainContext* main_context = mainloop_->get_main_context();
   if (nullptr != main_context && connected_to_pulse_) {
     std::unique_lock<std::mutex> lock(quit_mutex_);
-    GstUtils::g_idle_add_full_with_context(
+    gst::utils::g_idle_add_full_with_context(
         main_context, G_PRIORITY_DEFAULT_IDLE, quit_pulse, this, nullptr);
     quit_cond_.wait(lock);
   }
@@ -119,8 +119,8 @@ gboolean PulseSrc::quit_pulse(void* user_data) {
 }
 
 bool PulseSrc::remake_elements() {
-  if (!UGstElem::renew(pulsesrc_, {"client-name", "volume", "mute", "device"}) ||
-      !UGstElem::renew(shmsink_, {"socket-path"}))
+  if (!gst::UGstElem::renew(pulsesrc_, {"client-name", "volume", "mute", "device"}) ||
+      !gst::UGstElem::renew(shmsink_, {"socket-path"}))
     return false;
   return true;
 }
@@ -330,7 +330,7 @@ bool PulseSrc::stop() {
       "volume", GPropToProp::to_prop(G_OBJECT(pulsesrc_.get_raw()), "volume"));
   mute_id_ = pmanage<MPtr(&PContainer::push)>(
       "mute", GPropToProp::to_prop(G_OBJECT(pulsesrc_.get_raw()), "mute"));
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
   pmanage<MPtr(&PContainer::enable)>(devices_id_);
   return true;
 }

@@ -20,7 +20,7 @@
 #include "./switcher.hpp"
 #include <string.h>
 #include <fstream>
-#include "./gst/gst-utils.hpp"
+#include "./gst/utils.hpp"
 #include "./infotree/information-tree-json.hpp"
 #include "./quiddity/bundle/bundle-description-parser.hpp"
 #include "./quiddity/bundle/bundle.hpp"
@@ -268,7 +268,7 @@ void Switcher::apply_gst_configuration() {
   auto configuration = conf_.get();
   for (const auto& plugin : configuration->get_child_keys("gstreamer.primary_priority")) {
     int priority = configuration->branch_get_value("gstreamer.primary_priority." + plugin);
-    if (!GstInitialized::set_plugin_as_primary(plugin, priority)) {
+    if (!gst::Initialized::set_plugin_as_primary(plugin, priority)) {
       log_->warning("Unable to find Gstreamer plugin '%'. Check if plugin is installed.", plugin);
     }
   }

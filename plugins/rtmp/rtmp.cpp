@@ -33,7 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RTMP,
 RTMP::RTMP(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
   stream_app_url_id_ = pmanage<MPtr(&PContainer::make_string)>(
       "stream_app_url",
       [this](const std::string& val) {
@@ -81,7 +81,7 @@ RTMP::RTMP(quid::Config&& conf)
 bool RTMP::create_gst_pipeline() {
   shmaudio_sub_.reset();
   shmvideo_sub_.reset();
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
 
   std::string dest = "rtmpsink";
   if (audio_shmpath_.empty() || video_shmpath_.empty()) {

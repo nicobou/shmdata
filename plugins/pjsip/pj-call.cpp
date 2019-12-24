@@ -410,7 +410,7 @@ void PJCall::call_on_media_update(pjsip_inv_session* inv, pj_status_t status) {
           std::string(remote_sdp->origin.addr.ptr, remote_sdp->origin.addr.slen));
       auto it = SIPPlugin::this_->sip_calls_->readers_.find(call->media[i].shm_path_to_send);
       if (it == SIPPlugin::this_->sip_calls_->readers_.end()) {
-        SIPPlugin::this_->warning("no GstShmdataToCb found for sending % (PJCall)",
+        SIPPlugin::this_->warning("no ShmdataToCb found for sending % (PJCall)",
                                   call->media[i].shm_path_to_send);
       } else {
         // set default address for ICE sending
@@ -570,7 +570,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
                                                                      PJ_ICE_SESS_ROLE_CONTROLLED);
   if (!call->ice_trans_) SIPPlugin::this_->warning("ICE transport initialization failed");
   // initializing shmdata writers and linking with ICE transport
-  call->recv_rtp_session_ = std::make_unique<RtpSession>();
+  call->recv_rtp_session_ = std::make_unique<gst::RTPSession>();
   for (auto& it : media_to_receive) {
     auto shm_prefix = SIPPlugin::this_->get_shmpath_prefix() +
                       SIPPlugin::this_->get_manager_name() + "_" + SIPPlugin::this_->get_name() +
@@ -616,8 +616,8 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     std::string quid_name =
         media_label + "-" + std::string(call->peer_uri, 0, call->peer_uri.find('@'));
     SIPPlugin::this_->create_quiddity_stream(call->peer_uri, quid_name);
-    // Create a RTPReceiver
-    call->rtp_receivers_.emplace_back(std::make_unique<RTPReceiver>(
+    // Create a gst::RTPReceiver
+    call->rtp_receivers_.emplace_back(std::make_unique<gst::RTPReceiver>(
         call->recv_rtp_session_.get(),
         rtp_shmpath,
         [=](GstElement* el, const std::string& media_type, const std::string&) {
@@ -883,7 +883,7 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
     return false;
   }
   // making SDP description
-  SDPDescription desc(call->ice_trans_send_->get_first_candidate_host());
+  gst::SDPDescription desc(call->ice_trans_send_->get_first_candidate_host());
   // adding ICE ufrag and pwd to sdp session
   auto ufrag_pwd = call->ice_trans_send_->get_ufrag_and_passwd();
   if (!desc.add_msg_attribute("ice-ufrag", std::string(ufrag_pwd.first.ptr, ufrag_pwd.first.slen)))
@@ -922,7 +922,7 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
                StringUtils::replace_char(StringUtils::base64_encode(label), '=', "") + "\"";
     GstCaps* caps = gst_caps_from_string(rtpcaps.c_str());
     On_scope_exit { gst_caps_unref(caps); };
-    SDPMedia media;
+    gst::SDPMedia media;
     media.set_media_info_from_caps(caps);
     media.set_port(default_ports.back());
     for (auto& it : candidates.back()) {
@@ -1099,7 +1099,7 @@ void PJCall::make_attach_shmdata_to_contact(const std::string& shmpath,
                                      false);  // do not signal since the branch will be re-grafted
     if (!tree) tree = InfoTree::make();
     if (readers_.find(shmpath) == readers_.cend()) {
-      readers_.emplace(shmpath, std::make_unique<RTPSender>(&rtp_session_, shmpath, 1400));
+      readers_.emplace(shmpath, std::make_unique<gst::RTPSender>(&rtp_session_, shmpath, 1400));
       reader_ref_count_[shmpath] = 1;
     } else {
       ++reader_ref_count_[shmpath];

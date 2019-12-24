@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 #include "./configuration/configuration.hpp"
-#include "./gst/gst-initialized.hpp"
+#include "./gst/initialized.hpp"
 #include "./infotree/information-tree.hpp"
 #include "./logger/base-logger.hpp"
 #include "./logger/console-logger.hpp"
@@ -33,7 +33,7 @@
 #include "./utils/make-consultable.hpp"
 
 namespace switcher {
-class Switcher : public GstInitialized {
+class Switcher : public gst::Initialized {
   friend class Bundle;  // access to qcontainer_ and qfactory_
  public:
   using ptr = std::shared_ptr<Switcher>;

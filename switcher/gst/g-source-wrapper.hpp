@@ -25,6 +25,7 @@
 #include <memory>
 
 namespace switcher {
+namespace gst {
 class GSourceWrapper {
  public:
   using callback = std::function<void()>;
@@ -51,5 +52,6 @@ class GSourceWrapper {
   static gboolean source_func(gpointer user_data);
 };
 
+}  // namespace gst
 }  // namespace switcher
 #endif

@@ -337,7 +337,7 @@ New features:
 Bug fixes:
 * Fixed nvenc test after bundle pipeline syntax change.
 * Use docker image for CI to speed it up.
-* Fixed a potential race condition between GstPipeliner main loop and its destructor.
+* Fixed a potential race condition between gst::Pipeliner main loop and its destructor.
 * MIDI unit test does not fail if /dev/snd cannot be found.
 * Fixed deadlock when deleting a badly created glfwin. Also, overlay is not mandatory now, if something wrong happens during overlay initialization, it will only be hidden.
 * Unify OSC quiddity naming.
@@ -460,7 +460,7 @@ New features:
 * Cleaned up UGstElem lifecycle (better refcount management) and fixed PContainer::replace so it doesn't reset the index of the selection.
 * Adding more properties to videotestsrc and templating selection.
 * Removing more codec option from gst-video-codec and gst-audio-codec.
-* Added generic methods to get gstreamer elements caps values in GstUtils.
+* Added generic methods to get gstreamer elements caps values in gst::utils.
 * Adding SIP whitelist.
 * Using nvenc 7.
 * Only record the shmdata connections state instead of each connect/disconnect command when saving a session.

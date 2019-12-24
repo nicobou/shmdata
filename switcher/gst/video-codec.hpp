@@ -23,21 +23,22 @@
 #include <unordered_set>
 #include <vector>
 #include "../shmdata/gst-shm-tree-updater.hpp"
-#include "./gst-pipeliner.hpp"
+#include "./pipeliner.hpp"
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
+namespace gst {
 class quiddity;
 
-class GstVideoCodec {
+class VideoCodec {
  public:
-  GstVideoCodec(Quiddity* quid,
+  VideoCodec(Quiddity* quid,
                 const std::string& shmpath_to_encode,
                 const std::string& shmpath_encoded = {});
-  GstVideoCodec() = delete;
-  ~GstVideoCodec() = default;
-  GstVideoCodec(const GstVideoCodec&) = delete;
-  GstVideoCodec& operator=(const GstVideoCodec&) = delete;
+  VideoCodec() = delete;
+  ~VideoCodec() = default;
+  VideoCodec(const VideoCodec&) = delete;
+  VideoCodec& operator=(const VideoCodec&) = delete;
 
   void set_shm(const std::string& shmpath);
   void set_none();
@@ -52,7 +53,7 @@ class GstVideoCodec {
   std::string shm_encoded_path_;
   bool custom_shmsink_path_;
   // gst pipeline
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<Pipeliner> gst_pipeline_;
   // video encoding
   UGstElem shmsrc_{"shmdatasrc"};
   UGstElem queue_codec_element_{"queue"};
@@ -104,5 +105,6 @@ class GstVideoCodec {
   static gint sink_compare_ranks(GstPluginFeature* f1, GstPluginFeature* f2);
 };
 
+}  // namespace gst
 }  // namespace switcher
 #endif

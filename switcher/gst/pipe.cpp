@@ -18,13 +18,13 @@
  */
 
 /**
- * The GstPipeline RAII class
+ * The Pipeline RAII class
  */
 
-#include "./gst-pipe.hpp"
+#include "./pipe.hpp"
 #include <glib-object.h>
 #include "../utils/scope-exit.hpp"
-#include "./gst-utils.hpp"
+#include "./utils.hpp"
 
 #include <chrono>
 #include <thread>
@@ -32,7 +32,8 @@
 using namespace std::chrono_literals;
 
 namespace switcher {
-GstPipe::GstPipe(GMainContext* context,
+namespace gst {
+Pipe::Pipe(GMainContext* context,
                  GstBusSyncReply (*bus_sync_cb)(GstBus* /*bus*/,
                                                 GstMessage* msg,
                                                 gpointer user_data),
@@ -47,14 +48,14 @@ GstPipe::GstPipe(GMainContext* context,
   reinterpret_cast<GstBusSource*>(source_)->bus = gst_pipeline_get_bus(GST_PIPELINE(pipeline_));
   g_source_attach(source_, gmaincontext_);
   // add a watch to a bus is not working,
-  // (using g_idle_add from sync callback in GstPipeliner instead)
+  // (using g_idle_add from sync callback in Pipeliner instead)
   gst_bus_set_sync_handler(
       reinterpret_cast<GstBusSource*>(source_)->bus, bus_sync_cb, user_data, nullptr);
   reinterpret_cast<GstBusSource*>(source_)->inited = FALSE;
 }
 
-gboolean GstPipe::gst_pipeline_delete(gpointer user_data) {
-  auto context = static_cast<GstPipe*>(user_data);
+gboolean Pipe::gst_pipeline_delete(gpointer user_data) {
+  auto context = static_cast<Pipe*>(user_data);
   std::unique_lock<std::mutex> lock(context->end_);
   gst_element_set_state(context->pipeline_, GST_STATE_NULL);
   gst_object_unref(GST_OBJECT(context->pipeline_));
@@ -62,7 +63,7 @@ gboolean GstPipe::gst_pipeline_delete(gpointer user_data) {
   return FALSE;
 }
 
-GstPipe::~GstPipe() {
+Pipe::~Pipe() {
   std::unique_lock<std::mutex> lock(end_);
   auto gsrc = g_idle_source_new();
   g_source_set_callback(gsrc, gst_pipeline_delete, this, nullptr);
@@ -71,18 +72,18 @@ GstPipe::~GstPipe() {
   g_source_unref(source_);
 }
 
-gboolean GstPipe::source_prepare(GSource* source, gint* timeout) {
+gboolean Pipe::source_prepare(GSource* source, gint* timeout) {
   GstBusSource* bsrc = (GstBusSource*)source;
   *timeout = -1;
   return gst_bus_have_pending(bsrc->bus);
 }
 
-gboolean GstPipe::source_check(GSource* source) {
+gboolean Pipe::source_check(GSource* source) {
   GstBusSource* bsrc = (GstBusSource*)source;
   return gst_bus_have_pending(bsrc->bus);
 }
 
-gboolean GstPipe::source_dispatch(GSource* source, GSourceFunc callback, gpointer user_data) {
+gboolean Pipe::source_dispatch(GSource* source, GSourceFunc callback, gpointer user_data) {
   GstBusFunc handler = (GstBusFunc)callback;
   GstBusSource* bsrc = (GstBusSource*)source;
   gboolean result = FALSE;
@@ -97,14 +98,14 @@ gboolean GstPipe::source_dispatch(GSource* source, GSourceFunc callback, gpointe
   return result;
 }
 
-void GstPipe::source_finalize(GSource* source) {
+void Pipe::source_finalize(GSource* source) {
   GstBusSource* bsrc = (GstBusSource*)source;
   gst_object_unref(bsrc->bus);
   bsrc->bus = nullptr;
 }
 
-gboolean GstPipe::gst_play(gpointer user_data) {
-  auto context = static_cast<GstPipe*>(user_data);
+gboolean Pipe::gst_play(gpointer user_data) {
+  auto context = static_cast<Pipe*>(user_data);
   std::unique_lock<std::mutex> lock(context->play_mtx_);
   if (context->playing_asked_) {
     gst_element_set_state(context->pipeline_, GST_STATE_PLAYING);
@@ -114,7 +115,7 @@ gboolean GstPipe::gst_play(gpointer user_data) {
   return FALSE;
 }
 
-bool GstPipe::play(bool play) {
+bool Pipe::play(bool play) {
   std::unique_lock<std::mutex> lock(play_mtx_);
   if (playing_asked_ == play) return playing_asked_;
   playing_asked_ = play;
@@ -124,7 +125,7 @@ bool GstPipe::play(bool play) {
   return playing_asked_;
 }
 
-BoolLog GstPipe::seek(gdouble position) {
+BoolLog Pipe::seek(gdouble position) {
   return gst_element_seek(pipeline_,
                           speed_,
                           GST_FORMAT_TIME,
@@ -137,7 +138,7 @@ BoolLog GstPipe::seek(gdouble position) {
              : BoolLog(false, "seek not handled");
 }
 
-BoolLog GstPipe::seek_key_frame(gdouble position) {
+BoolLog Pipe::seek_key_frame(gdouble position) {
   return gst_element_seek(
              pipeline_,
              speed_,
@@ -151,7 +152,7 @@ BoolLog GstPipe::seek_key_frame(gdouble position) {
              : BoolLog(false, "seek not handled");
 }
 
-BoolLog GstPipe::speed(gdouble speed) {
+BoolLog Pipe::speed(gdouble speed) {
   speed_ = speed;
   // query position
   GstQuery* query = gst_query_new_position(GST_FORMAT_TIME);
@@ -176,7 +177,7 @@ BoolLog GstPipe::speed(gdouble speed) {
              : BoolLog(false, "speed not handled");
 }
 
-void GstPipe::query_position_and_length() {
+void Pipe::query_position_and_length() {
   gint64 pos;
   if (gst_element_query_position(pipeline_, GST_FORMAT_TIME, &pos) &&
       gst_element_query_duration(pipeline_, GST_FORMAT_TIME, &length_)) {
@@ -185,6 +186,7 @@ void GstPipe::query_position_and_length() {
   }
 }
 
-GstElement* GstPipe::get_pipeline() { return pipeline_; }
+GstElement* Pipe::get_pipeline() { return pipeline_; }
 
+}  // namespace gst
 }  // namespace switcher

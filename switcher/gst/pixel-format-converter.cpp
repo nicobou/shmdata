@@ -17,14 +17,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gst-pixel-format-converter.hpp"
+#include "./pixel-format-converter.hpp"
 #include "../utils/scope-exit.hpp"
 
 namespace switcher {
-GstPixelFormatConverter::GstPixelFormatConverter(const std::string& shmpath_to_convert,
+namespace gst {
+PixelFormatConverter::PixelFormatConverter(const std::string& shmpath_to_convert,
                                                  const std::string& shmpath_converted,
                                                  const std::string& format_name)
-    : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
+    : gst_pipeline_(std::make_unique<Pipeliner>(nullptr, nullptr)) {
   if (shmpath_converted.empty() || shmpath_to_convert.empty()) {
     return;
   }
@@ -36,7 +37,7 @@ GstPixelFormatConverter::GstPixelFormatConverter(const std::string& shmpath_to_c
   gst_caps_unref(caps);
   g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_to_convert.c_str(), nullptr);
 
-  auto nthreads_videoconvert = GstUtils::get_nthreads_property_value();
+  auto nthreads_videoconvert = gst::utils::get_nthreads_property_value();
   if (nthreads_videoconvert > 0) {
     g_object_set(G_OBJECT(color_space_codec_element_.get_raw()),
                  "n-threads",
@@ -67,12 +68,13 @@ GstPixelFormatConverter::GstPixelFormatConverter(const std::string& shmpath_to_c
   is_valid_ = true;
 }
 
-std::string GstPixelFormatConverter::get_caps_str(const std::string& format_name) const {
+std::string PixelFormatConverter::get_caps_str(const std::string& format_name) const {
   return std::string("video/x-raw, format=(string)") + format_name;
 }
 
-bool GstPixelFormatConverter::can_sink_caps(const std::string& caps) {
-  return GstUtils::can_sink_caps("videoconvert", caps);
+bool PixelFormatConverter::can_sink_caps(const std::string& caps) {
+  return gst::utils::can_sink_caps("videoconvert", caps);
 }
 
+}  // namespace gst
 }  // namespace switcher

@@ -22,7 +22,7 @@
 
 #include <memory>
 #include <unordered_map>
-#include "../gst/gst-pipeliner.hpp"
+#include "../gst/pipeliner.hpp"
 #include "../quiddity/quiddity.hpp"
 #include "../shmdata/gst-shm-tree-updater.hpp"
 #include "../utils/counter-map.hpp"
@@ -36,9 +36,9 @@ class Uridecodebin : public Quiddity {
   Uridecodebin& operator=(const Uridecodebin&) = delete;
 
  private:
-  GstPipe::on_msg_async_cb_t on_msg_async_cb_{nullptr};
-  GstPipe::on_msg_sync_cb_t on_msg_sync_cb_{nullptr};
-  GstPipeliner::on_error_cb_t on_error_cb_{nullptr};
+  gst::Pipe::on_msg_async_cb_t on_msg_async_cb_{nullptr};
+  gst::Pipe::on_msg_sync_cb_t on_msg_sync_cb_{nullptr};
+  gst::Pipeliner::on_error_cb_t on_error_cb_{nullptr};
   bool error_{false};
 
   GstElement* uridecodebin_{nullptr};
@@ -50,7 +50,7 @@ class Uridecodebin : public Quiddity {
   std::string uri_{};
   CounterMap counter_{};
   std::vector<std::unique_ptr<GstShmTreeUpdater>> shm_subs_{};
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
 
   void init_uridecodebin();
   void destroy_uridecodebin();

@@ -19,12 +19,13 @@
 
 #include "./rtp-sender.hpp"
 #include "../utils/scope-exit.hpp"
-#include "./gst-rtppayloader-finder.hpp"
 #include "./rtp-session.hpp"
+#include "./rtppayloader-finder.hpp"
 
 namespace switcher {
+namespace gst {
 
-RTPSender::RTPSender(RtpSession* session, const std::string& shmpath, unsigned int mtu)
+RTPSender::RTPSender(RTPSession* session, const std::string& shmpath, unsigned int mtu)
     : session_(session),
       shmpath_(shmpath),
       mtu_(mtu),
@@ -43,16 +44,16 @@ RTPSender::RTPSender(RtpSession* session, const std::string& shmpath, unsigned i
   g_object_set(
       G_OBJECT(fakesink_), "silent", TRUE, "signal-handoffs", TRUE, "sync", FALSE, nullptr);
   g_signal_connect(fakesink_, "handoff", (GCallback)on_handoff_cb, this);
-  GstUtils::sync_state_with_parent(shmdatasrc_);
-  GstUtils::sync_state_with_parent(typefind_);
+  gst::utils::sync_state_with_parent(shmdatasrc_);
+  gst::utils::sync_state_with_parent(typefind_);
   start_cv_.wait_for(lock, std::chrono::milliseconds(200));
 }
 
 RTPSender::~RTPSender() {
-  if (shmdatasrc_) GstUtils::clean_element(shmdatasrc_);
-  if (typefind_) GstUtils::clean_element(typefind_);
-  if (rtp_payloader_) GstUtils::clean_element(rtp_payloader_);
-  if (fakesink_) GstUtils::clean_element(fakesink_);
+  if (shmdatasrc_) gst::utils::clean_element(shmdatasrc_);
+  if (typefind_) gst::utils::clean_element(typefind_);
+  if (rtp_payloader_) gst::utils::clean_element(rtp_payloader_);
+  if (fakesink_) gst::utils::clean_element(fakesink_);
   if (rtp_sink_pad_) gst_element_release_request_pad(session_->rtpsession_, rtp_sink_pad_);
 }
 
@@ -62,7 +63,7 @@ void RTPSender::on_caps(GstElement* typefind,
                         gpointer user_data) {
   RTPSender* context = static_cast<RTPSender*>(user_data);
   // making the RTP payloader
-  GstElementFactory* fact = GstRTPPayloaderFinder::get_factory_by_caps(caps);
+  GstElementFactory* fact = rtppayloaderfinder::get_factory_by_caps(caps);
   if (nullptr != fact)
     context->rtp_payloader_ = gst_element_factory_create(fact, nullptr);
   else
@@ -103,8 +104,8 @@ void RTPSender::on_caps(GstElement* typefind,
   }
 
   // syncing gst elements with pipeline
-  GstUtils::sync_state_with_parent(context->rtp_payloader_);
-  GstUtils::sync_state_with_parent(context->fakesink_);
+  gst::utils::sync_state_with_parent(context->rtp_payloader_);
+  gst::utils::sync_state_with_parent(context->fakesink_);
   std::unique_lock<std::mutex> lock(context->start_m_);
   context->start_cv_.notify_one();
 }
@@ -159,4 +160,5 @@ bool RTPSender::remove_cb(id_t cb_id) {
   return true;
 }
 
+}  // namespace gst
 }  // namespace switcher

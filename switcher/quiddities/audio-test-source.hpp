@@ -23,7 +23,7 @@
 #include <atomic>
 #include <future>
 #include <memory>
-#include "../gst/gst-pipeliner.hpp"
+#include "../gst/pipeliner.hpp"
 #include "../gst/unique-gst-element.hpp"
 #include "../quiddity/quiddity.hpp"
 #include "../quiddity/startable-quiddity.hpp"
@@ -43,7 +43,7 @@ class AudioTestSource : public Quiddity, public StartableQuiddity {
 
   std::string shmpath_{};
   std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
   Selection<> sample_rate_{{"22050", "32000", "44100", "48000", "88200", "96000", "192000"}, 2};
   PContainer::prop_id_t sample_rate_id_;
   double frequency_{440.0};
@@ -56,9 +56,9 @@ class AudioTestSource : public Quiddity, public StartableQuiddity {
   PContainer::prop_id_t format_id_;
   PContainer::prop_id_t waveforms_id_{0};
 
-  UGstElem audiotestsrc_{"audiotestsrc"};
-  UGstElem capsfilter_{"capsfilter"};
-  UGstElem shmdatasink_{"shmdatasink"};
+  gst::UGstElem audiotestsrc_{"audiotestsrc"};
+  gst::UGstElem capsfilter_{"capsfilter"};
+  gst::UGstElem shmdatasink_{"shmdatasink"};
   bool start() final;
   bool stop() final;
   void update_caps();

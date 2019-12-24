@@ -18,7 +18,7 @@
  */
 
 #include "./file-decoder.hpp"
-#include "../gst/gst-utils.hpp"
+#include "../gst/utils.hpp"
 #include "../utils/scope-exit.hpp"
 
 namespace switcher {
@@ -105,7 +105,7 @@ bool FileDecoder::load_file(const std::string& path) {
   media_loaded_ = false;
   counter_.reset_counter_map();
   if (0 != cur_pos_id_) pmanage<MPtr(&PContainer::remove)>(cur_pos_id_);
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, [this, path](GstMessage* message) {
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, [this, path](GstMessage* message) {
     if (GST_MESSAGE_TYPE(message) == GST_MESSAGE_DURATION) {
       gint64 duration = GST_CLOCK_TIME_NONE;
       if (gst_element_query_duration(
@@ -118,7 +118,7 @@ bool FileDecoder::load_file(const std::string& path) {
                 if (play_) return gst_pipeline_->seek(cur_pos_);
                 if (!gst_pipeline_->seek_key_frame(cur_pos_)) return false;
                 gst_pipeline_->play(true);
-                GstUtils::wait_state_changed(gst_pipeline_->get_pipeline());
+                gst::utils::wait_state_changed(gst_pipeline_->get_pipeline());
                 gst_pipeline_->play(false);
               }
               return true;
@@ -150,7 +150,7 @@ bool FileDecoder::load_file(const std::string& path) {
   filesrc_ = gst_element_factory_make("filesrc", nullptr);
   g_object_set(G_OBJECT(filesrc_), "location", path.c_str(), nullptr);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), filesrc_);
-  decodebin_ = std::make_unique<DecodebinToShmdata>(
+  decodebin_ = std::make_unique<gst::DecodebinToShmdata>(
       gst_pipeline_.get(),
       [this](GstElement* el, const std::string& media_type, const std::string& media_label) {
         configure_shmdatasink(el, media_type, media_label);
@@ -177,7 +177,7 @@ bool FileDecoder::load_file(const std::string& path) {
   {
     std::unique_lock<std::mutex> lock(media_loaded_mutex_);
     gst_element_set_state(gst_pipeline_->get_pipeline(), GST_STATE_PAUSED);
-    GstUtils::wait_state_changed(gst_pipeline_->get_pipeline());
+    gst::utils::wait_state_changed(gst_pipeline_->get_pipeline());
     if (!media_loaded_cond_.wait_for(
             lock, std::chrono::milliseconds(2000), [this] { return media_loaded_; })) {
       warning("file-src: media loading timed out");

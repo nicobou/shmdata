@@ -89,7 +89,8 @@ VideoTestSource::VideoTestSource(quid::Config&& conf)
           "Select the video framerate",
           framerates_)),
       formats_(Selection<>(
-          GstUtils::get_gst_element_capability_as_list("videotestsrc", "format", GST_PAD_SRC), 0)),
+          gst::utils::get_gst_element_capability_as_list("videotestsrc", "format", GST_PAD_SRC),
+          0)),
       formats_id_(pmanage<MPtr(&PContainer::make_selection<>)>("format",
                                                                [this](const IndexOrName& val) {
                                                                  formats_.select(val);
@@ -99,7 +100,7 @@ VideoTestSource::VideoTestSource(quid::Config&& conf)
                                                                "Video Pixel Format",
                                                                "Select the pixel video format",
                                                                formats_)),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
   // We do this so that width and height properties states are correct.
   pmanage<MPtr(&PContainer::set_to_current)>(resolutions_id_);
 
@@ -157,8 +158,9 @@ bool VideoTestSource::start() {
 
   bool VideoTestSource::stop() {
     shm_sub_.reset(nullptr);
-    if (!UGstElem::renew(videotestsrc_, {"is-live", "pattern"}) ||
-        !UGstElem::renew(shmdatasink_, {"socket-path"}) || !UGstElem::renew(capsfilter_)) {
+    if (!gst::UGstElem::renew(videotestsrc_, {"is-live", "pattern"}) ||
+        !gst::UGstElem::renew(shmdatasink_, {"socket-path"}) ||
+        !gst::UGstElem::renew(capsfilter_)) {
       warning("error initializing gst element for videotestsrc");
       gst_pipeline_.reset();
       return false;
@@ -166,7 +168,7 @@ bool VideoTestSource::start() {
     pmanage<MPtr(&PContainer::replace)>(
         pmanage<MPtr(&PContainer::get_id)>("pattern"),
         GPropToProp::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
-    gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+    gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
     gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                      shmdatasink_.get_raw(),
                      capsfilter_.get_raw(),

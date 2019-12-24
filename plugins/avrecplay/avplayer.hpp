@@ -21,7 +21,7 @@
 #define SWITCHER_AVPLAYER_HPP
 
 #include <switcher/quiddity/startable-quiddity.hpp>
-#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/gst/pipeliner.hpp"
 #include "switcher/shmdata/gst-shm-tree-updater.hpp"
 #include "switcher/shmdata/shmdata-connector.hpp"
 #include "switcher/shmdata/shmdata-follower.hpp"
@@ -54,7 +54,7 @@ class AVPlayer : public Quiddity, public StartableQuiddity {
   ShmdataConnector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
   std::vector<std::unique_ptr<ShmFile>> files_list_{};
   GstElement* avplay_bin_{nullptr};  //!< Full recording pipeline
-  std::unique_ptr<GstPipeliner> gst_pipeline_{nullptr};
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};
   int64_t track_duration_{0};
   std::string playpath_{};
   int position_{0};

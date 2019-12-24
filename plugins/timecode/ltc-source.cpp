@@ -290,7 +290,7 @@ bool LTCSource::on_shmdata_disconnect() {
 }
 
 bool LTCSource::can_sink_caps(const std::string& str_caps) {
-  return GstUtils::can_sink_caps("audioconvert", str_caps);
+  return gst::utils::can_sink_caps("audioconvert", str_caps);
 }
 
 void LTCSource::write_samples_to_shmdata(const unsigned int& nb_samples) {

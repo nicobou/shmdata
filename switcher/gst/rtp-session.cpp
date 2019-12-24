@@ -20,10 +20,11 @@
 #include "./rtp-session.hpp"
 
 namespace switcher {
+namespace gst {
 
-RtpSession::RtpSession()
-    : gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
-      rtpsession_(GstUtils::make_element("rtpbin", nullptr)) {
+RTPSession::RTPSession()
+    : gst_pipeline_(std::make_unique<Pipeliner>(nullptr, nullptr)),
+      rtpsession_(gst::utils::make_element("rtpbin", nullptr)) {
   if (!gst_pipeline_ || !rtpsession_) {
     if (rtpsession_) gst_object_unref(rtpsession_);
     return;
@@ -44,4 +45,5 @@ RtpSession::RtpSession()
   gst_pipeline_->play(true);
 }
 
+}  // namespace gst
 }  // namespace switcher

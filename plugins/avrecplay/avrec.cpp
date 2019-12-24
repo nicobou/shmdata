@@ -44,7 +44,7 @@ AVRecorder::AVRecorder(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       StartableQuiddity(this),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
   // Create a list of all available gstreamer muxers if not already done.
   auto mux_factories =
       gst_element_factory_list_get_elements(GST_ELEMENT_FACTORY_TYPE_MUXER, GST_RANK_SECONDARY);
@@ -171,7 +171,7 @@ std::string AVRecorder::generate_pipeline_description() {
 
 bool AVRecorder::start() {
   if (recpath_.empty()) return false;
-  gst_pipeline_ = std::make_unique<GstPipeliner>(
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(
       nullptr, [this](GstMessage* msg) { return this->bus_sync(msg); });
 
   GError* error = nullptr;

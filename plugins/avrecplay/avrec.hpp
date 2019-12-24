@@ -21,7 +21,7 @@
 #define SWITCHER_AVREC_HPP
 
 #include <switcher/quiddity/startable-quiddity.hpp>
-#include "switcher/gst/gst-pipeliner.hpp"
+#include "switcher/gst/pipeliner.hpp"
 #include "switcher/shmdata/shmdata-connector.hpp"
 #include "switcher/shmdata/shmdata-follower.hpp"
 
@@ -88,7 +88,7 @@ class AVRecorder : public Quiddity, public StartableQuiddity {
 
   bool is_valid_{false};      //!< Used to validate that the construction of the quiddity worked
   ShmdataConnector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
-  std::unique_ptr<GstPipeliner> gst_pipeline_{nullptr};  //!< Gstreamer pipeline
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};  //!< Gstreamer pipeline
   GstElement* avrec_bin_{nullptr};                       //!< Full recording pipeline
 
   std::mutex eos_m_{};

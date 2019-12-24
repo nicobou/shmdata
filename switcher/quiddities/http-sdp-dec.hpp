@@ -25,7 +25,7 @@
 #include <string>
 #include "../gst/decodebin-to-shmdata.hpp"
 #include "../gst/g-source-wrapper.hpp"
-#include "../gst/gst-pipeliner.hpp"
+#include "../gst/pipeliner.hpp"
 #include "../gst/unique-gst-element.hpp"
 #include "../shmdata/gst-shm-tree-updater.hpp"
 #include "../utils/counter-map.hpp"
@@ -36,18 +36,18 @@ class HTTPSDPDec : public Quiddity {
   HTTPSDPDec(quid::Config&&);
 
  private:
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
-  UGstElem souphttpsrc_;
-  UGstElem sdpdemux_;
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
+  gst::UGstElem souphttpsrc_;
+  gst::UGstElem sdpdemux_;
   bool is_dataurisrc_{false};
   guint retry_delay_{1000};
   bool decompress_streams_{true};
   PContainer::prop_id_t decompress_streams_id_;
-  // will maintain a max of two GSourceWrapper in order to avoid destructing
+  // will maintain a max of two gst::GSourceWrapper in order to avoid destructing
   // itself from inside the GSource
-  std::list<GSourceWrapper::uptr> on_error_{};
+  std::list<gst::GSourceWrapper::uptr> on_error_{};
   std::string uri_{};
-  std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_{};
+  std::list<std::unique_ptr<gst::DecodebinToShmdata>> decodebins_{};
   std::string src_element_class_{"souphttpsrc"};
   CounterMap counter_{};
   std::vector<std::unique_ptr<GstShmTreeUpdater>> shm_subs_{};

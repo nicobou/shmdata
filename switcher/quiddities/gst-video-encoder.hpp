@@ -21,7 +21,7 @@
 #define __SWITCHER_GST_VIDEO_ENCODER_H__
 
 #include <memory>
-#include "../gst/gst-video-codec.hpp"
+#include "../gst/video-codec.hpp"
 #include "../quiddity/quiddity.hpp"
 #include "../shmdata/shmdata-connector.hpp"
 
@@ -36,7 +36,7 @@ class GstVideoEncoder : public Quiddity {
  private:
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
-  std::unique_ptr<GstVideoCodec> codecs_{nullptr};
+  std::unique_ptr<gst::VideoCodec> codecs_{nullptr};
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string& shmdata_sochet_path);
   bool can_sink_caps(const std::string& caps);

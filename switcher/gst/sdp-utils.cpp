@@ -20,6 +20,7 @@
 #include "./sdp-utils.hpp"
 
 namespace switcher {
+namespace gst {
 SDPMedia::SDPMedia() { gst_sdp_media_new(&media_); }
 
 SDPMedia::~SDPMedia() {
@@ -184,4 +185,5 @@ bool SDPDescription::add_media(const SDPMedia& media) {
   return true;
 }
 
+}  // namespace gst
 }  // namespace switcher

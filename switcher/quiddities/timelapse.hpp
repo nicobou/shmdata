@@ -25,7 +25,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
-#include "../gst/gst-video-timelapse.hpp"
+#include "../gst/video-timelapse.hpp"
 #include "../quiddity/property/fraction.hpp"
 #include "../quiddity/quiddity.hpp"
 #include "../shmdata/shmdata-connector.hpp"
@@ -78,8 +78,8 @@ class Timelapse : public Quiddity {
 
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
-  GstVideoTimelapseConfig timelapse_config_;
-  std::map<std::string, std::unique_ptr<GstVideoTimelapse>> timelapse_{};
+  gst::VideoTimelapseConfig timelapse_config_;
+  std::map<std::string, std::unique_ptr<gst::VideoTimelapse>> timelapse_{};
 
   bool on_shmdata_disconnect(const std::string& shmdata_sochet_path);
   bool on_shmdata_connect(const std::string& shmdata_sochet_path);

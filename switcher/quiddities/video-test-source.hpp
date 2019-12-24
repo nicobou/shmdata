@@ -22,7 +22,7 @@
 
 #include <memory>
 #include <vector>
-#include "../gst/gst-pipeliner.hpp"
+#include "../gst/pipeliner.hpp"
 #include "../gst/unique-gst-element.hpp"
 #include "../quiddity/property/fraction.hpp"
 #include "../quiddity/quiddity.hpp"
@@ -77,10 +77,10 @@ class VideoTestSource : public Quiddity, public StartableQuiddity {
   // Shmdata tree updater
   std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
   // gst elements
-  UGstElem videotestsrc_{"videotestsrc"};
-  UGstElem capsfilter_{"capsfilter"};
-  UGstElem shmdatasink_{"shmdatasink"};
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  gst::UGstElem videotestsrc_{"videotestsrc"};
+  gst::UGstElem capsfilter_{"capsfilter"};
+  gst::UGstElem shmdatasink_{"shmdatasink"};
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
   bool start() final;
   bool stop() final;
   void update_caps();

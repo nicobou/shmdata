@@ -22,9 +22,9 @@
 
 #include <string>
 
-#include "switcher/gst/gst-pipeliner.hpp"
-#include "switcher/gst/gst-utils.hpp"
+#include "switcher/gst/pipeliner.hpp"
 #include "switcher/gst/unique-gst-element.hpp"
+#include "switcher/gst/utils.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/shmdata/shmdata-connector.hpp"
 #include "switcher/shmdata/shmdata-follower.hpp"
@@ -46,13 +46,13 @@ class Cropper : public Quiddity {
   bool create_pipeline();
   bool can_sink_caps(const std::string& caps);
 
-  UGstElem shmsrc_{"shmdatasrc"};
-  UGstElem queue_element_{"queue"};
-  UGstElem cropper_element_{"videocrop"};
-  UGstElem scaler_element_{"videoscale"};
-  UGstElem shmsink_{"shmdatasink"};
+  gst::UGstElem shmsrc_{"shmdatasrc"};
+  gst::UGstElem queue_element_{"queue"};
+  gst::UGstElem cropper_element_{"videocrop"};
+  gst::UGstElem scaler_element_{"videoscale"};
+  gst::UGstElem shmsink_{"shmdatasink"};
   ShmdataConnector shmcntr_;
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
   std::string shmpath_to_crop_{};
   std::string shmpath_cropped_{};
   std::unique_ptr<ShmdataFollower> shmsrc_sub_{nullptr};
