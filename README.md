@@ -31,8 +31,8 @@ See instructions about:
 - [Shell scripting switcher and scenic](doc/shell-scripting.md)
 - [Shell scripting a SIP call](doc/sip-call.md)
 - [Shell scripting OSC quiddities](doc/using-osc-quiddities.md)
-- [Contributing code](doc/CODING.md)
-- [Writing your quiddity](doc/writing-quiddity.md)
+- [Contributing code](doc/contributing.md)
+- [Code structure](doc/code-structure.md)
 - [Writing custom quiddity bundles](doc/writing-bundles.md)
 
 Command line
