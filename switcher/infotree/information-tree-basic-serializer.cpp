@@ -21,7 +21,8 @@
 #include <string>
 
 namespace switcher {
-namespace BasicSerializer {
+namespace infotree {
+namespace keyval {
 
 typedef struct {
   std::list<std::string> path_{};
@@ -38,7 +39,7 @@ bool on_visiting_node(std::string key, const InfoTree::ptrc node, bool, BasicSer
   data->path_.push_back(key);
   auto value = node->read_data();
   if (value.not_null())
-    data->result_.append("." + BasicSerializer::path_to_string(data->path_) + " " +
+    data->result_.append("." + infotree::keyval::path_to_string(data->path_) + " " +
                          Any::to_string(value) + "\n");
   return true;  // always true since we want preorder_tree_walk continue to visit sibling(s)
 }
@@ -51,12 +52,12 @@ bool on_node_visited(std::string, const InfoTree::ptrc, bool, BasicSerializerDat
 std::string serialize(InfoTree::ptrc tree) {
   BasicSerializerData data;
   InfoTree::preorder_tree_walk(tree,
-                               std::bind(BasicSerializer::on_visiting_node,
+                               std::bind(infotree::keyval::on_visiting_node,
                                          std::placeholders::_1,
                                          std::placeholders::_2,
                                          std::placeholders::_3,
                                          &data),
-                               std::bind(BasicSerializer::on_node_visited,
+                               std::bind(infotree::keyval::on_node_visited,
                                          std::placeholders::_1,
                                          std::placeholders::_2,
                                          std::placeholders::_3,
@@ -85,5 +86,6 @@ InfoTree::ptr deserialize(const std::string& serialized) {
   return tree;
 }
 
-}  // namespace BasicSerializer
+}  // namespace keyval
+}  // namespace infotree
 }  // namespace switcher

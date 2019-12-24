@@ -40,7 +40,7 @@ ProtocolMapper::ProtocolMapper(quid::Config&& conf) : Quiddity(std::forward<quid
           message("ERROR: %", file_content.second);
           return false;
         }
-        auto tree = JSONSerializer::deserialize(file_content.first);
+        auto tree = infotree::json::deserialize(file_content.first);
         if (!tree) {
           message("ERROR: % is not a valid json file", val);
           return false;

@@ -37,9 +37,13 @@
 #include "./information-tree.hpp"
 
 namespace switcher {
-namespace BasicSerializer {
+namespace infotree {
+namespace keyval {
+
 std::string serialize(InfoTree::ptrc);
 InfoTree::ptr deserialize(const std::string& serialized);
-}  // namespace BasicSerializer
+
+}  // namespace keyval
+}  // namespace infotree
 }  // namespace switcher
 #endif

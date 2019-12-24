@@ -36,7 +36,7 @@ int pyInfoTree::InfoTree_init(pyInfoTreeObject* self, PyObject* args, PyObject* 
     return -1;
   if (!pyinfotree && !json_descr) json_descr = "null";
   if (nullptr != json_descr) {  // build a tree from the json description
-    self->keepAlive = JSONSerializer::deserialize(json_descr);
+    self->keepAlive = infotree::json::deserialize(json_descr);
     self->tree = self->keepAlive.get();
     return 0;
   }
@@ -167,7 +167,7 @@ PyObject* pyInfoTree::json(pyInfoTreeObject* self, PyObject* args, PyObject* kwd
     return Py_None;
   }
   if (nullptr == path) path = ".";
-  return PyUnicode_FromString(JSONSerializer::serialize(self->tree->get_tree(path).get()).c_str());
+  return PyUnicode_FromString(infotree::json::serialize(self->tree->get_tree(path).get()).c_str());
 }
 
 PyObject* pyInfoTree::any_to_pyobject(const Any& any) {

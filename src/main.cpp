@@ -20,9 +20,9 @@
 #include <time.h>
 #include <vector>
 #include "switcher/infotree/information-tree-json.hpp"
-#include "switcher/infotree/quiddity-class-printer.hpp"
 #include "switcher/logger/console-logger.hpp"
 #include "switcher/logger/silent-logger.hpp"
+#include "switcher/quiddity/quiddity-class-printer.hpp"
 #include "switcher/switcher.hpp"
 #include "switcher/utils/file-utils.hpp"
 
@@ -163,7 +163,7 @@ int main(int argc, char* argv[]) {
   }
   if (classdoc != nullptr) {
     g_print("%s\n",
-            JSONSerializer::serialize(manager->factory<MPtr(&quid::Factory::get_classes_doc)>()
+            infotree::json::serialize(manager->factory<MPtr(&quid::Factory::get_classes_doc)>()
                                           ->get_tree(std::string(".classes.") + classdoc)
                                           .get())
                 .c_str());
@@ -186,7 +186,7 @@ int main(int argc, char* argv[]) {
   manager->reset_state(false);
 
   if (load_file &&
-      !manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(load_file)).get())) {
+      !manager->load_state(infotree::json::deserialize(FileUtils::get_content(load_file)).get())) {
     std::cerr << "could not load file " << load_file << '\n';
   }
 

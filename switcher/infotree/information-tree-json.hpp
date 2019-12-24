@@ -32,9 +32,13 @@
 #include "./information-tree.hpp"
 
 namespace switcher {
-namespace JSONSerializer {
+namespace infotree {
+namespace json {
+
 std::string serialize(InfoTree::ptrc);
 InfoTree::ptr deserialize(const std::string& serialized);
-};
+
+}  // namespace json
+}  // namespace infotree
 }  // namespace switcher
 #endif

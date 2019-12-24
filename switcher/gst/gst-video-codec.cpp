@@ -32,7 +32,7 @@ GstVideoCodec::GstVideoCodec(Quiddity* quid,
     : quid_(quid),
       reset_id_(quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool()>>)>(
           "reset",
-          JSONSerializer::deserialize(
+          infotree::json::deserialize(
               R"(
                   {
                    "name" : "Reset codec configuration",

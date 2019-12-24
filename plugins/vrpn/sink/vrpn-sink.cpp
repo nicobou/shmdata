@@ -74,7 +74,7 @@ VRPNSink::VRPNSink(quid::Config&& conf)
   create_analog_device_id_ =
       mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
           "create_analog_device",
-          JSONSerializer::deserialize(
+          infotree::json::deserialize(
               R"(
                   {
                    "name" : "Create Analog Device",
@@ -92,7 +92,7 @@ VRPNSink::VRPNSink(quid::Config&& conf)
   create_button_device_id_ =
       mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
           "create_button_device",
-          JSONSerializer::deserialize(
+          infotree::json::deserialize(
               R"(
                   {
                    "name" : "Create Button Device",

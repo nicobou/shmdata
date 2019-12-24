@@ -29,7 +29,7 @@ PJPresence::PJPresence() {
   using register_t = std::function<bool(std::string, std::string)>;
   SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<register_t>)>(
       "register",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Register SIP Account",
@@ -51,7 +51,7 @@ PJPresence::PJPresence() {
 
   SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool()>>)>(
       "unregister",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Unregister SIP Account",
@@ -64,7 +64,7 @@ PJPresence::PJPresence() {
   // buddies
   SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
       "add_buddy",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Add Buddy",
@@ -82,7 +82,7 @@ PJPresence::PJPresence() {
   using set_name_t = std::function<bool(std::string, std::string)>;
   SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<set_name_t>)>(
       "name_buddy",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Set Buddy Name", 
@@ -105,7 +105,7 @@ PJPresence::PJPresence() {
 
   SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
       "del_buddy",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Del Buddy",

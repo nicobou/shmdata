@@ -66,7 +66,7 @@ PortMidiSource::PortMidiSource(quid::Config&& conf)
   auto next_midi_event_to_property_id_ =
       mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
           "next_midi_event_to_property",
-          JSONSerializer::deserialize(
+          infotree::json::deserialize(
               R"(
                   {
                    "name" : "Next MIDI Event To Property",
@@ -88,7 +88,7 @@ PortMidiSource::PortMidiSource(quid::Config&& conf)
   auto remove_midi_property_id_ =
       mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
           "remove_midi_property",
-          JSONSerializer::deserialize(
+          infotree::json::deserialize(
               R"(
                   {
                    "name" : "Remove Midi Property",
@@ -108,7 +108,7 @@ PortMidiSource::PortMidiSource(quid::Config&& conf)
   using map_midi_to_prop_t = std::function<bool(std::string, int, int)>;
   auto map_midi_to_property_id_ = mmanage<MPtr(&MContainer::make_method<map_midi_to_prop_t>)>(
       "map_midi_to_property",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Map midi channel to property",

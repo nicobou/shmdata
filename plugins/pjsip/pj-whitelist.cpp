@@ -36,7 +36,7 @@ PJWhiteList::PJWhiteList()
   using authorize_t = std::function<bool(std::string, bool)>;
   SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<authorize_t>)>(
       "authorize",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Authorized Incoming Call From",

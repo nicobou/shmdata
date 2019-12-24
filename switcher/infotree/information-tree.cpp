@@ -379,12 +379,12 @@ InfoTree::ptrc InfoTree::get_subtree(InfoTree::ptrc tree, const std::string& pat
 
 std::string InfoTree::serialize_json(const std::string& path) const {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
-  if (path_is_root(path)) return JSONSerializer::serialize(me_.lock().get());
+  if (path_is_root(path)) return infotree::json::serialize(me_.lock().get());
   auto found = get_node(path);
   if (nullptr == found.first) return "null";
   auto tree = (*found.first)[found.second].second;
   if (!tree) return "null";
-  return JSONSerializer::serialize(tree.get());
+  return infotree::json::serialize(tree.get());
 }
 
 bool InfoTree::path_is_root(const std::string& path) { return (path == ".") || (path == ".."); }

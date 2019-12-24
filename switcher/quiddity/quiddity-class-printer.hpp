@@ -21,7 +21,7 @@
 #define __SWITCHER_INFORMATION_TREE_QUIDDITY_CLASS_PRINTER_H__
 
 #include <string>
-#include "./information-tree.hpp"
+#include "../infotree/information-tree.hpp"
 
 namespace switcher {
 namespace QuiddityClassPrinter {

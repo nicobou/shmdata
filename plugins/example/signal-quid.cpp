@@ -35,7 +35,7 @@ SignalQuid::SignalQuid(quid::Config&& conf)
       signal_id_(smanage<MPtr(&SContainer::make)>("test-signal", "A test signal")) {
   mmanage<MPtr(&MContainer::make_method<std::function<bool()>>)>(
       "emit-signal",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Emit Signal",

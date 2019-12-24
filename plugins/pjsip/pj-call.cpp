@@ -81,7 +81,7 @@ PJCall::PJCall() {
   // properties and methods for user
   SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
       "send",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Send to a contact",
@@ -98,7 +98,7 @@ PJCall::PJCall() {
 
   SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
       "hang-up",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Hang Up",
@@ -116,7 +116,7 @@ PJCall::PJCall() {
   using attach_t = std::function<bool(std::string, std::string, bool)>;
   SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<attach_t>)>(
       "attach_shmdata_to_contact",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Attach Shmdata To Contact",

@@ -34,7 +34,7 @@ MethodQuid::MethodQuid(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       hello_id_(mmanage<MPtr(&MContainer::make_method<my_method_t>)>(
           "hello_",
-          JSONSerializer::deserialize(
+          infotree::json::deserialize(
               R"(
                   {
                    "name" : "Hello Method",
@@ -52,7 +52,7 @@ MethodQuid::MethodQuid(quid::Config&& conf)
           })),
       count_id_(mmanage<MPtr(&MContainer::make_method<std::function<void()>>)>(
           "count_",
-          JSONSerializer::deserialize(
+          infotree::json::deserialize(
               R"(
                   {
                    "name" : "Count Call",
@@ -63,7 +63,7 @@ MethodQuid::MethodQuid(quid::Config&& conf)
           [&]() { ++count_; })),
       many_args_id_(mmanage<MPtr(&MContainer::make_method<many_args_t>)>(
           "many_args_",
-          JSONSerializer::deserialize(
+          infotree::json::deserialize(
               R"(
                   {
                    "name" : "Method With Many Arguments",

@@ -52,7 +52,7 @@ ExternalShmdataWriter::ExternalShmdataWriter(quid::Config&& conf)
 }
 
 InfoTree::ptr ExternalShmdataWriter::on_saving() {
-  return JSONSerializer::deserialize(tree<MPtr(&InfoTree::serialize_json)>(".shmdata.writer."));
+  return infotree::json::deserialize(tree<MPtr(&InfoTree::serialize_json)>(".shmdata.writer."));
 }
 
 void ExternalShmdataWriter::on_loading(InfoTree::ptr&& tree) {

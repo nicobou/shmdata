@@ -43,7 +43,7 @@ SoapCtrlServer::SoapCtrlServer(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       set_port_id_(mmanage<MPtr(&MContainer::make_method<std::function<bool(int)>>)>(
           "set_port",
-          JSONSerializer::deserialize(
+          infotree::json::deserialize(
               R"(
                   {
                    "name" : "Set Port",
@@ -192,7 +192,7 @@ int controlService::get_classes_doc(std::string* result) {
   }
 
   *result =
-      JSONSerializer::serialize(manager->factory<MPtr(&quid::Factory::get_classes_doc)>().get());
+      infotree::json::serialize(manager->factory<MPtr(&quid::Factory::get_classes_doc)>().get());
 
   return SOAP_OK;
 }
@@ -209,7 +209,7 @@ int controlService::get_quiddity_description(const std::string& quiddity_name,
     return soap_senderfault("error in get_quiddity_description", s);
   }
 
-  *result = JSONSerializer::serialize(
+  *result = infotree::json::serialize(
       manager
           ->quids<MPtr(&quid::Container::get_quiddity_description)>(
               manager->quids<MPtr(&quid::Container::get_id)>(quiddity_name))
@@ -231,7 +231,7 @@ int controlService::get_quiddities_description(std::string* result) {
     return soap_senderfault("error in get_classes_doc", s);
   }
 
-  *result = JSONSerializer::serialize(
+  *result = infotree::json::serialize(
       manager->quids<MPtr(&quid::Container::get_quiddities_description)>().get());
 
   return SOAP_OK;
@@ -366,7 +366,7 @@ int controlService::save(const std::string& file_name, std::string* result) {
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
-  if (FileUtils::save(JSONSerializer::serialize(manager->get_state().get()), file_name))
+  if (FileUtils::save(infotree::json::serialize(manager->get_state().get()), file_name))
     *result = "true";
   else
     *result = "false";
@@ -381,7 +381,7 @@ int controlService::load(const std::string& file_name, std::string* result) {
 
   manager->reset_state(true);
 
-  if (!manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(file_name)).get())) {
+  if (!manager->load_state(infotree::json::deserialize(FileUtils::get_content(file_name)).get())) {
     *result = "false";
     return SOAP_OK;
   }
@@ -395,7 +395,7 @@ int controlService::run(const std::string& file_name, std::string* result) {
   SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
-  if (!manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(file_name)).get())) {
+  if (!manager->load_state(infotree::json::deserialize(FileUtils::get_content(file_name)).get())) {
     *result = "false";
     return SOAP_OK;
   }

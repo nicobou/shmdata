@@ -47,7 +47,7 @@ PJStunTurn::PJStunTurn() {
   using set_stun_turn_t = std::function<bool(std::string, std::string, std::string, std::string)>;
   SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<set_stun_turn_t>)>(
       "set_stun_turn",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Set STUN/TURN parameters",

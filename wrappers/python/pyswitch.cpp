@@ -278,7 +278,7 @@ PyDoc_STRVAR(pyswitch_classes_doc_doc,
 
 PyObject* pySwitch::classes_doc(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   return PyUnicode_FromString(
-      JSONSerializer::serialize(
+      infotree::json::serialize(
           self->switcher->factory<MPtr(&quid::Factory::get_classes_doc)>().get())
           .c_str());
 }
@@ -296,7 +296,7 @@ PyObject* pySwitch::class_doc(pySwitchObject* self, PyObject* args, PyObject* kw
     return Py_None;
   }
   return PyUnicode_FromString(
-      JSONSerializer::serialize(self->switcher->factory<MPtr(&quid::Factory::get_classes_doc)>()
+      infotree::json::serialize(self->switcher->factory<MPtr(&quid::Factory::get_classes_doc)>()
                                     ->get_tree(std::string(".classes.") + class_name)
                                     .get())
           .c_str());
@@ -323,7 +323,7 @@ PyDoc_STRVAR(pyswitch_quids_descr_doc,
 
 PyObject* pySwitch::quids_descr(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   return PyUnicode_FromString(
-      JSONSerializer::serialize(
+      infotree::json::serialize(
           self->switcher->quids<MPtr(&quid::Container::get_quiddities_description)>().get())
           .c_str());
 }
@@ -341,7 +341,7 @@ PyObject* pySwitch::quid_descr(pySwitchObject* self, PyObject* args, PyObject* k
     return Py_None;
   }
   return PyUnicode_FromString(
-      JSONSerializer::serialize(
+      infotree::json::serialize(
           self->switcher->quids<MPtr(&quid::Container::get_quiddity_description)>(id).get())
           .c_str());
 }

@@ -50,7 +50,7 @@ bool Configuration::from_file(const std::string& file_path) {
   file_stream.seekg(0, std::ios::beg);
   config.assign((std::istreambuf_iterator<char>(file_stream)), std::istreambuf_iterator<char>());
   // building the tree
-  auto tree = JSONSerializer::deserialize(config);
+  auto tree = infotree::json::deserialize(config);
   if (!tree) {
     warning("configuration tree cannot be constructed from file %", file_path);
     return false;

@@ -30,7 +30,6 @@ add_library(${SWITCHER_LIBRARY} SHARED
   infotree/information-tree-basic-serializer.cpp
   infotree/information-tree-json.cpp
   infotree/information-tree.cpp
-  infotree/quiddity-class-printer.cpp
   quiddities/audio-test-source.cpp
   quiddities/dummy-sink.cpp
   quiddities/empty-quiddity.cpp
@@ -56,6 +55,7 @@ add_library(${SWITCHER_LIBRARY} SHARED
   quiddity/property/property-container.cpp
   quiddity/property/property.cpp
   quiddity/quiddity-basic-test.cpp
+  quiddity/quiddity-class-printer.cpp
   quiddity/quiddity-container.cpp
   quiddity/quiddity-documentation.cpp
   quiddity/quiddity-factory.cpp

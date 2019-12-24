@@ -49,7 +49,7 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
   on_can_sink_caps_cb_ = on_can_sink_caps_cb;
   quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
       "connect",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Connect",
@@ -81,7 +81,7 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
   using connect_quid_t = std::function<bool(std::string, std::string)>;
   quid_->mmanage<MPtr(&MContainer::make_method<connect_quid_t>)>(
       "connect-quid",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Connect Quiddity",
@@ -117,7 +117,7 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
 
   quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
       "disconnect",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" :  "Disconnect",
@@ -140,7 +140,7 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
 
   quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool()>>)>(
       "disconnect-all",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" :  "Disconnect All",
@@ -158,7 +158,7 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
 
   quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
       "can-sink-caps",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Can sink caps",

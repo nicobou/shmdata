@@ -158,12 +158,12 @@ int main() {
     tree->graft(".child1.child2.bla1", InfoTree::make("wire"));
     tree->graft(".child1.child2.bla2", InfoTree::make("hub"));
 
-    std::string serialized = BasicSerializer::serialize(tree.get());
+    std::string serialized = infotree::keyval::serialize(tree.get());
     // std::cout << serialized << '\n';
 
-    InfoTree::ptr tree2 = BasicSerializer::deserialize(serialized);
+    InfoTree::ptr tree2 = infotree::keyval::deserialize(serialized);
     assert(tree2);
-    std::string serialized2 = BasicSerializer::serialize(tree2.get());
+    std::string serialized2 = infotree::keyval::serialize(tree2.get());
     // std::cout << serialized2 << '\n';
 
     assert(serialized == serialized2);
@@ -201,18 +201,18 @@ int main() {
     tree->graft(".child1.child2.black_door", elem2);
     tree->tag_as_array(".child1.child2", true);
 
-    std::string serialized = JSONSerializer::serialize(tree.get());
+    std::string serialized = infotree::json::serialize(tree.get());
     // std::cout << serialized << '\n';
-    auto deserialized_tree = JSONSerializer::deserialize(serialized);
-    auto deserialized_string = JSONSerializer::serialize(deserialized_tree.get());
+    auto deserialized_tree = infotree::json::deserialize(serialized);
+    auto deserialized_string = infotree::json::serialize(deserialized_tree.get());
     // std::cout << deserialized_string << '\n';
     assert(serialized == deserialized_string);
 
     // test copy
     auto tree_cpy = InfoTree::copy(tree.get());
-    assert(serialized == JSONSerializer::serialize(tree_cpy.get()));
+    assert(serialized == infotree::json::serialize(tree_cpy.get()));
     auto tree_cpy2 = tree->branch_get_copy(".");
-    assert(serialized == JSONSerializer::serialize(tree_cpy2.get()));
+    assert(serialized == infotree::json::serialize(tree_cpy2.get()));
   }
 
   {  // get childs keys inserting in an existing container
@@ -253,7 +253,7 @@ int main() {
       tree->graft(std::string(".branch.item" + it), InfoTree::make(it));
     tree->graft(".other.branch", InfoTree::make());  // not into copy_leaf_values
     tree->tag_as_array("branch.", true);
-    // std::string serialized = JSONSerializer::serialize(tree);
+    // std::string serialized = infotree::json::serialize(tree);
     // std::cout << serialized << '\n';
     std::list<std::string> values = tree->copy_leaf_values(".branch");
     assert(
@@ -288,12 +288,12 @@ int main() {
     tree->vgraft(".int", 9);
     tree->vgraft(".bool", true);
 
-    auto tree2 = JSONSerializer::deserialize(
+    auto tree2 = infotree::json::deserialize(
         R"({"string" : "a string value",
             "int" : 9,
             "bool" : true
            })");
-    assert(JSONSerializer::serialize(tree.get()) == JSONSerializer::serialize(tree2.get()));
+    assert(infotree::json::serialize(tree.get()) == infotree::json::serialize(tree2.get()));
   }
 
   return 0;
