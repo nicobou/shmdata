@@ -28,6 +28,7 @@
 #include "../utils/counter-map.hpp"
 
 namespace switcher {
+namespace quiddities {
 class Uridecodebin : public Quiddity {
  public:
   Uridecodebin(quid::Config&&);
@@ -74,5 +75,6 @@ class Uridecodebin : public Quiddity {
   void pad_to_shmdata_writer(GstElement* bin, GstPad* pad);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

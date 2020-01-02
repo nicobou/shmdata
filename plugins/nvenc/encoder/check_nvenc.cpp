@@ -59,7 +59,7 @@ void notify_success() {
 
 int main() {
   {
-    auto devices = CudaContext::get_devices();
+    auto devices = quiddities::CudaContext::get_devices();
     if (devices.empty()) {
       return 0; // no NVENC-enabled GPU as been detected
     }

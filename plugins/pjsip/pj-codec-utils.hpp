@@ -24,6 +24,7 @@
 #include <vector>
 
 namespace switcher {
+namespace quiddities {
 struct RTPCodec {
   typedef std::unique_ptr<RTPCodec> ptr;
   std::string encoding_name_;
@@ -47,5 +48,6 @@ std::vector<std::string> get_string_values_from_gst_struct(GstStructure* caps_st
                                                            std::string key);
 std::vector<gint> get_int_values_from_gst_struct(GstStructure* caps_struct, std::string key);
 }  // namespace PJCodecUtils
+}  // namespace quiddities
 }  // namespace switcher
 #endif

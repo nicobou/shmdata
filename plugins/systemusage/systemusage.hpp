@@ -26,6 +26,7 @@
 #include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
+namespace quiddities {
 struct Cpu {
   long user{0};
   long nice{0};
@@ -71,5 +72,6 @@ class SystemUsage : public Quiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(SystemUsage);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

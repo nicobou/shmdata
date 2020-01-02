@@ -23,6 +23,7 @@
 #include "switcher/quiddity/quiddity.hpp"
 
 namespace switcher {
+namespace quiddities {
 class ProtocolMapper : public Quiddity {
  public:
   ProtocolMapper(quid::Config&&);
@@ -37,6 +38,6 @@ class ProtocolMapper : public Quiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(ProtocolMapper);
-}
-
+}  // namespace quiddities
+}  // namespace switcher
 #endif

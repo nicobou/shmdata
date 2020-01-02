@@ -30,6 +30,7 @@
 #include "../shmdata/gst-shm-tree-updater.hpp"
 
 namespace switcher {
+namespace quiddities {
 class AudioTestSource : public Quiddity, public StartableQuiddity {
  public:
   AudioTestSource(quid::Config&&);
@@ -64,5 +65,6 @@ class AudioTestSource : public Quiddity, public StartableQuiddity {
   void update_caps();
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

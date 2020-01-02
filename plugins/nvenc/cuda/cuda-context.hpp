@@ -29,6 +29,7 @@
 #include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 class NVencES;
 // Creates a new CUDA context and associates it with the calling thread:
@@ -53,5 +54,6 @@ class CudaContext : public log::Logged, public SafeBoolIdiom {
   bool safe_bool_idiom() const { return nullptr != cuda_ctx_; }
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

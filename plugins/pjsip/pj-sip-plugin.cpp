@@ -20,6 +20,7 @@
 #include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_DECLARE_PLUGIN(SIPPlugin);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SIPPlugin,
                                      "sip",
@@ -320,4 +321,5 @@ void SIPPlugin::on_saved() {
   if (dns_address_ == "default") dns_address_ = default_dns_address_;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

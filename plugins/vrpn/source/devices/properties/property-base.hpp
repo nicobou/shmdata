@@ -24,6 +24,7 @@
 #include "switcher/quiddity/property/property-container.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 class PropertyBase {
@@ -57,7 +58,8 @@ class PropertyBase {
    */
   PContainer::prop_id_t prop_id_{};
 };
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 
 #endif

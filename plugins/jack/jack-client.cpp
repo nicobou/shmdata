@@ -23,6 +23,7 @@
 #include <string>
 
 namespace switcher {
+namespace quiddities {
 JackClient::JackClient(const std::string& name,
                        const std::string& server_name,
                        JackProcessCallback process_cb,
@@ -102,4 +103,5 @@ std::string JackPort::get_name() const { return port_name_; }
 
 bool JackPort::safe_bool_idiom() const { return static_cast<bool>(port_); }
 
+}  // namespace quiddities
 }  // namespace switcher

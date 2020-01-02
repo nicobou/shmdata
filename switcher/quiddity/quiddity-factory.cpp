@@ -39,33 +39,33 @@
 namespace switcher {
 
 quid::Factory::Factory(log::BaseLogger* log) : log::Logged(log) {
-  abstract_factory_.register_class<AudioTestSource>(
+  abstract_factory_.register_class<quiddities::AudioTestSource>(
       DocumentationRegistry::get()->get_type_from_class_name("AudioTestSource"));
-  abstract_factory_.register_class<DummySink>(
+  abstract_factory_.register_class<quiddities::DummySink>(
       DocumentationRegistry::get()->get_type_from_class_name("DummySink"));
-  abstract_factory_.register_class<EmptyQuiddity>(
+  abstract_factory_.register_class<quiddities::EmptyQuiddity>(
       DocumentationRegistry::get()->get_type_from_class_name("EmptyQuiddity"));
-  abstract_factory_.register_class<ExternalShmdataWriter>(
+  abstract_factory_.register_class<quiddities::ExternalShmdataWriter>(
       DocumentationRegistry::get()->get_type_from_class_name("ExternalShmdataWriter"));
-  abstract_factory_.register_class<FileDecoder>(
+  abstract_factory_.register_class<quiddities::FileDecoder>(
       DocumentationRegistry::get()->get_type_from_class_name("FileDecoder"));
-  abstract_factory_.register_class<GstVideoConverter>(
+  abstract_factory_.register_class<quiddities::GstVideoConverter>(
       DocumentationRegistry::get()->get_type_from_class_name("GstVideoConverter"));
-  abstract_factory_.register_class<GstVideoEncoder>(
+  abstract_factory_.register_class<quiddities::GstVideoEncoder>(
       DocumentationRegistry::get()->get_type_from_class_name("GstVideoEncoder"));
-  abstract_factory_.register_class<GstAudioEncoder>(
+  abstract_factory_.register_class<quiddities::GstAudioEncoder>(
       DocumentationRegistry::get()->get_type_from_class_name("GstAudioEncoder"));
-  abstract_factory_.register_class<GstDecodebin>(
+  abstract_factory_.register_class<quiddities::GstDecodebin>(
       DocumentationRegistry::get()->get_type_from_class_name("GstDecodebin"));
-  abstract_factory_.register_class<HTTPSDPDec>(
+  abstract_factory_.register_class<quiddities::HTTPSDPDec>(
       DocumentationRegistry::get()->get_type_from_class_name("HTTPSDPDec"));
-  abstract_factory_.register_class<ShmDelay>(
+  abstract_factory_.register_class<quiddities::ShmDelay>(
       DocumentationRegistry::get()->get_type_from_class_name("ShmDelay"));
-  abstract_factory_.register_class<Timelapse>(
+  abstract_factory_.register_class<quiddities::Timelapse>(
       DocumentationRegistry::get()->get_type_from_class_name("Timelapse"));
-  abstract_factory_.register_class<Uridecodebin>(
+  abstract_factory_.register_class<quiddities::Uridecodebin>(
       DocumentationRegistry::get()->get_type_from_class_name("Uridecodebin"));
-  abstract_factory_.register_class<VideoTestSource>(
+  abstract_factory_.register_class<quiddities::VideoTestSource>(
       DocumentationRegistry::get()->get_type_from_class_name("VideoTestSource"));
 }
 

@@ -32,6 +32,7 @@
 #include "../utils/periodic-task.hpp"
 
 namespace switcher {
+namespace quiddities {
 class Timelapse : public Quiddity {
  public:
   Timelapse(quid::Config&&);
@@ -89,5 +90,6 @@ class Timelapse : public Quiddity {
   bool stop_timelapse(const std::string& shmpath);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

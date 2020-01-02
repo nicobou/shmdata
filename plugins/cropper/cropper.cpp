@@ -20,6 +20,7 @@
 #include "cropper.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Cropper,
                                      "cropper",
                                      "Video Cropper",
@@ -222,4 +223,5 @@ bool Cropper::can_sink_caps(const std::string& caps) {
   return gst::utils::can_sink_caps("videocrop", caps);
 }
 
+}  // namespace quiddities
 }  // namespace switcher

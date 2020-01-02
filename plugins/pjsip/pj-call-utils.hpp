@@ -23,6 +23,7 @@
 #include "switcher/utils/string-utils.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace PJCallUtils {
 
 bool is_receive_media(const pjmedia_sdp_media* media) {
@@ -109,5 +110,6 @@ std::string get_rtp_caps(const pjmedia_sdp_media* media) {
 }
 
 }  // namespace PJCallUtils
+}  // namespace quiddities
 }  // namespace switcher
 #endif

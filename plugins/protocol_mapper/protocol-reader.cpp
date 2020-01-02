@@ -22,6 +22,7 @@
 #include "protocol-osc.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 const std::string ProtocolReader::kCurlProtocol{"curl"};
 const std::string ProtocolReader::kOscProtocol{"osc"};
@@ -98,4 +99,6 @@ ProtocolReader::ProtocolType ProtocolReader::get_protocol_from_json(const InfoTr
 
   return ProtocolType::UNDEFINED;
 }
-}
+
+}  // namespace quiddities
+}  // namespace switcher

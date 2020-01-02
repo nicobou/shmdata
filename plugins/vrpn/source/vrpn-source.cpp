@@ -20,6 +20,7 @@
 #include "./vrpn-source.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
@@ -472,5 +473,6 @@ int VRPNSource::handleMessage(void* userData, vrpn_HANDLERPARAM p) {
   return 0;
 }
 
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher

@@ -30,6 +30,7 @@
 #include "../utils/periodic-task.hpp"
 
 namespace switcher {
+namespace quiddities {
 class FileDecoder : public Quiddity {
  public:
   FileDecoder(quid::Config&&);
@@ -62,5 +63,6 @@ class FileDecoder : public Quiddity {
   std::unique_ptr<PeriodicTask<>> position_task_{};
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

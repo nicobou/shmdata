@@ -31,6 +31,7 @@
 #include "../utils/threaded-wrapper.hpp"
 
 namespace switcher {
+namespace quiddities {
 class GstDecodebin : public Quiddity {
  public:
   GstDecodebin(quid::Config&&);
@@ -60,5 +61,6 @@ class GstDecodebin : public Quiddity {
   bool create_pipeline();
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

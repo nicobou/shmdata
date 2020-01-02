@@ -20,6 +20,7 @@
 #include "./shmdata-to-osc.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToOsc,
                                      "OSCsink",
                                      "OSC sender",
@@ -154,4 +155,5 @@ bool ShmdataToOsc::can_sink_caps(const std::string& caps) {
   return (0 == caps.find("application/x-libloserialized-osc"));
 }
 
+}  // namespace quiddities
 }  // namespace switcher

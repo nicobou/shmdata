@@ -22,6 +22,7 @@
 #include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_DECLARE_PLUGIN(LADSPA);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LADSPA,
                                      "ladspa",
@@ -451,4 +452,6 @@ void LADSPA::save_properties() {
     }
   }
 }
-};
+
+}  // namespace quiddities
+}  // namespace switcher

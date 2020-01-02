@@ -26,6 +26,7 @@
 #include "../shmdata/shmdata-connector.hpp"
 
 namespace switcher {
+namespace quiddities {
 class GstAudioEncoder : public Quiddity {
  public:
   GstAudioEncoder(quid::Config&&);
@@ -42,5 +43,6 @@ class GstAudioEncoder : public Quiddity {
   bool can_sink_caps(const std::string& caps);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

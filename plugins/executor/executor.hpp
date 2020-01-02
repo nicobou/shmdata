@@ -38,6 +38,7 @@
 #include "switcher/utils/string-utils.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 class Executor : public Quiddity, public StartableQuiddity {
  public:
@@ -91,5 +92,6 @@ class Executor : public Quiddity, public StartableQuiddity {
   PContainer::prop_id_t whitelist_caps_id_;
 };
 SWITCHER_DECLARE_PLUGIN(Executor);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

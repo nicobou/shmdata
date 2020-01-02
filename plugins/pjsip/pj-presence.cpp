@@ -24,6 +24,7 @@
 #include "switcher/utils/string-utils.hpp"
 
 namespace switcher {
+namespace quiddities {
 PJPresence::PJPresence() {
   // registering account
   using register_t = std::function<bool(std::string, std::string)>;
@@ -589,4 +590,5 @@ pjsua_buddy_id PJPresence::get_id_from_buddy_name(const std::string& name) {
   return PJSUA_INVALID_ID;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

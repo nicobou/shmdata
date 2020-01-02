@@ -26,6 +26,7 @@
 #include "switcher/quiddity/property/property-container.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 template <typename T>
@@ -64,6 +65,7 @@ class Property : public PropertyBase {
    */
   T value_;
 };
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 #endif

@@ -23,6 +23,7 @@
 #include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_DECLARE_PLUGIN(AVPlayer);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AVPlayer,
                                      "avplayer",
@@ -211,4 +212,6 @@ GstBusSyncReply AVPlayer::bus_async(GstMessage* msg) {
   }
   return GST_BUS_PASS;
 }
-}
+
+}  // namespace quiddities
+}  // namespace switcher

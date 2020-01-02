@@ -25,6 +25,7 @@
 #include "vrpn_Analog.h"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 class AnalogSourceDevice : public SourceDevice {
@@ -63,6 +64,7 @@ class AnalogSourceDevice : public SourceDevice {
   static void handleAnalogCallback(void* userData, const vrpn_ANALOGCB info);
   void handleAnalogChannel(int index, double value);
 };
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 #endif

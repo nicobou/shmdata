@@ -30,6 +30,7 @@
 #include "../shmdata/gst-shm-tree-updater.hpp"
 
 namespace switcher {
+namespace quiddities {
 class VideoTestSource : public Quiddity, public StartableQuiddity {
  public:
   VideoTestSource(quid::Config&&);
@@ -86,5 +87,6 @@ class VideoTestSource : public Quiddity, public StartableQuiddity {
   void update_caps();
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

@@ -23,6 +23,7 @@
 #include "./pj-ice-stream-trans.hpp"
 
 namespace switcher {
+namespace quiddities {
 class SIPPlugin;
 class PJCall;
 
@@ -60,5 +61,6 @@ class PJStunTurn {
                      const std::string& turn_pass);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

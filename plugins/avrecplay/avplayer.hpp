@@ -29,6 +29,7 @@
 #include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
+namespace quiddities {
 class AVPlayer : public Quiddity, public StartableQuiddity {
  public:
   AVPlayer(quid::Config&&);
@@ -65,6 +66,7 @@ class AVPlayer : public Quiddity, public StartableQuiddity {
   std::mutex seek_mutex_{};
   std::unique_ptr<ThreadedWrapper<>> th_{std::make_unique<ThreadedWrapper<>>()};
 };
+}  // namespace quiddities
 }  // namespace switcher
 
 #endif

@@ -28,6 +28,7 @@
 #include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 using jack_sample_t = jack_default_audio_sample_t;
 
@@ -87,5 +88,6 @@ class JackPort : public SafeBoolIdiom {
   bool safe_bool_idiom() const final;
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

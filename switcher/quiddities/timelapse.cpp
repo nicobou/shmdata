@@ -22,6 +22,7 @@
 #include "../utils/file-utils.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Timelapse,
                                      "timelapse",
                                      "Timelapse",
@@ -248,4 +249,5 @@ bool Timelapse::can_sink_caps(const std::string& caps) {
   return gst::utils::can_sink_caps("videoconvert", caps);
 }
 
+}  // namespace quiddities
 }  // namespace switcher

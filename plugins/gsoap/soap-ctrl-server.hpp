@@ -26,6 +26,7 @@
 #include "webservices/soapcontrolService.h"
 
 namespace switcher {
+namespace quiddities {
 class SoapCtrlServer : public Quiddity {
  public:
   SoapCtrlServer(quid::Config&&);
@@ -51,5 +52,6 @@ class SoapCtrlServer : public Quiddity {
 
 SWITCHER_DECLARE_PLUGIN(SoapCtrlServer);
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

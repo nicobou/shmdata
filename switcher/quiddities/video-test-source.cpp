@@ -22,6 +22,7 @@
 #include "../utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
                                      "videotestsrc",
                                      "Video Pattern",
@@ -184,4 +185,5 @@ bool VideoTestSource::start() {
     return true;
   }
 
+  }  // namespace quiddities
 }  // namespace switcher

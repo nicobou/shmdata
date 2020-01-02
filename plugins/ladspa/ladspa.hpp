@@ -25,6 +25,7 @@
 #include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
+namespace quiddities {
 /**
  * LADSPA class,
  * Add a LADSPA (Linux Audio Developers Simple Plugin API) plugin among the ones installed on your
@@ -104,4 +105,6 @@ class LADSPA : public Quiddity {
       prop_subscribers_{};  //!< Subscribers to global properties in order to propagate their values
                             //! to per-channel properties
 };
-};
+
+}  // namespace quiddities
+}  // namespace switcher

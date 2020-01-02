@@ -22,6 +22,7 @@
 #include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 CudaContext::CudaContext(uint32_t device_id, log::BaseLogger* log) : log::Logged(log) {
   On_scope_exit {
@@ -70,4 +71,5 @@ std::vector<std::pair<int, std::string>> CudaContext::get_devices() {
   return res;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

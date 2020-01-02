@@ -20,6 +20,7 @@
 #include "./osc-to-shmdata.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
                                      "OSCsrc",
                                      "OSC Receiver",
@@ -104,4 +105,5 @@ int OscToShmdata::osc_handler(const char* path,
 
 void OscToShmdata::osc_error(int /*num*/, const char* /*msg*/, const char* /*path*/) {}
 
-}  // end of OscToShmdata class
+}  // namespace quiddities
+}  // namespace switcher

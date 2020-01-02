@@ -25,6 +25,7 @@
 #include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSink,
                                      "pulsesink",
@@ -322,4 +323,5 @@ bool PulseSink::on_shmdata_connect(const std::string& shmpath) {
   return true;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

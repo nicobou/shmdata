@@ -36,6 +36,7 @@
  * starting the Jack server. */
 
 namespace switcher {
+namespace quiddities {
 
 class JackServer : public SafeBoolIdiom {
  public:
@@ -89,5 +90,6 @@ class JackServer : public SafeBoolIdiom {
   bool safe_bool_idiom() const final;
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

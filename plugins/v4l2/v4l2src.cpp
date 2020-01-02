@@ -32,6 +32,7 @@
 #include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(V4L2Src,
                                      "v4l2src",
                                      "v4l2 Video Capture",
@@ -993,4 +994,5 @@ void V4L2Src::on_loading(InfoTree::ptr&& tree) {
 
 void V4L2Src::on_loaded() { is_loading_ = false; }
 
+}  // namespace quiddities
 }  // namespace switcher

@@ -20,6 +20,7 @@
 #include "./gst-decodebin.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstDecodebin,
                                      "decoder",
                                      "Decoder",
@@ -189,4 +190,5 @@ bool GstDecodebin::can_sink_caps(const std::string& caps) {
   return gst::utils::can_sink_caps("decodebin", caps);
 }
 
+}  // namespace quiddities
 }  // namespace switcher

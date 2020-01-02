@@ -23,6 +23,7 @@
 #include "switcher/utils/string-utils.hpp"
 
 namespace switcher {
+namespace quiddities {
 PJStunTurn::PJStunTurn() {
   if (PJ_SUCCESS != pjnath_init()) {
     SIPPlugin::this_->warning("cannot init pjnath");
@@ -250,4 +251,5 @@ std::unique_ptr<PJICEStreamTrans> PJStunTurn::get_ice_transport(unsigned comp_cn
   return res;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

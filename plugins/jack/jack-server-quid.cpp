@@ -20,6 +20,7 @@
 #include "./jack-server-quid.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackServerQuid,
                                      "jackserver",
                                      "Jack Audio Server",
@@ -209,4 +210,5 @@ PContainer::prop_id_t JackServerQuid::make_param(const std::string& config_path,
   return 0;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

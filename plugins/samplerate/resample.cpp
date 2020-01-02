@@ -18,6 +18,7 @@
 #include "./resample.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Resample,
                                      "resample",
                                      "Audio resampler",
@@ -164,4 +165,5 @@ bool Resample::can_sink_caps(const std::string& str_caps) {
   return true;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

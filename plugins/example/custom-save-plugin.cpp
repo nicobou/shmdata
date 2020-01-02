@@ -20,6 +20,7 @@
 #include "./custom-save-plugin.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(CustomSavePlugin,
                                      "custom-save",
                                      "Custom Save Plugin",
@@ -65,4 +66,5 @@ void CustomSavePlugin::on_loading(InfoTree::ptr&& tree) {
 
 void CustomSavePlugin::on_loaded() { on_loaded_called_ = true; }
 
+}  // namespace quiddities
 }  // namespace switcher

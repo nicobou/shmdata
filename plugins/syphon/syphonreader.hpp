@@ -24,6 +24,7 @@
 #include <vector>
 
 namespace switcher {
+namespace quiddities {
 typedef void (*syphonCallback)(void* context, const char* buffer, int& width, int& height);
 
 class SyphonReader {
@@ -51,6 +52,7 @@ class SyphonReader {
   void init();
   void handleNewFrame();
 };
+}  // namespace quiddities
 }  // namespace switcher
 
 #endif  // ifndef

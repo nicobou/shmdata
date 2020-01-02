@@ -25,6 +25,7 @@
 #include <vector>
 
 namespace switcher {
+namespace quiddities {
 template <typename SampleType>
 class AudioRingBuffer {
  public:
@@ -45,6 +46,7 @@ class AudioRingBuffer {
   std::size_t write_{0};
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #include "./audio-ring-buffer_spec.hpp"
 #endif

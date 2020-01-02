@@ -21,6 +21,7 @@
 #include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     LTCSource,
     "ltcsource",
@@ -325,4 +326,5 @@ void LTCSource::generate_ltc_frames(int nb_frames) {
   generating_frames_ = false;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

@@ -21,6 +21,7 @@
 #include "switcher/utils/net-utils.hpp"
 
 namespace switcher {
+namespace quiddities {
 // according to pjsip documentation:
 // Application should only instantiate
 // one SIP endpoint instance for every process.
@@ -175,4 +176,5 @@ bool PJSIP::create_resolver(std::string dns_address) {
   return true;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

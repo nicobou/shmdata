@@ -22,6 +22,7 @@
 #include "../utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FileDecoder,
                                      "filesrc",
                                      "file Player",
@@ -216,4 +217,5 @@ void FileDecoder::configure_shmdatasink(GstElement* element,
       this, element, shmpath, GstShmTreeUpdater::Direction::writer));
 }
 
+}  // namespace quiddities
 }  // namespace switcher

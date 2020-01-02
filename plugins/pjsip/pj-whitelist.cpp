@@ -20,6 +20,7 @@
 #include "switcher/infotree/information-tree-json.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 PJWhiteList::PJWhiteList()
     : mode_id_(SIPPlugin::this_->pmanage<MPtr(&PContainer::make_selection<>)>(
@@ -103,4 +104,5 @@ bool PJWhiteList::is_authorized(const std::string& sip_url) const {
   return found->second;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

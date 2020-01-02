@@ -35,6 +35,7 @@
 #include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 //! GLFWVideo class, to display video in a resizable window.
 class GLFWVideo : public Quiddity {
@@ -357,5 +358,6 @@ class GLFWVideo : public Quiddity {
   ThreadedWrapper<> async_this_{};
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

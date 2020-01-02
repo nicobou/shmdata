@@ -23,6 +23,7 @@
 #include "./audio-ring-buffer.hpp"
 
 namespace switcher {
+namespace quiddities {
 template <typename SampleT>
 class AudioResampler {
  public:
@@ -46,6 +47,7 @@ class AudioResampler {
   std::size_t cur_pos_{0};
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #include "./audio-resampler_spec.hpp"
 #endif

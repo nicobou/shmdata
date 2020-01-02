@@ -20,6 +20,7 @@
 #include "vrpn-button-server.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 VRPNButtonServer::VRPNButtonServer(const char* name, vrpn_Connection* connection, int numButtons)
@@ -34,5 +35,6 @@ vrpn_int32 VRPNButtonServer::setNumButtons(vrpn_int32 sizeRequested) {
   num_buttons = sizeRequested;
   return num_buttons;
 }
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher

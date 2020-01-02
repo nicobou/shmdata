@@ -23,6 +23,7 @@
 #include "protocol-reader.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 class ProtocolOsc : public ProtocolReader {
  public:
@@ -45,6 +46,7 @@ class ProtocolOsc : public ProtocolReader {
   bool safe_bool_idiom() const final { return true; };
   int send_osc_code(const std::string& type, const std::string& path, const Any& value);
 };
-}
 
+}  // namespace quiddities
+}  // namespace switcher
 #endif

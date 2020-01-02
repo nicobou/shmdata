@@ -20,6 +20,7 @@
 #include "./rtmp.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_DECLARE_PLUGIN(RTMP);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RTMP,
                                      "rtmp",
@@ -180,4 +181,6 @@ bool RTMP::can_sink_caps(std::string str_caps) {
   return StringUtils::starts_with(str_caps, "audio/x-raw") ||
          StringUtils::starts_with(str_caps, "video/x-h264");
 }
-};
+
+}  // namespace quiddities
+}  // namespace switcher

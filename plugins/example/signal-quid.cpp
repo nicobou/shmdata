@@ -21,6 +21,7 @@
 #include "switcher/infotree/information-tree-json.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SignalQuid,
                                      "signal",
                                      "Signal Quiddity",
@@ -54,4 +55,5 @@ SignalQuid::SignalQuid(quid::Config&& conf)
       });
 }
 
-}
+}  // namespace quiddities
+}  // namespace switcher

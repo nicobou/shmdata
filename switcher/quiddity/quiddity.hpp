@@ -47,13 +47,18 @@ namespace gst {
 class VideoCodec;
 class AudioCodec;
 }  // namespace gst
+namespace quiddities {
+class ProtocolCurl;
+class ProtocolOsc;
+class ProtocolReader;
+}  // namespace quiddities
 
 class Quiddity : public log::Logged, public SafeBoolIdiom {
   friend class Bundle;  // access to props_ in order to forward properties
   // FIXME do something for this (to many friend class in quiddity.hpp):
-  friend class ProtocolCurl;
-  friend class ProtocolOsc;
-  friend class ProtocolReader;
+  friend class quiddities::ProtocolCurl;
+  friend class quiddities::ProtocolOsc;
+  friend class quiddities::ProtocolReader;
   friend class StartableQuiddity;
   friend class ShmdataConnector;
   friend class ShmdataWriter;

@@ -28,6 +28,7 @@
 // This quiddity implements an example of every possible property types for a quiddity
 
 namespace switcher {
+namespace quiddities {
 class PropertyQuid : public Quiddity {
  public:
   PropertyQuid(quid::Config&&);
@@ -94,5 +95,6 @@ class PropertyQuid : public Quiddity {
 
 SWITCHER_DECLARE_PLUGIN(PropertyQuid);
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

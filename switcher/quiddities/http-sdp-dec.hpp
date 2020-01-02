@@ -31,6 +31,7 @@
 #include "../utils/counter-map.hpp"
 
 namespace switcher {
+namespace quiddities {
 class HTTPSDPDec : public Quiddity {
  public:
   HTTPSDPDec(quid::Config&&);
@@ -64,5 +65,6 @@ class HTTPSDPDec : public Quiddity {
   static void on_new_element_in_sdpdemux(GstBin* bin, GstElement* element, gpointer user_data);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

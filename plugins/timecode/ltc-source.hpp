@@ -34,6 +34,7 @@
 #include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
+namespace quiddities {
 /**
  * LTCSource class,
  * Generated an LTC timecode in an audioshmdata or reads it from a prerecorded audio timecode file.
@@ -82,5 +83,6 @@ class LTCSource : public Quiddity, public StartableQuiddity {
   unsigned int timeshift_fw_{0};
 };
 SWITCHER_DECLARE_PLUGIN(LTCSource)
+}  // namespace quiddities
 }  // namespace switcher
 #endif

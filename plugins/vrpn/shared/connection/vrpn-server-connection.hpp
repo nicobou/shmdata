@@ -23,6 +23,7 @@
 #include "./vrpn-connection.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 /**
@@ -32,6 +33,8 @@ class VRPNServerConnection : public VRPNConnection {
  public:
   VRPNServerConnection(const int port) : VRPNConnection(vrpn_create_server_connection(port)){};
 };
-}
-}
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
+
 #endif

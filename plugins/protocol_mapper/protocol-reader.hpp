@@ -27,6 +27,7 @@
 #include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 class ProtocolReader : public SafeBoolIdiom {
  public:
@@ -63,6 +64,7 @@ class ProtocolReader : public SafeBoolIdiom {
   virtual bool safe_bool_idiom() const { return false; };
   static ProtocolType get_protocol_from_json(const InfoTree* tree);
 };
-}
 
+}  // namespace quiddities
+}  // namespace switcher
 #endif

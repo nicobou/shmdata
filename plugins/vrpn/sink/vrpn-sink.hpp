@@ -34,6 +34,7 @@
 #include "shared/connection/vrpn-server-connection.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 class VRPNSink : public Quiddity, public StartableQuiddity {
@@ -112,6 +113,8 @@ class VRPNSink : public Quiddity, public StartableQuiddity {
   // Destroy connection last
   std::unique_ptr<VRPNServerConnection> connection_{};
 };
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
+
 #endif

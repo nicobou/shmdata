@@ -30,6 +30,7 @@
 #include "switcher/shmdata/shmdata-connector.hpp"
 
 namespace switcher {
+namespace quiddities {
 class ShmdataToJack : public Quiddity {
  public:
   ShmdataToJack(quid::Config&&);
@@ -106,5 +107,6 @@ class ShmdataToJack : public Quiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToJack);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

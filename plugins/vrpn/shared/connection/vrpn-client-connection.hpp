@@ -24,6 +24,7 @@
 #include "./vrpn-connection.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 /**
@@ -34,7 +35,8 @@ class VRPNClientConnection : public VRPNConnection {
   VRPNClientConnection(const std::string& hostname)
       : VRPNConnection(vrpn_get_connection_by_name(hostname.c_str())){};
 };
-}
-}
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 
 #endif

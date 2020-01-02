@@ -24,6 +24,7 @@
 #include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_DECLARE_PLUGIN(AVRecorder);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AVRecorder,
                                      "avrec",
@@ -548,4 +549,6 @@ void AVRecorder::ConnectedShmdata::apply_gst_properties(GstElement* element) {
         G_OBJECT(element), std::string(prop_name, 0, gst_prop_name_pos).c_str(), value.c_str());
   }
 }
-};
+
+}  // namespace quiddities
+}  // namespace switcher

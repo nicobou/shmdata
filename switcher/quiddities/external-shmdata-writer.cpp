@@ -21,6 +21,7 @@
 #include "../infotree/information-tree-json.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalShmdataWriter,
                                      "extshmsrc",
                                      "Raw Shmdata",
@@ -60,4 +61,5 @@ void ExternalShmdataWriter::on_loading(InfoTree::ptr&& tree) {
   graft_tree(".shmdata.writer.", tree);
 }
 
+}  // namespace quiddities
 }  // namespace switcher

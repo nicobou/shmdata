@@ -32,6 +32,7 @@
 #include "switcher/shmdata/gst-shm-tree-updater.hpp"
 
 namespace switcher {
+namespace quiddities {
 class PulseSrc : public Quiddity, public StartableQuiddity {
  public:
   PulseSrc(quid::Config&&);
@@ -105,5 +106,6 @@ class PulseSrc : public Quiddity, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(PulseSrc);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

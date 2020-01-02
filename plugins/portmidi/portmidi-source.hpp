@@ -26,6 +26,7 @@
 #include "switcher/shmdata/shmdata-writer.hpp"
 
 namespace switcher {
+namespace quiddities {
 class PortMidiSource : public Quiddity, public StartableQuiddity, public PortMidi {
  public:
   PortMidiSource(quid::Config&&);
@@ -76,5 +77,6 @@ class PortMidiSource : public Quiddity, public StartableQuiddity, public PortMid
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSource);
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

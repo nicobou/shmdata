@@ -26,6 +26,7 @@
 #include "switcher/shmdata/gst-shm-tree-updater.hpp"
 
 namespace switcher {
+namespace quiddities {
 class V4L2Src : public Quiddity, public StartableQuiddity {
  public:
   V4L2Src(quid::Config&&);
@@ -186,5 +187,6 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
 
 SWITCHER_DECLARE_PLUGIN(V4L2Src);
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

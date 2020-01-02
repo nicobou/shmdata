@@ -30,6 +30,7 @@
 #endif
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SoapCtrlServer,
                                      "SOAPcontrolServer",
                                      "Switcher Web Controler (SOAP)",
@@ -158,7 +159,8 @@ void SoapCtrlServer::server_thread() {
   }
 }
 
-}  // end of SoapCtrlServer class
+}  // namespace quiddities
+}  // namespace switcher
 
 /**********************************************
  * below is the implementation of the service *
@@ -166,7 +168,7 @@ void SoapCtrlServer::server_thread() {
 
 int controlService::get_classes(std::vector<std::string>* result) {
   using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   if (ctrl_server == nullptr || !(bool)manager) {
@@ -182,7 +184,7 @@ int controlService::get_classes(std::vector<std::string>* result) {
 
 int controlService::get_classes_doc(std::string* result) {
   using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   if (ctrl_server == nullptr || !(bool)manager) {
@@ -200,7 +202,7 @@ int controlService::get_classes_doc(std::string* result) {
 int controlService::get_quiddity_description(const std::string& quiddity_name,
                                              std::string* result) {
   using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   if (ctrl_server == nullptr || !(bool)manager) {
@@ -220,7 +222,7 @@ int controlService::get_quiddity_description(const std::string& quiddity_name,
 
 int controlService::get_quiddities_description(std::string* result) {
   using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   if (ctrl_server == nullptr || !(bool)manager) {
@@ -239,7 +241,7 @@ int controlService::get_quiddities_description(std::string* result) {
 
 int controlService::get_quiddity_names(std::vector<std::string>* result) {
   using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   *result = ctrl_server->get_switcher()->quids<MPtr(&quid::Container::get_names)>();
   return SOAP_OK;
 }
@@ -248,7 +250,7 @@ int controlService::set_property(const std::string& quiddity_name,
                                  const std::string& property_name,
                                  const std::string& property_value) {
   using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   auto qrox = manager->quids<MPtr(&quid::Container::get_qrox_from_name)>(quiddity_name);
@@ -268,7 +270,7 @@ int controlService::get_property(const std::string& quiddity_name,
                                  const std::string& property_name,
                                  std::string* result) {
   using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   auto qrox = manager->quids<MPtr(&quid::Container::get_qrox_from_name)>(quiddity_name);
@@ -284,7 +286,7 @@ int controlService::make_shmpath(const std::string& quiddity_name,
                                  const std::string& suffix,
                                  std::string* result) {
   using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   auto qrox = manager->quids<MPtr(&quid::Container::get_qrox_from_name)>(quiddity_name);
@@ -300,7 +302,7 @@ int controlService::create_named_quiddity(const std::string& quiddity_class,
                                           std::string* result) {
   using namespace switcher;
 
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   auto created = manager->quids<MPtr(&quid::Container::create)>(quiddity_class, nick_name, nullptr);
@@ -316,7 +318,7 @@ int controlService::create_named_quiddity(const std::string& quiddity_class,
 
 int controlService::delete_quiddity(const std::string& quiddity_name) {
   using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   if (manager->quids<MPtr(&quid::Container::remove)>(
@@ -334,7 +336,7 @@ int controlService::invoke_method(const std::string& quiddity_name,
                                   std::vector<std::string> args,
                                   std::string* result) {
   using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   auto tuple_args = std::string();
@@ -363,7 +365,7 @@ int controlService::invoke_method(const std::string& quiddity_name,
 int controlService::save(const std::string& file_name, std::string* result) {
   using namespace switcher;
 
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   if (FileUtils::save(infotree::json::serialize(manager->get_state().get()), file_name))
@@ -376,7 +378,7 @@ int controlService::save(const std::string& file_name, std::string* result) {
 int controlService::load(const std::string& file_name, std::string* result) {
   using namespace switcher;
 
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   manager->reset_state(true);
@@ -392,7 +394,7 @@ int controlService::load(const std::string& file_name, std::string* result) {
 int controlService::run(const std::string& file_name, std::string* result) {
   using namespace switcher;
 
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   if (!manager->load_state(infotree::json::deserialize(FileUtils::get_content(file_name)).get())) {
@@ -407,7 +409,7 @@ int controlService::get_information_tree(const std::string& quiddity_name,
                                          const std::string& path,
                                          std::string* result) {
   using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   auto qrox = manager->quids<MPtr(&quid::Container::get_qrox_from_name)>(quiddity_name);
@@ -419,7 +421,7 @@ int controlService::get_user_data(const std::string& quiddity_name,
                                   const std::string& path,
                                   std::string* result) {
   using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
   auto qrox = manager->quids<MPtr(&quid::Container::get_qrox_from_name)>(quiddity_name);
   if (qrox) *result = qrox.get()->user_data<MPtr(&InfoTree::serialize_json)>(path);
@@ -430,7 +432,7 @@ int controlService::prune_user_data(const std::string& quiddity_name,
                                     const std::string& path,
                                     std::string* result) {
   using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
   auto qrox = manager->quids<MPtr(&quid::Container::get_qrox_from_name)>(quiddity_name);
   if (qrox)
@@ -446,7 +448,7 @@ int controlService::graft_user_data(const std::string& quiddity_name,
                                     const std::string& value,
                                     std::string* result) {
   using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   auto qrox = manager->quids<MPtr(&quid::Container::get_qrox_from_name)>(quiddity_name);
@@ -488,7 +490,7 @@ int controlService::tag_as_array_user_data(const std::string& quiddity_name,
                                            bool is_array,
                                            std::string* result) {
   using namespace switcher;
-  SoapCtrlServer* ctrl_server = static_cast<SoapCtrlServer*>(this->user);
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   auto qrox = manager->quids<MPtr(&quid::Container::get_qrox_from_name)>(quiddity_name);

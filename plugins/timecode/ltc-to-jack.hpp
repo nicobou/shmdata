@@ -27,6 +27,7 @@
 #include "switcher/shmdata/shmdata-follower.hpp"
 
 namespace switcher {
+namespace quiddities {
 /**
  * LTCToJack class,
  * Decodes an incoming audio stream with encoded LTC and controls Jack Transport from it.
@@ -72,6 +73,7 @@ class LTCToJack : public Quiddity {
 
 SWITCHER_DECLARE_PLUGIN(LTCToJack);
 
+}  // namespace quiddities
 }  // namespace switcher
 
 #endif

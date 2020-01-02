@@ -29,6 +29,7 @@
 #include "../utils/periodic-task.hpp"
 
 namespace switcher {
+namespace quiddities {
 /**
  * ShmDelay class
  */
@@ -89,5 +90,6 @@ class ShmDelay : public Quiddity {
   unsigned int buffer_size_{1 << 10};
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

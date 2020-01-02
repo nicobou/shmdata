@@ -23,9 +23,11 @@
 #include "./sink/vrpn-sink.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 SWITCHER_DECLARE_PLUGIN(VRPNSink);
-}
-}
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 
 #endif

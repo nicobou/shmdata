@@ -24,6 +24,7 @@
 #include "./glfwvideo.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 class GLFWRenderer {
  public:
@@ -64,6 +65,8 @@ class RendererSingleton {
   static std::unique_ptr<GLFWRenderer> s_instance_;
   static std::mutex creation_mutex_;
 };
-};
+
+}  // namespace quiddities
+}  // namespace switcher
 
 #endif

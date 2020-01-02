@@ -20,6 +20,7 @@
 #include "analog-source-device.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 AnalogSourceDevice::AnalogSourceDevice(const std::string& name,
@@ -81,5 +82,6 @@ void AnalogSourceDevice::handleAnalogCallback(void* userData, const vrpn_ANALOGC
     context->handleAnalogChannel(i, info.channel[i]);
   }
 }
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher

@@ -26,6 +26,7 @@
 #include "switcher/quiddity/quiddity.hpp"
 
 namespace switcher {
+namespace quiddities {
 class MethodQuid : public Quiddity {
  public:
   MethodQuid(quid::Config&&);
@@ -45,5 +46,6 @@ class MethodQuid : public Quiddity {
 
 SWITCHER_DECLARE_PLUGIN(MethodQuid);
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

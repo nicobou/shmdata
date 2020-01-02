@@ -20,6 +20,7 @@
 #include "./sink-device.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 SinkDevice::SinkDevice(const std::string& name) : Device(name) {}
@@ -30,5 +31,6 @@ InfoTree::ptr SinkDevice::getTree() const {
   return Device::getTree();
 }
 
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher

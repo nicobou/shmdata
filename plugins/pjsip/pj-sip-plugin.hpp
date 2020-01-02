@@ -31,6 +31,7 @@
 #include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
+namespace quiddities {
 class SIPPlugin : public Quiddity {
   friend PJCall;
   friend PJPresence;
@@ -92,5 +93,6 @@ class SIPPlugin : public Quiddity {
   void on_saved() final;
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

@@ -31,6 +31,7 @@
 #include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
+namespace quiddities {
 class Watcher : public Quiddity, public StartableQuiddity {
  public:
   enum class DirectoryStatus { ERROR, ABSENT, PRESENT, IS_FILE };
@@ -56,5 +57,6 @@ class Watcher : public Quiddity, public StartableQuiddity {
   DirectoryStatus dir_exists(const std::string path) const;
 };
 SWITCHER_DECLARE_PLUGIN(Watcher);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

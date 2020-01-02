@@ -25,6 +25,7 @@
 #include "../shmdata/shmdata-follower.hpp"
 
 namespace switcher {
+namespace quiddities {
 class ExternalShmdataWriter : public Quiddity {
  public:
   ExternalShmdataWriter(quid::Config&&);
@@ -39,5 +40,6 @@ class ExternalShmdataWriter : public Quiddity {
   void on_loading(InfoTree::ptr&& tree) final;
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

@@ -23,6 +23,7 @@
 #include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(NVencPlugin,
                                      "nvenc",
                                      "Hardware video encoder (NVenc)",
@@ -439,4 +440,5 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
                   std::to_string(frameNum) + "/" + std::to_string(frameDen)));
 }
 
+}  // namespace quiddities
 }  // namespace switcher

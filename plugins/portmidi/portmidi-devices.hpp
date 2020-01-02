@@ -37,6 +37,7 @@
 #include "switcher/utils/bool-log.hpp"
 
 namespace switcher {
+namespace quiddities {
 class PortMidi {
  public:
   typedef void (*on_pm_event_method)(PmEvent* midi_event, void* user_data);
@@ -98,5 +99,6 @@ class PortMidi {
   static unsigned int instance_counter_;
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

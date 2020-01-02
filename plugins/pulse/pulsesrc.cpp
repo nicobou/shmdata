@@ -23,6 +23,7 @@
 #include "switcher/quiddity/property/gprop-to-prop.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
                                      "pulsesrc",
                                      "Pulse Audio Device",
@@ -390,4 +391,5 @@ void PulseSrc::on_loading(InfoTree::ptr&& tree) {
 
 void PulseSrc::on_loaded() { is_loading_ = true; }
 
+}  // namespace quiddities
 }  // namespace switcher

@@ -27,6 +27,7 @@
 #include "./stb_image.h"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_DECLARE_PLUGIN(GLFWVideo);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GLFWVideo,
                                      "glfwin",
@@ -1669,4 +1670,5 @@ void GLFWVideo::GUIConfiguration::render_overlay(ImDrawData* draw_data) {
   glDisable(GL_BLEND);
 }
 
+}  // namespace quiddities
 }  // namespace switcher

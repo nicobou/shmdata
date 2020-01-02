@@ -39,6 +39,7 @@
 #define VNC_KEYBOARD_EVENTS_CAPS "application/x-keyboard-events"
 
 namespace switcher {
+namespace quiddities {
 class VncClientSrc : public Quiddity, public StartableQuiddity {
  public:
   VncClientSrc(quid::Config&&);
@@ -80,5 +81,6 @@ class VncClientSrc : public Quiddity, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(VncClientSrc);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

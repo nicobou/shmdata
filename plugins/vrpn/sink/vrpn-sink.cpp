@@ -21,6 +21,7 @@
 #include "switcher/infotree/information-tree-json.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VRPNSink,
                                      "vrpnsink",
@@ -629,5 +630,6 @@ void VRPNSink::loop() {
     device.second->loop();
   }
 }
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher

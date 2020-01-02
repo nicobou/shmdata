@@ -20,6 +20,7 @@
 #include "./empty-quiddity.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(EmptyQuiddity,
                                      "emptyquid",
                                      "Empty Quiddity",
@@ -31,4 +32,5 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(EmptyQuiddity,
 
 EmptyQuiddity::EmptyQuiddity(quid::Config&& conf) : Quiddity(std::forward<quid::Config>(conf)) {}
 
+}  // namespace quiddities
 }  // namespace switcher

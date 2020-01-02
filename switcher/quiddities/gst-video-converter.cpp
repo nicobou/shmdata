@@ -20,6 +20,7 @@
 #include "./gst-video-converter.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoConverter,
                                      "videoconvert",
                                      "Video converter",
@@ -84,4 +85,5 @@ bool GstVideoConverter::can_sink_caps(const std::string& caps) {
   return gst::PixelFormatConverter::can_sink_caps(caps);
 }
 
+}  // namespace quiddities
 }  // namespace switcher

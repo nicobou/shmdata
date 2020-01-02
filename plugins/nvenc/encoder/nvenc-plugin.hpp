@@ -30,6 +30,7 @@
 #include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
+namespace quiddities {
 class NVencPlugin : public Quiddity {
  public:
   NVencPlugin(quid::Config&&);
@@ -80,5 +81,6 @@ class NVencPlugin : public Quiddity {
 
 SWITCHER_DECLARE_PLUGIN(NVencPlugin);
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

@@ -33,6 +33,7 @@
 #include "switcher/shmdata/shmdata-connector.hpp"
 
 namespace switcher {
+namespace quiddities {
 class PulseSink : public Quiddity {
  public:
   PulseSink(quid::Config&&);
@@ -101,5 +102,6 @@ class PulseSink : public Quiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(PulseSink);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

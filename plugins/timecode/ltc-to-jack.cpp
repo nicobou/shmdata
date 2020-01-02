@@ -20,6 +20,7 @@
 #include "ltc-to-jack.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCToJack,
                                      "ltctojack",
                                      "LTC to Jack Transport",
@@ -177,4 +178,5 @@ bool LTCToJack::can_sink_caps(std::string str_caps) {
   return StringUtils::starts_with(str_caps, "audio/x-raw");
 }
 
+}  // namespace quiddities
 }  // namespace switcher

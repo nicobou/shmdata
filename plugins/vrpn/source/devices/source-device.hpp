@@ -29,6 +29,7 @@
 #include "vrpn_BaseClass.h"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 class SourceDevice : public Device {
@@ -97,6 +98,7 @@ class SourceDevice : public Device {
     }
   }
 };
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 #endif

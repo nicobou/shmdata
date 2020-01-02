@@ -25,6 +25,7 @@
 #include "../shmdata/shmdata-follower.hpp"
 
 namespace switcher {
+namespace quiddities {
 class DummySink : public Quiddity {
  public:
   DummySink(quid::Config&&);
@@ -45,5 +46,6 @@ class DummySink : public Quiddity {
   bool can_sink_caps(const std::string& caps);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

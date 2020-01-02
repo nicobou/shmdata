@@ -22,6 +22,7 @@
 #include "switcher/quiddity/quiddity-container.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackToShmdata,
                                      "jacksrc",
                                      "Jack Audio Device",
@@ -291,4 +292,5 @@ void JackToShmdata::on_port(jack_port_t* port) {
   }
 }
 
-}  // namespace swittcher
+}  // namespace quiddities
+}  // namespace switcher

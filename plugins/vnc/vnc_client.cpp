@@ -25,6 +25,7 @@
 using namespace std;
 
 namespace switcher {
+namespace quiddities {
 
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VncClientSrc,
                                      "vncclientsrc",
@@ -248,4 +249,6 @@ void VncClientSrc::update_vnc(rfbClient* client, int, int, int, int) {
     }
   }
 }
-}
+
+}  // namespace quiddities
+}  // namespace switcher

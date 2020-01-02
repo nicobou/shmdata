@@ -23,6 +23,7 @@
 #include "switcher/shmdata/shmdata-connector.hpp"
 
 namespace switcher {
+namespace quiddities {
 /**
  * RTMP class,
  * RTMP quiddity compatible with multiple streaming applications (Youtube, Twitch,...)
@@ -62,4 +63,6 @@ class RTMP : public Quiddity {
   PContainer::prop_id_t stream_key_id_{0};      //!< Stream key property id
   std::string stream_key_{};                    //!< Stream key, found on the streaming application
 };
-};
+
+}  // namespace quiddities
+}  // namespace switcher

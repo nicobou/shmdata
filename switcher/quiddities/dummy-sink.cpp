@@ -20,6 +20,7 @@
 #include "./dummy-sink.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(DummySink,
                                      "dummysink",
                                      "Dummy Sink Quiddity",
@@ -68,4 +69,5 @@ bool DummySink::disconnect() {
 
 bool DummySink::can_sink_caps(const std::string&) { return true; }
 
+}  // namespace quiddities
 }  // namespace switcher

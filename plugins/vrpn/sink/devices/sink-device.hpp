@@ -26,6 +26,7 @@
 #include "shared/device.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 class SinkDevice : public Device {
@@ -40,7 +41,8 @@ class SinkDevice : public Device {
    */
   InfoTree::ptr getTree() const;
 };
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 
 #endif

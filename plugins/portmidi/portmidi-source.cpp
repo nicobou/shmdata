@@ -25,6 +25,7 @@
 #include "switcher/infotree/information-tree-json.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSource,
                                      "midisrc",
                                      "Midi (PortMidi)",
@@ -270,4 +271,5 @@ bool PortMidiSource::make_property(const std::string& property_long_name,
   return true;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

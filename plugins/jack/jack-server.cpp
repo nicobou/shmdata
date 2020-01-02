@@ -21,6 +21,7 @@
 #include <cstring>
 
 namespace switcher {
+namespace quiddities {
 
 log::BaseLogger* JackServer::current_jack_log_ = nullptr;
 
@@ -306,4 +307,5 @@ void JackServer::jack_error(const char* msg) {
   if (current_jack_log_) current_jack_log_->error("jackd info: %", std::string(msg));
 }
 
+}  // namespace quiddities
 }  // namespace switcher

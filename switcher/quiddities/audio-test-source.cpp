@@ -23,6 +23,7 @@
 #include "../utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
                                      "audiotestsrc",
                                      "Audio Test Source",
@@ -163,4 +164,6 @@ void AudioTestSource::update_caps() {
   On_scope_exit { gst_caps_unref(caps); };
   g_object_set(G_OBJECT(capsfilter_.get_raw()), "caps", caps, nullptr);
 }
-}
+
+}  // namespace quiddities
+}  // namespace switcher

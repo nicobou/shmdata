@@ -19,6 +19,7 @@
 #include "protocol-curl.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 std::atomic<int> ProtocolCurl::instance_count_{0};
 
@@ -98,4 +99,6 @@ bool ProtocolCurl::make_properties(Quiddity* quid, const InfoTree* tree) {
   }
   return true;
 }
-}
+
+}  // namespace quiddities
+}  // namespace switcher

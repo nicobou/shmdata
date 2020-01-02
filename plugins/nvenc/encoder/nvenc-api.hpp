@@ -24,6 +24,7 @@
 #include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 class NVencAPI : public SafeBoolIdiom {
  public:
@@ -40,5 +41,6 @@ class NVencAPI : public SafeBoolIdiom {
   bool safe_bool_idiom() const { return nvenc_api_has_been_set_; }
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

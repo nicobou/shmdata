@@ -28,6 +28,7 @@
 #include "switcher/shmdata/shmdata-writer.hpp"
 
 namespace switcher {
+namespace quiddities {
 class JackToShmdata : public Quiddity, public StartableQuiddity {
  public:
   JackToShmdata(quid::Config&&);
@@ -67,5 +68,6 @@ class JackToShmdata : public Quiddity, public StartableQuiddity {
 
 SWITCHER_DECLARE_PLUGIN(JackToShmdata);
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

@@ -28,6 +28,7 @@
 #include "switcher/shmdata/shmdata-follower.hpp"
 
 namespace switcher {
+namespace quiddities {
 class PortMidiSink : public Quiddity, public StartableQuiddity, public PortMidi {
  public:
   PortMidiSink(quid::Config&&);
@@ -58,5 +59,6 @@ class PortMidiSink : public Quiddity, public StartableQuiddity, public PortMidi 
 };
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSink);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

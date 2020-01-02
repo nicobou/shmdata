@@ -20,6 +20,7 @@
 #include "./gst-audio-encoder.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstAudioEncoder,
                                      "audioenc",
                                      "Audio Encoder",
@@ -54,4 +55,5 @@ bool GstAudioEncoder::can_sink_caps(const std::string& caps) {
   return gst::utils::can_sink_caps("audioconvert", caps);
 }
 
+}  // namespace quiddities
 }  // namespace switcher

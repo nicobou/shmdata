@@ -22,6 +22,7 @@
 #include "../utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
                                      "urisrc",
                                      "URI/URL Player",
@@ -311,4 +312,5 @@ bool Uridecodebin::to_shmdata() {
   return true;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

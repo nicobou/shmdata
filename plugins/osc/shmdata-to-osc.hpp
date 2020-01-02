@@ -29,6 +29,7 @@
 #include "switcher/shmdata/shmdata-follower.hpp"
 
 namespace switcher {
+namespace quiddities {
 class ShmdataToOsc : public Quiddity, public StartableQuiddity {
  public:
   ShmdataToOsc(quid::Config&&);
@@ -58,5 +59,6 @@ class ShmdataToOsc : public Quiddity, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToOsc);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

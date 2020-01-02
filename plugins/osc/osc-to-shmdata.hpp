@@ -26,6 +26,7 @@
 #include "switcher/shmdata/shmdata-writer.hpp"
 
 namespace switcher {
+namespace quiddities {
 class OscToShmdata : public Quiddity, public StartableQuiddity {
  public:
   OscToShmdata(quid::Config&&);
@@ -47,5 +48,6 @@ class OscToShmdata : public Quiddity, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(OscToShmdata);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

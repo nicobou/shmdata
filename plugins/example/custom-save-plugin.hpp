@@ -26,6 +26,7 @@
 #include "switcher/quiddity/quiddity.hpp"
 
 namespace switcher {
+namespace quiddities {
 class CustomSavePlugin : public Quiddity {
  public:
   CustomSavePlugin(quid::Config&&);
@@ -51,5 +52,6 @@ class CustomSavePlugin : public Quiddity {
 
 SWITCHER_DECLARE_PLUGIN(CustomSavePlugin);
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

@@ -27,6 +27,7 @@
 #include "switcher/quiddity/property/selection.hpp"
 
 namespace switcher {
+namespace quiddities {
 class SIPPlugin;
 class PJCall;
 class PJSIP;
@@ -91,5 +92,6 @@ class PJPresence {
   static void on_buddy_evsub_state(pjsua_buddy_id buddy_id, pjsip_evsub* sub, pjsip_event* event);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

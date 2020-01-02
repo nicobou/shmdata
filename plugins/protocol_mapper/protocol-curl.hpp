@@ -20,10 +20,11 @@
 #define SWITCHER_PROTOCOL_CURL_HPP
 
 #include <curl/curl.h>
-#include "protocol-reader.hpp"
+#include "./protocol-reader.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 class ProtocolCurl : public ProtocolReader {
  public:
@@ -39,6 +40,7 @@ class ProtocolCurl : public ProtocolReader {
   bool safe_bool_idiom() const final { return curl_ != nullptr; };
   bool curl_request(const std::string& url);
 };
-}
 
+}  // namespace quiddities
+}  // namespace switcher
 #endif

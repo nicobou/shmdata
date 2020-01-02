@@ -21,6 +21,7 @@
 #include <lo/lo.h>
 
 namespace switcher {
+namespace quiddities {
 
 ProtocolOsc::ProtocolOsc(Quiddity* quid, const InfoTree* tree) : ProtocolReader(quid, tree) {
   auto url = tree->branch_read_data<std::string>("url");
@@ -144,4 +145,6 @@ ProtocolOsc::OscAddress::OscAddress(const std::string& url) {
 ProtocolOsc::OscAddress::~OscAddress() {
   if (address) lo_address_free(address);
 }
-}
+
+}  // namespace quiddities
+}  // namespace switcher

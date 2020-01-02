@@ -26,6 +26,7 @@
 #include "switcher/shmdata/shmdata-writer.hpp"
 
 namespace switcher {
+namespace quiddities {
 class Resample : public Quiddity {
  public:
   Resample(quid::Config&&);
@@ -66,5 +67,6 @@ class Resample : public Quiddity {
 
 SWITCHER_DECLARE_PLUGIN(Resample);
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

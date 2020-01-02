@@ -27,6 +27,7 @@
 #include "../shmdata/shmdata-connector.hpp"
 
 namespace switcher {
+namespace quiddities {
 class GstVideoConverter : public Quiddity {
  public:
   GstVideoConverter(quid::Config&&);
@@ -50,5 +51,6 @@ class GstVideoConverter : public Quiddity {
   bool can_sink_caps(const std::string& caps);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

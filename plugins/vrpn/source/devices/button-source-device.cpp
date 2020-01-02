@@ -20,6 +20,7 @@
 #include "button-source-device.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 ButtonSourceDevice::ButtonSourceDevice(const std::string& name,
@@ -76,5 +77,6 @@ void ButtonSourceDevice::handleButtonCallback(void* userData, const vrpn_BUTTONC
   // Get out of the static method ASAP
   static_cast<ButtonSourceDevice*>(userData)->handleButton(info.button, info.state != 0);
 }
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher

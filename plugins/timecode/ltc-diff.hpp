@@ -28,6 +28,7 @@
 #include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
+namespace quiddities {
 /**
  * LTCDiff class,
  */
@@ -85,6 +86,7 @@ class LTCDiff : public Quiddity {
       nullptr};  //!< Task used to notify the display timecode properties
 };
 SWITCHER_DECLARE_PLUGIN(LTCDiff)
+}  // namespace quiddities
 }  // namespace switcher
 
 #endif

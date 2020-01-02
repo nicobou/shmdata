@@ -20,6 +20,7 @@
 #include "./portmidi-sink.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSink,
                                      "midisink",
                                      "Midi (Port Midi)",
@@ -133,4 +134,5 @@ bool PortMidiSink::on_shmdata_disconnect() {
 
 bool PortMidiSink::can_sink_caps(std::string caps) { return (0 == caps.find("audio/midi")); }
 
+}  // namespace quiddities
 }  // namespace switcher

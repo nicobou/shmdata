@@ -27,6 +27,7 @@
 #include "../utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     HTTPSDPDec,
     "httpsdpdec",
@@ -179,4 +180,5 @@ void HTTPSDPDec::uri_to_shmdata() {
   gst_pipeline_->play(true);
 }
 
+}  // namespace quiddities
 }  // namespace switcher

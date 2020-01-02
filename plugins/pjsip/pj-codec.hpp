@@ -28,6 +28,7 @@
 #include <pjsip_ua.h>
 
 namespace switcher {
+namespace quiddities {
 class PJCall;
 
 class PJCodec {
@@ -70,5 +71,6 @@ class PJCodec {
   static pj_status_t alt_codec_dealloc_codec(pjmedia_codec_factory* factory, pjmedia_codec* codec);
   static pj_status_t alt_codec_deinit(void);
 };
+}  // namespace quiddities
 }  // namespace switcher
 #endif

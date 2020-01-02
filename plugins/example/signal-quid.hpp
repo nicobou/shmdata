@@ -23,6 +23,7 @@
 #include "switcher/quiddity/quiddity.hpp"
 
 namespace switcher {
+namespace quiddities {
 class SignalQuid : public Quiddity {
  public:
   SignalQuid(quid::Config&&);
@@ -35,5 +36,6 @@ class SignalQuid : public Quiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(SignalQuid);
-}
+}  // namespace quiddities
+}  // namespace switcher
 #endif  // __SWITCHER_SIGNAL_QUID_H__

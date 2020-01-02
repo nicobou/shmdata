@@ -24,6 +24,7 @@
 #include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 char* pjcall_pjsip_module_name = strdup("mod-siprtpapp");
 
@@ -1215,4 +1216,5 @@ bool PJCall::negotiate_ice(PJICEStreamTrans* ice_trans,
   return true;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

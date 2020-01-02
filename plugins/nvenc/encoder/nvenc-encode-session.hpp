@@ -32,6 +32,7 @@
 #include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
+namespace quiddities {
 class NVencES : public log::Logged, public SafeBoolIdiom {
  public:
   NVencES(uint32_t device_id, log::BaseLogger* log);
@@ -93,5 +94,6 @@ class NVencES : public log::Logged, public SafeBoolIdiom {
   static bool is_same(const GUID& g1, const GUID& g2);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

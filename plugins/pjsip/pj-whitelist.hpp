@@ -22,6 +22,7 @@
 #include "switcher/quiddity/property/property-container.hpp"
 
 namespace switcher {
+namespace quiddities {
 class PJWhiteList {
  public:
   using on_authorization_updated_t = std::function<void(bool)>;
@@ -45,5 +46,6 @@ class PJWhiteList {
   bool authorize_buddy_cb(const std::string& sip_url, bool authorized);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

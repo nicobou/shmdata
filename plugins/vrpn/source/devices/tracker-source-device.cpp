@@ -20,6 +20,7 @@
 #include "tracker-source-device.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 TrackerSourceDevice::TrackerSourceDevice(const std::string& name,
                                          const std::string& uri,
@@ -44,5 +45,6 @@ InfoTree::ptr TrackerSourceDevice::getTree() const {
 void TrackerSourceDevice::handleTrackerCallback(void* /*userData*/, const vrpn_TRACKERCB /*info*/) {
   // auto* context = static_cast<TrackerSourceDevice*>(userData);
 }
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher

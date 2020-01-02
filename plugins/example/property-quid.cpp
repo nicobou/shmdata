@@ -20,6 +20,7 @@
 #include "property-quid.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyQuid,
                                      "dummy",
                                      "Dummy Plugin",
@@ -276,4 +277,5 @@ PropertyQuid::PropertyQuid(quid::Config&& conf)
   debug("hello from plugin");
 }
 
+}  // namespace quiddities
 }  // namespace switcher

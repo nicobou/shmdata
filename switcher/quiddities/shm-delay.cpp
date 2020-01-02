@@ -21,6 +21,7 @@
 #include "../utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmDelay,
                                      "shmdelay",
                                      "Shmdata delay line",
@@ -212,4 +213,5 @@ ShmDelay::ShmContent ShmDelay::ShmBuffer::find_closest(double target_timestamp) 
   return closest;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

@@ -21,6 +21,7 @@
 #include "switcher/infotree/information-tree-json.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(MethodQuid,
                                      "method",
                                      "Example Method Plugin",
@@ -98,4 +99,5 @@ MethodQuid::MethodQuid(quid::Config&& conf)
   debug("hello_id_ %", std::to_string(hello_id_));
 }
 
+}  // namespace quiddities
 }  // namespace switcher

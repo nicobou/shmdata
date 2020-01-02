@@ -21,6 +21,7 @@
 #include "switcher/gst/utils.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCDiff,
                                      "ltcdiff",
                                      "LTC timecode difference",
@@ -192,4 +193,5 @@ void LTCDiff::LTCReader::on_data(void* data, size_t data_size) {
   }
 }
 
+}  // namespace quiddities
 }  // namespace switcher

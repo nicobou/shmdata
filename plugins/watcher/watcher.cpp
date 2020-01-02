@@ -22,6 +22,7 @@
 namespace fs = std::filesystem;
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Watcher,
                                      "watcher",
                                      "Directory watcher",
@@ -149,4 +150,5 @@ Watcher::DirectoryStatus Watcher::dir_exists(const std::string path) const {
   }
   return DirectoryStatus::IS_FILE;
 }
+}  // namespace quiddities
 }  // namespace switcher

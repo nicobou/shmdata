@@ -23,10 +23,12 @@
 #include "../quiddity/quiddity.hpp"
 
 namespace switcher {
+namespace quiddities {
 class EmptyQuiddity : public Quiddity {
  public:
   EmptyQuiddity(quid::Config&&);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

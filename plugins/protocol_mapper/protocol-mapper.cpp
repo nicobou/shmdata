@@ -21,6 +21,7 @@
 #include "switcher/utils/file-utils.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ProtocolMapper,
                                      "protocol-mapper",
                                      "Protocol to property mapper",
@@ -66,4 +67,6 @@ ProtocolMapper::ProtocolMapper(quid::Config&& conf) : Quiddity(std::forward<quid
       "Load the command description",
       config_file_);
 }
-}
+
+}  // namespace quiddities
+}  // namespace switcher

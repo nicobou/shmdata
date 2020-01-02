@@ -36,6 +36,7 @@
 #include "switcher/switcher.hpp"
 
 namespace switcher {
+namespace quiddities {
 class PJCall {
  public:
   PJCall();
@@ -131,5 +132,6 @@ class PJCall {
                             pj_pool_t* dlg_pool);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

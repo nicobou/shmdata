@@ -20,10 +20,12 @@
 #include "./property-base.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 PContainer::prop_id_t PropertyBase::getPropId() const { return prop_id_; };
 void PropertyBase::setPropId(PContainer::prop_id_t prop_id) { prop_id_ = prop_id; };
 
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher

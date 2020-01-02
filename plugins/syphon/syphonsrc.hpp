@@ -28,6 +28,7 @@
 #include "switcher/shmdata/shmdata-writer.hpp"
 
 namespace switcher {
+namespace quiddities {
 class SyphonSrc : public Quiddity, public StartableQuiddity {
  public:
   SyphonSrc(quid::Config&&);
@@ -48,5 +49,6 @@ class SyphonSrc : public Quiddity, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(SyphonSrc);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

@@ -32,6 +32,7 @@
 using namespace std;
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SystemUsage,
                                      "systemusage",
                                      "SystemUsage plugin",
@@ -248,4 +249,5 @@ void SystemUsage::pollState() {
   graft_tree(".top.", tree_);
 }
 
+}  // namespace quiddities
 }  // namespace switcher

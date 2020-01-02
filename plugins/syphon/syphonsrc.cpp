@@ -28,6 +28,7 @@
 using namespace std;
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SyphonSrc,
                                      "syphonsrc",
                                      "Video capture (through Syphon)",
@@ -105,4 +106,5 @@ void SyphonSrc::frameCallback(void* context, const char* data, int& width, int& 
   ctx->writer_->bytes_written(width * height * 4);
 }
 
+}  // namespace quiddities
 }  // namespace switcher

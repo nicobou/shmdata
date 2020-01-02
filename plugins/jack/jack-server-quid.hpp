@@ -26,6 +26,7 @@
 #include "switcher/quiddity/startable-quiddity.hpp"
 
 namespace switcher {
+namespace quiddities {
 class JackServerQuid : public Quiddity, public StartableQuiddity {
  public:
   JackServerQuid(quid::Config&&);
@@ -51,5 +52,6 @@ class JackServerQuid : public Quiddity, public StartableQuiddity {
 
 SWITCHER_DECLARE_PLUGIN(JackServerQuid);
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

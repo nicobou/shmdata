@@ -22,6 +22,7 @@
 #include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 static volatile sig_atomic_t child_dead = 0;
 extern "C" void signal_cb(int signal_number) { child_dead = 1; }
@@ -364,4 +365,5 @@ void Executor::clean_up_child_process() {
     info("'%' output has been updated.", command_line_);
   }
 }
+}  // namespace quiddities
 }  // namespace switcher

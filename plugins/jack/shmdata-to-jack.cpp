@@ -25,6 +25,7 @@
 #include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
                                      "jacksink",
                                      "Audio Display (Jack)",
@@ -409,4 +410,5 @@ void ShmdataToJack::on_port(jack_port_t* port) {
   }
 }
 
+}  // namespace quiddities
 }  // namespace switcher

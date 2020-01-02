@@ -26,6 +26,7 @@
 #include "switcher/shmdata/shmdata-follower.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 class AVRecorder : public Quiddity, public StartableQuiddity {
  public:
@@ -108,6 +109,7 @@ class AVRecorder : public Quiddity, public StartableQuiddity {
       saved_properties_;  //!< Properties values of the selected muxer for all connected shmdata.
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 
 #endif

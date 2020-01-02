@@ -31,6 +31,7 @@
 #include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 class Cropper : public Quiddity {
  public:
@@ -71,5 +72,6 @@ class Cropper : public Quiddity {
   ThreadedWrapper<> async_this_{};
 };
 SWITCHER_DECLARE_PLUGIN(Cropper);
+}  // namespace quiddities
 }  // namespace switcher
 #endif
