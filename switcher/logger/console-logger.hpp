@@ -19,6 +19,7 @@
 #include "./base-logger.hpp"
 
 namespace switcher {
+namespace log {
 
 class ConsoleLogger : public BaseLogger {
  public:
@@ -42,5 +43,6 @@ class ConsoleLogger : public BaseLogger {
   }
 };
 
+}  // namespace log
 }  // namespace shmdata
 #endif

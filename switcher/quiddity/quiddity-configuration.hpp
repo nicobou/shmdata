@@ -35,13 +35,13 @@ struct Config {
          const std::string& type,
          const InfoTree::ptrc tree_config,
          Container* qc,
-         BaseLogger* log)
+         log::BaseLogger* log)
       : name_(name), type_(type), tree_config_(tree_config), qc_(qc), log_(log) {}
   std::string name_;
   std::string type_;
   InfoTree::ptrc tree_config_;
   Container* qc_;
-  BaseLogger* log_;
+  log::BaseLogger* log_;
 };
 
 }  // namespace quid

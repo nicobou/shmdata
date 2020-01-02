@@ -22,8 +22,8 @@
 #include "../infotree/information-tree-json.hpp"
 
 namespace switcher {
-Configuration::Configuration(BaseLogger* log, on_loaded_t on_loaded_cb)
-    : Logged(log), on_loaded_cb_(on_loaded_cb) {}
+Configuration::Configuration(log::BaseLogger* log, on_loaded_t on_loaded_cb)
+    : log::Logged(log), on_loaded_cb_(on_loaded_cb) {}
 
 bool Configuration::from_file(const std::string& file_path) {
   // opening file

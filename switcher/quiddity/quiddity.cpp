@@ -36,7 +36,7 @@
 namespace switcher {
 
 Quiddity::Quiddity(quid::Config&& conf)
-    : Logged(conf.log_),
+    : log::Logged(conf.log_),
       information_tree_(InfoTree::make()),
       structured_user_data_(InfoTree::make()),
       configuration_tree_(conf.tree_config_ ? InfoTree::copy(conf.tree_config_) : InfoTree::make()),

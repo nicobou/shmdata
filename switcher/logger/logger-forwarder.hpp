@@ -23,6 +23,7 @@
 #include "./base-logger.hpp"
 
 namespace switcher {
+namespace log {
 
 class LoggerForwarder : public BaseLogger {
  public:
@@ -30,5 +31,6 @@ class LoggerForwarder : public BaseLogger {
   LoggerForwarder(BaseLogger*) {}
 };
 
+}  // namespace log
 }  // namespace shmdata
 #endif

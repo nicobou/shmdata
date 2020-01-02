@@ -40,7 +40,7 @@ class Switcher : public gst::Initialized {
 
   ~Switcher() = default;
 
-  template <typename L = ConsoleLogger, typename... Largs>
+  template <typename L = log::ConsoleLogger, typename... Largs>
   static Switcher::ptr make_switcher(const std::string& name, Largs... args) {
     Switcher::ptr switcher(new Switcher(name, std::make_unique<L>(std::forward<Largs>(args)...)));
     switcher->me_ = switcher;
@@ -67,7 +67,7 @@ class Switcher : public gst::Initialized {
   Make_delegate(Switcher, quid::Container, qcontainer_.get(), quids);
 
   // get log
-  BaseLogger* get_logger() { return log_.get(); }
+  log::BaseLogger* get_logger() { return log_.get(); }
 
   // shmpaths
   static std::string get_shm_dir() { return "/tmp"; }
@@ -93,7 +93,7 @@ class Switcher : public gst::Initialized {
   void remove_shm_zombies() const;
   static void init_gst();
 
-  mutable std::unique_ptr<BaseLogger> log_;
+  mutable std::unique_ptr<log::BaseLogger> log_;
   quid::Factory qfactory_;
   Configuration conf_;
   quid::Container::ptr qcontainer_;

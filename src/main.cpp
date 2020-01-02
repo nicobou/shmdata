@@ -132,9 +132,9 @@ int main(int argc, char* argv[]) {
   if (port_number == nullptr) port_number = "27182";
 
   if (debug) {
-    manager = Switcher::make_switcher<ConsoleLogger>(server_name);
+    manager = Switcher::make_switcher<log::ConsoleLogger>(server_name);
   } else {
-    manager = Switcher::make_switcher<SilentLogger>(server_name);
+    manager = Switcher::make_switcher<log::SilentLogger>(server_name);
   }
 
   if (display_version) {

@@ -28,7 +28,7 @@ namespace switcher {
 class ShmdataSwitcherLogger : public shmdata::AbstractLogger {
  public:
   ShmdataSwitcherLogger() = delete;
-  ShmdataSwitcherLogger(BaseLogger* log) : log_(log) {}
+  ShmdataSwitcherLogger(log::BaseLogger* log) : log_(log) {}
 
  private:
   void on_error(std::string&& str) final { log_->warning("ERROR: %", str); }
@@ -38,7 +38,7 @@ class ShmdataSwitcherLogger : public shmdata::AbstractLogger {
   void on_info(std::string&& str) final { log_->info("%", str); }
   void on_debug(std::string&& str) final { log_->debug("%", str); }
 
-  BaseLogger* log_;
+  log::BaseLogger* log_;
 };
 
 }  // namespace switcher

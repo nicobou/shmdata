@@ -24,10 +24,10 @@
 #include "../logger/logged.hpp"
 
 namespace switcher {
-class Configuration : public Logged {
+class Configuration : public log::Logged {
  public:
   using on_loaded_t = std::function<void()>;
-  Configuration(BaseLogger* log, on_loaded_t on_loaded_cb);
+  Configuration(log::BaseLogger* log, on_loaded_t on_loaded_cb);
   Configuration() = delete;
 
   bool from_file(const std::string& file_path);

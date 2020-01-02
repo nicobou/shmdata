@@ -37,7 +37,7 @@ Bundle::Bundle(quid::Config&& conf)
     : Quiddity(std::forward<quid::Config>(conf)),
       conf_(conf),
       shmcntr_(static_cast<Quiddity*>(this)),
-      manager_(Switcher::make_switcher<LoggerForwarder>(conf_.name_, conf_.log_)) {
+      manager_(Switcher::make_switcher<log::LoggerForwarder>(conf_.name_, conf_.log_)) {
   for (auto& it : qcontainer_->get_switcher()->qfactory_.get_plugin_dirs()) {
     manager_->qfactory_.scan_dir(it);
   }

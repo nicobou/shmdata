@@ -19,7 +19,7 @@
 #include "./base-logger.hpp"
 
 namespace switcher {
-
+namespace log {
 class SilentLogger : public BaseLogger {
  private:
   void on_error(std::string&&) final {}
@@ -30,5 +30,6 @@ class SilentLogger : public BaseLogger {
   void on_debug(std::string&&) final {}
 };
 
+}  // namespace log
 }  // namespace shmdata
 #endif

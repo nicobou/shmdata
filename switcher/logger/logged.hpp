@@ -23,6 +23,7 @@
   void NAME(const char* format) const { log_->NAME(format); }
 
 namespace switcher {
+namespace log {
 
 class Logged {
 
@@ -41,5 +42,6 @@ class Logged {
   mutable BaseLogger* log_{nullptr};
 };
 
+}  // namespace log
 }  // namespace shmdata
 #endif

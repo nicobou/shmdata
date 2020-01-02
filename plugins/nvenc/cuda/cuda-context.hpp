@@ -32,12 +32,12 @@ namespace switcher {
 
 class NVencES;
 // Creates a new CUDA context and associates it with the calling thread:
-class CudaContext : public Logged, public SafeBoolIdiom {
+class CudaContext : public log::Logged, public SafeBoolIdiom {
   friend NVencES;
 
  public:
-  CudaContext(uint32_t device_id, BaseLogger* log);
-  CudaContext(BaseLogger* log) : CudaContext(0, log) {}
+  CudaContext(uint32_t device_id, log::BaseLogger* log);
+  CudaContext(log::BaseLogger* log) : CudaContext(0, log) {}
   CudaContext() = delete;
   ~CudaContext();
   CudaContext(const CudaContext&) = delete;

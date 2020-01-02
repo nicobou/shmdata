@@ -39,14 +39,16 @@ class Switcher;
 class Bundle;
 
 namespace quid {
-class Container : public Logged {
+class Container : public log::Logged {
   friend class Bundle;
 
  public:
   using ptr = std::shared_ptr<Container>;
   using OnCreateRemoveCb = std::function<void(qid_t)>;
 
-  static Container::ptr make_container(Switcher* switcher, quid::Factory* factory, BaseLogger* log);
+  static Container::ptr make_container(Switcher* switcher,
+                                       quid::Factory* factory,
+                                       log::BaseLogger* log);
   Container() = delete;
   virtual ~Container() = default;
   Container(const Container&) = delete;
@@ -136,7 +138,7 @@ class Container : public Logged {
   Switcher* get_switcher() { return switcher_; };
 
  private:
-  Container(Switcher* switcher, quid::Factory* factory, BaseLogger* log);
+  Container(Switcher* switcher, quid::Factory* factory, log::BaseLogger* log);
 
   // forwarding accessor and return constructor on error
   std::pair<bool, Quiddity*> find_quiddity(qid_t id) const {

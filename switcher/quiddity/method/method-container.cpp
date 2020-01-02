@@ -21,7 +21,7 @@
 
 namespace switcher {
 
-MContainer::MContainer(BaseLogger* log,
+MContainer::MContainer(log::BaseLogger* log,
                        InfoTree::ptr tree,
                        on_tree_grafted_cb_t on_tree_grafted_cb,
                        on_tree_pruned_cb_t on_tree_pruned_cb,
@@ -29,7 +29,7 @@ MContainer::MContainer(BaseLogger* log,
                        on_method_removed_cb_t on_method_removed,
                        on_method_enabled_cb_t on_method_enabled,
                        on_method_disabled_cb_t on_method_disabled)
-    : Logged(log),
+    : log::Logged(log),
       tree_(tree),
       on_tree_grafted_cb_(on_tree_grafted_cb),
       on_tree_pruned_cb_(on_tree_pruned_cb),

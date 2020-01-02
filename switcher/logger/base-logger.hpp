@@ -29,6 +29,7 @@
   virtual void on_##NAME(std::string&&){};
 
 namespace switcher {
+namespace log {
 
 class BaseLogger {
  public:
@@ -56,5 +57,6 @@ class BaseLogger {
   }
 };
 
-}  // namespace shmdata
+}  // namespace log
+}  // namespace switcher
 #endif

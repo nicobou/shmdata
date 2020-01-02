@@ -49,9 +49,9 @@ int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds
 
   self->name = name;
   if (showDebug && PyBool_Check(showDebug) && showDebug==Py_True) {
-    self->switcher = Switcher::make_switcher<ConsoleLogger>(PyUnicode_AsUTF8(self->name));
+    self->switcher = Switcher::make_switcher<log::ConsoleLogger>(PyUnicode_AsUTF8(self->name));
   } else {
-    self->switcher = Switcher::make_switcher<SilentLogger>(PyUnicode_AsUTF8(self->name));
+    self->switcher = Switcher::make_switcher<log::SilentLogger>(PyUnicode_AsUTF8(self->name));
   }
 
   if (!self->switcher) {

@@ -33,7 +33,7 @@
 #include "./method.hpp"
 
 namespace switcher {
-class MContainer : public Logged {
+class MContainer : public log::Logged {
   friend class Bundle;  // replacing some methods like replace and delete
  public:
   using meth_id_t = MethodBase::meth_id_t;
@@ -45,7 +45,7 @@ class MContainer : public Logged {
   using on_method_disabled_cb_t = std::function<void(const std::string& name)>;
   MContainer() = delete;
   // ctor will own tree and write into .method.
-  MContainer(BaseLogger* log,
+  MContainer(log::BaseLogger* log,
              InfoTree::ptr tree,
              on_tree_grafted_cb_t on_tree_grafted_cb,
              on_tree_pruned_cb_t on_tree_pruned_cb,

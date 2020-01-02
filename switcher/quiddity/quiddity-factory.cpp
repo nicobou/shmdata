@@ -38,7 +38,7 @@
 
 namespace switcher {
 
-quid::Factory::Factory(BaseLogger* log) : Logged(log) {
+quid::Factory::Factory(log::BaseLogger* log) : log::Logged(log) {
   abstract_factory_.register_class<AudioTestSource>(
       DocumentationRegistry::get()->get_type_from_class_name("AudioTestSource"));
   abstract_factory_.register_class<DummySink>(

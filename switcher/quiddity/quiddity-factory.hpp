@@ -32,11 +32,11 @@
 
 namespace switcher {
 namespace quid {
-class Factory : public Logged {
+class Factory : public log::Logged {
   friend class Container;
 
  public:
-  Factory(BaseLogger* log);
+  Factory(log::BaseLogger* log);
   std::vector<std::string> get_plugin_dirs() const;
   std::string get_default_plugin_dir() const;
   std::vector<std::string> get_class_list() const;

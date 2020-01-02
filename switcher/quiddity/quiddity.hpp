@@ -48,7 +48,7 @@ class VideoCodec;
 class AudioCodec;
 }  // namespace gst
 
-class Quiddity : public Logged, public SafeBoolIdiom {
+class Quiddity : public log::Logged, public SafeBoolIdiom {
   friend class Bundle;  // access to props_ in order to forward properties
   // FIXME do something for this (to many friend class in quiddity.hpp):
   friend class ProtocolCurl;

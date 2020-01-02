@@ -39,7 +39,7 @@ namespace switcher {
 
 class JackServer : public SafeBoolIdiom {
  public:
-  explicit JackServer(BaseLogger* logger,
+  explicit JackServer(log::BaseLogger* logger,
                       const std::string& name,
                       const std::string& driver,
                       bool real_time);
@@ -63,7 +63,7 @@ class JackServer : public SafeBoolIdiom {
 
  private:
   const std::string kDefaultDriver{"alsa"};
-  BaseLogger* log_;
+  log::BaseLogger* log_;
   jackctl_server_t* server_;
   InfoTree::ptr config_;
   jackctl_driver_t* current_driver_{nullptr};
@@ -75,7 +75,7 @@ class JackServer : public SafeBoolIdiom {
   // unfortunately jack_set_info_function and jack_set_error_function
   // does not provide user data allowing to sentd context when login,
   // so jack log handling is global
-  static BaseLogger* current_jack_log_;
+  static log::BaseLogger* current_jack_log_;
 
   static void jack_info(const char* msg);
   static void jack_error(const char* msg);
