@@ -84,105 +84,19 @@ add_library(${SWITCHER_LIBRARY} SHARED
   utils/type-name-registry.cpp
   )
 
+set(HEADER_DIR_INCLUDES
+  configuration
+  gst
+  infotree
+  logger
+  quiddities
+  quiddity
+  shmdata
+  utils
+  )
+
 set(HEADER_INCLUDES
-  configuration/configuration.hpp
-  gst/decodebin-to-shmdata.hpp
-  gst/g-source-wrapper.hpp
-  gst/glibmainloop.hpp
-  gst/gst-audio-codec.hpp
-  gst/gst-initialized.hpp
-  gst/gst-pipe.hpp
-  gst/gst-pipeliner.hpp
-  gst/gst-pixel-format-converter.hpp
-  gst/gst-rtppayloader-finder.hpp
-  gst/gst-shmdata-to-cb.hpp
-  gst/gst-utils.hpp
-  gst/gst-video-codec.hpp
-  gst/gst-video-timelapse.hpp
-  gst/rtp-receiver.hpp
-  gst/rtp-sender.hpp
-  gst/rtp-session.hpp
-  gst/sdp-utils.hpp
-  gst/unique-gst-element.hpp
-  infotree/information-tree-basic-serializer.hpp
-  infotree/information-tree-json.hpp
-  infotree/information-tree.hpp
-  infotree/quiddity-class-printer.hpp
-  logger/base-logger.hpp
-  logger/console-logger.hpp
-  logger/logged.hpp
-  logger/logger-forwarder.hpp
-  logger/silent-logger.hpp
-  quiddities/audio-test-source.hpp
-  quiddities/dummy-sink.hpp
-  quiddities/empty-quiddity.hpp
-  quiddities/external-shmdata-writer.hpp
-  quiddities/file-decoder.hpp
-  quiddities/gst-audio-encoder.hpp
-  quiddities/gst-decodebin.hpp
-  quiddities/gst-video-converter.hpp
-  quiddities/gst-video-encoder.hpp
-  quiddities/http-sdp-dec.hpp
-  quiddities/shm-delay.hpp
-  quiddities/timelapse.hpp
-  quiddities/uridecodebin.hpp
-  quiddities/video-test-source.hpp
-  quiddity/bundle/bundle-description-parser.hpp
-  quiddity/bundle/bundle.hpp
-  quiddity/documentation-registry.hpp
-  quiddity/method/method-container.hpp
-  quiddity/method/method.hpp
-  quiddity/plugin-loader.hpp
-  quiddity/property/color.hpp
-  quiddity/property/fraction.hpp
-  quiddity/property/gprop-to-prop.hpp
-  quiddity/property/group.hpp
-  quiddity/property/property-container.hpp
-  quiddity/property/property-internal-types.hpp
-  quiddity/property/property-specification.hpp
-  quiddity/property/property.hpp
-  quiddity/property/selection.hpp
-  quiddity/quid-id-t.hpp
-  quiddity/quiddity-basic-test.hpp
-  quiddity/quiddity-configuration.hpp
-  quiddity/quiddity-container.hpp
-  quiddity/quiddity-documentation.hpp
-  quiddity/quiddity-factory.hpp
-  quiddity/quiddity-qrox.hpp
-  quiddity/quiddity.hpp
-  quiddity/signal/sig.hpp
-  quiddity/signal/signal-container.hpp
-  quiddity/startable-quiddity.hpp
-  shmdata/caps/audio-caps.hpp
-  shmdata/caps/utils.hpp
-  shmdata/gst-shm-tree-updater.hpp
-  shmdata/gst-shmdata-subscriber.hpp
-  shmdata/shmdata-connector.hpp
-  shmdata/shmdata-follower.hpp
-  shmdata/shmdata-stat.hpp
-  shmdata/shmdata-switcher-logger.hpp
-  shmdata/shmdata-writer.hpp
   switcher.hpp
-  utils/abstract-factory.hpp
-  utils/abstract-factory_spec.hpp
-  utils/any.hpp
-  utils/bool-any.hpp
-  utils/bool-log.hpp
-  utils/counter-map.hpp
-  utils/creator.hpp
-  utils/file-utils.hpp
-  utils/is-specialization-of.hpp
-  utils/make-consultable.hpp
-  utils/method-trait.hpp
-  utils/net-utils.hpp
-  utils/periodic-task.hpp
-  utils/safe-bool-idiom.hpp
-  utils/scope-exit.hpp
-  utils/serialize-string.hpp
-  utils/string-utils.hpp
-  utils/templated-sequence.hpp
-  utils/threaded-wrapper.hpp
-  utils/type-name-registry.hpp
   )
 
 if (OSX)
@@ -217,6 +131,11 @@ endif ()
 install(TARGETS ${SWITCHER_LIBRARY}
     LIBRARY DESTINATION lib
     COMPONENT libraries)
+
+install(DIRECTORY ${HEADER_DIR_INCLUDES}
+    DESTINATION include/switcher-${SWITCHER_API_VERSION}/switcher
+    COMPONENT headers
+    )
 
 install(FILES ${HEADER_INCLUDES}
     DESTINATION include/switcher-${SWITCHER_API_VERSION}/switcher
