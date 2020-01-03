@@ -28,14 +28,15 @@
 #include "switcher/gst/pipeliner.hpp"
 #include "switcher/gst/unique-gst-element.hpp"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
 #include "switcher/shmdata/gst-shm-tree-updater.hpp"
 
 namespace switcher {
 namespace quiddities {
-class PulseSrc : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class PulseSrc : public Quiddity, public Startable {
  public:
-  PulseSrc(quid::Config&&);
+  PulseSrc(quiddity::Config&&);
   ~PulseSrc();
   PulseSrc(const PulseSrc&) = delete;
   PulseSrc& operator=(const PulseSrc&) = delete;
@@ -65,11 +66,11 @@ class PulseSrc : public Quiddity, public StartableQuiddity {
   std::condition_variable devices_cond_{};
   // property:
   // device enum members
-  Selection<> devices_{{"none"}, 0};
-  PContainer::prop_id_t devices_id_{0};
-  PContainer::prop_id_t volume_id_{0};
-  PContainer::prop_id_t mute_id_{0};
-  Selection<> save_device_enum_{{"port", "device"}, 0};
+  property::Selection<> devices_{{"none"}, 0};
+  property::prop_id_t devices_id_{0};
+  property::prop_id_t volume_id_{0};
+  property::prop_id_t mute_id_{0};
+  property::Selection<> save_device_enum_{{"port", "device"}, 0};
   bool is_loading_{false};
 
   // pulse_audio

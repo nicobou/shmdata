@@ -37,6 +37,8 @@
 #include "switcher/utils/bool-log.hpp"
 
 namespace switcher {
+using namespace quiddity;
+
 namespace quiddities {
 class PortMidi {
  public:
@@ -48,8 +50,8 @@ class PortMidi {
 
  protected:
   // info
-  Selection<> input_devices_enum_{{"none"}, 0};
-  Selection<> output_devices_enum_{{"none"}, 0};
+  property::Selection<> input_devices_enum_{{"none"}, 0};
+  property::Selection<> output_devices_enum_{{"none"}, 0};
   // input
   // static int get_default_input_device_id();
   BoolLog open_input_device(int id, on_pm_event_method method, void* user_data);

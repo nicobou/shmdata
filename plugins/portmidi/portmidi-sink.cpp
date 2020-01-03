@@ -30,13 +30,13 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSink,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PortMidiSink::PortMidiSink(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      StartableQuiddity(this),
+PortMidiSink::PortMidiSink(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
       shmcntr_(static_cast<Quiddity*>(this)),
-      devices_id_(pmanage<MPtr(&PContainer::make_selection<>)>(
+      devices_id_(pmanage<MPtr(&property::PBag::make_selection<>)>(
           "device",
-          [this](const IndexOrName& val) {
+          [this](const quiddity::property::IndexOrName& val) {
             output_devices_enum_.select(val);
             int device = stoi(output_devices_enum_.get_attached());
             if (device_ != device) {
@@ -53,15 +53,15 @@ PortMidiSink::PortMidiSink(quid::Config&& conf)
           "MIDI output device to use",
           output_devices_enum_)),
       autostart_id_(
-          pmanage<MPtr(&PContainer::make_bool)>("autostart",
-                                                [this](bool val) {
-                                                  autostart_ = val;
-                                                  return true;
-                                                },
-                                                [this]() { return autostart_; },
-                                                "Autostart",
-                                                "Start processing on shmdata connect or not",
-                                                autostart_)) {
+          pmanage<MPtr(&property::PBag::make_bool)>("autostart",
+                                                    [this](bool val) {
+                                                      autostart_ = val;
+                                                      return true;
+                                                    },
+                                                    [this]() { return autostart_; },
+                                                    "Autostart",
+                                                    "Start processing on shmdata connect or not",
+                                                    autostart_)) {
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
       [this](const std::string&) { return this->on_shmdata_disconnect(); },
@@ -119,7 +119,7 @@ bool PortMidiSink::on_shmdata_connect(std::string path) {
       ShmdataFollower::Direction::reader,
       true);
   if (autostart_) {
-    return pmanage<MPtr(&PContainer::set_str_str)>("started", "true");
+    return pmanage<MPtr(&property::PBag::set_str_str)>("started", "true");
   }
   return true;
 }
@@ -127,7 +127,7 @@ bool PortMidiSink::on_shmdata_connect(std::string path) {
 bool PortMidiSink::on_shmdata_disconnect() {
   shm_.reset();
   if (autostart_) {
-    return pmanage<MPtr(&PContainer::set_str_str)>("started", "false");
+    return pmanage<MPtr(&property::PBag::set_str_str)>("started", "false");
   }
   return true;
 }

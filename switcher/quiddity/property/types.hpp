@@ -23,7 +23,29 @@
 #include <functional>
 
 namespace switcher {
-namespace prop {
+namespace quiddity {
+namespace property {
+
+// The following struct allows the select method to be invoked by index or by name
+struct IndexOrName {
+  IndexOrName() = delete;
+  IndexOrName(size_t idx) : index_(idx), is_index_(true) {}
+  IndexOrName(std::string str) : name_(str), is_index_(false) {}
+  IndexOrName(size_t idx, std::string str) : index_(idx), name_(str), is_index_(true) {}
+  std::string to_string() const { return std::to_string(index_); }
+  static std::pair<bool, IndexOrName> from_string(const std::string& str) {
+    if (!isdigit(*str.begin()) && !('-' == *str.begin() && !isdigit(*str.begin())))
+      return std::make_pair(true, IndexOrName(str));
+    std::istringstream iss(str);
+    size_t res;
+    iss >> res;
+    return std::make_pair(true, IndexOrName(res));
+  }
+
+  const size_t index_{0};
+  const std::string name_{};
+  const bool is_index_;
+};
 
 // set/get
 template <typename W>
@@ -43,6 +65,7 @@ inline prop_id_t id_from_string(const std::string& str) {
 using register_id_t = size_t;
 using notify_cb_t = std::function<void()>;
 
-}  // namespace propsetget
+}  // namespace property
+}  // namespace quiddity
 }  // namespace switcher
 #endif

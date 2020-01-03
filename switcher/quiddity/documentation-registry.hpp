@@ -22,9 +22,10 @@
 
 #include <map>
 #include <memory>
-#include "./quiddity-documentation.hpp"
+#include "./doc.hpp"
 
 namespace switcher {
+namespace quiddity {
 
 class DocumentationRegistry {
  public:
@@ -32,15 +33,18 @@ class DocumentationRegistry {
     if (!instance_) instance_ = std::make_unique<DocumentationRegistry>();
     return instance_;
   }
-  bool register_doc(const std::string& quiddity_type, const quid::Doc& doc);
+  bool register_doc(const std::string& quiddity_type, const quiddity::Doc& doc);
   bool register_type_from_class_name(const std::string& class_name, const std::string& quid_type);
   std::string get_type_from_class_name(const std::string& class_name) const;
-  const std::map<std::string, quid::Doc>& get_docs() const;
+  const std::map<std::string, quiddity::Doc>& get_docs() const;
 
  private:
   static std::unique_ptr<DocumentationRegistry> instance_;
-  std::map<std::string, quid::Doc> doc_registry_{};
+  std::map<std::string, quiddity::Doc> doc_registry_{};
   std::map<std::string, std::string> type_from_class_registry_{};
 };
-}
+
+}  // namespace quiddity
+}  // namespace switcher
+
 #endif

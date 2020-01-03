@@ -23,16 +23,19 @@
 #include <string>
 
 namespace switcher {
+namespace quiddity {
+namespace bundle {
 class Bundle;
+}  // namespace bundle
 
-class StartableQuiddity {
-  friend Bundle;
+class Startable {
+  friend bundle::Bundle;
 
  public:
-  StartableQuiddity(void* quiddity);
-  virtual ~StartableQuiddity() = default;
-  StartableQuiddity(const StartableQuiddity&) = delete;
-  StartableQuiddity& operator=(const StartableQuiddity&) = delete;
+  Startable(void* quiddity);
+  virtual ~Startable() = default;
+  Startable(const Startable&) = delete;
+  Startable& operator=(const Startable&) = delete;
 
   static const std::string disabledWhenStartedMsg;
   static const std::string disabledWhenStopedMsg;
@@ -43,12 +46,13 @@ class StartableQuiddity {
  private:
   // default ctor is private in order to let the bundle class chose optionnaly if it is itself
   // startable or not
-  StartableQuiddity() = default;
+  Startable() = default;
   bool __started_{false};
 
   void init_startable(void* quiddity);
   virtual bool start() = 0;
   virtual bool stop() = 0;
 };
+}  // namespace quiddity
 }  // namespace switcher
 #endif

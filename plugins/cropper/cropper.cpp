@@ -30,70 +30,70 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Cropper,
                                      "LGPL",
                                      "Francis Lecavalier");
 
-Cropper::Cropper(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
+Cropper::Cropper(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
-      left_id_(pmanage<MPtr(&PContainer::make_int)>("left",
-                                                    [this](const int val) {
-                                                      left_ = val;
-                                                      if (gst_pipeline_ != nullptr) {
-                                                        async_this_.run_async(
-                                                            [this]() { create_pipeline(); });
-                                                      }
-                                                      return true;
-                                                    },
-                                                    [this]() { return left_; },
-                                                    "Left Crop",
-                                                    "Pixels to crop on the left side",
-                                                    0,
-                                                    0,
-                                                    4096)),
-      right_id_(pmanage<MPtr(&PContainer::make_int)>("right",
-                                                     [this](const int val) {
-                                                       right_ = val;
-                                                       if (gst_pipeline_ != nullptr) {
-                                                         async_this_.run_async(
-                                                             [this]() { create_pipeline(); });
-                                                       }
-                                                       return true;
-                                                     },
-                                                     [this]() { return right_; },
-                                                     "Right Crop",
-                                                     "Pixels to crop on the right side",
-                                                     0,
-                                                     0,
-                                                     4096)),
-      top_id_(pmanage<MPtr(&PContainer::make_int)>("top",
-                                                   [this](const int val) {
-                                                     top_ = val;
-                                                     if (gst_pipeline_ != nullptr) {
-                                                       async_this_.run_async(
-                                                           [this]() { create_pipeline(); });
-                                                     }
-                                                     return true;
-                                                   },
-                                                   [this]() { return top_; },
-                                                   "Top Crop",
-                                                   "Pixels to crop at the top",
-                                                   0,
-                                                   0,
-                                                   4096)),
-      bottom_id_(pmanage<MPtr(&PContainer::make_int)>("bottom",
-                                                      [this](const int val) {
-                                                        bottom_ = val;
-                                                        if (gst_pipeline_ != nullptr) {
-                                                          async_this_.run_async(
-                                                              [this]() { create_pipeline(); });
-                                                        }
-                                                        return true;
-                                                      },
-                                                      [this]() { return bottom_; },
-                                                      "Bottom Crop",
-                                                      "Pixels to crop at the bottom",
-                                                      0,
-                                                      0,
-                                                      4096)) {
+      left_id_(pmanage<MPtr(&property::PBag::make_int)>("left",
+                                                        [this](const int val) {
+                                                          left_ = val;
+                                                          if (gst_pipeline_ != nullptr) {
+                                                            async_this_.run_async(
+                                                                [this]() { create_pipeline(); });
+                                                          }
+                                                          return true;
+                                                        },
+                                                        [this]() { return left_; },
+                                                        "Left Crop",
+                                                        "Pixels to crop on the left side",
+                                                        0,
+                                                        0,
+                                                        4096)),
+      right_id_(pmanage<MPtr(&property::PBag::make_int)>("right",
+                                                         [this](const int val) {
+                                                           right_ = val;
+                                                           if (gst_pipeline_ != nullptr) {
+                                                             async_this_.run_async(
+                                                                 [this]() { create_pipeline(); });
+                                                           }
+                                                           return true;
+                                                         },
+                                                         [this]() { return right_; },
+                                                         "Right Crop",
+                                                         "Pixels to crop on the right side",
+                                                         0,
+                                                         0,
+                                                         4096)),
+      top_id_(pmanage<MPtr(&property::PBag::make_int)>("top",
+                                                       [this](const int val) {
+                                                         top_ = val;
+                                                         if (gst_pipeline_ != nullptr) {
+                                                           async_this_.run_async(
+                                                               [this]() { create_pipeline(); });
+                                                         }
+                                                         return true;
+                                                       },
+                                                       [this]() { return top_; },
+                                                       "Top Crop",
+                                                       "Pixels to crop at the top",
+                                                       0,
+                                                       0,
+                                                       4096)),
+      bottom_id_(pmanage<MPtr(&property::PBag::make_int)>("bottom",
+                                                          [this](const int val) {
+                                                            bottom_ = val;
+                                                            if (gst_pipeline_ != nullptr) {
+                                                              async_this_.run_async(
+                                                                  [this]() { create_pipeline(); });
+                                                            }
+                                                            return true;
+                                                          },
+                                                          [this]() { return bottom_; },
+                                                          "Bottom Crop",
+                                                          "Pixels to crop at the bottom",
+                                                          0,
+                                                          0,
+                                                          4096)) {
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
       [this](const std::string&) { return on_shmdata_disconnect(); },

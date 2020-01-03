@@ -17,33 +17,31 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_QUIDDITY_CONFIGURATION_H__
-#define __SWITCHER_QUIDDITY_CONFIGURATION_H__
+#ifndef __SWITCHER_QUIDDITY_PROXID_H__
+#define __SWITCHER_QUIDDITY_PROXID_H__
 
 #include <string>
-
-#include "../infotree/information-tree.hpp"
-#include "../logger/base-logger.hpp"
+#include "../utils/bool-log.hpp"
+#include "./quid-id-t.hpp"
+#include "./quiddity.hpp"
 
 namespace switcher {
+namespace quiddity {
+class Qrox : public BoolLog {
+ public:
+  Qrox();
+  Qrox(const Qrox& cpyqrox) = default;
+  Qrox(bool is_valid);
+  Qrox(bool is_valid, const std::string& msg);
+  Qrox(bool is_valid, const std::string& msg, qid_t id, Quiddity* ptr);
+  qid_t get_id() const;
+  Quiddity* get();
 
-namespace quid {
-class Container;
-struct Config {
-  Config() = delete;
-  Config(const std::string& name,
-         const std::string& type,
-         const InfoTree::ptrc tree_config,
-         Container* qc,
-         log::BaseLogger* log)
-      : name_(name), type_(type), tree_config_(tree_config), qc_(qc), log_(log) {}
-  std::string name_;
-  std::string type_;
-  InfoTree::ptrc tree_config_;
-  Container* qc_;
-  log::BaseLogger* log_;
+ private:
+  qid_t id_{0};
+  Quiddity* quid_{nullptr};
 };
 
-}  // namespace quid
+}  // namespace quiddity
 }  // namespace switcher
 #endif

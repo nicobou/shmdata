@@ -28,10 +28,10 @@
 #include "../logger/logged.hpp"
 #include "../utils/abstract-factory.hpp"
 #include "./plugin-loader.hpp"
-#include "./quiddity-configuration.hpp"
+#include "./config.hpp"
 
 namespace switcher {
-namespace quid {
+namespace quiddity {
 class Factory : public log::Logged {
   friend class Container;
 
@@ -44,20 +44,20 @@ class Factory : public log::Logged {
   bool exists(const std::string& class_name) const;
   bool scan_dir(const std::string& directory_path);
   void register_class_with_custom_factory(const std::string& class_name,
-                                          Quiddity* (*custom_create)(quid::Config&&),
+                                          Quiddity* (*custom_create)(quiddity::Config&&),
                                           void (*custom_destroy)(Quiddity*));
 
  private:
   // create is private because it must be called from quiddity container only
-  std::shared_ptr<Quiddity> create(const std::string& class_name, quid::Config&& config);
+  std::shared_ptr<Quiddity> create(const std::string& class_name, quiddity::Config&& config);
   bool load_plugin(const std::string& filename);
   void close_plugin(const std::string& class_name);
 
   std::vector<std::string> plugin_dirs_{};
-  AbstractFactory<Quiddity, std::string, quid::Config&&> abstract_factory_{};
+  AbstractFactory<Quiddity, std::string, quiddity::Config&&> abstract_factory_{};
   std::unordered_map<std::string, PluginLoader::ptr> plugins_{};
 };
 
-}  // namespace quid
+}  // namespace quiddity
 }  // namespace switcher
 #endif

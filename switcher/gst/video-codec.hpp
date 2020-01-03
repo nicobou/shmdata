@@ -28,13 +28,12 @@
 
 namespace switcher {
 namespace gst {
-class quiddity;
 
 class VideoCodec {
  public:
-  VideoCodec(Quiddity* quid,
-                const std::string& shmpath_to_encode,
-                const std::string& shmpath_encoded = {});
+  VideoCodec(quiddity::Quiddity* quid,
+             const std::string& shmpath_to_encode,
+             const std::string& shmpath_encoded = {});
   VideoCodec() = delete;
   ~VideoCodec() = default;
   VideoCodec(const VideoCodec&) = delete;
@@ -46,8 +45,8 @@ class VideoCodec {
   bool stop();
 
  private:
-  Quiddity* quid_;
-  MContainer::meth_id_t reset_id_;
+  quiddity::Quiddity* quid_;
+  quiddity::method::meth_id_t reset_id_;
   // shmdata path
   std::string shmpath_to_encode_;
   std::string shm_encoded_path_;
@@ -63,8 +62,8 @@ class VideoCodec {
   std::unique_ptr<GstShmTreeUpdater> shmsrc_sub_{nullptr};
   std::unique_ptr<GstShmTreeUpdater> shmsink_sub_{nullptr};
   std::vector<std::string> codec_properties_{};
-  Selection<> codecs_;
-  PContainer::prop_id_t codec_id_;
+  quiddity::property::Selection<> codecs_;
+  quiddity::property::prop_id_t codec_id_;
   // codec params black list
   std::unordered_set<std::string> param_black_list_{"analyse",  // x264enc
                                                     "arnr-type",
@@ -87,7 +86,7 @@ class VideoCodec {
   // shmdatasrc copy-buffers property:
   bool copy_buffers_{false};
   // parameter grouping
-  PContainer::prop_id_t param_group_id_;
+  quiddity::property::prop_id_t param_group_id_;
 
   bool remake_codec_elements();
   void make_codec_properties();
@@ -95,7 +94,7 @@ class VideoCodec {
   void make_bin();
   void show();
   void hide();
-  PContainer::prop_id_t install_codec();
+  quiddity::property::prop_id_t install_codec();
   bool reset_codec_configuration();
   static void set_codec(const gint value, void* user_data);
   static gint get_codec(void* user_data);

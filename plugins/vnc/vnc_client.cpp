@@ -36,9 +36,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VncClientSrc,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-VncClientSrc::VncClientSrc(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      StartableQuiddity(this),
+VncClientSrc::VncClientSrc(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
       shmcntr_(static_cast<Quiddity*>(this)) {
   register_writer_suffix("vnc");
   shmcntr_.install_connect_method([this](const std::string path) { return connect(path); },
@@ -47,25 +47,25 @@ VncClientSrc::VncClientSrc(quid::Config&& conf)
                                   [this](const std::string caps) { return can_sink_caps(caps); },
                                   2);
   vnc_server_address_id_ =
-      pmanage<MPtr(&PContainer::make_string)>("vnc_server_address",
-                                              [this](const std::string& val) {
-                                                vnc_server_address_ = val;
-                                                return true;
-                                              },
-                                              [this]() { return vnc_server_address_; },
-                                              "IP address",
-                                              "Address of the VNC server",
-                                              vnc_server_address_);
+      pmanage<MPtr(&property::PBag::make_string)>("vnc_server_address",
+                                                  [this](const std::string& val) {
+                                                    vnc_server_address_ = val;
+                                                    return true;
+                                                  },
+                                                  [this]() { return vnc_server_address_; },
+                                                  "IP address",
+                                                  "Address of the VNC server",
+                                                  vnc_server_address_);
   capture_truecolor_id_ =
-      pmanage<MPtr(&PContainer::make_bool)>("capture_truecolor",
-                                            [this](const bool& val) {
-                                              capture_truecolor_ = val;
-                                              return true;
-                                            },
-                                            [this]() { return capture_truecolor_; },
-                                            "Capture color depth",
-                                            "Capture in 32bits if true, 16bits otherwise",
-                                            capture_truecolor_);
+      pmanage<MPtr(&property::PBag::make_bool)>("capture_truecolor",
+                                                [this](const bool& val) {
+                                                  capture_truecolor_ = val;
+                                                  return true;
+                                                },
+                                                [this]() { return capture_truecolor_; },
+                                                "Capture color depth",
+                                                "Capture in 32bits if true, 16bits otherwise",
+                                                capture_truecolor_);
 }
 
 VncClientSrc::~VncClientSrc() { stop(); }

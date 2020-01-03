@@ -26,16 +26,17 @@
 
 namespace switcher {
 namespace quiddities {
+using namespace quiddity;
 class DummySink : public Quiddity {
  public:
-  DummySink(quid::Config&&);
+  DummySink(quiddity::Config&&);
   ~DummySink() = default;
   DummySink(const DummySink&) = delete;
   DummySink& operator=(const DummySink&) = delete;
 
  private:
   bool frame_received_{false};
-  PContainer::prop_id_t frame_received_id_;
+  property::prop_id_t frame_received_id_;
 
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;

@@ -27,17 +27,17 @@
 #include "./sig.hpp"
 
 namespace switcher {
-class SContainer {
+namespace quiddity {
+namespace signal {
+using on_tree_grafted_cb_t = std::function<void(const std::string& key)>;
+using on_tree_pruned_cb_t = std::function<void(const std::string& key)>;
+
+class SBag {
   friend class Bundle;  // replacing some methods like replace and delete
  public:
-  using sig_id_t = Sig::sig_id_t;
-  using notify_cb_t = Sig::notify_cb_t;
-  using register_id_t = Sig::register_id_t;
-  using on_tree_grafted_cb_t = std::function<void(const std::string& key)>;
-  using on_tree_pruned_cb_t = std::function<void(const std::string& key)>;
-  SContainer() = delete;
+  SBag() = delete;
   // ctor will own tree and write into .property.
-  SContainer(InfoTree::ptr tree,
+  SBag(InfoTree::ptr tree,
              on_tree_grafted_cb_t on_tree_grafted_cb,
              on_tree_pruned_cb_t on_tree_pruned_cb);
 
@@ -45,7 +45,7 @@ class SContainer {
   // return 0 if id is not found
   sig_id_t get_id(const std::string& name) const;
   std::string get_name(sig_id_t id) const;
-  std::vector<std::pair<std::string, SContainer::sig_id_t>> get_ids() const;
+  std::vector<std::pair<std::string, sig_id_t>> get_ids() const;
   std::map<sig_id_t, std::string> get_names() const;
 
   register_id_t subscribe(sig_id_t id, notify_cb_t fun) const;
@@ -70,5 +70,7 @@ class SContainer {
   on_tree_pruned_cb_t on_tree_pruned_cb_;
 };
 
+}  // namespace signal
+}  // namespace quiddity
 }  // namespace switcher
 #endif

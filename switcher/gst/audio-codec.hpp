@@ -27,11 +27,10 @@
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
-class quiddity;
 namespace gst {
 class AudioCodec {
  public:
-  AudioCodec(Quiddity* quid);
+  AudioCodec(quiddity::Quiddity* quid);
   AudioCodec() = delete;
   ~AudioCodec() = default;
   AudioCodec(const AudioCodec&) = delete;
@@ -41,8 +40,8 @@ class AudioCodec {
   bool stop();
 
  private:
-  switcher::Quiddity* quid_;
-  switcher::MContainer::meth_id_t reset_id_;
+  switcher::quiddity::Quiddity* quid_;
+  switcher::quiddity::method::meth_id_t reset_id_;
   // shmdata path
   std::string shmpath_to_encode_{};
   std::string shm_encoded_path_{};
@@ -58,13 +57,13 @@ class AudioCodec {
   std::unique_ptr<GstShmTreeUpdater> shmsrc_sub_{nullptr};
   std::unique_ptr<GstShmTreeUpdater> shmsink_sub_{nullptr};
   // codec props
-  Selection<> codecs_;
-  switcher::PContainer::prop_id_t codec_id_;
+  quiddity::property::Selection<> codecs_;
+  switcher::quiddity::property::prop_id_t codec_id_;
   std::vector<std::string> codec_properties_{};
   // codec params black list
   std::unordered_set<std::string> param_black_list_{
       "name", "parent", "hard-resync", "mark-granule", "perfect-timestamp", "tolerance"};
-  switcher::PContainer::prop_id_t group_codec_id_{0};
+  switcher::quiddity::property::prop_id_t group_codec_id_{0};
   // shmdatasrc copy-buffers property:
   bool copy_buffers_{true};
 
@@ -76,7 +75,7 @@ class AudioCodec {
   void show();
   void hide();
   bool has_enough_channels(const std::string& str_caps);
-  switcher::PContainer::prop_id_t install_codec();
+  switcher::quiddity::property::prop_id_t install_codec();
   bool reset_codec_configuration();
   static gboolean sink_factory_filter(GstPluginFeature* feature, gpointer data);
   static gint sink_compare_ranks(GstPluginFeature* f1, GstPluginFeature* f2);

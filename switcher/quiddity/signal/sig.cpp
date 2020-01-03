@@ -20,8 +20,9 @@
 #include "./sig.hpp"
 
 namespace switcher {
-
-Sig::register_id_t Sig::subscribe(notify_cb_t fun) const {
+namespace quiddity {
+namespace signal {
+register_id_t Sig::subscribe(notify_cb_t fun) const {
   to_notify_[++counter_] = fun;
   return counter_;
 }
@@ -37,4 +38,6 @@ void Sig::notify(InfoTree::ptr tree) const {
   for (auto& it : to_notify_) it.second(tree);
 }
 
+}  // namespace signal
+}  // namespace quiddity
 }  // namespace switcher

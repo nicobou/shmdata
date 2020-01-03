@@ -20,16 +20,16 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <cassert>
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 
 int main() {
   {
     using namespace switcher;
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    assert(test::full(manager, "OSCsink"));
+    assert(quiddity::test::full(manager, "OSCsink"));
   }  // end of scope is releasing the manager
   return 0;
 }

@@ -21,7 +21,6 @@
 #include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
-namespace quiddities {
 
 std::unique_ptr<GLFWRenderer> RendererSingleton::s_instance_;
 std::mutex RendererSingleton::creation_mutex_;
@@ -175,5 +174,4 @@ GLFWRenderer* RendererSingleton::get() {
   return s_instance_.get();
 }
 
-}  // namespace quiddities
 }  // namespace switcher

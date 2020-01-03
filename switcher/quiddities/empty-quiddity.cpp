@@ -30,7 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(EmptyQuiddity,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-EmptyQuiddity::EmptyQuiddity(quid::Config&& conf) : Quiddity(std::forward<quid::Config>(conf)) {}
+EmptyQuiddity::EmptyQuiddity(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)) {}
 
 }  // namespace quiddities
 }  // namespace switcher

@@ -17,15 +17,32 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_INFORMATION_TREE_QUIDDITY_CLASS_PRINTER_H__
-#define __SWITCHER_INFORMATION_TREE_QUIDDITY_CLASS_PRINTER_H__
+#ifndef __SWITCHER_QUIDDITY_CONFIGURATION_H__
+#define __SWITCHER_QUIDDITY_CONFIGURATION_H__
 
 #include <string>
+
 #include "../infotree/information-tree.hpp"
+#include "../logger/base-logger.hpp"
 
 namespace switcher {
-namespace QuiddityClassPrinter {
-std::string print(InfoTree::ptrc);
-}  // namespace QuiddityClassPrinter
+namespace quiddity {
+class Container;
+struct Config {
+  Config() = delete;
+  Config(const std::string& name,
+         const std::string& type,
+         const InfoTree::ptrc tree_config,
+         Container* qc,
+         log::BaseLogger* log)
+      : name_(name), type_(type), tree_config_(tree_config), qc_(qc), log_(log) {}
+  std::string name_;
+  std::string type_;
+  InfoTree::ptrc tree_config_;
+  Container* qc_;
+  log::BaseLogger* log_;
+};
+
+}  // namespace quiddity
 }  // namespace switcher
 #endif

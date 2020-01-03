@@ -21,6 +21,7 @@
 #include "./documentation-registry.hpp"
 
 namespace switcher {
+namespace quiddity {
 PluginLoader::PluginLoader() {}
 
 PluginLoader::~PluginLoader() {
@@ -88,4 +89,6 @@ std::string PluginLoader::get_class_name() const {
   if (module_ == nullptr) return std::string();
   return class_name_;
 }
-}
+
+}  // namespace quiddity
+}  // namespace switcher

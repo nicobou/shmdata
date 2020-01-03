@@ -25,10 +25,12 @@
 #include "./property.hpp"
 
 namespace switcher {
-namespace GPropToProp {
+namespace quiddity {
+namespace property {
 
 std::unique_ptr<PropertyBase> to_prop(GObject* object, const std::string& gprop_name);
 
-}  // namespace GPropToProp
+}  // namespace property
+}  // namespace quiddity
 }  // namespace switcher
 #endif

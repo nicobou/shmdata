@@ -28,31 +28,32 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Resample,
                                      "GPL",
                                      "Nicolas Bouillot");
 
-Resample::Resample(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
+Resample::Resample(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
       cntr_(static_cast<Quiddity*>(this)),
-      samplerate_id_(
-          pmanage<MPtr(&PContainer::make_parented_unsigned_int)>("samplerate",
-                                                                 "",
-                                                                 [this](unsigned int val) {
-                                                                   samplerate_ = val;
-                                                                   return true;
-                                                                 },
-                                                                 [this]() { return samplerate_; },
-                                                                 "Samplerate",
-                                                                 "The Samplerate to apply",
-                                                                 samplerate_,
-                                                                 1,
-                                                                 192000)),
-      algo_id_(pmanage<MPtr(&PContainer::make_selection<int>)>("algo",
-                                                               [this](const IndexOrName& val) {
-                                                                 algo_.select(val);
-                                                                 return true;
-                                                               },
-                                                               [this]() { return algo_.get(); },
-                                                               "Resampling algorithm",
-                                                               "Balance fidelity vs. speed",
-                                                               algo_)) {
+      samplerate_id_(pmanage<MPtr(&property::PBag::make_parented_unsigned_int)>(
+          "samplerate",
+          "",
+          [this](unsigned int val) {
+            samplerate_ = val;
+            return true;
+          },
+          [this]() { return samplerate_; },
+          "Samplerate",
+          "The Samplerate to apply",
+          samplerate_,
+          1,
+          192000)),
+      algo_id_(pmanage<MPtr(&property::PBag::make_selection<int>)>(
+          "algo",
+          [this](const quiddity::property::IndexOrName& val) {
+            algo_.select(val);
+            return true;
+          },
+          [this]() { return algo_.get(); },
+          "Resampling algorithm",
+          "Balance fidelity vs. speed",
+          algo_)) {
   register_writer_suffix("audio");
   cntr_.install_connect_method([this](const std::string& shmpath) { return connect(shmpath); },
                                [this](const std::string&) { return disconnect(); },
@@ -66,8 +67,9 @@ Resample::Resample(quid::Config&& conf)
 bool Resample::connect(const std::string& path) {
   shmr_.reset();
   shmw_.reset();
-  pmanage<MPtr(&PContainer::disable)>(algo_id_, ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&PContainer::disable)>(samplerate_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(algo_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(samplerate_id_,
+                                          ShmdataConnector::disabledWhenConnectedMsg);
   shmr_ = std::make_unique<ShmdataFollower>(
       this,
       path,
@@ -151,8 +153,8 @@ bool Resample::connect(const std::string& path) {
 bool Resample::disconnect() {
   shmr_.reset();
   shmw_.reset();
-  pmanage<MPtr(&PContainer::enable)>(algo_id_);
-  pmanage<MPtr(&PContainer::enable)>(samplerate_id_);
+  pmanage<MPtr(&property::PBag::enable)>(algo_id_);
+  pmanage<MPtr(&property::PBag::enable)>(samplerate_id_);
   return true;
 }
 

@@ -28,7 +28,7 @@ class GstShmTreeUpdater {
   using on_caps_cb_t = std::function<void(const std::string&)>;
   using on_delete_t = std::function<void()>;
   enum class Direction { writer, reader };
-  GstShmTreeUpdater(Quiddity* quid,
+  GstShmTreeUpdater(quiddity::Quiddity* quid,
                     GstElement* element,
                     const std::string& shmpath,
                     Direction d,
@@ -38,7 +38,7 @@ class GstShmTreeUpdater {
   GstShmTreeUpdater() = delete;
 
  private:
-  Quiddity* quid_;
+  quiddity::Quiddity* quid_;
   std::string shmpath_;
   Direction dir_;
   std::string key_;

@@ -21,16 +21,16 @@
 
 #include <unistd.h>
 #include "switcher/infotree/information-tree-json.hpp"
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 
 int main() {
   bool success = false;
   {
     switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&switcher::quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&switcher::quiddity::Factory::scan_dir)>("./");
 
-    if (switcher::test::full(manager, "SOAPcontrolServer")) success = true;
+    if (switcher::quiddity::test::full(manager, "SOAPcontrolServer")) success = true;
 
   }  // end of scope is releasing the manager
 

@@ -20,25 +20,26 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <cassert>
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 
 int main() {
   {
     using namespace switcher;
+    using namespace switcher::quiddity;
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    assert(switcher::test::full(manager, "protocol-mapper"));
-    auto created =
-        manager->quids<MPtr(&quid::Container::create)>("protocol-mapper", std::string(), nullptr);
+    assert(switcher::quiddity::test::full(manager, "protocol-mapper"));
+    auto created = manager->quids<MPtr(&quiddity::Container::create)>(
+        "protocol-mapper", std::string(), nullptr);
     assert(created);
     auto quid = created.get();
-    assert(quid->prop<MPtr(&PContainer::set_str_str)>("config_file", "protocol-curl.json"));
-    assert(quid->prop<MPtr(&PContainer::set_str_str)>("continuous_message", "true"));
-    assert(quid->prop<MPtr(&PContainer::set_str_str)>("bang", "true"));
-    assert(quid->prop<MPtr(&PContainer::set_str_str)>("wrong_url", "true"));
-    assert(quid->prop<MPtr(&PContainer::set_str_str)>("test_timeout", "true"));
+    assert(quid->prop<MPtr(&property::PBag::set_str_str)>("config_file", "protocol-curl.json"));
+    assert(quid->prop<MPtr(&property::PBag::set_str_str)>("continuous_message", "true"));
+    assert(quid->prop<MPtr(&property::PBag::set_str_str)>("bang", "true"));
+    assert(quid->prop<MPtr(&property::PBag::set_str_str)>("wrong_url", "true"));
+    assert(quid->prop<MPtr(&property::PBag::set_str_str)>("test_timeout", "true"));
   }
   return 0;
 }

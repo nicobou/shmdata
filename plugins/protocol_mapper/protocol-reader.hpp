@@ -22,11 +22,12 @@
 #include <map>
 #include <switcher/utils/safe-bool-idiom.hpp>
 #include "switcher/infotree/information-tree.hpp"
-#include "switcher/quiddity/property/property-container.hpp"
+#include "switcher/quiddity/property/pbag.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
+using namespace quiddity;
 namespace quiddities {
 
 class ProtocolReader : public SafeBoolIdiom {

@@ -27,9 +27,10 @@
 
 namespace switcher {
 namespace quiddities {
+using namespace quiddity;
 class Resample : public Quiddity {
  public:
-  Resample(quid::Config&&);
+  Resample(quiddity::Config&&);
 
  private:
   bool connect(const std::string& path);
@@ -50,19 +51,19 @@ class Resample : public Quiddity {
   ShmdataConnector cntr_;
   // properties
   unsigned int samplerate_{44100};
-  PContainer::prop_id_t samplerate_id_;
-  Selection<int> algo_{{"Best Quality (Bandlimited)",
-                        "Medium Quality (Bandlimited)",
-                        "Fastest (Bandlimited)",
-                        "Zero Order Hold (Blindlingly Fast)",
-                        "Linear (Blindlingly Fast)"},
-                       {SRC_SINC_BEST_QUALITY,
-                        SRC_SINC_MEDIUM_QUALITY,
-                        SRC_SINC_FASTEST,
-                        SRC_ZERO_ORDER_HOLD,
-                        SRC_LINEAR},
-                       2};
-  PContainer::prop_id_t algo_id_;
+  property::prop_id_t samplerate_id_;
+  property::Selection<int> algo_{{"Best Quality (Bandlimited)",
+                                  "Medium Quality (Bandlimited)",
+                                  "Fastest (Bandlimited)",
+                                  "Zero Order Hold (Blindlingly Fast)",
+                                  "Linear (Blindlingly Fast)"},
+                                 {SRC_SINC_BEST_QUALITY,
+                                  SRC_SINC_MEDIUM_QUALITY,
+                                  SRC_SINC_FASTEST,
+                                  SRC_ZERO_ORDER_HOLD,
+                                  SRC_LINEAR},
+                                 2};
+  property::prop_id_t algo_id_;
 };
 
 SWITCHER_DECLARE_PLUGIN(Resample);

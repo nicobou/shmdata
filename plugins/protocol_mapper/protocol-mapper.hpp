@@ -24,16 +24,17 @@
 
 namespace switcher {
 namespace quiddities {
+using namespace quiddity;
 class ProtocolMapper : public Quiddity {
  public:
-  ProtocolMapper(quid::Config&&);
+  ProtocolMapper(quiddity::Config&&);
   ~ProtocolMapper() = default;
 
  private:
 
   // Protocol configuration
   std::string config_file_{};
-  PContainer::prop_id_t config_file_id_;
+  property::prop_id_t config_file_id_;
   std::unique_ptr<ProtocolReader> protocol_reader_{};
 };
 

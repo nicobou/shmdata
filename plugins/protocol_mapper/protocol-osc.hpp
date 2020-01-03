@@ -41,7 +41,7 @@ class ProtocolOsc : public ProtocolReader {
 
   std::string url_{};
   std::unique_ptr<OscAddress> osc_address_;
-  PContainer::prop_id_t url_id_{0};
+  property::prop_id_t url_id_{0};
 
   bool safe_bool_idiom() const final { return true; };
   int send_osc_code(const std::string& type, const std::string& path, const Any& value);

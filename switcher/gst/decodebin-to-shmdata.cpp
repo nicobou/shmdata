@@ -18,7 +18,6 @@
  */
 
 #include "./decodebin-to-shmdata.hpp"
-#include <glib/gprintf.h>
 #include "../utils/scope-exit.hpp"
 #include "../utils/string-utils.hpp"
 

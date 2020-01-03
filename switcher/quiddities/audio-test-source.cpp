@@ -33,21 +33,21 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-AudioTestSource::AudioTestSource(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      StartableQuiddity(this),
+AudioTestSource::AudioTestSource(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      quiddity::Startable(this),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
-      sample_rate_id_(
-          pmanage<MPtr(&PContainer::make_selection<>)>("sample_rate",
-                                                       [this](const IndexOrName& val) {
-                                                         sample_rate_.select(val);
-                                                         return true;
-                                                       },
-                                                       [this]() { return sample_rate_.get(); },
-                                                       "Sample rate",
-                                                       "List of supported sample rates",
-                                                       sample_rate_)),
-      frequency_id_(pmanage<MPtr(&PContainer::make_double)>(
+      sample_rate_id_(pmanage<MPtr(&property::PBag::make_selection<>)>(
+          "sample_rate",
+          [this](const quiddity::property::IndexOrName& val) {
+            sample_rate_.select(val);
+            return true;
+          },
+          [this]() { return sample_rate_.get(); },
+          "Sample rate",
+          "List of supported sample rates",
+          sample_rate_)),
+      frequency_id_(pmanage<MPtr(&property::PBag::make_double)>(
           "frequency",
           [this](const double& val) {
             frequency_ = val;
@@ -60,7 +60,7 @@ AudioTestSource::AudioTestSource(quid::Config&& conf)
           440.0,
           1.0,
           kMaxFrequency)),
-      volume_id_(pmanage<MPtr(&PContainer::make_float)>(
+      volume_id_(pmanage<MPtr(&property::PBag::make_float)>(
           "volume",
           [this](const float& val) {
             volume_ = val;
@@ -73,29 +73,30 @@ AudioTestSource::AudioTestSource(quid::Config&& conf)
           0.5f,
           0.0f,
           1.0f)),
-      channels_id_(pmanage<MPtr(&PContainer::make_int)>("channels",
-                                                        [this](const int& val) {
-                                                          channels_ = val;
-                                                          return true;
-                                                        },
-                                                        [this]() { return channels_; },
-                                                        "Number of channels",
-                                                        "Set number of channels",
-                                                        1,
-                                                        1,
-                                                        kMaxChannels)),
-      format_(Selection<>(
+      channels_id_(pmanage<MPtr(&property::PBag::make_int)>("channels",
+                                                            [this](const int& val) {
+                                                              channels_ = val;
+                                                              return true;
+                                                            },
+                                                            [this]() { return channels_; },
+                                                            "Number of channels",
+                                                            "Set number of channels",
+                                                            1,
+                                                            1,
+                                                            kMaxChannels)),
+      format_(property::Selection<>(
           gst::utils::get_gst_element_capability_as_list("audiotestsrc", "format", GST_PAD_SRC),
           0)),
-      format_id_(pmanage<MPtr(&PContainer::make_selection<>)>("format",
-                                                              [this](const IndexOrName& val) {
-                                                                format_.select(val);
-                                                                return true;
-                                                              },
-                                                              [this]() { return format_.get(); },
-                                                              "Format",
-                                                              "List of supported sound formats",
-                                                              format_)) {
+      format_id_(pmanage<MPtr(&property::PBag::make_selection<>)>(
+          "format",
+          [this](const quiddity::property::IndexOrName& val) {
+            format_.select(val);
+            return true;
+          },
+          [this]() { return format_.get(); },
+          "Format",
+          "List of supported sound formats",
+          format_)) {
   if (!audiotestsrc_ || !capsfilter_ || !shmdatasink_) {
     is_valid_ = false;
     return;
@@ -105,8 +106,8 @@ AudioTestSource::AudioTestSource(quid::Config&& conf)
   g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "is-live", TRUE, nullptr);
   g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "samplesperbuffer", 512, nullptr);
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
-  waveforms_id_ = pmanage<MPtr(&PContainer::push)>(
-      "wave", GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "wave"));
+  waveforms_id_ = pmanage<MPtr(&property::PBag::push)>(
+      "wave", quiddity::property::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "wave"));
   register_writer_suffix("audio");
 }
 
@@ -116,8 +117,8 @@ bool AudioTestSource::start() {
     return false;
   }
 
-  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
-      this, shmdatasink_.get_raw(), shmpath_, GstShmTreeUpdater::Direction::writer);
+  shm_sub_ = std::make_unique<switcher::GstShmTreeUpdater>(
+      this, shmdatasink_.get_raw(), shmpath_, switcher::GstShmTreeUpdater::Direction::writer);
   update_caps();
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    audiotestsrc_.get_raw(),
@@ -127,9 +128,9 @@ bool AudioTestSource::start() {
   gst_element_link_many(
       audiotestsrc_.get_raw(), capsfilter_.get_raw(), shmdatasink_.get_raw(), nullptr);
 
-  pmanage<MPtr(&PContainer::disable)>(format_id_, disabledWhenStartedMsg);
-  pmanage<MPtr(&PContainer::disable)>(channels_id_, disabledWhenStartedMsg);
-  pmanage<MPtr(&PContainer::disable)>(sample_rate_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(format_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(channels_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(sample_rate_id_, disabledWhenStartedMsg);
   gst_pipeline_->play(true);
 
   return true;
@@ -138,9 +139,9 @@ bool AudioTestSource::start() {
 bool AudioTestSource::stop() {
   shm_sub_.reset();
 
-  pmanage<MPtr(&PContainer::enable)>(format_id_);
-  pmanage<MPtr(&PContainer::enable)>(channels_id_);
-  pmanage<MPtr(&PContainer::enable)>(sample_rate_id_);
+  pmanage<MPtr(&property::PBag::enable)>(format_id_);
+  pmanage<MPtr(&property::PBag::enable)>(channels_id_);
+  pmanage<MPtr(&property::PBag::enable)>(sample_rate_id_);
 
   if (!gst::UGstElem::renew(audiotestsrc_, {"is-live", "samplesperbuffer"}) ||
       !gst::UGstElem::renew(capsfilter_) || !gst::UGstElem::renew(shmdatasink_, {"socket-path"})) {
@@ -149,8 +150,8 @@ bool AudioTestSource::stop() {
     return false;
   }
 
-  pmanage<MPtr(&PContainer::replace)>(
-      waveforms_id_, GPropToProp::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "wave"));
+  pmanage<MPtr(&property::PBag::replace)>(
+      waveforms_id_, quiddity::property::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "wave"));
   gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
 
   return true;

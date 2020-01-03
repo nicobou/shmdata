@@ -17,13 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./quiddity-container.hpp"
+#include "./container.hpp"
 #include <limits>
 #include "../switcher.hpp"
 #include "../utils/scope-exit.hpp"
 
 namespace switcher {
-namespace quid {
+namespace quiddity {
 Container::ptr Container::make_container(Switcher* switcher,
                                          Factory* factory,
                                          log::BaseLogger* log) {
@@ -220,5 +220,5 @@ Qrox Container::get_qrox_from_name(const std::string& name) {
   return get_qrox(id);
 }
 
-}  // namespace quid
+}  // namespace quiddity
 }  // namespace switcher

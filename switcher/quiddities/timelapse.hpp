@@ -33,9 +33,10 @@
 
 namespace switcher {
 namespace quiddities {
+using namespace quiddity;
 class Timelapse : public Quiddity {
  public:
-  Timelapse(quid::Config&&);
+  Timelapse(quiddity::Config&&);
   ~Timelapse() = default;
   Timelapse(const Timelapse&) = delete;
   Timelapse& operator=(const Timelapse&) = delete;
@@ -43,32 +44,32 @@ class Timelapse : public Quiddity {
  private:
   // images path
   std::string img_dir_;
-  PContainer::prop_id_t img_dir_id_;
+  property::prop_id_t img_dir_id_;
   std::string img_name_;
-  PContainer::prop_id_t img_name_id_;
+  property::prop_id_t img_name_id_;
   // numerate files
   bool num_files_{true};
-  PContainer::prop_id_t num_files_id_;
+  property::prop_id_t num_files_id_;
   // bool notify last file
   bool notify_last_file_{false};
-  PContainer::prop_id_t notify_last_file_id_;
+  property::prop_id_t notify_last_file_id_;
   // framerate
-  Fraction framerate_{1, 1};
-  PContainer::prop_id_t framerate_id_;
+  property::Fraction framerate_{1, 1};
+  property::prop_id_t framerate_id_;
   // max files
   unsigned int max_files_{10};
-  PContainer::prop_id_t max_files_id_;
+  property::prop_id_t max_files_id_;
   // image quality
   unsigned int jpg_quality_{85};
-  PContainer::prop_id_t jpg_quality_id_;
+  property::prop_id_t jpg_quality_id_;
   // last image
   std::string last_image_{};
-  PContainer::prop_id_t last_image_id_;
+  property::prop_id_t last_image_id_;
   // scaling image
   unsigned int width_{0};
-  PContainer::prop_id_t width_id_;
+  property::prop_id_t width_id_;
   unsigned int height_{0};
-  PContainer::prop_id_t height_id_;
+  property::prop_id_t height_id_;
 
   // making dynamically configurable timelapse
   std::atomic_bool updated_config_{false};

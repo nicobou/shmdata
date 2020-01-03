@@ -44,26 +44,26 @@ add_library(${SWITCHER_LIBRARY} SHARED
   quiddities/timelapse.cpp
   quiddities/uridecodebin.cpp
   quiddities/video-test-source.cpp
-  quiddity/bundle/bundle-description-parser.cpp
+  quiddity/bundle/description-parser.cpp
   quiddity/bundle/bundle.cpp
   quiddity/documentation-registry.cpp
-  quiddity/method/method-container.cpp
+  quiddity/method/mbag.cpp
   quiddity/plugin-loader.cpp
   quiddity/property/color.cpp
   quiddity/property/fraction.cpp
   quiddity/property/gprop-to-prop.cpp
-  quiddity/property/property-container.cpp
+  quiddity/property/pbag.cpp
   quiddity/property/property.cpp
-  quiddity/quiddity-basic-test.cpp
-  quiddity/quiddity-class-printer.cpp
-  quiddity/quiddity-container.cpp
-  quiddity/quiddity-documentation.cpp
-  quiddity/quiddity-factory.cpp
-  quiddity/quiddity-qrox.cpp
+  quiddity/basic-test.cpp
+  quiddity/class-printer.cpp
+  quiddity/container.cpp
+  quiddity/doc.cpp
+  quiddity/factory.cpp
+  quiddity/qrox.cpp
   quiddity/quiddity.cpp
   quiddity/signal/sig.cpp
-  quiddity/signal/signal-container.cpp
-  quiddity/startable-quiddity.cpp
+  quiddity/signal/sbag.cpp
+  quiddity/startable.cpp
   shmdata/caps/audio-caps.cpp
   shmdata/caps/utils.cpp
   shmdata/gst-shm-tree-updater.cpp

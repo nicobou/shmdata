@@ -38,49 +38,48 @@ const unsigned int VRPNSource::vrpnLoopInterval{16};
 
 VRPNSource::~VRPNSource() { destroyed_ = true; }
 
-VRPNSource::VRPNSource(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)), StartableQuiddity(this) {
+VRPNSource::VRPNSource(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)), Startable(this) {
   register_writer_suffix("vrpn");
   // Create the hostname property
-  host_id_ = pmanage<MPtr(&PContainer::make_string)>("host",
-                                                     [this](const std::string& val) {
-                                                       host_ = val;
-                                                       return true;
-                                                     },
-                                                     [this]() { return host_; },
-                                                     "Host",
-                                                     "VRPN server hostname or IP address.",
-                                                     host_);
+  host_id_ = pmanage<MPtr(&property::PBag::make_string)>("host",
+                                                         [this](const std::string& val) {
+                                                           host_ = val;
+                                                           return true;
+                                                         },
+                                                         [this]() { return host_; },
+                                                         "Host",
+                                                         "VRPN server hostname or IP address.",
+                                                         host_);
 
   // Create the port property
-  port_id_ = pmanage<MPtr(&PContainer::make_int)>("port",
-                                                  [this](int val) {
-                                                    port_ = val;
-                                                    return true;
-                                                  },
-                                                  [this]() { return port_; },
-                                                  "Port",
-                                                  "Port that the VRPN client will connect to.",
-                                                  port_,
-                                                  1,
-                                                  65536);
+  port_id_ = pmanage<MPtr(&property::PBag::make_int)>("port",
+                                                      [this](int val) {
+                                                        port_ = val;
+                                                        return true;
+                                                      },
+                                                      [this]() { return port_; },
+                                                      "Port",
+                                                      "Port that the VRPN client will connect to.",
+                                                      port_,
+                                                      1,
+                                                      65536);
 
   // Create the advanced configuration group
-  pmanage<MPtr(&PContainer::make_group)>(
+  pmanage<MPtr(&property::PBag::make_group)>(
       "advanced", "Advanced configuration", "Advanced configuration");
 
   // Add debug option to advanced configuration group
-  pmanage<MPtr(&PContainer::make_parented_bool)>("debug",
-                                                 "advanced",
-                                                 [this](bool val) {
-                                                   debug_ = val;
-                                                   return true;
-                                                 },
-                                                 [this]() { return debug_; },
-                                                 "Debug",
-                                                 "Debug values to console",
-                                                 debug_);
-
+  pmanage<MPtr(&property::PBag::make_parented_bool)>("debug",
+                                                     "advanced",
+                                                     [this](bool val) {
+                                                       debug_ = val;
+                                                       return true;
+                                                     },
+                                                     [this]() { return debug_; },
+                                                     "Debug",
+                                                     "Debug values to console",
+                                                     debug_);
 }
 
 /**
@@ -172,8 +171,8 @@ bool VRPNSource::start() {
   }
 
   // Disable some properties while we're on
-  pmanage<MPtr(&PContainer::disable)>(host_id_, StartableQuiddity::disabledWhenStartedMsg);
-  pmanage<MPtr(&PContainer::disable)>(port_id_, StartableQuiddity::disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(host_id_, Startable::disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(port_id_, Startable::disabledWhenStartedMsg);
 
   for (auto& device : devices_) {
     device.second->start(connection_.get());
@@ -211,7 +210,7 @@ bool VRPNSource::stop() {
   shmDataWriter_.reset(nullptr);
 
   // Re-enable properties
-  pmanage<MPtr(&PContainer::enable)>(host_id_);
+  pmanage<MPtr(&property::PBag::enable)>(host_id_);
 
   return true;
 }
@@ -251,7 +250,7 @@ void VRPNSource::createAnalogDevice(const std::string& id,
   std::string groupName = name + "-analog";
 
   // Create a group to hold the channel properties
-  pmanage<MPtr(&PContainer::make_group)>(
+  pmanage<MPtr(&property::PBag::make_group)>(
       groupName, "\"" + name + "\" Device Analog Channels", "Device Analog Channels Properties");
 
   // Create the device
@@ -266,7 +265,7 @@ void VRPNSource::createAnalogDevice(const std::string& id,
                         double p_value,
                         double p_min,
                         double p_max) {
-        return pmanage<MPtr(&PContainer::make_parented_double)>(
+        return pmanage<MPtr(&property::PBag::make_parented_double)>(
             p_id,
             groupName,
             nullptr,
@@ -282,10 +281,10 @@ void VRPNSource::createAnalogDevice(const std::string& id,
             p_min,
             p_max);
       },
-      [this](PContainer::prop_id_t propId) {
+      [this](property::prop_id_t propId) {
         // ThreadWrapped notify, because it is called from the vrpn thread
         vrpnPropertyNotify_->run_async(
-            [this, propId]() { pmanage<MPtr(&PContainer::notify)>(propId); });
+            [this, propId]() { pmanage<MPtr(&property::PBag::notify)>(propId); });
       });
 
   if (is_started()) {
@@ -307,41 +306,40 @@ void VRPNSource::createButtonDevice(const std::string& id,
   std::string groupName = name + "-button";
 
   // Create a group to hold the button properties
-  pmanage<MPtr(&PContainer::make_group)>(
+  pmanage<MPtr(&property::PBag::make_group)>(
       groupName, "\"" + name + "\" Device Buttons", "Device Buttons Properties");
 
   // Create the device
-  std::unique_ptr<ButtonSourceDevice> device =
-      std::make_unique<ButtonSourceDevice>(name,
-                                           uri,
-                                           numButtons,
-                                           [this, groupName](Property<bool>* property,
-                                                             std::string p_id,
-                                                             std::string p_name,
-                                                             std::string p_description,
-                                                             bool p_value) {
-                                             return pmanage<MPtr(&PContainer::make_parented_bool)>(
-                                                 p_id,
-                                                 groupName,
-                                                 nullptr,
-                                                 [this, property]() {
-                                                   // Called from switcher's thread OR
-                                                   // vrpnPropertyNotify_'s thread unfortunately
-                                                   // That's the reason we need an std::mutex
-                                                   std::lock_guard<std::mutex> _(vrpnMutex_);
-                                                   return property->value();
-                                                 },
-                                                 p_name,
-                                                 p_description,
-                                                 p_value);
-                                           },
-                                           [this](PContainer::prop_id_t propId) {
-                                             // ThreadWrapped notify, because it is called from the
-                                             // vrpn thread
-                                             vrpnPropertyNotify_->run_async([this, propId]() {
-                                               pmanage<MPtr(&PContainer::notify)>(propId);
-                                             });
-                                           });
+  std::unique_ptr<ButtonSourceDevice> device = std::make_unique<ButtonSourceDevice>(
+      name,
+      uri,
+      numButtons,
+      [this, groupName](Property<bool>* property,
+                        std::string p_id,
+                        std::string p_name,
+                        std::string p_description,
+                        bool p_value) {
+        return pmanage<MPtr(&property::PBag::make_parented_bool)>(
+            p_id,
+            groupName,
+            nullptr,
+            [this, property]() {
+              // Called from switcher's thread OR
+              // vrpnPropertyNotify_'s thread unfortunately
+              // That's the reason we need an std::mutex
+              std::lock_guard<std::mutex> _(vrpnMutex_);
+              return property->value();
+            },
+            p_name,
+            p_description,
+            p_value);
+      },
+      [this](property::prop_id_t propId) {
+        // ThreadWrapped notify, because it is called from the
+        // vrpn thread
+        vrpnPropertyNotify_->run_async(
+            [this, propId]() { pmanage<MPtr(&property::PBag::notify)>(propId); });
+      });
 
   if (is_started()) {
     device->start(connection_.get());
@@ -361,13 +359,13 @@ void VRPNSource::createTrackerDevice(const std::string& id,
   std::string groupName = name + "-tracker";
 
   // Create a group to hold the button properties
-  pmanage<MPtr(&PContainer::make_group)>(
+  pmanage<MPtr(&property::PBag::make_group)>(
       groupName, "\"" + name + "\" Device Trackers", "Device Trackers Properties");
 
   // Create the device
   std::unique_ptr<TrackerSourceDevice> device =
-      std::make_unique<TrackerSourceDevice>(name, uri, [this](PContainer::prop_id_t propId) {
-        pmanage<MPtr(&PContainer::notify)>(propId);
+      std::make_unique<TrackerSourceDevice>(name, uri, [this](property::prop_id_t propId) {
+        pmanage<MPtr(&property::PBag::notify)>(propId);
       });
 
   if (is_started()) {

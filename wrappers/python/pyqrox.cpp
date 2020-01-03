@@ -60,8 +60,8 @@ int pyQrox::Qrox_init(pyQroxObject* self, PyObject* args, PyObject* kwds) {
   PyObject* pyqrox;
   static char* kwlist[] = {(char*)"qrox_c_ptr", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyqrox)) return -1;
-  auto* qrox = static_cast<quid::Qrox*>(PyCapsule_GetPointer(pyqrox, nullptr));
-  self->qrox = std::make_unique<quid::Qrox>(*qrox);
+  auto* qrox = static_cast<quiddity::Qrox*>(PyCapsule_GetPointer(pyqrox, nullptr));
+  self->qrox = std::make_unique<quiddity::Qrox>(*qrox);
   return 0;
 }
 

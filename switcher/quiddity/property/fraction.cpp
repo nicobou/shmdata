@@ -22,7 +22,8 @@
 #include <utility>
 
 namespace switcher {
-
+namespace quiddity {
+namespace property {
 Fraction::Fraction(ator_t num, ator_t denom) : num_(num), denom_(denom) {}
 
 Fraction::fraction_t Fraction::get() const { return std::make_pair(num_, denom_); }
@@ -51,4 +52,6 @@ std::string Fraction::to_string() const {
   return std::to_string(numerator()) + "/" + std::to_string(denominator());
 }
 
+}  // namespace property
+}  // namespace quiddity
 }  // namespace switcher

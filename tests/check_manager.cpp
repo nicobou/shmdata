@@ -21,7 +21,7 @@
 
 #include <gst/gst.h>
 #include "switcher/switcher.hpp"
-//#include "switcher/quiddity-basic-test.hpp"
+//#include "switcher/basic-test.hpp"
 
 int main() {
   {

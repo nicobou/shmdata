@@ -46,7 +46,7 @@ PJStunTurn::PJStunTurn() {
 
   // set stun/turn config
   using set_stun_turn_t = std::function<bool(std::string, std::string, std::string, std::string)>;
-  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<set_stun_turn_t>)>(
+  SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<set_stun_turn_t>)>(
       "set_stun_turn",
       infotree::json::deserialize(
           R"(
@@ -75,7 +75,7 @@ PJStunTurn::PJStunTurn() {
              const std::string& login,
              const std::string& pass) { return set_stun_turn(stun, turn, login, pass); });
 
-  SIPPlugin::this_->pmanage<MPtr(&PContainer::make_bool)>(
+  SIPPlugin::this_->pmanage<MPtr(&property::PBag::make_bool)>(
       "lower-case-turn-account",
       [this](const bool& val) {
         lower_case_turn_account_ = val;

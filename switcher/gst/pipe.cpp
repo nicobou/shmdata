@@ -29,7 +29,7 @@
 #include <chrono>
 #include <thread>
 
-using namespace std::chrono_literals;
+using namespace ::std::chrono_literals;
 
 namespace switcher {
 namespace gst {

@@ -27,7 +27,6 @@
 #include "./stb_image.h"
 
 namespace switcher {
-namespace quiddities {
 SWITCHER_DECLARE_PLUGIN(GLFWVideo);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GLFWVideo,
                                      "glfwin",
@@ -51,26 +50,27 @@ const std::string GLFWVideo::kOverlayDisabledMessage =
 
 std::atomic<int> GLFWVideo::instance_counter_(0);
 
-GLFWVideo::GLFWVideo(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
+GLFWVideo::GLFWVideo(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
-      background_config_id_(pmanage<MPtr(&PContainer::make_group)>(
+      background_config_id_(pmanage<MPtr(&property::PBag::make_group)>(
           "background_config",
           "Background configuration",
           "Select if you want a color or an image background when no video is playing.")),
-      background_type_id_(pmanage<MPtr(&PContainer::make_parented_selection<>)>(
+      background_type_id_(pmanage<MPtr(&property::PBag::make_parented_selection<>)>(
           "background_type",
           "background_config",
-          [this](const IndexOrName& val) {
+          [this](const quiddity::property::IndexOrName& val) {
             background_type_.select(val);
             if (background_type_.get_current() == kBackgroundTypeImage) {
-              pmanage<MPtr(&PContainer::disable)>(color_id_, kBackgroundColorDisabled);
-              pmanage<MPtr(&PContainer::enable)>(background_image_id_);
+              pmanage<MPtr(&property::PBag::disable)>(color_id_, kBackgroundColorDisabled);
+              pmanage<MPtr(&property::PBag::enable)>(background_image_id_);
               draw_image_ = true;
             } else {
-              pmanage<MPtr(&PContainer::disable)>(background_image_id_, kBackgroundImageDisabled);
-              pmanage<MPtr(&PContainer::enable)>(color_id_);
+              pmanage<MPtr(&property::PBag::disable)>(background_image_id_,
+                                                      kBackgroundImageDisabled);
+              pmanage<MPtr(&property::PBag::enable)>(color_id_);
               draw_image_ = false;
             }
             return true;
@@ -80,10 +80,10 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
           "Use a color or image background. Default: color.",
           background_type_)),
       color_(0, 0, 0, 0xFF),
-      color_id_(pmanage<MPtr(&PContainer::make_parented_color)>(
+      color_id_(pmanage<MPtr(&property::PBag::make_parented_color)>(
           "color",
           "background_config",
-          [this](const Color& val) {
+          [this](const property::Color& val) {
             color_ = val;
             add_rendering_task([this]() {
               set_color();
@@ -93,9 +93,9 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
           },
           [this]() { return color_; },
           "Background color",
-          "Color of the background when no video is displayed.",
+          "property::Color of the background when no video is displayed.",
           color_)),
-      background_image_id_(pmanage<MPtr(&PContainer::make_parented_string)>(
+      background_image_id_(pmanage<MPtr(&property::PBag::make_parented_string)>(
           "background_image",
           "background_config",
           [this](const std::string& val) {
@@ -131,38 +131,38 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
           "Background image file",
           "Path to the image to use as background when no video is played.",
           std::string())),
-      overlay_id_(pmanage<MPtr(&PContainer::make_group)>(
+      overlay_id_(pmanage<MPtr(&property::PBag::make_group)>(
           "overlay_config", "Overlay configuration", "Toggle and configure the text overlay.")),
-      show_overlay_id_(pmanage<MPtr(&PContainer::make_parented_bool)>(
+      show_overlay_id_(pmanage<MPtr(&property::PBag::make_parented_bool)>(
           "show_overlay",
           "overlay_config",
           [this](bool val) {
             show_overlay_ = val;
             if (show_overlay_) {
-              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->text_id_);
-              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->alignment_id_);
-              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->font_id_);
-              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->use_custom_font_id_);
+              pmanage<MPtr(&property::PBag::enable)>(gui_configuration_->text_id_);
+              pmanage<MPtr(&property::PBag::enable)>(gui_configuration_->alignment_id_);
+              pmanage<MPtr(&property::PBag::enable)>(gui_configuration_->font_id_);
+              pmanage<MPtr(&property::PBag::enable)>(gui_configuration_->use_custom_font_id_);
               if (gui_configuration_->use_custom_font_)
-                pmanage<MPtr(&PContainer::enable)>(gui_configuration_->custom_font_id_);
+                pmanage<MPtr(&property::PBag::enable)>(gui_configuration_->custom_font_id_);
               else
-                pmanage<MPtr(&PContainer::enable)>(gui_configuration_->font_size_id_);
-              pmanage<MPtr(&PContainer::enable)>(gui_configuration_->color_id_);
+                pmanage<MPtr(&property::PBag::enable)>(gui_configuration_->font_size_id_);
+              pmanage<MPtr(&property::PBag::enable)>(gui_configuration_->color_id_);
             } else {
-              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->text_id_,
-                                                  kOverlayDisabledMessage);
-              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->alignment_id_,
-                                                  kOverlayDisabledMessage);
-              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->font_id_,
-                                                  kOverlayDisabledMessage);
-              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->use_custom_font_id_,
-                                                  kOverlayDisabledMessage);
-              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->custom_font_id_,
-                                                  kOverlayDisabledMessage);
-              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->font_size_id_,
-                                                  kOverlayDisabledMessage);
-              pmanage<MPtr(&PContainer::disable)>(gui_configuration_->color_id_,
-                                                  kOverlayDisabledMessage);
+              pmanage<MPtr(&property::PBag::disable)>(gui_configuration_->text_id_,
+                                                      kOverlayDisabledMessage);
+              pmanage<MPtr(&property::PBag::disable)>(gui_configuration_->alignment_id_,
+                                                      kOverlayDisabledMessage);
+              pmanage<MPtr(&property::PBag::disable)>(gui_configuration_->font_id_,
+                                                      kOverlayDisabledMessage);
+              pmanage<MPtr(&property::PBag::disable)>(gui_configuration_->use_custom_font_id_,
+                                                      kOverlayDisabledMessage);
+              pmanage<MPtr(&property::PBag::disable)>(gui_configuration_->custom_font_id_,
+                                                      kOverlayDisabledMessage);
+              pmanage<MPtr(&property::PBag::disable)>(gui_configuration_->font_size_id_,
+                                                      kOverlayDisabledMessage);
+              pmanage<MPtr(&property::PBag::disable)>(gui_configuration_->color_id_,
+                                                      kOverlayDisabledMessage);
             }
             return true;
           },
@@ -175,10 +175,10 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
             std::lock_guard<std::mutex> lock(configuration_mutex_);
             if (!window_moved_ || !gui_configuration_) return;
             add_rendering_task([this]() {
-              pmanage<MPtr(&PContainer::notify)>(position_x_id_);
-              pmanage<MPtr(&PContainer::notify)>(position_y_id_);
-              pmanage<MPtr(&PContainer::notify)>(width_id_);
-              pmanage<MPtr(&PContainer::notify)>(height_id_);
+              pmanage<MPtr(&property::PBag::notify)>(position_x_id_);
+              pmanage<MPtr(&property::PBag::notify)>(position_y_id_);
+              pmanage<MPtr(&property::PBag::notify)>(width_id_);
+              pmanage<MPtr(&property::PBag::notify)>(height_id_);
               ImGui::SetCurrentContext(gui_configuration_->context_->ctx);
               ImGuiIO& io = ImGui::GetIO();
               io.DisplaySize.x = static_cast<float>(width_);
@@ -191,18 +191,18 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
           },
           std::chrono::milliseconds(500))),
       title_(get_name()),
-      title_id_(pmanage<MPtr(&PContainer::make_string)>("title",
-                                                        [this](const std::string& val) {
-                                                          title_ = val;
-                                                          glfwSetWindowTitle(window_,
-                                                                             title_.c_str());
-                                                          return true;
-                                                        },
-                                                        [this]() { return title_; },
-                                                        "Window Title",
-                                                        "Window Title",
-                                                        title_)),
-      xevents_to_shmdata_id_(pmanage<MPtr(&PContainer::make_bool)>(
+      title_id_(pmanage<MPtr(&property::PBag::make_string)>("title",
+                                                            [this](const std::string& val) {
+                                                              title_ = val;
+                                                              glfwSetWindowTitle(window_,
+                                                                                 title_.c_str());
+                                                              return true;
+                                                            },
+                                                            [this]() { return title_; },
+                                                            "Window Title",
+                                                            "Window Title",
+                                                            title_)),
+      xevents_to_shmdata_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "xevents",
           [this](bool val) {
             xevents_to_shmdata_ = val;
@@ -230,7 +230,7 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
           "Keyboard/Mouse Events",
           "Capture Keyboard/Mouse Events",
           xevents_to_shmdata_)),
-      fullscreen_id_(pmanage<MPtr(&PContainer::make_bool)>(
+      fullscreen_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "fullscreen",
           [this](bool val) {
             if (val == fullscreen_) return true;
@@ -242,12 +242,12 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
                 minimized_height_ = height_;
                 minimized_position_x_ = position_x_;
                 minimized_position_y_ = position_y_;
-                pmanage<MPtr(&PContainer::disable)>(width_id_, kFullscreenDisabled);
-                pmanage<MPtr(&PContainer::disable)>(height_id_, kFullscreenDisabled);
-                pmanage<MPtr(&PContainer::disable)>(position_x_id_, kFullscreenDisabled);
-                pmanage<MPtr(&PContainer::disable)>(position_y_id_, kFullscreenDisabled);
-                pmanage<MPtr(&PContainer::disable)>(decorated_id_, kFullscreenDisabled);
-                
+                pmanage<MPtr(&property::PBag::disable)>(width_id_, kFullscreenDisabled);
+                pmanage<MPtr(&property::PBag::disable)>(height_id_, kFullscreenDisabled);
+                pmanage<MPtr(&property::PBag::disable)>(position_x_id_, kFullscreenDisabled);
+                pmanage<MPtr(&property::PBag::disable)>(position_y_id_, kFullscreenDisabled);
+                pmanage<MPtr(&property::PBag::disable)>(decorated_id_, kFullscreenDisabled);
+
                 MonitorConfig monitor = get_monitor_config();
                 // Positioning is handled by glfwSetWindowMonitor; variables are set just so that
                 // they are in sync with the actual screen position.
@@ -262,11 +262,11 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
                                      monitor.height,
                                      GLFW_DONT_CARE);
               } else {
-                pmanage<MPtr(&PContainer::enable)>(width_id_);
-                pmanage<MPtr(&PContainer::enable)>(height_id_);
-                pmanage<MPtr(&PContainer::enable)>(position_x_id_);
-                pmanage<MPtr(&PContainer::enable)>(position_y_id_);
-                pmanage<MPtr(&PContainer::enable)>(decorated_id_);
+                pmanage<MPtr(&property::PBag::enable)>(width_id_);
+                pmanage<MPtr(&property::PBag::enable)>(height_id_);
+                pmanage<MPtr(&property::PBag::enable)>(position_x_id_);
+                pmanage<MPtr(&property::PBag::enable)>(position_y_id_);
+                pmanage<MPtr(&property::PBag::enable)>(decorated_id_);
                 position_x_ = minimized_position_x_;
                 position_y_ = minimized_position_y_;
                 glfwSetWindowMonitor(window_,
@@ -285,7 +285,7 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
           "Window Fullscreen",
           "Toggle fullscreen on the window in its current monitor",
           false)),
-      decorated_id_(pmanage<MPtr(&PContainer::make_bool)>(
+      decorated_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "decorated",
           [this](bool val) {
             if (val == decorated_) return true;
@@ -300,7 +300,7 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
           "Window Decoration",
           "Show/Hide Window Decoration",
           true)),
-      always_on_top_id_(pmanage<MPtr(&PContainer::make_bool)>(
+      always_on_top_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "always_on_top",
           [this](bool val) {
             if (val == always_on_top_) return true;
@@ -315,37 +315,38 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
           "Always On Top",
           "Toggle Window Always On Top",
           true)),
-      rotation_id_(
-          pmanage<MPtr(&PContainer::make_selection<>)>("rotation",
-                                                       [this](const IndexOrName& val) {
-                                                         rotation_.select(val);
-                                                         add_rendering_task([this]() {
-                                                           set_viewport();
-                                                           set_rotation_shader();
-                                                           return true;
-                                                         });
-                                                         return true;
-                                                       },
-                                                       [this]() { return rotation_.get(); },
-                                                       "Rotation modes",
-                                                       "Possible rotation modes of the video.",
-                                                       rotation_)),
-      flip_id_(pmanage<MPtr(&PContainer::make_selection<>)>("flip",
-                                                            [this](const IndexOrName& val) {
-                                                              flip_.select(val);
-                                                              add_rendering_task([this]() {
-                                                                set_flip_shader();
-                                                                return true;
-                                                              });
-                                                              return true;
-                                                            },
-                                                            [this]() { return flip_.get(); },
-                                                            "Flip modes",
-                                                            "Possible flip modes of the video.",
-                                                            flip_)),
-      vsync_id_(pmanage<MPtr(&PContainer::make_selection<int>)>(
+      rotation_id_(pmanage<MPtr(&property::PBag::make_selection<>)>(
+          "rotation",
+          [this](const quiddity::property::IndexOrName& val) {
+            rotation_.select(val);
+            add_rendering_task([this]() {
+              set_viewport();
+              set_rotation_shader();
+              return true;
+            });
+            return true;
+          },
+          [this]() { return rotation_.get(); },
+          "Rotation modes",
+          "Possible rotation modes of the video.",
+          rotation_)),
+      flip_id_(pmanage<MPtr(&property::PBag::make_selection<>)>(
+          "flip",
+          [this](const quiddity::property::IndexOrName& val) {
+            flip_.select(val);
+            add_rendering_task([this]() {
+              set_flip_shader();
+              return true;
+            });
+            return true;
+          },
+          [this]() { return flip_.get(); },
+          "Flip modes",
+          "Possible flip modes of the video.",
+          flip_)),
+      vsync_id_(pmanage<MPtr(&property::PBag::make_selection<int>)>(
           "vsync",
-          [this](const IndexOrName& val) {
+          [this](const quiddity::property::IndexOrName& val) {
             vsync_.select(val);
             add_rendering_task([this]() {
               glfwSwapInterval(vsync_.get_attached());
@@ -379,7 +380,7 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
     return;
   }
   // win_aspect_ratio_toggle_id_ =
-  //     pmanage<MPtr(&PContainer::make_bool)>("win_aspect_ratio_toggle",
+  //     pmanage<MPtr(&property::PBag::make_bool)>("win_aspect_ratio_toggle",
   //                                           [this](const bool& val) {
   //                                             win_aspect_ratio_toggle_ = val;
   //                                             minimized_width_ = width_;
@@ -406,7 +407,7 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
   //                                           "Enable/Disable",
   //                                           win_aspect_ratio_toggle_);
 
-  width_id_ = pmanage<MPtr(&PContainer::make_int)>(
+  width_id_ = pmanage<MPtr(&property::PBag::make_int)>(
       "width",
       [this](const int& val) {
         if (val == width_) return true;
@@ -427,7 +428,7 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
       800,
       1,
       max_width_);
-  height_id_ = pmanage<MPtr(&PContainer::make_int)>(
+  height_id_ = pmanage<MPtr(&property::PBag::make_int)>(
       "height",
       [this](const int& val) {
         if (val == height_) return true;
@@ -448,38 +449,38 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
       600,
       1,
       max_height_);
-  position_x_id_ = pmanage<MPtr(&PContainer::make_int)>("position_x",
-                                                        [this](const int& val) {
-                                                          if (val == position_x_) return true;
-                                                          add_rendering_task([this, val]() {
-                                                            position_x_ = val;
-                                                            set_position();
-                                                            return true;
-                                                          });
-                                                          return true;
-                                                        },
-                                                        [this]() { return position_x_; },
-                                                        "Window Position X",
-                                                        "Set Window Horizontal Position",
-                                                        0,
-                                                        0,
-                                                        max_width_);
-  position_y_id_ = pmanage<MPtr(&PContainer::make_int)>("position_y",
-                                                        [this](const int& val) {
-                                                          if (val == position_y_) return true;
-                                                          add_rendering_task([this, val]() {
-                                                            position_y_ = val;
-                                                            set_position();
-                                                            return true;
-                                                          });
-                                                          return true;
-                                                        },
-                                                        [this]() { return position_y_; },
-                                                        "Window Position Y",
-                                                        "Set Window Vertical Position",
-                                                        0,
-                                                        0,
-                                                        max_height_);
+  position_x_id_ = pmanage<MPtr(&property::PBag::make_int)>("position_x",
+                                                            [this](const int& val) {
+                                                              if (val == position_x_) return true;
+                                                              add_rendering_task([this, val]() {
+                                                                position_x_ = val;
+                                                                set_position();
+                                                                return true;
+                                                              });
+                                                              return true;
+                                                            },
+                                                            [this]() { return position_x_; },
+                                                            "Window Position X",
+                                                            "Set Window Horizontal Position",
+                                                            0,
+                                                            0,
+                                                            max_width_);
+  position_y_id_ = pmanage<MPtr(&property::PBag::make_int)>("position_y",
+                                                            [this](const int& val) {
+                                                              if (val == position_y_) return true;
+                                                              add_rendering_task([this, val]() {
+                                                                position_y_ = val;
+                                                                set_position();
+                                                                return true;
+                                                              });
+                                                              return true;
+                                                            },
+                                                            [this]() { return position_y_; },
+                                                            "Window Position Y",
+                                                            "Set Window Vertical Position",
+                                                            0,
+                                                            0,
+                                                            max_height_);
 
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
@@ -488,15 +489,15 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
       [this](const std::string& caps) { return can_sink_caps(caps); },
       1);
 
-  pmanage<MPtr(&PContainer::make_bool)>("keyb_interaction",
-                                        [this](const bool& val) {
-                                          keyb_interaction_ = val;
-                                          return true;
-                                        },
-                                        [this]() { return keyb_interaction_; },
-                                        "Keyboard Shortcuts",
-                                        "Enable/Disable keybord shortcuts",
-                                        keyb_interaction_);
+  pmanage<MPtr(&property::PBag::make_bool)>("keyb_interaction",
+                                            [this](const bool& val) {
+                                              keyb_interaction_ = val;
+                                              return true;
+                                            },
+                                            [this]() { return keyb_interaction_; },
+                                            "Keyboard Shortcuts",
+                                            "Enable/Disable keybord shortcuts",
+                                            keyb_interaction_);
 
   if (!remake_elements()) {
     is_valid_ = false;
@@ -538,8 +539,8 @@ GLFWVideo::GLFWVideo(quid::Config&& conf)
   glGenTextures(1, &drawing_texture_);
   setup_vertex_array();
 
-  pmanage<MPtr(&PContainer::set_to_current)>(color_id_);
-  pmanage<MPtr(&PContainer::set_to_current)>(background_type_id_);
+  pmanage<MPtr(&property::PBag::set_to_current)>(color_id_);
+  pmanage<MPtr(&property::PBag::set_to_current)>(background_type_id_);
 
   {
     std::lock_guard<std::mutex> lock(configuration_mutex_);
@@ -832,8 +833,8 @@ void GLFWVideo::set_events_cb(GLFWwindow* window) {
 
 void GLFWVideo::close_cb(GLFWwindow* window) {
   auto quiddity = static_cast<GLFWVideo*>(glfwGetWindowUserPointer(window));
-  quiddity->meth<MPtr(&MContainer::invoke_str)>(
-      quiddity->meth<MPtr(&MContainer::get_id)>("disconnect-all"), "");
+  quiddity->meth<MPtr(&method::MBag::invoke_str)>(
+      quiddity->meth<MPtr(&method::MBag::get_id)>("disconnect-all"), "");
   quiddity->self_destruct();
 }
 
@@ -880,17 +881,17 @@ void GLFWVideo::key_cb(GLFWwindow* window, int key, int /*scancode*/, int action
     switch (key) {
       case GLFW_KEY_F:
       case GLFW_KEY_ESCAPE:
-        quiddity->pmanage<MPtr(&PContainer::set<bool>)>(
+        quiddity->pmanage<MPtr(&property::PBag::set<bool>)>(
             quiddity->fullscreen_id_,
             !quiddity->fullscreen_);  // toggle fullscreen
         break;
       case GLFW_KEY_D:
-        quiddity->pmanage<MPtr(&PContainer::set<bool>)>(
+        quiddity->pmanage<MPtr(&property::PBag::set<bool>)>(
             quiddity->decorated_id_,
             !quiddity->decorated_);  // toggle decoration
         break;
       case GLFW_KEY_T:
-        quiddity->pmanage<MPtr(&PContainer::set<bool>)>(
+        quiddity->pmanage<MPtr(&property::PBag::set<bool>)>(
             quiddity->always_on_top_id_,
             !quiddity->always_on_top_);  // toggle always on top status
         break;
@@ -1167,24 +1168,24 @@ bool GLFWVideo::remake_elements() {
 }
 
 void GLFWVideo::install_gst_properties() {
-  pmanage<MPtr(&PContainer::push)>("gamma",
-                                   GPropToProp::to_prop(G_OBJECT(gamma_.get_raw()), "gamma"));
-  pmanage<MPtr(&PContainer::push)>(
-      "contrast", GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "contrast"));
-  pmanage<MPtr(&PContainer::push)>(
-      "brightness", GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "brightness"));
-  pmanage<MPtr(&PContainer::push)>("hue",
-                                   GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "hue"));
-  pmanage<MPtr(&PContainer::push)>(
-      "saturation", GPropToProp::to_prop(G_OBJECT(videobalance_.get_raw()), "saturation"));
+  pmanage<MPtr(&property::PBag::push)>(
+      "gamma", quiddity::property::to_prop(G_OBJECT(gamma_.get_raw()), "gamma"));
+  pmanage<MPtr(&property::PBag::push)>(
+      "contrast", quiddity::property::to_prop(G_OBJECT(videobalance_.get_raw()), "contrast"));
+  pmanage<MPtr(&property::PBag::push)>(
+      "brightness", quiddity::property::to_prop(G_OBJECT(videobalance_.get_raw()), "brightness"));
+  pmanage<MPtr(&property::PBag::push)>(
+      "hue", quiddity::property::to_prop(G_OBJECT(videobalance_.get_raw()), "hue"));
+  pmanage<MPtr(&property::PBag::push)>(
+      "saturation", quiddity::property::to_prop(G_OBJECT(videobalance_.get_raw()), "saturation"));
 }
 
 void GLFWVideo::remove_gst_properties() {
-  pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("gamma"));
-  pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("contrast"));
-  pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("brightness"));
-  pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("hue"));
-  pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>("saturation"));
+  pmanage<MPtr(&property::PBag::remove)>(pmanage<MPtr(&property::PBag::get_id)>("gamma"));
+  pmanage<MPtr(&property::PBag::remove)>(pmanage<MPtr(&property::PBag::get_id)>("contrast"));
+  pmanage<MPtr(&property::PBag::remove)>(pmanage<MPtr(&property::PBag::get_id)>("brightness"));
+  pmanage<MPtr(&property::PBag::remove)>(pmanage<MPtr(&property::PBag::get_id)>("hue"));
+  pmanage<MPtr(&property::PBag::remove)>(pmanage<MPtr(&property::PBag::get_id)>("saturation"));
 }
 
 inline void GLFWVideo::on_handoff_cb(GstElement* /*object*/,
@@ -1378,7 +1379,7 @@ void GLFWVideo::GUIConfiguration::destroy_imgui() {
 }
 
 void GLFWVideo::GUIConfiguration::init_properties() {
-  auto set_font = [this](const IndexOrName& val) {
+  auto set_font = [this](const quiddity::property::IndexOrName& val) {
     std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
     fonts_.select(val);
     parent_window_->add_rendering_task([this, val]() {
@@ -1389,7 +1390,7 @@ void GLFWVideo::GUIConfiguration::init_properties() {
   };
   auto get_font = [this]() { return fonts_.get(); };
 
-  text_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_string)>(
+  text_id_ = parent_window_->pmanage<MPtr(&property::PBag::make_parented_string)>(
       "overlay_text",
       "overlay_config",
       [this](const std::string& val) {
@@ -1401,40 +1402,41 @@ void GLFWVideo::GUIConfiguration::init_properties() {
       "Overlay text",
       "Overlay text content",
       text_);
-  alignment_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_selection<unsigned int>)>(
-      "overlay_alignment",
-      "overlay_config",
-      [this](const IndexOrName& val) {
-        std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
-        alignment_.select(val);
-        return true;
-      },
-      [this]() { return alignment_.get(); },
-      "Text alignment",
-      "Alignment of the overlay text",
-      alignment_);
-  use_custom_font_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_bool)>(
+  alignment_id_ =
+      parent_window_->pmanage<MPtr(&property::PBag::make_parented_selection<unsigned int>)>(
+          "overlay_alignment",
+          "overlay_config",
+          [this](const quiddity::property::IndexOrName& val) {
+            std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
+            alignment_.select(val);
+            return true;
+          },
+          [this]() { return alignment_.get(); },
+          "Text alignment",
+          "Alignment of the overlay text",
+          alignment_);
+  use_custom_font_id_ = parent_window_->pmanage<MPtr(&property::PBag::make_parented_bool)>(
       "overlay_use_config",
       "overlay_config",
       [this](bool val) {
         use_custom_font_ = val;
         if (val) {
-          parent_window_->pmanage<MPtr(&PContainer::disable)>(
+          parent_window_->pmanage<MPtr(&property::PBag::disable)>(
               font_id_,
               "This property is unavailable because "
               "the custom font is currently selected.");
-          parent_window_->pmanage<MPtr(&PContainer::enable)>(custom_font_id_);
+          parent_window_->pmanage<MPtr(&property::PBag::enable)>(custom_font_id_);
           if (StringUtils::starts_with(custom_font_, "/") &&
               StringUtils::ends_with(custom_font_, ".ttf")) {
-            parent_window_->pmanage<MPtr(&PContainer::set_to_current)>(custom_font_id_);
+            parent_window_->pmanage<MPtr(&property::PBag::set_to_current)>(custom_font_id_);
           }
         } else {
-          parent_window_->pmanage<MPtr(&PContainer::disable)>(
+          parent_window_->pmanage<MPtr(&property::PBag::disable)>(
               custom_font_id_,
               "This property is disabled because the"
               " custom font option is turned off.");
-          parent_window_->pmanage<MPtr(&PContainer::enable)>(font_id_);
-          parent_window_->pmanage<MPtr(&PContainer::set_to_current)>(font_id_);
+          parent_window_->pmanage<MPtr(&property::PBag::enable)>(font_id_);
+          parent_window_->pmanage<MPtr(&property::PBag::set_to_current)>(font_id_);
         }
         return true;
       },
@@ -1442,7 +1444,7 @@ void GLFWVideo::GUIConfiguration::init_properties() {
       "Toggle use of custom font",
       "Toggle use of custom font",
       false);
-  custom_font_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_string)>(
+  custom_font_id_ = parent_window_->pmanage<MPtr(&property::PBag::make_parented_string)>(
       "overlay_additional_font",
       "overlay_config",
       [this](const std::string& val) {
@@ -1470,8 +1472,8 @@ void GLFWVideo::GUIConfiguration::init_properties() {
       "Custom text font",
       "Custom text font full path",
       custom_font_);
-  fonts_ = Selection<>(std::move(fonts_list_), 0);
-  font_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_selection<>)>(
+  fonts_ = property::Selection<>(std::move(fonts_list_), 0);
+  font_id_ = parent_window_->pmanage<MPtr(&property::PBag::make_parented_selection<>)>(
       "overlay_fonts",
       "overlay_config",
       set_font,
@@ -1479,10 +1481,10 @@ void GLFWVideo::GUIConfiguration::init_properties() {
       "Text font",
       "Font of the overlay text",
       fonts_);
-  color_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_color)>(
+  color_id_ = parent_window_->pmanage<MPtr(&property::PBag::make_parented_color)>(
       "overlay_color",
       "overlay_config",
-      [this](const Color& val) {
+      [this](const property::Color& val) {
         std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
         color_ = val;
         return true;
@@ -1491,15 +1493,15 @@ void GLFWVideo::GUIConfiguration::init_properties() {
       "Overlay color",
       "Overlay text color",
       color_);
-  font_size_id_ = parent_window_->pmanage<MPtr(&PContainer::make_parented_unsigned_int)>(
+  font_size_id_ = parent_window_->pmanage<MPtr(&property::PBag::make_parented_unsigned_int)>(
       "overlay_font_size",
       "overlay_config",
       [this](const unsigned int& val) {
         font_size_ = val;
         if (use_custom_font_)
-          parent_window_->pmanage<MPtr(&PContainer::set_to_current)>(custom_font_id_);
+          parent_window_->pmanage<MPtr(&property::PBag::set_to_current)>(custom_font_id_);
         else
-          parent_window_->pmanage<MPtr(&PContainer::set_to_current)>(font_id_);
+          parent_window_->pmanage<MPtr(&property::PBag::set_to_current)>(font_id_);
         return true;
       },
       [this]() { return font_size_; },
@@ -1670,5 +1672,4 @@ void GLFWVideo::GUIConfiguration::render_overlay(ImDrawData* draw_data) {
   glDisable(GL_BLEND);
 }
 
-}  // namespace quiddities
 }  // namespace switcher

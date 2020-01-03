@@ -31,7 +31,7 @@
 #include <gst/gst.h>
 
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
 #include "switcher/shmdata/shmdata-connector.hpp"
 #include "switcher/shmdata/shmdata-follower.hpp"
 #include "switcher/utils/periodic-task.hpp"
@@ -40,9 +40,10 @@
 namespace switcher {
 namespace quiddities {
 
-class Executor : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class Executor : public Quiddity, public Startable {
  public:
-  Executor(quid::Config&&);
+  Executor(quiddity::Config&&);
   ~Executor();
   Executor(const Executor&) = delete;
   Executor& operator=(const Executor&) = delete;
@@ -79,17 +80,17 @@ class Executor : public Quiddity, public StartableQuiddity {
   std::unique_ptr<ShmdataFollower> follower_{nullptr};
 
   std::string command_line_{};
-  PContainer::prop_id_t command_line_id_;
+  property::prop_id_t command_line_id_;
 
   bool autostart_{false};
-  PContainer::prop_id_t autostart_id_;
+  property::prop_id_t autostart_id_;
   bool restart_on_change_{false};
-  PContainer::prop_id_t restart_on_change_id_;
+  property::prop_id_t restart_on_change_id_;
   bool periodic_{false};
-  PContainer::prop_id_t periodic_id_;
+  property::prop_id_t periodic_id_;
 
   std::string whitelist_caps_{};
-  PContainer::prop_id_t whitelist_caps_id_;
+  property::prop_id_t whitelist_caps_id_;
 };
 SWITCHER_DECLARE_PLUGIN(Executor);
 }  // namespace quiddities

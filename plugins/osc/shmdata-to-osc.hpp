@@ -24,15 +24,16 @@
 #include <chrono>
 #include <mutex>
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
 #include "switcher/shmdata/shmdata-connector.hpp"
 #include "switcher/shmdata/shmdata-follower.hpp"
 
 namespace switcher {
 namespace quiddities {
-class ShmdataToOsc : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class ShmdataToOsc : public Quiddity, public Startable {
  public:
-  ShmdataToOsc(quid::Config&&);
+  ShmdataToOsc(quiddity::Config&&);
   ~ShmdataToOsc();
   ShmdataToOsc(const ShmdataToOsc&) = delete;
   ShmdataToOsc& operator=(const ShmdataToOsc&) = delete;
@@ -51,11 +52,11 @@ class ShmdataToOsc : public Quiddity, public StartableQuiddity {
   std::unique_ptr<ShmdataFollower> shm_{nullptr};
 
   int port_{1056};
-  PContainer::prop_id_t port_id_;
+  property::prop_id_t port_id_;
   std::string host_{"localhost"};
-  PContainer::prop_id_t host_id_;
+  property::prop_id_t host_id_;
   bool autostart_{false};
-  PContainer::prop_id_t autostart_id_;
+  property::prop_id_t autostart_id_;
 };
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToOsc);

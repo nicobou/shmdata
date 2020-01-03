@@ -28,9 +28,10 @@
 
 namespace switcher {
 namespace quiddities {
+using namespace quiddity;
 class GstVideoConverter : public Quiddity {
  public:
-  GstVideoConverter(quid::Config&&);
+  GstVideoConverter(quiddity::Config&&);
   ~GstVideoConverter() = default;
   GstVideoConverter(const GstVideoConverter&) = delete;
   GstVideoConverter& operator=(const GstVideoConverter&) = delete;
@@ -38,12 +39,12 @@ class GstVideoConverter : public Quiddity {
  private:
   std::string shmpath_to_convert_{};
   std::string shmpath_converted_{};
-  Selection<> video_format_;
-  PContainer::prop_id_t video_format_id_;
+  property::Selection<> video_format_;
+  property::prop_id_t video_format_id_;
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;
-  std::unique_ptr<GstShmTreeUpdater> shmsrc_sub_{nullptr};
-  std::unique_ptr<GstShmTreeUpdater> shmsink_sub_{nullptr};
+  std::unique_ptr<switcher::GstShmTreeUpdater> shmsrc_sub_{nullptr};
+  std::unique_ptr<switcher::GstShmTreeUpdater> shmsink_sub_{nullptr};
 
   std::unique_ptr<gst::PixelFormatConverter> converter_{nullptr};
   bool on_shmdata_disconnect();

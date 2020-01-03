@@ -22,8 +22,8 @@
 #include <fstream>
 #include "./gst/utils.hpp"
 #include "./infotree/information-tree-json.hpp"
-#include "./quiddity/bundle/bundle-description-parser.hpp"
 #include "./quiddity/bundle/bundle.hpp"
+#include "./quiddity/bundle/description-parser.hpp"
 #include "./utils/file-utils.hpp"
 #include "./utils/scope-exit.hpp"
 
@@ -104,7 +104,7 @@ bool Switcher::load_state(InfoTree* state) {
           quid_to_start.push_back(name);
         } else {
           auto quid = qcontainer_->get_quiddity(qcontainer_->get_id(name));
-          if (!quid || !quid->prop<MPtr(&PContainer::set_str_str)>(
+          if (!quid || !quid->prop<MPtr(&quiddity::property::PBag::set_str_str)>(
                            prop, Any::to_string(properties->branch_get_value(name + "." + prop)))) {
             log_->message("ERROR:failed to apply value, quiddity is %, property is %, value is %",
                           name,
@@ -142,7 +142,7 @@ bool Switcher::load_state(InfoTree* state) {
       log_->warning("failed to get quiddity %", name);
       continue;
     }
-    if (!quid || !quid->prop<MPtr(&PContainer::set_str_str)>("started", "true")) {
+    if (!quid || !quid->prop<MPtr(&quiddity::property::PBag::set_str_str)>("started", "true")) {
       log_->message("ERROR:failed to start quiddity %", name);
       log_->warning("failed to start quiddity %", name);
     }
@@ -154,22 +154,24 @@ bool Switcher::load_state(InfoTree* state) {
     for (auto& quid : quids) {
       auto quid_id = qcontainer_->get_id(quid);
       auto quidreaders = readers->get_child_keys(quid + ".shm_from_quid");
-      auto connect_quid_id = qcontainer_->meths<MPtr(&MContainer::get_id)>(quid_id, "connect-quid");
+      auto connect_quid_id =
+          qcontainer_->meths<MPtr(&quiddity::method::MBag::get_id)>(quid_id, "connect-quid");
       for (auto& reader : quidreaders) {
-        qcontainer_
-            ->meths<MPtr(&MContainer::invoke<std::function<bool(std::string, std::string)>>)>(
-                quid_id,
-                connect_quid_id,
-                std::make_tuple(Any::to_string(readers->branch_get_value(quid + ".shm_from_quid." +
-                                                                         reader + ".name")),
-                                Any::to_string(readers->branch_get_value(quid + ".shm_from_quid." +
-                                                                         reader + ".suffix"))));
+        qcontainer_->meths<MPtr(
+            &quiddity::method::MBag::invoke<std::function<bool(std::string, std::string)>>)>(
+            quid_id,
+            connect_quid_id,
+            std::make_tuple(Any::to_string(readers->branch_get_value(quid + ".shm_from_quid." +
+                                                                     reader + ".name")),
+                            Any::to_string(readers->branch_get_value(quid + ".shm_from_quid." +
+                                                                     reader + ".suffix"))));
       }
       auto rawreaders = readers->get_child_keys(quid + ".raw_shm");
       for (auto& reader : rawreaders) {
-        qcontainer_->meths<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+        qcontainer_->meths<MPtr(&quiddity::method::MBag::invoke<std::function<bool(std::string)>>)>(
             qcontainer_->get_id(quid),
-            qcontainer_->meths<MPtr(&MContainer::get_id)>(qcontainer_->get_id(quid), "connect"),
+            qcontainer_->meths<MPtr(&quiddity::method::MBag::get_id)>(qcontainer_->get_id(quid),
+                                                                      "connect"),
             std::make_tuple(Any::to_string(readers->branch_get_value(quid + "." + reader))));
       }
     }
@@ -222,7 +224,7 @@ InfoTree::ptr Switcher::get_state() const {
     }
 
     // writable property values
-    quid->prop<MPtr(&PContainer::update_values_in_tree)>();
+    quid->prop<MPtr(&quiddity::property::PBag::update_values_in_tree)>();
     auto props = quid->tree<MPtr(&InfoTree::get_child_keys)>("property");
     for (auto& prop : props) {
       // Don't save unwritable properties.
@@ -238,7 +240,7 @@ InfoTree::ptr Switcher::get_state() const {
 
     // Record shmdata connections.
     // Ignore them if no connect-to methods is installed for this quiddity.
-    if (0 == quid->meth<MPtr(&MContainer::get_id)>("connect-quid")) continue;
+    if (0 == quid->meth<MPtr(&quiddity::method::MBag::get_id)>("connect-quid")) continue;
 
     auto readers = quid->tree<MPtr(&InfoTree::get_child_keys)>("shmdata.reader");
     int nb = 0;
@@ -299,16 +301,17 @@ void Switcher::register_bundle_from_configuration() {
       continue;
     }
     // check if the pipeline description is correct
-    auto spec = bundle::DescriptionParser(pipeline, quid_types);
+    auto spec = quiddity::bundle::DescriptionParser(pipeline, quid_types);
     if (!spec) {
       log_->warning("% : error parsing the pipeline (%)", it, spec.get_parsing_error());
       continue;
     }
     // ok, bundle can be added
-    DocumentationRegistry::get()->register_doc(
-        it, quid::Doc(long_name, it, category, tags, description, "n/a", "n/a"));
+    quiddity::DocumentationRegistry::get()->register_doc(
+        it, quiddity::Doc(long_name, it, category, tags, description, "n/a", "n/a"));
 
-    qfactory_.register_class_with_custom_factory(it, &bundle::create, &bundle::destroy);
+    qfactory_.register_class_with_custom_factory(
+        it, &quiddity::bundle::create, &quiddity::bundle::destroy);
     // making the new bundle type available for next bundle definition:
     quid_types.push_back(it);
   }

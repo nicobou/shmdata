@@ -17,10 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./quiddity-basic-test.hpp"
+#include "./basic-test.hpp"
 #include <iostream>
 
 namespace switcher {
+namespace quiddity {
 bool test::full(Switcher::ptr manager,
                 const std::string& quiddity_class_name,
                 InfoTree::ptr config) {
@@ -36,7 +37,7 @@ bool test::create(Switcher::ptr manager,
                   InfoTree::ptr config) {
   auto log = manager->get_logger();
   {
-    auto res = manager->quids<MPtr(&switcher::quid::Container::create)>(
+    auto res = manager->quids<MPtr(&switcher::quiddity::Container::create)>(
         quiddity_class_name, quiddity_class_name, config.get());
     if (!res) {
       log->warning("% cannot be created: %", quiddity_class_name, res.msg());
@@ -47,15 +48,15 @@ bool test::create(Switcher::ptr manager,
       log->error("% was created with the wrong name", quiddity_class_name);
       return false;
     }
-    auto res_rm = manager->quids<MPtr(&switcher::quid::Container::remove)>(
-        manager->quids<MPtr(&switcher::quid::Container::get_id)>(quiddity_class_name));
+    auto res_rm = manager->quids<MPtr(&switcher::quiddity::Container::remove)>(
+        manager->quids<MPtr(&switcher::quiddity::Container::get_id)>(quiddity_class_name));
     if (!res_rm) {
       log->error("error while removing quiddity %: %", quiddity_class_name, res.msg());
       return false;
     }
   }
   {  // testing with generated name
-    auto res = manager->quids<MPtr(&switcher::quid::Container::create)>(
+    auto res = manager->quids<MPtr(&switcher::quiddity::Container::create)>(
         quiddity_class_name, std::string(), config.get());
     if (!res) {
       log->warning("%  cannot be created: %", quiddity_class_name, res.msg());
@@ -66,8 +67,8 @@ bool test::create(Switcher::ptr manager,
       log->error("creation did not generate a name for class %", quiddity_class_name);
       return false;
     }
-    auto res_rm = manager->quids<MPtr(&switcher::quid::Container::remove)>(
-        manager->quids<MPtr(&switcher::quid::Container::get_id)>(res.msg()));
+    auto res_rm = manager->quids<MPtr(&switcher::quiddity::Container::remove)>(
+        manager->quids<MPtr(&switcher::quiddity::Container::get_id)>(res.msg()));
     if (!res_rm) {
       log->error("error while removing quiddity: %", res.msg());
       return false;
@@ -80,7 +81,7 @@ bool test::startable(Switcher::ptr manager,
                      const std::string& quiddity_class_name,
                      InfoTree::ptr config) {
   auto log = manager->get_logger();
-  auto qrox = manager->quids<MPtr(&switcher::quid::Container::create)>(
+  auto qrox = manager->quids<MPtr(&switcher::quiddity::Container::create)>(
       quiddity_class_name, quiddity_class_name, config.get());
   if (!qrox) {
     log->warning("% cannot be created (startable not actualy tested)", quiddity_class_name);
@@ -88,13 +89,13 @@ bool test::startable(Switcher::ptr manager,
     // missing resource
     return true;
   }
-  auto started_id = qrox.get()->prop<MPtr(&PContainer::get_id)>("started");
+  auto started_id = qrox.get()->prop<MPtr(&property::PBag::get_id)>("started");
   if (0 != started_id) {
-    qrox.get()->prop<MPtr(&PContainer::set<bool>)>(started_id, true);
-    qrox.get()->prop<MPtr(&PContainer::set<bool>)>(started_id, false);
-    qrox.get()->prop<MPtr(&PContainer::set<bool>)>(started_id, true);
+    qrox.get()->prop<MPtr(&property::PBag::set<bool>)>(started_id, true);
+    qrox.get()->prop<MPtr(&property::PBag::set<bool>)>(started_id, false);
+    qrox.get()->prop<MPtr(&property::PBag::set<bool>)>(started_id, true);
   }
-  if (!manager->quids<MPtr(&switcher::quid::Container::remove)>(qrox.get_id())) {
+  if (!manager->quids<MPtr(&switcher::quiddity::Container::remove)>(qrox.get_id())) {
     log->error("error while removing quiddity % (startable test)", quiddity_class_name);
     return false;
   }
@@ -105,14 +106,14 @@ bool test::tree(Switcher::ptr manager,
                 const std::string& quiddity_class_name,
                 InfoTree::ptr config) {
   auto log = manager->get_logger();
-  auto qrox = manager->quids<MPtr(&switcher::quid::Container::create)>(
+  auto qrox = manager->quids<MPtr(&switcher::quiddity::Container::create)>(
       quiddity_class_name, std::string(), config.get());
   if (!qrox) {
     log->warning("% cannot be created (tree not actualy tested)");
     return true;
   }
   qrox.get()->tree<MPtr(&InfoTree::serialize_json)>(".");
-  manager->quids<MPtr(&switcher::quid::Container::remove)>(qrox.get_id());
+  manager->quids<MPtr(&switcher::quiddity::Container::remove)>(qrox.get_id());
   return true;
 }
 
@@ -120,7 +121,7 @@ bool test::properties(Switcher::ptr manager,
                       const std::string& quiddity_class_name,
                       InfoTree::ptr config) {
   auto log = manager->get_logger();
-  auto qrox = manager->quids<MPtr(&switcher::quid::Container::create)>(
+  auto qrox = manager->quids<MPtr(&switcher::quiddity::Container::create)>(
       quiddity_class_name, std::string(), config.get());
   if (!qrox) {
     log->warning("% cannot be created (properties not actualy tested)", quiddity_class_name);
@@ -132,10 +133,10 @@ bool test::properties(Switcher::ptr manager,
     // do not test if the property has been disabled
     if (quid->tree<MPtr(&InfoTree::branch_read_data<bool>)>(std::string(".property.") + it +
                                                             ".enabled.")) {
-      auto default_value = quid->prop<MPtr(&PContainer::get_str_str)>(it);
+      auto default_value = quid->prop<MPtr(&property::PBag::get_str_str)>(it);
       if (!default_value.empty() && quid->tree<MPtr(&InfoTree::branch_read_data<bool>)>(
                                         std::string(".property.") + it + ".writable.")) {
-        if (!quid->prop<MPtr(&PContainer::set_str_str)>(it, default_value)) {
+        if (!quid->prop<MPtr(&property::PBag::set_str_str)>(it, default_value)) {
           log->error("property % for quiddity of class % cannot be set with its default value",
                      it,
                      quiddity_class_name);
@@ -147,4 +148,5 @@ bool test::properties(Switcher::ptr manager,
   return true;
 }
 
+}  // namespace quiddity
 }  // namespace switcher

@@ -26,28 +26,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "./types.hpp"
 
 namespace switcher {
-// The following struct allows the select method to be invoked by index or by name
-struct IndexOrName {
-  IndexOrName() = delete;
-  IndexOrName(size_t idx) : index_(idx), is_index_(true) {}
-  IndexOrName(std::string str) : name_(str), is_index_(false) {}
-  IndexOrName(size_t idx, std::string str) : index_(idx), name_(str), is_index_(true) {}
-  std::string to_string() const { return std::to_string(index_); }
-  static std::pair<bool, IndexOrName> from_string(const std::string& str) {
-    if (!isdigit(*str.begin()) && !('-' == *str.begin() && !isdigit(*str.begin())))
-      return std::make_pair(true, switcher::IndexOrName(str));
-    std::istringstream iss(str);
-    size_t res;
-    iss >> res;
-    return std::make_pair(true, switcher::IndexOrName(res));
-  }
-
-  const size_t index_{0};
-  const std::string name_{};
-  const bool is_index_;
-};
+namespace quiddity {
+namespace property {
 
 template <typename T = std::string>
 class Selection {
@@ -114,5 +97,7 @@ class Selection {
   index_t current_selection_{0};
 };
 
+}  // namespace property
+}  // namespace quiddity
 }  // namespace switcher
 #endif

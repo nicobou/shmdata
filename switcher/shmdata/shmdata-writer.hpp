@@ -32,7 +32,7 @@
 namespace switcher {
 class ShmdataWriter : public SafeBoolIdiom {
  public:
-  ShmdataWriter(Quiddity* quid,
+  ShmdataWriter(quiddity::Quiddity* quid,
                 const std::string& path,
                 size_t memsize,
                 const std::string& data_descr);
@@ -51,7 +51,7 @@ class ShmdataWriter : public SafeBoolIdiom {
   std::string get_path() const { return shmpath_; }
 
  private:
-  Quiddity* quid_;
+  quiddity::Quiddity* quid_;
   std::string shmpath_;
   std::string data_type_;
   ShmdataSwitcherLogger shmlog_;

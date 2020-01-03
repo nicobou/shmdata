@@ -27,8 +27,8 @@
 namespace switcher {
 namespace gst {
 VideoTimelapse::VideoTimelapse(const VideoTimelapseConfig& config,
-                                     Quiddity* quid,
-                                     on_new_file_t on_new_file)
+                               quiddity::Quiddity* quid,
+                               on_new_file_t on_new_file)
     : config_(config),
       on_new_file_(on_new_file),
       gst_pipeline_(std::make_unique<Pipeliner>(

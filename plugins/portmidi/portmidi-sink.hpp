@@ -23,15 +23,16 @@
 #include <memory>
 #include "./portmidi-devices.hpp"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
 #include "switcher/shmdata/shmdata-connector.hpp"
 #include "switcher/shmdata/shmdata-follower.hpp"
 
 namespace switcher {
 namespace quiddities {
-class PortMidiSink : public Quiddity, public StartableQuiddity, public PortMidi {
+using namespace quiddity;
+class PortMidiSink : public Quiddity, public Startable, public PortMidi {
  public:
-  PortMidiSink(quid::Config&&);
+  PortMidiSink(quiddity::Config&&);
   ~PortMidiSink() = default;
   PortMidiSink(const PortMidiSink&) = delete;
   PortMidiSink& operator=(const PortMidiSink&) = delete;
@@ -53,9 +54,9 @@ class PortMidiSink : public Quiddity, public StartableQuiddity, public PortMidi 
   std::unique_ptr<ShmdataFollower> shm_{nullptr};
 
   int device_{0};
-  PContainer::prop_id_t devices_id_{0};
+  property::prop_id_t devices_id_{0};
   bool autostart_{false};
-  PContainer::prop_id_t autostart_id_;
+  property::prop_id_t autostart_id_;
 };
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSink);

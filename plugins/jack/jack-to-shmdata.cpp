@@ -19,7 +19,7 @@
 
 #include "./jack-to-shmdata.hpp"
 #include <string.h>
-#include "switcher/quiddity/quiddity-container.hpp"
+#include "switcher/quiddity/container.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -32,9 +32,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackToShmdata,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-JackToShmdata::JackToShmdata(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      StartableQuiddity(this),
+JackToShmdata::JackToShmdata(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
       client_name_(get_name()),
       jack_client_(client_name_,
                    conf.tree_config_->branch_has_data("server_name")
@@ -62,28 +62,28 @@ JackToShmdata::JackToShmdata(quid::Config&& conf)
   if (config<MPtr(&InfoTree::branch_has_data)>("max_number_of_channels"))
     max_number_of_channels =
         config<MPtr(&InfoTree::branch_get_value)>("max_number_of_channels").copy_as<size_t>();
-  client_name_id_ = pmanage<MPtr(&PContainer::make_string)>("jack-client-name",
-                                                            [this](const std::string& val) {
-                                                              client_name_ = val;
-                                                              return true;
-                                                            },
-                                                            [this]() { return client_name_; },
-                                                            "Client Name",
-                                                            "The jack client name",
-                                                            client_name_);
-  auto_connect_id_ = pmanage<MPtr(&PContainer::make_bool)>(
+  client_name_id_ = pmanage<MPtr(&property::PBag::make_string)>("jack-client-name",
+                                                                [this](const std::string& val) {
+                                                                  client_name_ = val;
+                                                                  return true;
+                                                                },
+                                                                [this]() { return client_name_; },
+                                                                "Client Name",
+                                                                "The jack client name",
+                                                                client_name_);
+  auto_connect_id_ = pmanage<MPtr(&property::PBag::make_bool)>(
       "auto_connect",
       [this](const bool& val) {
         auto_connect_ = val;
         update_port_to_connect();
         if (auto_connect_) {
-          pmanage<MPtr(&PContainer::enable)>(connect_to_id_);
-          pmanage<MPtr(&PContainer::enable)>(index_id_);
+          pmanage<MPtr(&property::PBag::enable)>(connect_to_id_);
+          pmanage<MPtr(&property::PBag::enable)>(index_id_);
         } else {
           static const std::string why_disabled =
               "this property is available only when auto connect is enabled";
-          pmanage<MPtr(&PContainer::disable)>(connect_to_id_, why_disabled);
-          pmanage<MPtr(&PContainer::disable)>(index_id_, why_disabled);
+          pmanage<MPtr(&property::PBag::disable)>(connect_to_id_, why_disabled);
+          pmanage<MPtr(&property::PBag::disable)>(index_id_, why_disabled);
         }
         return true;
       },
@@ -91,41 +91,41 @@ JackToShmdata::JackToShmdata(quid::Config&& conf)
       "Auto Connect",
       "Auto Connect to another client",
       auto_connect_);
-  connect_to_id_ = pmanage<MPtr(&PContainer::make_string)>("connect_to",
-                                                           [this](const std::string& val) {
-                                                             connect_to_ = val;
-                                                             update_port_to_connect();
-                                                             return true;
-                                                           },
-                                                           [this]() { return connect_to_; },
-                                                           "Connect To",
-                                                           "Auto connect to an other client",
-                                                           connect_to_);
+  connect_to_id_ = pmanage<MPtr(&property::PBag::make_string)>("connect_to",
+                                                               [this](const std::string& val) {
+                                                                 connect_to_ = val;
+                                                                 update_port_to_connect();
+                                                                 return true;
+                                                               },
+                                                               [this]() { return connect_to_; },
+                                                               "Connect To",
+                                                               "Auto connect to an other client",
+                                                               connect_to_);
   index_id_ =
-      pmanage<MPtr(&PContainer::make_int)>("index",
-                                           [this](const int& val) {
-                                             index_ = val;
-                                             update_port_to_connect();
-                                             return true;
-                                           },
-                                           [this]() { return index_; },
-                                           "Channel",
-                                           "Start connecting to other client from this index",
-                                           num_channels_,
-                                           1,
-                                           max_number_of_channels);
-  num_channels_id_ = pmanage<MPtr(&PContainer::make_int)>("channels",
-                                                          [this](const int& val) {
-                                                            num_channels_ = val;
-                                                            update_port_to_connect();
-                                                            return true;
-                                                          },
-                                                          [this]() { return num_channels_; },
-                                                          "Number of channels",
-                                                          "Number of channels",
-                                                          num_channels_,
-                                                          1,
-                                                          max_number_of_channels);
+      pmanage<MPtr(&property::PBag::make_int)>("index",
+                                               [this](const int& val) {
+                                                 index_ = val;
+                                                 update_port_to_connect();
+                                                 return true;
+                                               },
+                                               [this]() { return index_; },
+                                               "Channel",
+                                               "Start connecting to other client from this index",
+                                               num_channels_,
+                                               1,
+                                               max_number_of_channels);
+  num_channels_id_ = pmanage<MPtr(&property::PBag::make_int)>("channels",
+                                                              [this](const int& val) {
+                                                                num_channels_ = val;
+                                                                update_port_to_connect();
+                                                                return true;
+                                                              },
+                                                              [this]() { return num_channels_; },
+                                                              "Number of channels",
+                                                              "Number of channels",
+                                                              num_channels_,
+                                                              1,
+                                                              max_number_of_channels);
   update_port_to_connect();
   register_writer_suffix("audio");
 }
@@ -177,11 +177,11 @@ bool JackToShmdata::start() {
     shm_.reset(nullptr);
     return false;
   }
-  pmanage<MPtr(&PContainer::disable)>(auto_connect_id_, disabledWhenStartedMsg);
-  pmanage<MPtr(&PContainer::disable)>(num_channels_id_, disabledWhenStartedMsg);
-  pmanage<MPtr(&PContainer::disable)>(client_name_id_, disabledWhenStartedMsg);
-  pmanage<MPtr(&PContainer::disable)>(connect_to_id_, disabledWhenStartedMsg);
-  pmanage<MPtr(&PContainer::disable)>(index_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(auto_connect_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(num_channels_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(client_name_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(connect_to_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(index_id_, disabledWhenStartedMsg);
   {
     std::lock_guard<std::mutex> lock(input_ports_mutex_);
     input_ports_.clear();
@@ -198,11 +198,11 @@ bool JackToShmdata::stop() {
     input_ports_.clear();
   }
   shm_.reset(nullptr);
-  pmanage<MPtr(&PContainer::enable)>(auto_connect_id_);
-  pmanage<MPtr(&PContainer::enable)>(num_channels_id_);
-  pmanage<MPtr(&PContainer::enable)>(client_name_id_);
-  pmanage<MPtr(&PContainer::enable)>(connect_to_id_);
-  pmanage<MPtr(&PContainer::enable)>(index_id_);
+  pmanage<MPtr(&property::PBag::enable)>(auto_connect_id_);
+  pmanage<MPtr(&property::PBag::enable)>(num_channels_id_);
+  pmanage<MPtr(&property::PBag::enable)>(client_name_id_);
+  pmanage<MPtr(&property::PBag::enable)>(connect_to_id_);
+  pmanage<MPtr(&property::PBag::enable)>(index_id_);
   return true;
 }
 

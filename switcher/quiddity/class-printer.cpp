@@ -15,11 +15,12 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "./quiddity-class-printer.hpp"
+#include "./class-printer.hpp"
 #include <string>
 
 namespace switcher {
-namespace QuiddityClassPrinter {
+namespace quiddity {
+namespace classprinter {
 
 typedef struct {
   std::string result_{};
@@ -42,12 +43,12 @@ bool on_node_visited(std::string, const InfoTree::ptrc, bool, Data*) { return tr
 std::string print(InfoTree::ptrc tree) {
   Data data;
   InfoTree::preorder_tree_walk(tree,
-                               std::bind(QuiddityClassPrinter::on_visiting_node,
+                               std::bind(classprinter::on_visiting_node,
                                          std::placeholders::_1,
                                          std::placeholders::_2,
                                          std::placeholders::_3,
                                          &data),
-                               std::bind(QuiddityClassPrinter::on_node_visited,
+                               std::bind(classprinter::on_node_visited,
                                          std::placeholders::_1,
                                          std::placeholders::_2,
                                          std::placeholders::_3,
@@ -55,5 +56,6 @@ std::string print(InfoTree::ptrc tree) {
   return data.result_;
 }
 
-}  // namespace QuiddityClassPrinter
+}  // namespace classprinter
+}  // namespace quiddity
 }  // namespace switcher

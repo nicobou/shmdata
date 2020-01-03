@@ -52,7 +52,7 @@ class PJPresence {
   std::mutex registration_mutex_{};
   std::condition_variable registration_cond_{};
   // online status
-  Selection<> status_{{"Available", "Busy", "Away", "Offline"}, 0};
+  quiddity::property::Selection<> status_{{"Available", "Busy", "Away", "Offline"}, 0};
   std::string custom_status_{""};
   // sip registration status (read only)
   bool registered_{false};

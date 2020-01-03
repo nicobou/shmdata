@@ -26,19 +26,18 @@
 #include <unordered_map>
 #include "../../infotree/information-tree.hpp"
 #include "../../utils/serialize-string.hpp"
-#include "./property-internal-types.hpp"
-#include "./property-specification.hpp"
+#include "./doc.hpp"
+#include "./types.hpp"
 
 namespace switcher {
-class PContainer;  // property container
+namespace quiddity {
+namespace property {
+class PBag;  // property container
 
 class PropertyBase {
-  friend class PContainer;
+  friend class PBag;
 
  public:
-  using register_id_t = prop::register_id_t;
-  using notify_cb_t = prop::notify_cb_t;
-  using prop_id_t = prop::prop_id_t;
   PropertyBase() = delete;
   virtual ~PropertyBase() = default;
   PropertyBase(size_t type_hash);
@@ -71,7 +70,7 @@ class PropertyBase {
   // id is given by other class but saved here in order to avoid
   // save it along with the Property instance
   prop_id_t id_{0};
-  // following is for use by friend PContainer:
+  // following is for use by friend PBag:
   void set_id(prop_id_t id);
   std::vector<register_id_t> get_register_ids() const;
 };
@@ -80,8 +79,8 @@ template <typename V,
           typename W = V>  // readonly when set_ initialized with nullptr
 class Property : public PropertyBase {
  public:
-  using get_cb_t = typename prop::get_t<W>;
-  using set_cb_t = typename prop::set_t<W>;
+  using get_cb_t = typename property::get_t<W>;
+  using set_cb_t = typename property::set_t<W>;
 
   template <typename... SpecArgs>
   Property(set_cb_t set, get_cb_t get, SpecArgs... args)
@@ -147,11 +146,13 @@ class Property : public PropertyBase {
   std::unique_lock<std::mutex> get_lock() { return std::unique_lock<std::mutex>(ts_); }
 
  private:
-  PropertySpecification<V, W> doc_;
+  Doc<V, W> doc_;
   set_cb_t set_;
   get_cb_t get_;
   mutable std::mutex ts_{};
 };
 
+}  // namespace property
+}  // namespace quiddity
 }  // namespace switcher
 #endif

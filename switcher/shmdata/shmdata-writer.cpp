@@ -22,7 +22,7 @@
 
 namespace switcher {
 
-ShmdataWriter::ShmdataWriter(Quiddity* quid,
+ShmdataWriter::ShmdataWriter(quiddity::Quiddity* quid,
                              const std::string& path,
                              size_t memsize,
                              const std::string& data_descr)

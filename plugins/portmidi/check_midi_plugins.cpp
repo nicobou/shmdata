@@ -22,7 +22,7 @@
 #include <sys/stat.h>
 #include <cstring>
 #include <iostream>
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 
 int main() {
   bool success = true;
@@ -30,7 +30,7 @@ int main() {
     using namespace switcher;
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
     struct stat st;
     if (stat("/dev/snd", &st) == -1) {
@@ -38,21 +38,21 @@ int main() {
       return 0;
     }
 
-    if (manager->quids<MPtr(&quid::Container::create)>("midisrc", "src", nullptr))
-      manager->quids<MPtr(&quid::Container::remove)>(
-          manager->quids<MPtr(&quid::Container::get_id)>("src"));
+    if (manager->quids<MPtr(&quiddity::Container::create)>("midisrc", "src", nullptr))
+      manager->quids<MPtr(&quiddity::Container::remove)>(
+          manager->quids<MPtr(&quiddity::Container::get_id)>("src"));
     else
       success = false;
 
-    if (manager->quids<MPtr(&quid::Container::create)>("midisrc", "sink", nullptr))
-      manager->quids<MPtr(&quid::Container::remove)>(
-          manager->quids<MPtr(&quid::Container::get_id)>("sink"));
+    if (manager->quids<MPtr(&quiddity::Container::create)>("midisrc", "sink", nullptr))
+      manager->quids<MPtr(&quiddity::Container::remove)>(
+          manager->quids<MPtr(&quiddity::Container::get_id)>("sink"));
     else
       success = false;
 
-    if (!test::full(manager, "midisrc")) success = false;
+    if (!quiddity::test::full(manager, "midisrc")) success = false;
 
-    if (!test::full(manager, "midisink")) success = false;
+    if (!quiddity::test::full(manager, "midisink")) success = false;
   }  // end of scope is releasing the manager
 
   if (success)

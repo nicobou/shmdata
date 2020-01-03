@@ -23,8 +23,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "switcher/quiddity/property/property-container.hpp"
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
+#include "switcher/quiddity/property/pbag.hpp"
 #include "switcher/switcher.hpp"
 
 int main() { return 0; }

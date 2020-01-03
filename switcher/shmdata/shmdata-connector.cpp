@@ -21,7 +21,7 @@
 #include "../gst/utils.hpp"
 #include "../infotree/information-tree-json.hpp"
 #include "../infotree/information-tree.hpp"
-#include "../quiddity/quiddity-container.hpp"
+#include "../quiddity/container.hpp"
 #include "../quiddity/quiddity.hpp"
 #include "../shmdata/shmdata-stat.hpp"
 #include "../utils/scope-exit.hpp"
@@ -31,7 +31,7 @@ namespace switcher {
 const std::string ShmdataConnector::disabledWhenConnectedMsg =
     "this property is disabled when a stream is connected";
 
-ShmdataConnector::ShmdataConnector(Quiddity* quid) : quid_(quid) {}
+ShmdataConnector::ShmdataConnector(quiddity::Quiddity* quid) : quid_(quid) {}
 
 bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
                                               OnDisconnect on_disconnect_cb,
@@ -47,7 +47,7 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
   on_disconnect_cb_ = on_disconnect_cb;
   on_disconnect_all_cb_ = on_disconnect_all_cb;
   on_can_sink_caps_cb_ = on_can_sink_caps_cb;
-  quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+  quid_->mmanage<MPtr(&quiddity::method::MBag::make_method<std::function<bool(std::string)>>)>(
       "connect",
       infotree::json::deserialize(
           R"(
@@ -79,17 +79,17 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
       });
 
   using connect_quid_t = std::function<bool(std::string, std::string)>;
-  quid_->mmanage<MPtr(&MContainer::make_method<connect_quid_t>)>(
+  quid_->mmanage<MPtr(&quiddity::method::MBag::make_method<connect_quid_t>)>(
       "connect-quid",
       infotree::json::deserialize(
           R"(
                   {
-                   "name" : "Connect Quiddity",
-                   "description" : "connect to a Quiddity shmpath",
+                   "name" : "Connect quiddity::Quiddity",
+                   "description" : "connect to a quiddity::Quiddity shmpath",
                    "arguments" : [
                      {
-                        "long name" : "Quiddity name",
-                        "description" : "Name of the Quiddity producing the shmdata"
+                        "long name" : "quiddity::Quiddity name",
+                        "description" : "Name of the quiddity::Quiddity producing the shmdata"
                      }, {
                         "long name" : "shmdata suffix",
                         "description" : "Suffix of the shmdata, for instance audio or video2"
@@ -115,7 +115,7 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
         return on_connect_cb_(path);
       });
 
-  quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+  quid_->mmanage<MPtr(&quiddity::method::MBag::make_method<std::function<bool(std::string)>>)>(
       "disconnect",
       infotree::json::deserialize(
           R"(
@@ -138,7 +138,7 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
         return on_disconnect_cb_(path);
       });
 
-  quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool()>>)>(
+  quid_->mmanage<MPtr(&quiddity::method::MBag::make_method<std::function<bool()>>)>(
       "disconnect-all",
       infotree::json::deserialize(
           R"(
@@ -156,7 +156,7 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
         return on_disconnect_all_cb_();
       });
 
-  quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+  quid_->mmanage<MPtr(&quiddity::method::MBag::make_method<std::function<bool(std::string)>>)>(
       "can-sink-caps",
       infotree::json::deserialize(
           R"(

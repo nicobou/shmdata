@@ -33,9 +33,10 @@ namespace quiddities {
 /**
  * ShmDelay class
  */
+using namespace quiddity;
 class ShmDelay : public Quiddity {
  public:
-  ShmDelay(quid::Config&& conf);
+  ShmDelay(quiddity::Config&& conf);
   ~ShmDelay() = default;
 
  private:
@@ -85,7 +86,7 @@ class ShmDelay : public Quiddity {
   double last_timestamp_{0};  //!< Timestamp of the last written shmdata.
 
   // Properties
-  PContainer::prop_id_t time_delay_id_{0};
+  property::prop_id_t time_delay_id_{0};
   double time_delay_{0};  //!< Delay in milliseconds.
   unsigned int buffer_size_{1 << 10};
 };

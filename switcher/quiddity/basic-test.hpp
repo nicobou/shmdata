@@ -17,31 +17,24 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_QUIDDITY_PROXID_H__
-#define __SWITCHER_QUIDDITY_PROXID_H__
+#ifndef __SWITCHER_QUIDDITY_BASIC_TEST_H__
+#define __SWITCHER_QUIDDITY_BASIC_TEST_H__
 
-#include <string>
-#include "../utils/bool-log.hpp"
-#include "./quid-id-t.hpp"
-#include "./quiddity.hpp"
+#include "../switcher.hpp"
 
 namespace switcher {
-namespace quid {
-class Qrox : public BoolLog {
- public:
-  Qrox();
-  Qrox(const Qrox& cpyqrox) = default;
-  Qrox(bool is_valid);
-  Qrox(bool is_valid, const std::string& msg);
-  Qrox(bool is_valid, const std::string& msg, qid_t id, Quiddity* ptr);
-  qid_t get_id() const;
-  Quiddity* get();
-
- private:
-  qid_t id_{0};
-  Quiddity* quid_{nullptr};
-};
-
-}  // namespace quid
+namespace quiddity {
+namespace test {
+bool full(Switcher::ptr manager, const std::string& class_name, InfoTree::ptr config = nullptr);
+bool tree(Switcher::ptr manager, const std::string& class_name, InfoTree::ptr config = nullptr);
+bool create(Switcher::ptr manager, const std::string& class_name, InfoTree::ptr config = nullptr);
+bool startable(Switcher::ptr manager,
+               const std::string& class_name,
+               InfoTree::ptr config = nullptr);
+bool properties(Switcher::ptr manager,
+                const std::string& class_name,
+                InfoTree::ptr config = nullptr);
+}  // namespace test
+}  // namespace quiddity
 }  // namespace switcher
 #endif

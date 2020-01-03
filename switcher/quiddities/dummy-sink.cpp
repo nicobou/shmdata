@@ -30,15 +30,15 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(DummySink,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-DummySink::DummySink(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
+DummySink::DummySink(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
       frame_received_id_(
-          pmanage<MPtr(&PContainer::make_bool)>("frame-received",
-                                                nullptr,
-                                                [this]() { return frame_received_; },
-                                                "Frame Received",
-                                                "A Frame has been receivedon the shmdata",
-                                                frame_received_)),
+          pmanage<MPtr(&property::PBag::make_bool)>("frame-received",
+                                                    nullptr,
+                                                    [this]() { return frame_received_; },
+                                                    "Frame Received",
+                                                    "A Frame has been receivedon the shmdata",
+                                                    frame_received_)),
       shmcntr_(static_cast<Quiddity*>(this)) {
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->connect(shmpath); },
@@ -53,10 +53,10 @@ bool DummySink::connect(const std::string& path) {
   shm_ = std::make_unique<ShmdataFollower>(this, path, [this](void*, size_t) {
     if (!frame_received_) {
       {
-        auto lock = pmanage<MPtr(&PContainer::get_lock)>(frame_received_id_);
+        auto lock = pmanage<MPtr(&property::PBag::get_lock)>(frame_received_id_);
         frame_received_ = true;
       }
-      pmanage<MPtr(&PContainer::notify)>(frame_received_id_);
+      pmanage<MPtr(&property::PBag::notify)>(frame_received_id_);
     }
   });
   return true;

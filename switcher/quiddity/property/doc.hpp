@@ -36,18 +36,19 @@
 #include "./selection.hpp"
 
 namespace switcher {
-
+namespace quiddity {
+namespace property {
 template <typename T, typename TT = T>
-class PropertySpecification {
+class Doc {
  public:
-  PropertySpecification() = delete;
+  Doc() = delete;
 
   // typename V is here in order to allow value to be initialized from an other
   // type,
   // e.g. an unsigned int with an int
 
   template <typename U = T, typename V>
-  PropertySpecification(
+  Doc(
       bool is_writable,
       const std::string& label,
       const std::string& description,
@@ -63,7 +64,7 @@ class PropertySpecification {
   }
 
   template <typename U = T, typename V>
-  PropertySpecification(bool is_writable,
+  Doc(bool is_writable,
                         const std::string& label,
                         const std::string& description,
                         const V& default_value,
@@ -87,7 +88,7 @@ class PropertySpecification {
   }
 
   template <typename U = bool>
-  PropertySpecification(bool is_writable,
+  Doc(bool is_writable,
                         const std::string& label,
                         const std::string& description,
                         const bool& default_value)
@@ -100,7 +101,7 @@ class PropertySpecification {
   }
 
   template <typename U = char>
-  PropertySpecification(bool is_writable,
+  Doc(bool is_writable,
                         const std::string& label,
                         const std::string& description,
                         const char& default_value)
@@ -113,7 +114,7 @@ class PropertySpecification {
   }
 
   template <typename U, typename V = Selection<>::index_t>
-  PropertySpecification(
+  Doc(
       bool is_writable,
       const std::string& label,
       const std::string& description,
@@ -143,7 +144,7 @@ class PropertySpecification {
   }
 
   template <typename U = Fraction>
-  PropertySpecification(bool is_writable,
+  Doc(bool is_writable,
                         const std::string& label,
                         const std::string& description,
                         const Fraction& default_value,
@@ -175,7 +176,7 @@ class PropertySpecification {
   }
 
   template <typename U = Color>
-  PropertySpecification(bool is_writable,
+  Doc(bool is_writable,
                         const std::string& label,
                         const std::string& description,
                         const Color& default_value)
@@ -188,7 +189,7 @@ class PropertySpecification {
   }
 
   template <typename U = T, typename V>
-  PropertySpecification(
+  Doc(
       bool is_writable,
       const std::string& label,
       const std::string& description,
@@ -205,7 +206,7 @@ class PropertySpecification {
 
   template <typename U = Group,
             typename std::enable_if<std::is_same<U, Group>::value>::type* = nullptr>
-  PropertySpecification(const std::string& label, const std::string& description)
+  Doc(const std::string& label, const std::string& description)
       : spec_(InfoTree::make()), is_valid_([](const Group&) { return false; }) {
     spec_->graft("label", InfoTree::make(label));
     spec_->graft("description", InfoTree::make(description));
@@ -265,5 +266,7 @@ class PropertySpecification {
   }
 };
 
+}  // namespace property
+}  // namespace quiddity
 }  // namespace switcher
 #endif

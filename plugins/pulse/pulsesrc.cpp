@@ -33,18 +33,18 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PulseSrc::PulseSrc(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      StartableQuiddity(this),
+PulseSrc::PulseSrc(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
       mainloop_(std::make_unique<gst::GlibMainLoop>()),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
   register_writer_suffix("audio");
-  pmanage<MPtr(&PContainer::make_group)>(
+  pmanage<MPtr(&property::PBag::make_group)>(
       "advanced", "Advanced configuration", "Advanced configuration");
-  pmanage<MPtr(&PContainer::make_parented_selection<>)>(
+  pmanage<MPtr(&property::PBag::make_parented_selection<>)>(
       "save_mode",
       "advanced",
-      [this](const IndexOrName& val) {
+      [this](const quiddity::property::IndexOrName& val) {
         save_device_enum_.select(val);
         return true;
       },
@@ -72,10 +72,10 @@ PulseSrc::PulseSrc(quid::Config&& conf)
     is_valid_ = false;
     return;
   }
-  volume_id_ = pmanage<MPtr(&PContainer::push)>(
-      "volume", GPropToProp::to_prop(G_OBJECT(pulsesrc_.get_raw()), "volume"));
-  mute_id_ = pmanage<MPtr(&PContainer::push)>(
-      "mute", GPropToProp::to_prop(G_OBJECT(pulsesrc_.get_raw()), "mute"));
+  volume_id_ = pmanage<MPtr(&property::PBag::push)>(
+      "volume", quiddity::property::to_prop(G_OBJECT(pulsesrc_.get_raw()), "volume"));
+  mute_id_ = pmanage<MPtr(&property::PBag::push)>(
+      "mute", quiddity::property::to_prop(G_OBJECT(pulsesrc_.get_raw()), "mute"));
 }
 
 gboolean PulseSrc::async_get_pulse_devices(void* user_data) {
@@ -181,7 +181,7 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
     // registering enum for devices
     context->update_capture_device();
 
-    auto set = [context](const IndexOrName& val) {
+    auto set = [context](const quiddity::property::IndexOrName& val) {
       if (context->is_loading_) return false;
       context->devices_.select(val);
       return true;
@@ -189,12 +189,13 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
     auto get = [context]() { return context->devices_.get_current_index(); };
 
     if (!context->devices_id_) {
-      context->devices_id_ = context->pmanage<MPtr(&PContainer::make_selection<>)>(
+      context->devices_id_ = context->pmanage<MPtr(&property::PBag::make_selection<>)>(
           "device", set, get, "Device", "Audio capture device to use", context->devices_);
     } else {
-      context->pmanage<MPtr(&PContainer::replace_and_notify)>(
+      context->pmanage<MPtr(&property::PBag::replace_and_notify)>(
           context->devices_id_,
-          std::make_unique<Property<Selection<>, Selection<>::index_t>>(
+          std::make_unique<
+              property::Property<property::Selection<>, property::Selection<>::index_t>>(
               set,
               get,
               "Device",
@@ -302,7 +303,7 @@ void PulseSrc::update_capture_device() {
     names.push_back(it.description_);
     nicks.push_back(it.name_);
   }
-  devices_ = Selection<>(std::make_pair(names, nicks), 0);
+  devices_ = property::Selection<>(std::make_pair(names, nicks), 0);
 }
 
 bool PulseSrc::start() {
@@ -316,23 +317,23 @@ bool PulseSrc::start() {
       GST_BIN(gst_pipeline_->get_pipeline()), pulsesrc_.get_raw(), shmsink_.get_raw(), nullptr);
   gst_element_link_many(pulsesrc_.get_raw(), shmsink_.get_raw(), nullptr);
   gst_pipeline_->play(true);
-  pmanage<MPtr(&PContainer::disable)>(devices_id_, StartableQuiddity::disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(devices_id_, Startable::disabledWhenStartedMsg);
   return true;
 }
 
 bool PulseSrc::stop() {
   shm_sub_.reset(nullptr);
-  pmanage<MPtr(&PContainer::remove)>(volume_id_);
+  pmanage<MPtr(&property::PBag::remove)>(volume_id_);
   volume_id_ = 0;
-  pmanage<MPtr(&PContainer::remove)>(mute_id_);
+  pmanage<MPtr(&property::PBag::remove)>(mute_id_);
   mute_id_ = 0;
   if (!remake_elements()) return false;
-  volume_id_ = pmanage<MPtr(&PContainer::push)>(
-      "volume", GPropToProp::to_prop(G_OBJECT(pulsesrc_.get_raw()), "volume"));
-  mute_id_ = pmanage<MPtr(&PContainer::push)>(
-      "mute", GPropToProp::to_prop(G_OBJECT(pulsesrc_.get_raw()), "mute"));
+  volume_id_ = pmanage<MPtr(&property::PBag::push)>(
+      "volume", quiddity::property::to_prop(G_OBJECT(pulsesrc_.get_raw()), "volume"));
+  mute_id_ = pmanage<MPtr(&property::PBag::push)>(
+      "mute", quiddity::property::to_prop(G_OBJECT(pulsesrc_.get_raw()), "mute"));
   gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
-  pmanage<MPtr(&PContainer::enable)>(devices_id_);
+  pmanage<MPtr(&property::PBag::enable)>(devices_id_);
   return true;
 }
 
@@ -367,8 +368,8 @@ void PulseSrc::on_loading(InfoTree::ptr&& tree) {
           "Audio capture device not found on its saved port when loading saved scenario, "
           "defaulting to first available device");
     } else {
-      pmanage<MPtr(&PContainer::set<IndexOrName>)>(devices_id_,
-                                                   IndexOrName(it - capture_devices_.begin()));
+      pmanage<MPtr(&property::PBag::set<quiddity::property::IndexOrName>)>(
+          devices_id_, quiddity::property::IndexOrName(it - capture_devices_.begin()));
     }
   } else {  // save by device
     auto it = std::find_if(capture_devices_.begin(),
@@ -380,8 +381,8 @@ void PulseSrc::on_loading(InfoTree::ptr&& tree) {
           "Saved audio capture not found when loading saved scenario, defaulting to first "
           "available device");
     } else {
-      pmanage<MPtr(&PContainer::set<IndexOrName>)>(devices_id_,
-                                                   IndexOrName(it - capture_devices_.begin()));
+      pmanage<MPtr(&property::PBag::set<quiddity::property::IndexOrName>)>(
+          devices_id_, quiddity::property::IndexOrName(it - capture_devices_.begin()));
     }
   }
 

@@ -20,7 +20,7 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <cassert>
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 #include "switcher/switcher.hpp"
 
 int main() {
@@ -28,9 +28,9 @@ int main() {
     using namespace switcher;
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    assert(switcher::test::full(manager, "cropper"));
+    assert(quiddity::test::full(manager, "cropper"));
 
   }  // end of scope is releasing the manager
   return 0;

@@ -24,7 +24,7 @@
 #include <vector>
 
 namespace switcher {
-namespace quid {
+namespace quiddity {
 class Doc {
  public:
   Doc() = default;
@@ -52,6 +52,6 @@ class Doc {
   std::string author_{};
   std::string license_{};
 };
-}  // namespace quid
+}  // namespace quiddity
 }  // namespace switcher
 #endif

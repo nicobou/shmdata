@@ -44,7 +44,7 @@ PyObject* pyQuiddity::set(pyQuiddityObject* self, PyObject* args, PyObject* kwds
   };
   if (PyBool_Check(value)) {
     if (!pyquid::ungiled(std::function([&]() {
-          return self->quid->prop<MPtr(&PContainer::set_str_str)>(
+          return self->quid->prop<MPtr(&property::PBag::set_str_str)>(
               property, (value == Py_True) ? "true" : "false");
         }))) {
       Py_INCREF(Py_False);
@@ -60,8 +60,8 @@ PyObject* pyQuiddity::set(pyQuiddityObject* self, PyObject* args, PyObject* kwds
     val_str = PyUnicode_AsEncodedString(value, "utf-8", "Error ");
   }
   if (!pyquid::ungiled(std::function([&]() {
-        return self->quid->prop<MPtr(&PContainer::set_str_str)>(property,
-                                                                PyBytes_AS_STRING(val_str));
+        return self->quid->prop<MPtr(&property::PBag::set_str_str)>(property,
+                                                                    PyBytes_AS_STRING(val_str));
       }))) {
     Py_INCREF(Py_False);
     return Py_False;
@@ -82,13 +82,13 @@ PyObject* pyQuiddity::get(pyQuiddityObject* self, PyObject* args, PyObject* kwds
     Py_INCREF(Py_False);
     return Py_False;
   }
-  auto prop_id = self->quid->prop<MPtr(&PContainer::get_id)>(property);
+  auto prop_id = self->quid->prop<MPtr(&property::PBag::get_id)>(property);
   if (0 == prop_id) {
     Py_INCREF(Py_False);
     return Py_False;
   }
   return pyInfoTree::any_to_pyobject(pyquid::ungiled(
-      std::function([&]() { return self->quid->prop<MPtr(&PContainer::get_any)>(prop_id); })));
+      std::function([&]() { return self->quid->prop<MPtr(&property::PBag::get_any)>(prop_id); })));
 }
 
 PyDoc_STRVAR(pyquiddity_invoke_doc,
@@ -137,8 +137,8 @@ PyObject* pyQuiddity::invoke(pyQuiddityObject* self, PyObject* args, PyObject* k
   }
 
   BoolAny res = pyquid::ungiled(std::function([&]() {
-    return self->quid->meth<MPtr(&MContainer::invoke_any)>(
-        self->quid->meth<MPtr(&MContainer::get_id)>(method), tuple_args);
+    return self->quid->meth<MPtr(&method::MBag::invoke_any)>(
+        self->quid->meth<MPtr(&method::MBag::get_id)>(method), tuple_args);
   }));
 
   if (!res) {
@@ -207,8 +207,8 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
   Py_INCREF(user_data);
   self->async_invocations->emplace_back(std::async(
       std::launch::async, [self, cb, user_data, meth = std::string(method), tuple_args]() {
-        auto res = self->quid->meth<MPtr(&MContainer::invoke_any)>(
-            self->quid->meth<MPtr(&MContainer::get_id)>(meth), tuple_args);
+        auto res = self->quid->meth<MPtr(&method::MBag::invoke_any)>(
+            self->quid->meth<MPtr(&method::MBag::get_id)>(meth), tuple_args);
         bool has_gil = (1 == PyGILState_Check()) ? true : false;
         PyThreadState* m_state = nullptr;
         if (!has_gil) {
@@ -340,9 +340,9 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
                                      const char* signal_name,
                                      PyObject* cb,
                                      PyObject* user_data) {
-  auto sig_id = self->quid->sig<MPtr(&SContainer::get_id)>(signal_name);
+  auto sig_id = self->quid->sig<MPtr(&signal::SBag::get_id)>(signal_name);
   if (0 == sig_id) return false;
-  auto reg_id = self->quid->sig<MPtr(&SContainer::subscribe)>(
+  auto reg_id = self->quid->sig<MPtr(&signal::SBag::subscribe)>(
       sig_id, [cb, user_data, self](const InfoTree::ptr& tree) {
         bool has_gil = (1 == PyGILState_Check()) ? true : false;
         PyThreadState* m_state;
@@ -381,10 +381,10 @@ bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
                                        const char* prop_name,
                                        PyObject* cb,
                                        PyObject* user_data) {
-  auto prop_id = self->quid->prop<MPtr(&PContainer::get_id)>(prop_name);
+  auto prop_id = self->quid->prop<MPtr(&property::PBag::get_id)>(prop_name);
   if (0 == prop_id) return false;
   auto reg_id =
-      self->quid->prop<MPtr(&PContainer::subscribe)>(prop_id, [prop_id, cb, self, user_data]() {
+      self->quid->prop<MPtr(&property::PBag::subscribe)>(prop_id, [prop_id, cb, self, user_data]() {
         bool has_gil = (1 == PyGILState_Check()) ? true : false;
         PyThreadState* m_state;
         if (!has_gil) {
@@ -393,14 +393,14 @@ bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
         }
         PyObject* arglist;
         if (user_data)
-          arglist = Py_BuildValue(
-              "(OO)",
-              pyInfoTree::any_to_pyobject(self->quid->prop<MPtr(&PContainer::get_any)>(prop_id)),
-              user_data);
+          arglist = Py_BuildValue("(OO)",
+                                  pyInfoTree::any_to_pyobject(
+                                      self->quid->prop<MPtr(&property::PBag::get_any)>(prop_id)),
+                                  user_data);
         else
-          arglist = Py_BuildValue(
-              "(O)",
-              pyInfoTree::any_to_pyobject(self->quid->prop<MPtr(&PContainer::get_any)>(prop_id)));
+          arglist = Py_BuildValue("(O)",
+                                  pyInfoTree::any_to_pyobject(
+                                      self->quid->prop<MPtr(&property::PBag::get_any)>(prop_id)));
         PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
         PyObject* pyerr = PyErr_Occurred();
         if (pyerr != nullptr) PyErr_Print();
@@ -462,11 +462,11 @@ PyObject* pyQuiddity::subscribe(pyQuiddityObject* self, PyObject* args, PyObject
 }
 
 bool pyQuiddity::unsubscribe_from_property(pyQuiddityObject* self, const char* prop_name) {
-  auto prop_id = self->quid->prop<MPtr(&PContainer::get_id)>(prop_name);
+  auto prop_id = self->quid->prop<MPtr(&property::PBag::get_id)>(prop_name);
   if (0 == prop_id) return false;
   auto found = self->prop_reg->props.find(prop_id);
   if (self->prop_reg->props.end() == found) return false;
-  auto unsubscribed = self->quid->prop<MPtr(&PContainer::unsubscribe)>(prop_id, found->second);
+  auto unsubscribed = self->quid->prop<MPtr(&property::PBag::unsubscribe)>(prop_id, found->second);
   if (!unsubscribed) return false;
   auto cb = self->prop_reg->callbacks.find(prop_id);
   Py_XDECREF(cb->second);
@@ -481,11 +481,11 @@ bool pyQuiddity::unsubscribe_from_property(pyQuiddityObject* self, const char* p
 }
 
 bool pyQuiddity::unsubscribe_from_signal(pyQuiddityObject* self, const char* signal_name) {
-  auto sig_id = self->quid->sig<MPtr(&SContainer::get_id)>(signal_name);
+  auto sig_id = self->quid->sig<MPtr(&signal::SBag::get_id)>(signal_name);
   if (0 == sig_id) return false;
   auto found = self->sig_reg->signals.find(sig_id);
   if (self->sig_reg->signals.end() == found) return false;
-  auto unsubscribed = self->quid->sig<MPtr(&SContainer::unsubscribe)>(sig_id, found->second);
+  auto unsubscribed = self->quid->sig<MPtr(&signal::SBag::unsubscribe)>(sig_id, found->second);
   if (!unsubscribed) return false;
   auto cb = self->sig_reg->callbacks.find(sig_id);
   Py_XDECREF(cb->second);
@@ -561,7 +561,7 @@ PyObject* pyQuiddity::get_signal_id(pyQuiddityObject* self, PyObject* args, PyOb
     Py_INCREF(Py_None);
     return Py_None;
   }
-  return PyLong_FromLong(self->quid->sig<MPtr(&SContainer::get_id)>(signal));
+  return PyLong_FromLong(self->quid->sig<MPtr(&signal::SBag::get_id)>(signal));
 }
 
 PyObject* pyQuiddity::Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/) {
@@ -588,7 +588,7 @@ void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
   // cleaning signal subscription
   for (const auto& it : self->sig_reg->callbacks) {
     auto found = self->sig_reg->signals.find(it.first);
-    self->quid->sig<MPtr(&SContainer::unsubscribe)>(found->first, found->second);
+    self->quid->sig<MPtr(&signal::SBag::unsubscribe)>(found->first, found->second);
     Py_XDECREF(it.second);
   }
   for (auto& it : self->sig_reg->user_data) {
@@ -599,7 +599,7 @@ void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
   // cleaning prop subscription
   for (const auto& it : self->prop_reg->callbacks) {
     auto found = self->prop_reg->props.find(it.first);
-    self->quid->prop<MPtr(&PContainer::unsubscribe)>(found->first, found->second);
+    self->quid->prop<MPtr(&property::PBag::unsubscribe)>(found->first, found->second);
     Py_XDECREF(it.second);
   }
   for (auto& it : self->prop_reg->user_data) {

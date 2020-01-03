@@ -22,38 +22,39 @@
 #include <cassert>
 #include <iostream>
 #include <vector>
-#include "switcher/quiddity/property/property-container.hpp"
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
+#include "switcher/quiddity/property/pbag.hpp"
 
 int main() {
   {
     using namespace switcher;
+    using namespace switcher::quiddity;
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    assert(test::full(manager, "custom-save"));
+    assert(quiddity::test::full(manager, "custom-save"));
     manager->reset_state(true);
 
     InfoTree::ptr save;
 
     {  // check saving a cutom state
       auto test =
-          manager->quids<MPtr(&quid::Container::create)>("custom-save", "test", nullptr).get();
+          manager->quids<MPtr(&quiddity::Container::create)>("custom-save", "test", nullptr).get();
       assert(test);
       auto has_loaded_id =
-          test->prop<MPtr(&PContainer::get_id)>(std::string("has_loaded_custom_state"));
+          test->prop<MPtr(&property::PBag::get_id)>(std::string("has_loaded_custom_state"));
       auto has_saved_id =
-          test->prop<MPtr(&PContainer::get_id)>(std::string("has_saved_custom_state"));
-      assert(!test->prop<MPtr(&PContainer::get<bool>)>(has_loaded_id));
-      assert(!test->prop<MPtr(&PContainer::get<bool>)>(has_saved_id));
+          test->prop<MPtr(&property::PBag::get_id)>(std::string("has_saved_custom_state"));
+      assert(!test->prop<MPtr(&property::PBag::get<bool>)>(has_loaded_id));
+      assert(!test->prop<MPtr(&property::PBag::get<bool>)>(has_saved_id));
 
       // saving the custom state
       save = manager->get_state();
       assert(save);
-      assert(!test->prop<MPtr(&PContainer::get<bool>)>(has_loaded_id));
-      assert(test->prop<MPtr(&PContainer::get<bool>)>(has_saved_id));
+      assert(!test->prop<MPtr(&property::PBag::get<bool>)>(has_loaded_id));
+      assert(test->prop<MPtr(&property::PBag::get<bool>)>(has_saved_id));
     }
 
     // reset manager
@@ -61,12 +62,12 @@ int main() {
 
     {  // check loading
       manager->load_state(save.get());
-      auto loaded = manager->quids<MPtr(&quid::Container::get_qrox_from_name)>("test").get();
+      auto loaded = manager->quids<MPtr(&quiddity::Container::get_qrox_from_name)>("test").get();
       assert(loaded);
-      assert(loaded->prop<MPtr(&PContainer::get<bool>)>(
-          loaded->prop<MPtr(&PContainer::get_id)>(std::string("has_loaded_custom_state"))));
-      assert(!loaded->prop<MPtr(&PContainer::get<bool>)>(
-          loaded->prop<MPtr(&PContainer::get_id)>(std::string("has_saved_custom_state"))));
+      assert(loaded->prop<MPtr(&property::PBag::get<bool>)>(
+          loaded->prop<MPtr(&property::PBag::get_id)>(std::string("has_loaded_custom_state"))));
+      assert(!loaded->prop<MPtr(&property::PBag::get<bool>)>(
+          loaded->prop<MPtr(&property::PBag::get_id)>(std::string("has_saved_custom_state"))));
     }
 
   }  // end of scope is releasing the manager

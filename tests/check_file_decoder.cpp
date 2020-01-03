@@ -21,7 +21,7 @@
 
 #include <shmdata/console-logger.hpp>
 
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 #include "switcher/shmdata/shmdata-follower.hpp"
 
 bool success = false;
@@ -56,10 +56,11 @@ int main() {
   {
     switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("filedecoder");
 
-    if (!switcher::test::full(manager, "filesrc")) return 1;
+    if (!switcher::quiddity::test::full(manager, "filesrc")) return 1;
 
     auto filesrc =
-        manager->quids<MPtr(&switcher::quid::Container::create)>("filesrc", "src", nullptr).get();
+        manager->quids<MPtr(&switcher::quiddity::Container::create)>("filesrc", "src", nullptr)
+            .get();
 
     ::shmdata::ConsoleLogger logger;
     auto reader = std::make_unique<shmdata::Follower>(filesrc->make_shmpath("audio"),
@@ -71,9 +72,9 @@ int main() {
                                                       nullptr,
                                                       &logger);
 
-    filesrc->prop<MPtr(&PContainer::set_str_str)>("loop", "true");
-    filesrc->prop<MPtr(&PContainer::set_str_str)>("play", "true");
-    filesrc->prop<MPtr(&PContainer::set_str_str)>("location", "./oie.mp3");
+    filesrc->prop<MPtr(&quiddity::property::PBag::set_str_str)>("loop", "true");
+    filesrc->prop<MPtr(&quiddity::property::PBag::set_str_str)>("play", "true");
+    filesrc->prop<MPtr(&quiddity::property::PBag::set_str_str)>("location", "./oie.mp3");
 
     wait_until_success();
 

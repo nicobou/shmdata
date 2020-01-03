@@ -31,9 +31,10 @@
 
 namespace switcher {
 namespace quiddities {
+using namespace quiddity;
 class ShmdataToJack : public Quiddity {
  public:
-  ShmdataToJack(quid::Config&&);
+  ShmdataToJack(quiddity::Config&&);
   ~ShmdataToJack() = default;
   ShmdataToJack(const ShmdataToJack&) = delete;
   ShmdataToJack& operator=(const ShmdataToJack&) = delete;
@@ -68,18 +69,18 @@ class ShmdataToJack : public Quiddity {
   // properties
   bool auto_connect_{true};
   std::string connect_to_{"system:playback_%d"};
-  PContainer::prop_id_t connect_to_id_;
+  property::prop_id_t connect_to_id_;
   unsigned int index_{1};
-  PContainer::prop_id_t index_id_{0};
-  PContainer::prop_id_t auto_connect_id_;
+  property::prop_id_t index_id_{0};
+  property::prop_id_t auto_connect_id_;
   bool connect_all_to_first_{false};
-  PContainer::prop_id_t connect_all_to_first_id_;
+  property::prop_id_t connect_all_to_first_id_;
   bool connect_only_first_{false};
-  PContainer::prop_id_t connect_only_first_id_;
+  property::prop_id_t connect_only_first_id_;
   bool do_format_conversion_{true};
-  PContainer::prop_id_t do_format_conversion_id_;
+  property::prop_id_t do_format_conversion_id_;
   bool do_rate_conversion_{true};
-  PContainer::prop_id_t do_rate_conversion_id_;
+  property::prop_id_t do_rate_conversion_id_;
 
   // registering connect/disconnect/can_sink_caps:
   ShmdataConnector shmcntr_;

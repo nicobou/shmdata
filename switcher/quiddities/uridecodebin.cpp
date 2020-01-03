@@ -37,8 +37,8 @@ void Uridecodebin::bus_async(GstMessage* msg) {
   if (loop_) gst_pipeline_->seek(0);
 }
 
-Uridecodebin::Uridecodebin(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
+Uridecodebin::Uridecodebin(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
       on_msg_async_cb_([this](GstMessage* msg) { this->bus_async(msg); }),
       on_msg_sync_cb_(nullptr),
       on_error_cb_([this](GstObject*, GError*) { this->error_ = true; }),
@@ -51,25 +51,25 @@ Uridecodebin::Uridecodebin(quid::Config&& conf)
 
   register_writer_suffix(".*");
 
-  pmanage<MPtr(&PContainer::make_string)>("uri",
-                                          [this](const std::string& val) {
-                                            uri_ = val;
-                                            return to_shmdata();
-                                          },
-                                          [this]() { return uri_; },
-                                          "URI",
-                                          "URI To Be Redirected Into Shmdata(s)",
-                                          "");
+  pmanage<MPtr(&property::PBag::make_string)>("uri",
+                                              [this](const std::string& val) {
+                                                uri_ = val;
+                                                return to_shmdata();
+                                              },
+                                              [this]() { return uri_; },
+                                              "URI",
+                                              "URI To Be Redirected Into Shmdata(s)",
+                                              "");
 
-  pmanage<MPtr(&PContainer::make_bool)>("loop",
-                                        [this](const bool& val) {
-                                          loop_ = val;
-                                          return true;
-                                        },
-                                        [this]() { return loop_; },
-                                        "Looping",
-                                        "Loop media",
-                                        loop_);
+  pmanage<MPtr(&property::PBag::make_bool)>("loop",
+                                            [this](const bool& val) {
+                                              loop_ = val;
+                                              return true;
+                                            },
+                                            [this]() { return loop_; },
+                                            "Looping",
+                                            "Loop media",
+                                            loop_);
 }
 
 void Uridecodebin::init_uridecodebin() {
@@ -259,8 +259,8 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   std::string shmpath = make_shmpath(media_name);
   g_object_set(G_OBJECT(shmdatasink), "socket-path", shmpath.c_str(), nullptr);
 
-  shm_subs_.emplace_back(std::make_unique<GstShmTreeUpdater>(
-      this, shmdatasink, shmpath, GstShmTreeUpdater::Direction::writer));
+  shm_subs_.emplace_back(std::make_unique<switcher::GstShmTreeUpdater>(
+      this, shmdatasink, shmpath, switcher::GstShmTreeUpdater::Direction::writer));
   if (!stream_is_image) gst::utils::sync_state_with_parent(shmdatasink);
 }
 

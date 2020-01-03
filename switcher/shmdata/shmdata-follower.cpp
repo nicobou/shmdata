@@ -22,7 +22,7 @@
 
 namespace switcher {
 
-ShmdataFollower::ShmdataFollower(Quiddity* quid,
+ShmdataFollower::ShmdataFollower(quiddity::Quiddity* quid,
                                  const std::string& path,
                                  ::shmdata::Reader::onData od,
                                  ::shmdata::Reader::onServerConnected osc,
@@ -94,7 +94,7 @@ void ShmdataFollower::update_quid_stats() {
 
 void ShmdataFollower::initialize_tree(const std::string& tree_path) {
   auto tree = quid_->prune_tree(tree_path, false);
-  quid_->graft_tree(tree_path, Quiddity::get_shm_information_template(), false);
+  quid_->graft_tree(tree_path, quiddity::Quiddity::get_shm_information_template(), false);
   if (tree) {
     for (auto& it : tree->get_child_keys(".")) {
       quid_->graft_tree(tree_path_ + "." + it, tree->prune(it), false);

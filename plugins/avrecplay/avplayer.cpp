@@ -36,12 +36,12 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AVPlayer,
 
 const std::string AVPlayer::kShmDestPath = "/tmp/avplayer/";
 
-AVPlayer::AVPlayer(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      StartableQuiddity(this),
+AVPlayer::AVPlayer(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
-  pmanage<MPtr(&PContainer::make_string)>(
+  pmanage<MPtr(&property::PBag::make_string)>(
       "playpath",
       [this](const std::string& val) {
         if (val.empty()) {
@@ -65,16 +65,16 @@ AVPlayer::AVPlayer(quid::Config&& conf)
       "Location of the folder from which the player will read recorded shmdata files",
       playpath_);
 
-  pmanage<MPtr(&PContainer::make_bool)>("paused",
-                                        [this](const bool& val) {
-                                          pause_ = val;
-                                          gst_pipeline_->play(pause_);
-                                          return true;
-                                        },
-                                        []() { return false; },
-                                        "Paused",
-                                        "Toggle paused status of the stream",
-                                        pause_);
+  pmanage<MPtr(&property::PBag::make_bool)>("paused",
+                                            [this](const bool& val) {
+                                              pause_ = val;
+                                              gst_pipeline_->play(pause_);
+                                              return true;
+                                            },
+                                            []() { return false; },
+                                            "Paused",
+                                            "Toggle paused status of the stream",
+                                            pause_);
 
   struct stat st;
   if (stat(AVPlayer::kShmDestPath.c_str(), &st) != 0 || !S_ISDIR(st.st_mode)) {
@@ -148,7 +148,7 @@ bool AVPlayer::start() {
 bool AVPlayer::stop() {
   position_task_.reset();
   gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
-  pmanage<MPtr(&PContainer::remove)>(position_id_);
+  pmanage<MPtr(&property::PBag::remove)>(position_id_);
   position_id_ = 0;
   track_duration_ = 0;
   pause_ = false;
@@ -159,7 +159,7 @@ bool AVPlayer::stop() {
 GstBusSyncReply AVPlayer::bus_async(GstMessage* msg) {
   switch (GST_MESSAGE_TYPE(msg)) {
     case GST_MESSAGE_EOS: {
-      th_->run_async([this]() { pmanage<MPtr(&PContainer::set_str_str)>("started", "false"); });
+      th_->run_async([this]() { pmanage<MPtr(&property::PBag::set_str_str)>("started", "false"); });
       break;
     }
 
@@ -169,28 +169,28 @@ GstBusSyncReply AVPlayer::bus_async(GstMessage* msg) {
             gst_pipeline_->get_pipeline(), GST_FORMAT_TIME, &track_duration_);
 
         if (track_duration_ != 0) {
-          position_id_ =
-              pmanage<MPtr(&PContainer::make_int)>("track_position",
-                                                   [this](const int& pos) {
-                                                     std::lock_guard<std::mutex> lock(seek_mutex_);
-                                                     position_ = pos;
-                                                     seek_called_ = true;
-                                                     gst_pipeline_->play(false);
-                                                     return true;
-                                                   },
-                                                   [this]() { return position_; },
-                                                   "Track position",
-                                                   "Current position of the track",
-                                                   0,
-                                                   0,
-                                                   track_duration_ / GST_SECOND);
+          position_id_ = pmanage<MPtr(&property::PBag::make_int)>(
+              "track_position",
+              [this](const int& pos) {
+                std::lock_guard<std::mutex> lock(seek_mutex_);
+                position_ = pos;
+                seek_called_ = true;
+                gst_pipeline_->play(false);
+                return true;
+              },
+              [this]() { return position_; },
+              "Track position",
+              "Current position of the track",
+              0,
+              0,
+              track_duration_ / GST_SECOND);
           position_task_ = std::make_unique<PeriodicTask<>>(
               [this]() {
                 gint64 position;
                 gst_element_query_position(
                     gst_pipeline_->get_pipeline(), GST_FORMAT_TIME, &position);
                 position_ = static_cast<int>(position / GST_SECOND);
-                pmanage<MPtr(&PContainer::notify)>(position_id_);
+                pmanage<MPtr(&property::PBag::notify)>(position_id_);
 
               },
               std::chrono::milliseconds(500));

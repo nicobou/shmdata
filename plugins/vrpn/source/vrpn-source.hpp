@@ -22,9 +22,9 @@
 
 #include <iomanip>
 #include <memory>
-#include <switcher/quiddity/property/property-container.hpp>
+#include <switcher/quiddity/property/pbag.hpp>
 #include <switcher/quiddity/quiddity.hpp>
-#include <switcher/quiddity/startable-quiddity.hpp>
+#include <switcher/quiddity/startable.hpp>
 #include <switcher/shmdata/shmdata-writer.hpp>
 #include <switcher/utils/periodic-task.hpp>
 #include <switcher/utils/threaded-wrapper.hpp>
@@ -38,9 +38,10 @@ namespace switcher {
 namespace quiddities {
 namespace vrpn {
 
-class VRPNSource : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class VRPNSource : public Quiddity, public Startable {
  public:
-  VRPNSource(quid::Config&&);
+  VRPNSource(quiddity::Config&&);
   ~VRPNSource();
   VRPNSource(const VRPNSource&) = delete;
   VRPNSource& operator=(const VRPNSource&) = delete;
@@ -59,7 +60,7 @@ class VRPNSource : public Quiddity, public StartableQuiddity {
   /**
    * Host property id
    */
-  PContainer::prop_id_t host_id_;
+  property::prop_id_t host_id_;
 
   /**
    * Port property value
@@ -69,7 +70,7 @@ class VRPNSource : public Quiddity, public StartableQuiddity {
   /**
    * Port property id
    */
-  PContainer::prop_id_t port_id_;
+  property::prop_id_t port_id_;
 
   /**
    * Debug property value

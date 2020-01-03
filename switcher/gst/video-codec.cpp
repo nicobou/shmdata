@@ -21,17 +21,17 @@
 #include "../infotree/information-tree-json.hpp"
 #include "../quiddity/property/gprop-to-prop.hpp"
 #include "../quiddity/quiddity.hpp"
-#include "../quiddity/startable-quiddity.hpp"
+#include "../quiddity/startable.hpp"
 #include "../utils/scope-exit.hpp"
 #include "./utils.hpp"
 
 namespace switcher {
 namespace gst {
-VideoCodec::VideoCodec(Quiddity* quid,
-                             const std::string& shmpath,
-                             const std::string& shmpath_encoded)
+VideoCodec::VideoCodec(quiddity::Quiddity* quid,
+                       const std::string& shmpath,
+                       const std::string& shmpath_encoded)
     : quid_(quid),
-      reset_id_(quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool()>>)>(
+      reset_id_(quid_->mmanage<MPtr(&quiddity::method::MBag::make_method<std::function<bool()>>)>(
           "reset",
           infotree::json::deserialize(
               R"(
@@ -53,24 +53,26 @@ VideoCodec::VideoCodec(Quiddity* quid,
                   {"schroenc", "theoraenc"}),
               0),
       codec_id_(install_codec()),
-      param_group_id_(quid_->pmanage<MPtr(&PContainer::make_group)>(
+      param_group_id_(quid_->pmanage<MPtr(&quiddity::property::PBag::make_group)>(
           "codec_params", "Codec configuration", "Codec specific parameters")) {
   set_shm(shmpath);
   reset_codec_configuration();
-  quid_->pmanage<MPtr(&PContainer::set_to_current)>(codec_id_);
+  quid_->pmanage<MPtr(&quiddity::property::PBag::set_to_current)>(codec_id_);
 }
 
 void VideoCodec::hide() {
-  quid_->mmanage<MPtr(&MContainer::disable)>(reset_id_, StartableQuiddity::disabledWhenStartedMsg);
-  quid_->pmanage<MPtr(&PContainer::disable)>(codec_id_, StartableQuiddity::disabledWhenStartedMsg);
-  quid_->pmanage<MPtr(&PContainer::disable)>(param_group_id_,
-                                             StartableQuiddity::disabledWhenStartedMsg);
+  quid_->mmanage<MPtr(&quiddity::method::MBag::disable)>(
+      reset_id_, quiddity::Startable::disabledWhenStartedMsg);
+  quid_->pmanage<MPtr(&quiddity::property::PBag::disable)>(
+      codec_id_, quiddity::Startable::disabledWhenStartedMsg);
+  quid_->pmanage<MPtr(&quiddity::property::PBag::disable)>(
+      param_group_id_, quiddity::Startable::disabledWhenStartedMsg);
 }
 
 void VideoCodec::show() {
-  quid_->mmanage<MPtr(&MContainer::enable)>(reset_id_);
-  quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_);
-  quid_->pmanage<MPtr(&PContainer::enable)>(param_group_id_);
+  quid_->mmanage<MPtr(&quiddity::method::MBag::enable)>(reset_id_);
+  quid_->pmanage<MPtr(&quiddity::property::PBag::enable)>(codec_id_);
+  quid_->pmanage<MPtr(&quiddity::property::PBag::enable)>(param_group_id_);
 }
 
 void VideoCodec::make_bin() {
@@ -105,7 +107,8 @@ bool VideoCodec::remake_codec_elements() {
 
 void VideoCodec::uninstall_codec_properties() {
   for (auto& it : codec_properties_)
-    quid_->pmanage<MPtr(&PContainer::remove)>(quid_->pmanage<MPtr(&PContainer::get_id)>(it));
+    quid_->pmanage<MPtr(&quiddity::property::PBag::remove)>(
+        quid_->pmanage<MPtr(&quiddity::property::PBag::get_id)>(it));
   codec_properties_.clear();
 }
 
@@ -118,10 +121,10 @@ void VideoCodec::make_codec_properties() {
   for (guint i = 0; i < num_properties; i++) {
     auto param_name = g_param_spec_get_name(props[i]);
     if (param_black_list_.end() == param_black_list_.find(param_name)) {
-      quid_->pmanage<MPtr(&PContainer::push_parented)>(
+      quid_->pmanage<MPtr(&quiddity::property::PBag::push_parented)>(
           param_name,
           "codec_params",
-          GPropToProp::to_prop(G_OBJECT(codec_element_.get_raw()), param_name));
+          quiddity::property::to_prop(G_OBJECT(codec_element_.get_raw()), param_name));
       codec_properties_.push_back(param_name);
     }
   }
@@ -131,18 +134,22 @@ bool VideoCodec::reset_codec_configuration() {
   auto& quid = quid_;
   auto* codec_sel = &codecs_;
   codec_sel->select(codecs_.get_index("x264enc"));
-  quid->pmanage<MPtr(&PContainer::notify)>(codec_id_);
+  quid->pmanage<MPtr(&quiddity::property::PBag::notify)>(codec_id_);
   make_codec_properties();
-  quid->pmanage<MPtr(&PContainer::set_str)>(quid->pmanage<MPtr(&PContainer::get_id)>("bitrate"),
-                                            "4096");
-  quid->pmanage<MPtr(&PContainer::set_str)>(quid->pmanage<MPtr(&PContainer::get_id)>("pass"),
-                                            "cbr");
+  quid->pmanage<MPtr(&quiddity::property::PBag::set_str)>(
+      quid->pmanage<MPtr(&quiddity::property::PBag::get_id)>("bitrate"), "4096");
+  quid->pmanage<MPtr(&quiddity::property::PBag::set_str)>(
+      quid->pmanage<MPtr(&quiddity::property::PBag::get_id)>("pass"), "cbr");
   return true;
 }
 
 bool VideoCodec::start() {
   hide();
-  if (0 == quid_->pmanage<MPtr(&PContainer::get<IndexOrName>)>(codec_id_).index_) return true;
+  if (0 == quid_
+               ->pmanage<MPtr(&quiddity::property::PBag::get<quiddity::property::IndexOrName>)>(
+                   codec_id_)
+               .index_)
+    return true;
   shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
       quid_, shm_encoded_.get_raw(), shm_encoded_path_, GstShmTreeUpdater::Direction::writer);
   shmsrc_sub_ = std::make_unique<GstShmTreeUpdater>(
@@ -157,7 +164,10 @@ bool VideoCodec::start() {
 
 bool VideoCodec::stop() {
   show();
-  if (0 != quid_->pmanage<MPtr(&PContainer::get<IndexOrName>)>(codec_id_).index_) {
+  if (0 != quid_
+               ->pmanage<MPtr(&quiddity::property::PBag::get<quiddity::property::IndexOrName>)>(
+                   codec_id_)
+               .index_) {
     shmsink_sub_.reset();
     shmsrc_sub_.reset();
     remake_codec_elements();
@@ -186,10 +196,10 @@ void VideoCodec::set_shm(const std::string& shmpath) {
                nullptr);
 }
 
-PContainer::prop_id_t VideoCodec::install_codec() {
-  return quid_->pmanage<MPtr(&PContainer::make_selection<>)>(
+quiddity::property::prop_id_t VideoCodec::install_codec() {
+  return quid_->pmanage<MPtr(&quiddity::property::PBag::make_selection<>)>(
       "codec",
-      [this](const IndexOrName& val) {
+      [this](const quiddity::property::IndexOrName& val) {
         uninstall_codec_properties();
         codecs_.select(val);
         if (0 == val.index_) return true;
@@ -212,8 +222,8 @@ PContainer::prop_id_t VideoCodec::install_codec() {
 }
 
 void VideoCodec::set_none() {
-  quid_->pmanage<MPtr(&PContainer::set<IndexOrName>)>(
-      quid_->pmanage<MPtr(&PContainer::get_id)>("codec"), 0);
+  quid_->pmanage<MPtr(&quiddity::property::PBag::set<quiddity::property::IndexOrName>)>(
+      quid_->pmanage<MPtr(&quiddity::property::PBag::get_id)>("codec"), 0);
 }
 
 }  // namespace gst

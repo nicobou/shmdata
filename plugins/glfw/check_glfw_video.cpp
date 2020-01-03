@@ -23,15 +23,17 @@
 #include <unistd.h>  // sleep
 #include <cassert>
 #include <iostream>
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 #include "switcher/utils/serialize-string.hpp"
 
 int main() {
   {
     using namespace switcher;
+    using namespace switcher::quiddity;
+
     Switcher::ptr manager = Switcher::make_switcher("glfwtest");
 
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
     if (!glfwInit()) {
       // probably launched from ssh, could not find a display
@@ -39,37 +41,37 @@ int main() {
     }
 
     // creating a video source quiddity
-    auto vqrox = manager->quids<MPtr(&quid::Container::create)>("videotestsrc", "vid", nullptr);
+    auto vqrox = manager->quids<MPtr(&quiddity::Container::create)>("videotestsrc", "vid", nullptr);
     auto vid = vqrox.get();
     assert(vid);
 
-    assert(vid->prop<MPtr(&PContainer::set_str_str)>("started", "true"));
+    assert(vid->prop<MPtr(&property::PBag::set_str_str)>("started", "true"));
 
     // creating a "glfwin" quiddity
-    auto wqrox = manager->quids<MPtr(&quid::Container::create)>("glfwin", "win", nullptr);
+    auto wqrox = manager->quids<MPtr(&quiddity::Container::create)>("glfwin", "win", nullptr);
     auto win = wqrox.get();
     assert(win);
 
     // connecting
-    auto connect_id = win->meth<MPtr(&MContainer::get_id)>("connect");
+    auto connect_id = win->meth<MPtr(&method::MBag::get_id)>("connect");
     assert(0 != connect_id);
-    auto disconnect_id = win->meth<MPtr(&MContainer::get_id)>("disconnect");
+    auto disconnect_id = win->meth<MPtr(&method::MBag::get_id)>("disconnect");
     assert(0 != disconnect_id);
-    assert(win->meth<MPtr(&MContainer::invoke_str)>(
+    assert(win->meth<MPtr(&method::MBag::invoke_str)>(
         connect_id, serialize::esc_for_tuple(vid->make_shmpath("video"))));
     usleep(100000);
-    assert(win->meth<MPtr(&MContainer::invoke_str)>(
+    assert(win->meth<MPtr(&method::MBag::invoke_str)>(
         disconnect_id, serialize::esc_for_tuple(vid->make_shmpath("video"))));
 
     // We destroy it while connected to catch pipeline crashes.
-    assert(win->meth<MPtr(&MContainer::invoke_str)>(
+    assert(win->meth<MPtr(&method::MBag::invoke_str)>(
         connect_id, serialize::esc_for_tuple(vid->make_shmpath("video"))));
 
     usleep(1000000);
 
-    assert(manager->quids<MPtr(&quid::Container::remove)>(wqrox.get_id()));
-    assert(manager->quids<MPtr(&quid::Container::remove)>(vqrox.get_id()));
-    assert(test::full(manager, "glfwin"));
+    assert(manager->quids<MPtr(&quiddity::Container::remove)>(wqrox.get_id()));
+    assert(manager->quids<MPtr(&quiddity::Container::remove)>(vqrox.get_id()));
+    assert(quiddity::test::full(manager, "glfwin"));
   }  // end of scope is releasing the manager
 
   return 0;  // success

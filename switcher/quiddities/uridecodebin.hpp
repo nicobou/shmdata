@@ -29,9 +29,10 @@
 
 namespace switcher {
 namespace quiddities {
+using namespace quiddity;
 class Uridecodebin : public Quiddity {
  public:
-  Uridecodebin(quid::Config&&);
+  Uridecodebin(quiddity::Config&&);
   ~Uridecodebin() = default;
   Uridecodebin(const Uridecodebin&) = delete;
   Uridecodebin& operator=(const Uridecodebin&) = delete;
@@ -50,7 +51,7 @@ class Uridecodebin : public Quiddity {
   bool playing_{true};
   std::string uri_{};
   CounterMap counter_{};
-  std::vector<std::unique_ptr<GstShmTreeUpdater>> shm_subs_{};
+  std::vector<std::unique_ptr<switcher::GstShmTreeUpdater>> shm_subs_{};
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
 
   void init_uridecodebin();

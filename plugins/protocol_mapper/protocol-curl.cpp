@@ -71,7 +71,7 @@ bool ProtocolCurl::make_properties(Quiddity* quid, const InfoTree* tree) {
       continuous = tree->branch_read_data<std::string>(it + ".continuous") == "true";
     }
 
-    quid->pmanage<MPtr(&PContainer::make_bool)>(
+    quid->pmanage<MPtr(&property::PBag::make_bool)>(
         it,
         [this, it, url, continuous](bool val) {
           if (continuous) vals_[it] = val;

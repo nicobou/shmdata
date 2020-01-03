@@ -38,28 +38,28 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SyphonSrc,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-SyphonSrc::SyphonSrc(quid::Config&&) : StartableQuiddity(this) {
+SyphonSrc::SyphonSrc(quiddity::Config&&) : Startable(this) {
   reader_.reset(new SyphonReader(frameCallback, (void*)this));
 
-  pmanage<MPtr(&PContainer::make_string)>("servername",
-                                          [this](const std::string& val) {
-                                            syphon_servername_ = val;
-                                            return true;
-                                          },
-                                          [this]() { return syphon_servername_; },
-                                          "Server name",
-                                          "The name of the Syphon server",
-                                          syphon_servername_);
+  pmanage<MPtr(&property::PBag::make_string)>("servername",
+                                              [this](const std::string& val) {
+                                                syphon_servername_ = val;
+                                                return true;
+                                              },
+                                              [this]() { return syphon_servername_; },
+                                              "Server name",
+                                              "The name of the Syphon server",
+                                              syphon_servername_);
 
-  pmanage<MPtr(&PContainer::make_string)>("appname",
-                                          [this](const std::string& val) {
-                                            syphon_appname_ = val;
-                                            return true;
-                                          },
-                                          [this]() { return syphon_appname_; },
-                                          "App name",
-                                          "The name of the Syphon application",
-                                          syphon_appname_);
+  pmanage<MPtr(&property::PBag::make_string)>("appname",
+                                              [this](const std::string& val) {
+                                                syphon_appname_ = val;
+                                                return true;
+                                              },
+                                              [this]() { return syphon_appname_; },
+                                              "App name",
+                                              "The name of the Syphon application",
+                                              syphon_appname_);
 }
 
 bool SyphonSrc::start() {

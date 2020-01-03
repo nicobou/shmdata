@@ -32,6 +32,7 @@ namespace quiddities {
 /**
  * LTCDiff class,
  */
+using namespace quiddity;
 class LTCDiff : public Quiddity {
  public:
   struct LTCReader {
@@ -52,7 +53,7 @@ class LTCDiff : public Quiddity {
     bool ltc_first_zero_detected{false};  //!< Used during FPS detection to detect start of cycle
   };
 
-  LTCDiff(quid::Config&& conf);
+  LTCDiff(quiddity::Config&& conf);
   ~LTCDiff() = default;
 
  private:
@@ -78,9 +79,9 @@ class LTCDiff : public Quiddity {
   size_t next_index_{0};  //!< Index of the next LTCReader
   std::vector<std::string> display_timecodes_{
       2};  //!< Timecode in string form for display in the inspector
-  PContainer::prop_id_t
+  property::prop_id_t
       display_timecode1_id_{};  //!< Timecode display property of one of the ltc sources
-  PContainer::prop_id_t
+  property::prop_id_t
       display_timecode2_id_{};  //!< Timecode display property of the other ltc source
   std::unique_ptr<PeriodicTask<>> notify_task_{
       nullptr};  //!< Task used to notify the display timecode properties

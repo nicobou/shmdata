@@ -23,8 +23,8 @@ namespace switcher {
 namespace quiddities {
 namespace vrpn {
 
-PContainer::prop_id_t PropertyBase::getPropId() const { return prop_id_; };
-void PropertyBase::setPropId(PContainer::prop_id_t prop_id) { prop_id_ = prop_id; };
+property::prop_id_t PropertyBase::getPropId() const { return prop_id_; };
+void PropertyBase::setPropId(property::prop_id_t prop_id) { prop_id_ = prop_id; };
 
 }  // namespace vrpn
 }  // namespace quiddities

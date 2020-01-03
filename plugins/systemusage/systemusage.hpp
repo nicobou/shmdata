@@ -22,7 +22,7 @@
 
 #include <memory>
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
 #include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
@@ -53,9 +53,10 @@ struct Net {
   long tx_drop{0};
 };
 
+using namespace quiddity;
 class SystemUsage : public Quiddity {
  public:
-  SystemUsage(quid::Config&&);
+  SystemUsage(quiddity::Config&&);
   ~SystemUsage() = default;
   SystemUsage(const SystemUsage&) = delete;
   SystemUsage& operator=(const SystemUsage&) = delete;

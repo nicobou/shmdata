@@ -20,17 +20,17 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <cassert>
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 
 int main() {
   {
     using namespace switcher;
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
     // Currently no more than this because a stream key is needed to fully stream and committing it
     // is unsecure. Functional testing will be manual.
-    assert(switcher::test::full(manager, "rtmp"));
+    assert(switcher::quiddity::test::full(manager, "rtmp"));
   }
   return 0;
 }

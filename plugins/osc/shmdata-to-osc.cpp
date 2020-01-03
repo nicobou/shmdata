@@ -30,48 +30,48 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToOsc,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-ShmdataToOsc::ShmdataToOsc(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      StartableQuiddity(this),
+ShmdataToOsc::ShmdataToOsc(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
       shmcntr_(static_cast<Quiddity*>(this)),
-      port_id_(pmanage<MPtr(&PContainer::make_int)>("port",
-                                                    [this](const int& val) {
-                                                      if (port_ == val) return true;
-                                                      port_ = val;
-                                                      if (!address_) return true;
-                                                      stop();
-                                                      start();
+      port_id_(pmanage<MPtr(&property::PBag::make_int)>("port",
+                                                        [this](const int& val) {
+                                                          if (port_ == val) return true;
+                                                          port_ = val;
+                                                          if (!address_) return true;
+                                                          stop();
+                                                          start();
+                                                          return true;
+                                                        },
+                                                        [this]() { return port_; },
+                                                        "Port",
+                                                        "OSC destination port",
+                                                        port_,
+                                                        1,
+                                                        65536)),
+      host_id_(pmanage<MPtr(&property::PBag::make_string)>("host",
+                                                           [this](const std::string& val) {
+                                                             if (host_ == val) return true;
+                                                             host_ = val;
+                                                             if (!address_) return true;
+                                                             stop();
+                                                             start();
+                                                             return true;
+                                                           },
+                                                           [this]() { return host_; },
+                                                           "Destination Host",
+                                                           "OSC destination host",
+                                                           host_)),
+      autostart_id_(
+          pmanage<MPtr(&property::PBag::make_bool)>("autostart",
+                                                    [this](bool val) {
+                                                      autostart_ = val;
                                                       return true;
                                                     },
-                                                    [this]() { return port_; },
-                                                    "Port",
-                                                    "OSC destination port",
-                                                    port_,
-                                                    1,
-                                                    65536)),
-      host_id_(pmanage<MPtr(&PContainer::make_string)>("host",
-                                                       [this](const std::string& val) {
-                                                         if (host_ == val) return true;
-                                                         host_ = val;
-                                                         if (!address_) return true;
-                                                         stop();
-                                                         start();
-                                                         return true;
-                                                       },
-                                                       [this]() { return host_; },
-                                                       "Destination Host",
-                                                       "OSC destination host",
-                                                       host_)),
-      autostart_id_(
-          pmanage<MPtr(&PContainer::make_bool)>("autostart",
-                                                [this](bool val) {
-                                                  autostart_ = val;
-                                                  return true;
-                                                },
-                                                [this]() { return autostart_; },
-                                                "Autostart",
-                                                "Start processing on shmdata connect or not",
-                                                autostart_)) {
+                                                    [this]() { return autostart_; },
+                                                    "Autostart",
+                                                    "Start processing on shmdata connect or not",
+                                                    autostart_)) {
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
       [this](const std::string&) { return on_shmdata_disconnect(); },
@@ -125,7 +125,7 @@ bool ShmdataToOsc::on_shmdata_connect(const std::string& path) {
       ShmdataFollower::Direction::reader,
       true);
   if (autostart_ && !address_) {
-    return pmanage<MPtr(&PContainer::set_str_str)>("started", "true");
+    return pmanage<MPtr(&property::PBag::set_str_str)>("started", "true");
   }
   return true;
 }
@@ -133,7 +133,7 @@ bool ShmdataToOsc::on_shmdata_connect(const std::string& path) {
 bool ShmdataToOsc::on_shmdata_disconnect() {
   shm_.reset();
   if (autostart_) {
-    return pmanage<MPtr(&PContainer::set_str_str)>("started", "false");
+    return pmanage<MPtr(&property::PBag::set_str_str)>("started", "false");
   }
   return true;
 }

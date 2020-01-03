@@ -20,7 +20,7 @@
 #ifndef SWITCHER_AVREC_HPP
 #define SWITCHER_AVREC_HPP
 
-#include <switcher/quiddity/startable-quiddity.hpp>
+#include <switcher/quiddity/startable.hpp>
 #include "switcher/gst/pipeliner.hpp"
 #include "switcher/shmdata/shmdata-connector.hpp"
 #include "switcher/shmdata/shmdata-follower.hpp"
@@ -28,9 +28,10 @@
 namespace switcher {
 namespace quiddities {
 
-class AVRecorder : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class AVRecorder : public Quiddity, public Startable {
  public:
-  AVRecorder(quid::Config&&);
+  AVRecorder(quiddity::Config&&);
   bool start() final;
   bool stop() final;
 
@@ -50,7 +51,7 @@ class AVRecorder : public Quiddity, public StartableQuiddity {
 
   std::string generate_pipeline_description();
 
-  //! Property custom saving
+  //! property::Property custom saving
   InfoTree::ptr on_saving() final;
   void on_loading(InfoTree::ptr&& tree) final;
   void save_properties();
@@ -75,16 +76,16 @@ class AVRecorder : public Quiddity, public StartableQuiddity {
     std::string shmdata_name_{};   //!< Extraction of the unique shmdata name from the shmpath.
     std::string shmpath_{};        //!< Shmdata file path.
     std::string recfile_{};        //!< Name of the recording file (modulo suffix from record mode).
-    PContainer::prop_id_t recfile_id_{0};
+    property::prop_id_t recfile_id_{0};
     std::string label_{"custom"};  //!< Label suffix for label record mode.
-    PContainer::prop_id_t label_id_{0};
+    property::prop_id_t label_id_{0};
     //!< List of all supported muxers for the shmdata and their respective properties.
     std::map<std::string, ElementProperties> muxers_{};
     //!< Shmdata follower used to detect supported muxers for the shmdata.
     std::unique_ptr<ShmdataFollower> shm_follower_{nullptr};
-    Selection<> muxer_selection_{{"none"}, 0};  //!< Supported muxer selection.
-    PContainer::prop_id_t muxer_selection_id_{0};
-    std::vector<PContainer::prop_id_t> muxer_properties_id_{};
+    property::Selection<> muxer_selection_{{"none"}, 0};  //!< Supported muxer selection.
+    property::prop_id_t muxer_selection_id_{0};
+    std::vector<property::prop_id_t> muxer_properties_id_{};
   };
 
   bool is_valid_{false};      //!< Used to validate that the construction of the quiddity worked
@@ -99,12 +100,13 @@ class AVRecorder : public Quiddity, public StartableQuiddity {
 
   //! Quiddity properties
   std::string recpath_{};                //!< Path where the shmdata will be recorded.
-  PContainer::prop_id_t recpath_id_{0};  //!< Property id of the recording path.
-  //!< Selection of recording modes, can be by date (suffix date at each recording), by label
+  property::prop_id_t recpath_id_{0};    //!< property::Property id of the recording path.
+  //!< property::Selection of recording modes, can be by date (suffix date at each recording), by
+  //!< label
   //!(suffix cusotm label at each recording) or overwrite (rewrite the file if it already exists).
   //! Defaults to date.
-  Selection<> record_mode_{{kRecordModeDate, kRecordModeLabel, kRecordModeOverwrite}, 0};
-  PContainer::prop_id_t record_mode_id_{0};  //!< Property id of the record mode selection.
+  property::Selection<> record_mode_{{kRecordModeDate, kRecordModeLabel, kRecordModeOverwrite}, 0};
+  property::prop_id_t record_mode_id_{0};  //!< property::Property id of the record mode selection.
   std::map<std::string, std::map<std::string, std::string>>
       saved_properties_;  //!< Properties values of the selected muxer for all connected shmdata.
 };

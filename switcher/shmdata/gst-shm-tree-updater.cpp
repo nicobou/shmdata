@@ -22,7 +22,7 @@
 
 namespace switcher {
 
-GstShmTreeUpdater::GstShmTreeUpdater(Quiddity* quid,
+GstShmTreeUpdater::GstShmTreeUpdater(quiddity::Quiddity* quid,
                                      GstElement* element,
                                      const std::string& shmpath,
                                      Direction dir,
@@ -52,7 +52,7 @@ GstShmTreeUpdater::GstShmTreeUpdater(Quiddity* quid,
   auto path = key_ + shmpath_;
   auto tree = quid_->prune_tree(path, false);
   // adding default informations for this shmdata
-  quid_->graft_tree(path, Quiddity::get_shm_information_template(), false);
+  quid_->graft_tree(path, quiddity::Quiddity::get_shm_information_template(), false);
   if (tree) {
     for (auto& it : tree->get_child_keys(".")) {
       quid_->graft_tree(path + "." + it, tree->prune(it), false);

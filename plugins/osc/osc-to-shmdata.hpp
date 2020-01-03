@@ -22,21 +22,22 @@
 
 #include "lo/lo.h"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
 #include "switcher/shmdata/shmdata-writer.hpp"
 
 namespace switcher {
 namespace quiddities {
-class OscToShmdata : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class OscToShmdata : public Quiddity, public Startable {
  public:
-  OscToShmdata(quid::Config&&);
+  OscToShmdata(quiddity::Config&&);
   ~OscToShmdata();
   OscToShmdata(const OscToShmdata&) = delete;
   OscToShmdata& operator=(const OscToShmdata&) = delete;
 
  private:
   int port_{1056};
-  PContainer::prop_id_t port_id_;
+  property::prop_id_t port_id_;
   lo_server_thread osc_thread_{nullptr};
   std::unique_ptr<ShmdataWriter> shm_{nullptr};
 

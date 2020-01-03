@@ -24,12 +24,14 @@
 #include "../../infotree/information-tree.hpp"
 
 namespace switcher {
+namespace quiddity {
+namespace signal {
+using register_id_t = size_t;
+using notify_cb_t = std::function<void(const InfoTree::ptr&)>;
+using sig_id_t = size_t;
 
 class Sig {
  public:
-  using register_id_t = size_t;
-  using notify_cb_t = std::function<void(const InfoTree::ptr&)>;
-  using sig_id_t = size_t;
   Sig() = default;
 
   register_id_t subscribe(notify_cb_t fun) const;
@@ -41,5 +43,7 @@ class Sig {
   mutable std::map<register_id_t, notify_cb_t> to_notify_{};
 };
 
+}  // namespace signal
+}  // namespace quiddity
 }  // namespace switcher
 #endif

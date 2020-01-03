@@ -22,14 +22,15 @@
 
 #include "./portmidi-devices.hpp"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
 #include "switcher/shmdata/shmdata-writer.hpp"
 
 namespace switcher {
 namespace quiddities {
-class PortMidiSource : public Quiddity, public StartableQuiddity, public PortMidi {
+using namespace quiddity;
+class PortMidiSource : public Quiddity, public Startable, public PortMidi {
  public:
-  PortMidiSource(quid::Config&&);
+  PortMidiSource(quiddity::Config&&);
   ~PortMidiSource() = default;
   PortMidiSource(const PortMidiSource&) = delete;
   PortMidiSource& operator=(const PortMidiSource&) = delete;
@@ -45,23 +46,23 @@ class PortMidiSource : public Quiddity, public StartableQuiddity, public PortMid
   int last_data1_{-1};
   int last_data2_{-1};
   // properties
-  PContainer::prop_id_t devices_id_{0};
+  property::prop_id_t devices_id_{0};
   // last midi value property
-  PContainer::prop_id_t last_midi_value_id_{0};
+  property::prop_id_t last_midi_value_id_{0};
   // method ids
-  MContainer::meth_id_t next_midi_event_to_property_id_{0};
-  MContainer::meth_id_t remove_midi_property_id_{0};
-  MContainer::meth_id_t map_midi_to_property_id_{0};
+  method::meth_id_t next_midi_event_to_property_id_{0};
+  method::meth_id_t remove_midi_property_id_{0};
+  method::meth_id_t map_midi_to_property_id_{0};
   // other members
   bool make_property_for_next_midi_event_{false};
   std::string next_property_name_{};
-  std::map<std::string, PContainer::prop_id_t> prop_ids_{};
+  std::map<std::string, property::prop_id_t> prop_ids_{};
   // this is persistent to the quiddity:
   std::map<std::string, MidiPropertyContext> midi_property_contexts_{};
   std::map<std::pair<unsigned int, unsigned int>, std::string> midi_channels_{};
   std::map<std::string, unsigned int> midi_values_{};
   // using property name instead of long name:
-  std::map<std::string, PContainer::prop_id_t> unused_props_specs_{};
+  std::map<std::string, property::prop_id_t> unused_props_specs_{};
 
   bool start() final;
   bool stop() final;

@@ -32,9 +32,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Jérémie Soria");
 
-LTCSource::LTCSource(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      StartableQuiddity(this),
+LTCSource::LTCSource(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
       shmcntr_(static_cast<Quiddity*>(this)) {
   register_writer_suffix("audio");
   jack_client_ = jack_client_open(
@@ -54,9 +54,9 @@ LTCSource::LTCSource(quid::Config&& conf)
     return;
   }
 
-  time_reference_id_ = pmanage<MPtr(&PContainer::make_selection<>)>(
+  time_reference_id_ = pmanage<MPtr(&property::PBag::make_selection<>)>(
       "time_reference",
-      [this](const IndexOrName& val) {
+      [this](const quiddity::property::IndexOrName& val) {
         time_reference_.select(val);
         return true;
       },
@@ -65,9 +65,9 @@ LTCSource::LTCSource(quid::Config&& conf)
       "Select the time reference for the generated timecode",
       time_reference_);
 
-  fps_id_ = pmanage<MPtr(&PContainer::make_selection<double>)>(
+  fps_id_ = pmanage<MPtr(&property::PBag::make_selection<double>)>(
       "fps",
-      [this](const IndexOrName& val) {
+      [this](const quiddity::property::IndexOrName& val) {
         fps_.select(val);
         return true;
       },
@@ -76,7 +76,7 @@ LTCSource::LTCSource(quid::Config&& conf)
       "Desired frame per second setting for the encoder.",
       fps_);
 
-  timeshift_fw_id_ = pmanage<MPtr(&PContainer::make_unsigned_int)>(
+  timeshift_fw_id_ = pmanage<MPtr(&property::PBag::make_unsigned_int)>(
       "timeshift_forward",
       [this](const unsigned int& val) {
         // We increment the initial timecode.
@@ -99,7 +99,7 @@ LTCSource::LTCSource(quid::Config&& conf)
 }
 
 LTCSource::~LTCSource() {
-  if (is_started()) pmanage<MPtr(&PContainer::set_str_str)>("started", "false");
+  if (is_started()) pmanage<MPtr(&property::PBag::set_str_str)>("started", "false");
   jack_client_close(jack_client_);
 }
 
@@ -185,9 +185,9 @@ bool LTCSource::start() {
     return false;
   }
 
-  pmanage<MPtr(&PContainer::disable)>(time_reference_id_, disabledWhenStartedMsg);
-  pmanage<MPtr(&PContainer::disable)>(fps_id_, disabledWhenStartedMsg);
-  pmanage<MPtr(&PContainer::disable)>(timeshift_fw_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(time_reference_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(fps_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(timeshift_fw_id_, disabledWhenStartedMsg);
 
   return true;
 }
@@ -198,9 +198,9 @@ bool LTCSource::stop() {
   shmw_.reset(nullptr);
   samples_.clear();
 
-  pmanage<MPtr(&PContainer::enable)>(time_reference_id_);
-  pmanage<MPtr(&PContainer::enable)>(fps_id_);
-  pmanage<MPtr(&PContainer::enable)>(timeshift_fw_id_);
+  pmanage<MPtr(&property::PBag::enable)>(time_reference_id_);
+  pmanage<MPtr(&property::PBag::enable)>(fps_id_);
+  pmanage<MPtr(&property::PBag::enable)>(timeshift_fw_id_);
 
   return true;
 }
@@ -280,7 +280,7 @@ bool LTCSource::on_shmdata_disconnect() {
   // We don't switch the source of the ticks during the generation so we stop if we get disconnected
   // from the shmdata.
   if (is_started()) {
-    pmanage<MPtr(&PContainer::set_str_str)>("started", "false");
+    pmanage<MPtr(&property::PBag::set_str_str)>("started", "false");
     message("ERROR: LTC generation stopped because the tick source was disconnected (ltcsource).");
     warning("LTC generation stopped because the tick source was disconnected (ltcsource).");
   }

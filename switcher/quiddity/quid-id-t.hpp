@@ -21,8 +21,8 @@
 #define __SWITCHER_QUID_ID_T_H__
 
 namespace switcher {
-namespace quid {
+namespace quiddity {
 using qid_t = size_t;
-}  // namespace quid
+}  // namespace quiddity
 }  // namespace switcher
 #endif

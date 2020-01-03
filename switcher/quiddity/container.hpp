@@ -27,18 +27,18 @@
 #include "../infotree/information-tree-json.hpp"
 #include "../infotree/information-tree.hpp"
 #include "../logger/logged.hpp"
+#include "./config.hpp"
 #include "./documentation-registry.hpp"
+#include "./factory.hpp"
+#include "./qrox.hpp"
 #include "./quid-id-t.hpp"
-#include "./quiddity-configuration.hpp"
-#include "./quiddity-factory.hpp"
-#include "./quiddity-qrox.hpp"
 #include "./quiddity.hpp"
 
 namespace switcher {
 class Switcher;
+namespace quiddity {
 class Bundle;
 
-namespace quid {
 class Container : public log::Logged {
   friend class Bundle;
 
@@ -47,7 +47,7 @@ class Container : public log::Logged {
   using OnCreateRemoveCb = std::function<void(qid_t)>;
 
   static Container::ptr make_container(Switcher* switcher,
-                                       quid::Factory* factory,
+                                       quiddity::Factory* factory,
                                        log::BaseLogger* log);
   Container() = delete;
   virtual ~Container() = default;
@@ -138,7 +138,7 @@ class Container : public log::Logged {
   Switcher* get_switcher() { return switcher_; };
 
  private:
-  Container(Switcher* switcher, quid::Factory* factory, log::BaseLogger* log);
+  Container(Switcher* switcher, quiddity::Factory* factory, log::BaseLogger* log);
 
   // forwarding accessor and return constructor on error
   std::pair<bool, Quiddity*> find_quiddity(qid_t id) const {
@@ -155,7 +155,7 @@ class Container : public log::Logged {
     return ReturnType();
   }
 
-  quid::Factory* factory_;
+  quiddity::Factory* factory_;
   std::map<unsigned int, OnCreateRemoveCb> on_created_cbs_{};
   std::map<unsigned int, OnCreateRemoveCb> on_removed_cbs_{};
   CounterMap counters_{};
@@ -166,6 +166,6 @@ class Container : public log::Logged {
   std::unordered_map<qid_t, std::shared_ptr<Quiddity>> quiddities_{};
 };
 
-}  // namespace quid
+}  // namespace quiddity
 }  // namespace switcher
 #endif

@@ -38,22 +38,22 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Nicolas Bouillot");
 
-HTTPSDPDec::HTTPSDPDec(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
+HTTPSDPDec::HTTPSDPDec(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
       souphttpsrc_("souphttpsrc"),
       sdpdemux_("sdpdemux"),
       decompress_streams_id_(
-          pmanage<MPtr(&PContainer::make_bool)>("decompress",
-                                                [this](const bool& val) {
-                                                  decompress_streams_ = val;
-                                                  return true;
-                                                },
-                                                [this]() { return decompress_streams_; },
-                                                "Decompress",
-                                                "Decompress received streams",
-                                                decompress_streams_)),
-      to_shm_id_(pmanage<MPtr(&PContainer::make_string)>(
+          pmanage<MPtr(&property::PBag::make_bool)>("decompress",
+                                                    [this](const bool& val) {
+                                                      decompress_streams_ = val;
+                                                      return true;
+                                                    },
+                                                    [this]() { return decompress_streams_; },
+                                                    "Decompress",
+                                                    "Decompress received streams",
+                                                    decompress_streams_)),
+      to_shm_id_(pmanage<MPtr(&property::PBag::make_string)>(
           "to_shmdata",
           [this](const std::string& uri) {
             if ("" == uri) return true;
@@ -117,8 +117,8 @@ void HTTPSDPDec::configure_shmdatasink(GstElement* element,
     shmpath = make_shmpath(media_label + "-" + media_name);
 
   g_object_set(G_OBJECT(element), "socket-path", shmpath.c_str(), nullptr);
-  shm_subs_.emplace_back(std::make_unique<GstShmTreeUpdater>(
-      this, element, shmpath, GstShmTreeUpdater::Direction::writer));
+  shm_subs_.emplace_back(std::make_unique<switcher::GstShmTreeUpdater>(
+      this, element, shmpath, switcher::GstShmTreeUpdater::Direction::writer));
 }
 
 void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement* /*object */, GstPad* pad, gpointer user_data) {

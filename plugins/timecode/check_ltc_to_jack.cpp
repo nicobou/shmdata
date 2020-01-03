@@ -20,30 +20,32 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <string>
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 
 int main() {
   bool success = true;
 
   {
     using namespace switcher;
+    using namespace switcher::quiddity;
+
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("../jack");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("../jack");
 
     // creating a jack server
     InfoTree::ptr server_config = InfoTree::make();
     server_config->vgraft("driver", "dummy");
     server_config->vgraft("realtime", false);
-    auto jserv = manager->quids<MPtr(&switcher::quid::Container::create)>(
+    auto jserv = manager->quids<MPtr(&switcher::quiddity::Container::create)>(
         "jackserver", "test_server", server_config.get());
     assert(jserv);
-    assert(jserv.get()->prop<MPtr(&PContainer::set_str_str)>("driver", "dummy"));
-    assert(jserv.get()->prop<MPtr(&PContainer::set_str_str)>("started", "true"));
+    assert(jserv.get()->prop<MPtr(&property::PBag::set_str_str)>("driver", "dummy"));
+    assert(jserv.get()->prop<MPtr(&property::PBag::set_str_str)>("started", "true"));
 
-    if (!test::full(manager, "ltctojack")) success = false;
+    if (!quiddity::test::full(manager, "ltctojack")) success = false;
   }  // end of scope is releasing the manager
 
   if (success)

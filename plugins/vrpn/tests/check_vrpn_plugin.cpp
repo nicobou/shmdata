@@ -19,18 +19,18 @@
 
 #include <cassert>
 #include <vector>
-#include "switcher/quiddity/property/property-container.hpp"
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
+#include "switcher/quiddity/property/pbag.hpp"
 
 int main() {
   {
     using namespace switcher;
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    assert(test::full(manager, "vrpnsrc"));
-    assert(test::full(manager, "vrpnsink"));
+    assert(quiddity::test::full(manager, "vrpnsrc"));
+    assert(quiddity::test::full(manager, "vrpnsink"));
 
   }  // end of scope is releasing the manager
   return 0;

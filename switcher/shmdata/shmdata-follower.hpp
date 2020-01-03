@@ -30,12 +30,11 @@
 #include "./shmdata-switcher-logger.hpp"
 
 namespace switcher {
-class Quiddity;
 
 class ShmdataFollower {
  public:
   enum class Direction { writer, reader };
-  ShmdataFollower(Quiddity* quid,
+  ShmdataFollower(quiddity::Quiddity* quid,
                   const std::string& path,
                   ::shmdata::Reader::onData cb,
                   ::shmdata::Reader::onServerConnected osc = nullptr,
@@ -48,7 +47,7 @@ class ShmdataFollower {
   ShmdataFollower& operator=(const ShmdataFollower&) = delete;
 
  private:
-  Quiddity* quid_;
+  quiddity::Quiddity* quid_;
   // shmdata stats
   ShmdataStat shm_stat_{};
   std::mutex bytes_mutex_{};

@@ -32,53 +32,53 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FileDecoder,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-FileDecoder::FileDecoder(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      location_id_(pmanage<MPtr(&PContainer::make_string)>("location",
-                                                           [this](const std::string& val) {
-                                                             location_ = val;
-                                                             return load_file(location_);
-                                                           },
-                                                           [this]() { return location_; },
-                                                           "File location",
-                                                           "Location of the file to decode",
-                                                           "")),
-      play_id_(pmanage<MPtr(&PContainer::make_bool)>("play",
-                                                     [this](const bool& val) {
-                                                       play_ = val;
-                                                       if (gst_pipeline_) {
-                                                         gst_pipeline_->play(play_);
-                                                       }
-                                                       return true;
-                                                     },
-                                                     [this]() { return play_; },
-                                                     "Play",
-                                                     "Play/pause the player",
-                                                     play_)),
+FileDecoder::FileDecoder(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      location_id_(pmanage<MPtr(&property::PBag::make_string)>("location",
+                                                               [this](const std::string& val) {
+                                                                 location_ = val;
+                                                                 return load_file(location_);
+                                                               },
+                                                               [this]() { return location_; },
+                                                               "File location",
+                                                               "Location of the file to decode",
+                                                               "")),
+      play_id_(pmanage<MPtr(&property::PBag::make_bool)>("play",
+                                                         [this](const bool& val) {
+                                                           play_ = val;
+                                                           if (gst_pipeline_) {
+                                                             gst_pipeline_->play(play_);
+                                                           }
+                                                           return true;
+                                                         },
+                                                         [this]() { return play_; },
+                                                         "Play",
+                                                         "Play/pause the player",
+                                                         play_)),
       cur_pos_id_(0),
-      loop_id_(pmanage<MPtr(&PContainer::make_bool)>("loop",
-                                                     [this](const bool& val) {
-                                                       loop_ = val;
-                                                       if (gst_pipeline_)
-                                                         gst_pipeline_->loop(loop_);
-                                                       return true;
-                                                     },
-                                                     [this]() { return loop_; },
-                                                     "Looping",
-                                                     "Loop media",
-                                                     loop_)),
-      speed_id_(pmanage<MPtr(&PContainer::make_double)>(
+      loop_id_(pmanage<MPtr(&property::PBag::make_bool)>("loop",
+                                                         [this](const bool& val) {
+                                                           loop_ = val;
+                                                           if (gst_pipeline_)
+                                                             gst_pipeline_->loop(loop_);
+                                                           return true;
+                                                         },
+                                                         [this]() { return loop_; },
+                                                         "Looping",
+                                                         "Loop media",
+                                                         loop_)),
+      speed_id_(pmanage<MPtr(&property::PBag::make_double)>(
           "rate",
           [this](const double& val) {
             // just pause if rate is set to 0
             if (0 == val) {
               if (gst_pipeline_) {
                 {
-                  auto lock = pmanage<MPtr(&PContainer::get_lock)>(play_id_);
+                  auto lock = pmanage<MPtr(&property::PBag::get_lock)>(play_id_);
                   play_ = false;
                   gst_pipeline_->play(false);
                 }
-                pmanage<MPtr(&PContainer::notify)>(play_id_);
+                pmanage<MPtr(&property::PBag::notify)>(play_id_);
               }
               return true;
             }
@@ -105,13 +105,13 @@ bool FileDecoder::load_file(const std::string& path) {
   shm_subs_.clear();
   media_loaded_ = false;
   counter_.reset_counter_map();
-  if (0 != cur_pos_id_) pmanage<MPtr(&PContainer::remove)>(cur_pos_id_);
+  if (0 != cur_pos_id_) pmanage<MPtr(&property::PBag::remove)>(cur_pos_id_);
   gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, [this, path](GstMessage* message) {
     if (GST_MESSAGE_TYPE(message) == GST_MESSAGE_DURATION) {
       gint64 duration = GST_CLOCK_TIME_NONE;
       if (gst_element_query_duration(
               GST_ELEMENT(GST_MESSAGE_SRC(message)), GST_FORMAT_TIME, &duration)) {
-        cur_pos_id_ = pmanage<MPtr(&PContainer::make_unsigned_int)>(
+        cur_pos_id_ = pmanage<MPtr(&property::PBag::make_unsigned_int)>(
             "pos",
             [this](const unsigned int& val) {
               cur_pos_ = val;
@@ -192,7 +192,7 @@ bool FileDecoder::load_file(const std::string& path) {
         gint64 position = GST_CLOCK_TIME_NONE;
         if (gst_element_query_position(gst_pipeline_->get_pipeline(), GST_FORMAT_TIME, &position)) {
           if (cur_pos_ != GST_TIME_AS_MSECONDS(position)) {
-            pmanage<MPtr(&PContainer::notify)>(cur_pos_id_);
+            pmanage<MPtr(&property::PBag::notify)>(cur_pos_id_);
           }
         }
       },
@@ -213,8 +213,8 @@ void FileDecoder::configure_shmdatasink(GstElement* element,
     shmpath = make_shmpath(media_label + "-" + media_name);
 
   g_object_set(G_OBJECT(element), "socket-path", shmpath.c_str(), nullptr);
-  shm_subs_.emplace_back(std::make_unique<GstShmTreeUpdater>(
-      this, element, shmpath, GstShmTreeUpdater::Direction::writer));
+  shm_subs_.emplace_back(std::make_unique<switcher::GstShmTreeUpdater>(
+      this, element, shmpath, switcher::GstShmTreeUpdater::Direction::writer));
 }
 
 }  // namespace quiddities

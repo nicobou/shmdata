@@ -26,14 +26,15 @@
 #include "../gst/pipeliner.hpp"
 #include "../gst/unique-gst-element.hpp"
 #include "../quiddity/quiddity.hpp"
-#include "../quiddity/startable-quiddity.hpp"
+#include "../quiddity/startable.hpp"
 #include "../shmdata/gst-shm-tree-updater.hpp"
 
 namespace switcher {
 namespace quiddities {
-class AudioTestSource : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class AudioTestSource : public Quiddity, public Startable {
  public:
-  AudioTestSource(quid::Config&&);
+  AudioTestSource(quiddity::Config&&);
   ~AudioTestSource() = default;
   AudioTestSource(const AudioTestSource&) = delete;
   AudioTestSource& operator=(const AudioTestSource&) = delete;
@@ -43,19 +44,20 @@ class AudioTestSource : public Quiddity, public StartableQuiddity {
   static const int kMaxChannels = 128;
 
   std::string shmpath_{};
-  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
+  std::unique_ptr<switcher::GstShmTreeUpdater> shm_sub_{nullptr};
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
-  Selection<> sample_rate_{{"22050", "32000", "44100", "48000", "88200", "96000", "192000"}, 2};
-  PContainer::prop_id_t sample_rate_id_;
+  property::Selection<> sample_rate_{
+      {"22050", "32000", "44100", "48000", "88200", "96000", "192000"}, 2};
+  property::prop_id_t sample_rate_id_;
   double frequency_{440.0};
-  PContainer::prop_id_t frequency_id_;
+  property::prop_id_t frequency_id_;
   float volume_{0.5f};
-  PContainer::prop_id_t volume_id_;
+  property::prop_id_t volume_id_;
   int channels_{1};
-  PContainer::prop_id_t channels_id_;
-  Selection<> format_;
-  PContainer::prop_id_t format_id_;
-  PContainer::prop_id_t waveforms_id_{0};
+  property::prop_id_t channels_id_;
+  property::Selection<> format_;
+  property::prop_id_t format_id_;
+  property::prop_id_t waveforms_id_{0};
 
   gst::UGstElem audiotestsrc_{"audiotestsrc"};
   gst::UGstElem capsfilter_{"capsfilter"};

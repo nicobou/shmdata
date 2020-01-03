@@ -58,7 +58,7 @@ void AnalogSourceDevice::handleAnalogChannel(int index, double value) {
 
   if (property == nullptr) {
     std::unique_ptr<Property<double>> newProperty = std::make_unique<Property<double>>(value);
-    PContainer::prop_id_t prop_id =
+    property::prop_id_t prop_id =
         createDoubleProperty_(newProperty.get(),
                               id,
                               name_ + " Analog " + std::to_string(index),

@@ -24,7 +24,7 @@
 #include <chrono>
 #include <future>
 #include <vector>
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 #include "switcher/shmdata/gst-shmdata-subscriber.hpp"
 
 #include "cuda/cuda-context.hpp"
@@ -35,6 +35,7 @@ static std::condition_variable cond_var{};
 static std::mutex mut{};
 
 using namespace switcher;
+using namespace switcher::quiddity;
 
 void wait_until_success() {
   // wait 3 seconds
@@ -66,13 +67,13 @@ int main() {
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
     // testing if two nvenc can be created simultaneously
     std::vector<std::string> nvencs;
     for (int i = 0; i < 2; ++i) {
       auto created =
-          manager->quids<MPtr(&quid::Container::create)>("nvenc", std::string(), nullptr);
+          manager->quids<MPtr(&quiddity::Container::create)>("nvenc", std::string(), nullptr);
       if (!created) {
         std::cerr << "nvenc creating failed, i: " << i << '\n';
         return 1;
@@ -80,49 +81,48 @@ int main() {
       nvencs.push_back(created.msg());
     }
     for (auto& it : nvencs)
-      manager->quids<MPtr(&quid::Container::remove)>(
-          manager->quids<MPtr(&quid::Container::get_id)>(it));
+      manager->quids<MPtr(&quiddity::Container::remove)>(
+          manager->quids<MPtr(&quiddity::Container::get_id)>(it));
     nvencs.clear();
 
     // testing if nvenc can be used
     {
       auto created =
-          manager->quids<MPtr(&quid::Container::create)>("nvenc", std::string(), nullptr);
+          manager->quids<MPtr(&quiddity::Container::create)>("nvenc", std::string(), nullptr);
       if (!created) {
         std::cerr << "nvenc encoding could not be created" << '\n';
         return 1;
       }
-      manager->quids<MPtr(&quid::Container::remove)>(
-          manager->quids<MPtr(&quid::Container::get_id)>(created.msg()));
+      manager->quids<MPtr(&quiddity::Container::remove)>(
+          manager->quids<MPtr(&quiddity::Container::get_id)>(created.msg()));
     }
 
     // standard test
-    assert(test::full(manager, "nvenc"));
-    manager->quids<MPtr(&quid::Container::remove)>(
-        manager->quids<MPtr(&quid::Container::get_id)>("nvenc"));
+    assert(quiddity::test::full(manager, "nvenc"));
+    manager->quids<MPtr(&quiddity::Container::remove)>(
+        manager->quids<MPtr(&quiddity::Container::get_id)>("nvenc"));
 
     // testing nvenc is encoding
     auto created =
-        manager->quids<MPtr(&quid::Container::create)>("videotestsrc", std::string(), nullptr);
+        manager->quids<MPtr(&quiddity::Container::create)>("videotestsrc", std::string(), nullptr);
     assert(created);
     auto vid = created.get();
-    vid->prop<MPtr(&PContainer::set_str_str)>("codec", "0");
-    vid->prop<MPtr(&PContainer::set_str_str)>("started", "true");
+    vid->prop<MPtr(&property::PBag::set_str_str)>("codec", "0");
+    vid->prop<MPtr(&property::PBag::set_str_str)>("started", "true");
     auto vid_shmpath = vid->make_shmpath("video");
     assert(!vid_shmpath.empty());
 
     auto nvenc_created =
-        manager->quids<MPtr(&quid::Container::create)>("nvenc", std::string(), nullptr);
+        manager->quids<MPtr(&quiddity::Container::create)>("nvenc", std::string(), nullptr);
     assert(nvenc_created);
     auto nvenc = nvenc_created.get();
     assert(nvenc);
-    nvenc->meth<MPtr(&MContainer::invoke_str)>(
-        nvenc->meth<MPtr(&switcher::MContainer::get_id)>("connect"),
-        serialize::esc_for_tuple(vid_shmpath));
+    nvenc->meth<MPtr(&method::MBag::invoke_str)>(
+        nvenc->meth<MPtr(&method::MBag::get_id)>("connect"), serialize::esc_for_tuple(vid_shmpath));
 
     // tracking nvenc shmdata writer byterate for evaluating success
-    auto registration_id = nvenc->sig<MPtr(&switcher::SContainer::subscribe_by_name)>(
-        "on-tree-grafted", [&](const switcher::InfoTree::ptr& tree) {
+    auto registration_id = nvenc->sig<MPtr(&signal::SBag::subscribe_by_name)>(
+        "on-tree-grafted", [&](const InfoTree::ptr& tree) {
           size_t byte_rate = nvenc->tree<MPtr(&InfoTree::branch_get_value)>(
               tree->get_value().as<std::string>() + ".byte_rate");
           if (0 != byte_rate) {
@@ -132,8 +132,8 @@ int main() {
     assert(0 != registration_id);
 
     wait_until_success();
-    assert(nvenc->sig<MPtr(&switcher::SContainer::unsubscribe_by_name)>("on-tree-grafted",
-                                                                        registration_id));
+    assert(
+        nvenc->sig<MPtr(&signal::SBag::unsubscribe_by_name)>("on-tree-grafted", registration_id));
   }  // end of scope is releasing the manager
 
   if (!success) {
@@ -147,19 +147,19 @@ int main() {
     success = false;
     // starting a new test: nvenc data can be decoded
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
     manager->conf<MPtr(&Configuration::from_file)>("./check_decode.json");
 
     auto nvdec_created =
-        manager->quids<MPtr(&quid::Container::create)>("nvencdecoder", "nvencdecoder", nullptr);
+        manager->quids<MPtr(&quiddity::Container::create)>("nvencdecoder", "nvencdecoder", nullptr);
     assert(nvdec_created);
     auto nvdec = nvdec_created.get();
     assert(nvdec);
-    nvdec->prop<MPtr(&PContainer::set_str_str)>("started", "true");
-    nvdec->prop<MPtr(&PContainer::subscribe)>(
-        nvdec->prop<MPtr(&PContainer::get_id)>("dummy/frame-received"), [&]() {
-          success = nvdec->prop<MPtr(&PContainer::get<bool>)>(
-              nvdec->prop<MPtr(&PContainer::get_id)>("dummy/frame-received"));
+    nvdec->prop<MPtr(&property::PBag::set_str_str)>("started", "true");
+    nvdec->prop<MPtr(&property::PBag::subscribe)>(
+        nvdec->prop<MPtr(&property::PBag::get_id)>("dummy/frame-received"), [&]() {
+          success = nvdec->prop<MPtr(&property::PBag::get<bool>)>(
+              nvdec->prop<MPtr(&property::PBag::get_id)>("dummy/frame-received"));
           notify_success();
         });
 

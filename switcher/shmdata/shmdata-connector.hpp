@@ -26,7 +26,9 @@
 #include <vector>
 
 namespace switcher {
+namespace quiddity {
 class Quiddity;
+}  // namespace quiddity
 
 class ShmdataConnector {
  public:
@@ -35,7 +37,7 @@ class ShmdataConnector {
   using OnDisconnectAll = std::function<bool()>;
   using CanSinkCaps = std::function<bool(const std::string& /*caps*/)>;
 
-  explicit ShmdataConnector(Quiddity* quid);
+  explicit ShmdataConnector(quiddity::Quiddity* quid);
   ShmdataConnector() = delete;
   virtual ~ShmdataConnector(){};
   ShmdataConnector(const ShmdataConnector&) = delete;
@@ -48,7 +50,7 @@ class ShmdataConnector {
   static const std::string disabledWhenConnectedMsg;
 
  private:
-  Quiddity* quid_{nullptr};
+  quiddity::Quiddity* quid_{nullptr};
   // methods to install
   OnConnect on_connect_cb_{nullptr};
   OnDisconnect on_disconnect_cb_{nullptr};

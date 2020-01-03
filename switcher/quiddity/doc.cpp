@@ -17,18 +17,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./quiddity-documentation.hpp"
+#include "./doc.hpp"
 #include <iostream>
 #include <sstream>
 
 namespace switcher {
-quid::Doc::Doc(const std::string& long_name,
-               const std::string& class_name,
-               const std::string& category,
-               const std::string& tags,
-               const std::string& short_description,
-               const std::string& license,
-               const std::string& author)
+namespace quiddity {
+quiddity::Doc::Doc(const std::string& long_name,
+                   const std::string& class_name,
+                   const std::string& category,
+                   const std::string& tags,
+                   const std::string& short_description,
+                   const std::string& license,
+                   const std::string& author)
     : category_(category),
       class_name_(class_name),
       description_(short_description),
@@ -42,18 +43,19 @@ quid::Doc::Doc(const std::string& long_name,
   while (std::getline(ss, tok, '/')) tags_.push_back(tok);
 }
 
-std::string quid::Doc::get_category() const { return category_; }
+std::string quiddity::Doc::get_category() const { return category_; }
 
-std::string quid::Doc::get_class_name() const { return class_name_; }
+std::string quiddity::Doc::get_class_name() const { return class_name_; }
 
-std::string quid::Doc::get_description() const { return description_; }
+std::string quiddity::Doc::get_description() const { return description_; }
 
-std::string quid::Doc::get_long_name() const { return long_name_; }
+std::string quiddity::Doc::get_long_name() const { return long_name_; }
 
-std::string quid::Doc::get_author() const { return author_; }
+std::string quiddity::Doc::get_author() const { return author_; }
 
-std::string quid::Doc::get_license() const { return license_; }
+std::string quiddity::Doc::get_license() const { return license_; }
 
-std::vector<std::string> quid::Doc::get_tags() const { return tags_; };
+std::vector<std::string> quiddity::Doc::get_tags() const { return tags_; };
 
+}  // namespace quiddity
 }  // namespace switcher

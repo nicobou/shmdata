@@ -24,14 +24,15 @@
 #include <string>
 #include "./syphonreader.hpp"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
 #include "switcher/shmdata/shmdata-writer.hpp"
 
 namespace switcher {
 namespace quiddities {
-class SyphonSrc : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class SyphonSrc : public Quiddity, public Startable {
  public:
-  SyphonSrc(quid::Config&&);
+  SyphonSrc(quiddity::Config&&);
   ~SyphonSrc() = default;
   SyphonSrc(const SyphonSrc&) = delete;
   SyphonSrc& operator=(const SyphonSrc&) = delete;

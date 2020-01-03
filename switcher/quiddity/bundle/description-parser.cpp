@@ -17,11 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./bundle-description-parser.hpp"
+#include "./description-parser.hpp"
 #include <iostream>
 #include <regex>
 
 namespace switcher {
+namespace quiddity {
 namespace bundle {
 DescriptionParser::DescriptionParser(const std::string& description,
                                      const std::vector<std::string>& valid_types)
@@ -279,4 +280,5 @@ std::string DescriptionParser::prepare_item(const std::string& item) const {
 }
 
 }  // namespace bundle
+}  // namespace quiddity
 }  // namespace switcher

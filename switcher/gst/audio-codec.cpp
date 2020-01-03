@@ -21,15 +21,15 @@
 #include "../infotree/information-tree-json.hpp"
 #include "../quiddity/property/gprop-to-prop.hpp"
 #include "../quiddity/quiddity.hpp"
-#include "../quiddity/startable-quiddity.hpp"
+#include "../quiddity/startable.hpp"
 #include "../utils/scope-exit.hpp"
 #include "./utils.hpp"
 
 namespace switcher {
 namespace gst {
-AudioCodec::AudioCodec(Quiddity* quid)
+AudioCodec::AudioCodec(quiddity::Quiddity* quid)
     : quid_(quid),
-      reset_id_(quid_->mmanage<MPtr(&MContainer::make_method<std::function<bool()>>)>(
+      reset_id_(quid_->mmanage<MPtr(&quiddity::method::MBag::make_method<std::function<bool()>>)>(
           "reset",
           infotree::json::deserialize(
               R"(
@@ -50,16 +50,18 @@ AudioCodec::AudioCodec(Quiddity* quid)
 }
 
 void AudioCodec::hide() {
-  quid_->mmanage<MPtr(&MContainer::disable)>(reset_id_, StartableQuiddity::disabledWhenStartedMsg);
-  quid_->pmanage<MPtr(&PContainer::disable)>(codec_id_, StartableQuiddity::disabledWhenStartedMsg);
-  quid_->pmanage<MPtr(&PContainer::disable)>(group_codec_id_,
-                                             StartableQuiddity::disabledWhenStartedMsg);
+  quid_->mmanage<MPtr(&quiddity::method::MBag::disable)>(
+      reset_id_, quiddity::Startable::disabledWhenStartedMsg);
+  quid_->pmanage<MPtr(&quiddity::property::PBag::disable)>(
+      codec_id_, quiddity::Startable::disabledWhenStartedMsg);
+  quid_->pmanage<MPtr(&quiddity::property::PBag::disable)>(
+      group_codec_id_, quiddity::Startable::disabledWhenStartedMsg);
 }
 
 void AudioCodec::show() {
-  quid_->mmanage<MPtr(&MContainer::enable)>(reset_id_);
-  quid_->pmanage<MPtr(&PContainer::enable)>(codec_id_);
-  quid_->pmanage<MPtr(&PContainer::enable)>(group_codec_id_);
+  quid_->mmanage<MPtr(&quiddity::method::MBag::enable)>(reset_id_);
+  quid_->pmanage<MPtr(&quiddity::property::PBag::enable)>(codec_id_);
+  quid_->pmanage<MPtr(&quiddity::property::PBag::enable)>(group_codec_id_);
 }
 
 void AudioCodec::make_bin() {
@@ -97,17 +99,20 @@ bool AudioCodec::remake_codec_elements() {
 
 void AudioCodec::uninstall_codec_properties() {
   for (auto& it : codec_properties_)
-    quid_->pmanage<MPtr(&PContainer::remove)>(quid_->pmanage<MPtr(&PContainer::get_id)>(it));
+    quid_->pmanage<MPtr(&quiddity::property::PBag::remove)>(
+        quid_->pmanage<MPtr(&quiddity::property::PBag::get_id)>(it));
   codec_properties_.clear();
 }
 
 void AudioCodec::toggle_codec_properties(bool enable) {
   for (auto& it : codec_properties_) {
     if (enable)
-      quid_->pmanage<MPtr(&PContainer::enable)>(quid_->pmanage<MPtr(&PContainer::get_id)>(it));
+      quid_->pmanage<MPtr(&quiddity::property::PBag::enable)>(
+          quid_->pmanage<MPtr(&quiddity::property::PBag::get_id)>(it));
     else
-      quid_->pmanage<MPtr(&PContainer::disable)>(quid_->pmanage<MPtr(&PContainer::get_id)>(it),
-                                                 StartableQuiddity::disabledWhenStartedMsg);
+      quid_->pmanage<MPtr(&quiddity::property::PBag::disable)>(
+          quid_->pmanage<MPtr(&quiddity::property::PBag::get_id)>(it),
+          quiddity::Startable::disabledWhenStartedMsg);
   }
 }
 
@@ -116,15 +121,15 @@ void AudioCodec::make_codec_properties() {
   GParamSpec** props =
       g_object_class_list_properties(G_OBJECT_GET_CLASS(codec_element_.get_raw()), &num_properties);
   On_scope_exit { g_free(props); };
-  group_codec_id_ = quid_->pmanage<MPtr(&PContainer::make_group)>(
+  group_codec_id_ = quid_->pmanage<MPtr(&quiddity::property::PBag::make_group)>(
       "codec_config", "Audio codec properties", "Configure the codec");
   for (guint i = 0; i < num_properties; i++) {
     auto param_name = g_param_spec_get_name(props[i]);
     if (param_black_list_.end() == param_black_list_.find(param_name)) {
-      quid_->pmanage<MPtr(&PContainer::push_parented)>(
+      quid_->pmanage<MPtr(&quiddity::property::PBag::push_parented)>(
           param_name,
           "codec_config",
-          GPropToProp::to_prop(G_OBJECT(codec_element_.get_raw()), param_name));
+          quiddity::property::to_prop(G_OBJECT(codec_element_.get_raw()), param_name));
       codec_properties_.push_back(param_name);
     }
   }
@@ -132,9 +137,9 @@ void AudioCodec::make_codec_properties() {
 
 bool AudioCodec::reset_codec_configuration() {
   {
-    auto lock = quid_->pmanage<MPtr(&PContainer::get_lock)>(codec_id_);
-    codecs_.select(IndexOrName("Opus audio encoder"));
-    quid_->pmanage<MPtr(&PContainer::notify)>(codec_id_);
+    auto lock = quid_->pmanage<MPtr(&quiddity::property::PBag::get_lock)>(codec_id_);
+    codecs_.select(quiddity::property::IndexOrName("Opus audio encoder"));
+    quid_->pmanage<MPtr(&quiddity::property::PBag::notify)>(codec_id_);
   }
   return true;
 }
@@ -195,11 +200,11 @@ bool AudioCodec::stop() {
   return true;
 }
 
-PContainer::prop_id_t AudioCodec::install_codec() {
-  codecs_.select(IndexOrName("Opus audio encoder"));
-  return quid_->pmanage<MPtr(&PContainer::make_selection<>)>(
+quiddity::property::prop_id_t AudioCodec::install_codec() {
+  codecs_.select(quiddity::property::IndexOrName("Opus audio encoder"));
+  return quid_->pmanage<MPtr(&quiddity::property::PBag::make_selection<>)>(
       "codec",
-      [this](const IndexOrName& val) {
+      [this](const quiddity::property::IndexOrName& val) {
         uninstall_codec_properties();
         codecs_.select(val);
         if (0 == val.index_) return true;

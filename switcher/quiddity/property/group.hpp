@@ -27,6 +27,8 @@
 #include <utility>
 
 namespace switcher {
+namespace quiddity {
+namespace property {
 class Group {
  public:
   static std::pair<bool, Group> from_string(const std::string&) {
@@ -39,5 +41,7 @@ class Group {
   }
 };
 
+}  // namespace property
+}  // namespace quiddity
 }  // namespace switcher
 #endif

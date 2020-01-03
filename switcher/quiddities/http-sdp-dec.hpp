@@ -32,9 +32,10 @@
 
 namespace switcher {
 namespace quiddities {
+using namespace quiddity;
 class HTTPSDPDec : public Quiddity {
  public:
-  HTTPSDPDec(quid::Config&&);
+  HTTPSDPDec(quiddity::Config&&);
 
  private:
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
@@ -43,7 +44,7 @@ class HTTPSDPDec : public Quiddity {
   bool is_dataurisrc_{false};
   guint retry_delay_{1000};
   bool decompress_streams_{true};
-  PContainer::prop_id_t decompress_streams_id_;
+  property::prop_id_t decompress_streams_id_;
   // will maintain a max of two gst::GSourceWrapper in order to avoid destructing
   // itself from inside the GSource
   std::list<gst::GSourceWrapper::uptr> on_error_{};
@@ -51,8 +52,8 @@ class HTTPSDPDec : public Quiddity {
   std::list<std::unique_ptr<gst::DecodebinToShmdata>> decodebins_{};
   std::string src_element_class_{"souphttpsrc"};
   CounterMap counter_{};
-  std::vector<std::unique_ptr<GstShmTreeUpdater>> shm_subs_{};
-  PContainer::prop_id_t to_shm_id_;
+  std::vector<std::unique_ptr<switcher::GstShmTreeUpdater>> shm_subs_{};
+  property::prop_id_t to_shm_id_;
   bool to_shmdata(std::string uri);
   void init_httpsdpdec();
   void destroy_httpsdpdec();

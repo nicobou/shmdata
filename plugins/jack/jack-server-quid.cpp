@@ -30,9 +30,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackServerQuid,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-JackServerQuid::JackServerQuid(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      StartableQuiddity(this),
+JackServerQuid::JackServerQuid(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
       jack_server_(get_log_ptr(),
                    config<MPtr(&InfoTree::branch_get_value)>("name"),
                    config<MPtr(&InfoTree::branch_get_value)>("driver"),
@@ -40,19 +40,19 @@ JackServerQuid::JackServerQuid(quid::Config&& conf)
                        ? false
                        : config<MPtr(&InfoTree::branch_get_value)>("realtime").as<bool>()),
       config_(jack_server_.get_config()),
-      driver_config_id_(pmanage<MPtr(&PContainer::make_group)>(
+      driver_config_id_(pmanage<MPtr(&property::PBag::make_group)>(
           "driver_config",
           "Driver configuration",
           "Select if you want to configure the audio driver used by jack.")),
-      advanced_config_id_(pmanage<MPtr(&PContainer::make_group)>(
+      advanced_config_id_(pmanage<MPtr(&property::PBag::make_group)>(
           "advanced_config",
           "Advanced configuration",
           "Select if you want to configure jack's advanced configuration.")),
       driver_enum_(jack_server_.get_driver_names(), jack_server_.get_driver_index()),
-      driver_id_(pmanage<MPtr(&PContainer::make_parented_selection<>)>(
+      driver_id_(pmanage<MPtr(&property::PBag::make_parented_selection<>)>(
           "driver",
           "driver_config",
-          [this](const IndexOrName& val) {
+          [this](const quiddity::property::IndexOrName& val) {
             driver_enum_.select(val);
             if (!jack_server_.update_driver(driver_enum_.get_current())) return false;
             renew_driver_properties();
@@ -76,7 +76,7 @@ JackServerQuid::JackServerQuid(quid::Config&& conf)
 
 void JackServerQuid::renew_driver_properties() {
   // removing old properties
-  for (const auto& it : driver_params_) pmanage<MPtr(&PContainer::remove)>(it);
+  for (const auto& it : driver_params_) pmanage<MPtr(&property::PBag::remove)>(it);
 
   // creating new driver related properties
   auto params = config_->get_child_keys("driver.params");
@@ -90,12 +90,12 @@ bool JackServerQuid::start() { return jack_server_.start(); }
 
 bool JackServerQuid::stop() { return jack_server_.stop(); }
 
-PContainer::prop_id_t JackServerQuid::make_param(const std::string& config_path,
-                                                 const std::string& parent) {
+property::prop_id_t JackServerQuid::make_param(const std::string& config_path,
+                                               const std::string& parent) {
   auto type = config_->branch_get_value(config_path + ".type").as<std::string>();
   auto name = config_->branch_get_value(config_path + ".name").as<std::string>();
   if (type == "bool") {
-    return pmanage<MPtr(&PContainer::make_parented_bool)>(
+    return pmanage<MPtr(&property::PBag::make_parented_bool)>(
         name,
         parent,
         [this, config_path](const bool& val) {
@@ -109,7 +109,7 @@ PContainer::prop_id_t JackServerQuid::make_param(const std::string& config_path,
         config_->branch_get_value(config_path + ".value").as<bool>());
   }
   if (type == "string") {
-    return pmanage<MPtr(&PContainer::make_parented_string)>(
+    return pmanage<MPtr(&property::PBag::make_parented_string)>(
         name,
         parent,
         [this, config_path](const std::string& val) {
@@ -129,7 +129,7 @@ PContainer::prop_id_t JackServerQuid::make_param(const std::string& config_path,
     if (config_min.not_null()) min = config_min;
     auto config_max = config_->branch_get_value(config_path + ".max");
     if (config_max.not_null()) max = config_max;
-    return pmanage<MPtr(&PContainer::make_parented_int)>(
+    return pmanage<MPtr(&property::PBag::make_parented_int)>(
         name,
         parent,
         [this, config_path](const int& val) {
@@ -151,7 +151,7 @@ PContainer::prop_id_t JackServerQuid::make_param(const std::string& config_path,
     if (config_min.not_null()) min = config_min;
     auto config_max = config_->branch_get_value(config_path + ".max");
     if (config_max.not_null()) max = config_max;
-    return pmanage<MPtr(&PContainer::make_parented_unsigned_int)>(
+    return pmanage<MPtr(&property::PBag::make_parented_unsigned_int)>(
         name,
         parent,
         [this, config_path](const uint& val) {
@@ -174,14 +174,15 @@ PContainer::prop_id_t JackServerQuid::make_param(const std::string& config_path,
     std::vector<std::string> value_names;
     for (const auto& it : config_->copy_leaf_values(config_path + ".enum"))
       value_names.push_back(it);
-    selections_.emplace(config_path, Selection<>(std::move(value_names), std::move(values), 0));
+    selections_.emplace(config_path,
+                        property::Selection<>(std::move(value_names), std::move(values), 0));
     selections_.at(config_path)
         .select(config_->branch_get_value(config_path + ".value").as<std::string>());
     // return created property
-    return pmanage<MPtr(&PContainer::make_parented_selection<>)>(
+    return pmanage<MPtr(&property::PBag::make_parented_selection<>)>(
         name,
         parent,
-        [this, config_path](const IndexOrName& val) {
+        [this, config_path](const quiddity::property::IndexOrName& val) {
           auto selection = selections_.at(config_path);
           selection.select(val);
           config_->branch_set_value(config_path + ".value", selection.get_current_index());
@@ -193,7 +194,7 @@ PContainer::prop_id_t JackServerQuid::make_param(const std::string& config_path,
         selections_.at(config_path));
   }
   if (type == "char") {
-    return pmanage<MPtr(&PContainer::make_parented_char)>(
+    return pmanage<MPtr(&property::PBag::make_parented_char)>(
         name,
         parent,
         [this, config_path](const char& val) {

@@ -24,18 +24,19 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "switcher/quiddity/quiddity-container.hpp"
+#include "switcher/quiddity/container.hpp"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
 #include "switcher/shmdata/shmdata-follower.hpp"
 #include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
 namespace quiddities {
-class Watcher : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class Watcher : public Quiddity, public Startable {
  public:
   enum class DirectoryStatus { ERROR, ABSENT, PRESENT, IS_FILE };
-  Watcher(quid::Config&&);
+  Watcher(quiddity::Config&&);
   ~Watcher();
   Watcher(const Watcher&) = delete;
   Watcher& operator=(const Watcher&) = delete;
@@ -44,9 +45,9 @@ class Watcher : public Quiddity, public StartableQuiddity {
   std::vector<std::tuple<std::string, std::unique_ptr<ShmdataFollower>>> followers_;
   std::unique_ptr<PeriodicTask<>> readEventsTask_;
   std::string directory_{"."};
-  PContainer::prop_id_t directory_id_;
+  property::prop_id_t directory_id_;
   bool create_dir_{false};
-  PContainer::prop_id_t create_dir_id_;
+  property::prop_id_t create_dir_id_;
 
   // Shmdata methods
   bool start() final;

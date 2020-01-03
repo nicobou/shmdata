@@ -34,9 +34,10 @@
 
 namespace switcher {
 namespace quiddities {
+using namespace quiddity;
 class PulseSink : public Quiddity {
  public:
-  PulseSink(quid::Config&&);
+  PulseSink(quiddity::Config&&);
   ~PulseSink();
   PulseSink(const PulseSink&) = delete;
   PulseSink& operator=(const PulseSink&) = delete;
@@ -74,10 +75,10 @@ class PulseSink : public Quiddity {
   std::condition_variable devices_cond_{};
   bool connected_to_pulse_{false};
   //  property:
-  Selection<> devices_enum_{{"none"}, 0};
-  PContainer::prop_id_t devices_enum_id_{0};
-  PContainer::prop_id_t volume_id_{0};
-  PContainer::prop_id_t mute_id_{0};
+  property::Selection<> devices_enum_{{"none"}, 0};
+  property::prop_id_t devices_enum_id_{0};
+  property::prop_id_t volume_id_{0};
+  property::prop_id_t mute_id_{0};
   // quit
   std::mutex quit_mutex_{};
   std::condition_variable quit_cond_{};

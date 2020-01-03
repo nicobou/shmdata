@@ -31,9 +31,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(MethodQuid,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-MethodQuid::MethodQuid(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      hello_id_(mmanage<MPtr(&MContainer::make_method<my_method_t>)>(
+MethodQuid::MethodQuid(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      hello_id_(mmanage<MPtr(&method::MBag::make_method<my_method_t>)>(
           "hello_",
           infotree::json::deserialize(
               R"(
@@ -51,7 +51,7 @@ MethodQuid::MethodQuid(quid::Config&& conf)
           [&](const std::string& str) {
             return std::string("hello ") + str + " and count is " + std::to_string(count_);
           })),
-      count_id_(mmanage<MPtr(&MContainer::make_method<std::function<void()>>)>(
+      count_id_(mmanage<MPtr(&method::MBag::make_method<std::function<void()>>)>(
           "count_",
           infotree::json::deserialize(
               R"(
@@ -62,7 +62,7 @@ MethodQuid::MethodQuid(quid::Config&& conf)
                   }
               )"),
           [&]() { ++count_; })),
-      many_args_id_(mmanage<MPtr(&MContainer::make_method<many_args_t>)>(
+      many_args_id_(mmanage<MPtr(&method::MBag::make_method<many_args_t>)>(
           "many_args_",
           infotree::json::deserialize(
               R"(

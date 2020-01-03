@@ -32,28 +32,29 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Watcher,
                                      "LGPL",
                                      "Francis Lecavalier");
 
-Watcher::Watcher(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      StartableQuiddity(this),
-      directory_id_(pmanage<MPtr(&PContainer::make_string)>("directory",
-                                                            [this](const std::string& val) {
-                                                              directory_ = val;
-                                                              return true;
-                                                            },
-                                                            [this]() { return directory_; },
-                                                            "Directory Path",
-                                                            "Full path of the directory to watch",
-                                                            directory_)),
-      create_dir_id_(
-          pmanage<MPtr(&PContainer::make_bool)>("create_directory",
-                                                [this](bool val) {
-                                                  create_dir_ = val;
-                                                  return true;
-                                                },
-                                                [this]() { return create_dir_; },
-                                                "Create directory",
-                                                "Create the watched directory if it doesn't exist",
-                                                create_dir_)) {}
+Watcher::Watcher(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
+      directory_id_(
+          pmanage<MPtr(&property::PBag::make_string)>("directory",
+                                                      [this](const std::string& val) {
+                                                        directory_ = val;
+                                                        return true;
+                                                      },
+                                                      [this]() { return directory_; },
+                                                      "Directory Path",
+                                                      "Full path of the directory to watch",
+                                                      directory_)),
+      create_dir_id_(pmanage<MPtr(&property::PBag::make_bool)>(
+          "create_directory",
+          [this](bool val) {
+            create_dir_ = val;
+            return true;
+          },
+          [this]() { return create_dir_; },
+          "Create directory",
+          "Create the watched directory if it doesn't exist",
+          create_dir_)) {}
 
 Watcher::~Watcher() { stop(); }
 

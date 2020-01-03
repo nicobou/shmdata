@@ -20,24 +20,25 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <cassert>
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 
 int main() {
   {
     using namespace switcher;
+    using namespace switcher::quiddity;
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
-    assert(switcher::test::full(manager, "protocol-mapper"));
-    auto created =
-        manager->quids<MPtr(&quid::Container::create)>("protocol-mapper", std::string(), nullptr);
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
+    assert(switcher::quiddity::test::full(manager, "protocol-mapper"));
+    auto created = manager->quids<MPtr(&quiddity::Container::create)>(
+        "protocol-mapper", std::string(), nullptr);
     assert(created);
     auto quid = created.get();
-    assert(quid->prop<MPtr(&PContainer::set_str_str)>("config_file", "protocol-osc.json"));
-    assert(quid->prop<MPtr(&PContainer::set_str_str)>("int32", "true"));
-    assert(quid->prop<MPtr(&PContainer::set_str_str)>("wrongtype", "true"));
-    assert(quid->prop<MPtr(&PContainer::set_str_str)>("notype", "true"));
-    assert(quid->prop<MPtr(&PContainer::set_str_str)>("ardour_goto_start", "true"));
+    assert(quid->prop<MPtr(&property::PBag::set_str_str)>("config_file", "protocol-osc.json"));
+    assert(quid->prop<MPtr(&property::PBag::set_str_str)>("int32", "true"));
+    assert(quid->prop<MPtr(&property::PBag::set_str_str)>("wrongtype", "true"));
+    assert(quid->prop<MPtr(&property::PBag::set_str_str)>("notype", "true"));
+    assert(quid->prop<MPtr(&property::PBag::set_str_str)>("ardour_goto_start", "true"));
   }
   return 0;
 }

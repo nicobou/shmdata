@@ -33,19 +33,21 @@
 #include "./method.hpp"
 
 namespace switcher {
-class MContainer : public log::Logged {
+namespace quiddity {
+namespace method {
+using on_tree_grafted_cb_t = std::function<void(const std::string& key)>;
+using on_tree_pruned_cb_t = std::function<void(const std::string& key)>;
+using on_method_created_cb_t = std::function<void(const std::string& name)>;
+using on_method_removed_cb_t = std::function<void(const std::string& name)>;
+using on_method_enabled_cb_t = std::function<void(const std::string& name)>;
+using on_method_disabled_cb_t = std::function<void(const std::string& name)>;
+
+class MBag : public log::Logged {
   friend class Bundle;  // replacing some methods like replace and delete
  public:
-  using meth_id_t = MethodBase::meth_id_t;
-  using on_tree_grafted_cb_t = std::function<void(const std::string& key)>;
-  using on_tree_pruned_cb_t = std::function<void(const std::string& key)>;
-  using on_method_created_cb_t = std::function<void(const std::string& name)>;
-  using on_method_removed_cb_t = std::function<void(const std::string& name)>;
-  using on_method_enabled_cb_t = std::function<void(const std::string& name)>;
-  using on_method_disabled_cb_t = std::function<void(const std::string& name)>;
-  MContainer() = delete;
+  MBag() = delete;
   // ctor will own tree and write into .method.
-  MContainer(log::BaseLogger* log,
+  MBag(log::BaseLogger* log,
              InfoTree::ptr tree,
              on_tree_grafted_cb_t on_tree_grafted_cb,
              on_tree_pruned_cb_t on_tree_pruned_cb,
@@ -58,7 +60,7 @@ class MContainer : public log::Logged {
   // return 0 if id is not found
   meth_id_t get_id(const std::string& id) const;
   std::string get_name(meth_id_t id) const;
-  std::vector<std::pair<std::string, MContainer::meth_id_t>> get_ids() const;
+  std::vector<std::pair<std::string, method::meth_id_t>> get_ids() const;
   std::map<meth_id_t, std::string> get_names() const;
 
   // ----------- add/remove/update (you should prefer makers for adding)
@@ -149,5 +151,7 @@ class MContainer : public log::Logged {
   CounterMap suborders_{};
 };
 
+}  // namespace method
+}  // namespace quiddity
 }  // namespace switcher
 #endif

@@ -28,7 +28,7 @@
 #include <vector>
 
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
 #include "switcher/shmdata/shmdata-connector.hpp"
 #include "switcher/shmdata/shmdata-follower.hpp"
 #include "switcher/shmdata/shmdata-writer.hpp"
@@ -40,9 +40,10 @@
 
 namespace switcher {
 namespace quiddities {
-class VncClientSrc : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class VncClientSrc : public Quiddity, public Startable {
  public:
-  VncClientSrc(quid::Config&&);
+  VncClientSrc(quiddity::Config&&);
   ~VncClientSrc();
   VncClientSrc(const VncClientSrc&) = delete;
   VncClientSrc& operator=(const VncClientSrc&) = delete;
@@ -54,8 +55,8 @@ class VncClientSrc : public Quiddity, public StartableQuiddity {
   ShmdataConnector shmcntr_;
   // prop
   std::string vnc_server_address_{"localhost"};
-  PContainer::prop_id_t vnc_server_address_id_{0};
-  PContainer::prop_id_t capture_truecolor_id_{0};
+  property::prop_id_t vnc_server_address_id_{0};
+  property::prop_id_t capture_truecolor_id_{0};
   bool capture_truecolor_{true};
   bool previous_truecolor_state_{true};
   rfbClient* rfb_client_{nullptr};

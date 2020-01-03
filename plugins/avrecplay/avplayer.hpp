@@ -20,7 +20,7 @@
 #ifndef SWITCHER_AVPLAYER_HPP
 #define SWITCHER_AVPLAYER_HPP
 
-#include <switcher/quiddity/startable-quiddity.hpp>
+#include <switcher/quiddity/startable.hpp>
 #include "switcher/gst/pipeliner.hpp"
 #include "switcher/shmdata/gst-shm-tree-updater.hpp"
 #include "switcher/shmdata/shmdata-connector.hpp"
@@ -30,9 +30,10 @@
 
 namespace switcher {
 namespace quiddities {
-class AVPlayer : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class AVPlayer : public Quiddity, public Startable {
  public:
-  AVPlayer(quid::Config&&);
+  AVPlayer(quiddity::Config&&);
   bool start() final;
   bool stop() final;
 
@@ -59,7 +60,7 @@ class AVPlayer : public Quiddity, public StartableQuiddity {
   int64_t track_duration_{0};
   std::string playpath_{};
   int position_{0};
-  PContainer::prop_id_t position_id_{0};
+  property::prop_id_t position_id_{0};
   std::unique_ptr<PeriodicTask<>> position_task_{};
   bool pause_{false};
   bool seek_called_{false};

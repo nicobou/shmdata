@@ -27,21 +27,20 @@
 #include "../../utils/any.hpp"
 #include "../../utils/counter-map.hpp"
 #include "../../utils/is-specialization-of.hpp"
-#include "./property-internal-types.hpp"
 #include "./property.hpp"
+#include "./types.hpp"
 
 namespace switcher {
-class PContainer {
+namespace quiddity {
+namespace property {
+class PBag {
   friend class Bundle;  // replacing some methods like replace and delete
  public:
-  using prop_id_t = PropertyBase::prop_id_t;
-  using notify_cb_t = PropertyBase::notify_cb_t;
-  using register_id_t = PropertyBase::register_id_t;
   using on_tree_grafted_cb_t = std::function<void(const std::string& key)>;
   using on_tree_pruned_cb_t = std::function<void(const std::string& key)>;
-  PContainer() = delete;
+  PBag() = delete;
   // ctor will own tree and write into .property.
-  PContainer(InfoTree::ptr tree,
+  PBag(InfoTree::ptr tree,
              on_tree_grafted_cb_t on_tree_grafted_cb,
              on_tree_pruned_cb_t on_tree_pruned_cb);
 
@@ -49,7 +48,7 @@ class PContainer {
   // return 0 if id is not found
   prop_id_t get_id(const std::string& id) const;
   std::string get_name(prop_id_t id) const;
-  std::vector<std::pair<std::string, PContainer::prop_id_t>> get_ids() const;
+  std::vector<std::pair<std::string, prop_id_t>> get_ids() const;
   std::map<prop_id_t, std::string> get_names() const;
 
   register_id_t subscribe(prop_id_t id, notify_cb_t fun) const;
@@ -103,8 +102,8 @@ class PContainer {
 
   // ----------- makers
   prop_id_t make_int(const std::string& strid,
-                     prop::set_t<int> set,
-                     prop::get_t<int> get,
+                     set_t<int> set,
+                     get_t<int> get,
                      const std::string& label,
                      const std::string& description,
                      int default_value,
@@ -113,8 +112,8 @@ class PContainer {
 
   prop_id_t make_parented_int(const std::string& strid,
                               const std::string& parent_strid,
-                              prop::set_t<int> set,
-                              prop::get_t<int> get,
+                              set_t<int> set,
+                              get_t<int> get,
                               const std::string& label,
                               const std::string& description,
                               int default_value,
@@ -122,8 +121,8 @@ class PContainer {
                               int max);
 
   prop_id_t make_short(const std::string& strid,
-                       prop::set_t<short> set,
-                       prop::get_t<short> get,
+                       set_t<short> set,
+                       get_t<short> get,
                        const std::string& label,
                        const std::string& description,
                        short default_value,
@@ -132,8 +131,8 @@ class PContainer {
 
   prop_id_t make_parented_short(const std::string& strid,
                                 const std::string& parent_strid,
-                                prop::set_t<short> set,
-                                prop::get_t<short> get,
+                                set_t<short> set,
+                                get_t<short> get,
                                 const std::string& label,
                                 const std::string& description,
                                 short default_value,
@@ -141,8 +140,8 @@ class PContainer {
                                 short max);
 
   prop_id_t make_long(const std::string& strid,
-                      prop::set_t<long> set,
-                      prop::get_t<long> get,
+                      set_t<long> set,
+                      get_t<long> get,
                       const std::string& label,
                       const std::string& description,
                       long default_value,
@@ -151,8 +150,8 @@ class PContainer {
 
   prop_id_t make_parented_long(const std::string& strid,
                                const std::string& parent_strid,
-                               prop::set_t<long> set,
-                               prop::get_t<long> get,
+                               set_t<long> set,
+                               get_t<long> get,
                                const std::string& label,
                                const std::string& description,
                                long default_value,
@@ -255,23 +254,23 @@ class PContainer {
                                              unsigned long long max);
 
   prop_id_t make_bool(const std::string& strid,
-                      prop::set_t<bool> set,
-                      prop::get_t<bool> get,
+                      set_t<bool> set,
+                      get_t<bool> get,
                       const std::string& label,
                       const std::string& description,
                       bool default_value);
 
   prop_id_t make_parented_bool(const std::string& strid,
                                const std::string& parent_strid,
-                               prop::set_t<bool> set,
-                               prop::get_t<bool> get,
+                               set_t<bool> set,
+                               get_t<bool> get,
                                const std::string& label,
                                const std::string& description,
                                bool default_value);
 
   prop_id_t make_float(const std::string& strid,
-                       prop::set_t<float> set,
-                       prop::get_t<float> get,
+                       set_t<float> set,
+                       get_t<float> get,
                        const std::string& label,
                        const std::string& description,
                        float default_value,
@@ -280,8 +279,8 @@ class PContainer {
 
   prop_id_t make_parented_float(const std::string& strid,
                                 const std::string& parent_strid,
-                                prop::set_t<float> set,
-                                prop::get_t<float> get,
+                                set_t<float> set,
+                                get_t<float> get,
                                 const std::string& label,
                                 const std::string& description,
                                 float default_value,
@@ -289,8 +288,8 @@ class PContainer {
                                 float max);
 
   prop_id_t make_double(const std::string& strid,
-                        prop::set_t<double> set,
-                        prop::get_t<double> get,
+                        set_t<double> set,
+                        get_t<double> get,
                         const std::string& label,
                         const std::string& description,
                         double default_value,
@@ -299,8 +298,8 @@ class PContainer {
 
   prop_id_t make_parented_double(const std::string& strid,
                                  const std::string& parent_strid,
-                                 prop::set_t<double> set,
-                                 prop::get_t<double> get,
+                                 set_t<double> set,
+                                 get_t<double> get,
                                  const std::string& label,
                                  const std::string& description,
                                  double default_value,
@@ -327,16 +326,16 @@ class PContainer {
                                       long double max);
 
   prop_id_t make_char(const std::string& strid,
-                      prop::set_t<char> set,
-                      prop::get_t<char> get,
+                      set_t<char> set,
+                      get_t<char> get,
                       const std::string& label,
                       const std::string& description,
                       char default_value);
 
   prop_id_t make_parented_char(const std::string& strid,
                                const std::string& parent_strid,
-                               prop::set_t<char> set,
-                               prop::get_t<char> get,
+                               set_t<char> set,
+                               get_t<char> get,
                                const std::string& label,
                                const std::string& description,
                                char default_value);
@@ -389,8 +388,8 @@ class PContainer {
                                 const std::string& description);
 
   prop_id_t make_fraction(const std::string& strid,
-                          prop::set_t<Fraction> set,
-                          prop::get_t<Fraction> get,
+                          set_t<Fraction> set,
+                          get_t<Fraction> get,
                           const std::string& label,
                           const std::string& description,
                           const Fraction& default_value,
@@ -401,8 +400,8 @@ class PContainer {
 
   prop_id_t make_parented_fraction(const std::string& strid,
                                    const std::string& parent_strid,
-                                   prop::set_t<Fraction> set,
-                                   prop::get_t<Fraction> get,
+                                   set_t<Fraction> set,
+                                   get_t<Fraction> get,
                                    const std::string& label,
                                    const std::string& description,
                                    const Fraction& default_value,
@@ -412,16 +411,16 @@ class PContainer {
                                    Fraction::ator_t max_denom);
 
   prop_id_t make_color(const std::string& strid,
-                       prop::set_t<Color> set,
-                       prop::get_t<Color> get,
+                       set_t<Color> set,
+                       get_t<Color> get,
                        const std::string& label,
                        const std::string& description,
                        const Color& default_value);
 
   prop_id_t make_parented_color(const std::string& strid,
                                 const std::string& parent_strid,
-                                prop::set_t<Color> set,
-                                prop::get_t<Color> get,
+                                set_t<Color> set,
+                                get_t<Color> get,
                                 const std::string& label,
                                 const std::string& description,
                                 const Color& default_value);
@@ -429,7 +428,7 @@ class PContainer {
   // forward_property mirrors properties from the property container in the current container
   prop_id_t mirror_property_from(const std::string& strid,
                                  const std::string& parent_strid,
-                                 PContainer* pc,
+                                 PBag* pc,
                                  prop_id_t prop_id);
 
   template <typename T>
@@ -494,5 +493,7 @@ class PContainer {
   bool replace_impl(prop_id_t prop_id, std::unique_ptr<PropertyBase>&& prop_ptr, bool force_notify);
 };
 
+}  // namespace property
+}  // namespace quiddity
 }  // namespace switcher
 #endif

@@ -31,11 +31,11 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RTMP,
                                      "LGPL",
                                      "Jérémie Soria");
 
-RTMP::RTMP(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
+RTMP::RTMP(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
-  stream_app_url_id_ = pmanage<MPtr(&PContainer::make_string)>(
+  stream_app_url_id_ = pmanage<MPtr(&property::PBag::make_string)>(
       "stream_app_url",
       [this](const std::string& val) {
         stream_app_url_ = val;
@@ -47,7 +47,7 @@ RTMP::RTMP(quid::Config&& conf)
       "Stream application URL",
       "RTMP address used to stream.",
       stream_app_url_);
-  stream_key_id_ = pmanage<MPtr(&PContainer::make_string)>(
+  stream_key_id_ = pmanage<MPtr(&property::PBag::make_string)>(
       "stream_key",
       [this](const std::string& val) {
         stream_key_ = val;

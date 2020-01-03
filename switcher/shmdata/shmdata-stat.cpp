@@ -36,7 +36,7 @@ void ShmdataStat::reset() {
   accesses_ = 0;
 }
 
-std::function<void(const ShmdataStat&)> ShmdataStat::make_tree_updater(Quiddity* quid,
+std::function<void(const ShmdataStat&)> ShmdataStat::make_tree_updater(quiddity::Quiddity* quid,
                                                                        const std::string& key,
                                                                        bool do_signal) {
   return [quid, key, do_signal](const ShmdataStat& stat) {

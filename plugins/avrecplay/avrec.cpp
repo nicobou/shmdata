@@ -41,9 +41,9 @@ const std::string AVRecorder::kRecordModeDate = "Date suffix";
 const std::string AVRecorder::kRecordModeLabel = "Label suffix";
 const std::string AVRecorder::kRecordModeOverwrite = "Overwrite";
 
-AVRecorder::AVRecorder(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      StartableQuiddity(this),
+AVRecorder::AVRecorder(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
   // Create a list of all available gstreamer muxers if not already done.
@@ -66,7 +66,7 @@ AVRecorder::AVRecorder(quid::Config&& conf)
     }
   }
 
-  pmanage<MPtr(&PContainer::make_string)>(
+  pmanage<MPtr(&property::PBag::make_string)>(
       "recpath",
       [this](const std::string& val) {
         if (val.empty()) {
@@ -92,15 +92,15 @@ AVRecorder::AVRecorder(quid::Config&& conf)
       "Location of the folder in which the shmdata will be recorded",
       recpath_);
 
-  pmanage<MPtr(&PContainer::make_selection<>)>(
+  pmanage<MPtr(&property::PBag::make_selection<>)>(
       "record_mode",
-      [this](const IndexOrName& val) {
+      [this](const quiddity::property::IndexOrName& val) {
         record_mode_.select(val);
         for (auto& shmdata : connected_shmdata_) {
           if (record_mode_.get_current() == AVRecorder::kRecordModeLabel) {
             shmdata->create_label_property();
           } else
-            pmanage<MPtr(&PContainer::remove)>(shmdata->label_id_);
+            pmanage<MPtr(&property::PBag::remove)>(shmdata->label_id_);
         }
         return true;
       },
@@ -226,16 +226,16 @@ bool AVRecorder::start() {
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), avrec_bin_);
 
   // Disable all properties when recording.
-  pmanage<MPtr(&PContainer::disable)>(recpath_id_, StartableQuiddity::disabledWhenStartedMsg);
-  pmanage<MPtr(&PContainer::disable)>(record_mode_id_, StartableQuiddity::disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(recpath_id_, Startable::disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(record_mode_id_, Startable::disabledWhenStartedMsg);
   for (auto& shmdata : connected_shmdata_) {
-    pmanage<MPtr(&PContainer::disable)>(shmdata->recfile_id_,
-                                        StartableQuiddity::disabledWhenStartedMsg);
+    pmanage<MPtr(&property::PBag::disable)>(shmdata->recfile_id_,
+                                            Startable::disabledWhenStartedMsg);
     if (record_mode_.get_current() == AVRecorder::kRecordModeLabel)
-      pmanage<MPtr(&PContainer::disable)>(shmdata->label_id_,
-                                          StartableQuiddity::disabledWhenStartedMsg);
+      pmanage<MPtr(&property::PBag::disable)>(shmdata->label_id_,
+                                              Startable::disabledWhenStartedMsg);
     for (auto& prop : shmdata->muxer_properties_id_)
-      pmanage<MPtr(&PContainer::disable)>(prop, StartableQuiddity::disabledWhenStartedMsg);
+      pmanage<MPtr(&property::PBag::disable)>(prop, Startable::disabledWhenStartedMsg);
   }
 
   gst_pipeline_->play(true);
@@ -252,10 +252,10 @@ bool AVRecorder::stop() {
 
   // Enable all properties when stopping.
   for (auto& shmdata : connected_shmdata_) {
-    pmanage<MPtr(&PContainer::enable)>(shmdata->recfile_id_);
+    pmanage<MPtr(&property::PBag::enable)>(shmdata->recfile_id_);
     if (record_mode_.get_current() == AVRecorder::kRecordModeLabel)
-      pmanage<MPtr(&PContainer::enable)>(shmdata->label_id_);
-    for (auto& prop : shmdata->muxer_properties_id_) pmanage<MPtr(&PContainer::enable)>(prop);
+      pmanage<MPtr(&property::PBag::enable)>(shmdata->label_id_);
+    for (auto& prop : shmdata->muxer_properties_id_) pmanage<MPtr(&property::PBag::enable)>(prop);
   }
 
   // Put the value of all dynamically created properties in a structure for possible later saving.
@@ -282,9 +282,9 @@ bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
       this,
       shmpath,
       nullptr,
-      [ this, connected_shmdata = connected_shmdata.get(), shmdata_name, shmpath ](
+      [this, connected_shmdata = connected_shmdata.get(), shmdata_name, shmpath](
           const std::string& str_caps) {
-        pmanage<MPtr(&PContainer::make_group)>(
+        pmanage<MPtr(&property::PBag::make_group)>(
             shmdata_name + "_group",
             "Muxer for " + shmdata_name,
             std::string("Properties of the muxer for shmdata ") + shmdata_name);
@@ -294,7 +294,7 @@ bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
         connected_shmdata->discover_compatible_muxers(muxer_list);
 
         auto recfile_prop_name = "recfile_" + shmdata_name;
-        connected_shmdata->recfile_id_ = pmanage<MPtr(&PContainer::make_parented_string)>(
+        connected_shmdata->recfile_id_ = pmanage<MPtr(&property::PBag::make_parented_string)>(
             recfile_prop_name,
             shmdata_name + "_group",
             [connected_shmdata](const std::string& val) {
@@ -307,13 +307,13 @@ bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
             connected_shmdata->shmdata_name_);
         toggle_property_saving(recfile_prop_name);
 
-        connected_shmdata->muxer_selection_ = Selection<>(std::move(muxer_list), 0);
+        connected_shmdata->muxer_selection_ = property::Selection<>(std::move(muxer_list), 0);
         auto muxer_selection_prop_name = "muxers_" + connected_shmdata->shmdata_name_;
         connected_shmdata->muxer_selection_id_ =
-            pmanage<MPtr(&PContainer::make_parented_selection<>)>(
+            pmanage<MPtr(&property::PBag::make_parented_selection<>)>(
                 muxer_selection_prop_name,
                 shmdata_name + "_group",
-                [connected_shmdata](const IndexOrName& val) {
+                [connected_shmdata](const quiddity::property::IndexOrName& val) {
                   connected_shmdata->muxer_selection_.select(val);
                   return connected_shmdata->update_gst_properties();
                 },
@@ -328,18 +328,18 @@ bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
 
         auto saved_properties = saved_properties_.find(shmdata_name);
         if (saved_properties != saved_properties_.end()) {
-          pmanage<MPtr(&PContainer::set_str)>(connected_shmdata->muxer_selection_id_,
-                                              saved_properties->second["muxer"]);
-          pmanage<MPtr(&PContainer::set_str)>(connected_shmdata->recfile_id_,
-                                              saved_properties->second["recfile"]);
-          pmanage<MPtr(&PContainer::set_str)>(connected_shmdata->label_id_,
-                                              saved_properties->second["label"]);
+          pmanage<MPtr(&property::PBag::set_str)>(connected_shmdata->muxer_selection_id_,
+                                                  saved_properties->second["muxer"]);
+          pmanage<MPtr(&property::PBag::set_str)>(connected_shmdata->recfile_id_,
+                                                  saved_properties->second["recfile"]);
+          pmanage<MPtr(&property::PBag::set_str)>(connected_shmdata->label_id_,
+                                                  saved_properties->second["label"]);
           for (auto& prop : saved_properties->second) {
             if (prop.first == "muxer" || prop.first == "recfile" || prop.first == "label") continue;
-            pmanage<MPtr(&PContainer::set_str_str)>(prop.first, prop.second);
+            pmanage<MPtr(&property::PBag::set_str_str)>(prop.first, prop.second);
           }
         } else {
-          pmanage<MPtr(&PContainer::set_to_current)>(connected_shmdata->muxer_selection_id_);
+          pmanage<MPtr(&property::PBag::set_to_current)>(connected_shmdata->muxer_selection_id_);
         }
       },
       nullptr);
@@ -393,7 +393,7 @@ InfoTree::ptr AVRecorder::on_saving() {
   auto res = InfoTree::make();
 
   // We don't want to load a started recording scenario.
-  pmanage<MPtr(&PContainer::set_str_str)>("started", "false");
+  pmanage<MPtr(&property::PBag::set_str_str)>("started", "false");
 
   // Put the value of all dynamically created properties in a structure for possible later saving.
   save_properties();
@@ -437,8 +437,8 @@ void AVRecorder::save_properties() {
     saved_properties_[shmdata->shmdata_name_]["recfile"] = shmdata->recfile_;
     saved_properties_[shmdata->shmdata_name_]["label"] = shmdata->label_;
     for (auto& prop : shmdata->muxer_properties_id_) {
-      auto value = pmanage<MPtr(&PContainer::get_str)>(prop);
-      auto prop_name = pmanage<MPtr(&PContainer::get_name)>(prop);
+      auto value = pmanage<MPtr(&property::PBag::get_str)>(prop);
+      auto prop_name = pmanage<MPtr(&property::PBag::get_name)>(prop);
       saved_properties_[shmdata->shmdata_name_][prop_name] = value;
     }
   }
@@ -450,12 +450,12 @@ AVRecorder::ConnectedShmdata::ConnectedShmdata(AVRecorder* parent,
     : parent_(parent), shmdata_name_(shmdata_name), shmpath_(shmpath) {}
 
 AVRecorder::ConnectedShmdata::~ConnectedShmdata() {
-  parent_->pmanage<MPtr(&PContainer::remove)>(muxer_selection_id_);
-  parent_->pmanage<MPtr(&PContainer::remove)>(recfile_id_);
+  parent_->pmanage<MPtr(&property::PBag::remove)>(muxer_selection_id_);
+  parent_->pmanage<MPtr(&property::PBag::remove)>(recfile_id_);
   if (parent_->record_mode_.get_current() == AVRecorder::kRecordModeLabel)
-    parent_->pmanage<MPtr(&PContainer::remove)>(label_id_);
-  parent_->pmanage<MPtr(&PContainer::remove)>(
-      parent_->pmanage<MPtr(&PContainer::get_id)>(shmdata_name_ + "_group"));
+    parent_->pmanage<MPtr(&property::PBag::remove)>(label_id_);
+  parent_->pmanage<MPtr(&property::PBag::remove)>(
+      parent_->pmanage<MPtr(&property::PBag::get_id)>(shmdata_name_ + "_group"));
   for (auto& muxer : muxers_) gst_object_unref(muxer.second.elem);
 }
 
@@ -497,7 +497,7 @@ void AVRecorder::ConnectedShmdata::discover_compatible_muxers(
 bool AVRecorder::ConnectedShmdata::update_gst_properties() {
   // Remove all active dynamic properties.
   for (auto& prop_id : muxer_properties_id_) {
-    parent_->pmanage<MPtr(&PContainer::remove)>(prop_id);
+    parent_->pmanage<MPtr(&property::PBag::remove)>(prop_id);
   }
   muxer_properties_id_.clear();
 
@@ -511,10 +511,10 @@ bool AVRecorder::ConnectedShmdata::update_gst_properties() {
     auto prop_name = prop + "_avrec_" + muxer_name + "_" + shmdata_name_;
 
     auto prop_id =
-        static_cast<PContainer::prop_id_t>(parent_->pmanage<MPtr(&PContainer::push_parented)>(
+        static_cast<property::prop_id_t>(parent_->pmanage<MPtr(&property::PBag::push_parented)>(
             prop_name,
             shmdata_name_ + "_group",
-            GPropToProp::to_prop(G_OBJECT(selected_muxer->second.elem), prop)));
+            quiddity::property::to_prop(G_OBJECT(selected_muxer->second.elem), prop)));
     muxer_properties_id_.push_back(prop_id);
     parent_->toggle_property_saving(prop_name);
   }
@@ -524,23 +524,23 @@ bool AVRecorder::ConnectedShmdata::update_gst_properties() {
 void AVRecorder::ConnectedShmdata::create_label_property() {
   auto label_prop_name = "label_" + shmdata_name_;
   label_id_ =
-      parent_->pmanage<MPtr(&PContainer::make_parented_string)>(label_prop_name,
-                                                                shmdata_name_ + "_group",
-                                                                [this](const std::string& val) {
-                                                                  label_ = val;
-                                                                  return true;
-                                                                },
-                                                                [this]() { return label_; },
-                                                                "File name suffix.",
-                                                                "",
-                                                                label_);
+      parent_->pmanage<MPtr(&property::PBag::make_parented_string)>(label_prop_name,
+                                                                    shmdata_name_ + "_group",
+                                                                    [this](const std::string& val) {
+                                                                      label_ = val;
+                                                                      return true;
+                                                                    },
+                                                                    [this]() { return label_; },
+                                                                    "File name suffix.",
+                                                                    "",
+                                                                    label_);
   parent_->toggle_property_saving(label_prop_name);
 }
 
 void AVRecorder::ConnectedShmdata::apply_gst_properties(GstElement* element) {
   for (auto& prop : muxer_properties_id_) {
-    auto value = parent_->pmanage<MPtr(&PContainer::get_str)>(prop);
-    auto prop_name = parent_->pmanage<MPtr(&PContainer::get_name)>(prop);
+    auto value = parent_->pmanage<MPtr(&property::PBag::get_str)>(prop);
+    auto prop_name = parent_->pmanage<MPtr(&property::PBag::get_name)>(prop);
     auto gst_prop_name_pos = prop_name.find("_avrec_");
     if (gst_prop_name_pos == std::string::npos) return;
 

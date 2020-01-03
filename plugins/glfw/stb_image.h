@@ -2725,7 +2725,7 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
       z->img_comp[i].id = stbi__get8(s);
       if (z->img_comp[i].id != i+1)   // JFIF requires
          if (z->img_comp[i].id != i) {  // some version of jpegtran outputs non-JFIF-compliant files!
-            // somethings output this (see http://fileformats.archiveteam.org/wiki/JPEG#Color_format)
+            // somethings output this (see http://fileformats.archiveteam.org/wiki/JPEG#property::Color_format)
             if (z->img_comp[i].id != rgb[i])
                return stbi__err("bad component ID","Corrupt JPEG");
             ++z->rgb;

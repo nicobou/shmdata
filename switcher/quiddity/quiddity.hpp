@@ -34,15 +34,15 @@
 #include "../logger/logged.hpp"
 #include "../utils/make-consultable.hpp"
 #include "../utils/safe-bool-idiom.hpp"
+#include "./config.hpp"
+#include "./doc.hpp"
 #include "./documentation-registry.hpp"
-#include "./method/method-container.hpp"
-#include "./property/property-container.hpp"
-#include "./quiddity-configuration.hpp"
-#include "./quiddity-documentation.hpp"
-#include "./signal/signal-container.hpp"
+#include "./method/mbag.hpp"
+#include "./property/pbag.hpp"
+#include "./signal/sbag.hpp"
 
 namespace switcher {
-class Container;
+
 namespace gst {
 class VideoCodec;
 class AudioCodec;
@@ -53,25 +53,38 @@ class ProtocolOsc;
 class ProtocolReader;
 }  // namespace quiddities
 
+class ShmdataConnector;
+class ShmdataWriter;
+class ShmdataFollower;
+class GstShmTreeUpdater;
+class ShmdataDecoder;
+struct ShmdataStat;
+
+namespace quiddity {
+class Container;
+namespace bundle {
+class Bundle;
+}  // namespace bundle
+
 class Quiddity : public log::Logged, public SafeBoolIdiom {
-  friend class Bundle;  // access to props_ in order to forward properties
+  friend class bundle::Bundle;  // access to props_ in order to forward properties
   // FIXME do something for this (to many friend class in quiddity.hpp):
   friend class quiddities::ProtocolCurl;
   friend class quiddities::ProtocolOsc;
   friend class quiddities::ProtocolReader;
-  friend class StartableQuiddity;
-  friend class ShmdataConnector;
-  friend class ShmdataWriter;
-  friend class ShmdataFollower;
+  friend class Startable;
+  friend class switcher::ShmdataConnector;
+  friend class switcher::ShmdataWriter;
+  friend class switcher::ShmdataFollower;
   friend class gst::VideoCodec;
   friend class gst::AudioCodec;
-  friend class GstShmTreeUpdater;
-  friend class ShmdataDecoder;
-  friend struct ShmdataStat;
+  friend class switcher::GstShmTreeUpdater;
+  friend class switcher::ShmdataDecoder;
+  friend struct switcher::ShmdataStat;
 
  public:
   using ptr = std::shared_ptr<Quiddity>;
-  explicit Quiddity(quid::Config&&);
+  explicit Quiddity(quiddity::Config&&);
   Quiddity() = delete;
   Quiddity(const Quiddity&) = delete;
   Quiddity& operator=(const Quiddity&) = delete;
@@ -92,13 +105,13 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   std::string get_nickname() const;
 
   // properties
-  Make_consultable(Quiddity, PContainer, &props_, prop);
+  Make_consultable(Quiddity, property::PBag, &props_, prop);
 
   // methods
-  Make_consultable(Quiddity, MContainer, &meths_, meth);
+  Make_consultable(Quiddity, method::MBag, &meths_, meth);
 
   // signals
-  Make_consultable(Quiddity, SContainer, &sigs_, sig);
+  Make_consultable(Quiddity, signal::SBag, &sigs_, sig);
 
   // information
   Make_consultable(Quiddity, InfoTree, information_tree_.get(), tree);
@@ -147,21 +160,21 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   InfoTree::ptr configuration_tree_;
 
   // signals
-  SContainer sigs_;
-  SContainer::sig_id_t on_method_added_id_;
-  SContainer::sig_id_t on_method_removed_id_;
-  SContainer::sig_id_t on_tree_grafted_id_;
-  SContainer::sig_id_t on_tree_pruned_id_;
-  SContainer::sig_id_t on_user_data_grafted_id_;
-  SContainer::sig_id_t on_user_data_pruned_id_;
-  SContainer::sig_id_t on_nicknamed_id_;
+  signal::SBag sigs_;
+  signal::sig_id_t on_method_added_id_;
+  signal::sig_id_t on_method_removed_id_;
+  signal::sig_id_t on_tree_grafted_id_;
+  signal::sig_id_t on_tree_pruned_id_;
+  signal::sig_id_t on_user_data_grafted_id_;
+  signal::sig_id_t on_user_data_pruned_id_;
+  signal::sig_id_t on_nicknamed_id_;
 
   // properties
-  PContainer props_;
+  property::PBag props_;
   std::vector<std::string> properties_blacklist_{};
 
   // methods
-  MContainer meths_;
+  method::MBag meths_;
 
   // position weight FIXME should be outside this file ?
   int position_weight_counter_{0};
@@ -187,16 +200,16 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   void register_writer_suffix(const std::string& suffix);
 
   // property
-  Make_delegate(Quiddity, PContainer, &props_, pmanage);
+  Make_delegate(Quiddity, property::PBag, &props_, pmanage);
 
   // configuration
   Make_consultable(Quiddity, InfoTree, configuration_tree_.get(), config);
 
   // signal
-  Make_delegate(Quiddity, SContainer, &sigs_, smanage);
+  Make_delegate(Quiddity, signal::SBag, &sigs_, smanage);
 
   // methods
-  Make_delegate(Quiddity, MContainer, &meths_, mmanage);
+  Make_delegate(Quiddity, method::MBag, &meths_, mmanage);
 
   // life management
   void self_destruct();
@@ -209,29 +222,35 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   bool is_valid_{true};
 
   // access to the quiddity Container
-  quid::Container* qcontainer_;
+  Container* qcontainer_;
 };
 
-#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(                                                 \
-    cpp_quiddity_class, class_name, name, category, tags, description, license, author)       \
-  bool cpp_quiddity_class##_doc_registered = DocumentationRegistry::get()->register_doc(      \
-      class_name, quid::Doc(class_name, name, category, tags, description, license, author)); \
-  bool cpp_quiddity_class##_class_registered =                                                \
-      DocumentationRegistry::get()->register_type_from_class_name(                            \
+}  // namespace quiddity
+}  // namespace switcher
+
+#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(                                           \
+    cpp_quiddity_class, class_name, name, category, tags, description, license, author) \
+  bool cpp_quiddity_class##_doc_registered =                                            \
+      switcher::quiddity::DocumentationRegistry::get()->register_doc(                   \
+          class_name,                                                                   \
+          switcher::quiddity::Doc(                                                      \
+              class_name, name, category, tags, description, license, author));         \
+  bool cpp_quiddity_class##_class_registered =                                          \
+      switcher::quiddity::DocumentationRegistry::get()->register_type_from_class_name(  \
           std::string(#cpp_quiddity_class), class_name);
 
-#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                         \
-  extern "C" Quiddity* create(quid::Config&& conf) {                        \
-    return new cpp_quiddity_class(std::forward<quid::Config>(conf));        \
-  }                                                                         \
-  extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }          \
-  extern "C" const char* get_quiddity_type() {                              \
-    static char type[64];                                                   \
-    strcpy(type,                                                            \
-           DocumentationRegistry::get()                                     \
-               ->get_type_from_class_name(std::string(#cpp_quiddity_class)) \
-               .c_str());                                                   \
-    return static_cast<const char*>(type);                                  \
+#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                                    \
+  extern "C" switcher::quiddity::Quiddity* create(switcher::quiddity::Config&& conf) { \
+    return new cpp_quiddity_class(std::forward<switcher::quiddity::Config>(conf));     \
+  }                                                                                    \
+  extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }                     \
+  extern "C" const char* get_quiddity_type() {                                         \
+    static char type[64];                                                              \
+    strcpy(type,                                                                       \
+           switcher::quiddity::DocumentationRegistry::get()                            \
+               ->get_type_from_class_name(std::string(#cpp_quiddity_class))            \
+               .c_str());                                                              \
+    return static_cast<const char*>(type);                                             \
   }
-}  // namespace switcher
+
 #endif

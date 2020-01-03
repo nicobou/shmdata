@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./quiddity-factory.hpp"
+#include "./factory.hpp"
 #include <gio/gio.h>
 
 // the quiddities to register (line sorted)
@@ -37,8 +37,9 @@
 #include "../quiddities/video-test-source.hpp"
 
 namespace switcher {
+namespace quiddity {
 
-quid::Factory::Factory(log::BaseLogger* log) : log::Logged(log) {
+quiddity::Factory::Factory(log::BaseLogger* log) : log::Logged(log) {
   abstract_factory_.register_class<quiddities::AudioTestSource>(
       DocumentationRegistry::get()->get_type_from_class_name("AudioTestSource"));
   abstract_factory_.register_class<quiddities::DummySink>(
@@ -69,7 +70,7 @@ quid::Factory::Factory(log::BaseLogger* log) : log::Logged(log) {
       DocumentationRegistry::get()->get_type_from_class_name("VideoTestSource"));
 }
 
-bool quid::Factory::scan_dir(const std::string& directory_path) {
+bool quiddity::Factory::scan_dir(const std::string& directory_path) {
   GFile* dir = g_file_new_for_commandline_arg(directory_path.c_str());
   gboolean res;
   GError* error;
@@ -103,11 +104,13 @@ bool quid::Factory::scan_dir(const std::string& directory_path) {
   return true;
 }
 
-std::string quid::Factory::get_default_plugin_dir() const { return SWITCHER_DEFAULT_PLUGIN_DIR; }
+std::string quiddity::Factory::get_default_plugin_dir() const {
+  return SWITCHER_DEFAULT_PLUGIN_DIR;
+}
 
-std::vector<std::string> quid::Factory::get_plugin_dirs() const { return plugin_dirs_; }
+std::vector<std::string> quiddity::Factory::get_plugin_dirs() const { return plugin_dirs_; }
 
-InfoTree::ptr quid::Factory::get_classes_doc() const {
+InfoTree::ptr quiddity::Factory::get_classes_doc() const {
   auto classes_str = std::string(".classes.");
   auto res = InfoTree::make();
   res->graft(classes_str, InfoTree::make());
@@ -131,11 +134,11 @@ InfoTree::ptr quid::Factory::get_classes_doc() const {
   return res;
 }
 
-bool quid::Factory::exists(const std::string& class_name) const {
+bool quiddity::Factory::exists(const std::string& class_name) const {
   return abstract_factory_.key_exists(class_name);
 }
 
-bool quid::Factory::load_plugin(const std::string& filename) {
+bool quiddity::Factory::load_plugin(const std::string& filename) {
   PluginLoader::ptr plugin = std::make_shared<PluginLoader>();
   auto loaded = plugin->load(filename);
   if (!loaded) {
@@ -155,23 +158,25 @@ bool quid::Factory::load_plugin(const std::string& filename) {
   return true;
 }
 
-void quid::Factory::close_plugin(const std::string& class_name) {
+void quiddity::Factory::close_plugin(const std::string& class_name) {
   abstract_factory_.unregister_class(class_name);
   plugins_.erase(class_name);
 }
 
-Quiddity::ptr quid::Factory::create(const std::string& class_name, quid::Config&& config) {
-  return abstract_factory_.create(class_name, std::forward<quid::Config>(config));
+Quiddity::ptr quiddity::Factory::create(const std::string& class_name, quiddity::Config&& config) {
+  return abstract_factory_.create(class_name, std::forward<quiddity::Config>(config));
 }
 
-std::vector<std::string> quid::Factory::get_class_list() const {
+std::vector<std::string> quiddity::Factory::get_class_list() const {
   return abstract_factory_.get_keys();
 }
 
-void quid::Factory::register_class_with_custom_factory(const std::string& class_name,
-                                                       Quiddity* (*custom_create)(quid::Config&&),
-                                                       void (*custom_destroy)(Quiddity*)) {
+void quiddity::Factory::register_class_with_custom_factory(
+    const std::string& class_name,
+    Quiddity* (*custom_create)(quiddity::Config&&),
+    void (*custom_destroy)(Quiddity*)) {
   abstract_factory_.register_class_with_custom_factory(class_name, custom_create, custom_destroy);
 }
 
+}  // namespace quiddity
 }  // namespace switcher

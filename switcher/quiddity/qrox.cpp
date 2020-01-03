@@ -17,10 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./quiddity-qrox.hpp"
+#include "./qrox.hpp"
 
 namespace switcher {
-namespace quid {
+namespace quiddity {
 Qrox::Qrox() : BoolLog() {}
 
 Qrox::Qrox(bool is_valid) : BoolLog(is_valid) {}
@@ -34,5 +34,5 @@ qid_t Qrox::get_id() const { return id_; }
 
 Quiddity* Qrox::get() { return quid_; }
 
-}  // namespace quid
+}  // namespace quiddity
 }  // namespace switcher

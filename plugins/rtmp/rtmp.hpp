@@ -28,11 +28,12 @@ namespace quiddities {
  * RTMP class,
  * RTMP quiddity compatible with multiple streaming applications (Youtube, Twitch,...)
  */
+using namespace quiddity;
 class RTMP : public Quiddity {
  public:
 
   //! Constructor
-  RTMP(quid::Config&&);
+  RTMP(quiddity::Config&&);
 
   //! Destructor
   ~RTMP() = default;
@@ -58,9 +59,9 @@ class RTMP : public Quiddity {
 
   std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};  //!< Gstreamer pipeline
 
-  PContainer::prop_id_t stream_app_url_id_{0};  //!< Stream URL property id
+  property::prop_id_t stream_app_url_id_{0};    //!< Stream URL property id
   std::string stream_app_url_{};                //!< RTMP url of the streaming application
-  PContainer::prop_id_t stream_key_id_{0};      //!< Stream key property id
+  property::prop_id_t stream_key_id_{0};        //!< Stream key property id
   std::string stream_key_{};                    //!< Stream key, found on the streaming application
 };
 

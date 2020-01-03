@@ -22,7 +22,8 @@
 #include <utility>
 
 namespace switcher {
-
+namespace quiddity {
+namespace property {
 Color::Color(channel_t r, channel_t g, channel_t b, channel_t a) : color_(r, g, b, a) {}
 
 Color::color_t::color_t(channel_t red, channel_t green, channel_t blue, channel_t alpha)
@@ -63,4 +64,6 @@ Color::channel_t Color::blue() const { return color_.b; }
 
 Color::channel_t Color::alpha() const { return color_.a; }
 
+}  // namespace property
+}  // namespace quiddity
 }  // namespace switcher

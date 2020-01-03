@@ -21,15 +21,17 @@
 
 #include <cassert>
 #include "switcher/infotree/information-tree-json.hpp"
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 
 int main() {
   {
     using namespace switcher;
+    using namespace switcher::quiddity;
+
     auto test_name = std::string("check_jack");
     Switcher::ptr manager = Switcher::make_switcher(test_name);
 
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
     // creating a jack server
     InfoTree::ptr server_config = InfoTree::make();
@@ -37,17 +39,17 @@ int main() {
     server_config->vgraft("driver", "dummy");
     server_config->vgraft("realtime", false);
 
-    auto jserv = manager->quids<MPtr(&switcher::quid::Container::create)>(
+    auto jserv = manager->quids<MPtr(&quiddity::Container::create)>(
         "jackserver", "test_server", server_config.get());
     assert(jserv);
-    assert(jserv.get()->prop<MPtr(&PContainer::set_str_str)>("started", "true"));
+    assert(jserv.get()->prop<MPtr(&property::PBag::set_str_str)>("started", "true"));
 
     // run tests using this server
     InfoTree::ptr client_config = InfoTree::make();
     client_config->vgraft("server_name", test_name);
-    assert(switcher::test::full(manager, "jacksink", client_config));
-    assert(switcher::test::full(manager, "jacksrc", client_config));
-    assert(switcher::test::full(manager, "jackserver", server_config));
+    assert(quiddity::test::full(manager, "jacksink", client_config));
+    assert(quiddity::test::full(manager, "jacksrc", client_config));
+    assert(quiddity::test::full(manager, "jackserver", server_config));
 
   }  // end of scope is releasing the manager
   return 0;

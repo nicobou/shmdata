@@ -32,7 +32,7 @@ struct ShmdataStat {
   void count_buffer(size_t buffer_size);
   void reset();
   void update_tree(const InfoTree::ptr& tree, const std::string& key) const;
-  static std::function<void(const ShmdataStat&)> make_tree_updater(Quiddity* quid,
+  static std::function<void(const ShmdataStat&)> make_tree_updater(quiddity::Quiddity* quid,
                                                                    const std::string& key,
                                                                    bool do_signal = true);
 };

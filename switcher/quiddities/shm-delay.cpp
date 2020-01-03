@@ -31,23 +31,23 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmDelay,
                                      "LGPL",
                                      "Jérémie Soria");
 
-ShmDelay::ShmDelay(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+ShmDelay::ShmDelay(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   register_writer_suffix("delayed-shm");
   time_delay_id_ =
-      pmanage<MPtr(&PContainer::make_double)>("time_delay",
-                                              [this](const double& val) {
-                                                time_delay_ = val;
-                                                return true;
-                                              },
-                                              [this]() { return time_delay_; },
-                                              "Delay in ms",
-                                              "Delay the input shmdata by a delay in ms",
-                                              time_delay_,
-                                              0,
-                                              60000);
+      pmanage<MPtr(&property::PBag::make_double)>("time_delay",
+                                                  [this](const double& val) {
+                                                    time_delay_ = val;
+                                                    return true;
+                                                  },
+                                                  [this]() { return time_delay_; },
+                                                  "Delay in ms",
+                                                  "Delay the input shmdata by a delay in ms",
+                                                  time_delay_,
+                                                  0,
+                                                  60000);
 
-  pmanage<MPtr(&PContainer::make_unsigned_int)>(
+  pmanage<MPtr(&property::PBag::make_unsigned_int)>(
       "buffer_size",
       [this](const unsigned int& val) {
         buffer_size_ = val;
@@ -77,11 +77,11 @@ bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
         shmpath,
         [this](void* data, size_t data_size) {
           if (!data_size) return;
-          pmanage<MPtr(&PContainer::set<double>)>(time_delay_id_, *static_cast<double*>(data));
+          pmanage<MPtr(&property::PBag::set<double>)>(time_delay_id_, *static_cast<double*>(data));
         },
         nullptr,
         nullptr);
-    pmanage<MPtr(&PContainer::disable)>(
+    pmanage<MPtr(&property::PBag::disable)>(
         time_delay_id_, "Delay is provided by an ltc-diff shmdata, it cannot be changed manually");
     return true;
   }
@@ -142,7 +142,7 @@ bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
 bool ShmDelay::on_shmdata_disconnect(const std::string& shmpath) {
   if (StringUtils::ends_with(shmpath, "ltc-diff")) {
     diff_follower_.reset(nullptr);
-    pmanage<MPtr(&PContainer::enable)>(time_delay_id_);
+    pmanage<MPtr(&property::PBag::enable)>(time_delay_id_);
   } else {
     writing_task_.reset(nullptr);
     shmw_.reset(nullptr);

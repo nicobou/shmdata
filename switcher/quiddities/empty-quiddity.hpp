@@ -24,9 +24,10 @@
 
 namespace switcher {
 namespace quiddities {
+using namespace quiddity;
 class EmptyQuiddity : public Quiddity {
  public:
-  EmptyQuiddity(quid::Config&&);
+  EmptyQuiddity(quiddity::Config&&);
 };
 
 }  // namespace quiddities

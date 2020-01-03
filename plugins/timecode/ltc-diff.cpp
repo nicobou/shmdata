@@ -31,31 +31,31 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCDiff,
                                      "LGPL",
                                      "Jérémie Soria");
 
-LTCDiff::LTCDiff(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+LTCDiff::LTCDiff(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   register_writer_suffix("ltc-diff");
   display_timecode1_id_ =
-      pmanage<MPtr(&PContainer::make_string)>("first_timecode",
-                                              nullptr,
-                                              [this]() { return display_timecodes_.at(0); },
-                                              "Timecode 1",
-                                              "Timecode of the first connected source",
-                                              display_timecodes_.at(0));
+      pmanage<MPtr(&property::PBag::make_string)>("first_timecode",
+                                                  nullptr,
+                                                  [this]() { return display_timecodes_.at(0); },
+                                                  "Timecode 1",
+                                                  "Timecode of the first connected source",
+                                                  display_timecodes_.at(0));
 
   display_timecode2_id_ =
-      pmanage<MPtr(&PContainer::make_string)>("second_timecode",
-                                              nullptr,
-                                              [this]() { return display_timecodes_.at(1); },
-                                              "Timecode 2",
-                                              "Timecode of the second connected source",
-                                              display_timecodes_.at(1));
+      pmanage<MPtr(&property::PBag::make_string)>("second_timecode",
+                                                  nullptr,
+                                                  [this]() { return display_timecodes_.at(1); },
+                                                  "Timecode 2",
+                                                  "Timecode of the second connected source",
+                                                  display_timecodes_.at(1));
 
   notify_task_ = std::make_unique<PeriodicTask<>>(
       [this]() {
-        pmanage<MPtr(&PContainer::get_lock)>(display_timecode1_id_);
-        pmanage<MPtr(&PContainer::notify)>(display_timecode1_id_);
-        pmanage<MPtr(&PContainer::get_lock)>(display_timecode2_id_);
-        pmanage<MPtr(&PContainer::notify)>(display_timecode2_id_);
+        pmanage<MPtr(&property::PBag::get_lock)>(display_timecode1_id_);
+        pmanage<MPtr(&property::PBag::notify)>(display_timecode1_id_);
+        pmanage<MPtr(&property::PBag::get_lock)>(display_timecode2_id_);
+        pmanage<MPtr(&property::PBag::notify)>(display_timecode2_id_);
       },
       std::chrono::milliseconds(500));
 

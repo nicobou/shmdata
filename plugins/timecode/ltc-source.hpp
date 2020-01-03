@@ -24,7 +24,7 @@
 #include <ltc.h>
 #include <deque>
 #include <fstream>
-#include <switcher/quiddity/startable-quiddity.hpp>
+#include <switcher/quiddity/startable.hpp>
 #include "switcher/gst/unique-gst-element.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/shmdata/gst-shmdata-subscriber.hpp"
@@ -40,9 +40,10 @@ namespace quiddities {
  * Generated an LTC timecode in an audioshmdata or reads it from a prerecorded audio timecode file.
  * To be used for audio and video synchronization.
  */
-class LTCSource : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class LTCSource : public Quiddity, public Startable {
  public:
-  LTCSource(quid::Config&&);
+  LTCSource(quiddity::Config&&);
   ~LTCSource();
 
  private:
@@ -74,12 +75,13 @@ class LTCSource : public Quiddity, public StartableQuiddity {
                                                //! to avoid blocking the shmdata writing.
 
   // Properties
-  PContainer::prop_id_t time_reference_id_{0};
-  Selection<> time_reference_{{"Absolute timecode", "Relative timecode from start time"}, 1};
-  PContainer::prop_id_t fps_id_{0};
-  Selection<double> fps_{{"30 FPS", "25 FPS", "24 FPS"}, {30, 25, 24}, 0};
+  property::prop_id_t time_reference_id_{0};
+  property::Selection<> time_reference_{{"Absolute timecode", "Relative timecode from start time"},
+                                        1};
+  property::prop_id_t fps_id_{0};
+  property::Selection<double> fps_{{"30 FPS", "25 FPS", "24 FPS"}, {30, 25, 24}, 0};
   jack_nframes_t sample_rate_{0};
-  PContainer::prop_id_t timeshift_fw_id_{0};
+  property::prop_id_t timeshift_fw_id_{0};
   unsigned int timeshift_fw_{0};
 };
 SWITCHER_DECLARE_PLUGIN(LTCSource)

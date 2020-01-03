@@ -24,15 +24,16 @@
 
 namespace switcher {
 namespace quiddities {
+using namespace quiddity;
 class SignalQuid : public Quiddity {
  public:
-  SignalQuid(quid::Config&&);
+  SignalQuid(quiddity::Config&&);
   ~SignalQuid() = default;
   SignalQuid(const SignalQuid&) = delete;
   SignalQuid& operator=(const SignalQuid&) = delete;
 
  private:
-  SContainer::sig_id_t signal_id_;
+  signal::sig_id_t signal_id_;
 };
 
 SWITCHER_DECLARE_PLUGIN(SignalQuid);

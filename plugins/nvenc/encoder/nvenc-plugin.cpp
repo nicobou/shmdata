@@ -33,17 +33,17 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(NVencPlugin,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-NVencPlugin::NVencPlugin(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      default_preset_id_(pmanage<MPtr(&PContainer::make_bool)>(
+NVencPlugin::NVencPlugin(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      default_preset_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "bitrate_from_preset",
           [this](bool value) {
             bitrate_from_preset_ = value;
             if (bitrate_from_preset_) {
-              pmanage<MPtr(&PContainer::disable)>(
+              pmanage<MPtr(&property::PBag::disable)>(
                   bitrate_id_, "Cannot set bitrate if using default preset configuration.");
             } else {
-              pmanage<MPtr(&PContainer::enable)>(bitrate_id_);
+              pmanage<MPtr(&property::PBag::enable)>(bitrate_id_);
             }
             return true;
           },
@@ -52,17 +52,17 @@ NVencPlugin::NVencPlugin(quid::Config&& conf)
           "Use default preset configuration.",
           bitrate_from_preset_)),
       bitrate_id_(
-          pmanage<MPtr(&PContainer::make_unsigned_int)>("bitrate",
-                                                        [this](const uint32_t& value) {
-                                                          bitrate_ = value;
-                                                          return true;
-                                                        },
-                                                        [this]() { return bitrate_; },
-                                                        "Desired bitrate",
-                                                        "Value of the desired average bitrate.",
-                                                        bitrate_,
-                                                        1000000,
-                                                        20000000)),
+          pmanage<MPtr(&property::PBag::make_unsigned_int)>("bitrate",
+                                                            [this](const uint32_t& value) {
+                                                              bitrate_ = value;
+                                                              return true;
+                                                            },
+                                                            [this]() { return bitrate_; },
+                                                            "Desired bitrate",
+                                                            "Value of the desired average bitrate.",
+                                                            bitrate_,
+                                                            1000000,
+                                                            20000000)),
       es_(std::make_unique<ThreadedWrapper<NVencES>>(get_log_ptr())),
       shmcntr_(static_cast<Quiddity*>(this)) {
   register_writer_suffix("video-encoded");
@@ -77,22 +77,21 @@ NVencPlugin::NVencPlugin(quid::Config&& conf)
     is_valid_ = false;
     return;
   }
-  devices_ = Selection<>(std::move(names), 0);
+  devices_ = property::Selection<>(std::move(names), 0);
   update_device();
-  devices_id_ =
-      pmanage<MPtr(&PContainer::make_selection<>)>("gpu",
-                                                   [this](const IndexOrName& val) {
-                                                     if (devices_.get_current_index() == val.index_)
-                                                       return true;
-                                                     devices_.select(val);
-                                                     update_device();
-                                                     return true;
-                                                   },
-                                                   [this]() { return devices_.get(); },
-                                                   "encoder GPU",
-                                                   "Selection of the GPU used for encoding",
-                                                   devices_);
-  pmanage<MPtr(&PContainer::set_to_current)>(default_preset_id_);
+  devices_id_ = pmanage<MPtr(&property::PBag::make_selection<>)>(
+      "gpu",
+      [this](const quiddity::property::IndexOrName& val) {
+        if (devices_.get_current_index() == val.index_) return true;
+        devices_.select(val);
+        update_device();
+        return true;
+      },
+      [this]() { return devices_.get(); },
+      "encoder GPU",
+      "Selection of the GPU used for encoding",
+      devices_);
+  pmanage<MPtr(&property::PBag::set_to_current)>(default_preset_id_);
 
   if (!es_) {
     is_valid_ = false;
@@ -130,8 +129,8 @@ void NVencPlugin::update_codec() {
   codecs_guids_ = es_->invoke<MPtr(&NVencES::get_supported_codecs)>();
   std::vector<std::string> names;
   for (auto& it : codecs_guids_) names.push_back(it.first);
-  codecs_ = Selection<>(std::move(names), 0);
-  auto set = [this](const IndexOrName& val) {
+  codecs_ = property::Selection<>(std::move(names), 0);
+  auto set = [this](const quiddity::property::IndexOrName& val) {
     if (codecs_.get_current_index() != val.index_) {
       codecs_.select(val);
       update_preset();
@@ -143,13 +142,13 @@ void NVencPlugin::update_codec() {
   };
   auto get = [this]() { return codecs_.get_current_index(); };
   if (0 == codecs_id_)
-    codecs_id_ = pmanage<MPtr(&PContainer::make_selection<>)>(
-        "codec", set, get, "Codec", "Codec Selection", codecs_);
+    codecs_id_ = pmanage<MPtr(&property::PBag::make_selection<>)>(
+        "codec", set, get, "Codec", "Codec property::Selection<>", codecs_);
   else
-    pmanage<MPtr(&PContainer::replace)>(
+    pmanage<MPtr(&property::PBag::replace)>(
         codecs_id_,
-        std::make_unique<Property<Selection<>, Selection<>::index_t>>(
-            set, get, "Codec", "Codec Selection", codecs_, codecs_.size() - 1));
+        std::make_unique<property::Property<property::Selection<>, property::Selection<>::index_t>>(
+            set, get, "Codec", "Codec property::Selection<>", codecs_, codecs_.size() - 1));
   update_preset();
   update_profile();
   update_max_width_height();
@@ -172,20 +171,21 @@ void NVencPlugin::update_preset() {
     // if (it.first == "Low Latency default") index_low_lantency_default = current_index;
     ++current_index;
   }
-  presets_ = Selection<>(std::move(names), index_low_lantency_default);
-  auto set = [this](const IndexOrName& val) {
+  presets_ = property::Selection<>(std::move(names), index_low_lantency_default);
+  auto set = [this](const quiddity::property::IndexOrName& val) {
     if (presets_.get_current_index() != val.index_) presets_.select(val);
     return true;
   };
   auto get = [this]() { return presets_.get(); };
   if (0 == presets_id_)
-    presets_id_ = pmanage<MPtr(&PContainer::make_selection<>)>(
-        "preset", set, get, "Preset", "Preset Selection", presets_);
+    presets_id_ = pmanage<MPtr(&property::PBag::make_selection<>)>(
+        "preset", set, get, "Preset", "Preset property::Selection<>", presets_);
   else
-    pmanage<MPtr(&PContainer::replace)>(
+    pmanage<MPtr(&property::PBag::replace)>(
         presets_id_,
-        std::make_unique<Property<Selection<>, IndexOrName>>(
-            set, get, "Preset", "Preset Selection", presets_, presets_.size() - 1));
+        std::make_unique<
+            property::Property<property::Selection<>, quiddity::property::IndexOrName>>(
+            set, get, "Preset", "Preset property::Selection<>", presets_, presets_.size() - 1));
 }
 
 void NVencPlugin::update_profile() {
@@ -197,20 +197,21 @@ void NVencPlugin::update_profile() {
   profiles_guids_ = es_->invoke<MPtr(&NVencES::get_profiles)>(guid_iter->second);
   std::vector<std::string> names;
   for (auto& it : profiles_guids_) names.push_back(it.first);
-  profiles_ = Selection<>(std::move(names), 0);
-  auto set = [this](const IndexOrName& val) {
+  profiles_ = property::Selection<>(std::move(names), 0);
+  auto set = [this](const quiddity::property::IndexOrName& val) {
     if (profiles_.get_current_index() != val.index_) profiles_.select(val);
     return true;
   };
   auto get = [this]() { return profiles_.get(); };
   if (0 == profiles_id_)
-    profiles_id_ = pmanage<MPtr(&PContainer::make_selection<>)>(
-        "profile", set, get, "Profile", "Profile Selection", profiles_);
+    profiles_id_ = pmanage<MPtr(&property::PBag::make_selection<>)>(
+        "profile", set, get, "Profile", "Profile property::Selection<>", profiles_);
   else
-    pmanage<MPtr(&PContainer::replace)>(
+    pmanage<MPtr(&property::PBag::replace)>(
         profiles_id_,
-        std::make_unique<Property<Selection<>, IndexOrName>>(
-            set, get, "Profile", "Profile Selection", profiles_, profiles_.size() - 1));
+        std::make_unique<
+            property::Property<property::Selection<>, quiddity::property::IndexOrName>>(
+            set, get, "Profile", "Profile property::Selection<>", profiles_, profiles_.size() - 1));
 }
 
 void NVencPlugin::update_max_width_height() {
@@ -224,29 +225,29 @@ void NVencPlugin::update_max_width_height() {
   max_height_ = mwh.second;
   auto getwidth = [this]() { return this->max_width_; };
   if (0 == max_width_id_)
-    max_width_id_ = pmanage<MPtr(&PContainer::make_int)>("maxwidth",
-                                                         nullptr,
-                                                         getwidth,
-                                                         "Max width",
-                                                         "Max video source width",
-                                                         max_width_,
-                                                         max_width_,
-                                                         max_width_);
+    max_width_id_ = pmanage<MPtr(&property::PBag::make_int)>("maxwidth",
+                                                             nullptr,
+                                                             getwidth,
+                                                             "Max width",
+                                                             "Max video source width",
+                                                             max_width_,
+                                                             max_width_,
+                                                             max_width_);
   else
-    pmanage<MPtr(&PContainer::notify)>(max_width_id_);
+    pmanage<MPtr(&property::PBag::notify)>(max_width_id_);
 
   auto getheight = [this]() { return max_height_; };
   if (0 == max_height_id_)
-    max_height_id_ = pmanage<MPtr(&PContainer::make_int)>("maxheight",
-                                                          nullptr,
-                                                          getheight,
-                                                          "Max height",
-                                                          "Max video source height",
-                                                          max_height_,
-                                                          max_height_,
-                                                          max_height_);
+    max_height_id_ = pmanage<MPtr(&property::PBag::make_int)>("maxheight",
+                                                              nullptr,
+                                                              getheight,
+                                                              "Max height",
+                                                              "Max video source height",
+                                                              max_height_,
+                                                              max_height_,
+                                                              max_height_);
   else
-    pmanage<MPtr(&PContainer::notify)>(max_height_id_);
+    pmanage<MPtr(&property::PBag::notify)>(max_height_id_);
 }
 
 void NVencPlugin::update_input_formats() {
@@ -285,14 +286,14 @@ bool NVencPlugin::on_shmdata_disconnect() {
                                                    get_log_ptr());
   shmw_.reset(nullptr);
 
-  pmanage<MPtr(&PContainer::enable)>(devices_id_);
-  pmanage<MPtr(&PContainer::enable)>(presets_id_);
-  pmanage<MPtr(&PContainer::enable)>(profiles_id_);
-  pmanage<MPtr(&PContainer::enable)>(codecs_id_);
-  pmanage<MPtr(&PContainer::enable)>(max_width_id_);
-  pmanage<MPtr(&PContainer::enable)>(max_height_id_);
-  pmanage<MPtr(&PContainer::enable)>(default_preset_id_);
-  pmanage<MPtr(&PContainer::set_to_current)>(default_preset_id_);
+  pmanage<MPtr(&property::PBag::enable)>(devices_id_);
+  pmanage<MPtr(&property::PBag::enable)>(presets_id_);
+  pmanage<MPtr(&property::PBag::enable)>(profiles_id_);
+  pmanage<MPtr(&property::PBag::enable)>(codecs_id_);
+  pmanage<MPtr(&property::PBag::enable)>(max_width_id_);
+  pmanage<MPtr(&property::PBag::enable)>(max_height_id_);
+  pmanage<MPtr(&property::PBag::enable)>(default_preset_id_);
+  pmanage<MPtr(&property::PBag::set_to_current)>(default_preset_id_);
 
   return true;
 }
@@ -306,15 +307,17 @@ bool NVencPlugin::on_shmdata_connect(const std::string& shmpath) {
       [this](void* data, size_t size) { this->on_shmreader_data(data, size); },
       [this](const std::string& data_descr) { this->on_shmreader_server_connected(data_descr); }));
 
-  pmanage<MPtr(&PContainer::disable)>(devices_id_, ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&PContainer::disable)>(presets_id_, ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&PContainer::disable)>(profiles_id_, ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&PContainer::disable)>(codecs_id_, ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&PContainer::disable)>(max_width_id_, ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&PContainer::disable)>(max_height_id_, ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&PContainer::disable)>(default_preset_id_,
-                                      ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&PContainer::disable)>(bitrate_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(devices_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(presets_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(profiles_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(codecs_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(max_width_id_,
+                                          ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(max_height_id_,
+                                          ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(default_preset_id_,
+                                          ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(bitrate_id_, ShmdataConnector::disabledWhenConnectedMsg);
 
   return true;
 }

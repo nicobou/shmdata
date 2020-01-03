@@ -30,20 +30,20 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoConverter,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-GstVideoConverter::GstVideoConverter(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
+GstVideoConverter::GstVideoConverter(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
       video_format_(
           gst::utils::get_gst_element_capability_as_list("videoconvert", "format", GST_PAD_SRC), 0),
-      video_format_id_(
-          pmanage<MPtr(&PContainer::make_selection<>)>("pixel_format",
-                                                       [this](const IndexOrName& val) {
-                                                         video_format_.select(val);
-                                                         return true;
-                                                       },
-                                                       [this]() { return video_format_.get(); },
-                                                       "Convert to selected pixel format",
-                                                       "Pixel format to convert into",
-                                                       video_format_)),
+      video_format_id_(pmanage<MPtr(&property::PBag::make_selection<>)>(
+          "pixel_format",
+          [this](const quiddity::property::IndexOrName& val) {
+            video_format_.select(val);
+            return true;
+          },
+          [this]() { return video_format_.get(); },
+          "Convert to selected pixel format",
+          "Pixel format to convert into",
+          video_format_)),
       shmcntr_(static_cast<Quiddity*>(this)) {
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
@@ -59,7 +59,7 @@ bool GstVideoConverter::on_shmdata_disconnect() {
   shmsink_sub_.reset();
   shmsrc_sub_.reset();
   converter_.reset();
-  pmanage<MPtr(&PContainer::enable)>(video_format_id_);
+  pmanage<MPtr(&property::PBag::enable)>(video_format_id_);
   return true;
 }
 
@@ -73,11 +73,18 @@ bool GstVideoConverter::on_shmdata_connect(const std::string& shmpath) {
   converter_ = std::make_unique<gst::PixelFormatConverter>(
       shmpath_to_convert_, shmpath_converted_, video_format_.get_attached());
   if (!static_cast<bool>(*converter_.get())) return false;
-  shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
-      this, converter_->get_shmsink(), shmpath_converted_, GstShmTreeUpdater::Direction::writer);
-  shmsrc_sub_ = std::make_unique<GstShmTreeUpdater>(
-      this, converter_->get_shmsrc(), shmpath_to_convert_, GstShmTreeUpdater::Direction::reader);
-  pmanage<MPtr(&PContainer::disable)>(video_format_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  shmsink_sub_ =
+      std::make_unique<switcher::GstShmTreeUpdater>(this,
+                                                    converter_->get_shmsink(),
+                                                    shmpath_converted_,
+                                                    switcher::GstShmTreeUpdater::Direction::writer);
+  shmsrc_sub_ =
+      std::make_unique<switcher::GstShmTreeUpdater>(this,
+                                                    converter_->get_shmsrc(),
+                                                    shmpath_to_convert_,
+                                                    switcher::GstShmTreeUpdater::Direction::reader);
+  pmanage<MPtr(&property::PBag::disable)>(video_format_id_,
+                                          ShmdataConnector::disabledWhenConnectedMsg);
   return true;
 }
 

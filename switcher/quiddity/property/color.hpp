@@ -26,6 +26,8 @@
 #include <vector>
 
 namespace switcher {
+namespace quiddity {
+namespace property {
 class Color {
  public:
   using channel_t = uint8_t;
@@ -55,5 +57,7 @@ class Color {
   color_t color_;
 };
 
+}  // namespace property
+}  // namespace quiddity
 }  // namespace switcher
 #endif

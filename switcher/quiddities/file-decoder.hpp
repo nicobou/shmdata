@@ -31,9 +31,10 @@
 
 namespace switcher {
 namespace quiddities {
+using namespace quiddity;
 class FileDecoder : public Quiddity {
  public:
-  FileDecoder(quid::Config&&);
+  FileDecoder(quiddity::Config&&);
 
  private:
   bool load_file(const std::string& path);
@@ -45,19 +46,19 @@ class FileDecoder : public Quiddity {
   std::mutex media_loaded_mutex_{};
   bool media_loaded_{false};
   CounterMap counter_{};
-  std::vector<std::unique_ptr<GstShmTreeUpdater>> shm_subs_{};
+  std::vector<std::unique_ptr<switcher::GstShmTreeUpdater>> shm_subs_{};
   GstElement* filesrc_{nullptr};
   // custom properties
   std::string location_{};
-  PContainer::prop_id_t location_id_;
+  property::prop_id_t location_id_;
   bool play_{false};
-  PContainer::prop_id_t play_id_;
+  property::prop_id_t play_id_;
   double cur_pos_{0};
-  PContainer::prop_id_t cur_pos_id_;
+  property::prop_id_t cur_pos_id_;
   bool loop_{false};
-  PContainer::prop_id_t loop_id_;
+  property::prop_id_t loop_id_;
   double speed_{1.0};
-  PContainer::prop_id_t speed_id_;
+  property::prop_id_t speed_id_;
   std::unique_ptr<gst::DecodebinToShmdata> decodebin_{nullptr};
   std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};
   std::unique_ptr<PeriodicTask<>> position_task_{};

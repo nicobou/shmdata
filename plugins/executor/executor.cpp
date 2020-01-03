@@ -36,30 +36,31 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Executor,
                                      "LGPL",
                                      "Francis Lecavalier");
 
-Executor::Executor(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      StartableQuiddity(this),
+Executor::Executor(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
       shmcntr_(static_cast<Quiddity*>(this)),
-      command_line_id_(pmanage<MPtr(&PContainer::make_string)>("command_line",
-                                                               [this](const std::string& val) {
-                                                                 command_line_ = val;
-                                                                 return true;
-                                                               },
-                                                               [this]() { return command_line_; },
-                                                               "Command Line",
-                                                               "Command line to execute",
-                                                               command_line_)),
-      autostart_id_(
-          pmanage<MPtr(&PContainer::make_bool)>("autostart",
-                                                [this](bool val) {
-                                                  autostart_ = val;
-                                                  return true;
-                                                },
-                                                [this]() { return autostart_; },
-                                                "Autostart",
-                                                "Execute command line on shmdata connect or not",
-                                                autostart_)),
-      restart_on_change_id_(pmanage<MPtr(&PContainer::make_bool)>(
+      command_line_id_(
+          pmanage<MPtr(&property::PBag::make_string)>("command_line",
+                                                      [this](const std::string& val) {
+                                                        command_line_ = val;
+                                                        return true;
+                                                      },
+                                                      [this]() { return command_line_; },
+                                                      "Command Line",
+                                                      "Command line to execute",
+                                                      command_line_)),
+      autostart_id_(pmanage<MPtr(&property::PBag::make_bool)>(
+          "autostart",
+          [this](bool val) {
+            autostart_ = val;
+            return true;
+          },
+          [this]() { return autostart_; },
+          "Autostart",
+          "Execute command line on shmdata connect or not",
+          autostart_)),
+      restart_on_change_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "restart_on_change",
           [this](bool val) {
             restart_on_change_ = val;
@@ -69,7 +70,7 @@ Executor::Executor(quid::Config&& conf)
           "Restart on change",
           "Restart process execution when shmdata connections change or not",
           restart_on_change_)),
-      periodic_id_(pmanage<MPtr(&PContainer::make_bool)>(
+      periodic_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "periodic",
           [this](bool val) {
             periodic_ = val;
@@ -82,15 +83,15 @@ Executor::Executor(quid::Config&& conf)
 
       // Whitelist caps in order to control connections with an Executor as a writer
       whitelist_caps_id_(
-          pmanage<MPtr(&PContainer::make_string)>("whitelist_caps",
-                                                  [this](const std::string& val) {
-                                                    whitelist_caps_ = val;
-                                                    return true;
-                                                  },
-                                                  [this]() { return whitelist_caps_; },
-                                                  "Whitelist compatible capabilities",
-                                                  "Apply capabilities to executed command line",
-                                                  whitelist_caps_)) {
+          pmanage<MPtr(&property::PBag::make_string)>("whitelist_caps",
+                                                      [this](const std::string& val) {
+                                                        whitelist_caps_ = val;
+                                                        return true;
+                                                      },
+                                                      [this]() { return whitelist_caps_; },
+                                                      "Whitelist compatible capabilities",
+                                                      "Apply capabilities to executed command line",
+                                                      whitelist_caps_)) {
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
       [this](const std::string& shmpath) { return on_shmdata_disconnect(shmpath); },
@@ -296,7 +297,7 @@ void Executor::monitor_process() {
           start();
           restart_ = false;
         } else {
-          pmanage<MPtr(&PContainer::set_str_str)>("started", "false");
+          pmanage<MPtr(&property::PBag::set_str_str)>("started", "false");
         }
       }
     }

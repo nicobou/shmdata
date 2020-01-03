@@ -48,8 +48,8 @@ class VideoTimelapse : public SafeBoolIdiom {
  public:
   using on_new_file_t = std::function<void(std::string&&)>;
   VideoTimelapse(const VideoTimelapseConfig& config,
-                    Quiddity* quid,
-                    on_new_file_t on_new_file);
+                 quiddity::Quiddity* quid,
+                 on_new_file_t on_new_file);
   VideoTimelapse() = delete;
   ~VideoTimelapse() = default;
   VideoTimelapse(const VideoTimelapse&) = delete;

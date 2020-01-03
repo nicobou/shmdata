@@ -42,14 +42,14 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SystemUsage,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-SystemUsage::SystemUsage(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
+SystemUsage::SystemUsage(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
       tree_{InfoTree::make()},
       period_(1.0),
       pollStateTask_(std::make_unique<PeriodicTask<>>(
           [this]() { this->pollState(); },
           std::chrono::milliseconds(static_cast<int>(1000 * period_)))) {
-  pmanage<MPtr(&PContainer::make_float)>(
+  pmanage<MPtr(&property::PBag::make_float)>(
       "period",
       [this](const float& val) {
         period_ = val;

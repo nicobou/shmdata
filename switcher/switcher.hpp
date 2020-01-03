@@ -28,13 +28,18 @@
 #include "./infotree/information-tree.hpp"
 #include "./logger/base-logger.hpp"
 #include "./logger/console-logger.hpp"
-#include "./quiddity/quiddity-container.hpp"
-#include "./quiddity/quiddity-factory.hpp"
+#include "./quiddity/container.hpp"
+#include "./quiddity/factory.hpp"
 #include "./utils/make-consultable.hpp"
 
 namespace switcher {
+namespace quiddity {
+namespace bundle {
+class Bundle;
+}  // namespace bundle
+}  // namespace quiddity
 class Switcher : public gst::Initialized {
-  friend class Bundle;  // access to qcontainer_ and qfactory_
+  friend class quiddity::bundle::Bundle;  // access to qcontainer_ and qfactory_
  public:
   using ptr = std::shared_ptr<Switcher>;
 
@@ -61,10 +66,10 @@ class Switcher : public gst::Initialized {
   Make_delegate(Switcher, Configuration, &conf_, conf);
 
   // Quiddity Factory
-  Make_delegate(Switcher, quid::Factory, &qfactory_, factory);
+  Make_delegate(Switcher, quiddity::Factory, &qfactory_, factory);
 
   // Quiddity container
-  Make_delegate(Switcher, quid::Container, qcontainer_.get(), quids);
+  Make_delegate(Switcher, quiddity::Container, qcontainer_.get(), quids);
 
   // get log
   log::BaseLogger* get_logger() { return log_.get(); }
@@ -84,7 +89,7 @@ class Switcher : public gst::Initialized {
                 apply_gst_configuration();
                 register_bundle_from_configuration();
               }),
-        qcontainer_(quid::Container::make_container(this, &qfactory_, log_.get())),
+        qcontainer_(quiddity::Container::make_container(this, &qfactory_, log_.get())),
         name_(std::regex_replace(name, std::regex("[^[:alnum:]| ]"), "-")) {
     remove_shm_zombies();
   }
@@ -94,9 +99,9 @@ class Switcher : public gst::Initialized {
   static void init_gst();
 
   mutable std::unique_ptr<log::BaseLogger> log_;
-  quid::Factory qfactory_;
+  quiddity::Factory qfactory_;
   Configuration conf_;
-  quid::Container::ptr qcontainer_;
+  quiddity::Container::ptr qcontainer_;
   std::string name_;
   std::vector<std::string> quiddities_at_reset_{};
   std::weak_ptr<Switcher> me_{};

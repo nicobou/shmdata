@@ -108,7 +108,7 @@ class PJCall {
                                                      pjmedia_sdp_session* offer);
   bool make_call(std::string contact_uri);
   bool create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_session** res);
-  Quiddity::ptr retrieve_rtp_manager();
+  quiddity::Quiddity::ptr retrieve_rtp_manager();
   bool send_to(const std::string& sip_url);
   void make_hang_up(pjsip_inv_session* inv);
   bool hang_up(const std::string& sip_url);

@@ -31,9 +31,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalShmdataWriter,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-ExternalShmdataWriter::ExternalShmdataWriter(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)) {
-  pmanage<MPtr(&PContainer::make_string)>(
+ExternalShmdataWriter::ExternalShmdataWriter(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)) {
+  pmanage<MPtr(&property::PBag::make_string)>(
       "shmdata-path",
       [this](const std::string& val) {
         shmdata_path_ = val;

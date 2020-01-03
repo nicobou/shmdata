@@ -30,20 +30,20 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-OscToShmdata::OscToShmdata(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      StartableQuiddity(this),
-      port_id_(pmanage<MPtr(&PContainer::make_int)>("port",
-                                                    [this](const int& val) {
-                                                      port_ = val;
-                                                      return true;
-                                                    },
-                                                    [this]() { return port_; },
-                                                    "Port",
-                                                    "OSC port to listen to",
-                                                    port_,
-                                                    1,
-                                                    65536)) {
+OscToShmdata::OscToShmdata(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
+      port_id_(pmanage<MPtr(&property::PBag::make_int)>("port",
+                                                        [this](const int& val) {
+                                                          port_ = val;
+                                                          return true;
+                                                        },
+                                                        [this]() { return port_; },
+                                                        "Port",
+                                                        "OSC port to listen to",
+                                                        port_,
+                                                        1,
+                                                        65536)) {
   register_writer_suffix("osc");
 }
 

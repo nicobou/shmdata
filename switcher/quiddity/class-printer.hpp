@@ -17,22 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_QUIDDITY_BASIC_TEST_H__
-#define __SWITCHER_QUIDDITY_BASIC_TEST_H__
+#ifndef __SWITCHER_INFORMATION_TREE_QUIDDITY_CLASS_PRINTER_H__
+#define __SWITCHER_INFORMATION_TREE_QUIDDITY_CLASS_PRINTER_H__
 
-#include "../switcher.hpp"
+#include <string>
+#include "../infotree/information-tree.hpp"
 
 namespace switcher {
-namespace test {
-bool full(Switcher::ptr manager, const std::string& class_name, InfoTree::ptr config = nullptr);
-bool tree(Switcher::ptr manager, const std::string& class_name, InfoTree::ptr config = nullptr);
-bool create(Switcher::ptr manager, const std::string& class_name, InfoTree::ptr config = nullptr);
-bool startable(Switcher::ptr manager,
-               const std::string& class_name,
-               InfoTree::ptr config = nullptr);
-bool properties(Switcher::ptr manager,
-                const std::string& class_name,
-                InfoTree::ptr config = nullptr);
-}  // namespace test
+namespace quiddity {
+namespace classprinter {
+std::string print(InfoTree::ptrc);
+}  // namespace classprinter
+}  // namespace quiddity
 }  // namespace switcher
 #endif

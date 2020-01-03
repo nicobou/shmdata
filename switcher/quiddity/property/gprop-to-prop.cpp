@@ -21,31 +21,31 @@
 #include "../../utils/scope-exit.hpp"
 
 namespace switcher {
-namespace GPropToProp {
+namespace quiddity {
+namespace property {
+  std::unique_ptr<PropertyBase> to_prop(GObject * gobj, const std::string& gprop_name) {
+    GParamSpec* pspec = g_object_class_find_property(G_OBJECT_GET_CLASS(gobj), gprop_name.c_str());
+    if (nullptr == pspec) {
+      return std::unique_ptr<PropertyBase>();
+    }
 
-std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_name) {
-  GParamSpec* pspec = g_object_class_find_property(G_OBJECT_GET_CLASS(gobj), gprop_name.c_str());
-  if (nullptr == pspec) {
-    return std::unique_ptr<PropertyBase>();
-  }
+    GValue value = G_VALUE_INIT;
+    g_value_init(&value, pspec->value_type);
+    g_object_get_property(gobj, pspec->name, &value);
+    std::string description = std::string(g_param_spec_get_blurb(pspec));
+    bool is_writable = false;
+    if (pspec->flags & G_PARAM_WRITABLE) is_writable = true;
 
-  GValue value = G_VALUE_INIT;
-  g_value_init(&value, pspec->value_type);
-  g_object_get_property(gobj, pspec->name, &value);
-  std::string description = std::string(g_param_spec_get_blurb(pspec));
-  bool is_writable = false;
-  if (pspec->flags & G_PARAM_WRITABLE) is_writable = true;
-
-  auto res = std::unique_ptr<PropertyBase>();
-  switch (G_VALUE_TYPE(&value)) {
-    case G_TYPE_STRING: {
-      auto content = g_value_get_string(&value);
-      res = std::make_unique<Property<std::string>>(
+    auto res = std::unique_ptr<PropertyBase>();
+    switch (G_VALUE_TYPE(&value)) {
+      case G_TYPE_STRING: {
+        auto content = g_value_get_string(&value);
+        res = std::make_unique<Property<std::string>>(
           is_writable ?
           [gobj, gprop_name](const std::string &val){
             g_object_set(gobj, gprop_name.c_str(), val.c_str(), nullptr);
             return true;
-          } : static_cast<prop::set_t<std::string>>(nullptr),  // FIXME
+          } : static_cast<set_t<std::string>>(nullptr),  // FIXME
           [gobj, gprop_name](){
             gchar* strval = nullptr;
             On_scope_exit {
@@ -56,15 +56,15 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
           gprop_name,
           std::string(description),
           std::string(content ? content : ""));
-      break;
-    }
-    case G_TYPE_BOOLEAN:
-      res = std::make_unique<Property<bool>>(
+        break;
+      }
+      case G_TYPE_BOOLEAN:
+        res = std::make_unique<Property<bool>>(
           is_writable ?
           [gobj, gprop_name](const bool &val){
             g_object_set(gobj, gprop_name.c_str(), val ? TRUE : FALSE, nullptr);
             return true;
-          } : static_cast<prop::set_t<bool>>(nullptr),
+          } : static_cast<set_t<bool>>(nullptr),
           [gobj, gprop_name](){
             gboolean val;
             g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
@@ -73,15 +73,15 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
           gprop_name,
           std::string(description),
           g_value_get_boolean(&value) ? true : false);
-      break;
-    case G_TYPE_ULONG: {
-      GParamSpecULong* pulong = G_PARAM_SPEC_ULONG(pspec);
-      res = std::make_unique<Property<gulong>>(
+        break;
+      case G_TYPE_ULONG: {
+        GParamSpecULong* pulong = G_PARAM_SPEC_ULONG(pspec);
+        res = std::make_unique<Property<gulong>>(
             is_writable ?
             [gobj, gprop_name](const gulong &val){
               g_object_set(gobj, gprop_name.c_str(), val, nullptr);
               return true;
-            } : static_cast<prop::set_t<gulong>>(nullptr),
+            } : static_cast<set_t<gulong>>(nullptr),
             [gobj, gprop_name](){
               gulong val;
               g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
@@ -92,15 +92,15 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
             g_value_get_ulong(&value),
             pulong->minimum,
             pulong->maximum);
-    } break;
-    case G_TYPE_LONG: {
-      GParamSpecLong* plong = G_PARAM_SPEC_LONG(pspec);
-      res = std::make_unique<Property<glong>>(
+      } break;
+      case G_TYPE_LONG: {
+        GParamSpecLong* plong = G_PARAM_SPEC_LONG(pspec);
+        res = std::make_unique<Property<glong>>(
             is_writable ?
             [gobj, gprop_name](const glong &val){
               g_object_set(gobj, gprop_name.c_str(), val, nullptr);
               return true;
-            } : static_cast<prop::set_t<glong>>(nullptr),
+            } : static_cast<set_t<glong>>(nullptr),
             [gobj, gprop_name](){
               glong val;
               g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
@@ -111,15 +111,15 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
             g_value_get_long(&value),
             plong->minimum,
             plong->maximum);
-    } break;
-    case G_TYPE_UINT: {
-      GParamSpecUInt* puint = G_PARAM_SPEC_UINT(pspec);
-      res = std::make_unique<Property<guint>>(
+      } break;
+      case G_TYPE_UINT: {
+        GParamSpecUInt* puint = G_PARAM_SPEC_UINT(pspec);
+        res = std::make_unique<Property<guint>>(
             is_writable ?
             [gobj, gprop_name](const guint &val){
               g_object_set(gobj, gprop_name.c_str(), val, nullptr);
               return true;
-            } : static_cast<prop::set_t<guint>>(nullptr),
+            } : static_cast<set_t<guint>>(nullptr),
             [gobj, gprop_name](){
               guint val;
               g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
@@ -130,15 +130,15 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
             g_value_get_uint(&value),
             puint->minimum,
             puint->maximum);
-    } break;
-    case G_TYPE_INT: {
-      GParamSpecInt* pint = G_PARAM_SPEC_INT(pspec);
-      res = std::make_unique<Property<gint>>(
+      } break;
+      case G_TYPE_INT: {
+        GParamSpecInt* pint = G_PARAM_SPEC_INT(pspec);
+        res = std::make_unique<Property<gint>>(
             is_writable ?
             [gobj, gprop_name](const gint &val){
               g_object_set(gobj, gprop_name.c_str(), val, nullptr);
               return true;
-            } : static_cast<prop::set_t<gint>>(nullptr),
+            } : static_cast<set_t<gint>>(nullptr),
             [gobj, gprop_name](){
               gint val;
               g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
@@ -149,15 +149,15 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
             g_value_get_int(&value),
             pint->minimum,
             pint->maximum);
-    } break;
-    case G_TYPE_UINT64: {
-      GParamSpecUInt64* puint64 = G_PARAM_SPEC_UINT64(pspec);
-      res = std::make_unique<Property<guint64>>(
+      } break;
+      case G_TYPE_UINT64: {
+        GParamSpecUInt64* puint64 = G_PARAM_SPEC_UINT64(pspec);
+        res = std::make_unique<Property<guint64>>(
             is_writable ?
             [gobj, gprop_name](const guint64 &val){
               g_object_set(gobj, gprop_name.c_str(), val, nullptr);
               return true;
-            } : static_cast<prop::set_t<guint64>>(nullptr),
+            } : static_cast<set_t<guint64>>(nullptr),
             [gobj, gprop_name](){
               guint64 val;
               g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
@@ -168,15 +168,15 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
             g_value_get_uint64(&value),
             puint64->minimum,
             puint64->maximum);
-    } break;
-    case G_TYPE_INT64: {
-      GParamSpecInt64* pint64 = G_PARAM_SPEC_INT64(pspec);
-      res = std::make_unique<Property<gint64>>(
+      } break;
+      case G_TYPE_INT64: {
+        GParamSpecInt64* pint64 = G_PARAM_SPEC_INT64(pspec);
+        res = std::make_unique<Property<gint64>>(
             is_writable ?
             [gobj, gprop_name](const gint64 &val){
               g_object_set(gobj, gprop_name.c_str(), val, nullptr);
               return true;
-            } : static_cast<prop::set_t<gint64>>(nullptr),
+            } : static_cast<set_t<gint64>>(nullptr),
             [gobj, gprop_name](){
               gint64 val;
               g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
@@ -187,15 +187,15 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
             g_value_get_int64(&value),
             pint64->minimum,
             pint64->maximum);
-    } break;
-    case G_TYPE_FLOAT: {
-      GParamSpecFloat* pfloat = G_PARAM_SPEC_FLOAT(pspec);
-      res = std::make_unique<Property<gfloat>>(
+      } break;
+      case G_TYPE_FLOAT: {
+        GParamSpecFloat* pfloat = G_PARAM_SPEC_FLOAT(pspec);
+        res = std::make_unique<Property<gfloat>>(
             is_writable ?
             [gobj, gprop_name](const gfloat &val){
               g_object_set(gobj, gprop_name.c_str(), val, nullptr);
               return true;
-            } : static_cast<prop::set_t<gfloat>>(nullptr),
+            } : static_cast<set_t<gfloat>>(nullptr),
             [gobj, gprop_name](){
               gfloat val;
               g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
@@ -206,15 +206,15 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
             g_value_get_float(&value),
             pfloat->minimum,
             pfloat->maximum);
-    } break;
-    case G_TYPE_DOUBLE: {
-      GParamSpecDouble* pdouble = G_PARAM_SPEC_DOUBLE(pspec);
-      res = std::make_unique<Property<gdouble>>(
+      } break;
+      case G_TYPE_DOUBLE: {
+        GParamSpecDouble* pdouble = G_PARAM_SPEC_DOUBLE(pspec);
+        res = std::make_unique<Property<gdouble>>(
             is_writable ?
             [gobj, gprop_name](const gdouble &val){
               g_object_set(gobj, gprop_name.c_str(), val, nullptr);
               return true;
-            } : static_cast<prop::set_t<gdouble>>(nullptr),
+            } : static_cast<set_t<gdouble>>(nullptr),
             [gobj, gprop_name](){
               gdouble val;
               g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
@@ -225,9 +225,9 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
             g_value_get_double(&value),
             pdouble->minimum,
             pdouble->maximum);
-    } break;
-    default:
-      if (pspec->value_type == GST_TYPE_CAPS) {
+      } break;
+      default:
+        if (pspec->value_type == GST_TYPE_CAPS) {
 #ifdef DEBUG
         std::cerr << "GST_TYPE_CAPS is not a supporteed property type" << '\n';
 #endif
@@ -259,7 +259,7 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
                 //g_object_set(gobj, gprop_name.c_str(), val.name_.c_str(), nullptr);
               }
               return true;
-            } : static_cast<prop::set_t<IndexOrName>>(nullptr),
+            } : static_cast<set_t<IndexOrName>>(nullptr),
             [gobj, gprop_name, indexes](){
               gint val;
               g_object_get(gobj, gprop_name.c_str(), &val, nullptr);
@@ -295,7 +295,7 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
               gst_value_set_fraction (&fract, val.numerator(), val.denominator());
               g_object_set_property(gobj, gprop_name.c_str(), &fract);
               return true;
-            } : static_cast<prop::set_t<Fraction>>(nullptr),
+            } : static_cast<set_t<Fraction>>(nullptr),
             [gobj, gprop_name](){
               GValue fract = G_VALUE_INIT; On_scope_exit{g_value_reset(&fract);};
               g_object_get_property(gobj, gprop_name.c_str(), &fract);
@@ -325,5 +325,6 @@ std::unique_ptr<PropertyBase> to_prop(GObject* gobj, const std::string& gprop_na
   return res;
 }
 
-}  // namespace GPropToProp
+}  // namespace property
+}  // namespace quiddity
 }  // namespace switcher

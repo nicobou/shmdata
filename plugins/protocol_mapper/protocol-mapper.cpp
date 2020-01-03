@@ -31,8 +31,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ProtocolMapper,
                                      "LGPL",
                                      "Nicolas Bouillot/Jérémie Soria");
 
-ProtocolMapper::ProtocolMapper(quid::Config&& conf) : Quiddity(std::forward<quid::Config>(conf)) {
-  config_file_id_ = pmanage<MPtr(&PContainer::make_string)>(
+ProtocolMapper::ProtocolMapper(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)) {
+  config_file_id_ = pmanage<MPtr(&property::PBag::make_string)>(
       "config_file",
       [this](const std::string& val) {
         config_file_ = val;
@@ -58,7 +59,7 @@ ProtocolMapper::ProtocolMapper(quid::Config&& conf) : Quiddity(std::forward<quid
         if (!protocol_reader_->make_properties(this, tree->get_tree("commands").get()))
           return false;
 
-        pmanage<MPtr(&PContainer::disable)>(config_file_id_, "Service already loaded");
+        pmanage<MPtr(&property::PBag::disable)>(config_file_id_, "Service already loaded");
 
         return true;
       },

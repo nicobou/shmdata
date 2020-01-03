@@ -25,10 +25,12 @@
 #include "../../utils/bool-log.hpp"
 
 namespace switcher {
+namespace quiddity {
+namespace method {
+using meth_id_t = size_t;
 
 class MethodBase {
  public:
-  using meth_id_t = size_t;
   virtual ~MethodBase() = default;
   static inline meth_id_t id_from_string(const std::string& str) {
     if (!isdigit(*str.begin())) return 0;
@@ -108,5 +110,7 @@ class Method : public MethodBase {
   M method_;
 };
 
+}  // namespace method
+}  // namespace quiddity
 }  // namespace switcher
 #endif

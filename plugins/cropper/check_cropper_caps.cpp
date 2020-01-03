@@ -20,34 +20,35 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <cassert>
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 #include "switcher/switcher.hpp"
 
 int main() {
   {
     using namespace switcher;
+    using namespace switcher::quiddity;
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
     // check can_sink_caps
-    auto cqrox = manager->quids<MPtr(&quid::Container::create)>("cropper", "crop", nullptr);
+    auto cqrox = manager->quids<MPtr(&quiddity::Container::create)>("cropper", "crop", nullptr);
     assert(cqrox);
 
     auto crop = cqrox.get();
     assert(crop);
 
-    auto meth_id = crop->meth<MPtr(&MContainer::get_id)>("can-sink-caps");
+    auto meth_id = crop->meth<MPtr(&method::MBag::get_id)>("can-sink-caps");
     assert(0 != meth_id);
 
     // should reject connection if the caps is not "video/x-raw"
-    bool can_connect = crop->meth<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+    bool can_connect = crop->meth<MPtr(&method::MBag::invoke<std::function<bool(std::string)>>)>(
         meth_id, std::make_tuple("audio/x-raw"));
 
     assert(can_connect == false);
 
     // should accept connection if the caps are valid and of type "video/x-raw"
-    can_connect = crop->meth<MPtr(&MContainer::invoke<std::function<bool(std::string)>>)>(
+    can_connect = crop->meth<MPtr(&method::MBag::invoke<std::function<bool(std::string)>>)>(
         meth_id,
         std::make_tuple("video/x-raw, format=I420, width=1920, height=1080, framerate=30/1"));
 

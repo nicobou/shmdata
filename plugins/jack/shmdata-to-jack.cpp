@@ -20,8 +20,8 @@
 #include "./shmdata-to-jack.hpp"
 #include "./audio-resampler.hpp"
 #include "switcher/gst/utils.hpp"
+#include "switcher/quiddity/container.hpp"
 #include "switcher/quiddity/property/gprop-to-prop.hpp"
-#include "switcher/quiddity/quiddity-container.hpp"
 #include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
@@ -35,8 +35,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-ShmdataToJack::ShmdataToJack(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
+ShmdataToJack::ShmdataToJack(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
       jack_client_(get_name(),
                    conf.tree_config_->branch_has_data("server_name")
                        ? conf.tree_config_->branch_get_value("server_name").copy_as<std::string>()
@@ -53,33 +53,33 @@ ShmdataToJack::ShmdataToJack(quid::Config&& conf)
                      });
                      thread.detach();
                    }),
-      connect_to_id_(pmanage<MPtr(&PContainer::make_string)>("connect_to",
-                                                             [this](const std::string& val) {
-                                                               connect_to_ = val;
-                                                               update_port_to_connect();
-                                                               return true;
-                                                             },
-                                                             [this]() { return connect_to_; },
-                                                             "Connect To",
-                                                             "Which client to connect to",
-                                                             connect_to_)),
-      auto_connect_id_(pmanage<MPtr(&PContainer::make_bool)>(
+      connect_to_id_(pmanage<MPtr(&property::PBag::make_string)>("connect_to",
+                                                                 [this](const std::string& val) {
+                                                                   connect_to_ = val;
+                                                                   update_port_to_connect();
+                                                                   return true;
+                                                                 },
+                                                                 [this]() { return connect_to_; },
+                                                                 "Connect To",
+                                                                 "Which client to connect to",
+                                                                 connect_to_)),
+      auto_connect_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "auto_connect",
           [this](const bool& val) {
             auto_connect_ = val;
             update_port_to_connect();
             if (auto_connect_) {
-              pmanage<MPtr(&PContainer::enable)>(connect_to_id_);
-              pmanage<MPtr(&PContainer::enable)>(index_id_);
-              pmanage<MPtr(&PContainer::enable)>(connect_all_to_first_id_);
-              pmanage<MPtr(&PContainer::enable)>(connect_only_first_id_);
+              pmanage<MPtr(&property::PBag::enable)>(connect_to_id_);
+              pmanage<MPtr(&property::PBag::enable)>(index_id_);
+              pmanage<MPtr(&property::PBag::enable)>(connect_all_to_first_id_);
+              pmanage<MPtr(&property::PBag::enable)>(connect_only_first_id_);
             } else {
               static const std::string why_disabled =
                   "this property is available only when auto connect is enabled";
-              pmanage<MPtr(&PContainer::disable)>(connect_to_id_, why_disabled);
-              pmanage<MPtr(&PContainer::disable)>(index_id_, why_disabled);
-              pmanage<MPtr(&PContainer::disable)>(connect_all_to_first_id_, why_disabled);
-              pmanage<MPtr(&PContainer::disable)>(connect_only_first_id_, why_disabled);
+              pmanage<MPtr(&property::PBag::disable)>(connect_to_id_, why_disabled);
+              pmanage<MPtr(&property::PBag::disable)>(index_id_, why_disabled);
+              pmanage<MPtr(&property::PBag::disable)>(connect_all_to_first_id_, why_disabled);
+              pmanage<MPtr(&property::PBag::disable)>(connect_only_first_id_, why_disabled);
             }
             return true;
           },
@@ -88,45 +88,45 @@ ShmdataToJack::ShmdataToJack(quid::Config&& conf)
           "Auto Connect to another client",
           auto_connect_)),
       connect_all_to_first_id_(
-          pmanage<MPtr(&PContainer::make_bool)>("connect_all_to_first",
-                                                [this](const bool& val) {
-                                                  connect_all_to_first_ = val;
-                                                  return true;
-                                                },
-                                                [this]() { return connect_all_to_first_; },
-                                                "Many Channels To One",
-                                                "Connect all channels to the first",
-                                                connect_all_to_first_)),
+          pmanage<MPtr(&property::PBag::make_bool)>("connect_all_to_first",
+                                                    [this](const bool& val) {
+                                                      connect_all_to_first_ = val;
+                                                      return true;
+                                                    },
+                                                    [this]() { return connect_all_to_first_; },
+                                                    "Many Channels To One",
+                                                    "Connect all channels to the first",
+                                                    connect_all_to_first_)),
       connect_only_first_id_(
-          pmanage<MPtr(&PContainer::make_bool)>("connect_only_first",
-                                                [this](const bool& val) {
-                                                  connect_only_first_ = val;
-                                                  return true;
-                                                },
-                                                [this]() { return connect_only_first_; },
-                                                "Connect only first channel",
-                                                "Connect only first channel",
-                                                connect_only_first_)),
+          pmanage<MPtr(&property::PBag::make_bool)>("connect_only_first",
+                                                    [this](const bool& val) {
+                                                      connect_only_first_ = val;
+                                                      return true;
+                                                    },
+                                                    [this]() { return connect_only_first_; },
+                                                    "Connect only first channel",
+                                                    "Connect only first channel",
+                                                    connect_only_first_)),
       do_format_conversion_id_(
-          pmanage<MPtr(&PContainer::make_bool)>("do_format_conversion",
-                                                [this](const bool& val) {
-                                                  do_format_conversion_ = val;
-                                                  return true;
-                                                },
-                                                [this]() { return do_format_conversion_; },
-                                                "Do sample conversion to float (F32LE)",
-                                                "Do sample conversion to float (F32LE)",
-                                                do_format_conversion_)),
+          pmanage<MPtr(&property::PBag::make_bool)>("do_format_conversion",
+                                                    [this](const bool& val) {
+                                                      do_format_conversion_ = val;
+                                                      return true;
+                                                    },
+                                                    [this]() { return do_format_conversion_; },
+                                                    "Do sample conversion to float (F32LE)",
+                                                    "Do sample conversion to float (F32LE)",
+                                                    do_format_conversion_)),
       do_rate_conversion_id_(
-          pmanage<MPtr(&PContainer::make_bool)>("do_rate_conversion",
-                                                [this](const bool& val) {
-                                                  do_rate_conversion_ = val;
-                                                  return true;
-                                                },
-                                                [this]() { return do_format_conversion_; },
-                                                "Convert to Jack rate",
-                                                "Convert to Jack rate",
-                                                do_rate_conversion_)),
+          pmanage<MPtr(&property::PBag::make_bool)>("do_rate_conversion",
+                                                    [this](const bool& val) {
+                                                      do_rate_conversion_ = val;
+                                                      return true;
+                                                    },
+                                                    [this]() { return do_format_conversion_; },
+                                                    "Convert to Jack rate",
+                                                    "Convert to Jack rate",
+                                                    do_rate_conversion_)),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
   // is_constructed_ is needed because of a cross reference among JackClient and JackPort
@@ -150,7 +150,7 @@ ShmdataToJack::ShmdataToJack(quid::Config&& conf)
   if (config<MPtr(&InfoTree::branch_has_data)>("max_number_of_channels"))
     max_number_of_channels =
         config<MPtr(&InfoTree::branch_get_value)>("max_number_of_channels").copy_as<unsigned int>();
-  index_id_ = pmanage<MPtr(&PContainer::make_int)>(
+  index_id_ = pmanage<MPtr(&property::PBag::make_int)>(
       "index",
       [this](const int& val) {
         index_ = val;
@@ -314,13 +314,15 @@ bool ShmdataToJack::start() {
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), audiobin_);
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
-  pmanage<MPtr(&PContainer::disable)>(auto_connect_id_, ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&PContainer::disable)>(connect_to_id_, ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&PContainer::disable)>(index_id_, ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&PContainer::disable)>(connect_all_to_first_id_,
-                                      ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&PContainer::disable)>(connect_only_first_id_,
-                                      ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(auto_connect_id_,
+                                          ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(connect_to_id_,
+                                          ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(index_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(connect_all_to_first_id_,
+                                          ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(connect_only_first_id_,
+                                          ShmdataConnector::disabledWhenConnectedMsg);
   connect_ports();
   return true;
 }
@@ -332,11 +334,11 @@ bool ShmdataToJack::stop() {
     On_scope_exit { gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr); };
     if (!make_elements()) return false;
   }
-  pmanage<MPtr(&PContainer::enable)>(auto_connect_id_);
-  pmanage<MPtr(&PContainer::enable)>(connect_to_id_);
-  pmanage<MPtr(&PContainer::enable)>(index_id_);
-  pmanage<MPtr(&PContainer::enable)>(connect_all_to_first_id_);
-  pmanage<MPtr(&PContainer::enable)>(connect_only_first_id_);
+  pmanage<MPtr(&property::PBag::enable)>(auto_connect_id_);
+  pmanage<MPtr(&property::PBag::enable)>(connect_to_id_);
+  pmanage<MPtr(&property::PBag::enable)>(index_id_);
+  pmanage<MPtr(&property::PBag::enable)>(connect_all_to_first_id_);
+  pmanage<MPtr(&property::PBag::enable)>(connect_only_first_id_);
   return true;
 }
 

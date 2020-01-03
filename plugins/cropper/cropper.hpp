@@ -33,9 +33,10 @@
 namespace switcher {
 namespace quiddities {
 
+using namespace quiddity;
 class Cropper : public Quiddity {
  public:
-  Cropper(quid::Config&&);
+  Cropper(quiddity::Config&&);
   ~Cropper() = default;
   Cropper(const Cropper&) = delete;
   Cropper& operator=(const Cropper&) = delete;
@@ -61,13 +62,13 @@ class Cropper : public Quiddity {
   std::string cur_caps_{};
 
   int left_{0};
-  PContainer::prop_id_t left_id_;
+  property::prop_id_t left_id_;
   int right_{0};
-  PContainer::prop_id_t right_id_;
+  property::prop_id_t right_id_;
   int top_{0};
-  PContainer::prop_id_t top_id_;
+  property::prop_id_t top_id_;
   int bottom_{0};
-  PContainer::prop_id_t bottom_id_;
+  property::prop_id_t bottom_id_;
 
   ThreadedWrapper<> async_this_{};
 };

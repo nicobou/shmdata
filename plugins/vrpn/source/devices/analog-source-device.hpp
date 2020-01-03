@@ -34,13 +34,13 @@ class AnalogSourceDevice : public SourceDevice {
    * Type for the double property creation callback
    */
   using CreateDoublePropertyCallback =
-      std::function<PContainer::prop_id_t(Property<double>* property,
-                                          const std::string& id,
-                                          const std::string& name,
-                                          const std::string& description,
-                                          double value,
-                                          double min,
-                                          double max)>;
+      std::function<property::prop_id_t(Property<double>* property,
+                                        const std::string& id,
+                                        const std::string& name,
+                                        const std::string& description,
+                                        double value,
+                                        double min,
+                                        double max)>;
 
   AnalogSourceDevice(const std::string& name,
                      const std::string& uri,

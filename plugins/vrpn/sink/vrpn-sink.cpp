@@ -35,9 +35,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VRPNSink,
 // Have to define it here, otherwise symbol not found...
 const unsigned int VRPNSink::vrpnLoopInterval{16};
 
-VRPNSink::VRPNSink(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      StartableQuiddity(this),
+VRPNSink::VRPNSink(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
       shmdataConnector_(static_cast<Quiddity*>(this)) {
   shmdataConnector_.install_connect_method(
       [this](const std::string& shmPath) { return this->connect(shmPath); },
@@ -46,34 +46,34 @@ VRPNSink::VRPNSink(quid::Config&& conf)
       [this](const std::string& caps) { return this->canSinkCaps(caps); },
       1);
 
-  port_id_ = pmanage<MPtr(&PContainer::make_int)>("port",
-                                                  [this](int val) {
-                                                    port_ = val;
-                                                    return true;
-                                                  },
-                                                  [this]() { return port_; },
-                                                  "Port",
-                                                  "Port that the VRPN server will listen to.",
-                                                  port_,
-                                                  1,
-                                                  65536);
+  port_id_ = pmanage<MPtr(&property::PBag::make_int)>("port",
+                                                      [this](int val) {
+                                                        port_ = val;
+                                                        return true;
+                                                      },
+                                                      [this]() { return port_; },
+                                                      "Port",
+                                                      "Port that the VRPN server will listen to.",
+                                                      port_,
+                                                      1,
+                                                      65536);
 
-  pmanage<MPtr(&PContainer::make_group)>(
+  pmanage<MPtr(&property::PBag::make_group)>(
       "advanced", "Advanced configuration", "Advanced configuration");
 
-  pmanage<MPtr(&PContainer::make_parented_bool)>("debug",
-                                                 "advanced",
-                                                 [this](bool val) {
-                                                   debug_ = val;
-                                                   return true;
-                                                 },
-                                                 [this]() { return debug_; },
-                                                 "Debug",
-                                                 "Debug values to console",
-                                                 debug_);
+  pmanage<MPtr(&property::PBag::make_parented_bool)>("debug",
+                                                     "advanced",
+                                                     [this](bool val) {
+                                                       debug_ = val;
+                                                       return true;
+                                                     },
+                                                     [this]() { return debug_; },
+                                                     "Debug",
+                                                     "Debug values to console",
+                                                     debug_);
 
   create_analog_device_id_ =
-      mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+      mmanage<MPtr(&method::MBag::make_method<std::function<bool(std::string)>>)>(
           "create_analog_device",
           infotree::json::deserialize(
               R"(
@@ -91,7 +91,7 @@ VRPNSink::VRPNSink(quid::Config&& conf)
           [this](const std::string& dev) { return createAnalogDeviceMethod(dev); });
 
   create_button_device_id_ =
-      mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+      mmanage<MPtr(&method::MBag::make_method<std::function<bool(std::string)>>)>(
           "create_button_device",
           infotree::json::deserialize(
               R"(
@@ -199,41 +199,41 @@ bool VRPNSink::createAnalogDevice(const std::string& deviceName) {
   std::unique_ptr<AnalogSinkDevice> analogDevice =
       std::make_unique<AnalogSinkDevice>(deviceName.c_str(), 0);
 
-  devicesProperties_[deviceId] = std::make_unique<std::vector<PContainer::prop_id_t>>();
+  devicesProperties_[deviceId] = std::make_unique<std::vector<property::prop_id_t>>();
 
   // Create the device property group
   std::string groupName = std::string(deviceName) + "-analog";
-  pmanage<MPtr(&PContainer::make_group)>(
+  pmanage<MPtr(&property::PBag::make_group)>(
       groupName, "\"" + std::string(deviceName) + "\" Analog Device", "Analog Device Properties");
 
   // Add a property to the group, controlling the number of channels
-  pmanage<MPtr(&PContainer::make_parented_int)>(groupName + "-numChannels",
-                                                groupName,
-                                                [this, deviceName](int val) {
-                                                  // Called from switcher's thread
-                                                  // Sync with vrpn thread before accessing
-                                                  // connection/devices
-                                                  std::lock_guard<std::mutex> _(vrpnMutex_);
-                                                  this->updateAnalogProperties(deviceName, val);
-                                                  return true;
-                                                },
-                                                [this, deviceId]() {
-                                                  // Called from switcher's thread
-                                                  // Sync with vrpn thread before accessing
-                                                  // connection/devices
-                                                  std::lock_guard<std::mutex> _(vrpnMutex_);
-                                                  AnalogSinkDevice* analog =
-                                                      getAnalogDevice(deviceId);
-                                                  return analog ? analog->getNumChannels() : 0;
-                                                },
-                                                "Number of channels",
-                                                "Number of allocated channels in the device.",
-                                                0,
-                                                0,
-                                                vrpn_CHANNEL_MAX);
+  pmanage<MPtr(&property::PBag::make_parented_int)>(groupName + "-numChannels",
+                                                    groupName,
+                                                    [this, deviceName](int val) {
+                                                      // Called from switcher's thread
+                                                      // Sync with vrpn thread before accessing
+                                                      // connection/devices
+                                                      std::lock_guard<std::mutex> _(vrpnMutex_);
+                                                      this->updateAnalogProperties(deviceName, val);
+                                                      return true;
+                                                    },
+                                                    [this, deviceId]() {
+                                                      // Called from switcher's thread
+                                                      // Sync with vrpn thread before accessing
+                                                      // connection/devices
+                                                      std::lock_guard<std::mutex> _(vrpnMutex_);
+                                                      AnalogSinkDevice* analog =
+                                                          getAnalogDevice(deviceId);
+                                                      return analog ? analog->getNumChannels() : 0;
+                                                    },
+                                                    "Number of channels",
+                                                    "Number of allocated channels in the device.",
+                                                    0,
+                                                    0,
+                                                    vrpn_CHANNEL_MAX);
 
   // Create a container for the properties
-  pmanage<MPtr(&PContainer::make_parented_group)>(
+  pmanage<MPtr(&property::PBag::make_parented_group)>(
       groupName + "-channels", groupName, "Channels", "Channel Properties");
 
   // Start the device if we are already started
@@ -276,13 +276,13 @@ void VRPNSink::updateAnalogProperties(const std::string& deviceName, int numChan
   // Find and update the properties if necessary
   auto search = devicesProperties_.find(deviceId);
   if (search != devicesProperties_.end()) {
-    std::vector<PContainer::prop_id_t>* props = search->second.get();
+    std::vector<property::prop_id_t>* props = search->second.get();
     int initialSize = (int)props->size();
 
     if (numChannels > initialSize) {
       // Add missing properties
       for (int i = initialSize; i < numChannels; ++i) {
-        auto property = pmanage<MPtr(&PContainer::make_parented_double)>(
+        auto property = pmanage<MPtr(&property::PBag::make_parented_double)>(
             deviceName + "-analog-" + std::to_string(i),
             std::string(deviceName) + "-analog-channels",
             [this, deviceId, i](double val) {
@@ -309,13 +309,13 @@ void VRPNSink::updateAnalogProperties(const std::string& deviceName, int numChan
             std::numeric_limits<double>::max());
         props->push_back(property);
         if (!is_started()) {
-          pmanage<MPtr(&PContainer::disable)>(property, StartableQuiddity::disabledWhenStopedMsg);
+          pmanage<MPtr(&property::PBag::disable)>(property, Startable::disabledWhenStopedMsg);
         }
       }
     } else if (numChannels < initialSize) {
       // Remove extra properties
       for (int i = initialSize; i > numChannels; --i) {
-        pmanage<MPtr(&PContainer::remove)>(props->at((size_t)i - 1));
+        pmanage<MPtr(&property::PBag::remove)>(props->at((size_t)i - 1));
       }
       props->resize((size_t)numChannels);
     }
@@ -356,42 +356,43 @@ bool VRPNSink::createButtonDevice(const std::string& deviceName) {
   std::unique_ptr<ButtonSinkDevice> buttonDevice =
       std::make_unique<ButtonSinkDevice>(deviceName.c_str(), 0);
 
-  devicesProperties_[deviceId] = std::make_unique<std::vector<PContainer::prop_id_t>>();
+  devicesProperties_[deviceId] = std::make_unique<std::vector<property::prop_id_t>>();
 
   // Create the device property group
   std::string groupName = std::string(deviceName) + "-button";
-  pmanage<MPtr(&PContainer::make_group)>(groupName,
-                                         "\"" + std::string(deviceName) + "\" Button Device Button",
-                                         "Button Device Properties");
+  pmanage<MPtr(&property::PBag::make_group)>(
+      groupName,
+      "\"" + std::string(deviceName) + "\" Button Device Button",
+      "Button Device Properties");
 
   // Add a property to the group, controlling the number of channels
-  pmanage<MPtr(&PContainer::make_parented_int)>(groupName + "-numChannels",
-                                                groupName,
-                                                [this, deviceName](int val) {
-                                                  // Called from switcher's thread
-                                                  // Sync with vrpn thread before accessing
-                                                  // connection/devices
-                                                  std::lock_guard<std::mutex> _(vrpnMutex_);
-                                                  this->updateButtonProperties(deviceName, val);
-                                                  return true;
-                                                },
-                                                [this, deviceId]() {
-                                                  // Called from switcher's thread
-                                                  // Sync with vrpn thread before accessing
-                                                  // connection/devices
-                                                  std::lock_guard<std::mutex> _(vrpnMutex_);
-                                                  ButtonSinkDevice* button =
-                                                      getButtonDevice(deviceId);
-                                                  return button ? button->getNumButtons() : 0;
-                                                },
-                                                "Number of channels",
-                                                "Number of allocated channels in the device.",
-                                                0,
-                                                0,
-                                                vrpn_BUTTON_MAX_BUTTONS);
+  pmanage<MPtr(&property::PBag::make_parented_int)>(groupName + "-numChannels",
+                                                    groupName,
+                                                    [this, deviceName](int val) {
+                                                      // Called from switcher's thread
+                                                      // Sync with vrpn thread before accessing
+                                                      // connection/devices
+                                                      std::lock_guard<std::mutex> _(vrpnMutex_);
+                                                      this->updateButtonProperties(deviceName, val);
+                                                      return true;
+                                                    },
+                                                    [this, deviceId]() {
+                                                      // Called from switcher's thread
+                                                      // Sync with vrpn thread before accessing
+                                                      // connection/devices
+                                                      std::lock_guard<std::mutex> _(vrpnMutex_);
+                                                      ButtonSinkDevice* button =
+                                                          getButtonDevice(deviceId);
+                                                      return button ? button->getNumButtons() : 0;
+                                                    },
+                                                    "Number of channels",
+                                                    "Number of allocated channels in the device.",
+                                                    0,
+                                                    0,
+                                                    vrpn_BUTTON_MAX_BUTTONS);
 
   // Create a container for the properties
-  pmanage<MPtr(&PContainer::make_parented_group)>(
+  pmanage<MPtr(&property::PBag::make_parented_group)>(
       groupName + "-buttons", groupName, "Buttons", "Button Properties");
 
   // Start the device if we are already started
@@ -434,13 +435,13 @@ void VRPNSink::updateButtonProperties(const std::string& deviceName, int numButt
   // Find and update the properties if necessary
   auto search = devicesProperties_.find(deviceId);
   if (search != devicesProperties_.end()) {
-    std::vector<PContainer::prop_id_t>* props = search->second.get();
+    std::vector<property::prop_id_t>* props = search->second.get();
     int initialSize = (int)props->size();
 
     if (numButtons > initialSize) {
       // Add missing properties
       for (int i = initialSize; i < numButtons; ++i) {
-        auto property = pmanage<MPtr(&PContainer::make_parented_bool)>(
+        auto property = pmanage<MPtr(&property::PBag::make_parented_bool)>(
             deviceName + "-button-" + std::to_string(i),
             std::string(deviceName) + "-button-buttons",
             [this, deviceId, i](bool val) {
@@ -465,13 +466,13 @@ void VRPNSink::updateButtonProperties(const std::string& deviceName, int numButt
             false);
         props->push_back(property);
         if (!is_started()) {
-          pmanage<MPtr(&PContainer::disable)>(property, StartableQuiddity::disabledWhenStopedMsg);
+          pmanage<MPtr(&property::PBag::disable)>(property, Startable::disabledWhenStopedMsg);
         }
       }
     } else if (numButtons < initialSize) {
       // Remove extra properties
       for (int i = initialSize; i > numButtons; --i) {
-        pmanage<MPtr(&PContainer::remove)>(props->at((size_t)i - 1));
+        pmanage<MPtr(&property::PBag::remove)>(props->at((size_t)i - 1));
       }
       props->resize((size_t)numButtons);
     }
@@ -548,9 +549,9 @@ bool VRPNSink::start() {
     return false;
   }
 
-  pmanage<MPtr(&PContainer::disable)>(port_id_, disabledWhenStartedMsg);
-  mmanage<MPtr(&MContainer::enable)>(create_analog_device_id_);
-  mmanage<MPtr(&MContainer::enable)>(create_button_device_id_);
+  pmanage<MPtr(&property::PBag::disable)>(port_id_, disabledWhenStartedMsg);
+  mmanage<MPtr(&method::MBag::enable)>(create_analog_device_id_);
+  mmanage<MPtr(&method::MBag::enable)>(create_button_device_id_);
 
   for (auto& device : devices_) {
     device.second->start(connection_.get());
@@ -558,7 +559,7 @@ bool VRPNSink::start() {
 
   for (auto& deviceProperties : devicesProperties_) {
     for (auto property : *deviceProperties.second) {
-      pmanage<MPtr(&PContainer::enable)>(property);
+      pmanage<MPtr(&property::PBag::enable)>(property);
     }
   }
 
@@ -584,10 +585,10 @@ bool VRPNSink::stop() {
   }
   connection_.reset(nullptr);
 
-  pmanage<MPtr(&PContainer::enable)>(port_id_);
+  pmanage<MPtr(&property::PBag::enable)>(port_id_);
   for (auto& deviceProperties : devicesProperties_) {
     for (auto property : *deviceProperties.second) {
-      pmanage<MPtr(&PContainer::disable)>(property, StartableQuiddity::disabledWhenStopedMsg);
+      pmanage<MPtr(&property::PBag::disable)>(property, Startable::disabledWhenStopedMsg);
     }
   }
 

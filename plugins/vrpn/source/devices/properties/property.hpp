@@ -23,7 +23,7 @@
 #include <string>
 #include <typeinfo>
 #include "./property-base.hpp"
-#include "switcher/quiddity/property/property-container.hpp"
+#include "switcher/quiddity/property/pbag.hpp"
 
 namespace switcher {
 namespace quiddities {

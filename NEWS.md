@@ -61,7 +61,7 @@ Bug fixes:
 * more asserts in pyquid signal file
 * pixel converter destruct gst pipeline before elements
 * gstpipe set gst pipeline to null from the destructor and unref from gmainloop
-* gstpipe kills gst pipeline from the main loop  fix sometimes filesrc crash at deletion (members order in quiddity-container)
+* gstpipe kills gst pipeline from the main loop  fix sometimes filesrc crash at deletion (members order in container)
 * reverse gst-element ref removal from previous commit
 * adding unsubscribe to signal in python exemple
 * avoid segfaut due to simultameous g_signal_handler_disconnect and signal notification in gst-shmdata-subscriber
@@ -457,7 +457,7 @@ New features:
 * Shmdata access rate is notified in the quiddity information tree, along with byte_rate.
 * Make DNS in SIP configurable and get the system one by default instead of a hardcoded value.
 * Audiotestsrc quiddity revamping : added properties (sample rate, channels number, audio format), modified gstreamer pipeline lifecycle.
-* Cleaned up UGstElem lifecycle (better refcount management) and fixed PContainer::replace so it doesn't reset the index of the selection.
+* Cleaned up UGstElem lifecycle (better refcount management) and fixed PBag::replace so it doesn't reset the index of the selection.
 * Adding more properties to videotestsrc and templating selection.
 * Removing more codec option from gst-video-codec and gst-audio-codec.
 * Added generic methods to get gstreamer elements caps values in gst::utils.

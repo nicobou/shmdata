@@ -25,14 +25,15 @@
 #include <string>
 
 #include "../utils/bool-log.hpp"
-#include "./quiddity-configuration.hpp"
+#include "./config.hpp"
 
 namespace switcher {
+namespace quiddity {
 class Quiddity;
 
 // the types of the class factories for quiddity plugins
-typedef Quiddity* create_t(quid::Config&&);
-typedef void destroy_t(switcher::Quiddity*);
+typedef Quiddity* create_t(quiddity::Config&&);
+typedef void destroy_t(Quiddity*);
 typedef const char* get_type_t();
 
 class PluginLoader {
@@ -55,6 +56,7 @@ class PluginLoader {
   GModule* module_{nullptr};
   std::string class_name_{};
 };
+}  // namespace quiddity
 }  // namespace switcher
 
 #endif

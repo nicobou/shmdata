@@ -26,6 +26,8 @@
 #include <vector>
 
 namespace switcher {
+namespace quiddity {
+namespace property {
 class Fraction {
  public:
   using ator_t = long long;  // using stoll in from_string static method
@@ -48,5 +50,7 @@ class Fraction {
   ator_t denom_;
 };
 
+}  // namespace property
+}  // namespace quiddity
 }  // namespace switcher
 #endif

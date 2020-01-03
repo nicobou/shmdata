@@ -24,7 +24,7 @@
 #include <iomanip>
 #include <memory>
 #include <switcher/quiddity/quiddity.hpp>
-#include <switcher/quiddity/startable-quiddity.hpp>
+#include <switcher/quiddity/startable.hpp>
 #include <switcher/shmdata/shmdata-connector.hpp>
 #include <switcher/shmdata/shmdata-follower.hpp>
 #include <switcher/utils/periodic-task.hpp>
@@ -37,9 +37,10 @@ namespace switcher {
 namespace quiddities {
 namespace vrpn {
 
-class VRPNSink : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class VRPNSink : public Quiddity, public Startable {
  public:
-  VRPNSink(quid::Config&&);
+  VRPNSink(quiddity::Config&&);
   ~VRPNSink() = default;
   VRPNSink(const VRPNSink&) = delete;
   VRPNSink& operator=(const VRPNSink&) = delete;
@@ -53,13 +54,13 @@ class VRPNSink : public Quiddity, public StartableQuiddity {
   /**
    * Port property id
    */
-  PContainer::prop_id_t port_id_;
+  property::prop_id_t port_id_;
 
   /**
    * Methods id
    */
-  MContainer::meth_id_t create_analog_device_id_{0};
-  MContainer::meth_id_t create_button_device_id_{0};
+  method::meth_id_t create_analog_device_id_{0};
+  method::meth_id_t create_button_device_id_{0};
 
   /**
    * Debug property value
@@ -96,7 +97,7 @@ class VRPNSink : public Quiddity, public StartableQuiddity {
    * Device properties
    * Map of vector of property ids per device id
    */
-  std::map<std::string, std::unique_ptr<std::vector<PContainer::prop_id_t>>> devicesProperties_{};
+  std::map<std::string, std::unique_ptr<std::vector<property::prop_id_t>>> devicesProperties_{};
 
   // ANALOG DEVICE
   bool createAnalogDeviceMethod(const std::string& deviceName);

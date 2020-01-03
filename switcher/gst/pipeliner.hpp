@@ -32,9 +32,6 @@
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
-class Quiddity;
-class CustomPropertyHelper;
-
 namespace gst {
 
 class Pipeliner {

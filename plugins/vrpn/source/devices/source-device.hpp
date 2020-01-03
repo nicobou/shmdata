@@ -37,7 +37,7 @@ class SourceDevice : public Device {
   /**
    * Helper for property notification callbacks
    */
-  using NotifyPropertyCallback = std::function<void(PContainer::prop_id_t propId)>;
+  using NotifyPropertyCallback = std::function<void(property::prop_id_t propId)>;
 
   /**
    * Device Constructor
@@ -68,7 +68,7 @@ class SourceDevice : public Device {
   std::string uri_;
 
   /**
-   * Property Notification Callback
+   * property::Property Notification Callback
    */
   NotifyPropertyCallback notifyProperty_;
 

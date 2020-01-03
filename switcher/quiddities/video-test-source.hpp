@@ -26,14 +26,15 @@
 #include "../gst/unique-gst-element.hpp"
 #include "../quiddity/property/fraction.hpp"
 #include "../quiddity/quiddity.hpp"
-#include "../quiddity/startable-quiddity.hpp"
+#include "../quiddity/startable.hpp"
 #include "../shmdata/gst-shm-tree-updater.hpp"
 
 namespace switcher {
 namespace quiddities {
-class VideoTestSource : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class VideoTestSource : public Quiddity, public quiddity::Startable {
  public:
-  VideoTestSource(quid::Config&&);
+  VideoTestSource(quiddity::Config&&);
   ~VideoTestSource() = default;
   VideoTestSource(const VideoTestSource&) = delete;
   VideoTestSource& operator=(const VideoTestSource&) = delete;
@@ -41,42 +42,43 @@ class VideoTestSource : public Quiddity, public StartableQuiddity {
  private:
   std::string shmpath_{};
   // width height
-  Selection<Fraction> resolutions_{
+  property::Selection<property::Fraction> resolutions_{
       {"3840x2160", "1920x1080", "1280x720", "800x600", "640x480", "320x240", "Custom"},
-      {Fraction(3840, 2160),
-       Fraction(1920, 1080),
-       Fraction(1280, 720),
-       Fraction(800, 600),
-       Fraction(640, 480),
-       Fraction(320, 240),
-       Fraction(-1, -1)},
+      {property::Fraction(3840, 2160),
+       property::Fraction(1920, 1080),
+       property::Fraction(1280, 720),
+       property::Fraction(800, 600),
+       property::Fraction(640, 480),
+       property::Fraction(320, 240),
+       property::Fraction(-1, -1)},
       1};
-  PContainer::prop_id_t resolutions_id_;
+  property::prop_id_t resolutions_id_;
   int width_{1920};
   static const int kMaxWidth{4096};
   static const int kMinWidth{1};
-  PContainer::prop_id_t width_id_;
+  property::prop_id_t width_id_;
   int height_{1080};
   static const int kMaxHeight{4096};
   static const int kMinHeight{1};
-  PContainer::prop_id_t height_id_;
+  property::prop_id_t height_id_;
   // framerate
-  Selection<Fraction> framerates_{{"60", "59.94", "50", "30", "29.97", "25", "24", "23.976"},
-                                  {Fraction(60, 1),
-                                   Fraction(5994, 100),
-                                   Fraction(50, 1),
-                                   Fraction(30, 1),
-                                   Fraction(2997, 100),
-                                   Fraction(25, 1),
-                                   Fraction(24, 1),
-                                   Fraction(23976, 1000)},  // or 2997/125
-                                  3};                       // default to 30 fps
-  PContainer::prop_id_t framerates_id_;
+  property::Selection<property::Fraction> framerates_{
+      {"60", "59.94", "50", "30", "29.97", "25", "24", "23.976"},
+      {property::Fraction(60, 1),
+       property::Fraction(5994, 100),
+       property::Fraction(50, 1),
+       property::Fraction(30, 1),
+       property::Fraction(2997, 100),
+       property::Fraction(25, 1),
+       property::Fraction(24, 1),
+       property::Fraction(23976, 1000)},  // or 2997/125
+      3};                                 // default to 30 fps
+  property::prop_id_t framerates_id_;
   // formats
-  Selection<> formats_;
-  PContainer::prop_id_t formats_id_;
+  property::Selection<> formats_;
+  property::prop_id_t formats_id_;
   // Shmdata tree updater
-  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
+  std::unique_ptr<switcher::GstShmTreeUpdater> shm_sub_{nullptr};
   // gst elements
   gst::UGstElem videotestsrc_{"videotestsrc"};
   gst::UGstElem capsfilter_{"capsfilter"};

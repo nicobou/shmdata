@@ -58,7 +58,7 @@ void ButtonSourceDevice::handleButton(int index, bool value) {
 
   if (property == nullptr) {
     std::unique_ptr<Property<bool>> newProperty = std::make_unique<Property<bool>>(value);
-    PContainer::prop_id_t prop_id =
+    property::prop_id_t prop_id =
         createBoolProperty_(newProperty.get(),
                             id,
                             name_ + " Button " + std::to_string(index),

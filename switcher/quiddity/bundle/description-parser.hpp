@@ -26,6 +26,7 @@
 #include "../../utils/safe-bool-idiom.hpp"
 
 namespace switcher {
+namespace quiddity {
 namespace bundle {
 struct quiddity_spec_t {
   std::string type{};
@@ -79,6 +80,7 @@ class DescriptionParser : public SafeBoolIdiom {
   bool safe_bool_idiom() const final { return is_valid_; };
 };
 }  // namespace bundle
+}  // namespace quiddity
 }  // namespace switcher
 
 #endif

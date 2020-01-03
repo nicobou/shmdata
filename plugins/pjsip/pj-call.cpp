@@ -80,7 +80,7 @@ PJCall::PJCall() {
   status = PJCodec::install_codecs();
   if (status != PJ_SUCCESS) SIPPlugin::this_->warning("Install codecs failed");
   // properties and methods for user
-  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+  SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<std::function<bool(std::string)>>)>(
       "send",
       infotree::json::deserialize(
           R"(
@@ -97,7 +97,7 @@ PJCall::PJCall() {
               )"),
       [this](const std::string& url) { return send_to(url); });
 
-  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+  SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<std::function<bool(std::string)>>)>(
       "hang-up",
       infotree::json::deserialize(
           R"(
@@ -115,7 +115,7 @@ PJCall::PJCall() {
       [this](const std::string& url) { return hang_up(url); });
 
   using attach_t = std::function<bool(std::string, std::string, bool)>;
-  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<attach_t>)>(
+  SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<attach_t>)>(
       "attach_shmdata_to_contact",
       infotree::json::deserialize(
           R"(

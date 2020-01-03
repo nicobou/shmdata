@@ -27,17 +27,18 @@
 
 namespace switcher {
 namespace quiddities {
+using namespace quiddity;
 class MethodQuid : public Quiddity {
  public:
-  MethodQuid(quid::Config&&);
+  MethodQuid(quiddity::Config&&);
   ~MethodQuid() = default;
   MethodQuid(const MethodQuid&) = delete;
   MethodQuid& operator=(const MethodQuid&) = delete;
 
  private:
-  MContainer::meth_id_t hello_id_;
-  MContainer::meth_id_t count_id_;
-  MContainer::meth_id_t many_args_id_;
+  method::meth_id_t hello_id_;
+  method::meth_id_t count_id_;
+  method::meth_id_t many_args_id_;
   using my_method_t = std::function<std::string(std::string)>;
   using many_args_t = std::function<bool(int, float, const std::string&, bool)>;
   std::string hello_{};

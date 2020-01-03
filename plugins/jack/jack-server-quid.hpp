@@ -23,28 +23,29 @@
 #include <memory>
 #include "./jack-server.hpp"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/quiddity/startable-quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
 
 namespace switcher {
 namespace quiddities {
-class JackServerQuid : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class JackServerQuid : public Quiddity, public Startable {
  public:
-  JackServerQuid(quid::Config&&);
+  JackServerQuid(quiddity::Config&&);
 
  private:
   JackServer jack_server_;
   // config_ is a shared ptr obtained from jack_server_.
   InfoTree::ptr config_;
-  PContainer::prop_id_t driver_config_id_;
-  PContainer::prop_id_t advanced_config_id_;
+  property::prop_id_t driver_config_id_;
+  property::prop_id_t advanced_config_id_;
   // driver properties
-  Selection<> driver_enum_;
-  PContainer::prop_id_t driver_id_{0};
+  property::Selection<> driver_enum_;
+  property::prop_id_t driver_id_{0};
 
-  std::vector<PContainer::prop_id_t> driver_params_{};
-  std::map<std::string, Selection<>> selections_{};
+  std::vector<property::prop_id_t> driver_params_{};
+  std::map<std::string, property::Selection<>> selections_{};
 
-  PContainer::prop_id_t make_param(const std::string& config_path, const std::string& parent);
+  property::prop_id_t make_param(const std::string& config_path, const std::string& parent);
   void renew_driver_properties();
   bool start() final;
   bool stop() final;

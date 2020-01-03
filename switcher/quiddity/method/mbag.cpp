@@ -17,11 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./method-container.hpp"
+#include "./mbag.hpp"
 
 namespace switcher {
-
-MContainer::MContainer(log::BaseLogger* log,
+namespace quiddity {
+namespace method {
+MBag::MBag(log::BaseLogger* log,
                        InfoTree::ptr tree,
                        on_tree_grafted_cb_t on_tree_grafted_cb,
                        on_tree_pruned_cb_t on_tree_pruned_cb,
@@ -41,7 +42,7 @@ MContainer::MContainer(log::BaseLogger* log,
   tree_->tag_as_array(".method", true);
 }
 
-bool MContainer::remove(meth_id_t meth_id) {
+bool MBag::remove(meth_id_t meth_id) {
   auto it = strids_.find(meth_id);
   if (strids_.end() == it) return false;  // meth not found
   auto key = std::string("method.") + it->second;
@@ -54,7 +55,7 @@ bool MContainer::remove(meth_id_t meth_id) {
   return true;
 }
 
-bool MContainer::enable(meth_id_t meth_id) {
+bool MBag::enable(meth_id_t meth_id) {
   const auto& it = strids_.find(meth_id);
   if (strids_.end() == it) return false;
   auto key = std::string("method.") + it->second + ".enabled";
@@ -66,7 +67,7 @@ bool MContainer::enable(meth_id_t meth_id) {
   return true;
 }
 
-bool MContainer::disable(meth_id_t meth_id, const std::string& why) {
+bool MBag::disable(meth_id_t meth_id, const std::string& why) {
   const auto& it = strids_.find(meth_id);
   if (strids_.end() == it) return false;
   auto key = std::string("method.") + it->second + ".enabled";
@@ -78,7 +79,7 @@ bool MContainer::disable(meth_id_t meth_id, const std::string& why) {
   return true;
 }
 
-MContainer::meth_id_t MContainer::get_id(const std::string& strid) const {
+method::meth_id_t MBag::get_id(const std::string& strid) const {
   const auto& it = ids_.find(strid);
   if (ids_.end() != it) return it->second;
   // accepting id converted to string
@@ -87,20 +88,22 @@ MContainer::meth_id_t MContainer::get_id(const std::string& strid) const {
   return 0;
 }
 
-std::vector<std::pair<std::string, MContainer::meth_id_t>> MContainer::get_ids() const {
-  std::vector<std::pair<std::string, MContainer::meth_id_t>> ids;
+std::vector<std::pair<std::string, method::meth_id_t>> MBag::get_ids() const {
+  std::vector<std::pair<std::string, method::meth_id_t>> ids;
   for (auto& meth : ids_) {
     ids.push_back(std::make_pair(meth.first, meth.second));
   }
   return ids;
 }
 
-std::string MContainer::get_name(meth_id_t id) const {
+std::string MBag::get_name(meth_id_t id) const {
   const auto& it = strids_.find(id);
   if (strids_.end() != it) return it->second;
   return std::string();
 }
 
-std::map<MContainer::meth_id_t, std::string> MContainer::get_names() const { return strids_; }
+std::map<method::meth_id_t, std::string> MBag::get_names() const { return strids_; }
 
+}  // namespace method
+}  // namespace quiddity
 }  // namespace switcher

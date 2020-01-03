@@ -20,12 +20,13 @@
 #include "./property.hpp"
 
 namespace switcher {
-
+namespace quiddity {
+namespace property {
 PropertyBase::PropertyBase(size_t type_hash) : type_hash_(type_hash) {}
 
-PropertyBase::prop_id_t PropertyBase::get_id() const { return id_; }
+prop_id_t PropertyBase::get_id() const { return id_; }
 
-PropertyBase::register_id_t PropertyBase::subscribe(notify_cb_t fun) const {
+register_id_t PropertyBase::subscribe(notify_cb_t fun) const {
   to_notify_[++counter_] = fun;
   return counter_;
 }
@@ -43,20 +44,19 @@ void PropertyBase::notify() const {
   for (auto& it : to_notify_) it.second();
 }
 
-std::map<PropertyBase::register_id_t, PropertyBase::notify_cb_t> PropertyBase::get_notify_cbs()
-    const {
-  return to_notify_;
-};
+std::map<register_id_t, notify_cb_t> PropertyBase::get_notify_cbs() const { return to_notify_; };
 
 void PropertyBase::set_notify_cbs(std::map<register_id_t, notify_cb_t> cbs) { to_notify_ = cbs; };
 
 void PropertyBase::set_id(prop_id_t id) { id_ = id; }
 
-std::vector<PropertyBase::register_id_t> PropertyBase::get_register_ids() const {
+std::vector<register_id_t> PropertyBase::get_register_ids() const {
   std::vector<register_id_t> res;
   res.reserve(to_notify_.size());
   for (auto& it : to_notify_) res.push_back(it.first);
   return res;
 }
 
+}  // namespace property
+}  // namespace quiddity
 }  // namespace switcher

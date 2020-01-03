@@ -21,56 +21,56 @@
 
 #include <cassert>
 #include <vector>
-#include "switcher/quiddity/property/property-container.hpp"
-#include "switcher/quiddity/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
+#include "switcher/quiddity/property/pbag.hpp"
 #include "switcher/utils/serialize-string.hpp"
 
 int main() {
   {
     using namespace switcher;
+    using namespace switcher::quiddity;
+
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    assert(test::full(manager, "dummy"));
+    assert(quiddity::test::full(manager, "dummy"));
 
     // creating a "myplugin" quiddity
-    auto qrox = manager->quids<MPtr(&quid::Container::create)>("dummy", "test", nullptr);
+    auto qrox = manager->quids<MPtr(&quiddity::Container::create)>("dummy", "test", nullptr);
     auto pquid = qrox.get();
     assert(pquid);
 
-    assert(pquid->prop<MPtr(&PContainer::set_str_str)>("color_", "0A93D8FF"));
-    assert(!pquid->prop<MPtr(&PContainer::set_str_str)>("color_", "0A93D8"));
-    assert(!pquid->prop<MPtr(&PContainer::set_str_str)>("color_", "GGGGGGGGGG"));
-    assert(!pquid->prop<MPtr(&PContainer::set_str_str)>("color_", "0000000T"));
+    assert(pquid->prop<MPtr(&property::PBag::set_str_str)>("color_", "0A93D8FF"));
+    assert(!pquid->prop<MPtr(&property::PBag::set_str_str)>("color_", "0A93D8"));
+    assert(!pquid->prop<MPtr(&property::PBag::set_str_str)>("color_", "GGGGGGGGGG"));
+    assert(!pquid->prop<MPtr(&property::PBag::set_str_str)>("color_", "0000000T"));
 
     // tuple testing (get)
     using MyTuple = std::tuple<long long, float, std::string>;
-    auto tid = pquid->prop<MPtr(&PContainer::get_id)>("tuple_");
-    std::cout << pquid->prop<MPtr(&PContainer::get_str)>(tid) << '\n';
+    auto tid = pquid->prop<MPtr(&property::PBag::get_id)>("tuple_");
+    std::cout << pquid->prop<MPtr(&property::PBag::get_str)>(tid) << '\n';
 
-    MyTuple my_tuple = pquid->prop<MPtr(&PContainer::get<MyTuple>)>(tid);
+    MyTuple my_tuple = pquid->prop<MPtr(&property::PBag::get<MyTuple>)>(tid);
     std::cout << "get is working !!!"
               << " " << std::get<0>(my_tuple) << " "  // 2
               << std::get<1>(my_tuple) << " "         // 2.2
               << std::get<2>(my_tuple) << "\n";       // a22
 
     // tuple testing (set)
-    pquid->prop<MPtr(&PContainer::set_str)>(
-        tid,
-        std::string("4,4.4,") + serialize::esc_for_tuple("b,44"));
+    pquid->prop<MPtr(&property::PBag::set_str)>(
+        tid, std::string("4,4.4,") + serialize::esc_for_tuple("b,44"));
 
-    std::cout << pquid->prop<MPtr(&PContainer::get_str)>(tid)
-              << '\n';
+    std::cout << pquid->prop<MPtr(&property::PBag::get_str)>(tid) << '\n';
 
-    my_tuple = pquid->prop<MPtr(&PContainer::get<MyTuple>)>(tid);
+    my_tuple = pquid->prop<MPtr(&property::PBag::get<MyTuple>)>(tid);
     std::cout << "get after set"
               << " " << std::get<0>(my_tuple) << " "  // 4
               << std::get<1>(my_tuple) << " "         // 4.4
               << std::get<2>(my_tuple) << "\n";       // b,44
 
     // removing the quiddity
-    assert(manager->quids<MPtr(&quid::Container::remove)>(qrox.get_id()));
+    assert(manager->quids<MPtr(&quiddity::Container::remove)>(qrox.get_id()));
   }  // end of scope is releasing the manager
   return 0;
 }

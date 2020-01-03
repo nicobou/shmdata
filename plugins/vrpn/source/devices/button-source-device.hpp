@@ -33,11 +33,11 @@ class ButtonSourceDevice : public SourceDevice {
    * Type for the bool property creation callback
    */
   using CreateBoolPropertyCallback =
-      std::function<PContainer::prop_id_t(Property<bool>* property,
-                                          const std::string& id,
-                                          const std::string& name,
-                                          const std::string& description,
-                                          bool value)>;
+      std::function<property::prop_id_t(Property<bool>* property,
+                                        const std::string& id,
+                                        const std::string& name,
+                                        const std::string& description,
+                                        bool value)>;
   ButtonSourceDevice(const std::string& name,
                      const std::string& uri,
                      int numProperties,

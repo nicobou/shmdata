@@ -25,13 +25,15 @@
 #include "../../shmdata/shmdata-connector.hpp"
 #include "../../switcher.hpp"
 #include "../quiddity.hpp"
-#include "../startable-quiddity.hpp"
-#include "./bundle-description-parser.hpp"
+#include "../startable.hpp"
+#include "./description-parser.hpp"
 
 namespace switcher {
-class Bundle : public Quiddity, public StartableQuiddity {
+namespace quiddity {
+namespace bundle {
+class Bundle : public Quiddity, public Startable {
  public:
-  Bundle(quid::Config&&);
+  Bundle(Config&&);
   ~Bundle();
   Bundle(const Bundle&) = delete;
   Bundle& operator=(const Bundle&) = delete;
@@ -52,7 +54,7 @@ class Bundle : public Quiddity, public StartableQuiddity {
   };
 
  private:
-  quid::Config conf_;
+  quiddity::Config conf_;
   std::atomic_bool quitting_{false};
   std::vector<std::pair<std::string /*quid_name*/, std::string /*shmpath*/>> connected_shms_{};
   std::mutex connected_shms_mtx_{};
@@ -74,10 +76,9 @@ class Bundle : public Quiddity, public StartableQuiddity {
 };
 
 // wrappers for the abstract factory registration
-namespace bundle {
-Quiddity* create(quid::Config&& conf);
+Quiddity* create(Config&& conf);
 void destroy(Quiddity* quiddity);
 }  // namespace bundle
-
+}  // namespace quiddity
 }  // namespace switcher
 #endif

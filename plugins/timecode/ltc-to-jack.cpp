@@ -30,8 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCToJack,
                                      "LGPL",
                                      "Jérémie Soria");
 
-LTCToJack::LTCToJack(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+LTCToJack::LTCToJack(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   jack_client_ = jack_client_open(
       std::string(std::string("clockLTC_") + get_name()).c_str(), JackNullOption, nullptr);
 
@@ -54,7 +54,7 @@ LTCToJack::LTCToJack(quid::Config&& conf)
       [this](const std::string& caps) { return can_sink_caps(caps); },
       1);
 
-  drift_threshold_id_ = pmanage<MPtr(&PContainer::make_double)>(
+  drift_threshold_id_ = pmanage<MPtr(&property::PBag::make_double)>(
       "drift_threshold",
       [this](const double& val) {
         std::lock_guard<std::mutex> lock(threshold_mutex_);
