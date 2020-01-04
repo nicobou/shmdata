@@ -24,8 +24,8 @@
 #include "./portmidi-devices.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/shmdata-connector.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -49,9 +49,9 @@ class PortMidiSink : public Quiddity, public Startable, public PortMidi {
 
   bool started_{false};
   // registering connect/disconnect/can_sink_caps:
-  ShmdataConnector shmcntr_;
+  shmdata::Connector shmcntr_;
   // shmdata follower
-  std::unique_ptr<ShmdataFollower> shm_{nullptr};
+  std::unique_ptr<shmdata::Follower> shm_{nullptr};
 
   int device_{0};
   property::prop_id_t devices_id_{0};

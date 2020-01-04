@@ -207,14 +207,14 @@ GLFWVideo::GLFWVideo(quiddity::Config&& conf)
           [this](bool val) {
             xevents_to_shmdata_ = val;
             if (xevents_to_shmdata_) {
-              keyb_shm_ = std::make_unique<ShmdataWriter>(
+              keyb_shm_ = std::make_unique<shmdata::Writer>(
                   this, make_shmpath("keyb"), sizeof(KeybEvent), "application/x-keyboard-events");
               if (!keyb_shm_.get()) {
                 warning("GLFW keyboard event shmdata writer failed");
                 keyb_shm_.reset(nullptr);
               }
 
-              mouse_shm_ = std::make_unique<ShmdataWriter>(
+              mouse_shm_ = std::make_unique<shmdata::Writer>(
                   this, make_shmpath("mouse"), sizeof(MouseEvent), "application/x-mouse-events");
               if (!mouse_shm_.get()) {
                 warning("GLFW mouse event shmdata writer failed");
@@ -872,7 +872,8 @@ void GLFWVideo::key_cb(GLFWwindow* window, int key, int /*scancode*/, int action
   if (quiddity->keyb_shm_.get()) {
     guint32 val = key;
     auto keybevent = KeybEvent(val, action);
-    quiddity->keyb_shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(&keybevent, sizeof(KeybEvent));
+    quiddity->keyb_shm_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(&keybevent,
+                                                                       sizeof(KeybEvent));
     quiddity->keyb_shm_->bytes_written(sizeof(KeybEvent));
   }
 
@@ -909,8 +910,8 @@ void GLFWVideo::mouse_cb(GLFWwindow* window, double xpos, double ypos) {
   if (!quiddity->cursor_inside_) return;
 
   auto mouse_event = MouseEvent(xpos, ypos, 1);
-  quiddity->mouse_shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(&mouse_event,
-                                                                    sizeof(MouseEvent));
+  quiddity->mouse_shm_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(&mouse_event,
+                                                                      sizeof(MouseEvent));
   quiddity->mouse_shm_->bytes_written(sizeof(MouseEvent));
 }
 
@@ -1025,11 +1026,11 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
   on_shmdata_disconnect();
   shmpath_ = shmpath;
   g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
-  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
+  shm_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
       this,
       shmsrc_.get_raw(),
       shmpath_,
-      GstShmTreeUpdater::Direction::reader,
+      shmdata::GstTreeUpdater::Direction::reader,
       [this](const std::string& caps) {
         GstCaps* gstcaps = gst_caps_from_string(caps.c_str());
         On_scope_exit {
@@ -1060,39 +1061,37 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
         });
       });
 
-  shm_follower_ = std::make_unique<ShmdataFollower>(this,
-                                                    shmpath_,
-                                                    nullptr,
-                                                    [this](const std::string& shmtype) {
-                                                      if (!cur_caps_.empty() &&
-                                                          cur_caps_ != shmtype) {
-                                                        cur_caps_ = shmtype;
-                                                        debug(
-                                                            "glfwin restarting shmdata connection "
-                                                            "because of an updated caps (%)",
-                                                            cur_caps_);
-                                                        async_this_.run_async([this]() {
-                                                          on_shmdata_connect(shmpath_);
-                                                        });
+  shm_follower_ = std::make_unique<shmdata::Follower>(
+      this,
+      shmpath_,
+      nullptr,
+      [this](const std::string& shmtype) {
+        if (!cur_caps_.empty() && cur_caps_ != shmtype) {
+          cur_caps_ = shmtype;
+          debug(
+              "glfwin restarting shmdata connection "
+              "because of an updated caps (%)",
+              cur_caps_);
+          async_this_.run_async([this]() { on_shmdata_connect(shmpath_); });
 
-                                                        return;
-                                                      }
-                                                      cur_caps_ = shmtype;
-                                                      add_rendering_task([this]() {
-                                                        draw_video_ = true;
-                                                        setup_video_texture();
-                                                        enable_geometry();
-                                                        return true;
-                                                      });
-                                                    },
-                                                    [this]() {
-                                                      add_rendering_task([this]() {
-                                                        draw_video_ = false;
-                                                        setup_background_texture();
-                                                        disable_geometry();
-                                                        return true;
-                                                      });
-                                                    });
+          return;
+        }
+        cur_caps_ = shmtype;
+        add_rendering_task([this]() {
+          draw_video_ = true;
+          setup_video_texture();
+          enable_geometry();
+          return true;
+        });
+      },
+      [this]() {
+        add_rendering_task([this]() {
+          draw_video_ = false;
+          setup_background_texture();
+          disable_geometry();
+          return true;
+        });
+      });
 
   // Fakesink setup
   g_object_set(G_OBJECT(fakesink_.get_raw()),

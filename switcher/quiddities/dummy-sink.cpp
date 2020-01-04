@@ -50,7 +50,7 @@ DummySink::DummySink(quiddity::Config&& conf)
 
 bool DummySink::connect(const std::string& path) {
   shm_.reset();
-  shm_ = std::make_unique<ShmdataFollower>(this, path, [this](void*, size_t) {
+  shm_ = std::make_unique<shmdata::Follower>(this, path, [this](void*, size_t) {
     if (!frame_received_) {
       {
         auto lock = pmanage<MPtr(&property::PBag::get_lock)>(frame_received_id_);

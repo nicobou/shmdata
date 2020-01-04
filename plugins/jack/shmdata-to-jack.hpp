@@ -26,8 +26,8 @@
 #include "./drift-observer.hpp"
 #include "./jack-client.hpp"
 #include "switcher/gst/pipeliner.hpp"
-#include "switcher/shmdata/gst-shm-tree-updater.hpp"
-#include "switcher/shmdata/shmdata-connector.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -83,13 +83,13 @@ class ShmdataToJack : public Quiddity {
   property::prop_id_t do_rate_conversion_id_;
 
   // registering connect/disconnect/can_sink_caps:
-  ShmdataConnector shmcntr_;
+  shmdata::Connector shmcntr_;
 
   // gst pipeline:
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
 
   // shmsubscriber (publishing to the information-tree):
-  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
+  std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
 
   bool start();
   bool stop();

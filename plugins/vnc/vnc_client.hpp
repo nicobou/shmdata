@@ -29,9 +29,9 @@
 
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/shmdata-connector.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
-#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/shmdata/writer.hpp"
 
 #include <rfb/rfbclient.h>
 
@@ -52,7 +52,7 @@ class VncClientSrc : public Quiddity, public Startable {
   bool stop();
 
  private:
-  ShmdataConnector shmcntr_;
+  shmdata::Connector shmcntr_;
   // prop
   std::string vnc_server_address_{"localhost"};
   property::prop_id_t vnc_server_address_id_{0};
@@ -62,7 +62,7 @@ class VncClientSrc : public Quiddity, public Startable {
   rfbClient* rfb_client_{nullptr};
   std::vector<unsigned char> framebuffer_{};
   size_t framebuffer_size_{0};
-  std::unique_ptr<ShmdataWriter> vnc_writer_{nullptr};
+  std::unique_ptr<shmdata::Writer> vnc_writer_{nullptr};
   std::atomic_bool vnc_continue_update_{false};
   std::thread vnc_update_thread_{};
 
@@ -70,7 +70,7 @@ class VncClientSrc : public Quiddity, public Startable {
   std::mutex connect_mutex_{};
   int shmreader_id_{0};
   std::map<int, std::string> shmdata_readers_caps_{};
-  std::map<std::string, std::unique_ptr<ShmdataFollower>> events_readers_{};
+  std::map<std::string, std::unique_ptr<shmdata::Follower>> events_readers_{};
 
   bool connect(std::string shmdata_socket_path);
   bool disconnect(std::string shmName);

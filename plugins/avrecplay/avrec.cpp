@@ -278,7 +278,7 @@ bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
   // Create a follower on the connecting shmdata, when receiving its caps, discover compatible
   // muxers and fetch all their gstreamer properties then create the appropriate switcher
   // properties.
-  auto shm_follower = std::make_unique<ShmdataFollower>(
+  auto shm_follower = std::make_unique<shmdata::Follower>(
       this,
       shmpath,
       nullptr,

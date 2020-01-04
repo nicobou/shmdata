@@ -87,12 +87,12 @@ void SyphonSrc::frameCallback(void* context, const char* data, int& width, int& 
   SyphonSrc* ctx = static_cast<SyphonSrc*>(context);
   static bool set = false;
   if (set == false || ctx->width_ != width || ctx->height_ != height) {
-    ctx->writer_ = std::make_unique<ShmdataWriter>(ctx,
-                                                   ctx->make_shmpath("video"),
-                                                   width * height * 4,
-                                                   string("video/x-raw, format=RGBA, ") +
-                                                       "width=" + to_string(width) +
-                                                       "height=" + to_string(height));
+    ctx->writer_ = std::make_unique<shmdata::Writer>(ctx,
+                                                     ctx->make_shmpath("video"),
+                                                     width * height * 4,
+                                                     string("video/x-raw, format=RGBA, ") +
+                                                         "width=" + to_string(width) +
+                                                         "height=" + to_string(height));
     ctx->width_ = width;
     ctx->height_ = height;
     if (!ctx->writer_.get()) {
@@ -101,8 +101,8 @@ void SyphonSrc::frameCallback(void* context, const char* data, int& width, int& 
     } else
       set = true;
   }
-  ctx->writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(static_cast<const void*>(data),
-                                                            width * height * 4);
+  ctx->writer_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(static_cast<const void*>(data),
+                                                              width * height * 4);
   ctx->writer_->bytes_written(width * height * 4);
 }
 

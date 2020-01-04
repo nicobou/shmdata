@@ -73,18 +73,18 @@ bool GstVideoConverter::on_shmdata_connect(const std::string& shmpath) {
   converter_ = std::make_unique<gst::PixelFormatConverter>(
       shmpath_to_convert_, shmpath_converted_, video_format_.get_attached());
   if (!static_cast<bool>(*converter_.get())) return false;
-  shmsink_sub_ =
-      std::make_unique<switcher::GstShmTreeUpdater>(this,
-                                                    converter_->get_shmsink(),
-                                                    shmpath_converted_,
-                                                    switcher::GstShmTreeUpdater::Direction::writer);
-  shmsrc_sub_ =
-      std::make_unique<switcher::GstShmTreeUpdater>(this,
-                                                    converter_->get_shmsrc(),
-                                                    shmpath_to_convert_,
-                                                    switcher::GstShmTreeUpdater::Direction::reader);
+  shmsink_sub_ = std::make_unique<switcher::shmdata::GstTreeUpdater>(
+      this,
+      converter_->get_shmsink(),
+      shmpath_converted_,
+      switcher::shmdata::GstTreeUpdater::Direction::writer);
+  shmsrc_sub_ = std::make_unique<switcher::shmdata::GstTreeUpdater>(
+      this,
+      converter_->get_shmsrc(),
+      shmpath_to_convert_,
+      switcher::shmdata::GstTreeUpdater::Direction::reader);
   pmanage<MPtr(&property::PBag::disable)>(video_format_id_,
-                                          ShmdataConnector::disabledWhenConnectedMsg);
+                                          shmdata::Connector::disabledWhenConnectedMsg);
   return true;
 }
 

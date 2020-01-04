@@ -26,8 +26,8 @@
 #include "switcher/gst/unique-gst-element.hpp"
 #include "switcher/gst/utils.hpp"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/shmdata/shmdata-connector.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
 #include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
@@ -53,12 +53,12 @@ class Cropper : public Quiddity {
   gst::UGstElem cropper_element_{"videocrop"};
   gst::UGstElem scaler_element_{"videoscale"};
   gst::UGstElem shmsink_{"shmdatasink"};
-  ShmdataConnector shmcntr_;
+  shmdata::Connector shmcntr_;
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
   std::string shmpath_to_crop_{};
   std::string shmpath_cropped_{};
-  std::unique_ptr<ShmdataFollower> shmsrc_sub_{nullptr};
-  std::unique_ptr<ShmdataFollower> shmsink_sub_{nullptr};
+  std::unique_ptr<shmdata::Follower> shmsrc_sub_{nullptr};
+  std::unique_ptr<shmdata::Follower> shmsink_sub_{nullptr};
   std::string cur_caps_{};
 
   int left_{0};

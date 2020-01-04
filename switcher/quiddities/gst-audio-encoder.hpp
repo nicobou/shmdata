@@ -23,7 +23,7 @@
 #include <memory>
 #include "../gst/audio-codec.hpp"
 #include "../quiddity/quiddity.hpp"
-#include "../shmdata/shmdata-connector.hpp"
+#include "../shmdata/connector.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -37,7 +37,7 @@ class GstAudioEncoder : public Quiddity {
 
  private:
   // registering connect/disconnect/can_sink_caps:
-  ShmdataConnector shmcntr_;
+  shmdata::Connector shmcntr_;
   std::unique_ptr<gst::AudioCodec> codecs_;
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string& shmdata_sochet_path);

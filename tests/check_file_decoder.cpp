@@ -22,7 +22,7 @@
 #include <shmdata/console-logger.hpp>
 
 #include "switcher/quiddity/basic-test.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/follower.hpp"
 
 bool success = false;
 std::atomic<bool> do_continue{true};
@@ -63,14 +63,14 @@ int main() {
             .get();
 
     ::shmdata::ConsoleLogger logger;
-    auto reader = std::make_unique<shmdata::Follower>(filesrc->make_shmpath("audio"),
-                                                      [](void*, size_t data_size) {
-                                                        if (!data_size) return;
-                                                        notify_success();
-                                                      },
-                                                      nullptr,
-                                                      nullptr,
-                                                      &logger);
+    auto reader = std::make_unique<::shmdata::Follower>(filesrc->make_shmpath("audio"),
+                                                        [](void*, size_t data_size) {
+                                                          if (!data_size) return;
+                                                          notify_success();
+                                                        },
+                                                        nullptr,
+                                                        nullptr,
+                                                        &logger);
 
     filesrc->prop<MPtr(&quiddity::property::PBag::set_str_str)>("loop", "true");
     filesrc->prop<MPtr(&quiddity::property::PBag::set_str_str)>("play", "true");

@@ -27,10 +27,10 @@
 #include <switcher/quiddity/startable.hpp>
 #include "switcher/gst/unique-gst-element.hpp"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/shmdata/gst-shmdata-subscriber.hpp"
-#include "switcher/shmdata/shmdata-connector.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
-#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/shmdata/gst-subscriber.hpp"
+#include "switcher/shmdata/writer.hpp"
 #include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
@@ -60,11 +60,11 @@ class LTCSource : public Quiddity, public Startable {
 
   std::deque<ltcsnd_sample_t> samples_{};       //!< Pool of samples to send to shmdata
   std::atomic<bool> generating_frames_{false};  //!< Flag to prevent infinite generation of samples.
-  std::unique_ptr<ShmdataWriter> shmw_{};       //!< Shmdata writer.
-  ShmdataConnector shmcntr_{nullptr};
+  std::unique_ptr<shmdata::Writer> shmw_{};     //!< Shmdata writer.
+  shmdata::Connector shmcntr_{nullptr};
   bool external_sync_source_{false};  //!< Is a shmdata connected to use a cadencing source.
   size_t format_size_{0};
-  std::unique_ptr<ShmdataFollower> shm_follower_{
+  std::unique_ptr<shmdata::Follower> shm_follower_{
       nullptr};                          //!< Incoming sound stream optionally used for cadencing.
   jack_client_t* jack_client_{nullptr};  //!< Jack client for sample generation cadencing
 

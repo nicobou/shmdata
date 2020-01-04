@@ -22,7 +22,7 @@
 
 #include <unordered_set>
 #include <vector>
-#include "../shmdata/gst-shm-tree-updater.hpp"
+#include "../shmdata/gst-tree-updater.hpp"
 #include "./pipeliner.hpp"
 
 namespace switcher {
@@ -60,7 +60,7 @@ class VideoTimelapse : public SafeBoolIdiom {
   on_new_file_t on_new_file_;
   // gst pipeline
   std::unique_ptr<Pipeliner> gst_pipeline_;
-  std::unique_ptr<GstShmTreeUpdater> shmsrc_sub_{nullptr};
+  std::unique_ptr<shmdata::GstTreeUpdater> shmsrc_sub_{nullptr};
 
   // safe bool idiom
   bool is_valid_{false};

@@ -22,8 +22,8 @@
 
 #include <switcher/quiddity/startable.hpp>
 #include "switcher/gst/pipeliner.hpp"
-#include "switcher/shmdata/shmdata-connector.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -82,14 +82,14 @@ class AVRecorder : public Quiddity, public Startable {
     //!< List of all supported muxers for the shmdata and their respective properties.
     std::map<std::string, ElementProperties> muxers_{};
     //!< Shmdata follower used to detect supported muxers for the shmdata.
-    std::unique_ptr<ShmdataFollower> shm_follower_{nullptr};
+    std::unique_ptr<shmdata::Follower> shm_follower_{nullptr};
     property::Selection<> muxer_selection_{{"none"}, 0};  //!< Supported muxer selection.
     property::prop_id_t muxer_selection_id_{0};
     std::vector<property::prop_id_t> muxer_properties_id_{};
   };
 
   bool is_valid_{false};      //!< Used to validate that the construction of the quiddity worked
-  ShmdataConnector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
+  shmdata::Connector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
   std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};  //!< Gstreamer pipeline
   GstElement* avrec_bin_{nullptr};                       //!< Full recording pipeline
 

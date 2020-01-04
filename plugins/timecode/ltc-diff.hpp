@@ -22,9 +22,9 @@
 
 #include <ltc.h>
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/shmdata/shmdata-connector.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
-#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/shmdata/writer.hpp"
 #include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
@@ -41,7 +41,7 @@ class LTCDiff : public Quiddity {
     void on_data(void* data, size_t data_size);
 
     double timecode_{0};                                      //!< Last detected timecode
-    std::unique_ptr<ShmdataFollower> shm_follower_{nullptr};  //!< LTC shmdata follower
+    std::unique_ptr<shmdata::Follower> shm_follower_{nullptr};  //!< LTC shmdata follower
     std::mutex timecode_m_{};
     LTCDecoder* decoder_{nullptr};  //!< LTC decoder used to detect real time value
 
@@ -66,10 +66,10 @@ class LTCDiff : public Quiddity {
       ltc_readers_{};  //!< Incoming sound stream optionally used for cadencing.
 
   bool do_compute_{false};
-  ShmdataConnector shmcntr_{nullptr};
-  std::unique_ptr<ShmdataFollower> shm_follower_{
+  shmdata::Connector shmcntr_{nullptr};
+  std::unique_ptr<shmdata::Follower> shm_follower_{
       nullptr};  //!< Unique, used to cadence the time difference computation
-  std::unique_ptr<ShmdataWriter> shmw_{nullptr};
+  std::unique_ptr<shmdata::Writer> shmw_{nullptr};
 
   std::mutex timecode_m_{};
 

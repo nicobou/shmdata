@@ -25,8 +25,8 @@
 #include <mutex>
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/shmdata-connector.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -48,8 +48,8 @@ class ShmdataToOsc : public Quiddity, public Startable {
 
   lo_address address_{nullptr};
   std::mutex address_mutex_{};
-  ShmdataConnector shmcntr_;
-  std::unique_ptr<ShmdataFollower> shm_{nullptr};
+  shmdata::Connector shmcntr_;
+  std::unique_ptr<shmdata::Follower> shm_{nullptr};
 
   int port_{1056};
   property::prop_id_t port_id_;

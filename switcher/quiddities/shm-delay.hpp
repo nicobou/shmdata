@@ -23,9 +23,9 @@
 #include <deque>
 #include "../gst/utils.hpp"
 #include "../quiddity/quiddity.hpp"
-#include "../shmdata/shmdata-connector.hpp"
-#include "../shmdata/shmdata-follower.hpp"
-#include "../shmdata/shmdata-writer.hpp"
+#include "../shmdata/connector.hpp"
+#include "../shmdata/follower.hpp"
+#include "../shmdata/writer.hpp"
 #include "../utils/periodic-task.hpp"
 
 namespace switcher {
@@ -77,10 +77,10 @@ class ShmDelay : public Quiddity {
   bool on_shmdata_disconnect(const std::string& shmpath);
 
   ShmBuffer delay_content_{1 << 10};   //!< Size limit for the buffer (~1GB)
-  ShmdataConnector shmcntr_{nullptr};  //!< Shmdata connector for ltc and shmdata inputs
-  std::unique_ptr<ShmdataFollower> shm_follower_{nullptr};   //!< Shmdata to be delayed
-  std::unique_ptr<ShmdataFollower> diff_follower_{nullptr};  //!< Timecode delay
-  std::unique_ptr<ShmdataWriter> shmw_{};                    //!< Shmdata writer.
+  shmdata::Connector shmcntr_{nullptr};  //!< Shmdata connector for ltc and shmdata inputs
+  std::unique_ptr<shmdata::Follower> shm_follower_{nullptr};          //!< Shmdata to be delayed
+  std::unique_ptr<shmdata::Follower> diff_follower_{nullptr};         //!< Timecode delay
+  std::unique_ptr<shmdata::Writer> shmw_{};                           //!< Shmdata writer.
   std::unique_ptr<PeriodicTask<std::chrono::microseconds>> writing_task_{
       nullptr};  //!< Shmdata writing task (high frequency to be accurate on timestamp checking)
   double last_timestamp_{0};  //!< Timestamp of the last written shmdata.

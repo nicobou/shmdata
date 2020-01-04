@@ -109,14 +109,14 @@ bool PortMidiSink::stop() {
 }
 
 bool PortMidiSink::on_shmdata_connect(std::string path) {
-  shm_ = std::make_unique<ShmdataFollower>(
+  shm_ = std::make_unique<shmdata::Follower>(
       this,
       path,
       [this](void* data, size_t size) { this->on_shmreader_data(data, size); },
       nullptr,
       nullptr,
-      ShmdataStat::kDefaultUpdateInterval,
-      ShmdataFollower::Direction::reader,
+      shmdata::Stat::kDefaultUpdateInterval,
+      shmdata::Follower::Direction::reader,
       true);
   if (autostart_) {
     return pmanage<MPtr(&property::PBag::set_str_str)>("started", "true");

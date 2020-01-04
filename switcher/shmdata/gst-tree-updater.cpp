@@ -17,17 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gst-shm-tree-updater.hpp"
+#include "./gst-tree-updater.hpp"
 #include "../shmdata/caps/utils.hpp"
 
 namespace switcher {
+namespace shmdata {
 
-GstShmTreeUpdater::GstShmTreeUpdater(quiddity::Quiddity* quid,
-                                     GstElement* element,
-                                     const std::string& shmpath,
-                                     Direction dir,
-                                     on_caps_cb_t on_caps_cb,
-                                     on_delete_t on_delete_cb)
+GstTreeUpdater::GstTreeUpdater(quiddity::Quiddity* quid,
+                               GstElement* element,
+                               const std::string& shmpath,
+                               Direction dir,
+                               on_caps_cb_t on_caps_cb,
+                               on_delete_t on_delete_cb)
     : quid_(quid),
       shmpath_(shmpath),
       dir_(dir),
@@ -37,13 +38,12 @@ GstShmTreeUpdater::GstShmTreeUpdater(quiddity::Quiddity* quid,
                [this, on_caps_cb](const std::string& caps) {
                  auto parent_path = key_ + shmpath_;
                  quid_->graft_tree(parent_path + ".caps", InfoTree::make(caps), false);
-                 quid_->graft_tree(parent_path + ".category",
-                                   InfoTree::make(shmdata::caps::get_category(caps)),
-                                   false);
+                 quid_->graft_tree(
+                     parent_path + ".category", InfoTree::make(caps::get_category(caps)), false);
                  quid_->notify_tree_updated(parent_path);
                  if (on_caps_cb) on_caps_cb(caps);
                },
-               ShmdataStat::make_tree_updater(
+               Stat::make_tree_updater(
                    quid_,
                    key_ + shmpath_,
                    (/* do not signal tree update for readers */ dir_ == Direction::writer
@@ -60,9 +60,10 @@ GstShmTreeUpdater::GstShmTreeUpdater(quiddity::Quiddity* quid,
   }
 }
 
-GstShmTreeUpdater::~GstShmTreeUpdater() {
+GstTreeUpdater::~GstTreeUpdater() {
   if (on_del_) on_del_();
   quid_->prune_tree(key_ + shmpath_);
 }
 
+}  // namespace shmdata
 }  // namespace switcher

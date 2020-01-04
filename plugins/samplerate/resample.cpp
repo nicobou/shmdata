@@ -67,10 +67,10 @@ Resample::Resample(quiddity::Config&& conf)
 bool Resample::connect(const std::string& path) {
   shmr_.reset();
   shmw_.reset();
-  pmanage<MPtr(&property::PBag::disable)>(algo_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(algo_id_, shmdata::Connector::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(samplerate_id_,
-                                          ShmdataConnector::disabledWhenConnectedMsg);
-  shmr_ = std::make_unique<ShmdataFollower>(
+                                          shmdata::Connector::disabledWhenConnectedMsg);
+  shmr_ = std::make_unique<shmdata::Follower>(
       this,
       path,
       [this](void* buf, size_t size) {
@@ -118,13 +118,13 @@ bool Resample::connect(const std::string& path) {
         }
         // write to shmdata
         auto written = resampler_data_->output_frames_gen * incaps_->channels() * sizeof(float);
-        shmw_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(resampled_.data(), written);
+        shmw_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(resampled_.data(), written);
         shmw_->bytes_written(written);
       },
       [this](const std::string& str_caps) {
         if (nullptr != resampler_config_) src_delete(resampler_config_);  // FIXME make this RAII
 
-        incaps_ = std::make_unique<AudioCaps>(str_caps);
+        incaps_ = std::make_unique<shmdata::caps::AudioCaps>(str_caps);
         if (!(*incaps_)) {
           warning("resample does not understand shmdata caps: %", incaps_->error_msg());
           return;
@@ -144,7 +144,7 @@ bool Resample::connect(const std::string& path) {
         auto newcaps = *incaps_;
         newcaps.set_samplerate(samplerate_);
         newcaps.set_float();
-        shmw_ = std::make_unique<ShmdataWriter>(this, make_shmpath("audio"), 1, newcaps.get());
+        shmw_ = std::make_unique<shmdata::Writer>(this, make_shmpath("audio"), 1, newcaps.get());
       },
       nullptr);
   return true;
@@ -159,7 +159,7 @@ bool Resample::disconnect() {
 }
 
 bool Resample::can_sink_caps(const std::string& str_caps) {
-  auto audiocaps = AudioCaps(str_caps);
+  auto audiocaps = shmdata::caps::AudioCaps(str_caps);
   if (!audiocaps) return false;
   if (!audiocaps.is_float() && audiocaps.format_size_in_bytes() != sizeof(short) &&
       audiocaps.format_size_in_bytes() != sizeof(int))

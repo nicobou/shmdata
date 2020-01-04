@@ -23,8 +23,8 @@
 #include <jack/jack.h>
 #include <ltc.h>
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/shmdata/shmdata-connector.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -48,8 +48,8 @@ class LTCToJack : public Quiddity {
   bool can_sink_caps(std::string str_caps);
 
   // Shmdata
-  ShmdataConnector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
-  std::unique_ptr<ShmdataFollower> shm_follower_{nullptr};  //!< Incoming LTC stream
+  shmdata::Connector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
+  std::unique_ptr<shmdata::Follower> shm_follower_{nullptr};  //!< Incoming LTC stream
 
   jack_client_t* jack_client_{nullptr};  //!< Jack client connected to transport
   LTCDecoder* decoder_{nullptr};         //!< LTC frame decoder

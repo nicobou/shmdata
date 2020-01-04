@@ -19,11 +19,13 @@
 
 #include "./utils.hpp"
 #include <algorithm>
-#include "../gst-shmdata-subscriber.hpp"
+#include "../gst-subscriber.hpp"
 
 namespace switcher {
+namespace shmdata {
+namespace caps {
 
-std::string shmdata::caps::get_category(const std::string& caps) {
+std::string get_category(const std::string& caps) {
   std::string category;
   std::string mime_type(caps.begin(), std::find(caps.begin(), caps.end(), (',')));
   if (std::string::npos != mime_type.find("video/x-raw")) {
@@ -51,4 +53,6 @@ std::string shmdata::caps::get_category(const std::string& caps) {
   return category;
 }
 
+}  // namespace caps
+}  // namespace shmdata
 }  // namespace switcher

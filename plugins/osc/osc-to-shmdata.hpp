@@ -23,7 +23,7 @@
 #include "lo/lo.h"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/shmdata/writer.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -39,7 +39,7 @@ class OscToShmdata : public Quiddity, public Startable {
   int port_{1056};
   property::prop_id_t port_id_;
   lo_server_thread osc_thread_{nullptr};
-  std::unique_ptr<ShmdataWriter> shm_{nullptr};
+  std::unique_ptr<shmdata::Writer> shm_{nullptr};
 
   bool start() final;
   bool stop() final;

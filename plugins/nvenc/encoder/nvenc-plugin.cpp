@@ -301,23 +301,27 @@ bool NVencPlugin::on_shmdata_disconnect() {
 bool NVencPlugin::on_shmdata_connect(const std::string& shmpath) {
   // Needed to avoid concurrency with old shmdata follower.
   shm_.reset(nullptr);
-  shm_.reset(new ShmdataFollower(
+  shm_.reset(new shmdata::Follower(
       this,
       shmpath,
       [this](void* data, size_t size) { this->on_shmreader_data(data, size); },
       [this](const std::string& data_descr) { this->on_shmreader_server_connected(data_descr); }));
 
-  pmanage<MPtr(&property::PBag::disable)>(devices_id_, ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&property::PBag::disable)>(presets_id_, ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&property::PBag::disable)>(profiles_id_, ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&property::PBag::disable)>(codecs_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(devices_id_,
+                                          shmdata::Connector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(presets_id_,
+                                          shmdata::Connector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(profiles_id_,
+                                          shmdata::Connector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(codecs_id_, shmdata::Connector::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(max_width_id_,
-                                          ShmdataConnector::disabledWhenConnectedMsg);
+                                          shmdata::Connector::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(max_height_id_,
-                                          ShmdataConnector::disabledWhenConnectedMsg);
+                                          shmdata::Connector::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(default_preset_id_,
-                                          ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&property::PBag::disable)>(bitrate_id_, ShmdataConnector::disabledWhenConnectedMsg);
+                                          shmdata::Connector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(bitrate_id_,
+                                          shmdata::Connector::disabledWhenConnectedMsg);
 
   return true;
 }
@@ -347,7 +351,7 @@ void NVencPlugin::on_shmreader_data(void* data, size_t size) {
   es_.get()->invoke_async<MPtr(&NVencES::encode_current_input)>(nullptr);
   es_.get()->invoke_async<MPtr(&NVencES::process_encoded_frame)>(
       nullptr, [&](void* data, uint32_t enc_size) {
-        shmw_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, enc_size);
+        shmw_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(data, enc_size);
         shmw_->bytes_written(enc_size);
       });
 }
@@ -431,12 +435,13 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
   else
     codec = "x-h264";
 
-  shmw_ = std::make_unique<ShmdataWriter>(
+  shmw_ = std::make_unique<shmdata::Writer>(
       this,
       make_shmpath("video-encoded"),
       1,
-      std::string("video/" + codec + ", stream-format=(string)byte-stream, "
-                                     "alignment=(string)au, profile=(string)baseline" +
+      std::string("video/" + codec +
+                  ", stream-format=(string)byte-stream, "
+                  "alignment=(string)au, profile=(string)baseline" +
                   ", width=(int)" + std::to_string(width) + ", height=(int)" +
                   std::to_string(height) +
                   ", pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)" +

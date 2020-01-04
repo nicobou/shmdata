@@ -25,7 +25,7 @@
 #include <future>
 #include <vector>
 #include "switcher/quiddity/basic-test.hpp"
-#include "switcher/shmdata/gst-shmdata-subscriber.hpp"
+#include "switcher/shmdata/gst-subscriber.hpp"
 
 #include "cuda/cuda-context.hpp"
 

@@ -17,29 +17,30 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./shmdata-connector.hpp"
+#include "./connector.hpp"
 #include "../gst/utils.hpp"
 #include "../infotree/information-tree-json.hpp"
 #include "../infotree/information-tree.hpp"
 #include "../quiddity/container.hpp"
 #include "../quiddity/quiddity.hpp"
-#include "../shmdata/shmdata-stat.hpp"
+#include "../shmdata/stat.hpp"
 #include "../utils/scope-exit.hpp"
 
 namespace switcher {
+namespace shmdata {
 
-const std::string ShmdataConnector::disabledWhenConnectedMsg =
+const std::string Connector::disabledWhenConnectedMsg =
     "this property is disabled when a stream is connected";
 
-ShmdataConnector::ShmdataConnector(quiddity::Quiddity* quid) : quid_(quid) {}
+Connector::Connector(quiddity::Quiddity* quid) : quid_(quid) {}
 
-bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
-                                              OnDisconnect on_disconnect_cb,
-                                              OnDisconnectAll on_disconnect_all_cb,
-                                              CanSinkCaps on_can_sink_caps_cb,
-                                              unsigned int max_reader) {
+bool Connector::install_connect_method(OnConnect on_connect_cb,
+                                       OnDisconnect on_disconnect_cb,
+                                       OnDisconnectAll on_disconnect_all_cb,
+                                       CanSinkCaps on_can_sink_caps_cb,
+                                       unsigned int max_reader) {
   if (quid_ == nullptr) {
-    quid_->warning("ShmdataConnector is created without quiddity");
+    quid_->warning("Connector is created without quiddity");
     return false;
   }
   quid_->graft_tree(".shmdata.max_reader", InfoTree::make(max_reader));
@@ -181,4 +182,5 @@ bool ShmdataConnector::install_connect_method(OnConnect on_connect_cb,
   return true;
 }
 
+}  // namespace shmdata
 }  // namespace switcher

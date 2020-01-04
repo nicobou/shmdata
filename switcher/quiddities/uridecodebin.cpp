@@ -259,8 +259,8 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   std::string shmpath = make_shmpath(media_name);
   g_object_set(G_OBJECT(shmdatasink), "socket-path", shmpath.c_str(), nullptr);
 
-  shm_subs_.emplace_back(std::make_unique<switcher::GstShmTreeUpdater>(
-      this, shmdatasink, shmpath, switcher::GstShmTreeUpdater::Direction::writer));
+  shm_subs_.emplace_back(std::make_unique<switcher::shmdata::GstTreeUpdater>(
+      this, shmdatasink, shmpath, switcher::shmdata::GstTreeUpdater::Direction::writer));
   if (!stream_is_image) gst::utils::sync_state_with_parent(shmdatasink);
 }
 

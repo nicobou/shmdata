@@ -135,8 +135,8 @@ bool AVPlayer::start() {
     file->sink_element_ = gst_bin_get_by_name(GST_BIN(avplay_bin_), file->sink_name_.c_str());
     if (!file->sink_element_) continue;
 
-    file->shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
-        this, file->sink_element_, file->shmpath_, GstShmTreeUpdater::Direction::writer);
+    file->shmsink_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+        this, file->sink_element_, file->shmpath_, shmdata::GstTreeUpdater::Direction::writer);
   }
 
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);

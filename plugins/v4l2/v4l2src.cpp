@@ -694,8 +694,8 @@ bool V4L2Src::start() {
                           nullptr);
   }
 
-  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
-      this, shmsink_.get_raw(), shmpath_, GstShmTreeUpdater::Direction::writer);
+  shm_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+      this, shmsink_.get_raw(), shmpath_, shmdata::GstTreeUpdater::Direction::writer);
 
   gst_pipeline_->play(true);
   pmanage<MPtr(&property::PBag::disable)>(devices_id_, disabledWhenStartedMsg);

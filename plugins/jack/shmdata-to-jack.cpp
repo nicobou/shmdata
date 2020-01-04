@@ -309,20 +309,20 @@ bool ShmdataToJack::start() {
     return false;
   }
   g_object_set(G_OBJECT(shmdatasrc_), "socket-path", shmpath_.c_str(), nullptr);
-  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
-      this, shmdatasrc_, shmpath_, GstShmTreeUpdater::Direction::reader);
+  shm_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+      this, shmdatasrc_, shmpath_, shmdata::GstTreeUpdater::Direction::reader);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), audiobin_);
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
   pmanage<MPtr(&property::PBag::disable)>(auto_connect_id_,
-                                          ShmdataConnector::disabledWhenConnectedMsg);
+                                          shmdata::Connector::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(connect_to_id_,
-                                          ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&property::PBag::disable)>(index_id_, ShmdataConnector::disabledWhenConnectedMsg);
+                                          shmdata::Connector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(index_id_, shmdata::Connector::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(connect_all_to_first_id_,
-                                          ShmdataConnector::disabledWhenConnectedMsg);
+                                          shmdata::Connector::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(connect_only_first_id_,
-                                          ShmdataConnector::disabledWhenConnectedMsg);
+                                          shmdata::Connector::disabledWhenConnectedMsg);
   connect_ports();
   return true;
 }

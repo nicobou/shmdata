@@ -170,7 +170,7 @@ bool JackToShmdata::start() {
   data_type += channel_mask;
 
   std::string shmpath = make_shmpath("audio");
-  shm_ = std::make_unique<ShmdataWriter>(
+  shm_ = std::make_unique<shmdata::Writer>(
       this, shmpath, buf_.size() * sizeof(jack_sample_t), data_type);
   if (!shm_.get()) {
     warning("JackToShmdata failed to start");
@@ -234,7 +234,7 @@ int JackToShmdata::jack_process(jack_nframes_t nframes, void* arg) {
         }
       }
       size_t size = nframes * num_chan * sizeof(jack_sample_t);
-      context->shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(context->buf_.data(), size);
+      context->shm_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(context->buf_.data(), size);
       context->shm_->bytes_written(size);
     }  // locked
   }    // releasing lock

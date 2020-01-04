@@ -24,29 +24,29 @@
 #include <atomic>
 #include <future>
 #include <mutex>
-#include "./shmdata-stat.hpp"
 #include "../utils/periodic-task.hpp"
+#include "./stat.hpp"
 
 namespace switcher {
-class GstShmdataSubscriber {
+namespace shmdata {
+class GstSubscriber {
  public:
   using on_caps_cb_t = std::function<void(const std::string&)>;
-  using on_stat_monitor_t = std::function<void(const ShmdataStat&)>;
+  using on_stat_monitor_t = std::function<void(const Stat&)>;
   using on_delete_t = std::function<void()>;
   using on_connection_status_t = std::function<void(bool status)>;
 
-  GstShmdataSubscriber(
-      GstElement* element,
-      on_caps_cb_t on_caps_cb,
-      on_stat_monitor_t on_stat_monitor_cb,
-      on_delete_t on_delete_cb = nullptr,
-      on_connection_status_t on_connection_status_cb = nullptr,
-      std::chrono::milliseconds update_interval = ShmdataStat::kDefaultUpdateInterval);
+  GstSubscriber(GstElement* element,
+                on_caps_cb_t on_caps_cb,
+                on_stat_monitor_t on_stat_monitor_cb,
+                on_delete_t on_delete_cb = nullptr,
+                on_connection_status_t on_connection_status_cb = nullptr,
+                std::chrono::milliseconds update_interval = Stat::kDefaultUpdateInterval);
 
-  GstShmdataSubscriber() = delete;
-  GstShmdataSubscriber(const GstShmdataSubscriber&) = delete;
-  GstShmdataSubscriber& operator=(const GstShmdataSubscriber&) = delete;
-  ~GstShmdataSubscriber();
+  GstSubscriber() = delete;
+  GstSubscriber(const GstSubscriber&) = delete;
+  GstSubscriber& operator=(const GstSubscriber&) = delete;
+  ~GstSubscriber();
 
  private:
   static void on_caps_cb(GObject* gobject, GParamSpec* pspec, gpointer user_data);
@@ -66,5 +66,6 @@ class GstShmdataSubscriber {
   gulong signal_connection_id_{0};
 };
 
+}  // namespace shmdata
 }  // namespace switcher
 #endif

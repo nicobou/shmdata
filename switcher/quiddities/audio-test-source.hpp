@@ -27,7 +27,7 @@
 #include "../gst/unique-gst-element.hpp"
 #include "../quiddity/quiddity.hpp"
 #include "../quiddity/startable.hpp"
-#include "../shmdata/gst-shm-tree-updater.hpp"
+#include "../shmdata/gst-tree-updater.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -44,7 +44,7 @@ class AudioTestSource : public Quiddity, public Startable {
   static const int kMaxChannels = 128;
 
   std::string shmpath_{};
-  std::unique_ptr<switcher::GstShmTreeUpdater> shm_sub_{nullptr};
+  std::unique_ptr<switcher::shmdata::GstTreeUpdater> shm_sub_{nullptr};
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
   property::Selection<> sample_rate_{
       {"22050", "32000", "44100", "48000", "88200", "96000", "192000"}, 2};

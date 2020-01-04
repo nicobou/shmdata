@@ -9,24 +9,24 @@ pkg_check_modules(GMODULE REQUIRED gmodule-2.0)
 
 add_library(${SWITCHER_LIBRARY} SHARED
   configuration/configuration.cpp
+  gst/audio-codec.cpp
   gst/decodebin-to-shmdata.cpp
   gst/g-source-wrapper.cpp
   gst/glibmainloop.cpp
-  gst/audio-codec.cpp
   gst/initialized.cpp
   gst/pipe.cpp
   gst/pipeliner.cpp
   gst/pixel-format-converter.cpp
-  gst/rtppayloader-finder.cpp
-  gst/shmdata-to-cb.cpp
-  gst/utils.cpp
-  gst/video-codec.cpp
-  gst/video-timelapse.cpp
   gst/rtp-receiver.cpp
   gst/rtp-sender.cpp
   gst/rtp-session.cpp
+  gst/rtppayloader-finder.cpp
   gst/sdp-utils.cpp
+  gst/shmdata-to-cb.cpp
   gst/unique-gst-element.cpp
+  gst/utils.cpp
+  gst/video-codec.cpp
+  gst/video-timelapse.cpp
   infotree/information-tree-basic-serializer.cpp
   infotree/information-tree-json.cpp
   infotree/information-tree.cpp
@@ -44,9 +44,14 @@ add_library(${SWITCHER_LIBRARY} SHARED
   quiddities/timelapse.cpp
   quiddities/uridecodebin.cpp
   quiddities/video-test-source.cpp
-  quiddity/bundle/description-parser.cpp
+  quiddity/basic-test.cpp
   quiddity/bundle/bundle.cpp
+  quiddity/bundle/description-parser.cpp
+  quiddity/class-printer.cpp
+  quiddity/container.cpp
+  quiddity/doc.cpp
   quiddity/documentation-registry.cpp
+  quiddity/factory.cpp
   quiddity/method/mbag.cpp
   quiddity/plugin-loader.cpp
   quiddity/property/color.cpp
@@ -54,24 +59,19 @@ add_library(${SWITCHER_LIBRARY} SHARED
   quiddity/property/gprop-to-prop.cpp
   quiddity/property/pbag.cpp
   quiddity/property/property.cpp
-  quiddity/basic-test.cpp
-  quiddity/class-printer.cpp
-  quiddity/container.cpp
-  quiddity/doc.cpp
-  quiddity/factory.cpp
   quiddity/qrox.cpp
   quiddity/quiddity.cpp
-  quiddity/signal/sig.cpp
   quiddity/signal/sbag.cpp
+  quiddity/signal/sig.cpp
   quiddity/startable.cpp
   shmdata/caps/audio-caps.cpp
   shmdata/caps/utils.cpp
-  shmdata/gst-shm-tree-updater.cpp
-  shmdata/gst-shmdata-subscriber.cpp
-  shmdata/shmdata-connector.cpp
-  shmdata/shmdata-follower.cpp
-  shmdata/shmdata-stat.cpp
-  shmdata/shmdata-writer.cpp
+  shmdata/connector.cpp
+  shmdata/follower.cpp
+  shmdata/gst-subscriber.cpp
+  shmdata/gst-tree-updater.cpp
+  shmdata/stat.cpp
+  shmdata/writer.cpp
   switcher.cpp
   utils/bool-any.cpp
   utils/bool-log.cpp

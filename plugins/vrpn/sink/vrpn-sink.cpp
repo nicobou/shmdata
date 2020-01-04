@@ -599,7 +599,7 @@ bool VRPNSink::stop() {
  * @thread switcher
  */
 bool VRPNSink::connect(const std::string& path) {
-  shmDataFollower_.reset(new ShmdataFollower(
+  shmDataFollower_.reset(new shmdata::Follower(
       this, path, [this](void* data, size_t size) { this->onShmReaderData(data, size); }));
   return true;
 }

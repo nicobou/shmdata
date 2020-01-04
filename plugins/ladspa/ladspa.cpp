@@ -312,7 +312,8 @@ bool LADSPA::on_shmdata_connect(const std::string& shmpath) {
     save_properties();
     first_connect_ = false;
   }
-  pmanage<MPtr(&property::PBag::disable)>(plugins_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(plugins_id_,
+                                          shmdata::Connector::disabledWhenConnectedMsg);
 
   create_and_play_gst_pipeline();
 
@@ -326,11 +327,11 @@ void LADSPA::create_and_play_gst_pipeline() {
 
   if (!create_gst_pipeline()) return;
 
-  shmsrc_sub_ = std::make_unique<GstShmTreeUpdater>(
+  shmsrc_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
       this,
       shmdatasrc_,
       shmpath_,
-      GstShmTreeUpdater::Direction::reader,
+      shmdata::GstTreeUpdater::Direction::reader,
       [this](const std::string& str_caps) {
         GstCaps* caps = gst_caps_from_string(str_caps.c_str());
         On_scope_exit {
@@ -359,8 +360,8 @@ void LADSPA::create_and_play_gst_pipeline() {
         }
       });
 
-  shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
-      this, shmdatasink_, shmpath_transformed_, GstShmTreeUpdater::Direction::writer);
+  shmsink_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+      this, shmdatasink_, shmpath_transformed_, shmdata::GstTreeUpdater::Direction::writer);
 
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   g_object_set(G_OBJECT(ladspa_bin_), "async-handling", TRUE, nullptr);

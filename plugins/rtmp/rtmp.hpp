@@ -19,8 +19,8 @@
 
 #include "switcher/gst/pipeliner.hpp"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/shmdata/gst-shm-tree-updater.hpp"
-#include "switcher/shmdata/shmdata-connector.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -53,9 +53,10 @@ class RTMP : public Quiddity {
 
   std::string audio_shmpath_{};  //!< Path of the audio input shmdata
   std::string video_shmpath_{};  //!< Path of the video input shmdata
-  ShmdataConnector shmcntr_;  //!< Shmdata connector of uncompressed audio/video into the quiddity.
-  std::unique_ptr<GstShmTreeUpdater> shmaudio_sub_{nullptr};  //!< Subscriber to audio shmdata
-  std::unique_ptr<GstShmTreeUpdater> shmvideo_sub_{nullptr};  //!< Subscriber to video shmdata
+  shmdata::Connector
+      shmcntr_;  //!< Shmdata connector of uncompressed audio/video into the quiddity.
+  std::unique_ptr<shmdata::GstTreeUpdater> shmaudio_sub_{nullptr};  //!< Subscriber to audio shmdata
+  std::unique_ptr<shmdata::GstTreeUpdater> shmvideo_sub_{nullptr};  //!< Subscriber to video shmdata
 
   std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};  //!< Gstreamer pipeline
 

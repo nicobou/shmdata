@@ -44,22 +44,22 @@
 namespace switcher {
 
 namespace gst {
-class VideoCodec;
 class AudioCodec;
+class VideoCodec;
 }  // namespace gst
 namespace quiddities {
 class ProtocolCurl;
 class ProtocolOsc;
 class ProtocolReader;
 }  // namespace quiddities
-
-class ShmdataConnector;
-class ShmdataWriter;
-class ShmdataFollower;
-class GstShmTreeUpdater;
+namespace shmdata {
+class Connector;
+class Follower;
+class GstTreeUpdater;
 class ShmdataDecoder;
-struct ShmdataStat;
-
+class Writer;
+struct Stat;
+}  // namespace shmdata
 namespace quiddity {
 class Container;
 namespace bundle {
@@ -68,19 +68,19 @@ class Bundle;
 
 class Quiddity : public log::Logged, public SafeBoolIdiom {
   friend class bundle::Bundle;  // access to props_ in order to forward properties
+  friend class Startable;
   // FIXME do something for this (to many friend class in quiddity.hpp):
+  friend class gst::AudioCodec;
+  friend class gst::VideoCodec;
   friend class quiddities::ProtocolCurl;
   friend class quiddities::ProtocolOsc;
   friend class quiddities::ProtocolReader;
-  friend class Startable;
-  friend class switcher::ShmdataConnector;
-  friend class switcher::ShmdataWriter;
-  friend class switcher::ShmdataFollower;
-  friend class gst::VideoCodec;
-  friend class gst::AudioCodec;
-  friend class switcher::GstShmTreeUpdater;
-  friend class switcher::ShmdataDecoder;
-  friend struct switcher::ShmdataStat;
+  friend class shmdata::Connector;
+  friend class shmdata::Follower;
+  friend class shmdata::GstTreeUpdater;
+  friend class shmdata::ShmdataDecoder;
+  friend class shmdata::Writer;
+  friend struct shmdata::Stat;
 
  public:
   using ptr = std::shared_ptr<Quiddity>;

@@ -18,10 +18,10 @@
  */
 
 #include "switcher/gst/pipeliner.hpp"
-#include "switcher/shmdata/gst-shm-tree-updater.hpp"
-#include "switcher/shmdata/shmdata-connector.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
-#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
+#include "switcher/shmdata/writer.hpp"
 #include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
@@ -73,10 +73,10 @@ class LADSPA : public Quiddity {
 
   std::string shmpath_{};  //!< Path of the input shmdata
   std::string shmpath_transformed_{};  //!< Path of the output shmdata
-  ShmdataConnector shmcntr_;           //!< Shmdata connector to connect into the quiddity.
+  shmdata::Connector shmcntr_;         //!< Shmdata connector to connect into the quiddity.
   std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};       //!< Gstreamer pipeline
-  std::unique_ptr<GstShmTreeUpdater> shmsrc_sub_{nullptr};      //!< Subscriber to input shmdata
-  std::unique_ptr<GstShmTreeUpdater> shmsink_sub_{nullptr};     //!< Subscriber to output shmdata
+  std::unique_ptr<shmdata::GstTreeUpdater> shmsrc_sub_{nullptr};   //!< Subscriber to input shmdata
+  std::unique_ptr<shmdata::GstTreeUpdater> shmsink_sub_{nullptr};  //!< Subscriber to output shmdata
   bool first_connect_{false};  //!< First connection to a LADSPA plugin?
 
   GstElement* shmdatasrc_{nullptr};             //!< Gstreamer shmdatasrc element

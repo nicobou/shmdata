@@ -17,12 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./shmdata-writer.hpp"
+#include "./writer.hpp"
 #include "./caps/utils.hpp"
 
 namespace switcher {
+namespace shmdata {
 
-ShmdataWriter::ShmdataWriter(quiddity::Quiddity* quid,
+Writer::Writer(quiddity::Quiddity* quid,
                              const std::string& path,
                              size_t memsize,
                              const std::string& data_descr)
@@ -32,7 +33,7 @@ ShmdataWriter::ShmdataWriter(quiddity::Quiddity* quid,
       shmlog_(quid->get_log_ptr()),
       shm_(shmpath_, memsize, data_type_, &shmlog_),
       task_(shm_ ? std::make_unique<PeriodicTask<>>([this]() { this->update_quid_stats(); },
-                                                    ShmdataStat::kDefaultUpdateInterval)
+                                                    Stat::kDefaultUpdateInterval)
                  : nullptr) {
   if (shm_ && nullptr != quid_) {
     auto parent_path = ".shmdata.writer." + shmpath_;
@@ -45,28 +46,29 @@ ShmdataWriter::ShmdataWriter(quiddity::Quiddity* quid,
     }
     quid_->graft_tree(parent_path + ".caps", InfoTree::make(data_type_), false);
     quid_->graft_tree(
-        parent_path + ".category", InfoTree::make(shmdata::caps::get_category(data_type_)), false);
+        parent_path + ".category", InfoTree::make(caps::get_category(data_type_)), false);
     quid_->notify_tree_updated(parent_path);
   }
 }
 
-ShmdataWriter::~ShmdataWriter() {
+Writer::~Writer() {
   if (shm_ && nullptr != quid_) quid_->prune_tree(std::string(".shmdata.writer.") + shmpath_);
 }
 
-void ShmdataWriter::bytes_written(size_t size) {
+void Writer::bytes_written(size_t size) {
   std::unique_lock<std::mutex> lock(bytes_mutex_);
   shm_stats_.count_buffer(size);
 }
 
-void ShmdataWriter::update_quid_stats() {
+void Writer::update_quid_stats() {
   decltype(shm_stats_) stats;
   {
     std::unique_lock<std::mutex> lock(bytes_mutex_);
     stats = shm_stats_;
     shm_stats_.reset();
   }
-  ShmdataStat::make_tree_updater(quid_, ".shmdata.writer." + shmpath_)(stats);
+  Stat::make_tree_updater(quid_, ".shmdata.writer." + shmpath_)(stats);
 }
 
+}  // namespace shmdata
 }  // namespace switcher

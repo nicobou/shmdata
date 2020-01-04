@@ -22,8 +22,8 @@
 
 #include <string>
 #include "../../infotree/information-tree.hpp"
-#include "../gst-shmdata-subscriber.hpp"
-#include "../shmdata-stat.hpp"
+#include "../gst-subscriber.hpp"
+#include "../stat.hpp"
 
 namespace switcher {
 namespace shmdata {

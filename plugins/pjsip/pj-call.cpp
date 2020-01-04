@@ -586,7 +586,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
            std::find_if(call->rtp_writers_.cbegin(),
                         call->rtp_writers_.cend(),
                         [testpath = rtp_shmpath + rtp_shmpath_suffix](
-                            const std::unique_ptr<ShmdataWriter>& writer) {
+                            const std::unique_ptr<shmdata::Writer>& writer) {
                           return writer->get_path() == testpath;
                         })) {
       ++i;
@@ -601,17 +601,17 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     if (rtp_caps.empty()) rtp_caps = "unknown_data_type";
 
     call->rtp_writers_.emplace_back(
-        std::make_unique<ShmdataWriter>(SIPPlugin::this_, rtp_shmpath, 1, rtp_caps));
+        std::make_unique<shmdata::Writer>(SIPPlugin::this_, rtp_shmpath, 1, rtp_caps));
     // uncomment the following in order to get rtp shmdata shown in scenic:
     // SIPPlugin::this_->graft_tree(
     //     std::string(".shmdata.writer.") + rtp_shmpath + ".uri",
     //     InfoTree::make(call->peer_uri));
     auto* writer = call->rtp_writers_.back().get();
-    call->ice_trans_->set_data_cb(call->rtp_writers_.size(),
-                                  [writer, rtp_shmpath](void* data, size_t size) {
-                                    writer->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, size);
-                                    writer->bytes_written(size);
-                                  });
+    call->ice_trans_->set_data_cb(
+        call->rtp_writers_.size(), [writer, rtp_shmpath](void* data, size_t size) {
+          writer->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(data, size);
+          writer->bytes_written(size);
+        });
     // setting a decoder for this shmdata
     // Create a shmdata quiddity for this stream.
     std::string quid_name =
@@ -625,11 +625,11 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
           auto shmpath = shm_prefix + media_label + "-" + media_type;
           g_object_set(G_OBJECT(el), "socket-path", shmpath.c_str(), nullptr);
           std::lock_guard<std::mutex> lock(call->shm_subs_mtx_);
-          call->shm_subs_.emplace_back(std::make_unique<GstShmTreeUpdater>(
+          call->shm_subs_.emplace_back(std::make_unique<shmdata::GstTreeUpdater>(
               SIPPlugin::this_,
               el,
               shmpath,
-              GstShmTreeUpdater::Direction::writer,
+              shmdata::GstTreeUpdater::Direction::writer,
               [=](const std::string& /*caps*/) {
                 SIPPlugin::this_->graft_tree(std::string(".shmdata.writer.") + shmpath + ".uri",
                                              InfoTree::make(call->peer_uri));

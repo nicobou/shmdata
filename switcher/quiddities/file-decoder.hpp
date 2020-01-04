@@ -25,7 +25,7 @@
 #include "../gst/decodebin-to-shmdata.hpp"
 #include "../gst/pipeliner.hpp"
 #include "../quiddity/quiddity.hpp"
-#include "../shmdata/gst-shm-tree-updater.hpp"
+#include "../shmdata/gst-tree-updater.hpp"
 #include "../utils/counter-map.hpp"
 #include "../utils/periodic-task.hpp"
 
@@ -46,7 +46,7 @@ class FileDecoder : public Quiddity {
   std::mutex media_loaded_mutex_{};
   bool media_loaded_{false};
   CounterMap counter_{};
-  std::vector<std::unique_ptr<switcher::GstShmTreeUpdater>> shm_subs_{};
+  std::vector<std::unique_ptr<switcher::shmdata::GstTreeUpdater>> shm_subs_{};
   GstElement* filesrc_{nullptr};
   // custom properties
   std::string location_{};

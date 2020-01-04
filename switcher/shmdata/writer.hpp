@@ -26,27 +26,28 @@
 #include "../utils/make-consultable.hpp"
 #include "../utils/periodic-task.hpp"
 #include "../utils/safe-bool-idiom.hpp"
-#include "./shmdata-stat.hpp"
-#include "./shmdata-switcher-logger.hpp"
+#include "./stat.hpp"
+#include "./switcher-logger.hpp"
 
 namespace switcher {
-class ShmdataWriter : public SafeBoolIdiom {
+namespace shmdata {
+class Writer : public SafeBoolIdiom {
  public:
-  ShmdataWriter(quiddity::Quiddity* quid,
+  Writer(quiddity::Quiddity* quid,
                 const std::string& path,
                 size_t memsize,
                 const std::string& data_descr);
-  ShmdataWriter() = delete;
-  ~ShmdataWriter();
-  ShmdataWriter(const ShmdataWriter&) = delete;
-  ShmdataWriter& operator=(const ShmdataWriter&) = delete;
-  ShmdataWriter& operator=(ShmdataWriter&&) = default;
+  Writer() = delete;
+  ~Writer();
+  Writer(const Writer&) = delete;
+  Writer& operator=(const Writer&) = delete;
+  Writer& operator=(Writer&&) = default;
 
-  Make_delegate(ShmdataWriter, shmdata::Writer, &shm_, writer);
+  Make_delegate(Writer, ::shmdata::Writer, &shm_, writer);
   // FIXME use consultable Global Wrapping
   // this is used in order to monitor traffic in the shmdata,
   // i.e. you need to update this at each write with the size writen,
-  // regardless of the shmdata::Writer method you are using
+  // regardless of the ::shmdata::Writer method you are using
   void bytes_written(size_t size);
   std::string get_path() const { return shmpath_; }
 
@@ -54,15 +55,16 @@ class ShmdataWriter : public SafeBoolIdiom {
   quiddity::Quiddity* quid_;
   std::string shmpath_;
   std::string data_type_;
-  ShmdataSwitcherLogger shmlog_;
-  shmdata::Writer shm_;
+  SwitcherLogger shmlog_;
+  ::shmdata::Writer shm_;
   std::unique_ptr<PeriodicTask<>> task_;
-  ShmdataStat shm_stats_{};
+  Stat shm_stats_{};
   std::mutex bytes_mutex_{};
 
   bool safe_bool_idiom() const final { return static_cast<bool>(shm_); };
   void update_quid_stats();
 };
 
+}  // namespace shmdata
 }  // namespace switcher
 #endif

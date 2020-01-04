@@ -22,7 +22,7 @@
 
 namespace switcher {
 namespace quiddities {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalShmdataWriter,
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalWriter,
                                      "extshmsrc",
                                      "Raw Shmdata",
                                      "other",
@@ -31,19 +31,19 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalShmdataWriter,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-ExternalShmdataWriter::ExternalShmdataWriter(quiddity::Config&& conf)
+ExternalWriter::ExternalWriter(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf)) {
   pmanage<MPtr(&property::PBag::make_string)>(
       "shmdata-path",
       [this](const std::string& val) {
         shmdata_path_ = val;
-        shm_ = std::make_unique<ShmdataFollower>(this,
-                                                 shmdata_path_,
-                                                 nullptr,
-                                                 nullptr,
-                                                 nullptr,
-                                                 ShmdataStat::kDefaultUpdateInterval,
-                                                 ShmdataFollower::Direction::writer);
+        shm_ = std::make_unique<shmdata::Follower>(this,
+                                                   shmdata_path_,
+                                                   nullptr,
+                                                   nullptr,
+                                                   nullptr,
+                                                   shmdata::Stat::kDefaultUpdateInterval,
+                                                   shmdata::Follower::Direction::writer);
         return true;
       },
       [this]() { return shmdata_path_; },
@@ -52,11 +52,11 @@ ExternalShmdataWriter::ExternalShmdataWriter(quiddity::Config&& conf)
       "");
 }
 
-InfoTree::ptr ExternalShmdataWriter::on_saving() {
+InfoTree::ptr ExternalWriter::on_saving() {
   return infotree::json::deserialize(tree<MPtr(&InfoTree::serialize_json)>(".shmdata.writer."));
 }
 
-void ExternalShmdataWriter::on_loading(InfoTree::ptr&& tree) {
+void ExternalWriter::on_loading(InfoTree::ptr&& tree) {
   if (tree->empty()) return;
   graft_tree(".shmdata.writer.", tree);
 }

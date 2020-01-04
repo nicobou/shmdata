@@ -23,6 +23,8 @@
 #include "../../utils/string-utils.hpp"
 
 namespace switcher {
+namespace shmdata {
+namespace caps {
 
 bool AudioCaps::safe_bool_idiom() const {
   return (is_unsigned_ || is_signed_ || is_float_) && samplerate_ != 0 && format_size_ != 0 &&
@@ -127,4 +129,7 @@ std::string AudioCaps::get() const {
          ", channels=(int)" + std::to_string(channels_) +
          ", channel-mask=(bitmask)0x0000000000000000";
 }
+
+}  // namespace caps
+}  // namespace shmdata
 }  // namespace switcher

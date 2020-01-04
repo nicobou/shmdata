@@ -136,7 +136,8 @@ PortMidiSource::PortMidiSource(quiddity::Config&& conf)
 }
 
 bool PortMidiSource::start() {
-  shm_ = std::make_unique<ShmdataWriter>(this, make_shmpath("midi"), sizeof(PmEvent), "audio/midi");
+  shm_ =
+      std::make_unique<shmdata::Writer>(this, make_shmpath("midi"), sizeof(PmEvent), "audio/midi");
   if (!shm_.get()) {
     message("ERROR:Midi failed to start");
     shm_.reset(nullptr);
@@ -169,7 +170,7 @@ void PortMidiSource::on_pm_event(PmEvent* event, void* user_data) {
   PmEvent* tmp_event = (PmEvent*)g_malloc(sizeof(PmEvent));
   tmp_event->message = event->message;
   tmp_event->timestamp = event->timestamp;
-  context->shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(tmp_event, sizeof(PmEvent));
+  context->shm_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(tmp_event, sizeof(PmEvent));
   context->shm_->bytes_written(sizeof(PmEvent));
   g_free(tmp_event);
 

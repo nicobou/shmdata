@@ -28,7 +28,7 @@
 #include "../gst/video-timelapse.hpp"
 #include "../quiddity/property/fraction.hpp"
 #include "../quiddity/quiddity.hpp"
-#include "../shmdata/shmdata-connector.hpp"
+#include "../shmdata/connector.hpp"
 #include "../utils/periodic-task.hpp"
 
 namespace switcher {
@@ -79,7 +79,7 @@ class Timelapse : public Quiddity {
   PeriodicTask<> relaunch_task_;
 
   // registering connect/disconnect/can_sink_caps:
-  ShmdataConnector shmcntr_;
+  shmdata::Connector shmcntr_;
   gst::VideoTimelapseConfig timelapse_config_;
   std::map<std::string, std::unique_ptr<gst::VideoTimelapse>> timelapse_{};
 

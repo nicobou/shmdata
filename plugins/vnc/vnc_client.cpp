@@ -97,8 +97,8 @@ bool VncClientSrc::start() {
       if (i > 0) {
         if (!HandleRFBServerMessage(rfb_client_)) return;
         if (vnc_writer_) {
-          vnc_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(rfb_client_->frameBuffer,
-                                                                   framebuffer_size_);
+          vnc_writer_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(rfb_client_->frameBuffer,
+                                                                     framebuffer_size_);
           vnc_writer_->bytes_written(framebuffer_size_);
         }
       }
@@ -121,7 +121,7 @@ bool VncClientSrc::connect(string shmdata_socket_path) {
   int shmreader_id = shmreader_id_;
   shmreader_id_++;
 
-  auto reader = std::make_unique<ShmdataFollower>(
+  auto reader = std::make_unique<shmdata::Follower>(
       this,
       shmdata_socket_path,
       [=](void* data, size_t size) {
@@ -229,7 +229,7 @@ void VncClientSrc::update_vnc(rfbClient* client, int, int, int, int) {
 
   that->framebuffer_size_ = width * height * depth / 8;
   if (!that->vnc_writer_ ||
-      that->framebuffer_size_ > that->vnc_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>() ||
+      that->framebuffer_size_ > that->vnc_writer_->writer<MPtr(&::shmdata::Writer::alloc_size)>() ||
       that->previous_truecolor_state_ != that->capture_truecolor_) {
     auto data_type = string();
     if (that->capture_truecolor_)
@@ -242,7 +242,7 @@ void VncClientSrc::update_vnc(rfbClient* client, int, int, int, int) {
     that->previous_truecolor_state_ = that->capture_truecolor_;
 
     that->vnc_writer_.reset();
-    that->vnc_writer_ = std::make_unique<ShmdataWriter>(
+    that->vnc_writer_ = std::make_unique<shmdata::Writer>(
         that, that->make_shmpath("vnc"), that->framebuffer_size_, data_type);
     if (!that->vnc_writer_) {
       return;

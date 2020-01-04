@@ -31,8 +31,8 @@
 #include "switcher/gst/pipeliner.hpp"
 #include "switcher/gst/rtp-session.hpp"
 #include "switcher/gst/shmdata-to-cb.hpp"
-#include "switcher/shmdata/gst-shm-tree-updater.hpp"
-#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
+#include "switcher/shmdata/writer.hpp"
 #include "switcher/switcher.hpp"
 
 namespace switcher {
@@ -58,11 +58,11 @@ class PJCall {
   using call_t = struct call {
     pjsip_inv_session* inv{nullptr};
     // as receiver
-    std::vector<std::unique_ptr<ShmdataWriter>> rtp_writers_{};
+    std::vector<std::unique_ptr<shmdata::Writer>> rtp_writers_{};
     std::unique_ptr<PJICEStreamTrans> ice_trans_{};
     std::unique_ptr<gst::RTPSession> recv_rtp_session_{};
     std::mutex shm_subs_mtx_{};
-    std::vector<std::unique_ptr<GstShmTreeUpdater>> shm_subs_{};
+    std::vector<std::unique_ptr<shmdata::GstTreeUpdater>> shm_subs_{};
     std::vector<std::unique_ptr<gst::RTPReceiver>> rtp_receivers_{};
     // as sender
     std::unique_ptr<PJICEStreamTrans> ice_trans_send_{};

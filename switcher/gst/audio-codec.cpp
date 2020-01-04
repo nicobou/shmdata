@@ -165,13 +165,16 @@ bool AudioCodec::start(const std::string& shmpath, const std::string& shmpath_en
                FALSE,
                nullptr);
 
-  shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
-      this->quid_, shm_encoded_.get_raw(), shm_encoded_path_, GstShmTreeUpdater::Direction::writer);
-  shmsrc_sub_ = std::make_unique<GstShmTreeUpdater>(
+  shmsink_sub_ =
+      std::make_unique<shmdata::GstTreeUpdater>(this->quid_,
+                                                shm_encoded_.get_raw(),
+                                                shm_encoded_path_,
+                                                shmdata::GstTreeUpdater::Direction::writer);
+  shmsrc_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
       this->quid_,
       shmsrc_.get_raw(),
       shmpath_to_encode_,
-      GstShmTreeUpdater::Direction::reader,
+      shmdata::GstTreeUpdater::Direction::reader,
       [this](const std::string& caps) {
         if (!this->has_enough_channels(caps)) {
           // FIXME: To do in can_sink_caps of audioenc when destination caps are implemented.

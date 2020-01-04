@@ -72,7 +72,7 @@ ShmDelay::ShmDelay(quiddity::Config&& conf)
 bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
   // Get the value of the delay from a shmdata
   if (!diff_follower_ && StringUtils::ends_with(shmpath, "ltc-diff")) {
-    diff_follower_ = std::make_unique<ShmdataFollower>(
+    diff_follower_ = std::make_unique<shmdata::Follower>(
         this,
         shmpath,
         [this](void* data, size_t data_size) {
@@ -90,7 +90,7 @@ bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
   if (shm_follower_ || StringUtils::ends_with(shmpath, "ltc-diff")) return false;
 
   // Follow the shmdata to delay.
-  shm_follower_ = std::make_unique<ShmdataFollower>(
+  shm_follower_ = std::make_unique<shmdata::Follower>(
       this,
       shmpath,
       [this](void* data, size_t data_size) {
@@ -109,7 +109,7 @@ bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
         };
 
         // We are only delaying so the caps will be identical to the received shmdata
-        shmw_ = std::make_unique<ShmdataWriter>(this, make_shmpath("delayed-shm"), 1, str_caps);
+        shmw_ = std::make_unique<shmdata::Writer>(this, make_shmpath("delayed-shm"), 1, str_caps);
 
         // Task checking if a previously recorded shmdata is a candidate to be written.
         writing_task_ = std::make_unique<PeriodicTask<std::chrono::microseconds>>(
@@ -128,8 +128,8 @@ bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
               // We record the timestamp of the shmdata we are now forwarding.
               last_timestamp_ = closest.timestamp_;
 
-              shmw_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(closest.content_.data(),
-                                                                 closest.data_size_);
+              shmw_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(closest.content_.data(),
+                                                                   closest.data_size_);
               shmw_->bytes_written(closest.data_size_);
             },
             std::chrono::microseconds(100));

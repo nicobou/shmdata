@@ -17,34 +17,27 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_GST_SHM_TREE_UPDATER_H__
-#define __SWITCHER_GST_SHM_TREE_UPDATER_H__
+#ifndef __SWITCHER_SHMDATA_STAT_H__
+#define __SWITCHER_SHMDATA_STAT_H__
 
-#include "./gst-shmdata-subscriber.hpp"
+#include <cstddef>
+#include "../quiddity/quiddity.hpp"
 
 namespace switcher {
-class GstShmTreeUpdater {
- public:
-  using on_caps_cb_t = std::function<void(const std::string&)>;
-  using on_delete_t = std::function<void()>;
-  enum class Direction { writer, reader };
-  GstShmTreeUpdater(quiddity::Quiddity* quid,
-                    GstElement* element,
-                    const std::string& shmpath,
-                    Direction d,
-                    on_caps_cb_t on_caps_cb = nullptr,
-                    on_delete_t on_delete_cb = nullptr);
-  ~GstShmTreeUpdater();
-  GstShmTreeUpdater() = delete;
+namespace shmdata {
+struct Stat {
+  static const std::chrono::milliseconds kDefaultUpdateInterval;
 
- private:
-  quiddity::Quiddity* quid_;
-  std::string shmpath_;
-  Direction dir_;
-  std::string key_;
-  on_delete_t on_del_;
-  GstShmdataSubscriber shm_sub_;
+  size_t bytes_{0};
+  size_t accesses_{0};
+  void count_buffer(size_t buffer_size);
+  void reset();
+  void update_tree(const InfoTree::ptr& tree, const std::string& key) const;
+  static std::function<void(const Stat&)> make_tree_updater(quiddity::Quiddity* quid,
+                                                                   const std::string& key,
+                                                                   bool do_signal = true);
 };
 
+}  // namespace shmdata
 }  // namespace switcher
 #endif

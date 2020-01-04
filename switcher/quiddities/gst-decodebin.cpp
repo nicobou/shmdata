@@ -76,14 +76,14 @@ void GstDecodebin::configure_shmdatasink(GstElement* element,
     shmpath_decoded_ = make_shmpath(media_label + "-" + media_name);
 
   g_object_set(G_OBJECT(element), "socket-path", shmpath_decoded_.c_str(), nullptr);
-  shmw_sub_ = std::make_unique<ShmdataFollower>(this,
-                                                shmpath_decoded_,
-                                                nullptr,
-                                                nullptr,
-                                                nullptr,
-                                                ShmdataStat::kDefaultUpdateInterval,
-                                                ShmdataFollower::Direction::writer,
-                                                true);
+  shmw_sub_ = std::make_unique<shmdata::Follower>(this,
+                                                  shmpath_decoded_,
+                                                  nullptr,
+                                                  nullptr,
+                                                  nullptr,
+                                                  shmdata::Stat::kDefaultUpdateInterval,
+                                                  shmdata::Follower::Direction::writer,
+                                                  true);
 }
 
 bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
@@ -102,7 +102,7 @@ bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
   if (!create_pipeline()) {
     return false;
   }
-  shmr_sub_ = std::make_unique<ShmdataFollower>(
+  shmr_sub_ = std::make_unique<shmdata::Follower>(
       this,
       shmpath_to_decode_,
       nullptr,
@@ -120,8 +120,8 @@ bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
         cur_caps_ = caps;
       },
       nullptr,
-      ShmdataStat::kDefaultUpdateInterval,
-      ShmdataFollower::Direction::reader,
+      shmdata::Stat::kDefaultUpdateInterval,
+      shmdata::Follower::Direction::reader,
       true);
 
   return true;

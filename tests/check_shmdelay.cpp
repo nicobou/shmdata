@@ -22,7 +22,7 @@
 #include <shmdata/console-logger.hpp>
 
 #include "switcher/quiddity/basic-test.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/follower.hpp"
 
 bool success = false;
 std::atomic<bool> do_continue{true};
@@ -85,7 +85,7 @@ int main() {
                           .count();
 
     ::shmdata::ConsoleLogger logger;
-    auto reader = std::make_unique<shmdata::Follower>(
+    auto reader = std::make_unique<::shmdata::Follower>(
         shmdelaytest->make_shmpath("delayed-shm"),
         [&start_time](void*, size_t data_size) {
           if (!data_size) return;

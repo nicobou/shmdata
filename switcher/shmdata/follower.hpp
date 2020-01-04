@@ -26,33 +26,34 @@
 #include <shmdata/reader.hpp>
 #include <string>
 #include "../utils/periodic-task.hpp"
-#include "./shmdata-stat.hpp"
-#include "./shmdata-switcher-logger.hpp"
+#include "./stat.hpp"
+#include "./switcher-logger.hpp"
 
 namespace switcher {
+namespace shmdata {
 
-class ShmdataFollower {
+class Follower {
  public:
   enum class Direction { writer, reader };
-  ShmdataFollower(quiddity::Quiddity* quid,
-                  const std::string& path,
-                  ::shmdata::Reader::onData cb,
-                  ::shmdata::Reader::onServerConnected osc = nullptr,
-                  ::shmdata::Reader::onServerDisconnected osd = nullptr,
-                  std::chrono::milliseconds update_interval = ShmdataStat::kDefaultUpdateInterval,
-                  Direction dir = Direction::reader,
-                  bool get_shmdata_on_connect = false);
-  ~ShmdataFollower();
-  ShmdataFollower(const ShmdataFollower&) = delete;
-  ShmdataFollower& operator=(const ShmdataFollower&) = delete;
+  Follower(quiddity::Quiddity* quid,
+           const std::string& path,
+           ::shmdata::Reader::onData cb,
+           ::shmdata::Reader::onServerConnected osc = nullptr,
+           ::shmdata::Reader::onServerDisconnected osd = nullptr,
+           std::chrono::milliseconds update_interval = Stat::kDefaultUpdateInterval,
+           Direction dir = Direction::reader,
+           bool get_shmdata_on_connect = false);
+  ~Follower();
+  Follower(const Follower&) = delete;
+  Follower& operator=(const Follower&) = delete;
 
  private:
   quiddity::Quiddity* quid_;
   // shmdata stats
-  ShmdataStat shm_stat_{};
+  Stat shm_stat_{};
   std::mutex bytes_mutex_{};
   // shmdata follower related members:
-  ShmdataSwitcherLogger logger_;
+  SwitcherLogger logger_;
   std::string data_type_{};
   ::shmdata::Reader::onData od_;
   ::shmdata::Reader::onServerConnected osc_;
@@ -70,5 +71,6 @@ class ShmdataFollower {
   void initialize_tree(const std::string& tree_path);
 };
 
+}  // namespace shmdata
 }  // namespace switcher
 #endif

@@ -303,7 +303,7 @@ bool PulseSink::on_shmdata_disconnect() {
 
 bool PulseSink::on_shmdata_connect(const std::string& shmpath) {
   pmanage<MPtr(&property::PBag::disable)>(devices_enum_id_,
-                                          ShmdataConnector::disabledWhenConnectedMsg);
+                                          shmdata::Connector::disabledWhenConnectedMsg);
   shmpath_ = shmpath;
   g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   if (!devices_.empty())
@@ -311,8 +311,8 @@ bool PulseSink::on_shmdata_connect(const std::string& shmpath) {
                  "device",
                  devices_.at(devices_enum_.get_current_index()).name_.c_str(),
                  nullptr);
-  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
-      this, shmsrc_.get_raw(), shmpath_, GstShmTreeUpdater::Direction::reader);
+  shm_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+      this, shmsrc_.get_raw(), shmpath_, shmdata::GstTreeUpdater::Direction::reader);
 
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmsrc_.get_raw(),

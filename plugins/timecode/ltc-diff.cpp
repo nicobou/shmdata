@@ -72,8 +72,8 @@ bool LTCDiff::on_shmdata_connect(const std::string& shmpath) {
   next_index_ = next_index_ ? 0 : 1;
 
   if (!shm_follower_) {
-    shmw_ = std::make_unique<ShmdataWriter>(this, make_shmpath("ltc-diff"), 1, "audio/ltc-diff");
-    shm_follower_ = std::make_unique<ShmdataFollower>(
+    shmw_ = std::make_unique<shmdata::Writer>(this, make_shmpath("ltc-diff"), 1, "audio/ltc-diff");
+    shm_follower_ = std::make_unique<shmdata::Follower>(
         this,
         shmpath,
         [this](void*, size_t) {
@@ -101,8 +101,8 @@ bool LTCDiff::on_shmdata_connect(const std::string& shmpath) {
           }
 
           time_difference_ = std::max<double>(time_difference_, -time_difference_) * 1000;
-          shmw_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(&time_difference_,
-                                                             sizeof(time_difference_));
+          shmw_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(&time_difference_,
+                                                               sizeof(time_difference_));
           shmw_->bytes_written(sizeof(time_difference_));
           time_difference_ = 0;
         },
@@ -132,7 +132,7 @@ LTCDiff::LTCReader::LTCReader(LTCDiff* quid, const std::string& shmpath, size_t 
   decoder_ = ltc_decoder_create(1920, 32);
   if (nullptr == decoder_) return;
 
-  shm_follower_ = std::make_unique<ShmdataFollower>(
+  shm_follower_ = std::make_unique<shmdata::Follower>(
       quid,
       shmpath,
       [this](void* data, size_t data_size) { on_data(data, data_size); },

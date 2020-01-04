@@ -25,7 +25,7 @@
 #include "./jack-client.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/shmdata/writer.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -54,7 +54,7 @@ class JackToShmdata : public Quiddity, public Startable {
   std::vector<std::string> ports_to_connect_{};
   std::mutex port_to_connect_in_jack_process_mutex_{};
   std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
-  std::unique_ptr<ShmdataWriter> shm_{nullptr};
+  std::unique_ptr<shmdata::Writer> shm_{nullptr};
   JackClient jack_client_;
   std::vector<JackPort> input_ports_{};
 

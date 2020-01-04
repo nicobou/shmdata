@@ -156,7 +156,7 @@ bool VRPNSource::start() {
 
   // Initialize the shmdata writer
   shmDataWriter_ =
-      std::make_unique<ShmdataWriter>(this, make_shmpath("vrpn"), 1, "application/vrpn");
+      std::make_unique<shmdata::Writer>(this, make_shmpath("vrpn"), 1, "application/vrpn");
   if (!shmDataWriter_.get()) {
     message("ERROR: VRPN source failed to initialize its shmdata");
     shmDataWriter_.reset(nullptr);
@@ -464,8 +464,8 @@ int VRPNSource::handleMessage(void* userData, vrpn_HANDLERPARAM p) {
   }
 
   // WRITE TO SHMDATA
-  context->shmDataWriter_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(buffer.data(),
-                                                                       buffer.size());
+  context->shmDataWriter_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(buffer.data(),
+                                                                         buffer.size());
   context->shmDataWriter_->bytes_written(buffer.size());
 
   return 0;

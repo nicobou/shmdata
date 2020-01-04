@@ -17,12 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./shmdata-follower.hpp"
+#include "./follower.hpp"
 #include "./caps/utils.hpp"
 
 namespace switcher {
+namespace shmdata {
 
-ShmdataFollower::ShmdataFollower(quiddity::Quiddity* quid,
+Follower::Follower(quiddity::Quiddity* quid,
                                  const std::string& path,
                                  ::shmdata::Reader::onData od,
                                  ::shmdata::Reader::onServerConnected osc,
@@ -52,12 +53,12 @@ ShmdataFollower::ShmdataFollower(quiddity::Quiddity* quid,
   }
 }
 
-ShmdataFollower::~ShmdataFollower() {
+Follower::~Follower() {
   follower_.reset(nullptr);
   if (!data_type_.empty()) quid_->prune_tree(tree_path_);
 }
 
-void ShmdataFollower::on_data(void* data, size_t size) {
+void Follower::on_data(void* data, size_t size) {
   {
     std::unique_lock<std::mutex> lock(bytes_mutex_);
     shm_stat_.count_buffer(size);
@@ -66,7 +67,7 @@ void ShmdataFollower::on_data(void* data, size_t size) {
   od_(data, size);
 }
 
-void ShmdataFollower::on_server_connected(const std::string& data_type) {
+void Follower::on_server_connected(const std::string& data_type) {
   if (get_shmdata_on_connect_) {
     initialize_tree(tree_path_);
   }
@@ -75,24 +76,23 @@ void ShmdataFollower::on_server_connected(const std::string& data_type) {
     data_type_ = data_type;
     quid_->graft_tree(tree_path_ + ".caps", InfoTree::make(data_type), false);
     quid_->graft_tree(
-        tree_path_ + ".category", InfoTree::make(shmdata::caps::get_category(data_type)), false);
+        tree_path_ + ".category", InfoTree::make(caps::get_category(data_type)), false);
     quid_->notify_tree_updated(tree_path_);
   }
   if (osc_) osc_(data_type);
 }
 
-void ShmdataFollower::on_server_disconnected() {
+void Follower::on_server_disconnected() {
   if (osd_) osd_();
 }
 
-void ShmdataFollower::update_quid_stats() {
+void Follower::update_quid_stats() {
   std::unique_lock<std::mutex> lock(bytes_mutex_);
-  ShmdataStat::make_tree_updater(
-      quid_, tree_path_, (dir_ == Direction::writer ? true : false))(shm_stat_);
+  Stat::make_tree_updater(quid_, tree_path_, (dir_ == Direction::writer ? true : false))(shm_stat_);
   shm_stat_.reset();
 }
 
-void ShmdataFollower::initialize_tree(const std::string& tree_path) {
+void Follower::initialize_tree(const std::string& tree_path) {
   auto tree = quid_->prune_tree(tree_path, false);
   quid_->graft_tree(tree_path, quiddity::Quiddity::get_shm_information_template(), false);
   if (tree) {
@@ -101,4 +101,5 @@ void ShmdataFollower::initialize_tree(const std::string& tree_path) {
     }
   }
 }
+}  // namespace shmdata
 }  // namespace switcher

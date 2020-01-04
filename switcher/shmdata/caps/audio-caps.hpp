@@ -24,6 +24,8 @@
 #include "../../utils/safe-bool-idiom.hpp"
 
 namespace switcher {
+namespace shmdata {
+namespace caps {
 
 class AudioCaps : public SafeBoolIdiom {
  public:
@@ -57,5 +59,7 @@ class AudioCaps : public SafeBoolIdiom {
   std::string error_{};
 };
 
+}  // namespace caps
+}  // namespace shmdata
 }  // namespace switcher
 #endif

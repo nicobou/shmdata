@@ -23,7 +23,7 @@
 #include "switcher/gst/unique-gst-element.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/gst-shm-tree-updater.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -86,7 +86,7 @@ class V4L2Src : public Quiddity, public Startable {
   const std::string raw_suffix_{"video"};
   const std::string enc_suffix_{"video-encoded"};
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
-  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
+  std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
 
   // devices list:
   property::Selection<> devices_enum_{{"none"}, 0};

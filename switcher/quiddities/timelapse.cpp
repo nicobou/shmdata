@@ -198,7 +198,7 @@ bool Timelapse::on_shmdata_connect(const std::string& shmpath) {
   std::unique_lock<std::mutex> lock(timelapse_mtx_);
   if (timelapse_.size() == 1) {
     pmanage<MPtr(&property::PBag::disable)>(img_name_id_,
-                                            ShmdataConnector::disabledWhenConnectedMsg);
+                                            shmdata::Connector::disabledWhenConnectedMsg);
     img_name_.clear();
   }
   return start_timelapse(shmpath);

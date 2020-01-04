@@ -122,15 +122,15 @@ bool RTMP::create_gst_pipeline() {
     auto shmdatavideo = gst_bin_get_by_name(GST_BIN(bin), "shmvideo");
     g_object_set(G_OBJECT(shmdatavideo), "socket-path", video_shmpath_.c_str(), nullptr);
 
-    shmvideo_sub_ = std::make_unique<GstShmTreeUpdater>(
-        this, shmdatavideo, video_shmpath_, GstShmTreeUpdater::Direction::reader);
+    shmvideo_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+        this, shmdatavideo, video_shmpath_, shmdata::GstTreeUpdater::Direction::reader);
   }
 
   if (!audio_shmpath_.empty()) {
     auto shmdataaudio = gst_bin_get_by_name(GST_BIN(bin), "shmaudio");
     g_object_set(G_OBJECT(shmdataaudio), "socket-path", audio_shmpath_.c_str(), nullptr);
-    shmaudio_sub_ = std::make_unique<GstShmTreeUpdater>(
-        this, shmdataaudio, audio_shmpath_, GstShmTreeUpdater::Direction::reader);
+    shmaudio_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+        this, shmdataaudio, audio_shmpath_, shmdata::GstTreeUpdater::Direction::reader);
   }
 
   if (!audio_shmpath_.empty() && !video_shmpath_.empty() && !stream_app_url_.empty() &&

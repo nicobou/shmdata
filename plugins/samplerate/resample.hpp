@@ -21,9 +21,9 @@
 #include <samplerate.h>
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/shmdata/caps/audio-caps.hpp"
-#include "switcher/shmdata/shmdata-connector.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
-#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/shmdata/writer.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -45,10 +45,10 @@ class Resample : public Quiddity {
   SRC_STATE* resampler_config_{nullptr};
   std::unique_ptr<SRC_DATA> resampler_data_{};
   // shmdata
-  std::unique_ptr<AudioCaps> incaps_{};
-  std::unique_ptr<ShmdataWriter> shmw_{};
-  std::unique_ptr<ShmdataFollower> shmr_{nullptr};
-  ShmdataConnector cntr_;
+  std::unique_ptr<shmdata::caps::AudioCaps> incaps_{};
+  std::unique_ptr<shmdata::Writer> shmw_{};
+  std::unique_ptr<shmdata::Follower> shmr_{nullptr};
+  shmdata::Connector cntr_;
   // properties
   unsigned int samplerate_{44100};
   property::prop_id_t samplerate_id_;

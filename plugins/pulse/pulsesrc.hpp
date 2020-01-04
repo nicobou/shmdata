@@ -29,7 +29,7 @@
 #include "switcher/gst/unique-gst-element.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/gst-shm-tree-updater.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -59,7 +59,7 @@ class PulseSrc : public Quiddity, public Startable {
   gst::UGstElem pulsesrc_{"pulsesrc"};
   gst::UGstElem shmsink_{"shmdatasink"};
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
-  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
+  std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
   // pulse devices
   bool connected_to_pulse_{false};
   std::mutex devices_mutex_{};

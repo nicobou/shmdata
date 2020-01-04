@@ -16,7 +16,7 @@ New features:
 * Add run-switcher-in-docker in documentation
 * Add missing caps specifier in JackToShmdata
 * pjsip upgraded to 2.9
-* Add argument to init ShmdataFollower tree on server connect
+* Add argument to init Follower tree on server connect
 * Add do not convert rate and format in jacksink in order to get more than 63 channels
 * Add stun turn port configuration in doc about bash scripting a sip call
 * pyquid is installed in python lib path instead of cmake prefix
@@ -64,7 +64,7 @@ Bug fixes:
 * gstpipe kills gst pipeline from the main loop  fix sometimes filesrc crash at deletion (members order in container)
 * reverse gst-element ref removal from previous commit
 * adding unsubscribe to signal in python exemple
-* avoid segfaut due to simultameous g_signal_handler_disconnect and signal notification in gst-shmdata-subscriber
+* avoid segfaut due to simultameous g_signal_handler_disconnect and signal notification in gst-subscriber
 * information tree serialization is mutexed now
 * Add documentation for building NVDEC
 * Make nvdec compatible with decodebin and shmdata
@@ -663,7 +663,7 @@ Bug fixes:
 * fix pruning with clang
 * activating syphon for being ported to shmdata1
 * fix check startable
-* fix race condition with GstShmdataSubscriber
+* fix race condition with GstSubscriber
 * no wait for state when asking PLAYING or PAUSED state
 * disabling GTK on OSX
 * add missing include for errno

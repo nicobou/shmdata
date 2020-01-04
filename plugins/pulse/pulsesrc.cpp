@@ -311,8 +311,8 @@ bool PulseSrc::start() {
                "device",
                capture_devices_.at(devices_.get_current_index()).name_.c_str(),
                nullptr);
-  shm_sub_ = std::make_unique<GstShmTreeUpdater>(
-      this, shmsink_.get_raw(), shmpath_, GstShmTreeUpdater::Direction::writer);
+  shm_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+      this, shmsink_.get_raw(), shmpath_, shmdata::GstTreeUpdater::Direction::writer);
   gst_bin_add_many(
       GST_BIN(gst_pipeline_->get_pipeline()), pulsesrc_.get_raw(), shmsink_.get_raw(), nullptr);
   gst_element_link_many(pulsesrc_.get_raw(), shmsink_.get_raw(), nullptr);

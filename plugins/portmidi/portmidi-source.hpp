@@ -23,7 +23,7 @@
 #include "./portmidi-devices.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/shmdata/writer.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -41,7 +41,7 @@ class PortMidiSource : public Quiddity, public Startable, public PortMidi {
     std::string property_long_name_{};
   } MidiPropertyContext;
 
-  std::unique_ptr<ShmdataWriter> shm_{nullptr};
+  std::unique_ptr<shmdata::Writer> shm_{nullptr};
   int last_status_{-1};
   int last_data1_{-1};
   int last_data2_{-1};

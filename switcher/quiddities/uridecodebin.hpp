@@ -24,7 +24,7 @@
 #include <unordered_map>
 #include "../gst/pipeliner.hpp"
 #include "../quiddity/quiddity.hpp"
-#include "../shmdata/gst-shm-tree-updater.hpp"
+#include "../shmdata/gst-tree-updater.hpp"
 #include "../utils/counter-map.hpp"
 
 namespace switcher {
@@ -51,7 +51,7 @@ class Uridecodebin : public Quiddity {
   bool playing_{true};
   std::string uri_{};
   CounterMap counter_{};
-  std::vector<std::unique_ptr<switcher::GstShmTreeUpdater>> shm_subs_{};
+  std::vector<std::unique_ptr<switcher::shmdata::GstTreeUpdater>> shm_subs_{};
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
 
   void init_uridecodebin();

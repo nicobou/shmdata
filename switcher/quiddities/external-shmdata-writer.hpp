@@ -22,21 +22,21 @@
 
 #include <memory>
 #include "../quiddity/quiddity.hpp"
-#include "../shmdata/shmdata-follower.hpp"
+#include "../shmdata/follower.hpp"
 
 namespace switcher {
 namespace quiddities {
 using namespace quiddity;
-class ExternalShmdataWriter : public Quiddity {
+class ExternalWriter : public Quiddity {
  public:
-  ExternalShmdataWriter(quiddity::Config&&);
-  ~ExternalShmdataWriter() = default;
-  ExternalShmdataWriter(const ExternalShmdataWriter&) = delete;
-  ExternalShmdataWriter& operator=(const ExternalShmdataWriter&) = delete;
+  ExternalWriter(quiddity::Config&&);
+  ~ExternalWriter() = default;
+  ExternalWriter(const ExternalWriter&) = delete;
+  ExternalWriter& operator=(const ExternalWriter&) = delete;
 
  private:
   std::string shmdata_path_{};
-  std::unique_ptr<ShmdataFollower> shm_{nullptr};
+  std::unique_ptr<shmdata::Follower> shm_{nullptr};
   InfoTree::ptr on_saving() final;
   void on_loading(InfoTree::ptr&& tree) final;
 };

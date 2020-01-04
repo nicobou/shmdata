@@ -77,7 +77,7 @@ LTCToJack::~LTCToJack() {
 }
 
 bool LTCToJack::on_shmdata_connect(const std::string& shmpath) {
-  shm_follower_ = std::make_unique<ShmdataFollower>(
+  shm_follower_ = std::make_unique<shmdata::Follower>(
       this, shmpath, [this](void* data, size_t size) { on_data(data, size); }, nullptr, nullptr);
 
   jack_transport_start(jack_client_);

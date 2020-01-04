@@ -25,7 +25,7 @@
 #include <switcher/quiddity/property/pbag.hpp>
 #include <switcher/quiddity/quiddity.hpp>
 #include <switcher/quiddity/startable.hpp>
-#include <switcher/shmdata/shmdata-writer.hpp>
+#include <switcher/shmdata/writer.hpp>
 #include <switcher/utils/periodic-task.hpp>
 #include <switcher/utils/threaded-wrapper.hpp>
 #include "./devices/analog-source-device.hpp"
@@ -86,7 +86,7 @@ class VRPNSource : public Quiddity, public Startable {
   void on_loading(InfoTree::ptr&& tree) final;
 
   // SHMDATA
-  std::unique_ptr<ShmdataWriter> shmDataWriter_{nullptr};
+  std::unique_ptr<shmdata::Writer> shmDataWriter_{nullptr};
 
   // VRPN
   std::mutex vrpnMutex_{};

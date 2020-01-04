@@ -46,8 +46,8 @@ quiddity::Factory::Factory(log::BaseLogger* log) : log::Logged(log) {
       DocumentationRegistry::get()->get_type_from_class_name("DummySink"));
   abstract_factory_.register_class<quiddities::EmptyQuiddity>(
       DocumentationRegistry::get()->get_type_from_class_name("EmptyQuiddity"));
-  abstract_factory_.register_class<quiddities::ExternalShmdataWriter>(
-      DocumentationRegistry::get()->get_type_from_class_name("ExternalShmdataWriter"));
+  abstract_factory_.register_class<quiddities::ExternalWriter>(
+      DocumentationRegistry::get()->get_type_from_class_name("ExternalWriter"));
   abstract_factory_.register_class<quiddities::FileDecoder>(
       DocumentationRegistry::get()->get_type_from_class_name("FileDecoder"));
   abstract_factory_.register_class<quiddities::GstVideoConverter>(

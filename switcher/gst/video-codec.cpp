@@ -150,10 +150,10 @@ bool VideoCodec::start() {
                    codec_id_)
                .index_)
     return true;
-  shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
-      quid_, shm_encoded_.get_raw(), shm_encoded_path_, GstShmTreeUpdater::Direction::writer);
-  shmsrc_sub_ = std::make_unique<GstShmTreeUpdater>(
-      quid_, shmsrc_.get_raw(), shmpath_to_encode_, GstShmTreeUpdater::Direction::reader);
+  shmsink_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+      quid_, shm_encoded_.get_raw(), shm_encoded_path_, shmdata::GstTreeUpdater::Direction::writer);
+  shmsrc_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+      quid_, shmsrc_.get_raw(), shmpath_to_encode_, shmdata::GstTreeUpdater::Direction::reader);
   make_bin();
 
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);

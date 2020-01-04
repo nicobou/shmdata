@@ -27,7 +27,7 @@
 #include "switcher/quiddity/container.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/follower.hpp"
 #include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
@@ -42,7 +42,7 @@ class Watcher : public Quiddity, public Startable {
   Watcher& operator=(const Watcher&) = delete;
 
  private:
-  std::vector<std::tuple<std::string, std::unique_ptr<ShmdataFollower>>> followers_;
+  std::vector<std::tuple<std::string, std::unique_ptr<shmdata::Follower>>> followers_;
   std::unique_ptr<PeriodicTask<>> readEventsTask_;
   std::string directory_{"."};
   property::prop_id_t directory_id_;

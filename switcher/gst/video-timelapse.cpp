@@ -85,8 +85,8 @@ VideoTimelapse::VideoTimelapse(const VideoTimelapseConfig& config,
   }
   GstElement* shmdatasrc =
       gst::utils::get_first_element_from_factory_name(GST_BIN(bin), "shmdatasrc");
-  shmsrc_sub_ = std::make_unique<GstShmTreeUpdater>(
-      quid, shmdatasrc, config_.orig_shmpath_, GstShmTreeUpdater::Direction::reader);
+  shmsrc_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+      quid, shmdatasrc, config_.orig_shmpath_, shmdata::GstTreeUpdater::Direction::reader);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), bin);
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);

@@ -17,51 +17,53 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./shmdata-stat.hpp"
+#include "./stat.hpp"
 
 namespace switcher {
+namespace shmdata {
 
 // We use two for simplicity here, tasks need to be created with milliseconds and it is better for
 // precision to have seconds for the display of the byte and frame rate.
-const std::chrono::milliseconds ShmdataStat::kDefaultUpdateInterval =
+const std::chrono::milliseconds Stat::kDefaultUpdateInterval =
     std::chrono::milliseconds(3000);
 
-void ShmdataStat::count_buffer(size_t buffer_size) {
+void Stat::count_buffer(size_t buffer_size) {
   bytes_ += buffer_size;
   ++accesses_;
 }
 
-void ShmdataStat::reset() {
+void Stat::reset() {
   bytes_ = 0;
   accesses_ = 0;
 }
 
-std::function<void(const ShmdataStat&)> ShmdataStat::make_tree_updater(quiddity::Quiddity* quid,
+std::function<void(const Stat&)> Stat::make_tree_updater(quiddity::Quiddity* quid,
                                                                        const std::string& key,
                                                                        bool do_signal) {
-  return [quid, key, do_signal](const ShmdataStat& stat) {
+  return [quid, key, do_signal](const Stat& stat) {
     auto tree = InfoTree::make();
     tree->graft(
         ".byte_rate",
         InfoTree::make(stat.bytes_ /
-                       std::chrono::duration<float>(ShmdataStat::kDefaultUpdateInterval).count()));
+                       std::chrono::duration<float>(Stat::kDefaultUpdateInterval).count()));
     tree->graft(
         ".rate",
         InfoTree::make(stat.accesses_ /
-                       std::chrono::duration<float>(ShmdataStat::kDefaultUpdateInterval).count()));
+                       std::chrono::duration<float>(Stat::kDefaultUpdateInterval).count()));
     quid->graft_tree(key + ".stat", tree, do_signal);
   };
 }
 
-void ShmdataStat::update_tree(const InfoTree::ptr& tree, const std::string& key) const {
+void Stat::update_tree(const InfoTree::ptr& tree, const std::string& key) const {
   tree->graft(
       key + ".stat.byte_rate",
       InfoTree::make(bytes_ /
-                     std::chrono::duration<float>(ShmdataStat::kDefaultUpdateInterval).count()));
+                     std::chrono::duration<float>(Stat::kDefaultUpdateInterval).count()));
   tree->graft(
       key + ".stat.rate",
       InfoTree::make(accesses_ /
-                     std::chrono::duration<float>(ShmdataStat::kDefaultUpdateInterval).count()));
+                     std::chrono::duration<float>(Stat::kDefaultUpdateInterval).count()));
 }
 
+}  // namespace shmdata
 }  // namespace switcher

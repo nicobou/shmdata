@@ -21,7 +21,7 @@
 
 #include <shmdata/console-logger.hpp>
 #include "switcher/quiddity/basic-test.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/follower.hpp"
 #include "switcher/utils/serialize-string.hpp"
 
 bool success = false;
@@ -107,20 +107,20 @@ int main() {
             connect_id, serialize::esc_for_tuple(ltctestsource2->make_shmpath("audio"))))
       return 1;
 
-    shmdata::ConsoleLogger logger;
-    auto reader = std::make_unique<shmdata::Reader>(ltcdiff->make_shmpath("ltc-diff"),
-                                                    [](void* data, size_t data_size) {
-                                                      if (data_size) {
-                                                        auto diff = *static_cast<double*>(data);
-                                                        // 1000ms in 30 frames, 50ms is between one
-                                                        // and two frames at 30 fps, we accept 1
-                                                        // frame of error.
-                                                        if (diff - 1000 < 50) notify_success();
-                                                      }
-                                                    },
-                                                    nullptr,
-                                                    nullptr,
-                                                    &logger);
+    ::shmdata::ConsoleLogger logger;
+    auto reader = std::make_unique<::shmdata::Reader>(ltcdiff->make_shmpath("ltc-diff"),
+                                                      [](void* data, size_t data_size) {
+                                                        if (data_size) {
+                                                          auto diff = *static_cast<double*>(data);
+                                                          // 1000ms in 30 frames, 50ms is between
+                                                          // one and two frames at 30 fps, we accept
+                                                          // 1 frame of error.
+                                                          if (diff - 1000 < 50) notify_success();
+                                                        }
+                                                      },
+                                                      nullptr,
+                                                      nullptr,
+                                                      &logger);
 
     wait_until_success();
 

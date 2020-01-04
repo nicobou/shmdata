@@ -25,7 +25,7 @@
 #include "./syphonreader.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/shmdata/writer.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -39,7 +39,7 @@ class SyphonSrc : public Quiddity, public Startable {
 
  private:
   std::shared_ptr<SyphonReader> reader_{};
-  std::unique_ptr<ShmdataWriter> writer_{nullptr};
+  std::unique_ptr<shmdata::Writer> writer_{nullptr};
   std::string syphon_servername_{""};
   std::string syphon_appname_{""};
   int width_{0}, height_{0};

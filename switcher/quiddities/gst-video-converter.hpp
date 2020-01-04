@@ -23,8 +23,8 @@
 #include <memory>
 #include "../gst/pixel-format-converter.hpp"
 #include "../quiddity/quiddity.hpp"
-#include "../shmdata/gst-shm-tree-updater.hpp"
-#include "../shmdata/shmdata-connector.hpp"
+#include "../shmdata/connector.hpp"
+#include "../shmdata/gst-tree-updater.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -42,9 +42,9 @@ class GstVideoConverter : public Quiddity {
   property::Selection<> video_format_;
   property::prop_id_t video_format_id_;
   // registering connect/disconnect/can_sink_caps:
-  ShmdataConnector shmcntr_;
-  std::unique_ptr<switcher::GstShmTreeUpdater> shmsrc_sub_{nullptr};
-  std::unique_ptr<switcher::GstShmTreeUpdater> shmsink_sub_{nullptr};
+  shmdata::Connector shmcntr_;
+  std::unique_ptr<switcher::shmdata::GstTreeUpdater> shmsrc_sub_{nullptr};
+  std::unique_ptr<switcher::shmdata::GstTreeUpdater> shmsink_sub_{nullptr};
 
   std::unique_ptr<gst::PixelFormatConverter> converter_{nullptr};
   bool on_shmdata_disconnect();

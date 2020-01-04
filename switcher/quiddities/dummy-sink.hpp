@@ -21,8 +21,8 @@
 #define __SWITCHER_DUMMY_SINK_H__
 
 #include "../quiddity/quiddity.hpp"
-#include "../shmdata/shmdata-connector.hpp"
-#include "../shmdata/shmdata-follower.hpp"
+#include "../shmdata/connector.hpp"
+#include "../shmdata/follower.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -39,9 +39,9 @@ class DummySink : public Quiddity {
   property::prop_id_t frame_received_id_;
 
   // registering connect/disconnect/can_sink_caps:
-  ShmdataConnector shmcntr_;
+  shmdata::Connector shmcntr_;
   // shmdata follower
-  std::unique_ptr<ShmdataFollower> shm_{nullptr};
+  std::unique_ptr<shmdata::Follower> shm_{nullptr};
   bool connect(const std::string& shmdata_path);
   bool disconnect();
   bool can_sink_caps(const std::string& caps);

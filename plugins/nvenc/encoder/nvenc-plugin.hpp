@@ -24,9 +24,9 @@
 #include <memory>
 #include "./nvenc-encode-session.hpp"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/shmdata/shmdata-connector.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
-#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/shmdata/writer.hpp"
 #include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
@@ -62,10 +62,10 @@ class NVencPlugin : public Quiddity {
   int max_height_{0};
   property::prop_id_t max_height_id_{0};
   std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> video_formats_{};
-  std::unique_ptr<ShmdataWriter> shmw_{nullptr};
+  std::unique_ptr<shmdata::Writer> shmw_{nullptr};
   std::unique_ptr<ThreadedWrapper<NVencES>> es_;
-  std::unique_ptr<ShmdataFollower> shm_{nullptr};
-  ShmdataConnector shmcntr_;
+  std::unique_ptr<shmdata::Follower> shm_{nullptr};
+  shmdata::Connector shmcntr_;
   void update_device();
   void update_codec();
   void update_preset();

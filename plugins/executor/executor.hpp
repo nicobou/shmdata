@@ -32,8 +32,8 @@
 
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/shmdata-connector.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
 #include "switcher/utils/periodic-task.hpp"
 #include "switcher/utils/string-utils.hpp"
 
@@ -70,14 +70,14 @@ class Executor : public Quiddity, public Startable {
   pid_t child_pid_{0};
   posix_spawnattr_t attr_;
   posix_spawn_file_actions_t act_;
-  ShmdataConnector shmcntr_;
+  shmdata::Connector shmcntr_;
   std::string shmpath_{};
   std::string shmpath_audio_{};
   std::string shmpath_video_{};
   std::unique_ptr<PeriodicTask<>> monitoring_task_{nullptr};
-  std::unique_ptr<ShmdataFollower> follower_video_{nullptr};
-  std::unique_ptr<ShmdataFollower> follower_audio_{nullptr};
-  std::unique_ptr<ShmdataFollower> follower_{nullptr};
+  std::unique_ptr<shmdata::Follower> follower_video_{nullptr};
+  std::unique_ptr<shmdata::Follower> follower_audio_{nullptr};
+  std::unique_ptr<shmdata::Follower> follower_{nullptr};
 
   std::string command_line_{};
   property::prop_id_t command_line_id_;

@@ -28,7 +28,7 @@
 #include <regex>
 #include "../gst/utils.hpp"
 #include "../infotree/information-tree-json.hpp"
-#include "../shmdata/shmdata-stat.hpp"
+#include "../shmdata/stat.hpp"
 #include "../switcher.hpp"
 #include "./container.hpp"
 #include "./quid-id-t.hpp"
@@ -284,7 +284,7 @@ InfoTree::ptr Quiddity::get_shm_information_template() {
   InfoTree::ptr tree = InfoTree::make();
   tree->graft(".caps", InfoTree::make());
   tree->graft(".category", InfoTree::make());
-  ShmdataStat().update_tree(tree, ".");
+  shmdata::Stat().update_tree(tree, ".");
   return tree;
 }
 

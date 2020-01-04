@@ -29,19 +29,20 @@ namespace switcher {
 namespace quiddity {
 class Quiddity;
 }  // namespace quiddity
+namespace shmdata {
 
-class ShmdataConnector {
+class Connector {
  public:
   using OnConnect = std::function<bool(const std::string& /*shmpath*/)>;
   using OnDisconnect = std::function<bool(const std::string& /*shmpath*/)>;
   using OnDisconnectAll = std::function<bool()>;
   using CanSinkCaps = std::function<bool(const std::string& /*caps*/)>;
 
-  explicit ShmdataConnector(quiddity::Quiddity* quid);
-  ShmdataConnector() = delete;
-  virtual ~ShmdataConnector(){};
-  ShmdataConnector(const ShmdataConnector&) = delete;
-  ShmdataConnector& operator=(const ShmdataConnector&) = delete;
+  explicit Connector(quiddity::Quiddity* quid);
+  Connector() = delete;
+  virtual ~Connector(){};
+  Connector(const Connector&) = delete;
+  Connector& operator=(const Connector&) = delete;
   bool install_connect_method(OnConnect on_connect_cb,
                               OnDisconnect on_disconnect_cb,
                               OnDisconnectAll on_disconnect_all_cb,
@@ -58,5 +59,6 @@ class ShmdataConnector {
   CanSinkCaps on_can_sink_caps_cb_{nullptr};
 };
 
+}  // namespace shmdata
 }  // namespace switcher
 #endif

@@ -112,7 +112,7 @@ void LTCSource::tick_callback(jack_nframes_t nframes) {
 }
 
 bool LTCSource::start() {
-  shmw_ = std::make_unique<ShmdataWriter>(
+  shmw_ = std::make_unique<shmdata::Writer>(
       this,
       make_shmpath("audio"),
       1,
@@ -213,7 +213,7 @@ bool LTCSource::on_shmdata_connect(const std::string& shmpath) {
     return false;
   }
 
-  shm_follower_ = std::make_unique<ShmdataFollower>(
+  shm_follower_ = std::make_unique<shmdata::Follower>(
       this,
       shmpath,
       [this](void*, size_t size) {
@@ -301,7 +301,7 @@ void LTCSource::write_samples_to_shmdata(const unsigned int& nb_samples) {
   std::vector<ltcsnd_sample_t> array;
   array.reserve(samples_size);
   std::copy(samples_.begin(), samples_.begin() + nb_samples, array.begin());
-  shmw_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(array.data(), samples_size);
+  shmw_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(array.data(), samples_size);
   shmw_->bytes_written(samples_size);
   for (unsigned int i = 0; i < nb_samples; ++i) {
     samples_.pop_front();

@@ -119,7 +119,7 @@ bool Cropper::on_shmdata_connect(const std::string& shmpath) {
   if (!create_pipeline()) {
     return false;
   }
-  shmsrc_sub_ = std::make_unique<ShmdataFollower>(
+  shmsrc_sub_ = std::make_unique<shmdata::Follower>(
       this,
       shmpath_to_crop_,
       nullptr,
@@ -137,17 +137,17 @@ bool Cropper::on_shmdata_connect(const std::string& shmpath) {
         cur_caps_ = caps;
       },
       nullptr,
-      ShmdataStat::kDefaultUpdateInterval,
-      ShmdataFollower::Direction::reader,
+      shmdata::Stat::kDefaultUpdateInterval,
+      shmdata::Follower::Direction::reader,
       true);
-  shmsink_sub_ = std::make_unique<ShmdataFollower>(this,
-                                                   shmpath_cropped_,
-                                                   nullptr,
-                                                   nullptr,
-                                                   nullptr,
-                                                   ShmdataStat::kDefaultUpdateInterval,
-                                                   ShmdataFollower::Direction::writer,
-                                                   true);
+  shmsink_sub_ = std::make_unique<shmdata::Follower>(this,
+                                                     shmpath_cropped_,
+                                                     nullptr,
+                                                     nullptr,
+                                                     nullptr,
+                                                     shmdata::Stat::kDefaultUpdateInterval,
+                                                     shmdata::Follower::Direction::writer,
+                                                     true);
   return true;
 }
 

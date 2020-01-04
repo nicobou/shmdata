@@ -27,11 +27,11 @@
 #include <imgui.h>
 // clang-format on
 #include "switcher/gst/pipeliner.hpp"
-#include "switcher/shmdata/gst-shm-tree-updater.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
 #include "switcher/utils/periodic-task.hpp"
-#include "switcher/shmdata/shmdata-connector.hpp"
-#include "switcher/shmdata/shmdata-follower.hpp"
-#include "switcher/shmdata/shmdata-writer.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/shmdata/writer.hpp"
 #include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
@@ -258,10 +258,10 @@ class GLFWVideo : public Quiddity {
   /**
    * \brief Shmdata connection
    */
-  ShmdataConnector shmcntr_;
+  shmdata::Connector shmcntr_;
   std::string shmpath_{};
-  std::unique_ptr<ShmdataFollower> shm_follower_{nullptr};
-  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
+  std::unique_ptr<shmdata::Follower> shm_follower_{nullptr};
+  std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
   std::string cur_caps_{};
 
   /**
@@ -310,8 +310,8 @@ class GLFWVideo : public Quiddity {
   gboolean keyb_interaction_{TRUE};
   bool xevents_to_shmdata_{false};
   property::prop_id_t xevents_to_shmdata_id_{0};
-  std::unique_ptr<ShmdataWriter> keyb_shm_{nullptr};
-  std::unique_ptr<ShmdataWriter> mouse_shm_{nullptr};
+  std::unique_ptr<shmdata::Writer> keyb_shm_{nullptr};
+  std::unique_ptr<shmdata::Writer> mouse_shm_{nullptr};
   int vid_width_{0};
   int vid_height_{0};
   int image_width_{0};

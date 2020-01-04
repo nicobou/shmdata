@@ -22,7 +22,7 @@
 
 #include <atomic>
 #include <vector>
-#include "../../shmdata/shmdata-connector.hpp"
+#include "../../shmdata/connector.hpp"
 #include "../../switcher.hpp"
 #include "../quiddity.hpp"
 #include "../startable.hpp"
@@ -61,7 +61,7 @@ class Bundle : public Quiddity, public Startable {
   std::vector<std::string> start_quids_{};
   std::vector<std::string> exposed_writer_quids_{};
   std::string reader_quid_{};
-  ShmdataConnector shmcntr_;
+  shmdata::Connector shmcntr_;
   std::vector<std::unique_ptr<on_tree_data_t>> on_tree_datas_{};
   std::string pipeline_{};
   Switcher::ptr manager_;

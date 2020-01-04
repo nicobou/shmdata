@@ -188,36 +188,36 @@ bool Executor::on_shmdata_connect(const std::string& shmpath) {
   if (StringUtils::ends_with(shmpath, "video")) {
     if (!shmpath_video_.empty()) follower_video_.reset();
     shmpath_video_ = shmpath;
-    follower_video_ = std::make_unique<ShmdataFollower>(this,
-                                                        shmpath_video_,
-                                                        nullptr,
-                                                        nullptr,
-                                                        nullptr,
-                                                        ShmdataStat::kDefaultUpdateInterval,
-                                                        ShmdataFollower::Direction::reader,
-                                                        true);
+    follower_video_ = std::make_unique<shmdata::Follower>(this,
+                                                          shmpath_video_,
+                                                          nullptr,
+                                                          nullptr,
+                                                          nullptr,
+                                                          shmdata::Stat::kDefaultUpdateInterval,
+                                                          shmdata::Follower::Direction::reader,
+                                                          true);
   } else if (StringUtils::ends_with(shmpath, "audio")) {
     if (!shmpath_audio_.empty()) follower_audio_.reset();
     shmpath_audio_ = shmpath;
-    follower_audio_ = std::make_unique<ShmdataFollower>(this,
-                                                        shmpath_audio_,
-                                                        nullptr,
-                                                        nullptr,
-                                                        nullptr,
-                                                        ShmdataStat::kDefaultUpdateInterval,
-                                                        ShmdataFollower::Direction::reader,
-                                                        true);
+    follower_audio_ = std::make_unique<shmdata::Follower>(this,
+                                                          shmpath_audio_,
+                                                          nullptr,
+                                                          nullptr,
+                                                          nullptr,
+                                                          shmdata::Stat::kDefaultUpdateInterval,
+                                                          shmdata::Follower::Direction::reader,
+                                                          true);
   } else {
     if (!shmpath_.empty()) follower_.reset();
     shmpath_ = shmpath;
-    follower_ = std::make_unique<ShmdataFollower>(this,
-                                                  shmpath_,
-                                                  nullptr,
-                                                  nullptr,
-                                                  nullptr,
-                                                  ShmdataStat::kDefaultUpdateInterval,
-                                                  ShmdataFollower::Direction::reader,
-                                                  true);
+    follower_ = std::make_unique<shmdata::Follower>(this,
+                                                    shmpath_,
+                                                    nullptr,
+                                                    nullptr,
+                                                    nullptr,
+                                                    shmdata::Stat::kDefaultUpdateInterval,
+                                                    shmdata::Follower::Direction::reader,
+                                                    true);
   }
   if (child_pid_ != 0) {
     if (restart_on_change_) {

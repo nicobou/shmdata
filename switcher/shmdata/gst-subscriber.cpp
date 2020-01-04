@@ -17,11 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gst-shmdata-subscriber.hpp"
+#include "./gst-subscriber.hpp"
 
 namespace switcher {
+namespace shmdata {
 
-GstShmdataSubscriber::GstShmdataSubscriber(GstElement* element,
+GstSubscriber::GstSubscriber(GstElement* element,
                                            on_caps_cb_t on_caps_cb,
                                            on_stat_monitor_t on_stat_monitor_cb,
                                            on_delete_t on_delete_cb,
@@ -35,17 +36,17 @@ GstShmdataSubscriber::GstShmdataSubscriber(GstElement* element,
       ptask_([this]() { this->stat_monitor(); }, update_interval) {
   gst_object_ref(static_cast<gpointer>(element));
   signal_handler_id_ = g_signal_connect(
-      G_OBJECT(element_), "notify::caps", G_CALLBACK(GstShmdataSubscriber::on_caps_cb), this);
+      G_OBJECT(element_), "notify::caps", G_CALLBACK(GstSubscriber::on_caps_cb), this);
   signal_connection_id_ =
       g_signal_connect(G_OBJECT(element_),
                        "notify::connected",
-                       G_CALLBACK(GstShmdataSubscriber::on_connection_status_cb),
+                       G_CALLBACK(GstSubscriber::on_connection_status_cb),
                        this);
 
   notify_caps();
 }
 
-GstShmdataSubscriber::~GstShmdataSubscriber() {
+GstSubscriber::~GstSubscriber() {
   std::lock_guard<std::mutex> lock(dtor_mutex_);
   if (nullptr != on_delete_cb_) on_delete_cb_();
   if (GST_IS_ELEMENT(element_)) {
@@ -55,10 +56,10 @@ GstShmdataSubscriber::~GstShmdataSubscriber() {
   gst_object_unref(static_cast<gpointer>(element_));
 }
 
-void GstShmdataSubscriber::on_caps_cb(GObject* /*gobject*/,
+void GstSubscriber::on_caps_cb(GObject* /*gobject*/,
                                       GParamSpec* /*pspec*/,
                                       gpointer user_data) {
-  GstShmdataSubscriber* context = static_cast<GstShmdataSubscriber*>(user_data);
+  GstSubscriber* context = static_cast<GstSubscriber*>(user_data);
   std::lock_guard<std::mutex> lock(context->dtor_mutex_);
   if (!context->on_caps_cb_) {
     return;
@@ -66,7 +67,7 @@ void GstShmdataSubscriber::on_caps_cb(GObject* /*gobject*/,
   context->notify_caps();
 }
 
-void GstShmdataSubscriber::notify_caps() {
+void GstSubscriber::notify_caps() {
   GValue val = G_VALUE_INIT;
   g_value_init(&val, G_TYPE_STRING);
   g_object_get_property(G_OBJECT(element_), "caps", &val);
@@ -75,16 +76,16 @@ void GstShmdataSubscriber::notify_caps() {
   g_value_unset(&val);
 }
 
-void GstShmdataSubscriber::on_connection_status_cb(GObject* /*gobject*/,
+void GstSubscriber::on_connection_status_cb(GObject* /*gobject*/,
                                                    GParamSpec* /*pspec*/,
                                                    gpointer user_data) {
-  GstShmdataSubscriber* context = static_cast<GstShmdataSubscriber*>(user_data);
+  GstSubscriber* context = static_cast<GstSubscriber*>(user_data);
   std::lock_guard<std::mutex> lock(context->dtor_mutex_);
   if (!context->on_connection_status_cb_) return;
   context->notify_connection();
 }
 
-void GstShmdataSubscriber::notify_connection() {
+void GstSubscriber::notify_connection() {
   GValue val = G_VALUE_INIT;
   g_value_init(&val, G_TYPE_BOOLEAN);
   g_object_get_property(G_OBJECT(element_), "connected", &val);
@@ -92,9 +93,9 @@ void GstShmdataSubscriber::notify_connection() {
   g_value_unset(&val);
 }
 
-void GstShmdataSubscriber::stat_monitor() {
+void GstSubscriber::stat_monitor() {
   if (!on_stat_monitor_cb_) return;
-  ShmdataStat stat;
+  Stat stat;
   {
     GValue val = G_VALUE_INIT;
     g_value_init(&val, G_TYPE_UINT64);
@@ -112,4 +113,5 @@ void GstShmdataSubscriber::stat_monitor() {
   on_stat_monitor_cb_(stat);
 }
 
+}  // namespace shmdata
 }  // namespace switcher
