@@ -23,9 +23,9 @@
 namespace switcher {
 namespace quiddities {
 
-log::BaseLogger* JackServer::current_jack_log_ = nullptr;
+log::Base* JackServer::current_jack_log_ = nullptr;
 
-JackServer::JackServer(log::BaseLogger* logger,
+JackServer::JackServer(log::Base* logger,
                        const std::string& name,
                        const std::string& config_driver,
                        bool realtime)

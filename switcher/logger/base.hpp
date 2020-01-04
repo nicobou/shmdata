@@ -31,9 +31,9 @@
 namespace switcher {
 namespace log {
 
-class BaseLogger {
+class Base {
  public:
-  virtual ~BaseLogger() = default;
+  virtual ~Base() = default;
   MakeSwitcherLogLevel(error);
   MakeSwitcherLogLevel(critical);
   MakeSwitcherLogLevel(warning);

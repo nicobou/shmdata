@@ -13,7 +13,7 @@
 #ifndef _SWITCHER_LOGGED_H_
 #define _SWITCHER_LOGGED_H_
 
-#include "./base-logger.hpp"
+#include "./base.hpp"
 
 #define MakeSwitcherLoggedMember(NAME)                                                          \
   template <typename... Targs>                                                                  \
@@ -29,17 +29,17 @@ class Logged {
 
  protected:
   Logged() = delete;
-  Logged(BaseLogger* bl) : log_(bl) {}
+  Logged(Base* bl) : log_(bl) {}
   MakeSwitcherLoggedMember(error);
   MakeSwitcherLoggedMember(critical);
   MakeSwitcherLoggedMember(warning);
   MakeSwitcherLoggedMember(message);
   MakeSwitcherLoggedMember(info);
   MakeSwitcherLoggedMember(debug);
-  BaseLogger* get_log_ptr() { return log_; };
+  Base* get_log_ptr() { return log_; };
 
  private:
-  mutable BaseLogger* log_{nullptr};
+  mutable Base* log_{nullptr};
 };
 
 }  // namespace log

@@ -20,8 +20,8 @@
 #include <time.h>
 #include <vector>
 #include "switcher/infotree/json-serializer.hpp"
-#include "switcher/logger/console-logger.hpp"
-#include "switcher/logger/silent-logger.hpp"
+#include "switcher/logger/console.hpp"
+#include "switcher/logger/silent.hpp"
 #include "switcher/quiddity/class-printer.hpp"
 #include "switcher/switcher.hpp"
 #include "switcher/utils/file-utils.hpp"
@@ -133,9 +133,9 @@ int main(int argc, char* argv[]) {
   if (port_number == nullptr) port_number = "27182";
 
   if (debug) {
-    manager = Switcher::make_switcher<log::ConsoleLogger>(server_name);
+    manager = Switcher::make_switcher<log::Console>(server_name);
   } else {
-    manager = Switcher::make_switcher<log::SilentLogger>(server_name);
+    manager = Switcher::make_switcher<log::Silent>(server_name);
   }
 
   if (display_version) {

@@ -20,15 +20,15 @@
 #ifndef _LOGGER_FORWARDER_H_
 #define _LOGGER_FORWARDER_H_
 
-#include "./base-logger.hpp"
+#include "./base.hpp"
 
 namespace switcher {
 namespace log {
 
-class LoggerForwarder : public BaseLogger {
+class Forwarder : public Base {
  public:
-  LoggerForwarder() = delete;
-  LoggerForwarder(BaseLogger*) {}
+  Forwarder() = delete;
+  Forwarder(Base*) {}
 };
 
 }  // namespace log

@@ -27,7 +27,7 @@ namespace switcher {
 class Configuration : public log::Logged {
  public:
   using on_loaded_t = std::function<void()>;
-  Configuration(log::BaseLogger* log, on_loaded_t on_loaded_cb);
+  Configuration(log::Base* log, on_loaded_t on_loaded_cb);
   Configuration() = delete;
 
   bool from_file(const std::string& file_path);

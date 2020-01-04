@@ -47,14 +47,14 @@ class MBag : public log::Logged {
  public:
   MBag() = delete;
   // ctor will own tree and write into .method.
-  MBag(log::BaseLogger* log,
-             InfoTree::ptr tree,
-             on_tree_grafted_cb_t on_tree_grafted_cb,
-             on_tree_pruned_cb_t on_tree_pruned_cb,
-             on_method_created_cb_t on_method_created,
-             on_method_removed_cb_t on_method_removed,
-             on_method_enabled_cb_t on_method_enabled,
-             on_method_disabled_cb_t on_method_disabled);
+  MBag(log::Base* log,
+       InfoTree::ptr tree,
+       on_tree_grafted_cb_t on_tree_grafted_cb,
+       on_tree_pruned_cb_t on_tree_pruned_cb,
+       on_method_created_cb_t on_method_created,
+       on_method_removed_cb_t on_method_removed,
+       on_method_enabled_cb_t on_method_enabled,
+       on_method_disabled_cb_t on_method_disabled);
 
   // ------------- use
   // return 0 if id is not found

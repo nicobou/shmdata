@@ -26,8 +26,8 @@
 #include "./configuration/configuration.hpp"
 #include "./gst/initialized.hpp"
 #include "./infotree/information-tree.hpp"
-#include "./logger/base-logger.hpp"
-#include "./logger/console-logger.hpp"
+#include "./logger/base.hpp"
+#include "./logger/console.hpp"
 #include "./quiddity/container.hpp"
 #include "./quiddity/factory.hpp"
 #include "./utils/make-consultable.hpp"
@@ -45,7 +45,7 @@ class Switcher : public gst::Initialized {
 
   ~Switcher() = default;
 
-  template <typename L = log::ConsoleLogger, typename... Largs>
+  template <typename L = log::Console, typename... Largs>
   static Switcher::ptr make_switcher(const std::string& name, Largs... args) {
     Switcher::ptr switcher(new Switcher(name, std::make_unique<L>(std::forward<Largs>(args)...)));
     switcher->me_ = switcher;
@@ -72,7 +72,7 @@ class Switcher : public gst::Initialized {
   Make_delegate(Switcher, quiddity::Container, qcontainer_.get(), quids);
 
   // get log
-  log::BaseLogger* get_logger() { return log_.get(); }
+  log::Base* get_logger() { return log_.get(); }
 
   // shmpaths
   static std::string get_shm_dir() { return "/tmp"; }
@@ -98,7 +98,7 @@ class Switcher : public gst::Initialized {
   void remove_shm_zombies() const;
   static void init_gst();
 
-  mutable std::unique_ptr<log::BaseLogger> log_;
+  mutable std::unique_ptr<log::Base> log_;
   quiddity::Factory qfactory_;
   Configuration conf_;
   quiddity::Container::ptr qcontainer_;

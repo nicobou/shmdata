@@ -21,7 +21,7 @@
 #define __SWITCHER_SHMDATA_SWITCHER_LOGGER_H__
 
 #include <shmdata/abstract-logger.hpp>
-#include "../logger/base-logger.hpp"
+#include "../logger/base.hpp"
 
 namespace switcher {
 namespace shmdata {
@@ -29,7 +29,7 @@ namespace shmdata {
 class SwitcherLogger : public ::shmdata::AbstractLogger {
  public:
   SwitcherLogger() = delete;
-  SwitcherLogger(log::BaseLogger* log) : log_(log) {}
+  SwitcherLogger(log::Base* log) : log_(log) {}
 
  private:
   void on_error(std::string&& str) final { log_->warning("ERROR: %", str); }
@@ -39,7 +39,7 @@ class SwitcherLogger : public ::shmdata::AbstractLogger {
   void on_info(std::string&& str) final { log_->info("%", str); }
   void on_debug(std::string&& str) final { log_->debug("%", str); }
 
-  log::BaseLogger* log_;
+  log::Base* log_;
 };
 
 }  // namespace shmdata

@@ -19,7 +19,7 @@
 
 #include "./bundle.hpp"
 #include <regex>
-#include "../../logger/logger-forwarder.hpp"
+#include "../../logger/forwarder.hpp"
 #include "../../utils/scope-exit.hpp"
 #include "../container.hpp"
 #include "../quid-id-t.hpp"
@@ -38,7 +38,7 @@ Bundle::Bundle(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf)),
       conf_(conf),
       shmcntr_(static_cast<Quiddity*>(this)),
-      manager_(Switcher::make_switcher<log::LoggerForwarder>(conf_.name_, conf_.log_)) {
+      manager_(Switcher::make_switcher<log::Forwarder>(conf_.name_, conf_.log_)) {
   for (auto& it : qcontainer_->get_switcher()->qfactory_.get_plugin_dirs()) {
     manager_->qfactory_.scan_dir(it);
   }

@@ -39,7 +39,7 @@
 namespace switcher {
 namespace quiddity {
 
-quiddity::Factory::Factory(log::BaseLogger* log) : log::Logged(log) {
+quiddity::Factory::Factory(log::Base* log) : log::Logged(log) {
   abstract_factory_.register_class<quiddities::AudioTestSource>(
       DocumentationRegistry::get()->get_type_from_class_name("AudioTestSource"));
   abstract_factory_.register_class<quiddities::DummySink>(

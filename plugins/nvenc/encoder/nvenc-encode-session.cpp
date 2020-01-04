@@ -25,7 +25,7 @@ namespace switcher {
 namespace quiddities {
 NVencES::NVencES(uint32_t device_id,
                  //, uint32_t width, uint32_t height,  NV_ENC_BUFFER_FORMAT format
-                 log::BaseLogger* log)
+                 log::Base* log)
     : log::Logged(log), cu_ctx_(device_id, log) {
   On_scope_exit {
     if (!safe_bool_idiom()) warning("NV encoder session initialization failed");

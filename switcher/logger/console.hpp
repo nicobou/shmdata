@@ -16,12 +16,12 @@
 #define _SWITCHER_CONSOLE_LOGGER_H_
 
 #include <iostream>
-#include "./base-logger.hpp"
+#include "./base.hpp"
 
 namespace switcher {
 namespace log {
 
-class ConsoleLogger : public BaseLogger {
+class Console : public Base {
  public:
   void set_debug(bool debug) { debug_ = debug; }
 

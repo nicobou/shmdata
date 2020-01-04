@@ -16,11 +16,11 @@
 #define _SILENT_LOGGER_H_
 
 #include <iostream>
-#include "./base-logger.hpp"
+#include "./base.hpp"
 
 namespace switcher {
 namespace log {
-class SilentLogger : public BaseLogger {
+class Silent : public Base {
  private:
   void on_error(std::string&&) final {}
   void on_critical(std::string&&) final {}

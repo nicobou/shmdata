@@ -48,7 +48,7 @@ class Container : public log::Logged {
 
   static Container::ptr make_container(Switcher* switcher,
                                        quiddity::Factory* factory,
-                                       log::BaseLogger* log);
+                                       log::Base* log);
   Container() = delete;
   virtual ~Container() = default;
   Container(const Container&) = delete;
@@ -138,7 +138,7 @@ class Container : public log::Logged {
   Switcher* get_switcher() { return switcher_; };
 
  private:
-  Container(Switcher* switcher, quiddity::Factory* factory, log::BaseLogger* log);
+  Container(Switcher* switcher, quiddity::Factory* factory, log::Base* log);
 
   // forwarding accessor and return constructor on error
   std::pair<bool, Quiddity*> find_quiddity(qid_t id) const {

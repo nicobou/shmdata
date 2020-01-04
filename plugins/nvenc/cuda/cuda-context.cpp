@@ -24,7 +24,7 @@
 namespace switcher {
 namespace quiddities {
 
-CudaContext::CudaContext(uint32_t device_id, log::BaseLogger* log) : log::Logged(log) {
+CudaContext::CudaContext(uint32_t device_id, log::Base* log) : log::Logged(log) {
   On_scope_exit {
     if (!safe_bool_idiom()) warning("cuda context creation failed");
   };

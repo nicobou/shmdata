@@ -19,8 +19,8 @@
 
 #include "./pyswitch.hpp"
 #include <switcher/infotree/information-tree.hpp>
-#include <switcher/logger/console-logger.hpp>
-#include <switcher/logger/silent-logger.hpp>
+#include <switcher/logger/console.hpp>
+#include <switcher/logger/silent.hpp>
 #include "./pyinfotree.hpp"
 #include "./pyqrox.hpp"
 
@@ -49,9 +49,9 @@ int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds
 
   self->name = name;
   if (showDebug && PyBool_Check(showDebug) && showDebug==Py_True) {
-    self->switcher = Switcher::make_switcher<log::ConsoleLogger>(PyUnicode_AsUTF8(self->name));
+    self->switcher = Switcher::make_switcher<log::Console>(PyUnicode_AsUTF8(self->name));
   } else {
-    self->switcher = Switcher::make_switcher<log::SilentLogger>(PyUnicode_AsUTF8(self->name));
+    self->switcher = Switcher::make_switcher<log::Silent>(PyUnicode_AsUTF8(self->name));
   }
 
   if (!self->switcher) {

@@ -22,7 +22,7 @@
 #include "../infotree/json-serializer.hpp"
 
 namespace switcher {
-Configuration::Configuration(log::BaseLogger* log, on_loaded_t on_loaded_cb)
+Configuration::Configuration(log::Base* log, on_loaded_t on_loaded_cb)
     : log::Logged(log), on_loaded_cb_(on_loaded_cb) {}
 
 bool Configuration::from_file(const std::string& file_path) {

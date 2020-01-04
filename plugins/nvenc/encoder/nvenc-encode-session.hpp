@@ -35,8 +35,8 @@ namespace switcher {
 namespace quiddities {
 class NVencES : public log::Logged, public SafeBoolIdiom {
  public:
-  NVencES(uint32_t device_id, log::BaseLogger* log);
-  NVencES(log::BaseLogger* log) : NVencES(0, log) {}
+  NVencES(uint32_t device_id, log::Base* log);
+  NVencES(log::Base* log) : NVencES(0, log) {}
   NVencES() = delete;
   ~NVencES();
   NVencES(const NVencES&) = delete;

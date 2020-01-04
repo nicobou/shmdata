@@ -24,15 +24,13 @@
 
 namespace switcher {
 namespace quiddity {
-Container::ptr Container::make_container(Switcher* switcher,
-                                         Factory* factory,
-                                         log::BaseLogger* log) {
+Container::ptr Container::make_container(Switcher* switcher, Factory* factory, log::Base* log) {
   Container::ptr container(new Container(switcher, factory, log));
   container->me_ = container;
   return container;
 }
 
-Container::Container(Switcher* switcher, Factory* factory, log::BaseLogger* log)
+Container::Container(Switcher* switcher, Factory* factory, log::Base* log)
     : log::Logged(log), factory_(factory), switcher_(switcher) {}
 
 Qrox Container::create(const std::string& quiddity_class,

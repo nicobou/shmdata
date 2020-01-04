@@ -37,8 +37,8 @@ class CudaContext : public log::Logged, public SafeBoolIdiom {
   friend NVencES;
 
  public:
-  CudaContext(uint32_t device_id, log::BaseLogger* log);
-  CudaContext(log::BaseLogger* log) : CudaContext(0, log) {}
+  CudaContext(uint32_t device_id, log::Base* log);
+  CudaContext(log::Base* log) : CudaContext(0, log) {}
   CudaContext() = delete;
   ~CudaContext();
   CudaContext(const CudaContext&) = delete;
