@@ -15,7 +15,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "./information-tree-json.hpp"
+#include "./json-serializer.hpp"
 #include <json-glib/json-glib.h>
 #include "../utils/scope-exit.hpp"
 

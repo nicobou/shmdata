@@ -20,7 +20,7 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <unistd.h>
-#include "switcher/infotree/information-tree-json.hpp"
+#include "switcher/infotree/json-serializer.hpp"
 #include "switcher/quiddity/basic-test.hpp"
 
 int main() {

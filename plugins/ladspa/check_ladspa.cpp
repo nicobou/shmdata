@@ -22,7 +22,7 @@
 #include <assert.h>
 #include <atomic>
 #include <condition_variable>
-#include <switcher/infotree/information-tree-json.hpp>
+#include <switcher/infotree/json-serializer.hpp>
 #include "switcher/quiddity/basic-test.hpp"
 
 using namespace switcher;

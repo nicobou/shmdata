@@ -19,7 +19,7 @@
 
 #include "./configuration.hpp"
 #include <fstream>
-#include "../infotree/information-tree-json.hpp"
+#include "../infotree/json-serializer.hpp"
 
 namespace switcher {
 Configuration::Configuration(log::BaseLogger* log, on_loaded_t on_loaded_cb)

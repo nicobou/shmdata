@@ -21,7 +21,7 @@
 #include <string.h>
 #include <fstream>
 #include "./gst/utils.hpp"
-#include "./infotree/information-tree-json.hpp"
+#include "./infotree/json-serializer.hpp"
 #include "./quiddity/bundle/bundle.hpp"
 #include "./quiddity/bundle/description-parser.hpp"
 #include "./utils/file-utils.hpp"

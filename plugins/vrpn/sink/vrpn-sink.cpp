@@ -18,7 +18,7 @@
  */
 
 #include "./vrpn-sink.hpp"
-#include "switcher/infotree/information-tree-json.hpp"
+#include "switcher/infotree/json-serializer.hpp"
 
 namespace switcher {
 namespace quiddities {

@@ -24,8 +24,8 @@
 #include <thread>
 #include <unordered_map>
 
-#include "../infotree/information-tree-json.hpp"
 #include "../infotree/information-tree.hpp"
+#include "../infotree/json-serializer.hpp"
 #include "../logger/logged.hpp"
 #include "./config.hpp"
 #include "./documentation-registry.hpp"

@@ -18,32 +18,27 @@
  */
 
 /**
- * @file   information-tree-basic-serializer.h
+ * @file   json-serializer.h
  *
- * @brief serialize and deserialize an information tree
+ * @brief serialize and deserialize an information tree using json
  *
- * serializing as lines with absolute key path, space(s), value and new line
- * for instance:
- * .child1.child2.vol 0.6
- * .child1.child2.freq 440
- * .child1.child2.name myoscilator
  *
  */
 
-#ifndef __SWITCHER_INFORMATION_TREE_BASIC_SERIALIZER_H__
-#define __SWITCHER_INFORMATION_TREE_BASIC_SERIALIZER_H__
+#ifndef __SWITCHER_INFORMATION_TREE_JSON_H__
+#define __SWITCHER_INFORMATION_TREE_JSON_H__
 
 #include <string>
 #include "./information-tree.hpp"
 
 namespace switcher {
 namespace infotree {
-namespace keyval {
+namespace json {
 
 std::string serialize(InfoTree::ptrc);
 InfoTree::ptr deserialize(const std::string& serialized);
 
-}  // namespace keyval
+}  // namespace json
 }  // namespace infotree
 }  // namespace switcher
 #endif

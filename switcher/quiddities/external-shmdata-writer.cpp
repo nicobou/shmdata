@@ -18,7 +18,7 @@
  */
 
 #include "./external-shmdata-writer.hpp"
-#include "../infotree/information-tree-json.hpp"
+#include "../infotree/json-serializer.hpp"
 
 namespace switcher {
 namespace quiddities {

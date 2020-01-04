@@ -18,7 +18,7 @@
  */
 
 #include "./video-codec.hpp"
-#include "../infotree/information-tree-json.hpp"
+#include "../infotree/json-serializer.hpp"
 #include "../quiddity/property/gprop-to-prop.hpp"
 #include "../quiddity/quiddity.hpp"
 #include "../quiddity/startable.hpp"

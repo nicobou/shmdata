@@ -19,8 +19,8 @@
 
 #include "./connector.hpp"
 #include "../gst/utils.hpp"
-#include "../infotree/information-tree-json.hpp"
 #include "../infotree/information-tree.hpp"
+#include "../infotree/json-serializer.hpp"
 #include "../quiddity/container.hpp"
 #include "../quiddity/quiddity.hpp"
 #include "../shmdata/stat.hpp"

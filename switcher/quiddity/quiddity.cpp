@@ -27,7 +27,7 @@
 #include <list>
 #include <regex>
 #include "../gst/utils.hpp"
-#include "../infotree/information-tree-json.hpp"
+#include "../infotree/json-serializer.hpp"
 #include "../shmdata/stat.hpp"
 #include "../switcher.hpp"
 #include "./container.hpp"

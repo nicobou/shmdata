@@ -19,7 +19,7 @@
 #include "./pj-call-utils.hpp"
 #include "./pj-sip-plugin.hpp"
 #include "switcher/gst/sdp-utils.hpp"
-#include "switcher/infotree/information-tree-json.hpp"
+#include "switcher/infotree/json-serializer.hpp"
 #include "switcher/utils/net-utils.hpp"
 #include "switcher/utils/scope-exit.hpp"
 

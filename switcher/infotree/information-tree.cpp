@@ -22,7 +22,7 @@
 #include <iostream>
 #include "../utils/scope-exit.hpp"
 #include "../utils/string-utils.hpp"
-#include "./information-tree-json.hpp"
+#include "./json-serializer.hpp"
 
 namespace switcher {
 

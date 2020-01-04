@@ -18,7 +18,7 @@
 #include "./pj-stun-turn.hpp"
 #include <pjnath.h>
 #include "./pj-sip-plugin.hpp"
-#include "switcher/infotree/information-tree-json.hpp"
+#include "switcher/infotree/json-serializer.hpp"
 #include "switcher/utils/scope-exit.hpp"
 #include "switcher/utils/string-utils.hpp"
 

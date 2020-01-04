@@ -27,8 +27,8 @@ add_library(${SWITCHER_LIBRARY} SHARED
   gst/utils.cpp
   gst/video-codec.cpp
   gst/video-timelapse.cpp
-  infotree/information-tree-basic-serializer.cpp
-  infotree/information-tree-json.cpp
+  infotree/key-val-serializer.cpp
+  infotree/json-serializer.cpp
   infotree/information-tree.cpp
   quiddities/audio-test-source.cpp
   quiddities/dummy-sink.cpp

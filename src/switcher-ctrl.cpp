@@ -18,7 +18,7 @@
 #include <glib.h>
 #include <locale.h>
 #include <string>
-#include "switcher/infotree/information-tree-json.hpp"
+#include "switcher/infotree/json-serializer.hpp"
 #include "webservices/control.nsmap"
 #include "webservices/soapcontrolProxy.h"
 

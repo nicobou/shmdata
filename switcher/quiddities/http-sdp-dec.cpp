@@ -22,7 +22,7 @@
 #include <memory>
 #include "../gst/g-source-wrapper.hpp"
 #include "../gst/utils.hpp"
-#include "../infotree/information-tree-json.hpp"
+#include "../infotree/json-serializer.hpp"
 #include "../shmdata/gst-subscriber.hpp"
 #include "../utils/scope-exit.hpp"
 

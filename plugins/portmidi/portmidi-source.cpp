@@ -22,7 +22,7 @@
 #include <switcher/quiddity/container.hpp>
 #include <switcher/switcher.hpp>
 #include <switcher/utils/scope-exit.hpp>
-#include "switcher/infotree/information-tree-json.hpp"
+#include "switcher/infotree/json-serializer.hpp"
 
 namespace switcher {
 namespace quiddities {

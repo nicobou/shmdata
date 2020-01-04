@@ -16,7 +16,7 @@
  */
 
 #include "soap-ctrl-server.hpp"
-#include "switcher/infotree/information-tree-json.hpp"
+#include "switcher/infotree/json-serializer.hpp"
 #include "switcher/utils/file-utils.hpp"
 #include "switcher/utils/scope-exit.hpp"
 #include "switcher/utils/serialize-string.hpp"

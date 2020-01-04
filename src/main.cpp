@@ -19,7 +19,7 @@
 #include <signal.h>
 #include <time.h>
 #include <vector>
-#include "switcher/infotree/information-tree-json.hpp"
+#include "switcher/infotree/json-serializer.hpp"
 #include "switcher/logger/console-logger.hpp"
 #include "switcher/logger/silent-logger.hpp"
 #include "switcher/quiddity/class-printer.hpp"
