@@ -25,7 +25,7 @@
 #include <string>
 
 namespace switcher {
-namespace NetUtils {
+namespace netutils {
 
 bool is_used(std::uint16_t port);
 
@@ -34,6 +34,6 @@ std::map</* interface name */ std::string, /* ip */ std::string> get_ips();
 std::string get_system_dns();
 bool is_valid_IP(const std::string& ip);
 
-}  // namespace NetUtils
+}  // namespace netutils
 }  // namespace switcher
 #endif

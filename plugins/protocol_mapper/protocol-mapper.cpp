@@ -37,7 +37,7 @@ ProtocolMapper::ProtocolMapper(quiddity::Config&& conf)
       "config_file",
       [this](const std::string& val) {
         config_file_ = val;
-        auto file_content = FileUtils::get_file_content(val);
+        auto file_content = fileutils::get_file_content(val);
         if (file_content.first.empty()) {
           message("ERROR: %", file_content.second);
           return false;

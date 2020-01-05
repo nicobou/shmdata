@@ -189,7 +189,7 @@ int main(int argc, char* argv[]) {
   manager->reset_state(false);
 
   if (load_file &&
-      !manager->load_state(infotree::json::deserialize(FileUtils::get_content(load_file)).get())) {
+      !manager->load_state(infotree::json::deserialize(fileutils::get_content(load_file)).get())) {
     std::cerr << "could not load file " << load_file << '\n';
   }
 

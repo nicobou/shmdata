@@ -29,10 +29,12 @@
 #include "switcher/infotree/json-serializer.hpp"
 #include "switcher/infotree/key-val-serializer.hpp"
 
-//----------------- a custom struct without operator <<
+using namespace switcher;
+
+// a custom struct without operator <<
 struct Widget : public DefaultSerializable<Widget> {};
 
-//----------------- a custom struct with operator <<
+// a custom struct with operator <<
 struct SerializableWidget {
   friend std::ostream& operator<<(std::ostream& os, const SerializableWidget&);
 };
@@ -41,10 +43,7 @@ std::ostream& operator<<(std::ostream& os, const SerializableWidget&) {
   return os;
 }
 
-//---------------- test
 int main() {
-  using namespace switcher;
-
   auto string_compare = [](const std::string& first, const std::string& second) {
     return (0 == first.compare(second));
   };

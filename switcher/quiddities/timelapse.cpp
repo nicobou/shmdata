@@ -39,7 +39,7 @@ Timelapse::Timelapse(quiddity::Config&& conf)
           [this](const std::string& val) {
             img_dir_ = val;
             if (!img_dir_.empty() && img_dir_.back() != '/') img_dir_ += '/';
-            auto file_prepared = FileUtils::prepare_writable_dir(val);
+            auto file_prepared = fileutils::prepare_writable_dir(val);
             if (!file_prepared.first) {
               warning("error preparing % directory for writing: %", val, file_prepared.second);
               return false;

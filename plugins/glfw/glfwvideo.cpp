@@ -1513,7 +1513,7 @@ void GLFWVideo::GUIConfiguration::init_properties() {
 
 std::vector<std::string> GLFWVideo::GUIConfiguration::get_fonts() {
   auto fonts =
-      FileUtils::get_files_from_directory(std::string(DATADIR) + "fonts", "", ".ttf", true);
+      fileutils::get_files_from_directory(std::string(DATADIR) + "fonts", "", ".ttf", true);
   for (auto& font : fonts) {
     font = stringutils::replace_string(font, std::string(DATADIR) + "fonts/", "");
   }

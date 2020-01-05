@@ -26,7 +26,7 @@
 #include "./bool-log.hpp"
 
 namespace switcher {
-namespace FileUtils {
+namespace fileutils {
 
 // A message is given in case of error
 std::pair<bool, std::string> prepare_writable_dir(const std::string& path);
@@ -53,6 +53,6 @@ std::pair<std::string, std::string> get_file_content(const std::string& file_pat
 BoolLog save(const std::string& content, const std::string& file_path);
 std::string get_content(const std::string& file_path);
 
-}  // namespace FileUtils
+}  // namespace fileutils
 }  // namespace switcher
 #endif

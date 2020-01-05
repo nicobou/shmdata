@@ -32,7 +32,7 @@
 
 namespace switcher {
 
-std::pair<bool, std::string> FileUtils::prepare_writable_dir(const std::string& path) {
+std::pair<bool, std::string> fileutils::prepare_writable_dir(const std::string& path) {
   if (is_dir(path)) {
     if (0 != access(path.c_str(), W_OK | X_OK)) {  // not writable
       int err = errno;
@@ -61,7 +61,7 @@ std::pair<bool, std::string> FileUtils::prepare_writable_dir(const std::string& 
   return std::make_pair(true, std::string());
 }
 
-bool FileUtils::is_dir(const std::string& path) {
+bool fileutils::is_dir(const std::string& path) {
   struct stat sb;
   if (stat(path.c_str(), &sb) == -1)  // does not exists
     return false;
@@ -70,7 +70,7 @@ bool FileUtils::is_dir(const std::string& path) {
   return true;
 }
 
-std::pair<bool, std::string> FileUtils::create_writable_dir(const std::string& path) {
+std::pair<bool, std::string> fileutils::create_writable_dir(const std::string& path) {
   if (-1 == mkdir(path.c_str(), S_IRWXU)) {
     int err = errno;
     return std::make_pair(false, std::string(strerror(err)));
@@ -78,7 +78,7 @@ std::pair<bool, std::string> FileUtils::create_writable_dir(const std::string& p
   return std::make_pair(true, std::string());
 }
 
-std::vector<std::string> FileUtils::get_files_from_directory(std::string path,
+std::vector<std::string> fileutils::get_files_from_directory(std::string path,
                                                              std::string prefix,
                                                              std::string suffix,
                                                              bool recursive) {
@@ -108,7 +108,7 @@ std::vector<std::string> FileUtils::get_files_from_directory(std::string path,
   return files;
 }
 
-std::vector<std::string> FileUtils::get_shmfiles_from_directory(std::string dir_path,
+std::vector<std::string> fileutils::get_shmfiles_from_directory(std::string dir_path,
                                                                 std::string file_prefix) {
   DIR* directory;
   struct dirent* entry;
@@ -130,7 +130,7 @@ std::vector<std::string> FileUtils::get_shmfiles_from_directory(std::string dir_
   return files;
 }
 
-std::pair<std::string, std::string> FileUtils::get_file_content(const std::string& file_path,
+std::pair<std::string, std::string> fileutils::get_file_content(const std::string& file_path,
                                                                 int max_file_size) {
   // opening file
   std::ifstream file_stream(file_path);
@@ -155,7 +155,7 @@ std::pair<std::string, std::string> FileUtils::get_file_content(const std::strin
   return std::make_pair(res, std::string());
 }
 
-BoolLog FileUtils::save(const std::string& content, const std::string& file_path) {
+BoolLog fileutils::save(const std::string& content, const std::string& file_path) {
   if (content.empty()) {
     return BoolLog(false, "cannot save empty content to file");
   }
@@ -190,7 +190,7 @@ BoolLog FileUtils::save(const std::string& content, const std::string& file_path
   return true;
 }
 
-std::string FileUtils::get_content(const std::string& file_path) {
+std::string fileutils::get_content(const std::string& file_path) {
   // opening file
   std::ifstream file_stream(file_path);
   if (!file_stream) {
@@ -209,7 +209,7 @@ std::string FileUtils::get_content(const std::string& file_path) {
   return file_str;
 }
 
-BoolLog FileUtils::remove(const std::string& abs_path) {
+BoolLog fileutils::remove(const std::string& abs_path) {
   if (-1 == ::remove(abs_path.c_str())) {
     int err = errno;
     return BoolLog(false, strerror(err));

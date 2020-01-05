@@ -53,7 +53,7 @@ SIPPlugin::SIPPlugin(quiddity::Config&& conf)
           "SIP Port",
           "SIP port used when registering",
           std::to_string(sip_port_))),
-      default_dns_address_(NetUtils::get_system_dns()),
+      default_dns_address_(netutils::get_system_dns()),
       dns_address_(default_dns_address_),
       dns_address_id_(pmanage<MPtr(&property::PBag::make_string)>(
           "dns_addr",
@@ -61,7 +61,7 @@ SIPPlugin::SIPPlugin(quiddity::Config&& conf)
             auto val = requested_val;
             if (val.empty()) return false;
             if ("default" == requested_val) val = default_dns_address_;
-            if (!NetUtils::is_valid_IP(val)) {
+            if (!netutils::is_valid_IP(val)) {
               message("ERROR:Not a valid IP address, expected x.y.z.a with x, y, z, a in [0:255].");
               return false;
             }
@@ -232,7 +232,7 @@ bool SIPPlugin::start_sip_transport() {
   // Note also pjsua_transport_close is not called between subsequent pjsua_transport_create
   // in pjsip-apps/src/pjsua/pjsua_app.c
 
-  if (NetUtils::is_used(sip_port_)) {
+  if (netutils::is_used(sip_port_)) {
     warning("SIP port cannot be bound (%)", std::to_string(sip_port_));
     message("ERROR: SIP port is not available (%)", std::to_string(sip_port_));
     return false;

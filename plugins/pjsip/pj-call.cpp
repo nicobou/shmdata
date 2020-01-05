@@ -48,7 +48,7 @@ pjsip_module PJCall::mod_siprtp_ = {
 
 PJCall::PJCall() {
   pj_status_t status;
-  local_ips_ = NetUtils::get_ips();
+  local_ips_ = netutils::get_ips();
   for (auto& it : local_ips_)
     SIPPlugin::this_->debug("Local IP found for interface %: %", it.first, it.second);
   for (auto& it : local_ips_) {

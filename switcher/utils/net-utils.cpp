@@ -30,7 +30,7 @@
 
 namespace switcher {
 
-bool NetUtils::is_used(std::uint16_t port) {
+bool netutils::is_used(std::uint16_t port) {
   bool res = true;
   struct addrinfo hints;
   memset(&hints, 0, sizeof(struct addrinfo));
@@ -63,7 +63,7 @@ bool NetUtils::is_used(std::uint16_t port) {
   return res;
 }
 
-std::map</* interface name */ std::string, /* ip */ std::string> NetUtils::get_ips() {
+std::map</* interface name */ std::string, /* ip */ std::string> netutils::get_ips() {
   std::map<std::string, std::string> res;
   struct ifaddrs *ifaddr, *ifa;
   int family, s;
@@ -110,7 +110,7 @@ std::map</* interface name */ std::string, /* ip */ std::string> NetUtils::get_i
   return res;
 }
 
-std::string NetUtils::get_system_dns() {
+std::string netutils::get_system_dns() {
   if (res_init()) {
     return kDefaultDNS;
   }
@@ -120,7 +120,7 @@ std::string NetUtils::get_system_dns() {
   return dns_addr;
 }
 
-bool NetUtils::is_valid_IP(const std::string& ip) {
+bool netutils::is_valid_IP(const std::string& ip) {
   struct sockaddr_in sa;
   return inet_pton(AF_INET, ip.c_str(), &sa.sin_addr) == 1;
 }
