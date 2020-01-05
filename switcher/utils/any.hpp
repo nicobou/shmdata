@@ -28,6 +28,8 @@
 #include <utility>
 #include "./serialize-string.hpp"
 
+namespace switcher {
+
 template <class T>
 using StorageType = typename std::decay<T>::type;
 
@@ -333,4 +335,5 @@ struct DefaultSerializable {
     }
 };
 
+}  // namespace switcher
 #endif
