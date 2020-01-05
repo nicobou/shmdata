@@ -26,7 +26,7 @@
 int main() {
   {
     using namespace switcher;
-    using namespace switcher::quiddity;
+    using namespace quiddity;
 
     auto test_name = std::string("check_jack");
     Switcher::ptr manager = Switcher::make_switcher(test_name);

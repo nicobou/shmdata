@@ -27,7 +27,7 @@ int main() {
 
   {
     using namespace switcher;
-    using namespace switcher::quiddity;
+    using namespace quiddity;
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
@@ -39,7 +39,7 @@ int main() {
     InfoTree::ptr server_config = InfoTree::make();
     server_config->vgraft("driver", "dummy");
     server_config->vgraft("realtime", false);
-    auto jserv = manager->quids<MPtr(&switcher::quiddity::Container::create)>(
+    auto jserv = manager->quids<MPtr(&quiddity::Container::create)>(
         "jackserver", "test_server", server_config.get());
     assert(jserv);
     assert(jserv.get()->prop<MPtr(&property::PBag::set_str_str)>("driver", "dummy"));

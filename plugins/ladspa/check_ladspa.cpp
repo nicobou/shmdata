@@ -26,7 +26,7 @@
 #include "switcher/quiddity/basic-test.hpp"
 
 using namespace switcher;
-using namespace switcher::quiddity;
+using namespace quiddity;
 
 static bool success = false;
 static std::atomic<bool> do_continue{true};

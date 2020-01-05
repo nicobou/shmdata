@@ -30,7 +30,7 @@ int main() {
     manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
     // Currently no more than this because a stream key is needed to fully stream and committing it
     // is unsecure. Functional testing will be manual.
-    assert(switcher::quiddity::test::full(manager, "rtmp"));
+    assert(quiddity::test::full(manager, "rtmp"));
   }
   return 0;
 }

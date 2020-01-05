@@ -35,7 +35,7 @@ static std::condition_variable cond_var{};
 static std::mutex mut{};
 
 using namespace switcher;
-using namespace switcher::quiddity;
+using namespace quiddity;
 
 void wait_until_success() {
   // wait 3 seconds

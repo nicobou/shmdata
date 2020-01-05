@@ -321,14 +321,14 @@ bool Executor::read_outputs() {
   }
 
   // update stdout value
-  std::string escaped_stdout = switcher::stringutils::escape_json(
-      cout_buffer.substr(0, static_cast<size_t>(cout_bytes_read)));
+  std::string escaped_stdout =
+      stringutils::escape_json(cout_buffer.substr(0, static_cast<size_t>(cout_bytes_read)));
 
   bool is_updated = graft_output("stdout", escaped_stdout);
 
   // update stderr value
-  std::string escaped_stderr = switcher::stringutils::escape_json(
-      cerr_buffer.substr(0, static_cast<size_t>(cerr_bytes_read)));
+  std::string escaped_stderr =
+      stringutils::escape_json(cerr_buffer.substr(0, static_cast<size_t>(cerr_bytes_read)));
 
   return graft_output("stderr", escaped_stderr) || is_updated;
 }

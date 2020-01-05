@@ -28,7 +28,7 @@ unsigned int signal_counter = 0;
 
 int main() {
   using namespace switcher;
-  using namespace switcher::quiddity;
+  using namespace quiddity;
 
   Switcher::ptr manager = Switcher::make_switcher("testing_signals");
   manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");

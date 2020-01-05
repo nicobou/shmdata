@@ -25,7 +25,7 @@
 
 int main() {
   using namespace switcher;
-  using namespace switcher::quiddity;
+  using namespace quiddity;
   // generic switcher testing
   Switcher::ptr sw = Switcher::make_switcher("test-manager");
   sw->factory<MPtr(&quiddity::Factory::scan_dir)>("./");

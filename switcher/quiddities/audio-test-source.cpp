@@ -117,8 +117,8 @@ bool AudioTestSource::start() {
     return false;
   }
 
-  shm_sub_ = std::make_unique<switcher::shmdata::GstTreeUpdater>(
-      this, shmdatasink_.get_raw(), shmpath_, switcher::shmdata::GstTreeUpdater::Direction::writer);
+  shm_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+      this, shmdatasink_.get_raw(), shmpath_, shmdata::GstTreeUpdater::Direction::writer);
   update_caps();
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    audiotestsrc_.get_raw(),

@@ -25,12 +25,12 @@
 int main() {
   {
     using namespace switcher;
-    using namespace switcher::quiddity;
+    using namespace quiddity;
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
     manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    assert(switcher::quiddity::test::full(manager, "protocol-mapper"));
+    assert(quiddity::test::full(manager, "protocol-mapper"));
     auto created = manager->quids<MPtr(&quiddity::Container::create)>(
         "protocol-mapper", std::string(), nullptr);
     assert(created);

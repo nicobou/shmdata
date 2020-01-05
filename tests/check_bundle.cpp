@@ -58,20 +58,20 @@ int main() {
     Switcher::ptr manager = Switcher::make_switcher("bundle");
 
     // loading configuration with bundle
-    assert(manager->conf<MPtr(&switcher::Configuration::from_file)>("./check_bundle.config"));
+    assert(manager->conf<MPtr(&Configuration::from_file)>("./check_bundle.config"));
 
     // creating and removing some complex bundles
     auto bundles = {"source-bundle", "sink-bundle", "filter-bundle", "whitespaces-bundle"};
     for (const auto& bundle : bundles) {
-      assert(switcher::quiddity::test::create(manager, bundle));
+      assert(quiddity::test::create(manager, bundle));
     }
 
     // testing shmdata communication from a bundle to an other
-    auto srcqrox = manager->quids<MPtr(&switcher::quiddity::Container::create)>(
-        "vid-source-bundle", "src", nullptr);
+    auto srcqrox =
+        manager->quids<MPtr(&quiddity::Container::create)>("vid-source-bundle", "src", nullptr);
     assert(srcqrox);
-    auto dummyqrox = manager->quids<MPtr(&switcher::quiddity::Container::create)>(
-        "dummy-sink-bundle", "dummy", nullptr);
+    auto dummyqrox =
+        manager->quids<MPtr(&quiddity::Container::create)>("dummy-sink-bundle", "dummy", nullptr);
     assert(dummyqrox);
     auto dummy = dummyqrox.get();
 

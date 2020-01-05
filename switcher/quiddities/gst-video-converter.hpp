@@ -43,8 +43,8 @@ class GstVideoConverter : public Quiddity {
   property::prop_id_t video_format_id_;
   // registering connect/disconnect/can_sink_caps:
   shmdata::Connector shmcntr_;
-  std::unique_ptr<switcher::shmdata::GstTreeUpdater> shmsrc_sub_{nullptr};
-  std::unique_ptr<switcher::shmdata::GstTreeUpdater> shmsink_sub_{nullptr};
+  std::unique_ptr<shmdata::GstTreeUpdater> shmsrc_sub_{nullptr};
+  std::unique_ptr<shmdata::GstTreeUpdater> shmsink_sub_{nullptr};
 
   std::unique_ptr<gst::PixelFormatConverter> converter_{nullptr};
   bool on_shmdata_disconnect();

@@ -54,13 +54,12 @@ void notify_success() {
 
 int main() {
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("filedecoder");
+    Switcher::ptr manager = Switcher::make_switcher("filedecoder");
 
-    if (!switcher::quiddity::test::full(manager, "filesrc")) return 1;
+    if (!quiddity::test::full(manager, "filesrc")) return 1;
 
     auto filesrc =
-        manager->quids<MPtr(&switcher::quiddity::Container::create)>("filesrc", "src", nullptr)
-            .get();
+        manager->quids<MPtr(&quiddity::Container::create)>("filesrc", "src", nullptr).get();
 
     ::shmdata::ConsoleLogger logger;
     auto reader = std::make_unique<::shmdata::Follower>(filesrc->make_shmpath("audio"),

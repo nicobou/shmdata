@@ -52,7 +52,7 @@ class HTTPSDPDec : public Quiddity {
   std::list<std::unique_ptr<gst::DecodebinToShmdata>> decodebins_{};
   std::string src_element_class_{"souphttpsrc"};
   CounterMap counter_{};
-  std::vector<std::unique_ptr<switcher::shmdata::GstTreeUpdater>> shm_subs_{};
+  std::vector<std::unique_ptr<shmdata::GstTreeUpdater>> shm_subs_{};
   property::prop_id_t to_shm_id_;
   bool to_shmdata(std::string uri);
   void init_httpsdpdec();

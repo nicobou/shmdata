@@ -23,14 +23,16 @@
 #include "switcher/infotree/json-serializer.hpp"
 #include "switcher/quiddity/basic-test.hpp"
 
+using namespace switcher;
+
 int main() {
   bool success = false;
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
+    Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&switcher::quiddity::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    if (switcher::quiddity::test::full(manager, "SOAPcontrolServer")) success = true;
+    if (quiddity::test::full(manager, "SOAPcontrolServer")) success = true;
 
   }  // end of scope is releasing the manager
 

@@ -26,11 +26,13 @@
 #include "switcher/quiddity/basic-test.hpp"
 #include "switcher/switcher.hpp"
 
+using namespace switcher;
+
 int main() {
   bool success = true;
-  switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
-  for (auto& it : manager->factory<MPtr(&switcher::quiddity::Factory::get_class_list)>()) {
-    if (!switcher::quiddity::test::create(manager, it)) success = false;
+  Switcher::ptr manager = Switcher::make_switcher("test_manager");
+  for (auto& it : manager->factory<MPtr(&quiddity::Factory::get_class_list)>()) {
+    if (!quiddity::test::create(manager, it)) success = false;
   }
   gst_deinit();
   if (success)

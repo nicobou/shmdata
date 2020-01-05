@@ -20,6 +20,8 @@
 #include <cassert>
 #include "switcher/utils/string-utils.hpp"
 
+using namespace switcher;
+
 int main() {
   std::string str =
       "૱꠸┯┰┱┲❗►◄Ăă0123456789ǕǖꞀ¤­Ð¢℥Ω℧Kℶℷℸⅇ⅊⚌⚍⚎⚏⚭⚮⌀⏑⏒⏓⏔⏕⏖⏗⏘⏙⏠⏡⏦ᶀᶁᶂᶃᶄᶆᶇᶈᶉᶊᶋᶌᶍᶎᶏᶐᶑᶒᶓᶔᶕᶖᶗᶘᶙᶚᶸᵯ"
@@ -74,6 +76,6 @@ int main() {
       "❥♡♢♤♧⚀⚁⚂⚃⚄⚅⚇⚆⚈⚉♨♩♪♫♬♭♮♯⌨⏏⎗⎘⎙⎚⌥⎇⌘⌦⌫⌧♲♳♴♵♶♷♸♹♺♻♼♽⁌⁍⎌⌇⌲⍝⍟⍣⍤⍥⍨⍩⎋♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓⏚⏛| |"
       " | | | | | | | |​|☹☺שמכיל גרסאות של";
 
-  assert(switcher::stringutils::base64_decode(switcher::stringutils::base64_encode(str)) == str);
+  assert(stringutils::base64_decode(stringutils::base64_encode(str)) == str);
   return 0;
 }

@@ -24,11 +24,11 @@
 
 int main() {
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
+    Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
     manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    if (!switcher::quiddity::test::full(manager, "syphon")) return 1;
+    if (!quiddity::test::full(manager, "syphon")) return 1;
   }  // end of scope is releasing the manager
 
   return 0;

@@ -21,13 +21,13 @@
 
 #include <gst/gst.h>
 #include "switcher/switcher.hpp"
-//#include "switcher/basic-test.hpp"
+
+using namespace switcher;
 
 int main() {
   {
     int c = 10;
-    while (--c > 0)
-      switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test-manager");
+    while (--c > 0) Switcher::ptr manager = Switcher::make_switcher("test-manager");
   }
   gst_deinit();
   return 0;

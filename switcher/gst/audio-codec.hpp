@@ -40,8 +40,8 @@ class AudioCodec {
   bool stop();
 
  private:
-  switcher::quiddity::Quiddity* quid_;
-  switcher::quiddity::method::meth_id_t reset_id_;
+  quiddity::Quiddity* quid_;
+  quiddity::method::meth_id_t reset_id_;
   // shmdata path
   std::string shmpath_to_encode_{};
   std::string shm_encoded_path_{};
@@ -58,12 +58,12 @@ class AudioCodec {
   std::unique_ptr<shmdata::GstTreeUpdater> shmsink_sub_{nullptr};
   // codec props
   quiddity::property::Selection<> codecs_;
-  switcher::quiddity::property::prop_id_t codec_id_;
+  quiddity::property::prop_id_t codec_id_;
   std::vector<std::string> codec_properties_{};
   // codec params black list
   std::unordered_set<std::string> param_black_list_{
       "name", "parent", "hard-resync", "mark-granule", "perfect-timestamp", "tolerance"};
-  switcher::quiddity::property::prop_id_t group_codec_id_{0};
+  quiddity::property::prop_id_t group_codec_id_{0};
   // shmdatasrc copy-buffers property:
   bool copy_buffers_{true};
 
@@ -75,7 +75,7 @@ class AudioCodec {
   void show();
   void hide();
   bool has_enough_channels(const std::string& str_caps);
-  switcher::quiddity::property::prop_id_t install_codec();
+  quiddity::property::prop_id_t install_codec();
   bool reset_codec_configuration();
   static gboolean sink_factory_filter(GstPluginFeature* feature, gpointer data);
   static gint sink_compare_ranks(GstPluginFeature* f1, GstPluginFeature* f2);

@@ -37,7 +37,7 @@ bool test::create(Switcher::ptr manager,
                   InfoTree::ptr config) {
   auto log = manager->get_logger();
   {
-    auto res = manager->quids<MPtr(&switcher::quiddity::Container::create)>(
+    auto res = manager->quids<MPtr(&quiddity::Container::create)>(
         quiddity_class_name, quiddity_class_name, config.get());
     if (!res) {
       log->warning("% cannot be created: %", quiddity_class_name, res.msg());
@@ -48,15 +48,15 @@ bool test::create(Switcher::ptr manager,
       log->error("% was created with the wrong name", quiddity_class_name);
       return false;
     }
-    auto res_rm = manager->quids<MPtr(&switcher::quiddity::Container::remove)>(
-        manager->quids<MPtr(&switcher::quiddity::Container::get_id)>(quiddity_class_name));
+    auto res_rm = manager->quids<MPtr(&quiddity::Container::remove)>(
+        manager->quids<MPtr(&quiddity::Container::get_id)>(quiddity_class_name));
     if (!res_rm) {
       log->error("error while removing quiddity %: %", quiddity_class_name, res.msg());
       return false;
     }
   }
   {  // testing with generated name
-    auto res = manager->quids<MPtr(&switcher::quiddity::Container::create)>(
+    auto res = manager->quids<MPtr(&quiddity::Container::create)>(
         quiddity_class_name, std::string(), config.get());
     if (!res) {
       log->warning("%  cannot be created: %", quiddity_class_name, res.msg());
@@ -67,8 +67,8 @@ bool test::create(Switcher::ptr manager,
       log->error("creation did not generate a name for class %", quiddity_class_name);
       return false;
     }
-    auto res_rm = manager->quids<MPtr(&switcher::quiddity::Container::remove)>(
-        manager->quids<MPtr(&switcher::quiddity::Container::get_id)>(res.msg()));
+    auto res_rm = manager->quids<MPtr(&quiddity::Container::remove)>(
+        manager->quids<MPtr(&quiddity::Container::get_id)>(res.msg()));
     if (!res_rm) {
       log->error("error while removing quiddity: %", res.msg());
       return false;
@@ -81,7 +81,7 @@ bool test::startable(Switcher::ptr manager,
                      const std::string& quiddity_class_name,
                      InfoTree::ptr config) {
   auto log = manager->get_logger();
-  auto qrox = manager->quids<MPtr(&switcher::quiddity::Container::create)>(
+  auto qrox = manager->quids<MPtr(&quiddity::Container::create)>(
       quiddity_class_name, quiddity_class_name, config.get());
   if (!qrox) {
     log->warning("% cannot be created (startable not actualy tested)", quiddity_class_name);
@@ -95,7 +95,7 @@ bool test::startable(Switcher::ptr manager,
     qrox.get()->prop<MPtr(&property::PBag::set<bool>)>(started_id, false);
     qrox.get()->prop<MPtr(&property::PBag::set<bool>)>(started_id, true);
   }
-  if (!manager->quids<MPtr(&switcher::quiddity::Container::remove)>(qrox.get_id())) {
+  if (!manager->quids<MPtr(&quiddity::Container::remove)>(qrox.get_id())) {
     log->error("error while removing quiddity % (startable test)", quiddity_class_name);
     return false;
   }
@@ -106,14 +106,14 @@ bool test::tree(Switcher::ptr manager,
                 const std::string& quiddity_class_name,
                 InfoTree::ptr config) {
   auto log = manager->get_logger();
-  auto qrox = manager->quids<MPtr(&switcher::quiddity::Container::create)>(
+  auto qrox = manager->quids<MPtr(&quiddity::Container::create)>(
       quiddity_class_name, std::string(), config.get());
   if (!qrox) {
     log->warning("% cannot be created (tree not actualy tested)");
     return true;
   }
   qrox.get()->tree<MPtr(&InfoTree::serialize_json)>(".");
-  manager->quids<MPtr(&switcher::quiddity::Container::remove)>(qrox.get_id());
+  manager->quids<MPtr(&quiddity::Container::remove)>(qrox.get_id());
   return true;
 }
 
@@ -121,7 +121,7 @@ bool test::properties(Switcher::ptr manager,
                       const std::string& quiddity_class_name,
                       InfoTree::ptr config) {
   auto log = manager->get_logger();
-  auto qrox = manager->quids<MPtr(&switcher::quiddity::Container::create)>(
+  auto qrox = manager->quids<MPtr(&quiddity::Container::create)>(
       quiddity_class_name, std::string(), config.get());
   if (!qrox) {
     log->warning("% cannot be created (properties not actualy tested)", quiddity_class_name);

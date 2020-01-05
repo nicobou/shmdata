@@ -51,7 +51,7 @@ class Uridecodebin : public Quiddity {
   bool playing_{true};
   std::string uri_{};
   CounterMap counter_{};
-  std::vector<std::unique_ptr<switcher::shmdata::GstTreeUpdater>> shm_subs_{};
+  std::vector<std::unique_ptr<shmdata::GstTreeUpdater>> shm_subs_{};
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
 
   void init_uridecodebin();

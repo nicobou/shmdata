@@ -76,7 +76,7 @@ struct AnyValueDerived : AnyValueBase {
       return new AnyValueDerived<T>(value_, category_, arithmetic_type_);
     }
 
-    std::string to_string() const { return switcher::serialize::apply<T>(value_); }
+    std::string to_string() const { return serialize::apply<T>(value_); }
 };
 
 template <>

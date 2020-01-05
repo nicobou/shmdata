@@ -117,8 +117,8 @@ void HTTPSDPDec::configure_shmdatasink(GstElement* element,
     shmpath = make_shmpath(media_label + "-" + media_name);
 
   g_object_set(G_OBJECT(element), "socket-path", shmpath.c_str(), nullptr);
-  shm_subs_.emplace_back(std::make_unique<switcher::shmdata::GstTreeUpdater>(
-      this, element, shmpath, switcher::shmdata::GstTreeUpdater::Direction::writer));
+  shm_subs_.emplace_back(std::make_unique<shmdata::GstTreeUpdater>(
+      this, element, shmpath, shmdata::GstTreeUpdater::Direction::writer));
 }
 
 void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement* /*object */, GstPad* pad, gpointer user_data) {

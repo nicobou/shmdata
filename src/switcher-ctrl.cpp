@@ -22,6 +22,8 @@
 #include "webservices/control.nsmap"
 #include "webservices/soapcontrolProxy.h"
 
+using namespace switcher;
+
 // options
 static gchar* server = nullptr;
 static gboolean save = FALSE;
@@ -253,8 +255,8 @@ int main(int argc, char* argv[]) {
       return false;
     }
     switcher_control.get_classes_doc(&resultlist);
-    std::cout << switcher::infotree::json::serialize(
-                     switcher::infotree::json::deserialize(resultlist)
+    std::cout << infotree::json::serialize(
+                     infotree::json::deserialize(resultlist)
                          ->get_tree(std::string(".classes.") + remaining_args[0])
                          .get())
               << '\n';

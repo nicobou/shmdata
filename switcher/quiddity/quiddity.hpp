@@ -228,29 +228,26 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
 }  // namespace quiddity
 }  // namespace switcher
 
-#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(                                           \
-    cpp_quiddity_class, class_name, name, category, tags, description, license, author) \
-  bool cpp_quiddity_class##_doc_registered =                                            \
-      switcher::quiddity::DocumentationRegistry::get()->register_doc(                   \
-          class_name,                                                                   \
-          switcher::quiddity::Doc(                                                      \
-              class_name, name, category, tags, description, license, author));         \
-  bool cpp_quiddity_class##_class_registered =                                          \
-      switcher::quiddity::DocumentationRegistry::get()->register_type_from_class_name(  \
+#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(                                                      \
+    cpp_quiddity_class, class_name, name, category, tags, description, license, author)            \
+  bool cpp_quiddity_class##_doc_registered = quiddity::DocumentationRegistry::get()->register_doc( \
+      class_name, quiddity::Doc(class_name, name, category, tags, description, license, author));  \
+  bool cpp_quiddity_class##_class_registered =                                                     \
+      quiddity::DocumentationRegistry::get()->register_type_from_class_name(                       \
           std::string(#cpp_quiddity_class), class_name);
 
-#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                                    \
-  extern "C" switcher::quiddity::Quiddity* create(switcher::quiddity::Config&& conf) { \
-    return new cpp_quiddity_class(std::forward<switcher::quiddity::Config>(conf));     \
-  }                                                                                    \
-  extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }                     \
-  extern "C" const char* get_quiddity_type() {                                         \
-    static char type[64];                                                              \
-    strcpy(type,                                                                       \
-           switcher::quiddity::DocumentationRegistry::get()                            \
-               ->get_type_from_class_name(std::string(#cpp_quiddity_class))            \
-               .c_str());                                                              \
-    return static_cast<const char*>(type);                                             \
+#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                         \
+  extern "C" quiddity::Quiddity* create(quiddity::Config&& conf) {          \
+    return new cpp_quiddity_class(std::forward<quiddity::Config>(conf));    \
+  }                                                                         \
+  extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }          \
+  extern "C" const char* get_quiddity_type() {                              \
+    static char type[64];                                                   \
+    strcpy(type,                                                            \
+           quiddity::DocumentationRegistry::get()                           \
+               ->get_type_from_class_name(std::string(#cpp_quiddity_class)) \
+               .c_str());                                                   \
+    return static_cast<const char*>(type);                                  \
   }
 
 #endif

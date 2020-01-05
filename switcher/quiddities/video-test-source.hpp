@@ -78,7 +78,7 @@ class VideoTestSource : public Quiddity, public quiddity::Startable {
   property::Selection<> formats_;
   property::prop_id_t formats_id_;
   // Shmdata tree updater
-  std::unique_ptr<switcher::shmdata::GstTreeUpdater> shm_sub_{nullptr};
+  std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
   // gst elements
   gst::UGstElem videotestsrc_{"videotestsrc"};
   gst::UGstElem capsfilter_{"capsfilter"};

@@ -142,8 +142,8 @@ void VideoTestSource::update_caps() {
 
 bool VideoTestSource::start() {
   if (!gst_pipeline_) return false;
-  shm_sub_ = std::make_unique<switcher::shmdata::GstTreeUpdater>(
-      this, shmdatasink_.get_raw(), shmpath_, switcher::shmdata::GstTreeUpdater::Direction::writer);
+  shm_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+      this, shmdatasink_.get_raw(), shmpath_, shmdata::GstTreeUpdater::Direction::writer);
   update_caps();
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   pmanage<MPtr(&property::PBag::replace)>(
