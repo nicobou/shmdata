@@ -94,8 +94,8 @@ std::vector<std::string> FileUtils::get_files_from_directory(std::string path,
     if (std::string(entry->d_name) == "." || std::string(entry->d_name) == "..") continue;
 
     if (entry->d_type == DT_REG) {
-      if ((prefix.empty() || StringUtils::starts_with(entry->d_name, prefix)) &&
-          (suffix.empty() || StringUtils::ends_with(entry->d_name, suffix))) {
+      if ((prefix.empty() || stringutils::starts_with(entry->d_name, prefix)) &&
+          (suffix.empty() || stringutils::ends_with(entry->d_name, suffix))) {
         files.push_back(path + "/" + entry->d_name);
       }
     } else if (entry->d_type == DT_DIR && recursive) {
@@ -122,7 +122,7 @@ std::vector<std::string> FileUtils::get_shmfiles_from_directory(std::string dir_
     if (std::string(entry->d_name) == "." || std::string(entry->d_name) == "..") continue;
 
     if (entry->d_type == DT_SOCK &&
-        (file_prefix.empty() || StringUtils::starts_with(entry->d_name, file_prefix))) {
+        (file_prefix.empty() || stringutils::starts_with(entry->d_name, file_prefix))) {
       files.push_back(dir_path + "/" + entry->d_name);
     }
   }

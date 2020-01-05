@@ -457,7 +457,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
   // find related buddy id ('sip:' is not saved)
   auto peer_uri = std::string(from_uri, 4, std::string::npos);
   auto peer_uri_lower_case = std::string(from_uri, 4, std::string::npos);
-  StringUtils::tolower(peer_uri_lower_case);
+  stringutils::tolower(peer_uri_lower_case);
   if (!SIPPlugin::this_->white_list_->is_authorized(peer_uri) &&
       !SIPPlugin::this_->white_list_->is_authorized(peer_uri_lower_case)) {
     SIPPlugin::this_->message("ERROR:call refused from %", peer_uri);
@@ -920,7 +920,7 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
     std::string label = tok;
     while (std::getline(ss, tok, ' ')) label += tok;
     rtpcaps += ", media-label=(string)\"" +
-               StringUtils::replace_char(StringUtils::base64_encode(label), '=', "") + "\"";
+               stringutils::replace_char(stringutils::base64_encode(label), '=', "") + "\"";
     GstCaps* caps = gst_caps_from_string(rtpcaps.c_str());
     On_scope_exit { gst_caps_unref(caps); };
     gst::SDPMedia media;

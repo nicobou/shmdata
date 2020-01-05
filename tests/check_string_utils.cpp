@@ -74,6 +74,6 @@ int main() {
       "❥♡♢♤♧⚀⚁⚂⚃⚄⚅⚇⚆⚈⚉♨♩♪♫♬♭♮♯⌨⏏⎗⎘⎙⎚⌥⎇⌘⌦⌫⌧♲♳♴♵♶♷♸♹♺♻♼♽⁌⁍⎌⌇⌲⍝⍟⍣⍤⍥⍨⍩⎋♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓⏚⏛| |"
       " | | | | | | | |​|☹☺שמכיל גרסאות של";
 
-  assert(switcher::StringUtils::base64_decode(switcher::StringUtils::base64_encode(str)) == str);
+  assert(switcher::stringutils::base64_decode(switcher::stringutils::base64_encode(str)) == str);
   return 0;
 }

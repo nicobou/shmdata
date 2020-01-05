@@ -90,7 +90,7 @@ ProtocolReader::ProtocolType ProtocolReader::get_protocol_from_json(const InfoTr
   if (protocol_type.is_null()) return ProtocolType::UNDEFINED;
 
   auto protocol_str = protocol_type.copy_as<std::string>();
-  StringUtils::tolower(protocol_str);
+  stringutils::tolower(protocol_str);
 
   if (protocol_str == kCurlProtocol)
     return ProtocolType::CURL;

@@ -144,7 +144,7 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement* /*object */, GstPad* pad, g
   On_scope_exit { gst_caps_unref(caps); };
   auto structure = gst_caps_get_structure(caps, 0);
   auto media_label = gst_structure_get_string(structure, "media-label");
-  if (media_label) decodebin->set_media_label(StringUtils::base64_decode(media_label));
+  if (media_label) decodebin->set_media_label(stringutils::base64_decode(media_label));
   decodebin->invoke([](GstElement* el) { gst::utils::sync_state_with_parent(el); });
   context->decodebins_.push_back(std::move(decodebin));
 }

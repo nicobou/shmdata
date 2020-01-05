@@ -26,7 +26,7 @@
 
 namespace switcher {
 
-std::string StringUtils::replace_char(const std::string& orig,
+std::string stringutils::replace_char(const std::string& orig,
                                       const char to_replace,
                                       const std::string& replacement) {
   std::string escaped = std::string();
@@ -44,7 +44,7 @@ std::string StringUtils::replace_char(const std::string& orig,
   return escaped;
 }
 
-std::string StringUtils::replace_string(const std::string& orig,
+std::string stringutils::replace_string(const std::string& orig,
                                         const std::string& to_replace,
                                         const std::string& replacement) {
   std::string unescaped = std::string();
@@ -62,37 +62,37 @@ std::string StringUtils::replace_string(const std::string& orig,
   return unescaped;
 }
 
-void StringUtils::toupper(std::string& str) {
+void stringutils::toupper(std::string& str) {
   std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 }
-void StringUtils::tolower(std::string& str) {
+void stringutils::tolower(std::string& str) {
   std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 }
 
-bool StringUtils::starts_with(const std::string& str, const std::string& suffix) {
+bool stringutils::starts_with(const std::string& str, const std::string& suffix) {
   auto lower_str = std::string(str);
   auto lower_suffix = std::string(suffix);
-  StringUtils::tolower(lower_str);
-  StringUtils::tolower(lower_suffix);
+  stringutils::tolower(lower_str);
+  stringutils::tolower(lower_suffix);
   return str.size() >= suffix.size() && lower_str.find(lower_suffix) == 0;
 }
 
-bool StringUtils::ends_with(const std::string& str, const std::string& suffix) {
+bool stringutils::ends_with(const std::string& str, const std::string& suffix) {
   auto str_len = str.size();
   auto suffix_len = suffix.size();
   auto lower_str = std::string(str);
   auto lower_suffix = std::string(suffix);
-  StringUtils::tolower(lower_str);
-  StringUtils::tolower(lower_suffix);
+  stringutils::tolower(lower_str);
+  stringutils::tolower(lower_suffix);
   return str_len >= suffix_len &&
          lower_str.find(lower_suffix, str_len - suffix_len) != std::string::npos;
 }
 
-std::string StringUtils::base64_encode(const std::string& str) {
+std::string stringutils::base64_encode(const std::string& str) {
   return std::string(g_base64_encode(reinterpret_cast<const guchar*>(str.c_str()), str.size()));
 }
 
-std::string StringUtils::base64_decode(const std::string& str) {
+std::string stringutils::base64_decode(const std::string& str) {
   gsize str_size = 2048;
   guchar* decoded_guchar = g_base64_decode(str.c_str(), &str_size);
   On_scope_exit {
@@ -106,7 +106,7 @@ std::string StringUtils::base64_decode(const std::string& str) {
   return std::string(decoded_char);
 }
 
-std::string StringUtils::escape_json(const std::string& str) {
+std::string stringutils::escape_json(const std::string& str) {
   std::ostringstream o;
   for (auto c = str.cbegin(); c != str.cend(); c++) {
     switch (*c) {

@@ -26,7 +26,7 @@
 #include <vector>
 
 namespace switcher {
-namespace StringUtils {
+namespace stringutils {
 
 std::string replace_char(const std::string& orig,
                          const char to_replace,
@@ -45,6 +45,6 @@ std::string base64_decode(const std::string& str);
 
 std::string escape_json(const std::string& str);
 
-}  // namespace StringUtils
+}  // namespace stringutils
 }  // namespace switcher
 #endif

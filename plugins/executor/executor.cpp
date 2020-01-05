@@ -185,7 +185,7 @@ bool Executor::stop() {
 }
 
 bool Executor::on_shmdata_connect(const std::string& shmpath) {
-  if (StringUtils::ends_with(shmpath, "video")) {
+  if (stringutils::ends_with(shmpath, "video")) {
     if (!shmpath_video_.empty()) follower_video_.reset();
     shmpath_video_ = shmpath;
     follower_video_ = std::make_unique<shmdata::Follower>(this,
@@ -196,7 +196,7 @@ bool Executor::on_shmdata_connect(const std::string& shmpath) {
                                                           shmdata::Stat::kDefaultUpdateInterval,
                                                           shmdata::Follower::Direction::reader,
                                                           true);
-  } else if (StringUtils::ends_with(shmpath, "audio")) {
+  } else if (stringutils::ends_with(shmpath, "audio")) {
     if (!shmpath_audio_.empty()) follower_audio_.reset();
     shmpath_audio_ = shmpath;
     follower_audio_ = std::make_unique<shmdata::Follower>(this,
@@ -235,10 +235,10 @@ bool Executor::on_shmdata_connect(const std::string& shmpath) {
 }
 
 bool Executor::on_shmdata_disconnect(const std::string& shmpath) {
-  if (StringUtils::ends_with(shmpath, "video")) {
+  if (stringutils::ends_with(shmpath, "video")) {
     follower_video_.reset();
     shmpath_video_.clear();
-  } else if (StringUtils::ends_with(shmpath, "audio")) {
+  } else if (stringutils::ends_with(shmpath, "audio")) {
     follower_audio_.reset();
     shmpath_audio_.clear();
   } else {
@@ -321,17 +321,15 @@ bool Executor::read_outputs() {
   }
 
   // update stdout value
-  std::string escaped_stdout = switcher::StringUtils::escape_json(
-    cout_buffer.substr(0, static_cast<size_t>(cout_bytes_read))
-  );
+  std::string escaped_stdout = switcher::stringutils::escape_json(
+      cout_buffer.substr(0, static_cast<size_t>(cout_bytes_read)));
 
   bool is_updated = graft_output("stdout", escaped_stdout);
 
   // update stderr value
-  std::string escaped_stderr = switcher::StringUtils::escape_json(
-    cerr_buffer.substr(0, static_cast<size_t>(cerr_bytes_read))
-  );
-  
+  std::string escaped_stderr = switcher::stringutils::escape_json(
+      cerr_buffer.substr(0, static_cast<size_t>(cerr_bytes_read)));
+
   return graft_output("stderr", escaped_stderr) || is_updated;
 }
 

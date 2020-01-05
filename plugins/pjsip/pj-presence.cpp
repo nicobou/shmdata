@@ -190,7 +190,7 @@ bool PJPresence::register_account_wrapped(const std::string& user, const std::st
     return false;
   }
   std::string tmp = user;
-  if (lower_case_accounts_) StringUtils::tolower(tmp);
+  if (lower_case_accounts_) stringutils::tolower(tmp);
   SIPPlugin::this_->pjsip_->run([&]() { register_account(tmp, std::string(password)); });
   SIPPlugin::this_->pmanage<MPtr(&property::PBag::notify)>(
       SIPPlugin::this_->pmanage<MPtr(&property::PBag::get_id)>("sip-registration"));
@@ -305,7 +305,7 @@ void PJPresence::add_buddy(const std::string& user) {
     return;
   }
   std::string sip_user = user;
-  if (lower_case_accounts_) StringUtils::tolower(sip_user);
+  if (lower_case_accounts_) stringutils::tolower(sip_user);
   std::string buddy_full_uri("sip:" + sip_user  // + ";transport=tcp"
                              );
   if (pjsua_verify_url(buddy_full_uri.c_str()) != PJ_SUCCESS) {
@@ -352,7 +352,7 @@ void PJPresence::del_buddy(const std::string& user) {
     return;
   }
   std::string sip_user = user;
-  if (lower_case_accounts_) StringUtils::tolower(sip_user);
+  if (lower_case_accounts_) stringutils::tolower(sip_user);
   auto it = buddy_id_.find(sip_user);
   if (buddy_id_.end() == it) {
     SIPPlugin::this_->message("ERROR:% is not in buddy list, cannot delete", sip_user);
@@ -403,7 +403,7 @@ void PJPresence::name_buddy(std::string name, std::string sip_user) {
 
 bool PJPresence::name_buddy_wrapped(const std::string& name, const std::string& buddy_uri) {
   std::string bud(buddy_uri);
-  if (lower_case_accounts_) StringUtils::tolower(bud);
+  if (lower_case_accounts_) stringutils::tolower(bud);
   SIPPlugin::this_->pjsip_->run([&]() { name_buddy(std::string(name), bud); });
   return true;
 }
@@ -585,7 +585,7 @@ void PJPresence::on_buddy_evsub_state(pjsua_buddy_id /*buddy_id*/,
 pjsua_buddy_id PJPresence::get_id_from_buddy_name(const std::string& name) {
   auto bud =
       std::find_if(buddy_id_.begin(), buddy_id_.end(), [&name](decltype(*buddy_id_.begin())& it) {
-        return StringUtils::starts_with(it.first, name + "@");
+        return stringutils::starts_with(it.first, name + "@");
       });
   if (buddy_id_.end() != bud) return bud->second;
   return PJSUA_INVALID_ID;

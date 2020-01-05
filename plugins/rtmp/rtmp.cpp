@@ -62,13 +62,13 @@ RTMP::RTMP(quiddity::Config&& conf)
 
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) {
-        if (StringUtils::ends_with(shmpath, "video-encoded"))
+        if (stringutils::ends_with(shmpath, "video-encoded"))
           return on_shmdata_connect(shmpath, ShmType::VIDEO);
         else
           return on_shmdata_connect(shmpath, ShmType::AUDIO);
       },
       [this](const std::string& shmpath) {
-        if (StringUtils::ends_with(shmpath, "video-encoded"))
+        if (stringutils::ends_with(shmpath, "video-encoded"))
           return on_shmdata_disconnect(ShmType::VIDEO);
         else
           return on_shmdata_disconnect(ShmType::AUDIO);
@@ -76,7 +76,6 @@ RTMP::RTMP(quiddity::Config&& conf)
       nullptr,
       [this](const std::string& caps) { return can_sink_caps(caps); },
       std::numeric_limits<unsigned int>::max());
-
 }
 
 bool RTMP::create_gst_pipeline() {
@@ -178,8 +177,8 @@ bool RTMP::on_shmdata_disconnect(ShmType type) {
 }
 
 bool RTMP::can_sink_caps(std::string str_caps) {
-  return StringUtils::starts_with(str_caps, "audio/x-raw") ||
-         StringUtils::starts_with(str_caps, "video/x-h264");
+  return stringutils::starts_with(str_caps, "audio/x-raw") ||
+         stringutils::starts_with(str_caps, "video/x-h264");
 }
 
 }  // namespace quiddities

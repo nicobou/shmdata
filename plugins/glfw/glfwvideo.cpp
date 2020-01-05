@@ -1425,8 +1425,8 @@ void GLFWVideo::GUIConfiguration::init_properties() {
               "This property is unavailable because "
               "the custom font is currently selected.");
           parent_window_->pmanage<MPtr(&property::PBag::enable)>(custom_font_id_);
-          if (StringUtils::starts_with(custom_font_, "/") &&
-              StringUtils::ends_with(custom_font_, ".ttf")) {
+          if (stringutils::starts_with(custom_font_, "/") &&
+              stringutils::ends_with(custom_font_, ".ttf")) {
             parent_window_->pmanage<MPtr(&property::PBag::set_to_current)>(custom_font_id_);
           }
         } else {
@@ -1451,12 +1451,12 @@ void GLFWVideo::GUIConfiguration::init_properties() {
         if (val.empty()) {
           parent_window_->message("No value was defined for overlay_additional_font or overlay_config properties.");
           return true;
-        } else if (!StringUtils::ends_with(val, ".ttf")) {
+        } else if (!stringutils::ends_with(val, ".ttf")) {
           parent_window_->message(
               "Cannot set % as custom font, only truetype fonts are supported (.ttf extension).",
               val);
           return false;
-        } else if (!StringUtils::starts_with(val, "/")) {
+        } else if (!stringutils::starts_with(val, "/")) {
           parent_window_->message("Only absolute paths are supported for the custom font.");
           return false;
         }
@@ -1515,7 +1515,7 @@ std::vector<std::string> GLFWVideo::GUIConfiguration::get_fonts() {
   auto fonts =
       FileUtils::get_files_from_directory(std::string(DATADIR) + "fonts", "", ".ttf", true);
   for (auto& font : fonts) {
-    font = StringUtils::replace_string(font, std::string(DATADIR) + "fonts/", "");
+    font = stringutils::replace_string(font, std::string(DATADIR) + "fonts/", "");
   }
   return fonts;
 }

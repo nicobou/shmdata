@@ -71,7 +71,7 @@ ShmDelay::ShmDelay(quiddity::Config&& conf)
 
 bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
   // Get the value of the delay from a shmdata
-  if (!diff_follower_ && StringUtils::ends_with(shmpath, "ltc-diff")) {
+  if (!diff_follower_ && stringutils::ends_with(shmpath, "ltc-diff")) {
     diff_follower_ = std::make_unique<shmdata::Follower>(
         this,
         shmpath,
@@ -87,7 +87,7 @@ bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
   }
 
   // We do not delay an ltc-diff shmdata.
-  if (shm_follower_ || StringUtils::ends_with(shmpath, "ltc-diff")) return false;
+  if (shm_follower_ || stringutils::ends_with(shmpath, "ltc-diff")) return false;
 
   // Follow the shmdata to delay.
   shm_follower_ = std::make_unique<shmdata::Follower>(
@@ -140,7 +140,7 @@ bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
 }
 
 bool ShmDelay::on_shmdata_disconnect(const std::string& shmpath) {
-  if (StringUtils::ends_with(shmpath, "ltc-diff")) {
+  if (stringutils::ends_with(shmpath, "ltc-diff")) {
     diff_follower_.reset(nullptr);
     pmanage<MPtr(&property::PBag::enable)>(time_delay_id_);
   } else {

@@ -173,7 +173,7 @@ bool GstDecodebin::create_pipeline() {
     On_scope_exit { gst_caps_unref(caps); };
     auto structure = gst_caps_get_structure(caps, 0);
     auto media_label = gst_structure_get_string(structure, "media-label");
-    if (media_label) decodebin->set_media_label(StringUtils::base64_decode(media_label));
+    if (media_label) decodebin->set_media_label(stringutils::base64_decode(media_label));
   }
 
   // save the decodebin

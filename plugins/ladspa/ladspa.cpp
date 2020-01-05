@@ -104,7 +104,7 @@ LADSPA::PluginList LADSPA::get_ladspa_plugins() {
       GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, GST_RANK_NONE, false);
   size_t index = 0;
   for (auto& plugin : plugins.second) {
-    if (StringUtils::starts_with(plugin, "ladspa")) {
+    if (stringutils::starts_with(plugin, "ladspa")) {
       plugins_list.first.push_back(plugins.first.at(index));
       plugins_list.second.push_back(plugin);
     }
@@ -385,7 +385,7 @@ bool LADSPA::on_shmdata_disconnect() {
 }
 
 bool LADSPA::can_sink_caps(std::string str_caps) {
-  if (!StringUtils::starts_with(str_caps, "audio/x-raw")) return false;
+  if (!stringutils::starts_with(str_caps, "audio/x-raw")) return false;
 
   GstCaps* caps = gst_caps_from_string(str_caps.c_str());
   On_scope_exit {

@@ -210,7 +210,7 @@ bool PJStunTurn::set_stun_turn(const std::string& stun,
     ice_cfg_.turn.auth_cred.type = PJ_STUN_AUTH_CRED_STATIC;
     if (!turn_user.empty()) {
       turn_user_ = std::string(turn_user);
-      if (lower_case_turn_account_) StringUtils::tolower(turn_user_);
+      if (lower_case_turn_account_) stringutils::tolower(turn_user_);
       ice_cfg_.turn.auth_cred.data.static_cred.username.ptr = (char*)turn_user_.c_str();
       ice_cfg_.turn.auth_cred.data.static_cred.username.slen = turn_user_.size();
     }

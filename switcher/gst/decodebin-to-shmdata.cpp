@@ -144,9 +144,9 @@ int /*GstAutoplugSelectResult*/ DecodebinToShmdata::on_autoplug_select(GstElemen
   if (!context->decompress_) {
     gchar* caps_str = gst_caps_to_string(caps);
     On_scope_exit { g_free(caps_str); };
-    if (StringUtils::starts_with(caps_str, "audio/") ||
-        StringUtils::starts_with(caps_str, "video/") ||
-        StringUtils::starts_with(caps_str, "image/"))
+    if (stringutils::starts_with(caps_str, "audio/") ||
+        stringutils::starts_with(caps_str, "video/") ||
+        stringutils::starts_with(caps_str, "image/"))
       return EXPOSE;
   }
 
@@ -156,11 +156,11 @@ int /*GstAutoplugSelectResult*/ DecodebinToShmdata::on_autoplug_select(GstElemen
     GstCaps* caps = gst_pad_get_current_caps(pad);
     On_scope_exit { gst_caps_unref(caps); };
     const GValue* val = gst_structure_get_value(gst_caps_get_structure(caps, 0), "caps");
-    auto caps_str = StringUtils::base64_decode(g_value_get_string(val));
-    if (StringUtils::starts_with(caps_str, "audio/midi")) return EXPOSE;
-    if (StringUtils::starts_with(caps_str, "audio/") ||
-        StringUtils::starts_with(caps_str, "video/") ||
-        StringUtils::starts_with(caps_str, "image/"))
+    auto caps_str = stringutils::base64_decode(g_value_get_string(val));
+    if (stringutils::starts_with(caps_str, "audio/midi")) return EXPOSE;
+    if (stringutils::starts_with(caps_str, "audio/") ||
+        stringutils::starts_with(caps_str, "video/") ||
+        stringutils::starts_with(caps_str, "image/"))
       return_val = TRY;
     return return_val;
   }

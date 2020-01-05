@@ -318,11 +318,11 @@ bool InfoTree::make_array(bool is_array) {
 }
 
 std::string InfoTree::escape_dots(const std::string& str) {
-  return StringUtils::replace_char(str, '.', "__DOT__");
+  return stringutils::replace_char(str, '.', "__DOT__");
 }
 
 std::string InfoTree::unescape_dots(const std::string& str) {
-  return StringUtils::replace_string(str, "__DOT__", ".");
+  return stringutils::replace_string(str, "__DOT__", ".");
 }
 
 std::list<std::string> InfoTree::get_child_keys(const std::string& path) const {

@@ -175,7 +175,7 @@ void LTCToJack::on_data(void* data, size_t data_size) {
 }
 
 bool LTCToJack::can_sink_caps(std::string str_caps) {
-  return StringUtils::starts_with(str_caps, "audio/x-raw");
+  return stringutils::starts_with(str_caps, "audio/x-raw");
 }
 
 }  // namespace quiddities

@@ -23,7 +23,7 @@
 namespace switcher {
 namespace serialize {
 std::string esc_for_tuple(const std::string& str) {
-  return StringUtils::replace_string(str, ",", tuple_comma_esc_string);
+  return stringutils::replace_string(str, ",", tuple_comma_esc_string);
 }
 void append_targs(std::string*, size_t) {}
 }  // namespace serialize

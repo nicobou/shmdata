@@ -195,7 +195,7 @@ std::string Uridecodebin::get_pad_name(GstPad* pad) {
 }
 
 bool Uridecodebin::pad_is_image(const std::string& padname) {
-  return StringUtils::starts_with(padname, "image");
+  return stringutils::starts_with(padname, "image");
 }
 
 void Uridecodebin::decodebin_pad_added_cb(GstElement* object, GstPad* pad, gpointer /*user_data*/) {

@@ -72,13 +72,13 @@ AudioCaps::AudioCaps(const std::string& str_caps) {
   else if (format_type == "F")
     is_float_ = true;
   str_format = str_format.substr(1, str_format.size());
-  if (StringUtils::starts_with(str_format, "8"))
+  if (stringutils::starts_with(str_format, "8"))
     format_size_ = 8;
-  else if (StringUtils::starts_with(str_format, "16"))
+  else if (stringutils::starts_with(str_format, "16"))
     format_size_ = 16;
-  else if (StringUtils::starts_with(str_format, "32"))
+  else if (stringutils::starts_with(str_format, "32"))
     format_size_ = 32;
-  else if (StringUtils::starts_with(str_format, "64"))
+  else if (stringutils::starts_with(str_format, "64"))
     format_size_ = 64;
   else {
     format_size_ = 0;
