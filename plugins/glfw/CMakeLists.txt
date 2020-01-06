@@ -111,7 +111,7 @@ if (PLUGIN_GLFW)
     add_custom_command(OUTPUT ${IMGUI_SOURCE_FILES} DEPENDS imgui COMMAND "")
 
     add_library(glfwvideo SHARED
-        #glad.c
+        glad.c
         glfw-renderer.cpp
         glfwvideo.cpp
         ${IMGUI_SOURCE_FILES}
