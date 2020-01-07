@@ -16,7 +16,7 @@ New features:
 * Add run-switcher-in-docker in documentation
 * Add missing caps specifier in JackToShmdata
 * pjsip upgraded to 2.9
-* Add argument to init Follower tree on server connect
+* Add argument to init ShmdataFollower tree on server connect
 * Add do not convert rate and format in jacksink in order to get more than 63 channels
 * Add stun turn port configuration in doc about bash scripting a sip call
 * pyquid is installed in python lib path instead of cmake prefix
@@ -61,7 +61,8 @@ Bug fixes:
 * more asserts in pyquid signal file
 * pixel converter destruct gst pipeline before elements
 * gstpipe set gst pipeline to null from the destructor and unref from gmainloop
-* gstpipe kills gst pipeline from the main loop  fix sometimes filesrc crash at deletion (members order in container)
+* gstpipe kills gst pipeline from the main loop
+* fix sometimes filesrc crash at deletion (members order in quiddity-container)
 * reverse gst-element ref removal from previous commit
 * adding unsubscribe to signal in python exemple
 * avoid segfaut due to simultameous g_signal_handler_disconnect and signal notification in gst-subscriber
