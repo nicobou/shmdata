@@ -44,4 +44,6 @@ swcard.quid().invoke('connect-quid', ['capture', 'audio'])
 # let it go! but just for a sec.
 time.sleep(1)
 
+sw.remove(swcapture.id())
+sw.remove(swcard.id())
 exit(0)

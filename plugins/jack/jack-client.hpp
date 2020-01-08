@@ -49,7 +49,6 @@ class JackClient : public SafeBoolIdiom {
                       PortCallback_t port_cb,
                       JackShutdown_t shutdown_cb);
   JackClient() = delete;
-  JackClient(const JackClient&) = delete;
   JackClient& operator=(const JackClient&) = delete;
   jack_nframes_t get_sample_rate() const { return sample_rate_; };
   jack_nframes_t get_buffer_size() const { return buffer_size_; };
@@ -58,7 +57,6 @@ class JackClient : public SafeBoolIdiom {
 
  private:
   using jack_client_handle = std::unique_ptr<jack_client_t, decltype(&jack_client_close)>;
-  jack_client_handle client_;
   jack_status_t status_{};
   jack_nframes_t sample_rate_{0};  // actually uint32_t
   jack_nframes_t buffer_size_{0};  // actually uint32_t
@@ -68,6 +66,8 @@ class JackClient : public SafeBoolIdiom {
   XRunCallback_t xrun_cb_;
   PortCallback_t port_cb_;
   JackShutdown_t shutdown_cb_;
+  jack_client_handle client_;
+
   bool safe_bool_idiom() const final;
   static void port_callback(jack_port_id_t port, int yn, void* user_data);
   static void on_jack_shutdown(void* arg);

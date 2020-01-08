@@ -23,7 +23,6 @@
 #include <atomic>
 #include <chrono>
 #include <future>
-#include <iostream>
 
 namespace switcher {
 

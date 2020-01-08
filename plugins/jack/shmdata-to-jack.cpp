@@ -37,22 +37,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
 
 ShmdataToJack::ShmdataToJack(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf)),
-      jack_client_(get_name(),
-                   conf.tree_config_->branch_has_data("server_name")
-                       ? conf.tree_config_->branch_get_value("server_name").copy_as<std::string>()
-                       : std::string(),
-                   &ShmdataToJack::jack_process,
-                   this,
-                   [this](uint n) { on_xrun(n); },
-                   [this](jack_port_t* port) { on_port(port); },
-                   [this]() {
-                     if (!is_constructed_) return;
-                     auto thread = std::thread([this]() {
-                       if (!qcontainer_->remove(qcontainer_->get_id(get_name())))
-                         warning("% did not self destruct after jack shutdown", get_name());
-                     });
-                     thread.detach();
-                   }),
       connect_to_id_(pmanage<MPtr(&property::PBag::make_string)>("connect_to",
                                                                  [this](const std::string& val) {
                                                                    connect_to_ = val;
@@ -128,7 +112,23 @@ ShmdataToJack::ShmdataToJack(quiddity::Config&& conf)
                                                     "Convert to Jack rate",
                                                     do_rate_conversion_)),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
+      jack_client_(get_name(),
+                   conf.tree_config_->branch_has_data("server_name")
+                       ? conf.tree_config_->branch_get_value("server_name").copy_as<std::string>()
+                       : std::string(),
+                   &ShmdataToJack::jack_process,
+                   this,
+                   [this](uint n) { on_xrun(n); },
+                   [this](jack_port_t* port) { on_port(port); },
+                   [this]() {
+                     if (!is_constructed_) return;
+                     auto thread = std::thread([this]() {
+                       if (!qcontainer_->remove(qcontainer_->get_id(get_name())))
+                         warning("% did not self destruct after jack shutdown", get_name());
+                     });
+                     thread.detach();
+                   }) {
   // is_constructed_ is needed because of a cross reference among JackClient and JackPort
   is_constructed_ = true;
   if (!jack_client_) {

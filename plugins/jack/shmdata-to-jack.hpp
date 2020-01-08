@@ -59,13 +59,6 @@ class ShmdataToJack : public Quiddity {
   // rate:
   DriftObserver<jack_nframes_t> drift_observer_{};
 
-  // jack client
-  JackClient jack_client_;
-  std::vector<std::string> ports_to_connect_{};
-  std::mutex port_to_connect_in_jack_process_mutex_{};
-  std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
-  std::vector<JackPort> output_ports_{};
-
   // properties
   bool auto_connect_{true};
   std::string connect_to_{"system:playback_%d"};
@@ -90,6 +83,13 @@ class ShmdataToJack : public Quiddity {
 
   // shmsubscriber (publishing to the information-tree):
   std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
+
+  // jack client
+  std::vector<std::string> ports_to_connect_{};
+  std::mutex port_to_connect_in_jack_process_mutex_{};
+  std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
+  JackClient jack_client_;
+  std::vector<JackPort> output_ports_{};
 
   bool start();
   bool stop();
