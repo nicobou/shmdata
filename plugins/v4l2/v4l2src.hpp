@@ -116,7 +116,6 @@ class V4L2Src : public Quiddity, public Startable {
        property::Fraction(320, 240),
        property::Fraction(-1, -1)},
       1};
-  property::prop_id_t custom_resolutions_id_{0};
   gint width_{0};
   property::prop_id_t width_id_{0};
   gint height_{0};
@@ -164,14 +163,14 @@ class V4L2Src : public Quiddity, public Startable {
 
   bool fetch_available_resolutions();
   bool fetch_available_frame_intervals();
+  std::string fetch_current_resolution();
+  std::string fetch_current_framerate();
 
   void update_capture_device();
   void update_device_specific_properties();
-  void update_discrete_resolution();
-  void update_width_height();
+  void update_device_resolution();
   void update_tv_standard();
-  void update_discrete_framerate();
-  void update_framerate_numerator_denominator();
+  void update_device_framerate();
   void update_pixel_format();
   bool is_current_pixel_format_raw_video() const;
   void set_shm_suffix();
