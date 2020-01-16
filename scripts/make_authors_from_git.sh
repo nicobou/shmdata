@@ -19,6 +19,7 @@ git log --format='%aN' | \
     sed 's/nicolas/Nicolas Bouillot/' | \
     sed 's/Nina/Nicolas Bouillot/' | \
     sed 's/Jeremie Soria/Jérémie Soria/' | \
+    sed 's/vlaurent/Valentin Laurent/' | \
     grep -v metalab | \
     grep -v 4d3d3d3 | \
     sort | \

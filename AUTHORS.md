@@ -1,17 +1,16 @@
 * Nicolas Bouillot
 * Jérémie Soria
 * Emmanuel Durand
+* Francis Lecavalier
 * François Ubald Brien
 * Ludovic Schreiber
-* Francis Lecavalier
 * Michal Seta
+* Valentin Laurent
 * Sebastien Paquet
 * Mike Wozniewski
 * Alexandre Quessy
-* Valentin Laurent
 * Patrick Dupuis
 * Jerome Berthelin
-* vlaurent
 * Rostom Mesli
 * Patrick Keroulas
 * Marc Lavallée
