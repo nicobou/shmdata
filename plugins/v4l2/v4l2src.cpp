@@ -72,7 +72,7 @@ V4L2Src::V4L2Src(quiddity::Config&& conf)
       "dropping/adding frame if necessary.",
       force_framerate_);
 
-  if (!v4l2src_ || !capsfilter_ || !videorate_ || !shmsink_) {
+  if (!v4l2src_ || !deinterlace_ || !capsfilter_ || !videorate_ || !shmsink_) {
     is_valid_ = false;
     return;
   }
@@ -102,6 +102,18 @@ V4L2Src::V4L2Src(quiddity::Config&& conf)
       "config", "Capture device configuration", "device specific parameters");
 
   update_device_specific_properties();
+
+  deinterlace_mode_id_ = pmanage<MPtr(&property::PBag::make_parented_selection<>)>(
+      "deinterlace_mode",
+      "config",
+      [this](const quiddity::property::IndexOrName& val) {
+        deinterlace_mode_.select(val);
+        return true;
+      },
+      [this]() { return deinterlace_mode_.get(); },
+      "Deinterlace mode",
+      "Choose whether input should be deinterlaced or not.",
+      deinterlace_mode_);
 
   pmanage<MPtr(&property::PBag::make_group)>(
       "advanced", "Advanced configuration", "Advanced configuration");
@@ -135,7 +147,7 @@ std::string V4L2Src::fetch_current_framerate() {
 
   if (-1 == ioctl(fd, VIDIOC_G_PARM, &src_parm)) {
     int err = errno;
-    warning("error while trying to get video parameters (%)", std::string(strerror(err)));
+    error("error while trying to get video parameters (%)", std::string(strerror(err)));
     return "";
   }
 
@@ -162,7 +174,7 @@ std::string V4L2Src::fetch_current_resolution() {
   struct v4l2_capability vcap;
   if (-1 == ioctl(fd, VIDIOC_QUERYCAP, &vcap)) {
     int err = errno;
-    warning("error while trying to get video capture device id (%)", std::string(strerror(err)));
+    error("error while trying to get video capture device id (%)", std::string(strerror(err)));
     return "";
   }
 
@@ -180,7 +192,7 @@ std::string V4L2Src::fetch_current_resolution() {
 
   if (-1 == ioctl(fd, VIDIOC_G_FMT, &src_fmt)) {
     int err = errno;
-    warning("error while trying to get video format (%)", std::string(strerror(err)));
+    error("error while trying to get video format (%)", std::string(strerror(err)));
     return "";
   }
 
@@ -583,9 +595,10 @@ bool V4L2Src::remake_elements() {
     return false;
   }
   if (!gst::UGstElem::renew(v4l2src_, {"device", "norm", "io-mode"}) ||
+      !gst::UGstElem::renew(deinterlace_, {"mode", "method"}) ||
       !gst::UGstElem::renew(videorate_) || !gst::UGstElem::renew(capsfilter_, {"caps"}) ||
       !gst::UGstElem::renew(shmsink_, {"socket-path"})) {
-    warning("V4L2Src: issue when with elements for video capture");
+    error("V4L2Src: issue with elements for video capture");
     return false;
   }
   return true;
@@ -605,7 +618,7 @@ void V4L2Src::set_device_id(const std::string& file_path, const std::string& id)
   int fd = open(file_path.c_str(), O_RDONLY);
   if (fd < 0) {
     int err = errno;
-    warning("v4l2Src: error while trying to set device id (%)", std::string(strerror(err)));
+    error("v4l2Src: error while trying to set device id (%)", std::string(strerror(err)));
     return;
   }
   On_scope_exit { close(fd); };
@@ -613,7 +626,7 @@ void V4L2Src::set_device_id(const std::string& file_path, const std::string& id)
   struct v4l2_capability vcap;
   if (-1 == ioctl(fd, VIDIOC_QUERYCAP, &vcap)) {
     int err = errno;
-    warning("error while trying to get video capture device id (%)", std::string(strerror(err)));
+    error("error while trying to get video capture device id (%)", std::string(strerror(err)));
     return;
   }
   const auto bus_info = std::string((char*)vcap.bus_info);
@@ -622,7 +635,7 @@ void V4L2Src::set_device_id(const std::string& file_path, const std::string& id)
         return bus_info == desc.bus_info_;
       });
   if (capture_devices_.end() == it) {
-    warning(
+    error(
         "BUG: trying to set device id, the device at % seems to be a video device, but not listed "
         "internally",
         file_path);
@@ -644,7 +657,7 @@ bool V4L2Src::inspect_file_device(const std::string& file_path) {
   struct v4l2_capability vcap;
   if (-1 == ioctl(fd, VIDIOC_QUERYCAP, &vcap)) {
     int err = errno;
-    warning("error while trying to get video capture device id (%)", std::string(strerror(err)));
+    error("error while trying to get video capture device id (%)", std::string(strerror(err)));
     return false;
   }
   description.file_device_ = file_path;
@@ -764,18 +777,25 @@ bool V4L2Src::start() {
     gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                      v4l2src_.get_raw(),
                      capsfilter_.get_raw(),
+                     deinterlace_.get_raw(),
                      shmsink_.get_raw(),
                      nullptr);
-    gst_element_link_many(v4l2src_.get_raw(), capsfilter_.get_raw(), shmsink_.get_raw(), nullptr);
+    gst_element_link_many(v4l2src_.get_raw(),
+                          capsfilter_.get_raw(),
+                          deinterlace_.get_raw(),
+                          shmsink_.get_raw(),
+                          nullptr);
   } else {
     gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                      v4l2src_.get_raw(),
                      capsfilter_.get_raw(),
+                     deinterlace_.get_raw(),
                      videorate_.get_raw(),
                      shmsink_.get_raw(),
                      nullptr);
     gst_element_link_many(v4l2src_.get_raw(),
                           capsfilter_.get_raw(),
+                          deinterlace_.get_raw(),
                           videorate_.get_raw(),
                           shmsink_.get_raw(),
                           nullptr);
@@ -796,6 +816,7 @@ bool V4L2Src::start() {
   pmanage<MPtr(&property::PBag::disable)>(framerates_enum_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&property::PBag::disable)>(custom_framerate_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&property::PBag::disable)>(pixel_format_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(deinterlace_mode_id_, disabledWhenStartedMsg);
   return true;
 }
 
@@ -815,6 +836,7 @@ bool V4L2Src::stop() {
   pmanage<MPtr(&property::PBag::enable)>(framerates_enum_id_);
   pmanage<MPtr(&property::PBag::enable)>(custom_framerate_id_);
   pmanage<MPtr(&property::PBag::enable)>(pixel_format_id_);
+  pmanage<MPtr(&property::PBag::enable)>(deinterlace_mode_id_);
   return true;
 }
 
@@ -832,6 +854,13 @@ bool V4L2Src::configure_capture() {
   // When using a videorate element we need to copy the buffers between elements otherwise we get
   // stuck.
   if (force_framerate_) g_object_set(G_OBJECT(v4l2src_.get_raw()), "io_mode", 1, nullptr);
+
+  g_object_set(G_OBJECT(deinterlace_.get_raw()),
+               "mode",
+               deinterlace_mode_.get_current_index(),
+               "method",
+               4,
+               nullptr);
 
   std::string caps = pixel_format_enum_.get_attached();
   if (0 != width_id_)

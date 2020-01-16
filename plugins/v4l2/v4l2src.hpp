@@ -82,6 +82,7 @@ class V4L2Src : public Quiddity, public Startable {
   gst::UGstElem videorate_{"videorate"};
   gst::UGstElem capsfilter_{"capsfilter"};
   gst::UGstElem shmsink_{"shmdatasink"};
+  gst::UGstElem deinterlace_{"deinterlace"};
   std::string shmpath_{};
   const std::string raw_suffix_{"video"};
   const std::string enc_suffix_{"video-encoded"};
@@ -97,9 +98,13 @@ class V4L2Src : public Quiddity, public Startable {
   property::prop_id_t force_framerate_id_{0};
   bool is_loading_{false};  // device selection will be disabled manually during load
 
-  // pixet format
+  // pixel format
   property::Selection<> pixel_format_enum_{{"none"}, 0};
   property::prop_id_t pixel_format_id_{0};
+
+  // deinterlacing
+  property::Selection<> deinterlace_mode_{{"Auto-detection", "On", "Off"}, 0};
+  property::prop_id_t deinterlace_mode_id_{0};
 
   // resolution enum and select for the currently selected device,
   // this is updated when selecting an other device
