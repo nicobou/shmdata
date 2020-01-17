@@ -149,6 +149,7 @@ class InfoTree {
   bool branch_set_value(const std::string& path, const Any& data);
   bool branch_set_value(const std::string& path, const char* data);
   bool branch_set_value(const std::string& path, std::nullptr_t ptr);
+  bool for_each_in_array(const std::string& path, std::function<void(InfoTree*)> fun);
 
   // copy subtree
   InfoTree::ptr branch_get_copy(const std::string& path) const;

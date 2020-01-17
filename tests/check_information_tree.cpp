@@ -295,5 +295,52 @@ int main() {
     assert(infotree::json::serialize(tree.get()) == infotree::json::serialize(tree2.get()));
   }
 
+  {  // for_each_in_array, testing an array of json objects
+    std::string legendaires =
+        R"(
+       {"legendaires" : [{"name" : "Gryf"},
+                         {"name" : "Shimy"},
+                         {"name" : "Razzia"},
+                         {"name" : "Jadina"},
+                         {"name" : "Danael"}]
+       })";
+    auto tree = infotree::json::deserialize(legendaires);
+    assert(tree);
+    assert(!tree->empty());
+    auto num_element_read = 0;
+    auto res = tree->for_each_in_array(".legendaires", [&](InfoTree* array_element) {
+      ++num_element_read;
+      assert(array_element->branch_has_data("name"));
+    });
+    assert(res);
+    assert(num_element_read == 5);
+  }
+
+  {  // for_each_in_array, testing an array of value
+    std::string legendaires =
+        R"(["Gryf", "Shimy", "Razzia", "Jadina", "Danael"])";
+    auto tree = infotree::json::deserialize(legendaires);
+    assert(tree);
+    assert(!tree->empty());
+    auto num_element_read = 0;
+    auto res = tree->for_each_in_array(".", [&](InfoTree* array_element) {
+      ++num_element_read;
+      assert(array_element->is_leaf());
+    });
+    assert(res);
+    assert(num_element_read == 5);
+  }
+
+  {  // check for_each_in_array returns false when path does not exist or is not refering to an
+     // array
+    auto tree = InfoTree::make();
+    tree->vgraft(".string", "a string value");
+    tree->vgraft(".int", 9);
+    tree->vgraft(".bool", true);
+    assert(!tree->for_each_in_array(".string", [](InfoTree*) { assert(false); }));
+    assert(!tree->for_each_in_array(".strong", [](InfoTree*) { assert(false); }));
+    assert(!tree->for_each_in_array(".", [](InfoTree*) { assert(false); }));
+  }
+
   return 0;
 }
