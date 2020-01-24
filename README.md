@@ -4,7 +4,7 @@ switcher
 ![Switcher logo](doc/Switcher_horizontal_shadow_C.png)
 
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![pipeline status](https://gitlab.com/sat-metalab/switcher/badges/develop/pipeline.svg)](https://gitlab.com/sat-metalab/switcher/commits/develop)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![pipeline status](https://gitlab.com/sat-metalab/switcher/badges/develop/pipeline.svg)](https://gitlab.com/sat-metalab/switcher/commits/develop) [![coverage report](https://gitlab.com/sat-metalab/switcher/badges/develop/coverage.svg)](https://gitlab.com/sat-metalab/switcher/commits/develop)
 
 [switcher](https://gitlab.com/sat-metalab/switcher) is an integration environment, able to interoperate with other software and protocols. Switcher provides low latency streaming of multichannel audio, video and data through IP networks.
 

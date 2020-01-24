@@ -42,3 +42,32 @@ add_test(check_ugstelem check_ugstelem)
 
 add_executable(check_string_utils check_string_utils.cpp)
 add_test(check_string_utils check_string_utils)
+
+#
+# Code coverage
+#
+if (TEST_COVERAGE)
+    add_custom_command(OUTPUT test_coverage
+        COMMAND mkdir -p ${CMAKE_BINARY_DIR}/coverage
+        COMMAND lcov --no-external --capture --initial
+            --directory ${CMAKE_SOURCE_DIR}
+            --exclude '${CMAKE_SOURCE_DIR}/tests/*'
+            --exclude '${CMAKE_SOURCE_DIR}/build/*'
+            --exclude '${CMAKE_SOURCE_DIR}/plugins/gsoap/generated/*'
+            --exclude '${CMAKE_SOURCE_DIR}/plugins/glfw/stb_image.h'
+            --output-file coverage/switcher_base.info
+        COMMAND make test
+        COMMAND lcov --no-external --capture
+            --directory ${CMAKE_SOURCE_DIR}
+            --exclude '${CMAKE_SOURCE_DIR}/tests/*'
+            --exclude '${CMAKE_SOURCE_DIR}/build/*'
+            --exclude '${CMAKE_SOURCE_DIR}/plugins/gsoap/generated/*'
+            --output-file coverage/switcher.info
+        COMMAND lcov --add-tracefile ${CMAKE_BINARY_DIR}/coverage/switcher_base.info
+            --add-tracefile ${CMAKE_BINARY_DIR}/coverage/switcher.info
+            --output-file ${CMAKE_BINARY_DIR}/coverage/switcher_total.info
+        COMMAND genhtml --output-directory ${CMAKE_BINARY_DIR}/coverage ${CMAKE_BINARY_DIR}/coverage/switcher_total.info
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        )
+    add_custom_target(check_coverage DEPENDS test_coverage)
+endif()

@@ -12,7 +12,8 @@ stages:
   - test
   - test-package
   - deploy
-
+  - coverage
+  
 Build and Deploy CI image:
   stage: configure
   image: docker:18
@@ -23,6 +24,9 @@ Build and Deploy CI image:
     - docker build -t $CONTAINER_TAG --build-arg BUILD_TYPE=$BUILD_TYPE -f $DOCKERFILE_PATH --target build .
     - echo $CI_DEPLOY_PASSWORD | docker login -u $CI_DEPLOY_USER --password-stdin $CI_REGISTRY
     - docker push $CONTAINER_TAG
+  except:
+    - develop
+    - master
 
 Test:
   stage: test
@@ -32,6 +36,9 @@ Test:
   script:
     - cd $BUILD_DIR/build
     - make test
+  except:
+    - develop
+    - master
 
 Test package:
   stage: test-package
@@ -57,3 +64,34 @@ Build and Deploy clean image:
   only:
     - develop
     - master
+
+
+#
+# Test coverage
+#
+coverage:
+  stage: coverage
+  image: ubuntu:20.04
+  script: 
+    - apt update
+    - DEBIAN_FRONTEND=noninteractive apt install -y cmake bison build-essential flex libtool git libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev
+    - git clone https://gitlab.com/sat-metalab/shmdata.git
+    - cd shmdata && mkdir build && cd build
+    - git checkout develop
+    - cmake -DCMAKE_BUILD_TYPE=Release ..
+    - make -j$(nproc) && make install && ldconfig && cd ../..
+    - DEBIAN_FRONTEND=noninteractive apt install -y lcov zip
+    - DEBIAN_FRONTEND=noninteractive apt install -y cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins  libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libltc-dev libcurl4-gnutls-dev gsoap wah-plugins libxrandr-dev libxinerama-dev libxcursor-dev libsamplerate0-dev python3-dev
+    - git submodule update --init
+    - rm -rf build && mkdir build && cd build
+    - cmake -DTEST_COVERAGE=ON -DENABLE_GPL=ON ..
+    - make -j$(nproc) && make install && ldconfig
+    - make check_coverage
+    - zip -r coverage.zip coverage
+    - mv coverage.zip ../
+  artifacts:
+    name: "switcher_coverage_${CI_BUILD_REF_NAME}"
+    paths:
+    - "coverage.zip"
+  only:
+    - develop

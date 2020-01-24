@@ -116,6 +116,11 @@ int main() {
                                                           // one and two frames at 30 fps, we accept
                                                           // 1 frame of error.
                                                           if (diff - 1000 < 50) notify_success();
+#ifdef SWITCHER_TEST_COVERAGE
+                                                          // we tolerate more difference when
+                                                          // testing coverage
+                                                          if (diff - 1000 < 500) notify_success();
+#endif
                                                         }
                                                       },
                                                       nullptr,

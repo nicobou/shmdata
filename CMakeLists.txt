@@ -25,6 +25,11 @@ set(PACKAGE_VERSION ${SWITCHER_VERSION_STRING})
 set(CMAKE_CXX_STANDARD 17)
 set(DATADIR ${CMAKE_INSTALL_PREFIX}/share/switcher/)
 
+set(TEST_COVERAGE OFF CACHE BOOL "Enable test coverage")
+if (TEST_COVERAGE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSWITCHER_TEST_COVERAGE -g -O0 --coverage")
+endif()
+
 # CPack - General
 set(CPACK_PACKAGE_NAME ${PACKAGE_NAME})
 set(CPACK_PACKAGE_VENDOR "Metalab - Société des arts technologiques")
