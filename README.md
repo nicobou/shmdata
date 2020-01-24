@@ -3,7 +3,8 @@
        (_-</ _ \/  ' \/ _  / _ `/ __/ _ `/
       /___/_//_/_/_/_/\_,_/\_,_/\__/\_,_/ 
 
-[![build status](https://gitlab.com/sat-metalab/shmdata/badges/master/build.svg)](https://gitlab.com/sat-metalab/shmdata/commits/master)
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) [![pipeline status](https://gitlab.com/sat-metalab/shmdata/badges/develop/pipeline.svg)](https://gitlab.com/sat-metalab/shmdata/commits/develop) [![coverage report](https://gitlab.com/sat-metalab/shmdata/badges/develop/coverage.svg)](https://gitlab.com/sat-metalab/shmdata/commits/develop)
+
 
 # shmdata
 Library to share streams of framed data between processes via shared memory. shmdata is server less: it requires applications to link data streams using socket path (e.g. "/tmp/my_shmdata_stream"). Shmdata is very fast and allows processes to access data streams without the need of extra copy.

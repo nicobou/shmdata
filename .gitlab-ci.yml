@@ -1,7 +1,7 @@
 image: docker:18
 
 services:
-  - docker:dind
+  - docker:18.09-dind
 
 variables:
   BUILD_DIR: /opt/shmdata
@@ -12,6 +12,7 @@ stages:
   - test
   - test-package
   - deploy
+  - coverage
 
 Build and Deploy CI image:
   stage: configure
@@ -22,6 +23,10 @@ Build and Deploy CI image:
     - docker build -t $CONTAINER_TAG --build-arg BUILD_TYPE=$BUILD_TYPE -f $DOCKERFILE_PATH --target build .
     - echo $CI_DEPLOY_PASSWORD | docker login -u $CI_DEPLOY_USER --password-stdin $CI_REGISTRY
     - docker push $CONTAINER_TAG
+  except:
+    - develop
+    - master
+
 
 Test:
   stage: test
@@ -29,6 +34,9 @@ Test:
   script:
     - cd $BUILD_DIR/build
     - make test
+  except:
+    - develop
+    - master
 
 Test package:
   stage: test-package
@@ -36,6 +44,9 @@ Test package:
   script:
     - cd $BUILD_DIR/build
     - make package_source_test
+  only:
+    - develop
+    - master
 
 Build and Deploy clean image:
   stage: deploy
@@ -48,3 +59,26 @@ Build and Deploy clean image:
   only:
     - develop
     - master
+
+#
+# Test coverage
+#
+coverage:
+  stage: coverage
+  image: ubuntu:20.04
+  script: 
+    - apt update
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends lcov zip
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends cmake bison build-essential flex libtool git libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base python3-dev
+    - rm -rf build && mkdir build && cd build
+    - cmake -DTEST_COVERAGE=ON ..
+    - make -j$(nproc) && make install && ldconfig
+    - make check_coverage
+    - zip -r coverage.zip coverage
+    - mv coverage.zip ../
+  artifacts:
+    name: "shmdata_coverage_${CI_BUILD_REF_NAME}"
+    paths:
+    - "coverage.zip"
+  only:
+    - develop
