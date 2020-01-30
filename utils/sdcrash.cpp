@@ -98,8 +98,8 @@ int main (int argc, char *argv[]) {
                                NULL,
                                logger);
   if (!writer ){
-    printf("writer failled: quit without trying to write\n");
-    return 0;
+    printf("writer failed: quit without trying to write\n");
+    return 1;
   }
     
   Frame frame;
