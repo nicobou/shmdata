@@ -2,6 +2,66 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.0.0 (2020-01-31)
+---------------------------
+This is an official release in the 2.0 stable series.
+
+Breaking changes:
+* 💥 fileutils namespace
+* 💥 any in switcher namespace
+* 💥 namespace stringutils
+* 💥 renaming logger classes and files
+* 💥 renaming infotree files
+* 💥 shmdata namespace
+* 💥 quiddity namespace
+* 💥 quiddities namespace
+* 💥 log namespace
+* 💥 gst namespace
+* 💥 infotree namespace
+* 💥 subfolder in switcher sources
+* 💥 init_startable in now private, a StartableQuiddity must call the appropriate parent constructor
+* 💥 Rename pixel_format property of videoconvert
+
+New Features: 
+* ✨✅ adding for_each_in_array in InfoTree
+* ✨ Add deinterlacer in v4l2src
+* ✨ Add video properties auto-detect
+* ✨ Add jack-server quiddity
+* ✨ Add swquid-info, a command line informator for quiddities
+* ✨ Add swcam-display tool
+* ✨ Add graft Infotree by value
+* ✨ Add get_name, get_type, set & get nickname in pyquiddity
+* ✨ Add autostart property to midisink
+* ✨ Add autostart property to OSCsink
+* ✨ Add restart_on_change property to Executor
+* ✨ Add do-lost in rtp-session
+* ✨ Add video cropper quiddity
+
+Bug fixes:
+* 🐛 Fix SIP transmissin of shmdata created by NDI2Shmdata
+* 🐛 Fix in shmdata-to-jack destruction
+* 🐛 Fix play pause action in filesrc
+* 🐛 Fix map midi value to property
+* 🐛 Light refactor of OSCsrc
+* 🐛 Fix handling of shmdata created by SIP when calling contact
+* 🐛 Refactor gst-decodebin and fix erratic behavior when decoder connects to itself
+* 🐛 Fix race condition with gstream pipeline play/pause
+* 🐛 Explicitly capture invite_session in pjcall
+* 🐛 Add a destructor for Watcher
+
+Analytics:
+* 📈 coverage in CI
+
+Docs:
+* 📝 Add GPLv3 badge in README.md
+* 📈 Fix pipeline status in README.md
+* 📈 Updated code structure documentation
+* 📈 Updated InfoTree exemple links in writing-quiddity.md
+
+✅ Tests:
+* ✅ Add test for switcher commands
+* ✅ Add switcher log and quiddity configuration to quiddity-basic-test
+
 switcher 1.1.2 (2019-09-17)
 ---------------------------
 This is an official release in the 1.1 stable series.
