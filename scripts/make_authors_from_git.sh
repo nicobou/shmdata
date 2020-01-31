@@ -15,10 +15,11 @@ fi
 git log --format='%aN' | \
     sed 's/Francois/François/' | \
     sed 's/François/François/' | \
-    sed 's/ubald/François Ubald Brien/' | \
-    sed 's/nicolas/Nicolas Bouillot/' | \
-    sed 's/Nina/Nicolas Bouillot/' | \
     sed 's/Jeremie Soria/Jérémie Soria/' | \
+    sed 's/Marie-Eve$/Marie-Eve Dumas/' | \
+    sed 's/Nina/Nicolas Bouillot/' | \
+    sed 's/nicolas/Nicolas Bouillot/' | \
+    sed 's/ubald/François Ubald Brien/' | \
     sed 's/vlaurent/Valentin Laurent/' | \
     grep -v metalab | \
     grep -v 4d3d3d3 | \

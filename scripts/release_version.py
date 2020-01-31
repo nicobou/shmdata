@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 """
 Release script usable by shmdata and switcher libraries.
 
@@ -229,7 +230,8 @@ def update_changelog(lib, version):
     git_add([orig_file_name])
     if subprocess.call(os.path.join(sys.path[0], 'make_authors_from_git.sh'), shell=True) == 0:
         git_add([authors_file_name])
-    git_commit('📝 Updated changelog for version {}.{}.{}.'.format(version[0], version[1], version[2]))
+    git_commit('📝 Updated changelog for version {}.{}.{}.'.format(
+        version[0], version[1], version[2]))
 
 
 @atexit.register  # Only clean on exit if the release was successful.
