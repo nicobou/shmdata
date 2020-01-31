@@ -258,16 +258,17 @@ PropertyQuid::PropertyQuid(quiddity::Config&& conf)
                                                         10,
                                                         10)  // max num/denom
       ) {
-  // std::cout << pmanage<MPtr(&property::PBag::get<int>)>( int_id_) << std::endl;
-  // std::cout << pmanage<MPtr(&property::PBag::get<unsigned int>)>( uint_id_) <<
-  // std::endl;
+  debug("int_id_ is %, unsigned_int_id_ is %",
+        std::to_string(pmanage<MPtr(&property::PBag::get<int>)>(int_id_)),
+        std::to_string(pmanage<MPtr(&property::PBag::get<unsigned int>)>(unsigned_int_id_)));
 
   pmanage<MPtr(&property::PBag::set<MyTuple>)>(
       tuple_id_, std::make_tuple<long long, float, std::string>(2, 2.2, "a22"));
 
-  std::cout << std::get<0>(tuple_) << " "    // 2
-            << std::get<1>(tuple_) << " "    // 2.2
-            << std::get<2>(tuple_) << "\n";  // a22
+  debug("tuple_ is % % %",
+        std::to_string(std::get<0>(tuple_)) /*2*/,
+        std::to_string(std::get<1>(tuple_)) /* 2.2 */,
+        std::get<2>(tuple_) /* a22*/);
 
   // creating some custom infos
   InfoTree::ptr tree = InfoTree::make();
