@@ -18,6 +18,7 @@
 #include "./resample.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Resample,
                                      "resample",
                                      "Audio resampler",
@@ -27,31 +28,32 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Resample,
                                      "GPL",
                                      "Nicolas Bouillot");
 
-Resample::Resample(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
+Resample::Resample(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
       cntr_(static_cast<Quiddity*>(this)),
-      samplerate_id_(
-          pmanage<MPtr(&PContainer::make_parented_unsigned_int)>("samplerate",
-                                                                 "",
-                                                                 [this](unsigned int val) {
-                                                                   samplerate_ = val;
-                                                                   return true;
-                                                                 },
-                                                                 [this]() { return samplerate_; },
-                                                                 "Samplerate",
-                                                                 "The Samplerate to apply",
-                                                                 samplerate_,
-                                                                 1,
-                                                                 192000)),
-      algo_id_(pmanage<MPtr(&PContainer::make_selection<int>)>("algo",
-                                                               [this](const IndexOrName& val) {
-                                                                 algo_.select(val);
-                                                                 return true;
-                                                               },
-                                                               [this]() { return algo_.get(); },
-                                                               "Resampling algorithm",
-                                                               "Balance fidelity vs. speed",
-                                                               algo_)) {
+      samplerate_id_(pmanage<MPtr(&property::PBag::make_parented_unsigned_int)>(
+          "samplerate",
+          "",
+          [this](unsigned int val) {
+            samplerate_ = val;
+            return true;
+          },
+          [this]() { return samplerate_; },
+          "Samplerate",
+          "The Samplerate to apply",
+          samplerate_,
+          1,
+          192000)),
+      algo_id_(pmanage<MPtr(&property::PBag::make_selection<int>)>(
+          "algo",
+          [this](const quiddity::property::IndexOrName& val) {
+            algo_.select(val);
+            return true;
+          },
+          [this]() { return algo_.get(); },
+          "Resampling algorithm",
+          "Balance fidelity vs. speed",
+          algo_)) {
   register_writer_suffix("audio");
   cntr_.install_connect_method([this](const std::string& shmpath) { return connect(shmpath); },
                                [this](const std::string&) { return disconnect(); },
@@ -65,9 +67,10 @@ Resample::Resample(quid::Config&& conf)
 bool Resample::connect(const std::string& path) {
   shmr_.reset();
   shmw_.reset();
-  pmanage<MPtr(&PContainer::disable)>(algo_id_, ShmdataConnector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&PContainer::disable)>(samplerate_id_, ShmdataConnector::disabledWhenConnectedMsg);
-  shmr_ = std::make_unique<ShmdataFollower>(
+  pmanage<MPtr(&property::PBag::disable)>(algo_id_, shmdata::Connector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(samplerate_id_,
+                                          shmdata::Connector::disabledWhenConnectedMsg);
+  shmr_ = std::make_unique<shmdata::Follower>(
       this,
       path,
       [this](void* buf, size_t size) {
@@ -115,13 +118,13 @@ bool Resample::connect(const std::string& path) {
         }
         // write to shmdata
         auto written = resampler_data_->output_frames_gen * incaps_->channels() * sizeof(float);
-        shmw_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(resampled_.data(), written);
+        shmw_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(resampled_.data(), written);
         shmw_->bytes_written(written);
       },
       [this](const std::string& str_caps) {
         if (nullptr != resampler_config_) src_delete(resampler_config_);  // FIXME make this RAII
 
-        incaps_ = std::make_unique<AudioCaps>(str_caps);
+        incaps_ = std::make_unique<shmdata::caps::AudioCaps>(str_caps);
         if (!(*incaps_)) {
           warning("resample does not understand shmdata caps: %", incaps_->error_msg());
           return;
@@ -141,7 +144,7 @@ bool Resample::connect(const std::string& path) {
         auto newcaps = *incaps_;
         newcaps.set_samplerate(samplerate_);
         newcaps.set_float();
-        shmw_ = std::make_unique<ShmdataWriter>(this, make_shmpath("audio"), 1, newcaps.get());
+        shmw_ = std::make_unique<shmdata::Writer>(this, make_shmpath("audio"), 1, newcaps.get());
       },
       nullptr);
   return true;
@@ -150,13 +153,13 @@ bool Resample::connect(const std::string& path) {
 bool Resample::disconnect() {
   shmr_.reset();
   shmw_.reset();
-  pmanage<MPtr(&PContainer::enable)>(algo_id_);
-  pmanage<MPtr(&PContainer::enable)>(samplerate_id_);
+  pmanage<MPtr(&property::PBag::enable)>(algo_id_);
+  pmanage<MPtr(&property::PBag::enable)>(samplerate_id_);
   return true;
 }
 
 bool Resample::can_sink_caps(const std::string& str_caps) {
-  auto audiocaps = AudioCaps(str_caps);
+  auto audiocaps = shmdata::caps::AudioCaps(str_caps);
   if (!audiocaps) return false;
   if (!audiocaps.is_float() && audiocaps.format_size_in_bytes() != sizeof(short) &&
       audiocaps.format_size_in_bytes() != sizeof(int))
@@ -164,4 +167,5 @@ bool Resample::can_sink_caps(const std::string& str_caps) {
   return true;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

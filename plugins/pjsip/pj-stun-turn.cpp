@@ -18,11 +18,12 @@
 #include "./pj-stun-turn.hpp"
 #include <pjnath.h>
 #include "./pj-sip-plugin.hpp"
-#include "switcher/information-tree-json.hpp"
-#include "switcher/scope-exit.hpp"
-#include "switcher/string-utils.hpp"
+#include "switcher/infotree/json-serializer.hpp"
+#include "switcher/utils/scope-exit.hpp"
+#include "switcher/utils/string-utils.hpp"
 
 namespace switcher {
+namespace quiddities {
 PJStunTurn::PJStunTurn() {
   if (PJ_SUCCESS != pjnath_init()) {
     SIPPlugin::this_->warning("cannot init pjnath");
@@ -45,9 +46,9 @@ PJStunTurn::PJStunTurn() {
 
   // set stun/turn config
   using set_stun_turn_t = std::function<bool(std::string, std::string, std::string, std::string)>;
-  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<set_stun_turn_t>)>(
+  SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<set_stun_turn_t>)>(
       "set_stun_turn",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Set STUN/TURN parameters",
@@ -74,7 +75,7 @@ PJStunTurn::PJStunTurn() {
              const std::string& login,
              const std::string& pass) { return set_stun_turn(stun, turn, login, pass); });
 
-  SIPPlugin::this_->pmanage<MPtr(&PContainer::make_bool)>(
+  SIPPlugin::this_->pmanage<MPtr(&property::PBag::make_bool)>(
       "lower-case-turn-account",
       [this](const bool& val) {
         lower_case_turn_account_ = val;
@@ -209,7 +210,7 @@ bool PJStunTurn::set_stun_turn(const std::string& stun,
     ice_cfg_.turn.auth_cred.type = PJ_STUN_AUTH_CRED_STATIC;
     if (!turn_user.empty()) {
       turn_user_ = std::string(turn_user);
-      if (lower_case_turn_account_) StringUtils::tolower(turn_user_);
+      if (lower_case_turn_account_) stringutils::tolower(turn_user_);
       ice_cfg_.turn.auth_cred.data.static_cred.username.ptr = (char*)turn_user_.c_str();
       ice_cfg_.turn.auth_cred.data.static_cred.username.slen = turn_user_.size();
     }
@@ -250,4 +251,5 @@ std::unique_ptr<PJICEStreamTrans> PJStunTurn::get_ice_transport(unsigned comp_cn
   return res;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

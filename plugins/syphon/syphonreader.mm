@@ -199,7 +199,7 @@ namespace switcher
     glPushMatrix();
     glLoadIdentity();
 
-    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glClearproperty::Color(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glEnable(GL_TEXTURE_RECTANGLE_ARB);
@@ -209,7 +209,7 @@ namespace switcher
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-    glColor4f(1.0, 1.0, 1.0, 1.0);
+    glproperty::Color4f(1.0, 1.0, 1.0, 1.0);
     GLfloat texCoords[] = {
       0.0, (GLfloat) height_,
       (GLfloat) width_, (GLfloat) height_,

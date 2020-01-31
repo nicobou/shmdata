@@ -28,14 +28,15 @@
 #include "./pj-ice-stream-trans.hpp"
 #include "./pj-media-endpt.hpp"
 #include "./pj-sip.hpp"
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shm-tree-updater.hpp"
-#include "switcher/gst-shmdata-to-cb.hpp"
-#include "switcher/rtp-session.hpp"
-#include "switcher/shmdata-writer.hpp"
+#include "switcher/gst/pipeliner.hpp"
+#include "switcher/gst/rtp-session.hpp"
+#include "switcher/gst/shmdata-to-cb.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
+#include "switcher/shmdata/writer.hpp"
 #include "switcher/switcher.hpp"
 
 namespace switcher {
+namespace quiddities {
 class PJCall {
  public:
   PJCall();
@@ -48,7 +49,7 @@ class PJCall {
   /* Media stream created when the call is active. */
   using media_t = struct media_stream {
     std::string shm_path_to_send{};
-    RTPSender::id_t cb_id{0};
+    gst::RTPSender::id_t cb_id{0};
     pj_sockaddr def_addr;
   };
 
@@ -57,12 +58,12 @@ class PJCall {
   using call_t = struct call {
     pjsip_inv_session* inv{nullptr};
     // as receiver
-    std::vector<std::unique_ptr<ShmdataWriter>> rtp_writers_{};
+    std::vector<std::unique_ptr<shmdata::Writer>> rtp_writers_{};
     std::unique_ptr<PJICEStreamTrans> ice_trans_{};
-    std::unique_ptr<RtpSession> recv_rtp_session_{};
+    std::unique_ptr<gst::RTPSession> recv_rtp_session_{};
     std::mutex shm_subs_mtx_{};
-    std::vector<std::unique_ptr<GstShmTreeUpdater>> shm_subs_{};
-    std::vector<std::unique_ptr<RTPReceiver>> rtp_receivers_{};
+    std::vector<std::unique_ptr<shmdata::GstTreeUpdater>> shm_subs_{};
+    std::vector<std::unique_ptr<gst::RTPReceiver>> rtp_receivers_{};
     // as sender
     std::unique_ptr<PJICEStreamTrans> ice_trans_send_{};
     // media
@@ -86,11 +87,11 @@ class PJCall {
   std::condition_variable call_cv_{};
   bool call_action_done_{false};
   // internal rtp
-  RtpSession rtp_session_{};
+  gst::RTPSession rtp_session_{};
   std::map<std::string, unsigned> reader_ref_count_{};
   std::vector<std::unique_ptr<call_t>> incoming_call_{};
   std::vector<std::unique_ptr<call_t>> outgoing_call_{};
-  std::map<std::string, std::unique_ptr<RTPSender>> readers_{};
+  std::map<std::string, std::unique_ptr<gst::RTPSender>> readers_{};
 
   // sip functions
   static pj_bool_t on_rx_request(pjsip_rx_data* rdata);
@@ -107,7 +108,7 @@ class PJCall {
                                                      pjmedia_sdp_session* offer);
   bool make_call(std::string contact_uri);
   bool create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_session** res);
-  Quiddity::ptr retrieve_rtp_manager();
+  quiddity::Quiddity::ptr retrieve_rtp_manager();
   bool send_to(const std::string& sip_url);
   void make_hang_up(pjsip_inv_session* inv);
   bool hang_up(const std::string& sip_url);
@@ -131,5 +132,6 @@ class PJCall {
                             pj_pool_t* dlg_pool);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

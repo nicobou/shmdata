@@ -20,6 +20,7 @@
 #include <cmath>
 
 namespace switcher {
+namespace quiddities {
 
 template <typename SampleT>
 AudioResampler<SampleT>::AudioResampler(std::size_t original_size,
@@ -65,4 +66,5 @@ SampleT AudioResampler<SampleT>::linear_get_next_sample() {
   return sample;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

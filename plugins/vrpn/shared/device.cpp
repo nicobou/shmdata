@@ -20,6 +20,7 @@
 #include "./device.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 Device::Device(const std::string& name) : name_(name) {}
@@ -31,6 +32,6 @@ InfoTree::ptr Device::getTree() const {
   tree->graft("name", InfoTree::make(name_));
   return tree;
 }
-
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher

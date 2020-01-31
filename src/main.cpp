@@ -19,14 +19,15 @@
 #include <signal.h>
 #include <time.h>
 #include <vector>
-#include "switcher/console-logger.hpp"
-#include "switcher/file-utils.hpp"
-#include "switcher/information-tree-json.hpp"
-#include "switcher/quiddity-class-printer.hpp"
-#include "switcher/silent-logger.hpp"
+#include "switcher/infotree/json-serializer.hpp"
+#include "switcher/logger/console.hpp"
+#include "switcher/logger/silent.hpp"
+#include "switcher/quiddity/class-printer.hpp"
 #include "switcher/switcher.hpp"
+#include "switcher/utils/file-utils.hpp"
 
 using namespace switcher;
+using namespace quiddity;
 
 static const gchar* server_name = nullptr;
 static const gchar* port_number = nullptr;
@@ -112,10 +113,10 @@ void leave(int sig) {
 
 int main(int argc, char* argv[]) {
   setlocale(LC_ALL, "");
-  (void)signal(SIGINT, leave);
-  (void)signal(SIGABRT, leave);
-  (void)signal(SIGQUIT, leave);
-  (void)signal(SIGTERM, leave);
+  (void)::signal(SIGINT, leave);
+  (void)::signal(SIGABRT, leave);
+  (void)::signal(SIGQUIT, leave);
+  (void)::signal(SIGTERM, leave);
 
   // command line options
   GError* error = nullptr;
@@ -132,9 +133,9 @@ int main(int argc, char* argv[]) {
   if (port_number == nullptr) port_number = "27182";
 
   if (debug) {
-    manager = Switcher::make_switcher<ConsoleLogger>(server_name);
+    manager = Switcher::make_switcher<log::Console>(server_name);
   } else {
-    manager = Switcher::make_switcher<SilentLogger>(server_name);
+    manager = Switcher::make_switcher<log::Silent>(server_name);
   }
 
   if (display_version) {
@@ -143,42 +144,44 @@ int main(int argc, char* argv[]) {
   }
 
   // loading plugins from default location // FIXME add an option
-  manager->factory<MPtr(&quid::Factory::scan_dir)>(
-      manager->factory<MPtr(&quid::Factory::get_default_plugin_dir)>());
+  manager->factory<MPtr(&quiddity::Factory::scan_dir)>(
+      manager->factory<MPtr(&quiddity::Factory::get_default_plugin_dir)>());
 
-  if (extraplugindir != nullptr) manager->factory<MPtr(&quid::Factory::scan_dir)>(extraplugindir);
+  if (extraplugindir != nullptr)
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>(extraplugindir);
 
   // checking if this is printing info only
   if (listclasses) {
-    std::vector<std::string> resultlist = manager->factory<MPtr(&quid::Factory::get_class_list)>();
+    std::vector<std::string> resultlist =
+        manager->factory<MPtr(&quiddity::Factory::get_class_list)>();
     for (uint i = 0; i < resultlist.size(); i++) g_print("%s\n", resultlist[i].c_str());
     return 0;
   }
   if (classesdoc) {
-    g_print(
-        "%s\n",
-        QuiddityClassPrinter::print(manager->factory<MPtr(&quid::Factory::get_classes_doc)>().get())
-            .c_str());
+    g_print("%s\n",
+            classprinter::print(manager->factory<MPtr(&quiddity::Factory::get_classes_doc)>().get())
+                .c_str());
     return 0;
   }
   if (classdoc != nullptr) {
     g_print("%s\n",
-            JSONSerializer::serialize(manager->factory<MPtr(&quid::Factory::get_classes_doc)>()
+            infotree::json::serialize(manager->factory<MPtr(&quiddity::Factory::get_classes_doc)>()
                                           ->get_tree(std::string(".classes.") + classdoc)
                                           .get())
                 .c_str());
     return 0;
   }
 
-  auto created =
-      manager->quids<MPtr(&quid::Container::create)>("SOAPcontrolServer", "soapserver", nullptr);
+  auto created = manager->quids<MPtr(&quiddity::Container::create)>(
+      "SOAPcontrolServer", "soapserver", nullptr);
   if (!created) {
     std::cerr << "could not create SOAP server" << '\n';
     return 0;
   }
   auto soap = created.get();
-  if (!soap->meth<MPtr(&MContainer::invoke_str)>(soap->meth<MPtr(&MContainer::get_id)>("set_port"),
-                                                 serialize::esc_for_tuple(port_number))) {
+  if (!soap->meth<MPtr(&method::MBag::invoke_str)>(
+          soap->meth<MPtr(&method::MBag::get_id)>("set_port"),
+          serialize::esc_for_tuple(port_number))) {
     std::cerr << "could not set soap port " << '\n';
     return 0;
   }
@@ -186,7 +189,7 @@ int main(int argc, char* argv[]) {
   manager->reset_state(false);
 
   if (load_file &&
-      !manager->load_state(JSONSerializer::deserialize(FileUtils::get_content(load_file)).get())) {
+      !manager->load_state(infotree::json::deserialize(fileutils::get_content(load_file)).get())) {
     std::cerr << "could not load file " << load_file << '\n';
   }
 

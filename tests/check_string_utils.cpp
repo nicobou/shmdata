@@ -18,7 +18,9 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <cassert>
-#include "switcher/string-utils.hpp"
+#include "switcher/utils/string-utils.hpp"
+
+using namespace switcher;
 
 int main() {
   std::string str =
@@ -74,6 +76,6 @@ int main() {
       "❥♡♢♤♧⚀⚁⚂⚃⚄⚅⚇⚆⚈⚉♨♩♪♫♬♭♮♯⌨⏏⎗⎘⎙⎚⌥⎇⌘⌦⌫⌧♲♳♴♵♶♷♸♹♺♻♼♽⁌⁍⎌⌇⌲⍝⍟⍣⍤⍥⍨⍩⎋♃♄♅♆♇♈♉♊♋♌♍♎♏♐♑♒♓⏚⏛| |"
       " | | | | | | | |​|☹☺שמכיל גרסאות של";
 
-  assert(switcher::StringUtils::base64_decode(switcher::StringUtils::base64_encode(str)) == str);
+  assert(stringutils::base64_decode(stringutils::base64_encode(str)) == str);
   return 0;
 }

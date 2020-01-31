@@ -24,9 +24,10 @@
 #include <array>
 #include <functional>
 #include "./nvenc-api.hpp"
-#include "switcher/safe-bool-idiom.hpp"
+#include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
+namespace quiddities {
 class NVencBuffers : public SafeBoolIdiom {
  public:
   NVencBuffers(void* encoder, uint32_t width, uint32_t height, NV_ENC_BUFFER_FORMAT format);
@@ -60,5 +61,6 @@ class NVencBuffers : public SafeBoolIdiom {
   bool safe_bool_idiom() const;
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

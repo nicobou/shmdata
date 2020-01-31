@@ -18,9 +18,11 @@
 #include <glib.h>
 #include <locale.h>
 #include <string>
-#include "switcher/information-tree-json.hpp"
+#include "switcher/infotree/json-serializer.hpp"
 #include "webservices/control.nsmap"
 #include "webservices/soapcontrolProxy.h"
+
+using namespace switcher;
 
 // options
 static gchar* server = nullptr;
@@ -253,8 +255,8 @@ int main(int argc, char* argv[]) {
       return false;
     }
     switcher_control.get_classes_doc(&resultlist);
-    std::cout << switcher::JSONSerializer::serialize(
-                     switcher::JSONSerializer::deserialize(resultlist)
+    std::cout << infotree::json::serialize(
+                     infotree::json::deserialize(resultlist)
                          ->get_tree(std::string(".classes.") + remaining_args[0])
                          .get())
               << '\n';

@@ -19,11 +19,12 @@
 
 #include "./cuda-context.hpp"
 #include "./cu-res.hpp"
-#include "switcher/scope-exit.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 
-CudaContext::CudaContext(uint32_t device_id, BaseLogger* log) : Logged(log) {
+CudaContext::CudaContext(uint32_t device_id, log::Base* log) : log::Logged(log) {
   On_scope_exit {
     if (!safe_bool_idiom()) warning("cuda context creation failed");
   };
@@ -70,4 +71,5 @@ std::vector<std::pair<int, std::string>> CudaContext::get_devices() {
   return res;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

@@ -17,7 +17,7 @@
 
 #undef NDEBUG  // get assert in release mode
 
-#include "switcher/scope-exit.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 // note: do not write multiple "On_scope_exit" call in the same line
 int main() {

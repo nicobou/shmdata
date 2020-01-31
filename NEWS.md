@@ -2,6 +2,66 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.0.0 (2020-01-31)
+---------------------------
+This is an official release in the 2.0 stable series.
+
+Breaking changes:
+* 💥 fileutils namespace
+* 💥 any in switcher namespace
+* 💥 namespace stringutils
+* 💥 renaming logger classes and files
+* 💥 renaming infotree files
+* 💥 shmdata namespace
+* 💥 quiddity namespace
+* 💥 quiddities namespace
+* 💥 log namespace
+* 💥 gst namespace
+* 💥 infotree namespace
+* 💥 subfolder in switcher sources
+* 💥 init_startable in now private, a StartableQuiddity must call the appropriate parent constructor
+* 💥 Rename pixel_format property of videoconvert
+
+New Features: 
+* ✨✅ adding for_each_in_array in InfoTree
+* ✨ Add deinterlacer in v4l2src
+* ✨ Add video properties auto-detect
+* ✨ Add jack-server quiddity
+* ✨ Add swquid-info, a command line informator for quiddities
+* ✨ Add swcam-display tool
+* ✨ Add graft Infotree by value
+* ✨ Add get_name, get_type, set & get nickname in pyquiddity
+* ✨ Add autostart property to midisink
+* ✨ Add autostart property to OSCsink
+* ✨ Add restart_on_change property to Executor
+* ✨ Add do-lost in rtp-session
+* ✨ Add video cropper quiddity
+
+Bug fixes:
+* 🐛 Fix SIP transmissin of shmdata created by NDI2Shmdata
+* 🐛 Fix in shmdata-to-jack destruction
+* 🐛 Fix play pause action in filesrc
+* 🐛 Fix map midi value to property
+* 🐛 Light refactor of OSCsrc
+* 🐛 Fix handling of shmdata created by SIP when calling contact
+* 🐛 Refactor gst-decodebin and fix erratic behavior when decoder connects to itself
+* 🐛 Fix race condition with gstream pipeline play/pause
+* 🐛 Explicitly capture invite_session in pjcall
+* 🐛 Add a destructor for Watcher
+
+Analytics:
+* 📈 coverage in CI
+
+Docs:
+* 📝 Add GPLv3 badge in README.md
+* 📈 Fix pipeline status in README.md
+* 📈 Updated code structure documentation
+* 📈 Updated InfoTree exemple links in writing-quiddity.md
+
+✅ Tests:
+* ✅ Add test for switcher commands
+* ✅ Add switcher log and quiddity configuration to quiddity-basic-test
+
 switcher 1.1.2 (2019-09-17)
 ---------------------------
 This is an official release in the 1.1 stable series.
@@ -61,10 +121,11 @@ Bug fixes:
 * more asserts in pyquid signal file
 * pixel converter destruct gst pipeline before elements
 * gstpipe set gst pipeline to null from the destructor and unref from gmainloop
-* gstpipe kills gst pipeline from the main loop  fix sometimes filesrc crash at deletion (members order in quiddity-container)
+* gstpipe kills gst pipeline from the main loop
+* fix sometimes filesrc crash at deletion (members order in quiddity-container)
 * reverse gst-element ref removal from previous commit
 * adding unsubscribe to signal in python exemple
-* avoid segfaut due to simultameous g_signal_handler_disconnect and signal notification in gst-shmdata-subscriber
+* avoid segfaut due to simultameous g_signal_handler_disconnect and signal notification in gst-subscriber
 * information tree serialization is mutexed now
 * Add documentation for building NVDEC
 * Make nvdec compatible with decodebin and shmdata
@@ -337,7 +398,7 @@ New features:
 Bug fixes:
 * Fixed nvenc test after bundle pipeline syntax change.
 * Use docker image for CI to speed it up.
-* Fixed a potential race condition between GstPipeliner main loop and its destructor.
+* Fixed a potential race condition between gst::Pipeliner main loop and its destructor.
 * MIDI unit test does not fail if /dev/snd cannot be found.
 * Fixed deadlock when deleting a badly created glfwin. Also, overlay is not mandatory now, if something wrong happens during overlay initialization, it will only be hidden.
 * Unify OSC quiddity naming.
@@ -457,10 +518,10 @@ New features:
 * Shmdata access rate is notified in the quiddity information tree, along with byte_rate.
 * Make DNS in SIP configurable and get the system one by default instead of a hardcoded value.
 * Audiotestsrc quiddity revamping : added properties (sample rate, channels number, audio format), modified gstreamer pipeline lifecycle.
-* Cleaned up UGstElem lifecycle (better refcount management) and fixed PContainer::replace so it doesn't reset the index of the selection.
+* Cleaned up UGstElem lifecycle (better refcount management) and fixed PBag::replace so it doesn't reset the index of the selection.
 * Adding more properties to videotestsrc and templating selection.
 * Removing more codec option from gst-video-codec and gst-audio-codec.
-* Added generic methods to get gstreamer elements caps values in GstUtils.
+* Added generic methods to get gstreamer elements caps values in gst::utils.
 * Adding SIP whitelist.
 * Using nvenc 7.
 * Only record the shmdata connections state instead of each connect/disconnect command when saving a session.
@@ -663,7 +724,7 @@ Bug fixes:
 * fix pruning with clang
 * activating syphon for being ported to shmdata1
 * fix check startable
-* fix race condition with GstShmdataSubscriber
+* fix race condition with GstSubscriber
 * no wait for state when asking PLAYING or PAUSED state
 * disabling GTK on OSX
 * add missing include for errno

@@ -25,17 +25,19 @@
 #include <condition_variable>
 #include <mutex>
 #include <vector>
-#include "switcher/glibmainloop.hpp"
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shm-tree-updater.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/unique-gst-element.hpp"
+#include "switcher/gst/glibmainloop.hpp"
+#include "switcher/gst/pipeliner.hpp"
+#include "switcher/gst/unique-gst-element.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
 
 namespace switcher {
+namespace quiddities {
+using namespace quiddity;
 class PulseSink : public Quiddity {
  public:
-  PulseSink(quid::Config&&);
+  PulseSink(quiddity::Config&&);
   ~PulseSink();
   PulseSink(const PulseSink&) = delete;
   PulseSink& operator=(const PulseSink&) = delete;
@@ -52,18 +54,18 @@ class PulseSink : public Quiddity {
     std::string active_port_{};
   } DeviceDescription;
 
-  std::unique_ptr<GlibMainLoop> mainloop_;
+  std::unique_ptr<gst::GlibMainLoop> mainloop_;
   // registering connect/disconnect/can_sink_caps:
-  ShmdataConnector shmcntr_;
+  shmdata::Connector shmcntr_;
   // gst pipeline:
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
   // shmsubscriber (publishing to the information-tree):
-  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
+  std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
   // internal use:
   std::string shmpath_{};
-  UGstElem shmsrc_{"shmdatasrc"};
-  UGstElem audioconvert_{"audioconvert"};
-  UGstElem pulsesink_{"pulsesink"};
+  gst::UGstElem shmsrc_{"shmdatasrc"};
+  gst::UGstElem audioconvert_{"audioconvert"};
+  gst::UGstElem pulsesink_{"pulsesink"};
   pa_glib_mainloop* pa_glib_mainloop_{nullptr};
   pa_mainloop_api* pa_mainloop_api_{nullptr};
   pa_context* pa_context_{nullptr};
@@ -73,10 +75,10 @@ class PulseSink : public Quiddity {
   std::condition_variable devices_cond_{};
   bool connected_to_pulse_{false};
   //  property:
-  Selection<> devices_enum_{{"none"}, 0};
-  PContainer::prop_id_t devices_enum_id_{0};
-  PContainer::prop_id_t volume_id_{0};
-  PContainer::prop_id_t mute_id_{0};
+  property::Selection<> devices_enum_{{"none"}, 0};
+  property::prop_id_t devices_enum_id_{0};
+  property::prop_id_t volume_id_{0};
+  property::prop_id_t mute_id_{0};
   // quit
   std::mutex quit_mutex_{};
   std::condition_variable quit_cond_{};
@@ -101,5 +103,6 @@ class PulseSink : public Quiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(PulseSink);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

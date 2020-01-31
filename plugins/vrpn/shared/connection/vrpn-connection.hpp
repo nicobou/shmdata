@@ -23,6 +23,7 @@
 #include <vrpn_Connection.h>
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 /**
@@ -46,7 +47,8 @@ class VRPNConnection {
  private:
   vrpn_Connection* connection_;
 };
-}
-}
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 
 #endif

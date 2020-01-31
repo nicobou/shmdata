@@ -19,28 +19,41 @@
 
 #undef NDEBUG  // get assert in release mode
 
-#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 
 int main() {
   {
     using namespace switcher;
+    using namespace quiddity;
     Switcher::ptr switcher = Switcher::make_switcher("test_switcher");
 
-    switcher->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    switcher->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
+
+    switcher->factory<MPtr(&quiddity::Factory::scan_dir)>("../jack");
+
+    // creating a jack server
+    InfoTree::ptr server_config = InfoTree::make();
+    server_config->vgraft("driver", "dummy");
+    server_config->vgraft("realtime", false);
+    auto jserv = switcher->quids<MPtr(&quiddity::Container::create)>(
+        "jackserver", "test_server", server_config.get());
+    assert(jserv);
+    assert(jserv.get()->prop<MPtr(&property::PBag::set_str_str)>("driver", "dummy"));
+    assert(jserv.get()->prop<MPtr(&property::PBag::set_str_str)>("started", "true"));
 
     // Fringe case like CI cannot run this test successfully but we don't want it to fail.
-    if (!switcher->quids<MPtr(&quid::Container::create)>(
+    if (!switcher->quids<MPtr(&quiddity::Container::create)>(
             "ltcsource", "ltctestsourcedummy", nullptr))
       return 0;
 
     auto created =
-        switcher->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsource", nullptr);
+        switcher->quids<MPtr(&quiddity::Container::create)>("ltcsource", "ltctestsource", nullptr);
     if (!created) return 1;
 
-    if (!created.get()->prop<MPtr(&PContainer::set_str_str)>("started", "true")) return 1;
-    if (!switcher->quids<MPtr(&quid::Container::remove)>(created.get_id())) return 1;
+    if (!created.get()->prop<MPtr(&property::PBag::set_str_str)>("started", "true")) return 1;
+    if (!switcher->quids<MPtr(&quiddity::Container::remove)>(created.get_id())) return 1;
 
-    if (!test::full(switcher, "ltcsource")) return 1;
+    if (!quiddity::test::full(switcher, "ltcsource")) return 1;
 
   }  // end of scope is releasing the switcher
   return 0;

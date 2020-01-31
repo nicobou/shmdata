@@ -23,47 +23,49 @@
 #include <cuda.h>
 #include <memory>
 #include "./nvenc-encode-session.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/shmdata-writer.hpp"
-#include "switcher/threaded-wrapper.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/shmdata/writer.hpp"
+#include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
+namespace quiddities {
+using namespace quiddity;
 class NVencPlugin : public Quiddity {
  public:
-  NVencPlugin(quid::Config&&);
+  NVencPlugin(quiddity::Config&&);
   ~NVencPlugin() = default;
   NVencPlugin(const NVencPlugin&) = delete;
   NVencPlugin& operator=(const NVencPlugin&) = delete;
 
 
  private:
-  Selection<> devices_{{"none"}, 0};
+  property::Selection<> devices_{{"none"}, 0};
   bool bitrate_from_preset_{false};
-  PContainer::prop_id_t default_preset_id_;
+  property::prop_id_t default_preset_id_;
   uint32_t bitrate_{5000000};
-  PContainer::prop_id_t bitrate_id_;
-  PContainer::prop_id_t devices_id_{0};
+  property::prop_id_t bitrate_id_;
+  property::prop_id_t devices_id_{0};
   std::vector<int> devices_nv_ids_{};
-  Selection<> codecs_{{"none"}, 0};
+  property::Selection<> codecs_{{"none"}, 0};
   std::vector<std::pair<std::string, GUID>> codecs_guids_{};
-  PContainer::prop_id_t codecs_id_{0};
-  Selection<> presets_{{"none"}, 0};
+  property::prop_id_t codecs_id_{0};
+  property::Selection<> presets_{{"none"}, 0};
   std::vector<std::pair<std::string, GUID>> presets_guids_{};
-  PContainer::prop_id_t presets_id_{0};
-  Selection<> profiles_{{"none"}, 0};
+  property::prop_id_t presets_id_{0};
+  property::Selection<> profiles_{{"none"}, 0};
   std::vector<std::pair<std::string, GUID>> profiles_guids_{};
-  PContainer::prop_id_t profiles_id_{0};
+  property::prop_id_t profiles_id_{0};
   int max_width_{0};
-  PContainer::prop_id_t max_width_id_{0};
+  property::prop_id_t max_width_id_{0};
   int max_height_{0};
-  PContainer::prop_id_t max_height_id_{0};
+  property::prop_id_t max_height_id_{0};
   std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> video_formats_{};
-  std::unique_ptr<ShmdataWriter> shmw_{nullptr};
+  std::unique_ptr<shmdata::Writer> shmw_{nullptr};
   std::unique_ptr<ThreadedWrapper<NVencES>> es_;
-  std::unique_ptr<ShmdataFollower> shm_{nullptr};
-  ShmdataConnector shmcntr_;
+  std::unique_ptr<shmdata::Follower> shm_{nullptr};
+  shmdata::Connector shmcntr_;
   void update_device();
   void update_codec();
   void update_preset();
@@ -80,5 +82,6 @@ class NVencPlugin : public Quiddity {
 
 SWITCHER_DECLARE_PLUGIN(NVencPlugin);
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

@@ -23,6 +23,7 @@
 #include <cuda.h>
 
 namespace switcher {
+namespace quiddities {
 struct CuRes {
   CuRes() = delete;
   explicit CuRes(CUresult ret) : ret_(ret) {}
@@ -30,5 +31,6 @@ struct CuRes {
   const CUresult ret_;
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 """
 Release script usable by shmdata and switcher libraries.
 
@@ -130,11 +131,11 @@ def commit_version_number(lib, new_version, regex_pattern):
     os.rename(changed_file, config_file)
     git_add([config_file])
     if shmdata_required_version:
-        assert git_commit('Shmdata version change to {}.{}'.format(new_version[0], new_version[1])) == 0, \
+        assert git_commit('🔖 Shmdata version change to {}.{}'.format(new_version[0], new_version[1])) == 0, \
             'Failed to commit shmdata version number.'
     else:
-        assert git_commit('Version {}.{}.{}'.format(new_version[0], new_version[1],
-                                                    new_version[2])) == 0, 'Failed to commit version number.'
+        assert git_commit('🔖 Version {}.{}.{}'.format(new_version[0], new_version[1],
+                                                      new_version[2])) == 0, 'Failed to commit version number.'
 
 
 def git_push(remote_repo, remote_branch):
@@ -229,7 +230,8 @@ def update_changelog(lib, version):
     git_add([orig_file_name])
     if subprocess.call(os.path.join(sys.path[0], 'make_authors_from_git.sh'), shell=True) == 0:
         git_add([authors_file_name])
-    git_commit('Updated changelog for version {}.{}.{}.'.format(version[0], version[1], version[2]))
+    git_commit('📝 Updated changelog for version {}.{}.{}.'.format(
+        version[0], version[1], version[2]))
 
 
 @atexit.register  # Only clean on exit if the release was successful.

@@ -20,6 +20,7 @@
 #include "analog-source-device.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 AnalogSourceDevice::AnalogSourceDevice(const std::string& name,
@@ -57,7 +58,7 @@ void AnalogSourceDevice::handleAnalogChannel(int index, double value) {
 
   if (property == nullptr) {
     std::unique_ptr<Property<double>> newProperty = std::make_unique<Property<double>>(value);
-    PContainer::prop_id_t prop_id =
+    property::prop_id_t prop_id =
         createDoubleProperty_(newProperty.get(),
                               id,
                               name_ + " Analog " + std::to_string(index),
@@ -81,5 +82,6 @@ void AnalogSourceDevice::handleAnalogCallback(void* userData, const vrpn_ANALOGC
     context->handleAnalogChannel(i, info.channel[i]);
   }
 }
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher

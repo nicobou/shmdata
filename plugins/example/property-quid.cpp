@@ -20,6 +20,7 @@
 #include "property-quid.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyQuid,
                                      "dummy",
                                      "Dummy Plugin",
@@ -29,52 +30,55 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyQuid,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PropertyQuid::PropertyQuid(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      bool_id_(pmanage<MPtr(&PContainer::make_bool)>("bool_",
-                                                     [this](bool val) {
-                                                       bool_ = val;
-                                                       return true;
-                                                     },
-                                                     [this]() { return bool_; },
-                                                     "Bool Example",
-                                                     "This property is an example for type bool",
-                                                     bool_)),
+PropertyQuid::PropertyQuid(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      bool_id_(
+          pmanage<MPtr(&property::PBag::make_bool)>("bool_",
+                                                    [this](bool val) {
+                                                      bool_ = val;
+                                                      return true;
+                                                    },
+                                                    [this]() { return bool_; },
+                                                    "Bool Example",
+                                                    "This property is an example for type bool",
+                                                    bool_)),
       string_id_(
-          pmanage<MPtr(&PContainer::make_string)>("string_",
-                                                  [this](const std::string& val) {
-                                                    string_ = val;
-                                                    return true;
-                                                  },
-                                                  [this]() { return string_; },
-                                                  "String Example",
-                                                  "This property is an example for type string",
-                                                  string_)),
-      char_id_(pmanage<MPtr(&PContainer::make_char)>("char_",
-                                                     [this](const char& val) {
-                                                       char_ = val;
+          pmanage<MPtr(&property::PBag::make_string)>("string_",
+                                                      [this](const std::string& val) {
+                                                        string_ = val;
+                                                        return true;
+                                                      },
+                                                      [this]() { return string_; },
+                                                      "String Example",
+                                                      "This property is an example for type string",
+                                                      string_)),
+      char_id_(
+          pmanage<MPtr(&property::PBag::make_char)>("char_",
+                                                    [this](const char& val) {
+                                                      char_ = val;
+                                                      return true;
+                                                    },
+                                                    [this]() { return char_; },
+                                                    "Char Example",
+                                                    "This property is an example for type char",
+                                                    char_)),
+      color_id_(
+          pmanage<MPtr(&property::PBag::make_color)>("color_",
+                                                     [this](const property::Color& val) {
+                                                       color_ = val;
                                                        return true;
                                                      },
-                                                     [this]() { return char_; },
-                                                     "Char Example",
-                                                     "This property is an example for type char",
-                                                     char_)),
-      color_id_(pmanage<MPtr(&PContainer::make_color)>("color_",
-                                                       [this](const Color& val) {
-                                                         color_ = val;
-                                                         return true;
-                                                       },
-                                                       [this]() { return color_; },
-                                                       "Color Example",
-                                                       "This property is an example for type color",
-                                                       color_)),
-      integral_group_id_(pmanage<MPtr(&PContainer::make_group)>(
+                                                     [this]() { return color_; },
+                                                     "property::Color Example",
+                                                     "This property is an example for type color",
+                                                     color_)),
+      integral_group_id_(pmanage<MPtr(&property::PBag::make_group)>(
           "integrals",
           "Integral Group Example",
           "This property is an example for grouping integral types")),
-      int_id_(pmanage<MPtr(&PContainer::make_parented_int)>(  // PContainer factory
-          "int_",                                             // string id
-          "integrals",                                        // parent
+      int_id_(pmanage<MPtr(&property::PBag::make_parented_int)>(  // PBag factory
+          "int_",                                                 // string id
+          "integrals",                                            // parent
           [this](int val) {
             int_ = val;
             return true;
@@ -85,7 +89,7 @@ PropertyQuid::PropertyQuid(quid::Config&& conf)
           int_,                                        // default value
           -10,                                         // min
           10)),                                        // max
-      short_id_(pmanage<MPtr(&PContainer::make_parented_short)>(
+      short_id_(pmanage<MPtr(&property::PBag::make_parented_short)>(
           "short_",
           "integrals",
           [this](short val) {
@@ -98,7 +102,7 @@ PropertyQuid::PropertyQuid(quid::Config&& conf)
           short_,
           -11,
           11)),
-      long_id_(pmanage<MPtr(&PContainer::make_parented_long)>(
+      long_id_(pmanage<MPtr(&property::PBag::make_parented_long)>(
           "long_",
           "integrals",
           [this](long val) {
@@ -111,7 +115,7 @@ PropertyQuid::PropertyQuid(quid::Config&& conf)
           long_,
           -20,
           20)),
-      long_long_id_(pmanage<MPtr(&PContainer::make_parented_long_long)>(
+      long_long_id_(pmanage<MPtr(&property::PBag::make_parented_long_long)>(
           "long_long_",
           "integrals",
           [this](long long val) {
@@ -124,7 +128,7 @@ PropertyQuid::PropertyQuid(quid::Config&& conf)
           long_long_,
           -21,
           21)),
-      unsigned_int_id_(pmanage<MPtr(&PContainer::make_parented_unsigned_int)>(
+      unsigned_int_id_(pmanage<MPtr(&property::PBag::make_parented_unsigned_int)>(
           "unsigned_int_",
           "integrals",
           [this](unsigned int val) {
@@ -137,7 +141,7 @@ PropertyQuid::PropertyQuid(quid::Config&& conf)
           unsigned_int_,
           0,
           10)),
-      unsigned_short_id_(pmanage<MPtr(&PContainer::make_parented_unsigned_short)>(
+      unsigned_short_id_(pmanage<MPtr(&property::PBag::make_parented_unsigned_short)>(
           "unsigned_short_",
           "integrals",
           [this](unsigned short val) {
@@ -150,7 +154,7 @@ PropertyQuid::PropertyQuid(quid::Config&& conf)
           unsigned_short_,
           1,
           11)),
-      unsigned_long_id_(pmanage<MPtr(&PContainer::make_parented_unsigned_long)>(
+      unsigned_long_id_(pmanage<MPtr(&property::PBag::make_parented_unsigned_long)>(
           "unsigned_long_",
           "integrals",
           [this](unsigned long val) {
@@ -163,7 +167,7 @@ PropertyQuid::PropertyQuid(quid::Config&& conf)
           unsigned_long_,
           4,
           200)),
-      unsigned_long_long_id_(pmanage<MPtr(&PContainer::make_parented_unsigned_long_long)>(
+      unsigned_long_long_id_(pmanage<MPtr(&property::PBag::make_parented_unsigned_long_long)>(
           "unsigned_long_long_",
           "integrals",
           [this](unsigned long long val) {
@@ -176,11 +180,11 @@ PropertyQuid::PropertyQuid(quid::Config&& conf)
           unsigned_long_long_,
           2,
           210)),
-      floating_point_group_id_(pmanage<MPtr(&PContainer::make_group)>(
+      floating_point_group_id_(pmanage<MPtr(&property::PBag::make_group)>(
           "floats",
           "Floating Point Group Example",
           "This property is an example for grouping floating points")),
-      float_id_(pmanage<MPtr(&PContainer::make_parented_float)>(
+      float_id_(pmanage<MPtr(&property::PBag::make_parented_float)>(
           "float_",
           "floats",
           [this](float val) {
@@ -193,7 +197,7 @@ PropertyQuid::PropertyQuid(quid::Config&& conf)
           float_,
           -1.f,
           1.f)),
-      double_id_(pmanage<MPtr(&PContainer::make_parented_double)>(
+      double_id_(pmanage<MPtr(&property::PBag::make_parented_double)>(
           "double_",
           "floats",
           [this](double val) {
@@ -206,7 +210,7 @@ PropertyQuid::PropertyQuid(quid::Config&& conf)
           double_,
           -1.f,
           10.f)),
-      long_double_id_(pmanage<MPtr(&PContainer::make_parented_long_double)>(
+      long_double_id_(pmanage<MPtr(&property::PBag::make_parented_long_double)>(
           "long_double_",
           "floats",
           [this](long double val) {
@@ -219,51 +223,52 @@ PropertyQuid::PropertyQuid(quid::Config&& conf)
           long_double_,
           -1.f,
           10.f)),
-      selection_id_(
-          pmanage<MPtr(&PContainer::make_selection<>)>("enum_",
-                                                       [this](const IndexOrName& val) {
-                                                         selection_.select(val);
-                                                         return true;
-                                                       },
-                                                       [this]() { return selection_.get(); },
-                                                       "Selection Example",
-                                                       "This property is an example for type enum",
-                                                       selection_)),
-      tuple_id_(
-          pmanage<MPtr(&PContainer::make_tuple<MyTuple>)>("tuple_",
-                                                          [this](const MyTuple& val) {
-                                                            tuple_ = val;
-                                                            return true;
-                                                          },
-                                                          [this]() { return tuple_; },
-                                                          "Tuple Example",
-                                                          "This property is an example for tuple",
-                                                          tuple_)),
+      selection_id_(pmanage<MPtr(&property::PBag::make_selection<>)>(
+          "enum_",
+          [this](const quiddity::property::IndexOrName& val) {
+            selection_.select(val);
+            return true;
+          },
+          [this]() { return selection_.get(); },
+          "Selection Example",
+          "This property is an example for type enum",
+          selection_)),
+      tuple_id_(pmanage<MPtr(&property::PBag::make_tuple<MyTuple>)>(
+          "tuple_",
+          [this](const MyTuple& val) {
+            tuple_ = val;
+            return true;
+          },
+          [this]() { return tuple_; },
+          "Tuple Example",
+          "This property is an example for tuple",
+          tuple_)),
       fraction_id_(
-          pmanage<MPtr(&PContainer::make_fraction)>("fraction_",
-                                                    [this](const Fraction& val) {
-                                                      fraction_ = val;
-                                                      return true;
-                                                    },
-                                                    [this]() { return fraction_; },
-                                                    "Fraction Example",
-                                                    "This property is an example for fraction",
-                                                    fraction_,
-                                                    -10,
-                                                    1,  // min num/denom
-                                                    10,
-                                                    10)  // max num/denom
+          pmanage<MPtr(&property::PBag::make_fraction)>("fraction_",
+                                                        [this](const property::Fraction& val) {
+                                                          fraction_ = val;
+                                                          return true;
+                                                        },
+                                                        [this]() { return fraction_; },
+                                                        "property::Fraction Example",
+                                                        "This property is an example for fraction",
+                                                        fraction_,
+                                                        -10,
+                                                        1,  // min num/denom
+                                                        10,
+                                                        10)  // max num/denom
       ) {
-  // std::cout << pmanage<MPtr(&PContainer::get<int>)>( int_id_) << std::endl;
-  // std::cout << pmanage<MPtr(&PContainer::get<unsigned int>)>( uint_id_) <<
-  // std::endl;
+  debug("int_id_ is %, unsigned_int_id_ is %",
+        std::to_string(pmanage<MPtr(&property::PBag::get<int>)>(int_id_)),
+        std::to_string(pmanage<MPtr(&property::PBag::get<unsigned int>)>(unsigned_int_id_)));
 
-  pmanage<MPtr(&PContainer::set<MyTuple>)>(
+  pmanage<MPtr(&property::PBag::set<MyTuple>)>(
       tuple_id_, std::make_tuple<long long, float, std::string>(2, 2.2, "a22"));
 
-  std::cout << std::get<0>(tuple_) << " "    // 2
-            << std::get<1>(tuple_) << " "    // 2.2
-            << std::get<2>(tuple_) << "\n";  // a22
+  debug("tuple_ is % % %",
+        std::to_string(std::get<0>(tuple_)) /*2*/,
+        std::to_string(std::get<1>(tuple_)) /* 2.2 */,
+        std::get<2>(tuple_) /* a22*/);
 
   // creating some custom infos
   InfoTree::ptr tree = InfoTree::make();
@@ -276,4 +281,5 @@ PropertyQuid::PropertyQuid(quid::Config&& conf)
   debug("hello from plugin");
 }
 
+}  // namespace quiddities
 }  // namespace switcher

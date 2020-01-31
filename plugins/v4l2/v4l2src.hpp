@@ -19,16 +19,18 @@
 #define __SWITCHER_V4L2SRC_H__
 
 #include <memory>
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shm-tree-updater.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/startable-quiddity.hpp"
-#include "switcher/unique-gst-element.hpp"
+#include "switcher/gst/pipeliner.hpp"
+#include "switcher/gst/unique-gst-element.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
 
 namespace switcher {
-class V4L2Src : public Quiddity, public StartableQuiddity {
+namespace quiddities {
+using namespace quiddity;
+class V4L2Src : public Quiddity, public Startable {
  public:
-  V4L2Src(quid::Config&&);
+  V4L2Src(quiddity::Config&&);
   ~V4L2Src() = default;
   V4L2Src(const V4L2Src&) = delete;
   V4L2Src& operator=(const V4L2Src&) = delete;
@@ -76,79 +78,83 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
     gint frame_interval_stepwise_step_denominator_{0};
   } CaptureDescription;
 
-  UGstElem v4l2src_{"v4l2src"};
-  UGstElem videorate_{"videorate"};
-  UGstElem capsfilter_{"capsfilter"};
-  UGstElem shmsink_{"shmdatasink"};
+  gst::UGstElem v4l2src_{"v4l2src"};
+  gst::UGstElem videorate_{"videorate"};
+  gst::UGstElem capsfilter_{"capsfilter"};
+  gst::UGstElem shmsink_{"shmdatasink"};
+  gst::UGstElem deinterlace_{"deinterlace"};
   std::string shmpath_{};
   const std::string raw_suffix_{"video"};
   const std::string enc_suffix_{"video-encoded"};
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
-  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
+  std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
 
   // devices list:
-  Selection<> devices_enum_{{"none"}, 0};
-  PContainer::prop_id_t devices_id_{0};
-  Selection<> save_device_enum_{{"port", "device"}, 0};
-  PContainer::prop_id_t save_device_id_{0};
+  property::Selection<> devices_enum_{{"none"}, 0};
+  property::prop_id_t devices_id_{0};
+  property::Selection<> save_device_enum_{{"port", "device"}, 0};
+  property::prop_id_t save_device_id_{0};
   bool force_framerate_{false};
-  PContainer::prop_id_t force_framerate_id_{0};
+  property::prop_id_t force_framerate_id_{0};
   bool is_loading_{false};  // device selection will be disabled manually during load
 
-  // pixet format
-  Selection<> pixel_format_enum_{{"none"}, 0};
-  PContainer::prop_id_t pixel_format_id_{0};
+  // pixel format
+  property::Selection<> pixel_format_enum_{{"none"}, 0};
+  property::prop_id_t pixel_format_id_{0};
+
+  // deinterlacing
+  property::Selection<> deinterlace_mode_{{"Auto-detection", "On", "Off"}, 0};
+  property::prop_id_t deinterlace_mode_id_{0};
 
   // resolution enum and select for the currently selected device,
   // this is updated when selecting an other device
-  Selection<> resolutions_enum_{{"none"}, 0};
-  PContainer::prop_id_t resolutions_id_{0};
+  property::Selection<> resolutions_enum_{{"none"}, 0};
+  property::prop_id_t resolutions_id_{0};
   // width height for the currently selected device
-  Selection<Fraction> custom_resolutions_{
+  property::Selection<property::Fraction> custom_resolutions_{
       {"3840x2160", "1920x1080", "1280x720", "800x600", "640x480", "320x240", "Custom"},
-      {Fraction(3840, 2160),
-       Fraction(1920, 1080),
-       Fraction(1280, 720),
-       Fraction(800, 600),
-       Fraction(640, 480),
-       Fraction(320, 240),
-       Fraction(-1, -1)},
+      {property::Fraction(3840, 2160),
+       property::Fraction(1920, 1080),
+       property::Fraction(1280, 720),
+       property::Fraction(800, 600),
+       property::Fraction(640, 480),
+       property::Fraction(320, 240),
+       property::Fraction(-1, -1)},
       1};
-  PContainer::prop_id_t custom_resolutions_id_{0};
   gint width_{0};
-  PContainer::prop_id_t width_id_{0};
+  property::prop_id_t width_id_{0};
   gint height_{0};
-  PContainer::prop_id_t height_id_{0};
+  property::prop_id_t height_id_{0};
 
   // tv standard enum and select for the currently selected device,
   // this is updated when selecting an other device
-  Selection<> tv_standards_enum_{{"none"}, 0};
-  PContainer::prop_id_t tv_standards_id_{0};
+  property::Selection<> tv_standards_enum_{{"none"}, 0};
+  property::prop_id_t tv_standards_id_{0};
 
   // framerate enum and select for the currently selected device,
   // this is updated when selecting an other device
-  Selection<> framerates_enum_{{"none"}, 0};
-  PContainer::prop_id_t framerates_enum_id_{0};
+  property::Selection<> framerates_enum_{{"none"}, 0};
+  property::prop_id_t framerates_enum_id_{0};
 
   // width height for the currently selected device
-  Selection<Fraction> standard_framerates_{
+  property::Selection<property::Fraction> standard_framerates_{
       {"60", "59.94", "50", "30", "29.97", "25", "24", "23.976", "Custom"},
-      {Fraction(60, 1),
-       Fraction(2997, 50),  // 59.94
-       Fraction(50, 1),
-       Fraction(30, 1),
-       Fraction(2997, 100),
-       Fraction(25, 1),
-       Fraction(24, 1),
-       Fraction(2997, 125),  // 23.976
-       Fraction(-1, -1)},
+      {property::Fraction(60, 1),
+       property::Fraction(2997, 50),  // 59.94
+       property::Fraction(50, 1),
+       property::Fraction(30, 1),
+       property::Fraction(2997, 100),
+       property::Fraction(25, 1),
+       property::Fraction(24, 1),
+       property::Fraction(2997, 125),  // 23.976
+       property::Fraction(-1, -1)},
       3};  // default to 30 fps
-  PContainer::prop_id_t standard_framerates_id_{0};
-  Fraction custom_framerate_{30, 1};
-  PContainer::prop_id_t custom_framerate_id_{0};
+  property::prop_id_t standard_framerates_id_{0};
+  property::Fraction custom_framerate_{30, 1};
+  property::prop_id_t custom_framerate_id_{0};
 
   // grouping of capture device configuration
-  PContainer::prop_id_t group_id_{0};
+  property::prop_id_t group_id_{0};
   std::vector<CaptureDescription> capture_devices_{};
 
   bool start() final;
@@ -162,14 +168,14 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
 
   bool fetch_available_resolutions();
   bool fetch_available_frame_intervals();
+  std::string fetch_current_resolution();
+  std::string fetch_current_framerate();
 
   void update_capture_device();
   void update_device_specific_properties();
-  void update_discrete_resolution();
-  void update_width_height();
+  void update_device_resolution();
   void update_tv_standard();
-  void update_discrete_framerate();
-  void update_framerate_numerator_denominator();
+  void update_device_framerate();
   void update_pixel_format();
   bool is_current_pixel_format_raw_video() const;
   void set_shm_suffix();
@@ -186,5 +192,6 @@ class V4L2Src : public Quiddity, public StartableQuiddity {
 
 SWITCHER_DECLARE_PLUGIN(V4L2Src);
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

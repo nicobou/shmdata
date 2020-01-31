@@ -22,12 +22,12 @@
 
 #include <iomanip>
 #include <memory>
-#include <switcher/periodic-task.hpp>
-#include <switcher/property-container.hpp>
-#include <switcher/quiddity.hpp>
-#include <switcher/shmdata-writer.hpp>
-#include <switcher/startable-quiddity.hpp>
-#include <switcher/threaded-wrapper.hpp>
+#include <switcher/quiddity/property/pbag.hpp>
+#include <switcher/quiddity/quiddity.hpp>
+#include <switcher/quiddity/startable.hpp>
+#include <switcher/shmdata/writer.hpp>
+#include <switcher/utils/periodic-task.hpp>
+#include <switcher/utils/threaded-wrapper.hpp>
 #include "./devices/analog-source-device.hpp"
 #include "./devices/button-source-device.hpp"
 #include "./devices/source-device.hpp"
@@ -35,11 +35,13 @@
 #include "shared/connection/vrpn-client-connection.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
-class VRPNSource : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class VRPNSource : public Quiddity, public Startable {
  public:
-  VRPNSource(quid::Config&&);
+  VRPNSource(quiddity::Config&&);
   ~VRPNSource();
   VRPNSource(const VRPNSource&) = delete;
   VRPNSource& operator=(const VRPNSource&) = delete;
@@ -58,7 +60,7 @@ class VRPNSource : public Quiddity, public StartableQuiddity {
   /**
    * Host property id
    */
-  PContainer::prop_id_t host_id_;
+  property::prop_id_t host_id_;
 
   /**
    * Port property value
@@ -68,7 +70,7 @@ class VRPNSource : public Quiddity, public StartableQuiddity {
   /**
    * Port property id
    */
-  PContainer::prop_id_t port_id_;
+  property::prop_id_t port_id_;
 
   /**
    * Debug property value
@@ -84,7 +86,7 @@ class VRPNSource : public Quiddity, public StartableQuiddity {
   void on_loading(InfoTree::ptr&& tree) final;
 
   // SHMDATA
-  std::unique_ptr<ShmdataWriter> shmDataWriter_{nullptr};
+  std::unique_ptr<shmdata::Writer> shmDataWriter_{nullptr};
 
   // VRPN
   std::mutex vrpnMutex_{};
@@ -108,6 +110,7 @@ class VRPNSource : public Quiddity, public StartableQuiddity {
   // Destroy connection last
   std::unique_ptr<VRPNClientConnection> connection_{};
 };
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 #endif

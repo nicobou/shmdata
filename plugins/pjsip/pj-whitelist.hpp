@@ -19,9 +19,10 @@
 #define PLUGINS_PJSIP_PJ_WHITELIST_H_
 
 #include <unordered_map>
-#include "switcher/property-container.hpp"
+#include "switcher/quiddity/property/pbag.hpp"
 
 namespace switcher {
+namespace quiddities {
 class PJWhiteList {
  public:
   using on_authorization_updated_t = std::function<void(bool)>;
@@ -37,13 +38,14 @@ class PJWhiteList {
 
  private:
   std::unordered_map<std::string, on_authorization_updated_t> on_auth_cbs_{};
-  Selection<> mode_{{"authorized contacts", "everybody"}, 0};
-  PContainer::prop_id_t mode_id_;
-  Selection<>::index_t everybody_;
+  quiddity::property::Selection<> mode_{{"authorized contacts", "everybody"}, 0};
+  quiddity::property::prop_id_t mode_id_;
+  quiddity::property::Selection<>::index_t everybody_;
   const bool default_authorization_{true};
   std::unordered_map<std::string, bool> authorizations_{};
   bool authorize_buddy_cb(const std::string& sip_url, bool authorized);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

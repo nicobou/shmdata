@@ -19,6 +19,7 @@
 #include "./pj-sip.hpp"
 
 namespace switcher {
+namespace quiddities {
 pjmedia_endpt* PJMediaEndpt::med_endpt_ = nullptr;
 
 PJMediaEndpt::PJMediaEndpt() {
@@ -40,4 +41,5 @@ PJMediaEndpt::~PJMediaEndpt() {
   }
 }
 
+}  // namespace quiddities
 }  // namespace switcher

@@ -26,11 +26,13 @@
 #include "./pj-sip.hpp"
 #include "./pj-stun-turn.hpp"
 #include "./pj-whitelist.hpp"
-#include "switcher/quiddity-container.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/threaded-wrapper.hpp"
+#include "switcher/quiddity/container.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
+namespace quiddities {
+using namespace quiddity;
 class SIPPlugin : public Quiddity {
   friend PJCall;
   friend PJPresence;
@@ -40,7 +42,7 @@ class SIPPlugin : public Quiddity {
   friend PJICEStreamTrans;
 
  public:
-  SIPPlugin(quid::Config&&);
+  SIPPlugin(quiddity::Config&&);
   ~SIPPlugin();
   SIPPlugin(const SIPPlugin&) = delete;
   SIPPlugin& operator=(const SIPPlugin&) = delete;
@@ -50,7 +52,7 @@ class SIPPlugin : public Quiddity {
  private:
   pjsua_transport_id transport_id_{-1};
   unsigned int sip_port_{5060};
-  PContainer::prop_id_t port_id_;
+  property::prop_id_t port_id_;
   std::string default_dns_address_;
   std::string dns_address_;
 
@@ -59,9 +61,9 @@ class SIPPlugin : public Quiddity {
   int console_log_level_{2};
   std::string log_filename_;
 
-  PContainer::prop_id_t dns_address_id_{0};
+  property::prop_id_t dns_address_id_{0};
   bool decompress_streams_{true};
-  PContainer::prop_id_t decompress_streams_id_;
+  property::prop_id_t decompress_streams_id_;
   std::unique_ptr<PJCall> sip_calls_{nullptr};
   std::unique_ptr<PJPresence> sip_presence_{nullptr};
   std::unique_ptr<PJStunTurn> stun_turn_{nullptr};
@@ -85,11 +87,13 @@ class SIPPlugin : public Quiddity {
   void expose_stream_to_quiddity(const std::string& quid_name, const std::string& shmpath);
   void remove_exposed_quiddity(const std::string& peer_uri, const std::string& quid_name);
   void remove_exposed_quiddities(const std::string& peer_uri);
+  std::string get_exposed_quiddity_name_from_shmpath(const std::string& shmpath);
 
   // on_saving and on_saved methods set DNS server to "default" when system (default) DNS is used.
   InfoTree::ptr on_saving() final;
   void on_saved() final;
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

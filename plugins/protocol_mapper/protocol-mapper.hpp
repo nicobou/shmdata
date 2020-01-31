@@ -20,23 +20,25 @@
 #define SWITCHER_PROTOCOL_MAPPER_HPP
 
 #include "protocol-reader.hpp"
-#include "switcher/quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
 
 namespace switcher {
+namespace quiddities {
+using namespace quiddity;
 class ProtocolMapper : public Quiddity {
  public:
-  ProtocolMapper(quid::Config&&);
+  ProtocolMapper(quiddity::Config&&);
   ~ProtocolMapper() = default;
 
  private:
 
   // Protocol configuration
   std::string config_file_{};
-  PContainer::prop_id_t config_file_id_;
+  property::prop_id_t config_file_id_;
   std::unique_ptr<ProtocolReader> protocol_reader_{};
 };
 
 SWITCHER_DECLARE_PLUGIN(ProtocolMapper);
-}
-
+}  // namespace quiddities
+}  // namespace switcher
 #endif

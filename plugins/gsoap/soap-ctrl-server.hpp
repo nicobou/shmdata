@@ -21,14 +21,16 @@
 #include <memory>
 #include <mutex>
 #include <thread>
-#include "switcher/quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
 #include "switcher/switcher.hpp"
 #include "webservices/soapcontrolService.h"
 
 namespace switcher {
+namespace quiddities {
+using namespace quiddity;
 class SoapCtrlServer : public Quiddity {
  public:
-  SoapCtrlServer(quid::Config&&);
+  SoapCtrlServer(quiddity::Config&&);
   ~SoapCtrlServer();
   SoapCtrlServer(const SoapCtrlServer&) = delete;
   SoapCtrlServer& operator=(const SoapCtrlServer&) = delete;
@@ -46,10 +48,11 @@ class SoapCtrlServer : public Quiddity {
   SOAP_SOCKET socket_{-1};
   std::thread thread_{};
   std::mutex mutex_{};
-  MContainer::meth_id_t set_port_id_;
+  method::meth_id_t set_port_id_;
 };
 
 SWITCHER_DECLARE_PLUGIN(SoapCtrlServer);
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

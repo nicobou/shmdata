@@ -19,13 +19,14 @@
 
 #include "./nvenc-encode-session.hpp"
 #include <cstring>  // memset
-#include "switcher/scope-exit.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 NVencES::NVencES(uint32_t device_id,
                  //, uint32_t width, uint32_t height,  NV_ENC_BUFFER_FORMAT format
-                 BaseLogger* log)
-    : Logged(log), cu_ctx_(device_id, log) {
+                 log::Base* log)
+    : log::Logged(log), cu_ctx_(device_id, log) {
   On_scope_exit {
     if (!safe_bool_idiom()) warning("NV encoder session initialization failed");
   };
@@ -273,4 +274,5 @@ bool NVencES::process_encoded_frame(std::function<void(void*, uint32_t)> fun) {
   return buffers_->process_encoded_frame(fun);
 }
 
+}  // namespace quiddities
 }  // namespace switcher

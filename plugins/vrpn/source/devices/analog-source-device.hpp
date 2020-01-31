@@ -25,6 +25,7 @@
 #include "vrpn_Analog.h"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 class AnalogSourceDevice : public SourceDevice {
@@ -33,13 +34,13 @@ class AnalogSourceDevice : public SourceDevice {
    * Type for the double property creation callback
    */
   using CreateDoublePropertyCallback =
-      std::function<PContainer::prop_id_t(Property<double>* property,
-                                          const std::string& id,
-                                          const std::string& name,
-                                          const std::string& description,
-                                          double value,
-                                          double min,
-                                          double max)>;
+      std::function<property::prop_id_t(Property<double>* property,
+                                        const std::string& id,
+                                        const std::string& name,
+                                        const std::string& description,
+                                        double value,
+                                        double min,
+                                        double max)>;
 
   AnalogSourceDevice(const std::string& name,
                      const std::string& uri,
@@ -63,6 +64,7 @@ class AnalogSourceDevice : public SourceDevice {
   static void handleAnalogCallback(void* userData, const vrpn_ANALOGCB info);
   void handleAnalogChannel(int index, double value);
 };
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 #endif

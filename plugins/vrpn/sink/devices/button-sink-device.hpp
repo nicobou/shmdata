@@ -24,6 +24,7 @@
 #include "./sink-device.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 class ButtonSinkDevice : public SinkDevice {
@@ -75,7 +76,8 @@ class ButtonSinkDevice : public SinkDevice {
    */
   int numButtons_{};
 };
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 
 #endif

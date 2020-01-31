@@ -18,9 +18,9 @@
  */
 
 #include "./pyswitch.hpp"
-#include <switcher/console-logger.hpp>
-#include <switcher/information-tree.hpp>
-#include <switcher/silent-logger.hpp>
+#include <switcher/infotree/information-tree.hpp>
+#include <switcher/logger/console.hpp>
+#include <switcher/logger/silent.hpp>
 #include "./pyinfotree.hpp"
 #include "./pyqrox.hpp"
 
@@ -49,17 +49,17 @@ int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds
 
   self->name = name;
   if (showDebug && PyBool_Check(showDebug) && showDebug==Py_True) {
-    self->switcher = Switcher::make_switcher<ConsoleLogger>(PyUnicode_AsUTF8(self->name));
+    self->switcher = Switcher::make_switcher<log::Console>(PyUnicode_AsUTF8(self->name));
   } else {
-    self->switcher = Switcher::make_switcher<SilentLogger>(PyUnicode_AsUTF8(self->name));
+    self->switcher = Switcher::make_switcher<log::Silent>(PyUnicode_AsUTF8(self->name));
   }
 
   if (!self->switcher) {
     return -1;
   }
 
-  self->switcher->factory<MPtr(&quid::Factory::scan_dir)>(
-      self->switcher->factory<MPtr(&quid::Factory::get_default_plugin_dir)>());
+  self->switcher->factory<MPtr(&quiddity::Factory::scan_dir)>(
+      self->switcher->factory<MPtr(&quiddity::Factory::get_default_plugin_dir)>());
 
   if (configFile) {
     if (!self->switcher->conf<MPtr(&Configuration::from_file)>(PyUnicode_AsUTF8(configFile)))
@@ -116,7 +116,7 @@ PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds)
     return Py_None;
   }
 
-  auto qrox = self->switcher->quids<MPtr(&quid::Container::create)>(
+  auto qrox = self->switcher->quids<MPtr(&quiddity::Container::create)>(
       type,
       name ? name : std::string(),
       pyinfotree ? reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree : nullptr);
@@ -144,7 +144,7 @@ PyObject* pySwitch::remove(pySwitchObject* self, PyObject* args, PyObject* kwds)
     Py_INCREF(Py_False);
     return Py_False;
   }
-  if (!self->switcher->quids<MPtr(&quid::Container::remove)>(id)) {
+  if (!self->switcher->quids<MPtr(&quiddity::Container::remove)>(id)) {
     Py_INCREF(Py_False);
     return Py_False;
   }
@@ -164,7 +164,7 @@ PyObject* pySwitch::get_qrox_from_name(pySwitchObject* self, PyObject* args, PyO
     Py_INCREF(Py_None);
     return Py_None;
   }
-  auto qrox = self->switcher->quids<MPtr(&quid::Container::get_qrox_from_name)>(name);
+  auto qrox = self->switcher->quids<MPtr(&quiddity::Container::get_qrox_from_name)>(name);
   if (!qrox) {
     Py_INCREF(Py_None);
     return Py_None;
@@ -189,7 +189,7 @@ PyObject* pySwitch::get_qrox(pySwitchObject* self, PyObject* args, PyObject* kwd
     Py_INCREF(Py_None);
     return Py_None;
   }
-  auto qrox = self->switcher->quids<MPtr(&quid::Container::get_qrox)>(id);
+  auto qrox = self->switcher->quids<MPtr(&quiddity::Container::get_qrox)>(id);
   if (!qrox) {
     Py_INCREF(Py_None);
     return Py_None;
@@ -263,7 +263,7 @@ PyDoc_STRVAR(pyswitch_list_classes_doc,
              "Returns: A list a of class name.\n");
 
 PyObject* pySwitch::list_classes(pySwitchObject* self, PyObject* args, PyObject* kwds) {
-  auto class_list = self->switcher->factory<MPtr(&quid::Factory::get_class_list)>();
+  auto class_list = self->switcher->factory<MPtr(&quiddity::Factory::get_class_list)>();
   PyObject* result = PyList_New(class_list.size());
   for (unsigned int i = 0; i < class_list.size(); ++i) {
     PyList_SetItem(result, i, Py_BuildValue("s", class_list[i].c_str()));
@@ -278,8 +278,8 @@ PyDoc_STRVAR(pyswitch_classes_doc_doc,
 
 PyObject* pySwitch::classes_doc(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   return PyUnicode_FromString(
-      JSONSerializer::serialize(
-          self->switcher->factory<MPtr(&quid::Factory::get_classes_doc)>().get())
+      infotree::json::serialize(
+          self->switcher->factory<MPtr(&quiddity::Factory::get_classes_doc)>().get())
           .c_str());
 }
 
@@ -296,7 +296,7 @@ PyObject* pySwitch::class_doc(pySwitchObject* self, PyObject* args, PyObject* kw
     return Py_None;
   }
   return PyUnicode_FromString(
-      JSONSerializer::serialize(self->switcher->factory<MPtr(&quid::Factory::get_classes_doc)>()
+      infotree::json::serialize(self->switcher->factory<MPtr(&quiddity::Factory::get_classes_doc)>()
                                     ->get_tree(std::string(".classes.") + class_name)
                                     .get())
           .c_str());
@@ -308,7 +308,7 @@ PyDoc_STRVAR(pyswitch_list_quids_doc,
              "Returns: A list a of quiddities.\n");
 
 PyObject* pySwitch::list_quids(pySwitchObject* self, PyObject* args, PyObject* kwds) {
-  auto quids = self->switcher->quids<MPtr(&quid::Container::get_names)>();
+  auto quids = self->switcher->quids<MPtr(&quiddity::Container::get_names)>();
   PyObject* result = PyList_New(quids.size());
   for (unsigned int i = 0; i < quids.size(); ++i) {
     PyList_SetItem(result, i, Py_BuildValue("s", quids[i].c_str()));
@@ -323,8 +323,8 @@ PyDoc_STRVAR(pyswitch_quids_descr_doc,
 
 PyObject* pySwitch::quids_descr(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   return PyUnicode_FromString(
-      JSONSerializer::serialize(
-          self->switcher->quids<MPtr(&quid::Container::get_quiddities_description)>().get())
+      infotree::json::serialize(
+          self->switcher->quids<MPtr(&quiddity::Container::get_quiddities_description)>().get())
           .c_str());
 }
 
@@ -341,8 +341,8 @@ PyObject* pySwitch::quid_descr(pySwitchObject* self, PyObject* args, PyObject* k
     return Py_None;
   }
   return PyUnicode_FromString(
-      JSONSerializer::serialize(
-          self->switcher->quids<MPtr(&quid::Container::get_quiddity_description)>(id).get())
+      infotree::json::serialize(
+          self->switcher->quids<MPtr(&quiddity::Container::get_quiddity_description)>(id).get())
           .c_str());
 }
 

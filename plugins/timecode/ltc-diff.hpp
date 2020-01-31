@@ -21,16 +21,18 @@
 #define SWITCHER_LTC_DIFF_HPP
 
 #include <ltc.h>
-#include "switcher/periodic-task.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/shmdata-writer.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/shmdata/writer.hpp"
+#include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
+namespace quiddities {
 /**
  * LTCDiff class,
  */
+using namespace quiddity;
 class LTCDiff : public Quiddity {
  public:
   struct LTCReader {
@@ -39,7 +41,7 @@ class LTCDiff : public Quiddity {
     void on_data(void* data, size_t data_size);
 
     double timecode_{0};                                      //!< Last detected timecode
-    std::unique_ptr<ShmdataFollower> shm_follower_{nullptr};  //!< LTC shmdata follower
+    std::unique_ptr<shmdata::Follower> shm_follower_{nullptr};  //!< LTC shmdata follower
     std::mutex timecode_m_{};
     LTCDecoder* decoder_{nullptr};  //!< LTC decoder used to detect real time value
 
@@ -51,7 +53,7 @@ class LTCDiff : public Quiddity {
     bool ltc_first_zero_detected{false};  //!< Used during FPS detection to detect start of cycle
   };
 
-  LTCDiff(quid::Config&& conf);
+  LTCDiff(quiddity::Config&& conf);
   ~LTCDiff() = default;
 
  private:
@@ -64,10 +66,10 @@ class LTCDiff : public Quiddity {
       ltc_readers_{};  //!< Incoming sound stream optionally used for cadencing.
 
   bool do_compute_{false};
-  ShmdataConnector shmcntr_{nullptr};
-  std::unique_ptr<ShmdataFollower> shm_follower_{
+  shmdata::Connector shmcntr_{nullptr};
+  std::unique_ptr<shmdata::Follower> shm_follower_{
       nullptr};  //!< Unique, used to cadence the time difference computation
-  std::unique_ptr<ShmdataWriter> shmw_{nullptr};
+  std::unique_ptr<shmdata::Writer> shmw_{nullptr};
 
   std::mutex timecode_m_{};
 
@@ -77,14 +79,15 @@ class LTCDiff : public Quiddity {
   size_t next_index_{0};  //!< Index of the next LTCReader
   std::vector<std::string> display_timecodes_{
       2};  //!< Timecode in string form for display in the inspector
-  PContainer::prop_id_t
+  property::prop_id_t
       display_timecode1_id_{};  //!< Timecode display property of one of the ltc sources
-  PContainer::prop_id_t
+  property::prop_id_t
       display_timecode2_id_{};  //!< Timecode display property of the other ltc source
   std::unique_ptr<PeriodicTask<>> notify_task_{
       nullptr};  //!< Task used to notify the display timecode properties
 };
 SWITCHER_DECLARE_PLUGIN(LTCDiff)
+}  // namespace quiddities
 }  // namespace switcher
 
 #endif

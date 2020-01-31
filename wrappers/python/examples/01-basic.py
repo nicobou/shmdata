@@ -42,6 +42,13 @@ vidqrox = sw.create('videotestsrc', 'vid')
 assert None != vidqrox
 vid = vidqrox.quid()
 
+# Quiddities have names, types & nicknames
+assert None != vid.get_name()
+assert None != vid.get_type()
+nick = 'my vid'
+assert vid.set_nickname(nick)
+assert nick == vid.get_nickname()
+
 # Quiddities have properties that can be accessed with get and set.
 # Before action, you can get property information from the quiddity information tree
 assert None != vid.get_info_tree_as_json('.property')

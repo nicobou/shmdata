@@ -18,9 +18,10 @@
  */
 
 #include "signal-quid.hpp"
-#include "switcher/information-tree-json.hpp"
+#include "switcher/infotree/json-serializer.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SignalQuid,
                                      "signal",
                                      "Signal Quiddity",
@@ -30,12 +31,12 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SignalQuid,
                                      "LGPL",
                                      "Jérémie Soria");
 
-SignalQuid::SignalQuid(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      signal_id_(smanage<MPtr(&SContainer::make)>("test-signal", "A test signal")) {
-  mmanage<MPtr(&MContainer::make_method<std::function<bool()>>)>(
+SignalQuid::SignalQuid(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      signal_id_(smanage<MPtr(&signal::SBag::make)>("test-signal", "A test signal")) {
+  mmanage<MPtr(&method::MBag::make_method<std::function<bool()>>)>(
       "emit-signal",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Emit Signal",
@@ -46,7 +47,7 @@ SignalQuid::SignalQuid(quid::Config&& conf)
       [&]() {
         auto tree = InfoTree::make();
         tree->graft(".zetremendouskey", InfoTree::make("zegreatvalue"));
-        smanage<MPtr(&SContainer::notify)>(signal_id_, std::move(tree));
+        smanage<MPtr(&signal::SBag::notify)>(signal_id_, std::move(tree));
         // also grafting the tree
         graft_tree(".zetremendouskey", InfoTree::make("zegreatvalue"), true);
         prune_tree(".zetremendouskey", true);
@@ -54,4 +55,5 @@ SignalQuid::SignalQuid(quid::Config&& conf)
       });
 }
 
-}
+}  // namespace quiddities
+}  // namespace switcher

@@ -21,20 +21,20 @@
 
 #include <cassert>
 #include <vector>
-#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 
 int main() {
   {
     using namespace switcher;
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    assert(test::full(manager, "v4l2src"));
-    if (!manager->quids<MPtr(&quid::Container::create)>("v4l2src", "test", nullptr))
+    assert(quiddity::test::full(manager, "v4l2src"));
+    if (!manager->quids<MPtr(&quiddity::Container::create)>("v4l2src", "test", nullptr))
       return 0;  // no camera in this computer
-    assert(manager->quids<MPtr(&quid::Container::remove)>(
-        manager->quids<MPtr(&quid::Container::get_id)>("test")));
+    assert(manager->quids<MPtr(&quiddity::Container::remove)>(
+        manager->quids<MPtr(&quiddity::Container::get_id)>("test")));
   }  // end of scope is releasing the manager
   return 0;
 }

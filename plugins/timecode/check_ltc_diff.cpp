@@ -20,9 +20,9 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <shmdata/console-logger.hpp>
-#include "switcher/quiddity-basic-test.hpp"
-#include "switcher/serialize-string.hpp"
-#include "switcher/shmdata-follower.hpp"
+#include "switcher/quiddity/basic-test.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/utils/serialize-string.hpp"
 
 bool success = false;
 std::atomic<bool> do_continue{true};
@@ -30,6 +30,7 @@ std::condition_variable cond_var{};
 std::mutex mut{};
 
 using namespace switcher;
+using namespace quiddity;
 
 void wait_until_success() {
   // wait 3 seconds
@@ -57,55 +58,74 @@ int main() {
     using namespace switcher;
     Switcher::ptr manager = Switcher::make_switcher("ltcdifftest");
 
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
+
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("../jack");
+
+    // creating a jack server
+    InfoTree::ptr server_config = InfoTree::make();
+    server_config->vgraft("driver", "dummy");
+    server_config->vgraft("realtime", false);
+    auto jserv = manager->quids<MPtr(&quiddity::Container::create)>(
+        "jackserver", "test_server", server_config.get());
+    assert(jserv);
+    assert(jserv.get()->prop<MPtr(&property::PBag::set_str_str)>("driver", "dummy"));
+    assert(jserv.get()->prop<MPtr(&property::PBag::set_str_str)>("started", "true"));
 
     // Fringe case like CI cannot run this test successfully but we don't want it to fail.
-    if (!manager->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsourcedummy", nullptr))
+    if (!manager->quids<MPtr(&quiddity::Container::create)>(
+            "ltcsource", "ltctestsourcedummy", nullptr))
       return 0;
 
-    if (!test::full(manager, "ltcdiff")) return 1;
+    if (!quiddity::test::full(manager, "ltcdiff")) return 1;
 
     auto ltctestsource1 =
-        manager->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsource1", nullptr)
+        manager->quids<MPtr(&quiddity::Container::create)>("ltcsource", "ltctestsource1", nullptr)
             .get();
     if (!ltctestsource1) return 1;
     auto ltctestsource2 =
-        manager->quids<MPtr(&quid::Container::create)>("ltcsource", "ltctestsource2", nullptr)
+        manager->quids<MPtr(&quiddity::Container::create)>("ltcsource", "ltctestsource2", nullptr)
             .get();
     if (!ltctestsource2) return 1;
     auto ltcdiff =
-        manager->quids<MPtr(&quid::Container::create)>("ltcdiff", "ltcdifftest", nullptr).get();
+        manager->quids<MPtr(&quiddity::Container::create)>("ltcdiff", "ltcdifftest", nullptr).get();
     if (!ltcdiff) return 1;
 
     // We set 30 frames of delay for this source.
-    if (!ltctestsource1->prop<MPtr(&PContainer::set_str_str)>("timeshift_forward", "30")) return 1;
+    if (!ltctestsource1->prop<MPtr(&property::PBag::set_str_str)>("timeshift_forward", "30"))
+      return 1;
 
-    if (!ltctestsource1->prop<MPtr(&PContainer::set_str_str)>("started", "true")) return 1;
+    if (!ltctestsource1->prop<MPtr(&property::PBag::set_str_str)>("started", "true")) return 1;
 
-    if (!ltctestsource2->prop<MPtr(&PContainer::set_str_str)>("started", "true")) return 1;
+    if (!ltctestsource2->prop<MPtr(&property::PBag::set_str_str)>("started", "true")) return 1;
 
-    auto connect_id = ltcdiff->meth<MPtr(&MContainer::get_id)>("connect");
-    if (!ltcdiff->meth<MPtr(&MContainer::invoke_str)>(
+    auto connect_id = ltcdiff->meth<MPtr(&method::MBag::get_id)>("connect");
+    if (!ltcdiff->meth<MPtr(&method::MBag::invoke_str)>(
             connect_id, serialize::esc_for_tuple(ltctestsource1->make_shmpath("audio"))))
       return 1;
-    if (!ltcdiff->meth<MPtr(&MContainer::invoke_str)>(
+    if (!ltcdiff->meth<MPtr(&method::MBag::invoke_str)>(
             connect_id, serialize::esc_for_tuple(ltctestsource2->make_shmpath("audio"))))
       return 1;
 
-    shmdata::ConsoleLogger logger;
-    auto reader = std::make_unique<shmdata::Reader>(ltcdiff->make_shmpath("ltc-diff"),
-                                                    [](void* data, size_t data_size) {
-                                                      if (data_size) {
-                                                        auto diff = *static_cast<double*>(data);
-                                                        // 1000ms in 30 frames, 50ms is between one
-                                                        // and two frames at 30 fps, we accept 1
-                                                        // frame of error.
-                                                        if (diff - 1000 < 50) notify_success();
-                                                      }
-                                                    },
-                                                    nullptr,
-                                                    nullptr,
-                                                    &logger);
+    ::shmdata::ConsoleLogger logger;
+    auto reader = std::make_unique<::shmdata::Reader>(ltcdiff->make_shmpath("ltc-diff"),
+                                                      [](void* data, size_t data_size) {
+                                                        if (data_size) {
+                                                          auto diff = *static_cast<double*>(data);
+                                                          // 1000ms in 30 frames, 50ms is between
+                                                          // one and two frames at 30 fps, we accept
+                                                          // 1 frame of error.
+                                                          if (diff - 1000 < 50) notify_success();
+#ifdef SWITCHER_TEST_COVERAGE
+                                                          // we tolerate more difference when
+                                                          // testing coverage
+                                                          if (diff - 1000 < 500) notify_success();
+#endif
+                                                        }
+                                                      },
+                                                      nullptr,
+                                                      nullptr,
+                                                      &logger);
 
     wait_until_success();
 

@@ -20,18 +20,20 @@
 #ifndef SWITCHER_AVPLAYER_HPP
 #define SWITCHER_AVPLAYER_HPP
 
-#include <switcher/startable-quiddity.hpp>
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shm-tree-updater.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/shmdata-writer.hpp"
-#include "switcher/threaded-wrapper.hpp"
+#include <switcher/quiddity/startable.hpp>
+#include "switcher/gst/pipeliner.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
+#include "switcher/shmdata/writer.hpp"
+#include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
-class AVPlayer : public Quiddity, public StartableQuiddity {
+namespace quiddities {
+using namespace quiddity;
+class AVPlayer : public Quiddity, public Startable {
  public:
-  AVPlayer(quid::Config&&);
+  AVPlayer(quiddity::Config&&);
   bool start() final;
   bool stop() final;
 
@@ -45,26 +47,27 @@ class AVPlayer : public Quiddity, public StartableQuiddity {
     std::string filepath_{};
     std::string sink_name_{};
     GstElement* sink_element_{nullptr};
-    std::unique_ptr<GstShmTreeUpdater> shmsink_sub_{nullptr};
+    std::unique_ptr<shmdata::GstTreeUpdater> shmsink_sub_{nullptr};
   };
 
   //! Shmdata methods
   GstBusSyncReply bus_async(GstMessage* msg);
 
-  ShmdataConnector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
+  shmdata::Connector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
   std::vector<std::unique_ptr<ShmFile>> files_list_{};
   GstElement* avplay_bin_{nullptr};  //!< Full recording pipeline
-  std::unique_ptr<GstPipeliner> gst_pipeline_{nullptr};
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};
   int64_t track_duration_{0};
   std::string playpath_{};
   int position_{0};
-  PContainer::prop_id_t position_id_{0};
+  property::prop_id_t position_id_{0};
   std::unique_ptr<PeriodicTask<>> position_task_{};
   bool pause_{false};
   bool seek_called_{false};
   std::mutex seek_mutex_{};
   std::unique_ptr<ThreadedWrapper<>> th_{std::make_unique<ThreadedWrapper<>>()};
 };
+}  // namespace quiddities
 }  // namespace switcher
 
 #endif

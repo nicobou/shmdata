@@ -21,6 +21,7 @@
 #include "./pj-media-endpt.hpp"
 
 namespace switcher {
+namespace quiddities {
 PJCodec::alt_codec_factory_t PJCodec::alt_codec_factory;
 
 pjmedia_codec_factory_op PJCodec::alt_codec_factory_op = {&PJCodec::alt_codec_test_alloc,
@@ -138,4 +139,5 @@ pj_status_t PJCodec::install_codecs() {
   /* initialize your evil library here */
   return PJ_SUCCESS;
 }
+}  // namespace quiddities
 }  // namespace switcher

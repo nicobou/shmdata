@@ -20,10 +20,10 @@
 #include "avplayer.hpp"
 
 #include <sys/stat.h>
-#include "switcher/scope-exit.hpp"
-#include "switcher/shmdata-utils.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_DECLARE_PLUGIN(AVPlayer);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AVPlayer,
                                      "avplayer",
@@ -36,11 +36,12 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AVPlayer,
 
 const std::string AVPlayer::kShmDestPath = "/tmp/avplayer/";
 
-AVPlayer::AVPlayer(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
+AVPlayer::AVPlayer(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
-  pmanage<MPtr(&PContainer::make_string)>(
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
+  pmanage<MPtr(&property::PBag::make_string)>(
       "playpath",
       [this](const std::string& val) {
         if (val.empty()) {
@@ -64,16 +65,16 @@ AVPlayer::AVPlayer(quid::Config&& conf)
       "Location of the folder from which the player will read recorded shmdata files",
       playpath_);
 
-  pmanage<MPtr(&PContainer::make_bool)>("paused",
-                                        [this](const bool& val) {
-                                          pause_ = val;
-                                          gst_pipeline_->play(pause_);
-                                          return true;
-                                        },
-                                        []() { return false; },
-                                        "Paused",
-                                        "Toggle paused status of the stream",
-                                        pause_);
+  pmanage<MPtr(&property::PBag::make_bool)>("paused",
+                                            [this](const bool& val) {
+                                              pause_ = val;
+                                              gst_pipeline_->play(pause_);
+                                              return true;
+                                            },
+                                            []() { return false; },
+                                            "Paused",
+                                            "Toggle paused status of the stream",
+                                            pause_);
 
   struct stat st;
   if (stat(AVPlayer::kShmDestPath.c_str(), &st) != 0 || !S_ISDIR(st.st_mode)) {
@@ -86,12 +87,10 @@ AVPlayer::AVPlayer(quid::Config&& conf)
       return;
     }
   }
-
-  init_startable(this);
 }
 
 bool AVPlayer::start() {
-  gst_pipeline_ = std::make_unique<GstPipeliner>(
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(
       [this](GstMessage* msg) { return this->bus_async(msg); },
       /*[this](GstMessage* msg) { return this->bus_sync(msg); }*/ nullptr);
   std::vector<std::string> playlist;
@@ -136,8 +135,8 @@ bool AVPlayer::start() {
     file->sink_element_ = gst_bin_get_by_name(GST_BIN(avplay_bin_), file->sink_name_.c_str());
     if (!file->sink_element_) continue;
 
-    file->shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
-        this, file->sink_element_, file->shmpath_, GstShmTreeUpdater::Direction::writer);
+    file->shmsink_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+        this, file->sink_element_, file->shmpath_, shmdata::GstTreeUpdater::Direction::writer);
   }
 
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
@@ -148,8 +147,8 @@ bool AVPlayer::start() {
 }
 bool AVPlayer::stop() {
   position_task_.reset();
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
-  pmanage<MPtr(&PContainer::remove)>(position_id_);
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
+  pmanage<MPtr(&property::PBag::remove)>(position_id_);
   position_id_ = 0;
   track_duration_ = 0;
   pause_ = false;
@@ -160,7 +159,7 @@ bool AVPlayer::stop() {
 GstBusSyncReply AVPlayer::bus_async(GstMessage* msg) {
   switch (GST_MESSAGE_TYPE(msg)) {
     case GST_MESSAGE_EOS: {
-      th_->run_async([this]() { pmanage<MPtr(&PContainer::set_str_str)>("started", "false"); });
+      th_->run_async([this]() { pmanage<MPtr(&property::PBag::set_str_str)>("started", "false"); });
       break;
     }
 
@@ -170,28 +169,28 @@ GstBusSyncReply AVPlayer::bus_async(GstMessage* msg) {
             gst_pipeline_->get_pipeline(), GST_FORMAT_TIME, &track_duration_);
 
         if (track_duration_ != 0) {
-          position_id_ =
-              pmanage<MPtr(&PContainer::make_int)>("track_position",
-                                                   [this](const int& pos) {
-                                                     std::lock_guard<std::mutex> lock(seek_mutex_);
-                                                     position_ = pos;
-                                                     seek_called_ = true;
-                                                     gst_pipeline_->play(false);
-                                                     return true;
-                                                   },
-                                                   [this]() { return position_; },
-                                                   "Track position",
-                                                   "Current position of the track",
-                                                   0,
-                                                   0,
-                                                   track_duration_ / GST_SECOND);
+          position_id_ = pmanage<MPtr(&property::PBag::make_int)>(
+              "track_position",
+              [this](const int& pos) {
+                std::lock_guard<std::mutex> lock(seek_mutex_);
+                position_ = pos;
+                seek_called_ = true;
+                gst_pipeline_->play(false);
+                return true;
+              },
+              [this]() { return position_; },
+              "Track position",
+              "Current position of the track",
+              0,
+              0,
+              track_duration_ / GST_SECOND);
           position_task_ = std::make_unique<PeriodicTask<>>(
               [this]() {
                 gint64 position;
                 gst_element_query_position(
                     gst_pipeline_->get_pipeline(), GST_FORMAT_TIME, &position);
                 position_ = static_cast<int>(position / GST_SECOND);
-                pmanage<MPtr(&PContainer::notify)>(position_id_);
+                pmanage<MPtr(&property::PBag::notify)>(position_id_);
 
               },
               std::chrono::milliseconds(500));
@@ -213,4 +212,6 @@ GstBusSyncReply AVPlayer::bus_async(GstMessage* msg) {
   }
   return GST_BUS_PASS;
 }
-}
+
+}  // namespace quiddities
+}  // namespace switcher

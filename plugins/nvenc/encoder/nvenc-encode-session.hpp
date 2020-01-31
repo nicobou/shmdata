@@ -28,14 +28,15 @@
 #include "./nvenc-api.hpp"
 #include "./nvenc-buffers.hpp"
 #include "cuda/cuda-context.hpp"
-#include "switcher/logged.hpp"
-#include "switcher/safe-bool-idiom.hpp"
+#include "switcher/logger/logged.hpp"
+#include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
-class NVencES : public Logged, public SafeBoolIdiom {
+namespace quiddities {
+class NVencES : public log::Logged, public SafeBoolIdiom {
  public:
-  NVencES(uint32_t device_id, BaseLogger* log);
-  NVencES(BaseLogger* log) : NVencES(0, log) {}
+  NVencES(uint32_t device_id, log::Base* log);
+  NVencES(log::Base* log) : NVencES(0, log) {}
   NVencES() = delete;
   ~NVencES();
   NVencES(const NVencES&) = delete;
@@ -93,5 +94,6 @@ class NVencES : public Logged, public SafeBoolIdiom {
   static bool is_same(const GUID& g1, const GUID& g2);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

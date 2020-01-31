@@ -18,9 +18,10 @@
  */
 
 #include "ltc-diff.hpp"
-#include "switcher/gst-utils.hpp"
+#include "switcher/gst/utils.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCDiff,
                                      "ltcdiff",
                                      "LTC timecode difference",
@@ -30,31 +31,31 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCDiff,
                                      "LGPL",
                                      "Jérémie Soria");
 
-LTCDiff::LTCDiff(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+LTCDiff::LTCDiff(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   register_writer_suffix("ltc-diff");
   display_timecode1_id_ =
-      pmanage<MPtr(&PContainer::make_string)>("first_timecode",
-                                              nullptr,
-                                              [this]() { return display_timecodes_.at(0); },
-                                              "Timecode 1",
-                                              "Timecode of the first connected source",
-                                              display_timecodes_.at(0));
+      pmanage<MPtr(&property::PBag::make_string)>("first_timecode",
+                                                  nullptr,
+                                                  [this]() { return display_timecodes_.at(0); },
+                                                  "Timecode 1",
+                                                  "Timecode of the first connected source",
+                                                  display_timecodes_.at(0));
 
   display_timecode2_id_ =
-      pmanage<MPtr(&PContainer::make_string)>("second_timecode",
-                                              nullptr,
-                                              [this]() { return display_timecodes_.at(1); },
-                                              "Timecode 2",
-                                              "Timecode of the second connected source",
-                                              display_timecodes_.at(1));
+      pmanage<MPtr(&property::PBag::make_string)>("second_timecode",
+                                                  nullptr,
+                                                  [this]() { return display_timecodes_.at(1); },
+                                                  "Timecode 2",
+                                                  "Timecode of the second connected source",
+                                                  display_timecodes_.at(1));
 
   notify_task_ = std::make_unique<PeriodicTask<>>(
       [this]() {
-        pmanage<MPtr(&PContainer::get_lock)>(display_timecode1_id_);
-        pmanage<MPtr(&PContainer::notify)>(display_timecode1_id_);
-        pmanage<MPtr(&PContainer::get_lock)>(display_timecode2_id_);
-        pmanage<MPtr(&PContainer::notify)>(display_timecode2_id_);
+        pmanage<MPtr(&property::PBag::get_lock)>(display_timecode1_id_);
+        pmanage<MPtr(&property::PBag::notify)>(display_timecode1_id_);
+        pmanage<MPtr(&property::PBag::get_lock)>(display_timecode2_id_);
+        pmanage<MPtr(&property::PBag::notify)>(display_timecode2_id_);
       },
       std::chrono::milliseconds(500));
 
@@ -71,8 +72,8 @@ bool LTCDiff::on_shmdata_connect(const std::string& shmpath) {
   next_index_ = next_index_ ? 0 : 1;
 
   if (!shm_follower_) {
-    shmw_ = std::make_unique<ShmdataWriter>(this, make_shmpath("ltc-diff"), 1, "audio/ltc-diff");
-    shm_follower_ = std::make_unique<ShmdataFollower>(
+    shmw_ = std::make_unique<shmdata::Writer>(this, make_shmpath("ltc-diff"), 1, "audio/ltc-diff");
+    shm_follower_ = std::make_unique<shmdata::Follower>(
         this,
         shmpath,
         [this](void*, size_t) {
@@ -100,8 +101,8 @@ bool LTCDiff::on_shmdata_connect(const std::string& shmpath) {
           }
 
           time_difference_ = std::max<double>(time_difference_, -time_difference_) * 1000;
-          shmw_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(&time_difference_,
-                                                             sizeof(time_difference_));
+          shmw_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(&time_difference_,
+                                                               sizeof(time_difference_));
           shmw_->bytes_written(sizeof(time_difference_));
           time_difference_ = 0;
         },
@@ -123,7 +124,7 @@ bool LTCDiff::on_shmdata_disconnect(const std::string& shmpath) {
 }
 
 bool LTCDiff::can_sink_caps(const std::string& str_caps) {
-  return GstUtils::can_sink_caps("audioconvert", str_caps);
+  return gst::utils::can_sink_caps("audioconvert", str_caps);
 }
 
 LTCDiff::LTCReader::LTCReader(LTCDiff* quid, const std::string& shmpath, size_t index)
@@ -131,7 +132,7 @@ LTCDiff::LTCReader::LTCReader(LTCDiff* quid, const std::string& shmpath, size_t 
   decoder_ = ltc_decoder_create(1920, 32);
   if (nullptr == decoder_) return;
 
-  shm_follower_ = std::make_unique<ShmdataFollower>(
+  shm_follower_ = std::make_unique<shmdata::Follower>(
       quid,
       shmpath,
       [this](void* data, size_t data_size) { on_data(data, data_size); },
@@ -192,4 +193,5 @@ void LTCDiff::LTCReader::on_data(void* data, size_t data_size) {
   }
 }
 
+}  // namespace quiddities
 }  // namespace switcher

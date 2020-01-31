@@ -23,6 +23,7 @@
 // pjmedia_endpt RAII class
 
 namespace switcher {
+namespace quiddities {
 class PJCodec;
 
 class PJMediaEndpt {
@@ -40,5 +41,6 @@ class PJMediaEndpt {
   static pjmedia_endpt* med_endpt_;
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

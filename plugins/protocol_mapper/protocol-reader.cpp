@@ -22,6 +22,7 @@
 #include "protocol-osc.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 const std::string ProtocolReader::kCurlProtocol{"curl"};
 const std::string ProtocolReader::kOscProtocol{"osc"};
@@ -30,7 +31,7 @@ ProtocolReader::ProtocolReader(Quiddity* quid, const InfoTree* tree) {
   continuous_ = tree->branch_read_data<std::string>("continuous") == "true";
   if (!continuous_) return;
 
-  auto emission_prop = quid->pmanage<MPtr(&PContainer::make_unsigned_int)>(
+  auto emission_prop = quid->pmanage<MPtr(&property::PBag::make_unsigned_int)>(
       "emission_period",
       [this](const unsigned int& val) {
         emission_period_ = val;
@@ -43,7 +44,7 @@ ProtocolReader::ProtocolReader(Quiddity* quid, const InfoTree* tree) {
       emission_period_,
       50,
       10000);
-  quid->pmanage<MPtr(&PContainer::set_to_current)>(emission_prop);
+  quid->pmanage<MPtr(&property::PBag::set_to_current)>(emission_prop);
 }
 
 std::unique_ptr<ProtocolReader> ProtocolReader::create_protocol_reader(Quiddity* quid,
@@ -89,7 +90,7 @@ ProtocolReader::ProtocolType ProtocolReader::get_protocol_from_json(const InfoTr
   if (protocol_type.is_null()) return ProtocolType::UNDEFINED;
 
   auto protocol_str = protocol_type.copy_as<std::string>();
-  StringUtils::tolower(protocol_str);
+  stringutils::tolower(protocol_str);
 
   if (protocol_str == kCurlProtocol)
     return ProtocolType::CURL;
@@ -98,4 +99,6 @@ ProtocolReader::ProtocolType ProtocolReader::get_protocol_from_json(const InfoTr
 
   return ProtocolType::UNDEFINED;
 }
-}
+
+}  // namespace quiddities
+}  // namespace switcher

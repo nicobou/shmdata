@@ -22,19 +22,21 @@
 
 #include <jack/jack.h>
 #include <ltc.h>
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
 
 namespace switcher {
+namespace quiddities {
 /**
  * LTCToJack class,
  * Decodes an incoming audio stream with encoded LTC and controls Jack Transport from it.
  *
  */
+using namespace quiddity;
 class LTCToJack : public Quiddity {
  public:
-  LTCToJack(quid::Config&&);
+  LTCToJack(quiddity::Config&&);
   ~LTCToJack();
   LTCToJack(const LTCToJack&) = delete;
   LTCToJack& operator=(const LTCToJack&) = delete;
@@ -46,8 +48,8 @@ class LTCToJack : public Quiddity {
   bool can_sink_caps(std::string str_caps);
 
   // Shmdata
-  ShmdataConnector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
-  std::unique_ptr<ShmdataFollower> shm_follower_{nullptr};  //!< Incoming LTC stream
+  shmdata::Connector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
+  std::unique_ptr<shmdata::Follower> shm_follower_{nullptr};  //!< Incoming LTC stream
 
   jack_client_t* jack_client_{nullptr};  //!< Jack client connected to transport
   LTCDecoder* decoder_{nullptr};         //!< LTC frame decoder
@@ -56,7 +58,7 @@ class LTCToJack : public Quiddity {
   double jack_time_ref_{0.};     //!< Jack transport time at the beginning of the LTC decoding
   double diff_clocks_{0.};       //!< Difference between the absolute clocks of jack and LTC
   double drift_threshold_{.05};  //!< Minimum time difference to trigger a repositioning of jack
-  PContainer::prop_id_t drift_threshold_id_{0};  //!< Threshold property handle
+  property::prop_id_t drift_threshold_id_{0};    //!< Threshold property handle
   std::mutex threshold_mutex_{};                 //!< Protection of drift threshold member
 
   // Needed for LTC fps detection
@@ -72,6 +74,7 @@ class LTCToJack : public Quiddity {
 
 SWITCHER_DECLARE_PLUGIN(LTCToJack);
 
+}  // namespace quiddities
 }  // namespace switcher
 
 #endif

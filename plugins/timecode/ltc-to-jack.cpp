@@ -20,6 +20,7 @@
 #include "ltc-to-jack.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCToJack,
                                      "ltctojack",
                                      "LTC to Jack Transport",
@@ -29,8 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCToJack,
                                      "LGPL",
                                      "Jérémie Soria");
 
-LTCToJack::LTCToJack(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+LTCToJack::LTCToJack(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
   jack_client_ = jack_client_open(
       std::string(std::string("clockLTC_") + get_name()).c_str(), JackNullOption, nullptr);
 
@@ -53,7 +54,7 @@ LTCToJack::LTCToJack(quid::Config&& conf)
       [this](const std::string& caps) { return can_sink_caps(caps); },
       1);
 
-  drift_threshold_id_ = pmanage<MPtr(&PContainer::make_double)>(
+  drift_threshold_id_ = pmanage<MPtr(&property::PBag::make_double)>(
       "drift_threshold",
       [this](const double& val) {
         std::lock_guard<std::mutex> lock(threshold_mutex_);
@@ -76,7 +77,7 @@ LTCToJack::~LTCToJack() {
 }
 
 bool LTCToJack::on_shmdata_connect(const std::string& shmpath) {
-  shm_follower_ = std::make_unique<ShmdataFollower>(
+  shm_follower_ = std::make_unique<shmdata::Follower>(
       this, shmpath, [this](void* data, size_t size) { on_data(data, size); }, nullptr, nullptr);
 
   jack_transport_start(jack_client_);
@@ -174,7 +175,8 @@ void LTCToJack::on_data(void* data, size_t data_size) {
 }
 
 bool LTCToJack::can_sink_caps(std::string str_caps) {
-  return StringUtils::starts_with(str_caps, "audio/x-raw");
+  return stringutils::starts_with(str_caps, "audio/x-raw");
 }
 
+}  // namespace quiddities
 }  // namespace switcher

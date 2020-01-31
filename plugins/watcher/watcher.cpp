@@ -22,6 +22,7 @@
 namespace fs = std::filesystem;
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Watcher,
                                      "watcher",
                                      "Directory watcher",
@@ -31,29 +32,31 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Watcher,
                                      "LGPL",
                                      "Francis Lecavalier");
 
-Watcher::Watcher(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      directory_id_(pmanage<MPtr(&PContainer::make_string)>("directory",
-                                                            [this](const std::string& val) {
-                                                              directory_ = val;
-                                                              return true;
-                                                            },
-                                                            [this]() { return directory_; },
-                                                            "Directory Path",
-                                                            "Full path of the directory to watch",
-                                                            directory_)),
-      create_dir_id_(
-          pmanage<MPtr(&PContainer::make_bool)>("create_directory",
-                                                [this](bool val) {
-                                                  create_dir_ = val;
-                                                  return true;
-                                                },
-                                                [this]() { return create_dir_; },
-                                                "Create directory",
-                                                "Create the watched directory if it doesn't exist",
-                                                create_dir_)) {
-  init_startable(this);
-}
+Watcher::Watcher(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
+      directory_id_(
+          pmanage<MPtr(&property::PBag::make_string)>("directory",
+                                                      [this](const std::string& val) {
+                                                        directory_ = val;
+                                                        return true;
+                                                      },
+                                                      [this]() { return directory_; },
+                                                      "Directory Path",
+                                                      "Full path of the directory to watch",
+                                                      directory_)),
+      create_dir_id_(pmanage<MPtr(&property::PBag::make_bool)>(
+          "create_directory",
+          [this](bool val) {
+            create_dir_ = val;
+            return true;
+          },
+          [this]() { return create_dir_; },
+          "Create directory",
+          "Create the watched directory if it doesn't exist",
+          create_dir_)) {}
+
+Watcher::~Watcher() { stop(); }
 
 bool Watcher::start() {
   stop();
@@ -112,7 +115,11 @@ void Watcher::watch_events() {
   // Check if a file was created
   for (auto& file : fs::recursive_directory_iterator(directory_)) {
     std::string path = file.path().string();
-    if (std::find_if(followers_.begin(), followers_.end(), [path](const std::tuple<std::string, std::unique_ptr<ShmdataFollower>>& t) {return std::get<0>(t) == path;}) == followers_.end()) {
+    if (std::find_if(followers_.begin(),
+                     followers_.end(),
+                     [path](const std::tuple<std::string, std::unique_ptr<shmdata::Follower>>& t) {
+                       return std::get<0>(t) == path;
+                     }) == followers_.end()) {
       if (fs::is_socket(file.path())) {
         create_follower(path);
       }
@@ -124,14 +131,14 @@ void Watcher::watch_events() {
 void Watcher::create_follower(const std::string& shmpath) {
   followers_.push_back(
       std::make_tuple(shmpath,
-                      std::make_unique<ShmdataFollower>(this,
-                                                        shmpath,
-                                                        nullptr,
-                                                        nullptr,
-                                                        nullptr,
-                                                        ShmdataStat::kDefaultUpdateInterval,
-                                                        ShmdataFollower::Direction::writer,
-                                                        true)));
+                      std::make_unique<shmdata::Follower>(this,
+                                                          shmpath,
+                                                          nullptr,
+                                                          nullptr,
+                                                          nullptr,
+                                                          shmdata::Stat::kDefaultUpdateInterval,
+                                                          shmdata::Follower::Direction::writer,
+                                                          true)));
 }
 
 Watcher::DirectoryStatus Watcher::dir_exists(const std::string path) const {
@@ -148,4 +155,5 @@ Watcher::DirectoryStatus Watcher::dir_exists(const std::string path) const {
   }
   return DirectoryStatus::IS_FILE;
 }
+}  // namespace quiddities
 }  // namespace switcher

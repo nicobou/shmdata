@@ -20,20 +20,23 @@
 #ifndef __SWITCHER_SIGNAL_QUID_H__
 #define __SWITCHER_SIGNAL_QUID_H__
 
-#include "switcher/quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
 
 namespace switcher {
+namespace quiddities {
+using namespace quiddity;
 class SignalQuid : public Quiddity {
  public:
-  SignalQuid(quid::Config&&);
+  SignalQuid(quiddity::Config&&);
   ~SignalQuid() = default;
   SignalQuid(const SignalQuid&) = delete;
   SignalQuid& operator=(const SignalQuid&) = delete;
 
  private:
-  SContainer::sig_id_t signal_id_;
+  signal::sig_id_t signal_id_;
 };
 
 SWITCHER_DECLARE_PLUGIN(SignalQuid);
-}
+}  // namespace quiddities
+}  // namespace switcher
 #endif  // __SWITCHER_SIGNAL_QUID_H__

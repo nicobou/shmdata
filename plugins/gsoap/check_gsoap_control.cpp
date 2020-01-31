@@ -20,17 +20,19 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <unistd.h>
-#include "switcher/information-tree-json.hpp"
-#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/infotree/json-serializer.hpp"
+#include "switcher/quiddity/basic-test.hpp"
+
+using namespace switcher;
 
 int main() {
   bool success = false;
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_manager");
+    Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&switcher::quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    if (switcher::test::full(manager, "SOAPcontrolServer")) success = true;
+    if (quiddity::test::full(manager, "SOAPcontrolServer")) success = true;
 
   }  // end of scope is releasing the manager
 

@@ -23,12 +23,14 @@
 #include <memory>
 #include <string>
 
-#include "switcher/quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
 
 namespace switcher {
+namespace quiddities {
+using namespace quiddity;
 class CustomSavePlugin : public Quiddity {
  public:
-  CustomSavePlugin(quid::Config&&);
+  CustomSavePlugin(quiddity::Config&&);
   ~CustomSavePlugin() = default;
   CustomSavePlugin(const CustomSavePlugin&) = delete;
   CustomSavePlugin& operator=(const CustomSavePlugin&) = delete;
@@ -39,10 +41,10 @@ class CustomSavePlugin : public Quiddity {
   // property used in order to implement the test
   bool has_loaded_custom_state_{false};
   bool on_loaded_called_{false};
-  PContainer::prop_id_t has_loaded_custom_state_id_;
+  property::prop_id_t has_loaded_custom_state_id_;
   bool on_saving_called_{false};
   bool on_saved_called_{false};
-  PContainer::prop_id_t has_saved_custom_state_id_;
+  property::prop_id_t has_saved_custom_state_id_;
   InfoTree::ptr on_saving() final;
   void on_saved() final;
   void on_loading(InfoTree::ptr&& tree) final;
@@ -51,5 +53,6 @@ class CustomSavePlugin : public Quiddity {
 
 SWITCHER_DECLARE_PLUGIN(CustomSavePlugin);
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

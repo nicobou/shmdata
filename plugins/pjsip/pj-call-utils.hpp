@@ -20,9 +20,10 @@
 
 #include <pjsua-lib/pjsua.h>
 #include <regex>
-#include "switcher/string-utils.hpp"
+#include "switcher/utils/string-utils.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace PJCallUtils {
 
 bool is_receive_media(const pjmedia_sdp_media* media) {
@@ -61,7 +62,7 @@ std::string get_media_label(const pjmedia_sdp_media* media) {
     auto pos = value.find(name);
     if (std::string::npos != pos) {
       auto index = pos + name.size();
-      return StringUtils::base64_decode(std::string(value, index, value.find(';', index)));
+      return stringutils::base64_decode(std::string(value, index, value.find(';', index)));
     }
   }
   return res;
@@ -97,9 +98,9 @@ std::string get_rtp_caps(const pjmedia_sdp_media* media) {
       // transforming caps=... into caps=(string)""
       std::regex e("\\b(caps=)([^;]*)");
       more = std::regex_replace(more, e, "$1(string)\"$2\"");
-      more = StringUtils::replace_string(more, "==\";", "\\==\";");
-      more = StringUtils::replace_string(more, "=\";", "\\=\";");
-      more = StringUtils::replace_char(more, ';', ", ");
+      more = stringutils::replace_string(more, "==\";", "\\==\";");
+      more = stringutils::replace_string(more, "=\";", "\\=\";");
+      more = stringutils::replace_char(more, ';', ", ");
     }
   }
   res += std::string(", media=(string)") +
@@ -109,5 +110,6 @@ std::string get_rtp_caps(const pjmedia_sdp_media* media) {
 }
 
 }  // namespace PJCallUtils
+}  // namespace quiddities
 }  // namespace switcher
 #endif

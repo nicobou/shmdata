@@ -24,9 +24,10 @@
 #include <map>
 #include <mutex>
 #include <string>
-#include "switcher/selection.hpp"
+#include "switcher/quiddity/property/selection.hpp"
 
 namespace switcher {
+namespace quiddities {
 class SIPPlugin;
 class PJCall;
 class PJSIP;
@@ -51,7 +52,7 @@ class PJPresence {
   std::mutex registration_mutex_{};
   std::condition_variable registration_cond_{};
   // online status
-  Selection<> status_{{"Available", "Busy", "Away", "Offline"}, 0};
+  quiddity::property::Selection<> status_{{"Available", "Busy", "Away", "Offline"}, 0};
   std::string custom_status_{""};
   // sip registration status (read only)
   bool registered_{false};
@@ -91,5 +92,6 @@ class PJPresence {
   static void on_buddy_evsub_state(pjsua_buddy_id buddy_id, pjsip_evsub* sub, pjsip_event* event);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

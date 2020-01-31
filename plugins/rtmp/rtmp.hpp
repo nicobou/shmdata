@@ -17,21 +17,23 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shm-tree-updater.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
+#include "switcher/gst/pipeliner.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
 
 namespace switcher {
+namespace quiddities {
 /**
  * RTMP class,
  * RTMP quiddity compatible with multiple streaming applications (Youtube, Twitch,...)
  */
+using namespace quiddity;
 class RTMP : public Quiddity {
  public:
 
   //! Constructor
-  RTMP(quid::Config&&);
+  RTMP(quiddity::Config&&);
 
   //! Destructor
   ~RTMP() = default;
@@ -51,15 +53,18 @@ class RTMP : public Quiddity {
 
   std::string audio_shmpath_{};  //!< Path of the audio input shmdata
   std::string video_shmpath_{};  //!< Path of the video input shmdata
-  ShmdataConnector shmcntr_;  //!< Shmdata connector of uncompressed audio/video into the quiddity.
-  std::unique_ptr<GstShmTreeUpdater> shmaudio_sub_{nullptr};  //!< Subscriber to audio shmdata
-  std::unique_ptr<GstShmTreeUpdater> shmvideo_sub_{nullptr};  //!< Subscriber to video shmdata
+  shmdata::Connector
+      shmcntr_;  //!< Shmdata connector of uncompressed audio/video into the quiddity.
+  std::unique_ptr<shmdata::GstTreeUpdater> shmaudio_sub_{nullptr};  //!< Subscriber to audio shmdata
+  std::unique_ptr<shmdata::GstTreeUpdater> shmvideo_sub_{nullptr};  //!< Subscriber to video shmdata
 
-  std::unique_ptr<GstPipeliner> gst_pipeline_{nullptr};  //!< Gstreamer pipeline
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};  //!< Gstreamer pipeline
 
-  PContainer::prop_id_t stream_app_url_id_{0};  //!< Stream URL property id
+  property::prop_id_t stream_app_url_id_{0};    //!< Stream URL property id
   std::string stream_app_url_{};                //!< RTMP url of the streaming application
-  PContainer::prop_id_t stream_key_id_{0};      //!< Stream key property id
+  property::prop_id_t stream_key_id_{0};        //!< Stream key property id
   std::string stream_key_{};                    //!< Stream key, found on the streaming application
 };
-};
+
+}  // namespace quiddities
+}  // namespace switcher

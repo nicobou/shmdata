@@ -21,11 +21,12 @@
 #include <lo/lo.h>
 
 namespace switcher {
+namespace quiddities {
 
 ProtocolOsc::ProtocolOsc(Quiddity* quid, const InfoTree* tree) : ProtocolReader(quid, tree) {
   auto url = tree->branch_read_data<std::string>("url");
 
-  url_id_ = quid->pmanage<MPtr(&PContainer::make_string)>(
+  url_id_ = quid->pmanage<MPtr(&property::PBag::make_string)>(
       "remote_url",
       [this](const std::string& val) {
         url_ = val;
@@ -40,7 +41,7 @@ ProtocolOsc::ProtocolOsc(Quiddity* quid, const InfoTree* tree) : ProtocolReader(
       "URL of the remote host receiving OSC (e.g: osc.udp://localhost:4444)",
       url_);
 
-  if (!url.empty()) quid->pmanage<MPtr(&PContainer::set<std::string>)>(url_id_, url);
+  if (!url.empty()) quid->pmanage<MPtr(&property::PBag::set<std::string>)>(url_id_, url);
 }
 
 bool ProtocolOsc::make_properties(Quiddity* quid, const InfoTree* tree) {
@@ -56,9 +57,9 @@ bool ProtocolOsc::make_properties(Quiddity* quid, const InfoTree* tree) {
     auto value = tree->branch_get_value(it + ".value");
     if (!type.empty() && value.is_null()) continue;
 
-    quid->pmanage<MPtr(&PContainer::make_bool)>(
+    quid->pmanage<MPtr(&property::PBag::make_bool)>(
         it,
-        [ this, quidptr = quid, it, type, path, value, continuous ](bool val) {
+        [this, quidptr = quid, it, type, path, value, continuous](bool val) {
           if (url_.empty()) {
             quidptr->warning("No remote url set, cannot send OSC messages (protocol-mapper).");
             quidptr->message("No remote url set, cannot send OSC messages.");
@@ -144,4 +145,6 @@ ProtocolOsc::OscAddress::OscAddress(const std::string& url) {
 ProtocolOsc::OscAddress::~OscAddress() {
   if (address) lo_address_free(address);
 }
-}
+
+}  // namespace quiddities
+}  // namespace switcher

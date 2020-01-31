@@ -20,6 +20,7 @@
 #include "./nvenc-api.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 bool NVencAPI::nvenc_api_has_been_set_ = false;
 NV_ENCODE_API_FUNCTION_LIST NVencAPI::api;
@@ -31,4 +32,5 @@ NVencAPI::NVencAPI() {
   }
 }
 
+}  // namespace quiddities
 }  // namespace switcher

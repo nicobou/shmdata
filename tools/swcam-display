@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# switcher is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+
+import argparse
+import os
+import signal
+import sys
+import time
+from pyquid import Switcher, Quiddity, InfoTree
+from typing import Any
+
+
+def parse_args() -> argparse.Namespace:
+    argp = argparse.ArgumentParser()
+    argp.add_argument("-l", "--list-camera", help="list available cameras", action="store_true")
+    argp.add_argument("-d", "--debug", help="print switcher log messages", action="store_true")
+    argp.add_argument("-c", "--capture-device",
+                      help="video capture device (name or number, as displayed with option -l)", type=str)
+    return argp.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+
+    # create a switcher.
+    sw = Switcher('swcam-display' + str(os.getpid()), debug=args.debug)
+    cam = sw.create('v4l2src', 'cam')
+    if (not cam):
+        print('sorry, no device found')
+        return
+    if (args.list_camera):
+        devices = InfoTree(cam.quid().get_info_tree_as_json('.property.device.values'))
+        for id, label in zip(devices.get_key_values('id'), devices.get_key_values('label')):
+            print(str(id) + ': "' + label + '"')
+        return
+    if(args.capture_device):
+        if(not cam.quid().set("device", args.capture_device)):
+            print('cannot set device ' + args.capture_device)
+            exit(1)
+    cam.quid().set('started', True)
+    win = sw.create('glfwin', 'win')
+    win.quid().invoke('connect-quid', ['cam', 'video'])
+
+    while(True):
+        time.sleep(0.2)
+
+
+def sigint_handler(signum: Any, frame: Any) -> None:
+    print('')  # avoid having the prompt back
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    signal.signal(signal.SIGINT, sigint_handler)
+    main()

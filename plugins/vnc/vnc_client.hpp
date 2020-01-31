@@ -27,11 +27,11 @@
 #include <thread>
 #include <vector>
 
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/shmdata-writer.hpp"
-#include "switcher/startable-quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/shmdata/writer.hpp"
 
 #include <rfb/rfbclient.h>
 
@@ -39,9 +39,11 @@
 #define VNC_KEYBOARD_EVENTS_CAPS "application/x-keyboard-events"
 
 namespace switcher {
-class VncClientSrc : public Quiddity, public StartableQuiddity {
+namespace quiddities {
+using namespace quiddity;
+class VncClientSrc : public Quiddity, public Startable {
  public:
-  VncClientSrc(quid::Config&&);
+  VncClientSrc(quiddity::Config&&);
   ~VncClientSrc();
   VncClientSrc(const VncClientSrc&) = delete;
   VncClientSrc& operator=(const VncClientSrc&) = delete;
@@ -50,17 +52,17 @@ class VncClientSrc : public Quiddity, public StartableQuiddity {
   bool stop();
 
  private:
-  ShmdataConnector shmcntr_;
+  shmdata::Connector shmcntr_;
   // prop
   std::string vnc_server_address_{"localhost"};
-  PContainer::prop_id_t vnc_server_address_id_{0};
-  PContainer::prop_id_t capture_truecolor_id_{0};
+  property::prop_id_t vnc_server_address_id_{0};
+  property::prop_id_t capture_truecolor_id_{0};
   bool capture_truecolor_{true};
   bool previous_truecolor_state_{true};
   rfbClient* rfb_client_{nullptr};
   std::vector<unsigned char> framebuffer_{};
   size_t framebuffer_size_{0};
-  std::unique_ptr<ShmdataWriter> vnc_writer_{nullptr};
+  std::unique_ptr<shmdata::Writer> vnc_writer_{nullptr};
   std::atomic_bool vnc_continue_update_{false};
   std::thread vnc_update_thread_{};
 
@@ -68,7 +70,7 @@ class VncClientSrc : public Quiddity, public StartableQuiddity {
   std::mutex connect_mutex_{};
   int shmreader_id_{0};
   std::map<int, std::string> shmdata_readers_caps_{};
-  std::map<std::string, std::unique_ptr<ShmdataFollower>> events_readers_{};
+  std::map<std::string, std::unique_ptr<shmdata::Follower>> events_readers_{};
 
   bool connect(std::string shmdata_socket_path);
   bool disconnect(std::string shmName);
@@ -80,5 +82,6 @@ class VncClientSrc : public Quiddity, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(VncClientSrc);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

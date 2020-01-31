@@ -21,6 +21,7 @@
 #include <glib/gprintf.h>
 
 namespace switcher {
+namespace quiddities {
 
 PortMidi::PortMidiScheduler* PortMidi::scheduler_ = nullptr;
 unsigned int PortMidi::instance_counter_ = 0;
@@ -300,8 +301,9 @@ void PortMidi::update_device_enum() {
       onames.push_back(std::string(listinfo->name) + " (" + std::string(listinfo->interf) + ")");
     }
   }
-  input_devices_enum_ = Selection<>(std::make_pair(inames, inicks), 0);
-  output_devices_enum_ = Selection<>(std::make_pair(onames, onicks), 0);
+  input_devices_enum_ = property::Selection<>(std::make_pair(inames, inicks), 0);
+  output_devices_enum_ = property::Selection<>(std::make_pair(onames, onicks), 0);
 }
 
+}  // namespace quiddities
 }  // namespace switcher

@@ -21,13 +21,13 @@
 #define __SWITCHER_PYQROX_H__
 
 #include <Python.h>  // according to python doc, this *must* be the first include
-#include "switcher/quiddity-qrox.hpp"
+#include "switcher/quiddity/qrox.hpp"
 
 using namespace switcher;
 
 class pyQrox {
  public:
-  using pyQroxObject = struct { PyObject_HEAD std::unique_ptr<quid::Qrox> qrox{}; };
+  using pyQroxObject = struct { PyObject_HEAD std::unique_ptr<quiddity::Qrox> qrox{}; };
 
   static PyTypeObject pyType;
   static PyMethodDef pyQrox_methods[];

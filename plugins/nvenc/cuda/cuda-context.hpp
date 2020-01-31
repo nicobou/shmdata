@@ -25,19 +25,20 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "switcher/logged.hpp"
-#include "switcher/safe-bool-idiom.hpp"
+#include "switcher/logger/logged.hpp"
+#include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 class NVencES;
 // Creates a new CUDA context and associates it with the calling thread:
-class CudaContext : public Logged, public SafeBoolIdiom {
+class CudaContext : public log::Logged, public SafeBoolIdiom {
   friend NVencES;
 
  public:
-  CudaContext(uint32_t device_id, BaseLogger* log);
-  CudaContext(BaseLogger* log) : CudaContext(0, log) {}
+  CudaContext(uint32_t device_id, log::Base* log);
+  CudaContext(log::Base* log) : CudaContext(0, log) {}
   CudaContext() = delete;
   ~CudaContext();
   CudaContext(const CudaContext&) = delete;
@@ -53,5 +54,6 @@ class CudaContext : public Logged, public SafeBoolIdiom {
   bool safe_bool_idiom() const { return nullptr != cuda_ctx_; }
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

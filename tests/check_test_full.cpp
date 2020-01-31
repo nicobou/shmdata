@@ -23,15 +23,17 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 #include "switcher/switcher.hpp"
+
+using namespace switcher;
 
 int main() {
   bool success = true;
   {
-    switcher::Switcher::ptr manager = switcher::Switcher::make_switcher("test_full");
-    for (auto& it : manager->factory<MPtr(&switcher::quid::Factory::get_class_list)>()) {
-      if (!switcher::test::full(manager, it)) {
+    Switcher::ptr manager = Switcher::make_switcher("test_full");
+    for (auto& it : manager->factory<MPtr(&quiddity::Factory::get_class_list)>()) {
+      if (!quiddity::test::full(manager, it)) {
         success = false;
       }
     }

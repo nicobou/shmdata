@@ -24,6 +24,10 @@ if (WITH_SWITCHER)
         COMPONENT applications
         )
 
+    # TEST
+
+    add_test(NAME check_switcher_command COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/check_switcher.sh)
+
 endif ()
 
 # Switcher Control
@@ -61,5 +65,9 @@ if (WITH_SWITCHER_CTRL)
         DESTINATION bin
         COMPONENT applications
         )
+
+    # TEST
+
+    add_test(NAME check_switcher_ctrl_command COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/check_switcher_ctrl.sh)
 
 endif ()

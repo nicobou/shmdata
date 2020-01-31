@@ -20,6 +20,7 @@
 #include "./osc-to-shmdata.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
                                      "OSCsrc",
                                      "OSC Receiver",
@@ -29,20 +30,20 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-OscToShmdata::OscToShmdata(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)), port_(1056) {
-  init_startable(this);
-  pmanage<MPtr(&PContainer::make_int)>("port",
-                                       [this](const int& val) {
-                                         port_ = val;
-                                         return true;
-                                       },
-                                       [this]() { return port_; },
-                                       "Port",
-                                       "OSC port to listen",
-                                       port_,
-                                       1,
-                                       65536);
+OscToShmdata::OscToShmdata(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
+      port_id_(pmanage<MPtr(&property::PBag::make_int)>("port",
+                                                        [this](const int& val) {
+                                                          port_ = val;
+                                                          return true;
+                                                        },
+                                                        [this]() { return port_; },
+                                                        "Port",
+                                                        "OSC port to listen to",
+                                                        port_,
+                                                        1,
+                                                        65536)) {
   register_writer_suffix("osc");
 }
 
@@ -50,7 +51,7 @@ OscToShmdata::~OscToShmdata() { stop(); }
 
 bool OscToShmdata::start() {
   // creating a shmdata
-  shm_ = std::make_unique<ShmdataWriter>(
+  shm_ = std::make_unique<shmdata::Writer>(
       this, make_shmpath("osc"), 1, "application/x-libloserialized-osc");
   if (!shm_.get()) {
     warning("OscToShmdata failed to start");
@@ -91,17 +92,18 @@ int OscToShmdata::osc_handler(const char* path,
   }
   size_t size = 0;
   void* buftmp = lo_message_serialise(m, path, nullptr, &size);
-  if (context->shm_->writer<MPtr(&shmdata::Writer::alloc_size)>() < size) {
+  if (context->shm_->writer<MPtr(&::shmdata::Writer::alloc_size)>() < size) {
     context->shm_.reset(nullptr);
-    context->shm_.reset(new ShmdataWriter(
+    context->shm_.reset(new shmdata::Writer(
         context, context->make_shmpath("osc"), size, "application/x-libloserialized-osc"));
   }
-  context->shm_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(buftmp, size);
+  context->shm_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(buftmp, size);
   context->shm_->bytes_written(size);
-  g_free(buftmp);
+  free(buftmp);
   return 0;
 }
 
 void OscToShmdata::osc_error(int /*num*/, const char* /*msg*/, const char* /*path*/) {}
 
-}  // end of OscToShmdata class
+}  // namespace quiddities
+}  // namespace switcher

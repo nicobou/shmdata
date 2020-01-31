@@ -20,14 +20,15 @@
 #define SWITCHER_PROTOCOL_READER_HPP
 
 #include <map>
-#include <switcher/safe-bool-idiom.hpp>
-#include "switcher/exec-loop.hpp"
-#include "switcher/information-tree.hpp"
-#include "switcher/periodic-task.hpp"
-#include "switcher/property-container.hpp"
-#include "switcher/quiddity.hpp"
+#include <switcher/utils/safe-bool-idiom.hpp>
+#include "switcher/infotree/information-tree.hpp"
+#include "switcher/quiddity/property/pbag.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
+using namespace quiddity;
+namespace quiddities {
 
 class ProtocolReader : public SafeBoolIdiom {
  public:
@@ -64,6 +65,7 @@ class ProtocolReader : public SafeBoolIdiom {
   virtual bool safe_bool_idiom() const { return false; };
   static ProtocolType get_protocol_from_json(const InfoTree* tree);
 };
-}
 
+}  // namespace quiddities
+}  // namespace switcher
 #endif

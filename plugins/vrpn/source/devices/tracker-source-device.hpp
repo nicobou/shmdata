@@ -24,6 +24,7 @@
 #include "vrpn_Tracker.h"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 struct TrackerPosision {
@@ -48,6 +49,7 @@ class TrackerSourceDevice : public SourceDevice {
  private:
   static void handleTrackerCallback(void* userData, const vrpn_TRACKERCB info);
 };
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 #endif

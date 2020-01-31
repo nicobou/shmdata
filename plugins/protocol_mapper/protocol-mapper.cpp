@@ -17,10 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 #include "protocol-mapper.hpp"
-#include "switcher/file-utils.hpp"
-#include "switcher/information-tree-json.hpp"
+#include "switcher/infotree/json-serializer.hpp"
+#include "switcher/utils/file-utils.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ProtocolMapper,
                                      "protocol-mapper",
                                      "Protocol to property mapper",
@@ -30,17 +31,18 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ProtocolMapper,
                                      "LGPL",
                                      "Nicolas Bouillot/Jérémie Soria");
 
-ProtocolMapper::ProtocolMapper(quid::Config&& conf) : Quiddity(std::forward<quid::Config>(conf)) {
-  config_file_id_ = pmanage<MPtr(&PContainer::make_string)>(
+ProtocolMapper::ProtocolMapper(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)) {
+  config_file_id_ = pmanage<MPtr(&property::PBag::make_string)>(
       "config_file",
       [this](const std::string& val) {
         config_file_ = val;
-        auto file_content = FileUtils::get_file_content(val);
+        auto file_content = fileutils::get_file_content(val);
         if (file_content.first.empty()) {
           message("ERROR: %", file_content.second);
           return false;
         }
-        auto tree = JSONSerializer::deserialize(file_content.first);
+        auto tree = infotree::json::deserialize(file_content.first);
         if (!tree) {
           message("ERROR: % is not a valid json file", val);
           return false;
@@ -57,7 +59,7 @@ ProtocolMapper::ProtocolMapper(quid::Config&& conf) : Quiddity(std::forward<quid
         if (!protocol_reader_->make_properties(this, tree->get_tree("commands").get()))
           return false;
 
-        pmanage<MPtr(&PContainer::disable)>(config_file_id_, "Service already loaded");
+        pmanage<MPtr(&property::PBag::disable)>(config_file_id_, "Service already loaded");
 
         return true;
       },
@@ -66,4 +68,6 @@ ProtocolMapper::ProtocolMapper(quid::Config&& conf) : Quiddity(std::forward<quid
       "Load the command description",
       config_file_);
 }
-}
+
+}  // namespace quiddities
+}  // namespace switcher

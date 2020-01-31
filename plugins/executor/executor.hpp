@@ -30,18 +30,20 @@
 #include <string>
 #include <gst/gst.h>
 
-#include "switcher/periodic-task.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/startable-quiddity.hpp"
-#include "switcher/string-utils.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/utils/periodic-task.hpp"
+#include "switcher/utils/string-utils.hpp"
 
 namespace switcher {
+namespace quiddities {
 
-class Executor : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class Executor : public Quiddity, public Startable {
  public:
-  Executor(quid::Config&&);
+  Executor(quiddity::Config&&);
   ~Executor();
   Executor(const Executor&) = delete;
   Executor& operator=(const Executor&) = delete;
@@ -64,29 +66,33 @@ class Executor : public Quiddity, public StartableQuiddity {
   int cout_pipe_[2];
   int cerr_pipe_[2];
   bool user_stopped_{false};
+  bool restart_{false};
   pid_t child_pid_{0};
   posix_spawnattr_t attr_;
   posix_spawn_file_actions_t act_;
-  ShmdataConnector shmcntr_;
+  shmdata::Connector shmcntr_;
   std::string shmpath_{};
   std::string shmpath_audio_{};
   std::string shmpath_video_{};
   std::unique_ptr<PeriodicTask<>> monitoring_task_{nullptr};
-  std::unique_ptr<ShmdataFollower> follower_video_{nullptr};
-  std::unique_ptr<ShmdataFollower> follower_audio_{nullptr};
-  std::unique_ptr<ShmdataFollower> follower_{nullptr};
+  std::unique_ptr<shmdata::Follower> follower_video_{nullptr};
+  std::unique_ptr<shmdata::Follower> follower_audio_{nullptr};
+  std::unique_ptr<shmdata::Follower> follower_{nullptr};
 
   std::string command_line_{};
-  PContainer::prop_id_t command_line_id_;
+  property::prop_id_t command_line_id_;
 
   bool autostart_{false};
-  PContainer::prop_id_t autostart_id_;
+  property::prop_id_t autostart_id_;
+  bool restart_on_change_{false};
+  property::prop_id_t restart_on_change_id_;
   bool periodic_{false};
-  PContainer::prop_id_t periodic_id_;
+  property::prop_id_t periodic_id_;
 
   std::string whitelist_caps_{};
-  PContainer::prop_id_t whitelist_caps_id_;
+  property::prop_id_t whitelist_caps_id_;
 };
 SWITCHER_DECLARE_PLUGIN(Executor);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

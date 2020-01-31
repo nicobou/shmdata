@@ -23,24 +23,29 @@
 #include <regex>
 #include <string>
 #include <vector>
-#include "./base-logger.hpp"
-#include "./configuration.hpp"
-#include "./console-logger.hpp"
-#include "./gst-initialized.hpp"
-#include "./information-tree.hpp"
-#include "./make-consultable.hpp"
-#include "./quiddity-container.hpp"
-#include "./quiddity-factory.hpp"
+#include "./configuration/configuration.hpp"
+#include "./gst/initialized.hpp"
+#include "./infotree/information-tree.hpp"
+#include "./logger/base.hpp"
+#include "./logger/console.hpp"
+#include "./quiddity/container.hpp"
+#include "./quiddity/factory.hpp"
+#include "./utils/make-consultable.hpp"
 
 namespace switcher {
-class Switcher : public GstInitialized {
-  friend class Bundle;  // access to qcontainer_ and qfactory_
+namespace quiddity {
+namespace bundle {
+class Bundle;
+}  // namespace bundle
+}  // namespace quiddity
+class Switcher : public gst::Initialized {
+  friend class quiddity::bundle::Bundle;  // access to qcontainer_ and qfactory_
  public:
   using ptr = std::shared_ptr<Switcher>;
 
   ~Switcher() = default;
 
-  template <typename L = ConsoleLogger, typename... Largs>
+  template <typename L = log::Console, typename... Largs>
   static Switcher::ptr make_switcher(const std::string& name, Largs... args) {
     Switcher::ptr switcher(new Switcher(name, std::make_unique<L>(std::forward<Largs>(args)...)));
     switcher->me_ = switcher;
@@ -61,11 +66,15 @@ class Switcher : public GstInitialized {
   Make_delegate(Switcher, Configuration, &conf_, conf);
 
   // Quiddity Factory
-  Make_delegate(Switcher, quid::Factory, &qfactory_, factory);
+  Make_delegate(Switcher, quiddity::Factory, &qfactory_, factory);
 
   // Quiddity container
-  Make_delegate(Switcher, quid::Container, qcontainer_.get(), quids);
+  Make_delegate(Switcher, quiddity::Container, qcontainer_.get(), quids);
 
+  // get log
+  log::Base* get_logger() { return log_.get(); }
+
+  // shmpaths
   static std::string get_shm_dir() { return "/tmp"; }
   static std::string get_shm_prefix() { return "switcher_"; }
 
@@ -80,7 +89,7 @@ class Switcher : public GstInitialized {
                 apply_gst_configuration();
                 register_bundle_from_configuration();
               }),
-        qcontainer_(quid::Container::make_container(this, &qfactory_, log_.get())),
+        qcontainer_(quiddity::Container::make_container(this, &qfactory_, log_.get())),
         name_(std::regex_replace(name, std::regex("[^[:alnum:]| ]"), "-")) {
     remove_shm_zombies();
   }
@@ -89,10 +98,10 @@ class Switcher : public GstInitialized {
   void remove_shm_zombies() const;
   static void init_gst();
 
-  mutable std::unique_ptr<BaseLogger> log_;
-  quid::Factory qfactory_;
+  mutable std::unique_ptr<log::Base> log_;
+  quiddity::Factory qfactory_;
   Configuration conf_;
-  quid::Container::ptr qcontainer_;
+  quiddity::Container::ptr qcontainer_;
   std::string name_;
   std::vector<std::string> quiddities_at_reset_{};
   std::weak_ptr<Switcher> me_{};

@@ -23,38 +23,43 @@
 #include <lo/lo.h>
 #include <chrono>
 #include <mutex>
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/startable-quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
 
 namespace switcher {
-class ShmdataToOsc : public Quiddity, public StartableQuiddity {
+namespace quiddities {
+using namespace quiddity;
+class ShmdataToOsc : public Quiddity, public Startable {
  public:
-  ShmdataToOsc(quid::Config&&);
+  ShmdataToOsc(quiddity::Config&&);
   ~ShmdataToOsc();
   ShmdataToOsc(const ShmdataToOsc&) = delete;
   ShmdataToOsc& operator=(const ShmdataToOsc&) = delete;
 
  private:
-  // registering connect/disconnect/can_sink_caps:
-  ShmdataConnector shmcntr_;
-  // shmdata follower
-  std::unique_ptr<ShmdataFollower> shm_{nullptr};
-  // props
-  gint port_{1056};
-  std::string host_{"localhost"};
-  lo_address address_{nullptr};
-  std::mutex address_mutex_{};
-
   bool start() final;
   bool stop() final;
-  bool connect(const std::string& shmdata_path);
-  bool disconnect();
+  bool on_shmdata_connect(const std::string& shmdata_path);
+  bool on_shmdata_disconnect();
   bool can_sink_caps(const std::string& caps);
   void on_shmreader_data(void* data, size_t data_size);
+
+  lo_address address_{nullptr};
+  std::mutex address_mutex_{};
+  shmdata::Connector shmcntr_;
+  std::unique_ptr<shmdata::Follower> shm_{nullptr};
+
+  int port_{1056};
+  property::prop_id_t port_id_;
+  std::string host_{"localhost"};
+  property::prop_id_t host_id_;
+  bool autostart_{false};
+  property::prop_id_t autostart_id_;
 };
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToOsc);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

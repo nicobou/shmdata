@@ -23,14 +23,16 @@
 #include <memory>
 #include <mutex>
 #include "./jack-client.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-writer.hpp"
-#include "switcher/startable-quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
+#include "switcher/shmdata/writer.hpp"
 
 namespace switcher {
-class JackToShmdata : public Quiddity, public StartableQuiddity {
+namespace quiddities {
+using namespace quiddity;
+class JackToShmdata : public Quiddity, public Startable {
  public:
-  JackToShmdata(quid::Config&&);
+  JackToShmdata(quiddity::Config&&);
   ~JackToShmdata() = default;
   JackToShmdata(const JackToShmdata&) = delete;
   JackToShmdata& operator=(const JackToShmdata&) = delete;
@@ -38,21 +40,21 @@ class JackToShmdata : public Quiddity, public StartableQuiddity {
  private:
   size_t kMaxNumberOfChannels{128};
   size_t num_channels_{1};
-  PContainer::prop_id_t num_channels_id_{0};
+  property::prop_id_t num_channels_id_{0};
   std::string client_name_{};
-  PContainer::prop_id_t client_name_id_{0};
+  property::prop_id_t client_name_id_{0};
   bool auto_connect_{true};
-  PContainer::prop_id_t auto_connect_id_{0};
+  property::prop_id_t auto_connect_id_{0};
   std::string connect_to_{"system:capture_%d"};
-  PContainer::prop_id_t connect_to_id_{0};
+  property::prop_id_t connect_to_id_{0};
   size_t index_{1};
-  PContainer::prop_id_t index_id_{0};
+  property::prop_id_t index_id_{0};
   std::mutex input_ports_mutex_{};
   std::vector<jack_sample_t> buf_{};
   std::vector<std::string> ports_to_connect_{};
   std::mutex port_to_connect_in_jack_process_mutex_{};
   std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
-  std::unique_ptr<ShmdataWriter> shm_{nullptr};
+  std::unique_ptr<shmdata::Writer> shm_{nullptr};
   JackClient jack_client_;
   std::vector<JackPort> input_ports_{};
 
@@ -67,5 +69,6 @@ class JackToShmdata : public Quiddity, public StartableQuiddity {
 
 SWITCHER_DECLARE_PLUGIN(JackToShmdata);
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

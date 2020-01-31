@@ -21,46 +21,48 @@
 
 #include <cassert>
 #include <vector>
-#include "switcher/method-trait.hpp"
-#include "switcher/property-container.hpp"
-#include "switcher/quiddity-basic-test.hpp"
-#include "switcher/serialize-string.hpp"
+#include "switcher/quiddity/basic-test.hpp"
+#include "switcher/quiddity/property/pbag.hpp"
+#include "switcher/utils/method-trait.hpp"
+#include "switcher/utils/serialize-string.hpp"
 
 int main() {
   {
     using namespace switcher;
+    using namespace quiddity;
+
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
-    assert(test::full(manager, "method"));
-    auto qrox = manager->quids<MPtr(&quid::Container::create)>("method", "test", nullptr);
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
+    assert(quiddity::test::full(manager, "method"));
+    auto qrox = manager->quids<MPtr(&quiddity::Container::create)>("method", "test", nullptr);
     auto mquid = qrox.get();
     assert(mquid);
 
     // testing "hello" method. Signature is string(string)
     using hello_meth_t = std::function<std::string(std::string)>;
-    auto hello_id = mquid->meth<MPtr(&MContainer::get_id)>("hello_");
+    auto hello_id = mquid->meth<MPtr(&method::MBag::get_id)>("hello_");
     assert(hello_id != 0);
-    auto res = mquid->meth<MPtr(&MContainer::invoke<hello_meth_t>)>(
+    auto res = mquid->meth<MPtr(&method::MBag::invoke<hello_meth_t>)>(
         hello_id, std::make_tuple(std::string("Nicolas")));
     assert("hello Nicolas and count is 0" == res);
 
     // using "count" method. Signature is void()
     using count_meth_t = std::function<void()>;
-    auto count_id = mquid->meth<MPtr(&MContainer::get_id)>("count_");
+    auto count_id = mquid->meth<MPtr(&method::MBag::get_id)>("count_");
     assert(count_id != 0);
-    mquid->meth<MPtr(&MContainer::invoke<count_meth_t>)>(count_id, std::make_tuple());
+    mquid->meth<MPtr(&method::MBag::invoke<count_meth_t>)>(count_id, std::make_tuple());
 
     // testing count did its internal counting
     assert("hello Nicolas and count is 1" ==
-           mquid->meth<MPtr(&MContainer::invoke<hello_meth_t>)>(
+           mquid->meth<MPtr(&method::MBag::invoke<hello_meth_t>)>(
                hello_id, std::make_tuple(std::string("Nicolas"))));
 
     // testing "many args" method: Signature bool(int, float, const std::string&, bool).
     // many return true only if arguments are <1,3.14,"is, but not ",false>
     using many_args_t = std::function<bool(int, float, const std::string&, bool)>;
-    auto many_id = mquid->meth<MPtr(&MContainer::get_id)>("many_args_");
+    auto many_id = mquid->meth<MPtr(&method::MBag::get_id)>("many_args_");
     assert(many_id != 0);
-    assert(true == mquid->meth<MPtr(&MContainer::invoke<many_args_t>)>(
+    assert(true == mquid->meth<MPtr(&method::MBag::invoke<many_args_t>)>(
                        many_id, std::make_tuple(1, 3.14f, std::string("is, but not "), false)));
 
     // testing "many args" invokation from string, using tuple deserialization.
@@ -69,9 +71,9 @@ int main() {
         std::string("1,3.14,") + serialize::esc_for_tuple("is, but not ") + std::string(",false"));
     assert(tuple_from_str.first);  // first is a boolean indicating the success of deserialization
     assert(true ==
-           mquid->meth<MPtr(&MContainer::invoke<many_args_t>)>(many_id, tuple_from_str.second));
+           mquid->meth<MPtr(&method::MBag::invoke<many_args_t>)>(many_id, tuple_from_str.second));
 
-    assert(manager->quids<MPtr(&quid::Container::remove)>(qrox.get_id()));
+    assert(manager->quids<MPtr(&quiddity::Container::remove)>(qrox.get_id()));
   }  // end of scope is releasing the manager
   return 0;
 }

@@ -17,24 +17,26 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shm-tree-updater.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/shmdata-writer.hpp"
-#include "switcher/threaded-wrapper.hpp"
+#include "switcher/gst/pipeliner.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
+#include "switcher/shmdata/writer.hpp"
+#include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
+namespace quiddities {
 /**
  * LADSPA class,
  * Add a LADSPA (Linux Audio Developers Simple Plugin API) plugin among the ones installed on your
  * system.
  */
+using namespace quiddity;
 class LADSPA : public Quiddity {
  public:
 
   //! Constructor
-  LADSPA(quid::Config&&);
+  LADSPA(quiddity::Config&&);
 
   //! Destructor
   ~LADSPA() = default;
@@ -64,17 +66,17 @@ class LADSPA : public Quiddity {
   bool on_shmdata_disconnect();
   bool can_sink_caps(std::string str_caps);
 
-  // Property custom saving
+  // property::Property custom saving
   InfoTree::ptr on_saving() final;
   void on_loading(InfoTree::ptr&& tree) final;
   void save_properties();
 
   std::string shmpath_{};  //!< Path of the input shmdata
   std::string shmpath_transformed_{};  //!< Path of the output shmdata
-  ShmdataConnector shmcntr_;           //!< Shmdata connector to connect into the quiddity.
-  std::unique_ptr<GstPipeliner> gst_pipeline_{nullptr};         //!< Gstreamer pipeline
-  std::unique_ptr<GstShmTreeUpdater> shmsrc_sub_{nullptr};      //!< Subscriber to input shmdata
-  std::unique_ptr<GstShmTreeUpdater> shmsink_sub_{nullptr};     //!< Subscriber to output shmdata
+  shmdata::Connector shmcntr_;         //!< Shmdata connector to connect into the quiddity.
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};       //!< Gstreamer pipeline
+  std::unique_ptr<shmdata::GstTreeUpdater> shmsrc_sub_{nullptr};   //!< Subscriber to input shmdata
+  std::unique_ptr<shmdata::GstTreeUpdater> shmsink_sub_{nullptr};  //!< Subscriber to output shmdata
   bool first_connect_{false};  //!< First connection to a LADSPA plugin?
 
   GstElement* shmdatasrc_{nullptr};             //!< Gstreamer shmdatasrc element
@@ -89,19 +91,22 @@ class LADSPA : public Quiddity {
   bool reset_saved_properties_{false};  //!< Used to keep saved properties in some cases
 
   int channels_number_{1};
-  PContainer::prop_id_t perchannel_group_id_{0};  //!< Group containing per-channel properties
+  property::prop_id_t perchannel_group_id_{0};  //!< Group containing per-channel properties
   PluginList plugins_list_;           //!< List of all LADSPA plugins available on the system
-  Selection<> plugins_;               //!< Plugin list property data
-  PContainer::prop_id_t plugins_id_;  //!< Plugins list property id
+  property::Selection<> plugins_;     //!< Plugin list property data
+  property::prop_id_t plugins_id_;    //!< Plugins list property id
   bool global_settings_{true};  //!< Indicates if global properties must be propagated per channel
-  PContainer::prop_id_t global_settings_id_{0};  //!< Property id of global properties boolean
+  property::prop_id_t global_settings_id_{
+      0};  //!< property::Property id of global properties boolean
   std::unique_ptr<ThreadedWrapper<>> channels_change_th_{
       std::make_unique<ThreadedWrapper<>>()};  //!< Threaded wrapper used for dynamic reconstruction
                                                //! of pipeline when channels number changes
   std::mutex channels_change_mutex_{};  //!< Used when channels number changes and reconstruction of
                                         //! pipeline
-  std::vector<std::pair<PContainer::prop_id_t, PContainer::register_id_t>>
+  std::vector<std::pair<property::prop_id_t, property::register_id_t>>
       prop_subscribers_{};  //!< Subscribers to global properties in order to propagate their values
                             //! to per-channel properties
 };
-};
+
+}  // namespace quiddities
+}  // namespace switcher

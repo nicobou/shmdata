@@ -20,6 +20,7 @@
 #include "./button-sink-device.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 ButtonSinkDevice::ButtonSinkDevice(const std::string& name, int numButtons)
@@ -64,5 +65,6 @@ void ButtonSinkDevice::setButton(int index, bool value) {
   }
 }
 
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher

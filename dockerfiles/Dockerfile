@@ -21,7 +21,7 @@ RUN apt update -y \
             gstreamer1.0-plugins-base \
             gstreamer1.0-plugins-good \
             gstreamer1.0-plugins-ugly \
-            jackd \
+            jackd2 \
             libcgsi-gsoap1\
             libcgsi-gsoap-dev \
             libcurl3-gnutls \

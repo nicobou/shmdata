@@ -21,22 +21,25 @@
 #define __SWITCHER_OSC_CTRL_SERVER_H__
 
 #include "lo/lo.h"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-writer.hpp"
-#include "switcher/startable-quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
+#include "switcher/shmdata/writer.hpp"
 
 namespace switcher {
-class OscToShmdata : public Quiddity, public StartableQuiddity {
+namespace quiddities {
+using namespace quiddity;
+class OscToShmdata : public Quiddity, public Startable {
  public:
-  OscToShmdata(quid::Config&&);
+  OscToShmdata(quiddity::Config&&);
   ~OscToShmdata();
   OscToShmdata(const OscToShmdata&) = delete;
   OscToShmdata& operator=(const OscToShmdata&) = delete;
 
  private:
-  gint port_;
+  int port_{1056};
+  property::prop_id_t port_id_;
   lo_server_thread osc_thread_{nullptr};
-  std::unique_ptr<ShmdataWriter> shm_{nullptr};
+  std::unique_ptr<shmdata::Writer> shm_{nullptr};
 
   bool start() final;
   bool stop() final;
@@ -46,5 +49,6 @@ class OscToShmdata : public Quiddity, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(OscToShmdata);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

@@ -22,10 +22,11 @@
 #include <assert.h>
 #include <atomic>
 #include <condition_variable>
-#include <switcher/information-tree-json.hpp>
-#include "switcher/quiddity-basic-test.hpp"
+#include <switcher/infotree/json-serializer.hpp>
+#include "switcher/quiddity/basic-test.hpp"
 
 using namespace switcher;
+using namespace quiddity;
 
 static bool success = false;
 static std::atomic<bool> do_continue{true};
@@ -57,21 +58,21 @@ int main() {
   {
     Switcher::ptr manager = Switcher::make_switcher("ladspatest");
 
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
     manager->conf<MPtr(&Configuration::from_file)>("./check_ladspa.json");
 
     // creating a ladspa audiotest bundle
-    auto created =
-        manager->quids<MPtr(&quid::Container::create)>("audiotestladspa", std::string(), nullptr);
+    auto created = manager->quids<MPtr(&quiddity::Container::create)>(
+        "audiotestladspa", std::string(), nullptr);
     auto ladspa = created.get();
     assert(created && ladspa);
-    if (!ladspa->prop<MPtr(&PContainer::set_str_str)>("started", "true")) return 1;
+    if (!ladspa->prop<MPtr(&property::PBag::set_str_str)>("started", "true")) return 1;
 
-    ladspa->prop<MPtr(&PContainer::subscribe)>(
-        ladspa->prop<MPtr(&PContainer::get_id)>("dummy/frame-received"), [&]() {
-          if (ladspa->prop<MPtr(&PContainer::get<bool>)>(
-                  ladspa->prop<MPtr(&PContainer::get_id)>("dummy/frame-received"))) {
+    ladspa->prop<MPtr(&property::PBag::subscribe)>(
+        ladspa->prop<MPtr(&property::PBag::get_id)>("dummy/frame-received"), [&]() {
+          if (ladspa->prop<MPtr(&property::PBag::get<bool>)>(
+                  ladspa->prop<MPtr(&property::PBag::get_id)>("dummy/frame-received"))) {
             notify_success();
           }
         });
@@ -83,9 +84,9 @@ int main() {
       return 1;
     }
 
-    if (!manager->quids<MPtr(&quid::Container::remove)>(created.get_id())) return 1;
+    if (!manager->quids<MPtr(&quiddity::Container::remove)>(created.get_id())) return 1;
 
-    if (!test::full(manager, "ladspa")) return 1;
+    if (!quiddity::test::full(manager, "ladspa")) return 1;
   }  // end of scope is releasing the manager
 
   return 0;  // success

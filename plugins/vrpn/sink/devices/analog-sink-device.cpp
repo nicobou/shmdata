@@ -20,6 +20,7 @@
 #include "./analog-sink-device.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 AnalogSinkDevice::AnalogSinkDevice(const std::string& name, int numChannels)
@@ -68,5 +69,6 @@ void AnalogSinkDevice::setChannel(int index, double value) {
   }
 }
 
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher

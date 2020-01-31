@@ -21,9 +21,11 @@
 #define __SWITCHER_VRPN_SOURCE_DEVICE_PROPERTY_BASE_H__
 
 #include <string>
-#include "switcher/property-container.hpp"
+#include "switcher/quiddity/property/pbag.hpp"
 
 namespace switcher {
+using namespace quiddity;
+namespace quiddities {
 namespace vrpn {
 
 class PropertyBase {
@@ -38,26 +40,27 @@ class PropertyBase {
   /**
    * Switcher property id getter
    */
-  PContainer::prop_id_t getPropId() const;
+  property::prop_id_t getPropId() const;
 
   /**
    * Switcher property id setter
    */
-  void setPropId(PContainer::prop_id_t prop_id);
+  void setPropId(property::prop_id_t prop_id);
 
   /**
-   * The templated Property class requires this one to have at least one virtual void
+   * The templated property::Property class requires this one to have at least one virtual void
    * method. Unfortunately we don't need one so here it is...
    */
   virtual void noop() = 0;
 
  protected:
   /**
-   * Switcher Property Id
+   * Switcher property::Property Id
    */
-  PContainer::prop_id_t prop_id_{};
+  property::prop_id_t prop_id_{};
 };
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 
 #endif

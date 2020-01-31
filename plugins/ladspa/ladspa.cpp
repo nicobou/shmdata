@@ -18,11 +18,11 @@
  */
 
 #include "./ladspa.hpp"
-#include "switcher/gprop-to-prop.hpp"
-#include "switcher/scope-exit.hpp"
-#include "switcher/shmdata-utils.hpp"
+#include "switcher/quiddity/property/gprop-to-prop.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_DECLARE_PLUGIN(LADSPA);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LADSPA,
                                      "ladspa",
@@ -35,35 +35,36 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LADSPA,
 
 const std::vector<std::string> LADSPA::KPropertiesBlackList = {"name", "parent"};
 
-LADSPA::LADSPA(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
+LADSPA::LADSPA(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)),
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
       plugins_list_(get_ladspa_plugins()),
-      plugins_(Selection<>(std::move(plugins_list_.first), std::move(plugins_list_.second), 0)) {
+      plugins_(property::Selection<>(
+          std::move(plugins_list_.first), std::move(plugins_list_.second), 0)) {
   if (plugins_list_.first.empty()) return;
 
   register_writer_suffix("audio");
 
-  perchannel_group_id_ = pmanage<MPtr(&PContainer::make_group)>(
+  perchannel_group_id_ = pmanage<MPtr(&property::PBag::make_group)>(
       "perchannel_group",
       "Per-channel settings",
       "If multiple channels are input they will all be configured separately in this group.");
 
   global_settings_id_ =
-      pmanage<MPtr(&PContainer::make_bool)>("global_settings",
-                                            [this](bool val) {
-                                              global_settings_ = val;
-                                              return true;
-                                            },
-                                            [this]() { return global_settings_; },
-                                            "Settings for all channels",
-                                            "Toggle the global settings for all channels",
-                                            true);
+      pmanage<MPtr(&property::PBag::make_bool)>("global_settings",
+                                                [this](bool val) {
+                                                  global_settings_ = val;
+                                                  return true;
+                                                },
+                                                [this]() { return global_settings_; },
+                                                "Settings for all channels",
+                                                "Toggle the global settings for all channels",
+                                                true);
 
-  plugins_id_ = pmanage<MPtr(&PContainer::make_selection<>)>(
+  plugins_id_ = pmanage<MPtr(&property::PBag::make_selection<>)>(
       "plugins",
-      [this](const IndexOrName& val) {
+      [this](const quiddity::property::IndexOrName& val) {
         plugins_.select(val);
 
         // We don't want to reset the properties if they were loaded from a save file
@@ -74,7 +75,7 @@ LADSPA::LADSPA(quid::Config&& conf)
 
         if (!create_gst_pipeline()) return false;
         // Here we just create the pipeline to get the properties, since we don't put the bin in a
-        // GstPipeline it
+        // gst::Pipeline it
         // will leak if we don't unref.
         gst_object_unref(ladspa_bin_);
         first_connect_ = true;
@@ -93,17 +94,17 @@ LADSPA::LADSPA(quid::Config&& conf)
       [this](const std::string& caps) { return can_sink_caps(caps); },
       1);
 
-  pmanage<MPtr(&PContainer::set_to_current)>(plugins_id_);
-  pmanage<MPtr(&PContainer::set_to_current)>(global_settings_id_);
+  pmanage<MPtr(&property::PBag::set_to_current)>(plugins_id_);
+  pmanage<MPtr(&property::PBag::set_to_current)>(global_settings_id_);
 }
 
 LADSPA::PluginList LADSPA::get_ladspa_plugins() {
   PluginList plugins_list;
-  auto plugins = GstUtils::element_factory_list_to_pair_of_vectors(
+  auto plugins = gst::utils::element_factory_list_to_pair_of_vectors(
       GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, GST_RANK_NONE, false);
   size_t index = 0;
   for (auto& plugin : plugins.second) {
-    if (StringUtils::starts_with(plugin, "ladspa")) {
+    if (stringutils::starts_with(plugin, "ladspa")) {
       plugins_list.first.push_back(plugins.first.at(index));
       plugins_list.second.push_back(plugin);
     }
@@ -116,7 +117,7 @@ LADSPA::PluginList LADSPA::get_ladspa_plugins() {
 void LADSPA::mirror_gst_properties() {
   // Unsubscribe old global properties
   for (auto& subscriber : prop_subscribers_) {
-    pmanage<MPtr(&PContainer::unsubscribe)>(subscriber.first, subscriber.second);
+    pmanage<MPtr(&property::PBag::unsubscribe)>(subscriber.first, subscriber.second);
   }
   prop_subscribers_.clear();
 
@@ -128,22 +129,22 @@ void LADSPA::mirror_gst_properties() {
   }
   std::string first_element_name = gst_element_get_name(first_element);
   for (auto& property : properties_) {
-    auto prop_id = static_cast<PContainer::prop_id_t>(pmanage<MPtr(&PContainer::push)>(
-        property, GPropToProp::to_prop(G_OBJECT(first_element), property)));
+    auto prop_id = static_cast<property::prop_id_t>(pmanage<MPtr(&property::PBag::push)>(
+        property, quiddity::property::to_prop(G_OBJECT(first_element), property)));
 
     // When the global property changes we propagate the change on all the elements
     auto rid =
-        pmanage<MPtr(&PContainer::subscribe)>(prop_id, [this, property, first_element_name]() {
+        pmanage<MPtr(&property::PBag::subscribe)>(prop_id, [this, property, first_element_name]() {
           if (!global_settings_) return;
           auto property_value =
-              pmanage<MPtr(&PContainer::get_str_str)>(property + "_" + first_element_name);
+              pmanage<MPtr(&property::PBag::get_str_str)>(property + "_" + first_element_name);
           for (auto& element : ladspa_elements_) {
-            pmanage<MPtr(&PContainer::set_str_str)>(property + "_" + gst_element_get_name(element),
-                                                    property_value);
+            pmanage<MPtr(&property::PBag::set_str_str)>(
+                property + "_" + gst_element_get_name(element), property_value);
           }
         });
     // We start by propagating once for each property.
-    pmanage<MPtr(&PContainer::set_to_current)>(prop_id);
+    pmanage<MPtr(&property::PBag::set_to_current)>(prop_id);
     prop_subscribers_.push_back(std::make_pair<>(prop_id, rid));
   }
 }
@@ -151,10 +152,10 @@ void LADSPA::mirror_gst_properties() {
 bool LADSPA::create_gst_pipeline() {
   GError* error = nullptr;
   std::string target_format = g_value_get_string(
-      GstUtils::get_gst_element_capability(plugins_.get_attached(), "format", GST_PAD_SINK));
+      gst::utils::get_gst_element_capability(plugins_.get_attached(), "format", GST_PAD_SINK));
 
   auto target_channels = g_value_get_int(
-      GstUtils::get_gst_element_capability(plugins_.get_attached(), "channels", GST_PAD_SINK));
+      gst::utils::get_gst_element_capability(plugins_.get_attached(), "channels", GST_PAD_SINK));
 
   std::string description =
       std::string("shmdatasrc name=shmsrc ! audioconvert ! audio/x-raw,format=") + target_format;
@@ -256,17 +257,17 @@ void LADSPA::get_gst_properties() {
     std::string element_name = gst_element_get_name(element);
 
     // Remove the group too
-    pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>(element_name));
+    pmanage<MPtr(&property::PBag::remove)>(pmanage<MPtr(&property::PBag::get_id)>(element_name));
 
     for (auto& property : properties_) {
-      pmanage<MPtr(&PContainer::remove)>(
-          pmanage<MPtr(&PContainer::get_id)>(property + "_" + element_name));
+      pmanage<MPtr(&property::PBag::remove)>(
+          pmanage<MPtr(&property::PBag::get_id)>(property + "_" + element_name));
     }
   }
 
   // We unsubscribe the global properties before clearing the list.
   for (auto& property : properties_) {
-    pmanage<MPtr(&PContainer::remove)>(pmanage<MPtr(&PContainer::get_id)>(property));
+    pmanage<MPtr(&property::PBag::remove)>(pmanage<MPtr(&property::PBag::get_id)>(property));
   }
   properties_.clear();
 
@@ -283,15 +284,16 @@ void LADSPA::get_gst_properties() {
 
   for (auto& element : ladspa_elements_) {
     std::string element_name = gst_element_get_name(element);
-    pmanage<MPtr(&PContainer::make_parented_group)>(
+    pmanage<MPtr(&property::PBag::make_parented_group)>(
         element_name,
         "perchannel_group",
         element_name,
         std::string("Setting of ladspa instance ") + element_name);
     for (auto& property : properties_) {
-      pmanage<MPtr(&PContainer::push_parented)>(property + "_" + element_name,
-                                                element_name,
-                                                GPropToProp::to_prop(G_OBJECT(element), property));
+      pmanage<MPtr(&property::PBag::push_parented)>(
+          property + "_" + element_name,
+          element_name,
+          quiddity::property::to_prop(G_OBJECT(element), property));
     }
   }
 }
@@ -310,7 +312,8 @@ bool LADSPA::on_shmdata_connect(const std::string& shmpath) {
     save_properties();
     first_connect_ = false;
   }
-  pmanage<MPtr(&PContainer::disable)>(plugins_id_, ShmdataConnector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(plugins_id_,
+                                          shmdata::Connector::disabledWhenConnectedMsg);
 
   create_and_play_gst_pipeline();
 
@@ -320,15 +323,15 @@ bool LADSPA::on_shmdata_connect(const std::string& shmpath) {
 void LADSPA::create_and_play_gst_pipeline() {
   shmsrc_sub_.reset();
   shmsink_sub_.reset();
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
 
   if (!create_gst_pipeline()) return;
 
-  shmsrc_sub_ = std::make_unique<GstShmTreeUpdater>(
+  shmsrc_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
       this,
       shmdatasrc_,
       shmpath_,
-      GstShmTreeUpdater::Direction::reader,
+      shmdata::GstTreeUpdater::Direction::reader,
       [this](const std::string& str_caps) {
         GstCaps* caps = gst_caps_from_string(str_caps.c_str());
         On_scope_exit {
@@ -357,8 +360,8 @@ void LADSPA::create_and_play_gst_pipeline() {
         }
       });
 
-  shmsink_sub_ = std::make_unique<GstShmTreeUpdater>(
-      this, shmdatasink_, shmpath_transformed_, GstShmTreeUpdater::Direction::writer);
+  shmsink_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+      this, shmdatasink_, shmpath_transformed_, shmdata::GstTreeUpdater::Direction::writer);
 
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   g_object_set(G_OBJECT(ladspa_bin_), "async-handling", TRUE, nullptr);
@@ -370,19 +373,19 @@ void LADSPA::create_and_play_gst_pipeline() {
 }
 
 bool LADSPA::on_shmdata_disconnect() {
-  pmanage<MPtr(&PContainer::enable)>(plugins_id_);
+  pmanage<MPtr(&property::PBag::enable)>(plugins_id_);
   shmsrc_sub_.reset();
   shmsink_sub_.reset();
 
   // Save the properties values if we reconnect the same plugin.
   save_properties();
 
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
   return true;
 }
 
 bool LADSPA::can_sink_caps(std::string str_caps) {
-  if (!StringUtils::starts_with(str_caps, "audio/x-raw")) return false;
+  if (!stringutils::starts_with(str_caps, "audio/x-raw")) return false;
 
   GstCaps* caps = gst_caps_from_string(str_caps.c_str());
   On_scope_exit {
@@ -401,8 +404,8 @@ bool LADSPA::can_sink_caps(std::string str_caps) {
     return false;
   }
 
-  auto target_rate =
-      GstUtils::get_gst_element_capability_as_range(plugins_.get_attached(), "rate", GST_PAD_SINK);
+  auto target_rate = gst::utils::get_gst_element_capability_as_range(
+      plugins_.get_attached(), "rate", GST_PAD_SINK);
 
   return ((target_rate.first <= rate && rate <= target_rate.second));
 }
@@ -440,7 +443,7 @@ void LADSPA::on_loading(InfoTree::ptr&& tree) {
   channels_number_ = tree->branch_read_data<int>(".channels_number");
 
   reset_saved_properties_ = false;
-  pmanage<MPtr(&PContainer::set_to_current)>(plugins_id_);
+  pmanage<MPtr(&property::PBag::set_to_current)>(plugins_id_);
 }
 
 void LADSPA::save_properties() {
@@ -448,8 +451,10 @@ void LADSPA::save_properties() {
     std::string element_name = gst_element_get_name(element);
     for (auto& prop_name : properties_) {
       saved_properties_[element_name][prop_name] =
-          pmanage<MPtr(&PContainer::get_str_str)>(prop_name + "_" + element_name);
+          pmanage<MPtr(&property::PBag::get_str_str)>(prop_name + "_" + element_name);
     }
   }
 }
-};
+
+}  // namespace quiddities
+}  // namespace switcher

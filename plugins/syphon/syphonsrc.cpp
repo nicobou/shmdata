@@ -28,6 +28,7 @@
 using namespace std;
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SyphonSrc,
                                      "syphonsrc",
                                      "Video capture (through Syphon)",
@@ -37,30 +38,28 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SyphonSrc,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-SyphonSrc::SyphonSrc(quid::Config&&) {
-  init_startable(this);
-
+SyphonSrc::SyphonSrc(quiddity::Config&&) : Startable(this) {
   reader_.reset(new SyphonReader(frameCallback, (void*)this));
 
-  pmanage<MPtr(&PContainer::make_string)>("servername",
-                                          [this](const std::string& val) {
-                                            syphon_servername_ = val;
-                                            return true;
-                                          },
-                                          [this]() { return syphon_servername_; },
-                                          "Server name",
-                                          "The name of the Syphon server",
-                                          syphon_servername_);
+  pmanage<MPtr(&property::PBag::make_string)>("servername",
+                                              [this](const std::string& val) {
+                                                syphon_servername_ = val;
+                                                return true;
+                                              },
+                                              [this]() { return syphon_servername_; },
+                                              "Server name",
+                                              "The name of the Syphon server",
+                                              syphon_servername_);
 
-  pmanage<MPtr(&PContainer::make_string)>("appname",
-                                          [this](const std::string& val) {
-                                            syphon_appname_ = val;
-                                            return true;
-                                          },
-                                          [this]() { return syphon_appname_; },
-                                          "App name",
-                                          "The name of the Syphon application",
-                                          syphon_appname_);
+  pmanage<MPtr(&property::PBag::make_string)>("appname",
+                                              [this](const std::string& val) {
+                                                syphon_appname_ = val;
+                                                return true;
+                                              },
+                                              [this]() { return syphon_appname_; },
+                                              "App name",
+                                              "The name of the Syphon application",
+                                              syphon_appname_);
 }
 
 bool SyphonSrc::start() {
@@ -88,12 +87,12 @@ void SyphonSrc::frameCallback(void* context, const char* data, int& width, int& 
   SyphonSrc* ctx = static_cast<SyphonSrc*>(context);
   static bool set = false;
   if (set == false || ctx->width_ != width || ctx->height_ != height) {
-    ctx->writer_ = std::make_unique<ShmdataWriter>(ctx,
-                                                   ctx->make_shmpath("video"),
-                                                   width * height * 4,
-                                                   string("video/x-raw, format=RGBA, ") +
-                                                       "width=" + to_string(width) +
-                                                       "height=" + to_string(height));
+    ctx->writer_ = std::make_unique<shmdata::Writer>(ctx,
+                                                     ctx->make_shmpath("video"),
+                                                     width * height * 4,
+                                                     string("video/x-raw, format=RGBA, ") +
+                                                         "width=" + to_string(width) +
+                                                         "height=" + to_string(height));
     ctx->width_ = width;
     ctx->height_ = height;
     if (!ctx->writer_.get()) {
@@ -102,9 +101,10 @@ void SyphonSrc::frameCallback(void* context, const char* data, int& width, int& 
     } else
       set = true;
   }
-  ctx->writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(static_cast<const void*>(data),
-                                                            width * height * 4);
+  ctx->writer_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(static_cast<const void*>(data),
+                                                              width * height * 4);
   ctx->writer_->bytes_written(width * height * 4);
 }
 
+}  // namespace quiddities
 }  // namespace switcher

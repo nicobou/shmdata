@@ -16,10 +16,11 @@
  */
 
 #include "./pj-sip-plugin.hpp"
-#include "switcher/net-utils.hpp"
-#include "switcher/scope-exit.hpp"
+#include "switcher/utils/net-utils.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_DECLARE_PLUGIN(SIPPlugin);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SIPPlugin,
                                      "sip",
@@ -34,9 +35,9 @@ SIPPlugin* SIPPlugin::this_ = nullptr;
 
 std::atomic<unsigned short> SIPPlugin::sip_plugin_used_(0);
 
-SIPPlugin::SIPPlugin(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
-      port_id_(pmanage<MPtr(&PContainer::make_string)>(
+SIPPlugin::SIPPlugin(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      port_id_(pmanage<MPtr(&property::PBag::make_string)>(
           "port",
           [this](const std::string& valstr) {
             if (valstr.empty()) return false;
@@ -52,15 +53,15 @@ SIPPlugin::SIPPlugin(quid::Config&& conf)
           "SIP Port",
           "SIP port used when registering",
           std::to_string(sip_port_))),
-      default_dns_address_(NetUtils::get_system_dns()),
+      default_dns_address_(netutils::get_system_dns()),
       dns_address_(default_dns_address_),
-      dns_address_id_(pmanage<MPtr(&PContainer::make_string)>(
+      dns_address_id_(pmanage<MPtr(&property::PBag::make_string)>(
           "dns_addr",
           [this](const std::string& requested_val) {
             auto val = requested_val;
             if (val.empty()) return false;
             if ("default" == requested_val) val = default_dns_address_;
-            if (!NetUtils::is_valid_IP(val)) {
+            if (!netutils::is_valid_IP(val)) {
               message("ERROR:Not a valid IP address, expected x.y.z.a with x, y, z, a in [0:255].");
               return false;
             }
@@ -83,15 +84,15 @@ SIPPlugin::SIPPlugin(quid::Config&& conf)
           "IP address used for DNS",
           dns_address_)),
       decompress_streams_id_(
-          pmanage<MPtr(&PContainer::make_bool)>("decompress",
-                                                [this](const bool& val) {
-                                                  decompress_streams_ = val;
-                                                  return true;
-                                                },
-                                                [this]() { return decompress_streams_; },
-                                                "Decompress",
-                                                "Decompress received streams",
-                                                decompress_streams_)) {
+          pmanage<MPtr(&property::PBag::make_bool)>("decompress",
+                                                    [this](const bool& val) {
+                                                      decompress_streams_ = val;
+                                                      return true;
+                                                    },
+                                                    [this]() { return decompress_streams_; },
+                                                    "Decompress",
+                                                    "Decompress received streams",
+                                                    decompress_streams_)) {
   if (1 == sip_plugin_used_.fetch_or(1)) {
     warning("an other sip quiddity is instancied, cannot init");
     is_valid_ = false;
@@ -186,7 +187,7 @@ void SIPPlugin::apply_configuration() {
   if (config<MPtr(&InfoTree::branch_has_data)>("port")) {
     debug("SIP is trying to set port from configuration");
     auto port = config<MPtr(&InfoTree::branch_get_value)>("port");
-    if (pmanage<MPtr(&PContainer::set<std::string>)>(port_id_, port.copy_as<std::string>())) {
+    if (pmanage<MPtr(&property::PBag::set<std::string>)>(port_id_, port.copy_as<std::string>())) {
       debug("sip has set port from configuration");
     } else {
       warning("sip failed setting port from configuration");
@@ -231,7 +232,7 @@ bool SIPPlugin::start_sip_transport() {
   // Note also pjsua_transport_close is not called between subsequent pjsua_transport_create
   // in pjsip-apps/src/pjsua/pjsua_app.c
 
-  if (NetUtils::is_used(sip_port_)) {
+  if (netutils::is_used(sip_port_)) {
     warning("SIP port cannot be bound (%)", std::to_string(sip_port_));
     message("ERROR: SIP port is not available (%)", std::to_string(sip_port_));
     return false;
@@ -247,6 +248,21 @@ bool SIPPlugin::start_sip_transport() {
     return false;
   }
   return true;
+}
+
+std::string SIPPlugin::get_exposed_quiddity_name_from_shmpath(const std::string& shmpath) {
+  {
+    std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
+    for (auto const& [peer_uri, names] : exposed_quiddities_) {
+      for (auto const& name : names) {
+        if (shmpath == qcontainer_->get_quiddity(qcontainer_->get_id(name))
+                           ->prop<MPtr(&property::PBag::get_str_str)>("shmdata-path")) {
+          return name;
+        }
+      }
+    }
+    return "";
+  }
 }
 
 void SIPPlugin::create_quiddity_stream(const std::string& peer_uri, const std::string& quid_name) {
@@ -266,7 +282,7 @@ void SIPPlugin::create_quiddity_stream(const std::string& peer_uri, const std::s
 
 void SIPPlugin::expose_stream_to_quiddity(const std::string& quid_name,
                                           const std::string& shmpath) {
-  qcontainer_->props<MPtr(&PContainer::set_str_str)>(
+  qcontainer_->props<MPtr(&property::PBag::set_str_str)>(
       qcontainer_->get_id(Quiddity::string_to_quiddity_name(quid_name)), "shmdata-path", shmpath);
 }
 
@@ -305,4 +321,5 @@ void SIPPlugin::on_saved() {
   if (dns_address_ == "default") dns_address_ = default_dns_address_;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

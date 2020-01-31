@@ -24,17 +24,19 @@
 #include <pulse/pulseaudio.h>
 #include <condition_variable>
 #include <mutex>
-#include "switcher/glibmainloop.hpp"
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shm-tree-updater.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/startable-quiddity.hpp"
-#include "switcher/unique-gst-element.hpp"
+#include "switcher/gst/glibmainloop.hpp"
+#include "switcher/gst/pipeliner.hpp"
+#include "switcher/gst/unique-gst-element.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
 
 namespace switcher {
-class PulseSrc : public Quiddity, public StartableQuiddity {
+namespace quiddities {
+using namespace quiddity;
+class PulseSrc : public Quiddity, public Startable {
  public:
-  PulseSrc(quid::Config&&);
+  PulseSrc(quiddity::Config&&);
   ~PulseSrc();
   PulseSrc(const PulseSrc&) = delete;
   PulseSrc& operator=(const PulseSrc&) = delete;
@@ -52,23 +54,23 @@ class PulseSrc : public Quiddity, public StartableQuiddity {
     std::string bus_path_{};
   } DeviceDescription;
 
-  std::unique_ptr<GlibMainLoop> mainloop_;
+  std::unique_ptr<gst::GlibMainLoop> mainloop_;
   std::string shmpath_{};
-  UGstElem pulsesrc_{"pulsesrc"};
-  UGstElem shmsink_{"shmdatasink"};
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
-  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
+  gst::UGstElem pulsesrc_{"pulsesrc"};
+  gst::UGstElem shmsink_{"shmdatasink"};
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
+  std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
   // pulse devices
   bool connected_to_pulse_{false};
   std::mutex devices_mutex_{};
   std::condition_variable devices_cond_{};
   // property:
   // device enum members
-  Selection<> devices_{{"none"}, 0};
-  PContainer::prop_id_t devices_id_{0};
-  PContainer::prop_id_t volume_id_{0};
-  PContainer::prop_id_t mute_id_{0};
-  Selection<> save_device_enum_{{"port", "device"}, 0};
+  property::Selection<> devices_{{"none"}, 0};
+  property::prop_id_t devices_id_{0};
+  property::prop_id_t volume_id_{0};
+  property::prop_id_t mute_id_{0};
+  property::Selection<> save_device_enum_{{"port", "device"}, 0};
   bool is_loading_{false};
 
   // pulse_audio
@@ -105,5 +107,6 @@ class PulseSrc : public Quiddity, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(PulseSrc);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

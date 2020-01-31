@@ -20,9 +20,7 @@ git submodule update --init --recursive
 mkdir build && cd build
 
 # Generate make recipes
-CC="gcc-8" CXX="g++-8" cmake .. \
-  -DENABLE_GPL=ON \
-  -DCMAKE_BUILD_TYPE=Release # replace "Release" with "Debug" when coding
+CC="gcc-8" CXX="g++-8" cmake .. -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE=Release # replace "Release" with "Debug" when coding
 
 # Build and install switcher on your system
 make -j"$(nproc)"

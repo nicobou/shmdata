@@ -24,24 +24,26 @@
 #include <ltc.h>
 #include <deque>
 #include <fstream>
-#include <switcher/startable-quiddity.hpp>
-#include "switcher/gst-shmdata-subscriber.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/shmdata-writer.hpp"
-#include "switcher/threaded-wrapper.hpp"
-#include "switcher/unique-gst-element.hpp"
+#include <switcher/quiddity/startable.hpp>
+#include "switcher/gst/unique-gst-element.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/shmdata/gst-subscriber.hpp"
+#include "switcher/shmdata/writer.hpp"
+#include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
+namespace quiddities {
 /**
  * LTCSource class,
  * Generated an LTC timecode in an audioshmdata or reads it from a prerecorded audio timecode file.
  * To be used for audio and video synchronization.
  */
-class LTCSource : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class LTCSource : public Quiddity, public Startable {
  public:
-  LTCSource(quid::Config&&);
+  LTCSource(quiddity::Config&&);
   ~LTCSource();
 
  private:
@@ -58,11 +60,11 @@ class LTCSource : public Quiddity, public StartableQuiddity {
 
   std::deque<ltcsnd_sample_t> samples_{};       //!< Pool of samples to send to shmdata
   std::atomic<bool> generating_frames_{false};  //!< Flag to prevent infinite generation of samples.
-  std::unique_ptr<ShmdataWriter> shmw_{};       //!< Shmdata writer.
-  ShmdataConnector shmcntr_{nullptr};
+  std::unique_ptr<shmdata::Writer> shmw_{};     //!< Shmdata writer.
+  shmdata::Connector shmcntr_{nullptr};
   bool external_sync_source_{false};  //!< Is a shmdata connected to use a cadencing source.
   size_t format_size_{0};
-  std::unique_ptr<ShmdataFollower> shm_follower_{
+  std::unique_ptr<shmdata::Follower> shm_follower_{
       nullptr};                          //!< Incoming sound stream optionally used for cadencing.
   jack_client_t* jack_client_{nullptr};  //!< Jack client for sample generation cadencing
 
@@ -73,14 +75,16 @@ class LTCSource : public Quiddity, public StartableQuiddity {
                                                //! to avoid blocking the shmdata writing.
 
   // Properties
-  PContainer::prop_id_t time_reference_id_{0};
-  Selection<> time_reference_{{"Absolute timecode", "Relative timecode from start time"}, 1};
-  PContainer::prop_id_t fps_id_{0};
-  Selection<double> fps_{{"30 FPS", "25 FPS", "24 FPS"}, {30, 25, 24}, 0};
+  property::prop_id_t time_reference_id_{0};
+  property::Selection<> time_reference_{{"Absolute timecode", "Relative timecode from start time"},
+                                        1};
+  property::prop_id_t fps_id_{0};
+  property::Selection<double> fps_{{"30 FPS", "25 FPS", "24 FPS"}, {30, 25, 24}, 0};
   jack_nframes_t sample_rate_{0};
-  PContainer::prop_id_t timeshift_fw_id_{0};
+  property::prop_id_t timeshift_fw_id_{0};
   unsigned int timeshift_fw_{0};
 };
 SWITCHER_DECLARE_PLUGIN(LTCSource)
+}  // namespace quiddities
 }  // namespace switcher
 #endif

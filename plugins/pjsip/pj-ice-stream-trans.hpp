@@ -25,9 +25,10 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "switcher/safe-bool-idiom.hpp"
+#include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
+namespace quiddities {
 class PJICEStreamTrans : public SafeBoolIdiom {
  public:
   using on_data_cb_t = std::function<void(void* data, size_t size)>;
@@ -74,5 +75,6 @@ class PJICEStreamTrans : public SafeBoolIdiom {
   static void cb_on_ice_complete(pj_ice_strans* ice_st, pj_ice_strans_op op, pj_status_t status);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

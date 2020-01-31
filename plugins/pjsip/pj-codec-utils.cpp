@@ -21,6 +21,7 @@
 #include <vector>
 
 namespace switcher {
+namespace quiddities {
 PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codecs() {
   PJCodecUtils::codecs res;
   // assuming gst_init (nullptr, nullptr); has been called
@@ -199,4 +200,5 @@ PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructur
   }
   return res;
 }
+}  // namespace quiddities
 }  // namespace switcher

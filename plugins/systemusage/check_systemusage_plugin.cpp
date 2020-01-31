@@ -22,7 +22,7 @@
 #include <chrono>
 #include <thread>
 #include <vector>
-#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 
 int main() {
   using namespace switcher;
@@ -30,9 +30,9 @@ int main() {
 
   {
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    if (!test::full(manager, "systemusage")) success = false;
+    if (!quiddity::test::full(manager, "systemusage")) success = false;
   }  // end of scope is releasing the manager
   if (success)
     return 0;

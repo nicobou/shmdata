@@ -17,14 +17,15 @@
 
 #include "./pj-whitelist.hpp"
 #include "./pj-sip-plugin.hpp"
-#include "switcher/information-tree-json.hpp"
+#include "switcher/infotree/json-serializer.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 PJWhiteList::PJWhiteList()
-    : mode_id_(SIPPlugin::this_->pmanage<MPtr(&PContainer::make_selection<>)>(
+    : mode_id_(SIPPlugin::this_->pmanage<MPtr(&property::PBag::make_selection<>)>(
           "mode",
-          [this](const IndexOrName& val) {
+          [this](const quiddity::property::IndexOrName& val) {
             mode_.select(val);
             return true;
           },
@@ -34,9 +35,9 @@ PJWhiteList::PJWhiteList()
           mode_)),
       everybody_(mode_.get_index("everybody")) {
   using authorize_t = std::function<bool(std::string, bool)>;
-  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<authorize_t>)>(
+  SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<authorize_t>)>(
       "authorize",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Authorized Incoming Call From",
@@ -103,4 +104,5 @@ bool PJWhiteList::is_authorized(const std::string& sip_url) const {
   return found->second;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

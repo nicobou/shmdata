@@ -21,7 +21,7 @@
 #include <atomic>
 #include <cassert>
 #include <condition_variable>
-#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 #include "switcher/switcher.hpp"
 
 using namespace switcher;
@@ -58,34 +58,37 @@ int main() {
     Switcher::ptr manager = Switcher::make_switcher("bundle");
 
     // loading configuration with bundle
-    assert(manager->conf<MPtr(&switcher::Configuration::from_file)>("./check_bundle.config"));
+    assert(manager->conf<MPtr(&Configuration::from_file)>("./check_bundle.config"));
 
     // creating and removing some complex bundles
     auto bundles = {"source-bundle", "sink-bundle", "filter-bundle", "whitespaces-bundle"};
     for (const auto& bundle : bundles) {
-      assert(switcher::test::create(manager, bundle));
+      assert(quiddity::test::create(manager, bundle));
     }
 
     // testing shmdata communication from a bundle to an other
-    auto srcqrox = manager->quids<MPtr(&switcher::quid::Container::create)>(
-        "vid-source-bundle", "src", nullptr);
+    auto srcqrox =
+        manager->quids<MPtr(&quiddity::Container::create)>("vid-source-bundle", "src", nullptr);
     assert(srcqrox);
-    auto dummyqrox = manager->quids<MPtr(&switcher::quid::Container::create)>(
-        "dummy-sink-bundle", "dummy", nullptr);
+    auto dummyqrox =
+        manager->quids<MPtr(&quiddity::Container::create)>("dummy-sink-bundle", "dummy", nullptr);
     assert(dummyqrox);
     auto dummy = dummyqrox.get();
 
-    assert(srcqrox.get()->prop<MPtr(&PContainer::set_str_str)>("started", "true"));
-    assert(0 != dummy->prop<MPtr(&PContainer::subscribe)>(
-                    dummy->prop<MPtr(&PContainer::get_id)>("dummy/frame-received"), [&]() {
-                      if (dummy->prop<MPtr(&PContainer::get<bool>)>(
-                              dummy->prop<MPtr(&PContainer::get_id)>("dummy/frame-received"))) {
-                        notify_success();
-                      }
-                    }));
+    assert(srcqrox.get()->prop<MPtr(&quiddity::property::PBag::set_str_str)>("started", "true"));
+    assert(0 !=
+           dummy->prop<MPtr(&quiddity::property::PBag::subscribe)>(
+               dummy->prop<MPtr(&quiddity::property::PBag::get_id)>("dummy/frame-received"), [&]() {
+                 if (dummy->prop<MPtr(&quiddity::property::PBag::get<bool>)>(
+                         dummy->prop<MPtr(&quiddity::property::PBag::get_id)>(
+                             "dummy/frame-received"))) {
+                   notify_success();
+                 }
+               }));
 
-    assert(dummy->meth<MPtr(&MContainer::invoke<std::function<bool(std::string, std::string)>>)>(
-        dummy->meth<MPtr(&MContainer::get_id)>("connect-quid"),
+    assert(dummy->meth<MPtr(
+               &quiddity::method::MBag::invoke<std::function<bool(std::string, std::string)>>)>(
+        dummy->meth<MPtr(&quiddity::method::MBag::get_id)>("connect-quid"),
         std::make_tuple("src", "video-encoded")));
 
     wait_until_success();

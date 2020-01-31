@@ -22,6 +22,7 @@
 #include <cstring>  // memset
 
 namespace switcher {
+namespace quiddities {
 NVencBuffers::NVencBuffers(void* encoder,
                            uint32_t width,
                            uint32_t height,
@@ -177,4 +178,5 @@ bool NVencBuffers::process_encoded_frame(std::function<void(void*, uint32_t)> fu
   return true;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

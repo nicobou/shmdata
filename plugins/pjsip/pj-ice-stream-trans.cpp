@@ -21,6 +21,7 @@
 #include "./pj-sip-plugin.hpp"
 
 namespace switcher {
+namespace quiddities {
 PJICEStreamTrans::PJICEStreamTrans(pj_ice_strans_cfg& ice_cfg,
                                    unsigned comp_cnt,
                                    pj_ice_sess_role role)
@@ -222,4 +223,5 @@ bool PJICEStreamTrans::set_data_cb(unsigned comp_id, on_data_cb_t cb) {
   return true;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

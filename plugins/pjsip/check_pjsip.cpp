@@ -21,23 +21,25 @@
 
 #include <cassert>
 #include <vector>
-#include "switcher/quiddity-basic-test.hpp"
+#include "switcher/quiddity/basic-test.hpp"
 
 int main() {
   {
     using namespace switcher;
-    switcher::Switcher::ptr manager = Switcher::make_switcher("siptest");
+    using namespace quiddity;
 
-    manager->factory<MPtr(&quid::Factory::scan_dir)>("./");
+    Switcher::ptr manager = Switcher::make_switcher("siptest");
 
-    assert(test::full(manager, "sip"));
+    manager->factory<MPtr(&Factory::scan_dir)>("./");
 
-    for (auto& it : manager->quids<MPtr(&quid::Container::get_names)>()) {
-      manager->quids<MPtr(&quid::Container::remove)>(
-          manager->quids<MPtr(&quid::Container::get_id)>(it));
+    assert(quiddity::test::full(manager, "sip"));
+
+    for (auto& it : manager->quids<MPtr(&quiddity::Container::get_names)>()) {
+      manager->quids<MPtr(&quiddity::Container::remove)>(
+          manager->quids<MPtr(&quiddity::Container::get_id)>(it));
     }
     manager->conf<MPtr(&Configuration::from_file)>("./config.json");
-    assert(manager->quids<MPtr(&quid::Container::create)>("sip", "test", nullptr));
+    assert(manager->quids<MPtr(&quiddity::Container::create)>("sip", "test", nullptr));
   }  // end of scope is releasing the manager
   return 0;
 }

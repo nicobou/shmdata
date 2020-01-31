@@ -21,22 +21,23 @@
 #define __SWITCHER_GLFW_VIDEO_H__
 
 // clang-format off
-#include "./glad.h"
+#include "./external/glad.h"
+#include "./multiple-buffer.hpp"
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 // clang-format on
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shm-tree-updater.hpp"
-#include "switcher/multiple-buffer.hpp"
-#include "switcher/periodic-task.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/shmdata-writer.hpp"
-#include "switcher/threaded-wrapper.hpp"
+#include "switcher/gst/pipeliner.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
+#include "switcher/utils/periodic-task.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/shmdata/writer.hpp"
+#include "switcher/utils/threaded-wrapper.hpp"
 
 namespace switcher {
 
 //! GLFWVideo class, to display video in a resizable window.
+using namespace quiddity;
 class GLFWVideo : public Quiddity {
   friend class GLFWRenderer;
 
@@ -46,7 +47,7 @@ class GLFWVideo : public Quiddity {
    * \brief Constructor
    * \param Title of the window
    */
-  GLFWVideo(quid::Config&&);
+  GLFWVideo(quiddity::Config&&);
   /**
    * \brief Destructor
    */
@@ -136,34 +137,35 @@ class GLFWVideo : public Quiddity {
 
     ImVec2 text_size_{};
     std::string text_{};
-    PContainer::prop_id_t text_id_{0};
-    Selection<unsigned int> alignment_{{"Top left corner",
-                                        "Bottom left corner",
-                                        "Top right corner",
-                                        "Bottom right corner",
-                                        "Center",
-                                        "Top center",
-                                        "Bottom center"},
-                                       {Alignment::TOP_ALIGNED | Alignment::LEFT_ALIGNED,
-                                        Alignment::BOTTOM_ALIGNED | Alignment::LEFT_ALIGNED,
-                                        Alignment::TOP_ALIGNED | Alignment::RIGHT_ALIGNED,
-                                        Alignment::BOTTOM_ALIGNED | Alignment::RIGHT_ALIGNED,
-                                        Alignment::VERTICAL_CENTER | Alignment::HORIZONTAL_CENTER,
-                                        Alignment::TOP_ALIGNED | Alignment::HORIZONTAL_CENTER,
-                                        Alignment::BOTTOM_ALIGNED | Alignment::HORIZONTAL_CENTER},
-                                       6};
-    PContainer::prop_id_t alignment_id_{0};
+    property::prop_id_t text_id_{0};
+    property::Selection<unsigned int> alignment_{
+        {"Top left corner",
+         "Bottom left corner",
+         "Top right corner",
+         "Bottom right corner",
+         "Center",
+         "Top center",
+         "Bottom center"},
+        {Alignment::TOP_ALIGNED | Alignment::LEFT_ALIGNED,
+         Alignment::BOTTOM_ALIGNED | Alignment::LEFT_ALIGNED,
+         Alignment::TOP_ALIGNED | Alignment::RIGHT_ALIGNED,
+         Alignment::BOTTOM_ALIGNED | Alignment::RIGHT_ALIGNED,
+         Alignment::VERTICAL_CENTER | Alignment::HORIZONTAL_CENTER,
+         Alignment::TOP_ALIGNED | Alignment::HORIZONTAL_CENTER,
+         Alignment::BOTTOM_ALIGNED | Alignment::HORIZONTAL_CENTER},
+        6};
+    property::prop_id_t alignment_id_{0};
     bool use_custom_font_{};
-    PContainer::prop_id_t use_custom_font_id_{0};
+    property::prop_id_t use_custom_font_id_{0};
     std::string custom_font_{};
-    PContainer::prop_id_t custom_font_id_{0};
+    property::prop_id_t custom_font_id_{0};
     std::vector<std::string> fonts_list_;
-    Selection<> fonts_{{"none"}, 0};
-    PContainer::prop_id_t font_id_{0};
-    Color color_;
-    PContainer::prop_id_t color_id_{0};
+    property::Selection<> fonts_{{"none"}, 0};
+    property::prop_id_t font_id_{0};
+    property::Color color_;
+    property::prop_id_t color_id_{0};
     unsigned int font_size_{20};
-    PContainer::prop_id_t font_size_id_{0};
+    property::prop_id_t font_size_id_{0};
     std::unique_ptr<GUIContext> context_{nullptr};
     ImFontAtlas font_atlas_{};
   };
@@ -256,23 +258,23 @@ class GLFWVideo : public Quiddity {
   /**
    * \brief Shmdata connection
    */
-  ShmdataConnector shmcntr_;
+  shmdata::Connector shmcntr_;
   std::string shmpath_{};
-  std::unique_ptr<ShmdataFollower> shm_follower_{nullptr};
-  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
+  std::unique_ptr<shmdata::Follower> shm_follower_{nullptr};
+  std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
   std::string cur_caps_{};
 
   /**
    * \brief Gstreamer elements and tools
    */
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
-  UGstElem shmsrc_{"shmdatasrc"};
-  UGstElem queue_{"queue"};
-  UGstElem videoconvert_{"videoconvert"};
-  UGstElem capsfilter_{"capsfilter"};
-  UGstElem gamma_{"gamma"};
-  UGstElem videobalance_{"videobalance"};
-  UGstElem fakesink_{"fakesink"};
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
+  gst::UGstElem shmsrc_{"shmdatasrc"};
+  gst::UGstElem queue_{"queue"};
+  gst::UGstElem videoconvert_{"videoconvert"};
+  gst::UGstElem capsfilter_{"capsfilter"};
+  gst::UGstElem gamma_{"gamma"};
+  gst::UGstElem videobalance_{"videobalance"};
+  gst::UGstElem fakesink_{"fakesink"};
 
   /**
    * \brief Window content properties
@@ -284,32 +286,32 @@ class GLFWVideo : public Quiddity {
   /**
    * \brief Background properties
    */
-  PContainer::prop_id_t background_config_id_{0};
-  Selection<> background_type_{{kBackgroundTypeColor, kBackgroundTypeImage}, 0};
-  PContainer::prop_id_t background_type_id_{0};
-  Color color_;
-  PContainer::prop_id_t color_id_{0};
+  property::prop_id_t background_config_id_{0};
+  property::Selection<> background_type_{{kBackgroundTypeColor, kBackgroundTypeImage}, 0};
+  property::prop_id_t background_type_id_{0};
+  property::Color color_;
+  property::prop_id_t color_id_{0};
   std::string background_image_{};
-  PContainer::prop_id_t background_image_id_{0};
+  property::prop_id_t background_image_id_{0};
   /**
    * \brief Overlay properties
    */
   std::mutex configuration_mutex_{};
-  PContainer::prop_id_t overlay_id_{0};
+  property::prop_id_t overlay_id_{0};
   bool show_overlay_{false};
-  PContainer::prop_id_t show_overlay_id_{0};
+  property::prop_id_t show_overlay_id_{0};
   std::unique_ptr<GUIConfiguration> gui_configuration_{nullptr};
   std::unique_ptr<PeriodicTask<>> geometry_task_;
   /**
    * \brief top level properties
    */
   std::string title_;
-  PContainer::prop_id_t title_id_{0};
+  property::prop_id_t title_id_{0};
   gboolean keyb_interaction_{TRUE};
   bool xevents_to_shmdata_{false};
-  PContainer::prop_id_t xevents_to_shmdata_id_{0};
-  std::unique_ptr<ShmdataWriter> keyb_shm_{nullptr};
-  std::unique_ptr<ShmdataWriter> mouse_shm_{nullptr};
+  property::prop_id_t xevents_to_shmdata_id_{0};
+  std::unique_ptr<shmdata::Writer> keyb_shm_{nullptr};
+  std::unique_ptr<shmdata::Writer> mouse_shm_{nullptr};
   int vid_width_{0};
   int vid_height_{0};
   int image_width_{0};
@@ -322,28 +324,29 @@ class GLFWVideo : public Quiddity {
    */
   std::vector<MonitorConfig> monitors_config_{};
   bool fullscreen_{false};
-  PContainer::prop_id_t fullscreen_id_{0};
+  property::prop_id_t fullscreen_id_{0};
   bool decorated_{false};
-  PContainer::prop_id_t decorated_id_{0};
+  property::prop_id_t decorated_id_{0};
   bool always_on_top_{false};
-  PContainer::prop_id_t always_on_top_id_{0};
+  property::prop_id_t always_on_top_id_{0};
   bool win_aspect_ratio_toggle_{false};
-  PContainer::prop_id_t win_aspect_ratio_toggle_id_{0};
+  property::prop_id_t win_aspect_ratio_toggle_id_{0};
   int width_{800};
-  PContainer::prop_id_t width_id_{0};
+  property::prop_id_t width_id_{0};
   int height_{600};
-  PContainer::prop_id_t height_id_{0};
+  property::prop_id_t height_id_{0};
   int position_x_{0};
-  PContainer::prop_id_t position_x_id_{0};
+  property::prop_id_t position_x_id_{0};
   int position_y_{0};
-  PContainer::prop_id_t position_y_id_{0};
-  Selection<> rotation_{
+  property::prop_id_t position_y_id_{0};
+  property::Selection<> rotation_{
       {"None", "90 degrees clockwise", "90 degrees anti-clockwise", "180 degrees"}, 0};
-  PContainer::prop_id_t rotation_id_{0};
-  Selection<> flip_{{"None", "Horizontal flip", "Vertical flip", "Bidirectional flip"}, 0};
-  PContainer::prop_id_t flip_id_{0};
-  Selection<int> vsync_{{"Hard", "Soft", "None"}, {1, -1, 0}, 0};
-  PContainer::prop_id_t vsync_id_{0};
+  property::prop_id_t rotation_id_{0};
+  property::Selection<> flip_{{"None", "Horizontal flip", "Vertical flip", "Bidirectional flip"},
+                              0};
+  property::prop_id_t flip_id_{0};
+  property::Selection<int> vsync_{{"Hard", "Soft", "None"}, {1, -1, 0}, 0};
+  property::prop_id_t vsync_id_{0};
   int max_width_{0};
   int max_height_{0};
   int minimized_width_{800};

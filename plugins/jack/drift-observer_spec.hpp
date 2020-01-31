@@ -21,6 +21,7 @@
 #include <iostream>
 
 namespace switcher {
+namespace quiddities {
 
 template <typename TimeType>
 TimeType DriftObserver<TimeType>::set_current_time_info(const TimeType date,
@@ -58,4 +59,5 @@ void DriftObserver<TimeType>::set_smoothing_factor(const double& sf) {
   smoothing_factor_ = sf;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

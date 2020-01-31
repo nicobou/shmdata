@@ -23,22 +23,24 @@
 #include <chrono>
 #include <iomanip>
 #include <memory>
-#include <switcher/periodic-task.hpp>
-#include <switcher/quiddity.hpp>
-#include <switcher/shmdata-connector.hpp>
-#include <switcher/shmdata-follower.hpp>
-#include <switcher/startable-quiddity.hpp>
+#include <switcher/quiddity/quiddity.hpp>
+#include <switcher/quiddity/startable.hpp>
+#include <switcher/shmdata/connector.hpp>
+#include <switcher/shmdata/follower.hpp>
+#include <switcher/utils/periodic-task.hpp>
 #include "./devices/analog-sink-device.hpp"
 #include "./devices/button-sink-device.hpp"
 #include "./devices/sink-device.hpp"
 #include "shared/connection/vrpn-server-connection.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
-class VRPNSink : public Quiddity, public StartableQuiddity {
+using namespace quiddity;
+class VRPNSink : public Quiddity, public Startable {
  public:
-  VRPNSink(quid::Config&&);
+  VRPNSink(quiddity::Config&&);
   ~VRPNSink() = default;
   VRPNSink(const VRPNSink&) = delete;
   VRPNSink& operator=(const VRPNSink&) = delete;
@@ -52,13 +54,13 @@ class VRPNSink : public Quiddity, public StartableQuiddity {
   /**
    * Port property id
    */
-  PContainer::prop_id_t port_id_;
+  property::prop_id_t port_id_;
 
   /**
    * Methods id
    */
-  MContainer::meth_id_t create_analog_device_id_{0};
-  MContainer::meth_id_t create_button_device_id_{0};
+  method::meth_id_t create_analog_device_id_{0};
+  method::meth_id_t create_button_device_id_{0};
 
   /**
    * Debug property value
@@ -77,8 +79,8 @@ class VRPNSink : public Quiddity, public StartableQuiddity {
   bool loading_{false};
 
   // SHMDATA
-  ShmdataConnector shmdataConnector_;
-  std::unique_ptr<ShmdataFollower> shmDataFollower_{nullptr};
+  shmdata::Connector shmdataConnector_;
+  std::unique_ptr<shmdata::Follower> shmDataFollower_{nullptr};
   bool connect(const std::string& path);
   bool disconnect();
   bool canSinkCaps(const std::string& caps);
@@ -95,7 +97,7 @@ class VRPNSink : public Quiddity, public StartableQuiddity {
    * Device properties
    * Map of vector of property ids per device id
    */
-  std::map<std::string, std::unique_ptr<std::vector<PContainer::prop_id_t>>> devicesProperties_{};
+  std::map<std::string, std::unique_ptr<std::vector<property::prop_id_t>>> devicesProperties_{};
 
   // ANALOG DEVICE
   bool createAnalogDeviceMethod(const std::string& deviceName);
@@ -112,6 +114,8 @@ class VRPNSink : public Quiddity, public StartableQuiddity {
   // Destroy connection last
   std::unique_ptr<VRPNServerConnection> connection_{};
 };
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
+
 #endif

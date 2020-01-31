@@ -64,6 +64,7 @@ class RendererSingleton {
   static std::unique_ptr<GLFWRenderer> s_instance_;
   static std::mutex creation_mutex_;
 };
-};
+
+}  // namespace switcher
 
 #endif

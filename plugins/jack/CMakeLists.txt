@@ -46,6 +46,21 @@ if (PLUGIN_JACK)
 
     add_dependencies(switcherjacktoshm ${SWITCHER_LIBRARY})
 
+    # Jack Server
+
+    link_libraries(
+      ${JACK_LIBRARIES}
+      -ljackserver
+    )
+
+    add_library(switcherjackserver SHARED
+        jack-server-quid.cpp
+        jack-server.cpp
+        )
+
+    add_dependencies(switcherjackserver ${SWITCHER_LIBRARY})
+
+
     # TEST
 
     add_executable(check_jack check_jack.cpp)
@@ -53,6 +68,6 @@ if (PLUGIN_JACK)
 
     # INSTALL
 
-    install(TARGETS switchershmtojack switcherjacktoshm LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(TARGETS switchershmtojack switcherjacktoshm switcherjackserver LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
 
 endif ()

@@ -24,9 +24,10 @@
 #include <functional>
 #include <mutex>
 #include <thread>
-#include "switcher/safe-bool-idiom.hpp"
+#include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
+namespace quiddities {
 class SIPPlugin;
 class PJCall;
 class PJPresence;
@@ -71,5 +72,6 @@ class PJSIP : public SafeBoolIdiom {
   bool create_resolver(std::string dns_address);
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #endif

@@ -21,6 +21,7 @@
 #define __SWITCHER_DRIFT_OBSERVER_H__
 
 namespace switcher {
+namespace quiddities {
 template <typename TimeType>
 class DriftObserver {
  public:
@@ -40,6 +41,7 @@ class DriftObserver {
   double smoothing_factor_{0.0001};
 };
 
+}  // namespace quiddities
 }  // namespace switcher
 #include "./drift-observer_spec.hpp"
 #endif

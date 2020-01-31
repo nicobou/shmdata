@@ -25,21 +25,22 @@
 #include <list>
 #include <map>
 #include <memory>
-#include "switcher/quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
 
 using namespace switcher;
+using namespace quiddity;
 
 class pyQuiddity {
  public:
   using sig_registering_t = struct {
-    std::map<SContainer::sig_id_t, SContainer::register_id_t> signals{};
-    std::map<SContainer::sig_id_t, PyObject*> callbacks{};
-    std::map<SContainer::sig_id_t, PyObject*> user_data{};
+    std::map<signal::sig_id_t, signal::register_id_t> signals{};
+    std::map<signal::sig_id_t, PyObject*> callbacks{};
+    std::map<signal::sig_id_t, PyObject*> user_data{};
   };
   using prop_registering_t = struct {
-    std::map<PContainer::prop_id_t, PContainer::register_id_t> props{};
-    std::map<PContainer::prop_id_t, PyObject*> callbacks{};
-    std::map<PContainer::prop_id_t, PyObject*> user_data{};
+    std::map<property::prop_id_t, property::register_id_t> props{};
+    std::map<property::prop_id_t, PyObject*> callbacks{};
+    std::map<property::prop_id_t, PyObject*> user_data{};
   };
   using pyQuiddityObject = struct {
     PyObject_HEAD Quiddity* quid{nullptr};
@@ -71,6 +72,11 @@ class pyQuiddity {
   // access to quiddity InfoTree
   static PyObject* get_info(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_info_tree_as_json(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  // name, type and nickname
+  static PyObject* get_name(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get_type(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* set_nickname(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get_nickname(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   // subscription
   static PyObject* subscribe(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* unsubscribe(pyQuiddityObject* self, PyObject* args, PyObject* kwds);

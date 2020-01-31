@@ -24,6 +24,7 @@
 #include "vrpn_Analog.h"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 /**
@@ -83,7 +84,8 @@ class AnalogSinkDevice : public SinkDevice {
    */
   bool changed_{false};
 };
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 
 #endif

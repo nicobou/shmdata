@@ -22,9 +22,10 @@
 
 #include <string>
 #include "./connection/vrpn-connection.hpp"
-#include "switcher/information-tree.hpp"
+#include "switcher/infotree/information-tree.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 /**
@@ -72,6 +73,8 @@ class Device {
    */
   std::string name_{};
 };
-}
-}
+
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 #endif

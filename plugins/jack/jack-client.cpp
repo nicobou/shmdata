@@ -23,6 +23,7 @@
 #include <string>
 
 namespace switcher {
+namespace quiddities {
 JackClient::JackClient(const std::string& name,
                        const std::string& server_name,
                        JackProcessCallback process_cb,
@@ -30,17 +31,17 @@ JackClient::JackClient(const std::string& name,
                        XRunCallback_t xrun_cb,
                        PortCallback_t port_cb,
                        JackShutdown_t shutdown_cb)
-    : client_(jack_client_open(name.c_str(),
-                               server_name.empty() ? JackNullOption : JackServerName,
-                               &status_,
-                               server_name.empty() ? nullptr : server_name.c_str()),
-              &jack_client_close),
-      user_cb_(process_cb),
+    : user_cb_(process_cb),
       user_cb_arg_(process_user_data),
       xrun_cb_(xrun_cb),
       port_cb_(port_cb),
-      shutdown_cb_(shutdown_cb) {
-  if ((client_ == NULL) && !(status_ & JackServerFailed)) return;
+      shutdown_cb_(shutdown_cb),
+      client_(jack_client_open(name.c_str(),
+                               server_name.empty() ? JackNullOption : JackServerName,
+                               &status_,
+                               server_name.empty() ? nullptr : server_name.c_str()),
+              &jack_client_close) {
+  if ((client_ == nullptr) && !(status_ & JackServerFailed)) return;
   jack_on_shutdown(client_.get(), &JackClient::on_jack_shutdown, this);
   // if (status_ & JackNameNotUnique) {
   // client_name = jack_get_client_name(client);
@@ -102,4 +103,5 @@ std::string JackPort::get_name() const { return port_name_; }
 
 bool JackPort::safe_bool_idiom() const { return static_cast<bool>(port_); }
 
+}  // namespace quiddities
 }  // namespace switcher

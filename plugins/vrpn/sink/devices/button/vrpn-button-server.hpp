@@ -23,6 +23,7 @@
 #include "vrpn_Button.h"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 /**
@@ -53,6 +54,7 @@ class VRPNButtonServer : public vrpn_Button_Server {
   vrpn_int32 setNumButtons(vrpn_int32 sizeRequested);
 };
 
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher
 #endif

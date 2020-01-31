@@ -18,9 +18,9 @@
  */
 
 #include "./rtmp.hpp"
-#include "switcher/shmdata-utils.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_DECLARE_PLUGIN(RTMP);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RTMP,
                                      "rtmp",
@@ -31,11 +31,11 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RTMP,
                                      "LGPL",
                                      "Jérémie Soria");
 
-RTMP::RTMP(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)),
+RTMP::RTMP(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std::make_unique<GstPipeliner>(nullptr, nullptr)) {
-  stream_app_url_id_ = pmanage<MPtr(&PContainer::make_string)>(
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
+  stream_app_url_id_ = pmanage<MPtr(&property::PBag::make_string)>(
       "stream_app_url",
       [this](const std::string& val) {
         stream_app_url_ = val;
@@ -47,7 +47,7 @@ RTMP::RTMP(quid::Config&& conf)
       "Stream application URL",
       "RTMP address used to stream.",
       stream_app_url_);
-  stream_key_id_ = pmanage<MPtr(&PContainer::make_string)>(
+  stream_key_id_ = pmanage<MPtr(&property::PBag::make_string)>(
       "stream_key",
       [this](const std::string& val) {
         stream_key_ = val;
@@ -62,13 +62,13 @@ RTMP::RTMP(quid::Config&& conf)
 
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) {
-        if (StringUtils::ends_with(shmpath, "video-encoded"))
+        if (stringutils::ends_with(shmpath, "video-encoded"))
           return on_shmdata_connect(shmpath, ShmType::VIDEO);
         else
           return on_shmdata_connect(shmpath, ShmType::AUDIO);
       },
       [this](const std::string& shmpath) {
-        if (StringUtils::ends_with(shmpath, "video-encoded"))
+        if (stringutils::ends_with(shmpath, "video-encoded"))
           return on_shmdata_disconnect(ShmType::VIDEO);
         else
           return on_shmdata_disconnect(ShmType::AUDIO);
@@ -76,13 +76,12 @@ RTMP::RTMP(quid::Config&& conf)
       nullptr,
       [this](const std::string& caps) { return can_sink_caps(caps); },
       std::numeric_limits<unsigned int>::max());
-
 }
 
 bool RTMP::create_gst_pipeline() {
   shmaudio_sub_.reset();
   shmvideo_sub_.reset();
-  gst_pipeline_ = std::make_unique<GstPipeliner>(nullptr, nullptr);
+  gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
 
   std::string dest = "rtmpsink";
   if (audio_shmpath_.empty() || video_shmpath_.empty()) {
@@ -122,15 +121,15 @@ bool RTMP::create_gst_pipeline() {
     auto shmdatavideo = gst_bin_get_by_name(GST_BIN(bin), "shmvideo");
     g_object_set(G_OBJECT(shmdatavideo), "socket-path", video_shmpath_.c_str(), nullptr);
 
-    shmvideo_sub_ = std::make_unique<GstShmTreeUpdater>(
-        this, shmdatavideo, video_shmpath_, GstShmTreeUpdater::Direction::reader);
+    shmvideo_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+        this, shmdatavideo, video_shmpath_, shmdata::GstTreeUpdater::Direction::reader);
   }
 
   if (!audio_shmpath_.empty()) {
     auto shmdataaudio = gst_bin_get_by_name(GST_BIN(bin), "shmaudio");
     g_object_set(G_OBJECT(shmdataaudio), "socket-path", audio_shmpath_.c_str(), nullptr);
-    shmaudio_sub_ = std::make_unique<GstShmTreeUpdater>(
-        this, shmdataaudio, audio_shmpath_, GstShmTreeUpdater::Direction::reader);
+    shmaudio_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+        this, shmdataaudio, audio_shmpath_, shmdata::GstTreeUpdater::Direction::reader);
   }
 
   if (!audio_shmpath_.empty() && !video_shmpath_.empty() && !stream_app_url_.empty() &&
@@ -178,7 +177,9 @@ bool RTMP::on_shmdata_disconnect(ShmType type) {
 }
 
 bool RTMP::can_sink_caps(std::string str_caps) {
-  return StringUtils::starts_with(str_caps, "audio/x-raw") ||
-         StringUtils::starts_with(str_caps, "video/x-h264");
+  return stringutils::starts_with(str_caps, "audio/x-raw") ||
+         stringutils::starts_with(str_caps, "video/x-h264");
 }
-};
+
+}  // namespace quiddities
+}  // namespace switcher

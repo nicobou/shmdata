@@ -21,11 +21,12 @@
 #define __SWITCHER_SYSTEM_USAGE_H__
 
 #include <memory>
-#include "switcher/periodic-task.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/startable-quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
+#include "switcher/utils/periodic-task.hpp"
 
 namespace switcher {
+namespace quiddities {
 struct Cpu {
   long user{0};
   long nice{0};
@@ -52,9 +53,10 @@ struct Net {
   long tx_drop{0};
 };
 
+using namespace quiddity;
 class SystemUsage : public Quiddity {
  public:
-  SystemUsage(quid::Config&&);
+  SystemUsage(quiddity::Config&&);
   ~SystemUsage() = default;
   SystemUsage(const SystemUsage&) = delete;
   SystemUsage& operator=(const SystemUsage&) = delete;
@@ -71,5 +73,6 @@ class SystemUsage : public Quiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(SystemUsage);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

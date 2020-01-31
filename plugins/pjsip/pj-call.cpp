@@ -18,13 +18,13 @@
 #include "./pj-call.hpp"
 #include "./pj-call-utils.hpp"
 #include "./pj-sip-plugin.hpp"
-#include "switcher/information-tree-json.hpp"
-#include "switcher/net-utils.hpp"
-#include "switcher/scope-exit.hpp"
-#include "switcher/sdp-utils.hpp"
-#include "switcher/shmdata-utils.hpp"
+#include "switcher/gst/sdp-utils.hpp"
+#include "switcher/infotree/json-serializer.hpp"
+#include "switcher/utils/net-utils.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 
 char* pjcall_pjsip_module_name = strdup("mod-siprtpapp");
 
@@ -48,7 +48,7 @@ pjsip_module PJCall::mod_siprtp_ = {
 
 PJCall::PJCall() {
   pj_status_t status;
-  local_ips_ = NetUtils::get_ips();
+  local_ips_ = netutils::get_ips();
   for (auto& it : local_ips_)
     SIPPlugin::this_->debug("Local IP found for interface %: %", it.first, it.second);
   for (auto& it : local_ips_) {
@@ -80,9 +80,9 @@ PJCall::PJCall() {
   status = PJCodec::install_codecs();
   if (status != PJ_SUCCESS) SIPPlugin::this_->warning("Install codecs failed");
   // properties and methods for user
-  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+  SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<std::function<bool(std::string)>>)>(
       "send",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Send to a contact",
@@ -97,9 +97,9 @@ PJCall::PJCall() {
               )"),
       [this](const std::string& url) { return send_to(url); });
 
-  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+  SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<std::function<bool(std::string)>>)>(
       "hang-up",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Hang Up",
@@ -115,9 +115,9 @@ PJCall::PJCall() {
       [this](const std::string& url) { return hang_up(url); });
 
   using attach_t = std::function<bool(std::string, std::string, bool)>;
-  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<attach_t>)>(
+  SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<attach_t>)>(
       "attach_shmdata_to_contact",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Attach Shmdata To Contact",
@@ -411,7 +411,7 @@ void PJCall::call_on_media_update(pjsip_inv_session* inv, pj_status_t status) {
           std::string(remote_sdp->origin.addr.ptr, remote_sdp->origin.addr.slen));
       auto it = SIPPlugin::this_->sip_calls_->readers_.find(call->media[i].shm_path_to_send);
       if (it == SIPPlugin::this_->sip_calls_->readers_.end()) {
-        SIPPlugin::this_->warning("no GstShmdataToCb found for sending % (PJCall)",
+        SIPPlugin::this_->warning("no ShmdataToCb found for sending % (PJCall)",
                                   call->media[i].shm_path_to_send);
       } else {
         // set default address for ICE sending
@@ -457,7 +457,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
   // find related buddy id ('sip:' is not saved)
   auto peer_uri = std::string(from_uri, 4, std::string::npos);
   auto peer_uri_lower_case = std::string(from_uri, 4, std::string::npos);
-  StringUtils::tolower(peer_uri_lower_case);
+  stringutils::tolower(peer_uri_lower_case);
   if (!SIPPlugin::this_->white_list_->is_authorized(peer_uri) &&
       !SIPPlugin::this_->white_list_->is_authorized(peer_uri_lower_case)) {
     SIPPlugin::this_->message("ERROR:call refused from %", peer_uri);
@@ -571,7 +571,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
                                                                      PJ_ICE_SESS_ROLE_CONTROLLED);
   if (!call->ice_trans_) SIPPlugin::this_->warning("ICE transport initialization failed");
   // initializing shmdata writers and linking with ICE transport
-  call->recv_rtp_session_ = std::make_unique<RtpSession>();
+  call->recv_rtp_session_ = std::make_unique<gst::RTPSession>();
   for (auto& it : media_to_receive) {
     auto shm_prefix = SIPPlugin::this_->get_shmpath_prefix() +
                       SIPPlugin::this_->get_manager_name() + "_" + SIPPlugin::this_->get_name() +
@@ -586,7 +586,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
            std::find_if(call->rtp_writers_.cbegin(),
                         call->rtp_writers_.cend(),
                         [testpath = rtp_shmpath + rtp_shmpath_suffix](
-                            const std::unique_ptr<ShmdataWriter>& writer) {
+                            const std::unique_ptr<shmdata::Writer>& writer) {
                           return writer->get_path() == testpath;
                         })) {
       ++i;
@@ -601,34 +601,35 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     if (rtp_caps.empty()) rtp_caps = "unknown_data_type";
 
     call->rtp_writers_.emplace_back(
-        std::make_unique<ShmdataWriter>(SIPPlugin::this_, rtp_shmpath, 1, rtp_caps));
+        std::make_unique<shmdata::Writer>(SIPPlugin::this_, rtp_shmpath, 1, rtp_caps));
     // uncomment the following in order to get rtp shmdata shown in scenic:
     // SIPPlugin::this_->graft_tree(
     //     std::string(".shmdata.writer.") + rtp_shmpath + ".uri",
     //     InfoTree::make(call->peer_uri));
     auto* writer = call->rtp_writers_.back().get();
-    call->ice_trans_->set_data_cb(call->rtp_writers_.size(),
-                                  [writer, rtp_shmpath](void* data, size_t size) {
-                                    writer->writer<MPtr(&shmdata::Writer::copy_to_shm)>(data, size);
-                                    writer->bytes_written(size);
-                                  });
+    call->ice_trans_->set_data_cb(
+        call->rtp_writers_.size(), [writer, rtp_shmpath](void* data, size_t size) {
+          writer->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(data, size);
+          writer->bytes_written(size);
+        });
     // setting a decoder for this shmdata
     // Create a shmdata quiddity for this stream.
-    std::string quid_name = media_label + "-" + call->peer_uri;
+    std::string quid_name =
+        media_label + "-" + std::string(call->peer_uri, 0, call->peer_uri.find('@'));
     SIPPlugin::this_->create_quiddity_stream(call->peer_uri, quid_name);
-    // Create a RTPReceiver
-    call->rtp_receivers_.emplace_back(std::make_unique<RTPReceiver>(
+    // Create a gst::RTPReceiver
+    call->rtp_receivers_.emplace_back(std::make_unique<gst::RTPReceiver>(
         call->recv_rtp_session_.get(),
         rtp_shmpath,
         [=](GstElement* el, const std::string& media_type, const std::string&) {
           auto shmpath = shm_prefix + media_label + "-" + media_type;
           g_object_set(G_OBJECT(el), "socket-path", shmpath.c_str(), nullptr);
           std::lock_guard<std::mutex> lock(call->shm_subs_mtx_);
-          call->shm_subs_.emplace_back(std::make_unique<GstShmTreeUpdater>(
+          call->shm_subs_.emplace_back(std::make_unique<shmdata::GstTreeUpdater>(
               SIPPlugin::this_,
               el,
               shmpath,
-              GstShmTreeUpdater::Direction::writer,
+              shmdata::GstTreeUpdater::Direction::writer,
               [=](const std::string& /*caps*/) {
                 SIPPlugin::this_->graft_tree(std::string(".shmdata.writer.") + shmpath + ".uri",
                                              InfoTree::make(call->peer_uri));
@@ -883,7 +884,7 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
     return false;
   }
   // making SDP description
-  SDPDescription desc(call->ice_trans_send_->get_first_candidate_host());
+  gst::SDPDescription desc(call->ice_trans_send_->get_first_candidate_host());
   // adding ICE ufrag and pwd to sdp session
   auto ufrag_pwd = call->ice_trans_send_->get_ufrag_and_passwd();
   if (!desc.add_msg_attribute("ice-ufrag", std::string(ufrag_pwd.first.ptr, ufrag_pwd.first.slen)))
@@ -901,20 +902,44 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
     } else {
       break;
     }
-    std::string rawlabel = SIPPlugin::this_->get_quiddity_name_from_file_name(it);
-    auto quid_id = SIPPlugin::this_->qcontainer_->get_id(rawlabel);
-    auto quid = SIPPlugin::this_->qcontainer_->get_quiddity(quid_id);
-    if (quid) rawlabel = quid->get_nickname();
+
+    // Shmdata received from SIP have a very different nomenclature than those created locally.
+    // When sending those shmdatas received from SIP to someone else (i.e. creating a relay),
+    // we mustn't use the get_quiddity_name_from_file_name() function; rather, we must interrogate
+    // the SIP quiddity (which manages the shmpaths received from SIP contacts).
+    std::string rawlabel = SIPPlugin::this_->get_exposed_quiddity_name_from_shmpath(it);
+    if (rawlabel.empty()) {
+      rawlabel = SIPPlugin::this_->get_quiddity_name_from_file_name(it);
+    }
+
+    // If shmdata is not received from SIP, then it is most probably generated by the current
+    // Switcher instance. We get the quiddity name/bundle name
+    if (!rawlabel.empty()) {
+      auto quid_id = SIPPlugin::this_->qcontainer_->get_id(rawlabel);
+      auto quid = SIPPlugin::this_->qcontainer_->get_quiddity(quid_id);
+      if (quid) rawlabel = quid->get_nickname();
+    } else {
+      // If shmdata is not received from SIP and is not a Switcher generated path, it can be an NDI
+      // stream, a Gstreamer pipeline or any stream produced by a shmdata writer.
+      // Those shmdatas can have completely arbitrary naming patterns. In that case, we take
+      // the second to last part of the shmpath.
+      // For reference: /tmp/ndi_default_value_suffix -> we want the "value" part of the shmdata,
+      // before the suffix
+      auto last_underscore = it.find_last_of('_');
+      auto second_to_last_underscore = it.rfind('_', last_underscore - 1);
+      rawlabel = "ndi" + it.substr(second_to_last_underscore + 1, last_underscore);
+    }
+
     std::istringstream ss(rawlabel);  // Turn the string into a stream
     std::string tok;
     std::getline(ss, tok, ' ');
     std::string label = tok;
     while (std::getline(ss, tok, ' ')) label += tok;
     rtpcaps += ", media-label=(string)\"" +
-               StringUtils::replace_char(StringUtils::base64_encode(label), '=', "") + "\"";
+               stringutils::replace_char(stringutils::base64_encode(label), '=', "") + "\"";
     GstCaps* caps = gst_caps_from_string(rtpcaps.c_str());
     On_scope_exit { gst_caps_unref(caps); };
-    SDPMedia media;
+    gst::SDPMedia media;
     media.set_media_info_from_caps(caps);
     media.set_port(default_ports.back());
     for (auto& it : candidates.back()) {
@@ -1004,7 +1029,8 @@ bool PJCall::hang_up(const std::string& sip_url) {
                                });
 
     if (it_out != outgoing_call_.end()) {
-      SIPPlugin::this_->pjsip_->run_async([&]() { make_hang_up((*it_out)->inv); });
+      auto invite_out = (*it_out)->inv;
+      SIPPlugin::this_->pjsip_->run_async([this, &invite_out]() { make_hang_up(invite_out); });
       call_cv_.wait_for(lock, std::chrono::seconds(5), [this]() {
         if (call_action_done_) {
           call_action_done_ = false;
@@ -1024,7 +1050,8 @@ bool PJCall::hang_up(const std::string& sip_url) {
                                });
 
     if (it_inc != incoming_call_.end()) {
-      SIPPlugin::this_->pjsip_->run_async([&]() { make_hang_up((*it_inc)->inv); });
+      auto invite_inc = (*it_inc)->inv;
+      SIPPlugin::this_->pjsip_->run_async([this, &invite_inc]() { make_hang_up(invite_inc); });
       call_cv_.wait_for(lock, std::chrono::seconds(5), [this]() {
         if (call_action_done_) {
           call_action_done_ = false;
@@ -1089,7 +1116,7 @@ void PJCall::make_attach_shmdata_to_contact(const std::string& shmpath,
                                      false);  // do not signal since the branch will be re-grafted
     if (!tree) tree = InfoTree::make();
     if (readers_.find(shmpath) == readers_.cend()) {
-      readers_.emplace(shmpath, std::make_unique<RTPSender>(&rtp_session_, shmpath, 1400));
+      readers_.emplace(shmpath, std::make_unique<gst::RTPSender>(&rtp_session_, shmpath, 1400));
       reader_ref_count_[shmpath] = 1;
     } else {
       ++reader_ref_count_[shmpath];
@@ -1205,4 +1232,5 @@ bool PJCall::negotiate_ice(PJICEStreamTrans* ice_trans,
   return true;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

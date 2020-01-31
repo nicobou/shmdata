@@ -20,6 +20,7 @@
 #include "source-device.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 SourceDevice::SourceDevice(const std::string& name,
@@ -35,5 +36,6 @@ InfoTree::ptr SourceDevice::getTree() const {
 
 void SourceDevice::loop() { device_->mainloop(); }
 
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher

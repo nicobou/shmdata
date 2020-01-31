@@ -20,6 +20,7 @@
 #include "./portmidi-sink.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSink,
                                      "midisink",
                                      "Midi (Port Midi)",
@@ -29,27 +30,44 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSink,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-PortMidiSink::PortMidiSink(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
-  init_startable(this);
+PortMidiSink::PortMidiSink(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
+      shmcntr_(static_cast<Quiddity*>(this)),
+      devices_id_(pmanage<MPtr(&property::PBag::make_selection<>)>(
+          "device",
+          [this](const quiddity::property::IndexOrName& val) {
+            output_devices_enum_.select(val);
+            int device = stoi(output_devices_enum_.get_attached());
+            if (device_ != device) {
+              device_ = device;
+              if (started_) {
+                stop();
+                start();
+              }
+            }
+            return true;
+          },
+          [this]() { return output_devices_enum_.get(); },
+          "Output device",
+          "MIDI output device to use",
+          output_devices_enum_)),
+      autostart_id_(
+          pmanage<MPtr(&property::PBag::make_bool)>("autostart",
+                                                    [this](bool val) {
+                                                      autostart_ = val;
+                                                      return true;
+                                                    },
+                                                    [this]() { return autostart_; },
+                                                    "Autostart",
+                                                    "Start processing on shmdata connect or not",
+                                                    autostart_)) {
   shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return this->connect(shmpath); },
-      [this](const std::string&) { return this->disconnect(); },
-      [this]() { return this->disconnect(); },
+      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
+      [this](const std::string&) { return this->on_shmdata_disconnect(); },
+      [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-
-  devices_id_ = pmanage<MPtr(&PContainer::make_selection<>)>(
-      "device",
-      [this](const IndexOrName& val) {
-        output_devices_enum_.select(val);
-        device_ = stoi(output_devices_enum_.get_attached());
-        return true;
-      },
-      [this]() { return output_devices_enum_.get(); },
-      "Capture device",
-      "MIDI capture device to use",
-      output_devices_enum_);
   device_ = stoi(output_devices_enum_.get_attached());
 }
 
@@ -62,38 +80,59 @@ void PortMidiSink::on_shmreader_data(void* data, size_t /*size */) {
 }
 
 bool PortMidiSink::start() {
-  pmanage<MPtr(&PContainer::disable)>(devices_id_, disabledWhenStartedMsg);
-  open_output_device(device_);
-  // FIXME the following might not be necessary
-  gint stat = 165;
-  gint data1 = 1;
-  gint data2 = 67;
+  if (started_) {
+    warning("midisink already started");
+    return true;
+  }
+
+  BoolLog res = open_output_device(device_);
+  if (!res.operator bool()) {
+    error("%", res.msg());
+    return false;
+  }
+
+  int stat = 165;
+  int data1 = 1;
+  int data2 = 67;
   push_midi_message(device_, (unsigned char)stat, (unsigned char)data1, (unsigned char)data2);
+  started_ = true;
+
   return true;
 }
 
 bool PortMidiSink::stop() {
-  close_output_device(device_);
-  pmanage<MPtr(&PContainer::enable)>(devices_id_);
+  if (started_) {
+    close_output_device(device_);
+    started_ = false;
+  }
   return true;
 }
 
-bool PortMidiSink::connect(std::string path) {
-  shm_ = std::make_unique<ShmdataFollower>(
+bool PortMidiSink::on_shmdata_connect(std::string path) {
+  shm_ = std::make_unique<shmdata::Follower>(
       this,
       path,
       [this](void* data, size_t size) { this->on_shmreader_data(data, size); },
       nullptr,
       nullptr,
-      ShmdataStat::kDefaultUpdateInterval);
+      shmdata::Stat::kDefaultUpdateInterval,
+      shmdata::Follower::Direction::reader,
+      true);
+  if (autostart_) {
+    return pmanage<MPtr(&property::PBag::set_str_str)>("started", "true");
+  }
   return true;
 }
 
-bool PortMidiSink::disconnect() {
-  shm_.reset(nullptr);
+bool PortMidiSink::on_shmdata_disconnect() {
+  shm_.reset();
+  if (autostart_) {
+    return pmanage<MPtr(&property::PBag::set_str_str)>("started", "false");
+  }
   return true;
 }
 
 bool PortMidiSink::can_sink_caps(std::string caps) { return (0 == caps.find("audio/midi")); }
 
+}  // namespace quiddities
 }  // namespace switcher

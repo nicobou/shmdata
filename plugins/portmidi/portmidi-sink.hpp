@@ -22,36 +22,44 @@
 
 #include <memory>
 #include "./portmidi-devices.hpp"
-#include "switcher/quiddity.hpp"
-#include "switcher/shmdata-connector.hpp"
-#include "switcher/shmdata-follower.hpp"
-#include "switcher/startable-quiddity.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/follower.hpp"
 
 namespace switcher {
-class PortMidiSink : public Quiddity, public StartableQuiddity, public PortMidi {
+namespace quiddities {
+using namespace quiddity;
+class PortMidiSink : public Quiddity, public Startable, public PortMidi {
  public:
-  PortMidiSink(quid::Config&&);
+  PortMidiSink(quiddity::Config&&);
   ~PortMidiSink() = default;
   PortMidiSink(const PortMidiSink&) = delete;
   PortMidiSink& operator=(const PortMidiSink&) = delete;
 
  private:
-  // registering connect/disconnect/can_sink_caps:
-  ShmdataConnector shmcntr_;
-  // shmdata follower
-  std::unique_ptr<ShmdataFollower> shm_{nullptr};
-  PContainer::prop_id_t devices_id_{0};
-  int device_{0};
   bool start() final;
   bool stop() final;
   // segment callback
-  bool connect(std::string path);
-  bool disconnect();
+  bool on_shmdata_connect(std::string path);
+  bool on_shmdata_disconnect();
   bool can_sink_caps(std::string caps);
   // shmdata any callback
   void on_shmreader_data(void* data, size_t data_size);
+
+  bool started_{false};
+  // registering connect/disconnect/can_sink_caps:
+  shmdata::Connector shmcntr_;
+  // shmdata follower
+  std::unique_ptr<shmdata::Follower> shm_{nullptr};
+
+  int device_{0};
+  property::prop_id_t devices_id_{0};
+  bool autostart_{false};
+  property::prop_id_t autostart_id_;
 };
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSink);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

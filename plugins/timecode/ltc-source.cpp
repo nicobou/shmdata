@@ -18,9 +18,10 @@
  */
 
 #include "ltc-source.hpp"
-#include "switcher/scope-exit.hpp"
+#include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
+namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     LTCSource,
     "ltcsource",
@@ -31,8 +32,10 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Jérémie Soria");
 
-LTCSource::LTCSource(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+LTCSource::LTCSource(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
+      shmcntr_(static_cast<Quiddity*>(this)) {
   register_writer_suffix("audio");
   jack_client_ = jack_client_open(
       std::string(std::string("genLTC_") + get_name()).c_str(), JackNullOption, nullptr);
@@ -51,9 +54,9 @@ LTCSource::LTCSource(quid::Config&& conf)
     return;
   }
 
-  time_reference_id_ = pmanage<MPtr(&PContainer::make_selection<>)>(
+  time_reference_id_ = pmanage<MPtr(&property::PBag::make_selection<>)>(
       "time_reference",
-      [this](const IndexOrName& val) {
+      [this](const quiddity::property::IndexOrName& val) {
         time_reference_.select(val);
         return true;
       },
@@ -62,9 +65,9 @@ LTCSource::LTCSource(quid::Config&& conf)
       "Select the time reference for the generated timecode",
       time_reference_);
 
-  fps_id_ = pmanage<MPtr(&PContainer::make_selection<double>)>(
+  fps_id_ = pmanage<MPtr(&property::PBag::make_selection<double>)>(
       "fps",
-      [this](const IndexOrName& val) {
+      [this](const quiddity::property::IndexOrName& val) {
         fps_.select(val);
         return true;
       },
@@ -73,7 +76,7 @@ LTCSource::LTCSource(quid::Config&& conf)
       "Desired frame per second setting for the encoder.",
       fps_);
 
-  timeshift_fw_id_ = pmanage<MPtr(&PContainer::make_unsigned_int)>(
+  timeshift_fw_id_ = pmanage<MPtr(&property::PBag::make_unsigned_int)>(
       "timeshift_forward",
       [this](const unsigned int& val) {
         // We increment the initial timecode.
@@ -93,11 +96,10 @@ LTCSource::LTCSource(quid::Config&& conf)
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-  init_startable(this);
 }
 
 LTCSource::~LTCSource() {
-  if (is_started()) pmanage<MPtr(&PContainer::set_str_str)>("started", "false");
+  if (is_started()) pmanage<MPtr(&property::PBag::set_str_str)>("started", "false");
   jack_client_close(jack_client_);
 }
 
@@ -110,7 +112,7 @@ void LTCSource::tick_callback(jack_nframes_t nframes) {
 }
 
 bool LTCSource::start() {
-  shmw_ = std::make_unique<ShmdataWriter>(
+  shmw_ = std::make_unique<shmdata::Writer>(
       this,
       make_shmpath("audio"),
       1,
@@ -183,9 +185,9 @@ bool LTCSource::start() {
     return false;
   }
 
-  pmanage<MPtr(&PContainer::disable)>(time_reference_id_, disabledWhenStartedMsg);
-  pmanage<MPtr(&PContainer::disable)>(fps_id_, disabledWhenStartedMsg);
-  pmanage<MPtr(&PContainer::disable)>(timeshift_fw_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(time_reference_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(fps_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(timeshift_fw_id_, disabledWhenStartedMsg);
 
   return true;
 }
@@ -196,9 +198,9 @@ bool LTCSource::stop() {
   shmw_.reset(nullptr);
   samples_.clear();
 
-  pmanage<MPtr(&PContainer::enable)>(time_reference_id_);
-  pmanage<MPtr(&PContainer::enable)>(fps_id_);
-  pmanage<MPtr(&PContainer::enable)>(timeshift_fw_id_);
+  pmanage<MPtr(&property::PBag::enable)>(time_reference_id_);
+  pmanage<MPtr(&property::PBag::enable)>(fps_id_);
+  pmanage<MPtr(&property::PBag::enable)>(timeshift_fw_id_);
 
   return true;
 }
@@ -211,7 +213,7 @@ bool LTCSource::on_shmdata_connect(const std::string& shmpath) {
     return false;
   }
 
-  shm_follower_ = std::make_unique<ShmdataFollower>(
+  shm_follower_ = std::make_unique<shmdata::Follower>(
       this,
       shmpath,
       [this](void*, size_t size) {
@@ -248,13 +250,13 @@ bool LTCSource::on_shmdata_connect(const std::string& shmpath) {
 
         std::string str_format(format);
         str_format = str_format.substr(1, str_format.size());
-        if (StringUtils::starts_with(str_format, "8"))
+        if (stringutils::starts_with(str_format, "8"))
           format_size_ = 1;
-        else if (StringUtils::starts_with(str_format, "16"))
+        else if (stringutils::starts_with(str_format, "16"))
           format_size_ = 2;
-        else if (StringUtils::starts_with(str_format, "32"))
+        else if (stringutils::starts_with(str_format, "32"))
           format_size_ = 4;
-        else if (StringUtils::starts_with(str_format, "64"))
+        else if (stringutils::starts_with(str_format, "64"))
           format_size_ = 8;
         else {
           format_size_ = 0;
@@ -278,7 +280,7 @@ bool LTCSource::on_shmdata_disconnect() {
   // We don't switch the source of the ticks during the generation so we stop if we get disconnected
   // from the shmdata.
   if (is_started()) {
-    pmanage<MPtr(&PContainer::set_str_str)>("started", "false");
+    pmanage<MPtr(&property::PBag::set_str_str)>("started", "false");
     message("ERROR: LTC generation stopped because the tick source was disconnected (ltcsource).");
     warning("LTC generation stopped because the tick source was disconnected (ltcsource).");
   }
@@ -289,7 +291,7 @@ bool LTCSource::on_shmdata_disconnect() {
 }
 
 bool LTCSource::can_sink_caps(const std::string& str_caps) {
-  return GstUtils::can_sink_caps("audioconvert", str_caps);
+  return gst::utils::can_sink_caps("audioconvert", str_caps);
 }
 
 void LTCSource::write_samples_to_shmdata(const unsigned int& nb_samples) {
@@ -299,7 +301,7 @@ void LTCSource::write_samples_to_shmdata(const unsigned int& nb_samples) {
   std::vector<ltcsnd_sample_t> array;
   array.reserve(samples_size);
   std::copy(samples_.begin(), samples_.begin() + nb_samples, array.begin());
-  shmw_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(array.data(), samples_size);
+  shmw_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(array.data(), samples_size);
   shmw_->bytes_written(samples_size);
   for (unsigned int i = 0; i < nb_samples; ++i) {
     samples_.pop_front();
@@ -324,4 +326,5 @@ void LTCSource::generate_ltc_frames(int nb_frames) {
   generating_frames_ = false;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

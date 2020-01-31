@@ -19,17 +19,18 @@
 #include <list>
 #include <string>
 #include "./pj-sip-plugin.hpp"
-#include "switcher/information-tree-json.hpp"
-#include "switcher/scope-exit.hpp"
-#include "switcher/string-utils.hpp"
+#include "switcher/infotree/json-serializer.hpp"
+#include "switcher/utils/scope-exit.hpp"
+#include "switcher/utils/string-utils.hpp"
 
 namespace switcher {
+namespace quiddities {
 PJPresence::PJPresence() {
   // registering account
   using register_t = std::function<bool(std::string, std::string)>;
-  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<register_t>)>(
+  SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<register_t>)>(
       "register",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Register SIP Account",
@@ -49,9 +50,9 @@ PJPresence::PJPresence() {
         return register_account_wrapped(login, pass);
       });
 
-  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool()>>)>(
+  SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<std::function<bool()>>)>(
       "unregister",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Unregister SIP Account",
@@ -62,9 +63,9 @@ PJPresence::PJPresence() {
       [this]() { return unregister_account_wrapped(); });
 
   // buddies
-  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+  SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<std::function<bool(std::string)>>)>(
       "add_buddy",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Add Buddy",
@@ -80,9 +81,9 @@ PJPresence::PJPresence() {
       [this](const std::string& buddy) { return add_buddy_wrapped(buddy); });
 
   using set_name_t = std::function<bool(std::string, std::string)>;
-  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<set_name_t>)>(
+  SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<set_name_t>)>(
       "name_buddy",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Set Buddy Name", 
@@ -103,9 +104,9 @@ PJPresence::PJPresence() {
         return name_buddy_wrapped(name, buddy);
       });
 
-  SIPPlugin::this_->mmanage<MPtr(&MContainer::make_method<std::function<bool(std::string)>>)>(
+  SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<std::function<bool(std::string)>>)>(
       "del_buddy",
-      JSONSerializer::deserialize(
+      infotree::json::deserialize(
           R"(
                   {
                    "name" : "Del Buddy",
@@ -121,9 +122,9 @@ PJPresence::PJPresence() {
       [this](const std::string& name) { return del_buddy_wrapped(name); });
 
   // online status
-  SIPPlugin::this_->pmanage<MPtr(&PContainer::make_selection<>)>(
+  SIPPlugin::this_->pmanage<MPtr(&property::PBag::make_selection<>)>(
       "status",
-      [this](const IndexOrName& val) {
+      [this](const quiddity::property::IndexOrName& val) {
         status_.select(val);
         if (-1 == account_id_) {
           SIPPlugin::this_->warning("cannot send online status when not registered");
@@ -137,7 +138,7 @@ PJPresence::PJPresence() {
       "Online Status",
       "Online Status",
       status_);
-  SIPPlugin::this_->pmanage<MPtr(&PContainer::make_string)>(
+  SIPPlugin::this_->pmanage<MPtr(&property::PBag::make_string)>(
       "status-note",
       [this](const std::string& val) {
         custom_status_ = val;
@@ -150,23 +151,24 @@ PJPresence::PJPresence() {
       "Custom status note",
       custom_status_);
 
-  SIPPlugin::this_->pmanage<MPtr(&PContainer::make_bool)>("sip-registration",
-                                                          nullptr,
-                                                          [this]() { return registered_; },
-                                                          "Registered",
-                                                          "Self SIP registration status",
-                                                          registered_);
+  SIPPlugin::this_->pmanage<MPtr(&property::PBag::make_bool)>("sip-registration",
+                                                              nullptr,
+                                                              [this]() { return registered_; },
+                                                              "Registered",
+                                                              "Self SIP registration status",
+                                                              registered_);
   SIPPlugin::this_->graft_tree(".self.", InfoTree::make(nullptr));
 
-  SIPPlugin::this_->pmanage<MPtr(&PContainer::make_bool)>("lower-case-accounts",
-                                                          [this](const bool& val) {
-                                                            lower_case_accounts_ = val;
-                                                            return true;
-                                                          },
-                                                          [this]() { return lower_case_accounts_; },
-                                                          "Lower Case Accounts",
-                                                          "Lower Case Accounts",
-                                                          lower_case_accounts_);
+  SIPPlugin::this_->pmanage<MPtr(&property::PBag::make_bool)>(
+      "lower-case-accounts",
+      [this](const bool& val) {
+        lower_case_accounts_ = val;
+        return true;
+      },
+      [this]() { return lower_case_accounts_; },
+      "Lower Case Accounts",
+      "Lower Case Accounts",
+      lower_case_accounts_);
 }
 
 PJPresence::~PJPresence() {
@@ -188,10 +190,10 @@ bool PJPresence::register_account_wrapped(const std::string& user, const std::st
     return false;
   }
   std::string tmp = user;
-  if (lower_case_accounts_) StringUtils::tolower(tmp);
+  if (lower_case_accounts_) stringutils::tolower(tmp);
   SIPPlugin::this_->pjsip_->run([&]() { register_account(tmp, std::string(password)); });
-  SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
-      SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
+  SIPPlugin::this_->pmanage<MPtr(&property::PBag::notify)>(
+      SIPPlugin::this_->pmanage<MPtr(&property::PBag::get_id)>("sip-registration"));
   if (registered_) return true;
   return false;
 }
@@ -286,8 +288,8 @@ void PJPresence::unregister_account(bool notify_tree) {
   registered_ = false;
   if (notify_tree) {
     SIPPlugin::this_->graft_tree(".self.", InfoTree::make(nullptr));
-    SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
-        SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
+    SIPPlugin::this_->pmanage<MPtr(&property::PBag::notify)>(
+        SIPPlugin::this_->pmanage<MPtr(&property::PBag::get_id)>("sip-registration"));
   }
 
   return;
@@ -303,7 +305,7 @@ void PJPresence::add_buddy(const std::string& user) {
     return;
   }
   std::string sip_user = user;
-  if (lower_case_accounts_) StringUtils::tolower(sip_user);
+  if (lower_case_accounts_) stringutils::tolower(sip_user);
   std::string buddy_full_uri("sip:" + sip_user  // + ";transport=tcp"
                              );
   if (pjsua_verify_url(buddy_full_uri.c_str()) != PJ_SUCCESS) {
@@ -350,7 +352,7 @@ void PJPresence::del_buddy(const std::string& user) {
     return;
   }
   std::string sip_user = user;
-  if (lower_case_accounts_) StringUtils::tolower(sip_user);
+  if (lower_case_accounts_) stringutils::tolower(sip_user);
   auto it = buddy_id_.find(sip_user);
   if (buddy_id_.end() == it) {
     SIPPlugin::this_->message("ERROR:% is not in buddy list, cannot delete", sip_user);
@@ -401,7 +403,7 @@ void PJPresence::name_buddy(std::string name, std::string sip_user) {
 
 bool PJPresence::name_buddy_wrapped(const std::string& name, const std::string& buddy_uri) {
   std::string bud(buddy_uri);
-  if (lower_case_accounts_) StringUtils::tolower(bud);
+  if (lower_case_accounts_) stringutils::tolower(bud);
   SIPPlugin::this_->pjsip_->run([&]() { name_buddy(std::string(name), bud); });
   return true;
 }
@@ -410,8 +412,8 @@ void PJPresence::on_registration_state(pjsua_acc_id acc_id, pjsua_reg_info* info
   PJPresence* context = static_cast<PJPresence*>(pjsua_acc_get_user_data(acc_id));
   if (nullptr == context || !pjsua_acc_is_valid(acc_id)) {
     SIPPlugin::this_->warning("SIP registration failed");
-    SIPPlugin::this_->pmanage<MPtr(&PContainer::notify)>(
-        SIPPlugin::this_->pmanage<MPtr(&PContainer::get_id)>("sip-registration"));
+    SIPPlugin::this_->pmanage<MPtr(&property::PBag::notify)>(
+        SIPPlugin::this_->pmanage<MPtr(&property::PBag::get_id)>("sip-registration"));
     return;
   }
   std::unique_lock<std::mutex> lock(context->registration_mutex_);
@@ -583,10 +585,11 @@ void PJPresence::on_buddy_evsub_state(pjsua_buddy_id /*buddy_id*/,
 pjsua_buddy_id PJPresence::get_id_from_buddy_name(const std::string& name) {
   auto bud =
       std::find_if(buddy_id_.begin(), buddy_id_.end(), [&name](decltype(*buddy_id_.begin())& it) {
-        return StringUtils::starts_with(it.first, name + "@");
+        return stringutils::starts_with(it.first, name + "@");
       });
   if (buddy_id_.end() != bud) return bud->second;
   return PJSUA_INVALID_ID;
 }
 
+}  // namespace quiddities
 }  // namespace switcher

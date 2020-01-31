@@ -25,14 +25,16 @@
 #include "./audio-ring-buffer.hpp"
 #include "./drift-observer.hpp"
 #include "./jack-client.hpp"
-#include "switcher/gst-pipeliner.hpp"
-#include "switcher/gst-shm-tree-updater.hpp"
-#include "switcher/shmdata-connector.hpp"
+#include "switcher/gst/pipeliner.hpp"
+#include "switcher/shmdata/connector.hpp"
+#include "switcher/shmdata/gst-tree-updater.hpp"
 
 namespace switcher {
+namespace quiddities {
+using namespace quiddity;
 class ShmdataToJack : public Quiddity {
  public:
-  ShmdataToJack(quid::Config&&);
+  ShmdataToJack(quiddity::Config&&);
   ~ShmdataToJack() = default;
   ShmdataToJack(const ShmdataToJack&) = delete;
   ShmdataToJack& operator=(const ShmdataToJack&) = delete;
@@ -57,37 +59,37 @@ class ShmdataToJack : public Quiddity {
   // rate:
   DriftObserver<jack_nframes_t> drift_observer_{};
 
-  // jack client
-  JackClient jack_client_;
-  std::vector<std::string> ports_to_connect_{};
-  std::mutex port_to_connect_in_jack_process_mutex_{};
-  std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
-  std::vector<JackPort> output_ports_{};
-
   // properties
   bool auto_connect_{true};
   std::string connect_to_{"system:playback_%d"};
-  PContainer::prop_id_t connect_to_id_;
+  property::prop_id_t connect_to_id_;
   unsigned int index_{1};
-  PContainer::prop_id_t index_id_{0};
-  PContainer::prop_id_t auto_connect_id_;
+  property::prop_id_t index_id_{0};
+  property::prop_id_t auto_connect_id_;
   bool connect_all_to_first_{false};
-  PContainer::prop_id_t connect_all_to_first_id_;
+  property::prop_id_t connect_all_to_first_id_;
   bool connect_only_first_{false};
-  PContainer::prop_id_t connect_only_first_id_;
+  property::prop_id_t connect_only_first_id_;
   bool do_format_conversion_{true};
-  PContainer::prop_id_t do_format_conversion_id_;
+  property::prop_id_t do_format_conversion_id_;
   bool do_rate_conversion_{true};
-  PContainer::prop_id_t do_rate_conversion_id_;
+  property::prop_id_t do_rate_conversion_id_;
 
   // registering connect/disconnect/can_sink_caps:
-  ShmdataConnector shmcntr_;
+  shmdata::Connector shmcntr_;
 
   // gst pipeline:
-  std::unique_ptr<GstPipeliner> gst_pipeline_;
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
 
   // shmsubscriber (publishing to the information-tree):
-  std::unique_ptr<GstShmTreeUpdater> shm_sub_{nullptr};
+  std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
+
+  // jack client
+  std::vector<std::string> ports_to_connect_{};
+  std::mutex port_to_connect_in_jack_process_mutex_{};
+  std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
+  JackClient jack_client_;
+  std::vector<JackPort> output_ports_{};
 
   bool start();
   bool stop();
@@ -106,5 +108,6 @@ class ShmdataToJack : public Quiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToJack);
+}  // namespace quiddities
 }  // namespace switcher
 #endif

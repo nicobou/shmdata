@@ -20,6 +20,7 @@
 #include "button-source-device.hpp"
 
 namespace switcher {
+namespace quiddities {
 namespace vrpn {
 
 ButtonSourceDevice::ButtonSourceDevice(const std::string& name,
@@ -57,7 +58,7 @@ void ButtonSourceDevice::handleButton(int index, bool value) {
 
   if (property == nullptr) {
     std::unique_ptr<Property<bool>> newProperty = std::make_unique<Property<bool>>(value);
-    PContainer::prop_id_t prop_id =
+    property::prop_id_t prop_id =
         createBoolProperty_(newProperty.get(),
                             id,
                             name_ + " Button " + std::to_string(index),
@@ -76,5 +77,6 @@ void ButtonSourceDevice::handleButtonCallback(void* userData, const vrpn_BUTTONC
   // Get out of the static method ASAP
   static_cast<ButtonSourceDevice*>(userData)->handleButton(info.button, info.state != 0);
 }
-}  // Namespace vrpn
-}  // Namespace switcher
+}  // namespace vrpn
+}  // namespace quiddities
+}  // namespace switcher

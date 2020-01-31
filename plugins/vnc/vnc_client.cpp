@@ -25,6 +25,7 @@
 using namespace std;
 
 namespace switcher {
+namespace quiddities {
 
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VncClientSrc,
                                      "vncclientsrc",
@@ -35,9 +36,10 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VncClientSrc,
                                      "LGPL",
                                      "Emmanuel Durand");
 
-VncClientSrc::VncClientSrc(quid::Config&& conf)
-    : Quiddity(std::forward<quid::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
-  init_startable(this);
+VncClientSrc::VncClientSrc(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      Startable(this),
+      shmcntr_(static_cast<Quiddity*>(this)) {
   register_writer_suffix("vnc");
   shmcntr_.install_connect_method([this](const std::string path) { return connect(path); },
                                   [this](const std::string path) { return disconnect(path); },
@@ -45,25 +47,25 @@ VncClientSrc::VncClientSrc(quid::Config&& conf)
                                   [this](const std::string caps) { return can_sink_caps(caps); },
                                   2);
   vnc_server_address_id_ =
-      pmanage<MPtr(&PContainer::make_string)>("vnc_server_address",
-                                              [this](const std::string& val) {
-                                                vnc_server_address_ = val;
-                                                return true;
-                                              },
-                                              [this]() { return vnc_server_address_; },
-                                              "IP address",
-                                              "Address of the VNC server",
-                                              vnc_server_address_);
+      pmanage<MPtr(&property::PBag::make_string)>("vnc_server_address",
+                                                  [this](const std::string& val) {
+                                                    vnc_server_address_ = val;
+                                                    return true;
+                                                  },
+                                                  [this]() { return vnc_server_address_; },
+                                                  "IP address",
+                                                  "Address of the VNC server",
+                                                  vnc_server_address_);
   capture_truecolor_id_ =
-      pmanage<MPtr(&PContainer::make_bool)>("capture_truecolor",
-                                            [this](const bool& val) {
-                                              capture_truecolor_ = val;
-                                              return true;
-                                            },
-                                            [this]() { return capture_truecolor_; },
-                                            "Capture color depth",
-                                            "Capture in 32bits if true, 16bits otherwise",
-                                            capture_truecolor_);
+      pmanage<MPtr(&property::PBag::make_bool)>("capture_truecolor",
+                                                [this](const bool& val) {
+                                                  capture_truecolor_ = val;
+                                                  return true;
+                                                },
+                                                [this]() { return capture_truecolor_; },
+                                                "Capture color depth",
+                                                "Capture in 32bits if true, 16bits otherwise",
+                                                capture_truecolor_);
 }
 
 VncClientSrc::~VncClientSrc() { stop(); }
@@ -95,8 +97,8 @@ bool VncClientSrc::start() {
       if (i > 0) {
         if (!HandleRFBServerMessage(rfb_client_)) return;
         if (vnc_writer_) {
-          vnc_writer_->writer<MPtr(&shmdata::Writer::copy_to_shm)>(rfb_client_->frameBuffer,
-                                                                   framebuffer_size_);
+          vnc_writer_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(rfb_client_->frameBuffer,
+                                                                     framebuffer_size_);
           vnc_writer_->bytes_written(framebuffer_size_);
         }
       }
@@ -119,7 +121,7 @@ bool VncClientSrc::connect(string shmdata_socket_path) {
   int shmreader_id = shmreader_id_;
   shmreader_id_++;
 
-  auto reader = std::make_unique<ShmdataFollower>(
+  auto reader = std::make_unique<shmdata::Follower>(
       this,
       shmdata_socket_path,
       [=](void* data, size_t size) {
@@ -227,7 +229,7 @@ void VncClientSrc::update_vnc(rfbClient* client, int, int, int, int) {
 
   that->framebuffer_size_ = width * height * depth / 8;
   if (!that->vnc_writer_ ||
-      that->framebuffer_size_ > that->vnc_writer_->writer<MPtr(&shmdata::Writer::alloc_size)>() ||
+      that->framebuffer_size_ > that->vnc_writer_->writer<MPtr(&::shmdata::Writer::alloc_size)>() ||
       that->previous_truecolor_state_ != that->capture_truecolor_) {
     auto data_type = string();
     if (that->capture_truecolor_)
@@ -240,11 +242,13 @@ void VncClientSrc::update_vnc(rfbClient* client, int, int, int, int) {
     that->previous_truecolor_state_ = that->capture_truecolor_;
 
     that->vnc_writer_.reset();
-    that->vnc_writer_ = std::make_unique<ShmdataWriter>(
+    that->vnc_writer_ = std::make_unique<shmdata::Writer>(
         that, that->make_shmpath("vnc"), that->framebuffer_size_, data_type);
     if (!that->vnc_writer_) {
       return;
     }
   }
 }
-}
+
+}  // namespace quiddities
+}  // namespace switcher
