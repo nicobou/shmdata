@@ -24,7 +24,7 @@
 #include "switcher/utils/file-utils.hpp"
 #include "switcher/utils/scope-exit.hpp"
 #define STB_IMAGE_IMPLEMENTATION
-#include "./stb_image.h"
+#include "./external/stb_image.h"
 
 namespace switcher {
 SWITCHER_DECLARE_PLUGIN(GLFWVideo);

@@ -93,5 +93,5 @@ coverage:
     name: "switcher_coverage_${CI_BUILD_REF_NAME}"
     paths:
     - "coverage.zip"
-  only:
-    - develop
+  except:
+    - master

@@ -54,7 +54,7 @@ if (TEST_COVERAGE)
             --exclude '${CMAKE_SOURCE_DIR}/tests/*'
             --exclude '${CMAKE_SOURCE_DIR}/build/*'
             --exclude '${CMAKE_SOURCE_DIR}/plugins/gsoap/generated/*'
-            --exclude '${CMAKE_SOURCE_DIR}/plugins/glfw/stb_image.h'
+            --exclude '${CMAKE_SOURCE_DIR}/plugins/glfw/external/*'
             --output-file coverage/switcher_base.info
         COMMAND make test
         COMMAND lcov --no-external --capture
@@ -62,6 +62,7 @@ if (TEST_COVERAGE)
             --exclude '${CMAKE_SOURCE_DIR}/tests/*'
             --exclude '${CMAKE_SOURCE_DIR}/build/*'
             --exclude '${CMAKE_SOURCE_DIR}/plugins/gsoap/generated/*'
+            --exclude '${CMAKE_SOURCE_DIR}/plugins/glfw/external/*'
             --output-file coverage/switcher.info
         COMMAND lcov --add-tracefile ${CMAKE_BINARY_DIR}/coverage/switcher_base.info
             --add-tracefile ${CMAKE_BINARY_DIR}/coverage/switcher.info

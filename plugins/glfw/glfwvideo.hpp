@@ -21,7 +21,7 @@
 #define __SWITCHER_GLFW_VIDEO_H__
 
 // clang-format off
-#include "./glad.h"
+#include "./external/glad.h"
 #include "./multiple-buffer.hpp"
 #include <GLFW/glfw3.h>
 #include <imgui.h>
