@@ -10,12 +10,12 @@
  * GNU Lesser General Public License for more details.
  */
 
-#ifndef _ABSTRACT_LOGGER_H_
-#define _ABSTRACT_LOGGER_H_
+#ifndef _SHMDATA_ABSTRACT_LOGGER_H_
+#define _SHMDATA_ABSTRACT_LOGGER_H_
 
 #include <string>
 
-#define MakeLevel(NAME)                                                                   \
+#define SHMDATA_MakeLevel(NAME)                                                                   \
  public:                                                                                  \
   template <typename... Targs>                                                            \
   void NAME(const char* format, const ::std::string& value, Targs... Fargs) {             \
@@ -32,12 +32,12 @@ namespace shmdata {
 class AbstractLogger {
  public:
   virtual ~AbstractLogger() = default;
-  MakeLevel(error);
-  MakeLevel(critical);
-  MakeLevel(warning);
-  MakeLevel(message);
-  MakeLevel(info);
-  MakeLevel(debug);
+  SHMDATA_MakeLevel(error);
+  SHMDATA_MakeLevel(critical);
+  SHMDATA_MakeLevel(warning);
+  SHMDATA_MakeLevel(message);
+  SHMDATA_MakeLevel(info);
+  SHMDATA_MakeLevel(debug);
 
  private:
   std::string make_string(const char* format) { return std::string(format); }

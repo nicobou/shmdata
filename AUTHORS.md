@@ -4,5 +4,6 @@
 * Jérémie Soria
 * François Ubald Brien
 * Michal Seta
-* vlaurent
+* Valentin Laurent
 * Mike Wozniewski
+* Marie-Eve

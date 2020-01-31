@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.5.1)
 set(SHMDATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SHMDATA_VERSION_MAJOR 1)
 set(SHMDATA_VERSION_MINOR 3)
-set(SHMDATA_VERSION_PATCH 20)
+set(SHMDATA_VERSION_PATCH 22)
 set(SHMDATA_VERSION_STRING ${SHMDATA_VERSION_MAJOR}.${SHMDATA_VERSION_MINOR}.${SHMDATA_VERSION_PATCH})
 set(SHMDATA_API_VERSION ${SHMDATA_VERSION_MAJOR}.${SHMDATA_VERSION_MINOR})
 set(SHMDATA_LIBRARY shmdata-${SHMDATA_API_VERSION})
@@ -22,6 +22,36 @@ set(PACKAGE_VERSION ${SHMDATA_VERSION_STRING})
 
 # Compilation
 set(CMAKE_CXX_STANDARD 17)
+
+
+#
+# Code coverage
+#
+
+set(TEST_COVERAGE OFF CACHE BOOL "Enable test coverage")
+if (TEST_COVERAGE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 --coverage")
+  add_custom_command(OUTPUT test_coverage
+    COMMAND mkdir -p ${CMAKE_BINARY_DIR}/coverage
+    COMMAND lcov --no-external --capture --initial
+                 --directory ${CMAKE_SOURCE_DIR}
+                 --exclude '${CMAKE_SOURCE_DIR}/tests/*'
+                 --exclude '${CMAKE_SOURCE_DIR}/build/*'
+                 --output-file coverage/shmdata_base.info
+    COMMAND make test
+    COMMAND lcov --no-external --capture
+                 --directory ${CMAKE_SOURCE_DIR}
+                 --exclude '${CMAKE_SOURCE_DIR}/tests/*'
+                 --exclude '${CMAKE_SOURCE_DIR}/build/*'
+                 --output-file coverage/shmdata.info
+    COMMAND lcov --add-tracefile ${CMAKE_BINARY_DIR}/coverage/shmdata_base.info
+                 --add-tracefile ${CMAKE_BINARY_DIR}/coverage/shmdata.info
+                 --output-file ${CMAKE_BINARY_DIR}/coverage/shmdata_total.info
+    COMMAND genhtml --output-directory ${CMAKE_BINARY_DIR}/coverage ${CMAKE_BINARY_DIR}/coverage/shmdata_total.info
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
+  add_custom_target(check_coverage DEPENDS test_coverage)
+endif()  # TEST_COVERAGE 
 
 # CPack - General
 set(CPACK_PACKAGE_NAME ${PACKAGE_NAME})
