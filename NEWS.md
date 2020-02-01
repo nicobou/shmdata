@@ -54,11 +54,11 @@ Analytics:
 
 Docs:
 * 📝 Add GPLv3 badge in README.md
-* 📈 Fix pipeline status in README.md
-* 📈 Updated code structure documentation
-* 📈 Updated InfoTree exemple links in writing-quiddity.md
+* 📝 Fix pipeline status in README.md
+* 📝 Updated code structure documentation
+* 📝 Updated InfoTree exemple links in writing-quiddity.md
 
-✅ Tests:
+Tests:
 * ✅ Add test for switcher commands
 * ✅ Add switcher log and quiddity configuration to quiddity-basic-test
 
