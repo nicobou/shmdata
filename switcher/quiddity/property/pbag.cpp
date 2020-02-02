@@ -100,6 +100,12 @@ bool PBag::disable(prop_id_t prop_id, const std::string& why) {
   return true;
 }
 
+bool PBag::enabled(prop_id_t prop_id) {
+  const auto& it = strids_.find(prop_id);
+  if (strids_.end() == it) return false;
+  return tree_->branch_get_value(std::string("property.") + it->second + ".enabled").as<bool>();
+}
+
 property::register_id_t PBag::subscribe(prop_id_t id, notify_cb_t fun) const {
   auto prop = props_.find(id);
   if (prop == props_.end()) return 0;
