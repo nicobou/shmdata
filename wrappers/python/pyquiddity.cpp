@@ -512,7 +512,7 @@ PyObject* pyQuiddity::unsubscribe(pyQuiddityObject* self, PyObject* args, PyObje
     return Py_None;
   }
 
-  if (unsubscribe_from_signal(self, name)) {
+  if (unsubscribe_from_property(self, name)) {
     Py_INCREF(Py_True);
     return Py_True;
   }

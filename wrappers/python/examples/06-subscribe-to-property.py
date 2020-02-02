@@ -38,8 +38,12 @@ vid = qroxvid.quid()
 assert "width" in pyquid.InfoTree(
     vid.get_info_tree_as_json(".property")).get_key_values('id', False)
 
-# subscribe to the property named "width"
+# subscribe to the property named "width". Unsubscribe will be called with vid destruction
 assert vid.subscribe("width", on_property_changed, my_user_data)
+
+# WARNING: do not subscribe using the quid() method of a qrox. In this case subscription  is done on a temporary quid object which cannot hold data required when triggering the callback.
+# The following is wrong and results in on_property_changed not being called back:
+assert qroxvid.quid().subscribe("height", on_property_changed, my_user_data)
 
 vid.set("width", my_width)
 

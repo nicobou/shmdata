@@ -34,15 +34,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoSnapshot,
 
 VideoSnapshot::VideoSnapshot(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf)),
-      gst_pipeline_(std::make_unique<gst::Pipeliner>(
-          [this](GstMessage* msg) {
-            if (msg->type != GST_MESSAGE_ELEMENT) return;
-            const GstStructure* s = gst_message_get_structure(msg);
-            auto name = std::string(gst_structure_get_name(s));
-            if (name != "GstMultiFileSink") return;
-            on_new_file(gst_structure_get_string(s, "filename"));
-          },
-          nullptr)),
       snap_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "shot",
           [this](bool val) {
@@ -113,7 +104,16 @@ VideoSnapshot::VideoSnapshot(quiddity::Config&& conf)
                                                             jpg_quality_,
                                                             0,
                                                             100)),
-      shmcntr_(static_cast<Quiddity*>(this)) {
+      shmcntr_(static_cast<Quiddity*>(this)),
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(
+          [this](GstMessage* msg) {
+            if (msg->type != GST_MESSAGE_ELEMENT) return;
+            const GstStructure* s = gst_message_get_structure(msg);
+            auto name = std::string(gst_structure_get_name(s));
+            if (name != "GstMultiFileSink") return;
+            on_new_file(gst_structure_get_string(s, "filename"));
+          },
+          nullptr)) {
   pmanage<MPtr(&property::PBag::disable)>(snap_id_,
                                           shmdata::Connector::disabledWhenDisconnectedMsg);
   shmcntr_.install_connect_method(
@@ -157,14 +157,14 @@ void VideoSnapshot::make_gst_pipeline(const std::string& shmpath) {
 }
 
 void VideoSnapshot::on_new_file(const std::string& filename) {
-  std::unique_lock<std::mutex> lock(mtx_);
-  g_object_set(G_OBJECT(valve_), "drop", TRUE, nullptr);
-  {
-    auto lock = pmanage<MPtr(&property::PBag::get_lock)>(last_image_id_);
-    last_image_ = filename;
-  }
-  pmanage<MPtr(&property::PBag::notify)>(last_image_id_);
-  message("image % written", filename);
+    std::unique_lock<std::mutex> lock(mtx_);
+    g_object_set(G_OBJECT(valve_), "drop", TRUE, nullptr);
+    {
+      auto image_lock = pmanage<MPtr(&property::PBag::get_lock)>(last_image_id_);
+      last_image_ = filename;
+    }
+    pmanage<MPtr(&property::PBag::notify)>(last_image_id_);
+    message("image % written", filename);
 }
 
 bool VideoSnapshot::on_shmdata_disconnect() {
