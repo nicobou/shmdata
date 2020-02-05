@@ -10,4 +10,8 @@ if (WITH_TOOLS)
     GROUP_EXECUTE GROUP_READ
     WORLD_EXECUTE WORLD_READ)
 
+  add_test(NAME check_swcam_display COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_swcam_display.sh)
+  add_test(NAME check_shmshot COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_shmshot.sh)
+  add_test(NAME check_shmdata2jack COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_shmdata2jack.sh)
+
 endif ()

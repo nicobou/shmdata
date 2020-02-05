@@ -64,7 +64,8 @@ def main() -> None:
     args = argp.parse_args()
 
     # create a switcher.
-    sw = Switcher('swquid-info' + str(os.getpid()), debug=args.debug)
+    name = 'swquid-info' + str(os.getpid())
+    sw = Switcher(name, debug=args.debug)
 
     if args.list_all:
         classes = sw.list_classes()
@@ -78,10 +79,10 @@ def main() -> None:
 
     user_request = args.quiddity_class.split('.', 1)
     doc = InfoTree()
-    qrox = sw.create(user_request[0])
+    qrox = sw.create(user_request[0], config=InfoTree('{ "server_name" : "'+name+'" }'))
     if (not qrox):
-        print('quiddity class "' + user_request[0] + '" not found')
-        exit(1)
+        print('quiddity class "' + user_request[0] + '" could not be inspected', file=sys.stderr)
+        exit(0)
 
     if (args.short_list and (args.properties or args.methods or args.signals)):
         res = []
