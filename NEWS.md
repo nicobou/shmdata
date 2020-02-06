@@ -8,9 +8,11 @@ This is an official release in the 2.0 stable series.
 
 New features:
 * ✨✅ adding videosnapshot quiddity
+
 Bug fixes:
 * 🐛  Fix deinterlace crash in v4l2src when pixel format is not raw video
 * 💚 add missing dependency related to ubuntu 20:04 image update
+
 Typos:
 * ✏️  Fix typo in NEWS.md
 * ✏️ sochet meant socket
