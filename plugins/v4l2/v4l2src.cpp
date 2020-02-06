@@ -72,7 +72,7 @@ V4L2Src::V4L2Src(quiddity::Config&& conf)
       "dropping/adding frame if necessary.",
       force_framerate_);
 
-  if (!v4l2src_ || !deinterlace_ || !capsfilter_ || !videorate_ || !shmsink_) {
+  if (!v4l2src_ || !videoconvert_ || !deinterlace_ || !capsfilter_ || !videorate_ || !shmsink_) {
     is_valid_ = false;
     return;
   }
@@ -595,6 +595,7 @@ bool V4L2Src::remake_elements() {
     return false;
   }
   if (!gst::UGstElem::renew(v4l2src_, {"device", "norm", "io-mode"}) ||
+      !gst::UGstElem::renew(videoconvert_, {}) ||
       !gst::UGstElem::renew(deinterlace_, {"mode", "method"}) ||
       !gst::UGstElem::renew(videorate_) || !gst::UGstElem::renew(capsfilter_, {"caps"}) ||
       !gst::UGstElem::renew(shmsink_, {"socket-path"})) {
@@ -771,32 +772,35 @@ bool V4L2Src::start() {
   configure_capture();
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
 
-  if (!force_framerate_) {
+  gst_bin_add_many(
+      GST_BIN(gst_pipeline_->get_pipeline()), v4l2src_.get_raw(), capsfilter_.get_raw(), nullptr);
+  gst_element_link_many(v4l2src_.get_raw(), capsfilter_.get_raw(), nullptr);
+
+  if (is_current_pixel_format_raw_video()) {
     gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
-                     v4l2src_.get_raw(),
-                     capsfilter_.get_raw(),
+                     videoconvert_.get_raw(),
                      deinterlace_.get_raw(),
-                     shmsink_.get_raw(),
                      nullptr);
-    gst_element_link_many(v4l2src_.get_raw(),
-                          capsfilter_.get_raw(),
-                          deinterlace_.get_raw(),
-                          shmsink_.get_raw(),
-                          nullptr);
+    gst_element_link_many(
+        capsfilter_.get_raw(), videoconvert_.get_raw(), deinterlace_.get_raw(), nullptr);
+  }
+
+  if (force_framerate_) {
+    gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), videorate_.get_raw());
+    if (is_current_pixel_format_raw_video()) {
+      gst_element_link(deinterlace_.get_raw(), videorate_.get_raw());
+    } else {
+      gst_element_link(capsfilter_.get_raw(), videorate_.get_raw());
+    }
+  }
+
+  gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), shmsink_.get_raw());
+  if (force_framerate_) {
+    gst_element_link(videorate_.get_raw(), shmsink_.get_raw());
+  } else if (is_current_pixel_format_raw_video()) {
+    gst_element_link(deinterlace_.get_raw(), shmsink_.get_raw());
   } else {
-    gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
-                     v4l2src_.get_raw(),
-                     capsfilter_.get_raw(),
-                     deinterlace_.get_raw(),
-                     videorate_.get_raw(),
-                     shmsink_.get_raw(),
-                     nullptr);
-    gst_element_link_many(v4l2src_.get_raw(),
-                          capsfilter_.get_raw(),
-                          deinterlace_.get_raw(),
-                          videorate_.get_raw(),
-                          shmsink_.get_raw(),
-                          nullptr);
+    gst_element_link(capsfilter_.get_raw(), shmsink_.get_raw());
   }
 
   shm_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
