@@ -2,6 +2,19 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.0.2 (2020-02-06)
+---------------------------
+This is an official release in the 2.0 stable series.
+
+New features:
+* ✨✅ adding videosnapshot quiddity
+Bug fixes:
+* 🐛  Fix deinterlace crash in v4l2src when pixel format is not raw video
+* 💚 add missing dependency related to ubuntu 20:04 image update
+Typos:
+* ✏️  Fix typo in NEWS.md
+* ✏️ sochet meant socket
+
 switcher 2.0.0 (2020-01-31)
 ---------------------------
 This is an official release in the 2.0 stable series.
