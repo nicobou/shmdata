@@ -22,7 +22,6 @@
 #include <cassert>
 #include <vector>
 #include "switcher/quiddity/basic-test.hpp"
-#include "switcher/quiddity/property/pbag.hpp"
 #include "switcher/utils/method-trait.hpp"
 #include "switcher/utils/serialize-string.hpp"
 

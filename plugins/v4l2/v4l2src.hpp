@@ -82,6 +82,7 @@ class V4L2Src : public Quiddity, public Startable {
   gst::UGstElem videorate_{"videorate"};
   gst::UGstElem capsfilter_{"capsfilter"};
   gst::UGstElem shmsink_{"shmdatasink"};
+  gst::UGstElem videoconvert_{"videoconvert"};
   gst::UGstElem deinterlace_{"deinterlace"};
   std::string shmpath_{};
   const std::string raw_suffix_{"video"};

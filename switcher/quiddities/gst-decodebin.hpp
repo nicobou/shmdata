@@ -54,7 +54,7 @@ class GstDecodebin : public Quiddity {
   std::unique_ptr<shmdata::Follower> shmr_sub_{};
   ThreadedWrapper<> async_this_{};
   bool on_shmdata_disconnect();
-  bool on_shmdata_connect(const std::string& shmdata_sochet_path);
+  bool on_shmdata_connect(const std::string& shmdata_socket_path);
   bool can_sink_caps(const std::string& caps);
   void configure_shmdatasink(GstElement* element,
                              const std::string& media_type,

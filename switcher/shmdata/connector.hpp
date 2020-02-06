@@ -49,6 +49,7 @@ class Connector {
                               CanSinkCaps on_can_sink_caps_cb,
                               unsigned int max_reader);
   static const std::string disabledWhenConnectedMsg;
+  static const std::string disabledWhenDisconnectedMsg;
 
  private:
   quiddity::Quiddity* quid_{nullptr};

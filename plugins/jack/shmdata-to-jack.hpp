@@ -98,7 +98,7 @@ class ShmdataToJack : public Quiddity {
   void disconnect_ports();
   void on_port(jack_port_t* port);
   bool on_shmdata_disconnect();
-  bool on_shmdata_connect(const std::string& shmdata_sochet_path);
+  bool on_shmdata_connect(const std::string& shmdata_socket_path);
   bool can_sink_caps(const std::string& caps);
   bool make_elements();
   void check_output_ports(unsigned int channels);

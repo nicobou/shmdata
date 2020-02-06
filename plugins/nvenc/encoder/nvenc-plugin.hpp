@@ -74,7 +74,7 @@ class NVencPlugin : public Quiddity {
   void update_input_formats();
 
   bool on_shmdata_disconnect();
-  bool on_shmdata_connect(const std::string& shmdata_sochet_path);
+  bool on_shmdata_connect(const std::string& shmdata_socket_path);
   bool can_sink_caps(const std::string& caps);
   void on_shmreader_data(void* data, size_t data_size);
   void on_shmreader_server_connected(const std::string& data_descr);

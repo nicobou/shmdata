@@ -83,8 +83,8 @@ class Timelapse : public Quiddity {
   gst::VideoTimelapseConfig timelapse_config_;
   std::map<std::string, std::unique_ptr<gst::VideoTimelapse>> timelapse_{};
 
-  bool on_shmdata_disconnect(const std::string& shmdata_sochet_path);
-  bool on_shmdata_connect(const std::string& shmdata_sochet_path);
+  bool on_shmdata_disconnect(const std::string& shmdata_socket_path);
+  bool on_shmdata_connect(const std::string& shmdata_socket_path);
   bool on_shmdata_disconnect_all();
   bool can_sink_caps(const std::string& caps);
   bool start_timelapse(const std::string& shmpath);

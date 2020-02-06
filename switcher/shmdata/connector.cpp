@@ -31,6 +31,8 @@ namespace shmdata {
 
 const std::string Connector::disabledWhenConnectedMsg =
     "this property is disabled when a stream is connected";
+const std::string Connector::disabledWhenDisconnectedMsg =
+    "this property is disabled when no stream is connected";
 
 Connector::Connector(quiddity::Quiddity* quid) : quid_(quid) {}
 

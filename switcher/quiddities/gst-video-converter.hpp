@@ -48,7 +48,7 @@ class GstVideoConverter : public Quiddity {
 
   std::unique_ptr<gst::PixelFormatConverter> converter_{nullptr};
   bool on_shmdata_disconnect();
-  bool on_shmdata_connect(const std::string& shmdata_sochet_path);
+  bool on_shmdata_connect(const std::string& shmdata_socket_path);
   bool can_sink_caps(const std::string& caps);
 };
 
