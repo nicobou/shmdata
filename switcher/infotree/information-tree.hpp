@@ -113,7 +113,7 @@ class InfoTree {
   }
 
   // serialize
-  std::string serialize_json(const std::string& path) const;
+  std::string serialize_json(const std::string& path = std::string(".")) const;
 
   // get child keys - returning a newly allocated list
   std::list<std::string> get_child_keys(const std::string& path) const;
@@ -150,6 +150,7 @@ class InfoTree {
   bool branch_set_value(const std::string& path, const char* data);
   bool branch_set_value(const std::string& path, std::nullptr_t ptr);
   bool for_each_in_array(const std::string& path, std::function<void(InfoTree*)> fun);
+  bool cfor_each_in_array(const std::string& path, std::function<void(const InfoTree*)> fun) const;
 
   // copy subtree
   InfoTree::ptr branch_get_copy(const std::string& path) const;
