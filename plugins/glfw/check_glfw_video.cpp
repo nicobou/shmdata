@@ -35,11 +35,6 @@ int main() {
 
     manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    if (!glfwInit()) {
-      // probably launched from ssh, could not find a display
-      return 0;
-    }
-
     // creating a video source quiddity
     auto vqrox = manager->quids<MPtr(&quiddity::Container::create)>("videotestsrc", "vid", nullptr);
     auto vid = vqrox.get();

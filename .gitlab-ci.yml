@@ -35,7 +35,8 @@ Test:
     CTEST_OUTPUT_ON_FAILURE: 1
   script:
     - cd $BUILD_DIR/build
-    - make test
+    - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
+    - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' make test
   except:
     - develop
     - master
@@ -86,7 +87,8 @@ coverage:
     - rm -rf build && mkdir build && cd build
     - cmake -DTEST_COVERAGE=ON -DENABLE_GPL=ON ..
     - make -j$(nproc) && make install && ldconfig
-    - make check_coverage
+    - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
+    - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' make check_coverage
     - zip -r coverage.zip coverage
     - mv coverage.zip ../
   artifacts:
