@@ -220,7 +220,7 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
 bool DescriptionParser::parse_param(const std::string& raw_param, quiddity_spec_t& quid) {
   std::string param = restore_spaces(raw_param);
   {  // check if this parameter in only blacklisted
-    std::regex rgx("_\\w+");
+    std::regex rgx("_[\\w-]+");
     if (std::regex_match(param, rgx)) {
       if (param == "_name" || param == "_group") {
         parsing_error_ =
