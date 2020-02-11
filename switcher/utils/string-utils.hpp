@@ -34,6 +34,9 @@ std::string replace_char(const std::string& orig,
 std::string replace_string(const std::string& orig,
                            const std::string& to_replace,
                            const std::string& replacement);
+std::vector<std::string> split_string(const std::string&,
+                                      const std::string& delimiter,
+                                      std::size_t max = std::string::npos);
 
 void toupper(std::string& str);
 void tolower(std::string& str);
