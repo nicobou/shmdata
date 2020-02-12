@@ -23,16 +23,17 @@
 #include <memory>
 #include <string>
 
-#include "switcher/quiddity/quiddity.hpp"
-#include "switcher/gst/unique-gst-element.hpp"
 #include "switcher/gst/pipeliner.hpp"
+#include "switcher/gst/unique-gst-element.hpp"
+#include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
 
 // This quiddity implements a simple gst pipeline
 
 namespace switcher {
 namespace quiddities {
 using namespace quiddity;
-class GstQuid : public Quiddity {
+class GstQuid : public Quiddity, public Startable {
  public:
   GstQuid(quiddity::Config&&);
   ~GstQuid() = default;
@@ -44,12 +45,8 @@ class GstQuid : public Quiddity {
   gst::UGstElem src_{"videotestsrc"};
   gst::UGstElem sink_{"xvimagesink"};
 
-  bool started_{false};
-  property::prop_id_t started_id_;
-
-  bool play(bool);
-  bool start_pipeline();
-  bool stop_pipeline();
+  bool start() final;
+  bool stop() final;
   bool remake_elements();
 };
 

@@ -31,14 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstQuid,
                                      "Hantz-Carly F. Vius");
 
 GstQuid::GstQuid(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
-      started_id_(pmanage<MPtr(&property::PBag::make_bool)>(
-          "started_id_",
-          [this](bool val) { return play(val); },
-          [this]() { return started_; },
-          "Pipeline state",
-          "This property tells whether the pipeline is started or not",
-          started_)) {
+    : Quiddity(std::forward<quiddity::Config>(conf)), quiddity::Startable(this) {
   debug("GstQuid::GstQuid");
 }
 
@@ -52,29 +45,7 @@ bool GstQuid::remake_elements() {
   return true;
 }
 
-bool GstQuid::play(bool b) {
-  if (started_ == b) {
-    debug("GstQuid::play: Nothing to do.");
-    return true;
-  }
-
-  bool res;
-  if (b) {
-    res = start_pipeline();
-  } else {
-    res = stop_pipeline();
-  }
-
-  if (!res) {
-    debug("GstQuid::play: Couldn't change pipeline state.");
-    return false;
-  }
-
-  started_ = b;
-  return true;
-}
-
-bool GstQuid::stop_pipeline() {
+bool GstQuid::stop() {
   if (!pipeline_) {
     debug("GstQuid::stop_pipeline: Pipeline not initialized. Nothing to do.");
     return true;
@@ -86,7 +57,7 @@ bool GstQuid::stop_pipeline() {
   return true;
 }
 
-bool GstQuid::start_pipeline() {
+bool GstQuid::start() {
   if (pipeline_) {
     debug("GstQuid::create_pipeline: Pipeline already created. Stopping");
     pipeline_->play(false);

@@ -32,19 +32,15 @@ int main() {
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
     manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
-
     assert(quiddity::test::full(manager, "gst"));
 
-    auto qrox = manager->quids<MPtr(&quiddity::Container::create)>("gst", "test", nullptr);
+    auto qrox =
+        manager->quids<MPtr(&quiddity::Container::create)>("gst", "Gst(frame test)", nullptr);
     auto quid = qrox.get();
     assert(quid);
 
-    auto sid = quid->prop<MPtr(&property::PBag::get_id)>("started_id_");
-    assert(sid != 0);
-
-    assert(quid->prop<MPtr(&property::PBag::set<bool>)>(sid, true));
-    std::this_thread::sleep_for(2s);
-    assert(quid->prop<MPtr(&property::PBag::set<bool>)>(sid, false));
+    assert(quid->prop<MPtr(&property::PBag::set_str_str)>("started", "true"));
+    assert(quid->prop<MPtr(&property::PBag::set_str_str)>("started", "false"));
 
     assert(manager->quids<MPtr(&quiddity::Container::remove)>(qrox.get_id()));
   }
