@@ -38,7 +38,7 @@ class GstQuid : public Quiddity {
   ~GstQuid() = default;
   GstQuid(const GstQuid&) = delete;
   GstQuid& operator=(const GstQuid&) = delete;
-  
+
  private:
   bool play(bool);
   bool start_pipeline();
