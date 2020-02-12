@@ -39,9 +39,6 @@ int main() {
     auto quid = qrox.get();
     assert(quid);
 
-    assert(quid->prop<MPtr(&property::PBag::set_str_str)>("started", "true"));
-    assert(quid->prop<MPtr(&property::PBag::set_str_str)>("started", "false"));
-
     assert(manager->quids<MPtr(&quiddity::Container::remove)>(qrox.get_id()));
   }
 
