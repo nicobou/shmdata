@@ -39,8 +39,6 @@ class GstQuid : public Quiddity {
   GstQuid(const GstQuid&) = delete;
   GstQuid& operator=(const GstQuid&) = delete;
   
-  static std::string make_username();
-
  private:
   bool play(bool);
   bool start_pipeline();
