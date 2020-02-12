@@ -1,7 +1,7 @@
 /*
- * This file is part of switcher.
+ * This file is part of switcher-plugin-example.
  *
- * switcher-gst is free software; you can redistribute it and/or
+ * switcher-plugin-example is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2 of the License, or (at your option) any later version.
@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_DUMMY_PLUGIN_H__
-#define __SWITCHER_DUMMY_PLUGIN_H__
+#ifndef __SWITCHER_GST_PLUGIN_H__
+#define __SWITCHER_GST_PLUGIN_H__
 
 #include <memory>
 #include <string>
@@ -40,17 +40,17 @@ class GstQuid : public Quiddity {
   GstQuid& operator=(const GstQuid&) = delete;
 
  private:
-  bool play(bool);
-  bool start_pipeline();
-  bool stop_pipeline();
-  bool remake_elements();
-
-  std::unique_ptr<gst::Pipeliner> pipeline_;
+  std::unique_ptr<gst::Pipeliner> pipeline_{};
   gst::UGstElem src_{"videotestsrc"};
   gst::UGstElem sink_{"xvimagesink"};
 
   bool started_{false};
   property::prop_id_t started_id_;
+
+  bool play(bool);
+  bool start_pipeline();
+  bool stop_pipeline();
+  bool remake_elements();
 };
 
 SWITCHER_DECLARE_PLUGIN(GstQuid);

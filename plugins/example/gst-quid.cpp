@@ -1,7 +1,7 @@
 /*
- * This file is part of switcher-gst.
+ * This file is part of switcher-plugin-example.
  *
- * switcher-gst is free software; you can redistribute it and/or
+ * switcher-plugin-example is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2 of the License, or (at your option) any later version.
@@ -75,7 +75,7 @@ bool GstQuid::play(bool b) {
 }
 
 bool GstQuid::stop_pipeline() {
-  if (pipeline_ == nullptr) {
+  if (!pipeline_) {
     debug("GstQuid::stop_pipeline: Pipeline not initialized. Nothing to do.");
     return true;
   }
@@ -87,7 +87,7 @@ bool GstQuid::stop_pipeline() {
 }
 
 bool GstQuid::start_pipeline() {
-  if (pipeline_ != nullptr) {
+  if (pipeline_) {
     debug("GstQuid::create_pipeline: Pipeline already created. Stopping");
     pipeline_->play(false);
   }
