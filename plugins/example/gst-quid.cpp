@@ -70,6 +70,7 @@ bool GstQuid::play(bool b) {
 
   if (!res) {
     debug("GstQuid::play: Couldn't change pipeline state.");
+    return false;
   }
 
   started_ = b;
