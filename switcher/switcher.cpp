@@ -276,21 +276,32 @@ void Switcher::apply_gst_configuration() {
   }
 }
 
-bool Switcher::load_bundle_from_config(const std::string bundle_description) {
+bool Switcher::load_bundle_from_config(const std::string& bundle_description) {
   log_->debug("Receiving new bundles configuration: %", bundle_description);
   auto bundles = infotree::json::deserialize(bundle_description);
+  if (!bundles) {
+    log_->error("Invalid bundle configuration.");
+    return false;
+  }
+
   auto new_configuration = InfoTree::copy(conf_.get().get());
+  bool bundles_added = false;
   for (const auto& bundle_name : bundles->get_child_keys("bundle")) {
     if (new_configuration.get()->branch_get_copy(".bundle." + bundle_name) !=
         InfoTree::make_null()) {
+      log_->warning("Bundle '%' already exists. Skipping.", bundle_name);
       continue;
     }
+    if (!bundles_added) bundles_added = true;
     new_configuration->graft(".bundle." + bundle_name + ".",
                              bundles->branch_get_copy("bundle." + bundle_name));
   }
-  conf_.set(new_configuration);
-  register_bundle_from_configuration();
-  log_->debug("New bundles added");
+
+  if (bundles_added) {
+    conf_.set(new_configuration);
+    register_bundle_from_configuration();
+    log_->debug("New bundles added");
+  }
   return true;
 }
 
