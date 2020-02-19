@@ -85,7 +85,7 @@ option(ENABLE_GPL "Compile plugins using GPL libraries" OFF)
 find_package(PkgConfig REQUIRED)
 
 # This is required in the case where macport screwed with the paths on mac os x
-set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH")
+set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 
 pkg_check_modules(SHMDATA REQUIRED shmdata-${SHMDATA_REQUIRED_VERSION})
 pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-base-1.0 gstreamer-controller-1.0 gstreamer-sdp-1.0 gstreamer-video-1.0)
