@@ -26,8 +26,8 @@ std::unique_ptr<DocumentationRegistry> DocumentationRegistry::instance_{nullptr}
 
 bool DocumentationRegistry::register_doc(const std::string& quiddity_type,
                                          const quiddity::Doc& doc) {
-  doc_registry_.emplace(std::make_pair<>(quiddity_type, doc));
-  return true;
+  auto res = doc_registry_.try_emplace(quiddity_type, doc);
+  return res.second;
 }
 
 bool DocumentationRegistry::register_type_from_class_name(const std::string& class_name,

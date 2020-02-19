@@ -276,6 +276,24 @@ void Switcher::apply_gst_configuration() {
   }
 }
 
+bool Switcher::load_bundle_from_config(const std::string bundle_description) {
+  log_->debug("Receiving new bundles configuration: %", bundle_description);
+  auto bundles = infotree::json::deserialize(bundle_description);
+  auto new_configuration = InfoTree::copy(conf_.get().get());
+  for (const auto& bundle_name : bundles->get_child_keys("bundle")) {
+    if (new_configuration.get()->branch_get_copy(".bundle." + bundle_name) !=
+        InfoTree::make_null()) {
+      continue;
+    }
+    new_configuration->graft(".bundle." + bundle_name + ".",
+                             bundles->branch_get_copy("bundle." + bundle_name));
+  }
+  conf_.set(new_configuration);
+  register_bundle_from_configuration();
+  log_->debug("New bundles added");
+  return true;
+}
+
 void Switcher::register_bundle_from_configuration() {
   // registering bundle(s) as creatable class
   auto quid_types = qfactory_.get_class_list();
@@ -307,8 +325,12 @@ void Switcher::register_bundle_from_configuration() {
       continue;
     }
     // ok, bundle can be added
-    quiddity::DocumentationRegistry::get()->register_doc(
-        it, quiddity::Doc(long_name, it, category, tags, description, "n/a", "n/a"));
+    // Bundle names must be unique
+    if (!quiddity::DocumentationRegistry::get()->register_doc(
+            it, quiddity::Doc(long_name, it, category, tags, description, "n/a", "n/a"))) {
+      log_->warning("bundle '%' already exists. Skipping.", it);
+      continue;
+    }
 
     qfactory_.register_class_with_custom_factory(
         it, &quiddity::bundle::create, &quiddity::bundle::destroy);
