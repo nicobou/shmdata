@@ -292,7 +292,7 @@ bool Switcher::load_bundle_from_config(const std::string& bundle_description) {
       log_->warning("Bundle '%' already exists. Skipping.", bundle_name);
       continue;
     }
-    if (!bundles_added) bundles_added = true;
+    bundles_added = true;
     new_configuration->graft(".bundle." + bundle_name + ".",
                              bundles->branch_get_copy("bundle." + bundle_name));
   }
