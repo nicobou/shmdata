@@ -48,7 +48,8 @@ Test package:
     CTEST_OUTPUT_ON_FAILURE: 1
   script:
     - cd $BUILD_DIR/build
-    - make package_source_test
+    - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
+    - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' make package_source_test
   only:
     - develop
     - master
