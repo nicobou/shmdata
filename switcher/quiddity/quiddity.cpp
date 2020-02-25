@@ -101,7 +101,6 @@ Quiddity::Quiddity(quiddity::Config&& conf)
 
 Quiddity::~Quiddity() {
   std::lock_guard<std::mutex> lock(self_destruct_mtx_);
-  debug("% (a % quiddity) destructed", get_name(), get_type());
 }
 
 std::string Quiddity::get_name() const { return name_; }
