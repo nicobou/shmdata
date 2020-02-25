@@ -25,22 +25,12 @@
 #include "switcher/switcher.hpp"
 
 int main() {
-  {
-    using namespace switcher;
-    using namespace quiddity;
-    using namespace std::chrono_literals;
+  using namespace switcher;
+  using namespace quiddity;
 
-    Switcher::ptr manager = Switcher::make_switcher("test_manager");
-    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
-    assert(quiddity::test::full(manager, "gst"));
-
-    auto qrox =
-        manager->quids<MPtr(&quiddity::Container::create)>("gst", "Gst(frame test)", nullptr);
-    auto quid = qrox.get();
-    assert(quid);
-
-    assert(manager->quids<MPtr(&quiddity::Container::remove)>(qrox.get_id()));
-  }
+  Switcher::ptr manager = Switcher::make_switcher("test_manager");
+  manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
+  assert(quiddity::test::full(manager, "gst"));
 
   return 0;
 }
