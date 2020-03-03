@@ -21,10 +21,10 @@
 #define __SWITCHER_GLIB_MAINLOOP_H__
 
 #include <glib.h>
-#include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <thread>
+#include "../utils/threaded-wrapper.hpp"
 
 namespace switcher {
 namespace gst {
@@ -42,9 +42,7 @@ class GlibMainLoop {
  private:
   GMainContext* main_context_{nullptr};
   GMainLoop* mainloop_{nullptr};
-  std::mutex begin_{};
-  std::thread thread_;  // this runs the main loop
-  void main_loop_thread();
+  ThreadedWrapper<> main_loop_{};
 };
 }  // namespace gst
 }  // namespace switcher

@@ -26,7 +26,12 @@ if not winqrox:
 if not winqrox2:
     winqrox2 = sw.create(type='dummysink', name='win2')
 
+# creating a dummysink for audio
+aqrox = sw.create(type='dummysink', name='asink')
+
 assert winqrox
+assert winqrox2
+assert aqrox
 
 
 # creating the uri decoder
@@ -35,6 +40,7 @@ uri = sw.create('urisrc', 'uri').quid()
 # connecting quiddities
 assert winqrox.quid().invoke('connect-quid', ['uri', 'image-0'])
 assert winqrox2.quid().invoke('connect-quid', ['uri', 'video-0'])
+assert aqrox.quid().invoke('connect-quid', ['uri', 'audio-0'])
 
 assert uri.set('uri', 'https://gitlab.com/sat-metalab/switcher/raw/master/tests/oie.mp3')
 time.sleep(2)
