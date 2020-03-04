@@ -72,6 +72,8 @@ Uridecodebin::Uridecodebin(quiddity::Config&& conf)
                                             loop_);
 }
 
+Uridecodebin::~Uridecodebin() { destroy_uridecodebin(); }
+
 void Uridecodebin::init_uridecodebin() {
   if (!gst::utils::make_element("uridecodebin", &uridecodebin_)) {
     warning("cannot create uridecodebin");
@@ -80,31 +82,42 @@ void Uridecodebin::init_uridecodebin() {
 
   // discard_next_uncomplete_buffer_ = false;
   rtpgstcaps_ = gst_caps_from_string("application/x-rtp, media=(string)application");
-  g_signal_connect(G_OBJECT(uridecodebin_),
-                   "pad-added",
-                   (GCallback)Uridecodebin::uridecodebin_pad_added_cb,
-                   (gpointer)this);
-  g_signal_connect(G_OBJECT(uridecodebin_),
-                   "unknown-type",
-                   (GCallback)Uridecodebin::unknown_type_cb,
-                   (gpointer)this);
-  g_signal_connect(G_OBJECT(uridecodebin_),
-                   "autoplug-continue",
-                   (GCallback)Uridecodebin::autoplug_continue_cb,
-                   (gpointer)this);
-  g_signal_connect(G_OBJECT(uridecodebin_),
-                   "autoplug-select",
-                   (GCallback)Uridecodebin::autoplug_select_cb,
-                   (gpointer)this);
-  g_signal_connect(G_OBJECT(uridecodebin_),
-                   "source-setup",
-                   (GCallback)Uridecodebin::source_setup_cb,
-                   (gpointer) this);
+  sig_handles_.emplace_back(g_signal_connect(G_OBJECT(uridecodebin_),
+                                             "pad-added",
+                                             (GCallback)Uridecodebin::uridecodebin_pad_added_cb,
+                                             (gpointer)this));
+  sig_handles_.emplace_back(g_signal_connect(G_OBJECT(uridecodebin_),
+                                             "unknown-type",
+                                             (GCallback)Uridecodebin::unknown_type_cb,
+                                             (gpointer)this));
+  sig_handles_.emplace_back(g_signal_connect(G_OBJECT(uridecodebin_),
+                                             "autoplug-continue",
+                                             (GCallback)Uridecodebin::autoplug_continue_cb,
+                                             (gpointer)this));
+  sig_handles_.emplace_back(g_signal_connect(G_OBJECT(uridecodebin_),
+                                             "autoplug-select",
+                                             (GCallback)Uridecodebin::autoplug_select_cb,
+                                             (gpointer)this));
+  sig_handles_.emplace_back(g_signal_connect(G_OBJECT(uridecodebin_),
+                                             "source-setup",
+                                             (GCallback)Uridecodebin::source_setup_cb,
+                                             (gpointer)this));
+  if (sig_handles_.end() != std::find_if(sig_handles_.begin(),
+                                         sig_handles_.end(),
+                                         [](const gulong& handle) { return handle <= 0; })) {
+    warning("subscription to a g_signal failed in uridecodeing quiddity");
+  }
   g_object_set(
       G_OBJECT(uridecodebin_), "expose-all-streams", TRUE, "async-handling", TRUE, nullptr);
 }
 
 void Uridecodebin::destroy_uridecodebin() {
+  if (uridecodebin_) {
+    for (const auto& it : sig_handles_) {
+      g_signal_handler_disconnect(uridecodebin_, it);
+    }
+  }
+  sig_handles_.clear();
   gst_pipeline_ = std::make_unique<gst::Pipeliner>(on_msg_async_cb_, on_msg_sync_cb_, on_error_cb_);
   shm_subs_.clear();
 }

@@ -33,11 +33,12 @@ using namespace quiddity;
 class Uridecodebin : public Quiddity {
  public:
   Uridecodebin(quiddity::Config&&);
-  ~Uridecodebin() = default;
+  ~Uridecodebin();
   Uridecodebin(const Uridecodebin&) = delete;
   Uridecodebin& operator=(const Uridecodebin&) = delete;
 
  private:
+  std::vector<gulong> sig_handles_{};
   gst::Pipe::on_msg_async_cb_t on_msg_async_cb_{nullptr};
   gst::Pipe::on_msg_sync_cb_t on_msg_sync_cb_{nullptr};
   gst::Pipeliner::on_error_cb_t on_error_cb_{nullptr};
