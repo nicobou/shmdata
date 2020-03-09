@@ -400,7 +400,7 @@ void ShmdataToJack::on_port(jack_port_t* port) {
   if (!is_constructed_) return;
   std::lock_guard<std::mutex> lock(ports_to_connect_mutex_);
   int flags = jack_port_flags(port);
-  if (!(flags & JackPortIsOutput)) return;
+  if (!(flags & JackPortIsInput)) return;
   auto it = std::find(ports_to_connect_.begin(), ports_to_connect_.end(), jack_port_name(port));
   if (ports_to_connect_.end() == it) return;
   {
