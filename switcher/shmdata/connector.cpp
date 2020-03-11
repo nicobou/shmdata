@@ -72,12 +72,15 @@ bool Connector::install_connect_method(OnConnect on_connect_cb,
         }
         auto quid_name = quid_->get_quiddity_name_from_file_name(path);
         auto suffix = quid_->get_shmdata_name_from_file_name(path);
+        auto tree = InfoTree::make();
         if (!quid_name.empty() && !suffix.empty()) {
-          auto tree = InfoTree::make();
           tree->graft("name", InfoTree::make(quid_name));
           tree->graft("suffix", InfoTree::make(suffix));
-          quid_->information_tree_->graft(std::string(".shmdata.reader.") + path + ".writer", tree);
+        } else {
+          tree->graft("name", InfoTree::make(""));
+          tree->graft("suffix", InfoTree::make(""));
         }
+        quid_->information_tree_->graft(std::string(".shmdata.reader.") + path + ".writer", tree);
         return on_connect_cb_(path);
       });
 
