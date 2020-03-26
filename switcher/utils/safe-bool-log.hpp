@@ -17,34 +17,25 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_GLIB_MAINLOOP_H__
-#define __SWITCHER_GLIB_MAINLOOP_H__
+#ifndef __SWITCHER_SAFE_BOOL_LOG_H__
+#define __SWITCHER_SAFE_BOOL_LOG_H__
 
-#include <glib.h>
-#include <memory>
-#include <mutex>
-#include <thread>
-#include "../utils/threaded-wrapper.hpp"
+#include <string>
+#include "./safe-bool-idiom.hpp"
 
 namespace switcher {
-namespace gst {
 
-class GlibMainLoop {
+class SafeBoolLog : public SafeBoolIdiom {
  public:
-  typedef std::shared_ptr<GlibMainLoop> ptr;
-  GlibMainLoop();
-  ~GlibMainLoop();
-  GlibMainLoop(const GlibMainLoop&) = delete;
-  GlibMainLoop& operator=(const GlibMainLoop&) = delete;
+  std::string msg() const { return msg_; };
 
-  GMainContext* get_main_context();
+ protected:
+  void set_safe_bool_log_msg(const std::string& msg) { msg_ = msg; }
 
  private:
-  GMainContext* main_context_{nullptr};
-  GMainLoop* mainloop_{nullptr};
-  ThreadedWrapper<> main_loop_{};
+  std::string msg_;
 };
-}  // namespace gst
+
 }  // namespace switcher
 
 #endif

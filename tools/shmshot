@@ -1,0 +1,199 @@
+#!/usr/bin/env python3
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# switcher is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+
+import argparse
+import atexit
+import datetime
+import os
+import signal
+import sys
+import termios
+import threading
+import time
+import tty
+
+from pyquid import Switcher, Quiddity, InfoTree
+from typing import Any
+
+# the videosnapshot quiddity
+shot = None
+# In non-interactive mode, this variable is used for saving twice
+# the image bacause the first returned by the v4l2 device is not the actual
+# current frame, but old data from a memory buffer.
+second_shot = False
+
+# access to options in @atexit
+args = None
+orig_settings = None
+
+
+# quit property in non interactive mode:
+cv = threading.Condition()
+
+
+def parse_args() -> argparse.Namespace:
+    argp = argparse.ArgumentParser(
+        description="""
+  Shmshot takes image snapshot(s) from a video shmdata stream and exit. Additionaly, an interactive mode allows a user to trigger snapshots and obtain a sequence of images. Shmshot can read from a video shmdata (using the --shmpath option) or read from a v4l2 device (using the --capture-device option). By default, shmshot with read the default v4l2 capture device available.
+
+  Note that a video shmdata can be created using the following command: 
+gst-launch videotestsrc pattern=18 ! shmdatasink socket-path=/tmp/video_shm
+
+  In interactive mode (--interactive option), image snapshots are taken only when the user hit the space bar. Press escape (or ctrl-c) in order to quit. In interactive mode, you can display a the source video in a preview window (--preview option).
+
+"Cause you can't, you won't and you don't stop."
+
+Examples:
+========
+Get an image snapshot from default camera in current folder:
+shmshot
+
+Get an image from a video shmdata located at '/tmp/video_shm':
+shmshot -s /tmp/video_shm
+
+Save the image in a specific directory with a specific name
+shmshot --folder ~/Picture --name me_as_bytes # writes '/tmp/me_as_bytes.jpg'
+
+Run shmshot in interactive mode with video preview and image written to '~/tmp/'
+shmshot -i -v -f ~/tmp/
+
+Arguments:
+=========
+""", formatter_class=argparse.RawTextHelpFormatter)
+    argp.add_argument("-s", "--shmpath",
+                      help="shmpath of the video stream to capture", type=str)
+    argp.add_argument("-c", "--capture-device",
+                      help="video capture device (name or number, as displayed with option -l)", type=str)
+    argp.add_argument("-d", "--debug", help="print switcher log messages", action="store_true")
+    argp.add_argument("-l", "--list-camera", help="list available cameras", action="store_true")
+    argp.add_argument("-f", "--folder",
+                      help="folder where images with be stored", type=str)
+    argp.add_argument("-n", "--name",
+                      help="Name of the jpeg files to be produced. You can use printf format for numbering files. The default name for non interactive capture is 'shmshot_YYYY-MM-DD_HH:MM:SS_NSEC.jpg'.", type=str)
+    argp.add_argument("-i", "--interactive",
+                      help="Run in interactive mode", action="store_true")
+    argp.add_argument("-v", "--video-preview",
+                      help="Display the video shmdata in a window", action="store_true")
+    return argp.parse_args()
+
+
+def on_image_exit(value, shot):
+    global cv
+    global second_shot
+    if (second_shot):
+        print(value + " saved")
+        with cv:
+            cv.notifyAll()
+    else:
+        second_shot = True
+        shot.set('shot', True)
+
+
+def print_image_name(value):
+    print(value + " saved")
+
+
+def main() -> None:
+    global shot
+    global args
+    global orig_settings
+    args = parse_args()
+
+    # create a switcher and a videosnapshot quiddity:
+    sw = Switcher('shmshot' + str(os.getpid()), debug=args.debug)
+    shot_qrox = sw.create('videosnapshot', 'shot')
+    shot = shot_qrox.quid()
+
+    # configure before connect
+    if (args.interactive):
+        shot.set("num_files", True)
+    else:
+        shot.set("num_files", False)
+    if (args.folder):
+        shot.set("imgdir", args.folder)
+    else:
+        shot.set("imgdir", ".")
+    if (args.name):
+        shot.set("imgname", args.name)
+    else:
+        shot.set("imgname", "shmshot_" + f"{datetime.datetime.now():%Y-%m-%d_%H:%M:%S_%f}")
+
+    # configure v4l2 capture
+    if (not args.shmpath):
+        cam = sw.create('v4l2src', 'cam')
+        if (not cam):
+            print('sorry, no device found')
+            return
+        if (args.list_camera):
+            devices = InfoTree(cam.quid().get_info_tree_as_json('.property.device.values'))
+            for id, label in zip(devices.get_key_values('id'), devices.get_key_values('label')):
+                print(str(id) + ': "' + label + '"')
+            return
+        if(args.capture_device):
+            if(not cam.quid().set("device", args.capture_device)):
+                print('cannot set device ' + args.capture_device)
+                exit(1)
+        cam.quid().set('started', True)
+    # end v4l2 device
+
+    # connect the snapshot to the video shmdata
+    if (args.shmpath):
+        shot.invoke('connect', [args.shmpath])
+    else:
+        shot.invoke('connect-quid', ['cam', 'video'])
+
+    # non-interactive mode
+    if (not args.interactive):
+        with cv:
+            shot.subscribe("last_image", on_image_exit, shot)
+            shot.set('shot', True)
+            cv.wait()
+        sw.remove(shot_qrox.id())
+        sys.exit(0)
+
+    # interactive mode video preview (capture from stdin)
+    orig_settings = termios.tcgetattr(sys.stdin)
+    tty.setcbreak(sys.stdin)
+    if (args.video_preview):
+        win = sw.create('glfwin', 'win').quid()
+        win.set('decorated', True)
+        if (args.shmpath):
+            win.invoke('connect', [args.shmpath])
+        else:
+            win.invoke('connect-quid', ['cam', 'video'])
+
+    # interactive mode
+    shot.subscribe("last_image", print_image_name)
+    shot.set("num_files", True)
+    x = 0
+    while x != chr(27):  # ESC
+        x = sys.stdin.read(1)[0]
+        if (x is ' '):
+            shot.set('shot', True)
+    shot.unsubscribe("last_image")
+    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, orig_settings)
+
+
+def sigint_handler(signum: Any, frame: Any) -> None:
+    shot.unsubscribe("last_image")
+    if (args and args.interactive):
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, orig_settings)
+    print('')  # avoid having the prompt back
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    signal.signal(signal.SIGINT, sigint_handler)
+    main()

@@ -24,12 +24,8 @@ namespace switcher {
 namespace gst {
 
 GlibMainLoop::GlibMainLoop()
-    : main_context_(g_main_context_new()),
-      mainloop_(g_main_loop_new(main_context_, FALSE)),
-      thread_() {
-  std::unique_lock<std::mutex> lock_begin(begin_);
-  thread_ = std::thread(&GlibMainLoop::main_loop_thread, this);
-  thread_.detach();
+    : main_context_(g_main_context_new()), mainloop_(g_main_loop_new(main_context_, FALSE)) {
+  main_loop_.run_async([this]() { g_main_loop_run(mainloop_); });
 }
 
 GMainContext* GlibMainLoop::get_main_context() { return main_context_; }
@@ -39,16 +35,10 @@ GlibMainLoop::~GlibMainLoop() {
     std::this_thread::sleep_for(std::chrono::milliseconds(2));
   }
   g_main_loop_quit(mainloop_);
-  std::unique_lock<std::mutex> lock_begin(begin_);
-  g_main_loop_unref(mainloop_);
-  g_main_context_unref(main_context_);
-}
-
-void GlibMainLoop::main_loop_thread() {
-  {
-    std::unique_lock<std::mutex> lock_begin(begin_);
-    g_main_loop_run(mainloop_);  // this call is blocking
-  }
+  main_loop_.run_async([this]() {
+    g_main_loop_unref(mainloop_);
+    g_main_context_unref(main_context_);
+  });
 }
 
 }  // namespace gst

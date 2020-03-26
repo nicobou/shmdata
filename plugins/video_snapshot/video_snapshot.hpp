@@ -33,11 +33,6 @@ class VideoSnapshot : public Quiddity {
   VideoSnapshot(quiddity::Config&&);
 
  private:
-  // gst pipeline
-  std::mutex mtx_{};
-  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
-  GstElement* valve_{nullptr};
-
   // Take Snaphot property
   property::prop_id_t snap_id_;
 
@@ -61,6 +56,11 @@ class VideoSnapshot : public Quiddity {
 
   // registering connect/disconnect/can_sink_caps:
   shmdata::Connector shmcntr_;
+
+  // gst pipeline
+  std::mutex mtx_{};
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
+  GstElement* valve_{nullptr};
 
   void make_gst_pipeline(const std::string& shmpath);
   void on_new_file(const std::string& filename);

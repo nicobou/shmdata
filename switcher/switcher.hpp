@@ -78,6 +78,9 @@ class Switcher : public gst::Initialized {
   static std::string get_shm_dir() { return "/tmp"; }
   static std::string get_shm_prefix() { return "switcher_"; }
 
+  // Bundles
+  bool load_bundle_from_config(const std::string& bundle_description);
+
  private:
   Switcher() = delete;
   template <typename L>  // unique_ptr<LOG_TYPE>

@@ -23,11 +23,11 @@ namespace switcher {
 namespace shmdata {
 
 GstSubscriber::GstSubscriber(GstElement* element,
-                                           on_caps_cb_t on_caps_cb,
-                                           on_stat_monitor_t on_stat_monitor_cb,
-                                           on_delete_t on_delete_cb,
-                                           on_connection_status_t on_connection_status_cb,
-                                           std::chrono::milliseconds update_interval)
+                             on_caps_cb_t on_caps_cb,
+                             on_stat_monitor_t on_stat_monitor_cb,
+                             on_delete_t on_delete_cb,
+                             on_connection_status_t on_connection_status_cb,
+                             std::chrono::milliseconds update_interval)
     : element_(element),
       on_caps_cb_(on_caps_cb),
       on_stat_monitor_cb_(on_stat_monitor_cb),
@@ -56,9 +56,7 @@ GstSubscriber::~GstSubscriber() {
   gst_object_unref(static_cast<gpointer>(element_));
 }
 
-void GstSubscriber::on_caps_cb(GObject* /*gobject*/,
-                                      GParamSpec* /*pspec*/,
-                                      gpointer user_data) {
+void GstSubscriber::on_caps_cb(GObject* /*gobject*/, GParamSpec* /*pspec*/, gpointer user_data) {
   GstSubscriber* context = static_cast<GstSubscriber*>(user_data);
   std::lock_guard<std::mutex> lock(context->dtor_mutex_);
   if (!context->on_caps_cb_) {

@@ -2,15 +2,45 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.0 (2020-03-26)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+Documentation:
+* Add an example of quiddity using gst
+
+New features:
+* ✨ Add dynamic bundle loading
+* ✨ add cfor_each_in_array for infotree
+* ✨ add safe-bool-log util
+* ✨ adding shmshot tool for image capture of video shmdata
+
+Bug fixes:
+* 🐛 Fix a segfault when a glfwin is destroyed
+* 🐛 Fix parsing of bundle parameters with dashes
+* 🐛 Fixed CI fail on develop and master branch
+* 🐛 Fixed an issue with dependencies detection through pkg-config
+* 🐛 Return false when the pipeline's state can't be changed
+* 🐛 fix jacksink not reconnecting to its autoconnect destination
+* 🐛 improving glibmainloop concurrency strategy
+* 🐛 urisrc unregisters uridecodebin signals before destruction of pipeline
+
+Continuous integration:
+* ✅ Allowed for GLFW plugin to be tested by the CI
+* ✅ Changed Ubuntu version for coverage check
+* ✅ added tests for tools
+
 switcher 2.0.2 (2020-02-06)
 ---------------------------
 This is an official release in the 2.0 stable series.
 
 New features:
 * ✨✅ adding videosnapshot quiddity
+
 Bug fixes:
 * 🐛  Fix deinterlace crash in v4l2src when pixel format is not raw video
 * 💚 add missing dependency related to ubuntu 20:04 image update
+
 Typos:
 * ✏️  Fix typo in NEWS.md
 * ✏️ sochet meant socket

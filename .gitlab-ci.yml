@@ -35,7 +35,8 @@ Test:
     CTEST_OUTPUT_ON_FAILURE: 1
   script:
     - cd $BUILD_DIR/build
-    - make test
+    - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
+    - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' make test
   except:
     - develop
     - master
@@ -47,7 +48,8 @@ Test package:
     CTEST_OUTPUT_ON_FAILURE: 1
   script:
     - cd $BUILD_DIR/build
-    - make package_source_test
+    - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
+    - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' make package_source_test
   only:
     - develop
     - master
@@ -71,7 +73,7 @@ Build and Deploy clean image:
 #
 coverage:
   stage: coverage
-  image: ubuntu:20.04
+  image: ubuntu:19.10
   script: 
     - apt update
     - DEBIAN_FRONTEND=noninteractive apt install -y cmake bison build-essential flex libtool git libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev
@@ -81,12 +83,13 @@ coverage:
     - cmake -DCMAKE_BUILD_TYPE=Release ..
     - make -j$(nproc) && make install && ldconfig && cd ../..
     - DEBIAN_FRONTEND=noninteractive apt install -y lcov zip
-    - DEBIAN_FRONTEND=noninteractive apt install -y cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins  libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev xorg-dev libltc-dev libcurl4-gnutls-dev gsoap wah-plugins libxrandr-dev libxinerama-dev libxcursor-dev libsamplerate0-dev python3-dev
+    - DEBIAN_FRONTEND=noninteractive apt install -y cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins  libgl1-mesa-dev libglu1-mesa-dev xorg-dev freeglut3-dev mesa-common-dev libltc-dev libcurl4-gnutls-dev gsoap wah-plugins libxrandr-dev libxinerama-dev libxcursor-dev libsamplerate0-dev python3-dev gstreamer1.0-tools
     - git submodule update --init
     - rm -rf build && mkdir build && cd build
     - cmake -DTEST_COVERAGE=ON -DENABLE_GPL=ON ..
     - make -j$(nproc) && make install && ldconfig
-    - make check_coverage
+    - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
+    - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' make check_coverage
     - zip -r coverage.zip coverage
     - mv coverage.zip ../
   artifacts:

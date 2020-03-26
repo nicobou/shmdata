@@ -8,8 +8,8 @@ cmake_minimum_required(VERSION 3.5.1)
 # Project Variables
 set(SWITCHER_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SWITCHER_VERSION_MAJOR 2)
-set(SWITCHER_VERSION_MINOR 0)
-set(SWITCHER_VERSION_PATCH 2)
+set(SWITCHER_VERSION_MINOR 1)
+set(SWITCHER_VERSION_PATCH 0)
 set(SWITCHER_VERSION_STRING ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR}.${SWITCHER_VERSION_PATCH})
 set(SWITCHER_API_VERSION ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR})
 set(SWITCHER_LIBRARY switcher-${SWITCHER_API_VERSION})
@@ -85,7 +85,7 @@ option(ENABLE_GPL "Compile plugins using GPL libraries" OFF)
 find_package(PkgConfig REQUIRED)
 
 # This is required in the case where macport screwed with the paths on mac os x
-set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH")
+set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 
 pkg_check_modules(SHMDATA REQUIRED shmdata-${SHMDATA_REQUIRED_VERSION})
 pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-base-1.0 gstreamer-controller-1.0 gstreamer-sdp-1.0 gstreamer-video-1.0)

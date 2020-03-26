@@ -65,11 +65,13 @@ InfoTree::ptr InfoTree::copy(InfoTree::ptrc tree) {
   if (tree)
     preorder_tree_walk(tree,
                        [&](const std::string& name, InfoTree::ptrc tree, bool is_array_element) {
-                         std::string key;
+                         std::string key{"."};
                          for (auto& it : path) {
-                           key += "." + it;
+                           key += it + ".";
                          }
-                         if (is_array_element) res->tag_as_array(key, true);
+                         if (is_array_element) {
+                           res->tag_as_array(key, true);
+                         }
                          path.push_back(name);
                          key += "." + name;
                          auto value = tree->read_data();
@@ -390,6 +392,28 @@ std::string InfoTree::serialize_json(const std::string& path) const {
 bool InfoTree::path_is_root(const std::string& path) { return (path == ".") || (path == ".."); }
 
 bool InfoTree::for_each_in_array(const std::string& path, std::function<void(InfoTree*)> fun) {
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
+  // finding the parent node of the array
+  auto& children = children_;
+  if (path_is_root(path)) {
+    if (!is_array_) return false;
+  } else {
+    auto found = get_node(path);
+    if (!found.first) return false;
+    auto& tree = (*found.first)[found.second].second;
+    if (!tree->is_array_) return false;
+    children = tree->children_;
+  }
+
+  // apply function to array elements
+  for (auto& child : children) {
+    fun(child.second.get());
+  }
+  return true;
+}
+
+bool InfoTree::cfor_each_in_array(const std::string& path,
+                                  std::function<void(const InfoTree*)> fun) const {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   // finding the parent node of the array
   auto& children = children_;
