@@ -5,6 +5,7 @@
 * François Ubald Brien
 * Ludovic Schreiber
 * Michal Seta
+* Hantz-Carly F. Vius
 * Valentin Laurent
 * Sebastien Paquet
 * Mike Wozniewski
