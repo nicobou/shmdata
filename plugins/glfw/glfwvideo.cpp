@@ -569,9 +569,11 @@ GLFWVideo::~GLFWVideo() {
   ongoing_destruction_ = true;
   if (is_valid_) RendererSingleton::get()->unsubscribe_from_render_loop(this);
 
-  destroy_gl_elements();
-  if (window_) glfwDestroyWindow(window_);
-
+  {
+    std::lock_guard<std::mutex> lock(RendererSingleton::creation_window_mutex_);
+    destroy_gl_elements();
+    if (window_) glfwDestroyWindow(window_);
+  }
   // Needs to be called because glfwTerminate releases OpenGL function pointers.
   gui_configuration_.reset();
 
