@@ -66,7 +66,6 @@ class Pipe {
   std::mutex end_{};
   std::condition_variable end_cond_{};
   bool playing_asked_{false};
-  std::mutex play_mtx_{};
   std::condition_variable play_cond_{};
   void query_position_and_length();
   static gboolean gst_pipeline_delete(gpointer user_data);

@@ -20,7 +20,9 @@
 #ifndef __SWITCHER_URIDECODEBIN_H__
 #define __SWITCHER_URIDECODEBIN_H__
 
+#include <map>
 #include <memory>
+#include <mutex>
 #include <unordered_map>
 #include "../gst/pipeliner.hpp"
 #include "../quiddity/quiddity.hpp"
@@ -38,6 +40,8 @@ class Uridecodebin : public Quiddity {
   Uridecodebin& operator=(const Uridecodebin&) = delete;
 
  private:
+  std::mutex pipe_mtx_{};
+  std::map<GstElement*, gulong> decodebin_handles_{};
   std::vector<gulong> sig_handles_{};
   gst::Pipe::on_msg_async_cb_t on_msg_async_cb_{nullptr};
   gst::Pipe::on_msg_sync_cb_t on_msg_sync_cb_{nullptr};

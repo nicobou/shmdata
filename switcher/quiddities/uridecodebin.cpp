@@ -112,12 +112,18 @@ void Uridecodebin::init_uridecodebin() {
 }
 
 void Uridecodebin::destroy_uridecodebin() {
+  std::lock_guard<std::mutex> lock(pipe_mtx_);
   if (uridecodebin_) {
     for (const auto& it : sig_handles_) {
       g_signal_handler_disconnect(uridecodebin_, it);
     }
   }
   sig_handles_.clear();
+  for (const auto& it : decodebin_handles_) {
+    g_signal_handler_disconnect(it.first, it.second);
+  }
+  decodebin_handles_.clear();
+  gst_pipeline_.reset();
   gst_pipeline_ = std::make_unique<gst::Pipeliner>(on_msg_async_cb_, on_msg_sync_cb_, on_error_cb_);
   shm_subs_.clear();
 }
@@ -135,6 +141,7 @@ void Uridecodebin::unknown_type_cb(GstElement* bin,
   context->warning("Uridecodebin unknown type: % (%)",
                    std::string(gst_caps_to_string(caps)),
                    std::string(gst_element_get_name(bin)));
+  std::lock_guard<std::mutex> lock(context->pipe_mtx_);
   context->pad_to_shmdata_writer(context->gst_pipeline_->get_pipeline(), pad);
 }
 
@@ -211,7 +218,9 @@ bool Uridecodebin::pad_is_image(const std::string& padname) {
   return stringutils::starts_with(padname, "image");
 }
 
-void Uridecodebin::decodebin_pad_added_cb(GstElement* object, GstPad* pad, gpointer /*user_data*/) {
+void Uridecodebin::decodebin_pad_added_cb(GstElement* object, GstPad* pad, gpointer user_data) {
+  Uridecodebin* context = static_cast<Uridecodebin*>(user_data);
+  std::lock_guard<std::mutex> lock(context->pipe_mtx_);
   GstBin* bin = static_cast<GstBin*>(g_object_get_data(G_OBJECT(object), "bin"));
   GstElement* shmdatasink =
       static_cast<GstElement*>(g_object_get_data(G_OBJECT(object), "shmdatasink"));
@@ -243,10 +252,11 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   if (stream_is_image) {
     GstElement* decodebin = nullptr;
     gst::utils::make_element("decodebin", &decodebin);
-    g_signal_connect(G_OBJECT(decodebin),
-                     "pad-added",
-                     (GCallback)Uridecodebin::decodebin_pad_added_cb,
-                     (gpointer)this);
+    decodebin_handles_.emplace(decodebin,
+                               g_signal_connect(G_OBJECT(decodebin),
+                                                "pad-added",
+                                                (GCallback)Uridecodebin::decodebin_pad_added_cb,
+                                                (gpointer)this));
     g_object_set_data(G_OBJECT(decodebin), "decodebin", decodebin);
     g_object_set_data(G_OBJECT(decodebin), "shmdatasink", shmdatasink);
     g_object_set_data(G_OBJECT(decodebin), "bin", bin);
@@ -279,6 +289,7 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
 
 void Uridecodebin::uridecodebin_pad_added_cb(GstElement* object, GstPad* pad, gpointer user_data) {
   Uridecodebin* context = static_cast<Uridecodebin*>(user_data);
+  std::lock_guard<std::mutex> lock(context->pipe_mtx_);
   GstCaps* newcaps = gst_pad_get_current_caps(pad);
   On_scope_exit { gst_caps_unref(newcaps); };
   if (gst_caps_can_intersect(context->rtpgstcaps_, newcaps)) {
@@ -310,14 +321,14 @@ bool Uridecodebin::to_shmdata() {
     warning("no uri to decode");
     return false;
   }
-  counter_.reset_counter_map();
-  destroy_uridecodebin();
   if (!gst_uri_is_valid(uri_.c_str())) {
     warning("uri % is invalid (uridecodebin)", uri_);
     message("ERROR:The provided uri is invalid.");
     return false;
   }
+  destroy_uridecodebin();
   init_uridecodebin();
+  counter_.reset_counter_map();
   debug("to_shmdata set uri %", uri_);
   g_object_set(G_OBJECT(uridecodebin_), "uri", uri_.c_str(), nullptr);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), uridecodebin_);
