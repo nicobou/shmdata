@@ -30,11 +30,11 @@ class GstTreeUpdater {
   using on_delete_t = std::function<void()>;
   enum class Direction { writer, reader };
   GstTreeUpdater(quiddity::Quiddity* quid,
-                    GstElement* element,
-                    const std::string& shmpath,
-                    Direction d,
-                    on_caps_cb_t on_caps_cb = nullptr,
-                    on_delete_t on_delete_cb = nullptr);
+                 GstElement* element,
+                 const std::string& shmpath,
+                 Direction dir,
+                 on_caps_cb_t on_caps_cb = nullptr,
+                 on_delete_t on_delete_cb = nullptr);
   ~GstTreeUpdater();
   GstTreeUpdater() = delete;
 
