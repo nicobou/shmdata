@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.24 (2020-04-20)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* 💬 a name for Marie-Eve
+
 shmdata 1.3.22 (2020-01-31)
 ---------------------------
 This is an official release in the 1.3 stable series.
