@@ -143,7 +143,6 @@ GLFWRenderer::rendering_tasks_t GLFWRenderer::pop_rendering_tasks() {
     auto renderer = rendering_tasks_.find(unsubscriber);
     if (renderer != rendering_tasks_.end()) rendering_tasks_.erase(renderer);
   }
-
   cond_subscription_.notify_all();
 
   unsubscribers_.clear();

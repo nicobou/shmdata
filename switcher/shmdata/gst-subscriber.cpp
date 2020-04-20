@@ -37,11 +37,10 @@ GstSubscriber::GstSubscriber(GstElement* element,
   gst_object_ref(static_cast<gpointer>(element));
   signal_handler_id_ = g_signal_connect(
       G_OBJECT(element_), "notify::caps", G_CALLBACK(GstSubscriber::on_caps_cb), this);
-  signal_connection_id_ =
-      g_signal_connect(G_OBJECT(element_),
-                       "notify::connected",
-                       G_CALLBACK(GstSubscriber::on_connection_status_cb),
-                       this);
+  signal_connection_id_ = g_signal_connect(G_OBJECT(element_),
+                                           "notify::connected",
+                                           G_CALLBACK(GstSubscriber::on_connection_status_cb),
+                                           this);
 
   notify_caps();
 }

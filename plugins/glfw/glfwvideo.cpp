@@ -569,9 +569,11 @@ GLFWVideo::~GLFWVideo() {
   ongoing_destruction_ = true;
   if (is_valid_) RendererSingleton::get()->unsubscribe_from_render_loop(this);
 
-  destroy_gl_elements();
-  if (window_) glfwDestroyWindow(window_);
-
+  {
+    std::lock_guard<std::mutex> lock(RendererSingleton::creation_window_mutex_);
+    destroy_gl_elements();
+    if (window_) glfwDestroyWindow(window_);
+  }
   // Needs to be called because glfwTerminate releases OpenGL function pointers.
   gui_configuration_.reset();
 
@@ -1026,6 +1028,7 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
   on_shmdata_disconnect();
   shmpath_ = shmpath;
   g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
+  g_object_set(G_OBJECT(shmsrc_.get_raw()), "copy-buffers", TRUE, nullptr);
   shm_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
       this,
       shmsrc_.get_raw(),

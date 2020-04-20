@@ -77,13 +77,13 @@ class VideoTestSource : public Quiddity, public quiddity::Startable {
   // formats
   property::Selection<> formats_;
   property::prop_id_t formats_id_;
-  // Shmdata tree updater
-  std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
   // gst elements
   gst::UGstElem videotestsrc_{"videotestsrc"};
   gst::UGstElem capsfilter_{"capsfilter"};
   gst::UGstElem shmdatasink_{"shmdatasink"};
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
+  // Shmdata tree updater
+  std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
   bool start() final;
   bool stop() final;
   void update_caps();

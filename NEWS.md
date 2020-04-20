@@ -2,6 +2,23 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.2 (2020-04-20)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+Bug fixes:
+* 🐛 fix sometimes deadlock with the test 08-quid-infotree-stress.py
+* 🐛 fix connect does not signal shmdata when quiddity name is not found
+* 🐛 fix deadlock and segfault with uridecodebin and glfw plugin
+* 🐛 fix race condition during glfw destruction
+
+
+Improvements
+* ⬆️ upgrading to pjsip 2.10
+* ✏ Add a dependency to (linux) installation instructions
+* Converted release script to Python3
+
+
 switcher 2.1.0 (2020-03-26)
 ---------------------------
 This is an official release in the 2.1 stable series.
