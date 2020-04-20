@@ -6,4 +6,4 @@
 * Michal Seta
 * Valentin Laurent
 * Mike Wozniewski
-* Marie-Eve
+* Marie-Eve Dumas
