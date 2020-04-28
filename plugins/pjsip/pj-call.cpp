@@ -1112,7 +1112,7 @@ void PJCall::make_attach_shmdata_to_contact(const std::string& shmpath,
   }
   if (attach) {
     InfoTree::ptr tree =
-        SIPPlugin::this_->prune_tree(std::string(".buddies." + std::to_string(id)),
+        SIPPlugin::this_->prune_tree(std::string(".buddies." + std::to_string(id) + ".connections"),
                                      false);  // do not signal since the branch will be re-grafted
     if (!tree) tree = InfoTree::make();
     if (readers_.find(shmpath) == readers_.cend()) {
@@ -1121,9 +1121,9 @@ void PJCall::make_attach_shmdata_to_contact(const std::string& shmpath,
     } else {
       ++reader_ref_count_[shmpath];
     }
-    tree->graft(std::string(".connections." + shmpath), InfoTree::make(shmpath));
-    tree->tag_as_array(".connections", true);
-    SIPPlugin::this_->graft_tree(".buddies." + std::to_string(id), tree);
+    tree->graft(std::string(shmpath), InfoTree::make(shmpath));
+    tree->tag_as_array(".", true);
+    SIPPlugin::this_->graft_tree(".buddies." + std::to_string(id) + ".connections", tree);
     return;
   }
   // detach
