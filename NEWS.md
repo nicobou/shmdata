@@ -2,6 +2,22 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.4 (2020-05-06)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+New features:
+* ✨ Add webrtc quiddity with example signaling server and web client
+
+Bug fixes:
+* 🐛 Graft only connections on attach_shmdata
+* 🐛 Fixed release script not filling NEWS.md
+
+New dependency related to the webrtc quiddity:
+* ➕ Added libsoup for websocket communication
+* ➕ Added gsteamer-webrtc-1.0
+
+
 switcher 2.1.0 (2020-03-26)
 ---------------------------
 This is an official release in the 2.1 stable series.

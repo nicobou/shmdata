@@ -14,4 +14,5 @@
 * Jerome Berthelin
 * Rostom Mesli
 * Patrick Keroulas
+* Michał Seta
 * Marc Lavallée
