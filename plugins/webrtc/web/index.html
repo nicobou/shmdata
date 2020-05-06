@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="index.css">
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="webrtc.js"></script>
+    <script src="index.js"></script>
+  </head>
+  <body>
+
+
+    <div id="logView" class="sidepanel">
+      <a id="logCloseBtn" href="javascript:void(0)" class="closebtn" onclick="hideLog()">X</a>
+      <br/>
+    </div>
+
+    <div id="userList" class="sidepanel">
+      <a id="ULCloseBtn" href="javascript:void(0)" class="closebtn" onclick="hideUserList()">X</a>
+      <br/>
+    </div>
+
+    <button class="openbtn" onclick="showUserList()">> User list</button>  
+    <button class="openbtn" onclick="showLog()">> Log View</button>  
+
+
+    <div>
+    <label for="server-input">Server:</label>
+    <input id="server-input" name="server-input" placeholder="wss://localhost:8443" required autofocus value="wss://15.223.12.210:8443">
+    <label for="room-input">Room:</label>
+    <input id="room-input" name="room-input" placeholder="RHtest" required autofocus value="RHtest">
+    <label for="user-input">Username:</label>
+    <input id="user-input" name="user-input" placeholder="JSClient" required autofocus>
+
+    <button id="connectBtn" onClick="connect()">Connect</button>
+    </div>
+
+    <div id="videoContainer"></div>
+    <script type="text/javascript">pageReady();</script>
+  </body>
+
+  </body>
+</html> 
+

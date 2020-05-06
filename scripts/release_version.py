@@ -211,7 +211,7 @@ def update_changelog(lib: str, version: List[int]) -> None:
     tag_date = subprocess.check_output(f"git log -1 --format=%ai {latest_tag}", shell=True, encoding="utf-8")
     commits = re.split(
         r"[a-z0-9]{40} ",
-        subprocess.check_output(f"git log --first-parent --since=\"{tag_date}\" | tr -d '\n'", shell=True, encoding="utf-8").strip()
+        subprocess.check_output(f"git log --pretty=oneline --first-parent --since=\"{tag_date}\" | tr -d '\n'", shell=True, encoding="utf-8").strip()
     )
     commits = commits[1:-1]
     with open(new_file_name, "w") as new_file:
@@ -347,7 +347,10 @@ if __name__ == "__main__":
     git_tag(f"{release_version[0]}.{release_version[1]}.{release_version[2]}")
 
     print("Pushing all branches and tags to remote.")
-    assert git_push(remote_repo, bringup_branch) == 0, f"Failed to push branch {bringup_branch} into {remote_repo}/{bringup_branch}"
-    assert git_push(remote_repo, working_branch) == 0, "Failed to push branch {working_branch} into {remote_repo}/{working_branch}"
+    do_push=input(f"Do you want to push {bringup_branch} and {working_branch} branches to {remote_repo}? [y/N]")
+    if do_push == "y":
+        assert git_push(remote_repo, bringup_branch) == 0, f"Failed to push branch {bringup_branch} into {remote_repo}/{bringup_branch}"
+        assert git_push(remote_repo, working_branch) == 0, "Failed to push branch {working_branch} into {remote_repo}/{working_branch}"
 
+    print("Cleaning up temporary files")
     success = True

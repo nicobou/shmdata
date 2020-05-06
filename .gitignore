@@ -1,9 +1,9 @@
+*.pem
 *.switcher
 *.swp
 .idea/workspace.xml
+.vscode/*
 __pycache__
 build/
 cmake-build-*/
 html/
-plugins/pjsip/config.json
-.vscode/*

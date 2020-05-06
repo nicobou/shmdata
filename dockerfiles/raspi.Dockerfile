@@ -32,6 +32,7 @@ RUN apt-get update -y \
             libglib2.0-dev \
             libgstreamer-plugins-base1.0 \
             libgstreamer-plugins-base1.0-dev \
+            libgstreamer-plugins-bad1.0-dev \
             libgstreamer1.0 \
             libgstreamer1.0-dev \
             libjack-jackd2-dev \
@@ -48,6 +49,7 @@ RUN apt-get update -y \
             libpulse-dev \
             libsamplerate0 \
             libsamplerate0-dev \
+            libsoup2.4-dev \
             libssl1.1 \
             libssl-dev \
             libtool \
@@ -116,6 +118,7 @@ RUN rm -rf ${BUILD_DIR} \
         libgl1-mesa-dev \
         libglib2.0-dev \
         libgstreamer-plugins-base1.0-dev \
+        libgstreamer-plugins-bad1.0-dev \
         libgstreamer1.0-dev \
         libjack-jackd2-dev \
         libjson-glib-dev \
@@ -125,6 +128,7 @@ RUN rm -rf ${BUILD_DIR} \
         libpulse-dev \
         libsamplerate0-dev \
         libssl-dev \
+        libsoup2.4-dev \
         libtool \
         libvncserver-dev \
         libxcursor-dev \

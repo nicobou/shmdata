@@ -18,10 +18,13 @@
  */
 
 #include "./string-utils.hpp"
+
 #include <glib.h>
+
 #include <algorithm>
 #include <cctype>
 #include <sstream>
+
 #include "./scope-exit.hpp"
 
 namespace switcher {
@@ -60,6 +63,34 @@ std::string stringutils::replace_string(const std::string& orig,
     }
   }
   return unescaped;
+}
+
+std::vector<std::string> stringutils::split_string(const std::string& text,
+                                                   const std::string& delimiter,
+                                                   std::size_t max) {
+  std::vector<std::string> parts;
+
+  std::size_t count = 0;
+  auto push_part = [&](const std::string& s) {
+    parts.push_back(s);
+    ++count;
+  };
+
+  std::size_t current = 0;
+  std::size_t previous = 0;
+  current = text.find(delimiter);
+
+  while (count < max - 1 && current != std::string::npos) {
+    push_part(text.substr(previous, current - previous));
+    previous = current + delimiter.length();
+    current = text.find(delimiter, previous);
+  }
+
+  if (count == max - 1 || (current == std::string::npos && max == std::string::npos)) {
+    push_part(text.substr(previous, text.length() - previous));
+  }
+
+  return parts;
 }
 
 void stringutils::toupper(std::string& str) {

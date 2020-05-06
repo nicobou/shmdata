@@ -77,5 +77,42 @@ int main() {
       " | | | | | | | |​|☹☺שמכיל גרסאות של";
 
   assert(stringutils::base64_decode(stringutils::base64_encode(str)) == str);
+
+  {
+    std::string text = "Line to split";
+    {
+      auto parts = stringutils::split_string(text, " ", 1);
+      assert(parts.size() == 1);
+      assert(parts[0] == text);
+    }
+
+    {
+      auto parts = stringutils::split_string(text, " ", 2);
+      assert(parts.size() == 2);
+      assert(parts[0] == "Line");
+      assert(parts[1] == "to split");
+    }
+
+    {
+      auto parts = stringutils::split_string(text, " ");
+      auto p3 = stringutils::split_string(text, " ", 3);
+      assert(parts.size() == 3);
+      assert(parts.size() == p3.size());
+      assert(parts[0] == p3[0]);
+      assert(parts[0] == "Line");
+      assert(parts[1] == p3[1]);
+      assert(parts[1] == "to");
+      assert(parts[2] == p3[2]);
+      assert(parts[2] == "split");
+    }
+  }
+
+  {
+    std::string text = "  word  ";
+    auto parts = stringutils::split_string(text, " ");
+    assert(parts.size() == 5);
+    assert(parts[2] == "word");
+  }
+
   return 0;
 }
