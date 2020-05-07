@@ -213,7 +213,7 @@ bool PJICEStreamTrans::sendto(unsigned comp_id,
                               const pj_sockaddr_t* dst_addr,
                               int dst_addr_len) {
   if (pj_ice_strans_sess_is_complete(icest_))
-    return PJ_SUCCESS == pj_ice_strans_sendto(icest_, comp_id, data, size, dst_addr, dst_addr_len);
+    return PJ_SUCCESS == pj_ice_strans_sendto2(icest_, comp_id, data, size, dst_addr, dst_addr_len);
   return true;  // not sent, but this is an expected behaviour
 }
 
