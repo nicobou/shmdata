@@ -69,6 +69,11 @@ async def main():
     task.cancel()
     await asyncio.gather(task, return_exceptions=True)
 
+    for q in aquids:
+        q.unsubscribe('on-tree-grafted')
+    for q in vquids:
+        q.unsubscribe('on-tree-grafted')
+
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main())
 loop.close()
