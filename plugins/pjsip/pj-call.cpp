@@ -114,6 +114,18 @@ PJCall::PJCall() {
               )"),
       [this](const std::string& url) { return hang_up(url); });
 
+    SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<std::function<bool()>>)>(
+      "hang_up_all",
+      infotree::json::deserialize(
+          R"(
+                  {
+                   "name" : "Hang Up All Calls",
+                   "description" : "Hang up all current inbound and outbound calls",
+                   "arguments" : []
+                  }
+              )"),
+      [this]() { return hang_up_all_calls(); });
+
   using attach_t = std::function<bool(std::string, std::string, bool)>;
   SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<attach_t>)>(
       "attach_shmdata_to_contact",
@@ -141,21 +153,34 @@ PJCall::PJCall() {
       });
 }
 
-void PJCall::finalize_calls() {
+bool PJCall::hang_up_all_calls() {
   std::vector<std::string> uris;
-
-  std::lock_guard<std::mutex> out_lock(SIPPlugin::this_->sip_calls_->finalize_outgoing_calls_m_);
-  std::lock_guard<std::mutex> inc_lock(SIPPlugin::this_->sip_calls_->finalize_incoming_calls_m_);
-
+  auto beginpos = 0;
+  
   // Hangup outgoing calls
-  for (auto& it : outgoing_call_) uris.push_back(it->peer_uri);
-  for (auto& it : uris) hang_up(it);
+  for (const auto& it : outgoing_call_) {
+    beginpos = 0 == it->peer_uri.find("sip:") ? 4 : 0;
+    uris.push_back(std::string(it->peer_uri, beginpos, std::string::npos));
+  }
+  for (const auto& it : uris) hang_up(it);
 
   uris.clear();
 
   // Hangup incoming calls
-  for (auto& it : incoming_call_) uris.push_back(it->peer_uri);
-  for (auto& it : uris) hang_up(it);
+  for (const auto& it : incoming_call_) {
+    beginpos = 0 == it->peer_uri.find("sip:") ? 4 : 0;
+    uris.push_back(std::string(it->peer_uri, beginpos, std::string::npos));
+  }
+  for (const auto& it : uris) hang_up(it);
+
+  return true;
+}
+
+void PJCall::finalize_calls() {
+  std::lock_guard<std::mutex> out_lock(SIPPlugin::this_->sip_calls_->finalize_outgoing_calls_m_);
+  std::lock_guard<std::mutex> inc_lock(SIPPlugin::this_->sip_calls_->finalize_incoming_calls_m_);
+
+  hang_up_all_calls();
 
   can_create_calls_ = false;
 }

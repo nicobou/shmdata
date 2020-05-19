@@ -112,6 +112,7 @@ class PJCall {
   bool send_to(const std::string& sip_url);
   void make_hang_up(pjsip_inv_session* inv);
   bool hang_up(const std::string& sip_url);
+  bool hang_up_all_calls();
   bool attach_shmdata_to_contact(const std::string& shmpath,
                                  const std::string& contact_uri,
                                  bool attach);
