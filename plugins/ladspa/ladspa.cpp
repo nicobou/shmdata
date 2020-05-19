@@ -67,6 +67,7 @@ LADSPA::LADSPA(quiddity::Config&& conf)
       [this](const quiddity::property::IndexOrName& val) {
         plugins_.select(val);
 
+        debug("ladspa plugin selected: %\n", plugins_.get_current());
         // We don't want to reset the properties if they were loaded from a save file
         if (reset_saved_properties_)
           saved_properties_.clear();
@@ -447,6 +448,12 @@ void LADSPA::on_loading(InfoTree::ptr&& tree) {
 }
 
 void LADSPA::save_properties() {
+  // switching locale to C in order to get float serialized correctly
+  auto cur_loc = std::locale("");
+  std::locale::global(std::locale::classic());
+  // restore previous locale when done
+  On_scope_exit { std::locale::global(cur_loc); };
+
   for (auto& element : ladspa_elements_) {
     std::string element_name = gst_element_get_name(element);
     for (auto& prop_name : properties_) {
