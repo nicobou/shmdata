@@ -2,6 +2,18 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.6 (2020-05-19)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+Bug fixes:
+* 🐛 fix issue with ladspa plugin with ca_FR locale
+* 🐛 fix pyquid_quid_infotree_stress test
+
+Improvements:
+* 👽 Update PJSIP sendto function call to sendto2
+* ✨ Expose SIP method to hang up all calls
+
 switcher 2.1.4 (2020-05-06)
 ---------------------------
 This is an official release in the 2.1 stable series.
