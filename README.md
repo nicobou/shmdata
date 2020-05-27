@@ -30,6 +30,47 @@ gst-inspect-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ shmdatasrc
 gst-inspect-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ shmdatasink
 ```
 
+# Create a video shmdata with GStreamer
+The path of the shmdata will be /tmp/video_shmdata
+```
+gst-launch --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ videotestsrc ! shmdatasink socket-path=/tmp/video_shmdata
+```
+
+# Monitor a shmdata
+The `sdflow` utility is installed along with the shmdata library. It prints the shmdata metadata once connected with the shmdata writer, and then a line of information for each buffer pushed by the shmdata writer. Here is an example :
+```
+$ sdflow /tmp/video_shmdata 
+connected: type video/x-raw, format=(string)I420, width=(int)320, height=(int)240, framerate=(fraction)30/1, multiview-mode=(string)mono, pixel-aspect-ratio=(fraction)1/1, interlace-mode=(string)progressive
+0    size: 115200    data: EBEBEBEBEBEBEBEBEBEBEBEBEBEBEB...
+1    size: 115200    data: EBEBEBEBEBEBEBEBEBEBEBEBEBEBEB...
+etc
+```
+
+# Monitor frame rate of a shmdata
+
+You need the `pv` utily:
+```
+sudo apt install pv
+```
+
+With `pv` and `sdflow` you can display the frame rate of a shmdata (here `/tmp/video_shmdata`):
+```
+sdflow /tmp/video_shmdata | pv --line-mode --rate > /dev/null
+```
+
+You can get this as a command (`sdfps`) if you copy the following into your `~/.bashrc` file:
+```
+function sdfps {
+        sdflow $1 | pv --line-mode --rate > /dev/null
+}
+```
+
+Then you can monitor the rate of a shmdata like this:
+```
+source ~/.bashrc # this reloads the bashrc configuration
+sdfps /tmp/video_shmdata
+```
+
 # Installation
 Here is how to build and install it on Debian GNU/Linux or Ubuntu::
 
