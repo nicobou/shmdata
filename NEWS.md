@@ -1,6 +1,12 @@
-NEWS
+iNEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
+
+switcher 2.1.8 (2020-06-01)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+* 📝 Improved Python wrapper documentation
 
 switcher 2.1.6 (2020-05-19)
 ---------------------------
