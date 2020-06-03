@@ -954,12 +954,13 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
       // If shmdata is not received from SIP and is not a Switcher generated path, it can be an NDI
       // stream, a Gstreamer pipeline or any stream produced by a shmdata writer.
       // Those shmdatas can have completely arbitrary naming patterns. In that case, we take
-      // the second to last part of the shmpath.
-      // For reference: /tmp/ndi_default_value_suffix -> we want the "value" part of the shmdata,
-      // before the suffix
-      auto last_underscore = it.find_last_of('_');
-      auto second_to_last_underscore = it.rfind('_', last_underscore - 1);
-      rawlabel = "ndi" + it.substr(second_to_last_underscore + 1, last_underscore);
+      // only the socket name, not its whole path
+      // For reference: /tmp/ndi_default_value_suffix -> we want the "ndi_default_value_suffix" part
+      auto last_slash = it.find_last_of('/');
+      if (last_slash == std::string::npos)
+        rawlabel = it;
+      else
+        rawlabel = it.substr(last_slash + 1);
     }
 
     std::istringstream ss(rawlabel);  // Turn the string into a stream
