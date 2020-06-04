@@ -25,6 +25,15 @@
 
 namespace switcher {
 namespace quiddities {
+
+const std::map<PJPresence::SipStatus, std::string> PJPresence::SipStatusMap{
+    {SipStatus::ONLINE, "online"},
+    {SipStatus::OFFLINE, "offline"},
+    {SipStatus::AWAY, "away"},
+    {SipStatus::BUSY, "busy"},
+    {SipStatus::UNKNOWN, "unknown"}
+};
+
 PJPresence::PJPresence() {
   // registering account
   using register_t = std::function<bool(std::string, std::string)>;
@@ -339,9 +348,9 @@ void PJPresence::add_buddy(const std::string& user) {
   SIPPlugin::this_->graft_tree(".buddies." + std::to_string(buddy_id) + ".uri",
                                InfoTree::make(sip_user));
   SIPPlugin::this_->graft_tree(".buddies." + std::to_string(buddy_id) + ".send_status",
-                               InfoTree::make("disconnected"));
+                               InfoTree::make(PJCall::SendRecvStatusMap.at(PJCall::SendRecvStatus::DISCONNECTED)));
   SIPPlugin::this_->graft_tree(".buddies." + std::to_string(buddy_id) + ".recv_status",
-                               InfoTree::make("disconnected"));
+                               InfoTree::make(PJCall::SendRecvStatusMap.at(PJCall::SendRecvStatus::DISCONNECTED)));
   return;
 }
 
@@ -453,37 +462,28 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   if (nullptr == context) return;
   pjsua_buddy_info info;
   pjsua_buddy_get_info(buddy_id, &info);
-  // std::string activity;
-  // if (PJRPID_ACTIVITY_UNKNOWN == info.rpid.activity)
-  //   activity = "unknown";
-  // if (PJRPID_ACTIVITY_AWAY == info.rpid.activity)
-  //   activity = "away";
-  // if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
-  //   activity = "busy";
-  // std::string buddy_url(info.uri.ptr, (size_t) info.uri.slen);
-  // tree->graft(".sip_url", InfoTree::make(buddy_url));
-  std::string status("unknown");
+  std::string status(SipStatusMap.at(SipStatus::UNKNOWN));
   switch (info.status) {
     case PJSUA_BUDDY_STATUS_UNKNOWN:
       break;
     case PJSUA_BUDDY_STATUS_ONLINE:
-      status = "online";
+      status = SipStatusMap.at(SipStatus::ONLINE);
       break;
     case PJSUA_BUDDY_STATUS_OFFLINE:
-      status = "offline";
+      status = SipStatusMap.at(SipStatus::OFFLINE);
       break;
     default:
       break;
   }
-  if (PJRPID_ACTIVITY_AWAY == info.rpid.activity) status = "away";
-  if (PJRPID_ACTIVITY_BUSY == info.rpid.activity) status = "busy";
+  if (PJRPID_ACTIVITY_AWAY == info.rpid.activity) status = SipStatusMap.at(SipStatus::AWAY);
+  if (PJRPID_ACTIVITY_BUSY == info.rpid.activity) status = SipStatusMap.at(SipStatus::BUSY);
 
   InfoTree::ptr tree =
       SIPPlugin::this_->get_tree(std::string(".buddies." + std::to_string(buddy_id)));
   if (!tree) tree = InfoTree::make();
   // writing status and state
   if (std::string(info.status_text.ptr, (size_t)info.status_text.slen) == "Offline")
-    tree->graft(".status", InfoTree::make("Offline"));
+    tree->graft(".status", InfoTree::make(SipStatusMap.at(SipStatus::OFFLINE)));
   else
     tree->graft(".status", InfoTree::make(status));
   tree->graft(".status_text",

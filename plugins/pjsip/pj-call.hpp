@@ -45,6 +45,9 @@ class PJCall {
   PJCall& operator=(const PJCall&) = delete;
   void finalize_calls();
 
+  enum class SendRecvStatus { DISCONNECTED, CONNECTING, CALLING, RECEIVING };
+  static const std::map<SendRecvStatus, std::string> SendRecvStatusMap;
+
  private:
   /* Media stream created when the call is active. */
   using media_t = struct media_stream {
