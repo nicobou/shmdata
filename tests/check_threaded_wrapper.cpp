@@ -22,7 +22,6 @@
 #include <cassert>
 #include <iostream>
 #include <string>
-#include "switcher/utils/make-consultable.hpp"  // for MPtr
 #include "switcher/utils/threaded-wrapper.hpp"
 
 using namespace std;
@@ -48,18 +47,19 @@ struct A {
 void use_A(ThreadedWrapper<A>& twa, const string& str) {
   int i = 100;
   while (--i >= 0) {
-    auto res = twa.invoke<MPtr(&A::hello)>(i, str);
+    std::string res;
+    twa.invoke([&](A* a) { res = a->hello(i, str); });
     assert(res == string("hello") + to_string(i));
-    twa.invoke<MPtr(&A::do_nothing)>();
+    twa.invoke([&](A* a) { a->do_nothing(); });
   }
 }
 
 void use_A_async(ThreadedWrapper<A>& twa, const string& str) {
   int i = 100;
   while (--i >= 0) {
-    twa.invoke_async<MPtr(&A::hello)>(
-        [=](const string& str) { assert(str == string("hello") + to_string(i)); }, i, str);
-    twa.invoke_async<MPtr(&A::do_nothing)>([=]() {
+    twa.invoke_async([&](A* a) { a->hello(i, str); });
+    twa.invoke_async([&](A* a) {
+      a->do_nothing();
       if (0 == i) cout << str << ": last do_nothing invocation done" << endl;
     });
   }

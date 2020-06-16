@@ -69,11 +69,12 @@ SIPPlugin::SIPPlugin(quiddity::Config&& conf)
             // Try setting the new DNS address, if it doesn't work try the old one.
             auto old_dns_address = dns_address_;
             dns_address_ = val;
-            if (!pjsip_->invoke<MPtr(&PJSIP::create_resolver)>(dns_address_)) {
+            if (!pjsip_->invoke<bool>(
+                    [&](PJSIP* ctx) { return ctx->create_resolver(dns_address_); })) {
               dns_address_ = old_dns_address;
               message("ERROR:Could not set the DNS address (PJSIP), setting the old one %.",
                       dns_address_);
-              pjsip_->invoke<MPtr(&PJSIP::create_resolver)>(dns_address_);
+              pjsip_->invoke<bool>([&](PJSIP* ctx) { return ctx->create_resolver(dns_address_); });
               return false;
             }
 
@@ -122,7 +123,7 @@ SIPPlugin::SIPPlugin(quiddity::Config&& conf)
         if (transport_id_ != -1) pjsua_transport_close(transport_id_, PJ_FALSE);
       });
 
-  if (!pjsip_->invoke<MPtr(&PJSIP::safe_bool_idiom)>()) {
+  if (!pjsip_->invoke<bool>([](PJSIP* ctx) { return ctx->safe_bool_idiom(); })) {
     is_valid_ = false;
     return;
   }

@@ -70,31 +70,24 @@ class ThreadedWrapper {
     }
   }
 
-  // introspection of methods return type
-  template <typename F, F f>
-  struct method_traits;
-  // const
-  template <typename C, typename R, typename... Args, R (C::*fn_ptr)(Args...) const>
-  struct method_traits<R (C::*)(Args...) const, fn_ptr> {
-    using return_t = R;
-  };
-  // non const
-  template <typename C, typename R, typename... Args, R (C::*fn_ptr)(Args...)>
-  struct method_traits<R (C::*)(Args...), fn_ptr> {
-    using return_t = R;
-  };
-
-  // returning methods
-  template <typename MType,
-            MType fun,
-            typename... ARGs,
-            typename std::enable_if<
-                !std::is_same<void, typename method_traits<MType, fun>::return_t>::value>::type* =
-                nullptr>
-  typename method_traits<MType, fun>::return_t invoke(ARGs... args) {
-    typename method_traits<MType, fun>::return_t res;
+  template <typename R = void,
+            typename std::enable_if<std::is_same<void, R>::value>::type* = nullptr>
+  R invoke(std::function<void(T*)> fun) {
     auto task = [&]() {
-      res = (this->member_.get()->*fun)(std::forward<ARGs>(args)...);
+      fun(this->member_.get());
+      std::unique_lock<std::mutex> lock(this->task_done_m_);
+      this->task_done_cv_.notify_one();
+    };
+    do_sync_task(task);
+    return;
+  }
+
+  // invoke with a return type
+  template <typename R, typename std::enable_if<!std::is_same<void, R>::value>::type* = nullptr>
+  R invoke(std::function<R(T*)> fun) {
+    R res;
+    auto task = [&]() {
+      res = fun(this->member_.get());
       std::unique_lock<std::mutex> lock(this->task_done_m_);
       this->task_done_cv_.notify_one();
     };
@@ -102,60 +95,10 @@ class ThreadedWrapper {
     return res;
   }
 
-  template <typename MType,
-            MType fun,
-            typename... ARGs,
-            typename std::enable_if<
-                !std::is_same<void, typename method_traits<MType, fun>::return_t>::value>::type* =
-                nullptr>
-  void invoke_async(std::function<void(typename method_traits<MType, fun>::return_t)> on_result,
-                    ARGs... args) {
+  void invoke_async(std::function<void(T*)> fun) {
     {
       std::unique_lock<std::mutex> lock_sync(async_mtx_);
-      async_tasks_.emplace_back([=]() {
-        if (on_result)
-          on_result((this->member_.get()->*fun)(args...));
-        else
-          (this->member_.get()->*fun)(args...);
-      });
-    }
-    return;
-  }
-
-  // void methods
-  template <
-      typename MType,
-      MType fun,
-      typename... ARGs,
-      typename std::enable_if<
-          std::is_same<void, typename method_traits<MType, fun>::return_t>::value>::type* = nullptr>
-  typename method_traits<MType, fun>::return_t invoke(ARGs... args) {
-    auto task = [&]() {
-      (this->member_.get()->*fun)(std::forward<ARGs>(args)...);
-      std::unique_lock<std::mutex> lock(this->task_done_m_);
-      this->task_done_cv_.notify_one();
-    };
-    do_sync_task(task);
-    return;
-  }
-
-  template <
-      typename MType,
-      MType fun,
-      typename... ARGs,
-      typename std::enable_if<
-          std::is_same<void, typename method_traits<MType, fun>::return_t>::value>::type* = nullptr>
-  void invoke_async(std::function<void()> on_result, ARGs... args) {
-    {
-      std::unique_lock<std::mutex> lock_sync(async_mtx_);
-      async_tasks_.emplace_back([=]() {
-        if (on_result) {
-          (this->member_.get()->*fun)(args...);
-          on_result();
-        } else {
-          (this->member_.get()->*fun)(args...);
-        }
-      });
+      async_tasks_.emplace_back([=]() { fun(this->member_.get()); });
     }
     return;
   }

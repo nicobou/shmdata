@@ -44,6 +44,8 @@ class PJPresence {
   PJPresence& operator=(const PJPresence&) = delete;
 
   enum { AVAILABLE, BUSY, AWAY, OFFLINE, OPT_MAX };
+  enum class SipStatus{ ONLINE, OFFLINE, AWAY, BUSY, UNKNOWN };
+  static const std::map<SipStatus, std::string> SipStatusMap;
 
  private:
   bool lower_case_accounts_{true};

@@ -103,14 +103,14 @@ NVencPlugin::NVencPlugin(quiddity::Config&& conf)
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
-  is_valid_ = es_.get()->invoke<MPtr(&NVencES::safe_bool_idiom)>();
+  is_valid_ = es_.get()->invoke<bool>([](NVencES* ctx) { return ctx->safe_bool_idiom(); });
 }
 
 void NVencPlugin::update_device() {
   es_.reset();
   es_ = std::make_unique<ThreadedWrapper<NVencES>>(devices_nv_ids_[devices_.get_current_index()],
                                                    get_log_ptr());
-  if (!es_->invoke<MPtr(&NVencES::safe_bool_idiom)>()) {
+  if (!es_.get()->invoke<bool>([](NVencES* ctx) { return ctx->safe_bool_idiom(); })) {
     message(
         "ERROR: nvenc failed to create encoding session "
         "(the total number of simultaneous sessions "
@@ -126,7 +126,8 @@ void NVencPlugin::update_device() {
 }
 
 void NVencPlugin::update_codec() {
-  codecs_guids_ = es_->invoke<MPtr(&NVencES::get_supported_codecs)>();
+  codecs_guids_ = es_->invoke<decltype(codecs_guids_)>(
+      [](NVencES* ctx) { return ctx->get_supported_codecs(); });
   std::vector<std::string> names;
   for (auto& it : codecs_guids_) names.push_back(it.first);
   codecs_ = property::Selection<>(std::move(names), 0);
@@ -161,7 +162,8 @@ void NVencPlugin::update_preset() {
       codecs_guids_.begin(), codecs_guids_.end(), [&](const std::pair<std::string, GUID>& codec) {
         return codec.first == cur_codec;
       });
-  presets_guids_ = es_->invoke<MPtr(&NVencES::get_presets)>(guid_iter->second);
+  presets_guids_ = es_->invoke<decltype(presets_guids_)>(
+      [&](NVencES* ctx) { return ctx->get_presets(guid_iter->second); });
   std::vector<std::string> names;
   size_t index_low_lantency_default = 0;
   size_t current_index = 0;
@@ -194,7 +196,8 @@ void NVencPlugin::update_profile() {
       codecs_guids_.begin(), codecs_guids_.end(), [&](const std::pair<std::string, GUID>& codec) {
         return codec.first == cur_codec;
       });
-  profiles_guids_ = es_->invoke<MPtr(&NVencES::get_profiles)>(guid_iter->second);
+  profiles_guids_ = es_->invoke<decltype(profiles_guids_)>(
+      [&](NVencES* ctx) { return ctx->get_profiles(guid_iter->second); });
   std::vector<std::string> names;
   for (auto& it : profiles_guids_) names.push_back(it.first);
   profiles_ = property::Selection<>(std::move(names), 0);
@@ -220,7 +223,8 @@ void NVencPlugin::update_max_width_height() {
       codecs_guids_.begin(), codecs_guids_.end(), [&](const std::pair<std::string, GUID>& codec) {
         return codec.first == cur_codec;
       });
-  auto mwh = es_->invoke<MPtr(&NVencES::get_max_width_height)>(guid_iter->second);
+  auto mwh = es_->invoke<std::pair<int, int>>(
+      [&](NVencES* ctx) { return ctx->get_max_width_height(guid_iter->second); });
   max_width_ = mwh.first;
   max_height_ = mwh.second;
   auto getwidth = [this]() { return this->max_width_; };
@@ -257,7 +261,8 @@ void NVencPlugin::update_input_formats() {
         return codec.first == cur_codec;
       });
   video_formats_.clear();
-  video_formats_ = es_->invoke<MPtr(&NVencES::get_input_formats)>(guid_iter->second);
+  video_formats_ = es_->invoke<decltype(video_formats_)>(
+      [&](NVencES* ctx) { return ctx->get_input_formats(guid_iter->second); });
   for (auto& it : video_formats_) {
     std::string format;
     if ("NV12" == it.first)
@@ -344,16 +349,18 @@ bool NVencPlugin::can_sink_caps(const std::string& strcaps) {
 }
 
 void NVencPlugin::on_shmreader_data(void* data, size_t size) {
-  if (!es_.get()->invoke<MPtr(&NVencES::copy_to_next_input_buffer)>(data, size)) {
+  if (!es_.get()->invoke<bool>(
+          [&](NVencES* ctx) { return ctx->copy_to_next_input_buffer(data, size); })) {
     warning("error copying data to nvenc");
     return;
   }
-  es_.get()->invoke_async<MPtr(&NVencES::encode_current_input)>(nullptr);
-  es_.get()->invoke_async<MPtr(&NVencES::process_encoded_frame)>(
-      nullptr, [&](void* data, uint32_t enc_size) {
-        shmw_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(data, enc_size);
-        shmw_->bytes_written(enc_size);
-      });
+  es_.get()->invoke_async([](NVencES* ctx) { ctx->encode_current_input(); });
+  es_.get()->invoke_async([&](NVencES* ctx) {
+    ctx->process_encoded_frame([&](void* data, uint32_t enc_size) {
+      shmw_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(data, enc_size);
+      shmw_->bytes_written(enc_size);
+    });
+  });
 }
 
 void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
@@ -417,16 +424,17 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
       profiles_guids_.end(),
       [&](const std::pair<std::string, GUID>& profile) { return profile.first == cur_profile; });
 
-  es_->invoke_async<MPtr(&NVencES::initialize_encoder)>(nullptr,
-                                                        guid_iter->second,
-                                                        preset_iter->second,
-                                                        profiles_iter->second,
-                                                        bitrate_from_preset_ ? 0 : bitrate_,
-                                                        width,
-                                                        height,
-                                                        frameNum,
-                                                        frameDen,
-                                                        buf_format);
+  es_->invoke_async([&](NVencES* ctx) {
+    ctx->initialize_encoder(guid_iter->second,
+                            preset_iter->second,
+                            profiles_iter->second,
+                            bitrate_from_preset_ ? 0 : bitrate_,
+                            width,
+                            height,
+                            frameNum,
+                            frameDen,
+                            buf_format);
+  });
   shmw_.reset();
 
   std::string codec;

@@ -46,6 +46,13 @@ pjsip_module PJCall::mod_siprtp_ = {
     nullptr,        /* on_tsx_state()   */
 };
 
+const std::map<PJCall::SendRecvStatus, std::string> PJCall::SendRecvStatusMap = {
+    {SendRecvStatus::DISCONNECTED, "disconnected"},
+    {SendRecvStatus::CONNECTING, "connecting"},
+    {SendRecvStatus::CALLING, "calling"},
+    {SendRecvStatus::RECEIVING, "receiving"}
+};
+
 PJCall::PJCall() {
   pj_status_t status;
   local_ips_ = netutils::get_ips();
@@ -226,7 +233,7 @@ bool PJCall::release_incoming_call(call_t* call, pjsua_buddy_id id) {
   if (!tree) {
     SIPPlugin::this_->warning("cannot find buddy information tree, call status update cancelled");
   } else {
-    tree->graft(std::string(".recv_status."), InfoTree::make("disconnected"));
+    tree->graft(std::string(".recv_status."), InfoTree::make(SendRecvStatusMap.at(SendRecvStatus::DISCONNECTED)));
     SIPPlugin::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
   }
 
@@ -268,7 +275,7 @@ bool PJCall::release_outgoing_call(call_t* call, pjsua_buddy_id id) {
   if (!tree) {
     SIPPlugin::this_->warning("cannot find buddy information tree, call status update cancelled");
   } else {
-    tree->graft(std::string(".send_status."), InfoTree::make("disconnected"));
+    tree->graft(std::string(".send_status."), InfoTree::make(SendRecvStatusMap.at(SendRecvStatus::DISCONNECTED)));
     SIPPlugin::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
   }
   // removing call
@@ -301,9 +308,9 @@ void PJCall::on_inv_state_confirmed(call_t* call, pjsip_inv_session* /*inv*/, pj
     SIPPlugin::this_->sip_calls_->call_cv_.notify_all();
   }
   if (calls.end() != it)
-    tree->graft(std::string(".send_status."), InfoTree::make("calling"));
+    tree->graft(std::string(".send_status."), InfoTree::make(SendRecvStatusMap.at(SendRecvStatus::CALLING)));
   else
-    tree->graft(std::string(".recv_status."), InfoTree::make("receiving"));
+    tree->graft(std::string(".recv_status."), InfoTree::make(SendRecvStatusMap.at(SendRecvStatus::RECEIVING)));
   SIPPlugin::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
 }
 
@@ -325,9 +332,9 @@ void PJCall::on_inv_state_connecting(call_t* call, pjsip_inv_session* /*inv*/, p
     return c->inv == call->inv;
   });
   if (calls.end() != it)
-    tree->graft(std::string(".send_status."), InfoTree::make("connecting"));
+    tree->graft(std::string(".send_status."), InfoTree::make(SendRecvStatusMap.at(SendRecvStatus::CONNECTING)));
   else
-    tree->graft(std::string(".recv_status."), InfoTree::make("connecting"));
+    tree->graft(std::string(".recv_status."), InfoTree::make(SendRecvStatusMap.at(SendRecvStatus::CONNECTING)));
   SIPPlugin::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
 }
 
@@ -884,7 +891,7 @@ bool PJCall::make_call(std::string dst_uri) {
     SIPPlugin::this_->warning("cannot find buddy information tree, call cancelled");
     return false;
   }
-  tree->graft(std::string(".send_status."), InfoTree::make("calling"));
+  tree->graft(std::string(".send_status."), InfoTree::make(SendRecvStatusMap.at(SendRecvStatus::CALLING)));
   SIPPlugin::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
   return true;
 }
@@ -947,12 +954,13 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
       // If shmdata is not received from SIP and is not a Switcher generated path, it can be an NDI
       // stream, a Gstreamer pipeline or any stream produced by a shmdata writer.
       // Those shmdatas can have completely arbitrary naming patterns. In that case, we take
-      // the second to last part of the shmpath.
-      // For reference: /tmp/ndi_default_value_suffix -> we want the "value" part of the shmdata,
-      // before the suffix
-      auto last_underscore = it.find_last_of('_');
-      auto second_to_last_underscore = it.rfind('_', last_underscore - 1);
-      rawlabel = "ndi" + it.substr(second_to_last_underscore + 1, last_underscore);
+      // only the socket name, not its whole path
+      // For reference: /tmp/ndi_default_value_suffix -> we want the "ndi_default_value_suffix" part
+      auto last_slash = it.find_last_of('/');
+      if (last_slash == std::string::npos)
+        rawlabel = it;
+      else
+        rawlabel = it.substr(last_slash + 1);
     }
 
     std::istringstream ss(rawlabel);  // Turn the string into a stream

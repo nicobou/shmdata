@@ -12,7 +12,7 @@ if (PLUGIN_GLFW)
 
     include(ExternalProject)
     ExternalProject_Add(glfw
-        URL https://github.com/glfw/glfw/archive/3.2.1.tar.gz
+        URL https://github.com/glfw/glfw/archive/3.3.2.tar.gz
         CMAKE_ARGS -DBUILD_SHARED_LIBS=FALSE
         CMAKE_ARGS -DGLFW_BUILD_EXAMPLES=FALSE
         CMAKE_ARGS -DGLFW_BUILD_TESTS=FALSE

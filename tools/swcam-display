@@ -35,7 +35,7 @@ def main() -> None:
     args = parse_args()
 
     # create a switcher.
-    sw = Switcher('swcam-display' + str(os.getpid()), debug=args.debug)
+    sw = Switcher('swcam' + str(os.getpid()), debug=args.debug)
     cam = sw.create('v4l2src', 'cam')
     if (not cam):
         print('sorry, no device found')

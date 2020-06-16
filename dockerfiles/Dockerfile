@@ -59,6 +59,8 @@ RUN apt update -y \
             libvncserver-dev \
             libxcursor1 \
             libxcursor-dev \
+            libxi6 \
+            libxi-dev \
             libxinerama1 \
             libxinerama-dev \
             libxrandr2 \
@@ -149,6 +151,7 @@ RUN rm -rf ${BUILD_DIR} \
         libtool \
         libvncserver-dev \
         libxcursor-dev \
+        libxi-dev \
         libxinerama-dev \
         libxrandr-dev \
         linux-libc-dev \

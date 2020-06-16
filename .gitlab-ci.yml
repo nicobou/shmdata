@@ -73,7 +73,7 @@ Build and Deploy clean image:
 #
 coverage:
   stage: coverage
-  image: ubuntu:19.10
+  image: ubuntu:20.04
   script: 
     - apt update
     - DEBIAN_FRONTEND=noninteractive apt install -y cmake bison build-essential flex libtool git libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev
