@@ -2,6 +2,22 @@ iNEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.10 (2020-06-16)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+Bug fixes:
+* 🐛 Fixed PJCall not handling correctly external shmdatas
+* 🐛 fix swcam-display segfaut in 20.04
+
+Dependency upgrades:
+* ⬆️ upgrade glfw to version 3.3.2
+* ⬆️ using Ubuntu 20.04 instead of 19.10 in CI for coverage
+
+Improvements:
+* ♻️ Add enums for various SIP statuses
+* ♻️ use lambda instead of method pointer in ThreadedWrapper
+
 switcher 2.1.8 (2020-06-01)
 ---------------------------
 This is an official release in the 2.1 stable series.
