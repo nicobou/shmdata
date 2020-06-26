@@ -140,7 +140,8 @@ std::string stringutils::base64_decode(const std::string& str) {
 std::string stringutils::escape_json(const std::string& str) {
   std::ostringstream o;
   for (auto c = str.cbegin(); c != str.cend(); c++) {
-    switch (*c) {
+    auto cur_char = static_cast<signed char>(*c);
+    switch (cur_char) {
       case '"':
         o << "\\\"";
         break;
@@ -163,10 +164,10 @@ std::string stringutils::escape_json(const std::string& str) {
         o << "\\t";
         break;
       default:
-        if ('\x00' <= *c && *c <= '\x1f') {
-          o << "\\u" << std::hex << std::setw(4) << std::setfill('0') << (int)*c;
+        if ('\x00' <= cur_char && cur_char <= '\x1f') {
+          o << "\\u" << std::hex << std::setw(4) << std::setfill('0') << (int)cur_char;
         } else {
-          o << *c;
+          o << cur_char;
         }
     }
   }
