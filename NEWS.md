@@ -2,6 +2,13 @@ iNEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.12 (2020-06-29)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+Bug fix:
+* 🐛 compilation error with escape_json on arm
+
 switcher 2.1.10 (2020-06-16)
 ---------------------------
 This is an official release in the 2.1 stable series.
