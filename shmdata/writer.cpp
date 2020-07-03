@@ -73,6 +73,10 @@ Writer::Writer(const std::string& path,
 bool Writer::copy_to_shm(const void* data, size_t size) {
   bool res = true;
   {
+    if (!(*sem_.get())) {
+      log_->warning("semaphore was not correctly initialized");
+      return false;
+    }
     WriteLock wlock(sem_.get());
     if (size > connect_data_.shm_size_) {
       log_->debug("resizing shmdata (%) from % bytes to % bytes",
