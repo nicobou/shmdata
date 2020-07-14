@@ -292,10 +292,10 @@ static void notify_connection(void* object) {
 void gst_shmdata_src_on_server_connect(void *user_data, const char *type_descr) {
   GstShmdataSrc *self = GST_SHMDATA_SRC (user_data);
 
-  if (NULL != self->caps)
+  if (NULL != self && NULL != self->caps)
     gst_caps_unref(self->caps);
   self->caps = gst_caps_from_string(type_descr);
-  if (NULL != self->caps)
+  if (NULL != self && NULL != self->caps)
     self->has_new_caps = TRUE;
   self->connected = TRUE;
   g_idle_add((GSourceFunc)notify_connection, self);

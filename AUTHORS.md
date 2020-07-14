@@ -6,4 +6,5 @@
 * Michal Seta
 * Valentin Laurent
 * Mike Wozniewski
+* Francis Lecavalier
 * Marie-Eve Dumas

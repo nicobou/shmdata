@@ -2,6 +2,13 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.28 (2020-07-14)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* 🐛 Fix segfault in copy_to_shm
+* 🐛 Fix segfault on server connection
+
 shmdata 1.3.26 (2020-06-01)
 ---------------------------
 This is an official release in the 1.3 stable series.
