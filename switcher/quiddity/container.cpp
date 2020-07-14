@@ -138,9 +138,9 @@ InfoTree::ptr Container::get_quiddities_description() {
   tree->graft("quiddities", InfoTree::make());
   tree->tag_as_array("quiddities", true);
   auto subtree = tree->get_tree("quiddities");
-  for (auto& it : quiddities_) {
-    auto quid = it.second;
-    if (quid) {
+  for (const auto& it : quiddities_) {
+    if (it.second) {
+      auto quid = it.second;
       std::string name = quid->get_name();
       subtree->graft(name + ".id", InfoTree::make(name));
       subtree->graft(name + ".class", InfoTree::make(quid->get_type()));

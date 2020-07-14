@@ -2,6 +2,12 @@ iNEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.14 (2020-07-14)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+* 🐛 Fix invalid quiddity pointer segfault
+
 switcher 2.1.12 (2020-06-29)
 ---------------------------
 This is an official release in the 2.1 stable series.
