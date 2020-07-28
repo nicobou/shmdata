@@ -84,8 +84,8 @@ PyObject* pyQuiddity::get(pyQuiddityObject* self, PyObject* args, PyObject* kwds
   }
   auto prop_id = self->quid->prop<MPtr(&property::PBag::get_id)>(property);
   if (0 == prop_id) {
-    Py_INCREF(Py_False);
-    return Py_False;
+    PyErr_SetString(PyExc_ValueError, "property not found");
+    return static_cast<PyObject*>(nullptr);
   }
   return pyInfoTree::any_to_pyobject(pyquid::ungiled(
       std::function([&]() { return self->quid->prop<MPtr(&property::PBag::get_any)>(prop_id); })));
@@ -109,8 +109,9 @@ PyObject* pyQuiddity::invoke(pyQuiddityObject* self, PyObject* args, PyObject* k
     if (PyList_Check(inv_args)) {  // a list argument is given
       list_size = PyList_Size(inv_args);
     } else {  // something else is given as argument
-      Py_INCREF(Py_None);
-      return Py_None;
+      PyErr_SetString(PyExc_TypeError,
+                      "pyQuiddity invoke method expects a List containing arguments");
+      return static_cast<PyObject*>(nullptr);
     }
   }
   auto tuple_args = std::string();
@@ -171,8 +172,9 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
     if (PyList_Check(inv_args)) {  // a list argument is given
       list_size = PyList_Size(inv_args);
     } else {  // something else is given as argument
-      Py_INCREF(Py_None);
-      return Py_None;
+      PyErr_SetString(PyExc_TypeError,
+                      "pyQuiddity invoke_async method expects a List containing arguments");
+      return static_cast<PyObject*>(nullptr);
     }
   }
   auto tuple_args = std::string();
@@ -199,8 +201,10 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
   }
 
   if (cb != nullptr && !PyCallable_Check(cb)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(
+        PyExc_TypeError,
+        "pyQuiddity invoke_async method expects a callable object for the on_done_cb argument");
+    return static_cast<PyObject*>(nullptr);
   }
 
   Py_INCREF(cb);
@@ -442,8 +446,8 @@ PyObject* pyQuiddity::subscribe(pyQuiddityObject* self, PyObject* args, PyObject
     return Py_None;
   }
   if (!PyCallable_Check(cb)) {
-    Py_INCREF(Py_False);
-    return Py_False;
+    PyErr_SetString(PyExc_TypeError, "pyQuiddity callback argument must be callable");
+    return static_cast<PyObject*>(nullptr);
   }
 
   if (subscribe_to_property(self, name, cb, user_data)) {
