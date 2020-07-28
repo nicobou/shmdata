@@ -1,9 +1,33 @@
 INSTALL   
 =======
 
-## Quick build and installation (latest Ubuntu)
-
 > **Note**: Ensure **[Shmdata](https://gitlab.com/sat-metalab/shmdata)** is already installed before proceeding.
+
+## Quick build and installation (Ubuntu 20.04)
+
+Build and install **switcher** from the command line:
+
+```bash
+# Install all dependencies
+sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins  libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libltc-dev libcurl4-gnutls-dev gsoap wah-plugins libxrandr-dev libxinerama-dev libxcursor-dev libsamplerate0-dev libsoup2.4-dev python3-dev libxxf86vm-dev
+
+# Clone all code from master branch
+git clone https://gitlab.com/sat-metalab/switcher.git
+
+# Configure build folder
+cd switcher
+git submodule update --init --recursive
+mkdir build && cd build
+
+# Generate make recipes
+cmake .. -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE=Release # replace "Release" with "Debug" when coding
+
+# Build and install switcher on your system
+make -j"$(nproc)"
+sudo make install && sudo ldconfig
+```
+
+## Quick build and installation (Ubuntu 18.04)
 
 Build and install **switcher** from the command line:
 
@@ -28,6 +52,8 @@ sudo make install && sudo ldconfig
 ```
 
 > The inline environment variables `CC` and `CXX` are set in order to force the usage of **gcc-8** and **g++-8** without polluting your system environment. All following instructions assume you are using **gcc-8** and **g++-8** as C/C++ compilers.
+
+## Custom compilation
 
 You can verify and change the build configuration using **ccmake**. To do so, you must first install the needed package:
     
@@ -113,7 +139,7 @@ If you wish to use GPU-accelerated video decoding, you will also need to build t
     $ make package_source_test
 ```
 
-# Mac OS X Installation
+# Mac OS X Installation (experimental)
 
 * Install xcode
 
