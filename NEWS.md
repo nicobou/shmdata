@@ -2,6 +2,14 @@ iNEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.16 (2020-08-07)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+* 📝 update instruction for build with ubuntu 20.04
+* 🐛 fix filesrc quiddity blocking when set with a non existing file
+* 🥅 catching errors related to method signatures in pyquiddity
+
 switcher 2.1.14 (2020-07-14)
 ---------------------------
 This is an official release in the 2.1 stable series.

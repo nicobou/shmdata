@@ -18,6 +18,7 @@
  */
 
 #include "./file-decoder.hpp"
+#include <filesystem>
 #include "../gst/utils.hpp"
 #include "../utils/scope-exit.hpp"
 
@@ -101,6 +102,12 @@ FileDecoder::FileDecoder(quiddity::Config&& conf)
 }
 
 bool FileDecoder::load_file(const std::string& path) {
+  {
+    if (!std::filesystem::exists(std::filesystem::path(path))) {
+      warning("file % could not be loaded (does not exist)", path);
+      return false;
+    }
+  }
   // cleaning previous
   shm_subs_.clear();
   media_loaded_ = false;
