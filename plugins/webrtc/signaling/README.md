@@ -27,13 +27,13 @@ generate them by running the following command in this directory.
 Run the server
 
 ```sh
-./simple-server.py
+./simple_server.py
 ```
 
 or
 
 ```sh
-python3 simple-server.py
+python3 simple_server.py
 ```
 
 ## Possible issues

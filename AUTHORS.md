@@ -15,4 +15,5 @@
 * Rostom Mesli
 * Patrick Keroulas
 * Michał Seta
+* Marie-Eve Dumas
 * Marc Lavallée
