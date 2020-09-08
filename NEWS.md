@@ -1,6 +1,12 @@
-iNEWS
+NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
+
+switcher 2.1.18 (2020-09-08)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+* 🎨 Refactored the simple server to be a class in the WebRTC Quiddity
 
 switcher 2.1.16 (2020-08-07)
 ---------------------------
