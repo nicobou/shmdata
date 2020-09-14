@@ -23,6 +23,11 @@ if (PLUGIN_WEBRTC)
   add_executable(check_webrtc check_webrtc.cpp)
   add_test(check_webrtc check_webrtc)
 
+  pkg_check_modules(PYTHON python3)
+  option(WITH_PYTHON "Python Wrapper" ${PYTHON_FOUND})
+  if(WITH_PYTHON)
+    add_test(pyquid_quid_webrtc ${CMAKE_CURRENT_SOURCE_DIR}/check_quid_webrtc.py)
+  endif()
 
   install(TARGETS webrtc LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
 endif ()

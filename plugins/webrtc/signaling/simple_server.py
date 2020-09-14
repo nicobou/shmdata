@@ -8,18 +8,18 @@
 #
 # Code from: https://github.com/nirbheek/gstwebrtc-demos/blob/master/signalling/simple_server.py
 
-import os
-import sys
-import ssl
-import logging
-import asyncio
-import websockets
 import argparse
-import http
+import asyncio
 import concurrent
+import http
+import logging
+import os
+import ssl
+import sys
+import websockets
 
 
-class WebRTCSimpleServer(object):
+class WebRTCSimpleServer:
 
     def __init__(self, loop, options):
         ############### Global data ###############

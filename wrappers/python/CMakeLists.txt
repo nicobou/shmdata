@@ -21,9 +21,9 @@ if (WITH_PYTHON)
     add_library(pyquid SHARED
         pyinfotree.cpp
         pyquid.cpp
-	pyquiddity.cpp
-	pyqrox.cpp
-	pyswitch.cpp
+        pyquiddity.cpp
+        pyqrox.cpp
+        pyswitch.cpp
         )
     set_target_properties(pyquid PROPERTIES PREFIX "")
 
