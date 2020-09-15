@@ -1,7 +1,4 @@
-             __            __     __      
-        ___ / /  __ _  ___/ /__ _/ /____ _
-       (_-</ _ \/  ' \/ _  / _ `/ __/ _ `/
-      /___/_//_/_/_/_/\_,_/\_,_/\__/\_,_/ 
+![Shmdata logo](doc/logo/png/Shmdata-color-horizontal-black-text.png)
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) [![pipeline status](https://gitlab.com/sat-metalab/shmdata/badges/develop/pipeline.svg)](https://gitlab.com/sat-metalab/shmdata/commits/develop) [![coverage report](https://gitlab.com/sat-metalab/shmdata/badges/develop/coverage.svg)](https://gitlab.com/sat-metalab/shmdata/commits/develop)
 
