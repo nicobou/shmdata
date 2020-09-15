@@ -1,20 +1,20 @@
-switcher
+Switcher
 ========
 
-![Switcher logo](doc/Switcher_horizontal_shadow_C.png)
+![Switcher logo](doc/logo/png/Switcher-color-horizontal-black-text.png)
 
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![pipeline status](https://gitlab.com/sat-metalab/switcher/badges/develop/pipeline.svg)](https://gitlab.com/sat-metalab/switcher/commits/develop) [![coverage report](https://gitlab.com/sat-metalab/switcher/badges/develop/coverage.svg)](https://gitlab.com/sat-metalab/switcher/commits/develop)
 
-[switcher](https://gitlab.com/sat-metalab/switcher) is an integration environment, able to interoperate with other software and protocols. Switcher provides low latency streaming of multichannel audio, video and data through IP networks.
+[Switcher](https://gitlab.com/sat-metalab/switcher) is an integration environment, able to interoperate with other software and protocols. Switcher provides low latency streaming of multichannel audio, video and data through IP networks.
 
 Switcher is more generic and provides managing of several instances of services (called Quiddities). A Quiddity can be created and removed dynamically and can be controlled through property get/set as well as method invocations and information tree monitoring. Switcher provides introspection mechanisms to help write higher level software written in C++, python3, node.js or shell. Switcher can save and load the state of quiddities. 
 
 Most Quiddities expose and/or consume live streams of data frames using the [shmdata](https://gitlab.com/sat-metalab/shmdata), a library for sharing data streams among processes with zero copy through POSIX shared memory. Note shmdata has [GStreamer](https://gstreamer.freedesktop.org/) elements.
 
-For instance, the camera (v4l2src) Quiddity provides the video stream from a camera that can be connected simultaneously to several other Quiddities, including a local display (glfwin), a file recorder (avrec), a low-latency streamer (SIP) or more, including another shmdata enabled software. Note that the SIP quiddity supports NAT traversal through STUN/TURN and a companion repository is available for deployment of a SIP server compatible with switcher: [scenic-server](https://gitlab.com/sat-metalab/scenic-server). 
+For instance, the camera (v4l2src) Quiddity provides the video stream from a camera that can be connected simultaneously to several other Quiddities, including a local display (glfwin), a file recorder (avrec), a low-latency streamer (SIP) or more, including another shmdata enabled software. Note that the SIP quiddity supports NAT traversal through STUN/TURN and a companion repository is available for deployment of a SIP server compatible with Switcher: [scenic-server](https://gitlab.com/sat-metalab/scenic-server). 
 
-[Scenic](https://gitlab.com/sat-metalab/scenic) provides a web interface for switcher. It emphasizes routing of audio, video and data signals and multichannel transmission over the network.
+[Scenic](https://gitlab.com/sat-metalab/scenic) provides a web interface for Switcher. It emphasizes routing of audio, video and data signals and multichannel transmission over the network.
 
 [NDI2shmdata](https://gitlab.com/sat-metalab/ndi2shmdata) converts [shmdata](https://gitlab.com/sat-metalab/shmdata) to [NewTek's NDI](http://ndi.newtek.com), and _vice versa_. Note that you can include shmdata from external applications using the _extshmsrc_ quiddity. 
 
@@ -28,7 +28,7 @@ See instructions about:
 - [Mapping OSC or HTTP messages to quiddity properties](doc/protocol-mapper.md)
 - [Using the GStreamer plugin for NVidia H264 GPU decoder (nvdec)](doc/using-nvdec-gstreamer-plugins.md)
 - [Using the Executor quiddity](plugins/executor/README.md)
-- [Shell scripting switcher and scenic](doc/shell-scripting.md)
+- [Shell scripting Switcher and scenic](doc/shell-scripting.md)
 - [Shell scripting a SIP call](doc/sip-call.md)
 - [Shell scripting OSC quiddities](doc/using-osc-quiddities.md)
 - [Contributing code](doc/contributing.md)
@@ -37,17 +37,17 @@ See instructions about:
 
 Command line
 -------
-switcher can be started with the ```switcher``` command and can be controlled remotely with the ```switcher-ctrl``` command. Help can be obtained with the ```-h``` option.
+Switcher can be started with the ```switcher``` command and can be controlled remotely with the ```switcher-ctrl``` command. Help can be obtained with the ```-h``` option.
 
 License
 -------
-switcher is released under the terms of the GNU GPL v3 or above.
+Switcher is released under the terms of the GNU GPL v3 or above.
 libswitcher is released under the terms of the GNU LGPL v2 or above.
-switcher plugins licenses are per plugin, see plugin folders.
+Switcher plugins licenses are per plugin, see plugin folders.
 
-In addition, the developers of the switcher hereby grants permission for non-GPL compatible GStreamer plugins to be used and distributed together with switcher. This permission is above and beyond the permissions granted by the GPL license by which switcher is covered. If you modify this code, you may extend this exception to your version of the code, but you are not obligated to do so. If you do not wish to do so, delete this exception statement from your version.
+In addition, the developers of the Switcher hereby grants permission for non-GPL compatible GStreamer plugins to be used and distributed together with Switcher. This permission is above and beyond the permissions granted by the GPL license by which Switcher is covered. If you modify this code, you may extend this exception to your version of the code, but you are not obligated to do so. If you do not wish to do so, delete this exception statement from your version.
 
-Some optional parts of switcher are licensed under the GNU General Public License
+Some optional parts of Switcher are licensed under the GNU General Public License
 version 2 or later (GPL v2+). None of these parts are used by default, you have to explicitly pass -DENABLE\_GPL=ON to cmake to activate them. In this case, libswitcher's license changes to GPL v2+.
 
 Specifically, the GPL parts of libswitcher are:

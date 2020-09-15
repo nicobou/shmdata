@@ -49,14 +49,14 @@ assert uri.set('uri', 'https://download.blender.org/peach/bigbuckbunny_movies/Bi
 time.sleep(2)
 
 assert uri.set(
-    'uri', 'https://gitlab.com/sat-metalab/switcher/raw/master/doc/Switcher_horizontal_shadow_C.png')
+    'uri', 'https://gitlab.com/sat-metalab/switcher/raw/master/doc/logo/png/Switcher-color-horizontal-white-text.png')
 time.sleep(2)
 
 assert uri.set('uri', 'https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_640x360.m4v')
 time.sleep(2)
 
 assert uri.set(
-    'uri', 'https://gitlab.com/sat-metalab/switcher/raw/master/doc/Switcher_horizontal_shadow_C.png')
+    'uri', 'https://gitlab.com/sat-metalab/switcher/raw/master/doc/logo/png/Switcher-color-horizontal-white-text.png')
 time.sleep(2)
 
 assert uri.set('uri', 'https://gitlab.com/sat-metalab/switcher/raw/master/doc/mapper_prop_osc.png')
