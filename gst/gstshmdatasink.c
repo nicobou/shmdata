@@ -52,6 +52,7 @@ enum
   PROP_0,
   PROP_SOCKET_PATH,
   PROP_CAPS,
+  PROP_EXTRA_CAPS_PROPERTIES,
   PROP_BYTES_SINCE_LAST_REQUEST,
   PROP_BUFFERS_SINCE_LAST_REQUEST,
   // PROP_PERMS,
@@ -331,6 +332,7 @@ gst_shmdata_sink_init (GstShmdataSink * self)
   g_cond_init (&self->cond);
   self->size = DEFAULT_INITIAL_SIZE;
   self->socket_path = NULL;
+  self->extra_caps_properties = NULL;
   //  self->perms = DEFAULT_PERMS;
   gst_allocation_params_init (&self->params);
 }
@@ -378,6 +380,16 @@ gst_shmdata_sink_class_init (GstShmdataSinkClass * klass)
           "The data type (caps) exposed in the shared memory, as negociated with other elements",
           NULL,
           G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (
+      gobject_class,
+      PROP_EXTRA_CAPS_PROPERTIES,
+      g_param_spec_string (
+          "extra-caps-properties",
+          "Extra 'key=value' pairs to add to the data type exposed for the shmdata. Pairs are separated by a coma.",
+          "The extra properties appended to the negotiated caps. If an extra caps property already exists in the negotiated caps, the original negotiated value will be overwritten.",
+          NULL,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (
       gobject_class,
@@ -448,6 +460,7 @@ gst_shmdata_sink_finalize (GObject * object)
 
   g_cond_clear (&self->cond);
   g_free (self->socket_path);
+  g_free (self->extra_caps_properties);
   g_free (self->caps);
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
@@ -467,6 +480,12 @@ gst_shmdata_sink_set_property (GObject * object, guint prop_id,
       g_free (self->socket_path);
       self->socket_path = g_value_dup_string (value);
 
+      GST_OBJECT_UNLOCK (object);
+      break;
+    case PROP_EXTRA_CAPS_PROPERTIES:
+      GST_OBJECT_LOCK (object);
+      g_free (self->extra_caps_properties);
+      self->extra_caps_properties = g_value_dup_string (value);
       GST_OBJECT_UNLOCK (object);
       break;
     /* case PROP_PERMS: */
@@ -503,6 +522,9 @@ gst_shmdata_sink_get_property (GObject * object, guint prop_id,
       break;
     case PROP_CAPS:
       g_value_set_string (value, self->caps);
+      break;
+    case PROP_EXTRA_CAPS_PROPERTIES:
+      g_value_set_string (value, self->extra_caps_properties);
       break;
     case PROP_BYTES_SINCE_LAST_REQUEST:
       g_value_set_uint64 (value, self->bytes_since_last_request);
@@ -711,8 +733,39 @@ static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
 
   GST_DEBUG_OBJECT (self, "Creating new socket at %s" 
       " with shared memory of %zu bytes", self->socket_path, self->size); 
+
   g_free(self->caps);
-  self->caps = gst_caps_to_string (caps);
+  gchar* str_caps = gst_caps_to_string (caps);
+
+  // Append extra-caps-properties to received caps
+  // If a property is already present, it will be overwritten
+  if (self->extra_caps_properties != NULL) {
+    if (str_caps == NULL) {
+      self->caps = g_strdup(self->extra_caps_properties);
+    } else {
+      gchar* merged_caps_str = g_strjoin(",", str_caps, self->extra_caps_properties, NULL);
+
+      // Check if the newly formed caps are valid;
+      // gst_caps_from_string removes duplicate properties. The value of a duplicate property
+      // will be equal to the last defined value in the string for this property 
+      GstCaps* merged_caps = gst_caps_from_string(merged_caps_str);
+      if (merged_caps != NULL) {
+        self->caps = gst_caps_to_string(merged_caps);
+        gst_caps_unref(merged_caps);
+      } else {
+        self->caps = g_strdup(str_caps);
+        GST_ELEMENT_WARNING(self, STREAM, FORMAT,
+          ("Malformed 'extra-caps-properties'. Defaulting to negotiated caps."), (NULL)); 
+      }
+
+      g_free(merged_caps_str);
+    }
+  } else {
+    self->caps = g_strdup(str_caps);
+  }
+
+  g_free (str_caps);
+
   g_object_notify(G_OBJECT(sink), "caps");
 
   GST_DEBUG_OBJECT(G_OBJECT(sink), "on_caps %s", self->caps);
