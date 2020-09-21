@@ -2,6 +2,14 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.30 (2020-09-21)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* 🍱 adding logo and graphic charter
+* ✨ Add extra-caps-properties to GstShmdataSink element
+* 🐛 fix compilation with gcc 10
+
 shmdata 1.3.28 (2020-07-14)
 ---------------------------
 This is an official release in the 1.3 stable series.
