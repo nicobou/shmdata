@@ -4,7 +4,7 @@
 * Jérémie Soria
 * François Ubald Brien
 * Michal Seta
+* Francis Lecavalier
 * Valentin Laurent
 * Mike Wozniewski
-* Francis Lecavalier
 * Marie-Eve Dumas
