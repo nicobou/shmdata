@@ -75,7 +75,8 @@ void GstDecodebin::configure_shmdatasink(GstElement* element,
   else
     shmpath_decoded_ = make_shmpath(media_label + "-" + media_name);
 
-  g_object_set(G_OBJECT(element), "socket-path", shmpath_decoded_.c_str(), nullptr);
+  auto extra_caps = get_quiddity_caps();
+  g_object_set(G_OBJECT(element), "socket-path", shmpath_decoded_.c_str(), "extra-caps-properties", extra_caps.c_str(), nullptr);
   shmw_sub_ = std::make_unique<shmdata::Follower>(this,
                                                   shmpath_decoded_,
                                                   nullptr,

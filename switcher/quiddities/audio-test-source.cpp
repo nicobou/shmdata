@@ -106,6 +106,8 @@ AudioTestSource::AudioTestSource(quiddity::Config&& conf)
   g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "is-live", TRUE, nullptr);
   g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "samplesperbuffer", 512, nullptr);
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
+  auto extra_caps = get_quiddity_caps();
+  g_object_set(G_OBJECT(shmdatasink_.get_raw()), "extra-caps-properties", extra_caps.c_str(), nullptr);
   waveforms_id_ = pmanage<MPtr(&property::PBag::push)>(
       "wave", quiddity::property::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "wave"));
   register_writer_suffix("audio");
@@ -144,7 +146,7 @@ bool AudioTestSource::stop() {
   pmanage<MPtr(&property::PBag::enable)>(sample_rate_id_);
 
   if (!gst::UGstElem::renew(audiotestsrc_, {"is-live", "samplesperbuffer"}) ||
-      !gst::UGstElem::renew(capsfilter_) || !gst::UGstElem::renew(shmdatasink_, {"socket-path"})) {
+      !gst::UGstElem::renew(capsfilter_) || !gst::UGstElem::renew(shmdatasink_, {"socket-path", "extra-caps-properties"})) {
     warning("error initializing gst element for audiotestsrc");
     gst_pipeline_.reset();
     return false;

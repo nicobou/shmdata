@@ -655,7 +655,8 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
         rtp_shmpath,
         [=](GstElement* el, const std::string& media_type, const std::string&) {
           auto shmpath = shm_prefix + media_label + "-" + media_type;
-          g_object_set(G_OBJECT(el), "socket-path", shmpath.c_str(), nullptr);
+          auto extra_caps = SIPPlugin::this_->get_quiddity_caps();
+          g_object_set(G_OBJECT(el), "socket-path", shmpath.c_str(), "extra-caps-properties", extra_caps.c_str(), nullptr);
           std::lock_guard<std::mutex> lock(call->shm_subs_mtx_);
           call->shm_subs_.emplace_back(std::make_unique<shmdata::GstTreeUpdater>(
               SIPPlugin::this_,

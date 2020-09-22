@@ -44,9 +44,13 @@ Writer::Writer(quiddity::Quiddity* quid,
         quid_->graft_tree(parent_path + "." + it, tree->prune(it), false);
       }
     }
-    quid_->graft_tree(parent_path + ".caps", InfoTree::make(data_type_), false);
+
+    // Add Switcher and quiddity info in shmdata caps
+    auto caps = data_type_ + ", " + quid_->get_quiddity_caps();
+
+    quid_->graft_tree(parent_path + ".caps", InfoTree::make(caps), false);
     quid_->graft_tree(
-        parent_path + ".category", InfoTree::make(caps::get_category(data_type_)), false);
+        parent_path + ".category", InfoTree::make(caps::get_category(caps)), false);
     quid_->notify_tree_updated(parent_path);
   }
 }

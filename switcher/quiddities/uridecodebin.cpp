@@ -281,6 +281,8 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   debug("uridecodebin: new media %", media_name);
   std::string shmpath = make_shmpath(media_name);
   g_object_set(G_OBJECT(shmdatasink), "socket-path", shmpath.c_str(), nullptr);
+  auto extra_caps = get_quiddity_caps();
+  g_object_set(G_OBJECT(shmdatasink), "extra-caps-properties", extra_caps.c_str(), nullptr);
 
   shm_subs_.emplace_back(std::make_unique<shmdata::GstTreeUpdater>(
       this, shmdatasink, shmpath, shmdata::GstTreeUpdater::Direction::writer));

@@ -74,12 +74,12 @@ void Follower::on_server_connected(const std::string& data_type) {
 
   if (data_type != data_type_) {
     data_type_ = data_type;
-    quid_->graft_tree(tree_path_ + ".caps", InfoTree::make(data_type), false);
+    quid_->graft_tree(tree_path_ + ".caps", InfoTree::make(data_type_), false);
     quid_->graft_tree(
-        tree_path_ + ".category", InfoTree::make(caps::get_category(data_type)), false);
+        tree_path_ + ".category", InfoTree::make(caps::get_category(data_type_)), false);
     quid_->notify_tree_updated(tree_path_);
   }
-  if (osc_) osc_(data_type);
+  if (osc_) osc_(data_type_);
 }
 
 void Follower::on_server_disconnected() {

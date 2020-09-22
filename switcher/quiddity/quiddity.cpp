@@ -189,6 +189,12 @@ std::string Quiddity::get_shmdata_name_from_file_name(const std::string& path) c
 
 std::string Quiddity::get_manager_name() { return qcontainer_->get_switcher()->get_name(); }
 
+std::string Quiddity::get_quiddity_caps() {
+  auto caps_str = qcontainer_->get_switcher()->get_switcher_caps();
+  caps_str = caps_str + ",quiddity-id=(int)" + std::to_string(qcontainer_->get_id(get_name()));
+  return caps_str;
+}
+
 std::string Quiddity::get_socket_name_prefix() { return "switcher_"; }
 
 std::string Quiddity::get_socket_dir() { return "/tmp"; }

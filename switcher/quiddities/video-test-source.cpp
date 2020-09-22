@@ -116,6 +116,9 @@ VideoTestSource::VideoTestSource(quiddity::Config&& conf)
   shmpath_ = make_shmpath("video");
   g_object_set(G_OBJECT(videotestsrc_.get_raw()), "is-live", TRUE, nullptr);
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
+
+  auto extra_caps = get_quiddity_caps();
+  g_object_set(G_OBJECT(shmdatasink_.get_raw()), "extra-caps-properties", extra_caps.c_str(), nullptr);
   update_caps();
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmdatasink_.get_raw(),
@@ -161,7 +164,7 @@ bool VideoTestSource::start() {
   bool VideoTestSource::stop() {
     shm_sub_.reset(nullptr);
     if (!gst::UGstElem::renew(videotestsrc_, {"is-live", "pattern"}) ||
-        !gst::UGstElem::renew(shmdatasink_, {"socket-path"}) ||
+        !gst::UGstElem::renew(shmdatasink_, {"socket-path", "extra-caps-properties"}) ||
         !gst::UGstElem::renew(capsfilter_)) {
       warning("error initializing gst element for videotestsrc");
       gst_pipeline_.reset();

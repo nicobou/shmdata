@@ -96,7 +96,7 @@ void VideoCodec::make_bin() {
 bool VideoCodec::remake_codec_elements() {
   if (0 != codecs_.get_current_index()) {
     if (!UGstElem::renew(shmsrc_, {"socket-path"}) ||
-        !UGstElem::renew(shm_encoded_, {"socket-path", "sync", "async"}) ||
+        !UGstElem::renew(shm_encoded_, {"socket-path", "sync", "async", "extra-caps-properties"}) ||
         !UGstElem::renew(color_space_codec_element_) || !UGstElem::renew(queue_codec_element_) ||
         !UGstElem::renew(codec_element_, codec_properties_)) {
       return false;
@@ -186,6 +186,8 @@ void VideoCodec::set_shm(const std::string& shmpath) {
                "socket-path",
                shmpath_to_encode_.c_str(),
                nullptr);
+
+  auto extra_caps = quid_->get_quiddity_caps();
   g_object_set(G_OBJECT(shm_encoded_.get_raw()),
                "socket-path",
                shm_encoded_path_.c_str(),
@@ -193,6 +195,8 @@ void VideoCodec::set_shm(const std::string& shmpath) {
                FALSE,
                "async",
                FALSE,
+               "extra-caps-properties",
+               extra_caps.c_str(),
                nullptr);
 }
 

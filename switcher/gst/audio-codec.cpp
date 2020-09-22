@@ -87,7 +87,7 @@ void AudioCodec::make_bin() {
 bool AudioCodec::remake_codec_elements() {
   if (0 != codecs_.get_current_index()) {
     if (!UGstElem::renew(shmsrc_, {"socket-path"}) ||
-        !UGstElem::renew(shm_encoded_, {"socket-path", "sync", "async"}) ||
+        !UGstElem::renew(shm_encoded_, {"socket-path", "sync", "async", "extra-caps-properties"}) ||
         !UGstElem::renew(audio_convert_) || !UGstElem::renew(audio_resample_) ||
         !UGstElem::renew(queue_codec_element_) ||
         !UGstElem::renew(codec_element_, codec_properties_)) {
@@ -155,6 +155,7 @@ bool AudioCodec::start(const std::string& shmpath, const std::string& shmpath_en
   else
     shm_encoded_path_ = shmpath_encoded;
 
+  auto extra_caps = quid_->get_quiddity_caps();
   g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_to_encode_.c_str(), nullptr);
   g_object_set(G_OBJECT(shm_encoded_.get_raw()),
                "socket-path",
@@ -163,6 +164,8 @@ bool AudioCodec::start(const std::string& shmpath, const std::string& shmpath_en
                FALSE,
                "async",
                FALSE,
+               "extra-caps-properties",
+               extra_caps.c_str(),
                nullptr);
 
   shmsink_sub_ =

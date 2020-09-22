@@ -70,8 +70,9 @@ bool GstVideoConverter::on_shmdata_connect(const std::string& shmpath) {
   }
   shmpath_to_convert_ = shmpath;
   converter_.reset();
+  auto extra_caps = get_quiddity_caps();
   converter_ = std::make_unique<gst::PixelFormatConverter>(
-      shmpath_to_convert_, shmpath_converted_, video_format_.get_attached());
+      shmpath_to_convert_, shmpath_converted_, video_format_.get_attached(), extra_caps);
   if (!static_cast<bool>(*converter_.get())) return false;
   shmsink_sub_ =
       std::make_unique<shmdata::GstTreeUpdater>(this,

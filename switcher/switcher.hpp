@@ -56,6 +56,9 @@ class Switcher : public gst::Initialized {
   Switcher(const Switcher&) = delete;
   std::string get_name() const;
   std::string get_switcher_version() const;
+  void set_control_port(const int port);
+  int get_control_port() const;
+  std::string get_switcher_caps() const;
 
   // State
   InfoTree::ptr get_state() const;
@@ -108,6 +111,7 @@ class Switcher : public gst::Initialized {
   std::string name_;
   std::vector<std::string> quiddities_at_reset_{};
   std::weak_ptr<Switcher> me_{};
+  int control_port_{0};
 };
 }  // namespace switcher
 
