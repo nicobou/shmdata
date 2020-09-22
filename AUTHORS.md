@@ -11,9 +11,9 @@
 * Mike Wozniewski
 * Alexandre Quessy
 * Patrick Dupuis
+* Marie-Eve Dumas
 * Jerome Berthelin
 * Rostom Mesli
 * Patrick Keroulas
 * Michał Seta
-* Marie-Eve Dumas
 * Marc Lavallée

@@ -2,6 +2,15 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.20 (2020-09-22)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+* ✨ Add quiddity and Switcher info in shmdata caps
+* 🍱 updating switcher logo and adding graphic charter
+* 📝 update dependencies in instalaltion doc (ubuntu 20.04)
+* ✅ test for the webrtc quiddity
+
 switcher 2.1.18 (2020-09-08)
 ---------------------------
 This is an official release in the 2.1 stable series.
